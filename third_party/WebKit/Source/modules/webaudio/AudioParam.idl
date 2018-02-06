@@ -28,7 +28,7 @@
 
 // See https://webaudio.github.io/web-audio-api/#AudioParam
 interface AudioParam {
-    attribute float value;
+    [RaisesException=Setter] attribute float value;
     readonly attribute float defaultValue;
 
     // Nominal range for the value.

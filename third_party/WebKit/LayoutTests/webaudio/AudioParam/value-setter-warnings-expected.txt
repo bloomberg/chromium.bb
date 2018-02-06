@@ -1,18 +1,11 @@
 CONSOLE ERROR: line 39: [audit.js] this test requires the explicit comparison with the expected result when it runs with run-webkit-tests.
 CONSOLE MESSAGE: line 129: Test: test-0
 CONSOLE WARNING: line 135: AudioParam value setter will become equivalent to AudioParam.setValueAtTime() in M65, around March 2018  See https://webaudio.github.io/web-audio-api/#dom-audioparam-value for more details.
-CONSOLE WARNING: line 148: ConstantSource.offset.value setter called at time 0.4986666666666666 overlaps event setValueAtTime(1, 0.2) to linearRampToValueAtTime(99, 0.7)
 CONSOLE MESSAGE: line 129: Test: test-1
-CONSOLE WARNING: line 148: ConstantSource.offset.value setter called at time 0.09866666666666667 overlaps event setValueAtTime(0, 0) to linearRampToValueAtTime(1, 0.21)
-CONSOLE WARNING: line 148: ConstantSource.offset.value setter called at time 0.4986666666666666 overlaps event linearRampToValueAtTime(1, 0.21) to linearRampToValueAtTime(99, 0.71)
 CONSOLE MESSAGE: line 129: Test: test-2
-CONSOLE WARNING: line 148: ConstantSource.offset.value setter called at time 0.09866666666666667 overlaps event setValueAtTime(0, 0) to linearRampToValueAtTime(1, 0.22)
 CONSOLE MESSAGE: line 129: Test: test-3
-CONSOLE WARNING: line 148: ConstantSource.offset.value setter called at time 0.09866666666666667 overlaps event setValueAtTime(0, 0) to linearRampToValueAtTime(1, 0.23)
 CONSOLE MESSAGE: line 129: Test: test-4
-CONSOLE WARNING: line 148: ConstantSource.offset.value setter called at time 0.4986666666666666 overlaps event setTargetAtTime(1, 0.24, 0.1)
 CONSOLE MESSAGE: line 129: Test: test-5
-CONSOLE WARNING: line 148: ConstantSource.offset.value setter called at time 0.4986666666666666 overlaps event setValueCurveAtTime(..., 0.25, 0.5) to setValueAtTime(3, 0.75)
 This is a testharness.js-based test.
 PASS # AUDIT TASK RUNNER STARTED.
 PASS > [test-0] 
@@ -31,8 +24,9 @@ PASS > [test-4]
 PASS   test-4 : rendered successfully
 PASS < [test-4] All assertions passed. (total 1 assertions)
 PASS > [test-5] 
+PASS   Value setter overlaps setValueCurve threw NotSupportedError: "Failed to set the 'value' property on 'AudioParam': setValueAtTime(99, 0.4986666666666666) overlaps setValueCurveAtTime(..., 0.25, 0.5)".
 PASS   test-5 : rendered successfully
-PASS < [test-5] All assertions passed. (total 1 assertions)
+PASS < [test-5] All assertions passed. (total 2 assertions)
 PASS # AUDIT TASK RUNNER FINISHED: 6 tasks ran successfully.
 Harness: the test ran to completion.
 

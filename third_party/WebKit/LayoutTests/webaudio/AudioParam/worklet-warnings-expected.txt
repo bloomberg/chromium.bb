@@ -1,5 +1,5 @@
-CONSOLE WARNING: line 36: AudioParam value setter will become equivalent to AudioParam.setValueAtTime() in M65, around March 2018  See https://webaudio.github.io/web-audio-api/#dom-audioparam-value for more details.
 CONSOLE WARNING: line 39: AudioWorklet("noise-generator").amplitude.value 99 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 39: AudioWorklet("noise-generator").amplitude.setValueAtTime value 99 outside nominal range [0, 1]; value will be clamped.
 CONSOLE WARNING: line 43: AudioWorklet("noise-generator").amplitude.setValueAtTime value -1 outside nominal range [0, 1]; value will be clamped.
 CONSOLE WARNING: line 44: AudioWorklet("noise-generator").amplitude.linearRampToValueAtTime value 5 outside nominal range [0, 1]; value will be clamped.
 This is a testharness.js-based test.

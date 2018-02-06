@@ -234,6 +234,7 @@ class AudioParam final : public ScriptWrappable {
   String GetParamName() const;
 
   float value() const;
+  void setValue(float, ExceptionState&);
   void setValue(float);
   float defaultValue() const;
 

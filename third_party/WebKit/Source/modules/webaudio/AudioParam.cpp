@@ -303,6 +303,17 @@ void AudioParam::setValue(float value) {
   Handler().SetValue(value);
 }
 
+void AudioParam::setValue(float value, ExceptionState& exception_state) {
+  WarnIfOutsideRange("value", value);
+
+  // This is to signal any errors, if necessary, about conflicting
+  // automations.
+  setValueAtTime(value, Context()->currentTime(), exception_state);
+  // This is to change the value so that an immediate query for the
+  // value returns the expected values.
+  Handler().SetValue(value);
+}
+
 // TODO(crbug.com/764396): Remove this when fixed.
 void AudioParam::WarnIfSetterOverlapsEvent() {
   DCHECK(IsMainThread());

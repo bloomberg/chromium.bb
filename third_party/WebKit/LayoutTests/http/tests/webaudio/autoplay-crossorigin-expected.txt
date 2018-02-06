@@ -1,6 +1,5 @@
 CONSOLE WARNING: line 13: An AudioContext in a cross origin iframe must be created or resumed from a user gesture to enable audio output.
 CONSOLE WARNING: line 23: An AudioContext in a cross origin iframe must be created or resumed from a user gesture to enable audio output.
-CONSOLE WARNING: line 30: AudioParam value setter will become equivalent to AudioParam.setValueAtTime() in M65, around March 2018  See https://webaudio.github.io/web-audio-api/#dom-audioparam-value for more details.
 CONSOLE WARNING: line 36: An AudioContext in a cross origin iframe must be created or resumed from a user gesture to enable audio output.
 CONSOLE ERROR: line 2676: Uncaught Error: assert_equals: stateAfterClick expected "running" but got "suspended"
 This is a testharness.js-based test.
