@@ -36,9 +36,9 @@ namespace blink {
 
 SVGPaintContext::~SVGPaintContext() {
   if (filter_) {
-    DCHECK(SVGResourcesCache::CachedResourcesForLayoutObject(&object_));
+    DCHECK(SVGResourcesCache::CachedResourcesForLayoutObject(object_));
     DCHECK(
-        SVGResourcesCache::CachedResourcesForLayoutObject(&object_)->Filter() ==
+        SVGResourcesCache::CachedResourcesForLayoutObject(object_)->Filter() ==
         filter_);
     DCHECK(filter_recording_context_);
     SVGFilterPainter(*filter_).FinishEffect(object_,
@@ -49,9 +49,9 @@ SVGPaintContext::~SVGPaintContext() {
   }
 
   if (masker_) {
-    DCHECK(SVGResourcesCache::CachedResourcesForLayoutObject(&object_));
+    DCHECK(SVGResourcesCache::CachedResourcesForLayoutObject(object_));
     DCHECK(
-        SVGResourcesCache::CachedResourcesForLayoutObject(&object_)->Masker() ==
+        SVGResourcesCache::CachedResourcesForLayoutObject(object_)->Masker() ==
         masker_);
     SVGMaskPainter(*masker_).FinishEffect(object_, GetPaintInfo().context);
   }
@@ -95,7 +95,7 @@ bool SVGPaintContext::ApplyClipMaskAndFilterIfNecessary() {
   }
 
   SVGResources* resources =
-      SVGResourcesCache::CachedResourcesForLayoutObject(&object_);
+      SVGResourcesCache::CachedResourcesForLayoutObject(object_);
 
   if (!ApplyMaskIfNecessary(resources))
     return false;

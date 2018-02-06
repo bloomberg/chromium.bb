@@ -3592,7 +3592,7 @@ bool LayoutObject::CanUpdateSelectionOnRootLineBoxes() const {
 void LayoutObject::SetNeedsBoundariesUpdate() {
   if (IsSVGChild()) {
     // The boundaries affect mask clip.
-    auto* resources = SVGResourcesCache::CachedResourcesForLayoutObject(this);
+    auto* resources = SVGResourcesCache::CachedResourcesForLayoutObject(*this);
     if (resources && resources->Masker())
       SetNeedsPaintPropertyUpdate();
     if (resources && resources->Clipper())

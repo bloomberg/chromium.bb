@@ -74,11 +74,9 @@ void LayoutSVGResourceFilter::RemoveAllClientsFromCache(
 }
 
 void LayoutSVGResourceFilter::RemoveClientFromCache(
-    LayoutObject* client,
+    LayoutObject& client,
     bool mark_for_invalidation) {
-  DCHECK(client);
-
-  auto entry = filter_.find(client);
+  auto entry = filter_.find(&client);
   bool filter_cached = entry != filter_.end();
   if (filter_cached) {
     entry->value->Dispose();
@@ -139,7 +137,7 @@ void LayoutSVGResourceFilter::PrimitiveAttributeChanged(
     node_map->InvalidateDependentEffects(effect);
 
     // Issue paint invalidations for the image on the screen.
-    MarkClientForInvalidation(filter.key, kPaintInvalidation);
+    MarkClientForInvalidation(*filter.key, kPaintInvalidation);
   }
   NotifyContentChanged();
 }

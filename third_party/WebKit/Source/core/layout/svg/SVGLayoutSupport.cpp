@@ -260,7 +260,7 @@ void SVGLayoutSupport::ComputeContainerBoundingBoxes(
   }
 
   local_visual_rect = stroke_bounding_box;
-  AdjustVisualRectWithResources(container, local_visual_rect);
+  AdjustVisualRectWithResources(*container, local_visual_rect);
 }
 
 const LayoutSVGRoot* SVGLayoutSupport::FindTreeRootObject(
@@ -348,7 +348,7 @@ void SVGLayoutSupport::LayoutChildren(LayoutObject* first_child,
     // it causes assertions if we use a SubTreeLayoutScope for them.
     if (child->IsSVGResourceContainer()) {
       // Lay out any referenced resources before the child.
-      LayoutResourcesIfNeeded(child);
+      LayoutResourcesIfNeeded(*child);
       child->LayoutIfNeeded();
     } else {
       SubtreeLayoutScope layout_scope(*child);
@@ -357,15 +357,13 @@ void SVGLayoutSupport::LayoutChildren(LayoutObject* first_child,
                                     LayoutInvalidationReason::kSvgChanged);
 
       // Lay out any referenced resources before the child.
-      LayoutResourcesIfNeeded(child);
+      LayoutResourcesIfNeeded(*child);
       child->LayoutIfNeeded();
     }
   }
 }
 
-void SVGLayoutSupport::LayoutResourcesIfNeeded(const LayoutObject* object) {
-  DCHECK(object);
-
+void SVGLayoutSupport::LayoutResourcesIfNeeded(const LayoutObject& object) {
   SVGResources* resources =
       SVGResourcesCache::CachedResourcesForLayoutObject(object);
   if (resources)
@@ -382,29 +380,28 @@ bool SVGLayoutSupport::IsOverflowHidden(const LayoutObject* object) {
 }
 
 void SVGLayoutSupport::AdjustVisualRectWithResources(
-    const LayoutObject* layout_object,
+    const LayoutObject& layout_object,
     FloatRect& visual_rect) {
-  DCHECK(layout_object);
-
   SVGResources* resources =
       SVGResourcesCache::CachedResourcesForLayoutObject(layout_object);
   if (!resources)
     return;
 
   if (LayoutSVGResourceFilter* filter = resources->Filter())
-    visual_rect = filter->ResourceBoundingBox(layout_object);
+    visual_rect = filter->ResourceBoundingBox(&layout_object);
 
-  if (LayoutSVGResourceClipper* clipper = resources->Clipper())
+  if (LayoutSVGResourceClipper* clipper = resources->Clipper()) {
     visual_rect.Intersect(
-        clipper->ResourceBoundingBox(layout_object->ObjectBoundingBox()));
+        clipper->ResourceBoundingBox(layout_object.ObjectBoundingBox()));
+  }
 
   if (LayoutSVGResourceMasker* masker = resources->Masker())
-    visual_rect.Intersect(masker->ResourceBoundingBox(layout_object));
+    visual_rect.Intersect(masker->ResourceBoundingBox(&layout_object));
 }
 
 bool SVGLayoutSupport::HasFilterResource(const LayoutObject& object) {
   SVGResources* resources =
-      SVGResourcesCache::CachedResourcesForLayoutObject(&object);
+      SVGResourcesCache::CachedResourcesForLayoutObject(object);
   return resources && resources->Filter();
 }
 
@@ -420,7 +417,7 @@ bool SVGLayoutSupport::PointInClippingArea(const LayoutObject& object,
   }
   DCHECK_EQ(clip_path_operation->GetType(), ClipPathOperation::REFERENCE);
   SVGResources* resources =
-      SVGResourcesCache::CachedResourcesForLayoutObject(&object);
+      SVGResourcesCache::CachedResourcesForLayoutObject(object);
   if (!resources || !resources->Clipper())
     return true;
   return resources->Clipper()->HitTestClipContent(object.ObjectBoundingBox(),

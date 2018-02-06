@@ -206,7 +206,7 @@ void SVGShapePainter::PaintMarkers(const PaintInfo& paint_info,
     return;
 
   SVGResources* resources =
-      SVGResourcesCache::CachedResourcesForLayoutObject(&layout_svg_shape_);
+      SVGResourcesCache::CachedResourcesForLayoutObject(layout_svg_shape_);
   if (!resources)
     return;
 

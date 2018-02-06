@@ -99,7 +99,7 @@ void LayoutSVGResourceContainer::MakeClientsPending(
   for (auto* client : clients_) {
     // Unlink the resource from the client's SVGResources.
     SVGResources* resources =
-        SVGResourcesCache::CachedResourcesForLayoutObject(client);
+        SVGResourcesCache::CachedResourcesForLayoutObject(*client);
     // Or else the client wouldn't be in the list in the first place.
     DCHECK(resources);
     resources->ResourceDestroyed(this);
@@ -134,7 +134,7 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
     }
 
     if (mark_for_invalidation)
-      MarkClientForInvalidation(client, mode);
+      MarkClientForInvalidation(*client, mode);
 
     LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
         client, needs_layout);
@@ -147,15 +147,14 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
 }
 
 void LayoutSVGResourceContainer::MarkClientForInvalidation(
-    LayoutObject* client,
+    LayoutObject& client,
     InvalidationMode mode) {
-  DCHECK(client);
   DCHECK(!clients_.IsEmpty());
 
   switch (mode) {
     case kLayoutAndBoundariesInvalidation:
     case kBoundariesInvalidation:
-      client->SetNeedsBoundariesUpdate();
+      client.SetNeedsBoundariesUpdate();
       break;
     case kPaintInvalidation:
       // Since LayoutSVGInlineTexts don't have SVGResources (they use their
@@ -163,27 +162,25 @@ void LayoutSVGResourceContainer::MarkClientForInvalidation(
       // if the client is one that could have a LayoutSVGInlineText use a
       // paint invalidation reason that will force paint invalidation of the
       // entire <text>/<tspan>/... subtree.
-      client->SetShouldDoFullPaintInvalidation(
+      client.SetShouldDoFullPaintInvalidation(
           PaintInvalidationReason::kSVGResource);
-      client->InvalidateClipPathCache();
+      client.InvalidateClipPathCache();
       // Invalidate paint properties to update effects if any.
-      client->SetNeedsPaintPropertyUpdate();
+      client.SetNeedsPaintPropertyUpdate();
       break;
     case kParentOnlyInvalidation:
       break;
   }
 }
 
-void LayoutSVGResourceContainer::AddClient(LayoutObject* client) {
-  DCHECK(client);
-  clients_.insert(client);
+void LayoutSVGResourceContainer::AddClient(LayoutObject& client) {
+  clients_.insert(&client);
   ClearInvalidationMask();
 }
 
-bool LayoutSVGResourceContainer::RemoveClient(LayoutObject* client) {
-  DCHECK(client);
+bool LayoutSVGResourceContainer::RemoveClient(LayoutObject& client) {
   RemoveClientFromCache(client, false);
-  clients_.erase(client);
+  clients_.erase(&client);
   return clients_.IsEmpty();
 }
 
@@ -201,18 +198,17 @@ void LayoutSVGResourceContainer::InvalidateCacheAndMarkForLayout(
 }
 
 static inline void RemoveFromCacheAndInvalidateDependencies(
-    LayoutObject* object,
+    LayoutObject& object,
     bool needs_layout) {
-  DCHECK(object);
   if (SVGResources* resources =
           SVGResourcesCache::CachedResourcesForLayoutObject(object)) {
     resources->RemoveClientFromCacheAffectingObjectBounds(object);
   }
 
-  if (!object->GetNode() || !object->GetNode()->IsSVGElement())
+  if (!object.GetNode() || !object.GetNode()->IsSVGElement())
     return;
 
-  ToSVGElement(object->GetNode())->NotifyIncomingReferences(needs_layout);
+  ToSVGElement(object.GetNode())->NotifyIncomingReferences(needs_layout);
 }
 
 void LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
@@ -225,12 +221,12 @@ void LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
     object->SetNeedsLayoutAndFullPaintInvalidation(
         LayoutInvalidationReason::kSvgResourceInvalidated);
 
-  RemoveFromCacheAndInvalidateDependencies(object, needs_layout);
+  RemoveFromCacheAndInvalidateDependencies(*object, needs_layout);
 
   // Invalidate resources in ancestor chain, if needed.
   LayoutObject* current = object->Parent();
   while (current) {
-    RemoveFromCacheAndInvalidateDependencies(current, needs_layout);
+    RemoveFromCacheAndInvalidateDependencies(*current, needs_layout);
 
     if (current->IsSVGResourceContainer()) {
       // This will process the rest of the ancestors.

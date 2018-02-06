@@ -60,10 +60,9 @@ void LayoutSVGResourcePattern::RemoveAllClientsFromCache(
 }
 
 void LayoutSVGResourcePattern::RemoveClientFromCache(
-    LayoutObject* client,
+    LayoutObject& client,
     bool mark_for_invalidation) {
-  DCHECK(client);
-  pattern_map_.erase(client);
+  pattern_map_.erase(&client);
   MarkClientForInvalidation(client, mark_for_invalidation
                                         ? kPaintInvalidation
                                         : kParentOnlyInvalidation);
@@ -183,7 +182,7 @@ LayoutSVGResourcePattern::ResolveContentElement() const {
   const LayoutSVGResourceContainer* content_layout_object = this;
   while (SVGResources* resources =
              SVGResourcesCache::CachedResourcesForLayoutObject(
-                 content_layout_object)) {
+                 *content_layout_object)) {
     LayoutSVGResourceContainer* linked_resource = resources->LinkedResource();
     if (!linked_resource)
       break;

@@ -39,7 +39,7 @@ class LayoutSVGResourceMasker final : public LayoutSVGResourceContainer {
   const char* GetName() const override { return "LayoutSVGResourceMasker"; }
 
   void RemoveAllClientsFromCache(bool mark_for_invalidation = true) override;
-  void RemoveClientFromCache(LayoutObject*,
+  void RemoveClientFromCache(LayoutObject&,
                              bool mark_for_invalidation = true) override;
 
   FloatRect ResourceBoundingBox(const LayoutObject*);

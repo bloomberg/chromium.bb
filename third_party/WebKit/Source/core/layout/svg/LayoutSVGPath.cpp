@@ -62,7 +62,7 @@ FloatRect LayoutSVGPath::MarkerRect(float stroke_width) const {
   DCHECK(!marker_positions_.IsEmpty());
 
   SVGResources* resources =
-      SVGResourcesCache::CachedResourcesForLayoutObject(this);
+      SVGResourcesCache::CachedResourcesForLayoutObject(*this);
   DCHECK(resources);
 
   LayoutSVGResourceMarker* marker_start = resources->MarkerStart();
@@ -90,7 +90,7 @@ bool LayoutSVGPath::ShouldGenerateMarkerPositions() const {
     return false;
 
   SVGResources* resources =
-      SVGResourcesCache::CachedResourcesForLayoutObject(this);
+      SVGResourcesCache::CachedResourcesForLayoutObject(*this);
   if (!resources)
     return false;
 
@@ -105,7 +105,7 @@ void LayoutSVGPath::ProcessMarkerPositions() {
     return;
 
   SVGResources* resources =
-      SVGResourcesCache::CachedResourcesForLayoutObject(this);
+      SVGResourcesCache::CachedResourcesForLayoutObject(*this);
   DCHECK(resources);
 
   LayoutSVGResourceMarker* marker_start = resources->MarkerStart();
