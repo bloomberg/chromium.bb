@@ -92,25 +92,27 @@ static CustomElementDefinition* DefinitionFor(
 }
 
 // https://dom.spec.whatwg.org/#concept-create-element
-HTMLElement* CustomElement::CreateCustomElementSync(
+HTMLElement* CustomElement::CreateCustomElement(
     Document& document,
     const QualifiedName& tag_name,
-    CustomElementDefinition* definition) {
+    const CreateElementFlags flags,
+    CustomElementDefinition& definition) {
   DCHECK(ShouldCreateCustomElement(tag_name) ||
          ShouldCreateCustomizedBuiltinElement(tag_name))
       << tag_name;
+
+  if (flags.IsAsyncCustomElements())
+    return definition.CreateElementAsync(document, tag_name, flags);
+
   HTMLElement* element;
 
-  if (definition && definition->Descriptor().IsAutonomous()) {
+  if (definition.Descriptor().IsAutonomous()) {
     // 6. If definition is non-null and we have an autonomous custom element
-    element = definition->CreateElementSync(document, tag_name);
-  } else if (definition) {
+    element = definition.CreateElementSync(document, tag_name);
+  } else {
     // 5. If definition is non-null and we have a customized built-in element
     element = CreateUndefinedElement(document, tag_name);
-    definition->Upgrade(element);
-  } else {
-    // 7. Otherwise
-    element = CreateUndefinedElement(document, tag_name);
+    definition.Upgrade(element);
   }
   return element;
 }
