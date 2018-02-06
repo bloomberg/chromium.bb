@@ -1595,7 +1595,6 @@ test("browser_tests") {
         "../browser/chromeos/policy/login_policy_test_base.cc",
         "../browser/chromeos/policy/login_policy_test_base.h",
         "../browser/chromeos/policy/login_screen_default_policy_browsertest.cc",
-        "../browser/chromeos/policy/policy_cert_verifier_browsertest.cc",
         "../browser/chromeos/policy/power_policy_browsertest.cc",
         "../browser/chromeos/policy/restore_on_startup_browsertest_chromeos.cc",
         "../browser/chromeos/policy/signin_profile_apps_policy_browsertest.cc",
@@ -3106,6 +3105,7 @@ test("unit_tests") {
       "../browser/ui/window_sizer/window_sizer_unittest.cc",
     ]
     sources += [
+      "../browser/chromeos/policy/policy_cert_verifier_unittest.cc",
       "../browser/component_updater/cros_component_installer_unittest.cc",
       "../browser/mash_service_registry_unittest.cc",
       "../browser/media/webrtc/desktop_media_list_ash_unittest.cc",
