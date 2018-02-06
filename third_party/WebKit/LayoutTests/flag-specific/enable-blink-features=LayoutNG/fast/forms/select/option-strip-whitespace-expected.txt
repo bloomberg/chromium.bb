@@ -40,11 +40,11 @@ layer at (0,0) size 800x334
         LayoutText {#text} at (0,0) size 0x0
 layer at (78,44) size 77x70 clip at (79,45) size 60x68
   LayoutListBox {SELECT} at (69.59,0) size 77.53x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    LayoutNGBlockFlow {OPTION} at (1,1) size 60.53x17
+    LayoutBlockFlow {OPTION} at (1,1) size 60.53x17
       LayoutText {#text} at (2,0) size 57x16
         text run at (2,0) width 57: "Five Tabs"
 layer at (92,135) size 78x70 clip at (93,136) size 61x68
   LayoutListBox {SELECT} at (84,91) size 77.53x70 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-    LayoutNGBlockFlow {OPTION} at (1,1) size 60.53x17
+    LayoutBlockFlow {OPTION} at (1,1) size 60.53x17
       LayoutText {#text} at (2,0) size 57x16
         text run at (2,0) width 57: "Five Tabs"
