@@ -118,7 +118,6 @@ jumbo_component("message_center") {
       sources += [
         "views/bounded_label.cc",
         "views/bounded_label.h",
-        "views/constants.h",
         "views/desktop_popup_alignment_delegate.cc",
         "views/desktop_popup_alignment_delegate.h",
         "views/message_popup_collection.cc",

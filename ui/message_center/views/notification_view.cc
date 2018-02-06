@@ -27,7 +27,6 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/views/bounded_label.h"
-#include "ui/message_center/views/constants.h"
 #include "ui/message_center/views/notification_button.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/padded_button.h"
@@ -51,6 +50,18 @@
 namespace message_center {
 
 namespace {
+
+const int kTextBottomPadding = 12;
+const int kItemTitleToMessagePadding = 3;
+
+// Character limit = pixels per line * line limit / min. pixels per character.
+const int kMinPixelsPerTitleCharacter = 4;
+
+constexpr size_t kMessageCharacterLimit =
+    kNotificationWidth * kMessageExpandedLineLimit / 3;
+
+constexpr size_t kContextMessageCharacterLimit =
+    kNotificationWidth * kContextMessageLineLimit / 3;
 
 // Dimensions.
 const int kProgressBarBottomPadding = 0;
@@ -109,14 +120,14 @@ NotificationItemView::NotificationItemView(const NotificationItem& item) {
   title->set_collapse_when_hidden(true);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetEnabledColor(kRegularTextColor);
-  title->SetBackgroundColor(kRegularTextBackgroundColor);
+  title->SetAutoColorReadabilityEnabled(false);
   AddChildView(title);
 
   views::Label* message = new views::Label(item.message);
   message->set_collapse_when_hidden(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message->SetEnabledColor(kDimTextColor);
-  message->SetBackgroundColor(kDimTextBackgroundColor);
+  message->SetAutoColorReadabilityEnabled(false);
   AddChildView(message);
 
   PreferredSizeChanged();
@@ -391,19 +402,18 @@ void NotificationView::CreateOrUpdateTitleView(
   const gfx::FontList& font_list =
       views::Label().font_list().DeriveWithSizeDelta(2);
 
-  int title_character_limit =
+  constexpr int kTitleCharacterLimit =
       kNotificationWidth * kMaxTitleLines / kMinPixelsPerTitleCharacter;
 
-  base::string16 title = gfx::TruncateString(notification.title(),
-                                             title_character_limit,
-                                             gfx::WORD_BREAK);
+  base::string16 title = gfx::TruncateString(
+      notification.title(), kTitleCharacterLimit, gfx::WORD_BREAK);
   if (!title_view_) {
     int padding = kTitleLineHeight - font_list.GetHeight();
 
     title_view_ = new BoundedLabel(title, font_list);
     title_view_->SetLineHeight(kTitleLineHeight);
     title_view_->SetLineLimit(kMaxTitleLines);
-    title_view_->SetColors(kRegularTextColor, kRegularTextBackgroundColor);
+    title_view_->SetColor(kRegularTextColor);
     title_view_->SetBorder(MakeTextBorder(padding, 3, 0));
     top_view_->AddChildView(title_view_);
   } else {
@@ -429,7 +439,7 @@ void NotificationView::CreateOrUpdateMessageView(
     int padding = kMessageLineHeight - views::Label().font_list().GetHeight();
     message_view_ = new BoundedLabel(text);
     message_view_->SetLineHeight(kMessageLineHeight);
-    message_view_->SetColors(kRegularTextColor, kDimTextBackgroundColor);
+    message_view_->SetColor(kRegularTextColor);
     message_view_->SetBorder(MakeTextBorder(padding, 4, 0));
     top_view_->AddChildView(message_view_);
   } else {
@@ -473,8 +483,7 @@ void NotificationView::CreateOrUpdateContextMessageView(
     context_message_view_ = new BoundedLabel(message);
     context_message_view_->SetLineLimit(kContextMessageLineLimit);
     context_message_view_->SetLineHeight(kMessageLineHeight);
-    context_message_view_->SetColors(kDimTextColor,
-                                     kContextTextBackgroundColor);
+    context_message_view_->SetColor(kDimTextColor);
     context_message_view_->SetBorder(MakeTextBorder(padding, 4, 0));
     top_view_->AddChildView(context_message_view_);
   } else {

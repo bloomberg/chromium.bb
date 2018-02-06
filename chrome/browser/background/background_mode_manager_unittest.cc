@@ -41,7 +41,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
 #if defined(OS_CHROMEOS)
@@ -228,9 +227,6 @@ class BackgroundModeManagerWithExtensionsTest : public testing::Test {
     profile_manager_ = CreateTestingProfileManager();
     profile_ = profile_manager_->CreateTestingProfile("p1");
 
-    // Aura clears notifications from the message center at shutdown.
-    message_center::MessageCenter::Initialize();
-
     test_keep_alive_.reset(
         new ScopedKeepAlive(KeepAliveOrigin::BACKGROUND_MODE_MANAGER,
                             KeepAliveRestartOption::DISABLED));
@@ -275,10 +271,6 @@ class BackgroundModeManagerWithExtensionsTest : public testing::Test {
     // As a result, we have to clear the browser process state here
     // before tearing down the Message Center.
     profile_manager_.reset();
-
-    // Message Center shutdown must occur after the KeepAlive is released
-    // because clearing it will end up referencing the message center.
-    message_center::MessageCenter::Shutdown();
 
     // Clear the shutdown flag to isolate the remaining effect of this test.
     browser_shutdown::SetTryingToQuit(false);

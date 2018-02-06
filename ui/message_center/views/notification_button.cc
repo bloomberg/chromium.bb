@@ -7,7 +7,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/views/constants.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -25,8 +24,7 @@ NotificationButton::NotificationButton(views::ButtonListener* listener)
   SetBackground(views::CreateSolidBackground(kNotificationBackgroundColor));
   set_notify_enter_exit_on_child(true);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal,
-      gfx::Insets(kButtonVerticalPadding, kButtonHorizontalPadding),
+      views::BoxLayout::kHorizontal, gfx::Insets(0, kButtonHorizontalPadding),
       kButtonIconToTitlePadding));
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor, gfx::Insets(1, 2, 2, 2)));
@@ -53,17 +51,14 @@ void NotificationButton::SetIcon(const gfx::ImageSkia& image) {
 }
 
 void NotificationButton::SetTitle(const base::string16& title) {
-  if (title_ != NULL)
+  if (title_)
     delete title_;  // This removes the title from this view's children.
-  if (title.empty()) {
-    title_ = NULL;
-  } else {
+  title_ = nullptr;
+  if (!title.empty()) {
     title_ = new views::Label(title);
     title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     title_->SetEnabledColor(kRegularTextColor);
-    title_->SetBackgroundColor(kRegularTextBackgroundColor);
-    title_->SetBorder(
-        views::CreateEmptyBorder(kButtonTitleTopPadding, 0, 0, 0));
+    title_->SetAutoColorReadabilityEnabled(false);
     AddChildView(title_);
   }
   SetAccessibleName(title);
