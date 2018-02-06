@@ -29,10 +29,6 @@ import org.chromium.chrome.browser.ChromeVersionInfo;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,15 +39,16 @@ import java.util.Map;
 
 /**
  * Rule for taking screen shots within tests. Screenshots are saved as
- * {@code screenshot_dir/test_class_directory/test_directory/shot_name random.png}.
+ * {@code screenshot_dir/shot_name random.png}.
  * The associated JSON file describing the screenshot is saved as
- * {@code screenshot_dir/test_class_directory/test_directory/shot_name random.json}.
+ * {@code screenshot_dir/shot_name random.json}.
  * <p>
  * {@code screenshot_dir} comes from the instrumentation test command line, which is set by the
- * test runners. {@code test_class_directory} and {@code test_directory} can both the set by the
- * {@link ScreenShooter.Directory} annotation. {@code test_class_directory} defaults to nothing
- * (i.e. no directory created at this level), and {@code test_directory} defaults to the name of
- * the individual test. {@code random} is a random value to make the filenames unique.
+ * test runners
+ * <p>
+ * {@code shot_name} is the argument to {@code shoot()}
+ * </p>
+ * {@code random} is a random value to make the filenames unique.
  * <p>
  * The JSON file contains three categories of data:
  * <dl>
@@ -70,7 +67,6 @@ import java.util.Map;
  * &#064;RunWith(ChromeJUnit4ClassRunner.class)
  * &#064;CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
  * &#064;Restriction(RESTRICTION_TYPE_PHONE) // Tab switcher button only exists on phones.
- * &#064;ScreenShooter.Directory("Example")
  * public class ExampleUiCaptureTest {
  *     &#064;Rule
  *     public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
@@ -88,7 +84,6 @@ import java.util.Map;
  *     &#064;Test
  *     &#064;SmallTest
  *     &#064;Feature({"UiCatalogue"})
- *     &#064;ScreenShooter.Directory("TabSwitcher")
  *     public void testCaptureTabSwitcher() throws IOException, InterruptedException {
  *         mScreenShooter.shoot("NTP");
  *         Espresso.onView(ViewMatchers.withId(R.id.tab_switcher_button)).
@@ -120,7 +115,6 @@ public class ScreenShooter extends TestWatcher {
 
     private final UiDevice mDevice;
     private final String mBaseDir;
-    private File mDir;
     private String mTestClassName;
     private String mTestMethodName;
     private static final String[] FILTERS = {TEST_CLASS_FILTER, TEST_METHOD_FILTER,
@@ -137,12 +131,6 @@ public class ScreenShooter extends TestWatcher {
         UiCatalogueExample,
     }
 
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target({ElementType.TYPE, ElementType.METHOD})
-    public @interface Directory {
-        String value();
-    }
-
     public ScreenShooter() {
         Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
         mDevice = UiDevice.getInstance(instrumentation);
@@ -151,20 +139,9 @@ public class ScreenShooter extends TestWatcher {
 
     @Override
     protected void starting(Description d) {
-        mDir = new File(mBaseDir);
         mTestClassName = d.getClassName();
         mTestMethodName = d.getMethodName();
         Class<?> testClass = d.getTestClass();
-        Directory classDirectoryAnnotation = testClass.getAnnotation(Directory.class);
-        String classDirName =
-                classDirectoryAnnotation == null ? "" : classDirectoryAnnotation.value();
-        if (!classDirName.isEmpty()) mDir = new File(mBaseDir, classDirName);
-        Directory methodDirectoryAnnotation = d.getAnnotation(Directory.class);
-        String testMethodDir = methodDirectoryAnnotation == null
-                ? d.getMethodName()
-                : methodDirectoryAnnotation.value();
-        if (!testMethodDir.isEmpty()) mDir = new File(mDir, testMethodDir);
-        if (!mDir.exists()) assertTrue("Create screenshot directory", mDir.mkdirs());
         mFeatures = d.getAnnotation(Feature.class).value();
     }
 
@@ -180,7 +157,7 @@ public class ScreenShooter extends TestWatcher {
      * @param tags User selected tags from {@link TagsEnum}.
      */
     public void shoot(String shotName, TagsEnum... tags) {
-        assertNotNull("ScreenShooter rule initialized", mDir);
+        assertNotNull("ScreenShooter rule initialized", mTestClassName);
         Map<String, String> filters = new HashMap<>();
         setFilterValue(filters, TEST_CLASS_FILTER, mTestClassName);
         setFilterValue(filters, TEST_METHOD_FILTER, mTestMethodName);
@@ -223,7 +200,7 @@ public class ScreenShooter extends TestWatcher {
         metadata.put("Android build fingerprint", Build.FINGERPRINT);
 
         try {
-            File shotFile = File.createTempFile(shotName, IMAGE_SUFFIX, mDir);
+            File shotFile = File.createTempFile(shotName, IMAGE_SUFFIX, new File(mBaseDir));
             assertTrue("Screenshot " + shotName, mDevice.takeScreenshot(shotFile));
             writeImageDescription(shotFile, filters, tags, metadata);
         } catch (IOException e) {
@@ -253,7 +230,7 @@ public class ScreenShooter extends TestWatcher {
         String jsonFileName =
                 shotFileName.substring(0, shotFileName.length() - IMAGE_SUFFIX.length())
                 + JSON_SUFFIX;
-        try (FileWriter fileWriter = new FileWriter(new File(mDir, jsonFileName));) {
+        try (FileWriter fileWriter = new FileWriter(new File(mBaseDir, jsonFileName));) {
             fileWriter.write(imageDescription.toString());
         }
     }

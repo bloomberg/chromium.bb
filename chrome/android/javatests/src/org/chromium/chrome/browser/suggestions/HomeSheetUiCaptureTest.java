@@ -37,7 +37,6 @@ import org.chromium.ui.test.util.UiRestriction;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
-@ScreenShooter.Directory("HomeSheetStates")
 public class HomeSheetUiCaptureTest {
     @Rule
     public SuggestionsBottomSheetTestRule mActivityRule = new SuggestionsBottomSheetTestRule();
@@ -61,7 +60,6 @@ public class HomeSheetUiCaptureTest {
     @Test
     @MediumTest
     @Feature({"UiCatalogue"})
-    @ScreenShooter.Directory("SignInPromo")
     public void testSignInPromo() {
         // Needs to be "Full" to for this to work on small screens in landscape.
         mActivityRule.setSheetState(BottomSheet.SHEET_STATE_FULL, false);
@@ -74,7 +72,6 @@ public class HomeSheetUiCaptureTest {
     @Test
     @MediumTest
     @Feature({"UiCatalogue"})
-    @ScreenShooter.Directory("AllDismissed")
     public void testAllDismissed() {
         NewTabPageAdapter adapter = mActivityRule.getAdapter();
         ThreadUtils.runOnUiThreadBlocking(() -> {
@@ -98,7 +95,6 @@ public class HomeSheetUiCaptureTest {
     @Test
     @MediumTest
     @Feature({"UiCatalogue"})
-    @ScreenShooter.Directory("NewTab")
     public void testNewTab() {
         // Select "New tab" from the menu.
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),

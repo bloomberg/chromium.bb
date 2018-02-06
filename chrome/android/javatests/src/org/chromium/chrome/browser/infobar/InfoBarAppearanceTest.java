@@ -36,7 +36,6 @@ import java.util.concurrent.TimeoutException;
 // clang-format off
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@ScreenShooter.Directory("InfoBars")
 public class InfoBarAppearanceTest {
     // clang-format on
 

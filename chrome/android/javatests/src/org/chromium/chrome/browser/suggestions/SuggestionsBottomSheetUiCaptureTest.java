@@ -49,7 +49,6 @@ public class SuggestionsBottomSheetUiCaptureTest {
     @Test
     @MediumTest
     @Feature({"UiCatalogue"})
-    @ScreenShooter.Directory("SuggestionsBottomSheetPosition")
     public void testBottomSheetPosition() throws Exception {
         mActivityRule.setSheetState(BottomSheet.SHEET_STATE_HALF, false);
         waitForWindowUpdates();

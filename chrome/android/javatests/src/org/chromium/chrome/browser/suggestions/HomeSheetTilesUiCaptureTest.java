@@ -54,7 +54,6 @@ public class HomeSheetTilesUiCaptureTest {
     @Test
     @MediumTest
     @Feature({"UiCatalogue"})
-    @ScreenShooter.Directory("HomeSheetTiles")
     public void testAppearance() {
         mActivityRule.setSheetState(BottomSheet.SHEET_STATE_FULL, false);
         waitForWindowUpdates();
@@ -64,7 +63,6 @@ public class HomeSheetTilesUiCaptureTest {
     @Test
     @MediumTest
     @Feature({"UiCatalogue"})
-    @ScreenShooter.Directory("HomeSheetTiles")
     public void testContextMenu() {
         mActivityRule.setSheetState(BottomSheet.SHEET_STATE_FULL, false);
         waitForWindowUpdates();
