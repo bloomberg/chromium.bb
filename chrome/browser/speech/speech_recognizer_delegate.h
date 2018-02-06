@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 
 // Requires cleanup. See crbug.com/800374.
-enum SpeechRecognizerState {
+enum SpeechRecognizerStatus {
   SPEECH_RECOGNIZER_OFF = 0,
   SPEECH_RECOGNIZER_READY,
   SPEECH_RECOGNIZER_RECOGNIZING,
@@ -34,7 +34,7 @@ class SpeechRecognizerDelegate {
 
   // Invoked when the state of speech recognition is changed.
   virtual void OnSpeechRecognitionStateChanged(
-      SpeechRecognizerState new_state) = 0;
+      SpeechRecognizerStatus new_state) = 0;
 
   // Get the OAuth2 scope and token to pass to the speech recognizer. Does not
   // modify the arguments if no auth token is available or allowed.

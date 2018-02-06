@@ -61,7 +61,7 @@ void DictationChromeos::OnSpeechResult(const base::string16& query,
 void DictationChromeos::OnSpeechSoundLevelChanged(int16_t level) {}
 
 void DictationChromeos::OnSpeechRecognitionStateChanged(
-    SpeechRecognizerState new_state) {
+    SpeechRecognizerStatus new_state) {
   if (new_state == SPEECH_RECOGNIZER_RECOGNIZING)
     media::SoundsManager::Get()->Play(chromeos::SOUND_ENTER_SCREEN);
 }
