@@ -68,10 +68,11 @@ class WorkerInspectorController final
   WorkerInspectorController(WorkerThread*, WorkerThreadDebugger*);
 
   // InspectorSession::Client implementation.
-  void SendProtocolMessage(int session_id,
-                           int call_id,
-                           const String& response,
-                           const String& state) override;
+  void SendProtocolResponse(int session_id,
+                            int call_id,
+                            const String& response,
+                            const String& state) override;
+  void SendProtocolNotification(int session_id, const String& message) override;
 
   // WebThread::TaskObserver implementation.
   void WillProcessTask() override;

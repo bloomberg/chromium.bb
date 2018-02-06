@@ -103,6 +103,7 @@ void DevToolsSession::SendResponse(
   std::string json;
   base::JSONWriter::Write(*response.get(), &json);
   client_->DispatchProtocolMessage(agent_host_, json);
+  // |this| may be deleted at this point.
 }
 
 void DevToolsSession::MojoConnectionDestroyed() {
@@ -157,10 +158,10 @@ void DevToolsSession::DispatchProtocolMessageToAgent(
   DCHECK(!browser_only_);
   if (ShouldSendOnIO(method)) {
     if (io_session_ptr_)
-      io_session_ptr_->DispatchProtocolMessage(call_id, method, message);
+      io_session_ptr_->DispatchProtocolCommand(call_id, method, message);
   } else {
     if (session_ptr_)
-      session_ptr_->DispatchProtocolMessage(call_id, method, message);
+      session_ptr_->DispatchProtocolCommand(call_id, method, message);
   }
 }
 
@@ -185,23 +186,30 @@ void DevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
   client_->DispatchProtocolMessage(agent_host_, message->serialize());
+  // |this| may be deleted at this point.
 }
 
 void DevToolsSession::sendProtocolNotification(
     std::unique_ptr<protocol::Serializable> message) {
   client_->DispatchProtocolMessage(agent_host_, message->serialize());
+  // |this| may be deleted at this point.
 }
 
 void DevToolsSession::flushProtocolNotifications() {
 }
 
-void DevToolsSession::DispatchProtocolMessage(
+void DevToolsSession::DispatchProtocolResponse(
     const std::string& message,
     int call_id,
     const base::Optional<std::string>& state) {
   if (state.has_value())
     state_cookie_ = state.value();
   waiting_for_response_messages_.erase(call_id);
+  client_->DispatchProtocolMessage(agent_host_, message);
+  // |this| may be deleted at this point.
+}
+
+void DevToolsSession::DispatchProtocolNotification(const std::string& message) {
   client_->DispatchProtocolMessage(agent_host_, message);
   // |this| may be deleted at this point.
 }

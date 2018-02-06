@@ -83,23 +83,25 @@ interface DevToolsAgent {
 // words, the entity is under debug if and only if there is at least one
 // session.
 interface DevToolsSession {
-  // Dispatches protocol message from a client to a debugging target.
+  // Dispatches protocol command from a client to a debugging target.
   // |method| is a method name as defined in protocol (e.g. "Runtime.evaluate").
   // |call_id| is a command id as defined in protocol, and is going to be
   // reported back to host in a response message (see DevToolsSessionHost).
-  DispatchProtocolMessage(int32 call_id, string method, string message);
+  DispatchProtocolCommand(int32 call_id, string method, string message);
 };
 
 // A peer of DevToolsSession representing a remote debugging client
 // which receives notifications and responses from a session.
 // This interface is implemented in browser.
 interface DevToolsSessionHost {
-  // Dispatches protocol message to a remote debugging client.
-  // |call_id| is a command id as defined in protocol, only used
-  // for command responses (as opposite to protocol events).
+  // Dispatches protocol command response to a remote debugging client.
+  // |call_id| is a command id as defined in protocol.
   // |state| is a state for future reattach (see DevToolsAgent),
-  // only comes in response to a command.
-  DispatchProtocolMessage(mojo_base.mojom.BigString message,
+  // may be missing if the state did not change since last time.
+  DispatchProtocolResponse(mojo_base.mojom.BigString message,
                           int32 call_id,
                           string? state);
+
+  // Dispatches protocol notification to a remote debugging client.
+  DispatchProtocolNotification(mojo_base.mojom.BigString message);
 };

@@ -27,10 +27,12 @@ class CORE_EXPORT InspectorSession
  public:
   class Client {
    public:
-    virtual void SendProtocolMessage(int session_id,
-                                     int call_id,
-                                     const String& response,
-                                     const String& state) = 0;
+    virtual void SendProtocolResponse(int session_id,
+                                      int call_id,
+                                      const String& response,
+                                      const String& state) = 0;
+    virtual void SendProtocolNotification(int session_id,
+                                          const String& message) = 0;
     virtual ~Client() = default;
   };
 
