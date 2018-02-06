@@ -116,8 +116,8 @@ static void integral_images_highbd(const uint16_t *src, int src_stride,
   }
 }
 
-// Compute four values of boxsum from the given integral image. ii should point
-// at the middle of the box (for the first value). r is the box radius
+// Compute 4 values of boxsum from the given integral image. ii should point
+// at the middle of the box (for the first value). r is the box radius.
 static __m128i boxsum_from_ii(const int32_t *ii, int stride, int r) {
   const __m128i tl = xx_loadu_128(ii - (r + 1) - (r + 1) * stride);
   const __m128i tr = xx_loadu_128(ii + (r + 0) - (r + 1) * stride);
@@ -260,8 +260,8 @@ static __m128i cross_sum(const int32_t *buf, int stride) {
   return _mm_sub_epi32(_mm_slli_epi32(_mm_add_epi32(fours, threes), 2), threes);
 }
 
-// The final filter for selfguided restoration. Computes a weighted average
-// across A, B with "cross sums" (see cross_sum implementation above)
+// The final filter for self-guided restoration. Computes a weighted average
+// across A, B with "cross sums" (see cross_sum implementation above).
 static void final_filter(int32_t *dst, int dst_stride, const int32_t *A,
                          const int32_t *B, int buf_stride, const void *dgd8,
                          int dgd_stride, int width, int height, int highbd) {
@@ -380,7 +380,7 @@ static void calc_ab_fast(int32_t *A, int32_t *B, const int32_t *C,
 // cross_sum = 6 * sixes + 5 * fives
 //           = 5 * (fives + sixes) - sixes
 //           = (fives + sixes) << 2 + (fives + sixes) + sixes
-static __m128i cross_sum_fast_even(const int32_t *buf, int stride) {
+static __m128i cross_sum_fast_even_row(const int32_t *buf, int stride) {
   const __m128i xtl = xx_loadu_128(buf - 1 - stride);
   const __m128i xt = xx_loadu_128(buf - stride);
   const __m128i xtr = xx_loadu_128(buf + 1 - stride);
@@ -413,7 +413,7 @@ static __m128i cross_sum_fast_even(const int32_t *buf, int stride) {
 // cross_sum = 5 * fives + 6 * sixes
 //           = 4 * (fives + sixes) + (fives + sixes) + sixes
 //           = (fives + sixes) << 2 + (fives + sixes) + sixes
-static __m128i cross_sum_fast_odd(const int32_t *buf) {
+static __m128i cross_sum_fast_odd_row(const int32_t *buf) {
   const __m128i xl = xx_loadu_128(buf - 1);
   const __m128i x = xx_loadu_128(buf);
   const __m128i xr = xx_loadu_128(buf + 1);
@@ -428,186 +428,9 @@ static __m128i cross_sum_fast_odd(const int32_t *buf) {
       sixes);
 }
 
-// Calculate 4 values of the "cross sum" starting at buf.
-//
-// Pixels are indexed like this:
-// xtl  xt   xtr
-//  -    -    -
-// xl    x   xr
-//  -    -    -
-// xbl  xb   xbr
-//
-// Pixels are weighted like this:
-//  3    4    3
-//  0    0    0
-//  14   16   14
-//  0    0    0
-//  3    4    3
-//
-// buf points to x
-//
-// threes = xtl + xtr + xbr + xbl
-// fours = xt + xb
-// fourteens = xl + xr
-// sixteens = x
-// cross_sum = 4 * fours + 3 * threes + 14 * fourteens + 16 * sixteens
-//           = 4 * (fours + threes) + 16 * (sixteens + fourteens)
-//              - (threes + fourteens) - fourteens
-//           = (fours + threes) << 2 + (sixteens + fourteens) << 4
-//              - (threes + fourteens) - fourteens
-static __m128i cross_sum_fast_odd_not_last(const int32_t *buf, int stride) {
-  const int two_stride = 2 * stride;
-  const __m128i xtl = xx_loadu_128(buf - 1 - two_stride);
-  const __m128i xt = xx_loadu_128(buf - two_stride);
-  const __m128i xtr = xx_loadu_128(buf + 1 - two_stride);
-  const __m128i xl = xx_loadu_128(buf - 1);
-  const __m128i x = xx_loadu_128(buf);
-  const __m128i xr = xx_loadu_128(buf + 1);
-  const __m128i xbl = xx_loadu_128(buf - 1 + two_stride);
-  const __m128i xb = xx_loadu_128(buf + two_stride);
-  const __m128i xbr = xx_loadu_128(buf + 1 + two_stride);
-
-  const __m128i threes =
-      _mm_add_epi32(xtl, _mm_add_epi32(xtr, _mm_add_epi32(xbr, xbl)));
-  const __m128i fours = _mm_add_epi32(xt, xb);
-  const __m128i fourteens = _mm_add_epi32(xl, xr);
-  const __m128i sixteens = x;
-
-  const __m128i fours_plus_threes = _mm_add_epi32(fours, threes);
-  const __m128i sixteens_plus_fourteens = _mm_add_epi32(sixteens, fourteens);
-  const __m128i threes_plus_fourteens = _mm_add_epi32(threes, fourteens);
-
-  return _mm_sub_epi32(
-      _mm_sub_epi32(_mm_add_epi32(_mm_slli_epi32(fours_plus_threes, 2),
-                                  _mm_slli_epi32(sixteens_plus_fourteens, 4)),
-                    threes_plus_fourteens),
-      fourteens);
-}
-
-// Calculate 4 values of the "cross sum" starting at buf.
-//
-// Pixels are indexed like this:
-// xtl  xt   xtr
-//  -    -    -
-// xl    x   xr
-//
-// Pixels are weighted like this:
-//  4    6    4
-//  0    0    0
-//  16   18   16
-//
-// buf points to x
-//
-// fours = xtl + xtr
-// sixes = xt
-// sixteens = xl + xr
-// eighteens = x
-// cross_sum = 4 * fours + 6 * sixes + 16 * sixteens + 18 * eighteens
-//           = 4 * (fours + sixes) + 16 * (sixteens + eighteens)
-//              + 2 * (sixes + eighteens)
-//           = (fours + sixes) << 2 + (sixteens + eighteens) << 4
-//              + (sixes + eighteens) << 1
-static __m128i cross_sum_fast_odd_last(const int32_t *buf, int stride) {
-  const int two_stride = 2 * stride;
-  const __m128i xtl = xx_loadu_128(buf - 1 - two_stride);
-  const __m128i xt = xx_loadu_128(buf - two_stride);
-  const __m128i xtr = xx_loadu_128(buf + 1 - two_stride);
-  const __m128i xl = xx_loadu_128(buf - 1);
-  const __m128i x = xx_loadu_128(buf);
-  const __m128i xr = xx_loadu_128(buf + 1);
-
-  const __m128i fours = _mm_add_epi32(xtl, xtr);
-  const __m128i sixes = xt;
-  const __m128i sixteens = _mm_add_epi32(xl, xr);
-  const __m128i eighteens = x;
-
-  const __m128i fours_plus_sixes = _mm_add_epi32(fours, sixes);
-  const __m128i sixteens_plus_eighteens = _mm_add_epi32(sixteens, eighteens);
-  const __m128i sixes_plus_eighteens = _mm_add_epi32(sixes, eighteens);
-
-  return _mm_add_epi32(
-      _mm_add_epi32(_mm_slli_epi32(fours_plus_sixes, 2),
-                    _mm_slli_epi32(sixteens_plus_eighteens, 4)),
-      _mm_slli_epi32(sixes_plus_eighteens, 1));
-}
-
-// The final filter for selfguided restoration. Computes a weighted average
-// across A, B with "cross sums" (see cross_sum_... implementations above).
-// Designed for the first vertical sub-sampling version of FAST_SGR.
-static void final_filter_fast1(int32_t *dst, int dst_stride, const int32_t *A,
-                               const int32_t *B, int buf_stride,
-                               const void *dgd8, int dgd_stride, int width,
-                               int height, int highbd) {
-  const int nb0 = 5;
-  const int nb1 = 6;
-
-  const __m128i rounding0 =
-      round_for_shift(SGRPROJ_SGR_BITS + nb0 - SGRPROJ_RST_BITS);
-  const __m128i rounding1 =
-      round_for_shift(SGRPROJ_SGR_BITS + nb1 - SGRPROJ_RST_BITS);
-
-  const uint8_t *dgd_real =
-      highbd ? (const uint8_t *)CONVERT_TO_SHORTPTR(dgd8) : dgd8;
-
-  for (int i = 0; i < height; ++i) {
-    if (!(i & 1)) {  // even row
-      for (int j = 0; j < width; j += 4) {
-        const __m128i a =
-            cross_sum_fast_even(A + i * buf_stride + j, buf_stride);
-        const __m128i b =
-            cross_sum_fast_even(B + i * buf_stride + j, buf_stride);
-        const __m128i raw =
-            xx_loadl_64(dgd_real + ((i * dgd_stride + j) << highbd));
-        const __m128i src =
-            highbd ? _mm_cvtepu16_epi32(raw) : _mm_cvtepu8_epi32(raw);
-
-        __m128i v = _mm_add_epi32(_mm_madd_epi16(a, src), b);
-        __m128i w = _mm_srai_epi32(_mm_add_epi32(v, rounding0),
-                                   SGRPROJ_SGR_BITS + nb0 - SGRPROJ_RST_BITS);
-
-        xx_storeu_128(dst + i * dst_stride + j, w);
-      }
-    } else if (i != height - 1) {  // odd row and not last
-      for (int j = 0; j < width; j += 4) {
-        const __m128i a =
-            cross_sum_fast_odd_not_last(A + i * buf_stride + j, buf_stride);
-        const __m128i b =
-            cross_sum_fast_odd_not_last(B + i * buf_stride + j, buf_stride);
-        const __m128i raw =
-            xx_loadl_64(dgd_real + ((i * dgd_stride + j) << highbd));
-        const __m128i src =
-            highbd ? _mm_cvtepu16_epi32(raw) : _mm_cvtepu8_epi32(raw);
-
-        __m128i v = _mm_add_epi32(_mm_madd_epi16(a, src), b);
-        __m128i w = _mm_srai_epi32(_mm_add_epi32(v, rounding1),
-                                   SGRPROJ_SGR_BITS + nb1 - SGRPROJ_RST_BITS);
-
-        xx_storeu_128(dst + i * dst_stride + j, w);
-      }
-    } else {  // odd row and last
-      for (int j = 0; j < width; j += 4) {
-        const __m128i a =
-            cross_sum_fast_odd_last(A + i * buf_stride + j, buf_stride);
-        const __m128i b =
-            cross_sum_fast_odd_last(B + i * buf_stride + j, buf_stride);
-        const __m128i raw =
-            xx_loadl_64(dgd_real + ((i * dgd_stride + j) << highbd));
-        const __m128i src =
-            highbd ? _mm_cvtepu16_epi32(raw) : _mm_cvtepu8_epi32(raw);
-
-        __m128i v = _mm_add_epi32(_mm_madd_epi16(a, src), b);
-        __m128i w = _mm_srai_epi32(_mm_add_epi32(v, rounding1),
-                                   SGRPROJ_SGR_BITS + nb1 - SGRPROJ_RST_BITS);
-
-        xx_storeu_128(dst + i * dst_stride + j, w);
-      }
-    }
-  }
-}
-
-// The final filter for selfguided restoration. Computes a weighted average
-// across A, B with "cross sums" (see cross_sum_... implementations above).
-// Designed for the second vertical sub-sampling version of FAST_SGR.
+// The final filter for the FAST_SGR self-guided restoration. Computes a
+// weighted average across A, B with "cross sums" (see cross_sum_...
+// implementations above).
 static void final_filter_fast2(int32_t *dst, int dst_stride, const int32_t *A,
                                const int32_t *B, int buf_stride,
                                const void *dgd8, int dgd_stride, int width,
@@ -627,9 +450,9 @@ static void final_filter_fast2(int32_t *dst, int dst_stride, const int32_t *A,
     if (!(i & 1)) {  // even row
       for (int j = 0; j < width; j += 4) {
         const __m128i a =
-            cross_sum_fast_even(A + i * buf_stride + j, buf_stride);
+            cross_sum_fast_even_row(A + i * buf_stride + j, buf_stride);
         const __m128i b =
-            cross_sum_fast_even(B + i * buf_stride + j, buf_stride);
+            cross_sum_fast_even_row(B + i * buf_stride + j, buf_stride);
         const __m128i raw =
             xx_loadl_64(dgd_real + ((i * dgd_stride + j) << highbd));
         const __m128i src =
@@ -643,8 +466,8 @@ static void final_filter_fast2(int32_t *dst, int dst_stride, const int32_t *A,
       }
     } else {  // odd row
       for (int j = 0; j < width; j += 4) {
-        const __m128i a = cross_sum_fast_odd(A + i * buf_stride + j);
-        const __m128i b = cross_sum_fast_odd(B + i * buf_stride + j);
+        const __m128i a = cross_sum_fast_odd_row(A + i * buf_stride + j);
+        const __m128i b = cross_sum_fast_odd_row(B + i * buf_stride + j);
         const __m128i raw =
             xx_loadl_64(dgd_real + ((i * dgd_stride + j) << highbd));
         const __m128i src =
