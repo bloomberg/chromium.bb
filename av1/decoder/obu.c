@@ -22,7 +22,7 @@
 #include "av1/decoder/decodeframe.h"
 
 #if CONFIG_SCALABILITY
-// picture prediction structures (0-12 are predefined) in scaiability metadata
+// Picture prediction structures (0-12 are predefined) in scalability metadata.
 typedef enum {
   SCALABILITY_L1T2 = 0,
   SCALABILITY_L1T3 = 1,
@@ -281,7 +281,7 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
 
 #if CONFIG_OBU_SIZING
     // OBUs are preceded by an unsigned leb128 coded unsigned integer.
-    uint32_t u_obu_size = 0;
+    uint64_t u_obu_size = 0;
     aom_uleb_decode(data, bytes_available, &u_obu_size);
     const size_t obu_size = (size_t)u_obu_size;
     const size_t length_field_size = aom_uleb_size_in_bytes(u_obu_size);

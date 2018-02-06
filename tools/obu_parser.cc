@@ -170,8 +170,8 @@ bool DumpObu(const uint8_t *data, int length) {
     }
 
 #if CONFIG_OBU_SIZING
-    uint32_t obu_size = 0;
-    aom_uleb_decode(data + consumed, sizeof(obu_size), &obu_size);
+    uint64_t obu_size = 0;
+    aom_uleb_decode(data + consumed, remaining, &obu_size);
     const int current_obu_length = static_cast<int>(obu_size);
     const size_t length_field_size = aom_uleb_size_in_bytes(obu_size);
 #else

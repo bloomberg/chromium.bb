@@ -10,12 +10,12 @@
  */
 #include "aom/aom_integer.h"
 
-static const size_t kMaximumLeb128Size = 4;
-static const size_t kMaximumLeb128Value = 0xFFFFFFF;  // 2^28 - 1
-static const uint8_t kLeb128ByteMask = 0x7f;          // Binary: 01111111
-static const uint8_t kLeb128PadByte = 0x80;           // Binary: 10000000
+static const size_t kMaximumLeb128Size = 8;
+static const uint64_t kMaximumLeb128Value = 0xFFFFFFFFFFFFFF;  // 2 ^ 56 - 1
+static const uint8_t kLeb128ByteMask = 0x7f;  // Binary: 01111111
+static const uint8_t kLeb128PadByte = 0x80;   // Binary: 10000000
 
-size_t aom_uleb_size_in_bytes(uint32_t value) {
+size_t aom_uleb_size_in_bytes(uint64_t value) {
   size_t size = 0;
   do {
     ++size;
@@ -23,7 +23,7 @@ size_t aom_uleb_size_in_bytes(uint32_t value) {
   return size;
 }
 
-void aom_uleb_decode(const uint8_t *buffer, size_t available, uint32_t *value) {
+void aom_uleb_decode(const uint8_t *buffer, size_t available, uint64_t *value) {
   if (buffer && value) {
     for (size_t i = 0; i < kMaximumLeb128Size && i < available; ++i) {
       const uint8_t decoded_byte = *(buffer + i) & kLeb128ByteMask;
@@ -33,7 +33,7 @@ void aom_uleb_decode(const uint8_t *buffer, size_t available, uint32_t *value) {
   }
 }
 
-int aom_uleb_encode(uint32_t value, size_t available, uint8_t *coded_value,
+int aom_uleb_encode(uint64_t value, size_t available, uint8_t *coded_value,
                     size_t *coded_size) {
   const size_t leb_size = aom_uleb_size_in_bytes(value);
   if (value > kMaximumLeb128Value || leb_size > kMaximumLeb128Size ||
@@ -54,7 +54,7 @@ int aom_uleb_encode(uint32_t value, size_t available, uint8_t *coded_value,
   return 0;
 }
 
-int aom_uleb_encode_fixed_size(uint32_t value, size_t available,
+int aom_uleb_encode_fixed_size(uint64_t value, size_t available,
                                size_t pad_to_size, uint8_t *coded_value,
                                size_t *coded_size) {
   if (!coded_value || !coded_size || available < pad_to_size ||

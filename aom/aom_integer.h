@@ -8,7 +8,6 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-
 #ifndef AOM_AOM_INTEGER_H_
 #define AOM_AOM_INTEGER_H_
 
@@ -80,18 +79,18 @@ extern "C" {
 #endif  // __cplusplus
 
 // Returns size of uint32_t when encoded using LEB128.
-size_t aom_uleb_size_in_bytes(uint32_t value);
+size_t aom_uleb_size_in_bytes(uint64_t value);
 
 // Returns decoded LEB128 value.
-void aom_uleb_decode(const uint8_t *buffer, size_t available, uint32_t *value);
+void aom_uleb_decode(const uint8_t *buffer, size_t available, uint64_t *value);
 
 // Encodes LEB128 integer. Returns 0 when successful, and -1 upon failure.
-int aom_uleb_encode(uint32_t value, size_t available, uint8_t *coded_value,
+int aom_uleb_encode(uint64_t value, size_t available, uint8_t *coded_value,
                     size_t *coded_size);
 
 // Encodes LEB128 integer to size specified. Returns 0 when successful, and -1
 // upon failure.
-int aom_uleb_encode_fixed_size(uint32_t value, size_t available,
+int aom_uleb_encode_fixed_size(uint64_t value, size_t available,
                                size_t pad_to_size, uint8_t *coded_value,
                                size_t *coded_size);
 

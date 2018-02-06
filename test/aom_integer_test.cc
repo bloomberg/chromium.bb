@@ -18,7 +18,7 @@ const uint32_t kSizeTestNumValues = 6;
 const uint32_t kSizeTestExpectedSizes[kSizeTestNumValues] = {
   1, 1, 2, 3, 4, 5
 };
-const uint32_t kSizeTestInputs[kSizeTestNumValues] = {
+const uint64_t kSizeTestInputs[kSizeTestNumValues] = {
   0, 0x7f, 0x3fff, 0x1fffff, 0xffffff, 0x10000000
 };
 }  // namespace
@@ -26,8 +26,8 @@ const uint32_t kSizeTestInputs[kSizeTestNumValues] = {
 TEST(AomLeb128, DecodeTest) {
   const size_t num_leb128_bytes = 3;
   const uint8_t leb128_bytes[num_leb128_bytes] = { 0xE5, 0x8E, 0x26 };
-  const uint32_t expected_value = 0x98765;  // 624485
-  uint32_t value = 0;
+  const uint64_t expected_value = 0x98765;  // 624485
+  uint64_t value = 0;
   aom_uleb_decode(&leb128_bytes[0], num_leb128_bytes, &value);
   ASSERT_EQ(expected_value, value);
 
@@ -63,7 +63,7 @@ TEST(AomLeb128, EncDecTest) {
                             &bytes_written),
             0);
   ASSERT_EQ(bytes_written, 3u);
-  uint32_t decoded_value = 0;
+  uint64_t decoded_value = 0;
   aom_uleb_decode(&write_buffer[0], bytes_written, &decoded_value);
   ASSERT_EQ(value, decoded_value);
 }
@@ -96,7 +96,7 @@ TEST(AomLeb128, FixedSizeEncDecTest) {
                                  &write_buffer[0], &bytes_written),
       0);
   ASSERT_EQ(bytes_written, 4u);
-  uint32_t decoded_value = 0;
+  uint64_t decoded_value = 0;
   aom_uleb_decode(&write_buffer[0], bytes_written, &decoded_value);
   ASSERT_EQ(value, decoded_value);
 }
