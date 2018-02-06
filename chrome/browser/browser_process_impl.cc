@@ -182,6 +182,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/physical_web/physical_web_data_source_android.h"
+#include "chrome/browser/gpu/gpu_driver_info_manager_android.h"
 #endif
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
@@ -703,6 +704,15 @@ IconManager* BrowserProcessImpl::icon_manager() {
     CreateIconManager();
   return icon_manager_.get();
 }
+
+#if defined(OS_ANDROID)
+GpuDriverInfoManager* BrowserProcessImpl::gpu_driver_info_manager() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!gpu_driver_info_manager_)
+    gpu_driver_info_manager_ = GpuDriverInfoManager::Create();
+  return gpu_driver_info_manager_.get();
+}
+#endif
 
 GpuModeManager* BrowserProcessImpl::gpu_mode_manager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

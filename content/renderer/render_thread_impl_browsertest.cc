@@ -42,7 +42,6 @@
 #include "content/test/mock_render_process.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
-#include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/host/gpu_switches.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel_mojo.h"
@@ -215,11 +214,6 @@ class RenderThreadImplBrowserTest : public testing::Test {
     cmd->AppendSwitchASCII(switches::kLang, "en-US");
 
     cmd->AppendSwitchASCII(switches::kNumRasterThreads, "1");
-
-    // To avoid creating a GPU channel to query if
-    // accelerated_video_decode is blacklisted on older Android system
-    // in RenderThreadImpl::Init().
-    cmd->AppendSwitch(switches::kIgnoreGpuBlacklist);
 
     std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler =
         blink::scheduler::RendererScheduler::Create();
