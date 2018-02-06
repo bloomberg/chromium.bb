@@ -13,7 +13,6 @@
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayerScrollableArea.h"
-#include "core/testing/sim/SimDisplayItemList.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
 #include "platform/scroll/ScrollbarThemeOverlayMock.h"

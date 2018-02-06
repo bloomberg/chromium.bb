@@ -5,7 +5,6 @@
 #include "core/dom/ElementShadow.h"
 #include "core/dom/ElementShadowV0.h"
 #include "core/html/HTMLBodyElement.h"
-#include "core/testing/sim/SimDisplayItemList.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
 

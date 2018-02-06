@@ -9,7 +9,6 @@
 #include "core/intersection_observer/IntersectionObserverDelegate.h"
 #include "core/intersection_observer/IntersectionObserverInit.h"
 #include "core/testing/sim/SimCompositor.h"
-#include "core/testing/sim/SimDisplayItemList.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
 #include "platform/testing/UnitTestHelpers.h"

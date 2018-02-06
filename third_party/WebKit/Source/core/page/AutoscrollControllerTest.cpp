@@ -6,7 +6,6 @@
 #include "core/input/EventHandler.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
-#include "core/testing/sim/SimDisplayItemList.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
 #include "testing/gtest/include/gtest/gtest.h"

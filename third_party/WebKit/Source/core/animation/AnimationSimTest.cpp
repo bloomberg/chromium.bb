@@ -9,7 +9,6 @@
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/page/Page.h"
 #include "core/testing/sim/SimCompositor.h"
-#include "core/testing/sim/SimDisplayItemList.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"

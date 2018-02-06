@@ -12,7 +12,6 @@
 #include "core/geometry/DOMRect.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
-#include "core/testing/sim/SimDisplayItemList.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
 #include "testing/gtest/include/gtest/gtest.h"
