@@ -53,7 +53,7 @@ class GcdRestClient : public net::URLFetcherDelegate {
   void PatchState(std::unique_ptr<base::DictionaryValue> patch_details,
                   const GcdRestClient::ResultCallback& callback);
 
-  void SetClockForTest(std::unique_ptr<base::Clock> clock);
+  void SetClockForTest(base::Clock* clock);
 
  private:
   void OnTokenReceived(OAuthTokenGetter::Status status,
@@ -68,7 +68,7 @@ class GcdRestClient : public net::URLFetcherDelegate {
   std::string gcd_device_id_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   OAuthTokenGetter* token_getter_;
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
   std::unique_ptr<net::URLFetcher> url_fetcher_;
   ResultCallback callback_;
 

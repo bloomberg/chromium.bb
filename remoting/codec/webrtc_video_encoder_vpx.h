@@ -103,7 +103,6 @@ class WebrtcVideoEncoderVpx : public WebrtcVideoEncoder {
   std::unique_ptr<uint8_t[]> active_map_;
   webrtc::DesktopSize active_map_size_;
 
-  base::DefaultTickClock default_tick_clock_;
   base::TickClock* clock_;
 
   EncoderBitrateFilter bitrate_filter_;

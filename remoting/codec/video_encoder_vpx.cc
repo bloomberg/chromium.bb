@@ -352,7 +352,7 @@ std::unique_ptr<VideoPacket> VideoEncoderVpx::Encode(
 VideoEncoderVpx::VideoEncoderVpx(bool use_vp9)
     : use_vp9_(use_vp9),
       encode_unchanged_frame_(false),
-      clock_(&default_tick_clock_) {}
+      clock_(base::DefaultTickClock::GetInstance()) {}
 
 void VideoEncoderVpx::Configure(const webrtc::DesktopSize& size) {
   DCHECK(use_vp9_ || !lossless_color_);
