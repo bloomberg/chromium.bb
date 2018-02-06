@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+PASS CSSStyleDeclaration values are represented within CSSFontFaceRule
+Harness: the test ran to completion.
+
