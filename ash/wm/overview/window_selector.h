@@ -19,7 +19,6 @@
 #include "base/time/time.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -31,7 +30,7 @@ class Rect;
 namespace views {
 class Textfield;
 class Widget;
-}
+}  // namespace views
 
 namespace ash {
 class OverviewWindowDragController;
@@ -210,7 +209,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
 
   // True when performing operations that may cause window activations. This is
   // used to prevent handling the resulting expected activation.
-  bool ignore_activations_;
+  bool ignore_activations_ = false;
 
   // List of all the window overview grids, one for each root window.
   std::vector<std::unique_ptr<WindowGrid>> grid_list_;
@@ -220,7 +219,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   std::unique_ptr<SplitViewOverviewOverlay> split_view_overview_overlay_;
 
   // Tracks the index of the root window the selection widget is in.
-  size_t selected_grid_index_;
+  size_t selected_grid_index_ = 0;
 
   // The following variables are used for metric collection purposes. All of
   // them refer to this particular overview session and are not cumulative:
@@ -228,36 +227,33 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   base::Time overview_start_time_;
 
   // The number of arrow key presses.
-  size_t num_key_presses_;
+  size_t num_key_presses_ = 0;
 
   // The number of items in the overview.
-  size_t num_items_;
+  size_t num_items_ = 0;
 
   // Indicates if the text filter is shown on screen (rather than above it).
-  bool showing_text_filter_;
+  bool showing_text_filter_ = false;
 
   // Window text filter widget. As the user writes on it, we filter the items
   // in the overview. It is also responsible for handling overview key events,
   // such as enter key to select.
   std::unique_ptr<views::Widget> text_filter_widget_;
 
-  // Image used for text filter textfield.
-  gfx::ImageSkia search_image_;
-
   // The current length of the string entered into the text filtering textfield.
-  size_t text_filter_string_length_;
+  size_t text_filter_string_length_ = 0;
 
   // The number of times the text filtering textfield has been cleared of text
   // during this overview mode session.
-  size_t num_times_textfield_cleared_;
+  size_t num_times_textfield_cleared_ = 0;
 
   // Tracks whether minimized windows are currently being restored for overview
   // mode.
-  bool restoring_minimized_windows_;
+  bool restoring_minimized_windows_ = false;
 
   // The distance between the top edge of the screen and the bottom edge of
   // the text filtering textfield.
-  int text_filter_bottom_;
+  int text_filter_bottom_ = 0;
 
   bool is_shut_down_ = false;
 
