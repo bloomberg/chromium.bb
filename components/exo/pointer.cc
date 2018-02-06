@@ -398,6 +398,10 @@ void Pointer::CaptureCursor(const gfx::Point& hotspot) {
   DCHECK(root_surface());
   DCHECK(focus_surface_);
 
+  // Defer capture until surface commit.
+  if (host_window()->bounds().IsEmpty())
+    return;
+
   // Submit compositor frame to be captured.
   SubmitCompositorFrame();
 
