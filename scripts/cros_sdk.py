@@ -32,6 +32,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import locking
 from chromite.lib import namespaces
 from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import process_util
 from chromite.lib import retry_util
 from chromite.lib import toolchain
@@ -245,7 +246,8 @@ def DeleteChroot(chroot_path):
 
 
 def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
-                workspace, goma_dir, goma_client_json, additional_args):
+                workspace, goma_dir, goma_client_json, working_dir,
+                additional_args):
   """Enters an existing SDK chroot"""
   st = os.statvfs(os.path.join(chroot_path, 'usr', 'bin', 'sudo'))
   # The os.ST_NOSUID constant wasn't added until python-3.2.
@@ -263,6 +265,8 @@ def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
     cmd.extend(['--goma_dir', goma_dir])
   if goma_client_json:
     cmd.extend(['--goma_client_json', goma_client_json])
+  if working_dir is not None:
+    cmd.extend(['--working_dir', working_dir])
 
   if len(additional_args) > 0:
     cmd.append('--')
@@ -751,6 +755,15 @@ def _CreateParser(sdk_latest_version, bootstrap_latest_version):
   parser.add_argument('--goma_client_json', type='path',
                       help='Service account json file to use goma on bot. '
                            'Mounted into the chroot.')
+
+  # Use type=str instead of type='path' to prevent the given path from being
+  # transfered to absolute path automatically.
+  parser.add_argument('--working-dir', type=str,
+                      help='Run the command in specific working directory in '
+                           'chroot.  If the given directory is a relative '
+                           'path, this program will transfer the path to '
+                           'the corresponding one inside chroot.')
+
   parser.add_argument('commands', nargs=argparse.REMAINDER)
 
   # SDK overlay tarball options (mutually exclusive).
@@ -901,6 +914,9 @@ def main(argv):
       (options.enter or any_snapshot_operation)):
     parser.error("Trying to enter or snapshot the chroot when --delete "
                  "was specified makes no sense.")
+
+  if options.working_dir is not None and not os.path.isabs(options.working_dir):
+    options.working_dir = path_util.ToChrootPath(options.working_dir)
 
   # Clean up potential leftovers from previous interrupted builds.
   # TODO(bmgordon): Remove this at the end of 2017.  That should be long enough
@@ -1160,4 +1176,4 @@ snapshots will be unavailable).''' % ', '.join(missing_image_tools))
         EnterChroot(options.chroot, options.cache_dir, options.chrome_root,
                     options.chrome_root_mount, options.workspace,
                     options.goma_dir, options.goma_client_json,
-                    chroot_command)
+                    options.working_dir, chroot_command)
