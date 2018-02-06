@@ -202,17 +202,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   gfx::Point GetScreenCoordinates(const gfx::Point& relative_position) const;
 
-  // This method is called by the RenderWidgetHostViewGuest to inform the
-  // BrowserPlugin of the potential location of the context menu event (to
-  // come). The need for this (hack) is that the input events when passed on to
-  // the BrowserPlugin are modified by any CSS transforms applied on the plugin.
-  // Therefore, the coordinates of the context menu event with respect to the
-  // container window are modifed with the guest renderer process beiung unaware
-  // of the change. Then eventually, when the context menu event arrives at the
-  // browser, it contains the wrong coordinates (BUG=470087).
-  // TODO(ekaramad): Find a more fundamental solution and remove this later.
-  void SetContextMenuPosition(const gfx::Point& position);
-
   // Helper to send messages to embedder. If this guest is not yet attached,
   // then IPCs will be queued until attachment.
   void SendMessageToEmbedder(std::unique_ptr<IPC::Message> msg);

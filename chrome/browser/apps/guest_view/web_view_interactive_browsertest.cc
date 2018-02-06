@@ -1186,63 +1186,6 @@ IN_PROC_BROWSER_TEST_F(WebViewContextMenuInteractiveTest,
   ASSERT_EQ(20, menu_observer.params().y);
 }
 
-// Tests whether <webview> context menu sees <webview> local coordinates in its
-// RenderViewContextMenu params, when it is subject to CSS transforms.
-//
-// This test doesn't makes sense in --use-cross-process-frames-for-guests, since
-// it tests that events forwarded from the embedder are properly transformed,
-// and in oopif-mode the events are sent directly to the child process without
-// the forwarding code path (relying on surface-based hittesting).
-
-// Flaky.  http://crbug.com/613258
-IN_PROC_BROWSER_TEST_F(WebViewContextMenuInteractiveTest,
-                       DISABLED_ContextMenuParamsAfterCSSTransforms) {
-  LoadAndLaunchPlatformApp("web_view/context_menus/coordinates_with_transforms",
-                           "Launched");
-
-  if (!embedder_web_contents_)
-    embedder_web_contents_ = GetFirstAppWindowWebContents();
-  EXPECT_TRUE(embedder_web_contents());
-
-  if (!guest_web_contents_)
-    guest_web_contents_ = GetGuestViewManager()->WaitForSingleGuestCreated();
-  EXPECT_TRUE(guest_web_contents());
-
-  // We will send the input event to the embedder rather than the guest; which
-  // is more realistic. We need to do this to make sure that the MouseDown event
-  // is received forwarded by the BrowserPlugin to the RWHVG and eventually back
-  // to the guest. The RWHVG will in turn notify the ChromeWVGDelegate of the
-  // newly observed mouse down (potentially a context menu).
-  const std::string transforms[] = {"rotate(20deg)", "scale(1.5, 2.0)",
-                                    "translate(20px, 30px)", "NONE"};
-  for (size_t index = 0; index < 4; ++index) {
-    std::string command =
-        base::StringPrintf("setTransform('%s')", transforms[index].c_str());
-    ExtensionTestMessageListener transform_set_listener("TRANSFORM_SET", false);
-    EXPECT_TRUE(content::ExecuteScript(embedder_web_contents(), command));
-    ASSERT_TRUE(transform_set_listener.WaitUntilSatisfied());
-
-    gfx::Rect embedder_view_bounds =
-        embedder_web_contents()->GetRenderWidgetHostView()->GetViewBounds();
-    gfx::Rect guest_view_bounds =
-        guest_web_contents()->GetRenderWidgetHostView()->GetViewBounds();
-    ContextMenuWaiter menu_observer(content::NotificationService::AllSources());
-    gfx::Point guest_window_point(150, 150);
-    gfx::Point embedder_window_point = guest_window_point;
-    embedder_window_point += guest_view_bounds.OffsetFromOrigin();
-    embedder_window_point -= embedder_view_bounds.OffsetFromOrigin();
-    SimulateRWHMouseClick(
-        embedder_web_contents()->GetRenderViewHost()->GetWidget(),
-        blink::WebMouseEvent::Button::kRight,
-        /* Using window coordinates for the embedder */
-        embedder_window_point.x(), embedder_window_point.y());
-
-    menu_observer.WaitForMenuOpenAndClose();
-    EXPECT_EQ(menu_observer.params().x, guest_window_point.x());
-    EXPECT_EQ(menu_observer.params().y, guest_window_point.y());
-  }
-}
-
 // https://crbug.com/754890: The embedder could become out of sync and think
 // that the guest is not focused when the guest actually was.
 // TODO(crbug.com/807116): Flaky on the Linux MSAN bot.
