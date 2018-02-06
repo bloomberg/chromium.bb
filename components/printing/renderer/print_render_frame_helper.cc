@@ -1173,12 +1173,6 @@ void PrintRenderFrameHelper::OnPrintPreview(
   // PDF printer device supports alpha blending.
   print_pages_params_->params.supports_alpha_blend = true;
 
-  bool generate_draft_pages = false;
-  if (!settings.GetBoolean(kSettingGenerateDraftData, &generate_draft_pages)) {
-    NOTREACHED();
-  }
-  print_preview_context_.set_generate_draft_pages(generate_draft_pages);
-
   PrepareFrameForPreviewDocument();
 }
 
@@ -1289,8 +1283,6 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
   params.page_count = print_preview_context_.total_page_count();
   params.fit_to_page_scaling = fit_to_page_scaling;
   params.preview_request_id = print_params.preview_request_id;
-  params.clear_preview_data = print_preview_context_.generate_draft_pages() ||
-                              !print_preview_context_.IsModifiable();
   Send(new PrintHostMsg_DidGetPreviewPageCount(routing_id(), params));
   if (CheckForCancel())
     return false;
@@ -1325,18 +1317,11 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
   return true;
 }
 
-#if !defined(OS_MACOSX) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 bool PrintRenderFrameHelper::RenderPreviewPage(
     int page_number,
     const PrintMsg_Print_Params& print_params) {
-  std::unique_ptr<PdfMetafileSkia> draft_metafile;
   PdfMetafileSkia* initial_render_metafile = print_preview_context_.metafile();
-  if (print_preview_context_.IsModifiable() && is_print_ready_metafile_sent_) {
-    draft_metafile =
-        std::make_unique<PdfMetafileSkia>(print_params.printed_doc_type);
-    initial_render_metafile = draft_metafile.get();
-  }
-
   base::TimeTicks begin_time = base::TimeTicks::Now();
   PrintPageInternal(print_params, page_number,
                     print_preview_context_.total_page_count(),
@@ -1344,18 +1329,23 @@ bool PrintRenderFrameHelper::RenderPreviewPage(
                     initial_render_metafile, nullptr, nullptr);
   print_preview_context_.RenderedPreviewPage(base::TimeTicks::Now() -
                                              begin_time);
-  if (draft_metafile.get()) {
-    draft_metafile->FinishDocument();
-  } else if (print_preview_context_.IsModifiable() &&
-             print_preview_context_.generate_draft_pages()) {
-    DCHECK(!draft_metafile.get());
-    draft_metafile =
-        print_preview_context_.metafile()->GetMetafileForCurrentPage(
-            print_params.printed_doc_type);
-  }
-  return PreviewPageRendered(page_number, draft_metafile.get());
+
+  // For non-modifiable content, there is no need to call PreviewPageRendered()
+  // since it generally renders very fast. Just render and send the finished
+  // document to the browser.
+  if (!print_preview_context_.IsModifiable())
+    return true;
+
+  // Let the browser know this page has been rendered. Send |metafile|, which
+  // contains the rendering for just this one page. Then the browser can update
+  // the user visible print preview one page at a time, instead of waiting for
+  // the entire document to be rendered.
+  std::unique_ptr<PdfMetafileSkia> metafile =
+      initial_render_metafile->GetMetafileForCurrentPage(
+          print_params.printed_doc_type);
+  return PreviewPageRendered(page_number, std::move(metafile));
 }
-#endif  // !defined(OS_MACOSX) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 bool PrintRenderFrameHelper::FinalizePrintReadyDocument() {
   DCHECK(!is_print_ready_metafile_sent_);
@@ -2079,25 +2069,12 @@ bool PrintRenderFrameHelper::CheckForCancel() {
   return cancel;
 }
 
-bool PrintRenderFrameHelper::PreviewPageRendered(int page_number,
-                                                 PdfMetafileSkia* metafile) {
+bool PrintRenderFrameHelper::PreviewPageRendered(
+    int page_number,
+    std::unique_ptr<PdfMetafileSkia> metafile) {
   DCHECK_GE(page_number, FIRST_PAGE_INDEX);
-
-  // For non-modifiable files, |metafile| should be NULL, so do not bother
-  // sending a message. If we don't generate draft metafiles, |metafile| is
-  // NULL.
-  if (!print_preview_context_.IsModifiable() ||
-      !print_preview_context_.generate_draft_pages()) {
-    DCHECK(!metafile);
-    return true;
-  }
-
-  if (!metafile) {
-    NOTREACHED();
-    print_preview_context_.set_error(
-        PREVIEW_ERROR_PAGE_RENDERED_WITHOUT_METAFILE);
-    return false;
-  }
+  DCHECK(metafile);
+  DCHECK(print_preview_context_.IsModifiable());
 
   PrintHostMsg_DidPreviewPage_Params preview_page_params;
   if (!CopyMetafileDataToReadOnlySharedMem(*metafile,
@@ -2121,7 +2098,6 @@ bool PrintRenderFrameHelper::PreviewPageRendered(int page_number,
 PrintRenderFrameHelper::PrintPreviewContext::PrintPreviewContext()
     : total_page_count_(0),
       current_page_index_(0),
-      generate_draft_pages_(true),
       is_modifiable_(true),
       print_ready_metafile_page_count_(0),
       error_(PREVIEW_ERROR_NONE),
@@ -2188,23 +2164,14 @@ bool PrintRenderFrameHelper::PrintPreviewContext::CreatePreviewDocument(
                                            pages_to_render_.end(),
                                            total_page_count_) -
                           pages_to_render_.begin());
-  print_ready_metafile_page_count_ = pages_to_render_.size();
+
   if (pages_to_render_.empty()) {
-    print_ready_metafile_page_count_ = total_page_count_;
     // Render all pages.
+    pages_to_render_.reserve(total_page_count_);
     for (int i = 0; i < total_page_count_; ++i)
       pages_to_render_.push_back(i);
-  } else if (generate_draft_pages_) {
-    int pages_index = 0;
-    for (int i = 0; i < total_page_count_; ++i) {
-      if (pages_index < print_ready_metafile_page_count_ &&
-          i == pages_to_render_[pages_index]) {
-        pages_index++;
-        continue;
-      }
-      pages_to_render_.push_back(i);
-    }
   }
+  print_ready_metafile_page_count_ = pages_to_render_.size();
 
   document_render_time_ = base::TimeDelta();
   begin_time_ = base::TimeTicks::Now();
@@ -2294,12 +2261,6 @@ bool PrintRenderFrameHelper::PrintPreviewContext::IsFinalPageRendered() const {
   return static_cast<size_t>(current_page_index_) == pages_to_render_.size();
 }
 
-void PrintRenderFrameHelper::PrintPreviewContext::set_generate_draft_pages(
-    bool generate_draft_pages) {
-  DCHECK_EQ(INITIALIZED, state_);
-  generate_draft_pages_ = generate_draft_pages;
-}
-
 void PrintRenderFrameHelper::PrintPreviewContext::set_error(
     enum PrintPreviewErrorBuckets error) {
   error_ = error;
@@ -2332,10 +2293,6 @@ PrintRenderFrameHelper::PrintPreviewContext::prepared_node() const {
 int PrintRenderFrameHelper::PrintPreviewContext::total_page_count() const {
   DCHECK(state_ != UNINITIALIZED);
   return total_page_count_;
-}
-
-bool PrintRenderFrameHelper::PrintPreviewContext::generate_draft_pages() const {
-  return generate_draft_pages_;
 }
 
 PdfMetafileSkia* PrintRenderFrameHelper::PrintPreviewContext::metafile() {

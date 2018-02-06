@@ -314,9 +314,6 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidGetPreviewPageCount_Params)
 
   // The id of the preview request.
   IPC_STRUCT_MEMBER(int, preview_request_id)
-
-  // Indicates whether the existing preview data needs to be cleared or not.
-  IPC_STRUCT_MEMBER(bool, clear_preview_data)
 IPC_STRUCT_END()
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
