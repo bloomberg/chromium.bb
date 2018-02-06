@@ -548,7 +548,7 @@ const base::Feature kV8BackgroundCompile{"V8BackgroundCompile",
 
 // Enables to use a snapshot file in creating V8 contexts.
 const base::Feature kV8ContextSnapshot{"V8ContextSnapshot",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables future V8 VM features
 const base::Feature kV8VmFuture{"V8VmFuture",

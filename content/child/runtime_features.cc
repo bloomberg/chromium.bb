@@ -410,8 +410,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::EnableFeatureFromString(feature, false);
   }
 
-  if (base::FeatureList::IsEnabled(features::kV8ContextSnapshot))
-    WebRuntimeFeatures::EnableV8ContextSnapshot(true);
+  WebRuntimeFeatures::EnableV8ContextSnapshot(
+      base::FeatureList::IsEnabled(features::kV8ContextSnapshot));
 
   if (base::FeatureList::IsEnabled(features::kStopInBackground))
     WebRuntimeFeatures::EnableStopInBackground(true);
