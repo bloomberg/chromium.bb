@@ -132,12 +132,8 @@ ElementShadowV0::ElementShadowV0(ElementShadow& element_shadow)
 
 ElementShadowV0::~ElementShadowV0() = default;
 
-ShadowRoot& ElementShadowV0::YoungestShadowRoot() const {
-  return element_shadow_->YoungestShadowRoot();
-}
-
-ShadowRoot& ElementShadowV0::OldestShadowRoot() const {
-  return element_shadow_->OldestShadowRoot();
+inline ShadowRoot& ElementShadowV0::GetShadowRoot() const {
+  return element_shadow_->GetShadowRoot();
 }
 
 const V0InsertionPoint* ElementShadowV0::FinalDestinationInsertionPointFor(
@@ -162,24 +158,22 @@ void ElementShadowV0::Distribute() {
   HeapVector<Member<HTMLShadowElement>, 32> shadow_insertion_points;
   DistributionPool pool(element_shadow_->Host());
 
-  for (ShadowRoot* root = &YoungestShadowRoot(); root;
-       root = root->OlderShadowRoot()) {
-    HTMLShadowElement* shadow_insertion_point = nullptr;
-    for (const auto& point : root->DescendantInsertionPoints()) {
-      if (!point->IsActive())
-        continue;
-      if (auto* shadow = ToHTMLShadowElementOrNull(*point)) {
-        DCHECK(!shadow_insertion_point);
-        shadow_insertion_point = shadow;
-        shadow_insertion_points.push_back(shadow_insertion_point);
-      } else {
-        pool.DistributeTo(point, this);
-        if (ElementShadow* shadow =
-                ShadowWhereNodeCanBeDistributedForV0(*point)) {
-          if (!(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled() &&
-                shadow->IsV1()))
-            shadow->SetNeedsDistributionRecalc();
-        }
+  ShadowRoot& root = GetShadowRoot();
+  HTMLShadowElement* shadow_insertion_point = nullptr;
+  for (const auto& point : root.DescendantInsertionPoints()) {
+    if (!point->IsActive())
+      continue;
+    if (auto* shadow = ToHTMLShadowElementOrNull(*point)) {
+      DCHECK(!shadow_insertion_point);
+      shadow_insertion_point = shadow;
+      shadow_insertion_points.push_back(shadow_insertion_point);
+    } else {
+      pool.DistributeTo(point, this);
+      if (ElementShadow* shadow =
+              ShadowWhereNodeCanBeDistributedForV0(*point)) {
+        if (!(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled() &&
+              shadow->IsV1()))
+          shadow->SetNeedsDistributionRecalc();
       }
     }
   }
@@ -210,9 +204,7 @@ const SelectRuleFeatureSet& ElementShadowV0::EnsureSelectFeatureSet() {
     return select_features_;
 
   select_features_.Clear();
-  for (const ShadowRoot* root = &OldestShadowRoot(); root;
-       root = root->YoungerShadowRoot())
-    CollectSelectFeatureSetFrom(*root);
+  CollectSelectFeatureSetFrom(GetShadowRoot());
   needs_select_feature_set_ = false;
   return select_features_;
 }
