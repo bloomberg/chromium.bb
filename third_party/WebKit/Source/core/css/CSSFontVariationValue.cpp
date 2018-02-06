@@ -7,6 +7,7 @@
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
+namespace cssvalue {
 
 CSSFontVariationValue::CSSFontVariationValue(const AtomicString& tag,
                                              float value)
@@ -25,4 +26,5 @@ bool CSSFontVariationValue::Equals(const CSSFontVariationValue& other) const {
   return tag_ == other.tag_ && value_ == other.value_;
 }
 
+}  // namespace cssvalue
 }  // namespace blink
