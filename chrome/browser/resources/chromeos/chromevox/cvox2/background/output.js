@@ -870,11 +870,11 @@ Output.prototype = {
   go: function() {
     // Speech.
     var queueMode = cvox.QueueMode.CATEGORY_FLUSH;
-    if (this.queueMode_ !== undefined) {
-      queueMode = /** @type{cvox.QueueMode} */ (this.queueMode_);
-    } else if (Output.forceModeForNextSpeechUtterance_ !== undefined) {
+    if (Output.forceModeForNextSpeechUtterance_ !== undefined) {
       queueMode = /** @type{cvox.QueueMode} */ (
           Output.forceModeForNextSpeechUtterance_);
+    } else if (this.queueMode_ !== undefined) {
+      queueMode = /** @type{cvox.QueueMode} */ (this.queueMode_);
     }
 
     if (this.speechBuffer_.length > 0)
