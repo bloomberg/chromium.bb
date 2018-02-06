@@ -48,6 +48,10 @@ bool WidgetTest::IsNativeWindowVisible(gfx::NativeWindow window) {
 
 // static
 bool WidgetTest::IsWindowStackedAbove(Widget* above, Widget* below) {
+  // Since 10.13, a trip to the runloop has been necessary to ensure [NSApp
+  // orderedWindows] has been updated.
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_TRUE(above->IsVisible());
   EXPECT_TRUE(below->IsVisible());
 

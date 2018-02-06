@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_TEST_WIDGET_TEST_H_
 #define UI_VIEWS_TEST_WIDGET_TEST_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -34,6 +36,14 @@ namespace test {
 
 class WidgetTest : public ViewsTestBase {
  public:
+  // This class can be used as a deleter for std::unique_ptr<Widget>
+  // to call function Widget::CloseNow automatically.
+  struct WidgetCloser {
+    void operator()(Widget* widget) const;
+  };
+
+  using WidgetAutoclosePtr = std::unique_ptr<Widget, WidgetCloser>;
+
   WidgetTest();
   ~WidgetTest() override;
 
