@@ -83,6 +83,10 @@ class CONTENT_EXPORT WebRtcRemoteEventLogManager final
                      int lid,
                      const std::string& message);
 
+  // An implicit PeerConnectionRemoved() on all of the peer connections that
+  // were associated with the renderer process.
+  void RenderProcessHostExitedDestroyed(int render_process_id);
+
   // WebRtcEventLogUploaderObserver implementation.
   void OnWebRtcEventLogUploadComplete(const base::FilePath& file_path,
                                       bool upload_successful) override;
