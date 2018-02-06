@@ -213,8 +213,8 @@ Fwd_Txfm2d_Func fwd_func_sse2_list[TX_SIZES_ALL][2] = {
   { NULL, NULL },  // TX_4X4
   { av1_fwd_txfm2d_8x8_c,
     av1_fwd_txfm2d_8x8_sse2 },  // TX_8X8    // 8x8 transform
-  { NULL, NULL },               // TX_16X16
-  { NULL, NULL },               // TX_32X32
+  { av1_fwd_txfm2d_16x16_c, av1_fwd_txfm2d_16x16_sse2 },  // TX_16X16
+  { NULL, NULL },                                         // TX_32X32
 #if CONFIG_TX64X64
   { NULL, NULL },  // TX_64X64
 #endif             // CONFIG_TX64X64
@@ -270,7 +270,8 @@ TEST(av1_fwd_txfm2d_sse2, match) {
           target_func(input, output, input_stride, (TX_TYPE)tx_type, bd);
           for (int r = 0; r < rows; ++r) {
             for (int c = 0; c < cols; ++c) {
-              ASSERT_EQ(ref_output[r * cols + c], output[r * cols + c]);
+              ASSERT_EQ(ref_output[r * cols + c], output[r * cols + c])
+                  << "[" << r << "," << c << "]";
             }
           }
         }

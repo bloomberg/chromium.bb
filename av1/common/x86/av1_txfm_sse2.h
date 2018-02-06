@@ -93,10 +93,11 @@ static INLINE void load_buffer_32bit_to_16bit(const int32_t *in, int stride,
   }
 }
 
-static INLINE void store_buffer_16bit_to_32bit_8x8(const __m128i *in,
-                                                   int32_t *out) {
+static INLINE void store_buffer_16bit_to_32bit_8x8(const __m128i *const in,
+                                                   int32_t *const out,
+                                                   const int stride) {
   for (int i = 0; i < 8; ++i) {
-    store_16bit_to_32bit(in[i], out + i * 8);
+    store_16bit_to_32bit(in[i], out + i * stride);
   }
 }
 
@@ -130,6 +131,9 @@ static INLINE void flip_buf_sse2(__m128i *in, __m128i *out, int size) {
 
 void av1_fwd_txfm2d_8x8_sse2(const int16_t *input, int32_t *output, int stride,
                              TX_TYPE tx_type, int bd);
+
+void av1_fwd_txfm2d_16x16_sse2(const int16_t *input, int32_t *output,
+                               int stride, TX_TYPE tx_type, int bd);
 
 typedef void (*transform_1d_sse2)(const __m128i *input, __m128i *output,
                                   int8_t cos_bit);
