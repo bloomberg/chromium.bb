@@ -112,7 +112,7 @@
               // No overlap.
               {time: 0.1, value: -1},
               // Overlaps setValueCurve
-              {time: 0.5, value: 99},
+              {time: 0.5, value: 99, shouldThrow: true},
               // Past end of setValueCurve, so no warning
               {time: .9, value: 50}
             ])
@@ -145,7 +145,13 @@
         for (let item of valueSetterList) {
           context.suspend(item.time)
               .then(() => {
-                src.offset.value = item.value;
+                if (item.shouldThrow === true) {
+                  should(() => src.offset.value = item.value,
+                    'Value setter overlaps setValueCurve')
+                    .throw('NotSupportedError');
+                } else {
+                  src.offset.value = item.value;
+                }
               })
               .then(() => context.resume());
         }
