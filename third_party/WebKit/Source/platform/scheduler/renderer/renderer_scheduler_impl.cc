@@ -339,7 +339,7 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
   // Ensure the renderer scheduler was shut down explicitly, because otherwise
   // we could end up having stale pointers to the Blink heap which has been
   // terminated by this point.
-  DCHECK(main_thread_only().was_shutdown);
+  DCHECK(was_shutdown_);
 }
 
 RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
@@ -413,11 +413,6 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
                                 renderer_scheduler_impl,
                                 &renderer_scheduler_impl->tracing_controller_,
                                 YesNoStateToString),
-      was_shutdown(false,
-                   "RendererScheduler.WasShutdown",
-                   renderer_scheduler_impl,
-                   &renderer_scheduler_impl->tracing_controller_,
-                   YesNoStateToString),
       loading_task_estimated_cost(
           base::TimeDelta(),
           "RendererScheduler.LoadingTaskEstimatedCostMs",
@@ -599,7 +594,7 @@ RendererSchedulerImpl::RendererPauseHandleImpl::~RendererPauseHandleImpl() {
 }
 
 void RendererSchedulerImpl::Shutdown() {
-  if (main_thread_only().was_shutdown)
+  if (was_shutdown_)
     return;
 
   base::TimeTicks now = tick_clock()->NowTicks();
@@ -608,8 +603,8 @@ void RendererSchedulerImpl::Shutdown() {
   task_queue_throttler_.reset();
   idle_helper_.Shutdown();
   helper_.Shutdown();
-  main_thread_only().was_shutdown = true;
   main_thread_only().rail_mode_observer = nullptr;
+  was_shutdown_ = true;
 }
 
 std::unique_ptr<blink::WebThread> RendererSchedulerImpl::CreateMainThread() {
@@ -746,7 +741,7 @@ RendererSchedulerImpl::NewRenderWidgetSchedulingState() {
 
 void RendererSchedulerImpl::OnShutdownTaskQueue(
     const scoped_refptr<MainThreadTaskQueue>& task_queue) {
-  if (main_thread_only().was_shutdown)
+  if (was_shutdown_)
     return;
 
   if (task_queue_throttler_)
