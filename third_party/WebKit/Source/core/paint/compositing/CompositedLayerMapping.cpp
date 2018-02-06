@@ -543,16 +543,18 @@ GraphicsLayer* CompositedLayerMapping::FrameContentsGraphicsLayer() const {
 
 void CompositedLayerMapping::UpdateAfterPartResize() {
   if (GetLayoutObject().IsLayoutEmbeddedContent()) {
+    FloatPoint parent_posn = child_containment_layer_
+                                 ? child_containment_layer_->GetPosition()
+                                 : FloatPoint();
     if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-      if (GraphicsLayer* document_layer = FrameContentsGraphicsLayer())
-        document_layer->SetPosition(FlooredIntPoint(ContentsBox().Location()));
+      if (GraphicsLayer* document_layer = FrameContentsGraphicsLayer()) {
+        document_layer->SetPosition(FlooredIntPoint(
+            FloatPoint(ContentsBox().Location()) - parent_posn));
+      }
     } else if (PaintLayerCompositor* inner_compositor =
                    PaintLayerCompositor::FrameContentsCompositor(
                        ToLayoutEmbeddedContent(GetLayoutObject()))) {
       inner_compositor->FrameViewDidChangeSize();
-      FloatPoint parent_posn = child_containment_layer_
-                                   ? child_containment_layer_->GetPosition()
-                                   : FloatPoint();
       FloatSize offset = FloatPoint(ContentsBox().Location()) - parent_posn;
       // Assert our frameviews are always aligned to pixel boundaries.
       DCHECK(offset.Width() == floor(offset.Width()) &&
@@ -1304,7 +1306,13 @@ LayoutPoint CompositedLayerMapping::FrameOwnerContentsLocation() const {
     return LayoutPoint();
   }
 
-  return ownerLayer->GetCompositedLayerMapping()->ContentsBox().Location();
+  CompositedLayerMapping* owner_clm = ownerLayer->GetCompositedLayerMapping();
+  LayoutSize parent_posn_offset = LayoutSize(
+      ToFloatSize(owner_clm->child_containment_layer_
+                      ? owner_clm->child_containment_layer_->GetPosition()
+                      : FloatPoint()));
+  return ownerLayer->GetCompositedLayerMapping()->ContentsBox().Location() -
+         parent_posn_offset;
 }
 
 void CompositedLayerMapping::ComputeGraphicsLayerParentLocation(
