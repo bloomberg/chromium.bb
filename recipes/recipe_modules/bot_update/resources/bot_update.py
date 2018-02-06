@@ -523,6 +523,15 @@ def _get_target_branch_and_revision(solution_name, git_url, revisions):
   return 'master', configured
 
 
+def get_target_pin(solution_name, git_url, revisions):
+  """Returns revision to be checked out if it is pinned, else None."""
+  _, revision = _get_target_branch_and_revision(
+      solution_name, git_url, revisions)
+  if revision.upper() != 'HEAD':
+    return revision
+  return None
+
+
 def force_solution_revision(solution_name, git_url, revisions, cwd):
   branch, revision = _get_target_branch_and_revision(
       solution_name, git_url, revisions)
@@ -541,6 +550,18 @@ def force_solution_revision(solution_name, git_url, revisions, cwd):
   # argument as revision or ref, and not as a file/directory which happens to
   # have the exact same name.
   git('checkout', '--force', treeish, '--', cwd=cwd)
+
+
+def _has_in_git_cache(revision_sha1, git_cache_dir, url):
+  """Returns whether given revision_sha1 is contained in cache of a given repo.
+  """
+  try:
+    mirror_dir = git(
+        'cache', 'exists', '--quiet', '--cache-dir', git_cache_dir, url).strip()
+    git('cat-file', '-e', revision_sha1, cwd=mirror_dir)
+    return True
+  except SubprocessFailed:
+    return False
 
 
 def is_broken_repo_dir(repo_dir):
@@ -606,20 +627,46 @@ def _git_checkout(sln, sln_dir, revisions, shallow, refs, git_cache_dir,
   for ref in refs:
     populate_cmd.extend(['--ref', ref])
 
-  # Just in case we're hitting a different git server than the one from
-  # which the target revision was polled, we retry some.
-
-  # One minute (5 tries with exp. backoff). We retry at least once regardless
-  # of deadline in case initial fetch takes longer than the deadline but does
-  # not contain the required revision.
-  deadline = time.time() + 60
-  tries = 0
-  while True:
+  # Step 1: populate/refresh cache, if necessary.
+  pin = get_target_pin(name, url, revisions)
+  if not pin:
+    # Refresh only once.
     git(*populate_cmd)
-    mirror_dir = git(
-        'cache', 'exists', '--quiet',
-        '--cache-dir', git_cache_dir, url).strip()
+  elif _has_in_git_cache(pin, git_cache_dir, url):
+    # No need to fetch at all, because we already have needed revision.
+    pass
+  else:
+    # We may need to retry a bit due to eventual consinstency in replication of
+    # git servers.
+    soft_deadline = time.time() + 60
+    attempt = 0
+    while True:
+      attempt += 1
+      # TODO(tandrii): propagate the pin to git server per recommendation of
+      # maintainers of *.googlesource.com (workaround git server replication
+      # lag).
+      git(*populate_cmd)
+      if _has_in_git_cache(pin, git_cache_dir, url):
+        break
+      overrun = time.time() - soft_deadline
+      # Only kick in deadline after second attempt to ensure we retry at least
+      # once after initial fetch from not-yet-replicated server.
+      if attempt >= 2 and overrun > 0:
+        print 'Ran %s seconds past deadline. Aborting.' % (overrun,)
+        # TODO(tandrii): raise exception immediately here, instead of doing
+        # useless step 2 trying to fetch something that we know doesn't exist
+        # in cache **after production data gives us confidence to do so**.
+        break
 
+      sleep_secs = min(60, 2**attempt)
+      print 'waiting %s seconds and trying to fetch again...' % sleep_secs
+      time.sleep(sleep_secs)
+
+  # Step 2: populate a checkout from local cache. All operations are local.
+  mirror_dir = git(
+      'cache', 'exists', '--quiet', '--cache-dir', git_cache_dir, url).strip()
+  first_try = True
+  while True:
     try:
       # If repo deletion was aborted midway, it may have left .git in broken
       # state.
@@ -650,20 +697,12 @@ def _git_checkout(sln, sln_dir, revisions, shallow, refs, git_cache_dir,
     except SubprocessFailed as e:
       # Exited abnormally, theres probably something wrong.
       print 'Something failed: %s.' % str(e)
-
-      # Only kick in deadline after trying once, in case the revision hasn't
-      # yet propagated.
-      if tries >= 1 and time.time() > deadline:
-        overrun = time.time() - deadline
-        print 'Ran %s seconds past deadline. Aborting.' % overrun
+      if first_try:
+        first_try = False
+        # Lets wipe the checkout and try again.
+        remove(sln_dir, cleanup_dir)
+      else:
         raise
-
-      # Lets wipe the checkout and try again.
-      tries += 1
-      sleep_secs = 2**tries
-      print 'waiting %s seconds and trying again...' % sleep_secs
-      time.sleep(sleep_secs)
-      remove(sln_dir, cleanup_dir)
 
 
 def _download(url):
