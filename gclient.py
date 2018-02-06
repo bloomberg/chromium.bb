@@ -75,6 +75,10 @@
 #   Example:
 #     target_os = [ "ios" ]
 #     target_os_only = True
+#
+# Specifying a target CPU
+#   To specify a target CPU, the variables target_cpu and target_cpu_only
+#   are available and are analagous to target_os and target_os_only.
 
 from __future__ import print_function
 
@@ -94,6 +98,7 @@ import sys
 import time
 import urlparse
 
+import detect_host_arch
 import fix_encoding
 import gclient_eval
 import gclient_scm
@@ -347,6 +352,10 @@ class DependencySettings(object):
       return tuple(set(self.local_target_os).union(self.parent.target_os))
     else:
       return self.parent.target_os
+
+  @property
+  def target_cpu(self):
+    return self.parent.target_cpu
 
   def get_custom_deps(self, name, url):
     """Returns a custom deps if applicable."""
@@ -1301,6 +1310,15 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         'checkout_mac': 'mac' in self.target_os,
         'checkout_win': 'win' in self.target_os,
         'host_os': _detect_host_os(),
+
+        'checkout_arm': 'arm' in self.target_cpu,
+        'checkout_arm64': 'arm64' in self.target_cpu,
+        'checkout_x86': 'x86' in self.target_cpu,
+        'checkout_mips': 'mips' in self.target_cpu,
+        'checkout_ppc': 'ppc' in self.target_cpu,
+        'checkout_s390': 's390' in self.target_cpu,
+        'checkout_x64': 'x64' in self.target_cpu,
+        'host_cpu': detect_host_arch.HostArch(),
     }
     # Variables defined in DEPS file override built-in ones.
     result.update(self._vars)
@@ -1384,6 +1402,7 @@ solutions = [
     if 'all' in enforced_os:
       enforced_os = self.DEPS_OS_CHOICES.itervalues()
     self._enforced_os = tuple(set(enforced_os))
+    self._enforced_cpu = detect_host_arch.HostArch(),
     self._root_dir = root_dir
     self.config_content = None
 
@@ -1438,6 +1457,13 @@ it or fix the checkout.
     else:
       self._enforced_os = tuple(set(self._enforced_os).union(target_os))
 
+    # Append any target CPU that is not already being enforced to the tuple.
+    target_cpu = config_dict.get('target_cpu', [])
+    if config_dict.get('target_cpu_only', False):
+      self._enforced_cpu = tuple(set(target_cpu))
+    else:
+      self._enforced_cpu = tuple(set(self._enforced_cpu).union(target_cpu))
+
     cache_dir = config_dict.get('cache_dir', self._options.cache_dir)
     if cache_dir:
       cache_dir = os.path.join(self.root_dir, cache_dir)
@@ -1448,6 +1474,10 @@ it or fix the checkout.
 
     if not target_os and config_dict.get('target_os_only', False):
       raise gclient_utils.Error('Can\'t use target_os_only if target_os is '
+                                'not specified')
+
+    if not target_cpu and config_dict.get('target_cpu_only', False):
+      raise gclient_utils.Error('Can\'t use target_cpu_only if target_cpu is '
                                 'not specified')
 
     deps_to_add = []
@@ -1810,6 +1840,10 @@ it or fix the checkout.
   @property
   def target_os(self):
     return self._enforced_os
+
+  @property
+  def target_cpu(self):
+    return self._enforced_cpu
 
 
 class GitDependency(Dependency):
