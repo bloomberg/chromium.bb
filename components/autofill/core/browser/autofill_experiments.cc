@@ -46,9 +46,6 @@ const base::Feature kAutofillDeleteDisusedCreditCards{
     "AutofillDeleteDisusedCreditCards", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillExpandedPopupViews{
     "AutofillExpandedPopupViews", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kAutofillOfferLocalSaveIfServerCardManuallyEntered{
-    "AutofillOfferLocalSaveIfServerCardManuallyEntered",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillRationalizeFieldTypePredictions{
     "AutofillRationalizeFieldTypePredictions",
     base::FEATURE_ENABLED_BY_DEFAULT};
@@ -268,11 +265,6 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   }
 
   return !group_name.empty() && group_name != "Disabled";
-}
-
-bool IsAutofillOfferLocalSaveIfServerCardManuallyEnteredExperimentEnabled() {
-  return base::FeatureList::IsEnabled(
-      kAutofillOfferLocalSaveIfServerCardManuallyEntered);
 }
 
 bool IsAutofillSendBillingCustomerNumberExperimentEnabled() {

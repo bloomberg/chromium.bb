@@ -36,7 +36,6 @@ extern const base::Feature kAutofillCreditCardLastUsedDateDisplay;
 extern const base::Feature kAutofillDeleteDisusedAddresses;
 extern const base::Feature kAutofillDeleteDisusedCreditCards;
 extern const base::Feature kAutofillExpandedPopupViews;
-extern const base::Feature kAutofillOfferLocalSaveIfServerCardManuallyEntered;
 extern const base::Feature kAutofillRationalizeFieldTypePredictions;
 extern const base::Feature kAutofillSendBillingCustomerNumber;
 extern const base::Feature kAutofillSuppressDisusedAddresses;
@@ -123,12 +122,6 @@ void ModifyAutofillCreditCardSuggestion(struct Suggestion* suggestion);
 // if the margin isn't configured in an experiment to tweak autofill popup
 // layout.
 unsigned int GetPopupMargin();
-
-// Returns whether the experiment is enabled where if Chrome Autofill has a
-// server card synced down from Payments but the user manually enters its card
-// number into a checkout form anyway, the option to locally save the card is
-// offered.
-bool IsAutofillOfferLocalSaveIfServerCardManuallyEnteredExperimentEnabled();
 
 // Returns whether the experiment is enabled where Chrome reads billing customer
 // number from priority preference and sends it along with UploadCardRequest and

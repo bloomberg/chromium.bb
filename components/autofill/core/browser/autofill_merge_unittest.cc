@@ -275,13 +275,10 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
 
       // Import the profile.
       std::unique_ptr<CreditCard> imported_credit_card;
-      bool imported_credit_card_matches_masked_server_credit_card;
-      form_data_importer_->ImportFormData(
-          form_structure,
-          true,   // credit card autofill enabled
-          false,  // should return local card
-          &imported_credit_card,
-          &imported_credit_card_matches_masked_server_credit_card);
+      form_data_importer_->ImportFormData(form_structure,
+                                          true,  // credit card autofill enabled
+                                          false,  // should return local card
+                                          &imported_credit_card);
       EXPECT_FALSE(imported_credit_card);
 
       // Clear the |form| to start a new profile.
