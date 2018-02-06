@@ -238,8 +238,10 @@ CommandHandler.onCommand = function(command) {
   }
 
   // Require a current range.
-  if (!ChromeVoxState.instance.currentRange_)
+  if (!ChromeVoxState.instance.currentRange_) {
+    new Output().format('@warning_no_current_range').go();
     return true;
+  }
 
   var current = ChromeVoxState.instance.currentRange_;
 
@@ -514,6 +516,7 @@ CommandHandler.onCommand = function(command) {
         newRange.select();
 
         new Output()
+            .withoutHints()
             .withRichSpeechAndBraille(
                 ChromeVoxState.instance.currentRange_, prevRange,
                 Output.EventType.NAVIGATE)

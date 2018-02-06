@@ -46,18 +46,23 @@ AutomationPredicate.roles = function(roles) {
 /**
  * Constructs a predicate given a list of roles or predicates.
  * @param {{anyRole: (Array<Role>|undefined),
- *          anyPredicate: (Array<AutomationPredicate.Unary>|undefined)}} params
+ *          anyPredicate: (Array<AutomationPredicate.Unary>|undefined),
+ *          anyAttribute: (Object|undefined)}} params
  * @return {AutomationPredicate.Unary}
  */
 AutomationPredicate.match = function(params) {
   var anyRole = params.anyRole || [];
   var anyPredicate = params.anyPredicate || [];
+  var anyAttribute = params.anyAttribute || {};
   return function(node) {
     return anyRole.some(function(role) {
       return role == node.role;
     }) ||
         anyPredicate.some(function(p) {
           return p(node);
+        }) ||
+        Object.keys(anyAttribute).some(function(key) {
+          return node[key] === anyAttribute[key];
         });
   };
 };
@@ -392,6 +397,16 @@ AutomationPredicate.checkable = AutomationPredicate.roles([
   Role.CHECK_BOX, Role.RADIO_BUTTON, Role.MENU_ITEM_CHECK_BOX,
   Role.MENU_ITEM_RADIO, Role.TREE_ITEM
 ]);
+
+/**
+ * Returns if the node is clickable.
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.clickable = AutomationPredicate.match({
+  anyPredicate: [AutomationPredicate.button, AutomationPredicate.link],
+  anyAttribute: {clickable: true}
+});
 
 // Table related predicates.
 /**

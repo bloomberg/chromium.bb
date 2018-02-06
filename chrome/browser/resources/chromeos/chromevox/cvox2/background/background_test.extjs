@@ -139,16 +139,16 @@ TEST_F('BackgroundTest', 'ForwardBackwardNavigation', function() {
 
     mockFeedback.call(doCmd('nextLink'))
         .expectSpeech('alpha', 'Link')
-        .expectBraille('alpha lnk');
+        .expectBraille('alpha lnk Press Search+Space to activate.');
     mockFeedback.call(doCmd('nextLink'))
         .expectSpeech('beta', 'Link')
-        .expectBraille('beta lnk');
+        .expectBraille('beta lnk Press Search+Space to activate.');
     mockFeedback.call(doCmd('nextLink'))
         .expectSpeech('delta', 'Link')
-        .expectBraille('delta lnk');
+        .expectBraille('delta lnk Press Search+Space to activate.');
     mockFeedback.call(doCmd('previousLink'))
         .expectSpeech('beta', 'Link')
-        .expectBraille('beta lnk');
+        .expectBraille('beta lnk Press Search+Space to activate.');
     mockFeedback.call(doCmd('nextHeading'))
         .expectSpeech('charlie', 'Heading 1')
         .expectBraille('charlie h1');
@@ -161,10 +161,10 @@ TEST_F('BackgroundTest', 'ForwardBackwardNavigation', function() {
 
     mockFeedback.call(doCmd('nextObject'))
         .expectSpeech('delta', 'Link')
-        .expectBraille('delta lnk');
+        .expectBraille('delta lnk Press Search+Space to activate.');
     mockFeedback.call(doCmd('nextObject'))
         .expectSpeech('echo', 'Link')
-        .expectBraille('echo lnk');
+        .expectBraille('echo lnk Press Search+Space to activate.');
     mockFeedback.call(doCmd('nextObject'))
         .expectSpeech('foxtraut', 'Heading 2')
         .expectBraille('foxtraut h2');
@@ -265,7 +265,7 @@ TEST_F('BackgroundTest', 'SelectSingleBasic', function() {
     var incrementSelectedIndex =
         this.incrementSelectedIndex.bind(this, undefined, '#fruitSelect');
     mockFeedback.expectSpeech('apple', 'has pop up', 'Collapsed')
-        .expectBraille('apple btn +popup +')
+        .expectBraille('apple btn +popup + Press Search+Space to activate.')
         .call(incrementSelectedIndex)
         .expectSpeech('grape', /2 of 3/)
         .expectBraille('grape mnuitm 2/3 (x)')
@@ -307,7 +307,8 @@ TEST_F('BackgroundTest', 'AriaLabel', function() {
       rootNode.find({role: RoleType.LINK}).focus();
       mockFeedback.expectSpeech('foo')
           .expectSpeech('Link')
-          .expectBraille('foo lnk');
+          .expectSpeech('Press Search+Space to activate.')
+          .expectBraille('foo lnk Press Search+Space to activate.');
       mockFeedback.replay();
     }
   );

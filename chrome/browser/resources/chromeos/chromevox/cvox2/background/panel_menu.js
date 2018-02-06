@@ -316,6 +316,7 @@ PanelNodeMenu.prototype = {
       if (this.pred_(node)) {
         var output = new Output();
         var range = cursors.Range.fromNode(node);
+        output.withoutHints();
         output.withSpeech(range, range, Output.EventType.NAVIGATE);
         var label = output.toString();
         this.addMenuItem(label, '', '', (function() {

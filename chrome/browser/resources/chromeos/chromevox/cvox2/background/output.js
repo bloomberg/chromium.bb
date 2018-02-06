@@ -97,6 +97,9 @@ Output = function() {
 
   /** @private {!Object<string, boolean>} */
   this.suppressions_ = {};
+
+  /** @private {boolean} */
+  this.enableHints_ = true;
 };
 
 /**
@@ -784,6 +787,15 @@ Output.prototype = {
   },
 
   /**
+   * Don't include hints in subsequent output.
+   * @return {Output}
+   */
+  withoutHints: function() {
+    this.enableHints_ = false;
+    return this;
+  },
+
+  /**
    * Suppresses processing of a token for subsequent formatting commands.
    * @param {string} token
    * @return {Output}
@@ -956,6 +968,8 @@ Output.prototype = {
       this.subNode_(range, prevRange, type, buff);
     else
       this.range_(range, prevRange, type, buff);
+
+    this.hint_(range, uniqueAncestors, buff);
   },
 
   /**
@@ -1706,6 +1720,39 @@ Output.prototype = {
     var loc = range.start.node.boundsForRange(rangeStart, rangeEnd);
     if (loc)
       this.locations_.push(loc);
+  },
+
+  hint_: function(range, uniqueAncestors, buff) {
+    if (!this.enableHints_ || localStorage['useVerboseMode'] != 'true')
+      return;
+
+    var node = range.start.node;
+    if (!node) {
+      this.append_(buff, Msgs.getMsg('warning_no_current_range'));
+      return;
+    }
+
+    // Prioritized hints.
+    if (node.state[StateType.EDITABLE] && cvox.ChromeVox.isStickyPrefOn)
+      this.format_(node, '@sticky_mode_enabled', buff);
+
+    if (AutomationPredicate.checkable(node))
+      this.format_(node, '@hint_checkable', buff);
+    if (AutomationPredicate.clickable(node))
+      this.format_(node, '@hint_clickable', buff);
+    if (node.autoComplete == 'list' || node.autoComplete == 'both')
+      this.format_(node, '@hint_autocomplete_list', buff);
+    if (node.autoComplete == 'inline' || node.autoComplete == 'both')
+      this.format_(node, '@hint_autocomplete_inline', buff);
+    if (node.accessKey)
+      this.append_(buff, Msgs.getMsg('access_key', [node.accessKey]));
+
+    // Ancestry based hints.
+    if (uniqueAncestors.find(AutomationPredicate.table))
+      this.format_(node, '@hint_table', buff);
+    if (uniqueAncestors.find(
+            AutomationPredicate.roles([RoleType.MENU, RoleType.MENU_BAR])))
+      this.format_(node, '@hint_menu', buff);
   },
 
   /**
