@@ -48,7 +48,7 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
 
  private:
   // Internal representation of a lock request or held lock.
-  struct Lock;
+  class Lock;
 
   // State for a particular origin.
   class OriginState;
@@ -63,13 +63,19 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
                    const std::string& name,
                    blink::mojom::LockMode mode) const;
 
+  // Mints a monotonically increasing identifier. Used both for lock requests
+  // and granted locks as keys in ordered maps.
+  int64_t NextLockId();
+
+  void Break(const url::Origin& origin, const std::string& name);
+
   // Called when a lock is requested and optionally when a lock is released,
   // to process outstanding requests within the origin.
   void ProcessRequests(const url::Origin& origin);
 
   mojo::BindingSet<blink::mojom::LockManager, BindingState> bindings_;
 
-  int64_t next_lock_id = 1;
+  int64_t next_lock_id_ = 0;
   std::map<url::Origin, OriginState> origins_;
 
   SEQUENCE_CHECKER(sequence_checker_);

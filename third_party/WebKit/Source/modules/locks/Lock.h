@@ -60,6 +60,8 @@ class Lock final : public ScriptWrappable, public PausableObject {
 
   void ReleaseIfHeld();
 
+  void OnConnectionError();
+
   Member<ScriptPromiseResolver> resolver_;
 
   const String name_;
