@@ -11,6 +11,8 @@
 
 namespace device {
 
+const char kTestGeolocationApiKey[] = "FakeApiKeyForTest";
+
 // Base class responsible to setup Device Service for test.
 class DeviceServiceTestBase : public service_manager::test::ServiceTest {
  public:

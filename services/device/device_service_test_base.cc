@@ -22,7 +22,6 @@ namespace device {
 namespace {
 
 const char kTestServiceName[] = "device_unittests";
-const char kTestGeolocationApiKey[] = "";
 
 // Simple request context producer that immediately produces a
 // TestURLRequestContextGetter.
