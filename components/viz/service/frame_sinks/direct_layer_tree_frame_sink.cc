@@ -30,7 +30,8 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
     scoped_refptr<RasterContextProvider> worker_context_provider,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    SharedBitmapManager* shared_bitmap_manager)
+    SharedBitmapManager* shared_bitmap_manager,
+    bool use_viz_hit_test)
     : LayerTreeFrameSink(std::move(context_provider),
                          std::move(worker_context_provider),
                          std::move(compositor_task_runner),
@@ -40,7 +41,8 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
       support_manager_(support_manager),
       frame_sink_manager_(frame_sink_manager),
       display_(display),
-      display_client_(display_client) {
+      display_client_(display_client),
+      use_viz_hit_test_(use_viz_hit_test) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   capabilities_.must_always_swap = true;
   // Display and DirectLayerTreeFrameSink share a GL context, so sync
@@ -54,13 +56,15 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
     FrameSinkManagerImpl* frame_sink_manager,
     Display* display,
     mojom::DisplayClient* display_client,
-    scoped_refptr<VulkanContextProvider> vulkan_context_provider)
+    scoped_refptr<VulkanContextProvider> vulkan_context_provider,
+    bool use_viz_hit_test)
     : LayerTreeFrameSink(std::move(vulkan_context_provider)),
       frame_sink_id_(frame_sink_id),
       support_manager_(support_manager),
       frame_sink_manager_(frame_sink_manager),
       display_(display),
-      display_client_(display_client) {
+      display_client_(display_client),
+      use_viz_hit_test_(use_viz_hit_test) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   capabilities_.must_always_swap = true;
 }
@@ -80,8 +84,8 @@ bool DirectLayerTreeFrameSink::BindToClient(
   support_ = support_manager_->CreateCompositorFrameSinkSupport(
       this, frame_sink_id_, is_root,
       capabilities_.delegated_sync_points_required);
-  // TODO(riajiang): Check if viz hit-test is enabled and do setup work if it
-  // is turned on.
+  if (use_viz_hit_test_)
+    support_->SetUpHitTest();
   begin_frame_source_ = std::make_unique<ExternalBeginFrameSource>(this);
   client_->SetBeginFrameSource(begin_frame_source_.get());
 

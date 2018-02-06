@@ -35,6 +35,7 @@
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
@@ -858,13 +859,14 @@ void CompositorImpl::InitializeDisplay(
           ? std::make_unique<viz::DirectLayerTreeFrameSink>(
                 frame_sink_id_, GetHostFrameSinkManager(), manager,
                 display_.get(), nullptr /* display_client */,
-                vulkan_context_provider)
+                vulkan_context_provider, features::IsVizHitTestingEnabled())
           : std::make_unique<viz::DirectLayerTreeFrameSink>(
                 frame_sink_id_, GetHostFrameSinkManager(), manager,
                 display_.get(), nullptr /* display_client */, context_provider,
                 nullptr /* worker_context_provider */, task_runner,
                 gpu_memory_buffer_manager,
-                viz::ServerSharedBitmapManager::current());
+                viz::ServerSharedBitmapManager::current(),
+                features::IsVizHitTestingEnabled());
 
   display_->SetVisible(true);
   display_->Resize(size_);
