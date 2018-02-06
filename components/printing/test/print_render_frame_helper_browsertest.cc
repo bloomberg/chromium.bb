@@ -949,6 +949,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
 
   EXPECT_EQ(0, print_render_thread_->print_preview_pages_remaining());
   VerifyDidPreviewPage(true, 0);
+  VerifyDidPreviewPage(true, 1);
   VerifyPreviewPageCount(2);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
@@ -1114,24 +1115,34 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForMultiplePages) {
   VerifyPagesPrinted(false);
 }
 
-// Test to verify that complete metafile is generated for a subset of pages
-// without creating draft pages.
-TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
-       PrintPreviewForMultiplePagesWithoutDraftMode) {
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, PrintPreviewForSelectedPages) {
   LoadHTML(kMultipageHTML);
 
   // Fill in some dummy values.
   base::DictionaryValue dict;
   CreatePrintSettingsDictionary(&dict);
 
-  dict.SetBoolean(kSettingGenerateDraftData, false);
+  // Set a page range and update the dictionary to generate only the complete
+  // metafile with the selected pages. Page numbers used in the dictionary
+  // are 1-based.
+  base::Value page_range(base::Value::Type::DICTIONARY);
+  page_range.SetKey(kSettingPageRangeFrom, base::Value(2));
+  page_range.SetKey(kSettingPageRangeTo, base::Value(3));
+  base::Value page_range_array(base::Value::Type::LIST);
+  page_range_array.GetList().push_back(std::move(page_range));
+  dict.SetKey(kSettingPageRange, std::move(page_range_array));
 
   OnPrintPreview(dict);
 
-  EXPECT_EQ(3, print_render_thread_->print_preview_pages_remaining());
+  // The expected page count below is 3 because the total number of pages in the
+  // document, without the page range, is 3. Since only 2 pages have been
+  // generated, the print_preview_pages_remaining() result is 1.
+  // TODO(thestig): Fix this on the browser side to accept the number of actual
+  // pages generated instead, or to take both page counts.
+  EXPECT_EQ(1, print_render_thread_->print_preview_pages_remaining());
   VerifyDidPreviewPage(false, 0);
-  VerifyDidPreviewPage(false, 1);
-  VerifyDidPreviewPage(false, 2);
+  VerifyDidPreviewPage(true, 1);
+  VerifyDidPreviewPage(true, 2);
   VerifyPreviewPageCount(3);
   VerifyPrintPreviewCancelled(false);
   VerifyPrintPreviewFailed(false);
