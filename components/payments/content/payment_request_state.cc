@@ -18,7 +18,6 @@
 #include "components/payments/content/content_payment_request_delegate.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/payment_response_helper.h"
-#include "components/payments/content/service_worker_payment_app_factory.h"
 #include "components/payments/content/service_worker_payment_instrument.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/journey_logger.h"
@@ -81,13 +80,16 @@ void PaymentRequestState::GetAllPaymentAppsCallback(
     content::BrowserContext* context,
     const GURL& top_level_origin,
     const GURL& frame_origin,
-    content::PaymentAppProvider::PaymentApps apps) {
+    content::PaymentAppProvider::PaymentApps apps,
+    ServiceWorkerPaymentAppFactory::InstallablePaymentApps installable_apps) {
   number_of_pending_sw_payment_instruments_ = apps.size();
   if (number_of_pending_sw_payment_instruments_ == 0U) {
     FinishedGetAllSWPaymentInstruments();
     return;
   }
 
+  // TODO(crbug.com/782270): Create installable service worker payment
+  // instruments based on |installable_apps|.
   for (auto& app : apps) {
     std::unique_ptr<ServiceWorkerPaymentInstrument> instrument =
         std::make_unique<ServiceWorkerPaymentInstrument>(

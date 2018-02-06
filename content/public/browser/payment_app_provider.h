@@ -18,6 +18,7 @@
 namespace content {
 
 class BrowserContext;
+class WebContents;
 
 // This is providing the service worker based payment app related APIs to
 // Chrome layer. This class is a singleton, the instance of which can be
@@ -45,6 +46,15 @@ class CONTENT_EXPORT PaymentAppProvider {
       BrowserContext* browser_context,
       int64_t registration_id,
       payments::mojom::PaymentRequestEventDataPtr event_data,
+      InvokePaymentAppCallback callback) = 0;
+  virtual void InstallAndInvokePaymentApp(
+      WebContents* web_contents,
+      payments::mojom::PaymentRequestEventDataPtr event_data,
+      const std::string& app_name,
+      const std::string& sw_js_url,
+      const std::string& sw_scope,
+      bool sw_use_cache,
+      const std::vector<std::string>& enabled_methods,
       InvokePaymentAppCallback callback) = 0;
   virtual void CanMakePayment(
       BrowserContext* browser_context,

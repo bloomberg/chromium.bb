@@ -14,7 +14,7 @@ namespace payments {
 
 TestDownloader::TestDownloader(
     const scoped_refptr<net::URLRequestContextGetter>& context)
-    : impl_(context) {}
+    : PaymentManifestDownloader(context) {}
 
 TestDownloader::~TestDownloader() {}
 
@@ -41,7 +41,8 @@ void TestDownloader::DownloadPaymentMethodManifest(
     }
   }
 
-  impl_.DownloadPaymentMethodManifest(actual_url, std::move(callback));
+  PaymentManifestDownloader::DownloadPaymentMethodManifest(actual_url,
+                                                           std::move(callback));
 }
 
 }  // namespace payments

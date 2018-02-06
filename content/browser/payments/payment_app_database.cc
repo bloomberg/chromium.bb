@@ -401,6 +401,108 @@ void PaymentAppDatabase::DidSetPaymentAppUserHint(
   DCHECK(status == SERVICE_WORKER_OK);
 }
 
+void PaymentAppDatabase::SetPaymentAppInfoForRegisteredServiceWorker(
+    int64_t registration_id,
+    const std::string& instrument_key,
+    const std::string& name,
+    const std::vector<std::string>& enabled_methods,
+    SetPaymentAppInfoCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  service_worker_context_->FindReadyRegistrationForIdOnly(
+      registration_id,
+      base::BindOnce(&PaymentAppDatabase::DidFindRegistrationToSetPaymentApp,
+                     weak_ptr_factory_.GetWeakPtr(), instrument_key, name,
+                     enabled_methods, base::Passed(std::move(callback))));
+}
+
+void PaymentAppDatabase::DidFindRegistrationToSetPaymentApp(
+    const std::string& instrument_key,
+    const std::string& name,
+    const std::vector<std::string>& enabled_methods,
+    SetPaymentAppInfoCallback callback,
+    ServiceWorkerStatusCode status,
+    scoped_refptr<ServiceWorkerRegistration> registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (status != SERVICE_WORKER_OK) {
+    std::move(callback).Run(PaymentHandlerStatus::NO_ACTIVE_WORKER);
+    return;
+  }
+
+  StoredPaymentAppProto payment_app_proto;
+  payment_app_proto.set_registration_id(registration->id());
+  payment_app_proto.set_scope(registration->pattern().spec());
+  payment_app_proto.set_name(name);
+
+  std::string serialized_payment_app;
+  bool success = payment_app_proto.SerializeToString(&serialized_payment_app);
+  DCHECK(success);
+
+  service_worker_context_->StoreRegistrationUserData(
+      registration->id(), registration->pattern().GetOrigin(),
+      {{CreatePaymentAppKey(registration->pattern().spec()),
+        serialized_payment_app}},
+      base::Bind(&PaymentAppDatabase::DidWritePaymentAppForSetPaymentApp,
+                 weak_ptr_factory_.GetWeakPtr(), instrument_key,
+                 enabled_methods, base::Passed(std::move(callback)),
+                 std::move(registration)));
+
+  return;
+}
+
+void PaymentAppDatabase::DidWritePaymentAppForSetPaymentApp(
+    const std::string& instrument_key,
+    const std::vector<std::string>& enabled_methods,
+    SetPaymentAppInfoCallback callback,
+    scoped_refptr<ServiceWorkerRegistration> registration,
+    ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (status != SERVICE_WORKER_OK) {
+    std::move(callback).Run(PaymentHandlerStatus::STORAGE_OPERATION_FAILED);
+    return;
+  }
+
+  StoredPaymentInstrumentProto instrument_proto;
+  instrument_proto.set_registration_id(registration->id());
+  instrument_proto.set_instrument_key(instrument_key);
+  for (const auto& method : enabled_methods) {
+    instrument_proto.add_enabled_methods(method);
+  }
+
+  std::string serialized_instrument;
+  bool success = instrument_proto.SerializeToString(&serialized_instrument);
+  DCHECK(success);
+
+  StoredPaymentInstrumentKeyInfoProto key_info_proto;
+  key_info_proto.set_key(instrument_key);
+  key_info_proto.set_insertion_order(base::Time::Now().ToInternalValue());
+
+  std::string serialized_key_info;
+  success = key_info_proto.SerializeToString(&serialized_key_info);
+  DCHECK(success);
+
+  service_worker_context_->StoreRegistrationUserData(
+      registration->id(), registration->pattern().GetOrigin(),
+      {{CreatePaymentInstrumentKey(instrument_key), serialized_instrument},
+       {CreatePaymentInstrumentKeyInfoKey(instrument_key),
+        serialized_key_info}},
+      base::Bind(&PaymentAppDatabase::DidWritePaymentInstrumentForSetPaymentApp,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(std::move(callback))));
+}
+
+void PaymentAppDatabase::DidWritePaymentInstrumentForSetPaymentApp(
+    SetPaymentAppInfoCallback callback,
+    ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return std::move(callback).Run(
+      status == SERVICE_WORKER_OK
+          ? PaymentHandlerStatus::SUCCESS
+          : PaymentHandlerStatus::STORAGE_OPERATION_FAILED);
+}
+
 void PaymentAppDatabase::DidReadAllPaymentApps(
     ReadAllPaymentAppsCallback callback,
     const std::vector<std::pair<int64_t, std::string>>& raw_data,

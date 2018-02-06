@@ -162,7 +162,9 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
  private:
   // Called by the factory upon completed app lookup. These |apps| have only
   // valid payment methods.
-  void OnGotAllPaymentApps(content::PaymentAppProvider::PaymentApps apps) {
+  void OnGotAllPaymentApps(
+      content::PaymentAppProvider::PaymentApps apps,
+      ServiceWorkerPaymentAppFactory::InstallablePaymentApps installable_apps) {
     apps_ = std::move(apps);
   }
 

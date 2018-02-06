@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/payments/content/web_app_manifest_section.h"
+#include "components/payments/content/web_app_manifest.h"
 #include "components/webdata/common/web_database_table.h"
 
 class WebDatabase;

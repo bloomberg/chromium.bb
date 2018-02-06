@@ -46,6 +46,8 @@ class CONTENT_EXPORT PaymentAppDatabase {
       base::OnceCallback<void(payments::mojom::PaymentHandlerStatus)>;
   using ClearPaymentInstrumentsCallback =
       base::OnceCallback<void(payments::mojom::PaymentHandlerStatus)>;
+  using SetPaymentAppInfoCallback =
+      base::OnceCallback<void(payments::mojom::PaymentHandlerStatus)>;
 
   explicit PaymentAppDatabase(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
@@ -76,6 +78,12 @@ class CONTENT_EXPORT PaymentAppDatabase {
   void ClearPaymentInstruments(const GURL& scope,
                                ClearPaymentInstrumentsCallback callback);
   void SetPaymentAppUserHint(const GURL& scope, const std::string& user_hint);
+  void SetPaymentAppInfoForRegisteredServiceWorker(
+      int64_t registration_id,
+      const std::string& instrument_key,
+      const std::string& name,
+      const std::vector<std::string>& enabled_methods,
+      SetPaymentAppInfoCallback callback);
 
  private:
   // ReadAllPaymentApps callbacks
@@ -192,6 +200,24 @@ class CONTENT_EXPORT PaymentAppDatabase {
                                          const std::vector<std::string>& data,
                                          ServiceWorkerStatusCode status);
   void DidSetPaymentAppUserHint(ServiceWorkerStatusCode status);
+
+  // SetPaymentAppInfoForRegisteredServiceWorker callbacks.
+  void DidFindRegistrationToSetPaymentApp(
+      const std::string& instrument_key,
+      const std::string& name,
+      const std::vector<std::string>& enabled_methods,
+      SetPaymentAppInfoCallback callback,
+      ServiceWorkerStatusCode status,
+      scoped_refptr<ServiceWorkerRegistration> registration);
+  void DidWritePaymentAppForSetPaymentApp(
+      const std::string& instrument_key,
+      const std::vector<std::string>& enabled_methods,
+      SetPaymentAppInfoCallback callback,
+      scoped_refptr<ServiceWorkerRegistration> registration,
+      ServiceWorkerStatusCode status);
+  void DidWritePaymentInstrumentForSetPaymentApp(
+      SetPaymentAppInfoCallback callback,
+      ServiceWorkerStatusCode status);
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   base::WeakPtrFactory<PaymentAppDatabase> weak_ptr_factory_;

@@ -4,14 +4,15 @@
 
 #include "content/browser/payments/payment_app_provider_impl.h"
 
+#include "base/strings/string_util.h"
 #include "content/browser/payments/payment_app_context_impl.h"
+#include "content/browser/payments/payment_app_installer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -339,6 +340,21 @@ void StartServiceWorkerForDispatch(BrowserContext* browser_context,
                      registration_id, std::move(callback)));
 }
 
+void OnInstallPaymentApp(payments::mojom::PaymentRequestEventDataPtr event_data,
+                         PaymentAppProvider::InvokePaymentAppCallback callback,
+                         BrowserContext* browser_context,
+                         long registration_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (registration_id >= 0 && browser_context != nullptr) {
+    PaymentAppProvider::GetInstance()->InvokePaymentApp(
+        browser_context, registration_id, std::move(event_data),
+        std::move(callback));
+  } else {
+    std::move(callback).Run(payments::mojom::PaymentHandlerResponse::New());
+  }
+}
+
 }  // namespace
 
 // static
@@ -378,6 +394,35 @@ void PaymentAppProviderImpl::InvokePaymentApp(
   StartServiceWorkerForDispatch(
       browser_context, registration_id,
       base::BindOnce(&DispatchPaymentRequestEvent, std::move(event_data),
+                     std::move(callback)));
+}
+
+void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
+    WebContents* web_contents,
+    payments::mojom::PaymentRequestEventDataPtr event_data,
+    const std::string& app_name,
+    const std::string& sw_js_url,
+    const std::string& sw_scope,
+    bool sw_use_cache,
+    const std::vector<std::string>& enabled_methods,
+    InvokePaymentAppCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  DCHECK(base::IsStringUTF8(sw_js_url));
+  GURL url = GURL(sw_js_url);
+  DCHECK(base::IsStringUTF8(sw_scope));
+  GURL scope = GURL(sw_scope);
+  if (!url.is_valid() || !scope.is_valid() || enabled_methods.size() == 0) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       payments::mojom::PaymentHandlerResponse::New()));
+    return;
+  }
+
+  PaymentAppInstaller::Install(
+      web_contents, app_name, url, scope, sw_use_cache, enabled_methods,
+      base::BindOnce(&OnInstallPaymentApp, std::move(event_data),
                      std::move(callback)));
 }
 

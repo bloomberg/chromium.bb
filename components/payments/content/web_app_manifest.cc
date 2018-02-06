@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/content/web_app_manifest_section.h"
+#include "components/payments/content/web_app_manifest.h"
 
 namespace payments {
 
@@ -12,5 +12,8 @@ WebAppManifestSection::WebAppManifestSection(
     const WebAppManifestSection& param) = default;
 
 WebAppManifestSection::~WebAppManifestSection() = default;
+
+WebAppInstallationInfo::WebAppInstallationInfo() = default;
+WebAppInstallationInfo::~WebAppInstallationInfo() = default;
 
 }  // namespace payments
