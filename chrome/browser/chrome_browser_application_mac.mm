@@ -260,6 +260,7 @@ void CancelTerminate() {
         bool ctrlDown = [event modifierFlags] & NSControlKeyMask;
         if (kioskMode && ([event type] == NSRightMouseDown || ctrlDown))
           break;
+        FALLTHROUGH;  // Not menu-generating, so pass on the event.
       }
 
       default: {

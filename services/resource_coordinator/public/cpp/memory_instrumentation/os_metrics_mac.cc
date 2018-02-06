@@ -136,6 +136,7 @@ void PopulateByteStats(VMRegion* region,
     case SM_PRIVATE:
     case SM_COW:
       region->byte_stats_private_dirty_resident = dirty_bytes;
+      break;
     case SM_SHARED:
     case SM_PRIVATE_ALIASED:
     case SM_TRUESHARED:

@@ -445,7 +445,7 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
       [axAttributes addObject:kTextAttributes];
       if (!node_->GetData().HasState(ax::mojom::State::kProtected))
         [axAttributes addObjectsFromArray:kUnprotectedTextAttributes];
-    // Fallthrough.
+      FALLTHROUGH;
     case ax::mojom::Role::kCheckBox:
     case ax::mojom::Role::kComboBoxMenuButton:
     case ax::mojom::Role::kMenuItemCheckBox:

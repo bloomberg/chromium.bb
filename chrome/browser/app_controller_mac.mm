@@ -1056,7 +1056,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
         chrome::ExecuteCommand(browser, IDC_NEW_TAB);
         break;
       }
-      // Else fall through to create new window.
+      FALLTHROUGH;  // To create new window.
     case IDC_NEW_WINDOW:
       CreateBrowser(lastProfile);
       break;

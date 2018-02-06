@@ -191,7 +191,7 @@ void VersionUpdaterMac::UpdateStatus(NSDictionary* dictionary) {
 
     case kAutoupdateRegisterFailed:
       enable_promote_button = false;
-      // Fall through.
+      FALLTHROUGH;
     case kAutoupdateCheckFailed:
     case kAutoupdateInstallFailed:
     case kAutoupdatePromoteFailed:

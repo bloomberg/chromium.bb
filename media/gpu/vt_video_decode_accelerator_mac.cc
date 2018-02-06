@@ -761,8 +761,8 @@ void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
           frame->pic_order_cnt = *pic_order_cnt;
           frame->reorder_window = ComputeReorderWindow(sps);
         }
+        FALLTHROUGH;
 
-      // Intentional fallthrough.
       default:
         nalus.push_back(nalu);
         data_size += kNALUHeaderLength + nalu.size;
