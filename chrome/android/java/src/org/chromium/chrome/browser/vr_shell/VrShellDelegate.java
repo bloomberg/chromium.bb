@@ -65,6 +65,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Manages interactions with the VR Shell.
@@ -180,6 +182,23 @@ public class VrShellDelegate
     // Gets run when the user exits VR mode by clicking the 'x' button or system UI back button.
     private Runnable mCloseButtonListener;
 
+    private static final List<VrModeObserver> sVrModeObservers = new ArrayList<>();
+
+    /**
+     * Used to observe changes to whether Chrome is currently being viewed in VR.
+     */
+    public static interface VrModeObserver {
+        /**
+         * Called when Chrome enters VR rendering mode.
+         */
+        void onEnterVr();
+
+        /**
+         * Called when Chrome exits VR rendering mode.
+         */
+        void onExitVr();
+    }
+
     private static final class VrBroadcastReceiver extends BroadcastReceiver {
         private final WeakReference<ChromeActivity> mTargetActivity;
 
@@ -244,6 +263,24 @@ public class VrShellDelegate
         WeakReference<ChromeActivity> targetActivity() {
             return mTargetActivity;
         }
+    }
+
+    /**
+     * Registers the given {@link VrModeObserver}.
+     *
+     * @param observer The VrModeObserver to register.
+     */
+    public static void registerVrModeObserver(VrModeObserver observer) {
+        sVrModeObservers.add(observer);
+    }
+
+    /**
+     * Unregisters the given {@link VrModeObserver}.
+     *
+     * @param observer The VrModeObserver to remove.
+     */
+    public static void unregisterVrModeObserver(VrModeObserver observer) {
+        sVrModeObservers.remove(observer);
     }
 
     /**
@@ -874,6 +911,8 @@ public class VrShellDelegate
             }, EXPECT_DON_TIMEOUT_MS);
         }
         maybeSetPresentResult(true, donSuceeded);
+
+        for (VrModeObserver observer : sVrModeObservers) observer.onEnterVr();
     }
 
     private static void addBlackOverlayViewForActivity(ChromeActivity activity) {
@@ -1489,6 +1528,8 @@ public class VrShellDelegate
         // that we are exiting VR.
         callOnExitVrRequestListener(false);
         assert mOnExitVrRequestListener == null;
+
+        for (VrModeObserver observer : sVrModeObservers) observer.onExitVr();
     }
 
     private void callOnExitVrRequestListener(boolean success) {
