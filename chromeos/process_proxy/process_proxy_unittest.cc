@@ -32,6 +32,7 @@ const char kTestLineToSend[] = "abcdefgh\n";
 const char kTestLineExpected[] = "abcdefgh\r\n";
 
 const char kCatCommand[] = "cat";
+const char kFakeUserHash[] = "0123456789abcdef";
 const char kStdoutType[] = "stdout";
 const int kTestLineNum = 100;
 
@@ -186,7 +187,7 @@ class ProcessProxyTest : public testing::Test {
     registry_ = ProcessProxyRegistry::Get();
 
     terminal_id_ = registry_->OpenProcess(
-        kCatCommand,
+        kCatCommand, kFakeUserHash,
         base::Bind(&ProcessProxyTest::HandleRead, base::Unretained(this)));
 
     EXPECT_GE(terminal_id_, 0);
