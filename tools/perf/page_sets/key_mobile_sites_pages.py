@@ -144,44 +144,6 @@ class YahooAnswersPage(KeyMobileSitesPage):
     action_runner.ClickElement(text='Other Answers (1 - 20 of 149)')
 
 
-class GroupClonedPage(KeyMobileSitesPage):
-  """ Why: crbug.com/172906 """
-
-  def __init__(self, page_set, name='', extra_browser_args=None):
-    super(GroupClonedPage, self).__init__(
-        url='http://groupcloned.com',
-        page_set=page_set,
-        name=name,
-        extra_browser_args=extra_browser_args)
-
-  def RunNavigateSteps(self, action_runner):
-    super(GroupClonedPage, self).RunNavigateSteps(action_runner)
-    action_runner.Wait(5)
-    action_runner.WaitForJavaScriptCondition("""
-        document.getElementById("element-19") !== null &&
-        document.getElementById("element-19").contentDocument
-          .getElementById("element-22") !== null &&
-        document.getElementById("element-19").contentDocument
-          .getElementsByClassName(
-              "container list-item gc-list-item stretched").length !== 0""")
-
-
-class GroupClonedListImagesPage(KeyMobileSitesPage):
-  """ Why: crbug.com/172906 """
-
-  def __init__(self, page_set, name='', extra_browser_args=None):
-    super(GroupClonedListImagesPage, self).__init__(
-        url='http://groupcloned.com/test/list-images-variable/index.html',
-        page_set=page_set,
-        name=name,
-        extra_browser_args=extra_browser_args)
-
-  def RunNavigateSteps(self, action_runner):
-    super(GroupClonedListImagesPage, self).RunNavigateSteps(action_runner)
-    action_runner.WaitForJavaScriptCondition(
-        'document.getElementById("element-5") !== null')
-
-
 class GoogleNewsMobilePage(KeyMobileSitesPage):
   """ Why: Google News: accelerated scrolling version """
 

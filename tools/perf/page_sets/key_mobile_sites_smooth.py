@@ -82,32 +82,6 @@ class WowwikiSmoothPage(KeyMobileSitesSmoothPage):
     super(WowwikiSmoothPage, self).RunNavigateSteps(action_runner)
 
 
-class GroupClonedSmoothPage(key_mobile_sites_pages.GroupClonedPage):
-
-  def RunPageInteractions(self, action_runner):
-    with action_runner.CreateGestureInteraction('ScrollAction'):
-      action_runner.ScrollPage(
-          distance_expr="""
-              Math.max(0, 1250 + document.getElementById("element-19")
-                                         .contentDocument
-                                         .getElementById("element-22")
-                                         .getBoundingClientRect().top);""",
-          use_touch=True)
-
-
-class GroupClonedListImagesPage(
-    key_mobile_sites_pages.GroupClonedListImagesPage):
-
-  def RunPageInteractions(self, action_runner):
-    with action_runner.CreateGestureInteraction('ScrollAction'):
-      action_runner.ScrollPage(
-          distance_expr="""
-              Math.max(0, 1250 +
-                  document.getElementById("element-5")
-                          .getBoundingClientRect().top);""",
-          use_touch=True)
-
-
 class AmazonNicolasCageSmoothPage(key_mobile_sites_pages.AmazonNicolasCagePage):
 
   def RunPageInteractions(self, action_runner):
@@ -151,17 +125,7 @@ class KeyMobileSitesSmoothPageSet(story.StorySet):
     self.AddStory(WowwikiSmoothPage(self))
 
     # Add pages with custom page interaction logic.
-
-    # Page behaves non-deterministically, replaced with test version for now.
-    # self.AddStory(GroupClonedSmoothPage(self))
-    # mean_input_event_latency cannot be tracked correctly for
-    # GroupClonedListImagesPage.
-    # See crbug.com/409086.
-    # self.AddStory(GroupClonedListImagesSmoothPage(self))
-    # Amazon's Nicolas Cage search is currently failing. Reenable it once it's
-    # not anymore.
-    # crbug.com/667432
-    # self.AddStory(AmazonNicolasCageSmoothPage(self))
+    self.AddStory(AmazonNicolasCageSmoothPage(self))
     self.AddStory(CNNArticleSmoothPage(self))
 
     # Add pages with custom tags.
@@ -208,9 +172,9 @@ class KeyMobileSitesSmoothPageSet(story.StorySet):
             action_on_load_complete=True))
 
     # Why: #8 (Alexa global), picked an interesting page
-    # Forbidden (Rate Limit Exceeded)
-    # self.AddStory(KeyMobileSitesSmoothPage(
-    #  url='http://twitter.com/katyperry', page_set=self, name='Twitter'))
+    self.AddStory(
+        KeyMobileSitesSmoothPage(
+            url='http://twitter.com/katyperry', page_set=self, name='Twitter'))
 
     # Why: #37 (Alexa global) """
     self.AddStory(
@@ -218,13 +182,14 @@ class KeyMobileSitesSmoothPageSet(story.StorySet):
             url='http://pinterest.com', page_set=self, name='Pinterest'))
 
     # Why: #1 sports.
-    # Fails often; crbug.com/249722'
-    # self.AddStory(KeyMobileSitesSmoothPage(
-    # url='http://espn.go.com', page_set=self, name='ESPN'))
+    self.AddStory(
+        KeyMobileSitesSmoothPage(
+            url='http://espn.go.com', page_set=self, name='ESPN'))
+
     # Why: crbug.com/231413
-    # Doesn't scroll; crbug.com/249736
-    # self.AddStory(KeyMobileSitesSmoothPage(
-    #                 url='http://forecast.io', page_set=self))
+    self.AddStory(
+        KeyMobileSitesSmoothPage(url='http://forecast.io', page_set=self))
+
     # Why: crbug.com/169827
     self.AddStory(
         KeyMobileSitesSmoothPage(
