@@ -122,8 +122,7 @@ static inline bool FeatureExpectingPositiveInteger(
          media_feature == minColorIndexMediaFeature ||
          media_feature == monochromeMediaFeature ||
          media_feature == maxMonochromeMediaFeature ||
-         media_feature == minMonochromeMediaFeature ||
-         media_feature == immersiveMediaFeature;
+         media_feature == minMonochromeMediaFeature;
 }
 
 static inline bool FeatureWithPositiveInteger(const String& media_feature,
@@ -185,8 +184,7 @@ static inline bool FeatureWithoutValue(const String& media_feature) {
          media_feature == displayModeMediaFeature ||
          media_feature == scanMediaFeature ||
          media_feature == shapeMediaFeature ||
-         media_feature == colorGamutMediaFeature ||
-         media_feature == immersiveMediaFeature;
+         media_feature == colorGamutMediaFeature;
 }
 
 bool MediaQueryExp::IsViewportDependent() const {

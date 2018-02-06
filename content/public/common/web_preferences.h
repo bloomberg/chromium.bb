@@ -222,7 +222,7 @@ struct CONTENT_EXPORT WebPreferences {
   // Cues will not be placed in this margin area.
   float text_track_margin_percentage;
 
-  bool immersive_mode_enabled;
+  bool page_popups_suppressed;
 
 #if defined(OS_ANDROID)
   bool text_autosizing_enabled;

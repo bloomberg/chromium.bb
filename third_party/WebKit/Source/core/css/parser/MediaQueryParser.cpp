@@ -17,20 +17,12 @@ scoped_refptr<MediaQuerySet> MediaQueryParser::ParseMediaQuerySet(
 
 scoped_refptr<MediaQuerySet> MediaQueryParser::ParseMediaQuerySet(
     CSSParserTokenRange range) {
-  return MediaQueryParser(kMediaQuerySetParser, kHTMLStandardMode)
-      .ParseImpl(range);
-}
-
-scoped_refptr<MediaQuerySet> MediaQueryParser::ParseMediaQuerySetInMode(
-    CSSParserTokenRange range,
-    CSSParserMode mode) {
-  return MediaQueryParser(kMediaQuerySetParser, mode).ParseImpl(range);
+  return MediaQueryParser(kMediaQuerySetParser).ParseImpl(range);
 }
 
 scoped_refptr<MediaQuerySet> MediaQueryParser::ParseMediaCondition(
     CSSParserTokenRange range) {
-  return MediaQueryParser(kMediaConditionParser, kHTMLStandardMode)
-      .ParseImpl(range);
+  return MediaQueryParser(kMediaConditionParser).ParseImpl(range);
 }
 
 const MediaQueryParser::State MediaQueryParser::kReadRestrictor =
@@ -57,10 +49,8 @@ const MediaQueryParser::State MediaQueryParser::kSkipUntilBlockEnd =
     &MediaQueryParser::SkipUntilBlockEnd;
 const MediaQueryParser::State MediaQueryParser::kDone = &MediaQueryParser::Done;
 
-MediaQueryParser::MediaQueryParser(ParserType parser_type, CSSParserMode mode)
-    : parser_type_(parser_type),
-      query_set_(MediaQuerySet::Create()),
-      mode_(mode) {
+MediaQueryParser::MediaQueryParser(ParserType parser_type)
+    : parser_type_(parser_type), query_set_(MediaQuerySet::Create()) {
   if (parser_type == kMediaQuerySetParser)
     state_ = &MediaQueryParser::ReadRestrictor;
   else  // MediaConditionParser
@@ -160,13 +150,8 @@ void MediaQueryParser::ReadFeature(CSSParserTokenType type,
                                    const CSSParserToken& token,
                                    CSSParserTokenRange& range) {
   if (type == kIdentToken) {
-    String media_feature = token.Value().ToString();
-    if (IsMediaFeatureAllowedInMode(media_feature)) {
-      media_query_data_.SetMediaFeature(media_feature);
-      state_ = kReadFeatureColon;
-    } else {
-      state_ = kSkipUntilComma;
-    }
+    media_query_data_.SetMediaFeature(token.Value().ToString());
+    state_ = kReadFeatureColon;
   } else {
     state_ = kSkipUntilComma;
   }
@@ -278,12 +263,6 @@ scoped_refptr<MediaQuerySet> MediaQueryParser::ParseImpl(
     query_set_->AddMediaQuery(media_query_data_.TakeMediaQuery());
 
   return query_set_;
-}
-
-bool MediaQueryParser::IsMediaFeatureAllowedInMode(
-    const String& media_feature) const {
-  return mode_ == kUASheetMode ||
-         media_feature != MediaFeatureNames::immersiveMediaFeature;
 }
 
 MediaQueryData::MediaQueryData()
