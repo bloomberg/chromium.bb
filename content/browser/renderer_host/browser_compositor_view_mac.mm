@@ -153,13 +153,13 @@ std::unique_ptr<RecyclableCompositorMac> RecyclableCompositorMac::Create() {
 // static
 void RecyclableCompositorMac::Recycle(
     std::unique_ptr<RecyclableCompositorMac> compositor) {
-  DCHECK(compositor);
-  content::ImageTransportFactory::GetInstance()
-      ->SetCompositorSuspendedForRecycle(compositor->compositor(), true);
-
   // It is an error to have a browser compositor continue to exist after
   // shutdown.
   CHECK(!g_has_shut_down);
+  CHECK(compositor);
+  CHECK(content::ImageTransportFactory::GetInstance());
+  content::ImageTransportFactory::GetInstance()
+      ->SetCompositorSuspendedForRecycle(compositor->compositor(), true);
 
   // Make this RecyclableCompositorMac recyclable for future instances.
   g_spare_recyclable_compositors.Get().push_back(std::move(compositor));
