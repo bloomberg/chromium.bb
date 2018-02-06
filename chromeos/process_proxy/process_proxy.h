@@ -39,9 +39,9 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
 
   ProcessProxy();
 
-  // Opens a process using command |command|. Returns process ID on success, -1
-  // on failure.
-  int Open(const std::string& command);
+  // Opens a process using command |command| for the user with hash
+  // |user_id_hash|.  Returns process ID on success, -1 on failure.
+  int Open(const std::string& command, const std::string& user_id_hash);
 
   bool StartWatchingOutput(
       const scoped_refptr<base::SingleThreadTaskRunner>& watcher_runner,
@@ -75,7 +75,9 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
   // Launches command in a new terminal process, mapping its stdout and stdin to
   // |slave_fd|.
   // Returns launched process id, or -1 on failure.
-  int LaunchProcess(const std::string& command, int slave_fd);
+  int LaunchProcess(const std::string& command,
+                    const std::string& user_id_hash,
+                    int slave_fd);
 
   // Gets called by output watcher when the process writes something to its
   // output streams. If set, |callback| should be called when the output is

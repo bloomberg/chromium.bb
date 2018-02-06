@@ -25,6 +25,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extensions_browser_client.h"
 
 namespace terminal_private = extensions::api::terminal_private;
 namespace OnTerminalResize =
@@ -123,6 +124,10 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
   if (command_.empty())
     return RespondNow(Error("Invalid process name."));
 
+  const std::string user_id_hash =
+      ExtensionsBrowserClient::Get()->GetUserIdHashFromContext(
+          browser_context());
+
   content::WebContents* caller_contents = GetSenderWebContents();
   if (!caller_contents)
     return RespondNow(Error("No web contents."));
@@ -151,19 +156,22 @@ TerminalPrivateOpenTerminalProcessFunction::Run() {
                      tab_id),
           base::Bind(
               &TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread,
-              this)));
+              this),
+          user_id_hash));
   return RespondLater();
 }
 
 void TerminalPrivateOpenTerminalProcessFunction::OpenOnRegistryTaskRunner(
     const ProcessOutputCallback& output_callback,
-    const OpenProcessCallback& callback) {
+    const OpenProcessCallback& callback,
+    const std::string& user_id_hash) {
   DCHECK(!command_.empty());
 
   chromeos::ProcessProxyRegistry* registry =
       chromeos::ProcessProxyRegistry::Get();
 
-  int terminal_id = registry->OpenProcess(command_.c_str(), output_callback);
+  int terminal_id =
+      registry->OpenProcess(command_.c_str(), user_id_hash, output_callback);
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                    base::BindOnce(callback, terminal_id));

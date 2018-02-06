@@ -33,7 +33,8 @@ class TerminalPrivateOpenTerminalProcessFunction
   using OpenProcessCallback = base::Callback<void(int terminal_id)>;
 
   void OpenOnRegistryTaskRunner(const ProcessOutputCallback& output_callback,
-                                const OpenProcessCallback& callback);
+                                const OpenProcessCallback& callback,
+                                const std::string& user_id_hash);
   void RespondOnUIThread(int terminal_id);
 
   std::string command_;
