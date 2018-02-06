@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/net_errors.h"
 #include "net/socket/udp_socket.h"
@@ -26,6 +27,8 @@
 namespace network {
 
 namespace {
+
+const size_t kDatagramSize = 255;
 
 class SocketWrapperTestImpl : public UDPSocket::SocketWrapper {
  public:
@@ -61,6 +64,18 @@ class SocketWrapperTestImpl : public UDPSocket::SocketWrapper {
     NOTREACHED();
     return net::ERR_NOT_IMPLEMENTED;
   }
+  int SetBroadcast(bool broadcast) override {
+    NOTREACHED();
+    return net::ERR_NOT_IMPLEMENTED;
+  }
+  int JoinGroup(const net::IPAddress& group_address) override {
+    NOTREACHED();
+    return net::ERR_NOT_IMPLEMENTED;
+  }
+  int LeaveGroup(const net::IPAddress& group_address) override {
+    NOTREACHED();
+    return net::ERR_NOT_IMPLEMENTED;
+  }
   int Write(
       net::IOBuffer* buf,
       int buf_len,
@@ -76,8 +91,11 @@ class SocketWrapperTestImpl : public UDPSocket::SocketWrapper {
     NOTREACHED();
     return net::ERR_NOT_IMPLEMENTED;
   }
-
   int GetLocalAddress(net::IPEndPoint* address) const override {
+    NOTREACHED();
+    return net::ERR_NOT_IMPLEMENTED;
+  }
+  int ConfigureOptions(mojom::UDPSocketOptionsPtr options) override {
     NOTREACHED();
     return net::ERR_NOT_IMPLEMENTED;
   }
@@ -206,16 +224,13 @@ TEST_F(UDPSocketTest, Settings) {
   net::IPEndPoint server_addr;
   net::IPEndPoint any_port(GetLocalHostWithAnyPort());
 
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::OpenSync(&socket_ptr,
-                                                         any_port.GetFamily()));
+  test::UDPSocketTestHelper helper(&socket_ptr);
+  ASSERT_EQ(net::OK, helper.OpenSync(any_port.GetFamily()));
   net::IPEndPoint local_addr;
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::BindSync(&socket_ptr, any_port,
-                                                         &local_addr));
+  ASSERT_EQ(net::OK, helper.BindSync(any_port, &local_addr));
   EXPECT_NE(local_addr.ToString(), any_port.ToString());
-  EXPECT_EQ(net::OK, test::UDPSocketTestHelper::SetSendBufferSizeSync(
-                         &socket_ptr, 1024));
-  EXPECT_EQ(net::OK, test::UDPSocketTestHelper::SetReceiveBufferSizeSync(
-                         &socket_ptr, 2048));
+  EXPECT_EQ(net::OK, helper.SetSendBufferSizeSync(1024));
+  EXPECT_EQ(net::OK, helper.SetReceiveBufferSizeSync(2048));
 }
 
 // Tests that Send() is used after Bind() is not supported. Send() should only
@@ -229,14 +244,13 @@ TEST_F(UDPSocketTest, TestSendWithBind) {
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
 
   // Bind() the socket.
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::OpenSync(
-                         &socket_ptr, server_addr.GetFamily()));
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::BindSync(
-                         &socket_ptr, server_addr, &server_addr));
+  test::UDPSocketTestHelper helper(&socket_ptr);
+  ASSERT_EQ(net::OK, helper.OpenSync(server_addr.GetFamily()));
+  ASSERT_EQ(net::OK, helper.BindSync(server_addr, &server_addr));
 
   // Connect() has not been used, so Send() is not supported.
   std::vector<uint8_t> test_msg{1};
-  int result = test::UDPSocketTestHelper::SendSync(&socket_ptr, test_msg);
+  int result = helper.SendSync(test_msg);
   EXPECT_EQ(net::ERR_UNEXPECTED, result);
 }
 
@@ -254,10 +268,9 @@ TEST_F(UDPSocketTest, TestSendToWithConnect) {
                  std::move(receiver_interface_ptr));
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::OpenSync(
-                         &server_socket, server_addr.GetFamily()));
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::BindSync(
-                         &server_socket, server_addr, &server_addr));
+  test::UDPSocketTestHelper helper(&server_socket);
+  ASSERT_EQ(net::OK, helper.OpenSync(server_addr.GetFamily()));
+  ASSERT_EQ(net::OK, helper.BindSync(server_addr, &server_addr));
 
   // Create a client socket to send datagrams.
   mojom::UDPSocketReceiverPtr client_receiver_ptr;
@@ -265,14 +278,12 @@ TEST_F(UDPSocketTest, TestSendToWithConnect) {
   UDPSocket client_impl(mojo::MakeRequest(&client_socket),
                         std::move(client_receiver_ptr));
   net::IPEndPoint client_addr(GetLocalHostWithAnyPort());
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::OpenSync(
-                         &client_socket, client_addr.GetFamily()));
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::ConnectSync(
-                         &client_socket, server_addr, &client_addr));
+  test::UDPSocketTestHelper client_helper(&client_socket);
+  ASSERT_EQ(net::OK, client_helper.OpenSync(client_addr.GetFamily()));
+  ASSERT_EQ(net::OK, client_helper.ConnectSync(server_addr, &client_addr));
 
   std::vector<uint8_t> test_msg({1});
-  int result = test::UDPSocketTestHelper::SendToSync(&client_socket,
-                                                     server_addr, test_msg);
+  int result = client_helper.SendToSync(server_addr, test_msg);
   EXPECT_EQ(net::ERR_UNEXPECTED, result);
 }
 
@@ -288,42 +299,31 @@ TEST_F(UDPSocketTest, TestUnexpectedSequences) {
 
   // Before Open(), calling Connect() or Bind() will result in an error.
   net::IPEndPoint local_addr;
-  ASSERT_EQ(net::ERR_UNEXPECTED, test::UDPSocketTestHelper::BindSync(
-                                     &socket_ptr, any_port, &local_addr));
-  ASSERT_EQ(net::ERR_UNEXPECTED, test::UDPSocketTestHelper::ConnectSync(
-                                     &socket_ptr, any_port, &local_addr));
+  test::UDPSocketTestHelper helper(&socket_ptr);
+  ASSERT_EQ(net::ERR_UNEXPECTED, helper.BindSync(any_port, &local_addr));
+  ASSERT_EQ(net::ERR_UNEXPECTED, helper.ConnectSync(any_port, &local_addr));
 
   // Calling any Setters that depend on Open() should fail.
-  EXPECT_EQ(
-      net::ERR_UNEXPECTED,
-      test::UDPSocketTestHelper::SetSendBufferSizeSync(&socket_ptr, 1024));
-  EXPECT_EQ(
-      net::ERR_UNEXPECTED,
-      test::UDPSocketTestHelper::SetReceiveBufferSizeSync(&socket_ptr, 2048));
+  EXPECT_EQ(net::ERR_UNEXPECTED, helper.SetSendBufferSizeSync(1024));
+  EXPECT_EQ(net::ERR_UNEXPECTED, helper.SetReceiveBufferSizeSync(2048));
 
   // Now call Open().
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::OpenSync(&socket_ptr,
-                                                         any_port.GetFamily()));
+  ASSERT_EQ(net::OK, helper.OpenSync(any_port.GetFamily()));
   EXPECT_NE(local_addr.ToString(), any_port.ToString());
 
   // It is illegal call Open() twice.
-  ASSERT_EQ(net::ERR_UNEXPECTED, test::UDPSocketTestHelper::OpenSync(
-                                     &socket_ptr, any_port.GetFamily()));
+  ASSERT_EQ(net::ERR_UNEXPECTED, helper.OpenSync(any_port.GetFamily()));
 
   // Now these Setters should work.
-  EXPECT_EQ(net::OK, test::UDPSocketTestHelper::SetSendBufferSizeSync(
-                         &socket_ptr, 1024));
-  EXPECT_EQ(net::OK, test::UDPSocketTestHelper::SetReceiveBufferSizeSync(
-                         &socket_ptr, 2048));
+  EXPECT_EQ(net::OK, helper.SetSendBufferSizeSync(1024));
+  EXPECT_EQ(net::OK, helper.SetReceiveBufferSizeSync(2048));
 
   // Now Bind() the socket.
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::BindSync(&socket_ptr, any_port,
-                                                         &local_addr));
+  ASSERT_EQ(net::OK, helper.BindSync(any_port, &local_addr));
 
   // Calling Connect() after Bind() should fail because they can't be both used.
   ASSERT_EQ(net::ERR_SOCKET_IS_CONNECTED,
-            test::UDPSocketTestHelper::ConnectSync(&socket_ptr, any_port,
-                                                   &local_addr));
+            helper.ConnectSync(any_port, &local_addr));
 }
 
 // Tests that if the underlying socket implementation's Send() returned
@@ -334,15 +334,14 @@ TEST_F(UDPSocketTest, TestBufferValid) {
   UDPSocket impl(mojo::MakeRequest(&socket_ptr),
                  std::move(receiver_interface_ptr));
 
+  net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
+  test::UDPSocketTestHelper helper(&socket_ptr);
+  ASSERT_EQ(net::OK, helper.OpenSync(server_addr.GetFamily()));
+  ASSERT_EQ(net::OK, helper.BindSync(server_addr, &server_addr));
+
   HangingUDPSocket* socket_raw_ptr = new HangingUDPSocket();
   SetWrappedSocket(&impl, base::WrapUnique(socket_raw_ptr));
 
-  net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::OpenSync(
-                         &socket_ptr, server_addr.GetFamily()));
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::BindSync(
-                         &socket_ptr, server_addr, &server_addr));
-  const size_t kDatagramSize = 255;
   std::vector<uint8_t> test_msg(CreateTestMessage(0, kDatagramSize));
   socket_raw_ptr->set_expected_data(test_msg);
   base::RunLoop run_loop;
@@ -376,17 +375,16 @@ TEST_F(UDPSocketTest, TestInsufficientResources) {
   UDPSocket impl(mojo::MakeRequest(&socket_ptr),
                  std::move(receiver_interface_ptr));
 
-  HangingUDPSocket* socket_raw_ptr = new HangingUDPSocket();
-  SetWrappedSocket(&impl, base::WrapUnique(socket_raw_ptr));
-
   const size_t kQueueSize = UDPSocket::kMaxPendingSendRequests;
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::OpenSync(
-                         &socket_ptr, server_addr.GetFamily()));
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::BindSync(
-                         &socket_ptr, server_addr, &server_addr));
-  const size_t kDatagramSize = 255;
+  test::UDPSocketTestHelper helper(&socket_ptr);
+  ASSERT_EQ(net::OK, helper.OpenSync(server_addr.GetFamily()));
+  ASSERT_EQ(net::OK, helper.BindSync(server_addr, &server_addr));
+
+  HangingUDPSocket* socket_raw_ptr = new HangingUDPSocket();
+  SetWrappedSocket(&impl, base::WrapUnique(socket_raw_ptr));
+
   std::vector<uint8_t> test_msg(CreateTestMessage(0, kDatagramSize));
   socket_raw_ptr->set_expected_data(test_msg);
   // Send |kQueueSize| + 1 datagrams in a row, so the queue is filled up.
@@ -406,8 +404,7 @@ TEST_F(UDPSocketTest, TestInsufficientResources) {
 
   // SendTo() beyond the queue size should fail.
   EXPECT_EQ(net::ERR_INSUFFICIENT_RESOURCES,
-            test::UDPSocketTestHelper::SendToSync(
-                &socket_ptr, GetLocalHostWithAnyPort(), test_msg));
+            helper.SendToSync(GetLocalHostWithAnyPort(), test_msg));
 
   // Complete all pending requests. Queued SendTo() should hear back.
   socket_raw_ptr->CompleteAllPendingRequests();
@@ -428,10 +425,9 @@ TEST_F(UDPSocketTest, TestReceiveMoreOverflow) {
                  std::move(receiver_interface_ptr));
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::OpenSync(
-                         &server_socket, server_addr.GetFamily()));
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::BindSync(
-                         &server_socket, server_addr, &server_addr));
+  test::UDPSocketTestHelper helper(&server_socket);
+  ASSERT_EQ(net::OK, helper.OpenSync(server_addr.GetFamily()));
+  ASSERT_EQ(net::OK, helper.BindSync(server_addr, &server_addr));
 
   server_socket->ReceiveMore(std::numeric_limits<uint32_t>::max());
   server_socket.FlushForTesting();
@@ -453,10 +449,9 @@ TEST_F(UDPSocketTest, TestReadSend) {
                  std::move(receiver_interface_ptr));
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::OpenSync(
-                         &server_socket, server_addr.GetFamily()));
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::BindSync(
-                         &server_socket, server_addr, &server_addr));
+  test::UDPSocketTestHelper helper(&server_socket);
+  ASSERT_EQ(net::OK, helper.OpenSync(server_addr.GetFamily()));
+  ASSERT_EQ(net::OK, helper.BindSync(server_addr, &server_addr));
 
   // Create a client socket to send datagrams.
   mojom::UDPSocketReceiverPtr client_receiver_ptr;
@@ -464,19 +459,17 @@ TEST_F(UDPSocketTest, TestReadSend) {
   UDPSocket client_impl(mojo::MakeRequest(&client_socket),
                         std::move(client_receiver_ptr));
   net::IPEndPoint client_addr(GetLocalHostWithAnyPort());
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::OpenSync(
-                         &client_socket, client_addr.GetFamily()));
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::ConnectSync(
-                         &client_socket, server_addr, &client_addr));
+  test::UDPSocketTestHelper client_helper(&client_socket);
+  ASSERT_EQ(net::OK, client_helper.OpenSync(client_addr.GetFamily()));
+  ASSERT_EQ(net::OK, client_helper.ConnectSync(server_addr, &client_addr));
 
   const size_t kDatagramCount = 6;
-  const size_t kDatagramSize = 255;
   server_socket->ReceiveMore(kDatagramCount);
 
   for (size_t i = 0; i < kDatagramCount; ++i) {
     std::vector<uint8_t> test_msg(
         CreateTestMessage(static_cast<uint8_t>(i), kDatagramSize));
-    int result = test::UDPSocketTestHelper::SendSync(&client_socket, test_msg);
+    int result = client_helper.SendSync(test_msg);
     EXPECT_EQ(net::OK, result);
   }
 
@@ -494,8 +487,7 @@ TEST_F(UDPSocketTest, TestReadSend) {
   // Tests that sending a message that is larger than the specified limit
   // results in an early rejection.
   std::vector<uint8_t> large_msg(64 * 1024, 1);
-  EXPECT_EQ(net::ERR_MSG_TOO_BIG, test::UDPSocketTestHelper::SendToSync(
-                                      &server_socket, client_addr, large_msg));
+  EXPECT_EQ(net::ERR_MSG_TOO_BIG, helper.SendToSync(client_addr, large_msg));
 }
 
 TEST_F(UDPSocketTest, TestReadSendTo) {
@@ -505,10 +497,9 @@ TEST_F(UDPSocketTest, TestReadSendTo) {
   UDPSocket impl(mojo::MakeRequest(&server_socket), std::move(receiver_ptr));
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::OpenSync(
-                         &server_socket, server_addr.GetFamily()));
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::BindSync(
-                         &server_socket, server_addr, &server_addr));
+  test::UDPSocketTestHelper helper(&server_socket);
+  ASSERT_EQ(net::OK, helper.OpenSync(server_addr.GetFamily()));
+  ASSERT_EQ(net::OK, helper.BindSync(server_addr, &server_addr));
 
   // Create a client socket to send datagrams.
   test::UDPSocketReceiverImpl receiver;
@@ -520,20 +511,17 @@ TEST_F(UDPSocketTest, TestReadSendTo) {
   UDPSocket client_impl(mojo::MakeRequest(&client_socket),
                         std::move(client_receiver_ptr));
   net::IPEndPoint client_addr(GetLocalHostWithAnyPort());
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::OpenSync(
-                         &client_socket, client_addr.GetFamily()));
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::ConnectSync(
-                         &client_socket, server_addr, &client_addr));
+  test::UDPSocketTestHelper client_helper(&client_socket);
+  ASSERT_EQ(net::OK, client_helper.OpenSync(client_addr.GetFamily()));
+  ASSERT_EQ(net::OK, client_helper.ConnectSync(server_addr, &client_addr));
 
   const size_t kDatagramCount = 6;
-  const size_t kDatagramSize = 255;
   client_socket->ReceiveMore(kDatagramCount);
 
   for (size_t i = 0; i < kDatagramCount; ++i) {
     std::vector<uint8_t> test_msg(
         CreateTestMessage(static_cast<uint8_t>(i), kDatagramSize));
-    int result = test::UDPSocketTestHelper::SendToSync(&server_socket,
-                                                       client_addr, test_msg);
+    int result = helper.SendToSync(client_addr, test_msg);
     EXPECT_EQ(net::OK, result);
   }
 
@@ -552,8 +540,7 @@ TEST_F(UDPSocketTest, TestReadSendTo) {
   // Tests that sending a message that is larger than the specified limit
   // results in an early rejection.
   std::vector<uint8_t> large_msg(64 * 1024, 1);
-  EXPECT_EQ(net::ERR_MSG_TOO_BIG, test::UDPSocketTestHelper::SendToSync(
-                                      &server_socket, client_addr, large_msg));
+  EXPECT_EQ(net::ERR_MSG_TOO_BIG, helper.SendToSync(client_addr, large_msg));
 }
 
 // Make sure passing an invalid net::IPEndPoint will be detected by
@@ -565,10 +552,9 @@ TEST_F(UDPSocketTest, TestSendToInvalidAddress) {
                  std::move(receiver_interface_ptr));
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::OpenSync(
-                         &server_socket, server_addr.GetFamily()));
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::BindSync(
-                         &server_socket, server_addr, &server_addr));
+  test::UDPSocketTestHelper helper(&server_socket);
+  ASSERT_EQ(net::OK, helper.OpenSync(server_addr.GetFamily()));
+  ASSERT_EQ(net::OK, helper.BindSync(server_addr, &server_addr));
 
   std::vector<uint8_t> test_msg{1};
   std::vector<uint8_t> invalid_ip_addr{127, 0, 0, 0, 1};
@@ -599,13 +585,12 @@ TEST_F(UDPSocketTest, TestReadZeroByte) {
   UDPSocket impl(mojo::MakeRequest(&socket_ptr),
                  std::move(receiver_interface_ptr));
 
-  SetWrappedSocket(&impl, std::make_unique<ZeroByteReadUDPSocket>());
-
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::OpenSync(
-                         &socket_ptr, server_addr.GetFamily()));
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::BindSync(
-                         &socket_ptr, server_addr, &server_addr));
+  test::UDPSocketTestHelper helper(&socket_ptr);
+  ASSERT_EQ(net::OK, helper.OpenSync(server_addr.GetFamily()));
+  ASSERT_EQ(net::OK, helper.BindSync(server_addr, &server_addr));
+
+  SetWrappedSocket(&impl, std::make_unique<ZeroByteReadUDPSocket>());
 
   socket_ptr->ReceiveMore(1);
 
@@ -616,6 +601,118 @@ TEST_F(UDPSocketTest, TestReadZeroByte) {
   EXPECT_EQ(net::OK, result.net_error);
   EXPECT_TRUE(result.data);
   EXPECT_EQ(std::vector<uint8_t>(), result.data.value());
+}
+
+#if defined(OS_ANDROID)
+// Some Android devices do not support multicast socket.
+// The ones supporting multicast need WifiManager.MulticastLock to enable it.
+// https://developer.android.com/reference/android/net/wifi/WifiManager.MulticastLock.html
+#define MAYBE_JoinMulticastGroup DISABLED_JoinMulticastGroup
+#else
+#define MAYBE_JoinMulticastGroup JoinMulticastGroup
+#endif  // defined(OS_ANDROID)
+TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
+  const char kGroup[] = "237.132.100.17";
+
+  net::IPAddress group_ip;
+  EXPECT_TRUE(group_ip.AssignFromIPLiteral(kGroup));
+  mojom::UDPSocketPtr socket_ptr;
+  mojom::UDPSocketReceiverPtr receiver_ptr;
+  test::UDPSocketReceiverImpl receiver;
+  mojo::Binding<mojom::UDPSocketReceiver> receiver_binding(&receiver);
+  receiver_binding.Bind(mojo::MakeRequest(&receiver_ptr));
+  UDPSocket impl(mojo::MakeRequest(&socket_ptr), std::move(receiver_ptr));
+
+  test::UDPSocketTestHelper helper(&socket_ptr);
+
+  mojom::UDPSocketOptionsPtr options = network::mojom::UDPSocketOptions::New();
+#if defined(OS_FUCHSIA)
+  // Fuchsia currently doesn't support automatic interface selection for
+  // multicast, so interface index needs to be set explicitly.
+  // See https://fuchsia.atlassian.net/browse/NET-195 .
+  options->multicast_interface = 1;
+#endif  // defined(OS_FUCHSIA)
+
+  net::IPAddress bind_ip_address;
+  EXPECT_TRUE(bind_ip_address.AssignFromIPLiteral("0.0.0.0"));
+  net::IPEndPoint socket_address(bind_ip_address, 0);
+  ASSERT_EQ(net::OK, helper.OpenWithOptionsSync(socket_address.GetFamily(),
+                                                std::move(options)));
+  ASSERT_EQ(net::OK, helper.BindSync(socket_address, &socket_address));
+  int port = socket_address.port();
+  EXPECT_NE(0, port);
+  EXPECT_EQ(net::OK, helper.JoinGroupSync(group_ip));
+  // Joining group multiple times.
+  EXPECT_NE(net::OK, helper.JoinGroupSync(group_ip));
+
+  // Receive messages from itself.
+  std::vector<uint8_t> test_msg(CreateTestMessage(0, kDatagramSize));
+  net::IPEndPoint group_alias(group_ip, port);
+  EXPECT_EQ(net::OK, helper.SendToSync(group_alias, test_msg));
+  socket_ptr->ReceiveMore(1);
+  receiver.WaitForReceivedResults(1);
+  ASSERT_EQ(1u, receiver.results().size());
+  auto result = receiver.results()[0];
+  EXPECT_EQ(net::OK, result.net_error);
+  EXPECT_EQ(port, result.src_addr.value().port());
+  EXPECT_EQ(test_msg, result.data.value());
+
+  // Create a second socket to send a packet to multicast group.
+  mojom::UDPSocketPtr second_socket_ptr;
+  mojom::UDPSocketReceiverPtr second_receiver_ptr;
+  UDPSocket second_socket_impl(mojo::MakeRequest(&second_socket_ptr),
+                               std::move(second_receiver_ptr));
+  test::UDPSocketTestHelper second_socket_helper(&second_socket_ptr);
+  net::IPEndPoint second_socket_address(bind_ip_address, 0);
+  ASSERT_EQ(net::OK, second_socket_helper.OpenWithOptionsSync(
+                         second_socket_address.GetFamily(), nullptr));
+  ASSERT_EQ(net::OK, second_socket_helper.BindSync(second_socket_address,
+                                                   &second_socket_address));
+  int second_port = second_socket_address.port();
+  ASSERT_EQ(net::OK, second_socket_helper.SendToSync(group_alias, test_msg));
+
+  // First socket should receive packet sent by the second socket.
+  socket_ptr->ReceiveMore(1);
+  receiver.WaitForReceivedResults(2);
+  ASSERT_EQ(2u, receiver.results().size());
+  result = receiver.results()[1];
+  EXPECT_EQ(net::OK, result.net_error);
+  EXPECT_EQ(second_port, result.src_addr.value().port());
+  EXPECT_EQ(test_msg, result.data.value());
+
+  // First socket leaves group multiple times.
+  EXPECT_EQ(net::OK, helper.LeaveGroupSync(group_ip));
+  EXPECT_NE(net::OK, helper.LeaveGroupSync(group_ip));
+
+  // No longer can receive messages from itself or from second socket.
+  EXPECT_EQ(net::OK, helper.SendToSync(group_alias, test_msg));
+  ASSERT_EQ(net::OK, second_socket_helper.SendToSync(group_alias, test_msg));
+  socket_ptr->ReceiveMore(1);
+  socket_ptr.FlushForTesting();
+  ASSERT_EQ(2u, receiver.results().size());
+}
+
+TEST_F(UDPSocketTest, ErrorHappensDuringSocketOptionsConfiguration) {
+  mojom::UDPSocketPtr socket_ptr;
+  mojom::UDPSocketReceiverPtr receiver_ptr;
+  UDPSocket impl(mojo::MakeRequest(&socket_ptr), std::move(receiver_ptr));
+
+  test::UDPSocketTestHelper helper(&socket_ptr);
+
+  // Invalid options.
+  mojom::UDPSocketOptionsPtr options = network::mojom::UDPSocketOptions::New();
+  options->multicast_time_to_live = 256;
+
+  ASSERT_EQ(
+      net::ERR_INVALID_ARGUMENT,
+      helper.OpenWithOptionsSync(net::ADDRESS_FAMILY_IPV4, std::move(options)));
+
+  // It's legal to retry Open() with valid options.
+  mojom::UDPSocketOptionsPtr valid_options =
+      network::mojom::UDPSocketOptions::New();
+  valid_options->multicast_time_to_live = 255;
+  ASSERT_EQ(net::OK, helper.OpenWithOptionsSync(net::ADDRESS_FAMILY_IPV4,
+                                                std::move(options)));
 }
 
 }  // namespace network

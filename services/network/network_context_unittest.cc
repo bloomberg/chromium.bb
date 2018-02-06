@@ -739,10 +739,9 @@ TEST_F(NetworkContextTest, CreateUDPSocket) {
   mojom::UDPSocketPtr server_socket;
   network_context->CreateUDPSocket(mojo::MakeRequest(&server_socket),
                                    std::move(receiver_interface_ptr));
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::OpenSync(
-                         &server_socket, server_addr.GetFamily()));
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::BindSync(
-                         &server_socket, server_addr, &server_addr));
+  network::test::UDPSocketTestHelper helper(&server_socket);
+  ASSERT_EQ(net::OK, helper.OpenSync(server_addr.GetFamily()));
+  ASSERT_EQ(net::OK, helper.BindSync(server_addr, &server_addr));
 
   // Create a client socket to send datagrams.
   mojom::UDPSocketPtr client_socket;
@@ -753,10 +752,9 @@ TEST_F(NetworkContextTest, CreateUDPSocket) {
                                    std::move(client_receiver_ptr));
 
   net::IPEndPoint client_addr(GetLocalHostWithAnyPort());
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::OpenSync(
-                         &client_socket, client_addr.GetFamily()));
-  ASSERT_EQ(net::OK, test::UDPSocketTestHelper::ConnectSync(
-                         &client_socket, server_addr, &client_addr));
+  network::test::UDPSocketTestHelper client_helper(&client_socket);
+  ASSERT_EQ(net::OK, client_helper.OpenSync(client_addr.GetFamily()));
+  ASSERT_EQ(net::OK, client_helper.ConnectSync(server_addr, &client_addr));
 
   // This test assumes that the loopback interface doesn't drop UDP packets for
   // a small number of packets.
@@ -767,7 +765,7 @@ TEST_F(NetworkContextTest, CreateUDPSocket) {
   for (size_t i = 0; i < kDatagramCount; ++i) {
     std::vector<uint8_t> test_msg(
         CreateTestMessage(static_cast<uint8_t>(i), kDatagramSize));
-    int result = test::UDPSocketTestHelper::SendSync(&client_socket, test_msg);
+    int result = client_helper.SendSync(test_msg);
     EXPECT_EQ(net::OK, result);
   }
 

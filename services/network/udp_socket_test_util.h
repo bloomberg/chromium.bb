@@ -26,29 +26,25 @@ namespace test {
 // completion.
 class UDPSocketTestHelper {
  public:
-  // TODO(xunjieli): Make the helper takes in a UDPSocketPtr* and these into
-  // member methods.
-  static int OpenSync(mojom::UDPSocketPtr* socket,
-                      net::AddressFamily address_family);
+  explicit UDPSocketTestHelper(mojom::UDPSocketPtr* socket);
+  ~UDPSocketTestHelper();
+  int OpenSync(net::AddressFamily address_family);
+  int OpenWithOptionsSync(net::AddressFamily address_family,
+                          mojom::UDPSocketOptionsPtr options);
+  int ConnectSync(const net::IPEndPoint& remote_addr,
+                  net::IPEndPoint* local_addr_out);
+  int BindSync(const net::IPEndPoint& local_addr,
+               net::IPEndPoint* local_addr_out);
+  int SendToSync(const net::IPEndPoint& remote_addr,
+                 const std::vector<uint8_t>& input);
+  int SendSync(const std::vector<uint8_t>& input);
+  int SetSendBufferSizeSync(size_t size);
+  int SetReceiveBufferSizeSync(size_t size);
+  int JoinGroupSync(const net::IPAddress& group_address);
+  int LeaveGroupSync(const net::IPAddress& group_address);
 
-  static int ConnectSync(mojom::UDPSocketPtr* socket,
-                         const net::IPEndPoint& remote_addr,
-                         net::IPEndPoint* local_addr_out);
-
-  static int BindSync(mojom::UDPSocketPtr* socket,
-                      const net::IPEndPoint& local_addr,
-                      net::IPEndPoint* local_addr_out);
-
-  static int SendToSync(mojom::UDPSocketPtr* socket,
-                        const net::IPEndPoint& remote_addr,
-                        const std::vector<uint8_t>& input);
-
-  static int SendSync(mojom::UDPSocketPtr* socket,
-                      const std::vector<uint8_t>& input);
-
-  static int SetSendBufferSizeSync(mojom::UDPSocketPtr* socket, size_t size);
-
-  static int SetReceiveBufferSizeSync(mojom::UDPSocketPtr* socket, size_t size);
+ private:
+  mojom::UDPSocketPtr* socket_;
 };
 
 // An implementation of mojom::UDPSocketReceiver that records received results.
