@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/null_task_runner.h"
 #include "content/public/browser/permission_manager.h"
@@ -45,8 +46,13 @@ class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
 
 namespace content {
 
-TestBrowserContext::TestBrowserContext() {
-  EXPECT_TRUE(browser_context_dir_.CreateUniqueTempDir());
+TestBrowserContext::TestBrowserContext(
+    base::FilePath browser_context_dir_path) {
+  if (browser_context_dir_path.empty()) {
+    EXPECT_TRUE(browser_context_dir_.CreateUniqueTempDir());
+  } else {
+    EXPECT_TRUE(browser_context_dir_.Set(browser_context_dir_path));
+  }
   BrowserContext::Initialize(this, browser_context_dir_.GetPath());
 }
 
