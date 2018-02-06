@@ -44,9 +44,9 @@ class PolicyCertVerifierTest : public testing::Test {
         crypto::GetPublicSlotForChromeOSUser(test_nss_user_.username_hash()),
         crypto::GetPrivateSlotForChromeOSUser(
             test_nss_user_.username_hash(),
-            base::Callback<void(crypto::ScopedPK11Slot)>())));
+            base::RepeatingCallback<void(crypto::ScopedPK11Slot)>())));
 
-    cert_verifier_.reset(new PolicyCertVerifier(base::Bind(
+    cert_verifier_.reset(new PolicyCertVerifier(base::BindRepeating(
         &PolicyCertVerifierTest::OnTrustAnchorUsed, base::Unretained(this))));
     cert_verifier_->InitializeOnIOThread(new chromeos::CertVerifyProcChromeOS(
         crypto::GetPublicSlotForChromeOSUser(test_nss_user_.username_hash())));
@@ -108,9 +108,7 @@ class PolicyCertVerifierTest : public testing::Test {
   std::unique_ptr<PolicyCertVerifier> cert_verifier_;
 
  private:
-  void OnTrustAnchorUsed() {
-    trust_anchor_used_ = true;
-  }
+  void OnTrustAnchorUsed() { trust_anchor_used_ = true; }
 
   net::ScopedCERTCertificate LoadCertificate(const std::string& name,
                                              net::CertType type) {
