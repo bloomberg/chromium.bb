@@ -264,6 +264,12 @@ if (CONFIG_AV1_ENCODER)
     if (HAVE_SSE4_1)
       set(AOM_UNIT_TEST_ENCODER_SOURCES
           ${AOM_UNIT_TEST_ENCODER_SOURCES}
+          "${AOM_ROOT}/test/intra_edge_test.cc")
+    endif ()
+
+    if (HAVE_SSE4_1)
+      set(AOM_UNIT_TEST_ENCODER_SOURCES
+          ${AOM_UNIT_TEST_ENCODER_SOURCES}
           "${AOM_ROOT}/test/av1_horz_only_frame_superres_test.cc")
     endif ()
 
