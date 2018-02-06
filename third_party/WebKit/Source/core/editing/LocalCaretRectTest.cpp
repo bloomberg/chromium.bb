@@ -656,4 +656,35 @@ TEST_P(ParameterizedLocalCaretRectTest, TextAndImageMixedHeight) {
                 {Position(text2, 1), TextAffinity::kDownstream}));
 }
 
+TEST_P(ParameterizedLocalCaretRectTest, FloatFirstLetter) {
+  LoadAhem();
+  InsertStyleElement("#container::first-letter{float:right}");
+  SetBodyContent(
+      "<div id=container style='font: 10px/10px Ahem; width: 40px'>foo</div>");
+  const Node* foo = GetElementById("container")->firstChild();
+  const LayoutObject* first_letter = AssociatedLayoutObjectOf(*foo, 0);
+  const LayoutObject* remaining_text = AssociatedLayoutObjectOf(*foo, 1);
+
+  // TODO(editing-dev): Legacy LocalCaretRectOfPosition() is not aware of the
+  // first-letter LayoutObject. Fix it.
+
+  EXPECT_EQ(
+      LocalCaretRect(LayoutNGEnabled() ? first_letter : remaining_text,
+                     LayoutRect(0, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 0), TextAffinity::kDownstream}));
+  EXPECT_EQ(
+      LocalCaretRect(remaining_text,
+                     LayoutRect(LayoutNGEnabled() ? 0 : 10, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 1), TextAffinity::kDownstream}));
+  EXPECT_EQ(
+      LocalCaretRect(remaining_text,
+                     LayoutRect(LayoutNGEnabled() ? 10 : 20, 0, 1, 10)),
+      LocalCaretRectOfPosition({Position(foo, 2), TextAffinity::kDownstream}));
+  EXPECT_EQ(
+      LocalCaretRect(remaining_text, LayoutNGEnabled()
+                                         ? LayoutRect(20, 0, 1, 10)
+                                         : LayoutRect()),
+      LocalCaretRectOfPosition({Position(foo, 3), TextAffinity::kDownstream}));
+}
+
 }  // namespace blink
