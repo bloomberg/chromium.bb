@@ -30,6 +30,6 @@ extern const char kVariationsSeedDate[];
 extern const char kVariationsSeedSignature[];
 
 }  // namespace prefs
-}  // namespace metrics
+}  // namespace variations
 
 #endif  // COMPONENTS_VARIATIONS_PREF_NAMES_H_

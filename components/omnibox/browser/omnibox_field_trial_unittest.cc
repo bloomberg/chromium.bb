@@ -44,7 +44,7 @@ class OmniboxFieldTrialTest : public testing::Test {
     // a DCHECK.
     field_trial_list_.reset();
     field_trial_list_.reset(new base::FieldTrialList(
-        std::make_unique<metrics::SHA1EntropyProvider>("foo")));
+        std::make_unique<variations::SHA1EntropyProvider>("foo")));
     variations::testing::ClearAllVariationParams();
   }
 

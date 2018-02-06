@@ -12,7 +12,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace metrics {
+namespace variations {
 
 // Size of the low entropy source to use for the permuted entropy provider
 // in tests.
@@ -51,4 +51,4 @@ TEST(CachingPermutedEntropyProviderTest, HasConsistentResults) {
   }
 }
 
-}  // namespace metrics
+}  // namespace variations

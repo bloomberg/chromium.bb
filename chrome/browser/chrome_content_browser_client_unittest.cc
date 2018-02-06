@@ -305,7 +305,7 @@ class InstantNTPURLRewriteTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     field_trial_list_.reset(new base::FieldTrialList(
-        base::MakeUnique<metrics::SHA1EntropyProvider>("42")));
+        base::MakeUnique<variations::SHA1EntropyProvider>("42")));
   }
 
   void InstallTemplateURLWithNewTabPage(GURL new_tab_page_url) {

@@ -95,7 +95,7 @@ TEST_F(ChromeBlacklistTrialTest, BlacklistDisabledRun) {
 
   // Create the field trial with the blacklist disabled group.
   base::FieldTrialList field_trial_list(
-      base::MakeUnique<metrics::SHA1EntropyProvider>("test"));
+      base::MakeUnique<variations::SHA1EntropyProvider>("test"));
 
   scoped_refptr<base::FieldTrial> trial(
     base::FieldTrialList::CreateFieldTrial(

@@ -31,9 +31,8 @@ class TriggeredProfileResetterTest : public testing::Test {
         override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
 
     // Activate the triggered reset field trial for these tests.
-    field_trial_list_.reset(
-        new base::FieldTrialList(
-            base::MakeUnique<metrics::SHA1EntropyProvider>("foo")));
+    field_trial_list_.reset(new base::FieldTrialList(
+        base::MakeUnique<variations::SHA1EntropyProvider>("foo")));
     base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
         "TriggeredResetFieldTrial", "On");
     trial->group();

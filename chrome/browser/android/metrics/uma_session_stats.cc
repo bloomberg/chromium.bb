@@ -21,7 +21,7 @@
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/ukm_service.h"
-#include "components/variations/metrics_util.h"
+#include "components/variations/hashing.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/UmaSessionStats_jni.h"
@@ -164,9 +164,9 @@ static void JNI_UmaSessionStats_RegisterExternalExperiment(
   group_name_hashes.reserve(experiment_ids.size());
 
   variations::ActiveGroupId active_group;
-  active_group.name = metrics::HashName(trial_name_utf8);
+  active_group.name = variations::HashName(trial_name_utf8);
   for (int experiment_id : experiment_ids) {
-    active_group.group = metrics::HashName(base::IntToString(experiment_id));
+    active_group.group = variations::HashName(base::IntToString(experiment_id));
     // Since external experiments are not based on Chrome's low entropy source,
     // they are only sent to Google web properties for signed in users to make
     // sure that this couldn't be used to identify a user that's not signed in.

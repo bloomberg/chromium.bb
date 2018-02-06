@@ -6,7 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "components/variations/active_field_trials.h"
-#include "components/variations/metrics_util.h"
+#include "components/variations/hashing.h"
 #include "components/variations/synthetic_trials_active_group_id_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,8 +21,8 @@ class SyntheticTrialRegistryTest : public ::testing::Test {
   bool HasSyntheticTrial(const std::vector<ActiveGroupId>& synthetic_trials,
                          const std::string& trial_name,
                          const std::string& trial_group) {
-    uint32_t trial_name_hash = metrics::HashName(trial_name);
-    uint32_t trial_group_hash = metrics::HashName(trial_group);
+    uint32_t trial_name_hash = HashName(trial_name);
+    uint32_t trial_group_hash = HashName(trial_group);
     for (const ActiveGroupId& trial : synthetic_trials) {
       if (trial.name == trial_name_hash && trial.group == trial_group_hash)
         return true;
@@ -45,12 +45,10 @@ TEST_F(SyntheticTrialRegistryTest, RegisterSyntheticTrial) {
   SyntheticTrialRegistry registry;
 
   // Add two synthetic trials and confirm that they show up in the list.
-  SyntheticTrialGroup trial1(metrics::HashName("TestTrial1"),
-                             metrics::HashName("Group1"));
+  SyntheticTrialGroup trial1(HashName("TestTrial1"), HashName("Group1"));
   registry.RegisterSyntheticFieldTrial(trial1);
 
-  SyntheticTrialGroup trial2(metrics::HashName("TestTrial2"),
-                             metrics::HashName("Group2"));
+  SyntheticTrialGroup trial2(HashName("TestTrial2"), HashName("Group2"));
   registry.RegisterSyntheticFieldTrial(trial2);
   // Ensure that time has advanced by at least a tick before proceeding.
   WaitUntilTimeChanges(base::TimeTicks::Now());
@@ -71,16 +69,14 @@ TEST_F(SyntheticTrialRegistryTest, RegisterSyntheticTrial) {
   WaitUntilTimeChanges(begin_log_time);
 
   // Change the group for the first trial after the log started.
-  SyntheticTrialGroup trial3(metrics::HashName("TestTrial1"),
-                             metrics::HashName("Group2"));
+  SyntheticTrialGroup trial3(HashName("TestTrial1"), HashName("Group2"));
   registry.RegisterSyntheticFieldTrial(trial3);
   registry.GetSyntheticFieldTrialsOlderThan(begin_log_time, &synthetic_trials);
   EXPECT_EQ(1U, synthetic_trials.size());
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
 
   // Add a new trial after the log started and confirm that it doesn't show up.
-  SyntheticTrialGroup trial4(metrics::HashName("TestTrial3"),
-                             metrics::HashName("Group3"));
+  SyntheticTrialGroup trial4(HashName("TestTrial3"), HashName("Group3"));
   registry.RegisterSyntheticFieldTrial(trial4);
   registry.GetSyntheticFieldTrialsOlderThan(begin_log_time, &synthetic_trials);
   EXPECT_EQ(1U, synthetic_trials.size());
@@ -102,9 +98,8 @@ TEST_F(SyntheticTrialRegistryTest, RegisterSyntheticMultiGroupFieldTrial) {
   SyntheticTrialRegistry registry;
 
   // Register a synthetic trial TestTrial1 with groups A and B.
-  uint32_t trial_name_hash = metrics::HashName("TestTrial1");
-  std::vector<uint32_t> group_name_hashes = {metrics::HashName("A"),
-                                             metrics::HashName("B")};
+  uint32_t trial_name_hash = HashName("TestTrial1");
+  std::vector<uint32_t> group_name_hashes = {HashName("A"), HashName("B")};
   registry.RegisterSyntheticMultiGroupFieldTrial(trial_name_hash,
                                                  group_name_hashes);
   // Ensure that time has advanced by at least a tick before proceeding.
@@ -118,7 +113,7 @@ TEST_F(SyntheticTrialRegistryTest, RegisterSyntheticMultiGroupFieldTrial) {
   EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "B"));
 
   // Change the group for the trial to a single group.
-  group_name_hashes = {metrics::HashName("X")};
+  group_name_hashes = {HashName("X")};
   registry.RegisterSyntheticMultiGroupFieldTrial(trial_name_hash,
                                                  group_name_hashes);
   // Ensure that time has advanced by at least a tick before proceeding.
@@ -149,12 +144,10 @@ TEST_F(SyntheticTrialRegistryTest, GetSyntheticFieldTrialActiveGroups) {
       SyntheticTrialsActiveGroupIdProvider::GetInstance());
 
   // Add two synthetic trials and confirm that they show up in the list.
-  SyntheticTrialGroup trial1(metrics::HashName("TestTrial1"),
-                             metrics::HashName("Group1"));
+  SyntheticTrialGroup trial1(HashName("TestTrial1"), HashName("Group1"));
   registry.RegisterSyntheticFieldTrial(trial1);
 
-  SyntheticTrialGroup trial2(metrics::HashName("TestTrial2"),
-                             metrics::HashName("Group2"));
+  SyntheticTrialGroup trial2(HashName("TestTrial2"), HashName("Group2"));
   registry.RegisterSyntheticFieldTrial(trial2);
 
   // Ensure that time has advanced by at least a tick before proceeding.

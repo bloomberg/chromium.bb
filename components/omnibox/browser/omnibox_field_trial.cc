@@ -23,7 +23,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/search/search.h"
 #include "components/variations/active_field_trials.h"
-#include "components/variations/metrics_util.h"
+#include "components/variations/hashing.h"
 #include "components/variations/variations_associated_data.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
@@ -288,7 +288,7 @@ void OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(
   field_trial_hashes->clear();
   if (base::FieldTrialList::TrialExists(kBundledExperimentFieldTrialName)) {
     field_trial_hashes->push_back(
-        metrics::HashName(kBundledExperimentFieldTrialName));
+        variations::HashName(kBundledExperimentFieldTrialName));
   }
 }
 

@@ -31,7 +31,7 @@ CreateLowEntropyProvider() {
   return std::unique_ptr<const base::FieldTrial::EntropyProvider>(
       // Since variations are only enabled for users opted in to UMA, it is
       // acceptable to use the SHA1EntropyProvider for randomization.
-      new metrics::SHA1EntropyProvider(
+      new variations::SHA1EntropyProvider(
           // Synchronous read of the client id is permitted as it is fast
           // enough to have minimal impact on startup time, and is behind the
           // webview-enable-finch flag.

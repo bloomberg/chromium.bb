@@ -93,4 +93,4 @@ const char kVariationsSeedDate[] = "variations_seed_date";
 const char kVariationsSeedSignature[] = "variations_seed_signature";
 
 }  // namespace prefs
-}  // namespace metrics
+}  // namespace variations

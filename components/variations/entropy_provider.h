@@ -17,7 +17,7 @@
 #include "base/metrics/field_trial.h"
 #include "third_party/mt19937ar/mt19937ar.h"
 
-namespace metrics {
+namespace variations {
 
 // Internals of entropy_provider.cc exposed for testing.
 namespace internal {
@@ -92,6 +92,6 @@ class PermutedEntropyProvider : public base::FieldTrial::EntropyProvider {
   DISALLOW_COPY_AND_ASSIGN(PermutedEntropyProvider);
 };
 
-}  // namespace metrics
+}  // namespace variations
 
 #endif  // COMPONENTS_VARIATIONS_ENTROPY_PROVIDER_H_

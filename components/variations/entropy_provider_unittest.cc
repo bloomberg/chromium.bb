@@ -16,10 +16,10 @@
 #include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/variations/metrics_util.h"
+#include "components/variations/hashing.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace metrics {
+namespace variations {
 
 namespace {
 
@@ -396,4 +396,4 @@ TEST(EntropyProviderTest, SeededRandGeneratorIsUniform) {
   }
 }
 
-}  // namespace metrics
+}  // namespace variations

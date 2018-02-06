@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/variations/metrics_util.h"
+#include "components/variations/hashing.h"
 
 #include <string.h>
 
 #include "base/sha1.h"
 #include "base/sys_byteorder.h"
 
-namespace metrics {
+namespace variations {
 
 uint32_t HashName(base::StringPiece name) {
   // SHA-1 is designed to produce a uniformly random spread in its output space,
@@ -25,4 +25,4 @@ uint32_t HashName(base::StringPiece name) {
   return base::ByteSwapToLE32(bits);
 }
 
-}  // namespace metrics
+}  // namespace variations
