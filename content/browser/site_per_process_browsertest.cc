@@ -38,6 +38,7 @@
 #include "build/build_config.h"
 #include "cc/input/touch_action.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -10558,6 +10559,46 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OOPIFDetachDuringAnimation) {
       root->current_frame_host(), "window.domAutomationController.send(true);",
       &success));
   EXPECT_TRUE(success);
+}
+
+// Tests that a cross-process iframe asked to navigate to the same URL will
+// successfully commit the navigation.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       IFrameSameDocumentNavigation) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "foo.com", "/cross_site_iframe_factory.html?foo(bar)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* iframe = root->child_at(0);
+
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            iframe->current_frame_host()->GetSiteInstance());
+
+  // The iframe navigates same-document to a fragment.
+  GURL iframe_fragment_url = GURL(iframe->current_url().spec() + "#foo");
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+    EXPECT_TRUE(
+        ExecuteScript(iframe->current_frame_host(),
+                      "location.href=\"" + iframe_fragment_url.spec() + "\";"));
+    observer.Wait();
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_EQ(iframe_fragment_url, iframe->current_url());
+  }
+
+  // The parent frame wants the iframe do a navigation to the same URL. Because
+  // the URL has a fragment, this will be treated as a same-document navigation,
+  // and not as a normal load of the same URL. This should succeed.
+  {
+    TestNavigationObserver observer(shell()->web_contents());
+    EXPECT_TRUE(ExecuteScript(root->current_frame_host(),
+                              "document.getElementById('child-0').src=\"" +
+                                  iframe_fragment_url.spec() + "\";"));
+    observer.Wait();
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_EQ(iframe_fragment_url, iframe->current_url());
+  }
 }
 
 }  // namespace content

@@ -195,6 +195,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
     return devtools_navigation_token_;
   }
 
+  // Called on same-document navigation requests that need to be restarted as
+  // cross-document navigations. This happens when a same-document commit fails
+  // due to another navigation committing in the meantime.
+  void ResetForCrossDocumentRestart();
+
  private:
   // This enum describes the result of a Content Security Policy (CSP) check for
   // the request.

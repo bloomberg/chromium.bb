@@ -3566,25 +3566,24 @@ void RenderFrameHostImpl::CommitNavigation(
          is_same_document || !is_first_navigation ||
          subresource_loader_factories);
 
-  GetNavigationControl()->CommitNavigation(
-      head, body_url, common_params, request_params,
-      std::move(url_loader_client_endpoints),
-      std::move(subresource_loader_factories),
-      std::move(controller_service_worker_info), devtools_navigation_token);
+  if (is_same_document) {
+    GetNavigationControl()->CommitSameDocumentNavigation(
+        common_params, request_params,
+        base::BindOnce(&RenderFrameHostImpl::OnSameDocumentCommitProcessed,
+                       base::Unretained(this),
+                       GetNavigationHandle()->GetNavigationId(),
+                       common_params.should_replace_current_entry));
+  } else {
+    GetNavigationControl()->CommitNavigation(
+        head, body_url, common_params, request_params,
+        std::move(url_loader_client_endpoints),
+        std::move(subresource_loader_factories),
+        std::move(controller_service_worker_info), devtools_navigation_token);
 
-  // If a network request was made, update the Previews state.
-  if (IsURLHandledByNetworkStack(common_params.url) &&
-      !FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type)) {
-    last_navigation_previews_state_ = common_params.previews_state;
-  }
+    // If a network request was made, update the Previews state.
+    if (IsURLHandledByNetworkStack(common_params.url))
+      last_navigation_previews_state_ = common_params.previews_state;
 
-  // If this navigation is same-document, then |body| is nullptr. So without
-  // this condition, the following line would reset |stream_handle_| to nullptr.
-  // Doing this would stop any pending document load in the renderer and this
-  // same-document navigation would not load any new ones for replacement.
-  // The user would finish with a half loaded document.
-  // See https://crbug.com/769645.
-  if (!is_same_document) {
     // Released in OnStreamHandleConsumed().
     stream_handle_ = std::move(body);
   }
@@ -4753,6 +4752,31 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
                                               is_same_document_navigation);
 
   return true;
+}
+
+void RenderFrameHostImpl::OnSameDocumentCommitProcessed(
+    int64_t navigation_id,
+    bool should_replace_current_entry,
+    blink::mojom::CommitResult result) {
+  // If the NavigationRequest was deleted, another navigation commit started to
+  // be processed. Let the latest commit go through and stop doing anything.
+  if (!GetNavigationHandle() ||
+      GetNavigationHandle()->GetNavigationId() != navigation_id) {
+    return;
+  }
+
+  if (result == blink::mojom::CommitResult::RestartCrossDocument) {
+    // The navigation could not be committed as a same-document navigation.
+    // Restart the navigation cross-document.
+    frame_tree_node_->navigator()->RestartNavigationAsCrossDocument(
+        std::move(navigation_request_));
+  }
+
+  if (result == blink::mojom::CommitResult::Aborted) {
+    // Note: if the commit was successful, navigation_handle_ is reset in
+    // DidCommitProvisionalLoad.
+    navigation_request_.reset();
+  }
 }
 
 }  // namespace content

@@ -6723,47 +6723,18 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(2, web_contents->GetController().GetLastCommittedEntryIndex());
   EXPECT_TRUE(trigger.did_trigger_history_navigation());
 
-  if (IsBrowserSideNavigationEnabled()) {
-    // With browser-side-navigation, the history navigation is dropped.
-    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-    EXPECT_EQ(2, web_contents->GetController().GetLastCommittedEntryIndex());
-    EXPECT_EQ(3, web_contents->GetController().GetEntryCount());
+  // Wait for the back navigation to commit as well.
+  history_commit_observer.Wait();
+  EXPECT_EQ(start_url, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(0, web_contents->GetController().GetLastCommittedEntryIndex());
+  EXPECT_EQ(3, web_contents->GetController().GetEntryCount());
 
-    // Verify the expected origin through JavaScript. It also has the additional
-    // verification of the process also being still alive.
-    std::string origin;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        web_contents, "domAutomationController.send(document.origin)",
-        &origin));
-    EXPECT_EQ(cross_origin_url.GetOrigin().spec(), origin + "/");
-
-    // Navigate back again.
-    web_contents->GetController().GoBack();
-    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-    EXPECT_EQ(1, web_contents->GetController().GetLastCommittedEntryIndex());
-    EXPECT_EQ(3, web_contents->GetController().GetEntryCount());
-
-    // Verify the expected origin through JavaScript. It also has the additional
-    // verification of the process also being still alive.
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        web_contents, "domAutomationController.send(document.origin)",
-        &origin));
-    EXPECT_EQ(same_document_url.GetOrigin().spec(), origin + "/");
-  } else {
-    // Wait for the back navigation to commit as well.
-    history_commit_observer.Wait();
-    EXPECT_EQ(start_url, web_contents->GetLastCommittedURL());
-    EXPECT_EQ(0, web_contents->GetController().GetLastCommittedEntryIndex());
-    EXPECT_EQ(3, web_contents->GetController().GetEntryCount());
-
-    // Verify the expected origin through JavaScript. It also has the additional
-    // verification of the process also being still alive.
-    std::string origin;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        web_contents, "domAutomationController.send(document.origin)",
-        &origin));
-    EXPECT_EQ(start_url.GetOrigin().spec(), origin + "/");
-  }
+  // Verify the expected origin through JavaScript. It also has the additional
+  // verification of the process also being still alive.
+  std::string origin;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents, "domAutomationController.send(document.origin)", &origin));
+  EXPECT_EQ(start_url.GetOrigin().spec(), origin + "/");
 }
 
 // Test that verifies that Referer and Origin http headers are correctly sent
