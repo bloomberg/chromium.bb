@@ -294,10 +294,7 @@ Polymer({
     /** @private */
     showExportPasswords_: {
       type: Boolean,
-      value: function() {
-        return loadTimeData.valueExists('showExportPasswords') &&
-            loadTimeData.getBoolean('showExportPasswords');
-      }
+      computed: 'showExportPasswordsAndReady_(savedPasswords)'
     },
 
     /** @private */
@@ -578,6 +575,16 @@ Polymer({
    */
   getOnOffLabel_: function(toggleValue) {
     return toggleValue ? this.i18n('toggleOn') : this.i18n('toggleOff');
+  },
+
+  /**
+   * @private
+   * @param {!Array<!PasswordManager.PasswordUiEntry>} savedPasswords
+   */
+  showExportPasswordsAndReady_: function(savedPasswords) {
+    return loadTimeData.valueExists('showExportPasswords') &&
+        loadTimeData.getBoolean('showExportPasswords') &&
+        savedPasswords.length > 0;
   },
 
   /**
