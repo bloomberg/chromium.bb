@@ -8,6 +8,7 @@
 
 #include "base/base64url.h"
 #include "base/json/json_writer.h"
+#include "base/rand_util.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 
@@ -66,6 +67,16 @@ std::string CollectedClientData::SerializeToJson() const {
   base::DictionaryValue client_data;
   client_data.SetKey(kTypeKey, base::Value(type_));
   client_data.SetKey(kChallengeKey, base::Value(base64_encoded_challenge_));
+
+  if (base::RandDouble() < 0.2) {
+    // An extra key is sometimes added to ensure that RPs do not make
+    // unreasonably specific assumptions about the clientData JSON. This is
+    // done in the fashion of
+    // https://tools.ietf.org/html/draft-davidben-tls-grease-01
+    client_data.SetKey("new_keys_may_be_added_here",
+                       base::Value("do not compare clientDataJSON against a "
+                                   "template. See https://goo.gl/yabPex"));
+  }
 
   // The serialization of callerOrigin.
   client_data.SetKey(kOriginKey, base::Value(origin_));

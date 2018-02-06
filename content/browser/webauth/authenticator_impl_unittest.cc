@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/json/json_parser.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
@@ -373,15 +375,45 @@ TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
             cb.GetResponseStatus());
 }
 
+// Parses its arguments as JSON and expects that all the keys in the first are
+// also in the second, and with the same value.
+void CheckJSONIsSubsetOfJSON(base::StringPiece subset_str,
+                             base::StringPiece test_str) {
+  std::unique_ptr<base::Value> subset(base::JSONReader::Read(subset_str));
+  ASSERT_TRUE(subset);
+  ASSERT_TRUE(subset->is_dict());
+  std::unique_ptr<base::Value> test(base::JSONReader::Read(test_str));
+  ASSERT_TRUE(test);
+  ASSERT_TRUE(test->is_dict());
+
+  for (const auto& item : subset->DictItems()) {
+    base::Value* test_value = test->FindKey(item.first);
+    if (test_value == nullptr) {
+      ADD_FAILURE() << item.first << " does not exist in the test dictionary";
+      continue;
+    }
+
+    if (!item.second.Equals(test_value)) {
+      std::string want, got;
+      ASSERT_TRUE(base::JSONWriter::Write(item.second, &want));
+      ASSERT_TRUE(base::JSONWriter::Write(*test_value, &got));
+      ADD_FAILURE() << "Value of " << item.first << " is unequal: want " << want
+                    << " got " << got;
+    }
+  }
+}
+
 // Test that client data serializes to JSON properly.
 TEST_F(AuthenticatorImplTest, TestSerializedRegisterClientData) {
-  EXPECT_EQ(kTestRegisterClientDataJsonString,
-            GetTestClientData(client_data::kCreateType).SerializeToJson());
+  CheckJSONIsSubsetOfJSON(
+      kTestRegisterClientDataJsonString,
+      GetTestClientData(client_data::kCreateType).SerializeToJson());
 }
 
 TEST_F(AuthenticatorImplTest, TestSerializedSignClientData) {
-  EXPECT_EQ(kTestSignClientDataJsonString,
-            GetTestClientData(client_data::kGetType).SerializeToJson());
+  CheckJSONIsSubsetOfJSON(
+      kTestSignClientDataJsonString,
+      GetTestClientData(client_data::kGetType).SerializeToJson());
 }
 
 TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {
