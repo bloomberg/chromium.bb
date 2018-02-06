@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
+#include "chromeos/network/onc/onc_parsed_certificates.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/policy/policy_constants.h"
 #include "components/user_manager/user.h"
@@ -109,7 +110,7 @@ void UserNetworkConfigurationUpdater::ImportCertificates(
   }
 
   certificate_importer_->ImportCertificates(
-      certificates_onc,
+      std::make_unique<chromeos::onc::OncParsedCertificates>(certificates_onc),
       onc_source_,
       base::Bind(&UserNetworkConfigurationUpdater::OnCertificatesImported,
                  base::Unretained(this)));

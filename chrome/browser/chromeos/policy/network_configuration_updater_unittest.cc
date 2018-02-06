@@ -22,6 +22,7 @@
 #include "chromeos/network/fake_network_device_handler.h"
 #include "chromeos/network/mock_managed_network_configuration_handler.h"
 #include "chromeos/network/onc/onc_certificate_importer.h"
+#include "chromeos/network/onc/onc_parsed_certificates.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/onc/onc_constants.h"
@@ -121,8 +122,10 @@ class FakeCertificateImporter : public chromeos::onc::CertificateImporter {
     onc_trusted_certificates_ = std::move(onc_trusted_certificates);
   }
 
-  void SetExpectedONCCertificates(const base::ListValue& certificates) {
-    expected_onc_certificates_.reset(certificates.DeepCopy());
+  void SetExpectedONCCertificates(
+      std::unique_ptr<chromeos::onc::OncParsedCertificates>
+          expected_onc_certificates) {
+    expected_onc_certificates_ = std::move(expected_onc_certificates);
   }
 
   void SetExpectedONCSource(::onc::ONCSource source) {
@@ -135,23 +138,29 @@ class FakeCertificateImporter : public chromeos::onc::CertificateImporter {
     return count;
   }
 
-  void ImportCertificates(const base::ListValue& certificates,
-                          ::onc::ONCSource source,
-                          const DoneCallback& done_callback) override {
+  void ImportCertificates(
+      std::unique_ptr<chromeos::onc::OncParsedCertificates> certificates,
+      ::onc::ONCSource source,
+      DoneCallback done_callback) override {
     if (expected_onc_source_ != ::onc::ONC_SOURCE_UNKNOWN)
       EXPECT_EQ(expected_onc_source_, source);
     if (expected_onc_certificates_) {
-      EXPECT_TRUE(chromeos::onc::test_utils::Equals(
-          expected_onc_certificates_.get(), &certificates));
+      EXPECT_EQ(expected_onc_certificates_->has_error(),
+                certificates->has_error());
+      EXPECT_EQ(expected_onc_certificates_->server_or_authority_certificates(),
+                certificates->server_or_authority_certificates());
+      EXPECT_EQ(expected_onc_certificates_->client_certificates(),
+                certificates->client_certificates());
     }
+
     ++call_count_;
-    done_callback.Run(true, net::x509_util::DupCERTCertificateList(
-                                onc_trusted_certificates_));
+    std::move(done_callback).Run(true, std::move(onc_trusted_certificates_));
   }
 
  private:
   ::onc::ONCSource expected_onc_source_;
-  std::unique_ptr<base::ListValue> expected_onc_certificates_;
+  std::unique_ptr<chromeos::onc::OncParsedCertificates>
+      expected_onc_certificates_;
   net::ScopedCERTCertificateList onc_trusted_certificates_;
   unsigned int call_count_;
 
@@ -173,7 +182,7 @@ const char kFakeONC[] =
     "  },"
     "  \"Certificates\": ["
     "    { \"GUID\": \"{f998f760-272b-6939-4c2beffe428697ac}\","
-    "      \"PKCS12\": \"abc\","
+    "      \"PKCS12\": \"YWJj\","
     "      \"Type\": \"Client\" }"
     "  ],"
     "  \"Type\": \"UnencryptedConfiguration\""
@@ -238,7 +247,8 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
     base::ListValue* certs = NULL;
     fake_toplevel_onc->GetListWithoutPathExpansion(
         onc::toplevel_config::kCertificates, &certs);
-    AppendAll(*certs, &fake_certificates_);
+    fake_certificates_ =
+        std::make_unique<chromeos::onc::OncParsedCertificates>(*certs);
 
     certificate_importer_ = new FakeCertificateImporter;
     certificate_importer_owned_.reset(certificate_importer_);
@@ -297,7 +307,7 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
 
   base::ListValue fake_network_configs_;
   base::DictionaryValue fake_global_network_config_;
-  base::ListValue fake_certificates_;
+  std::unique_ptr<chromeos::onc::OncParsedCertificates> fake_certificates_;
   StrictMock<chromeos::MockManagedNetworkConfigurationHandler>
       network_config_handler_;
   FakeNetworkDeviceHandler network_device_handler_;
@@ -515,7 +525,8 @@ TEST_F(NetworkConfigurationUpdaterTest,
   Mock::VerifyAndClearExpectations(&network_config_handler_);
   EXPECT_EQ(0u, certificate_importer_->GetAndResetImportCount());
 
-  certificate_importer_->SetExpectedONCCertificates(fake_certificates_);
+  certificate_importer_->SetExpectedONCCertificates(
+      std::move(fake_certificates_));
   certificate_importer_->SetExpectedONCSource(onc::ONC_SOURCE_USER_POLICY);
 
   ASSERT_TRUE(certificate_importer_owned_);
@@ -573,7 +584,8 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam, InitialUpdates) {
                         ExpectedUsernameHash(),
                         IsEqualTo(&fake_network_configs_),
                         IsEqualTo(&fake_global_network_config_)));
-  certificate_importer_->SetExpectedONCCertificates(fake_certificates_);
+  certificate_importer_->SetExpectedONCCertificates(
+      std::move(fake_certificates_));
   certificate_importer_->SetExpectedONCSource(CurrentONCSource());
 
   CreateNetworkConfigurationUpdater();
@@ -601,7 +613,8 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam,
                         IsEqualTo(&fake_network_configs_),
                         IsEqualTo(&fake_global_network_config_)));
   certificate_importer_->SetExpectedONCSource(CurrentONCSource());
-  certificate_importer_->SetExpectedONCCertificates(fake_certificates_);
+  certificate_importer_->SetExpectedONCCertificates(
+      std::move(fake_certificates_));
 
   MarkPolicyProviderInitialized();
   EXPECT_EQ(ExpectedImportCertificatesCallCount(),
@@ -624,7 +637,8 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam,
                         IsEqualTo(&fake_network_configs_),
                         IsEqualTo(&fake_global_network_config_)));
   certificate_importer_->SetExpectedONCSource(CurrentONCSource());
-  certificate_importer_->SetExpectedONCCertificates(fake_certificates_);
+  certificate_importer_->SetExpectedONCCertificates(
+      std::move(fake_certificates_));
 
   CreateNetworkConfigurationUpdater();
 
@@ -650,7 +664,8 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam, PolicyChange) {
                         IsEqualTo(&fake_network_configs_),
                         IsEqualTo(&fake_global_network_config_)));
   certificate_importer_->SetExpectedONCSource(CurrentONCSource());
-  certificate_importer_->SetExpectedONCCertificates(fake_certificates_);
+  certificate_importer_->SetExpectedONCCertificates(
+      std::move(fake_certificates_));
 
   PolicyMap policy;
   policy.Set(GetParam(), POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -664,7 +679,9 @@ TEST_P(NetworkConfigurationUpdaterTestWithParam, PolicyChange) {
   // Another update is expected if the policy goes away.
   EXPECT_CALL(network_config_handler_,
               SetPolicy(CurrentONCSource(), _, IsEmpty(), IsEmpty()));
-  certificate_importer_->SetExpectedONCCertificates(base::ListValue());
+  certificate_importer_->SetExpectedONCCertificates(
+      std::make_unique<chromeos::onc::OncParsedCertificates>(
+          base::ListValue()));
 
   policy.Erase(GetParam());
   UpdateProviderPolicy(policy);
