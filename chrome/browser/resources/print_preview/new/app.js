@@ -54,6 +54,8 @@ Polymer({
         invalidSettings: false,
         initialized: false,
         cancelled: false,
+        printRequested: false,
+        printFailed: false,
       },
     },
 
@@ -64,6 +66,11 @@ Polymer({
       value: null,
     },
   },
+
+  observers: [
+    'onPreviewCancelled_(state_.cancelled)',
+    'onPrintRequested_(state_.printRequested, state_.previewLoading)',
+  ],
 
   /** @private {?WebUIListenerTracker} */
   listenerTracker_: null,
@@ -156,5 +163,62 @@ Polymer({
    */
   onSaveStickySettings_: function(e) {
     this.nativeLayer_.saveAppState(/** @type {string} */ (e.detail));
+  },
+
+  /** @private */
+  onPrintRequested_: function() {
+    if (this.state_.previewLoading || !this.state_.printRequested)
+      return;
+
+    assert(this.settings.scaling.valid);
+    assert(this.settings.pages.valid);
+    assert(this.settings.copies.valid);
+
+    const destination = assert(this.destinationStore_.selectedDestination);
+    const whenPrintDone =
+        this.nativeLayer_.print(this.$.model.createPrintTicket(destination));
+    if (destination.isLocal) {
+      const onError = destination.id ==
+              print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ?
+          this.onFileSelectionCancel_.bind(this) :
+          this.onPrintFailed_.bind(this);
+      whenPrintDone.then(this.close_.bind(this), onError);
+    } else {
+      // Cloud print resolves when print data is returned to submit to cloud
+      // print, or if print ticket cannot be read, no PDF data is found, or
+      // PDF is oversized.
+      whenPrintDone.then(
+          this.onPrintToCloud_.bind(this), this.onPrintFailed_.bind(this));
+    }
+  },
+
+  /** @private */
+  onFileSelectionCancel_: function() {
+    this.set('state_.printRequested', false);
+  },
+
+  /** @private */
+  onPrintToCloud_: function() {
+    // TODO (rbpotter): Actually print to cloud print once cloud print
+    // interface is hooked up. Currently there are no cloud printers so
+    // this should never happen.
+    assertNotReached('Trying to print to cloud printer!');
+  },
+
+  /**
+   * Called when printing to a privet, cloud, or extension printer fails.
+   * @param {*} httpError The HTTP error code, or -1 or a string describing
+   *     the error, if not an HTTP error.
+   * @private
+   */
+  onPrintFailed_: function(httpError) {
+    console.error('Printing failed with error code ' + httpError);
+    this.set('state.printFailed', true);
+  },
+
+  /** @private */
+  close_: function() {
+    this.detached();
+    this.nativeLayer_.dialogClose(false);
   },
 });

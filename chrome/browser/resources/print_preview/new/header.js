@@ -17,13 +17,6 @@ Polymer({
       notify: true,
     },
 
-    /** @private {boolean} */
-    printInProgress_: {
-      type: Boolean,
-      notify: true,
-      value: false,
-    },
-
     /**
      * @private {?string} Null value indicates that there is no error or
      *     state to display in the summary.
@@ -32,7 +25,7 @@ Polymer({
       type: String,
       computed: 'computeErrorOrStateString_(state.*, ' +
           'settings.copies.valid, settings.scaling.valid, ' +
-          'settings.pages.valid, printInProgress_)'
+          'settings.pages.valid)'
     },
 
     /**
@@ -51,7 +44,7 @@ Polymer({
 
   /** @private */
   onPrintButtonTap_: function() {
-    this.printInProgress_ = true;
+    this.set('state.printRequested', true);
   },
 
   /** @private */
@@ -85,6 +78,8 @@ Polymer({
    * @private
    */
   computeErrorOrStateString_: function() {
+    if (this.state.printFailed)
+      return loadTimeData.getString('couldNotPrint');
     if (this.state.cloudPrintError != '')
       return this.state.cloudPrintError;
     if (this.state.privetExtensionError != '')
@@ -94,7 +89,7 @@ Polymer({
         !this.getSetting('scaling').valid || !this.getSetting('pages').valid) {
       return '';
     }
-    if (this.printInProgress_) {
+    if (this.state.printRequested && !this.state.previewLoading) {
       return loadTimeData.getString(
           this.isPdfOrDrive_() ? 'saving' : 'printing');
     }

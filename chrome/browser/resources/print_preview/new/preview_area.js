@@ -34,16 +34,6 @@ cr.exportPath('print_preview_new');
  */
 print_preview_new.PDFPlugin;
 
-/**
- * Constant values matching printing::DuplexMode enum.
- * @enum {number}
- */
-print_preview_new.DuplexMode = {
-  SIMPLEX: 0,
-  LONG_EDGE: 1,
-  UNKNOWN_DUPLEX_MODE: -1
-};
-
 Polymer({
   is: 'print-preview-preview-area',
 
