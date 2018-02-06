@@ -9,6 +9,7 @@
 #include "core/css/cssom/CSSRotate.h"
 #include "core/css/cssom/CSSScale.h"
 #include "core/css/cssom/CSSSkew.h"
+#include "core/css/cssom/CSSSkewX.h"
 #include "core/css/cssom/CSSTranslate.h"
 
 namespace blink {
@@ -38,9 +39,10 @@ CSSTransformComponent* CSSTransformComponent::FromCSSValue(
     case CSSValueScale3d:
       return CSSScale::FromCSSValue(function_value);
     case CSSValueSkew:
-    case CSSValueSkewX:
     case CSSValueSkewY:
       return CSSSkew::FromCSSValue(function_value);
+    case CSSValueSkewX:
+      return CSSSkewX::FromCSSValue(function_value);
     case CSSValueTranslate:
     case CSSValueTranslateX:
     case CSSValueTranslateY:

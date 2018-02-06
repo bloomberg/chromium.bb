@@ -44,6 +44,11 @@ runInlineStylePropertyMapTests( {
     new CSSTransformValue([new CSSSkew(CSS.deg(0), CSS.rad(10))]),
     new CSSTransformValue([new CSSSkew(CSS.deg(0), CSS.grad(2))]),
     new CSSTransformValue([new CSSSkew(CSS.deg(0), CSS.turn(0.2))]),
+    // SkewX
+    new CSSTransformValue([new CSSSkewX(CSS.deg(30))]),
+    new CSSTransformValue([new CSSSkewX(CSS.rad(10))]),
+    new CSSTransformValue([new CSSSkewX(CSS.grad(2))]),
+    new CSSTransformValue([new CSSSkewX(CSS.turn(0.2))]),
     // Rotations
     cssTransformWithRotate(CSS.deg(30)),
     cssTransformWithRotate(CSS.rad(10)),
@@ -77,18 +82,18 @@ runInlineStylePropertyMapTests( {
     // Skews
     'skew(45deg)':
       new CSSTransformValue([new CSSSkew(CSS.deg(45), CSS.deg(0))]),
-    'skew(1rad)': new CSSTransformValue([new CSSSkew(CSS.rad(1), CSS.deg(0))]),
-    'skew(6.2grad)':
-      new CSSTransformValue([new CSSSkew(CSS.grad(6.2), CSS.deg(0))]),
-    'skew(0.31turn)':
+    'skew(1rad, 0deg)': new CSSTransformValue([new CSSSkew(CSS.rad(1), CSS.deg(0))]),
+    'skew(6.2grad, 10deg)':
+      new CSSTransformValue([new CSSSkew(CSS.grad(6.2), CSS.deg(10))]),
+    'skew(0.31turn, 0deg)':
       new CSSTransformValue([new CSSSkew(CSS.turn(0.31), CSS.deg(0))]),
     'skewX(45deg)':
-      new CSSTransformValue([new CSSSkew(CSS.deg(45), CSS.deg(0))]),
-    'skewX(1rad)': new CSSTransformValue([new CSSSkew(CSS.rad(1), CSS.deg(0))]),
+      new CSSTransformValue([new CSSSkewX(CSS.deg(45))]),
+    'skewX(1rad)': new CSSTransformValue([new CSSSkewX(CSS.rad(1))]),
     'skewX(6.2grad)':
-      new CSSTransformValue([new CSSSkew(CSS.grad(6.2), CSS.deg(0))]),
+      new CSSTransformValue([new CSSSkewX(CSS.grad(6.2))]),
     'skewX(0.31turn)':
-      new CSSTransformValue([new CSSSkew(CSS.turn(0.31), CSS.deg(0))]),
+      new CSSTransformValue([new CSSSkewX(CSS.turn(0.31))]),
     'skewY(45deg)':
       new CSSTransformValue([new CSSSkew(CSS.deg(0), CSS.deg(45))]),
     'skewY(1rad)': new CSSTransformValue([new CSSSkew(CSS.deg(0), CSS.rad(1))]),

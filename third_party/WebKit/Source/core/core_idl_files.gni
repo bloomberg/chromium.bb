@@ -90,6 +90,7 @@ core_idl_files =
                     "css/cssom/CSSRotate.idl",
                     "css/cssom/CSSScale.idl",
                     "css/cssom/CSSSkew.idl",
+                    "css/cssom/CSSSkewX.idl",
                     "css/cssom/CSSStyleValue.idl",
                     "css/cssom/CSSTransformComponent.idl",
                     "css/cssom/CSSTransformValue.idl",

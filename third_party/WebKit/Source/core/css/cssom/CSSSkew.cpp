@@ -54,18 +54,17 @@ CSSSkew* CSSSkew::FromCSSValue(const CSSFunctionValue& value) {
   const CSSPrimitiveValue& x_value = ToCSSPrimitiveValue(value.Item(0));
   switch (value.FunctionType()) {
     case CSSValueSkew:
-      if (value.length() == 2U) {
+      if (value.length() == 1U) {
+        return CSSSkew::Create(
+            CSSNumericValue::FromCSSValue(x_value),
+            CSSUnitValue::Create(0, CSSPrimitiveValue::UnitType::kDegrees));
+      } else if (value.length() == 2U) {
         const CSSPrimitiveValue& y_value = ToCSSPrimitiveValue(value.Item(1));
         return CSSSkew::Create(CSSNumericValue::FromCSSValue(x_value),
                                CSSNumericValue::FromCSSValue(y_value));
       }
-      // Else fall through; skew(ax) == skewX(ax).
-      FALLTHROUGH;
-    case CSSValueSkewX:
-      DCHECK_EQ(value.length(), 1U);
-      return CSSSkew::Create(
-          CSSNumericValue::FromCSSValue(x_value),
-          CSSUnitValue::Create(0, CSSPrimitiveValue::UnitType::kDegrees));
+      NOTREACHED();
+      return nullptr;
     case CSSValueSkewY:
       DCHECK_EQ(value.length(), 1U);
       return CSSSkew::Create(
