@@ -10,6 +10,14 @@
 cr.exportPath('settings');
 
 /**
+ * @typedef {{fullName: (string|undefined),
+ *            email: !string,
+ *            image: (string|undefined)}}
+ * @see chrome/browser/ui/webui/settings/people_handler.cc
+ */
+settings.StoredAccount;
+
+/**
  * @typedef {{childUser: (boolean|undefined),
  *            domain: (string|undefined),
  *            hasError: (boolean|undefined),
@@ -141,6 +149,12 @@ cr.define('settings', function() {
     getSyncStatus() {}
 
     /**
+     * Gets a list of stored accounts.
+     * @return {!Promise<!Array<!settings.StoredAccount>>}
+     */
+    getStoredAccounts() {}
+
+    /**
      * Function to invoke when the sync page has been navigated to. This
      * registers the UI as the "active" sync UI so that if the user tries to
      * open another sync UI, this one will be shown instead.
@@ -166,6 +180,12 @@ cr.define('settings', function() {
      * @return {!Promise<!settings.PageStatus>}
      */
     setSyncEncryption(syncPrefs) {}
+
+    /**
+     * Start syncing with an account, specified by its email.
+     * @param {!string} email
+     */
+    startSyncingWithEmail(email) {}
 
     /**
      * Opens the Google Activity Controls url in a new tab.
@@ -199,12 +219,16 @@ cr.define('settings', function() {
     attemptUserExit() {
       return chrome.send('AttemptUserExit');
     }
-
     // </if>
 
     /** @override */
     getSyncStatus() {
       return cr.sendWithPromise('SyncSetupGetSyncStatus');
+    }
+
+    /** @override */
+    getStoredAccounts() {
+      return cr.sendWithPromise('SyncSetupGetStoredAccounts');
     }
 
     /** @override */
@@ -227,6 +251,11 @@ cr.define('settings', function() {
     setSyncEncryption(syncPrefs) {
       return cr.sendWithPromise(
           'SyncSetupSetEncryption', JSON.stringify(syncPrefs));
+    }
+
+    /** @override */
+    startSyncingWithEmail(email) {
+      chrome.send('SyncSetupStartSyncingWithEmail', [email]);
     }
 
     /** @override */

@@ -103,14 +103,10 @@
       <neon-animatable route-path="default">
 <if expr="not chromeos">
         <template is="dom-if" if="[[diceEnabled_]]">
-          <div class="settings-box first two-line"
-              hidden="[[syncStatus.signedIn]]">
-            <div class="start">
-              <div>$i18n{peopleSignInPrompt}</div>
-              <div class="secondary">$i18n{peopleSignInPromptSecondary}</div>
-            </div>
-          </div>
-          <settings-sync-account-control></settings-sync-account-control>
+          <settings-sync-account-control
+              promo-label="$i18n{peopleSignInPrompt}"
+              promo-secondary-label="$i18n{peopleSignInPromptSecondary}">
+          </settings-sync-account-control>
         </template>
         <template is="dom-if" if="[[!diceEnabled_]]">
 </if>
