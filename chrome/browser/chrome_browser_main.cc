@@ -60,7 +60,6 @@
 #include "chrome/browser/chrome_browser_field_trials.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
-#include "chrome/browser/component_updater/downloadable_strings_component_installer.h"
 #include "chrome/browser/component_updater/file_type_policies_component_installer.h"
 #include "chrome/browser/component_updater/mei_preload_component_installer.h"
 #include "chrome/browser/component_updater/optimization_hints_component_installer.h"
@@ -560,10 +559,6 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
     RegisterSSLErrorAssistantComponent(cus, path);
-#endif
-
-#if BUILDFLAG(ENABLE_DOWNLOADABLE_STRINGS)
-    RegisterDownloadableStringsComponent(cus);
 #endif
   }
 

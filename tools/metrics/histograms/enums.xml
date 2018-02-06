@@ -9640,6 +9640,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DownloadableStrings.InstallStatus">
+  <obsolete>
+    Deprecated 2/2018
+  </obsolete>
   <int value="0" label="NONE"/>
   <int value="1" label="UPDATE_IN_PROGRESS"/>
   <int value="2" label="UPDATE_CANCELED"/>
@@ -9650,6 +9653,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DownloadableStrings.MobileCountryCode">
+  <obsolete>
+    Deprecated 2/2018
+  </obsolete>
   <int value="0" label="UNDETERMINED"/>
 </enum>
 
