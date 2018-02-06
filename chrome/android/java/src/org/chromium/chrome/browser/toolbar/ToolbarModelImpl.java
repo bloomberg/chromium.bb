@@ -10,7 +10,6 @@ import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -38,21 +37,24 @@ import org.chromium.ui.base.DeviceFormFactor;
  */
 class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, ToolbarModelDelegate {
     private final BottomSheet mBottomSheet;
+    private final boolean mUseModernDesign;
     private Tab mTab;
     private boolean mIsIncognito;
     private int mPrimaryColor;
     private boolean mIsUsingBrandColor;
-    private boolean mUseModernDesign;
 
     /**
      * Default constructor for this class.
+     * @param bottomSheet The {@link BottomSheet} for the activity displaying this toolbar.
+     * @param useModernDesign Whether the modern design should be used for the toolbar represented
+     *                        by this model.
      */
-    public ToolbarModelImpl(@Nullable BottomSheet bottomSheet) {
+    public ToolbarModelImpl(@Nullable BottomSheet bottomSheet, boolean useModernDesign) {
         super();
         mBottomSheet = bottomSheet;
-        mPrimaryColor = ApiCompatibilityUtils.getColor(
-                ContextUtils.getApplicationContext().getResources(),
-                R.color.default_primary_color);
+        mUseModernDesign = useModernDesign;
+        mPrimaryColor = ColorUtils.getDefaultThemeColor(
+                ContextUtils.getApplicationContext().getResources(), useModernDesign, false);
     }
 
     /**
@@ -60,16 +62,6 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
      */
     public void initializeWithNative() {
         initialize(this);
-    }
-
-    /**
-     * @param useModernDesign Whether the modern design should be used for the toolbar represented
-     *                        by this model.
-     */
-    public void setUseModernDesign(boolean useModernDesign) {
-        mUseModernDesign = useModernDesign;
-        setPrimaryColor(ColorUtils.getDefaultThemeColor(
-                ContextUtils.getApplicationContext().getResources(), useModernDesign, false));
     }
 
     @Override

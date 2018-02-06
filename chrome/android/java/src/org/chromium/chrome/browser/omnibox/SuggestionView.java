@@ -91,8 +91,8 @@ class SuggestionView extends ViewGroup {
     private OmniboxSuggestionDelegate mSuggestionDelegate;
     private Boolean mUseDarkColors;
     private int mPosition;
-    private int mRightOffsetPx;
-    private int mSuggestionViewOffset;
+    private int mRefineViewOffsetPx;
+    private int mSuggestionViewStartOffset;
 
     private final SuggestionContentsContainer mContentsView;
 
@@ -225,7 +225,8 @@ class SuggestionView extends ViewGroup {
                 contentsViewOffsetX + mContentsView.getMeasuredWidth(),
                 mContentsView.getMeasuredHeight());
 
-        int refineViewOffsetX = isRtl ? 0 : getMeasuredWidth() - mRefineWidth - mRightOffsetPx;
+        int refineViewOffsetX = isRtl ? mRefineViewOffsetPx
+                                      : (getMeasuredWidth() - mRefineWidth) - mRefineViewOffsetPx;
         mRefineView.layout(
                 refineViewOffsetX,
                 0,
@@ -321,8 +322,8 @@ class SuggestionView extends ViewGroup {
         mContentsView.mTextLine2.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources()
                 .getDimension(R.dimen.omnibox_suggestion_second_line_text_size));
 
-        mRightOffsetPx = useModernDesign ? mRefineViewModernEndPadding : 0;
-        mSuggestionViewOffset = useModernDesign ? mSuggestionListModernOffset : 0;
+        mRefineViewOffsetPx = useModernDesign ? mRefineViewModernEndPadding : 0;
+        mSuggestionViewStartOffset = useModernDesign ? mSuggestionListModernOffset : 0;
 
         // Suggestions with attached answers are rendered with rich results regardless of which
         // suggestion type they are.
@@ -875,18 +876,20 @@ class SuggestionView extends ViewGroup {
                 imageSpacing = getResources().getDimensionPixelOffset(
                         R.dimen.omnibox_suggestion_answer_image_horizontal_spacing);
             }
+
             if (isRTL) {
-                mTextLine1.layout(0, t, mTextRight - mSuggestionViewOffset, b);
+                mTextLine1.layout(0, t, mTextRight - mSuggestionViewStartOffset, b);
                 mAnswerImage.layout(
-                        mTextRight - imageWidth, t, mTextRight - mSuggestionViewOffset, b);
-                mTextLine2.layout(
-                        0, t, mTextRight - (imageWidth + imageSpacing) - mSuggestionViewOffset, b);
+                        mTextRight - imageWidth, t, mTextRight - mSuggestionViewStartOffset, b);
+                mTextLine2.layout(0, t,
+                        mTextRight - (imageWidth + imageSpacing) - mSuggestionViewStartOffset, b);
             } else {
-                mTextLine1.layout(mTextLeft + mSuggestionViewOffset, t, r - l, b);
+                mTextLine1.layout(mTextLeft + mSuggestionViewStartOffset, t, r - l, b);
                 mAnswerImage.layout(
-                        mTextLeft + mSuggestionViewOffset, t, mTextLeft + imageWidth, b);
+                        mTextLeft + mSuggestionViewStartOffset, t, mTextLeft + imageWidth, b);
                 mTextLine2.layout(
-                        mTextLeft + imageWidth + imageSpacing + mSuggestionViewOffset, t, r - l, b);
+                        mTextLeft + imageWidth + imageSpacing + mSuggestionViewStartOffset, t,
+                        r - l, b);
             }
 
             int suggestionIconPosition = getSuggestionIconLeftPosition();

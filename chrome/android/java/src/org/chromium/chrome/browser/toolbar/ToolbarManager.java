@@ -198,7 +198,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
         }
 
-        mToolbarModel = new ToolbarModelImpl(activity.getBottomSheet());
+        mToolbarModel = new ToolbarModelImpl(activity.getBottomSheet(),
+                activity.supportsModernDesign() && FeatureUtilities.isChromeModernDesignEnabled());
         mControlContainer = controlContainer;
         assert mControlContainer != null;
 
@@ -702,14 +703,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
         onNativeLibraryReady();
         mInitializedWithNative = true;
-    }
-
-    /**
-     * @param useModernDesign Whether the modern design should be used for the toolbar managed by
-     *                        this manager.
-     */
-    public void setUseModernDesign(boolean useModernDesign) {
-        mToolbarModel.setUseModernDesign(useModernDesign);
     }
 
     /**
