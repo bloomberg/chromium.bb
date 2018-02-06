@@ -23966,6 +23966,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Keyboard was hidden by the user."/>
 </enum>
 
+<enum name="KeyboardLockMethods">
+  <int value="0" label="keyboardLock() requested for all keys"/>
+  <int value="1" label="keyboardLock() requested for a subset of keys"/>
+  <int value="2" label="keyboardUnlock()"/>
+</enum>
+
 <enum name="KeychainMigrationStatus">
   <int value="0" label="Migration hasn't started"/>
   <int value="1" label="Migration succeeded"/>
