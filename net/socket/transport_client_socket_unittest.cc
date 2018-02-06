@@ -24,6 +24,7 @@
 #include "net/socket/tcp_client_socket.h"
 #include "net/socket/tcp_server_socket.h"
 #include "net/test/gtest_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -170,7 +171,7 @@ void TransportClientSocketTest::SendRequestAndResponse() {
     TestCompletionCallback write_callback;
     int write_result =
         sock_->Write(request_buffer.get(), request_buffer->BytesRemaining(),
-                     write_callback.callback());
+                     write_callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
     write_result = write_callback.GetResult(write_result);
     ASSERT_GT(write_result, 0);
     ASSERT_LE(bytes_written + write_result, request_len);
@@ -197,9 +198,9 @@ void TransportClientSocketTest::SendServerResponse() {
   int bytes_written = 0;
   while (write_buffer->BytesRemaining() > 0) {
     TestCompletionCallback write_callback;
-    int write_result = connected_sock_->Write(write_buffer.get(),
-                                              write_buffer->BytesRemaining(),
-                                              write_callback.callback());
+    int write_result = connected_sock_->Write(
+        write_buffer.get(), write_buffer->BytesRemaining(),
+        write_callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
     write_result = write_callback.GetResult(write_result);
     ASSERT_GE(write_result, 0);
     ASSERT_LE(bytes_written + write_result, reply_len);
@@ -407,7 +408,7 @@ TEST_P(TransportClientSocketTest, FullDuplex_ReadFirst) {
   int bytes_written = 0;
   while (true) {
     rv = sock_->Write(request_buffer.get(), kWriteBufLen,
-                      write_callback.callback());
+                      write_callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
     ASSERT_TRUE(rv >= 0 || rv == ERR_IO_PENDING);
     if (rv == ERR_IO_PENDING) {
       ReadServerData(bytes_written);
@@ -439,8 +440,9 @@ TEST_P(TransportClientSocketTest, DISABLED_FullDuplex_WriteFirst) {
 
   int bytes_written = 0;
   while (true) {
-    int rv = sock_->Write(request_buffer.get(), kWriteBufLen,
-                          write_callback.callback());
+    int rv =
+        sock_->Write(request_buffer.get(), kWriteBufLen,
+                     write_callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
     ASSERT_TRUE(rv >= 0 || rv == ERR_IO_PENDING);
 
     if (rv == ERR_IO_PENDING)

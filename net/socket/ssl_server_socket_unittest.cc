@@ -927,7 +927,8 @@ TEST_F(SSLServerSocketTest, DataTransfer) {
   TestCompletionCallback write_callback;
   TestCompletionCallback read_callback;
   server_ret = server_socket_->Write(write_buf.get(), write_buf->size(),
-                                     write_callback.callback());
+                                     write_callback.callback(),
+                                     TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_TRUE(server_ret > 0 || server_ret == ERR_IO_PENDING);
   client_ret = client_socket_->Read(
       read_buf.get(), read_buf->BytesRemaining(), read_callback.callback());
@@ -957,7 +958,8 @@ TEST_F(SSLServerSocketTest, DataTransfer) {
       read_buf.get(), read_buf->BytesRemaining(), read_callback.callback());
   EXPECT_TRUE(server_ret > 0 || server_ret == ERR_IO_PENDING);
   client_ret = client_socket_->Write(write_buf.get(), write_buf->size(),
-                                     write_callback.callback());
+                                     write_callback.callback(),
+                                     TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_TRUE(client_ret > 0 || client_ret == ERR_IO_PENDING);
 
   server_ret = read_callback.GetResult(server_ret);
@@ -1009,7 +1011,8 @@ TEST_F(SSLServerSocketTest, ClientWriteAfterServerClose) {
   // will call Read() on the transport socket again.
   TestCompletionCallback write_callback;
   server_ret = server_socket_->Write(write_buf.get(), write_buf->size(),
-                                     write_callback.callback());
+                                     write_callback.callback(),
+                                     TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_TRUE(server_ret > 0 || server_ret == ERR_IO_PENDING);
 
   server_ret = write_callback.GetResult(server_ret);
@@ -1019,7 +1022,8 @@ TEST_F(SSLServerSocketTest, ClientWriteAfterServerClose) {
 
   // The client writes some data. This should not cause an infinite loop.
   client_ret = client_socket_->Write(write_buf.get(), write_buf->size(),
-                                     write_callback.callback());
+                                     write_callback.callback(),
+                                     TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_TRUE(client_ret > 0 || client_ret == ERR_IO_PENDING);
 
   client_ret = write_callback.GetResult(client_ret);

@@ -1882,7 +1882,8 @@ int WrappedStreamSocket::Write(
     int buf_len,
     const CompletionCallback& callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
-  return transport_->Write(buf, buf_len, callback);
+  return transport_->Write(buf, buf_len, callback,
+                           TRAFFIC_ANNOTATION_FOR_TESTS);
 }
 
 int WrappedStreamSocket::SetReceiveBufferSize(int32_t size) {

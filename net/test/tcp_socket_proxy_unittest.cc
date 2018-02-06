@@ -12,6 +12,7 @@
 #include "net/socket/tcp_client_socket.h"
 #include "net/socket/tcp_server_socket.h"
 #include "net/test/gtest_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -71,7 +72,8 @@ class TcpSocketProxyTest : public testing::Test {
     *write_buffer->data() = test_message;
     TestCompletionCallback write_callback;
     int write_result =
-        socket1->Write(write_buffer.get(), 1, write_callback.callback());
+        socket1->Write(write_buffer.get(), 1, write_callback.callback(),
+                       TRAFFIC_ANNOTATION_FOR_TESTS);
 
     scoped_refptr<IOBufferWithSize> read_buffer(new IOBufferWithSize(1024));
     TestCompletionCallback read_callback;
