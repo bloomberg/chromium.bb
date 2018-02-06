@@ -23,6 +23,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/transform_util.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/cursor_factory_ozone.h"
@@ -478,7 +479,22 @@ void Pointer::UpdateCursor() {
 #endif
   }
 
-  cursor_client->SetCursor(cursor_);
+  // If there is a focused surface, update its widget as the views framework
+  // expect that Widget knows the current cursor. Otherwise update the
+  // cursor directly on CursorClient.
+  if (focus_surface_) {
+    aura::Window* window = focus_surface_->window();
+    do {
+      views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
+      if (widget) {
+        widget->SetCursor(cursor_);
+        return;
+      }
+      window = window->parent();
+    } while (window);
+  } else {
+    cursor_client->SetCursor(cursor_);
+  }
 }
 
 }  // namespace exo
