@@ -11,51 +11,42 @@
 #include "base/optional.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/completion_callback.h"
-#include "net/filter/filter_source_stream.h"
 #include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "url/gurl.h"
 
+namespace net {
+class SourceStream;
+}
+
 namespace content {
 
-// IMPORTANT: Currenly SignedExchangeHandler doesn't implement any CBOR parsing
-// logic nor verifying logic. It just behaves as if the passed body is a signed
-// HTTP exchange which contains a request to "https://example.com/test.html" and
-// a response with a payload which is equal to the original body.
-// TODO(https://crbug.com/803774): Implement CBOR parsing logic and verifying
+// IMPORTANT: Currenly SignedExchangeHandler doesn't implement any verifying
 // logic.
-class SignedExchangeHandler final : public net::FilterSourceStream {
+// TODO(https://crbug.com/803774): Implement verifying logic.
+class SignedExchangeHandler final {
  public:
   // TODO(https://crbug.com/803774): Add verification status here.
   using ExchangeHeadersCallback =
-      base::OnceCallback<void(const GURL& request_url,
+      base::OnceCallback<void(net::Error error,
+                              const GURL& request_url,
                               const std::string& request_method,
                               const network::ResourceResponseHead&,
+                              std::unique_ptr<net::SourceStream> payload_stream,
                               base::Optional<net::SSLInfo>)>;
 
   // Once constructed |this| starts reading the |body| and parses the response
   // as a signed HTTP exchange. The response body of the exchange can be read
-  // from |this| as a net::SourceStream after |headers_callback| is called.
+  // from |payload_stream| passed to |headers_callback|.
   SignedExchangeHandler(std::unique_ptr<net::SourceStream> body,
                         ExchangeHeadersCallback headers_callback);
-  ~SignedExchangeHandler() override;
-
-  // net::FilterSourceStream:
-  int FilterData(net::IOBuffer* output_buffer,
-                 int output_buffer_size,
-                 net::IOBuffer* input_buffer,
-                 int input_buffer_size,
-                 int* consumed_bytes,
-                 bool upstream_eof_reached) override;
-  std::string GetTypeAsString() const override;
+  ~SignedExchangeHandler();
 
  private:
-  void DoHeaderLoop();
-  void DidReadForHeaders(bool completed_syncly, int result);
-  bool MaybeRunHeadersCallback();
-
-  // TODO(https://crbug.com/803774): Remove this.
-  void FillMockExchangeHeaders();
+  void ReadLoop();
+  void DidRead(bool completed_syncly, int result);
+  bool RunHeadersCallback();
+  void RunErrorCallback(net::Error);
 
   // Signed exchange contents.
   GURL request_url_;
@@ -64,16 +55,12 @@ class SignedExchangeHandler final : public net::FilterSourceStream {
   base::Optional<net::SSLInfo> ssl_info_;
 
   ExchangeHeadersCallback headers_callback_;
-
-  // Internal IOBuffer used during reading the header. Note that during parsing
-  // the header we don't really need the output buffer, but we still need to
-  // give some > 0 buffer.
-  scoped_refptr<net::IOBufferWithSize> header_out_buf_;
+  std::unique_ptr<net::SourceStream> source_;
 
   // TODO(https://crbug.cxom/803774): Just for now. Implement the streaming
   // parser.
+  scoped_refptr<net::IOBufferWithSize> read_buf_;
   std::string original_body_string_;
-  size_t body_string_offset_ = 0;
 
   base::WeakPtrFactory<SignedExchangeHandler> weak_factory_;
 
