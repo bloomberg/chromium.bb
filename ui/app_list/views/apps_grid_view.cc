@@ -1558,16 +1558,28 @@ bool AppsGridView::HandleFocusMovementInFullscreenAllAppsState(bool arrow_up) {
   }
 
   // Move focus based on target global focus index.
-  if (target_global_index < 0 || target_global_index >= cols_ * row_total) {
-    // Target index is outside apps grid view.
-    if (folder_delegate_ && !arrow_up) {
+  if (folder_delegate_ &&
+      (target_global_index < 0 || target_global_index >= cols_ * row_total ||
+       target_global_index / kMaxFolderItemsPerPage !=
+           global_index / kMaxFolderItemsPerPage)) {
+    // The pagination inside a folder is set horizontally, so focus should be
+    // set on the search box when it is moved up outside the current page and
+    // should be set on the folder title when it is moved down outside the
+    // current page.
+    if (arrow_up) {
+      contents_view_->GetSearchBoxView()->search_box()->RequestFocus();
+    } else {
       contents_view_->apps_container_view()
           ->app_list_folder_view()
           ->folder_header_view()
           ->SetTextFocus();
-    } else {
-      contents_view_->GetSearchBoxView()->search_box()->RequestFocus();
     }
+    return true;
+  }
+
+  if (target_global_index < 0 || target_global_index >= cols_ * row_total) {
+    // Target index is outside apps grid view.
+    contents_view_->GetSearchBoxView()->search_box()->RequestFocus();
   } else if (has_suggestions_app &&
              target_global_index < suggestions_container_->num_results()) {
     suggestions_container_->tile_views()[target_global_index]->RequestFocus();
@@ -1796,6 +1808,20 @@ bool AppsGridView::HandleScrollFromAppListView(int offset, ui::EventType type) {
 
   HandleScroll(offset, type);
   return true;
+}
+
+AppListItemView* AppsGridView::GetCurrentPageFirstItemViewInFolder() {
+  DCHECK(folder_delegate_);
+  int first_index = pagination_model_.selected_page() * kMaxFolderItemsPerPage;
+  return view_model_.view_at(first_index);
+}
+
+AppListItemView* AppsGridView::GetCurrentPageLastItemViewInFolder() {
+  DCHECK(folder_delegate_);
+  int last_index = std::min(
+      (pagination_model_.selected_page() + 1) * kMaxFolderItemsPerPage - 1,
+      item_list_->item_count() - 1);
+  return view_model_.view_at(last_index);
 }
 
 void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {

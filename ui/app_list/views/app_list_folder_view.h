@@ -66,6 +66,7 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   // views::View
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // AppListModelObserver
   void OnAppListItemWillBeDeleted(AppListItem* item) override;

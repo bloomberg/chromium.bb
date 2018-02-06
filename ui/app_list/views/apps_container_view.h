@@ -86,6 +86,8 @@ class APP_LIST_EXPORT AppsContainerView : public AppListPage {
   gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
   gfx::Rect GetPageBoundsDuringDragging(ash::AppListState state) const override;
   views::View* GetSelectedView() const override;
+  views::View* GetFirstFocusableView() override;
+  views::View* GetLastFocusableView() override;
 
   AppsGridView* apps_grid_view() { return apps_grid_view_; }
   FolderBackgroundView* folder_background_view() {

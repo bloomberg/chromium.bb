@@ -54,6 +54,12 @@ class APP_LIST_EXPORT AppListPage : public views::View {
   // Returns selected view in this page.
   virtual views::View* GetSelectedView() const;
 
+  // Returns the first focusable view in this page.
+  virtual views::View* GetFirstFocusableView();
+
+  // Returns the last focusable view in this page.
+  virtual views::View* GetLastFocusableView();
+
  protected:
   AppListPage();
   ~AppListPage() override;

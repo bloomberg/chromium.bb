@@ -221,6 +221,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // returns true if this scroll would change pages.
   bool HandleScrollFromAppListView(int offset, ui::EventType type);
 
+  // Returns the first app list item view in the selected page in the folder.
+  AppListItemView* GetCurrentPageFirstItemViewInFolder();
+
+  // Returns the last app list item view in the selected page in the folder.
+  AppListItemView* GetCurrentPageLastItemViewInFolder();
+
   // Return the view model for test purposes.
   const views::ViewModelT<AppListItemView>* view_model_for_test() const {
     return &view_model_;
