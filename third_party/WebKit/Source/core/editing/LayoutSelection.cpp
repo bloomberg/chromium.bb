@@ -278,9 +278,7 @@ static void SetSelectionStateIfNeeded(LayoutObject* layout_object,
   DCHECK_NE(state, SelectionState::kNone) << layout_object;
   if (layout_object->GetSelectionState() == state)
     return;
-  // TODO(yoichio): Once we make LayoutObject::SetSelectionState() tribial, use
-  // it directly.
-  layout_object->LayoutObject::SetSelectionState(state);
+  layout_object->SetSelectionState(state);
 
   // Set containing block SelectionState kContain for CSS ::selection style.
   // See LayoutObject::InvalidatePaintForSelection().
