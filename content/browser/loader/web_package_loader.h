@@ -13,10 +13,6 @@
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/interfaces/url_loader.mojom.h"
 
-namespace net {
-class SourceStream;
-}  // namespace net
-
 namespace content {
 
 class SignedExchangeHandler;
@@ -70,11 +66,9 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
   // Called from |signed_exchange_handler_| when it finds an origin-signed HTTP
   // exchange.
   void OnHTTPExchangeFound(
-      net::Error error,
       const GURL& request_url,
       const std::string& request_method,
       const network::ResourceResponseHead& resource_response,
-      std::unique_ptr<net::SourceStream> payload_stream,
       base::Optional<net::SSLInfo> ssl_info);
 
   void FinishReadingBody(int result);

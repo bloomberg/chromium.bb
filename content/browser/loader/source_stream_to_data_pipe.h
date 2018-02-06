@@ -22,7 +22,9 @@ namespace content {
 class SourceStreamToDataPipe {
  public:
   // Reads out the data from |source| and write into |dest|.
-  SourceStreamToDataPipe(std::unique_ptr<net::SourceStream> source,
+  // Note that this does not take the ownership of |source|, the caller
+  // needs to take care that it is kept alive.
+  SourceStreamToDataPipe(net::SourceStream* source,
                          mojo::ScopedDataPipeProducerHandle dest,
                          base::OnceCallback<void(int)> completion_callback);
   ~SourceStreamToDataPipe();
@@ -38,7 +40,7 @@ class SourceStreamToDataPipe {
   void OnDataPipeClosed(MojoResult result);
   void OnComplete(int result);
 
-  std::unique_ptr<net::SourceStream> source_;
+  net::SourceStream* source_;  // Not owned.
   mojo::ScopedDataPipeProducerHandle dest_;
   base::OnceCallback<void(int)> completion_callback_;
 
