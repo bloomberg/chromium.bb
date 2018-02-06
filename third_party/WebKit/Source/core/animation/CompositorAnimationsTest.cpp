@@ -1320,9 +1320,31 @@ TEST_F(AnimationCompositorAnimationsTest, canStartElementOnCompositorEffect) {
   EXPECT_EQ(host->GetMainThreadCompositableAnimationsCountForTesting(), 0u);
   EXPECT_EQ(host->GetCompositedAnimationsCountForTesting(), 1u);
 }
-// TODO(xidachen): test temporary disabled due to crbug.com/781305.
+
+// Regression test for crbug.com/781305. When we have a transform animation
+// on a SVG element, the effect can be started on compositor but the element
+// itself cannot. The animation should not be a main thread compositable
+// animation.
 TEST_F(AnimationCompositorAnimationsTest,
-       DISABLED_cannotStartElementOnCompositorEffectWithRuntimeFeature) {
+       cannotStartElementOnCompositorEffectSVG) {
+  LoadTestData("transform-animation-on-svg.html");
+  Document* document = GetFrame()->GetDocument();
+  Element* target = document->getElementById("dots");
+  CompositorAnimations::FailureCode code =
+      CompositorAnimations::CheckCanStartElementOnCompositor(*target);
+  EXPECT_EQ(code, CompositorAnimations::FailureCode::NonActionable(
+                      "Element does not paint into own backing"));
+  EXPECT_EQ(document->Timeline().PendingAnimationsCount(), 4u);
+  EXPECT_EQ(document->Timeline().MainThreadCompositableAnimationsCount(), 0u);
+  CompositorAnimationHost* host =
+      document->View()->GetCompositorAnimationHost();
+  EXPECT_EQ(host->GetMainThreadAnimationsCountForTesting(), 4u);
+  EXPECT_EQ(host->GetMainThreadCompositableAnimationsCountForTesting(), 0u);
+  EXPECT_EQ(host->GetCompositedAnimationsCountForTesting(), 0u);
+}
+
+TEST_F(AnimationCompositorAnimationsTest,
+       cannotStartElementOnCompositorEffectWithRuntimeFeature) {
   ScopedTurnOff2DAndOpacityCompositorAnimationsForTest
       turn_off_2d_and_opacity_compositors_animation(true);
   LoadTestData("transform-animation.html");
@@ -1335,7 +1357,7 @@ TEST_F(AnimationCompositorAnimationsTest,
       CompositorAnimations::CheckCanStartElementOnCompositor(*target);
   EXPECT_EQ(
       code,
-      CompositorAnimations::FailureCode::NotPaintIntoOwnBacking(
+      CompositorAnimations::FailureCode::AcceleratableAnimNotAccelerated(
           "Acceleratable animation not accelerated due to an experiment"));
   EXPECT_EQ(document->Timeline().PendingAnimationsCount(), 1u);
   EXPECT_EQ(document->Timeline().MainThreadCompositableAnimationsCount(), 1u);

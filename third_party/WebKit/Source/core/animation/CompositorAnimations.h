@@ -68,7 +68,7 @@ class CORE_EXPORT CompositorAnimations {
     static FailureCode NonActionable(const String& reason) {
       return FailureCode(false, false, false, reason);
     }
-    static FailureCode NotPaintIntoOwnBacking(const String& reason) {
+    static FailureCode AcceleratableAnimNotAccelerated(const String& reason) {
       return FailureCode(true, false, false, reason);
     }
 
@@ -160,6 +160,8 @@ class CORE_EXPORT CompositorAnimations {
                            canStartElementOnCompositorEffectSPv2);
   FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
                            canStartElementOnCompositorEffect);
+  FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
+                           cannotStartElementOnCompositorEffectSVG);
   FRIEND_TEST_ALL_PREFIXES(
       AnimationCompositorAnimationsTest,
       cannotStartElementOnCompositorEffectWithRuntimeFeature);

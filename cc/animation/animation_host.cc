@@ -633,11 +633,18 @@ size_t AnimationHost::CompositedAnimationsCount() const {
 void AnimationHost::SetAnimationCounts(
     size_t total_animations_count,
     size_t main_thread_compositable_animations_count) {
-  size_t composited_animations_count = CompositedAnimationsCount();
+  // The |total_animations_count| is the total number of blink::Animations.
+  // A blink::Animation holds a CompositorAnimationPlayerHolder, which holds
+  // a CompositorAnimationPlayer, which holds a cc::AnimationPlayer. In other
+  // words, if a blink::Animation can be accelerated on compositor, it would
+  // have a 1:1 mapping to a cc::AnimationPlayer.
+  // So to check how many main thread animations there are, we subtract the
+  // number of cc::AnimationPlayer from |total_animations_count|.
+  size_t ticking_players_count = ticking_players_.size();
   if (main_thread_animations_count_ !=
-      total_animations_count - composited_animations_count) {
+      total_animations_count - ticking_players_count) {
     main_thread_animations_count_ =
-        total_animations_count - composited_animations_count;
+        total_animations_count - ticking_players_count;
     DCHECK_GE(main_thread_animations_count_, 0u);
     SetNeedsPushProperties();
   }
