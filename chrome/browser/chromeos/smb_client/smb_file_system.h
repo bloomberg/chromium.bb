@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/watcher.h"
 #include "chrome/browser/chromeos/smb_client/smb_service.h"
+#include "chrome/browser/chromeos/smb_client/temp_file_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
 #include "storage/browser/fileapi/async_file_util.h"
 #include "storage/browser/fileapi/watcher_manager.h"
@@ -213,6 +214,10 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface {
       const storage::AsyncFileUtil::StatusCallback& callback,
       smbprovider::ErrorType error) const;
 
+  void HandleRequestWriteFileCallback(
+      const storage::AsyncFileUtil::StatusCallback& callback,
+      smbprovider::ErrorType error) const;
+
   base::File::Error RunUnmountCallback(
       const ProviderId& provider_id,
       const std::string& file_system_id,
@@ -234,6 +239,7 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface {
   file_system_provider::Watchers watchers_;
 
   UnmountCallback unmount_callback_;
+  TempFileManager temp_file_manager_;
 
   base::WeakPtrFactory<SmbFileSystem> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(SmbFileSystem);
