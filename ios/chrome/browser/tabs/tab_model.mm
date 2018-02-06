@@ -497,6 +497,22 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
                           inBackground:inBackground];
 }
 
+- (Tab*)insertOpenByDOMTabWithOpener:(Tab*)opener {
+  DCHECK(_browserState);
+  web::WebState::CreateParams createParams(_browserState);
+  createParams.created_with_opener = YES;
+  std::unique_ptr<web::WebState> webState = web::WebState::Create(createParams);
+
+  int insertionFlags =
+      WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE;
+  int insertedIndex = _webStateList->InsertWebState(
+      _webStateList->count(), std::move(webState), insertionFlags,
+      WebStateOpener(opener.webState));
+
+  return LegacyTabHelper::GetTabForWebState(
+      _webStateList->GetWebStateAt(insertedIndex));
+}
+
 - (Tab*)insertTabWithLoadParams:
             (const web::NavigationManager::WebLoadParams&)loadParams
                          opener:(Tab*)parentTab

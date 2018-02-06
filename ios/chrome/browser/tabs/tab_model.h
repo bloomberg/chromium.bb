@@ -132,6 +132,10 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
                         atIndex:(NSUInteger)index
                    inBackground:(BOOL)inBackground;
 
+// Opens a new blank tab in response to DOM window opening action. Creates a web
+// state with empty navigation manager.
+- (Tab*)insertOpenByDOMTabWithOpener:(Tab*)parentTab;
+
 // Moves |tab| to the given |index|. |index| must be valid for this tab model
 // (must be less than the current number of tabs). |tab| must already be in this
 // tab model. If |tab| is already at |index|, this method does nothing and will
