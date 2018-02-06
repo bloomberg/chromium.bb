@@ -244,10 +244,11 @@ WallpaperManager.prototype.onGetCollectionsInfoFailed_ = function() {
 /**
  * Fetches info for the images belonging to the specific wallpaper collection
  * and pass the info to |WallpaperThumbnailsGrid| to display the images.
- * @param {string} collectionId The id of the collection.
+ * @param {number} index The index of the collection in |collectionsInfo_| list.
  * @private
  */
-WallpaperManager.prototype.showCollection_ = function(collectionId) {
+WallpaperManager.prototype.showCollection_ = function(index) {
+  var collectionId = this.collectionsInfo_[index]['collectionId'];
   // Check if the info for this collection has already been fetched. If so,
   // directly show the images.
   if (collectionId in this.imagesInfoMap_) {
@@ -276,7 +277,8 @@ WallpaperManager.prototype.showCollection_ = function(collectionId) {
         source: Constants.WallpaperSourceEnum.Online,
         availableOffline: false,
         author: imagesInfo[i]['displayText'][0],
-        authorWebsite: imagesInfo[i]['actionUrl']
+        authorWebsite: imagesInfo[i]['actionUrl'],
+        collectionName: this.collectionsInfo_[index]['collectionName']
       };
       wallpapersDataModel.push(wallpaperInfo);
       this.imagesInfoCount_++;
@@ -497,7 +499,8 @@ WallpaperManager.prototype.postDownloadDomInit_ = function() {
         for (var i = 0; i < thumbnails.length; i++) {
           var thumbnail = thumbnails[i];
           var url = self.wallpaperGrid_.dataModel.item(i).baseURL;
-          var fileName = getBaseName(url) + Constants.HighResolutionSuffix;
+          var fileName = getBaseName(url) +
+              WallpaperUtil.getOnlineWallpaperHighResolutionSuffix();
           if (self.downloadedListMap_ &&
               self.downloadedListMap_.hasOwnProperty(encodeURI(fileName))) {
             thumbnail.offline = true;
@@ -593,7 +596,8 @@ WallpaperManager.prototype.presetCategory_ = function() {
   // time (e.g., 13006377367586070).
   if (!this.enableOnlineWallpaper_ ||
       (this.currentWallpaper_ &&
-       this.currentWallpaper_.indexOf(Constants.HighResolutionSuffix) == -1)) {
+       this.currentWallpaper_.indexOf(
+           WallpaperUtil.getOnlineWallpaperHighResolutionSuffix()) == -1)) {
     // Custom is the last one in the categories list.
     this.categoriesList_.selectionModel.selectedIndex =
         this.categoriesList_.dataModel.length - 1;
@@ -608,7 +612,7 @@ WallpaperManager.prototype.presetCategory_ = function() {
     if (self.currentWallpaper_) {
       for (var key in self.manifest_.wallpaper_list) {
         var url = self.manifest_.wallpaper_list[key].base_url +
-            Constants.HighResolutionSuffix;
+            WallpaperUtil.getOnlineWallpaperHighResolutionSuffix();
         if (url.indexOf(self.currentWallpaper_) != -1 &&
             self.manifest_.wallpaper_list[key].categories.length > 0) {
           presetCategory = self.manifest_.wallpaper_list[key].categories[0] +
@@ -703,11 +707,8 @@ WallpaperManager.prototype.onWallpaperChanged_ = function(
 
 /**
  * Sets wallpaper to the corresponding wallpaper of selected thumbnail.
- * @param {{baseURL: string, layout: string, source: string,
- *          availableOffline: boolean, opt_dynamicURL: string,
- *          opt_author: string, opt_authorWebsite: string}}
- *     selectedItem the selected item in WallpaperThumbnailsGrid's data
- *     model.
+ * @param {Object} selectedItem the selected item in WallpaperThumbnailsGrid's
+ *     data model.
  */
 WallpaperManager.prototype.setSelectedWallpaper_ = function(selectedItem) {
   var self = this;
@@ -747,7 +748,8 @@ WallpaperManager.prototype.setSelectedWallpaper_ = function(selectedItem) {
       this.onWallpaperChanged_(selectedItem, selectedItem.baseURL);
       break;
     case Constants.WallpaperSourceEnum.Online:
-      var wallpaperURL = selectedItem.baseURL + Constants.HighResolutionSuffix;
+      var wallpaperURL = selectedItem.baseURL +
+          WallpaperUtil.getOnlineWallpaperHighResolutionSuffix();
       var selectedGridItem = this.wallpaperGrid_.getListItem(selectedItem);
 
       chrome.wallpaperPrivate.setWallpaperIfExists(
@@ -878,12 +880,19 @@ WallpaperManager.prototype.onSelectedItemChanged_ = function() {
 /**
  * Set attributions of wallpaper with given URL. If URL is not valid, clear
  * the attributions.
- * @param {{baseURL: string, dynamicURL: string, layout: string,
- *          author: string, authorWebsite: string, availableOffline: boolean}}
- *     selectedItem selected wallpaper item in grid.
+ * @param {Object} selectedItem the selected item in WallpaperThumbnailsGrid's
+ *     data model.
  * @private
  */
 WallpaperManager.prototype.setWallpaperAttribution_ = function(selectedItem) {
+  if (this.useNewWallpaperPicker_) {
+    $('photographer-name').textContent = selectedItem.author;
+    $('collection-name').textContent = selectedItem.collectionName;
+    $('explore').textContent = selectedItem.authorWebsite;
+    $('explore').href = selectedItem.authorWebsite;
+    return;
+  }
+
   // Only online wallpapers have author and website attributes. All other type
   // of wallpapers should not show attributions.
   if (!selectedItem ||
@@ -915,10 +924,11 @@ WallpaperManager.prototype.setWallpaperAttribution_ = function(selectedItem) {
           // operation within |WallpaperThumbnailsGridItem.decorate| hasn't
           // completed. See http://crbug.com/792829.
           var xhr = new XMLHttpRequest();
-          var urlSuffix = this.useNewWallpaperPicker_ ?
-              '' :
-              Constants.OnlineWallpaperThumbnailUrlSuffix;
-          xhr.open('GET', self.dataItem.baseURL + urlSuffix, true);
+          xhr.open(
+              'GET',
+              self.dataItem.baseURL +
+                  WallpaperUtil.getOnlineWallpaperThumbnailSuffix(),
+              true);
           xhr.responseType = 'arraybuffer';
           xhr.send(null);
           xhr.addEventListener('load', function(e) {
@@ -1248,8 +1258,7 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
     // If the new wallpaper picker is enabled, initiate the fetch of the
     // images info that belong to this collection.
     if (this.useNewWallpaperPicker_ && this.collectionsInfo_) {
-      this.showCollection_(
-          this.collectionsInfo_[selectedIndex]['collectionId']);
+      this.showCollection_(selectedIndex);
       return;
     }
 
@@ -1271,15 +1280,15 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
           authorWebsite: this.manifest_.wallpaper_list[i].author_website,
           dynamicURL: this.manifest_.wallpaper_list[i].dynamic_url
         };
-        var fileName =
-            getBaseName(wallpaperInfo.baseURL) + Constants.HighResolutionSuffix;
+        var fileName = getBaseName(wallpaperInfo.baseURL) +
+            WallpaperUtil.getOnlineWallpaperHighResolutionSuffix();
         if (this.downloadedListMap_ &&
             this.downloadedListMap_.hasOwnProperty(encodeURI(fileName))) {
           wallpaperInfo.availableOffline = true;
         }
         wallpapersDataModel.push(wallpaperInfo);
         var url = this.manifest_.wallpaper_list[i].base_url +
-            Constants.HighResolutionSuffix;
+            WallpaperUtil.getOnlineWallpaperHighResolutionSuffix();
         if (url == this.currentWallpaper_) {
           selectedItem = wallpaperInfo;
         }

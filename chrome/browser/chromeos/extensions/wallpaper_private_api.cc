@@ -217,6 +217,10 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
 #endif
   dict->SetBoolean("showBackdropWallpapers", show_backdrop_wallpapers);
 
+  dict->SetInteger(
+      "primaryDisplayWidth",
+      display::Screen::GetScreen()->GetPrimaryDisplay().size().width());
+
   return RespondNow(OneArgument(std::move(dict)));
 }
 
