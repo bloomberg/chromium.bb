@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace base {
 class DictionaryValue;
@@ -33,9 +34,6 @@ class CHROMEOS_EXPORT GsmSMSClient : public DBusClient {
  public:
   typedef base::Callback<void(uint32_t index, bool complete)>
       SmsReceivedHandler;
-  typedef base::Callback<void()> DeleteCallback;
-  typedef base::Callback<void(const base::DictionaryValue& sms)> GetCallback;
-  typedef base::Callback<void(const base::ListValue& result)> ListCallback;
 
   ~GsmSMSClient() override;
 
@@ -52,22 +50,22 @@ class CHROMEOS_EXPORT GsmSMSClient : public DBusClient {
   virtual void ResetSmsReceivedHandler(const std::string& service_name,
                                        const dbus::ObjectPath& object_path) = 0;
 
-  // Calls Delete method.  |callback| is called after the method call succeeds.
+  // Calls Delete method.  |callback| is called on method call completion.
   virtual void Delete(const std::string& service_name,
                       const dbus::ObjectPath& object_path,
                       uint32_t index,
-                      const DeleteCallback& callback) = 0;
+                      VoidDBusMethodCallback callback) = 0;
 
-  // Calls Get method.  |callback| is called after the method call succeeds.
+  // Calls Get method.  |callback| is called on method call completion.
   virtual void Get(const std::string& service_name,
                    const dbus::ObjectPath& object_path,
                    uint32_t index,
-                   const GetCallback& callback) = 0;
+                   DBusMethodCallback<base::DictionaryValue> callback) = 0;
 
-  // Calls List method.  |callback| is called after the method call succeeds.
+  // Calls List method.  |callback| is called on method call completion.
   virtual void List(const std::string& service_name,
                     const dbus::ObjectPath& object_path,
-                    const ListCallback& callback) = 0;
+                    DBusMethodCallback<base::ListValue> callback) = 0;
 
   // Requests a check for new messages. In shill this does nothing. The
   // stub implementation uses it to generate a sequence of test messages.

@@ -31,9 +31,6 @@ namespace {
 class SMSProxy {
  public:
   typedef GsmSMSClient::SmsReceivedHandler SmsReceivedHandler;
-  typedef GsmSMSClient::DeleteCallback DeleteCallback;
-  typedef GsmSMSClient::GetCallback GetCallback;
-  typedef GsmSMSClient::ListCallback ListCallback;
 
   SMSProxy(dbus::Bus* bus,
            const std::string& service_name,
@@ -60,7 +57,7 @@ class SMSProxy {
   }
 
   // Calls Delete method.
-  void Delete(uint32_t index, const DeleteCallback& callback) {
+  void Delete(uint32_t index, VoidDBusMethodCallback callback) {
     dbus::MethodCall method_call(modemmanager::kModemManagerSMSInterface,
                                  modemmanager::kSMSDeleteFunction);
     dbus::MessageWriter writer(&method_call);
@@ -68,11 +65,11 @@ class SMSProxy {
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&SMSProxy::OnDelete, weak_ptr_factory_.GetWeakPtr(),
-                       callback));
+                       std::move(callback)));
   }
 
   // Calls Get method.
-  void Get(uint32_t index, const GetCallback& callback) {
+  void Get(uint32_t index, DBusMethodCallback<base::DictionaryValue> callback) {
     dbus::MethodCall method_call(modemmanager::kModemManagerSMSInterface,
                                  modemmanager::kSMSGetFunction);
     dbus::MessageWriter writer(&method_call);
@@ -80,17 +77,17 @@ class SMSProxy {
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&SMSProxy::OnGet, weak_ptr_factory_.GetWeakPtr(),
-                       callback));
+                       std::move(callback)));
   }
 
   // Calls List method.
-  void List(const ListCallback& callback) {
+  void List(DBusMethodCallback<base::ListValue> callback) {
     dbus::MethodCall method_call(modemmanager::kModemManagerSMSInterface,
                                  modemmanager::kSMSListFunction);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&SMSProxy::OnList, weak_ptr_factory_.GetWeakPtr(),
-                       callback));
+                       std::move(callback)));
   }
 
  private:
@@ -117,38 +114,42 @@ class SMSProxy {
   }
 
   // Handles responses of Delete method calls.
-  void OnDelete(const DeleteCallback& callback, dbus::Response* response) {
-    if (!response)
-      return;
-    callback.Run();
+  void OnDelete(VoidDBusMethodCallback callback, dbus::Response* response) {
+    std::move(callback).Run(response);
   }
 
   // Handles responses of Get method calls.
-  void OnGet(const GetCallback& callback, dbus::Response* response) {
-    if (!response)
-      return;
-    dbus::MessageReader reader(response);
-    std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
-    base::DictionaryValue* dictionary_value = NULL;
-    if (!value.get() || !value->GetAsDictionary(&dictionary_value)) {
-      LOG(WARNING) << "Invalid response: " << response->ToString();
+  void OnGet(DBusMethodCallback<base::DictionaryValue> callback,
+             dbus::Response* response) {
+    if (!response) {
+      std::move(callback).Run(base::nullopt);
       return;
     }
-    callback.Run(*dictionary_value);
+    dbus::MessageReader reader(response);
+    auto value = base::DictionaryValue::From(dbus::PopDataAsValue(&reader));
+    if (!value) {
+      LOG(WARNING) << "Invalid response: " << response->ToString();
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+    std::move(callback).Run(std::move(*value));
   }
 
   // Handles responses of List method calls.
-  void OnList(const ListCallback& callback, dbus::Response* response) {
-    if (!response)
-      return;
-    dbus::MessageReader reader(response);
-    std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
-    base::ListValue* list_value = NULL;
-    if (!value.get() || !value->GetAsList(&list_value)) {
-      LOG(WARNING) << "Invalid response: " << response->ToString();
+  void OnList(DBusMethodCallback<base::ListValue> callback,
+              dbus::Response* response) {
+    if (!response) {
+      std::move(callback).Run(base::nullopt);
       return;
     }
-    callback.Run(*list_value);
+    dbus::MessageReader reader(response);
+    auto value = base::ListValue::From(dbus::PopDataAsValue(&reader));
+    if (!value) {
+      LOG(WARNING) << "Invalid response: " << response->ToString();
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+    std::move(callback).Run(std::move(*value));
   }
 
   dbus::ObjectProxy* proxy_;
@@ -183,23 +184,23 @@ class GsmSMSClientImpl : public GsmSMSClient {
   void Delete(const std::string& service_name,
               const dbus::ObjectPath& object_path,
               uint32_t index,
-              const DeleteCallback& callback) override {
-    GetProxy(service_name, object_path)->Delete(index, callback);
+              VoidDBusMethodCallback callback) override {
+    GetProxy(service_name, object_path)->Delete(index, std::move(callback));
   }
 
   // GsmSMSClient override.
   void Get(const std::string& service_name,
            const dbus::ObjectPath& object_path,
            uint32_t index,
-           const GetCallback& callback) override {
-    GetProxy(service_name, object_path)->Get(index, callback);
+           DBusMethodCallback<base::DictionaryValue> callback) override {
+    GetProxy(service_name, object_path)->Get(index, std::move(callback));
   }
 
   // GsmSMSClient override.
   void List(const std::string& service_name,
             const dbus::ObjectPath& object_path,
-            const ListCallback& callback) override {
-    GetProxy(service_name, object_path)->List(callback);
+            DBusMethodCallback<base::ListValue> callback) override {
+    GetProxy(service_name, object_path)->List(std::move(callback));
   }
 
   // GsmSMSClient override.

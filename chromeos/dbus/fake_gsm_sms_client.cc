@@ -50,28 +50,31 @@ void FakeGsmSMSClient::ResetSmsReceivedHandler(
 void FakeGsmSMSClient::Delete(const std::string& service_name,
                               const dbus::ObjectPath& object_path,
                               uint32_t index,
-                              const DeleteCallback& callback) {
-  message_list_.Remove(index, NULL);
-  callback.Run();
+                              VoidDBusMethodCallback callback) {
+  message_list_.Remove(index, nullptr);
+  std::move(callback).Run(true);
 }
 
 void FakeGsmSMSClient::Get(const std::string& service_name,
                            const dbus::ObjectPath& object_path,
                            uint32_t index,
-                           const GetCallback& callback) {
-  base::DictionaryValue* dictionary = NULL;
-  if (message_list_.GetDictionary(index, &dictionary)) {
-    callback.Run(*dictionary);
+                           DBusMethodCallback<base::DictionaryValue> callback) {
+  base::DictionaryValue* dictionary = nullptr;
+  if (!message_list_.GetDictionary(index, &dictionary)) {
+    std::move(callback).Run(base::nullopt);
     return;
   }
-  base::DictionaryValue empty_dictionary;
-  callback.Run(empty_dictionary);
+
+  // TODO(crbug.com/646113): Once migration is done, this can be simplified.
+  base::DictionaryValue copy;
+  copy.MergeDictionary(dictionary);
+  std::move(callback).Run(std::move(copy));
 }
 
 void FakeGsmSMSClient::List(const std::string& service_name,
                             const dbus::ObjectPath& object_path,
-                            const ListCallback& callback) {
-  callback.Run(message_list_);
+                            DBusMethodCallback<base::ListValue> callback) {
+  std::move(callback).Run(base::ListValue(message_list_.GetList()));
 }
 
 void FakeGsmSMSClient::RequestUpdate(const std::string& service_name,
