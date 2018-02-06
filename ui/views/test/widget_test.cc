@@ -26,6 +26,10 @@ Widget* CreateTopLevelPlatformWidgetWithStubbedCapture(
 
 }  // namespace
 
+void WidgetTest::WidgetCloser::operator()(Widget* widget) const {
+  widget->CloseNow();
+}
+
 WidgetTest::WidgetTest() {}
 WidgetTest::~WidgetTest() {}
 

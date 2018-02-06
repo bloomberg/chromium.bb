@@ -61,12 +61,6 @@ gfx::Point ConvertPointFromWidgetToView(View* view, const gfx::Point& p) {
   return tmp;
 }
 
-// This class can be used as a deleter for std::unique_ptr<Widget>
-// to call function Widget::CloseNow automatically.
-struct WidgetCloser {
-  inline void operator()(Widget* widget) const { widget->CloseNow(); }
-};
-
 class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
  public:
   TestBubbleDialogDelegateView(View* anchor)
@@ -81,8 +75,6 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
 
   mutable bool reset_controls_called_;
 };
-
-using WidgetAutoclosePtr = std::unique_ptr<Widget, WidgetCloser>;
 
 }  // namespace
 
@@ -284,82 +276,6 @@ TEST_F(WidgetTest, ChildBoundsRelativeToParent) {
 
   // The child's origin is at (0, 0), but the same size, so bounds should match.
   EXPECT_EQ(toplevel_bounds, child->GetWindowBoundsInScreen());
-}
-
-// Test z-order of child widgets relative to their parent.
-TEST_F(WidgetTest, ChildStackedRelativeToParent) {
-  WidgetAutoclosePtr parent(CreateTopLevelPlatformWidget());
-  Widget* child = CreateChildPlatformWidget(parent->GetNativeView());
-
-  parent->SetBounds(gfx::Rect(160, 100, 320, 200));
-  child->SetBounds(gfx::Rect(50, 50, 30, 20));
-
-  // Child shown first. Initially not visible, but on top of parent when shown.
-  // Use ShowInactive whenever showing the child, otherwise the usual activation
-  // logic will just put it on top anyway. Here, we want to ensure it is on top
-  // of its parent regardless.
-  child->ShowInactive();
-  EXPECT_FALSE(child->IsVisible());
-
-  parent->Show();
-  EXPECT_TRUE(child->IsVisible());
-  EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-  EXPECT_FALSE(IsWindowStackedAbove(parent.get(), child));  // Sanity check.
-
-  WidgetAutoclosePtr popover(CreateTopLevelPlatformWidget());
-  popover->SetBounds(gfx::Rect(150, 90, 340, 240));
-  popover->Show();
-
-  // NOTE: for aura-mus-client stacking of top-levels is not maintained in the
-  // client, so z-order of top-levels can't be determined.
-  const bool check_toplevel_z_order = !IsMus();
-  if (check_toplevel_z_order)
-    EXPECT_TRUE(IsWindowStackedAbove(popover.get(), child));
-  EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-
-  // Showing the parent again should raise it and its child above the popover.
-  parent->Show();
-  EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-  if (check_toplevel_z_order)
-    EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
-
-  // Test grandchildren.
-  Widget* grandchild = CreateChildPlatformWidget(child->GetNativeView());
-  grandchild->SetBounds(gfx::Rect(5, 5, 15, 10));
-  grandchild->ShowInactive();
-  EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
-  EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-  if (check_toplevel_z_order)
-    EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
-
-  popover->Show();
-  if (check_toplevel_z_order)
-    EXPECT_TRUE(IsWindowStackedAbove(popover.get(), grandchild));
-  EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
-
-  parent->Show();
-  EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
-  if (check_toplevel_z_order)
-    EXPECT_TRUE(IsWindowStackedAbove(child, popover.get()));
-
-  // Test hiding and reshowing.
-  parent->Hide();
-  EXPECT_FALSE(grandchild->IsVisible());
-  parent->Show();
-
-  EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
-  EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-  if (check_toplevel_z_order)
-    EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
-
-  grandchild->Hide();
-  EXPECT_FALSE(grandchild->IsVisible());
-  grandchild->ShowInactive();
-
-  EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
-  EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-  if (check_toplevel_z_order)
-    EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2116,7 +2032,7 @@ bool RunGetNativeThemeFromDestructor(const Widget::InitParams& in_params,
                                      bool is_first_run) {
   bool needs_second_run = false;
   // Destroyed by CloseNow() below.
-  WidgetAutoclosePtr widget(new Widget);
+  WidgetTest::WidgetAutoclosePtr widget(new Widget);
   Widget::InitParams params(in_params);
   // Deletes itself when the Widget is destroyed.
   params.delegate = new GetNativeThemeFromDestructorView;
