@@ -5,6 +5,7 @@
 import("//build/config/android/config.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
+import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/coverage/coverage.gni")
 import("//build/config/host_byteorder.gni")
@@ -143,15 +144,6 @@ declare_args() {
        (use_gold &&
         ((!is_android && linux_use_bundled_binutils) || is_chromeos ||
          !(current_cpu == "x86" || current_cpu == "x64"))))
-}
-
-if (is_clang) {
-  update_args = [ "--print-revision" ]
-  if (llvm_force_head_revision) {
-    update_args += [ "--llvm-force-head-revision" ]
-  }
-  clang_revision =
-      exec_script("//tools/clang/scripts/update.py", update_args, "trim string")
 }
 
 # Apply the default logic for these values if they were not set explicitly.
@@ -1018,7 +1010,15 @@ config("clang_stackrealign") {
 }
 
 config("clang_revision") {
-  if (is_clang) {
+  if (is_clang && clang_base_path == default_clang_base_path) {
+    update_args = [ "--print-revision" ]
+    if (llvm_force_head_revision) {
+      update_args += [ "--llvm-force-head-revision" ]
+    }
+    clang_revision = exec_script("//tools/clang/scripts/update.py",
+                                 update_args,
+                                 "trim string")
+
     # This is here so that all files get recompiled after a clang roll and
     # when turning clang on or off. (defines are passed via the command line,
     # and build system rebuild things when their commandline changes). Nothing
