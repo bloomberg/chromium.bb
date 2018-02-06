@@ -236,62 +236,6 @@ void BrowserCompositorMac::ClearCompositorFrame() {
     delegated_frame_host_->ClearDelegatedFrame();
 }
 
-void BrowserCompositorMac::CopyCompleted(
-    base::WeakPtr<BrowserCompositorMac> browser_compositor,
-    const ReadbackRequestCallback& callback,
-    const SkBitmap& bitmap,
-    ReadbackResponse response) {
-  callback.Run(bitmap, response);
-  if (browser_compositor) {
-    browser_compositor->outstanding_copy_count_ -= 1;
-    browser_compositor->UpdateState();
-  }
-}
-
-void BrowserCompositorMac::CopyFromCompositingSurface(
-    const gfx::Rect& src_subrect,
-    const gfx::Size& dst_size,
-    const ReadbackRequestCallback& callback,
-    SkColorType preferred_color_type) {
-  DCHECK(delegated_frame_host_);
-  DCHECK(state_ == HasAttachedCompositor);
-  outstanding_copy_count_ += 1;
-
-  auto callback_with_decrement =
-      base::Bind(&BrowserCompositorMac::CopyCompleted,
-                 weak_factory_.GetWeakPtr(), callback);
-  delegated_frame_host_->CopyFromCompositingSurface(
-      src_subrect, dst_size, callback_with_decrement, preferred_color_type);
-}
-
-void BrowserCompositorMac::CopyToVideoFrameCompleted(
-    base::WeakPtr<BrowserCompositorMac> browser_compositor,
-    const base::Callback<void(const gfx::Rect&, bool)>& callback,
-    const gfx::Rect& rect,
-    bool result) {
-  callback.Run(rect, result);
-  if (browser_compositor) {
-    browser_compositor->outstanding_copy_count_ -= 1;
-    browser_compositor->UpdateState();
-  }
-}
-
-void BrowserCompositorMac::CopyFromCompositingSurfaceToVideoFrame(
-    const gfx::Rect& src_subrect,
-    scoped_refptr<media::VideoFrame> target,
-    const base::Callback<void(const gfx::Rect&, bool)>& callback) {
-  DCHECK(delegated_frame_host_);
-  DCHECK(state_ == HasAttachedCompositor);
-  outstanding_copy_count_ += 1;
-
-  auto callback_with_decrement =
-      base::Bind(&BrowserCompositorMac::CopyToVideoFrameCompleted,
-                 weak_factory_.GetWeakPtr(), callback);
-
-  delegated_frame_host_->CopyFromCompositingSurfaceToVideoFrame(
-      src_subrect, std::move(target), callback_with_decrement);
-}
-
 viz::FrameSinkId BrowserCompositorMac::GetRootFrameSinkId() {
   if (recyclable_compositor_->compositor())
     return recyclable_compositor_->compositor()->frame_sink_id();
@@ -372,7 +316,7 @@ void BrowserCompositorMac::SetNSViewAttachedToWindow(bool attached) {
 }
 
 void BrowserCompositorMac::UpdateState() {
-  if (!render_widget_host_is_hidden_ || outstanding_copy_count_ > 0)
+  if (!render_widget_host_is_hidden_)
     TransitionToState(HasAttachedCompositor);
   else if (ns_view_attached_to_window_)
     TransitionToState(HasDetachedCompositor);

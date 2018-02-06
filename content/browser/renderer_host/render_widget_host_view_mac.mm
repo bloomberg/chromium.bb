@@ -1181,7 +1181,7 @@ void RenderWidgetHostViewMac::CopyFromSurface(
     const gfx::Size& dst_size,
     const ReadbackRequestCallback& callback,
     const SkColorType preferred_color_type) {
-  browser_compositor_->CopyFromCompositingSurface(
+  browser_compositor_->GetDelegatedFrameHost()->CopyFromCompositingSurface(
       src_subrect, dst_size, callback, preferred_color_type);
 }
 
@@ -1189,8 +1189,9 @@ void RenderWidgetHostViewMac::CopyFromSurfaceToVideoFrame(
     const gfx::Rect& src_subrect,
     scoped_refptr<media::VideoFrame> target,
     const base::Callback<void(const gfx::Rect&, bool)>& callback) {
-  browser_compositor_->CopyFromCompositingSurfaceToVideoFrame(
-      src_subrect, std::move(target), callback);
+  browser_compositor_->GetDelegatedFrameHost()
+      ->CopyFromCompositingSurfaceToVideoFrame(src_subrect, std::move(target),
+                                               callback);
 }
 
 void RenderWidgetHostViewMac::BeginFrameSubscription(
