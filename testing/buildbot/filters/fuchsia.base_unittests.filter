@@ -67,3 +67,6 @@
 
 # https://crbug.com/801353 - takes 50x-100x the normal time to execute on bots.
 -PersistentMemoryAllocatorTest.ParallelismTest
+
+# Times out on ARM64: https://crbug.com/809660.
+-AddressSpaceRandomizationTest.Random
