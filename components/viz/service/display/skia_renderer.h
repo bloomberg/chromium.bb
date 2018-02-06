@@ -51,8 +51,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
       const RenderPassRequirements& requirements) override;
   bool IsRenderPassResourceAllocated(
       const RenderPassId& render_pass_id) const override;
-  gfx::Size GetRenderPassTextureSize(
-      const RenderPassId& render_pass_id) override;
   void BindFramebufferToOutputSurface() override;
   void BindFramebufferToTexture(const RenderPassId render_pass_id) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
@@ -102,7 +100,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // A map from RenderPass id to the texture used to draw the RenderPass from.
   struct RenderPassBacking {
     sk_sp<SkSurface> render_pass_surface;
-    gfx::Size size;
     bool mipmap;
     gfx::ColorSpace color_space;
     RenderPassBacking(GrContext* gr_context,

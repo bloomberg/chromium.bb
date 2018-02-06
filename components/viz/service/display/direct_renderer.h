@@ -166,8 +166,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
       const RenderPassRequirements& requirements) = 0;
   virtual bool IsRenderPassResourceAllocated(
       const RenderPassId& render_pass_id) const = 0;
-  virtual gfx::Size GetRenderPassTextureSize(
-      const RenderPassId& render_pass_id) = 0;
   virtual void BindFramebufferToOutputSurface() = 0;
   virtual void BindFramebufferToTexture(const RenderPassId render_pass_id) = 0;
   virtual void SetScissorTestRect(const gfx::Rect& scissor_rect) = 0;

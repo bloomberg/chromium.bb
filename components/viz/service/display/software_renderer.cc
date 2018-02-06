@@ -818,12 +818,4 @@ bool SoftwareRenderer::IsRenderPassResourceAllocated(
   return it != render_pass_bitmaps_.end();
 }
 
-gfx::Size SoftwareRenderer::GetRenderPassTextureSize(
-    const RenderPassId& render_pass_id) {
-  auto it = render_pass_bitmaps_.find(render_pass_id);
-  DCHECK(it != render_pass_bitmaps_.end());
-  SkBitmap& bitmap = it->second;
-  return gfx::Size(bitmap.width(), bitmap.height());
-}
-
 }  // namespace viz
