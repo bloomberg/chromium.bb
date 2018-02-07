@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">Kamu telah meminta izin kepada orang tua untuk mengunjungi situs ini</translation>
 <translation id="4871132632506079383">Dari halaman tersemat di <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Telusuri histori</translation>
+<translation id="4881695831933465202">Buka</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Perlu autentikasi</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{dan 1 halaman web lainnya}other{dan # halaman web lainnya}}</translation>
@@ -745,6 +746,7 @@
 <translation id="6563469144985748109">Pengelola Anda belum menyetujuinya</translation>
 <translation id="6569060085658103619">Anda melihat halaman ekstensi</translation>
 <translation id="6596325263575161958">Opsi enkripsi</translation>
+<translation id="6604181099783169992">Sensor Gerakan atau Cahaya</translation>
 <translation id="6624427990725312378">Info Kontak</translation>
 <translation id="6626291197371920147">Tambahkan kartu yang valid</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Penelusuran</translation>

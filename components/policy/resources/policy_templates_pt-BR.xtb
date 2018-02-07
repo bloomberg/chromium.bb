@@ -330,7 +330,7 @@
 
       Se você configurar esta política como 'AllowMigration', usuários com diretório principal com criptografia ecryptfs terão a opção de migrar para ext4 conforme necessário (atualmente, quando o Android N estiver disponível para o dispositivo).
 
-      Esta política não se aplica a apps em Kiosk, porque eles migram automaticamente. Se esta política é deixada como não definida, o dispositivo se comporta como se a opção 'DisallowArc' tivesse sido escolhida.</translation>
+      Esta política não se aplica a aplicativos de quiosque, porque eles migram automaticamente. Se esta política é deixada como não definida, o dispositivo se comporta como se a opção 'DisallowArc' tivesse sido escolhida.</translation>
 <translation id="2201555246697292490">Configurar a lista de permissões de mensagens nativas</translation>
 <translation id="2204753382813641270">Controlar a ocultação automática da estante</translation>
 <translation id="2208976000652006649">Parâmetros para URL de pesquisa que usa POST</translation>
@@ -604,6 +604,15 @@
           Esta política é opcional. Se não for definida, não ocorrerá substituição do termo de pesquisa.
 
           Esta política só é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
+<translation id="306887062252197004">Esta política permite que os usuários do recurso WebDriver modifiquem
+      políticas que possam interferir na operação.
+
+      Atualmente, esta política desativa as políticas SitePerProcess e IsolateOrigins.
+
+      Se a política for desativada, o WebDriver poderá modificar políticas
+      incompatíveis.
+      Se a política for desativada ou não for configurada, o WebDriver não terá permissão
+      para modificar políticas incompatíveis.</translation>
 <translation id="3069958900488014740">Permite desativar a otimização da descoberta automática de proxies da Web (WPAD, na sigla em inglês) no <ph name="PRODUCT_NAME" />.
 
       Se esta política for definida como "false", a otimização de WPAD será desativada, fazendo com que o <ph name="PRODUCT_NAME" /> tenha que esperar mais tempo por servidores de WPAD baseados em DNS. Se a política não estiver definida ou estiver ativada, a otimização de WPAD será ativada.
@@ -686,16 +695,6 @@
 <translation id="332771718998993005">Determina o nome anunciado como um destino do <ph name="PRODUCT_NAME" />.
 
           Se essa política for definida como uma string não vazia, essa string será usada como o nome do destino do <ph name="PRODUCT_NAME" />. Caso contrário, o nome do destino será o nome do dispositivo. Se essa política não for definida, o nome do destino será o nome do dispositivo, e o proprietário do dispositivo (ou um usuário do domínio que está gerenciando o dispositivo) poderá alterá-lo. O nome é limitado a 24 caracteres.</translation>
-<translation id="3356249700768900657">
-      OBSERVAÇÃO: essa política é experimental e pode comprometer a funcionalidade.
-      Recomendamos que você consulte a configuração da política IsolateOrigins para ter
-      o melhor de dois mundos (isolamento e impacto limitado para os usuários), usando
-      IsolateOrigins com uma lista dos sites que você quer isolar. Essa configuração,
-      SitePerProcess, isola todos os sites.
-      Se a política estiver ativada, cada site executará o próprio processo.
-      Se a política estiver desativada, a lógica de gerenciamento de processo de pré-isolamento de site entrará em vigor.
-      Se a política não for configurada, o usuário poderá alterar essa configuração.
-      </translation>
 <translation id="3381968327636295719">Usar o navegador de host por padrão</translation>
 <translation id="3395348522300156660">Especifica as impressoras que um usuário pode usar.
 
@@ -1175,6 +1174,7 @@
 <translation id="4899708173828500852">Ativar Navegação segura</translation>
 <translation id="4906194810004762807">Taxa de atualização da Política de dispositivos</translation>
 <translation id="4917385247580444890">Forte</translation>
+<translation id="4923806312383904642">Permitir que o WebDriver modifique políticas incompatíveis</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">Se esta política for definida como verdadeira ou não for configurada, o <ph name="PRODUCT_NAME" /> permitirá a adição de uma pessoa no gerenciador de usuários.
 
@@ -1189,16 +1189,6 @@
 <translation id="4983201894483989687">Permitir a execução de plug-ins que estão desatualizados</translation>
 <translation id="4988291787868618635">Ação a ser realizada quando o intervalo de inatividade for atingido</translation>
 <translation id="4995548127349206948">Se a autenticação NTLMv2 está ativada.</translation>
-<translation id="5027819375434797927">
-      OBSERVAÇÃO: essa política é experimental e pode comprometer a funcionalidade.
-      Se a política estiver ativada, cada uma das origens mencionadas em uma
-      lista separada por vírgulas serão executadas em seu próprio processo. Essa ação também isolará
-      as origens nomeadas por subdomínios. Por exemplo: especificar https://example.com/ também
-      fará com que https://foo.example.com/ seja isolado como parte do
-      site https://example.com/.
-      Se a política estiver desativada, a lógica de gerenciamento de processo de pré-isolamento de site entrará em vigor.
-      Se a política não for configurada, o usuário poderá alterar essa configuração.
-      </translation>
 <translation id="5047604665028708335">Permitir acesso a sites fora de pacotes de conteúdo</translation>
 <translation id="5052081091120171147">Se ativada, esta política força a importação do histórico de navegação a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum histórico de navegação é importado. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="5056708224511062314">Lupa desativada</translation>

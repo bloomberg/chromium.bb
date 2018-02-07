@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">Une demande d'autorisation a été envoyée à tes parents pour la consultation de ce site</translation>
 <translation id="4871132632506079383">Source : une page intégrée à l'adresse <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Rechercher dans l'historique</translation>
+<translation id="4881695831933465202">Ouvrir</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Authentification requise</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{et 1 autre page Web}one{et # autre page Web}other{et # autres pages Web}}</translation>
@@ -745,6 +746,7 @@
 <translation id="6563469144985748109">Votre responsable ne l'a pas encore autorisé</translation>
 <translation id="6569060085658103619">Vous consultez actuellement une page d'extension</translation>
 <translation id="6596325263575161958">Options de chiffrement</translation>
+<translation id="6604181099783169992">Capteurs de mouvement ou de lumière</translation>
 <translation id="6624427990725312378">Coordonnées</translation>
 <translation id="6626291197371920147">Ajouter un numéro de carte valide</translation>
 <translation id="6628463337424475685">Recherche <ph name="ENGINE" /></translation>

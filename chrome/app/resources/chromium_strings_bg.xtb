@@ -32,7 +32,6 @@
 <translation id="2158734852934720349">Лицензи за отворен код за Chromium OS</translation>
 <translation id="2241627712206172106">Ако споделяте компютър, близките и приятелите ви могат да сърфират отделно и да настроят Chromium точно така, както искат.</translation>
 <translation id="2265088490657775772">Изтеглете Chromium за своя iPhone</translation>
-<translation id="2316129865977710310">Не, благодаря</translation>
 <translation id="2347108572062610441">Това разширение промени страницата, която се показва при стартиране на Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{В момента се изтегля файл. Искате ли да анулирате изтеглянето и да излезете от Chromium ?}other{В момента се изтеглят # файла. Искате ли да анулирате изтеглянията и да излезете от Chromium ?}}</translation>
 <translation id="2396765026452590966">Разширението „<ph name="EXTENSION_NAME" />“ промени страницата, която се показва при стартиране на Chromium.</translation>

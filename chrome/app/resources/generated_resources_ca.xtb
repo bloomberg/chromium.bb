@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">Administra certificats</translation>
 <translation id="152234381334907219">Contrasenyes que no es desen mai</translation>
 <translation id="1524430321211440688">Teclat</translation>
+<translation id="1524563461097350801">No, gràcies</translation>
 <translation id="1526560967942511387">Document sense títol</translation>
 <translation id="1526925867532626635">Confirmació de la configuració de sincronització</translation>
 <translation id="1529116897397289129">Les targetes desades es mostraran aquí</translation>
@@ -875,7 +876,6 @@
 <translation id="2352947182261340447">No hi ha prou espai disponible a l'emmagatzematge local.</translation>
 <translation id="2353297238722298836">La càmera i el micròfon es poden utilitzar</translation>
 <translation id="2356070529366658676">Pregunta-ho</translation>
-<translation id="2356517949307388948">S'ha produït un error mentre Chrome cercava programari perjudicial.</translation>
 <translation id="2357949918965361754">Podeu fer servir aquesta funció per mostrar contingut de Chrome al televisor i en altres dispositius.</translation>
 <translation id="2359345697448000899">Per gestionar les extensions, feu clic a Extensions al menú Eines.</translation>
 <translation id="2359808026110333948">Continua</translation>
@@ -1110,7 +1110,6 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="2715751256863167692">Amb aquesta actualització es restableix el dispositiu Chromebook i se suprimeixen les dades d'usuari actuals.</translation>
 <translation id="2718395828230677721">Llum nocturna</translation>
 <translation id="2718998670920917754">El programari antivirus ha detectat un virus.</translation>
-<translation id="2719545156185392871">Chrome pot cercar programari perjudicial a l'ordinador i suprimir-lo.</translation>
 <translation id="2719936478972253983">S'han bloquejat les galetes següents</translation>
 <translation id="2721037002783622288">&amp;Cerca la imatge a <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2444,7 +2443,6 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="4835836146030131423">S'ha produït un error en iniciar la sessió.</translation>
 <translation id="4837926214103741331">No teniu autorització per fer servir aquest dispositiu. Contacteu amb el propietari del dispositiu per obtenir el permís d'inici de sessió.</translation>
 <translation id="4837952862063191349">Per desbloquejar i restaurar les dades locals, introduïu la contrasenya antiga de: <ph name="DEVICE_TYPE" /></translation>
-<translation id="4838355575774807786">S'ha produït un error mentre Chrome estava suprimint programari perjudicial.</translation>
 <translation id="4838836835474292213">S'ha permès l'accés de lectura al porta-retalls</translation>
 <translation id="4839303808932127586">De&amp;sa el vídeo com a...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> elements seleccionats</translation>
@@ -4046,7 +4044,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="73786666777299047">Obre Chrome Web Store</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Obtén la connexió de dades</translation>
-<translation id="7382945755068785583">Inclou informació sobre programari maliciós, sobre la configuració del sistema i sobre processos de l'ordinador.</translation>
 <translation id="7384292194278095697">Aquest dispositiu ja no és compatible</translation>
 <translation id="7385854874724088939">S'ha produït un problema en intentar imprimir. Comproveu la impressora i torneu-ho a provar.</translation>
 <translation id="7386824183915085801">La vostra versió de Chrome i del sistema operatiu s'enviarà juntament amb la informació addicional que vulgueu incloure a la secció anterior. Si incloeu l'adreça electrònica, Google podrà contactar-vos en relació amb els suggeriments que heu enviat. Aquesta informació s'utilitza per al diagnosi de problemes i per millorar Chrome. La informació personal que envieu, ja sigui de forma expressa o indirecta, es protegirà segons les nostres polítiques de privadesa.<ph name="BEGIN_BOLD" /> En enviar els suggeriments, accepteu que Google els pugui utilitzar per millorar els seus productes o serveis.
@@ -4912,7 +4909,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8784626084144195648">Mitjana descartada</translation>
 <translation id="8785622406424941542">Llapis òptic</translation>
 <translation id="8787254343425541995">Permet servidors intermediaris per a xarxes compartides</translation>
-<translation id="8791260615011736453">És possible que, si cal, també se suprimeixin elements no inclosos en aquesta llista. Obtén més informació sobre la &lt;a href="<ph name="URL" />"&gt;protecció contra programari no desitjat&lt;/a&gt; a l'informe de privadesa de Chrome.</translation>
 <translation id="8791534160414513928">Envia una sol·licitud de no seguiment amb el trànsit de navegació</translation>
 <translation id="8792609692701651064">La finestra activa s'ha mogut a la pantalla esquerra</translation>
 <translation id="8794025342371547160">IP restringida</translation>

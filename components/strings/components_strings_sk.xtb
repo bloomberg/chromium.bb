@@ -520,6 +520,7 @@
 <translation id="4858792381671956233">Požiadali ste rodičov o povolenie návštevy tohto webu.</translation>
 <translation id="4871132632506079383">Z vloženej stránke na webe <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Hľadať v histórii</translation>
+<translation id="4881695831933465202">Otvoriť</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Vyžaduje sa overenie totožnosti</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{a 1 ďalšia webová stránka}few{a # ďalšie webové stránky}many{a # ďalšej webovej stránky}other{a # ďalších webových stránok}}</translation>
@@ -740,6 +741,7 @@
 <translation id="6563469144985748109">Váš správca to zatiaľ neschválil</translation>
 <translation id="6569060085658103619">Prezeráte si stránku s rozšíreniami</translation>
 <translation id="6596325263575161958">Možnosti šifrovania</translation>
+<translation id="6604181099783169992">Senzory pohybu alebo svetla</translation>
 <translation id="6624427990725312378">Kontaktné informácie</translation>
 <translation id="6626291197371920147">Pridanie platného čísla karty</translation>
 <translation id="6628463337424475685">Vyhľadávanie <ph name="ENGINE" /></translation>

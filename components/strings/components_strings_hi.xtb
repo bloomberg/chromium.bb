@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">आपने अपने अभिभावकों से पूछा था कि इस साइट पर जाना ठीक है या नहीं</translation>
 <translation id="4871132632506079383"><ph name="SITE" /> पर एम्बेड किए गए पेज से</translation>
 <translation id="4880827082731008257">खोज इतिहास</translation>
+<translation id="4881695831933465202">खोलें</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">प्रमाणीकरण ज़रूरी है</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{1 और वेब पेज}one{# और वेब पेज}other{# और वेब पेज}}</translation>
@@ -745,6 +746,7 @@
 <translation id="6563469144985748109">आपके प्रबंधक ने अभी तक इसकी स्वीकृति नहीं दी है</translation>
 <translation id="6569060085658103619">आप एक एक्सटेंशन पेज देख रहे हैं</translation>
 <translation id="6596325263575161958">सुरक्षित तरीका विकल्प</translation>
+<translation id="6604181099783169992">गति या लाइट सेंसर</translation>
 <translation id="6624427990725312378">संपर्क जानकारी</translation>
 <translation id="6626291197371920147">मान्य कार्ड नंबर जोड़ें</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> खोज</translation>

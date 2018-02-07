@@ -689,16 +689,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="332771718998993005">Beslut dig for et navn, der angives som en destination for <ph name="PRODUCT_NAME" />.
 
           Hvis denne politik er angivet som en udfyldt streng, anvendes strengen som navnet på destinationen for <ph name="PRODUCT_NAME" />. Hvis ikke, er navnet på destinationen det samme som navnet på enheden. Hvis denne politik ikke er angivet, er navnet på destinationen det samme som navnet på enheden, og enhedsejeren (eller en bruger fra domænet, som administrerer enheden) kan ændre det. Navnet må højst indeholde 24 tegn.</translation>
-<translation id="3356249700768900657">
-      BEMÆRK! Denne politik er eksperimentel og kan ødelægge funktionaliteten.
-      Det er en god idé at kigge på politikindstillingen IsolateOrigins for at få det bedste
-      fra begge verdener (isolering og begrænset indvirkning på brugerne) ved at bruge
-      IsolateOrigins sammen med en liste over de websites, du vil isolere. Denne indstilling,
-      SitePerProcess, isolerer all websites.
-      Hvis politikken er aktiveret, kører hvert website sin egen proces.
-      Hvis politikken er deaktiveret, anvendes processtyringslogikken, som blev brugt før isolering af websites.
-      Hvis politikken ikke konfigureres, kan brugeren ændre denne indstilling.
-      </translation>
 <translation id="3381968327636295719">Brug værtsbrowseren som standard</translation>
 <translation id="3395348522300156660">Angiver, hvilke printere en bruger kan anvende..
 
@@ -1197,16 +1187,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4983201894483989687">Tillad, at der køres forældede plugins</translation>
 <translation id="4988291787868618635">Påkrævet handling for inaktivitetsforsinkelse</translation>
 <translation id="4995548127349206948">Om NTLMv2-godkendelse er aktiveret.</translation>
-<translation id="5027819375434797927">
-      BEMÆRK! Denne politik er eksperimentel og kan ødelægge funktionaliteten.
-      Hvis politikken er aktiveret, kører hvert af de angivne websites
-      på en kommasepareret liste sin egen proces. Dette isolerer også
-      websites, der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/ angives,
-      isoleres https://foo.eksempel.dk/ også som en del af
-      websitet https://eksempel.dk/.
-      Hvis politikken er deaktiveret, anvendes processtyringslogikken, som blev brugt før isolering af websites.
-      Hvis politikken ikke konfigureres, kan brugeren ændre denne indstilling.
-      </translation>
 <translation id="5047604665028708335">Tillad adgang til websites uden for indholdspakker.</translation>
 <translation id="5052081091120171147">Denne politik tvinger import af browserhistorikken fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis den er deaktiveret, importeres der ikke nogen browserdata. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="5056708224511062314">Luppen er deaktiveret</translation>

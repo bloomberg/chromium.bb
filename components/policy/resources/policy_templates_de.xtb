@@ -686,21 +686,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="332771718998993005">Hiermit wird der Name von <ph name="PRODUCT_NAME" />-Zielen festgelegt.
 
           Wird für diese Richtlinie ein nicht-leerer String definiert, dann wird dieser als Name für das <ph name="PRODUCT_NAME" />-Ziel verwendet. Andernfalls wird der Gerätename als Zielname verwendet. Ist diese Richtlinie nicht definiert, wird der Gerätename als Zielname verwendet und der Geräteeigentümer oder ein Nutzer der Domain, von der das Gerät verwaltet wird, hat die Möglichkeit, den Namen zu ändern. Der Name darf maximal 24 Zeichen enthalten.</translation>
-<translation id="3356249700768900657">
-      HINWEIS: Diese Richtlinie ist experimentell und kann die Funktionalität
-      beeinträchtigen!
-      Sie sollten sich die IsolateOrigins-Richtlinieneinstellung ansehen, um die
-      Auswirkungen auf die Nutzer bei der Isolierung von Websites
-      gering zu halten. Verwenden Sie dazu IsolateOrigins mit einer
-      Liste von Websites, die Sie isolieren möchten. Mit der Einstellung
-      "SitePerProcess" werden alle Websites isoliert.
-      Wenn die Richtlinie aktiviert ist, wird auf jeder Website ein eigener Prozess
-      ausgeführt.
-      Wenn die Richtlinie deaktiviert ist, wird die Prozessverwaltungslogik vor der
-      Website-Isolierung übernommen.
-      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung
-      ändern.
-      </translation>
 <translation id="3381968327636295719">Standardmäßig Host-Browser verwenden</translation>
 <translation id="3395348522300156660">Gibt die Drucker an, die ein Nutzer verwenden kann.
 
@@ -1194,19 +1179,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 <translation id="4983201894483989687">Ausführung veralteter Plug-ins zulassen</translation>
 <translation id="4988291787868618635">Auszuführende Aktion bei Erreichen der Inaktivitätsverzögerung</translation>
 <translation id="4995548127349206948">Steuerung der Aktivierung der NTLMv2-Authentifizierung.</translation>
-<translation id="5027819375434797927">
-      HINWEIS: Diese Richtlinie ist experimentell und kann die Funktionalität
-      beeinträchtigen!
-      Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in
-      einer durch Kommas getrennten Liste ein eigener Prozess ausgeführt.
-      Dadurch werden auch durch Subdomains benannte Ursprünge isoliert; z. B.
-      wenn Sie https://example.com/ angeben, wird auch
-      https://foo.example.com/ als Teil der Website https://example.com/ isoliert.
-      Wenn die Richtlinie deaktiviert ist, wird die Prozessverwaltungslogik vor der
-      Website-Isolierung übernommen.
-      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung
-      ändern.
-      </translation>
 <translation id="5047604665028708335">Zugriff auf Websites außerhalb von Inhaltspaketen erlauben</translation>
 <translation id="5052081091120171147">Diese Richtlinie erzwingt, sofern aktiv, den Import des Browserverlaufs aus dem aktuellen Standardbrowser. Ist die Richtlinie aktiviert, wirkt sie sich auch auf den Importdialog aus. Wenn sie deaktiviert ist, erfolgt kein Import des Browserverlaufs. Sollte sie nicht konfiguriert sein, so wird der Nutzer möglicherweise gefragt, ob ein Import erfolgen soll, oder der Import findet automatisch statt.</translation>
 <translation id="5056708224511062314">Lupe deaktiviert</translation>

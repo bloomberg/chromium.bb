@@ -92,7 +92,7 @@
 <translation id="1134009406053225289">在無痕式視窗中開啟</translation>
 <translation id="1137673463384776352">在「<ph name="APP" />」中開啟連結</translation>
 <translation id="1140351953533677694">存取你的藍牙和序列裝置</translation>
-<translation id="1140610710803014750">如要在所有裝置上存取你的書籤，請登入並開啟同步處理功能。</translation>
+<translation id="1140610710803014750">如要將書籤同步到所有裝置，請登入並開啟同步處理功能。</translation>
 <translation id="114140604515785785">擴充功能根目錄：</translation>
 <translation id="1143142264369994168">憑證簽署者</translation>
 <translation id="1145292499998999162">已封鎖外掛程式</translation>
@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">管理憑證</translation>
 <translation id="152234381334907219">永不儲存</translation>
 <translation id="1524430321211440688">鍵盤</translation>
+<translation id="1524563461097350801">不用了，謝謝</translation>
 <translation id="1526560967942511387">未命名文件</translation>
 <translation id="1526925867532626635">確認同步處理設定</translation>
 <translation id="1529116897397289129">你所儲存的卡片會顯示在這裡</translation>
@@ -462,7 +463,7 @@
 <translation id="1679068421605151609">開發人員工具</translation>
 <translation id="16815041330799488">禁止網站讀取已複製到剪貼簿的文字和圖片</translation>
 <translation id="1682548588986054654">新增無痕式視窗</translation>
-<translation id="168715261339224929">如要在所有裝置上存取你的書籤，請開啟同步處理功能。</translation>
+<translation id="168715261339224929">如要將書籤同步到所有裝置，請開啟同步處理功能。</translation>
 <translation id="1688935057616748272">請輸入英文字母</translation>
 <translation id="168991973552362966">新增鄰近印表機</translation>
 <translation id="1689945336726856614">複製網址(&amp;U)</translation>
@@ -875,7 +876,6 @@
 <translation id="2352947182261340447">可用的本機儲存空間不足。</translation>
 <translation id="2353297238722298836">可使用攝影機和麥克風</translation>
 <translation id="2356070529366658676">詢問</translation>
-<translation id="2356517949307388948">Chrome 搜尋有害的軟體時發生錯誤。</translation>
 <translation id="2357949918965361754">您可以使用這項功能讓電視或其他裝置顯示 Chrome 的內容。</translation>
 <translation id="2359345697448000899">如要管理擴充功能，只要按一下 [工具] 選單裡的 [擴充功能] 即可。</translation>
 <translation id="2359808026110333948">繼續</translation>
@@ -1111,7 +1111,6 @@
 <translation id="2715751256863167692">這項升級作業會重設你的 Chromebook 並移除目前的使用者資料。</translation>
 <translation id="2718395828230677721">夜燈</translation>
 <translation id="2718998670920917754">防毒軟體偵測到病毒。</translation>
-<translation id="2719545156185392871">Chrome 可以找出電腦上有害的軟體並予以移除。</translation>
 <translation id="2719936478972253983">系統已封鎖下列 Cookie</translation>
 <translation id="2721037002783622288">透過 <ph name="SEARCH_ENGINE" /> 搜尋圖片(&amp;S)</translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -1895,7 +1894,7 @@
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3860381078714302691">歡迎使用 Hangouts Meet</translation>
 <translation id="3862134173397075045">歡迎在 Chrome 中體驗 Cast 服務！</translation>
-<translation id="3862788408946266506">含有「kiosk_only」資訊清單屬性的應用程式只能在 Chrome 作業系統資訊站模式中安裝</translation>
+<translation id="3862788408946266506">含有「kiosk_only」資訊清單屬性的應用程式只能在 Chrome 作業系統 Kiosk 模式中安裝</translation>
 <translation id="3865414814144988605">解析度</translation>
 <translation id="386548886866354912">使用「<ph name="EXTENSION_NAME" />」封裝</translation>
 <translation id="3866249974567520381">說明</translation>
@@ -2145,7 +2144,7 @@
 <translation id="4300305918532693141">如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" />。</translation>
 <translation id="430303754419731728">有作業系統更新，登入即可開始執行作業。</translation>
 <translation id="4305227814872083840">長 (2 秒)</translation>
-<translation id="4306119971288449206">應用程式的 content-type 應設為「<ph name="CONTENT_TYPE" />」</translation>
+<translation id="4306119971288449206">應用程式的內容類型應設為「<ph name="CONTENT_TYPE" />」</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K 作用中)</translation>
 <translation id="4310139701823742692">檔案格式錯誤。請檢查 PPD 檔案，然後再試一次。</translation>
 <translation id="431076611119798497">詳細資訊(&amp;D)</translation>
@@ -2445,7 +2444,6 @@
 <translation id="4835836146030131423">登入發生錯誤。</translation>
 <translation id="4837926214103741331">您未獲得授權，無法使用這個裝置。如需登入權限，請與裝置擁有者聯絡。</translation>
 <translation id="4837952862063191349">如要解鎖並還原您的本機資料，請輸入舊的 <ph name="DEVICE_TYPE" /> 密碼。</translation>
-<translation id="4838355575774807786">Chrome 移除有害的軟體時發生錯誤。</translation>
 <translation id="4838836835474292213">已允許讀取剪貼簿</translation>
 <translation id="4839303808932127586">將影片另存為(&amp;V)...</translation>
 <translation id="4839847978919684242">已選取 <ph name="SELCTED_FILES_COUNT" /> 個項目</translation>
@@ -2607,7 +2605,7 @@
 <translation id="5074318175948309511">你可能需要重新載入這個網頁，新設定才會生效。</translation>
 <translation id="5075131525758602494">輸入 SIM 卡的 PIN 碼</translation>
 <translation id="5078638979202084724">將所有分頁加入書籤</translation>
-<translation id="5084230410268011727">允許網站使用動作和光源感應器</translation>
+<translation id="5084230410268011727">允許網站使用動作感應器和光源感應器</translation>
 <translation id="5085162214018721575">正在檢查有無更新</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">要還原預設首頁嗎？</translation>
@@ -4044,7 +4042,6 @@
 <translation id="73786666777299047">開啟 Chrome 線上應用程式商店</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">取得數據連線</translation>
-<translation id="7382945755068785583">提供你電腦上的有害軟體、系統設定和處理程序的相關資訊。</translation>
 <translation id="7384292194278095697">我們已不再支援這個裝置</translation>
 <translation id="7385854874724088939">準備列印時出現錯誤，請檢查你的印表機，然後再試一次。</translation>
 <translation id="7386824183915085801">系統會提交你的 Chrome 和作業系統版本，
@@ -4915,7 +4912,6 @@
 <translation id="8784626084144195648">二進位化平均</translation>
 <translation id="8785622406424941542">觸控筆</translation>
 <translation id="8787254343425541995">允許共用網路使用 Proxy</translation>
-<translation id="8791260615011736453">你也可以視需要移除未列出的項目。如要進一步瞭解&lt;a href="<ph name="URL" />"&gt;垃圾軟體防護功能&lt;/a&gt;，請參閱 Chrome 隱私權白皮書。</translation>
 <translation id="8791534160414513928">將「不追蹤」要求與瀏覽流量一併送出</translation>
 <translation id="8792609692701651064">使用中的視窗已移至畫面左側</translation>
 <translation id="8794025342371547160">受限 IP</translation>

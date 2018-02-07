@@ -52,7 +52,7 @@
 
 <ph name="EXTENSION_NAME" /></translation>
 <translation id="1071917609930274619">Cifrado de datos</translation>
-<translation id="1074944608454986967">Para leer el contenido en voz alta, mantén presionado el botón de búsqueda y, luego, haz clic o arrastra el cursor para seleccionar contenido. O bien, destaca una parte y presiona Búsqueda + S.</translation>
+<translation id="1074944608454986967">Para leer el contenido en voz alta, mantén presionado el botón de búsqueda y, luego, haz clic en el contenido o arrastra el cursor para seleccionarlo. O bien, destaca una parte y presiona Búsqueda + S.</translation>
 <translation id="1076698951459398590">Habilitar tema</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
 <translation id="1077946062898560804">Configurar actualizaciones automáticas para todos los usuarios</translation>
@@ -351,6 +351,7 @@
 <translation id="1521442365706402292">Gestionar certificados</translation>
 <translation id="152234381334907219">Nunca guardado</translation>
 <translation id="1524430321211440688">Teclado</translation>
+<translation id="1524563461097350801">No, gracias</translation>
 <translation id="1526560967942511387">Documento sin título</translation>
 <translation id="1526925867532626635">Confirmar la configuración de sincronización</translation>
 <translation id="1529116897397289129">Las tarjetas guardadas aparecerán aquí</translation>
@@ -872,7 +873,6 @@
 <translation id="2352947182261340447">No hay espacio suficiente en el almacenamiento local.</translation>
 <translation id="2353297238722298836">Cámara y micrófono permitidos</translation>
 <translation id="2356070529366658676">Preguntar</translation>
-<translation id="2356517949307388948">Se produjo un error cuando Chrome buscaba software dañino.</translation>
 <translation id="2357949918965361754">Puedes usar esta función para ver contenido de Chrome en tu TV u otros dispositivos.</translation>
 <translation id="2359345697448000899">Para administrar tus extensiones, haz clic en la opción Extensiones en el menú Herramientas.</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -1108,7 +1108,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2715751256863167692">Esta actualización restablece tu Chromebook y quita los datos del usuario actual.</translation>
 <translation id="2718395828230677721">Luz nocturna</translation>
 <translation id="2718998670920917754">El software antivirus detectó un virus.</translation>
-<translation id="2719545156185392871">Chrome puede encontrar software dañino en tu computadora y quitarlo.</translation>
 <translation id="2719936478972253983">Se bloquearon las siguientes cookies</translation>
 <translation id="2721037002783622288">Buscar imagen en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2443,7 +2442,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="4835836146030131423">Error al acceder</translation>
 <translation id="4837926214103741331">No tienes autorización para utilizar este dispositivo. Para obtener permiso de acceso, comunícate con el propietario del dispositivo.</translation>
 <translation id="4837952862063191349">Para desbloquear y restaurar los datos locales, ingresa la contraseña anterior de <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4838355575774807786">Se produjo un error cuando Chrome intentaba quitar software dañino.</translation>
 <translation id="4838836835474292213">Se permitió el acceso de lectura al portapapeles</translation>
 <translation id="4839303808932127586">Guardar video como...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> elementos seleccionados</translation>
@@ -4044,7 +4042,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="73786666777299047">Abrir Chrome Web Store</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Obtener conexión de datos</translation>
-<translation id="7382945755068785583">Incluye información sobre software dañino, la configuración del sistema y los procesos en la computadora.</translation>
 <translation id="7384292194278095697">Este dispositivo ya no es compatible</translation>
 <translation id="7385854874724088939">Algo falló al intentar imprimir. Comprueba tu impresora e inténtalo nuevamente.</translation>
 <translation id="7386824183915085801">Las versiones de Chrome y del sistema operativo se enviarán junto con
@@ -4919,7 +4916,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8784626084144195648">Promedio de datos agrupados</translation>
 <translation id="8785622406424941542">Pluma stylus</translation>
 <translation id="8787254343425541995">Permitir proxies para redes compartidas</translation>
-<translation id="8791260615011736453">Es posible que los elementos que no se muestran aquí también se quiten si es necesario. Obtén más información sobre &lt;a href="<ph name="URL" />"&gt;la protección contra software no deseado&lt;/a&gt; en el informe de privacidad de Chrome.</translation>
 <translation id="8791534160414513928">Enviar solicitud de "No realizar seguimiento" con el tráfico de navegación</translation>
 <translation id="8792609692701651064">La ventana activa se movió a la pantalla izquierda</translation>
 <translation id="8794025342371547160">IP restringido</translation>

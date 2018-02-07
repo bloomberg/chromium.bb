@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">你已詢問家長是否同意你造訪這個網站</translation>
 <translation id="4871132632506079383">來自 <ph name="SITE" /> 的嵌入式網頁</translation>
 <translation id="4880827082731008257">搜尋紀錄</translation>
+<translation id="4881695831933465202">開啟</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />，<ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">需要進行驗證</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{還有另外 1 個網頁}other{還有另外 # 個網頁}}</translation>
@@ -745,6 +746,7 @@
 <translation id="6563469144985748109">你的管理員尚未核准這個網站</translation>
 <translation id="6569060085658103619">目前顯示的是擴充功能頁面</translation>
 <translation id="6596325263575161958">加密選項</translation>
+<translation id="6604181099783169992">動作或光源感應器</translation>
 <translation id="6624427990725312378">聯絡資訊</translation>
 <translation id="6626291197371920147">新增有效的信用卡號碼</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> 搜尋</translation>

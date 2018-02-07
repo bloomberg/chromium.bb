@@ -694,16 +694,6 @@
 <translation id="332771718998993005">Stabilește numele anunțat ca o destinație pentru <ph name="PRODUCT_NAME" />.
 
           Dacă această politică este setată la un șir completat, acel șir va fi folosit ca nume al destinației pentru <ph name="PRODUCT_NAME" />. În caz contrar, numele destinației va fi numele dispozitivului. Dacă această politică nu este setată, numele destinației va fi numele dispozitivului, iar proprietarului dispozitivului (sau unui utilizator de pe domeniul care gestionează dispozitivul) i se va permite să îl modifice. Numele este limitat la 24 de caractere.</translation>
-<translation id="3356249700768900657">
-      NOTĂ: Această politică este experimentală și poate întrerupe funcționarea!
-      Îți recomandăm să verifici setarea pentru politica IsolateOrigins pentru a beneficia
-      la maximum de fiecare, de izolare și de impact limitat asupra utilizatorilor, folosind
-      IsolateOrigins cu o listă a site-urilor pe care vrei să le izolezi. Această setare,
-      SitePerProcess, izolează toate site-urile.
-      Dacă politica este activată, fiecare site va rula propriul proces.
-      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă Izolării site-ului.
-      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
-      </translation>
 <translation id="3381968327636295719">Utilizează în mod prestabilit browserul gazdă</translation>
 <translation id="3395348522300156660">Specifică imprimantele pe care le poate folosi un utilizator.
 
@@ -1205,16 +1195,6 @@
 <translation id="4983201894483989687">Permite rularea pluginurilor învechite</translation>
 <translation id="4988291787868618635">Măsura care se va lua la atingerea intervalului maxim de inactivitate</translation>
 <translation id="4995548127349206948">Dacă este activată autentificarea NTLMv2.</translation>
-<translation id="5027819375434797927">
-      NOTĂ: Această politică este experimentală și poate întrerupe funcționarea!
-      Dacă politica este activată, fiecare dintre originile indicate într-o
-      listă de valori separate prin virgulă va rula propriul proces. Aceasta va izola, de asemenea,
-      originile denumite după subdomenii; de exemplu, specificarea https://example.com/ va
-      cauza și izolarea https://foo.example.com/ ca parte a
-      site-ului https://example.com/.
-      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă Izolării site-ului.
-      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
-      </translation>
 <translation id="5047604665028708335">Se permite accesul la site-urile din afara pachetelor de conținut</translation>
 <translation id="5052081091120171147">Dacă este activată, această politică forțează importarea istoricului de navigare din browserul prestabilit actual. Dacă este activată, această politică afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, istoricul de navigare nu va fi importat. În cazul în care nu este setată, utilizatorul poate fi întrebat dacă dorește importarea sau aceasta poate avea loc în mod automat.</translation>
 <translation id="5056708224511062314">Lupă ecran dezactivată</translation>

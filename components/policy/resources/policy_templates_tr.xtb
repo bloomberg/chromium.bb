@@ -724,16 +724,6 @@
 <translation id="332771718998993005"><ph name="PRODUCT_NAME" /> hedefi olarak tanıtılan adı belirleyin.
 
           Bu politika boş olmayan bir dizeye ayarlanırsa, söz konusu dize <ph name="PRODUCT_NAME" /> hedefinin adı olarak kullanılır. Aksi halde hedef adı cihaz adı olur. Bu politika ayarlanmazsa hedef adı cihaz adı olur ve cihaz sahibi (veya alandan cihazı yöneten bir kullanıcı), adı değiştirme iznine sahip olur. Ad, 24 karakterle sınırlıdır.</translation>
-<translation id="3356249700768900657">
-      NOT: Bu politika deneme niteliğinde olup işleyişi bozabilir!
-      Hem izolasyondan hem de kullanıcılar için sınırlı etkiden en iyi şekilde yararlanmak
-      üzere IsolateOrigins politika ayarına bakmak isteyebilirsiniz. Bunun için, izole
-      etmek istediğiniz sitelerin listesiyle IsolateOrigins'i kullanabilirsiniz. Bu ayar
-      (SitePerProcess) tüm siteleri izole eder.
-      Bu politikanın etkinleştirilmesi halinde her site kendi işleminde çalışır.
-      Bu politikanın devre dışı bırakılması halinde Site İzolasyonu öncesi işlem yönetimi mantığı etkin olur.
-      Bu politikanın yapılandırılmaması halinde kullanıcı bu ayarı değiştirebilir.
-      </translation>
 <translation id="3381968327636295719">Varsayılan olarak ana makine tarayıcısını kullan</translation>
 <translation id="3395348522300156660">Bir kullanıcının kullanabileceği yazıcıları belirtir.
 
@@ -1259,16 +1249,6 @@ politikayı geçersiz kılamaz.
 <translation id="4983201894483989687">Eski eklentilerin çalıştırılmasına izin ver</translation>
 <translation id="4988291787868618635">Boşta kalma gecikme süresine ulaşıldığında uygulanacak işlem</translation>
 <translation id="4995548127349206948">NTLMv2 kimlik doğrulamasının etkinleştirilip etkinleştirilmediği.</translation>
-<translation id="5027819375434797927">
-      NOT: Bu politika deneme niteliğinde olup işleyişi bozabilir!
-      Bu politikanın etkinleştirilmesi halinde, virgülle ayrılmış listede adı verilen her
-      kaynak kendi işleminde çalışır. Bu politika ayrıca alt alan adlarıyla adlandırılan
-      kaynakları da izole eder; örneğin, https://example.com/ adresinin belirtilmesi,
-      https://example.com/ sitesinin bir parçası olarak https://foo.example.com/ sitesinin de
-      izole edilmesine neden olur.
-      Bu politikanın devre dışı bırakılması halinde Site İzolasyonu öncesi işlem yönetimi mantığı etkin olur.
-      Bu politikanın yapılandırılmaması halinde kullanıcı bu ayarı değiştirebilir.
-      </translation>
 <translation id="5047604665028708335">İçerik paketlerinin dışındaki sitelere erişime izin ver</translation>
 <translation id="5052081091120171147">Bu politika, göz atma geçmişini etkin olması durumunda geçerli varsayılan tarayıcıdan içe aktarır. Bu politika etkinleştirilirse, içe aktarma iletişim kutusunu da etkiler.
 

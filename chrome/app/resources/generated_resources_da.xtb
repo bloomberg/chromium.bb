@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">Administrer certifikater</translation>
 <translation id="152234381334907219">Aldrig gemt</translation>
 <translation id="1524430321211440688">Tastatur</translation>
+<translation id="1524563461097350801">Nej tak</translation>
 <translation id="1526560967942511387">Unavngivet dokument</translation>
 <translation id="1526925867532626635">Bekræft indstillinger for synkronisering</translation>
 <translation id="1529116897397289129">Dine gemte kort vises her</translation>
@@ -872,7 +873,6 @@
 <translation id="2352947182261340447">Der er ikke nok tilgængelig plads på det lokale lager.</translation>
 <translation id="2353297238722298836">Der er givet adgang til kameraet og mikrofonen</translation>
 <translation id="2356070529366658676">Spørg</translation>
-<translation id="2356517949307388948">Der opstod en fejl i Chrome ved søgningen efter skadelig software.</translation>
 <translation id="2357949918965361754">Du kan bruge denne funktion til at vise indhold fra Chrome på dit fjernsyn eller andre enheder.</translation>
 <translation id="2359345697448000899">Administrer dine udvidelser ved at klikke på Udvidelser i værktøjsmenuen.</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
@@ -1109,7 +1109,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="2715751256863167692">Denne opgradering nulstiller din Chromebook og fjerner aktuelle brugerdata.</translation>
 <translation id="2718395828230677721">Nattelys</translation>
 <translation id="2718998670920917754">Antivirussoftwaren har fundet en virus.</translation>
-<translation id="2719545156185392871">Chrome kan finde og fjerne skadelig software på din computer.</translation>
 <translation id="2719936478972253983">Følgende cookies blev blokeret</translation>
 <translation id="2721037002783622288">&amp;Søg efter billedet på <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2446,7 +2445,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4835836146030131423">Fejl under login.</translation>
 <translation id="4837926214103741331">Du har ikke tilladelse til at bruge denne enhed. Kontakt enhedsejeren for at få tilladelse til at logge ind.</translation>
 <translation id="4837952862063191349">Indtast din gamle <ph name="DEVICE_TYPE" /> adgangskode for at låse op for og gendanne dine lokale data.</translation>
-<translation id="4838355575774807786">Der opstod en fejl i Chrome ved fjernelsen af skadelig software.</translation>
 <translation id="4838836835474292213">Der blev givet læseadgang til udklipsholderen</translation>
 <translation id="4839303808932127586">&amp;Gem video som ...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> elementer valgt</translation>
@@ -4048,7 +4046,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="73786666777299047">Åbn Chrome Webshop</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Få dataforbindelse</translation>
-<translation id="7382945755068785583">Indeholder oplysninger om skadelig software, systemindstillinger og processer på din computer.</translation>
 <translation id="7384292194278095697">Denne enhed understøttes ikke længere</translation>
 <translation id="7385854874724088939">Der gik noget galt, da du prøvede at udskrive. Tjek din printer, og prøv igen.</translation>
 <translation id="7386824183915085801">Versionsnummeret på din Chrome-browser og dit operativsystem sendes sammen med
@@ -4922,7 +4919,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8784626084144195648">Kasseret gennemsnit</translation>
 <translation id="8785622406424941542">Pen</translation>
 <translation id="8787254343425541995">Tillad proxyer til delte netværk</translation>
-<translation id="8791260615011736453">Elementer, der ikke er angivet her, kan muligvis også fjernes om nødvendigt. Få flere oplysninger om &lt;a href="<ph name="URL" />"&gt;beskyttelse mod uønsket software&lt;/a&gt; i hvidbogen om privatliv for Chrome.</translation>
 <translation id="8791534160414513928">Send en anmodning om "Do Not Track" sammen med din browsertrafik</translation>
 <translation id="8792609692701651064">Det aktive vindue blev flyttet til venstre skærm</translation>
 <translation id="8794025342371547160">Adgangsbeskyttet IP-adresse</translation>

@@ -32,7 +32,6 @@
 <translation id="2158734852934720349">Licencje oprogramowania typu open source w Chromium OS</translation>
 <translation id="2241627712206172106">Jeśli dzielisz się komputerem ze znajomymi lub rodziną, wszyscy możecie niezależnie przeglądać internet i po swojemu skonfigurować Chromium.</translation>
 <translation id="2265088490657775772">pobierz Chromium na iPhone'a</translation>
-<translation id="2316129865977710310">Nie, dziękuję</translation>
 <translation id="2347108572062610441">To rozszerzenie ustawiło inną stronę wyświetlaną po uruchomieniu Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Trwa pobieranie pliku. Czy chcesz je anulować i wyjść z Chromium?}few{Trwa pobieranie # plików. Czy chcesz je anulować i wyjść z Chromium?}many{Trwa pobieranie # plików. Czy chcesz je anulować i wyjść z Chromium?}other{Trwa pobieranie # pliku. Czy chcesz je anulować i wyjść z Chromium?}}</translation>
 <translation id="2396765026452590966">Rozszerzenie „<ph name="EXTENSION_NAME" />” ustawiło inną stronę wyświetlaną po uruchomieniu Chromium.</translation>

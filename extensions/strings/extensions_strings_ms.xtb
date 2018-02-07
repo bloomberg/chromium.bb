@@ -46,7 +46,6 @@
 <translation id="6322279351188361895">Gagal untuk membaca kunci persendirian.</translation>
 <translation id="6391538222494443604">Direktori input mesti wujud.</translation>
 <translation id="641087317769093025">Tidak boleh menyahzip sambungan</translation>
-<translation id="6542618148162044354">"<ph name="APP_NAME" />" meminta akses kepada satu atau beberapa peranti anda.</translation>
 <translation id="657064425229075395">Tidak dapat memuatkan skrip latar belakang '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> daripada <ph name="VENDOR_NAME" /> (nombor siri <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Tidak dapat mencipta direktori untuk menyahzip: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -64,7 +63,6 @@
 <translation id="8636666366616799973">Pakej adalah tidak sah. Butiran: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Sambungan ini gagal mengubah hala permintaan rangkaian ke <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> kerana sambungan lain (<ph name="EXTENSION_NAME" />) mengubah halanya ke <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Penyahpadat Sambungan</translation>
-<translation id="8761756413268424715">"<ph name="APP_NAME" />" meminta akses kepada salah satu peranti anda:</translation>
 <translation id="8825366169884721447">Sambungan ini gagal mengubah suai pengatas permintaan "<ph name="HEADER_NAME" />" untuk permintaan rangkaian kerana ubah suai tersebut bercanggah dengan sambungan lain (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Kunci persendirian untuk sambungan yang dinyatakan telah wujud. Gunakan semula kunci tersebut atau padamkannya dahulu.</translation>
 <translation id="907841381057066561">Gagal untuk mencipta fail zip sementara semasa pembungkusan.</translation>

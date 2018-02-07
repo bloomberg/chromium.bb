@@ -34,7 +34,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2158734852934720349">Licencias de código abierto de Chromium OS</translation>
 <translation id="2241627712206172106">Si compartes un ordenador, tus amigos y familiares pueden navegar de forma independiente y configurar Chromium a su gusto.</translation>
 <translation id="2265088490657775772">descarga Chromium en tu iPhone</translation>
-<translation id="2316129865977710310">No, gracias</translation>
 <translation id="2347108572062610441">Esta extensión ha cambiado la página que se muestra al iniciar Chromium.</translation>
 <translation id="2389622953163669926">{NUM_DOWNLOAD,plural, =1{Actualmente hay una descarga en curso. ¿Quieres cancelar la descarga y salir de Chromium?}other{Actualmente hay # descargas en curso. ¿Quieres cancelar las descargas y salir de Chromium?}}</translation>
 <translation id="2396765026452590966">La extensión <ph name="EXTENSION_NAME" /> ha cambiado la página que se muestra al iniciar Chromium.</translation>

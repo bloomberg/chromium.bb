@@ -635,6 +635,15 @@
           Dasar ini tidak wajib. Jika tidak ditetapkan, tiada penggantian istilah carian akan dilaksanakan.
 
           Dasar ini dihormati hanya jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
+<translation id="306887062252197004">Dasar ini membenarkan pengguna ciri WebDriver untuk mengatasi
+      dasar yang boleh campur tangan dalam operasi ini.
+
+      Dasar ini melumpuhkan dasar SitePerProcess dan IsolateOrigins pada masa ini.
+
+      Jika dasar ini didayakan, WebDriver akan dapat mengatasi dasar
+      yang tidak serasi.
+      Jika dasar ini dilumpuhkan atau tidak dikonfigurasikan, WebDriver tidak akan dibenarkan
+      untuk mengatasi dasar yang tidak serasi.</translation>
 <translation id="3069958900488014740">Membolehkan pengoptimuman WPAD (Penemuan Auto Proksi Web) dimatikan dalam <ph name="PRODUCT_NAME" />. 
 
       Jika dasar ini ditetapkan kepada palsu, pengoptimuman WPAD dilumpuhkan menyebabkan <ph name="PRODUCT_NAME" /> menunggu lebih lama untuk pelayan WPAD berasaskan DNS. Jika dasar ini tidak ditetapkan atau didayakan, pengoptimuman WPAD didayakan.
@@ -721,16 +730,6 @@
 <translation id="332771718998993005">Tentukan nama yang diiklankan sebagai destinasi <ph name="PRODUCT_NAME" />.
 
           Jika dasar ini ditetapkan kepada rentetan tidak kosong, rentetan itu akan digunakan sebagai nama bagi destinasi <ph name="PRODUCT_NAME" />. Jika tidak, nama peranti akan dijadikan nama destinasi. Jika dasar ini tidak ditetapkan, nama peranti akan dijadikan nama destinasi dan pemilik peranti (atau pengguna daripada domain yang mengurus peranti tersebut) akan dibenarkan untuk menukar nama itu. Nama dihadkan kepada 24 aksara.</translation>
-<translation id="3356249700768900657">
-      NOTA: Dasar ini adalah percubaan dan mungkin keluar daripada fungsi!
-      Anda mungkin ingin melihat pada tetapan dasar IsolateOrigins untuk mendapatkan
-      yang terbaik daripada kedua-duanya, pengasingan dan impak terhad untuk
-      pengguna dengan menggunakan IsolateOrigins yang mempunyai senarai
-      tapak yang hendak diasingkan. Tetapan SitePerProcess ini mengasingkan semua tapak.
-      Jika dasar ini didayakan, setiap tapak akan menjalankannya dalam prosesnya sendiri.
-      Jika dasar ini dilumpuhkan, logik pengurusan proses Pengasingan pra-Tapak akan berkuat kuasa.
-      Jika dasar tidak dikonfiguraskan, pengguna akan dapat mengubah tetapan ini.
-      </translation>
 <translation id="3381968327636295719">Gunakan penyemak imbas hos secara lalai</translation>
 <translation id="3395348522300156660">Menentukan pencetak yang boleh digunakan oleh pengguna.
 
@@ -1231,6 +1230,7 @@
 <translation id="4899708173828500852">Dayakan Penyemakan Imbas Selamat</translation>
 <translation id="4906194810004762807">Segar semula kadar untuk Dasar Peranti</translation>
 <translation id="4917385247580444890">Kuat</translation>
+<translation id="4923806312383904642">Benarkan WebDriver Mengatasi Dasar Tidak Serasi</translation>
 <translation id="494613465159630803">Penerima Cast</translation>
 <translation id="4962262530309732070">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan membenarkan ciri Tambah Orang daripada pengurus pengguna.
 
@@ -1245,16 +1245,6 @@
 <translation id="4983201894483989687">Benarkan pemalam yang lapuk dijalankan</translation>
 <translation id="4988291787868618635">Tindakan yang perlu diambil apabila kelewatan melahu dicapai</translation>
 <translation id="4995548127349206948">Sama ada pengesahan NTLMv2 didayakan.</translation>
-<translation id="5027819375434797927">
-      NOTA: Dasar ini adalah percubaan dan mungkin keluar daripada fungsi!
-      Jika dasar ini didayakan, setiap asal yang dinamakan dalam senarai yang
-      dipisahkan koma akan berjalan dalam prosesnya sendiri. Proses ini turut
-      akan mengasingkan asal yang dinamakan oleh subdomain; misalnya menentukan https://example.com/ akan
-      turut menyebabkan https://foo.example.com/ diasingkan sebagai sebahagian daripada
-      tapak https://example.com/.
-      Jika dasar ini dilumpuhkan, logik pengurusan proses Pengasingan pra-Tapak akan berkuat kuasa.
-      Jika dasar tidak dikonfiguraskan, pengguna akan dapat mengubah tetapan ini.
-      </translation>
 <translation id="5047604665028708335">Benarkan akses ke tapak di luar pek kandungan</translation>
 <translation id="5052081091120171147">Jika didayakan, dasar ini memaksa sejarah penyemakan imbas diimport dari penyemak imbas lalai semasa. Jika didayakan, dasar ini juga memberikan kesan terhadap dialog import.
 

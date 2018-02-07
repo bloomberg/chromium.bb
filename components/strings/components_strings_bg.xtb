@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">Попитахте родителите си дали може да посетите този сайт</translation>
 <translation id="4871132632506079383">От вградена страница на адрес <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Търсене в историята</translation>
+<translation id="4881695831933465202">Отваряне</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> и <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Изисква се удостоверяване</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{и още 1 уеб страница}other{и още # уеб страници}}</translation>
@@ -745,6 +746,7 @@
 <translation id="6563469144985748109">Мениджърът ви все още не е одобрил заявката</translation>
 <translation id="6569060085658103619">Преглеждате страница на разширение</translation>
 <translation id="6596325263575161958">Опции за шифроване</translation>
+<translation id="6604181099783169992">Сензори за движение или светлина</translation>
 <translation id="6624427990725312378">Информация за връзка</translation>
 <translation id="6626291197371920147">Добавяне на валиден номер на карта</translation>
 <translation id="6628463337424475685">Търсене с/ъс <ph name="ENGINE" /></translation>

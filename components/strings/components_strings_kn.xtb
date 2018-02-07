@@ -521,6 +521,7 @@
 <translation id="4858792381671956233">ಈ ಸೈಟ್ ಅನ್ನು ಭೇಟಿ ಮಾಡಬಹುದು ಎಂದು ನಿಮ್ಮ ಪೋಷಕರಿಗೆ ನೀವು ಕೇಳಿರುವಿರಿ.</translation>
 <translation id="4871132632506079383"><ph name="SITE" /> ನಲ್ಲಿ ಎಂಬೆಡ್‌ ಮಾಡಲಾದ ಪುಟದಿಂದ</translation>
 <translation id="4880827082731008257">ಹುಡುಕಾಟ ಇತಿಹಾಸ</translation>
+<translation id="4881695831933465202">ತೆರೆ</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">ಪ್ರಮಾಣೀಕರಣದ ಅವಶ್ಯಕತೆಯಿದೆ</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ಮತ್ತು 1 ಹೆಚ್ಚಿನ ವೆಬ್ ಪುಟ}one{ಮತ್ತು # ಹೆಚ್ಚಿನ ವೆಬ್ ಪುಟಗಳು}other{ಮತ್ತು # ಹೆಚ್ಚಿನ ವೆಬ್ ಪುಟಗಳು}}</translation>
@@ -740,6 +741,7 @@
 <translation id="6563469144985748109">ನಿಮ್ಮ ಮ್ಯಾನೇಜರ್ ಇನ್ನೂ ಇದನ್ನು ಅಂಗೀಕರಿಸಿಲ್ಲ</translation>
 <translation id="6569060085658103619">ನೀವು ವಿಸ್ತರಣೆ ಪುಟವನ್ನು ವೀಕ್ಷಿಸುತ್ತಿರುವಿರಿ</translation>
 <translation id="6596325263575161958">ಎನ್‌ಕ್ರಿಫ್ಶನ್ ಆಯ್ಕೆಗಳು</translation>
+<translation id="6604181099783169992">ಚಲನೆ ಅಥವಾ ಬೆಳಕಿನ ಸೆನ್ಸರ್‌ಗಳು</translation>
 <translation id="6624427990725312378">ಸಂಪರ್ಕ ಮಾಹಿತಿ</translation>
 <translation id="6626291197371920147">ಮಾನ್ಯವಾದ ಕಾರ್ಡ್ ಸಂಖ್ಯೆಯನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> ಹುಡುಕಾಟ</translation>

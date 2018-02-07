@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">Gestisci certificati</translation>
 <translation id="152234381334907219">Mai salvate</translation>
 <translation id="1524430321211440688">Tastiera</translation>
+<translation id="1524563461097350801">No, grazie</translation>
 <translation id="1526560967942511387">Documento senza titolo</translation>
 <translation id="1526925867532626635">Conferma impostazioni di sincronizzazione</translation>
 <translation id="1529116897397289129">Le carte di credito salvate verranno visualizzate qui</translation>
@@ -875,7 +876,6 @@
 <translation id="2352947182261340447">Spazio nella memoria locale insufficiente.</translation>
 <translation id="2353297238722298836">Videocamera e microfono consentiti</translation>
 <translation id="2356070529366658676">Chiedi</translation>
-<translation id="2356517949307388948">Si è verificato un errore in Chrome durante la ricerca di software dannoso.</translation>
 <translation id="2357949918965361754">Puoi utilizzare questa funzione per visualizzare i contenuti di Chrome alla TV o su altri dispositivi.</translation>
 <translation id="2359345697448000899">Gestisci le tue estensioni facendo clic su Estensioni nel menu Strumenti.</translation>
 <translation id="2359808026110333948">Continua</translation>
@@ -1110,7 +1110,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2715751256863167692">Questo upgrade ripristina il Chromebook e rimuove i dati utente correnti.</translation>
 <translation id="2718395828230677721">Luminosità notturna</translation>
 <translation id="2718998670920917754">Il software antivirus ha rilevato un virus.</translation>
-<translation id="2719545156185392871">Chrome può trovare software dannoso sul computer e rimuoverlo.</translation>
 <translation id="2719936478972253983">Sono stati bloccati i seguenti cookie</translation>
 <translation id="2721037002783622288">&amp;Cerca l'immagine su <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2443,7 +2442,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4835836146030131423">Errore durante l'accesso.</translation>
 <translation id="4837926214103741331">Non sei autorizzato a utilizzare questo dispositivo. Per ottenere l'autorizzazione di accesso contatta il proprietario del dispositivo.</translation>
 <translation id="4837952862063191349">Per sbloccare e ripristinare i dati locali, inserisci la vecchia password del dispositivo <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4838355575774807786">Si è verificato un errore in Chrome durante la rimozione di software dannoso.</translation>
 <translation id="4838836835474292213">Accesso alla lettura degli appunti consentito</translation>
 <translation id="4839303808932127586">Sal&amp;va video come...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> elementi selezionati</translation>
@@ -4043,7 +4041,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="73786666777299047">Apri Chrome Web Store</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Ricevi connessione dati</translation>
-<translation id="7382945755068785583">Sono incluse informazioni relative a software dannoso, impostazioni di sistema e processi sul computer.</translation>
 <translation id="7384292194278095697">Questo dispositivo non è più supportato</translation>
 <translation id="7385854874724088939">Si è verificato un problema durante il tentativo di stampa. Controlla la stampante e riprova.</translation>
 <translation id="7386824183915085801">La versione di Chrome e del sistema operativo verrà inviata insieme alle eventuali informazioni che decidi di inserire in alto. Se specifichi il tuo indirizzo email, Google potrebbe contattarti in merito al tuo rapporto di feedback, che verrà utilizzato per identificare problemi e migliorare Chrome. Le eventuali informazioni personali inviate, esplicitamente o involontariamente, verranno protette in conformità con le nostre norme sulla privacy.<ph name="BEGIN_BOLD" /> Se invii il feedback, accetti che Google possa utilizzarlo per migliorare qualsiasi suo prodotto o servizio.<ph name="END_BOLD" /></translation>
@@ -4908,7 +4905,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8784626084144195648">Media raccolta</translation>
 <translation id="8785622406424941542">Stilo</translation>
 <translation id="8787254343425541995">Consenti proxy per reti condivise</translation>
-<translation id="8791260615011736453">Se necessario potrebbero essere rimossi anche elementi non elencati qui. Leggi ulteriori informazioni sulla &lt;a href="<ph name="URL" />"&gt;protezione da software indesiderato&lt;/a&gt; nel whitepaper sulla privacy di Google Chrome.</translation>
 <translation id="8791534160414513928">Invia una richiesta "Non tenere traccia" con il tuo traffico di navigazione</translation>
 <translation id="8792609692701651064">Finestra attiva spostata nello schermo a sinistra</translation>
 <translation id="8794025342371547160">IP limitato</translation>

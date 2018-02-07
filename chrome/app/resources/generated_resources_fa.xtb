@@ -351,6 +351,7 @@
 <translation id="1521442365706402292">مدیریت گواهی‌ها</translation>
 <translation id="152234381334907219">هرگز ذخیره نمی‌شود</translation>
 <translation id="1524430321211440688">صفحه‌کلید</translation>
+<translation id="1524563461097350801">نه، متشکرم</translation>
 <translation id="1526560967942511387">سند بدون عنوان</translation>
 <translation id="1526925867532626635">تأیید تنظیمات همگام‌سازی</translation>
 <translation id="1529116897397289129">کارت‌های ذخیره‌شده در اینجا نشان داده خواهد شد</translation>
@@ -872,7 +873,6 @@
 <translation id="2352947182261340447">فضای کافی در حافظه محلی در دسترس نیست.</translation>
 <translation id="2353297238722298836">دوربین و میکروفون مجاز هستند</translation>
 <translation id="2356070529366658676">سؤال شود</translation>
-<translation id="2356517949307388948">‏هنگام جستجوی نرم‌افزار مضر توسط Chrome، خطایی روی داد.</translation>
 <translation id="2357949918965361754">‏می‌توانید از این قابلیت برای نمایش محتوا از Chrome روی تلویزیون یا دستگاه‌های دیگرتان استفاده کنید.</translation>
 <translation id="2359345697448000899">با کلیک کردن روی افزونه‌ها در منوی ابزار، برنامه‌های افزودنی خود را مدیریت کنید.</translation>
 <translation id="2359808026110333948">ادامه</translation>
@@ -1107,7 +1107,6 @@
 <translation id="2715751256863167692">‏این ارتقا Chromebook را بازنشانی می‌کند و داده‌های کاربر کنونی را برمی‌دارد.</translation>
 <translation id="2718395828230677721">نور شب</translation>
 <translation id="2718998670920917754">نرم‌افزار آنتی‌ویروس یک ویروس را شناسایی کرد.</translation>
-<translation id="2719545156185392871">‏Chrome می‌تواند نرم‌افزار مضر را در رایانه‌تان پیدا و آن را حذف کند.</translation>
 <translation id="2719936478972253983">کوکی‌های زیر مسدود شدند</translation>
 <translation id="2721037002783622288">&amp;جستجوی <ph name="SEARCH_ENGINE" /> برای تصویر</translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2442,7 +2441,6 @@
 <translation id="4835836146030131423">خطای ورود به سیستم.</translation>
 <translation id="4837926214103741331">مجاز به استفاده از این دستگاه نیستید. لطفاً برای دریافت اجازه ورود به سیستم با مالک دستگاه تماس بگیرید.</translation>
 <translation id="4837952862063191349">برای باز کردن قفل و بازیابی داده‌های محلی‌تان، لطفاً گذرواژه <ph name="DEVICE_TYPE" /> قدیمی‌تان را وارد کنید.</translation>
-<translation id="4838355575774807786">‏هنگام حذف نرم‌افزار مضر توسط Chrome، خطایی روی داد.</translation>
 <translation id="4838836835474292213">دسترسی برای خواندن محتوای بریده‌دان مجاز شد</translation>
 <translation id="4839303808932127586">ذ&amp;خیره فایل ویدیوی به‌عنوان...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> مورد انتخاب شد</translation>
@@ -4043,7 +4041,6 @@
 <translation id="73786666777299047">‏باز کردن نت‌بازار Chrome</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">دریافت اتصال داده</translation>
-<translation id="7382945755068785583">حاوی اطلاعاتی درباره نرم‌افزر، تنظیمات سیستم و پردازش‌هایی مضر در رایانه شما است.</translation>
 <translation id="7384292194278095697">این دستگاه دیگر پشتیبانی نمی‌شود</translation>
 <translation id="7385854874724088939">هنگام سعی برای چاپ، اشتباهی رخ داده است. لطفاً چاپگر خود را بررسی کنید و دوباره امتحان کنید.</translation>
 <translation id="7386824183915085801">‏نسخه Chrome و سیستم عامل شما به علاوه اطلاعاتی که در بالا انتخاب کرده‌اید تا اضافه شود، 
@@ -4918,7 +4915,6 @@
 <translation id="8784626084144195648">میانگین حذف‌شده‌ها</translation>
 <translation id="8785622406424941542">قلم</translation>
 <translation id="8787254343425541995">پراکسی‌های شبکه‌های مشترک مجاز باشند</translation>
-<translation id="8791260615011736453">‏موارد فهرست‌نشده نیز ممکن است (درصورت لزوم) برداشته شده باشند. در گزارش جامع و دقیق حریم‌ خصوصی Chrome، درباره &lt;a href="<ph name="URL" />"&gt;حفاظت دربرابر نرم‌افزار ناخواسته&lt;/a&gt; بیشتر بدانید.</translation>
 <translation id="8791534160414513928">ارسال درخواست «ردیابی نشود» با ترافیک مرور</translation>
 <translation id="8792609692701651064">پنجره فعال به نمایشگر سمت چپ منتقل شد</translation>
 <translation id="8794025342371547160">‏IP محدود</translation>

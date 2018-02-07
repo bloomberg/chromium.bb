@@ -689,13 +689,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="332771718998993005">Determina el nom que s'utilitzarà com a destinació de <ph name="PRODUCT_NAME" />.
 
           Si aquesta política es defineix en una cadena que no sigui buida, aquesta cadena s'utilitzarà com a nom de la destinació de <ph name="PRODUCT_NAME" />. En cas contrari, el nom de la destinació serà el nom del dispositiu. Si aquesta política no es defineix, el nom de la destinació serà el nom del dispositiu i el propietari del dispositiu (o un usuari del domini que gestioni el dispositiu) podrà canviar-lo. El nom pot tenir 24 caràcters com a màxim.</translation>
-<translation id="3356249700768900657">
-      NOTA: aquesta política és experimental i pot tenir problemes de funcionalitat.
-      Pots utilitzar la política IsolateOrigins amb una llista dels llocs web que vols aïllar per treure el màxim partit de les dues opcions: aïllar llocs web amb el mínim impacte possible per als usuaris. L'opció SitePerProcess aïlla tots els llocs web.
-      Si la política s'activa, cada lloc web s'executarà amb el seu propi procés.
-      Si la política es desactiva, s'aplicarà la lògica de gestió de processos prèvia a la política d'aïllament de llocs web.
-      Si la política no es configura, l'usuari podrà canviar aquesta opció de configuració.
-      </translation>
 <translation id="3381968327636295719">Fes servir el navegador amfitrió de manera predeterminada</translation>
 <translation id="3395348522300156660">Especifica les impressores que un usuari pot fer servir.
 
@@ -1179,12 +1172,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4983201894483989687">Permet que s'executin els connectors que estiguin obsolets</translation>
 <translation id="4988291787868618635">Acció que cal dur a terme quan s'arriba al retard d'inactivitat</translation>
 <translation id="4995548127349206948">Si l'autenticació NTLMv2 està activada.</translation>
-<translation id="5027819375434797927">
-      NOTA: aquesta política és experimental i pot tenir problemes de funcionalitat.
-      Si la política s'activa, cadascun dels orígens indicats en una llista separada per comes s'executarà amb el seu propi procés. Així mateix, també s'aïllaran els orígens indicats per subdominis (per exemple, en especificar https://example.com/, l'adreça https://foo.example.com/ també s'aïllarà com a part del lloc web https://example.com/).
-      Si la política es desactiva, s'aplicarà la lògica de gestió de processos prèvia a la política d'aïllament de llocs web.
-      Si la política no es configura, l'usuari podrà canviar aquesta opció de configuració.
-      </translation>
 <translation id="5047604665028708335">Permet l'accés a llocs situats fora de paquets de contingut.</translation>
 <translation id="5052081091120171147">Si està activada, aquesta política fa que l'historial de navegació s'importi des del navegador predeterminat actual. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, no s'importarà cap historial de navegació. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="5056708224511062314">Lupa desactivada</translation>

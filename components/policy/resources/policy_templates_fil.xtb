@@ -718,16 +718,6 @@
 <translation id="332771718998993005">Tinutukoy ang pangalang na-advertise bilang destinasyon ng <ph name="PRODUCT_NAME" />.
 
           Kung nakatakda ang patakarang ito sa isang may lamang string, gagamitin ang string na iyon bilang pangalan ng destinasyon ng <ph name="PRODUCT_NAME" />. Kung hindi, ang pangalan ng device ang magiging pangalan ng destinasyon. Kung hindi nakatakda ang patakarang ito, ang pangalan ng device ang magiging pangalan ng destinasyon, at papayagan ang may-ari ng device (o isang user mula sa domain na namamahala sa device) na palitan ito. Nalilimitahan ang pangalan sa 24 na character.</translation>
-<translation id="3356249700768900657">
-      TANDAAN: Ang patakarang ito ay pang-eksperimento at maaari nitong masira ang paggana!
-      Maaari mong tingnan ang setting ng patakaran ng IsolateOrigins upang parehong
-      masulit ang paghihiwalay at pagkakaroon ng limitadong epekto sa mga user, sa pamamagitan ng paggamit ng
-      IsolateOrigins na may listahan ng mga site na gusto mong ihiwalay. Hinihiwalay ng setting na ito na
-      SitePerProcess ang lahat ng site.
-      Kung naka-enable ang patakaran, magpapatakbo ang bawat site ng sarili nitong proseso.
-      Kung naka-disable ang patakaran, magkakaroon ng bisa ang logic sa pamamahala ng proseso bago ang Paghihiwalay ng Site.
-      Kung hindi naka-configure ang patakaran, mababago ng user ang setting na ito.
-      </translation>
 <translation id="3381968327636295719">Gamitin ang host browser bilang default</translation>
 <translation id="3395348522300156660">Tumutukoy sa mga printer na magagamit ng user.
 
@@ -1237,16 +1227,6 @@
 <translation id="4983201894483989687">Payagan ang pagpapatakbo ng mga plugin na wala na sa panahon</translation>
 <translation id="4988291787868618635">Pagkilos na gagawin kapag naabot ang idle delay</translation>
 <translation id="4995548127349206948">Kung naka-enable ang pag-authenticate ng NTLMv2.</translation>
-<translation id="5027819375434797927">
-      TANDAAN: Ang patakarang ito ay pang-eksperimento at maaari nitong masira ang paggana!
-      Kung naka-enable ang patakaran, ang bawat pinagmulan na pinangalanan sa
-      listahan na pinaghihiwalay ng kuwit ay magpapatakbo ng sarili nitong proseso. Ihihiwalay rin nito
-      ang mga pinagmulan na pinangalanan ayon sa mga subdomain; hal. ang pagtukoy sa https://example.com/ ay
-      magreresulta rin sa paghihiwalay sa https://foo.example.com/ bilang bahagi ng site ng
-      https://example.com/.
-      Kung naka-disable ang patakaran, magkakaroon ng bisa ang logic ng pamamahala sa proseso bago ang Paghihiwalay ng Site.
-      Kung hindi naka-configure ang patakaran, mababago ng user ang setting na ito.
-      </translation>
 <translation id="5047604665028708335">Payagan ang access sa mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="5052081091120171147">Pinupwersa ng patakarang ito na ma-import mula sa kasalukuyang default na browser ang kasaysayan ng pagba-browse kung pinagana. Kung pinagana, naaapektuhan rin ng patakarang ito ang dialog ng pag-import.
 

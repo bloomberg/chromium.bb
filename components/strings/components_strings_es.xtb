@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">Has solicitado permiso a tus padres para poder acceder a este sitio web</translation>
 <translation id="4871132632506079383">De una página insertada en <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Buscar en el historial</translation>
+<translation id="4881695831933465202">Abrir</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> y <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Autenticación obligatoria</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ y 1 página web más}other{ y # páginas web más}}</translation>
@@ -745,6 +746,7 @@
 <translation id="6563469144985748109">Tu administrador aún no la ha aprobado</translation>
 <translation id="6569060085658103619">Estas viendo la página de una extensión</translation>
 <translation id="6596325263575161958">Opciones de cifrado</translation>
+<translation id="6604181099783169992">Sensores de luz o movimiento</translation>
 <translation id="6624427990725312378">Información de contacto</translation>
 <translation id="6626291197371920147">Añadir un número de tarjeta válido</translation>
 <translation id="6628463337424475685">Búsqueda de <ph name="ENGINE" /></translation>

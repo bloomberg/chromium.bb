@@ -700,9 +700,6 @@
 <translation id="332771718998993005">Finn ut hvilket navn som er annonsert som en destinasjon for <ph name="PRODUCT_NAME" />.
 
           Hvis denne innstillingen er satt til en streng som ikke er tom, brukes denne strengen som navnet på destinasjonen for <ph name="PRODUCT_NAME" />. Ellers blir enhetsnavnet angitt som destinasjonsnavnet. Hvis denne innstillingen ikke er satt til noen verdi, blir enhetsnavnet angitt som destinasjonsnavnet, og eieren av enheten (eller en bruker fra domenet som administrerer enheten) kan endre det. Navnet er begrenset til 24 tegn.</translation>
-<translation id="3356249700768900657">
-      MERK: Denne regelen er eksperimentell og kan ødelegge funksjonalitet! Vi anbefaler at du tar en titt på regelen IsolateOrigins, som gir deg det beste av begge verdener. Hvis du bruker IsolateOrigins med en liste over nettsteder du vil isolere, får du både isolering og begrenset innvirkning på brukerne. Denne regelen – SitePerProcess – isolerer alle nettsteder. Hvis regelen er slått på, kjører hvert nettsted sin egen prosess. Hvis regelen er slått av, brukes administrasjonslogikken som er aktiv før prosessen for isolering av nettsteder startes. Hvis regelen ikke er konfigurert, kan brukeren endre denne innstillingen.
-      </translation>
 <translation id="3381968327636295719">Bruk vertsnettleser som standard</translation>
 <translation id="3395348522300156660">Angir skriverne som en bruker kan bruke.
 
@@ -1203,9 +1200,6 @@
 <translation id="4983201894483989687">Tillat kjøring av foreldede programtillegg</translation>
 <translation id="4988291787868618635">Handling som skal utføres når inaktivitetsforsinkelsen blir overskredet</translation>
 <translation id="4995548127349206948">Om NTLMv2-autentisering er aktivert eller ikke.</translation>
-<translation id="5027819375434797927">
-      MERK: Denne regelen er eksperimentell og kan ødelegge funksjonalitet! Hvis regelen er slått på, kjører hver opprinnelse (origin) som er oppført i den kommadelte listen, i sin egen prosess. Dette omfatter også opprinnelser med navn som bruker underdomener. Hvis du for eksempel angir https://example.com/, blir også https://foo.example.com/ isolert, som en del av det samme nettstedet. Hvis regelen er slått av, brukes administrasjonslogikken som er aktiv før prosessen for isolering av nettsteder startes. Hvis regelen ikke er konfigurert, kan brukeren endre denne innstillingen.
-      </translation>
 <translation id="5047604665028708335">Gi tilgang til nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="5052081091120171147">Denne retningslinjen tvinger import av nettleserloggen fra den aktuelle standardnettleseren hvis den er aktivert. Hvis den er aktivert, påvirker denne retningslinjen også importdialogen. Hvis den er deaktivert, importeres ingen nettleserlogg. Hvis den ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="5056708224511062314">Skjermforstørrelse deaktivert</translation>

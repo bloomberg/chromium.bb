@@ -520,6 +520,7 @@
 <translation id="4858792381671956233">Požádal(a) jsi rodiče o povolení návštěvy tohoto webu.</translation>
 <translation id="4871132632506079383">Z vložené stránky na webu <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Hledat v historii</translation>
+<translation id="4881695831933465202">Otevřít</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Je vyžadováno ověření</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{a 1 další webová stránka}few{a # další webové stránky}many{a # další webové stránky}other{a # dalších webových stránek}}</translation>
@@ -740,6 +741,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6563469144985748109">Správce vám přístup na web dosud neschválil.</translation>
 <translation id="6569060085658103619">Prohlížíte si stránku rozšíření</translation>
 <translation id="6596325263575161958">Možnosti šifrování</translation>
+<translation id="6604181099783169992">Senzory pohybu nebo světla</translation>
 <translation id="6624427990725312378">Kontaktní údaje</translation>
 <translation id="6626291197371920147">Přidání platného čísla karty</translation>
 <translation id="6628463337424475685">Vyhledávání <ph name="ENGINE" /></translation>

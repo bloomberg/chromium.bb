@@ -523,6 +523,7 @@
 <translation id="4858792381671956233">Pitao si roditelje smiješ li otvoriti tu web-lokaciju</translation>
 <translation id="4871132632506079383">S ugrađene stranice na web-lokaciji <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Pretraži povijest</translation>
+<translation id="4881695831933465202">Otvori</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Potrebna je autentifikacija</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{i još 1 web-stranica}one{i još # web-stranica}few{i još # web-stranice}other{i još # web-stranica}}</translation>
@@ -744,6 +745,7 @@
 <translation id="6563469144985748109">Voditelj je još nije odobrio</translation>
 <translation id="6569060085658103619">Gledate stranicu proširenja</translation>
 <translation id="6596325263575161958">Opcije šifriranja</translation>
+<translation id="6604181099783169992">Senzori pokreta ili osvjetljenja</translation>
 <translation id="6624427990725312378">Podaci za kontakt</translation>
 <translation id="6626291197371920147">Dodajte važeći broj kartice</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Pretraživanje</translation>

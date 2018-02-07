@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">Uruskan sijil</translation>
 <translation id="152234381334907219">Tidak Pernah Disimpan</translation>
 <translation id="1524430321211440688">Papan kekunci</translation>
+<translation id="1524563461097350801">Tidak, Terima Kasih</translation>
 <translation id="1526560967942511387">Dokumen Tidak Bertajuk</translation>
 <translation id="1526925867532626635">Sahkan tetapan penyegerakan</translation>
 <translation id="1529116897397289129">Kad yang disimpan akan kelihatan di sini</translation>
@@ -875,7 +876,6 @@
 <translation id="2352947182261340447">Ruang pada storan setempat tidak mencukupi.</translation>
 <translation id="2353297238722298836">Kamera dan mikrofon dibenarkan</translation>
 <translation id="2356070529366658676">Tanya</translation>
-<translation id="2356517949307388948">Ralat berlaku semasa Chrome mencari perisian yang berbahaya.</translation>
 <translation id="2357949918965361754">Anda boleh menggunakan ciri ini untuk memaparkan kandungan daripada Chrome pada TV atau peranti anda yang lain.</translation>
 <translation id="2359345697448000899">Uruskan sambungan anda dengan mengklik Sambungan dalam menu Alat.</translation>
 <translation id="2359808026110333948">Teruskan</translation>
@@ -1112,7 +1112,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2715751256863167692">Peningkatan ini akan menetapkan semula Chromebook anda dan mengalih keluar data pengguna semasa.</translation>
 <translation id="2718395828230677721">Cahaya Malam</translation>
 <translation id="2718998670920917754">Perisian anti-virus telah mengesan virus.</translation>
-<translation id="2719545156185392871">Chrome boleh mencari perisian yang berbahaya pada komputer anda dan mengalih keluar perisian tersebut.</translation>
 <translation id="2719936478972253983">Kuki berikut telah disekat</translation>
 <translation id="2721037002783622288">&amp;Cari imej di <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2447,7 +2446,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="4835836146030131423">Ralat melog masuk.</translation>
 <translation id="4837926214103741331">Anda tiada kebenaran untuk menggunakan peranti ini. Sila hubungi pemilik peranti untuk mendapatkan kebenaran log masuk.</translation>
 <translation id="4837952862063191349">Untuk membuka kunci dan memulihkan data tempatan anda, sila masukkan kata laluan <ph name="DEVICE_TYPE" /> lama anda.</translation>
-<translation id="4838355575774807786">Ralat berlaku semasa Chrome mengalih keluar perisian yang berbahaya.</translation>
 <translation id="4838836835474292213">Akses baca papan keratan dibenarkan</translation>
 <translation id="4839303808932127586">Si&amp;mpan video sebagai...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> item dipilih</translation>
@@ -4048,7 +4046,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="73786666777299047">Buka Gedung Web Chrome</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Dapatkan sambungan data</translation>
-<translation id="7382945755068785583">Merangkumi maklumat tentang perisian, tetapan sistem dan proses yang berbahaya pada komputer anda.</translation>
 <translation id="7384292194278095697">Peranti ini tidak disokong lagi</translation>
 <translation id="7385854874724088939">Sesuatu tidak kena apabila mencuba untuk mencetak.  Sila periksa pencetak anda dan cuba semula.</translation>
 <translation id="7386824183915085801">Versi Chrome dan sistem pengendalian anda akan diserahkan sebagai tambahan
@@ -4922,7 +4919,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8784626084144195648">Purata Bin</translation>
 <translation id="8785622406424941542">Stilus</translation>
 <translation id="8787254343425541995">Benarkan proksi untuk rangkaian yang dikongsi</translation>
-<translation id="8791260615011736453">Item yang tidak disenaraikan di sini mungkin turut dialih keluar, jika perlu. Ketahui lebih lanjut tentang &lt;a href="<ph name="URL" />"&gt;perlindungan daripada perisian yang tidak diingini&lt;/a&gt; dalam kertas putih privasi Chrome.</translation>
 <translation id="8791534160414513928">Hantar permintaan 'Jangan Kesan' dengan trafik penyemakan imbas anda</translation>
 <translation id="8792609692701651064">Tetingkap aktif dialihkan ke paparan kiri</translation>
 <translation id="8794025342371547160">IP terhad</translation>

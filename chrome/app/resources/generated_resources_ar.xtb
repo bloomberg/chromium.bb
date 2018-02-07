@@ -355,6 +355,7 @@
 <translation id="1521442365706402292">تنظيم الشهادات</translation>
 <translation id="152234381334907219">لم يتم الحفظ مطلقًا</translation>
 <translation id="1524430321211440688">لوحة المفاتيح</translation>
+<translation id="1524563461097350801">لا، شكرًا</translation>
 <translation id="1526560967942511387">مستند بلا عنوان</translation>
 <translation id="1526925867532626635">تأكيد إعدادات المزامنة</translation>
 <translation id="1529116897397289129">ستظهر هنا البطاقات المحفوظة</translation>
@@ -876,7 +877,6 @@
 <translation id="2352947182261340447">لا تتوفر مساحة كافية في سعة التخزين المحلية.</translation>
 <translation id="2353297238722298836">تم السماح باستخدام الكاميرا والميكروفون</translation>
 <translation id="2356070529366658676">طلب</translation>
-<translation id="2356517949307388948">‏حدث خطأ أثناء بحث Chrome عن البرنامج الضار.</translation>
 <translation id="2357949918965361754">‏يمكنك استخدام هذه الميزة لعرض محتوى من Chrome على التلفزيون أو غيره من الأجهزة.</translation>
 <translation id="2359345697448000899">يمكنك إدارة الإضافات من خلال النقر على "الإضافات" في قائمة "الأدوات".</translation>
 <translation id="2359808026110333948">المتابعة</translation>
@@ -1111,7 +1111,6 @@
 <translation id="2715751256863167692">‏تؤدي هذه الترقية إلى إعادة تعيين جهاز Chromebook وإزالة بيانات المستخدمين الحالية.</translation>
 <translation id="2718395828230677721">الإضاءة الليلية</translation>
 <translation id="2718998670920917754">اكتشف برنامج مكافحة الفيروسات فيروسًا.</translation>
-<translation id="2719545156185392871">‏يمكن لمتصفح Chrome العثور على برنامج ضار على جهاز الكمبيوتر وإزالته.</translation>
 <translation id="2719936478972253983">تم حظر ملفات تعريف الارتباط التالية</translation>
 <translation id="2721037002783622288">&amp;بحث على <ph name="SEARCH_ENGINE" /> عن صورة</translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2442,7 +2441,6 @@
 <translation id="4835836146030131423">حدث خطأ أثناء تسجيل الدخول.</translation>
 <translation id="4837926214103741331">لا يصرح لك باستخدام هذا الجهاز. يُرجى الاتصال بمالك الجهاز، للحصول على إذن تسجيل الدخول.</translation>
 <translation id="4837952862063191349">لإلغاء قفل بياناتك المحلية واستعادتها، يُرجى إدخال كلمة مرور <ph name="DEVICE_TYPE" /> القديمة.</translation>
-<translation id="4838355575774807786">‏حدث خطأ أثناء إزالة Chrome للبرامج الضارة.</translation>
 <translation id="4838836835474292213">تم السماح بالوصول لقراءة الحافظة</translation>
 <translation id="4839303808932127586">حف&amp;ظ مقطع الفيديو باسم...</translation>
 <translation id="4839847978919684242">تم تحديد <ph name="SELCTED_FILES_COUNT" /> من العناصر</translation>
@@ -4043,7 +4041,6 @@
 <translation id="73786666777299047">‏فتح سوق Chrome الإلكتروني</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">الحصول على اتصال البيانات</translation>
-<translation id="7382945755068785583">يتضمن معلومات حول البرامج الضارة، وإعدادات النظام، والعمليات على جهاز الكمبيوتر.</translation>
 <translation id="7384292194278095697">لم يعد هذا الجهاز مدعومًا</translation>
 <translation id="7385854874724088939">حدث خطأ ما أثناء الطباعة. يُرجى التحقق من الطابعة والمحاولة مرة أخرى.</translation>
 <translation id="7386824183915085801">‏سيتم إرسال إصدار Chrome ونظام التشغيل بالإضافة إلى
@@ -4917,7 +4914,6 @@
 <translation id="8784626084144195648">تم تثبيت المعدل</translation>
 <translation id="8785622406424941542">قلم الشاشة</translation>
 <translation id="8787254343425541995">السماح بالخوادم الوكيلة للشبكات المشتركة</translation>
-<translation id="8791260615011736453">‏قد يتم أيضًا إزالة العناصر غير المدرجة هنا، إذا لزم الأمر. تعرّف على مزيد من المعلومات حول &lt;a href="<ph name="URL" />"&gt;الحماية من البرامج غير المرغوب فيها&lt;/a&gt; في المستند التقني لخصوصية Chrome.</translation>
 <translation id="8791534160414513928">إرسال طلب "عدم التعقب" مع زيارات التصفح</translation>
 <translation id="8792609692701651064">تم نقل نافذة نشطة إلى شاشة العرض اليسرى</translation>
 <translation id="8794025342371547160">‏عنوان IP مقيد</translation>

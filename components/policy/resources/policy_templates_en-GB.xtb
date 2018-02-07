@@ -637,6 +637,15 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is optional. If not set, no search term replacement will be performed.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
+<translation id="306887062252197004">This policy allows users of the WebDriver feature to override
+      policies which can interfere with its operation.
+
+      Currently this policy disables SitePerProcess and IsolateOrigins policies.
+
+      If the policy is enabled, WebDriver will be able to override incompatible
+      policies.
+      If the policy is disabled or not configured, WebDriver will not be allowed
+      to override incompatible policies.</translation>
 <translation id="3069958900488014740">Allows you to turn off WPAD (Web Proxy Auto-Discovery) optimisation in <ph name="PRODUCT_NAME" />.
 
       If this policy is set to false, WPAD optimisation is disabled causing <ph name="PRODUCT_NAME" /> to wait longer for DNS-based WPAD servers. If the policy is not set or is enabled, WPAD optimisation is enabled.
@@ -723,16 +732,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="332771718998993005">Determine the name advertised as a <ph name="PRODUCT_NAME" /> destination.
 
           If this policy is set to a non-empty string, that string will be used as the name of the <ph name="PRODUCT_NAME" /> destination. Otherwise, the destination name will be the device name. If this policy is not set, the destination name will be the device name, and the owner of the device (or a user from the domain managing the device) will be allowed to change it. The name is limited to 24 characters.</translation>
-<translation id="3356249700768900657">
-      NOTE: This policy is experimental and may break functionality!
-      You might want to look at the IsolateOrigins policy setting to get the
-      best of both worlds, isolation and limited impact for users, by using
-      IsolateOrigins with a list of the sites that you want to isolate. This setting,
-      SitePerProcess, isolates all sites.
-      If the policy is enabled, each site will run in its own process.
-      If the policy is disabled, the pre-Site Isolation process management logic will take effect.
-      If the policy is not configured, the user will be able to change this setting.
-      </translation>
 <translation id="3381968327636295719">Use the host browser by default</translation>
 <translation id="3395348522300156660">Specifies the printers which a user can use.
 
@@ -1234,6 +1233,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4899708173828500852">Enable Safe Browsing</translation>
 <translation id="4906194810004762807">Refresh rate for Device Policy</translation>
 <translation id="4917385247580444890">Strong</translation>
+<translation id="4923806312383904642">Allow WebDriver to Override Incompatible Policies</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">If this policy is set to true or not configured, <ph name="PRODUCT_NAME" /> will allow Add Person from the user manager.
 
@@ -1248,16 +1248,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4983201894483989687">Allow running plug-ins that are outdated</translation>
 <translation id="4988291787868618635">Action to take when the idle delay is reached</translation>
 <translation id="4995548127349206948">Whether NTLMv2 authentication is enabled.</translation>
-<translation id="5027819375434797927">
-      NOTE: This policy is experimental and may break functionality!
-      If the policy is enabled, each of the named origins in a
-      comma-separated list will run in its own process. This will also isolate
-      origins named by subdomains, e.g. specifying https://example.com/ will
-      also cause https://foo.example.com/ to be isolated as part of the
-      https://example.com/ site.
-      If the policy is disabled, the pre-Site Isolation process management logic will take effect.
-      If the policy is not configured, the user will be able to change this setting.
-      </translation>
 <translation id="5047604665028708335">Allow access to sites outside of content packs</translation>
 <translation id="5052081091120171147">This policy forces the browsing history to be imported from the current default browser, if enabled. If enabled, this policy also affects the import dialogue.
 

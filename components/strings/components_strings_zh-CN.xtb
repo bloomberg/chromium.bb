@@ -521,6 +521,7 @@
 <translation id="4858792381671956233">您已向父母发送请求，询问他们是否允许您访问此网站</translation>
 <translation id="4871132632506079383">来自 <ph name="SITE" /> 上的一个嵌入式页面</translation>
 <translation id="4880827082731008257">搜索历史记录</translation>
+<translation id="4881695831933465202">打开</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">需要进行身份验证</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{和另外 1 个网页}other{和另外 # 个网页}}</translation>
@@ -741,6 +742,7 @@
 <translation id="6563469144985748109">您的管理员尚未批准此网站</translation>
 <translation id="6569060085658103619">您正在查看扩展程序页面</translation>
 <translation id="6596325263575161958">加密选项</translation>
+<translation id="6604181099783169992">动态传感器或光传感器</translation>
 <translation id="6624427990725312378">联系信息</translation>
 <translation id="6626291197371920147">添加有效的卡号</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> 搜索</translation>

@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">Pamahalaan ang mga sertipiko</translation>
 <translation id="152234381334907219">Hindi Kailanman Na-save</translation>
 <translation id="1524430321211440688">Keyboard</translation>
+<translation id="1524563461097350801">Hindi, Salamat na lang</translation>
 <translation id="1526560967942511387">Walang pamagat na Dokumento</translation>
 <translation id="1526925867532626635">Kumpirmahin ang mga setting ng pag-sync</translation>
 <translation id="1529116897397289129">Lalabas dito ang mga na-save na card</translation>
@@ -875,7 +876,6 @@
 <translation id="2352947182261340447">Walang available na sapat na espasyo sa lokal na storage.</translation>
 <translation id="2353297238722298836">Pinapayagan ang camera at mikropono</translation>
 <translation id="2356070529366658676">Magtanong</translation>
-<translation id="2356517949307388948">Nagkaroon ng error habang naghahanap ang Chrome ng mapaminsalang software.</translation>
 <translation id="2357949918965361754">Maaari mong gamitin ang feature na ito upang magpalabas ng content mula sa Chrome sa iyong TV o sa iba pang mga device.</translation>
 <translation id="2359345697448000899">Pamahalaan ang iyong mga extension sa pamamagitan ng pag-click sa Mga Extension sa menu na Mga Tool.</translation>
 <translation id="2359808026110333948">Magpatuloy</translation>
@@ -1111,7 +1111,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="2715751256863167692">Ire-reset ng pag-upgrade na ito ang iyong Chromebook at aalisin nito ang kasalukuyang data ng user.</translation>
 <translation id="2718395828230677721">Night Light</translation>
 <translation id="2718998670920917754">Nakakita ng virus ang software ng anti-virus.</translation>
-<translation id="2719545156185392871">Makakahanap at makakapag-alis ang Chrome ng mapaminsalang software sa iyong computer.</translation>
 <translation id="2719936478972253983">Na-block ang sumusunod na cookies</translation>
 <translation id="2721037002783622288">&amp;Maghanap sa <ph name="SEARCH_ENGINE" /> para sa larawan</translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2446,7 +2445,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="4835836146030131423">Error sa pag-sign in.</translation>
 <translation id="4837926214103741331">Wala kang pahintulot na gamitin ang device na ito. Mangyaring makipag-ugnayan sa may-ari ng device upang makakuha ng pahintulot sa pag-sign in.</translation>
 <translation id="4837952862063191349">Upang i-unlock at ibalik ang iyong lokal na data, pakilagay ang iyong lumang password sa <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4838355575774807786">Nagkaroon ng error habang inaalis ng Chrome ang mapaminsalang software.</translation>
 <translation id="4838836835474292213">Pinapayagan ang read access sa clipboard</translation>
 <translation id="4839303808932127586">I-sa&amp;ve ang video bilang...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> (na) item ang pinili</translation>
@@ -4047,7 +4045,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="73786666777299047">Buksan ang Chrome Web Store</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Kumuha ng koneksyon ng data</translation>
-<translation id="7382945755068785583">May impormasyon tungkol sa mga mapaminsalang software, setting ng system, at proseso sa iyong computer.</translation>
 <translation id="7384292194278095697">Hindi na sinusuportahan ang device na ito</translation>
 <translation id="7385854874724088939">May nangyaring mali noong sinusubukang mag-print.  Pakisuri ang iyong printer at subukang muli.</translation>
 <translation id="7386824183915085801">Isusumite ang bersyon ng iyong Chrome at operating system bilang karagdagan
@@ -4923,7 +4920,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8784626084144195648">Binned na Average</translation>
 <translation id="8785622406424941542">Stylus</translation>
 <translation id="8787254343425541995">Payagan ang mga proxy para sa mga nakabahaging network</translation>
-<translation id="8791260615011736453">Maaari ding alisin ang mga item na hindi nakalista rito kung kinakailangan. Matuto pa tungkol sa &lt;a href="<ph name="URL" />"&gt;proteksyon laban sa hindi gustong software&lt;/a&gt; sa white paper para sa privacy ng Chrome.</translation>
 <translation id="8791534160414513928">Magpadala ng kahilingang ‘Huwag Subaybayan’ kasama ng iyong trapiko ng pagba-browse</translation>
 <translation id="8792609692701651064">Inilipat ang aktibong window sa display sa kaliwa</translation>
 <translation id="8794025342371547160">Pinaghihigpitang IP</translation>

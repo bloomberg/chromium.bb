@@ -690,16 +690,6 @@
 <translation id="332771718998993005">A(z) <ph name="PRODUCT_NAME" /> céljaként hirdetett név meghatározása.
 
           Ha a házirend egy nem üres karakterláncként van meghatározva, akkor a rendszer azt a karakterláncot használja a(z) <ph name="PRODUCT_NAME" /> céljának neveként. Egyébként az eszköz neve lesz a cél neve. Ha a házirend nincs beállítva, a cél neve az eszköz neve lesz, az eszköz tulajdonosának (vagy az eszközt kezelő domain felhasználójának) pedig lehetősége lesz módosítani. A név hossza legfeljebb 24 karakter lehet.</translation>
-<translation id="3356249700768900657">
-      MEGJEGYZÉS: A házirend kísérleti állapotban van, és akadályozhatja a működést!
-      Tekintse át az IsolateOrigins házirend beállításait, és annak érdekében,
-      hogy az izoláció is megvalósuljon, és a felhasználók számára is korlátozottan
-      legyen érzékelhető a hatás, alkalmazza az IsolateOrigins házirendet
-      az izolálni kívánt webhelyek listáján. Ez a SitePerProcess beállítás minden webhelyet izolál.
-      Ha engedélyezi a házirendet, minden webhely önálló folyamatként fut majd.
-      Ha letiltja a házirendet, az előzetes webhely-izolációs folyamatkezelési logika lép életbe.
-      Ha nem állítja be a házirendet, a felhasználó módosíthatja ezt a beállítást.
-      </translation>
 <translation id="3381968327636295719">Alapértelmezés szerint használja a gazdagép böngészőjét</translation>
 <translation id="3395348522300156660">Meghatározza, hogy mely nyomtatókat használhatja a felhasználó.
 
@@ -1190,16 +1180,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4983201894483989687">Elavult bővítmények futtatásának engedélyezése</translation>
 <translation id="4988291787868618635">A tétlenségi késleltetés elteltével végzendő művelet</translation>
 <translation id="4995548127349206948">Engedélyezve van-e az NTLMv2 hitelesítés.</translation>
-<translation id="5027819375434797927">
-      MEGJEGYZÉS: A házirend kísérleti állapotban van, és akadályozhatja a működést!
-      Ha engedélyezi a házirendet, a vesszőkkel tagolt listában minden
-      megjelölt forrás önálló folyamatként fut majd. Ez az aldomainek által
-      megjelölt forrásokat is izolálja; például a https://example.com/ megadásával
-      a https://foo.example.com/ is izolálva lesz, mivel a
-      https://example.com/ webhely része.
-      Ha letiltja a házirendet, az előzetes webhely-izolációs folyamatkezelési logika lép életbe.
-      Ha nem állítja be a házirendet, a felhasználó módosíthatja ezt a beállítást.
-      </translation>
 <translation id="5047604665028708335">Hozzáférés engedélyezése a tartalomcsomagokon kívüli webhelyekhez</translation>
 <translation id="5052081091120171147">Ez a házirend engedélyezése esetén a böngészési előzmények importálását kényszeríti a jelenlegi alapértelmezett böngészőből. Bekapcsolása esetén a házirend az importálás párbeszédpanelére is hatással van. Ha le van tiltva, nem történik meg a böngészési előzmények importálása. Ha nincs beállítva, akkor előfordulhat, hogy a rendszer a felhasználótól kérdezi meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>
 <translation id="5056708224511062314">Nagyító kikapcsolva</translation>

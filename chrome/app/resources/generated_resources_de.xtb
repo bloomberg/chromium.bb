@@ -351,6 +351,7 @@
 <translation id="1521442365706402292">Zertifikate verwalten</translation>
 <translation id="152234381334907219">Nie speichern für...</translation>
 <translation id="1524430321211440688">Tastatur</translation>
+<translation id="1524563461097350801">Nein, danke</translation>
 <translation id="1526560967942511387">Unbenanntes Dokument</translation>
 <translation id="1526925867532626635">Synchronisierungseinstellungen bestätigen</translation>
 <translation id="1529116897397289129">Hier werden gespeicherte Kreditkarten angezeigt</translation>
@@ -872,7 +873,6 @@
 <translation id="2352947182261340447">Nicht genug Platz im lokalen Speicher.</translation>
 <translation id="2353297238722298836">Kamera- und Mikrofonnutzung zulässig</translation>
 <translation id="2356070529366658676">Fragen</translation>
-<translation id="2356517949307388948">Bei der Suche nach schädlicher Software ist ein Fehler aufgetreten.</translation>
 <translation id="2357949918965361754">Sie können diese Funktion nutzen, um Inhalte aus Chrome auf Ihrem Fernseher oder auf anderen Geräten anzusehen.</translation>
 <translation id="2359345697448000899">Klicken Sie zum Verwalten Ihrer Erweiterungen im Menü "Tools" auf "Erweiterungen".</translation>
 <translation id="2359808026110333948">Weiter</translation>
@@ -1107,7 +1107,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2715751256863167692">Durch dieses Upgrade wird Ihr Chromebook zurückgesetzt und die aktuellen Nutzerdaten werden entfernt.</translation>
 <translation id="2718395828230677721">Nachtlicht</translation>
 <translation id="2718998670920917754">Die Antivirensoftware hat ein Virus erkannt.</translation>
-<translation id="2719545156185392871">Chrome kann auf Ihrem Computer schädliche Software suchen und entfernen.</translation>
 <translation id="2719936478972253983">Die folgenden Cookies wurden blockiert</translation>
 <translation id="2721037002783622288">Mit <ph name="SEARCH_ENGINE" /> nach Bild &amp;suchen</translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2442,7 +2441,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4835836146030131423">Fehler bei Anmeldung</translation>
 <translation id="4837926214103741331">Sie sind nicht zur Verwendung dieses Geräts berechtigt. Bitten Sie den Geräteinhaber um eine Anmeldeberechtigung.</translation>
 <translation id="4837952862063191349">Geben Sie Ihr altes <ph name="DEVICE_TYPE" />-Passwort ein, um Ihre lokalen Daten zu entsperren und wiederherzustellen.</translation>
-<translation id="4838355575774807786">Beim Entfernen schädlicher Software ist ein Fehler aufgetreten.</translation>
 <translation id="4838836835474292213">Lesezugriff auf Zwischenablage erlaubt</translation>
 <translation id="4839303808932127586">Video &amp;speichern unter...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> Elemente ausgewählt</translation>
@@ -4043,7 +4041,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="73786666777299047">Chrome Web Store öffnen</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Datenverbindung nutzen</translation>
-<translation id="7382945755068785583">Die Angaben umfassen Informationen zu schädlicher Software, Systemeinstellungen und Prozessen auf Ihrem Computer.</translation>
 <translation id="7384292194278095697">Dieses Gerät wird nicht mehr unterstützt</translation>
 <translation id="7385854874724088939">Beim Drucken ist ein Fehler aufgetreten. Bitte überprüfen Sie Ihren Drucker und versuchen Sie es erneut.</translation>
 <translation id="7386824183915085801">Neben Ihrer Chrome- und Betriebssystemversion werden auch
@@ -4921,7 +4918,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8784626084144195648">Gruppendurchschnitt</translation>
 <translation id="8785622406424941542">Eingabestift</translation>
 <translation id="8787254343425541995">Proxys für freigegebene Netzwerke zulassen</translation>
-<translation id="8791260615011736453">Elemente, die hier nicht aufgeführt sind, können bei Bedarf ebenfalls entfernt werden. Weitere Informationen zum &lt;a href="<ph name="URL" />"&gt;Schutz vor unerwünschter Software&lt;/a&gt; finden Sie im Whitepaper zum Datenschutz in Chrome.</translation>
 <translation id="8791534160414513928">Mit Browserzugriffen eine "Do Not Track"-Anforderung senden</translation>
 <translation id="8792609692701651064">Aktives Fenster in linken Bildschirm verschoben</translation>
 <translation id="8794025342371547160">IP eingeschränkt</translation>

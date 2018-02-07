@@ -629,6 +629,15 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Toto pravidlo je voliteľné. Ak nie je nastavené, nedôjde k žiadnej výmene hľadaných výrazov.
 
           Toto pravidlo sa rešpektuje len vtedy, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
+<translation id="306887062252197004">Toto pravidlo umožňuje používateľom funkcie WebDriver prepísať
+      pravidlá, ktoré môžu prekážať v jej fungovaní.
+
+      Momentálne ním deaktivujete pravidlá SitePerProcess a IsolateOrigins.
+
+      Ak ho povolíte, funkcia WebDriver bude môcť prepisovať nekompatibilné
+      pravidlá.
+      Ak toto pravidlo deaktivujete alebo ho nenakonfigurujete, WebDriver nebude môcť
+      prepísať nekompatibilné pravidlá.</translation>
 <translation id="3069958900488014740">Umožňuje vypnúť optimalizáciu WPAD (Web Proxy Auto-Discovery) v prehliadači <ph name="PRODUCT_NAME" />.
 
       Ak je toto pravidlo nastavené na možnosť False, optimalizácia WPAD je zakázaná a prehliadač <ph name="PRODUCT_NAME" /> tak musí čakať dlhšie na servery WPAD založené na systéme DNS. Ak je toto pravidlo povolené alebo nie je nastavené, optimalizácia WPAD je aktívna.
@@ -714,16 +723,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="332771718998993005">Umožňuje zistiť názov cieľového priečinka funkcie <ph name="PRODUCT_NAME" />.
 
           Ak v tomto pravidle nastavíte reťazec, ktorý nie je prázdny, daný reťazec sa použije ako názov cieľového priečinka funkcie <ph name="PRODUCT_NAME" />. Inak sa ako názov cieľového priečinka použije názov zariadenia. Ak toto pravidlo nenastavíte, názov cieľového priečinka bude názov zariadenia, ktorý bude môcť zmeniť jeho vlastník (alebo používateľ z domény, ktorá ho spravuje). Názov môže mať maximálne 24 znakov.</translation>
-<translation id="3356249700768900657">
-      POZNÁMKA: Toto je experimentálne pravidlo, ktoré môže poškodiť funkčnosť!
-      Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom na používateľov,
-       pozrite si nastavenie pravidla IsolateOrigins. Pravidlo
-      IsolateOrigins použite so zoznamom webov, ktoré chcete izolovať. Toto
-      nastavenie – SitePerProcess – izoluje všetky weby.
-      Ak toto pravidlo povolíte, všetky weby sa budú spúšťať vo vlastných procesoch.
-      Ak ho zakážete, bude platiť logika správy procesov pre predbežnú izoláciu webov.
-      Ak toto pravidlo nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
-      </translation>
 <translation id="3381968327636295719">V predvolenom nastavení použiť hosťovský prehliadač</translation>
 <translation id="3395348522300156660">Umožňuje určiť tlačiarne, ktoré má používateľ k dispozícii.
 
@@ -1220,6 +1219,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="4899708173828500852">Povoliť Bezpečné prehliadanie</translation>
 <translation id="4906194810004762807">Frekvencia obnovenia pravidiel pre zariadenie</translation>
 <translation id="4917385247580444890">Silné</translation>
+<translation id="4923806312383904642">Povolenie pre WebDriver prepisovať nekompatibilné pravidlá</translation>
 <translation id="494613465159630803">Prijímač Cast</translation>
 <translation id="4962262530309732070">Ak je toto pravidlo nastavené na možnosť True alebo nie je nakonfigurované, <ph name="PRODUCT_NAME" /> povolí pridanie osoby prostredníctvom správcu používateľov.
 
@@ -1234,16 +1234,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="4983201894483989687">Povoliť spúšťanie zastaraných doplnkov</translation>
 <translation id="4988291787868618635">Akcia po určitej dobe nečinnosti</translation>
 <translation id="4995548127349206948">Či je povolené overenie totožnosti NTLMv2</translation>
-<translation id="5027819375434797927">
-      POZNÁMKA: Toto je experimentálne pravidlo, ktoré môže poškodiť funkčnosť!
-      Ak toto pravidlo povolíte, všetky zdroje v zozname
-      s položkami oddelenými čiarkami sa spustia vo vlastnom procese. Zároveň sa tým izolujú
-      zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude
-      aj adresa https://foo.example.com/ ako súčasť webu
-      https://example.com/.
-      Ak toto pravidlo zakážete, bude platiť logika správy procesov pre predbežnú izoláciu webov.
-      Ak ho nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
-      </translation>
 <translation id="5047604665028708335">Povoliť prístup ku stránkam mimo balíkov obsahu</translation>
 <translation id="5052081091120171147">Ak je toto pravidlo povolené, história prehliadania bude importovaná z aktuálneho predvoleného prehliadača. Povolenie tohto pravidla má vplyv aj na dialógové okno importu.
 
