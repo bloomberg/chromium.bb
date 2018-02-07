@@ -222,6 +222,10 @@ bool InputRouterImpl::FlingCancellationIsDeferred() {
   return gesture_event_queue_.FlingCancellationIsDeferred();
 }
 
+void InputRouterImpl::DidStopFlingingOnBrowser() {
+  client_->DidStopFlinging();
+}
+
 void InputRouterImpl::CancelTouchTimeout() {
   touch_event_queue_.SetAckTimeoutEnabled(false);
 }

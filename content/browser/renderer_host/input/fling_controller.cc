@@ -336,6 +336,7 @@ void FlingController::GenerateAndSendFlingEndEvents() {
 }
 
 void FlingController::CancelCurrentFling() {
+  bool had_active_fling = !!fling_curve_;
   fling_curve_.reset();
   has_fling_animation_started_ = false;
   fling_in_progress_ = false;
@@ -387,6 +388,9 @@ void FlingController::CancelCurrentFling() {
     client_->SendGeneratedGestureScrollEvents(GestureEventWithLatencyInfo(
         scroll_begin_event, ui::LatencyInfo(latency_source_event_type)));
   }
+
+  if (had_active_fling)
+    client_->DidStopFlingingOnBrowser();
 }
 
 bool FlingController::UpdateCurrentFlingState(

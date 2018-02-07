@@ -34,6 +34,8 @@ class CONTENT_EXPORT FlingControllerClient {
       const GestureEventWithLatencyInfo& gesture_event) = 0;
 
   virtual void SetNeedsBeginFrameForFlingProgress() = 0;
+
+  virtual void DidStopFlingingOnBrowser() = 0;
 };
 
 class CONTENT_EXPORT FlingController {

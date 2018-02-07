@@ -219,6 +219,10 @@ bool LegacyInputRouterImpl::FlingCancellationIsDeferred() {
   return gesture_event_queue_.FlingCancellationIsDeferred();
 }
 
+void LegacyInputRouterImpl::DidStopFlingingOnBrowser() {
+  client_->DidStopFlinging();
+}
+
 bool LegacyInputRouterImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(LegacyInputRouterImpl, message)
