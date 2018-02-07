@@ -42,11 +42,11 @@ class ContentElement : public UiElement {
   void Render(UiElementRenderer* renderer,
               const CameraModel& model) const final;
   void OnFocusChanged(bool focused) override;
-  void OnInputEdited(const TextInputInfo& info) override;
-  void OnInputCommitted(const TextInputInfo& info) override;
+  void OnInputEdited(const EditedText& info) override;
+  void OnInputCommitted(const EditedText& info) override;
   void RequestFocus() override;
   void RequestUnfocus() override;
-  void UpdateInput(const TextInputInfo& info) override;
+  void UpdateInput(const EditedText& info) override;
 
   void SetTextureId(unsigned int texture_id);
   void SetTextureLocation(UiElementRenderer::TextureLocation location);

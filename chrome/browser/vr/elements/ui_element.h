@@ -44,7 +44,7 @@ class Animation;
 class SkiaSurfaceProvider;
 class UiElementRenderer;
 struct CameraModel;
-struct TextInputInfo;
+struct EditedText;
 
 enum LayoutAlignment {
   NONE = 0,
@@ -215,11 +215,11 @@ class UiElement : public cc::AnimationTarget {
 
   // Editable elements should override these functions.
   virtual void OnFocusChanged(bool focused);
-  virtual void OnInputEdited(const TextInputInfo& info);
-  virtual void OnInputCommitted(const TextInputInfo& info);
+  virtual void OnInputEdited(const EditedText& info);
+  virtual void OnInputCommitted(const EditedText& info);
   virtual void RequestFocus();
   virtual void RequestUnfocus();
-  virtual void UpdateInput(const TextInputInfo& info);
+  virtual void UpdateInput(const EditedText& info);
 
   gfx::SizeF size() const;
   void SetSize(float width, float hight);

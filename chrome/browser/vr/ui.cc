@@ -212,18 +212,19 @@ void Ui::ShowSoftInput(bool show) {
 
 void Ui::UpdateWebInputSelectionIndices(int selection_start,
                                         int selection_end) {
-  model_->web_input_text_field_info.selection_start = selection_start;
-  model_->web_input_text_field_info.selection_end = selection_end;
+  model_->web_input_text_field_info.current.selection_start = selection_start;
+  model_->web_input_text_field_info.current.selection_end = selection_end;
 }
 
 void Ui::UpdateWebInputCompositionIndices(int composition_start,
                                           int composition_end) {
-  model_->web_input_text_field_info.composition_start = composition_start;
-  model_->web_input_text_field_info.composition_end = composition_end;
+  model_->web_input_text_field_info.current.composition_start =
+      composition_start;
+  model_->web_input_text_field_info.current.composition_end = composition_end;
 }
 
 void Ui::UpdateWebInputText(const base::string16& text) {
-  model_->web_input_text_field_info.text = text;
+  model_->web_input_text_field_info.current.text = text;
 }
 
 void Ui::SetAlertDialogEnabled(bool enabled,
@@ -276,11 +277,11 @@ void Ui::RequestUnfocus(int element_id) {
   input_manager_->RequestUnfocus(element_id);
 }
 
-void Ui::OnInputEdited(const TextInputInfo& info) {
+void Ui::OnInputEdited(const EditedText& info) {
   input_manager_->OnInputEdited(info);
 }
 
-void Ui::OnInputCommitted(const TextInputInfo& info) {
+void Ui::OnInputCommitted(const EditedText& info) {
   input_manager_->OnInputCommitted(info);
 }
 

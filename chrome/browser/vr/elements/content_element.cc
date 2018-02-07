@@ -68,12 +68,12 @@ void ContentElement::OnFocusChanged(bool focused) {
     event_handlers_.focus_change.Run(focused);
 }
 
-void ContentElement::OnInputEdited(const TextInputInfo& info) {
-  delegate_->OnWebInputEdited(info, false);
+void ContentElement::OnInputEdited(const EditedText& info) {
+  delegate_->OnWebInputEdited(info.current, false);
 }
 
-void ContentElement::OnInputCommitted(const TextInputInfo& info) {
-  delegate_->OnWebInputEdited(info, true);
+void ContentElement::OnInputCommitted(const EditedText& info) {
+  delegate_->OnWebInputEdited(info.current, true);
 }
 
 void ContentElement::OnHoverEnter(const gfx::PointF& position) {
@@ -178,9 +178,9 @@ void ContentElement::RequestUnfocus() {
   text_input_delegate_->RequestUnfocus(id());
 }
 
-void ContentElement::UpdateInput(const TextInputInfo& info) {
+void ContentElement::UpdateInput(const EditedText& info) {
   if (text_input_delegate_ && focused_)
-    text_input_delegate_->UpdateInput(info);
+    text_input_delegate_->UpdateInput(info.current);
 }
 
 bool ContentElement::OnBeginFrame(const base::TimeTicks& time,

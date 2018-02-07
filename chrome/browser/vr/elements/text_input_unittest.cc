@@ -44,9 +44,8 @@ class TextInputSceneTest : public UiTest {
     // Make test text input.
     text_input_delegate_ =
         std::make_unique<StrictMock<MockTextInputDelegate>>();
-    text_input_info_ =
-        std::make_unique<TextInputInfo>(base::ASCIIToUTF16("asdfg"));
-    auto text_input = CreateTextInput(1, model_, text_input_info_.get(),
+    edited_text_ = std::make_unique<EditedText>(base::ASCIIToUTF16("asdfg"));
+    auto text_input = CreateTextInput(1, model_, edited_text_.get(),
                                       text_input_delegate_.get());
     text_input_ = text_input.get();
     scene_->AddUiElement(k2dBrowsingForeground, std::move(text_input));
@@ -56,25 +55,25 @@ class TextInputSceneTest : public UiTest {
  protected:
   TextInput* text_input_;
   std::unique_ptr<StrictMock<MockTextInputDelegate>> text_input_delegate_;
-  std::unique_ptr<TextInputInfo> text_input_info_;
+  std::unique_ptr<EditedText> edited_text_;
   testing::Sequence in_sequence_;
 
  private:
   std::unique_ptr<TextInput> CreateTextInput(
       float font_height_meters,
       Model* model,
-      TextInputInfo* text_input_model,
+      EditedText* text_input_model,
       TextInputDelegate* text_input_delegate) {
     auto text_input = std::make_unique<TextInput>(
         font_height_meters,
         base::BindRepeating(
-            [](TextInputInfo* model, const TextInputInfo& text_input_info) {
+            [](EditedText* model, const EditedText& text_input_info) {
               *model = text_input_info;
             },
             base::Unretained(text_input_model)));
     EventHandlers event_handlers;
     event_handlers.focus_change = base::BindRepeating(
-        [](Model* model, TextInput* text_input, TextInputInfo* text_input_info,
+        [](Model* model, TextInput* text_input, EditedText* text_input_info,
            bool focused) {
           if (focused) {
             model->editing_input = true;
@@ -88,14 +87,12 @@ class TextInputSceneTest : public UiTest {
     text_input->set_event_handlers(event_handlers);
     text_input->SetDrawPhase(kPhaseNone);
     text_input->SetTextInputDelegate(text_input_delegate);
-    text_input->AddBinding(std::make_unique<Binding<TextInputInfo>>(
-        VR_BIND_LAMBDA([](TextInputInfo* info) { return *info; },
+    text_input->AddBinding(std::make_unique<Binding<EditedText>>(
+        VR_BIND_LAMBDA([](EditedText* info) { return *info; },
                        base::Unretained(text_input_model)),
-        VR_BIND_LAMBDA(
-            [](TextInput* e, const TextInputInfo& value) {
-              e->UpdateInput(value);
-            },
-            base::Unretained(text_input.get()))));
+        VR_BIND_LAMBDA([](TextInput* e,
+                          const EditedText& value) { e->UpdateInput(value); },
+                       base::Unretained(text_input.get()))));
     return text_input;
   }
 };
@@ -113,14 +110,14 @@ TEST_F(TextInputSceneTest, InputFieldFocus) {
 
   // Focusing on an input field should show the keyboard and tell the delegate
   // the field's content.
-  EXPECT_CALL(*text_input_delegate_, UpdateInput(*text_input_info_))
+  EXPECT_CALL(*text_input_delegate_, UpdateInput(edited_text_->current))
       .InSequence(in_sequence_);
   text_input_->OnFocusChanged(true);
   EXPECT_CALL(*kb_delegate, ShowKeyboard()).InSequence(in_sequence_);
   EXPECT_CALL(*kb_delegate, OnBeginFrame()).InSequence(in_sequence_);
   EXPECT_CALL(*kb_delegate, SetTransform(_)).InSequence(in_sequence_);
   EXPECT_TRUE(OnBeginFrame());
-  EXPECT_EQ(*text_input_info_, text_input_->GetTextInputInfoForTest());
+  EXPECT_EQ(*edited_text_, text_input_->edited_text());
 
   // Focusing out of an input field should hide the keyboard.
   text_input_->OnFocusChanged(false);
@@ -128,7 +125,7 @@ TEST_F(TextInputSceneTest, InputFieldFocus) {
   EXPECT_CALL(*kb_delegate, OnBeginFrame()).InSequence(in_sequence_);
   EXPECT_CALL(*kb_delegate, SetTransform(_)).InSequence(in_sequence_);
   EXPECT_TRUE(OnBeginFrame());
-  EXPECT_EQ(*text_input_info_, text_input_->GetTextInputInfoForTest());
+  EXPECT_EQ(*edited_text_, text_input_->edited_text());
 }
 
 TEST_F(TextInputSceneTest, InputFieldEdit) {
@@ -144,10 +141,10 @@ TEST_F(TextInputSceneTest, InputFieldEdit) {
 
   // Edits from the keyboard update the underlying text input  model.
   EXPECT_CALL(*text_input_delegate_, UpdateInput(_)).InSequence(in_sequence_);
-  TextInputInfo info(base::ASCIIToUTF16("asdfgh"));
+  EditedText info(base::ASCIIToUTF16("asdfgh"));
   text_input_->OnInputEdited(info);
   EXPECT_TRUE(OnBeginFrame());
-  EXPECT_EQ(info, *text_input_info_);
+  EXPECT_EQ(info, *edited_text_);
 }
 
 TEST_F(TextInputSceneTest, ClickOnTextGrabsFocus) {
@@ -193,8 +190,7 @@ TEST(TextInputTest, HintText) {
   EXPECT_GT(element->get_hint_element()->GetTargetOpacity(), 0);
 
   // When text enters the field, the hint should disappear.
-  TextInputInfo info;
-  info.text = base::UTF8ToUTF16("text");
+  EditedText info(base::UTF8ToUTF16("text"));
   element->UpdateInput(info);
   scene.OnBeginFrame(base::TimeTicks(), kStartHeadPose);
   EXPECT_EQ(element->get_hint_element()->GetTargetOpacity(), 0);
@@ -232,9 +228,9 @@ TEST(TextInputTest, CursorBlinking) {
   EXPECT_TRUE(toggled);
 
   // With a selection, the cursor should not be blinking or visible.
-  TextInputInfo info(base::UTF8ToUTF16("text"));
-  info.selection_start = 0;
-  info.selection_end = info.text.size();
+  EditedText info(base::UTF8ToUTF16("text"));
+  info.current.selection_start = 0;
+  info.current.selection_end = info.current.text.size();
   element->UpdateInput(info);
   EXPECT_EQ(0.f, element->get_cursor_element()->GetTargetOpacity());
   for (int ms = 0; ms <= 2000; ms += 100) {
@@ -254,15 +250,15 @@ TEST(TextInputTest, CursorPositionUpdatesOnKeyboardInput) {
   event_handlers.focus_change = TextInput::OnFocusChangedCallback();
   element->set_event_handlers(event_handlers);
 
-  TextInputInfo info(base::UTF8ToUTF16("text"));
-  info.selection_start = 0;
-  info.selection_end = 0;
+  EditedText info(base::UTF8ToUTF16("text"));
+  info.current.selection_start = 0;
+  info.current.selection_end = 0;
   element->UpdateInput(info);
   element->get_text_element()->LayOutTextForTest();
   int x1 = element->get_text_element()->GetRawCursorBounds().x();
 
-  info.selection_start = 1;
-  info.selection_end = 1;
+  info.current.selection_start = 1;
+  info.current.selection_end = 1;
   element->UpdateInput(info);
   element->get_text_element()->LayOutTextForTest();
   int x2 = element->get_text_element()->GetRawCursorBounds().x();
@@ -277,7 +273,7 @@ TEST(TextInputTest, CursorPositionUpdatesOnClicks) {
   event_handlers.focus_change = TextInput::OnFocusChangedCallback();
   element->set_event_handlers(event_handlers);
 
-  TextInputInfo info(base::UTF8ToUTF16("text"));
+  EditedText info(base::UTF8ToUTF16("text"));
   element->UpdateInput(info);
   element->get_text_element()->LayOutTextForTest();
 
@@ -297,13 +293,13 @@ TEST(TextInputTest, CursorPositionUpdatesOnClicks) {
   EXPECT_GT(x2, 0);
 
   // Set a selection and ensure that a click clears it.
-  info.selection_start = 0;
-  info.selection_end = info.text.size();
+  info.current.selection_start = 0;
+  info.current.selection_end = info.current.text.size();
   element->UpdateInput(info);
-  EXPECT_GT(element->GetTextInputInfoForTest().SelectionSize(), 0u);
+  EXPECT_GT(element->edited_text().current.SelectionSize(), 0u);
   element->OnButtonDown(gfx::PointF(0.5, 0.5));
   element->OnButtonUp(gfx::PointF(0.5, 0.5));
-  EXPECT_EQ(element->GetTextInputInfoForTest().SelectionSize(), 0u);
+  EXPECT_EQ(element->edited_text().current.SelectionSize(), 0u);
 }
 
 }  // namespace vr

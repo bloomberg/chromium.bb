@@ -468,7 +468,7 @@ void UiInputManager::RequestUnfocus(int element_id) {
   UnfocusFocusedElement();
 }
 
-void UiInputManager::OnInputEdited(const TextInputInfo& info) {
+void UiInputManager::OnInputEdited(const EditedText& info) {
   UiElement* focused = scene_->GetUiElementById(focused_element_id_);
   if (!focused)
     return;
@@ -476,7 +476,7 @@ void UiInputManager::OnInputEdited(const TextInputInfo& info) {
   focused->OnInputEdited(info);
 }
 
-void UiInputManager::OnInputCommitted(const TextInputInfo& info) {
+void UiInputManager::OnInputCommitted(const EditedText& info) {
   UiElement* focused = scene_->GetUiElementById(focused_element_id_);
   if (!focused || !focused->focusable())
     return;

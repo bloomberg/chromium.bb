@@ -24,10 +24,10 @@ class TextInput : public UiElement {
   // Called when this element receives focus.
   typedef base::RepeatingCallback<void(bool)> OnFocusChangedCallback;
   // Called when the user enters text while this element is focused.
-  typedef base::RepeatingCallback<void(const TextInputInfo&)>
+  typedef base::RepeatingCallback<void(const EditedText&)>
       OnInputEditedCallback;
   // Called when the user commits text while this element is focused.
-  typedef base::RepeatingCallback<void(const TextInputInfo&)>
+  typedef base::RepeatingCallback<void(const EditedText&)>
       OnInputCommittedCallback;
   TextInput(float font_height_meters,
             OnInputEditedCallback input_edit_callback);
@@ -36,11 +36,11 @@ class TextInput : public UiElement {
   void OnButtonDown(const gfx::PointF& position) override;
   void OnButtonUp(const gfx::PointF& position) override;
   void OnFocusChanged(bool focused) override;
-  void OnInputEdited(const TextInputInfo& info) override;
-  void OnInputCommitted(const TextInputInfo& info) override;
+  void OnInputEdited(const EditedText& info) override;
+  void OnInputCommitted(const EditedText& info) override;
   void RequestFocus() override;
   void RequestUnfocus() override;
-  void UpdateInput(const TextInputInfo& info) override;
+  void UpdateInput(const EditedText& info) override;
 
   void SetHintText(const base::string16& text);
   void SetTextColor(SkColor color);
@@ -61,23 +61,19 @@ class TextInput : public UiElement {
   Text* get_text_element() { return text_element_; }
   Rect* get_cursor_element() { return cursor_element_; }
 
-  TextInputInfo GetTextInputInfoForTest() const;
-
- protected:
-  TextInputInfo text_info() const { return text_info_; }
+  EditedText edited_text() const { return edited_text_; }
 
  private:
   void LayOutChildren() final;
   bool SetCursorBlinkState(const base::TimeTicks& time);
   void ResetCursorBlinkCycle();
 
-  virtual void OnUpdateInput(const TextInputInfo& info,
-                             const TextInputInfo& previous_info);
+  virtual void OnUpdateInput(const EditedText& info);
 
   OnInputEditedCallback input_edit_callback_;
   OnInputEditedCallback input_commit_callback_;
   TextInputDelegate* delegate_ = nullptr;
-  TextInputInfo text_info_;
+  EditedText edited_text_;
   bool focused_ = false;
   bool cursor_visible_ = false;
   base::TimeTicks cursor_blink_start_ticks_;

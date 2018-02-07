@@ -62,11 +62,7 @@ void TestKeyboardDelegate::Initialize(vr::SkiaSurfaceProvider* provider,
 }
 
 void TestKeyboardDelegate::UpdateInput(const vr::TextInputInfo& info) {
-  if (input_info_ == info)
-    return;
-
   input_info_ = info;
-  ui_interface_->OnInputEdited(input_info_);
 }
 
 bool TestKeyboardDelegate::HandleInput(ui::Event* e) {
@@ -75,41 +71,41 @@ bool TestKeyboardDelegate::HandleInput(ui::Event* e) {
   if (!editing_)
     return false;
 
+  TextInputInfo info(input_info_);
+
   auto* event = e->AsKeyEvent();
   switch (event->key_code()) {
     case ui::VKEY_RETURN:
-      input_info_.text.clear();
-      input_info_.selection_start = input_info_.selection_end = 0;
-      ui_interface_->OnInputCommitted(input_info_);
+      info.text.clear();
+      info.selection_start = info.selection_end = 0;
+      ui_interface_->OnInputCommitted(EditedText(info, input_info_));
       break;
     case ui::VKEY_BACK:
-      if (input_info_.selection_start != input_info_.selection_end) {
-        input_info_.text.erase(
-            input_info_.selection_start,
-            input_info_.selection_end - input_info_.selection_start);
-        input_info_.selection_end = input_info_.selection_start;
-      } else if (!input_info_.text.empty() && input_info_.selection_start > 0) {
-        input_info_.text.erase(input_info_.selection_start - 1, 1);
-        input_info_.selection_start--;
-        input_info_.selection_end--;
+      if (info.selection_start != info.selection_end) {
+        info.text.erase(info.selection_start,
+                        info.selection_end - info.selection_start);
+        info.selection_end = info.selection_start;
+      } else if (!info.text.empty() && info.selection_start > 0) {
+        info.text.erase(info.selection_start - 1, 1);
+        info.selection_start--;
+        info.selection_end--;
       }
-      ui_interface_->OnInputEdited(input_info_);
+      ui_interface_->OnInputEdited(EditedText(info, input_info_));
       break;
     default:
-      if (input_info_.selection_start != input_info_.selection_end) {
-        input_info_.text.erase(
-            input_info_.selection_start,
-            input_info_.selection_end - input_info_.selection_start);
-        input_info_.selection_end = input_info_.selection_start;
+      if (info.selection_start != info.selection_end) {
+        info.text.erase(info.selection_start,
+                        info.selection_end - info.selection_start);
+        info.selection_end = info.selection_start;
       }
 
       std::string character;
       base::WriteUnicodeCharacter(event->GetText(), &character);
-      input_info_.text = input_info_.text.insert(input_info_.selection_start,
-                                                 base::UTF8ToUTF16(character));
-      input_info_.selection_start++;
-      input_info_.selection_end++;
-      ui_interface_->OnInputEdited(input_info_);
+      info.text =
+          info.text.insert(info.selection_start, base::UTF8ToUTF16(character));
+      info.selection_start++;
+      info.selection_end++;
+      ui_interface_->OnInputEdited(EditedText(info, input_info_));
       break;
   }
   // We want to continue handling this keypress if the Ctrl key is down so

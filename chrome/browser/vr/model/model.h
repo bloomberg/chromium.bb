@@ -76,8 +76,8 @@ struct Model {
   bool editing_input = false;
   bool editing_web_input = false;
   // Editable text field state.
-  TextInputInfo omnibox_text_field_info;
-  TextInputInfo web_input_text_field_info;
+  EditedText omnibox_text_field_info;
+  EditedText web_input_text_field_info;
 
   // Controller state.
   ControllerModel controller;
