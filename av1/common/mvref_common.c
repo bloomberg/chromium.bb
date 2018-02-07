@@ -1861,8 +1861,8 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *cm) {
   if (ref_idx[0] != INVALID_IDX && ref_idx[1] != INVALID_IDX) {
     // == Bi-directional prediction ==
     cm->is_skip_mode_allowed = 1;
-    cm->ref_frame_idx_0 = ref_idx[0];
-    cm->ref_frame_idx_1 = ref_idx[1];
+    cm->ref_frame_idx_0 = AOMMIN(ref_idx[0], ref_idx[1]);
+    cm->ref_frame_idx_1 = AOMMAX(ref_idx[0], ref_idx[1]);
   } else if (ref_idx[0] != INVALID_IDX && ref_idx[1] == INVALID_IDX) {
     // == Forward prediction only ==
     // Identify the second nearest forward reference.
