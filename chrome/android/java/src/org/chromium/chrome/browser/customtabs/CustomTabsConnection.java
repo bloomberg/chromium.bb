@@ -119,9 +119,7 @@ public class CustomTabsConnection {
     private static final int SPECULATION_STATUS_ON_SWAP_MAX = 4;
 
     // Constants for sending connection characteristics.
-    private static final String EFFECTIVE_CONNECTION_TYPE = "effectiveConnectionType";
-    private static final String HTTP_RTT_MS = "httpRttMs";
-    private static final String TRANSPORT_RTT_MS = "transportRttMs";
+    public static final String DATA_REDUCTION_ENABLED = "dataReductionEnabled";
 
     // "/bg_non_interactive" is from L MR1, "/apps/bg_non_interactive" before,
     // and "background" from O.
