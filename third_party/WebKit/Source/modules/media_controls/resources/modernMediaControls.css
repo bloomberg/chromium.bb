@@ -262,6 +262,8 @@ video::-webkit-media-controls-timeline {
   padding-right: 16px;
   margin: 0;
   background: transparent;
+  /* This prevents layout issues in quirks mode */
+  box-sizing: unset !important;
 }
 
 audio::-webkit-media-controls-timeline {
