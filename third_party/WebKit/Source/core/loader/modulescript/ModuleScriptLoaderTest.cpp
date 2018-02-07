@@ -181,7 +181,8 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       GetDocument().IsSecureContext(), nullptr /* worker_clients */,
       GetDocument().AddressSpace(),
       OriginTrialContext::GetTokens(&GetDocument()).get(),
-      nullptr /* worker_settings */, kV8CacheOptionsDefault);
+      base::UnguessableToken::Create(), nullptr /* worker_settings */,
+      kV8CacheOptionsDefault);
   global_scope_ = new MainThreadWorkletGlobalScope(
       &GetFrame(), std::move(creation_params), *reporting_proxy_);
   global_scope_->ScriptController()->InitializeContextIfNeeded("Dummy Context");

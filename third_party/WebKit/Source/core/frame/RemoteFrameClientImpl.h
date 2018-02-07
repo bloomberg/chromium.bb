@@ -26,7 +26,7 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
   Frame* NextSibling() const override;
   Frame* FirstChild() const override;
   void FrameFocused() const override;
-  String GetDevToolsFrameToken() const override;
+  base::UnguessableToken GetDevToolsFrameToken() const override;
 
   // RemoteFrameClient overrides:
   void Navigate(const ResourceRequest&,

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "common/net/ip_address_space.mojom-blink.h"
 #include "core/CoreExport.h"
@@ -42,6 +43,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       WorkerClients*,
       mojom::IPAddressSpace,
       const Vector<String>* origin_trial_tokens,
+      const base::UnguessableToken& devtools_worker_token,
       std::unique_ptr<WorkerSettings>,
       V8CacheOptions,
       service_manager::mojom::blink::InterfaceProviderPtrInfo = {});
@@ -98,6 +100,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   CrossThreadPersistent<WorkerClients> worker_clients;
 
   mojom::IPAddressSpace address_space;
+
+  base::UnguessableToken devtools_worker_token;
 
   std::unique_ptr<WorkerSettings> worker_settings;
 

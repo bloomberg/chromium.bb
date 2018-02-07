@@ -5,6 +5,7 @@
 #ifndef FrameClient_h
 #define FrameClient_h
 
+#include "base/unguessable_token.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/BlameContext.h"
@@ -32,7 +33,7 @@ class CORE_EXPORT FrameClient : public GarbageCollectedFinalized<FrameClient> {
 
   virtual void FrameFocused() const = 0;
 
-  virtual String GetDevToolsFrameToken() const = 0;
+  virtual base::UnguessableToken GetDevToolsFrameToken() const = 0;
 
   virtual ~FrameClient() = default;
 

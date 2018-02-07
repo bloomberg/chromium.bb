@@ -226,8 +226,7 @@ void InspectorWorkerAgent::ConnectToProxy(WorkerInspectorProxy* proxy,
   session_id_to_connection_.Set(session_id, connection);
   connection_to_session_id_.Set(connection, session_id);
 
-  proxy->ConnectToInspector(connection,
-                            inspected_frames_->GetDevToolsFrameToken(), this);
+  proxy->ConnectToInspector(connection, this);
   DCHECK(GetFrontend());
   AttachedSessionIds()->setBoolean(session_id, true);
   GetFrontend()->attachedToTarget(session_id,

@@ -218,7 +218,7 @@ Response InspectorDOMStorageAgent::FindStorageArea(
     return Response::InternalError();
 
   InspectedFrames* inspected_frames =
-      new InspectedFrames(page_->DeprecatedLocalMainFrame(), String());
+      new InspectedFrames(page_->DeprecatedLocalMainFrame());
   frame = inspected_frames->FrameWithSecurityOrigin(security_origin);
   if (!frame)
     return Response::Error("Frame not found for the given security origin");

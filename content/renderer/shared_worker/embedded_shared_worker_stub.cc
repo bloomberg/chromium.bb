@@ -149,8 +149,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       url_, blink::WebString::FromUTF8(name_),
       blink::WebString::FromUTF8(info->content_security_policy),
       info->content_security_policy_type, info->creation_address_space,
-      blink::WebString::FromUTF8(devtools_worker_token.ToString()),
-      content_settings.PassInterface().PassHandle(),
+      devtools_worker_token, content_settings.PassInterface().PassHandle(),
       interface_provider.PassInterface().PassHandle());
 
   // If the host drops its connection, then self-destruct.

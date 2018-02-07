@@ -100,19 +100,16 @@ void WorkerInspectorProxy::AddConsoleMessageFromWorker(
       level, message, std::move(location), inspector_id_));
 }
 
-static void ConnectToWorkerGlobalScopeInspectorTask(
-    WorkerThread* worker_thread,
-    int session_id,
-    const String& parent_instrumentation_token) {
+static void ConnectToWorkerGlobalScopeInspectorTask(WorkerThread* worker_thread,
+                                                    int session_id) {
   if (WorkerInspectorController* inspector =
           worker_thread->GetWorkerInspectorController()) {
-    inspector->ConnectFrontend(session_id, parent_instrumentation_token);
+    inspector->ConnectFrontend(session_id);
   }
 }
 
 void WorkerInspectorProxy::ConnectToInspector(
     int session_id,
-    const String& parent_instrumentation_token,
     WorkerInspectorProxy::PageInspector* page_inspector) {
   if (!worker_thread_)
     return;
@@ -120,8 +117,7 @@ void WorkerInspectorProxy::ConnectToInspector(
   page_inspectors_.insert(session_id, page_inspector);
   worker_thread_->AppendDebuggerTask(
       CrossThreadBind(ConnectToWorkerGlobalScopeInspectorTask,
-                      CrossThreadUnretained(worker_thread_), session_id,
-                      parent_instrumentation_token));
+                      CrossThreadUnretained(worker_thread_), session_id));
 }
 
 static void DisconnectFromWorkerGlobalScopeInspectorTask(

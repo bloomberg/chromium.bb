@@ -62,10 +62,12 @@ class WebRemoteFrameClient {
   // This frame was focused by another frame.
   virtual void FrameFocused() {}
 
-  // Returns string to be used as a frame id in the devtools protocol.
+  // Returns token to be used as a frame id in the devtools protocol.
   // It is derived from the content's devtools_frame_token, is
   // defined by the browser and passed into Blink upon frame creation.
-  virtual WebString GetDevToolsFrameToken() { return WebString(); }
+  virtual base::UnguessableToken GetDevToolsFrameToken() {
+    return base::UnguessableToken::Create();
+  }
 
  protected:
   virtual ~WebRemoteFrameClient() = default;

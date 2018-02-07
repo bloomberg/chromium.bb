@@ -89,7 +89,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
  private:
   // WebDevToolsAgentImpl::Client overrides.
   void ResumeStartup() override;
-  const WebString& GetDevToolsFrameToken() override;
+  const base::UnguessableToken& GetDevToolsWorkerToken() override;
 
   void OnScriptLoaderFinished();
   void StartWorkerThread();
@@ -127,7 +127,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   WaitingForDebuggerState waiting_for_debugger_state_;
   // Unique worker token used by DevTools to attribute different instrumentation
   // to the same worker.
-  WebString devtools_frame_token_;
+  base::UnguessableToken devtools_worker_token_;
 
   service_manager::mojom::blink::InterfaceProviderPtrInfo
       interface_provider_info_;

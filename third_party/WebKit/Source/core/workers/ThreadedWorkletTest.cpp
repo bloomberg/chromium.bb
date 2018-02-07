@@ -186,7 +186,8 @@ class ThreadedWorkletMessagingProxyForTest
             document->IsSecureContext(), worker_clients,
             document->AddressSpace(),
             OriginTrialContext::GetTokens(document).get(),
-            std::move(worker_settings), kV8CacheOptionsDefault),
+            base::UnguessableToken::Create(), std::move(worker_settings),
+            kV8CacheOptionsDefault),
         WTF::nullopt);
   }
 

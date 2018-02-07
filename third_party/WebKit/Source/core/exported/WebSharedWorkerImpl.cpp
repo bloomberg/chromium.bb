@@ -152,8 +152,8 @@ void WebSharedWorkerImpl::ResumeStartup() {
   }
 }
 
-const WebString& WebSharedWorkerImpl::GetDevToolsFrameToken() {
-  return devtools_frame_token_;
+const base::UnguessableToken& WebSharedWorkerImpl::GetDevToolsWorkerToken() {
+  return devtools_worker_token_;
 }
 
 void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
@@ -211,7 +211,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
     const WebString& content_security_policy,
     WebContentSecurityPolicyType policy_type,
     mojom::IPAddressSpace creation_address_space,
-    const WebString& devtools_frame_token,
+    const base::UnguessableToken& devtools_worker_token,
     mojo::ScopedMessagePipeHandle content_settings_handle,
     mojo::ScopedMessagePipeHandle interface_provider) {
   DCHECK(IsMainThread());
@@ -223,7 +223,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
       std::move(content_settings_handle), 0u);
   pending_interface_provider_.set_handle(std::move(interface_provider));
 
-  devtools_frame_token_ = devtools_frame_token;
+  devtools_worker_token_ = devtools_worker_token;
   shadow_page_ = std::make_unique<WorkerShadowPage>(this);
 
   // If we were asked to pause worker context on start and wait for debugger
@@ -306,8 +306,9 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
                                   : nullptr,
           referrer_policy, starter_origin, starter_secure_context,
           worker_clients, main_script_loader_->ResponseAddressSpace(),
-          main_script_loader_->OriginTrialTokens(), std::move(worker_settings),
-          kV8CacheOptionsDefault, std::move(pending_interface_provider_));
+          main_script_loader_->OriginTrialTokens(), devtools_worker_token_,
+          std::move(worker_settings), kV8CacheOptionsDefault,
+          std::move(pending_interface_provider_));
   String source_code = main_script_loader_->SourceText();
 
   // SharedWorker can sometimes run tasks that are initiated by/associated with

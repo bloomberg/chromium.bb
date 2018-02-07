@@ -48,6 +48,7 @@
 #include "WebNavigationType.h"
 #include "WebTextDirection.h"
 #include "WebTriggeringEventInfo.h"
+#include "base/unguessable_token.h"
 #include "public/platform/BlameContext.h"
 #include "public/platform/WebApplicationCacheHost.h"
 #include "public/platform/WebColor.h"
@@ -512,10 +513,12 @@ class BLINK_EXPORT WebFrameClient {
   // ever having received a user gesture.
   virtual void DidBlockFramebust(const WebURL&) {}
 
-  // Returns string to be used as a frame id in the devtools protocol.
+  // Returns token to be used as a frame id in the devtools protocol.
   // It is derived from the content's devtools_frame_token, is
   // defined by the browser and passed into Blink upon frame creation.
-  virtual WebString GetDevToolsFrameToken() { return WebString(); }
+  virtual base::UnguessableToken GetDevToolsFrameToken() {
+    return base::UnguessableToken::Create();
+  }
 
   // PlzNavigate
   // Called to abort a navigation that is being handled by the browser process.

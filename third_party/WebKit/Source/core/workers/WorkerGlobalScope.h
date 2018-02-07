@@ -118,6 +118,9 @@ class CORE_EXPORT WorkerGlobalScope
   OffscreenFontSelector* GetFontSelector() { return font_selector_; }
 
   CoreProbeSink* GetProbeSink() final;
+  const base::UnguessableToken& GetDevToolsWorkerToken() {
+    return devtools_worker_token_;
+  }
 
   // EventTarget
   ExecutionContext* GetExecutionContext() const final;
@@ -187,6 +190,7 @@ class CORE_EXPORT WorkerGlobalScope
 
   const KURL url_;
   const String user_agent_;
+  const base::UnguessableToken devtools_worker_token_;
   const V8CacheOptions v8_cache_options_;
   std::unique_ptr<WorkerSettings> worker_settings_;
 

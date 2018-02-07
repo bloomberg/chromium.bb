@@ -140,7 +140,7 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
       WebEmbeddedWorkerStartData::kPauseAfterDownload)
     pause_after_download_state_ = kDoPauseAfterDownload;
 
-  devtools_frame_token_ = data.devtools_frame_token;
+  devtools_worker_token_ = data.devtools_worker_token;
   shadow_page_ = std::make_unique<WorkerShadowPage>(this);
   WebSettings* settings = shadow_page_->GetSettings();
 
@@ -288,8 +288,8 @@ void WebEmbeddedWorkerImpl::ResumeStartup() {
     shadow_page_->Initialize(worker_start_data_.script_url);
 }
 
-const WebString& WebEmbeddedWorkerImpl::GetDevToolsFrameToken() {
-  return devtools_frame_token_;
+const base::UnguessableToken& WebEmbeddedWorkerImpl::GetDevToolsWorkerToken() {
+  return devtools_worker_token_;
 }
 
 void WebEmbeddedWorkerImpl::OnScriptLoaderFinished() {
@@ -361,7 +361,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         document->GetContentSecurityPolicy()->Headers().get(),
         document->GetReferrerPolicy(), starter_origin, starter_secure_context,
         worker_clients, main_script_loader_->ResponseAddressSpace(),
-        main_script_loader_->OriginTrialTokens(), std::move(worker_settings),
+        main_script_loader_->OriginTrialTokens(), devtools_worker_token_,
+        std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
         std::move(interface_provider_info_));
     source_code = main_script_loader_->SourceText();
@@ -376,7 +377,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         nullptr /* ContentSecurityPolicy */, kReferrerPolicyDefault,
         starter_origin, starter_secure_context, worker_clients,
         worker_start_data_.address_space, nullptr /* OriginTrialTokens */,
-        std::move(worker_settings),
+        devtools_worker_token_, std::move(worker_settings),
         static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
         std::move(interface_provider_info_));
   }

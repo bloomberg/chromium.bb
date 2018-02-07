@@ -97,7 +97,8 @@ class AnimationWorkletThreadTest : public PageTestBase {
             document->GetReferrerPolicy(), document->GetSecurityOrigin(),
             document->IsSecureContext(), clients, document->AddressSpace(),
             OriginTrialContext::GetTokens(document).get(),
-            nullptr /* worker_settings */, kV8CacheOptionsDefault),
+            base::UnguessableToken::Create(), nullptr /* worker_settings */,
+            kV8CacheOptionsDefault),
         WTF::nullopt, WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
         ParentFrameTaskRunners::Create());
     return thread;
