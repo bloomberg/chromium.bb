@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
+#include "base/synchronization/lock.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
@@ -38,6 +39,7 @@ using ::testing::_;
 using ::testing::Assign;
 using ::testing::AtLeast;
 using ::testing::DoAll;
+using ::testing::InvokeWithoutArgs;
 using ::testing::NotNull;
 
 namespace content {
@@ -68,7 +70,9 @@ class MockAudioMirroringManager : public AudioMirroringManager {
 class FakeAudioManagerWithAssociations : public media::FakeAudioManager {
  public:
   explicit FakeAudioManagerWithAssociations(media::AudioLogFactory* factory)
-      : FakeAudioManager(std::make_unique<media::TestAudioThread>(), factory) {}
+      : FakeAudioManager(
+            std::make_unique<media::TestAudioThread>(/*real thread*/ true),
+            factory) {}
 
   void CreateDeviceAssociation(const std::string& input_device_id,
                                const std::string& output_device_id) {
@@ -77,16 +81,19 @@ class FakeAudioManagerWithAssociations : public media::FakeAudioManager {
     EXPECT_FALSE(IsValidDeviceId(input_device_id));
     EXPECT_FALSE(IsValidDeviceId(output_device_id));
 
+    base::AutoLock al(associations_lock_);
     associations_[input_device_id] = output_device_id;
   }
 
   std::string GetAssociatedOutputDeviceID(
       const std::string& input_id) override {
+    base::AutoLock al(associations_lock_);
     auto it = associations_.find(input_id);
     return it == associations_.end() ? "" : it->second;
   }
 
  private:
+  base::Lock associations_lock_;
   std::map<std::string, std::string> associations_;
 };
 
@@ -171,14 +178,14 @@ class MockAudioRendererHost : public AudioRendererHost {
       base::SyncSocket::TransitDescriptor socket_descriptor) {
     // Maps the shared memory.
     shared_memory_length_ = handle.GetSize();
-    shared_memory_.reset(new base::SharedMemory(handle, false));
+    shared_memory_ = std::make_unique<base::SharedMemory>(handle, false);
     CHECK(shared_memory_->Map(shared_memory_length_));
     CHECK(shared_memory_->memory());
 
     // Create the SyncSocket using the handle.
     base::SyncSocket::Handle sync_socket_handle =
         base::SyncSocket::UnwrapHandle(socket_descriptor);
-    sync_socket_.reset(new base::SyncSocket(sync_socket_handle));
+    sync_socket_ = std::make_unique<base::SyncSocket>(sync_socket_handle);
 
     // And then delegate the call to the mock method.
     WasNotifiedOfCreation(stream_id);
@@ -192,6 +199,17 @@ class MockAudioRendererHost : public AudioRendererHost {
   base::RunLoop* auth_run_loop_;  // Used to wait for authorization.
 
   DISALLOW_COPY_AND_ASSIGN(MockAudioRendererHost);
+};
+
+class MockMediaStreamProviderListener : public MediaStreamProviderListener {
+ public:
+  MockMediaStreamProviderListener() {}
+  ~MockMediaStreamProviderListener() override {}
+
+  MOCK_METHOD2(Opened,
+               void(MediaStreamType stream_type, int capture_session_id));
+  void Closed(MediaStreamType stream_type, int capture_session_id) override {}
+  void Aborted(MediaStreamType stream_type, int capture_session_id) override {}
 };
 
 class AudioRendererHostTest : public RenderViewHostTestHarness {
@@ -243,6 +261,7 @@ class AudioRendererHostTest : public RenderViewHostTestHarness {
   }
 
   std::string GetNondefaultIdExpectedToPassPermissionsCheck() {
+    base::RunLoop loop;
     std::string nondefault_id;
 
     MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
@@ -250,7 +269,8 @@ class AudioRendererHostTest : public RenderViewHostTestHarness {
     media_stream_manager_->media_devices_manager()->EnumerateDevices(
         devices_to_enumerate,
         base::Bind(
-            [](std::string* out, const MediaDeviceEnumeration& result) {
+            [](base::OnceClosure done, std::string* out,
+               const MediaDeviceEnumeration& result) {
               // Index 0 is default, so use 1. Always exists because we use
               // fake devices.
               CHECK(result[MediaDeviceType::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT]
@@ -258,16 +278,18 @@ class AudioRendererHostTest : public RenderViewHostTestHarness {
                   << "Expected to have a nondefault device.";
               *out = result[MediaDeviceType::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT][1]
                          .device_id;
+              std::move(done).Run();
             },
-            base::Unretained(&nondefault_id)));
+            loop.QuitClosure(), base::Unretained(&nondefault_id)));
 
     // Make sure nondefault_id is set before returning.
-    base::RunLoop().RunUntilIdle();
+    loop.Run();
 
     return nondefault_id;
   }
 
   std::string GetNondefaultInputId() {
+    base::RunLoop loop;
     std::string nondefault_id;
 
     MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
@@ -277,16 +299,19 @@ class AudioRendererHostTest : public RenderViewHostTestHarness {
         base::Bind(
             // Index 0 is default, so use 1. Always exists because we use
             // fake devices.
-            [](std::string* out, const MediaDeviceEnumeration& result) {
+            [](base::OnceClosure done, std::string* out,
+               const MediaDeviceEnumeration& result) {
               CHECK(result[MediaDeviceType::MEDIA_DEVICE_TYPE_AUDIO_INPUT]
                         .size() > 1)
                   << "Expected to have a nondefault device.";
               *out = result[MediaDeviceType::MEDIA_DEVICE_TYPE_AUDIO_INPUT][1]
                          .device_id;
+              std::move(done).Run();
             },
-            base::Unretained(&nondefault_id)));
+            loop.QuitClosure(), base::Unretained(&nondefault_id)));
 
-    base::RunLoop().RunUntilIdle();
+    // Make sure nondefault_id is set before returning.
+    loop.Run();
 
     return nondefault_id;
   }
@@ -385,10 +410,23 @@ class AudioRendererHostTest : public RenderViewHostTestHarness {
     // Set up association between input and output so that the output
     // device gets selected when using session id:
     audio_manager_->CreateDeviceAssociation(input_id, output_id);
+
+    // Authorize device for use and wait for completion.
+    MockMediaStreamProviderListener listener;
+    media_stream_manager_->audio_input_device_manager()->RegisterListener(
+        &listener);
+
     int session_id = media_stream_manager_->audio_input_device_manager()->Open(
         MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE, input_id,
                           "Fake input device"));
-    base::RunLoop().RunUntilIdle();
+
+    // Block for completion.
+    base::RunLoop loop;
+    EXPECT_CALL(listener, Opened(MEDIA_DEVICE_AUDIO_CAPTURE, session_id))
+        .WillOnce(InvokeWithoutArgs(&loop, &base::RunLoop::Quit));
+    loop.Run();
+    media_stream_manager_->audio_input_device_manager()->UnregisterListener(
+        &listener);
 
     // Send a create stream message to the audio output stream and wait until
     // we receive the created message.

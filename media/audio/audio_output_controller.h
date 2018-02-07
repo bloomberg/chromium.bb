@@ -33,8 +33,14 @@
 // audio operations like play, pause, stop, etc. on a separate thread,
 // namely the audio manager thread.
 //
-// All the public methods of AudioOutputController are non-blocking.
-// The actual operations are performed on the audio manager thread.
+// There are two ways to use this class.
+// 1. Do all operations (including Create and Close) from a thread different
+//    than the Audio Manager thread. In this case, the public methods are
+//    non-blocking. The actual operations are performed on the audio manager
+//    thread.
+// 2. Do all operations (including Create and Close) on the Audio Manager
+//    thread. In this case, they are completed synchronously.
+// Note: it is not allowed to mix 1. and 2.!
 //
 // Here is a state transition diagram for the AudioOutputController:
 //
@@ -60,7 +66,6 @@
 // The AudioOutputStream can request data from the AudioOutputController via the
 // AudioSourceCallback interface. AudioOutputController uses the SyncReader
 // passed to it via construction to synchronously fulfill this read request.
-//
 
 namespace media {
 
@@ -142,11 +147,12 @@ class MEDIA_EXPORT AudioOutputController
   // Closes the audio output stream. The state is changed and the resources
   // are freed on the audio manager thread. |closed_task| is executed after
   // that, on the thread on which Close was called. Callbacks (EventHandler and
-  // SyncReader) must exist until closed_task is called, but they are safe
+  // SyncReader) must exist until |closed_task| is called, but they are safe
   // to delete after that.
   //
-  // It is safe to call this method more than once. Calls after the first one
-  // will have no effect.
+  // When calling this on the audio manager thread, all resources will be
+  // released synchronously and there is no need for |closed_task|. In this
+  // case, it must be null.
   void Close(base::OnceClosure closed_task);
 
   // Sets the volume of the audio output stream.
@@ -254,9 +260,14 @@ class MEDIA_EXPORT AudioOutputController
   // Log the current average power level measured by power_monitor_.
   void LogAudioPowerLevel(const std::string& call_name);
 
+  SEQUENCE_CHECKER(owning_sequence_);
+
   AudioManager* const audio_manager_;
   const AudioParameters params_;
   EventHandler* const handler_;
+
+  // The message loop of audio manager thread that this object runs on.
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Specifies the device id of the output device to open or empty for the
   // default output device.
@@ -281,9 +292,6 @@ class MEDIA_EXPORT AudioOutputController
 
   // SyncReader is used only in low latency mode for synchronous reading.
   SyncReader* const sync_reader_;
-
-  // The message loop of audio manager thread that this object runs on.
-  const scoped_refptr<base::SingleThreadTaskRunner> message_loop_;
 
   // Scans audio samples from OnMoreData() as input to compute power levels.
   AudioPowerMonitor power_monitor_;

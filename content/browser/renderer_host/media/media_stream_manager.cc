@@ -430,7 +430,7 @@ void MediaStreamManager::SendMessageToNativeLog(const std::string& message) {
 
   MediaStreamManager* msm = g_media_stream_manager_tls_ptr.Pointer()->Get();
   if (!msm) {
-    DLOG(ERROR) << "No MediaStreamManager on the IO thread. " << message;
+    // MediaStreamManager hasn't been initialized. This is allowed in tests.
     return;
   }
 
