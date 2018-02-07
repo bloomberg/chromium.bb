@@ -817,13 +817,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     }
   }
 #else
-#if CONFIG_TEMPMV_SIGNALING
-  if (cm->use_prev_frame_mvs && rf[1] == NONE_FRAME)
-#else
-  if (prev_frame_mvs_base && cm->show_frame && cm->last_show_frame &&
-      rf[1] == NONE_FRAME)
-#endif
-  {
+  if (cm->use_prev_frame_mvs && rf[1] == NONE_FRAME) {
     int coll_blk_count = 0;
     const int mi_step = (xd->n8_w == 1 || xd->n8_h == 1)
                             ? mi_size_wide[BLOCK_8X8]

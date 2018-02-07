@@ -494,10 +494,8 @@ static const arg_def_t film_grain_test =
             "Film grain test vectors (0: none (default), 1: test-1  2: test-2, "
             "... 16: test-16)");
 #endif
-#if CONFIG_TEMPMV_SIGNALING
 static const arg_def_t disable_tempmv = ARG_DEF(
     NULL, "disable-tempmv", 1, "Disable temporal mv prediction (default is 0)");
-#endif
 static const arg_def_t frame_parallel_decoding =
     ARG_DEF(NULL, "frame-parallel", 1,
             "Enable frame parallel decodability features "
@@ -729,9 +727,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
 #if CONFIG_FILM_GRAIN
                                        &film_grain_test,
 #endif
-#if CONFIG_TEMPMV_SIGNALING
                                        &disable_tempmv,
-#endif
                                        &bitdeptharg,
                                        &inbitdeptharg,
                                        NULL };
@@ -803,9 +799,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
 #if CONFIG_FILM_GRAIN
                                         AV1E_SET_FILM_GRAIN_TEST_VECTOR,
 #endif
-#if CONFIG_TEMPMV_SIGNALING
                                         AV1E_SET_DISABLE_TEMPMV,
-#endif
                                         0 };
 #endif
 

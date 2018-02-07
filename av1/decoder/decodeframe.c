@@ -2551,9 +2551,7 @@ static void show_existing_frame_reset(AV1Decoder *const pbi) {
 
   cm->reset_frame_context = RESET_FRAME_CONTEXT_ALL;
 
-#if CONFIG_TEMPMV_SIGNALING
   cm->cur_frame->intra_only = 1;
-#endif  // CONFIG_TEMPMV_SIGNALING
 
 #if CONFIG_REFERENCE_BUFFER
   if (cm->seq_params.frame_id_numbers_present_flag) {
@@ -2810,13 +2808,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       cm->seq_force_integer_mv = 0;
     }
 #endif
-#if CONFIG_TEMPMV_SIGNALING
     cm->use_prev_frame_mvs = 0;
-#endif
   } else {
-#if CONFIG_TEMPMV_SIGNALING
     if (cm->intra_only || cm->error_resilient_mode) cm->use_prev_frame_mvs = 0;
-#endif
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
 // The only way to reset all frame contexts to their default values is with a
 // keyframe.
@@ -2956,7 +2950,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_EIGHTH_PEL_MV_ONLY
 #endif
       cm->interp_filter = read_frame_interp_filter(rb);
-#if CONFIG_TEMPMV_SIGNALING
       if (frame_might_use_prev_frame_mvs(cm))
         cm->use_ref_frame_mvs = aom_rb_read_bit(rb);
       else
@@ -2977,7 +2970,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       } else {
         cm->last_frame_seg_map = NULL;
       }
-#endif
 #endif
       for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
         RefBuffer *const ref_buf = &cm->frame_refs[i];
@@ -3002,9 +2994,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_OBU
     av1_setup_frame_sign_bias(cm);
 
-#if CONFIG_TEMPMV_SIGNALING
   cm->cur_frame->intra_only = cm->frame_type == KEY_FRAME || cm->intra_only;
-#endif
 
 #if CONFIG_REFERENCE_BUFFER
   if (cm->seq_params.frame_id_numbers_present_flag) {
@@ -3220,44 +3210,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   cm->reduced_tx_set_used = aom_rb_read_bit(rb);
 
-#if !CONFIG_TEMPMV_SIGNALING
-  // NOTE(zoeliu): As cm->prev_frame can take neither a frame of
-  //               show_exisiting_frame=1, nor can it take a frame not used as
-  //               a reference, it is probable that by the time it is being
-  //               referred to, the frame buffer it originally points to may
-  //               already get expired and have been reassigned to the current
-  //               newly coded frame. Hence, we need to check whether this is
-  //               the case, and if yes, we have 2 choices:
-  //               (1) Simply disable the use of previous frame mvs; or
-  //               (2) Have cm->prev_frame point to one reference frame buffer,
-  //                   e.g. LAST_FRAME.
-  if (!dec_is_ref_frame_buf(pbi, cm->prev_frame)) {
-    // Reassign the LAST_FRAME buffer to cm->prev_frame.
-    cm->prev_frame =
-        cm->frame_refs[LAST_FRAME - LAST_FRAME].idx != INVALID_IDX
-            ? &cm->buffer_pool
-                   ->frame_bufs[cm->frame_refs[LAST_FRAME - LAST_FRAME].idx]
-            : NULL;
-  }
-#endif
-
-#if CONFIG_TEMPMV_SIGNALING
   if (cm->use_prev_frame_mvs && !frame_can_use_prev_frame_mvs(cm)) {
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Frame wrongly requests previous frame MVs");
   }
-#else
-  cm->use_prev_frame_mvs = !cm->error_resilient_mode && cm->prev_frame &&
-#if CONFIG_HORZONLY_FRAME_SUPERRES
-                           cm->width == cm->last_width &&
-                           cm->height == cm->last_height &&
-#else
-                           cm->width == cm->prev_frame->buf.y_crop_width &&
-                           cm->height == cm->prev_frame->buf.y_crop_height &&
-#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
-                           !cm->last_intra_only && cm->last_show_frame &&
-                           (cm->last_frame_type != KEY_FRAME);
-#endif  // CONFIG_TEMPMV_SIGNALING
 
   if (!frame_is_intra_only(cm)) read_global_motion(cm, rb);
 
