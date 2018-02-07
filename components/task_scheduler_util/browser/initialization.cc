@@ -26,8 +26,7 @@ GetBrowserTaskSchedulerInitParamsFromVariations() {
     return nullptr;
 
   std::unique_ptr<base::TaskScheduler::InitParams> init_params =
-      GetTaskSchedulerInitParams(
-          "", variation_params, base::SchedulerBackwardCompatibility::DISABLED);
+      GetTaskSchedulerInitParams("", variation_params);
 #if defined(OS_WIN)
   if (init_params) {
     init_params->shared_worker_pool_environment =

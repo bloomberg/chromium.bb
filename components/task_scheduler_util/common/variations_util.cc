@@ -32,9 +32,8 @@ bool ContainsSeparator(const std::string& str) {
 #endif  // !defined(OS_IOS)
 
 // Builds a SchedulerWorkerPoolParams from the pool descriptor in
-// |variation_params[variation_param_prefix + pool_name]| and
-// |backward_compatibility|. Returns an invalid SchedulerWorkerPoolParams on
-// failure.
+// |variation_params[variation_param_prefix + pool_name]|. Returns an invalid
+// SchedulerWorkerPoolParams on failure.
 //
 // The pool descriptor is a semi-colon separated value string with the following
 // items:
@@ -47,9 +46,7 @@ bool ContainsSeparator(const std::string& str) {
 std::unique_ptr<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
     base::StringPiece variation_param_prefix,
     base::StringPiece pool_name,
-    const std::map<std::string, std::string>& variation_params,
-    base::SchedulerBackwardCompatibility backward_compatibility =
-        base::SchedulerBackwardCompatibility::DISABLED) {
+    const std::map<std::string, std::string>& variation_params) {
   auto pool_descriptor_it =
       variation_params.find(base::StrCat({variation_param_prefix, pool_name}));
   if (pool_descriptor_it == variation_params.end())
@@ -80,8 +77,7 @@ std::unique_ptr<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
   auto params = std::make_unique<base::SchedulerWorkerPoolParams>(
       base::RecommendedMaxNumberOfThreadsInPool(min, max, cores_multiplier,
                                                 offset),
-      base::TimeDelta::FromMilliseconds(detach_milliseconds),
-      backward_compatibility);
+      base::TimeDelta::FromMilliseconds(detach_milliseconds));
 
   if (params->max_threads() <= 0) {
     DLOG(ERROR) << "Invalid max threads in the Worker Pool Descriptor: "
@@ -103,9 +99,7 @@ std::unique_ptr<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
 
 std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams(
     base::StringPiece variation_param_prefix,
-    const std::map<std::string, std::string>& variation_params,
-    base::SchedulerBackwardCompatibility
-        foreground_blocking_backward_compatibility) {
+    const std::map<std::string, std::string>& variation_params) {
   const auto background_worker_pool_params = GetWorkerPoolParams(
       variation_param_prefix, "Background", variation_params);
   const auto background_blocking_worker_pool_params = GetWorkerPoolParams(
@@ -113,8 +107,7 @@ std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams(
   const auto foreground_worker_pool_params = GetWorkerPoolParams(
       variation_param_prefix, "Foreground", variation_params);
   const auto foreground_blocking_worker_pool_params = GetWorkerPoolParams(
-      variation_param_prefix, "ForegroundBlocking", variation_params,
-      foreground_blocking_backward_compatibility);
+      variation_param_prefix, "ForegroundBlocking", variation_params);
 
   if (!background_worker_pool_params ||
       !background_blocking_worker_pool_params ||
