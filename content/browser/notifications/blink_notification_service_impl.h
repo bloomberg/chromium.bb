@@ -56,6 +56,8 @@ class BlinkNotificationServiceImpl : public blink::mojom::NotificationService {
   void CloseNonPersistentNotificationOnUIThread(
       const std::string& notification_id);
 
+  blink::mojom::PermissionStatus CheckPermissionStatus();
+
   // The notification context that owns this service instance.
   PlatformNotificationContextImpl* notification_context_;
 
