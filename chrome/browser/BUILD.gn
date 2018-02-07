@@ -325,6 +325,8 @@ split_static_library("browser") {
     "conflicts/module_info_win.h",
     "conflicts/module_inspector_win.cc",
     "conflicts/module_inspector_win.h",
+    "conflicts/module_list_filter_win.cc",
+    "conflicts/module_list_filter_win.h",
     "conflicts/module_list_manager_win.cc",
     "conflicts/module_list_manager_win.h",
     "conflicts/msi_util_win.cc",
@@ -2914,6 +2916,7 @@ split_static_library("browser") {
     ]
     deps += [
       ":chrome_process_finder",
+      ":conflicts_module_list_proto",
       "//chrome:file_pre_reader",
       "//chrome/chrome_watcher:client",
       "//chrome/common:metrics_constants_util_win",

@@ -6,7 +6,6 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_reg_util_win.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,11 +52,9 @@ class ModuleListManagerTest : public ::testing::Test {
 
   void NotifyNewModuleList(ModuleListManager* mlm) {
     // Add an observer.
-    MockObserver observer;
-    mlm->SetObserver(&observer);
-    ASSERT_FALSE(observer.called());
-    ASSERT_FALSE(observer.version().IsValid());
-    ASSERT_TRUE(observer.path().empty());
+    ASSERT_FALSE(observer_.called());
+    ASSERT_FALSE(observer_.version().IsValid());
+    ASSERT_TRUE(observer_.path().empty());
 
     // Notify the manager of a new module list and expect it to be updated.
     // Also expect the observer to be called.
@@ -66,10 +63,9 @@ class ModuleListManagerTest : public ::testing::Test {
     mlm->LoadModuleList(version, path);
     EXPECT_EQ(version, mlm->module_list_version());
     EXPECT_EQ(path, mlm->module_list_path());
-    EXPECT_TRUE(observer.called());
-    EXPECT_EQ(version, observer.version());
-    EXPECT_EQ(path, observer.path());
-    mlm->SetObserver(nullptr);
+    EXPECT_TRUE(observer_.called());
+    EXPECT_EQ(version, observer_.version());
+    EXPECT_EQ(path, observer_.path());
 
     // Expect the registry to be updated too.
     base::win::RegKey reg_key(ModuleListManager::GetRegistryHive(),
@@ -86,6 +82,9 @@ class ModuleListManagerTest : public ::testing::Test {
     EXPECT_EQ(L"1.2.3.4", s);
   }
 
+ protected:
+  MockObserver observer_;
+
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   registry_util::RegistryOverrideManager registry_override_manager_;
@@ -94,7 +93,7 @@ class ModuleListManagerTest : public ::testing::Test {
 };
 
 TEST_F(ModuleListManagerTest, FindsNoPathInRegistry) {
-  ModuleListManager mlm(base::SequencedTaskRunnerHandle::Get());
+  ModuleListManager mlm(&observer_);
   EXPECT_TRUE(mlm.module_list_path().empty());
   EXPECT_FALSE(mlm.module_list_version().IsValid());
 
@@ -113,7 +112,7 @@ TEST_F(ModuleListManagerTest, FindsInvalidVersionInRegistry) {
             reg_key.WriteValue(ModuleListManager::kModuleListVersionKeyName,
                                L"invalid-version-string"));
 
-  ModuleListManager mlm(base::SequencedTaskRunnerHandle::Get());
+  ModuleListManager mlm(&observer_);
   EXPECT_TRUE(mlm.module_list_path().empty());
   EXPECT_FALSE(mlm.module_list_version().IsValid());
 
@@ -132,7 +131,7 @@ TEST_F(ModuleListManagerTest, FindsExistingPathInRegistry) {
             reg_key.WriteValue(ModuleListManager::kModuleListVersionKeyName,
                                L"1.0.0.0"));
 
-  ModuleListManager mlm(base::SequencedTaskRunnerHandle::Get());
+  ModuleListManager mlm(&observer_);
   EXPECT_TRUE(mlm.module_list_path().empty());
   EXPECT_FALSE(mlm.module_list_version().IsValid());
 

@@ -13,7 +13,10 @@
 #include "base/values.h"
 #include "chrome/browser/conflicts/installed_programs_win.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
+#include "chrome/browser/conflicts/proto/module_list.pb.h"
+#include "url/gurl.h"
 
+class ModuleListFilter;
 class PrefRegistrySimple;
 
 // A feature that controls whether Chrome keeps track of problematic programs.
@@ -40,6 +43,7 @@ class ProblematicProgramsUpdater : public ModuleDatabaseObserver {
   //
   // |installed_programs| must outlive the lifetime of this class.
   static std::unique_ptr<ProblematicProgramsUpdater> MaybeCreate(
+      const ModuleListFilter& module_list_filter,
       const InstalledPrograms& installed_programs);
 
   // Removes stale programs from the cache. This can happen if a program was
@@ -51,8 +55,8 @@ class ProblematicProgramsUpdater : public ModuleDatabaseObserver {
   // Returns true if the cache contains at least one problematic program.
   static bool HasCachedPrograms();
 
-  // Returns the names of all the cached problematic programs in a list Value.
-  static base::Value GetCachedProgramNames();
+  // Returns all the cached problematic programs in a list Value.
+  static base::Value GetCachedPrograms();
 
   // ModuleDatabaseObserver:
   void OnNewModuleFound(const ModuleInfoKey& module_key,
@@ -60,13 +64,37 @@ class ProblematicProgramsUpdater : public ModuleDatabaseObserver {
   void OnModuleDatabaseIdle() override;
 
  private:
-  explicit ProblematicProgramsUpdater(
-      const InstalledPrograms& installed_programs);
+  struct ProblematicProgram {
+    ProblematicProgram(
+        InstalledPrograms::ProgramInfo info,
+        std::unique_ptr<chrome::conflicts::BlacklistAction> blacklist_action);
+    ~ProblematicProgram();
+
+    // Needed for std::remove_if().
+    ProblematicProgram(ProblematicProgram&& problematic_program);
+    ProblematicProgram& operator=(ProblematicProgram&& problematic_program);
+
+    InstalledPrograms::ProgramInfo info;
+    std::unique_ptr<chrome::conflicts::BlacklistAction> blacklist_action;
+  };
+
+  ProblematicProgramsUpdater(const ModuleListFilter& module_list_filter,
+                             const InstalledPrograms& installed_programs);
+
+  // Helper function to serialize a vector of ProblematicPrograms to JSON.
+  static base::Value ConvertToDictionary(
+      const std::vector<ProblematicProgram>& programs);
+
+  // Helper function to deserialize a vector of ProblematicPrograms.
+  static std::vector<ProblematicProgram> ConvertToProblematicProgramsVector(
+      const base::Value& programs);
+
+  const ModuleListFilter& module_list_filter_;
 
   const InstalledPrograms& installed_programs_;
 
-  // Temporarily holds program names for modules that were recently found.
-  std::vector<InstalledPrograms::ProgramInfo> programs_;
+  // Temporarily holds problematic programs that were recently found.
+  std::vector<ProblematicProgram> problematic_programs_;
 
   // Becomes false on the first call to OnModuleDatabaseIdle.
   bool before_first_idle_ = true;
