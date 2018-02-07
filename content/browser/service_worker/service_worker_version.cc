@@ -1095,10 +1095,7 @@ void ServiceWorkerVersion::ClaimClients(ClaimClientsCallback callback) {
   // Registration must be kept alive by ServiceWorkerGlobalScope#registration.
   if (!registration) {
     mojo::ReportBadMessage("ClaimClients: No live registration");
-    // ReportBadMessage() will kill the renderer process, but Mojo complains if
-    // the callback is not run. Just run it with nonsense arguments.
-    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kUnknown,
-                            std::string());
+    binding_.Close();
     return;
   }
 
