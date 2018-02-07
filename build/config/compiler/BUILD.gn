@@ -567,6 +567,10 @@ config("compiler") {
            "gold plugin only supported with ChromeOS")
 
     cflags += [ "-flto=thin" ]
+
+    # Limit the size of the ThinLTO cache to the lesser of 10% of available disk
+    # space, 10GB and 100000 files.
+    cache_policy = "cache_size=10%:cache_size_bytes=10g:cache_size_files=100000"
     if (is_win) {
       # This is a straight translation of the non-Windows flags below.
       ldflags += [
@@ -574,7 +578,7 @@ config("compiler") {
         "/opt:lldltojobs=8",
         "/lldltocache:" +
             rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-        "/lldltocachepolicy:cache_size=10%",
+        "/lldltocachepolicy:$cache_policy",
       ]
     } else {
       ldflags += [ "-flto=thin" ]
@@ -587,11 +591,7 @@ config("compiler") {
           "-Wl,--thinlto-jobs=8",
           "-Wl,--thinlto-cache-dir=" +
               rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
-
-          # Limit the size of the ThinLTO cache to 10% of available disk space
-          # TODO(pcc): Change the limit from a percentage to an absolute size
-          # (10-20GB) once that feature lands in LLVM.
-          "-Wl,--thinlto-cache-policy,cache_size=10%",
+          "-Wl,--thinlto-cache-policy,$cache_policy",
         ]
       } else {
         ldflags += [ "-Wl,-plugin-opt,jobs=8" ]
