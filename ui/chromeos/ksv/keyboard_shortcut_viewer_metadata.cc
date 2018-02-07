@@ -17,6 +17,8 @@
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 
 namespace keyboard_shortcut_viewer {
 
@@ -116,6 +118,12 @@ base::string16 GetStringForKeyboardCode(ui::KeyboardCode key_code) {
   ui::DomCode dom_code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
   ui::DomKey dom_key;
   ui::KeyboardCode keycode_ignored;
+  if (ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
+          dom_code, 0 /* flags */, &dom_key, &keycode_ignored)) {
+    return base::UTF8ToUTF16(ui::KeycodeConverter::DomKeyToKeyString(dom_key));
+  }
+
+  // Fall back to US keyboard layout.
   const bool has_mapping = ui::DomCodeToUsLayoutDomKey(
       dom_code, 0 /* flags */, &dom_key, &keycode_ignored);
   DCHECK(has_mapping);

@@ -25,6 +25,7 @@ source_set("ksv") {
     "//ui/chromeos/events",
     "//ui/chromeos/strings",
     "//ui/events:events_base",
+    "//ui/events/ozone:events_ozone_layout",
     "//ui/views",
   ]
 }
