@@ -25,8 +25,8 @@ const base::Feature kEnableManualFallbacksGeneration = {
 
 // Enable additional elements in the form popup UI, which will allow the user to
 // trigger generation or view all saved passwords.
-const base::Feature kEnableManualFallbacksFilling = {
-    "EnableManualFallbacksFilling", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kManualFallbacksFilling = {
+    "ManualFallbacksFilling", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable a standalone popup UI, which will allow the user to view all saved
 // passwords.

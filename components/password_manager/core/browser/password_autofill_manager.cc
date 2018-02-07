@@ -301,7 +301,7 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
   if (ShouldShowManualFallbackForPreLollipop(
           autofill_client_->GetSyncService())) {
     if (base::FeatureList::IsEnabled(
-            password_manager::features::kEnableManualFallbacksFilling) &&
+            password_manager::features::kManualFallbacksFilling) &&
         (options & autofill::IS_PASSWORD_FIELD) && password_client_ &&
         password_client_->IsFillingFallbackEnabledForCurrentPage()) {
       AddSimpleSuggestionWithSeparatorOnTop(
