@@ -70,12 +70,11 @@ import org.chromium.net.GURLUtils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -245,7 +244,7 @@ public class CustomTabsConnection {
      * No rate-limiting, can be spammy if the app is misbehaved.
      *
      * @param name Call name to log.
-     * @param The return value for the logged call.
+     * @param result The return value for the logged call.
      */
     void logCall(String name, Object result) {
         if (!mLogRequests) return;
@@ -271,7 +270,7 @@ public class CustomTabsConnection {
      * The conversion is limited to Bundles not containing any array, and some elements are
      * converted into strings.
      *
-     * @param Bundle a Bundle to convert.
+     * @param bundle a Bundle to convert.
      * @return A JSON object, empty object if the parameter is null.
      */
     protected static JSONObject bundleToJson(Bundle bundle) {
@@ -372,7 +371,7 @@ public class CustomTabsConnection {
     /**
      * Starts as much as possible in anticipation of a future navigation.
      *
-     * @param mayCreatesparewebcontents true if warmup() can create a spare renderer.
+     * @param mayCreateSpareWebContents true if warmup() can create a spare renderer.
      * @return true for success.
      */
     private boolean warmupInternal(final boolean mayCreateSpareWebContents) {
@@ -610,26 +609,53 @@ public class CustomTabsConnection {
         final Bundle actionButtonBundle = IntentUtils.safeGetBundle(bundle,
                 CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE);
         boolean result = true;
+        List<Integer> ids = new ArrayList<>();
+        List<String> descriptions = new ArrayList<>();
+        List<Bitmap> icons = new ArrayList<>();
         if (actionButtonBundle != null) {
-            final int id = IntentUtils.safeGetInt(actionButtonBundle, CustomTabsIntent.KEY_ID,
+            int id = IntentUtils.safeGetInt(actionButtonBundle, CustomTabsIntent.KEY_ID,
                     CustomTabsIntent.TOOLBAR_ACTION_BUTTON_ID);
-            final Bitmap bitmap = CustomButtonParams.parseBitmapFromBundle(actionButtonBundle);
-            final String description = CustomButtonParams
-                    .parseDescriptionFromBundle(actionButtonBundle);
+            Bitmap bitmap = CustomButtonParams.parseBitmapFromBundle(actionButtonBundle);
+            String description = CustomButtonParams.parseDescriptionFromBundle(actionButtonBundle);
             if (bitmap != null && description != null) {
-                try {
-                    result &= ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            return BrowserSessionContentUtils.updateCustomButton(
-                                    session, id, bitmap, description);
-                        }
-                    });
-                } catch (ExecutionException e) {
-                    result = false;
-                }
+                ids.add(id);
+                descriptions.add(description);
+                icons.add(bitmap);
             }
         }
+
+        List<Bundle> bundleList = IntentUtils.safeGetParcelableArrayList(
+                bundle, CustomTabsIntent.EXTRA_TOOLBAR_ITEMS);
+        if (bundleList != null) {
+            for (Bundle toolbarItemBundle : bundleList) {
+                int id = IntentUtils.safeGetInt(toolbarItemBundle, CustomTabsIntent.KEY_ID,
+                        CustomTabsIntent.TOOLBAR_ACTION_BUTTON_ID);
+                if (ids.contains(id)) continue;
+
+                Bitmap bitmap = CustomButtonParams.parseBitmapFromBundle(toolbarItemBundle);
+                if (bitmap == null) continue;
+
+                String description =
+                        CustomButtonParams.parseDescriptionFromBundle(toolbarItemBundle);
+                if (description == null) continue;
+
+                ids.add(id);
+                descriptions.add(description);
+                icons.add(bitmap);
+            }
+        }
+
+        if (!ids.isEmpty()) {
+            result &= ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+                boolean res = true;
+                for (int i = 0; i < ids.size(); i++) {
+                    res &= BrowserSessionContentUtils.updateCustomButton(
+                            session, ids.get(i), icons.get(i), descriptions.get(i));
+                }
+                return res;
+            });
+        }
+
         if (bundle.containsKey(CustomTabsIntent.EXTRA_REMOTEVIEWS)) {
             final RemoteViews remoteViews = IntentUtils.safeGetParcelable(bundle,
                     CustomTabsIntent.EXTRA_REMOTEVIEWS);
@@ -637,17 +663,10 @@ public class CustomTabsConnection {
                     CustomTabsIntent.EXTRA_REMOTEVIEWS_VIEW_IDS);
             final PendingIntent pendingIntent = IntentUtils.safeGetParcelable(bundle,
                     CustomTabsIntent.EXTRA_REMOTEVIEWS_PENDINGINTENT);
-            try {
-                result &= ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws Exception {
-                        return BrowserSessionContentUtils.updateRemoteViews(
-                                session, remoteViews, clickableIDs, pendingIntent);
-                    }
-                });
-            } catch (ExecutionException e) {
-                result = false;
-            }
+            result &= ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+                return BrowserSessionContentUtils.updateRemoteViews(
+                        session, remoteViews, clickableIDs, pendingIntent);
+            });
         }
         logCall("updateVisuals()", result);
         return result;
@@ -777,7 +796,7 @@ public class CustomTabsConnection {
      * Note that this methods accepts URLs that don't exactly match the initially
      * prerendered URL. More precisely, the #fragment is ignored. In this case,
      * the client needs to navigate to the correct URL after the WebContents
-     * swap. This can be tested using {@link UrlUtilities#urlsFragmentsDiffer()}.
+     * swap. This can be tested using {@link UrlUtilities#urlsFragmentsDiffer}.
      *
      * @param session The Binder object identifying a session.
      * @param url The URL the WebContents is for.
@@ -1030,8 +1049,7 @@ public class CustomTabsConnection {
     /**
      * Notifies the application of a navigation event.
      *
-     * Delivers the {@link CustomTabsConnectionCallback#onNavigationEvent}
-     * callback to the application.
+     * Delivers the {@link CustomTabsCallback#onNavigationEvent} callback to the application.
      *
      * @param session The Binder object identifying the session.
      * @param navigationEvent The navigation event code, defined in {@link CustomTabsCallback}
@@ -1147,9 +1165,8 @@ public class CustomTabsConnection {
     /**
      * Keeps the application linked with a given session alive.
      *
-     * The application is kept alive (that is, raised to at least the current
-     * process priority level) until {@link dontKeepAliveForSessionId()} is
-     * called.
+     * The application is kept alive (that is, raised to at least the current process priority
+     * level) until {@link #dontKeepAliveForSession} is called.
      *
      * @param session The Binder object identifying the session.
      * @param intent Intent describing the service to bind to.
@@ -1162,7 +1179,7 @@ public class CustomTabsConnection {
     /**
      * Lets the lifetime of the process linked to a given sessionId be managed normally.
      *
-     * Without a matching call to {@link keepAliveForSessionId}, this is a no-op.
+     * Without a matching call to {@link #keepAliveForSession}, this is a no-op.
      *
      * @param session The Binder object identifying the session.
      */

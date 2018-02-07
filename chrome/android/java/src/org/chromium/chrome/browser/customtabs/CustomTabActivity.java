@@ -91,6 +91,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -355,7 +356,7 @@ public class CustomTabActivity extends ChromeActivity {
 
         // Setting task title and icon to be null will preserve the client app's title and icon.
         ApiCompatibilityUtils.setTaskDescription(this, null, null, toolbarColor);
-        showCustomButtonOnToolbar();
+        showCustomButtonsOnToolbar();
         mBottomBarDelegate = new CustomTabBottomBarDelegate(this, mIntentDataProvider,
                 getFullscreenManager());
         mBottomBarDelegate.showBottomBarIfNecessary();
@@ -477,7 +478,10 @@ public class CustomTabActivity extends ChromeActivity {
                     if (!CustomButtonParams.doesIconFitToolbar(CustomTabActivity.this, bitmap)) {
                         return false;
                     }
-                    showCustomButtonOnToolbar();
+                    int index = mIntentDataProvider.getCustomToolbarButtonIndexForId(id);
+                    assert index != -1;
+                    getToolbarManager().updateCustomActionButton(
+                            index, params.getIcon(getResources()), description);
                 } else {
                     if (mBottomBarDelegate != null) {
                         mBottomBarDelegate.updateBottomBarButtons(params);
@@ -948,18 +952,14 @@ public class CustomTabActivity extends ChromeActivity {
     /**
      * Configures the custom button on toolbar. Does nothing if invalid data is provided by clients.
      */
-    private void showCustomButtonOnToolbar() {
-        final CustomButtonParams params = mIntentDataProvider.getCustomButtonOnToolbar();
-        if (params == null) return;
-        getToolbarManager().setCustomActionButton(
-                params.getIcon(getResources()),
-                params.getDescription(),
-                new OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
+    private void showCustomButtonsOnToolbar() {
+        final List<CustomButtonParams> paramList = mIntentDataProvider.getCustomButtonsOnToolbar();
+        for (CustomButtonParams params : paramList) {
+            getToolbarManager().addCustomActionButton(
+                    params.getIcon(getResources()), params.getDescription(), v -> {
                         if (getActivityTab() == null) return;
                         mIntentDataProvider.sendButtonPendingIntentWithUrl(
-                                getApplicationContext(), getActivityTab().getUrl());
+                                getApplicationContext(), params, getActivityTab().getUrl());
                         RecordUserAction.record("CustomTabsCustomActionButtonClick");
                         if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()
                                 && TextUtils.equals(
@@ -967,8 +967,8 @@ public class CustomTabActivity extends ChromeActivity {
                             RecordUserAction.record(
                                     "CustomTabsCustomActionButtonClick.DownloadsUI.Share");
                         }
-                    }
-                });
+                    });
+        }
     }
 
     @Override
