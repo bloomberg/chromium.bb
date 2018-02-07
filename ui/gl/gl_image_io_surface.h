@@ -85,10 +85,9 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   static GLImageIOSurface* FromGLImage(GLImage* image);
 
  protected:
-  ~GLImageIOSurface() override;
-
- private:
   GLImageIOSurface(const gfx::Size& size, unsigned internalformat);
+  ~GLImageIOSurface() override;
+  virtual bool BindTexImageImpl(unsigned internalformat);
 
   Type GetType() const override;
   class RGBConverter;
