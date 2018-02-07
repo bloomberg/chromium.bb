@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
+import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.test.NativeLibraryTestRule;
@@ -60,9 +61,6 @@ import org.chromium.ui.base.PageTransition;
         ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"})
 public class WebappNavigationTest {
     private static final String YOUTUBE_URL = "https://www.youtube.com/watch?v=EYmjoW4vIX8";
-    private static final String WEB_APP_PATH = "/chrome/test/data/banners/manifest_test_page.html";
-    private static final String IN_SCOPE_PAGE_PATH =
-            "/chrome/test/data/banners/manifest_no_service_worker.html";
 
     @Rule
     public final WebappActivityTestRule mActivityTestRule = new WebappActivityTestRule();
@@ -211,7 +209,8 @@ public class WebappNavigationTest {
     @Feature({"Webapps"})
     @RetryOnFailure
     public void testInScopeNewTabLinkOpensInCct() throws Exception {
-        String inScopeUrl = mActivityTestRule.getTestServer().getURL(IN_SCOPE_PAGE_PATH);
+        String inScopeUrl =
+                WebappTestPage.getNonServiceWorkerUrl(mActivityTestRule.getTestServer());
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent().putExtra(
                 ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN));
         addAnchorAndClick(inScopeUrl, "_blank");
@@ -266,7 +265,8 @@ public class WebappNavigationTest {
     @RetryOnFailure
     public void testInScopeNavigationStaysInWebapp() throws Exception {
         WebappActivity activity = runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
-        String otherPageUrl = mActivityTestRule.getTestServer().getURL(IN_SCOPE_PAGE_PATH);
+        String otherPageUrl =
+                WebappTestPage.getNonServiceWorkerUrl(mActivityTestRule.getTestServer());
         addAnchorAndClick(otherPageUrl, "_self");
         ChromeTabUtils.waitForTabPageLoaded(activity.getActivityTab(), otherPageUrl);
 
@@ -307,7 +307,7 @@ public class WebappNavigationTest {
 
         ChromeTabbedActivity tabbedChrome = waitFor(ChromeTabbedActivity.class);
         ChromeTabUtils.waitForTabPageLoaded(tabbedChrome.getActivityTab(),
-                mActivityTestRule.getTestServer().getURL(WEB_APP_PATH));
+                WebappTestPage.getServiceWorkerUrl(mActivityTestRule.getTestServer()));
     }
 
     @Test
@@ -367,7 +367,8 @@ public class WebappNavigationTest {
         WebappActivity activity = runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
         Tab tab = activity.getActivityTab();
 
-        String otherInScopeUrl = mActivityTestRule.getTestServer().getURL(IN_SCOPE_PAGE_PATH);
+        String otherInScopeUrl =
+                WebappTestPage.getNonServiceWorkerUrl(mActivityTestRule.getTestServer());
         mActivityTestRule.loadUrlInTab(otherInScopeUrl, PageTransition.LINK, tab);
         Assert.assertEquals(otherInScopeUrl, tab.getUrl());
 
@@ -400,7 +401,7 @@ public class WebappNavigationTest {
         WebappActivity activity = runWebappActivityAndWaitForIdle(launchIntent);
 
         EmbeddedTestServer testServer = mActivityTestRule.getTestServer();
-        String initialInScopeUrl = testServer.getURL(WEB_APP_PATH);
+        String initialInScopeUrl = WebappTestPage.getServiceWorkerUrl(testServer);
         ChromeTabUtils.waitForTabPageLoaded(activity.getActivityTab(), initialInScopeUrl);
 
         final String redirectingUrl =
@@ -459,8 +460,8 @@ public class WebappNavigationTest {
     }
 
     private WebappActivity runWebappActivityAndWaitForIdle(Intent intent) throws Exception {
-        mActivityTestRule.startWebappActivity(intent.putExtra(
-                ShortcutHelper.EXTRA_URL, mActivityTestRule.getTestServer().getURL(WEB_APP_PATH)));
+        mActivityTestRule.startWebappActivity(intent.putExtra(ShortcutHelper.EXTRA_URL,
+                WebappTestPage.getServiceWorkerUrl(mActivityTestRule.getTestServer())));
         mActivityTestRule.waitUntilSplashscreenHides();
         mActivityTestRule.waitUntilIdle();
         return mActivityTestRule.getActivity();

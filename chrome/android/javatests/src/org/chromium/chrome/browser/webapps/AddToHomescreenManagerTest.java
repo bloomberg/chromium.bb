@@ -57,37 +57,30 @@ public class AddToHomescreenManagerTest {
     private static final String WEBAPP_ACTION_NAME = "WEBAPP_ACTION";
 
     private static final String WEBAPP_TITLE = "Webapp shortcut";
-    private static final String WEBAPP_HTML = UrlUtils.encodeHtmlDataUri(
-            "<html><head>"
+    private static final String WEBAPP_HTML = UrlUtils.encodeHtmlDataUri("<html><head>"
             + "<meta name=\"mobile-web-app-capable\" content=\"yes\" />"
             + "<title>" + WEBAPP_TITLE + "</title>"
             + "</head><body>Webapp capable</body></html>");
     private static final String EDITED_WEBAPP_TITLE = "Webapp shortcut edited";
 
     private static final String SECOND_WEBAPP_TITLE = "Webapp shortcut #2";
-    private static final String SECOND_WEBAPP_HTML = UrlUtils.encodeHtmlDataUri(
-            "<html><head>"
+    private static final String SECOND_WEBAPP_HTML = UrlUtils.encodeHtmlDataUri("<html><head>"
             + "<meta name=\"mobile-web-app-capable\" content=\"yes\" />"
             + "<title>" + SECOND_WEBAPP_TITLE + "</title>"
             + "</head><body>Webapp capable again</body></html>");
 
     private static final String NORMAL_TITLE = "Plain shortcut";
-    private static final String NORMAL_HTML = UrlUtils.encodeHtmlDataUri(
-            "<html>"
+    private static final String NORMAL_HTML = UrlUtils.encodeHtmlDataUri("<html>"
             + "<head><title>" + NORMAL_TITLE + "</title></head>"
             + "<body>Not Webapp capable</body></html>");
 
     private static final String META_APP_NAME_PAGE_TITLE = "Not the right title";
     private static final String META_APP_NAME_TITLE = "Web application-name";
-    private static final String META_APP_NAME_HTML = UrlUtils.encodeHtmlDataUri(
-            "<html><head>"
+    private static final String META_APP_NAME_HTML = UrlUtils.encodeHtmlDataUri("<html><head>"
             + "<meta name=\"mobile-web-app-capable\" content=\"yes\" />"
             + "<meta name=\"application-name\" content=\"" + META_APP_NAME_TITLE + "\">"
             + "<title>" + META_APP_NAME_PAGE_TITLE + "</title>"
             + "</head><body>Webapp capable</body></html>");
-
-    private static final String MANIFEST_PATH = "/chrome/test/data/banners/manifest_test_page.html";
-    private static final String MANIFEST_TITLE = "Web app banner test page";
 
     private static class TestShortcutHelperDelegate extends ShortcutHelper.Delegate {
         public String mRequestedShortcutTitle;
@@ -119,7 +112,6 @@ public class AddToHomescreenManagerTest {
         }
 
         private class WebappDataStorageWrapper extends WebappDataStorage {
-
             public WebappDataStorageWrapper(String webappId) {
                 super(webappId);
             }
@@ -274,7 +266,8 @@ public class AddToHomescreenManagerTest {
         final TestDataStorageFactory dataStorageFactory = new TestDataStorageFactory();
         WebappDataStorage.setFactoryForTests(dataStorageFactory);
 
-        loadUrl(mTestServerRule.getServer().getURL(MANIFEST_PATH), MANIFEST_TITLE);
+        loadUrl(WebappTestPage.getServiceWorkerUrl(mTestServerRule.getServer()),
+                WebappTestPage.PAGE_TITLE);
         addShortcutToTab(mTab, "", true);
 
         // Make sure that the splash screen image was downloaded.
@@ -293,15 +286,16 @@ public class AddToHomescreenManagerTest {
         Assert.assertEquals(idealSize, splashImage.getHeight());
     }
 
-    /** Tests that the appinstalled event is fired when an app is installed.
+    /**
+     * Tests that the appinstalled event is fired when an app is installed.
      */
     @Test
     @SmallTest
     @Feature("{Webapp}")
     public void testAddWebappShortcutAppInstalledEvent() throws Exception {
-        loadUrl(WebappTestPage.getBannerUrlWithAction(
+        loadUrl(WebappTestPage.getServiceWorkerUrlWithAction(
                         mTestServerRule.getServer(), "verify_appinstalled"),
-                MANIFEST_TITLE);
+                WebappTestPage.PAGE_TITLE);
         addShortcutToTab(mTab, "", true);
 
         // Wait for the tab title to change. This will happen (due to the JavaScript that runs
@@ -356,10 +350,9 @@ public class AddToHomescreenManagerTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mTab.getWebContents().evaluateJavaScriptForTests(
-                        "(function() {"
-                        + "window.open('" + url + "');"
-                        + "})()",
+                mTab.getWebContents().evaluateJavaScriptForTests("(function() {"
+                                + "window.open('" + url + "');"
+                                + "})()",
                         null);
             }
         });
