@@ -266,16 +266,16 @@ class KeyboardControllerTest : public testing::Test,
 
  protected:
   // KeyboardControllerObserver overrides
-  void OnKeyboardVisibleBoundsChanging(const gfx::Rect& new_bounds) override {
+  void OnKeyboardVisibleBoundsChanged(const gfx::Rect& new_bounds) override {
     visible_bounds_ = new_bounds;
     visible_bounds_number_of_calls_++;
   }
-  void OnKeyboardWorkspaceOccludedBoundsChanging(
+  void OnKeyboardWorkspaceOccludedBoundsChanged(
       const gfx::Rect& new_bounds) override {
     occluding_bounds_ = new_bounds;
     occluding_bounds_number_of_calls_++;
   }
-  void OnKeyboardAvailabilityChanging(bool is_available) override {
+  void OnKeyboardAvailabilityChanged(bool is_available) override {
     is_available_ = is_available;
     is_available_number_of_calls_++;
   }

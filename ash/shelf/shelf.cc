@@ -308,13 +308,13 @@ void Shelf::SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds) {
   state.visual_bounds = bounds;
   state.occluded_bounds = bounds;
   state.displaced_bounds = gfx::Rect();
-  shelf_layout_manager_->OnKeyboardAvailabilityChanging(state.is_available);
-  shelf_layout_manager_->OnKeyboardVisibleBoundsChanging(state.visual_bounds);
-  shelf_layout_manager_->OnKeyboardWorkspaceOccludedBoundsChanging(
+  shelf_layout_manager_->OnKeyboardAvailabilityChanged(state.is_available);
+  shelf_layout_manager_->OnKeyboardVisibleBoundsChanged(state.visual_bounds);
+  shelf_layout_manager_->OnKeyboardWorkspaceOccludedBoundsChanged(
       state.occluded_bounds);
-  shelf_layout_manager_->OnKeyboardWorkspaceDisplacingBoundsChanging(
+  shelf_layout_manager_->OnKeyboardWorkspaceDisplacingBoundsChanged(
       state.displaced_bounds);
-  shelf_layout_manager_->OnKeyboardAppearanceChanging(state);
+  shelf_layout_manager_->OnKeyboardAppearanceChanged(state);
 }
 
 ShelfLockingManager* Shelf::GetShelfLockingManagerForTesting() {

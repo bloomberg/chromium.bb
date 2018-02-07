@@ -194,7 +194,7 @@ class AshKeyboardControllerObserver
   ~AshKeyboardControllerObserver() override {}
 
   // KeyboardControllerObserver:
-  void OnKeyboardVisibleBoundsChanging(const gfx::Rect& bounds) override {
+  void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override {
     extensions::EventRouter* router = extensions::EventRouter::Get(context_);
 
     if (!router->HasEventListener(

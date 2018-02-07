@@ -457,7 +457,7 @@ void WebUILoginView::OnVirtualKeyboardStateChanged(bool activated,
 ////////////////////////////////////////////////////////////////////////////////
 // keyboard::KeyboardControllerObserver:
 
-void WebUILoginView::OnKeyboardAvailabilityChanging(const bool is_available) {
+void WebUILoginView::OnKeyboardAvailabilityChanged(const bool is_available) {
   if (!GetOobeUI())
     return;
   CoreOobeView* view = GetOobeUI()->GetCoreOobeView();

@@ -145,7 +145,7 @@ void WorkspaceLayoutManager::SetChildBounds(aura::Window* child,
 //////////////////////////////////////////////////////////////////////////////
 // WorkspaceLayoutManager, keyboard::KeyboardControllerObserver implementation:
 
-void WorkspaceLayoutManager::OnKeyboardWorkspaceDisplacingBoundsChanging(
+void WorkspaceLayoutManager::OnKeyboardWorkspaceDisplacingBoundsChanged(
     const gfx::Rect& new_bounds) {
   aura::Window* window = wm::GetActiveWindow();
   if (!window)
