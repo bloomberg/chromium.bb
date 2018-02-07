@@ -136,16 +136,22 @@ int main(int argc, const char *argv[]) {
 
   size_t unit_size = 0;
   int unit_number = 0;
+  int64_t obu_overhead_bytes_total = 0;
   while (ReadTemporalUnit(&input_ctx, &unit_size)) {
     printf("Temporal unit %d\n", unit_number);
-    if (!aom_tools::DumpObu(input_ctx.unit_buffer,
-                            static_cast<int>(unit_size))) {
+
+    int obu_overhead_current_unit = 0;
+    if (!aom_tools::DumpObu(input_ctx.unit_buffer, static_cast<int>(unit_size),
+                            &obu_overhead_current_unit)) {
       fprintf(stderr, "Error: Temporal Unit parse failed on unit number %d.\n",
               unit_number);
       return EXIT_FAILURE;
     }
+    printf("  OBU overhead:    %d\n", obu_overhead_current_unit);
     ++unit_number;
+    obu_overhead_bytes_total += obu_overhead_current_unit;
   }
 
+  printf("File total OBU overhead: %" PRId64 "\n", obu_overhead_bytes_total);
   return EXIT_SUCCESS;
 }

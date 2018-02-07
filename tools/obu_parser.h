@@ -50,8 +50,10 @@ struct ObuHeader {
 };
 
 // Print information obtained from OBU(s) in data until data is exhausted or an
-// error occurs. Returns true when all data is consumed successfully.
-bool DumpObu(const uint8_t *data, int length);
+// error occurs. Returns true when all data is consumed successfully, and
+// optionally reports OBU storage overhead via obu_overhead_bytes when the
+// pointer is non-null.
+bool DumpObu(const uint8_t *data, int length, int *obu_overhead_bytes);
 
 }  // namespace aom_tools
 

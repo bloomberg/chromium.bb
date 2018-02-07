@@ -152,10 +152,11 @@ void PrintObuHeader(const ObuHeader *header) {
   }
 }
 
-bool DumpObu(const uint8_t *data, int length) {
+bool DumpObu(const uint8_t *data, int length, int *obu_overhead_bytes) {
   const int kObuHeaderLengthSizeBytes = 1;
   const int kMinimumBytesRequired = 1 + kObuHeaderLengthSizeBytes;
   int consumed = 0;
+  int obu_overhead = 0;
   ObuHeader obu_header;
   while (consumed < length) {
     const int remaining = length - consumed;
@@ -180,6 +181,8 @@ bool DumpObu(const uint8_t *data, int length) {
     const size_t length_field_size = kObuLengthFieldSizeBytes;
 #endif  // CONFIG_OBU_SIZING
 
+    obu_overhead += length_field_size;
+
     if (current_obu_length > remaining) {
       fprintf(stderr,
               "OBU parsing failed at offset %d with bad length of %d "
@@ -196,6 +199,8 @@ bool DumpObu(const uint8_t *data, int length) {
       return false;
     }
 
+    ++obu_overhead;
+
     if (obu_header.has_extension) {
       const uint8_t obu_ext_header_byte =
           *(data + consumed + kObuHeaderLengthSizeBytes);
@@ -205,6 +210,8 @@ bool DumpObu(const uint8_t *data, int length) {
                 consumed);
         return false;
       }
+
+      ++obu_overhead;
     }
 
     PrintObuHeader(&obu_header);
@@ -212,6 +219,8 @@ bool DumpObu(const uint8_t *data, int length) {
     // TODO(tomfinegan): Parse OBU payload. For now just consume it.
     consumed += current_obu_length;
   }
+
+  if (obu_overhead_bytes) *obu_overhead_bytes = obu_overhead;
 
   return true;
 }
