@@ -31,6 +31,8 @@ source_set("net") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   sources = [
+    "chunked_data_stream_uploader.cc",
+    "chunked_data_stream_uploader.h",
     "clients/crn_network_client_protocol.h",
     "cookies/cookie_cache.cc",
     "cookies/cookie_cache.h",
@@ -109,6 +111,7 @@ test("ios_net_unittests") {
   ]
 
   sources = [
+    "chunked_data_stream_uploader_unittest.cc",
     "cookies/cookie_cache_unittest.cc",
     "cookies/cookie_creation_time_manager_unittest.mm",
     "cookies/cookie_store_ios_persistent_unittest.mm",
