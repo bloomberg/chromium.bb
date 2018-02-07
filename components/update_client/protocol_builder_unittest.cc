@@ -15,30 +15,36 @@ using std::string;
 
 namespace update_client {
 
-TEST(UpdateClientUtils, BuildProtocolRequest_ProdIdVersion) {
-  // Verifies that |prod_id| and |version| are serialized.
-  const string request = BuildProtocolRequest("some_prod_id", "1.0", "", "", "",
-                                              "", "", "", nullptr);
-  EXPECT_NE(string::npos, request.find(" version=\"some_prod_id-1.0\" "));
+TEST(BuildProtocolRequest, SessionIdProdIdVersion) {
+  // Verifies that |session_id|, |prod_id| and |version| are serialized.
+  const string request = BuildProtocolRequest(
+      "15160585-8ADE-4D3C-839B-1281A6035D1F", "some_prod_id", "1.0", "", "", "",
+      "", "", "", nullptr);
+  EXPECT_NE(
+      string::npos,
+      request.find(" sessionid=\"{15160585-8ADE-4D3C-839B-1281A6035D1F}\" "));
+  EXPECT_NE(string::npos,
+            request.find(" version=\"some_prod_id-1.0\" prodversion=\"1.0\" "));
 }
 
-TEST(UpdateClientUtils, BuildProtocolRequest_DownloadPreference) {
+TEST(BuildProtocolRequest, DownloadPreference) {
   // Verifies that an empty |download_preference| is not serialized.
   const string request_no_dlpref =
-      BuildProtocolRequest("", "", "", "", "", "", "", "", nullptr);
+      BuildProtocolRequest("1", "", "", "", "", "", "", "", "", nullptr);
   EXPECT_EQ(string::npos, request_no_dlpref.find(" dlpref="));
 
   // Verifies that |download_preference| is serialized.
-  const string request_with_dlpref =
-      BuildProtocolRequest("", "", "", "", "", "some pref", "", "", nullptr);
+  const string request_with_dlpref = BuildProtocolRequest(
+      "1", "", "", "", "", "", "some pref", "", "", nullptr);
   EXPECT_NE(string::npos, request_with_dlpref.find(" dlpref=\"some pref\""));
 }
 
-TEST(UpdateClientUtils, BuildProtocolRequestUpdaterStateAttributes) {
+TEST(BuildProtocolRequest, UpdaterStateAttributes) {
   // When no updater state is provided, then check that the elements and
   // attributes related to the updater state are not serialized.
   std::string request =
-      BuildProtocolRequest("", "", "", "", "", "", "", "", nullptr).c_str();
+      BuildProtocolRequest("1", "", "", "", "", "", "", "", "", nullptr)
+          .c_str();
   EXPECT_EQ(std::string::npos, request.find(" domainjoined"));
   EXPECT_EQ(std::string::npos, request.find("<updater"));
 
@@ -52,7 +58,7 @@ TEST(UpdateClientUtils, BuildProtocolRequestUpdaterStateAttributes) {
   attributes["autoupdatecheckenabled"] = "0";
   attributes["updatepolicy"] = "-1";
   request = BuildProtocolRequest(
-      "", "", "", "", "", "", "", "",
+      "1", "", "", "", "", "", "", "", "",
       std::make_unique<UpdaterState::Attributes>(attributes));
   EXPECT_NE(std::string::npos, request.find(" domainjoined=\"1\""));
   const std::string updater_element =

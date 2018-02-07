@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -39,7 +40,8 @@ UpdateContext::UpdateContext(
       crx_data_callback(std::move(crx_data_callback)),
       notify_observers_callback(notify_observers_callback),
       callback(std::move(callback)),
-      crx_downloader_factory(crx_downloader_factory) {
+      crx_downloader_factory(crx_downloader_factory),
+      session_id(base::GenerateGUID()) {
   for (const auto& id : ids)
     components.insert(
         std::make_pair(id, std::make_unique<Component>(*this, id)));
@@ -157,8 +159,9 @@ void UpdateEngine::DoUpdateCheck(const UpdateContextIterator it) {
       update_checker_factory_(config_, metadata_.get());
 
   update_context->update_checker->CheckForUpdates(
-      update_context->ids, update_context->components,
-      config_->ExtraRequestParams(), update_context->enabled_component_updates,
+      update_context->session_id, update_context->ids,
+      update_context->components, config_->ExtraRequestParams(),
+      update_context->enabled_component_updates,
       base::BindOnce(&UpdateEngine::UpdateCheckDone, base::Unretained(this),
                      it));
 }

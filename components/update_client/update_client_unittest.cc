@@ -240,11 +240,13 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
       return std::make_unique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
                          UpdateCheckCallback update_check_callback) override {
+      EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(1u, ids_to_check.size());
       const std::string id = "jebgalgnebhfojomionfpkfelancnnkf";
@@ -350,7 +352,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
       return std::make_unique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
@@ -376,7 +379,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
         </app>
       </response>
       */
-
+      EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(2u, ids_to_check.size());
 
@@ -560,7 +563,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
       return std::make_unique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
@@ -600,6 +604,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
         </app>
       </response>
       */
+      EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(2u, ids_to_check.size());
 
@@ -828,7 +833,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
       return std::make_unique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
@@ -869,6 +875,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
       </response>
       */
 
+      EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(2u, ids_to_check.size());
 
@@ -1095,11 +1102,14 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
       return std::make_unique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
                          UpdateCheckCallback update_check_callback) override {
+      EXPECT_FALSE(session_id.empty());
+
       static int num_call = 0;
       ++num_call;
 
@@ -1421,7 +1431,8 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
       return std::make_unique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
@@ -1447,6 +1458,8 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
         </app>
       </response>
       */
+      EXPECT_FALSE(session_id.empty());
+
       const std::string id = "jebgalgnebhfojomionfpkfelancnnkf";
       EXPECT_EQ(id, ids_to_check[0]);
       EXPECT_EQ(1u, components.count(id));
@@ -1608,11 +1621,14 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
       return std::make_unique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
                          UpdateCheckCallback update_check_callback) override {
+      EXPECT_FALSE(session_id.empty());
+
       static int num_call = 0;
       ++num_call;
 
@@ -1909,11 +1925,13 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
       return std::make_unique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
                          UpdateCheckCallback update_check_callback) override {
+      EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(1u, ids_to_check.size());
       const std::string id = "jebgalgnebhfojomionfpkfelancnnkf";
@@ -2020,7 +2038,8 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       return std::make_unique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
@@ -2046,6 +2065,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
         </app>
       </response>
       */
+      EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(1u, ids_to_check.size());
 
@@ -2211,11 +2231,13 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
       return std::make_unique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
                          UpdateCheckCallback update_check_callback) override {
+      EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(1u, ids_to_check.size());
       const std::string id = "jebgalgnebhfojomionfpkfelancnnkf";
@@ -2315,11 +2337,14 @@ TEST_F(UpdateClientTest, EmptyIdList) {
       return std::make_unique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {}
+                         UpdateCheckCallback update_check_callback) override {
+      NOTREACHED();
+    }
   };
 
   class FakeCrxDownloader : public CrxDownloader {
@@ -2364,11 +2389,14 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
       return nullptr;
     }
 
-    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
-                         UpdateCheckCallback update_check_callback) override {}
+                         UpdateCheckCallback update_check_callback) override {
+      NOTREACHED();
+    }
   };
 
   class FakeCrxDownloader : public CrxDownloader {
@@ -2462,11 +2490,14 @@ TEST_F(UpdateClientTest, RetryAfter) {
       return std::make_unique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
                          UpdateCheckCallback update_check_callback) override {
+      EXPECT_FALSE(session_id.empty());
+
       static int num_call = 0;
       ++num_call;
 
@@ -2635,7 +2666,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
       return std::make_unique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
@@ -2680,8 +2712,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
       // configurator instance, persists its value in the corresponding
       // update context, and propagates it down to each of the update actions,
       // and further down to the UpdateChecker instance.
+      EXPECT_FALSE(session_id.empty());
       EXPECT_FALSE(enabled_component_updates);
-
       EXPECT_EQ(2u, ids_to_check.size());
 
       {
@@ -2881,11 +2913,13 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
       return std::make_unique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
                          UpdateCheckCallback update_check_callback) override {
+      EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(1u, ids_to_check.size());
       const std::string id = "jebgalgnebhfojomionfpkfelancnnkf";
@@ -2961,7 +2995,8 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
       return std::make_unique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
@@ -2989,6 +3024,7 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
         </app>
       </response>
       */
+      EXPECT_FALSE(session_id.empty());
       EXPECT_TRUE(enabled_component_updates);
       EXPECT_EQ(1u, ids_to_check.size());
 
@@ -3122,7 +3158,8 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
       return std::make_unique<FakeUpdateChecker>();
     }
 
-    void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+    void CheckForUpdates(const std::string& session_id,
+                         const std::vector<std::string>& ids_to_check,
                          const IdToComponentPtrMap& components,
                          const std::string& additional_attributes,
                          bool enabled_component_updates,
@@ -3141,6 +3178,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
         </app>
       </response>
       */
+      EXPECT_FALSE(session_id.empty());
       EXPECT_EQ(1u, ids_to_check.size());
       const std::string id = "gjpmebpgbhcamgdgjcmnjfhggjpgcimm";
       EXPECT_EQ(id, ids_to_check[0]);

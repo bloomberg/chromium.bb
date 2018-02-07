@@ -202,6 +202,7 @@ std::string BuildActionRunEventElement(bool succeeded,
 }
 
 std::string BuildProtocolRequest(
+    const std::string& session_id,
     const std::string& prod_id,
     const std::string& browser_version,
     const std::string& channel,
@@ -222,22 +223,27 @@ std::string BuildProtocolRequest(
   // Constant information for this updater.
   base::StringAppendF(&request, "dedup=\"cr\" acceptformat=\"crx2,crx3\" ");
 
+  // Sesssion id and request id
+  DCHECK(!session_id.empty());
+  DCHECK(!base::StartsWith(session_id, "{", base::CompareCase::SENSITIVE));
+  DCHECK(!base::EndsWith(session_id, "}", base::CompareCase::SENSITIVE));
+  base::StringAppendF(&request, "sessionid=\"{%s}\" requestid=\"{%s}\" ",
+                      session_id.c_str(), base::GenerateGUID().c_str());
+
   // Chrome version and platform information.
-  base::StringAppendF(
-      &request,
-      "version=\"%s-%s\" prodversion=\"%s\" "
-      "requestid=\"{%s}\" lang=\"%s\" updaterchannel=\"%s\" prodchannel=\"%s\" "
-      "os=\"%s\" arch=\"%s\" nacl_arch=\"%s\"",
-      prod_id.c_str(),  // "version" is prefixed by prod_id.
-      browser_version.c_str(),
-      browser_version.c_str(),            // "prodversion"
-      base::GenerateGUID().c_str(),       // "requestid"
-      lang.c_str(),                       // "lang"
-      channel.c_str(),                    // "updaterchannel"
-      channel.c_str(),                    // "prodchannel"
-      UpdateQueryParams::GetOS(),         // "os"
-      UpdateQueryParams::GetArch(),       // "arch"
-      UpdateQueryParams::GetNaclArch());  // "nacl_arch"
+  base::StringAppendF(&request,
+                      "version=\"%s-%s\" prodversion=\"%s\" "
+                      "lang=\"%s\" updaterchannel=\"%s\" prodchannel=\"%s\" "
+                      "os=\"%s\" arch=\"%s\" nacl_arch=\"%s\"",
+                      prod_id.c_str(),  // "version" is prefixed by prod_id.
+                      browser_version.c_str(),
+                      browser_version.c_str(),            // "prodversion"
+                      lang.c_str(),                       // "lang"
+                      channel.c_str(),                    // "updaterchannel"
+                      channel.c_str(),                    // "prodchannel"
+                      UpdateQueryParams::GetOS(),         // "os"
+                      UpdateQueryParams::GetArch(),       // "arch"
+                      UpdateQueryParams::GetNaclArch());  // "nacl_arch"
 #if defined(OS_WIN)
   const bool is_wow64(base::win::OSInfo::GetInstance()->wow64_status() ==
                       base::win::OSInfo::WOW64_ENABLED);
@@ -296,6 +302,7 @@ std::string BuildProtocolRequest(
 
 std::string BuildUpdateCheckRequest(
     const Configurator& config,
+    const std::string& session_id,
     const std::vector<std::string>& ids_checked,
     const IdToComponentPtrMap& components,
     PersistedData* metadata,
@@ -386,7 +393,7 @@ std::string BuildUpdateCheckRequest(
 
   // Include the updater state in the update check request.
   return BuildProtocolRequest(
-      config.GetProdId(), config.GetBrowserVersion().GetString(),
+      session_id, config.GetProdId(), config.GetBrowserVersion().GetString(),
       config.GetChannel(), config.GetLang(), config.GetOSLongName(),
       config.GetDownloadPreference(), app_elements, additional_attributes,
       updater_state_attributes);
@@ -405,10 +412,11 @@ std::string BuildEventPingRequest(const Configurator& config,
   app.append("</app>");
 
   // The ping request does not include any updater state.
-  return BuildProtocolRequest(
-      config.GetProdId(), config.GetBrowserVersion().GetString(),
-      config.GetChannel(), config.GetLang(), config.GetOSLongName(),
-      config.GetDownloadPreference(), app, "", nullptr);
+  return BuildProtocolRequest(component.session_id(), config.GetProdId(),
+                              config.GetBrowserVersion().GetString(),
+                              config.GetChannel(), config.GetLang(),
+                              config.GetOSLongName(),
+                              config.GetDownloadPreference(), app, "", nullptr);
 }
 
 }  // namespace update_client

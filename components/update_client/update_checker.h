@@ -37,7 +37,8 @@ class UpdateChecker {
   // XML attribute string.
   // On completion, the state of |components| is mutated as required by the
   // server response received.
-  virtual void CheckForUpdates(const std::vector<std::string>& ids_to_check,
+  virtual void CheckForUpdates(const std::string& session_id,
+                               const std::vector<std::string>& ids_to_check,
                                const IdToComponentPtrMap& components,
                                const std::string& additional_attributes,
                                bool enabled_component_updates,
