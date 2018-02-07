@@ -45,10 +45,10 @@ config("skia_config") {
     "//third_party/skia/include/pipe",
     "//third_party/skia/include/ports",
     "//third_party/skia/include/utils",
-    "//third_party/vulkan/include",
   ]
   if (enable_vulkan) {
     include_dirs += [ "$vulkan_sdk_path/include" ]
+    configs = [ "//third_party/vulkan:vulkan_config" ]
   }
 
   defines = skia_for_chromium_defines
