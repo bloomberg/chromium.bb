@@ -16,21 +16,18 @@
 
 namespace content {
 
-class WebRtcLocalEventLogManager final : public LogFileWriter {
+class WebRtcLocalEventLogManager {
  public:
   explicit WebRtcLocalEventLogManager(WebRtcLocalEventLogsObserver* observer);
-  ~WebRtcLocalEventLogManager() override;
+  ~WebRtcLocalEventLogManager();
 
   bool PeerConnectionAdded(int render_process_id, int lid);
   bool PeerConnectionRemoved(int render_process_id, int lid);
 
-  bool EnableLogging(const base::FilePath& base_path,
-                     size_t max_file_size_bytes);
+  bool EnableLogging(base::FilePath base_path, size_t max_file_size_bytes);
   bool DisableLogging();
 
-  bool EventLogWrite(int render_process_id,
-                     int lid,
-                     const std::string& message);
+  bool EventLogWrite(int render_process_id, int lid, const std::string& output);
 
   // This function is public, but this entire class is a protected
   // implementation detail of WebRtcEventLogManager, which hides this
@@ -38,12 +35,24 @@ class WebRtcLocalEventLogManager final : public LogFileWriter {
   void SetClockForTesting(base::Clock* clock);
 
  private:
-  // Create a local log file.
-  void StartLogFile(int render_process_id, int lid);
+  using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
 
-  // LogFileWriter implementation. Closes a log file, flushing it to disk
-  // and relinquishing its handle.
-  LogFilesMap::iterator CloseLogFile(LogFilesMap::iterator it) override;
+  struct LogFile {
+    LogFile(base::File file, size_t max_file_size_bytes)
+        : file(std::move(file)),
+          max_file_size_bytes(max_file_size_bytes),
+          file_size_bytes(0) {}
+    base::File file;
+    const size_t max_file_size_bytes;
+    size_t file_size_bytes;
+  };
+
+  typedef std::map<PeerConnectionKey, LogFile> LogFilesMap;
+
+  // File handling.
+  void StartLogFile(int render_process_id, int lid);
+  void StopLogFile(int render_process_id, int lid);
+  LogFilesMap::iterator CloseLogFile(LogFilesMap::iterator it);
 
   // Derives the name of a local log file. The format is:
   // [user_defined]_[date]_[time]_[pid]_[lid].log

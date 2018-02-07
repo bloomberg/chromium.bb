@@ -8,35 +8,29 @@
 #include <map>
 #include <memory>
 #include <type_traits>
-#include <utility>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/clock.h"
 #include "content/browser/webrtc/webrtc_event_log_manager_common.h"
 #include "content/browser/webrtc/webrtc_local_event_log_manager.h"
-#include "content/browser/webrtc/webrtc_remote_event_log_manager.h"
 #include "content/common/content_export.h"
 
 namespace content {
 
-class BrowserContext;
-
-// This is a singleton class running in the browser UI thread (ownership of
-// the only instance lies in BrowserContext).  It is in charge of writing WebRTC
-// event logs to temporary files, then uploading those files to remote servers,
-// as well as of writing the logs to files which were manually indicated by the
-// user from the WebRTCIntenals. (A log may simulatenously be written to both,
-// either, or none.)
+// This is a singleton class running in the browser UI thread.
+// It is in charge of writing RTC event logs to temporary files, then uploading
+// those files to remote servers, as well as of writing the logs to files which
+// were manually indicated by the user from the WebRTCIntenals. (A log may
+// simulatenously be written to both, either, or none.)
+// TODO(eladalon): This currently only supports the old use-case - locally
+// stored log files. An upcoming CL will add remote-support.
+// https://crbug.com/775415
 class CONTENT_EXPORT WebRtcEventLogManager
-    : public WebRtcLocalEventLogsObserver,
-      public WebRtcRemoteEventLogsObserver {
+    : protected WebRtcLocalEventLogsObserver {
  public:
-  using BrowserContextId = WebRtcRemoteEventLogManager::BrowserContextId;
-
   // To turn WebRTC on and off, we go through PeerConnectionTrackerProxy. In
   // order to make this toggling easily testable, PeerConnectionTrackerProxyImpl
   // will send real messages to PeerConnectionTracker, whereas
@@ -45,15 +39,9 @@ class CONTENT_EXPORT WebRtcEventLogManager
   class PeerConnectionTrackerProxy {
    public:
     virtual ~PeerConnectionTrackerProxy() = default;
-    virtual void SetWebRtcEventLoggingState(WebRtcEventLogPeerConnectionKey key,
-                                            bool event_logging_enabled) = 0;
+    virtual void StartEventLogOutput(WebRtcEventLogPeerConnectionKey key) = 0;
+    virtual void StopEventLogOutput(WebRtcEventLogPeerConnectionKey key) = 0;
   };
-
-  // Translate a BrowserContext into an ID, allowing associating PeerConnections
-  // with it while making sure that its methods would never be called outside
-  // of the UI thread.
-  static BrowserContextId GetBrowserContextId(
-      const BrowserContext* browser_context);
 
   // Ensures that no previous instantiation of the class was performed, then
   // instantiates the class and returns the object. Subsequent calls to
@@ -66,25 +54,10 @@ class CONTENT_EXPORT WebRtcEventLogManager
 
   ~WebRtcEventLogManager() override;
 
-  // Enables WebRTC event logging for a given BrowserContext:
-  // * Pending logs from previous sessions become eligible to be uploaded.
-  // * New logs for active peer connections *may* be recorded. (This does *not*
-  //   start logging; it just makes it possible.)
-  // This function would typically be called during a BrowserContext's
-  // initialization.
-  // This function must not be called for an off-the-records BrowserContext.
-  // Local-logging is not associated with BrowserContexts, and is allowed even
-  // if EnableForBrowserContext is not called. That is, even for incognito mode.
-  void EnableForBrowserContext(const BrowserContext* browser_context,
-                               base::OnceClosure reply = base::OnceClosure());
-
-  // Disables WebRTC event logging for a given BrowserContext. New remote-bound
-  // WebRTC event logs will no longer be created for this BrowserContext.
-  // This would typically be called when a BrowserContext is destroyed, so it
-  // receives the ID instead of a pointer to the BrowserContext itself, to
-  // ensure that it would not call any virtual functions during destruction.
-  void DisableForBrowserContext(BrowserContextId browser_context_id,
-                                base::OnceClosure reply = base::OnceClosure());
+  // Currently, we only support manual logs initiated by the user
+  // through WebRTCInternals, which are stored locally.
+  // TODO(eladalon): Allow starting/stopping an RTC event log
+  // that will be uploaded to the server. https://crbug.com/775415
 
   // Call this to let the manager know when a PeerConnection was created.
   // If a reply callback is given, it will be posted back to BrowserThread::UI,
@@ -124,7 +97,7 @@ class CONTENT_EXPORT WebRtcEventLogManager
   // will get a local log file associated (specifically, we do *not* guarantee
   // it would be either the oldest or the newest).
   void EnableLocalLogging(
-      const base::FilePath& base_path,
+      base::FilePath base_path,
       size_t max_file_size_bytes = kDefaultMaxLocalLogFileSizeBytes,
       base::OnceCallback<void(bool)> reply = base::OnceCallback<void(bool)>());
 
@@ -134,33 +107,18 @@ class CONTENT_EXPORT WebRtcEventLogManager
   void DisableLocalLogging(
       base::OnceCallback<void(bool)> reply = base::OnceCallback<void(bool)>());
 
-  // Start logging the peer connection's WebRTC events to a file, which will
-  // later be uploaded to a remote server. If a reply is provided, it will be
-  // posted back to BrowserThread::UI with the return value provided by
-  // WebRtcRemoteEventLogManager::StartRemoteLogging - see the comment there
-  // for more details.
-  // TODO(eladalon): Add support for injecting metadata through this call.
-  // https://crbug.com/775415
-  void StartRemoteLogging(
-      int render_process_id,
-      int lid,  // Renderer-local PeerConnection ID.
-      size_t max_file_size_bytes,
-      base::OnceCallback<void(bool)> reply = base::OnceCallback<void(bool)>());
-
   // Called when a new log fragment is sent from the renderer. This will
   // potentially be written to a local WebRTC event log, a log destined for
   // upload, or both.
-  // If a reply callback is given, it will be posted back to BrowserThread::UI
-  // with a pair of bools, the first bool associated with local logging and the
-  // second bool associated with remote-bound logging. Each bool assumes the
-  // value true if and only if the message was written in its entirety into
-  // a local/remote-bound log file.
+  // If a reply callback is given, it will be posted back to BrowserThread::UI,
+  // with true if and only if |output| was written in its entirety to both the
+  // local log (if any) as well as the remote log (if any). In the edge case
+  // that neither log file exists, false will be returned.
   void OnWebRtcEventLogWrite(
       int render_process_id,
       int lid,  // Renderer-local PeerConnection ID.
-      const std::string& message,
-      base::OnceCallback<void(std::pair<bool, bool>)> reply =
-          base::OnceCallback<void(std::pair<bool, bool>)>());
+      const std::string& output,
+      base::OnceCallback<void(bool)> reply = base::OnceCallback<void(bool)>());
 
   // Set (or unset) an observer that will be informed whenever a local log file
   // is started/stopped. The observer needs to be able to either run from
@@ -171,29 +129,13 @@ class CONTENT_EXPORT WebRtcEventLogManager
   void SetLocalLogsObserver(WebRtcLocalEventLogsObserver* observer,
                             base::OnceClosure reply = base::OnceClosure());
 
-  // Set (or unset) an observer that will be informed whenever a remote log file
-  // is started/stopped. Note that this refers to writing these files to disk,
-  // not for uploading them to the server.
-  // The observer needs to be able to either run from anywhere. If you need the
-  // code to run on specific runners or queues, have the observer post
-  // them there.
-  // If a reply callback is given, it will be posted back to BrowserThread::UI
-  // after the observer has been set.
-  void SetRemoteLogsObserver(WebRtcRemoteEventLogsObserver* observer,
-                             base::OnceClosure reply = base::OnceClosure());
-
  protected:
   friend class WebRtcEventLogManagerTest;  // Unit tests inject a frozen clock.
 
   WebRtcEventLogManager();
 
-  // This can be used by unit tests to ensure that they would run synchronously.
   void SetTaskRunnerForTesting(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
-
-  // This allows unit tests that do not wish to change the task runner to still
-  // check when certain operations are finished.
-  scoped_refptr<base::SequencedTaskRunner>& GetTaskRunnerForTesting();
 
  private:
   using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
@@ -202,8 +144,8 @@ class CONTENT_EXPORT WebRtcEventLogManager
   // we have turned WebRTC event logging on for a given peer connection, so that
   // we may turn it off only when the last client no longer needs it.
   enum LoggingTarget : unsigned int {
-    kLocalLogging = 1 << 0,
-    kRemoteLogging = 1 << 1
+    kLocalLogging = 0x01
+    // TODO(eladalon): Add kRemoteLogging as 0x02. https://crbug.com/775415
   };
   using LoggingTargetBitmap = std::underlying_type<LoggingTarget>::type;
 
@@ -211,83 +153,48 @@ class CONTENT_EXPORT WebRtcEventLogManager
 
   // WebRtcLocalEventLogsObserver implementation:
   void OnLocalLogStarted(PeerConnectionKey peer_connection,
-                         const base::FilePath& file_path) override;
+                         base::FilePath file_path) override;
   void OnLocalLogStopped(PeerConnectionKey peer_connection) override;
-
-  // WebRtcRemoteEventLogsObserver implementation:
-  void OnRemoteLogStarted(PeerConnectionKey key,
-                          const base::FilePath& file_path) override;
-  void OnRemoteLogStopped(PeerConnectionKey key) override;
-
-  void OnLoggingTargetStarted(LoggingTarget target, PeerConnectionKey key);
-  void OnLoggingTargetStopped(LoggingTarget target, PeerConnectionKey key);
-
-  void EnableForBrowserContextInternal(
-      BrowserContextId browser_context_id,
-      const base::FilePath& browser_context_dir,
-      base::OnceClosure reply);
-  void DisableForBrowserContextInternal(BrowserContextId browser_context_id,
-                                        base::OnceClosure reply);
 
   void PeerConnectionAddedInternal(int render_process_id,
                                    int lid,
                                    base::OnceCallback<void(bool)> reply);
   void PeerConnectionRemovedInternal(int render_process_id,
                                      int lid,
-                                     BrowserContextId browser_context_id,
                                      base::OnceCallback<void(bool)> reply);
 
-  void EnableLocalLoggingInternal(const base::FilePath& base_path,
+  void EnableLocalLoggingInternal(base::FilePath base_path,
                                   size_t max_file_size_bytes,
                                   base::OnceCallback<void(bool)> reply);
   void DisableLocalLoggingInternal(base::OnceCallback<void(bool)> reply);
 
-  void StartRemoteLoggingInternal(
-      int render_process_id,
-      int lid,  // Renderer-local PeerConnection ID.
-      base::Optional<BrowserContextId> browser_context_id,
-      const base::FilePath& browser_context_dir,
-      size_t max_file_size_bytes,
-      base::OnceCallback<void(bool)> reply);
-
   void OnWebRtcEventLogWriteInternal(
       int render_process_id,
       int lid,  // Renderer-local PeerConnection ID.
-      bool remote_logging_allowed,
-      const std::string& message,
-      base::OnceCallback<void(std::pair<bool, bool>)> reply);
+      const std::string& output,
+      base::OnceCallback<void(bool)> reply);
 
   void SetLocalLogsObserverInternal(WebRtcLocalEventLogsObserver* observer,
                                     base::OnceClosure reply);
 
-  void SetRemoteLogsObserverInternal(WebRtcRemoteEventLogsObserver* observer,
-                                     base::OnceClosure reply);
+  // Send a message to WebRTC telling it to start/stop sending event-log
+  // notifications for a given peer connection.
+  void UpdateWebRtcEventLoggingState(PeerConnectionKey peer_connection,
+                                     bool enabled);
 
-  // Methods for injecting testing utilities in place of actual implementations.
-  // Because these are only intended for testing, we perform these changes
-  // asynchronously, trusting the unit tests to do so carefully enough.
   void SetClockForTesting(base::Clock* clock);
+
   void SetPeerConnectionTrackerProxyForTesting(
       std::unique_ptr<PeerConnectionTrackerProxy> pc_tracker_proxy);
-  void SetWebRtcEventLogUploaderFactoryForTesting(
-      std::unique_ptr<WebRtcEventLogUploader::Factory> uploader_factory);
 
   // Observer which will be informed whenever a local log file is started or
   // stopped. Its callbacks are called synchronously from |task_runner_|,
   // so the observer needs to be able to either run from any (sequenced) runner.
   WebRtcLocalEventLogsObserver* local_logs_observer_;
 
-  // Observer which will be informed whenever a remote log file is started or
-  // stopped. Its callbacks are called synchronously from |task_runner_|,
-  // so the observer needs to be able to either run from any (sequenced) runner.
-  WebRtcRemoteEventLogsObserver* remote_logs_observer_;
-
   // Manages local-bound logs - logs stored on the local filesystem when
   // logging has been explicitly enabled by the user.
   WebRtcLocalEventLogManager local_logs_manager_;
-
-  // Manages remote-bound logs - logs which will be sent to a remote server.
-  WebRtcRemoteEventLogManager remote_logs_manager_;
 
   // This keeps track of which peer connections have event logging turned on
   // in WebRTC, and for which client(s).
