@@ -1135,10 +1135,11 @@ bool Node::CanStartSelection() const {
     const ComputedStyle& style = GetLayoutObject()->StyleRef();
     if (style.UserSelect() == EUserSelect::kNone)
       return false;
-    // We allow selections to begin within |user-select: text| sub trees
+    // We allow selections to begin within |user-select: text/all| sub trees
     // but not if the element is draggable.
     if (style.UserDrag() != EUserDrag::kElement &&
-        style.UserSelect() == EUserSelect::kText)
+        (style.UserSelect() == EUserSelect::kText ||
+         style.UserSelect() == EUserSelect::kAll))
       return true;
   }
   ContainerNode* parent = FlatTreeTraversal::Parent(*this);

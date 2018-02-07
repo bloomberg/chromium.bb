@@ -351,23 +351,6 @@ TEST_F(EventHandlerTest, HitOnUserSelectNoneDoesNotShowIBeam) {
                                                                          hit));
 }
 
-TEST_F(EventHandlerTest, ChildCanOverrideUserSelectNone) {
-  SetHtmlInnerHTML(
-      "<div style='user-select: none'>"
-      "<span style='user-select: text'>blabla</span>"
-      "</div>");
-  Node* const text = GetDocument().body()->firstChild()->firstChild()->firstChild();
-  LayoutPoint location =
-      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
-  HitTestResult hit =
-      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
-          location);
-  EXPECT_TRUE(text->CanStartSelection());
-  EXPECT_TRUE(
-      GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(text,
-                                                                         hit));
-}
-
 TEST_F(EventHandlerTest, ShadowChildCanOverrideUserSelectNone) {
   SetHtmlInnerHTML("<p style='user-select: none' id='host'></p>");
   ShadowRoot* const shadow_root = SetShadowContent(
@@ -385,7 +368,61 @@ TEST_F(EventHandlerTest, ShadowChildCanOverrideUserSelectNone) {
                                                                          hit));
 }
 
-TEST_F(EventHandlerTest, ChildCanOverrideUserSelectText) {
+TEST_F(EventHandlerTest, UserSelectAllCanOverrideUserSelectNone) {
+  SetHtmlInnerHTML(
+      "<div style='user-select: none'>"
+      "<span style='user-select: all'>blabla</span>"
+      "</div>");
+  Node* const text =
+      GetDocument().body()->firstChild()->firstChild()->firstChild();
+  LayoutPoint location =
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
+  HitTestResult hit =
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+          location);
+  EXPECT_TRUE(text->CanStartSelection());
+  EXPECT_TRUE(
+      GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(text,
+                                                                         hit));
+}
+
+TEST_F(EventHandlerTest, UserSelectNoneCanOverrideUserSelectAll) {
+  SetHtmlInnerHTML(
+      "<div style='user-select: all'>"
+      "<span style='user-select: none'>blabla</span>"
+      "</div>");
+  Node* const text =
+      GetDocument().body()->firstChild()->firstChild()->firstChild();
+  LayoutPoint location =
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
+  HitTestResult hit =
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+          location);
+  EXPECT_FALSE(text->CanStartSelection());
+  EXPECT_FALSE(
+      GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(text,
+                                                                         hit));
+}
+
+TEST_F(EventHandlerTest, UserSelectTextCanOverrideUserSelectNone) {
+  SetHtmlInnerHTML(
+      "<div style='user-select: none'>"
+      "<span style='user-select: text'>blabla</span>"
+      "</div>");
+  Node* const text =
+      GetDocument().body()->firstChild()->firstChild()->firstChild();
+  LayoutPoint location =
+      text->GetLayoutObject()->FirstFragment().VisualRect().Center();
+  HitTestResult hit =
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+          location);
+  EXPECT_TRUE(text->CanStartSelection());
+  EXPECT_TRUE(
+      GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(text,
+                                                                         hit));
+}
+
+TEST_F(EventHandlerTest, UserSelectNoneCanOverrideUserSelectText) {
   SetHtmlInnerHTML(
       "<div style='user-select: text'>"
       "<span style='user-select: none'>blabla</span>"
