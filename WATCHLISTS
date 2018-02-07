@@ -1017,6 +1017,9 @@
                   '|third_party/WebKit/LayoutTests/fast/mediacapturefromelement/' \
                   '|third_party/WebKit/public/platform/WebCanvasCapture'
     },
+    'media_controls': {
+      'filepath': 'third_party/WebKit/Source/modules/media_controls/'
+    },
     'media_galleries': {
       'filepath': 'chrome/browser/extensions/api/media_galleries/'\
                   '|chrome/browser/media_galleries/'\
@@ -2099,6 +2102,7 @@
                     'stevenjb+watch-md-settings@chromium.org'],
     'media': ['feature-media-reviews@chromium.org'],
     'media_capture_from_element': ['emircan+watch+capturefromdom@chromium.org'],
+    'media_controls': ['steimel+watch-mediacontrols@chromium.org'],
     'media_galleries': ['thestig@chromium.org',
                         'tommycli@chromium.org'],
     'media_mojo': ['alokp+watch@chromium.org'],
