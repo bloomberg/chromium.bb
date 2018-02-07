@@ -12,7 +12,21 @@
 
 namespace zucchini {
 
-TEST(Algorithm, RangeIsBounded) {
+namespace {
+
+// Casting functions to specify signed 8-bit and 16-bit integer constants.
+// For example, signed8(0xFF) == int8_t(-1).
+inline int8_t signed8(uint8_t v) {
+  return *reinterpret_cast<const int8_t*>(&v);
+}
+
+inline int32_t signed16(uint16_t v) {
+  return *reinterpret_cast<const int16_t*>(&v);
+}
+
+}  // namespace
+
+TEST(AlgorithmTest, RangeIsBounded) {
   // Basic tests.
   EXPECT_TRUE(RangeIsBounded<uint8_t>(0U, +0U, 10U));
   EXPECT_TRUE(RangeIsBounded<uint8_t>(0U, +10U, 10U));
@@ -57,7 +71,7 @@ TEST(Algorithm, RangeIsBounded) {
       RangeIsBounded<uint32_t>(0xFFFFFFFFU, +0xFFFFFFFFU, 0xFFFFFFFFU));
 }
 
-TEST(Algorithm, RangeCovers) {
+TEST(AlgorithmTest, RangeCovers) {
   // Basic tests.
   EXPECT_TRUE(RangeCovers<uint8_t>(0U, +10U, 0U));
   EXPECT_TRUE(RangeCovers<uint8_t>(0U, +10U, 5U));
@@ -100,7 +114,7 @@ TEST(Algorithm, RangeCovers) {
   EXPECT_FALSE(RangeCovers<uint32_t>(0xFFFFFFFFU, +2, 0));
 }
 
-TEST(Algorithm, InclusiveClamp) {
+TEST(AlgorithmTest, InclusiveClamp) {
   EXPECT_EQ(1U, InclusiveClamp<uint32_t>(0U, 1U, 9U));
   EXPECT_EQ(1U, InclusiveClamp<uint32_t>(1U, 1U, 9U));
   EXPECT_EQ(5U, InclusiveClamp<uint32_t>(5U, 1U, 9U));
@@ -117,7 +131,7 @@ TEST(Algorithm, InclusiveClamp) {
             InclusiveClamp<uint32_t>(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF));
 }
 
-TEST(Algorithm, Ceil) {
+TEST(AlgorithmTest, Ceil) {
   EXPECT_EQ(0U, ceil<uint32_t>(0U, 2U));
   EXPECT_EQ(2U, ceil<uint32_t>(1U, 2U));
   EXPECT_EQ(2U, ceil<uint32_t>(2U, 2U));
@@ -129,6 +143,64 @@ TEST(Algorithm, Ceil) {
   EXPECT_EQ(22U, ceil<uint32_t>(21U, 11U));
   EXPECT_EQ(22U, ceil<uint32_t>(22U, 11U));
   EXPECT_EQ(33U, ceil<uint32_t>(23U, 11U));
+}
+
+TEST(AlgorithmTest, SignExtend) {
+  // 0x6A = 0b0110'1010.
+  EXPECT_EQ(uint8_t(0x00), (SignExtend<uint8_t>(0, 0x6A)));
+  EXPECT_EQ(signed8(0xFE), (SignExtend<int8_t>(1, signed8(0x6A))));
+  EXPECT_EQ(uint8_t(0x02), (SignExtend<uint8_t>(2, 0x6A)));
+  EXPECT_EQ(signed8(0xFA), (SignExtend<int8_t>(3, signed8(0x6A))));
+  EXPECT_EQ(uint8_t(0x0A), (SignExtend<uint8_t>(4, 0x6A)));
+  EXPECT_EQ(signed8(0xEA), (SignExtend<int8_t>(5, signed8(0x6A))));
+  EXPECT_EQ(uint8_t(0xEA), (SignExtend<uint8_t>(6, 0x6A)));
+  EXPECT_EQ(signed8(0x6A), (SignExtend<int8_t>(7, signed8(0x6A))));
+
+  EXPECT_EQ(signed16(0xFFFA), (SignExtend<int16_t>(3, 0x6A)));
+  EXPECT_EQ(uint16_t(0x000A), (SignExtend<uint16_t>(4, 0x6A)));
+
+  EXPECT_EQ(int32_t(0xFFFF8000), (SignExtend<int32_t>(15, 0x00008000)));
+  EXPECT_EQ(uint32_t(0x00008000U), (SignExtend<uint32_t>(16, 0x00008000)));
+  EXPECT_EQ(int32_t(0xFFFFFC00), (SignExtend<int32_t>(10, 0x00000400)));
+  EXPECT_EQ(uint32_t(0xFFFFFFFFU), (SignExtend<uint32_t>(31, 0xFFFFFFFF)));
+
+  EXPECT_EQ(int64_t(0xFFFFFFFFFFFFFE6ALL),
+            (SignExtend<int64_t>(9, 0x000000000000026ALL)));
+  EXPECT_EQ(int64_t(0x000000000000016ALL),
+            (SignExtend<int64_t>(9, 0xFFFFFFFFFFFFFD6ALL)));
+  EXPECT_EQ(uint64_t(0xFFFFFFFFFFFFFE6AULL),
+            (SignExtend<uint64_t>(9, 0x000000000000026AULL)));
+  EXPECT_EQ(uint64_t(0x000000000000016AULL),
+            (SignExtend<uint64_t>(9, 0xFFFFFFFFFFFFFD6AULL)));
+}
+
+TEST(AlgorithmTest, SignExtendTemplated) {
+  // 0x6A = 0b0110'1010.
+  EXPECT_EQ(uint8_t(0x00), (SignExtend<0, uint8_t>(0x6A)));
+  EXPECT_EQ(signed8(0xFE), (SignExtend<1, int8_t>(signed8(0x6A))));
+  EXPECT_EQ(uint8_t(0x02), (SignExtend<2, uint8_t>(0x6A)));
+  EXPECT_EQ(signed8(0xFA), (SignExtend<3, int8_t>(signed8(0x6A))));
+  EXPECT_EQ(uint8_t(0x0A), (SignExtend<4, uint8_t>(0x6A)));
+  EXPECT_EQ(signed8(0xEA), (SignExtend<5, int8_t>(signed8(0x6A))));
+  EXPECT_EQ(uint8_t(0xEA), (SignExtend<6, uint8_t>(0x6A)));
+  EXPECT_EQ(signed8(0x6A), (SignExtend<7, int8_t>(signed8(0x6A))));
+
+  EXPECT_EQ(signed16(0xFFFA), (SignExtend<3, int16_t>(0x6A)));
+  EXPECT_EQ(uint16_t(0x000A), (SignExtend<4, uint16_t>(0x6A)));
+
+  EXPECT_EQ(int32_t(0xFFFF8000), (SignExtend<15, int32_t>(0x00008000)));
+  EXPECT_EQ(uint32_t(0x00008000U), (SignExtend<16, uint32_t>(0x00008000)));
+  EXPECT_EQ(int32_t(0xFFFFFC00), (SignExtend<10, int32_t>(0x00000400)));
+  EXPECT_EQ(uint32_t(0xFFFFFFFFU), (SignExtend<31, uint32_t>(0xFFFFFFFF)));
+
+  EXPECT_EQ(int64_t(0xFFFFFFFFFFFFFE6ALL),
+            (SignExtend<9, int64_t>(0x000000000000026ALL)));
+  EXPECT_EQ(int64_t(0x000000000000016ALL),
+            (SignExtend<9, int64_t>(0xFFFFFFFFFFFFFD6ALL)));
+  EXPECT_EQ(uint64_t(0xFFFFFFFFFFFFFE6AULL),
+            (SignExtend<9, uint64_t>(0x000000000000026AULL)));
+  EXPECT_EQ(uint64_t(0x000000000000016AULL),
+            (SignExtend<9, uint64_t>(0xFFFFFFFFFFFFFD6AULL)));
 }
 
 }  // namespace zucchini
