@@ -5037,6 +5037,15 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="5" label="View PDF button clicked in the PDF plugin placeholder"/>
 </enum>
 
+<enum name="ChromePrimaryAccountStateInGaiaCookies">
+  <int value="0" label="No Chrome primary account."/>
+  <int value="1"
+      label="Chrome primary account is the first account in Gaia cookies."/>
+  <int value="2"
+      label="Chrome primary account is another account in Gaia cookies."/>
+  <int value="3" label="Chrome primary account is not in Gaia cookies."/>
+</enum>
+
 <enum name="ChromiumAndroidLinkerBrowserState">
   <int value="0" label="Normal, Random Address Load"/>
   <int value="1" label="Low memory, Fixed Address Load Success"/>
@@ -39535,9 +39544,11 @@ Called by update_net_trust_anchors.py.-->
 <enum name="SigninDiceResponseHeader">
   <int value="0" label="Signin"/>
   <int value="1" label="SignoutPrimary">
-    Signout including the primary account.
+    Signout including the Chrome primary account.
   </int>
-  <int value="2" label="SignoutSecondary">Signout only secondary accounts.</int>
+  <int value="2" label="SignoutSecondary">
+    Signout not including the Chrome primary accounts.
+  </int>
   <int value="3" label="EnableSync">Enable Sync after signin.</int>
 </enum>
 
