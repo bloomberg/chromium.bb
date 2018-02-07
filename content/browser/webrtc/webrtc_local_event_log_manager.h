@@ -32,6 +32,8 @@ class WebRtcLocalEventLogManager final : public LogFileWriter {
                      int lid,
                      const std::string& message);
 
+  void RenderProcessHostExitedDestroyed(int render_process_id);
+
   // This function is public, but this entire class is a protected
   // implementation detail of WebRtcEventLogManager, which hides this
   // function from everybody except its own unit tests.

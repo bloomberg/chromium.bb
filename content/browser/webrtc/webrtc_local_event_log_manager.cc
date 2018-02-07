@@ -121,6 +121,30 @@ bool WebRtcLocalEventLogManager::EventLogWrite(int render_process_id,
   return WriteToLogFile(it, message);
 }
 
+void WebRtcLocalEventLogManager::RenderProcessHostExitedDestroyed(
+    int render_process_id) {
+  // Remove all of the peer connections associated with this render process.
+  auto pc_it = active_peer_connections_.begin();
+  while (pc_it != active_peer_connections_.end()) {
+    if (pc_it->render_process_id == render_process_id) {
+      pc_it = active_peer_connections_.erase(pc_it);
+    } else {
+      ++pc_it;
+    }
+  }
+
+  // Close all of the files that were associated with peer connections which
+  // belonged to this render process.
+  auto log_it = log_files_.begin();
+  while (log_it != log_files_.end()) {
+    if (log_it->first.render_process_id == render_process_id) {
+      log_it = CloseLogFile(log_it);
+    } else {
+      ++log_it;
+    }
+  }
+}
+
 void WebRtcLocalEventLogManager::SetClockForTesting(base::Clock* clock) {
   clock_for_testing_ = clock;
 }
