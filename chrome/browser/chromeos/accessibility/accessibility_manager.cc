@@ -52,6 +52,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
@@ -320,7 +321,8 @@ AccessibilityManager::AccessibilityManager()
   select_to_speak_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(
       extension_misc::kSelectToSpeakExtensionId,
       resources_path.Append(extension_misc::kSelectToSpeakExtensionPath),
-      base::Closure()));
+      base::Bind(&AccessibilityManager::PostUnloadSelectToSpeak,
+                 weak_ptr_factory_.GetWeakPtr())));
   switch_access_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(
       extension_misc::kSwitchAccessExtensionId,
       resources_path.Append(extension_misc::kSwitchAccessExtensionPath),
@@ -1452,6 +1454,9 @@ void AccessibilityManager::PostUnloadChromeVox() {
 
   // In case the user darkened the screen, undarken it now.
   SetDarkenScreen(false);
+
+  // Stop speech.
+  TtsController::GetInstance()->Stop();
 }
 
 void AccessibilityManager::PostSwitchChromeVoxProfile() {
@@ -1482,6 +1487,18 @@ void AccessibilityManager::OnChromeVoxPanelClosing() {
 void AccessibilityManager::OnChromeVoxPanelDestroying() {
   chromevox_panel_widget_observer_.reset(nullptr);
   chromevox_panel_ = nullptr;
+}
+
+void AccessibilityManager::PostUnloadSelectToSpeak() {
+  // Do any teardown work needed immediately after Select-to-Speak actually
+  // unloads.
+
+  // Clear the accessibility focus ring and highlight.
+  ash::AccessibilityFocusRingController::GetInstance()->HideFocusRing();
+  ash::AccessibilityFocusRingController::GetInstance()->HideHighlights();
+
+  // Stop speech.
+  TtsController::GetInstance()->Stop();
 }
 
 void AccessibilityManager::SetKeyboardListenerExtensionId(
