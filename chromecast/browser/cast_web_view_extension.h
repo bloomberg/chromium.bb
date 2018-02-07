@@ -22,6 +22,9 @@
 #include "url/gurl.h"
 
 namespace chromecast {
+namespace shell {
+class RemoteDebuggingServer;
+}
 
 class CastExtensionHost;
 class CastWebContentsManager;
@@ -31,16 +34,12 @@ class CastWebViewExtension : public CastWebView {
  public:
   // |delegate| and |browser_context| should outlive the lifetime of this
   // object.
-  CastWebViewExtension(const extensions::Extension* extension,
-                       const GURL& initial_url,
-                       CastWebView::Delegate* delegate,
+  CastWebViewExtension(const CreateParams& params,
                        CastWebContentsManager* web_contents_manager,
                        content::BrowserContext* browser_context,
                        scoped_refptr<content::SiteInstance> site_instance,
-                       bool transparent,
-                       bool allow_media_access,
-                       bool is_headless,
-                       bool enable_touch_input);
+                       const extensions::Extension* extension,
+                       const GURL& initial_url);
   ~CastWebViewExtension() override;
 
   shell::CastContentWindow* window() const override;
@@ -55,6 +54,7 @@ class CastWebViewExtension : public CastWebView {
  private:
   const std::unique_ptr<shell::CastContentWindow> window_;
   const std::unique_ptr<CastExtensionHost> extension_host_;
+  shell::RemoteDebuggingServer* remote_debugging_server_;
   scoped_refptr<content::SiteInstance> site_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(CastWebViewExtension);

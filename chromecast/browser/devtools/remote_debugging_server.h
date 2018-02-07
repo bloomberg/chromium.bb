@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_map>
 
 #include "base/macros.h"
 
@@ -17,6 +18,8 @@ class WebContents;
 
 namespace chromecast {
 namespace shell {
+
+class CastDevToolsManagerDelegate;
 
 class RemoteDebuggingServer {
  public:
@@ -30,6 +33,14 @@ class RemoteDebuggingServer {
   void DisableWebContentsForDebugging(content::WebContents* web_contents);
 
  private:
+  CastDevToolsManagerDelegate* GetDevtoolsDelegate();
+  void StartIfNeeded();
+  void StopIfNeeded();
+
+  class WebContentsObserver;
+  std::unordered_map<content::WebContents*,
+                     std::unique_ptr<WebContentsObserver>>
+      observers_;
   uint16_t port_;
   bool is_started_;
 
