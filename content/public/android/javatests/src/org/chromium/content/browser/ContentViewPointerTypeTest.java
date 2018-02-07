@@ -15,12 +15,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.blink_public.web.WebCursorInfoType;
 import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content_shell.ShellViewAndroidDelegate;
 import org.chromium.content_shell.ShellViewAndroidDelegate.OnCursorUpdateHelper;
+import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 /**
@@ -38,10 +41,30 @@ public class ContentViewPointerTypeTest {
             + "<div id=\"help\" style=\"cursor:help;\"></div>"
             + "</body></html>");
 
+    private static class OnCursorUpdateHelperImpl
+            extends CallbackHelper implements OnCursorUpdateHelper {
+        private int mPointerType;
+
+        @Override
+        public void notifyCalled(int type) {
+            mPointerType = type;
+            notifyCalled();
+        }
+
+        public int getPointerType() {
+            assert getCallCount() > 0;
+            return mPointerType;
+        }
+    }
+
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.launchContentShellWithUrl(CURSOR_PAGE);
-        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        ContentShellActivity activity =
+                mActivityTestRule.launchContentShellWithUrlSync(CURSOR_PAGE);
+        if (activity != null) {
+            ShellViewAndroidDelegate delegate = activity.getActiveShell().getViewAndroidDelegate();
+            delegate.setOnCursorUpdateHelper(new OnCursorUpdateHelperImpl());
+        }
     }
 
     private void moveCursor(final float x, final float y) {
@@ -67,7 +90,8 @@ public class ContentViewPointerTypeTest {
 
     private void checkPointerTypeForNode(final String nodeId, final int type) throws Throwable {
         final Rect rect = DOMUtils.getNodeBounds(mActivityTestRule.getWebContents(), nodeId);
-        OnCursorUpdateHelper onCursorUpdateHelper = mActivityTestRule.getOnCursorUpdateHelper();
+        OnCursorUpdateHelperImpl onCursorUpdateHelper =
+                (OnCursorUpdateHelperImpl) mActivityTestRule.getOnCursorUpdateHelper();
         int onCursorUpdateCount = onCursorUpdateHelper.getCallCount();
         mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
