@@ -21460,6 +21460,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
     These numbers are the lower 32 bits of the hash of the metric name.
   </summary>
   <int value="-2055973512" label="Login.ConsumerNewUsersAllowed"/>
+  <int value="-2048378466" label="Sqlite.Vfs_Events"/>
   <int value="-2021219906"
       label="DataUse.MessageSize.AllServices.Downstream.Foreground.NotCellular"/>
   <int value="-1724216561"
@@ -21472,8 +21473,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="ServiceWorkerCache.Cache.Scheduler.QueueLength"/>
   <int value="-1390672863"
       label="DataUse.MessageSize.AllServices.Upstream.Background.NotCellular"/>
+  <int value="-1345388508" label="Renderer4.IdealContentsScale"/>
+  <int value="-1321341911"
+      label="DataUse.BackgroundToDataRecievedPerByte.User"/>
   <int value="-1286300074"
       label="Network.Shill.Wifi.ExpiredLeaseLengthSeconds"/>
+  <int value="-1189959109" label="RendererScheduler.TaskCountPerQueueType"/>
+  <int value="-983723378" label="RendererScheduler.TaskDurationPerThreadType"/>
   <int value="-968816650"
       label="PasswordManager.Android.PasswordExceptionEntry.Website"/>
   <int value="-847447887"
@@ -21487,6 +21493,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-132932440" label="DataUse.ContentType.Services"/>
   <int value="-48200749" label="DiskCache.0.TotalIOTime"/>
   <int value="0" label="Missing hash value"/>
+  <int value="61486329" label="RendererScheduler.TaskCountPerFrameType"/>
+  <int value="76333534" label="WorkerThread.Task.Time"/>
   <int value="149985012"
       label="DataUse.MessageSize.AllServices.Upstream.Unknown.Cellular"/>
   <int value="192918458"
@@ -21511,8 +21519,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="PasswordManager.Android.PasswordCredentialEntry.Username"/>
   <int value="1753226325"
       label="DataUse.MessageSize.AllServices.Downstream.Foreground.Cellular"/>
+  <int value="1864392953" label="AsyncDNS.HostsNotifyInterval"/>
   <int value="1977321258"
       label="DataUse.MessageSize.AllServices.Downstream.Background.Cellular"/>
+  <int value="2147480259" label="Sqlite.Vfs_Fetch"/>
 </enum>
 
 <enum name="HistoryFaviconsRecoveryEnum">
