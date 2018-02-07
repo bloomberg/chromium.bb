@@ -675,8 +675,11 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
         </message>
 
         <!-- iOS App Store metadata text. Won't be bundled into the app. -->
-        <message name="IDS_APP_STORE_TITLE" desc="App Store title of the Chrome Remote Desktop app for iOS. If needed to meet the 30-char limit, please translate just 'Remote Desktop' instead. [CHAR-LIMIT=30] [NAME=app_store_title]" meaning="Title used in App Store">
+        <message name="IDS_APP_STORE_TITLE" desc="App Store title of the Chrome Remote Desktop app for iOS. If needed to meet the 50-char limit, please translate just 'Remote Desktop' instead. [CHAR-LIMIT=50] [NAME=app_store_title]" meaning="Title used in App Store">
           Chrome Remote Desktop
+        </message>
+        <message name="IDS_APP_STORE_PROMOTIONAL_TEXT" desc="App Store promotional text. To be displayed below the app title in App Store. No period at the end. [CHAR-LIMIT=170]">
+          Securely access your computer
         </message>
         <message name="IDS_APP_STORE_KEYWORDS" desc="App Store keywords (to be used to search for the app) for the Chrome Remote Desktop app for iOS. Separate keywords with newline. [NAME=app_store_keywords]">
 Chrome
@@ -694,7 +697,7 @@ Securely access your computer from your iOS device. It's fast, simple and free.
 • Install Chrome Remote Desktop software and follow the instructions to complete setup.
 • On your iOS device, open the app and tap on any of your online computers to connect.
         </message>
-        <message name="IDS_APP_STORE_CHANGES" desc="List of what's changed in this release of Chrome Remote Desktop for iOS. [CHAR-LIMIT=500] [NAME=app_store_changes]">
+        <message name="IDS_APP_STORE_CHANGES" desc="List of what's changed in this release of Chrome Remote Desktop for iOS. [CHAR-LIMIT=4000] [NAME=app_store_changes]">
 • New look and feel.
 • Improved performance, responsiveness and reliability.
 • Support for playing audio from Windows or Linux computers.
