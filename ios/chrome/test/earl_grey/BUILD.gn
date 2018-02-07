@@ -14,6 +14,7 @@ group("all_tests") {
     ":ios_chrome_flaky_egtests",
     ":ios_chrome_integration_egtests",
     ":ios_chrome_multitasking_egtests",
+    ":ios_chrome_payments_egtests",
     ":ios_chrome_perf_egtests",
     ":ios_chrome_reading_list_egtests",
     ":ios_chrome_settings_egtests",
