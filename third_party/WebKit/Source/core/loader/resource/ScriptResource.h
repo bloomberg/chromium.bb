@@ -68,7 +68,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   const String& SourceText();
 
-  AccessControlStatus CalculateAccessControlStatus() const;
+  AccessControlStatus CalculateAccessControlStatus(const SecurityOrigin*) const;
 
  private:
   class ScriptResourceFactory : public ResourceFactory {

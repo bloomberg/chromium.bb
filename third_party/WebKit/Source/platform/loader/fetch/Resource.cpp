@@ -36,6 +36,7 @@
 #include "platform/InstanceCounters.h"
 #include "platform/SharedBuffer.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/loader/cors/CORS.h"
 #include "platform/loader/fetch/CachedMetadata.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
@@ -468,6 +469,16 @@ void Resource::Finish(double load_finish_time,
 
 AtomicString Resource::HttpContentType() const {
   return GetResponse().HttpContentType();
+}
+
+bool Resource::PassesAccessControlCheck(
+    const SecurityOrigin& security_origin) const {
+  WTF::Optional<network::mojom::CORSError> cors_error = CORS::CheckAccess(
+      GetResponse().Url(), GetResponse().HttpStatusCode(),
+      GetResponse().HttpHeaderFields(),
+      LastResourceRequest().GetFetchCredentialsMode(), security_origin);
+
+  return !cors_error;
 }
 
 bool Resource::MustRefetchDueToIntegrityMetadata(

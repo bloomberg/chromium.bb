@@ -92,7 +92,8 @@ void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
   ModuleScriptCreationParams params(
       script_resource->GetResponse().Url(), script_resource->SourceText(),
       script_resource->GetResourceRequest().GetFetchCredentialsMode(),
-      script_resource->CalculateAccessControlStatus());
+      script_resource->CalculateAccessControlStatus(
+          fetcher_->Context().GetSecurityOrigin()));
   Finalize(params, error_messages);
 }
 
