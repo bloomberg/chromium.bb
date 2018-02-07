@@ -346,6 +346,7 @@ class BLINK_EXPORT WebFrameClient {
     WebTriggeringEventInfo triggering_event_info;
     WebFormElement form;
     WebSourceLocation source_location;
+    WebString devtools_initiator_info;
     WebContentSecurityPolicyDisposition
         should_check_main_world_content_security_policy;
 
