@@ -4681,6 +4681,7 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
   int cur_tx_depth = 0;
   uint8_t parent_idx_buf[MAX_MIB_SIZE * MAX_MIB_SIZE] = { 0 };
   uint8_t child_idx_buf[MAX_MIB_SIZE * MAX_MIB_SIZE] = { 0 };
+  const int hash_dc_level = 1 << x->e_mbd.bd;
 
   TX_SIZE cur_tx_size = max_txsize_rect_lookup[1][bsize];
   while (cur_tx_depth <= MAX_VARTX_DEPTH) {
@@ -4705,7 +4706,7 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
           for (int i = 0; i < cur_tx_bh; i++) {
             const int16_t *cur_diff_row = diff + (row + i) * diff_stride + col;
             for (int j = 0; j < cur_tx_bw; j++) {
-              hash = hash ^ clip_pixel(cur_diff_row[j] + 128);
+              hash = hash ^ (cur_diff_row[j] + hash_dc_level);
               hash = (uint32_t)((int64_t)hash * 16777619);
             }
           }
