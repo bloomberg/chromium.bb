@@ -6,10 +6,12 @@
 
 #include "build/build_config.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "net/base/escape.h"
 #include "public/platform/Platform.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/Source/platform/blob/BlobData.h"
 #include "third_party/WebKit/Source/platform/clipboard/ClipboardMimeTypes.h"
+#include "third_party/WebKit/Source/platform/wtf/text/StringUTF8Adaptor.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -53,16 +55,21 @@ DragData BuildDragData(const WebDragData& web_drag_data) {
 };
 
 #if !defined(OS_MACOSX)
+String EscapeForHTML(const String& str) {
+  std::string output =
+      net::EscapeForHTML(StringUTF8Adaptor(str).AsStringPiece());
+  return String(output.c_str());
+}
 // TODO(slangley): crbug.com/775830 Remove the implementation of
 // URLToImageMarkup from clipboard_utils.h once we can delete
 // MockWebClipboardImpl.
 WTF::String URLToImageMarkup(const WebURL& url, const WTF::String& title) {
   WTF::String markup("<img src=\"");
-  markup.append(EncodeWithURLEscapeSequences(url.GetString()));
+  markup.append(EscapeForHTML(url.GetString()));
   markup.append("\"");
   if (!title.IsEmpty()) {
     markup.append(" alt=\"");
-    markup.append(EncodeWithURLEscapeSequences(title));
+    markup.append(EscapeForHTML(title));
     markup.append("\"");
   }
   markup.append("/>");
