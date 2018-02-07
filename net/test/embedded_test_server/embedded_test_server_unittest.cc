@@ -243,13 +243,9 @@ TEST_P(EmbeddedTestServerTest, GetURLWithHostname) {
 }
 
 TEST_P(EmbeddedTestServerTest, RegisterRequestHandler) {
-  server_->RegisterRequestHandler(
-      base::Bind(&EmbeddedTestServerTest::HandleRequest,
-                 base::Unretained(this),
-                 "/test",
-                 "<b>Worked!</b>",
-                 "text/html",
-                 HTTP_OK));
+  server_->RegisterRequestHandler(base::BindRepeating(
+      &EmbeddedTestServerTest::HandleRequest, base::Unretained(this), "/test",
+      "<b>Worked!</b>", "text/html", HTTP_OK));
   ASSERT_TRUE(server_->Start());
 
   std::unique_ptr<URLFetcher> fetcher =
@@ -357,27 +353,15 @@ TEST_P(EmbeddedTestServerTest, ConnectionListenerRead) {
 }
 
 TEST_P(EmbeddedTestServerTest, ConcurrentFetches) {
-  server_->RegisterRequestHandler(
-      base::Bind(&EmbeddedTestServerTest::HandleRequest,
-                 base::Unretained(this),
-                 "/test1",
-                 "Raspberry chocolate",
-                 "text/html",
-                 HTTP_OK));
-  server_->RegisterRequestHandler(
-      base::Bind(&EmbeddedTestServerTest::HandleRequest,
-                 base::Unretained(this),
-                 "/test2",
-                 "Vanilla chocolate",
-                 "text/html",
-                 HTTP_OK));
-  server_->RegisterRequestHandler(
-      base::Bind(&EmbeddedTestServerTest::HandleRequest,
-                 base::Unretained(this),
-                 "/test3",
-                 "No chocolates",
-                 "text/plain",
-                 HTTP_NOT_FOUND));
+  server_->RegisterRequestHandler(base::BindRepeating(
+      &EmbeddedTestServerTest::HandleRequest, base::Unretained(this), "/test1",
+      "Raspberry chocolate", "text/html", HTTP_OK));
+  server_->RegisterRequestHandler(base::BindRepeating(
+      &EmbeddedTestServerTest::HandleRequest, base::Unretained(this), "/test2",
+      "Vanilla chocolate", "text/html", HTTP_OK));
+  server_->RegisterRequestHandler(base::BindRepeating(
+      &EmbeddedTestServerTest::HandleRequest, base::Unretained(this), "/test3",
+      "No chocolates", "text/plain", HTTP_NOT_FOUND));
   ASSERT_TRUE(server_->Start());
 
   std::unique_ptr<URLFetcher> fetcher1 =
@@ -476,8 +460,9 @@ TEST_P(EmbeddedTestServerTest, CloseDuringWrite) {
   CancelRequestDelegate cancel_delegate;
   TestURLRequestContext context;
   cancel_delegate.set_cancel_in_response_started(true);
-  server_->RegisterRequestHandler(base::Bind(
-      &HandlePrefixedRequest, "/infinite", base::Bind(&HandleInfiniteRequest)));
+  server_->RegisterRequestHandler(
+      base::BindRepeating(&HandlePrefixedRequest, "/infinite",
+                          base::BindRepeating(&HandleInfiniteRequest)));
   ASSERT_TRUE(server_->Start());
 
   std::unique_ptr<URLRequest> request =
