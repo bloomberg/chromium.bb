@@ -81,11 +81,15 @@ GetAdditionalNavigationRequestClientHintsHeaders(
   // the browser process.
   if (web_client_hints.IsEnabled(
           blink::mojom::WebClientHintsType::kDeviceMemory)) {
+    // Initialize device memory if it's not already.
+    blink::ApproximatedDeviceMemory::Initialize();
+    const float device_memory =
+        blink::ApproximatedDeviceMemory::GetApproximatedDeviceMemory();
+    DCHECK_LT(0.0, device_memory);
     additional_headers->SetHeader(
         blink::kClientHintsHeaderMapping[static_cast<int>(
             blink::mojom::WebClientHintsType::kDeviceMemory)],
-        base::NumberToString(
-            blink::ApproximatedDeviceMemory::GetApproximatedDeviceMemory()));
+        base::NumberToString(device_memory));
   }
 
   // Static assert that triggers if a new client hint header is added. If a new
