@@ -698,7 +698,6 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
       {"displaySource", IDR_DISPLAY_SOURCE_CUSTOM_BINDINGS_JS},
       {"contextMenus", IDR_CONTEXT_MENUS_CUSTOM_BINDINGS_JS},
       {"contextMenusHandlers", IDR_CONTEXT_MENUS_HANDLERS_JS},
-      {"i18n", IDR_I18N_CUSTOM_BINDINGS_JS},
       {"mimeHandlerPrivate", IDR_MIME_HANDLER_PRIVATE_CUSTOM_BINDINGS_JS},
       {"extensions/common/api/mime_handler.mojom", IDR_MIME_HANDLER_MOJOM_JS},
       {"mojoPrivate", IDR_MOJO_PRIVATE_CUSTOM_BINDINGS_JS},
@@ -719,6 +718,7 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
     resources.push_back({"messaging", IDR_MESSAGING_JS});
     resources.push_back({"messaging_utils", IDR_MESSAGING_UTILS_JS});
     resources.push_back({"extension", IDR_EXTENSION_CUSTOM_BINDINGS_JS});
+    resources.push_back({"i18n", IDR_I18N_CUSTOM_BINDINGS_JS});
     resources.push_back({"runtime", IDR_RUNTIME_CUSTOM_BINDINGS_JS});
 
     // Custom types sources.
