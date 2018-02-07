@@ -35,7 +35,7 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
                              public DeviceInfoTracker {
  public:
   DeviceInfoSyncBridge(LocalDeviceInfoProvider* local_device_info_provider,
-                       const ModelTypeStoreFactory& store_factory,
+                       OnceModelTypeStoreFactory store_factory,
                        const ChangeProcessorFactory& change_processor_factory);
   ~DeviceInfoSyncBridge() override;
 

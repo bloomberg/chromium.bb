@@ -1623,13 +1623,13 @@ void ProfileSyncService::SetPlatformSyncAllowedProvider(
 }
 
 // static
-syncer::ModelTypeStoreFactory ProfileSyncService::GetModelTypeStoreFactory(
-    const base::FilePath& base_path) {
+syncer::RepeatingModelTypeStoreFactory
+ProfileSyncService::GetModelTypeStoreFactory(const base::FilePath& base_path) {
   // TODO(skym): Verify using AsUTF8Unsafe is okay here. Should work as long
   // as the Local State file is guaranteed to be UTF-8.
   const std::string path =
       FormatSharedModelTypeStorePath(base_path).AsUTF8Unsafe();
-  return base::Bind(&ModelTypeStore::CreateStore, path);
+  return base::BindRepeating(&ModelTypeStore::CreateStore, path);
 }
 
 void ProfileSyncService::ConfigureDataTypeManager() {

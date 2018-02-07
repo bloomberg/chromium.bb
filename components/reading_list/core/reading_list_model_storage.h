@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_READING_LIST_CORE_READING_LIST_MODEL_STORAGE_H_
 #define COMPONENTS_READING_LIST_CORE_READING_LIST_MODEL_STORAGE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -37,7 +38,7 @@ class ReadingListModelStorage : public syncer::ModelTypeSyncBridge {
   // Sets the model the Storage is backing.
   // This will trigger store initalization and load persistent entries.
   // Pass the |clock| from the |model| to ensure synchroization when loading
-  // entries.
+  // entries. Must be called no more than once.
   virtual void SetReadingListModel(ReadingListModel* model,
                                    ReadingListStoreDelegate* delegate,
                                    base::Clock* clock) = 0;

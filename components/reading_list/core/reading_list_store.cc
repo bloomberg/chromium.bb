@@ -22,10 +22,10 @@
 #include "components/sync/protocol/model_type_state.pb.h"
 
 ReadingListStore::ReadingListStore(
-    StoreFactoryFunction create_store_callback,
+    syncer::OnceModelTypeStoreFactory create_store_callback,
     const ChangeProcessorFactory& change_processor_factory)
     : ReadingListModelStorage(change_processor_factory, syncer::READING_LIST),
-      create_store_callback_(create_store_callback),
+      create_store_callback_(std::move(create_store_callback)),
       pending_transaction_count_(0) {}
 
 ReadingListStore::~ReadingListStore() {
@@ -40,9 +40,10 @@ void ReadingListStore::SetReadingListModel(ReadingListModel* model,
   model_ = model;
   delegate_ = delegate;
   clock_ = clock;
-  create_store_callback_.Run(
-      syncer::READING_LIST,
-      base::Bind(&ReadingListStore::OnStoreCreated, base::AsWeakPtr(this)));
+  std::move(create_store_callback_)
+      .Run(syncer::READING_LIST,
+           base::BindOnce(&ReadingListStore::OnStoreCreated,
+                          base::AsWeakPtr(this)));
 }
 
 std::unique_ptr<ReadingListModelStorage::ScopedBatchUpdate>

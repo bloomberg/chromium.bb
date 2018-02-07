@@ -54,14 +54,14 @@ SyncedPrintersManager* SyncedPrintersManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
   Profile* profile = Profile::FromBrowserContext(browser_context);
 
-  const syncer::ModelTypeStoreFactory& store_factory =
+  syncer::OnceModelTypeStoreFactory store_factory =
       browser_sync::ProfileSyncService::GetModelTypeStoreFactory(
           profile->GetPath());
 
   std::unique_ptr<PrintersSyncBridge> sync_bridge =
       std::make_unique<PrintersSyncBridge>(
-          store_factory, base::BindRepeating(base::IgnoreResult(
-                             &base::debug::DumpWithoutCrashing)));
+          std::move(store_factory), base::BindRepeating(base::IgnoreResult(
+                                        &base::debug::DumpWithoutCrashing)));
 
   return SyncedPrintersManager::Create(profile, std::move(sync_bridge))
       .release();

@@ -60,11 +60,11 @@ std::unique_ptr<KeyedService> ReadingListModelFactory::BuildServiceInstanceFor(
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
 
-  const syncer::ModelTypeStoreFactory& store_factory =
+  syncer::OnceModelTypeStoreFactory store_factory =
       browser_sync::ProfileSyncService::GetModelTypeStoreFactory(
           chrome_browser_state->GetStatePath());
   std::unique_ptr<ReadingListStore> store = std::make_unique<ReadingListStore>(
-      store_factory,
+      std::move(store_factory),
       base::Bind(&syncer::ModelTypeChangeProcessor::Create,
                  base::BindRepeating(&syncer::ReportUnrecoverableError,
                                      GetChannel())));
