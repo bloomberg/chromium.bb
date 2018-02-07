@@ -96,11 +96,6 @@ WebRtcEventLogManager::WebRtcEventLogManager()
 
 WebRtcEventLogManager::~WebRtcEventLogManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  for (RenderProcessHost* host : observed_render_process_hosts_) {
-    host->RemoveObserver(this);
-  }
-
   DCHECK(g_webrtc_event_log_manager);
   g_webrtc_event_log_manager = nullptr;
 }
@@ -110,7 +105,6 @@ void WebRtcEventLogManager::EnableForBrowserContext(
     base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(!browser_context->IsOffTheRecord());
-  // Posting to task queue owned by the unretained object - unretained is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::EnableForBrowserContextInternal,
@@ -123,7 +117,6 @@ void WebRtcEventLogManager::DisableForBrowserContext(
     BrowserContextId browser_context_id,
     base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Posting to task queue owned by the unretained object - unretained is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::DisableForBrowserContextInternal,
@@ -136,17 +129,6 @@ void WebRtcEventLogManager::PeerConnectionAdded(
     int lid,
     base::OnceCallback<void(bool)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
-  auto it = observed_render_process_hosts_.find(host);
-  if (it == observed_render_process_hosts_.end()) {
-    // This is the first PeerConnection which we see that's associated
-    // with this RPH.
-    host->AddObserver(this);
-    observed_render_process_hosts_.insert(host);
-  }
-
-  // Posting to task queue owned by the unretained object - unretained is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::PeerConnectionAddedInternal,
@@ -174,7 +156,6 @@ void WebRtcEventLogManager::PeerConnectionRemoved(
   }
   const BrowserContext* browser_context = host->GetBrowserContext();
 
-  // Posting to task queue owned by the unretained object - unretained is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::PeerConnectionRemovedInternal,
@@ -188,7 +169,6 @@ void WebRtcEventLogManager::EnableLocalLogging(
     base::OnceCallback<void(bool)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!base_path.empty());
-  // Posting to task queue owned by the unretained object - unretained is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::EnableLocalLoggingInternal,
@@ -199,7 +179,6 @@ void WebRtcEventLogManager::EnableLocalLogging(
 void WebRtcEventLogManager::DisableLocalLogging(
     base::OnceCallback<void(bool)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Posting to task queue owned by the unretained object - unretained is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::DisableLocalLoggingInternal,
@@ -219,7 +198,6 @@ void WebRtcEventLogManager::StartRemoteLogging(
     browser_context_id = GetBrowserContextId(browser_context);
   }
 
-  // Posting to task queue owned by the unretained object - unretained is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::StartRemoteLoggingInternal,
@@ -235,7 +213,6 @@ void WebRtcEventLogManager::OnWebRtcEventLogWrite(
     base::OnceCallback<void(std::pair<bool, bool>)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const BrowserContext* browser_context = GetBrowserContext(render_process_id);
-  // Posting to task queue owned by the unretained object - unretained is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::OnWebRtcEventLogWriteInternal,
@@ -248,7 +225,6 @@ void WebRtcEventLogManager::SetLocalLogsObserver(
     WebRtcLocalEventLogsObserver* observer,
     base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Posting to task queue owned by the unretained object - unretained is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::SetLocalLogsObserverInternal,
@@ -259,7 +235,6 @@ void WebRtcEventLogManager::SetRemoteLogsObserver(
     WebRtcRemoteEventLogsObserver* observer,
     base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Posting to task queue owned by the unretained object - unretained is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::SetRemoteLogsObserverInternal,
@@ -276,38 +251,6 @@ scoped_refptr<base::SequencedTaskRunner>&
 WebRtcEventLogManager::GetTaskRunnerForTesting() {
   // Testing function only - threading left for the caller's discretion.
   return task_runner_;
-}
-
-void WebRtcEventLogManager::RenderProcessExited(RenderProcessHost* host,
-                                                base::TerminationStatus status,
-                                                int exit_code) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderProcessHostExitedDestroyed(host);
-}
-
-void WebRtcEventLogManager::RenderProcessHostDestroyed(
-    RenderProcessHost* host) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderProcessHostExitedDestroyed(host);
-}
-
-void WebRtcEventLogManager::RenderProcessHostExitedDestroyed(
-    RenderProcessHost* host) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(host);
-
-  auto it = observed_render_process_hosts_.find(host);
-  if (it == observed_render_process_hosts_.end()) {
-    return;  // We've never seen PeerConnections associated with this RPH.
-  }
-  host->RemoveObserver(this);
-  observed_render_process_hosts_.erase(host);
-
-  // Posting to task queue owned by the unretained object - unretained is safe.
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&WebRtcEventLogManager::RenderProcessExitedInternal,
-                     base::Unretained(this), host->GetID()));
 }
 
 void WebRtcEventLogManager::OnLocalLogStarted(PeerConnectionKey peer_connection,
@@ -505,12 +448,6 @@ void WebRtcEventLogManager::OnWebRtcEventLogWriteInternal(
         base::BindOnce(std::move(reply),
                        std::make_pair(local_result, remote_result)));
   }
-}
-
-void WebRtcEventLogManager::RenderProcessExitedInternal(int render_process_id) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  local_logs_manager_.RenderProcessHostExitedDestroyed(render_process_id);
-  remote_logs_manager_.RenderProcessHostExitedDestroyed(render_process_id);
 }
 
 void WebRtcEventLogManager::SetLocalLogsObserverInternal(
