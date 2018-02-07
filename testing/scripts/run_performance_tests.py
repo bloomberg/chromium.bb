@@ -70,7 +70,6 @@ def main():
       '--isolated-script-test-filter', type=str, required=False)
   parser.add_argument('--xvfb', help='Start xvfb.', action='store_true')
   parser.add_argument('--output-format', action='append')
-  parser.add_argument('--builder', required=True)
   parser.add_argument('--bot', required=True,
                       help='Bot ID to use to determine which tests to run. Will'
                            ' use //tools/perf/core/benchmark_sharding_map.json'
@@ -84,7 +83,7 @@ def main():
 
   with open(sharding_map_path()) as f:
     sharding_map = json.load(f)
-  sharding = sharding_map[args.builder][args.bot]['benchmarks']
+  sharding = sharding_map[args.bot]['benchmarks']
   return_code = 0
 
   for benchmark in sharding:
