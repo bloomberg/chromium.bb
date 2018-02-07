@@ -45,6 +45,7 @@ class HEADLESS_EXPORT VirtualTimeController
     enum class ContinuePolicy {
       CONTINUE_MORE_TIME_NEEDED,
       NOT_REQUIRED,
+      STOP,  // Note STOP trumps CONTINUE_MORE_TIME_NEEDED.
     };
 
     // Called when the tasks's requested virtual time interval has elapsed.
