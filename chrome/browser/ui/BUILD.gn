@@ -453,6 +453,7 @@ split_static_library("ui") {
       "cocoa/passwords/password_prompt_bridge_interface.h",
       "cocoa/passwords/password_prompt_view_bridge.h",
       "cocoa/passwords/password_prompt_view_bridge.mm",
+      "cocoa/passwords/password_prompt_views_mac.mm",
       "cocoa/passwords/passwords_bubble_cocoa.h",
       "cocoa/passwords/passwords_bubble_cocoa.mm",
       "cocoa/passwords/passwords_bubble_controller.h",

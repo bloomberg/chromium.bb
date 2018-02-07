@@ -75,13 +75,3 @@ void PasswordPromptViewBridge::ShowWindow() {
   constrained_window_ =
       CreateAndShowWebModalDialogMac(this, web_contents_, sheet);
 }
-
-AccountChooserPrompt* CreateAccountChooserPromptView(
-    PasswordDialogController* controller, content::WebContents* web_contents) {
-  return new PasswordPromptViewBridge(controller, web_contents);
-}
-
-AutoSigninFirstRunPrompt* CreateAutoSigninPromptView(
-    PasswordDialogController* controller, content::WebContents* web_contents) {
-  return new PasswordPromptViewBridge(controller, web_contents);
-}
