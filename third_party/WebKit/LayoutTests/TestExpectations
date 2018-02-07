@@ -3040,7 +3040,6 @@ crbug.com/774688 [ Mac ] fast/spatial-navigation/snav-container-white-space.html
 
 # Sheriff failures 2017-10-23
 crbug.com/772411 http/tests/media/autoplay-crossorigin.html [ Timeout Failure Pass ]
-crbug.com/777222 http/tests/devtools/change-iframe-src.js [ Pass Failure Timeout ]
 crbug.com/777222 http/tests/devtools/inspect-iframe-from-different-domain.js [ Pass Failure Timeout ]
 
 crbug.com/778745 http/tests/inspector-protocol/cachestorage/read-cached-response.js [ Pass Failure ]
