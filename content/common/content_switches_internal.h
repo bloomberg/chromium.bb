@@ -19,8 +19,6 @@ bool IsPinchToZoomEnabled();
 
 V8CacheOptions GetV8CacheOptions();
 
-ProgressBarCompletion GetProgressBarCompletionPolicy();
-
 SavePreviousDocumentResources GetSavePreviousDocumentResources();
 
 void WaitForDebugger(const std::string& label);

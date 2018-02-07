@@ -87,13 +87,6 @@ enum HistoryScrollRestorationType {
   kScrollRestorationManual
 };
 
-enum class ProgressBarCompletion {
-  kLoadEvent,
-  kResourcesBeforeDCL,
-  kDOMContentLoaded,
-  kResourcesBeforeDCLAndSameOriginIFrames
-};
-
 enum class SavePreviousDocumentResources {
   kNever,
   kUntilOnDOMContentLoaded,

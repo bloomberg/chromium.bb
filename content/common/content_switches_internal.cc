@@ -36,12 +36,6 @@ namespace content {
 
 namespace {
 
-#if defined(ANDROID)
-const base::Feature kProgressBarCompletionResourcesBeforeDOMContentLoaded{
-    "progress-bar-completion-resources-before-domContentLoaded",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 const base::Feature kSavePreviousDocumentResources{
     "SavePreviousDocumentResources", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -93,32 +87,6 @@ V8CacheOptions GetV8CacheOptions() {
   } else {
     return V8_CACHE_OPTIONS_DEFAULT;
   }
-}
-
-ProgressBarCompletion GetProgressBarCompletionPolicy() {
-#if defined(OS_ANDROID)
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  std::string progress_bar_completion =
-      command_line.GetSwitchValueASCII(switches::kProgressBarCompletion);
-  if (progress_bar_completion == "loadEvent")
-    return ProgressBarCompletion::LOAD_EVENT;
-  if (progress_bar_completion == "resourcesBeforeDOMContentLoaded")
-    return ProgressBarCompletion::RESOURCES_BEFORE_DCL;
-  if (progress_bar_completion == "domContentLoaded")
-    return ProgressBarCompletion::DOM_CONTENT_LOADED;
-  if (progress_bar_completion ==
-      "resourcesBeforeDOMContentLoadedAndSameOriginIframes") {
-    return ProgressBarCompletion::RESOURCES_BEFORE_DCL_AND_SAME_ORIGIN_IFRAMES;
-  }
-  // The command line, which is set by the user, takes priority. Otherwise,
-  // fall back to the feature flag.
-  if (!base::FeatureList::IsEnabled(
-          kProgressBarCompletionResourcesBeforeDOMContentLoaded)) {
-    return ProgressBarCompletion::LOAD_EVENT;
-  }
-#endif
-  return ProgressBarCompletion::RESOURCES_BEFORE_DCL;
 }
 
 SavePreviousDocumentResources GetSavePreviousDocumentResources() {

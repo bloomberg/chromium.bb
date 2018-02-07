@@ -35,8 +35,6 @@ class ProgressTrackerTest : public ::testing::Test {
     client_ = new ProgressClient;
     dummy_page_holder_ =
         DummyPageHolder::Create(IntSize(800, 600), nullptr, client_.Get());
-    GetFrame().GetSettings()->SetProgressBarCompletion(
-        ProgressBarCompletion::kResourcesBeforeDCL);
   }
 
   LocalFrame& GetFrame() const { return dummy_page_holder_->GetFrame(); }

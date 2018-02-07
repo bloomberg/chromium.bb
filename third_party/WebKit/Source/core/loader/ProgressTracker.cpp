@@ -147,13 +147,7 @@ void ProgressTracker::WillStartLoading(unsigned long identifier,
                                        ResourceLoadPriority priority) {
   if (!frame_->IsLoading())
     return;
-  // All of the progress bar completion policies besides LoadEvent instead block
-  // on parsing completion, which corresponds to finishing parsing. For those
-  // policies, don't consider resource load that start after DOMContentLoaded
-  // finishes.
-  if (frame_->GetSettings()->GetProgressBarCompletion() !=
-          ProgressBarCompletion::kLoadEvent &&
-      (HaveParsedAndPainted() || priority < ResourceLoadPriority::kHigh))
+  if (HaveParsedAndPainted() || priority < ResourceLoadPriority::kHigh)
     return;
   progress_items_.Set(identifier, std::make_unique<ProgressItem>(
                                       kProgressItemDefaultEstimatedLength));
@@ -207,18 +201,10 @@ void ProgressTracker::MaybeSendProgress() {
   DCHECK_GE(estimated_bytes_for_pending_requests, 0);
   DCHECK_GE(estimated_bytes_for_pending_requests, bytes_received);
 
-  if (HaveParsedAndPainted()) {
-    if (frame_->GetSettings()->GetProgressBarCompletion() ==
-        ProgressBarCompletion::kDOMContentLoaded) {
-      SendFinalProgress();
-      return;
-    }
-    if (frame_->GetSettings()->GetProgressBarCompletion() !=
-            ProgressBarCompletion::kLoadEvent &&
-        estimated_bytes_for_pending_requests == bytes_received) {
-      SendFinalProgress();
-      return;
-    }
+  if (HaveParsedAndPainted() &&
+      estimated_bytes_for_pending_requests == bytes_received) {
+    SendFinalProgress();
+    return;
   }
 
   double percent_of_bytes_received =
@@ -256,15 +242,5 @@ void ProgressTracker::CompleteProgress(unsigned long identifier) {
   item->estimated_length = item->bytes_received;
   MaybeSendProgress();
 }
-
-STATIC_ASSERT_ENUM(WebSettings::ProgressBarCompletion::kLoadEvent,
-                   ProgressBarCompletion::kLoadEvent);
-STATIC_ASSERT_ENUM(WebSettings::ProgressBarCompletion::kResourcesBeforeDCL,
-                   ProgressBarCompletion::kResourcesBeforeDCL);
-STATIC_ASSERT_ENUM(WebSettings::ProgressBarCompletion::kDOMContentLoaded,
-                   ProgressBarCompletion::kDOMContentLoaded);
-STATIC_ASSERT_ENUM(
-    WebSettings::ProgressBarCompletion::kResourcesBeforeDCLAndSameOriginIFrames,
-    ProgressBarCompletion::kResourcesBeforeDCLAndSameOriginIFrames);
 
 }  // namespace blink

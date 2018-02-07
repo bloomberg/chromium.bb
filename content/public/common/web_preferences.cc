@@ -33,17 +33,6 @@ STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_PARSE, WebSettings::kV8CacheOptionsParse);
 STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_CODE, WebSettings::kV8CacheOptionsCode);
 STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_LAST, WebSettings::kV8CacheOptionsCode);
 
-STATIC_ASSERT_ENUM(ProgressBarCompletion::LOAD_EVENT,
-                   WebSettings::ProgressBarCompletion::kLoadEvent);
-STATIC_ASSERT_ENUM(ProgressBarCompletion::RESOURCES_BEFORE_DCL,
-                   WebSettings::ProgressBarCompletion::kResourcesBeforeDCL);
-STATIC_ASSERT_ENUM(ProgressBarCompletion::DOM_CONTENT_LOADED,
-                   WebSettings::ProgressBarCompletion::kDOMContentLoaded);
-STATIC_ASSERT_ENUM(
-    ProgressBarCompletion::RESOURCES_BEFORE_DCL_AND_SAME_ORIGIN_IFRAMES,
-    WebSettings::ProgressBarCompletion::
-        kResourcesBeforeDCLAndSameOriginIFrames);
-
 STATIC_ASSERT_ENUM(SavePreviousDocumentResources::NEVER,
                    WebSettings::SavePreviousDocumentResources::kNever);
 STATIC_ASSERT_ENUM(
@@ -207,7 +196,6 @@ WebPreferences::WebPreferences()
       ignore_main_frame_overflow_hidden_quirk(false),
       report_screen_size_in_physical_pixels_quirk(false),
       resue_global_for_unowned_main_frame(false),
-      progress_bar_completion(ProgressBarCompletion::LOAD_EVENT),
       spellcheck_enabled_by_default(true),
       video_fullscreen_orientation_lock_enabled(false),
       video_rotate_to_fullscreen_enabled(false),

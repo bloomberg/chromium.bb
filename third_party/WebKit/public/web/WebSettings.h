@@ -69,13 +69,6 @@ class WebSettings {
     kV8CacheOptionsCode,
   };
 
-  enum class ProgressBarCompletion {
-    kLoadEvent,
-    kResourcesBeforeDCL,
-    kDOMContentLoaded,
-    kResourcesBeforeDCLAndSameOriginIFrames
-  };
-
   enum class SavePreviousDocumentResources {
     kNever,
     kUntilOnDOMContentLoaded,
@@ -201,7 +194,6 @@ class WebSettings {
   virtual void SetLoadsImagesAutomatically(bool) = 0;
   virtual void SetLoadWithOverviewMode(bool) = 0;
   virtual void SetShouldReuseGlobalForUnownedMainFrame(bool) = 0;
-  virtual void SetProgressBarCompletion(ProgressBarCompletion) = 0;
   virtual void SetSavePreviousDocumentResources(
       SavePreviousDocumentResources) = 0;
   virtual void SetLocalStorageEnabled(bool) = 0;

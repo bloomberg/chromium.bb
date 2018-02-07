@@ -890,9 +890,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.report_screen_size_in_physical_pixels_quirk);
   settings->SetShouldReuseGlobalForUnownedMainFrame(
       prefs.resue_global_for_unowned_main_frame);
-  settings->SetProgressBarCompletion(
-      static_cast<WebSettings::ProgressBarCompletion>(
-          prefs.progress_bar_completion));
   settings->SetPreferHiddenVolumeControls(true);
   settings->SetSpellCheckEnabledByDefault(prefs.spellcheck_enabled_by_default);
 

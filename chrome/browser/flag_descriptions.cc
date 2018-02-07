@@ -2156,22 +2156,6 @@ const char kProgressBarThrottleName[] = "Android progress update throttling.";
 const char kProgressBarThrottleDescription[] =
     "Limit the maximum progress update to make progress appear smoother.";
 
-const char kProgressBarCompletionName[] =
-    "Android phone page load progress bar completion time.";
-const char kProgressBarCompletionDescription[] =
-    "Configures Android phone page loading progress bar completion time.";
-const char kProgressBarCompletionLoadEvent[] =
-    R"*(Top loading frame's onload event ("everything" is done in the )*"
-    R"*(page, historical behavior).)*";
-const char kProgressBarCompletionResourcesBeforeDcl[] =
-    "Main frame's domContentLoaded and all resources loads started before "
-    "domContentLoaded (iframes ignored).";
-const char kProgressBarCompletionDomContentLoaded[] =
-    "Main frame's domContentLoaded (iframes ignored).";
-const char kProgressBarCompletionResourcesBeforeDclAndSameOriginIframes[] =
-    "domContentLoaded and all resources loads started before domContentLoaded "
-    "(main frame and same origin iframes).";
-
 const char kPullToRefreshEffectName[] = "The pull-to-refresh effect";
 const char kPullToRefreshEffectDescription[] =
     "Page reloads triggered by vertically overscrolling content.";
