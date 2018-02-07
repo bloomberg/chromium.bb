@@ -8,11 +8,9 @@ namespace app_list {
 
 WebstoreInstaller::WebstoreInstaller(const std::string& webstore_item_id,
                                      Profile* profile,
-                                     gfx::NativeWindow parent_window,
                                      const Callback& callback)
     : WebstoreInstallWithPrompt(webstore_item_id,
                                 profile,
-                                parent_window,
                                 callback) {
   set_install_source(
       extensions::WebstoreInstaller::INSTALL_SOURCE_APP_LAUNCHER);

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_ASH_APP_LIST_APP_LIST_CONTROLLER_ASH_H_
 #define CHROME_BROWSER_UI_ASH_APP_LIST_APP_LIST_CONTROLLER_ASH_H_
 
+#include <string>
+
 #include "ash/public/cpp/shelf_types.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -20,8 +22,8 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   ~AppListControllerDelegateAsh() override;
 
   // AppListControllerDelegate overrides:
+  int64_t GetAppListDisplayId() override;
   void DismissView() override;
-  gfx::NativeWindow GetAppListWindow() override;
   gfx::Rect GetAppInfoDialogBounds() override;
   bool IsAppPinned(const std::string& app_id) override;
   bool IsAppOpen(const std::string& app_id) const override;

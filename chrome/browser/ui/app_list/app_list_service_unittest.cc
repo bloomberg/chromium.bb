@@ -63,8 +63,6 @@ class TestingAppListServiceImpl : public AppListServiceImpl {
 
   bool IsAppListVisible() const override { return !!showing_for_profile_; }
 
-  gfx::NativeWindow GetAppListWindow() override { return NULL; }
-
   AppListControllerDelegate* GetControllerDelegate() override { return NULL; }
 
   // AppListServiceImpl overrides:

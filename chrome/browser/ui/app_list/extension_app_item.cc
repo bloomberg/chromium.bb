@@ -105,8 +105,7 @@ bool ExtensionAppItem::RunExtensionEnableFlow() {
 
     extension_enable_flow_.reset(new ExtensionEnableFlow(
         profile(), extension_id(), this));
-    extension_enable_flow_->StartForNativeWindow(
-        extension_enable_flow_controller_->GetAppListWindow());
+    extension_enable_flow_->StartForNativeWindow(nullptr);
   }
   return true;
 }

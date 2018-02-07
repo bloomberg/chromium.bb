@@ -170,10 +170,6 @@ void AppListServiceAsh::DismissAppList() {
 void AppListServiceAsh::EnableAppList(Profile* initial_profile,
                                       AppListEnableSource enable_source) {}
 
-gfx::NativeWindow AppListServiceAsh::GetAppListWindow() {
-  return app_list_presenter_->GetWindow();
-}
-
 Profile* AppListServiceAsh::GetCurrentAppListProfile() {
   return ChromeLauncherController::instance()->profile();
 }

@@ -123,8 +123,7 @@ class EnableViaPrompt : public ExtensionEnableFlowDelegate {
 
   void Run() {
     flow_.reset(new ExtensionEnableFlow(profile_, extension_id_, this));
-    flow_->StartForCurrentlyNonexistentWindow(
-        base::Callback<gfx::NativeWindow(void)>());
+    flow_->Start();
   }
 
  private:

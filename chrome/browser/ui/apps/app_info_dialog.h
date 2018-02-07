@@ -7,7 +7,6 @@
 
 #include "base/callback_forward.h"
 #include "chrome/common/features.h"
-#include "ui/gfx/native_widget_types.h"
 
 class Profile;
 
@@ -37,9 +36,8 @@ bool CanShowAppInfoDialog();
 
 #if BUILDFLAG(ENABLE_APP_LIST)
 // Shows the chrome app information as a frameless window for the given |app|
-// and |profile| at the given |app_list_bounds|. Appears 'inside' the app list.
-void ShowAppInfoInAppList(gfx::NativeWindow parent,
-                          const gfx::Rect& app_list_bounds,
+// and |profile| at the given |app_info_bounds|.
+void ShowAppInfoInAppList(const gfx::Rect& app_info_bounds,
                           Profile* profile,
                           const extensions::Extension* app,
                           const base::Closure& close_callback);

@@ -14,12 +14,11 @@ TestAppListControllerDelegate::TestAppListControllerDelegate() {
 TestAppListControllerDelegate::~TestAppListControllerDelegate() {
 }
 
-void TestAppListControllerDelegate::DismissView() {
+int64_t TestAppListControllerDelegate::GetAppListDisplayId() {
+  return 0;
 }
 
-gfx::NativeWindow TestAppListControllerDelegate::GetAppListWindow() {
-  return nullptr;
-}
+void TestAppListControllerDelegate::DismissView() {}
 
 bool TestAppListControllerDelegate::IsAppPinned(const std::string& app_id) {
   return false;

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <vector>
 
 #include "base/bind.h"
@@ -173,13 +174,9 @@ void WebstoreResult::StartInstall() {
   SetPercentDownloaded(0);
   SetIsInstalling(true);
 
-  scoped_refptr<WebstoreInstaller> installer =
-      new WebstoreInstaller(
-          app_id_,
-          profile_,
-          controller_->GetAppListWindow(),
-          base::Bind(&WebstoreResult::InstallCallback,
-                     weak_factory_.GetWeakPtr()));
+  scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
+      app_id_, profile_,
+      base::Bind(&WebstoreResult::InstallCallback, weak_factory_.GetWeakPtr()));
   installer->BeginInstall();
 }
 

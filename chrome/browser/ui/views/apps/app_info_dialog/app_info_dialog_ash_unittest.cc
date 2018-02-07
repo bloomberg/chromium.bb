@@ -37,7 +37,7 @@ class AppInfoDialogAshTest : public ash::AshTestBase {
     widget_ = views::DialogDelegate::CreateDialogWidget(
         new views::DialogDelegateView(), CurrentContext(), NULL);
     dialog_ = new AppInfoDialog(
-        widget_->GetNativeWindow(), extension_environment_.profile(),
+        extension_environment_.profile(),
         extension_environment_.MakePackagedApp(kTestExtensionId, true).get());
     widget_->GetContentsView()->AddChildView(dialog_);
     widget_->Show();

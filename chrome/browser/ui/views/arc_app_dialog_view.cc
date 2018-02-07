@@ -10,11 +10,11 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/native_window_tracker.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -87,11 +87,6 @@ class ArcAppDialogView : public views::DialogDelegateView,
 
   AppListControllerDelegate* controller_;
 
-  gfx::NativeWindow parent_;
-
-  // Tracks whether |parent_| got destroyed.
-  std::unique_ptr<NativeWindowTracker> parent_window_tracker_;
-
   const std::string app_id_;
   const base::string16 window_title_;
   const base::string16 confirm_button_text_;
@@ -121,9 +116,6 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
       cancel_button_text_(cancel_button_text),
       confirm_callback_(confirm_callback) {
   DCHECK(controller);
-  parent_ = controller_->GetAppListWindow();
-  if (parent_)
-    parent_window_tracker_ = NativeWindowTracker::Create(parent_);
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
@@ -158,7 +150,6 @@ ArcAppDialogView::ArcAppDialogView(Profile* profile,
 }
 
 ArcAppDialogView::~ArcAppDialogView() {
-  DCHECK_EQ(this, g_current_arc_app_dialog_view);
   g_current_arc_app_dialog_view = nullptr;
 }
 
@@ -222,7 +213,8 @@ void ArcAppDialogView::Show() {
   initial_setup_ = false;
 
   // The parent window was killed before the icon was loaded.
-  if (parent_ && parent_window_tracker_->WasNativeWindowClosed()) {
+  if (!AppListService::Get()->IsAppListVisible()) {
+    g_current_arc_app_dialog_view = nullptr;
     Cancel();
     DialogDelegateView::DeleteDelegate();
     return;
@@ -232,7 +224,7 @@ void ArcAppDialogView::Show() {
     controller_->OnShowChildDialog();
 
   g_current_arc_app_dialog_view = this;
-  constrained_window::CreateBrowserModalDialogViews(this, parent_)->Show();
+  constrained_window::CreateBrowserModalDialogViews(this, nullptr)->Show();
 }
 
 }  // namespace

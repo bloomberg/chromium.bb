@@ -63,7 +63,6 @@ class AppListServiceDisabled : public AppListService {
   bool IsAppListVisible() const override { return false; }
   void EnableAppList(Profile* initial_profile,
                      AppListEnableSource enable_source) override {}
-  gfx::NativeWindow GetAppListWindow() override { return nullptr; }
   AppListControllerDelegate* GetControllerDelegate() override {
     return nullptr;
   }

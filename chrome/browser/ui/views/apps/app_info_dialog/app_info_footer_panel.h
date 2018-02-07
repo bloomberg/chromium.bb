@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_panel.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/button.h"
 
 class Profile;
@@ -33,9 +32,7 @@ class AppInfoFooterPanel
       public extensions::ExtensionUninstallDialog::Delegate,
       public base::SupportsWeakPtr<AppInfoFooterPanel> {
  public:
-  AppInfoFooterPanel(gfx::NativeWindow parent_window,
-                     Profile* profile,
-                     const extensions::Extension* app);
+  AppInfoFooterPanel(Profile* profile, const extensions::Extension* app);
   ~AppInfoFooterPanel() override;
 
  private:
@@ -72,8 +69,6 @@ class AppInfoFooterPanel
   // Uninstall the app. Must only be called if CanUninstallApp() returns true.
   void UninstallApp();
   bool CanUninstallApp() const;
-
-  gfx::NativeWindow parent_window_;
 
   // UI elements on the dialog. Elements are NULL if they are not displayed.
   views::View* create_shortcuts_button_;
