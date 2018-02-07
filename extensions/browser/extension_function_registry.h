@@ -7,14 +7,14 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
+#include "base/macros.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 
 class ExtensionFunction;
 
 // A factory function for creating new ExtensionFunction instances.
-typedef ExtensionFunction* (*ExtensionFunctionFactory)();
+using ExtensionFunctionFactory = ExtensionFunction* (*)();
 
 // Template for defining ExtensionFunctionFactory.
 template <class T>
@@ -28,7 +28,7 @@ class ExtensionFunctionRegistry {
  public:
   struct FactoryEntry {
    public:
-    explicit FactoryEntry();
+    FactoryEntry();
     constexpr FactoryEntry(
         ExtensionFunctionFactory factory,
         const char* function_name,
@@ -37,14 +37,15 @@ class ExtensionFunctionRegistry {
           function_name_(function_name),
           histogram_value_(histogram_value) {}
 
-    ExtensionFunctionFactory factory_;
-    const char* function_name_;
-    extensions::functions::HistogramValue histogram_value_;
+    ExtensionFunctionFactory factory_ = nullptr;
+    const char* function_name_ = nullptr;
+    extensions::functions::HistogramValue histogram_value_ =
+        extensions::functions::UNKNOWN;
   };
 
   static ExtensionFunctionRegistry* GetInstance();
-  explicit ExtensionFunctionRegistry();
-  virtual ~ExtensionFunctionRegistry();
+  ExtensionFunctionRegistry();
+  ~ExtensionFunctionRegistry();
 
   // Allows overriding of specific functions for testing.  Functions must be
   // previously registered.  Returns true if successful.
@@ -54,6 +55,7 @@ class ExtensionFunctionRegistry {
   // Factory method for the ExtensionFunction registered as 'name'.
   ExtensionFunction* NewFunction(const std::string& name);
 
+  // Registers a new extension function. This will override any existing entry.
   void Register(const FactoryEntry& entry);
   template <class T>
   void RegisterFunction() {
@@ -61,8 +63,11 @@ class ExtensionFunctionRegistry {
                           T::histogram_value()));
   }
 
+ private:
   typedef std::map<std::string, FactoryEntry> FactoryMap;
   FactoryMap factories_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionFunctionRegistry);
 };
 
 #endif  // EXTENSIONS_BROWSER_EXTENSION_FUNCTION_REGISTRY_H_
