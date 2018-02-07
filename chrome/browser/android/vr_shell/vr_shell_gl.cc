@@ -298,8 +298,11 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
   std::string render_path_string = base::GetFieldTrialParamValueByFeature(
       features::kWebXrRenderPath, features::kWebXrRenderPathParamName);
   DVLOG(1) << __FUNCTION__ << ": WebXrRenderPath=" << render_path_string;
-  if (render_path_string == features::kWebXrRenderPathParamValueGpuFence) {
-    // TODO(https://crbug.com/760389): force this on for S8 via whitelist?
+  if (render_path_string == features::kWebXrRenderPathParamValueClientWait) {
+    // Use the baseline kClientWait.
+  } else {
+    // Default aka features::kWebXrRenderPathParamValueGpuFence.
+    // Use kGpuFence if it is supported. If not, use baseline kClientWait.
     if (gl::GLFence::IsGpuFenceSupported()) {
       webvr_use_gpu_fence_ = true;
       render_path = VrMetricsUtil::XRRenderPath::kGpuFence;
@@ -1096,11 +1099,26 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
   } else {
     submit_head_pose = render_info_primary_.head_pose;
   }
-  if (ShouldDrawWebVr() && surfaceless_rendering_ && !webvr_use_gpu_fence_) {
-    // Continue with submit once a GL fence signals that current drawing
-    // operations have completed.
-    std::unique_ptr<gl::GLFenceEGL> fence = gl::GLFenceEGL::Create();
-    DCHECK(fence);
+  std::unique_ptr<gl::GLFenceEGL> fence = nullptr;
+  if (ShouldDrawWebVr() && surfaceless_rendering_) {
+    if (webvr_use_gpu_fence_) {
+      // Continue with submit once the previous frame's GL fence signals that
+      // it is done rendering. This avoids blocking in GVR's Submit. Fence is
+      // null for the first frame, in that case the fence wait is skipped.
+      fence.reset(webvr_prev_frame_completion_fence_.release());
+      if (fence && fence->HasCompleted()) {
+        // The fence had already signaled, so we don't know how long ago
+        // rendering had finished. We can submit immediately.
+        AddWebVrRenderTimeEstimate(frame_index, false);
+        fence = nullptr;
+      }
+    } else {
+      // Continue with submit once a GL fence signals that current drawing
+      // operations have completed.
+      fence = gl::GLFenceEGL::Create();
+    }
+  }
+  if (fence) {
     webvr_delayed_frame_submit_.Reset(base::Bind(
         &VrShellGl::DrawFrameSubmitWhenReady, base::Unretained(this)));
     task_runner_->PostTask(
@@ -1131,27 +1149,29 @@ void VrShellGl::DrawFrameSubmitWhenReady(
     }
   }
 
+  if (fence && webvr_use_gpu_fence_) {
+    // We were waiting for the fence, so the time now is the actual
+    // finish time for the previous frame's rendering.
+    AddWebVrRenderTimeEstimate(frame_index, true);
+  }
+
   webvr_delayed_frame_submit_.Cancel();
   DrawFrameSubmitNow(frame_index, head_pose);
 }
 
-void VrShellGl::AddWebVrRenderTimeEstimate(int16_t frame_index,
-                                           base::TimeTicks submit_start,
-                                           base::TimeTicks submit_done) {
-  base::TimeDelta submit_elapsed = submit_done - submit_start;
-
+void VrShellGl::AddWebVrRenderTimeEstimate(int16_t frame_index, bool did_wait) {
   int16_t prev_idx =
       (frame_index + kPoseRingBufferSize - 1) % kPoseRingBufferSize;
   base::TimeTicks prev_js_submit = webvr_time_js_submit_[prev_idx];
   if (webvr_use_gpu_fence_ && !prev_js_submit.is_null()) {
     // If we don't wait for rendering to complete, estimate render time for the
-    // *previous* frame based on GVR timing.
-    if (submit_elapsed > base::TimeDelta::FromMilliseconds(2)) {
-      // Submit was slow, assume this is the true render time.
-      base::TimeDelta prev_render_delta = submit_done - prev_js_submit;
-      webvr_render_time_.AddSample(prev_render_delta);
+    // *previous* frame based on fence completion wait time.
+    if (did_wait) {
+      // Fence wasn't complete, we waited for rendering to finish.
+      base::TimeDelta prev_render = base::TimeTicks::Now() - prev_js_submit;
+      webvr_render_time_.AddSample(prev_render);
     } else {
-      // Submit didn't block. True completion time could have been anywhere
+      // Fence was already done. True completion time could have been anywhere
       // between the last GVR submit and now. Just decay the average down a
       // bit. We could try to estimate based on the difference between
       // submit_start and prev_js_submit, but that tends to be an
@@ -1177,7 +1197,6 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
     acquired_frame_.Submit(*buffer_viewport_list_, mat);
     base::TimeTicks submit_done = base::TimeTicks::Now();
     webvr_submit_time_.AddSample(submit_done - submit_start);
-    AddWebVrRenderTimeEstimate(frame_index, submit_start, submit_done);
     CHECK(!acquired_frame_);
   }
 
@@ -1194,6 +1213,9 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
   // buffers.
   if (submit_client_) {
     if (webvr_use_gpu_fence_) {
+      // Save a fence for local completion checking.
+      webvr_prev_frame_completion_fence_ = gl::GLFenceEGL::Create();
+
       // Make a GpuFence and pass it to the Renderer for sequencing frames.
       std::unique_ptr<gl::GLFence> gl_fence = gl::GLFence::CreateForGpuFence();
       std::unique_ptr<gfx::GpuFence> gpu_fence = gl_fence->GetGpuFence();
@@ -1466,13 +1488,13 @@ bool VrShellGl::ShouldSkipVSync() {
       mean_render_time - (base::TimeTicks::Now() - prev_js_submit);
   base::TimeDelta mean_js_time = webvr_js_time_.GetAverage();
   base::TimeDelta mean_js_wait = webvr_js_wait_time_.GetAverage();
-  base::TimeDelta mean_gvr_wait = webvr_submit_time_.GetAverage();
   // We don't want the next frame to arrive too early. Estimated
   // time-to-new-frame is the net JavaScript time (not counting time spent
-  // waiting) plus the net render time (not counting time blocked in submit).
+  // waiting) plus the net render time.
+  //
   // Ideally we'd want the new frame to be ready one vsync interval after the
   // current frame finishes rendering, but allow being a half vsync early.
-  if (mean_js_time - mean_js_wait + mean_render_time - mean_gvr_wait <
+  if (mean_js_time - mean_js_wait + mean_render_time <
       prev_render_time_left + frame_interval / 2) {
     return true;
   }

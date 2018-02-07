@@ -175,9 +175,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void OnWebVrFrameTimedOut();
 
   base::TimeDelta GetPredictedFrameTime();
-  void AddWebVrRenderTimeEstimate(int16_t frame_index,
-                                  base::TimeTicks submit_start,
-                                  base::TimeTicks submit_done);
+  void AddWebVrRenderTimeEstimate(int16_t frame_index, bool did_wait);
 
   void OnVSync(base::TimeTicks frame_time);
 
@@ -229,6 +227,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   int premature_received_frames_ = 0;
   base::queue<uint16_t> pending_frames_;
   std::unique_ptr<MailboxToSurfaceBridge> mailbox_bridge_;
+
+  // A fence used to avoid overstuffed GVR buffers in WebVR mode.
+  std::unique_ptr<gl::GLFenceEGL> webvr_prev_frame_completion_fence_;
 
   // The default size for the render buffers.
   gfx::Size render_size_default_;
