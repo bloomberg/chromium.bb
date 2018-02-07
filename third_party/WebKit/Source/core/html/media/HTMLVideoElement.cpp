@@ -387,9 +387,10 @@ bool HTMLVideoElement::HasAvailableVideoFrame() const {
   if (!GetWebMediaPlayer())
     return false;
 
+  // The ready state maximum is used here instead of the current ready state
+  // since a frame is still available during a seek.
   return GetWebMediaPlayer()->HasVideo() &&
-         GetWebMediaPlayer()->GetReadyState() >=
-             WebMediaPlayer::kReadyStateHaveCurrentData;
+         ready_state_maximum_ >= kHaveCurrentData;
 }
 
 void HTMLVideoElement::webkitEnterFullscreen() {
