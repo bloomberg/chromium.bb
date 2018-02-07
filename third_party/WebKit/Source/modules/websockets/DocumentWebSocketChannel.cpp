@@ -480,7 +480,9 @@ void DocumentWebSocketChannel::ProcessSendQueue() {
                      message->text.length(), &consumed_buffered_amount);
         break;
       case kMessageTypeBlob:
-        DCHECK(!blob_loader_);
+        CHECK(!blob_loader_);
+        CHECK(message);
+        CHECK(message->blob_data_handle);
         blob_loader_ = new BlobLoader(message->blob_data_handle, this);
         break;
       case kMessageTypeArrayBuffer:
