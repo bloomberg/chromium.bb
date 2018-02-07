@@ -7,7 +7,7 @@
 
 [
     OriginTrialEnabled=Sensor,
-    Constructor(optional SensorOptions sensorOptions),
+    Constructor(optional SpatialSensorOptions sensorOptions),
     ConstructorCallWith=ExecutionContext,
     SecureContext,
     RaisesException=Constructor,

@@ -5,11 +5,15 @@
 #include "modules/sensor/SensorProxy.h"
 
 #include "core/frame/LocalFrame.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "modules/sensor/SensorProviderProxy.h"
+#include "modules/sensor/SensorReadingRemapper.h"
+#include "platform/LayoutTestSupport.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
+#include "public/platform/WebScreenInfo.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 
@@ -100,6 +104,18 @@ void SensorProxy::Resume() {
   sensor_->Resume();
   suspended_ = false;
   UpdatePollingStatus();
+}
+
+const device::SensorReading& SensorProxy::GetReading(bool remapped) const {
+  if (remapped) {
+    if (remapped_reading_.timestamp() != reading_.timestamp()) {
+      remapped_reading_ = reading_;
+      SensorReadingRemapper::RemapToScreenCoords(
+          type_, GetScreenOrientationAngle(), &remapped_reading_);
+    }
+    return remapped_reading_;
+  }
+  return reading_;
 }
 
 const SensorConfiguration* SensorProxy::DefaultConfig() const {
@@ -239,6 +255,17 @@ void SensorProxy::OnPollingTimer(TimerBase*) {
 
 bool SensorProxy::ShouldProcessReadings() const {
   return IsInitialized() && !suspended_ && !active_frequencies_.IsEmpty();
+}
+
+uint16_t SensorProxy::GetScreenOrientationAngle() const {
+  DCHECK(IsInitialized());
+  if (LayoutTestSupport::IsRunningLayoutTest()) {
+    // Simulate that the device is turned 90 degrees on the right.
+    // 'orientation_angle' must be 270 as per
+    // https://w3c.github.io/screen-orientation/#dfn-update-the-orientation-information.
+    return 270;
+  }
+  return GetPage()->GetChromeClient().GetScreenInfo().orientation_angle;
 }
 
 void SensorProxy::UpdatePollingStatus() {

@@ -38,7 +38,7 @@ Sensor::Sensor(ExecutionContext* execution_context,
                device::mojom::blink::SensorType type,
                const Vector<FeaturePolicyFeature>& features)
     : ContextLifecycleObserver(execution_context),
-      sensor_options_(sensor_options),
+      frequency_(0.0),
       type_(type),
       state_(SensorState::kIdle),
       last_reported_timestamp_(0.0) {
@@ -54,12 +54,12 @@ Sensor::Sensor(ExecutionContext* execution_context,
   }
 
   // Check the given frequency value.
-  if (sensor_options_.hasFrequency()) {
-    double frequency = sensor_options_.frequency();
+  if (sensor_options.hasFrequency()) {
+    frequency_ = sensor_options.frequency();
     const double max_allowed_frequency =
         device::GetSensorMaxAllowedFrequency(type_);
-    if (frequency > max_allowed_frequency) {
-      sensor_options_.setFrequency(max_allowed_frequency);
+    if (frequency_ > max_allowed_frequency) {
+      frequency_ = max_allowed_frequency;
       String message = String::Format(
           "Maximum allowed frequency value for this sensor type is %.0f Hz.",
           max_allowed_frequency);
@@ -68,6 +68,19 @@ Sensor::Sensor(ExecutionContext* execution_context,
       execution_context->AddConsoleMessage(console_message);
     }
   }
+}
+
+Sensor::Sensor(ExecutionContext* execution_context,
+               const SpatialSensorOptions& options,
+               ExceptionState& exception_state,
+               device::mojom::blink::SensorType sensor_type,
+               const Vector<FeaturePolicyFeature>& features)
+    : Sensor(execution_context,
+             static_cast<const SensorOptions&>(options),
+             exception_state,
+             sensor_type,
+             features) {
+  use_screen_coords_ = (options.referenceFrame() == "screen");
 }
 
 Sensor::~Sensor() = default;
@@ -95,7 +108,7 @@ bool Sensor::hasReading() const {
   if (!IsActivated())
     return false;
   DCHECK(sensor_proxy_);
-  return sensor_proxy_->reading().timestamp() != 0.0;
+  return sensor_proxy_->GetReading().timestamp() != 0.0;
 }
 
 DOMHighResTimeStamp Sensor::timestamp(ScriptState* script_state,
@@ -118,11 +131,11 @@ DOMHighResTimeStamp Sensor::timestamp(ScriptState* script_state,
 
   if (LayoutTestSupport::IsRunningLayoutTest()) {
     // In layout tests Performance.now() * 0.001 is passed to the shared buffer.
-    return sensor_proxy_->reading().timestamp() * 1000;
+    return sensor_proxy_->GetReading().timestamp() * 1000;
   }
 
   return performance->MonotonicTimeToDOMHighResTimeStamp(
-      TimeTicksFromSeconds(sensor_proxy_->reading().timestamp()));
+      TimeTicksFromSeconds(sensor_proxy_->GetReading().timestamp()));
 }
 
 void Sensor::Trace(blink::Visitor* visitor) {
@@ -145,16 +158,14 @@ auto Sensor::CreateSensorConfig() -> SensorConfigurationPtr {
   double minimum_frequency = sensor_proxy_->FrequencyLimits().first;
   double maximum_frequency = sensor_proxy_->FrequencyLimits().second;
 
-  double frequency = sensor_options_.hasFrequency()
-                         ? sensor_options_.frequency()
-                         : default_frequency;
+  if (frequency_ == 0.0)  // i.e. was never set.
+    frequency_ = default_frequency;
+  if (frequency_ > maximum_frequency)
+    frequency_ = maximum_frequency;
+  if (frequency_ < minimum_frequency)
+    frequency_ = minimum_frequency;
 
-  if (frequency > maximum_frequency)
-    frequency = maximum_frequency;
-  if (frequency < minimum_frequency)
-    frequency = minimum_frequency;
-
-  result->frequency = frequency;
+  result->frequency = frequency_;
   return result;
 }
 
@@ -195,7 +206,7 @@ void Sensor::OnSensorReadingChanged() {
     return;
 
   double elapsedTime =
-      sensor_proxy_->reading().timestamp() - last_reported_timestamp_;
+      sensor_proxy_->GetReading().timestamp() - last_reported_timestamp_;
   DCHECK_GT(elapsedTime, 0.0);
 
   DCHECK_GT(configuration_->frequency, 0.0);
@@ -323,7 +334,7 @@ void Sensor::HandleError(ExceptionCode code,
 
 void Sensor::NotifyReading() {
   DCHECK_EQ(state_, SensorState::kActivated);
-  last_reported_timestamp_ = sensor_proxy_->reading().timestamp();
+  last_reported_timestamp_ = sensor_proxy_->GetReading().timestamp();
   DispatchEvent(Event::Create(EventTypeNames::reading));
 }
 
@@ -352,6 +363,11 @@ void Sensor::NotifyError(DOMException* error) {
 bool Sensor::IsIdleOrErrored() const {
   return (state_ == SensorState::kIdle) ||
          pending_error_notification_.IsActive();
+}
+
+const device::SensorReading& Sensor::GetReading() const {
+  DCHECK(sensor_proxy_);
+  return sensor_proxy_->GetReading(use_screen_coords_);
 }
 
 }  // namespace blink

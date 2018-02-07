@@ -14,7 +14,7 @@ class LinearAccelerationSensor final : public Accelerometer {
 
  public:
   static LinearAccelerationSensor* Create(ExecutionContext*,
-                                          const SensorOptions&,
+                                          const SpatialSensorOptions&,
                                           ExceptionState&);
   static LinearAccelerationSensor* Create(ExecutionContext*, ExceptionState&);
 
@@ -22,7 +22,7 @@ class LinearAccelerationSensor final : public Accelerometer {
 
  private:
   LinearAccelerationSensor(ExecutionContext*,
-                           const SensorOptions&,
+                           const SpatialSensorOptions&,
                            ExceptionState&);
 };
 

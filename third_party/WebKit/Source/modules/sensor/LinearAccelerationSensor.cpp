@@ -10,7 +10,7 @@ namespace blink {
 
 LinearAccelerationSensor* LinearAccelerationSensor::Create(
     ExecutionContext* execution_context,
-    const SensorOptions& options,
+    const SpatialSensorOptions& options,
     ExceptionState& exception_state) {
   return new LinearAccelerationSensor(execution_context, options,
                                       exception_state);
@@ -20,12 +20,12 @@ LinearAccelerationSensor* LinearAccelerationSensor::Create(
 LinearAccelerationSensor* LinearAccelerationSensor::Create(
     ExecutionContext* execution_context,
     ExceptionState& exception_state) {
-  return Create(execution_context, SensorOptions(), exception_state);
+  return Create(execution_context, SpatialSensorOptions(), exception_state);
 }
 
 LinearAccelerationSensor::LinearAccelerationSensor(
     ExecutionContext* execution_context,
-    const SensorOptions& options,
+    const SpatialSensorOptions& options,
     ExceptionState& exception_state)
     : Accelerometer(execution_context,
                     options,
