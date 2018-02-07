@@ -26,6 +26,7 @@
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
+#include "ui/base/ui_features.h"
 
 namespace {
 
@@ -44,10 +45,18 @@ int GetNotificationTypeForAction(const ExtensionAction& extension_action) {
 
 // static
 std::unique_ptr<ExtensionActionPlatformDelegate>
-ExtensionActionPlatformDelegate::Create(
+ExtensionActionPlatformDelegate::CreateCocoa(
     ExtensionActionViewController* controller) {
   return base::WrapUnique(new ExtensionActionPlatformDelegateCocoa(controller));
 }
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+std::unique_ptr<ExtensionActionPlatformDelegate>
+ExtensionActionPlatformDelegate::Create(
+    ExtensionActionViewController* controller) {
+  return CreateCocoa(controller);
+}
+#endif
 
 ExtensionActionPlatformDelegateCocoa::ExtensionActionPlatformDelegateCocoa(
     ExtensionActionViewController* controller)

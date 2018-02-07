@@ -21,6 +21,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/ui_features.h"
 
 namespace {
 
@@ -232,7 +233,7 @@ void SigninViewControllerDelegateMac::CleanupAndDeleteThis() {
 
 // static
 SigninViewControllerDelegate*
-SigninViewControllerDelegate::CreateModalSigninDelegate(
+SigninViewControllerDelegate::CreateModalSigninDelegateCocoa(
     SigninViewController* signin_view_controller,
     profiles::BubbleViewMode mode,
     Browser* browser,
@@ -247,7 +248,7 @@ SigninViewControllerDelegate::CreateModalSigninDelegate(
 
 // static
 SigninViewControllerDelegate*
-SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
+SigninViewControllerDelegate::CreateSyncConfirmationDelegateCocoa(
     SigninViewController* signin_view_controller,
     Browser* browser) {
   return new SigninViewControllerDelegateMac(
@@ -263,7 +264,7 @@ SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
 
 // static
 SigninViewControllerDelegate*
-SigninViewControllerDelegate::CreateSigninErrorDelegate(
+SigninViewControllerDelegate::CreateSigninErrorDelegateCocoa(
     SigninViewController* signin_view_controller,
     Browser* browser) {
   return new SigninViewControllerDelegateMac(
@@ -272,3 +273,29 @@ SigninViewControllerDelegate::CreateSigninErrorDelegate(
       browser, NSMakeRect(0, 0, kModalDialogWidth, kSigninErrorDialogHeight),
       ui::MODAL_TYPE_WINDOW, true /* wait_for_size */);
 }
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+SigninViewControllerDelegate*
+SigninViewControllerDelegate::CreateModalSigninDelegate(
+    SigninViewController* signin_view_controller,
+    profiles::BubbleViewMode mode,
+    Browser* browser,
+    signin_metrics::AccessPoint access_point) {
+  return CreateModalSigninDelegateCocoa(signin_view_controller, mode, browser,
+                                        access_point);
+}
+
+SigninViewControllerDelegate*
+SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
+    SigninViewController* signin_view_controller,
+    Browser* browser) {
+  return CreateSyncConfirmationDelegateCocoa(signin_view_controller, browser);
+}
+
+SigninViewControllerDelegate*
+SigninViewControllerDelegate::CreateSigninErrorDelegate(
+    SigninViewController* signin_view_controller,
+    Browser* browser) {
+  return CreateSigninErrorDelegateCocoa(signin_view_controller, browser);
+}
+#endif

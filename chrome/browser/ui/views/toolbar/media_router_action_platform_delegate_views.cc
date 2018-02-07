@@ -5,13 +5,19 @@
 #include "chrome/browser/ui/views/toolbar/media_router_action_platform_delegate_views.h"
 
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 
 // static
 std::unique_ptr<MediaRouterActionPlatformDelegate>
 MediaRouterActionPlatformDelegate::Create(Browser* browser) {
+#if defined(OS_MACOSX)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return CreateCocoa(browser);
+#endif
   return base::WrapUnique(new MediaRouterActionPlatformDelegateViews(browser));
 }
 

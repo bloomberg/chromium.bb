@@ -11,12 +11,20 @@
 #import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#include "ui/base/ui_features.h"
 
 // static
 std::unique_ptr<MediaRouterActionPlatformDelegate>
-MediaRouterActionPlatformDelegate::Create(Browser* browser) {
+MediaRouterActionPlatformDelegate::CreateCocoa(Browser* browser) {
   return base::WrapUnique(new MediaRouterActionPlatformDelegateCocoa(browser));
 }
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+std::unique_ptr<MediaRouterActionPlatformDelegate>
+MediaRouterActionPlatformDelegate::Create(Browser* browser) {
+  return CreateCocoa(browser);
+}
+#endif
 
 MediaRouterActionPlatformDelegateCocoa::MediaRouterActionPlatformDelegateCocoa(
     Browser* browser)
