@@ -137,16 +137,17 @@ TEST_F(ShelfWindowWatcherTest, OpenAndCloseMash) {
 }
 
 TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItemProperties) {
-  // Creating windows without a valid ShelfItemType does not add items.
+  // Creating windows without a valid ShelfItemType only adds items in mash.
   std::unique_ptr<views::Widget> widget1 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
   std::unique_ptr<views::Widget> widget2 =
       CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  EXPECT_EQ(2, model_->item_count());
+  const bool is_mash = Shell::GetAshConfig() == Config::MASH;
+  EXPECT_EQ(is_mash ? 4 : 2, model_->item_count());
 
   // Create a ShelfItem for the first window.
   ShelfID id_w1 = CreateShelfItem(widget1->GetNativeWindow());
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(is_mash ? 4 : 3, model_->item_count());
 
   int index_w1 = model_->ItemIndexByID(id_w1);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w1].status);
@@ -158,16 +159,22 @@ TEST_F(ShelfWindowWatcherTest, CreateAndRemoveShelfItemProperties) {
   int index_w2 = model_->ItemIndexByID(id_w2);
   EXPECT_EQ(STATUS_RUNNING, model_->items()[index_w2].status);
 
-  // ShelfItem is removed when the item type window property is cleared.
+  // ShelfItem is removed when the type property is cleared in classic ash.
   widget1->GetNativeWindow()->SetProperty(kShelfItemTypeKey,
                                           static_cast<int32_t>(TYPE_UNDEFINED));
-  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(is_mash ? 4 : 3, model_->item_count());
   widget2->GetNativeWindow()->SetProperty(kShelfItemTypeKey,
                                           static_cast<int32_t>(TYPE_UNDEFINED));
-  EXPECT_EQ(2, model_->item_count());
+  EXPECT_EQ(is_mash ? 4 : 2, model_->item_count());
   // Clearing twice doesn't do anything.
   widget2->GetNativeWindow()->SetProperty(kShelfItemTypeKey,
                                           static_cast<int32_t>(TYPE_UNDEFINED));
+  EXPECT_EQ(is_mash ? 4 : 2, model_->item_count());
+
+  // Closing the windows will remove the items in mash.
+  widget1->CloseNow();
+  EXPECT_EQ(is_mash ? 3 : 2, model_->item_count());
+  widget2->CloseNow();
   EXPECT_EQ(2, model_->item_count());
 }
 
