@@ -30,7 +30,7 @@ namespace {
 class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {
  public:
   using ErrorCallback =
-      base::Callback<void(PersistentPrefStore::PrefReadError)>;
+      base::RepeatingCallback<void(PersistentPrefStore::PrefReadError)>;
   explicit ReadErrorHandler(ErrorCallback cb) : callback_(cb) {}
 
   void OnError(PersistentPrefStore::PrefReadError error) override {
@@ -61,16 +61,16 @@ uint32_t GetWriteFlags(const PrefService::Preference* pref) {
 PrefService::PrefService(
     std::unique_ptr<PrefNotifierImpl> pref_notifier,
     std::unique_ptr<PrefValueStore> pref_value_store,
-    PersistentPrefStore* user_prefs,
-    PrefRegistry* pref_registry,
-    base::Callback<void(PersistentPrefStore::PrefReadError)>
+    scoped_refptr<PersistentPrefStore> user_prefs,
+    scoped_refptr<PrefRegistry> pref_registry,
+    base::RepeatingCallback<void(PersistentPrefStore::PrefReadError)>
         read_error_callback,
     bool async)
     : pref_notifier_(std::move(pref_notifier)),
       pref_value_store_(std::move(pref_value_store)),
-      pref_registry_(pref_registry),
-      user_pref_store_(user_prefs),
-      read_error_callback_(read_error_callback) {
+      pref_registry_(std::move(pref_registry)),
+      user_pref_store_(std::move(user_prefs)),
+      read_error_callback_(std::move(read_error_callback)) {
   pref_notifier_->SetPrefService(this);
 
   // TODO(battre): This is a check for crbug.com/435208 to make sure that

@@ -55,9 +55,9 @@ class COMPONENTS_PREFS_EXPORT PrefServiceFactory {
   // Sets up error callback for the PrefService.  A do-nothing default
   // is provided if this is not called.
   void set_read_error_callback(
-      const base::Callback<void(PersistentPrefStore::PrefReadError)>&
+      base::RepeatingCallback<void(PersistentPrefStore::PrefReadError)>
           read_error_callback) {
-    read_error_callback_ = read_error_callback;
+    read_error_callback_ = std::move(read_error_callback);
   }
 
   // Specifies to use an actual file-backed user pref store.
@@ -71,7 +71,7 @@ class COMPONENTS_PREFS_EXPORT PrefServiceFactory {
   // Creates a PrefService object initialized with the parameters from
   // this factory.
   std::unique_ptr<PrefService> Create(
-      PrefRegistry* registry,
+      scoped_refptr<PrefRegistry> pref_registry,
       std::unique_ptr<PrefValueStore::Delegate> delegate = nullptr);
 
  protected:
@@ -82,7 +82,8 @@ class COMPONENTS_PREFS_EXPORT PrefServiceFactory {
   scoped_refptr<PersistentPrefStore> user_prefs_;
   scoped_refptr<PrefStore> recommended_prefs_;
 
-  base::Callback<void(PersistentPrefStore::PrefReadError)> read_error_callback_;
+  base::RepeatingCallback<void(PersistentPrefStore::PrefReadError)>
+      read_error_callback_;
 
   // Defaults to false.
   bool async_;

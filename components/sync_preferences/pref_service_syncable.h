@@ -38,10 +38,10 @@ class PrefServiceSyncable : public PrefService {
   PrefServiceSyncable(
       std::unique_ptr<PrefNotifierImpl> pref_notifier,
       std::unique_ptr<PrefValueStore> pref_value_store,
-      PersistentPrefStore* user_prefs,
-      user_prefs::PrefRegistrySyncable* pref_registry,
+      scoped_refptr<PersistentPrefStore> user_prefs,
+      scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry,
       const PrefModelAssociatorClient* pref_model_associato_client,
-      base::Callback<void(PersistentPrefStore::PrefReadError)>
+      base::RepeatingCallback<void(PersistentPrefStore::PrefReadError)>
           read_error_callback,
       bool async);
   ~PrefServiceSyncable() override;

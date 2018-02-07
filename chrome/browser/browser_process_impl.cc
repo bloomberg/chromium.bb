@@ -1082,7 +1082,7 @@ void BrowserProcessImpl::CreateLocalState() {
   delegate->InitPrefRegistry(pref_registry.get());
   local_state_ = chrome_prefs::CreateLocalState(
       local_state_path, local_state_task_runner_.get(), policy_service(),
-      pref_registry, false, std::move(delegate));
+      std::move(pref_registry), false, std::move(delegate));
   DCHECK(local_state_);
 }
 

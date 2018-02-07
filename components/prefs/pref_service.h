@@ -166,9 +166,9 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // for simplified construction.
   PrefService(std::unique_ptr<PrefNotifierImpl> pref_notifier,
               std::unique_ptr<PrefValueStore> pref_value_store,
-              PersistentPrefStore* user_prefs,
-              PrefRegistry* pref_registry,
-              base::Callback<void(PersistentPrefStore::PrefReadError)>
+              scoped_refptr<PersistentPrefStore> user_prefs,
+              scoped_refptr<PrefRegistry> pref_registry,
+              base::RepeatingCallback<void(PersistentPrefStore::PrefReadError)>
                   read_error_callback,
               bool async);
   virtual ~PrefService();
@@ -359,7 +359,8 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   scoped_refptr<PersistentPrefStore> user_pref_store_;
 
   // Callback to call when a read error occurs.
-  base::Callback<void(PersistentPrefStore::PrefReadError)> read_error_callback_;
+  const base::RepeatingCallback<void(PersistentPrefStore::PrefReadError)>
+      read_error_callback_;
 
  private:
   // Hash map expected to be fastest here since it minimises expensive

@@ -37,7 +37,7 @@ void PrefServiceFactory::SetUserPrefsFile(
 }
 
 std::unique_ptr<PrefService> PrefServiceFactory::Create(
-    PrefRegistry* pref_registry,
+    scoped_refptr<PrefRegistry> pref_registry,
     std::unique_ptr<PrefValueStore::Delegate> delegate) {
   auto pref_notifier = std::make_unique<PrefNotifierImpl>();
   auto pref_value_store = std::make_unique<PrefValueStore>(
@@ -47,5 +47,5 @@ std::unique_ptr<PrefService> PrefServiceFactory::Create(
       pref_notifier.get(), std::move(delegate));
   return std::make_unique<PrefService>(
       std::move(pref_notifier), std::move(pref_value_store), user_prefs_.get(),
-      pref_registry, read_error_callback_, async_);
+      std::move(pref_registry), read_error_callback_, async_);
 }
