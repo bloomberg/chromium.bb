@@ -44,22 +44,27 @@ class TextStream;
 
 enum LayoutAsTextBehaviorFlags {
   kLayoutAsTextBehaviorNormal = 0,
-  kLayoutAsTextShowAllLayers =
-      1 << 0,  // Dump all layers, not just those that would paint.
-  kLayoutAsTextShowLayerNesting = 1 << 1,  // Annotate the layer lists.
-  kLayoutAsTextShowCompositedLayers =
-      1 << 2,  // Show which layers are composited.
-  kLayoutAsTextShowAddresses = 1
-                               << 3,  // Show layer and layoutObject addresses.
-  kLayoutAsTextShowIDAndClass = 1 << 4,  // Show id and class attributes
-  kLayoutAsTextPrintingMode = 1 << 5,    // Dump the tree in printing mode.
-  kLayoutAsTextDontUpdateLayout =
-      1 << 6,  // Don't update layout, to make it safe to call showLayerTree()
-               // from the debugger inside layout or painting code.
-  kLayoutAsTextShowLayoutState =
-      1 << 7,  // Print the various 'needs layout' bits on layoutObjects.
-  kLayoutAsTextShowLineTrees =
-      1 << 8  // Dump the line trees for each LayoutBlockFlow.
+  // Dump all layers, not just those that would paint.
+  kLayoutAsTextShowAllLayers = 1 << 0,
+  // Annotate the layer lists.
+  kLayoutAsTextShowLayerNesting = 1 << 1,
+  // Show which layers are composited.
+  kLayoutAsTextShowCompositedLayers = 1 << 2,
+  // Show layer and layoutObject addresses.
+  kLayoutAsTextShowAddresses = 1 << 3,
+  // Show id and class attributes
+  kLayoutAsTextShowIDAndClass = 1 << 4,
+  // Dump the tree in printing mode.
+  kLayoutAsTextPrintingMode = 1 << 5,
+  // Don't update layout, to make it safe to call showLayerTree() from the
+  // debugger inside layout or painting code.
+  kLayoutAsTextDontUpdateLayout = 1 << 6,
+  // Print the various 'needs layout' bits on layoutObjects.
+  kLayoutAsTextShowLayoutState = 1 << 7,
+  // Dump the line trees for each LayoutBlockFlow.
+  kLayoutAsTextShowLineTrees = 1 << 8,
+  // Print paint properties associated with layers and layout objects.
+  kLayoutAsTextShowPaintProperties = 1 << 9,
 };
 typedef unsigned LayoutAsTextBehavior;
 
