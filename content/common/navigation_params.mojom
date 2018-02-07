@@ -4,7 +4,6 @@
 
 module content.mojom;
 
-import "mojo/common/values.mojom";
 import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
@@ -56,12 +55,5 @@ struct BeginNavigationParams {
   // If the transition type is a client side redirect, then this holds the URL
   // of the page that had the client side redirect.
   url.mojom.Url client_side_redirect_url;
-
-  // If the navigation is renderer-initiated and the renderer is being
-  // inspected by DevTools, this field is non-null and contains the
-  // initiator information in DevTools protocol format. See
-  // https://chromedevtools.github.io/devtools-protocol/tot/Network#type-Initiator
-  // for details.
-  mojo.common.mojom.DictionaryValue? devtools_initiator;
 };
 

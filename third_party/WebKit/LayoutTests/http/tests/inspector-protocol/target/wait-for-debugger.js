@@ -13,12 +13,12 @@
     document.body.appendChild(iframe);
   `);
 
-  let params = (await dp.Network.onceRequestWillBeSent()).params;
   let sessionId = (await dp.Target.onceAttachedToTarget()).params.sessionId;
   let dp1 = session.createChild(sessionId).protocol;
   dp1.Network.enable();
   dp1.Network.setUserAgentOverride({userAgent: 'test (subframe)'});
   dp1.Runtime.runIfWaitingForDebugger();
+  let params = (await dp1.Network.onceRequestWillBeSent()).params;
   testRunner.log(`User-Agent = ${params.request.headers['User-Agent']}`);
   await dp1.Network.onceLoadingFinished();
   let content = (await dp1.Network.getResponseBody({requestId: params.requestId})).result.body;
