@@ -2652,6 +2652,9 @@ void RenderWidgetHostImpl::RequestCompositorFrameSink(
     // TODO(kylechar): Find out why renderer is requesting a CompositorFrameSink
     // with no view.
     if (view_) {
+      // Connects the viz process end of CompositorFrameSink message pipes. The
+      // renderer compositor may request a new CompositorFrameSink on context
+      // loss, which will destroy the existing CompositorFrameSink.
       GetHostFrameSinkManager()->CreateCompositorFrameSink(
           view_->GetFrameSinkId(), std::move(request), std::move(client));
     }

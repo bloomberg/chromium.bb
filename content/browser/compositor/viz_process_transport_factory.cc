@@ -490,7 +490,9 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
       compositor->force_software_compositor();
   root_params->renderer_settings = renderer_settings_;
 
-  // Creates the viz end of the root CompositorFrameSink.
+  // Connects the viz process end of CompositorFrameSink message pipes. The
+  // browser compositor may request a new CompositorFrameSink on context loss,
+  // which will destroy the existing CompositorFrameSink.
   GetHostFrameSinkManager()->CreateRootCompositorFrameSink(
       std::move(root_params));
 
