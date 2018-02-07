@@ -20,6 +20,7 @@ const bool PlatformStyle::kDialogDefaultButtonCanBeCancel = false;
 const bool PlatformStyle::kSelectWordOnRightClick = true;
 const bool PlatformStyle::kSelectAllOnRightClickWhenUnfocused = true;
 const bool PlatformStyle::kTextfieldScrollsToStartOnFocusChange = true;
+const bool PlatformStyle::kTextfieldUsesDragCursorWhenDraggable = false;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = true;
 const bool PlatformStyle::kUseRipples = false;
 
