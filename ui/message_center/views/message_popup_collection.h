@@ -115,9 +115,9 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // See crbug.com/224089
   void RepositionWidgetsWithTarget();
 
-  // The base line is an (imaginary) line that would touch the bottom of the
+  // The baseline is an (imaginary) line that would touch the bottom of the
   // next created notification if bottom-aligned or its top if top-aligned.
-  int GetBaseLine(ToastContentsView* last_toast) const;
+  int GetBaseline() const;
 
   // Overridden from MessageCenterObserver:
   void OnNotificationAdded(const std::string& notification_id) override;

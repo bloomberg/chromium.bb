@@ -123,7 +123,7 @@ void MessagePopupCollection::UpdateWidgets() {
   }
 
   bool top_down = alignment_delegate_->IsTopDown();
-  int base = GetBaseLine(toasts_.empty() ? NULL : toasts_.back());
+  int base = GetBaseline();
 #if defined(OS_CHROMEOS)
   bool is_primary_display =
       alignment_delegate_->IsPrimaryDisplayForNotification();
@@ -291,8 +291,8 @@ void MessagePopupCollection::RemoveToast(ToastContentsView* toast,
 
 void MessagePopupCollection::RepositionWidgets() {
   bool top_down = alignment_delegate_->IsTopDown();
-  int base = GetBaseLine(NULL);  // We don't want to position relative to last
-                                 // toast - we want re-position.
+  // We don't want to position relative to last toast - we want re-position.
+  int base = alignment_delegate_->GetBaseline();
 
   for (Toasts::const_iterator iter = toasts_.begin(); iter != toasts_.end();) {
     Toasts::const_iterator curr = iter++;
@@ -361,14 +361,14 @@ void MessagePopupCollection::RepositionWidgetsWithTarget() {
   }
 }
 
-int MessagePopupCollection::GetBaseLine(ToastContentsView* last_toast) const {
-  if (!last_toast) {
-    return alignment_delegate_->GetBaseLine();
-  } else if (alignment_delegate_->IsTopDown()) {
+int MessagePopupCollection::GetBaseline() const {
+  if (toasts_.empty())
+    return alignment_delegate_->GetBaseline();
+
+  if (alignment_delegate_->IsTopDown())
     return toasts_.back()->bounds().bottom() + kToastMarginY;
-  } else {
-    return toasts_.back()->origin().y() - kToastMarginY;
-  }
+
+  return toasts_.back()->origin().y() - kToastMarginY;
 }
 
 void MessagePopupCollection::OnNotificationAdded(

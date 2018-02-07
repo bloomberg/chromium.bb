@@ -33,7 +33,7 @@ class MESSAGE_CENTER_EXPORT PopupAlignmentDelegate {
 
   // Returns the baseline height of the current work area. That is the starting
   // point if there are no other toasts.
-  virtual int GetBaseLine() const = 0;
+  virtual int GetBaseline() const = 0;
 
   // Returns the rect of the current work area.
   virtual gfx::Rect GetWorkArea() const = 0;
