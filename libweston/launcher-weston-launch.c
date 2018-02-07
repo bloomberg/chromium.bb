@@ -303,6 +303,5 @@ const struct launcher_interface launcher_weston_launch_iface = {
 	.open = launcher_weston_launch_open,
 	.close = launcher_weston_launch_close,
 	.activate_vt = launcher_weston_launch_activate_vt,
-	.restore = launcher_weston_launch_restore,
 	.get_vt = launcher_weston_launch_get_vt,
 };

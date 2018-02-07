@@ -246,11 +246,6 @@ headless_output_create(struct weston_compositor *compositor,
 }
 
 static void
-headless_restore(struct weston_compositor *ec)
-{
-}
-
-static void
 headless_destroy(struct weston_compositor *ec)
 {
 	struct headless_backend *b = to_headless_backend(ec);
@@ -283,7 +278,6 @@ headless_backend_create(struct weston_compositor *compositor,
 		goto err_free;
 
 	b->base.destroy = headless_destroy;
-	b->base.restore = headless_restore;
 
 	b->use_pixman = config->use_pixman;
 	if (b->use_pixman) {

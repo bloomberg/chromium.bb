@@ -698,12 +698,6 @@ session_notify(struct wl_listener *listener, void *data)
 	}
 }
 
-static void
-fbdev_restore(struct weston_compositor *compositor)
-{
-	weston_launcher_restore(compositor->launcher);
-}
-
 static struct fbdev_backend *
 fbdev_backend_create(struct weston_compositor *compositor,
                      struct weston_fbdev_backend_config *param)
@@ -743,7 +737,6 @@ fbdev_backend_create(struct weston_compositor *compositor,
 	}
 
 	backend->base.destroy = fbdev_backend_destroy;
-	backend->base.restore = fbdev_restore;
 
 	backend->prev_state = WESTON_COMPOSITOR_ACTIVE;
 

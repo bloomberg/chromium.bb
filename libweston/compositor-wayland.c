@@ -2451,11 +2451,6 @@ wayland_backend_handle_event(int fd, uint32_t mask, void *data)
 }
 
 static void
-wayland_restore(struct weston_compositor *ec)
-{
-}
-
-static void
 wayland_destroy(struct weston_compositor *ec)
 {
 	struct wayland_backend *b = to_wayland_backend(ec);
@@ -2618,7 +2613,6 @@ wayland_backend_create(struct weston_compositor *compositor,
 	}
 
 	b->base.destroy = wayland_destroy;
-	b->base.restore = wayland_restore;
 
 	loop = wl_display_get_event_loop(compositor->wl_display);
 

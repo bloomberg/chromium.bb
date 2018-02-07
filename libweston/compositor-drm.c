@@ -5118,12 +5118,6 @@ udev_drm_event(int fd, uint32_t mask, void *data)
 }
 
 static void
-drm_restore(struct weston_compositor *ec)
-{
-	weston_launcher_restore(ec->launcher);
-}
-
-static void
 drm_destroy(struct weston_compositor *ec)
 {
 	struct drm_backend *b = to_drm_backend(ec);
@@ -5651,7 +5645,6 @@ drm_backend_create(struct weston_compositor *compositor,
 	}
 
 	b->base.destroy = drm_destroy;
-	b->base.restore = drm_restore;
 	b->base.repaint_begin = drm_repaint_begin;
 	b->base.repaint_flush = drm_repaint_flush;
 	b->base.repaint_cancel = drm_repaint_cancel;

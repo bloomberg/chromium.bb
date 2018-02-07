@@ -597,11 +597,6 @@ rdp_backend_create_output(struct weston_compositor *compositor)
 }
 
 static void
-rdp_restore(struct weston_compositor *ec)
-{
-}
-
-static void
 rdp_destroy(struct weston_compositor *ec)
 {
 	struct rdp_backend *b = to_rdp_backend(ec);
@@ -1303,7 +1298,6 @@ rdp_backend_create(struct weston_compositor *compositor,
 
 	b->compositor = compositor;
 	b->base.destroy = rdp_destroy;
-	b->base.restore = rdp_restore;
 	b->rdp_key = config->rdp_key ? strdup(config->rdp_key) : NULL;
 	b->no_clients_resize = config->no_clients_resize;
 

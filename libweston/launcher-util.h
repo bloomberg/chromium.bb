@@ -50,9 +50,6 @@ int
 weston_launcher_activate_vt(struct weston_launcher *launcher, int vt);
 
 void
-weston_launcher_restore(struct weston_launcher *launcher);
-
-void
 weston_setup_vt_switch_bindings(struct weston_compositor *compositor);
 
 #endif

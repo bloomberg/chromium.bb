@@ -1743,11 +1743,6 @@ x11_backend_get_wm_info(struct x11_backend *c)
 }
 
 static void
-x11_restore(struct weston_compositor *ec)
-{
-}
-
-static void
 x11_destroy(struct weston_compositor *ec)
 {
 	struct x11_backend *backend = to_x11_backend(ec);
@@ -1839,7 +1834,6 @@ x11_backend_create(struct weston_compositor *compositor,
 	weston_log("Using %s renderer\n", config->use_pixman ? "pixman" : "gl");
 
 	b->base.destroy = x11_destroy;
-	b->base.restore = x11_restore;
 
 	if (x11_input_create(b, config->no_input) < 0) {
 		weston_log("Failed to create X11 input\n");

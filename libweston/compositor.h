@@ -820,7 +820,6 @@ struct weston_backend_config {
 
 struct weston_backend {
 	void (*destroy)(struct weston_compositor *compositor);
-	void (*restore)(struct weston_compositor *compositor);
 
 	/** Begin a repaint sequence
 	 *

@@ -36,7 +36,6 @@ struct launcher_interface {
 	int (* open) (struct weston_launcher *launcher, const char *path, int flags);
 	void (* close) (struct weston_launcher *launcher, int fd);
 	int (* activate_vt) (struct weston_launcher *launcher, int vt);
-	void (* restore) (struct weston_launcher *launcher);
 	/* Get the number of the VT weston is running in */
 	int (* get_vt) (struct weston_launcher *launcher);
 };

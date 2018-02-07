@@ -333,6 +333,5 @@ const struct launcher_interface launcher_direct_iface = {
 	.open = launcher_direct_open,
 	.close = launcher_direct_close,
 	.activate_vt = launcher_direct_activate_vt,
-	.restore = launcher_direct_restore,
 	.get_vt = launcher_direct_get_vt,
 };
