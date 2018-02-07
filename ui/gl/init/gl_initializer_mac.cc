@@ -17,11 +17,17 @@
 #include "base/threading/thread_restrictions.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_features.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_osmesa_api_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_switching_manager.h"
+
+#if BUILDFLAG(USE_EGL_ON_MAC)
+#include "ui/gl/gl_egl_api_implementation.h"
+#include "ui/gl/gl_surface_egl.h"
+#endif  // BUILDFLAG(USE_EGL_ON_MAC)
 
 namespace gl {
 namespace init {
@@ -127,6 +133,56 @@ bool InitializeStaticCGLInternal(GLImplementation implementation) {
   return true;
 }
 
+#if BUILDFLAG(USE_EGL_ON_MAC)
+const char kGLESv2ANGLELibraryName[] = "libGLESv2.dylib";
+const char kEGLANGLELibraryName[] = "libEGL.dylib";
+
+bool InitializeStaticEGLInternal(GLImplementation implementation) {
+  if (implementation == kGLImplementationSwiftShaderGL) {
+    return false;
+  }
+
+  base::FilePath module_path;
+  if (!PathService::Get(base::DIR_MODULE, &module_path)) {
+    return false;
+  }
+
+  base::FilePath glesv2_path = module_path.Append(kGLESv2ANGLELibraryName);
+  base::NativeLibrary gles_library = LoadLibraryAndPrintError(glesv2_path);
+  if (!gles_library) {
+    return false;
+  }
+
+  base::FilePath egl_path = module_path.Append(kEGLANGLELibraryName);
+  base::NativeLibrary egl_library = LoadLibraryAndPrintError(egl_path);
+  if (!egl_library) {
+    base::UnloadNativeLibrary(gles_library);
+    return false;
+  }
+
+  GLGetProcAddressProc get_proc_address =
+      reinterpret_cast<GLGetProcAddressProc>(
+          base::GetFunctionPointerFromNativeLibrary(egl_library,
+                                                    "eglGetProcAddress"));
+  if (!get_proc_address) {
+    LOG(ERROR) << "eglGetProcAddress not found.";
+    base::UnloadNativeLibrary(egl_library);
+    base::UnloadNativeLibrary(gles_library);
+    return false;
+  }
+
+  SetGLGetProcAddressProc(get_proc_address);
+  AddGLNativeLibrary(egl_library);
+  AddGLNativeLibrary(gles_library);
+  SetGLImplementation(kGLImplementationEGLGLES2);
+
+  InitializeStaticGLBindingsGL();
+  InitializeStaticGLBindingsEGL();
+
+  return true;
+}
+#endif  // BUILDFLAG(USE_EGL_ON_MAC)
+
 }  // namespace
 
 bool InitializeGLOneOffPlatform() {
@@ -139,6 +195,14 @@ bool InitializeGLOneOffPlatform() {
         return false;
       }
       return true;
+#if BUILDFLAG(USE_EGL_ON_MAC)
+    case kGLImplementationEGLGLES2:
+      if (!GLSurfaceEGL::InitializeOneOff(0)) {
+        LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
+        return false;
+      }
+      return true;
+#endif  // BUILDFLAG(USE_EGL_ON_MAC)
     default:
       return true;
   }
@@ -163,6 +227,10 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
     case kGLImplementationDesktopGLCoreProfile:
     case kGLImplementationAppleGL:
       return InitializeStaticCGLInternal(implementation);
+#if BUILDFLAG(USE_EGL_ON_MAC)
+    case kGLImplementationEGLGLES2:
+      return InitializeStaticEGLInternal(implementation);
+#endif  // BUILDFLAG(USE_EGL_ON_MAC)
     case kGLImplementationMockGL:
     case kGLImplementationStubGL:
       SetGLImplementation(implementation);

@@ -24,6 +24,7 @@ import("//third_party/WebKit/public/public_features.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 import("//tools/resources/generate_resource_whitelist.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
+import("//ui/gl/features.gni")
 import("//v8/gni/v8.gni")
 
 if (is_android) {
@@ -957,6 +958,48 @@ if (is_win) {
     }
   }
 
+  if (use_egl_on_mac) {
+    # We need to copy the ANGLE libraries so that the bundle_data dependencies
+    # have a "copy" target type. Otherwise for "shared_library" target types
+    # it will try to link things into Chromium.app when we want to keep the
+    # ANGLE libraries separate instead.
+    copy("angle_library_copy") {
+      sources = [
+        "$root_out_dir/libEGL.dylib",
+        "$root_out_dir/libGLESv2.dylib",
+      ]
+      outputs = [
+        "$root_out_dir/for_bundle/{{source_file_part}}",
+      ]
+      deps = [
+        "//third_party/angle:libEGL",
+        "//third_party/angle:libGLESv2",
+      ]
+    }
+
+    # Add the ANGLE .dylibs in the MODULE_DIR of Chromium.app
+    bundle_data("angle_binaries") {
+      sources = [
+        "$root_out_dir/for_bundle/libEGL.dylib",
+        "$root_out_dir/for_bundle/libGLESv2.dylib",
+      ]
+      outputs = [
+        "{{bundle_contents_dir}}/{{source_file_part}}",
+      ]
+      public_deps = [
+        ":angle_library_copy",
+      ]
+    }
+  }
+
+  group("angle_library") {
+    if (use_egl_on_mac) {
+      deps = [
+        ":angle_binaries",
+      ]
+    }
+  }
+
   _should_bundle_widevine =
       (is_chrome_branded || enable_widevine) && enable_library_cdms
   if (_should_bundle_widevine) {
@@ -1230,6 +1273,7 @@ if (is_win) {
     ]
 
     deps = [
+      ":angle_library",
       ":chrome_framework_helpers",
       ":chrome_framework_plugins",
       ":chrome_framework_resources",

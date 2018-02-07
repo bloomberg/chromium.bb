@@ -19,8 +19,14 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_enums.h"
+#include "ui/gl/gl_features.h"
+#include "ui/gl/gl_version_info.h"
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/yuv_to_rgb_converter.h"
+
+#if BUILDFLAG(USE_EGL_ON_MAC)
+#include "ui/gl/gl_image_io_surface_egl.h"
+#endif  // BUILDFLAG(USE_EGL_ON_MAC)
 
 // Note that this must be included after gl_bindings.h to avoid conflicts.
 #include <OpenGL/CGLIOSurface.h>
@@ -201,6 +207,12 @@ GLenum ConvertRequestedInternalFormat(GLenum internalformat) {
 // static
 GLImageIOSurface* GLImageIOSurface::Create(const gfx::Size& size,
                                            unsigned internalformat) {
+#if BUILDFLAG(USE_EGL_ON_MAC)
+  if (GLContext::GetCurrent()->GetVersionInfo()->is_angle) {
+    return new GLImageIOSurfaceEGL(size, internalformat);
+  }
+#endif  // BUILDFLAG(USE_EGL_ON_MAC)
+
   return new GLImageIOSurface(size, internalformat);
 }
 
@@ -290,24 +302,33 @@ bool GLImageIOSurface::BindTexImageWithInternalformat(unsigned target,
     return false;
   }
 
+  DCHECK(io_surface_);
+
+  if (!BindTexImageImpl(internalformat)) {
+    return false;
+  }
+
+  UMA_HISTOGRAM_TIMES("GPU.IOSurface.TexImageTime",
+                      base::TimeTicks::Now() - start_time);
+  return true;
+}
+
+bool GLImageIOSurface::BindTexImageImpl(unsigned internalformat) {
   CGLContextObj cgl_context =
       static_cast<CGLContextObj>(GLContext::GetCurrent()->GetHandle());
-
-  DCHECK(io_surface_);
 
   GLenum texture_format =
       internalformat ? internalformat : TextureFormat(format_);
   CGLError cgl_error = CGLTexImageIOSurface2D(
-      cgl_context, target, texture_format, size_.width(), size_.height(),
-      DataFormat(format_), DataType(format_), io_surface_.get(), 0);
+      cgl_context, GL_TEXTURE_RECTANGLE_ARB, texture_format, size_.width(),
+      size_.height(), DataFormat(format_), DataType(format_), io_surface_.get(),
+      0);
   if (cgl_error != kCGLNoError) {
     LOG(ERROR) << "Error in CGLTexImageIOSurface2D: "
                << CGLErrorString(cgl_error);
     return false;
   }
 
-  UMA_HISTOGRAM_TIMES("GPU.IOSurface.TexImageTime",
-                      base::TimeTicks::Now() - start_time);
   return true;
 }
 

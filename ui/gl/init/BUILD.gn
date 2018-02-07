@@ -26,6 +26,7 @@ jumbo_component("init") {
   deps = [
     "//base",
     "//ui/gfx",
+    "//ui/gl:gl_features",
   ]
 
   public_deps = [
@@ -37,7 +38,6 @@ jumbo_component("init") {
       "gl_factory_android.cc",
       "gl_initializer_android.cc",
     ]
-    deps += [ "//ui/gl:gl_features" ]
   } else if (is_win) {
     sources += [
       "gl_factory_win.cc",
@@ -46,7 +46,6 @@ jumbo_component("init") {
 
     libs = [ "dwmapi.lib" ]
     ldflags = [ "/DELAYLOAD:dwmapi.dll" ]
-    deps += [ "//ui/gl:gl_features" ]
   } else if (is_mac) {
     sources += [
       "gl_factory_mac.cc",
@@ -60,10 +59,7 @@ jumbo_component("init") {
       "gl_initializer_x11.cc",
     ]
 
-    deps += [
-      "//ui/gfx/x",
-      "//ui/gl:gl_features",
-    ]
+    deps += [ "//ui/gfx/x" ]
   } else if (use_ozone) {
     sources += [
       "gl_factory_ozone.cc",
