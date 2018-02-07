@@ -43,6 +43,7 @@
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
 #include "net/socket/server_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/brotli/include/brotli/decode.h"
 #include "v8/include/v8-version-string.h"
 
@@ -136,32 +137,42 @@ void ServerWrapper::AcceptWebSocket(int connection_id,
                                     const net::HttpServerRequestInfo& request) {
   server_->SetSendBufferSize(connection_id, kSendBufferSizeForDevTools);
   server_->SetReceiveBufferSize(connection_id, kReceiveBufferSizeForDevTools);
-  server_->AcceptWebSocket(connection_id, request);
+  // TODO (https://crbug.com/656607): Add proper annotation.
+  server_->AcceptWebSocket(connection_id, request,
+                           NO_TRAFFIC_ANNOTATION_BUG_656607);
 }
 
 void ServerWrapper::SendOverWebSocket(int connection_id,
                                       const std::string& message) {
-  server_->SendOverWebSocket(connection_id, message);
+  // TODO (https://crbug.com/656607): Add proper annotation.
+  server_->SendOverWebSocket(connection_id, message,
+                             NO_TRAFFIC_ANNOTATION_BUG_656607);
 }
 
 void ServerWrapper::SendResponse(int connection_id,
                                  const net::HttpServerResponseInfo& response) {
-  server_->SendResponse(connection_id, response);
+  // TODO (https://crbug.com/656607): Add proper annotation.
+  server_->SendResponse(connection_id, response,
+                        NO_TRAFFIC_ANNOTATION_BUG_656607);
 }
 
 void ServerWrapper::Send200(int connection_id,
                             const std::string& data,
                             const std::string& mime_type) {
-  server_->Send200(connection_id, data, mime_type);
+  // TODO (https://crbug.com/656607): Add proper annotation.
+  server_->Send200(connection_id, data, mime_type,
+                   NO_TRAFFIC_ANNOTATION_BUG_656607);
 }
 
 void ServerWrapper::Send404(int connection_id) {
-  server_->Send404(connection_id);
+  // TODO (https://crbug.com/656607): Add proper annotation.
+  server_->Send404(connection_id, NO_TRAFFIC_ANNOTATION_BUG_656607);
 }
 
 void ServerWrapper::Send500(int connection_id,
                             const std::string& message) {
-  server_->Send500(connection_id, message);
+  // TODO (https://crbug.com/656607): Add proper annotation.
+  server_->Send500(connection_id, message, NO_TRAFFIC_ANNOTATION_BUG_656607);
 }
 
 void ServerWrapper::Close(int connection_id) {
@@ -387,7 +398,8 @@ void ServerWrapper::OnHttpRequest(int connection_id,
 
   if (!base::StartsWith(info.path, "/devtools/",
                         base::CompareCase::SENSITIVE)) {
-    server_->Send404(connection_id);
+    // TODO (https://crbug.com/656607): Add proper annotation.
+    server_->Send404(connection_id, NO_TRAFFIC_ANNOTATION_BUG_656607);
     return;
   }
 
@@ -398,7 +410,9 @@ void ServerWrapper::OnHttpRequest(int connection_id,
     base::FilePath path = frontend_dir_.AppendASCII(filename);
     std::string data;
     base::ReadFileToString(path, &data);
-    server_->Send200(connection_id, data, mime_type);
+    // TODO (https://crbug.com/656607): Add proper annotation.
+    server_->Send200(connection_id, data, mime_type,
+                     NO_TRAFFIC_ANNOTATION_BUG_656607);
     return;
   }
 
@@ -409,7 +423,8 @@ void ServerWrapper::OnHttpRequest(int connection_id,
                        handler_, connection_id, filename));
     return;
   }
-  server_->Send404(connection_id);
+  // TODO (https://crbug.com/656607): Add proper annotation.
+  server_->Send404(connection_id, NO_TRAFFIC_ANNOTATION_BUG_656607);
 }
 
 void ServerWrapper::OnWebSocketRequest(
