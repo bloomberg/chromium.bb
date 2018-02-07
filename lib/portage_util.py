@@ -1000,6 +1000,8 @@ class EBuild(object):
 
     old_ebuild_path = self.ebuild_path
     if EBuild._AlmostSameEBuilds(old_ebuild_path, new_stable_ebuild_path):
+      logging.info('Old and new ebuild %s are exactly identical; '
+                   'skipping uprev', new_stable_ebuild_path)
       os.unlink(new_stable_ebuild_path)
       return
     else:
