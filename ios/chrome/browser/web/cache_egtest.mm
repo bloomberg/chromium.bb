@@ -28,6 +28,7 @@
 #endif
 
 using chrome_test_util::GetOriginalBrowserState;
+using chrome_test_util::TapWebViewElementWithId;
 using web::test::HttpServer;
 
 namespace {
@@ -137,7 +138,8 @@ class CacheTestResponseProvider : public web::DataResponseProvider {
   [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 1"];
 
   // Navigate to another page. 2nd hit to server.
-  chrome_test_util::TapWebViewElementWithId(kCacheTestLinkID);
+  GREYAssert(chrome_test_util::TapWebViewElementWithId(kCacheTestLinkID),
+             @"Failed to tap %s", kCacheTestLinkID);
   [ChromeEarlGrey waitForWebViewContainingText:"serverHitCounter: 2"];
 
   // Navigate back. This should not hit the server. Verify the page has been
@@ -177,7 +179,8 @@ class CacheTestResponseProvider : public web::DataResponseProvider {
   // first allow popups.
   ScopedBlockPopupsPref prefSetter(CONTENT_SETTING_ALLOW,
                                    GetOriginalBrowserState());
-  chrome_test_util::TapWebViewElementWithId(kCacheTestLinkID);
+  GREYAssert(chrome_test_util::TapWebViewElementWithId(kCacheTestLinkID),
+             @"Failed to tap %s", kCacheTestLinkID);
   [ChromeEarlGrey waitForMainTabCount:2];
   [ChromeEarlGrey waitForPageToFinishLoading];
   [ChromeEarlGrey waitForWebViewContainingText:"First Page"];

@@ -100,7 +100,8 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   LoadWebUIUrl(kChromeUIChromeURLsHost);
 
   // Tap on chrome://terms link on the page.
-  chrome_test_util::TapWebViewElementWithId(kChromeUITermsHost);
+  GREYAssert(TapWebViewElementWithId(kChromeUITermsHost), @"Failed to tap %s",
+             kChromeUITermsHost);
 
   // Verify that the resulting page is chrome://terms.
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://terms")]
@@ -115,7 +116,8 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   LoadWebUIUrl(kChromeUIChromeURLsHost);
 
   // Tap on chrome://version link on the page.
-  chrome_test_util::TapWebViewElementWithId(kChromeUIVersionHost);
+  GREYAssert(TapWebViewElementWithId(kChromeUIVersionHost), @"Failed to tap %s",
+             kChromeUIVersionHost);
 
   // Verify that the resulting page is chrome://version.
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://version")]

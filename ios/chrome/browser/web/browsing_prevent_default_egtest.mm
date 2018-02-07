@@ -24,6 +24,7 @@
 #endif
 
 using chrome_test_util::GetOriginalBrowserState;
+using chrome_test_util::TapWebViewElementWithId;
 
 namespace {
 
@@ -60,7 +61,8 @@ GURL GetTestUrl() {
 
   // Tap on the test link and wait for the page to display "Click done", as an
   // indicator that the element was tapped.
-  chrome_test_util::TapWebViewElementWithId(linkID);
+  GREYAssert(TapWebViewElementWithId(linkID), @"Failed to tap %s",
+             linkID.c_str());
   [ChromeEarlGrey waitForWebViewContainingText:"Click done"];
 
   // Check that no navigation occurred and no new tabs were opened.

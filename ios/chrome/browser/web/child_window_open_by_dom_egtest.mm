@@ -67,16 +67,19 @@ const char kWindow2Closed[] = "window2.closed: true";
 // the same window object.
 - (void)test2ChildWindowsWithName {
   // Open two windows with the same name.
-  TapWebViewElementWithId(kNamedWindowLink);
+  GREYAssert(TapWebViewElementWithId(kNamedWindowLink), @"Failed to tap %s",
+             kNamedWindowLink);
   [ChromeEarlGrey waitForMainTabCount:2];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
-  TapWebViewElementWithId(kNamedWindowLink);
+  GREYAssert(TapWebViewElementWithId(kNamedWindowLink), @"Failed to tap %s",
+             kNamedWindowLink);
   [ChromeEarlGrey waitForMainTabCount:2];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
   // Check that they're the same window.
-  TapWebViewElementWithId("compareNamedWindows");
+  GREYAssert(TapWebViewElementWithId("compareNamedWindows"),
+             @"Failed to tap \"compareNamedWindows\"");
   const char kWindowsEqualText[] = "named windows equal: true";
   [ChromeEarlGrey waitForWebViewContainingText:kWindowsEqualText];
 }
@@ -85,16 +88,19 @@ const char kWindow2Closed[] = "window2.closed: true";
 // returns a unique window object each time.
 - (void)test2ChildWindowsWithoutName {
   // Open two unnamed windows.
-  TapWebViewElementWithId(kUnnamedWindowLink);
+  GREYAssert(TapWebViewElementWithId(kUnnamedWindowLink), @"Failed to tap %s",
+             kUnnamedWindowLink);
   [ChromeEarlGrey waitForMainTabCount:2];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
-  TapWebViewElementWithId(kUnnamedWindowLink);
+  GREYAssert(TapWebViewElementWithId(kUnnamedWindowLink), @"Failed to tap %s",
+             kUnnamedWindowLink);
   [ChromeEarlGrey waitForMainTabCount:3];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
   // Check that they aren't the same window object.
-  TapWebViewElementWithId("compareUnnamedWindows");
+  GREYAssert(TapWebViewElementWithId("compareUnnamedWindows"),
+             @"Failed to tap \"compareUnnamedWindows\"");
   const char kWindowsEqualText[] = "unnamed windows equal: false";
   [ChromeEarlGrey waitForWebViewContainingText:kWindowsEqualText];
 }
@@ -103,17 +109,20 @@ const char kWindow2Closed[] = "window2.closed: true";
 // object than a subsequent call to window.open() without a name.
 - (void)testChildWindowsWithAndWithoutName {
   // Open a named window.
-  TapWebViewElementWithId(kNamedWindowLink);
+  GREYAssert(TapWebViewElementWithId(kNamedWindowLink), @"Failed to tap %s",
+             kNamedWindowLink);
   [ChromeEarlGrey waitForMainTabCount:2];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
   // Open an unnamed window.
-  TapWebViewElementWithId(kUnnamedWindowLink);
+  GREYAssert(TapWebViewElementWithId(kUnnamedWindowLink), @"Failed to tap %s",
+             kUnnamedWindowLink);
   [ChromeEarlGrey waitForMainTabCount:3];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
   // Check that they aren't the same window object.
-  TapWebViewElementWithId("compareNamedAndUnnamedWindows");
+  GREYAssert(TapWebViewElementWithId("compareNamedAndUnnamedWindows"),
+             @"Failed to tap \"compareNamedAndUnnamedWindows\"");
   const char kWindowsEqualText[] = "named and unnamed equal: false";
   [ChromeEarlGrey waitForWebViewContainingText:kWindowsEqualText];
 }
@@ -124,70 +133,85 @@ const char kWindow2Closed[] = "window2.closed: true";
 // results in window.closed being set to true for all references to the window
 // object for that tab.
 - (void)testWindowClosedWithName {
-  TapWebViewElementWithId("openWindowWithName");
+  GREYAssert(TapWebViewElementWithId("openWindowWithName"),
+             @"Failed to tap \"openWindowWithName\"");
   [ChromeEarlGrey waitForMainTabCount:2];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
   // Check that named window 1 is opened and named window 2 isn't.
   const char kCheckWindow1Link[] = "checkNamedWindow1Closed";
   [ChromeEarlGrey waitForWebViewContainingText:kCheckWindow1Link];
-  TapWebViewElementWithId(kCheckWindow1Link);
+  GREYAssert(TapWebViewElementWithId(kCheckWindow1Link), @"Failed to tap %s",
+             kCheckWindow1Link);
   [ChromeEarlGrey waitForWebViewContainingText:kWindow1Open];
   const char kCheckWindow2Link[] = "checkNamedWindow2Closed";
-  TapWebViewElementWithId(kCheckWindow2Link);
+  GREYAssert(TapWebViewElementWithId(kCheckWindow2Link), @"Failed to tap %s",
+             kCheckWindow2Link);
   [ChromeEarlGrey waitForWebViewContainingText:kWindow2NeverOpen];
 
   // Open another window with the same name. Check that named window 2 is now
   // opened.
-  TapWebViewElementWithId("openWindowWithName");
+  GREYAssert(TapWebViewElementWithId("openWindowWithName"),
+             @"Failed to tap \"openWindowWithName\"");
   [ChromeEarlGrey waitForMainTabCount:2];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
-  TapWebViewElementWithId(kCheckWindow2Link);
+  GREYAssert(TapWebViewElementWithId(kCheckWindow2Link), @"Failed to tap %s",
+             kCheckWindow2Link);
   [ChromeEarlGrey waitForWebViewContainingText:kWindow2Open];
 
   // Close the opened window. Check that named window 1 and 2 are both closed.
   chrome_test_util::CloseTabAtIndex(1);
   [ChromeEarlGrey waitForMainTabCount:1];
-  TapWebViewElementWithId(kCheckWindow1Link);
+  GREYAssert(TapWebViewElementWithId(kCheckWindow1Link), @"Failed to tap %s",
+             kCheckWindow1Link);
   [ChromeEarlGrey waitForWebViewContainingText:kWindow1Closed];
-  TapWebViewElementWithId(kCheckWindow2Link);
+  GREYAssert(TapWebViewElementWithId(kCheckWindow2Link), @"Failed to tap %s",
+             kCheckWindow2Link);
   [ChromeEarlGrey waitForWebViewContainingText:kWindow2Closed];
 }
 
 // Tests that closing a tab will set window.closed to true for only
 // corresponding window object and not for any other window objects.
 - (void)testWindowClosedWithoutName {
-  TapWebViewElementWithId("openWindowNoName");
+  GREYAssert(TapWebViewElementWithId("openWindowNoName"),
+             @"Failed to tap \"openWindowNoName\"");
   [ChromeEarlGrey waitForMainTabCount:2];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
 
   // Check that unnamed window 1 is opened and unnamed window 2 isn't.
   const char kCheckWindow1Link[] = "checkUnnamedWindow1Closed";
   [ChromeEarlGrey waitForWebViewContainingText:kCheckWindow1Link];
-  TapWebViewElementWithId(kCheckWindow1Link);
+  GREYAssert(TapWebViewElementWithId(kCheckWindow1Link), @"Failed to tap %s",
+             kCheckWindow1Link);
   [ChromeEarlGrey waitForWebViewContainingText:kWindow1Open];
   const char kCheckWindow2Link[] = "checkUnnamedWindow2Closed";
-  TapWebViewElementWithId(kCheckWindow2Link);
+  GREYAssert(TapWebViewElementWithId(kCheckWindow2Link), @"Failed to tap %s",
+             kCheckWindow2Link);
   [ChromeEarlGrey waitForWebViewContainingText:kWindow2NeverOpen];
 
   // Open another unnamed window. Check that unnamed window 2 is now opened.
-  TapWebViewElementWithId("openWindowNoName");
+  GREYAssert(TapWebViewElementWithId("openWindowNoName"),
+             @"Failed to tap \"openWindowNoName\"");
   [ChromeEarlGrey waitForMainTabCount:3];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
-  TapWebViewElementWithId(kCheckWindow2Link);
+  GREYAssert(TapWebViewElementWithId(kCheckWindow2Link), @"Failed to tap %s",
+             kCheckWindow2Link);
   [ChromeEarlGrey waitForWebViewContainingText:kWindow2Open];
 
   // Close the first opened window. Check that unnamed window 1 is closed and
   // unnamed window 2 is still open.
   chrome_test_util::CloseTabAtIndex(1);
-  TapWebViewElementWithId(kCheckWindow1Link);
+  GREYAssert(TapWebViewElementWithId(kCheckWindow1Link), @"Failed to tap %s",
+             kCheckWindow1Link);
   [ChromeEarlGrey waitForWebViewContainingText:kWindow1Closed];
-  TapWebViewElementWithId(kCheckWindow2Link);
+  GREYAssert(TapWebViewElementWithId(kCheckWindow2Link), @"Failed to tap %s",
+             kCheckWindow2Link);
   [ChromeEarlGrey waitForWebViewContainingText:kWindow2Open];
 
   // Close the second opened window. Check that unnamed window 2 is closed.
   chrome_test_util::CloseTabAtIndex(1);
-  TapWebViewElementWithId(kCheckWindow2Link);
+  GREYAssert(TapWebViewElementWithId(kCheckWindow2Link), @"Failed to tap %s",
+             kCheckWindow2Link);
   [ChromeEarlGrey waitForWebViewContainingText:kWindow2Closed];
 }
 

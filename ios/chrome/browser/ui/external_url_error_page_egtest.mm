@@ -169,7 +169,8 @@ using web::test::HttpServer;
   web::test::SetUpHttpServer(std::move(provider));
 
   [ChromeEarlGrey loadURL:URL];
-  TapWebViewElementWithId(kButtonId);
+  GREYAssert(TapWebViewElementWithId(kButtonId), @"Failed to tap %s",
+             kButtonId.c_str());
   // Check that the timer has completed.
   [ChromeEarlGrey waitForWebViewContainingText:kTimerCompleted];
   // DNS error page should still not appear.

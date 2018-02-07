@@ -32,6 +32,7 @@
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::OmniboxText;
+using chrome_test_util::TapWebViewElementWithId;
 using testing::ElementToDismissAlert;
 
 namespace {
@@ -200,7 +201,8 @@ id<GREYMatcher> GoButtonMatcher() {
   const GURL destinationURL = GetDestinationUrl();
 
   [ChromeEarlGrey loadURL:GetFormUrl()];
-  chrome_test_util::TapWebViewElementWithId(kSubmitButtonLabel);
+  GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
+             kSubmitButtonLabel);
   [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -220,7 +222,8 @@ id<GREYMatcher> GoButtonMatcher() {
   const GURL destinationURL = GetDestinationUrl();
 
   [ChromeEarlGrey loadURL:GetFormUrl()];
-  chrome_test_util::TapWebViewElementWithId(kSubmitButtonLabel);
+  GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
+             kSubmitButtonLabel);
   [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -241,7 +244,8 @@ id<GREYMatcher> GoButtonMatcher() {
   const GURL destinationURL = GetDestinationUrl();
 
   [ChromeEarlGrey loadURL:GetFormUrl()];
-  chrome_test_util::TapWebViewElementWithId(kSubmitButtonLabel);
+  GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
+             kSubmitButtonLabel);
   [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -261,7 +265,8 @@ id<GREYMatcher> GoButtonMatcher() {
   const GURL destinationURL = GetDestinationUrl();
 
   [ChromeEarlGrey loadURL:GetFormUrl()];
-  chrome_test_util::TapWebViewElementWithId(kSubmitButtonLabel);
+  GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
+             kSubmitButtonLabel);
   [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -287,7 +292,8 @@ id<GREYMatcher> GoButtonMatcher() {
   const GURL destinationURL = GetDestinationUrl();
 
   [ChromeEarlGrey loadURL:GetFormUrl()];
-  chrome_test_util::TapWebViewElementWithId(kSubmitButtonLabel);
+  GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
+             kSubmitButtonLabel);
   [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -314,7 +320,8 @@ id<GREYMatcher> GoButtonMatcher() {
   GURL destinationURL = GetDestinationUrl();
 
   [ChromeEarlGrey loadURL:GetFormUrl()];
-  chrome_test_util::TapWebViewElementWithId(kSubmitButtonLabel);
+  GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
+             kSubmitButtonLabel);
   [ChromeEarlGrey waitForWebViewContainingText:kDestinationText];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -334,7 +341,8 @@ id<GREYMatcher> GoButtonMatcher() {
   [ChromeEarlGrey loadURL:GetRedirectFormUrl()];
 
   // Submit the form, which redirects before printing the data.
-  chrome_test_util::TapWebViewElementWithId(kSubmitButtonLabel);
+  GREYAssert(TapWebViewElementWithId(kSubmitButtonLabel), @"Failed to tap %s",
+             kSubmitButtonLabel);
 
   // Check that the redirect changes the POST to a GET.
   [ChromeEarlGrey waitForWebViewContainingText:"GET"];
@@ -372,7 +380,7 @@ id<GREYMatcher> GoButtonMatcher() {
   // Open the second URL, tap the button, and verify the browser navigates to
   // the expected URL.
   [ChromeEarlGrey loadURL:formURL];
-  chrome_test_util::TapWebViewElementWithId("button");
+  GREYAssert(TapWebViewElementWithId("button"), @"Failed to tap \"button\"");
   [ChromeEarlGrey waitForWebViewContainingText:"POST"];
   [[EarlGrey selectElementWithMatcher:OmniboxText(formURL.GetContent())]
       assertWithMatcher:grey_notNil()];
