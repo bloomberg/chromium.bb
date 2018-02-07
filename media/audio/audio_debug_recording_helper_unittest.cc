@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -144,10 +145,10 @@ class AudioDebugRecordingHelperTest : public ::testing::Test {
     // Check that AudioDebugRecordingHelper::EnableDebugRecording adds file
     // extension to file name suffix.
     EXPECT_EQ(file_name_suffix_.AddExtension(kFileExtension), file_name_suffix);
-    base::FilePath temp_dir;
-    ASSERT_TRUE(base::GetTempDir(&temp_dir));
+    base::ScopedTempDir temp_dir;
+    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     base::FilePath base_file_path(
-        temp_dir.Append(base::FilePath(kBaseFileName)));
+        temp_dir.GetPath().Append(base::FilePath(kBaseFileName)));
     base::FilePath file_path =
         base_file_path.AddExtension(file_name_suffix.value());
     base::File debug_file(base::File(
