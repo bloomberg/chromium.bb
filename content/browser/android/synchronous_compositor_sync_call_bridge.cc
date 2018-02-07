@@ -62,6 +62,7 @@ bool SynchronousCompositorSyncCallBridge::ReceiveFrameOnIOThread(
   if (remote_closed_ || frame_futures_.empty())
     return false;
   auto frame_ptr = std::make_unique<SynchronousCompositor::Frame>();
+  frame_ptr->layer_tree_frame_sink_id = layer_tree_frame_sink_id;
   scoped_refptr<SynchronousCompositor::FrameFuture> future =
       std::move(frame_futures_.front());
   DCHECK(future);
