@@ -48,6 +48,7 @@ static const char* g_ui_element_name_strings[] = {
     "kUrlBarSeparator",
     "kUrlBarOriginRegion",
     "kUrlBarOriginContent",
+    "kUrlBarHintText",
     "kOmniboxVisibiltyControlForVoice",
     "kOmniboxVisibilityControlForAudioPermissionPrompt",
     "kOmniboxDmmRoot",
