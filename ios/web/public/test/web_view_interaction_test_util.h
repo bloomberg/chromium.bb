@@ -36,6 +36,12 @@ bool TapWebViewElementWithId(web::WebState* web_state,
                              const std::string& element_id);
 
 // Returns whether the element with |element_id| in the passed |web_state| has
+// been tapped using a JavaScript click() event. |error| can be nil.
+bool TapWebViewElementWithId(web::WebState* web_state,
+                             const std::string& element_id,
+                             NSError* __autoreleasing* error);
+
+// Returns whether the element with |element_id| in the passed |web_state| has
 // been focused using a JavaScript focus() event.
 bool FocusWebViewElementWithId(web::WebState* web_state,
                                const std::string& element_id);

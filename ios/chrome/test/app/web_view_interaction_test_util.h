@@ -7,11 +7,18 @@
 
 #include <string>
 
+@class NSError;
+
 namespace chrome_test_util {
 
 // Attempts to tap the element with |element_id| in the current WebState
 // using a JavaScript click() event.
 bool TapWebViewElementWithId(const std::string& element_id);
+
+// Attempts to tap the element with |element_id| in the current WebState
+// using a JavaScript click() event. |error| can be nil.
+bool TapWebViewElementWithId(const std::string& element_id,
+                             NSError* __autoreleasing* error);
 
 // Attemps to submit form with |form_id| in the current WebState.
 void SubmitWebViewFormWithId(const std::string& form_id);
