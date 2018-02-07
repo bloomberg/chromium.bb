@@ -877,6 +877,7 @@ void RenderWidgetHostViewChildFrame::OnBeginFrame(
     const viz::BeginFrameArgs& args) {
   if (renderer_compositor_frame_sink_)
     renderer_compositor_frame_sink_->OnBeginFrame(args);
+  host_->ProgressFling(args.frame_time);
 }
 
 void RenderWidgetHostViewChildFrame::OnBeginFramePausedChanged(bool paused) {

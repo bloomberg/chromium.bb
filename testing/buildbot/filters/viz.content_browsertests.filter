@@ -30,6 +30,7 @@
 -SitePerProcessBrowserTest.HiddenOOPIFWillNotGenerateCompositorFramesAfterNavigation
 
 # Further WaitForChildFrameSurfaceReady doesn't work http://crbug.com/787945
+-SitePerProcessBrowserTest.GestureFlingStart
 -SitePerProcessBrowserTest.GestureFlingStartEventsBubble
 -SitePerProcessBrowserTest.NavigateCrashedSubframeToSameSite
 -SitePerProcessBrowserTest.OOPIFDetachDuringAnimation
