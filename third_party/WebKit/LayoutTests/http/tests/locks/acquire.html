@@ -43,6 +43,34 @@ promise_test(async t => {
 promise_test(async t => {
   const res = uniqueName(t);
   await promise_rejects(
+    t, 'NotSupportedError',
+    navigator.locks.acquire(res, {mode: 'shared', steal: true}, lock => {}),
+    'Request with mode=shared and steal=true should fail');
+}, "The 'steal' option must be used with exclusive locks");
+
+promise_test(async t => {
+  const res = uniqueName(t);
+  const controller = new AbortController();
+  await promise_rejects(
+    t, 'NotSupportedError',
+    navigator.locks.acquire(
+      res, {signal: controller.signal, steal: true}, lock => {}),
+    'Request with signal and steal=true should fail');
+}, "The 'signal' and 'steal' options are mutually exclusive");
+
+promise_test(async t => {
+  const res = uniqueName(t);
+  const controller = new AbortController();
+  await promise_rejects(
+    t, 'NotSupportedError',
+    navigator.locks.acquire(
+      res, {signal: controller.signal, ifAvailable: true}, lock => {}),
+    'Request with signal and ifAvailable=true should fail');
+}, "The 'signal' and 'ifAvailable' options are mutually exclusive");
+
+promise_test(async t => {
+  const res = uniqueName(t);
+  await promise_rejects(
     t, new TypeError(), navigator.locks.acquire(res, undefined));
   await promise_rejects(
     t, new TypeError(), navigator.locks.acquire(res, null));

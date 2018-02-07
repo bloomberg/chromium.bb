@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/modules/v8/v8_lock_granted_callback.h"
+#include "core/dom/AbortSignal.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/UseCounter.h"
@@ -25,6 +26,8 @@
 namespace blink {
 
 namespace {
+
+constexpr char kRequestAbortedMessage[] = "The request was aborted.";
 
 LockInfo ToLockInfo(const mojom::blink::LockInfoPtr& record) {
   LockInfo info;
@@ -219,6 +222,25 @@ ScriptPromise LockManager::acquire(ScriptState* script_state,
     return ScriptPromise();
   }
 
+  if (options.hasSignal() && options.ifAvailable()) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
+        "The 'signal' and 'ifAvailable' options cannot be used together.");
+    return ScriptPromise();
+  }
+
+  if (options.hasSignal() && options.steal()) {
+    exception_state.ThrowDOMException(
+        kNotSupportedError,
+        "The 'signal' and 'steal' options cannot be used together.");
+    return ScriptPromise();
+  }
+
+  if (options.hasSignal() && options.signal()->aborted()) {
+    exception_state.ThrowDOMException(kAbortError, kRequestAbortedMessage);
+    return ScriptPromise();
+  }
+
   mojom::blink::LockManager::WaitMode wait =
       options.steal()
           ? mojom::blink::LockManager::WaitMode::PREEMPT
@@ -229,8 +251,15 @@ ScriptPromise LockManager::acquire(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   mojom::blink::LockRequestPtr request_ptr;
-  AddPendingRequest(new LockRequestImpl(callback, resolver, name, mode,
-                                        mojo::MakeRequest(&request_ptr), this));
+  LockRequestImpl* request = new LockRequestImpl(
+      callback, resolver, name, mode, mojo::MakeRequest(&request_ptr), this);
+  AddPendingRequest(request);
+
+  if (options.hasSignal()) {
+    options.signal()->AddAlgorithm(WTF::Bind(&LockRequestImpl::Abort,
+                                             WrapWeakPersistent(request),
+                                             String(kRequestAbortedMessage)));
+  }
 
   service_->RequestLock(name, mode, wait, std::move(request_ptr));
 
