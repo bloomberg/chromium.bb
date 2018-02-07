@@ -132,6 +132,98 @@ TEST_F(InputConversionTest, ValueDict) {
   EXPECT_EQ(input, a_file->contents());
 }
 
+TEST_F(InputConversionTest, ValueJSON) {
+  Err err;
+  std::string input(R"*({
+  "a": 5,
+  "b": "foo",
+  "c": {
+    "d": true,
+    "e": [
+      {
+        "f": "bar"
+      }
+    ]
+  }
+})*");
+  Value result = ConvertInputToValue(settings(), input, nullptr,
+                                     Value(nullptr, "json"), &err);
+  EXPECT_FALSE(err.has_error());
+  ASSERT_EQ(Value::SCOPE, result.type());
+
+  const Value* a_value = result.scope_value()->GetValue("a");
+  ASSERT_TRUE(a_value);
+  EXPECT_EQ(5, a_value->int_value());
+
+  const Value* b_value = result.scope_value()->GetValue("b");
+  ASSERT_TRUE(b_value);
+  EXPECT_EQ("foo", b_value->string_value());
+
+  const Value* c_value = result.scope_value()->GetValue("c");
+  ASSERT_TRUE(c_value);
+  ASSERT_EQ(Value::SCOPE, c_value->type());
+
+  const Value* d_value = c_value->scope_value()->GetValue("d");
+  ASSERT_TRUE(d_value);
+  EXPECT_EQ(true, d_value->boolean_value());
+
+  const Value* e_value = c_value->scope_value()->GetValue("e");
+  ASSERT_TRUE(e_value);
+  ASSERT_EQ(Value::LIST, e_value->type());
+
+  EXPECT_EQ(1u, e_value->list_value().size());
+  ASSERT_EQ(Value::SCOPE, e_value->list_value()[0].type());
+  const Value* f_value = e_value->list_value()[0].scope_value()->GetValue("f");
+  ASSERT_TRUE(f_value);
+  EXPECT_EQ("bar", f_value->string_value());
+}
+
+TEST_F(InputConversionTest, ValueJSONInvalidInput) {
+  Err err;
+  std::string input(R"*({
+  "a": 5,
+  "b":
+})*");
+  Value result = ConvertInputToValue(settings(), input, nullptr,
+                                     Value(nullptr, "json"), &err);
+  EXPECT_TRUE(err.has_error());
+  EXPECT_EQ("Input is not a valid JSON: Line: 4, column: 2, Unexpected token.",
+            err.message());
+}
+
+TEST_F(InputConversionTest, ValueJSONUnsupportedValue) {
+  Err err;
+  std::string input(R"*({
+  "a": null
+})*");
+  Value result = ConvertInputToValue(settings(), input, nullptr,
+                                     Value(nullptr, "json"), &err);
+  EXPECT_TRUE(err.has_error());
+  EXPECT_EQ("Null values are not supported.", err.message());
+}
+
+TEST_F(InputConversionTest, ValueJSONInvalidVariable) {
+  Err err;
+  std::string input(R"*({
+  "a\\x0001b": 5
+})*");
+  Value result = ConvertInputToValue(settings(), input, nullptr,
+                                     Value(nullptr, "json"), &err);
+  EXPECT_TRUE(err.has_error());
+  EXPECT_EQ("Invalid identifier \"a\\x0001b\".", err.message());
+}
+
+TEST_F(InputConversionTest, ValueJSONUnsupported) {
+  Err err;
+  std::string input(R"*({
+  "d": 0.0
+})*");
+  Value result = ConvertInputToValue(settings(), input, nullptr,
+                                     Value(nullptr, "json"), &err);
+  EXPECT_TRUE(err.has_error());
+  EXPECT_EQ("Floating point values are not supported.", err.message());
+}
+
 TEST_F(InputConversionTest, ValueEmpty) {
   Err err;
   Value result = ConvertInputToValue(settings(), "", nullptr,

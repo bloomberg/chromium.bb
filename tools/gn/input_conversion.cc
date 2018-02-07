@@ -7,9 +7,11 @@
 #include <memory>
 #include <utility>
 
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "tools/gn/build_settings.h"
 #include "tools/gn/err.h"
 #include "tools/gn/input_file.h"
@@ -106,6 +108,98 @@ Value ParseList(const std::string& input, const ParseNode* origin, Err* err) {
   return ret;
 }
 
+bool IsIdentifier(const base::StringPiece& buffer) {
+  DCHECK(buffer.size() > 0);
+  if (!Tokenizer::IsIdentifierFirstChar(buffer[0]))
+    return false;
+  for (size_t i = 1; i < buffer.size(); i++)
+    if (!Tokenizer::IsIdentifierContinuingChar(buffer[i]))
+      return false;
+  return true;
+}
+
+Value ParseJSONValue(const Settings* settings,
+                     const base::Value& value,
+                     const ParseNode* origin,
+                     InputFile* input_file,
+                     Err* err) {
+  switch (value.type()) {
+    case base::Value::Type::NONE:
+      *err = Err(origin, "Null values are not supported.");
+      return Value();
+    case base::Value::Type::BOOLEAN:
+      return Value(origin, value.GetBool());
+    case base::Value::Type::INTEGER:
+      return Value(origin, static_cast<int64_t>(value.GetInt()));
+    case base::Value::Type::DOUBLE:
+      *err = Err(origin, "Floating point values are not supported.");
+      return Value();
+    case base::Value::Type::STRING:
+      return Value(origin, value.GetString());
+    case base::Value::Type::BINARY:
+      *err = Err(origin, "Binary values are not supported.");
+      return Value();
+    case base::Value::Type::DICTIONARY: {
+      std::unique_ptr<Scope> scope = std::make_unique<Scope>(settings);
+      for (const auto& it : value.DictItems()) {
+        Value value =
+            ParseJSONValue(settings, it.second, origin, input_file, err);
+        if (!IsIdentifier(it.first)) {
+          *err = Err(origin, "Invalid identifier \"" + it.first + "\".");
+          return Value();
+        }
+        // Search for the key in the input file. We know it's present because
+        // it was parsed by the JSON reader, but we need its location to
+        // construct a StringPiece that can be used as key in the Scope.
+        size_t off = input_file->contents().find("\"" + it.first + "\"");
+        if (off == std::string::npos) {
+          *err = Err(origin, "Invalid encoding \"" + it.first + "\".");
+          return Value();
+        }
+        base::StringPiece key(&input_file->contents()[off + 1],
+                              it.first.size());
+        scope->SetValue(key, std::move(value), origin);
+      }
+      return Value(origin, std::move(scope));
+    }
+    case base::Value::Type::LIST: {
+      Value result(origin, Value::LIST);
+      result.list_value().reserve(value.GetList().size());
+      for (const auto& val : value.GetList()) {
+        Value value = ParseJSONValue(settings, val, origin, input_file, err);
+        result.list_value().push_back(value);
+      }
+      return result;
+    }
+  }
+  return Value();
+}
+
+// Parses the JSON string and converts it to GN value.
+Value ParseJSON(const Settings* settings,
+                const std::string& input,
+                const ParseNode* origin,
+                Err* err) {
+  InputFile* input_file;
+  std::vector<Token>* tokens;
+  std::unique_ptr<ParseNode>* parse_root_ptr;
+  g_scheduler->input_file_manager()->AddDynamicInput(SourceFile(), &input_file,
+                                                     &tokens, &parse_root_ptr);
+  input_file->SetContents(input);
+
+  int error_code_out;
+  std::string error_msg_out;
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
+      input, base::JSONParserOptions::JSON_PARSE_RFC, &error_code_out,
+      &error_msg_out);
+  if (!value) {
+    *err = Err(origin, "Input is not a valid JSON: " + error_msg_out);
+    return Value();
+  }
+
+  return ParseJSONValue(settings, *value, origin, input_file, err);
+}
+
 // Backend for ConvertInputToValue, this takes the extracted string for the
 // input conversion so we can recursively call ourselves to handle the optional
 // "trim" prefix. This original value is also kept for the purposes of throwing
@@ -139,6 +233,8 @@ Value DoConvertInputToValue(const Settings* settings,
     return ParseList(input, origin, err);
   if (input_conversion == "scope")
     return ParseValueOrScope(settings, input, PARSE_SCOPE, origin, err);
+  if (input_conversion == "json")
+    return ParseJSON(settings, input, origin, err);
 
   *err = Err(original_input_conversion, "Not a valid input_conversion.",
              "Run gn help input_conversion to see your options.");
@@ -188,6 +284,20 @@ const char kInputConversion_Help[] =
 
       Note that if the input is empty, the result will be a null value which
       will produce an error if assigned to a variable.
+
+  "json"
+      Parse the input as a JSON and convert it to equivalent GN rvalue. The data
+      type mapping is:
+        a string in JSON maps to string in GN
+        an integer in JSON maps to integer in GN
+        a float in JSON is unsupported and will result in an error
+        an object in JSON maps to scope in GN
+        an array in JSON maps to list in GN
+        a boolean in JSON maps to boolean in GN
+        a null in JSON is unsupported and will result in an error
+
+      Nota that the dictionary keys have to be valid GN identifiers otherwise
+      they will produce an error.
 
   "trim ..."
       Prefixing any of the other transformations with the word "trim" will
