@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/strings/string_piece.h"
-#include "base/task_scheduler/scheduler_worker_params.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"
 
@@ -21,15 +20,11 @@ class CommandLine;
 namespace task_scheduler_util {
 
 // Builds a TaskScheduler::InitParams from pool descriptors in
-// |variations_params| that are prefixed with |variation_param_prefix|.
-// |foreground_blocking_backward_compatibility| controls backward compatibility
-// in the foreground blocking pool. Returns nullptr on failure.
+// |variations_params| that are prefixed with |variation_param_prefix|. Returns
+// nullptr on failure.
 std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams(
     base::StringPiece variation_param_prefix,
-    const std::map<std::string, std::string>& variation_params,
-    base::SchedulerBackwardCompatibility
-        foreground_blocking_backward_compatibility =
-            base::SchedulerBackwardCompatibility::DISABLED);
+    const std::map<std::string, std::string>& variation_params);
 
 #if !defined(OS_IOS)
 // Serializes variation params from the BrowserScheduler field trial whose key

@@ -21,8 +21,6 @@ namespace task_scheduler_util {
 
 namespace {
 
-using SchedulerBackwardCompatibility = base::SchedulerBackwardCompatibility;
-
 #if !defined(OS_IOS)
 constexpr char kFieldTrialName[] = "BrowserScheduler";
 constexpr char kFieldTrialTestGroup[] = "Test";
@@ -55,9 +53,7 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams5) {
   variation_params["RendererForeground"] = "4;4;1;0;62";
   variation_params["RendererForegroundBlocking"] = "8;8;1;0;72";
 
-  auto init_params = GetTaskSchedulerInitParams(
-      "Renderer", variation_params,
-      base::SchedulerBackwardCompatibility::INIT_COM_STA);
+  auto init_params = GetTaskSchedulerInitParams("Renderer", variation_params);
   ASSERT_TRUE(init_params);
 
   EXPECT_EQ(1, init_params->background_worker_pool_params.max_threads());
@@ -90,7 +86,7 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams5) {
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(72),
             init_params->foreground_blocking_worker_pool_params
                 .suggested_reclaim_time());
-  EXPECT_EQ(base::SchedulerBackwardCompatibility::INIT_COM_STA,
+  EXPECT_EQ(base::SchedulerBackwardCompatibility::DISABLED,
             init_params->foreground_blocking_worker_pool_params
                 .backward_compatibility());
 }
