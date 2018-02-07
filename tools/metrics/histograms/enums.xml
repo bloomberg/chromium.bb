@@ -12514,6 +12514,8 @@ Called by update_net_error_codes.py.-->
   <int value="416" label="DeviceUserPolicyLoopbackProcessingMode"/>
   <int value="417" label="DeviceLoginScreenIsolateOrigins"/>
   <int value="418" label="DeviceLoginScreenSitePerProcess"/>
+  <int value="419" label="RelaunchNotification"/>
+  <int value="420" label="RelaunchNotificationPeriod"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

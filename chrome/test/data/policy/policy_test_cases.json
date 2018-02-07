@@ -2318,6 +2318,25 @@
     ]
   },
 
+  "RelaunchNotification": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "RelaunchNotification": 1},
+    "pref_mappings": [
+      { "pref": "browser.relaunch_notification",
+        "local_state": true
+      }
+    ]
+  },
+
+  "RelaunchNotificationPeriod": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "RelaunchNotificationPeriod": 86400000},
+    "pref_mappings": [
+      { "pref": "browser.relaunch_notification_period",
+        "local_state": true
+      }
+    ]
+  },
 
   "----- Chrome OS policies ------------------------------------------------": {},
 

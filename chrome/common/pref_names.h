@@ -733,6 +733,13 @@ extern const char kShowCastIconInToolbar[];
 #endif  // !defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
+#if !defined(OS_CHROMEOS)
+extern const char kRelaunchNotification[];
+#endif  // !defined(OS_CHROMEOS)
+extern const char kRelaunchNotificationPeriod[];
+#endif  // !defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
 extern const char kAttemptedToEnableAutoupdate[];
 
 extern const char kMediaGalleriesUniqueId[];
