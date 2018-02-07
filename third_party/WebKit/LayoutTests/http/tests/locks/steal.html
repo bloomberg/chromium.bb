@@ -94,13 +94,4 @@ promise_test(async t => {
 
 }, 'Last caller wins');
 
-promise_test(async t => {
-  const res = uniqueName(t);
-  await promise_rejects(
-    t, 'NotSupportedError',
-    navigator.locks.acquire(res, {mode: 'shared', steal: true}, lock => {}),
-    'Request with mode=shared and steal=true should fail');
-
-}, 'Can only steal with exclusive locks');
-
 </script>

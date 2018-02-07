@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>Web Locks API: AbortSignal integration</title>
+<link rel=help href="https://github.com/inexorabletash/web-locks">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/helpers.js"></script>
+<script>
+'use strict';
+
+promise_test(async t => {
+  const res = uniqueName(t);
+
+  // These cases should not work:
+  for (const signal of ['string', 12.34, false, {}, Symbol(), () => {}, self]) {
+    await promise_rejects(
+      t, new TypeError(),
+      navigator.locks.acquire(
+        res, {signal}, t.unreached_func('callback should not run')),
+      'Bindings should throw if the signal option is a not an AbortSignal');
+  }
+
+  // These cases should work:
+  for (const signal of [null, undefined]) {
+    assert_equals(
+      undefined,
+      await navigator.locks.acquire(res, {signal}, lock => {}),
+      'Bindings should accept a null-ish signal option');
+  }
+}, 'The signal option must be an AbortSignal');
+
+promise_test(async t => {
+  const res = uniqueName(t);
+  const controller = new AbortController();
+  controller.abort();
+
+  await promise_rejects(
+    t, 'AbortError',
+    navigator.locks.acquire(res, {signal: controller.signal},
+                            t.unreached_func('callback should not run')),
+    'Request should reject with AbortError');
+}, 'Passing an already aborted signal aborts');
+
+promise_test(async t => {
+  const res = uniqueName(t);
+
+  // Grab a lock and hold it forever.
+  const never_settled = new Promise(resolve => { /* never */ });
+  navigator.locks.acquire(res, lock => never_settled);
+
+  const controller = new AbortController();
+
+  const promise =
+    navigator.locks.acquire(res, {signal: controller.signal},
+                            t.unreached_func('callback should not run'));
+
+  // Verify the request is enqueued:
+  const state = await navigator.locks.query();
+  assert_equals(state.held.filter(lock => lock.name === res).length, 1);
+  assert_equals(state.pending.filter(lock => lock.name === res).length, 1);
+
+  const rejected = promise_rejects(
+    t, 'AbortError', promise, 'Request should reject with AbortError');
+
+  controller.abort();
+
+  await rejected;
+
+}, 'An aborted request results in AbortError');
+
+promise_test(async t => {
+  const res = uniqueName(t);
+
+  // Grab a lock and hold it forever.
+  const never_settled = new Promise(resolve => { /* never */ });
+  navigator.locks.acquire(res, lock => never_settled);
+
+  const controller = new AbortController();
+
+  const promise =
+    navigator.locks.acquire(res, {signal: controller.signal}, lock => {});
+
+  // Verify the request is enqueued:
+  const state = await navigator.locks.query();
+  assert_equals(state.held.filter(lock => lock.name === res).length, 1);
+  assert_equals(state.pending.filter(lock => lock.name === res).length, 1);
+
+  const rejected = promise_rejects(
+    t, 'AbortError', promise, 'Request should reject with AbortError');
+
+  let callback_called = false;
+  t.step_timeout(() => {
+    callback_called = true;
+    controller.abort();
+  }, 10);
+
+  await rejected;
+  assert_true(callback_called, 'timeout should have caused the abort');
+
+}, 'Abort after a timeout');
+
+promise_test(async t => {
+  const res = uniqueName(t);
+
+  const controller = new AbortController();
+
+  let got_lock = false;
+  await navigator.locks.acquire(
+    res, {signal: controller.signal}, async lock => { got_lock = true; });
+
+  assert_true(got_lock, 'Lock should be acquired if abort is not signalled.');
+
+}, 'Signal that is not aborted');
+
+</script>
