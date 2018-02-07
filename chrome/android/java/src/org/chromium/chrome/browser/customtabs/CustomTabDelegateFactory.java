@@ -94,6 +94,11 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
                     }
                 }
                 return false;
+            } catch (SecurityException e) {
+                // https://crbug.com/808494: Handle the URL in Chrome if dispatching to another
+                // application fails with a SecurityException. This happens due to malformed
+                // manifests in another app.
+                return false;
             } catch (RuntimeException e) {
                 IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
                 return false;
