@@ -46,6 +46,27 @@ SurfaceId MakeSurfaceId(const FrameSinkId& frame_sink_id, uint32_t parent_id) {
       LocalSurfaceId(parent_id, base::UnguessableToken::Deserialize(0, 1u)));
 }
 
+// Holds the four interface objects needed to create a RootCompositorFrameSink.
+struct RootCompositorFrameSinkData {
+  mojom::RootCompositorFrameSinkParamsPtr BuildParams(
+      const FrameSinkId& frame_sink_id) {
+    auto params = mojom::RootCompositorFrameSinkParams::New();
+    params->frame_sink_id = frame_sink_id;
+    params->widget = gpu::kNullSurfaceHandle;
+    params->compositor_frame_sink = MakeRequest(&compositor_frame_sink);
+    params->compositor_frame_sink_client =
+        compositor_frame_sink_client.BindInterfacePtr().PassInterface();
+    params->display_private = MakeRequest(&display_private);
+    params->display_client = display_client.BindInterfacePtr().PassInterface();
+    return params;
+  }
+
+  mojom::CompositorFrameSinkAssociatedPtr compositor_frame_sink;
+  MockCompositorFrameSinkClient compositor_frame_sink_client;
+  mojom::DisplayPrivateAssociatedPtr display_private;
+  MockDisplayClient display_client;
+};
+
 // A mock implementation of mojom::FrameSinkManager.
 class MockFrameSinkManagerImpl : public FrameSinkManagerImpl {
  public:
@@ -72,6 +93,14 @@ class MockFrameSinkManagerImpl : public FrameSinkManagerImpl {
     MockCreateRootCompositorFrameSink(params->frame_sink_id);
   }
   MOCK_METHOD1(MockCreateRootCompositorFrameSink,
+               void(const FrameSinkId& frame_sink_id));
+  void DestroyCompositorFrameSink(
+      const FrameSinkId& frame_sink_id,
+      DestroyCompositorFrameSinkCallback callback) override {
+    MockDestroyCompositorFrameSink(frame_sink_id);
+    std::move(callback).Run();
+  }
+  MOCK_METHOD1(MockDestroyCompositorFrameSink,
                void(const FrameSinkId& frame_sink_id));
   MOCK_METHOD2(RegisterFrameSinkHierarchy,
                void(const FrameSinkId& parent, const FrameSinkId& child));
@@ -523,6 +552,10 @@ TEST_F(HostFrameSinkManagerRemoteTest, RestartOnGpuCrash) {
   host().RegisterFrameSinkId(kFrameSinkChild1, &host_client);
   host().RegisterFrameSinkHierarchy(kFrameSinkParent1, kFrameSinkChild1);
 
+  RootCompositorFrameSinkData root_data;
+  host().CreateRootCompositorFrameSink(
+      root_data.BuildParams(kFrameSinkParent1));
+
   MockCompositorFrameSinkClient compositor_frame_sink_client;
   mojom::CompositorFrameSinkPtr compositor_frame_sink;
   host().CreateCompositorFrameSink(
@@ -531,9 +564,14 @@ TEST_F(HostFrameSinkManagerRemoteTest, RestartOnGpuCrash) {
 
   EXPECT_TRUE(IsBoundToFrameSinkManager());
 
-  // Verify CompositorFrameSink was created on other end of message pipe.
+  // Verify registration and CompositorFrameSink creation happened.
   {
     base::RunLoop run_loop;
+    EXPECT_CALL(impl(), RegisterFrameSinkId(kFrameSinkParent1));
+    EXPECT_CALL(impl(), RegisterFrameSinkId(kFrameSinkChild1));
+    EXPECT_CALL(impl(), RegisterFrameSinkHierarchy(kFrameSinkParent1,
+                                                   kFrameSinkChild1));
+    EXPECT_CALL(impl(), MockCreateRootCompositorFrameSink(kFrameSinkParent1));
     EXPECT_CALL(impl(), MockCreateCompositorFrameSink(kFrameSinkChild1))
         .WillOnce(InvokeClosure(run_loop.QuitClosure()));
     run_loop.Run();
@@ -573,45 +611,32 @@ TEST_F(HostFrameSinkManagerRemoteTest, DeletedHitTestQuery) {
 
   // Register a FrameSinkId, and create a RootCompositorFrameSink, which should
   // create a HitTestQuery.
-  host().RegisterFrameSinkId(kFrameSinkChild1, &host_client);
-  mojom::CompositorFrameSinkAssociatedPtrInfo
-      compositor_frame_sink_associated_info;
-  MockCompositorFrameSinkClient compositor_frame_sink_client;
-  mojom::DisplayPrivateAssociatedPtr display_private;
-  MockDisplayClient display_client;
+  host().RegisterFrameSinkId(kFrameSinkParent1, &host_client);
+  RootCompositorFrameSinkData root_data;
+  host().CreateRootCompositorFrameSink(
+      root_data.BuildParams(kFrameSinkParent1));
 
-  auto params = mojom::RootCompositorFrameSinkParams::New();
-  params->frame_sink_id = kFrameSinkChild1;
-  params->widget = 0;
-  params->compositor_frame_sink =
-      MakeRequest(&compositor_frame_sink_associated_info);
-  params->compositor_frame_sink_client =
-      compositor_frame_sink_client.BindInterfacePtr().PassInterface();
-  params->display_private = MakeRequest(&display_private);
-  params->display_client = display_client.BindInterfacePtr().PassInterface();
-  host().CreateRootCompositorFrameSink(std::move(params));
-
-  EXPECT_TRUE(DisplayHitTestQueryExists(kFrameSinkChild1));
+  EXPECT_TRUE(DisplayHitTestQueryExists(kFrameSinkParent1));
 
   // Verify RootCompositorFrameSink was created on other end of message pipe.
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(impl(), MockCreateRootCompositorFrameSink(kFrameSinkChild1))
+    EXPECT_CALL(impl(), MockCreateRootCompositorFrameSink(kFrameSinkParent1))
         .WillOnce(InvokeClosure(run_loop.QuitClosure()));
     run_loop.Run();
   }
 
   GetFrameSinkManagerClient()->SwitchActiveAggregatedHitTestRegionList(
-      kFrameSinkChild1, 0);
+      kFrameSinkParent1, 0);
   // Continue to send hit-test data to HitTestQuery associated with
   // kFrameSinkChild1.
 
-  host().InvalidateFrameSinkId(kFrameSinkChild1);
+  host().InvalidateFrameSinkId(kFrameSinkParent1);
   // Invalidating kFrameSinkChild1 would delete the corresponding HitTestQuery,
   // so further msgs to that HitTestQuery should be dropped.
-  EXPECT_FALSE(DisplayHitTestQueryExists(kFrameSinkChild1));
+  EXPECT_FALSE(DisplayHitTestQueryExists(kFrameSinkParent1));
   GetFrameSinkManagerClient()->SwitchActiveAggregatedHitTestRegionList(
-      kFrameSinkChild1, 1);
+      kFrameSinkParent1, 1);
 }
 
 // Verify that HostFrameSinkManager assigns temporary references when connected
@@ -639,6 +664,64 @@ TEST_F(HostFrameSinkManagerRemoteTest, AssignTemporaryReference) {
   EXPECT_CALL(impl(), AssignTemporaryReference(surface_id, kFrameSinkParent1))
       .WillOnce(InvokeClosure(run_loop.QuitClosure()));
   run_loop.Run();
+}
+
+// Verify that on lost context a RootCompositorFrameSink can be recreated.
+TEST_F(HostFrameSinkManagerRemoteTest, ContextLossRecreateRoot) {
+  FakeHostFrameSinkClient host_client;
+
+  // Register a FrameSinkId, and create a RootCompositorFrameSink.
+  host().RegisterFrameSinkId(kFrameSinkParent1, &host_client);
+  RootCompositorFrameSinkData root_data1;
+  host().CreateRootCompositorFrameSink(
+      root_data1.BuildParams(kFrameSinkParent1));
+
+  // Verify RootCompositorFrameSink was created on other end of message pipe.
+  EXPECT_CALL(impl(), MockCreateRootCompositorFrameSink(kFrameSinkParent1));
+  root_data1.compositor_frame_sink.FlushForTesting();
+  testing::Mock::VerifyAndClearExpectations(&impl());
+
+  // Create a new RootCompositorFrameSink and try to connect it with the same
+  // FrameSinkId. This will happen if the browser GL context is lost.
+  RootCompositorFrameSinkData root_data2;
+  host().CreateRootCompositorFrameSink(
+      root_data2.BuildParams(kFrameSinkParent1));
+
+  // Verify RootCompositorFrameSink is destroyed and then recreated.
+  EXPECT_CALL(impl(), MockDestroyCompositorFrameSink(kFrameSinkParent1));
+  EXPECT_CALL(impl(), MockCreateRootCompositorFrameSink(kFrameSinkParent1));
+  root_data2.compositor_frame_sink.FlushForTesting();
+}
+
+// Verify that on lost context a CompositorFrameSink can be recreated.
+TEST_F(HostFrameSinkManagerRemoteTest, ContextLossRecreateNonRoot) {
+  FakeHostFrameSinkClient host_client;
+
+  // Register a FrameSinkId and create a CompositorFrameSink.
+  host().RegisterFrameSinkId(kFrameSinkChild1, &host_client);
+  MockCompositorFrameSinkClient compositor_frame_sink_client1;
+  mojom::CompositorFrameSinkPtr compositor_frame_sink1;
+  host().CreateCompositorFrameSink(
+      kFrameSinkChild1, MakeRequest(&compositor_frame_sink1),
+      compositor_frame_sink_client1.BindInterfacePtr());
+
+  // Verify CompositorFrameSink was created on other end of message pipe.
+  EXPECT_CALL(impl(), MockCreateCompositorFrameSink(kFrameSinkChild1));
+  compositor_frame_sink1.FlushForTesting();
+  testing::Mock::VerifyAndClearExpectations(&impl());
+
+  // Create a new CompositorFrameSink and try to connect it with the same
+  // FrameSinkId. This will happen if the client GL context is lost.
+  MockCompositorFrameSinkClient compositor_frame_sink_client2;
+  mojom::CompositorFrameSinkPtr compositor_frame_sink2;
+  host().CreateCompositorFrameSink(
+      kFrameSinkChild1, MakeRequest(&compositor_frame_sink2),
+      compositor_frame_sink_client2.BindInterfacePtr());
+
+  // Verify CompositorFrameSink is destroyed and then recreated.
+  EXPECT_CALL(impl(), MockDestroyCompositorFrameSink(kFrameSinkChild1));
+  EXPECT_CALL(impl(), MockCreateCompositorFrameSink(kFrameSinkChild1));
+  compositor_frame_sink2.FlushForTesting();
 }
 
 }  // namespace test

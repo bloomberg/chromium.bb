@@ -125,7 +125,14 @@ void HostFrameSinkManager::CreateRootCompositorFrameSink(
   FrameSinkId frame_sink_id = params->frame_sink_id;
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
   DCHECK(data.IsFrameSinkRegistered());
-  DCHECK(!data.HasCompositorFrameSinkData());
+  DCHECK(!data.support);
+
+  // If GL context is lost a new CompositorFrameSink will be created. Destroy
+  // the old CompositorFrameSink first.
+  if (data.has_created_compositor_frame_sink) {
+    frame_sink_manager_->DestroyCompositorFrameSink(frame_sink_id,
+                                                    base::OnceClosure());
+  }
 
   data.is_root = true;
   data.has_created_compositor_frame_sink = true;
@@ -140,7 +147,14 @@ void HostFrameSinkManager::CreateCompositorFrameSink(
     mojom::CompositorFrameSinkClientPtr client) {
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
   DCHECK(data.IsFrameSinkRegistered());
-  DCHECK(!data.HasCompositorFrameSinkData());
+  DCHECK(!data.support);
+
+  // If GL context is lost a new CompositorFrameSink will be created. Destroy
+  // the old CompositorFrameSink first.
+  if (data.has_created_compositor_frame_sink) {
+    frame_sink_manager_->DestroyCompositorFrameSink(frame_sink_id,
+                                                    base::OnceClosure());
+  }
 
   data.is_root = false;
   data.has_created_compositor_frame_sink = true;
