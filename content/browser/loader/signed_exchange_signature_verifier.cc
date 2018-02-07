@@ -7,6 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/cbor/cbor_values.h"
 #include "components/cbor/cbor_writer.h"
+#include "content/browser/loader/signed_exchange_consts.h"
 #include "content/browser/loader/signed_exchange_header_parser.h"
 
 namespace content {
@@ -14,11 +15,6 @@ namespace content {
 namespace {
 
 constexpr char kSignedHeadersName[] = "signed-headers";
-
-// TODO(crbug.com/803774): Share these string constants with the parser
-constexpr char kUrlKey[] = ":url";
-constexpr char kMethodKey[] = ":method";
-constexpr char kStatusKey[] = ":status";
 
 base::Optional<cbor::CBORValue> GenerateCanonicalRequestCBOR(
     const SignedExchangeSignatureVerifier::Input& input) {
