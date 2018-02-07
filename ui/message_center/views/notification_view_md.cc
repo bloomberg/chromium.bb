@@ -13,6 +13,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -71,32 +72,18 @@ constexpr gfx::Insets kSettingsRadioButtonPadding(14, 18, 14, 18);
 constexpr gfx::Insets kSettingsButtonRowPadding(8);
 
 // Background of inline actions area.
-const SkColor kActionsRowBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
-// Base ink drop color of action buttons.
-const SkColor kActionButtonInkDropBaseColor = SkColorSetRGB(0x0, 0x0, 0x0);
+constexpr SkColor kActionsRowBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
 // Ripple ink drop opacity of action buttons.
 const float kActionButtonInkDropRippleVisibleOpacity = 0.08f;
 // Highlight (hover) ink drop opacity of action buttons.
 const float kActionButtonInkDropHighlightVisibleOpacity = 0.08f;
 // Text color of action button.
-const SkColor kActionButtonTextColor = SkColorSetRGB(0x33, 0x67, 0xD6);
+constexpr SkColor kActionButtonTextColor = gfx::kGoogleBlue700;
 // Background color of the large image.
-const SkColor kLargeImageBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
+constexpr SkColor kLargeImageBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
 
-const SkColor kRegularTextColorMD = SkColorSetRGB(0x21, 0x21, 0x21);
-const SkColor kDimTextColorMD = SkColorSetRGB(0x75, 0x75, 0x75);
-
-// The background color of inline reply input field.
-const SkColor kInputContainerBackgroundColor = SkColorSetRGB(0x33, 0x67, 0xD6);
-
-// The text color of inline reply input field.
-const SkColor kInputTextColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
-const SkColor kInputPlaceholderColor = SkColorSetARGB(0x8A, 0xFF, 0xFF, 0xFF);
-
-// The icon color of inline reply input field.
-const SkColor kInputReplyButtonColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
-const SkColor kInputReplyButtonPlaceholderColor =
-    SkColorSetARGB(0x60, 0xFF, 0xFF, 0xFF);
+constexpr SkColor kRegularTextColorMD = SkColorSetRGB(0x21, 0x21, 0x21);
+constexpr SkColor kDimTextColorMD = SkColorSetRGB(0x75, 0x75, 0x75);
 
 // Background of inline settings area.
 const SkColor kSettingsRowBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
@@ -346,7 +333,7 @@ NotificationButtonMD::NotificationButtonMD(
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetInkDropMode(views::LabelButton::InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
-  set_ink_drop_base_color(kActionButtonInkDropBaseColor);
+  set_ink_drop_base_color(SK_ColorBLACK);
   set_ink_drop_visible_opacity(kActionButtonInkDropRippleVisibleOpacity);
   SetEnabledTextColors(kActionButtonTextColor);
   SetBorder(views::CreateEmptyBorder(kActionButtonPadding));
@@ -378,9 +365,9 @@ NotificationInputTextfieldMD::NotificationInputTextfieldMD(
     views::TextfieldController* controller)
     : index_(0) {
   set_controller(controller);
-  SetTextColor(kInputTextColor);
+  SetTextColor(SK_ColorBLACK);
   SetBackgroundColor(SK_ColorTRANSPARENT);
-  set_placeholder_text_color(kInputPlaceholderColor);
+  set_placeholder_text_color(SkColorSetA(SK_ColorBLACK, 0x8A));
   SetBorder(views::CreateEmptyBorder(kInputTextfieldPadding));
 }
 
@@ -409,16 +396,16 @@ NotificationInputReplyButtonMD::NotificationInputReplyButtonMD(
 NotificationInputReplyButtonMD::~NotificationInputReplyButtonMD() = default;
 
 void NotificationInputReplyButtonMD::SetNormalImage() {
-  SetImage(STATE_NORMAL, gfx::CreateVectorIcon(kNotificationInlineReplyIcon,
-                                               kInputReplyButtonSize,
-                                               kInputReplyButtonColor));
+  SetImage(STATE_NORMAL,
+           gfx::CreateVectorIcon(kNotificationInlineReplyIcon,
+                                 kInputReplyButtonSize, SK_ColorBLACK));
 }
 
 void NotificationInputReplyButtonMD::SetPlaceholderImage() {
   SetImage(
       STATE_NORMAL,
       gfx::CreateVectorIcon(kNotificationInlineReplyIcon, kInputReplyButtonSize,
-                            kInputReplyButtonPlaceholderColor));
+                            SkColorSetA(SK_ColorBLACK, 0x60)));
 }
 
 // NotificationInputContainerMD ////////////////////////////////////////////////
@@ -480,7 +467,7 @@ NotificationInputContainerMD::CreateInkDropRipple() const {
 }
 
 SkColor NotificationInputContainerMD::GetInkDropBaseColor() const {
-  return kInputContainerBackgroundColor;
+  return gfx::kGoogleBlue700;
 }
 
 bool NotificationInputContainerMD::HandleKeyEvent(views::Textfield* sender,
