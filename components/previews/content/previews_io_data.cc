@@ -316,7 +316,7 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
       passed_reasons.push_back(
           PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER);
     } else {
-      // Since server optimization guidance not configure, allow the preview
+      // Since server optimization guidance not configured, allow the preview
       // but with qualified eligibility reason.
       LogPreviewDecisionMade(
           PreviewsEligibilityReason::ALLOWED_WITHOUT_OPTIMIZATION_HINTS,

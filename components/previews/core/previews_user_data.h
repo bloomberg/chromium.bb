@@ -36,6 +36,20 @@ class PreviewsUserData : public base::SupportsUserData::Data {
   // A session unique ID related to this navigation.
   uint64_t page_id() const { return page_id_; }
 
+  // Sets a data savings inflation percent value to use instead of the default
+  // if there is a committed preview. Note that this is expected to be used for
+  // specific preview types (such as NoScript) that don't have better data use
+  // estimation information.
+  void SetDataSavingsInflationPercent(int inflation_percent) {
+    data_savings_inflation_percent_ = inflation_percent;
+  }
+
+  // Returns the data savings inflation percent to use for this navigation
+  // instead of the default if it is not 0.
+  int data_savings_inflation_percent() {
+    return data_savings_inflation_percent_;
+  }
+
   // Sets that the page load received the Cache-Control:no-transform
   // directive. Expected to be set upon receiving a committed response.
   void SetCacheControlNoTransformDirective() {
@@ -65,10 +79,13 @@ class PreviewsUserData : public base::SupportsUserData::Data {
  private:
   // A session unique ID related to this navigation.
   const uint64_t page_id_;
-  bool cache_control_no_transform_directive_;
+  // A previews data savings inflation percent for the navigation if not 0.
+  int data_savings_inflation_percent_ = 0;
+  // Whether the origin provided a no-transform directive.
+  bool cache_control_no_transform_directive_ = false;
 
   // The committed previews type, if any.
-  previews::PreviewsType committed_previews_type_;
+  previews::PreviewsType committed_previews_type_ = PreviewsType::NONE;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsUserData);
 };

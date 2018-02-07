@@ -11,6 +11,7 @@
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/previews/core/previews_user_data.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
@@ -109,8 +110,11 @@ class PreviewsOptimizationGuide::Hints {
       const optimization_guide::proto::Configuration& config,
       const optimization_guide::ComponentInfo& info);
 
-  // Whether the URL is whitelisted for the given previews type.
-  bool IsWhitelisted(const GURL& url, PreviewsType type);
+  // Whether the URL is whitelisted for the given previews type. If so,
+  // |out_inflation_percent| will be populated if meta data available for it.
+  bool IsWhitelisted(const GURL& url,
+                     PreviewsType type,
+                     int* out_inflation_percent);
 
  private:
   Hints();
@@ -119,9 +123,10 @@ class PreviewsOptimizationGuide::Hints {
   // it.
   url_matcher::URLMatcher url_matcher_;
 
-  // A map from the condition set ID to the preview types it is whitelisted by
-  // the server for.
-  std::map<url_matcher::URLMatcherConditionSet::ID, std::set<PreviewsType>>
+  // A map from the condition set ID to associated whitelist Optimization
+  // details.
+  std::map<url_matcher::URLMatcherConditionSet::ID,
+           std::set<std::pair<PreviewsType, int>>>
       whitelist_;
 };
 
@@ -175,11 +180,12 @@ PreviewsOptimizationGuide::Hints::CreateFromConfig(
 
     // Create whitelist condition set out of the optimizations that are
     // whitelisted for the host suffix.
-    std::set<PreviewsType> whitelisted_optimizations;
+    std::set<std::pair<PreviewsType, int>> whitelisted_optimizations;
     for (const auto optimization : hint.whitelisted_optimizations()) {
       if (optimization.optimization_type() ==
           optimization_guide::proto::NOSCRIPT) {
-        whitelisted_optimizations.insert(PreviewsType::NOSCRIPT);
+        whitelisted_optimizations.insert(std::make_pair(
+            PreviewsType::NOSCRIPT, optimization.inflation_percent()));
       }
     }
     url_matcher::URLMatcherCondition condition =
@@ -199,8 +205,10 @@ PreviewsOptimizationGuide::Hints::CreateFromConfig(
   return hints;
 }
 
-bool PreviewsOptimizationGuide::Hints::IsWhitelisted(const GURL& url,
-                                                     PreviewsType type) {
+bool PreviewsOptimizationGuide::Hints::IsWhitelisted(
+    const GURL& url,
+    PreviewsType type,
+    int* out_inflation_percent) {
   std::set<url_matcher::URLMatcherConditionSet::ID> matches =
       url_matcher_.MatchURL(url);
 
@@ -216,8 +224,16 @@ bool PreviewsOptimizationGuide::Hints::IsWhitelisted(const GURL& url,
     return false;
   }
 
-  const auto& whitelisted_previews = whitelist_iter->second;
-  return whitelisted_previews.find(type) != whitelisted_previews.end();
+  const auto& whitelisted_optimizations = whitelist_iter->second;
+  for (auto optimization_iter = whitelisted_optimizations.begin();
+       optimization_iter != whitelisted_optimizations.end();
+       ++optimization_iter) {
+    if (optimization_iter->first == type) {
+      *out_inflation_percent = optimization_iter->second;
+      return true;
+    }
+  }
+  return false;
 }
 
 PreviewsOptimizationGuide::PreviewsOptimizationGuide(
@@ -241,7 +257,16 @@ bool PreviewsOptimizationGuide::IsWhitelisted(const net::URLRequest& request,
   if (!hints_)
     return false;
 
-  return hints_->IsWhitelisted(request.url(), type);
+  int inflation_percent = 0;
+  if (!hints_->IsWhitelisted(request.url(), type, &inflation_percent))
+    return false;
+
+  previews::PreviewsUserData* previews_user_data =
+      previews::PreviewsUserData::GetData(request);
+  if (inflation_percent != 0 && previews_user_data)
+    previews_user_data->SetDataSavingsInflationPercent(inflation_percent);
+
+  return true;
 }
 
 void PreviewsOptimizationGuide::OnHintsProcessed(
