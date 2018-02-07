@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "components/offline_items_collection/core/offline_item_filter.h"
 #include "components/offline_items_collection/core/offline_item_state.h"
+#include "components/offline_items_collection/core/pending_state.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
@@ -148,6 +149,9 @@ struct OfflineItem {
   // ---------------------------------------------------------------------------
   // The current state of the OfflineItem.
   OfflineItemState state;
+
+  // Reason OfflineItem is pending.
+  PendingState pendingState;
 
   // Whether or not the offlining of this content can be resumed if it was
   // paused or interrupted.

@@ -29,12 +29,12 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadNotifier;
-import org.chromium.chrome.browser.download.DownloadUpdate.PendingState;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
+import org.chromium.components.offline_items_collection.PendingState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -160,7 +160,7 @@ public class OfflineContentAggregatorNotificationBridgeUiTest {
                 .notifyDownloadCanceled(items.get(3).id /* OfflineItemState.CANCELLED */);
         verify(mNotifier, times(1))
                 .notifyDownloadInterrupted(argThat(new DownloadInfoIdMatcher(items.get(4).id)),
-                        ArgumentMatchers.anyBoolean(), eq(PendingState.PENDING_REASON_UNKNOWN));
+                        ArgumentMatchers.anyBoolean(), eq(PendingState.NOT_PENDING));
         verify(mNotifier, times(1))
                 .notifyDownloadFailed(argThat(new DownloadInfoIdMatcher(items.get(5).id)));
         verify(mNotifier, times(1))
