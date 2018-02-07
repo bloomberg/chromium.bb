@@ -347,16 +347,16 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // The PrefNotifier handles registering and notifying preference observers.
   // It is created and owned by this PrefService. Subclasses may access it for
   // unit testing.
-  std::unique_ptr<PrefNotifierImpl> pref_notifier_;
+  const std::unique_ptr<PrefNotifierImpl> pref_notifier_;
 
   // The PrefValueStore provides prioritized preference values. It is owned by
   // this PrefService. Subclasses may access it for unit testing.
-  std::unique_ptr<PrefValueStore> pref_value_store_;
+  const std::unique_ptr<PrefValueStore> pref_value_store_;
 
-  scoped_refptr<PrefRegistry> pref_registry_;
+  const scoped_refptr<PrefRegistry> pref_registry_;
 
   // Pref Stores and profile that we passed to the PrefValueStore.
-  scoped_refptr<PersistentPrefStore> user_pref_store_;
+  const scoped_refptr<PersistentPrefStore> user_pref_store_;
 
   // Callback to call when a read error occurs.
   const base::RepeatingCallback<void(PersistentPrefStore::PrefReadError)>
