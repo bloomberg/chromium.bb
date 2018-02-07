@@ -76,6 +76,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "remove_box.icon",
     "sad_tab.icon",
     "security.icon",
+    "sensors.icon",
     "settings.icon",
     "signin_button_drop_down_arrow.icon",
     "smartphone.icon",

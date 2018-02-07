@@ -239,6 +239,9 @@
     <message name="IDS_PAGE_INFO_TYPE_CLIPBOARD" desc="The label used for the clipboard permission controls in the Page Info popup.">
       Clipboard
     </message>
+    <message name="IDS_PAGE_INFO_TYPE_SENSORS" desc="The label used for the sensor permission controls in the Page Info popup. Title case format.">
+      Motion or Light Sensors
+    </message>
     <!-- TODO(crbug.com/716303): A few permissions are missing here. -->
 
     <!-- Permission values -->
