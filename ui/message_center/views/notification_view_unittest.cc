@@ -284,7 +284,7 @@ TEST_F(NotificationViewTest, CreateOrUpdateTest) {
 }
 
 TEST_F(NotificationViewTest, CreateOrUpdateTestSettingsButton) {
-  data()->settings_button_handler = SettingsButtonHandler::TRAY;
+  data()->settings_button_handler = SettingsButtonHandler::INLINE;
   Notification notification(
       NOTIFICATION_TYPE_BASE_FORMAT, std::string("notification id"),
       base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"),
@@ -492,7 +492,7 @@ TEST_F(NotificationViewTest, UpdateButtonCountTest) {
 }
 
 TEST_F(NotificationViewTest, SettingsButtonTest) {
-  data()->settings_button_handler = SettingsButtonHandler::TRAY;
+  data()->settings_button_handler = SettingsButtonHandler::INLINE;
   Notification notf(
       NOTIFICATION_TYPE_BASE_FORMAT, std::string("notification id"),
       base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"),
