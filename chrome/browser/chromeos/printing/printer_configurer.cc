@@ -177,6 +177,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
   void OnComponentLoad(const Printer& printer,
                        const std::string& ppd_contents,
                        PrinterSetupCallback cb,
+                       component_updater::CrOSComponentManager::Error error,
                        const base::FilePath& result) {
     // Result is the component mount point, or empty
     // if the component couldn't be loaded

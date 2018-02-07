@@ -191,8 +191,8 @@ void CrOSComponentManager::Load(const std::string& name,
     LoadInternal(name, std::move(load_callback));
   } else {
     // A compatible component is installed, do not load it.
-    base::PostTask(FROM_HERE,
-                   base::BindOnce(std::move(load_callback), base::FilePath()));
+    base::PostTask(FROM_HERE, base::BindOnce(std::move(load_callback),
+                                             Error::NONE, base::FilePath()));
   }
 }
 
@@ -253,7 +253,8 @@ void CrOSComponentManager::Install(ComponentUpdateService* cus,
   const auto it = components.find(name);
   if (it == components.end()) {
     base::PostTask(FROM_HERE,
-                   base::BindOnce(std::move(load_callback), base::FilePath()));
+                   base::BindOnce(std::move(load_callback),
+                                  Error::UNKNOWN_COMPONENT, base::FilePath()));
     return;
   }
   ComponentConfig config(it->first, it->second.find("env_version")->second,
@@ -278,11 +279,15 @@ void CrOSComponentManager::FinishInstall(const std::string& name,
                                          MountPolicy mount_policy,
                                          LoadCallback load_callback,
                                          update_client::Error error) {
-  if (mount_policy == MountPolicy::kMount) {
+  if (error != update_client::Error::NONE) {
+    base::PostTask(FROM_HERE,
+                   base::BindOnce(std::move(load_callback),
+                                  Error::INSTALL_FAILURE, base::FilePath()));
+  } else if (mount_policy == MountPolicy::kMount) {
     LoadInternal(name, std::move(load_callback));
   } else {
-    base::PostTask(FROM_HERE,
-                   base::BindOnce(std::move(load_callback), base::FilePath()));
+    base::PostTask(FROM_HERE, base::BindOnce(std::move(load_callback),
+                                             Error::NONE, base::FilePath()));
   }
 }
 
@@ -299,15 +304,22 @@ void CrOSComponentManager::LoadInternal(const std::string& name,
             base::BindOnce(&CrOSComponentManager::FinishLoad,
                            base::Unretained(this), std::move(load_callback)));
   } else {
-    base::PostTask(FROM_HERE,
-                   base::BindOnce(std::move(load_callback), base::FilePath()));
+    base::PostTask(FROM_HERE, base::BindOnce(std::move(load_callback),
+                                             Error::COMPATIBILITY_CHECK_FAILED,
+                                             base::FilePath()));
   }
 }
 
 void CrOSComponentManager::FinishLoad(LoadCallback load_callback,
                                       base::Optional<base::FilePath> result) {
-  PostTask(FROM_HERE, base::BindOnce(std::move(load_callback),
-                                     result.value_or(base::FilePath())));
+  if (!result.has_value()) {
+    base::PostTask(FROM_HERE,
+                   base::BindOnce(std::move(load_callback),
+                                  Error::MOUNT_FAILURE, base::FilePath()));
+  } else {
+    base::PostTask(FROM_HERE, base::BindOnce(std::move(load_callback),
+                                             Error::NONE, result.value()));
+  }
 }
 
 std::vector<ComponentConfig> CrOSComponentManager::GetInstalled() {
