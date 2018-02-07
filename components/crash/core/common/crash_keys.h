@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/strings/string_piece.h"
+
 namespace base {
 class CommandLine;
 }  // namespace base
@@ -31,6 +33,17 @@ void SetSwitchesFromCommandLine(const base::CommandLine& command_line,
 
 // Clears all the CommandLine-related crash keys.
 void ResetCommandLineForTesting();
+
+// Sets the printer info. Data should be separated by ';' up to
+// kPrinterInfoCount substrings. Each substring will be truncated if necessary.
+class ScopedPrinterInfo {
+ public:
+  explicit ScopedPrinterInfo(const base::StringPiece& data);
+  ~ScopedPrinterInfo();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedPrinterInfo);
+};
 
 }  // namespace crash_keys
 
