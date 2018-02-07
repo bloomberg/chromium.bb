@@ -9,7 +9,7 @@ using device::mojom::blink::SensorType;
 namespace blink {
 
 Accelerometer* Accelerometer::Create(ExecutionContext* execution_context,
-                                     const SensorOptions& options,
+                                     const SpatialSensorOptions& options,
                                      ExceptionState& exception_state) {
   return new Accelerometer(execution_context, options, exception_state,
                            SensorType::ACCELEROMETER,
@@ -19,11 +19,11 @@ Accelerometer* Accelerometer::Create(ExecutionContext* execution_context,
 // static
 Accelerometer* Accelerometer::Create(ExecutionContext* execution_context,
                                      ExceptionState& exception_state) {
-  return Create(execution_context, SensorOptions(), exception_state);
+  return Create(execution_context, SpatialSensorOptions(), exception_state);
 }
 
 Accelerometer::Accelerometer(ExecutionContext* execution_context,
-                             const SensorOptions& options,
+                             const SpatialSensorOptions& options,
                              ExceptionState& exception_state,
                              SensorType sensor_type,
                              const Vector<FeaturePolicyFeature>& features)
@@ -35,17 +35,17 @@ Accelerometer::Accelerometer(ExecutionContext* execution_context,
 
 double Accelerometer::x(bool& is_null) const {
   INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return proxy()->reading().accel.x;
+  return GetReading().accel.x;
 }
 
 double Accelerometer::y(bool& is_null) const {
   INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return proxy()->reading().accel.y;
+  return GetReading().accel.y;
 }
 
 double Accelerometer::z(bool& is_null) const {
   INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return proxy()->reading().accel.z;
+  return GetReading().accel.z;
 }
 
 void Accelerometer::Trace(blink::Visitor* visitor) {

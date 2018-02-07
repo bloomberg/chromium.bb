@@ -6,6 +6,7 @@
 #define Accelerometer_h
 
 #include "modules/sensor/Sensor.h"
+#include "modules/sensor/SpatialSensorOptions.h"
 
 namespace blink {
 
@@ -14,7 +15,7 @@ class Accelerometer : public Sensor {
 
  public:
   static Accelerometer* Create(ExecutionContext*,
-                               const SensorOptions&,
+                               const SpatialSensorOptions&,
                                ExceptionState&);
   static Accelerometer* Create(ExecutionContext*, ExceptionState&);
 
@@ -26,7 +27,7 @@ class Accelerometer : public Sensor {
 
  protected:
   Accelerometer(ExecutionContext*,
-                const SensorOptions&,
+                const SpatialSensorOptions&,
                 ExceptionState&,
                 device::mojom::blink::SensorType,
                 const Vector<FeaturePolicyFeature>&);

@@ -14,7 +14,7 @@ namespace blink {
 Vector<double> OrientationSensor::quaternion(bool& is_null) {
   reading_dirty_ = false;
   INIT_IS_NULL_AND_RETURN(is_null, Vector<double>());
-  const auto& quat = proxy()->reading().orientation_quat;
+  const auto& quat = GetReading().orientation_quat;
   return Vector<double>({quat.x, quat.y, quat.z, quat.w});
 }
 
@@ -92,7 +92,7 @@ void OrientationSensor::PopulateMatrixInternal(
     return;
   }
 
-  const auto& quat = proxy()->reading().orientation_quat;
+  const auto& quat = GetReading().orientation_quat;
 
   DoPopulateMatrix(target_matrix, quat.x, quat.y, quat.z, quat.w);
 }

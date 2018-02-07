@@ -32,17 +32,17 @@ Gyroscope::Gyroscope(ExecutionContext* execution_context,
 
 double Gyroscope::x(bool& is_null) const {
   INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return proxy()->reading().gyro.x;
+  return GetReading().gyro.x;
 }
 
 double Gyroscope::y(bool& is_null) const {
   INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return proxy()->reading().gyro.y;
+  return GetReading().gyro.y;
 }
 
 double Gyroscope::z(bool& is_null) const {
   INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return proxy()->reading().gyro.z;
+  return GetReading().gyro.z;
 }
 
 void Gyroscope::Trace(blink::Visitor* visitor) {

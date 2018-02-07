@@ -32,17 +32,17 @@ Magnetometer::Magnetometer(ExecutionContext* execution_context,
 
 double Magnetometer::x(bool& is_null) const {
   INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return proxy()->reading().magn.x;
+  return GetReading().magn.x;
 }
 
 double Magnetometer::y(bool& is_null) const {
   INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return proxy()->reading().magn.y;
+  return GetReading().magn.y;
 }
 
 double Magnetometer::z(bool& is_null) const {
   INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return proxy()->reading().magn.z;
+  return GetReading().magn.z;
 }
 
 void Magnetometer::Trace(blink::Visitor* visitor) {

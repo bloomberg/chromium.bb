@@ -37,7 +37,7 @@ AmbientLightSensor::AmbientLightSensor(ExecutionContext* execution_context,
 
 double AmbientLightSensor::illuminance(bool& is_null) const {
   INIT_IS_NULL_AND_RETURN(is_null, 0.0);
-  return proxy()->reading().als.value;
+  return GetReading().als.value;
 }
 
 void AmbientLightSensor::Trace(blink::Visitor* visitor) {
