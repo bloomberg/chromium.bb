@@ -52,12 +52,10 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
 
   // Returns the color that the resize gutters should be drawn with.
   virtual SkColor DelegatedFrameHostGetGutterColor() const = 0;
-  virtual gfx::Size DelegatedFrameHostDesiredSizeInDIP() const = 0;
 
   virtual bool DelegatedFrameCanCreateResizeLock() const = 0;
   virtual std::unique_ptr<CompositorResizeLock>
   DelegatedFrameHostCreateResizeLock() = 0;
-  virtual viz::LocalSurfaceId GetLocalSurfaceId() const = 0;
 
   virtual void OnFirstSurfaceActivation(
       const viz::SurfaceInfo& surface_info) = 0;
@@ -126,8 +124,13 @@ class CONTENT_EXPORT DelegatedFrameHost
       viz::mojom::HitTestRegionListPtr hit_test_region_list);
   void ClearDelegatedFrame();
   void WasHidden();
-  void WasShown(const ui::LatencyInfo& latency_info);
-  void WasResized(const cc::DeadlinePolicy& deadline_policy);
+  // TODO(ccameron): Include device scale factor here.
+  void WasShown(const viz::LocalSurfaceId& local_surface_id,
+                const gfx::Size& dip_size,
+                const ui::LatencyInfo& latency_info);
+  void WasResized(const viz::LocalSurfaceId& local_surface_id,
+                  const gfx::Size& dip_size,
+                  const cc::DeadlinePolicy& deadline_policy);
   bool HasSavedFrame() const;
   gfx::Size GetRequestedRendererSize() const;
   void SetCompositor(ui::Compositor* compositor);
@@ -163,8 +166,11 @@ class CONTENT_EXPORT DelegatedFrameHost
   void SetWantsAnimateOnlyBeginFrames();
   void DidNotProduceFrame(const viz::BeginFrameAck& ack);
 
+  // Returns the surface id for the surface most recently activated by
+  // OnFirstSurfaceActivation.
+  // TODO(ccameron): GetActiveSurfaceId may be a better name.
   viz::SurfaceId GetCurrentSurfaceId() const {
-    return viz::SurfaceId(frame_sink_id_, local_surface_id_);
+    return viz::SurfaceId(frame_sink_id_, active_local_surface_id_);
   }
   viz::CompositorFrameSinkSupport* GetCompositorFrameSinkSupportForTesting() {
     return support_.get();
@@ -217,15 +223,29 @@ class CONTENT_EXPORT DelegatedFrameHost
   void ResetCompositorFrameSinkSupport();
 
   const viz::FrameSinkId frame_sink_id_;
-  viz::LocalSurfaceId local_surface_id_;
   DelegatedFrameHostClient* const client_;
   const bool enable_surface_synchronization_;
   const bool enable_viz_;
   ui::Compositor* compositor_ = nullptr;
 
-  // It reflects the scale factor of the surface most recently activated via
+  // The surface id that was most recently activated by
   // OnFirstSurfaceActivation.
+  viz::LocalSurfaceId active_local_surface_id_;
+  // The scale factor of the above surface.
   float active_device_scale_factor_ = 0.f;
+
+  // The local surface id as of the most recent call to WasResized or WasShown.
+  // This is the surface that we expect future frames to reference. This will
+  // eventually equal the active surface.
+  viz::LocalSurfaceId pending_local_surface_id_;
+  // The size of the above surface (updated at the same time).
+  gfx::Size pending_surface_dip_size_;
+
+  // In non-surface sync, this is the size of the most recently activated
+  // surface (which is suitable for calculating gutter size). In surface sync,
+  // this is most recent size set in WasResized.
+  // TODO(ccameron): The meaning of "current" should be made more clear here.
+  gfx::Size current_frame_size_in_dip_;
 
   // Overridable tick clock used for testing functions using current time.
   base::TickClock* tick_clock_;
@@ -253,9 +273,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   std::unique_ptr<CompositorResizeLock> resize_lock_;
   bool create_resize_lock_after_commit_ = false;
   bool allow_one_renderer_frame_during_resize_lock_ = false;
-
-  // Keeps track of the current frame size.
-  gfx::Size current_frame_size_in_dip_;
 
   // This lock is for waiting for a front surface to become available to draw.
   std::unique_ptr<ui::CompositorLock> released_front_lock_;

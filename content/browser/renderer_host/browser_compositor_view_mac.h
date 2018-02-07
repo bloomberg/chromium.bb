@@ -90,6 +90,13 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
 
   viz::FrameSinkId GetRootFrameSinkId();
 
+  const gfx::Size& GetRendererSize() const {
+    return delegated_frame_host_size_dip_;
+  }
+  const viz::LocalSurfaceId& GetRendererLocalSurfaceId() const {
+    return delegated_frame_host_surface_id_;
+  }
+
   // Indicate that the recyclable compositor should be destroyed, and no future
   // compositors should be recycled.
   static void DisableRecyclingForShutdown();
@@ -98,9 +105,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   ui::Layer* DelegatedFrameHostGetLayer() const override;
   bool DelegatedFrameHostIsVisible() const override;
   SkColor DelegatedFrameHostGetGutterColor() const override;
-  gfx::Size DelegatedFrameHostDesiredSizeInDIP() const override;
   bool DelegatedFrameCanCreateResizeLock() const override;
-  viz::LocalSurfaceId GetLocalSurfaceId() const override;
   std::unique_ptr<CompositorResizeLock> DelegatedFrameHostCreateResizeLock()
       override;
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
