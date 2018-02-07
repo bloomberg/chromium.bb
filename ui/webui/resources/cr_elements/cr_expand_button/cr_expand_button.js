@@ -44,4 +44,9 @@ Polymer({
     this.expanded = !this.expanded;
     event.stopPropagation();
   },
+
+  /** @private */
+  getAriaPressed_: function(expanded) {
+    return expanded ? 'true' : 'false';
+  },
 });
