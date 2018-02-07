@@ -677,6 +677,23 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_Media_Next_Track">
+  <owner>warx@chromium.org</owner>
+  <description>User pressed the next track media control button.</description>
+</action>
+
+<action name="Accel_Media_PlayPause">
+  <owner>warx@chromium.org</owner>
+  <description>User pressed the play/pause media control button.</description>
+</action>
+
+<action name="Accel_Media_Prev_Track">
+  <owner>warx@chromium.org</owner>
+  <description>
+    User pressed the previous track media control button.
+  </description>
+</action>
+
 <action name="Accel_Move_Window_To_Above_Display">
   <owner>warx@chromium.org</owner>
   <description>

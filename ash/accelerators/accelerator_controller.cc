@@ -260,14 +260,17 @@ void HandleLaunchLastApp() {
 }
 
 void HandleMediaNextTrack() {
+  base::RecordAction(UserMetricsAction("Accel_Media_Next_Track"));
   Shell::Get()->media_controller()->HandleMediaNextTrack();
 }
 
 void HandleMediaPlayPause() {
+  base::RecordAction(UserMetricsAction("Accel_Media_PlayPause"));
   Shell::Get()->media_controller()->HandleMediaPlayPause();
 }
 
 void HandleMediaPrevTrack() {
+  base::RecordAction(UserMetricsAction("Accel_Media_Prev_Track"));
   Shell::Get()->media_controller()->HandleMediaPrevTrack();
 }
 
