@@ -1566,6 +1566,13 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     if (!dns_task)
       return;
 
+    if (duration < base::TimeDelta::FromMilliseconds(10)) {
+      base::UmaHistogramSparse("Net.DNS.DnsTask.ErrorBeforeFallback.Fast",
+                               std::abs(net_error));
+    } else {
+      base::UmaHistogramSparse("Net.DNS.DnsTask.ErrorBeforeFallback.Slow",
+                               std::abs(net_error));
+    }
     dns_task_error_ = net_error;
 
     // TODO(szym): Run ServeFromHosts now if nsswitch.conf says so.
