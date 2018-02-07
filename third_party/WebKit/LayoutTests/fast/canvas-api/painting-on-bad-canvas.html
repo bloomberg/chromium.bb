@@ -37,10 +37,6 @@ test(function(){
     // First pass: normal conditions
     testAPICalls();
 
-    // Test a zero size canvas
-    canvas.width = 0;
-    testAPICalls();
-
     // Test a canvas so large that it has no chance of successful allocating a backing
     canvas.width = 10000000;
     canvas.height = 10000000;

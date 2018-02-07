@@ -8,13 +8,8 @@ test(function() {
     patternCanvasCtx.fillRect(0, 0, 15, 15);
     var myOCanvas = new OffscreenCanvas(100, 100);
     var myOCanvasCtx = myOCanvas.getContext("2d");
-    var pattern = myOCanvasCtx.createPattern(patternCanvas, 'repeat');
-    myOCanvasCtx.fillStyle = pattern;
-    myOCanvasCtx.fillRect(0, 0, myOCanvas.width, myOCanvas.height);
-    var imageData = myOCanvasCtx.getImageData(0, 0, 1, 1).data;
-    assert_equals(imageData[0], 0);
-    assert_equals(imageData[1], 0);
-    assert_equals(imageData[2], 0);
-    assert_equals(imageData[3], 0);
-}, "CreatePattern using OffcreenCanvas as image source silently fails when offscreenCanvas has zero size");
+    assert_throws("InvalidStateError", function() {
+      myOCanvasCtx.createPattern(patternCanvas, 'repeat');
+    });
+}, "CreatePattern using OffcreenCanvas as image source throws exception when offscreenCanvas has zero size");
 </script>
