@@ -31,8 +31,19 @@ interface NotificationService {
 
   // Shows a notification that is not associated with a service worker.
   // Notifies |event_listener| when the notification is shown/clicked/closed.
+  // Calling this again with the same |token| from the same origin will cause
+  // the original notification to be replaced with the new data and resources.
+  // |token| must be non-empty, and the same token should be passed to
+  // CloseNonPersistentNotification to close this notification programmatically.
   DisplayNonPersistentNotification(
+        string token,
         NotificationData notification_data,
         NotificationResources notification_resources,
         NonPersistentNotificationListener event_listener);
+
+  // Closes a notification that is not associated with a service worker.
+  // |token| identifies which notification should be closed (must be non-empty).
+  // Calling this without previously calling DisplayNonPersistentNotification
+  // with the same token is a no-op.
+  CloseNonPersistentNotification(string token);
 };

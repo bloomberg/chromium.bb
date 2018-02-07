@@ -77,6 +77,7 @@ void BlinkNotificationServiceImpl::OnConnectionError() {
 }
 
 void BlinkNotificationServiceImpl::DisplayNonPersistentNotification(
+    const std::string& token,
     const PlatformNotificationData& platform_notification_data,
     const NotificationResources& notification_resources,
     blink::mojom::NonPersistentNotificationListenerPtr event_listener_ptr) {
@@ -84,16 +85,9 @@ void BlinkNotificationServiceImpl::DisplayNonPersistentNotification(
   if (!Service())
     return;
 
-  // TODO(https://crbug.com/595685): Generate a GUID in the
-  // NotificationIdGenerator instead.
-  static int request_id = 0;
-  request_id++;
-
   std::string notification_id =
       notification_context_->notification_id_generator()
-          ->GenerateForNonPersistentNotification(
-              origin_.GetURL(), platform_notification_data.tag, request_id,
-              render_process_id_);
+          ->GenerateForNonPersistentMojoNotification(origin_, token);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -118,6 +112,31 @@ void BlinkNotificationServiceImpl::DisplayNonPersistentNotificationOnUIThread(
 
   Service()->DisplayNotification(browser_context_, notification_id, origin,
                                  notification_data, notification_resources);
+}
+
+void BlinkNotificationServiceImpl::CloseNonPersistentNotification(
+    const std::string& token) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!Service())
+    return;
+
+  std::string notification_id =
+      notification_context_->notification_id_generator()
+          ->GenerateForNonPersistentMojoNotification(origin_, token);
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&BlinkNotificationServiceImpl::
+                         CloseNonPersistentNotificationOnUIThread,
+                     weak_ptr_factory_.GetWeakPtr(), notification_id));
+}
+
+void BlinkNotificationServiceImpl::CloseNonPersistentNotificationOnUIThread(
+    const std::string& notification_id) {
+  Service()->CloseNotification(browser_context_, notification_id);
+
+  NotificationEventDispatcherImpl::GetInstance()
+      ->DispatchNonPersistentCloseEvent(notification_id);
 }
 
 }  // namespace content

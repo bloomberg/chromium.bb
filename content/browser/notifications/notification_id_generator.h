@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
+#include "url/origin.h"
 
 class GURL;
 
@@ -65,10 +66,26 @@ class CONTENT_EXPORT NotificationIdGenerator {
   // Generates an id for a non-persistent notification given the notification's
   // origin, tag and request id. The request id must've been created by the
   // |render_process_id|.
+  // TODO(https://crbug.com/595685): Remove this method once we use the mojo
+  // pathway by default.
   std::string GenerateForNonPersistentNotification(const GURL& origin,
                                                    const std::string& tag,
                                                    int request_id,
                                                    int render_process_id) const;
+
+  // Generates an id for a non-persistent notification given the notification's
+  // |origin| and |token|.
+  //
+  // |token| is what determines which notifications from the same origin receive
+  // the same notification ID and therefore which notifications will replace
+  // each other. (So different notifications with the same non-empty tag should
+  // have the same token, but notifications without tags should have unique
+  // tokens.)
+  // TODO(https://crbug.com/595685): Remove 'Mojo' from this method name once
+  // we use the mojo pathway by default.
+  std::string GenerateForNonPersistentMojoNotification(
+      const url::Origin& origin,
+      const std::string& token) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationIdGenerator);
