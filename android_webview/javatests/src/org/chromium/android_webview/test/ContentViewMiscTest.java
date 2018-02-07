@@ -23,8 +23,8 @@ import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewStatics;
+import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.net.ProxyChangeListener;
 
 import java.util.concurrent.atomic.AtomicBoolean;
