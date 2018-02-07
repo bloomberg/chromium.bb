@@ -946,18 +946,18 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     mbmi->interp_filters = av1_broadcast_interp_filter(BILINEAR);
 
     int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
-    int_mv ref_mvs[MAX_MV_REF_CANDIDATES];
+    int_mv ref_mvs[INTRA_FRAME + 1][MAX_MV_REF_CANDIDATES];
 
-    av1_find_mv_refs(cm, xd, mi, INTRA_FRAME, &xd->ref_mv_count[INTRA_FRAME],
-                     xd->ref_mv_stack[INTRA_FRAME], NULL, ref_mvs, mi_row,
-                     mi_col, NULL, NULL, inter_mode_ctx);
+    av1_find_mv_refs(cm, xd, mi, INTRA_FRAME, xd->ref_mv_count,
+                     xd->ref_mv_stack, NULL, ref_mvs, mi_row, mi_col, NULL,
+                     NULL, inter_mode_ctx, 0);
 
     int_mv nearestmv, nearmv;
 
 #if CONFIG_AMVR
-    av1_find_best_ref_mvs(0, ref_mvs, &nearestmv, &nearmv, 0);
+    av1_find_best_ref_mvs(0, ref_mvs[INTRA_FRAME], &nearestmv, &nearmv, 0);
 #else
-    av1_find_best_ref_mvs(0, ref_mvs, &nearestmv, &nearmv);
+    av1_find_best_ref_mvs(0, ref_mvs[INTRA_FRAME], &nearestmv, &nearmv);
 #endif
     int_mv dv_ref = nearestmv.as_int == 0 ? nearmv : nearestmv;
     if (dv_ref.as_int == 0)
@@ -1728,43 +1728,38 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_OPT_REF_MV
   if (is_compound) {
     MV_REFERENCE_FRAME ref_frame = av1_ref_frame_type(mbmi->ref_frame);
-    av1_find_mv_refs(cm, xd, mi, ref_frame, &xd->ref_mv_count[ref_frame],
-                     xd->ref_mv_stack[ref_frame], compound_inter_mode_ctx,
-                     ref_mvs[ref_frame], mi_row, mi_col, fpm_sync, (void *)pbi,
-                     inter_mode_ctx);
+    av1_find_mv_refs(cm, xd, mi, ref_frame, xd->ref_mv_count, xd->ref_mv_stack,
+                     compound_inter_mode_ctx, ref_mvs, mi_row, mi_col, fpm_sync,
+                     (void *)pbi, inter_mode_ctx, 0);
     if (xd->ref_mv_count[ref_frame] <= 1) {
       for (int ref = 0; ref < 1 + is_compound; ++ref) {
         MV_REFERENCE_FRAME frame = mbmi->ref_frame[ref];
 
-        av1_find_mv_refs(cm, xd, mi, frame, &xd->ref_mv_count[frame],
-                         xd->ref_mv_stack[frame], compound_inter_mode_ctx,
-                         ref_mvs[frame], mi_row, mi_col, fpm_sync, (void *)pbi,
-                         inter_mode_ctx);
+        av1_find_mv_refs(cm, xd, mi, frame, xd->ref_mv_count, xd->ref_mv_stack,
+                         compound_inter_mode_ctx, ref_mvs, mi_row, mi_col,
+                         fpm_sync, (void *)pbi, inter_mode_ctx, 0);
       }
     }
   } else {
     MV_REFERENCE_FRAME frame = mbmi->ref_frame[0];
-    av1_find_mv_refs(cm, xd, mi, frame, &xd->ref_mv_count[frame],
-                     xd->ref_mv_stack[frame], compound_inter_mode_ctx,
-                     ref_mvs[frame], mi_row, mi_col, fpm_sync, (void *)pbi,
-                     inter_mode_ctx);
+    av1_find_mv_refs(cm, xd, mi, frame, xd->ref_mv_count, xd->ref_mv_stack,
+                     compound_inter_mode_ctx, ref_mvs, mi_row, mi_col, fpm_sync,
+                     (void *)pbi, inter_mode_ctx, 0);
   }
 #else
   for (int ref = 0; ref < 1 + is_compound; ++ref) {
     MV_REFERENCE_FRAME frame = mbmi->ref_frame[ref];
 
-    av1_find_mv_refs(cm, xd, mi, frame, &xd->ref_mv_count[frame],
-                     xd->ref_mv_stack[frame], compound_inter_mode_ctx,
-                     ref_mvs[frame], mi_row, mi_col, fpm_sync, (void *)pbi,
-                     inter_mode_ctx);
+    av1_find_mv_refs(cm, xd, mi, frame, xd->ref_mv_count, xd->ref_mv_stack,
+                     compound_inter_mode_ctx, ref_mvs, mi_row, mi_col, fpm_sync,
+                     (void *)pbi, inter_mode_ctx, 0);
   }
 
   if (is_compound) {
     MV_REFERENCE_FRAME ref_frame = av1_ref_frame_type(mbmi->ref_frame);
-    av1_find_mv_refs(cm, xd, mi, ref_frame, &xd->ref_mv_count[ref_frame],
-                     xd->ref_mv_stack[ref_frame], compound_inter_mode_ctx,
-                     ref_mvs[ref_frame], mi_row, mi_col, fpm_sync, (void *)pbi,
-                     inter_mode_ctx);
+    av1_find_mv_refs(cm, xd, mi, ref_frame, xd->ref_mv_count, xd->ref_mv_stack,
+                     compound_inter_mode_ctx, ref_mvs, mi_row, mi_col, fpm_sync,
+                     (void *)pbi, inter_mode_ctx, 0);
   }
 #endif
 
