@@ -371,7 +371,6 @@ class SigninScreenHandler
   void HandleShutdownSystem();
   void HandleRebootSystem();
   void HandleRemoveUser(const AccountId& account_id);
-  void HandleShowAddUser(const base::ListValue* args);
   void HandleToggleEnrollmentScreen();
   void HandleToggleEnrollmentAd();
   void HandleToggleEnableDebuggingScreen();
@@ -440,9 +439,6 @@ class SigninScreenHandler
   bool IsGuestSigninAllowed() const;
 
   bool ShouldLoadGaia() const;
-
-  // Shows signin.
-  void OnShowAddUser();
 
   net::Error FrameError() const;
 

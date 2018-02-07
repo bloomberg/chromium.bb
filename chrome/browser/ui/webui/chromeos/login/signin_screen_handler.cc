@@ -495,7 +495,6 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleLaunchPublicSession);
   AddRawCallback("offlineLogin", &SigninScreenHandler::HandleOfflineLogin);
   AddCallback("rebootSystem", &SigninScreenHandler::HandleRebootSystem);
-  AddRawCallback("showAddUser", &SigninScreenHandler::HandleShowAddUser);
   AddCallback("shutdownSystem", &SigninScreenHandler::HandleShutdownSystem);
   AddCallback("removeUser", &SigninScreenHandler::HandleRemoveUser);
   AddCallback("toggleEnrollmentScreen",
@@ -623,7 +622,7 @@ void SigninScreenHandler::ShowImpl() {
 
   if (oobe_ui_) {
     // Shows new user sign-in for OOBE.
-    OnShowAddUser();
+    gaia_screen_handler_->OnShowAddUser();
   } else {
     // Populates account picker. Animation is turned off for now until we
     // figure out how to make it fast enough. This will call LoadUsers.
@@ -988,7 +987,7 @@ void SigninScreenHandler::OnUserRemoved(const AccountId& account_id,
                                         bool last_user_removed) {
   CallJS("login.AccountPickerScreen.removeUser", account_id);
   if (last_user_removed)
-    OnShowAddUser();
+    gaia_screen_handler_->OnShowAddUser();
 }
 
 void SigninScreenHandler::OnUserImageChanged(const user_manager::User& user) {
@@ -1019,7 +1018,7 @@ void SigninScreenHandler::OnPreferencesChanged() {
       !delegate_->IsShowUsers()) {
     // We are at the account picker screen and the POD setting has changed
     // to be disabled. We need to show the add user page.
-    HandleShowAddUser(nullptr);
+    gaia_screen_handler_->HandleShowAddUser(nullptr);
     return;
   }
 
@@ -1275,20 +1274,6 @@ void SigninScreenHandler::HandleRemoveUser(const AccountId& account_id) {
     return;
   delegate_->RemoveUser(account_id);
   UpdateAddButtonStatus();
-}
-
-void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
-  TRACE_EVENT_ASYNC_STEP_INTO0("ui", "ShowLoginWebUI",
-                               LoginDisplayHostWebUI::kShowLoginWebUIid,
-                               "ShowAddUser");
-  std::string email;
-  // |args| can be null if it's OOBE.
-  if (args)
-    args->GetString(0, &email);
-  gaia_screen_handler_->set_populated_email(email);
-  if (!email.empty())
-    SendReauthReason(AccountId::FromUserEmail(email));
-  OnShowAddUser();
 }
 
 void SigninScreenHandler::HandleToggleEnrollmentScreen() {
@@ -1656,12 +1641,6 @@ bool SigninScreenHandler::IsGuestSigninAllowed() const {
   bool allow_guest;
   cros_settings->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
   return allow_guest;
-}
-
-void SigninScreenHandler::OnShowAddUser() {
-  is_account_picker_showing_first_time_ = false;
-  lock_screen_utils::EnforcePolicyInputMethods(std::string());
-  gaia_screen_handler_->ShowGaiaAsync();
 }
 
 net::Error SigninScreenHandler::FrameError() const {

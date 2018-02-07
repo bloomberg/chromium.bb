@@ -52,9 +52,10 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // GaiaView:
   void MaybePreloadAuthExtension() override;
   void DisableRestrictiveProxyCheckForTest() override;
+  void ShowGaiaAsync() override;
 
  private:
-  // TODO (antrim@): remove this dependency.
+  // TODO (xiaoyinh): remove this dependency.
   friend class SigninScreenHandler;
 
   struct GaiaContext;
@@ -126,6 +127,10 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void HandleIdentifierEntered(const std::string& account_identifier);
 
   void HandleAuthExtensionLoaded();
+  void HandleUpdateGaiaDialogSize(int width, int height);
+  void HandleUpdateGaiaDialogVisibility(bool visible);
+  void HandleShowAddUser(const base::ListValue* args);
+  void OnShowAddUser();
 
   // Really handles the complete login message.
   void DoCompleteLogin(const std::string& gaia_id,
@@ -161,13 +166,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Updates the member variable and UMA histogram indicating whether the
   // principals API was used during SAML login.
   void SetSAMLPrincipalsAPIUsed(bool api_used);
-
-  // Show the sign-in screen. Depending on internal state, the screen will
-  // either be shown immediately or after an asynchronous clean-up process that
-  // cleans DNS cache and cookies. In the latter case, the request to show the
-  // screen can be canceled by calling CancelShowGaiaAsync() while the clean-up
-  // is in progress.
-  void ShowGaiaAsync();
 
   // Cancels the request to show the sign-in screen while the asynchronous
   // clean-up process that precedes the screen showing is in progress.

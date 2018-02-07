@@ -140,6 +140,11 @@ class FakeLoginDisplayHost : public chromeos::LoginDisplayHost {
   void LoadWallpaper(const AccountId& account_id) override {}
   void LoadSigninWallpaper() override {}
   bool IsUserWhitelisted(const AccountId& account_id) override { return false; }
+  void UpdateGaiaDialogVisibility(bool visible) override {}
+  void UpdateGaiaDialogSize(int width, int height) override {}
+  const user_manager::UserList GetUsers() override {
+    return user_manager::UserList();
+  }
 
  private:
   bool is_voice_interaction_oobe_ = false;

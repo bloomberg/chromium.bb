@@ -91,7 +91,8 @@
   USER_ADDING: 'user-adding',
   APP_LAUNCH_SPLASH: 'app-launch-splash',
   ARC_KIOSK_SPLASH: 'arc-kiosk-splash',
-  DESKTOP_USER_MANAGER: 'login-add-user'
+  DESKTOP_USER_MANAGER: 'login-add-user',
+  GAIA_SIGNIN: 'gaia-signin'
 };
 
 /* Possible lock screen enabled app activity state. */
@@ -297,10 +298,17 @@ cr.define('cr.ui.login', function() {
           loadTimeData.getString('showViewsLock') == 'on' &&
           (this.displayType_ == DISPLAY_TYPE.LOCK ||
            this.displayType_ == DISPLAY_TYPE.USER_ADDING);
-      var showingViewsLogin = loadTimeData.valueExists('showViewsLogin') &&
+      return showingViewsLock || this.showingViewsLogin;
+    },
+
+    /**
+     * Returns true if we are showing views based login screen.
+     * @return {boolean}
+     */
+    get showingViewsLogin() {
+      return loadTimeData.valueExists('showViewsLogin') &&
           loadTimeData.getString('showViewsLogin') == 'on' &&
-          (this.displayType_ == DISPLAY_TYPE.LOGIN);
-      return showingViewsLock || showingViewsLogin;
+          (this.displayType_ == DISPLAY_TYPE.GAIA_SIGNIN);
     },
 
     /**
@@ -640,6 +648,10 @@ cr.define('cr.ui.login', function() {
         return;
 
       var screenId = screen.id;
+      if (screenId == SCREEN_ACCOUNT_PICKER && this.showingViewsLogin) {
+        chrome.send('updateGaiaDialogVisibility', [false]);
+        return;
+      }
 
       // Make sure the screen is decorated.
       this.preloadScreen(screen);
@@ -735,6 +747,12 @@ cr.define('cr.ui.login', function() {
       // This requires |screen| to have 'box-sizing: border-box'.
       screen.style.width = width + 'px';
       screen.style.height = height + 'px';
+
+      if (this.showingViewsLogin) {
+        chrome.send('updateGaiaDialogSize', [width, height]);
+        $('scroll-container').classList.toggle('disable-scroll', true);
+        $('scroll-container').scrollTop = $('inner-container').offsetTop;
+      }
     },
 
     /**

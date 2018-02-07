@@ -96,7 +96,8 @@ const char* kKnownDisplayTypes[] = {OobeUI::kOobeDisplay,
                                     OobeUI::kLockDisplay,
                                     OobeUI::kUserAddingDisplay,
                                     OobeUI::kAppLaunchSplashDisplay,
-                                    OobeUI::kArcKioskSplashDisplay};
+                                    OobeUI::kArcKioskSplashDisplay,
+                                    OobeUI::kGaiaSigninDisplay};
 
 const char kStringsJSPath[] = "strings.js";
 const char kLockJSPath[] = "lock.js";
@@ -245,6 +246,7 @@ const char OobeUI::kLockDisplay[] = "lock";
 const char OobeUI::kUserAddingDisplay[] = "user-adding";
 const char OobeUI::kAppLaunchSplashDisplay[] = "app-launch-splash";
 const char OobeUI::kArcKioskSplashDisplay[] = "arc-kiosk-splash";
+const char OobeUI::kGaiaSigninDisplay[] = "gaia-signin";
 
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
     : WebUIController(web_ui) {

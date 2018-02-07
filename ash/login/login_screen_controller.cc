@@ -288,6 +288,12 @@ void LoginScreenController::FocusLockScreenApps(bool reverse) {
   login_screen_client_->FocusLockScreenApps(reverse);
 }
 
+void LoginScreenController::ShowGaiaSignin() {
+  if (!login_screen_client_)
+    return;
+  login_screen_client_->ShowGaiaSignin();
+}
+
 void LoginScreenController::AddLockScreenAppsFocusObserver(
     LockScreenAppsFocusObserver* observer) {
   lock_screen_apps_focus_observers_.AddObserver(observer);
