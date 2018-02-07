@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_BUBBLE_ANCHOR_UTIL_H_
 #define CHROME_BROWSER_UI_BUBBLE_ANCHOR_UTIL_H_
 
+#include "build/build_config.h"
+
 namespace gfx {
 class Rect;
 }
@@ -24,6 +26,12 @@ constexpr int kNoToolbarLeftOffset = 40;
 // actual View. This function has separate implementations for Views- and Cocoa-
 // based browsers. The anchor rect is in screen coordinates.
 gfx::Rect GetPageInfoAnchorRect(Browser* browser);
+
+#if defined(OS_MACOSX)
+// Returns the page info anchor rect for |browser|, which is assumed to have a
+// Cocoa browser window.
+gfx::Rect GetPageInfoAnchorRectCocoa(Browser* browser);
+#endif
 
 }  // namespace bubble_anchor_util
 
