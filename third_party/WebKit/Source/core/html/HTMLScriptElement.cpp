@@ -41,21 +41,15 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLScriptElement::HTMLScriptElement(Document& document,
-                                            const CreateElementFlags flags,
-                                            bool already_started,
-                                            bool created_during_document_write)
+                                            const CreateElementFlags flags)
     : HTMLElement(scriptTag, document),
       loader_(InitializeScriptLoader(flags.IsCreatedByParser(),
-                                     already_started,
-                                     created_during_document_write)) {}
+                                     flags.WasAlreadyStarted(),
+                                     flags.IsCreatedDuringDocumentWrite())) {}
 
-HTMLScriptElement* HTMLScriptElement::Create(
-    Document& document,
-    const CreateElementFlags flags,
-    bool already_started,
-    bool created_during_document_write) {
-  return new HTMLScriptElement(document, flags, already_started,
-                               created_during_document_write);
+HTMLScriptElement* HTMLScriptElement::Create(Document& document,
+                                             const CreateElementFlags flags) {
+  return new HTMLScriptElement(document, flags);
 }
 
 bool HTMLScriptElement::IsURLAttribute(const Attribute& attribute) const {
@@ -225,9 +219,10 @@ void HTMLScriptElement::SetScriptElementForBinding(
 }
 
 Element* HTMLScriptElement::CloneElementWithoutAttributesAndChildren() {
-  auto* element =
-      new HTMLScriptElement(GetDocument(), CreateElementFlags::ByCloneNode(),
-                            loader_->AlreadyStarted(), false);
+  CreateElementFlags flags =
+      CreateElementFlags::ByCloneNode().SetAlreadyStarted(
+          loader_->AlreadyStarted());
+  auto* element = new HTMLScriptElement(GetDocument(), flags);
   const AtomicString& is = FastGetAttribute(HTMLNames::isAttr);
   if (!is.IsNull() && !V0CustomElement::IsValidName(element->localName()))
     V0CustomElementRegistrationContext::SetTypeExtension(element, is);

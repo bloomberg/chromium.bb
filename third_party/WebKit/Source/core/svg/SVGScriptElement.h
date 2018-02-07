@@ -53,7 +53,7 @@ class SVGScriptElement final : public SVGElement,
   void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
-  SVGScriptElement(Document&, const CreateElementFlags, bool already_started);
+  SVGScriptElement(Document&, const CreateElementFlags);
 
   void ParseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
