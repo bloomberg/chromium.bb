@@ -23,6 +23,8 @@ public final class WebApkMetaDataKeys {
     public static final String THEME_COLOR = "org.chromium.webapk.shell_apk.themeColor";
     public static final String BACKGROUND_COLOR = "org.chromium.webapk.shell_apk.backgroundColor";
     public static final String ICON_ID = "org.chromium.webapk.shell_apk.iconId";
+    public static final String DISABLE_FULL_SCREEN_MODE =
+            "org.chromium.webapk.shell_apk.disableFullScreenMode";
 
     public static final String ICON_URLS_AND_ICON_MURMUR2_HASHES =
             "org.chromium.webapk.shell_apk.iconUrlsAndIconMurmur2Hashes";
