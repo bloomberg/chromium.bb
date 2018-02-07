@@ -78,6 +78,10 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   // gesture is currently being processed.
   bool IsGestureNeededForPlayback() const;
 
+  // Returns an error string to be used by the HTMLMediaElement when the play()
+  // method fails because of autoplay restrictions.
+  String GetPlayErrorMessage() const;
+
   virtual void Trace(blink::Visitor*);
 
  private:
@@ -119,6 +123,10 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   // Called when the video visibility changes while autoplaying muted, will
   // pause the video when invisible and resume the video when visible.
   void OnVisibilityChangedForAutoplay(bool is_visible);
+
+  // Returns whether the current autoplay policy is
+  // kDocumentUserActivationRequired. This is a helper method for readability.
+  bool IsUsingDocumentUserActivationRequiredPolicy() const;
 
   bool locked_pending_user_gesture_ : 1;
   bool locked_pending_user_gesture_if_cross_origin_experiment_enabled_ : 1;
