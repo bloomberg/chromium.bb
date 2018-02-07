@@ -7,13 +7,16 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
+
 @class NSError;
 
 namespace chrome_test_util {
 
 // Attempts to tap the element with |element_id| in the current WebState
-// using a JavaScript click() event.
-bool TapWebViewElementWithId(const std::string& element_id);
+// using a JavaScript click() event. Returns a bool indicating if the tap
+// was successful.
+bool TapWebViewElementWithId(const std::string& element_id) WARN_UNUSED_RESULT;
 
 // Attempts to tap the element with |element_id| in the current WebState
 // using a JavaScript click() event. |error| can be nil.

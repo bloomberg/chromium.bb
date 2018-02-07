@@ -386,7 +386,8 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   [ChromeEarlGrey loadURL:page1URL];
 
   // Click link to update location.hash and go to new URL (same page).
-  chrome_test_util::TapWebViewElementWithId(kHashChangeWithHistoryLabel);
+  GREYAssert(TapWebViewElementWithId(kHashChangeWithHistoryLabel),
+             @"Failed to tap %s", kHashChangeWithHistoryLabel);
 
   // Navigate back to original URL. This should fire a hashchange event.
   std::string backHashChangeContent = "backHashChange";
@@ -429,14 +430,16 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   [ChromeEarlGrey loadURL:page1URL];
 
   // Tap link to replace the location value.
-  TapWebViewElementWithId(kHashChangeWithoutHistoryLabel);
+  GREYAssert(TapWebViewElementWithId(kHashChangeWithoutHistoryLabel),
+             @"Failed to tap %s", kHashChangeWithoutHistoryLabel);
   [[EarlGrey
       selectElementWithMatcher:OmniboxText(
                                    hashChangedWithoutHistoryURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Tap link to update the location.hash with a new value.
-  TapWebViewElementWithId(kHashChangeWithHistoryLabel);
+  GREYAssert(TapWebViewElementWithId(kHashChangeWithHistoryLabel),
+             @"Failed to tap %s", kHashChangeWithHistoryLabel);
   [[EarlGrey
       selectElementWithMatcher:OmniboxText(
                                    hashChangedWithHistoryURL.GetContent())]
@@ -464,14 +467,16 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   [ChromeEarlGrey loadURL:page1URL];
 
   // Tap link to update location.hash with a new value.
-  TapWebViewElementWithId(kHashChangeWithHistoryLabel);
+  GREYAssert(TapWebViewElementWithId(kHashChangeWithHistoryLabel),
+             @"Failed to tap %s", kHashChangeWithHistoryLabel);
   [[EarlGrey
       selectElementWithMatcher:OmniboxText(
                                    hashChangedWithHistoryURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Tap link to update location.hash with the same value.
-  TapWebViewElementWithId(kHashChangeWithHistoryLabel);
+  GREYAssert(TapWebViewElementWithId(kHashChangeWithHistoryLabel),
+             @"Failed to tap %s", kHashChangeWithHistoryLabel);
 
   // Tap back once to return to original URL.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
@@ -560,7 +565,8 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   // Load index, tap on redirect link, and assert that the page is redirected
   // to the proper destination.
   [ChromeEarlGrey loadURL:indexURL];
-  TapWebViewElementWithId(redirectLabel);
+  GREYAssert(TapWebViewElementWithId(redirectLabel), @"Failed to tap %s",
+             redirectLabel.c_str());
   [ChromeEarlGrey waitForWebViewContainingText:"You've arrived"];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];

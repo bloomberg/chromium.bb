@@ -242,6 +242,7 @@ void TestResponseProvider::GetLanguageResponse(
 
 }  // namespace
 
+using chrome_test_util::TapWebViewElementWithId;
 using translate::LanguageDetectionController;
 
 #pragma mark - MockTranslateScriptManager
@@ -473,7 +474,7 @@ using translate::LanguageDetectionController;
   expectedLanguageDetails.adopted_language = "fr";
   [self assertLanguageDetails:expectedLanguageDetails];
   // Trigger the hash change.
-  chrome_test_util::TapWebViewElementWithId("Hash");
+  GREYAssert(TapWebViewElementWithId("Hash"), @"Failed to tap \"Hash\"");
   // Check that language detection has been re-run.
   expectedLanguageDetails.adopted_language = "en";
   [self assertLanguageDetails:expectedLanguageDetails];
@@ -530,7 +531,7 @@ using translate::LanguageDetectionController;
   GURL URL = web::test::HttpServer::MakeUrl(std::string("http://") + kLinkPath);
   GURL someLanguageURL = web::test::HttpServer::MakeUrl(kSomeLanguageUrl);
   [ChromeEarlGrey loadURL:URL];
-  chrome_test_util::TapWebViewElementWithId("click");
+  GREYAssert(TapWebViewElementWithId("click"), @"Failed to tap \"click\"");
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           someLanguageURL.GetContent())]
       assertWithMatcher:grey_notNil()];

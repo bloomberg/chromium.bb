@@ -649,7 +649,8 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   // Open a tab with a link to click.
   NewMainTabWithURL(initialURL, "link");
   // Click the link.
-  chrome_test_util::TapWebViewElementWithId("link");
+  GREYAssert(chrome_test_util::TapWebViewElementWithId("link"),
+             @"Failed to tap \"link\"");
 
   [ChromeEarlGrey waitForWebViewContainingText:"Whee"];
   NSUInteger tabIndex = chrome_test_util::GetMainTabCount() - 1;

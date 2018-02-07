@@ -26,6 +26,7 @@ using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::SettingsMenuBackButton;
+using chrome_test_util::TapWebViewElementWithId;
 
 namespace {
 
@@ -95,8 +96,10 @@ NSString* GetTextFieldForID(int categoryId) {
   [ChromeEarlGrey loadURL:URL];
 
   // Autofill one of the forms.
-  chrome_test_util::TapWebViewElementWithId("fill_profile_president");
-  chrome_test_util::TapWebViewElementWithId("submit_profile");
+  GREYAssert(TapWebViewElementWithId("fill_profile_president"),
+             @"Failed to tap \"fill_profile_president\"");
+  GREYAssert(TapWebViewElementWithId("submit_profile"),
+             @"Failed to tap \"submit_profile\"");
 }
 
 // Helper to open the settings page for the record with |address|.
