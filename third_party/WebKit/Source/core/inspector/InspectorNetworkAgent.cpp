@@ -1687,7 +1687,7 @@ InspectorNetworkAgent::InspectorNetworkAgent(
   DCHECK((IsMainThread() && !worker_global_scope_) ||
          (!IsMainThread() && worker_global_scope_));
   const base::UnguessableToken& token =
-      worker_global_scope_ ? worker_global_scope_->GetDevToolsWorkerToken()
+      worker_global_scope_ ? worker_global_scope_->GetParentDevToolsToken()
                            : inspected_frames->Root()->GetDevToolsFrameToken();
   // token.ToString() is latin1.
   conditions_token_ = String(token.ToString().c_str());

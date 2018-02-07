@@ -332,6 +332,7 @@ WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
       worker_thread_id_(GetNextWorkerThreadId()),
       forcible_termination_delay_(kForcibleTerminationDelay),
       inspector_task_runner_(std::make_unique<InspectorTaskRunner>()),
+      devtools_worker_token_(base::UnguessableToken::Create()),
       loading_context_(loading_context),
       worker_reporting_proxy_(worker_reporting_proxy),
       shutdown_event_(WTF::WrapUnique(

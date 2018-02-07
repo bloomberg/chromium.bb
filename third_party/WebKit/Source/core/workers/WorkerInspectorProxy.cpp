@@ -44,8 +44,12 @@ WorkerInspectorProxy* WorkerInspectorProxy::Create() {
 WorkerInspectorProxy::~WorkerInspectorProxy() = default;
 
 const String& WorkerInspectorProxy::InspectorId() {
-  if (inspector_id_.IsEmpty())
-    inspector_id_ = "dedicated:" + IdentifiersFactory::CreateIdentifier();
+  if (inspector_id_.IsEmpty() && worker_thread_) {
+    const base::UnguessableToken& token =
+        worker_thread_->GetDevToolsWorkerToken();
+    // token.ToString() is latin1.
+    inspector_id_ = String(token.ToString().c_str());
+  }
   return inspector_id_;
 }
 
@@ -97,7 +101,7 @@ void WorkerInspectorProxy::AddConsoleMessageFromWorker(
     const String& message,
     std::unique_ptr<SourceLocation> location) {
   execution_context_->AddConsoleMessage(ConsoleMessage::CreateFromWorker(
-      level, message, std::move(location), inspector_id_));
+      level, message, std::move(location), InspectorId()));
 }
 
 static void ConnectToWorkerGlobalScopeInspectorTask(WorkerThread* worker_thread,
