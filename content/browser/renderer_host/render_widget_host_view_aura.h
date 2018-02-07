@@ -146,13 +146,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                        const gfx::Size& output_size,
                        const ReadbackRequestCallback& callback,
                        const SkColorType color_type) override;
-  void CopyFromSurfaceToVideoFrame(
-      const gfx::Rect& src_rect,
-      scoped_refptr<media::VideoFrame> target,
-      const base::Callback<void(const gfx::Rect&, bool)>& callback) override;
-  void BeginFrameSubscription(
-      std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) override;
-  void EndFrameSubscription() override;
   gfx::Rect GetBoundsInRootWindow() override;
   void WheelEventAck(const blink::WebMouseWheelEvent& event,
                      InputEventAckState ack_result) override;

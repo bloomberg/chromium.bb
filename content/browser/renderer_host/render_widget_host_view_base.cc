@@ -18,11 +18,9 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
-#include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_features.h"
-#include "media/base/video_frame.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
@@ -172,14 +170,6 @@ void RenderWidgetHostViewBase::CopyFromSurface(
   callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
 }
 
-void RenderWidgetHostViewBase::CopyFromSurfaceToVideoFrame(
-    const gfx::Rect& src_rect,
-    scoped_refptr<media::VideoFrame> target,
-    const base::Callback<void(const gfx::Rect&, bool)>& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(gfx::Rect(), false);
-}
-
 base::string16 RenderWidgetHostViewBase::GetSelectedText() {
   if (!GetTextInputManager())
     return base::string16();
@@ -299,16 +289,6 @@ RenderWidgetHostViewBase::CreateSyntheticGestureTarget() {
   RenderWidgetHostImpl* host = GetRenderWidgetHostImpl();
   return std::unique_ptr<SyntheticGestureTarget>(
       new SyntheticGestureTargetBase(host));
-}
-
-// Base implementation is unimplemented.
-void RenderWidgetHostViewBase::BeginFrameSubscription(
-    std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
-  NOTREACHED();
-}
-
-void RenderWidgetHostViewBase::EndFrameSubscription() {
-  NOTREACHED();
 }
 
 void RenderWidgetHostViewBase::FocusedNodeTouched(

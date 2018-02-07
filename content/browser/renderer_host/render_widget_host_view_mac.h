@@ -317,13 +317,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
                        const gfx::Size& output_size,
                        const ReadbackRequestCallback& callback,
                        const SkColorType color_type) override;
-  void CopyFromSurfaceToVideoFrame(
-      const gfx::Rect& src_rect,
-      scoped_refptr<media::VideoFrame> target,
-      const base::Callback<void(const gfx::Rect&, bool)>& callback) override;
-  void BeginFrameSubscription(
-      std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) override;
-  void EndFrameSubscription() override;
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;
   void DidCreateNewRendererCompositorFrameSink(

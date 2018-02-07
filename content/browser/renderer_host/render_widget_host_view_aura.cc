@@ -46,7 +46,6 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
-#include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/input_messages.h"
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
@@ -58,7 +57,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "gpu/ipc/common/gpu_messages.h"
-#include "media/base/video_frame.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/ui/common/switches.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
@@ -897,29 +895,6 @@ void RenderWidgetHostViewAura::CopyFromSurface(
   }
   delegated_frame_host_->CopyFromCompositingSurface(
       src_subrect, dst_size, callback, preferred_color_type);
-}
-
-void RenderWidgetHostViewAura::CopyFromSurfaceToVideoFrame(
-    const gfx::Rect& src_subrect,
-    scoped_refptr<media::VideoFrame> target,
-    const base::Callback<void(const gfx::Rect&, bool)>& callback) {
-  if (!IsSurfaceAvailableForCopy()) {
-    callback.Run(gfx::Rect(), false);
-    return;
-  }
-  delegated_frame_host_->CopyFromCompositingSurfaceToVideoFrame(
-      src_subrect, std::move(target), callback);
-}
-
-void RenderWidgetHostViewAura::BeginFrameSubscription(
-    std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
-  if (delegated_frame_host_)
-    delegated_frame_host_->BeginFrameSubscription(std::move(subscriber));
-}
-
-void RenderWidgetHostViewAura::EndFrameSubscription() {
-  if (delegated_frame_host_)
-    delegated_frame_host_->EndFrameSubscription();
 }
 
 #if defined(OS_WIN)

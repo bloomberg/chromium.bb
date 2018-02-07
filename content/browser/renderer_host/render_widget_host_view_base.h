@@ -58,10 +58,6 @@ namespace cc {
 struct BeginFrameAck;
 }  // namespace cc
 
-namespace media {
-class VideoFrame;
-}
-
 namespace blink {
 class WebMouseEvent;
 class WebMouseWheelEvent;
@@ -119,13 +115,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
                        const gfx::Size& output_size,
                        const ReadbackRequestCallback& callback,
                        const SkColorType color_type) override;
-  void CopyFromSurfaceToVideoFrame(
-      const gfx::Rect& src_rect,
-      scoped_refptr<media::VideoFrame> target,
-      const base::Callback<void(const gfx::Rect&, bool)>& callback) override;
-  void BeginFrameSubscription(
-      std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) override;
-  void EndFrameSubscription() override;
   void FocusedNodeTouched(const gfx::Point& location_dips_screen,
                           bool editable) override;
   void GetScreenInfo(ScreenInfo* screen_info) override;

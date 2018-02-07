@@ -65,7 +65,7 @@ void CompositorFrameSinkSupport::SetUpHitTest() {
       frame_sink_id_);
 }
 
-void CompositorFrameSinkSupport::SetAggregatedDamageCallback(
+void CompositorFrameSinkSupport::SetAggregatedDamageCallbackForTesting(
     AggregatedDamageCallback callback) {
   aggregated_damage_callback_ = std::move(callback);
 }

@@ -15,28 +15,18 @@
 #include "base/time/default_tick_clock.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
-#include "components/viz/common/gl_helper.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
-#include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_hittest.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/compositor_resize_lock.h"
-#include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
 #include "content/public/common/content_switches.h"
-#include "gpu/command_buffer/common/mailbox.h"
-#include "gpu/command_buffer/common/sync_token.h"
-#include "media/base/video_frame.h"
-#include "media/base/video_util.h"
-#include "skia/ext/image_operations.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/effects/SkLumaColorFilter.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/dip_util.h"
 
 namespace content {
@@ -53,8 +43,7 @@ DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
       enable_surface_synchronization_(enable_surface_synchronization),
       enable_viz_(enable_viz),
       tick_clock_(base::DefaultTickClock::GetInstance()),
-      frame_evictor_(std::make_unique<viz::FrameEvictor>(this)),
-      weak_ptr_factory_(this) {
+      frame_evictor_(std::make_unique<viz::FrameEvictor>(this)) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->GetContextFactory()->AddObserver(this);
   viz::HostFrameSinkManager* host_frame_sink_manager =
@@ -79,8 +68,6 @@ DelegatedFrameHost::~DelegatedFrameHost() {
   viz::HostFrameSinkManager* host_frame_sink_manager =
       factory->GetContextFactoryPrivate()->GetHostFrameSinkManager();
   host_frame_sink_manager->InvalidateFrameSinkId(frame_sink_id_);
-
-  DCHECK(!vsync_manager_.get());
 }
 
 void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
@@ -160,52 +147,11 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
     request->set_area(
         gfx::ScaleToRoundedRect(src_subrect, active_device_scale_factor_));
   }
-
-  if (request_copy_of_output_callback_for_testing_.is_null())
-    support_->RequestCopyOfSurface(std::move(request));
-  else
-    request_copy_of_output_callback_for_testing_.Run(std::move(request));
-}
-
-void DelegatedFrameHost::CopyFromCompositingSurfaceToVideoFrame(
-    const gfx::Rect& src_subrect,
-    scoped_refptr<media::VideoFrame> target,
-    const base::Callback<void(const gfx::Rect&, bool)>& callback) {
-  if (!CanCopyFromCompositingSurface()) {
-    callback.Run(gfx::Rect(), false);
-    return;
-  }
-
-  std::unique_ptr<viz::CopyOutputRequest> request = std::make_unique<
-      viz::CopyOutputRequest>(
-      viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
-      base::BindOnce(
-          &DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo,
-          AsWeakPtr(),  // For caching the ReadbackYUVInterface on this class.
-          nullptr, std::move(target), callback));
-  if (!src_subrect.IsEmpty()) {
-    request->set_area(
-        gfx::ScaleToRoundedRect(src_subrect, active_device_scale_factor_));
-  }
-
-  if (request_copy_of_output_callback_for_testing_.is_null())
-    support_->RequestCopyOfSurface(std::move(request));
-  else
-    request_copy_of_output_callback_for_testing_.Run(std::move(request));
+  support_->RequestCopyOfSurface(std::move(request));
 }
 
 bool DelegatedFrameHost::CanCopyFromCompositingSurface() const {
   return support_ && HasFallbackSurface() && active_device_scale_factor_ != 0.f;
-}
-
-void DelegatedFrameHost::BeginFrameSubscription(
-    std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
-  frame_subscriber_ = std::move(subscriber);
-}
-
-void DelegatedFrameHost::EndFrameSubscription() {
-  idle_frame_subscriber_textures_.clear();
-  frame_subscriber_.reset();
 }
 
 viz::FrameSinkId DelegatedFrameHost::GetFrameSinkId() {
@@ -292,14 +238,6 @@ bool DelegatedFrameHost::ShouldSkipFrame(const gfx::Size& size_in_dip) {
     return false;
   }
   return size_in_dip != resize_lock_->expected_size();
-}
-
-void DelegatedFrameHost::OnAggregatedSurfaceDamage(
-    const viz::LocalSurfaceId& id,
-    const gfx::Rect& damage_rect) {
-  if (id != local_surface_id_)
-    return;
-  AttemptFrameSubscriberCapture(damage_rect);
 }
 
 void DelegatedFrameHost::WasResized(const cc::DeadlinePolicy& deadline_policy) {
@@ -397,63 +335,6 @@ void DelegatedFrameHost::CheckResizeLock() {
   // the release of the lock until we've kicked a frame with the new texture, to
   // avoid resizing the UI before we have a chance to draw a "good" frame.
   resize_lock_->UnlockCompositor();
-}
-
-void DelegatedFrameHost::AttemptFrameSubscriberCapture(
-    const gfx::Rect& damage_rect) {
-  if (!frame_subscriber() || !CanCopyFromCompositingSurface())
-    return;
-
-  const base::TimeTicks now = tick_clock_->NowTicks();
-  base::TimeTicks present_time;
-  if (vsync_interval_ <= base::TimeDelta()) {
-    present_time = now;
-  } else {
-    const int64_t intervals_elapsed = (now - vsync_timebase_) / vsync_interval_;
-    present_time = vsync_timebase_ + (intervals_elapsed + 1) * vsync_interval_;
-  }
-
-  scoped_refptr<media::VideoFrame> frame;
-  RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
-  if (!frame_subscriber()->ShouldCaptureFrame(damage_rect, present_time, &frame,
-                                              &callback))
-    return;
-
-  // Get a texture to re-use; else, create a new one.
-  scoped_refptr<OwnedMailbox> subscriber_texture;
-  if (!idle_frame_subscriber_textures_.empty()) {
-    subscriber_texture = idle_frame_subscriber_textures_.back();
-    idle_frame_subscriber_textures_.pop_back();
-  } else if (viz::GLHelper* helper =
-                 ImageTransportFactory::GetInstance()->GetGLHelper()) {
-    subscriber_texture = new OwnedMailbox(helper);
-  }
-
-  std::unique_ptr<viz::CopyOutputRequest> request =
-      std::make_unique<viz::CopyOutputRequest>(
-          viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
-          base::BindOnce(
-              &DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo,
-              AsWeakPtr(), subscriber_texture, frame,
-              base::Bind(callback, present_time)));
-  // Setting the source in this copy request asks that the layer abort any prior
-  // uncommitted copy requests made on behalf of the same frame subscriber.
-  // This will not affect any of the copy requests spawned elsewhere from
-  // DelegatedFrameHost (e.g., a call to CopyFromCompositingSurface() for
-  // screenshots) since those copy requests do not specify |frame_subscriber()|
-  // as a source.
-  request->set_source(frame_subscriber()->GetSourceIdForCopyRequest());
-  if (subscriber_texture) {
-    request->SetMailbox(subscriber_texture->mailbox(),
-                        subscriber_texture->sync_token());
-  }
-
-  // To avoid unnecessary browser composites, try to go directly to the Surface
-  // rather than through the Layer (which goes through the browser compositor).
-  if (request_copy_of_output_callback_for_testing_.is_null())
-    support_->RequestCopyOfSurface(std::move(request));
-  else
-    request_copy_of_output_callback_for_testing_.Run(std::move(request));
 }
 
 void DelegatedFrameHost::DidCreateNewRendererCompositorFrameSink(
@@ -660,172 +541,6 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
   frame_evictor_->DiscardedFrame();
 }
 
-// static
-void DelegatedFrameHost::ReturnSubscriberTexture(
-    base::WeakPtr<DelegatedFrameHost> dfh,
-    scoped_refptr<OwnedMailbox> subscriber_texture,
-    const gpu::SyncToken& sync_token) {
-  if (!subscriber_texture.get())
-    return;
-  if (!dfh)
-    return;
-
-  subscriber_texture->UpdateSyncToken(sync_token);
-
-  if (dfh->frame_subscriber_ && subscriber_texture->texture_id())
-    dfh->idle_frame_subscriber_textures_.push_back(subscriber_texture);
-}
-
-// static
-void DelegatedFrameHost::CopyFromCompositingSurfaceFinishedForVideo(
-    scoped_refptr<media::VideoFrame> video_frame,
-    base::WeakPtr<DelegatedFrameHost> dfh,
-    const base::Callback<void(bool)>& callback,
-    scoped_refptr<OwnedMailbox> subscriber_texture,
-    std::unique_ptr<viz::SingleReleaseCallback> release_callback,
-    bool result) {
-  callback.Run(result);
-
-  gpu::SyncToken sync_token;
-  if (result) {
-    viz::GLHelper* gl_helper =
-        ImageTransportFactory::GetInstance()->GetGLHelper();
-    gl_helper->GenerateSyncToken(&sync_token);
-  }
-  if (release_callback) {
-    const bool lost_resource = !sync_token.HasData();
-    release_callback->Run(sync_token, lost_resource);
-  }
-  ReturnSubscriberTexture(dfh, subscriber_texture, sync_token);
-}
-
-// static
-void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
-    base::WeakPtr<DelegatedFrameHost> dfh,
-    scoped_refptr<OwnedMailbox> subscriber_texture,
-    scoped_refptr<media::VideoFrame> video_frame,
-    const base::Callback<void(const gfx::Rect&, bool)>& callback,
-    std::unique_ptr<viz::CopyOutputResult> result) {
-  base::ScopedClosureRunner scoped_callback_runner(
-      base::BindOnce(callback, gfx::Rect(), false));
-  base::ScopedClosureRunner scoped_return_subscriber_texture(base::BindOnce(
-      &ReturnSubscriberTexture, dfh, subscriber_texture, gpu::SyncToken()));
-
-  if (!dfh)
-    return;
-  if (result->IsEmpty())
-    return;
-
-  // Compute the dest size we want after the letterboxing resize. Make the
-  // coordinates and sizes even because we letterbox in YUV space
-  // (see CopyRGBToVideoFrame). They need to be even for the UV samples to
-  // line up correctly.
-  // The video frame's visible_rect() and the result's size() are both physical
-  // pixels.
-  gfx::Rect region_in_frame = media::ComputeLetterboxRegion(
-      video_frame->visible_rect(), result->size());
-  region_in_frame =
-      gfx::Rect(region_in_frame.x() & ~1, region_in_frame.y() & ~1,
-                region_in_frame.width() & ~1, region_in_frame.height() & ~1);
-  if (region_in_frame.IsEmpty())
-    return;
-
-  if (result->format() == viz::CopyOutputResult::Format::RGBA_BITMAP) {
-    SkBitmap bitmap = result->AsSkBitmap();
-    // Scale the bitmap to the required size, if necessary.
-    SkBitmap scaled_bitmap;
-    if (result->size() != region_in_frame.size()) {
-      skia::ImageOperations::ResizeMethod method =
-          skia::ImageOperations::RESIZE_GOOD;
-      scaled_bitmap = skia::ImageOperations::Resize(
-          bitmap, method, region_in_frame.width(), region_in_frame.height());
-    } else {
-      scaled_bitmap = bitmap;
-    }
-
-    media::CopyRGBToVideoFrame(
-        reinterpret_cast<uint8_t*>(scaled_bitmap.getPixels()),
-        scaled_bitmap.rowBytes(), region_in_frame, video_frame.get());
-
-    ignore_result(scoped_callback_runner.Release());
-    callback.Run(region_in_frame, true);
-    return;
-  }
-
-  DCHECK_EQ(result->format(), viz::CopyOutputResult::Format::RGBA_TEXTURE);
-
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  viz::GLHelper* gl_helper = factory->GetGLHelper();
-  if (!gl_helper)
-    return;
-  if (subscriber_texture.get() && !subscriber_texture->texture_id())
-    return;
-
-  gpu::Mailbox mailbox = result->GetTextureResult()->mailbox;
-  gpu::SyncToken sync_token = result->GetTextureResult()->sync_token;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback =
-      result->TakeTextureOwnership();
-
-  if (!dfh->yuv_readback_pipeline_) {
-    dfh->yuv_readback_pipeline_ =
-        gl_helper->CreateReadbackPipelineYUV(true, true);
-  }
-  viz::ReadbackYUVInterface* yuv_readback_pipeline =
-      dfh->yuv_readback_pipeline_.get();
-  viz::GLHelper::ScalerInterface* const scaler =
-      yuv_readback_pipeline->scaler();
-  const gfx::Vector2d scale_from(result->size().width(),
-                                 result->size().height());
-  const gfx::Vector2d scale_to(region_in_frame.width(),
-                               region_in_frame.height());
-  if (scale_from == scale_to) {
-    if (scaler)
-      yuv_readback_pipeline->SetScaler(nullptr);
-  } else if (!scaler || !scaler->IsSameScaleRatio(scale_from, scale_to)) {
-    // The scaler chosen here is based on performance measurements of full
-    // end-to-end systems.  When down-scaling, always use the "fast" scaler
-    // because it performs well on both low- and high- end machines, provides
-    // decent image quality, and doesn't overwhelm downstream video encoders
-    // with too much entropy (which can drastically increase CPU utilization).
-    // When up-scaling, always use "best" because the quality improvement is
-    // huge with insignificant performance penalty.  Note that this strategy
-    // differs from single-frame snapshot capture.
-    viz::GLHelper::ScalerQuality quality =
-        ((result->size().width() < region_in_frame.size().width()) &&
-         (result->size().height() < region_in_frame.size().height()))
-            ? viz::GLHelper::SCALER_QUALITY_BEST
-            : viz::GLHelper::SCALER_QUALITY_FAST;
-
-    DVLOG(1) << "Re-creating YUV readback pipeline scaler for source rect "
-             << result->rect().ToString() << " and destination size "
-             << region_in_frame.size().ToString();
-
-    std::unique_ptr<viz::GLHelper::ScalerInterface> scaler =
-        gl_helper->CreateScaler(quality, scale_from, scale_to, false, false,
-                                false);
-    DCHECK(scaler);  // Arguments to CreateScaler() should never be invalid.
-    yuv_readback_pipeline->SetScaler(std::move(scaler));
-  }
-
-  ignore_result(scoped_callback_runner.Release());
-  ignore_result(scoped_return_subscriber_texture.Release());
-
-  base::Callback<void(bool result)> finished_callback = base::Bind(
-      &DelegatedFrameHost::CopyFromCompositingSurfaceFinishedForVideo,
-      video_frame, dfh->AsWeakPtr(), base::Bind(callback, region_in_frame),
-      subscriber_texture, base::Passed(&release_callback));
-  yuv_readback_pipeline->ReadbackYUV(
-      mailbox, sync_token, result->size(), gfx::Rect(region_in_frame.size()),
-      video_frame->stride(media::VideoFrame::kYPlane),
-      video_frame->data(media::VideoFrame::kYPlane),
-      video_frame->stride(media::VideoFrame::kUPlane),
-      video_frame->data(media::VideoFrame::kUPlane),
-      video_frame->stride(media::VideoFrame::kVPlane),
-      video_frame->data(media::VideoFrame::kVPlane), region_in_frame.origin(),
-      finished_callback);
-  media::LetterboxYUV(video_frame.get(), region_in_frame);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, ui::CompositorObserver implementation:
 
@@ -883,19 +598,11 @@ void DelegatedFrameHost::OnCompositingShuttingDown(ui::Compositor* compositor) {
   DCHECK(!compositor_);
 }
 
-void DelegatedFrameHost::OnUpdateVSyncParameters(base::TimeTicks timebase,
-                                                 base::TimeDelta interval) {
-  vsync_timebase_ = timebase;
-  vsync_interval_ = interval;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, ImageTransportFactoryObserver implementation:
 
 void DelegatedFrameHost::OnLostResources() {
   EvictDelegatedFrame();
-  idle_frame_subscriber_textures_.clear();
-  yuv_readback_pipeline_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -907,10 +614,6 @@ void DelegatedFrameHost::SetCompositor(ui::Compositor* compositor) {
     return;
   compositor_ = compositor;
   compositor_->AddObserver(this);
-  DCHECK(!vsync_manager_.get());
-  vsync_manager_ = compositor_->vsync_manager();
-  vsync_manager_->AddObserver(this);
-
   compositor_->AddFrameSink(frame_sink_id_);
 }
 
@@ -920,11 +623,6 @@ void DelegatedFrameHost::ResetCompositor() {
   resize_lock_.reset();
   if (compositor_->HasObserver(this))
     compositor_->RemoveObserver(this);
-  if (vsync_manager_) {
-    vsync_manager_->RemoveObserver(this);
-    vsync_manager_ = nullptr;
-  }
-
   compositor_->RemoveFrameSink(frame_sink_id_);
   compositor_ = nullptr;
 }
@@ -951,9 +649,6 @@ void DelegatedFrameHost::CreateCompositorFrameSinkSupport() {
                  ->GetHostFrameSinkManager()
                  ->CreateCompositorFrameSinkSupport(this, frame_sink_id_,
                                                     is_root, needs_sync_points);
-  support_->SetAggregatedDamageCallback(
-      base::BindRepeating(&DelegatedFrameHost::OnAggregatedSurfaceDamage,
-                          weak_ptr_factory_.GetWeakPtr()));
   if (compositor_)
     compositor_->AddFrameSink(frame_sink_id_);
   if (needs_begin_frame_)

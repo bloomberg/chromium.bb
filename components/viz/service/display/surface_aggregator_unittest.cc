@@ -425,7 +425,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SimpleFrame) {
 
   // Add a callback for when the surface is damaged.
   MockAggregatedDamageCallback aggregated_damage_callback;
-  support_->SetAggregatedDamageCallback(
+  support_->SetAggregatedDamageCallbackForTesting(
       aggregated_damage_callback.GetCallback());
 
   constexpr float device_scale_factor = 1.0f;
@@ -647,11 +647,11 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, FallbackSurfaceReference) {
 
   MockAggregatedDamageCallback aggregated_damage_callback;
 
-  support_->SetAggregatedDamageCallback(
+  support_->SetAggregatedDamageCallbackForTesting(
       aggregated_damage_callback.GetCallback());
-  primary_child_support->SetAggregatedDamageCallback(
+  primary_child_support->SetAggregatedDamageCallbackForTesting(
       aggregated_damage_callback.GetCallback());
-  fallback_child_support->SetAggregatedDamageCallback(
+  fallback_child_support->SetAggregatedDamageCallbackForTesting(
       aggregated_damage_callback.GetCallback());
 
   SubmitCompositorFrame(support_.get(), root_passes, arraysize(root_passes),
@@ -788,7 +788,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, StretchContentToFillBounds) {
   Pass root_passes[] = {Pass(root_quads, arraysize(root_quads), SurfaceSize())};
 
   MockAggregatedDamageCallback aggregated_damage_callback;
-  support_->SetAggregatedDamageCallback(
+  support_->SetAggregatedDamageCallbackForTesting(
       aggregated_damage_callback.GetCallback());
 
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id_);
@@ -853,7 +853,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, StretchContentToFillStretchedBounds) {
   Pass root_passes[] = {Pass(root_quads, arraysize(root_quads), SurfaceSize())};
 
   MockAggregatedDamageCallback aggregated_damage_callback;
-  support_->SetAggregatedDamageCallback(
+  support_->SetAggregatedDamageCallbackForTesting(
       aggregated_damage_callback.GetCallback());
 
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id_);
@@ -919,7 +919,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, StretchContentToFillSquashedBounds) {
   Pass root_passes[] = {Pass(root_quads, arraysize(root_quads), SurfaceSize())};
 
   MockAggregatedDamageCallback aggregated_damage_callback;
-  support_->SetAggregatedDamageCallback(
+  support_->SetAggregatedDamageCallbackForTesting(
       aggregated_damage_callback.GetCallback());
 
   SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id_);
@@ -998,7 +998,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, FallbackSurfaceReferenceWithPrimary) {
       Pass(root_quads, arraysize(root_quads), root_size, NoDamage())};
 
   MockAggregatedDamageCallback aggregated_damage_callback;
-  support_->SetAggregatedDamageCallback(
+  support_->SetAggregatedDamageCallbackForTesting(
       aggregated_damage_callback.GetCallback());
 
   SubmitCompositorFrame(support_.get(), root_passes, arraysize(root_passes),

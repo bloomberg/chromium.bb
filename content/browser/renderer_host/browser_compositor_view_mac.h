@@ -35,7 +35,6 @@ class BrowserCompositorMacClient {
 // detach it from a ui::Compositor as needed. The ui::Compositor will be
 // detached from the DelegatedFrameHost when the following conditions are
 // all met:
-// - There are no outstanding copy requests
 // - The RenderWidgetHostImpl providing frames to the DelegatedFrameHost
 //   is visible.
 // - The RenderWidgetHostViewMac that is used to display these frames is
@@ -127,8 +126,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
     // - |recyclable_compositor_| exists and is attached to
     //   |delegated_frame_host_|.
     // Happens when:
-    // - |render_widet_host_| is in the visible state, or there are
-    //   outstanding copy requests.
+    // - |render_widet_host_| is in the visible state.
     HasAttachedCompositor,
     // Effects:
     // - |recyclable_compositor_| exists, but |delegated_frame_host_| is
