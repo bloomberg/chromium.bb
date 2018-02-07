@@ -15,6 +15,17 @@ namespace {
 
 using TabsStats = TabStatsDataStore::TabsStats;
 
+void EnsureTabStatsMatchExpectations(const TabsStats& expected,
+                                     const TabsStats& actual) {
+  EXPECT_EQ(expected.total_tab_count, actual.total_tab_count);
+  EXPECT_EQ(expected.total_tab_count_max, actual.total_tab_count_max);
+  EXPECT_EQ(expected.max_tab_per_window, actual.max_tab_per_window);
+  EXPECT_EQ(expected.window_count, actual.window_count);
+  EXPECT_EQ(expected.window_count_max, actual.window_count_max);
+}
+
+}  // namespace
+
 class TabStatsTrackerBrowserTest : public InProcessBrowserTest {
  public:
   TabStatsTrackerBrowserTest() : tab_stats_tracker_(nullptr) {}
@@ -30,22 +41,11 @@ class TabStatsTrackerBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(TabStatsTrackerBrowserTest);
 };
 
-void EnsureTabStatsMatchExpectations(const TabsStats& expected,
-                                     const TabsStats& actual) {
-  EXPECT_EQ(expected.total_tab_count, actual.total_tab_count);
-  EXPECT_EQ(expected.total_tab_count_max, actual.total_tab_count_max);
-  EXPECT_EQ(expected.max_tab_per_window, actual.max_tab_per_window);
-  EXPECT_EQ(expected.window_count, actual.window_count);
-  EXPECT_EQ(expected.window_count_max, actual.window_count_max);
-}
-
-}  // namespace
-
 IN_PROC_BROWSER_TEST_F(TabStatsTrackerBrowserTest,
                        TabsAndWindowsAreCountedAccurately) {
   // Assert that the |TabStatsTracker| instance is initialized during the
   // creation of the main browser.
-  ASSERT_NE(static_cast<TabStatsTracker*>(nullptr), tab_stats_tracker_);
+  ASSERT_TRUE(tab_stats_tracker_ != nullptr);
 
   TabsStats expected_stats = {};
 
@@ -91,6 +91,47 @@ IN_PROC_BROWSER_TEST_F(TabStatsTrackerBrowserTest,
   expected_stats.window_count = 1;
   EnsureTabStatsMatchExpectations(expected_stats,
                                   tab_stats_tracker_->tab_stats());
+}
+
+IN_PROC_BROWSER_TEST_F(TabStatsTrackerBrowserTest,
+                       TabDeletionGetsHandledProperly) {
+  // Assert that the |TabStatsTracker| instance is initialized during the
+  // creation of the main browser.
+  ASSERT_TRUE(tab_stats_tracker_ != nullptr);
+
+  constexpr base::TimeDelta kValidLongInterval = base::TimeDelta::FromHours(12);
+
+  TabStatsDataStore* data_store = tab_stats_tracker_->tab_stats_data_store();
+  TabStatsDataStore::TabsStateDuringIntervalMap* interval_map =
+      data_store->AddInterval();
+
+  AddTabAtIndex(1, GURL("about:blank"), ui::PAGE_TRANSITION_TYPED);
+
+  EXPECT_EQ(2U, interval_map->size());
+
+  content::WebContents* web_contents =
+      data_store->existing_tabs_for_testing()->begin()->first;
+
+  // Delete one of the WebContents without calling the |OnTabRemoved| function,
+  // the WebContentsObserver owned by |tab_stats_tracker_| should be notified
+  // and this should be handled correctly.
+  TabStatsDataStore::TabID tab_id =
+      data_store->GetTabIDForTesting(web_contents).value();
+  delete web_contents;
+  EXPECT_TRUE(base::ContainsKey(*interval_map, tab_id));
+  tab_stats_tracker_->OnInterval(kValidLongInterval, interval_map);
+  EXPECT_EQ(1U, interval_map->size());
+  EXPECT_FALSE(base::ContainsKey(*interval_map, tab_id));
+
+  web_contents = data_store->existing_tabs_for_testing()->begin()->first;
+
+  // Do this a second time, ensures that the situation where there's no existing
+  // tabs is handled properly.
+  tab_id = data_store->GetTabIDForTesting(web_contents).value();
+  delete web_contents;
+  EXPECT_TRUE(base::ContainsKey(*interval_map, tab_id));
+  tab_stats_tracker_->OnInterval(kValidLongInterval, interval_map);
+  EXPECT_EQ(0U, interval_map->size());
 }
 
 }  // namespace metrics

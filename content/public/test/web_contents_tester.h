@@ -135,6 +135,10 @@ class WebContentsTester {
 
   // Override IsCurrentlyAudible for testing.
   virtual void SetIsCurrentlyAudible(bool audible) = 0;
+
+  // Simulates a direct user interaction.
+  // |render_widget_host| can be equal to nullptr.
+  virtual void TestOnUserInteraction(blink::WebInputEvent::Type type) = 0;
 };
 
 }  // namespace content
