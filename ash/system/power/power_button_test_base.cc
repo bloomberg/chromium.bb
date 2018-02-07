@@ -25,12 +25,6 @@
 
 namespace ash {
 
-constexpr gfx::Vector3dF PowerButtonTestBase::kUpVector;
-
-constexpr gfx::Vector3dF PowerButtonTestBase::kDownVector;
-
-constexpr gfx::Vector3dF PowerButtonTestBase::kSidewaysVector;
-
 PowerButtonTestBase::PowerButtonTestBase() = default;
 
 PowerButtonTestBase::~PowerButtonTestBase() = default;
@@ -61,18 +55,20 @@ void PowerButtonTestBase::SetUp() {
 
 void PowerButtonTestBase::ResetPowerButtonController() {
   ShellTestApi().ResetPowerButtonControllerForTest();
-  InitPowerButtonControllerMembers(false /* send_accelerometer_update */);
+  InitPowerButtonControllerMembers(
+      chromeos::PowerManagerClient::TabletMode::UNSUPPORTED);
 }
 
 void PowerButtonTestBase::InitPowerButtonControllerMembers(
-    bool send_accelerometer_update) {
+    chromeos::PowerManagerClient::TabletMode initial_tablet_mode_switch_state) {
   power_button_controller_ = Shell::Get()->power_button_controller();
   tick_clock_ = new base::SimpleTestTickClock;
   power_button_controller_->SetTickClockForTesting(
       base::WrapUnique(tick_clock_));
 
-  if (send_accelerometer_update) {
-    SendAccelerometerUpdate(kSidewaysVector, kUpVector);
+  if (initial_tablet_mode_switch_state !=
+      chromeos::PowerManagerClient::TabletMode::UNSUPPORTED) {
+    SetTabletModeSwitchState(initial_tablet_mode_switch_state);
     tablet_controller_ =
         power_button_controller_->tablet_power_button_controller_for_test();
     tablet_test_api_ = std::make_unique<TabletPowerButtonControllerTestApi>(
@@ -86,17 +82,13 @@ void PowerButtonTestBase::InitPowerButtonControllerMembers(
   }
 }
 
-void PowerButtonTestBase::SendAccelerometerUpdate(
-    const gfx::Vector3dF& screen,
-    const gfx::Vector3dF& keyboard) {
-  scoped_refptr<chromeos::AccelerometerUpdate> update(
-      new chromeos::AccelerometerUpdate());
-  update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, screen.x(), screen.y(),
-              screen.z());
-  update->Set(chromeos::ACCELEROMETER_SOURCE_ATTACHED_KEYBOARD, keyboard.x(),
-              keyboard.y(), keyboard.z());
+void PowerButtonTestBase::SetTabletModeSwitchState(
+    chromeos::PowerManagerClient::TabletMode tablet_mode_switch_state) {
+  power_button_controller_->OnGetSwitchStates(
+      chromeos::PowerManagerClient::SwitchStates{
+          chromeos::PowerManagerClient::LidState::OPEN,
+          tablet_mode_switch_state});
 
-  power_button_controller_->OnAccelerometerUpdated(update);
   tablet_controller_ =
       power_button_controller_->tablet_power_button_controller_for_test();
   screenshot_controller_ =
