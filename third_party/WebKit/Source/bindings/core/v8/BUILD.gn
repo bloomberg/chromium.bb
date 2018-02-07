@@ -271,10 +271,8 @@ source_set("testing") {
             generated_core_testing_callback_function_files
 
   configs -= core_config_remove
-  configs += [
-    "//third_party/WebKit/Source:inside_blink",
-    "//third_party/WebKit/Source:config",
-  ]
+  configs += core_config_add + [ "//third_party/WebKit/Source:inside_blink" ] -
+             [ "//third_party/WebKit/Source/core:config" ]
 
   deps = [
     ":bindings_core_impl_generated",
