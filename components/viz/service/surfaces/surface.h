@@ -80,6 +80,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
           SurfaceManager* surface_manager,
           base::WeakPtr<SurfaceClient> surface_client,
           BeginFrameSource* begin_frame_source,
+          base::TickClock* tick_clock,
           bool needs_sync_tokens);
   ~Surface();
 
@@ -248,6 +249,10 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   static void TakeLatencyInfoFromFrame(
       CompositorFrame* frame,
       std::vector<ui::LatencyInfo>* latency_info);
+
+  base::TimeTicks GetBeginFrameTime();
+
+  base::TimeDelta GetBeginFrameInterval();
 
   const SurfaceInfo surface_info_;
   SurfaceId previous_frame_surface_id_;

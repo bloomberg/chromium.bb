@@ -32,6 +32,10 @@
 #include <string>
 #endif
 
+namespace base {
+class TickClock;
+}  // namespace base
+
 namespace viz {
 
 namespace test {
@@ -55,6 +59,13 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   SurfaceDependencyTracker* dependency_tracker() {
     return &dependency_tracker_;
   }
+
+  // Sets an alternative base::TickClock to pass into surfaces for surface
+  // synchronization deadlines. This allows unit tests to mock the wall clock.
+  void SetTickClockForTesting(base::TickClock* tick_clock);
+
+  // Returns the base::TickClock used to set surface synchronization deadlines.
+  base::TickClock* tick_clock() { return tick_clock_; }
 
   // Creates a Surface for the given SurfaceClient. The surface will be
   // destroyed when DestroySurface is called, all of its destruction
@@ -305,6 +316,9 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // Always empty set that is returned when there is no entry in |references_|
   // for a SurfaceId.
   const base::flat_set<SurfaceId> empty_surface_id_set_;
+
+  // Used for setting deadlines for surface synchronization.
+  base::TickClock* tick_clock_;
 
   // Keeps track of surface references for a surface. The graph of references is
   // stored in both directions, so we know the parents and children for each

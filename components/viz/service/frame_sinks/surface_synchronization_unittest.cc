@@ -166,6 +166,15 @@ class SurfaceSynchronizationTest : public testing::Test {
     begin_frame_source_->TestOnBeginFrame(args);
   }
 
+  void SendLateBeginFrame() {
+    // Creep the time forward so that any BeginFrameArgs is not equal to the
+    // last one otherwise we violate the BeginFrameSource contract.
+    now_src_->Advance(4u * BeginFrameArgs::DefaultInterval());
+    BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
+        BEGINFRAME_FROM_HERE, now_src_.get());
+    begin_frame_source_->TestOnBeginFrame(args);
+  }
+
   void SetFrameSinkHierarchy(const FrameSinkId& parent_frame_sink_id,
                              const FrameSinkId& child_frame_sink_id) {
     frame_sink_manager_client_.SetFrameSinkHierarchy(parent_frame_sink_id,
@@ -186,6 +195,8 @@ class SurfaceSynchronizationTest : public testing::Test {
         std::make_unique<FakeExternalBeginFrameSource>(0.f, false);
     begin_frame_source_->SetClient(&begin_frame_source_client_);
     now_src_ = std::make_unique<base::SimpleTestTickClock>();
+    frame_sink_manager_.surface_manager()->SetTickClockForTesting(
+        now_src_.get());
     frame_sink_manager_.surface_manager()->AddObserver(&surface_observer_);
     frame_sink_manager_.SetLocalClient(&frame_sink_manager_client_);
     supports_[kDisplayFrameSink] = std::make_unique<CompositorFrameSinkSupport>(
@@ -239,12 +250,12 @@ class SurfaceSynchronizationTest : public testing::Test {
   testing::NiceMock<MockCompositorFrameSinkClient> support_client_;
 
  private:
+  std::unique_ptr<base::SimpleTestTickClock> now_src_;
   FrameSinkManagerImpl frame_sink_manager_;
   TestFrameSinkManagerClient frame_sink_manager_client_;
   FakeSurfaceObserver surface_observer_;
   FakeExternalBeginFrameSourceClient begin_frame_source_client_;
   std::unique_ptr<FakeExternalBeginFrameSource> begin_frame_source_;
-  std::unique_ptr<base::SimpleTestTickClock> now_src_;
   std::unordered_map<FrameSinkId,
                      std::unique_ptr<CompositorFrameSinkSupport>,
                      FrameSinkIdHash>
@@ -513,6 +524,35 @@ TEST_F(SurfaceSynchronizationTest, DeadlineHits) {
   EXPECT_TRUE(child_surface1()->HasActiveFrame());
   EXPECT_FALSE(child_surface1()->HasPendingFrame());
   EXPECT_THAT(child_surface1()->activation_dependencies(), IsEmpty());
+}
+
+// parent_surface is blocked on |child_id1| until a late BeginFrame arrives and
+// triggers a deadline.
+TEST_F(SurfaceSynchronizationTest, LateBeginFrameTriggersDeadline) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(),
+      MakeCompositorFrame({child_id1}, empty_surface_ids(),
+                          std::vector<TransferableResource>()));
+
+  // parent_support is blocked on |child_id1|.
+  EXPECT_TRUE(parent_surface()->has_deadline());
+  EXPECT_FALSE(parent_surface()->HasActiveFrame());
+  EXPECT_TRUE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->activation_dependencies(),
+              UnorderedElementsAre(child_id1));
+
+  SendLateBeginFrame();
+
+  // The deadline has passed.
+  EXPECT_FALSE(parent_surface()->has_deadline());
+
+  // parent_surface has been activated.
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_FALSE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->activation_dependencies(), IsEmpty());
 }
 
 // This test verifies at the Surface activates once a CompositorFrame is

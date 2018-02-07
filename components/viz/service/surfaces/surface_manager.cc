@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -46,6 +47,7 @@ SurfaceManager::SurfaceManager(uint32_t number_of_frames_to_activation_deadline)
     : dependency_tracker_(this, number_of_frames_to_activation_deadline),
       root_surface_id_(FrameSinkId(0u, 0u),
                        LocalSurfaceId(1u, base::UnguessableToken::Create())),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       weak_factory_(this) {
   thread_checker_.DetachFromThread();
 
@@ -87,6 +89,10 @@ std::string SurfaceManager::SurfaceReferencesToString() {
 }
 #endif
 
+void SurfaceManager::SetTickClockForTesting(base::TickClock* tick_clock) {
+  tick_clock_ = tick_clock;
+}
+
 Surface* SurfaceManager::CreateSurface(
     base::WeakPtr<SurfaceClient> surface_client,
     const SurfaceInfo& surface_info,
@@ -100,9 +106,9 @@ Surface* SurfaceManager::CreateSurface(
   // and return.
   auto it = surface_map_.find(surface_info.id());
   if (it == surface_map_.end()) {
-    surface_map_[surface_info.id()] =
-        std::make_unique<Surface>(surface_info, this, surface_client,
-                                  begin_frame_source, needs_sync_tokens);
+    surface_map_[surface_info.id()] = std::make_unique<Surface>(
+        surface_info, this, surface_client, begin_frame_source, tick_clock_,
+        needs_sync_tokens);
     // We can get into a situation where multiple CompositorFrames arrive for a
     // FrameSink before the client can add any references for the frame. When
     // the second frame with a new size arrives, the first will be destroyed in

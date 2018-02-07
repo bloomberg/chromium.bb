@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "base/stl_util.h"
+#include "base/time/tick_clock.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/transferable_resource.h"
@@ -24,11 +25,12 @@ Surface::Surface(const SurfaceInfo& surface_info,
                  SurfaceManager* surface_manager,
                  base::WeakPtr<SurfaceClient> surface_client,
                  BeginFrameSource* begin_frame_source,
+                 base::TickClock* tick_clock,
                  bool needs_sync_tokens)
     : surface_info_(surface_info),
       surface_manager_(surface_manager),
       surface_client_(std::move(surface_client)),
-      deadline_(this, begin_frame_source),
+      deadline_(this, begin_frame_source, tick_clock),
       needs_sync_tokens_(needs_sync_tokens) {}
 
 Surface::~Surface() {
@@ -62,7 +64,8 @@ bool Surface::InheritActivationDeadlineFrom(
 void Surface::SetActivationDeadline(uint32_t number_of_frames_to_deadline) {
   TRACE_EVENT1("viz", "Surface::SetActivationDeadline", "FrameSinkId",
                surface_id().frame_sink_id().ToString());
-  deadline_.Set(number_of_frames_to_deadline);
+  deadline_.Set(GetBeginFrameTime(), number_of_frames_to_deadline,
+                GetBeginFrameInterval());
 }
 
 void Surface::SetPreviousFrameSurface(Surface* surface) {
@@ -176,11 +179,13 @@ bool Surface::QueueFrame(
                   aggregated_damage_callback, std::move(presented_callback));
     RejectCompositorFramesToFallbackSurfaces();
 
-    deadline_.Set(deadline_in_frames);
-
-    // Ask the SurfaceDependencyTracker to inform |this| when its dependencies
-    // are resolved.
-    surface_manager_->dependency_tracker()->RequestSurfaceResolution(this);
+    // If the deadline is in the past, then we will activate immediately.
+    if (deadline_.Set(GetBeginFrameTime(), deadline_in_frames,
+                      GetBeginFrameInterval())) {
+      // Ask the SurfaceDependencyTracker to inform |this| when its dependencies
+      // are resolved.
+      surface_manager_->dependency_tracker()->RequestSurfaceResolution(this);
+    }
   }
 
   // Returns resources for the previous pending frame.
@@ -520,6 +525,32 @@ void Surface::TakeLatencyInfoFromFrame(
             frame->metadata.latency_info.end(),
             std::back_inserter(*latency_info));
   frame->metadata.latency_info.clear();
+}
+
+base::TimeTicks Surface::GetBeginFrameTime() {
+  if (!surface_client_)
+    return surface_manager_->tick_clock()->NowTicks();
+
+  const BeginFrameArgs& begin_frame_args =
+      surface_client_->LastUsedBeginFrameArgs();
+
+  if (!begin_frame_args.IsValid())
+    return surface_manager_->tick_clock()->NowTicks();
+
+  return begin_frame_args.frame_time;
+}
+
+base::TimeDelta Surface::GetBeginFrameInterval() {
+  if (!surface_client_)
+    return BeginFrameArgs::DefaultInterval();
+
+  const BeginFrameArgs& begin_frame_args =
+      surface_client_->LastUsedBeginFrameArgs();
+
+  if (!begin_frame_args.IsValid())
+    return BeginFrameArgs::DefaultInterval();
+
+  return begin_frame_args.interval;
 }
 
 }  // namespace viz
