@@ -58,6 +58,10 @@ class VIEWS_EXPORT PlatformStyle {
   // focus.
   static const bool kTextfieldScrollsToStartOnFocusChange;
 
+  // Whether text fields should use a "drag" cursor when not actually
+  // dragging but available to do so.
+  static const bool kTextfieldUsesDragCursorWhenDraggable;
+
   // Creates the default scrollbar for the given orientation.
   static std::unique_ptr<ScrollBar> CreateScrollBar(bool is_horizontal);
 
