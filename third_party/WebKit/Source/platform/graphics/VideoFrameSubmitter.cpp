@@ -42,6 +42,14 @@ void VideoFrameSubmitter::StopRendering() {
   DCHECK(is_rendering_);
   DCHECK(provider_);
 
+  // Push out final frame.
+  SubmitSingleFrame();
+
+  is_rendering_ = false;
+  compositor_frame_sink_->SetNeedsBeginFrame(false);
+}
+
+void VideoFrameSubmitter::SubmitSingleFrame() {
   viz::BeginFrameAck current_begin_frame_ack =
       viz::BeginFrameAck::CreateManualAckWithDamage();
   scoped_refptr<media::VideoFrame> video_frame = provider_->GetCurrentFrame();
@@ -49,8 +57,6 @@ void VideoFrameSubmitter::StopRendering() {
       FROM_HERE, base::BindOnce(&VideoFrameSubmitter::SubmitFrame,
                                 weak_ptr_factory_.GetWeakPtr(),
                                 current_begin_frame_ack, video_frame));
-  is_rendering_ = false;
-  compositor_frame_sink_->SetNeedsBeginFrame(false);
   provider_->PutCurrentFrame();
 }
 
@@ -61,14 +67,7 @@ void VideoFrameSubmitter::DidReceiveFrame() {
   // DidReceiveFrame is called before renderering has started, as a part of
   // PaintSingleFrame.
   if (!is_rendering_) {
-    viz::BeginFrameAck current_begin_frame_ack =
-        viz::BeginFrameAck::CreateManualAckWithDamage();
-    scoped_refptr<media::VideoFrame> video_frame = provider_->GetCurrentFrame();
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&VideoFrameSubmitter::SubmitFrame,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  current_begin_frame_ack, video_frame));
-    provider_->PutCurrentFrame();
+    SubmitSingleFrame();
   }
 }
 
@@ -101,6 +100,17 @@ void VideoFrameSubmitter::StartSubmitting(const viz::FrameSinkId& id) {
   binding_.Bind(mojo::MakeRequest(&client));
   canvas_provider->CreateCompositorFrameSink(
       id, std::move(client), mojo::MakeRequest(&compositor_frame_sink_));
+
+  scoped_refptr<media::VideoFrame> video_frame = provider_->GetCurrentFrame();
+  if (video_frame) {
+    viz::BeginFrameAck current_begin_frame_ack =
+        viz::BeginFrameAck::CreateManualAckWithDamage();
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&VideoFrameSubmitter::SubmitFrame,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  current_begin_frame_ack, video_frame));
+    provider_->PutCurrentFrame();
+  }
 }
 
 void VideoFrameSubmitter::SubmitFrame(
@@ -112,11 +122,10 @@ void VideoFrameSubmitter::SubmitFrame(
   viz::CompositorFrame compositor_frame;
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
 
-  // TODO(lethalantidote): Replace with true size. Current is just for test.
   render_pass->SetNew(1, gfx::Rect(video_frame->coded_size()),
                       gfx::Rect(video_frame->coded_size()), gfx::Transform());
   render_pass->filters = cc::FilterOperations();
-  resource_provider_->AppendQuads(render_pass.get(), video_frame);
+  resource_provider_->AppendQuads(render_pass.get(), video_frame, rotation_);
   compositor_frame.metadata.begin_frame_ack = begin_frame_ack;
   compositor_frame.metadata.device_scale_factor = 1;
   compositor_frame.metadata.may_contain_video = true;
@@ -166,6 +175,10 @@ void VideoFrameSubmitter::OnBeginFrame(const viz::BeginFrameArgs& args) {
   SubmitFrame(current_begin_frame_ack, video_frame);
 
   provider_->PutCurrentFrame();
+}
+
+void VideoFrameSubmitter::SetRotation(media::VideoRotation rotation) {
+  rotation_ = rotation;
 }
 
 void VideoFrameSubmitter::DidReceiveCompositorFrameAck(

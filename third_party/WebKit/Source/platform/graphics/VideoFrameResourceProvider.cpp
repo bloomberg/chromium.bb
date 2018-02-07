@@ -65,12 +65,35 @@ void VideoFrameResourceProvider::Initialize(
 
 void VideoFrameResourceProvider::AppendQuads(
     viz::RenderPass* render_pass,
-    scoped_refptr<media::VideoFrame> frame) {
+    scoped_refptr<media::VideoFrame> frame,
+    media::VideoRotation rotation) {
+  gfx::Transform transform = gfx::Transform();
+  gfx::Size rotated_size = frame->coded_size();
+
+  switch (rotation) {
+    case media::VIDEO_ROTATION_90:
+      rotated_size = gfx::Size(rotated_size.height(), rotated_size.width());
+      transform.Rotate(90.0);
+      transform.Translate(0.0, -rotated_size.height());
+      break;
+    case media::VIDEO_ROTATION_180:
+      transform.Rotate(180.0);
+      transform.Translate(-rotated_size.width(), -rotated_size.height());
+      break;
+    case media::VIDEO_ROTATION_270:
+      rotated_size = gfx::Size(rotated_size.height(), rotated_size.width());
+      transform.Rotate(270.0);
+      transform.Translate(-rotated_size.width(), 0);
+      break;
+    case media::VIDEO_ROTATION_0:
+      break;
+  }
+
   viz::ContextProvider::ScopedContextLock lock(context_provider_);
   resource_updater_->ObtainFrameResources(frame);
   // TODO(lethalantidote) : update with true value;
   bool contents_opaque = true;
-  gfx::Rect visible_layer_rect = gfx::Rect(frame->coded_size());
+  gfx::Rect visible_layer_rect = gfx::Rect(rotated_size);
   gfx::Rect clip_rect = gfx::Rect(frame->coded_size());
   bool is_clipped = false;
   float draw_opacity = 1.0f;
@@ -78,12 +101,12 @@ void VideoFrameResourceProvider::AppendQuads(
 
   // Internal to this compositor frame, this video quad is never occluded,
   // thus the full quad is visible.
-  gfx::Rect visible_quad_rect = gfx::Rect(frame->coded_size());
+  gfx::Rect visible_quad_rect = gfx::Rect(rotated_size);
 
-  resource_updater_->AppendQuads(
-      render_pass, frame, gfx::Transform(), frame->coded_size(),
-      visible_layer_rect, clip_rect, is_clipped, contents_opaque, draw_opacity,
-      sorting_context_id, visible_quad_rect);
+  resource_updater_->AppendQuads(render_pass, std::move(frame), transform,
+                                 rotated_size, visible_layer_rect, clip_rect,
+                                 is_clipped, contents_opaque, draw_opacity,
+                                 sorting_context_id, visible_quad_rect);
 }
 
 void VideoFrameResourceProvider::ReleaseFrameResources() {

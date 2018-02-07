@@ -3320,3 +3320,5 @@ crbug.com/750599 virtual/outofblink-cors/external/wpt/fetch/api/abort/general-se
 crbug.com/750599 virtual/outofblink-cors/external/wpt/fetch/api/abort/general-sharedworker.html [ Timeout ]
 crbug.com/750599 virtual/outofblink-cors/external/wpt/fetch/api/abort/general.any.html [ Timeout ]
 crbug.com/750599 virtual/outofblink-cors/external/wpt/fetch/api/abort/general.any.worker.html [ Timeout ]
+
+crbug.com/794338 media/video-rotation.html [ Skip ]

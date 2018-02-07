@@ -44,7 +44,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
     compositor_frame_sink_ = std::move(*sink);
   }
 
-  // VideoFrameProvider::Client implementation.
+  // cc::VideoFrameProvider::Client implementation.
   void StopUsingProvider() override;
   void StartRendering() override;
   void StopRendering() override;
@@ -53,6 +53,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   // WebVideoFrameSubmitter implementation.
   void Initialize(cc::VideoFrameProvider*) override;
   void StartSubmitting(const viz::FrameSinkId&) override;
+  void SetRotation(media::VideoRotation) override;
 
   // cc::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
@@ -70,6 +71,12 @@ class PLATFORM_EXPORT VideoFrameSubmitter
  private:
   void SubmitFrame(viz::BeginFrameAck, scoped_refptr<media::VideoFrame>);
 
+  // Pulls frame and submits it to compositor.
+  // Used in cases like PaintSingleFrame, which occurs before video rendering
+  // has started to post a poster image, or to submit a final frame before
+  // ending rendering.
+  void SubmitSingleFrame();
+
   cc::VideoFrameProvider* provider_ = nullptr;
   viz::mojom::blink::CompositorFrameSinkPtr compositor_frame_sink_;
   mojo::Binding<viz::mojom::blink::CompositorFrameSinkClient> binding_;
@@ -78,6 +85,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   std::unique_ptr<VideoFrameResourceProvider> resource_provider_;
 
   bool is_rendering_;
+  media::VideoRotation rotation_;
   gfx::Size current_size_in_pixels_;
   base::WeakPtrFactory<VideoFrameSubmitter> weak_ptr_factory_;
 

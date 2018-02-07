@@ -18,6 +18,7 @@
 
 using testing::_;
 using testing::DoAll;
+using testing::Eq;
 using testing::Return;
 using testing::StrictMock;
 
@@ -31,6 +32,7 @@ class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
   MOCK_METHOD0(StartRendering, void());
   MOCK_METHOD0(StopRendering, void());
   MOCK_METHOD1(Initialize, void(cc::VideoFrameProvider*));
+  MOCK_METHOD1(SetRotation, void(media::VideoRotation));
   void DidReceiveFrame() override { ++did_receive_frame_count_; }
 
   int did_receive_frame_count() { return did_receive_frame_count_; }
@@ -65,8 +67,11 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
       compositor_ = std::make_unique<VideoFrameCompositor>(
           message_loop.task_runner(), std::move(client_));
       base::RunLoop().RunUntilIdle();
+      EXPECT_CALL(*submitter_,
+                  SetRotation(Eq(media::VideoRotation::VIDEO_ROTATION_90)));
       EXPECT_CALL(*submitter_, StartSubmitting(_));
-      compositor_->EnableSubmission(viz::FrameSinkId(1, 1));
+      compositor_->EnableSubmission(viz::FrameSinkId(1, 1),
+                                    media::VideoRotation::VIDEO_ROTATION_90);
     }
 
     compositor_->set_tick_clock_for_testing(&tick_clock_);
@@ -262,12 +267,8 @@ TEST_P(VideoFrameCompositorTest, UpdateCurrentFrameIfStale) {
   EXPECT_CALL(*this, Render(_, _, _)).Times(0);
   compositor()->UpdateCurrentFrameIfStale();
 
-  if (IsSurfaceLayerForVideoEnabled()) {
-    compositor()->set_submitter_for_test(nullptr);
-  } else {
-    // Clear our client, which means no mock function calls for Client.
-    compositor()->SetVideoFrameProviderClient(nullptr);
-  }
+  // Clear our client, which means no mock function calls for Client.
+  compositor()->SetVideoFrameProviderClient(nullptr);
 
   // Wait for background rendering to tick.
   base::RunLoop run_loop;

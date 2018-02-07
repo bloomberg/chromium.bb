@@ -18,6 +18,7 @@ include_rules = [
     "+cc",
     "-cc/blink",
     "+components/viz/common",
+    "+media/base/video_rotation.h",
     "+mojo/public",
     "+net/cert",
     "+net/http",
