@@ -107,8 +107,8 @@ HTMLImageElement* HTMLImageElement::Create(Document& document) {
 }
 
 HTMLImageElement* HTMLImageElement::Create(Document& document,
-                                           bool created_by_parser) {
-  return new HTMLImageElement(document, created_by_parser);
+                                           const CreateElementFlags flags) {
+  return new HTMLImageElement(document, flags.IsCreatedByParser());
 }
 
 HTMLImageElement::~HTMLImageElement() = default;

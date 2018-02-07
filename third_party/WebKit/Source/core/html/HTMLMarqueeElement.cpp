@@ -61,7 +61,7 @@ HTMLMarqueeElement* HTMLMarqueeElement::Create(Document& document) {
 }
 
 void HTMLMarqueeElement::DidAddUserAgentShadowRoot(ShadowRoot& shadow_root) {
-  Element* style = HTMLStyleElement::Create(GetDocument(), false);
+  auto* style = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
   style->setTextContent(
       ":host { display: inline-block; overflow: hidden;"
       "text-align: initial; white-space: nowrap; }"

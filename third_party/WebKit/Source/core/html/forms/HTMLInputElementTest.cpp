@@ -79,11 +79,12 @@ TEST_F(HTMLInputElementTest, FilteredDataListOptionsForMultipleEmail) {
 }
 
 TEST_F(HTMLInputElementTest, create) {
-  HTMLInputElement* input =
-      HTMLInputElement::Create(GetDocument(), /* createdByParser */ false);
+  auto* input = HTMLInputElement::Create(GetDocument(),
+                                         CreateElementFlags::ByCreateElement());
   EXPECT_NE(nullptr, input->UserAgentShadowRoot());
 
-  input = HTMLInputElement::Create(GetDocument(), /* createdByParser */ true);
+  input =
+      HTMLInputElement::Create(GetDocument(), CreateElementFlags::ByParser());
   EXPECT_EQ(nullptr, input->UserAgentShadowRoot());
   input->ParserSetAttributes(Vector<Attribute>());
   EXPECT_NE(nullptr, input->UserAgentShadowRoot());
@@ -115,16 +116,16 @@ TEST_F(HTMLInputElementTest, NoAssertWhenMovedInNewDocument) {
 }
 
 TEST_F(HTMLInputElementTest, DefaultToolTip) {
-  HTMLInputElement* input_without_form =
-      HTMLInputElement::Create(GetDocument(), false);
+  auto* input_without_form =
+      HTMLInputElement::Create(GetDocument(), CreateElementFlags());
   input_without_form->SetBooleanAttribute(HTMLNames::requiredAttr, true);
   GetDocument().body()->AppendChild(input_without_form);
   EXPECT_EQ("<<ValidationValueMissing>>", input_without_form->DefaultToolTip());
 
   HTMLFormElement* form = HTMLFormElement::Create(GetDocument());
   GetDocument().body()->AppendChild(form);
-  HTMLInputElement* input_with_form =
-      HTMLInputElement::Create(GetDocument(), false);
+  auto* input_with_form =
+      HTMLInputElement::Create(GetDocument(), CreateElementFlags());
   input_with_form->SetBooleanAttribute(HTMLNames::requiredAttr, true);
   form->AppendChild(input_with_form);
   EXPECT_EQ("<<ValidationValueMissing>>", input_with_form->DefaultToolTip());
@@ -135,7 +136,7 @@ TEST_F(HTMLInputElementTest, DefaultToolTip) {
 
 // crbug.com/589838
 TEST_F(HTMLInputElementTest, ImageTypeCrash) {
-  HTMLInputElement* input = HTMLInputElement::Create(GetDocument(), false);
+  auto* input = HTMLInputElement::Create(GetDocument(), CreateElementFlags());
   input->setAttribute(HTMLNames::typeAttr, "image");
   input->EnsureFallbackContent();
   // Make sure ensurePrimaryContent() recreates UA shadow tree, and updating
@@ -177,7 +178,7 @@ TEST_F(HTMLInputElementTest, DateTimeChooserSizeParamRespectsScale) {
 }
 
 TEST_F(HTMLInputElementTest, StepDownOverflow) {
-  HTMLInputElement* input = HTMLInputElement::Create(GetDocument(), false);
+  auto* input = HTMLInputElement::Create(GetDocument(), CreateElementFlags());
   input->setAttribute(HTMLNames::typeAttr, "date");
   input->setAttribute(HTMLNames::minAttr, "2010-02-10");
   input->setAttribute(HTMLNames::stepAttr, "9223372036854775556");

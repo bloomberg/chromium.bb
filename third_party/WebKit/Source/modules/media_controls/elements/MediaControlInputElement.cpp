@@ -162,7 +162,7 @@ void MediaControlInputElement::UpdateOverflowString() {
 MediaControlInputElement::MediaControlInputElement(
     MediaControlsImpl& media_controls,
     MediaControlElementType display_type)
-    : HTMLInputElement(media_controls.GetDocument(), false),
+    : HTMLInputElement(media_controls.GetDocument(), CreateElementFlags()),
       MediaControlElementBase(media_controls, display_type, this) {
   CreateUserAgentShadowRoot();
   CreateShadowSubtree();

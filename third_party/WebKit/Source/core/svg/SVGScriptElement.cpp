@@ -33,17 +33,17 @@
 namespace blink {
 
 inline SVGScriptElement::SVGScriptElement(Document& document,
-                                          bool was_inserted_by_parser,
+                                          const CreateElementFlags flags,
                                           bool already_started)
     : SVGElement(SVGNames::scriptTag, document),
       SVGURIReference(this),
-      loader_(InitializeScriptLoader(was_inserted_by_parser,
+      loader_(InitializeScriptLoader(flags.IsCreatedByParser(),
                                      already_started,
                                      false)) {}
 
 SVGScriptElement* SVGScriptElement::Create(Document& document,
-                                           bool inserted_by_parser) {
-  return new SVGScriptElement(document, inserted_by_parser, false);
+                                           const CreateElementFlags flags) {
+  return new SVGScriptElement(document, flags, false);
 }
 
 void SVGScriptElement::ParseAttribute(
@@ -149,7 +149,8 @@ Document& SVGScriptElement::GetDocument() const {
 
 Element* SVGScriptElement::CloneElementWithoutAttributesAndChildren() {
   auto* element =
-      new SVGScriptElement(GetDocument(), false, loader_->AlreadyStarted());
+      new SVGScriptElement(GetDocument(), CreateElementFlags::ByCloneNode(),
+                           loader_->AlreadyStarted());
   const AtomicString& is = FastGetAttribute(HTMLNames::isAttr);
   if (!is.IsNull() && !V0CustomElement::IsValidName(element->localName()))
     V0CustomElementRegistrationContext::SetTypeExtension(element, is);

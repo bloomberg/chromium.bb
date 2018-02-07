@@ -89,12 +89,12 @@
     "rect",
     {
       name: "script",
-      constructorNeedsCreatedByParser: true,
+      constructorNeedsCreateElementFlags: true,
     },
     "stop",
     {
       name: "style",
-      constructorNeedsCreatedByParser: true,
+      constructorNeedsCreateElementFlags: true,
     },
     {
       name: "svg",

@@ -38,7 +38,7 @@ class ElementLookupTrieWriter(json5_generator.Writer):
     # FIXME: Inherit all these from somewhere.
     default_parameters = {
         'JSInterfaceName': {},
-        'constructorNeedsCreatedByParser': {},
+        'constructorNeedsCreateElementFlags': {},
         'interfaceHeaderDir': {},
         'interfaceName': {},
         'noConstructor': {},

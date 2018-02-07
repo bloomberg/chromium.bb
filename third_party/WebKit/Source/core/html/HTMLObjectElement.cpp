@@ -49,19 +49,18 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLObjectElement::HTMLObjectElement(Document& document,
-                                            bool created_by_parser)
+                                            const CreateElementFlags flags)
     : HTMLPlugInElement(objectTag,
                         document,
-                        created_by_parser,
+                        flags,
                         kShouldNotPreferPlugInsForImages),
       use_fallback_content_(false) {}
 
 inline HTMLObjectElement::~HTMLObjectElement() = default;
 
 HTMLObjectElement* HTMLObjectElement::Create(Document& document,
-                                             bool created_by_parser) {
-  HTMLObjectElement* element =
-      new HTMLObjectElement(document, created_by_parser);
+                                             const CreateElementFlags flags) {
+  auto* element = new HTMLObjectElement(document, flags);
   element->EnsureUserAgentShadowRoot();
   return element;
 }

@@ -94,7 +94,7 @@ MediaControlTimelineElement::MediaControlTimelineElement(
 
     // This stylesheet element contains rules that cannot be present in the UA
     // stylesheet (e.g. animations).
-    HTMLStyleElement* style = HTMLStyleElement::Create(GetDocument(), false);
+    auto* style = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
     style->setTextContent(
         MediaControlsResourceLoader::GetShadowTimelineStyleSheet());
     track.AppendChild(style);

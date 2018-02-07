@@ -36,17 +36,17 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLStyleElement::HTMLStyleElement(Document& document,
-                                          bool created_by_parser)
+                                          const CreateElementFlags flags)
     : HTMLElement(styleTag, document),
-      StyleElement(&document, created_by_parser),
+      StyleElement(&document, flags.IsCreatedByParser()),
       fired_load_(false),
       loaded_sheet_(false) {}
 
 HTMLStyleElement::~HTMLStyleElement() = default;
 
 HTMLStyleElement* HTMLStyleElement::Create(Document& document,
-                                           bool created_by_parser) {
-  return new HTMLStyleElement(document, created_by_parser);
+                                           const CreateElementFlags flags) {
+  return new HTMLStyleElement(document, flags);
 }
 
 void HTMLStyleElement::ParseAttribute(

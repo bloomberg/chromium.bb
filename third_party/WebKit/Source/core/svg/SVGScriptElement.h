@@ -21,6 +21,7 @@
 #ifndef SVGScriptElement_h
 #define SVGScriptElement_h
 
+#include "core/dom/CreateElementFlags.h"
 #include "core/script/ScriptElementBase.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
@@ -38,7 +39,7 @@ class SVGScriptElement final : public SVGElement,
   USING_GARBAGE_COLLECTED_MIXIN(SVGScriptElement);
 
  public:
-  static SVGScriptElement* Create(Document&, bool was_inserted_by_parser);
+  static SVGScriptElement* Create(Document&, const CreateElementFlags);
 
   ScriptLoader* Loader() const final { return loader_.Get(); }
 
@@ -52,9 +53,7 @@ class SVGScriptElement final : public SVGElement,
   void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
-  SVGScriptElement(Document&,
-                   bool was_inserted_by_parser,
-                   bool already_started);
+  SVGScriptElement(Document&, const CreateElementFlags, bool already_started);
 
   void ParseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;

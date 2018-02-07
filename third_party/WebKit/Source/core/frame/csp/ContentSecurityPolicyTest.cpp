@@ -746,7 +746,8 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
                                       << "`, Nonce: `" << test.nonce << "`");
 
     unsigned expected_reports = test.allowed ? 0u : 1u;
-    HTMLScriptElement* element = HTMLScriptElement::Create(*document, true);
+    auto* element =
+        HTMLScriptElement::Create(*document, CreateElementFlags::ByParser());
 
     // Enforce 'script-src'
     Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::Create();

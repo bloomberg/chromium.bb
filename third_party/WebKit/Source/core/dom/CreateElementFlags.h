@@ -18,7 +18,7 @@ class CreateElementFlags {
 
   // https://html.spec.whatwg.org/#create-an-element-for-the-token
   static CreateElementFlags ByParser() {
-    return CreateElementFlags().SetCreatedByParser();
+    return CreateElementFlags().SetCreatedByParser(true);
   }
 
   // https://dom.spec.whatwg.org/#concept-node-clone
@@ -40,21 +40,24 @@ class CreateElementFlags {
 
   // https://html.spec.whatwg.org/#create-an-element-for-the-token
   static CreateElementFlags ByFragmentParser() {
-    return CreateElementFlags().SetCreatedByParser().SetAsyncCustomElements();
+    return CreateElementFlags()
+        .SetCreatedByParser(true)
+        .SetAsyncCustomElements();
   }
 
- private:
+  // Construct an instance indicating default behavior.
   CreateElementFlags()
       : created_by_parser_(false),
         async_custom_elements_(false),
         custom_elements_v1_(true),
         custom_elements_v0_(true) {}
 
-  CreateElementFlags& SetCreatedByParser() {
-    created_by_parser_ = true;
+  CreateElementFlags& SetCreatedByParser(bool flag) {
+    created_by_parser_ = flag;
     return *this;
   }
 
+ private:
   CreateElementFlags& SetAsyncCustomElements() {
     async_custom_elements_ = true;
     return *this;

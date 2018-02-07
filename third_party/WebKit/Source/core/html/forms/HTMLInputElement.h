@@ -28,6 +28,7 @@
 #include "base/gtest_prod_util.h"
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "core/dom/CreateElementFlags.h"
 #include "core/html/forms/FileChooser.h"
 #include "core/html/forms/StepRange.h"
 #include "core/html/forms/TextControlElement.h"
@@ -54,7 +55,7 @@ class CORE_EXPORT HTMLInputElement
   USING_GARBAGE_COLLECTED_MIXIN(HTMLInputElement);
 
  public:
-  static HTMLInputElement* Create(Document&, bool created_by_parser);
+  static HTMLInputElement* Create(Document&, const CreateElementFlags);
   ~HTMLInputElement() override;
   void Trace(blink::Visitor*) override;
 
@@ -303,7 +304,7 @@ class CORE_EXPORT HTMLInputElement
   void ChildrenChanged(const ChildrenChange&) override;
 
  protected:
-  HTMLInputElement(Document&, bool created_by_parser);
+  HTMLInputElement(Document&, const CreateElementFlags);
 
   void DefaultEventHandler(Event*) override;
   void CreateShadowSubtree();

@@ -56,8 +56,8 @@ bool WebHelperPluginImpl::Initialize(const String& plugin_type,
   if (!frame->GetFrame()->Client())
     return false;
 
-  object_element_ =
-      HTMLObjectElement::Create(*frame->GetFrame()->GetDocument(), false);
+  object_element_ = HTMLObjectElement::Create(*frame->GetFrame()->GetDocument(),
+                                              CreateElementFlags());
   Vector<String> attribute_names;
   Vector<String> attribute_values;
   DCHECK(frame->GetFrame()->GetDocument()->Url().IsValid());

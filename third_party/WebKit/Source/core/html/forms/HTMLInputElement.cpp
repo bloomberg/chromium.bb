@@ -96,7 +96,8 @@ class ListAttributeTargetObserver : public IdTargetObserver {
 
 const int kDefaultSize = 20;
 
-HTMLInputElement::HTMLInputElement(Document& document, bool created_by_parser)
+HTMLInputElement::HTMLInputElement(Document& document,
+                                   const CreateElementFlags flags)
     : TextControlElement(inputTag, document),
       size_(kDefaultSize),
       has_dirty_value_(false),
@@ -107,26 +108,26 @@ HTMLInputElement::HTMLInputElement(Document& document, bool created_by_parser)
       autocomplete_(kUninitialized),
       has_non_empty_list_(false),
       state_restored_(false),
-      parsing_in_progress_(created_by_parser),
+      parsing_in_progress_(flags.IsCreatedByParser()),
       can_receive_dropped_files_(false),
       should_reveal_password_(false),
       needs_to_update_view_value_(true),
       is_placeholder_visible_(false),
       has_been_password_field_(false),
-      // |m_inputType| is lazily created when constructed by the parser to avoid
-      // constructing unnecessarily a text inputType and its shadow subtree,
+      // |input_type_| is lazily created when constructed by the parser to avoid
+      // constructing unnecessarily a text InputType and its shadow subtree,
       // just to destroy them when the |type| attribute gets set by the parser
       // to something else than 'text'.
-      input_type_(created_by_parser ? nullptr : InputType::CreateText(*this)),
+      input_type_(flags.IsCreatedByParser() ? nullptr
+                                            : InputType::CreateText(*this)),
       input_type_view_(input_type_ ? input_type_->CreateView() : nullptr) {
   SetHasCustomStyleCallbacks();
 }
 
 HTMLInputElement* HTMLInputElement::Create(Document& document,
-                                           bool created_by_parser) {
-  HTMLInputElement* input_element =
-      new HTMLInputElement(document, created_by_parser);
-  if (!created_by_parser) {
+                                           const CreateElementFlags flags) {
+  auto* input_element = new HTMLInputElement(document, flags);
+  if (!flags.IsCreatedByParser()) {
     DCHECK(input_element->input_type_view_->NeedsShadowSubtree());
     input_element->CreateUserAgentShadowRoot();
     input_element->CreateShadowSubtree();

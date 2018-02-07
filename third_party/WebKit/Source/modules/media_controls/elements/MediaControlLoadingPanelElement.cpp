@@ -60,7 +60,7 @@ void MediaControlLoadingPanelElement::PopulateShadowDOM() {
   // This stylesheet element and will contain rules that are specific to the
   // loading panel. The shadow DOM protects these rules and rules from the
   // parent DOM from bleeding across the shadow DOM boundary.
-  HTMLStyleElement* style = HTMLStyleElement::Create(GetDocument(), false);
+  auto* style = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
   style->setTextContent(
       MediaControlsResourceLoader::GetShadowLoadingStyleSheet());
   shadow_root->AppendChild(style);

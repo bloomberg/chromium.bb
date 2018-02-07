@@ -49,17 +49,17 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLLinkElement::HTMLLinkElement(Document& document,
-                                        bool created_by_parser)
+                                        const CreateElementFlags flags)
     : HTMLElement(linkTag, document),
       link_loader_(LinkLoader::Create(this)),
       referrer_policy_(kReferrerPolicyDefault),
       sizes_(DOMTokenList::Create(*this, HTMLNames::sizesAttr)),
       rel_list_(RelList::Create(this)),
-      created_by_parser_(created_by_parser) {}
+      created_by_parser_(flags.IsCreatedByParser()) {}
 
 HTMLLinkElement* HTMLLinkElement::Create(Document& document,
-                                         bool created_by_parser) {
-  return new HTMLLinkElement(document, created_by_parser);
+                                         const CreateElementFlags flags) {
+  return new HTMLLinkElement(document, flags);
 }
 
 HTMLLinkElement::~HTMLLinkElement() = default;

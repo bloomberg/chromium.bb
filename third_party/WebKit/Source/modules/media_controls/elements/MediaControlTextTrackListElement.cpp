@@ -101,8 +101,8 @@ Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
   HTMLLabelElement* track_item = HTMLLabelElement::Create(GetDocument());
   track_item->SetShadowPseudoId(
       AtomicString("-internal-media-controls-text-track-list-item"));
-  HTMLInputElement* track_item_input =
-      HTMLInputElement::Create(GetDocument(), false);
+  auto* track_item_input =
+      HTMLInputElement::Create(GetDocument(), CreateElementFlags());
   track_item_input->SetShadowPseudoId(
       AtomicString("-internal-media-controls-text-track-list-item-input"));
   track_item_input->setType(InputTypeNames::checkbox);
