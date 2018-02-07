@@ -197,6 +197,10 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
 
   bool IsRootScrollerAncestor() const;
 
+  // GraphicsLayerClient implementation
+  bool ShouldThrottleRendering() const override;
+  bool IsTrackingRasterInvalidations() const override;
+
  private:
 #if DCHECK_IS_ON()
   void AssertNoUnresolvedDirtyBits();
@@ -214,8 +218,6 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
                      GraphicsContext&,
                      GraphicsLayerPaintingPhase,
                      const IntRect& interest_rect) const override;
-
-  bool IsTrackingRasterInvalidations() const override;
 
   void UpdateWithoutAcceleratedCompositing(CompositingUpdateType);
   void UpdateIfNeeded(DocumentLifecycle::LifecycleState target_state,

@@ -288,7 +288,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   void SetLayerState(PropertyTreeState&&, const IntPoint& layer_offset);
 
-  // Capture the last painted result into a PaintRecord.
+  // Capture the last painted result into a PaintRecord. This GraphicsLayer
+  // must DrawsContent. The result is never nullptr.
   sk_sp<PaintRecord> CapturePaintRecord() const;
 
  protected:
