@@ -12,10 +12,12 @@
     await ConsoleTestRunner.waitUntilNthMessageReceivedPromise(waitFor);
   var messages = ConsoleModel.consoleModel.messages();
   TestRunner.addResult('Received console messages:');
+  var results = [];
   for (var i = 0; i < messages.length; ++i) {
     var m = messages[i];
-    TestRunner.addResult('Message: ' + Bindings.displayNameForURL(m.url) + ':' + m.line + ' ' + m.messageText);
+    results.push('Message: ' + Bindings.displayNameForURL(m.url) + ':' + m.line + ' ' + m.messageText);
   }
+  TestRunner.addResults(results.sort());
   TestRunner.addResult('TEST COMPLETE.');
   TestRunner.completeTest();
 })();
