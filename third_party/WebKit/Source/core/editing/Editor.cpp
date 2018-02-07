@@ -92,7 +92,6 @@
 #include "core/page/Page.h"
 #include "core/svg/SVGImageElement.h"
 #include "platform/KillRing.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/scroll/ScrollAlignment.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/PtrUtil.h"
@@ -496,57 +495,6 @@ bool Editor::DispatchCutEvent(EditorCommandSource source) {
                                 source);
 }
 
-bool Editor::DispatchPasteEvent(PasteMode paste_mode,
-                                EditorCommandSource source) {
-  return DispatchClipboardEvent(EventTypeNames::paste, kDataTransferReadable,
-                                source, paste_mode);
-}
-
-void Editor::PasteAsPlainTextWithPasteboard(Pasteboard* pasteboard,
-                                            EditorCommandSource source) {
-  String text = pasteboard->PlainText();
-  PasteAsPlainText(text, CanSmartReplaceWithPasteboard(pasteboard), source);
-}
-
-void Editor::PasteWithPasteboard(Pasteboard* pasteboard,
-                                 EditorCommandSource source) {
-  DocumentFragment* fragment = nullptr;
-  bool chose_plain_text = false;
-
-  if (pasteboard->IsHTMLAvailable()) {
-    unsigned fragment_start = 0;
-    unsigned fragment_end = 0;
-    KURL url;
-    String markup = pasteboard->ReadHTML(url, fragment_start, fragment_end);
-    if (!markup.IsEmpty()) {
-      DCHECK(GetFrame().GetDocument());
-      fragment = CreateFragmentFromMarkupWithContext(
-          *GetFrame().GetDocument(), markup, fragment_start, fragment_end, url,
-          kDisallowScriptingAndPluginContent);
-    }
-  }
-
-  if (!fragment) {
-    String text = pasteboard->PlainText();
-    if (!text.IsEmpty()) {
-      chose_plain_text = true;
-
-      // TODO(editing-dev): Use of UpdateStyleAndLayoutIgnorePendingStylesheets
-      // needs to be audited.  See http://crbug.com/590369 for more details.
-      // |SelectedRange| requires clean layout for visible selection
-      // normalization.
-      GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-      fragment = CreateFragmentFromText(SelectedRange(), text);
-    }
-  }
-
-  if (fragment) {
-    PasteAsFragment(fragment, CanSmartReplaceWithPasteboard(pasteboard),
-                    chose_plain_text, source);
-  }
-}
-
 void Editor::WriteSelectionToPasteboard() {
   KURL url = GetFrame().GetDocument()->Url();
   String html = GetFrameSelection().SelectedHTMLForClipboard();
@@ -636,10 +584,6 @@ bool Editor::DispatchClipboardEvent(const AtomicString& event_type,
   data_transfer->SetAccessPolicy(kDataTransferNumb);
 
   return !no_default_processing;
-}
-
-bool Editor::CanSmartReplaceWithPasteboard(Pasteboard* pasteboard) {
-  return SmartInsertDeleteEnabled() && pasteboard->CanSmartReplace();
 }
 
 void Editor::ReplaceSelectionWithFragment(DocumentFragment* fragment,
@@ -1188,68 +1132,6 @@ void Editor::Copy(EditorCommandSource source) {
     else
       WriteSelectionToPasteboard();
   }
-}
-
-void Editor::Paste(EditorCommandSource source) {
-  DCHECK(GetFrame().GetDocument());
-  if (!DispatchPasteEvent(kAllMimeTypes, source))
-    return;
-  if (!CanPaste())
-    return;
-
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // A 'paste' event handler might have dirtied the layout so we need to update
-  // before we obtain the selection.
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  if (source == kCommandFromMenuOrKeyBinding &&
-      !GetFrameSelection().SelectionHasFocus())
-    return;
-
-  ResourceFetcher* loader = GetFrame().GetDocument()->Fetcher();
-  ResourceCacheValidationSuppressor validation_suppressor(loader);
-
-  const PasteMode paste_mode = CanEditRichly() ? kAllMimeTypes : kPlainTextOnly;
-
-  if (source == kCommandFromMenuOrKeyBinding) {
-    DataTransfer* data_transfer =
-        DataTransfer::Create(DataTransfer::kCopyAndPaste, kDataTransferReadable,
-                             DataObject::CreateFromPasteboard(paste_mode));
-
-    if (DispatchBeforeInputDataTransfer(
-            FindEventTargetForClipboardEvent(source),
-            InputEvent::InputType::kInsertFromPaste,
-            data_transfer) != DispatchEventResult::kNotCanceled)
-      return;
-    // 'beforeinput' event handler may destroy target frame.
-    if (frame_->GetDocument()->GetFrame() != frame_)
-      return;
-  }
-
-  if (paste_mode == kAllMimeTypes)
-    PasteWithPasteboard(Pasteboard::GeneralPasteboard(), source);
-  else
-    PasteAsPlainTextWithPasteboard(Pasteboard::GeneralPasteboard(), source);
-}
-
-void Editor::PasteAsPlainText(EditorCommandSource source) {
-  if (!DispatchPasteEvent(kPlainTextOnly, source))
-    return;
-  if (!CanPaste())
-    return;
-
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  // A 'paste' event handler might have dirtied the layout so we need to update
-  // before we obtain the selection.
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  if (source == kCommandFromMenuOrKeyBinding &&
-      !GetFrameSelection().SelectionHasFocus())
-    return;
-
-  PasteAsPlainTextWithPasteboard(Pasteboard::GeneralPasteboard(), source);
 }
 
 static void CountEditingEvent(ExecutionContext* execution_context,

@@ -73,6 +73,7 @@
 #include "core/page/Page.h"
 #include "platform/Histogram.h"
 #include "platform/KillRing.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/scroll/Scrollbar.h"
 #include "platform/wtf/StringExtras.h"
 #include "platform/wtf/text/AtomicString.h"
@@ -1782,6 +1783,117 @@ static bool CanReadClipboard(LocalFrame& frame, EditorCommandSource source) {
       default_value);
 }
 
+static bool CanSmartReplaceWithPasteboard(LocalFrame& frame,
+                                          Pasteboard* pasteboard) {
+  return frame.GetEditor().SmartInsertDeleteEnabled() &&
+         pasteboard->CanSmartReplace();
+}
+
+static void PasteAsPlainTextWithPasteboard(LocalFrame& frame,
+                                           Pasteboard* pasteboard,
+                                           EditorCommandSource source) {
+  const String text = pasteboard->PlainText();
+  frame.GetEditor().PasteAsPlainText(
+      text, CanSmartReplaceWithPasteboard(frame, pasteboard), source);
+}
+
+static bool DispatchPasteEvent(LocalFrame& frame,
+                               PasteMode paste_mode,
+                               EditorCommandSource source) {
+  return frame.GetEditor().DispatchClipboardEvent(
+      EventTypeNames::paste, kDataTransferReadable, source, paste_mode);
+}
+
+static void PasteWithPasteboard(LocalFrame& frame,
+                                Pasteboard* pasteboard,
+                                EditorCommandSource source) {
+  DocumentFragment* fragment = nullptr;
+  bool chose_plain_text = false;
+
+  if (pasteboard->IsHTMLAvailable()) {
+    unsigned fragment_start = 0;
+    unsigned fragment_end = 0;
+    KURL url;
+    const String markup =
+        pasteboard->ReadHTML(url, fragment_start, fragment_end);
+    if (!markup.IsEmpty()) {
+      DCHECK(frame.GetDocument());
+      fragment = CreateFragmentFromMarkupWithContext(
+          *frame.GetDocument(), markup, fragment_start, fragment_end, url,
+          kDisallowScriptingAndPluginContent);
+    }
+  }
+
+  if (!fragment) {
+    const String text = pasteboard->PlainText();
+    if (!text.IsEmpty()) {
+      chose_plain_text = true;
+
+      // TODO(editing-dev): Use of UpdateStyleAndLayoutIgnorePendingStylesheets
+      // needs to be audited.  See http://crbug.com/590369 for more details.
+      // |SelectedRange| requires clean layout for visible selection
+      // normalization.
+      frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+      fragment =
+          CreateFragmentFromText(frame.GetEditor().SelectedRange(), text);
+    }
+  }
+
+  if (!fragment)
+    return;
+
+  frame.GetEditor().PasteAsFragment(
+      fragment, CanSmartReplaceWithPasteboard(frame, pasteboard),
+      chose_plain_text, source);
+}
+
+static void Paste(LocalFrame& frame, EditorCommandSource source) {
+  DCHECK(frame.GetDocument());
+  if (!DispatchPasteEvent(frame, kAllMimeTypes, source))
+    return;
+  if (!frame.GetEditor().CanPaste())
+    return;
+
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // A 'paste' event handler might have dirtied the layout so we need to update
+  // before we obtain the selection.
+  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  if (source == kCommandFromMenuOrKeyBinding &&
+      !frame.Selection().SelectionHasFocus())
+    return;
+
+  ResourceFetcher* const loader = frame.GetDocument()->Fetcher();
+  ResourceCacheValidationSuppressor validation_suppressor(loader);
+
+  const PasteMode paste_mode =
+      frame.GetEditor().CanEditRichly() ? kAllMimeTypes : kPlainTextOnly;
+
+  if (source == kCommandFromMenuOrKeyBinding) {
+    DataTransfer* data_transfer =
+        DataTransfer::Create(DataTransfer::kCopyAndPaste, kDataTransferReadable,
+                             DataObject::CreateFromPasteboard(paste_mode));
+
+    if (DispatchBeforeInputDataTransfer(
+            frame.GetEditor().FindEventTargetForClipboardEvent(source),
+            InputEvent::InputType::kInsertFromPaste,
+            data_transfer) != DispatchEventResult::kNotCanceled)
+      return;
+    // 'beforeinput' event handler may destroy target frame.
+    if (frame.GetDocument()->GetFrame() != frame)
+      return;
+  }
+
+  if (paste_mode == kAllMimeTypes) {
+    PasteWithPasteboard(frame, Pasteboard::GeneralPasteboard(), source);
+    return;
+  }
+  PasteAsPlainTextWithPasteboard(frame, Pasteboard::GeneralPasteboard(),
+                                 source);
+}
+
 static bool ExecutePaste(LocalFrame& frame,
                          Event*,
                          EditorCommandSource source,
@@ -1793,7 +1905,7 @@ static bool ExecutePaste(LocalFrame& frame,
   // |canExecute()|. See also "Copy", and "Cut" command.
   if (!CanReadClipboard(frame, source))
     return false;
-  frame.GetEditor().Paste(source);
+  Paste(frame, source);
   return true;
 }
 
@@ -1814,7 +1926,7 @@ static bool ExecutePasteGlobalSelection(LocalFrame& frame,
 
   bool old_selection_mode = Pasteboard::GeneralPasteboard()->IsSelectionMode();
   Pasteboard::GeneralPasteboard()->SetSelectionMode(true);
-  frame.GetEditor().Paste(source);
+  Paste(frame, source);
   Pasteboard::GeneralPasteboard()->SetSelectionMode(old_selection_mode);
   return true;
 }
@@ -1823,7 +1935,23 @@ static bool ExecutePasteAndMatchStyle(LocalFrame& frame,
                                       Event*,
                                       EditorCommandSource source,
                                       const String&) {
-  frame.GetEditor().PasteAsPlainText(source);
+  if (!DispatchPasteEvent(frame, kPlainTextOnly, source))
+    return false;
+  if (!frame.GetEditor().CanPaste())
+    return false;
+
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // A 'paste' event handler might have dirtied the layout so we need to update
+  // before we obtain the selection.
+  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  if (source == kCommandFromMenuOrKeyBinding &&
+      !frame.Selection().SelectionHasFocus())
+    return false;
+
+  PasteAsPlainTextWithPasteboard(frame, Pasteboard::GeneralPasteboard(),
+                                 source);
   return true;
 }
 
