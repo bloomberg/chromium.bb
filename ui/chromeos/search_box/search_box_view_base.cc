@@ -84,9 +84,14 @@ class SearchBoxImageButton : public views::ImageButton {
   explicit SearchBoxImageButton(views::ButtonListener* listener)
       : ImageButton(listener) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
+
+    // Avoid drawing default dashed focus and draw customized focus in
+    // OnPaintBackground();
+    SetFocusPainter(nullptr);
   }
   ~SearchBoxImageButton() override {}
 
+  // views::View overrides:
   bool OnKeyPressed(const ui::KeyEvent& event) override {
     // Disable space key to press the button. The keyboard events received
     // by this view are forwarded from a Textfield (SearchBoxView) and key
@@ -98,10 +103,14 @@ class SearchBoxImageButton : public views::ImageButton {
     return Button::OnKeyPressed(event);
   }
 
+  void OnFocus() override { SchedulePaint(); }
+
+  void OnBlur() override { SchedulePaint(); }
+
  private:
   // views::View overrides:
   void OnPaintBackground(gfx::Canvas* canvas) override {
-    if (state() == STATE_PRESSED) {
+    if (state() == STATE_PRESSED || HasFocus()) {
       canvas->FillRect(gfx::Rect(size()), kSelectedColor);
     }
   }
