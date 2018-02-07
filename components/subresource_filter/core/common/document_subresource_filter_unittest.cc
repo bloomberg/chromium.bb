@@ -91,6 +91,25 @@ TEST_F(DocumentSubresourceFilterTest, DryRun) {
   EXPECT_EQ(0, statistics.num_loads_disallowed);
 }
 
+TEST_F(DocumentSubresourceFilterTest, MatchingRuleDryRun) {
+  ActivationState activation_state(kDryRun);
+  activation_state.measure_performance = false;
+  DocumentSubresourceFilter filter(url::Origin(), activation_state, ruleset());
+
+  EXPECT_NE(nullptr,
+            filter.FindMatchingUrlRule(GURL(kTestAlphaURL), kImageType));
+  EXPECT_EQ(nullptr,
+            filter.FindMatchingUrlRule(GURL(kTestAlphaDataURI), kImageType));
+  EXPECT_NE(nullptr, filter.FindMatchingUrlRule(GURL(kTestAlphaWSURI),
+                                                proto::ELEMENT_TYPE_OTHER));
+  EXPECT_EQ(nullptr,
+            filter.FindMatchingUrlRule(GURL(kTestBetaURL), kImageType));
+  EXPECT_NE(nullptr,
+            filter.FindMatchingUrlRule(GURL(kTestAlphaURL), kSubdocumentType));
+  EXPECT_EQ(nullptr,
+            filter.FindMatchingUrlRule(GURL(kTestBetaURL), kSubdocumentType));
+}
+
 TEST_F(DocumentSubresourceFilterTest, Enabled) {
   auto test_impl = [this](bool measure_performance) {
     ActivationState activation_state(kEnabled);
@@ -128,6 +147,25 @@ TEST_F(DocumentSubresourceFilterTest, Enabled) {
 
   test_impl(true /* measure_performance */);
   test_impl(false /* measure_performance */);
+}
+
+TEST_F(DocumentSubresourceFilterTest, MatchingRuleEnabled) {
+  ActivationState activation_state(kEnabled);
+  activation_state.measure_performance = false;
+  DocumentSubresourceFilter filter(url::Origin(), activation_state, ruleset());
+
+  EXPECT_NE(nullptr,
+            filter.FindMatchingUrlRule(GURL(kTestAlphaURL), kImageType));
+  EXPECT_EQ(nullptr,
+            filter.FindMatchingUrlRule(GURL(kTestAlphaDataURI), kImageType));
+  EXPECT_NE(nullptr, filter.FindMatchingUrlRule(GURL(kTestAlphaWSURI),
+                                                proto::ELEMENT_TYPE_OTHER));
+  EXPECT_EQ(nullptr,
+            filter.FindMatchingUrlRule(GURL(kTestBetaURL), kImageType));
+  EXPECT_NE(nullptr,
+            filter.FindMatchingUrlRule(GURL(kTestAlphaURL), kSubdocumentType));
+  EXPECT_EQ(nullptr,
+            filter.FindMatchingUrlRule(GURL(kTestBetaURL), kSubdocumentType));
 }
 
 }  // namespace subresource_filter
