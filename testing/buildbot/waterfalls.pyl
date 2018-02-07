@@ -1015,11 +1015,6 @@
           'all',
         ],
       },
-      'Leak Detection Linux': {
-        'test_suites': {
-          'isolated_scripts': 'leak_detection_isolated_scripts',
-        },
-      },
       'Linux ARM': {
         'test_suites': {
           'gtest_tests': 'linux_arm_gtests',
@@ -1355,6 +1350,11 @@
           'cast_shell',
           'cast_test_lists',
         ],
+      },
+      'Leak Detection Linux': {
+        'test_suites': {
+          'isolated_scripts': 'leak_detection_isolated_scripts',
+        },
       },
       'Linux Builder': {
         'additional_compile_targets': [
