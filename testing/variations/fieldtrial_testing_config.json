@@ -2192,49 +2192,6 @@
             ]
         }
     ],
-    "NetDelayableH2AndQuicRequests": [
-        {
-            "platforms": [
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled3",
-                    "enable_features": [
-                        "PrioritySupportedRequestsDelayable"
-                    ]
-                }
-            ]
-        },
-        {
-            "platforms": [
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledHead3",
-                    "enable_features": [
-                        "HeadPriorityRequestsDelayable"
-                    ]
-                }
-            ]
-        },
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Yielding3",
-                    "enable_features": [
-                        "NetworkSchedulerYielding"
-                    ]
-                }
-            ]
-        }
-    ],
     "NetworkQualityEstimator": [
         {
             "platforms": [
