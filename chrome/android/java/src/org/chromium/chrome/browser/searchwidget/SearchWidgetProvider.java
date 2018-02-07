@@ -12,6 +12,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -58,7 +59,12 @@ public class SearchWidgetProvider extends AppWidgetProvider {
 
         public SearchWidgetProviderDelegate(Context context) {
             mContext = context == null ? ContextUtils.getApplicationContext() : context;
-            mManager = AppWidgetManager.getInstance(mContext);
+
+            if (mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_APP_WIDGETS)) {
+                mManager = AppWidgetManager.getInstance(mContext);
+            } else {
+                mManager = null;
+            }
         }
 
         /** Returns the Context to pull resources from. */
@@ -73,12 +79,14 @@ public class SearchWidgetProvider extends AppWidgetProvider {
 
         /** Returns IDs for all search widgets that exist. */
         protected int[] getAllSearchWidgetIds() {
+            if (mManager == null) return new int[0];
             return mManager.getAppWidgetIds(
                     new ComponentName(getContext(), SearchWidgetProvider.class.getName()));
         }
 
         /** See {@link AppWidgetManager#updateAppWidget}. */
         protected void updateAppWidget(int id, RemoteViews views) {
+            assert mManager != null;
             mManager.updateAppWidget(id, views);
         }
     }
