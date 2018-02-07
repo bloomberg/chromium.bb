@@ -5,6 +5,25 @@
 cr.define('extensions', function() {
   'use strict';
 
+  /**
+   * @return {!Promise} A signal that the document is ready. Need to wait for
+   *     this, otherwise the custom ExtensionOptions element might not have been
+   *     registered yet.
+   */
+  function whenDocumentReady() {
+    if (document.readyState == 'complete')
+      return Promise.resolve();
+
+    return new Promise(function(resolve) {
+      document.addEventListener('readystatechange', function f() {
+        if (document.readyState == 'complete') {
+          document.removeEventListener('readystatechange', f);
+          resolve();
+        }
+      });
+    });
+  }
+
   const OptionsDialog = Polymer({
     is: 'extensions-options-dialog',
 
@@ -25,21 +44,23 @@ cr.define('extensions', function() {
     /** @param {chrome.developerPrivate.ExtensionInfo} data */
     show: function(data) {
       this.data_ = data;
-      if (!this.extensionOptions_)
-        this.extensionOptions_ = document.createElement('ExtensionOptions');
-      this.extensionOptions_.extension = this.data_.id;
-      this.extensionOptions_.onclose = this.close.bind(this);
+      whenDocumentReady().then(() => {
+        if (!this.extensionOptions_)
+          this.extensionOptions_ = document.createElement('ExtensionOptions');
+        this.extensionOptions_.extension = this.data_.id;
+        this.extensionOptions_.onclose = this.close.bind(this);
 
-      const onSizeChanged = e => {
-        this.extensionOptions_.style.height = e.height + 'px';
-        this.extensionOptions_.style.width = e.width + 'px';
+        const onSizeChanged = e => {
+          this.extensionOptions_.style.height = e.height + 'px';
+          this.extensionOptions_.style.width = e.width + 'px';
 
-        if (!this.$$('dialog').open)
-          this.$$('dialog').showModal();
-      };
+          if (!this.$$('dialog').open)
+            this.$$('dialog').showModal();
+        };
 
-      this.extensionOptions_.onpreferredsizechanged = onSizeChanged;
-      this.$.body.appendChild(this.extensionOptions_);
+        this.extensionOptions_.onpreferredsizechanged = onSizeChanged;
+        this.$.body.appendChild(this.extensionOptions_);
+      });
     },
 
     close: function() {
