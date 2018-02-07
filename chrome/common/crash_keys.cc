@@ -35,9 +35,7 @@ static bool IsBoringSwitch(const std::string& flag) {
     switches::kProcessType,
     switches::kV,
     switches::kVModule,
-#if defined(OS_WIN)
-    switches::kForceFieldTrials,
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
     switches::kMetricsClientID,
 #elif defined(OS_CHROMEOS)
     switches::kPpapiFlashArgs,
