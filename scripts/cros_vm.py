@@ -419,8 +419,10 @@ class VM(object):
     parser.add_argument('--qemu-smp', type=int, default='0',
                         help='SMP argument that will be passed to qemu. (0 '
                              'means auto-detection.)')
+    # TODO(pwang): replace SandyBridge to Haswell-noTSX once lab machine
+    # running VMTest all migrate to GCE.
     parser.add_argument('--qemu-cpu', type=str,
-                        default='Haswell-noTSX,-invpcid,-tsc-deadline',
+                        default='SandyBridge,-invpcid,-tsc-deadline',
                         help='CPU argument that will be passed to qemu.')
     parser.add_argument('--qemu-bios-path', type='path',
                         help='Path of directory with qemu bios files.')
