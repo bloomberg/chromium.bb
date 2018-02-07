@@ -170,6 +170,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void OnContentOverlayFrameAvailable();
   void OnUiFrameAvailable();
   void OnWebVRFrameAvailable();
+  void OnNewWebVRFrame();
   void ScheduleOrCancelWebVrFrameTimeout();
   void OnWebVrTimeoutImminent();
   void OnWebVrFrameTimedOut();
@@ -294,7 +295,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   // Attributes for gesture detection while holding app button.
   gfx::Vector3dF controller_start_direction_;
 
-  vr::FPSMeter fps_meter_;
+  vr::FPSMeter vr_ui_fps_meter_;
+  vr::FPSMeter webvr_fps_meter_;
 
   // JS time is from SendVSync (pose time) to incoming JS submitFrame.
   vr::SlidingTimeDeltaAverage webvr_js_time_;

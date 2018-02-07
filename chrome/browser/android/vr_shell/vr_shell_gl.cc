@@ -182,7 +182,8 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser_interface,
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       binding_(this),
       browser_(browser_interface),
-      fps_meter_(),
+      vr_ui_fps_meter_(),
+      webvr_fps_meter_(),
       webvr_js_time_(kWebVRSlidingAverageSize),
       webvr_render_time_(kWebVRSlidingAverageSize),
       webvr_js_wait_time_(kWebVRSlidingAverageSize),
@@ -498,6 +499,9 @@ void VrShellGl::OnUiFrameAvailable() {
 }
 
 void VrShellGl::OnWebVRFrameAvailable() {
+  // This is called each time a frame that was drawn on the WebVR Surface
+  // arrives on the SurfaceTexture.
+
   // A "while" loop here is a bad idea. It's legal to call
   // UpdateTexImage repeatedly even if no frames are available, but
   // that does *not* wait for a new frame, it just reuses the most
@@ -513,12 +517,20 @@ void VrShellGl::OnWebVRFrameAvailable() {
   TRACE_EVENT1("gpu", "VrShellGl::OnWebVRFrameAvailable", "frame", frame_index);
   pending_frames_.pop();
 
+  OnNewWebVRFrame();
+  DrawFrame(frame_index, base::TimeTicks::Now());
+}
+
+void VrShellGl::OnNewWebVRFrame() {
   ui_->OnWebVrFrameAvailable();
 
-  if (web_vr_mode_)
+  if (web_vr_mode_) {
     ++webvr_frames_received_;
 
-  DrawFrame(frame_index, base::TimeTicks::Now());
+    webvr_fps_meter_.AddFrame(base::TimeTicks::Now());
+    TRACE_COUNTER1("gpu", "WebVR FPS", webvr_fps_meter_.GetFPS());
+  }
+
   ScheduleOrCancelWebVrFrameTimeout();
 }
 
@@ -1243,9 +1255,9 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
 
   // After saving the timestamp, fps will be available via GetFPS().
   // TODO(vollick): enable rendering of this framerate in a HUD.
-  fps_meter_.AddFrame(base::TimeTicks::Now());
-  DVLOG(1) << "fps: " << fps_meter_.GetFPS();
-  TRACE_COUNTER1("gpu", "WebVR FPS", fps_meter_.GetFPS());
+  vr_ui_fps_meter_.AddFrame(base::TimeTicks::Now());
+  DVLOG(1) << "fps: " << vr_ui_fps_meter_.GetFPS();
+  TRACE_COUNTER1("gpu", "VR UI FPS", vr_ui_fps_meter_.GetFPS());
 }
 
 bool VrShellGl::ShouldDrawWebVr() {
