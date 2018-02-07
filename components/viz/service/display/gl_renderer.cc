@@ -3814,4 +3814,11 @@ bool GLRenderer::IsRenderPassResourceAllocated(
   return texture_it != render_pass_textures_.end();
 }
 
+gfx::Size GLRenderer::GetRenderPassTextureSize(
+    const RenderPassId& render_pass_id) {
+  auto texture_it = render_pass_textures_.find(render_pass_id);
+  DCHECK(texture_it != render_pass_textures_.end());
+  return texture_it->second.size();
+}
+
 }  // namespace viz
