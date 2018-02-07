@@ -49,14 +49,6 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
                                const std::string& new_hash,
                                Callback callback) = 0;
 
-  // Asks cryptohomed to asynchronously try to add another |new_passhash| for
-  // |user_id| using |passhash| to unlock the key.
-  // |callback| will be called with status info on completion.
-  virtual void AsyncAddKey(const Identification& user_id,
-                           const std::string& passhash,
-                           const std::string& new_passhash,
-                           Callback callback) = 0;
-
   // Asks cryptohomed to asynchronously to mount a tmpfs for guest mode.
   // |callback| will be called with status info on completion.
   virtual void AsyncMountGuest(Callback callback) = 0;
