@@ -151,8 +151,8 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   // Keyboard input related.
   void RequestFocus(int element_id);
   void RequestUnfocus(int element_id);
-  void OnInputEdited(const TextInputInfo& info) override;
-  void OnInputCommitted(const TextInputInfo& info) override;
+  void OnInputEdited(const EditedText& info) override;
+  void OnInputCommitted(const EditedText& info) override;
   void OnKeyboardHidden() override;
 
  private:

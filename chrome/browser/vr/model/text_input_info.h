@@ -15,6 +15,7 @@ namespace vr {
 struct TextInputInfo {
  public:
   TextInputInfo();
+  TextInputInfo(const TextInputInfo& other);
   explicit TextInputInfo(base::string16 t);
 
   static const int kDefaultCompositionIndex = -1;
@@ -46,6 +47,27 @@ struct TextInputInfo {
         "t(%s) s(%d, %d) c(%d, %d)", base::UTF16ToUTF8(text).c_str(),
         selection_start, selection_end, composition_start, composition_end);
   }
+};
+
+// A superset of TextInputInfo, consisting of a current and previous text field
+// state.  A keyboard can return this structure, allowing clients to derive
+// deltas in keyboard state.
+struct EditedText {
+ public:
+  EditedText();
+  EditedText(const EditedText& other);
+  EditedText(const TextInputInfo& current, const TextInputInfo& previous);
+  explicit EditedText(base::string16 t);
+
+  bool operator==(const EditedText& other) const;
+  bool operator!=(const EditedText& other) const { return !(*this == other); }
+
+  void Update(const TextInputInfo& info);
+
+  std::string ToString() const;
+
+  TextInputInfo current;
+  TextInputInfo previous;
 };
 
 }  // namespace vr

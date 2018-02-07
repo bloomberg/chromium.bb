@@ -29,6 +29,7 @@
 #include "chrome/browser/vr/elements/laser.h"
 #include "chrome/browser/vr/elements/linear_layout.h"
 #include "chrome/browser/vr/elements/omnibox_formatting.h"
+#include "chrome/browser/vr/elements/omnibox_text_field.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/repositioner.h"
 #include "chrome/browser/vr/elements/reticle.h"
@@ -847,7 +848,7 @@ void UiSceneCreator::CreateContentQuad() {
         if (focused) {
           e->UpdateInput(model->web_input_text_field_info);
         } else {
-          e->UpdateInput(TextInputInfo());
+          e->UpdateInput(EditedText());
         }
       },
       model_, base::Unretained(main_content.get()));
@@ -894,11 +895,11 @@ void UiSceneCreator::CreateContentQuad() {
       VR_BIND_FUNC(UiElementRenderer::TextureLocation, Model, model_,
                    model->content_overlay_location, ContentElement,
                    main_content.get(), SetOverlayTextureLocation));
-  main_content->AddBinding(std::make_unique<Binding<TextInputInfo>>(
-      VR_BIND_LAMBDA([](TextInputInfo* info) { return *info; },
+  main_content->AddBinding(std::make_unique<Binding<EditedText>>(
+      VR_BIND_LAMBDA([](EditedText* info) { return *info; },
                      base::Unretained(&model_->web_input_text_field_info)),
       VR_BIND_LAMBDA([](ContentElement* e,
-                        const TextInputInfo& value) { e->UpdateInput(value); },
+                        const EditedText& value) { e->UpdateInput(value); },
                      base::Unretained(main_content.get()))));
   shadow->AddChild(std::move(main_content));
   scene_->AddUiElement(k2dBrowsingContentGroup, std::move(shadow));
@@ -1579,43 +1580,6 @@ void UiSceneCreator::CreateController() {
   scene_->AddUiElement(kControllerGroup, std::move(reticle_laser_group));
 }
 
-std::unique_ptr<TextInput> UiSceneCreator::CreateTextInput(
-    float font_height_meters,
-    Model* model,
-    TextInputInfo* text_input_model,
-    TextInputDelegate* text_input_delegate) {
-  auto text_input = std::make_unique<TextInput>(
-      font_height_meters,
-      base::BindRepeating(
-          [](TextInputInfo* model, const TextInputInfo& text_input_info) {
-            *model = text_input_info;
-          },
-          base::Unretained(text_input_model)));
-  EventHandlers event_handlers;
-  event_handlers.focus_change = base::BindRepeating(
-      [](Model* model, TextInput* text_input, TextInputInfo* text_input_info,
-         bool focused) {
-        if (focused) {
-          model->editing_input = true;
-          text_input->UpdateInput(*text_input_info);
-        } else {
-          model->editing_input = false;
-        }
-      },
-      base::Unretained(model), base::Unretained(text_input.get()),
-      base::Unretained(text_input_model));
-  text_input->set_event_handlers(event_handlers);
-  text_input->SetDrawPhase(kPhaseNone);
-  text_input->SetTextInputDelegate(text_input_delegate);
-  text_input->AddBinding(std::make_unique<Binding<TextInputInfo>>(
-      VR_BIND_LAMBDA([](TextInputInfo* info) { return *info; },
-                     base::Unretained(text_input_model)),
-      VR_BIND_LAMBDA([](TextInput* e,
-                        const TextInputInfo& value) { e->UpdateInput(value); },
-                     base::Unretained(text_input.get()))));
-  return text_input;
-}
-
 void UiSceneCreator::CreateKeyboard() {
   auto visibility_control_root =
       Create<UiElement>(kKeyboardVisibilityControlForVoice, kPhaseNone);
@@ -1881,14 +1845,58 @@ void UiSceneCreator::CreateOmnibox() {
   VR_BIND_COLOR(model_, omnibox_container.get(),
                 &ColorScheme::omnibox_background, &Rect::SetColor);
 
-  float width = kOmniboxWidthDMM - 2 * kOmniboxTextMarginDMM -
-                kOmniboxTextFieldIconSizeDMM;
-  auto omnibox_text_field =
-      CreateTextInput(kOmniboxTextHeightDMM, model_,
-                      &model_->omnibox_text_field_info, text_input_delegate_);
+  auto omnibox_text_field = Create<OmniboxTextField>(
+      kOmniboxTextField, kPhaseNone, kOmniboxTextHeightDMM,
+      base::BindRepeating(
+          [](Model* model, const EditedText& text_input_info) {
+            model->omnibox_text_field_info = text_input_info;
+          },
+          base::Unretained(model_)),
+      base::BindRepeating(
+          [](UiBrowserInterface* browser, const AutocompleteRequest& request) {
+            browser->StartAutocomplete(request);
+          },
+          base::Unretained(browser_)),
+      base::BindRepeating(
+          [](UiBrowserInterface* browser) { browser->StopAutocomplete(); },
+          base::Unretained(browser_)));
+
+  omnibox_text_field->SetTextInputDelegate(text_input_delegate_);
+  omnibox_text_field->set_hit_testable(false);
+  omnibox_text_field->SetHintText(
+      l10n_util::GetStringUTF16(IDS_SEARCH_OR_TYPE_URL));
+  omnibox_text_field->set_x_anchoring(LEFT);
+  omnibox_text_field->SetTranslate(kOmniboxTextMarginDMM, 0, 0);
+  omnibox_text_field->SetSize(kOmniboxWidthDMM - 2 * kOmniboxTextMarginDMM -
+                                  kOmniboxTextFieldIconSizeDMM,
+                              0);
+
+  EventHandlers event_handlers;
+  event_handlers.focus_change = base::BindRepeating(
+      [](Model* model, TextInput* text_input, bool focused) {
+        if (focused) {
+          model->editing_input = true;
+          text_input->UpdateInput(model->omnibox_text_field_info);
+        } else {
+          model->editing_input = false;
+        }
+      },
+      base::Unretained(model_), base::Unretained(omnibox_text_field.get()));
+  omnibox_text_field->set_event_handlers(event_handlers);
+
+  omnibox_text_field->AddBinding(VR_BIND_FUNC(
+      bool, Model, model_, model->has_mode_in_stack(kModeEditingOmnibox),
+      OmniboxTextField, omnibox_text_field.get(), SetEnabled));
+  omnibox_text_field->AddBinding(std::make_unique<Binding<EditedText>>(
+      VR_BIND_LAMBDA(
+          [](Model* model) { return model->omnibox_text_field_info; },
+          base::Unretained(model_)),
+      VR_BIND_LAMBDA([](OmniboxTextField* e,
+                        const EditedText& value) { e->UpdateInput(value); },
+                     base::Unretained(omnibox_text_field.get()))));
   omnibox_text_field->set_input_committed_callback(base::BindRepeating(
       [](Model* model, UiBrowserInterface* browser, Ui* ui,
-         const TextInputInfo& text) {
+         const EditedText& text) {
         if (!model->omnibox_suggestions.empty()) {
           browser->Navigate(model->omnibox_suggestions.front().destination);
           ui->OnUiRequestedNavigation();
@@ -1896,16 +1904,19 @@ void UiSceneCreator::CreateOmnibox() {
       },
       base::Unretained(model_), base::Unretained(browser_),
       base::Unretained(ui_)));
-  omnibox_text_field->AddBinding(
-      VR_BIND(TextInputInfo, Model, model_, model->omnibox_text_field_info,
-              UiBrowserInterface, browser_,
-              view->StartAutocomplete({value.text, 0, true})));
-  omnibox_text_field->SetSize(width, 0);
-  omnibox_text_field->SetHintText(
-      l10n_util::GetStringUTF16(IDS_SEARCH_OR_TYPE_URL));
-  omnibox_text_field->SetName(kOmniboxTextField);
-  omnibox_text_field->set_x_anchoring(LEFT);
-  omnibox_text_field->SetTranslate(kOmniboxTextMarginDMM, 0, 0);
+  omnibox_text_field->AddBinding(std::make_unique<Binding<Autocompletion>>(
+      VR_BIND_LAMBDA(
+          [](Model* m) {
+            if (!m->omnibox_suggestions.empty()) {
+              return m->omnibox_suggestions.front().autocompletion;
+            } else {
+              return Autocompletion();
+            }
+          },
+          base::Unretained(model_)),
+      VR_BIND_LAMBDA([](OmniboxTextField* e,
+                        const Autocompletion& v) { e->SetAutocompletion(v); },
+                     base::Unretained(omnibox_text_field.get()))));
   omnibox_text_field->AddBinding(std::make_unique<Binding<bool>>(
       VR_BIND_LAMBDA(
           [](Model* m) {
@@ -1929,28 +1940,11 @@ void UiSceneCreator::CreateOmnibox() {
           base::Unretained(model_)),
       VR_BIND_LAMBDA(
           [](TextInput* e, Model* m, const bool& unused) {
-            m->omnibox_text_field_info = TextInputInfo();
+            m->omnibox_text_field_info = EditedText();
           },
           base::Unretained(omnibox_text_field.get()),
           base::Unretained(model_))));
-  omnibox_text_field->AddBinding(std::make_unique<Binding<AutocompleteStatus>>(
-      VR_BIND_LAMBDA(
-          [](Model* m) {
-            AutocompleteStatus state;
-            state.active = m->has_mode_in_stack(kModeEditingOmnibox);
-            state.input = m->omnibox_text_field_info.text;
-            return state;
-          },
-          base::Unretained(model_)),
-      VR_BIND_LAMBDA(
-          [](UiBrowserInterface* browser, const AutocompleteStatus& r) {
-            if (r.active) {
-              browser->StartAutocomplete({r.input, 0, true});
-            } else {
-              browser->StopAutocomplete();
-            }
-          },
-          base::Unretained(browser_))));
+
   VR_BIND_COLOR(model_, omnibox_text_field.get(), &ColorScheme::omnibox_text,
                 &TextInput::SetTextColor);
   VR_BIND_COLOR(model_, omnibox_text_field.get(), &ColorScheme::omnibox_hint,

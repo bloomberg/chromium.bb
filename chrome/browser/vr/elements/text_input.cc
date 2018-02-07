@@ -68,11 +68,14 @@ void TextInput::SetTextInputDelegate(TextInputDelegate* text_input_delegate) {
 void TextInput::OnButtonDown(const gfx::PointF& position) {
   // Reposition the cursor based on click position.
   int cursor_position = text_element_->GetCursorPositionFromPoint(position);
-  TextInputInfo info(text_info_);
-  info.selection_start = cursor_position;
-  info.selection_end = cursor_position;
-  if (text_info_ != info) {
-    UpdateInput(info);
+
+  TextInputInfo new_info(edited_text_.current);
+  new_info.selection_start = cursor_position;
+  new_info.selection_end = cursor_position;
+  if (new_info != edited_text_.current) {
+    EditedText new_edited_text(edited_text_);
+    new_edited_text.Update(new_info);
+    UpdateInput(new_edited_text);
     ResetCursorBlinkCycle();
   }
 }
@@ -86,7 +89,7 @@ void TextInput::OnFocusChanged(bool focused) {
 
   // Update the keyboard with the current text.
   if (delegate_ && focused)
-    delegate_->UpdateInput(text_info_);
+    delegate_->UpdateInput(edited_text_.current);
 
   if (event_handlers_.focus_change)
     event_handlers_.focus_change.Run(focused);
@@ -110,12 +113,12 @@ void TextInput::SetHintText(const base::string16& text) {
   hint_element_->SetText(text);
 }
 
-void TextInput::OnInputEdited(const TextInputInfo& info) {
+void TextInput::OnInputEdited(const EditedText& info) {
   if (input_edit_callback_)
     input_edit_callback_.Run(info);
 }
 
-void TextInput::OnInputCommitted(const TextInputInfo& info) {
+void TextInput::OnInputCommitted(const EditedText& info) {
   if (input_commit_callback_)
     input_commit_callback_.Run(info);
 }
@@ -133,20 +136,22 @@ void TextInput::SetSelectionColors(const TextSelectionColors& colors) {
   text_element_->SetSelectionColors(colors);
 }
 
-void TextInput::UpdateInput(const TextInputInfo& info) {
-  if (text_info_ == info)
+void TextInput::UpdateInput(const EditedText& info) {
+  if (edited_text_ == info)
     return;
 
-  OnUpdateInput(info, text_info_);
+  OnUpdateInput(info);
 
-  text_info_ = info;
+  edited_text_ = info;
 
-  if (delegate_ && focused_)
-    delegate_->UpdateInput(info);
+  if (delegate_ && focused_) {
+    delegate_->UpdateInput(info.current);
+  }
 
-  text_element_->SetText(info.text);
-  text_element_->SetSelectionIndices(info.selection_start, info.selection_end);
-  hint_element_->SetVisible(info.text.empty());
+  text_element_->SetText(info.current.text);
+  text_element_->SetSelectionIndices(info.current.selection_start,
+                                     info.current.selection_end);
+  hint_element_->SetVisible(info.current.text.empty());
 }
 
 bool TextInput::OnBeginFrame(const base::TimeTicks& time,
@@ -165,10 +170,6 @@ void TextInput::OnSetName() {
   cursor_element_->set_owner_name_for_test(name());
 }
 
-TextInputInfo TextInput::GetTextInputInfoForTest() const {
-  return text_info_;
-}
-
 void TextInput::LayOutChildren() {
   // To avoid re-rendering a texture when the cursor blinks, the texture is a
   // separate element. Once the text has been laid out, we can position the
@@ -180,7 +181,7 @@ void TextInput::LayOutChildren() {
 
 bool TextInput::SetCursorBlinkState(const base::TimeTicks& time) {
   base::TimeDelta delta = time - cursor_blink_start_ticks_;
-  bool visible = focused_ && text_info_.SelectionSize() == 0 &&
+  bool visible = focused_ && edited_text_.current.SelectionSize() == 0 &&
                  (delta.InMilliseconds() / kCursorBlinkHalfPeriodMs + 1) % 2;
   if (cursor_visible_ == visible)
     return false;
@@ -193,7 +194,6 @@ void TextInput::ResetCursorBlinkCycle() {
   cursor_blink_start_ticks_ = base::TimeTicks::Now();
 }
 
-void TextInput::OnUpdateInput(const TextInputInfo& info,
-                              const TextInputInfo& previous_info) {}
+void TextInput::OnUpdateInput(const EditedText& info) {}
 
 }  // namespace vr

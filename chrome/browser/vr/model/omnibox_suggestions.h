@@ -65,6 +65,14 @@ struct AutocompleteRequest {
   base::string16 text;
   size_t cursor_position = 0;
   bool prevent_inline_autocomplete = false;
+
+  bool operator==(const AutocompleteRequest& other) const {
+    return text == other.text && cursor_position == other.cursor_position &&
+           prevent_inline_autocomplete == other.prevent_inline_autocomplete;
+  }
+  bool operator!=(const AutocompleteRequest& other) const {
+    return !(*this == other);
+  }
 };
 
 // This struct represents the current request to the AutocompleteController.

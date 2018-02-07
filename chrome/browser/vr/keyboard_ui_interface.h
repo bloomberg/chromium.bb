@@ -16,8 +16,8 @@ namespace vr {
 class KeyboardUiInterface {
  public:
   virtual ~KeyboardUiInterface() {}
-  virtual void OnInputEdited(const TextInputInfo& info) = 0;
-  virtual void OnInputCommitted(const TextInputInfo& info) = 0;
+  virtual void OnInputEdited(const EditedText& info) = 0;
+  virtual void OnInputCommitted(const EditedText& info) = 0;
   virtual void OnKeyboardHidden() = 0;
 };
 

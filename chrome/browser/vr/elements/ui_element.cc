@@ -193,11 +193,11 @@ void UiElement::OnFocusChanged(bool focused) {
   NOTREACHED();
 }
 
-void UiElement::OnInputEdited(const TextInputInfo& info) {
+void UiElement::OnInputEdited(const EditedText& info) {
   NOTREACHED();
 }
 
-void UiElement::OnInputCommitted(const TextInputInfo& info) {
+void UiElement::OnInputCommitted(const EditedText& info) {
   NOTREACHED();
 }
 
@@ -209,7 +209,7 @@ void UiElement::RequestUnfocus() {
   NOTREACHED();
 }
 
-void UiElement::UpdateInput(const TextInputInfo& info) {
+void UiElement::UpdateInput(const EditedText& info) {
   NOTREACHED();
 }
 

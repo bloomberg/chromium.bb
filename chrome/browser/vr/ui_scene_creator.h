@@ -34,12 +34,6 @@ class UiSceneCreator {
 
   void CreateScene();
 
-  static std::unique_ptr<TextInput> CreateTextInput(
-      float font_height_meters,
-      Model* model,
-      TextInputInfo* text_input_model,
-      TextInputDelegate* text_input_delegate);
-
  private:
   void Create2dBrowsingSubtreeRoots();
   void CreateWebVrRoot();

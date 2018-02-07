@@ -25,7 +25,7 @@ class UiElement;
 struct ControllerModel;
 struct RenderInfo;
 struct ReticleModel;
-struct TextInputInfo;
+struct EditedText;
 
 using GestureList = std::vector<std::unique_ptr<blink::WebGestureEvent>>;
 
@@ -59,8 +59,8 @@ class UiInputManager {
   // Text input related.
   void RequestFocus(int element_id);
   void RequestUnfocus(int element_id);
-  void OnInputEdited(const TextInputInfo& info);
-  void OnInputCommitted(const TextInputInfo& info);
+  void OnInputEdited(const EditedText& info);
+  void OnInputCommitted(const EditedText& info);
   void OnKeyboardHidden();
 
   bool controller_quiescent() const { return controller_quiescent_; }

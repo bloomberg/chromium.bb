@@ -50,8 +50,8 @@ class MockRect : public Rect {
   MOCK_METHOD1(OnButtonDown, void(const gfx::PointF& position));
   MOCK_METHOD1(OnButtonUp, void(const gfx::PointF& position));
   MOCK_METHOD1(OnFocusChanged, void(bool));
-  MOCK_METHOD1(OnInputEdited, void(const TextInputInfo&));
-  MOCK_METHOD1(OnInputCommitted, void(const TextInputInfo&));
+  MOCK_METHOD1(OnInputEdited, void(const EditedText&));
+  MOCK_METHOD1(OnInputCommitted, void(const EditedText&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockRect);
@@ -60,12 +60,12 @@ class MockRect : public Rect {
 class MockTextInput : public TextInput {
  public:
   MockTextInput()
-      : TextInput(1, base::RepeatingCallback<void(const TextInputInfo&)>()) {}
+      : TextInput(1, base::RepeatingCallback<void(const EditedText&)>()) {}
   ~MockTextInput() override = default;
 
   MOCK_METHOD1(OnFocusChanged, void(bool));
-  MOCK_METHOD1(OnInputEdited, void(const TextInputInfo&));
-  MOCK_METHOD1(OnInputCommitted, void(const TextInputInfo&));
+  MOCK_METHOD1(OnInputEdited, void(const EditedText&));
+  MOCK_METHOD1(OnInputCommitted, void(const EditedText&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTextInput);
@@ -158,7 +158,7 @@ class UiInputManagerContentTest : public UiTest {
 TEST_F(UiInputManagerTest, FocusedElement) {
   StrictMock<MockTextInput>* p_element1 = CreateAndAddMockInputElement(-5.f);
   StrictMock<MockTextInput>* p_element2 = CreateAndAddMockInputElement(-5.f);
-  TextInputInfo edit(base::ASCIIToUTF16("asdfg"));
+  EditedText edit(base::ASCIIToUTF16("asdfg"));
 
   // Focus request triggers OnFocusChanged.
   testing::Sequence s;
