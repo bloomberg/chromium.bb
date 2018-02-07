@@ -89,8 +89,10 @@ class MockVideoFrameResourceProvider
   ~MockVideoFrameResourceProvider() = default;
 
   MOCK_METHOD1(Initialize, void(viz::ContextProvider*));
-  MOCK_METHOD2(AppendQuads,
-               void(viz::RenderPass*, scoped_refptr<media::VideoFrame>));
+  MOCK_METHOD3(AppendQuads,
+               void(viz::RenderPass*,
+                    scoped_refptr<media::VideoFrame>,
+                    media::VideoRotation));
   MOCK_METHOD0(ReleaseFrameResources, void());
   MOCK_METHOD2(PrepareSendToParent,
                void(const cc::LayerTreeResourceProvider::ResourceIdArray&,
@@ -191,7 +193,7 @@ TEST_F(VideoFrameSubmitterTest,
   EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
   EXPECT_CALL(*provider_, PutCurrentFrame());
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
-  EXPECT_CALL(*resource_provider_, AppendQuads(_, _));
+  EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _));
   EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
   EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
 
@@ -229,11 +231,78 @@ TEST_F(VideoFrameSubmitterTest, DidReceiveFrameSubmitsFrame) {
           gfx::Size(8, 8), base::TimeDelta())));
   EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
   EXPECT_CALL(*provider_, PutCurrentFrame());
-  EXPECT_CALL(*resource_provider_, AppendQuads(_, _));
+  EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _));
   EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
   EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
 
   submitter_->DidReceiveFrame();
+  scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(VideoFrameSubmitterTest, RotationInformationPassedToResourceProvider) {
+  // Check to see if rotation is communicated pre-rendering.
+  MakeSubmitter();
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_FALSE(submitter_->Rendering());
+
+  submitter_->SetRotation(media::VideoRotation::VIDEO_ROTATION_90);
+
+  EXPECT_CALL(*provider_, GetCurrentFrame())
+      .WillOnce(Return(media::VideoFrame::CreateFrame(
+          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+          gfx::Size(8, 8), base::TimeDelta())));
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
+  EXPECT_CALL(*provider_, PutCurrentFrame());
+  EXPECT_CALL(*resource_provider_,
+              AppendQuads(_, _, media::VideoRotation::VIDEO_ROTATION_90));
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
+  EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
+
+  submitter_->DidReceiveFrame();
+  scoped_task_environment_.RunUntilIdle();
+
+  // Check to see if an update to rotation just before rendering is
+  // communicated.
+  submitter_->SetRotation(media::VideoRotation::VIDEO_ROTATION_180);
+
+  EXPECT_CALL(*sink_, SetNeedsBeginFrame(true));
+  submitter_->StartRendering();
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(*provider_, UpdateCurrentFrame(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(*provider_, GetCurrentFrame())
+      .WillOnce(Return(media::VideoFrame::CreateFrame(
+          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+          gfx::Size(8, 8), base::TimeDelta())));
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
+  EXPECT_CALL(*provider_, PutCurrentFrame());
+  EXPECT_CALL(*resource_provider_,
+              AppendQuads(_, _, media::VideoRotation::VIDEO_ROTATION_180));
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
+  EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
+
+  viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
+      BEGINFRAME_FROM_HERE, now_src_.get());
+  submitter_->OnBeginFrame(args);
+  scoped_task_environment_.RunUntilIdle();
+
+  // Check to see if changing rotation while rendering is handled.
+  submitter_->SetRotation(media::VideoRotation::VIDEO_ROTATION_270);
+
+  EXPECT_CALL(*provider_, UpdateCurrentFrame(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(*provider_, GetCurrentFrame())
+      .WillOnce(Return(media::VideoFrame::CreateFrame(
+          media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
+          gfx::Size(8, 8), base::TimeDelta())));
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
+  EXPECT_CALL(*provider_, PutCurrentFrame());
+  EXPECT_CALL(*resource_provider_,
+              AppendQuads(_, _, media::VideoRotation::VIDEO_ROTATION_270));
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
+  EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
+
+  submitter_->OnBeginFrame(args);
   scoped_task_environment_.RunUntilIdle();
 }
 
@@ -253,7 +322,7 @@ TEST_F(VideoFrameSubmitterTest, OnBeginFrameSubmitsFrame) {
           gfx::Size(8, 8), base::TimeDelta())));
   EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
   EXPECT_CALL(*provider_, PutCurrentFrame());
-  EXPECT_CALL(*resource_provider_, AppendQuads(_, _));
+  EXPECT_CALL(*resource_provider_, AppendQuads(_, _, _));
   EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
   EXPECT_CALL(*resource_provider_, ReleaseFrameResources());
 

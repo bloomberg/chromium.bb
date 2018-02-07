@@ -274,13 +274,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   if (surface_layer_for_video_enabled_)
     bridge_ = params->create_bridge_callback().Run(this);
 
-  if (surface_layer_for_video_enabled_) {
-    vfc_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VideoFrameCompositor::EnableSubmission,
-                              base::Unretained(compositor_.get()),
-                              bridge_->GetFrameSinkId()));
-  }
-
   // If we're supposed to force video overlays, then make sure that they're
   // enabled all the time.
   always_enable_overlays_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -420,8 +413,6 @@ void WebMediaPlayerImpl::RegisterContentsLayer(blink::WebLayer* web_layer) {
   DCHECK(bridge_);
   bridge_->GetWebLayer()->CcLayer()->SetContentsOpaque(opaque_);
   bridge_->GetWebLayer()->SetContentsOpaqueIsFixed(true);
-  // TODO(lethalantidote): Figure out how to pass along rotation information.
-  // https://crbug/750313.
   client_->SetWebLayer(web_layer);
 }
 
@@ -1563,6 +1554,13 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
       video_weblayer_->layer()->SetContentsOpaque(opaque_);
       video_weblayer_->SetContentsOpaqueIsFixed(true);
       client_->SetWebLayer(video_weblayer_.get());
+    } else {
+      vfc_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &VideoFrameCompositor::EnableSubmission,
+              base::Unretained(compositor_.get()), bridge_->GetFrameSinkId(),
+              pipeline_metadata_.video_decoder_config.video_rotation()));
     }
   }
 

@@ -38,7 +38,9 @@ class PLATFORM_EXPORT VideoFrameResourceProvider {
 
   virtual void ObtainContextProvider();
   virtual void Initialize(viz::ContextProvider*);
-  virtual void AppendQuads(viz::RenderPass*, scoped_refptr<media::VideoFrame>);
+  virtual void AppendQuads(viz::RenderPass*,
+                           scoped_refptr<media::VideoFrame>,
+                           media::VideoRotation);
   virtual void ReleaseFrameResources();
 
   virtual void PrepareSendToParent(

@@ -243,7 +243,8 @@ class MockVideoFrameCompositor : public VideoFrameCompositor {
   // MOCK_METHOD doesn't like OnceCallback.
   void SetOnNewProcessedFrameCallback(OnNewProcessedFrameCB cb) {}
   MOCK_METHOD0(GetCurrentFrameAndUpdateIfStale, scoped_refptr<VideoFrame>());
-  MOCK_METHOD1(EnableSubmission, void(const viz::FrameSinkId&));
+  MOCK_METHOD2(EnableSubmission,
+               void(const viz::FrameSinkId&, media::VideoRotation));
 };
 
 class WebMediaPlayerImplTest : public testing::Test {
@@ -310,13 +311,6 @@ class WebMediaPlayerImplTest : public testing::Test {
     auto compositor = std::make_unique<StrictMock<MockVideoFrameCompositor>>(
         params->video_frame_compositor_task_runner());
     compositor_ = compositor.get();
-
-    if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)) {
-      EXPECT_CALL(*compositor_, EnableSubmission(_));
-
-      EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
-          .WillOnce(ReturnRef(id_));
-    }
 
     wmpi_ = std::make_unique<WebMediaPlayerImpl>(
         web_local_frame_, &client_, nullptr, &delegate_,
@@ -397,7 +391,14 @@ class WebMediaPlayerImplTest : public testing::Test {
     wmpi_->OnError(status);
   }
 
-  void OnMetadata(PipelineMetadata metadata) { wmpi_->OnMetadata(metadata); }
+  void OnMetadata(PipelineMetadata metadata) {
+    if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)) {
+      EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
+          .WillOnce(ReturnRef(id_));
+      EXPECT_CALL(*compositor_, EnableSubmission(_, _));
+    }
+    wmpi_->OnMetadata(metadata);
+  }
 
   void OnVideoNaturalSizeChange(const gfx::Size& size) {
     wmpi_->OnVideoNaturalSizeChange(size);

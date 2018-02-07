@@ -7,6 +7,7 @@
 
 #include "WebCommon.h"
 #include "cc/layers/video_frame_provider.h"
+#include "media/base/video_rotation.h"
 
 namespace cc {
 class LayerTreeSettings;
@@ -29,7 +30,8 @@ using WebContextProviderCallback = base::RepeatingCallback<void(
     base::OnceCallback<void(viz::ContextProvider*)>)>;
 
 // Exposes the VideoFrameSubmitter, which submits CompositorFrames containing
-// information from VideoFrames.
+// decoded VideoFrames from the VideoFrameProvider to the compositor for
+// display.
 class BLINK_PLATFORM_EXPORT WebVideoFrameSubmitter
     : public cc::VideoFrameProvider::Client {
  public:
@@ -39,8 +41,13 @@ class BLINK_PLATFORM_EXPORT WebVideoFrameSubmitter
       gpu::GpuMemoryBufferManager*,
       const cc::LayerTreeSettings&);
   virtual ~WebVideoFrameSubmitter() = default;
+
+  // Intialize must be called before submissions occur, pulled out of
+  // StartSubmitting() to enable tests without the full mojo statck running.
   virtual void Initialize(cc::VideoFrameProvider*) = 0;
+
   virtual void StartSubmitting(const viz::FrameSinkId&) = 0;
+  virtual void SetRotation(media::VideoRotation) = 0;
 };
 
 }  // namespace blink
