@@ -39,7 +39,6 @@
 namespace blink {
 
 class ExecutionContext;
-class MemoryInfo;
 class WorkerGlobalScope;
 
 class WorkerPerformance final : public PerformanceBase {
@@ -53,8 +52,6 @@ class WorkerPerformance final : public PerformanceBase {
   ExecutionContext* GetExecutionContext() const override {
     return execution_context_;
   }
-
-  MemoryInfo* memory();
 
   virtual void Trace(blink::Visitor*);
 
