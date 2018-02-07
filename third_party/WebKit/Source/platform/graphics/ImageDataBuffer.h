@@ -43,8 +43,13 @@ namespace blink {
 
 class ImageDataBuffer {
  public:
-  ImageDataBuffer(const IntSize& size, const unsigned char* data)
-      : data_(data), uses_pixmap_(false), size_(size) {}
+  ImageDataBuffer(const IntSize& size,
+                  const unsigned char* data,
+                  const CanvasColorParams& color_params = CanvasColorParams())
+      : data_(data),
+        color_params_(color_params),
+        uses_pixmap_(false),
+        size_(size) {}
   ImageDataBuffer(const SkPixmap& pixmap)
       : pixmap_(pixmap),
         uses_pixmap_(true),
@@ -58,13 +63,10 @@ class ImageDataBuffer {
   bool PLATFORM_EXPORT EncodeImage(const String& mime_type,
                                    const double& quality,
                                    Vector<unsigned char>* encoded_image) const;
-  const unsigned char* Pixels() const;
-  const IntSize& size() const { return size_; }
-  int Height() const { return size_.Height(); }
-  int Width() const { return size_.Width(); }
 
  private:
   const unsigned char* data_;
+  const CanvasColorParams color_params_;
   SkPixmap pixmap_;
   bool uses_pixmap_ = false;
   IntSize size_;

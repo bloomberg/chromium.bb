@@ -56,6 +56,7 @@
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebExternalTextureLayer.h"
 #include "skia/ext/texture_handle.h"
+#include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
@@ -1205,10 +1206,18 @@ scoped_refptr<Uint8Array> DrawingBuffer::PaintRenderingResultsToDataArray(
   CheckedNumeric<int> data_size = 4;
   data_size *= width;
   data_size *= height;
+  if (RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled() &&
+      use_half_float_storage_) {
+    data_size *= 2;
+  }
   if (!data_size.IsValid())
     return nullptr;
 
   unsigned byte_length = width * height * 4;
+  if (RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled() &&
+      use_half_float_storage_) {
+    byte_length *= 2;
+  }
   scoped_refptr<ArrayBuffer> dst_buffer =
       ArrayBuffer::CreateOrNull(byte_length, 1);
   if (!dst_buffer)
@@ -1260,11 +1269,22 @@ void DrawingBuffer::ReadBackFramebuffer(unsigned char* pixels,
     state_restorer_->SetPixelPackBufferBindingDirty();
     gl_->BindBuffer(GL_PIXEL_PACK_BUFFER, 0);
   }
-  gl_->ReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+  GLenum data_type = GL_UNSIGNED_BYTE;
+  if (RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled() &&
+      use_half_float_storage_) {
+    if (webgl_version_ > kWebGL1)
+      data_type = GL_HALF_FLOAT;
+    else
+      data_type = GL_HALF_FLOAT_OES;
+  }
+  gl_->ReadPixels(0, 0, width, height, GL_RGBA, data_type, pixels);
 
   size_t buffer_size = 4 * width * height;
-
-  if (readback_order == kReadbackSkia) {
+  if (data_type != GL_UNSIGNED_BYTE)
+    buffer_size *= 2;
+  // For half float storage Skia order is RGBA, hence no swizzling is needed.
+  if (readback_order == kReadbackSkia && data_type == GL_UNSIGNED_BYTE) {
 #if (SK_R32_SHIFT == 16) && !SK_B32_SHIFT
     // Swizzle red and blue channels to match SkBitmap's byte ordering.
     // TODO(kbr): expose GL_BGRA as extension.
@@ -1275,11 +1295,15 @@ void DrawingBuffer::ReadBackFramebuffer(unsigned char* pixels,
   }
 
   if (op == WebGLImageConversion::kAlphaDoPremultiply) {
-    for (size_t i = 0; i < buffer_size; i += 4) {
-      pixels[i + 0] = std::min(255, pixels[i + 0] * pixels[i + 3] / 255);
-      pixels[i + 1] = std::min(255, pixels[i + 1] * pixels[i + 3] / 255);
-      pixels[i + 2] = std::min(255, pixels[i + 2] * pixels[i + 3] / 255);
-    }
+    std::unique_ptr<SkColorSpaceXform> xform =
+        SkColorSpaceXform::New(SkColorSpace::MakeSRGBLinear().get(),
+                               SkColorSpace::MakeSRGBLinear().get());
+    SkColorSpaceXform::ColorFormat color_format =
+        SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
+    if (data_type != GL_UNSIGNED_BYTE)
+      color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+    xform->apply(color_format, pixels, color_format, pixels, width * height,
+                 kPremul_SkAlphaType);
   } else if (op != WebGLImageConversion::kAlphaDoNothing) {
     NOTREACHED();
   }
@@ -1288,8 +1312,12 @@ void DrawingBuffer::ReadBackFramebuffer(unsigned char* pixels,
 void DrawingBuffer::FlipVertically(uint8_t* framebuffer,
                                    int width,
                                    int height) {
-  std::vector<uint8_t> scanline(width * 4);
   unsigned row_bytes = width * 4;
+  if (RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled() &&
+      use_half_float_storage_) {
+    row_bytes *= 2;
+  }
+  std::vector<uint8_t> scanline(row_bytes);
   unsigned count = height / 2;
   for (unsigned i = 0; i < count; i++) {
     uint8_t* row_a = framebuffer + i * row_bytes;

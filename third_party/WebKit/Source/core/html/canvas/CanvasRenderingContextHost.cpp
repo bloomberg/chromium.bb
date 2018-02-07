@@ -29,8 +29,14 @@ scoped_refptr<StaticBitmapImage>
 CanvasRenderingContextHost::CreateTransparentImage(const IntSize& size) const {
   if (!IsValidImageSize(size))
     return nullptr;
+  CanvasColorParams color_params = CanvasColorParams();
+  if (RenderingContext())
+    color_params = RenderingContext()->ColorParams();
+  SkImageInfo info = SkImageInfo::Make(
+      size.Width(), size.Height(), color_params.GetSkColorType(),
+      kPremul_SkAlphaType, color_params.GetSkColorSpaceForSkSurfaces());
   sk_sp<SkSurface> surface =
-      SkSurface::MakeRasterN32Premul(size.Width(), size.Height());
+      SkSurface::MakeRaster(info, info.minRowBytes(), nullptr);
   if (!surface)
     return nullptr;
   return StaticBitmapImage::Create(surface->makeImageSnapshot());

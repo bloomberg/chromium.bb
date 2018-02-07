@@ -768,6 +768,9 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::ToStaticBitmapImage(
         SkImageInfo info =
             SkImageInfo::Make(adjusted_size.Width(), adjusted_size.Height(),
                               kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
+        info = info.makeColorSpace(ColorParams().GetSkColorSpace());
+        if (ColorParams().GetSkColorType() != kN32_SkColorType)
+          info = info.makeColorType(kRGBA_F16_SkColorType);
         image_bitmap = StaticBitmapImage::Create(std::move(data_array), info);
       }
     }

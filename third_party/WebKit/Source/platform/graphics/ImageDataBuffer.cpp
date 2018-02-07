@@ -36,6 +36,7 @@
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/image-encoders/ImageEncoder.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/Base64.h"
 #include "platform/wtf/text/WTFString.h"
@@ -43,12 +44,6 @@
 #include "third_party/skia/include/encode/SkJpegEncoder.h"
 
 namespace blink {
-
-const unsigned char* ImageDataBuffer::Pixels() const {
-  if (uses_pixmap_)
-    return static_cast<const unsigned char*>(pixmap_.addr());
-  return data_;
-}
 
 std::unique_ptr<ImageDataBuffer> ImageDataBuffer::Create(
     scoped_refptr<StaticBitmapImage> image) {
@@ -82,11 +77,13 @@ bool ImageDataBuffer::EncodeImage(const String& mime_type,
   if (uses_pixmap_) {
     src = pixmap_;
   } else {
-    SkImageInfo info =
-        SkImageInfo::Make(Width(), Height(), kRGBA_8888_SkColorType,
-                          kUnpremul_SkAlphaType, nullptr);
-    const size_t rowBytes = info.minRowBytes();
-    src.reset(info, Pixels(), rowBytes);
+    SkColorType color_type = kRGBA_8888_SkColorType;
+    if (color_params_.GetSkColorType() != kN32_SkColorType)
+      color_type = kRGBA_F16_SkColorType;
+    SkImageInfo info = SkImageInfo::Make(size_.Width(), size_.Height(),
+                                         color_type, kUnpremul_SkAlphaType,
+                                         color_params_.GetSkColorSpace());
+    src.reset(info, data_, info.minRowBytes());
   }
 
   if (mime_type == "image/jpeg") {
