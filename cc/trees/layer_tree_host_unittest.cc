@@ -5625,7 +5625,9 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
   TestSwapPromiseResult swap_promise_result_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromiseForVisibility);
+// Flaky: https://crbug.com/657910
+// SINGLE_AND_MULTI_THREAD_TEST_F(
+//     LayerTreeHostTestBreakSwapPromiseForVisibility);
 
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
  public:
