@@ -40,6 +40,10 @@
 
 #include <memory>
 
+#if (defined(__ARM_NEON__) || defined(__ARM_NEON))
+#include <arm_neon.h>
+#endif
+
 namespace blink {
 
 PNGImageDecoder::PNGImageDecoder(AlphaOption alpha_option,
@@ -275,6 +279,107 @@ void PNGImageDecoder::HeaderAvailable() {
   has_alpha_channel_ = (channels == 4);
 }
 
+#if (defined(__ARM_NEON__) || defined(__ARM_NEON))
+// Swizzle RGBA to SkPMColor order, and return the AND of all alpha channels.
+static inline void SetRGBARawRowNeon(png_bytep src_ptr,
+                                     const int pixel_count,
+                                     ImageFrame::PixelData* dst_pixel,
+                                     unsigned* const alpha_mask) {
+  assert(dst_pixel);
+  assert(alpha_mask);
+
+  constexpr int kPixelsPerLoad = 16;
+  // Input registers.
+  uint8x16x4_t rgba;
+  // Alpha mask.
+  uint8x16_t alpha_mask_vector = vdupq_n_u8(255);
+
+  int i = pixel_count;
+  for (; i >= kPixelsPerLoad; i -= kPixelsPerLoad) {
+    // Reads 16 pixels at once, each color channel in a different
+    // 128-bit register.
+    rgba = vld4q_u8(src_ptr);
+    // AND pixel alpha values into the alpha detection mask.
+    alpha_mask_vector = vandq_u8(alpha_mask_vector, rgba.val[3]);
+
+#if SK_PMCOLOR_BYTE_ORDER(R, G, B, A)
+    // Already in right order, write back (interleaved) results to memory.
+    vst4q_u8(reinterpret_cast<uint8_t*>(dst_pixel), rgba);
+
+#elif SK_PMCOLOR_BYTE_ORDER(B, G, R, A)
+    // Re-order color channels for BGRA.
+    uint8x16x4_t bgra = {rgba.val[2], rgba.val[1], rgba.val[0], rgba.val[3]};
+    // Write back (interleaved) results to memory.
+    vst4q_u8(reinterpret_cast<uint8_t*>(dst_pixel), bgra);
+
+#endif
+
+    // Advance to next elements.
+    src_ptr += kPixelsPerLoad * 4;
+    dst_pixel += kPixelsPerLoad;
+  }
+
+  // AND together the 16 alpha values in the alpha_mask_vector.
+  uint64_t alpha_mask_u64 =
+      vget_lane_u64(vreinterpret_u64_u8(vget_low_u8(alpha_mask_vector)), 0);
+  alpha_mask_u64 &=
+      vget_lane_u64(vreinterpret_u64_u8(vget_high_u8(alpha_mask_vector)), 0);
+  alpha_mask_u64 &= (alpha_mask_u64 >> 32);
+  alpha_mask_u64 &= (alpha_mask_u64 >> 16);
+  alpha_mask_u64 &= (alpha_mask_u64 >> 8);
+  *alpha_mask &= alpha_mask_u64;
+
+  // Handle the tail elements.
+  for (; i > 0; i--, dst_pixel++, src_ptr += 4) {
+    ImageFrame::SetRGBARaw(dst_pixel, src_ptr[0], src_ptr[1], src_ptr[2],
+                           src_ptr[3]);
+    *alpha_mask &= src_ptr[3];
+  }
+}
+
+// Swizzle RGB to opaque SkPMColor order, and return the AND
+// of all alpha channels.
+static inline void SetRGBARawRowNoAlphaNeon(png_bytep src_ptr,
+                                            const int pixel_count,
+                                            ImageFrame::PixelData* dst_pixel) {
+  assert(dst_pixel);
+
+  constexpr int kPixelsPerLoad = 16;
+  // Input registers.
+  uint8x16x3_t rgb;
+
+  int i = pixel_count;
+  for (; i >= kPixelsPerLoad; i -= kPixelsPerLoad) {
+    // Reads 16 pixels at once, each color channel in a different
+    // 128-bit register.
+    rgb = vld3q_u8(src_ptr);
+
+#if SK_PMCOLOR_BYTE_ORDER(R, G, B, A)
+    // RGB already in right order, add opaque alpha channel.
+    uint8x16x4_t rgba = {rgb.val[0], rgb.val[1], rgb.val[2], vdupq_n_u8(255)};
+    // Write back (interleaved) results to memory.
+    vst4q_u8(reinterpret_cast<uint8_t*>(dst_pixel), rgba);
+
+#elif SK_PMCOLOR_BYTE_ORDER(B, G, R, A)
+    // Re-order color channels for BGR, add opaque alpha channel.
+    uint8x16x4_t bgra = {rgb.val[2], rgb.val[1], rgb.val[0], vdupq_n_u8(255)};
+    // Write back (interleaved) results to memory.
+    vst4q_u8(reinterpret_cast<uint8_t*>(dst_pixel), bgra);
+
+#endif
+
+    // Advance to next elements.
+    src_ptr += kPixelsPerLoad * 3;
+    dst_pixel += kPixelsPerLoad;
+  }
+
+  // Handle the tail elements.
+  for (; i > 0; i--, dst_pixel++, src_ptr += 3) {
+    ImageFrame::SetRGBARaw(dst_pixel, src_ptr[0], src_ptr[1], src_ptr[2], 255);
+  }
+}
+#endif
+
 void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
                                    unsigned row_index,
                                    int) {
@@ -402,12 +507,16 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
           alpha_mask &= src_ptr[3];
         }
       } else {
+#if (defined(__ARM_NEON__) || defined(__ARM_NEON))
+        SetRGBARawRowNeon(src_ptr, width, dst_row, &alpha_mask);
+#else
         for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
              dst_pixel++, src_ptr += 4) {
           ImageFrame::SetRGBARaw(dst_pixel, src_ptr[0], src_ptr[1], src_ptr[2],
                                  src_ptr[3]);
           alpha_mask &= src_ptr[3];
         }
+#endif
       }
     } else {
       // Now, the blend method is ImageFrame::BlendAtopPreviousFrame. Since the
@@ -435,12 +544,15 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
       current_buffer_saw_alpha_ = true;
 
   } else {
+#if (defined(__ARM_NEON__) || defined(__ARM_NEON))
+    SetRGBARawRowNoAlphaNeon(src_ptr, width, dst_row);
+#else
     for (auto *dst_pixel = dst_row; dst_pixel < dst_row + width;
          src_ptr += 3, ++dst_pixel) {
       ImageFrame::SetRGBARaw(dst_pixel, src_ptr[0], src_ptr[1], src_ptr[2],
                              255);
     }
-
+#endif
     // We'll apply the color space xform to opaque pixels after they have been
     // written to the ImageFrame, purely because SkColorSpaceXform supports
     // RGBA (and not RGB).
