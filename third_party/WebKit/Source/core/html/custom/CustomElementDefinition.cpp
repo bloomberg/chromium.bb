@@ -108,11 +108,15 @@ HTMLElement* CustomElementDefinition::CreateElementForConstructor(
   return element;
 }
 
-HTMLElement* CustomElementDefinition::CreateElementAsync(
+// A part of https://dom.spec.whatwg.org/#concept-create-element
+HTMLElement* CustomElementDefinition::CreateElement(
     Document& document,
     const QualifiedName& tag_name,
     CreateElementFlags flags) {
-  // https://dom.spec.whatwg.org/#concept-create-element
+  DCHECK(CustomElement::ShouldCreateCustomElement(tag_name) ||
+         CustomElement::ShouldCreateCustomizedBuiltinElement(tag_name))
+      << tag_name;
+
   // 5. If definition is non-null, and definition’s name is not equal to
   // its local name (i.e., definition represents a customized built-in
   // element), then:
@@ -127,14 +131,24 @@ HTMLElement* CustomElementDefinition::CreateElementAsync(
     auto* result = document.CreateRawElement(tag_name, flags);
     result->SetCustomElementState(CustomElementState::kUndefined);
 
+    // 5.3. If the synchronous custom elements flag is set, upgrade
+    // element using definition.
     // 5.4. Otherwise, enqueue a custom element upgrade reaction given
     // result and definition.
-    EnqueueUpgradeReaction(result);
+    if (!flags.IsAsyncCustomElements())
+      Upgrade(result);
+    else
+      EnqueueUpgradeReaction(result);
     return ToHTMLElement(result);
   }
 
   // 6. If definition is non-null, then:
-  // 6.2. If the synchronous custom elements flag is not set:
+  // 6.1. If the synchronous custom elements flag is set, then run these
+  // steps while catching any exceptions:
+  if (!flags.IsAsyncCustomElements())
+    return CreateAutonomousCustomElementSync(document, tag_name);
+
+  // 6.2. Otherwise: (the synchronous custom elements flag is not set)
   // 6.2.1. Set result to a new element that implements the HTMLElement
   // interface, with no attributes, namespace set to the HTML namespace,
   // namespace prefix set to prefix, local name set to localName, custom

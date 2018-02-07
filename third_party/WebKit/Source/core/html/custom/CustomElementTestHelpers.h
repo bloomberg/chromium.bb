@@ -62,8 +62,9 @@ class TestCustomElementDefinition : public CustomElementDefinition {
     return true;
   }
 
-  HTMLElement* CreateElementSync(Document& document,
-                                 const QualifiedName&) override {
+  HTMLElement* CreateAutonomousCustomElementSync(
+      Document& document,
+      const QualifiedName&) override {
     return CreateElementForConstructor(document);
   }
 

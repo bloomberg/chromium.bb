@@ -910,7 +910,7 @@ Element* HTMLConstructionSite::CreateElement(
     CEReactionsScope reactions;
 
     // 7.
-    element = definition->CreateElementSync(document, tag_name);
+    element = definition->CreateAutonomousCustomElementSync(document, tag_name);
 
     // "8. Append each attribute in the given token to element." We don't use
     // setAttributes here because the custom element constructor may have
@@ -923,8 +923,9 @@ Element* HTMLConstructionSite::CreateElement(
     // steps 9.1-3.
   } else {
     if (definition) {
-      element = definition->CreateElementAsync(document, tag_name,
-                                               GetCreateElementFlags());
+      DCHECK(GetCreateElementFlags().IsAsyncCustomElements());
+      element = definition->CreateElement(document, tag_name,
+                                          GetCreateElementFlags());
     } else {
       element = document.createElement(tag_name, GetCreateElementFlags());
       // Step 7.3 of "create an element". The above createElement()
