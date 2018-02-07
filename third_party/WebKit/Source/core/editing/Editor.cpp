@@ -855,14 +855,6 @@ void Editor::ApplyParagraphStyle(CSSPropertyValueSet* style,
       ->Apply();
 }
 
-void Editor::ApplyStyleToSelection(CSSPropertyValueSet* style,
-                                   InputEvent::InputType input_type) {
-  if (!style || style->IsEmpty() || !CanEditRichly())
-    return;
-
-  ApplyStyle(style, input_type);
-}
-
 void Editor::ApplyParagraphStyleToSelection(CSSPropertyValueSet* style,
                                             InputEvent::InputType input_type) {
   if (!style || style->IsEmpty() || !CanEditRichly())

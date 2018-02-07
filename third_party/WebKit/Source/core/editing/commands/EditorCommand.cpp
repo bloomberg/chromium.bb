@@ -274,6 +274,15 @@ static LocalFrame* TargetFrame(LocalFrame& frame, Event* event) {
   return node->GetDocument().GetFrame();
 }
 
+static void ApplyStyleToSelection(LocalFrame& frame,
+                                  CSSPropertyValueSet* style,
+                                  InputEvent::InputType input_type) {
+  if (!style || style->IsEmpty() || !frame.GetEditor().CanEditRichly())
+    return;
+
+  frame.GetEditor().ApplyStyle(style, input_type);
+}
+
 static bool ApplyCommandToFrame(LocalFrame& frame,
                                 EditorCommandSource source,
                                 InputEvent::InputType input_type,
@@ -282,7 +291,7 @@ static bool ApplyCommandToFrame(LocalFrame& frame,
   // good reason for that?
   switch (source) {
     case kCommandFromMenuOrKeyBinding:
-      frame.GetEditor().ApplyStyleToSelection(style, input_type);
+      ApplyStyleToSelection(frame, style, input_type);
       return true;
     case kCommandFromDOM:
       frame.GetEditor().ApplyStyle(style, input_type);
