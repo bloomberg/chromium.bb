@@ -10,6 +10,7 @@ from telemetry.timeline import chrome_trace_category_filter
 from telemetry.timeline import chrome_trace_config
 from telemetry.web_perf import timeline_based_measurement
 from contrib.vr_benchmarks import webvr_sample_pages
+from contrib.vr_benchmarks import webvr_wpr_pages
 from contrib.vr_benchmarks import vr_browsing_mode_pages
 
 
@@ -32,11 +33,17 @@ class _BaseVRBenchmark(perf_benchmark.PerfBenchmark):
         'This is useful for local testing when turning off the '
         'screen leads to locking the phone, which makes Telemetry '
         'not produce valid results.')
+    parser.add_option(
+        '--recording-wpr',
+        action='store_true',
+        default=False,
+        help='Modifies benchmark behavior slightly while recording WPR files '
+             'for it. This largely boils down to adding waits/sleeps in order '
+             'to ensure that enough streaming data is recorded for the '
+             'benchmark to run without issues.')
 
 
-@benchmark.Owner(emails=['bsheedy@chromium.org', 'leilei@chromium.org'])
-class XrWebVrStatic(_BaseVRBenchmark):
-  """Measures WebVR performance with sample pages."""
+class _BaseWebVRBenchmark(_BaseVRBenchmark):
 
   SUPPORTED_PLATFORMS = [story.expectations.ALL_ANDROID]
 
@@ -56,9 +63,6 @@ class XrWebVrStatic(_BaseVRBenchmark):
         chrome_trace_config.MemoryDumpConfig())
     return options
 
-  def CreateStorySet(self, options):
-    return webvr_sample_pages.WebVrSamplePageSet()
-
   def SetExtraBrowserOptions(self, options):
     memory.SetExtraBrowserOptionsForMemoryMeasurement(options)
     options.AppendExtraBrowserArgs([
@@ -66,13 +70,33 @@ class XrWebVrStatic(_BaseVRBenchmark):
     ])
 
   @classmethod
-  def Name(cls):
-    return 'xr.webvr.static'
-
-  @classmethod
   def ShouldAddValue(cls, name, from_first_story_run):
     del from_first_story_run  # unused
     return memory.DefaultShouldAddValueForMemoryMeasurement(name)
+
+
+@benchmark.Owner(emails=['bsheedy@chromium.org', 'leilei@chromium.org'])
+class XrWebVrStatic(_BaseWebVRBenchmark):
+  """Measures WebVR performance with synthetic sample pages."""
+
+  def CreateStorySet(self, options):
+    return webvr_sample_pages.WebVrSamplePageSet()
+
+  @classmethod
+  def Name(cls):
+    return 'xr.webvr.static'
+
+
+@benchmark.Owner(emails=['bsheedy@chromium.org', 'tiborg@chromium.org'])
+class XrWebVrWprStatic(_BaseWebVRBenchmark):
+  """Measures WebVR performance with WPR copies of live websites."""
+
+  def CreateStorySet(self, options):
+    return webvr_wpr_pages.WebVrWprPageSet()
+
+  @classmethod
+  def Name(cls):
+    return 'xr.webvr.wpr.static'
 
 
 @benchmark.Owner(emails=['tiborg@chromium.org'])
