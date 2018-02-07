@@ -48,16 +48,26 @@ class MEDIA_EXPORT SourceBufferRangeByPts : public SourceBufferRange {
   // range (within the fudge room) - specifically, if the first buffer in
   // |buffers| is not a keyframe, then it must be next in DTS order w.r.t. last
   // buffer in |buffers|. Otherwise, it's a keyframe that must be next in PTS
-  // order w.r.t. |highest_frame_|.
+  // order w.r.t. |highest_frame_| or be immediately adjacent to the last buffer
+  // in this range if that buffer has estimated duration (only allowed in WebM
+  // streams).
   // If |new_buffers_group_start_pts| is set otherwise, then that time must come
-  // directly after |highest_frame_| (within the fudge room), and the first
-  // buffer in |buffers| must be a keyframe.
+  // directly after |highest_frame_| (within the fudge room), or directly after
+  // the last buffered frame if it has estimated duration (only allowed in WebM
+  // streams), and the first buffer in |buffers| must be a keyframe.
   // The latter scenario is required when a muxed coded frame group has such a
   // large jagged start across tracks that its first buffer is not within the
   // fudge room, yet its group start was.
+  // The conditions around estimated duration are handled by
+  // AllowableAppendAfterEstimatedDuration, and are intended to solve the edge
+  // case in the SourceBufferStreamTest
+  // MergeAllowedIfRangeEndTimeWithEstimatedDurationMatchesNextRangeStart.
   // During append, |highest_frame_| is updated, if necessary.
   void AppendBuffersToEnd(const BufferQueue& buffers,
                           base::TimeDelta new_buffers_group_start_timestamp);
+  bool AllowableAppendAfterEstimatedDuration(
+      const BufferQueue& buffers,
+      base::TimeDelta new_buffers_group_start_pts) const;
   bool CanAppendBuffersToEnd(const BufferQueue& buffers,
                              base::TimeDelta new_buffers_group_start_pts) const;
 

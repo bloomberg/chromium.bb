@@ -5835,6 +5835,51 @@ TEST_P(SourceBufferStreamTest, SapType2WithNonkeyframePtsInEarlierRange) {
   CheckNoNextBuffer();
 }
 
+TEST_P(SourceBufferStreamTest,
+       MergeAllowedIfRangeEndTimeWithEstimatedDurationMatchesNextRangeStart) {
+  // Tests the edge case where fudge room is not increased when an estimated
+  // duration is increased due to overlap appends, causing two ranges to not be
+  // within fudge room of each other (nor merged), yet abutting each other.
+  // Append a GOP that has fudge room as its interval (e.g. 2 frames of same
+  // duration >= minimum 1ms).
+  NewCodedFrameGroupAppend("0D10K 10D10");
+  CheckExpectedRangesByTimestamp("{ [0,20) }");
+
+  // Trigger a DTS discontinuity so later 21ms append also is discontinuous and
+  // retains 10ms*2 fudge room.
+  NewCodedFrameGroupAppend("100D10K");
+  CheckExpectedRangesByTimestamp("{ [0,20) [100,110) }");
+
+  // Append another keyframe that starts within fudge room distance of the
+  // non-keyframe in the GOP appended, above.
+  NewCodedFrameGroupAppend("21D10K");
+  CheckExpectedRangesByTimestamp("{ [0,31) [100,110) }");
+
+  // Overlap-append the original GOP with a single estimated-duration keyframe.
+  // Though its timestamp is not within fudge room of the next keyframe, that
+  // next keyframe at time 21ms was in the overlapped range and is retained in
+  // the result of the overlap append's range.
+  NewCodedFrameGroupAppend("0D10EK");
+  CheckExpectedRangesByTimestamp("{ [0,31) [100,110) }");
+
+  // That new keyframe at time 0 now has derived estimated duration 21ms.  That
+  // increased estimated duration did *not* increase the fudge room (which is
+  // still 2 * 10ms = 20ms.) So the next line, which splices in a new frame at
+  // time 21 causes the estimated keyframe at time 0 to not have a timestamp
+  // within fudge room of the new range that starts right at 21ms, the same time
+  // that ends the first buffered range, requiring CanAppendBuffersToEnd to
+  // handle this scenario specifically.
+  NewCodedFrameGroupAppend("21D10K");
+  CheckExpectedRangesByTimestamp("{ [0,31) [100,110) }");
+
+  SeekToTimestampMs(0);
+  CheckExpectedBuffers("0D21EK 21D10K");
+  CheckNoNextBuffer();
+  SeekToTimestampMs(100);
+  CheckExpectedBuffers("100D10K");
+  CheckNoNextBuffer();
+}
+
 INSTANTIATE_TEST_CASE_P(LegacyByDts,
                         SourceBufferStreamTest,
                         Values(BufferingApi::kLegacyByDts));

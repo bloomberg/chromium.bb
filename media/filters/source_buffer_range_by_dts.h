@@ -51,15 +51,26 @@ class MEDIA_EXPORT SourceBufferRangeByDts : public SourceBufferRange {
   // it encounters new keyframes.
   // If |new_buffers_group_start_timestamp| is kNoDecodeTimestamp(), then the
   // first buffer in |buffers| must come directly after the last buffer in this
-  // range (within the fudge room).
+  // range (within the fudge room), or be a keyframe that starts precisely where
+  // the last buffer in this range ends and that last buffer has estimated
+  // duration.
   // If |new_buffers_group_start_timestamp| is set otherwise, then that time
   // must come directly after the last buffer in this range (within the fudge
-  // room). The latter scenario is required when a muxed coded frame group has
-  // such a large jagged start across tracks that its first buffer is not within
-  // the fudge room, yet its group start was.
+  // room) or precisely where the last buffer in this range ends and that last
+  // buffer has estimated duration.
+  // The latter scenario is required when a muxed coded frame group has such a
+  // large jagged start across tracks that its first buffer is not within the
+  // fudge room, yet its group start was.
+  // The conditions around estimated duration are handled by
+  // AllowableAppendAfterEstimatedDuration, and are intended to solve the edge
+  // case in the SourceBufferStreamTest
+  // MergeAllowedIfRangeEndTimeWithEstimatedDurationMatchesNextRangeStart.
   // During append, |highest_frame_| is updated, if necessary.
   void AppendBuffersToEnd(const BufferQueue& buffers,
                           DecodeTimestamp new_buffers_group_start_timestamp);
+  bool AllowableAppendAfterEstimatedDuration(
+      const BufferQueue& buffers,
+      DecodeTimestamp new_buffers_group_start_timestamp) const;
   bool CanAppendBuffersToEnd(
       const BufferQueue& buffers,
       DecodeTimestamp new_buffers_group_start_timestamp) const;
