@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 416
+#   For your editing convenience: highest ID currently used: 418
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -10787,7 +10787,7 @@
       origins named by subdomains; e.g. specifying https://example.com/ will
       also cause https://foo.example.com/ to be isolated as part of the
       https://example.com/ site.
-      If the policy is disabled, the pre-Site Isolation process management logic will take effect.
+      If the policy is disabled, the per-Site Isolation process management logic will take effect.
       If the policy is not configured, the user will be able to change this setting.
       ''',
     },
@@ -10812,7 +10812,59 @@
       IsolateOrigins with a list of the sites you want to isolate. This setting,
       SitePerProcess, isolates all sites.
       If the policy is enabled, each site will run in its own process.
-      If the policy is disabled, the pre-Site Isolation process management logic will take effect.
+      If the policy is disabled, the per-Site Isolation process management logic will take effect.
+      If the policy is not configured, the user will be able to change this setting.
+      ''',
+    },
+    {
+      'name': 'DeviceLoginScreenIsolateOrigins',
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome_os:66-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': 'https://example.com/,https://othersite.org/',
+      'id': 417,
+      'caption': '''Enable Site Isolation for specified origins''',
+      'tags': ['system-security'],
+      'desc': '''
+      NOTE: This policy is experimental and may break functionality!
+      This policy applies to the sign-in screen. Please see also the 'IsolateOrigins' policy which applies to the user session. It is recommended to set both policies to the same value.
+      If the policy is enabled, each of the named origins in a
+      comma-separated list will run in its own process. This will also isolate
+      origins named by subdomains; e.g. specifying https://example.com/ will
+      also cause https://foo.example.com/ to be isolated as part of the
+      https://example.com/ site.
+      If the policy is disabled, the per-Site Isolation process management logic will take effect.
+      If the policy is not configured, the platform default site isolation settings will be used for the sign-in screen.
+      ''',
+    },
+    {
+      'name': 'DeviceLoginScreenSitePerProcess',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:66-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 418,
+      'caption': '''Enable Site Isolation for every site''',
+      'tags': ['system-security'],
+      'desc': '''
+      NOTE: This policy is experimental and may break functionality!
+      This policy applies to the sign-in screen. Please see also the 'SitePerProcess' policy which applies to the user session. It is recommended to set both policies to the same value.
+      You might want to look at the IsolateOrigins policy setting to get the
+      best of both worlds, isolation and limited impact for users, by using
+      IsolateOrigins with a list of the sites you want to isolate. This setting,
+      SitePerProcess, isolates all sites.
+      If the policy is enabled, each site will run in its own process.
+      If the policy is disabled, the per-Site Isolation process management logic will take effect.
       If the policy is not configured, the user will be able to change this setting.
       ''',
     },

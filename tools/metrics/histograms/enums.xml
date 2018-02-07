@@ -12503,6 +12503,8 @@ Called by update_net_error_codes.py.-->
   <int value="414" label="WebDriverOverridesIncompatiblePolicies"/>
   <int value="415" label="DeviceKerberosEncryptionTypes"/>
   <int value="416" label="DeviceUserPolicyLoopbackProcessingMode"/>
+  <int value="417" label="DeviceLoginScreenIsolateOrigins"/>
+  <int value="418" label="DeviceLoginScreenSitePerProcess"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

@@ -964,6 +964,20 @@ message DeviceUserPolicyLoopbackProcessingModeProto {
   optional Mode mode = 1 [default = USER_POLICY_MODE_DEFAULT];
 }
 
+// Specifies a list of origins. Each of the specified origins will run in its
+// own process on the sign-in screen.
+message DeviceLoginScreenIsolateOriginsProto {
+  // A comma-separated list of the origins to be run in a separate process on
+  // the sign-in screen.
+  optional string isolate_origins = 1;
+}
+
+// Specifies if each site should run in its own process on the sign-in screen.
+message DeviceLoginScreenSitePerProcessProto {
+  // If true, each site will run in its own process on the sign-in screen.
+  optional bool site_per_process = 1;
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1046,4 +1060,8 @@ message ChromeDeviceSettingsProto {
       65;
   optional DeviceUserPolicyLoopbackProcessingModeProto
       device_user_policy_loopback_processing_mode = 66;
+  optional DeviceLoginScreenIsolateOriginsProto
+      device_login_screen_isolate_origins = 67;
+  optional DeviceLoginScreenSitePerProcessProto
+      device_login_screen_site_per_process = 68;
 }
