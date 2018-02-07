@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/sequence_checker.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/interfaces/ukm_interface.mojom.h"
@@ -64,6 +65,9 @@ class UkmRecorderImpl : public UkmRecorder {
 
   void AddEntry(mojom::UkmEntryPtr entry) override;
 
+  // Load sampling configurations from field-trial information.
+  void LoadExperimentSamplingInfo();
+
   // Whether recording new data is currently allowed.
   bool recording_enabled_;
 
@@ -74,6 +78,10 @@ class UkmRecorderImpl : public UkmRecorder {
 
   // Whitelisted Entry hashes, only the ones in this set will be recorded.
   std::set<uint64_t> whitelisted_entry_hashes_;
+
+  // Sampling configurations, loaded from a field-trial.
+  int default_sampling_rate_ = 0;
+  base::flat_map<uint64_t, int> event_sampling_rates_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };
