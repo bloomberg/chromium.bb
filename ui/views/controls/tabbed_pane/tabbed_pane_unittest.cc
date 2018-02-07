@@ -38,8 +38,9 @@ class TabbedPaneTest : public ViewsTestBase {
   }
 
  protected:
-  void MakeTabbedPaneForOrientation(TabbedPane::Orientation orientation) {
-    tabbed_pane_ = std::make_unique<TabbedPane>(orientation);
+  void MakeTabbedPane(TabbedPane::Orientation orientation,
+                      TabbedPane::TabStripStyle style) {
+    tabbed_pane_ = std::make_unique<TabbedPane>(orientation, style);
     tabbed_pane_->set_owned_by_client();
   }
 
@@ -65,13 +66,27 @@ class TabbedPaneTest : public ViewsTestBase {
 
 // Tests tab orientation.
 TEST_F(TabbedPaneTest, HorizontalOrientation) {
-  EXPECT_EQ(tabbed_pane_->IsHorizontal(), true);
+  EXPECT_EQ(tabbed_pane_->GetOrientation(),
+            TabbedPane::Orientation::kHorizontal);
 }
 
 // Tests tab orientation.
 TEST_F(TabbedPaneTest, VerticalOrientation) {
-  MakeTabbedPaneForOrientation(TabbedPane::Orientation::kVertical);
-  EXPECT_EQ(tabbed_pane_->IsHorizontal(), false);
+  MakeTabbedPane(TabbedPane::Orientation::kVertical,
+                 TabbedPane::TabStripStyle::kBorder);
+  EXPECT_EQ(tabbed_pane_->GetOrientation(), TabbedPane::Orientation::kVertical);
+}
+
+// Tests tab strip style.
+TEST_F(TabbedPaneTest, TabStripBorderStyle) {
+  EXPECT_EQ(tabbed_pane_->GetStyle(), TabbedPane::TabStripStyle::kBorder);
+}
+
+// Tests tab strip style.
+TEST_F(TabbedPaneTest, TabStripHighlightStyle) {
+  MakeTabbedPane(TabbedPane::Orientation::kVertical,
+                 TabbedPane::TabStripStyle::kHighlight);
+  EXPECT_EQ(tabbed_pane_->GetStyle(), TabbedPane::TabStripStyle::kHighlight);
 }
 
 // Tests the preferred size and layout when tabs are aligned horizontally.
@@ -108,7 +123,8 @@ TEST_F(TabbedPaneTest, SizeAndLayout) {
 
 // Tests the preferred size and layout when tabs are aligned vertically..
 TEST_F(TabbedPaneTest, SizeAndLayoutInVerticalOrientation) {
-  MakeTabbedPaneForOrientation(TabbedPane::Orientation::kVertical);
+  MakeTabbedPane(TabbedPane::Orientation::kVertical,
+                 TabbedPane::TabStripStyle::kBorder);
   View* child1 = new StaticSizedView(gfx::Size(20, 10));
   tabbed_pane_->AddTab(ASCIIToUTF16("tab1"), child1);
   View* child2 = new StaticSizedView(gfx::Size(5, 5));
