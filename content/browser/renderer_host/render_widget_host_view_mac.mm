@@ -49,7 +49,6 @@
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
-#include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
@@ -66,7 +65,6 @@
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "gpu/ipc/common/gpu_messages.h"
-#include "media/base/video_frame.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -1183,25 +1181,6 @@ void RenderWidgetHostViewMac::CopyFromSurface(
     const SkColorType preferred_color_type) {
   browser_compositor_->GetDelegatedFrameHost()->CopyFromCompositingSurface(
       src_subrect, dst_size, callback, preferred_color_type);
-}
-
-void RenderWidgetHostViewMac::CopyFromSurfaceToVideoFrame(
-    const gfx::Rect& src_subrect,
-    scoped_refptr<media::VideoFrame> target,
-    const base::Callback<void(const gfx::Rect&, bool)>& callback) {
-  browser_compositor_->GetDelegatedFrameHost()
-      ->CopyFromCompositingSurfaceToVideoFrame(src_subrect, std::move(target),
-                                               callback);
-}
-
-void RenderWidgetHostViewMac::BeginFrameSubscription(
-    std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
-  browser_compositor_->GetDelegatedFrameHost()->BeginFrameSubscription(
-      std::move(subscriber));
-}
-
-void RenderWidgetHostViewMac::EndFrameSubscription() {
-  browser_compositor_->GetDelegatedFrameHost()->EndFrameSubscription();
 }
 
 void RenderWidgetHostViewMac::ForwardMouseEvent(const WebMouseEvent& event) {

@@ -23,10 +23,6 @@ class Rect;
 class Size;
 }
 
-namespace media {
-class VideoFrame;
-}
-
 namespace ui {
 class TextInputClient;
 }
@@ -34,7 +30,6 @@ class TextInputClient;
 namespace content {
 
 class RenderWidgetHost;
-class RenderWidgetHostViewFrameSubscriber;
 class TouchSelectionControllerClientManager;
 struct ScreenInfo;
 
@@ -167,13 +162,13 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual void SetInsets(const gfx::Insets& insets) = 0;
 
   // Returns true if the current display surface is available, a prerequisite
-  // for CopyFromSurface() or CopyFromSurfaceToVideoFrame() to succeed.
+  // for CopyFromSurface() to succeed.
   virtual bool IsSurfaceAvailableForCopy() const = 0;
 
   // Copies the given subset of the view's surface, optionally scales it, and
   // returns the result as a bitmap via the provided callback. This is meant for
   // one-off snapshots. For continuous video capture of the surface, please use
-  // BeginFrameSubscription().
+  // viz::FrameSinkManager::CreateVideoCapturer() instead.
   //
   // |src_rect| is either the subset of the view's surface, in view coordinates,
   // or empty to indicate that all of it should be copied. This is NOT the same
@@ -194,42 +189,6 @@ class CONTENT_EXPORT RenderWidgetHostView {
                                const gfx::Size& output_size,
                                const ReadbackRequestCallback& callback,
                                const SkColorType color_type) = 0;
-
-  // Copies the given subset of the view's surface, scales/letterboxes it, and
-  // returns the result within the provided media::VideoFrame. This is meant for
-  // one-off snapshots. For continuous video capture of the surface, please use
-  // BeginFrameSubscription().
-  //
-  // |src_rect| is either the subset of the view's surface, in view coordinates,
-  // or empty to indicate that all of it should be copied. This is NOT the same
-  // coordinate system as that used GetViewBounds() (https://crbug.com/73362).
-  //
-  // The |target| must use a pixel format supported by the platform. The size of
-  // the source region and the target together will determine how the content is
-  // positioned and scaled within the video frame. The aspect ratio of the
-  // source region will always be preserved, with letterboxing/pillarboxing
-  // applied to fill the entire frame.
-  //
-  // |callback| is always invoked, at some point in the future, with the region
-  // within |target| where the content was placed and a boolean success/fail
-  // flag. It may be called sychronously or asynchronously.
-  //
-  // If the view's renderer is suspended (see WasOccluded()), this may result in
-  // copying old data or failing.
-  virtual void CopyFromSurfaceToVideoFrame(
-      const gfx::Rect& src_rect,
-      scoped_refptr<media::VideoFrame> target,
-      const base::Callback<void(const gfx::Rect&, bool)>& callback) = 0;
-
-  // Begin subscribing for presentation events and captured frames.
-  // |subscriber| is now owned by this object, it will be called only on the
-  // UI thread.
-  virtual void BeginFrameSubscription(
-      std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) = 0;
-
-  // End subscribing for frame presentation events. FrameSubscriber will be
-  // deleted after this call.
-  virtual void EndFrameSubscription() = 0;
 
   // Notification that a node was touched.
   // The |location_dips_screen| parameter contains the location where the touch

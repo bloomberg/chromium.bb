@@ -30,12 +30,6 @@
 -MediaStreamManagerTest.MakeMediaAccessRequest
 -MediaStreamManagerTest.MakeMultipleRequests
 
-# These expect to be able to compile shader programs but Fuchsia currently uses
-# a stub GPU implementation, so that fails. https://crbug.com/766360.
--RenderWidgetHostViewAuraCopyRequestTest.DedupeFrameSubscriberRequests
--RenderWidgetHostViewAuraCopyRequestTest.DestroyedAfterCopyRequest
--RenderWidgetHostViewAuraCopyRequestTest.PresentTime
-
 # Failing: https://crbug.com/771701.
 -IndexedDBFactoryTest.DataFormatVersion
 

@@ -21,15 +21,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/null_task_runner.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
-#include "components/viz/common/frame_sinks/copy_output_request.h"
-#include "components/viz/common/gl_helper.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
@@ -57,7 +54,6 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
-#include "content/browser/renderer_host/render_widget_host_view_frame_subscriber.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_view_aura.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
@@ -79,7 +75,6 @@
 #include "content/test/test_web_contents.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_sink.h"
-#include "media/base/video_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
@@ -209,53 +204,6 @@ class TestWindowObserver : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(TestWindowObserver);
 };
 
-class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
- public:
-  FakeFrameSubscriber(gfx::Size size, base::Callback<void(bool)> callback)
-      : size_(size),
-        callback_(callback),
-        should_capture_(true),
-        source_id_for_copy_request_(base::UnguessableToken::Create()) {}
-
-  bool ShouldCaptureFrame(const gfx::Rect& damage_rect,
-                          base::TimeTicks present_time,
-                          scoped_refptr<media::VideoFrame>* storage,
-                          DeliverFrameCallback* callback) override {
-    if (!should_capture_)
-      return false;
-    last_present_time_ = present_time;
-    *storage = media::VideoFrame::CreateFrame(media::PIXEL_FORMAT_I420, size_,
-                                              gfx::Rect(size_), size_,
-                                              base::TimeDelta());
-    *callback = base::Bind(&FakeFrameSubscriber::CallbackMethod, callback_);
-    return true;
-  }
-
-  const base::UnguessableToken& GetSourceIdForCopyRequest() override {
-    return source_id_for_copy_request_;
-  }
-
-  base::TimeTicks last_present_time() const { return last_present_time_; }
-
-  void set_should_capture(bool should_capture) {
-    should_capture_ = should_capture;
-  }
-
-  static void CallbackMethod(base::Callback<void(bool)> callback,
-                             base::TimeTicks present_time,
-                             const gfx::Rect& region_in_frame,
-                             bool success) {
-    callback.Run(success);
-  }
-
- private:
-  gfx::Size size_;
-  base::Callback<void(bool)> callback_;
-  base::TimeTicks last_present_time_;
-  bool should_capture_;
-  base::UnguessableToken source_id_for_copy_request_;
-};
-
 class FakeWindowEventDispatcher : public aura::WindowEventDispatcher {
  public:
   FakeWindowEventDispatcher(aura::WindowTreeHost* host)
@@ -377,19 +325,6 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
         window()->GetHost()->compositor());
   }
 
-  void InterceptCopyOfOutput(std::unique_ptr<viz::CopyOutputRequest> request) {
-    last_copy_request_ = std::move(request);
-    if (last_copy_request_->has_mailbox()) {
-      // Give the resulting texture a size.
-      viz::GLHelper* gl_helper =
-          ImageTransportFactory::GetInstance()->GetGLHelper();
-      GLuint texture = gl_helper->ConsumeMailboxToTexture(
-          last_copy_request_->mailbox(), last_copy_request_->sync_token());
-      gl_helper->ResizeTexture(texture, window()->bounds().size());
-      gl_helper->DeleteTexture(texture);
-    }
-  }
-
   viz::SurfaceId surface_id() const {
     return GetDelegatedFrameHost()->GetCurrentSurfaceId();
   }
@@ -424,7 +359,6 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
   }
 
   gfx::Size last_frame_size_;
-  std::unique_ptr<viz::CopyOutputRequest> last_copy_request_;
   FakeWindowEventDispatcher* dispatcher_;
   std::unique_ptr<FakeRendererCompositorFrameSink>
       renderer_compositor_frame_sink_;
@@ -3850,259 +3784,6 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
 
   surface_manager->RemoveObserver(&observer);
   view_->SetNeedsBeginFrames(false);
-}
-
-class RenderWidgetHostViewAuraCopyRequestTest
-    : public RenderWidgetHostViewAuraShutdownTest {
- public:
-  RenderWidgetHostViewAuraCopyRequestTest()
-      : callback_count_(0),
-        result_(false),
-        frame_subscriber_(nullptr),
-        view_rect_(100, 100) {}
-
-  void CallbackMethod(bool result) {
-    result_ = result;
-    callback_count_++;
-    quit_closure_.Run();
-  }
-
-  void RunLoopUntilCallback() {
-    base::RunLoop run_loop;
-    quit_closure_ = run_loop.QuitClosure();
-    // Temporarily ignore real draw requests.
-    frame_subscriber_->set_should_capture(false);
-    run_loop.Run();
-    frame_subscriber_->set_should_capture(true);
-  }
-
-  void InitializeView() {
-    view_->InitAsChild(nullptr);
-    view_->GetDelegatedFrameHost()->SetRequestCopyOfOutputCallbackForTesting(
-        base::Bind(&FakeRenderWidgetHostViewAura::InterceptCopyOfOutput,
-                   base::Unretained(view_)));
-    aura::client::ParentWindowWithContext(
-        view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
-        gfx::Rect());
-    view_->SetSize(view_rect_.size());
-    view_->Show();
-
-    frame_subscriber_ = new FakeFrameSubscriber(
-        view_rect_.size(),
-        base::Bind(&RenderWidgetHostViewAuraCopyRequestTest::CallbackMethod,
-                   base::Unretained(this)));
-    view_->BeginFrameSubscription(base::WrapUnique(frame_subscriber_));
-    ASSERT_EQ(0, callback_count_);
-    ASSERT_FALSE(view_->last_copy_request_);
-  }
-
-  void InstallFakeTickClock() {
-    view_->GetDelegatedFrameHost()->tick_clock_ = &tick_clock_;
-  }
-
-  void SubmitCompositorFrame() {
-    view_->SubmitCompositorFrame(
-        kArbitraryLocalSurfaceId,
-        MakeDelegatedFrame(1.f, view_rect_.size(), view_rect_), nullptr);
-    viz::SurfaceId surface_id =
-        view_->GetDelegatedFrameHost()->GetCurrentSurfaceId();
-    if (surface_id.is_valid())
-      view_->GetDelegatedFrameHost()->OnAggregatedSurfaceDamage(
-          surface_id.local_surface_id(), view_rect_);
-    ASSERT_TRUE(view_->last_copy_request_);
-  }
-
-  void ReleaseSwappedFrame() {
-    std::unique_ptr<viz::CopyOutputRequest> request =
-        std::move(view_->last_copy_request_);
-    request->SendResult(std::make_unique<viz::CopyOutputTextureResult>(
-        view_rect_, request->mailbox(), request->sync_token(),
-        gfx::ColorSpace(),
-        viz::SingleReleaseCallback::Create(
-            base::Bind([](const gpu::SyncToken&, bool) {}))));
-    RunLoopUntilCallback();
-  }
-
-  void SubmitCompositorFrameAndRelease() {
-    SubmitCompositorFrame();
-    ReleaseSwappedFrame();
-  }
-
-  void RunOnCompositingDidCommitAndReleaseFrame() {
-    view_->RunOnCompositingDidCommit();
-    ReleaseSwappedFrame();
-  }
-
-  void OnUpdateVSyncParameters(base::TimeTicks timebase,
-                               base::TimeDelta interval) {
-    view_->GetDelegatedFrameHost()->OnUpdateVSyncParameters(timebase, interval);
-  }
-
-  base::TimeTicks vsync_timebase() {
-    return view_->GetDelegatedFrameHost()->vsync_timebase_;
-  }
-
-  base::TimeDelta vsync_interval() {
-    return view_->GetDelegatedFrameHost()->vsync_interval_;
-  }
-
-  int callback_count_;
-  bool result_;
-  FakeFrameSubscriber* frame_subscriber_;  // Owned by |view_|.
-  base::SimpleTestTickClock tick_clock_;
-  const gfx::Rect view_rect_;
-
- private:
-  base::Closure quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraCopyRequestTest);
-};
-
-// Tests that only one copy/readback request will be executed per one browser
-// composite operation, even when multiple render frame swaps occur in between
-// browser composites, and even if the frame subscriber desires more frames than
-// the number of browser composites.
-TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DedupeFrameSubscriberRequests) {
-  InitializeView();
-  int expected_callback_count = 0;
-
-  // Normal case: A browser composite executes for each render frame swap.
-  for (int i = 0; i < 3; ++i) {
-    // Renderer provides another frame and the Browser composites with the
-    // frame, executing the copy request, and then the result is delivered.
-    SubmitCompositorFrame();
-    RunOnCompositingDidCommitAndReleaseFrame();
-
-    // The callback should be run with success status.
-    ++expected_callback_count;
-    ASSERT_EQ(expected_callback_count, callback_count_);
-    EXPECT_TRUE(result_);
-  }
-
-  // De-duping case: One browser composite executes per varied number of render
-  // frame swaps.
-  for (int i = 0; i < 3; ++i) {
-    const int num_swaps = 1 + i % 3;
-
-    // The renderer provides |num_swaps| frames.
-    for (int j = 0; j < num_swaps; ++j) {
-      SubmitCompositorFrame();
-      if (j > 0) {
-        ++expected_callback_count;
-        ASSERT_EQ(expected_callback_count, callback_count_);
-        EXPECT_FALSE(result_);  // The prior copy request was aborted.
-      }
-    }
-
-    // Browser composites with the frame, executing the last copy request that
-    // was made, and then the result is delivered.
-    RunOnCompositingDidCommitAndReleaseFrame();
-
-    // The final callback should be run with success status.
-    ++expected_callback_count;
-    ASSERT_EQ(expected_callback_count, callback_count_);
-    EXPECT_TRUE(result_);
-  }
-
-  // Destroy the RenderWidgetHostViewAura and ImageTransportFactory.
-  TearDownEnvironment();
-}
-
-TEST_F(RenderWidgetHostViewAuraCopyRequestTest, DestroyedAfterCopyRequest) {
-  InitializeView();
-
-  SubmitCompositorFrame();
-  EXPECT_EQ(0, callback_count_);
-  EXPECT_TRUE(view_->last_copy_request_);
-  EXPECT_TRUE(view_->last_copy_request_->has_mailbox());
-
-  // Notify DelegatedFrameHost that the copy requests were moved to the
-  // compositor thread by calling OnCompositingDidCommit().
-  //
-  // Send back the mailbox included in the request. There's no release callback
-  // since the mailbox came from the RWHVA originally.
-  RunOnCompositingDidCommitAndReleaseFrame();
-
-  // The callback should succeed.
-  EXPECT_EQ(1, callback_count_);
-  EXPECT_TRUE(result_);
-
-  SubmitCompositorFrame();
-  EXPECT_EQ(1, callback_count_);
-  std::unique_ptr<viz::CopyOutputRequest> request =
-      std::move(view_->last_copy_request_);
-
-  // Destroy the RenderWidgetHostViewAura and ImageTransportFactory.
-  TearDownEnvironment();
-
-  // Send the result after-the-fact.  It goes nowhere since DelegatedFrameHost
-  // has been destroyed.  CopyOutputRequest auto-sends an empty result upon
-  // destruction.
-  request.reset();
-
-  // Because the copy request callback may be holding state within it, that
-  // state must handle the RWHVA and ImageTransportFactory going away before the
-  // callback is called. This test passes if it does not crash as a result of
-  // these things being destroyed.
-  EXPECT_EQ(2, callback_count_);
-  EXPECT_FALSE(result_);
-}
-
-TEST_F(RenderWidgetHostViewAuraCopyRequestTest, PresentTime) {
-  InitializeView();
-  InstallFakeTickClock();
-
-  // Verify our initial state.
-  EXPECT_EQ(base::TimeTicks(), frame_subscriber_->last_present_time());
-  EXPECT_EQ(base::TimeTicks(), tick_clock_.NowTicks());
-
-  // Start our fake clock from a non-zero, but not an even multiple of the
-  // interval, value to differentiate it from our initialization state.
-  const base::TimeDelta kDefaultInterval =
-      viz::BeginFrameArgs::DefaultInterval();
-  tick_clock_.Advance(kDefaultInterval / 3);
-
-  // Swap the first frame without any vsync information.
-  ASSERT_EQ(base::TimeTicks(), vsync_timebase());
-  ASSERT_EQ(base::TimeDelta(), vsync_interval());
-
-  // During this first call, there is no known vsync information, so while the
-  // callback should succeed the present time is effectively just current time.
-  SubmitCompositorFrameAndRelease();
-  EXPECT_EQ(tick_clock_.NowTicks(), frame_subscriber_->last_present_time());
-
-  // Now initialize the vsync parameters with a null timebase, but a known vsync
-  // interval; which should give us slightly better frame time estimates.
-  OnUpdateVSyncParameters(base::TimeTicks(), kDefaultInterval);
-  ASSERT_EQ(base::TimeTicks(), vsync_timebase());
-  ASSERT_EQ(kDefaultInterval, vsync_interval());
-
-  // Now that we have a vsync interval, the presentation time estimate should be
-  // the nearest presentation interval, which is just kDefaultInterval since our
-  // tick clock is initialized to a time before that.
-  SubmitCompositorFrameAndRelease();
-  EXPECT_EQ(base::TimeTicks() + kDefaultInterval,
-            frame_subscriber_->last_present_time());
-
-  // Now initialize the vsync parameters with a valid timebase and a known vsync
-  // interval; which should give us the best frame time estimates.
-  const base::TimeTicks kBaseTime = tick_clock_.NowTicks();
-  OnUpdateVSyncParameters(kBaseTime, kDefaultInterval);
-  ASSERT_EQ(kBaseTime, vsync_timebase());
-  ASSERT_EQ(kDefaultInterval, vsync_interval());
-
-  // Now that we have a vsync interval and a timebase, the presentation time
-  // should be based on the number of vsync intervals which have elapsed since
-  // the vsync timebase.  Advance time by a non integer number of intervals to
-  // verify.
-  const double kElapsedIntervals = 2.5;
-  tick_clock_.Advance(kDefaultInterval * kElapsedIntervals);
-  SubmitCompositorFrameAndRelease();
-  EXPECT_EQ(kBaseTime + kDefaultInterval * std::ceil(kElapsedIntervals),
-            frame_subscriber_->last_present_time());
-
-  // Destroy the RenderWidgetHostViewAura and ImageTransportFactory.
-  TearDownEnvironment();
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, VisibleViewportTest) {

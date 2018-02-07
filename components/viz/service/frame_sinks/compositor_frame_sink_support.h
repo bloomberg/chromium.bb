@@ -66,7 +66,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   // The provided callback will be run every time a surface owned by this object
   // or one of its descendents is determined to be damaged at aggregation time.
-  void SetAggregatedDamageCallback(AggregatedDamageCallback callback);
+  void SetAggregatedDamageCallbackForTesting(AggregatedDamageCallback callback);
 
   // Sets callback called on destruction.
   void SetDestructionCallback(base::OnceClosure callback);
