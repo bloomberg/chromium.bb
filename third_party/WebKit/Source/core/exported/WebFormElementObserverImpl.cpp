@@ -34,7 +34,6 @@ class WebFormElementObserverImpl::ObserverCallback
 
  private:
   Member<HTMLElement> element_;
-  HeapHashSet<Member<Node>> parents_;
   Member<MutationObserver> mutation_observer_;
   std::unique_ptr<WebFormElementObserverCallback> callback_;
 };
@@ -51,15 +50,11 @@ WebFormElementObserverImpl::ObserverCallback::ObserverCallback(
     init.setAttributeFilter({"action", "class", "style"});
     mutation_observer_->observe(element_, init, ASSERT_NO_EXCEPTION);
   }
-  for (Node* node = element_; node->parentElement();
-       node = node->parentElement()) {
+  if (element_->parentElement()) {
     MutationObserverInit init;
     init.setChildList(true);
-    init.setAttributes(true);
-    init.setAttributeFilter({"class", "style"});
-    mutation_observer_->observe(node->parentElement(), init,
+    mutation_observer_->observe(element_->parentElement(), init,
                                 ASSERT_NO_EXCEPTION);
-    parents_.insert(node->parentElement());
   }
 }
 
@@ -74,11 +69,8 @@ void WebFormElementObserverImpl::ObserverCallback::Deliver(
   for (const auto& record : records) {
     if (record->type() == "childList") {
       for (unsigned i = 0; i < record->removedNodes()->length(); ++i) {
-        Node* removed_node = record->removedNodes()->item(i);
-        if (removed_node != element_ &&
-            parents_.find(removed_node) == parents_.end()) {
+        if (record->removedNodes()->item(i) != element_)
           continue;
-        }
         callback_->ElementWasHiddenOrRemoved();
         Disconnect();
         return;
@@ -108,14 +100,11 @@ void WebFormElementObserverImpl::ObserverCallback::Deliver(
 void WebFormElementObserverImpl::ObserverCallback::Disconnect() {
   mutation_observer_->disconnect();
   callback_.reset();
-  parents_.clear();
-  element_.Clear();
 }
 
 void WebFormElementObserverImpl::ObserverCallback::Trace(
     blink::Visitor* visitor) {
   visitor->Trace(element_);
-  visitor->Trace(parents_);
   visitor->Trace(mutation_observer_);
   MutationObserver::Delegate::Trace(visitor);
 }
