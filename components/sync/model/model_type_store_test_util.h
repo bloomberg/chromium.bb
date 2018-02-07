@@ -17,16 +17,17 @@ class ModelTypeStoreTestUtil {
  public:
   // Creates an in memory store synchronously. Be aware that to do this all
   // outstanding tasks will be run as the current message loop is pumped.
-  static std::unique_ptr<ModelTypeStore> CreateInMemoryStoreForTest();
+  static std::unique_ptr<ModelTypeStore> CreateInMemoryStoreForTest(
+      ModelType type = UNSPECIFIED);
 
-  // Creates a factory callback to synchronously return an in memory store.
-  static ModelTypeStoreFactory FactoryForInMemoryStoreForTest();
+  // Creates a factory callback to synchronously return in memory stores.
+  static RepeatingModelTypeStoreFactory FactoryForInMemoryStoreForTest();
 
   // Can be curried with an owned store object to allow passing an already
   // created store to a service constructor in a unit test.
   static void MoveStoreToCallback(std::unique_ptr<ModelTypeStore> store,
                                   ModelType type,
-                                  const ModelTypeStore::InitCallback& callback);
+                                  ModelTypeStore::InitCallback callback);
 };
 
 }  // namespace syncer

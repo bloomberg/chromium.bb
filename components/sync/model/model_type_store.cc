@@ -4,6 +4,8 @@
 
 #include "components/sync/model/model_type_store.h"
 
+#include <utility>
+
 #include "components/sync/model_impl/accumulating_metadata_change_list.h"
 #include "components/sync/model_impl/model_type_store_impl.h"
 #include "components/sync/model_impl/passthrough_metadata_change_list.h"
@@ -12,15 +14,15 @@ namespace syncer {
 
 // static
 void ModelTypeStore::CreateInMemoryStoreForTest(ModelType type,
-                                                const InitCallback& callback) {
-  ModelTypeStoreImpl::CreateInMemoryStoreForTest(type, callback);
+                                                InitCallback callback) {
+  ModelTypeStoreImpl::CreateInMemoryStoreForTest(type, std::move(callback));
 }
 
 // static
 void ModelTypeStore::CreateStore(const std::string& path,
                                  ModelType type,
-                                 const InitCallback& callback) {
-  ModelTypeStoreImpl::CreateStore(type, path, callback);
+                                 InitCallback callback) {
+  ModelTypeStoreImpl::CreateStore(type, path, std::move(callback));
 }
 
 ModelTypeStore::~ModelTypeStore() {}

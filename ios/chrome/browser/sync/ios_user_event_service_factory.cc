@@ -51,7 +51,7 @@ IOSUserEventServiceFactory::BuildServiceInstanceFor(
     return std::make_unique<syncer::NoOpUserEventService>();
   }
 
-  syncer::ModelTypeStoreFactory store_factory =
+  syncer::OnceModelTypeStoreFactory store_factory =
       browser_sync::ProfileSyncService::GetModelTypeStoreFactory(
           browser_state->GetStatePath());
   syncer::ModelTypeSyncBridge::ChangeProcessorFactory processor_factory =

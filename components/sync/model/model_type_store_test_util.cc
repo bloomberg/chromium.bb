@@ -15,44 +15,46 @@ namespace syncer {
 
 using Result = ModelTypeStore::Result;
 
-namespace {
-
-void MoveStoreToScopedPtr(std::unique_ptr<ModelTypeStore>* out_store,
-                          Result result,
-                          std::unique_ptr<ModelTypeStore> in_store) {
-  ASSERT_EQ(Result::SUCCESS, result);
-  std::swap(*out_store, in_store);
-}
-
-}  // namespace
-
 // static
 std::unique_ptr<ModelTypeStore>
-ModelTypeStoreTestUtil::CreateInMemoryStoreForTest() {
+ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(ModelType type) {
+  base::RunLoop loop;
   std::unique_ptr<ModelTypeStore> store;
+
   ModelTypeStore::CreateInMemoryStoreForTest(
-      UNSPECIFIED, base::Bind(&MoveStoreToScopedPtr, &store));
+      type,
+      base::BindOnce(
+          [](base::RunLoop* loop, std::unique_ptr<ModelTypeStore>* out_store,
+             Result result, std::unique_ptr<ModelTypeStore> in_store) {
+            ASSERT_EQ(Result::SUCCESS, result);
+            *out_store = std::move(in_store);
+            loop->Quit();
+          },
+          &loop, &store));
 
   // Force the initialization to run now, synchronously.
-  base::RunLoop().RunUntilIdle();
+  loop.Run();
 
   EXPECT_TRUE(store);
   return store;
 }
 
 // static
-ModelTypeStoreFactory ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest() {
-  return base::Bind(&ModelTypeStoreTestUtil::MoveStoreToCallback,
-                    base::Passed(CreateInMemoryStoreForTest()));
+RepeatingModelTypeStoreFactory
+ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest() {
+  return base::BindRepeating([](ModelType type,
+                                ModelTypeStore::InitCallback callback) {
+    std::move(callback).Run(Result::SUCCESS, CreateInMemoryStoreForTest(type));
+  });
 }
 
 // static
 void ModelTypeStoreTestUtil::MoveStoreToCallback(
     std::unique_ptr<ModelTypeStore> store,
     ModelType type,
-    const ModelTypeStore::InitCallback& callback) {
+    ModelTypeStore::InitCallback callback) {
   ASSERT_TRUE(store);
-  callback.Run(Result::SUCCESS, std::move(store));
+  std::move(callback).Run(Result::SUCCESS, std::move(store));
 }
 
 }  // namespace syncer

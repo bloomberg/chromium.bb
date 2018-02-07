@@ -21,34 +21,35 @@ MockModelTypeStore::MockModelTypeStore() = default;
 MockModelTypeStore::~MockModelTypeStore() = default;
 
 void MockModelTypeStore::ReadData(const IdList& id_list,
-                                  const ReadDataCallback& callback) {
+                                  ReadDataCallback callback) {
   if (!read_data_handler_.is_null()) {
-    read_data_handler_.Run(id_list, callback);
+    read_data_handler_.Run(id_list, std::move(callback));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, Result::SUCCESS,
-                              base::Passed(std::unique_ptr<RecordList>()),
-                              base::Passed(std::unique_ptr<IdList>())));
+        FROM_HERE, base::BindOnce(std::move(callback), Result::SUCCESS,
+                                  std::unique_ptr<RecordList>(),
+                                  std::unique_ptr<IdList>()));
   }
 }
 
-void MockModelTypeStore::ReadAllData(const ReadAllDataCallback& callback) {
+void MockModelTypeStore::ReadAllData(ReadAllDataCallback callback) {
   if (!read_all_data_handler_.is_null()) {
-    read_all_data_handler_.Run(callback);
+    read_all_data_handler_.Run(std::move(callback));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, Result::SUCCESS,
-                              base::Passed(std::unique_ptr<RecordList>())));
+        FROM_HERE, base::BindOnce(std::move(callback), Result::SUCCESS,
+                                  std::unique_ptr<RecordList>()));
   }
 }
 
-void MockModelTypeStore::ReadAllMetadata(const ReadMetadataCallback& callback) {
+void MockModelTypeStore::ReadAllMetadata(ReadMetadataCallback callback) {
   if (!read_all_metadata_handler_.is_null()) {
-    read_all_metadata_handler_.Run(callback);
+    read_all_metadata_handler_.Run(std::move(callback));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, base::Optional<ModelError>(),
-                              base::Passed(std::unique_ptr<MetadataBatch>())));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), base::Optional<ModelError>(),
+                       std::unique_ptr<MetadataBatch>()));
   }
 }
 
@@ -59,12 +60,13 @@ MockModelTypeStore::CreateWriteBatch() {
 
 void MockModelTypeStore::CommitWriteBatch(
     std::unique_ptr<WriteBatch> write_batch,
-    const CallbackWithResult& callback) {
+    CallbackWithResult callback) {
   if (!commit_write_batch_handler_.is_null()) {
-    commit_write_batch_handler_.Run(std::move(write_batch), callback);
+    commit_write_batch_handler_.Run(std::move(write_batch),
+                                    std::move(callback));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, Result::SUCCESS));
+        FROM_HERE, base::BindOnce(std::move(callback), Result::SUCCESS));
   }
 }
 

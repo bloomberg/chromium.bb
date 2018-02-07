@@ -50,7 +50,7 @@ KeyedService* UserEventServiceFactory::BuildServiceInstanceFor(
     return new syncer::NoOpUserEventService();
   }
 
-  syncer::ModelTypeStoreFactory store_factory =
+  syncer::OnceModelTypeStoreFactory store_factory =
       browser_sync::ProfileSyncService::GetModelTypeStoreFactory(
           profile->GetPath());
   syncer::ModelTypeSyncBridge::ChangeProcessorFactory processor_factory =

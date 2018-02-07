@@ -84,7 +84,7 @@ std::unique_ptr<DeviceInfoSpecifics> ModelToSpecifics(
 
 DeviceInfoSyncBridge::DeviceInfoSyncBridge(
     LocalDeviceInfoProvider* local_device_info_provider,
-    const ModelTypeStoreFactory& store_factory,
+    OnceModelTypeStoreFactory store_factory,
     const ChangeProcessorFactory& change_processor_factory)
     : ModelTypeSyncBridge(change_processor_factory, DEVICE_INFO),
       local_device_info_provider_(local_device_info_provider) {
@@ -100,9 +100,9 @@ DeviceInfoSyncBridge::DeviceInfoSyncBridge(
                    base::Unretained(this)));
   }
 
-  store_factory.Run(
-      DEVICE_INFO,
-      base::Bind(&DeviceInfoSyncBridge::OnStoreCreated, base::AsWeakPtr(this)));
+  std::move(store_factory)
+      .Run(DEVICE_INFO, base::BindOnce(&DeviceInfoSyncBridge::OnStoreCreated,
+                                       base::AsWeakPtr(this)));
 }
 
 DeviceInfoSyncBridge::~DeviceInfoSyncBridge() {}

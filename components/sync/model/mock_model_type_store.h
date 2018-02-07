@@ -22,7 +22,7 @@ namespace syncer {
 // Here is an example:
 // ===
 // void OnReadData(const ModelTypeStore::IdList& id_list,
-//                 const ModelTypeStore::ReadAllDataCallback& callback) {
+//                 ModelTypeStore::ReadAllDataCallback callback) {
 //   // Verify id_list here.
 //   // Prepare fake response.
 //   std::unique_ptr<ModelTypeStore::RecordList> record_list(
@@ -44,33 +44,34 @@ namespace syncer {
 class MockModelTypeStore : public ModelTypeStore {
  public:
   // Signatures for all ModelTypeStore virtual functions.
-  using ReadAllDataSignature = base::Callback<void(const ReadAllDataCallback&)>;
+  using ReadAllDataSignature =
+      base::RepeatingCallback<void(ReadAllDataCallback)>;
   using ReadDataSignature =
-      base::Callback<void(const IdList&, const ReadDataCallback&)>;
+      base::RepeatingCallback<void(const IdList&, ReadDataCallback)>;
   using ReadAllMetadataSignature =
-      base::Callback<void(const ReadMetadataCallback& callback)>;
+      base::RepeatingCallback<void(ReadMetadataCallback callback)>;
   using CommitWriteBatchSignature =
-      base::Callback<void(std::unique_ptr<WriteBatch>, CallbackWithResult)>;
-  using WriteRecordSignature =
-      base::Callback<void(WriteBatch*, const std::string&, const std::string&)>;
+      base::RepeatingCallback<void(std::unique_ptr<WriteBatch>,
+                                   CallbackWithResult)>;
+  using WriteRecordSignature = base::RepeatingCallback<
+      void(WriteBatch*, const std::string&, const std::string&)>;
   using WriteGlobalMetadataSignature =
-      base::Callback<void(WriteBatch*, const std::string&)>;
+      base::RepeatingCallback<void(WriteBatch*, const std::string&)>;
   using DeleteRecordSignature =
-      base::Callback<void(WriteBatch*, const std::string&)>;
+      base::RepeatingCallback<void(WriteBatch*, const std::string&)>;
   using DeleteGlobalMetadataSignature = base::Callback<void(WriteBatch*)>;
 
   MockModelTypeStore();
   ~MockModelTypeStore() override;
 
   // ModelTypeStore implementation.
-  void ReadData(const IdList& id_list,
-                const ReadDataCallback& callback) override;
-  void ReadAllData(const ReadAllDataCallback& callback) override;
-  void ReadAllMetadata(const ReadMetadataCallback& callback) override;
+  void ReadData(const IdList& id_list, ReadDataCallback callback) override;
+  void ReadAllData(ReadAllDataCallback callback) override;
+  void ReadAllMetadata(ReadMetadataCallback callback) override;
 
   std::unique_ptr<WriteBatch> CreateWriteBatch() override;
   void CommitWriteBatch(std::unique_ptr<WriteBatch> write_batch,
-                        const CallbackWithResult& callback) override;
+                        CallbackWithResult callback) override;
 
   // Register handler functions.
   void RegisterReadDataHandler(const ReadDataSignature& handler);

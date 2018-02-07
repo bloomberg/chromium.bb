@@ -20,7 +20,7 @@ namespace syncer {
 
 class UserEventSyncBridge : public ModelTypeSyncBridge {
  public:
-  UserEventSyncBridge(const ModelTypeStoreFactory& store_factory,
+  UserEventSyncBridge(OnceModelTypeStoreFactory store_factory,
                       const ChangeProcessorFactory& change_processor_factory,
                       GlobalIdMapper* global_id_mapper);
   ~UserEventSyncBridge() override;

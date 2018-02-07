@@ -68,15 +68,15 @@ std::unique_ptr<EntityData> CopyToEntityData(
 }  // namespace
 
 UserEventSyncBridge::UserEventSyncBridge(
-    const ModelTypeStoreFactory& store_factory,
+    OnceModelTypeStoreFactory store_factory,
     const ChangeProcessorFactory& change_processor_factory,
     GlobalIdMapper* global_id_mapper)
     : ModelTypeSyncBridge(change_processor_factory, USER_EVENTS),
       global_id_mapper_(global_id_mapper) {
   DCHECK(global_id_mapper_);
-  store_factory.Run(
-      USER_EVENTS,
-      base::Bind(&UserEventSyncBridge::OnStoreCreated, base::AsWeakPtr(this)));
+  std::move(store_factory)
+      .Run(USER_EVENTS, base::BindOnce(&UserEventSyncBridge::OnStoreCreated,
+                                       base::AsWeakPtr(this)));
   global_id_mapper_->AddGlobalIdChangeObserver(base::Bind(
       &UserEventSyncBridge::HandleGlobalIdChange, base::AsWeakPtr(this)));
 }

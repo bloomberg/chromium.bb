@@ -50,10 +50,11 @@ std::unique_ptr<EntityData> CopyToEntityData(
 class PrintersSyncBridge::StoreProxy {
  public:
   StoreProxy(PrintersSyncBridge* owner,
-             const syncer::ModelTypeStoreFactory& callback)
+             syncer::OnceModelTypeStoreFactory callback)
       : owner_(owner), weak_ptr_factory_(this) {
-    callback.Run(syncer::PRINTERS, base::Bind(&StoreProxy::OnStoreCreated,
-                                              weak_ptr_factory_.GetWeakPtr()));
+    std::move(callback).Run(syncer::PRINTERS,
+                            base::BindOnce(&StoreProxy::OnStoreCreated,
+                                           weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Returns true if the store has been initialized.
@@ -147,12 +148,12 @@ class PrintersSyncBridge::StoreProxy {
 };
 
 PrintersSyncBridge::PrintersSyncBridge(
-    const syncer::ModelTypeStoreFactory& callback,
+    syncer::OnceModelTypeStoreFactory callback,
     const base::RepeatingClosure& error_callback)
     : ModelTypeSyncBridge(base::BindRepeating(&ModelTypeChangeProcessor::Create,
                                               error_callback),
                           syncer::PRINTERS),
-      store_delegate_(std::make_unique<StoreProxy>(this, callback)),
+      store_delegate_(std::make_unique<StoreProxy>(this, std::move(callback))),
       observers_(new base::ObserverListThreadSafe<Observer>()) {}
 
 PrintersSyncBridge::~PrintersSyncBridge() {}
