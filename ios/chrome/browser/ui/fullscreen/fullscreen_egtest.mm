@@ -295,7 +295,17 @@ void AssertURLIs(const GURL& expectedURL) {
   [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Close the tab.
-  chrome_test_util::TapWebViewElementWithId("link2");
+  NSError* error = nil;
+  // The effect of clicking the link, closes the tab and invalidates the web
+  // view. This results in |TapWebViewElementWithId| returning false. This
+  // error is represented by code 3.
+  GREYAssertFalse(chrome_test_util::TapWebViewElementWithId("link2", &error),
+                  @"Failed to tap \"link2\"");
+  GREYAssert(error.code == 3,
+             @"Failed to receive WKErrorWebViewInvalidated error");
+  GREYAssert([error.domain isEqualToString:@"WKErrorDomain"],
+             @"Failed to receive WKErrorDomain error");
+
   [ChromeEarlGrey waitForWebViewContainingText:"link1"];
 
   // Make sure the toolbar is on the screen.
