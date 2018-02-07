@@ -15,7 +15,7 @@
 #include "printing/page_range.h"
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#include "chrome/common/crash_keys.h"
+#include "components/crash/core/common/crash_keys.h"
 #include "printing/backend/print_backend.h"
 #endif
 

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -115,6 +116,31 @@ void ResetCommandLineForTesting() {
   num_switches_key.Clear();
   for (auto& key : switches_keys) {
     key.Clear();
+  }
+}
+
+using PrinterInfoKey = crash_reporter::CrashKeyString<64>;
+static PrinterInfoKey printer_info_keys[] = {
+    {"prn-info-1", PrinterInfoKey::Tag::kArray},
+    {"prn-info-2", PrinterInfoKey::Tag::kArray},
+    {"prn-info-3", PrinterInfoKey::Tag::kArray},
+    {"prn-info-4", PrinterInfoKey::Tag::kArray},
+};
+
+ScopedPrinterInfo::ScopedPrinterInfo(const base::StringPiece& data) {
+  std::vector<std::string> info = base::SplitString(
+      data.as_string(), ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  for (size_t i = 0; i < arraysize(printer_info_keys); ++i) {
+    std::string value;
+    if (i < info.size())
+      value = info[i];
+    printer_info_keys[i].Set(value);
+  }
+}
+
+ScopedPrinterInfo::~ScopedPrinterInfo() {
+  for (auto& crash_key : printer_info_keys) {
+    crash_key.Clear();
   }
 }
 

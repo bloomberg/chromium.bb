@@ -29,17 +29,6 @@ void SetCrashKeysFromCommandLine(const base::CommandLine& command_line);
 //   multiple because of process collapsing).
 void SetActiveExtensions(const std::set<std::string>& extensions);
 
-// Sets the printer info. Data should be separated by ';' up to
-// kPrinterInfoCount substrings. Each substring will be truncated if necessary.
-class ScopedPrinterInfo {
- public:
-  explicit ScopedPrinterInfo(const base::StringPiece& data);
-  ~ScopedPrinterInfo();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedPrinterInfo);
-};
-
 }  // namespace crash_keys
 
 #endif  // CHROME_COMMON_CRASH_KEYS_H_
