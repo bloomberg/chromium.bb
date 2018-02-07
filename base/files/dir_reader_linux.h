@@ -89,7 +89,7 @@ class DirReaderLinux {
 
  private:
   const int fd_;
-  unsigned char buf_[512];
+  alignas(linux_dirent) unsigned char buf_[512];
   size_t offset_;
   size_t size_;
 
