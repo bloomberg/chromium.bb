@@ -68,7 +68,8 @@ message VmInfo {
 
 // Information that must be included with every StartVm dbus message.
 message StartVmRequest {
-  // The VM that should be started.
+  // The VM that should be started. This is ignored if starting a termina VM,
+  // which will always use the latest component from imageloader.
   VirtualMachineSpec vm = 1;
 
   // Any additional disks that should be mounted inside the VM.
@@ -79,12 +80,15 @@ message StartVmRequest {
 
   // The human-readable name to be assigned to this VM.
   string name = 4;
+
+  // If true, concierge should also perform termina-specific setup.
+  bool start_termina = 5;
 }
 
 // Information sent back by vm_concierge in response to a StartVm dbus message.
 message StartVmResponse {
-  // If true, the VM was started successfully.  |ipv4_address|, |pid|, and
-  // |cid| will have non-default values only if this is true.
+  // If true, the VM was started successfully.  |vm_info| will have non-default
+  // values only if this is true.
   bool success = 1;
 
   // If the VM failed to start, the reason for the failure.
@@ -122,21 +126,6 @@ message GetVmInfoResponse {
 
   // Information about the VM that was requested.
   VmInfo vm_info = 2;
-}
-
-// Information that must be included with every StartLxd dbus message.
-message StartLxdRequest {
-  // The name of the VM to start lxd for.
-  string name = 1;
-}
-
-// Response sent back by vm_concierge when it received a StartLxd message.
-message StartLxdResponse {
-  // If true, the requested VM has started lxd.
-  bool success = 1;
-
-  // The failure_reason if the requested VM could not start lxd.
-  string failure_reason = 2;
 }
 
 // The type of storage location for a disk image.

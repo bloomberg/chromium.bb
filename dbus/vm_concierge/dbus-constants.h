@@ -16,7 +16,6 @@ const char kStartVmMethod[] = "StartVm";
 const char kStopVmMethod[] = "StopVm";
 const char kStopAllVmsMethod[] = "StopAllVms";
 const char kGetVmInfoMethod[] = "GetVmInfo";
-const char kStartLxdMethod[] = "StartLxd";
 const char kCreateDiskImageMethod[] = "CreateDiskImage";
 
 }  // namespace concierge
