@@ -15,17 +15,19 @@ bool PathProvider(int key, FilePath* result) {
 
   switch (key) {
     case DIR_EXE:
-      PathService::Get(FILE_EXE, result);
+      if (!PathService::Get(FILE_EXE, result))
+        return false;
       *result = result->DirName();
       return true;
     case DIR_MODULE:
-      PathService::Get(FILE_MODULE, result);
+      if (!PathService::Get(FILE_MODULE, result))
+        return false;
       *result = result->DirName();
       return true;
+    case DIR_ASSETS:
+      return PathService::Get(DIR_MODULE, result);
     case DIR_TEMP:
-      if (!GetTempDir(result))
-        return false;
-      return true;
+      return GetTempDir(result);
     case base::DIR_HOME:
       *result = GetHomeDir();
       return true;

@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
@@ -109,6 +110,13 @@ bool PathProviderMac(int key, base::FilePath* result) {
 #else
       return base::mac::GetUserDirectory(NSDesktopDirectory, result);
 #endif
+    case base::DIR_ASSETS:
+      if (!base::mac::AmIBundled()) {
+        return PathService::Get(base::DIR_MODULE, result);
+      }
+      *result = base::mac::FrameworkBundlePath().Append(
+          FILE_PATH_LITERAL("Resources"));
+      return true;
     case base::DIR_CACHE:
       return base::mac::GetUserDirectory(NSCachesDirectory, result);
     default:

@@ -46,6 +46,11 @@ bool PathProviderAndroid(int key, FilePath* result) {
       return false;
     case base::DIR_CACHE:
       return base::android::GetCacheDirectory(result);
+    case base::DIR_ASSETS:
+      // On Android assets are normally loaded from the APK using
+      // base::android::OpenApkAsset(). In tests, since the assets are no
+      // packaged, DIR_ASSETS is overridden to point to the build directory.
+      return false;
     case base::DIR_ANDROID_APP_DATA:
       return base::android::GetDataDirectory(result);
     case base::DIR_ANDROID_EXTERNAL_STORAGE:

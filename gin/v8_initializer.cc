@@ -34,10 +34,6 @@
 #endif
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
-#if defined(OS_FUCHSIA)
-#include "base/base_paths_fuchsia.h"
-#endif
-
 namespace gin {
 
 namespace {
@@ -103,26 +99,20 @@ const char* GetSnapshotFileName(
 }
 
 void GetV8FilePath(const char* file_name, base::FilePath* path_out) {
-#if !defined(OS_MACOSX)
-  base::FilePath data_path;
 #if defined(OS_ANDROID)
   // This is the path within the .apk.
-  data_path = base::FilePath(FILE_PATH_LITERAL("assets"));
-#elif defined(OS_FUCHSIA)
-  PathService::Get(base::DIR_FUCHSIA_RESOURCES, &data_path);
-#elif defined(OS_POSIX)
-  PathService::Get(base::DIR_EXE, &data_path);
-#elif defined(OS_WIN)
-  PathService::Get(base::DIR_MODULE, &data_path);
-#endif
-  DCHECK(!data_path.empty());
-
-  *path_out = data_path.AppendASCII(file_name);
-#else   // !defined(OS_MACOSX)
+  *path_out =
+      base::FilePath(FILE_PATH_LITERAL("assets")).AppendASCII(file_name);
+#elif defined(OS_MACOSX)
   base::ScopedCFTypeRef<CFStringRef> natives_file_name(
       base::SysUTF8ToCFStringRef(file_name));
   *path_out = base::mac::PathForFrameworkBundleResource(natives_file_name);
-#endif  // !defined(OS_MACOSX)
+#else
+  base::FilePath data_path;
+  bool r = PathService::Get(base::DIR_ASSETS, &data_path);
+  DCHECK(r);
+  *path_out = data_path.AppendASCII(file_name);
+#endif
 }
 
 bool MapV8File(base::PlatformFile platform_file,
