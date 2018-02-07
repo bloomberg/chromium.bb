@@ -100,6 +100,8 @@ public class PageLoadMetricsTest {
             if (loadEventStartMs > 0) mLoadEventStartLatch.countDown();
         }
 
+        // Wait methods below assume that the navigation either has already started or it will never
+        // start.
         public boolean waitForFirstContentfulPaintEvent() throws InterruptedException {
             // The event will not occur if there is no navigation to observe, so we can exit
             // earlier.
