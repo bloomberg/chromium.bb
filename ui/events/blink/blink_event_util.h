@@ -44,7 +44,8 @@ CoalesceScrollAndPinch(const blink::WebGestureEvent* second_last_event,
 
 blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
     const MotionEvent& event,
-    bool may_cause_scrolling);
+    bool may_cause_scrolling,
+    bool hovering);
 
 blink::WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
                                              base::TimeTicks timestamp,

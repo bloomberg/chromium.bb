@@ -42,8 +42,8 @@ TEST(MotionEventWebTest, Constructor) {
       size_t pointer_index = generic_event.PushPointer(pp2);
       EXPECT_GT(pointer_index, 0u);
 
-      blink::WebTouchEvent web_touch_event =
-          CreateWebTouchEventFromMotionEvent(generic_event, true);
+      blink::WebTouchEvent web_touch_event = CreateWebTouchEventFromMotionEvent(
+          generic_event, true /* may_cause_scrolling */, false /* hovering */);
 
       MotionEventWeb event(web_touch_event);
       EXPECT_EQ(tool_type, event.GetToolType(pointer_index));

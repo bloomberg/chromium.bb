@@ -45,13 +45,15 @@ class PointerEventFactoryTest : public ::testing::Test {
       int unique_id,
       bool is_primary,
       WebInputEvent::Type type = WebInputEvent::kPointerDown,
-      size_t coalesced_event_count = 0) {
+      size_t coalesced_event_count = 0,
+      bool hovering = false) {
     WebPointerEvent web_pointer_event;
     web_pointer_event.pointer_type = pointer_type;
     web_pointer_event.id = raw_id;
     web_pointer_event.SetType(type);
     web_pointer_event.SetTimeStampSeconds(WebInputEvent::kTimeStampForTesting);
     web_pointer_event.force = 1.0;
+    web_pointer_event.hovering = hovering;
     Vector<WebPointerEvent> coalesced_events;
     for (size_t i = 0; i < coalesced_event_count; i++) {
       coalesced_events.push_back(web_pointer_event);
@@ -85,7 +87,7 @@ class PointerEventFactoryTest : public ::testing::Test {
       WebInputEvent::Modifiers = WebInputEvent::kNoModifiers,
       size_t coalesced_event_count = 0);
   void CreateAndCheckPointerTransitionEvent(PointerEvent*, const AtomicString&);
-  void CheckScrollCapablePointers(const std::set<int>& expected);
+  void CheckNonHoveringPointers(const std::set<int>& expected);
 
   PointerEventFactory pointer_event_factory_;
   int expected_mouse_id_;
@@ -147,10 +149,10 @@ void PointerEventFactoryTest::CreateAndCheckPointerTransitionEvent(
   EXPECT_EQ(clone_pointer_event->type(), type);
 }
 
-void PointerEventFactoryTest::CheckScrollCapablePointers(
+void PointerEventFactoryTest::CheckNonHoveringPointers(
     const std::set<int>& expected_pointers) {
   Vector<int> pointers =
-      pointer_event_factory_.GetPointerIdsOfScrollCapablePointers();
+      pointer_event_factory_.GetPointerIdsOfNonHoveringPointers();
   EXPECT_EQ(pointers.size(), expected_pointers.size());
   for (int p : pointers) {
     EXPECT_TRUE(expected_pointers.find(p) != expected_pointers.end());
@@ -396,35 +398,35 @@ TEST_F(PointerEventFactoryTest, MouseAndTouchAndPen) {
                                 mapped_id_start_ + 1, true);
 }
 
-TEST_F(PointerEventFactoryTest, ScrollCapablePointers) {
-  CheckScrollCapablePointers({});
+TEST_F(PointerEventFactoryTest, NonHoveringPointers) {
+  CheckNonHoveringPointers({});
 
   CreateAndCheckMouseEvent(WebPointerProperties::PointerType::kMouse, 0,
                            expected_mouse_id_, true);
   PointerEvent* pointer_event1 = CreateAndCheckMouseEvent(
       WebPointerProperties::PointerType::kPen, 0, mapped_id_start_, true);
-  CheckScrollCapablePointers({});
+  CheckNonHoveringPointers({});
 
   CreateAndCheckWebPointerEvent(WebPointerProperties::PointerType::kPen, 0,
                                 mapped_id_start_, true);
-  CheckScrollCapablePointers({mapped_id_start_});
+  CheckNonHoveringPointers({mapped_id_start_});
 
   CreateAndCheckWebPointerEvent(WebPointerProperties::PointerType::kTouch, 0,
                                 mapped_id_start_ + 1, true);
-  CheckScrollCapablePointers({mapped_id_start_, mapped_id_start_ + 1});
+  CheckNonHoveringPointers({mapped_id_start_, mapped_id_start_ + 1});
 
   pointer_event_factory_.Remove(pointer_event1->pointerId());
-  CheckScrollCapablePointers({mapped_id_start_ + 1});
+  CheckNonHoveringPointers({mapped_id_start_ + 1});
 
   CreateAndCheckWebPointerEvent(WebPointerProperties::PointerType::kTouch, 1,
                                 mapped_id_start_ + 2, false);
 
-  CheckScrollCapablePointers({mapped_id_start_ + 1, mapped_id_start_ + 2});
+  CheckNonHoveringPointers({mapped_id_start_ + 1, mapped_id_start_ + 2});
 
   CreateAndCheckMouseEvent(WebPointerProperties::PointerType::kTouch, 1,
                            mapped_id_start_ + 2, false);
 
-  CheckScrollCapablePointers({mapped_id_start_ + 1});
+  CheckNonHoveringPointers({mapped_id_start_ + 1});
 
   CreateAndCheckWebPointerEvent(WebPointerProperties::PointerType::kPen, 0,
                                 mapped_id_start_ + 3, true);
@@ -432,11 +434,11 @@ TEST_F(PointerEventFactoryTest, ScrollCapablePointers) {
   CreateAndCheckWebPointerEvent(WebPointerProperties::PointerType::kPen, 1,
                                 mapped_id_start_ + 4, false);
 
-  CheckScrollCapablePointers(
+  CheckNonHoveringPointers(
       {mapped_id_start_ + 1, mapped_id_start_ + 3, mapped_id_start_ + 4});
 
   pointer_event_factory_.Clear();
-  CheckScrollCapablePointers({});
+  CheckNonHoveringPointers({});
 }
 
 TEST_F(PointerEventFactoryTest, PenAsTouchAndMouseEvent) {

@@ -2328,7 +2328,7 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
       WebPointerEvent pointer_event = WebPointerEvent(
           PointerEventTypeForTouchPointState(touch_point.state), touch_point,
           touch_point.radius_x * 2, touch_point.radius_y * 2);
-      pointer_event.scroll_capable = true;
+      pointer_event.hovering = false;
       pointer_event.dispatch_type = dispatch_type;
       pointer_event.moved_beyond_slop_region = true;
       pointer_event.unique_touch_event_id = unique_touch_event_id;

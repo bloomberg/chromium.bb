@@ -130,6 +130,7 @@ struct TouchData {
   Cancelability cancelable;
   bool moved_beyond_slop_region;
   bool touch_start_or_first_move;
+  bool hovering;
   uint32 unique_touch_event_id;
   array<TouchPoint> touches;
 };

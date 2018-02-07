@@ -160,7 +160,9 @@ class CORE_EXPORT PointerEventManager
       const EventHandlingUtil::PointerEventTarget&);
 
   // Returns whether the event is consumed or not.
-  WebInputEventResult SendTouchPointerEvent(EventTarget*, PointerEvent*);
+  WebInputEventResult SendTouchPointerEvent(EventTarget*,
+                                            PointerEvent*,
+                                            bool hovering);
 
   void SendBoundaryEvents(EventTarget* exited_target,
                           EventTarget* entered_target,
@@ -216,8 +218,8 @@ class CORE_EXPORT PointerEventManager
       [static_cast<size_t>(WebPointerProperties::PointerType::kLastEntry) + 1];
 
   // Set upon scrolling starts when sending a pointercancel, prevents PE
-  // dispatches for scroll capable pointers  until all of them become inactive.
-  bool scroll_capable_pointers_canceled_;
+  // dispatches for non-hovering pointers until all of them become inactive.
+  bool non_hovering_pointers_canceled_;
 
   Deque<uint32_t> touch_ids_for_canceled_pointerdowns_;
 

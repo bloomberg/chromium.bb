@@ -964,7 +964,8 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
     return false;
 
   blink::WebTouchEvent web_event = ui::CreateWebTouchEventFromMotionEvent(
-      event, result.moved_beyond_slop_region);
+      event, result.moved_beyond_slop_region /* may_cause_scrolling */,
+      false /* hovering */);
   if (web_event.GetType() == blink::WebInputEvent::kUndefined)
     return false;
 
@@ -1015,8 +1016,9 @@ void RenderWidgetHostViewAndroid::ResetGestureDetection() {
     bool causes_scrolling = false;
     ui::LatencyInfo latency_info(ui::SourceEventType::TOUCH);
     latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
-    blink::WebTouchEvent web_event =
-        ui::CreateWebTouchEventFromMotionEvent(*cancel_event, causes_scrolling);
+    blink::WebTouchEvent web_event = ui::CreateWebTouchEventFromMotionEvent(
+        *cancel_event, causes_scrolling /* may_cause_scrolling */,
+        false /* hovering */);
     if (host_->delegate()->GetInputEventRouter()) {
       host_->delegate()->GetInputEventRouter()->RouteTouchEvent(
           this, &web_event, latency_info);

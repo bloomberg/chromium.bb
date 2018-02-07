@@ -34,7 +34,7 @@ WebPointerEvent::WebPointerEvent(const WebTouchEvent& touch_event,
                                  const WebTouchPoint& touch_point)
     : WebInputEvent(sizeof(WebPointerEvent)),
       WebPointerProperties(touch_point),
-      scroll_capable(true),
+      hovering(touch_event.hovering),
       width(touch_point.radius_x * 2.f),
       height(touch_point.radius_y * 2.f) {
   // WebInutEvent attributes
@@ -56,7 +56,7 @@ WebPointerEvent::WebPointerEvent(WebInputEvent::Type type,
                                  const WebMouseEvent& mouse_event)
     : WebInputEvent(sizeof(WebPointerEvent)),
       WebPointerProperties(mouse_event),
-      scroll_capable(false),
+      hovering(true),
       width(1),
       height(1) {
   DCHECK_GE(type, WebInputEvent::kPointerTypeFirst);
