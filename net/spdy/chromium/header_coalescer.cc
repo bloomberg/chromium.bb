@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "net/base/escape.h"
 #include "net/http/http_log_util.h"
@@ -119,9 +120,12 @@ bool HeaderCoalescer::AddHeader(SpdyStringPiece key, SpdyStringPiece value) {
   // Therefore allowed characters are '\t' (HTAB), x20 (SP), x21-7E, and x80-FF.
   for (const unsigned char c : value) {
     if (c < '\t' || ('\t' < c && c < 0x20) || c == 0x7f) {
+      std::string error_line;
+      base::StringAppendF(&error_line,
+                          "Invalid character 0x%02X in header value.", c);
       net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_INVALID_HEADER,
                         base::Bind(&ElideNetLogHeaderCallback, key, value,
-                                   "Invalid character in header value."));
+                                   error_line.c_str()));
       return false;
     }
   }
