@@ -1617,6 +1617,7 @@ class CONTENT_EXPORT RenderFrameImpl
     blink::WebTriggeringEventInfo triggering_event_info;
     blink::WebFormElement form;
     blink::WebSourceLocation source_location;
+    blink::WebString devtools_initiator_info;
 
     explicit PendingNavigationInfo(const NavigationPolicyInfo& info);
   };
