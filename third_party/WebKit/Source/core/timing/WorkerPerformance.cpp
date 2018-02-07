@@ -30,7 +30,6 @@
 
 #include "core/timing/WorkerPerformance.h"
 
-#include "core/timing/MemoryInfo.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/scheduler/child/web_scheduler.h"
@@ -49,10 +48,6 @@ WorkerPerformance::WorkerPerformance(WorkerGlobalScope* context)
 void WorkerPerformance::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);
   PerformanceBase::Trace(visitor);
-}
-
-MemoryInfo* WorkerPerformance::memory() {
-  return MemoryInfo::Create();
 }
 
 }  // namespace blink
