@@ -1024,4 +1024,25 @@ TEST_F(NavigationAndLoadCallbacksTest, DisallowRequest) {
   }));
 }
 
+// Tests rejecting the navigation from ShouldAllowResponse. PageLoaded callback
+// is not called.
+TEST_F(NavigationAndLoadCallbacksTest, DisallowResponse) {
+  const GURL url = test_server_->GetURL("/echo");
+
+  // Perform new page navigation.
+  NavigationContext* context = nullptr;
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+      .WillOnce(VerifyNewPageStartedContext(web_state(), url, &context));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
+      .WillOnce(Return(false));
+  // TODO(crbug.com/809557): DidFinishNavigation should be called.
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  web::test::LoadUrl(web_state(), test_server_->GetURL("/echo"));
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+    return !web_state()->IsLoading();
+  }));
+}
+
 }  // namespace web
