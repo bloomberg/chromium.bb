@@ -187,9 +187,10 @@ std::unique_ptr<ui::Event> PenEventProcessor::GenerateTouchEvent(
   int rotation_angle = static_cast<int>(pointer_details.twist) % 180;
   if (rotation_angle < 0)
     rotation_angle += 180;
-  std::unique_ptr<ui::Event> event = std::make_unique<ui::TouchEvent>(
+  std::unique_ptr<ui::TouchEvent> event = std::make_unique<ui::TouchEvent>(
       event_type, point, event_time, pointer_details,
       flags | ui::GetModifiersFromKeyState(), rotation_angle);
+  event->set_hovering(event_type == ui::ET_TOUCH_RELEASED);
   event->latency()->AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0, event_time, 1);
   return event;

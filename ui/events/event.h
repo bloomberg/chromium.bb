@@ -716,6 +716,9 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   void set_may_cause_scrolling(bool causes) { may_cause_scrolling_ = causes; }
   bool may_cause_scrolling() const { return may_cause_scrolling_; }
 
+  void set_hovering(bool hovering) { hovering_ = hovering; }
+  bool hovering() const { return hovering_; }
+
   void set_should_remove_native_touch_id_mapping(
       bool should_remove_native_touch_id_mapping) {
     should_remove_native_touch_id_mapping_ =
@@ -752,6 +755,10 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   // release and cancel events where the associated touch press event
   // created a mapping between the native id and the touch_id_.
   bool should_remove_native_touch_id_mapping_;
+
+  // True for devices like some pens when they support hovering over
+  // digitizer and they send events while hovering.
+  bool hovering_;
 
   // Structure for holding pointer details for implementing PointerEvents API.
   PointerDetails pointer_details_;

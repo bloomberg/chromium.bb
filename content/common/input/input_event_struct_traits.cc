@@ -277,6 +277,7 @@ bool StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::Read(
     touch_event->dispatch_type = touch_data->cancelable;
     touch_event->moved_beyond_slop_region =
         touch_data->moved_beyond_slop_region;
+    touch_event->hovering = touch_data->hovering;
     touch_event->touch_start_or_first_touch_move =
         touch_data->touch_start_or_first_move;
     touch_event->unique_touch_event_id = touch_data->unique_touch_event_id;
@@ -492,7 +493,7 @@ StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::touch_data(
       static_cast<const blink::WebTouchEvent*>(event->web_event.get());
   auto touch_data = content::mojom::TouchData::New(
       touch_event->dispatch_type, touch_event->moved_beyond_slop_region,
-      touch_event->touch_start_or_first_touch_move,
+      touch_event->touch_start_or_first_touch_move, touch_event->hovering,
       touch_event->unique_touch_event_id,
       std::vector<content::mojom::TouchPointPtr>());
   for (unsigned i = 0; i < touch_event->touches_length; ++i) {

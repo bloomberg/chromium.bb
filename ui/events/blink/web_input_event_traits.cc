@@ -80,9 +80,10 @@ void ApppendTouchPointDetails(const WebTouchPoint& point, std::string* result) {
 void ApppendEventDetails(const WebTouchEvent& event, std::string* result) {
   StringAppendF(result,
                 "{\n Touches: %u, DispatchType: %d, CausesScrolling: %d,"
-                " uniqueTouchEventId: %u\n[\n",
+                " Hovering: %d, uniqueTouchEventId: %u\n[\n",
                 event.touches_length, event.dispatch_type,
-                event.moved_beyond_slop_region, event.unique_touch_event_id);
+                event.moved_beyond_slop_region, event.hovering,
+                event.unique_touch_event_id);
   for (unsigned i = 0; i < event.touches_length; ++i)
     ApppendTouchPointDetails(event.touches[i], result);
   result->append(" ]\n}");

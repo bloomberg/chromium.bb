@@ -67,9 +67,10 @@ TEST(WebInputEventUtilTest, MotionEventConversion) {
     }
     expected_event.touches[0] = expected_pointer;
     expected_event.unique_touch_event_id = 123456U;
+    expected_event.hovering = true;
 
-    WebTouchEvent actual_event =
-        ui::CreateWebTouchEventFromMotionEvent(event, false);
+    WebTouchEvent actual_event = ui::CreateWebTouchEventFromMotionEvent(
+        event, false /* may_cause_scrolling */, true /* hovering */);
     EXPECT_EQ(ui::WebInputEventTraits::ToString(expected_event),
               ui::WebInputEventTraits::ToString(actual_event));
   }

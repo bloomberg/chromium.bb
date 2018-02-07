@@ -475,7 +475,7 @@ void RenderWidgetHostViewEventHandler::OnTouchEvent(ui::TouchEvent* event) {
     event->SetHandled();
   } else {
     touch_event = ui::CreateWebTouchEventFromMotionEvent(
-        pointer_state_, event->may_cause_scrolling());
+        pointer_state_, event->may_cause_scrolling(), event->hovering());
   }
   pointer_state_.CleanupRemovedTouchPoints(*event);
 

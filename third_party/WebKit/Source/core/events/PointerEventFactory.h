@@ -59,8 +59,8 @@ class CORE_EXPORT PointerEventFactory {
   // the same id before.
   bool Remove(const int);
 
-  // Returns all ids of pointers that are capable or scrolling.
-  Vector<int> GetPointerIdsOfScrollCapablePointers() const;
+  // Returns all ids of pointers that are not hovering.
+  Vector<int> GetPointerIdsOfNonHoveringPointers() const;
 
   // Returns whether a pointer id exists and active.
   bool IsActive(const int) const;
@@ -96,25 +96,25 @@ class CORE_EXPORT PointerEventFactory {
   typedef struct PointerAttributes {
     IncomingId incoming_id;
     bool is_active_buttons;
-    bool can_scroll;
+    bool hovering;
     PointerAttributes()
-        : incoming_id(), is_active_buttons(false), can_scroll(false) {}
+        : incoming_id(), is_active_buttons(false), hovering(true) {}
     PointerAttributes(IncomingId incoming_id,
                       bool is_active_buttons,
-                      bool can_scroll)
+                      bool hovering)
         : incoming_id(incoming_id),
           is_active_buttons(is_active_buttons),
-          can_scroll(can_scroll) {}
+          hovering(hovering) {}
   } PointerAttributes;
 
   int AddIdAndActiveButtons(const IncomingId,
                             bool is_active_buttons,
-                            bool can_scroll);
+                            bool hovering);
   bool IsPrimary(const int) const;
   void SetIdTypeButtons(PointerEventInit&,
                         const WebPointerProperties&,
                         unsigned buttons,
-                        bool can_scroll);
+                        bool hovering);
   void SetEventSpecificFields(PointerEventInit&, const AtomicString& type);
 
   // Creates pointerevents like boundary and capture events from another

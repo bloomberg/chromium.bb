@@ -599,7 +599,8 @@ std::pair<WebGestureEvent, WebGestureEvent> CoalesceScrollAndPinch(
 
 blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
     const MotionEvent& event,
-    bool moved_beyond_slop_region) {
+    bool moved_beyond_slop_region,
+    bool hovering) {
   static_assert(static_cast<int>(MotionEvent::MAX_TOUCH_POINT_COUNT) ==
                     static_cast<int>(blink::WebTouchEvent::kTouchesLengthCap),
                 "inconsistent maximum number of active touch points");
@@ -612,6 +613,7 @@ blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
                              ? WebInputEvent::kEventNonBlocking
                              : WebInputEvent::kBlocking;
   result.moved_beyond_slop_region = moved_beyond_slop_region;
+  result.hovering = hovering;
 
   // TODO(mustaq): MotionEvent flags seems unrelated, should use
   // metaState instead?
