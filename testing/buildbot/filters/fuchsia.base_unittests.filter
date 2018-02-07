@@ -70,3 +70,6 @@
 
 # Times out on ARM64: https://crbug.com/809660.
 -AddressSpaceRandomizationTest.Random
+
+# Flaky, https://crbug.com/768436, https://crbug.com/792310.
+-TaskSchedulerWorkerPoolBlockingTest.MaximumWorkersTest
