@@ -12,11 +12,11 @@
 #include "chrome/browser/sync/test/integration/await_match_status_change_checker.h"
 #include "chromeos/printing/printer_configuration.h"
 
+namespace content {
+class BrowserContext;
+}
+
 namespace printers_helper {
-
-void SetUp();
-
-void SetupClients();
 
 // Create a test printer.
 chromeos::Printer CreateTestPrinter(int index);
@@ -33,6 +33,9 @@ void RemovePrinter(chromeos::SyncedPrintersManager* manager, int index);
 bool EditPrinterDescription(chromeos::SyncedPrintersManager* manager,
                             int index,
                             const std::string& description);
+
+// Waits for the printer store associated with |context| to load.
+void WaitForPrinterStoreToLoad(content::BrowserContext* context);
 
 // Returns the verifier store.
 chromeos::SyncedPrintersManager* GetVerifierPrinterStore();

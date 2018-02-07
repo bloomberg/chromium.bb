@@ -94,6 +94,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/sync/test/integration/printers_helper.h"
 #include "chrome/browser/sync/test/integration/sync_arc_package_helper.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chromeos/chromeos_switches.h"
@@ -822,6 +823,9 @@ void SyncTest::WaitForDataModels(Profile* profile) {
       profile, ServiceAccessType::EXPLICIT_ACCESS));
   search_test_utils::WaitForTemplateURLServiceToLoad(
       TemplateURLServiceFactory::GetForProfile(profile));
+#if defined(OS_CHROMEOS)
+  printers_helper::WaitForPrinterStoreToLoad(profile);
+#endif
 }
 
 void SyncTest::ReadPasswordFile() {
