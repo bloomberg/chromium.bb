@@ -161,6 +161,9 @@ class FakeDateTimeChooserClient
   Member<Element> owner_element_;
 };
 
+// TODO(crbug.com/779126): A number of popups are not supported in immersive
+// mode. The PagePopupSuppressionTests ensure that these unsupported popups
+// do not appear in immersive mode.
 class PagePopupSuppressionTest : public ::testing::Test {
  public:
   PagePopupSuppressionTest() = default;
@@ -218,11 +221,11 @@ TEST_F(PagePopupSuppressionTest, SuppressColorChooser) {
   EXPECT_TRUE(CanOpenColorChooser());
 
   Settings* settings = GetSettings();
-  settings->SetPagePopupsSuppressed(true);
+  settings->SetImmersiveModeEnabled(true);
 
   EXPECT_FALSE(CanOpenColorChooser());
 
-  settings->SetPagePopupsSuppressed(false);
+  settings->SetImmersiveModeEnabled(false);
   EXPECT_TRUE(CanOpenColorChooser());
 }
 
@@ -231,11 +234,11 @@ TEST_F(PagePopupSuppressionTest, SuppressDateTimeChooser) {
   EXPECT_TRUE(CanOpenDateTimeChooser());
 
   Settings* settings = GetSettings();
-  settings->SetPagePopupsSuppressed(true);
+  settings->SetImmersiveModeEnabled(true);
 
   EXPECT_FALSE(CanOpenDateTimeChooser());
 
-  settings->SetPagePopupsSuppressed(false);
+  settings->SetImmersiveModeEnabled(false);
   EXPECT_TRUE(CanOpenDateTimeChooser());
 }
 
@@ -244,11 +247,11 @@ TEST_F(PagePopupSuppressionTest, SuppressPopupMenu) {
   EXPECT_TRUE(CanOpenPopupMenu());
 
   Settings* settings = GetSettings();
-  settings->SetPagePopupsSuppressed(true);
+  settings->SetImmersiveModeEnabled(true);
 
   EXPECT_FALSE(CanOpenPopupMenu());
 
-  settings->SetPagePopupsSuppressed(false);
+  settings->SetImmersiveModeEnabled(false);
   EXPECT_TRUE(CanOpenPopupMenu());
 }
 

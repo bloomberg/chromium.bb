@@ -180,6 +180,7 @@ const std::string Converter::kMfNameLookupTable[] = {
     "-webkit-transform-3d",
     "scan",
     "shape",
+    "immersive",
     "INVALID_NAME"};
 
 const std::string Converter::kImportLookupTable[] = {

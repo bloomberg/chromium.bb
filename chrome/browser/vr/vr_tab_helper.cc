@@ -29,7 +29,7 @@ void VrTabHelper::SetIsInVr(bool is_in_vr) {
 
   WebPreferences web_prefs =
       web_contents_->GetRenderViewHost()->GetWebkitPreferences();
-  web_prefs.page_popups_suppressed = is_in_vr_;
+  web_prefs.immersive_mode_enabled = is_in_vr_;
   web_contents_->GetRenderViewHost()->UpdateWebkitPreferences(web_prefs);
 }
 
