@@ -104,36 +104,31 @@ HTMLElement* CustomElement::CreateCustomElement(
   if (flags.IsAsyncCustomElements())
     return definition.CreateElementAsync(document, tag_name, flags);
 
-  HTMLElement* element;
-
   if (definition.Descriptor().IsAutonomous()) {
     // 6. If definition is non-null and we have an autonomous custom element
-    element = definition.CreateElementSync(document, tag_name);
-  } else {
-    // 5. If definition is non-null and we have a customized built-in element
-    element = CreateUndefinedElement(document, tag_name);
-    definition.Upgrade(element);
+    return definition.CreateElementSync(document, tag_name);
   }
-  return element;
+  // 5. If definition is non-null and we have a customized built-in element
+  auto* result = CreateUndefinedElement(document, tag_name);
+  definition.Upgrade(result);
+  return result;
 }
 
+// https://dom.spec.whatwg.org/#concept-create-element
 HTMLElement* CustomElement::CreateCustomElement(Document& document,
                                                 const QualifiedName& tag_name,
                                                 CreateElementFlags flags) {
-  DCHECK(ShouldCreateCustomElement(tag_name));
-
-  // To create an element:
-  // https://dom.spec.whatwg.org/#concept-create-element
-  // 6. If definition is non-null, then:
-  // 6.2. If the synchronous custom elements flag is not set:
-  if (CustomElementDefinition* definition = DefinitionFor(
+  DCHECK(ShouldCreateCustomElement(tag_name)) << tag_name;
+  // 4. Let definition be the result of looking up a custom element
+  // definition given document, namespace, localName, and is.
+  if (auto* definition = DefinitionFor(
           document, CustomElementDescriptor(tag_name.LocalName(),
                                             tag_name.LocalName()))) {
-    if (flags.IsAsyncCustomElements())
-      return definition->CreateElementAsync(document, tag_name, flags);
-    return definition->CreateElementSync(document, tag_name);
+    DCHECK(definition->Descriptor().IsAutonomous());
+    // 6. Otherwise, if definition is non-null, then:
+    return CreateCustomElement(document, tag_name, flags, *definition);
   }
-
+  // 7. Otherwise:
   return CreateUndefinedElement(document, tag_name);
 }
 
