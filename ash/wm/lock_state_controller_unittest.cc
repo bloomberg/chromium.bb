@@ -71,7 +71,8 @@ class LockStateControllerTest : public PowerButtonTestBase {
 
   void SetUp() override {
     PowerButtonTestBase::SetUp();
-    InitPowerButtonControllerMembers(false /* SendAccelerometerUpdate */);
+    InitPowerButtonControllerMembers(
+        chromeos::PowerManagerClient::TabletMode::UNSUPPORTED);
 
     test_animator_ = new TestSessionStateAnimator;
     lock_state_controller_->set_animator_for_test(test_animator_);

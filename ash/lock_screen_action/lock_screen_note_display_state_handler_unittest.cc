@@ -184,12 +184,12 @@ class LockScreenNoteDisplayStateHandlerTest : public AshTestBase {
 
  private:
   void InitializeTabletPowerButtonState() {
-    // Tablet button controller initialization is deferred until the
-    // accelerometer update is received by the power button controller.
-    scoped_refptr<chromeos::AccelerometerUpdate> accelerometer_update(
-        new chromeos::AccelerometerUpdate());
-    Shell::Get()->power_button_controller()->OnAccelerometerUpdated(
-        accelerometer_update);
+    // Initialize the tablet power button controller only if the tablet mode
+    // switch is set.
+    Shell::Get()->power_button_controller()->OnGetSwitchStates(
+        chromeos::PowerManagerClient::SwitchStates{
+            chromeos::PowerManagerClient::LidState::OPEN,
+            chromeos::PowerManagerClient::TabletMode::ON});
   }
 
   base::SimpleTestTickClock tick_clock_;

@@ -39,9 +39,6 @@ class ASH_EXPORT TabletPowerButtonController
       public chromeos::PowerManagerClient::Observer,
       public TabletModeObserver {
  public:
-  // Public for tests.
-  static constexpr float kGravity = 9.80665f;
-
   // Amount of time since last screen state change that power button event needs
   // to be ignored.
   static constexpr base::TimeDelta kScreenStateChangeDelay =

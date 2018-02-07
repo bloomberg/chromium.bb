@@ -24,6 +24,8 @@
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
 
+using PowerManagerClient = chromeos::PowerManagerClient;
+
 namespace ash {
 
 namespace {
@@ -40,7 +42,7 @@ class TabletPowerButtonControllerTest : public PowerButtonTestBase {
 
   void SetUp() override {
     PowerButtonTestBase::SetUp();
-    InitPowerButtonControllerMembers(true /* send_accelerometer_update */);
+    InitPowerButtonControllerMembers(PowerManagerClient::TabletMode::ON);
     power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
     EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
@@ -445,8 +447,8 @@ TEST_F(TabletPowerButtonControllerTest, LidEventsStopForcingOff) {
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
 
   // A lid closed event is received, we should stop forcing off backlights.
-  power_manager_client_->SetLidState(
-      chromeos::PowerManagerClient::LidState::CLOSED, tick_clock_->NowTicks());
+  power_manager_client_->SetLidState(PowerManagerClient::LidState::CLOSED,
+                                     tick_clock_->NowTicks());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   // Pressing/releasing power button again to set backlights forced off. This is
@@ -458,8 +460,8 @@ TEST_F(TabletPowerButtonControllerTest, LidEventsStopForcingOff) {
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
 
   // A lid open event is received, we should stop forcing off backlights.
-  power_manager_client_->SetLidState(
-      chromeos::PowerManagerClient::LidState::OPEN, tick_clock_->NowTicks());
+  power_manager_client_->SetLidState(PowerManagerClient::LidState::OPEN,
+                                     tick_clock_->NowTicks());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 }
 
@@ -468,16 +470,16 @@ TEST_F(TabletPowerButtonControllerTest, TabletModeEventsStopForcingOff) {
   PressPowerButton();
   ReleasePowerButton();
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
-  power_manager_client_->SetTabletMode(
-      chromeos::PowerManagerClient::TabletMode::ON, tick_clock_->NowTicks());
+  power_manager_client_->SetTabletMode(PowerManagerClient::TabletMode::ON,
+                                       tick_clock_->NowTicks());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   AdvanceClockToAvoidIgnoring();
   PressPowerButton();
   ReleasePowerButton();
   ASSERT_TRUE(power_manager_client_->backlights_forced_off());
-  power_manager_client_->SetTabletMode(
-      chromeos::PowerManagerClient::TabletMode::OFF, tick_clock_->NowTicks());
+  power_manager_client_->SetTabletMode(PowerManagerClient::TabletMode::OFF,
+                                       tick_clock_->NowTicks());
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 }
 
@@ -492,7 +494,7 @@ TEST_F(TabletPowerButtonControllerTest, SyncTouchscreenEnabled) {
   // and PowerButtonController.
   power_manager_client_->SetBacklightsForcedOff(false);
   ResetPowerButtonController();
-  SendAccelerometerUpdate(kSidewaysVector, kSidewaysVector);
+  SetTabletModeSwitchState(PowerManagerClient::TabletMode::ON);
 
   // Run the event loop for PowerButtonDisplayController to get backlight state
   // and check that the global touchscreen status is correct.
@@ -501,23 +503,23 @@ TEST_F(TabletPowerButtonControllerTest, SyncTouchscreenEnabled) {
   EXPECT_TRUE(GetGlobalTouchscreenEnabled());
 }
 
-// Tests that tablet power button behavior is enabled on having seen
-// accelerometer update, otherwise it is disabled.
+// Tests that tablet power button behavior is enabled on setting tablet mode
+// switch enabled, otherwise it is disabled.
 TEST_F(TabletPowerButtonControllerTest, EnableOnAccelerometerUpdate) {
   ASSERT_TRUE(tablet_controller_);
   ResetPowerButtonController();
   EXPECT_FALSE(tablet_controller_);
 
-  SendAccelerometerUpdate(kSidewaysVector, kSidewaysVector);
+  SetTabletModeSwitchState(PowerManagerClient::TabletMode::ON);
   EXPECT_TRUE(tablet_controller_);
 
   // If clamshell-like power button behavior is requested via a flag, the
   // TabletPowerButtonController shouldn't be initialized in response to
-  // accelerometer events.
+  // set tablet mode switch enabled.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kForceClamshellPowerButton);
   ResetPowerButtonController();
-  SendAccelerometerUpdate(kSidewaysVector, kSidewaysVector);
+  SetTabletModeSwitchState(PowerManagerClient::TabletMode::ON);
   EXPECT_FALSE(tablet_controller_);
 }
 
@@ -615,7 +617,7 @@ TEST_F(TabletPowerButtonControllerTest, TouchscreenEnabledClamshell) {
   ResetPowerButtonController();
   // Run the event loop for PowerButtonDisplayController to get backlight state.
   base::RunLoop().RunUntilIdle();
-  SendAccelerometerUpdate(kSidewaysVector, kSidewaysVector);
+  SetTabletModeSwitchState(PowerManagerClient::TabletMode::ON);
   EXPECT_TRUE(GetGlobalTouchscreenEnabled());
 }
 
@@ -670,18 +672,6 @@ TEST_F(TabletPowerButtonControllerTest, A11yAlert) {
   ReleasePowerButton();
 }
 
-using NoTabletModePowerButtonControllerTest = NoTabletModePowerButtonTestBase;
-
-// Tests that tablet power button behavior should not be enabled on the device
-// that hasn't tablet mode switch set, even it has seen accelerometer data.
-TEST_F(NoTabletModePowerButtonControllerTest,
-       HasAccelerometerUpdateButNoTabletModeSwitch) {
-  InitPowerButtonControllerMembers(true /* send_accelerometer_update */);
-  ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshEnableTabletMode));
-  EXPECT_FALSE(tablet_controller_);
-}
-
 class TabletPowerButtonControllerShowMenuTest : public PowerButtonTestBase {
  public:
   TabletPowerButtonControllerShowMenuTest() {
@@ -692,7 +682,7 @@ class TabletPowerButtonControllerShowMenuTest : public PowerButtonTestBase {
   void SetUp() override {
     PowerButtonTestBase::SetUp();
 
-    InitPowerButtonControllerMembers(true /* send_accelerometer_update */);
+    InitPowerButtonControllerMembers(PowerManagerClient::TabletMode::ON);
     EnableTabletMode(true);
 
     // Advance a duration longer than |kIgnorePowerButtonAfterResumeDelay| to
