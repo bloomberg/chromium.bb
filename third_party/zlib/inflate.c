@@ -84,7 +84,6 @@
 #include "inftrees.h"
 #include "inflate.h"
 #include "inffast.h"
-#include "x86.h"
 
 #ifdef MAKEFIXED
 #  ifndef BUILDFIXED
@@ -201,8 +200,6 @@ int stream_size;
 {
     int ret;
     struct inflate_state FAR *state;
-
-    x86_check_features();
 
     if (version == Z_NULL || version[0] != ZLIB_VERSION[0] ||
         stream_size != (int)(sizeof(z_stream)))
