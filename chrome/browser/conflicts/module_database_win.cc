@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
+#include "chrome/browser/conflicts/module_list_filter_win.h"
 #include "chrome/browser/conflicts/problematic_programs_updater_win.h"
 #include "chrome/browser/conflicts/third_party_metrics_recorder_win.h"
 
@@ -42,11 +43,12 @@ ModuleDatabase::ModuleDatabase(
       has_started_processing_(false),
       shell_extensions_enumerated_(false),
       ime_enumerated_(false),
+      module_list_received_(false),
       // ModuleDatabase owns |module_inspector_|, so it is safe to use
       // base::Unretained().
       module_inspector_(base::Bind(&ModuleDatabase::OnModuleInspected,
                                    base::Unretained(this))),
-      module_list_manager_(task_runner),
+      module_list_manager_(this),
       weak_ptr_factory_(this) {}
 
 ModuleDatabase::~ModuleDatabase() {
@@ -115,6 +117,27 @@ void ModuleDatabase::OnImeEnumerationFinished() {
 
   if (RegisteredModulesEnumerated())
     OnRegisteredModulesEnumerated();
+}
+
+void ModuleDatabase::OnNewModuleList(const base::Version& version,
+                                     const base::FilePath& path) {
+  // No attempt is made to dynamically reconcile a new module list version. The
+  // next Chrome launch will pick it up.
+  if (module_list_received_)
+    return;
+
+  auto module_list_filter = std::make_unique<ModuleListFilter>();
+  if (!module_list_filter->Initialize(path))
+    return;
+
+  module_list_filter_ = std::move(module_list_filter);
+
+  // Mark the module list as received here so that if Initialize() fails,
+  // another attempt will be made with a newer version.
+  module_list_received_ = true;
+
+  if (installed_programs_.initialized())
+    InitializeProblematicProgramsUpdater();
 }
 
 void ModuleDatabase::OnModuleLoad(content::ProcessType process_type,
@@ -263,8 +286,16 @@ void ModuleDatabase::OnInstalledProgramsInitialized() {
       std::make_unique<ThirdPartyMetricsRecorder>(installed_programs_);
   AddObserver(third_party_metrics_.get());
 
-  problematic_programs_updater_ =
-      ProblematicProgramsUpdater::MaybeCreate(installed_programs_);
+  if (module_list_filter_)
+    InitializeProblematicProgramsUpdater();
+}
+
+void ModuleDatabase::InitializeProblematicProgramsUpdater() {
+  DCHECK(module_list_filter_);
+  DCHECK(installed_programs_.initialized());
+
+  problematic_programs_updater_ = ProblematicProgramsUpdater::MaybeCreate(
+      *module_list_filter_, installed_programs_);
   if (problematic_programs_updater_)
     AddObserver(problematic_programs_updater_.get());
 }

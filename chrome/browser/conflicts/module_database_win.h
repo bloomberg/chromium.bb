@@ -21,6 +21,7 @@
 #include "content/public/common/process_type.h"
 
 class ModuleDatabaseObserver;
+class ModuleListFilter;
 class ProblematicProgramsUpdater;
 class ThirdPartyMetricsRecorder;
 
@@ -37,7 +38,7 @@ class FilePath;
 // This is effectively a singleton, but doesn't use base::Singleton. The intent
 // is for the object to be created when Chrome is single-threaded, and for it
 // be set as the process-wide singleton via SetInstance.
-class ModuleDatabase {
+class ModuleDatabase : ModuleListManager::Observer {
  public:
   // Structures for maintaining information about modules.
   using ModuleMap = std::map<ModuleInfoKey, ModuleInfoData>;
@@ -53,7 +54,7 @@ class ModuleDatabase {
   // otherwise noted. For calls from other contexts this task runner is used to
   // bounce the call when appropriate.
   explicit ModuleDatabase(scoped_refptr<base::SequencedTaskRunner> task_runner);
-  ~ModuleDatabase();
+  ~ModuleDatabase() override;
 
   // Retrieves the singleton global instance of the ModuleDatabase.
   static ModuleDatabase* GetInstance();
@@ -85,6 +86,10 @@ class ModuleDatabase {
 
   // Indicates that all input method editors have been enumerated.
   void OnImeEnumerationFinished();
+
+  // ModuleListManager::Observer:
+  void OnNewModuleList(const base::Version& version,
+                       const base::FilePath& path) override;
 
   // Indicates that a module has been loaded. The data passed to this function
   // is taken as gospel, so if it originates from a remote process it should be
@@ -167,6 +172,10 @@ class ModuleDatabase {
   // Called when |installed_programs_| finishes its initialization.
   void OnInstalledProgramsInitialized();
 
+  // Initializes |problematic_programs_updater_| when both the ModuleListFilter
+  // and the InstalledPrograms are available.
+  void InitializeProblematicProgramsUpdater();
+
   // The task runner to which this object is bound.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
@@ -184,6 +193,9 @@ class ModuleDatabase {
   // Indicates if all input method editors have been enumerated.
   bool ime_enumerated_;
 
+  // Indicates if the initial Module List has been received.
+  bool module_list_received_;
+
   // Inspects new modules on a blocking task runner.
   ModuleInspector module_inspector_;
 
@@ -193,6 +205,9 @@ class ModuleDatabase {
   // Keeps track of where the most recent module list is located on disk, and
   // provides notifications when this changes.
   ModuleListManager module_list_manager_;
+
+  // Filters third-party modules against a whitelist and a blacklist.
+  std::unique_ptr<ModuleListFilter> module_list_filter_;
 
   // Retrieves the list of installed programs.
   InstalledPrograms installed_programs_;

@@ -129,9 +129,9 @@ void CheckRegistryKeyForInstalledProgram(
 
   base::FilePath install_path;
   if (GetInstallPathUsingInstallLocation(candidate, &install_path)) {
-    programs_data->programs.emplace_back(std::move(display_name), hkey,
-                                         std::move(candidate_key_path),
-                                         wow64access);
+    programs_data->programs.push_back({std::move(display_name), hkey,
+                                       std::move(candidate_key_path),
+                                       wow64access});
 
     const size_t program_index = programs_data->programs.size() - 1;
     programs_data->install_directories.emplace_back(std::move(install_path),
@@ -141,9 +141,9 @@ void CheckRegistryKeyForInstalledProgram(
 
   std::vector<base::FilePath> installed_files;
   if (GetInstalledFilesUsingMsiGuid(key_name, msi_util, &installed_files)) {
-    programs_data->programs.emplace_back(std::move(display_name), hkey,
-                                         std::move(candidate_key_path),
-                                         wow64access);
+    programs_data->programs.push_back({std::move(display_name), hkey,
+                                       std::move(candidate_key_path),
+                                       wow64access});
 
     const size_t program_index = programs_data->programs.size() - 1;
     for (auto& installed_file : installed_files) {
@@ -201,17 +201,6 @@ std::unique_ptr<InstalledPrograms::ProgramsData> GetProgramsData(
 }
 
 }  // namespace
-
-InstalledPrograms::ProgramInfo::ProgramInfo(base::string16 name,
-                                            HKEY registry_root,
-                                            base::string16 registry_key_path,
-                                            REGSAM registry_wow64_access)
-    : name(std::move(name)),
-      registry_root(registry_root),
-      registry_key_path(std::move(registry_key_path)),
-      registry_wow64_access(registry_wow64_access) {}
-
-InstalledPrograms::ProgramInfo::~ProgramInfo() = default;
 
 InstalledPrograms::ProgramsData::ProgramsData() = default;
 

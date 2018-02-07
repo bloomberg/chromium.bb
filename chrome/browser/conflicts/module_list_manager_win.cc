@@ -25,11 +25,8 @@ ModuleListManager::Observer::Observer() = default;
 
 ModuleListManager::Observer::~Observer() = default;
 
-ModuleListManager::ModuleListManager(
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : registry_key_root_(GetRegistryPath()),
-      task_runner_(task_runner),
-      observer_(nullptr) {
+ModuleListManager::ModuleListManager(Observer* observer)
+    : registry_key_root_(GetRegistryPath()), observer_(observer) {
   // Read the cached path and version.
   std::wstring path;
   std::wstring version;
@@ -49,18 +46,13 @@ ModuleListManager::ModuleListManager(
 ModuleListManager::~ModuleListManager() = default;
 
 base::FilePath ModuleListManager::module_list_path() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return module_list_path_;
 }
 
 base::Version ModuleListManager::module_list_version() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return module_list_version_;
-}
-
-void ModuleListManager::SetObserver(Observer* observer) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  observer_ = observer;
 }
 
 // static
@@ -78,7 +70,7 @@ std::wstring ModuleListManager::GetRegistryPath() {
 
 void ModuleListManager::LoadModuleList(const base::Version& version,
                                        const base::FilePath& path) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(version.IsValid());
   DCHECK(!path.empty());
 

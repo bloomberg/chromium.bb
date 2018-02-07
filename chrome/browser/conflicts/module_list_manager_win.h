@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/sequenced_task_runner.h"
+#include "base/sequence_checker.h"
 #include "base/version.h"
 
 namespace component_updater {
@@ -57,11 +57,11 @@ class ModuleListManager {
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  // Creates a ModuleListManager bound to the provided |task_runner|. All calls
-  // to the manager are expected to be received on that task runner, and all
-  // outgoing callbacks will be on the same task runner.
-  explicit ModuleListManager(
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+  // Creates a ModuleListManager that notifies |observer| of the arrival of new
+  // module lists. This instance is bound to the task runner it is created on.
+  // All calls to the manager are expected to be received on that task runner,
+  // and all outgoing callbacks will be on the same task runner.
+  explicit ModuleListManager(Observer* observer);
 
   ~ModuleListManager();
 
@@ -72,11 +72,6 @@ class ModuleListManager {
   // Returns the version of the current module list. This is empty if no module
   // list is available.
   base::Version module_list_version();
-
-  // For adding and removing an observer. It is expected that there only be a
-  // single observer needed. The observer must outlive this class. Call
-  // SetObserver(nullptr) to clear the observer.
-  void SetObserver(Observer* observer);
 
   // Generates the registry key where Path and Version information will be
   // written. Exposed for testing.
@@ -98,8 +93,7 @@ class ModuleListManager {
   // path information is cached.
   const std::wstring registry_key_root_;
 
-  // The task runner on which this class does its work.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // The path and version of the most recently installed module list. This is
   // retrieved from the registry at creation of ModuleListManager, and
@@ -108,7 +102,7 @@ class ModuleListManager {
   base::Version module_list_version_;
 
   // The observer of this object.
-  Observer* observer_;
+  Observer* const observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ModuleListManager);
 };

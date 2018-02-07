@@ -54,12 +54,6 @@ class MsiUtil;
 class InstalledPrograms {
  public:
   struct ProgramInfo {
-    ProgramInfo(base::string16 name,
-                HKEY registry_root,
-                base::string16 registry_key_path,
-                REGSAM registry_wow64_access);
-    ~ProgramInfo();
-
     base::string16 name;
 
     // Holds the path to the uninstall entry in the registry.
@@ -91,7 +85,7 @@ class InstalledPrograms {
   };
 
   InstalledPrograms();
-  ~InstalledPrograms();
+  virtual ~InstalledPrograms();
 
   // Initializes this class on a background sequence.
   void Initialize(base::OnceClosure on_initialized_callback);
