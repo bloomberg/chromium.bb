@@ -4785,11 +4785,11 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   extra_data->set_transition_type(transition_type);
   extra_data->set_should_replace_current_entry(should_replace_current_entry);
   extra_data->set_stream_override(std::move(stream_override));
-  bool is_prefetch =
+  bool is_for_no_state_prefetch =
       GetContentClient()->renderer()->IsPrefetchOnly(this, request);
-  extra_data->set_is_prefetch(is_prefetch);
+  extra_data->set_is_for_no_state_prefetch(is_for_no_state_prefetch);
   extra_data->set_download_to_network_cache_only(
-      is_prefetch && resource_type != RESOURCE_TYPE_MAIN_FRAME);
+      is_for_no_state_prefetch && resource_type != RESOURCE_TYPE_MAIN_FRAME);
   extra_data->set_initiated_in_secure_context(frame_document.IsSecureContext());
 
   // Renderer process transfers apply only to navigational requests.

@@ -376,10 +376,13 @@ int GetLoadFlagsForWebURLRequest(const WebURLRequest& request) {
     load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
   }
 
+  if (request.GetRequestContext() == WebURLRequest::kRequestContextPrefetch)
+    load_flags |= net::LOAD_PREFETCH;
+
   if (request.GetExtraData()) {
     RequestExtraData* extra_data =
         static_cast<RequestExtraData*>(request.GetExtraData());
-    if (extra_data->is_prefetch())
+    if (extra_data->is_for_no_state_prefetch())
       load_flags |= net::LOAD_PREFETCH;
   }
 
