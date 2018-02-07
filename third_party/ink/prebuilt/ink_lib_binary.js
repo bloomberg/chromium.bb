@@ -1,3 +1,6 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 var g,aa="function"==typeof Object.defineProperties?Object.defineProperty:function(a,b,c){a!=Array.prototype&&a!=Object.prototype&&(a[b]=c.value)},ba="undefined"!=typeof window&&window===this?this:"undefined"!=typeof global&&null!=global?global:this,ca=function(a,b){if(b){var c=ba;a=a.split(".");for(var d=0;d<a.length-1;d++){var e=a[d];e in c||(c[e]={});c=c[e]}a=a[a.length-1];d=c[a];b=b(d);b!=d&&null!=b&&aa(c,a,{configurable:!0,writable:!0,value:b})}},da=function(){da=function(){};ba.Symbol||(ba.Symbol=
 ea)},ea=function(){var a=0;return function(b){return"jscomp_symbol_"+(b||"")+a++}}(),ha=function(){da();var a=ba.Symbol.iterator;a||(a=ba.Symbol.iterator=ba.Symbol("iterator"));"function"!=typeof Array.prototype[a]&&aa(Array.prototype,a,{configurable:!0,writable:!0,value:function(){return fa(this)}});ha=function(){}},fa=function(a){var b=0;return ia(function(){return b<a.length?{done:!1,value:a[b++]}:{done:!0}})},ia=function(a){ha();a={next:a};a[ba.Symbol.iterator]=function(){return this};return a},
 ja=function(a){ha();var b=a[Symbol.iterator];return b?b.call(a):fa(a)},k=function(a,b){return Object.prototype.hasOwnProperty.call(a,b)};

@@ -5,7 +5,6 @@
 (function() {
   var config = new ink.embed.Config({
     parentEl: document.querySelector('#ink-canvas'),
-    nativeClientManifestUrl: 'ink.nmf',
     sengineType: 'makeSEngineInMemory'
   });
   ink.embed.EmbedComponent.execute(config, (embed) => {
