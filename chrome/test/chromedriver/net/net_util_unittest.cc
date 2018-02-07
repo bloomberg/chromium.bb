@@ -24,6 +24,7 @@
 #include "net/server/http_server.h"
 #include "net/server/http_server_request_info.h"
 #include "net/socket/tcp_server_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,10 +81,11 @@ class FetchUrlTest : public testing::Test,
                      const net::HttpServerRequestInfo& info) override {
     switch (response_) {
       case kSendHello:
-        server_->Send200(connection_id, "hello", "text/plain");
+        server_->Send200(connection_id, "hello", "text/plain",
+                         TRAFFIC_ANNOTATION_FOR_TESTS);
         break;
       case kSend404:
-        server_->Send404(connection_id);
+        server_->Send404(connection_id, TRAFFIC_ANNOTATION_FOR_TESTS);
         break;
       case kClose:
         server_->Close(connection_id);

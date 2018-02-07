@@ -46,6 +46,7 @@
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
 #include "net/socket/tcp_server_socket.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 
 namespace {
 
@@ -121,7 +122,8 @@ class HttpServer : public net::HttpServer::Delegate {
                   std::unique_ptr<net::HttpServerResponseInfo> response) {
     if (!keep_alive)
       response->AddHeader("Connection", "close");
-    server_->SendResponse(connection_id, *response);
+    server_->SendResponse(connection_id, *response,
+                          TRAFFIC_ANNOTATION_FOR_TESTS);
     // Don't need to call server_->Close(), since SendResponse() will handle
     // this for us.
   }
