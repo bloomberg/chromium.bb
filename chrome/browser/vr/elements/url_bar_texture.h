@@ -21,7 +21,6 @@
 
 namespace gfx {
 class PointF;
-class RenderText;
 }  // namespace gfx
 
 namespace vr {
@@ -52,10 +51,6 @@ class UrlBarTexture : public UiTexture {
                               security_state::SecurityLevel security_level,
                               RenderTextWrapper* render_text,
                               const UrlBarColors& colors);
-  bool url_dirty() const { return url_dirty_; }
-
-  std::unique_ptr<gfx::RenderText> url_render_text_;
-  ElisionParameters elision_parameters_;
 
   // Rendered state for test purposes. The text rectangles represent regions
   // available to text, not the smaller area of the actual rendered text.
@@ -69,16 +64,13 @@ class UrlBarTexture : public UiTexture {
   float ToPixels(float meters) const;
   float ToMeters(float pixels) const;
   bool HitsTransparentRegion(const gfx::PointF& meters, bool left) const;
-  void RenderUrl(const gfx::Size& texture_size, const gfx::Rect& text_bounds);
 
   gfx::SizeF size_;
   ToolbarState state_;
-
-  bool url_dirty_ = true;
   UrlBarColors colors_;
 
   base::Callback<void(UiUnsupportedMode)> failure_callback_;
-  gfx::RectF security_hit_region_ = gfx::RectF(0, 0, 0, 0);
+  gfx::RectF security_hit_region_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlBarTexture);
 };

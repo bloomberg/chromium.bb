@@ -115,8 +115,6 @@ UrlBarTexture::~UrlBarTexture() = default;
 
 void UrlBarTexture::SetToolbarState(const ToolbarState& state) {
   SetAndDirty(&state_, state);
-  if (dirty())
-    url_dirty_ = true;
 }
 
 float UrlBarTexture::ToPixels(float meters) const {
@@ -133,8 +131,6 @@ bool UrlBarTexture::HitsSecurityRegion(const gfx::PointF& position) const {
 
 void UrlBarTexture::SetColors(const UrlBarColors& colors) {
   SetAndDirty(&colors_, colors);
-  if (dirty())
-    url_dirty_ = true;
 }
 
 void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
@@ -145,17 +141,20 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   rendered_url_text_rect_ = gfx::Rect();
   rendered_security_text_ = base::string16();
   rendered_security_text_rect_ = gfx::Rect();
-  security_hit_region_.SetRect(0, 0, 0, 0);
+  security_hit_region_ = gfx::RectF();
 
   // Make a gfx canvas to support utility drawing methods.
   cc::SkiaPaintCanvas paint_canvas(canvas);
   gfx::Canvas gfx_canvas(&paint_canvas, 1.0f);
 
+  if (!state_.should_display_url)
+    return;
+
   // Keep track of horizontal position as elements are added left to right.
   float left_edge = 0;
 
   // Site security state icon.
-  if (state_.should_display_url && state_.vector_icon != nullptr) {
+  if (state_.vector_icon != nullptr) {
     gfx::RectF icon_region(left_edge, kHeight / 2 - kUrlBarIconSizeDMM / 2,
                            kUrlBarIconSizeDMM, kUrlBarIconSizeDMM);
     VectorIcon::DrawVectorIcon(
@@ -166,25 +165,27 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
     left_edge += kUrlBarIconSizeDMM;
   }
 
+  std::unique_ptr<gfx::RenderText> render_text;
+  gfx::FontList font_list;
+  int pixel_font_height =
+      texture_size.height() * kUrlBarFontHeightDMM / kHeight;
+
   // Possibly draw security text (eg. "Offline") next to the icon.  This text
   // consumes a significant percentage of URL bar text space, so for now, only
   // Offline mode shows text (see crbug.com/735770).
-  if (state_.offline_page && state_.should_display_url) {
+  if (state_.offline_page) {
     left_edge += kUrlBarOfflineIconTextSpacingDMM;
     float chip_max_width = kWidth - left_edge;
     gfx::Rect text_bounds(ToPixels(left_edge), 0, ToPixels(chip_max_width),
                           ToPixels(kHeight));
 
-    int pixel_font_height =
-        texture_size.height() * kUrlBarFontHeightDMM / kHeight;
     const base::string16& chip_text = state_.secure_verbose_text;
     DCHECK(!chip_text.empty());
 
-    gfx::FontList font_list;
     if (!GetDefaultFontList(pixel_font_height, chip_text, &font_list))
       failure_callback_.Run(UiUnsupportedMode::kUnhandledCodePoint);
 
-    std::unique_ptr<gfx::RenderText> render_text(CreateRenderText());
+    render_text = CreateRenderText();
     render_text->SetFontList(font_list);
     render_text->SetColor(colors_.offline_page_warning);
     render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -215,50 +216,25 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
     left_edge += kUrlBarSeparatorWidthDMM;
   }
 
-  if (state_.should_display_url) {
-    left_edge += kUrlBarFieldSpacingDMM;
+  left_edge += kUrlBarFieldSpacingDMM;
 
-    if (!url_render_text_ || url_dirty_) {
-      float url_width = kWidth - left_edge;
-      gfx::Rect text_bounds(ToPixels(left_edge), 0, ToPixels(url_width),
+  float url_width = kWidth - left_edge;
+  gfx::Rect url_text_bounds(ToPixels(left_edge), 0, ToPixels(url_width),
                             ToPixels(kHeight));
-      RenderUrl(texture_size, text_bounds);
-      url_dirty_ = false;
-    }
-
-    // TODO(cjgrant): Now that this element is only origin information, and not
-    // the entire URL bar, eliminate this unnecessary caching and simply draw
-    // everything when generating the texture.
-    url_render_text_->Draw(&gfx_canvas);
-    float fade_width = ToPixels(kUrlBarOriginFadeWidth);
-    ApplyUrlFading(canvas, url_render_text_->display_rect(), fade_width,
-                   elision_parameters_.fade_left,
-                   elision_parameters_.fade_right);
-
-    rendered_url_text_ = url_render_text_->text();
-    rendered_url_text_rect_ = url_render_text_->display_rect();
-  }
-}
-
-void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
-                              const gfx::Rect& text_bounds) {
   url::Parsed parsed;
   const base::string16 text = url_formatter::FormatUrl(
       state_.gurl, GetVrFormatUrlTypes(), net::UnescapeRule::NORMAL, &parsed,
       nullptr, nullptr);
 
-  int pixel_font_height =
-      texture_size.height() * kUrlBarFontHeightDMM / kHeight;
-  gfx::FontList font_list;
   if (!GetDefaultFontList(pixel_font_height, text, &font_list))
     failure_callback_.Run(UiUnsupportedMode::kUnhandledCodePoint);
 
-  std::unique_ptr<gfx::RenderText> render_text(CreateRenderText());
+  render_text = CreateRenderText();
   render_text->SetFontList(font_list);
   render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   render_text->SetDirectionalityMode(gfx::DIRECTIONALITY_AS_URL);
   render_text->SetText(text);
-  render_text->SetDisplayRect(text_bounds);
+  render_text->SetDisplayRect(url_text_bounds);
 
   RenderTextWrapper vr_render_text(render_text.get());
   ApplyUrlStyling(text, parsed, state_.security_level, &vr_render_text,
@@ -269,8 +245,13 @@ void UrlBarTexture::RenderUrl(const gfx::Size& texture_size,
                            ToPixels(kUrlBarOriginMinimumPathWidth));
   render_text->SetDisplayOffset(elision_parameters.offset);
 
-  url_render_text_ = std::move(render_text);
-  elision_parameters_ = elision_parameters;
+  render_text->Draw(&gfx_canvas);
+  float fade_width = ToPixels(kUrlBarOriginFadeWidth);
+  ApplyUrlFading(canvas, render_text->display_rect(), fade_width,
+                 elision_parameters.fade_left, elision_parameters.fade_right);
+
+  rendered_url_text_ = render_text->text();
+  rendered_url_text_rect_ = render_text->display_rect();
 }
 
 // static

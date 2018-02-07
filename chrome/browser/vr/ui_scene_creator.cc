@@ -1680,7 +1680,7 @@ void UiSceneCreator::CreateUrlBar() {
   origin_content->SetTranslate(kUrlBarOriginContentOffsetDMM, 0, 0);
   origin_content->set_x_anchoring(LEFT);
   origin_content->set_x_centering(LEFT);
-  VR_BIND_VISIBILITY(origin_content, !model->fullscreen_enabled());
+  VR_BIND_VISIBILITY(origin_content, model->toolbar_state.should_display_url);
   origin_content->AddBinding(
       VR_BIND_FUNC(ToolbarState, Model, model_, model->toolbar_state, UrlBar,
                    origin_content.get(), SetToolbarState));
@@ -1690,6 +1690,24 @@ void UiSceneCreator::CreateUrlBar() {
   VR_BIND_COLOR(model_, origin_content.get(), &ColorScheme::element_background,
                 &TexturedElement::SetBackgroundColor);
   scene_->AddUiElement(kUrlBarOriginRegion, std::move(origin_content));
+
+  auto hint_text =
+      Create<Text>(kUrlBarHintText, kPhaseForeground, kUrlBarFontHeightDMM);
+  hint_text->set_hit_testable(true);
+  hint_text->set_x_anchoring(LEFT);
+  hint_text->set_x_centering(LEFT);
+  hint_text->SetSize(kUrlBarOriginContentWidthDMM, kUrlBarHeightDMM);
+  hint_text->SetTranslate(kUrlBarOriginContentOffsetDMM, 0, 0);
+  hint_text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
+  hint_text->SetAlignment(UiTexture::kTextAlignmentLeft);
+  hint_text->SetText(l10n_util::GetStringUTF16(IDS_SEARCH_OR_TYPE_URL));
+  VR_BIND_VISIBILITY(hint_text, !model->toolbar_state.should_display_url);
+  VR_BIND_COLOR(model_, hint_text.get(), &ColorScheme::omnibox_hint,
+                &Text::SetColor);
+  EventHandlers event_handlers;
+  event_handlers.button_up = url_click_callback;
+  hint_text->set_event_handlers(event_handlers);
+  scene_->AddUiElement(kUrlBarOriginRegion, std::move(hint_text));
 }
 
 void UiSceneCreator::CreateLoadingIndicator() {

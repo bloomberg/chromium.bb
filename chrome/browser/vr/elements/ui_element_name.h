@@ -47,6 +47,7 @@ enum UiElementName {
   kUrlBarSeparator,
   kUrlBarOriginRegion,
   kUrlBarOriginContent,
+  kUrlBarHintText,
   kOmniboxVisibiltyControlForVoice,
   kOmniboxVisibilityControlForAudioPermissionPrompt,
   kOmniboxDmmRoot,
