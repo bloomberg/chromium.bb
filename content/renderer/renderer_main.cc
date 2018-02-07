@@ -32,7 +32,7 @@
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
-#include "third_party/WebKit/public/platform/SamplingHeapProfiler.h"
+#include "third_party/WebKit/common/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/ui_base_switches.h"

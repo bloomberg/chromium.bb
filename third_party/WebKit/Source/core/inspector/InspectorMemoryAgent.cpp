@@ -31,10 +31,10 @@
 #include "core/inspector/InspectorMemoryAgent.h"
 
 #include "base/debug/stack_trace.h"
+#include "common/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/inspector/InspectedFrames.h"
 #include "platform/InstanceCounters.h"
-#include "platform/memory_profiler/SamplingNativeHeapProfiler.h"
 
 namespace blink {
 
@@ -101,11 +101,11 @@ Response InspectorMemoryAgent::startSampling(
       in_sampling_interval.fromMaybe(kDefaultNativeMemorySamplingInterval);
   if (interval <= 0)
     return Response::Error("Invalid sampling rate.");
-  SamplingNativeHeapProfiler::GetInstance()->SetSamplingInterval(interval);
+  SamplingHeapProfiler::GetInstance()->SetSamplingInterval(interval);
   state_->setInteger(MemoryAgentState::samplingProfileInterval, interval);
   if (in_suppressRandomness.fromMaybe(false))
-    SamplingNativeHeapProfiler::GetInstance()->SuppressRandomnessForTest();
-  profile_id_ = SamplingNativeHeapProfiler::GetInstance()->Start();
+    SamplingHeapProfiler::GetInstance()->SuppressRandomnessForTest();
+  profile_id_ = SamplingHeapProfiler::GetInstance()->Start();
   return Response::OK();
 }
 
@@ -115,7 +115,7 @@ Response InspectorMemoryAgent::stopSampling() {
                      &sampling_interval);
   if (!sampling_interval)
     return Response::Error("Sampling profiler is not started.");
-  SamplingNativeHeapProfiler::GetInstance()->Stop();
+  SamplingHeapProfiler::GetInstance()->Stop();
   state_->setInteger(MemoryAgentState::samplingProfileInterval, 0);
   return Response::OK();
 }
@@ -137,8 +137,8 @@ InspectorMemoryAgent::GetSamplingProfileById(uint32_t id) {
   std::unique_ptr<protocol::Array<protocol::Memory::SamplingProfileNode>>
       samples =
           protocol::Array<protocol::Memory::SamplingProfileNode>::create();
-  std::vector<SamplingNativeHeapProfiler::Sample> raw_samples =
-      SamplingNativeHeapProfiler::GetInstance()->GetSamples(id);
+  std::vector<SamplingHeapProfiler::Sample> raw_samples =
+      SamplingHeapProfiler::GetInstance()->GetSamples(id);
 
   for (auto& it : raw_samples) {
     std::unique_ptr<protocol::Array<protocol::String>> stack =
