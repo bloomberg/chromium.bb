@@ -95,6 +95,7 @@ While the <code>activeTab</code> permission is enabled for a tab, an extension c
 <ul>
   <li>Call <code>$(ref:tabs.executeScript)</code> or <code>$(ref:tabs.insertCSS)</code> on that tab.
   <li>Get the URL, title, and favicon for that tab via an API that returns a <code>$(ref:tabs.Tab)</code> object (essentially, <code>activeTab</code> grants the <code><a href="tabs#manifest">tabs</a></code> permission temporarily).
+  <li>Intercept network requests in the tab to the tab's main frame origin using the <a href="webRequest">webRequest</a> API. The extension temporarily gets host permissions for the tab's main frame origin.
 </ul>
 </p>
 
