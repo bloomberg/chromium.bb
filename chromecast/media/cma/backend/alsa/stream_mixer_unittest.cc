@@ -464,6 +464,15 @@ int64_t FramesToDelayUs(int64_t frames) {
   return frames * base::Time::kMicrosecondsPerSecond / kTestSamplesPerSecond;
 }
 
+std::string DeathRegex(const std::string& regex) {
+// String arguments aren't passed to CHECK() in official builds.
+#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
+  return "";
+#else
+  return regex;
+#endif
+}
+
 }  // namespace
 
 class StreamMixerTest : public testing::Test {
@@ -497,7 +506,6 @@ class StreamMixerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(StreamMixerTest);
 };
 
-using StreamMixerDeathTest = StreamMixerTest;
 
 TEST_F(StreamMixerTest, AddSingleInput) {
   auto* input = new testing::StrictMock<MockInputQueue>(kTestSamplesPerSecond);
@@ -1207,47 +1215,6 @@ TEST_F(StreamMixerTest, PostProcessorProvidesDefaultPipeline) {
   CHECK_EQ(MockPostProcessor::instances()->size(), 2u);
 }
 
-TEST_F(StreamMixerTest, InvalidStreamTypeCrashes) {
-  const char json[] = R"json(
-{
-  "postprocessors": {
-    "output_streams": [{
-      "streams": [ "foobar" ],
-      "processors": [{
-        "processor": "dont_care.so",
-        "config": { "delay": 0 }
-      }]
-    }]
-  }
-}
-)json";
-
-// String arguments aren't passed to CHECK() in official builds.
-#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
-  std::string death_regex = "";
-#else
-  std::string death_regex = "foobar is not a stream type";
-#endif
-
-  EXPECT_DEATH(StreamMixer::Get()->ResetPostProcessorsForTest(
-                   std::make_unique<MockPostProcessorFactory>(), json),
-               death_regex);
-}
-
-TEST_F(StreamMixerTest, BadJsonCrashes) {
-  const std::string json("{{");
-// String arguments aren't passed to CHECK() in official builds.
-#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
-  std::string death_regex = "";
-#else
-  std::string death_regex = "Invalid JSON";
-#endif
-
-  EXPECT_DEATH(StreamMixer::Get()->ResetPostProcessorsForTest(
-                   std::make_unique<MockPostProcessorFactory>(), json),
-               death_regex);
-}
-
 TEST_F(StreamMixerTest, MultiplePostProcessorsInOneStream) {
   const char kJsonTemplate[] = R"json(
 {
@@ -1417,8 +1384,38 @@ TEST_F(StreamMixerTest, ObserverGets1ChannelIfNumOutputChannelsIs1) {
   mixer->RemoveLoopbackAudioObserver(&observer);
 }
 
+using StreamMixerDeathTest = StreamMixerTest;
+
+TEST_F(StreamMixerDeathTest, InvalidStreamTypeCrashes) {
+  const char json[] = R"json(
+{
+  "postprocessors": {
+    "output_streams": [{
+      "streams": [ "foobar" ],
+      "processors": [{
+        "processor": "dont_care.so",
+        "config": { "delay": 0 }
+      }]
+    }]
+  }
+}
+)json";
+
+  EXPECT_DEATH(StreamMixer::Get()->ResetPostProcessorsForTest(
+                   std::make_unique<MockPostProcessorFactory>(), json),
+               DeathRegex("foobar is not a stream type"));
+}
+
+TEST_F(StreamMixerDeathTest, BadJsonCrashes) {
+  const std::string json("{{");
+  EXPECT_DEATH(StreamMixer::Get()->ResetPostProcessorsForTest(
+                   std::make_unique<MockPostProcessorFactory>(), json),
+               DeathRegex("Invalid JSON"));
+}
+
 TEST_F(StreamMixerDeathTest, CrashesIfChannelCountDoesNotMatchFlags) {
   StreamMixer* mixer = StreamMixer::Get();
+  const int kNumOutputChannels = 2;
   const std::string config = R"Json({
 "postprocessors": {
   "linearize": {
@@ -1430,14 +1427,16 @@ TEST_F(StreamMixerDeathTest, CrashesIfChannelCountDoesNotMatchFlags) {
   }
 }})Json";
 
+  mixer->SetNumOutputChannelsForTest(kNumOutputChannels);
   ASSERT_DEATH(mixer->ResetPostProcessorsForTest(
                    std::make_unique<MockPostProcessorFactory>(), config),
-               "PostProcessor configuration channel count does not match "
-               "command line flag");
+               DeathRegex("PostProcessor configuration channel count does not "
+                          "match command line flag"));
 }
 
 TEST_F(StreamMixerDeathTest, CrashesIfMoreThan2LoopbackChannels) {
   StreamMixer* mixer = StreamMixer::Get();
+  const int kNumOutputChannels = 2;
   const std::string config = R"Json({
 "postprocessors": {
   "output_streams": [{
@@ -1457,9 +1456,10 @@ TEST_F(StreamMixerDeathTest, CrashesIfMoreThan2LoopbackChannels) {
   }
 }})Json";
 
+  mixer->SetNumOutputChannelsForTest(kNumOutputChannels);
   ASSERT_DEATH(mixer->ResetPostProcessorsForTest(
                    std::make_unique<MockPostProcessorFactory>(), config),
-               "loopback_channel_count <= 2");
+               DeathRegex("loopback_channel_count <= 2"));
 }
 
 }  // namespace media
