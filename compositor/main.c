@@ -43,11 +43,6 @@
 #include <sys/time.h>
 #include <linux/limits.h>
 
-#ifdef HAVE_LIBUNWIND
-#define UNW_LOCAL_ONLY
-#include <libunwind.h>
-#endif
-
 #include "weston.h"
 #include "compositor.h"
 #include "../shared/os-compatibility.h"
@@ -189,85 +184,6 @@ sigchld_handler(int signal_number, void *data)
 
 	return 1;
 }
-
-#ifdef HAVE_LIBUNWIND
-
-static void
-print_backtrace(void)
-{
-	unw_cursor_t cursor;
-	unw_context_t context;
-	unw_word_t off;
-	unw_proc_info_t pip;
-	int ret, i = 0;
-	char procname[256];
-	const char *filename;
-	Dl_info dlinfo;
-
-	pip.unwind_info = NULL;
-	ret = unw_getcontext(&context);
-	if (ret) {
-		weston_log("unw_getcontext: %d\n", ret);
-		return;
-	}
-
-	ret = unw_init_local(&cursor, &context);
-	if (ret) {
-		weston_log("unw_init_local: %d\n", ret);
-		return;
-	}
-
-	ret = unw_step(&cursor);
-	while (ret > 0) {
-		ret = unw_get_proc_info(&cursor, &pip);
-		if (ret) {
-			weston_log("unw_get_proc_info: %d\n", ret);
-			break;
-		}
-
-		ret = unw_get_proc_name(&cursor, procname, 256, &off);
-		if (ret && ret != -UNW_ENOMEM) {
-			if (ret != -UNW_EUNSPEC)
-				weston_log("unw_get_proc_name: %d\n", ret);
-			procname[0] = '?';
-			procname[1] = 0;
-		}
-
-		if (dladdr((void *)(pip.start_ip + off), &dlinfo) && dlinfo.dli_fname &&
-		    *dlinfo.dli_fname)
-			filename = dlinfo.dli_fname;
-		else
-			filename = "?";
-
-		weston_log("%u: %s (%s%s+0x%x) [%p]\n", i++, filename, procname,
-			   ret == -UNW_ENOMEM ? "..." : "", (int)off, (void *)(pip.start_ip + off));
-
-		ret = unw_step(&cursor);
-		if (ret < 0)
-			weston_log("unw_step: %d\n", ret);
-	}
-}
-
-#else
-
-static void
-print_backtrace(void)
-{
-	void *buffer[32];
-	int i, count;
-	Dl_info info;
-
-	count = backtrace(buffer, ARRAY_LENGTH(buffer));
-	for (i = 0; i < count; i++) {
-		dladdr(buffer[i], &info);
-		weston_log("  [%016lx]  %s  (%s)\n",
-			(long) buffer[i],
-			info.dli_sname ? info.dli_sname : "--",
-			info.dli_fname);
-	}
-}
-
-#endif
 
 static void
 child_client_exec(int sockfd, const char *path)
@@ -641,39 +557,6 @@ static int on_term_signal(int signal_number, void *data)
 	wl_display_terminate(display);
 
 	return 1;
-}
-
-static void
-on_caught_signal(int s, siginfo_t *siginfo, void *context)
-{
-	/* This signal handler will do a best-effort backtrace, and
-	 * then call the backend restore function, which will switch
-	 * back to the vt we launched from or ungrab X etc and then
-	 * raise SIGTRAP.  If we run weston under gdb from X or a
-	 * different vt, and tell gdb "handle *s* nostop", this
-	 * will allow weston to switch back to gdb on crash and then
-	 * gdb will catch the crash with SIGTRAP.*/
-
-	weston_log("caught signal: %d\n", s);
-
-	print_backtrace();
-
-	if (segv_compositor && segv_compositor->backend)
-		segv_compositor->backend->restore(segv_compositor);
-
-	raise(SIGTRAP);
-}
-
-static void
-catch_signals(void)
-{
-	struct sigaction action;
-
-	action.sa_flags = SA_SIGINFO | SA_RESETHAND;
-	action.sa_sigaction = on_caught_signal;
-	sigemptyset(&action.sa_mask);
-	sigaction(SIGSEGV, &action, NULL);
-	sigaction(SIGABRT, &action, NULL);
 }
 
 static const char *
@@ -1829,8 +1712,6 @@ int main(int argc, char *argv[])
 
 	weston_log_set_handler(vlog, vlog_continue);
 	weston_log_file_open(log);
-
-	catch_signals();
 
 	weston_log("%s\n"
 		   STAMP_SPACE "%s\n"

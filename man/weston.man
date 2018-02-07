@@ -324,20 +324,6 @@ The directory for Weston's socket and lock files.
 Wayland clients will automatically use this.
 .
 .\" ***************************************************************
-.SH DIAGNOSTICS
-Weston has a segmentation fault handler, that attempts to restore
-the virtual console or ungrab X before raising
-.BR SIGTRAP .
-If you run
-.BR weston " under " gdb (1)
-from an X11 terminal or a different virtual terminal, and tell gdb
-.IP
-handle SIGSEGV nostop
-.PP
-This will allow weston to switch back to gdb on crash and then
-gdb will catch the crash with SIGTRAP.
-.
-.\" ***************************************************************
 .SH BUGS
 Bugs should be reported to the freedesktop.org bugzilla at
 https://bugs.freedesktop.org with product "Wayland" and
