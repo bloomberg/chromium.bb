@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/location.h"
@@ -26,24 +27,34 @@
 #include "media/audio/test_audio_thread.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/gmock_callback_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
+using ::testing::Bool;
+using ::testing::TestWithParam;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::NotNull;
 using ::testing::Return;
+using ::testing::StrictMock;
+using ::testing::Mock;
 
 namespace media {
 
 static const int kSampleRate = AudioParameters::kAudioCDSampleRate;
 static const int kBitsPerSample = 16;
 static const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
-static const int kSamplesPerPacket = kSampleRate / 100;
+static const int kSamplesPerPacket = kSampleRate / 1000;
 static const double kTestVolume = 0.25;
 static const float kBufferNonZeroData = 1.0f;
+
+AudioParameters AOCTestParams() {
+  return AudioParameters(AudioParameters::AUDIO_FAKE, kChannelLayout,
+                         kSampleRate, kBitsPerSample, kSamplesPerPacket);
+}
 
 class MockAudioOutputControllerEventHandler
     : public AudioOutputController::EventHandler {
@@ -54,7 +65,7 @@ class MockAudioOutputControllerEventHandler
   MOCK_METHOD0(OnControllerPlaying, void());
   MOCK_METHOD0(OnControllerPaused, void());
   MOCK_METHOD0(OnControllerError, void());
-  MOCK_METHOD1(OnLog, void(base::StringPiece));
+  void OnLog(base::StringPiece) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioOutputControllerEventHandler);
@@ -76,25 +87,76 @@ class MockAudioOutputControllerSyncReader
   DISALLOW_COPY_AND_ASSIGN(MockAudioOutputControllerSyncReader);
 };
 
-class MockAudioOutputStream : public AudioOutputStream {
+class MockAudioOutputStream : public AudioOutputStream,
+                              public AudioOutputStream::AudioSourceCallback {
  public:
-  MOCK_METHOD0(Open, bool());
-  MOCK_METHOD1(Start, void(AudioSourceCallback* callback));
-  MOCK_METHOD0(Stop, void());
-  MOCK_METHOD1(SetVolume, void(double volume));
-  MOCK_METHOD1(GetVolume, void(double* volume));
-  MOCK_METHOD0(Close, void());
+  explicit MockAudioOutputStream(AudioManager* audio_manager)
+      : audio_manager_(audio_manager) {}
 
-  // Set/get the callback passed to Start().
-  AudioSourceCallback* callback() const { return callback_; }
-  void SetCallback(AudioSourceCallback* asc) { callback_ = asc; }
+  // We forward to a fake stream to get automatic OnMoreData callbacks,
+  // required by some tests.
+  MOCK_METHOD0(DidOpen, void());
+  MOCK_METHOD0(DidStart, void());
+  MOCK_METHOD0(DidStop, void());
+  MOCK_METHOD0(DidClose, void());
+  MOCK_METHOD1(SetVolume, void(double));
+  MOCK_METHOD1(GetVolume, void(double* volume));
+
+  bool Open() override {
+    EXPECT_EQ(nullptr, impl_);
+    impl_ =
+        audio_manager_->MakeAudioOutputStreamProxy(AOCTestParams(), "default");
+    impl_->Open();
+    DidOpen();
+    return true;
+  }
+
+  void Start(AudioOutputStream::AudioSourceCallback* cb) override {
+    EXPECT_EQ(nullptr, callback_);
+    callback_ = cb;
+    impl_->Start(this);
+    DidStart();
+  }
+
+  void Stop() override {
+    impl_->Stop();
+    callback_ = nullptr;
+    DidStop();
+  }
+
+  void Close() override {
+    impl_->Close();
+    impl_ = nullptr;
+    DidClose();
+  }
 
  private:
-  AudioSourceCallback* callback_;
+  int OnMoreData(base::TimeDelta delay,
+                 base::TimeTicks delay_timestamp,
+                 int prior_frames_skipped,
+                 AudioBus* dest) override {
+    int res = callback_->OnMoreData(delay, delay_timestamp,
+                                    prior_frames_skipped, dest);
+    EXPECT_EQ(dest->channel(0)[0], kBufferNonZeroData);
+    return res;
+  }
+
+  void OnError() override {
+    // Fake stream doesn't send errors.
+    NOTREACHED();
+  }
+
+  AudioManager* audio_manager_;
+  AudioOutputStream* impl_ = nullptr;
+  AudioOutputStream::AudioSourceCallback* callback_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(MockAudioOutputStream);
 };
 
 class MockAudioPushSink : public AudioPushSink {
  public:
+  MockAudioPushSink() = default;
+
   MOCK_METHOD0(Close, void());
   MOCK_METHOD1(OnDataCheck, void(float));
 
@@ -102,6 +164,9 @@ class MockAudioPushSink : public AudioPushSink {
               base::TimeTicks reference_time) override {
     OnDataCheck(source->channel(0)[0]);
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockAudioPushSink);
 };
 
 ACTION(PopulateBuffer) {
@@ -111,55 +176,86 @@ ACTION(PopulateBuffer) {
   arg0->channel(0)[0] = kBufferNonZeroData;
 }
 
-class AudioOutputControllerTest : public testing::Test {
+class AudioOutputControllerTest : public TestWithParam<bool> {
  public:
   AudioOutputControllerTest()
-      : audio_manager_(AudioManager::CreateForTesting(
-            std::make_unique<TestAudioThread>())) {
-    EXPECT_CALL(mock_event_handler_, OnLog(_)).Times(testing::AnyNumber());
-    base::RunLoop().RunUntilIdle();
-  }
+      : synchronous_use_(GetParam()),
+        audio_manager_(AudioManager::CreateForTesting(
+            // Make sure that the audio manager thread == the main thread with
+            // synchronous use of the controller.
+            std::make_unique<TestAudioThread>(!synchronous_use_))),
+        mock_stream_(audio_manager_.get()) {}
 
   ~AudioOutputControllerTest() override { audio_manager_->Shutdown(); }
 
  protected:
-  void Create(int samples_per_packet) {
-    params_ = AudioParameters(
-        AudioParameters::AUDIO_FAKE, kChannelLayout,
-        kSampleRate, kBitsPerSample, samples_per_packet);
-
-    if (params_.IsValid()) {
-      EXPECT_CALL(mock_event_handler_, OnControllerCreated());
-    }
+  void Create() {
+    EXPECT_CALL(mock_event_handler_, OnControllerCreated());
 
     controller_ = AudioOutputController::Create(
-        audio_manager_.get(), &mock_event_handler_, params_, std::string(),
-        &mock_sync_reader_);
-    if (controller_.get())
-      controller_->SetVolume(kTestVolume);
-
-    EXPECT_EQ(params_.IsValid(), controller_.get() != NULL);
-    base::RunLoop().RunUntilIdle();
+        audio_manager_.get(), &mock_event_handler_, AOCTestParams(),
+        std::string(), &mock_sync_reader_);
+    EXPECT_NE(nullptr, controller_.get());
+    controller_->SetVolume(kTestVolume);
   }
 
   void Play() {
-    // Expect the event handler to receive one OnControllerPlaying() call.
-    EXPECT_CALL(mock_event_handler_, OnControllerPlaying());
-
-    // During playback, the mock pretends to provide audio data rendered and
-    // sent from the render process.
-    EXPECT_CALL(mock_sync_reader_, RequestMoreData(_, _, _)).Times(AtLeast(1));
-    EXPECT_CALL(mock_sync_reader_, Read(_)).WillRepeatedly(PopulateBuffer());
+    base::RunLoop loop;
+    // The barrier is used to wait for all of the expectations to be fulfilled.
+    base::RepeatingClosure barrier =
+        base::BarrierClosure(3, loop.QuitClosure());
+    EXPECT_CALL(mock_event_handler_, OnControllerPlaying())
+        .WillOnce(RunClosure(barrier));
+    EXPECT_CALL(mock_sync_reader_, RequestMoreData(_, _, _))
+        .WillOnce(RunClosure(barrier))
+        .WillRepeatedly(Return());
+    EXPECT_CALL(mock_sync_reader_, Read(_))
+        .WillOnce(Invoke([barrier](AudioBus* data) {
+          data->channel(0)[0] = kBufferNonZeroData;
+          barrier.Run();
+        }))
+        .WillRepeatedly(PopulateBuffer());
     controller_->Play();
-    base::RunLoop().RunUntilIdle();
+
+    // Waits for all gmock expectations to be satisfied.
+    loop.Run();
+  }
+
+  void PlayWhileDiverting() {
+    base::RunLoop loop;
+    // The barrier is used to wait for all of the expectations to be fulfilled.
+    base::RepeatingClosure barrier =
+        base::BarrierClosure(4, loop.QuitClosure());
+    EXPECT_CALL(mock_stream_, DidStart()).WillOnce(RunClosure(barrier));
+    EXPECT_CALL(mock_event_handler_, OnControllerPlaying())
+        .WillOnce(RunClosure(barrier));
+    // The mock stream will start pulling data. We verify that the calls are
+    // forwarded to SyncReader, and write some data to the buffer that we can
+    // verify later.
+    EXPECT_CALL(mock_sync_reader_, RequestMoreData(_, _, _))
+        .WillOnce(RunClosure(barrier))
+        .WillRepeatedly(Return());
+    EXPECT_CALL(mock_sync_reader_, Read(_))
+        .WillOnce(Invoke([barrier](AudioBus* data) {
+          data->channel(0)[0] = kBufferNonZeroData;
+          barrier.Run();
+        }))
+        .WillRepeatedly(PopulateBuffer());
+    controller_->Play();
+
+    // Waits for all gmock expectations to be satisfied.
+    loop.Run();
+    // At some point in the future, the stream must be stopped.
+    EXPECT_CALL(mock_stream_, DidStop());
   }
 
   void Pause() {
-    // Expect the event handler to receive one OnControllerPaused() call.
-    EXPECT_CALL(mock_event_handler_, OnControllerPaused());
-
+    base::RunLoop loop;
+    EXPECT_CALL(mock_event_handler_, OnControllerPaused())
+        .WillOnce(RunOnceClosure(loop.QuitClosure()));
     controller_->Pause();
-    base::RunLoop().RunUntilIdle();
+    loop.Run();
+    Mock::VerifyAndClearExpectations(&mock_event_handler_);
   }
 
   void ChangeDevice() {
@@ -173,60 +269,52 @@ class AudioOutputControllerTest : public testing::Test {
     audio_manager_->GetTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&AudioOutputController::OnDeviceChange, controller_));
+
+    // Wait for device change to take effect.
+    base::RunLoop loop;
+    audio_manager_->GetTaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
+    loop.Run();
   }
 
-  void Divert(bool was_playing, int num_times_to_be_started) {
-    if (was_playing) {
-      // Expect the handler to receive one OnControllerPlaying() call as a
-      // result of the stream switching.
-      EXPECT_CALL(mock_event_handler_, OnControllerPlaying());
-    }
-
-    EXPECT_CALL(mock_stream_, Open())
-        .WillOnce(Return(true));
+  void Divert() {
+    EXPECT_CALL(mock_stream_, DidOpen());
     EXPECT_CALL(mock_stream_, SetVolume(kTestVolume));
-    if (num_times_to_be_started > 0) {
-      EXPECT_CALL(mock_stream_, Start(NotNull()))
-          .Times(num_times_to_be_started)
-          .WillRepeatedly(
-              Invoke(&mock_stream_, &MockAudioOutputStream::SetCallback));
-      EXPECT_CALL(mock_stream_, Stop())
-          .Times(num_times_to_be_started);
-    }
 
     controller_->StartDiverting(&mock_stream_);
-    base::RunLoop().RunUntilIdle();
+    base::RunLoop loop;
+    // Wait for controller to start diverting.
+    audio_manager_->GetTaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
+    loop.Run();
+  }
+
+  void DivertWhilePlaying() {
+    base::RunLoop loop;
+    // The barrier is used to wait for all of the expectations to be fulfilled.
+    base::RepeatingClosure barrier =
+        base::BarrierClosure(4, loop.QuitClosure());
+    // Expect mock streams to be initialized and started.
+    EXPECT_CALL(mock_stream_, DidOpen()).WillOnce(RunClosure(barrier));
+    EXPECT_CALL(mock_stream_, SetVolume(kTestVolume))
+        .WillOnce(RunClosure(barrier));
+    EXPECT_CALL(mock_stream_, DidStart()).WillOnce(RunClosure(barrier));
+    // Expect event handler to be informed.
+    EXPECT_CALL(mock_event_handler_, OnControllerPlaying())
+        .WillOnce(RunClosure(barrier));
+
+    controller_->StartDiverting(&mock_stream_);
+    // Wait until callbacks has started.
+    loop.Run();
+    // At some point in the future, the stream must be stopped.
+    EXPECT_CALL(mock_stream_, DidStop());
   }
 
   void StartDuplicating(MockAudioPushSink* sink) {
+    base::RunLoop loop;
+    EXPECT_CALL(*sink, OnDataCheck(kBufferNonZeroData))
+        .WillOnce(RunOnceClosure(loop.QuitClosure()))
+        .WillRepeatedly(Return());
     controller_->StartDuplicating(sink);
-    base::RunLoop().RunUntilIdle();
-  }
-
-  void ReadDivertedAudioData() {
-    std::unique_ptr<AudioBus> dest = AudioBus::Create(params_);
-    ASSERT_TRUE(mock_stream_.callback());
-    const int frames_read = mock_stream_.callback()->OnMoreData(
-        base::TimeDelta(), base::TimeTicks::Now(), 0, dest.get());
-    EXPECT_LT(0, frames_read);
-    EXPECT_EQ(kBufferNonZeroData, dest->channel(0)[0]);
-  }
-
-  void ReadDuplicatedAudioData(const std::vector<MockAudioPushSink*>& sinks) {
-    for (size_t i = 0; i < sinks.size(); i++) {
-      EXPECT_CALL(*sinks[i], OnDataCheck(kBufferNonZeroData)).Times(AtLeast(1));
-    }
-
-    std::unique_ptr<AudioBus> dest = AudioBus::Create(params_);
-
-    // It is this OnMoreData() call that triggers |sink|'s OnData().
-    const int frames_read = controller_->OnMoreData(
-        base::TimeDelta(), base::TimeTicks::Now(), 0, dest.get());
-
-    EXPECT_LT(0, frames_read);
-    EXPECT_EQ(kBufferNonZeroData, dest->channel(0)[0]);
-
-    base::RunLoop().RunUntilIdle();
+    loop.Run();
   }
 
   void Revert(bool was_playing) {
@@ -236,21 +324,49 @@ class AudioOutputControllerTest : public testing::Test {
       EXPECT_CALL(mock_event_handler_, OnControllerPlaying());
     }
 
-    EXPECT_CALL(mock_stream_, Close());
+    EXPECT_CALL(mock_stream_, DidClose());
 
     controller_->StopDiverting();
-    base::RunLoop().RunUntilIdle();
+    base::RunLoop loop;
+    audio_manager_->GetTaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
+    loop.Run();
   }
 
   void StopDuplicating(MockAudioPushSink* sink) {
-    EXPECT_CALL(*sink, Close());
-    controller_->StopDuplicating(sink);
-    base::RunLoop().RunUntilIdle();
+    {
+      // First, verify we're still getting callbacks. Must be done on the AM
+      // task runner, since it may be a separate thread, and EXPECTing from the
+      // main thread would be racy.
+      base::RunLoop loop;
+      audio_manager_->GetTaskRunner()->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              [](MockAudioPushSink* sink, base::RepeatingClosure done_closure) {
+                Mock::VerifyAndClear(sink);
+                EXPECT_CALL(*sink, OnDataCheck(kBufferNonZeroData))
+                    .WillOnce(RunClosure(done_closure))
+                    .WillRepeatedly(Return());
+              },
+              sink, loop.QuitClosure()));
+      loop.Run();
+    }
+
+    {
+      EXPECT_CALL(*sink, Close());
+      controller_->StopDuplicating(sink);
+      base::RunLoop loop;
+      audio_manager_->GetTaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
+      loop.Run();
+    }
   }
 
   void Close() {
     EXPECT_CALL(mock_sync_reader_, Close());
 
+    if (synchronous_use_) {
+      controller_->Close(base::OnceClosure());
+      return;
+    }
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&AudioOutputController::Close, controller_,
@@ -263,16 +379,16 @@ class AudioOutputControllerTest : public testing::Test {
         FROM_HERE,
         base::BindOnce(&AudioOutputControllerTest::TriggerErrorThenDeviceChange,
                        base::Unretained(this)));
+
+    base::RunLoop loop;
+    audio_manager_->GetTaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
+    loop.Run();
   }
 
   // These help make test sequences more readable.
-  void DivertNeverPlaying() { Divert(false, 0); }
-  void DivertWillEventuallyBeTwicePlayed() { Divert(false, 2); }
-  void DivertWhilePlaying() { Divert(true, 1); }
   void RevertWasNotPlaying() { Revert(false); }
   void RevertWhilePlaying() { Revert(true); }
 
- private:
   void TriggerErrorThenDeviceChange() {
     DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
 
@@ -286,133 +402,124 @@ class AudioOutputControllerTest : public testing::Test {
   }
 
   base::TestMessageLoop message_loop_;
+  const bool synchronous_use_;
   std::unique_ptr<AudioManager> audio_manager_;
-  MockAudioOutputControllerEventHandler mock_event_handler_;
-  MockAudioOutputControllerSyncReader mock_sync_reader_;
-  MockAudioOutputStream mock_stream_;
-  AudioParameters params_;
+  StrictMock<MockAudioOutputControllerEventHandler> mock_event_handler_;
+  StrictMock<MockAudioOutputControllerSyncReader> mock_sync_reader_;
+  StrictMock<MockAudioOutputStream> mock_stream_;
   scoped_refptr<AudioOutputController> controller_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(AudioOutputControllerTest);
 };
 
-TEST_F(AudioOutputControllerTest, CreateAndClose) {
-  Create(kSamplesPerPacket);
+TEST_P(AudioOutputControllerTest, CreateAndClose) {
+  Create();
   Close();
 }
 
-TEST_F(AudioOutputControllerTest, PlayAndClose) {
-  Create(kSamplesPerPacket);
+TEST_P(AudioOutputControllerTest, PlayAndClose) {
+  Create();
   Play();
   Close();
 }
 
-TEST_F(AudioOutputControllerTest, PlayPauseClose) {
-  Create(kSamplesPerPacket);
-  Play();
-  Pause();
-  Close();
-}
-
-TEST_F(AudioOutputControllerTest, PlayPausePlayClose) {
-  Create(kSamplesPerPacket);
+TEST_P(AudioOutputControllerTest, PlayPauseClose) {
+  Create();
   Play();
   Pause();
+  Close();
+}
+
+TEST_P(AudioOutputControllerTest, PlayPausePlayClose) {
+  Create();
+  Play();
+  Pause();
   Play();
   Close();
 }
 
-TEST_F(AudioOutputControllerTest, PlayDeviceChangeClose) {
-  Create(kSamplesPerPacket);
+TEST_P(AudioOutputControllerTest, PlayDeviceChangeClose) {
+  Create();
   Play();
   ChangeDevice();
   Close();
 }
 
-TEST_F(AudioOutputControllerTest, PlayDeviceChangeError) {
-  Create(kSamplesPerPacket);
+TEST_P(AudioOutputControllerTest, PlayDeviceChangeError) {
+  Create();
   Play();
   SimulateErrorThenDeviceChange();
   Close();
 }
 
-TEST_F(AudioOutputControllerTest, PlayDivertRevertClose) {
-  Create(kSamplesPerPacket);
+TEST_P(AudioOutputControllerTest, PlayDivertRevertClose) {
+  Create();
   Play();
   DivertWhilePlaying();
-  ReadDivertedAudioData();
   RevertWhilePlaying();
   Close();
 }
 
-TEST_F(AudioOutputControllerTest, PlayDivertRevertDivertRevertClose) {
-  Create(kSamplesPerPacket);
+TEST_P(AudioOutputControllerTest, PlayDivertRevertDivertRevertClose) {
+  Create();
   Play();
   DivertWhilePlaying();
-  ReadDivertedAudioData();
   RevertWhilePlaying();
   DivertWhilePlaying();
-  ReadDivertedAudioData();
   RevertWhilePlaying();
   Close();
 }
 
-TEST_F(AudioOutputControllerTest, DivertPlayPausePlayRevertClose) {
-  Create(kSamplesPerPacket);
-  DivertWillEventuallyBeTwicePlayed();
-  Play();
-  ReadDivertedAudioData();
+TEST_P(AudioOutputControllerTest, DivertPlayPausePlayRevertClose) {
+  Create();
+  Divert();
+  PlayWhileDiverting();
   Pause();
-  Play();
-  ReadDivertedAudioData();
+  PlayWhileDiverting();
   RevertWhilePlaying();
   Close();
 }
 
-TEST_F(AudioOutputControllerTest, DivertRevertClose) {
-  Create(kSamplesPerPacket);
-  DivertNeverPlaying();
+TEST_P(AudioOutputControllerTest, DivertRevertClose) {
+  Create();
+  Divert();
   RevertWasNotPlaying();
   Close();
 }
 
-TEST_F(AudioOutputControllerTest, PlayDuplicateStopClose) {
-  Create(kSamplesPerPacket);
+TEST_P(AudioOutputControllerTest, PlayDuplicateStopClose) {
+  Create();
   MockAudioPushSink mock_sink;
   Play();
   StartDuplicating(&mock_sink);
-  ReadDuplicatedAudioData({&mock_sink});
   StopDuplicating(&mock_sink);
   Close();
 }
 
-TEST_F(AudioOutputControllerTest, TwoDuplicates) {
-  Create(kSamplesPerPacket);
+TEST_P(AudioOutputControllerTest, TwoDuplicates) {
+  Create();
   MockAudioPushSink mock_sink_1;
   MockAudioPushSink mock_sink_2;
   Play();
   StartDuplicating(&mock_sink_1);
   StartDuplicating(&mock_sink_2);
-  ReadDuplicatedAudioData({&mock_sink_1, &mock_sink_2});
   StopDuplicating(&mock_sink_1);
   StopDuplicating(&mock_sink_2);
   Close();
 }
 
-TEST_F(AudioOutputControllerTest, DuplicateDivertInteract) {
-  Create(kSamplesPerPacket);
+TEST_P(AudioOutputControllerTest, DuplicateDivertInteract) {
+  Create();
   MockAudioPushSink mock_sink;
   Play();
   StartDuplicating(&mock_sink);
   DivertWhilePlaying();
-
-  // When diverted stream pulls data, it would trigger a push to sink.
-  EXPECT_CALL(mock_sink, OnDataCheck(kBufferNonZeroData));
-  ReadDivertedAudioData();
-
   StopDuplicating(&mock_sink);
   RevertWhilePlaying();
   Close();
 }
+
+INSTANTIATE_TEST_CASE_P(AOC, AudioOutputControllerTest, Bool());
 
 }  // namespace media

@@ -597,6 +597,12 @@ void AudioManagerMac::ShutdownOnAudioThread() {
   CHECK(basic_input_streams_.empty());
   CHECK(low_latency_input_streams_.empty());
 
+  // Deinitialize power observer on audio thread, since it's initialized on the
+  // audio thread. Typically, constructor/destructor and
+  // InitializeOnAudioThread/ShutdownOnAudioThread are all run on the main
+  // thread, but this might not be true in testing.
+  power_observer_.reset();
+
   AudioManagerBase::ShutdownOnAudioThread();
 }
 
