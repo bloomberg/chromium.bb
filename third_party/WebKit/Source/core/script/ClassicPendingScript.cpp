@@ -249,8 +249,10 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
   // "the URL from which the script was obtained" [spec text]
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-base-url
   const KURL& base_url = source_code.Url();
-  return ClassicScript::Create(source_code, base_url, options_,
-                               resource->CalculateAccessControlStatus());
+  return ClassicScript::Create(
+      source_code, base_url, options_,
+      resource->CalculateAccessControlStatus(
+          GetElement()->GetDocument().GetSecurityOrigin()));
 }
 
 void ClassicPendingScript::SetStreamer(ScriptStreamer* streamer) {
