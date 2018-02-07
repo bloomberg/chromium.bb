@@ -27,6 +27,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/test/gtest_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -81,6 +82,8 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
     HttpRequestInfo* request_info = new HttpRequestInfo;
     request_info->url = GURL(url);
     request_info->method = "GET";
+    request_info->traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
     request_info_vector_.push_back(base::WrapUnique(request_info));
     return request_info;
   }
@@ -205,6 +208,8 @@ TEST_F(HttpNetworkTransactionSSLTest, TokenBindingAsync) {
   request_info.url = GURL("https://www.example.com/");
   request_info.method = "GET";
   request_info.token_binding_referrer = "encrypted.example.com";
+  request_info.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
   HttpNetworkSession session(HttpNetworkSession::Params(), session_context_);
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, &session);

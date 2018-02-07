@@ -276,6 +276,8 @@ class QuicNetworkTransactionTest : public PlatformTest,
     url.append(kDefaultServerHostName);
     request_.url = GURL(url);
     request_.load_flags = 0;
+    request_.traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
 
     scoped_refptr<X509Certificate> cert(
@@ -5172,6 +5174,8 @@ TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
   request3.method = "GET";
   request3.url = GURL("https://mail.example.org/");
   request3.load_flags = 0;
+  request3.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   HttpNetworkTransaction trans3(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback3;
   EXPECT_THAT(trans3.Start(&request3, callback3.callback(), net_log_.bound()),
@@ -5667,6 +5671,8 @@ class QuicNetworkTransactionWithDestinationTest
     request.url = GURL(url);
     request.load_flags = 0;
     request.method = "GET";
+    request.traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
     TestCompletionCallback callback;
     int rv = trans.Start(&request, callback.callback(), net_log_.bound());
     EXPECT_THAT(callback.GetResult(rv), IsOk());
@@ -5756,6 +5762,8 @@ TEST_P(QuicNetworkTransactionWithDestinationTest, InvalidCertificate) {
 
   HttpRequestInfo request;
   request.url = url;
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
   TestCompletionCallback callback;
