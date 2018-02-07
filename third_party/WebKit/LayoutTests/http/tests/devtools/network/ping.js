@@ -18,17 +18,16 @@
       }
   `);
 
-  TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'requestWillBeSent', step2);
   TestRunner.evaluateInPage('navigateLink()');
-
-  function step2() {
-    // inspector-test.js appears in network panel occasionally in Safari on
-    // Mac, so checking last request.
-    var request = NetworkTestRunner.networkRequests().pop();
-
-    TestRunner.addResult(request.url());
-    TestRunner.addResult('resource.requestContentType: ' + request.requestContentType());
-
-    TestRunner.completeTest();
+  await TestRunner.addSnifferPromise(SDK.NetworkDispatcher.prototype, 'requestWillBeSent');
+  var request = NetworkTestRunner.networkRequests().peekLast();
+  if (request.url().endsWith('/')) {
+    await TestRunner.addSnifferPromise(SDK.NetworkDispatcher.prototype, 'requestWillBeSent');
+    request = NetworkTestRunner.networkRequests().pop();
   }
+
+  TestRunner.addResult(request.url());
+  TestRunner.addResult('resource.requestContentType: ' + request.requestContentType());
+
+  TestRunner.completeTest();
 })();
