@@ -89,7 +89,7 @@ unsigned NextWordPositionBoundary(
     return length;
   }
   need_more_context = false;
-  return FindNextWordFromIndex(characters, length, offset, true);
+  return FindNextWordForward(characters, length, offset);
 }
 
 unsigned PreviousWordPositionBoundary(
@@ -104,7 +104,7 @@ unsigned PreviousWordPositionBoundary(
     return 0;
   }
   need_more_context = false;
-  return FindNextWordFromIndex(characters, length, offset, false);
+  return FindNextWordBackward(characters, length, offset);
 }
 
 unsigned StartWordBoundary(

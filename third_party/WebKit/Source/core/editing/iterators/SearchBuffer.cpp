@@ -227,10 +227,10 @@ inline bool SearchBuffer::IsWordStartMatch(size_t start, size_t length) const {
     return true;
 
   size_t word_break_search_start = start + length;
-  while (word_break_search_start > start)
-    word_break_search_start =
-        FindNextWordFromIndex(buffer_.data(), buffer_.size(),
-                              word_break_search_start, false /* backwards */);
+  while (word_break_search_start > start) {
+    word_break_search_start = FindNextWordBackward(
+        buffer_.data(), buffer_.size(), word_break_search_start);
+  }
   if (word_break_search_start != start)
     return false;
   if (options_ & kWholeWord)
