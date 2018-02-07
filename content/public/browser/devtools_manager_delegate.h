@@ -66,8 +66,8 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
   // and provide attach links.
   virtual std::string GetDiscoveryPageHTML();
 
-  // Returns frontend resource data by |path|.
-  virtual std::string GetFrontendResource(const std::string& path);
+  // Returns whether frontend resources are bundled within the binary.
+  virtual bool HasBundledFrontendResources();
 
   // Makes browser target easily discoverable for remote debugging.
   // This should only return true when remote debugging endpoint is not

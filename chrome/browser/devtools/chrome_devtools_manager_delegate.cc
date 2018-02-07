@@ -184,9 +184,8 @@ std::string ChromeDevToolsManagerDelegate::GetDiscoveryPageHTML() {
       .as_string();
 }
 
-std::string ChromeDevToolsManagerDelegate::GetFrontendResource(
-    const std::string& path) {
-  return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
+bool ChromeDevToolsManagerDelegate::HasBundledFrontendResources() {
+  return true;
 }
 
 void ChromeDevToolsManagerDelegate::DevToolsAgentHostAttached(

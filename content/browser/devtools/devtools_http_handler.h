@@ -42,8 +42,6 @@ class ServerWrapper;
 class DevToolsHttpHandler {
  public:
   // Takes ownership over |socket_factory|.
-  // If |frontend_url| is empty, assumes it's bundled, and uses
-  // |delegate->GetFrontendResource()|.
   // |delegate| is only accessed on UI thread.
   // If |active_port_output_directory| is non-empty, it is assumed the
   // socket_factory was initialized with an ephemeral port (0). The
@@ -52,7 +50,6 @@ class DevToolsHttpHandler {
   DevToolsHttpHandler(
       DevToolsManagerDelegate* delegate,
       std::unique_ptr<DevToolsSocketFactory> server_socket_factory,
-      const std::string& frontend_url,
       const base::FilePath& active_port_output_directory,
       const base::FilePath& debug_frontend_dir);
   ~DevToolsHttpHandler();
