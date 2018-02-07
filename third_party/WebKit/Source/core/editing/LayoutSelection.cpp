@@ -364,9 +364,7 @@ static OldSelectedLayoutObjects ResetOldSelectedLayoutObjects(
       continue;
     if (old_state != SelectionState::kContain)
       old_selected_objects.insert(layout_object, old_state);
-    // TODO(yoichio): Once we make LayoutObject::SetSelectionState() trivial,
-    // use it directly.
-    layout_object->LayoutObject::SetSelectionState(SelectionState::kNone);
+    layout_object->SetSelectionState(SelectionState::kNone);
 
     // Reset containing block SelectionState for CSS ::selection style.
     // See LayoutObject::InvalidatePaintForSelection().
@@ -375,7 +373,7 @@ static OldSelectedLayoutObjects ResetOldSelectedLayoutObjects(
          containing_block = containing_block->ContainingBlock()) {
       if (containing_block_set.Contains(containing_block))
         break;
-      containing_block->LayoutObject::SetSelectionState(SelectionState::kNone);
+      containing_block->SetSelectionState(SelectionState::kNone);
       containing_block_set.insert(containing_block);
     }
   }
