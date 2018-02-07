@@ -11,6 +11,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/media/AutoplayUmaHelper.h"
 #include "core/html/media/HTMLMediaElement.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "platform/network/NetworkStateNotifier.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Assertions.h"
@@ -21,6 +22,15 @@
 namespace blink {
 
 namespace {
+
+const char kWarningUnmuteFailed[] =
+    "Unmuting failed and the element was paused instead because the user "
+    "didn't interact with the document before. https://goo.gl/xX8pDD";
+const char kErrorAutoplayFuncUnified[] =
+    "play() failed because the user didn't interact with the document first. "
+    "https://goo.gl/xX8pDD";
+const char kErrorAutoplayFuncMobile[] =
+    "play() can only be initiated by a user gesture.";
 
 bool IsDocumentCrossOrigin(const Document& document) {
   const LocalFrame* frame = document.GetFrame();
@@ -180,6 +190,11 @@ bool AutoplayPolicy::RequestAutoplayUnmute() {
 
   if (was_autoplaying_muted) {
     if (IsGestureNeededForPlayback()) {
+      if (IsUsingDocumentUserActivationRequiredPolicy()) {
+        element_->GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+            kJSMessageSource, kWarningMessageLevel, kWarningUnmuteFailed));
+      }
+
       autoplay_uma_helper_->RecordAutoplayUnmuteStatus(
           AutoplayUnmuteActionStatus::kFailure);
       return false;
@@ -268,10 +283,8 @@ bool AutoplayPolicy::IsOrWillBeAutoplayingMutedInternal(bool muted) const {
 }
 
 bool AutoplayPolicy::IsLockedPendingUserGesture() const {
-  if (GetAutoplayPolicyForDocument(element_->GetDocument()) ==
-      AutoplayPolicy::Type::kDocumentUserActivationRequired) {
+  if (IsUsingDocumentUserActivationRequiredPolicy())
     return !IsDocumentAllowedToPlay(element_->GetDocument());
-  }
 
   return locked_pending_user_gesture_;
 }
@@ -293,6 +306,12 @@ bool AutoplayPolicy::IsGestureNeededForPlayback() const {
     return false;
 
   return IsGestureNeededForPlaybackIfPendingUserGestureIsLocked();
+}
+
+String AutoplayPolicy::GetPlayErrorMessage() const {
+  return IsUsingDocumentUserActivationRequiredPolicy()
+             ? kErrorAutoplayFuncUnified
+             : kErrorAutoplayFuncMobile;
 }
 
 bool AutoplayPolicy::IsGestureNeededForPlaybackIfPendingUserGestureIsLocked()
@@ -336,6 +355,11 @@ void AutoplayPolicy::OnVisibilityChangedForAutoplay(bool is_visible) {
 
     element_->UpdatePlayState();
   }
+}
+
+bool AutoplayPolicy::IsUsingDocumentUserActivationRequiredPolicy() const {
+  return GetAutoplayPolicyForDocument(element_->GetDocument()) ==
+         AutoplayPolicy::Type::kDocumentUserActivationRequired;
 }
 
 bool AutoplayPolicy::IsGestureNeededForPlaybackIfCrossOriginExperimentEnabled()
