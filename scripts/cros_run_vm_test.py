@@ -110,7 +110,7 @@ class VMTest(object):
     if self.board:
       cmd += ['--board', self.board]
     if self.results_dir:
-      cmd += ['--results-dir', self.results_dir]
+      cmd += ['--results_dir', self.results_dir]
     cmd += [
         '--no-quickmerge',
         '--ssh_options', '-F /dev/null -i /dev/null',

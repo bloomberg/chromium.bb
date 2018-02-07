@@ -273,10 +273,11 @@ class VM(object):
       qemu_args.append('-enable-kvm')
     if not self.display:
       qemu_args.extend(['-display', 'none'])
-    logging.info(cros_build_lib.CmdToStr(qemu_args))
     logging.info('Pid file: %s', self.pidfile)
     if not self.dry_run:
       self._RunCommand(qemu_args)
+    else:
+      logging.info(cros_build_lib.CmdToStr(qemu_args))
 
   def _GetVMPid(self):
     """Get the pid of the VM.
