@@ -23,7 +23,7 @@ function VolumeModel() {
    * @type {number}
    */
   this.volume_ = 0.5;
-};
+}
 
 /**
  * After unmuting, the volume should be non-zero value to avoid that the mute
@@ -177,7 +177,9 @@ MediaControls.ButtonStateType = {
 /**
  * @return {HTMLAudioElement|HTMLVideoElement} The media element.
  */
-MediaControls.prototype.getMedia = function() { return this.media_ };
+MediaControls.prototype.getMedia = function() {
+  return this.media_;
+};
 
 /**
  * Format the time in hh:mm:ss format (omitting redundant leading zeros)
@@ -516,7 +518,7 @@ MediaControls.prototype.setSeeking_ = function(seeking) {
 MediaControls.prototype.onTimeLabelClick_ = function(event) {
   this.showRemainingTime_ = !this.showRemainingTime_;
   this.updateTimeLabel_(this.media_.currentTime, this.media_.duration);
-}
+};
 
 /**
  * Update the label for current playing position and video duration.
@@ -645,11 +647,11 @@ MediaControls.prototype.reflectVolumeToUi_ = function() {
   this.soundButton_.setAttribute('aria-label', this.volumeModel_.isMuted_
                                  ? str('MEDIA_PLAYER_UNMUTE_BUTTON_LABEL')
                                  : str('MEDIA_PLAYER_MUTE_BUTTON_LABEL'));
-  this.volume_.value = this.volumeModel_.getMediaVolume() * this.volume_.max
+  this.volume_.value = this.volumeModel_.getMediaVolume() * this.volume_.max;
   if (this.media_) {
     this.media_.volume = this.volumeModel_.getMediaVolume();
   }
-}
+};
 
 /**
  * Handles change event of the volume slider.
@@ -670,7 +672,7 @@ MediaControls.prototype.onVolumeChange_ = function(value) {
  */
 MediaControls.prototype.onVolumeDrag_ = function() {
   if (this.media_.volume !== 0) {
-    this.volumeModel_.onVolumeChanged(this.media_.volume);;
+    this.volumeModel_.onVolumeChanged(this.media_.volume);
   }
 };
 
@@ -1184,9 +1186,9 @@ VideoControls.prototype.restorePlayState = function() {
 
 /**
  * Updates video control when the window is fullscreened or restored.
- * @param {boolean} fullscreen True if the window gets fullscreened.
  */
-VideoControls.prototype.onFullScreenChanged = function(fullscreen) {
+VideoControls.prototype.onFullScreenChanged = function() {
+  var fullscreen = util.isFullScreen(chrome.app.window.current());
   if (fullscreen) {
     this.container_.setAttribute('fullscreen', '');
   } else {
@@ -1194,9 +1196,10 @@ VideoControls.prototype.onFullScreenChanged = function(fullscreen) {
   }
 
   if (this.fullscreenButton_) {
-    this.fullscreenButton_.setAttribute('aria-label',
-        fullscreen ? str('VIDEO_PLAYER_EXIT_FULL_SCREEN_BUTTON_LABEL')
-                   : str('VIDEO_PLAYER_FULL_SCREEN_BUTTON_LABEL'));;
+    this.fullscreenButton_.setAttribute(
+        'aria-label',
+        fullscreen ? str('VIDEO_PLAYER_EXIT_FULL_SCREEN_BUTTON_LABEL') :
+                     str('VIDEO_PLAYER_FULL_SCREEN_BUTTON_LABEL'));
     // If the fullscreen button has focus on entering fullscreen mode, reset the
     // focus to make the spacebar toggle play/pause state. This is the
     // consistent behavior with Youtube Web UI.

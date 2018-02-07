@@ -24,10 +24,8 @@ function FullWindowVideoControls(
   this.casting = false;
 
   var currentWindow = chrome.app.window.current();
-  currentWindow.onFullscreened.addListener(
-      this.onFullScreenChanged.bind(this, true));
-  currentWindow.onRestored.addListener(
-      this.onFullScreenChanged.bind(this, false));
+  currentWindow.onFullscreened.addListener(this.onFullScreenChanged.bind(this));
+  currentWindow.onRestored.addListener(this.onFullScreenChanged.bind(this));
   document.addEventListener('keydown', function(e) {
     this.inactivityWatcher_.kick();
     switch (util.getKeyModifiers(e) + e.key) {
