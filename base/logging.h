@@ -573,7 +573,11 @@ class CheckOpResult {
 // TODO(scottmg): Reinvestigate a short sequence that will work on both
 // compilers once clang supports more intrinsics. See https://crbug.com/693713.
 #if defined(__clang__)
-#define IMMEDIATE_CRASH() ({__asm int 3 __asm ud2 __asm push __COUNTER__})
+#define IMMEDIATE_CRASH()                           \
+  ({                                                \
+    {__asm int 3 __asm ud2 __asm push __COUNTER__}; \
+    __builtin_unreachable();                        \
+  })
 #else
 #define IMMEDIATE_CRASH() __debugbreak()
 #endif  // __clang__

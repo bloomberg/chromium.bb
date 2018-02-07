@@ -170,8 +170,6 @@ MULTIPROCESS_TEST_MAIN(TerminateCurrentProcessImmediatelyWithCode0) {
   base::ThreadLocalPointer<ThreadLocalObject> object;
   base::AtExitManager::RegisterCallback(&AtExitHandler, nullptr);
   Process::TerminateCurrentProcessImmediately(0);
-  NOTREACHED();
-  return 42;
 }
 
 TEST_F(ProcessTest, TerminateCurrentProcessImmediatelyWithZeroExitCode) {
@@ -185,8 +183,6 @@ TEST_F(ProcessTest, TerminateCurrentProcessImmediatelyWithZeroExitCode) {
 
 MULTIPROCESS_TEST_MAIN(TerminateCurrentProcessImmediatelyWithCode250) {
   Process::TerminateCurrentProcessImmediately(250);
-  NOTREACHED();
-  return 42;
 }
 
 TEST_F(ProcessTest, TerminateCurrentProcessImmediatelyWithNonZeroExitCode) {
