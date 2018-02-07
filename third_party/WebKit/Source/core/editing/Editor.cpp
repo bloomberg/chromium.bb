@@ -807,21 +807,6 @@ void Editor::ApplyParagraphStyleToSelection(CSSPropertyValueSet* style,
   ApplyParagraphStyle(style, input_type);
 }
 
-bool Editor::SelectionStartHasStyle(CSSPropertyID property_id,
-                                    const String& value) const {
-  const SecureContextMode secure_context_mode =
-      frame_->GetDocument()->GetSecureContextMode();
-
-  EditingStyle* style_to_check =
-      EditingStyle::Create(property_id, value, secure_context_mode);
-  EditingStyle* style_at_start =
-      EditingStyleUtilities::CreateStyleAtSelectionStart(
-          GetFrameSelection().ComputeVisibleSelectionInDOMTreeDeprecated(),
-          property_id == CSSPropertyBackgroundColor, style_to_check->Style());
-  return style_to_check->TriStateOfStyle(style_at_start, secure_context_mode) !=
-         EditingTriState::kFalse;
-}
-
 EditingTriState Editor::SelectionHasStyle(CSSPropertyID property_id,
                                           const String& value) const {
   const SecureContextMode secure_context_mode =

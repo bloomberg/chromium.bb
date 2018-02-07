@@ -99,7 +99,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
   void RespondToChangedContents(const Position&);
 
-  bool SelectionStartHasStyle(CSSPropertyID, const String& value) const;
   EditingTriState SelectionHasStyle(CSSPropertyID, const String& value) const;
 
   void RemoveFormattingAndStyle();

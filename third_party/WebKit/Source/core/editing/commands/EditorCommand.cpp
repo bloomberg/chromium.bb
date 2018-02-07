@@ -365,6 +365,22 @@ static bool ExecuteToggleStyleInList(LocalFrame& frame,
   return ApplyCommandToFrame(frame, source, input_type, new_mutable_style);
 }
 
+static bool SelectionStartHasStyle(LocalFrame& frame,
+                                   CSSPropertyID property_id,
+                                   const String& value) {
+  const SecureContextMode secure_context_mode =
+      frame.GetDocument()->GetSecureContextMode();
+
+  EditingStyle* const style_to_check =
+      EditingStyle::Create(property_id, value, secure_context_mode);
+  EditingStyle* const style_at_start =
+      EditingStyleUtilities::CreateStyleAtSelectionStart(
+          frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated(),
+          property_id == CSSPropertyBackgroundColor, style_to_check->Style());
+  return style_to_check->TriStateOfStyle(style_at_start, secure_context_mode) !=
+         EditingTriState::kFalse;
+}
+
 static bool ExecuteToggleStyle(LocalFrame& frame,
                                EditorCommandSource source,
                                InputEvent::InputType input_type,
@@ -377,8 +393,7 @@ static bool ExecuteToggleStyle(LocalFrame& frame,
 
   bool style_is_present;
   if (frame.GetEditor().Behavior().ShouldToggleStyleBasedOnStartOfSelection())
-    style_is_present =
-        frame.GetEditor().SelectionStartHasStyle(property_id, on_value);
+    style_is_present = SelectionStartHasStyle(frame, property_id, on_value);
   else
     style_is_present = frame.GetEditor().SelectionHasStyle(
                            property_id, on_value) == EditingTriState::kTrue;
@@ -488,7 +503,7 @@ static EditingTriState StateStyle(LocalFrame& frame,
                                   const char* desired_value) {
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (frame.GetEditor().Behavior().ShouldToggleStyleBasedOnStartOfSelection()) {
-    return frame.GetEditor().SelectionStartHasStyle(property_id, desired_value)
+    return SelectionStartHasStyle(frame, property_id, desired_value)
                ? EditingTriState::kTrue
                : EditingTriState::kFalse;
   }
