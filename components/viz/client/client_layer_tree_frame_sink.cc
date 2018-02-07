@@ -156,7 +156,7 @@ void ClientLayerTreeFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
 
   mojom::HitTestRegionListPtr hit_test_region_list;
   if (hit_test_data_provider_)
-    hit_test_region_list = hit_test_data_provider_->GetHitTestData();
+    hit_test_region_list = hit_test_data_provider_->GetHitTestData(frame);
 
   compositor_frame_sink_ptr_->SubmitCompositorFrame(
       local_surface_id_, std::move(frame), std::move(hit_test_region_list),
