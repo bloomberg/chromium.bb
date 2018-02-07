@@ -20,6 +20,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/pickle.h"
 #include "base/process/process_handle.h"
+#include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
@@ -83,6 +84,30 @@ void HistogramBase::SetFlags(int32_t flags) {
 void HistogramBase::ClearFlags(int32_t flags) {
   HistogramBase::Count old_flags = subtle::NoBarrier_Load(&flags_);
   subtle::NoBarrier_Store(&flags_, old_flags & ~flags);
+}
+
+void HistogramBase::AddScaled(Sample value, int count, int scale) {
+  DCHECK_LT(0, scale);
+
+  // Convert raw count and probabilistically round up/down if the remainder
+  // is more than a random number [0, scale). This gives a more accurate
+  // count when there are a large number of records. RandInt is "inclusive",
+  // hence the -1 for the max value.
+  int64_t count_scaled = count / scale;
+  if (count - (count_scaled * scale) > base::RandInt(0, scale - 1))
+    count_scaled += 1;
+  if (count_scaled == 0)
+    return;
+
+  AddCount(value, count_scaled);
+}
+
+void HistogramBase::AddKilo(Sample value, int count) {
+  AddScaled(value, count, 1000);
+}
+
+void HistogramBase::AddKiB(Sample value, int count) {
+  AddScaled(value, count, 1024);
 }
 
 void HistogramBase::AddTime(const TimeDelta& time) {
