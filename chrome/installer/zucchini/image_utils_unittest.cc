@@ -4,8 +4,6 @@
 
 #include "chrome/installer/zucchini/image_utils.h"
 
-#include <stdint.h>
-
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
