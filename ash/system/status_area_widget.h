@@ -17,6 +17,7 @@ class Window;
 }
 
 namespace ash {
+class FlagWarningTray;
 class ImeMenuTray;
 class LogoutButtonTray;
 class OverviewButtonTray;
@@ -96,23 +97,18 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   // ShelfBackgroundAnimatorObserver:
   void UpdateShelfItemBackground(SkColor color) override;
 
+  // TODO(jamescook): Introduce a test API instead of these methods.
   LogoutButtonTray* logout_button_tray_for_testing() {
     return logout_button_tray_.get();
   }
-
   VirtualKeyboardTray* virtual_keyboard_tray_for_testing() {
     return virtual_keyboard_tray_.get();
   }
+  FlagWarningTray* flag_warning_tray_for_testing() {
+    return flag_warning_tray_.get();
+  }
 
  private:
-  void AddSystemTray();
-  void AddWebNotificationTray();
-  void AddLogoutButtonTray();
-  void AddPaletteTray();
-  void AddVirtualKeyboardTray();
-  void AddImeMenuTray();
-  void AddOverviewButtonTray();
-
   StatusAreaWidgetDelegate* status_area_widget_delegate_;
 
   std::unique_ptr<OverviewButtonTray> overview_button_tray_;
@@ -122,6 +118,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   std::unique_ptr<PaletteTray> palette_tray_;
   std::unique_ptr<VirtualKeyboardTray> virtual_keyboard_tray_;
   std::unique_ptr<ImeMenuTray> ime_menu_tray_;
+  std::unique_ptr<FlagWarningTray> flag_warning_tray_;
 
   LoginStatus login_status_ = LoginStatus::NOT_LOGGED_IN;
 

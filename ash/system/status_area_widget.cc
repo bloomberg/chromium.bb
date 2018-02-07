@@ -7,6 +7,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/system/flag_warning/flag_warning_tray.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/palette/palette_tray.h"
@@ -63,6 +64,9 @@ void StatusAreaWidget::Initialize() {
   logout_button_tray_ = std::make_unique<LogoutButtonTray>(shelf_);
   status_area_widget_delegate_->AddChildView(logout_button_tray_.get());
 
+  flag_warning_tray_ = std::make_unique<FlagWarningTray>(shelf_);
+  status_area_widget_delegate_->AddChildView(flag_warning_tray_.get());
+
   // The layout depends on the number of children, so build it once after
   // adding all of them.
   status_area_widget_delegate_->UpdateLayout();
@@ -93,6 +97,7 @@ StatusAreaWidget::~StatusAreaWidget() {
   palette_tray_.reset();
   logout_button_tray_.reset();
   overview_button_tray_.reset();
+  flag_warning_tray_.reset();
 
   // All child tray views have been removed.
   DCHECK_EQ(0, GetContentsView()->child_count());
@@ -106,6 +111,7 @@ void StatusAreaWidget::UpdateAfterShelfAlignmentChange() {
   ime_menu_tray_->UpdateAfterShelfAlignmentChange();
   palette_tray_->UpdateAfterShelfAlignmentChange();
   overview_button_tray_->UpdateAfterShelfAlignmentChange();
+  flag_warning_tray_->UpdateAfterShelfAlignmentChange();
   status_area_widget_delegate_->UpdateLayout();
 }
 
@@ -162,6 +168,7 @@ void StatusAreaWidget::SchedulePaint() {
   ime_menu_tray_->SchedulePaint();
   palette_tray_->SchedulePaint();
   overview_button_tray_->SchedulePaint();
+  flag_warning_tray_->SchedulePaint();
 }
 
 const ui::NativeTheme* StatusAreaWidget::GetNativeTheme() const {
