@@ -19,6 +19,7 @@ MediaControlPictureInPictureButtonElement::
   setType(InputTypeNames::button);
   SetShadowPseudoId(
       AtomicString("-internal-media-controls-picture-in-picture-button"));
+  SetIsWanted(false);
 }
 
 bool MediaControlPictureInPictureButtonElement::
