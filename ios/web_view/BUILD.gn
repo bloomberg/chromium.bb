@@ -11,6 +11,14 @@ import("//ios/web_view/features.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
+group("all_tests") {
+  testonly = true
+  deps = [
+    ":ios_web_view_inttests",
+    ":ios_web_view_unittests",
+  ]
+}
+
 config("config") {
   defines = [ "CWV_IMPLEMENTATION" ]
   libs = [
@@ -265,6 +273,20 @@ test("ios_web_view_unittests") {
     "//third_party/ocmock",
   ]
   deps += ios_web_view_deps
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  assert_no_deps = ios_assert_no_deps
+}
+
+test("ios_web_view_inttests") {
+  testonly = true
+
+  deps = [
+    "//ios/web_view/test:inttests",
+  ]
+
+  bundle_deps = [ ":web_view+bundle" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
