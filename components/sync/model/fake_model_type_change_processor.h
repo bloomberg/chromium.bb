@@ -43,8 +43,6 @@ class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   void DisableSync() override;
   bool IsTrackingMetadata() override;
   void ReportError(const ModelError& error) override;
-  void ReportError(const base::Location& location,
-                   const std::string& message) override;
 
   // Indicates that ReportError should be called in the future.
   void ExpectError();

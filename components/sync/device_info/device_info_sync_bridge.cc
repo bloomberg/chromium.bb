@@ -342,8 +342,8 @@ void DeviceInfoSyncBridge::OnStoreCreated(
     store_->ReadAllData(base::Bind(&DeviceInfoSyncBridge::OnReadAllData,
                                    base::AsWeakPtr(this)));
   } else {
-    change_processor()->ReportError(FROM_HERE,
-                                    "ModelTypeStore creation failed.");
+    change_processor()->ReportError(
+        {FROM_HERE, "ModelTypeStore creation failed."});
   }
 }
 
@@ -351,7 +351,8 @@ void DeviceInfoSyncBridge::OnReadAllData(
     Result result,
     std::unique_ptr<RecordList> record_list) {
   if (result != Result::SUCCESS) {
-    change_processor()->ReportError(FROM_HERE, "Initial load of data failed.");
+    change_processor()->ReportError(
+        {FROM_HERE, "Initial load of data failed."});
     return;
   }
 
@@ -361,8 +362,8 @@ void DeviceInfoSyncBridge::OnReadAllData(
     if (specifics->ParseFromString(r.value)) {
       all_data_[specifics->cache_guid()] = std::move(specifics);
     } else {
-      change_processor()->ReportError(FROM_HERE,
-                                      "Failed to deserialize specifics.");
+      change_processor()->ReportError(
+          {FROM_HERE, "Failed to deserialize specifics."});
       return;
     }
   }
@@ -382,7 +383,7 @@ void DeviceInfoSyncBridge::OnReadAllMetadata(
     base::Optional<ModelError> error,
     std::unique_ptr<MetadataBatch> metadata_batch) {
   if (error) {
-    change_processor()->ReportError(error.value());
+    change_processor()->ReportError(*error);
     return;
   }
 
@@ -392,7 +393,7 @@ void DeviceInfoSyncBridge::OnReadAllMetadata(
 
 void DeviceInfoSyncBridge::OnCommit(Result result) {
   if (result != Result::SUCCESS) {
-    change_processor()->ReportError(FROM_HERE, "Failed a write to store.");
+    change_processor()->ReportError({FROM_HERE, "Failed a write to store."});
   }
 }
 

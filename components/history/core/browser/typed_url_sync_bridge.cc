@@ -298,8 +298,8 @@ void TypedURLSyncBridge::GetAllData(DataCallback callback) {
   ++num_db_accesses_;
   if (!history_backend_->GetAllTypedURLs(&typed_urls)) {
     ++num_db_errors_;
-    change_processor()->ReportError(FROM_HERE,
-                                    "Could not get the typed_url entries.");
+    change_processor()->ReportError(
+        {FROM_HERE, "Could not get the typed_url entries."});
     return;
   }
 
@@ -418,9 +418,9 @@ void TypedURLSyncBridge::OnURLsDeleted(HistoryBackend* history_backend,
   if (all_history) {
     auto batch = std::make_unique<syncer::MetadataBatch>();
     if (!sync_metadata_database_->GetAllSyncMetadata(batch.get())) {
-      change_processor()->ReportError(FROM_HERE,
-                                      "Failed reading typed url metadata from "
-                                      "TypedURLSyncMetadataDatabase.");
+      change_processor()->ReportError({FROM_HERE,
+                                       "Failed reading typed url metadata from "
+                                       "TypedURLSyncMetadataDatabase."});
       return;
     }
 
@@ -446,8 +446,8 @@ void TypedURLSyncBridge::Init() {
 
 void TypedURLSyncBridge::OnDatabaseError() {
   sync_metadata_database_ = nullptr;
-  change_processor()->ReportError(FROM_HERE,
-                                  "HistoryDatabase encountered error");
+  change_processor()->ReportError(
+      {FROM_HERE, "HistoryDatabase encountered error"});
 }
 
 int TypedURLSyncBridge::GetErrorPercentage() const {
@@ -728,15 +728,15 @@ void TypedURLSyncBridge::UpdateURLRowFromTypedUrlSpecifics(
 void TypedURLSyncBridge::LoadMetadata() {
   if (!history_backend_ || !sync_metadata_database_) {
     change_processor()->ReportError(
-        FROM_HERE, "Failed to load TypedURLSyncMetadataDatabase.");
+        {FROM_HERE, "Failed to load TypedURLSyncMetadataDatabase."});
     return;
   }
 
   auto batch = std::make_unique<syncer::MetadataBatch>();
   if (!sync_metadata_database_->GetAllSyncMetadata(batch.get())) {
-    change_processor()->ReportError(
-        FROM_HERE,
-        "Failed reading typed url metadata from TypedURLSyncMetadataDatabase.");
+    change_processor()->ReportError({FROM_HERE,
+                                     "Failed reading typed url metadata from "
+                                     "TypedURLSyncMetadataDatabase."});
     return;
   }
   change_processor()->ModelReadyToSync(std::move(batch));

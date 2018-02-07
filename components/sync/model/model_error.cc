@@ -20,4 +20,8 @@ const std::string& ModelError::message() const {
   return message_;
 }
 
+std::string ModelError::ToString() const {
+  return location_.ToString() + std::string(": ") + message_;
+}
+
 }  // namespace syncer

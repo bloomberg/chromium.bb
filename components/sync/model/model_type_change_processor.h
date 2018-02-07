@@ -99,10 +99,6 @@ class ModelTypeChangeProcessor {
   // be called after an error. This will result in sync being temporarily
   // disabled for the model type (generally until the next restart).
   virtual void ReportError(const ModelError& error) = 0;
-
-  // A convenience form of the above.
-  virtual void ReportError(const base::Location& location,
-                           const std::string& message) = 0;
 };
 
 }  // namespace syncer

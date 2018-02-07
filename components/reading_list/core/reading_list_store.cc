@@ -126,8 +126,8 @@ void ReadingListStore::OnDatabaseLoad(
     std::unique_ptr<syncer::ModelTypeStore::RecordList> entries) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (result != syncer::ModelTypeStore::Result::SUCCESS) {
-    change_processor()->ReportError(FROM_HERE,
-                                    "Cannot load Reading List Database.");
+    change_processor()->ReportError(
+        {FROM_HERE, "Cannot load Reading List Database."});
     return;
   }
   auto loaded_entries =
@@ -162,7 +162,7 @@ void ReadingListStore::OnReadAllMetadata(
     std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
-    change_processor()->ReportError(FROM_HERE, "Failed to read metadata.");
+    change_processor()->ReportError({FROM_HERE, "Failed to read metadata."});
   } else {
     change_processor()->ModelReadyToSync(std::move(metadata_batch));
   }

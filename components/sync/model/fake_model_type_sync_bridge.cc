@@ -305,7 +305,7 @@ void FakeModelTypeSyncBridge::GetData(StorageKeyList keys,
                                       DataCallback callback) {
   if (error_next_) {
     error_next_ = false;
-    change_processor()->ReportError(FROM_HERE, "boom");
+    change_processor()->ReportError({FROM_HERE, "boom"});
     return;
   }
 
@@ -320,7 +320,7 @@ void FakeModelTypeSyncBridge::GetData(StorageKeyList keys,
 void FakeModelTypeSyncBridge::GetAllData(DataCallback callback) {
   if (error_next_) {
     error_next_ = false;
-    change_processor()->ReportError(FROM_HERE, "boom");
+    change_processor()->ReportError({FROM_HERE, "boom"});
     return;
   }
 

@@ -201,8 +201,8 @@ void UserEventSyncBridge::OnStoreCreated(
     store_->ReadAllMetadata(base::Bind(&UserEventSyncBridge::OnReadAllMetadata,
                                        base::AsWeakPtr(this)));
   } else {
-    change_processor()->ReportError(FROM_HERE,
-                                    "ModelTypeStore creation failed.");
+    change_processor()->ReportError(
+        {FROM_HERE, "ModelTypeStore creation failed."});
   }
 }
 
@@ -210,7 +210,7 @@ void UserEventSyncBridge::OnReadAllMetadata(
     base::Optional<ModelError> error,
     std::unique_ptr<MetadataBatch> metadata_batch) {
   if (error) {
-    change_processor()->ReportError(error.value());
+    change_processor()->ReportError(*error);
   } else {
     if (!metadata_batch->GetModelTypeState().initial_sync_done()) {
       // We have never initialized before, force it to true. We are not going to
@@ -227,7 +227,7 @@ void UserEventSyncBridge::OnReadAllMetadata(
 
 void UserEventSyncBridge::OnCommit(Result result) {
   if (result != Result::SUCCESS) {
-    change_processor()->ReportError(FROM_HERE, "Failed writing user events.");
+    change_processor()->ReportError({FROM_HERE, "Failed writing user events."});
   }
 }
 
@@ -243,7 +243,7 @@ void UserEventSyncBridge::OnReadAllData(
     Result result,
     std::unique_ptr<RecordList> data_records) {
   if (result != Result::SUCCESS) {
-    change_processor()->ReportError(FROM_HERE, "Failed reading user events.");
+    change_processor()->ReportError({FROM_HERE, "Failed reading user events."});
     return;
   }
 
@@ -254,8 +254,8 @@ void UserEventSyncBridge::OnReadAllData(
       DCHECK_EQ(r.id, GetStorageKeyFromSpecifics(specifics));
       batch->Put(r.id, CopyToEntityData(specifics));
     } else {
-      change_processor()->ReportError(FROM_HERE,
-                                      "Failed deserializing user events.");
+      change_processor()->ReportError(
+          {FROM_HERE, "Failed deserializing user events."});
       return;
     }
   }
@@ -266,7 +266,7 @@ void UserEventSyncBridge::OnReadAllDataToDelete(
     Result result,
     std::unique_ptr<RecordList> data_records) {
   if (result != Result::SUCCESS) {
-    change_processor()->ReportError(FROM_HERE, "Failed reading user events.");
+    change_processor()->ReportError({FROM_HERE, "Failed reading user events."});
     return;
   }
 

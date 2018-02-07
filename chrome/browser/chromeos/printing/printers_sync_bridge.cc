@@ -82,15 +82,15 @@ class PrintersSyncBridge::StoreProxy {
                                      weak_ptr_factory_.GetWeakPtr()));
     } else {
       owner_->change_processor()->ReportError(
-          FROM_HERE, "ModelTypeStore creation failed.");
+          {FROM_HERE, "ModelTypeStore creation failed."});
     }
   }
 
   void OnReadAllData(Result result,
                      std::unique_ptr<ModelTypeStore::RecordList> record_list) {
     if (result != Result::SUCCESS) {
-      owner_->change_processor()->ReportError(FROM_HERE,
-                                              "Initial load of data failed");
+      owner_->change_processor()->ReportError(
+          {FROM_HERE, "Initial load of data failed"});
       return;
     }
 
@@ -111,7 +111,7 @@ class PrintersSyncBridge::StoreProxy {
 
     if (error) {
       owner_->change_processor()->ReportError(
-          FROM_HERE, "Failed to deserialize all specifics.");
+          {FROM_HERE, "Failed to deserialize all specifics."});
       return;
     }
 
@@ -124,8 +124,8 @@ class PrintersSyncBridge::StoreProxy {
   void OnCommit(ModelTypeStore::Result result) {
     if (result != Result::SUCCESS) {
       LOG(WARNING) << "Failed to commit operation to store";
-      owner_->change_processor()->ReportError(FROM_HERE,
-                                              "Failed to commit to store");
+      owner_->change_processor()->ReportError(
+          {FROM_HERE, "Failed to commit to store"});
     }
   }
 
@@ -133,7 +133,7 @@ class PrintersSyncBridge::StoreProxy {
       base::Optional<syncer::ModelError> error,
       std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
     if (error) {
-      owner_->change_processor()->ReportError(error.value());
+      owner_->change_processor()->ReportError(*error);
       return;
     }
 

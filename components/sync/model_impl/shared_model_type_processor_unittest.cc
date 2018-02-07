@@ -400,7 +400,7 @@ TEST_F(SharedModelTypeProcessorTest, MergeError) {
 
 // Test that errors before it's called are passed to |start_callback| correctly.
 TEST_F(SharedModelTypeProcessorTest, StartErrors) {
-  type_processor()->ReportError(FROM_HERE, "boom");
+  type_processor()->ReportError({FROM_HERE, "boom"});
   ExpectError();
   OnSyncStarting();
 
@@ -408,7 +408,7 @@ TEST_F(SharedModelTypeProcessorTest, StartErrors) {
   ResetState(false);
   OnSyncStarting();
   ExpectError();
-  type_processor()->ReportError(FROM_HERE, "boom");
+  type_processor()->ReportError({FROM_HERE, "boom"});
 
   // Test an error loading pending data.
   ResetStateWriteItem(kKey1, kValue1);
@@ -419,7 +419,7 @@ TEST_F(SharedModelTypeProcessorTest, StartErrors) {
 
   // Test an error prior to metadata load.
   ResetState(false);
-  type_processor()->ReportError(FROM_HERE, "boom");
+  type_processor()->ReportError({FROM_HERE, "boom"});
   ExpectError();
   OnSyncStarting();
   ModelReadyToSync();
@@ -427,7 +427,7 @@ TEST_F(SharedModelTypeProcessorTest, StartErrors) {
   // Test an error prior to pending data load.
   ResetStateWriteItem(kKey1, kValue1);
   InitializeToMetadataLoaded();
-  type_processor()->ReportError(FROM_HERE, "boom");
+  type_processor()->ReportError({FROM_HERE, "boom"});
   ExpectError();
   OnSyncStarting();
   OnPendingCommitDataLoaded();

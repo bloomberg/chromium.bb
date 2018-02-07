@@ -195,11 +195,6 @@ void SharedModelTypeProcessor::ReportError(const ModelError& error) {
   }
 }
 
-void SharedModelTypeProcessor::ReportError(const base::Location& location,
-                                           const std::string& message) {
-  ReportError(ModelError(location, message));
-}
-
 void SharedModelTypeProcessor::ConnectSync(
     std::unique_ptr<CommitQueue> worker) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -413,7 +408,7 @@ void SharedModelTypeProcessor::OnCommitCompleted(
   base::Optional<ModelError> error = bridge_->ApplySyncChanges(
       std::move(metadata_change_list), entity_change_list);
   if (error) {
-    ReportError(error.value());
+    ReportError(*error);
   }
 }
 
@@ -478,7 +473,7 @@ void SharedModelTypeProcessor::OnUpdateReceived(
   base::Optional<ModelError> error =
       bridge_->ApplySyncChanges(std::move(metadata_changes), entity_changes);
   if (error) {
-    ReportError(error.value());
+    ReportError(*error);
     return;
   }
 
@@ -690,7 +685,7 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
   base::Optional<ModelError> error =
       bridge_->MergeSyncData(std::move(metadata_changes), entity_data);
   if (error) {
-    ReportError(error.value());
+    ReportError(*error);
     return;
   }
 
