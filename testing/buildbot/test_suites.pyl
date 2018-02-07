@@ -1058,7 +1058,6 @@
   'mojo_windows_specific_gtests': {
     'media_service_unittests': {},
     'services_unittests': {},
-    'views_mus_interactive_ui_tests': {},
   },
 
   'linux_chromeos_rel_mus_specific_gtests': {
