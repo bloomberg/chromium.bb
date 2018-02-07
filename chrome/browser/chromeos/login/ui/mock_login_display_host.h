@@ -51,6 +51,9 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD1(StartArcKiosk, void(const AccountId&));
   MOCK_METHOD0(StartVoiceInteractionOobe, void(void));
   MOCK_METHOD0(IsVoiceInteractionOobe, bool(void));
+  MOCK_METHOD1(UpdateGaiaDialogVisibility, void(bool visible));
+  MOCK_METHOD2(UpdateGaiaDialogSize, void(int width, int height));
+  MOCK_METHOD0(GetUsers, const user_manager::UserList(void));
 
   MOCK_METHOD1(CompleteLogin, void(const UserContext&));
   MOCK_METHOD0(OnGaiaScreenReady, void());

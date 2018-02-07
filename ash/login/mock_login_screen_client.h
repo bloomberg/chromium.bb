@@ -58,6 +58,7 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
   MOCK_METHOD1(OnMaxIncorrectPasswordAttempted,
                void(const AccountId& account_id));
   MOCK_METHOD1(FocusLockScreenApps, void(bool reverse));
+  MOCK_METHOD0(ShowGaiaSignin, void());
 
  private:
   bool authenticate_user_callback_result_ = true;

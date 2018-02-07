@@ -79,6 +79,7 @@ class OobeUI : public content::WebUIController,
   static const char kUserAddingDisplay[];
   static const char kAppLaunchSplashDisplay[];
   static const char kArcKioskSplashDisplay[];
+  static const char kGaiaSigninDisplay[];
 
   class Observer {
    public:

@@ -27,6 +27,11 @@ class GaiaView {
 
   virtual void DisableRestrictiveProxyCheckForTest() = 0;
 
+  // Show the sign-in screen. Depending on internal state, the screen will
+  // either be shown immediately or after an asynchronous clean-up process that
+  // cleans DNS cache and cookies.
+  virtual void ShowGaiaAsync() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GaiaView);
 };

@@ -21,9 +21,11 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/lock_screen_utils.h"
+#include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/signin_partition_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
@@ -346,6 +348,11 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
 
   UpdateAuthParams(&params, IsRestrictiveProxy());
 
+  int user_count = LoginDisplayHost::default_host()
+                       ? LoginDisplayHost::default_host()->GetUsers().size()
+                       : 0;
+  params.SetInteger("userCount", user_count);
+
   GaiaScreenMode screen_mode = GetGaiaScreenMode(context.email,
                                                  context.use_offline);
   params.SetInteger("screenMode", screen_mode);
@@ -530,6 +537,11 @@ void GaiaScreenHandler::RegisterMessages() {
               &GaiaScreenHandler::HandleCompleteAdAuthentication);
   AddCallback("cancelAdAuthentication",
               &GaiaScreenHandler::HandleCancelActiveDirectoryAuth);
+  AddRawCallback("showAddUser", &GaiaScreenHandler::HandleShowAddUser);
+  AddCallback("updateGaiaDialogSize",
+              &GaiaScreenHandler::HandleUpdateGaiaDialogSize);
+  AddCallback("updateGaiaDialogVisibility",
+              &GaiaScreenHandler::HandleUpdateGaiaDialogVisibility);
 
   // Allow UMA metrics collection from JS.
   web_ui()->AddMessageHandler(std::make_unique<MetricsHandler>());
@@ -554,10 +566,12 @@ void GaiaScreenHandler::OnPortalDetectionCompleted(
 }
 
 void GaiaScreenHandler::HandleIdentifierEntered(const std::string& user_email) {
-  if (!LoginDisplayHost::default_host()->IsUserWhitelisted(
+  if (LoginDisplayHost::default_host() &&
+      !LoginDisplayHost::default_host()->IsUserWhitelisted(
           user_manager::known_user::GetAccountId(
-              user_email, std::string() /* id */, AccountType::UNKNOWN)))
+              user_email, std::string() /* id */, AccountType::UNKNOWN))) {
     ShowWhitelistCheckFailedError();
+  }
 }
 
 void GaiaScreenHandler::HandleAuthExtensionLoaded() {
@@ -628,7 +642,8 @@ void GaiaScreenHandler::DoAdAuth(
   switch (error) {
     case authpolicy::ERROR_NONE: {
       DCHECK(account_info.has_account_id() &&
-             !account_info.account_id().empty());
+             !account_info.account_id().empty() &&
+             LoginDisplayHost::default_host());
       const AccountId account_id(GetAccountId(
           username, account_info.account_id(), AccountType::ACTIVE_DIRECTORY));
       LoginDisplayHost::default_host()->SetDisplayAndGivenName(
@@ -668,7 +683,9 @@ void GaiaScreenHandler::DoAdAuth(
 void GaiaScreenHandler::HandleCompleteAdAuthentication(
     const std::string& username,
     const std::string& password) {
-  LoginDisplayHost::default_host()->SetDisplayEmail(username);
+  if (LoginDisplayHost::default_host())
+    LoginDisplayHost::default_host()->SetDisplayEmail(username);
+
   set_populated_email(username);
   DCHECK(authpolicy_login_helper_);
   authpolicy_login_helper_->AuthenticateUser(
@@ -689,6 +706,9 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
     const std::string& auth_code,
     bool using_saml,
     const std::string& gaps_cookie) {
+  if (!LoginDisplayHost::default_host())
+    return;
+
   DCHECK(!email.empty());
   DCHECK(!gaia_id.empty());
   const std::string sanitized_email = gaia::SanitizeEmail(email);
@@ -758,10 +778,45 @@ void GaiaScreenHandler::HandleGaiaUIReady() {
     LoginDisplayHost::default_host()->OnGaiaScreenReady();
 }
 
+void GaiaScreenHandler::HandleUpdateGaiaDialogSize(int width, int height) {
+  if (LoginDisplayHost::default_host())
+    LoginDisplayHost::default_host()->UpdateGaiaDialogSize(width, height);
+}
+
+void GaiaScreenHandler::HandleUpdateGaiaDialogVisibility(bool visible) {
+  if (LoginDisplayHost::default_host())
+    LoginDisplayHost::default_host()->UpdateGaiaDialogVisibility(visible);
+}
+
+void GaiaScreenHandler::HandleShowAddUser(const base::ListValue* args) {
+  // TODO(xiaoyinh): Add trace event for gaia webui in views login screen.
+  TRACE_EVENT_ASYNC_STEP_INTO0("ui", "ShowLoginWebUI",
+                               LoginDisplayHostWebUI::kShowLoginWebUIid,
+                               "ShowAddUser");
+
+  std::string email;
+  // |args| can be null if it's OOBE.
+  if (args)
+    args->GetString(0, &email);
+  set_populated_email(email);
+  if (!email.empty())
+    SendReauthReason(AccountId::FromUserEmail(email));
+  OnShowAddUser();
+}
+
+void GaiaScreenHandler::OnShowAddUser() {
+  signin_screen_handler_->is_account_picker_showing_first_time_ = false;
+  lock_screen_utils::EnforcePolicyInputMethods(std::string());
+  ShowGaiaAsync();
+}
+
 void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
                                         const std::string& typed_email,
                                         const std::string& password,
                                         bool using_saml) {
+  if (!LoginDisplayHost::default_host())
+    return;
+
   if (using_saml && !using_saml_api_)
     RecordSAMLScrapingVerificationResultInHistogram(true);
 
@@ -840,7 +895,7 @@ void GaiaScreenHandler::ShowSigninScreenForTest(const std::string& username,
   if (frame_state() == GaiaScreenHandler::FRAME_STATE_LOADED) {
     SubmitLoginFormForTest();
   } else if (frame_state() != GaiaScreenHandler::FRAME_STATE_LOADING) {
-    signin_screen_handler_->OnShowAddUser();
+    OnShowAddUser();
   }
 }
 
@@ -890,7 +945,8 @@ void GaiaScreenHandler::CancelShowGaiaAsync() {
 
 void GaiaScreenHandler::ShowGaiaScreenIfReady() {
   if (!dns_cleared_ || !cookies_cleared_ ||
-      !show_when_dns_and_cookies_cleared_) {
+      !show_when_dns_and_cookies_cleared_ ||
+      !LoginDisplayHost::default_host()) {
     return;
   }
 

@@ -1161,6 +1161,14 @@ void LoginDisplayHostWebUI::StartVoiceInteractionOobe() {
   login_view_->set_should_emit_login_prompt_visible(false);
 }
 
+void LoginDisplayHostWebUI::UpdateGaiaDialogVisibility(bool visible) {}
+
+void LoginDisplayHostWebUI::UpdateGaiaDialogSize(int width, int height) {}
+
+const user_manager::UserList LoginDisplayHostWebUI::GetUsers() {
+  return user_manager::UserList();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // external
 

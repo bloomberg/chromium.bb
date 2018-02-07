@@ -9,6 +9,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "content/public/common/service_manager_connection.h"
@@ -104,6 +105,13 @@ void LoginScreenClient::FocusLockScreenApps(bool reverse) {
   // give focus to the next window in the tab order.
   if (!delegate_ || !delegate_->HandleFocusLockScreenApps(reverse))
     HandleFocusLeavingLockScreenApps(reverse);
+}
+
+void LoginScreenClient::ShowGaiaSignin() {
+  if (chromeos::LoginDisplayHost::default_host()) {
+    chromeos::LoginDisplayHost::default_host()->UpdateGaiaDialogVisibility(
+        true /*visible*/);
+  }
 }
 
 void LoginScreenClient::LoadWallpaper(const AccountId& account_id) {

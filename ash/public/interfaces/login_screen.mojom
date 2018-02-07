@@ -144,4 +144,7 @@ interface LoginScreenClient {
   // lock screen.
   // |reverse|:   Whether the tab order is reversed.
   FocusLockScreenApps(bool reverse);
+
+  // Show Gaia signin dialog in chrome.
+  ShowGaiaSignin();
 };

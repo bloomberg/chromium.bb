@@ -23,7 +23,7 @@ AccountId GetOwnerAccountId() {
   const AccountId owner = user_manager::known_user::GetAccountId(
       owner_email, std::string() /*id*/, AccountType::UNKNOWN);
   return owner;
-};
+}
 
 }  // namespace
 
@@ -39,6 +39,8 @@ void LoginDisplayViews::Init(const user_manager::UserList& filtered_users,
                              bool show_guest,
                              bool show_users,
                              bool show_new_user) {
+  host_->SetUsers(filtered_users);
+
   // Convert |filtered_users| to mojo structures.
   const AccountId owner_account = GetOwnerAccountId();
   std::vector<ash::mojom::LoginUserInfoPtr> users;
