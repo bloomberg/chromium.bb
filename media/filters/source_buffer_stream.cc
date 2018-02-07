@@ -145,7 +145,9 @@ std::string BufferQueueBuffersToLogString(
   result << "Buffers:\n";
   for (const auto& buf : buffers) {
     result << "\tdts=" << buf->GetDecodeTimestamp().InMicroseconds() << " "
-           << buf->AsHumanReadableString() << "\n";
+           << buf->AsHumanReadableString()
+           << ", is_duration_estimated=" << buf->is_duration_estimated()
+           << "\n";
   }
 
   return result.str();

@@ -108,17 +108,36 @@ void SourceBufferRangeByDts::AppendBuffersToEnd(
   }
 }
 
+bool SourceBufferRangeByDts::AllowableAppendAfterEstimatedDuration(
+    const BufferQueue& buffers,
+    DecodeTimestamp new_buffers_group_start_timestamp) const {
+  if (buffers_.empty() || !buffers_.back()->is_duration_estimated() ||
+      buffers.empty() || !buffers.front()->is_key_frame()) {
+    return false;
+  }
+
+  if (new_buffers_group_start_timestamp == kNoDecodeTimestamp()) {
+    return GetBufferedEndTimestamp() == buffers.front()->GetDecodeTimestamp();
+  }
+
+  return GetBufferedEndTimestamp() == new_buffers_group_start_timestamp;
+}
+
 bool SourceBufferRangeByDts::CanAppendBuffersToEnd(
     const BufferQueue& buffers,
     DecodeTimestamp new_buffers_group_start_timestamp) const {
   DCHECK(!buffers_.empty());
   if (new_buffers_group_start_timestamp == kNoDecodeTimestamp()) {
-    return IsNextInDecodeSequence(buffers.front()->GetDecodeTimestamp());
+    return IsNextInDecodeSequence(buffers.front()->GetDecodeTimestamp()) ||
+           AllowableAppendAfterEstimatedDuration(
+               buffers, new_buffers_group_start_timestamp);
   }
   DCHECK(new_buffers_group_start_timestamp >= GetEndTimestamp());
   DCHECK(buffers.front()->GetDecodeTimestamp() >=
          new_buffers_group_start_timestamp);
-  return IsNextInDecodeSequence(new_buffers_group_start_timestamp);
+  return IsNextInDecodeSequence(new_buffers_group_start_timestamp) ||
+         AllowableAppendAfterEstimatedDuration(
+             buffers, new_buffers_group_start_timestamp);
 }
 
 void SourceBufferRangeByDts::Seek(DecodeTimestamp timestamp) {

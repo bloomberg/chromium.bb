@@ -62,6 +62,21 @@ bool SourceBufferRangeByPts::CanAppendRangeToEnd(
                                NextRangeStartTimeForAppendRangeToEnd(range));
 }
 
+bool SourceBufferRangeByPts::AllowableAppendAfterEstimatedDuration(
+    const BufferQueue& buffers,
+    base::TimeDelta new_buffers_group_start_pts) const {
+  if (buffers_.empty() || !buffers_.back()->is_duration_estimated() ||
+      buffers.empty() || !buffers.front()->is_key_frame()) {
+    return false;
+  }
+
+  if (new_buffers_group_start_pts == kNoTimestamp) {
+    return GetBufferedEndTimestamp() == buffers.front()->timestamp();
+  }
+
+  return GetBufferedEndTimestamp() == new_buffers_group_start_pts;
+}
+
 bool SourceBufferRangeByPts::CanAppendBuffersToEnd(
     const BufferQueue& buffers,
     base::TimeDelta new_buffers_group_start_pts) const {
@@ -71,13 +86,17 @@ bool SourceBufferRangeByPts::CanAppendBuffersToEnd(
   DCHECK(!buffers_.empty());
   if (new_buffers_group_start_pts == kNoTimestamp) {
     return buffers.front()->is_key_frame()
-               ? IsNextInPresentationSequence(buffers.front()->timestamp())
+               ? (IsNextInPresentationSequence(buffers.front()->timestamp()) ||
+                  AllowableAppendAfterEstimatedDuration(
+                      buffers, new_buffers_group_start_pts))
                : IsNextInDecodeSequence(buffers.front()->GetDecodeTimestamp());
   }
   CHECK(buffers.front()->is_key_frame());
   DCHECK(new_buffers_group_start_pts >= GetEndTimestamp());
   DCHECK(buffers.front()->timestamp() >= new_buffers_group_start_pts);
-  return IsNextInPresentationSequence(new_buffers_group_start_pts);
+  return IsNextInPresentationSequence(new_buffers_group_start_pts) ||
+         AllowableAppendAfterEstimatedDuration(buffers,
+                                               new_buffers_group_start_pts);
 }
 
 void SourceBufferRangeByPts::AppendBuffersToEnd(
