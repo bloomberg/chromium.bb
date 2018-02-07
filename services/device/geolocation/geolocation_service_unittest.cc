@@ -4,6 +4,10 @@
 
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/geolocation_handler.h"
+#endif
 #include "device/geolocation/geolocation_provider_impl.h"
 #include "device/geolocation/network_location_request.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -11,12 +15,20 @@
 #include "services/device/device_service_test_base.h"
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/device/public/interfaces/geolocation.mojom.h"
+#include "services/device/public/interfaces/geolocation_config.mojom.h"
 #include "services/device/public/interfaces/geolocation_context.mojom.h"
 #include "services/device/public/interfaces/geolocation_control.mojom.h"
 
 namespace device {
 
 namespace {
+
+void CheckBoolReturnValue(base::OnceClosure quit_closure,
+                          bool expect,
+                          bool result) {
+  EXPECT_EQ(expect, result);
+  std::move(quit_closure).Run();
+}
 
 // Observer that waits until a TestURLFetcher with the specified fetcher_id
 // starts, after which it is made available through .fetcher().
@@ -60,6 +72,11 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
   void SetUp() override {
     DeviceServiceTestBase::SetUp();
 
+#if defined(OS_CHROMEOS)
+    chromeos::DBusThreadManager::Initialize();
+    chromeos::NetworkHandler::Initialize();
+#endif
+
     connector()->BindInterface(mojom::kServiceName, &geolocation_control_);
     geolocation_control_->UserDidOptIntoLocationServices();
 
@@ -70,6 +87,11 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
   void TearDown() override {
     DeviceServiceTestBase::TearDown();
 
+#if defined(OS_CHROMEOS)
+    chromeos::NetworkHandler::Shutdown();
+    chromeos::DBusThreadManager::Shutdown();
+#endif
+
     // Let the GeolocationImpl destruct earlier than GeolocationProviderImpl to
     // make sure the base::CallbackList<> member in GeolocationProviderImpl is
     // empty.
@@ -77,9 +99,14 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
+  void BindGeolocationConfig() {
+    connector()->BindInterface(mojom::kServiceName, &geolocation_config_);
+  }
+
   mojom::GeolocationControlPtr geolocation_control_;
   mojom::GeolocationContextPtr geolocation_context_;
   mojom::GeolocationPtr geolocation_;
+  mojom::GeolocationConfigPtr geolocation_config_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationServiceUnitTest);
 };
@@ -108,6 +135,24 @@ TEST_F(GeolocationServiceUnitTest, UrlWithApiKey) {
   EXPECT_EQ(expected_url, observer.fetcher()->GetOriginalURL());
 }
 #endif
+
+TEST_F(GeolocationServiceUnitTest, GeolocationConfig) {
+  BindGeolocationConfig();
+  {
+    base::RunLoop run_loop;
+    geolocation_config_->IsHighAccuracyLocationBeingCaptured(
+        base::BindOnce(&CheckBoolReturnValue, run_loop.QuitClosure(), false));
+    run_loop.Run();
+  }
+
+  geolocation_->SetHighAccuracy(true);
+  {
+    base::RunLoop run_loop;
+    geolocation_config_->IsHighAccuracyLocationBeingCaptured(
+        base::BindOnce(&CheckBoolReturnValue, run_loop.QuitClosure(), true));
+    run_loop.Run();
+  }
+}
 
 }  // namespace
 
