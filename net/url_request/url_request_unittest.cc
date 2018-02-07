@@ -4673,6 +4673,45 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateOnAuthRequiredAsyncCancel) {
   EXPECT_EQ(1, network_delegate.destroyed_requests());
 }
 
+// Tests that NetworkDelegate header overrides from the 401 response do not
+// affect the 200 response. This is a regression test for
+// https://crbug.com/801237.
+TEST_F(URLRequestTestHTTP, NetworkDelegateOverrideHeadersWithAuth) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  TestDelegate d;
+  d.set_credentials(AuthCredentials(kUser, kSecret));
+  default_network_delegate_.set_add_header_to_first_response(true);
+
+  {
+    GURL url(http_test_server()->GetURL("/auth-basic"));
+    std::unique_ptr<URLRequest> r(default_context_.CreateRequest(
+        url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->Start();
+
+    base::RunLoop().Run();
+
+    EXPECT_EQ(OK, d.request_status());
+    EXPECT_EQ(200, r->GetResponseCode());
+    EXPECT_TRUE(d.auth_required_called());
+    EXPECT_FALSE(r->response_headers()->HasHeader("X-Network-Delegate"));
+  }
+
+  {
+    GURL url(http_test_server()->GetURL("/defaultresponse"));
+    std::unique_ptr<URLRequest> r(default_context_.CreateRequest(
+        url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->Start();
+
+    base::RunLoop().Run();
+
+    // Check that set_add_header_to_first_response normally adds a header.
+    EXPECT_EQ(OK, d.request_status());
+    EXPECT_EQ(200, r->GetResponseCode());
+    EXPECT_TRUE(r->response_headers()->HasHeader("X-Network-Delegate"));
+  }
+}
+
 // Tests that we can handle when a network request was canceled while we were
 // waiting for the network delegate.
 // Part 1: Request is cancelled while waiting for OnBeforeURLRequest callback.

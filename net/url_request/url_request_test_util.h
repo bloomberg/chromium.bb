@@ -265,6 +265,12 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
     redirect_on_headers_received_url_ = redirect_on_headers_received_url;
   }
 
+  // Adds a X-Network-Delegate header to the first OnHeadersReceived call, but
+  // not subsequent ones.
+  void set_add_header_to_first_response(bool add_header_to_first_response) {
+    add_header_to_first_response_ = add_header_to_first_response;
+  }
+
   void set_allowed_unsafe_redirect_url(GURL allowed_unsafe_redirect_url) {
     allowed_unsafe_redirect_url_ = allowed_unsafe_redirect_url;
   }
@@ -410,6 +416,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   bool cancel_request_with_policy_violating_referrer_;  // false by default
   bool will_be_intercepted_on_next_error_;
   bool before_start_transaction_fails_;
+  bool add_header_to_first_response_;
 };
 
 //-----------------------------------------------------------------------------
