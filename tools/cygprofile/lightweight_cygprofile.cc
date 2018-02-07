@@ -68,7 +68,7 @@ std::atomic<int> g_data_index;
 template <bool for_testing>
 void RecordAddress(size_t address) {
   int index = g_data_index.load(std::memory_order_relaxed);
-  if (index == kPhases)
+  if (index >= kPhases)
     return;
 
   const size_t start =
@@ -77,8 +77,12 @@ void RecordAddress(size_t address) {
       for_testing ? kEndOfTextForTesting : base::android::kEndOfText;
   if (UNLIKELY(address < start || address > end)) {
     Disable();
-    LOG(FATAL) << "Return address out of bounds (are dummy functions in the "
-               << "orderfile?)";
+    // If the start and end addresses are set incorrectly, this code path is
+    // likely happening during a static initializer. Logging at this time is
+    // prone to deadlock. By crashing immediately we at least have a chance to
+    // get a stack trace from the system to give some clue about the nature of
+    // the problem.
+    IMMEDIATE_CRASH();
   }
 
   size_t offset = address - start;
