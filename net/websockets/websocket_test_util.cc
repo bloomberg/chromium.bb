@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "net/proxy_resolution/proxy_service.h"
 #include "net/socket/socket_test_util.h"
+#include "net/websockets/websocket_basic_handshake_stream.h"
 #include "url/origin.h"
 
 namespace net {
@@ -188,128 +189,9 @@ WebSocketTestURLRequestContextHost::GetURLRequestContext() {
   return &url_request_context_;
 }
 
-int FakeWebSocketHandshakeStreamBase::ReadResponseBody(
-    IOBuffer* buf,
-    int buf_len,
-    const CompletionCallback& callback) {
-  NOTREACHED();
-  return ERR_IO_PENDING;
-}
-
-bool FakeWebSocketHandshakeStreamBase::IsResponseBodyComplete() const {
-  NOTREACHED();
-  return false;
-}
-
-bool FakeWebSocketHandshakeStreamBase::IsConnectionReused() const {
-  NOTREACHED();
-  return false;
-}
-void FakeWebSocketHandshakeStreamBase::SetConnectionReused() {
-  NOTREACHED();
-}
-
-bool FakeWebSocketHandshakeStreamBase::CanReuseConnection() const {
-  return false;
-}
-
-int64_t FakeWebSocketHandshakeStreamBase::GetTotalReceivedBytes() const {
-  return 0;
-}
-
-int64_t FakeWebSocketHandshakeStreamBase::GetTotalSentBytes() const {
-  return 0;
-}
-
-bool FakeWebSocketHandshakeStreamBase::GetLoadTimingInfo(
-    LoadTimingInfo* load_timing_info) const {
-  NOTREACHED();
-  return false;
-}
-
-bool FakeWebSocketHandshakeStreamBase::GetAlternativeService(
-    AlternativeService* alternative_service) const {
-  NOTREACHED();
-  return false;
-}
-
-void FakeWebSocketHandshakeStreamBase::GetSSLInfo(SSLInfo* ssl_info) {}
-
-void FakeWebSocketHandshakeStreamBase::GetSSLCertRequestInfo(
-    SSLCertRequestInfo* cert_request_info) {
-  NOTREACHED();
-}
-
-bool FakeWebSocketHandshakeStreamBase::GetRemoteEndpoint(IPEndPoint* endpoint) {
-  return false;
-}
-
-Error FakeWebSocketHandshakeStreamBase::GetTokenBindingSignature(
-    crypto::ECPrivateKey* key,
-    TokenBindingType tb_type,
-    std::vector<uint8_t>* out) {
-  NOTREACHED();
-  return ERR_NOT_IMPLEMENTED;
-}
-
-void FakeWebSocketHandshakeStreamBase::Drain(HttpNetworkSession* session) {
-  NOTREACHED();
-}
-
-void FakeWebSocketHandshakeStreamBase::PopulateNetErrorDetails(
-    NetErrorDetails* details) {
-  NOTREACHED();
-}
-
-void FakeWebSocketHandshakeStreamBase::SetPriority(RequestPriority priority) {
-  NOTREACHED();
-}
-
-HttpStream* FakeWebSocketHandshakeStreamBase::RenewStreamForAuth() {
-  NOTREACHED();
-  return nullptr;
-}
-
-std::unique_ptr<WebSocketStream> FakeWebSocketHandshakeStreamBase::Upgrade() {
-  NOTREACHED();
-  return std::unique_ptr<WebSocketStream>();
-}
-
-int FakeWebSocketHandshakeStream::InitializeStream(
-    const HttpRequestInfo* request_info,
-    bool can_send_early,
-    RequestPriority priority,
-    const NetLogWithSource& net_log,
-    const CompletionCallback& callback) {
-  state_.Initialize(request_info, can_send_early, priority, net_log, callback);
-  return OK;
-}
-
-int FakeWebSocketHandshakeStream::SendRequest(
-    const HttpRequestHeaders& request_headers,
-    HttpResponseInfo* response,
-    const CompletionCallback& callback) {
-  return parser()->SendRequest(state_.GenerateRequestLine(), request_headers,
-                               TRAFFIC_ANNOTATION_FOR_TESTS, response,
-                               callback);
-}
-
-int FakeWebSocketHandshakeStream::ReadResponseHeaders(
-    const CompletionCallback& callback) {
-  return parser()->ReadResponseHeaders(callback);
-}
-
-void FakeWebSocketHandshakeStream::Close(bool not_reusable) {
-  if (parser())
-    parser()->Close(true);
-}
-
-std::unique_ptr<WebSocketHandshakeStreamBase>
-FakeWebSocketStreamCreateHelper::CreateBasicStream(
-    std::unique_ptr<ClientSocketHandle> connection,
-    bool using_proxy) {
-  return std::make_unique<FakeWebSocketHandshakeStream>(std::move(connection),
-                                                        using_proxy);
+void TestWebSocketHandshakeStreamCreateHelper::OnBasicStreamCreated(
+    WebSocketBasicHandshakeStream* stream) {
+  stream->SetWebSocketKeyForTesting("dGhlIHNhbXBsZSBub25jZQ==");
 }
 
 }  // namespace net

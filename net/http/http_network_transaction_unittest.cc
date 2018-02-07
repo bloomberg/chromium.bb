@@ -17153,7 +17153,6 @@ void AddWebSocketHeaders(HttpRequestHeaders* headers) {
   headers->SetHeader("Upgrade", "websocket");
   headers->SetHeader("Origin", "http://www.example.org");
   headers->SetHeader("Sec-WebSocket-Version", "13");
-  headers->SetHeader("Sec-WebSocket-Key", "dGhlIHNhbXBsZSBub25jZQ==");
 }
 
 }  // namespace
@@ -17176,7 +17175,8 @@ TEST_F(HttpNetworkTransactionTest, CreateWebSocketHandshakeStream) {
     request.traffic_annotation =
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-    FakeWebSocketStreamCreateHelper websocket_stream_create_helper;
+    TestWebSocketHandshakeStreamCreateHelper websocket_stream_create_helper;
+
     HttpNetworkTransaction trans(LOW, session.get());
     trans.SetWebSocketHandshakeStreamCreateHelper(
         &websocket_stream_create_helper);
@@ -17228,25 +17228,25 @@ TEST_F(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWssTunnel) {
                 "Upgrade: websocket\r\n"
                 "Origin: http://www.example.org\r\n"
                 "Sec-WebSocket-Version: 13\r\n"
-                "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\r\n"),
-  };
+                "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+                "Sec-WebSocket-Extensions: permessage-deflate; "
+                "client_max_window_bits\r\n\r\n")};
 
   // The proxy responds to the connect with a 407, using a persistent
   // connection.
   MockRead data_reads[] = {
       // No credentials.
-      MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"),
-      MockRead("Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
-      MockRead("Content-Length: 0\r\n"),
-      MockRead("Proxy-Connection: keep-alive\r\n\r\n"),
+      MockRead("HTTP/1.1 407 Proxy Authentication Required\r\n"
+               "Proxy-Authenticate: Basic realm=\"MyRealm1\"\r\n"
+               "Content-Length: 0\r\n"
+               "Proxy-Connection: keep-alive\r\n\r\n"),
 
       MockRead("HTTP/1.1 200 Connection Established\r\n\r\n"),
 
-      MockRead("HTTP/1.1 101 Switching Protocols\r\n"),
-      MockRead("Upgrade: websocket\r\n"),
-      MockRead("Connection: Upgrade\r\n"),
-      MockRead("Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n"),
-  };
+      MockRead("HTTP/1.1 101 Switching Protocols\r\n"
+               "Upgrade: websocket\r\n"
+               "Connection: Upgrade\r\n"
+               "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n")};
 
   StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
                                 arraysize(data_writes));
@@ -17254,9 +17254,10 @@ TEST_F(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWssTunnel) {
   SSLSocketDataProvider ssl(ASYNC, OK);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
+  TestWebSocketHandshakeStreamCreateHelper websocket_stream_create_helper;
+
   auto trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
-  FakeWebSocketStreamCreateHelper websocket_stream_create_helper;
   trans->SetWebSocketHandshakeStreamCreateHelper(
       &websocket_stream_create_helper);
 
@@ -17320,32 +17321,30 @@ TEST_F(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWsTunnel) {
       // credentials. Because WebSockets have a separate set of socket pools,
       // they cannot and will not use the same TCP/IP connection as the
       // preflight HTTP request.
-      MockWrite(
-          "CONNECT www.example.org:80 HTTP/1.1\r\n"
-          "Host: www.example.org:80\r\n"
-          "Proxy-Connection: keep-alive\r\n"
-          "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+      MockWrite("CONNECT www.example.org:80 HTTP/1.1\r\n"
+                "Host: www.example.org:80\r\n"
+                "Proxy-Connection: keep-alive\r\n"
+                "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
 
-      MockWrite(
-          "GET / HTTP/1.1\r\n"
-          "Host: www.example.org\r\n"
-          "Connection: Upgrade\r\n"
-          "Upgrade: websocket\r\n"
-          "Origin: http://www.example.org\r\n"
-          "Sec-WebSocket-Version: 13\r\n"
-          "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\r\n"),
-  };
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: Upgrade\r\n"
+                "Upgrade: websocket\r\n"
+                "Origin: http://www.example.org\r\n"
+                "Sec-WebSocket-Version: 13\r\n"
+                "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n"
+                "Sec-WebSocket-Extensions: permessage-deflate; "
+                "client_max_window_bits\r\n\r\n")};
 
   MockRead data_reads[] = {
       // HTTP CONNECT with credentials.
       MockRead("HTTP/1.1 200 Connection Established\r\n\r\n"),
 
       // WebSocket connection established inside tunnel.
-      MockRead("HTTP/1.1 101 Switching Protocols\r\n"),
-      MockRead("Upgrade: websocket\r\n"),
-      MockRead("Connection: Upgrade\r\n"),
-      MockRead("Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n"),
-  };
+      MockRead("HTTP/1.1 101 Switching Protocols\r\n"
+               "Upgrade: websocket\r\n"
+               "Connection: Upgrade\r\n"
+               "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n")};
 
   StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
                                 arraysize(data_writes));
@@ -17355,9 +17354,10 @@ TEST_F(HttpNetworkTransactionTest, ProxyHeadersNotSentOverWsTunnel) {
       GURL("http://myproxy:70/"), "MyRealm1", HttpAuth::AUTH_SCHEME_BASIC,
       "Basic realm=MyRealm1", AuthCredentials(kFoo, kBar), "/");
 
+  TestWebSocketHandshakeStreamCreateHelper websocket_stream_create_helper;
+
   auto trans =
       std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
-  FakeWebSocketStreamCreateHelper websocket_stream_create_helper;
   trans->SetWebSocketHandshakeStreamCreateHelper(
       &websocket_stream_create_helper);
 
