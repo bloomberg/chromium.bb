@@ -157,7 +157,7 @@ vector<AV1InvTxfm2dParam> GetInvTxfm2dParamList() {
     param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_4X8, 2, 0.09));
     param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_8X4, 2, 0.11));
     param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_8X16, 2, 0.03));
-    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X8, 2, 0.06));
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X8, 2, 0.07));
     param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X32, 3, 0.4));
     param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_32X16, 3, 0.5));
 

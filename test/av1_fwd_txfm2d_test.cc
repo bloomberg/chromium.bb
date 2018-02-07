@@ -150,10 +150,10 @@ vector<AV1FwdTxfm2dParam> GetTxfm2dParamList() {
 
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X8, 3.9, 0.57));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X4, 4.3, 0.68));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X16, 12, 0.85));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X16, 12, 0.92));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X8, 12, 1.1));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X32, 32, 4.1));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X16, 46, 5.9));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X16, 46, 6));
 
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X16, 5, 0.6));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X4, 6, 0.9));
@@ -186,7 +186,8 @@ TEST(AV1FwdTxfm2d, CfgTest) {
       for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
 #if CONFIG_TX64X64
         if ((tx_size_wide[tx_size] == 64 || tx_size_high[tx_size] == 64) &&
-            tx_type != DCT_DCT) {
+            (tx_type != DCT_DCT && tx_type != IDTX && tx_type != V_DCT &&
+             tx_type != H_DCT)) {
           continue;
         }
 #endif  // CONFIG_TX64X64

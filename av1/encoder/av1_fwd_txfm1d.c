@@ -1518,7 +1518,8 @@ void av1_fidentity4_c(const int32_t *input, int32_t *output, int8_t cos_bit,
                       const int8_t *stage_range) {
   (void)cos_bit;
   for (int i = 0; i < 4; ++i)
-    output[i] = (int32_t)dct_const_round_shift(input[i] * Sqrt2);
+    output[i] = round_shift(input[i] * NewSqrt2, NewSqrt2Bits);
+  assert(stage_range[0] + NewSqrt2Bits <= 32);
   range_check(0, input, output, 4, stage_range[0]);
 }
 
@@ -1533,7 +1534,8 @@ void av1_fidentity16_c(const int32_t *input, int32_t *output, int8_t cos_bit,
                        const int8_t *stage_range) {
   (void)cos_bit;
   for (int i = 0; i < 16; ++i)
-    output[i] = (int32_t)dct_const_round_shift(input[i] * 2 * Sqrt2);
+    output[i] = round_shift(input[i] * 2 * NewSqrt2, NewSqrt2Bits);
+  assert(stage_range[0] + NewSqrt2Bits <= 32);
   range_check(0, input, output, 16, stage_range[0]);
 }
 
@@ -1549,7 +1551,8 @@ void av1_fidentity64_c(const int32_t *input, int32_t *output, int8_t cos_bit,
                        const int8_t *stage_range) {
   (void)cos_bit;
   for (int i = 0; i < 64; ++i)
-    output[i] = (int32_t)dct_const_round_shift(input[i] * 4 * Sqrt2);
+    output[i] = round_shift(input[i] * 4 * NewSqrt2, NewSqrt2Bits);
+  assert(stage_range[0] + NewSqrt2Bits <= 32);
   range_check(0, input, output, 64, stage_range[0]);
 }
 #endif  // CONFIG_TX64X64

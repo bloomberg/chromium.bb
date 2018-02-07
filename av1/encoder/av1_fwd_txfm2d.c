@@ -518,7 +518,6 @@ const int8_t *fwd_txfm_range_mult2_list[TXFM_TYPES] = {
 };
 
 static INLINE void set_fwd_txfm_non_scale_range(TXFM_2D_FLIP_CFG *cfg) {
-  const int txw_idx = get_txw_idx(cfg->tx_size);
   const int txh_idx = get_txh_idx(cfg->tx_size);
   av1_zero(cfg->stage_range_col);
   av1_zero(cfg->stage_range_row);
@@ -535,16 +534,9 @@ static INLINE void set_fwd_txfm_non_scale_range(TXFM_2D_FLIP_CFG *cfg) {
     int stage_num_row = cfg->stage_num_row;
     const int8_t *range_mult2_row =
         fwd_txfm_range_mult2_list[cfg->txfm_type_row];
-    if (stage_num_row > 1) {
-      // non identity
-      for (int i = 0; i < stage_num_row; ++i)
-        cfg->stage_range_row[i] =
-            (max_fwd_range_mult2_col[txh_idx] + range_mult2_row[i] + 1) >> 1;
-    } else {
-      // identity
-      // TODO(angiebird): check if this config is correct
-      cfg->stage_range_row[0] = fwd_idtx_range_row[txw_idx][txh_idx];
-    }
+    for (int i = 0; i < stage_num_row; ++i)
+      cfg->stage_range_row[i] =
+          (max_fwd_range_mult2_col[txh_idx] + range_mult2_row[i] + 1) >> 1;
   }
 }
 
