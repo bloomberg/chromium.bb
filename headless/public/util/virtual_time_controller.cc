@@ -87,6 +87,7 @@ void VirtualTimeController::NotifyTasksAndAdvance() {
 
   // Give at most as much virtual time as available until the next callback.
   bool advance_virtual_time = false;
+  bool stop_virtual_time = false;
   bool ready_to_advance = true;
   TimeDelta next_budget;
   for (const auto& entry_pair : tasks_) {
@@ -102,13 +103,16 @@ void VirtualTimeController::NotifyTasksAndAdvance() {
     if (entry_pair.second.continue_policy ==
         RepeatingTask::ContinuePolicy::CONTINUE_MORE_TIME_NEEDED) {
       advance_virtual_time = true;
+    } else if (entry_pair.second.continue_policy ==
+               RepeatingTask::ContinuePolicy::STOP) {
+      stop_virtual_time = true;
     }
   }
 
   if (!ready_to_advance)
     return;
 
-  if (!advance_virtual_time) {
+  if (!advance_virtual_time || stop_virtual_time) {
     for (auto& entry_pair : tasks_) {
       entry_pair.second.ready_to_advance = false;
     }
