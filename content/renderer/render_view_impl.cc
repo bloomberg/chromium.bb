@@ -1589,7 +1589,8 @@ void RenderViewImpl::NavigateBackForwardSoon(int offset) {
   history_navigation_virtual_time_pauser_ =
       RenderThreadImpl::current()
           ->GetRendererScheduler()
-          ->CreateWebScopedVirtualTimePauser();
+          ->CreateWebScopedVirtualTimePauser(
+              blink::WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant);
   history_navigation_virtual_time_pauser_.PauseVirtualTime(true);
   Send(new ViewHostMsg_GoToEntryAtOffset(GetRoutingID(), offset));
 }

@@ -107,11 +107,9 @@ class VirtualTimeObserverTest : public VirtualTimeBrowserTest {
                                              "Advanced to 110ms",
                                              "step2",
                                              "Paused @ 110ms",
-                                             "Advanced to 120ms",
                                              "Advanced to 210ms",
                                              "step3",
                                              "Paused @ 210ms",
-                                             "Advanced to 220ms",
                                              "Advanced to 310ms",
                                              "step4",
                                              "pass"};

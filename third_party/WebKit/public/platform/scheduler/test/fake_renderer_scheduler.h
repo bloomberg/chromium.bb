@@ -63,7 +63,8 @@ class FakeRendererScheduler : public RendererScheduler {
   bool MainThreadSeemsUnresponsive(
       base::TimeDelta main_thread_responsiveness_threshold) override;
   void SetRendererProcessType(RendererProcessType type) override;
-  WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser() override;
+  WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
+      WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeRendererScheduler);

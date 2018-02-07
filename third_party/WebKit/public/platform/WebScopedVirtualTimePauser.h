@@ -17,9 +17,15 @@ class RendererSchedulerImpl;
 // virtual time while performing an asynchronous operation.
 class BLINK_PLATFORM_EXPORT WebScopedVirtualTimePauser {
  public:
+  enum class VirtualTaskDuration {
+    kInstant,    // Virtual time will not be advanced when it's unpaused.
+    kNonInstant  // Virtual time may be advanced when it's unpaused.
+  };
+
   // Note simply creating a WebScopedVirtualTimePauser doesn't cause VirtualTime
   // to pause, instead you need to call PauseVirtualTime.
-  explicit WebScopedVirtualTimePauser(scheduler::RendererSchedulerImpl*);
+  WebScopedVirtualTimePauser(scheduler::RendererSchedulerImpl*,
+                             VirtualTaskDuration);
 
   WebScopedVirtualTimePauser();
   ~WebScopedVirtualTimePauser();
@@ -41,6 +47,7 @@ class BLINK_PLATFORM_EXPORT WebScopedVirtualTimePauser {
 
   base::TimeTicks virtual_time_when_paused_;
   bool paused_ = false;
+  VirtualTaskDuration duration_ = VirtualTaskDuration::kInstant;
   scheduler::RendererSchedulerImpl* scheduler_;  // NOT OWNED
   int trace_id_;
 
