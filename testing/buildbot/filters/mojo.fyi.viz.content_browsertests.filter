@@ -31,6 +31,7 @@
 
 # Further WaitForChildFrameSurfaceReady doesn't work http://crbug.com/787945
 -SitePerProcessBrowserTest.GestureFlingStartEventsBubble
+-SitePerProcessBrowserTest.GestureFlingStart
 -SitePerProcessBrowserTest.NavigateCrashedSubframeToSameSite
 -SitePerProcessBrowserTest.OOPIFDetachDuringAnimation
 -SitePerProcessBrowserTest.PhysicalBackingSizeTest
