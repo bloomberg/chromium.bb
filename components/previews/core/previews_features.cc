@@ -4,13 +4,23 @@
 
 #include "components/previews/core/previews_features.h"
 
+#include "build/build_config.h"
+
 namespace previews {
 namespace features {
 
 // Kill switch (or holdback) for all previews. No previews will be allowed
 // if this feature is disabled. If enabled, which specific previews that
 // are enabled are controlled by other features.
-const base::Feature kPreviews{"Previews", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kPreviews {
+  "Previews",
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+      // Previews allowed for Android (but also allow on Linux for dev/debug).
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else   // !defined(OS_ANDROID) || defined(OS_LINUX)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // defined(OS_ANDROID) || defined(OS_LINUX)
+};
 
 // Enables the Offline previews on android slow connections.
 const base::Feature kOfflinePreviews{"OfflinePreviews",
