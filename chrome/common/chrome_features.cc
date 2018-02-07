@@ -337,8 +337,8 @@ const base::Feature kMacMaterialDesignDownloadShelf{
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Enabled or disabled the Material Design version of chrome://extensions.
-const base::Feature kMaterialDesignExtensions{
-    "MaterialDesignExtensions", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kMaterialDesignExtensions{"MaterialDesignExtensions",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Sets whether dismissing the new-tab-page override bubble counts as
 // acknowledgement.

@@ -6,6 +6,7 @@
 
 GEN('#include "chrome/browser/ui/webui/extensions/' +
     'extension_settings_browsertest.h"');
+GEN('#include "chrome/common/chrome_features.h"');
 
 // The id of the extension from |InstallGoodExtension|.
 var GOOD_EXTENSION_ID = 'ldnnhddmnhbkjipkidpdiheffobcpfmf';
@@ -48,6 +49,9 @@ ExtensionSettingsWebUITest.prototype = {
 
   /** @override */
   typedefCppFixture: 'ExtensionSettingsUIBrowserTest',
+
+  /** @override */
+  featureList: ['', 'features::kMaterialDesignExtensions'],
 
   /** @override */
   setUp: function() {
