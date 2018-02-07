@@ -51,7 +51,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/message_center/public/cpp/message_center_switches.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
@@ -479,11 +478,13 @@ PlatformNotificationServiceImpl::CreateNotificationFromData(
             notification_resources.action_icons.size());
 
   message_center::RichNotificationData optional_fields;
-
+#if defined(OS_CHROMEOS)
   optional_fields.settings_button_handler =
-      message_center::IsNewStyleNotificationEnabled()
-          ? message_center::SettingsButtonHandler::INLINE
-          : message_center::SettingsButtonHandler::DELEGATE;
+      message_center::SettingsButtonHandler::TRAY;
+#else
+  optional_fields.settings_button_handler =
+      message_center::SettingsButtonHandler::DELEGATE;
+#endif
 
   // TODO(peter): Handle different screen densities instead of always using the
   // 1x bitmap - crbug.com/585815.

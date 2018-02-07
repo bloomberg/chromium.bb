@@ -48,7 +48,7 @@ struct MESSAGE_CENTER_PUBLIC_EXPORT NotificationItem {
 
 enum class SettingsButtonHandler {
   NONE,     // No button. This is the default.
-  INLINE,   // Button shown, settings inline.
+  TRAY,     // Button shown, the tray handles clicks. Only used on Chrome OS.
   DELEGATE  // Button shown, notification's delegate handles action.
 };
 
