@@ -7,24 +7,19 @@
 <script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-bluetooth_test(() => {
-  let val = new Uint8Array([1]);
-  return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
-    .then(() => requestDeviceWithTrustedClick({
-      filters: [{services: ['health_thermometer']}]}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => gattServer.getPrimaryService('health_thermometer'))
-    .then(service => service.getCharacteristic('measurement_interval'))
-    .then(characteristic => characteristic.getDescriptor(user_description.name))
-    .then(descriptor => {
-      return setBluetoothFakeAdapter('MissingServiceHeartRateAdapter')
-        .then(() => assert_promise_rejects_with_message(
-          descriptor.writeValue(val),
-          new DOMException(
-            'GATT Service no longer exists.',
-            'InvalidStateError'),
-          'Service got removed.'));
-    });
-}, 'Service gets removed. Reject with InvalidStateError.');
+const test_desc = 'Service gets removed. Reject with InvalidStateError.';
+const expected = new DOMException('GATT Service no longer exists.',
+    'InvalidStateError');
+let descriptor, fake_peripheral, fake_service;
+
+bluetooth_test(() => getUserDescriptionDescriptor()
+    .then(_ => ({descriptor, fake_peripheral, fake_service} = _))
+    .then(() => fake_service.remove())
+    .then(() => fake_peripheral.simulateGATTServicesChanged())
+    .then(() => assert_promise_rejects_with_message(
+        descriptor.writeValue(new ArrayBuffer(1 /* length */)),
+        expected,
+        'Service got removed.')),
+    test_desc);
 
 </script>

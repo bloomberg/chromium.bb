@@ -6,20 +6,18 @@
 <script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-bluetooth_test(() => {
-  return setBluetoothFakeAdapter('HeartRateAdapter')
-    .then(() => requestDeviceWithTrustedClick({
-      filters: [{services: ['heart_rate']}]}))
-    .then(device => device.gatt.connect())
-    .then(gattService => gattService.getPrimaryService('heart_rate'))
-    .then(service => service.getCharacteristic('heart_rate_measurement'))
-    .then(characteristic => {
-      return setBluetoothFakeAdapter('MissingServiceHeartRateAdapter')
-        .then(() => assert_promise_rejects_with_message(
-          characteristic.startNotifications(),
-          new DOMException('GATT Service no longer exists.',
-                           'InvalidStateError'),
-          'Service got removed.'));
-    });
-}, 'Service is removed. Reject with InvalidStateError.');
+const test_desc = 'Service is removed. Reject with InvalidStateError.';
+const expected = new DOMException('GATT Service no longer exists.',
+    'InvalidStateError');
+let characteristic, fake_peripheral, fake_service;
+
+bluetooth_test(() => getMeasurementIntervalCharacteristic()
+    .then(_ => ({characteristic, fake_peripheral, fake_service} = _))
+    .then(() => fake_service.remove())
+    .then(() => fake_peripheral.simulateGATTServicesChanged())
+    .then(() => assert_promise_rejects_with_message(
+        characteristic.startNotifications(),
+        expected,
+        'Service got removed.')),
+    test_desc);
 </script>
