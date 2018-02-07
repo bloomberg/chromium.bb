@@ -29,9 +29,13 @@ class WebRequestPermissions {
  public:
   // Different host permission checking modes for CanExtensionAccessURL.
   enum HostPermissionsCheck {
-    DO_NOT_CHECK_HOST = 0,    // No check.
-    REQUIRE_HOST_PERMISSION,  // Permission needed for given URL.
-    REQUIRE_ALL_URLS          // Permission needed for <all_urls>.
+    DO_NOT_CHECK_HOST = 0,            // No check.
+    REQUIRE_HOST_PERMISSION_FOR_URL,  // Permission needed for given request
+                                      // URL.
+    REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,  // Permission needed for
+                                                    // given request URL and its
+                                                    // initiator.
+    REQUIRE_ALL_URLS  // Permission needed for <all_urls>.
   };
 
   // Returns true if the request shall not be reported to extensions.

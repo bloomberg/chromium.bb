@@ -1360,7 +1360,8 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
           WebRequestPermissions::CanExtensionAccessURL(
               extension_info_map, listener->id.extension_id, request->url,
               request->frame_data ? request->frame_data->tab_id : -1,
-              crosses_incognito, WebRequestPermissions::REQUIRE_HOST_PERMISSION,
+              crosses_incognito,
+              WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL,
               request->initiator);
 
       if (access != PermissionsData::ACCESS_ALLOWED) {

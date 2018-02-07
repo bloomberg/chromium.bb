@@ -42,6 +42,42 @@ bool HasWebRequestScheme(const GURL& url) {
 
 bool g_allow_all_extension_locations_in_public_session = false;
 
+PermissionsData::AccessType GetHostAccessForURL(
+    const extensions::Extension& extension,
+    const GURL& url,
+    int tab_id) {
+  // about: URLs are not covered in host permissions, but are allowed
+  // anyway.
+  if (url.SchemeIs(url::kAboutScheme) ||
+      url::IsSameOriginWith(url, extension.url())) {
+    return PermissionsData::ACCESS_ALLOWED;
+  }
+
+  return extension.permissions_data()->GetPageAccess(&extension, url, tab_id,
+                                                     nullptr /*error*/);
+}
+
+// Returns the most restricted access type out of |access1| and |access2|.
+PermissionsData::AccessType GetMinimumAccessType(
+    PermissionsData::AccessType access1,
+    PermissionsData::AccessType access2) {
+  PermissionsData::AccessType access = PermissionsData::ACCESS_DENIED;
+  switch (access1) {
+    case PermissionsData::ACCESS_DENIED:
+      access = PermissionsData::ACCESS_DENIED;
+      break;
+    case PermissionsData::ACCESS_WITHHELD:
+      access = (access2 == PermissionsData::ACCESS_DENIED
+                    ? PermissionsData::ACCESS_DENIED
+                    : PermissionsData::ACCESS_WITHHELD);
+      break;
+    case PermissionsData::ACCESS_ALLOWED:
+      access = access2;
+      break;
+  }
+  return access;
+}
+
 }  // namespace
 
 // Returns true if the URL is sensitive and requests to this URL must not be
@@ -208,17 +244,19 @@ PermissionsData::AccessType WebRequestPermissions::CanExtensionAccessURL(
     case DO_NOT_CHECK_HOST:
       access = PermissionsData::ACCESS_ALLOWED;
       break;
-    case REQUIRE_HOST_PERMISSION:
-      // about: URLs are not covered in host permissions, but are allowed
-      // anyway.
-      if (url.SchemeIs(url::kAboutScheme) ||
-          url::IsSameOriginWith(url, extension->url())) {
-        access = PermissionsData::ACCESS_ALLOWED;
-        break;
-      }
-      access = extension->permissions_data()->GetPageAccess(extension, url,
-                                                            tab_id, nullptr);
+    case REQUIRE_HOST_PERMISSION_FOR_URL:
+      access = GetHostAccessForURL(*extension, url, tab_id);
       break;
+    case REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR: {
+      PermissionsData::AccessType request_access =
+          GetHostAccessForURL(*extension, url, tab_id);
+      PermissionsData::AccessType initiator_access =
+          initiator
+              ? GetHostAccessForURL(*extension, initiator->GetURL(), tab_id)
+              : PermissionsData::ACCESS_ALLOWED;
+      access = GetMinimumAccessType(request_access, initiator_access);
+      break;
+    }
     case REQUIRE_ALL_URLS:
       if (extension->permissions_data()->HasEffectiveAccessToAllHosts())
         access = PermissionsData::ACCESS_ALLOWED;
@@ -240,8 +278,8 @@ bool WebRequestPermissions::CanExtensionAccessInitiator(
   if (initiator) {
     access = CanExtensionAccessURL(
         extension_info_map, extension_id, initiator->GetURL(), tab_id,
-        crosses_incognito, WebRequestPermissions::REQUIRE_HOST_PERMISSION,
-        base::nullopt);
+        crosses_incognito,
+        WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL, base::nullopt);
   }
   return access == PermissionsData::ACCESS_ALLOWED;
 }
