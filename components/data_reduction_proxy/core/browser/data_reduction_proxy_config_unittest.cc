@@ -988,8 +988,9 @@ TEST_F(DataReductionProxyConfigTest,
 TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
   // Turn on proxy-decides-transform feature to satisfy DCHECK.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kDataReductionProxyDecidesTransform);
+  scoped_feature_list.InitFromCommandLine(
+      "Previews,DataReductionProxyDecidesTransform" /* enable_features */,
+      std::string() /* disable_features */);
   base::FieldTrialList field_trial_list(nullptr);
   base::FieldTrialList::CreateFieldTrial(
       "DataReductionProxyPreviewsBlackListTransition", "Enabled");

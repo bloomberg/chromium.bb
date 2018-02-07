@@ -47,6 +47,7 @@
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -918,8 +919,10 @@ TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
 TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
   Init(USE_INSECURE_PROXY, false);
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kDataReductionProxyDecidesTransform);
+  scoped_feature_list.InitWithFeatures(
+      {previews::features::kPreviews,
+       features::kDataReductionProxyDecidesTransform},
+      {});
 
   // Enable Lo-Fi.
   bool is_data_reduction_proxy_enabled[] = {false, true};
@@ -1246,6 +1249,11 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
 
 TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
   Init(USE_INSECURE_PROXY, false);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {previews::features::kPreviews,
+       features::kDataReductionProxyDecidesTransform},
+      {});
 
   base::HistogramTester histogram_tester;
 

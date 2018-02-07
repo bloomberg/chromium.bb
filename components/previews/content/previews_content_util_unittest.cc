@@ -104,7 +104,7 @@ TEST_F(PreviewsContentUtilTest,
 
 TEST_F(PreviewsContentUtilTest, DetermineEnabledClientPreviewsStateClientLoFi) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("ClientLoFi", std::string());
+  scoped_feature_list.InitFromCommandLine("Previews,ClientLoFi", std::string());
   EXPECT_EQ(content::CLIENT_LOFI_ON,
             previews::DetermineEnabledClientPreviewsState(*CreateHttpsRequest(),
                                                           previews_decider()));
@@ -122,8 +122,8 @@ TEST_F(PreviewsContentUtilTest,
 
   // Now, enable both Client LoFi and NoScript.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("ClientLoFi,NoScriptPreviews",
-                                          std::string());
+  scoped_feature_list.InitFromCommandLine(
+      "Previews,ClientLoFi,NoScriptPreviews", std::string());
 
   // Verify NoScript takes precendence over LoFi (for https).
   EXPECT_EQ(content::NOSCRIPT_ON,

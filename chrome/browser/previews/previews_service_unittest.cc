@@ -74,8 +74,9 @@ class PreviewsServiceTest : public testing::Test {
                          content::BrowserThread::GetTaskRunnerForThread(
                              content::BrowserThread::UI),
                          file_path);
-    scoped_feature_list_.InitAndDisableFeature(
-        data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
+    scoped_feature_list_.InitWithFeatures(
+        {previews::features::kPreviews},
+        {data_reduction_proxy::features::kDataReductionProxyDecidesTransform});
   }
 
   void TearDown() override { variations::testing::ClearAllVariationParams(); }
@@ -127,29 +128,37 @@ TEST_F(PreviewsServiceTest, TestClientLoFiFieldTrialNotSet) {
 
 TEST_F(PreviewsServiceTest, TestServerLoFiNotEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
+  scoped_feature_list.InitWithFeatures(
+      {previews::features::kPreviews} /* enabled features */,
+      {data_reduction_proxy::features::
+           kDataReductionProxyDecidesTransform} /* disabled features */);
   EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::LOFI));
 }
 
 TEST_F(PreviewsServiceTest, TestLitePageNotEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
+  scoped_feature_list.InitWithFeatures(
+      {previews::features::kPreviews} /* enabled features */,
+      {data_reduction_proxy::features::
+           kDataReductionProxyDecidesTransform} /* disabled features */);
   EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::LITE_PAGE));
 }
 
 TEST_F(PreviewsServiceTest, TestServerLoFiProxyDecidesTransform) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
+  scoped_feature_list.InitWithFeatures(
+      {previews::features::kPreviews,
+       data_reduction_proxy::features::kDataReductionProxyDecidesTransform},
+      {});
   EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::LOFI));
 }
 
 TEST_F(PreviewsServiceTest, TestLitePageProxyDecidesTransform) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
+  scoped_feature_list.InitWithFeatures(
+      {previews::features::kPreviews,
+       data_reduction_proxy::features::kDataReductionProxyDecidesTransform},
+      {});
   EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::LITE_PAGE));
 }
 

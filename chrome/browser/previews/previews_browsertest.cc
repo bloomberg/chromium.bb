@@ -121,7 +121,7 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
   PreviewsNoScriptBrowserTest() {
     // Explicitly disable server hints.
     scoped_feature_list_.InitWithFeatures(
-        {previews::features::kNoScriptPreviews},
+        {previews::features::kPreviews, previews::features::kNoScriptPreviews},
         {previews::features::kOptimizationHints});
   }
 
@@ -208,7 +208,7 @@ class PreviewsOptimizationGuideBrowserTest : public PreviewsBrowserTest {
  public:
   PreviewsOptimizationGuideBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
-        {previews::features::kOptimizationHints,
+        {previews::features::kPreviews, previews::features::kOptimizationHints,
          previews::features::kNoScriptPreviews},
         {});
   }

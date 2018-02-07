@@ -425,11 +425,11 @@ TEST_F(PreviewsIODataTest, TestInitialization) {
 }
 
 TEST_F(PreviewsIODataTest, AllPreviewsDisabledByFeature) {
-  InitializeUIService();
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kClientLoFi, features::kNoScriptPreviews},
       {features::kPreviews} /* disable_features */);
+  InitializeUIService();
 
   network_quality_estimator()->set_effective_connection_type(
       net::EFFECTIVE_CONNECTION_TYPE_2G);
@@ -450,6 +450,8 @@ TEST_F(PreviewsIODataTest, AllPreviewsDisabledByFeature) {
 // state of the blacklist. Excluded values are USER_RECENTLY_OPTED_OUT,
 // USER_BLACKLISTED, HOST_BLACKLISTED. These are internal to the blacklist.
 TEST_F(PreviewsIODataTest, TestDisallowPreviewBecauseOfBlackListState) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   std::unique_ptr<net::URLRequest> request = CreateRequest();
   base::HistogramTester histogram_tester;
 
@@ -485,6 +487,8 @@ TEST_F(PreviewsIODataTest, TestDisallowPreviewBecauseOfBlackListState) {
 }
 
 TEST_F(PreviewsIODataTest, TestDisallowOfflineWhenNetworkQualityUnavailable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
 
   network_quality_estimator()->set_effective_connection_type(
@@ -500,9 +504,11 @@ TEST_F(PreviewsIODataTest, TestDisallowOfflineWhenNetworkQualityUnavailable) {
 }
 
 TEST_F(PreviewsIODataTest, TestAllowLitePageWhenNetworkQualityFast) {
-  // LoFi and LitePage check NQE on their own.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
 
+  // LoFi and LitePage check NQE on their own.
   network_quality_estimator()->set_effective_connection_type(
       net::EFFECTIVE_CONNECTION_TYPE_3G);
 
@@ -516,6 +522,8 @@ TEST_F(PreviewsIODataTest, TestAllowLitePageWhenNetworkQualityFast) {
 }
 
 TEST_F(PreviewsIODataTest, TestDisallowOfflineWhenNetworkQualityFast) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
 
   network_quality_estimator()->set_effective_connection_type(
@@ -529,6 +537,8 @@ TEST_F(PreviewsIODataTest, TestDisallowOfflineWhenNetworkQualityFast) {
 }
 
 TEST_F(PreviewsIODataTest, TestDisallowOfflineOnReload) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
 
   network_quality_estimator()->set_effective_connection_type(
@@ -545,6 +555,8 @@ TEST_F(PreviewsIODataTest, TestDisallowOfflineOnReload) {
 }
 
 TEST_F(PreviewsIODataTest, TestAllowOffline) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
 
   network_quality_estimator()->set_effective_connection_type(
@@ -559,6 +571,8 @@ TEST_F(PreviewsIODataTest, TestAllowOffline) {
 }
 
 TEST_F(PreviewsIODataTest, ClientLoFiDisallowedByDefault) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
 
   base::HistogramTester histogram_tester;
@@ -570,6 +584,8 @@ TEST_F(PreviewsIODataTest, ClientLoFiDisallowedByDefault) {
 }
 
 TEST_F(PreviewsIODataTest, ClientLoFiDisallowedWhenFieldTrialDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
   CreateFieldTrialWithParams("PreviewsClientLoFi", "Disabled", {});
 
@@ -583,6 +599,8 @@ TEST_F(PreviewsIODataTest, ClientLoFiDisallowedWhenFieldTrialDisabled) {
 }
 
 TEST_F(PreviewsIODataTest, ClientLoFiDisallowedWhenNetworkQualityUnavailable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
   CreateFieldTrialWithParams("PreviewsClientLoFi", "Enabled", {});
 
@@ -602,6 +620,8 @@ TEST_F(PreviewsIODataTest, ClientLoFiDisallowedWhenNetworkQualityUnavailable) {
 }
 
 TEST_F(PreviewsIODataTest, ClientLoFiDisallowedWhenNetworkFast) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
   CreateFieldTrialWithParams("PreviewsClientLoFi", "Enabled",
                              {{"max_allowed_effective_connection_type", "2G"}});
@@ -621,6 +641,8 @@ TEST_F(PreviewsIODataTest, ClientLoFiDisallowedWhenNetworkFast) {
 }
 
 TEST_F(PreviewsIODataTest, ClientLoFiAllowed) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
   CreateFieldTrialWithParams("PreviewsClientLoFi", "Enabled",
                              {{"max_allowed_effective_connection_type", "2G"}});
@@ -640,6 +662,8 @@ TEST_F(PreviewsIODataTest, ClientLoFiAllowed) {
 }
 
 TEST_F(PreviewsIODataTest, MissingHostDisallowed) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
   CreateFieldTrialWithParams("PreviewsClientLoFi", "Enabled",
                              {{"max_allowed_effective_connection_type", "2G"}});
@@ -655,6 +679,8 @@ TEST_F(PreviewsIODataTest, MissingHostDisallowed) {
 }
 
 TEST_F(PreviewsIODataTest, ClientLoFiAllowedOnReload) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
   CreateFieldTrialWithParams("PreviewsClientLoFi", "Enabled",
                              {{"max_allowed_effective_connection_type", "2G"}});
@@ -677,6 +703,8 @@ TEST_F(PreviewsIODataTest, ClientLoFiAllowedOnReload) {
 }
 
 TEST_F(PreviewsIODataTest, ClientLoFiObeysHostBlackListFromServer) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
   CreateFieldTrialWithParams("PreviewsClientLoFi", "Enabled",
                              {{"max_allowed_effective_connection_type", "2G"},
@@ -722,6 +750,8 @@ TEST_F(PreviewsIODataTest, ClientLoFiObeysHostBlackListFromServer) {
 }
 
 TEST_F(PreviewsIODataTest, NoScriptDisallowedByDefault) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
 
   network_quality_estimator()->set_effective_connection_type(
@@ -737,9 +767,10 @@ TEST_F(PreviewsIODataTest, NoScriptDisallowedByDefault) {
 }
 
 TEST_F(PreviewsIODataTest, NoScriptAllowedByFeature) {
-  InitializeUIService();
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kNoScriptPreviews);
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kNoScriptPreviews}, {});
+  InitializeUIService();
 
   network_quality_estimator()->set_effective_connection_type(
       net::EFFECTIVE_CONNECTION_TYPE_2G);
@@ -758,10 +789,12 @@ TEST_F(PreviewsIODataTest, NoScriptAllowedByFeature) {
 }
 
 TEST_F(PreviewsIODataTest, NoScriptAllowedByFeatureWithWhitelist) {
-  InitializeUIService();
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {features::kNoScriptPreviews, features::kOptimizationHints}, {});
+      {features::kPreviews, features::kNoScriptPreviews,
+       features::kOptimizationHints},
+      {});
+  InitializeUIService();
 
   network_quality_estimator()->set_effective_connection_type(
       net::EFFECTIVE_CONNECTION_TYPE_2G);
@@ -795,6 +828,8 @@ TEST_F(PreviewsIODataTest, NoScriptAllowedByFeatureWithWhitelist) {
 }
 
 TEST_F(PreviewsIODataTest, LogPreviewNavigationPassInCorrectParams) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
   const GURL url("http://www.url_a.com/url_a");
   const bool opt_out = true;
@@ -815,6 +850,8 @@ TEST_F(PreviewsIODataTest, LogPreviewNavigationPassInCorrectParams) {
 }
 
 TEST_F(PreviewsIODataTest, LogPreviewDecisionMadePassInCorrectParams) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
   const PreviewsEligibilityReason reason(
       PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE);
@@ -849,6 +886,8 @@ TEST_F(PreviewsIODataTest, LogPreviewDecisionMadePassInCorrectParams) {
 }  // namespace
 
 TEST_F(PreviewsIODataTest, LogDecisionMadeBlacklistNotAvailable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
   CreateFieldTrialWithParams("PreviewsClientLoFi", "Enabled", {});
   auto expected_reason = PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE;
@@ -867,6 +906,8 @@ TEST_F(PreviewsIODataTest, LogDecisionMadeBlacklistNotAvailable) {
 }
 
 TEST_F(PreviewsIODataTest, LogDecisionMadeBlacklistStatusesDefault) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
   CreateFieldTrialWithParams("PreviewsClientLoFi", "Enabled", {});
 
@@ -903,6 +944,8 @@ TEST_F(PreviewsIODataTest, LogDecisionMadeBlacklistStatusesDefault) {
 }
 
 TEST_F(PreviewsIODataTest, LogDecisionMadeBlacklistStatusesIgnore) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
   CreateFieldTrialWithParams("PreviewsClientLoFi", "Enabled", {});
   network_quality_estimator()->set_effective_connection_type(
@@ -939,6 +982,8 @@ TEST_F(PreviewsIODataTest, LogDecisionMadeBlacklistStatusesIgnore) {
 }
 
 TEST_F(PreviewsIODataTest, LogDecisionMadeNetworkQualityNotAvailable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
   CreateFieldTrialWithParams("PreviewsClientLoFi", "Enabled", {});
   std::unique_ptr<TestPreviewsBlackList> blacklist =
@@ -982,6 +1027,8 @@ TEST_F(PreviewsIODataTest, LogDecisionMadeNetworkQualityNotAvailable) {
 }
 
 TEST_F(PreviewsIODataTest, LogDecisionMadeNetworkNotSlow) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
   CreateFieldTrialWithParams("PreviewsClientLoFi", "Enabled", {});
   std::unique_ptr<TestPreviewsBlackList> blacklist =
@@ -1024,6 +1071,8 @@ TEST_F(PreviewsIODataTest, LogDecisionMadeNetworkNotSlow) {
 }
 
 TEST_F(PreviewsIODataTest, LogDecisionMadeHostBlacklisted) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
   CreateFieldTrialWithParams("PreviewsClientLoFi", "Enabled",
                              {{"short_host_blacklist", "example.com"}});
@@ -1071,6 +1120,8 @@ TEST_F(PreviewsIODataTest, LogDecisionMadeHostBlacklisted) {
 }
 
 TEST_F(PreviewsIODataTest, LogDecisionMadeReloadDisallowed) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
   std::unique_ptr<TestPreviewsBlackList> blacklist =
       std::make_unique<TestPreviewsBlackList>(
@@ -1117,6 +1168,8 @@ TEST_F(PreviewsIODataTest, LogDecisionMadeReloadDisallowed) {
 }
 
 TEST_F(PreviewsIODataTest, IgnoreBlacklistEnabledViaFlag) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   base::test::ScopedCommandLine scoped_command_line;
   base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
   command_line->AppendSwitch(switches::kIgnorePreviewsBlacklist);
@@ -1146,6 +1199,8 @@ TEST_F(PreviewsIODataTest, IgnoreBlacklistEnabledViaFlag) {
 }
 
 TEST_F(PreviewsIODataTest, LogDecisionMadeAllowPreviewsOnECT) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
   CreateFieldTrialWithParams("PreviewsClientLoFi", "Enabled", {});
 
