@@ -11,19 +11,11 @@
 #include "content/gpu/gpu_process.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/gpu/content_gpu_client.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
-#include "gpu/config/gpu_info_collector.h"
-#include "gpu/config/gpu_util.h"
 #include "gpu/ipc/service/gpu_init.h"
-#include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#endif
-
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 namespace content {
@@ -56,11 +48,8 @@ void InProcessGpuThread::Init() {
   gpu_process_ = new GpuProcess(io_thread_priority);
 
   auto gpu_init = std::make_unique<gpu::GpuInit>();
-  auto* client = GetContentClient()->gpu();
   gpu_init->InitializeInProcess(base::CommandLine::ForCurrentProcess(),
-                                gpu_preferences_,
-                                client ? client->GetGPUInfo() : nullptr,
-                                client ? client->GetGpuFeatureInfo() : nullptr);
+                                gpu_preferences_);
 
   GetContentClient()->SetGpuInfo(gpu_init->gpu_info());
 

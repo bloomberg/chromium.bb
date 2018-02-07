@@ -52,6 +52,19 @@ GPU_EXPORT void CacheGpuFeatureInfo(const GpuFeatureInfo& gpu_feature_info);
 // return true; otherwise, return false;
 GPU_EXPORT bool PopGpuFeatureInfoCache(GpuFeatureInfo* gpu_feature_info);
 
+#if defined(OS_ANDROID)
+// Check if GL bindings are initialized. If not, initializes GL
+// bindings, create a GL context, collects GPUInfo, make blacklist and
+// GPU driver bug workaround decisions. This is intended to be called
+// by Android WebView render thread and in-process GPU thread.
+GPU_EXPORT bool InitializeGLThreadSafe(base::CommandLine* command_line,
+                                       bool ignore_gpu_blacklist,
+                                       bool disable_gpu_driver_bug_workarounds,
+                                       bool log_gpu_control_list_decisions,
+                                       GPUInfo* out_gpu_info,
+                                       GpuFeatureInfo* out_gpu_feature_info);
+#endif  // OS_ANDROID
+
 }  // namespace gpu
 
 #endif  // GPU_CONFIG_GPU_UTIL_H_

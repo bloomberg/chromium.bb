@@ -299,7 +299,6 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   gpu_init->set_sandbox_helper(&sandbox_helper);
 
-  auto* client = GetContentClient()->gpu();
   // Gpu initialization may fail for various reasons, in which case we will need
   // to tear down this process. However, we can not do so safely until the IPC
   // channel is set up, because the detection of early return of a child process
@@ -309,9 +308,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   // defer tearing down the GPU process until receiving the initialization
   // message from the browser (through mojom::VizMain::CreateGpuService()).
   const bool init_success = gpu_init->InitializeAndStartSandbox(
-      const_cast<base::CommandLine*>(&command_line), gpu_preferences,
-      client ? client->GetGPUInfo() : nullptr,
-      client ? client->GetGpuFeatureInfo() : nullptr);
+      const_cast<base::CommandLine*>(&command_line), gpu_preferences);
   const bool dead_on_arrival = !init_success;
 
   logging::SetLogMessageHandler(nullptr);
@@ -324,6 +321,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   GpuProcess gpu_process(io_thread_priority);
 
+  auto* client = GetContentClient()->gpu();
   if (client)
     client->PostIOThreadCreated(gpu_process.io_task_runner());
 

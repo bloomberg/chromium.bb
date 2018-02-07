@@ -43,6 +43,9 @@ component("service") {
     "switches.h",
   ]
   defines = [ "GPU_IPC_SERVICE_IMPLEMENTATION" ]
+  if (is_chromecast) {
+    defines += [ "IS_CHROMECAST" ]
+  }
   public_deps = [
     "//base",
     "//ipc",

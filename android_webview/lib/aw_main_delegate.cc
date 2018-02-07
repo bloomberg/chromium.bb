@@ -268,22 +268,11 @@ gpu::SyncPointManager* GetSyncPointManager() {
   DCHECK(DeferredGpuCommandService::GetInstance());
   return DeferredGpuCommandService::GetInstance()->sync_point_manager();
 }
-
-const gpu::GPUInfo& GetGPUInfo() {
-  DCHECK(DeferredGpuCommandService::GetInstance());
-  return DeferredGpuCommandService::GetInstance()->gpu_info();
-}
-
-const gpu::GpuFeatureInfo& GetGpuFeatureInfo() {
-  DCHECK(DeferredGpuCommandService::GetInstance());
-  return DeferredGpuCommandService::GetInstance()->gpu_feature_info();
-}
 }  // namespace
 
 content::ContentGpuClient* AwMainDelegate::CreateContentGpuClient() {
-  content_gpu_client_.reset(new AwContentGpuClient(
-      base::Bind(&GetSyncPointManager), base::Bind(&GetGPUInfo),
-      base::Bind(&GetGpuFeatureInfo)));
+  content_gpu_client_.reset(
+      new AwContentGpuClient(base::Bind(&GetSyncPointManager)));
   return content_gpu_client_.get();
 }
 
