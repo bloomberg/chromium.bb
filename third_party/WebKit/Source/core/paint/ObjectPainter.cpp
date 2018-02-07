@@ -58,8 +58,9 @@ void ObjectPainter::PaintOutline(const PaintInfo& paint_info,
         return;
     }
   }
-
-  PaintOutlineRects(paint_info, outline_rects, style_to_use, layout_object_);
+  DrawingRecorder recorder(paint_info.context, layout_object_,
+                           paint_info.phase);
+  PaintOutlineRects(paint_info, outline_rects, style_to_use);
 }
 
 void ObjectPainter::PaintInlineChildrenOutlines(
