@@ -523,6 +523,7 @@
 <translation id="4858792381671956233">Du hast deine Eltern gefragt, ob du diese Website besuchen darfst</translation>
 <translation id="4871132632506079383">Von einer auf <ph name="SITE" /> eingebetteten Seite</translation>
 <translation id="4880827082731008257">Im Verlauf suchen</translation>
+<translation id="4881695831933465202">Öffnen</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Authentifizierung erforderlich</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{und 1 weitere Webseite}other{und # weitere Webseiten}}</translation>
@@ -744,6 +745,7 @@
 <translation id="6563469144985748109">Der Administrator hat die Berechtigung noch nicht erteilt</translation>
 <translation id="6569060085658103619">Dies ist eine Erweiterungsseite</translation>
 <translation id="6596325263575161958">Verschlüsselungsoptionen</translation>
+<translation id="6604181099783169992">Bewegungs- oder Lichtsensoren</translation>
 <translation id="6624427990725312378">Kontaktdaten</translation>
 <translation id="6626291197371920147">Gültige Kartennummer hinzufügen</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" />-Suche</translation>

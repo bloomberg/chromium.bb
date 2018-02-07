@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">Halda serte</translation>
 <translation id="152234381334907219">Ei ole kunagi salvestatud</translation>
 <translation id="1524430321211440688">Klaviatuur</translation>
+<translation id="1524563461097350801">Ei, tänan</translation>
 <translation id="1526560967942511387">Pealkirjata dokument</translation>
 <translation id="1526925867532626635">Sünkroonimisseadete kinnitamine</translation>
 <translation id="1529116897397289129">Salvestatud kaardid kuvatakse siin</translation>
@@ -875,7 +876,6 @@
 <translation id="2352947182261340447">Kohalikus salvestusruumis ei ole piisavalt ruumi.</translation>
 <translation id="2353297238722298836">Kaamera ja mikrofon on lubatud</translation>
 <translation id="2356070529366658676">Küsi</translation>
-<translation id="2356517949307388948">Chrome'is ohtliku tarkvara otsimisel ilmnes viga.</translation>
 <translation id="2357949918965361754">Selle funktsiooni abil saate kuvada Chrome'ist pärinevat sisu oma teleris või muudes seadmetes.</translation>
 <translation id="2359345697448000899">Laienduste haldamiseks klõpsake menüüs Tööriistad valikul Laiendused.</translation>
 <translation id="2359808026110333948">Jätka</translation>
@@ -1111,7 +1111,6 @@ Ma arvan, et see sait ei tohiks olla blokeeritud.</translation>
 <translation id="2715751256863167692">See üleviimine lähtestab teie Chromebooki ja eemaldab praegused kasutaja andmed.</translation>
 <translation id="2718395828230677721">Öövalgus</translation>
 <translation id="2718998670920917754">Viirusetõrjetarkvara tuvastas viiruse.</translation>
-<translation id="2719545156185392871">Chrome võib teie arvutist otsida kahjulikku tarkvara ja selle eemaldada.</translation>
 <translation id="2719936478972253983">Järgmised küpsisefailid blokeeriti</translation>
 <translation id="2721037002783622288">&amp;Otsi teenusest <ph name="SEARCH_ENGINE" /> kujutist</translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2446,7 +2445,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4835836146030131423">Sisselogimisel ilmnes viga.</translation>
 <translation id="4837926214103741331">Teil ei ole seadme kasutamiseks volitust. Sisselogimisloa saamiseks võtke ühendust omanikuga.</translation>
 <translation id="4837952862063191349">Kohalike andmete avamiseks ja taastamiseks sisestage oma seadme <ph name="DEVICE_TYPE" /> vana parool.</translation>
-<translation id="4838355575774807786">Chrome'is ohtliku tarkvara eemaldamisel ilmnes viga.</translation>
 <translation id="4838836835474292213">Lubati juurdepääs lõikelaua lugemiseks</translation>
 <translation id="4839303808932127586">Sa&amp;lvesta video nimega ...</translation>
 <translation id="4839847978919684242">Valitud on <ph name="SELCTED_FILES_COUNT" /> üksust</translation>
@@ -4047,7 +4045,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="73786666777299047">Ava Chrome'i veebipood</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Andmesideühenduse hankimine</translation>
-<translation id="7382945755068785583">Hõlmab teavet teie arvutis oleva ohtliku tarkvara, süsteemiseadete ja protsesside kohta.</translation>
 <translation id="7384292194278095697">Seda seadet ei toetata enam</translation>
 <translation id="7385854874724088939">Printimisel tekkis mingi tõrge. Kontrollige oma printerit ja proovige uuesti.</translation>
 <translation id="7386824183915085801">Lisaks ülalvalitud teabele saadetakse ka teie Chrome'i ja
@@ -4922,7 +4919,6 @@ Inimesed, kelle ühendus on aeglane, ei pruugi teie sisu näha.</translation>
 <translation id="8784626084144195648">Rühmitatud keskmine</translation>
 <translation id="8785622406424941542">Elektronpliiats</translation>
 <translation id="8787254343425541995">Lubage puhverserverid jagatud võrkudes</translation>
-<translation id="8791260615011736453">Siin mittekuvatud üksused võib vajaduse korral ka eemaldada. Vaadake lisateavet &lt;a href="<ph name="URL" />"&gt;soovimatu tarkvara vastase kaitse&lt;/a&gt; kohta Chrome'i privaatsusjuhendist.</translation>
 <translation id="8791534160414513928">Saada sirvimisliiklusega taotlus „Ära jälgi”</translation>
 <translation id="8792609692701651064">Aktiivne aken teisaldati vasakpoolsele ekraanikuvale</translation>
 <translation id="8794025342371547160">Piirangutega IP</translation>

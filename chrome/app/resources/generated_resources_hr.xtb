@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">Upravljanje potvrdama</translation>
 <translation id="152234381334907219">Nikad spremljeno</translation>
 <translation id="1524430321211440688">Tipkovnica</translation>
+<translation id="1524563461097350801">Ne, hvala</translation>
 <translation id="1526560967942511387">Neimenovani dokument</translation>
 <translation id="1526925867532626635">Potvrdite postavke sinkronizacije</translation>
 <translation id="1529116897397289129">Ovdje će se pojaviti spremljene kartice</translation>
@@ -875,7 +876,6 @@
 <translation id="2352947182261340447">U lokalnoj pohrani nema dovoljno prostora.</translation>
 <translation id="2353297238722298836">Dopušteni su kamera i mikrofon</translation>
 <translation id="2356070529366658676">Upitaj</translation>
-<translation id="2356517949307388948">Došlo je do pogreške dok je Chrome tražio štetni softver.</translation>
 <translation id="2357949918965361754">Pomoću te značajke možete prikazivati sadržaj iz Chromea na televizoru ili drugim uređajima.</translation>
 <translation id="2359345697448000899">Upravljajte svojim proširenjima tako da u izborniku Alati kliknete Proširenja.</translation>
 <translation id="2359808026110333948">Nastavi</translation>
@@ -1111,7 +1111,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="2715751256863167692">Ovom nadogradnjom Chromebook se vraća na zadano, a trenutačni korisnički podaci se uklanjaju.</translation>
 <translation id="2718395828230677721">Noćno svjetlo</translation>
 <translation id="2718998670920917754">Antivirusni softver otkrio je virus.</translation>
-<translation id="2719545156185392871">Chrome može pronaći i ukloniti štetni softver na vašem računalu.</translation>
 <translation id="2719936478972253983">Sljedeći su kolačići blokirani</translation>
 <translation id="2721037002783622288">&amp;Traži sliku uz <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2446,7 +2445,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="4835836146030131423">Pogreška u prijavi.</translation>
 <translation id="4837926214103741331">Niste ovlašteni za upotrebu ovog uređaja. Zamolite vlasnika da vam dopusti prijavu.</translation>
 <translation id="4837952862063191349">Da biste otključali i pohranili lokalne podatke, unesite staru zaporku za uređaj <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4838355575774807786">Došlo je do pogreške dok je Chrome uklanjao štetni softver.</translation>
 <translation id="4838836835474292213">Dopušten pristup za čitanje međuspremnika</translation>
 <translation id="4839303808932127586">Sp&amp;remi videozapis kao...</translation>
 <translation id="4839847978919684242">Odabrane stavke: <ph name="SELCTED_FILES_COUNT" /></translation>
@@ -4047,7 +4045,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="73786666777299047">Otvori Chrome web-trgovinu</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Dohvaćanje podatkovne veze</translation>
-<translation id="7382945755068785583">Obuhvaća informacije o štetnom softveru, postavkama sustava i procesima na vašem računalu.</translation>
 <translation id="7384292194278095697">Ovaj uređaj više nije podržan</translation>
 <translation id="7385854874724088939">Tijekom ispisa nešto se pokvarilo.  Provjerite pisač i pokušajte ponovno.</translation>
 <translation id="7386824183915085801">Informacije o vašem Chromeu i verziji operativnog sustava slat će se zajedno s informacijama
@@ -4921,7 +4918,6 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8784626084144195648">Kvantizacijski prosjek</translation>
 <translation id="8785622406424941542">Pisaljka</translation>
 <translation id="8787254343425541995">Dopusti proxyje za dijeljene mreže</translation>
-<translation id="8791260615011736453">Stavke koje nisu ovdje navedene također se po potrebi mogu ukloniti. Više o &lt;a href="<ph name="URL" />"&gt;zaštiti od neželjenog softvera&lt;/a&gt; potražite u Chromeovoj bijeloj knjizi o privatnosti.</translation>
 <translation id="8791534160414513928">Pošalji zahtjev "Nemoj pratiti" uz promet pregledavanja</translation>
 <translation id="8792609692701651064">Aktivni prozor pomaknut je na lijevi zaslon</translation>
 <translation id="8794025342371547160">Ograničeni IP</translation>

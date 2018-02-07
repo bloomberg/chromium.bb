@@ -525,6 +525,7 @@
 <translation id="4858792381671956233">Paprašėte tėvų leidimo apsilankyti šiame puslapyje</translation>
 <translation id="4871132632506079383">Svetainėje <ph name="SITE" /> įterptame puslapyje</translation>
 <translation id="4880827082731008257">Ieškoti istorijoje</translation>
+<translation id="4881695831933465202">Atidaryti</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Autentifikavimas yra būtinas</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ir dar 1 tinklalapis}one{ir dar # tinklalapis}few{ir dar # tinklalapiai}many{ir dar # tinklalapio}other{ir dar # tinklalapių}}</translation>
@@ -746,6 +747,7 @@
 <translation id="6563469144985748109">Jūsų valdytojas dar jos nepatvirtino</translation>
 <translation id="6569060085658103619">Peržiūrite plėtinio puslapį</translation>
 <translation id="6596325263575161958">Šifravimo parinktys</translation>
+<translation id="6604181099783169992">Judesio arba šviesos jutikliai</translation>
 <translation id="6624427990725312378">Kontaktinė informacija</translation>
 <translation id="6626291197371920147">Galiojančios kortelės numerio pridėjimas</translation>
 <translation id="6628463337424475685">„<ph name="ENGINE" />“ paieška</translation>

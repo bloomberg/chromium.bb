@@ -46,7 +46,6 @@
 <translation id="6322279351188361895">Failed to read private key.</translation>
 <translation id="6391538222494443604">Input directory must exist.</translation>
 <translation id="641087317769093025">Could not unzip extension</translation>
-<translation id="6542618148162044354">"<ph name="APP_NAME" />" is requesting access to one or more of your devices:</translation>
 <translation id="657064425229075395">Could not load background script '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> from <ph name="VENDOR_NAME" /> (serial number <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Could not create directory for unzipping: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -64,7 +63,6 @@
 <translation id="8636666366616799973">Package is invalid. Details: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">This extension failed to redirect a network request to <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> because another extension (<ph name="EXTENSION_NAME" />) redirected it to <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Extension Unpacker</translation>
-<translation id="8761756413268424715">"<ph name="APP_NAME" />" is requesting access to one of your devices:</translation>
 <translation id="8825366169884721447">This extension failed to modify the request header "<ph name="HEADER_NAME" />" of a network request because the modification conflicted with another extension (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">A private key for specified extension already exists. Reuse that key or delete it first.</translation>
 <translation id="907841381057066561">Failed to create temporary zip file during packaging.</translation>

@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">Certificaten beheren</translation>
 <translation id="152234381334907219">Nooit opgeslagen</translation>
 <translation id="1524430321211440688">Toetsenbord</translation>
+<translation id="1524563461097350801">Nee, bedankt</translation>
 <translation id="1526560967942511387">Naamloos document</translation>
 <translation id="1526925867532626635">Synchronisatie-instellingen bevestigen</translation>
 <translation id="1529116897397289129">Opgeslagen kaarten worden hier weergegeven</translation>
@@ -875,7 +876,6 @@
 <translation id="2352947182261340447">Onvoldoende ruimte in lokale opslag.</translation>
 <translation id="2353297238722298836">Camera en microfoon toegestaan</translation>
 <translation id="2356070529366658676">Vragen</translation>
-<translation id="2356517949307388948">Er is een fout opgetreden terwijl Chrome naar schadelijke software zocht.</translation>
 <translation id="2357949918965361754">Je kunt deze functie gebruiken om content van Chrome weer te geven op je tv of andere apparaten.</translation>
 <translation id="2359345697448000899">Je kunt je extensies beheren door in het gereedschapsmenu te klikken op 'Extensies'.</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
@@ -1111,7 +1111,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2715751256863167692">Met deze upgrade wordt je Chromebook gereset en worden huidige gebruikersgegevens verwijderd.</translation>
 <translation id="2718395828230677721">Nachtverlichting</translation>
 <translation id="2718998670920917754">De antivirussoftware heeft een virus gedetecteerd.</translation>
-<translation id="2719545156185392871">Chrome kan schadelijke software op je computer vinden en verwijderen.</translation>
 <translation id="2719936478972253983">De volgende cookies zijn geblokkeerd</translation>
 <translation id="2721037002783622288">Afbeelding &amp;zoeken in <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2446,7 +2445,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="4835836146030131423">Fout bij inloggen.</translation>
 <translation id="4837926214103741331">Je beschikt niet over de rechten om dit apparaat te gebruiken. Neem contact op met de eigenaar van het apparaat voor toestemming om in te loggen.</translation>
 <translation id="4837952862063191349">Geef het oude wachtwoord van je <ph name="DEVICE_TYPE" /> op om te ontgrendelen en je lokale gegevens te herstellen.</translation>
-<translation id="4838355575774807786">Er is een fout opgetreden tijdens het verwijderen van schadelijke software door Chrome.</translation>
 <translation id="4838836835474292213">Leestoegang voor klembord toegestaan</translation>
 <translation id="4839303808932127586">&amp;Video opslaan als...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> items geselecteerd</translation>
@@ -4048,7 +4046,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="73786666777299047">Chrome Web Store openen</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Dataverbinding ophalen</translation>
-<translation id="7382945755068785583">Hiermee wordt informatie over schadelijke software, systeeminstellingen en processen op je computer opgenomen.</translation>
 <translation id="7384292194278095697">Dit apparaat wordt niet meer ondersteund</translation>
 <translation id="7385854874724088939">Er is iets misgegaan bij het afdrukken. Controleer je printer en probeer het opnieuw.</translation>
 <translation id="7386824183915085801">Je versie van Chrome en van je besturingssysteem worden verzonden, samen met de
@@ -4922,7 +4919,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8784626084144195648">Gemiddelde van gegroepeerde gegevens</translation>
 <translation id="8785622406424941542">Stylus</translation>
 <translation id="8787254343425541995">Proxy's voor gedeelde netwerken toestaan</translation>
-<translation id="8791260615011736453">Zo nodig kunnen er ook items die hier niet worden vermeld, worden verwijderd. Lees meer informatie over &lt;a href="<ph name="URL" />"&gt;beveiliging tegen ongewenste software&lt;/a&gt; in de whitepaper over privacy in Chrome.</translation>
 <translation id="8791534160414513928">Een verzoek voor niet bijhouden met je browseverkeer verzenden</translation>
 <translation id="8792609692701651064">Actief venster verplaatst naar linkerscherm</translation>
 <translation id="8794025342371547160">Beperkt IP-adres</translation>

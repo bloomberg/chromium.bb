@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">Küsisite oma vanematelt, kas võite seda lehte külastada</translation>
 <translation id="4871132632506079383">Manustatud lehelt saidil <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Otsi ajaloost</translation>
+<translation id="4881695831933465202">Ava</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Vajalik on autentimine</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ja veel 1 veebileht}other{ja veel # veebilehte}}</translation>
@@ -745,6 +746,7 @@
 <translation id="6563469144985748109">Haldur ei ole seda veel kinnitanud</translation>
 <translation id="6569060085658103619">Vaatate laienduse lehte</translation>
 <translation id="6596325263575161958">Krüpteerimise valikud</translation>
+<translation id="6604181099783169992">Liikumis- või valgusandurid</translation>
 <translation id="6624427990725312378">Kontaktteave</translation>
 <translation id="6626291197371920147">Kehtiva kaardinumbri lisamine</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" />'i otsing</translation>

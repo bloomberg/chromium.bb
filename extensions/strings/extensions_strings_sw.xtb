@@ -46,7 +46,6 @@
 <translation id="6322279351188361895">Imeshindwa kusoma ufunguo wa kibinafsi</translation>
 <translation id="6391538222494443604">Lazima kuwe na saraka ya uingizaji.</translation>
 <translation id="641087317769093025">Isingeweza kufungua kiendelezi</translation>
-<translation id="6542618148162044354">"<ph name="APP_NAME" />" inaomba idhini ya kufikia kifaa chako kimoja au vingi:</translation>
 <translation id="657064425229075395">Haikuweza kupakia hati ya mandharinyuma '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> kutoka kwa <ph name="VENDOR_NAME" /> (nambari ya ufuatiliaji <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Isingeweza kuunda saraka ya kufungua: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -64,7 +63,6 @@
 <translation id="8636666366616799973">Furushi ni batili. Maelezo: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Kiendelezi kimeshindwa kuelekeza upya ombi la mtandao kwenye <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> kwa sababu kiendelezi kingine (<ph name="EXTENSION_NAME" />) kimeelekeza upya kwenye <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Kipakuaji cha Viendelezi</translation>
-<translation id="8761756413268424715">"<ph name="APP_NAME" />" inaomba idhini ya kufikia mojawapo ya vifaa vyako:</translation>
 <translation id="8825366169884721447">Kiendelezi hiki kimeshindwa kuboresha kichwa cha ombi "<ph name="HEADER_NAME" />" cha ombi la mtandao kwa sababu uboreshaji umekinzana na kiendelezi kingine (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Ufunguo binafsi wa kiendelezi kilichobainishwa tayari upo. Tumia ufunguo huo tena au uufute kwanza.</translation>
 <translation id="907841381057066561">Imeshindwa kuunda faili ya muda ya zip wakati wa kufungasha.</translation>

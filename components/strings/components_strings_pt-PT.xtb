@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">Perguntaste aos teus pais se podes aceder a este site.</translation>
 <translation id="4871132632506079383">A partir de uma página incorporada em <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Pesquisar histórico</translation>
+<translation id="4881695831933465202">Abrir</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">É necessária autenticação</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{e mais 1 página Web}other{e mais # páginas Web}}</translation>
@@ -745,6 +746,7 @@
 <translation id="6563469144985748109">O seu gestor ainda não o aprovou</translation>
 <translation id="6569060085658103619">Está a ver a página de uma extensão</translation>
 <translation id="6596325263575161958">Opções de encriptação</translation>
+<translation id="6604181099783169992">Sensores de movimento ou de luz</translation>
 <translation id="6624427990725312378">Informações de contacto</translation>
 <translation id="6626291197371920147">Adicionar número de cartão válido</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Pesquisar</translation>

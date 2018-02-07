@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">Kelola sertifikat</translation>
 <translation id="152234381334907219">Jangan Pernah Disimpan</translation>
 <translation id="1524430321211440688">Keyboard</translation>
+<translation id="1524563461097350801">Lain Kali</translation>
 <translation id="1526560967942511387">Dokumen Tanpa Judul</translation>
 <translation id="1526925867532626635">Konfirmasi setelan sinkronisasi</translation>
 <translation id="1529116897397289129">Kartu yang disimpan akan muncul di sini</translation>
@@ -668,7 +669,7 @@
 <translation id="2034346955588403444">Tambahkan jaringan Wi-Fi lainnya</translation>
 <translation id="203574396658008164">Aktifkan pencatat dari layar kunci</translation>
 <translation id="2039623879703305659">Jari bergerak terlalu cepat</translation>
-<translation id="2040460856718599782">Ups!  Terjadi masalah saat mencoba mengautentikasi Anda.  Periksa lagi kredensial masuk Anda dan coba lagi.</translation>
+<translation id="2040460856718599782">Ups!  Terjadi masalah saat mencoba mengautentikasi Anda.  Periksa lagi kredensial login Anda dan coba lagi.</translation>
 <translation id="2043818754674261542">Jauhkan ponsel untuk membuka kunci <ph name="DEVICE_TYPE" /> ini</translation>
 <translation id="204497730941176055">Microsoft Certificate Template Name</translation>
 <translation id="2045969484888636535">Lanjutkan pencekalan cookie</translation>
@@ -875,7 +876,6 @@
 <translation id="2352947182261340447">Tidak cukup ruang di penyimpanan lokal</translation>
 <translation id="2353297238722298836">Kamera dan mikrofon diizinkan</translation>
 <translation id="2356070529366658676">Tanya</translation>
-<translation id="2356517949307388948">Terjadi error saat Chrome menelusuri software berbahaya.</translation>
 <translation id="2357949918965361754">Anda dapat menggunakan fitur ini untuk menampilkan konten dari Chrome di TV atau perangkat lainnya.</translation>
 <translation id="2359345697448000899">Kelola ekstensi Anda dengan mengeklik Ekstensi pada menu Alat.</translation>
 <translation id="2359808026110333948">Lanjut</translation>
@@ -1111,7 +1111,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="2715751256863167692">Upgrade ini menyetel ulang Chromebook dan menghapus data pengguna saat ini.</translation>
 <translation id="2718395828230677721">Cahaya Malam</translation>
 <translation id="2718998670920917754">Software antivirus mendeteksi virus.</translation>
-<translation id="2719545156185392871">Chrome dapat menemukan software berbahaya di komputer dan menghapusnya.</translation>
 <translation id="2719936478972253983">Cookie berikut diblokir</translation>
 <translation id="2721037002783622288">&amp;Telusuri <ph name="SEARCH_ENGINE" /> untuk gambar</translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2446,7 +2445,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="4835836146030131423">Kesalahan masuk ke sistem.</translation>
 <translation id="4837926214103741331">Anda tidak diizinkan untuk menggunakan perangkat ini. Untuk izin masuk, hubungi pemilik perangkat.</translation>
 <translation id="4837952862063191349">Untuk membuka kunci dan memulihkan data lokal, masukkan sandi <ph name="DEVICE_TYPE" /> lama.</translation>
-<translation id="4838355575774807786">Terjadi error saat Chrome menghapus software berbahaya.</translation>
 <translation id="4838836835474292213">Akses baca papan klip diizinkan</translation>
 <translation id="4839303808932127586">Sim&amp;pan video sebagai...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> item dipilih</translation>
@@ -4047,7 +4045,6 @@ Untuk informasi selengkapnya, kunjungi <ph name="BEGIN_LINK" />Pusat Bantuan<ph 
 <translation id="73786666777299047">Buka Chrome Webstore</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Dapatkan koneksi data</translation>
-<translation id="7382945755068785583">Menyertakan informasi tentang software yang berbahaya, setelan sistem, dan proses di komputer Anda.</translation>
 <translation id="7384292194278095697">Perangkat ini tidak didukung lagi</translation>
 <translation id="7385854874724088939">Ada yang salah saat mencetak. Periksa pencetak Anda dan coba kembali.</translation>
 <translation id="7386824183915085801">Chrome dan versi sistem operasi Anda akan dikirimkan sebagai tambahan
@@ -4921,7 +4918,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8784626084144195648">Rata-rata dalam Sampah</translation>
 <translation id="8785622406424941542">Stilus</translation>
 <translation id="8787254343425541995">Memungkinkan proxy untuk jaringan bersama</translation>
-<translation id="8791260615011736453">Item yang tidak tercantum di sini juga mungkin dihapus, jika perlu. Pelajari lebih lanjut tentang &lt;a href="<ph name="URL" />"&gt;perlindungan software yang tidak diinginkan&lt;/a&gt; di panduan layanan privasi Chrome.</translation>
 <translation id="8791534160414513928">Kirim permintaan "Jangan Lacak" bersama dengan traffic akses internet</translation>
 <translation id="8792609692701651064">Jendela aktif dipindahkan ke layar kiri</translation>
 <translation id="8794025342371547160">IP Terbatas</translation>

@@ -520,6 +520,7 @@
 <translation id="4858792381671956233">Je hebt je ouders gevraagd of je deze site mag bezoeken</translation>
 <translation id="4871132632506079383">Van een ingesloten pagina op <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Geschiedenis doorzoeken</translation>
+<translation id="4881695831933465202">Openen</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Verificatie vereist</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{en nog 1 webpagina}other{en nog # webpagina's}}</translation>
@@ -740,6 +741,7 @@
 <translation id="6563469144985748109">Je beheerder heeft dit nog niet goedgekeurd</translation>
 <translation id="6569060085658103619">Je bekijkt een extensiepagina</translation>
 <translation id="6596325263575161958">Opties voor encryptie</translation>
+<translation id="6604181099783169992">Bewegings- of lichtsensoren</translation>
 <translation id="6624427990725312378">Contactgegevens</translation>
 <translation id="6626291197371920147">Een geldig kaartnummer toevoegen</translation>
 <translation id="6628463337424475685">Zoeken via <ph name="ENGINE" /></translation>

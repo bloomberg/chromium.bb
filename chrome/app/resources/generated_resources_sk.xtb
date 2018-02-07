@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">Spravovať certifikáty</translation>
 <translation id="152234381334907219">Neuložené</translation>
 <translation id="1524430321211440688">Klávesnica</translation>
+<translation id="1524563461097350801">Nie, ďakujem</translation>
 <translation id="1526560967942511387">Dokument bez názvu</translation>
 <translation id="1526925867532626635">Potvrdiť nastavenia synchronizácie</translation>
 <translation id="1529116897397289129">Tu sa zobrazia uložené karty</translation>
@@ -876,7 +877,6 @@ dotyku</translation>
 <translation id="2352947182261340447">V miestnom úložisku nie je dostatok miesta.</translation>
 <translation id="2353297238722298836">Kamera a mikrofón sú povolené</translation>
 <translation id="2356070529366658676">Opýtať sa</translation>
-<translation id="2356517949307388948">Pri hľadaní škodlivého softvéru sa v Chrome vyskytla chyba.</translation>
 <translation id="2357949918965361754">Pomocou tejto funkcie si môžete zobraziť obsah z Chromu v televízore alebo iných zariadeniach.</translation>
 <translation id="2359345697448000899">Ak chcete spravovať rozšírenia, kliknite na možnosť Rozšírenia v ponuke Nástroje.</translation>
 <translation id="2359808026110333948">Pokračovať</translation>
@@ -1111,7 +1111,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="2715751256863167692">Táto inovácia resetuje Chromebook a odstráni aktuálne dáta používateľa.</translation>
 <translation id="2718395828230677721">Nočný režim</translation>
 <translation id="2718998670920917754">Antivírusový softvér našiel vírus.</translation>
-<translation id="2719545156185392871">Chrome dokáže vo vašom počítači nájsť škodlivý softvér a odstrániť ho.</translation>
 <translation id="2719936478972253983">Boli zablokované nasledujúce súbory cookie:</translation>
 <translation id="2721037002783622288">&amp;Hľadať obrázok v službe <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2446,7 +2445,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="4835836146030131423">Chyba prihlásenia.</translation>
 <translation id="4837926214103741331">Nemáte oprávnenie používať toto zariadenie. Ak chcete získať povolenie na prihlásenie, kontaktujte majiteľa zariadenia.</translation>
 <translation id="4837952862063191349">Ak chcete zariadenie odomknúť a obnoviť svoje miestne údaje, zadajte svoje staré heslo pre zariadenie <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4838355575774807786">Pri odstraňovaní škodlivého softvéru sa v Chrome vyskytla chyba.</translation>
 <translation id="4838836835474292213">Je povolený prístup k čítaniu schránky</translation>
 <translation id="4839303808932127586">Uložiť &amp;video ako...</translation>
 <translation id="4839847978919684242">Počet vybratých položiek: <ph name="SELCTED_FILES_COUNT" /></translation>
@@ -4045,7 +4043,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="73786666777299047">Otvoriť Internetový obchod Chrome</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Získať dátové pripojenie</translation>
-<translation id="7382945755068785583">Obsahuje informácie o škodlivom softvéri, nastaveniach systému a procesoch vo vašom počítači.</translation>
 <translation id="7384292194278095697">Toto zariadenie už nie je podporované</translation>
 <translation id="7385854874724088939">Pri pokuse o tlač sa vyskytla chyba. Skontrolujte svoju tlačiareň a skúste to znova.</translation>
 <translation id="7386824183915085801">Spolu s verziou prehliadača Chrome a operačného systému sa odošlú
@@ -4919,7 +4916,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8784626084144195648">Vyhladený priemer</translation>
 <translation id="8785622406424941542">Dotykové pero</translation>
 <translation id="8787254343425541995">Povoliť servery proxy pre zdieľané siete</translation>
-<translation id="8791260615011736453">Položky, ktoré tu nie sú uvedené, môžu byť v prípade potreby aj odstránené. Prečítajte si ďalšie informácie o &lt;a href="<ph name="URL" />"&gt;ochrane pred nežiadúcim softvérom&lt;/a&gt; v bielej knihe ochrany súkromia v Chrome.</translation>
 <translation id="8791534160414513928">Posielať pri prehliadaní webov požiadavku Do Not Track</translation>
 <translation id="8792609692701651064">Aktívne okno bolo presunuté na obrazovku vľavo</translation>
 <translation id="8794025342371547160">Obmedzená adresa IP</translation>

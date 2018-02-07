@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">Valdyti sertifikatus</translation>
 <translation id="152234381334907219">Niekada neišsaugota</translation>
 <translation id="1524430321211440688">Klaviatūra</translation>
+<translation id="1524563461097350801">Ačiū, ne</translation>
 <translation id="1526560967942511387">Dokumentas be pavadinimo</translation>
 <translation id="1526925867532626635">Patvirtinti sinchronizavimo nustatymus</translation>
 <translation id="1529116897397289129">Išsaugotos kortelės bus rodomos čia</translation>
@@ -875,7 +876,6 @@
 <translation id="2352947182261340447">Nepakanka vietos vietinėje saugykloje.</translation>
 <translation id="2353297238722298836">Fotoaparatas ir mikrofonas leidžiami</translation>
 <translation id="2356070529366658676">Paklausti</translation>
-<translation id="2356517949307388948">„Chrome“ ieškant kenkėjiškos programinės įrangos įvyko klaida.</translation>
 <translation id="2357949918965361754">Šią funkciją galite naudoti, jei TV arba kituose įrenginiuose norite pateikti turinį iš „Chrome“.</translation>
 <translation id="2359345697448000899">„Įrankių“ meniu spustelėję „Plėtiniai“, tvarkykite plėtinius.</translation>
 <translation id="2359808026110333948">Tęsti</translation>
@@ -1111,7 +1111,6 @@ Nemanau, kad ši svetainė turėtų būti užblokuota!</translation>
 <translation id="2715751256863167692">Šis naujovinimas iš naujo nustato „Chromebook“ ir pašalina dabartinio naudotojo duomenis.</translation>
 <translation id="2718395828230677721">Nakties šviesa</translation>
 <translation id="2718998670920917754">Antivirusinė programinė įranga aptiko virusą.</translation>
-<translation id="2719545156185392871">„Chrome“ gali rasti kenkėjišką programinę įrangą jūsų kompiuteryje ir ją pašalinti.</translation>
 <translation id="2719936478972253983">Užblokuoti toliau nurodyti slapukai</translation>
 <translation id="2721037002783622288">&amp;Ieškoti vaizdo sistemoje „<ph name="SEARCH_ENGINE" />“</translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2446,7 +2445,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4835836146030131423">Prisiregistravimo klaida.</translation>
 <translation id="4837926214103741331">Neturite leidimo naudoti šį įrenginį. Susisiekite su įrenginio savininku, kad gautumėte leidimą prisijungti.</translation>
 <translation id="4837952862063191349">Kad atrakintumėte ir atkurtumėte vietinius duomenis, įveskite seną „<ph name="DEVICE_TYPE" />“ slaptažodį.</translation>
-<translation id="4838355575774807786">„Chrome“ šalinant kenkėjišką programinę įrangą įvyko klaida.</translation>
 <translation id="4838836835474292213">Iškarpinės skaitymo prieiga leidžiama</translation>
 <translation id="4839303808932127586">Iš&amp;saugoti vaizdo įrašą kaip...</translation>
 <translation id="4839847978919684242">Pasirinkta elementų: <ph name="SELCTED_FILES_COUNT" /></translation>
@@ -4048,7 +4046,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="73786666777299047">Atidarykite „Chrome“ internetinę parduotuvę</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Gauti duomenų ryšį</translation>
-<translation id="7382945755068785583">Įtraukiama informacija apie kenkėjišką programinę įrangą, sistemos nustatymus ir procesus kompiuteryje.</translation>
 <translation id="7384292194278095697">Šis įrenginys nebepalaikomas</translation>
 <translation id="7385854874724088939">Bandant spausdinti atsirado triktis. Patikrinkite spausdintuvą ir bandykite dar kartą.</translation>
 <translation id="7386824183915085801">„Chrome“ ir operacinės sistemos versija bus pateikta kartu su
@@ -4922,7 +4919,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8784626084144195648">Intervalo vidurkis</translation>
 <translation id="8785622406424941542">Rašiklis</translation>
 <translation id="8787254343425541995">Leisti tarpinius serverius bendrai naudojamuose tinkluose</translation>
-<translation id="8791260615011736453">Jei reikia, galima pašalinti ir elementus, kurie čia nenurodyti. Sužinokite daugiau apie &lt;a href="<ph name="URL" />"&gt;apsaugą nuo nepageidaujamos programinės įrangos&lt;/a&gt; „Chrome“ privatumo baltojoje knygoje.</translation>
 <translation id="8791534160414513928">Su naršymo srautu siųsti užklausą „Nestebėti“</translation>
 <translation id="8792609692701651064">Aktyvus langas perkeltas į kairįjį ekraną</translation>
 <translation id="8794025342371547160">Ribotas IP</translation>

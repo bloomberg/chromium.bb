@@ -624,6 +624,13 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
           Sera hii ni ya hiari. Isipowekwa, mabadiliko ya hoja ya utafutaji hayatatekelezwa.
 
           Sera hii inaheshimiwa tu iwapo sera ya 'DefaultSearchProviderEnabled' imewezeshwa.</translation>
+<translation id="306887062252197004">Sera hii inaruhusu watumiaji wa kipengele cha WebDriver kufuta sera ambazo zinaweza kuathiri utendaji wake. 
+
+      Kwa sasa, sera hii inazuia sera za SitePerProcess na IsolateOrigins.
+
+      Kama sera hii imeruhusiwa, WebDriver itaweza kufuta sera zote ambazo hazioani. 
+     
+      Ikiwa sera imezuiwa au haijawekwa, WebDriver haitaruhusiwa kufuta sera ambazo hazioani.</translation>
 <translation id="3069958900488014740">Huruhusu kuzima uboreshaji wa WPAD (Ugunduaji Kiotomatiki wa Seva Mbadala kwenye Wavuti) katika <ph name="PRODUCT_NAME" />.
 
       Sera hii ikiwekwa kuwa sivyo, uboreshaji wa WPAD utazimwa na kusababisha <ph name="PRODUCT_NAME" /> kusubiri muda mrefu zaidi kwa seva za WPAD zinazotegemea DNS. Sera hii isipowekwa au ikiwashwa, uboreshaji wa WPAD utawashwa.
@@ -710,9 +717,6 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="332771718998993005">Bainisha jina la mahali linaloonyeshwa wakati <ph name="PRODUCT_NAME" /> inatuma.
 
           Ikiwa sera hii imewekwa kwenye mfuatano ulio na maudhui, mfuatano huo utatumika kama jina la mahali ambapo <ph name="PRODUCT_NAME" /> inatuma. Vinginevyo, jina la mahali litakuwa jina la kifaa. Ikiwa sera hii haijawekwa, jina mahali litakuwa jina la kifaa na mmiliki wa kifaa (au mmiliki kutoka kwenye kikoa kinachodhibiti kifaa) ataruhusiwa kulibadilisha. Jina halitakiwi kuwa na zaidi ya herufi 24.</translation>
-<translation id="3356249700768900657">
-      KUMBUKA: Sera hii ni ya jaribio na huenda ikaathiri utendaji! Huenda ukahitaji kuangalia mipangilio ya sera ya IsolateOrigins ili upate matokeo bora ya sehemu zote mbili, utengaji na athari chache kwa watumiaji, kwa kutumia IsolateOrigins ambayo inaorodhesha tovuti ambazo unataka kutenga. Mipangilio hii, SitePerProcess, hutenga tovuti zote. Ikiwa sera imeruhusiwa, kila tovuti itatekelezwa katika mchakato wake. Ikiwa sera hii imezimwa, dhana ya udhibiti wa mchakato wa Utengaji wa awali wa Tovuti itatumika. Ikiwa sera haijawekewa mipangilio, mtumiaji ataweza kubadilisha mipangilio hii.
-      </translation>
 <translation id="3381968327636295719">Tumia kivinjari kipangishi kwa chaguo-msingi</translation>
 <translation id="3395348522300156660">Hubainisha printa ambazo mtumiaji anaweza kutumia. 
 
@@ -1202,6 +1206,7 @@ Ikiwa sera hii haijawekwa, hakuna programu au viendelezi vitakavyosakinishwa kio
 <translation id="4899708173828500852">Wezesha Kuvinjari Salama</translation>
 <translation id="4906194810004762807">Onyesha upya kiwango cha Sera ya Kifaa</translation>
 <translation id="4917385247580444890">Thabiti</translation>
+<translation id="4923806312383904642">Ruhusu WebDriver Ifute Sera Ambazo Hazioani</translation>
 <translation id="494613465159630803">Kipokea Maudhui ya Google Cast</translation>
 <translation id="4962262530309732070">Sera hii ikiwekwa kuwa ndivyo au isipowekwa mipangilio, <ph name="PRODUCT_NAME" /> itaruhusu kipengee cha Ongeza Wasifu kutoka kwenye kidhibiti cha mtumiaji.
 
@@ -1216,9 +1221,6 @@ Ikiwa sera hii haijawekwa, hakuna programu au viendelezi vitakavyosakinishwa kio
 <translation id="4983201894483989687">Ruhusu kuendesha programu jalizi ambazo zimepitwa na wakati.</translation>
 <translation id="4988291787868618635">Hatua ya kuchukua wakati ucheleweshaji wa kutokuwa na shughuli unapofikiwa</translation>
 <translation id="4995548127349206948">Ikiwa uthibishaji wa NTLMv2 umewashwa.</translation>
-<translation id="5027819375434797927">
-      KUMBUKA: Sera hii ni ya jaribio na huenda ikaathiri utendaji! Ikiwa sera imewashwa, kila sehemu iliyobainishwa katika orodha inayotenganishwa kwa koma itatekelezwa katika mchakato wake. Hatua hii itatenga sehemu zilizobainishwa kwa kutumia vijikoa; k.m. kubainisha https://example.com/ kutasababisha pia https://foo.example.com/ kutengwa kama sehemu ya https://example.com/ site. Ikiwa sera hii imezimwa, dhana ya udhibiti wa mchakato wa Utengaji wa awali wa Tovuti itatumika. Ikiwa sera haijawekewa mipangilio, mtumiaji ataweza kubadilisha mipangilio hii.
-      </translation>
 <translation id="5047604665028708335">Ruhusu ufikiaji wa tovuti zilizo nje ya vifurushi vya maudhui</translation>
 <translation id="5052081091120171147">Sera hii inalazimisha historia ya kuvinjari kuletwa kutoka kwenye kivinjari chaguo-msingi cha sasa ikiwa imewezeshwa. Ikiwa imewezeshwa, sera hii pia inaathiri kidadisi cha kuleta.
 

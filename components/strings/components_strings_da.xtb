@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">Du har spurgt dine forældre, om det er i orden at besøge dette website.</translation>
 <translation id="4871132632506079383">Fra en integreret side på <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Søg i historikken</translation>
+<translation id="4881695831933465202">Åbn</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Godkendelse er påkrævet</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{og 1 anden webside}one{og # anden webside}other{og # andre websider}}</translation>
@@ -745,6 +746,7 @@
 <translation id="6563469144985748109">Din administrator har ikke godkendt det endnu</translation>
 <translation id="6569060085658103619">Du ser en udvidelsesside</translation>
 <translation id="6596325263575161958">Krypteringsmuligheder</translation>
+<translation id="6604181099783169992">Bevægelses- eller lyssensorer</translation>
 <translation id="6624427990725312378">Kontaktoplysninger</translation>
 <translation id="6626291197371920147">Tilføj gyldigt kortnummer</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> -søgning</translation>

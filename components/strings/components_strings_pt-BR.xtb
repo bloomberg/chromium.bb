@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">Você perguntou aos seus responsáveis se pode visitar este site</translation>
 <translation id="4871132632506079383">A partir de uma página incorporada em <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Histórico de pesquisa</translation>
+<translation id="4881695831933465202">Abrir</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Autenticação necessária</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{e mais 1 página da Web}one{e mais # página da Web}other{e mais # páginas da Web}}</translation>
@@ -745,6 +746,7 @@
 <translation id="6563469144985748109">Seu administrador ainda não o aprovou</translation>
 <translation id="6569060085658103619">Você está vendo uma página de extensões</translation>
 <translation id="6596325263575161958">Opções de criptografia</translation>
+<translation id="6604181099783169992">Sensores de luz ou movimento</translation>
 <translation id="6624427990725312378">Informações de Contato</translation>
 <translation id="6626291197371920147">Adicionar número de cartão de crédito válido</translation>
 <translation id="6628463337424475685">Pesquisa do <ph name="ENGINE" /></translation>

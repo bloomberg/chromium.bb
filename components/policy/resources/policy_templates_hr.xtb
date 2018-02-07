@@ -687,16 +687,6 @@
 <translation id="332771718998993005">Odredi naziv koji će se oglašavati kao odredište za <ph name="PRODUCT_NAME" />.
 
           Ako se to pravilo postavi na niz koji nije prazan, taj će se niz upotrebljavati kao naziv odredišta za <ph name="PRODUCT_NAME" />. U suprotnom će naziv odredišta biti naziv uređaja. Ako se to pravilo ne postavi, naziv odredišta bit će naziv uređaja i vlasnik uređaja (ili korisnik s domene koja upravlja uređajem) moći će ga promijeniti. Duljina naziva ograničena je na 24 znaka.</translation>
-<translation id="3356249700768900657">
-      NAPOMENA: pravilo je eksperimentalno i može poremetiti funkciju!
-      Možda biste trebali razmisliti o postavci pravila IsolateOrigins da biste
-      iskoristili prednosti obje značajke, izolacije i ograničenog utjecaja za
-      korisnike, koristeći IsolateOrigins s popisom web-lokacija koje želite izolirati.
-      Ova postavka, SitePerProcess, izolira sve web-lokacije.
-      Ako se to pravilo omogući, svaka će se web-lokacija izvoditi u svojem procesu.
-      Ako se to pravilo onemogući, djelovat će logika upravljanja procesom izolacije prije web-lokacije.
-      Ako se pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
-      </translation>
 <translation id="3381968327636295719">Upotrijebi preglednik hosta prema zadanim postavkama</translation>
 <translation id="3395348522300156660">Određuje pisače koje korisnik može upotrebljavati.
 
@@ -1194,16 +1184,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="4983201894483989687">Dopusti pokretanje dodataka koji su zastarjeli</translation>
 <translation id="4988291787868618635">Radnja koja će se izvršiti kada nastupi odgoda neaktivnosti</translation>
 <translation id="4995548127349206948">Je li NTLMv2 autentifikacija omogućena.</translation>
-<translation id="5027819375434797927">
-      NAPOMENA: pravilo je eksperimentalno i može poremetiti funkciju!
-      Ako se to pravilo omogući, svaki od navedenih izvora na popisu
-      odijeljenom zarezima izvodit će se u svojem procesu. Time će se također
-      izolirati izvori navedeni prema poddomenama, npr. ako se navede
-      https://example.com/, izolirat će se i https://foo.example.com/ kao dio
-      web-lokacije https://example.com/.
-      Ako se to pravilo onemogući, djelovat će logika upravljanja procesom izolacije prije web-lokacije.
-      Ako se pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
-      </translation>
 <translation id="5047604665028708335">Dopusti pristup web-lokacijama izvan paketa sadržaja</translation>
 <translation id="5052081091120171147">Ako je omogućeno, ovo pravilo prisilno uvozi povijest pregledavanja iz trenutačno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, povijest pregledavanja se ne uvozi. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti povijest pregledavanja ili do uvoza može doći automatski.</translation>
 <translation id="5056708224511062314">Povećalo je onemogućeno</translation>

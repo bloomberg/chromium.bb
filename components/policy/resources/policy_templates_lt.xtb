@@ -723,16 +723,6 @@
 <translation id="332771718998993005">Pavadinimo, reklamuojamo kaip „<ph name="PRODUCT_NAME" />“ paskirties vieta, nustatymas.
 
           Jei ši politika nustatyta kaip ne tuščia eilutė, ta eilutė bus naudojama kaip „<ph name="PRODUCT_NAME" />“ paskirties vietos pavadinimas. Kitu atveju paskirties vietos pavadinimas bus įrenginio pavadinimas. Jei ši politika nenustatyta, paskirties vietos pavadinimas bus įrenginio pavadinimas, o įrenginio savininkas (arba naudotojas iš domeno, kuriame tvarkomas įrenginys) galės jį pakeisti. Pavadinimas ribojamas iki 24 simbolių.</translation>
-<translation id="3356249700768900657">
-      PASTABA. Ši politika yra eksperimentinė ir gali sugadinti kai kurias funkcijas!
-      Jums gali būti naudinga peržiūrėti politikos nustatymą „IsolateOrigins“, kad galėtumėte geriausiai
-      išnaudoti tiek atskyrimą, tiek ribotą įtaką naudotojams, pasitelkdami
-      „IsolateOrigins“ su norimų atskirti svetainių sąrašu. Nustatymu
-      „SitePerProcess“ atskiriamos visos svetainės.
-      Įgalinus politiką kiekviena svetainė vykdys savo procesą.
-      Išjungus politiką įsigalios išankstinio svetainės atskyrimo proceso tvarkymo logika.
-      Jei politika nesukonfigūruota, naudotojas šį nustatymą galės pakeisti.
-      </translation>
 <translation id="3381968327636295719">Pagal numatytuosius nustatymus naudoti prieglobos naršyklę</translation>
 <translation id="3395348522300156660">Nurodomi spausdintuvai, kuriuos gali naudoti naudotojas.
 
@@ -1247,16 +1237,6 @@
 <translation id="4983201894483989687">Leisti paleisti pasenusius papildinius</translation>
 <translation id="4988291787868618635">Veiksmas, kuris bus atliktas, kai bus pasiektas neveikos delsos laikas</translation>
 <translation id="4995548127349206948">Ar įgalintas „NTLMv2“ autentifikavimas.</translation>
-<translation id="5027819375434797927">
-      PASTABA. Ši politika yra eksperimentinė ir gali sugadinti kai kurias funkcijas!
-      Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas
-      į kableliais atskirtų verčių sąrašą, vykdys savo procesą. Taip pat bus atskiriami
-      šaltiniai, pavadinti pagal padomenius, pvz., nurodžius https://example.com/ taip pat
-      bus atskiriamas ir padomenis https://foo.example.com/
-      kaip svetainės https://example.com/ dalis.
-      Išjungus politiką įsigalios išankstinio svetainės atskyrimo proceso tvarkymo logika.
-      Jei politika nesukonfigūruota, naudotojas šį nustatymą galės pakeisti.
-      </translation>
 <translation id="5047604665028708335">Leisti pasiekti svetaines, nesančias turinio paketuose</translation>
 <translation id="5052081091120171147">Pagal šią politiką naršymo istorija priverstinai importuojama iš esamos numatytosios naršyklės (jei įgalinta). Be to, jei įgalinta, ši politika turi įtakos importavimo dialogo langui.
 

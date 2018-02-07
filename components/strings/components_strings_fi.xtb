@@ -525,6 +525,7 @@
 <translation id="4858792381671956233">Pyysit vanhemmiltasi lupaa käydä tällä sivustolla.</translation>
 <translation id="4871132632506079383">Sivustolla <ph name="SITE" /> olevalta upotetulta sivulta</translation>
 <translation id="4880827082731008257">Haku historiasta</translation>
+<translation id="4881695831933465202">Avaa</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Todennus vaaditaan</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ja 1 muu verkkosivu}other{ja # muuta verkkosivua}}</translation>
@@ -746,6 +747,7 @@
 <translation id="6563469144985748109">Ylläpitäjä ei ole hyväksynyt sitä vielä.</translation>
 <translation id="6569060085658103619">Tämä on laajennussivu.</translation>
 <translation id="6596325263575161958">Salausasetukset</translation>
+<translation id="6604181099783169992">Liike- tai valotunnistimet</translation>
 <translation id="6624427990725312378">Yhteystiedot</translation>
 <translation id="6626291197371920147">Lisää kelvollinen kortin numero</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" />-haku</translation>

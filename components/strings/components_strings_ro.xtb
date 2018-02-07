@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">Ți-ai întrebat părinții dacă poți accesa acest site</translation>
 <translation id="4871132632506079383">Dintr-o pagină încorporată pe <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Caută în istoric</translation>
+<translation id="4881695831933465202">Deschide</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Autentificare obligatorie</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{și încă 1 pagină web}few{și încă # pagini web}other{și încă # de pagini web}}</translation>
@@ -745,6 +746,7 @@
 <translation id="6563469144985748109">Administratorul nu l-a aprobat încă</translation>
 <translation id="6569060085658103619">Se afișează pagina unei extensii</translation>
 <translation id="6596325263575161958">Opțiuni de criptare</translation>
+<translation id="6604181099783169992">Senzori de mișcare sau de lumină</translation>
 <translation id="6624427990725312378">Informații de contact</translation>
 <translation id="6626291197371920147">Adaugă un număr de card valid</translation>
 <translation id="6628463337424475685">Căutare <ph name="ENGINE" /></translation>

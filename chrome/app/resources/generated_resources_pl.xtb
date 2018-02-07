@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">Zarządzaj certyfikatami</translation>
 <translation id="152234381334907219">Nigdy nie zapisane</translation>
 <translation id="1524430321211440688">Klawiatura</translation>
+<translation id="1524563461097350801">Nie, dziękuję</translation>
 <translation id="1526560967942511387">Dokument bez tytułu</translation>
 <translation id="1526925867532626635">Potwierdź ustawienia synchronizacji</translation>
 <translation id="1529116897397289129">Tutaj pojawią się zapisane karty</translation>
@@ -875,7 +876,6 @@
 <translation id="2352947182261340447">W pamięci lokalnej jest za mało miejsca.</translation>
 <translation id="2353297238722298836">Zezwolono na dostęp do kamery i mikrofonu</translation>
 <translation id="2356070529366658676">Pytaj</translation>
-<translation id="2356517949307388948">Podczas wyszukiwania szkodliwego oprogramowania przez Chrome wystąpił błąd.</translation>
 <translation id="2357949918965361754">Za pomocą tej funkcji możesz wyświetlać treści z Chrome na telewizorze lub innych urządzeniach.</translation>
 <translation id="2359345697448000899">Aby zarządzać zainstalowanymi rozszerzeniami, kliknij Rozszerzenia w menu Narzędzia.</translation>
 <translation id="2359808026110333948">Dalej</translation>
@@ -1111,7 +1111,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2715751256863167692">Ta aktualizacja resetuje Chromebooka i usuwa dane bieżącego użytkownika.</translation>
 <translation id="2718395828230677721">Podświetlenie nocne</translation>
 <translation id="2718998670920917754">Oprogramowanie antywirusowe wykryło wirusa.</translation>
-<translation id="2719545156185392871">Chrome może znaleźć i usunąć szkodliwe oprogramowanie na Twoim komputerze.</translation>
 <translation id="2719936478972253983">Te pliki cookie zostały zablokowane</translation>
 <translation id="2721037002783622288">&amp;Szukaj obrazu w <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2446,7 +2445,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="4835836146030131423">Błąd podczas logowania.</translation>
 <translation id="4837926214103741331">Nie masz uprawnień do korzystania z tego urządzenia. Aby uzyskać pozwolenie na logowanie się, skontaktuj się z jego właścicielem.</translation>
 <translation id="4837952862063191349">Aby odblokować i przywrócić dane lokalne, podaj swoje stare hasło do urządzenia <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4838355575774807786">Podczas usuwania szkodliwego oprogramowania przez Chrome wystąpił błąd.</translation>
 <translation id="4838836835474292213">Przyznano uprawnienia do odczytu zawartości schowka</translation>
 <translation id="4839303808932127586">Za&amp;pisz film wideo jako...</translation>
 <translation id="4839847978919684242">Wybrano <ph name="SELCTED_FILES_COUNT" /> elementy(ów)</translation>
@@ -4047,7 +4045,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="73786666777299047">Otwórz Chrome Web Store</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Korzystanie z transmisji danych</translation>
-<translation id="7382945755068785583">Obejmuje informacje o szkodliwym oprogramowaniu, ustawieniach systemu i procesach na komputerze.</translation>
 <translation id="7384292194278095697">To urządzenie nie jest już obsługiwane</translation>
 <translation id="7385854874724088939">Wystąpił błąd przy próbie drukowania. Sprawdź drukarkę i spróbuj ponownie.</translation>
 <translation id="7386824183915085801">Oprócz informacji, które wybierzesz powyżej, zostanie przesłana używana przez Ciebie wersja Chrome i systemu operacyjnego. Jeśli dołączysz adres e-mail, Google może się z Tobą skontaktować w sprawie Twojego zgłoszenia. Przesłane przez Ciebie informacje pomogą nam poszukać przyczyn problemów oraz ulepszyć Chrome. Wszystkie dane osobowe, które prześlesz celowo lub przypadkowo, będą chronione zgodnie z naszymi zasadami prywatności.<ph name="BEGIN_BOLD" /> Przesyłając to zgłoszenie, zgadzasz się na to, że Google może wykorzystać je, by ulepszyć dowolne swoje usługi.<ph name="END_BOLD" /></translation>
@@ -4915,7 +4912,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8784626084144195648">Średnia w przedziale</translation>
 <translation id="8785622406424941542">Rysik</translation>
 <translation id="8787254343425541995">Zezwalaj na serwery proxy w sieciach współdzielonych</translation>
-<translation id="8791260615011736453">Elementy niewymienione tutaj mogą również zostać usunięte, jeśli zajdzie taka potrzeba. Więcej informacji o &lt;a href="<ph name="URL" />"&gt;ochronie przed niechcianym oprogramowaniem&lt;/a&gt; znajdziesz w dokumencie dotyczącym prywatności w Chrome.</translation>
 <translation id="8791534160414513928">Wysyłaj żądanie „Bez śledzenia” podczas przeglądania</translation>
 <translation id="8792609692701651064">Aktywne okno zostało przeniesione na lewy wyświetlacz</translation>
 <translation id="8794025342371547160">IP z ograniczonym dostępem</translation>

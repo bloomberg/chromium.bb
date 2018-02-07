@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">Sertifikaları yönet</translation>
 <translation id="152234381334907219">Hiç Kaydedilmeyenler</translation>
 <translation id="1524430321211440688">Klavye</translation>
+<translation id="1524563461097350801">Hayır, teşekkürler</translation>
 <translation id="1526560967942511387">Adsız Doküman</translation>
 <translation id="1526925867532626635">Senkronizasyon ayarlarını onayla</translation>
 <translation id="1529116897397289129">Kayıtlı kartlar burada görünür</translation>
@@ -875,7 +876,6 @@
 <translation id="2352947182261340447">Yerel depolama alanında yeterli boş alan yok.</translation>
 <translation id="2353297238722298836">Kamera ve mikrofona izin verildi</translation>
 <translation id="2356070529366658676">Sor</translation>
-<translation id="2356517949307388948">Chrome zararlı yazılımları ararken bir hata oluştu.</translation>
 <translation id="2357949918965361754">Bu özelliği, Chrome'daki içerikleri TV'nizde ve diğer cihazlarda görüntülemek için kullanabilirsiniz.</translation>
 <translation id="2359345697448000899">Araçlar menüsünden Uzantılar'ı tıklayarak uzantılarınızı yönetin.</translation>
 <translation id="2359808026110333948">Devam Et</translation>
@@ -1111,7 +1111,6 @@ Bu sitenin engellenmesi gerektiğini düşünmüyorum!</translation>
 <translation id="2715751256863167692">Bu sürüm güncellemesi, Chromebook'unuzu sıfırlar ve mevcut kullanıcı verilerini kaldırır.</translation>
 <translation id="2718395828230677721">Gece Işığı</translation>
 <translation id="2718998670920917754">Virüsten koruma yazılımı bir virüs algıladı.</translation>
-<translation id="2719545156185392871">Chrome, bilgisayarınızda zararlı yazılım bulabilir ve bunu kaldırabilir.</translation>
 <translation id="2719936478972253983">Aşağıdaki çerezler engellendi</translation>
 <translation id="2721037002783622288"><ph name="SEARCH_ENGINE" /> içinde resim &amp;ara</translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2446,7 +2445,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="4835836146030131423">Oturum açma hatası.</translation>
 <translation id="4837926214103741331">Bu cihazı kullanma yetkiniz yok. Oturum açma izni almak için lütfen cihaz sahibiyle iletişime geçin.</translation>
 <translation id="4837952862063191349">Kilidi açmak ve yerel verilerinizi geri yüklemek için lütfen eski <ph name="DEVICE_TYPE" /> şifrenizi girin.</translation>
-<translation id="4838355575774807786">Chrome zararlı yazılımları kaldırırken bir hata oluştu.</translation>
 <translation id="4838836835474292213">Pano okuma erişimine izin verildi</translation>
 <translation id="4839303808932127586">Video olarak kay&amp;det...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> öğe seçildi</translation>
@@ -4048,7 +4046,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="73786666777299047">Chrome Web Mağazası'nı açın</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Veri bağlantısını al</translation>
-<translation id="7382945755068785583">Bilgisayarınızdaki zararlı yazılımlar, sistem ayarları ve işlemlerle ilgili bilgileri içerir.</translation>
 <translation id="7384292194278095697">Bu cihaz artık desteklenmiyor</translation>
 <translation id="7385854874724088939">Yazdırmaya çalışırken bir sorun oluştu. Lütfen yazıcınızı denetleyin ve yeniden deneyin.</translation>
 <translation id="7386824183915085801">Chrome ve işletim sistemi sürümünüz, yukarıda eklemeyi seçtiğiniz bilgilerle birlikte
@@ -4922,7 +4919,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8784626084144195648">Gruplu Ortalama</translation>
 <translation id="8785622406424941542">Ekran kalemi</translation>
 <translation id="8787254343425541995">Paylaşılan ağlar için proxy'lere izin ver</translation>
-<translation id="8791260615011736453">Gerekirse burada listelenmeyen öğeler de kaldırılabilir. &lt;a href="<ph name="URL" />"&gt;İstenmeyen yazılım koruması&lt;/a&gt; hakkında daha fazla bilgiyi Chrome gizliliği tanıtım yazısında bulabilirsiniz.</translation>
 <translation id="8791534160414513928">Göz atma trafiğimle birlikte bir "Do Not Track" isteği gönder</translation>
 <translation id="8792609692701651064">Etkin pencere sol ekrana taşındı</translation>
 <translation id="8794025342371547160">Kısıtlı IP</translation>

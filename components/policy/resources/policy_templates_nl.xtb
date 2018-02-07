@@ -633,6 +633,15 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
           Dit beleid is optioneel. Als het niet wordt ingesteld, wordt er geen vervanging van zoektermen uitgevoerd.
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
+<translation id="306887062252197004">Met dit beleid kunnen gebruikers van de WebDriver-functie beleidsregels
+      negeren die problemen met de werking kunnen veroorzaken.
+
+      Dit beleid schakelt momenteel de beleidsregels SitePerProcess en IsolateOrigins uit.
+
+      Als het beleid is ingeschakeld, kan WebDriver niet-compatibele
+      beleidsregels negeren.
+      Als het beleid is uitgeschakeld of niet is geconfigureerd, mag WebDriver
+      niet-compatibele beleidsregels niet negeren.</translation>
 <translation id="3069958900488014740">Hiermee kan WPAD-optimalisatie (Web Proxy Auto-Discovery) worden uitgeschakeld in <ph name="PRODUCT_NAME" />.
 
       Als dit beleid is ingesteld op 'onwaar', wordt WPAD-optimalisatie uitgeschakeld, waardoor <ph name="PRODUCT_NAME" /> langer moet wachten op DNS-gebaseerde WPAD-servers. Als het beleid niet is ingesteld of is ingeschakeld, is WPAD-optimalisatie ingeschakeld.
@@ -719,13 +728,6 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
 <translation id="332771718998993005">De naam bepalen die wordt geadverteerd als een bestemming van <ph name="PRODUCT_NAME" />.
 
           Als dit beleid is ingesteld op een niet-lege tekenreeks, wordt die tekenreeks gebruikt als de naam van de <ph name="PRODUCT_NAME" />-bestemming. Anders wordt de apparaatnaam gebruikt voor de bestemmingsnaam. Als dit beleid niet is ingesteld, is de naam van de bestemming de apparaatnaam en kan de eigenaar van het apparaat (of een gebruiker in het domein dat het apparaat beheert) deze naam wijzigen. De naam mag maximaal 24 tekens lang zijn.</translation>
-<translation id="3356249700768900657">
-      OPMERKING: Dit beleid is experimenteel en kan de functionaliteit verstoren.
-      Je kunt de beleidsinstelling IsolateOrigins bekijken om optimaal gebruik te maken van beide functies (isolatie en beperkte impact voor gebruikers) door IsolateOrigins te gebruiken met een lijst van de sites die je wilt isoleren. Met deze instelling (SitePerProcess) worden alle sites geïsoleerd.
-      Als het beleid is ingeschakeld, wordt elke site uitgevoerd in een eigen proces.
-      Als het beleid is uitgeschakeld, wordt de procesbeheerlogica die voorafgaat aan site-isolatie van kracht.
-      Als het beleid niet is geconfigureerd, kan de gebruiker deze instelling wijzigen.
-      </translation>
 <translation id="3381968327636295719"> gebruiken</translation>
 <translation id="3395348522300156660">Hiermee worden de printers gespecificeerd die een gebruiker kan gebruiken.
 
@@ -1214,6 +1216,7 @@ Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïns
 <translation id="4899708173828500852">Safe Browsing inschakelen</translation>
 <translation id="4906194810004762807">Vernieuwingsfrequentie voor apparaatbeleid</translation>
 <translation id="4917385247580444890">Sterk</translation>
+<translation id="4923806312383904642">WebDriver toestaan niet-compatibele beleidsregels te negeren</translation>
 <translation id="494613465159630803">Cast-receiver</translation>
 <translation id="4962262530309732070">Als dit beleid is ingesteld op 'true' (waar) of niet wordt geconfigureerd, staat <ph name="PRODUCT_NAME" /> 'Persoon toevoegen' toe vanuit gebruikersbeheer.
 
@@ -1228,12 +1231,6 @@ Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïns
 <translation id="4983201894483989687">Verouderde plug-ins toestaan die actief zijn</translation>
 <translation id="4988291787868618635">Actie die wordt ondernomen wanneer de inactieve vertraging wordt bereikt</translation>
 <translation id="4995548127349206948">Of NTLMv2-verificatie is ingeschakeld.</translation>
-<translation id="5027819375434797927">
-      OPMERKING: Dit beleid is experimenteel en kan de functionaliteit verstoren.
-      Als het beleid is ingeschakeld, wordt elk van de benoemde herkomsten in een door komma's gescheiden lijst uitgevoerd in een eigen proces. Hiermee worden ook herkomsten geïsoleerd die worden benoemd door subdomeinen (als je https://example.com/ specificeert, wordt ook https://foo.example.com/ geïsoleerd als onderdeel van de site https://example.com/).
-      Als het beleid is uitgeschakeld, wordt de procesbeheerlogica die voorafgaat aan site-isolatie van kracht.
-      Als het beleid niet is geconfigureerd, kan de gebruiker deze instelling wijzigen.
-      </translation>
 <translation id="5047604665028708335">Toegang toestaan tot sites die zich niet in de inhoudspakketten bevinden</translation>
 <translation id="5052081091120171147">Indien ingeschakeld, wordt met dit beleid afgedwongen dat de browsergeschiedenis wordt geïmporteerd uit de huidige standaardbrowser. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.
 

@@ -632,6 +632,12 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Esta política es opcional. Si no se establece, no se realizará ninguna sustitución de los términos de búsqueda.
 
           Solo se respetará esta política si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
+<translation id="306887062252197004">Esta política permite que los usuarios de la función WebDriver anulen las políticas que puedan interferir en su funcionamiento.
+
+      Actualmente esta política inhabilita las políticas SitePerProcess y IsolateOrigins.
+
+      Si la política está habilitada, WebDriver puede anular las políticas incompatibles.
+      Si la política está inhabilitada o no está configurada, WebDriver no puede anular las políticas incompatibles.</translation>
 <translation id="3069958900488014740">Permite desactivar la optimización de WPAD (detección automática de proxy web) en <ph name="PRODUCT_NAME" />.
 
       Si se asigna el valor false a esta política, la optimización de WPAD se inhabilitará, lo que causará que <ph name="PRODUCT_NAME" /> tenga que esperar más tiempo la respuesta de los servidores WPAD basados en DNS. Si no se configura esta política o se habilita, se habilitará la optimización de WPAD.
@@ -718,16 +724,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="332771718998993005">Determina el nombre que se utiliza como destino de <ph name="PRODUCT_NAME" />.
 
           Si se asigna una cadena que no esté vacía a esta política, esa cadena se utilizará como nombre del destino de <ph name="PRODUCT_NAME" />. De lo contrario, el nombre del destino será el nombre del dispositivo. Si esta política no se establece, el nombre del destino será el nombre del dispositivo y su propietario (o un usuario del dominio que gestiona el dispositivo) podrá cambiarlo. El nombre tiene un límite de 24 caracteres.</translation>
-<translation id="3356249700768900657">
-      NOTA: Esta política es experimental y puede hacer que el funcionamiento no sea correcto.
-      Para conseguir
-      tanto aislamiento como un impacto limitado para los usuarios, utiliza la política
-      IsolateOrigins con una lista de los sitios web que quieras aislar. La opción
-      SitePerProcess aísla todos los sitios web.
-      Si se habilita la política, cada sitio web se ejecuta en un proceso propio.
-      Si se inhabilita, se aplicará la lógica previa de administración de procesos de aislamiento de sitios web.
-      Si no se configura la política, el usuario podrá cambiar esta opción.
-      </translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de forma predeterminada</translation>
 <translation id="3395348522300156660">Especifica las impresoras que puede utilizar un usuario.
 
@@ -1228,6 +1224,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4899708173828500852">Habilitar la Navegación Segura</translation>
 <translation id="4906194810004762807">Frecuencia de actualización de Device Policy</translation>
 <translation id="4917385247580444890">Buena</translation>
+<translation id="4923806312383904642">Permitir que WebDriver anule las políticas incompatibles</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">Si se asigna el valor true a esta política o si esta no se configura, <ph name="PRODUCT_NAME" /> permitirá la opción Añadir persona del administrador de usuarios.
 
@@ -1242,16 +1239,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4983201894483989687">Permitir la ejecución de complementos obsoletos</translation>
 <translation id="4988291787868618635">Acción que se realiza al alcanzar el retraso de inactividad</translation>
 <translation id="4995548127349206948">Si la autenticación NTLMv2 está habilitada.</translation>
-<translation id="5027819375434797927">
-      NOTA: Esta política es experimental y puede hacer que el funcionamiento no sea correcto.
-      Si se habilita la política, cada uno de los orígenes especificados en una
-      lista de elementos separados por comas se ejecutará en un proceso propio. También se aislarán
-      los orígenes de los subdominios correspondientes (p. ej., si especificas https://example.com/,
-      también se aislará https://foo.example.com/ como parte
-      del sitio web https://example.com/).
-      Si se inhabilita, se aplicará la lógica previa de administración de procesos de aislamiento de sitios web.
-      Si no se configura la política, el usuario podrá cambiar esta opción.
-      </translation>
 <translation id="5047604665028708335">Permitir acceso a sitios no incluidos en paquetes de contenido</translation>
 <translation id="5052081091120171147">Si se habilita, esta política fuerza la importación del historial de navegación desde el navegador predeterminado actual. Si está habilitada, la política también afecta al cuadro de diálogo de importación.
 

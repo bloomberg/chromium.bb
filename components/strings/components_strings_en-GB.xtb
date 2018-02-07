@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">You asked your parents if it's OK to visit this site</translation>
 <translation id="4871132632506079383">From an embedded page at <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Search history</translation>
+<translation id="4881695831933465202">Open</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Authentication required</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{and 1 more web page}other{and # more web pages}}</translation>
@@ -745,6 +746,7 @@
 <translation id="6563469144985748109">Your manager hasn't approved it yet</translation>
 <translation id="6569060085658103619">You're viewing an extension page</translation>
 <translation id="6596325263575161958">Encryption options</translation>
+<translation id="6604181099783169992">Motion or light sensors</translation>
 <translation id="6624427990725312378">Contact Info</translation>
 <translation id="6626291197371920147">Add valid card number</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Search</translation>

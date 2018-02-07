@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">या साइटला भेट देणे ठीक आहे का ते आपण आपल्‍या पालकांना विचारले</translation>
 <translation id="4871132632506079383"><ph name="SITE" /> येथे एम्बेड केलेल्‍या पेजवरून</translation>
 <translation id="4880827082731008257">इतिहास शोध</translation>
+<translation id="4881695831933465202">उघडा</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">प्रमाणीकरण आवश्यक</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{आणि 1 आणखी वेब पृष्ठ}one{आणि # आणखी वेब पृष्‍ठ}other{आणि # आणखी वेब पृष्ठे}}</translation>
@@ -647,7 +648,7 @@
 <translation id="5719499550583120431">प्रीपेड कार्डे स्वीकारली जातात.</translation>
 <translation id="5720705177508910913">वर्तमान वापरकर्ता</translation>
 <translation id="5732392974455271431">आपले पालक तुमच्यासाठी ती अनावरोधित करू शकतात</translation>
-<translation id="5763042198335101085">वैध ईमेल पत्ता एंटर करा</translation>
+<translation id="5763042198335101085">वैध ईमेल अॅड्रेस एंटर करा</translation>
 <translation id="5765072501007116331">वितरण पद्धती आणि आवश्यकता पाहण्यासाठी, एक पत्ता निवडा</translation>
 <translation id="5770114862687765385">फाइल करप्ट आहे असे दिसते. सेशन रीसेट करण्यासाठी 'रीसेट करा' बटणावर क्लिक करा.</translation>
 <translation id="5778550464785688721">MIDI डिव्हाइसेस पूर्ण नियंत्रण</translation>
@@ -746,6 +747,7 @@
 <translation id="6563469144985748109">आपल्या व्यवस्थापकाने अद्याप ती मंजूर केली नाही</translation>
 <translation id="6569060085658103619">आपण एक विस्तार पृष्ठ पाहत आहात</translation>
 <translation id="6596325263575161958">कूटबद्धता पर्याय</translation>
+<translation id="6604181099783169992">गती किंवा प्रकाश सेन्सर</translation>
 <translation id="6624427990725312378">संपर्क माहिती</translation>
 <translation id="6626291197371920147">वैध कार्ड नंबर जोडा</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> शोध</translation>

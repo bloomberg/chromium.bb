@@ -353,6 +353,7 @@
 <translation id="1521442365706402292">Настроить сертификаты</translation>
 <translation id="152234381334907219">Сайты, пароли для которых не сохраняются</translation>
 <translation id="1524430321211440688">Клавиатура</translation>
+<translation id="1524563461097350801">Нет, спасибо</translation>
 <translation id="1526560967942511387">Документ без имени</translation>
 <translation id="1526925867532626635">Подтверждение настроек синхронизации</translation>
 <translation id="1529116897397289129">Здесь появятся сохраненные карты</translation>
@@ -874,7 +875,6 @@
 <translation id="2352947182261340447">Недостаточно места на устройстве</translation>
 <translation id="2353297238722298836">Доступ к камере и микрофону разрешен</translation>
 <translation id="2356070529366658676">Спрашивать</translation>
-<translation id="2356517949307388948">При проверке компьютера на наличие вредоносного ПО произошла ошибка.</translation>
 <translation id="2357949918965361754">Транслируйте контент из Chrome на телевизор и другие устройства.</translation>
 <translation id="2359345697448000899">Управлять расширениями можно на вкладке "Расширения" в меню "Инструменты".</translation>
 <translation id="2359808026110333948">Далее</translation>
@@ -1112,7 +1112,6 @@
 <translation id="2715751256863167692">Установив это обновление, вы восстановите исходные настройки устройства Chromebook. При этом с него будут удалены пользовательские данные.</translation>
 <translation id="2718395828230677721">Ночной режим</translation>
 <translation id="2718998670920917754">Антивирусное ПО обнаружило вирус.</translation>
-<translation id="2719545156185392871">Браузер Chrome может найти вредоносные программы на вашем компьютере и удалить их.</translation>
 <translation id="2719936478972253983">Заблокированные файлы cookie:</translation>
 <translation id="2721037002783622288">&amp;Найти картинку (<ph name="SEARCH_ENGINE" />)</translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2447,7 +2446,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4835836146030131423">Ошибка при входе.</translation>
 <translation id="4837926214103741331">У вас нет доступа к этому устройству. Свяжитесь с его владельцем.</translation>
 <translation id="4837952862063191349">Чтобы разблокировать и восстановить данные, введите старый пароль устройства <ph name="DEVICE_TYPE" /></translation>
-<translation id="4838355575774807786">При удалении вредоносного ПО произошла ошибка.</translation>
 <translation id="4838836835474292213">Доступ к буферу обмена открыт</translation>
 <translation id="4839303808932127586">Со&amp;хранить видео как...</translation>
 <translation id="4839847978919684242">Выбрано элементов: <ph name="SELCTED_FILES_COUNT" />.</translation>
@@ -4048,7 +4046,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="73786666777299047">Открыть Интернет-магазин Chrome</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Подключаться к точкам доступа</translation>
-<translation id="7382945755068785583">Содержит информацию о вредоносных программах, системных настройках и процессах в вашем компьютере.</translation>
 <translation id="7384292194278095697">Устройство больше не поддерживается</translation>
 <translation id="7385854874724088939">При печати произошла ошибка. Проверьте состояние принтера и повторите попытку.</translation>
 <translation id="7386824183915085801">Сведения об используемых вами версиях браузера Chrome и операционной системы будут отправлены
@@ -4922,7 +4919,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8784626084144195648">Среднее по группам</translation>
 <translation id="8785622406424941542">Стилус</translation>
 <translation id="8787254343425541995">Использовать прокси-серверы для общих сетей</translation>
-<translation id="8791260615011736453">Файлы, не перечисленные здесь, также можно удалить при необходимости. Подробнее &lt;a href="<ph name="URL" />"&gt;о защите от нежелательного ПО&lt;/a&gt;…</translation>
 <translation id="8791534160414513928">Отправлять запрет на отслеживание для исходящего трафика</translation>
 <translation id="8792609692701651064">Активное окно перемещено на левый экран</translation>
 <translation id="8794025342371547160">Ограниченный IP</translation>

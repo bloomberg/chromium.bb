@@ -724,17 +724,6 @@
 <translation id="332771718998993005">Ange vilket namn som ska visas som mål för <ph name="PRODUCT_NAME" />.
 
           Om principen är inställd på något annat än en tom sträng används den strängen som namn på målet för <ph name="PRODUCT_NAME" />. I annat fall används enhetens namn som målnamn. Om principen lämnas utan inställning används enhetens namn som målnamn och enhetens ägare (eller en användare på den domän som hanterar enheten) kan ändra det. Namnet får vara högst 24 tecken långt.</translation>
-<translation id="3356249700768900657">
-      OBS! Det här är en experimentell princip som kan göra så att något slutar fungera!
-      Ta gärna en titt på principen IsolateOrigins också – du kan få det bästa av
-      två världar, isolering och begränsad inverkan på användarna, genom att ange
-      en lista med webbplatser som ska isoleras med IsolateOrigins. Med den här
-      inställningen, SitePerProcess, isoleras alla webbplatser.
-      När principen är aktiverad körs varje webbplats som en egen process.
-      När principen inaktiveras gäller den logik för processhantering som
-      användes före webbplatsisoleringen.
-      Om principen inte konfigureras kan användaren ändra inställningen.
-      </translation>
 <translation id="3381968327636295719">Använd värdwebbläsaren som standard</translation>
 <translation id="3395348522300156660">Anger vilka skrivare som får användas.
 
@@ -1250,16 +1239,6 @@
 <translation id="4983201894483989687">Tillåt att föråldrade plugin-program körs</translation>
 <translation id="4988291787868618635">Åtgärd som ska vidtas när inaktivitetstiden har gått</translation>
 <translation id="4995548127349206948">Om autentisering med NTLMv2 har aktiverats eller inte</translation>
-<translation id="5027819375434797927">
-      OBS! Det här är en experimentell princip som kan göra så att något slutar fungera!
-      När principen är aktiverad körs varje namngivet ursprung i en
-      kommaavgränsad lista som en egen process. Även underdomäner isoleras:
-      om du anger https://example.com/ kommer även https://foo.example.com/ att
-      isoleras som en del av webbplatsen https://example.com/.
-      När principen inaktiveras gäller den logik för processhantering som
-      användes före webbplatsisoleringen.
-      Om principen inte konfigureras kan användaren ändra inställningen.
-      </translation>
 <translation id="5047604665028708335">Tillåt åtkomst till webbplatser utanför innehållspaket</translation>
 <translation id="5052081091120171147">Om den här policyn är aktiverad gör den att webbhistoriken måste importeras från den nuvarande standardwebbläsaren. Den påverkar då även importfönstret.
 

@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">Gestionar certificados</translation>
 <translation id="152234381334907219">Contraseñas que nunca se guardan</translation>
 <translation id="1524430321211440688">Teclado</translation>
+<translation id="1524563461097350801">No, gracias</translation>
 <translation id="1526560967942511387">Documento sin título</translation>
 <translation id="1526925867532626635">Confirmar la configuración de sincronización</translation>
 <translation id="1529116897397289129">Las tarjetas guardadas aparecerán aquí</translation>
@@ -875,7 +876,6 @@
 <translation id="2352947182261340447">No hay suficiente espacio disponible en el almacenamiento local</translation>
 <translation id="2353297238722298836">Cámara y micrófono permitidos</translation>
 <translation id="2356070529366658676">Preguntar</translation>
-<translation id="2356517949307388948">Chrome no ha podido buscar software dañino.</translation>
 <translation id="2357949918965361754">Puedes usar esta función para mostrar contenido de Chrome en tu TV o en otros dispositivos.</translation>
 <translation id="2359345697448000899">Para administrar tus extensiones, haz clic en la opción Extensiones del menú Herramientas.</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -1111,7 +1111,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2715751256863167692">Esta actualización recupera la configuración de tu Chromebook y elimina los datos de usuario actuales.</translation>
 <translation id="2718395828230677721">Luz nocturna</translation>
 <translation id="2718998670920917754">El programa antivirus ha detectado un virus.</translation>
-<translation id="2719545156185392871">Chrome puede encontrar software dañino en tu ordenador y quitarlo.</translation>
 <translation id="2719936478972253983">Se han bloqueado las siguientes cookies</translation>
 <translation id="2721037002783622288">&amp;Buscar imagen en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2445,7 +2444,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4835836146030131423">Se ha producido un error al acceder.</translation>
 <translation id="4837926214103741331">No tienes autorización para utilizar este dispositivo. Ponte en contacto con su propietario para obtener permiso de inicio de sesión.</translation>
 <translation id="4837952862063191349">Para desbloquear y restaurar tus datos locales, introduce la antigua contraseña de tu <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4838355575774807786">Chrome no ha podido quitar el software dañino.</translation>
 <translation id="4838836835474292213">Se ha permitido el acceso de lectura al portapapeles</translation>
 <translation id="4839303808932127586">Gu&amp;ardar vídeo como...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> elementos seleccionados</translation>
@@ -4044,7 +4042,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="73786666777299047">Abrir Chrome Web Store</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Obtener conexión de datos</translation>
-<translation id="7382945755068785583">Incluye información sobre software dañino, configuración del sistema y procesos de tu ordenador.</translation>
 <translation id="7384292194278095697">Este dispositivo ya no es compatible</translation>
 <translation id="7385854874724088939">Se ha producido un error al intentar realizar la impresión. Comprueba la impresora e inténtalo de nuevo.</translation>
 <translation id="7386824183915085801">Tu versión de Chrome y del sistema operativo se enviarán junto con
@@ -4917,7 +4914,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8784626084144195648">Media de datos agrupados</translation>
 <translation id="8785622406424941542">Lápiz óptico</translation>
 <translation id="8787254343425541995">Permitir servidores proxy en redes compartidas</translation>
-<translation id="8791260615011736453">Si es necesario, también se pueden quitar elementos que no se incluyan aquí. Consulta más información sobre la &lt;a href="<ph name="URL" />"&gt;protección contra software no deseado&lt;/a&gt; en el informe de privacidad de Chrome.</translation>
 <translation id="8791534160414513928">Enviar una solicitud de no seguimiento con tu tráfico de navegación</translation>
 <translation id="8792609692701651064">La ventana activa se ha movido a la pantalla de la izquierda</translation>
 <translation id="8794025342371547160">IP restringida</translation>

@@ -723,17 +723,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="332771718998993005">Določanje sporočenega imena cilja za napravo <ph name="PRODUCT_NAME" />.
 
           Če je pravilnik nastavljen na niz, ki ni prazen, je ta niz uporabljen kot ime cilja za napravo <ph name="PRODUCT_NAME" />, sicer pa je ime cilja ime naprave. Če ta pravilnik ni nastavljen, je ime cilja ime naprave in lastnik naprave (ali uporabnik v domeni, ki upravlja napravo) ga sme spremeniti. Ime je omejeno na 24 znakov dolžine.</translation>
-<translation id="3356249700768900657">
-      OPOMBA: Ta pravilnik je poskusen in lahko povzroči nedelovanje funkcije.
-      Oglejte si nastavitev pravilnika IsolateOrigins, če želite izkoristiti
-      prednosti obeh nastavitev, osamitve in omejenega vpliva za uporabnike, tako da uporabite
-      pravilnik IsolateOrigins s seznamom spletnih mest, ki jih želite osamiti. Ta nastavitev,
-      SitePerProcess, osami vsa spletna mesta.
-      Če je pravilnik omogočen, vsako spletno mesto izvaja svoj proces.
-      Če je pravilnik onemogočen, se uveljavi logika upravljanja procesov vnaprejšnje
-      osamitve spletnih mest.
-      Če pravilnik ni konfiguriran, bo uporabnik lahko spremenil to nastavitev.
-      </translation>
 <translation id="3381968327636295719">Privzeto uporabi brskalnik gostitelja</translation>
 <translation id="3395348522300156660">Določa tiskalnike, ki jih uporabnik lahko uporablja.
 
@@ -1248,17 +1237,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4983201894483989687">Dovoli izvajanje zastarelih vtičnikov</translation>
 <translation id="4988291787868618635">Dejanje, ki naj se izvede, ko preteče časovni zamik nedejavnosti</translation>
 <translation id="4995548127349206948">Ali je omogočeno preverjanje pristnosti NTLMv2.</translation>
-<translation id="5027819375434797927">
-      OPOMBA: Ta pravilnik je poskusen in lahko povzroči nedelovanje funkcije.
-      Če je pravilnik omogočen, bo vsak naveden izvor
-      s seznama, ločenega z vejicami, izvajal svoj proces. S tem bodo osamljeni
-      tudi izvori, ki jih navedejo poddomene; če na primer navedete https://example.com/,
-      bo kot del spletnega mesta https://example.com/ osamljeno tudi
-      spletno mesto https://foo.example.com/.
-      Če je pravilnik onemogočen, se uveljavi logika upravljanja procesov vnaprejšnje
-      osamitve spletnih mest.
-      Če pravilnik ni konfiguriran, bo uporabnik lahko spremenil to nastavitev.
-      </translation>
 <translation id="5047604665028708335">Omogoči dostop do spletnih mest zunaj paketov vsebine</translation>
 <translation id="5052081091120171147">Če je ta pravilnik omogočen, se zgodovina brskanja uvozi iz trenutnega privzetega brskalnika. Če je omogočen, ta pravilnik vpliva tudi na pogovorno okno za uvoz.
 

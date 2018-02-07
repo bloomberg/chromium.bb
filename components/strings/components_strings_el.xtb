@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">Ρώτησες τους γονείς σου εάν σου επιτρέπουν να επισκεφτείς αυτόν τον ιστότοπο</translation>
 <translation id="4871132632506079383">Από μια ενσωματωμένη σελίδα στον ιστότοπο <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Αναζήτηση ιστορικού</translation>
+<translation id="4881695831933465202">Άνοιγμα</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Απαιτείται έλεγχος ταυτότητας</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{και 1 ακόμη ιστοσελίδα}other{και # ακόμη ιστοσελίδες}}</translation>
@@ -745,6 +746,7 @@
 <translation id="6563469144985748109">Ο διαχειριστής σας δεν τον έχει εγκρίνει ακόμα</translation>
 <translation id="6569060085658103619">Βλέπετε μια σελίδα επέκτασης</translation>
 <translation id="6596325263575161958">Επιλογές κρυπτογράφησης</translation>
+<translation id="6604181099783169992">Αισθητήρες κίνησης ή φωτός</translation>
 <translation id="6624427990725312378">Στοιχεία επικοινωνίας</translation>
 <translation id="6626291197371920147">Προσθήκη έγκυρου αριθμού κάρτας</translation>
 <translation id="6628463337424475685">Αναζήτηση <ph name="ENGINE" /></translation>

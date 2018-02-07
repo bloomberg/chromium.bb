@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">Hantera certifikat</translation>
 <translation id="152234381334907219">Aldrig sparat</translation>
 <translation id="1524430321211440688">Tangentbord</translation>
+<translation id="1524563461097350801">Nej tack</translation>
 <translation id="1526560967942511387">Namnlöst dokument</translation>
 <translation id="1526925867532626635">Bekräfta synkroniseringsinställningarna</translation>
 <translation id="1529116897397289129">Sparade kort visas här</translation>
@@ -874,7 +875,6 @@
 <translation id="2352947182261340447">Det finns inte tillräckligt med utrymme i det lokala lagringsutrymmet.</translation>
 <translation id="2353297238722298836">Kamera och mikrofon är tillåtna</translation>
 <translation id="2356070529366658676">Fråga</translation>
-<translation id="2356517949307388948">Ett fel uppstod vid sökningen efter skadlig programvara med Chrome.</translation>
 <translation id="2357949918965361754">Du kan använda funktionen för att visa innehåll från Chrome på TV:n eller andra enheter.</translation>
 <translation id="2359345697448000899">Hantera tillägg genom att klicka på Tillägg på menyn Verktyg.</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
@@ -1110,7 +1110,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="2715751256863167692">Med den här uppgraderingen återställs Chromebook och nuvarande användardata tas bort.</translation>
 <translation id="2718395828230677721">Nattljus</translation>
 <translation id="2718998670920917754">Antivirusprogrammet har identifierat ett virus.</translation>
-<translation id="2719545156185392871">Med hjälp av Chrome kan du upptäcka skadlig programvara på datorn och ta bort den.</translation>
 <translation id="2719936478972253983">Följande cookies blockerades</translation>
 <translation id="2721037002783622288">&amp;Sök på <ph name="SEARCH_ENGINE" /> efter bild</translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2445,7 +2444,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="4835836146030131423">Inloggningsfel.</translation>
 <translation id="4837926214103741331">Du har inte behörighet att använda den här enheten. Kontakta enhetens ägare om du vill ha behörighet att logga in.</translation>
 <translation id="4837952862063191349">Lås upp och återställ lokal data genom att ange ditt gamla lösenord för <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4838355575774807786">Ett fel uppstod när skadlig programvara togs bort med Chrome.</translation>
 <translation id="4838836835474292213">Läsbehörighet till Urklipp har tillåtits</translation>
 <translation id="4839303808932127586">S&amp;para video som...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> poster har valts</translation>
@@ -4046,7 +4044,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="73786666777299047">Öppna Chrome Web Store</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Dela dataanslutning</translation>
-<translation id="7382945755068785583">Skickar med information om skadlig programvara, systeminställningar och processer på datorn.</translation>
 <translation id="7384292194278095697">Enheten stöds inte längre</translation>
 <translation id="7385854874724088939">Det uppstod ett problem vid utskriften.  Se över skrivaren och försök igen.</translation>
 <translation id="7386824183915085801">Versionen av Chrome och operativsystemet du använder läggs till, liksom 
@@ -4919,7 +4916,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8784626084144195648">Fackmedelvärde</translation>
 <translation id="8785622406424941542">E-penna</translation>
 <translation id="8787254343425541995">Tillåt proxyservrar för delade nätverk</translation>
-<translation id="8791260615011736453">Även objekt som inte står med här kan tas bort om det behövs. Läs mer om &lt;a href="<ph name="URL" />"&gt;skydd mot oönskad programvara&lt;/a&gt; i vitboken om sekretess och Chrome.</translation>
 <translation id="8791534160414513928">Skicka en begäran om att inte spåra med webbtrafik</translation>
 <translation id="8792609692701651064">Det aktiva fönstret har flyttats till den vänstra skärmen</translation>
 <translation id="8794025342371547160">Begränsad IP</translation>

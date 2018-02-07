@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">प्रमाणपत्रे व्यवस्थापित करा</translation>
 <translation id="152234381334907219">कधीही जतन न केलेले</translation>
 <translation id="1524430321211440688">कीबोर्ड</translation>
+<translation id="1524563461097350801">नाही, नको</translation>
 <translation id="1526560967942511387">अशीर्षकांकित दस्तऐवज</translation>
 <translation id="1526925867532626635">समक्रमण सेटिंग्जची पुष्टी करा</translation>
 <translation id="1529116897397289129">जतन केलेली कार्ड येथे दिसून येतील</translation>
@@ -874,7 +875,6 @@
 <translation id="2352947182261340447">स्थानिक स्टोरेजमध्ये पुरेशी जागा उपलब्ध नाही.</translation>
 <translation id="2353297238722298836">कॅमेरा आणि मायक्रोफोनला अनुमती आहे</translation>
 <translation id="2356070529366658676">विचारा</translation>
-<translation id="2356517949307388948">Chrome हानिकारक सॉफ्टवेअर शोधत असताना एरर आली.</translation>
 <translation id="2357949918965361754">आपण या वैशिष्ट्याचा वापर Chrome वरील सामग्री आपल्या टीव्ही वर किंवा इतर डिव्हाइसेसवर प्रदर्शित करण्यासाठी करू शकता.</translation>
 <translation id="2359345697448000899">टूल मेनूमध्‍ये विस्तारांवर क्लिक करुन आपले विस्तार व्यवस्थापित करा.</translation>
 <translation id="2359808026110333948">सुरू ठेवा</translation>
@@ -1110,7 +1110,6 @@
 <translation id="2715751256863167692">हे अपडेट तुमचे Chromebook रीसेट करते आणि तुमचा सद्य वापरकर्ता डेटा काढून टाकते.</translation>
 <translation id="2718395828230677721">रात्रीचा प्रकाश</translation>
 <translation id="2718998670920917754">अँटी-व्हायरस सॉफ्टवेअरला एक व्हायरस आढळला.</translation>
-<translation id="2719545156185392871">Chrome तुमच्या काँप्युटरवर हानिकारक सॉफ्टवेअर शोधू शकते आणि ते काढू शकते.</translation>
 <translation id="2719936478972253983">पुढील कुकी ब्लॉक केल्या होत्‍या</translation>
 <translation id="2721037002783622288">प्रतिमा <ph name="SEARCH_ENGINE" /> वर शोधा</translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -1772,7 +1771,7 @@
 <translation id="3693415264595406141">पासवर्ड:</translation>
 <translation id="3694027410380121301">मागील टॅब निवडा</translation>
 <translation id="3697100740575341996">आपल्या IT प्रशासकाने आपल्या डिव्हाइससाठी Chrome Goodies अक्षम केल्या आहेत. <ph name="MORE_INFO_LINK" /></translation>
-<translation id="3699624789011381381">ईमेल पत्ता</translation>
+<translation id="3699624789011381381">ईमेल अॅड्रेस</translation>
 <translation id="3702500414347826004"><ph name="URL" /> समाविष्‍ट करण्‍यासाठी आपली प्रारंभ पृष्‍ठे बदलली.</translation>
 <translation id="370415077757856453">JavaScript ब्लॉक केले</translation>
 <translation id="3704331259350077894">ऑपरेशनची समाप्ती</translation>
@@ -1971,7 +1970,7 @@
 <translation id="3979748722126423326"><ph name="NETWORKDEVICE" /> सक्षम करा</translation>
 <translation id="3981760180856053153">अवैध जतन प्रकार एंटर केले.</translation>
 <translation id="3983586614702900908">अज्ञात विक्रेत्याकडील डिव्हाइसेस</translation>
-<translation id="3987348946546879621">सेव्ह केलेला डेटा</translation>
+<translation id="3987348946546879621">वाचवलेला डेटा</translation>
 <translation id="3987938432087324095">क्षमस्व, ते समजले नाही.</translation>
 <translation id="3988996860813292272">टाइम झोन निवडा</translation>
 <translation id="3989635538409502728">साइन आउट</translation>
@@ -2440,7 +2439,6 @@
 <translation id="4835836146030131423">साइन इन करताना एरर.</translation>
 <translation id="4837926214103741331">आपण हे डिव्हाइस वापरण्यासाठी प्राधिकृत नाही. कृपया साइन इन करण्याच्या परवानगीसाठी डिव्हाइस मालकाशी संपर्क साधा.</translation>
 <translation id="4837952862063191349">आपला स्थानिक डेटा अनलॉक आणि पुनर्संचयित करण्‍यासाठी, कृपया आपला जुना <ph name="DEVICE_TYPE" /> पासवर्ड प्रविष्‍ट करा.</translation>
-<translation id="4838355575774807786">Chrome हानिकारक सॉफ्टवेअर काढत असताना एरर आली.</translation>
 <translation id="4838836835474292213">क्लिपबोर्डचा आशय वाचण्याची अनुमती दिली</translation>
 <translation id="4839303808932127586">म्हणून व्हिडिओ ज&amp;तन करा...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> आयटम निवडले</translation>
@@ -3893,7 +3891,7 @@
 <translation id="7108634116785509031"><ph name="HOST" /> ला तुमचा कॅमेरा वापरायचा आहे</translation>
 <translation id="7108668606237948702">प्रविष्‍ट करा</translation>
 <translation id="7112978678959880812">पर्सनलाइझ करणे चालू आहे. तुम्ही हे myaccount.google.com वर बदलू शकता.</translation>
-<translation id="7113502843173351041">आपला ईमेल पत्ता माहिती करून घ्या</translation>
+<translation id="7113502843173351041">आपला ईमेल अॅड्रेस माहिती करून घ्या</translation>
 <translation id="7114054701490058191">पासवर्ड जुळत नाहीत</translation>
 <translation id="7117228822971127758">कृपया नंतर पुन्हा प्रयत्न करा</translation>
 <translation id="7117247127439884114">पुन्हा साइन इन करा...</translation>
@@ -3953,7 +3951,7 @@
 <translation id="7221155467930685510">$1 GB</translation>
 <translation id="7221855153210829124">सूचना दर्शवा</translation>
 <translation id="7221869452894271364">हे पृष्ठ रीलोड करा</translation>
-<translation id="7222232353993864120">ईमेल पत्ता</translation>
+<translation id="7222232353993864120">ईमेल अॅड्रेस</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="722363467515709460">स्क्रीन भिंग सक्षम करा</translation>
 <translation id="7223775956298141902">अरेरे.. आपल्याकडे कोणतेही विस्तार नाहीत :-(</translation>
@@ -4043,11 +4041,10 @@
 <translation id="73786666777299047">Chrome वेब स्टोअर उघडा</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">डेटा कनेक्शन मिळवा</translation>
-<translation id="7382945755068785583">हानिकारक सॉफ्टवेअर, सिस्‍टम सेटिंग्‍ज आणि तुमच्‍या कॉंप्‍युटरवरील प्रक्रियांबद्दलच्‍या माहितीचा समावेश असतो.</translation>
 <translation id="7384292194278095697">हे डिव्हाइस यापुढे समर्थित असणार नाही</translation>
 <translation id="7385854874724088939">प्रिंट करण्याचा प्रयत्न करताना काहीतरी चूक झाली.  कृपया आपला प्रिंटर तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="7386824183915085801">वर समाविष्ट करण्यासाठी आपण निवडता त्‍या कोणत्याही माहिती व्यतिरिक्त आपले
-        Chrome आणि ऑपरेटिंग प्रणाली आवृत्ती सबमिट केली जाईल. आपण आपला ईमेल पत्ता
+        Chrome आणि ऑपरेटिंग प्रणाली आवृत्ती सबमिट केली जाईल. आपण आपला ईमेल अॅड्रेस
         समाविष्ट केल्यास, Google आपल्याशी अभिप्राय अहवाला संबंधी संपर्क साधू शकते. हा अभिप्राय
         समस्यांचे निदान करण्यासाठी आणि Chrome सुधारण्यात मदतीसाठी वापरला जातो. आपण
         सुस्पष्टपणे किंवा योगायोगाने सबमिट करता ती कोणतीही वैयक्तिक माहिती, 
@@ -4480,7 +4477,7 @@
 <translation id="8053390638574070785">हे पृष्ठ रीलोड करा</translation>
 <translation id="8054029954190364711">फिंगरप्रिंट अनलॉक वैशिष्‍ट्य</translation>
 <translation id="8054517699425078995">या प्रकारची फाईल आपल्‍या डिव्‍हाइसला हानी पोहचवू शकते. आपण <ph name="FILE_NAME" /> तरीही ठेवू इच्‍छिता?</translation>
-<translation id="8054563304616131773">कृपया एक वैध ईमेल पत्ता एंटर करा</translation>
+<translation id="8054563304616131773">कृपया एक वैध ईमेल अॅड्रेस एंटर करा</translation>
 <translation id="8054921503121346576">USB कीबोर्ड कनेक्ट झाला</translation>
 <translation id="8058655154417507695">कालबाह्य होण्याचे वर्ष</translation>
 <translation id="8059178146866384858">"$1" नावाची फाइल आधीच अस्तित्वात आहे. कृपया भिन्न नाव निवडा.</translation>
@@ -4915,7 +4912,6 @@
 <translation id="8784626084144195648">बिन केलेली सरासरी</translation>
 <translation id="8785622406424941542">लेखणी</translation>
 <translation id="8787254343425541995">सामायिक नेटवर्कसाठी प्रॉक्सीला अनुमती द्या</translation>
-<translation id="8791260615011736453">आवश्‍यक असल्‍यास, येथे सूचीत नसलेले आयटम देखील काढून टाकले जातील. Chrome गोपनीयता व्‍हाइट पेपरमध्‍ये &lt;a href="<ph name="URL" />"&gt;अनैच्छिक सॉफ्टवेअर संरक्षण&lt;/a&gt; बद्दल अधिक जाणून घ्‍या.</translation>
 <translation id="8791534160414513928">आपल्या ब्राउझिंग रहदारीसह "Do Not Track" विनंती पाठवा</translation>
 <translation id="8792609692701651064">सक्रिय विंडो डिस्‍प्‍लेच्‍या डावीकडे हलवली</translation>
 <translation id="8794025342371547160">प्रतिबंधित IP</translation>

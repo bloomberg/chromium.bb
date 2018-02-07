@@ -351,6 +351,7 @@
 <translation id="1521442365706402292">Administrer sertifikater</translation>
 <translation id="152234381334907219">Aldri lagret</translation>
 <translation id="1524430321211440688">Tastatur</translation>
+<translation id="1524563461097350801">Nei takk</translation>
 <translation id="1526560967942511387">Dokument uten tittel</translation>
 <translation id="1526925867532626635">Bekreft innstillingene for synkronisering</translation>
 <translation id="1529116897397289129">Lagrede kort vises her</translation>
@@ -872,7 +873,6 @@
 <translation id="2352947182261340447">Utilstrekkelig plass i lokal lagring.</translation>
 <translation id="2353297238722298836">Kameraet og mikrofonen er tillatt</translation>
 <translation id="2356070529366658676">Spør</translation>
-<translation id="2356517949307388948">En feil oppsto mens Chrome søkte etter skadelig programvare.</translation>
 <translation id="2357949918965361754">Du kan bruke denne funksjonen for å vise innhold fra Chrome på TV-en eller andre enheter.</translation>
 <translation id="2359345697448000899">Du kan administrere utvidelsene dine ved å klikke på Utvidelser i verktøymenyen.</translation>
 <translation id="2359808026110333948">Fortsett</translation>
@@ -1107,7 +1107,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2715751256863167692">Oppgraderingen tilbakestiller Chromebooken og fjerner gjeldende brukerdata.</translation>
 <translation id="2718395828230677721">Nattlys</translation>
 <translation id="2718998670920917754">Anti-virusprogramvaren oppdaget et virus.</translation>
-<translation id="2719545156185392871">Chrome kan finne skadelig programvare på datamaskinen din og fjerne den.</translation>
 <translation id="2719936478972253983">Følgende informasjonskapsler er blokkert</translation>
 <translation id="2721037002783622288">&amp;Søk etter bilder i <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2439,7 +2438,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="4835836146030131423">Feil ved pålogging.</translation>
 <translation id="4837926214103741331">Du er ikke autorisert til å bruke denne enheten. Ta kontakt med eieren av enheten for å få tillatelse til å logge på.</translation>
 <translation id="4837952862063191349">For å låse opp og gjenopprette lokale data må du oppgi det gamle <ph name="DEVICE_TYPE" />-passordet ditt.</translation>
-<translation id="4838355575774807786">En feil oppsto da Chrome fjernet skadelig programvare.</translation>
 <translation id="4838836835474292213">Lesetilgang til utklippstavlen er tillatt</translation>
 <translation id="4839303808932127586">La&amp;gre video som</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> elementer valgt</translation>
@@ -4038,7 +4036,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="73786666777299047">Åpne Chrome Nettmarked</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Få datatilkobling</translation>
-<translation id="7382945755068785583">Inkluderer informasjon om skadelig programvare, systeminnstillinger og prosesser på datamaskinen din.</translation>
 <translation id="7384292194278095697">Denne enheten støttes ikke lenger</translation>
 <translation id="7385854874724088939">Det oppstod en feil under forsøket på å skrive ut. Kontroller skriveren og prøv igjen.</translation>
 <translation id="7386824183915085801">Chrome- og operativsystem-versjonen din sendes inn, i tillegg til annen informasjon du tar med ovenfor. Hvis du inkluderer e-postadressen din, kan det hende at Google kontakter deg angående tilbakemeldingen din. Tilbakemeldingene brukes til å diagnostisere problemer og forbedre Chrome. Personlige opplysninger du sender inn, med hensikt eller ved et uhell, beskyttes i henhold til personvernreglene våre.<ph name="BEGIN_BOLD" /> Ved å sende inn denne tilbakemeldingen godtar du at Google bruker tilbakemeldingen du sender inn, til å forbedre et Google-produkt eller en Google-tjeneste.
@@ -4904,7 +4901,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8784626084144195648">Gjennomsnitt av grupperte data</translation>
 <translation id="8785622406424941542">Pekepenn</translation>
 <translation id="8787254343425541995">Gi tillatelse til mellomtjenere for delte nettverk</translation>
-<translation id="8791260615011736453">Elementer som ikke er oppført her, kan også fjernes, hvis det er nødvendig. Finn ut mer om &lt;a href="<ph name="URL" />"&gt;beskyttelse mot uønsket programvare&lt;/a&gt; i Teknisk dokument om personvern i Google Chrome.</translation>
 <translation id="8791534160414513928">Send en «Ingen sporing»-forespørsel med nettrafikken din</translation>
 <translation id="8792609692701651064">Det aktive vinduet er flyttet til venstre skjerm</translation>
 <translation id="8794025342371547160">Begrenset IP</translation>

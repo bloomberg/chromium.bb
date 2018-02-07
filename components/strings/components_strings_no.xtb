@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">Du har spurt foreldrene dine om det er greit å besøke dette nettstedet</translation>
 <translation id="4871132632506079383">Fra en innebygd side på <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Søk i loggen</translation>
+<translation id="4881695831933465202">Åpne</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Autentisering kreves</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{og 1 nettside til}other{og # nettsider til}}</translation>
@@ -745,6 +746,7 @@
 <translation id="6563469144985748109">Administratoren din har ikke godkjent det ennå</translation>
 <translation id="6569060085658103619">Du ser på en utvidelsesside</translation>
 <translation id="6596325263575161958">Krypteringsalternativer</translation>
+<translation id="6604181099783169992">Bevegelses- eller lyssensorer</translation>
 <translation id="6624427990725312378">Kontaktinformasjon</translation>
 <translation id="6626291197371920147">Legg til et gyldig kortnummer</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Søk</translation>

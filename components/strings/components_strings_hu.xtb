@@ -522,6 +522,7 @@
 <translation id="4858792381671956233">Megkérdezted a szüleidet, hogy meg szabad-e látogatnod ezt a webhelyet</translation>
 <translation id="4871132632506079383">A(z) <ph name="SITE" /> egyik beágyazott oldaláról</translation>
 <translation id="4880827082731008257">Keresés az előzmények között</translation>
+<translation id="4881695831933465202">Megnyitás</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> és <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Azonosítás szükséges</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{és egy további weboldal}other{és # további weboldal}}</translation>
@@ -743,6 +744,7 @@
 <translation id="6563469144985748109">A kezelő még nem hagyta jóvá</translation>
 <translation id="6569060085658103619">Jelenleg bővítményoldalt tekint meg</translation>
 <translation id="6596325263575161958">Titkosítási lehetőségek</translation>
+<translation id="6604181099783169992">Mozgás- és fényérzékelők</translation>
 <translation id="6624427990725312378">Kapcsolatfelvételi adatok</translation>
 <translation id="6626291197371920147">Adjon meg érvényes kártyaszámot</translation>
 <translation id="6628463337424475685">Keresés: <ph name="ENGINE" /></translation>

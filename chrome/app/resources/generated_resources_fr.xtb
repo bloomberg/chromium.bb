@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">Gérer les certificats</translation>
 <translation id="152234381334907219">Jamais enregistrés</translation>
 <translation id="1524430321211440688">Clavier</translation>
+<translation id="1524563461097350801">Non, merci</translation>
 <translation id="1526560967942511387">Document sans titre</translation>
 <translation id="1526925867532626635">Confirmer les paramètres de synchronisation</translation>
 <translation id="1529116897397289129">Les cartes enregistrées s'afficheront ici</translation>
@@ -875,7 +876,6 @@
 <translation id="2352947182261340447">Espace insuffisant sur le stockage local.</translation>
 <translation id="2353297238722298836">Caméra et micro autorisés</translation>
 <translation id="2356070529366658676">Demander</translation>
-<translation id="2356517949307388948">Une erreur s'est produite lors de la recherche de logiciels malveillants par Google Chrome.</translation>
 <translation id="2357949918965361754">Vous pouvez utiliser cette fonctionnalité pour afficher des contenus issus de Chrome sur votre téléviseur ou sur d'autres appareils.</translation>
 <translation id="2359345697448000899">Pour gérer les extensions, cliquer sur "Extensions" dans le menu "Outils"</translation>
 <translation id="2359808026110333948">Continuer</translation>
@@ -1111,7 +1111,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2715751256863167692">Cette mise à niveau entraîne la réinitialisation de votre Chromebook et la suppression des informations sur l'utilisateur actuelles.</translation>
 <translation id="2718395828230677721">Éclairage nocturne</translation>
 <translation id="2718998670920917754">Le logiciel antivirus a détecté un virus.</translation>
-<translation id="2719545156185392871">Google Chrome peut détecter et supprimer les logiciels malveillants sur votre ordinateur.</translation>
 <translation id="2719936478972253983">Les cookies suivants ont été bloqués</translation>
 <translation id="2721037002783622288">&amp;Rechercher une image avec <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2446,7 +2445,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4835836146030131423">Erreur lors de la connexion</translation>
 <translation id="4837926214103741331">Vous n'êtes pas autorisé à utiliser cet appareil. Pour obtenir l'autorisation de vous y connecter, veuillez contacter son propriétaire.</translation>
 <translation id="4837952862063191349">Pour déverrouiller et restaurer vos données locales, veuillez saisir l'ancien mot de passe de votre <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4838355575774807786">Une erreur s'est produite lors de la suppression du logiciel malveillant par Chrome.</translation>
 <translation id="4838836835474292213">Accès en lecture au presse-papiers autorisé</translation>
 <translation id="4839303808932127586">En&amp;registrer la vidéo sous...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> éléments sélectionnés</translation>
@@ -3162,7 +3160,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5921745308587794300">Faire pivoter la fenêtre</translation>
 <translation id="5924047253200400718">Obtenir de l'aide<ph name="SCANNING_STATUS" /></translation>
 <translation id="5925147183566400388">Pointeur de la déclaration CPS (Certification Practice Statement)</translation>
-<translation id="592880897588170157">Télécharger des fichiers PDF au lieu de les ouvrir automatiquement dans Chrome</translation>
+<translation id="592880897588170157">Télécharger les fichiers PDF au lieu de les ouvrir automatiquement dans Chrome</translation>
 <translation id="5931146425219109062">Accéder à toutes vos données sur les sites Web que vous consultez et les modifier</translation>
 <translation id="5932881020239635062">Série</translation>
 <translation id="5933376509899483611">Fuseau horaire</translation>
@@ -4048,7 +4046,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="73786666777299047">Ouvrez le Chrome Web Store</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Obtenir une connexion de données</translation>
-<translation id="7382945755068785583">Inclut des informations sur les logiciels malveillants, les paramètres système et les processus de l'ordinateur.</translation>
 <translation id="7384292194278095697">Appareil désormais incompatible</translation>
 <translation id="7385854874724088939">Erreur lors de la tentative d'impression. Vérifiez votre imprimante et réessayez.</translation>
 <translation id="7386824183915085801">La version de Chrome et celle du système d'exploitation sont envoyées
@@ -4922,7 +4919,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8784626084144195648">Moyenne par intervalle</translation>
 <translation id="8785622406424941542">Stylet</translation>
 <translation id="8787254343425541995">Autoriser les proxys pour les réseaux partagés</translation>
-<translation id="8791260615011736453">Au besoin, les éléments non indiqués ici peuvent également être supprimés. Pour en savoir plus sur la &lt;a href="<ph name="URL" />"&gt;protection contre les logiciels malveillants&lt;/a&gt;, consultez le livre blanc sur les règles de confidentialité de Chrome.</translation>
 <translation id="8791534160414513928">Envoyer une demande "Interdire le suivi" pendant la navigation</translation>
 <translation id="8792609692701651064">Fenêtre active transférée vers l'écran de gauche</translation>
 <translation id="8794025342371547160">IP limitée</translation>

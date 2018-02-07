@@ -719,16 +719,6 @@
 <translation id="332771718998993005">Määratakse nimi, mida esitatakse teenuse <ph name="PRODUCT_NAME" /> sihtkohana.
 
           Kui selle reegli väärtuseks määratakse mõni täidetud string, kasutatakse seda stringi teenuse <ph name="PRODUCT_NAME" /> sihtkohana. Muul juhul on sihtkoha nimeks seadme nimi. Kui see reegel jäetakse määramata, on sihtkoha nimeks seadme nimi ja seadme omanik (või seadet haldava domeeni kasutaja) saab seda muuta. Nimi tohib olla maksimaalselt 24 tähemärki.</translation>
-<translation id="3356249700768900657">
-      MÄRKUS. See reegel on katseline ja funktsioonid ei pruugi töötada.
-      Soovitame teil vaadata reegli IsolateOrigins seadet, et kasutada
-      nii isoleerimist kui ka piirata mõju kasutajate jaoks, kasutades reeglit
-      IsolateOrigins saitide puhul, mille soovite isoleerida. Seade
-      SitePerProcess isoleerib kõik saidid.
-      Kui reegel on lubatud, käitab iga sait siiski oma protsesse.
-      Kui reegel on keelatud, jõustub saidi isoleerimise eelse protsessihalduse loogika.
-      Kui reegel on seadistamata, saab kasutaja seda seadet muuta.
-      </translation>
 <translation id="3381968327636295719">Kasuta vaikimisi hostbrauserit</translation>
 <translation id="3395348522300156660">Määrab printerid, mida kasutaja saab kasutada.
 
@@ -1238,16 +1228,6 @@
 <translation id="4983201894483989687">Luba vananenud pistikprogrammide käitamine</translation>
 <translation id="4988291787868618635">Tehtav toiming, kui möödub jõudeoleku viiteaeg</translation>
 <translation id="4995548127349206948">Kas NTLMv2 autentimine on lubatud või mitte.</translation>
-<translation id="5027819375434797927">
-      MÄRKUS. See reegel on katseline ja funktsioonid ei pruugi töötada.
-      Kui reegel on lubatud, käitab iga komadega eraldatud loendis
-      nimetatud lähtekoht oma protsesse. See isoleerib ka
-      alamdomeenide nimetatud lähtekohad; nt määrates aadressi https://example.com/
-      isoleeritakse ka aadress https://foo.example.com/ saidi
-      https://example.com/ osana.
-      Kui reegel on keelatud, jõustub saidi isoleerimise eelse protsessihalduse loogika.
-      Kui reegel on seadistamata, saab kasutaja seda seadet muuta.
-      </translation>
 <translation id="5047604665028708335">Sisupakettidest väljaspool olevatele saitidele juurdepääsu lubamine</translation>
 <translation id="5052081091120171147">Selle reegli lubamisel imporditakse sirvimisajalugu praegusest vaikebrauserist. Lubamisel mõjutab reegel ka importimisdialoogi.
 

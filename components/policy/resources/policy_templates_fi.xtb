@@ -691,16 +691,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="332771718998993005">Määritä laitteelle nimi, jonka <ph name="PRODUCT_NAME" /> näyttää kohteena.
 
           Jos tämän käytännön arvo on ei-tyhjä merkkijono, <ph name="PRODUCT_NAME" /> näyttää kyseisen merkkijonon kohdenimenä. Muussa tapauksessa kohdenimenä käytetään laitteen nimeä. Jos tätä käytäntöä ei ole määritetty, kohdenimenä käytetään laitteen nimeä ja laitteen omistaja (tai laitetta hallinnoivan verkkotunnuksen käyttäjä) voi vaihtaa nimen. Nimen enimmäispituus on 24 merkkiä.</translation>
-<translation id="3356249700768900657">
-      HUOM. Tämä käytäntö on kokeellinen ja saattaa rikkoa toimintoja!
-      Suosittelemme tutustumaan IsolateOrigins-käytännon asetukseen saadaksesi
-      molempien parhaat puolet, eristämisen ja rajallisen vaikutuksen käyttäjille,
-      käyttämällä IsolateOrigins-käytäntöä eristettävien sivustojen luettelon kanssa.
-      Tämä asetus, SitePerProcess, eristää kaikki sivustot.
-      Jos käytäntö on otettu käyttöön, kaikki sivustot toimivat omien prosessiensa puitteissa.
-      Jos käytäntöä ei ole otettu käyttöön, sivuston eristämistä edeltävän prosessin hallintalogiikka tulee voimaan.
-      Jos käytäntöä ei ole määritetty, käyttäjä voi muuttaa tämän asetuksen.
-      </translation>
 <translation id="3381968327636295719">Käytä oletuksena isäntäselainta</translation>
 <translation id="3395348522300156660">Määrittää tulostimet, joita käyttäjä voi käyttää.
 
@@ -1197,15 +1187,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="4983201894483989687">Salli vanhentuneiden laajennuksien käyttö</translation>
 <translation id="4988291787868618635">Toiminto, joka suoritetaan käyttämättömyysajan kuluttua</translation>
 <translation id="4995548127349206948">Onko NTLMv2-todennus käytössä</translation>
-<translation id="5027819375434797927">
-      HUOM. Tämä käytäntö on kokeellinen ja saattaa rikkoa toimintoja!
-      Jos käytäntö on otettu käyttöön, kaikki pilkuilla erotetun luettelon nimetyistä alkuperistä
-      suorittavat oman prosessinsa. Tämä eristää myös aliverkkotunnusten
-      mukaan nimetyt alkuperät, esim. jos https://example.com/ määritetään,
-      https://foo.example.com/ eristetään myös osana https://example.com/-sivustoa.
-      Jos käytäntöä ei ole otettu käyttöön, sivuston eristämistä edeltävän prosessin hallintalogiikka tulee voimaan.
-      Jos käytäntöä ei ole määritetty, käyttäjä voi muuttaa tämän asetuksen.
-      </translation>
 <translation id="5047604665028708335">Salli sisältöpaketteihin kuulumattomien sivustojen käyttö</translation>
 <translation id="5052081091120171147">Tämä käytäntö pakottaa selaushistorian tuonnin nykyisestä oletusselaimesta. Jos käytäntö on käytössä, käytäntö vaikuttaa myös tuonti-ikkunaan. Jos käytäntö ei ole käytössä, selaushistoriaa ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjiltä voidaan kysyä, haluavatko he tuoda selaushistorian, tai historia voidaan tuoda automaattisesti.</translation>
 <translation id="5056708224511062314">Näytön suurentaja ei käytössä</translation>

@@ -616,6 +616,15 @@
           Esta política é opcional. Se não for definida, não será efetuada qualquer substituição do termo de pesquisa.
 
           Esta política apenas é respeitada se a política 'DefaultSearchProviderEnabled' estiver ativa.</translation>
+<translation id="306887062252197004">Esta política permite aos utilizadores da funcionalidade WebDriver substituírem
+      políticas que possam interferir na respetiva operação.
+
+      Atualmente, esta política desativa as políticas SitePerProcess e IsolateOrigins.
+
+      Se esta política estiver ativada, o WebDriver poderá substituir políticas
+      incompatíveis.
+      Se esta política estiver desativada ou não for configurada, o WebDriver não poderá
+      substituir políticas incompatíveis.</translation>
 <translation id="3069958900488014740">Permite desligar a otimização WPAD (Deteção automática de proxy da Web) em <ph name="PRODUCT_NAME" />.
 
       Se esta política for definida como falsa, a otimização WPAD estará desativada, o que faz com que o <ph name="PRODUCT_NAME" /> aguarde mais tempo pelos servidores WPAD baseados em DNS. Se a política não for definida ou estiver ativada, a otimização de WPAD estará ativada.
@@ -698,16 +707,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="332771718998993005">Determinar o nome anunciado como destino do <ph name="PRODUCT_NAME" />.
 
          Se esta política estiver definida como uma string não vazia, essa string é utilizada como o nome do destino do <ph name="PRODUCT_NAME" />. Caso contrário, o nome do destino é o nome do dispositivo. Se esta política não estiver definida, o nome do destino é o nome do dispositivo e o proprietário do dispositivo (ou um utilizador do domínio que gere o dispositivo) pode alterá-lo. O nome tem um limite de 24 carateres.</translation>
-<translation id="3356249700768900657">
-      NOTA: esta política é experimental e pode interferir no funcionamento.
-      Recomendamos que consulte a definição da política IsolateOrigins para obter o
-      melhor de dois mundos: isolamento e impacto limitado para os utilizadores, ao utilizar
-      a IsolateOrigins com uma lista dos sites que pretende isolar. Esta definição,
-      SitePerProcess, isola todos os sites.
-      Se a política estiver ativada, cada site é executado no seu próprio processo.
-      Se a política estiver desativada, aplica-se a lógica de gestão de processos antes do Isolamento do site.
-      Se a política não estiver configurada, o utilizador pode alterar esta definição.
-      </translation>
 <translation id="3381968327636295719">Utilizar o navegador anfitrião por predefinição</translation>
 <translation id="3395348522300156660">Especifica as impressoras disponíveis para um utilizador.
 
@@ -1192,6 +1191,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="4899708173828500852">Ativar Navegação Segura</translation>
 <translation id="4906194810004762807">Taxa de atualização para a Política do Dispositivo</translation>
 <translation id="4917385247580444890">Forte</translation>
+<translation id="4923806312383904642">Permitir ao WebDriver substituir políticas incompatíveis</translation>
 <translation id="494613465159630803">Recetor do Cast</translation>
 <translation id="4962262530309732070">Se esta política estiver definida como verdadeira ou não estiver configurada, o <ph name="PRODUCT_NAME" /> permite a opção Adicionar pessoa a partir do gestor de utilizadores.
 
@@ -1206,15 +1206,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="4983201894483989687">Permitir a execução de plug-ins desatualizados</translation>
 <translation id="4988291787868618635">Ação a realizar quando o atraso de inatividade for alcançado</translation>
 <translation id="4995548127349206948">Se a autenticação NTLMv2 está ativada.</translation>
-<translation id="5027819375434797927">
-      NOTA: esta política é experimental e pode interferir no funcionamento.
-      Se a política estiver ativada, cada uma das origens nomeadas numa
-      lista separada por vírgulas é executada no seu próprio processo. Deste modo, são também isoladas as
-      origens nomeadas por subdomínios. Por exemplo, ao especificar https://example.com/, https://foo.example.com/ também é isolado como fazendo parte do site 
-      https://example.com/.
-      Se a política estiver desativada, aplica-se a lógica de gestão de processos antes do Isolamento do site.
-      Se a política não estiver configurada, o utilizador pode alterar esta definição.
-      </translation>
 <translation id="5047604665028708335">Permitir o acesso a sites fora dos pacotes de conteúdo</translation>
 <translation id="5052081091120171147">Se esta política estiver ativada, força a importação do histórico de navegação a partir do navegador predefinido atual e também afeta a caixa de diálogo de importação. Se estiver desativada, o histórico de navegação não é importado. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-lo ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="5056708224511062314">Lupa desativada</translation>

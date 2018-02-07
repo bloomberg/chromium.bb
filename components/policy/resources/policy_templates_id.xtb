@@ -609,6 +609,15 @@
           Kebijakan ini adalah opsional. Jika tidak disetel, penggantian istilah penelusuran tidak akan dilakukan.
 
           Kebijakan ini hanya akan ditaati jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
+<translation id="306887062252197004">Kebijakan ini memungkinkan pengguna fitur WebDriver mengganti kebijakan
+      yang dapat mengganggu pengoperasiannya.
+
+      Saat ini, kebijakan ini menonaktifkan kebijakan SitePerProcess dan IsolateOrigins.
+
+      Jika kebijakan ini diaktifkan, WebDriver akan dapat mengganti kebijakan
+      yang tidak kompatibel.
+      Jika kebijakan ini dinonaktifkan atau tidak dikonfigurasi, WebDriver tidak akan diizinkan
+      untuk mengganti kebijakan yang tidak kompatibel.</translation>
 <translation id="3069958900488014740">Memungkinkan penonaktifan pengoptimalan WPAD (Web Proxy Auto-Discovery) di <ph name="PRODUCT_NAME" />.
 
       Jika kebijakan ini disetel ke false, pengoptimalan WPAD akan dinonaktifkan sehingga menyebabkan <ph name="PRODUCT_NAME" /> menunggu server WPAD berbasis DNS dalam waktu yang lebih lama. Jika kebijakan diaktifkan atau tidak disetel, pengoptimalan WPAD akan diaktifkan.
@@ -691,14 +700,6 @@
 <translation id="332771718998993005">Tentukan nama yang diiklankan sebagai tujuan <ph name="PRODUCT_NAME" />.
 
           Jika kebijakan ini disetel ke string yang tidak kosong, string tersebut akan digunakan sebagai nama tujuan <ph name="PRODUCT_NAME" />. Jika tidak, nama tujuan akan menjadi nama perangkat. Jika kebijakan ini tidak disetel, nama tujuan akan menjadi nama perangkat, dan pemilik perangkat (atau pengguna dari domain yang mengelola perangkat) akan diizinkan untuk mengubahnya. Karakter nama dibatasi hingga 24 karakter.</translation>
-<translation id="3356249700768900657">CATATAN: Kebijakan ini merupakan eksperimental dan mungkin mengganggu fungsi.
-      Anda mungkin ingin melihat setelan kebijakan IsolateOrigins untuk mendapatkan
-      manfaat isolasi dan dampak terbatas bagi pengguna, dengan
-      menggunakan IsolateOrigins yang berisi daftar situs yang ingin diisolasi. Setelan ini,
-      SitePerProcess, mengisolasi semua situs.
-      Jika kebijakan ini diaktifkan, setiap situs akan dijalankan dalam prosesnya sendiri.
-      Jika kebijakan ini dinonaktifkan, logika manajemen sebelum proses Isolasi Situs akan berlaku
-      Jika kebijakan ini tidak dikonfigurasi, pengguna akan dapat mengubah setelan ini.</translation>
 <translation id="3381968327636295719">Gunakan browser host jika tidak diubah</translation>
 <translation id="3395348522300156660">Menentukan printer yang dapat digunakan pengguna.
 
@@ -1181,6 +1182,7 @@
 <translation id="4899708173828500852">Aktifkan Safe Browsing</translation>
 <translation id="4906194810004762807">Segarkan peringkat untuk Kebijakan Perangkat</translation>
 <translation id="4917385247580444890">Kuat</translation>
+<translation id="4923806312383904642">Izinkan WebDriver Mengganti Kebijakan yang Tidak Kompatibel</translation>
 <translation id="494613465159630803">Penerima Cast</translation>
 <translation id="4962262530309732070">Jika kebijakan ini disetel ke true atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan mengizinkan setelan Tambahkan Pengguna dari pengelola pengguna.
 
@@ -1195,16 +1197,6 @@
 <translation id="4983201894483989687">Izinkan menjalankan plugin yang kedaluwarsa</translation>
 <translation id="4988291787868618635">Tindakan yang akan diambil saat penundaan waktu menganggur tercapai</translation>
 <translation id="4995548127349206948">Apakah autentikasi NTLMv2 diaktifkan atau tidak.</translation>
-<translation id="5027819375434797927">
-      CATATAN: Kebijakan ini merupakan eksperimental dan mungkin mengganggu fungsi.
-      Jika kebijakan ini diaktifkan, setiap asal bernama dalam daftar yang dipisahkan koma
-      akan dijalankan dalam prosesnya sendiri. Hal ini juga akan mengisolasi
-      asal yang diberi nama menurut subdomain; mis. menyebutkan https://example.com/ juga
-      akan menyebabkan https://foo.example.com/ diisolasi sebagai bagian dari
-      situs https://example.com/.
-      Jika kebijakan ini dinonaktifkan, logika manajemen sebelum proses Isolasi Situs akan berlaku.
-      Jika kebijakan ini tidak dikonfigurasi, pengguna akan dapat mengubah setelan ini.
-      </translation>
 <translation id="5047604665028708335">Memungkinkan akses ke situs di luar paket konten</translation>
 <translation id="5052081091120171147">Kebijakan ini memaksa histori browseran diimpor dari browser default saat ini, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, tidak ada histori browseran yang diimpor. Jika tidak disetel, pengguna mungkin ditanya apakah akan mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="5056708224511062314">Lup dinonaktifkan</translation>

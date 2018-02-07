@@ -46,7 +46,6 @@
 <translation id="6322279351188361895">Gagal membaca kunci pribadi.</translation>
 <translation id="6391538222494443604">Direktori masukan harus ada.</translation>
 <translation id="641087317769093025">Tidak dapat mengekstrak ekstensi</translation>
-<translation id="6542618148162044354">"<ph name="APP_NAME" />" meminta akses ke satu atau beberapa perangkat Anda:</translation>
 <translation id="657064425229075395">Tidak dapat memuat skrip latar belakang '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> dari <ph name="VENDOR_NAME" /> (nomor seri <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">Tidak dapat membuat direktori untuk pengekstrakan: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -64,7 +63,6 @@
 <translation id="8636666366616799973">Paket tidak valid. Detail: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8670869118777164560">Ekstensi ini gagal mengalihkan permintaan jaringan ke <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> karena ekstensi lain (<ph name="EXTENSION_NAME" />) mengalihkannya ke <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">Pembuka Ekstensi</translation>
-<translation id="8761756413268424715">"<ph name="APP_NAME" />" meminta akses ke salah satu perangkat Anda:</translation>
 <translation id="8825366169884721447">Ekstensi ini gagal memodifikasi tajuk permintaan "<ph name="HEADER_NAME" />" dari suatu permintaan jaringan karena modifikasi bertentangan dengan ekstensi lain (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">Kunci pribadi untuk ekstensi yang ditentukan sudah ada. Gunakan kembali kunci itu atau hapus terlebih dulu.</translation>
 <translation id="907841381057066561">Gagal membuat file zip sementara selama pengemasan</translation>

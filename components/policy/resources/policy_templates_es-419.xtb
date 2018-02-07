@@ -682,17 +682,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="332771718998993005">Determina el nombre anunciado como un destino de <ph name="PRODUCT_NAME" />.
 
           Si esta política se establece con una string no vacía, esa string se usará como el nombre del destino de <ph name="PRODUCT_NAME" />. De lo contrario, el nombre del destino será el nombre del dispositivo. Si esta política no se establece, el nombre del destino será el nombre del dispositivo, y el propietario del dispositivo (o un usuario del dominio que administre el dispositivo) podrá cambiarlo. El nombre tiene un límite máximo de 24 caracteres.</translation>
-<translation id="3356249700768900657">
-      NOTA: Esta política es experimental y es posible que su funcionalidad
-      tenga fallas. Para revisar la configuración de la política IsolateOrigins
-      a fin de aprovechar el aislamiento y reducir el impacto que puedan
-      sufrir los usuarios, utiliza IsolateOrigins con una lista de los sitios que
-      quieras aislar. Esta configuración, SitePerProcess, aísla todos los sitios.
-      Si se habilita la política, cada sitio se ejecutará en su propio proceso.
-      Si se inhabilita, se aplicará la lógica de administración del proceso
-      previo de aislamiento de sitios.
-      Si no se configura, el usuario podrá cambiar esta configuración.
-      </translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de manera predeterminada</translation>
 <translation id="3395348522300156660">Especifica las impresoras que puede utilizar un usuario.
 
@@ -1190,18 +1179,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4983201894483989687">Permitir la ejecución de complementos desactualizados</translation>
 <translation id="4988291787868618635">Acción que se realiza cuando se alcanza la demora de inactividad</translation>
 <translation id="4995548127349206948">Controla si está habilitada la autenticación NTLMv2.</translation>
-<translation id="5027819375434797927">
-      NOTA: Esta política es experimental, y es posible que su funcionalidad tenga
-      fallas.
-      Si se habilita la política, cada origen designado en una lista separada
-      por comas se ejecutará en su propio proceso. Esta acción también
-      aislará los sitios designados a partir de subdominios; p. ej.,
-      al especificar https://ejemplo.com/, también se aislará
-      https://foo.ejemplo.com/ como parte del sitio https://ejemplo.com/.
-      Si se inhabilita la política, se aplicará la lógica de administración del
-      proceso previo de aislamiento de sitios.
-      Si no se configura, el usuario podrá cambiar esta configuración.
-      </translation>
 <translation id="5047604665028708335">Permite el acceso a sitios fuera de los paquetes de contenido.</translation>
 <translation id="5052081091120171147">Esta política, si se habilita, fuerza la importación del historial de navegación del navegador predeterminado actual. Si se la habilita, esta política también afecta el cuadro de diálogo de importación. Si se la inhabilita, no se importa ningún historial de navegación. Si no se configura, se le puede preguntar al usuario si desea importar el historial de navegación o la importación puede realizarse de forma automática.</translation>
 <translation id="5056708224511062314">La lupa está inhabilitada.</translation>

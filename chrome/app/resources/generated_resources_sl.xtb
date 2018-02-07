@@ -355,6 +355,7 @@
 <translation id="1521442365706402292">Upravljanje certifikatov</translation>
 <translation id="152234381334907219">Nikoli shranjeno</translation>
 <translation id="1524430321211440688">Tipkovnica</translation>
+<translation id="1524563461097350801">Ne, hvala</translation>
 <translation id="1526560967942511387">Dokument brez naslova</translation>
 <translation id="1526925867532626635">Potrditev nastavitev sinhronizacije</translation>
 <translation id="1529116897397289129">Shranjene kartice bodo prikazane tukaj</translation>
@@ -876,7 +877,6 @@
 <translation id="2352947182261340447">V lokalni shrambi ni dovolj prostora.</translation>
 <translation id="2353297238722298836">Kamera in mikrofon sta dovoljena</translation>
 <translation id="2356070529366658676">Vprašaj</translation>
-<translation id="2356517949307388948">Medtem ko je Chrome iskal škodljivo programsko opremo, je prišlo do napake.</translation>
 <translation id="2357949918965361754">To funkcijo lahko uporabite za prikaz vsebine v Chromu prek televizorja ali drugih naprav.</translation>
 <translation id="2359345697448000899">Razširitve lahko upravljate tako, da v meniju z orodji kliknete »Razširitve«.</translation>
 <translation id="2359808026110333948">Nadaljuj</translation>
@@ -1112,7 +1112,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="2715751256863167692">S to nadgradnjo bo ponastavljen Chromebook in odstranjeni bodo trenutni uporabniški podatki.</translation>
 <translation id="2718395828230677721">Nočna svetloba</translation>
 <translation id="2718998670920917754">Protivirusna programska oprema je zaznala virus.</translation>
-<translation id="2719545156185392871">Chrome lahko poišče škodljivo programsko opremo v računalniku in jo odstrani.</translation>
 <translation id="2719936478972253983">Ti piškotki so blokirani</translation>
 <translation id="2721037002783622288">&amp;Išči sliko tu: <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2447,7 +2446,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="4835836146030131423">Napaka pri prijavi.</translation>
 <translation id="4837926214103741331">Nimate dovoljenja za uporabo te naprave. Za dovoljenje za prijavo se obrnite na lastnika naprave.</translation>
 <translation id="4837952862063191349">Če želite napravo odkleniti in obnoviti lokalne podatke vnesite staro geslo za <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4838355575774807786">Medtem ko je Chrome odstranjeval škodljivo programsko opremo, je prišlo do napake.</translation>
 <translation id="4838836835474292213">Dostop za branje odložišča je omogočen</translation>
 <translation id="4839303808932127586">Shr&amp;ani videoposnetek kot ...</translation>
 <translation id="4839847978919684242">Št. izbranih elementov: <ph name="SELCTED_FILES_COUNT" /></translation>
@@ -4048,7 +4046,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="73786666777299047">Odpiranje Spletne trgovine Chrome</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Uporaba podatkovne povezave</translation>
-<translation id="7382945755068785583">Vključuje podatke o škodljivi programski opremi, sistemskih nastavitvah in procesih v računalniku.</translation>
 <translation id="7384292194278095697">Ta naprava ni več podprta</translation>
 <translation id="7385854874724088939">Napaka pri tiskanju. Preverite tiskalnik in poskusite znova.</translation>
 <translation id="7386824183915085801">Poleg podatkov, ki jih izberete zgoraj, se pošljeta različici Chroma in operacijskega
@@ -4922,7 +4919,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8784626084144195648">Kvantizacijsko povprečje</translation>
 <translation id="8785622406424941542">Pisalo</translation>
 <translation id="8787254343425541995">Dovoli proxyje za omrežja v skupni rabi</translation>
-<translation id="8791260615011736453">Elementi, ki niso navedeni tukaj, bodo po potrebi morda tudi odstranjeni. Preberite več o &lt;a href="<ph name="URL" />"&gt;zaščiti pred neželeno programsko opremo&lt;/a&gt; v beli knjigi o zasebnosti za Chrome.</translation>
 <translation id="8791534160414513928">S prometom brskanja pošlji zahtevo »Ne sledi«</translation>
 <translation id="8792609692701651064">Aktivno okno premaknjeno na levi zaslon</translation>
 <translation id="8794025342371547160">Omejen IP</translation>

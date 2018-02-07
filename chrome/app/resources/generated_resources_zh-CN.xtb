@@ -351,6 +351,7 @@
 <translation id="1521442365706402292">管理证书</translation>
 <translation id="152234381334907219">一律不保存</translation>
 <translation id="1524430321211440688">键盘</translation>
+<translation id="1524563461097350801">不用了</translation>
 <translation id="1526560967942511387">无标题文档</translation>
 <translation id="1526925867532626635">确认同步设置</translation>
 <translation id="1529116897397289129">已保存的信用卡将显示在这里</translation>
@@ -872,7 +873,6 @@
 <translation id="2352947182261340447">可用的本地存储空间不足。</translation>
 <translation id="2353297238722298836">已允许使用摄像头和麦克风</translation>
 <translation id="2356070529366658676">询问</translation>
-<translation id="2356517949307388948">Chrome 在搜索有害软件时出现错误。</translation>
 <translation id="2357949918965361754">借助此功能，您可以将 Chrome 上的内容显示在您的电视或其他设备上。</translation>
 <translation id="2359345697448000899">您可以通过点击“工具”菜单中的“扩展程序”，管理您的扩展程序。</translation>
 <translation id="2359808026110333948">继续</translation>
@@ -1107,7 +1107,6 @@
 <translation id="2715751256863167692">此项升级操作会重置您 Chromebook 的硬件并移除当前的用户数据。</translation>
 <translation id="2718395828230677721">夜间模式</translation>
 <translation id="2718998670920917754">防病毒软件检测到病毒。</translation>
-<translation id="2719545156185392871">Chrome 可以查找您计算机上的有害软件并将其移除。</translation>
 <translation id="2719936478972253983">已拦截以下 Cookie</translation>
 <translation id="2721037002783622288">通过<ph name="SEARCH_ENGINE" />搜索图片(&amp;S)</translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2439,7 +2438,6 @@
 <translation id="4835836146030131423">登录发生错误。</translation>
 <translation id="4837926214103741331">您无权使用此设备。请向此设备的所有者申请登录权限。</translation>
 <translation id="4837952862063191349">要解锁并恢复您的本地数据，请输入旧的<ph name="DEVICE_TYPE" />密码。</translation>
-<translation id="4838355575774807786">Chrome 移除有害软件时出现错误。</translation>
 <translation id="4838836835474292213">已获准读取剪贴板</translation>
 <translation id="4839303808932127586">视频另存为(&amp;V)...</translation>
 <translation id="4839847978919684242">已经选择 <ph name="SELCTED_FILES_COUNT" /> 个文件或目录</translation>
@@ -4033,7 +4031,6 @@
 <translation id="73786666777299047">打开 Chrome 网上应用店</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">获取数据网络连接</translation>
-<translation id="7382945755068785583">包括与您计算机上的有害软件、系统设置和进程相关的信息。</translation>
 <translation id="7384292194278095697">此设备不再受支持</translation>
 <translation id="7385854874724088939">尝试打印时出现错误。请检查您的打印机，然后重试。</translation>
 <translation id="7386824183915085801">除了您选择包含的上述所有信息外，还将提交您的Chrome和操作系统版本。如果您提交的信息包含自己的电子邮件地址，Google可能会就您的反馈报告与您联系。该反馈用于诊断问题并帮助改进Chrome。您明确提交或无意中提交的所有个人信息都将按照我们的隐私权政策受到保护。<ph name="BEGIN_BOLD" />提交该反馈即表示您同意Google使用您提供的反馈来改进任何Google产品或服务<ph name="END_BOLD" />。</translation>
@@ -4898,7 +4895,6 @@
 <translation id="8784626084144195648">按区段计算的平均值</translation>
 <translation id="8785622406424941542">触控笔</translation>
 <translation id="8787254343425541995">允许共享网络使用代理</translation>
-<translation id="8791260615011736453">此处未列出的条目可能也会遭到移除（如果需要的话）。请参阅 Chrome 隐私权政策白皮书，详细了解&lt;a href="<ph name="URL" />"&gt;垃圾软件防护&lt;/a&gt;。</translation>
 <translation id="8791534160414513928">随浏览流量一起发送“不跟踪”请求</translation>
 <translation id="8792609692701651064">活动窗口已移至左侧显示屏</translation>
 <translation id="8794025342371547160">受限 IP</translation>

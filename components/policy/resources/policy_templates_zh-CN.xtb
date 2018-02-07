@@ -590,6 +590,12 @@
           此为可选政策。如果未设置此政策，系统将不会替换搜索字词。
 
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
+<translation id="306887062252197004">此政策允许 WebDriver 功能用户替换那些可能会干扰该功能运行的政策。
+
+      目前，此政策可停用 SitePerProcess 和 IsolateOrigins 政策。
+
+      如果此政策已启用，WebDriver 将能够替换与之冲突的政策。
+      如果此政策已停用或未配置，WebDriver 将无法替换与之冲突的政策。</translation>
 <translation id="3069958900488014740">允许停用 <ph name="PRODUCT_NAME" /> 中的 WPAD（网络代理自动发现）优化设置。
 
       如果此政策设置为 false，那么 WPAD 优化将处于停用状态，这会延长 <ph name="PRODUCT_NAME" /> 等待基于 DNS 的 WPAD 服务器响应的时间。如果未设置或已启用此政策，那么 WPAD 优化设置将处于启用状态。
@@ -671,13 +677,6 @@
 <translation id="332771718998993005">将广告中宣传的名称确定为 <ph name="PRODUCT_NAME" /> 目标名称。
 
           如果此政策设为非空字符串，该字符串将被用作 <ph name="PRODUCT_NAME" /> 目标名称。否则，目标名称便是设备名称。如果此政策未设置，则目标名称将是设备名称，且设备所有者（或者该设备的托管网域内的用户）将能更改该名称。该名称的长度不得超过 24 个字符。</translation>
-<translation id="3356249700768900657">
-      请注意：此政策尚处于实验阶段，可能会导致功能中断！
-      若想做到两全其美（既能实现隔离，又能减少给用户带来的影响），您最好先查看一下 IsolateOrigins 政策设置，了解如何使用 IsolateOrigins 政策设置您想隔离的网站列表。SitePerProcess 这项设置会隔离所有网站。
-      如果启用了此政策，每个网站都会在自己的进程中运行。
-      如果停用了此政策，原先的网站隔离进程管理逻辑就会生效。
-      如果未配置此政策，用户将能够更改此设置。
-      </translation>
 <translation id="3381968327636295719">默认情况下托管主机浏览器</translation>
 <translation id="3395348522300156660">指定用户可以使用的打印机。
 
@@ -1143,6 +1142,7 @@
 <translation id="4899708173828500852">启用安全浏览</translation>
 <translation id="4906194810004762807">设备策略的更新频率</translation>
 <translation id="4917385247580444890">强</translation>
+<translation id="4923806312383904642">允许 WebDriver 替换与之冲突的政策</translation>
 <translation id="494613465159630803">Cast 接收器</translation>
 <translation id="4962262530309732070">如果此政策设为 true 或未配置，<ph name="PRODUCT_NAME" /> 会允许通过用户管理器添加用户。
 
@@ -1157,12 +1157,6 @@
 <translation id="4983201894483989687">允许运行过期的插件</translation>
 <translation id="4988291787868618635">闲置延迟时间已过时执行的操作</translation>
 <translation id="4995548127349206948">是否启用 NTLMv2 身份验证。</translation>
-<translation id="5027819375434797927">
-      请注意：此政策尚处于实验阶段，可能会导致功能中断！
-      如果启用了此政策，则相关列表中以逗号分隔的每个指定来源都会在自己的进程中运行。这也会隔离以子网域命名的来源；例如，指定 https://example.com/ 也会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
-      如果停用了此政策，原先的网站隔离进程管理逻辑就会生效。
-      如果未配置此政策，用户将能够更改此设置。
-      </translation>
 <translation id="5047604665028708335">允许访问非内容包内的网站</translation>
 <translation id="5052081091120171147">如果启用此政策，就会强制从当前默认浏览器导入浏览记录，还会影响导入对话框。如果停用此政策，就不会导入浏览记录。如果未设置此政策，系统就会询问用户是否导入浏览记录，或者系统自动进行导入。</translation>
 <translation id="5056708224511062314">放大镜已停用</translation>

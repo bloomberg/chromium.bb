@@ -724,16 +724,6 @@
 <translation id="332771718998993005">Nosakiet pārraidīto nosaukumu kā <ph name="PRODUCT_NAME" /> galamērķi.
 
           Ja šai politikai tiks iestatīta virkne, kas nav tukša, šī virkne tiks izmantota kā <ph name="PRODUCT_NAME" /> galamērķa nosaukums. Pretējā gadījumā kā galamērķa nosaukums tiks izmantots ierīces nosaukums. Ja šī politika netiks iestatīta, kā galamērķa nosaukums tiks izmantots ierīces nosaukums un to varēs mainīt ierīces īpašnieks vai lietotājs no domēna, kurā ierīce tiek pārvaldīta. Nosaukuma garums nedrīkst pārsniegt 24 rakstzīmes.</translation>
-<translation id="3356249700768900657">
-      PIEZĪME: Šī politika ir eksperimentāla, un tās izmantošana var traucēt funkcionalitāti.
-      Ieteicams izmantot politikas IsolateOrigins iestatījumu, lai gūtu
-      vislabākos rezultātus, izolētu tikai vietnes, kuras vēlaties izolēt, un
-      ierobežotu ietekmi lietotājiem. Izmantojot politiku
-      SitePerProcess, tiek izolētas visas vietnes.
-      Ja politika ir iespējota, katrai vietnei tiks izpildīts atsevišķs process.
-      Ja politika ir atspējota, tiks ievērota iepriekšēja vietnes izolācijas procesa pārvaldības loģika.
-      Ja politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-      </translation>
 <translation id="3381968327636295719">Pēc noklusējuma lieto saimniekdatora pārlūku</translation>
 <translation id="3395348522300156660">Norāda printerus, ko lietotājs var izmantot.
 
@@ -1243,16 +1233,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4983201894483989687">Atļauj palaist novecojušus spraudņus</translation>
 <translation id="4988291787868618635">Darbība, kas ir jāveic, kad ir aizritējis laiks līdz dīkstāvei</translation>
 <translation id="4995548127349206948">Vai ir iespējota NTLMv2 autentifikācija.</translation>
-<translation id="5027819375434797927">
-      PIEZĪME: Šī politika ir eksperimentāla, un tās izmantošana var traucēt funkcionalitāti.
-      Ja politika ir iespējota, katrai komatatdalītā sarakstā norādītajai
-      vietnei tiks izpildīts atsevišķs process. Vietnes tiks arī izolētas
-      pēc apakšdomēniem, piemēram, norādot https://example.com/,
-      tiks izolēta arī vietne https://foo.example.com/ kā daļa no vietnes
-      https://example.com/.
-      Ja politika ir atspējota, tiks ievērota iepriekšēja vietnes izolācijas procesa pārvaldības loģikas.
-      Ja politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-      </translation>
 <translation id="5047604665028708335">Atļaut piekļuvi vietnēm, kas nav iekļautas satura pakotnēs.</translation>
 <translation id="5052081091120171147">Šī politika (ja tā ir iespējota) liek importēt pārlūkošanas vēsturi no pašreizējā noklusējuma pārlūka. Ja šī politika ir iespējota, tā arī maina importēšanas dialoglodziņu.
 

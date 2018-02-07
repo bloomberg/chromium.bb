@@ -351,6 +351,7 @@
 <translation id="1521442365706402292">Управление на сертификати</translation>
 <translation id="152234381334907219">Незапазвани никога</translation>
 <translation id="1524430321211440688">Клавиатура</translation>
+<translation id="1524563461097350801">Не, благодаря</translation>
 <translation id="1526560967942511387">Неозаглавен документ</translation>
 <translation id="1526925867532626635">Потвърждаване на настройките за синхронизиране</translation>
 <translation id="1529116897397289129">Тук ще се покажат запазените карти</translation>
@@ -872,7 +873,6 @@
 <translation id="2352947182261340447">Мястото в локалното хранилище не е достатъчно.</translation>
 <translation id="2353297238722298836">Достъпът до камерата и микрофона е разрешен</translation>
 <translation id="2356070529366658676">Попитайте ме</translation>
-<translation id="2356517949307388948">Възникна грешка, докато Chrome търсеше опасен софтуер.</translation>
 <translation id="2357949918965361754">С помощта на тази функция съдържанието от Chrome може да се показва на телевизора и другите ви устройства.</translation>
 <translation id="2359345697448000899">Управлявайте разширенията си, като кликнете върху „Разширения“ в менюто „Инструменти“.</translation>
 <translation id="2359808026110333948">Напред</translation>
@@ -1108,7 +1108,6 @@
 <translation id="2715751256863167692">С тази надстройка ще нулирате настройките на своя Chromebook и ще премахнете текущите потребителски данни.</translation>
 <translation id="2718395828230677721">Нощно осветление</translation>
 <translation id="2718998670920917754">Антивирусният софтуер откри вирус.</translation>
-<translation id="2719545156185392871">Chrome може да намери опасния софтуер на компютъра ви и да го премахне.</translation>
 <translation id="2719936478972253983">Следните „бисквитки“ бяха блокирани</translation>
 <translation id="2721037002783622288">&amp;Търсене на изображението чрез <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2443,7 +2442,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4835836146030131423">Грешка при влизането.</translation>
 <translation id="4837926214103741331">Не сте упълномощени да използвате това устройство. За разрешение за вход се свържете със собственика му.</translation>
 <translation id="4837952862063191349">За отключване и възстановяване на локалните си данни, моля, въведете старата си парола за <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4838355575774807786">Възникна грешка, докато Chrome премахваше опасния софтуер.</translation>
 <translation id="4838836835474292213">Разрешен е достъп за четене на съдържанието на буферната памет</translation>
 <translation id="4839303808932127586">&amp;Запазване на видеоклипа като...</translation>
 <translation id="4839847978919684242">Избрани са <ph name="SELCTED_FILES_COUNT" /> елемента</translation>
@@ -4045,7 +4043,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="73786666777299047">Отваряне на уеб магазина на Chrome</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Получаване на връзка за пренос на данни</translation>
-<translation id="7382945755068785583">Включва информация относно опасния софтуер, системните настройки и процесите на компютъра ви.</translation>
 <translation id="7384292194278095697">Това устройство вече не се поддържа</translation>
 <translation id="7385854874724088939">При опита за печат нещо се обърка.  Моля, проверете принтера си и опитайте отново.</translation>
 <translation id="7386824183915085801">Версията на Chrome и на операционната ви система ще се изпращат в допълнение
@@ -4919,7 +4916,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8784626084144195648">Средна стойност при групирани данни</translation>
 <translation id="8785622406424941542">Писалка</translation>
 <translation id="8787254343425541995">Разрешаване на прокси сървъри за споделените мрежи</translation>
-<translation id="8791260615011736453">При необходимост е възможно да бъдат премахнати и елементи, които не са посочени тук. Научете повече за &lt;a href="<ph name="URL" />"&gt;защитата от нежелан софтуер&lt;/a&gt; в информационния бюлетин за поверителността на Chrome.</translation>
 <translation id="8791534160414513928">Изпращане на заявка „Do Not Track“ с трафика ви на сърфиране</translation>
 <translation id="8792609692701651064">Активният прозорец е преместен на левия екран</translation>
 <translation id="8794025342371547160">Ограничен IP адрес</translation>

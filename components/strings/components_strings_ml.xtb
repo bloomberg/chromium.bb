@@ -523,6 +523,7 @@
 <translation id="4858792381671956233">ഈ സൈറ്റ് സന്ദർശിക്കുന്നതിന് നിങ്ങൾ രക്ഷിതാക്കളോട് അനുമതി ആവശ്യപ്പെട്ടു</translation>
 <translation id="4871132632506079383"><ph name="SITE" /> എന്ന സൈറ്റിൽ ഉൾച്ചേർത്തിട്ടുള്ള ഒരു പേജിൽ നിന്ന്</translation>
 <translation id="4880827082731008257">തിരയൽ ചരിത്രം</translation>
+<translation id="4881695831933465202">തുറക്കുക</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">പരിശോധിച്ചുറപ്പിക്കൽ ആവശ്യമുണ്ട്</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ഒരു വെബ്‌പേജ് കൂടിയുണ്ട്}other{# വെബ്‌പേജുകൾ കൂടിയുണ്ട്}}</translation>
@@ -744,6 +745,7 @@
 <translation id="6563469144985748109">നിങ്ങളുടെ മാനേജർ ഇതുവരെ അംഗീകാരം നൽകിയിട്ടില്ല</translation>
 <translation id="6569060085658103619">നിങ്ങൾ ഒരു വിപുലീകരണ പേജാണ് കാണുന്നത്</translation>
 <translation id="6596325263575161958">എൻക്രിപ്‌ഷൻ ഓപ്‌ഷനുകൾ</translation>
+<translation id="6604181099783169992">ചലന അല്ലെങ്കിൽ വെളിച്ച സെൻസറുകൾ</translation>
 <translation id="6624427990725312378">കോണ്‍ടാക്റ്റ് വിവരം</translation>
 <translation id="6626291197371920147">ശരിയായ കാർഡ് നമ്പർ ചേർക്കുക</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> തിരയൽ</translation>

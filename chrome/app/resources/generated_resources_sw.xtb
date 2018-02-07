@@ -352,6 +352,7 @@
 <translation id="1521442365706402292">Dhibiti vyeti</translation>
 <translation id="152234381334907219">Hayatahifadhiwa Kamwe</translation>
 <translation id="1524430321211440688">Kibodi</translation>
+<translation id="1524563461097350801">La, Asante</translation>
 <translation id="1526560967942511387">Andiko lisilo na kichwa</translation>
 <translation id="1526925867532626635">Thibitisha mipangilio ya usawazishaji</translation>
 <translation id="1529116897397289129">Kadi zilizohifadhiwa zitaonekana hapa</translation>
@@ -873,7 +874,6 @@
 <translation id="2352947182261340447">Nafasi haitoshi kwenye hifadhi ya ndani ya kifaa.</translation>
 <translation id="2353297238722298836">Kamera na maikrofoni zimeruhusiwa</translation>
 <translation id="2356070529366658676">Uliza</translation>
-<translation id="2356517949307388948">Hitilafu imetokea Chrome ilipokuwa inatafuta programu hatari.</translation>
 <translation id="2357949918965361754">Unaweza kutumia kipengele hiki kuonyesha maudhui kutoka Chrome kwenye televisheni au vifaa vyako vingine.</translation>
 <translation id="2359345697448000899">Dhibiti viendelezi vyako kwa kubofya Viendelezi katika menyu ya Zana.</translation>
 <translation id="2359808026110333948">Endelea</translation>
@@ -1108,7 +1108,6 @@ Sidhani ikiwa tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="2715751256863167692">Sasisho hili litabadilisha mipangilio ya Chromebook yako na kuondoa data ya mtumiaji iliyopo.</translation>
 <translation id="2718395828230677721">Mwanga wa Usiku</translation>
 <translation id="2718998670920917754">Programu ya kinga virusi imegundua virusi.</translation>
-<translation id="2719545156185392871">Chrome inaweza kupata programu hatari kwenye kompyuta yako na kuiondoa.</translation>
 <translation id="2719936478972253983">Vidakuzi vifuatavyo vilizuiwa</translation>
 <translation id="2721037002783622288">Tafuta <ph name="SEARCH_ENGINE" /> picha</translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2438,7 +2437,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4835836146030131423">Hitilafu katika kuingia.</translation>
 <translation id="4837926214103741331">Huruhusiwi kukitumia kifaa hiki. Tafadhali wasiliana na mmiliki wa kifaa kwa ruhusa ya kuingia katika akaunti.</translation>
 <translation id="4837952862063191349">Ili ufungue na kurejesha data yako ya karibu, tafadhali weka nenosiri lako la zamani la <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4838355575774807786">Hitilafu imetokea Chrome ilipokuwa inaondoa programu hatari.</translation>
 <translation id="4838836835474292213">Imepewa idhini ya kusoma ubao wa kunakili</translation>
 <translation id="4839303808932127586">Hifadhi video kama...</translation>
 <translation id="4839847978919684242">Vifaa <ph name="SELCTED_FILES_COUNT" /> vilivyochaguliwa</translation>
@@ -4039,7 +4037,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="73786666777299047">Fungua Duka la Chrome kwenye Wavuti</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Pata muunganisho wa data</translation>
-<translation id="7382945755068785583">Inajumuisha maelezo kuhusu programu hasidi, mipangilio ya mfumo na michakato kwenye kompyuta yako.</translation>
 <translation id="7384292194278095697">Kifaa hiki hakitumiki tena</translation>
 <translation id="7385854874724088939">Hitilafu fulani imetokea wakati wa kuchapisha. Tafadhali chunguza printa yako na ujaribu tena.</translation>
 <translation id="7386824183915085801">Chrome na Toleo lako la Mfumo wa Uendeshaji vitawasilishwa pamoja
@@ -4915,7 +4912,6 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="8784626084144195648">Wastani wa Uwekaji Pamoja</translation>
 <translation id="8785622406424941542">Stylus</translation>
 <translation id="8787254343425541995">Ruhusu proksi za mitandao iliyoshirikiwa</translation>
-<translation id="8791260615011736453">Vipengee ambavyo havijaorodheshwa hapa pia huenda vikaondolewa, inapohitajika, Pata maelezo zaidi kuhusu &lt;a href="<ph name="URL" />"&gt;ulinzi dhidi ya programu zisizohitajika&lt;/a&gt; katika ripoti rasmi ya faragha ya Chrome.</translation>
 <translation id="8791534160414513928">Tuma ombi la 'Usifuatilie' pamoja na rekodi yako ya shughuli za kuvinjari</translation>
 <translation id="8792609692701651064">Dirisha linalotumika limehamishwa kwenye onyesho la kushoto</translation>
 <translation id="8794025342371547160">IP Iliyodhibitiwa</translation>

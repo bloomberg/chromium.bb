@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">Ви надіслали батькам запит на перегляд цього сайту</translation>
 <translation id="4871132632506079383">Від вбудованої сторінки на сайті <ph name="SITE" /></translation>
 <translation id="4880827082731008257">Пошук в історії</translation>
+<translation id="4881695831933465202">Відкрити</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Потрібна автентифікація</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{і ще 1 веб-сторінка}one{і ще # веб-сторінка}few{і ще # веб-сторінки}many{і ще # веб-сторінок}other{і ще # веб-сторінки}}</translation>
@@ -745,6 +746,7 @@
 <translation id="6563469144985748109">Адміністратор ще не схвалив його</translation>
 <translation id="6569060085658103619">Ви переглядаєте сторінку розширень</translation>
 <translation id="6596325263575161958">Параметри шифрування</translation>
+<translation id="6604181099783169992">Датчики руху чи світла</translation>
 <translation id="6624427990725312378">Контактна інформація</translation>
 <translation id="6626291197371920147">Додати дійсний номер картки</translation>
 <translation id="6628463337424475685">Пошук <ph name="ENGINE" /></translation>

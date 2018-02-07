@@ -721,16 +721,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="332771718998993005">Xác định tên được quảng cáo là đích <ph name="PRODUCT_NAME" />.
 
           Nếu bạn đặt chính sách này thành một chuỗi không phải là chuỗi trống, thì chuỗi đó sẽ được sử dụng làm tên của đích <ph name="PRODUCT_NAME" />. Nếu không, tên đích sẽ là tên thiết bị. Nếu bạn không đặt chính sách này, thì tên đích sẽ là tên thiết bị và chủ sở hữu thiết bị (hoặc người dùng từ miền quản lý thiết bị) sẽ được phép thay đổi tên đó. Tên có độ dài tối đa là 24 ký tự.</translation>
-<translation id="3356249700768900657">
-      LƯU Ý: Chính sách này chỉ mang tính thử nghiệm và có thể làm hỏng chức năng!
-      Bạn nên xem cài đặt của chính sách IsolateOrigins để
-      khai thác tối đa cả hai khía cạnh, cách cô lập cũng như cách hạn chế tác động đến người dùng, bằng cách sử dụng
-      IsolateOrigins cùng với danh sách các trang web mà bạn muốn cô lập. Cài đặt này,
-      SitePerProcess, sẽ cô lập mọi trang web.
-      Nếu bạn bật chính sách này, mỗi trang web sẽ chạy theo quy trình riêng.
-      Nếu bạn tắt chính sách này, logic quản lý quy trình Cô lập trước khi khởi chạy trang web sẽ có hiệu lực.
-      Nếu bạn không định cấu hình chính sách này, người dùng sẽ có thể thay đổi cài đặt này.
-      </translation>
 <translation id="3381968327636295719">Sử dụng trình duyệt chính theo mặc định</translation>
 <translation id="3395348522300156660">Chỉ định các máy in mà người dùng có thể sử dụng.
 
@@ -1238,16 +1228,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4983201894483989687">Cho phép chạy các plugin đã lỗi thời</translation>
 <translation id="4988291787868618635">Hành động cần thực hiện khi đạt tới độ trễ khi không sử dụng</translation>
 <translation id="4995548127349206948">Cho dù có bật xác thực NTLMv2 hay không.</translation>
-<translation id="5027819375434797927">
-      LƯU Ý: Chính sách này chỉ mang tính thử nghiệm và có thể làm hỏng chức năng!
-      Nếu bạn bật chính sách này, mỗi nguồn gốc có tên trong
-      danh sách phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Cài đặt này cũng sẽ cô lập
-      các nguồn gốc được đặt tên theo miền phụ; chẳng hạn như việc chỉ định https://example.com/ cũng sẽ
-      khiến cho https://foo.example.com/ bị cô lập vì là một phần của
-      trang web https://example.com/.
-      Nếu bạn tắt chính sách này, logic quản lý quy trình Cô lập trước khi khởi chạy trang web sẽ có hiệu lực.
-      Nếu bạn không định cấu hình chính sách này, người dùng sẽ có thể thay đổi cài đặt này.
-      </translation>
 <translation id="5047604665028708335">Cho phép truy cập vào các trang web nằm ngoài gói nội dung</translation>
 <translation id="5052081091120171147">Chính sách này nếu được bật sẽ buộc lịch sử web phải được nhập từ trình duyệt mặc định hiện tại. Nếu được bật, chính sách này cũng ảnh hưởng đến hộp thoại nhập.
 

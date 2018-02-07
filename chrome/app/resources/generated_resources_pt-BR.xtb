@@ -354,6 +354,7 @@
 <translation id="1521442365706402292">Gerenciar certificados</translation>
 <translation id="152234381334907219">Nunca salvas</translation>
 <translation id="1524430321211440688">Teclado</translation>
+<translation id="1524563461097350801">Não, obrigado</translation>
 <translation id="1526560967942511387">Documento sem título</translation>
 <translation id="1526925867532626635">Confirmar configurações de sincronização</translation>
 <translation id="1529116897397289129">Os cards salvos serão exibidos aqui</translation>
@@ -875,7 +876,6 @@
 <translation id="2352947182261340447">Não há espaço suficiente disponível no armazenamento local.</translation>
 <translation id="2353297238722298836">Câmera e microfone permitidos</translation>
 <translation id="2356070529366658676">Perguntar</translation>
-<translation id="2356517949307388948">Ocorreu um erro enquanto o Chrome estava procurando softwares nocivos.</translation>
 <translation id="2357949918965361754">É possível usar esse recurso para exibir o conteúdo do Chrome na sua TV ou outros dispositivos.</translation>
 <translation id="2359345697448000899">Gerencie suas extensões clicando em Extensões no menu Ferramentas.</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -1111,7 +1111,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="2715751256863167692">Esse upgrade redefine seu Chromebook e remove os dados do usuário atuais.</translation>
 <translation id="2718395828230677721">Modo noturno</translation>
 <translation id="2718998670920917754">O software antivírus detectou um vírus.</translation>
-<translation id="2719545156185392871">O Chrome pode localizar softwares nocivos no seu computador e removê-los.</translation>
 <translation id="2719936478972253983">Os seguintes cookies foram bloqueados</translation>
 <translation id="2721037002783622288">&amp;Procurar imagem no <ph name="SEARCH_ENGINE" /></translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2446,7 +2445,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="4835836146030131423">Erro ao fazer login.</translation>
 <translation id="4837926214103741331">Você não tem autorização para usar este dispositivo. Para permissão de login, entre em contato com o proprietário do dispositivo.</translation>
 <translation id="4837952862063191349">Para desbloquear e restaurar seus dados locais, digite sua senha antiga do <ph name="DEVICE_TYPE" />.</translation>
-<translation id="4838355575774807786">Ocorreu um erro enquanto o Chrome estava removendo softwares nocivos.</translation>
 <translation id="4838836835474292213">Acesso de leitura à área de transferência permitido</translation>
 <translation id="4839303808932127586">Sal&amp;var vídeo como...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> itens selecionados</translation>
@@ -4049,7 +4047,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="73786666777299047">Abrir a Chrome Web Store</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Usar conexão de dados</translation>
-<translation id="7382945755068785583">Inclui informações sobre softwares perigosos, configurações do sistema e processos no seu computador.</translation>
 <translation id="7384292194278095697">Este dispositivo não é mais compatível</translation>
 <translation id="7385854874724088939">Ocorreu um erro durante a impressão.  Verifique a sua impressora e tente novamente.</translation>
 <translation id="7386824183915085801">As versões do Google Chrome e do sistema operacional do usuário serão
@@ -4209,7 +4206,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7628127343934101653">Abrir arquivos em PDF no aplicativo visualizador de PDF padrão.</translation>
 <translation id="7629827748548208700">Guia: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">&amp;Sempre abrir arquivos deste tipo</translation>
-<translation id="7632948528260659758">Os seguintes apps de quiosque tiveram falha na atualização:</translation>
+<translation id="7632948528260659758">Os seguintes aplicativos de quiosque tiveram falha na atualização:</translation>
 <translation id="7639178625568735185">Entendi.</translation>
 <translation id="763959977925219242">Pop-ups bloqueados</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> conecta você automaticamente a sites qualificados com as senhas que você salvou.</translation>
@@ -4925,7 +4922,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8784626084144195648">Média de pré-processamento</translation>
 <translation id="8785622406424941542">Stylus</translation>
 <translation id="8787254343425541995">Permitir proxies para redes compartilhadas</translation>
-<translation id="8791260615011736453">Itens que não estão listados aqui também podem ser removidos, se necessário. Saiba mais sobre &lt;a href="<ph name="URL" />"&gt;proteção contra softwares indesejados&lt;/a&gt; no artigo sobre privacidade do Chrome.</translation>
 <translation id="8791534160414513928">Enviar uma solicitação "Não rastrear" com seu tráfego de navegação</translation>
 <translation id="8792609692701651064">A janela ativa foi movida para a tela à esquerda</translation>
 <translation id="8794025342371547160">IP restrito</translation>

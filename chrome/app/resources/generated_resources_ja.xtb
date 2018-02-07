@@ -355,6 +355,7 @@
 <translation id="1521442365706402292">証明書の管理</translation>
 <translation id="152234381334907219">常に保存しない</translation>
 <translation id="1524430321211440688">キーボード</translation>
+<translation id="1524563461097350801">自動チェックアウトしない</translation>
 <translation id="1526560967942511387">無題のドキュメント</translation>
 <translation id="1526925867532626635">同期設定の確認</translation>
 <translation id="1529116897397289129">保存したカードがここに表示されます</translation>
@@ -876,7 +877,6 @@
 <translation id="2352947182261340447">ローカル ストレージに十分な空き容量がありません。</translation>
 <translation id="2353297238722298836">カメラとマイクを使用できます</translation>
 <translation id="2356070529366658676">確認する</translation>
-<translation id="2356517949307388948">Chrome での有害なソフトウェアの検索中にエラーが発生しました。</translation>
 <translation id="2357949918965361754">この機能を使用すると、テレビや他の端末に Chrome のコンテンツを表示できます。</translation>
 <translation id="2359345697448000899">[ツール] メニューの [拡張機能] をクリックして拡張機能を管理できます。</translation>
 <translation id="2359808026110333948">続行</translation>
@@ -1112,7 +1112,6 @@
 <translation id="2715751256863167692">このアップグレードを行うと、Chromebook がリセットされ、現在のユーザーデータは削除されます。</translation>
 <translation id="2718395828230677721">読書灯</translation>
 <translation id="2718998670920917754">ウイルス対策ソフトウェアでウイルスが検出されました。</translation>
-<translation id="2719545156185392871">Chrome で、お使いのパソコン上の有害なソフトウェアを探して削除することができます。</translation>
 <translation id="2719936478972253983">以下の Cookie がブロックされました</translation>
 <translation id="2721037002783622288"><ph name="SEARCH_ENGINE" /> で画像を検索(&amp;S)</translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2447,7 +2446,6 @@
 <translation id="4835836146030131423">ログイン中にエラーが発生しました。</translation>
 <translation id="4837926214103741331">このデバイスを使用する権限がありません。ログイン権限については、デバイスの所有者にお問い合わせください。</translation>
 <translation id="4837952862063191349">ロックを解除してローカルデータを復元するには、<ph name="DEVICE_TYPE" /> の以前のパスワードを入力してください。</translation>
-<translation id="4838355575774807786">Chrome での有害なソフトウェアの削除中にエラーが発生しました。</translation>
 <translation id="4838836835474292213">クリップボードへの読み取りアクセスが許可されています</translation>
 <translation id="4839303808932127586">名前を付けて動画を保存(&amp;V)...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> 個のアイテムを選択</translation>
@@ -4049,7 +4047,6 @@
 <translation id="73786666777299047">Chrome ウェブストアを開く</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">データ接続を行う</translation>
-<translation id="7382945755068785583">パソコン上の有害なソフトウェア、システム設定、プロセスに関する情報を送信内容に含めます。</translation>
 <translation id="7384292194278095697">この端末はもうサポートされていません</translation>
 <translation id="7385854874724088939">印刷中に問題が発生しました。プリンタを確認してからもう一度お試しください。</translation>
 <translation id="7386824183915085801">上記で送信項目に選択した情報に加えて、お使いの Chrome とオペレーティング 
@@ -4924,7 +4921,6 @@
 <translation id="8784626084144195648">ビニング平均</translation>
 <translation id="8785622406424941542">タッチペン</translation>
 <translation id="8787254343425541995">共有ネットワークのプロキシを許可する</translation>
-<translation id="8791260615011736453">ここに表示されていないアイテムも、必要に応じて削除された可能性があります。&lt;a href="<ph name="URL" />"&gt;迷惑ソフトウェアからの保護&lt;/a&gt;について詳しくは、Chrome のプライバシーに関するホワイト ペーパーをご覧ください。</translation>
 <translation id="8791534160414513928">閲覧トラフィックと一緒に「トラッキング拒否」リクエストを送信する</translation>
 <translation id="8792609692701651064">アクティブなウィンドウが左のディスプレイに移動しました</translation>
 <translation id="8794025342371547160">制限付き IP</translation>

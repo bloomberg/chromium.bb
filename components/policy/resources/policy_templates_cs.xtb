@@ -616,6 +616,12 @@ Pokud zásadu nenastavíte, bude se považovat za aktivované (viz popis výše)
           Tato zásada je volitelná. Pokud není nastavena, nebudou prováděna žádná nahrazení vyhledávacích dotazů.
 
           Tato zásada je zohledňována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
+<translation id="306887062252197004">Tato zásada povoluje uživatelům funkce WebDriver přepsat zásady, které by mohly narušovat operace této funkce.
+
+V současné době tato zásada deaktivuje zásady SitePerProcess a IsolateOrigins.
+
+Pokud je tato zásada povolena, funkce WebDriver bude moci přepsat nekompatibilní zásady.
+Pokud je tato zásada zakázána nebo není nakonfigurována, funkce WebDriver nebude moci přepsat nekompatibilní zásady.</translation>
 <translation id="3069958900488014740">Umožňuje vypnout v prohlížeči <ph name="PRODUCT_NAME" /> optimalizaci WPAD (Web Proxy Auto-Discovery).
 
       Je-li tato zásada nastavena na hodnotu false, je optimalizace WPAD zakázána, a <ph name="PRODUCT_NAME" /> proto bude na servery WPAD založené na DNS čekat déle. Pokud tato zásada není nastavena, je optimalizace WPAD povolena.
@@ -702,17 +708,6 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="332771718998993005">Určuje název uváděný jako cíl služby <ph name="PRODUCT_NAME" />.
 
           Je-li tato zásada nastavena na neprázdný řetězec, bude jako název cíle služby <ph name="PRODUCT_NAME" /> použit příslušný řetězec. V opačném případě bude jako název cíle použit název zařízení. Pokud tato zásada není nastavena, bude jako název cíle použit název zařízení a vlastník zařízení (nebo uživatel z domény, která zařízení spravuje) jej bude moci změnit. Název smí mít maximálně 24 znaků.</translation>
-<translation id="3356249700768900657">
-      POZNÁMKA: Tato zásada je experimentální a může narušit fungování!
-      Chcete-li využívat výhody obou možností (izolace a omezení vlivu
-      na uživatele), můžete použít nastavení zásady IsolateOrigins
-      a aplikovat zásadu v kombinaci se seznamem webů, které chcete
-      izolovat. Nastavení SitePerProcess izoluje všechny weby.
-      Pokud je tato zásada povolena, každý web bude spouštěn ve vlastním procesu.
-      Pokud je tato zásada zakázána, bude použita logika správy procesů
-      pro předběžnou izolaci webů.
-      Pokud tato zásada není nakonfigurována, uživatel může toto nastavení změnit.
-      </translation>
 <translation id="3381968327636295719">Používat ve výchozím nastavení hostitelský prohlížeč</translation>
 <translation id="3395348522300156660">Určuje, které tiskárny uživatel může používat.
 
@@ -1104,11 +1099,11 @@ Samotná zásada je na výše uvedených platformách podporována. Funkce, kter
 <translation id="465099050592230505">Adresa URL podnikového úložiště aplikací (podpora ukončena)</translation>
 <translation id="4665897631924472251">Nastavení správy rozšíření</translation>
 <translation id="4668325077104657568">Výchozí nastavení obrázků</translation>
-<translation id="4671708336564240458">Umožňuje nastavit, zda mají mít weby s podvodným chováním zakázáno otevírat nová okna a karty.
+<translation id="4671708336564240458">Umožňuje nastavit, zda mají mít weby s obtěžujícím chováním zakázáno otevírat nová okna a karty.
 
-      Je-li tato zásada nastavena na hodnotu True, nebudou weby s podvodným chováním moci otevírat nová okna ani karty.
+      Je-li tato zásada nastavena na hodnotu True, nebudou weby s obtěžujícím chováním moci otevírat nová okna ani karty.
       Toto chování se však neprojeví v případě, že je zásada SafeBrowsingEnabled nastavena na hodnotu False.
-      Je-li tato zásada nastavena na hodnotu False, weby s podvodným chováním budou mít otevírání nových oken a karet povoleno.
+      Je-li tato zásada nastavena na hodnotu False, weby s obtěžujícím chováním budou mít otevírání nových oken a karet povoleno.
       Pokud tato zásada není nastavena, použije se hodnota True.</translation>
 <translation id="467236746355332046">Podporované funkce:</translation>
 <translation id="4674167212832291997">Umožňuje personalizovat seznam vzorů adres URL, které by měl vždy vykreslit plugin <ph name="PRODUCT_FRAME_NAME" />.
@@ -1198,6 +1193,7 @@ Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření 
 <translation id="4899708173828500852">Aktivovat Bezpečné prohlížení</translation>
 <translation id="4906194810004762807">Obnovovací frekvence zásad pro zařízení</translation>
 <translation id="4917385247580444890">Silný</translation>
+<translation id="4923806312383904642">Povolit funkci WebDriver přepsat nekompatibilní zásady</translation>
 <translation id="494613465159630803">Přijímač Cast</translation>
 <translation id="4962262530309732070">Pokud je tato zásada nastavena na hodnotu true nebo nastavena není, bude <ph name="PRODUCT_NAME" /> povolovat přidávání osob ze správce uživatelů.
 
@@ -1212,16 +1208,6 @@ Je-li tato zásada ponechána nenastavená, žádné aplikace ani rozšíření 
 <translation id="4983201894483989687">Povolit spouštění zastaralých pluginů</translation>
 <translation id="4988291787868618635">Akce prováděná po určité době nečinnosti</translation>
 <translation id="4995548127349206948">Povolení nebo zakázání ověření NTLMv2.</translation>
-<translation id="5027819375434797927">
-      POZNÁMKA: Tato zásada je experimentální a může narušit fungování!
-      Pokud je tato zásada povolena, každý z uvedených zdrojů na seznamu
-      odděleném čárkami bude spouštěn ve vlastním procesu. Také budou izolovány
-      zdroje uvedené v subdoménách; např. pokud zadáte web https://example.com/,
-      bude izolována také subdoména https://foo.example.com/, která je jeho součástí.
-      Pokud je tato zásada zakázána, bude použita logika správy procesů
-      pro předběžnou izolaci webů.
-      Pokud tato zásada není nakonfigurována, uživatel může toto nastavení změnit.
-      </translation>
 <translation id="5047604665028708335">Povolit přístup k webům mimo obsahové balíčky</translation>
 <translation id="5052081091120171147">Je-li tato zásada aktivovaná, vynucuje import historie procházení z aktuálního výchozího prohlížeče. Aktivace této zásady má také vliv na dialogové okno importu
      

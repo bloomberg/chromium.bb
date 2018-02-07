@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">このサイトを開いてもよいかの問い合わせを保護者に送信しました</translation>
 <translation id="4871132632506079383"><ph name="SITE" /> に埋め込まれているページから</translation>
 <translation id="4880827082731008257">履歴を検索</translation>
+<translation id="4881695831933465202">開く</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">認証が必要です</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{他 1 件のウェブページ}other{他 # 件のウェブページ}}</translation>
@@ -745,6 +746,7 @@
 <translation id="6563469144985748109">管理者がまだサイトを開くことを許可していません</translation>
 <translation id="6569060085658103619">拡張機能のページを表示しています</translation>
 <translation id="6596325263575161958">暗号化オプション</translation>
+<translation id="6604181099783169992">モーション センサーまたは光センサー</translation>
 <translation id="6624427990725312378">連絡先情報</translation>
 <translation id="6626291197371920147">有効なカード番号を追加</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> 検索</translation>

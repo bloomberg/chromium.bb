@@ -46,7 +46,6 @@
 <translation id="6322279351188361895">تعذّرت قراءة المفتاح الخاص.</translation>
 <translation id="6391538222494443604">يجب أن يكون دليل الإدخال موجودًا.</translation>
 <translation id="641087317769093025">تعذر فك ضغط الإضافة</translation>
-<translation id="6542618148162044354">يطلب تطبيق "<ph name="APP_NAME" />" الدخول إلى جهاز أو أكثر من أجهزتك:</translation>
 <translation id="657064425229075395">تعذر تحميل النص البرمجي للخلفية '<ph name="BACKGROUND_SCRIPT" />'.</translation>
 <translation id="6580950983454333167"><ph name="PRODUCT_NAME" /> من <ph name="VENDOR_NAME" /> (الرقم التسلسلي <ph name="SERIAL_NUMBER" />)</translation>
 <translation id="6731255991101203740">تعذر إنشاء دليل لفك ضغط: '<ph name="DIRECTORY_PATH" />'</translation>
@@ -64,7 +63,6 @@
 <translation id="8636666366616799973">الحزمة غير صالحة. التفاصيل: "<ph name="ERROR_MESSAGE" />".</translation>
 <translation id="8670869118777164560">تعذّرت الإضافة في إعادة توجيه طلب الشبكة إلى <ph name="ATTEMPTED_REDIRECT_DESTINATION" /> نظرًا لإعادة توجيهها بواسطة إضافة أخرى (<ph name="EXTENSION_NAME" />) إلى <ph name="ACTUAL_REDIRECT_DESTINATION" />.</translation>
 <translation id="8712265948125780616">أداة فك ضغط الإضافات</translation>
-<translation id="8761756413268424715">يطلب تطبيق "<ph name="APP_NAME" />" الدخول إلى جهاز من أجهزتك:</translation>
 <translation id="8825366169884721447">تعذّرت الإضافة في تعديل عنوان الطلب "<ph name="HEADER_NAME" />" لأحد طلبات الشبكة نظرًا لتعارض التعديل مع إضافة أخرى (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8885905466771744233">يوجد مفتاح خاص للإضافة المحددة. أعد استخدام هذا المفتاح أو احذفه أولاً.</translation>
 <translation id="907841381057066561">تعذّر إنشاء ملف مضغوط مؤقت أثناء إنشاء الحزمة.</translation>

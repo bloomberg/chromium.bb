@@ -524,6 +524,7 @@
 <translation id="4858792381671956233">Ebeveynlerinize bu siteyi ziyaret etmenizin uygun olup olmadığını sordunuz</translation>
 <translation id="4871132632506079383"><ph name="SITE" /> web sitesindeki yerleşik bir sayfadan</translation>
 <translation id="4880827082731008257">Geçmişte ara</translation>
+<translation id="4881695831933465202">Aç</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4913131542719409934">Kimlik doğrulaması gerekiyor</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{ve 1 web sayfası daha}other{ve # web sayfası daha}}</translation>
@@ -745,6 +746,7 @@
 <translation id="6563469144985748109">Yöneticiniz henüz onaylamadı</translation>
 <translation id="6569060085658103619">Bir uzantı sayfası görüntülüyorsunuz</translation>
 <translation id="6596325263575161958">Şifreleme seçenekleri</translation>
+<translation id="6604181099783169992">Hareket veya Işık Sensörleri</translation>
 <translation id="6624427990725312378">İletişim Bilgileri</translation>
 <translation id="6626291197371920147">Geçerli kart numarası ekle</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Arama</translation>

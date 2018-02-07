@@ -355,6 +355,7 @@
 <translation id="1521442365706402292">Manage certificates</translation>
 <translation id="152234381334907219">Never Saved</translation>
 <translation id="1524430321211440688">Keyboard</translation>
+<translation id="1524563461097350801">No, Thanks</translation>
 <translation id="1526560967942511387">Untitled Document</translation>
 <translation id="1526925867532626635">Confirm sync settings</translation>
 <translation id="1529116897397289129">Saved cards will appear here</translation>
@@ -876,7 +877,6 @@
 <translation id="2352947182261340447">Not enough space available in local storage.</translation>
 <translation id="2353297238722298836">Camera and microphone allowed</translation>
 <translation id="2356070529366658676">Ask</translation>
-<translation id="2356517949307388948">An error occurred while Chrome was searching for harmful software.</translation>
 <translation id="2357949918965361754">You can use this feature to display content from Chrome on your TV or other devices.</translation>
 <translation id="2359345697448000899">Manage your extensions by clicking Extensions in the Tools menu.</translation>
 <translation id="2359808026110333948">Continue</translation>
@@ -1111,7 +1111,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2715751256863167692">This upgrade resets your Chromebook and removes current user data.</translation>
 <translation id="2718395828230677721">Night Light</translation>
 <translation id="2718998670920917754">Anti-virus software detected a virus.</translation>
-<translation id="2719545156185392871">Chrome can find harmful software on your computer and remove it.</translation>
 <translation id="2719936478972253983">The following cookies were blocked</translation>
 <translation id="2721037002783622288">&amp;Search <ph name="SEARCH_ENGINE" /> for image</translation>
 <translation id="2721334646575696520">Microsoft Edge</translation>
@@ -2446,7 +2445,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="4835836146030131423">Error signing in.</translation>
 <translation id="4837926214103741331">You are not authorised to use this device. Please contact the device owner for sign-in permission.</translation>
 <translation id="4837952862063191349">To unlock and restore your local data, please enter your old <ph name="DEVICE_TYPE" /> password.</translation>
-<translation id="4838355575774807786">An error occurred while Chrome was removing harmful software.</translation>
 <translation id="4838836835474292213">Clipboard read access allowed</translation>
 <translation id="4839303808932127586">Sa&amp;ve video as...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> items selected</translation>
@@ -4047,7 +4045,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="73786666777299047">Open Chrome Web Store</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Get data connection</translation>
-<translation id="7382945755068785583">Includes information about harmful software, system settings and processes on your computer.</translation>
 <translation id="7384292194278095697">This device is no longer supported</translation>
 <translation id="7385854874724088939">Something went wrong when trying to print.  Please check your printer and try again.</translation>
 <translation id="7386824183915085801">Your Chrome and operating system version will be submitted in addition
@@ -4921,7 +4918,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8784626084144195648">Binned Average</translation>
 <translation id="8785622406424941542">Stylus</translation>
 <translation id="8787254343425541995">Allow proxies for shared networks</translation>
-<translation id="8791260615011736453">If required, items not listed here may also be removed. Learn more about &lt;a href="<ph name="URL" />"&gt;unwanted software protection&lt;/a&gt; in the Chrome Privacy white paper.</translation>
 <translation id="8791534160414513928">Send a "Do Not Track" request with your browsing traffic</translation>
 <translation id="8792609692701651064">Active window moved to left display</translation>
 <translation id="8794025342371547160">Restricted IP</translation>

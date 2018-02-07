@@ -592,6 +592,12 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 Questa norma è facoltativa. Se non viene impostata, non verrà effettuata alcuna sostituzione dei termini di ricerca.
 
 Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearchProviderEnabled".</translation>
+<translation id="306887062252197004">Questa norma consente agli utenti della funzione WebDriver di eseguire l'override delle norme che possono interferire con il relativo funzionamento.
+
+      Al momento questa norma disattiva le norme SitePerProcess e IsolateOrigins.
+
+      Se la norma viene attivata, WebDriver potrà eseguire l'override delle norme non compatibili.
+      Se la norma viene disattivata o non viene configurata, WebDriver non potrà eseguire l'override delle norme non compatibili.</translation>
 <translation id="3069958900488014740">Consente di disattivare l'ottimizzazione WPAD (Web Proxy Auto-Discovery) in <ph name="PRODUCT_NAME" />.
 
       Se questa norma è impostata su false, l'ottimizzazione WPAD viene disattivata, aumentando così i tempi di attesa da parte di <ph name="PRODUCT_NAME" /> dei server WPAD basati su DNS. Se questa norma non è impostata oppure se è attiva, l'ottimizzazione WPAD è abilitata.
@@ -674,13 +680,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="332771718998993005">Consente di stabilire il nome pubblicizzato come destinazione di <ph name="PRODUCT_NAME" />.
 
           Se questa norma viene impostata su una stringa non vuota, tale stringa verrà usata come nome della destinazione di <ph name="PRODUCT_NAME" />. In caso contrario, il nome della destinazione sarà quello del dispositivo. Se questa norma non viene impostata, il nome della destinazione sarà il nome del dispositivo, che il proprietario (o un utente del dominio che gestisce il dispositivo) potrà cambiare. Il nome può essere formato da massimo 24 caratteri.</translation>
-<translation id="3356249700768900657">
-      NOTA: questa norma è sperimentale e potrebbe interrompere la funzionalità.
-      Potresti considerare l'impostazione della norma IsolateOrigins per ottenere sia l'isolamento sia un impatto limitato per gli utenti. Usa IsolateOrigins con un elenco dei siti che vuoi isolare. Questa impostazione, SitePerProcess, isola tutti i siti.
-      Se la norma viene attivata, ogni sito verrà eseguito in un proprio processo.
-      Se la norma viene disattivata, viene applicata la logica della gestione del processo di isolamento per sito.
-      Se la norma non viene configurata, l'utente potrà cambiare questa impostazione.
-      </translation>
 <translation id="3381968327636295719">Utilizza il browser host per impostazione predefinita</translation>
 <translation id="3395348522300156660">Consente di specificare le stampanti utilizzabili dagli utenti.
 
@@ -1151,6 +1150,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4899708173828500852">Consenti Navigazione sicura</translation>
 <translation id="4906194810004762807">Frequenza di aggiornamento per norma dispositivo</translation>
 <translation id="4917385247580444890">Forte</translation>
+<translation id="4923806312383904642">Consenti a WebDriver di eseguire l'override delle norme non compatibili</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">Se questo criterio è impostato su true o non viene configurato, su <ph name="PRODUCT_NAME" /> sarà possibile aggiungere persone con la funzione Aggiungi persona di Gestione utenti.
 
@@ -1165,12 +1165,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4983201894483989687">Consenti esecuzione dei plug-in obsoleti</translation>
 <translation id="4988291787868618635">Azione da compiere a raggiungimento ritardo inattività</translation>
 <translation id="4995548127349206948">Se l'autenticazione NTLMv2 è attiva.</translation>
-<translation id="5027819375434797927">
-      NOTA: questa norma è sperimentale e potrebbe interrompere la funzionalità.
-      Se la norma viene attivata, ogni origine indicata in un elenco di valori separati da virgole verrà eseguita in un proprio processo. Verranno inoltre isolate le origini indicate dai sottodomini; ad esempio, se viene specificato il sito https://example.com/ viene isolato anche https://foo.example.com/, perché fa parte del sito https://example.com/.
-      Se la norma viene disattivata, viene applicata la logica della gestione del processo di isolamento per sito.
-      Se la norma non viene configurata, l'utente potrà cambiare questa impostazione.
-      </translation>
 <translation id="5047604665028708335">Consenti l'accesso ai siti non presenti nei pacchetti di contenuti</translation>
 <translation id="5052081091120171147">Se è attiva, questa norma impone l'importazione della cronologia di navigazione dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, la cronologia di navigazione non viene importata. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="5056708224511062314">Ingrandimento dello schermo disattivato</translation>
