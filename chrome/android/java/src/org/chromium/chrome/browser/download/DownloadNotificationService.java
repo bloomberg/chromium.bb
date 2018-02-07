@@ -38,6 +38,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -1321,7 +1322,10 @@ public class DownloadNotificationService extends Service {
 
     @VisibleForTesting
     void updateNotification(int id, Notification notification) {
-        mNotificationManager.notify(NOTIFICATION_NAMESPACE, id, notification);
+        // Disabling StrictMode to avoid violations (crbug.com/809864).
+        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+            mNotificationManager.notify(NOTIFICATION_NAMESPACE, id, notification);
+        }
     }
 
     private void updateNotification(int notificationId, Notification notification, ContentId id,
