@@ -438,22 +438,6 @@ def get_waterfall_config():
     ])
 
   waterfall = add_tester(
-    waterfall, 'Mac 10.11 Perf', 'chromium-rel-mac11',
-    'mac',
-    swarming=[
-      {
-       'gpu': '8086:0166',
-       'os': 'Mac-10.11',
-       'pool': 'Chrome-perf',
-       'device_ids': [
-           'build102-b1', 'build103-b1',
-           'build104-b1', 'build105-b1', 'build106-b1'
-          ],
-       'perf_tests': [
-         ('media_perftests', 'build105-b1')]
-      }
-    ])
-  waterfall = add_tester(
     waterfall, 'Mac 10.12 Perf', 'chromium-rel-mac12',
     'mac',
     swarming=[
@@ -466,23 +450,6 @@ def get_waterfall_config():
            'build161-m1', 'build162-m1'],
        'perf_tests': [
          ('net_perftests', 'build159-m1'),
-       ]
-      }
-    ])
-  waterfall = add_tester(
-    waterfall, 'Mac Retina Perf',
-    'chromium-rel-mac-retina', 'mac',
-    swarming=[
-      {
-       'gpu': '8086:0d26',
-       'os': 'Mac-10.11',
-       'pool': 'Chrome-perf',
-       'device_ids': [
-           'build4-b1', 'build5-b1', 'build6-b1', 'build7-b1',
-           'build30-b4' # replacing build8-b1. crbug.com/724998
-          ],
-       'perf_tests': [
-         ('performance_browser_tests', 'build30-b4')
        ]
       }
     ])
