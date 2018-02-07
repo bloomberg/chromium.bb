@@ -809,6 +809,13 @@ int PaintLayerScrollableArea::PixelSnappedScrollHeight() const {
 }
 
 void PaintLayerScrollableArea::UpdateScrollOrigin() {
+  // LayoutView doesn't scroll when RLS is turned off so we should avoid
+  // changing the scroll origin in that case as it can affect coordinate
+  // conversions.
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() && GetLayoutBox() &&
+      GetLayoutBox()->IsLayoutView())
+    return;
+
   // This should do nothing prior to first layout; the if-clause will catch
   // that.
   if (OverflowRect().IsEmpty())
