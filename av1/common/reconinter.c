@@ -995,10 +995,12 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         assert(w <= 8 && h <= 8);
         ConvolveParams conv_params = get_conv_params_no_round(
             0, 0, plane, tmp_dst, tmp_dst_stride, is_compound);
-#if CONFIG_LOWPRECISION_BLEND
+#if CONFIG_LOWPRECISION_BLEND == 1  // for masked compound modes only
         if (is_masked_compound_type(mi->mbmi.interinter_compound_type))
           conv_params.round_1 = LOWPRECISION_BLEND_BITS;
-#endif  // CONFIG_LOWPRECISION_BLEND
+#elif CONFIG_LOWPRECISION_BLEND == 2  // for all compound modes
+        if (is_compound) conv_params.round_1 = LOWPRECISION_BLEND_BITS;
+#endif                                // CONFIG_LOWPRECISION_BLEND
 #if CONFIG_JNT_COMP
         conv_params.use_jnt_comp_avg = 0;
 #endif  // CONFIG_JNT_COMP
@@ -1197,10 +1199,12 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
     ConvolveParams conv_params = get_conv_params_no_round(
         ref, ref, plane, tmp_dst, MAX_SB_SIZE, is_compound);
-#if CONFIG_LOWPRECISION_BLEND
+#if CONFIG_LOWPRECISION_BLEND == 1  // for masked compound modes only
     if (is_masked_compound_type(mi->mbmi.interinter_compound_type))
       conv_params.round_1 = LOWPRECISION_BLEND_BITS;
-#endif  // CONFIG_LOWPRECISION_BLEND
+#elif CONFIG_LOWPRECISION_BLEND == 2  // for all compound modes
+    if (is_compound) conv_params.round_1 = LOWPRECISION_BLEND_BITS;
+#endif                                // CONFIG_LOWPRECISION_BLEND
 #if CONFIG_JNT_COMP
     av1_jnt_comp_weight_assign(cm, &mi->mbmi, 0, &conv_params.fwd_offset,
                                &conv_params.bck_offset,
