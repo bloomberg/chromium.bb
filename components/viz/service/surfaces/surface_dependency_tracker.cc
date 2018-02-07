@@ -141,15 +141,8 @@ void SurfaceDependencyTracker::UpdateSurfaceDeadline(Surface* surface) {
       }
     }
   }
-  // If there are no CompositorFrames currently blocked on this surface, then
-  // set a default deadline for this surface.
-  if (!surface->has_deadline()) {
-    surface->SetActivationDeadline(number_of_frames_to_deadline_);
-    deadline_changed = true;
-  }
 
-  if (!deadline_changed)
-    return;
+  DCHECK(surface->has_deadline());
 
   // Recursively propagate the newly set deadline to children.
   for (const SurfaceId& surface_id :
