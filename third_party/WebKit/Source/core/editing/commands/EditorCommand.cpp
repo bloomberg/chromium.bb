@@ -494,13 +494,27 @@ static EditingTriState StateStyle(LocalFrame& frame,
   return frame.GetEditor().SelectionHasStyle(property_id, desired_value);
 }
 
+static String SelectionStartCSSPropertyValue(LocalFrame& frame,
+                                             CSSPropertyID property_id) {
+  EditingStyle* const selection_style =
+      EditingStyleUtilities::CreateStyleAtSelectionStart(
+          frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated(),
+          property_id == CSSPropertyBackgroundColor);
+  if (!selection_style || !selection_style->Style())
+    return String();
+
+  if (property_id == CSSPropertyFontSize)
+    return String::Number(selection_style->LegacyFontSize(frame.GetDocument()));
+  return selection_style->Style()->GetPropertyValue(property_id);
+}
+
 static String ValueStyle(LocalFrame& frame, CSSPropertyID property_id) {
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // FIXME: Rather than retrieving the style at the start of the current
   // selection, we should retrieve the style present throughout the selection
   // for non-Mac platforms.
-  return frame.GetEditor().SelectionStartCSSPropertyValue(property_id);
+  return SelectionStartCSSPropertyValue(frame, property_id);
 }
 
 static bool IsUnicodeBidiNestedOrMultipleEmbeddings(CSSValueID value_id) {
