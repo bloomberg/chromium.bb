@@ -803,13 +803,12 @@ void LayoutSelection::Commit() {
        paint_range_.EndLayoutObject()->GetSelectionState() !=
            SelectionState::kStartAndEnd)) {
     if (paint_range_.StartLayoutObject() == paint_range_.EndLayoutObject()) {
-      paint_range_.StartLayoutObject()->LayoutObject::SetSelectionState(
+      paint_range_.StartLayoutObject()->SetSelectionState(
           SelectionState::kStartAndEnd);
     } else {
-      paint_range_.StartLayoutObject()->LayoutObject::SetSelectionState(
+      paint_range_.StartLayoutObject()->SetSelectionState(
           SelectionState::kStart);
-      paint_range_.EndLayoutObject()->LayoutObject::SetSelectionState(
-          SelectionState::kEnd);
+      paint_range_.EndLayoutObject()->SetSelectionState(SelectionState::kEnd);
     }
   }
   // TODO(yoichio): If start == end, they should be kStartAndEnd.
