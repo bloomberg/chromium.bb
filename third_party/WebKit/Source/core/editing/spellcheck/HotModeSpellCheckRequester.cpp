@@ -57,17 +57,6 @@ EphemeralRange CurrentWordIfTypingInPartialWord(const Element& editable) {
   return AdjacentWordIfExists(selection.Base());
 }
 
-bool IsUnderActiveEditing(const Element& editable, const Position& position) {
-  if (!editable.IsSpellCheckingEnabled() &&
-      !SpellChecker::IsSpellCheckingEnabledAt(position))
-    return false;
-  if (editable.VisibleBoundsInVisualViewport().IsEmpty())
-    return false;
-  // TODO(xiaochengh): Design more aggressive strategies to reduce checking when
-  // we are just moving selection around without modifying anything.
-  return true;
-}
-
 EphemeralRange CalculateHotModeCheckingRange(const Element& editable,
                                              const Position& position) {
   // Check everything in |editable| if its total length is short.
@@ -118,8 +107,10 @@ void HotModeSpellCheckRequester::CheckSpellingAt(const Position& position) {
     return;
   processed_root_editables_.push_back(root_editable);
 
-  if (!IsUnderActiveEditing(*root_editable, position))
+  if (!root_editable->IsSpellCheckingEnabled() &&
+      !SpellChecker::IsSpellCheckingEnabledAt(position)) {
     return;
+  }
 
   const EphemeralRange& current_word =
       CurrentWordIfTypingInPartialWord(*root_editable);
