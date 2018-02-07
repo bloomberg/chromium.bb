@@ -19,9 +19,9 @@ StringView FindVariableName(CSSParserTokenRange& range) {
   return range.Consume().Value();
 }
 
-StringOrCSSVariableReferenceValue VariableReferenceValue(
+CSSUnparsedSegment VariableReferenceValue(
     const StringView& variable_name,
-    const HeapVector<StringOrCSSVariableReferenceValue>& tokens) {
+    const HeapVector<CSSUnparsedSegment>& tokens) {
   CSSUnparsedValue* unparsed_value;
   if (tokens.size() == 0)
     unparsed_value = nullptr;
@@ -31,19 +31,17 @@ StringOrCSSVariableReferenceValue VariableReferenceValue(
   CSSStyleVariableReferenceValue* variable_reference =
       CSSStyleVariableReferenceValue::Create(variable_name.ToString(),
                                              unparsed_value);
-  return StringOrCSSVariableReferenceValue::FromCSSVariableReferenceValue(
-      variable_reference);
+  return CSSUnparsedSegment::FromCSSVariableReferenceValue(variable_reference);
 }
 
-HeapVector<StringOrCSSVariableReferenceValue> ParserTokenRangeToTokens(
+HeapVector<CSSUnparsedSegment> ParserTokenRangeToTokens(
     CSSParserTokenRange range) {
-  HeapVector<StringOrCSSVariableReferenceValue> tokens;
+  HeapVector<CSSUnparsedSegment> tokens;
   StringBuilder builder;
   while (!range.AtEnd()) {
     if (range.Peek().FunctionId() == CSSValueVar) {
       if (!builder.IsEmpty()) {
-        tokens.push_back(
-            StringOrCSSVariableReferenceValue::FromString(builder.ToString()));
+        tokens.push_back(CSSUnparsedSegment::FromString(builder.ToString()));
         builder.Clear();
       }
       CSSParserTokenRange block = range.ConsumeBlock();
@@ -58,8 +56,7 @@ HeapVector<StringOrCSSVariableReferenceValue> ParserTokenRangeToTokens(
     }
   }
   if (!builder.IsEmpty()) {
-    tokens.push_back(
-        StringOrCSSVariableReferenceValue::FromString(builder.ToString()));
+    tokens.push_back(CSSUnparsedSegment::FromString(builder.ToString()));
   }
   return tokens;
 }

@@ -14,19 +14,20 @@ namespace blink {
 
 class CSSVariableReferenceValue;
 class CSSVariableData;
+using CSSUnparsedSegment = StringOrCSSVariableReferenceValue;
 
 class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static CSSUnparsedValue* Create(
-      const HeapVector<StringOrCSSVariableReferenceValue>& tokens) {
+      const HeapVector<CSSUnparsedSegment>& tokens) {
     return new CSSUnparsedValue(tokens);
   }
 
   // Blink-internal constructor
   static CSSUnparsedValue* Create() {
-    return Create(HeapVector<StringOrCSSVariableReferenceValue>());
+    return Create(HeapVector<CSSUnparsedSegment>());
   }
   static CSSUnparsedValue* FromCSSValue(const CSSVariableReferenceValue&);
   static CSSUnparsedValue* FromCSSValue(const CSSVariableData&);
@@ -35,7 +36,7 @@ class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
 
   StyleValueType GetType() const override { return kUnparsedType; }
 
-  StringOrCSSVariableReferenceValue AnonymousIndexedGetter(
+  CSSUnparsedSegment AnonymousIndexedGetter(
       unsigned index,
       ExceptionState& exception_state) const {
     if (index < tokens_.size())
@@ -51,13 +52,13 @@ class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
   }
 
  protected:
-  CSSUnparsedValue(const HeapVector<StringOrCSSVariableReferenceValue>& tokens)
+  CSSUnparsedValue(const HeapVector<CSSUnparsedSegment>& tokens)
       : CSSStyleValue(), tokens_(tokens) {}
 
  private:
   static CSSUnparsedValue* FromString(const String& string) {
-    HeapVector<StringOrCSSVariableReferenceValue> tokens;
-    tokens.push_back(StringOrCSSVariableReferenceValue::FromString(string));
+    HeapVector<CSSUnparsedSegment> tokens;
+    tokens.push_back(CSSUnparsedSegment::FromString(string));
     return Create(tokens);
   }
 
@@ -65,7 +66,7 @@ class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
 
   FRIEND_TEST_ALL_PREFIXES(CSSVariableReferenceValueTest, MixedList);
 
-  HeapVector<StringOrCSSVariableReferenceValue> tokens_;
+  HeapVector<CSSUnparsedSegment> tokens_;
   DISALLOW_COPY_AND_ASSIGN(CSSUnparsedValue);
 };
 
