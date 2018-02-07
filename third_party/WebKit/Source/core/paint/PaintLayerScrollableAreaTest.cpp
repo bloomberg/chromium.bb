@@ -863,4 +863,41 @@ TEST_F(PaintLayerScrollableAreaTest, HitTestOverlayScrollbars) {
   GetDocument().GetLayoutView()->HitTest(hit_result);
   EXPECT_EQ(hit_result.GetScrollbar(), scrollable_area->HorizontalScrollbar());
 }
+
+class NonRLSPaintLayerScrollableAreaTest
+    : public PaintLayerScrollableAreaTest,
+      private ScopedRootLayerScrollingForTest {
+ public:
+  NonRLSPaintLayerScrollableAreaTest()
+      : ScopedRootLayerScrollingForTest(false) {}
+
+  ~NonRLSPaintLayerScrollableAreaTest() override {}
+};
+
+TEST_F(NonRLSPaintLayerScrollableAreaTest, RootPaintLayerNoScrollOriginRTL) {
+  // This test is checking a quirk of PLSA pre-RLS. It can be removed once RLS
+  // ships.
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        direction: rtl;
+        margin: 0;
+      }
+      .spacer {
+        width: 3000px;
+        height: 2000px;
+      }
+    </style>
+    <div class="spacer"></div>
+  )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  auto* scrollable_area = GetDocument().GetLayoutView()->GetScrollableArea();
+
+  // The scroll origin should not be set on the root PLSA. It should only be
+  // set on the FrameView.
+  EXPECT_EQ(IntPoint(), scrollable_area->ScrollOrigin());
+  EXPECT_EQ(IntPoint(3000 - scrollable_area->VisibleWidth(), 0),
+            GetDocument().View()->ScrollOrigin());
 }
+}  // namespace blink
