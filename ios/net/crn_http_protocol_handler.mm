@@ -630,6 +630,7 @@ void HttpProtocolHandlerCore::SetLoadFlags() {
     switch ([request_ cachePolicy]) {
       case NSURLRequestReloadIgnoringLocalAndRemoteCacheData:
         load_flags |= LOAD_BYPASS_CACHE;
+        FALLTHROUGH;
       case NSURLRequestReloadIgnoringLocalCacheData:
         load_flags |= LOAD_DISABLE_CACHE;
         break;

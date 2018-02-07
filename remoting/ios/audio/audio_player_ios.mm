@@ -148,7 +148,7 @@ void AudioPlayerIos::StartOnAudioThread() {
       GenerateOutputQueue((void*)this);
       GenerateOutputBuffers(audio_frame_supplier_->bytes_per_frame());
       state_ = STOPPED;
-    // Fall-through intended.
+      FALLTHROUGH;
     case STOPPED:
       PrimeQueue();
       return;
