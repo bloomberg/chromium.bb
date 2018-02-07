@@ -810,7 +810,8 @@ message MfName {
     _WEBKIT_TRANSFORM_3D = 42;
     SCAN = 43;
     SHAPE = 44;
-    INVALID_NAME = 45;
+    IMMERSIVE = 45;
+    INVALID_NAME = 46;
   }
   required ValueId id = 1;
 }

@@ -10,6 +10,7 @@
 #include "core/css/MediaList.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/MediaQueryExp.h"
+#include "core/css/parser/CSSParserMode.h"
 #include "core/css/parser/CSSParserToken.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/MediaQueryBlockWatcher.h"
@@ -59,6 +60,9 @@ class CORE_EXPORT MediaQueryParser {
   static scoped_refptr<MediaQuerySet> ParseMediaQuerySet(const String&);
   static scoped_refptr<MediaQuerySet> ParseMediaQuerySet(CSSParserTokenRange);
   static scoped_refptr<MediaQuerySet> ParseMediaCondition(CSSParserTokenRange);
+  static scoped_refptr<MediaQuerySet> ParseMediaQuerySetInMode(
+      CSSParserTokenRange,
+      CSSParserMode);
 
  private:
   enum ParserType {
@@ -66,7 +70,7 @@ class CORE_EXPORT MediaQueryParser {
     kMediaConditionParser,
   };
 
-  MediaQueryParser(ParserType);
+  MediaQueryParser(ParserType, CSSParserMode);
   virtual ~MediaQueryParser();
 
   scoped_refptr<MediaQuerySet> ParseImpl(CSSParserTokenRange);
@@ -113,11 +117,14 @@ class CORE_EXPORT MediaQueryParser {
   void SetStateAndRestrict(State, MediaQuery::RestrictorType);
   void HandleBlocks(const CSSParserToken&);
 
+  bool IsMediaFeatureAllowedInMode(const String& media_feature) const;
+
   State state_;
   ParserType parser_type_;
   MediaQueryData media_query_data_;
   scoped_refptr<MediaQuerySet> query_set_;
   MediaQueryBlockWatcher block_watcher_;
+  CSSParserMode mode_;
 
   const static State kReadRestrictor;
   const static State kReadMediaNot;

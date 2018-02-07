@@ -35,6 +35,7 @@ class CORE_EXPORT MediaValuesDynamic : public MediaValues {
   HoverType PrimaryHoverType() const override;
   int AvailableHoverTypes() const override;
   bool ThreeDEnabled() const override;
+  bool InImmersiveMode() const override;
   bool StrictMode() const override;
   const String MediaType() const override;
   WebDisplayMode DisplayMode() const override;

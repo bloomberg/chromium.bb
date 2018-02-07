@@ -813,9 +813,9 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state) {
                                            "Cannot show the payment request"));
   }
 
-  // VR mode uses popup suppression setting to disable html select element,
-  // date pickers, etc.
-  if (GetFrame()->GetDocument()->GetSettings()->GetPagePopupsSuppressed()) {
+  // TODO(crbug.com/779126): add support for handling payment requests in
+  // immersive mode.
+  if (GetFrame()->GetDocument()->GetSettings()->GetImmersiveModeEnabled()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(kInvalidStateError, "Page popups are suppressed"));
