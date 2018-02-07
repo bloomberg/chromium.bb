@@ -20,6 +20,8 @@ from testing_support import git_test_utils
 
 import git_common
 
+GitRepo = git_test_utils.GitRepo
+
 
 class GitHyperBlameTestBase(git_test_utils.GitRepoReadOnlyTestBase):
   @classmethod
@@ -36,16 +38,21 @@ class GitHyperBlameTestBase(git_test_utils.GitRepoReadOnlyTestBase):
                            revision=revision, out=stdout, err=stderr)
     return retval, stdout.getvalue().rstrip().split('\n')
 
-  def blame_line(self, commit_name, rest, filename=None):
+  def blame_line(self, commit_name, rest, author=None, filename=None):
     """Generate a blame line from a commit.
 
     Args:
       commit_name: The commit's schema name.
       rest: The blame line after the timestamp. e.g., '2) file2 - merged'.
+      author: The author's name. If omitted, reads the name out of the commit.
+      filename: The filename. If omitted, not shown in the blame line.
     """
     short = self.repo[commit_name][:8]
     start = '%s %s' % (short, filename) if filename else short
-    author = self.repo.show_commit(commit_name, format_string='%an %ai')
+    if author is None:
+      author = self.repo.show_commit(commit_name, format_string='%an %ai')
+    else:
+      author += self.repo.show_commit(commit_name, format_string=' %ai')
     return '%s (%s %s' % (start, author, rest)
 
 class GitHyperBlameMainTest(GitHyperBlameTestBase):
@@ -564,6 +571,65 @@ class GitHyperBlameLineNumberTest(GitHyperBlameTestBase):
     # Commit B, even though it was Line 2 at that time. Its index is out of
     # range in the number of lines in Commit B.
     retval, output = self.run_hyperblame(['B', 'D'], 'file', 'tag_D')
+    self.assertEqual(0, retval)
+    self.assertEqual(expected_output, output)
+
+
+class GitHyperBlameUnicodeTest(GitHyperBlameTestBase):
+  REPO_SCHEMA = """
+  A B C
+  """
+
+  COMMIT_A = {
+    GitRepo.AUTHOR_NAME: 'ASCII Author',
+    'file':  {'data': 'red\nblue\n'},
+  }
+
+  # Add a line.
+  COMMIT_B = {
+    GitRepo.AUTHOR_NAME: u'\u4e2d\u56fd\u4f5c\u8005'.encode('utf-8'),
+    'file': {'data': 'red\ngreen\nblue\n'},
+  }
+
+  # Modify a line with non-UTF-8 author and file text.
+  COMMIT_C = {
+    GitRepo.AUTHOR_NAME: u'Lat\u00edn-1 Author'.encode('latin-1'),
+    'file': {'data': u'red\ngre\u00e9n\nblue\n'.encode('latin-1')},
+  }
+
+  def testNonASCIIAuthorName(self):
+    """Ensures correct tabulation.
+
+    Tests the case where there are non-ASCII (UTF-8) characters in the author
+    name.
+
+    Regression test for https://crbug.com/808905.
+    """
+    expected_output = [
+        self.blame_line('A', '1) red', author='ASCII Author'),
+        # Expect 8 spaces, to line up with the other name.
+        self.blame_line('B', '2) green',
+            author=u'\u4e2d\u56fd\u4f5c\u8005        '.encode('utf-8')),
+        self.blame_line('A', '3) blue', author='ASCII Author'),
+    ]
+    retval, output = self.run_hyperblame([], 'file', 'tag_B')
+    self.assertEqual(0, retval)
+    self.assertEqual(expected_output, output)
+
+  def testNonUTF8Data(self):
+    """Ensures correct behaviour even if author or file data is not UTF-8.
+
+    There is no guarantee that a file will be UTF-8-encoded, so this is
+    realistic.
+    """
+    expected_output = [
+        self.blame_line('A', '1) red', author='ASCII Author  '),
+        # The Author has been re-encoded as UTF-8. The file data is preserved as
+        # raw byte data.
+        self.blame_line('C', '2) gre\xe9n', author='Lat\xc3\xadn-1 Author'),
+        self.blame_line('A', '3) blue', author='ASCII Author  '),
+    ]
+    retval, output = self.run_hyperblame([], 'file', 'tag_C')
     self.assertEqual(0, retval)
     self.assertEqual(expected_output, output)
 

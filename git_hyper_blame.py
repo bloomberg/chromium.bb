@@ -94,6 +94,11 @@ def parse_blame(blameoutput):
     yield BlameLine(commit, context, lineno_then, lineno_now, False)
 
 
+def num_codepoints(s):
+  """Gets the length of a UTF-8 byte string, in Unicode codepoints."""
+  return len(s.decode('utf-8', errors='replace'))
+
+
 def print_table(table, colsep=' ', rowsep='\n', align=None, out=sys.stdout):
   """Print a 2D rectangular array, aligning columns with spaces.
 
@@ -107,9 +112,10 @@ def print_table(table, colsep=' ', rowsep='\n', align=None, out=sys.stdout):
   colwidths = None
   for row in table:
     if colwidths is None:
-      colwidths = [len(x) for x in row]
+      colwidths = [num_codepoints(x) for x in row]
     else:
-      colwidths = [max(colwidths[i], len(x)) for i, x in enumerate(row)]
+      colwidths = [max(colwidths[i], num_codepoints(x))
+                   for i, x in enumerate(row)]
 
   if align is None:  # pragma: no cover
     align = 'l' * len(colwidths)
@@ -117,7 +123,7 @@ def print_table(table, colsep=' ', rowsep='\n', align=None, out=sys.stdout):
   for row in table:
     cells = []
     for i, cell in enumerate(row):
-      padding = ' ' * (colwidths[i] - len(cell))
+      padding = ' ' * (colwidths[i] - num_codepoints(cell))
       if align[i] == 'r':
         cell = padding + cell
       elif i < len(row) - 1:
