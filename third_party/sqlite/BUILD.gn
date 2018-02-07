@@ -4,13 +4,6 @@
 
 import("//testing/libfuzzer/fuzzer_test.gni")
 
-declare_args() {
-  # Controls whether the build should uses the version of sqlite3 library
-  # shipped with the system (currently only supported on iOS) or the one
-  # shipped with Chromium source.
-  use_system_sqlite = is_ios
-}
-
 # Compile-time options passed to SQLite.
 #
 # These options are used when building our own SQLite library, which happens
@@ -110,6 +103,21 @@ config("chromium_sqlite3_compile_options") {
     #               of https://crrev.com/c/894692
   ]
 
+  # On OSX, SQLite has extra logic for detecting the use of network
+  # filesystems (e.g., AFS, NFS) and for working around locking problems in
+  # these filesystems. This logic is gated by SQLITE_ENABLE_LOCKING_STYLE, which
+  # is 1 by default on OSX and iOS, and 0 everywhere else.
+  #
+  # When enabled, SQLITE_ENABLE_LOCKING_STYLE results in a compile-time warning
+  # on iOS. The recommended solution is to disable the flag on iOS, because
+  # iOS doesn't (yet?) have networked filesystems. Since we have to do this,
+  # might as well be explicit about the flag everywhere.
+  if (is_mac) {
+    defines += [ "SQLITE_ENABLE_LOCKING_STYLE=1" ]
+  } else {
+    defines += [ "SQLITE_ENABLE_LOCKING_STYLE=0" ]
+  }
+
   if (using_sanitizer) {
     # Limit max length of data blobs and queries for fuzzing builds by 128 MB.
     defines += [
@@ -130,83 +138,163 @@ config("chromium_sqlite3_compile_options") {
   }
 }
 
-if (!use_system_sqlite) {
-  config("sqlite_warnings") {
-    cflags = []
-    if (is_clang) {
-      # sqlite contains a few functions that are unused, at least on
-      # Windows with Chromium's sqlite patches applied
-      # (interiorCursorEOF fts3EvalDeferredPhrase
-      # fts3EvalSelectDeferred sqlite3Fts3InitHashTable
-      # sqlite3Fts3InitTok).
-      cflags += [ "-Wno-unused-function" ]
-    }
-    if (is_linux) {
-      cflags += [
-        # SQLite doesn"t believe in compiler warnings,
-        # preferring testing.
-        #   http://www.sqlite.org/faq.html#q17
-        "-Wno-int-to-pointer-cast",
-        "-Wno-pointer-to-int-cast",
-      ]
-    }
-    if (is_win && !is_clang) {
-      cflags += [ "/wd4101" ]  # 'zTrace' unreferenced variable in src/vdbe.c
+config("sqlite_warnings") {
+  cflags = []
+  if (is_clang) {
+    # sqlite contains a few functions that are unused, at least on
+    # Windows with Chromium's sqlite patches applied
+    # (interiorCursorEOF fts3EvalDeferredPhrase
+    # fts3EvalSelectDeferred sqlite3Fts3InitHashTable
+    # sqlite3Fts3InitTok).
+    cflags += [ "-Wno-unused-function" ]
+  }
+  if (is_linux) {
+    cflags += [
+      # SQLite doesn"t believe in compiler warnings,
+      # preferring testing.
+      #   http://www.sqlite.org/faq.html#q17
+      "-Wno-int-to-pointer-cast",
+      "-Wno-pointer-to-int-cast",
+    ]
+  }
+  if (is_ios) {
+    cflags += [
+      # SQLite issues a #pragma warning on iOS.
+      # http://sqlite.1065341.n5.nabble.com/Compiler-warning-quot-gethostuuid-is-disabled-quot-building-SQLite-for-iOS-td96881.html
+      #
+      # Contrary to what is said on the mailing list, setting
+      # SQLITE_ENABLE_LOCKING_STYLE to 0 does not make the warning go away.
+      "-Wno-#warnings",
+    ]
+  }
+  if (is_win && !is_clang) {
+    cflags += [ "/wd4101" ]  # 'zTrace' unreferenced variable in src/vdbe.c
+  }
+}
+
+# Naming the library "sqlite3" can cause conflicts with the system library.
+component("chromium_sqlite3") {
+  visibility = [ ":*" ]
+  sources = [
+    "amalgamation/config.h",
+    "amalgamation/sqlite3.c",
+    "amalgamation/sqlite3.h",
+    "src/src/recover.c",
+    "src/src/recover.h",
+    "src/src/recover_varint.c",
+  ]
+
+  cflags = []
+  defines = [
+    # The generated sqlite3.c does not include sqlite3.h, so we cannot easily
+    # inject the renaming macros in amalgamation/export_renames.h. However,
+    # if the macro below is defined, sqlite3.c will #include "config.h", which
+    # can be used to inject the macros.
+    "_HAVE_SQLITE_CONFIG_H",
+  ]
+
+  if (is_component_build) {
+    if (is_win) {
+      defines += [ "SQLITE_API=__declspec(dllexport)" ]
+    } else {
+      defines += [ "SQLITE_API=__attribute__((visibility(\"default\")))" ]
     }
   }
 
-  # "sqlite3" can cause conflicts with the system library.
-  component("chromium_sqlite3") {
-    visibility = [ ":*" ]
-    sources = [
-      "amalgamation/config.h",
-      "amalgamation/sqlite3.c",
-      "amalgamation/sqlite3.h",
-      "src/src/recover.c",
-      "src/src/recover.h",
-      "src/src/recover_varint.c",
+  if (is_linux || is_android) {
+    defines += [
+      # Linux provides fdatasync(), a faster equivalent of fsync().
+      "fdatasync=fdatasync",
     ]
+  }
 
-    cflags = []
-    defines = [
-      # The generated sqlite3.c does not include sqlite3.h, so we cannot easily
-      # inject the renaming macros in amalgamation/export_renames.h. However,
-      # if the macro below is defined, sqlite3.c will #include "config.h", which
-      # can be used to inject the macros.
-      "_HAVE_SQLITE_CONFIG_H",
+  if (is_posix) {
+    defines += [
+      # Allow xSleep() call on Unix to use usleep() rather than sleep(), so it
+      # will have microsecond precision.  Should only affect contended
+      # databases via the busy callback.  Browser profile databases are mostly
+      # exclusive, but renderer databases may allow for contention.
+      "HAVE_USLEEP=1",
+
+      # Use pread/pwrite directly rather than emulating them.
+      "USE_PREAD=1",
     ]
+  }
 
-    if (is_component_build) {
-      if (is_win) {
-        defines += [ "SQLITE_API=__declspec(dllexport)" ]
-      } else {
-        defines += [ "SQLITE_API=__attribute__((visibility(\"default\")))" ]
-      }
+  include_dirs = [
+    ".",  # sqlite3.h here must override the one in amalgamation/.
+    "amalgamation",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    ":chromium_sqlite3_compile_options",
+    "//build/config/compiler:no_chromium_code",
+
+    # Must be after no_chromium_code for warning flags to be ordered correctly.
+    ":sqlite_warnings",
+  ]
+
+  if (is_linux) {
+    libs = [ "dl" ]
+  } else if (is_mac || is_ios) {
+    libs = [ "CoreFoundation.framework" ]
+    if (!is_ios) {
+      libs += [ "CoreServices.framework" ]
     }
+  } else if (is_android) {
+    defines += [
+      "SQLITE_DEFAULT_JOURNAL_SIZE_LIMIT=1048576",
+      "SQLITE_DEFAULT_AUTOVACUUM=1",
+      "SQLITE_TEMP_STORE=3",
+      "SQLITE_ENABLE_FTS3_BACKWARDS",
+      "DSQLITE_DEFAULT_FILE_FORMAT=4",
+    ]
+  }
 
-    if (is_linux || is_android) {
-      defines += [
-        # Linux provides fdatasync(), a faster equivalent of fsync().
-        "fdatasync=fdatasync",
-      ]
-    }
+  deps = [
+    "//third_party/icu",
+  ]
+}
 
-    if (is_posix) {
-      defines += [
-        # Allow xSleep() call on Unix to use usleep() rather than sleep(), so it
-        # will have microsecond precision.  Should only affect contended
-        # databases via the busy callback.  Browser profile databases are mostly
-        # exclusive, but renderer databases may allow for contention.
-        "HAVE_USLEEP=1",
+config("sqlite_export") {
+  if (is_component_build && is_win) {
+    defines = [ "SQLITE_API=__declspec(dllimport)" ]
+  }
+}
 
-        # Use pread/pwrite directly rather than emulating them.
-        "USE_PREAD=1",
-      ]
-    }
+# This is used to allow the SQLITE_API definition to be different when
+# building sqlite3.c than it is when clients include sqlite3.h.
+group("sqlite") {
+  public_deps = [
+    ":chromium_sqlite3",
+  ]
+  public_configs = [
+    ":chromium_sqlite3_compile_options",
+    ":sqlite_export",
+  ]
+}
 
+if (is_linux) {
+  executable("sqlite_shell") {
     include_dirs = [
-      ".",  # sqlite3.h here must override the one in amalgamation/.
-      "amalgamation",
+      # shell.c contains an '#include "sqlite3.h", which we want to be
+      # resolved to //third_party/sqlite/shell.h.
+      ".",
+    ]
+
+    sources = [
+      "amalgamation/shell/shell.c",
+      "src/src/shell_icu_linux.c",
+
+      # Include a dummy c++ file to force linking of libstdc++.
+      "build_as_cpp.cc",
+    ]
+
+    deps = [
+      ":sqlite",
+      "//build/config:exe_and_shlib_deps",
+      "//third_party/icu",
     ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
@@ -218,137 +306,6 @@ if (!use_system_sqlite) {
       # correctly.
       ":sqlite_warnings",
     ]
-
-    if (is_linux) {
-      libs = [ "dl" ]
-    } else if (is_mac || is_ios) {
-      libs = [
-        "CoreFoundation.framework",
-        "CoreServices.framework",
-      ]
-    } else if (is_android) {
-      defines += [
-        "SQLITE_DEFAULT_JOURNAL_SIZE_LIMIT=1048576",
-        "SQLITE_DEFAULT_AUTOVACUUM=1",
-        "SQLITE_TEMP_STORE=3",
-        "SQLITE_ENABLE_FTS3_BACKWARDS",
-        "DSQLITE_DEFAULT_FILE_FORMAT=4",
-      ]
-    }
-
-    deps = [
-      "//third_party/icu",
-    ]
-  }
-
-  config("sqlite_export") {
-    if (is_component_build && is_win) {
-      defines = [ "SQLITE_API=__declspec(dllimport)" ]
-    }
-  }
-
-  # This is used to allow the SQLITE_API definition to be different when
-  # building sqlite3.c than it is when clients include sqlite3.h.
-  group("sqlite") {
-    public_deps = [
-      ":chromium_sqlite3",
-    ]
-    public_configs = [
-      ":chromium_sqlite3_compile_options",
-      ":sqlite_export",
-    ]
-  }
-
-  if (is_linux) {
-    executable("sqlite_shell") {
-      include_dirs = [
-        # shell.c contains an '#include "sqlite3.h", which we want to be
-        # resolved to //third_party/sqlite/shell.h.
-        ".",
-      ]
-
-      sources = [
-        "amalgamation/shell/shell.c",
-        "src/src/shell_icu_linux.c",
-
-        # Include a dummy c++ file to force linking of libstdc++.
-        "build_as_cpp.cc",
-      ]
-
-      deps = [
-        ":sqlite",
-        "//build/config:exe_and_shlib_deps",
-        "//third_party/icu",
-      ]
-
-      configs -= [ "//build/config/compiler:chromium_code" ]
-      configs += [
-        ":chromium_sqlite3_compile_options",
-        "//build/config/compiler:no_chromium_code",
-
-        # Must be after no_chromium_code for warning flags to be ordered
-        # correctly.
-        ":sqlite_warnings",
-      ]
-    }
-  }
-}
-
-if (use_system_sqlite) {
-  # iOS uses the version of sqlite3 shipped with the system instead of the
-  # version shipped with Chromium. Export a "sqlite" target so the change
-  # can be localized to this file.
-
-  config("system_sqlite_config") {
-    defines = [ "USE_SYSTEM_SQLITE" ]
-    if (is_ios) {
-      libs = [ "sqlite3" ]
-    } else {
-      assert(false, "extra flags to use system sqlite3 library missing")
-    }
-  }
-
-  source_set("sqlite") {
-    public_configs = [ ":system_sqlite_config" ]
-    if (is_ios) {
-      public_deps = [
-        ":sqlite_recover",
-      ]
-      deps = [
-        ":sqlite_regexp",
-      ]
-    }
-  }
-
-  if (is_ios) {
-    source_set("sqlite_recover") {
-      sources = [
-        # TODO(shess): Move out of the SQLite source tree, perhaps to ext/.
-        "src/src/recover.c",
-        "src/src/recover.h",
-        "src/src/recover_varint.c",
-      ]
-    }
-
-    source_set("sqlite_regexp") {
-      defines = [
-        # Necessary to statically compile the extension.
-        "SQLITE_CORE",
-        "SQLITE_ENABLE_ICU",
-        "SQLITE_ENABLE_MEMORY_MANAGEMENT",
-      ]
-      sources = [
-        "src/ext/icu/icu.c",
-      ]
-      deps = [
-        "//third_party/icu",
-      ]
-      if (is_clang) {
-        # src/ext/icu/icu.c uses assert(!"string") which causes warnings about
-        # conversion from string literal to bool.
-        configs -= [ "//build/config/clang:extra_warnings" ]
-      }
-    }
   }
 }
 

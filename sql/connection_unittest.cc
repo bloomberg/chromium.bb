@@ -1074,31 +1074,6 @@ TEST_F(SQLConnectionTest, AttachDatabaseWithOpenTransaction) {
   // Cannot see the attached database, yet.
   EXPECT_FALSE(db().IsSQLValid("SELECT count(*) from other.bar"));
 
-#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
-  // SQLite before 3.21 does not support ATTACH and DETACH in transactions.
-
-  // Attach fails in a transaction.
-  EXPECT_TRUE(db().BeginTransaction());
-  {
-    sql::test::ScopedErrorExpecter expecter;
-    expecter.ExpectError(SQLITE_ERROR);
-    EXPECT_FALSE(db().AttachDatabase(attach_path, kAttachmentPoint));
-    EXPECT_FALSE(db().IsSQLValid("SELECT count(*) from other.bar"));
-    ASSERT_TRUE(expecter.SawExpectedErrors());
-  }
-
-  // Detach also fails in a transaction.
-  {
-    sql::test::ScopedErrorExpecter expecter;
-    expecter.ExpectError(SQLITE_ERROR);
-    EXPECT_FALSE(db().DetachDatabase(kAttachmentPoint));
-    ASSERT_TRUE(expecter.SawExpectedErrors());
-  }
-
-  db().RollbackTransaction();
-#else   // defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
-  // Chrome's SQLite (3.21+) supports ATTACH and DETACH in transactions.
-
   // Attach succeeds in a transaction.
   EXPECT_TRUE(db().BeginTransaction());
   EXPECT_TRUE(db().AttachDatabase(attach_path, kAttachmentPoint));
@@ -1125,7 +1100,6 @@ TEST_F(SQLConnectionTest, AttachDatabaseWithOpenTransaction) {
   db().RollbackTransaction();
   EXPECT_TRUE(db().DetachDatabase(kAttachmentPoint));
   EXPECT_FALSE(db().IsSQLValid("SELECT count(*) from other.bar"));
-#endif  // defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
 }
 
 TEST_F(SQLConnectionTest, Basic_QuickIntegrityCheck) {

@@ -284,17 +284,23 @@ int Open(sqlite3_vfs* vfs, const char* file_name, sqlite3_file* wrapper_file,
   }
 #endif
 
-  // The wrapper instances must support a specific |iVersion|, but there is no
-  // explicit guarantee that the wrapped VFS will always vend instances with the
-  // same |iVersion| (though I believe this is always the case in practice).
-  // Vend a distinct set of IO methods for each version supported.
+  // |iVersion| determines what methods SQLite may call on the instance.
+  // Having the methods which can't be proxied return an error may cause SQLite
+  // to operate differently than if it didn't call those methods at all. To be
+  // on the safe side, the wrapper sqlite3_io_methods version perfectly matches
+  // the version of the wrapped files.
   //
-  // |iVersion| determines what methods SQLite may call on the instance.  Having
-  // the methods which can't be proxied return an error may cause SQLite to
-  // operate differently than if it didn't call those methods at all.  Another
-  // solution would be to fail if the wrapped file does not have the expected
-  // version, which may cause problems on platforms which use the system SQLite
-  // (iOS and some Linux distros).
+  // At a first glance, it might be tempting to simplify the code by
+  // restricting wrapping support to VFS version 3. However, this would fail
+  // on Fuchsia and might fail on Mac.
+  //
+  // On Mac, SQLite built with SQLITE_ENABLE_LOCKING_STYLE ends up using a VFS
+  // that dynamically dispatches between a few variants of sqlite3_io_methods,
+  // based on whether the opened database is on a local or on a remote (AFS,
+  // NFS) filesystem. Some variants return a VFS version 1 structure.
+  //
+  // Fuchsia doesn't implement POSIX locking, so it always uses dot-style
+  // locking, which returns VFS version 1 files.
   VfsFile* file = AsVfsFile(wrapper_file);
   file->wrapped_file = wrapped_file;
   if (wrapped_file->pMethods->iVersion == 1) {
@@ -503,12 +509,14 @@ sqlite3_vfs* VFSWrapper() {
       (wrapped_vfs->xCurrentTime ? &CurrentTime : nullptr);
   wrapper_vfs->xGetLastError = &GetLastError;
   // The methods above are in version 1 of sqlite_vfs.
-  // There were VFS implementations with nullptr for |xCurrentTimeInt64|.
-  wrapper_vfs->xCurrentTimeInt64 =
-      (wrapped_vfs->xCurrentTimeInt64 ? &CurrentTimeInt64 : nullptr);
+  DCHECK(wrapped_vfs->xCurrentTimeInt64);
+  wrapper_vfs->xCurrentTimeInt64 = &CurrentTimeInt64;
   // The methods above are in version 2 of sqlite_vfs.
+  DCHECK(wrapped_vfs->xSetSystemCall);
   wrapper_vfs->xSetSystemCall = &SetSystemCall;
+  DCHECK(wrapped_vfs->xGetSystemCall);
   wrapper_vfs->xGetSystemCall = &GetSystemCall;
+  DCHECK(wrapped_vfs->xNextSystemCall);
   wrapper_vfs->xNextSystemCall = &NextSystemCall;
   // The methods above are in version 3 of sqlite_vfs.
 
