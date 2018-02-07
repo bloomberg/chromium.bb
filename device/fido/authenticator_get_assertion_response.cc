@@ -9,7 +9,7 @@
 namespace device {
 
 AuthenticatorGetAssertionResponse::AuthenticatorGetAssertionResponse(
-    CTAPDeviceResponseCode response_code,
+    CtapDeviceResponseCode response_code,
     std::vector<uint8_t> auth_data,
     std::vector<uint8_t> signature,
     PublicKeyCredentialUserEntity user)

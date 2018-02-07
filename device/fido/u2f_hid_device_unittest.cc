@@ -16,8 +16,6 @@
 #include "device/fido/u2f_apdu_response.h"
 #include "device/fido/u2f_command_type.h"
 #include "device/fido/u2f_hid_device.h"
-#include "device/fido/u2f_message.h"
-#include "device/fido/u2f_packet.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/cpp/hid/hid_device_filter.h"

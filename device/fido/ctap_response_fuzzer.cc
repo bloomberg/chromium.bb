@@ -17,10 +17,10 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::vector<uint8_t> input(data, data + size);
   device::ReadCTAPMakeCredentialResponse(
-      device::CTAPDeviceResponseCode::kSuccess, input);
-  device::ReadCTAPGetAssertionResponse(device::CTAPDeviceResponseCode::kSuccess,
+      device::CtapDeviceResponseCode::kSuccess, input);
+  device::ReadCTAPGetAssertionResponse(device::CtapDeviceResponseCode::kSuccess,
                                        input);
-  device::ReadCTAPGetInfoResponse(device::CTAPDeviceResponseCode::kSuccess,
+  device::ReadCTAPGetInfoResponse(device::CtapDeviceResponseCode::kSuccess,
                                   input);
 
   return 0;

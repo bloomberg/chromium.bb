@@ -9,7 +9,7 @@
 namespace device {
 
 AuthenticatorGetInfoResponse::AuthenticatorGetInfoResponse(
-    CTAPDeviceResponseCode response_code,
+    CtapDeviceResponseCode response_code,
     std::vector<std::string> versions,
     std::vector<uint8_t> aaguid)
     : response_code_(response_code),

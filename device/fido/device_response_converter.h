@@ -22,27 +22,27 @@ namespace device {
 
 // Parses response code from response received from the authenticator. If
 // unknown response code value is received, then CTAP2_ERR_OTHER is returned.
-CTAPDeviceResponseCode GetResponseCode(const std::vector<uint8_t>& buffer);
+CtapDeviceResponseCode GetResponseCode(const std::vector<uint8_t>& buffer);
 
 // De-serializes CBOR encoded response, checks for valid CBOR map formatting,
 // and converts response to AuthenticatorMakeCredentialResponse object with
 // CBOR map keys that conform to format of attestation object defined by the
 // WebAuthN spec : https://w3c.github.io/webauthn/#fig-attStructs
 base::Optional<AuthenticatorMakeCredentialResponse>
-ReadCTAPMakeCredentialResponse(CTAPDeviceResponseCode response_code,
+ReadCTAPMakeCredentialResponse(CtapDeviceResponseCode response_code,
                                const std::vector<uint8_t>& buffer);
 
 // De-serializes CBOR encoded response to AuthenticatorGetAssertion /
 // AuthenticatorGetNextAssertion request to AuthenticatorGetAssertionResponse
 // object.
 base::Optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
-    CTAPDeviceResponseCode response_code,
+    CtapDeviceResponseCode response_code,
     const std::vector<uint8_t>& buffer);
 
 // De-serializes CBOR encoded response to AuthenticatorGetInfo request to
 // AuthenticatorGetInfoResponse object.
 base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
-    CTAPDeviceResponseCode response_code,
+    CtapDeviceResponseCode response_code,
     const std::vector<uint8_t>& buffer);
 
 }  // namespace device

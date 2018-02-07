@@ -34,9 +34,9 @@ class CTAPAuthenticatorRequestParam : public CTAPRequestParam {
   base::Optional<std::vector<uint8_t>> Encode() const override;
 
  private:
-  explicit CTAPAuthenticatorRequestParam(CTAPRequestCommand cmd);
+  explicit CTAPAuthenticatorRequestParam(CtapRequestCommand cmd);
 
-  CTAPRequestCommand cmd_;
+  CtapRequestCommand cmd_;
 
   DISALLOW_COPY_AND_ASSIGN(CTAPAuthenticatorRequestParam);
 };

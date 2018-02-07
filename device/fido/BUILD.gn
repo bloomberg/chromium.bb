@@ -39,6 +39,10 @@ source_set("fido") {
     "ec_public_key.h",
     "fido_attestation_statement.cc",
     "fido_attestation_statement.h",
+    "fido_hid_message.cc",
+    "fido_hid_message.h",
+    "fido_hid_packet.cc",
+    "fido_hid_packet.h",
     "public_key.cc",
     "public_key.h",
     "public_key_credential_descriptor.cc",
@@ -76,10 +80,6 @@ source_set("fido") {
     "u2f_device.h",
     "u2f_discovery.cc",
     "u2f_discovery.h",
-    "u2f_message.cc",
-    "u2f_message.h",
-    "u2f_packet.cc",
-    "u2f_packet.h",
     "u2f_parsing_utils.cc",
     "u2f_parsing_utils.h",
     "u2f_register.cc",
@@ -151,13 +151,13 @@ fuzzer_test("u2f_apdu_fuzzer") {
   libfuzzer_options = [ "max_len=65537" ]
 }
 
-fuzzer_test("u2f_message_fuzzer") {
+fuzzer_test("fido_hid_message_fuzzer") {
   sources = [
-    "u2f_message_fuzzer.cc",
+    "fido_hid_message_fuzzer.cc",
   ]
   deps = [
     ":fido",
-    "//net",
+    "//base",
   ]
   libfuzzer_options = [ "max_len=2048" ]
 }

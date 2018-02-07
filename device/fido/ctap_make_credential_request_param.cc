@@ -67,7 +67,7 @@ base::Optional<std::vector<uint8_t>> CTAPMakeCredentialRequestParam::Encode()
     return base::nullopt;
 
   std::vector<uint8_t> cbor_request({base::strict_cast<uint8_t>(
-      CTAPRequestCommand::kAuthenticatorMakeCredential)});
+      CtapRequestCommand::kAuthenticatorMakeCredential)});
   cbor_request.insert(cbor_request.end(), serialized_param->begin(),
                       serialized_param->end());
   return cbor_request;

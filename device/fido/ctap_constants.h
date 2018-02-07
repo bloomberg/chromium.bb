@@ -14,7 +14,7 @@ namespace device {
 
 // CTAP protocol device response code, as specified in
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#authenticator-api
-enum class CTAPDeviceResponseCode : uint8_t {
+enum class CtapDeviceResponseCode : uint8_t {
   kSuccess = 0x00,
   kCtap1ErrInvalidCommand = 0x01,
   kCtap1ErrInvalidParameter = 0x02,
@@ -68,9 +68,63 @@ enum class CTAPDeviceResponseCode : uint8_t {
   kCtap2ErrVendorLast = 0xFF
 };
 
+constexpr std::array<CtapDeviceResponseCode, 51> GetCtapResponseCodeList() {
+  return {CtapDeviceResponseCode::kSuccess,
+          CtapDeviceResponseCode::kCtap1ErrInvalidCommand,
+          CtapDeviceResponseCode::kCtap1ErrInvalidParameter,
+          CtapDeviceResponseCode::kCtap1ErrInvalidLength,
+          CtapDeviceResponseCode::kCtap1ErrInvalidSeq,
+          CtapDeviceResponseCode::kCtap1ErrTimeout,
+          CtapDeviceResponseCode::kCtap1ErrChannelBusy,
+          CtapDeviceResponseCode::kCtap1ErrLockRequired,
+          CtapDeviceResponseCode::kCtap1ErrInvalidChannel,
+          CtapDeviceResponseCode::kCtap2ErrCBORParsing,
+          CtapDeviceResponseCode::kCtap2ErrUnexpectedType,
+          CtapDeviceResponseCode::kCtap2ErrInvalidCBOR,
+          CtapDeviceResponseCode::kCtap2ErrInvalidCBORType,
+          CtapDeviceResponseCode::kCtap2ErrMissingParameter,
+          CtapDeviceResponseCode::kCtap2ErrLimitExceeded,
+          CtapDeviceResponseCode::kCtap2ErrUnsupportedExtension,
+          CtapDeviceResponseCode::kCtap2ErrTooManyElements,
+          CtapDeviceResponseCode::kCtap2ErrExtensionNotSupported,
+          CtapDeviceResponseCode::kCtap2ErrCredentialExcluded,
+          CtapDeviceResponseCode::kCtap2ErrCredentialNotValid,
+          CtapDeviceResponseCode::kCtap2ErrProcesssing,
+          CtapDeviceResponseCode::kCtap2ErrInvalidCredential,
+          CtapDeviceResponseCode::kCtap2ErrUserActionPending,
+          CtapDeviceResponseCode::kCtap2ErrOperationPending,
+          CtapDeviceResponseCode::kCtap2ErrNoOperations,
+          CtapDeviceResponseCode::kCtap2ErrUnsupportedAlgorithms,
+          CtapDeviceResponseCode::kCtap2ErrOperationDenied,
+          CtapDeviceResponseCode::kCtap2ErrKeyStoreFull,
+          CtapDeviceResponseCode::kCtap2ErrNotBusy,
+          CtapDeviceResponseCode::kCtap2ErrNoOperationPending,
+          CtapDeviceResponseCode::kCtap2ErrUnsupportedOption,
+          CtapDeviceResponseCode::kCtap2ErrInvalidOption,
+          CtapDeviceResponseCode::kCtap2ErrKeepAliveCancel,
+          CtapDeviceResponseCode::kCtap2ErrNoCredentials,
+          CtapDeviceResponseCode::kCtap2ErrUserActionTimeout,
+          CtapDeviceResponseCode::kCtap2ErrNotAllowed,
+          CtapDeviceResponseCode::kCtap2ErrPinInvalid,
+          CtapDeviceResponseCode::kCtap2ErrPinBlocked,
+          CtapDeviceResponseCode::kCtap2ErrPinAuthInvalid,
+          CtapDeviceResponseCode::kCtap2ErrPinAuthBlocked,
+          CtapDeviceResponseCode::kCtap2ErrPinNotSet,
+          CtapDeviceResponseCode::kCtap2ErrPinRequired,
+          CtapDeviceResponseCode::kCtap2ErrPinPolicyViolation,
+          CtapDeviceResponseCode::kCtap2ErrPinTokenExpired,
+          CtapDeviceResponseCode::kCtap2ErrRequestTooLarge,
+          CtapDeviceResponseCode::kCtap2ErrOther,
+          CtapDeviceResponseCode::kCtap2ErrSpecLast,
+          CtapDeviceResponseCode::kCtap2ErrExtensionFirst,
+          CtapDeviceResponseCode::kCtap2ErrExtensionLast,
+          CtapDeviceResponseCode::kCtap2ErrVendorFirst,
+          CtapDeviceResponseCode::kCtap2ErrVendorLast};
+}
+
 // Commands supported by CTAPHID device as specified in
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#ctaphid-commands
-enum class CTAPHIDDeviceCommand : uint8_t {
+enum class CtapHidDeviceCommand : uint8_t {
   kCtapHidMsg = 0x03,
   kCtapHidCBOR = 0x10,
   kCtapHidInit = 0x06,
@@ -82,9 +136,21 @@ enum class CTAPHIDDeviceCommand : uint8_t {
   kCtapHidLock = 0x04,
 };
 
+constexpr std::array<CtapHidDeviceCommand, 9> GetCtapHidDeviceCommandList() {
+  return {CtapHidDeviceCommand::kCtapHidMsg,
+          CtapHidDeviceCommand::kCtapHidCBOR,
+          CtapHidDeviceCommand::kCtapHidInit,
+          CtapHidDeviceCommand::kCtapHidPing,
+          CtapHidDeviceCommand::kCtapHidCancel,
+          CtapHidDeviceCommand::kCtapHidError,
+          CtapHidDeviceCommand::kCtapHidKeepAlive,
+          CtapHidDeviceCommand::kCtapHidWink,
+          CtapHidDeviceCommand::kCtapHidLock};
+}
+
 // Authenticator API commands supported by CTAP devices, as specified in
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#authenticator-api
-enum class CTAPRequestCommand : uint8_t {
+enum class CtapRequestCommand : uint8_t {
   kAuthenticatorMakeCredential = 0x01,
   kAuthenticatorGetAssertion = 0x02,
   kAuthenticatorGetNextAssertion = 0x08,
@@ -94,63 +160,23 @@ enum class CTAPRequestCommand : uint8_t {
   kAuthenticatorReset = 0x07,
 };
 
-constexpr std::array<CTAPDeviceResponseCode, 51> GetCTAPResponseCodeList() {
-  return {CTAPDeviceResponseCode::kSuccess,
-          CTAPDeviceResponseCode::kCtap1ErrInvalidCommand,
-          CTAPDeviceResponseCode::kCtap1ErrInvalidParameter,
-          CTAPDeviceResponseCode::kCtap1ErrInvalidLength,
-          CTAPDeviceResponseCode::kCtap1ErrInvalidSeq,
-          CTAPDeviceResponseCode::kCtap1ErrTimeout,
-          CTAPDeviceResponseCode::kCtap1ErrChannelBusy,
-          CTAPDeviceResponseCode::kCtap1ErrLockRequired,
-          CTAPDeviceResponseCode::kCtap1ErrInvalidChannel,
-          CTAPDeviceResponseCode::kCtap2ErrCBORParsing,
-          CTAPDeviceResponseCode::kCtap2ErrUnexpectedType,
-          CTAPDeviceResponseCode::kCtap2ErrInvalidCBOR,
-          CTAPDeviceResponseCode::kCtap2ErrInvalidCBORType,
-          CTAPDeviceResponseCode::kCtap2ErrMissingParameter,
-          CTAPDeviceResponseCode::kCtap2ErrLimitExceeded,
-          CTAPDeviceResponseCode::kCtap2ErrUnsupportedExtension,
-          CTAPDeviceResponseCode::kCtap2ErrTooManyElements,
-          CTAPDeviceResponseCode::kCtap2ErrExtensionNotSupported,
-          CTAPDeviceResponseCode::kCtap2ErrCredentialExcluded,
-          CTAPDeviceResponseCode::kCtap2ErrCredentialNotValid,
-          CTAPDeviceResponseCode::kCtap2ErrProcesssing,
-          CTAPDeviceResponseCode::kCtap2ErrInvalidCredential,
-          CTAPDeviceResponseCode::kCtap2ErrUserActionPending,
-          CTAPDeviceResponseCode::kCtap2ErrOperationPending,
-          CTAPDeviceResponseCode::kCtap2ErrNoOperations,
-          CTAPDeviceResponseCode::kCtap2ErrUnsupportedAlgorithms,
-          CTAPDeviceResponseCode::kCtap2ErrOperationDenied,
-          CTAPDeviceResponseCode::kCtap2ErrKeyStoreFull,
-          CTAPDeviceResponseCode::kCtap2ErrNotBusy,
-          CTAPDeviceResponseCode::kCtap2ErrNoOperationPending,
-          CTAPDeviceResponseCode::kCtap2ErrUnsupportedOption,
-          CTAPDeviceResponseCode::kCtap2ErrInvalidOption,
-          CTAPDeviceResponseCode::kCtap2ErrKeepAliveCancel,
-          CTAPDeviceResponseCode::kCtap2ErrNoCredentials,
-          CTAPDeviceResponseCode::kCtap2ErrUserActionTimeout,
-          CTAPDeviceResponseCode::kCtap2ErrNotAllowed,
-          CTAPDeviceResponseCode::kCtap2ErrPinInvalid,
-          CTAPDeviceResponseCode::kCtap2ErrPinBlocked,
-          CTAPDeviceResponseCode::kCtap2ErrPinAuthInvalid,
-          CTAPDeviceResponseCode::kCtap2ErrPinAuthBlocked,
-          CTAPDeviceResponseCode::kCtap2ErrPinNotSet,
-          CTAPDeviceResponseCode::kCtap2ErrPinRequired,
-          CTAPDeviceResponseCode::kCtap2ErrPinPolicyViolation,
-          CTAPDeviceResponseCode::kCtap2ErrPinTokenExpired,
-          CTAPDeviceResponseCode::kCtap2ErrRequestTooLarge,
-          CTAPDeviceResponseCode::kCtap2ErrOther,
-          CTAPDeviceResponseCode::kCtap2ErrSpecLast,
-          CTAPDeviceResponseCode::kCtap2ErrExtensionFirst,
-          CTAPDeviceResponseCode::kCtap2ErrExtensionLast,
-          CTAPDeviceResponseCode::kCtap2ErrVendorFirst,
-          CTAPDeviceResponseCode::kCtap2ErrVendorLast};
-}
-
+// String key values for CTAP request optional parameters and
+// AuthenticatorGetInfo response.
 extern const char kResidentKeyMapKey[];
 extern const char kUserVerificationMapKey[];
 extern const char kUserPresenceMapKey[];
+
+// HID transport specific constants.
+extern const size_t kHidPacketSize;
+extern const uint32_t kHidBroadcastChannel;
+extern const size_t kHidInitPacketHeaderSize;
+extern const size_t kHidContinuationPacketHeader;
+extern const size_t kHidMaxPacketSize;
+extern const size_t kHidInitPacketDataSize;
+extern const size_t kHidContinuationPacketDataSize;
+extern const uint8_t kHidMaxLockSeconds;
+// Messages are limited to an init packet and 128 continuation packets.
+extern const size_t kHidMaxMessageSize;
 
 }  // namespace device
 

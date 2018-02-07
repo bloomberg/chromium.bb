@@ -12,27 +12,27 @@ namespace device {
 CTAPAuthenticatorRequestParam
 CTAPAuthenticatorRequestParam::CreateGetInfoParam() {
   return CTAPAuthenticatorRequestParam(
-      CTAPRequestCommand::kAuthenticatorGetInfo);
+      CtapRequestCommand::kAuthenticatorGetInfo);
 }
 
 // static
 CTAPAuthenticatorRequestParam
 CTAPAuthenticatorRequestParam::CreateGetNextAssertionParam() {
   return CTAPAuthenticatorRequestParam(
-      CTAPRequestCommand::kAuthenticatorGetNextAssertion);
+      CtapRequestCommand::kAuthenticatorGetNextAssertion);
 }
 
 // static
 CTAPAuthenticatorRequestParam
 CTAPAuthenticatorRequestParam::CreateResetParam() {
-  return CTAPAuthenticatorRequestParam(CTAPRequestCommand::kAuthenticatorReset);
+  return CTAPAuthenticatorRequestParam(CtapRequestCommand::kAuthenticatorReset);
 }
 
 // static
 CTAPAuthenticatorRequestParam
 CTAPAuthenticatorRequestParam::CreateCancelParam() {
   return CTAPAuthenticatorRequestParam(
-      CTAPRequestCommand::kAuthenticatorCancel);
+      CtapRequestCommand::kAuthenticatorCancel);
 }
 
 CTAPAuthenticatorRequestParam::CTAPAuthenticatorRequestParam(
@@ -49,7 +49,7 @@ base::Optional<std::vector<uint8_t>> CTAPAuthenticatorRequestParam::Encode()
 }
 
 CTAPAuthenticatorRequestParam::CTAPAuthenticatorRequestParam(
-    CTAPRequestCommand cmd)
+    CtapRequestCommand cmd)
     : cmd_(cmd) {}
 
 }  // namespace device

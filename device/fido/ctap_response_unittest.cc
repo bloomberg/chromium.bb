@@ -160,10 +160,10 @@ TEST(CTAPResponseTest, TestReadMakeCredentialResponse) {
   };
 
   auto make_credential_response = ReadCTAPMakeCredentialResponse(
-      CTAPDeviceResponseCode::kSuccess, kDeviceResponse);
+      CtapDeviceResponseCode::kSuccess, kDeviceResponse);
   ASSERT_TRUE(make_credential_response);
   EXPECT_EQ(make_credential_response->response_code(),
-            CTAPDeviceResponseCode::kSuccess);
+            CtapDeviceResponseCode::kSuccess);
 
   auto cbor_attestation_object =
       cbor::CBORReader::Read(make_credential_response->attestation_object());
@@ -302,11 +302,11 @@ TEST(CTAPResponseTest, TestReadGetAssertionResponse) {
   };
 
   auto get_assertion_response = ReadCTAPGetAssertionResponse(
-      CTAPDeviceResponseCode::kSuccess, kDeviceResponse);
+      CtapDeviceResponseCode::kSuccess, kDeviceResponse);
   ASSERT_TRUE(get_assertion_response);
 
   EXPECT_EQ(get_assertion_response->response_code(),
-            CTAPDeviceResponseCode::kSuccess);
+            CtapDeviceResponseCode::kSuccess);
   ASSERT_TRUE(get_assertion_response->num_credentials());
   EXPECT_EQ(*get_assertion_response->num_credentials(), 1u);
 
