@@ -43,7 +43,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       WorkerClients*,
       mojom::IPAddressSpace,
       const Vector<String>* origin_trial_tokens,
-      const base::UnguessableToken& devtools_worker_token,
+      const base::UnguessableToken& parent_devtools_token,
       std::unique_ptr<WorkerSettings>,
       V8CacheOptions,
       service_manager::mojom::blink::InterfaceProviderPtrInfo = {});
@@ -101,7 +101,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
 
   mojom::IPAddressSpace address_space;
 
-  base::UnguessableToken devtools_worker_token;
+  base::UnguessableToken parent_devtools_token;
 
   std::unique_ptr<WorkerSettings> worker_settings;
 

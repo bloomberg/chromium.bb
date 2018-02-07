@@ -31,6 +31,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/unguessable_token.h"
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/ThreadableLoadingContext.h"
@@ -152,7 +153,13 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
     return worker_reporting_proxy_;
   }
 
+  // Only callable on the main thread.
   void AppendDebuggerTask(CrossThreadClosure);
+
+  // Only callable on the main thread.
+  const base::UnguessableToken& GetDevToolsWorkerToken() const {
+    return devtools_worker_token_;
+  }
 
   // Runs only debugger tasks while paused in debugger.
   void StartRunningDebuggerTasksOnPauseOnWorkerThread();
@@ -306,6 +313,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   TimeDelta forcible_termination_delay_;
 
   std::unique_ptr<InspectorTaskRunner> inspector_task_runner_;
+  base::UnguessableToken devtools_worker_token_;
 
   // Created on the main thread, passed to the worker thread but should kept
   // being accessed only on the main thread.

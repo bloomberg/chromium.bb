@@ -20,7 +20,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     WorkerClients* worker_clients,
     mojom::IPAddressSpace address_space,
     const Vector<String>* origin_trial_tokens,
-    const base::UnguessableToken& devtools_worker_token,
+    const base::UnguessableToken& parent_devtools_token,
     std::unique_ptr<WorkerSettings> worker_settings,
     V8CacheOptions v8_cache_options,
     service_manager::mojom::blink::InterfaceProviderPtrInfo
@@ -32,7 +32,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
       starter_secure_context(starter_secure_context),
       worker_clients(worker_clients),
       address_space(address_space),
-      devtools_worker_token(devtools_worker_token),
+      parent_devtools_token(parent_devtools_token),
       worker_settings(std::move(worker_settings)),
       v8_cache_options(v8_cache_options),
       interface_provider(std::move(interface_provider_info)) {
