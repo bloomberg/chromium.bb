@@ -44,7 +44,9 @@
     </style>
     <style name="MainTheme" parent="MainThemeBase" />
 
-    <style name="SearchActivityTheme" parent="MainTheme">
+    <!-- Extend MainThemeBase rather than MainTheme to avoid values-v27 navigation bar colors from
+         being applied -->
+    <style name="SearchActivityTheme" parent="MainThemeBase">
         <item name="android:windowBackground">@color/google_grey_500</item>
     </style>
 
