@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/renderer_host/media/video_capture_provider_switcher.h"
+#include "content/public/browser/video_capture_device_launcher.h"
 
 #include "base/callback_helpers.h"
 

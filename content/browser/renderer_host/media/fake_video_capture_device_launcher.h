@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_FAKE_VIDEO_CAPTURE_DEVICE_LAUNCHER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_FAKE_VIDEO_CAPTURE_DEVICE_LAUNCHER_H_
 
-#include "content/browser/renderer_host/media/video_capture_provider.h"
+#include "content/public/browser/video_capture_device_launcher.h"
 #include "media/capture/video/video_capture_system.h"
 
 namespace content {
