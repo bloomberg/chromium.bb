@@ -245,9 +245,9 @@ TEST(av1_fwd_txfm2d_sse2, match) {
       Fwd_Txfm2d_Func ref_func = fwd_func_sse2_list[tx_size][0];
       Fwd_Txfm2d_Func target_func = fwd_func_sse2_list[tx_size][1];
       if (ref_func != NULL && target_func != NULL) {
-        int16_t input[64 * 64] = { 0 };
-        int32_t output[64 * 64] = { 0 };
-        int32_t ref_output[64 * 64] = { 0 };
+        DECLARE_ALIGNED(16, int16_t, input[64 * 64]) = { 0 };
+        DECLARE_ALIGNED(16, int32_t, output[64 * 64]) = { 0 };
+        DECLARE_ALIGNED(16, int32_t, ref_output[64 * 64]) = { 0 };
         int input_stride = 64;
         ACMRandom rnd(ACMRandom::DeterministicSeed());
         int rows = tx_size_high[tx_size];
