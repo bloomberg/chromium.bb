@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/lazy_instance.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -23,6 +24,10 @@
 
 namespace ui {
 namespace {
+
+// The maximum number of times to dump before throttling (to avoid sending
+// thousands of crash dumps).
+const int kMaxCrashDumps = 10;
 
 typedef std::map<gfx::AcceleratedWidget,AcceleratedWidgetMac*>
     WidgetToHelperMap;
@@ -153,6 +158,11 @@ void AcceleratedWidgetMac::UpdateCALayerTree(
         IOSurfaceLookupFromMachPort(ca_layer_params.io_surface_mach_port));
     if (!io_surface) {
       LOG(ERROR) << "Unable to open IOSurface for frame.";
+      static int dump_counter = kMaxCrashDumps;
+      if (dump_counter) {
+        dump_counter -= 1;
+        base::debug::DumpWithoutCrashing();
+      }
     }
     GotIOSurfaceFrame(io_surface, ca_layer_params.pixel_size,
                       ca_layer_params.scale_factor);
