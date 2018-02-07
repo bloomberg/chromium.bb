@@ -11,23 +11,19 @@
 #include "core/html/canvas/HTMLCanvasElement.h"
 #include "core/loader/EmptyClients.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class HTMLCanvasElementModuleTest : public ::testing::Test {
+class HTMLCanvasElementModuleTest : public PageTestBase {
  protected:
   virtual void SetUp() {
     Page::PageClients page_clients;
     FillWithEmptyClients(page_clients);
-    std::unique_ptr<DummyPageHolder> dummy_page_holder =
-        DummyPageHolder::Create(IntSize(800, 600), &page_clients);
-    Persistent<Document> document = &dummy_page_holder->GetDocument();
-    document->documentElement()->SetInnerHTMLFromString(
-        "<body><canvas id='c'></canvas></body>");
-    document->View()->UpdateAllLifecyclePhases();
-    canvas_element_ = ToHTMLCanvasElement(document->getElementById("c"));
+    SetupPageWithClients(&page_clients);
+    SetHtmlInnerHTML("<body><canvas id='c'></canvas></body>");
+    canvas_element_ = ToHTMLCanvasElement(GetElementById("c"));
   }
 
   HTMLCanvasElement& CanvasElement() const { return *canvas_element_; }

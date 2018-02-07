@@ -18,7 +18,7 @@
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/loader/EmptyClients.h"
 #include "core/paint/PaintLayer.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "modules/canvas/canvas2d/CanvasGradient.h"
 #include "modules/canvas/canvas2d/CanvasPattern.h"
 #include "modules/webgl/WebGLRenderingContext.h"
@@ -99,13 +99,11 @@ scoped_refptr<Image> FakeImageSource::GetSourceImageForCanvas(
 
 enum LinearPixelMathState { kLinearPixelMathDisabled, kLinearPixelMathEnabled };
 
-class CanvasRenderingContext2DTest : public ::testing::Test {
+class CanvasRenderingContext2DTest : public PageTestBase {
  protected:
   CanvasRenderingContext2DTest();
   void SetUp() override;
 
-  DummyPageHolder& Page() const { return *dummy_page_holder_; }
-  Document& GetDocument() const { return *document_; }
   HTMLCanvasElement& CanvasElement() const { return *canvas_element_; }
   bool IsCanvasResourceHostSet(Canvas2DLayerBridge* bridge) {
     return !!bridge->resource_host_;
@@ -138,8 +136,6 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
       Canvas2DLayerBridge::AccelerationMode);
 
  private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
-  Persistent<Document> document_;
   Persistent<HTMLCanvasElement> canvas_element_;
   Persistent<MemoryCache> global_memory_cache_;
 
@@ -212,13 +208,10 @@ void CanvasRenderingContext2DTest::SetUp() {
 
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
-  dummy_page_holder_ = DummyPageHolder::Create(
-      IntSize(800, 600), &page_clients, nullptr, override_settings_function_);
-  document_ = &dummy_page_holder_->GetDocument();
-  document_->documentElement()->SetInnerHTMLFromString(
+  SetupPageWithClients(&page_clients, nullptr, override_settings_function_);
+  SetHtmlInnerHTML(
       "<body><canvas id='c'></canvas><canvas id='d'></canvas></body>");
-  document_->View()->UpdateAllLifecyclePhases();
-  canvas_element_ = ToHTMLCanvasElement(document_->getElementById("c"));
+  canvas_element_ = ToHTMLCanvasElement(GetElementById("c"));
 
   full_image_data_ = ImageData::Create(IntSize(10, 10));
   partial_image_data_ = ImageData::Create(IntSize(2, 2));
