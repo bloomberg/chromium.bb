@@ -460,13 +460,8 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
 
   (void)gm_mv_candidates;
 
-#if CONFIG_MV_COMPRESS
   mi_pos.row = (mi_row & 0x01) ? blk_row : blk_row + 1;
   mi_pos.col = (mi_col & 0x01) ? blk_col : blk_col + 1;
-#else
-  mi_pos.row = blk_row;
-  mi_pos.col = blk_col;
-#endif
 
   if (!is_inside(&xd->tile, mi_col, mi_row, cm->mi_rows, cm, &mi_pos))
     return coll_blk_count;
@@ -623,13 +618,8 @@ static int add_col_ref_mv(const AV1_COMMON *cm,
   mi_pos.row = blk_row;
   mi_pos.col = blk_col;
 #else
-#if CONFIG_MV_COMPRESS
   mi_pos.row = (mi_row & 0x01) ? blk_row : blk_row + 1;
   mi_pos.col = (mi_col & 0x01) ? blk_col : blk_col + 1;
-#else
-  mi_pos.row = blk_row;
-  mi_pos.col = blk_col;
-#endif
 #endif  // CONFIG_TMV
 
   if (!is_inside(&xd->tile, mi_col, mi_row, cm->mi_rows, cm, &mi_pos))
@@ -692,19 +682,12 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
           : NULL;
 #else
   const int prev_frame_mvs_stride = cm->mi_cols;
-#if CONFIG_MV_COMPRESS
   const MV_REF *const prev_frame_mvs_base =
       cm->use_prev_frame_mvs
           ? cm->prev_frame->mvs +
                 (((mi_row >> 1) << 1) + 1) * prev_frame_mvs_stride +
                 ((mi_col >> 1) << 1) + 1
           : NULL;
-#else
-  const MV_REF *const prev_frame_mvs_base =
-      cm->use_prev_frame_mvs
-          ? cm->prev_frame->mvs + mi_row * prev_frame_mvs_stride + mi_col
-          : NULL;
-#endif
 #endif  // CONFIG_TMV
 
   const int bs = AOMMAX(xd->n8_w, xd->n8_h);
@@ -1014,7 +997,6 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                 (tmi_col >> 1)
           : NULL;
 #else
-#if CONFIG_MV_COMPRESS
   const TileInfo *const tile_ = &xd->tile;
   int mi_row_end = tile_->mi_row_end;
   int mi_col_end = tile_->mi_col_end;
@@ -1027,12 +1009,6 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                 AOMMIN(((mi_col >> 1) << 1) + 1 + (((xd->n8_w - 1) >> 1) << 1),
                        mi_col_end - 1)
           : NULL;
-#else
-  const MV_REF *const prev_frame_mvs =
-      cm->use_prev_frame_mvs
-          ? cm->prev_frame->mvs + mi_row * cm->mi_cols + mi_col
-          : NULL;
-#endif  // CONFIG_MV_COMPRESS
 #endif  // CONFIG_TMV
 #endif  // CONFIG_MFMV
 
