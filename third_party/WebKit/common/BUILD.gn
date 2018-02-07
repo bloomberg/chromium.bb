@@ -54,6 +54,8 @@ jumbo_component("blink_common") {
     "origin_trials/trial_token_validator.cc",
     "origin_trials/trial_token_validator.h",
     "page/launching_process_state.h",
+    "sampling_heap_profiler/sampling_heap_profiler.cc",
+    "sampling_heap_profiler/sampling_heap_profiler.h",
     "sandbox_flags.h",
   ]
 
