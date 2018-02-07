@@ -1537,6 +1537,7 @@ test("content_unittests") {
     "../renderer/android/disambiguation_popup_helper_unittest.cc",
     "../renderer/bmp_image_decoder_unittest.cc",
     "../renderer/categorized_worker_pool_unittest.cc",
+    "../renderer/child_frame_compositing_helper_unittest.cc",
     "../renderer/device_sensors/device_motion_event_pump_unittest.cc",
     "../renderer/device_sensors/device_orientation_event_pump_unittest.cc",
     "../renderer/device_sensors/fake_sensor_and_provider.cc",

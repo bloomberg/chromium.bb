@@ -217,7 +217,7 @@ void BrowserPlugin::Detach() {
 
   attached_ = false;
   guest_crashed_ = false;
-  compositing_helper_->OnContainerDestroy();
+  web_layer_ = nullptr;
 
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_Detach(browser_plugin_instance_id_));
@@ -303,7 +303,8 @@ void BrowserPlugin::OnAdvanceFocus(int browser_plugin_instance_id,
 
 void BrowserPlugin::OnGuestGone(int browser_plugin_instance_id) {
   guest_crashed_ = true;
-  compositing_helper_->ChildFrameGone();
+  compositing_helper_->ChildFrameGone(frame_rect().size(),
+                                      screen_info().device_scale_factor);
 }
 
 void BrowserPlugin::OnGuestReady(int browser_plugin_instance_id,
@@ -402,6 +403,12 @@ void BrowserPlugin::UpdateGuestFocusState(blink::WebFocusType focus_type) {
 
 void BrowserPlugin::ScreenInfoChanged(const ScreenInfo& screen_info) {
   pending_resize_params_.screen_info = screen_info;
+  if (guest_crashed_) {
+    // Update the sad page to match the current ScreenInfo.
+    compositing_helper_->ChildFrameGone(frame_rect().size(),
+                                        screen_info.device_scale_factor);
+    return;
+  }
   WasResized();
 }
 
@@ -438,8 +445,7 @@ bool BrowserPlugin::Initialize(WebPluginContainer* container) {
       FROM_HERE, base::BindOnce(&BrowserPlugin::UpdateInternalInstanceId,
                                 weak_ptr_factory_.GetWeakPtr()));
 
-  compositing_helper_.reset(ChildFrameCompositingHelper::CreateForBrowserPlugin(
-      weak_ptr_factory_.GetWeakPtr()));
+  compositing_helper_ = std::make_unique<ChildFrameCompositingHelper>(this);
 
   embedding_render_widget_ =
       RenderFrameImpl::FromWebFrame(container_->GetDocument().GetFrame())
@@ -524,6 +530,12 @@ void BrowserPlugin::UpdateGeometry(const WebRect& plugin_rect_in_viewport,
 
   pending_resize_params_.frame_rect = frame_rect;
   pending_resize_params_.screen_info = embedding_render_widget_->screen_info();
+  if (guest_crashed_) {
+    // Update the sad page to match the current ScreenInfo.
+    compositing_helper_->ChildFrameGone(frame_rect.size(),
+                                        screen_info().device_scale_factor);
+    return;
+  }
   WasResized();
 }
 
@@ -765,5 +777,19 @@ void BrowserPlugin::OnMusEmbeddedFrameSinkIdAllocated(
   OnGuestReady(browser_plugin_instance_id_, frame_sink_id);
 }
 #endif
+
+blink::WebLayer* BrowserPlugin::GetLayer() {
+  return web_layer_.get();
+}
+
+void BrowserPlugin::SetLayer(std::unique_ptr<blink::WebLayer> web_layer) {
+  if (container_)
+    container_->SetWebLayer(web_layer.get());
+  web_layer_ = std::move(web_layer);
+}
+
+SkBitmap* BrowserPlugin::GetSadPageBitmap() {
+  return GetContentClient()->renderer()->GetSadWebViewBitmap();
+}
 
 }  // namespace content
