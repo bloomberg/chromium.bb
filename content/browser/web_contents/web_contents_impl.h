@@ -1329,6 +1329,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Reattaches this inner WebContents to its outer WebContents.
   void ReattachToOuterWebContentsFrame();
 
+  // A helper for clearing the link status bubble after navigating away.
+  // See also UpdateTargetURL.
+  void ClearTargetURL();
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -1666,6 +1670,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool has_persistent_video_ = false;
 
   bool was_ever_audible_ = false;
+
+  // Helper variable for resolving races in UpdateTargetURL / ClearTargetURL.
+  RenderViewHost* view_that_set_last_target_url_ = nullptr;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;

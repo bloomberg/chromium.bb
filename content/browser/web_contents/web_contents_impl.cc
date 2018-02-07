@@ -3783,7 +3783,7 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
     // clicking on a link); see bugs 1184641 and 980803. We don't want to
     // clear the bubble when a user navigates to a named anchor in the same
     // page.
-    UpdateTargetURL(render_frame_host->GetRenderViewHost(), GURL());
+    ClearTargetURL();
 
     RenderWidgetHostViewBase* rwhvb =
         static_cast<RenderWidgetHostViewBase*>(GetRenderWidgetHostView());
@@ -4951,14 +4951,27 @@ void WebContentsImpl::RenderViewDeleted(RenderViewHost* rvh) {
 void WebContentsImpl::UpdateTargetURL(RenderViewHost* render_view_host,
                                       const GURL& url) {
   if (fullscreen_widget_routing_id_ != MSG_ROUTING_NONE) {
-    // If we're fullscreen only update the url if it's from the fullscreen
-    // renderer.
+    // If we're in flash fullscreen (i.e. Pepper plugin fullscreen) only update
+    // the url if it's from the fullscreen renderer.
     RenderWidgetHostView* fs = GetFullscreenRenderWidgetHostView();
     if (fs && fs->GetRenderWidgetHost() != render_view_host->GetWidget())
       return;
   }
+
+  // In case of racey updates from multiple RenderViewHosts, the last URL should
+  // be shown - see also some discussion in https://crbug.com/807776.
+  if (!url.is_valid() && render_view_host != view_that_set_last_target_url_)
+    return;
+  view_that_set_last_target_url_ = url.is_valid() ? render_view_host : nullptr;
+
   if (delegate_)
     delegate_->UpdateTargetURL(this, url);
+}
+
+void WebContentsImpl::ClearTargetURL() {
+  view_that_set_last_target_url_ = nullptr;
+  if (delegate_)
+    delegate_->UpdateTargetURL(this, GURL());
 }
 
 void WebContentsImpl::Close(RenderViewHost* rvh) {
