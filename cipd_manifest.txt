@@ -18,3 +18,6 @@ infra/tools/mac_toolchain/${os=mac}-${arch} git_revision:d4dc0c29a004b59dcca1e69
 
 # LUCI rpc command line tool
 infra/tools/prpc/${platform} git_revision:bf5820217a310115ae8b971dee6ff6cb894ea3bf
+
+# LUCI authentication command line tool
+infra/tools/luci-auth/${platform} git_revision:bf5820217a310115ae8b971dee6ff6cb894ea3bf
