@@ -17,6 +17,7 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_aliases.h"
 #include "extensions/common/features/json_feature_provider_source.h"
+#include "extensions/common/features/manifest_feature.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/permissions/permission_message_provider.h"
@@ -107,6 +108,12 @@ std::unique_ptr<FeatureProvider> CastExtensionsClient::CreateFeatureProvider(
     provider = std::make_unique<ShellAPIFeatureProvider>();
   } else if (name == "manifest") {
     provider = std::make_unique<ShellManifestFeatureProvider>();
+
+    auto* feature = new extensions::ManifestFeature();
+    feature->set_name("cast_url");
+    feature->set_channel(version_info::Channel::STABLE);
+    feature->set_extension_types({extensions::Manifest::TYPE_PLATFORM_APP});
+    provider->AddFeature("cast_url", feature);
   } else if (name == "permission") {
     provider = std::make_unique<ShellPermissionFeatureProvider>();
   } else if (name == "behavior") {
