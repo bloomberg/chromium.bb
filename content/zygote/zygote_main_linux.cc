@@ -49,11 +49,12 @@
 #include "services/service_manager/sandbox/linux/sandbox_debug_handling_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #include "services/service_manager/sandbox/sandbox.h"
-#include "third_party/WebKit/public/web/linux/WebFontRendering.h"
+#include "third_party/WebKit/public/platform/WebFontRenderStyle.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
 #include "third_party/boringssl/src/include/openssl/rand.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
+#include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkFontMgr_android.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -200,7 +201,8 @@ static void ZygotePreSandboxInit() {
     custom.fFontsXml = font_config.c_str();
     custom.fIsolated = true;
 
-    blink::WebFontRendering::SetSkiaFontManager(SkFontMgr_New_Android(&custom));
+    blink::WebFontRenderStyle::SetSkiaFontManager(
+        SkFontMgr_New_Android(&custom));
   }
 }
 

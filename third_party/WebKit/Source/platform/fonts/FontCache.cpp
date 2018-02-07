@@ -67,6 +67,12 @@ FontCache::FontCache() : purge_prevent_count_(0), font_manager_(nullptr) {}
 
 SkFontMgr* FontCache::static_font_manager_ = nullptr;
 
+// The default variable-width font size. We use this as the default font
+// size for the "system font", and as a base size (which we then shrink) for
+// form control fonts.
+// static
+float FontCache::default_font_size_ = 16.0;
+
 #if defined(OS_WIN)
 bool FontCache::antialiased_text_enabled_ = false;
 bool FontCache::lcd_text_enabled_ = false;

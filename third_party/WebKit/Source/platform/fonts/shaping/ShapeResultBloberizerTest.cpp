@@ -24,7 +24,7 @@ namespace {
 static scoped_refptr<SimpleFontData> CreateTestSimpleFontData(
     bool force_rotation = false) {
   FontPlatformData platform_data(
-      PaintTypeface::FromSkTypeface(SkTypeface::MakeDefault()), nullptr, 10,
+      PaintTypeface::FromSkTypeface(SkTypeface::MakeDefault()), CString(), 10,
       false, false,
       force_rotation ? FontOrientation::kVerticalUpright
                      : FontOrientation::kHorizontal);

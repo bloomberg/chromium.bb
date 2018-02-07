@@ -62,10 +62,6 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/switches.h"
 
-#if defined(__linux__) || defined(ANDROID)
-#include "third_party/WebKit/public/web/linux/WebFontRendering.h"
-#endif
-
 using namespace blink;
 
 namespace test_runner {

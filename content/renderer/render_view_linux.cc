@@ -5,11 +5,11 @@
 #include "content/renderer/render_view_impl.h"
 
 #include "content/public/common/renderer_preferences.h"
-#include "third_party/WebKit/public/web/linux/WebFontRendering.h"
+#include "third_party/WebKit/public/platform/WebFontRenderStyle.h"
 #include "third_party/skia/include/core/SkFontLCDConfig.h"
 #include "ui/gfx/font_render_params.h"
 
-using blink::WebFontRendering;
+using blink::WebFontRenderStyle;
 
 namespace content {
 
@@ -51,27 +51,27 @@ SkPaint::Hinting RendererPreferencesToSkiaHinting(
 
 void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
   const RendererPreferences& prefs = renderer_preferences_;
-  WebFontRendering::SetHinting(RendererPreferencesToSkiaHinting(prefs));
-  WebFontRendering::SetAutoHint(prefs.use_autohinter);
-  WebFontRendering::SetUseBitmaps(prefs.use_bitmaps);
+  WebFontRenderStyle::SetHinting(RendererPreferencesToSkiaHinting(prefs));
+  WebFontRenderStyle::SetAutoHint(prefs.use_autohinter);
+  WebFontRenderStyle::SetUseBitmaps(prefs.use_bitmaps);
   SkFontLCDConfig::SetSubpixelOrder(
       gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrder(
           prefs.subpixel_rendering));
   SkFontLCDConfig::SetSubpixelOrientation(
       gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrientation(
           prefs.subpixel_rendering));
-  WebFontRendering::SetAntiAlias(prefs.should_antialias_text);
-  WebFontRendering::SetSubpixelRendering(
+  WebFontRenderStyle::SetAntiAlias(prefs.should_antialias_text);
+  WebFontRenderStyle::SetSubpixelRendering(
       prefs.subpixel_rendering !=
       gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE);
-  WebFontRendering::SetSubpixelPositioning(prefs.use_subpixel_positioning);
+  WebFontRenderStyle::SetSubpixelPositioning(prefs.use_subpixel_positioning);
   if (prefs.default_font_size > 0 &&
       prefs.default_font_size <= kMaxDefaultFontSize) {
-    WebFontRendering::SetDefaultFontSize(prefs.default_font_size);
+    WebFontRenderStyle::SetDefaultFontSize(prefs.default_font_size);
   }
 #if !defined(OS_ANDROID)
   if (!prefs.system_font_family_name.empty()) {
-    WebFontRendering::SetSystemFontFamily(
+    WebFontRenderStyle::SetSystemFontFamily(
         blink::WebString::FromUTF8(prefs.system_font_family_name));
   }
 #endif
