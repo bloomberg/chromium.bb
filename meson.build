@@ -294,7 +294,7 @@ libdrm = shared_library(
 
 ext_libdrm = declare_dependency(
   link_with : libdrm,
-  include_directories : inc_drm,
+  include_directories : [inc_root, inc_drm],
 )
 
 install_headers('libsync.h', 'xf86drm.h', 'xf86drmMode.h')
