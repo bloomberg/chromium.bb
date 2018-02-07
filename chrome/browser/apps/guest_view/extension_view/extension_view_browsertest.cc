@@ -146,7 +146,9 @@ IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, LoadAPISameIdDifferentSrc) {
   TestLoadApiHelper("testLoadAPISameIdDifferentSrc");
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, LoadAPILoadOtherExtension) {
+// Flaky, see crbug.com/810007
+IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest,
+                       DISABLED_LoadAPILoadOtherExtension) {
   TestLoadApiHelper("testLoadAPILoadOtherExtension");
 }
 
