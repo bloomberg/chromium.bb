@@ -1496,7 +1496,7 @@ void av1_filter_intra_edge_c(uint8_t *p, int sz, int strength) {
   uint8_t edge[129];
 
   memcpy(edge, p, sz * sizeof(*p));
-  for (int i = 1; i < sz - 1; i++) {
+  for (int i = 1; i < sz; i++) {
     int s = 0;
     for (int j = 0; j < INTRA_EDGE_TAPS; j++) {
       int k = i - 2 + j;
@@ -1531,7 +1531,7 @@ void av1_filter_intra_edge_high_c(uint16_t *p, int sz, int strength) {
   uint16_t edge[129];
 
   memcpy(edge, p, sz * sizeof(*p));
-  for (int i = 1; i < sz - 1; i++) {
+  for (int i = 1; i < sz; i++) {
     int s = 0;
     for (int j = 0; j < INTRA_EDGE_TAPS; j++) {
       int k = i - 2 + j;
@@ -1797,14 +1797,13 @@ static void build_intra_predictors_high(
       if (need_above && n_top_px > 0) {
         const int strength =
             intra_edge_filter_strength(txwpx, txhpx, p_angle - 90, filt_type);
-        const int n_px = n_top_px + ab_le + (need_right ? n_topright_px : 0);
+        const int n_px = n_top_px + ab_le + (need_right ? txhpx : 0);
         av1_filter_intra_edge_high(above_row - ab_le, n_px, strength);
       }
       if (need_left && n_left_px > 0) {
         const int strength =
             intra_edge_filter_strength(txhpx, txwpx, p_angle - 180, filt_type);
-        const int n_px =
-            n_left_px + ab_le + (need_bottom ? n_bottomleft_px : 0);
+        const int n_px = n_left_px + ab_le + (need_bottom ? txwpx : 0);
         av1_filter_intra_edge_high(left_col - ab_le, n_px, strength);
       }
     }
@@ -2015,14 +2014,13 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
       if (need_above && n_top_px > 0) {
         const int strength =
             intra_edge_filter_strength(txwpx, txhpx, p_angle - 90, filt_type);
-        const int n_px = n_top_px + ab_le + (need_right ? n_topright_px : 0);
+        const int n_px = n_top_px + ab_le + (need_right ? txhpx : 0);
         av1_filter_intra_edge(above_row - ab_le, n_px, strength);
       }
       if (need_left && n_left_px > 0) {
         const int strength =
             intra_edge_filter_strength(txhpx, txwpx, p_angle - 180, filt_type);
-        const int n_px =
-            n_left_px + ab_le + (need_bottom ? n_bottomleft_px : 0);
+        const int n_px = n_left_px + ab_le + (need_bottom ? txwpx : 0);
         av1_filter_intra_edge(left_col - ab_le, n_px, strength);
       }
     }
