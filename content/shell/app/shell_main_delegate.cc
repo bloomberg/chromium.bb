@@ -369,11 +369,7 @@ void ShellMainDelegate::InitializeResourceBundle() {
   ui::ResourceBundle::InitSharedInstanceWithPakPath(GetResourcesPakFilePath());
 #else
   base::FilePath pak_file;
-#if defined(OS_FUCHSIA)
-  bool r = PathService::Get(base::DIR_FUCHSIA_RESOURCES, &pak_file);
-#else
-  bool r = PathService::Get(base::DIR_MODULE, &pak_file);
-#endif
+  bool r = PathService::Get(base::DIR_ASSETS, &pak_file);
   DCHECK(r);
   pak_file = pak_file.Append(FILE_PATH_LITERAL("content_shell.pak"));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
