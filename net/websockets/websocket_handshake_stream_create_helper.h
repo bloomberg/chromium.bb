@@ -51,7 +51,7 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeStreamCreateHelper
   }
 
  protected:
-  // This is used by DeterministicKeyWebSocketHandshakeStreamCreateHelper.
+  // This is used by TestWebSocketHandshakeStreamCreateHelper.
   // The default implementation does nothing.
   virtual void OnBasicStreamCreated(WebSocketBasicHandshakeStream* stream);
 
