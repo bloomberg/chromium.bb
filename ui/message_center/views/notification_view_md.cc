@@ -1113,13 +1113,13 @@ void NotificationViewMD::CreateOrUpdateActionButtonViews(
 void NotificationViewMD::CreateOrUpdateInlineSettingsViews(
     const Notification& notification) {
   if (settings_row_) {
-    DCHECK_EQ(SettingsButtonHandler::TRAY,
+    DCHECK_EQ(SettingsButtonHandler::INLINE,
               notification.rich_notification_data().settings_button_handler);
     return;
   }
 
   if (notification.rich_notification_data().settings_button_handler !=
-      SettingsButtonHandler::TRAY) {
+      SettingsButtonHandler::INLINE) {
     return;
   }
 
