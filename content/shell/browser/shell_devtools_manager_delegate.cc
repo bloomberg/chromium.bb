@@ -51,11 +51,6 @@ namespace content {
 
 namespace {
 
-#if defined(OS_ANDROID)
-const char kFrontEndURL[] =
-    "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/inspector.html";
-#endif
-
 const int kBackLog = 10;
 
 base::subtle::Atomic32 g_last_used_port;
@@ -164,12 +159,8 @@ int ShellDevToolsManagerDelegate::GetHttpHandlerPort() {
 void ShellDevToolsManagerDelegate::StartHttpHandler(
     BrowserContext* browser_context) {
   std::string frontend_url;
-#if defined(OS_ANDROID)
-  frontend_url = base::StringPrintf(kFrontEndURL, GetWebKitRevision().c_str());
-#endif
   DevToolsAgentHost::StartRemoteDebuggingServer(
-      CreateSocketFactory(), frontend_url, browser_context->GetPath(),
-      base::FilePath());
+      CreateSocketFactory(), browser_context->GetPath(), base::FilePath());
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -211,13 +202,11 @@ std::string ShellDevToolsManagerDelegate::GetDiscoveryPageHTML() {
 #endif
 }
 
-std::string ShellDevToolsManagerDelegate::GetFrontendResource(
-    const std::string& path) {
+bool ShellDevToolsManagerDelegate::HasBundledFrontendResources() {
 #if defined(OS_ANDROID)
-  return std::string();
-#else
-  return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
+  return false;
 #endif
+  return true;
 }
 
 }  // namespace content

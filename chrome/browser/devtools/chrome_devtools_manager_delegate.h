@@ -50,7 +50,7 @@ class ChromeDevToolsManagerDelegate :
   scoped_refptr<content::DevToolsAgentHost> CreateNewTarget(
       const GURL& url) override;
   std::string GetDiscoveryPageHTML() override;
-  std::string GetFrontendResource(const std::string& path) override;
+  bool HasBundledFrontendResources() override;
 
   // content::DevToolsAgentHostObserver overrides.
   void DevToolsAgentHostAttached(

@@ -54,9 +54,8 @@ std::string DevToolsManagerDelegate::GetDiscoveryPageHTML() {
   return std::string();
 }
 
-std::string DevToolsManagerDelegate::GetFrontendResource(
-    const std::string& path) {
-  return std::string();
+bool DevToolsManagerDelegate::HasBundledFrontendResources() {
+  return false;
 }
 
 bool DevToolsManagerDelegate::IsBrowserTargetDiscoverable() {

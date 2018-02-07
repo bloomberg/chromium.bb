@@ -30,8 +30,6 @@ using content::DevToolsAgentHost;
 
 namespace {
 
-const char kFrontEndURL[] =
-    "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/inspector.html";
 const char kSocketNameFormat[] = "webview_devtools_remote_%d";
 const char kTetheringSocketName[] = "webview_devtools_tethering_%d_%d";
 
@@ -96,7 +94,6 @@ void AwDevToolsServer::Start() {
           base::StringPrintf(kSocketNameFormat, getpid())));
   DevToolsAgentHost::StartRemoteDebuggingServer(
       std::move(factory),
-      base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
       base::FilePath(), base::FilePath());
 }
 

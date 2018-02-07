@@ -30,6 +30,7 @@
 #include "content/browser/devtools/grit/devtools_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
+#include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/devtools_socket_factory.h"
 #include "content/public/common/content_client.h"
@@ -76,6 +77,8 @@ const char kTargetDevtoolsFrontendUrlField[] = "devtoolsFrontendUrl";
 const int32_t kSendBufferSizeForDevTools = 256 * 1024 * 1024;  // 256Mb
 const int32_t kReceiveBufferSizeForDevTools = 100 * 1024 * 1024;  // 100Mb
 
+const char kFrontEndURL[] =
+    "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/inspector.html";
 }  // namespace
 
 // ServerWrapper -------------------------------------------------------------
@@ -84,7 +87,7 @@ class ServerWrapper : net::HttpServer::Delegate {
  public:
   ServerWrapper(base::WeakPtr<DevToolsHttpHandler> handler,
                 std::unique_ptr<net::ServerSocket> socket,
-                const base::FilePath& frontend_dir,
+                const base::FilePath& debug_frontend_dir,
                 bool bundles_resources);
 
   int GetLocalAddress(net::IPEndPoint* address);
@@ -116,17 +119,17 @@ class ServerWrapper : net::HttpServer::Delegate {
 
   base::WeakPtr<DevToolsHttpHandler> handler_;
   std::unique_ptr<net::HttpServer> server_;
-  base::FilePath frontend_dir_;
+  base::FilePath debug_frontend_dir_;
   bool bundles_resources_;
 };
 
 ServerWrapper::ServerWrapper(base::WeakPtr<DevToolsHttpHandler> handler,
                              std::unique_ptr<net::ServerSocket> socket,
-                             const base::FilePath& frontend_dir,
+                             const base::FilePath& debug_frontend_dir,
                              bool bundles_resources)
     : handler_(handler),
       server_(new net::HttpServer(std::move(socket), this)),
-      frontend_dir_(frontend_dir),
+      debug_frontend_dir_(debug_frontend_dir),
       bundles_resources_(bundles_resources) {}
 
 int ServerWrapper::GetLocalAddress(net::IPEndPoint* address) {
@@ -220,7 +223,7 @@ void StartServerOnHandlerThread(
     std::unique_ptr<base::Thread> thread,
     std::unique_ptr<DevToolsSocketFactory> socket_factory,
     const base::FilePath& output_directory,
-    const base::FilePath& frontend_dir,
+    const base::FilePath& debug_frontend_dir,
     const std::string& browser_guid,
     bool bundles_resources) {
   DCHECK(thread->task_runner()->BelongsToCurrentThread());
@@ -230,7 +233,8 @@ void StartServerOnHandlerThread(
   std::unique_ptr<net::IPEndPoint> ip_address(new net::IPEndPoint);
   if (server_socket) {
     server_wrapper.reset(new ServerWrapper(handler, std::move(server_socket),
-                                           frontend_dir, bundles_resources));
+                                           debug_frontend_dir,
+                                           bundles_resources));
     if (server_wrapper->GetLocalAddress(ip_address.get()) != net::OK)
       ip_address.reset();
   } else {
@@ -406,8 +410,8 @@ void ServerWrapper::OnHttpRequest(int connection_id,
   std::string filename = PathWithoutParams(info.path.substr(10));
   std::string mime_type = GetMimeType(filename);
 
-  if (!frontend_dir_.empty()) {
-    base::FilePath path = frontend_dir_.AppendASCII(filename);
+  if (!debug_frontend_dir_.empty()) {
+    base::FilePath path = debug_frontend_dir_.AppendASCII(filename);
     std::string data;
     base::ReadFileToString(path, &data);
     // TODO (https://crbug.com/656607): Add proper annotation.
@@ -661,9 +665,13 @@ void DevToolsHttpHandler::OnDiscoveryPageRequest(int connection_id) {
 
 void DevToolsHttpHandler::OnFrontendResourceRequest(
     int connection_id, const std::string& path) {
+#if defined(OS_ANDROID)
+  Send404(connection_id);
+#else
   Send200(connection_id,
-          delegate_->GetFrontendResource(path),
+          content::DevToolsFrontendHost::GetFrontendResource(path).as_string(),
           GetMimeType(path));
+#endif
 }
 
 void DevToolsHttpHandler::OnWebSocketRequest(
@@ -722,18 +730,13 @@ void DevToolsHttpHandler::OnClose(int connection_id) {
 DevToolsHttpHandler::DevToolsHttpHandler(
     DevToolsManagerDelegate* delegate,
     std::unique_ptr<DevToolsSocketFactory> socket_factory,
-    const std::string& frontend_url,
     const base::FilePath& output_directory,
     const base::FilePath& debug_frontend_dir)
-    : frontend_url_(frontend_url), delegate_(delegate), weak_factory_(this) {
+    : delegate_(delegate), weak_factory_(this) {
   browser_guid_ = delegate_->IsBrowserTargetDiscoverable()
                       ? kBrowserUrlPrefix
                       : base::StringPrintf("%s/%s", kBrowserUrlPrefix,
                                            base::GenerateGUID().c_str());
-  bool bundles_resources = frontend_url_.empty();
-  if (frontend_url_.empty())
-    frontend_url_ = "/devtools/inspector.html";
-
   std::unique_ptr<base::Thread> thread(
       new base::Thread(kDevToolsHandlerThreadName));
   base::Thread::Options options;
@@ -745,8 +748,13 @@ DevToolsHttpHandler::DevToolsHttpHandler(
         base::BindOnce(&StartServerOnHandlerThread, weak_factory_.GetWeakPtr(),
                        std::move(thread), std::move(socket_factory),
                        output_directory, debug_frontend_dir, browser_guid_,
-                       bundles_resources));
+                       delegate_->HasBundledFrontendResources()));
   }
+  if (delegate_->HasBundledFrontendResources())
+    frontend_url_ = "/devtools/inspector.html";
+  else
+    frontend_url_ =
+        base::StringPrintf(kFrontEndURL, GetWebKitRevision().c_str());
 }
 
 void DevToolsHttpHandler::ServerStarted(

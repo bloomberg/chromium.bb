@@ -35,8 +35,6 @@ namespace shell {
 
 namespace {
 
-const char kFrontEndURL[] =
-    "https://chrome-devtools-frontend.appspot.com/serve_rev/%s/inspector.html";
 const uint16_t kDefaultRemoteDebuggingPort = 9222;
 
 const int kBackLog = 10;
@@ -115,10 +113,6 @@ std::unique_ptr<content::DevToolsSocketFactory> CreateSocketFactory(
 #endif
 }
 
-std::string GetFrontendUrl() {
-  return base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str());
-}
-
 uint16_t GetPort() {
   std::string port_str =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -153,8 +147,7 @@ void RemoteDebuggingServer::EnableWebContentsForDebugging(
 
   if (!is_started_) {
     content::DevToolsAgentHost::StartRemoteDebuggingServer(
-        CreateSocketFactory(port_), GetFrontendUrl(), base::FilePath(),
-        base::FilePath());
+        CreateSocketFactory(port_), base::FilePath(), base::FilePath());
     LOG(INFO) << "Devtools started: port=" << port_;
     is_started_ = true;
   }
