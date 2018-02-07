@@ -322,6 +322,10 @@ class GitRepo(object):
     env = self.get_git_commit_env(commit_data)
 
     for fname, file_data in commit_data.iteritems():
+      # If it isn't a string, it's one of the special keys.
+      if not isinstance(fname, basestring):
+        continue
+
       deleted = False
       if 'data' in file_data:
         data = file_data.get('data')
@@ -358,12 +362,11 @@ class GitRepo(object):
         key = getattr(self, singleton)
         if key in commit_data:
           val = commit_data[key]
+        elif suffix == 'DATE':
+          val = self._date
+          self._date += datetime.timedelta(days=1)
         else:
-          if suffix == 'DATE':
-            val = self._date
-            self._date += datetime.timedelta(days=1)
-          else:
-            val = getattr(self, 'DEFAULT_%s' % singleton)
+          val = getattr(self, 'DEFAULT_%s' % singleton)
         env['GIT_%s' % singleton] = str(val)
     return env
 
