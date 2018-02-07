@@ -96,7 +96,7 @@ class DownloadItemNotificationTest : public testing::Test {
   std::unique_ptr<message_center::Notification> LookUpNotification() const {
     std::vector<message_center::Notification> notifications =
         service_tester_->GetDisplayedNotificationsForType(
-            NotificationHandler::Type::DOWNLOAD);
+            NotificationHandler::Type::TRANSIENT);
     for (const auto& notification : notifications) {
       if (notification.id() == download_item_notification_->GetNotificationId())
         return std::make_unique<message_center::Notification>(notification);
@@ -106,13 +106,13 @@ class DownloadItemNotificationTest : public testing::Test {
 
   size_t NotificationCount() const {
     return service_tester_
-        ->GetDisplayedNotificationsForType(NotificationHandler::Type::DOWNLOAD)
+        ->GetDisplayedNotificationsForType(NotificationHandler::Type::TRANSIENT)
         .size();
   }
 
   void RemoveNotification() {
     service_tester_->RemoveNotification(
-        NotificationHandler::Type::DOWNLOAD,
+        NotificationHandler::Type::TRANSIENT,
         download_item_notification_->GetNotificationId(), false);
   }
 
@@ -131,7 +131,7 @@ class DownloadItemNotificationTest : public testing::Test {
     download_item_notification_ =
         download_notification_manager_->items_[download_item_.get()].get();
     NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
-        NotificationHandler::Type::DOWNLOAD,
+        NotificationHandler::Type::TRANSIENT,
         *download_item_notification_->notification_);
   }
 

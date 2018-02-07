@@ -202,13 +202,6 @@ NotificationHandler* NotificationDisplayServiceImpl::GetNotificationHandler(
   return nullptr;
 }
 
-void NotificationDisplayServiceImpl::RemoveNotificationHandler(
-    NotificationHandler::Type notification_type) {
-  auto iter = notification_handlers_.find(notification_type);
-  DCHECK(iter != notification_handlers_.end());
-  notification_handlers_.erase(iter);
-}
-
 void NotificationDisplayServiceImpl::Display(
     NotificationHandler::Type notification_type,
     const message_center::Notification& notification,

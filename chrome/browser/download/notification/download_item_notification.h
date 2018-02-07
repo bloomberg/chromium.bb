@@ -28,13 +28,9 @@ namespace message_center {
 class Notification;
 }
 
-class DownloadNotificationManagerForProfile;
-
 class DownloadItemNotification : public ImageDecoder::ImageRequest {
  public:
-  DownloadItemNotification(content::DownloadItem* item,
-                           DownloadNotificationManagerForProfile* manager);
-
+  explicit DownloadItemNotification(content::DownloadItem* item);
   ~DownloadItemNotification() override;
 
   void OnDownloadUpdated(content::DownloadItem* item);
@@ -43,13 +39,12 @@ class DownloadItemNotification : public ImageDecoder::ImageRequest {
   // Disables popup by setting low priority.
   void DisablePopup();
 
-  // Called back from the NotificationHandler.
+  // Called back from the NotificationDelegate.
   void OnNotificationClose();
   void OnNotificationClick();
   void OnNotificationButtonClick(int button_index);
 
  private:
-  class DownloadItemNotificationDelegate;
   friend class test::DownloadItemNotificationTest;
 
   enum ImageDecodeStatus { NOT_STARTED, IN_PROGRESS, DONE, FAILED, NOT_IMAGE };

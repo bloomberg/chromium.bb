@@ -14,59 +14,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/notification/download_item_notification.h"
-#include "chrome/browser/notifications/notification_display_service_impl.h"
-#include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/download_item.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/message_center/public/cpp/notification.h"
-#include "ui/message_center/public/cpp/notification_delegate.h"
-
-namespace {
-
-class DownloadNotificationHandler : public NotificationHandler {
- public:
-  explicit DownloadNotificationHandler(
-      DownloadNotificationManagerForProfile* manager)
-      : manager_(manager) {}
-  ~DownloadNotificationHandler() override = default;
-
-  void OnClose(Profile* profile,
-               const GURL& origin,
-               const std::string& notification_id,
-               bool by_user,
-               base::OnceClosure completed_closure) override {
-    if (by_user) {
-      manager_->GetNotificationItemByGuid(notification_id)
-          ->OnNotificationClose();
-    }
-
-    std::move(completed_closure).Run();
-  }
-
-  void OnClick(Profile* profile,
-               const GURL& origin,
-               const std::string& notification_id,
-               const base::Optional<int>& action_index,
-               const base::Optional<base::string16>& reply,
-               base::OnceClosure completed_closure) override {
-    DownloadItemNotification* item =
-        manager_->GetNotificationItemByGuid(notification_id);
-    if (!action_index)
-      item->OnNotificationClick();
-    else
-      item->OnNotificationButtonClick(*action_index);
-
-    std::move(completed_closure).Run();
-  }
-
- private:
-  DownloadNotificationManagerForProfile* manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadNotificationHandler);
-};
-
-}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // DownloadNotificationManager implementation:
@@ -105,19 +55,10 @@ DownloadNotificationManager::GetForProfile(Profile* profile) const {
 DownloadNotificationManagerForProfile::DownloadNotificationManagerForProfile(
     Profile* profile,
     DownloadNotificationManager* parent_manager)
-    : profile_(profile), parent_manager_(parent_manager) {
-  NotificationDisplayServiceImpl* service =
-      NotificationDisplayServiceImpl::GetForProfile(profile);
-  DCHECK(!service->GetNotificationHandler(NotificationHandler::Type::DOWNLOAD));
-  service->AddNotificationHandler(
-      NotificationHandler::Type::DOWNLOAD,
-      std::make_unique<DownloadNotificationHandler>(this));
-}
+    : profile_(profile), parent_manager_(parent_manager) {}
 
 DownloadNotificationManagerForProfile::
     ~DownloadNotificationManagerForProfile() {
-  NotificationDisplayServiceImpl::GetForProfile(profile_)
-      ->RemoveNotificationHandler(NotificationHandler::Type::DOWNLOAD);
   for (const auto& download : items_) {
     download.first->RemoveObserver(this);
   }
@@ -189,7 +130,7 @@ void DownloadNotificationManagerForProfile::OnNewDownloadReady(
       download_notification->DisablePopup();
   }
 
-  items_[download] = std::make_unique<DownloadItemNotification>(download, this);
+  items_[download] = std::make_unique<DownloadItemNotification>(download);
 }
 
 DownloadItemNotification*
