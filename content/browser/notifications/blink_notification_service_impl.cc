@@ -64,9 +64,7 @@ void BlinkNotificationServiceImpl::GetPermissionStatus(
     return;
   }
 
-  blink::mojom::PermissionStatus permission_status =
-      Service()->CheckPermissionOnIOThread(resource_context_, origin_.GetURL(),
-                                           render_process_id_);
+  blink::mojom::PermissionStatus permission_status = CheckPermissionStatus();
 
   std::move(callback).Run(permission_status);
 }
@@ -83,6 +81,8 @@ void BlinkNotificationServiceImpl::DisplayNonPersistentNotification(
     blink::mojom::NonPersistentNotificationListenerPtr event_listener_ptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!Service())
+    return;
+  if (CheckPermissionStatus() != blink::mojom::PermissionStatus::GRANTED)
     return;
 
   std::string notification_id =
@@ -137,6 +137,12 @@ void BlinkNotificationServiceImpl::CloseNonPersistentNotificationOnUIThread(
 
   NotificationEventDispatcherImpl::GetInstance()
       ->DispatchNonPersistentCloseEvent(notification_id);
+}
+
+blink::mojom::PermissionStatus
+BlinkNotificationServiceImpl::CheckPermissionStatus() {
+  return Service()->CheckPermissionOnIOThread(
+      resource_context_, origin_.GetURL(), render_process_id_);
 }
 
 }  // namespace content
