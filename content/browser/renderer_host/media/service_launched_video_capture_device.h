@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_SERVICE_LAUNCHED_VIDEO_CAPTURE_DEVICE_H_
 
 #include "content/browser/renderer_host/media/video_capture_provider.h"
+#include "content/public/browser/video_capture_device_launcher.h"
 #include "services/video_capture/public/interfaces/device.mojom.h"
 
 namespace content {

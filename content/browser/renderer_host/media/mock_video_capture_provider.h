@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_MOCK_VIDEO_CAPTURE_PROVIDER_H_
 
 #include "content/browser/renderer_host/media/video_capture_provider.h"
+#include "content/public/browser/video_capture_device_launcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {

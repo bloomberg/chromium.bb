@@ -8,6 +8,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
+#include "content/public/browser/video_capture_device_launcher.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/video_capture/public/interfaces/device_factory.mojom.h"
 #include "services/video_capture/public/interfaces/device_factory_provider.mojom.h"
