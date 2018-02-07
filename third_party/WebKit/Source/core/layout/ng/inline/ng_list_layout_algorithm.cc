@@ -19,10 +19,6 @@ void NGListLayoutAlgorithm::SetListMarkerPosition(
     LayoutUnit line_width,
     unsigned list_marker_index,
     NGLineBoxFragmentBuilder::ChildList* line_box) {
-  // The list marker fragment is at next to a text fragment, see
-  // NGInlineLayoutAlgorithm::PlaceLayoutResult().
-  if (!RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled())
-    list_marker_index++;
   const NGPhysicalFragment* physical_fragment =
       (*line_box)[list_marker_index].PhysicalFragment();
   DCHECK(physical_fragment);
@@ -36,8 +32,6 @@ void NGListLayoutAlgorithm::SetListMarkerPosition(
                                ? margins.first
                                : line_width + margins.second;
   (*line_box)[list_marker_index].offset.inline_offset = line_offset;
-  if (!RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled())
-    (*line_box)[list_marker_index - 1].offset.inline_offset = line_offset;
 }
 
 }  // namespace blink

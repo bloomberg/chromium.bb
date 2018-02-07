@@ -21,13 +21,11 @@
 namespace blink {
 
 class NGTextFragmentPainterTest : public PaintControllerPaintTest,
-                                  private ScopedLayoutNGForTest,
-                                  private ScopedLayoutNGPaintFragmentsForTest {
+                                  private ScopedLayoutNGForTest {
  public:
   NGTextFragmentPainterTest(LocalFrameClient* local_frame_client = nullptr)
       : PaintControllerPaintTest(local_frame_client),
-        ScopedLayoutNGForTest(true),
-        ScopedLayoutNGPaintFragmentsForTest(true) {}
+        ScopedLayoutNGForTest(true) {}
 };
 
 INSTANTIATE_TEST_CASE_P(All,

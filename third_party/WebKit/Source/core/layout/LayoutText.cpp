@@ -1962,8 +1962,6 @@ const NGOffsetMapping* LayoutText::GetNGOffsetMapping() const {
     return nullptr;
   // LayoutNG alternatives rely on |TextLength()| property, which is correct
   // only when fragment painting is enabled.
-  if (!RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled())
-    return nullptr;
   return NGOffsetMapping::GetFor(this);
 }
 

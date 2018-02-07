@@ -9,11 +9,9 @@
 
 namespace blink {
 
-class NGPhysicalBoxFragmentTest : public NGLayoutTest,
-                                  private ScopedLayoutNGPaintFragmentsForTest {
+class NGPhysicalBoxFragmentTest : public NGLayoutTest {
  public:
-  NGPhysicalBoxFragmentTest()
-      : NGLayoutTest(), ScopedLayoutNGPaintFragmentsForTest(true) {}
+  NGPhysicalBoxFragmentTest() : NGLayoutTest() {}
 
   const NGPhysicalBoxFragment& GetBodyFragment() const {
     return *ToLayoutBlockFlow(GetDocument().body()->GetLayoutObject())

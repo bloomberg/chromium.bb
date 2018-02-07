@@ -58,11 +58,9 @@ LocalCaretRect LocalCaretRectOfPositionTemplate(
       ComputeInlineAdjustedPosition(position);
 
   if (adjusted.IsNotNull()) {
-    if (RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled()) {
-      if (const LayoutBlockFlow* context =
-              NGInlineFormattingContextOf(adjusted.GetPosition()))
-        return ComputeNGLocalCaretRect(*context, adjusted);
-    }
+    if (const LayoutBlockFlow* context =
+            NGInlineFormattingContextOf(adjusted.GetPosition()))
+      return ComputeNGLocalCaretRect(*context, adjusted);
 
     // TODO(editing-dev): This DCHECK is for ensuring the correctness of
     // breaking |ComputeInlineBoxPosition| into |ComputeInlineAdjustedPosition|

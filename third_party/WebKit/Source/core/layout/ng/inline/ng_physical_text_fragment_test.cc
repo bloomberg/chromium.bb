@@ -10,11 +10,9 @@
 
 namespace blink {
 
-class NGPhysicalTextFragmentTest : public NGLayoutTest,
-                                   private ScopedLayoutNGPaintFragmentsForTest {
+class NGPhysicalTextFragmentTest : public NGLayoutTest {
  public:
-  NGPhysicalTextFragmentTest()
-      : NGLayoutTest(), ScopedLayoutNGPaintFragmentsForTest(true) {}
+  NGPhysicalTextFragmentTest() : NGLayoutTest() {}
 
  protected:
   Vector<scoped_refptr<const NGPhysicalTextFragment>>

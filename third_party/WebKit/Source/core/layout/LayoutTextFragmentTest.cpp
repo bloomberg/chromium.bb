@@ -45,12 +45,9 @@ class LayoutTextFragmentTest : public RenderingTest {
 class ParameterizedLayoutTextFragmentTest
     : public ::testing::WithParamInterface<bool>,
       private ScopedLayoutNGForTest,
-      private ScopedLayoutNGPaintFragmentsForTest,
       public LayoutTextFragmentTest {
  public:
-  ParameterizedLayoutTextFragmentTest()
-      : ScopedLayoutNGForTest(GetParam()),
-        ScopedLayoutNGPaintFragmentsForTest(GetParam()) {}
+  ParameterizedLayoutTextFragmentTest() : ScopedLayoutNGForTest(GetParam()) {}
 
  protected:
   bool LayoutNGEnabled() const { return GetParam(); }

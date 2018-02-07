@@ -28,12 +28,9 @@ class LocalCaretRectTest : public EditingTestBase {};
 class ParameterizedLocalCaretRectTest
     : public ::testing::WithParamInterface<bool>,
       private ScopedLayoutNGForTest,
-      private ScopedLayoutNGPaintFragmentsForTest,
       public LocalCaretRectTest {
  public:
-  ParameterizedLocalCaretRectTest()
-      : ScopedLayoutNGForTest(GetParam()),
-        ScopedLayoutNGPaintFragmentsForTest(GetParam()) {}
+  ParameterizedLocalCaretRectTest() : ScopedLayoutNGForTest(GetParam()) {}
 
  protected:
   bool LayoutNGEnabled() const { return GetParam(); }

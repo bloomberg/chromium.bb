@@ -39,12 +39,9 @@ const char kTacoText[] = "Los Compadres Taco Truck";
 // Helper class to run the same test code with and without LayoutNG
 class ParameterizedLayoutTextTest : public ::testing::WithParamInterface<bool>,
                                     private ScopedLayoutNGForTest,
-                                    private ScopedLayoutNGPaintFragmentsForTest,
                                     public LayoutTextTest {
  public:
-  ParameterizedLayoutTextTest()
-      : ScopedLayoutNGForTest(GetParam()),
-        ScopedLayoutNGPaintFragmentsForTest(GetParam()) {}
+  ParameterizedLayoutTextTest() : ScopedLayoutNGForTest(GetParam()) {}
 
  protected:
   bool LayoutNGEnabled() const { return GetParam(); }

@@ -18,12 +18,9 @@ class LayoutInlineTest : public RenderingTest {};
 class ParameterizedLayoutInlineTest
     : public ::testing::WithParamInterface<bool>,
       private ScopedLayoutNGForTest,
-      private ScopedLayoutNGPaintFragmentsForTest,
       public LayoutInlineTest {
  public:
-  ParameterizedLayoutInlineTest()
-      : ScopedLayoutNGForTest(GetParam()),
-        ScopedLayoutNGPaintFragmentsForTest(GetParam()) {}
+  ParameterizedLayoutInlineTest() : ScopedLayoutNGForTest(GetParam()) {}
 
  protected:
   bool LayoutNGEnabled() const { return GetParam(); }

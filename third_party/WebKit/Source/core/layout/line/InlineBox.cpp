@@ -384,7 +384,6 @@ void InlineBox::SetLineLayoutItemShouldDoFullPaintInvalidationIfNeeded() {
 bool CanUseInlineBox(const LayoutObject& node) {
   DCHECK(node.IsText() || node.IsInline() || node.IsLayoutBlockFlow());
   return !RuntimeEnabledFeatures::LayoutNGEnabled() ||
-         !RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled() ||
          !node.EnclosingNGBlockFlow();
 }
 

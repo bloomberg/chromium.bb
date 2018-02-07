@@ -138,12 +138,9 @@ Range* TextIteratorTest::GetBodyRange() const {
 class ParameterizedTextIteratorTest
     : public ::testing::WithParamInterface<bool>,
       private ScopedLayoutNGForTest,
-      private ScopedLayoutNGPaintFragmentsForTest,
       public TextIteratorTest {
  public:
-  ParameterizedTextIteratorTest()
-      : ScopedLayoutNGForTest(GetParam()),
-        ScopedLayoutNGPaintFragmentsForTest(GetParam()) {}
+  ParameterizedTextIteratorTest() : ScopedLayoutNGForTest(GetParam()) {}
 };
 
 INSTANTIATE_TEST_CASE_P(All, ParameterizedTextIteratorTest, ::testing::Bool());

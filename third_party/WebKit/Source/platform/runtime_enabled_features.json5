@@ -543,9 +543,6 @@
       name: "LayoutNGFragmentCaching",
     },
     {
-      name: "LayoutNGPaintFragments",
-    },
-    {
       name: "LazyInitializeMediaControls",
       // This is enabled by features::kLazyInitializeMediaControls.
     },
@@ -998,7 +995,7 @@
     },
     {
       name: "SlimmingPaintV175",
-      implied_by: ["SlimmingPaintV2", "LayoutNGPaintFragments"],
+      implied_by: ["SlimmingPaintV2", "LayoutNG"],
     },
     {
       name: "SlimmingPaintV2",

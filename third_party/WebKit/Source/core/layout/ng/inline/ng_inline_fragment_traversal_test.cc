@@ -10,12 +10,9 @@
 
 namespace blink {
 
-class NGInlineFragmentTraversalTest
-    : public NGLayoutTest,
-      private ScopedLayoutNGPaintFragmentsForTest {
+class NGInlineFragmentTraversalTest : public NGLayoutTest {
  public:
-  NGInlineFragmentTraversalTest()
-      : NGLayoutTest(), ScopedLayoutNGPaintFragmentsForTest(true) {}
+  NGInlineFragmentTraversalTest() : NGLayoutTest() {}
 
  protected:
   const NGPhysicalBoxFragment& GetRootFragmentById(const char* id) const {
