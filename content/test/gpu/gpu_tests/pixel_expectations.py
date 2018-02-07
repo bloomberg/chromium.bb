@@ -120,3 +120,5 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_Canvas2DRedBox', ['android'], bug=809846)
     self.Flaky('Pixel_CanvasDisplayLinearRGBAccelerated2D', ['android'],
                bug=809868)
+    self.Flaky('Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing',
+               ['android'], bug=810006)
