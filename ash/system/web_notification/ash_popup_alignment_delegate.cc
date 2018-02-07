@@ -84,7 +84,7 @@ int AshPopupAlignmentDelegate::GetToastOriginX(
   return work_area_.right() - kToastMarginX - toast_bounds.width();
 }
 
-int AshPopupAlignmentDelegate::GetBaseLine() const {
+int AshPopupAlignmentDelegate::GetBaseline() const {
   return work_area_.bottom() - kNoToastMarginBorderAndShadowOffset -
          tray_bubble_height_;
 }

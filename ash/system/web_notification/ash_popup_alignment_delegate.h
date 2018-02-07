@@ -49,7 +49,7 @@ class ASH_EXPORT AshPopupAlignmentDelegate
 
   // Overridden from message_center::PopupAlignmentDelegate:
   int GetToastOriginX(const gfx::Rect& toast_bounds) const override;
-  int GetBaseLine() const override;
+  int GetBaseline() const override;
   gfx::Rect GetWorkArea() const override;
   bool IsTopDown() const override;
   bool IsFromLeft() const override;

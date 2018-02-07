@@ -95,21 +95,21 @@ TEST_F(AshPopupAlignmentDelegateTest, ShelfAlignment) {
   UpdateDisplay("600x600");
   gfx::Point toast_point;
   toast_point.set_x(alignment_delegate()->GetToastOriginX(toast_size));
-  toast_point.set_y(alignment_delegate()->GetBaseLine());
+  toast_point.set_y(alignment_delegate()->GetBaseline());
   EXPECT_EQ(BOTTOM_RIGHT, GetPositionInDisplay(toast_point));
   EXPECT_FALSE(alignment_delegate()->IsTopDown());
   EXPECT_FALSE(alignment_delegate()->IsFromLeft());
 
   GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_RIGHT);
   toast_point.set_x(alignment_delegate()->GetToastOriginX(toast_size));
-  toast_point.set_y(alignment_delegate()->GetBaseLine());
+  toast_point.set_y(alignment_delegate()->GetBaseline());
   EXPECT_EQ(BOTTOM_RIGHT, GetPositionInDisplay(toast_point));
   EXPECT_FALSE(alignment_delegate()->IsTopDown());
   EXPECT_FALSE(alignment_delegate()->IsFromLeft());
 
   GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
   toast_point.set_x(alignment_delegate()->GetToastOriginX(toast_size));
-  toast_point.set_y(alignment_delegate()->GetBaseLine());
+  toast_point.set_y(alignment_delegate()->GetBaseline());
   EXPECT_EQ(BOTTOM_LEFT, GetPositionInDisplay(toast_point));
   EXPECT_FALSE(alignment_delegate()->IsTopDown());
   EXPECT_TRUE(alignment_delegate()->IsFromLeft());
@@ -121,14 +121,14 @@ TEST_F(AshPopupAlignmentDelegateTest, LockScreen) {
   GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
   gfx::Point toast_point;
   toast_point.set_x(alignment_delegate()->GetToastOriginX(toast_size));
-  toast_point.set_y(alignment_delegate()->GetBaseLine());
+  toast_point.set_y(alignment_delegate()->GetBaseline());
   EXPECT_EQ(BOTTOM_LEFT, GetPositionInDisplay(toast_point));
   EXPECT_FALSE(alignment_delegate()->IsTopDown());
   EXPECT_TRUE(alignment_delegate()->IsFromLeft());
 
   BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
   toast_point.set_x(alignment_delegate()->GetToastOriginX(toast_size));
-  toast_point.set_y(alignment_delegate()->GetBaseLine());
+  toast_point.set_y(alignment_delegate()->GetBaseline());
   EXPECT_EQ(BOTTOM_RIGHT, GetPositionInDisplay(toast_point));
   EXPECT_FALSE(alignment_delegate()->IsTopDown());
   EXPECT_FALSE(alignment_delegate()->IsFromLeft());
@@ -138,7 +138,7 @@ TEST_F(AshPopupAlignmentDelegateTest, AutoHide) {
   const gfx::Rect toast_size(0, 0, 10, 10);
   UpdateDisplay("600x600");
   int origin_x = alignment_delegate()->GetToastOriginX(toast_size);
-  int baseline = alignment_delegate()->GetBaseLine();
+  int baseline = alignment_delegate()->GetBaseline();
 
   // Create a window, otherwise autohide doesn't work.
   std::unique_ptr<views::Widget> widget = CreateTestWidget(
@@ -146,29 +146,29 @@ TEST_F(AshPopupAlignmentDelegateTest, AutoHide) {
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
-  EXPECT_LT(baseline, alignment_delegate()->GetBaseLine());
+  EXPECT_LT(baseline, alignment_delegate()->GetBaseline());
 }
 
 TEST_F(AshPopupAlignmentDelegateTest, DisplayResize) {
   const gfx::Rect toast_size(0, 0, 10, 10);
   UpdateDisplay("600x600");
   int origin_x = alignment_delegate()->GetToastOriginX(toast_size);
-  int baseline = alignment_delegate()->GetBaseLine();
+  int baseline = alignment_delegate()->GetBaseline();
 
   UpdateDisplay("800x800");
   EXPECT_LT(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
-  EXPECT_LT(baseline, alignment_delegate()->GetBaseLine());
+  EXPECT_LT(baseline, alignment_delegate()->GetBaseline());
 
   UpdateDisplay("400x400");
   EXPECT_GT(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
-  EXPECT_GT(baseline, alignment_delegate()->GetBaseLine());
+  EXPECT_GT(baseline, alignment_delegate()->GetBaseline());
 }
 
 TEST_F(AshPopupAlignmentDelegateTest, DockedMode) {
   const gfx::Rect toast_size(0, 0, 10, 10);
   UpdateDisplay("600x600");
   int origin_x = alignment_delegate()->GetToastOriginX(toast_size);
-  int baseline = alignment_delegate()->GetBaseLine();
+  int baseline = alignment_delegate()->GetBaseline();
 
   // Emulate the docked mode; enter to an extended mode, then invoke
   // OnNativeDisplaysChanged() with the info for the secondary display only.
@@ -180,14 +180,14 @@ TEST_F(AshPopupAlignmentDelegateTest, DockedMode) {
   display_manager()->OnNativeDisplaysChanged(new_info);
 
   EXPECT_LT(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
-  EXPECT_LT(baseline, alignment_delegate()->GetBaseLine());
+  EXPECT_LT(baseline, alignment_delegate()->GetBaseline());
 }
 
 TEST_F(AshPopupAlignmentDelegateTest, TrayHeight) {
   const gfx::Rect toast_size(0, 0, 10, 10);
   UpdateDisplay("600x600");
   int origin_x = alignment_delegate()->GetToastOriginX(toast_size);
-  int baseline = alignment_delegate()->GetBaseLine();
+  int baseline = alignment_delegate()->GetBaseline();
 
   // Simulate the system tray bubble being open.
   const int kTrayHeight = 100;
@@ -195,7 +195,7 @@ TEST_F(AshPopupAlignmentDelegateTest, TrayHeight) {
 
   EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
   EXPECT_EQ(baseline - kTrayHeight - message_center::kMarginBetweenPopups,
-            alignment_delegate()->GetBaseLine());
+            alignment_delegate()->GetBaseline());
 }
 
 TEST_F(AshPopupAlignmentDelegateTest, Extended) {
@@ -211,7 +211,7 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
   // Make sure that the toast position on the secondary display is
   // positioned correctly.
   EXPECT_LT(1300, for_2nd_display.GetToastOriginX(gfx::Rect(0, 0, 10, 10)));
-  EXPECT_LT(700, for_2nd_display.GetBaseLine());
+  EXPECT_LT(700, for_2nd_display.GetBaseline());
 }
 
 TEST_F(AshPopupAlignmentDelegateTest, Unified) {
@@ -236,17 +236,17 @@ TEST_F(AshPopupAlignmentDelegateTest, KeyboardShowing) {
   ASSERT_TRUE(keyboard::IsKeyboardOverscrollEnabled());
 
   UpdateDisplay("600x600");
-  int baseline = alignment_delegate()->GetBaseLine();
+  int baseline = alignment_delegate()->GetBaseline();
 
   Shelf* shelf = GetPrimaryShelf();
   gfx::Rect keyboard_bounds(0, 300, 600, 300);
   shelf->SetVirtualKeyboardBoundsForTesting(keyboard_bounds);
-  int keyboard_baseline = alignment_delegate()->GetBaseLine();
+  int keyboard_baseline = alignment_delegate()->GetBaseline();
   EXPECT_NE(baseline, keyboard_baseline);
   EXPECT_GT(keyboard_bounds.y(), keyboard_baseline);
 
   shelf->SetVirtualKeyboardBoundsForTesting(gfx::Rect());
-  EXPECT_EQ(baseline, alignment_delegate()->GetBaseLine());
+  EXPECT_EQ(baseline, alignment_delegate()->GetBaseline());
 }
 
 }  // namespace ash

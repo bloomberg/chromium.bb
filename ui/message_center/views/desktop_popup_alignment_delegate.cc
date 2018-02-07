@@ -39,7 +39,7 @@ int DesktopPopupAlignmentDelegate::GetToastOriginX(
   return work_area_.right() - kMarginBetweenPopups - toast_bounds.width();
 }
 
-int DesktopPopupAlignmentDelegate::GetBaseLine() const {
+int DesktopPopupAlignmentDelegate::GetBaseline() const {
   return IsTopDown() ? work_area_.y() + kMarginBetweenPopups
                      : work_area_.bottom() - kMarginBetweenPopups;
 }
