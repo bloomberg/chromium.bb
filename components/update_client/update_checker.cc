@@ -55,7 +55,8 @@ class UpdateCheckerImpl : public UpdateChecker {
   ~UpdateCheckerImpl() override;
 
   // Overrides for UpdateChecker.
-  void CheckForUpdates(const std::vector<std::string>& ids_checked,
+  void CheckForUpdates(const std::string& session_id,
+                       const std::vector<std::string>& ids_checked,
                        const IdToComponentPtrMap& components,
                        const std::string& additional_attributes,
                        bool enabled_component_updates,
@@ -63,7 +64,8 @@ class UpdateCheckerImpl : public UpdateChecker {
 
  private:
   void ReadUpdaterStateAttributes();
-  void CheckForUpdatesHelper(const IdToComponentPtrMap& components,
+  void CheckForUpdatesHelper(const std::string& session_id,
+                             const IdToComponentPtrMap& components,
                              const std::string& additional_attributes,
                              bool enabled_component_updates);
   void OnRequestSenderComplete(const IdToComponentPtrMap& components,
@@ -98,6 +100,7 @@ UpdateCheckerImpl::~UpdateCheckerImpl() {
 }
 
 void UpdateCheckerImpl::CheckForUpdates(
+    const std::string& session_id,
     const std::vector<std::string>& ids_checked,
     const IdToComponentPtrMap& components,
     const std::string& additional_attributes,
@@ -113,8 +116,9 @@ void UpdateCheckerImpl::CheckForUpdates(
       base::BindOnce(&UpdateCheckerImpl::ReadUpdaterStateAttributes,
                      base::Unretained(this)),
       base::BindOnce(&UpdateCheckerImpl::CheckForUpdatesHelper,
-                     base::Unretained(this), base::ConstRef(components),
-                     additional_attributes, enabled_component_updates));
+                     base::Unretained(this), session_id,
+                     base::ConstRef(components), additional_attributes,
+                     enabled_component_updates));
 }
 
 // This function runs on the blocking pool task runner.
@@ -132,6 +136,7 @@ void UpdateCheckerImpl::ReadUpdaterStateAttributes() {
 }
 
 void UpdateCheckerImpl::CheckForUpdatesHelper(
+    const std::string& session_id,
     const IdToComponentPtrMap& components,
     const std::string& additional_attributes,
     bool enabled_component_updates) {
@@ -144,8 +149,9 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
   request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
       config_->EnabledCupSigning(),
-      BuildUpdateCheckRequest(*config_, ids_checked_, components, metadata_,
-                              additional_attributes, enabled_component_updates,
+      BuildUpdateCheckRequest(*config_, session_id, ids_checked_, components,
+                              metadata_, additional_attributes,
+                              enabled_component_updates,
                               updater_state_attributes_),
       urls,
       base::BindOnce(&UpdateCheckerImpl::OnRequestSenderComplete,

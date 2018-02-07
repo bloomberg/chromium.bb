@@ -177,6 +177,10 @@ scoped_refptr<Configurator> Component::config() const {
   return update_context_.config;
 }
 
+std::string Component::session_id() const {
+  return update_context_.session_id;
+}
+
 void Component::Handle(CallbackHandleComplete callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(state_);

@@ -97,6 +97,7 @@ TEST_F(PingManagerTest, SendPing) {
                   "<event eventtype=\"3\" eventresult=\"1\" "
                   "previousversion=\"1.0\" nextversion=\"2.0\"/></app>"))
         << interceptor->GetRequestsAsString();
+    EXPECT_NE(string::npos, interceptor->GetRequests()[0].find(" sessionid="));
     interceptor->Reset();
   }
 

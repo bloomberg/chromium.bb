@@ -118,6 +118,7 @@ class UpdateEngine {
 };
 
 // TODO(sorin): consider making this a ref counted type.
+// Describes a group of components which are installed or updated together.
 struct UpdateContext {
   UpdateContext(
       const scoped_refptr<Configurator>& config,
@@ -172,6 +173,9 @@ struct UpdateContext {
   // update for the current component, the longer the wait until the engine
   // is handling the next component in the queue.
   base::TimeDelta next_update_delay;
+
+  // The session id this context is associated with.
+  const std::string session_id;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UpdateContext);

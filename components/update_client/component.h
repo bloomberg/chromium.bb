@@ -122,6 +122,8 @@ class Component {
 
   scoped_refptr<Configurator> config() const;
 
+  std::string session_id() const;
+
  private:
   friend class FakePingManagerImpl;
   friend class UpdateCheckerTest;
