@@ -501,7 +501,7 @@ bool WebRequestAction::HasPermission(ApplyInfo* apply_info,
       permission_check = WebRequestPermissions::DO_NOT_CHECK_HOST;
       break;
     case STRATEGY_HOST:
-      permission_check = WebRequestPermissions::REQUIRE_HOST_PERMISSION;
+      permission_check = WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL;
       break;
   }
   // TODO(devlin): Pass in the real tab id here.
