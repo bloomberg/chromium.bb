@@ -125,3 +125,7 @@ class SharedAndroidVrPageState(shared_page_state.SharedPageState):
   @property
   def platform(self):
     return self._platform
+
+  @property
+  def recording_wpr(self):
+    return self._finder_options.recording_wpr

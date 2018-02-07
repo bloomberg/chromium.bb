@@ -7,12 +7,14 @@ assert(is_android)
 group("vr_perf_tests") {
   testonly = true
   data = [
+    "./data/",
     "./__init__.py",
     "./shared_android_vr_page_state.py",
     "./vr_benchmarks.py",
     "./vr_browsing_mode_pages.py",
     "./vr_sample_page.py",
     "./webvr_sample_pages.py",
+    "./webvr_wpr_pages.py",
     "//chrome/android/shared_preference_files/test/",
     "//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
     "//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
