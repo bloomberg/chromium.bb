@@ -118,7 +118,7 @@ public class WebApkUpdateDataFetcherTest {
     @MediumTest
     @Feature({"WebApk"})
     public void testLaunchWithDesiredManifestUrl() throws Exception {
-        WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
+        WebappTestPage.navigateToServiceWorkerPageWithManifest(
                 mTestServerRule.getServer(), mTab, WEB_MANIFEST_URL1);
 
         CallbackWaiter waiter = new CallbackWaiter();
@@ -140,14 +140,14 @@ public class WebApkUpdateDataFetcherTest {
     @Feature({"Webapps"})
     @RetryOnFailure
     public void testLaunchWithDifferentManifestUrl() throws Exception {
-        WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
+        WebappTestPage.navigateToServiceWorkerPageWithManifest(
                 mTestServerRule.getServer(), mTab, WEB_MANIFEST_URL1);
 
         CallbackWaiter waiter = new CallbackWaiter();
         startWebApkUpdateDataFetcher(mTestServerRule.getServer().getURL(WEB_MANIFEST_SCOPE),
                 mTestServerRule.getServer().getURL(WEB_MANIFEST_URL2), waiter);
 
-        WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
+        WebappTestPage.navigateToServiceWorkerPageWithManifest(
                 mTestServerRule.getServer(), mTab, WEB_MANIFEST_URL2);
         waiter.waitForCallback(0);
         Assert.assertTrue(waiter.isWebApkCompatible());
@@ -162,7 +162,7 @@ public class WebApkUpdateDataFetcherTest {
     @MediumTest
     @Feature({"Webapps"})
     public void testLargeIconMurmur2Hash() throws Exception {
-        WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
+        WebappTestPage.navigateToServiceWorkerPageWithManifest(
                 mTestServerRule.getServer(), mTab, WEB_MANIFEST_WITH_LONG_ICON_MURMUR2_HASH);
 
         CallbackWaiter waiter = new CallbackWaiter();

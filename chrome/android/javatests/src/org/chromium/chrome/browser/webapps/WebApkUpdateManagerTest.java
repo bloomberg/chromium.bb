@@ -182,7 +182,7 @@ public class WebApkUpdateManagerTest {
         creationData.startUrl = mTestServerRule.getServer().getURL(
                 "/chrome/test/data/banners/manifest_%74est_page.html");
 
-        WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
+        WebappTestPage.navigateToServiceWorkerPageWithManifest(
                 mTestServerRule.getServer(), mTab, WEBAPK_MANIFEST_URL);
         Assert.assertFalse(checkUpdateNeeded(creationData));
     }
@@ -199,7 +199,7 @@ public class WebApkUpdateManagerTest {
         creationData.startUrl = mTestServerRule.getServer().getURL(
                 "/chrome/test/data/banners/manifest_%62est_page.html");
 
-        WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
+        WebappTestPage.navigateToServiceWorkerPageWithManifest(
                 mTestServerRule.getServer(), mTab, WEBAPK_MANIFEST_URL);
         Assert.assertTrue(checkUpdateNeeded(creationData));
     }
