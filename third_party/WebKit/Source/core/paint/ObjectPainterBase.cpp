@@ -12,7 +12,6 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
@@ -492,13 +491,11 @@ void DrawSolidBoxSide(GraphicsContext& graphics_context,
 void ObjectPainterBase::PaintOutlineRects(
     const PaintInfo& paint_info,
     const Vector<LayoutRect>& outline_rects,
-    const ComputedStyle& style,
-    const DisplayItemClient& display_item) {
+    const ComputedStyle& style) {
   Vector<IntRect> pixel_snapped_outline_rects;
   for (auto& r : outline_rects)
     pixel_snapped_outline_rects.push_back(PixelSnappedIntRect(r));
 
-  DrawingRecorder recorder(paint_info.context, display_item, paint_info.phase);
   Color color = style.VisitedDependentColor(GetCSSPropertyOutlineColor());
   if (style.OutlineStyleIsAuto()) {
     paint_info.context.DrawFocusRing(pixel_snapped_outline_rects,

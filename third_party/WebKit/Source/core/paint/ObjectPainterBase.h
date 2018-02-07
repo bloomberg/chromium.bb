@@ -14,7 +14,6 @@ namespace blink {
 
 class ComputedStyle;
 class Color;
-class DisplayItemClient;
 class GraphicsContext;
 struct PaintInfo;
 
@@ -41,8 +40,7 @@ class ObjectPainterBase {
   ObjectPainterBase() = default;
   void PaintOutlineRects(const PaintInfo&,
                          const Vector<LayoutRect>&,
-                         const ComputedStyle&,
-                         const DisplayItemClient&);
+                         const ComputedStyle&);
 };
 
 }  // namespace blink
