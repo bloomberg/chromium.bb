@@ -3212,8 +3212,6 @@ crbug.com/805794 [ Linux Win ] virtual/threaded/animations/responsive/viewport-u
 # Sheriff failures 2018-01-29
 # Flaky on Win7 (dbg)
 crbug.com/806748 [ Win7 ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-tap-hover-state-iframe.html [ Pass Failure ]
-# Flaky on Linux
-crbug.com/806017 [ Linux ] virtual/gpu/fast/canvas/canvas-strokePath-shadow.html [ Pass Timeout ]
 
 # Sheriff failures 2018-02-05
 crbug.com/809152 netinfo/estimate-multiple-frames.html [ Pass Failure ]
