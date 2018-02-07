@@ -180,6 +180,11 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onAriaAttributeChanged: function(evt) {
+    if (evt.target.activeDescendant) {
+      this.onActiveDescendantChanged(evt);
+      return;
+    }
+
     if (evt.target.state.editable)
       return;
     this.onEventIfInRange(evt);
