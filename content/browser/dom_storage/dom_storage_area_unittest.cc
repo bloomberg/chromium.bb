@@ -103,8 +103,11 @@ class DOMStorageAreaParamTest : public DOMStorageAreaTest,
 INSTANTIATE_TEST_CASE_P(_, DOMStorageAreaParamTest, ::testing::Bool());
 
 TEST_P(DOMStorageAreaParamTest, DOMStorageAreaBasics) {
+  const std::string kFirstNamespaceId = "id1";
+  const std::string kSecondNamespaceId = "id2";
   scoped_refptr<DOMStorageArea> area(
-      new DOMStorageArea(1, std::string(), nullptr, kOrigin, nullptr, nullptr));
+      new DOMStorageArea(kFirstNamespaceId, std::vector<std::string>(), kOrigin,
+                         nullptr, nullptr));
   const bool values_cached = GetParam();
   area->SetCacheOnlyKeys(!values_cached);
   base::string16 old_value;
@@ -114,7 +117,7 @@ TEST_P(DOMStorageAreaParamTest, DOMStorageAreaBasics) {
   // We don't focus on the underlying DOMStorageMap functionality
   // since that's covered by seperate unit tests.
   EXPECT_EQ(kOrigin, area->origin());
-  EXPECT_EQ(1, area->namespace_id());
+  EXPECT_EQ(kFirstNamespaceId, area->namespace_id());
   EXPECT_EQ(0u, area->Length());
   EXPECT_TRUE(
       area->SetItem(kKey, kValue, old_nullable_value, &old_nullable_value));
@@ -123,9 +126,9 @@ TEST_P(DOMStorageAreaParamTest, DOMStorageAreaBasics) {
   EXPECT_FALSE(area->HasUncommittedChanges());
 
   // Verify that a copy shares the same map.
-  copy = area->ShallowCopy(2, std::string());
+  copy = area->ShallowCopy(kSecondNamespaceId);
   EXPECT_EQ(kOrigin, copy->origin());
-  EXPECT_EQ(2, copy->namespace_id());
+  EXPECT_EQ(kSecondNamespaceId, copy->namespace_id());
   EXPECT_EQ(area->Length(), copy->Length());
   if (values_cached)
     EXPECT_EQ(area->GetItem(kKey).string(), copy->GetItem(kKey).string());
@@ -138,12 +141,12 @@ TEST_P(DOMStorageAreaParamTest, DOMStorageAreaBasics) {
   EXPECT_TRUE(area->RemoveItem(kKey, old_nullable_value, &old_value));
   EXPECT_EQ(kValue, old_value);
   EXPECT_NE(copy->map_.get(), area->map_.get());
-  copy = area->ShallowCopy(2, std::string());
+  copy = area->ShallowCopy(kSecondNamespaceId);
   EXPECT_EQ(copy->map_.get(), area->map_.get());
   EXPECT_TRUE(
       area->SetItem(kKey, kValue, old_nullable_value, &old_nullable_value));
   EXPECT_NE(copy->map_.get(), area->map_.get());
-  copy = area->ShallowCopy(2, std::string());
+  copy = area->ShallowCopy(kSecondNamespaceId);
   EXPECT_EQ(copy->map_.get(), area->map_.get());
   EXPECT_NE(0u, area->Length());
   EXPECT_TRUE(area->Clear());
@@ -165,7 +168,7 @@ TEST_P(DOMStorageAreaParamTest, DOMStorageAreaBasics) {
 }
 
 TEST_F(DOMStorageAreaTest, BackingDatabaseOpened) {
-  const int64_t kSessionStorageNamespaceId = kLocalStorageNamespaceId + 1;
+  const std::string kSessionStorageNamespaceId = "id1";
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   const base::FilePath kExpectedOriginFilePath = temp_dir.GetPath().Append(
@@ -183,9 +186,9 @@ TEST_F(DOMStorageAreaTest, BackingDatabaseOpened) {
   // Valid directory and origin but no session storage backing. Backing should
   // be null.
   {
-    scoped_refptr<DOMStorageArea> area(
-        new DOMStorageArea(kSessionStorageNamespaceId, std::string(), nullptr,
-                           kOrigin, nullptr, nullptr));
+    scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
+        kSessionStorageNamespaceId, std::vector<std::string>(), kOrigin,
+        nullptr, nullptr));
     EXPECT_EQ(nullptr, area->backing_.get());
 
     base::NullableString16 old_value;
@@ -237,13 +240,15 @@ TEST_F(DOMStorageAreaTest, BackingDatabaseOpened) {
 }
 
 TEST_P(DOMStorageAreaParamTest, ShallowCopyWithBacking) {
+  const std::string kFirstNamespaceId = "id1";
+  const std::string kSecondNamespaceId = "id2";
+  const std::string kThirdNamespaceId = "id3";
   base::ScopedTempDir temp_dir;
-  const std::string kNamespaceId = "id1";
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   scoped_refptr<SessionStorageDatabase> db = new SessionStorageDatabase(
       temp_dir.GetPath(), base::ThreadTaskRunnerHandle::Get());
   scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
-      1, kNamespaceId, nullptr, kOrigin, db.get(),
+      kFirstNamespaceId, std::vector<std::string>(), kOrigin, db.get(),
       new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get())));
   EXPECT_TRUE(area->backing_.get());
   EXPECT_TRUE(area->session_storage_backing_);
@@ -251,7 +256,7 @@ TEST_P(DOMStorageAreaParamTest, ShallowCopyWithBacking) {
   area->SetCacheOnlyKeys(!values_cached);
 
   scoped_refptr<DOMStorageArea> temp_copy;
-  temp_copy = area->ShallowCopy(2, std::string());
+  temp_copy = area->ShallowCopy(kSecondNamespaceId);
   EXPECT_TRUE(temp_copy->commit_batches_.empty());
   temp_copy->ClearShallowCopiedCommitBatches();
 
@@ -264,10 +269,10 @@ TEST_P(DOMStorageAreaParamTest, ShallowCopyWithBacking) {
   EXPECT_TRUE(area->HasUncommittedChanges());
   EXPECT_EQ(DOMStorageArea::CommitBatchHolder::TYPE_CURRENT_BATCH,
             area->commit_batches_.front().type);
-  copy = area->ShallowCopy(3, std::string());
+  copy = area->ShallowCopy(kThirdNamespaceId);
   EXPECT_EQ(copy->map_.get(), area->map_.get());
-  EXPECT_EQ(1u, copy->original_persistent_namespace_ids_->size());
-  EXPECT_EQ(kNamespaceId, (*copy->original_persistent_namespace_ids_)[0]);
+  EXPECT_EQ(1u, copy->original_namespace_ids_.size());
+  EXPECT_EQ(kFirstNamespaceId, copy->original_namespace_ids_[0]);
   if (!values_cached) {
     EXPECT_EQ(area->commit_batches_.front().batch,
               copy->commit_batches_.front().batch);
@@ -305,8 +310,10 @@ TEST_P(DOMStorageAreaParamTest, ShallowCopyWithBacking) {
 }
 
 TEST_F(DOMStorageAreaTest, SetCacheOnlyKeysWithoutBacking) {
+  const std::string kFirstNamespaceId = "id1";
   scoped_refptr<DOMStorageArea> area(
-      new DOMStorageArea(1, std::string(), nullptr, kOrigin, nullptr, nullptr));
+      new DOMStorageArea(kFirstNamespaceId, std::vector<std::string>(), kOrigin,
+                         nullptr, nullptr));
   EXPECT_EQ(DOMStorageArea::LOAD_STATE_KEYS_AND_VALUES,
             area->desired_load_state_);
   EXPECT_FALSE(area->map_->has_only_keys());

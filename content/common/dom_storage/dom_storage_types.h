@@ -29,12 +29,6 @@ const size_t kPerStorageAreaQuota = 10 * 1024 * 1024;
 // wasn't exceeded.
 const size_t kPerStorageAreaOverQuotaAllowance = 100 * 1024;
 
-// Value to indicate the localstorage namespace vs non-zero
-// values for sessionstorage namespaces.
-const int64_t kLocalStorageNamespaceId = 0;
-
-const int64_t kInvalidSessionStorageNamespaceId = kLocalStorageNamespaceId;
-
 }  // namespace content
 
 #endif  // CONTENT_COMMON_DOM_STORAGE_DOM_STORAGE_TYPES_H_

@@ -13,39 +13,50 @@
 
 namespace content {
 
-DOMStorageSession::DOMStorageSession(
+// static
+scoped_refptr<DOMStorageSession> DOMStorageSession::Create(
     DOMStorageContextImpl* context,
-    base::WeakPtr<SessionStorageContextMojo> mojo_context)
-    : context_(context),
-      mojo_context_(mojo_context),
-      namespace_id_(context->AllocateSessionId()),
-      persistent_namespace_id_(context->AllocatePersistentSessionId()),
-      should_persist_(false) {
+    base::WeakPtr<SessionStorageContextMojo> mojo_context) {
+  scoped_refptr<DOMStorageSession> result =
+      base::WrapRefCounted(new DOMStorageSession(
+          context, std::move(mojo_context), context->AllocateSessionId()));
   context->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DOMStorageContextImpl::CreateSessionNamespace, context_,
-                     namespace_id_, persistent_namespace_id_));
-  if (mojo_context_)
-    mojo_context_->CreateSessionNamespace(namespace_id_,
-                                          persistent_namespace_id_);
+      FROM_HERE, base::BindOnce(&DOMStorageContextImpl::CreateSessionNamespace,
+                                context, result->namespace_id()));
+  if (result->mojo_context_)
+    result->mojo_context_->CreateSessionNamespace(result->namespace_id());
+
+  return result;
 }
 
-DOMStorageSession::DOMStorageSession(
+// static
+scoped_refptr<DOMStorageSession> DOMStorageSession::Create(
     DOMStorageContextImpl* context,
     base::WeakPtr<SessionStorageContextMojo> mojo_context,
-    const std::string& persistent_namespace_id)
-    : context_(context),
-      mojo_context_(mojo_context),
-      namespace_id_(context->AllocateSessionId()),
-      persistent_namespace_id_(persistent_namespace_id),
-      should_persist_(false) {
+    const std::string& namespace_id) {
   context->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DOMStorageContextImpl::CreateSessionNamespace, context_,
-                     namespace_id_, persistent_namespace_id_));
-  if (mojo_context_)
-    mojo_context_->CreateSessionNamespace(namespace_id_,
-                                          persistent_namespace_id_);
+      FROM_HERE, base::BindOnce(&DOMStorageContextImpl::CreateSessionNamespace,
+                                context, namespace_id));
+  if (mojo_context)
+    mojo_context->CreateSessionNamespace(namespace_id);
+
+  return base::WrapRefCounted(
+      new DOMStorageSession(context, std::move(mojo_context), namespace_id));
+}
+
+// static
+scoped_refptr<DOMStorageSession> DOMStorageSession::CloneFrom(
+    DOMStorageContextImpl* context,
+    base::WeakPtr<SessionStorageContextMojo> mojo_context,
+    const std::string& namespace_id_to_clone) {
+  std::string clone_id = context->AllocateSessionId();
+  context->task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&DOMStorageContextImpl::CloneSessionNamespace,
+                                context, namespace_id_to_clone, clone_id));
+  if (mojo_context)
+    mojo_context->CloneSessionNamespace(namespace_id_to_clone, clone_id);
+  return base::WrapRefCounted(
+      new DOMStorageSession(context, std::move(mojo_context), clone_id));
 }
 
 void DOMStorageSession::SetShouldPersist(bool should_persist) {
@@ -60,40 +71,18 @@ bool DOMStorageSession::IsFromContext(DOMStorageContextImpl* context) {
   return context_.get() == context;
 }
 
-DOMStorageSession* DOMStorageSession::Clone() {
+scoped_refptr<DOMStorageSession> DOMStorageSession::Clone() {
   return CloneFrom(context_.get(), mojo_context_, namespace_id_);
-}
-
-// static
-DOMStorageSession* DOMStorageSession::CloneFrom(
-    DOMStorageContextImpl* context,
-    base::WeakPtr<SessionStorageContextMojo> mojo_context,
-    int64_t namespace_id_to_clone) {
-  int64_t clone_id = context->AllocateSessionId();
-  std::string persistent_clone_id = context->AllocatePersistentSessionId();
-  context->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DOMStorageContextImpl::CloneSessionNamespace, context,
-                     namespace_id_to_clone, clone_id, persistent_clone_id));
-  if (mojo_context)
-    mojo_context->CloneSessionNamespace(namespace_id_to_clone, clone_id,
-                                        persistent_clone_id);
-  return new DOMStorageSession(context, std::move(mojo_context), clone_id,
-                               persistent_clone_id);
 }
 
 DOMStorageSession::DOMStorageSession(
     DOMStorageContextImpl* context,
     base::WeakPtr<SessionStorageContextMojo> mojo_context,
-    int64_t namespace_id,
-    const std::string& persistent_namespace_id)
+    const std::string& namespace_id)
     : context_(context),
       mojo_context_(mojo_context),
       namespace_id_(namespace_id),
-      persistent_namespace_id_(persistent_namespace_id),
-      should_persist_(false) {
-  // This ctor is intended for use by the Clone() method.
-}
+      should_persist_(false) {}
 
 DOMStorageSession::~DOMStorageSession() {
   context_->task_runner()->PostTask(

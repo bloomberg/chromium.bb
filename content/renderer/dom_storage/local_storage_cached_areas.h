@@ -42,7 +42,7 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
       GetCachedArea(const url::Origin& origin);
 
   scoped_refptr<LocalStorageCachedArea> GetSessionStorageArea(
-      int64_t namespace_id,
+      const std::string& namespace_id,
       const url::Origin& origin);
 
   size_t TotalCacheSize() const;
@@ -53,7 +53,7 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
   void ClearAreasIfNeeded();
 
   scoped_refptr<LocalStorageCachedArea> GetCachedArea(
-      int64_t namespace_id,
+      const std::string& namespace_id,
       const url::Origin& origin,
       blink::scheduler::RendererScheduler* scheduler);
 
@@ -62,7 +62,7 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
   // Maps from a namespace + origin to its LocalStorageCachedArea object. When
   // this map is the only reference to the object, it can be deleted by the
   // cache.
-  using AreaKey = std::pair<int64_t, url::Origin>;
+  using AreaKey = std::pair<std::string, url::Origin>;
   std::map<AreaKey, scoped_refptr<LocalStorageCachedArea>> cached_areas_;
   size_t total_cache_limit_;
 

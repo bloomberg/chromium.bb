@@ -1398,8 +1398,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorage) {
   content::NavigationController* controller =
       &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
   ASSERT_TRUE(controller->GetDefaultSessionStorageNamespace());
-  std::string session_storage_persistent_id =
-      controller->GetDefaultSessionStorageNamespace()->persistent_id();
+  std::string session_storage_id =
+      controller->GetDefaultSessionStorageNamespace()->id();
   Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(url1_,
@@ -1407,10 +1407,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorage) {
   content::NavigationController* new_controller =
       &new_browser->tab_strip_model()->GetActiveWebContents()->GetController();
   ASSERT_TRUE(new_controller->GetDefaultSessionStorageNamespace());
-  std::string restored_session_storage_persistent_id =
-      new_controller->GetDefaultSessionStorageNamespace()->persistent_id();
-  EXPECT_EQ(session_storage_persistent_id,
-            restored_session_storage_persistent_id);
+  std::string restored_session_storage_id =
+      new_controller->GetDefaultSessionStorageNamespace()->id();
+  EXPECT_EQ(session_storage_id, restored_session_storage_id);
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, SessionStorageAfterTabReplace) {

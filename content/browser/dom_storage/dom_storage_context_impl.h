@@ -67,7 +67,7 @@ class CONTENT_EXPORT DOMStorageContextImpl
     : public base::RefCountedThreadSafe<DOMStorageContextImpl>,
       public base::trace_event::MemoryDumpProvider {
  public:
-  typedef std::map<int64_t, scoped_refptr<DOMStorageNamespace>>
+  typedef std::map<std::string, scoped_refptr<DOMStorageNamespace>>
       StorageNamespaceMap;
 
   // An interface for observing Local and Session Storage events on the
@@ -127,7 +127,7 @@ class CONTENT_EXPORT DOMStorageContextImpl
   }
 
   DOMStorageTaskRunner* task_runner() const { return task_runner_.get(); }
-  DOMStorageNamespace* GetStorageNamespace(int64_t namespace_id);
+  DOMStorageNamespace* GetStorageNamespace(const std::string& namespace_id);
 
   void GetLocalStorageUsage(std::vector<LocalStorageUsageInfo>* infos,
                             bool include_file_info);
@@ -174,20 +174,18 @@ class CONTENT_EXPORT DOMStorageContextImpl
       const GURL& page_url);
 
   // May be called on any thread.
-  int64_t AllocateSessionId();
-  std::string AllocatePersistentSessionId();
+  std::string AllocateSessionId();
 
   // Must be called on the background thread.
-  base::Optional<bad_message::BadMessageReason>
-      DiagnoseSessionNamespaceId(int64_t namespace_id);
+  base::Optional<bad_message::BadMessageReason> DiagnoseSessionNamespaceId(
+      const std::string& namespace_id);
 
   // Must be called on the background thread.
-  void CreateSessionNamespace(int64_t namespace_id,
-                              const std::string& persistent_namespace_id);
-  void DeleteSessionNamespace(int64_t namespace_id, bool should_persist_data);
-  void CloneSessionNamespace(int64_t existing_id,
-                             int64_t new_id,
-                             const std::string& new_persistent_id);
+  void CreateSessionNamespace(const std::string& namespace_id);
+  void DeleteSessionNamespace(const std::string& namespace_id,
+                              bool should_persist_data);
+  void CloneSessionNamespace(const std::string& existing_id,
+                             const std::string& new_id);
 
   // Starts backing sessionStorage on disk. This function must be called right
   // after DOMStorageContextImpl is created, before it's used.
@@ -240,16 +238,8 @@ class CONTENT_EXPORT DOMStorageContextImpl
   // List of objects observing local storage events.
   base::ObserverList<EventObserver> event_observers_;
 
-  // We use 32 bit values for per tab storage session ids.
-  // At a tab per second, this range is large enough for 68 years.
-  // The offset is to more quickly detect the error condition where
-  // an id related to one context is mistakenly used in another.
-  // We don't use a AtomicSequenceNumber so we can read the current value
-  // without having to increment it.
-  const int session_id_offset_;
-  base::subtle::Atomic32 session_id_sequence_;
-  // For diagnoostic purposes.
-  base::circular_deque<int64_t> recently_deleted_session_ids_;
+  // For diagnostic purposes.
+  base::circular_deque<std::string> recently_deleted_session_ids_;
 
   bool is_shutdown_;
   bool force_keep_session_state_;
@@ -258,15 +248,11 @@ class CONTENT_EXPORT DOMStorageContextImpl
 
   // For cleaning up unused namespaces gradually.
   bool scavenging_started_;
-  std::vector<std::string> deletable_persistent_namespace_ids_;
+  std::vector<std::string> deletable_namespace_ids_;
 
   // Persistent namespace IDs to protect from gradual deletion (they will
   // be needed for session restore).
-  std::set<std::string> protected_persistent_session_ids_;
-
-  // Mapping between persistent namespace IDs and namespace IDs for
-  // sessionStorage.
-  std::map<std::string, int64_t> persistent_namespace_id_to_namespace_id_;
+  std::set<std::string> protected_session_ids_;
 
   // For cleaning up unused databases more aggressively.
   bool is_low_end_device_;

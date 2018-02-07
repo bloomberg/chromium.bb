@@ -777,7 +777,7 @@ void StoragePartitionImpl::OpenLocalStorage(
 }
 
 void StoragePartitionImpl::OpenSessionStorage(
-    int64_t namespace_id,
+    const std::string& namespace_id,
     const url::Origin& origin,
     mojo::InterfaceRequest<mojom::LevelDBWrapper> request) {
   int process_id = bindings_.dispatch_context();

@@ -28,16 +28,15 @@ class CONTENT_EXPORT SessionStorageContextMojo {
                             base::FilePath subdirectory);
   ~SessionStorageContextMojo();
 
-  void OpenSessionStorage(int64_t namespace_id,
+  void OpenSessionStorage(const std::string& namespace_id,
                           const url::Origin& origin,
                           mojom::LevelDBWrapperRequest request);
 
-  void CreateSessionNamespace(int64_t namespace_id,
-                              const std::string& persistent_namespace_id);
-  void CloneSessionNamespace(int64_t namespace_id_to_clone,
-                             int64_t clone_namespace_id,
-                             const std::string& clone_persistent_namespace_id);
-  void DeleteSessionNamespace(int64_t namespace_id, bool should_persist);
+  void CreateSessionNamespace(const std::string& namespace_id);
+  void CloneSessionNamespace(const std::string& namespace_id_to_clone,
+                             const std::string& clone_namespace_id);
+  void DeleteSessionNamespace(const std::string& namespace_id,
+                              bool should_persist);
 
   // Clears any caches, to free up as much memory as possible. Next access to
   // storage for a particular origin will reload the data from the database.

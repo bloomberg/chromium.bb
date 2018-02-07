@@ -14,6 +14,9 @@ namespace content {
 namespace {
 const size_t kTotalCacheLimitInBytesLowEnd = 1 * 1024 * 1024;
 const size_t kTotalCacheLimitInBytes = 5 * 1024 * 1024;
+
+// An empty namespace is the local storage namespace.
+constexpr const char kLocalStorageNamespaceId[] = "";
 }  // namespace
 
 LocalStorageCachedAreas::LocalStorageCachedAreas(
@@ -33,9 +36,9 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
 }
 
 scoped_refptr<LocalStorageCachedArea>
-LocalStorageCachedAreas::GetSessionStorageArea(int64_t namespace_id,
+LocalStorageCachedAreas::GetSessionStorageArea(const std::string& namespace_id,
                                                const url::Origin& origin) {
-  DCHECK_NE(kLocalStorageNamespaceId, kInvalidSessionStorageNamespaceId);
+  DCHECK_NE(namespace_id, kLocalStorageNamespaceId);
   return GetCachedArea(namespace_id, origin, renderer_scheduler_);
 }
 
@@ -59,7 +62,7 @@ void LocalStorageCachedAreas::ClearAreasIfNeeded() {
 }
 
 scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
-    int64_t namespace_id,
+    const std::string& namespace_id,
     const url::Origin& origin,
     blink::scheduler::RendererScheduler* scheduler) {
   AreaKey key(namespace_id, origin);

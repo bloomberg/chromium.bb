@@ -115,8 +115,7 @@ void DOMStorageArea::EnableAggressiveCommitDelay() {
 DOMStorageArea::DOMStorageArea(const GURL& origin,
                                const base::FilePath& directory,
                                DOMStorageTaskRunner* task_runner)
-    : namespace_id_(kLocalStorageNamespaceId),
-      origin_(origin),
+    : origin_(origin),
       directory_(directory),
       task_runner_(task_runner),
 #if defined(OS_ANDROID)
@@ -134,23 +133,20 @@ DOMStorageArea::DOMStorageArea(const GURL& origin,
       start_time_(base::TimeTicks::Now()),
       data_rate_limiter_(kMaxBytesPerHour, base::TimeDelta::FromHours(1)),
       commit_rate_limiter_(kMaxCommitsPerHour, base::TimeDelta::FromHours(1)) {
+  DCHECK(namespace_id_.empty());
   if (!directory.empty()) {
     base::FilePath path = directory.Append(DatabaseFileNameFromOrigin(origin_));
     backing_.reset(new LocalStorageDatabaseAdapter(path));
   }
 }
 
-DOMStorageArea::DOMStorageArea(
-    int64_t namespace_id,
-    const std::string& persistent_namespace_id,
-    std::unique_ptr<std::vector<std::string>> original_persistent_namespace_ids,
-    const GURL& origin,
-    SessionStorageDatabase* session_storage_backing,
-    DOMStorageTaskRunner* task_runner)
+DOMStorageArea::DOMStorageArea(const std::string& namespace_id,
+                               std::vector<std::string> original_namespace_ids,
+                               const GURL& origin,
+                               SessionStorageDatabase* session_storage_backing,
+                               DOMStorageTaskRunner* task_runner)
     : namespace_id_(namespace_id),
-      persistent_namespace_id_(persistent_namespace_id),
-      original_persistent_namespace_ids_(
-          std::move(original_persistent_namespace_ids)),
+      original_namespace_ids_(std::move(original_namespace_ids)),
       origin_(origin),
       task_runner_(task_runner),
 #if defined(OS_ANDROID)
@@ -169,13 +165,11 @@ DOMStorageArea::DOMStorageArea(
       start_time_(base::TimeTicks::Now()),
       data_rate_limiter_(kMaxBytesPerHour, base::TimeDelta::FromHours(1)),
       commit_rate_limiter_(kMaxCommitsPerHour, base::TimeDelta::FromHours(1)) {
-  DCHECK(namespace_id != kLocalStorageNamespaceId);
+  DCHECK(!namespace_id.empty());
   if (session_storage_backing) {
-    backing_.reset(new SessionStorageDatabaseAdapter(
-        session_storage_backing, persistent_namespace_id,
-        original_persistent_namespace_ids_ ? *original_persistent_namespace_ids_
-                                           : std::vector<std::string>(),
-        origin));
+    backing_.reset(
+        new SessionStorageDatabaseAdapter(session_storage_backing, namespace_id,
+                                          original_namespace_ids_, origin));
   }
 }
 
@@ -298,23 +292,17 @@ void DOMStorageArea::FastClear() {
 }
 
 DOMStorageArea* DOMStorageArea::ShallowCopy(
-    int64_t destination_namespace_id,
-    const std::string& destination_persistent_namespace_id) {
-  DCHECK_NE(kLocalStorageNamespaceId, namespace_id_);
-  DCHECK_NE(kLocalStorageNamespaceId, destination_namespace_id);
+    const std::string& destination_namespace_id) {
+  DCHECK(!namespace_id_.empty());
+  DCHECK(!destination_namespace_id.empty());
 
-  auto original_persistent_namespace_ids =
-      std::make_unique<std::vector<std::string>>();
-  original_persistent_namespace_ids->push_back(persistent_namespace_id_);
-  if (original_persistent_namespace_ids_) {
-    original_persistent_namespace_ids->insert(
-        original_persistent_namespace_ids->end(),
-        original_persistent_namespace_ids_->begin(),
-        original_persistent_namespace_ids_->end());
-  }
+  std::vector<std::string> original_namespace_ids;
+  original_namespace_ids.push_back(namespace_id_);
+  original_namespace_ids.insert(original_namespace_ids.end(),
+                                original_namespace_ids_.begin(),
+                                original_namespace_ids_.end());
   DOMStorageArea* copy = new DOMStorageArea(
-      destination_namespace_id, destination_persistent_namespace_id,
-      std::move(original_persistent_namespace_ids), origin_,
+      destination_namespace_id, std::move(original_namespace_ids), origin_,
       session_storage_backing_.get(), task_runner_.get());
   copy->desired_load_state_ = desired_load_state_;
   copy->load_state_ = load_state_;
@@ -349,7 +337,7 @@ void DOMStorageArea::ClearShallowCopiedCommitBatches() {
          commit_batches_.back().type == CommitBatchHolder::TYPE_CLONE) {
     commit_batches_.pop_back();
   }
-  original_persistent_namespace_ids_ = nullptr;
+  original_namespace_ids_.clear();
 }
 
 void DOMStorageArea::SetCacheOnlyKeys(bool only_keys) {
@@ -496,7 +484,7 @@ void DOMStorageArea::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
 
   // Report memory usage for local storage backing. The session storage usage
   // will be reported by DOMStorageContextImpl.
-  if (namespace_id_ == kLocalStorageNamespaceId && backing_)
+  if (namespace_id_.empty() && backing_)
     backing_->ReportMemoryUsage(pmd, name + "/local_storage");
 
   // Do not add storage map usage if less than 1KB.

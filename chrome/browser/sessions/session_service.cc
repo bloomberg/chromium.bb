@@ -329,8 +329,7 @@ void SessionService::TabInserted(WebContents* contents) {
   content::SessionStorageNamespace* session_storage_namespace =
       contents->GetController().GetDefaultSessionStorageNamespace();
   ScheduleCommand(sessions::CreateSessionStorageAssociatedCommand(
-      session_tab_helper->session_id(),
-      session_storage_namespace->persistent_id()));
+      session_tab_helper->session_id(), session_storage_namespace->id()));
   session_storage_namespace->SetShouldPersist(true);
 }
 
@@ -660,8 +659,7 @@ void SessionService::BuildCommandsForTab(const SessionID& window_id,
   content::SessionStorageNamespace* session_storage_namespace =
       tab->GetController().GetDefaultSessionStorageNamespace();
   ScheduleCommand(sessions::CreateSessionStorageAssociatedCommand(
-      session_tab_helper->session_id(),
-      session_storage_namespace->persistent_id()));
+      session_tab_helper->session_id(), session_storage_namespace->id()));
 }
 
 void SessionService::BuildCommandsForBrowser(

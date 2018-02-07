@@ -187,15 +187,13 @@ class PrerenderContents::WebContentsDelegateImpl
 
 PrerenderContents::Observer::~Observer() {}
 
-PrerenderContents::PrerenderContents(
-    PrerenderManager* prerender_manager,
-    Profile* profile,
-    const GURL& url,
-    const content::Referrer& referrer,
-    Origin origin)
+PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
+                                     Profile* profile,
+                                     const GURL& url,
+                                     const content::Referrer& referrer,
+                                     Origin origin)
     : prerender_mode_(FULL_PRERENDER),
       prerendering_has_started_(false),
-      session_storage_namespace_id_(-1),
       prerender_canceler_binding_(this),
       prerender_manager_(prerender_manager),
       prerender_url_(url),

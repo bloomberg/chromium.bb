@@ -55,6 +55,7 @@
 #include "WebURLLoaderFactory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -262,7 +263,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Return a SessionStorage namespace
   virtual std::unique_ptr<WebStorageNamespace> CreateSessionStorageNamespace(
-      int64_t namespace_id);
+      base::StringPiece namespace_id);
 
   // FileSystem ----------------------------------------------------------
 

@@ -63,7 +63,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   void DeleteSessionStorage(const SessionStorageUsageInfo& usage_info) override;
   void SetSaveSessionStorageOnDisk() override;
   scoped_refptr<SessionStorageNamespace> RecreateSessionStorage(
-      const std::string& persistent_id) override;
+      const std::string& namespace_id) override;
   void StartScavengingUnusedSessionStorage() override;
 
   // Used by content settings to alter the behavior around
@@ -80,7 +80,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   // See mojom::StoragePartitionService interface.
   void OpenLocalStorage(const url::Origin& origin,
                         mojom::LevelDBWrapperRequest request);
-  void OpenSessionStorage(int64_t namespace_id,
+  void OpenSessionStorage(const std::string& namespace_id,
                           const url::Origin& origin,
                           mojom::LevelDBWrapperRequest request);
 

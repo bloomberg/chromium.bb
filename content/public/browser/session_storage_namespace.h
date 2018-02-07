@@ -19,13 +19,9 @@ namespace content {
 class SessionStorageNamespace
     : public base::RefCountedThreadSafe<SessionStorageNamespace> {
  public:
-  // Returns the ID of the |SessionStorageNamespace|. The ID is unique among all
-  // SessionStorageNamespace objects, but not unique across browser runs.
-  virtual int64_t id() const = 0;
-
-  // Returns the persistent ID for the |SessionStorageNamespace|. The ID is
-  // unique across browser runs.
-  virtual const std::string& persistent_id() const = 0;
+  // Returns the ID for the |SessionStorageNamespace|. The ID is unique among
+  // all SessionStorageNamespace objects and across browser runs.
+  virtual const std::string& id() const = 0;
 
   // For marking that the sessionStorage will be needed or won't be needed by
   // session restore.

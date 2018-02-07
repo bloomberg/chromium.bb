@@ -58,16 +58,14 @@ class CONTENT_EXPORT DOMStorageArea
                  DOMStorageTaskRunner* task_runner);
 
   // Session storage. Backed on disk if |session_storage_backing| is not NULL.
-  DOMStorageArea(int64_t namespace_id,
-                 const std::string& persistent_namespace_id,
-                 std::unique_ptr<std::vector<std::string>>
-                     original_persistent_namespace_ids,
+  DOMStorageArea(const std::string& namespace_id,
+                 std::vector<std::string> original_namespace_ids,
                  const GURL& origin,
                  SessionStorageDatabase* session_storage_backing,
                  DOMStorageTaskRunner* task_runner);
 
   const GURL& origin() const { return origin_; }
-  int64_t namespace_id() const { return namespace_id_; }
+  const std::string& namespace_id() const { return namespace_id_; }
   size_t map_memory_used() const { return map_ ? map_->memory_used() : 0; }
 
   // Writes a copy of the current set of values in the area to the |map|.
@@ -86,9 +84,7 @@ class CONTENT_EXPORT DOMStorageArea
   bool Clear();
   void FastClear();
 
-  DOMStorageArea* ShallowCopy(
-      int64_t destination_namespace_id,
-      const std::string& destination_persistent_namespace_id);
+  DOMStorageArea* ShallowCopy(const std::string& destination_namespace_id);
 
   bool HasUncommittedChanges() const;
   void ScheduleImmediateCommit();
@@ -220,9 +216,8 @@ class CONTENT_EXPORT DOMStorageArea
 
   static bool s_aggressive_flushing_enabled_;
 
-  int64_t namespace_id_;
-  std::string persistent_namespace_id_;
-  std::unique_ptr<std::vector<std::string>> original_persistent_namespace_ids_;
+  std::string namespace_id_;
+  std::vector<std::string> original_namespace_ids_;
   GURL origin_;
   base::FilePath directory_;
   scoped_refptr<DOMStorageTaskRunner> task_runner_;

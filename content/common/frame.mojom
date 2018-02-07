@@ -152,7 +152,7 @@ struct CreateNewWindowParams {
   WindowContainerType window_container_type;
 
   // The session storage namespace ID this window should use.
-  int64 session_storage_namespace_id;
+  string session_storage_namespace_id;
 
   // The name of the resulting frame that should be created (empty if none
   // has been specified). UTF8 encoded string.
@@ -204,7 +204,7 @@ struct CreateNewWindowReply {
   service_manager.mojom.InterfaceProvider main_frame_interface_provider;
 
   // Duplicated from CreateNewWindowParams because legacy code.
-  int64 cloned_session_storage_namespace_id;
+  string cloned_session_storage_namespace_id;
 
   // Used for devtools instrumentation and trace-ability. The token is
   // propagated to Blink's LocalFrame and both Blink and content/

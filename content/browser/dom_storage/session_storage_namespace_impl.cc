@@ -10,32 +10,37 @@
 
 namespace content {
 
-SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
-    DOMStorageContextWrapper* context)
-    : session_(new DOMStorageSession(context->context(),
-                                     context->GetMojoSessionStateWeakPtr())) {}
-
-SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
-    DOMStorageContextWrapper* context,
-    int64_t namepace_id_to_clone)
-    : session_(
-          DOMStorageSession::CloneFrom(context->context(),
-                                       context->GetMojoSessionStateWeakPtr(),
-                                       namepace_id_to_clone)) {}
-
-SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
-    DOMStorageContextWrapper* context,
-    const std::string& persistent_id)
-    : session_(new DOMStorageSession(context->context(),
-                                     context->GetMojoSessionStateWeakPtr(),
-                                     persistent_id)) {}
-
-int64_t SessionStorageNamespaceImpl::id() const {
-  return session_->namespace_id();
+// static
+scoped_refptr<SessionStorageNamespaceImpl> SessionStorageNamespaceImpl::Create(
+    DOMStorageContextWrapper* context) {
+  return base::WrapRefCounted(
+      new SessionStorageNamespaceImpl(DOMStorageSession::Create(
+          context->context(), context->GetMojoSessionStateWeakPtr())));
 }
 
-const std::string& SessionStorageNamespaceImpl::persistent_id() const {
-  return session_->persistent_namespace_id();
+// static
+scoped_refptr<SessionStorageNamespaceImpl> SessionStorageNamespaceImpl::Create(
+    DOMStorageContextWrapper* context,
+    const std::string& namepace_id) {
+  return base::WrapRefCounted(
+      new SessionStorageNamespaceImpl(DOMStorageSession::Create(
+          context->context(), context->GetMojoSessionStateWeakPtr(),
+          namepace_id)));
+}
+
+// static
+scoped_refptr<SessionStorageNamespaceImpl>
+SessionStorageNamespaceImpl::CloneFrom(
+    DOMStorageContextWrapper* context,
+    const std::string& namepace_id_to_clone) {
+  return base::WrapRefCounted(
+      new SessionStorageNamespaceImpl(DOMStorageSession::CloneFrom(
+          context->context(), context->GetMojoSessionStateWeakPtr(),
+          namepace_id_to_clone)));
+}
+
+const std::string& SessionStorageNamespaceImpl::id() const {
+  return session_->namespace_id();
 }
 
 void SessionStorageNamespaceImpl::SetShouldPersist(bool should_persist) {
@@ -56,9 +61,8 @@ bool SessionStorageNamespaceImpl::IsFromContext(
 }
 
 SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
-    DOMStorageSession* clone)
-    : session_(clone) {
-}
+    scoped_refptr<DOMStorageSession> session)
+    : session_(std::move(session)) {}
 
 SessionStorageNamespaceImpl::~SessionStorageNamespaceImpl() {
 }

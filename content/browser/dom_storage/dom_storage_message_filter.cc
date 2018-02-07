@@ -84,7 +84,7 @@ bool DOMStorageMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void DOMStorageMessageFilter::OnOpenStorageArea(int connection_id,
-                                                int64_t namespace_id,
+                                                const std::string& namespace_id,
                                                 const GURL& origin) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::Optional<bad_message::BadMessageReason>

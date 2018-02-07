@@ -1862,11 +1862,14 @@ NavigationControllerImpl::GetSessionStorageNamespace(SiteInstance* instance) {
   }
 
   // Create one if no one has accessed session storage for this partition yet.
-  SessionStorageNamespaceImpl* session_storage_namespace =
-      new SessionStorageNamespaceImpl(context_wrapper);
-  session_storage_namespace_map_[partition_id] = session_storage_namespace;
+  scoped_refptr<SessionStorageNamespaceImpl> session_storage_namespace =
+      SessionStorageNamespaceImpl::Create(context_wrapper);
+  SessionStorageNamespaceImpl* session_storage_namespace_ptr =
+      session_storage_namespace.get();
+  session_storage_namespace_map_[partition_id] =
+      std::move(session_storage_namespace);
 
-  return session_storage_namespace;
+  return session_storage_namespace_ptr;
 }
 
 SessionStorageNamespace*

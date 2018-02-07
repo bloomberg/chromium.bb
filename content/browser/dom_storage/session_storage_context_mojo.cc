@@ -23,27 +23,26 @@ SessionStorageContextMojo::SessionStorageContextMojo(
 SessionStorageContextMojo::~SessionStorageContextMojo() {}
 
 void SessionStorageContextMojo::OpenSessionStorage(
-    int64_t namespace_id,
+    const std::string& namespace_id,
     const url::Origin& origin,
     mojom::LevelDBWrapperRequest request) {
   NOTREACHED();
 }
 
 void SessionStorageContextMojo::CreateSessionNamespace(
-    int64_t namespace_id,
-    const std::string& persistent_namespace_id) {
+    const std::string& namespace_id) {
   NOTREACHED();
 }
 
 void SessionStorageContextMojo::CloneSessionNamespace(
-    int64_t namespace_id_to_clone,
-    int64_t clone_namespace_id,
-    const std::string& clone_persistent_namespace_id) {
+    const std::string& namespace_id_to_clone,
+    const std::string& clone_namespace_id) {
   NOTREACHED();
 }
 
-void SessionStorageContextMojo::DeleteSessionNamespace(int64_t namespace_id,
-                                                       bool should_persist) {
+void SessionStorageContextMojo::DeleteSessionNamespace(
+    const std::string& namespace_id,
+    bool should_persist) {
   NOTREACHED();
 }
 

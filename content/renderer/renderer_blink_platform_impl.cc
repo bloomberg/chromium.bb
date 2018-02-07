@@ -551,7 +551,8 @@ RendererBlinkPlatformImpl::CreateLocalStorageNamespace() {
 }
 
 std::unique_ptr<blink::WebStorageNamespace>
-RendererBlinkPlatformImpl::CreateSessionStorageNamespace(int64_t namespace_id) {
+RendererBlinkPlatformImpl::CreateSessionStorageNamespace(
+    base::StringPiece namespace_id) {
   if (base::FeatureList::IsEnabled(features::kMojoSessionStorage)) {
     if (!local_storage_cached_areas_) {
       local_storage_cached_areas_.reset(new LocalStorageCachedAreas(
@@ -559,10 +560,10 @@ RendererBlinkPlatformImpl::CreateSessionStorageNamespace(int64_t namespace_id) {
           renderer_scheduler_));
     }
     return std::make_unique<SessionWebStorageNamespaceImpl>(
-        namespace_id, local_storage_cached_areas_.get());
+        namespace_id.as_string(), local_storage_cached_areas_.get());
   }
 
-  return std::make_unique<WebStorageNamespaceImpl>(namespace_id);
+  return std::make_unique<WebStorageNamespaceImpl>(namespace_id.as_string());
 }
 
 //------------------------------------------------------------------------------

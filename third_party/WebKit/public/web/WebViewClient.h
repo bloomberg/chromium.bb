@@ -36,6 +36,7 @@
 #include "WebPopupType.h"
 #include "WebTextDirection.h"
 #include "WebWidgetClient.h"
+#include "base/strings/string_piece.h"
 #include "public/platform/WebString.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom-shared.h"
 
@@ -86,7 +87,9 @@ class WebViewClient : protected WebWidgetClient {
   }
 
   // Returns the session storage namespace id associated with this WebView.
-  virtual int64_t GetSessionStorageNamespaceId() { return 0; }
+  virtual base::StringPiece GetSessionStorageNamespaceId() {
+    return base::StringPiece();
+  }
 
   // Misc ----------------------------------------------------------------
 

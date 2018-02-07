@@ -20,6 +20,7 @@
 #include "base/observer_list.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "cc/input/browser_controls_state.h"
@@ -285,7 +286,7 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
                              blink::WebSandboxFlags sandbox_flags) override;
   blink::WebWidget* CreatePopup(blink::WebLocalFrame* creator,
                                 blink::WebPopupType popup_type) override;
-  int64_t GetSessionStorageNamespaceId() override;
+  base::StringPiece GetSessionStorageNamespaceId() override;
   void PrintPage(blink::WebLocalFrame* frame) override;
   bool EnumerateChosenDirectory(
       const blink::WebString& path,
@@ -779,7 +780,7 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   // The SessionStorage namespace that we're assigned to has an ID, and that ID
   // is passed to us upon creation.  WebKit asks for this ID upon first use and
   // uses it whenever asking the browser process to allocate new storage areas.
-  int64_t session_storage_namespace_id_;
+  std::string session_storage_namespace_id_;
 
   // All the registered observers.  We expect this list to be small, so vector
   // is fine.

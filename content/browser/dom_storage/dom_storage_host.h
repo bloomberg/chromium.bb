@@ -35,10 +35,10 @@ class CONTENT_EXPORT DOMStorageHost {
   explicit DOMStorageHost(DOMStorageContextImpl* context);
   ~DOMStorageHost();
 
-  base::Optional<bad_message::BadMessageReason>
-      OpenStorageArea(int connection_id,
-                      int namespace_id,
-                      const GURL& origin);
+  base::Optional<bad_message::BadMessageReason> OpenStorageArea(
+      int connection_id,
+      const std::string& namespace_id,
+      const GURL& origin);
   void CloseStorageArea(int connection_id);
   bool ExtractAreaValues(int connection_id, DOMStorageValuesMap* map);
   unsigned GetAreaLength(int connection_id);
@@ -55,7 +55,7 @@ class CONTENT_EXPORT DOMStorageHost {
                       const base::NullableString16& client_old_value,
                       const GURL& page_url);
   bool ClearArea(int connection_id, const GURL& page_url);
-  bool HasAreaOpen(int namespace_id, const GURL& origin) const;
+  bool HasAreaOpen(const std::string& namespace_id, const GURL& origin) const;
   bool HasConnection(int connection_id) const {
     return !!GetOpenArea(connection_id);
   }

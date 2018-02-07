@@ -16,7 +16,7 @@
 namespace content {
 
 DOMStorageCachedArea::DOMStorageCachedArea(
-    int64_t namespace_id,
+    const std::string& namespace_id,
     const GURL& origin,
     DOMStorageProxy* proxy,
     blink::scheduler::RendererScheduler* renderer_scheduler)

@@ -21,10 +21,9 @@ DOMStorageHost::~DOMStorageHost() {
     CloseStorageArea(connections_.begin()->first);
 }
 
-base::Optional<bad_message::BadMessageReason>
-DOMStorageHost::OpenStorageArea(
+base::Optional<bad_message::BadMessageReason> DOMStorageHost::OpenStorageArea(
     int connection_id,
-    int namespace_id,
+    const std::string& namespace_id,
     const GURL& origin) {
   if (HasConnection(connection_id))
     return bad_message::DSH_DUPLICATE_CONNECTION_ID;
@@ -141,8 +140,8 @@ bool DOMStorageHost::ClearArea(int connection_id, const GURL& page_url) {
   return true;
 }
 
-bool DOMStorageHost::HasAreaOpen(
-    int namespace_id, const GURL& origin) const {
+bool DOMStorageHost::HasAreaOpen(const std::string& namespace_id,
+                                 const GURL& origin) const {
   for (const auto& it : connections_) {
     if (namespace_id == it.second.namespace_->namespace_id() &&
         origin == it.second.area_->origin()) {
