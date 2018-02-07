@@ -2804,7 +2804,6 @@ TEST_F(NGColumnLayoutAlgorithmTest, ClassCBreakPointBeforeLine) {
         offset:0,0 size:55x20
           offset:0,0 size:33x20
             offset:0,0 size:33x11
-            offset:0,0 size:33x11
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }

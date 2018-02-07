@@ -752,7 +752,7 @@ CalcSelectionRangeAndSetSelectionState(const FrameSelection& frame_selection) {
                                       start_layout_object, start_offset,
                                       end_layout_object, end_offset);
 
-  if (!RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled())
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return new_range;
   return ComputeNewPaintRange(new_range, start_layout_object, start_offset,
                               end_layout_object, end_offset);

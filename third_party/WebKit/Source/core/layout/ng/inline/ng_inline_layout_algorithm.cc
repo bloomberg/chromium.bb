@@ -311,18 +311,6 @@ void NGInlineLayoutAlgorithm::PlaceLayoutResult(NGInlineItemResult* item_result,
     box->metrics.Unite(metrics);
 
   LayoutUnit line_top = item_result->margins.block_start - metrics.ascent;
-  if (!RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled()) {
-    // |CopyFragmentDataToLayoutBox| needs to know if a box fragment is an
-    // atomic inline, and its item_index. Add a text fragment as a marker.
-    NGTextFragmentBuilder text_builder(Node(),
-                                       ConstraintSpace().GetWritingMode());
-    text_builder.SetAtomicInline(item_result,
-                                 {fragment.InlineSize(), metrics.LineHeight()});
-    line_box_.AddChild(text_builder.ToTextFragment(), line_top, LayoutUnit(),
-                       item.BidiLevel());
-    // We need the box fragment as well to compute VisualRect() correctly.
-  }
-
   line_box_.AddChild(std::move(item_result->layout_result),
                      NGLogicalOffset{inline_offset, line_top},
                      item_result->inline_size, item.BidiLevel());

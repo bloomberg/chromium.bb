@@ -265,18 +265,10 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
       inline_content_physical_offset =
           NGPhysicalOffset(physical_borders.left, physical_borders.top);
 
-      if (RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled()) {
         // NGPaint offset is wrt parent fragment.
-        default_container_offset = start_fragment_logical_offset_wrt_box -
-                                   default_containing_block_.content_offset;
-        default_container_offset += inline_cb_borders.StartOffset();
-      } else {
-        // Legacy offset is wrt inline container.
-        default_container_offset =
-            NGLogicalOffset(inline_cb_borders.inline_start,
-                            inline_cb_borders.block_start) -
-            default_containing_block_.content_offset;
-      }
+      default_container_offset = start_fragment_logical_offset_wrt_box -
+                                 default_containing_block_.content_offset;
+      default_container_offset += inline_cb_borders.StartOffset();
     }
     containing_blocks_map_.insert(
         block_info.key, ContainingBlockInfo{inline_cb_style, inline_cb_size,

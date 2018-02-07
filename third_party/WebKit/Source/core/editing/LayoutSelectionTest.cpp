@@ -689,12 +689,10 @@ TEST_F(LayoutSelectionTest, Embed) {
 class NGLayoutSelectionTest
     : public LayoutSelectionTest,
       private ScopedLayoutNGForTest,
-      private ScopedLayoutNGPaintFragmentsForTest,
       private ScopedPaintUnderInvalidationCheckingForTest {
  public:
   NGLayoutSelectionTest()
       : ScopedLayoutNGForTest(true),
-        ScopedLayoutNGPaintFragmentsForTest(true),
         ScopedPaintUnderInvalidationCheckingForTest(true) {}
 };
 

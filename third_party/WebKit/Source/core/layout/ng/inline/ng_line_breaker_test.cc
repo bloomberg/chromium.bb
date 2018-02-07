@@ -126,14 +126,7 @@ TEST_F(NGLineBreakerTest, OverflowWord) {
   EXPECT_EQ("678", ToString(lines[1], node));
 }
 
-// The test leaks memory in CopyFragmentDataToLayoutBox. Re-enable when
-// LayoutNGPaintFragments is ready. crbug.com/732574
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_OverflowAtomicInline DISABLED_OverflowAtomicInline
-#else
-#define MAYBE_OverflowAtomicInline OverflowAtomicInline
-#endif
-TEST_F(NGLineBreakerTest, MAYBE_OverflowAtomicInline) {
+TEST_F(NGLineBreakerTest, OverflowAtomicInline) {
   LoadAhem();
   NGInlineNode node = CreateInlineNode(R"HTML(
     <!DOCTYPE html>

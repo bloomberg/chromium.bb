@@ -13,13 +13,10 @@
 namespace blink {
 
 class NGPaintFragmentTest : public RenderingTest,
-                            private ScopedLayoutNGForTest,
-                            private ScopedLayoutNGPaintFragmentsForTest {
+                            private ScopedLayoutNGForTest {
  public:
   NGPaintFragmentTest(LocalFrameClient* local_frame_client = nullptr)
-      : RenderingTest(local_frame_client),
-        ScopedLayoutNGForTest(true),
-        ScopedLayoutNGPaintFragmentsForTest(true) {}
+      : RenderingTest(local_frame_client), ScopedLayoutNGForTest(true) {}
 
  protected:
   const NGPaintFragment* GetPaintFragmentByElementId(const char* id) {

@@ -13,11 +13,9 @@
 
 namespace blink {
 
-class NGCaretRectTest : public NGLayoutTest,
-                        private ScopedLayoutNGPaintFragmentsForTest {
+class NGCaretRectTest : public NGLayoutTest {
  public:
-  NGCaretRectTest()
-      : NGLayoutTest(), ScopedLayoutNGPaintFragmentsForTest(true) {}
+  NGCaretRectTest() : NGLayoutTest() {}
 
   void SetUp() override {
     NGLayoutTest::SetUp();

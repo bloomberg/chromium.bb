@@ -15,6 +15,7 @@
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_layout_result.h"
+#include "core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
 namespace {
@@ -274,10 +275,6 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
     line_boxes.push_back(ToNGPhysicalLineBoxFragment(child.get()));
   }
 
-  LayoutText* layout_text =
-      ToLayoutText(GetLayoutObjectByElementId("text")->SlowFirstChild());
-  DCHECK(layout_text->HasTextBoxes());
-
   // Line break points may vary by minor differences in fonts.
   // The test is valid as long as we have 3 or more lines and their positions
   // are correct.
@@ -286,19 +283,13 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
   auto* line_box1 = line_boxes[0];
   // 40 = #left-float1' width 30 + #left-float2 10
   EXPECT_EQ(LayoutUnit(40), line_box1->Offset().left);
-  InlineTextBox* inline_text_box1 = layout_text->FirstTextBox();
-  EXPECT_EQ(LayoutUnit(40), inline_text_box1->X());
 
   auto* line_box2 = line_boxes[1];
   // 40 = #left-float1' width 30
   EXPECT_EQ(LayoutUnit(30), line_box2->Offset().left);
-  InlineTextBox* inline_text_box2 = inline_text_box1->NextTextBox();
-  EXPECT_EQ(LayoutUnit(30), inline_text_box2->X());
 
   auto* line_box3 = line_boxes[2];
   EXPECT_EQ(LayoutUnit(), line_box3->Offset().left);
-  InlineTextBox* inline_text_box3 = inline_text_box2->NextTextBox();
-  EXPECT_EQ(LayoutUnit(), inline_text_box3->X());
 }
 
 // Verifies that text correctly flows around the inline float that fits on
@@ -309,7 +300,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundInlineFloatThatFitsOnLine) {
     <style>
       * {
         font-family: "Arial", sans-serif;
-        font-size: 19px;
+        font-size: 18px;
       }
       #container {
         height: 200px; width: 200px; outline: solid orange;
@@ -324,13 +315,23 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundInlineFloatThatFitsOnLine) {
       </span>
     </div>
   )HTML");
-  LayoutText* layout_text =
-      ToLayoutText(GetLayoutObjectByElementId("text")->SlowFirstChild());
-  DCHECK(layout_text->HasTextBoxes());
 
-  InlineTextBox* inline_text_box1 = layout_text->FirstTextBox();
+  LayoutBlockFlow* block_flow =
+      ToLayoutBlockFlow(GetLayoutObjectByElementId("container"));
+  const NGPhysicalBoxFragment* block_box = block_flow->CurrentFragment();
+  ASSERT_TRUE(block_box);
+
+  // float plus two lines.
+  EXPECT_EQ(3u, block_box->Children().size());
+  const NGPhysicalLineBoxFragment& first_line =
+      ToNGPhysicalLineBoxFragment(*block_box->Children()[1]);
+
   // 30 == narrow-float's width.
-  EXPECT_EQ(LayoutUnit(30), inline_text_box1->X());
+  EXPECT_EQ(LayoutUnit(30), first_line.Offset().left);
+
+  Element* span = GetDocument().getElementById("text");
+  // 38 == narrow-float's width + body's margin.
+  EXPECT_EQ(LayoutUnit(38), span->OffsetLeft());
 
   Element* narrow_float = GetDocument().getElementById("narrow-float");
   // 8 == body's margin.
@@ -362,12 +363,6 @@ TEST_F(NGInlineLayoutAlgorithmTest,
       </span>
     </div>
   )HTML");
-  LayoutText* layout_text =
-      ToLayoutText(GetLayoutObjectByElementId("text")->SlowFirstChild());
-  DCHECK(layout_text->HasTextBoxes());
-
-  InlineTextBox* inline_text_box1 = layout_text->FirstTextBox();
-  EXPECT_EQ(LayoutUnit(), inline_text_box1->X());
 
   Element* wide_float = GetDocument().getElementById("wide-float");
   // 8 == body's margin.
@@ -435,13 +430,9 @@ TEST_F(NGInlineLayoutAlgorithmTest, PositionFloatsWithMargins) {
       </span>
     </div>
   )HTML");
-  LayoutText* layout_text =
-      ToLayoutText(GetLayoutObjectByElementId("text")->SlowFirstChild());
-  DCHECK(layout_text->HasTextBoxes());
-
-  InlineTextBox* inline_text_box1 = layout_text->FirstTextBox();
-  // 45 = sum of left's inline margins: 40 + left's width: 5
-  EXPECT_EQ(LayoutUnit(45), inline_text_box1->X());
+  Element* span = GetElementById("text");
+  // 53 = sum of left's inline margins: 40 + left's width: 5 + body's margin: 8
+  EXPECT_EQ(LayoutUnit(53), span->OffsetLeft());
 }
 
 // Test glyph bounding box causes visual overflow.

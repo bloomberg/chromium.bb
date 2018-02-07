@@ -52,24 +52,6 @@ void NGTextFragmentBuilder::SetItem(NGInlineItemResult* item_result,
   layout_object_ = item_result->item->GetLayoutObject();
 }
 
-void NGTextFragmentBuilder::SetAtomicInline(NGInlineItemResult* item_result,
-                                            NGLogicalSize size) {
-  DCHECK(!RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled());
-  DCHECK(item_result);
-  DCHECK(item_result->item->Style());
-
-  text_ = inline_node_.Text();
-  item_index_ = item_result->item_index;
-  start_offset_ = item_result->start_offset;
-  end_offset_ = item_result->end_offset;
-  SetStyle(item_result->item->Style());
-  size_ = size;
-  end_effect_ = NGTextEndEffect::kNone;
-  shape_result_ = nullptr;
-  expansion_ = 0;
-  layout_object_ = inline_node_.GetLayoutObject();
-}
-
 void NGTextFragmentBuilder::SetText(
     LayoutObject* layout_object,
     const String& text,

@@ -367,7 +367,7 @@ crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/block-insi
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/012.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/015.html [ Failure ]
 
-# ====== LayoutNG,LayoutNGPaintFragments ======
+# ====== LayoutNG ======
 
 ### Crash site: ContainerNode.cpp
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-with-empty-inline-children.html [ Crash Failure ]
@@ -385,7 +385,7 @@ crbug.com/714962 virtual/layout_ng/fast/inline/percentage-margins.html [ Failure
 crbug.com/714962 virtual/layout_ng/fast/inline/vertical-align-text-bottom.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/vertical-align-with-fallback-fonts.html [ Failure ]
 
-### Image/text failures only on LayoutNGPaintFragments
+### Image/text failures
 #crbug.com/714962 virtual/layout_ng/fast/inline/001.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/br-text-decoration.html [ Crash Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/continuation-outlines-with-layers-2.html [ Failure ]

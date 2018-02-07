@@ -87,13 +87,12 @@ class NGOffsetMappingTest : public NGLayoutTest {
   FontCachePurgePreventer purge_preventer_;
 };
 
+// TODO(layout-dev): Remove this unused parameterization.
 class ParameterizedNGOffsetMappingTest
     : public ::testing::WithParamInterface<bool>,
-      private ScopedLayoutNGPaintFragmentsForTest,
       public NGOffsetMappingTest {
  public:
-  ParameterizedNGOffsetMappingTest()
-      : ScopedLayoutNGPaintFragmentsForTest(GetParam()) {}
+  ParameterizedNGOffsetMappingTest() {}
 };
 
 INSTANTIATE_TEST_CASE_P(All,

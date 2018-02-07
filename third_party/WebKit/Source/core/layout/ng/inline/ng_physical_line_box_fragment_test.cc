@@ -11,12 +11,9 @@
 
 namespace blink {
 
-class NGPhysicalLineBoxFragmentTest
-    : public NGLayoutTest,
-      private ScopedLayoutNGPaintFragmentsForTest {
+class NGPhysicalLineBoxFragmentTest : public NGLayoutTest {
  public:
-  NGPhysicalLineBoxFragmentTest()
-      : NGLayoutTest(), ScopedLayoutNGPaintFragmentsForTest(true) {}
+  NGPhysicalLineBoxFragmentTest() : NGLayoutTest() {}
 
  protected:
   const NGPhysicalLineBoxFragment* GetLineBox() const {
