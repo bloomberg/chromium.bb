@@ -1392,17 +1392,24 @@ static void highbd_filter_intra_predictors(FILTER_INTRA_MODE mode,
 #endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_INTRA_EDGE
-static int is_smooth(MB_MODE_INFO *mbmi) {
-  return (mbmi->mode == SMOOTH_PRED || mbmi->mode == SMOOTH_V_PRED ||
-          mbmi->mode == SMOOTH_H_PRED);
+static int is_smooth(const MB_MODE_INFO *mbmi, int plane) {
+  if (plane == 0) {
+    const PREDICTION_MODE mode = mbmi->mode;
+    return (mode == SMOOTH_PRED || mode == SMOOTH_V_PRED ||
+            mode == SMOOTH_H_PRED);
+  } else {
+    const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
+    return (uv_mode == UV_SMOOTH_PRED || uv_mode == UV_SMOOTH_V_PRED ||
+            uv_mode == UV_SMOOTH_H_PRED);
+  }
 }
 
-static int get_filt_type(const MACROBLOCKD *xd) {
-  MB_MODE_INFO *ab = xd->up_available ? &xd->mi[-xd->mi_stride]->mbmi : 0;
-  MB_MODE_INFO *le = xd->left_available ? &xd->mi[-1]->mbmi : 0;
+static int get_filt_type(const MACROBLOCKD *xd, int plane) {
+  const MB_MODE_INFO *ab = xd->up_available ? &xd->mi[-xd->mi_stride]->mbmi : 0;
+  const MB_MODE_INFO *le = xd->left_available ? &xd->mi[-1]->mbmi : 0;
 
-  const int ab_sm = ab ? is_smooth(ab) : 0;
-  const int le_sm = le ? is_smooth(le) : 0;
+  const int ab_sm = ab ? is_smooth(ab, plane) : 0;
+  const int le_sm = le ? is_smooth(le, plane) : 0;
 
   return (ab_sm || le_sm) ? 1 : 0;
 }
@@ -1786,7 +1793,7 @@ static void build_intra_predictors_high(
 #if CONFIG_INTRA_EDGE
     const int need_right = p_angle < 90;
     const int need_bottom = p_angle > 180;
-    const int filt_type = get_filt_type(xd);
+    const int filt_type = get_filt_type(xd, plane);
     if (p_angle != 90 && p_angle != 180) {
       const int ab_le = need_above_left ? 1 : 0;
 #if CONFIG_EXT_INTRA_MOD
@@ -2003,7 +2010,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 #if CONFIG_INTRA_EDGE
     const int need_right = p_angle < 90;
     const int need_bottom = p_angle > 180;
-    const int filt_type = get_filt_type(xd);
+    const int filt_type = get_filt_type(xd, plane);
     if (p_angle != 90 && p_angle != 180) {
       const int ab_le = need_above_left ? 1 : 0;
 #if CONFIG_EXT_INTRA_MOD
