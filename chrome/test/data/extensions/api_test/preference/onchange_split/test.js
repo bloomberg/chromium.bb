@@ -21,7 +21,8 @@ function listenUntil(event, expected) {
         return;
       }
     }
-    chrome.test.fail("Unexpected event: " + JSON.stringify(value));
+    chrome.test.fail("Unexpected event: " + JSON.stringify(value) +
+                     ', incognito: ' + inIncognitoContext);
   });
 }
 
@@ -30,7 +31,8 @@ function listenUntil(event, expected) {
 // not capture superfluous unexpected events.
 function listenAndFailWhen(event) {
   return chrome.test.listenForever(event, function(value) {
-    chrome.test.fail("Unexpected event: " + JSON.stringify(value));
+    chrome.test.fail("Unexpected event: " + JSON.stringify(value) +
+                     ', incognito: ' + inIncognitoContext);
   });
 }
 
@@ -90,8 +92,10 @@ chrome.test.runTests([
         allowCookies.set({
           'value': true,
           'scope': 'incognito_session_only'
-        }, pass(sendMessage(constructMessage("pref set", "changeIncognitoOnly"),
-                            pass())));
+        }, pass(function() {
+          sendMessage(constructMessage("pref set", "changeIncognitoOnly"),
+                      pass())
+        }));
       }
     }));
   },
@@ -113,8 +117,10 @@ chrome.test.runTests([
       if (!inIncognitoContext) {
         allowCookies.set({
           'value': true
-        }, pass(sendMessage(constructMessage("pref set", "changeDefaultOnly"),
-                            pass())));
+        }, pass(function() {
+          sendMessage(constructMessage("pref set", "changeDefaultOnly"),
+                                       pass());
+        }));
       }
     }));
   },
@@ -138,9 +144,10 @@ chrome.test.runTests([
         allowCookies.set({
           'value': false,
           'scope': 'incognito_session_only'
-        }, pass(sendMessage(constructMessage("pref set",
-                                             "changeIncognitoOnlyBack"),
-                            pass())));
+        }, pass(function() {
+          sendMessage(constructMessage("pref set", "changeIncognitoOnlyBack"),
+                      pass())
+        }));
       }
     }));
   },
@@ -161,8 +168,10 @@ chrome.test.runTests([
       if (inIncognitoContext) {
         allowCookies.clear({
           'scope': 'incognito_session_only'
-        }, pass(sendMessage(constructMessage("pref cleared", "clearIncognito"),
-                            pass())));
+        }, pass(function() {
+          sendMessage(constructMessage("pref cleared", "clearIncognito"),
+                      pass())
+        }));
       }
     }));
   },

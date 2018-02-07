@@ -111,11 +111,10 @@ void DispatchEventToExtensions(Profile* profile,
       // If the extension is in incognito split mode,
       // a) incognito pref changes are visible only to the incognito tabs
       // b) regular pref changes are visible only to the incognito tabs if the
-      //    incognito pref has not alredy been set
+      //    incognito pref has not already been set
       Profile* restrict_to_profile = nullptr;
-      bool from_incognito = false;
       if (IncognitoInfo::IsSplitMode(extension.get())) {
-        if (incognito) {
+        if (incognito) {  // Handle case a).
           // If off the record profile does not exist, there should be no
           // extensions running in incognito at this time, and consequentially
           // no need to dispatch an event restricted to an incognito extension.
@@ -127,10 +126,13 @@ void DispatchEventToExtensions(Profile* profile,
           if (!profile->HasOffTheRecordProfile())
             continue;
           restrict_to_profile = profile->GetOffTheRecordProfile();
-        } else if (!PreferenceAPI::Get(profile)->DoesExtensionControlPref(
-                       extension->id(), browser_pref, &from_incognito) &&
-                   from_incognito) {
-          restrict_to_profile = profile;
+        } else {  // Handle case b).
+          bool controlled_from_incognito = false;
+          bool controlled_by_extension =
+              PreferenceAPI::Get(profile)->DoesExtensionControlPref(
+                  extension->id(), browser_pref, &controlled_from_incognito);
+          if (controlled_by_extension && controlled_from_incognito)
+            restrict_to_profile = profile;
         }
       }
 

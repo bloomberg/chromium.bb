@@ -343,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, OnChangeSplit) {
   listener_incognito10.Reply("ok");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();
+  EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher_incognito.message();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest,
