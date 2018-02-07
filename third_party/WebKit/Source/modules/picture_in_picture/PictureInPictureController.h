@@ -12,6 +12,13 @@ namespace blink {
 
 class HTMLVideoElement;
 
+// The PictureInPictureController is keeping the state and implementing the
+// logic around the Picture-in-Picture feature. It is meant to be used as well
+// by the Picture-in-Picture Web API and internally (eg. media controls). All
+// consumers inside Blink should use this class to access Picture-in-Picture. A
+// PictureInPictureController instance is associated to a Document. It is
+// supplement and therefore can be lazy-initiated. Callers should consider
+// whether they want to instantiate an object when they make a call.
 class MODULES_EXPORT PictureInPictureController
     : public GarbageCollectedFinalized<PictureInPictureController>,
       public Supplement<Document> {
@@ -25,10 +32,15 @@ class MODULES_EXPORT PictureInPictureController
 
   static const char* SupplementName();
 
+  // Returns whether system allows Picture-in-Picture feature or not for
+  // the associated document.
   bool PictureInPictureEnabled() const;
 
   void SetPictureInPictureEnabledForTesting(bool);
 
+  // List of Picture-in-Picture support statuses. If status is kEnabled,
+  // Picture-in-Picture is enabled for a document or element, otherwise it is
+  // not supported.
   enum class Status {
     kEnabled,
     kDisabledBySystem,
@@ -36,14 +48,23 @@ class MODULES_EXPORT PictureInPictureController
     kDisabledByAttribute,
   };
 
+  // Returns whether the document associated with the controller is allowed to
+  // request Picture-in-Picture.
   Status IsDocumentAllowed() const;
 
+  // Returns whether a given video element in a document associated with the
+  // controller is allowed to request Picture-in-Picture.
   Status IsElementAllowed(HTMLVideoElement&) const;
 
+  // Meant to be called by HTMLVideoElementPictureInPicture and DOM objects
+  // but not internally.
   void SetPictureInPictureElement(HTMLVideoElement&);
 
+  // Meant to be called by DocumentPictureInPicture,
+  // HTMLVideoElementPictureInPicture, and DOM objects but not internally.
   void UnsetPictureInPictureElement();
 
+  // Returns element currently in Picture-in-Picture if any. Null otherwise.
   HTMLVideoElement* PictureInPictureElement() const;
 
   void Trace(blink::Visitor*) override;
@@ -51,8 +72,11 @@ class MODULES_EXPORT PictureInPictureController
  private:
   explicit PictureInPictureController(Document&);
 
+  // Whether system allows Picture-in-Picture feature for the associated
+  // document.
   bool picture_in_picture_enabled_ = true;
 
+  // The Picture-in-Picture element for the associated document.
   Member<HTMLVideoElement> picture_in_picture_element_;
 };
 
