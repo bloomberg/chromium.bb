@@ -20,6 +20,7 @@
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 #import "ui/base/models/menu_model.h"
+#include "ui/base/ui_features.h"
 
 // Controller for UI events on items in the media galleries dialog.
 @interface MediaGalleriesCocoaController : NSObject {
@@ -273,9 +274,16 @@ ui::MenuModel* MediaGalleriesDialogCocoa::GetContextMenu(
 }
 
 // static
-MediaGalleriesDialog* MediaGalleriesDialog::Create(
+MediaGalleriesDialog* MediaGalleriesDialog::CreateCocoa(
     MediaGalleriesDialogController* controller) {
   base::scoped_nsobject<MediaGalleriesCocoaController> cocoa_controller(
       [[MediaGalleriesCocoaController alloc] init]);
   return new MediaGalleriesDialogCocoa(controller, cocoa_controller);
 }
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+MediaGalleriesDialog* MediaGalleriesDialog::Create(
+    MediaGalleriesDialogController* controller) {
+  return CreateCocoa(controller);
+}
+#endif

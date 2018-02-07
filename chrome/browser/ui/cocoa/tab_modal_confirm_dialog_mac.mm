@@ -15,15 +15,24 @@
 #include "chrome/common/chrome_switches.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/image/image.h"
 
 // static
-TabModalConfirmDialog* TabModalConfirmDialog::Create(
+TabModalConfirmDialog* TabModalConfirmDialog::CreateCocoa(
     TabModalConfirmDialogDelegate* delegate,
     content::WebContents* web_contents) {
   // Deletes itself when closed.
   return new TabModalConfirmDialogMac(delegate, web_contents);
 }
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+TabModalConfirmDialog* TabModalConfirmDialog::Create(
+    TabModalConfirmDialogDelegate* delegate,
+    content::WebContents* web_contents) {
+  return CreateCocoa(delegate, web_contents);
+}
+#endif
 
 @interface TabModalConfirmDialogMacBridge : NSObject {
   TabModalConfirmDialogDelegate* delegate_;  // weak

@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "build/build_config.h"
+
 class Browser;
 
 class MediaRouterActionPlatformDelegate {
@@ -18,6 +20,12 @@ class MediaRouterActionPlatformDelegate {
   // platform-specific implementation for the class.
   static std::unique_ptr<MediaRouterActionPlatformDelegate> Create(
       Browser* browser);
+#if defined(OS_MACOSX)
+  // Temporary shim for Polychrome. See bottom of first comment in
+  // https://crbug.com/80495 for details.
+  static std::unique_ptr<MediaRouterActionPlatformDelegate> CreateCocoa(
+      Browser* browser);
+#endif
 
   // Closes the overflow menu, if it was open. Returns whether or not the
   // overflow menu was closed.

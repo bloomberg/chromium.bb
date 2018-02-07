@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/harmony/bulleted_label_list_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -176,5 +177,9 @@ void SadTabView::OnPaint(gfx::Canvas* canvas) {
 
 SadTab* SadTab::Create(content::WebContents* web_contents,
                        SadTabKind kind) {
+#if defined(OS_MACOSX)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    return CreateCocoa(web_contents, kind);
+#endif
   return new SadTabView(web_contents, kind);
 }

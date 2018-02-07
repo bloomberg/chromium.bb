@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 
 namespace content {
@@ -34,6 +35,12 @@ class MediaGalleriesDialog {
   // Constructs a platform-specific dialog owned and controlled by |controller|.
   static MediaGalleriesDialog* Create(
       MediaGalleriesDialogController* controller);
+#if defined(OS_MACOSX)
+  // Temporary shim for Polychrome. See bottom of first comment in
+  // https://crbug.com/80495 for details.
+  static MediaGalleriesDialog* CreateCocoa(
+      MediaGalleriesDialogController* controller);
+#endif
  private:
   friend class TestMediaGalleriesAddScanResultsFunction;
 
