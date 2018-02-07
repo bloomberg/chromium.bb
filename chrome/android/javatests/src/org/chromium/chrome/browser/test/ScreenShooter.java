@@ -142,7 +142,8 @@ public class ScreenShooter extends TestWatcher {
         mTestClassName = d.getClassName();
         mTestMethodName = d.getMethodName();
         Class<?> testClass = d.getTestClass();
-        mFeatures = d.getAnnotation(Feature.class).value();
+        Feature annotation = d.getAnnotation(Feature.class);
+        mFeatures = annotation == null ? new String[] {} : annotation.value();
     }
 
     private static void setFilterValue(Map<String, String> tags, String name, String value) {
