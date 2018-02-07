@@ -378,8 +378,7 @@ TEST_F(RendererSideResourceSchedulerTest, IsThrottablePriority) {
   EXPECT_TRUE(
       Scheduler()->IsThrottablePriority(ResourceLoadPriority::kVeryLow));
   EXPECT_TRUE(Scheduler()->IsThrottablePriority(ResourceLoadPriority::kLow));
-  EXPECT_FALSE(
-      Scheduler()->IsThrottablePriority(ResourceLoadPriority::kMedium));
+  EXPECT_TRUE(Scheduler()->IsThrottablePriority(ResourceLoadPriority::kMedium));
   EXPECT_FALSE(Scheduler()->IsThrottablePriority(ResourceLoadPriority::kHigh));
   EXPECT_FALSE(
       Scheduler()->IsThrottablePriority(ResourceLoadPriority::kVeryHigh));
@@ -495,14 +494,13 @@ TEST_F(RendererSideResourceSchedulerTest, LoosenThrottlingPolicy) {
   // Now let's tighten the limit again.
   Scheduler()->SetOutstandingLimitForTesting(0, 0);
 
-  // ...and change the scheduling policy to |kNormal|, where priority >=
-  // |kMedium| requests are not throttled.
+  // ...and change the scheduling policy to |kNormal|.
   Scheduler()->LoosenThrottlingPolicy();
 
   EXPECT_FALSE(client1->WasRun());
   EXPECT_FALSE(client2->WasRun());
   EXPECT_FALSE(client3->WasRun());
-  EXPECT_TRUE(client4->WasRun());
+  EXPECT_FALSE(client4->WasRun());
 
   Scheduler()->SetOutstandingLimitForTesting(0, 2);
 

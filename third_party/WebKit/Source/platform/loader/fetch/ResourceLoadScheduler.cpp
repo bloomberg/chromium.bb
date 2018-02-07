@@ -612,14 +612,7 @@ bool ResourceLoadScheduler::IsThrottablePriority(
     }
   }
 
-  switch (policy_) {
-    case ThrottlingPolicy::kTight:
-      return priority < ResourceLoadPriority::kHigh;
-    case ThrottlingPolicy::kNormal:
-      return priority < ResourceLoadPriority::kMedium;
-  }
-  NOTREACHED();
-  return true;
+  return priority < ResourceLoadPriority::kHigh;
 }
 
 void ResourceLoadScheduler::OnThrottlingStateChanged(
