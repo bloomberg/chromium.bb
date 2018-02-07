@@ -483,6 +483,10 @@ source_set("test_support") {
   sources = [
     "preload_check_test_util.cc",
     "preload_check_test_util.h",
+    "value_store/test_value_store_factory.cc",
+    "value_store/test_value_store_factory.h",
+    "value_store/testing_value_store.cc",
+    "value_store/testing_value_store.h",
   ]
 
   deps = [
