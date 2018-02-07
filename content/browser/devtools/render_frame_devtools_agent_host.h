@@ -25,10 +25,6 @@
 #include "ui/android/view_android.h"
 #endif  // OS_ANDROID
 
-namespace network {
-struct ResourceResponse;
-}
-
 namespace viz {
 class CompositorFrameMetadata;
 }
@@ -65,17 +61,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       bool* report_raw_headers);
 
   static void OnResetNavigationRequest(NavigationRequest* navigation_request);
-
-  static void ApplyOverrides(FrameTreeNode* frame_tree_node,
-                             mojom::BeginNavigationParams* begin_params,
-                             bool* report_raw_headers);
-  static void OnNavigationRequestWillBeSent(
-      const NavigationRequest& navigation_request);
-  static void OnNavigationResponseReceived(
-      const NavigationRequest& nav_request,
-      const network::ResourceResponse& response);
-  static void OnNavigationRequestFailed(const NavigationRequest& nav_request,
-                                        int error_code);
 
   static std::vector<std::unique_ptr<NavigationThrottle>>
   CreateNavigationThrottles(NavigationHandleImpl* navigation_handle);

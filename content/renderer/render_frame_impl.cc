@@ -21,7 +21,6 @@
 #include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/i18n/char_iterator.h"
-#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -4052,8 +4051,6 @@ void RenderFrameImpl::DidStartProvisionalLoad(
         pending_navigation_info_->triggering_event_info;
     info.form = pending_navigation_info_->form;
     info.source_location = pending_navigation_info_->source_location;
-    info.devtools_initiator_info =
-        pending_navigation_info_->devtools_initiator_info;
 
     pending_navigation_info_.reset(nullptr);
     BeginNavigation(info);
@@ -6764,11 +6761,6 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
     client_side_redirect_url = frame_->GetDocument().Url();
 
   int load_flags = GetLoadFlagsForWebURLRequest(info.url_request);
-  std::unique_ptr<base::DictionaryValue> initiator;
-  if (!info.devtools_initiator_info.IsNull()) {
-    initiator = base::DictionaryValue::From(
-        base::JSONReader::Read(info.devtools_initiator_info.Utf8()));
-  }
   mojom::BeginNavigationParamsPtr begin_navigation_params =
       mojom::BeginNavigationParams::New(
           GetWebURLRequestHeadersAsString(info.url_request), load_flags,
@@ -6777,7 +6769,7 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
           GetRequestContextTypeForWebURLRequest(info.url_request),
           GetMixedContentContextTypeForWebURLRequest(info.url_request),
           is_form_submission, searchable_form_url, searchable_form_encoding,
-          initiator_origin, client_side_redirect_url, std::move(initiator));
+          initiator_origin, client_side_redirect_url);
 
   GetFrameHost()->BeginNavigation(MakeCommonNavigationParams(info, load_flags),
                                   std::move(begin_navigation_params));
@@ -7349,8 +7341,7 @@ RenderFrameImpl::PendingNavigationInfo::PendingNavigationInfo(
       client_redirect(info.is_client_redirect),
       triggering_event_info(info.triggering_event_info),
       form(info.form),
-      source_location(info.source_location),
-      devtools_initiator_info(info.devtools_initiator_info) {}
+      source_location(info.source_location) {}
 
 void RenderFrameImpl::BindWidget(mojom::WidgetRequest request) {
   GetRenderWidget()->SetWidgetBinding(std::move(request));
