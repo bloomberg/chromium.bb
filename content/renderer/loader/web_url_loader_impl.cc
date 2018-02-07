@@ -668,8 +668,6 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   }
 
   resource_request->load_flags = GetLoadFlagsForWebURLRequest(request);
-  if (resource_request->resource_type == RESOURCE_TYPE_PREFETCH)
-    resource_request->load_flags |= net::LOAD_PREFETCH;
 
   // |plugin_child_id| only needs to be non-zero if the request originates
   // outside the render process, so we can use requestorProcessID even

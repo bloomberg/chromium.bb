@@ -102,9 +102,12 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
     initiated_in_secure_context_ = secure;
   }
 
-  // The request is a prefetch and should use LOAD_PREFETCH network flags.
-  bool is_prefetch() const { return is_prefetch_; }
-  void set_is_prefetch(bool prefetch) { is_prefetch_ = prefetch; }
+  // The request is for a prefetch-only client (i.e. running NoStatePrefetch)
+  // and should use LOAD_PREFETCH network flags.
+  bool is_for_no_state_prefetch() const { return is_for_no_state_prefetch_; }
+  void set_is_for_no_state_prefetch(bool prefetch) {
+    is_for_no_state_prefetch_ = prefetch;
+  }
 
   // The request is downloaded to the network cache, but not rendered or
   // executed. The renderer will see this as an aborted request.
@@ -156,7 +159,7 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   blink::WebString requested_with_;
   std::unique_ptr<StreamOverrideParameters> stream_override_;
   bool initiated_in_secure_context_;
-  bool is_prefetch_;
+  bool is_for_no_state_prefetch_;
   bool download_to_network_cache_only_;
   bool block_mixed_plugin_content_;
   bool navigation_initiated_by_renderer_;
