@@ -1951,6 +1951,19 @@ const char kEnableMediaRouter[] = "media_router.enable_media_router";
 const char kShowCastIconInToolbar[] = "media_router.show_cast_icon_in_toolbar";
 #endif  // !defined(OS_ANDROID)
 
+#if !defined(OS_ANDROID)
+#if !defined(OS_CHROMEOS)
+// Pref name for the policy controlling the way in which users are notified of
+// the need to relaunch the browser for a pending update.
+const char kRelaunchNotification[] = "browser.relaunch_notification";
+#endif  // !defined(OS_CHROMEOS)
+// Pref name for the policy controlling the time period over which users are
+// notified of the need to relaunch the browser for a pending update. Values
+// are in milliseconds.
+const char kRelaunchNotificationPeriod[] =
+    "browser.relaunch_notification_period";
+#endif  // !defined(OS_ANDROID)
+
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
 

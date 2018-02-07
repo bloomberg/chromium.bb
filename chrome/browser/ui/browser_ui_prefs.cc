@@ -35,6 +35,14 @@ uint32_t GetHomeButtonAndHomePageIsNewTabPageFlags() {
 void RegisterBrowserPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kOptionsWindowLastTabIndex, 0);
   registry->RegisterBooleanPref(prefs::kAllowFileSelectionDialogs, true);
+
+#if !defined(OS_ANDROID)
+#if !defined(OS_CHROMEOS)
+  registry->RegisterIntegerPref(prefs::kRelaunchNotification, 0);
+#endif  // !defined(OS_CHROMEOS)
+  registry->RegisterIntegerPref(prefs::kRelaunchNotificationPeriod,
+                                7 * 24 * 60 * 60 * 1000);  // 1 week.
+#endif  // !defined(OS_ANDROID)
 }
 
 void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
