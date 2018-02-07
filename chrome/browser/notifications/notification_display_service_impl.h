@@ -58,9 +58,6 @@ class NotificationDisplayServiceImpl : public NotificationDisplayService {
   NotificationHandler* GetNotificationHandler(
       NotificationHandler::Type notification_type);
 
-  // Removes an implementation object added via AddNotificationHandler.
-  void RemoveNotificationHandler(NotificationHandler::Type notification_type);
-
   // NotificationDisplayService implementation:
   void Display(NotificationHandler::Type notification_type,
                const message_center::Notification& notification,

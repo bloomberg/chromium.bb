@@ -173,13 +173,34 @@ void RecordButtonClickAction(DownloadCommands::Command command) {
   }
 }
 
+// A thunk delegate class.
+class DownloadNotificationDelegate
+    : public message_center::NotificationDelegate {
+ public:
+  explicit DownloadNotificationDelegate(DownloadItemNotification* notification)
+      : notification_(notification) {}
+
+  void Close(bool by_user) override { notification_->OnNotificationClose(); }
+
+  void Click() override { notification_->OnNotificationClick(); }
+
+  void ButtonClick(int index) override {
+    notification_->OnNotificationButtonClick(index);
+  }
+
+ private:
+  ~DownloadNotificationDelegate() override = default;
+
+  // |notification_| is assumed to outlive |this|.
+  DownloadItemNotification* notification_;
+
+  DISALLOW_COPY_AND_ASSIGN(DownloadNotificationDelegate);
+};
+
 }  // namespace
 
-DownloadItemNotification::DownloadItemNotification(
-    content::DownloadItem* item,
-    DownloadNotificationManagerForProfile* manager)
-    : item_(item),
-      weak_factory_(this) {
+DownloadItemNotification::DownloadItemNotification(content::DownloadItem* item)
+    : item_(item), weak_factory_(this) {
   // Creates the notification instance. |title|, |body| and |icon| will be
   // overridden by UpdateNotificationData() below.
   message_center::RichNotificationData rich_notification_data;
@@ -194,7 +215,8 @@ DownloadItemNotification::DownloadItemNotification(
       GURL(kDownloadNotificationOrigin),              // origin_url
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kDownloadNotificationNotifierId),
-      rich_notification_data, nullptr);
+      rich_notification_data,
+      base::MakeRefCounted<DownloadNotificationDelegate>(this));
 
   notification_->set_progress(0);
   // Dangerous notifications don't have a click handler.
@@ -220,7 +242,7 @@ void DownloadItemNotification::OnDownloadRemoved(content::DownloadItem* item) {
 
   // Removing the notification causes calling |NotificationDelegate::Close()|.
   NotificationDisplayServiceFactory::GetForProfile(profile())->Close(
-      NotificationHandler::Type::DOWNLOAD, GetNotificationId());
+      NotificationHandler::Type::TRANSIENT, GetNotificationId());
 
   item_ = nullptr;
 }
@@ -235,7 +257,7 @@ void DownloadItemNotification::DisablePopup() {
   notification_->set_priority(message_center::LOW_PRIORITY);
   closed_ = false;
   NotificationDisplayServiceFactory::GetForProfile(profile())->Display(
-      NotificationHandler::Type::DOWNLOAD, *notification_);
+      NotificationHandler::Type::TRANSIENT, *notification_);
 }
 
 void DownloadItemNotification::OnNotificationClose() {
@@ -321,7 +343,7 @@ std::string DownloadItemNotification::GetNotificationId() const {
 
 void DownloadItemNotification::CloseNotification() {
   NotificationDisplayServiceFactory::GetForProfile(profile())->Close(
-      NotificationHandler::Type::DOWNLOAD, GetNotificationId());
+      NotificationHandler::Type::TRANSIENT, GetNotificationId());
 }
 
 void DownloadItemNotification::Update() {
@@ -423,7 +445,7 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
       notification_->set_priority(notification_->priority() + 1);
     }
     NotificationDisplayServiceFactory::GetForProfile(profile())->Display(
-        NotificationHandler::Type::DOWNLOAD, *notification_);
+        NotificationHandler::Type::TRANSIENT, *notification_);
   }
 
   if (item_->IsDone() && image_decode_status_ == NOT_STARTED) {
