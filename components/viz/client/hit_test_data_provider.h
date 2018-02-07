@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "components/viz/client/viz_client_export.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 
 namespace viz {
@@ -21,7 +22,8 @@ class VIZ_CLIENT_EXPORT HitTestDataProvider {
 
   // Returns an array of hit-test regions. May return nullptr to disable
   // hit-testing.
-  virtual mojom::HitTestRegionListPtr GetHitTestData() const = 0;
+  virtual mojom::HitTestRegionListPtr GetHitTestData(
+      const CompositorFrame& compositor_frame) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HitTestDataProvider);

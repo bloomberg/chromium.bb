@@ -44,8 +44,8 @@ HitTestDataProviderAura::HitTestDataProviderAura(aura::Window* window)
 
 HitTestDataProviderAura::~HitTestDataProviderAura() {}
 
-viz::mojom::HitTestRegionListPtr HitTestDataProviderAura::GetHitTestData()
-    const {
+viz::mojom::HitTestRegionListPtr HitTestDataProviderAura::GetHitTestData(
+    const viz::CompositorFrame& compositor_frame) const {
   const ui::mojom::EventTargetingPolicy event_targeting_policy =
       window_->event_targeting_policy();
   if (!window_->IsVisible() ||
@@ -58,6 +58,7 @@ viz::mojom::HitTestRegionListPtr HitTestDataProviderAura::GetHitTestData()
               ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY
           ? viz::mojom::kHitTestIgnore
           : viz::mojom::kHitTestMine;
+  // TODO(crbug.com/805416): Use pixels instead of DIP units for bounds.
   hit_test_region_list->bounds = window_->bounds();
 
   GetHitTestDataRecursively(window_, hit_test_region_list.get());

@@ -15,6 +15,8 @@ viz_component("client") {
     "frame_evictor.cc",
     "frame_evictor.h",
     "hit_test_data_provider.h",
+    "hit_test_data_provider_simple_bounds.cc",
+    "hit_test_data_provider_simple_bounds.h",
     "local_surface_id_provider.cc",
     "local_surface_id_provider.h",
   ]
@@ -34,6 +36,7 @@ viz_source_set("unit_tests") {
   testonly = true
   sources = [
     "client_layer_tree_frame_sink_unittest.cc",
+    "hit_test_data_provider_simple_bounds_unittest.cc",
   ]
 
   deps = [
