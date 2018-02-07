@@ -1700,7 +1700,7 @@ void UiSceneCreator::CreateUrlBar() {
   hint_text->SetTranslate(kUrlBarOriginContentOffsetDMM, 0, 0);
   hint_text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
   hint_text->SetAlignment(UiTexture::kTextAlignmentLeft);
-  hint_text->SetText(l10n_util::GetStringUTF16(IDS_SEARCH_OR_TYPE_URL));
+  hint_text->SetText(l10n_util::GetStringUTF16(IDS_SEARCH_OR_TYPE_WEB_ADDRESS));
   VR_BIND_VISIBILITY(hint_text, !model->toolbar_state.should_display_url);
   VR_BIND_COLOR(model_, hint_text.get(), &ColorScheme::omnibox_hint,
                 &Text::SetColor);
@@ -1882,7 +1882,7 @@ void UiSceneCreator::CreateOmnibox() {
   omnibox_text_field->SetTextInputDelegate(text_input_delegate_);
   omnibox_text_field->set_hit_testable(false);
   omnibox_text_field->SetHintText(
-      l10n_util::GetStringUTF16(IDS_SEARCH_OR_TYPE_URL));
+      l10n_util::GetStringUTF16(IDS_SEARCH_OR_TYPE_WEB_ADDRESS));
   omnibox_text_field->set_x_anchoring(LEFT);
   omnibox_text_field->SetTranslate(kOmniboxTextMarginDMM, 0, 0);
   omnibox_text_field->SetSize(kOmniboxWidthDMM - 2 * kOmniboxTextMarginDMM -
