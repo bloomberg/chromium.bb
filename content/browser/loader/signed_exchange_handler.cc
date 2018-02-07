@@ -5,126 +5,246 @@
 #include "content/browser/loader/signed_exchange_handler.h"
 
 #include "base/feature_list.h"
+#include "components/cbor/cbor_reader.h"
+#include "content/browser/loader/merkle_integrity_source_stream.h"
+#include "content/browser/loader/signed_exchange_consts.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "net/base/io_buffer.h"
+#include "net/filter/source_stream.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 
 namespace content {
 
+namespace {
+
+constexpr size_t kBufferSizeForRead = 65536;
+
+constexpr char kMiHeader[] = "MI";
+
+cbor::CBORValue BytestringFromString(base::StringPiece in_string) {
+  return cbor::CBORValue(
+      std::vector<uint8_t>(in_string.begin(), in_string.end()));
+}
+
+bool IsStringEqualTo(const cbor::CBORValue& value, const char* str) {
+  return value.is_string() && value.GetString() == str;
+}
+
+// TODO(https://crbug.com/803774): Just for now, remove once we have streaming
+// CBOR parser.
+class BufferSourceStream : public net::SourceStream {
+ public:
+  BufferSourceStream(const std::vector<uint8_t>& bytes)
+      : net::SourceStream(SourceStream::TYPE_NONE), buf_(bytes), ptr_(0u) {}
+  int Read(net::IOBuffer* dest_buffer,
+           int buffer_size,
+           const net::CompletionCallback& callback) override {
+    int bytes = std::min(static_cast<int>(buf_.size() - ptr_), buffer_size);
+    if (bytes > 0) {
+      memcpy(dest_buffer->data(), &buf_[ptr_], bytes);
+      ptr_ += bytes;
+    }
+    return bytes;
+  }
+  std::string Description() const override { return "buffer"; }
+
+ private:
+  std::vector<uint8_t> buf_;
+  size_t ptr_;
+};
+
+}  // namespace
+
 SignedExchangeHandler::SignedExchangeHandler(
-    std::unique_ptr<net::SourceStream> upstream,
+    std::unique_ptr<net::SourceStream> body,
     ExchangeHeadersCallback headers_callback)
-    : net::FilterSourceStream(net::SourceStream::TYPE_NONE,
-                              std::move(upstream)),
-      headers_callback_(std::move(headers_callback)),
+    : headers_callback_(std::move(headers_callback)),
+      source_(std::move(body)),
       weak_factory_(this) {
   DCHECK(base::FeatureList::IsEnabled(features::kSignedHTTPExchange));
 
-  // Triggering the first read (asynchronously) for header parsing.
-  header_out_buf_ = base::MakeRefCounted<net::IOBufferWithSize>(1);
+  // Triggering the first read (asynchronously) for CBOR parsing.
+  read_buf_ = base::MakeRefCounted<net::IOBufferWithSize>(kBufferSizeForRead);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&SignedExchangeHandler::DoHeaderLoop,
+      FROM_HERE, base::BindOnce(&SignedExchangeHandler::ReadLoop,
                                 weak_factory_.GetWeakPtr()));
 }
 
 SignedExchangeHandler::~SignedExchangeHandler() = default;
 
-int SignedExchangeHandler::FilterData(net::IOBuffer* output_buffer,
-                                      int output_buffer_size,
-                                      net::IOBuffer* input_buffer,
-                                      int input_buffer_size,
-                                      int* consumed_bytes,
-                                      bool upstream_eof_reached) {
-  *consumed_bytes = 0;
+void SignedExchangeHandler::ReadLoop() {
+  DCHECK(headers_callback_);
+  DCHECK(read_buf_);
+  int rv = source_->Read(
+      read_buf_.get(), read_buf_->size(),
+      base::BindRepeating(&SignedExchangeHandler::DidRead,
+                          base::Unretained(this), false /* sync */));
+  if (rv != net::ERR_IO_PENDING)
+    DidRead(true /* sync */, rv);
+}
 
-  original_body_string_.append(input_buffer->data(), input_buffer_size);
-  *consumed_bytes += input_buffer_size;
-
-  // We shouldn't write any data into the out buffer while we're
-  // parsing the header.
-  if (headers_callback_)
-    return 0;
-
-  if (upstream_eof_reached) {
-    // Run the parser code if this part is run for the first time.
-    // Now original_body_string_ has the entire body.
-    // (Note that we may come here multiple times if output_buffer_size
-    // is not big enough.
-    // TODO(https://crbug.com/803774): Do the streaming instead.
-    size_t size_to_copy =
-        std::min(original_body_string_.size() - body_string_offset_,
-                 base::checked_cast<size_t>(output_buffer_size));
-    memcpy(output_buffer->data(),
-           original_body_string_.data() + body_string_offset_, size_to_copy);
-    body_string_offset_ += size_to_copy;
-    return base::checked_cast<int>(size_to_copy);
+void SignedExchangeHandler::DidRead(bool completed_syncly, int result) {
+  if (result < 0) {
+    DVLOG(1) << "Error reading body stream: " << result;
+    RunErrorCallback(static_cast<net::Error>(result));
+    return;
   }
 
-  return 0;
-}
-
-std::string SignedExchangeHandler::GetTypeAsString() const {
-  return "HTXG";  // Tentative.
-}
-
-void SignedExchangeHandler::DoHeaderLoop() {
-  // Run the internal read loop by ourselves until we finish
-  // parsing the headers. (After that the caller should pumb
-  // the Read() calls).
-  DCHECK(headers_callback_);
-  DCHECK(header_out_buf_);
-  int rv = Read(header_out_buf_.get(), header_out_buf_->size(),
-                base::BindRepeating(&SignedExchangeHandler::DidReadForHeaders,
-                                    base::Unretained(this), false /* sync */));
-  if (rv != net::ERR_IO_PENDING)
-    DidReadForHeaders(true /* sync */, rv);
-}
-
-void SignedExchangeHandler::DidReadForHeaders(bool completed_syncly,
-                                              int result) {
-  if (MaybeRunHeadersCallback() || result < 0)
+  if (result == 0) {
+    if (!RunHeadersCallback())
+      RunErrorCallback(net::ERR_FAILED);
     return;
-  DCHECK_EQ(0, result);
+  }
+
+  original_body_string_.append(read_buf_->data(), result);
+
   if (completed_syncly) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&SignedExchangeHandler::DoHeaderLoop,
+        FROM_HERE, base::BindOnce(&SignedExchangeHandler::ReadLoop,
                                   weak_factory_.GetWeakPtr()));
   } else {
-    DoHeaderLoop();
+    ReadLoop();
   }
 }
 
-bool SignedExchangeHandler::MaybeRunHeadersCallback() {
-  if (!headers_callback_)
+bool SignedExchangeHandler::RunHeadersCallback() {
+  DCHECK(headers_callback_);
+
+  cbor::CBORReader::DecoderError error;
+  base::Optional<cbor::CBORValue> root = cbor::CBORReader::Read(
+      base::span<const uint8_t>(
+          reinterpret_cast<const uint8_t*>(original_body_string_.data()),
+          original_body_string_.size()),
+      &error);
+  if (!root) {
+    DVLOG(1) << "CBOR parsing failed: "
+             << cbor::CBORReader::ErrorCodeToString(error);
     return false;
+  }
+  original_body_string_.clear();
 
-  // If this was the first read, fire the headers callback now.
-  // TODO(https://crbug.com/803774): This is just for testing, we should
-  // implement the CBOR parsing here.
-  FillMockExchangeHeaders();
+  if (!root->is_array()) {
+    DVLOG(1) << "CBOR root is not an array";
+    return false;
+  }
+  const auto& root_array = root->GetArray();
+  if (!IsStringEqualTo(root_array[0], kHtxg)) {
+    DVLOG(1) << "CBOR has no htxg signature";
+    return false;
+  }
+
+  if (!IsStringEqualTo(root_array[1], kRequest)) {
+    DVLOG(1) << "request field not found";
+    return false;
+  }
+
+  if (!root_array[2].is_map()) {
+    DVLOG(1) << "request field is not a map";
+    return false;
+  }
+  const auto& request_map = root_array[2].GetMap();
+
+  // TODO(https://crbug.com/803774): request payload may come here.
+
+  if (!IsStringEqualTo(root_array[3], kResponse)) {
+    DVLOG(1) << "response field not found";
+    return false;
+  }
+
+  if (!root_array[4].is_map()) {
+    DVLOG(1) << "response field is not a map";
+    return false;
+  }
+  const auto& response_map = root_array[4].GetMap();
+
+  if (!IsStringEqualTo(root_array[5], kPayload)) {
+    DVLOG(1) << "payload field not found";
+    return false;
+  }
+
+  if (!root_array[6].is_bytestring()) {
+    DVLOG(1) << "payload field is not a bytestring";
+    return false;
+  }
+  const auto& payload_bytes = root_array[6].GetBytestring();
+
+  auto url_iter = request_map.find(BytestringFromString(kUrlKey));
+  if (url_iter == request_map.end() || !url_iter->second.is_bytestring()) {
+    DVLOG(1) << ":url is not found or not a bytestring";
+    return false;
+  }
+  request_url_ = GURL(url_iter->second.GetBytestringAsString());
+
+  auto method_iter = request_map.find(BytestringFromString(kMethodKey));
+  if (method_iter == request_map.end() ||
+      !method_iter->second.is_bytestring()) {
+    DVLOG(1) << ":method is not found or not a bytestring";
+    return false;
+  }
+  request_method_ = std::string(method_iter->second.GetBytestringAsString());
+
+  auto status_iter = response_map.find(BytestringFromString(kStatusKey));
+  if (status_iter == response_map.end() ||
+      !status_iter->second.is_bytestring()) {
+    DVLOG(1) << ":status is not found or not a bytestring";
+    return false;
+  }
+  base::StringPiece status_code_str =
+      status_iter->second.GetBytestringAsString();
+
+  std::string fake_header_str("HTTP/1.1 ");
+  status_code_str.AppendToString(&fake_header_str);
+  fake_header_str.append(" OK\r\n");
+  for (const auto& it : response_map) {
+    if (!it.first.is_bytestring() || !it.second.is_bytestring()) {
+      DVLOG(1) << "Non-bytestring value in the response map";
+      return false;
+    }
+    base::StringPiece name = it.first.GetBytestringAsString();
+    base::StringPiece value = it.second.GetBytestringAsString();
+    if (name == kMethodKey)
+      continue;
+
+    name.AppendToString(&fake_header_str);
+    fake_header_str.append(": ");
+    value.AppendToString(&fake_header_str);
+    fake_header_str.append("\r\n");
+  }
+  fake_header_str.append("\r\n");
+  response_head_.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(fake_header_str.c_str(),
+                                        fake_header_str.size()));
+  // TODO(https://crbug.com/803774): |mime_type| should be derived from
+  // "Content-Type" header.
+  response_head_.mime_type = "text/html";
+
+  // TODO(https://crbug.com/803774): Check that the Signature header entry has
+  // integrity="mi".
+  std::string mi_header_value;
+  if (!response_head_.headers->EnumerateHeader(nullptr, kMiHeader,
+                                               &mi_header_value)) {
+    DVLOG(1) << "Signed exchange has no MI: header";
+    return false;
+  }
+  auto payload_stream = std::make_unique<BufferSourceStream>(payload_bytes);
+  auto mi_stream = std::make_unique<MerkleIntegritySourceStream>(
+      mi_header_value, std::move(payload_stream));
+
   std::move(headers_callback_)
-      .Run(request_url_, request_method_, response_head_, ssl_info_);
-
-  // TODO(https://crbug.com/803774) Consume the bytes size that were
-  // necessary to read out the headers.
-
+      .Run(net::OK, request_url_, request_method_, response_head_,
+           std::move(mi_stream), ssl_info_);
   return true;
 }
 
-void SignedExchangeHandler::FillMockExchangeHeaders() {
-  // TODO(https://crbug.com/803774): Get the request url by parsing CBOR format.
-  request_url_ = GURL("https://example.com/test.html");
-  // TODO(https://crbug.com/803774): Get the request method by parsing CBOR
-  // format.
-  request_method_ = "GET";
-  // TODO(https://crbug.com/803774): Get more headers by parsing CBOR.
-  scoped_refptr<net::HttpResponseHeaders> headers(
-      new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
-  response_head_.headers = headers;
-  response_head_.mime_type = "text/html";
+void SignedExchangeHandler::RunErrorCallback(net::Error error) {
+  DCHECK(headers_callback_);
+  std::move(headers_callback_)
+      .Run(error, GURL(), std::string(), network::ResourceResponseHead(),
+           nullptr, base::nullopt);
 }
 
 }  // namespace content

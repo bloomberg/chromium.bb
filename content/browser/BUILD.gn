@@ -1024,6 +1024,7 @@ jumbo_source_set("browser") {
     "loader/resource_scheduler_filter.h",
     "loader/signed_exchange_cert_fetcher.cc",
     "loader/signed_exchange_cert_fetcher.h",
+    "loader/signed_exchange_consts.h",
     "loader/signed_exchange_handler.cc",
     "loader/signed_exchange_handler.h",
     "loader/signed_exchange_header_parser.cc",

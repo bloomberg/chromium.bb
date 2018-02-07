@@ -1,13 +1,6 @@
 <?php
+$fp = fopen("origin-signed-response-iframe.htxg", "rb");
 header('Content-Type: application/http-exchange+cbor');
+header("HTTP/1.0 200 OK");
+fpassthru($fp);
 ?>
-<!DOCTYPE html>
-<body>
-<script>
-window.addEventListener('message', (event) => {
-  event.data.port.postMessage({location: document.location.href});
-}, false);
-</script>
-hello<br>
-world
-</body>
