@@ -69,6 +69,8 @@ def main():
   parser.add_option('--readelf', help='Path to the readelf binary.')
   parser.add_option('--runtime-deps',
       help='A file created for the target using write_runtime_deps.')
+  parser.add_option('--exclude-shared-libraries',
+      help='List of shared libraries to exclude from the output.')
   parser.add_option('--output', help='Path to the generated .json file.')
   parser.add_option('--stamp', help='Path to touch on success.')
 
@@ -77,10 +79,15 @@ def main():
   SetReadelfPath(options.readelf)
 
   unsorted_lib_paths = []
+  exclude_shared_libraries = []
+  if options.exclude_shared_libraries:
+    exclude_shared_libraries = options.exclude_shared_libraries.split(',')
   for f in open(options.runtime_deps):
     f = f[:-1]
     if f.endswith('.so'):
       p = f.replace('lib.unstripped/', '')
+      if os.path.basename(p) in exclude_shared_libraries:
+        continue
       unsorted_lib_paths.append(p)
       _library_path_map[os.path.basename(p)] = p
 

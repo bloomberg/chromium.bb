@@ -2055,6 +2055,10 @@ if (enable_java_templates) {
           "--output=$_rebased_ordered_libraries_json",
           "--runtime-deps=" + rebase_path(_runtime_deps_file, root_build_dir),
         ]
+        if (defined(invoker.dont_load_shared_libraries)) {
+          args += [ "--exclude-shared-libraries=" +
+                    invoker.dont_load_shared_libraries ]
+        }
       }
 
       java_cpp_template("${_template_name}__native_libraries_java") {
