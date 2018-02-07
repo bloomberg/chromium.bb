@@ -32,9 +32,13 @@ class ASH_EXPORT UserMetricsRecorder {
 
   virtual ~UserMetricsRecorder();
 
-  // Record interesting user clicks on lock screen.
-  static void RecordUserClick(
-      LoginMetricsRecorder::LockScreenUserClickTarget target);
+  // Record interesting user clicks on tray on lock and login screens.
+  static void RecordUserClickOnTray(
+      LoginMetricsRecorder::TrayClickTarget target);
+
+  // Record interesting user clicks on shelf buttons on lock and login screens.
+  static void RecordUserClickOnShelfButton(
+      LoginMetricsRecorder::ShelfButtonClickTarget target);
 
   // Records an Ash owned user action.
   void RecordUserMetricsAction(UserMetricsAction action);

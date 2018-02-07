@@ -270,9 +270,8 @@ class NoteActionLaunchButton::ActionButton : public views::ImageButton,
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    UserMetricsRecorder::RecordUserClick(
-        LoginMetricsRecorder::LockScreenUserClickTarget::
-            kLockScreenNoteActionButton);
+    UserMetricsRecorder::RecordUserClickOnTray(
+        LoginMetricsRecorder::TrayClickTarget::kTrayActionNoteButton);
     if (event.IsKeyEvent()) {
       Shell::Get()->tray_action()->RequestNewLockScreenNote(
           mojom::LockScreenNoteOrigin::kLockScreenButtonKeyboard);

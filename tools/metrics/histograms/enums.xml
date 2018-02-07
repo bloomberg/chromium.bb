@@ -27106,6 +27106,16 @@ from previous Chrome versions.
   </int>
 </enum>
 
+<enum name="LoginScreenUserClickTarget">
+  <int value="0" label="Shut down button"/>
+  <int value="1" label="Restart button"/>
+  <int value="2" label="BrowseAsGuest"/>
+  <int value="3" label="AddUser"/>
+  <int value="4" label="System tray"/>
+  <int value="5" label="Virtual keyboard tray"/>
+  <int value="6" label="IME tray"/>
+</enum>
+
 <enum name="LoginStateKeyGenerationStatus">
   <summary>The result of a state key generation operation.</summary>
   <int value="0" label="GENERATION_METHOD_IDENTIFIER_HASH">

@@ -447,8 +447,8 @@ void ImeMenuTray::ClickedOutsideBubble() {
 }
 
 bool ImeMenuTray::PerformAction(const ui::Event& event) {
-  UserMetricsRecorder::RecordUserClick(
-      LoginMetricsRecorder::LockScreenUserClickTarget::kImeTray);
+  UserMetricsRecorder::RecordUserClickOnTray(
+      LoginMetricsRecorder::TrayClickTarget::kImeTray);
   if (bubble_)
     CloseBubble();
   else
