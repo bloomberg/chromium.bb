@@ -6692,9 +6692,17 @@ class HistoryNavigationBeforeCommitInjector
 // the cross-origin navigation and updates the URL, but not the origin of the
 // document. This results in mismatch between the two and causes the renderer
 // process to be killed. See https://crbug.com/630103.
+// Currently disabled on Android due to flakyness. See https://crbug.com/809488.
+#if defined(OS_ANDROID)
+#define MAYBE_RaceCrossOriginNavigationAndSameDocumentHistoryNavigation \
+  DISABLED_RaceCrossOriginNavigationAndSameDocumentHistoryNavigation
+#else
+#define MAYBE_RaceCrossOriginNavigationAndSameDocumentHistoryNavigation \
+  RaceCrossOriginNavigationAndSameDocumentHistoryNavigation
+#endif
 IN_PROC_BROWSER_TEST_F(
     NavigationControllerBrowserTest,
-    RaceCrossOriginNavigationAndSameDocumentHistoryNavigation) {
+    MAYBE_RaceCrossOriginNavigationAndSameDocumentHistoryNavigation) {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   FrameTreeNode* root = web_contents->GetFrameTree()->root();
