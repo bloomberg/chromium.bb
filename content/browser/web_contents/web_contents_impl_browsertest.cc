@@ -5,11 +5,14 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -25,6 +28,8 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/url_constants.h"
@@ -39,6 +44,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -1655,6 +1661,58 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   TitleWatcher title_watcher(web_contents, base::ASCIIToUTF16("done"));
   base::string16 title = title_watcher.WaitAndGetTitle();
   ASSERT_EQ(title, base::ASCIIToUTF16("done"));
+}
+
+class UpdateTargetURLWaiter : public WebContentsDelegate {
+ public:
+  UpdateTargetURLWaiter(WebContents* web_contents) {
+    web_contents->SetDelegate(this);
+  }
+
+  const GURL& WaitForUpdatedTargetURL() {
+    if (updated_target_url_.has_value())
+      return updated_target_url_.value();
+
+    runner_ = new MessageLoopRunner();
+    runner_->Run();
+    return updated_target_url_.value();
+  }
+
+ private:
+  void UpdateTargetURL(WebContents* source, const GURL& url) override {
+    updated_target_url_ = url;
+    if (runner_.get())
+      runner_->QuitClosure().Run();
+  }
+
+  base::Optional<GURL> updated_target_url_;
+  scoped_refptr<MessageLoopRunner> runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(UpdateTargetURLWaiter);
+};
+
+// Verifies that focusing a link in a cross-site frame will correctly tell
+// WebContentsDelegate to show a link status bubble.  This is a regression test
+// for https://crbug.com/807776.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateTargetURL) {
+  // Navigate to a test page.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  FrameTreeNode* subframe = web_contents->GetFrameTree()->root()->child_at(0);
+  GURL subframe_url =
+      embedded_test_server()->GetURL("b.com", "/simple_links.html");
+  NavigateFrameToURL(subframe, subframe_url);
+
+  // Focusing the link should fire the UpdateTargetURL notification.
+  UpdateTargetURLWaiter target_url_waiter(web_contents);
+  EXPECT_TRUE(ExecuteScript(
+      subframe, "document.getElementById('cross_site_link').focus();"));
+  EXPECT_EQ(GURL("http://foo.com/title2.html"),
+            target_url_waiter.WaitForUpdatedTargetURL());
 }
 
 }  // namespace content

@@ -26,6 +26,7 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case ViewHostMsg_Focus::ID:
     case ViewHostMsg_ShowFullscreenWidget::ID:
     case ViewHostMsg_ShowWidget::ID:
+    case ViewHostMsg_UpdateTargetURL::ID:
     // Allow cross-process JavaScript calls.
     case ViewHostMsg_RouteCloseEvent::ID:
     // Send page scale factor reset notification upon cross-process navigations.
@@ -53,8 +54,6 @@ bool SwappedOutMessages::CanHandleWhileSwappedOut(
   // Note that synchronous messages that are not handled will receive an
   // error reply instead, to avoid leaving the renderer in a stuck state.
   switch (msg.type()) {
-    // Sends an ACK.
-    case ViewHostMsg_UpdateTargetURL::ID:
     // We allow closing even if we are in the process of swapping out.
     case ViewHostMsg_Close::ID:
     // Sends an ACK.
