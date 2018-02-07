@@ -292,6 +292,7 @@ void BrowserCompositorMac::UpdateDelegatedFrameHostSurface(
       delegated_frame_host_scale_factor_, delegated_frame_host_size_dip_);
 
   GetDelegatedFrameHost()->WasResized(
+      delegated_frame_host_surface_id_, delegated_frame_host_size_dip_,
       cc::DeadlinePolicy::UseExistingDeadline());
 }
 
@@ -337,7 +338,9 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
   // Transition HasDetachedCompositor -> HasAttachedCompositor.
   if (state_ == HasDetachedCompositor && new_state == HasAttachedCompositor) {
     delegated_frame_host_->SetCompositor(recyclable_compositor_->compositor());
-    delegated_frame_host_->WasShown(ui::LatencyInfo());
+    delegated_frame_host_->WasShown(delegated_frame_host_surface_id_,
+                                    delegated_frame_host_size_dip_,
+                                    ui::LatencyInfo());
 
     gfx::ColorSpace color_space;
     GetViewProperties(nullptr, nullptr, &color_space);
@@ -445,17 +448,9 @@ SkColor BrowserCompositorMac::DelegatedFrameHostGetGutterColor() const {
   return client_->BrowserCompositorMacGetGutterColor();
 }
 
-gfx::Size BrowserCompositorMac::DelegatedFrameHostDesiredSizeInDIP() const {
-  return delegated_frame_host_size_dip_;
-}
-
 bool BrowserCompositorMac::DelegatedFrameCanCreateResizeLock() const {
   // Mac uses the RenderWidgetResizeHelper instead of a resize lock.
   return false;
-}
-
-viz::LocalSurfaceId BrowserCompositorMac::GetLocalSurfaceId() const {
-  return delegated_frame_host_surface_id_;
 }
 
 std::unique_ptr<CompositorResizeLock>
@@ -517,8 +512,10 @@ ui::Compositor* BrowserCompositorMac::CompositorForTesting() const {
 void BrowserCompositorMac::DidNavigate() {
   delegated_frame_host_surface_id_ =
       parent_local_surface_id_allocator_.GenerateId();
+  delegated_frame_host_->WasResized(delegated_frame_host_surface_id_,
+                                    delegated_frame_host_size_dip_,
+                                    cc::DeadlinePolicy::UseExistingDeadline());
   delegated_frame_host_->DidNavigate();
-  delegated_frame_host_->WasResized(cc::DeadlinePolicy::UseExistingDeadline());
 }
 
 void BrowserCompositorMac::DidReceiveFirstFrameAfterNavigation() {
