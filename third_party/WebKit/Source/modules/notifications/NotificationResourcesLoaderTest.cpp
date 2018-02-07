@@ -5,7 +5,7 @@
 #include "modules/notifications/NotificationResourcesLoader.h"
 
 #include <memory>
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/heap/Heap.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/testing/TestingPlatformSupport.h"
@@ -35,11 +35,10 @@ constexpr char kResourcesLoaderIcon500x500[] = "500x500.png";
 constexpr char kResourcesLoaderIcon3000x1000[] = "3000x1000.png";
 constexpr char kResourcesLoaderIcon3000x2000[] = "3000x2000.png";
 
-class NotificationResourcesLoaderTest : public ::testing::Test {
+class NotificationResourcesLoaderTest : public PageTestBase {
  public:
   NotificationResourcesLoaderTest()
-      : page_(DummyPageHolder::Create()),
-        loader_(new NotificationResourcesLoader(
+      : loader_(new NotificationResourcesLoader(
             Bind(&NotificationResourcesLoaderTest::DidFetchResources,
                  WTF::Unretained(this)))) {}
 
@@ -49,10 +48,10 @@ class NotificationResourcesLoaderTest : public ::testing::Test {
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
+  void SetUp() override { PageTestBase::SetUp(IntSize()); }
+
  protected:
-  ExecutionContext* GetExecutionContext() const {
-    return &page_->GetDocument();
-  }
+  ExecutionContext* GetExecutionContext() const { return &GetDocument(); }
 
   NotificationResourcesLoader* Loader() const { return loader_.Get(); }
 
@@ -82,7 +81,6 @@ class NotificationResourcesLoaderTest : public ::testing::Test {
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 
  private:
-  std::unique_ptr<DummyPageHolder> page_;
   Persistent<NotificationResourcesLoader> loader_;
   std::unique_ptr<WebNotificationResources> resources_;
 };

@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "core/dom/Document.h"
 #include "core/fileapi/Blob.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
@@ -119,11 +119,10 @@ class MockWebSocketHandshakeThrottle : public WebSocketHandshakeThrottle {
   MOCK_METHOD0(Destructor, void());
 };
 
-class DocumentWebSocketChannelTest : public ::testing::Test {
+class DocumentWebSocketChannelTest : public PageTestBase {
  public:
   DocumentWebSocketChannelTest()
-      : page_holder_(DummyPageHolder::Create()),
-        channel_client_(MockWebSocketChannelClient::Create()),
+      : channel_client_(MockWebSocketChannelClient::Create()),
         handle_(MockWebSocketHandle::Create()),
         handshake_throttle_(nullptr),
         sum_of_consumed_buffered_amount_(0) {
@@ -135,10 +134,10 @@ class DocumentWebSocketChannelTest : public ::testing::Test {
   ~DocumentWebSocketChannelTest() override { Channel()->Disconnect(); }
 
   void SetUp() override {
+    PageTestBase::SetUp(IntSize());
     channel_ = DocumentWebSocketChannel::CreateForTesting(
-        &page_holder_->GetDocument(), channel_client_.Get(),
-        SourceLocation::Capture(), Handle(),
-        base::WrapUnique(handshake_throttle_));
+        &GetDocument(), channel_client_.Get(), SourceLocation::Capture(),
+        Handle(), base::WrapUnique(handshake_throttle_));
   }
 
   MockWebSocketChannelClient* ChannelClient() { return channel_client_.Get(); }
@@ -175,7 +174,6 @@ class DocumentWebSocketChannelTest : public ::testing::Test {
     ::testing::Mock::VerifyAndClearExpectations(this);
   }
 
-  std::unique_ptr<DummyPageHolder> page_holder_;
   Persistent<MockWebSocketChannelClient> channel_client_;
   MockWebSocketHandle* handle_;
   // |handshake_throttle_| is owned by |channel_| once SetUp() has been called.
@@ -225,9 +223,9 @@ TEST_F(DocumentWebSocketChannelTest, connectSuccess) {
   }
 
   const KURL page_url("http://example.com/");
-  page_holder_->GetFrame().GetSecurityContext()->SetSecurityOrigin(
+  GetFrame().GetSecurityContext()->SetSecurityOrigin(
       SecurityOrigin::Create(page_url));
-  Document& document = page_holder_->GetDocument();
+  Document& document = GetDocument();
   document.SetURL(page_url);
   // Make sure that firstPartyForCookies() is set to the given value.
   EXPECT_STREQ("http://example.com/",

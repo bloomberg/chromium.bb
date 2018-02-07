@@ -5,7 +5,7 @@
 #include "modules/notifications/NotificationImageLoader.h"
 
 #include "core/dom/ExecutionContext.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
@@ -33,11 +33,11 @@ constexpr unsigned long kImageFetchTimeoutInMs = 90000;
 static_assert(kImageFetchTimeoutInMs > 1000.0,
               "kImageFetchTimeoutInMs must be greater than 1000ms.");
 
-class NotificationImageLoaderTest : public ::testing::Test {
+class NotificationImageLoaderTest : public PageTestBase {
  public:
   NotificationImageLoaderTest()
-      : page_(DummyPageHolder::Create()),
-        // Use an arbitrary type, since it only affects which UMA bucket we use.
+      :  // Use an arbitrary type, since it only affects which UMA bucket we
+         // use.
         loader_(
             new NotificationImageLoader(NotificationImageLoader::Type::kIcon)) {
   }
@@ -47,6 +47,8 @@ class NotificationImageLoaderTest : public ::testing::Test {
     platform_->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
+
+  void SetUp() override { PageTestBase::SetUp(IntSize()); }
 
   // Registers a mocked URL. When fetched it will be loaded form the test data
   // directory.
@@ -72,7 +74,7 @@ class NotificationImageLoaderTest : public ::testing::Test {
         Bind(&NotificationImageLoaderTest::ImageLoaded, WTF::Unretained(this)));
   }
 
-  ExecutionContext* Context() const { return &page_->GetDocument(); }
+  ExecutionContext* Context() const { return &GetDocument(); }
   LoadState Loaded() const { return loaded_; }
 
  protected:
@@ -80,7 +82,6 @@ class NotificationImageLoaderTest : public ::testing::Test {
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 
  private:
-  std::unique_ptr<DummyPageHolder> page_;
   Persistent<NotificationImageLoader> loader_;
   LoadState loaded_ = LoadState::kNotLoaded;
 };
