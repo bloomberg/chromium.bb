@@ -261,19 +261,11 @@ bool ResemblesMulticastDNSName(const std::string& hostname) {
 void RecordTotalTime(bool speculative,
                      bool from_cache,
                      base::TimeDelta duration) {
-  if (speculative) {
-    UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.TotalTime.Speculative", duration);
-  } else {
+  if (!speculative) {
     UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.TotalTime", duration);
-  }
 
-  if (!from_cache) {
-    if (speculative) {
-      UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.TotalTimeNotCached.Speculative",
-                                   duration);
-    } else {
+    if (!from_cache)
       UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.TotalTimeNotCached", duration);
-    }
   }
 }
 
@@ -1672,8 +1664,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         }
       } else {
         category = RESOLVE_SPECULATIVE_SUCCESS;
-        UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveSuccessTime.Speculative",
-                                     duration);
       }
     } else if (error == ERR_NETWORK_CHANGED ||
                error == ERR_HOST_RESOLVER_QUEUE_TOO_LARGE) {
@@ -1699,8 +1689,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         }
       } else {
         category = RESOLVE_SPECULATIVE_FAIL;
-        UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveFailureTime.Speculative",
-                                     duration);
       }
     }
     DCHECK_LT(static_cast<int>(category),
