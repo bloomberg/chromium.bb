@@ -100,6 +100,33 @@ class GobTest(cros_test_lib.MockTestCase):
     with self.assertRaises(timeout_util.TimeoutError):
       gob_util.FetchUrl('', '')
 
+  def testHtmlParser(self):
+    """Verify that GOB error message is parsed properly."""
+    html_data = '''
+<!DOCTYPE html>
+ <html lang=en>
+ <meta charset=utf-8>
+ <meta name=viewport>
+ <title>Error 403 (Forbidden)!!1</title>
+ <style>"*{margin:0;padding:0}"</style>
+ <div id="af-error-container">
+ <a href=//www.google.com><span id=logo aria-label=Google></span></a>
+
+ <p>Error <b>403.</b><br><ins>That's an error.<p>Too bad...</ins>
+ </div>
+ <div id="come other stuff">
+    some other stuff
+ </div>
+<html>'''
+    expected_parsed_data = '''Error 403.
+That's an error.
+
+Too bad...'''
+    ep = gob_util.ErrorParser()
+    ep.feed(html_data)
+    ep.close()
+    self.assertEquals(expected_parsed_data, ep.ParsedDiv())
+
 
 class GetCookieTests(cros_test_lib.TestCase):
   """Unittests for GetCookies()"""
