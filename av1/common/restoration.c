@@ -867,98 +867,37 @@ static void av1_selfguided_restoration_fast_internal(
     }
   }
   // Use the A[] and B[] arrays to calculate the filtered image
-  if (r == 1) {
-    for (i = 0; i < height; ++i) {
-      if (!(i & 1)) {  // even row
-        for (j = 0; j < width; ++j) {
-          const int k = i * buf_stride + j;
-          const int l = i * dgd_stride + j;
-          const int m = i * dst_stride + j;
-          const int nb = 5;
-          const int32_t a = (A[k - buf_stride] + A[k + buf_stride]) * 6 +
-                            (A[k - 1 - buf_stride] + A[k - 1 + buf_stride] +
-                             A[k + 1 - buf_stride] + A[k + 1 + buf_stride]) *
-                                5;
-          const int32_t b = (B[k - buf_stride] + B[k + buf_stride]) * 6 +
-                            (B[k - 1 - buf_stride] + B[k - 1 + buf_stride] +
-                             B[k + 1 - buf_stride] + B[k + 1 + buf_stride]) *
-                                5;
-          const int32_t v = a * dgd[l] + b;
-          dst[m] =
-              ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-        }
-      } else if (i != height - 1) {  // odd row and not last
-        for (j = 0; j < width; ++j) {
-          const int k = i * buf_stride + j;
-          const int l = i * dgd_stride + j;
-          const int m = i * dst_stride + j;
-          const int nb = 6;
-          const int buf_stride2 = 2 * buf_stride;
-          const int32_t a = A[k] * 16 + (A[k - 1] + A[k + 1]) * 14 +
-                            (A[k - buf_stride2] + A[k + buf_stride2]) * 4 +
-                            (A[k - 1 - buf_stride2] + A[k - 1 + buf_stride2] +
-                             A[k + 1 - buf_stride2] + A[k + 1 + buf_stride2]) *
-                                3;
-          const int32_t b = B[k] * 16 + (B[k - 1] + B[k + 1]) * 14 +
-                            (B[k - buf_stride2] + B[k + buf_stride2]) * 4 +
-                            (B[k - 1 - buf_stride2] + B[k - 1 + buf_stride2] +
-                             B[k + 1 - buf_stride2] + B[k + 1 + buf_stride2]) *
-                                3;
-          const int32_t v = a * dgd[l] + b;
-          dst[m] =
-              ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-        }
-      } else {  // odd row and last
-        for (j = 0; j < width; ++j) {
-          const int k = i * buf_stride + j;
-          const int l = i * dgd_stride + j;
-          const int m = i * dst_stride + j;
-          const int nb = 6;
-          const int buf_stride2 = 2 * buf_stride;
-          const int32_t a =
-              A[k] * 18 + (A[k - 1] + A[k + 1]) * 16 + A[k - buf_stride2] * 6 +
-              (A[k - 1 - buf_stride2] + A[k + 1 - buf_stride2]) * 4;
-          const int32_t b =
-              B[k] * 18 + (B[k - 1] + B[k + 1]) * 16 + B[k - buf_stride2] * 6 +
-              (B[k - 1 - buf_stride2] + B[k + 1 - buf_stride2]) * 4;
-          const int32_t v = a * dgd[l] + b;
-          dst[m] =
-              ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-        }
+  assert(r == 2);
+  for (i = 0; i < height; ++i) {
+    if (!(i & 1)) {  // even row
+      for (j = 0; j < width; ++j) {
+        const int k = i * buf_stride + j;
+        const int l = i * dgd_stride + j;
+        const int m = i * dst_stride + j;
+        const int nb = 5;
+        const int32_t a = (A[k - buf_stride] + A[k + buf_stride]) * 6 +
+                          (A[k - 1 - buf_stride] + A[k - 1 + buf_stride] +
+                           A[k + 1 - buf_stride] + A[k + 1 + buf_stride]) *
+                              5;
+        const int32_t b = (B[k - buf_stride] + B[k + buf_stride]) * 6 +
+                          (B[k - 1 - buf_stride] + B[k - 1 + buf_stride] +
+                           B[k + 1 - buf_stride] + B[k + 1 + buf_stride]) *
+                              5;
+        const int32_t v = a * dgd[l] + b;
+        dst[m] =
+            ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
       }
-    }
-  } else {  // r = 2
-    for (i = 0; i < height; ++i) {
-      if (!(i & 1)) {  // even row
-        for (j = 0; j < width; ++j) {
-          const int k = i * buf_stride + j;
-          const int l = i * dgd_stride + j;
-          const int m = i * dst_stride + j;
-          const int nb = 5;
-          const int32_t a = (A[k - buf_stride] + A[k + buf_stride]) * 6 +
-                            (A[k - 1 - buf_stride] + A[k - 1 + buf_stride] +
-                             A[k + 1 - buf_stride] + A[k + 1 + buf_stride]) *
-                                5;
-          const int32_t b = (B[k - buf_stride] + B[k + buf_stride]) * 6 +
-                            (B[k - 1 - buf_stride] + B[k - 1 + buf_stride] +
-                             B[k + 1 - buf_stride] + B[k + 1 + buf_stride]) *
-                                5;
-          const int32_t v = a * dgd[l] + b;
-          dst[m] =
-              ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-        }
-      } else {  // odd row
-        for (j = 0; j < width; ++j) {
-          const int k = i * buf_stride + j;
-          const int l = i * dgd_stride + j;
-          const int m = i * dst_stride + j;
-          const int nb = 4;
-          const int32_t a = A[k] * 6 + (A[k - 1] + A[k + 1]) * 5;
-          const int32_t b = B[k] * 6 + (B[k - 1] + B[k + 1]) * 5;
-          const int32_t v = a * dgd[l] + b;
-          dst[m] =
-              ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
-        }
+    } else {  // odd row
+      for (j = 0; j < width; ++j) {
+        const int k = i * buf_stride + j;
+        const int l = i * dgd_stride + j;
+        const int m = i * dst_stride + j;
+        const int nb = 4;
+        const int32_t a = A[k] * 6 + (A[k - 1] + A[k + 1]) * 5;
+        const int32_t b = B[k] * 6 + (B[k - 1] + B[k + 1]) * 5;
+        const int32_t v = a * dgd[l] + b;
+        dst[m] =
+            ROUND_POWER_OF_TWO(v, SGRPROJ_SGR_BITS + nb - SGRPROJ_RST_BITS);
       }
     }
   }
