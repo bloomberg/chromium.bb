@@ -40,12 +40,14 @@ class WebContentsVideoCaptureDevice::FrameTracker
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(
-            [](FrameTracker* self, int process_id, int frame_id) {
-              self->Observe(WebContents::FromRenderFrameHost(
-                  RenderFrameHost::FromID(process_id, frame_id)));
-              self->OnPossibleTargetChange();
+            [](base::WeakPtr<FrameTracker> self, int process_id, int frame_id) {
+              if (self) {
+                self->Observe(WebContents::FromRenderFrameHost(
+                    RenderFrameHost::FromID(process_id, frame_id)));
+                self->OnPossibleTargetChange();
+              }
             },
-            this, render_process_id, main_render_frame_id));
+            AsWeakPtr(), render_process_id, main_render_frame_id));
   }
 
   ~FrameTracker() final { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
