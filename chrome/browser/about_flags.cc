@@ -3708,13 +3708,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnableNewOverviewUiName,
      flag_descriptions::kAshEnableNewOverviewUiDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kAshEnableNewOverviewUi)},
-
-    {"ash-new-touch-support-for-screen-magnification",
-     flag_descriptions::kAshNewTouchSupportForScreenMagnificationName,
-     flag_descriptions::kAshNewTouchSupportForScreenMagnificationDescription,
-     kOsCrOS,
-     SINGLE_VALUE_TYPE(
-         ash::switches::kAshNewTouchSupportForScreenMagnification)},
 #endif  // defined(OS_CHROMEOS)
 
     {"unified-consent", flag_descriptions::kUnifiedConsentName,
