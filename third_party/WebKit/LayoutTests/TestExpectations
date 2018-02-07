@@ -3219,6 +3219,8 @@ crbug.com/809152 netinfo/estimate-multiple-frames.html [ Pass Failure ]
 
 # Sheriff failures 2018-02-07
 crbug.com/809998 [ Linux ] external/wpt/media-source/mediasource-duration [ Pass Crash Failure ]
+crbug.com/810009 [ Linux ] paint/invalidation/image/canvas-composite-repaint-by-all-imagesource.html [ Pass Timeout ]
+crbug.com/810009 [ Linux ] virtual/spv175/paint/invalidation/image/canvas-composite-repaint-by-all-imagesource.html [ Pass Timeout ]
 
 # These pass on bots with proprietary codecs (most CQ bots) while failing on bots without.
 crbug.com/807110 external/wpt/html/semantics/embedded-content/media-elements/mime-types/canPlayType.html [ Failure Pass ]
