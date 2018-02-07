@@ -2874,6 +2874,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
 // method, which provides less information than the WKWebView version. Audit
 // this for things that should be handled in the subclass instead.
 - (BOOL)shouldAllowLoadWithNavigationAction:(WKNavigationAction*)action {
+  // Skip the logic in this method and always allow load if |_delegate| is nil.
+  // This is a temporary workaround for https://crbug.com/809795 until we move
+  // this logic out of this class. This doesn't affect Chromium app because
+  // |_delegate| is always set in Chromium app.
+  if (!_delegate) {
+    return YES;
+  }
+
   // The WebDelegate may instruct the CRWWebController to stop loading, and
   // instead instruct the next page to be loaded in an animation.
   NSURLRequest* request = action.request;
