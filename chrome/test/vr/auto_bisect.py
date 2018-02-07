@@ -108,7 +108,8 @@ def ParseArgsAndAssertValid():
                       default=os.path.join('out', 'Release'),
                       help='The directory that builds will take place in. '
                            'Assumes that gn args have already been generated '
-                           'for the provided directory')
+                           'for the provided directory. Must be relative to '
+                           'the Chromium src/ directory, e.g. out/Release.')
   parser.add_argument('--build-target', required=True,
                       help='The target to build for testing')
 
@@ -237,7 +238,8 @@ def RunTestOnSwarming(args, unknown_args, output_dir):
       '${ISOLATED_OUTDIR}/output.json',
       '--isolated-script-test-perf-output',
       '${ISOLATED_OUTDIR}/perftest-output.json',
-      '--output-format', 'chartjson'])
+      '--output-format', 'chartjson',
+      '--chromium-output-directory', args.build_output_dir])
   print 'Running test'
   subprocess.check_output(swarming_args)
 
