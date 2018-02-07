@@ -1,5 +1,5 @@
 Tests that waitForDebuggerOnStart works with out-of-process iframes.
-User-Agent = test
+User-Agent = test (subframe)
 content (should have user-agent header overriden): HTTP_USER_AGENT: test
 
 

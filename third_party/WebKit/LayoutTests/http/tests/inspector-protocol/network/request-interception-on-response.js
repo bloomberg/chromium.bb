@@ -43,7 +43,7 @@
     requestId = event.params.requestId;
   });
   await new Promise(resolve => {
-    session.protocol.Network.onLoadingFinished(resolve);
+    session.protocol.Network.onResponseReceived(resolve);
     session.evaluate(`
       var iframe = document.createElement('iframe');
       iframe.src = '${testRunner.url('./resources/simple-iframe.html')}';
