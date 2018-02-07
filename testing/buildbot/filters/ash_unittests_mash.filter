@@ -153,9 +153,6 @@
 -ShelfLayoutManagerTest.AutoHideShelfOnScreenBoundary
 -ShelfLayoutManagerTest.GestureDrag
 
-# TODO: http://crbug.com/695562
--ShelfWindowWatcherTest.CreateAndRemoveShelfItemProperties
-
 # TODO: Probably event filter problem. http://crbug.com/695758
 -ShellTest.TestPreTargetHandlerOrder
 
