@@ -17,16 +17,6 @@
 -DeclarativeContentApiTest.EnabledForSplitIncognito
 -DeclarativeContentApiTest.UninstallWhileActivePageAction
 -DevToolsSanityTest.TestRawHeadersWithRedirectAndHSTS
--DiceBrowserTest.Reauth
--DiceBrowserTest.Signin
--DiceBrowserTest.SignoutAllAccounts
--DiceBrowserTest.SignoutMainAccount
--DiceBrowserTest.SignoutSecondaryAccount
--DiceFixAuthErrorsBrowserTest.ReauthFixAuthError
--DiceFixAuthErrorsBrowserTest.SigninAccountMismatch
--DicePrepareMigrationBrowserTest.EnableSyncAfterToken
--DicePrepareMigrationBrowserTest.EnableSyncBeforeToken
--DicePrepareMigrationBrowserTest.Signout
 -DisabledSignInIsolationBrowserTest.SyntheticTrial
 # DnsProbeBrowserTests that are flaky.
 -DnsProbeBrowserTest.CorrectionsLoadStopped
@@ -110,16 +100,6 @@
 -SafeBrowsingTriggeredPopupBlockerBrowserTest.NoFeature_NoMessages
 -SecurityStateTabHelperTest.PasswordSecurityLevelDowngradedOnFilesystemUrl
 -SiteDetailsBrowserTest.PlatformAppsNotIsolated
--SSLUITest.SHA1IsDefaultDisabled/0
--SSLUITest.SHA1IsDefaultDisabled/1
--SSLUITest.CommonNameIsDefaultDisabled/0
--SSLUITest.CommonNameIsDefaultDisabled/1
--SSLUITest.TestBadHTTPSDownload/0
--SSLUITest.TestBadHTTPSDownload/1
--SSLUITest.TestHTTPSOCSPOk/0
--SSLUITest.TestHTTPSOCSPOk/1
--SSLUITest.TestHTTPSOCSPRevoked/0
--SSLUITest.TestHTTPSOCSPRevoked/1
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
 -TabManagerTest.DiscardTabsWithMinimizedAndOccludedWindows
 -TaskManagerBrowserTest.SentDataObserved
@@ -189,6 +169,18 @@
 -ProfileBrowserTest.SendHPKPReport
 -ProfileBrowserTest.SendHPKPReportServerHangs
 -SecurityIndicatorTest.CheckIndicatorText
+
+# https://bugs.chromium.org/p/chromium/issues/detail?id=789670
+-DiceBrowserTest.Reauth
+-DiceBrowserTest.Signin
+-DiceBrowserTest.SignoutAllAccounts
+-DiceBrowserTest.SignoutMainAccount
+-DiceBrowserTest.SignoutSecondaryAccount
+-DiceFixAuthErrorsBrowserTest.ReauthFixAuthError
+-DiceFixAuthErrorsBrowserTest.SigninAccountMismatch
+-DicePrepareMigrationBrowserTest.EnableSyncAfterToken
+-DicePrepareMigrationBrowserTest.EnableSyncBeforeToken
+-DicePrepareMigrationBrowserTest.Signout
 
 # Need to add SetRequireCTDelegateForTesting to NetworkContext.
 -SymantecMessageSSLUITest.ManySubresources
@@ -261,6 +253,18 @@
 # http://crbug.com/783996
 # Add support for TLS client auth.
 -SSLUITestWithClientCert.TestWSSClientCert
+
+# https://bugs.chromium.org/p/chromium/issues/detail?id=755309
+-SSLUITest.SHA1IsDefaultDisabled/0
+-SSLUITest.SHA1IsDefaultDisabled/1
+-SSLUITest.CommonNameIsDefaultDisabled/0
+-SSLUITest.CommonNameIsDefaultDisabled/1
+-SSLUITest.TestBadHTTPSDownload/0
+-SSLUITest.TestBadHTTPSDownload/1
+-SSLUITest.TestHTTPSOCSPOk/0
+-SSLUITest.TestHTTPSOCSPOk/1
+-SSLUITest.TestHTTPSOCSPRevoked/0
+-SSLUITest.TestHTTPSOCSPRevoked/1
 
 # http://crbug.com/721414
 # TODO(rockot): add support for webRequest API.
