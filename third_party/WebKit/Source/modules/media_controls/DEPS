@@ -5,6 +5,7 @@ include_rules = [
   "+modules/ModulesExport.h",
   "+modules/device_orientation",
   "+modules/media_controls",
+  "+modules/picture_in_picture",
   "+modules/remoteplayback",
   "+modules/screen_orientation",
   "+mojo/public/cpp/bindings",
