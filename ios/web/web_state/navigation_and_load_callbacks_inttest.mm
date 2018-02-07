@@ -1045,4 +1045,48 @@ TEST_F(NavigationAndLoadCallbacksTest, DisallowResponse) {
   }));
 }
 
+// Tests stopping a navigation. Did FinishLoading and PageLoaded are never
+// called.
+TEST_F(NavigationAndLoadCallbacksTest, StopNavigation) {
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  web::test::LoadUrl(web_state(), test_server_->GetURL("/hung"));
+  web_state()->Stop();
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+    return !web_state()->IsLoading();
+  }));
+}
+
+// Tests stopping a finished navigation. PageLoaded is never called.
+TEST_F(NavigationAndLoadCallbacksTest, StopFinishedNavigation) {
+  GURL url = test_server_->GetURL("/exabyte_response");
+
+  NavigationContext* context = nullptr;
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
+      .WillOnce(VerifyNewPageStartedContext(web_state(), url, &context));
+  EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
+      .WillOnce(Return(true));
+  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+      .WillOnce(VerifyNewPageFinishedContext(web_state(), url, /*mime_type=*/"",
+                                             &context));
+  EXPECT_CALL(observer_, DidStopLoading(web_state()));
+
+  web::test::LoadUrl(web_state(), url);
+
+  // Server does not stop responding until it's shut down. Let the server run
+  // to make web state finish the navigation.
+  EXPECT_FALSE(WaitUntilConditionOrTimeout(2.0, ^{
+    return !web_state()->IsLoading();
+  }));
+
+  // Stop the loading.
+  web_state()->Stop();
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+    return !web_state()->IsLoading();
+  }));
+}
+
 }  // namespace web
