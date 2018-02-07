@@ -39,6 +39,11 @@ class WindowController;
 // Provides various utility functions that help manipulate tabs.
 class ExtensionTabUtil {
  public:
+  enum PopulateTabBehavior {
+    kPopulateTabs,
+    kDontPopulateTabs,
+  };
+
   struct OpenTabParams {
     OpenTabParams();
     ~OpenTabParams();
@@ -84,6 +89,9 @@ class ExtensionTabUtil {
       int window_id,
       std::string* error_message);
 
+  // Returns the tabs:: API constant for the window type of the |browser|.
+  static std::string GetBrowserWindowTypeText(const Browser& browser);
+
   // Creates a Tab object (see chrome/common/extensions/api/tabs.json) with
   // information about the state of a browser tab.  Depending on the
   // permissions of the extension, the object may or may not include sensitive
@@ -101,6 +109,9 @@ class ExtensionTabUtil {
 
   // Creates a Tab object but performs no extension permissions checks; the
   // returned object will contain privacy-sensitive data.
+  // TODO(devlin): These are easy to confuse with the safer, info-scrubbing
+  // versions above. We should get rid of these, and have callers explicitly
+  // pass in a null extension if they do not want values scrubbed.
   static std::unique_ptr<api::tabs::Tab> CreateTabObject(
       content::WebContents* web_contents) {
     return CreateTabObject(web_contents, nullptr, -1);
@@ -109,6 +120,16 @@ class ExtensionTabUtil {
       content::WebContents* web_contents,
       TabStripModel* tab_strip,
       int tab_index);
+
+  // Creates a DictionaryValue representing the window for the given |browser|,
+  // and scrubs any privacy-sensitive data that |extension| does not have
+  // access to. |populate_tab_behavior| determines whether tabs will be
+  // populated in the result.
+  // TODO(devlin): Convert this to a api::Windows::Window object.
+  static std::unique_ptr<base::DictionaryValue> CreateWindowValueForExtension(
+      const Browser& browser,
+      const Extension* extension,
+      PopulateTabBehavior populate_tab_behavior);
 
   // Creates a tab MutedInfo object (see chrome/common/extensions/api/tabs.json)
   // with information about the mute state of a browser tab.

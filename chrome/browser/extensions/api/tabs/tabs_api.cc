@@ -304,18 +304,20 @@ ExtensionFunction::ResponseAction WindowsGetFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   ApiParameterExtractor<windows::Get::Params> extractor(params.get());
-  WindowController* controller = nullptr;
+  Browser* browser = nullptr;
   std::string error;
-  if (!windows_util::GetWindowFromWindowID(this, params->window_id,
-                                           extractor.type_filters(),
-                                           &controller, &error)) {
+  if (!windows_util::GetBrowserFromWindowID(this, params->window_id,
+                                            extractor.type_filters(), &browser,
+                                            &error)) {
     return RespondNow(Error(error));
   }
 
+  ExtensionTabUtil::PopulateTabBehavior populate_tab_behavior =
+      extractor.populate_tabs() ? ExtensionTabUtil::kPopulateTabs
+                                : ExtensionTabUtil::kDontPopulateTabs;
   std::unique_ptr<base::DictionaryValue> windows =
-      extractor.populate_tabs()
-          ? controller->CreateWindowValueWithTabs(extension())
-          : controller->CreateWindowValue();
+      ExtensionTabUtil::CreateWindowValueForExtension(*browser, extension(),
+                                                      populate_tab_behavior);
   return RespondNow(OneArgument(std::move(windows)));
 }
 
@@ -325,18 +327,20 @@ ExtensionFunction::ResponseAction WindowsGetCurrentFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   ApiParameterExtractor<windows::GetCurrent::Params> extractor(params.get());
-  WindowController* controller = nullptr;
+  Browser* browser = nullptr;
   std::string error;
-  if (!windows_util::GetWindowFromWindowID(
+  if (!windows_util::GetBrowserFromWindowID(
           this, extension_misc::kCurrentWindowId, extractor.type_filters(),
-          &controller, &error)) {
+          &browser, &error)) {
     return RespondNow(Error(error));
   }
 
+  ExtensionTabUtil::PopulateTabBehavior populate_tab_behavior =
+      extractor.populate_tabs() ? ExtensionTabUtil::kPopulateTabs
+                                : ExtensionTabUtil::kDontPopulateTabs;
   std::unique_ptr<base::DictionaryValue> windows =
-      extractor.populate_tabs()
-          ? controller->CreateWindowValueWithTabs(extension())
-          : controller->CreateWindowValue();
+      ExtensionTabUtil::CreateWindowValueForExtension(*browser, extension(),
+                                                      populate_tab_behavior);
   return RespondNow(OneArgument(std::move(windows)));
 }
 
@@ -349,22 +353,28 @@ ExtensionFunction::ResponseAction WindowsGetLastFocusedFunction::Run() {
       params.get());
   // The WindowControllerList should contain a list of application,
   // browser and devtools windows.
-  WindowController* controller = nullptr;
-  for (auto* iter : WindowControllerList::GetInstance()->windows()) {
-    if (windows_util::CanOperateOnWindow(this, iter,
+  Browser* browser = nullptr;
+  for (auto* controller : WindowControllerList::GetInstance()->windows()) {
+    if (controller->GetBrowser() &&
+        windows_util::CanOperateOnWindow(this, controller,
                                          extractor.type_filters())) {
-      controller = iter;
+      // TODO(devlin): Doesn't this mean that we'll use the last window in the
+      // list if there is no active window? That seems wrong.
+      // See https://crbug.com/809822.
+      browser = controller->GetBrowser();
       if (controller->window()->IsActive())
         break;  // Use focused window.
     }
   }
-  if (!controller)
+  if (!browser)
     return RespondNow(Error(keys::kNoLastFocusedWindowError));
 
+  ExtensionTabUtil::PopulateTabBehavior populate_tab_behavior =
+      extractor.populate_tabs() ? ExtensionTabUtil::kPopulateTabs
+                                : ExtensionTabUtil::kDontPopulateTabs;
   std::unique_ptr<base::DictionaryValue> windows =
-      extractor.populate_tabs()
-          ? controller->CreateWindowValueWithTabs(extension())
-          : controller->CreateWindowValue();
+      ExtensionTabUtil::CreateWindowValueForExtension(*browser, extension(),
+                                                      populate_tab_behavior);
   return RespondNow(OneArgument(std::move(windows)));
 }
 
@@ -375,18 +385,17 @@ ExtensionFunction::ResponseAction WindowsGetAllFunction::Run() {
 
   ApiParameterExtractor<windows::GetAll::Params> extractor(params.get());
   std::unique_ptr<base::ListValue> window_list(new base::ListValue());
-  const WindowControllerList::ControllerList& windows =
-      WindowControllerList::GetInstance()->windows();
-  for (WindowControllerList::ControllerList::const_iterator iter =
-           windows.begin();
-       iter != windows.end(); ++iter) {
-    if (!windows_util::CanOperateOnWindow(this, *iter,
-                                          extractor.type_filters()))
+  ExtensionTabUtil::PopulateTabBehavior populate_tab_behavior =
+      extractor.populate_tabs() ? ExtensionTabUtil::kPopulateTabs
+                                : ExtensionTabUtil::kDontPopulateTabs;
+  for (auto* controller : WindowControllerList::GetInstance()->windows()) {
+    if (!controller->GetBrowser() ||
+        !windows_util::CanOperateOnWindow(this, controller,
+                                          extractor.type_filters())) {
       continue;
-    if (extractor.populate_tabs())
-      window_list->Append((*iter)->CreateWindowValueWithTabs(extension()));
-    else
-      window_list->Append((*iter)->CreateWindowValue());
+    }
+    window_list->Append(ExtensionTabUtil::CreateWindowValueForExtension(
+        *controller->GetBrowser(), extension(), populate_tab_behavior));
   }
 
   return RespondNow(OneArgument(std::move(window_list)));
@@ -649,8 +658,6 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
   else
     new_window->window()->ShowInactive();
 
-  WindowController* controller = new_window->extension_window_controller();
-
   std::unique_ptr<base::Value> result;
   if (new_window->profile()->IsOffTheRecord() &&
       !browser_context()->IsOffTheRecord() && !include_incognito()) {
@@ -658,7 +665,8 @@ ExtensionFunction::ResponseAction WindowsCreateFunction::Run() {
     // profile and CanCrossIncognito isn't allowed.
     result = std::make_unique<base::Value>();
   } else {
-    result = controller->CreateWindowValueWithTabs(extension());
+    result = ExtensionTabUtil::CreateWindowValueForExtension(
+        *new_window, extension(), ExtensionTabUtil::kPopulateTabs);
   }
 
   return RespondNow(OneArgument(std::move(result)));
@@ -669,11 +677,11 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
       windows::Update::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  WindowController* controller;
+  Browser* browser = nullptr;
   std::string error;
-  if (!windows_util::GetWindowFromWindowID(
+  if (!windows_util::GetBrowserFromWindowID(
           this, params->window_id, WindowController::GetAllWindowFilter(),
-          &controller, &error)) {
+          &browser, &error)) {
     return RespondNow(Error(error));
   }
 
@@ -683,7 +691,7 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
 
 #if defined(OS_CHROMEOS)
   const bool is_window_trusted_pinned =
-      ash::IsWindowTrustedPinned(controller->window());
+      ash::IsWindowTrustedPinned(browser->window());
   // Don't allow locked fullscreen operations on a window without the proper
   // permission (also don't allow any operations on a locked window if the
   // extension doesn't have the permission).
@@ -698,15 +706,13 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
   if (is_window_trusted_pinned &&
       params->update_info.state != windows::WINDOW_STATE_LOCKED_FULLSCREEN &&
       params->update_info.state != windows::WINDOW_STATE_NONE) {
-    SetWindowTrustedPinned(controller->window(), false);
-    controller->GetBrowser()->command_controller()->
-        LockedFullscreenStateChanged();
+    SetWindowTrustedPinned(browser->window(), false);
+    browser->command_controller()->LockedFullscreenStateChanged();
   } else if (!is_window_trusted_pinned &&
              params->update_info.state ==
                  windows::WINDOW_STATE_LOCKED_FULLSCREEN) {
-    SetWindowTrustedPinned(controller->window(), true);
-    controller->GetBrowser()->command_controller()->
-        LockedFullscreenStateChanged();
+    SetWindowTrustedPinned(browser->window(), true);
+    browser->command_controller()->LockedFullscreenStateChanged();
   }
 #endif
 
@@ -714,34 +720,38 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
       ConvertToWindowShowState(params->update_info.state);
 
   if (show_state != ui::SHOW_STATE_FULLSCREEN &&
-      show_state != ui::SHOW_STATE_DEFAULT)
-    controller->SetFullscreenMode(false, extension()->url());
+      show_state != ui::SHOW_STATE_DEFAULT) {
+    browser->extension_window_controller()->SetFullscreenMode(
+        false, extension()->url());
+  }
 
   switch (show_state) {
     case ui::SHOW_STATE_MINIMIZED:
-      controller->window()->Minimize();
+      browser->window()->Minimize();
       break;
     case ui::SHOW_STATE_MAXIMIZED:
-      controller->window()->Maximize();
+      browser->window()->Maximize();
       break;
     case ui::SHOW_STATE_FULLSCREEN:
-      if (controller->window()->IsMinimized() ||
-          controller->window()->IsMaximized())
-        controller->window()->Restore();
-      controller->SetFullscreenMode(true, extension()->url());
+      if (browser->window()->IsMinimized() ||
+          browser->window()->IsMaximized()) {
+        browser->window()->Restore();
+      }
+      browser->extension_window_controller()->SetFullscreenMode(
+          true, extension()->url());
       break;
     case ui::SHOW_STATE_NORMAL:
-      controller->window()->Restore();
+      browser->window()->Restore();
       break;
     default:
       break;
   }
 
   gfx::Rect bounds;
-  if (controller->window()->IsMinimized())
-    bounds = controller->window()->GetRestoredBounds();
+  if (browser->window()->IsMinimized())
+    bounds = browser->window()->GetRestoredBounds();
   else
-    bounds = controller->window()->GetBounds();
+    bounds = browser->window()->GetBounds();
   bool set_bounds = false;
 
   // Any part of the bounds can optionally be set by the caller.
@@ -773,27 +783,28 @@ ExtensionFunction::ResponseAction WindowsUpdateFunction::Run() {
     }
     // TODO(varkha): Updating bounds during a drag can cause problems and a more
     // general solution is needed. See http://crbug.com/251813 .
-    controller->window()->SetBounds(bounds);
+    browser->window()->SetBounds(bounds);
   }
 
   if (params->update_info.focused) {
     if (*params->update_info.focused) {
       if (show_state == ui::SHOW_STATE_MINIMIZED)
         return RespondNow(Error(keys::kInvalidWindowStateError));
-      controller->window()->Activate();
+      browser->window()->Activate();
     } else {
       if (show_state == ui::SHOW_STATE_MAXIMIZED ||
           show_state == ui::SHOW_STATE_FULLSCREEN) {
         return RespondNow(Error(keys::kInvalidWindowStateError));
       }
-      controller->window()->Deactivate();
+      browser->window()->Deactivate();
     }
   }
 
   if (params->update_info.draw_attention)
-    controller->window()->FlashFrame(*params->update_info.draw_attention);
+    browser->window()->FlashFrame(*params->update_info.draw_attention);
 
-  return RespondNow(OneArgument(controller->CreateWindowValue()));
+  return RespondNow(OneArgument(ExtensionTabUtil::CreateWindowValueForExtension(
+      *browser, extension(), ExtensionTabUtil::kDontPopulateTabs)));
 }
 
 ExtensionFunction::ResponseAction WindowsRemoveFunction::Run() {
@@ -801,22 +812,23 @@ ExtensionFunction::ResponseAction WindowsRemoveFunction::Run() {
       windows::Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  WindowController* controller = nullptr;
+  Browser* browser = nullptr;
   std::string error;
-  if (!windows_util::GetWindowFromWindowID(this, params->window_id,
-                                           WindowController::kNoWindowFilter,
-                                           &controller, &error)) {
+  if (!windows_util::GetBrowserFromWindowID(this, params->window_id,
+                                            WindowController::kNoWindowFilter,
+                                            &browser, &error)) {
     return RespondNow(Error(error));
   }
 
 #if defined(OS_CHROMEOS)
-  if (ash::IsWindowTrustedPinned(controller->window()) &&
+  if (ash::IsWindowTrustedPinned(browser->window()) &&
       !ExtensionHasLockedFullscreenPermission(extension())) {
     return RespondNow(
         Error(keys::kMissingLockWindowFullscreenPrivatePermission));
   }
 #endif
 
+  WindowController* controller = browser->extension_window_controller();
   WindowController::Reason reason;
   if (!controller->CanClose(&reason)) {
     return RespondNow(Error(reason == WindowController::REASON_NOT_EDITABLE
@@ -1179,9 +1191,8 @@ ExtensionFunction::ResponseAction TabsHighlightFunction::Run() {
 
   selection.set_active(active_index);
   browser->tab_strip_model()->SetSelectionFromModel(std::move(selection));
-  return RespondNow(OneArgument(
-      browser->extension_window_controller()->CreateWindowValueWithTabs(
-          extension())));
+  return RespondNow(OneArgument(ExtensionTabUtil::CreateWindowValueForExtension(
+      *browser, extension(), ExtensionTabUtil::kPopulateTabs)));
 }
 
 bool TabsHighlightFunction::HighlightTab(TabStripModel* tabstrip,

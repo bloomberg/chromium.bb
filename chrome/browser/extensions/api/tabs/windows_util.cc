@@ -23,38 +23,48 @@
 
 namespace windows_util {
 
-bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
-                           int window_id,
-                           extensions::WindowController::TypeFilter filter,
-                           extensions::WindowController** controller,
-                           std::string* error) {
+bool GetBrowserFromWindowID(UIThreadExtensionFunction* function,
+                            int window_id,
+                            extensions::WindowController::TypeFilter filter,
+                            Browser** browser,
+                            std::string* error) {
+  DCHECK(browser);
   DCHECK(error);
+
+  *browser = nullptr;
   if (window_id == extension_misc::kCurrentWindowId) {
-    extensions::WindowController* extension_window_controller =
-        function->dispatcher()->GetExtensionWindowController();
     // If there is a window controller associated with this extension, use that.
-    if (extension_window_controller) {
-      *controller = extension_window_controller;
-    } else {
+    extensions::WindowController* window_controller =
+        function->dispatcher()->GetExtensionWindowController();
+    if (!window_controller) {
       // Otherwise get the focused or most recently added window.
-      *controller = extensions::WindowControllerList::GetInstance()
-                        ->CurrentWindowForFunctionWithFilter(function, filter);
+      window_controller =
+          extensions::WindowControllerList::GetInstance()
+              ->CurrentWindowForFunctionWithFilter(function, filter);
     }
-    if (!(*controller)) {
+
+    if (window_controller)
+      *browser = window_controller->GetBrowser();
+
+    if (!(*browser)) {
       *error = extensions::tabs_constants::kNoCurrentWindowError;
       return false;
     }
   } else {
-    *controller =
+    extensions::WindowController* window_controller =
         extensions::WindowControllerList::GetInstance()
             ->FindWindowForFunctionByIdWithFilter(function, window_id, filter);
-    if (!(*controller)) {
+    if (window_controller)
+      *browser = window_controller->GetBrowser();
+
+    if (!(*browser)) {
       *error = extensions::ErrorUtils::FormatErrorMessage(
           extensions::tabs_constants::kWindowNotFoundError,
           base::IntToString(window_id));
       return false;
     }
   }
+  DCHECK(*browser);
   return true;
 }
 

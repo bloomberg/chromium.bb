@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/api/tabs/windows_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
@@ -205,9 +206,14 @@ void WindowsEventRouter::OnWindowControllerAdded(
     return;
   if (!profile_->IsSameProfile(window_controller->profile()))
     return;
+  // Ignore any windows without an associated browser (e.g., AppWindows).
+  if (!window_controller->GetBrowser())
+    return;
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(window_controller->CreateWindowValue());
+  args->Append(ExtensionTabUtil::CreateWindowValueForExtension(
+      *window_controller->GetBrowser(), nullptr,
+      ExtensionTabUtil::kDontPopulateTabs));
   DispatchEvent(events::WINDOWS_ON_CREATED, windows::OnCreated::kEventName,
                 window_controller, std::move(args));
 }
@@ -217,6 +223,9 @@ void WindowsEventRouter::OnWindowControllerRemoved(
   if (!HasEventListener(windows::OnRemoved::kEventName))
     return;
   if (!profile_->IsSameProfile(window_controller->profile()))
+    return;
+  // Ignore any windows without an associated browser (e.g., AppWindows).
+  if (!window_controller->GetBrowser())
     return;
 
   int window_id = window_controller->GetWindowId();
