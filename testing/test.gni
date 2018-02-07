@@ -13,6 +13,7 @@ if (is_android) {
 }
 
 if (is_fuchsia) {
+  import("//build/config/chromecast_build.gni")
   import("//build/config/fuchsia/rules.gni")
   import("//build/config/fuchsia/package.gni")
 }
@@ -237,6 +238,11 @@ template("test") {
         ":$_gen_runner_target",
         ":$_pkg_target",
       ]
+
+      # Disable packaging for Chromecast builds. (https://crbug.com/810069)
+      if (is_chromecast) {
+        deps -= [ ":${_pkg_target}" ]
+      }
     }
 
     # Makes the script which invokes the executable.
