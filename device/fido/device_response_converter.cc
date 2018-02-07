@@ -9,6 +9,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "components/cbor/cbor_reader.h"
 #include "components/cbor/cbor_writer.h"
 #include "device/fido/authenticator_supported_options.h"
@@ -18,22 +19,14 @@ namespace device {
 
 using CBOR = cbor::CBORValue;
 
-CTAPDeviceResponseCode GetResponseCode(const std::vector<uint8_t>& buffer) {
+CtapDeviceResponseCode GetResponseCode(const std::vector<uint8_t>& buffer) {
   if (buffer.empty())
-    return CTAPDeviceResponseCode::kCtap2ErrInvalidCBOR;
+    return CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
 
-  std::array<CTAPDeviceResponseCode, 51> response_codes =
-      GetCTAPResponseCodeList();
-
-  std::array<CTAPDeviceResponseCode, 51>::iterator found = std::find_if(
-      response_codes.begin(), response_codes.end(),
-      [&buffer](CTAPDeviceResponseCode response_code) {
-        return buffer[0] == base::strict_cast<uint8_t>(response_code);
-      });
-
-  return found == response_codes.end()
-             ? CTAPDeviceResponseCode::kCtap2ErrInvalidCBOR
-             : *found;
+  auto code = static_cast<CtapDeviceResponseCode>(buffer[0]);
+  return base::ContainsValue(GetCtapResponseCodeList(), code)
+             ? code
+             : CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
 }
 
 // Decodes byte array response from authenticator to CBOR value object and
@@ -41,7 +34,7 @@ CTAPDeviceResponseCode GetResponseCode(const std::vector<uint8_t>& buffer) {
 // to byte array in format specified by the WebAuthN spec (i.e the keys for
 // CBOR map value are converted from unsigned integers to string type.)
 base::Optional<AuthenticatorMakeCredentialResponse>
-ReadCTAPMakeCredentialResponse(CTAPDeviceResponseCode response_code,
+ReadCTAPMakeCredentialResponse(CtapDeviceResponseCode response_code,
                                const std::vector<uint8_t>& buffer) {
   base::Optional<CBOR> decoded_response = cbor::CBORReader::Read(buffer);
 
@@ -79,7 +72,7 @@ ReadCTAPMakeCredentialResponse(CTAPDeviceResponseCode response_code,
 }
 
 base::Optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
-    CTAPDeviceResponseCode response_code,
+    CtapDeviceResponseCode response_code,
     const std::vector<uint8_t>& buffer) {
   base::Optional<CBOR> decoded_response = cbor::CBORReader::Read(buffer);
 
@@ -132,7 +125,7 @@ base::Optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
 }
 
 base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
-    CTAPDeviceResponseCode response_code,
+    CtapDeviceResponseCode response_code,
     const std::vector<uint8_t>& buffer) {
   base::Optional<CBOR> decoded_response = cbor::CBORReader::Read(buffer);
 

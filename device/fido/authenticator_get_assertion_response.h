@@ -22,7 +22,7 @@ namespace device {
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#authenticatorGetAssertion
 class AuthenticatorGetAssertionResponse {
  public:
-  AuthenticatorGetAssertionResponse(CTAPDeviceResponseCode response_code,
+  AuthenticatorGetAssertionResponse(CtapDeviceResponseCode response_code,
                                     std::vector<uint8_t> auth_data,
                                     std::vector<uint8_t> signature,
                                     PublicKeyCredentialUserEntity user);
@@ -35,7 +35,7 @@ class AuthenticatorGetAssertionResponse {
   AuthenticatorGetAssertionResponse& SetCredential(
       PublicKeyCredentialDescriptor credential);
 
-  CTAPDeviceResponseCode response_code() const { return response_code_; }
+  CtapDeviceResponseCode response_code() const { return response_code_; }
   const std::vector<uint8_t>& auth_data() const { return auth_data_; }
   const std::vector<uint8_t>& signature() const { return signature_; }
   const PublicKeyCredentialUserEntity& user() const { return user_; }
@@ -47,7 +47,7 @@ class AuthenticatorGetAssertionResponse {
   }
 
  private:
-  CTAPDeviceResponseCode response_code_;
+  CtapDeviceResponseCode response_code_;
   std::vector<uint8_t> auth_data_;
   std::vector<uint8_t> signature_;
   PublicKeyCredentialUserEntity user_;
