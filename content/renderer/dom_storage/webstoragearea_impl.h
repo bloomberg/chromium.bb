@@ -22,7 +22,7 @@ class WebStorageAreaImpl : public blink::WebStorageArea {
  public:
   static WebStorageAreaImpl* FromConnectionId(int id);
 
-  WebStorageAreaImpl(int64_t namespace_id, const GURL& origin);
+  WebStorageAreaImpl(const std::string& namespace_id, const GURL& origin);
   ~WebStorageAreaImpl() override;
 
   // See WebStorageArea.h for documentation on these functions.

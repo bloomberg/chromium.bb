@@ -65,12 +65,12 @@ class DOMStorageContext {
   // and before it's used.
   virtual void SetSaveSessionStorageOnDisk() = 0;
 
-  // Creates a SessionStorageNamespace with the given |persistent_id|. Used
+  // Creates a SessionStorageNamespace with the given |namespace_id|. Used
   // after tabs are restored by session restore. When created, the
-  // SessionStorageNamespace with the correct |persistent_id| will be
+  // SessionStorageNamespace with the correct |namespace_id| will be
   // associated with the persisted sessionStorage data.
   virtual scoped_refptr<SessionStorageNamespace> RecreateSessionStorage(
-      const std::string& persistent_id) = 0;
+      const std::string& namespace_id) = 0;
 
   // Starts deleting sessionStorages which don't have an associated
   // SessionStorageNamespace alive. Called when SessionStorageNamespaces have

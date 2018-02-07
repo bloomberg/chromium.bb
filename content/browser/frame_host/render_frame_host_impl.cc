@@ -2871,7 +2871,7 @@ void RenderFrameHostImpl::CreateNewWindow(
   DOMStorageContextWrapper* dom_storage_context =
       static_cast<DOMStorageContextWrapper*>(
           storage_partition->GetDOMStorageContext());
-  auto cloned_namespace = base::MakeRefCounted<SessionStorageNamespaceImpl>(
+  auto cloned_namespace = SessionStorageNamespaceImpl::CloneFrom(
       dom_storage_context, params->session_storage_namespace_id);
 
   // If the opener is suppressed or script access is disallowed, we should

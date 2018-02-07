@@ -13,7 +13,7 @@ namespace content {
 // Used to report Session Storage usage info by DOMStorageContext.
 struct CONTENT_EXPORT SessionStorageUsageInfo {
   GURL origin;
-  std::string persistent_namespace_id;
+  std::string namespace_id;
 };
 
 }  // namespace content

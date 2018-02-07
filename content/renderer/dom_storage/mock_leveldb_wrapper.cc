@@ -16,7 +16,7 @@ void MockLevelDBWrapper::OpenLocalStorage(
 }
 
 void MockLevelDBWrapper::OpenSessionStorage(
-    int64_t namespace_id,
+    const std::string& namespace_id,
     const url::Origin& origin,
     mojom::LevelDBWrapperRequest database) {
   bindings_.AddBinding(this, std::move(database));

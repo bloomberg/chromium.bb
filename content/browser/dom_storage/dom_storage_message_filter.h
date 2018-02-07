@@ -51,7 +51,7 @@ class DOMStorageMessageFilter
 
   // Message Handlers.
   void OnOpenStorageArea(int connection_id,
-                         int64_t namespace_id,
+                         const std::string& namespace_id,
                          const GURL& origin);
   void OnCloseStorageArea(int connection_id);
   void OnLoadStorageArea(int connection_id, DOMStorageValuesMap* map);

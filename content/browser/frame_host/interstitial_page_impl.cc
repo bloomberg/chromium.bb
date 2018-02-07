@@ -595,7 +595,7 @@ RenderViewHostImpl* InterstitialPageImpl::CreateRenderViewHost() {
           BrowserContext::GetStoragePartition(
               browser_context, site_instance.get())->GetDOMStorageContext());
   session_storage_namespace_ =
-      new SessionStorageNamespaceImpl(dom_storage_context);
+      SessionStorageNamespaceImpl::Create(dom_storage_context);
 
   // Use the RenderViewHost from our FrameTree.
   // TODO(avi): The view routing ID can be restored to MSG_ROUTING_NONE once

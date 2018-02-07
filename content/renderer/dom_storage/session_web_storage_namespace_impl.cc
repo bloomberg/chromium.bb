@@ -17,7 +17,7 @@ using blink::WebStorageNamespace;
 namespace content {
 
 SessionWebStorageNamespaceImpl::SessionWebStorageNamespaceImpl(
-    int64_t namespace_id,
+    const std::string& namespace_id,
     LocalStorageCachedAreas* local_storage_cached_areas)
     : namespace_id_(namespace_id),
       local_storage_cached_areas_(local_storage_cached_areas) {}

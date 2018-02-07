@@ -16,7 +16,7 @@ class SessionWebStorageNamespaceImpl : public blink::WebStorageNamespace {
  public:
   // |local_storage_cached_areas| is guaranteed to outlive this object.
   SessionWebStorageNamespaceImpl(
-      int64_t namespace_id,
+      const std::string& namespace_id,
       LocalStorageCachedAreas* local_storage_cached_areas);
   ~SessionWebStorageNamespaceImpl() override;
 
@@ -26,7 +26,7 @@ class SessionWebStorageNamespaceImpl : public blink::WebStorageNamespace {
   bool IsSameNamespace(const WebStorageNamespace&) const override;
 
  private:
-  int64_t namespace_id_;
+  std::string namespace_id_;
   LocalStorageCachedAreas* const local_storage_cached_areas_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionWebStorageNamespaceImpl);

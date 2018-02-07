@@ -26,6 +26,10 @@
 using base::ASCIIToUTF16;
 
 namespace content {
+namespace {
+// An empty namespace is the local storage namespace.
+constexpr const char kLocalStorageNamespaceId[] = "";
+}  // namespace
 
 class DOMStorageContextImplTest : public testing::Test {
  public:
@@ -71,8 +75,6 @@ class DOMStorageContextImplTest : public testing::Test {
     context->Shutdown();
   }
 
-  int session_id_offset() { return context_->session_id_offset_; }
-
  protected:
   base::MessageLoop message_loop_;
   base::ScopedTempDir temp_dir_;
@@ -90,10 +92,7 @@ TEST_F(DOMStorageContextImplTest, Basics) {
   EXPECT_EQ(base::FilePath(), context_->sessionstorage_directory());
   EXPECT_EQ(storage_policy_.get(), context_->special_storage_policy_.get());
   context_->DeleteLocalStorage(GURL("http://chromium.org/"));
-  const int kFirstSessionStorageNamespaceId = 1 + session_id_offset();
   EXPECT_TRUE(context_->GetStorageNamespace(kLocalStorageNamespaceId));
-  EXPECT_FALSE(context_->GetStorageNamespace(kFirstSessionStorageNamespaceId));
-  EXPECT_EQ(kFirstSessionStorageNamespaceId, context_->AllocateSessionId());
   std::vector<LocalStorageUsageInfo> infos;
   context_->GetLocalStorageUsage(&infos, kDontIncludeFileInfo);
   EXPECT_TRUE(infos.empty());
@@ -176,32 +175,26 @@ TEST_F(DOMStorageContextImplTest, SetForceKeepSessionState) {
 }
 
 TEST_F(DOMStorageContextImplTest, PersistentIds) {
-  const int kFirstSessionStorageNamespaceId = 1 + session_id_offset();
-  const std::string kPersistentId = "persistent";
-  context_->CreateSessionNamespace(kFirstSessionStorageNamespaceId,
-                                   kPersistentId);
+  const std::string kFirstNamespaceId = "persistent";
+  context_->CreateSessionNamespace(kFirstNamespaceId);
   DOMStorageNamespace* dom_namespace =
-      context_->GetStorageNamespace(kFirstSessionStorageNamespaceId);
+      context_->GetStorageNamespace(kFirstNamespaceId);
   ASSERT_TRUE(dom_namespace);
-  EXPECT_EQ(kPersistentId, dom_namespace->persistent_namespace_id());
+  EXPECT_EQ(kFirstNamespaceId, dom_namespace->namespace_id());
   // Verify that the areas inherit the persistent ID.
   DOMStorageArea* area = dom_namespace->OpenStorageArea(kOrigin);
-  EXPECT_EQ(kPersistentId, area->persistent_namespace_id_);
+  EXPECT_EQ(kFirstNamespaceId, area->namespace_id_);
 
   // Verify that the persistent IDs are handled correctly when cloning.
-  const int kClonedSessionStorageNamespaceId = 2 + session_id_offset();
-  const std::string kClonedPersistentId = "cloned";
-  context_->CloneSessionNamespace(kFirstSessionStorageNamespaceId,
-                                  kClonedSessionStorageNamespaceId,
-                                  kClonedPersistentId);
+  const std::string kSecondNamespaceId = "cloned";
+  context_->CloneSessionNamespace(kFirstNamespaceId, kSecondNamespaceId);
   DOMStorageNamespace* cloned_dom_namespace =
-      context_->GetStorageNamespace(kClonedSessionStorageNamespaceId);
+      context_->GetStorageNamespace(kSecondNamespaceId);
   ASSERT_TRUE(dom_namespace);
-  EXPECT_EQ(kClonedPersistentId,
-            cloned_dom_namespace->persistent_namespace_id());
+  EXPECT_EQ(kSecondNamespaceId, cloned_dom_namespace->namespace_id());
   // Verify that the areas inherit the persistent ID.
   DOMStorageArea* cloned_area = cloned_dom_namespace->OpenStorageArea(kOrigin);
-  EXPECT_EQ(kClonedPersistentId, cloned_area->persistent_namespace_id_);
+  EXPECT_EQ(kSecondNamespaceId, cloned_area->namespace_id_);
 }
 
 // Disable this test on Android as on Android we always delete our old session
@@ -221,12 +214,10 @@ TEST_F(DOMStorageContextImplTest, DeleteSessionStorage) {
   ASSERT_EQ(temp_dir_.GetPath(), context_->sessionstorage_directory());
 
   // Write data.
-  const int kSessionStorageNamespaceId = 1 + session_id_offset();
-  const std::string kPersistentId = "persistent";
-  context_->CreateSessionNamespace(kSessionStorageNamespaceId,
-                                   kPersistentId);
+  const std::string kFirstNamespaceId = "persistent";
+  context_->CreateSessionNamespace(kFirstNamespaceId);
   DOMStorageNamespace* dom_namespace =
-      context_->GetStorageNamespace(kSessionStorageNamespaceId);
+      context_->GetStorageNamespace(kFirstNamespaceId);
   DOMStorageArea* area = dom_namespace->OpenStorageArea(kOrigin);
   const base::string16 kKey(ASCIIToUTF16("foo"));
   const base::string16 kValue(ASCIIToUTF16("bar"));
@@ -244,9 +235,8 @@ TEST_F(DOMStorageContextImplTest, DeleteSessionStorage) {
   context_->SetSaveSessionStorageOnDisk();
 
   // Read the data back.
-  context_->CreateSessionNamespace(kSessionStorageNamespaceId,
-                                   kPersistentId);
-  dom_namespace = context_->GetStorageNamespace(kSessionStorageNamespaceId);
+  context_->CreateSessionNamespace(kFirstNamespaceId);
+  dom_namespace = context_->GetStorageNamespace(kFirstNamespaceId);
   area = dom_namespace->OpenStorageArea(kOrigin);
   base::NullableString16 read_value;
   EXPECT_EQ(kKey, area->Key(0).string());
@@ -254,7 +244,7 @@ TEST_F(DOMStorageContextImplTest, DeleteSessionStorage) {
 
   SessionStorageUsageInfo info;
   info.origin = kOrigin;
-  info.persistent_namespace_id = kPersistentId;
+  info.namespace_id = kFirstNamespaceId;
   context_->DeleteSessionStorage(info);
 
   // Destroy and recreate again.
@@ -267,9 +257,8 @@ TEST_F(DOMStorageContextImplTest, DeleteSessionStorage) {
   context_->SetSaveSessionStorageOnDisk();
 
   // Now there should be no data.
-  context_->CreateSessionNamespace(kSessionStorageNamespaceId,
-                                   kPersistentId);
-  dom_namespace = context_->GetStorageNamespace(kSessionStorageNamespaceId);
+  context_->CreateSessionNamespace(kFirstNamespaceId);
+  dom_namespace = context_->GetStorageNamespace(kFirstNamespaceId);
   area = dom_namespace->OpenStorageArea(kOrigin);
 
   EXPECT_EQ(0u, area->Length());

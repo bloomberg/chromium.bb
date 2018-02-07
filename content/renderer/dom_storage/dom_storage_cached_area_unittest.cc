@@ -117,14 +117,13 @@ class MockProxy : public DOMStorageProxy {
 class DOMStorageCachedAreaTest : public testing::Test {
  public:
   DOMStorageCachedAreaTest()
-    : kNamespaceId(10),
-      kOrigin("http://dom_storage/"),
-      kKey(base::ASCIIToUTF16("key")),
-      kValue(base::ASCIIToUTF16("value")),
-      kPageUrl("http://dom_storage/page") {
-  }
+      : kNamespaceId("id"),
+        kOrigin("http://dom_storage/"),
+        kKey(base::ASCIIToUTF16("key")),
+        kValue(base::ASCIIToUTF16("value")),
+        kPageUrl("http://dom_storage/page") {}
 
-  const int64_t kNamespaceId;
+  const std::string kNamespaceId;
   const GURL kOrigin;
   const base::string16 kKey;
   const base::string16 kValue;

@@ -40,7 +40,7 @@ struct CreateViewParams {
   int32 main_frame_widget_routing_id = IPC.mojom.kRoutingIdNone;
 
   // The session storage namespace ID this view should use.
-  int64 session_storage_namespace_id;
+  string session_storage_namespace_id;
 
   // The route ID of the opener RenderFrame or RenderFrameProxy, if we need to
   // set one (MSG_ROUTING_NONE otherwise).

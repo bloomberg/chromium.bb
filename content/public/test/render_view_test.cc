@@ -320,7 +320,7 @@ void RenderViewTest::SetUp() {
   render_thread_->PassInitialInterfaceProviderRequestForFrame(
       view_params->main_frame_routing_id,
       mojo::MakeRequest(&view_params->main_frame_interface_provider));
-  view_params->session_storage_namespace_id = kInvalidSessionStorageNamespaceId;
+  view_params->session_storage_namespace_id = "";
   view_params->swapped_out = false;
   view_params->replicated_frame_state = FrameReplicationState();
   view_params->proxy_routing_id = MSG_ROUTING_NONE;

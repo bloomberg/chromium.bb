@@ -1378,8 +1378,8 @@ WebWidget* RenderViewImpl::CreatePopup(blink::WebLocalFrame* creator,
   return widget->GetWebWidget();
 }
 
-int64_t RenderViewImpl::GetSessionStorageNamespaceId() {
-  CHECK(session_storage_namespace_id_ != kInvalidSessionStorageNamespaceId);
+base::StringPiece RenderViewImpl::GetSessionStorageNamespaceId() {
+  CHECK(!session_storage_namespace_id_.empty());
   return session_storage_namespace_id_;
 }
 

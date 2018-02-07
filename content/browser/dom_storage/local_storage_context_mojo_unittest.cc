@@ -44,6 +44,8 @@ using leveldb::Uint8VectorToStdString;
 namespace content {
 
 namespace {
+// An empty namespace is the local storage namespace.
+constexpr const char kLocalStorageNamespaceId[] = "";
 
 void NoOpSuccess(bool success) {}
 

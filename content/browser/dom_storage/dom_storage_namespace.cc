@@ -15,24 +15,18 @@
 
 namespace content {
 
-DOMStorageNamespace::DOMStorageNamespace(
-    const base::FilePath& directory,
-    DOMStorageTaskRunner* task_runner)
-    : namespace_id_(kLocalStorageNamespaceId),
-      directory_(directory),
-      task_runner_(task_runner) {
-}
+DOMStorageNamespace::DOMStorageNamespace(const base::FilePath& directory,
+                                         DOMStorageTaskRunner* task_runner)
+    : directory_(directory), task_runner_(task_runner) {}
 
 DOMStorageNamespace::DOMStorageNamespace(
-    int64_t namespace_id,
-    const std::string& persistent_namespace_id,
+    const std::string& namespace_id,
     SessionStorageDatabase* session_storage_database,
     DOMStorageTaskRunner* task_runner)
     : namespace_id_(namespace_id),
-      persistent_namespace_id_(persistent_namespace_id),
       task_runner_(task_runner),
       session_storage_database_(session_storage_database) {
-  DCHECK_NE(kLocalStorageNamespaceId, namespace_id);
+  DCHECK(!namespace_id_.empty());
 }
 
 DOMStorageNamespace::~DOMStorageNamespace() {
@@ -48,12 +42,13 @@ DOMStorageArea* DOMStorageNamespace::OpenStorageArea(const GURL& origin) {
     return holder->area_.get();
   }
   DOMStorageArea* area;
-  if (namespace_id_ == kLocalStorageNamespaceId) {
+  // An empty namespace means LocalStorage.
+  if (namespace_id_.empty()) {
     area = new DOMStorageArea(origin, directory_, task_runner_.get());
   } else {
-    area = new DOMStorageArea(namespace_id_, persistent_namespace_id_, nullptr,
-                              origin, session_storage_database_.get(),
-                              task_runner_.get());
+    area =
+        new DOMStorageArea(namespace_id_, std::vector<std::string>(), origin,
+                           session_storage_database_.get(), task_runner_.get());
   }
   areas_[origin] = AreaHolder(area, 1);
   return area;
@@ -76,26 +71,22 @@ DOMStorageArea* DOMStorageNamespace::GetOpenStorageArea(const GURL& origin) {
 }
 
 DOMStorageNamespace* DOMStorageNamespace::Clone(
-    int64_t clone_namespace_id,
-    const std::string& clone_persistent_namespace_id) {
-  DCHECK_NE(kLocalStorageNamespaceId, namespace_id_);
-  DCHECK_NE(kLocalStorageNamespaceId, clone_namespace_id);
+    const std::string& clone_namespace_id) {
+  DCHECK(!namespace_id_.empty());
+  DCHECK(!clone_namespace_id.empty());
   DOMStorageNamespace* clone = new DOMStorageNamespace(
-      clone_namespace_id, clone_persistent_namespace_id,
-      session_storage_database_.get(), task_runner_.get());
+      clone_namespace_id, session_storage_database_.get(), task_runner_.get());
   AreaMap::const_iterator it = areas_.begin();
   // Clone the in-memory structures.
   for (; it != areas_.end(); ++it) {
-    DOMStorageArea* area = it->second.area_->ShallowCopy(
-        clone_namespace_id, clone_persistent_namespace_id);
+    DOMStorageArea* area = it->second.area_->ShallowCopy(clone_namespace_id);
     clone->areas_[it->first] = AreaHolder(area, 0);
   }
   // And clone the on-disk structures, too.
   if (session_storage_database_) {
     auto clone_task = base::BindOnce(
         base::IgnoreResult(&SessionStorageDatabase::CloneNamespace),
-        session_storage_database_, persistent_namespace_id_,
-        clone_persistent_namespace_id);
+        session_storage_database_, namespace_id_, clone_namespace_id);
     auto callback =
         base::BindOnce(&DOMStorageNamespace::OnCloneStorageDone, clone);
     task_runner_->GetSequencedTaskRunner(DOMStorageTaskRunner::COMMIT_SEQUENCE)
@@ -126,7 +117,7 @@ void DOMStorageNamespace::DeleteSessionStorageOrigin(const GURL& origin) {
 }
 
 void DOMStorageNamespace::PurgeMemory(bool aggressively) {
-  if (namespace_id_ == kLocalStorageNamespaceId && directory_.empty())
+  if (namespace_id_.empty() && directory_.empty())
     return;  // We can't purge local storage w/o backing on disk.
 
   AreaMap::iterator it = areas_.begin();

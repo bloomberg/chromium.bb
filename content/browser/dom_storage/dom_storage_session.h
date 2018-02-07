@@ -26,46 +26,42 @@ class SessionStorageContextMojo;
 class CONTENT_EXPORT DOMStorageSession
     : public base::RefCountedThreadSafe<DOMStorageSession> {
  public:
-  // Constructs a |DOMStorageSession| and allocates new IDs for it.
-  explicit DOMStorageSession(
+  // Constructs a |DOMStorageSession| and allocates a new ID for it.
+  static scoped_refptr<DOMStorageSession> Create(
       DOMStorageContextImpl* context,
       base::WeakPtr<SessionStorageContextMojo> mojo_context);
 
-  // Constructs a |DOMStorageSession| and assigns |persistent_namespace_id|
-  // to it. Allocates a new non-persistent ID.
-  DOMStorageSession(DOMStorageContextImpl* context,
-                    base::WeakPtr<SessionStorageContextMojo> mojo_context,
-                    const std::string& persistent_namespace_id);
-
-  int64_t namespace_id() const { return namespace_id_; }
-  const std::string& persistent_namespace_id() const {
-    return persistent_namespace_id_;
-  }
-  void SetShouldPersist(bool should_persist);
-  bool should_persist() const;
-  bool IsFromContext(DOMStorageContextImpl* context);
-  DOMStorageSession* Clone();
+  // Constructs a |DOMStorageSession| and assigns |namespace_id|
+  // to it.
+  static scoped_refptr<DOMStorageSession> Create(
+      DOMStorageContextImpl* context,
+      base::WeakPtr<SessionStorageContextMojo> mojo_context,
+      const std::string& namespace_id);
 
   // Constructs a |DOMStorageSession| by cloning
   // |namespace_id_to_clone|. Allocates new IDs for it.
-  static DOMStorageSession* CloneFrom(
+  static scoped_refptr<DOMStorageSession> CloneFrom(
       DOMStorageContextImpl* context,
       base::WeakPtr<SessionStorageContextMojo> mojo_context,
-      int64_t namepace_id_to_clone);
+      const std::string& namepace_id_to_clone);
+
+  const std::string& namespace_id() const { return namespace_id_; }
+  void SetShouldPersist(bool should_persist);
+  bool should_persist() const;
+  bool IsFromContext(DOMStorageContextImpl* context);
+  scoped_refptr<DOMStorageSession> Clone();
 
  private:
   friend class base::RefCountedThreadSafe<DOMStorageSession>;
 
   DOMStorageSession(DOMStorageContextImpl* context,
                     base::WeakPtr<SessionStorageContextMojo> mojo_context,
-                    int64_t namespace_id,
-                    const std::string& persistent_namespace_id);
+                    const std::string& namespace_id);
   ~DOMStorageSession();
 
   scoped_refptr<DOMStorageContextImpl> context_;
   base::WeakPtr<SessionStorageContextMojo> mojo_context_;
-  int64_t namespace_id_;
-  std::string persistent_namespace_id_;
+  std::string namespace_id_;
   bool should_persist_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageSession);

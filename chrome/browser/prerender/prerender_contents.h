@@ -293,7 +293,7 @@ class PrerenderContents : public content::NotificationObserver,
   // The session storage namespace id for use in matching. We must save it
   // rather than get it from the RenderViewHost since in the control group
   // we won't have a RenderViewHost.
-  int64_t session_storage_namespace_id_;
+  std::string session_storage_namespace_id_;
 
  private:
   class WebContentsDelegateImpl;

@@ -2846,7 +2846,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="135" label="DSH_NOT_CREATED_SESSION_ID"/>
   <int value="136" label="DSH_NOT_ALLOCATED_SESSION_ID"/>
   <int value="137" label="DSH_DELETED_SESSION_ID"/>
-  <int value="138" label="DSH_WRONG_STORAGE_PARTITION"/>
+  <int value="138" label="OBSOLETE_DSH_WRONG_STORAGE_PARTITION"/>
   <int value="139" label="BDH_DISALLOWED_ORIGIN"/>
   <int value="140" label="ARH_CREATED_STREAM_WITHOUT_AUTHORIZATION"/>
   <int value="141" label="MDDH_INVALID_DEVICE_TYPE_REQUEST"/>

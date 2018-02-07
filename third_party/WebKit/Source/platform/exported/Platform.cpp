@@ -214,7 +214,7 @@ std::unique_ptr<WebStorageNamespace> Platform::CreateLocalStorageNamespace() {
 }
 
 std::unique_ptr<WebStorageNamespace> Platform::CreateSessionStorageNamespace(
-    int64_t namespace_id) {
+    base::StringPiece namespace_id) {
   return nullptr;
 }
 
