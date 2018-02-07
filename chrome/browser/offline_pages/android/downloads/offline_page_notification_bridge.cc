@@ -68,7 +68,8 @@ void OfflinePageNotificationBridge::NotifyDownloadInterrupted(
     const OfflineItem& item) {
   JNIEnv* env = AttachCurrentThread();
   Java_OfflinePageNotificationBridge_notifyDownloadInterrupted(
-      env, ConvertUTF8ToJavaString(env, item.id.id), GetDisplayName(item));
+      env, ConvertUTF8ToJavaString(env, item.id.id), GetDisplayName(item),
+      static_cast<jint>(item.pendingState));
 }
 
 void OfflinePageNotificationBridge::NotifyDownloadCanceled(
