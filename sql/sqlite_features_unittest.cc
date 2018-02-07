@@ -94,7 +94,6 @@ TEST_F(SQLiteFeaturesTest, FTS3) {
   ASSERT_TRUE(db().Execute("CREATE VIRTUAL TABLE foo USING fts3(x)"));
 }
 
-#if !defined(USE_SYSTEM_SQLITE)
 // Originally history used fts2, which Chromium patched to treat "foo*" as a
 // prefix search, though the icu tokenizer would return it as two tokens {"foo",
 // "*"}.  Test that fts3 works correctly.
@@ -108,9 +107,7 @@ TEST_F(SQLiteFeaturesTest, FTS3_Prefix) {
   EXPECT_EQ("test",
             ExecuteWithResult(&db(), "SELECT x FROM foo WHERE x MATCH 'te*'"));
 }
-#endif
 
-#if !defined(USE_SYSTEM_SQLITE)
 // Verify that Chromium's SQLite is compiled with HAVE_USLEEP defined.  With
 // HAVE_USLEEP, SQLite uses usleep() with millisecond granularity.  Otherwise it
 // uses sleep() with second granularity.
@@ -124,7 +121,6 @@ TEST_F(SQLiteFeaturesTest, UsesUsleep) {
   // 1ms, with the rest at 2ms, and the worst observed cases was ASAN at 7ms.
   EXPECT_LT(delta.InMilliseconds(), 1000);
 }
-#endif
 
 // Ensure that our SQLite version has working foreign key support with cascade
 // delete support.
@@ -139,11 +135,10 @@ TEST_F(SQLiteFeaturesTest, ForeignKeySupport) {
   const char kSelectChildren[] = "SELECT * FROM children ORDER BY id";
 
   // Inserting without a matching parent should fail with constraint violation.
-  // Mask off any extended error codes for USE_SYSTEM_SQLITE.
   EXPECT_EQ("", ExecuteWithResult(&db(), kSelectParents));
   const int insert_error =
       db().ExecuteAndReturnErrorCode("INSERT INTO children VALUES (10, 1)");
-  EXPECT_EQ(SQLITE_CONSTRAINT, (insert_error & 0xff));
+  EXPECT_EQ(SQLITE_CONSTRAINT | SQLITE_CONSTRAINT_FOREIGNKEY, insert_error);
   EXPECT_EQ("", ExecuteWithResult(&db(), kSelectChildren));
 
   // Inserting with a matching parent should work.
@@ -342,7 +337,6 @@ TEST_F(SQLiteFeaturesTest, DISABLED_TimeMachine) {
 }
 #endif
 
-#if !defined(USE_SYSTEM_SQLITE)
 // Test that Chromium's patch to make auto_vacuum integrate with
 // SQLITE_FCNTL_CHUNK_SIZE is working.
 TEST_F(SQLiteFeaturesTest, SmartAutoVacuum) {
@@ -432,9 +426,8 @@ TEST_F(SQLiteFeaturesTest, SmartAutoVacuum) {
   }
 #endif
 }
-#endif  // !defined(USE_SYSTEM_SQLITE)
 
-#if !defined(USE_SYSTEM_SQLITE) && !defined(OS_FUCHSIA)
+#if !defined(OS_FUCHSIA)
 // SQLite WAL mode defaults to checkpointing the WAL on close.  This would push
 // additional work into Chromium shutdown.  Verify that SQLite supports a config
 // option to not checkpoint on close.

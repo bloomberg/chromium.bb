@@ -40561,8 +40561,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="RECOVERY_FAILED_VIRTUAL_TABLE_INIT">
     Failed to initialize recover vtable subsystem for connection.
   </int>
-  <int value="3" label="RECOVERY_FAILED_VIRTUAL_TABLE_SYSTEM_SQLITE">
-    USE_SYSTEM_SQLITE in force, recovery virtual table not available.
+  <int value="3" label="DEPRECATED_RECOVERY_FAILED_VIRTUAL_TABLE_SYSTEM_SQLITE">
+    Deprecated: USE_SYSTEM_SQLITE is no longer supported.
   </int>
   <int value="4" label="RECOVERY_FAILED_WRITABLE_SCHEMA">
     Failed to enable writable_schema.
