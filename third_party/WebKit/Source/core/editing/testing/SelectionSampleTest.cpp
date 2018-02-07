@@ -4,6 +4,7 @@
 
 #include "core/editing/testing/SelectionSample.h"
 
+#include "core/dom/ElementShadow.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/testing/EditingTestBase.h"

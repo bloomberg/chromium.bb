@@ -2158,8 +2158,7 @@ static void AssertLayoutTreeUpdated(Node& root) {
     DCHECK(!node.ChildNeedsDistributionRecalc());
     DCHECK(!node.NeedsStyleInvalidation());
     DCHECK(!node.ChildNeedsStyleInvalidation());
-    for (ShadowRoot* shadow_root = node.YoungestShadowRoot(); shadow_root;
-         shadow_root = shadow_root->OlderShadowRoot())
+    if (ShadowRoot* shadow_root = node.GetShadowRoot())
       AssertLayoutTreeUpdated(*shadow_root);
   }
 }
