@@ -115,6 +115,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       PaymentsTextCell* messageCell =
           base::mac::ObjCCastStrict<PaymentsTextCell>(cell);
       messageCell.textLabel.textColor = [[MDCPalette greyPalette] tint600];
+      break;
     }
     default:
       break;
