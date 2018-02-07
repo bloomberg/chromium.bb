@@ -414,10 +414,16 @@ class CORE_EXPORT EventHandler final
   FRIEND_TEST_ALL_PREFIXES(EventHandlerTest, HitOnTextShowsIBeam);
   FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
                            HitOnUserSelectNoneDoesNotShowIBeam);
-  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest, ChildCanOverrideUserSelectNone);
   FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
                            ShadowChildCanOverrideUserSelectNone);
-  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest, ChildCanOverrideUserSelectText);
+  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
+                           UserSelectAllCanOverrideUserSelectNone);
+  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
+                           UserSelectNoneCanOverrideUserSelectAll);
+  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
+                           UserSelectTextCanOverrideUserSelectNone);
+  FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
+                           UserSelectNoneCanOverrideUserSelectText);
   FRIEND_TEST_ALL_PREFIXES(EventHandlerTest,
                            ShadowChildCanOverrideUserSelectText);
   FRIEND_TEST_ALL_PREFIXES(EventHandlerTest, InputFieldsCanStartSelection);
