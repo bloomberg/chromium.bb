@@ -7,7 +7,6 @@ import json
 from telemetry.page import legacy_page_test
 from telemetry.value import histogram_util
 from telemetry.value import scalar
-from telemetry.value import skip
 
 _NAME = 'V8.DetachedContextAgeInGC'
 _UNITS = 'garbage_collections'
@@ -49,8 +48,7 @@ class V8DetachedContextAgeInGC(legacy_page_test.LegacyPageTest):
       tab.CollectGarbage()
     value = _GetMaxDetachedContextAge(tab, self._data_start)
     if value is None:
-      results.AddValue(skip.SkipValue(
-          results.current_page, 'No detached contexts'))
+      results.Skip('No detached contexts')
     else:
       results.AddValue(scalar.ScalarValue(
           results.current_page, _DISPLAY_NAME, _UNITS, value,
