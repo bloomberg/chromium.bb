@@ -385,10 +385,9 @@ void PeerConnectionTracker::OnGetAllStats() {
     rtc::scoped_refptr<InternalStatsObserver> observer(
         new rtc::RefCountedObject<InternalStatsObserver>(it->second));
 
-    // The last type parameter is ignored when the track id is empty.
-    it->first->GetStats(
-        observer, webrtc::PeerConnectionInterface::kStatsOutputLevelDebug,
-        empty_track_id, blink::WebMediaStreamSource::kTypeAudio);
+    it->first->GetStats(observer,
+                        webrtc::PeerConnectionInterface::kStatsOutputLevelDebug,
+                        nullptr);
   }
 }
 
