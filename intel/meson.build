@@ -29,7 +29,7 @@ libdrm_intel = shared_library(
   ],
   include_directories : [inc_root, inc_drm],
   link_with : libdrm,
-  dependencies : [dep_pciaccess, dep_pthread_stubs, dep_rt, dep_valgrind],
+  dependencies : [dep_pciaccess, dep_pthread_stubs, dep_rt, dep_valgrind, dep_atomic_ops],
   c_args : warn_c_args,
   version : '1.0.0',
   install : true,

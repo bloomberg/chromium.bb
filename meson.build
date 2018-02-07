@@ -48,6 +48,7 @@ cc = meson.get_compiler('c')
 intel_atomics = false
 lib_atomics = false
 
+dep_atomic_ops = dependency('atomic_ops', required : false)
 if cc.compiles('''
     int atomic_add(int *i) { return __sync_add_and_fetch (i, 1); }
     int atomic_cmpxchg(int *i, int j, int k) { return __sync_val_compare_and_swap (i, j, k); }
@@ -55,7 +56,8 @@ if cc.compiles('''
     name : 'Intel Atomics')
   intel_atomics = true
   with_atomics = true
-elif cc.has_header('atomic_ops.h')
+  dep_atomic_ops = []
+elif dep_atomic_ops.found()
   lib_atomics = true
   with_atomics = true
 elif cc.has_function('atomic_cas_uint')
