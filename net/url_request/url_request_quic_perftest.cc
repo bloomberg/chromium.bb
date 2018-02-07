@@ -163,7 +163,7 @@ class URLRequestQuicPerfTest : public ::testing::Test {
   void StartTcpServer() {
     tcp_server_ = std::make_unique<EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
-    tcp_server_->RegisterRequestHandler(base::Bind(&HandleRequest));
+    tcp_server_->RegisterRequestHandler(base::BindRepeating(&HandleRequest));
     ASSERT_TRUE(tcp_server_->Start()) << "HTTP/1.1 server fails to start";
 
     CertVerifyResult verify_result;

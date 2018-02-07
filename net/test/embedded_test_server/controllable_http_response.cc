@@ -44,9 +44,9 @@ ControllableHttpResponse::ControllableHttpResponse(
                                               "be instanciated before starting "
                                               "the EmbeddedTestServer.";
   embedded_test_server->RegisterRequestHandler(
-      base::Bind(RequestHandler, weak_ptr_factory_.GetWeakPtr(),
-                 base::ThreadTaskRunnerHandle::Get(),
-                 base::Owned(new bool(true)), relative_url));
+      base::BindRepeating(RequestHandler, weak_ptr_factory_.GetWeakPtr(),
+                          base::ThreadTaskRunnerHandle::Get(),
+                          base::Owned(new bool(true)), relative_url));
 }
 
 ControllableHttpResponse::~ControllableHttpResponse() {}

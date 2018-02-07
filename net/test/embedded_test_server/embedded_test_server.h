@@ -112,10 +112,10 @@ class EmbeddedTestServer {
     CERT_SHA1_LEAF,
   };
 
-  typedef base::Callback<std::unique_ptr<HttpResponse>(
+  typedef base::RepeatingCallback<std::unique_ptr<HttpResponse>(
       const HttpRequest& request)>
       HandleRequestCallback;
-  typedef base::Callback<void(const HttpRequest& request)>
+  typedef base::RepeatingCallback<void(const HttpRequest& request)>
       MonitorRequestCallback;
 
   // Creates a http test server. Start() must be called to start the server.

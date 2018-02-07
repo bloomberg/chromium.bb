@@ -3966,7 +3966,7 @@ TEST_F(TokenBindingURLRequestTest, ForwardWithoutTokenBinding) {
 // follow.
 TEST_F(URLRequestTestHTTP, ProxyTunnelRedirectTest) {
   http_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleRedirectConnect));
+      base::BindRepeating(&HandleRedirectConnect));
   ASSERT_TRUE(http_test_server()->Start());
 
   TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
@@ -4844,7 +4844,7 @@ std::unique_ptr<test_server::HttpResponse> HandleServerAuthConnect(
 // The EmbeddedTestServer will return a 401 response, which we should balk at.
 TEST_F(URLRequestTestHTTP, UnexpectedServerAuthTest) {
   http_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleServerAuthConnect));
+      base::BindRepeating(&HandleServerAuthConnect));
   ASSERT_TRUE(http_test_server()->Start());
 
   TestNetworkDelegate network_delegate;  // Must outlive URLRequest.

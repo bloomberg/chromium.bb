@@ -581,7 +581,7 @@ class DelayedHttpResponse : public BasicHttpResponse {
   void SendResponse(const SendBytesCallback& send,
                     const SendCompleteCallback& done) override {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(send, ToResponseString(), done),
+        FROM_HERE, base::BindOnce(send, ToResponseString(), done),
         base::TimeDelta::FromSecondsD(delay_));
   }
 
@@ -723,20 +723,22 @@ std::unique_ptr<HttpResponse> HandleSelfPac(const HttpRequest& request) {
 
 }  // anonymous namespace
 
-#define PREFIXED_HANDLER(prefix, handler) \
-  base::Bind(&HandlePrefixedRequest, prefix, base::Bind(handler))
+#define PREFIXED_HANDLER(prefix, handler)             \
+  base::BindRepeating(&HandlePrefixedRequest, prefix, \
+                      base::BindRepeating(handler))
 #define SERVER_REDIRECT_HANDLER(prefix, handler, status_code) \
-  base::Bind(&HandlePrefixedRequest, prefix, base::Bind(handler, status_code))
+  base::BindRepeating(&HandlePrefixedRequest, prefix,         \
+                      base::BindRepeating(handler, status_code))
 
 void RegisterDefaultHandlers(EmbeddedTestServer* server) {
-  server->RegisterDefaultHandler(base::Bind(&HandleDefaultConnect));
+  server->RegisterDefaultHandler(base::BindRepeating(&HandleDefaultConnect));
 
   server->RegisterDefaultHandler(
       PREFIXED_HANDLER("/cachetime", &HandleCacheTime));
   server->RegisterDefaultHandler(
-      base::Bind(&HandleEchoHeader, "/echoheader", "no-cache"));
-  server->RegisterDefaultHandler(
-      base::Bind(&HandleEchoHeader, "/echoheadercache", "max-age=60000"));
+      base::BindRepeating(&HandleEchoHeader, "/echoheader", "no-cache"));
+  server->RegisterDefaultHandler(base::BindRepeating(
+      &HandleEchoHeader, "/echoheadercache", "max-age=60000"));
   server->RegisterDefaultHandler(PREFIXED_HANDLER("/echo", &HandleEcho));
   server->RegisterDefaultHandler(
       PREFIXED_HANDLER("/echotitle", &HandleEchoTitle));
@@ -772,7 +774,8 @@ void RegisterDefaultHandlers(EmbeddedTestServer* server) {
   server->RegisterDefaultHandler(SERVER_REDIRECT_HANDLER(
       "/server-redirect-308", &HandleServerRedirect, HTTP_PERMANENT_REDIRECT));
 
-  server->RegisterDefaultHandler(base::Bind(&HandleCrossSiteRedirect, server));
+  server->RegisterDefaultHandler(
+      base::BindRepeating(&HandleCrossSiteRedirect, server));
   server->RegisterDefaultHandler(
       PREFIXED_HANDLER("/client-redirect", &HandleClientRedirect));
   server->RegisterDefaultHandler(
