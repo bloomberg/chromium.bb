@@ -110,7 +110,8 @@ ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context,
                             root_window->bounds().height());
   params.name = "ChromeVoxPanel";
   widget_->Init(params);
-  SetShadowElevation(widget_->GetNativeWindow(), wm::ShadowElevation::MEDIUM);
+  wm::SetShadowElevation(widget_->GetNativeWindow(),
+                         wm::kShadowElevationInactiveWindow);
 
   display::Screen::GetScreen()->AddObserver(this);
   ash::Shell::Get()->AddShellObserver(this);

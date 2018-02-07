@@ -10,39 +10,28 @@
 
 namespace wm {
 
+// Indicates an elevation should be chosen based on the window. This is used
+// by wm::ShadowController, but is not a valid elevation to pass to wm::Shadow.
+constexpr int kShadowElevationDefault = -1;
+
 // Different types of drop shadows that can be drawn under a window by the
-// shell. Used as a value for the kShadowTypeKey property. The integer value of
-// each entry is directly used for determining the size of the shadow.
-enum class ShadowElevation {
-  // Indicates an elevation should be chosen based on the window. This is the
-  // default.
-  DEFAULT = -1,
-  NONE = 0,
-  TINY = 2,
-  SMALL = 6,
-  MEDIUM = 8,
-  LARGE = 24,
-};
+// shell. Used as a value for the kShadowElevationKey property.
+constexpr int kShadowElevationNone = 0;
 
-WM_CORE_EXPORT void SetShadowElevation(aura::Window* window,
-                                       ShadowElevation elevation);
+// Standard shadow elevations used by the the aura window manager. The value is
+// used to initialize an instance of wm::Shadow and controls the offset and blur
+// of the shadow style created by gfx::ShadowValue::MakeMdShadowValues().
+constexpr int kShadowElevationMenuOrTooltip = 6;
+constexpr int kShadowElevationInactiveWindow = 8;
+constexpr int kShadowElevationActiveWindow = 24;
 
-// Returns true if |value| is a valid element of ShadowElevation elements.
-WM_CORE_EXPORT bool IsValidShadowElevation(int64_t value);
+WM_CORE_EXPORT void SetShadowElevation(aura::Window* window, int elevation);
 
 // A property key describing the drop shadow that should be displayed under the
 // window. A null value is interpreted as using the default.
-WM_CORE_EXPORT extern const aura::WindowProperty<ShadowElevation>* const
+WM_CORE_EXPORT extern const aura::WindowProperty<int>* const
     kShadowElevationKey;
 
 }  // namespace wm
-
-// Declaring the template specialization here to make sure that the
-// compiler in all builds, including jumbo builds, always knows about
-// the specialization before the first template instance use (for
-// instance in shadw_controller.cc). Using a template instance before
-// its specialization is declared in a translation unit is a C++
-// error.
-DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(WM_CORE_EXPORT, ::wm::ShadowElevation);
 
 #endif  // UI_WM_CORE_SHADOW_TYPES_H_

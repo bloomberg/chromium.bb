@@ -139,7 +139,7 @@ interface WindowManager {
   // Type: gfx::Rect.
   const string kRestoreBounds_Property = "prop:restore-bounds";
 
-  // See ShadowElevation for details. Type: wm::ShadowElevation.
+  // See ShadowController for details. Type: int32_t.
   const string kShadowElevation_Property = "prop:shadow-elevation";
 
   // The serialized shelf id. Maps to ash::kShelfIDKey. Type: mojom::String.

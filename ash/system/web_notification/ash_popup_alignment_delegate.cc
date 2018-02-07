@@ -113,7 +113,7 @@ void AshPopupAlignmentDelegate::ConfigureWidgetInitParamsForContainer(
     views::Widget* widget,
     views::Widget::InitParams* init_params) {
   init_params->shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
-  init_params->shadow_elevation = ::wm::ShadowElevation::MEDIUM;
+  init_params->shadow_elevation = ::wm::kShadowElevationInactiveWindow;
   // On ash, popups go in the status container.
   init_params->parent = shelf_->GetWindow()->GetRootWindow()->GetChildById(
       kShellWindowId_StatusContainer);

@@ -9,30 +9,22 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/shadow_util.h"
-#include "ui/wm/core/shadow_types.h"
 
 namespace wm {
 
 namespace {
 
 // Duration for opacity animation in milliseconds.
-const int kShadowAnimationDurationMs = 100;
-
-// Default rounded corner radius. Shadow::SetRoundedCornerRadius can
-// be used to override this for elements with a different rounded
-// corner radius.
-const int kDefaultRoundedCornerRadius = 2;
+constexpr int kShadowAnimationDurationMs = 100;
 
 }  // namespace
 
-Shadow::Shadow()
-    : desired_elevation_(ShadowElevation::NONE),
-      rounded_corner_radius_(kDefaultRoundedCornerRadius) {}
+Shadow::Shadow() {}
 
 Shadow::~Shadow() {}
 
-void Shadow::Init(ShadowElevation elevation) {
-  DCHECK_NE(ShadowElevation::DEFAULT, elevation);
+void Shadow::Init(int elevation) {
+  DCHECK_GE(elevation, 0);
   desired_elevation_ = elevation;
   layer_.reset(new ui::Layer(ui::LAYER_NOT_DRAWN));
   RecreateShadowLayer();
@@ -48,8 +40,8 @@ void Shadow::SetContentBounds(const gfx::Rect& content_bounds) {
   UpdateLayerBounds();
 }
 
-void Shadow::SetElevation(ShadowElevation elevation) {
-  DCHECK_NE(ShadowElevation::DEFAULT, elevation);
+void Shadow::SetElevation(int elevation) {
+  DCHECK_GE(elevation, 0);
   if (desired_elevation_ == elevation)
     return;
 

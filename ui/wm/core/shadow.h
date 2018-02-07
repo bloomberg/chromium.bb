@@ -21,7 +21,6 @@ class Layer;
 }  // namespace ui
 
 namespace wm {
-enum class ShadowElevation;
 
 // Simple class that draws a drop shadow around content at given bounds.
 class WM_CORE_EXPORT Shadow : public ui::ImplicitAnimationObserver {
@@ -29,7 +28,10 @@ class WM_CORE_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   Shadow();
   ~Shadow() override;
 
-  void Init(ShadowElevation elevation);
+  // Initialize for the the given shadow |elevation|. This is passed to
+  // gfx::ShadowValue::MakeMdShadowValues() and controls the y-offset and blur
+  // for the shadow style.
+  void Init(int elevation);
 
   // Returns |layer_.get()|. This is exposed so it can be added to the same
   // layer as the content and stacked below it.  SetContentBounds() should be
@@ -42,13 +44,13 @@ class WM_CORE_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   ui::Layer* shadow_layer() const { return shadow_layer_.get(); }
 
   const gfx::Rect& content_bounds() const { return content_bounds_; }
-  ShadowElevation desired_elevation() const { return desired_elevation_; }
+  int desired_elevation() const { return desired_elevation_; }
 
   // Moves and resizes the shadow layer to frame |content_bounds|.
   void SetContentBounds(const gfx::Rect& content_bounds);
 
   // Sets the shadow's appearance, animating opacity as necessary.
-  void SetElevation(ShadowElevation elevation);
+  void SetElevation(int elevation);
 
   // Sets the radius for the rounded corners to take into account when
   // adjusting the shadow layer to frame |content_bounds|. 0 or greater.
@@ -71,11 +73,11 @@ class WM_CORE_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   // dictates the shadow's display characteristics and is proportional to the
   // size of the blur and its offset. This may not match reality if the window
   // isn't big enough to support it.
-  ShadowElevation desired_elevation_;
+  int desired_elevation_ = 0;
 
   // Rounded corners are drawn on top of the window's content layer,
   // we need to exclude them from the occlusion area.
-  int rounded_corner_radius_;
+  int rounded_corner_radius_ = 2;
 
   // The details of the shadow image that's currently set on |shadow_layer_|.
   // This will be null until a positive elevation has been set. Once set, it
