@@ -901,8 +901,18 @@ static inline CanvasImageSource* ToImageSourceInternal(
   }
   if (value.IsSVGImageElement())
     return value.GetAsSVGImageElement();
-  if (value.IsHTMLCanvasElement())
+  if (value.IsHTMLCanvasElement()) {
+    if (static_cast<HTMLCanvasElement*>(value.GetAsHTMLCanvasElement())
+            ->Size()
+            .IsEmpty()) {
+      exception_state.ThrowDOMException(
+          kInvalidStateError,
+          String::Format("The image argument is a canvas element with a width "
+                         "or height of 0."));
+      return nullptr;
+    }
     return value.GetAsHTMLCanvasElement();
+  }
   if (value.IsImageBitmap()) {
     if (static_cast<ImageBitmap*>(value.GetAsImageBitmap())->IsNeutered()) {
       exception_state.ThrowDOMException(
@@ -916,6 +926,15 @@ static inline CanvasImageSource* ToImageSourceInternal(
             ->IsNeutered()) {
       exception_state.ThrowDOMException(
           kInvalidStateError, String::Format("The image source is detached"));
+      return nullptr;
+    }
+    if (static_cast<OffscreenCanvas*>(value.GetAsOffscreenCanvas())
+            ->Size()
+            .IsEmpty()) {
+      exception_state.ThrowDOMException(
+          kInvalidStateError,
+          String::Format("The image argument is an OffscreenCanvas element "
+                         "with a width or height of 0."));
       return nullptr;
     }
     return value.GetAsOffscreenCanvas();
