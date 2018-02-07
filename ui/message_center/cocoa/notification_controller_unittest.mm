@@ -148,7 +148,7 @@ TEST_F(NotificationControllerTest, BasicLayout) {
 
 TEST_F(NotificationControllerTest, NotificationSetttingsButtonLayout) {
   message_center::RichNotificationData data;
-  data.settings_button_handler = SettingsButtonHandler::TRAY;
+  data.settings_button_handler = SettingsButtonHandler::INLINE;
   std::unique_ptr<message_center::Notification> notification(
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE, "",
