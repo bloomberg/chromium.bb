@@ -1330,8 +1330,15 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
   if (!is_inter) {
     write_intra_mode(ec_ctx, bsize, mode, w);
+#if CONFIG_MONO_VIDEO
+    if (!cm->seq_params.monochrome &&
+        is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
+                            xd->plane[1].subsampling_y))
+#else
     if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                            xd->plane[1].subsampling_y)) {
+                            xd->plane[1].subsampling_y))
+#endif  // CONFIG_MONO_VIDEO
+    {
 #if !CONFIG_CFL
       write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mode, w);
 #else
@@ -1643,8 +1650,15 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
 
   write_intra_mode_kf(ec_ctx, mi, above_mi, left_mi, mbmi->mode, w);
 
+#if CONFIG_MONO_VIDEO
+  if (!cm->seq_params.monochrome &&
+      is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
+                          xd->plane[1].subsampling_y))
+#else
   if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                          xd->plane[1].subsampling_y)) {
+                          xd->plane[1].subsampling_y))
+#endif  // CONFIG_MONO_VIDEO
+  {
 #if !CONFIG_CFL
     write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mbmi->mode, w);
 #else

@@ -1077,8 +1077,15 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
   mbmi->mode = read_intra_mode(r, get_y_mode_cdf(ec_ctx, above_mi, left_mi));
 
+#if CONFIG_MONO_VIDEO
+  if (!cm->seq_params.monochrome &&
+      is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
+                          xd->plane[1].subsampling_y))
+#else
   if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                          xd->plane[1].subsampling_y)) {
+                          xd->plane[1].subsampling_y))
+#endif  // CONFIG_MONO_VIDEO
+  {
 #if !CONFIG_CFL
     mbmi->uv_mode = read_intra_mode_uv(ec_ctx, r, mbmi->mode);
 #else
@@ -1384,8 +1391,15 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
 
   mbmi->mode = read_intra_mode(r, ec_ctx->y_mode_cdf[size_group_lookup[bsize]]);
 
+#if CONFIG_MONO_VIDEO
+  if (!cm->seq_params.monochrome &&
+      is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
+                          xd->plane[1].subsampling_y))
+#else
   if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                          xd->plane[1].subsampling_y)) {
+                          xd->plane[1].subsampling_y))
+#endif  // CONFIG_MONO_VIDEO
+  {
 #if !CONFIG_CFL
     mbmi->uv_mode = read_intra_mode_uv(ec_ctx, r, mbmi->mode);
 #else
