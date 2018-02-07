@@ -91,8 +91,9 @@ TEST_F(PathServiceTest, Get) {
     if (key == DIR_USER_DESKTOP)
       continue;  // iOS doesn't implement DIR_USER_DESKTOP.
 #elif defined(OS_FUCHSIA)
-    if (key == DIR_USER_DESKTOP || key == FILE_MODULE)
-      continue;  // Fuchsia doesn't implement DIR_USER_DESKTOP or FILE_MODULE.
+    if (key == DIR_USER_DESKTOP || key == FILE_MODULE || key == DIR_MODULE)
+      continue;  // Fuchsia doesn't implement DIR_USER_DESKTOP, FILE_MODULE and
+                 // DIR_MODULE.
 #endif
     EXPECT_PRED1(ReturnsValidPath, key);
   }
