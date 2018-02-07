@@ -82,6 +82,7 @@ class CONTENT_EXPORT InputRouterImpl
   void ProgressFling(base::TimeTicks current_time) override;
   void StopFling() override;
   bool FlingCancellationIsDeferred() override;
+  void DidStopFlingingOnBrowser() override;
 
   // InputHandlerHost impl
   void CancelTouchTimeout() override;

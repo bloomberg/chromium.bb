@@ -78,6 +78,7 @@ class CONTENT_EXPORT LegacyInputRouterImpl
   void ProgressFling(base::TimeTicks current_time) override;
   void StopFling() override;
   bool FlingCancellationIsDeferred() override;
+  void DidStopFlingingOnBrowser() override;
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override;

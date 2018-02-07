@@ -78,6 +78,9 @@ class FlingControllerTest : public testing::Test,
     DCHECK(!scheduled_next_fling_progress_);
     scheduled_next_fling_progress_ = true;
   }
+  void DidStopFlingingOnBrowser() override {
+    notified_client_after_fling_stop_ = true;
+  }
 
   void SimulateFlingStart(blink::WebGestureDevice source_device,
                           const gfx::Vector2dF& velocity) {
@@ -94,6 +97,7 @@ class FlingControllerTest : public testing::Test,
   }
 
   void SimulateFlingCancel(blink::WebGestureDevice source_device) {
+    notified_client_after_fling_stop_ = false;
     WebGestureEvent fling_cancel(
         WebInputEvent::kGestureFlingCancel, 0,
         ui::EventTimeStampToSeconds(base::TimeTicks::Now()));
@@ -120,6 +124,7 @@ class FlingControllerTest : public testing::Test,
   WebGestureEvent last_sent_gesture_;
   bool last_fling_cancel_filtered_;
   bool scheduled_next_fling_progress_;
+  bool notified_client_after_fling_stop_;
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -449,6 +454,26 @@ TEST_F(FlingControllerTest, ControllerBoostsTouchscreenFling) {
                      gfx::Vector2dF(1000, 0));
   EXPECT_TRUE(FlingInProgress());
   EXPECT_TRUE(FlingBoosted());
+}
+
+TEST_F(FlingControllerTest, ControllerNotifiesTheClientAfterFlingStart) {
+  base::TimeTicks progress_time = base::TimeTicks::Now();
+  SimulateFlingStart(blink::kWebGestureDeviceTouchscreen,
+                     gfx::Vector2dF(1000, 0));
+  EXPECT_TRUE(FlingInProgress());
+
+  // Now cancel the fling. The GFC will get suppressed by fling booster.
+  SimulateFlingCancel(blink::kWebGestureDeviceTouchscreen);
+  EXPECT_TRUE(last_fling_cancel_filtered_);
+  EXPECT_TRUE(FlingInProgress());
+
+  // Wait for the boosting timer to expire. The delayed cancelation must work
+  // and the client must be notified after fling cancelation.
+  progress_time += base::TimeDelta::FromMilliseconds(500);
+  ProgressFling(progress_time);
+  EXPECT_FALSE(FlingInProgress());
+  EXPECT_EQ(WebInputEvent::kGestureScrollEnd, last_sent_gesture_.GetType());
+  EXPECT_TRUE(notified_client_after_fling_stop_);
 }
 
 }  // namespace content

@@ -111,6 +111,7 @@ class GestureEventQueueTest : public testing::Test,
   void SendGeneratedGestureScrollEvents(
       const GestureEventWithLatencyInfo& gesture_event) override {}
   void SetNeedsBeginFrameForFlingProgress() override {}
+  void DidStopFlingingOnBrowser() override {}
 
  protected:
   static GestureEventQueue::Config DefaultConfig() {
