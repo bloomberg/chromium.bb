@@ -20,6 +20,7 @@ config("glslang_config") {
 config("glslang_local_config") {
   if (is_clang) {
     cflags = [
+      "-Wno-logical-op-parentheses",
       "-Wno-reorder",
       "-Wno-sign-compare",
       "-Wno-tautological-constant-out-of-range-compare",
@@ -162,6 +163,8 @@ static_library("HLSL") {
     "src/hlsl/hlslOpMap.h",
     "src/hlsl/hlslParseHelper.cpp",
     "src/hlsl/hlslParseHelper.h",
+    "src/hlsl/hlslParseables.cpp",
+    "src/hlsl/hlslParseables.h",
     "src/hlsl/hlslScanContext.cpp",
     "src/hlsl/hlslScanContext.h",
     "src/hlsl/hlslTokenStream.cpp",
