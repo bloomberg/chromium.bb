@@ -13,14 +13,12 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/public/cpp/message_center_switches.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/ui_controller.h"
 #include "ui/message_center/views/message_view.h"
@@ -61,8 +59,7 @@ MessagePopupCollection::MessagePopupCollection(
   message_center_->AddObserver(this);
   alignment_delegate_->set_collection(this);
 #if !defined(OS_CHROMEOS)
-  if (!message_center::IsNewStyleNotificationEnabled())
-    context_menu_controller_.reset(new MessageViewContextMenuController());
+  context_menu_controller_.reset(new MessageViewContextMenuController());
 #endif
 }
 

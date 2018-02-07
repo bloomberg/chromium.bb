@@ -147,7 +147,7 @@ void NotificationViewMDTest::SetUp() {
   // Create a dummy notification.
   delegate_ = new NotificationTestDelegate();
   data_.reset(new RichNotificationData());
-  data_->settings_button_handler = SettingsButtonHandler::INLINE;
+  data_->settings_button_handler = SettingsButtonHandler::TRAY;
   notification_.reset(new Notification(
       NOTIFICATION_TYPE_BASE_FORMAT, std::string("notification id"),
       base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"),
