@@ -1038,8 +1038,10 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns whether a base::TaskScheduler should be created when
   // BrowserMainLoop starts.
-  // If false, a task scheduler has been created by the embedder, and browser
-  // main loop should skip creating a second one.
+  // If false, a task scheduler has been created by the embedder, and
+  // BrowserMainLoop should skip creating a second one.
+  // Note: the embedder should *not* start the TaskScheduler for
+  // BrowserMainLoop, BrowserMainLoop itself is responsible for that.
   virtual bool ShouldCreateTaskScheduler();
 
   // Returns true if the given Webauthn[1] RP ID[2] is permitted to receive
