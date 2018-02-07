@@ -14,6 +14,7 @@
 #include "base/process/process.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
+#include "build/build_config.h"
 #include "components/browser_watcher/stability_report.pb.h"
 #include "components/browser_watcher/stability_report_extractor.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,7 +56,13 @@ class StabilityDebuggingTest : public testing::Test {
   base::FilePath debug_path_;
 };
 
-TEST_F(StabilityDebuggingTest, CrashingTest) {
+#if defined(ADDRESS_SANITIZER) && defined(OS_WIN)
+// The test does not pass under WinASan. See crbug.com/809524.
+#define MAYBE_CrashingTest DISABLED_CrashingTest
+#else
+#define MAYBE_CrashingTest CrashingTest
+#endif
+TEST_F(StabilityDebuggingTest, MAYBE_CrashingTest) {
   RegisterStabilityVEH();
 
   // Raise an exception, then continue.
