@@ -191,7 +191,12 @@ class CleanUpStage(generic_stages.BuilderStage):
     osutils.UmountTree(self._build_root)
 
     # Re-mount chroot if it exists so that subsequent steps can clean up inside.
-    cros_build_lib.MountChroot(buildroot=self._build_root, create=False)
+    try:
+      cros_build_lib.MountChroot(buildroot=self._build_root, create=False)
+    except cros_build_lib.RunCommandError as e:
+      logging.error('Unable to mount chroot under %s.  Deleting chroot.  '
+                    'Error: %s', self._build_root, e)
+      self._DeleteChroot()
 
     if manifest is None:
       self._DeleteChroot()
