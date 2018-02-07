@@ -6,6 +6,8 @@
 
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -125,7 +127,7 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
     widget_ = views::DialogDelegate::CreateDialogWidget(
         new views::DialogDelegateView(), GetContext(), nullptr);
     widget_->AddObserver(this);
-    dialog_ = new AppInfoDialog(widget_->GetNativeWindow(), profile, extension);
+    dialog_ = new AppInfoDialog(profile, extension);
 
     widget_->GetContentsView()->AddChildView(dialog_);
     widget_->Show();

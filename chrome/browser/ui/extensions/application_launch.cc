@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/extensions/application_launch.h"
 
+#include <memory>
 #include <string>
 
 #include "apps/launcher.h"
@@ -57,16 +58,7 @@ using extensions::ExtensionRegistry;
 
 namespace {
 
-// Shows the app list and returns the app list's window.
-gfx::NativeWindow ShowAppListAndGetNativeWindow() {
-  AppListService* app_list_service = AppListService::Get();
-  app_list_service->Show();
-  return app_list_service->GetAppListWindow();
-}
-
-// Attempts to launch an app, prompting the user to enable it if necessary. If
-// a prompt is required it will be shown inside the window returned by
-// |parent_window_getter|.
+// Attempts to launch an app, prompting the user to enable it if necessary.
 // This class manages its own lifetime.
 class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
  public:
@@ -74,12 +66,10 @@ class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
       ExtensionService* service,
       Profile* profile,
       const std::string& extension_id,
-      const base::Callback<gfx::NativeWindow(void)>& parent_window_getter,
       const base::Closure& callback)
       : service_(service),
         profile_(profile),
         extension_id_(extension_id),
-        parent_window_getter_(parent_window_getter),
         callback_(callback) {
   }
 
@@ -88,7 +78,7 @@ class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
   void Run() {
     DCHECK(!service_->IsExtensionEnabled(extension_id_));
     flow_.reset(new ExtensionEnableFlow(profile_, extension_id_, this));
-    flow_->StartForCurrentlyNonexistentWindow(parent_window_getter_);
+    flow_->Start();
   }
 
  private:
@@ -107,7 +97,6 @@ class EnableViaDialogFlow : public ExtensionEnableFlowDelegate {
   ExtensionService* service_;
   Profile* profile_;
   std::string extension_id_;
-  base::Callback<gfx::NativeWindow(void)> parent_window_getter_;
   base::Closure callback_;
   std::unique_ptr<ExtensionEnableFlow> flow_;
 
@@ -409,11 +398,11 @@ void OpenApplicationWithReenablePrompt(const AppLaunchParams& params) {
   base::Callback<gfx::NativeWindow(void)> dialog_parent_window_getter;
   // TODO(pkotwicz): Figure out which window should be used as the parent for
   // the "enable application" dialog in Athena.
-  dialog_parent_window_getter = base::Bind(&ShowAppListAndGetNativeWindow);
-    (new EnableViaDialogFlow(
-        service, profile, extension->id(), dialog_parent_window_getter,
-        base::Bind(base::IgnoreResult(OpenEnabledApplication), params)))->Run();
-    return;
+  (new EnableViaDialogFlow(
+       service, profile, extension->id(),
+       base::Bind(base::IgnoreResult(OpenEnabledApplication), params)))
+      ->Run();
+  return;
   }
 
   OpenEnabledApplication(params);

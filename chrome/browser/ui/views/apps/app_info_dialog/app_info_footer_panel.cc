@@ -28,11 +28,9 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #endif
 
-AppInfoFooterPanel::AppInfoFooterPanel(gfx::NativeWindow parent_window,
-                                       Profile* profile,
+AppInfoFooterPanel::AppInfoFooterPanel(Profile* profile,
                                        const extensions::Extension* app)
     : AppInfoPanel(profile, app),
-      parent_window_(parent_window),
       create_shortcuts_button_(NULL),
       pin_to_shelf_button_(NULL),
       unpin_from_shelf_button_(NULL),

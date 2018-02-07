@@ -125,20 +125,43 @@ IN_PROC_BROWSER_TEST_F(ArcAppUninstallDialogViewBrowserTest,
 
   AppListService* service = AppListService::Get();
   ASSERT_TRUE(service);
-  service->ShowForProfile(browser()->profile());
   AppListControllerDelegate* controller(service->GetControllerDelegate());
   ASSERT_TRUE(controller);
+
+  // The dialog is only shown when AppList is visible, so we show AppList
+  // first.
+  service->ShowForProfile(browser()->profile());
   ShowArcAppUninstallDialog(browser()->profile(), controller, app_id);
   content::RunAllPendingInMessageLoop();
 
+  // When we show the dialog, AppList loses focus and gets dismissed.
+  EXPECT_FALSE(service->IsAppListVisible());
+
+  // Cancelling the dialog won't uninstall any app.
   EXPECT_TRUE(CloseAppDialogViewAndConfirmForTest(false));
   content::RunAllPendingInMessageLoop();
   app_ids = arc_app_list_pref()->GetAppIds();
   EXPECT_EQ(app_ids.size(), 2u);
 
+  // The app list is not showing, so the dialog won't show.
   ShowArcAppUninstallDialog(browser()->profile(), controller, app_id);
   content::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsArcAppDialogViewAliveForTest());
 
+  // Acceptting the dialog won't work since it was not shown.
+  EXPECT_FALSE(CloseAppDialogViewAndConfirmForTest(true));
+  content::RunAllPendingInMessageLoop();
+  app_ids = arc_app_list_pref()->GetAppIds();
+  EXPECT_EQ(app_ids.size(), 2u);
+  controller->DismissView();
+
+  // Show the app list, and then the dialog.
+  service->ShowForProfile(browser()->profile());
+  ShowArcAppUninstallDialog(browser()->profile(), controller, app_id);
+  content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(IsArcAppDialogViewAliveForTest());
+
+  // Acceptting the dialog should work now.
   EXPECT_TRUE(CloseAppDialogViewAndConfirmForTest(true));
   content::RunAllPendingInMessageLoop();
   app_ids = arc_app_list_pref()->GetAppIds();
@@ -158,20 +181,42 @@ IN_PROC_BROWSER_TEST_F(ArcAppUninstallDialogViewBrowserTest,
 
   AppListService* service = AppListService::Get();
   ASSERT_TRUE(service);
-  service->ShowForProfile(browser()->profile());
   AppListControllerDelegate* controller(service->GetControllerDelegate());
   ASSERT_TRUE(controller);
+
+  // The dialog is only shown when AppList is visible, so we show AppList
+  // first.
+  service->ShowForProfile(browser()->profile());
   ShowArcAppUninstallDialog(browser()->profile(), controller, app_id);
   content::RunAllPendingInMessageLoop();
 
+  // When we show the dialog, AppList loses focus and gets dismissed.
+  EXPECT_FALSE(service->IsAppListVisible());
+
+  // Cancelling the dialog won't uninstall any app.
   EXPECT_TRUE(CloseAppDialogViewAndConfirmForTest(false));
   content::RunAllPendingInMessageLoop();
   app_ids = arc_app_list_pref()->GetAppIds();
   EXPECT_EQ(app_ids.size(), 2u);
 
+  // The app list is not showing, so the dialog won't show.
   ShowArcAppUninstallDialog(browser()->profile(), controller, app_id);
   content::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsArcAppDialogViewAliveForTest());
 
+  // Acceptting the dialog won't work since it was not shown.
+  EXPECT_FALSE(CloseAppDialogViewAndConfirmForTest(true));
+  content::RunAllPendingInMessageLoop();
+  app_ids = arc_app_list_pref()->GetAppIds();
+  EXPECT_EQ(app_ids.size(), 2u);
+
+  // Show the app list, and then the dialog.
+  service->ShowForProfile(browser()->profile());
+  ShowArcAppUninstallDialog(browser()->profile(), controller, app_id);
+  content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(IsArcAppDialogViewAliveForTest());
+
+  // Acceptting the dialog should work now.
   EXPECT_TRUE(CloseAppDialogViewAndConfirmForTest(true));
   content::RunAllPendingInMessageLoop();
   app_ids = arc_app_list_pref()->GetAppIds();

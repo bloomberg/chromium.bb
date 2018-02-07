@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_dialog_views.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -29,6 +30,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
@@ -72,17 +74,18 @@ bool CanShowAppInfoDialog() {
 }
 
 #if BUILDFLAG(ENABLE_APP_LIST)
-void ShowAppInfoInAppList(gfx::NativeWindow parent,
-                          const gfx::Rect& app_list_bounds,
+void ShowAppInfoInAppList(const gfx::Rect& app_info_bounds,
                           Profile* profile,
                           const extensions::Extension* app,
                           const base::Closure& close_callback) {
-  views::View* app_info_view = new AppInfoDialog(parent, profile, app);
+  views::View* app_info_view = new AppInfoDialog(profile, app);
   views::DialogDelegate* dialog =
       CreateAppListContainerForView(app_info_view, close_callback);
-  views::Widget* dialog_widget =
-      constrained_window::CreateBrowserModalDialogViews(dialog, parent);
-  dialog_widget->SetBounds(app_list_bounds);
+  views::Widget* dialog_widget = new views::Widget();
+  views::Widget::InitParams params =
+      views::DialogDelegate::GetDialogWidgetInitParams(dialog, nullptr, nullptr,
+                                                       app_info_bounds);
+  dialog_widget->Init(params);
   dialog_widget->Show();
 }
 #endif
@@ -91,8 +94,7 @@ void ShowAppInfoInNativeDialog(content::WebContents* web_contents,
                                Profile* profile,
                                const extensions::Extension* app,
                                const base::Closure& close_callback) {
-  gfx::NativeWindow window = web_contents->GetTopLevelNativeWindow();
-  views::View* app_info_view = new AppInfoDialog(window, profile, app);
+  views::View* app_info_view = new AppInfoDialog(profile, app);
   constexpr gfx::Size kDialogSize = gfx::Size(380, 490);
   views::DialogDelegate* dialog =
       CreateDialogContainerForView(app_info_view, kDialogSize, close_callback);
@@ -101,6 +103,7 @@ void ShowAppInfoInNativeDialog(content::WebContents* web_contents,
     dialog_widget =
         constrained_window::ShowWebModalDialogViews(dialog, web_contents);
   } else {
+    gfx::NativeWindow window = web_contents->GetTopLevelNativeWindow();
     dialog_widget =
         constrained_window::CreateBrowserModalDialogViews(dialog, window);
     dialog_widget->Show();
@@ -114,9 +117,7 @@ base::OnceClosure& GetAppInfoDialogCreatedCallbackForTesting() {
   return closure;
 }
 
-AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
-                             Profile* profile,
-                             const extensions::Extension* app)
+AppInfoDialog::AppInfoDialog(Profile* profile, const extensions::Extension* app)
     : profile_(profile), app_id_(app->id()) {
   views::BoxLayout* layout = SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
@@ -126,7 +127,7 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
   dialog_header_->SetBorder(views::CreateSolidSidedBorder(
       0, 0, kHorizontalSeparatorHeight, 0, kDialogSeparatorColor));
 
-  dialog_footer_ = new AppInfoFooterPanel(parent_window, profile, app);
+  dialog_footer_ = new AppInfoFooterPanel(profile, app);
   dialog_footer_->SetBorder(views::CreateSolidSidedBorder(
       kHorizontalSeparatorHeight, 0, 0, 0, kDialogSeparatorColor));
   if (!dialog_footer_->has_children()) {

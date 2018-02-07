@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_TEST_TEST_APP_LIST_CONTROLLER_DELEGATE_H_
 #define CHROME_BROWSER_UI_APP_LIST_TEST_TEST_APP_LIST_CONTROLLER_DELEGATE_H_
 
+#include <string>
+
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 
 namespace test {
@@ -14,8 +16,8 @@ class TestAppListControllerDelegate : public AppListControllerDelegate {
   TestAppListControllerDelegate();
   ~TestAppListControllerDelegate() override;
 
+  int64_t GetAppListDisplayId() override;
   void DismissView() override;
-  gfx::NativeWindow GetAppListWindow() override;
   bool IsAppPinned(const std::string& app_id) override;
   void PinApp(const std::string& app_id) override;
   void UnpinApp(const std::string& app_id) override;

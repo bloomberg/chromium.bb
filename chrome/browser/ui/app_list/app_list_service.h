@@ -98,9 +98,6 @@ class AppListService {
   virtual void EnableAppList(Profile* initial_profile,
                              AppListEnableSource enable_source) = 0;
 
-  // Get the window the app list is in, or NULL if the app list isn't visible.
-  virtual gfx::NativeWindow GetAppListWindow() = 0;
-
   // Returns a pointer to the platform specific AppListControllerDelegate.
   virtual AppListControllerDelegate* GetControllerDelegate() = 0;
 

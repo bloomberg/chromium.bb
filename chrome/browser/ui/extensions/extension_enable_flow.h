@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_ENABLE_FLOW_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_ENABLE_FLOW_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -48,11 +49,10 @@ class ExtensionEnableFlow : public content::NotificationObserver,
   // enabling flow. Three variations of the flow are supported:
   //   - one with a parent WebContents
   //   - one with a native parent window
-  //   - one with a callback for creating a parent window
+  //   - one with no parent
   void StartForWebContents(content::WebContents* parent_contents);
   void StartForNativeWindow(gfx::NativeWindow parent_window);
-  void StartForCurrentlyNonexistentWindow(
-      base::Callback<gfx::NativeWindow(void)> window_getter);
+  void Start();
 
   const std::string& extension_id() const { return extension_id_; }
 

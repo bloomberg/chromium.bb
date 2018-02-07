@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 
+#include <string>
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "extensions/browser/extension_registry.h"
@@ -31,8 +33,8 @@ void ExtensionUninstaller::Run() {
     return;
   }
   controller_->OnShowChildDialog();
-  dialog_.reset(extensions::ExtensionUninstallDialog::Create(
-      profile_, controller_->GetAppListWindow(), this));
+  dialog_.reset(
+      extensions::ExtensionUninstallDialog::Create(profile_, nullptr, this));
   dialog_->ConfirmUninstall(extension,
                             extensions::UNINSTALL_REASON_USER_INITIATED,
                             extensions::UNINSTALL_SOURCE_APP_LIST);

@@ -67,7 +67,6 @@ class AppListServiceAsh : public AppListServiceImpl {
   void DismissAppList() override;
   void EnableAppList(Profile* initial_profile,
                      AppListEnableSource enable_source) override;
-  gfx::NativeWindow GetAppListWindow() override;
   Profile* GetCurrentAppListProfile() override;
   AppListControllerDelegate* GetControllerDelegate() override;
 

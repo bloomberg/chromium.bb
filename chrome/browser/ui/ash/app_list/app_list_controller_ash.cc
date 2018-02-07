@@ -13,6 +13,8 @@
 #include "extensions/common/extension.h"
 #include "ui/app_list/presenter/app_list_presenter_impl.h"
 #include "ui/app_list/views/app_list_view.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 
 AppListControllerDelegateAsh::AppListControllerDelegateAsh(
@@ -21,12 +23,16 @@ AppListControllerDelegateAsh::AppListControllerDelegateAsh(
 
 AppListControllerDelegateAsh::~AppListControllerDelegateAsh() {}
 
-void AppListControllerDelegateAsh::DismissView() {
-  app_list_presenter_->Dismiss();
+int64_t AppListControllerDelegateAsh::GetAppListDisplayId() {
+  auto* screen = display::Screen::GetScreen();
+  return screen
+             ? screen->GetDisplayNearestWindow(app_list_presenter_->GetWindow())
+                   .id()
+             : display::kInvalidDisplayId;
 }
 
-gfx::NativeWindow AppListControllerDelegateAsh::GetAppListWindow() {
-  return app_list_presenter_->GetWindow();
+void AppListControllerDelegateAsh::DismissView() {
+  app_list_presenter_->Dismiss();
 }
 
 gfx::Rect AppListControllerDelegateAsh::GetAppInfoDialogBounds() {
