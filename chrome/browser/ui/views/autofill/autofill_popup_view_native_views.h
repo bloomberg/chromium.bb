@@ -9,6 +9,8 @@
 #include "base/optional.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 
 #include <vector>
 
@@ -53,6 +55,11 @@ class AutofillPopupRowView : public views::View {
   views::Label* text_label_ = nullptr;
   views::Label* subtext_label_ = nullptr;
 
+  SkColor text_color_ = gfx::kPlaceholderColor;
+  SkColor text_selected_color_ = gfx::kPlaceholderColor;
+  SkColor subtext_color_ = gfx::kPlaceholderColor;
+  SkColor subtext_selected_color_ = gfx::kPlaceholderColor;
+
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupRowView);
 };
 
@@ -70,12 +77,23 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
                                views::Widget* parent_widget);
   ~AutofillPopupViewNativeViews() override;
 
+  const std::vector<AutofillPopupRowView*>& GetRowsForTesting() {
+    return rows_;
+  }
+
   // AutofillPopupView:
   void Show() override;
   void Hide() override;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
+
+  // AutofillPopupBaseView:
+  // TODO(tmartino): Remove these overrides and the corresponding methods in
+  // AutofillPopupBaseView once deprecation of AutofillPopupViewViews is
+  // complete.
+  void OnMouseExited(const ui::MouseEvent& event) override {}
+  void OnMouseMoved(const ui::MouseEvent& event) override {}
 
  private:
   void OnSelectedRowChanged(base::Optional<int> previous_row_selection,
