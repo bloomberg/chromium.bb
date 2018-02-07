@@ -158,19 +158,26 @@ void DataReductionProxyDataUseObserver::OnPageDidFinishLoad(
     // Report estimated data savings for NOSCRIPT if applicable.
     if (previews_user_data->committed_previews_type() ==
         previews::PreviewsType::NOSCRIPT) {
-      int inflated_bytes =
-          (data_use->total_bytes_received() *
-           previews::params::NoScriptPreviewsInflationPercent()) /
-              100 +
-          previews::params::NoScriptPreviewsInflationBytes();
+      int inflation_percent =
+          previews::params::NoScriptPreviewsInflationPercent();
+      int inflation_bytes = previews::params::NoScriptPreviewsInflationBytes();
+      if (previews_user_data->data_savings_inflation_percent() != 0) {
+        // Use specific inflation percent rather than default.
+        inflation_percent =
+            previews_user_data->data_savings_inflation_percent();
+        inflation_bytes = 0;
+      }
+      int total_inflated_bytes =
+          (data_use->total_bytes_received() * inflation_percent) / 100 +
+          inflation_bytes;
       // Report for overall usage.
       DCHECK(data_use->url().SchemeIs(url::kHttpsScheme));
       data_reduction_proxy_io_data_->UpdateContentLengths(
-          0, inflated_bytes, data_reduction_proxy_io_data_->IsEnabled(), HTTPS,
-          std::string());
+          0, total_inflated_bytes, data_reduction_proxy_io_data_->IsEnabled(),
+          HTTPS, std::string());
       // Report for host usage.
       data_reduction_proxy_io_data_->UpdateDataUseForHost(
-          0, inflated_bytes, data_use->url().HostNoBrackets());
+          0, total_inflated_bytes, data_use->url().HostNoBrackets());
     }
   }
 }

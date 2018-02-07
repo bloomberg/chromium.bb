@@ -17,6 +17,7 @@
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/previews/core/previews_user_data.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -311,6 +312,7 @@ TEST_F(PreviewsOptimizationGuideTest, IsWhitelistedWithMultipleHintMatches) {
   optimization_guide::proto::Optimization* optimization1 =
       hint1->add_whitelisted_optimizations();
   optimization1->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+  optimization1->set_inflation_percent(10);
 
   // No optimizations for sports.yahoo.com:
   optimization_guide::proto::Hint* hint2 = config.add_hints();
@@ -324,6 +326,7 @@ TEST_F(PreviewsOptimizationGuideTest, IsWhitelistedWithMultipleHintMatches) {
   optimization_guide::proto::Optimization* optimization3 =
       hint3->add_whitelisted_optimizations();
   optimization3->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+  optimization3->set_inflation_percent(30);
 
   // No optimizations for mail.yahoo.com:
   optimization_guide::proto::Hint* hint4 = config.add_hints();
@@ -335,7 +338,10 @@ TEST_F(PreviewsOptimizationGuideTest, IsWhitelistedWithMultipleHintMatches) {
 
   std::unique_ptr<net::URLRequest> request1 =
       CreateRequestWithURL(GURL("https://yahoo.com"));
+  previews::PreviewsUserData::Create(request1.get(), 1);
   EXPECT_TRUE(guide()->IsWhitelisted(*request1, PreviewsType::NOSCRIPT));
+  EXPECT_EQ(30, previews::PreviewsUserData::GetData(*request1)
+                    ->data_savings_inflation_percent());
 
   std::unique_ptr<net::URLRequest> request2 =
       CreateRequestWithURL(GURL("https://sports.yahoo.com"));
@@ -344,13 +350,19 @@ TEST_F(PreviewsOptimizationGuideTest, IsWhitelistedWithMultipleHintMatches) {
 
   std::unique_ptr<net::URLRequest> request3 =
       CreateRequestWithURL(GURL("https://mail.yahoo.com"));
+  previews::PreviewsUserData::Create(request3.get(), 3);
   // Uses "yahoo.com" match before "mail.yahoo.com" match.
   EXPECT_TRUE(guide()->IsWhitelisted(*request3, PreviewsType::NOSCRIPT));
+  EXPECT_EQ(30, previews::PreviewsUserData::GetData(*request3)
+                    ->data_savings_inflation_percent());
 
   std::unique_ptr<net::URLRequest> request4 =
       CreateRequestWithURL(GURL("https://indoor.sports.yahoo.com"));
+  previews::PreviewsUserData::Create(request4.get(), 4);
   // Uses "indoor.sports.yahoo.com" match before "sports.yahoo.com" match.
   EXPECT_TRUE(guide()->IsWhitelisted(*request4, PreviewsType::NOSCRIPT));
+  EXPECT_EQ(10, previews::PreviewsUserData::GetData(*request4)
+                    ->data_savings_inflation_percent());
 
   std::unique_ptr<net::URLRequest> request5 =
       CreateRequestWithURL(GURL("https://outdoor.sports.yahoo.com"));
