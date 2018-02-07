@@ -25,6 +25,78 @@
 
 #include "url/gurl.h"
 
+namespace {
+
+// The buffer size of the stream for HTTPBodyStream post test.
+const NSUInteger kRequestBodyBufferLength = 1024;
+
+// The buffer size of the stream for HTTPBodyStream post test when
+// testing the stream buffered data size larger than the net stack internal
+// buffer size.
+const NSUInteger kLargeRequestBodyBufferLength = 100 * kRequestBodyBufferLength;
+
+// The body data write times for HTTPBodyStream post test.
+const NSInteger kRequestBodyWriteTimes = 16;
+}
+
+@interface StreamBodyRequestDelegate : NSObject<NSStreamDelegate>
+- (void)setOutputStream:(NSOutputStream*)outputStream;
+- (NSMutableString*)requestBody;
+@end
+@implementation StreamBodyRequestDelegate {
+  NSOutputStream* _stream;
+  NSInteger _count;
+
+  NSMutableString* _requestBody;
+}
+
+- (instancetype)init {
+  _requestBody = [NSMutableString string];
+  return self;
+}
+
+- (void)setOutputStream:(NSOutputStream*)outputStream {
+  _stream = outputStream;
+}
+
+- (NSMutableString*)requestBody {
+  return _requestBody;
+}
+
+- (void)stream:(NSStream*)stream handleEvent:(NSStreamEvent)event {
+  ASSERT_EQ(stream, _stream);
+  switch (event) {
+    case NSStreamEventHasSpaceAvailable: {
+      if (_count < kRequestBodyWriteTimes) {
+        uint8_t buffer[kRequestBodyBufferLength];
+        memset(buffer, 'a' + _count, kRequestBodyBufferLength);
+        NSUInteger bytes_write =
+            [_stream write:buffer maxLength:kRequestBodyBufferLength];
+        ASSERT_EQ(kRequestBodyBufferLength, bytes_write);
+        [_requestBody appendString:[[NSString alloc]
+                                       initWithBytes:buffer
+                                              length:kRequestBodyBufferLength
+                                            encoding:NSUTF8StringEncoding]];
+        ++_count;
+      } else {
+        [_stream close];
+      }
+      break;
+    }
+    case NSStreamEventErrorOccurred:
+    case NSStreamEventEndEncountered: {
+      [_stream close];
+      [_stream setDelegate:nil];
+      [_stream removeFromRunLoop:[NSRunLoop currentRunLoop]
+                         forMode:NSDefaultRunLoopMode];
+      break;
+    }
+    default:
+      break;
+  }
+}
+@end
+
 namespace cronet {
 const char kUserAgent[] = "CronetTest/1.0.0.0";
 
@@ -421,6 +493,115 @@ TEST_F(HttpTest, PostRequest) {
   ASSERT_EQ(nil, [delegate_ error]);
   ASSERT_STREQ(base::SysNSStringToUTF8(request_body).c_str(),
                base::SysNSStringToUTF8(response_body).c_str());
+  ASSERT_TRUE(block_used);
+}
+
+// Verify the chunked request body upload function.
+TEST_F(HttpTest, PostRequestWithBodyStream) {
+  // Create request body stream.
+  CFReadStreamRef read_stream = NULL;
+  CFWriteStreamRef write_stream = NULL;
+  CFStreamCreateBoundPair(NULL, &read_stream, &write_stream,
+                          kRequestBodyBufferLength);
+
+  NSInputStream* input_stream = CFBridgingRelease(read_stream);
+  NSOutputStream* output_stream = CFBridgingRelease(write_stream);
+
+  StreamBodyRequestDelegate* stream_delegate =
+      [[StreamBodyRequestDelegate alloc] init];
+  output_stream.delegate = stream_delegate;
+  [stream_delegate setOutputStream:output_stream];
+
+  dispatch_queue_t queue =
+      dispatch_queue_create("data upload queue", DISPATCH_QUEUE_SERIAL);
+  dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+  dispatch_async(queue, ^{
+    [output_stream scheduleInRunLoop:[NSRunLoop currentRunLoop]
+                             forMode:NSDefaultRunLoopMode];
+    [output_stream open];
+
+    [[NSRunLoop currentRunLoop]
+        runUntilDate:[NSDate dateWithTimeIntervalSinceNow:10.0]];
+
+    dispatch_semaphore_signal(semaphore);
+  });
+
+  // Prepare the request.
+  NSURL* url = net::NSURLWithGURL(GURL(TestServer::EchoRequestBodyURL()));
+  NSMutableURLRequest* request = [[NSMutableURLRequest alloc] initWithURL:url];
+  request.HTTPMethod = @"POST";
+  request.HTTPBodyStream = input_stream;
+
+  // Set the request filter to check that the request was handled by the Cronet
+  // stack.
+  __block BOOL block_used = NO;
+  [Cronet setRequestFilterBlock:^(NSURLRequest* req) {
+    block_used = YES;
+    EXPECT_EQ([req URL], url);
+    return YES;
+  }];
+
+  // Send the request and wait for the response.
+  NSURLSessionDataTask* data_task = [session_ dataTaskWithRequest:request];
+  StartDataTaskAndWaitForCompletion(data_task);
+
+  // Verify that the response from the server matches the request body.
+  ASSERT_EQ(nil, [delegate_ error]);
+  NSString* response_body = [delegate_ responseBody];
+  NSMutableString* request_body = [stream_delegate requestBody];
+  ASSERT_STREQ(base::SysNSStringToUTF8(request_body).c_str(),
+               base::SysNSStringToUTF8(response_body).c_str());
+  ASSERT_TRUE(block_used);
+
+  // Wait for the run loop of the child thread exits. Timeout is 5 seconds.
+  dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_SEC);
+  ASSERT_EQ(0, dispatch_semaphore_wait(semaphore, timeout));
+}
+
+// Verify that the chunked data uploader can correctly handle the request body
+// if the stream contains data length exceed the internal upload buffer.
+TEST_F(HttpTest, PostRequestWithLargeBodyStream) {
+  // Create request body stream.
+  CFReadStreamRef read_stream = NULL;
+  CFWriteStreamRef write_stream = NULL;
+  // 100KB data is written in one time.
+  CFStreamCreateBoundPair(NULL, &read_stream, &write_stream,
+                          kLargeRequestBodyBufferLength);
+
+  NSInputStream* input_stream = CFBridgingRelease(read_stream);
+  NSOutputStream* output_stream = CFBridgingRelease(write_stream);
+  [output_stream open];
+
+  uint8_t buffer[kLargeRequestBodyBufferLength];
+  memset(buffer, 'a', kLargeRequestBodyBufferLength);
+  NSUInteger bytes_write =
+      [output_stream write:buffer maxLength:kLargeRequestBodyBufferLength];
+  ASSERT_EQ(kLargeRequestBodyBufferLength, bytes_write);
+  [output_stream close];
+
+  // Prepare the request.
+  NSURL* url = net::NSURLWithGURL(GURL(TestServer::EchoRequestBodyURL()));
+  NSMutableURLRequest* request = [[NSMutableURLRequest alloc] initWithURL:url];
+  request.HTTPMethod = @"POST";
+  request.HTTPBodyStream = input_stream;
+
+  // Set the request filter to check that the request was handled by the Cronet
+  // stack.
+  __block BOOL block_used = NO;
+  [Cronet setRequestFilterBlock:^(NSURLRequest* req) {
+    block_used = YES;
+    EXPECT_EQ([req URL], url);
+    return YES;
+  }];
+
+  // Send the request and wait for the response.
+  NSURLSessionDataTask* data_task = [session_ dataTaskWithRequest:request];
+  StartDataTaskAndWaitForCompletion(data_task);
+
+  // Verify that the response from the server matches the request body.
+  ASSERT_EQ(nil, [delegate_ error]);
+  NSString* response_body = [delegate_ responseBody];
+  ASSERT_EQ(kLargeRequestBodyBufferLength, [response_body length]);
   ASSERT_TRUE(block_used);
 }
 

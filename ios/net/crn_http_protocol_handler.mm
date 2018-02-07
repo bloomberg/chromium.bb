@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ios/net/chunked_data_stream_uploader.h"
 #import "ios/net/clients/crn_network_client_protocol.h"
 #import "ios/net/crn_http_protocol_handler_proxy_with_client_thread.h"
 #import "ios/net/http_protocol_logging.h"
@@ -145,7 +146,8 @@ void MetricsDelegate::SetInstance(MetricsDelegate* delegate) {
 class HttpProtocolHandlerCore
     : public base::RefCountedThreadSafe<HttpProtocolHandlerCore,
                                         HttpProtocolHandlerCore>,
-      public URLRequest::Delegate {
+      public URLRequest::Delegate,
+      public ChunkedDataStreamUploader::Delegate {
  public:
   explicit HttpProtocolHandlerCore(NSURLRequest* request);
   explicit HttpProtocolHandlerCore(NSURLSessionTask* task);
@@ -170,6 +172,9 @@ class HttpProtocolHandlerCore
                              bool fatal) override;
   void OnResponseStarted(URLRequest* request, int net_error) override;
   void OnReadCompleted(URLRequest* request, int bytes_read) override;
+
+  // ChunkedDataStreamUploader::Delegate method:
+  int OnRead(char* buffer, int buffer_length) override;
 
  private:
   friend class base::RefCountedThreadSafe<HttpProtocolHandlerCore,
@@ -219,6 +224,12 @@ class HttpProtocolHandlerCore
   // thread.
   URLRequest* net_request_;
 
+  // It is a weak pointer because the owner of the uploader is the URLRequest.
+  base::WeakPtr<ChunkedDataStreamUploader> chunked_uploader_;
+
+  // The stream has data to upload.
+  NSInputStream* pending_stream_;
+
   base::WeakPtr<RequestTracker> tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpProtocolHandlerCore);
@@ -228,7 +239,8 @@ HttpProtocolHandlerCore::HttpProtocolHandlerCore(NSURLRequest* request)
     : client_(nil),
       read_buffer_size_(kIOBufferMinSize),
       read_buffer_wrapper_(nullptr),
-      net_request_(nullptr) {
+      net_request_(nullptr),
+      pending_stream_(nil) {
   // The request will be accessed from another thread. It is safer to make a
   // copy to avoid conflicts.
   // The copy is mutable, because that request will be given to the client in
@@ -262,6 +274,11 @@ void HttpProtocolHandlerCore::HandleStreamEvent(NSStream* stream,
       break;
     case NSStreamEventEndEncountered:
       StopListeningStream(stream);
+      if (chunked_uploader_) {
+        chunked_uploader_->UploadWhenReady(true);
+        break;
+      }
+
       if (!post_data_readers_.empty()) {
         // NOTE: This call will result in |post_data_readers_| being cleared,
         // which is the desired behavior.
@@ -274,6 +291,13 @@ void HttpProtocolHandlerCore::HandleStreamEvent(NSStream* stream,
         tracker_->StartRequest(net_request_);
       break;
     case NSStreamEventHasBytesAvailable: {
+      if (chunked_uploader_) {
+        DCHECK(pending_stream_ == nil || pending_stream_ == stream);
+        pending_stream_ = base::mac::ObjCCastStrict<NSInputStream>(stream);
+        chunked_uploader_->UploadWhenReady(false);
+        break;
+      }
+
       NSInteger length;
       // TODO(crbug.com/738025): Dynamically change the size of the read buffer
       // to improve the read (POST) performance, see AllocateReadBuffer(), &
@@ -708,19 +732,28 @@ void HttpProtocolHandlerCore::Start(id<CRNNetworkClientProtocol> base_client) {
     [input_stream scheduleInRunLoop:[NSRunLoop currentRunLoop]
                             forMode:NSDefaultRunLoopMode];
     [input_stream open];
-    // The request will be started when the stream is fully read.
-    return;
-  }
 
-  NSData* body = [request_ HTTPBody];
-  const NSUInteger body_length = [body length];
-  if (body_length > 0) {
-    const char* source_bytes = reinterpret_cast<const char*>([body bytes]);
-    std::vector<char> owned_data(source_bytes, source_bytes + body_length);
-    std::unique_ptr<UploadElementReader> reader(
-        new UploadOwnedBytesElementReader(&owned_data));
-    net_request_->set_upload(
-        ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
+    if (net_request_->extra_request_headers().HasHeader(
+            HttpRequestHeaders::kContentLength)) {
+      // The request will be started when the stream is fully read.
+      return;
+    }
+
+    std::unique_ptr<ChunkedDataStreamUploader> uploader =
+        std::make_unique<ChunkedDataStreamUploader>(this);
+    chunked_uploader_ = uploader->GetWeakPtr();
+    net_request_->set_upload(std::move(uploader));
+  } else if ([request_ HTTPBody]) {
+    NSData* body = [request_ HTTPBody];
+    const NSUInteger body_length = [body length];
+    if (body_length > 0) {
+      const char* source_bytes = reinterpret_cast<const char*>([body bytes]);
+      std::vector<char> owned_data(source_bytes, source_bytes + body_length);
+      std::unique_ptr<UploadElementReader> reader(
+          new UploadOwnedBytesElementReader(&owned_data));
+      net_request_->set_upload(
+          ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
+    }
   }
 
   net_request_->Start();
@@ -769,6 +802,7 @@ void HttpProtocolHandlerCore::StopListeningStream(NSStream* stream) {
   [stream removeFromRunLoop:[NSRunLoop currentRunLoop]
                     forMode:NSDefaultRunLoopMode];
   stream_delegate_ = nil;
+  pending_stream_ = nil;
   // Close the stream if needed.
   switch ([stream streamStatus]) {
     case NSStreamStatusOpening:
@@ -842,6 +876,32 @@ void HttpProtocolHandlerCore::StripPostSpecificHeaders(
       HttpRequestHeaders::kContentType)];
   [request setValue:nil forHTTPHeaderField:base::SysUTF8ToNSString(
       HttpRequestHeaders::kOrigin)];
+}
+
+int HttpProtocolHandlerCore::OnRead(char* buffer, int buffer_length) {
+  int bytes_read = 0;
+  if (pending_stream_) {
+    // NSInputStream read() blocks the thread until there is at least one byte
+    // available, so check the status before call read().
+    if (![pending_stream_ hasBytesAvailable])
+      return ERR_IO_PENDING;
+
+    bytes_read = [pending_stream_ read:reinterpret_cast<unsigned char*>(buffer)
+                             maxLength:buffer_length];
+    // NSInputStream can read 0 byte when hasBytesAvailable is true, so do not
+    // treat it as a failure.
+    if (bytes_read < 0) {
+      // If NSInputStream meets an error on read(), fail the request
+      // immediately.
+      DLOG(ERROR) << "Failed to read POST data: "
+                  << base::SysNSStringToUTF8(
+                         [[pending_stream_ streamError] description]);
+      StopListeningStream(pending_stream_);
+      StopRequestWithError(NSURLErrorUnknown, ERR_UNEXPECTED);
+      return ERR_UNEXPECTED;
+    }
+  }
+  return bytes_read;
 }
 
 }  // namespace net
