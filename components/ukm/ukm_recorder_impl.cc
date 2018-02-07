@@ -8,10 +8,13 @@
 #include <string>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "components/ukm/ukm_source.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -23,6 +26,9 @@
 namespace ukm {
 
 namespace {
+
+const base::Feature kUkmSamplingRateFeature{"UkmSamplingRate",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Gets the list of whitelisted Entries as string. Format is a comma seperated
 // list of Entry names (as strings).
@@ -259,7 +265,57 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
     return;
   }
 
+  if (default_sampling_rate_ == 0)
+    LoadExperimentSamplingInfo();
+
+  auto found = event_sampling_rates_.find(entry->event_hash);
+  int sampling_rate = (found != event_sampling_rates_.end())
+                          ? found->second
+                          : default_sampling_rate_;
+  if (sampling_rate == 0 ||
+      (sampling_rate > 1 && base::RandInt(1, sampling_rate) != 1)) {
+    // Aggregate metrics could be accumulated here.
+    // for (auto& metric : entry->metrics)
+    //   aggregates[metric->metric_hash].dropped_due_to_sampling++;
+    return;
+  }
+
   entries_.push_back(std::move(entry));
+}
+
+void UkmRecorderImpl::LoadExperimentSamplingInfo() {
+  DCHECK_EQ(0, default_sampling_rate_);
+  std::map<std::string, std::string> params;
+
+  if (base::FeatureList::IsEnabled(kUkmSamplingRateFeature)) {
+    // Enabled may have various parameters to control sampling.
+    if (base::GetFieldTrialParamsByFeature(kUkmSamplingRateFeature, &params)) {
+      for (const auto& kv : params) {
+        const std::string& key = kv.first;
+        if (key.length() == 0)
+          continue;
+
+        // Keys starting with an underscore are global configuration.
+        if (key.at(0) == '_') {
+          if (key == "_default_sampling") {
+            int sampling;
+            if (base::StringToInt(kv.second, &sampling) && sampling >= 0)
+              default_sampling_rate_ = sampling;
+          }
+          continue;
+        }
+
+        // Anything else is an event name.
+        int sampling;
+        if (base::StringToInt(kv.second, &sampling) && sampling >= 0)
+          event_sampling_rates_[base::HashMetricName(key)] = sampling;
+      }
+    }
+  }
+
+  // Default rate must be >0 to indicate that load is complete.
+  if (default_sampling_rate_ == 0)
+    default_sampling_rate_ = 1;
 }
 
 void UkmRecorderImpl::StoreWhitelistedEntries() {
