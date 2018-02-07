@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_VIZ_HOST_HOST_FRAME_SINK_CLIENT_H_
 #define COMPONENTS_VIZ_HOST_HOST_FRAME_SINK_CLIENT_H_
 
+#include <stdint.h>
+
 namespace viz {
 
 class SurfaceInfo;
