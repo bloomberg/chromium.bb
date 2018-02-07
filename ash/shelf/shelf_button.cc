@@ -556,6 +556,7 @@ void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {
           base::Bind(&ShelfButton::OnTouchDragTimer, base::Unretained(this)));
       event->SetHandled();
       break;
+    case ui::ET_GESTURE_TAP_CANCEL:
     case ui::ET_GESTURE_END:
       drag_timer_.Stop();
       ClearState(STATE_HOVERED);
