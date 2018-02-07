@@ -2835,21 +2835,6 @@
             ]
         }
     ],
-    "ProgressBarCompletion": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "progress-bar-completion-resources-before-domContentLoaded",
-                    "enable_features": [
-                        "progress-bar-completion-resources-before-domContentLoaded"
-                    ]
-                }
-            ]
-        }
-    ],
     "QUIC": [
         {
             "platforms": [

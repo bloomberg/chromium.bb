@@ -201,7 +201,8 @@ class CONTENT_EXPORT FrameTree {
   void FrameRemoved(FrameTreeNode* frame);
 
   // Updates the overall load progress and notifies the WebContents.
-  void UpdateLoadProgress();
+  // Set based on the main frame's progress only.
+  void UpdateLoadProgress(double progress);
 
   // Returns this FrameTree's total load progress.
   double load_progress() { return load_progress_; }

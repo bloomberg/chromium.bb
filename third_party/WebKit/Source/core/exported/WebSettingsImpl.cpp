@@ -264,12 +264,6 @@ void WebSettingsImpl::SetShouldReuseGlobalForUnownedMainFrame(bool enabled) {
   settings_->SetShouldReuseGlobalForUnownedMainFrame(enabled);
 }
 
-void WebSettingsImpl::SetProgressBarCompletion(
-    ProgressBarCompletion progress_bar_completion) {
-  settings_->SetProgressBarCompletion(
-      static_cast<blink::ProgressBarCompletion>(progress_bar_completion));
-}
-
 void WebSettingsImpl::SetSavePreviousDocumentResources(
     SavePreviousDocumentResources save_resources) {
   settings_->SetSavePreviousDocumentResources(

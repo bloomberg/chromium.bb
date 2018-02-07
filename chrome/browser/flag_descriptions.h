@@ -1312,14 +1312,6 @@ extern const char kPayWithGoogleV1Description[];
 extern const char kProgressBarThrottleName[];
 extern const char kProgressBarThrottleDescription[];
 
-extern const char kProgressBarCompletionName[];
-extern const char kProgressBarCompletionDescription[];
-extern const char kProgressBarCompletionLoadEvent[];
-extern const char kProgressBarCompletionResourcesBeforeDcl[];
-extern const char kProgressBarCompletionDomContentLoaded[];
-extern const char
-    kProgressBarCompletionResourcesBeforeDclAndSameOriginIframes[];
-
 extern const char kPullToRefreshEffectName[];
 extern const char kPullToRefreshEffectDescription[];
 

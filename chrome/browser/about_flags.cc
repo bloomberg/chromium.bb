@@ -540,22 +540,6 @@ const FeatureEntry::Choice kV8CacheOptionsChoices[] = {
     {flag_descriptions::kV8CacheOptionsCode, switches::kV8CacheOptions, "code"},
 };
 
-#if defined(OS_ANDROID)
-const FeatureEntry::Choice kProgressBarCompletionChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kProgressBarCompletionLoadEvent,
-     switches::kProgressBarCompletion, "loadEvent"},
-    {flag_descriptions::kProgressBarCompletionResourcesBeforeDcl,
-     switches::kProgressBarCompletion, "resourcesBeforeDOMContentLoaded"},
-    {flag_descriptions::kProgressBarCompletionDomContentLoaded,
-     switches::kProgressBarCompletion, "domContentLoaded"},
-    {flag_descriptions::
-         kProgressBarCompletionResourcesBeforeDclAndSameOriginIframes,
-     switches::kProgressBarCompletion,
-     "resourcesBeforeDOMContentLoadedAndSameOriginIFrames"},
-};
-#endif  // OS_ANDROID
-
 const FeatureEntry::Choice kSavePreviousDocumentResourcesChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kSavePreviousDocumentResourcesNever,
@@ -2301,9 +2285,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"progress-bar-throttle", flag_descriptions::kProgressBarThrottleName,
      flag_descriptions::kProgressBarThrottleDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kProgressBarThrottleFeature)},
-    {"progress-bar-completion", flag_descriptions::kProgressBarCompletionName,
-     flag_descriptions::kProgressBarCompletionDescription, kOsAndroid,
-     MULTI_VALUE_TYPE(kProgressBarCompletionChoices)},
 #endif  // OS_ANDROID
     {"save-previous-document-resources-until",
      flag_descriptions::kSavePreviousDocumentResourcesName,

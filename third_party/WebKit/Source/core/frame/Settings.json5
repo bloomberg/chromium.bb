@@ -789,12 +789,6 @@
     },
 
     {
-      name: "progressBarCompletion",
-      initial: "ProgressBarCompletion::kResourcesBeforeDCL",
-      type: "ProgressBarCompletion",
-    },
-
-    {
       name: "historyEntryRequiresUserGesture",
       initial: false,
     },

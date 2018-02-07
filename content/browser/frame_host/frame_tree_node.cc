@@ -40,7 +40,6 @@ base::LazyInstance<FrameTreeNodeIdMap>::DestructorAtExit
 // These values indicate the loading progress status. The minimum progress
 // value matches what Blink's ProgressTracker has traditionally used for a
 // minimum progress value.
-const double kLoadingProgressNotStarted = 0.0;
 const double kLoadingProgressMinimum = 0.1;
 const double kLoadingProgressDone = 1.0;
 
@@ -164,7 +163,6 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
       is_created_by_script_(is_created_by_script),
       devtools_frame_token_(devtools_frame_token),
       frame_owner_properties_(frame_owner_properties),
-      loading_progress_(kLoadingProgressNotStarted),
       blame_context_(frame_tree_node_id_, parent) {
   std::pair<FrameTreeNodeIdMap::iterator, bool> result =
       g_frame_tree_node_id_map.Get().insert(
@@ -549,14 +547,6 @@ void FrameTreeNode::ResetNavigationRequest(bool keep_state,
   }
 }
 
-bool FrameTreeNode::has_started_loading() const {
-  return loading_progress_ != kLoadingProgressNotStarted;
-}
-
-void FrameTreeNode::reset_loading_progress() {
-  loading_progress_ = kLoadingProgressNotStarted;
-}
-
 void FrameTreeNode::DidStartLoading(bool to_different_document,
                                     bool was_previously_loading) {
   // Any main frame load to a new document should reset the load progress since
@@ -598,8 +588,10 @@ void FrameTreeNode::DidStopLoading() {
 }
 
 void FrameTreeNode::DidChangeLoadProgress(double load_progress) {
-  loading_progress_ = load_progress;
-  frame_tree_->UpdateLoadProgress();
+  DCHECK_GE(load_progress, kLoadingProgressMinimum);
+  DCHECK_LE(load_progress, kLoadingProgressDone);
+  if (IsMainFrame())
+    frame_tree_->UpdateLoadProgress(load_progress);
 }
 
 bool FrameTreeNode::StopLoading() {

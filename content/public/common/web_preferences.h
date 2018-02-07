@@ -56,17 +56,6 @@ enum ImageAnimationPolicy {
 
 enum class ViewportStyle { DEFAULT, MOBILE, TELEVISION, LAST = TELEVISION };
 
-// Controls when the progress bar reports itself as complete. See
-// third_party/WebKit/Source/core/loader/ProgressTracker.cpp for most of its
-// effects.
-enum class ProgressBarCompletion {
-  LOAD_EVENT,
-  RESOURCES_BEFORE_DCL,
-  DOM_CONTENT_LOADED,
-  RESOURCES_BEFORE_DCL_AND_SAME_ORIGIN_IFRAMES,
-  LAST = RESOURCES_BEFORE_DCL_AND_SAME_ORIGIN_IFRAMES
-};
-
 enum class SavePreviousDocumentResources {
   NEVER,
   UNTIL_ON_DOM_CONTENT_LOADED,
@@ -248,7 +237,6 @@ struct CONTENT_EXPORT WebPreferences {
   // Used by Android_WebView only to support legacy apps that inject script into
   // a top-level initial empty document and expect it to persist on navigation.
   bool resue_global_for_unowned_main_frame;
-  ProgressBarCompletion progress_bar_completion;
   // Specifies default setting for spellcheck when the spellcheck attribute is
   // not explicitly specified.
   bool spellcheck_enabled_by_default;

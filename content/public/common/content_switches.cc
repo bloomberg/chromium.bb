@@ -934,10 +934,6 @@ const char kEnableLongpressDragSelection[]  = "enable-longpress-drag-selection";
 // The telephony region (ISO country code) to use in phone number detection.
 const char kNetworkCountryIso[] = "network-country-iso";
 
-// When blink should declare a load "done" for the purpose of the
-// progress bar.
-const char kProgressBarCompletion[] = "progress-bar-completion";
-
 // Enables remote debug over HTTP on the specified socket name.
 const char kRemoteDebuggingSocketName[]     = "remote-debugging-socket-name";
 

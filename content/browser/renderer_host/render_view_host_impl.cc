@@ -426,8 +426,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
       command_line.HasSwitch(switches::kHistoryEntryRequiresUserGesture);
 
 #if defined(OS_ANDROID)
-  prefs.progress_bar_completion = GetProgressBarCompletionPolicy();
-
   prefs.use_solid_color_scrollbars = true;
 #endif  // defined(OS_ANDROID)
 
