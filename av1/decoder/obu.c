@@ -61,7 +61,8 @@ static OBU_TYPE read_obu_header(struct aom_read_bit_buffer *rb,
     aom_rb_read_literal(rb, 2);
     aom_rb_read_literal(rb, 1);  // reserved
 #else
-    *obu_extension_header = (uint8_t)aom_rb_read_literal(rb, 8);
+    if (obu_extension_header)
+      *obu_extension_header = (uint8_t)aom_rb_read_literal(rb, 8);
 #endif
   }
 
