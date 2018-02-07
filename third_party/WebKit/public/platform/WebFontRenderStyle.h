@@ -27,36 +27,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FontRenderStyle_h
-#define FontRenderStyle_h
+#ifndef WebFontRenderStyle_h
+#define WebFontRenderStyle_h
 
 #include "SkFontStyle.h"
 #include "SkPaint.h"
-#include "platform/PlatformExport.h"
-#include "platform/graphics/paint/PaintFont.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/CString.h"
+#include "public/platform/WebString.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+
+class SkFontMgr;
+
+namespace cc {
+class PaintFont;
+}  // namespace cc
 
 namespace blink {
 
-// FontRenderStyle describes the user's preferences for rendering a font at a
+// WebFontRenderStyle describes the user's preferences for rendering a font at a
 // given size.
-struct FontRenderStyle {
-  DISALLOW_NEW();
+struct WebFontRenderStyle {
   enum {
     kNoPreference = 2,
   };
 
-  FontRenderStyle()
-      : use_bitmaps(0),
-        use_auto_hint(0),
-        use_hinting(0),
-        hint_style(0),
-        use_anti_alias(0),
-        use_subpixel_rendering(0),
-        use_subpixel_positioning(0) {}
+  WebFontRenderStyle() = default;
 
-  bool operator==(const FontRenderStyle& a) const {
+  bool operator==(const WebFontRenderStyle& a) const {
     return use_bitmaps == a.use_bitmaps && use_auto_hint == a.use_auto_hint &&
            use_hinting == a.use_hinting && hint_style == a.hint_style &&
            use_anti_alias == a.use_anti_alias &&
@@ -64,32 +60,39 @@ struct FontRenderStyle {
            use_subpixel_positioning == a.use_subpixel_positioning;
   }
 
-  PLATFORM_EXPORT static void SetHinting(SkPaint::Hinting);
-  PLATFORM_EXPORT static void SetAutoHint(bool);
-  PLATFORM_EXPORT static void SetUseBitmaps(bool);
-  PLATFORM_EXPORT static void SetAntiAlias(bool);
-  PLATFORM_EXPORT static void SetSubpixelRendering(bool);
+  BLINK_PLATFORM_EXPORT static void SetSkiaFontManager(sk_sp<SkFontMgr>);
+  BLINK_PLATFORM_EXPORT static void SetHinting(SkPaint::Hinting);
+  BLINK_PLATFORM_EXPORT static void SetAutoHint(bool);
+  BLINK_PLATFORM_EXPORT static void SetUseBitmaps(bool);
+  BLINK_PLATFORM_EXPORT static void SetAntiAlias(bool);
+  BLINK_PLATFORM_EXPORT static void SetSubpixelRendering(bool);
+  BLINK_PLATFORM_EXPORT static void SetSubpixelPositioning(bool);
+  BLINK_PLATFORM_EXPORT static void SetDefaultFontSize(int);
+  BLINK_PLATFORM_EXPORT static void SetSystemFontFamily(const WebString& name);
 
-  static FontRenderStyle QuerySystem(const CString& family,
-                                     float text_size,
-                                     SkFontStyle);
-  void ApplyToPaintFont(PaintFont&, float device_scale_factor) const;
+  static WebFontRenderStyle GetDefault();
+
+  // Overrides fields with those from |other|, except the fields that are set to
+  // kNoPreference in |other|.
+  void OverrideWith(const WebFontRenderStyle& other);
+
+  void ApplyToPaintFont(cc::PaintFont&, float device_scale_factor) const;
 
   // Each of the use* members below can take one of three values:
   //   0: off
   //   1: on
   //   NoPreference: no preference expressed
-  char use_bitmaps;     // use embedded bitmap strike if possible
-  char use_auto_hint;   // use 'auto' hinting (FreeType specific)
-  char use_hinting;     // hint glyphs to the pixel grid
-  char hint_style;      // level of hinting, 0..3
-  char use_anti_alias;  // antialias glyph shapes
+  char use_bitmaps = kNoPreference;    // use embedded bitmap strike if possible
+  char use_auto_hint = kNoPreference;  // use 'auto' hinting (FreeType specific)
+  char use_hinting = kNoPreference;    // hint glyphs to the pixel grid
+  char hint_style = 0;                 // level of hinting, 0..3
+  char use_anti_alias = kNoPreference;  // antialias glyph shapes
   // use subpixel rendering (partially-filled pixels)
-  char use_subpixel_rendering;
+  char use_subpixel_rendering = kNoPreference;
   // use subpixel positioning (fractional X positions for glyphs)
-  char use_subpixel_positioning;
+  char use_subpixel_positioning = kNoPreference;
 };
 
 }  // namespace blink
 
-#endif  // FontRenderStyle_h
+#endif  // WebFontRenderStyle_h

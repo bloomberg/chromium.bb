@@ -28,13 +28,20 @@
 
 namespace blink {
 
+static AtomicString& MutableSystemFontFamily() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, system_font_family, ());
+  return system_font_family;
+}
+
 // static
 const AtomicString& FontCache::SystemFontFamily() {
-  // TODO(fuchsia): Implement this when UI support is ready. crbug.com/750946
-  NOTIMPLEMENTED();
+  return MutableSystemFontFamily();
+}
 
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, font_family, ());
-  return font_family;
+// static
+void FontCache::SetSystemFontFamily(const AtomicString& family_name) {
+  DCHECK(!family_name.IsEmpty());
+  MutableSystemFontFamily() = family_name;
 }
 
 void FontCache::GetFontForCharacter(

@@ -47,8 +47,6 @@ void LayoutThemeFontProvider::SystemFont(CSSValueID system_font_id,
                                          AtomicString& font_family) {
   font_style = NormalSlopeValue();
   font_weight = NormalWeightValue();
-  font_size = default_font_size_;
-  font_family = DefaultGUIFont();
 
   switch (system_font_id) {
     case CSSValueSmallCaption:
@@ -67,19 +65,14 @@ void LayoutThemeFontProvider::SystemFont(CSSValueID system_font_id,
     case CSSValueWebkitSmallControl:
     case CSSValueWebkitControl:
       // Why 2 points smaller? Because that's what Gecko does.
-      font_size = default_font_size_ - PointsToPixels(2);
+      font_size = FontCache::DefaultFontSize() - PointsToPixels(2);
       font_family = DefaultGUIFont();
       break;
     default:
-      font_size = default_font_size_;
+      font_size = FontCache::DefaultFontSize();
       font_family = DefaultGUIFont();
       break;
   }
-}
-
-// static
-void LayoutThemeFontProvider::SetDefaultFontSize(int font_size) {
-  default_font_size_ = static_cast<float>(font_size);
 }
 
 }  // namespace blink

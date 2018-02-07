@@ -19,8 +19,8 @@ class DummyFontFaceSource : public CSSFontFaceSource {
       const FontDescription&,
       const FontSelectionCapabilities&) override {
     return SimpleFontData::Create(FontPlatformData(
-        PaintTypeface::FromSkTypeface(SkTypeface::MakeDefault()), "", 0, false,
-        false));
+        PaintTypeface::FromSkTypeface(SkTypeface::MakeDefault()), CString(), 0,
+        false, false));
   }
 
   DummyFontFaceSource() = default;

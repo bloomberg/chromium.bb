@@ -30,12 +30,6 @@
 
 namespace blink {
 
-// The default variable-width font size. We use this as the default font
-// size for the "system font", and as a base size (which we then shrink) for
-// form control fonts.
-// static
-float LayoutThemeFontProvider::default_font_size_ = 16.0;
-
 // We aim to match IE here.
 // -IE uses a font based on the encoding as the default font for form controls.
 // -Gecko uses MS Shell Dlg (actually calls GetStockObject(DEFAULT_GUI_FONT),

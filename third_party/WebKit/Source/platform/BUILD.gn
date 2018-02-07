@@ -696,7 +696,6 @@ jumbo_component("platform") {
     "exported/WebVideoFrameSubmitter.cpp",
     "exported/WrappedResourceRequest.h",
     "exported/WrappedResourceResponse.h",
-    "exported/linux/WebFontRenderStyle.cpp",
     "feature_policy/FeaturePolicy.cpp",
     "feature_policy/FeaturePolicy.h",
     "fonts/AcceptLanguagesResolver.cpp",
@@ -788,11 +787,9 @@ jumbo_component("platform") {
     "fonts/VDMXParser.h",
     "fonts/WebFontDecoder.cpp",
     "fonts/WebFontDecoder.h",
+    "fonts/WebFontRenderStyle.cpp",
     "fonts/android/FontCacheAndroid.cpp",
     "fonts/linux/FontCacheLinux.cpp",
-    "fonts/linux/FontPlatformDataLinux.cpp",
-    "fonts/linux/FontRenderStyle.cpp",
-    "fonts/linux/FontRenderStyle.h",
     "fonts/mac/CoreTextVariationsSupport.cpp",
     "fonts/mac/CoreTextVariationsSupport.h",
     "fonts/mac/FontCacheMac.mm",
@@ -1560,6 +1557,7 @@ jumbo_component("platform") {
     sources -= [
       # Uses KillRingMac.mm instead.
       "KillRingNone.cpp",
+      "fonts/WebFontRenderStyle.cpp",
       "fonts/skia/FontCacheSkia.cpp",
       "scroll/ScrollAnimator.cpp",
       "scroll/ScrollAnimator.h",
@@ -1589,6 +1587,9 @@ jumbo_component("platform") {
   if (is_win) {
     sources += [ "clipboard/ClipboardUtilitiesWin.cpp" ]
     sources -= [
+      # TODO(https://crbug.com/808221): Use WebFontRenderStyle on Windows.
+      "fonts/WebFontRenderStyle.cpp",
+
       # Uses LocaleWin instead.
       "text/LocaleICU.cpp",
       "text/LocaleICU.h",
@@ -1603,17 +1604,7 @@ jumbo_component("platform") {
     }
   }
 
-  if (is_android) {
-    # Add in some Linux files also shared with Android.
-    set_sources_assignment_filter([])
-    sources += [
-      "exported/linux/WebFontRenderStyle.cpp",
-      "fonts/linux/FontPlatformDataLinux.cpp",
-      "fonts/linux/FontRenderStyle.cpp",
-      "fonts/linux/FontRenderStyle.h",
-    ]
-    set_sources_assignment_filter(sources_assignment_filter)
-  } else {
+  if (!is_android) {
     if (!snake_case_source_files) {
       sources -= [ "scroll/ScrollbarThemeAndroid.cpp" ]
     }
@@ -1622,7 +1613,6 @@ jumbo_component("platform") {
   if (is_fuchsia) {
     sources += [
       "fonts/fuchsia/FontCacheFuchsia.cpp",
-      "fonts/fuchsia/FontPlatformDataFuchsia.cpp",
       "text/fuchsia/HyphenationFuchsia.cpp",
     ]
   }

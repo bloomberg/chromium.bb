@@ -285,7 +285,7 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
   const auto& tf = paint_tf.ToSkTypeface();
   std::unique_ptr<FontPlatformData> font_platform_data =
       WTF::WrapUnique(new FontPlatformData(
-          paint_tf, name.data(), font_size,
+          paint_tf, name, font_size,
           (font_description.Weight() >
                FontSelectionValue(200) +
                    FontSelectionValue(tf->fontStyle().weight()) ||

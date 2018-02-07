@@ -124,13 +124,6 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   float ClampedMenuListArrowPaddingSize(const PlatformChromeClient*,
                                         const ComputedStyle&) const;
 
-  // Provide a way to pass the default font size from the Settings object
-  // to the layout theme. FIXME: http://b/1129186 A cleaner way would be
-  // to remove the default font size from this object and have callers
-  // that need the value to get it directly from the appropriate Settings
-  // object.
-  static void SetDefaultFontSize(int);
-
   static void SetSelectionColors(unsigned active_background_color,
                                  unsigned active_foreground_color,
                                  unsigned inactive_background_color,

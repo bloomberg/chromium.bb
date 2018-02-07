@@ -373,11 +373,6 @@ void LayoutThemeDefault::DidChangeThemeEngine() {
   cached_menu_list_arrow_padding_size_ = 0;
 }
 
-// static
-void LayoutThemeDefault::SetDefaultFontSize(int font_size) {
-  LayoutThemeFontProvider::SetDefaultFontSize(font_size);
-}
-
 int LayoutThemeDefault::MenuListInternalPadding(const ComputedStyle& style,
                                                 int padding) const {
   if (style.Appearance() == kNoControlPart)

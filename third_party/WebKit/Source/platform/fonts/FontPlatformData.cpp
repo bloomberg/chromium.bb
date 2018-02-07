@@ -24,14 +24,18 @@
 #include "build/build_config.h"
 #include "hb-ot.h"
 #include "hb.h"
+#include "platform/LayoutTestSupport.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/shaping/HarfBuzzFace.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/text/Character.h"
 #include "platform/wtf/ByteSwap.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/Platform.h"
+#include "public/platform/linux/WebSandboxSupport.h"
 
 #if defined(OS_MACOSX)
 #include "third_party/skia/include/ports/SkTypeface_mac.h"
@@ -94,7 +98,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& source)
       synthetic_italic_(source.synthetic_italic_),
       avoid_embedded_bitmaps_(source.avoid_embedded_bitmaps_),
       orientation_(source.orientation_),
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
       style_(source.style_),
 #endif
       harf_buzz_face_(nullptr),
@@ -107,35 +111,20 @@ FontPlatformData::FontPlatformData(const FontPlatformData& source)
 }
 
 FontPlatformData::FontPlatformData(const FontPlatformData& src, float text_size)
-    : paint_typeface_(src.paint_typeface_),
+    : FontPlatformData(src.paint_typeface_,
 #if !defined(OS_WIN)
-      family_(src.family_),
+                       src.family_.data(),
+#else
+                       CString(),
 #endif
-      text_size_(text_size),
-      synthetic_bold_(src.synthetic_bold_),
-      synthetic_italic_(src.synthetic_italic_),
-      avoid_embedded_bitmaps_(false),
-      orientation_(src.orientation_),
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-      style_(FontRenderStyle::QuerySystem(
-          family_,
-          text_size_,
-          paint_typeface_.ToSkTypeface()->fontStyle())),
-#endif
-      harf_buzz_face_(nullptr),
-      is_hash_table_deleted_value_(false)
-#if defined(OS_WIN)
-      ,
-      paint_text_flags_(src.paint_text_flags_)
-#endif
-{
-#if defined(OS_WIN)
-  QuerySystemForRenderStyle();
-#endif
+                       text_size,
+                       src.synthetic_bold_,
+                       src.synthetic_italic_,
+                       src.orientation_) {
 }
 
 FontPlatformData::FontPlatformData(const PaintTypeface& paint_tf,
-                                   const char* family,
+                                   const CString& family,
                                    float text_size,
                                    bool synthetic_bold,
                                    bool synthetic_italic,
@@ -149,18 +138,26 @@ FontPlatformData::FontPlatformData(const PaintTypeface& paint_tf,
       synthetic_italic_(synthetic_italic),
       avoid_embedded_bitmaps_(false),
       orientation_(orientation),
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-      style_(FontRenderStyle::QuerySystem(
-          family_,
-          text_size_,
-          paint_typeface_.ToSkTypeface()->fontStyle())),
-#endif
       is_hash_table_deleted_value_(false)
 #if defined(OS_WIN)
       ,
       paint_text_flags_(0)
 #endif
 {
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
+  style_ = WebFontRenderStyle::GetDefault();
+  auto system_style = QuerySystemRenderStyle(
+      family_, text_size_, paint_typeface_.ToSkTypeface()->fontStyle());
+
+  // In layout tests ignore system preference for subpixel positioning as it may
+  // be toggled by the tests.
+  if (LayoutTestSupport::IsRunningLayoutTest()) {
+    system_style.use_subpixel_positioning = WebFontRenderStyle::kNoPreference;
+  }
+
+  style_.OverrideWith(system_style);
+#endif
+
 #if defined(OS_WIN)
   QuerySystemForRenderStyle();
 #endif
@@ -196,7 +193,7 @@ const FontPlatformData& FontPlatformData::operator=(
   avoid_embedded_bitmaps_ = other.avoid_embedded_bitmaps_;
   harf_buzz_face_ = nullptr;
   orientation_ = other.orientation_;
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
   style_ = other.style_;
 #endif
 
@@ -221,7 +218,7 @@ bool FontPlatformData::operator==(const FontPlatformData& a) const {
          synthetic_bold_ == a.synthetic_bold_ &&
          synthetic_italic_ == a.synthetic_italic_ &&
          avoid_embedded_bitmaps_ == a.avoid_embedded_bitmaps_
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
          && style_ == a.style_
 #endif
          && orientation_ == a.orientation_;
@@ -291,7 +288,45 @@ bool FontPlatformData::FontContainsCharacter(UChar32 character) {
   font.ToSkPaint().textToGlyphs(&character, sizeof(character), &glyph);
   return glyph;
 }
+#endif
 
+#if !defined(OS_MACOSX) && !defined(OS_WIN)
+// static
+WebFontRenderStyle FontPlatformData::QuerySystemRenderStyle(
+    const CString& family,
+    float text_size,
+    SkFontStyle font_style) {
+  WebFontRenderStyle result;
+
+#if !defined(OS_ANDROID)
+  // If the font name is missing (i.e. probably a web font) or the sandbox is
+  // disabled, use the system defaults.
+  if (family.length() && Platform::Current()->GetSandboxSupport()) {
+    bool is_bold = font_style.weight() >= SkFontStyle::kSemiBold_Weight;
+    bool is_italic = font_style.slant() != SkFontStyle::kUpright_Slant;
+    const int size_and_style = (((int)text_size) << 2) | (((int)is_bold) << 1) |
+                               (((int)is_italic) << 0);
+    Platform::Current()->GetSandboxSupport()->GetWebFontRenderStyleForStrike(
+        family.data(), size_and_style, &result);
+  }
+#endif
+
+  return result;
+}
+
+void FontPlatformData::SetupPaintFont(PaintFont* font,
+                                      float device_scale_factor,
+                                      const Font*) const {
+  style_.ApplyToPaintFont(*font, device_scale_factor);
+
+  const float ts = text_size_ >= 0 ? text_size_ : 12;
+  font->SetTextSize(SkFloatToScalar(ts));
+  font->SetTypeface(paint_typeface_);
+  font->SetFakeBoldText(synthetic_bold_);
+  font->SetTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
+
+  font->SetEmbeddedBitmapText(!avoid_embedded_bitmaps_);
+}
 #endif
 
 const PaintTypeface& FontPlatformData::GetPaintTypeface() const {

@@ -43,12 +43,9 @@ class CORE_EXPORT LayoutThemeFontProvider {
                          FontSelectionValue& weight,
                          float& font_size,
                          AtomicString& font_family);
-  static void SetDefaultFontSize(int);
 
  protected:
   static const WTF::AtomicString& DefaultGUIFont();
-
-  static float default_font_size_;
 };
 
 }  // namespace blink

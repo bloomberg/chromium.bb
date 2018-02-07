@@ -157,12 +157,17 @@ class PLATFORM_EXPORT FontCache {
   SkFontMgr* FontManager() { return font_manager_.get(); }
   static void SetFontManager(sk_sp<SkFontMgr>);
 
+  // TODO(https://crbug.com/808221) System font style configuration is not
+  // related to FontCache. Move it somewhere else, e.g. to WebThemeEngine.
+  static float DefaultFontSize() { return default_font_size_; }
+  static void SetDefaultFontSize(float size) { default_font_size_ = size; }
+
 #if !defined(OS_MACOSX)
   static const AtomicString& SystemFontFamily();
 #else
   static const AtomicString& LegacySystemFontFamily();
 #endif
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
   static void SetSystemFontFamily(const AtomicString&);
 #endif
 
@@ -298,6 +303,8 @@ class PLATFORM_EXPORT FontCache {
 
   // A leaky owning bare pointer.
   static SkFontMgr* static_font_manager_;
+
+  static float default_font_size_;
 
 #if defined(OS_WIN)
   static bool antialiased_text_enabled_;

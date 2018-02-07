@@ -142,7 +142,7 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
 
   // TODO(vmpstr): Handle web fonts PaintTypefaces.
   PaintTypeface paint_tf = PaintTypeface::FromSkTypeface(return_typeface);
-  return FontPlatformData(std::move(paint_tf), "", size,
+  return FontPlatformData(std::move(paint_tf), CString(), size,
                           bold && !base_typeface_->isBold(),
                           italic && !base_typeface_->isItalic(), orientation);
 }

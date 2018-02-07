@@ -68,8 +68,8 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
 
-#if defined(__linux__) || defined(ANDROID)
-#include "third_party/WebKit/public/web/linux/WebFontRendering.h"
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+#include "third_party/WebKit/public/platform/WebFontRenderStyle.h"
 #endif
 
 using namespace blink;
@@ -1611,8 +1611,8 @@ void TestRunner::Reset() {
   drag_image_.Reset();
 
   WebSecurityPolicy::ResetOriginAccessWhitelists();
-#if defined(__linux__) || defined(ANDROID)
-  WebFontRendering::SetSubpixelPositioning(false);
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  WebFontRenderStyle::SetSubpixelPositioning(false);
 #endif
 
   if (delegate_) {
@@ -2149,10 +2149,10 @@ void TestRunner::RemoveOriginAccessWhitelistEntry(
 }
 
 void TestRunner::SetTextSubpixelPositioning(bool value) {
-#if defined(__linux__) || defined(ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   // Since FontConfig doesn't provide a variable to control subpixel
   // positioning, we'll fall back to setting it globally for all fonts.
-  WebFontRendering::SetSubpixelPositioning(value);
+  WebFontRenderStyle::SetSubpixelPositioning(value);
 #endif
 }
 
