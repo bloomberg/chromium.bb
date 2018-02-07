@@ -94,10 +94,6 @@ class ASH_EXPORT MagnificationController {
   virtual void SwitchTargetRootWindow(aura::Window* new_root_window,
                                       bool redraw_original_root) = 0;
 
-  // Adds event rewriter for testing. Event rewriter is added at construction of
-  // the controller. But test run happens after the construction.
-  virtual void AddEventRewriterForTesting() = 0;
-
  protected:
   MagnificationController() {}
 

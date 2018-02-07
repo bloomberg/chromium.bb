@@ -141,8 +141,6 @@ class MagnificationControllerImpl : public MagnificationController,
     return point_of_interest_;
   }
 
-  void AddEventRewriterForTesting() override;
-
   bool IsOnAnimationForTesting() const override { return is_on_animation_; }
 
   void DisableMoveMagnifierDelayForTesting() override {
@@ -236,7 +234,6 @@ class MagnificationControllerImpl : public MagnificationController,
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
 
   // ui::EventRewriter overrides:
   ui::EventRewriteStatus RewriteEvent(
@@ -363,11 +360,7 @@ MagnificationControllerImpl::MagnificationControllerImpl()
       disable_move_magnifier_delay_(false) {
   Shell::Get()->AddPreTargetHandler(this);
   root_window_->AddObserver(this);
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshNewTouchSupportForScreenMagnification)) {
-    root_window_->GetHost()->GetEventSource()->AddEventRewriter(this);
-  }
+  root_window_->GetHost()->GetEventSource()->AddEventRewriter(this);
 
   point_of_interest_ = root_window_->bounds().CenterPoint();
 
@@ -381,11 +374,7 @@ MagnificationControllerImpl::~MagnificationControllerImpl() {
   if (input_method)
     input_method->RemoveObserver(this);
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshNewTouchSupportForScreenMagnification)) {
-    root_window_->GetHost()->GetEventSource()->RemoveEventRewriter(this);
-  }
-
+  root_window_->GetHost()->GetEventSource()->RemoveEventRewriter(this);
   root_window_->RemoveObserver(this);
 
   Shell::Get()->RemovePreTargetHandler(this);
@@ -568,13 +557,6 @@ void MagnificationControllerImpl::SwitchTargetRootWindow(
   RedrawKeepingMousePosition(scale, true, true);
 
   root_window_->AddObserver(this);
-}
-
-void MagnificationControllerImpl::AddEventRewriterForTesting() {
-  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ash::switches::kAshNewTouchSupportForScreenMagnification));
-
-  root_window_->GetHost()->GetEventSource()->AddEventRewriter(this);
 }
 
 void MagnificationControllerImpl::AfterAnimationMoveCursorTo(
@@ -966,43 +948,6 @@ ui::EventRewriteStatus MagnificationControllerImpl::NextDispatchEvent(
   DCHECK_EQ(0u, press_event_map_.size());
 
   return ui::EVENT_REWRITE_REWRITTEN;
-}
-
-void MagnificationControllerImpl::OnGestureEvent(ui::GestureEvent* event) {
-  // TODO(yawano): Remove old touch support implementation once the new one is
-  // enabled by default.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshNewTouchSupportForScreenMagnification)) {
-    return;
-  }
-
-  if (!IsEnabled())
-    return;
-
-  const ui::GestureEventDetails& details = event->details();
-  if (details.type() == ui::ET_GESTURE_SCROLL_UPDATE &&
-      details.touch_points() == 2) {
-    gfx::Rect viewport_rect_in_dip = GetViewportRect();
-    viewport_rect_in_dip.Offset(-details.scroll_x(), -details.scroll_y());
-    gfx::Rect viewport_rect_in_pixel =
-        ui::ConvertRectToPixel(root_window_->layer(), viewport_rect_in_dip);
-    MoveWindow(viewport_rect_in_pixel.origin(), false);
-    event->SetHandled();
-  } else if (details.type() == ui::ET_GESTURE_PINCH_UPDATE &&
-             details.touch_points() == 3) {
-    float scale = GetScale() * details.scale();
-    point_of_interest_ = event->root_location();
-    SetScale(scale, false);
-    event->SetHandled();
-  } else if (details.type() == ui::ET_GESTURE_PINCH_END &&
-             details.touch_points() == 3) {
-    float scale = GetScale();
-    // Jump back to exactly 1.0 if we are just a tiny bit zoomed in.
-    if (scale < kMinMagnifiedScaleThreshold) {
-      scale = kNonMagnifiedScale;
-      SetScale(scale, true);
-    }
-  }
 }
 
 void MagnificationControllerImpl::MoveMagnifierWindowFollowPoint(

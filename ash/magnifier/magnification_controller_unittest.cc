@@ -798,11 +798,6 @@ TEST_F(MagnificationControllerTest, AdjustScaleFromScroll) {
 // Performs pinch zoom and confirm that zoom level is changed. This test case
 // also tests touch event handling.
 TEST_F(MagnificationControllerTest, PinchZoom) {
-  // TODO(yawano): remove this once the flag is removed.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ash::switches::kAshNewTouchSupportForScreenMagnification);
-  GetMagnificationController()->AddEventRewriterForTesting();
-
   ASSERT_EQ(0u, touch_event_watcher_->touch_events.size());
 
   GetMagnificationController()->SetEnabled(true);
@@ -881,11 +876,6 @@ TEST_F(MagnificationControllerTest, PinchZoom) {
 }
 
 TEST_F(MagnificationControllerTest, TwoFingersScroll) {
-  // TODO(yawano): remove this once the flag is removed.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ash::switches::kAshNewTouchSupportForScreenMagnification);
-  GetMagnificationController()->AddEventRewriterForTesting();
-
   GetMagnificationController()->SetEnabled(true);
   ASSERT_EQ(2.0f, GetMagnificationController()->GetScale());
 
@@ -923,11 +913,6 @@ TEST_F(MagnificationControllerTest, TwoFingersScroll) {
 }
 
 TEST_F(MagnificationControllerTest, GestureLock) {
-  // TODO(yawano): remove this once flag is removed.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ash::switches::kAshNewTouchSupportForScreenMagnification);
-  GetMagnificationController()->AddEventRewriterForTesting();
-
   GetMagnificationController()->SetEnabled(true);
   ASSERT_EQ(2.0f, GetMagnificationController()->GetScale());
 

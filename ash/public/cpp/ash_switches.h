@@ -45,7 +45,6 @@ ASH_PUBLIC_EXPORT extern const char kAshUiModeAuto[];
 ASH_PUBLIC_EXPORT extern const char kAshUiModeClamshell[];
 ASH_PUBLIC_EXPORT extern const char kAshUiModeTablet[];
 ASH_PUBLIC_EXPORT extern const char kAshHideNotificationsForFactory[];
-ASH_PUBLIC_EXPORT extern const char kAshNewTouchSupportForScreenMagnification[];
 ASH_PUBLIC_EXPORT extern const char kAshShelfColor[];
 ASH_PUBLIC_EXPORT extern const char kAshShelfColorEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAshShelfColorDisabled[];

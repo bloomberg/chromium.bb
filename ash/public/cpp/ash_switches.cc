@@ -126,10 +126,6 @@ const char kAshUiModeTablet[] = "touch_view";
 const char kAshHideNotificationsForFactory[] =
     "ash-hide-notifications-for-factory";
 
-// Enables new implementation of touch support for screen magnification.
-const char kAshNewTouchSupportForScreenMagnification[] =
-    "ash-new-touch-support-for-screen-magnification";
-
 // Enables the shelf color to be derived from the wallpaper.
 const char kAshShelfColor[] = "ash-shelf-color";
 const char kAshShelfColorEnabled[] = "enabled";

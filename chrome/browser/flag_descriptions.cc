@@ -2494,11 +2494,6 @@ const char kAshEnableUnifiedDesktopDescription[] =
     "Enable unified desktop mode which allows a window to span multiple "
     "displays.";
 
-const char kAshNewTouchSupportForScreenMagnificationName[] =
-    "New touch support for screen magnification";
-const char kAshNewTouchSupportForScreenMagnificationDescription[] =
-    "Enable new implementation of touch support for screen magnification";
-
 const char kBulkPrintersName[] = "Bulk Printers Policy";
 const char kBulkPrintersDescription[] = "Enables the new bulk printers policy";
 
