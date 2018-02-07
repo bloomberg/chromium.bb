@@ -59,20 +59,20 @@ void NotificationManager::SendNotifications(
 
   for (KeyboardControllerObserver& observer : observers) {
     if (send_availability_notification)
-      observer.OnKeyboardAvailabilityChanging(is_available);
+      observer.OnKeyboardAvailabilityChanged(is_available);
 
     if (send_visual_bounds_notification)
-      observer.OnKeyboardVisibleBoundsChanging(bounds);
+      observer.OnKeyboardVisibleBoundsChanged(bounds);
 
     if (send_occluded_bounds_notification)
-      observer.OnKeyboardWorkspaceOccludedBoundsChanging(occluded_region);
+      observer.OnKeyboardWorkspaceOccludedBoundsChanged(occluded_region);
 
     if (send_displaced_bounds_notification) {
-      observer.OnKeyboardWorkspaceDisplacingBoundsChanging(
+      observer.OnKeyboardWorkspaceDisplacingBoundsChanged(
           workspace_layout_offset_region);
     }
 
-    observer.OnKeyboardAppearanceChanging(state);
+    observer.OnKeyboardAppearanceChanged(state);
   }
 }
 

@@ -95,7 +95,7 @@ class ArcImeService : public KeyedService,
       const gfx::Range& selection_range) override;
 
   // Overridden from keyboard::KeyboardControllerObserver.
-  void OnKeyboardAppearanceChanging(
+  void OnKeyboardAppearanceChanged(
       const keyboard::KeyboardStateDescriptor& state) override;
 
   // Overridden from ui::TextInputClient:

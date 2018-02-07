@@ -279,7 +279,7 @@ void ArcImeService::OnCursorRectChangedWithSurroundingText(
 
 ////////////////////////////////////////////////////////////////////////////////
 // Overridden from keyboard::KeyboardControllerObserver
-void ArcImeService::OnKeyboardAppearanceChanging(
+void ArcImeService::OnKeyboardAppearanceChanged(
     const keyboard::KeyboardStateDescriptor& state) {
   if (!focused_arc_window_)
     return;

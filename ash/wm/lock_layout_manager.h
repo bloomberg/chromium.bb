@@ -71,7 +71,7 @@ class ASH_EXPORT LockLayoutManager
   void WillChangeVisibilityState(ShelfVisibilityState visibility) override;
 
   // keyboard::KeyboardControllerObserver overrides:
-  void OnKeyboardWorkspaceOccludedBoundsChanging(
+  void OnKeyboardWorkspaceOccludedBoundsChanged(
       const gfx::Rect& new_bounds) override;
   void OnKeyboardClosed() override;
 

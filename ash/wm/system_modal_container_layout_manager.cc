@@ -136,7 +136,7 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
 // implementation:
 
 void SystemModalContainerLayoutManager::
-    OnKeyboardWorkspaceOccludedBoundsChanging(const gfx::Rect& new_bounds) {
+    OnKeyboardWorkspaceOccludedBoundsChanged(const gfx::Rect& new_bounds) {
   PositionDialogsAfterWorkAreaResize();
 }
 

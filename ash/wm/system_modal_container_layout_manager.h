@@ -50,7 +50,7 @@ class ASH_EXPORT SystemModalContainerLayoutManager
                                intptr_t old) override;
 
   // Overridden from keyboard::KeyboardControllerObserver:
-  void OnKeyboardWorkspaceOccludedBoundsChanging(
+  void OnKeyboardWorkspaceOccludedBoundsChanged(
       const gfx::Rect& new_bounds) override;
 
   // True if the window is either contained by the top most modal window,

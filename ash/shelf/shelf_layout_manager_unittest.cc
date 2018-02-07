@@ -2122,8 +2122,8 @@ class ShelfLayoutManagerKeyboardTest : public AshTestBase {
     state.displaced_bounds = is_locked ? bounds : gfx::Rect();
     state.is_locked = is_locked;
     state.is_available = !bounds.IsEmpty();
-    layout_manager->OnKeyboardAvailabilityChanging(state.is_available);
-    layout_manager->OnKeyboardAppearanceChanging(state);
+    layout_manager->OnKeyboardAvailabilityChanged(state.is_available);
+    layout_manager->OnKeyboardAppearanceChanged(state);
   }
 
   const gfx::Rect& keyboard_bounds() const { return keyboard_bounds_; }

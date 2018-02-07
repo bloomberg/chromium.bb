@@ -452,7 +452,7 @@ void ShelfLayoutManager::OnWindowActivated(ActivationReason reason,
   UpdateAutoHideStateNow();
 }
 
-void ShelfLayoutManager::OnKeyboardAppearanceChanging(
+void ShelfLayoutManager::OnKeyboardAppearanceChanged(
     const keyboard::KeyboardStateDescriptor& state) {
   // If in locked mode, change the work area.
   bool change_work_area = state.is_locked;
@@ -460,7 +460,7 @@ void ShelfLayoutManager::OnKeyboardAppearanceChanging(
   LayoutShelfAndUpdateBounds(change_work_area);
 }
 
-void ShelfLayoutManager::OnKeyboardAvailabilityChanging(
+void ShelfLayoutManager::OnKeyboardAvailabilityChanged(
     const bool is_available) {
   // On login screen if keyboard has been just hidden, update bounds just once
   // but ignore target_bounds.work_area_insets since shelf overlaps with login
