@@ -25,8 +25,6 @@
 
   var requestId = '';
   session.protocol.Network.onRequestWillBeSent(event => {
-    if (!event.params.documentURL.startsWith('data:'))
-      return;
     if (requestId)
       throw "requestId already set";
     requestId = event.params.requestId;

@@ -90,27 +90,6 @@ FrameTreeNode* GetFrameTreeNodeAncestor(FrameTreeNode* frame_tree_node) {
 
 }  // namespace
 
-template <typename Handler, typename... MethodArgs, typename... Args>
-void DispatchToAgents(FrameTreeNode* frame_tree_node,
-                      void (Handler::*method)(MethodArgs...),
-                      Args&&... args) {
-  RenderFrameDevToolsAgentHost* agent_host =
-      FindAgentHost(GetFrameTreeNodeAncestor(frame_tree_node));
-  if (!agent_host)
-    return;
-  for (auto* h : Handler::ForAgentHost(agent_host))
-    (h->*method)(std::forward<Args>(args)...);
-}
-
-template <typename Handler, typename... MethodArgs, typename... Args>
-void DispatchToAgents(int frame_tree_node_id,
-                      void (Handler::*method)(MethodArgs...),
-                      Args&&... args) {
-  FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
-  if (ftn)
-    DispatchToAgents(ftn, method, std::forward<Args>(args)...);
-}
-
 // static
 scoped_refptr<DevToolsAgentHost>
 DevToolsAgentHost::GetOrCreateFor(WebContents* web_contents) {
@@ -186,37 +165,26 @@ void RenderFrameDevToolsAgentHost::AddAllAgentHosts(
 // static
 void RenderFrameDevToolsAgentHost::OnResetNavigationRequest(
     NavigationRequest* navigation_request) {
+  // Communicate network error to own agent host only.
+  if (navigation_request->net_error() != net::OK) {
+    RenderFrameDevToolsAgentHost* agent_host =
+        FindAgentHost(navigation_request->frame_tree_node());
+    if (agent_host) {
+      for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host))
+        network->NavigationFailed(navigation_request);
+    }
+  }
+
   // Traverse frame chain all the way to the top and report to all
   // page handlers that the navigation completed.
   for (FrameTreeNode* node = navigation_request->frame_tree_node(); node;
        node = node->parent()) {
-    DispatchToAgents(node, &protocol::PageHandler::NavigationReset,
-                     navigation_request);
+    RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(node);
+    if (!agent_host)
+      continue;
+    for (auto* page : protocol::PageHandler::ForAgentHost(agent_host))
+      page->NavigationReset(navigation_request);
   }
-}
-
-// static
-void RenderFrameDevToolsAgentHost::OnNavigationResponseReceived(
-    const NavigationRequest& nav_request,
-    const network::ResourceResponse& response) {
-  FrameTreeNode* ftn = nav_request.frame_tree_node();
-  std::string id = nav_request.devtools_navigation_token().ToString();
-  std::string frame_id = ftn->devtools_frame_token().ToString();
-  GURL url = nav_request.common_params().url;
-  DispatchToAgents(ftn, &protocol::NetworkHandler::ResponseReceived, id, id,
-                   url, protocol::Page::ResourceTypeEnum::Document,
-                   response.head, frame_id);
-}
-
-// static
-void RenderFrameDevToolsAgentHost::OnNavigationRequestFailed(
-    const NavigationRequest& nav_request,
-    int error_code) {
-  FrameTreeNode* ftn = nav_request.frame_tree_node();
-  std::string id = nav_request.devtools_navigation_token().ToString();
-  DispatchToAgents(ftn, &protocol::NetworkHandler::LoadingComplete, id,
-                   protocol::Page::ResourceTypeEnum::Document,
-                   network::URLLoaderCompletionStatus(error_code));
 }
 
 // static
@@ -259,7 +227,7 @@ RenderFrameDevToolsAgentHost::CreateNavigationThrottles(
 }
 
 // static
-void RenderFrameDevToolsAgentHost::ApplyOverrides(
+void RenderFrameDevToolsAgentHost::OnWillSendNavigationRequest(
     FrameTreeNode* frame_tree_node,
     mojom::BeginNavigationParams* begin_params,
     bool* report_raw_headers) {
@@ -274,8 +242,8 @@ void RenderFrameDevToolsAgentHost::ApplyOverrides(
     if (!network->enabled())
       continue;
     *report_raw_headers = true;
-    network->ApplyOverrides(&headers, &begin_params->skip_service_worker,
-                            &disable_cache);
+    network->WillSendNavigationRequest(
+        &headers, &begin_params->skip_service_worker, &disable_cache);
   }
   if (disable_cache) {
     begin_params->load_flags &=
@@ -288,11 +256,17 @@ void RenderFrameDevToolsAgentHost::ApplyOverrides(
 }
 
 // static
-void RenderFrameDevToolsAgentHost::OnNavigationRequestWillBeSent(
-    const NavigationRequest& navigation_request) {
-  DispatchToAgents(navigation_request.frame_tree_node(),
-                   &protocol::NetworkHandler::NavigationRequestWillBeSent,
-                   navigation_request);
+bool RenderFrameDevToolsAgentHost::IsNetworkHandlerEnabled(
+    FrameTreeNode* frame_tree_node) {
+  frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
+  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
+  if (!agent_host)
+    return false;
+  for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host)) {
+    if (network->enabled())
+      return true;
+  }
+  return false;
 }
 
 // static
