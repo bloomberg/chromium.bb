@@ -373,6 +373,7 @@ if (current_os == "win" || current_os == "winrt_81" ||
 } else if (current_os == "aix") {
   is_android = false
   is_chromeos = false
+  is_fuchsia = false
   is_ios = false
   is_linux = false
   is_mac = false
