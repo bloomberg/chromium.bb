@@ -173,7 +173,8 @@ TEST_P(AutofillPopupViewNativeViewsForEveryTypeTest, ShowClickTest) {
   CreateAndShowView({click.id});
   EXPECT_CALL(autofill_popup_controller_, AcceptSuggestion(::testing::_))
       .Times(click.click);
-  gfx::Point center = view()->child_at(0)->GetLocalBounds().CenterPoint();
+  gfx::Point center =
+      view()->GetRowsForTesting()[0]->GetLocalBounds().CenterPoint();
   generator_->set_current_location(center);
   generator_->ClickLeftButton();
   view()->RemoveAllChildViews(true /* delete_children */);

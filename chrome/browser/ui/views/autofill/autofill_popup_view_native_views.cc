@@ -73,6 +73,16 @@ void AutofillPopupRowView::SetStyle(bool is_selected) {
       this, is_selected
                 ? ui::NativeTheme::kColorId_ResultsTableSelectedBackground
                 : ui::NativeTheme::kColorId_ResultsTableNormalBackground));
+
+  if (text_label_) {
+    text_label_->SetEnabledColor(is_selected ? text_selected_color_
+                                             : text_color_);
+  }
+
+  if (subtext_label_) {
+    subtext_label_->SetEnabledColor(is_selected ? subtext_selected_color_
+                                                : subtext_color_);
+  }
 }
 
 void AutofillPopupRowView::OnMouseEntered(const ui::MouseEvent& event) {
@@ -97,19 +107,17 @@ bool AutofillPopupRowView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void AutofillPopupRowView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  if (text_label_) {
-    text_label_->SetEnabledColor(theme->GetSystemColor(
-        is_warning_ ? ui::NativeTheme::kColorId_ResultsTableNegativeText
-                    : ui::NativeTheme::kColorId_ResultsTableNormalText));
-    text_label_->SetSelectionTextColor(theme->GetSystemColor(
-        is_warning_ ? ui::NativeTheme::kColorId_ResultsTableNegativeSelectedText
-                    : ui::NativeTheme::kColorId_ResultsTableSelectedText));
-  }
+  text_color_ = theme->GetSystemColor(
+      is_warning_ ? ui::NativeTheme::kColorId_ResultsTableNegativeText
+                  : ui::NativeTheme::kColorId_ResultsTableNormalText);
+  text_selected_color_ = theme->GetSystemColor(
+      is_warning_ ? ui::NativeTheme::kColorId_ResultsTableNegativeSelectedText
+                  : ui::NativeTheme::kColorId_ResultsTableSelectedText);
 
-  if (subtext_label_) {
-    subtext_label_->SetEnabledColor(theme->GetSystemColor(
-        ui::NativeTheme::kColorId_ResultsTableNormalDimmedText));
-  }
+  subtext_color_ = theme->GetSystemColor(
+      ui::NativeTheme::kColorId_ResultsTableNormalDimmedText);
+  subtext_selected_color_ = theme->GetSystemColor(
+      ui::NativeTheme::kColorId_ResultsTableSelectedDimmedText);
 }
 
 void AutofillPopupRowView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
