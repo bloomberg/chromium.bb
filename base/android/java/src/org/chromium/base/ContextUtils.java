@@ -17,8 +17,6 @@ import android.preference.PreferenceManager;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 
-import java.lang.reflect.Method;
-
 /**
  * This class provides Android application context related utility methods.
  */
@@ -157,25 +155,27 @@ public class ContextUtils {
      * @return Whether the process is isolated.
      */
     public static boolean isIsolatedProcess() {
-        // Could be tested by trying to list a directory and seeing if it throws.
-        // Reflection is faster though.
         try {
-            Method isIsolatedMethod = Process.class.getMethod("isIsolated");
-            return (Boolean) isIsolatedMethod.invoke(null);
+            return (Boolean) Process.class.getMethod("isIsolated").invoke(null);
         } catch (Exception e) { // No multi-catch below API level 19 for reflection exceptions.
+            // If fallback logic is ever needed, refer to:
+            // https://chromium-review.googlesource.com/c/chromium/src/+/905563/1
             throw new RuntimeException(e);
         }
     }
 
-    /** @return The name of the current process. E.g. "org.chromium.chrome:isolated_process0" */
+    /** @return The name of the current process. E.g. "org.chromium.chrome:privileged_process0". */
     public static String getProcessName() {
-        // Could be obtained by looping through results of ActivityManager.getRunningAppProcesses(),
-        // but avoiding IPC is much faster.
         try {
+            // An even more convenient ActivityThread.currentProcessName() exists, but was not added
+            // until JB MR2.
             Class<?> activityThreadClazz = Class.forName("android.app.ActivityThread");
-            Method currentProcessName = activityThreadClazz.getMethod("currentProcessName");
-            return (String) currentProcessName.invoke(null);
+            Object activityThread =
+                    activityThreadClazz.getMethod("currentActivityThread").invoke(null);
+            return (String) activityThreadClazz.getMethod("getProcessName").invoke(activityThread);
         } catch (Exception e) { // No multi-catch below API level 19 for reflection exceptions.
+            // If fallback logic is ever needed, refer to:
+            // https://chromium-review.googlesource.com/c/chromium/src/+/905563/1
             throw new RuntimeException(e);
         }
     }
