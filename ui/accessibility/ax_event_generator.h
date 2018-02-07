@@ -38,7 +38,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
     MENU_ITEM_SELECTED,
     NAME_CHANGED,
     OTHER_ATTRIBUTE_CHANGED,
-    RELATED_NODE_CHANGED,
     ROLE_CHANGED,
     ROW_COUNT_CHANGED,
     SCROLL_POSITION_CHANGED,
@@ -170,7 +169,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
  private:
   void FireLiveRegionEvents(AXNode* node);
   void FireActiveDescendantEvents();
-  void FireRelationSourceEvents(AXTree* tree, AXNode* target_node);
 
   AXTree* tree_ = nullptr;  // Not owned.
   std::map<AXNode*, std::set<Event>> tree_events_;
