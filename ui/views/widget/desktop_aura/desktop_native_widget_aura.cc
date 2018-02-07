@@ -413,7 +413,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   NativeWidgetAura::RegisterNativeWidgetForWindow(this, content_window_);
   content_window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
   content_window_->Init(params.layer_type);
-  wm::SetShadowElevation(content_window_, wm::ShadowElevation::NONE);
+  wm::SetShadowElevation(content_window_, wm::kShadowElevationNone);
 
   if (!desktop_window_tree_host_) {
     if (params.desktop_window_tree_host) {

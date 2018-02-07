@@ -20,6 +20,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/wm/core/shadow.h"
+#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -32,41 +33,38 @@ namespace wm {
 
 namespace {
 
-constexpr ShadowElevation kInactiveNormalShadowElevation =
-    ShadowElevation::MEDIUM;
-
-ShadowElevation GetDefaultShadowElevationForWindow(aura::Window* window) {
+int GetDefaultShadowElevationForWindow(aura::Window* window) {
   switch (window->type()) {
     case aura::client::WINDOW_TYPE_NORMAL:
     case aura::client::WINDOW_TYPE_PANEL:
-      return kInactiveNormalShadowElevation;
+      return kShadowElevationInactiveWindow;
 
     case aura::client::WINDOW_TYPE_MENU:
     case aura::client::WINDOW_TYPE_TOOLTIP:
-      return ShadowElevation::SMALL;
+      return kShadowElevationMenuOrTooltip;
 
     default:
       break;
   }
-  return ShadowElevation::NONE;
+  return kShadowElevationNone;
 }
 
-// Returns the ShadowElevation for |window|, converting |DEFAULT| to the
-// appropriate ShadowElevation.
-ShadowElevation GetShadowElevationConvertDefault(aura::Window* window) {
-  ShadowElevation elevation = window->GetProperty(kShadowElevationKey);
-  return elevation == ShadowElevation::DEFAULT
+// Returns the shadow elevation for |window|, converting
+// |kShadowElevationDefault| to the appropriate value.
+int GetShadowElevationConvertDefault(aura::Window* window) {
+  int elevation = window->GetProperty(kShadowElevationKey);
+  return elevation == kShadowElevationDefault
              ? GetDefaultShadowElevationForWindow(window)
              : elevation;
 }
 
-ShadowElevation GetShadowElevationForActiveState(aura::Window* window) {
-  ShadowElevation elevation = window->GetProperty(kShadowElevationKey);
-  if (elevation != ShadowElevation::DEFAULT)
+int GetShadowElevationForActiveState(aura::Window* window) {
+  int elevation = window->GetProperty(kShadowElevationKey);
+  if (elevation != kShadowElevationDefault)
     return elevation;
 
   if (IsActiveWindow(window))
-    return ShadowController::kActiveNormalShadowElevation;
+    return kShadowElevationActiveWindow;
 
   return GetDefaultShadowElevationForWindow(window);
 }
@@ -74,15 +72,14 @@ ShadowElevation GetShadowElevationForActiveState(aura::Window* window) {
 // Returns the shadow style to be applied to |losing_active| when it is losing
 // active to |gaining_active|. |gaining_active| may be of a type that hides when
 // inactive, and as such we do not want to render |losing_active| as inactive.
-ShadowElevation GetShadowElevationForWindowLosingActive(
-    aura::Window* losing_active,
-    aura::Window* gaining_active) {
+int GetShadowElevationForWindowLosingActive(aura::Window* losing_active,
+                                            aura::Window* gaining_active) {
   if (gaining_active && GetHideOnDeactivate(gaining_active)) {
     if (base::ContainsValue(GetTransientChildren(losing_active),
                             gaining_active))
-      return ShadowController::kActiveNormalShadowElevation;
+      return kShadowElevationActiveWindow;
   }
-  return kInactiveNormalShadowElevation;
+  return kShadowElevationInactiveWindow;
 }
 
 }  // namespace
@@ -168,8 +165,7 @@ void ShadowController::Impl::OnWindowPropertyChanged(aura::Window* window,
                                                      const void* key,
                                                      intptr_t old) {
   if (key == kShadowElevationKey) {
-    if (window->GetProperty(kShadowElevationKey) ==
-        static_cast<ShadowElevation>(old))
+    if (window->GetProperty(kShadowElevationKey) == old)
       return;
   } else if (key == aura::client::kShowStateKey) {
     if (window->GetProperty(aura::client::kShowStateKey) ==
@@ -207,9 +203,8 @@ void ShadowController::Impl::OnWindowActivated(ActivationReason reason,
   }
   if (lost_active) {
     Shadow* shadow = GetShadowForWindow(lost_active);
-    if (shadow &&
-        GetShadowElevationConvertDefault(lost_active) ==
-            kInactiveNormalShadowElevation) {
+    if (shadow && GetShadowElevationConvertDefault(lost_active) ==
+                      kShadowElevationInactiveWindow) {
       shadow->SetElevation(
           GetShadowElevationForWindowLosingActive(lost_active, gained_active));
     }

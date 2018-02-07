@@ -16,6 +16,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow_controller.h"
+#include "ui/wm/core/shadow_types.h"
 
 namespace ash {
 namespace {
@@ -29,13 +30,10 @@ const float kStartBoundsRatio = 0.85f;
 
 // The elevation of the shadow for the phantom window should match that of an
 // active window.
-constexpr ::wm::ShadowElevation kShadowElevation =
-    ::wm::ShadowController::kActiveNormalShadowElevation;
-
 // The shadow ninebox requires a minimum size to work well. See
 // ui/wm/core/shadow.cc
-constexpr int kMinWidthWithShadow = 2 * static_cast<int>(kShadowElevation);
-constexpr int kMinHeightWithShadow = 4 * static_cast<int>(kShadowElevation);
+constexpr int kMinWidthWithShadow = 2 * ::wm::kShadowElevationActiveWindow;
+constexpr int kMinHeightWithShadow = 4 * ::wm::kShadowElevationActiveWindow;
 
 }  // namespace
 
@@ -80,7 +78,7 @@ std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
   params.name = "PhantomWindow";
   params.layer_type = ui::LAYER_SOLID_COLOR;
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
-  params.shadow_elevation = ::wm::ShadowElevation::LARGE;
+  params.shadow_elevation = ::wm::kShadowElevationActiveWindow;
   params.parent = root_window->GetChildById(kShellWindowId_ShelfContainer);
   phantom_widget->set_focus_on_creation(false);
   phantom_widget->Init(params);

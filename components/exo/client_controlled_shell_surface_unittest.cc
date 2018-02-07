@@ -52,7 +52,7 @@ bool IsWidgetPinned(views::Widget* widget) {
          type == ash::mojom::WindowPinType::TRUSTED_PINNED;
 }
 
-wm::ShadowElevation GetShadowElevation(aura::Window* window) {
+int GetShadowElevation(aura::Window* window) {
   return window->GetProperty(wm::kShadowElevationKey);
 }
 
@@ -296,14 +296,14 @@ TEST_F(ClientControlledShellSurfaceTest, SurfaceShadow) {
   shell_surface->SetShadowBounds(gfx::Rect());
   surface->Commit();
 
-  EXPECT_EQ(wm::ShadowElevation::NONE, GetShadowElevation(window));
+  EXPECT_EQ(wm::kShadowElevationNone, GetShadowElevation(window));
   EXPECT_FALSE(shadow->layer()->visible());
 
   // 6) This should enable non surface shadow again.
   shell_surface->SetShadowBounds(gfx::Rect(10, 10, 100, 100));
   surface->Commit();
 
-  EXPECT_EQ(wm::ShadowElevation::DEFAULT, GetShadowElevation(window));
+  EXPECT_EQ(wm::kShadowElevationDefault, GetShadowElevation(window));
   EXPECT_TRUE(shadow->layer()->visible());
 }
 
@@ -335,7 +335,7 @@ TEST_F(ClientControlledShellSurfaceTest, ShadowWithStateChange) {
 
   shell_surface->SetShadowBounds(shadow_bounds);
   surface->Commit();
-  EXPECT_EQ(wm::ShadowElevation::DEFAULT, GetShadowElevation(window));
+  EXPECT_EQ(wm::kShadowElevationDefault, GetShadowElevation(window));
 
   EXPECT_TRUE(shadow->layer()->visible());
   // Origin must be in sync.

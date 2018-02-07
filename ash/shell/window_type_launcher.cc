@@ -40,7 +40,10 @@ namespace shell {
 
 namespace {
 
-SkColor g_colors[] = {SK_ColorRED, SK_ColorYELLOW, SK_ColorBLUE, SK_ColorGREEN};
+constexpr int kWindowShadowElevation = 8;
+constexpr const SkColor kColors[] = {SK_ColorRED, SK_ColorYELLOW, SK_ColorBLUE,
+                                     SK_ColorGREEN};
+
 int g_color_index = 0;
 
 class ModalWindow : public views::WidgetDelegateView,
@@ -48,9 +51,9 @@ class ModalWindow : public views::WidgetDelegateView,
  public:
   explicit ModalWindow(ui::ModalType modal_type)
       : modal_type_(modal_type),
-        color_(g_colors[g_color_index]),
+        color_(kColors[g_color_index]),
         open_button_(MdTextButton::Create(this, base::ASCIIToUTF16("Moar!"))) {
-    ++g_color_index %= arraysize(g_colors);
+    ++g_color_index %= arraysize(kColors);
     AddChildView(open_button_);
   }
   ~ModalWindow() override = default;
@@ -99,8 +102,8 @@ class ModalWindow : public views::WidgetDelegateView,
 
 class NonModalTransient : public views::WidgetDelegateView {
  public:
-  NonModalTransient() : color_(g_colors[g_color_index]) {
-    ++g_color_index %= arraysize(g_colors);
+  NonModalTransient() : color_(kColors[g_color_index]) {
+    ++g_color_index %= arraysize(kColors);
   }
   ~NonModalTransient() override = default;
 
@@ -167,8 +170,7 @@ void InitWindowTypeLauncher(const base::Closure& show_views_examples_callback) {
       new WindowTypeLauncher(show_views_examples_callback),
       Shell::GetPrimaryRootWindow(), gfx::Rect(120, 150, 300, 410));
   widget->GetNativeView()->SetName("WindowTypeLauncher");
-  ::wm::SetShadowElevation(widget->GetNativeView(),
-                           ::wm::ShadowElevation::MEDIUM);
+  ::wm::SetShadowElevation(widget->GetNativeView(), kWindowShadowElevation);
   widget->Show();
 }
 

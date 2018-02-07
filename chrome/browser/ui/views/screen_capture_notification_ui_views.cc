@@ -23,7 +23,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/wm/core/shadow_types.h"
 
 #if defined(OS_WIN)
 #include "ui/views/win/hwnd_util.h"

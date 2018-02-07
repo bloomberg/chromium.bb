@@ -567,7 +567,7 @@ void ScopedTransformOverviewWindow::Close() {
 
 void ScopedTransformOverviewWindow::PrepareForOverview() {
   original_shadow_elevation_ = window_->GetProperty(::wm::kShadowElevationKey);
-  ::wm::SetShadowElevation(window_, ::wm::ShadowElevation::NONE);
+  ::wm::SetShadowElevation(window_, ::wm::kShadowElevationNone);
 
   DCHECK(!overview_started_);
   overview_started_ = true;

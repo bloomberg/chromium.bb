@@ -50,7 +50,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow.h"
-#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace ash {
@@ -73,8 +72,9 @@ constexpr SkColor kWindowSelectionBorderColor =
 // Border thickness of overview selector.
 constexpr int kWindowSelectionBorderThickness = 1;
 
-// Corner radius of the overview selector border.
+// Corner radius and shadow applied to the overview selector border.
 constexpr int kWindowSelectionRadius = 9;
+constexpr int kWindowSelectionShadowElevation = 24;
 
 // Values for the old overview ui.
 // TODO(crbug.com/782320): Delete these values when the old ui becomes obsolete.
@@ -843,8 +843,8 @@ void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
   widget_window->SetBounds(target_bounds - fade_out_direction);
   widget_window->SetName("OverviewModeSelector");
 
-  selector_shadow_.reset(new ::wm::Shadow());
-  selector_shadow_->Init(::wm::ShadowElevation::LARGE);
+  selector_shadow_ = std::make_unique<::wm::Shadow>();
+  selector_shadow_->Init(kWindowSelectionShadowElevation);
   selector_shadow_->layer()->SetVisible(true);
   selection_widget_->GetLayer()->SetMasksToBounds(false);
   selection_widget_->GetLayer()->Add(selector_shadow_->layer());
