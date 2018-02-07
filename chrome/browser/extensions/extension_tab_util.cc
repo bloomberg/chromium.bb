@@ -661,8 +661,8 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
 // static
 void ExtensionTabUtil::ForEachTab(
     const base::Callback<void(WebContents*)>& callback) {
-  for (TabContentsIterator iterator; !iterator.done(); iterator.Next())
-    callback.Run(*iterator);
+  for (auto* web_contents : AllTabContentses())
+    callback.Run(web_contents);
 }
 
 // static

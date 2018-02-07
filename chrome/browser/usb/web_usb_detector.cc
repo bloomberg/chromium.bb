@@ -119,7 +119,8 @@ class WebUsbNotificationDelegate : public TabStripModelObserver,
     // If the URL is already open, activate that tab.
     content::WebContents* tab_to_activate = nullptr;
     Browser* browser = nullptr;
-    for (TabContentsIterator it; !it.done(); it.Next()) {
+    auto& all_tabs = AllTabContentses();
+    for (auto it = all_tabs.begin(), end = all_tabs.end(); it != end; ++it) {
       if (it->GetVisibleURL() == landing_page_ &&
           (!tab_to_activate ||
            it->GetLastActiveTime() > tab_to_activate->GetLastActiveTime())) {

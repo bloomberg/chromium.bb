@@ -208,9 +208,9 @@ void MediaClient::RequestCaptureState() {
 }
 
 void MediaClient::SuspendMediaSessions() {
-  for (TabContentsIterator it; !it.done(); it.Next()) {
-    content::MediaSession::Get(*it)->Suspend(
-        content::MediaSession::SuspendType::SYSTEM);
+  for (auto* web_contents : AllTabContentses()) {
+    content::MediaSession::Get(web_contents)
+        ->Suspend(content::MediaSession::SuspendType::SYSTEM);
   }
 }
 

@@ -646,8 +646,7 @@ void TabManager::PurgeBrowserMemory() {
   // function therefore only targets large blocks of memory in the browser.
   // Note that other objects will listen to MemoryPressureListener events
   // to release memory.
-  for (TabContentsIterator it; !it.done(); it.Next()) {
-    WebContents* web_contents = *it;
+  for (auto* web_contents : AllTabContentses()) {
     // Screenshots can consume ~5 MB per web contents for platforms that do
     // touch back/forward.
     web_contents->GetController().ClearAllScreenshots();

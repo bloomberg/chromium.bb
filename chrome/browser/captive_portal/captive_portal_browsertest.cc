@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <set>
@@ -543,12 +545,10 @@ std::string CreateServerRedirect(const std::string& dest_url) {
 // Returns the total number of loading tabs across all Browsers, for all
 // Profiles.
 int NumLoadingTabs() {
-  int num_loading_tabs = 0;
-  for (TabContentsIterator it; !it.done(); it.Next()) {
-    if (it->IsLoading())
-      ++num_loading_tabs;
-  }
-  return num_loading_tabs;
+  return std::count_if(AllTabContentses().begin(), AllTabContentses().end(),
+                       [](content::WebContents* web_contents) {
+                         return web_contents->IsLoading();
+                       });
 }
 
 bool IsLoginTab(WebContents* web_contents) {
@@ -695,10 +695,12 @@ FailLoadsAfterLoginObserver::FailLoadsAfterLoginObserver()
     : waiting_for_navigation_(false) {
   registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                  content::NotificationService::AllSources());
-  for (TabContentsIterator it; !it.done(); it.Next()) {
-    if (it->IsLoading())
-      tabs_needing_navigation_.insert(*it);
-  }
+  std::copy_if(
+      AllTabContentses().begin(), AllTabContentses().end(),
+      std::inserter(tabs_needing_navigation_, tabs_needing_navigation_.end()),
+      [](content::WebContents* web_contents) {
+        return web_contents->IsLoading();
+      });
 }
 
 FailLoadsAfterLoginObserver::~FailLoadsAfterLoginObserver() {
@@ -1238,12 +1240,10 @@ CaptivePortalBrowserTest::GetStateOfTabReloaderAt(Browser* browser,
 
 int CaptivePortalBrowserTest::NumTabsWithState(
     CaptivePortalTabReloader::State state) const {
-  int num_tabs = 0;
-  for (TabContentsIterator it; !it.done(); it.Next()) {
-    if (GetStateOfTabReloader(*it) == state)
-      ++num_tabs;
-  }
-  return num_tabs;
+  return std::count_if(AllTabContentses().begin(), AllTabContentses().end(),
+                       [this, state](content::WebContents* web_contents) {
+                         return GetStateOfTabReloader(web_contents) == state;
+                       });
 }
 
 int CaptivePortalBrowserTest::NumBrokenTabs() const {
