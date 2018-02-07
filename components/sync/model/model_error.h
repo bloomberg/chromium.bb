@@ -28,6 +28,9 @@ class ModelError {
   // if the error is set.
   const std::string& message() const;
 
+  // Returns string representation of this object, appropriate for logging.
+  std::string ToString() const;
+
  private:
   base::Location location_;
   std::string message_;

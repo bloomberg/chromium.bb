@@ -368,8 +368,8 @@ void AutocompleteSyncBridge::AutocompleteSyncBridge::GetData(
   DCHECK(thread_checker_.CalledOnValidThread());
   std::vector<AutofillEntry> entries;
   if (!GetAutofillTable()->GetAllAutofillEntries(&entries)) {
-    change_processor()->ReportError(FROM_HERE,
-                                    "Failed to load entries from table.");
+    change_processor()->ReportError(
+        {FROM_HERE, "Failed to load entries from table."});
     return;
   }
 
@@ -390,8 +390,8 @@ void AutocompleteSyncBridge::GetAllData(DataCallback callback) {
 
   std::vector<AutofillEntry> entries;
   if (!GetAutofillTable()->GetAllAutofillEntries(&entries)) {
-    change_processor()->ReportError(FROM_HERE,
-                                    "Failed to load entries from table.");
+    change_processor()->ReportError(
+        {FROM_HERE, "Failed to load entries from table."});
     return;
   }
 
@@ -422,7 +422,7 @@ void AutocompleteSyncBridge::ActOnLocalChanges(
             &date_last_used);
         if (!success) {
           change_processor()->ReportError(
-              FROM_HERE, "Failed reading autofill entry from WebDatabase.");
+              {FROM_HERE, "Failed reading autofill entry from WebDatabase."});
           return;
         }
 
@@ -439,21 +439,21 @@ void AutocompleteSyncBridge::ActOnLocalChanges(
   }
 
   if (Optional<ModelError> error = metadata_change_list->TakeError())
-    change_processor()->ReportError(error.value());
+    change_processor()->ReportError(*error);
 }
 
 void AutocompleteSyncBridge::LoadMetadata() {
   if (!web_data_backend_ || !web_data_backend_->GetDatabase() ||
       !GetAutofillTable()) {
-    change_processor()->ReportError(FROM_HERE,
-                                    "Failed to load AutofillWebDatabase.");
+    change_processor()->ReportError(
+        {FROM_HERE, "Failed to load AutofillWebDatabase."});
     return;
   }
 
   auto batch = std::make_unique<syncer::MetadataBatch>();
   if (!GetAutofillTable()->GetAllSyncMetadata(syncer::AUTOFILL, batch.get())) {
     change_processor()->ReportError(
-        FROM_HERE, "Failed reading autofill metadata from WebDatabase.");
+        {FROM_HERE, "Failed reading autofill metadata from WebDatabase."});
     return;
   }
   change_processor()->ModelReadyToSync(std::move(batch));
