@@ -19,7 +19,7 @@ namespace features {
 
 extern const base::Feature kAffiliationBasedMatching;
 extern const base::Feature kHtmlBasedUsernameDetector;
-extern const base::Feature kEnableManualFallbacksFilling;
+extern const base::Feature kManualFallbacksFilling;
 extern const base::Feature kEnableManualFallbacksFillingStandalone;
 extern const base::Feature kEnableManualFallbacksGeneration;
 extern const base::Feature kEnableManualPasswordGeneration;

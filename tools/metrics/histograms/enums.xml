@@ -26033,6 +26033,7 @@ from previous Chrome versions.
   <int value="-290672626" label="enable-asm-wasm"/>
   <int value="-288316828" label="enable-delegated-renderer"/>
   <int value="-284547865" label="UnifiedConsent:enabled"/>
+  <int value="-283388027" label="ManualFallbacksFilling:disabled"/>
   <int value="-281844827" label="AutofillCreditCardAblationExperiment:enabled"/>
   <int value="-280111192" label="AutofillUpstreamSendDetectedValues:enabled"/>
   <int value="-279920685" label="affiliation-based-matching:enabled"/>
@@ -26583,6 +26584,7 @@ from previous Chrome versions.
   <int value="1163255347" label="ash-enable-touch-view-touch-feedback"/>
   <int value="1166169237" label="disable-delay-agnostic-aec"/>
   <int value="1167613030" label="enable-permission-action-reporting"/>
+  <int value="1169418814" label="ManualFallbacksFilling:enabled"/>
   <int value="1174088940" label="enable-wasm"/>
   <int value="1179013979"
       label="OmniboxUIExperimentMaxAutocompleteMatches:enabled"/>
