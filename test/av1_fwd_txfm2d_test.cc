@@ -21,7 +21,7 @@
 #include "./av1_rtcd.h"
 
 using libaom_test::ACMRandom;
-using libaom_test::Fwd_Txfm2d_Func;
+using libaom_test::FwdTxfm2dFunc;
 using libaom_test::TYPE_TXFM;
 using libaom_test::bd;
 using libaom_test::compute_avg_abs_error;
@@ -125,7 +125,7 @@ class AV1FwdTxfm2d : public ::testing::TestWithParam<AV1FwdTxfm2dParam> {
   int tx_width_;
   int tx_height_;
   int txfm2d_size_;
-  Fwd_Txfm2d_Func fwd_txfm_;
+  FwdTxfm2dFunc fwd_txfm_;
   int16_t *input_;
   int32_t *output_;
   double *ref_input_;
@@ -210,7 +210,7 @@ TEST(AV1FwdTxfm2d, CfgTest) {
 
 #if HAVE_SSE2 && defined(__SSE2__)
 #include "av1/common/x86/av1_txfm_sse2.h"
-Fwd_Txfm2d_Func fwd_func_sse2_list[TX_SIZES_ALL][2] = {
+FwdTxfm2dFunc fwd_func_sse2_list[TX_SIZES_ALL][2] = {
   { NULL, NULL },  // TX_4X4
   { av1_fwd_txfm2d_8x8_c,
     av1_fwd_txfm2d_8x8_sse2 },  // TX_8X8    // 8x8 transform
@@ -250,8 +250,8 @@ TEST(av1_fwd_txfm2d_sse2, match) {
         // No ADST for large size transforms.
         continue;
       }
-      Fwd_Txfm2d_Func ref_func = fwd_func_sse2_list[tx_size][0];
-      Fwd_Txfm2d_Func target_func = fwd_func_sse2_list[tx_size][1];
+      FwdTxfm2dFunc ref_func = fwd_func_sse2_list[tx_size][0];
+      FwdTxfm2dFunc target_func = fwd_func_sse2_list[tx_size][1];
       if (ref_func != NULL && target_func != NULL) {
         DECLARE_ALIGNED(16, int16_t, input[64 * 64]) = { 0 };
         DECLARE_ALIGNED(16, int32_t, output[64 * 64]) = { 0 };

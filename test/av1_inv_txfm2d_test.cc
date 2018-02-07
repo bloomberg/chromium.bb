@@ -15,14 +15,17 @@
 #include <vector>
 
 #include "./av1_rtcd.h"
-#include "test/acm_random.h"
-#include "test/util.h"
-#include "test/av1_txfm_test.h"
+
+#include "aom_ports/aom_timer.h"
 #include "av1/common/av1_inv_txfm1d_cfg.h"
+#include "test/acm_random.h"
+#include "test/av1_txfm_test.h"
+#include "test/util.h"
 
 using libaom_test::ACMRandom;
-using libaom_test::Fwd_Txfm2d_Func;
-using libaom_test::Inv_Txfm2d_Func;
+using libaom_test::FwdTxfm2dFunc;
+using libaom_test::InvTxfm2dFunc;
+using libaom_test::LbdInvTxfm2dFunc;
 using libaom_test::bd;
 using libaom_test::compute_avg_abs_error;
 using libaom_test::input_base;
@@ -48,10 +51,8 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
     int tx_w = tx_size_wide[tx_size_];
     int tx_h = tx_size_high[tx_size_];
     int txfm2d_size = tx_w * tx_h;
-    const Fwd_Txfm2d_Func fwd_txfm_func =
-        libaom_test::fwd_txfm_func_ls[tx_size_];
-    const Inv_Txfm2d_Func inv_txfm_func =
-        libaom_test::inv_txfm_func_ls[tx_size_];
+    const FwdTxfm2dFunc fwd_txfm_func = libaom_test::fwd_txfm_func_ls[tx_size_];
+    const InvTxfm2dFunc inv_txfm_func = libaom_test::inv_txfm_func_ls[tx_size_];
     double avg_abs_error = 0;
     ACMRandom rnd(ACMRandom::DeterministicSeed());
 
@@ -213,4 +214,123 @@ TEST(AV1InvTxfm2d, CfgTest) {
     }
   }
 }
+
+typedef std::tr1::tuple<LbdInvTxfm2dFunc *> AV1LbdInvTxfm2dParam;
+class AV1LbdInvTxfm2d : public ::testing::TestWithParam<AV1LbdInvTxfm2dParam> {
+ public:
+  void RunAV1InvTxfm2dTest(LbdInvTxfm2dFunc *test_list, int run_times);
+};
+
+void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(LbdInvTxfm2dFunc *test_list,
+                                          int run_times) {
+  const int bd = 8;
+  for (int tx_size = TX_4X4; tx_size < TX_SIZES_ALL; ++tx_size) {
+    for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
+      FwdTxfm2dFunc fwd_func = libaom_test::fwd_txfm_func_ls[tx_size];
+      InvTxfm2dFunc ref_func = libaom_test::inv_txfm_func_ls[tx_size];
+      LbdInvTxfm2dFunc target_func = test_list[tx_size];
+      if (ref_func != NULL && target_func != NULL) {
+        const int BLK_WIDTH = 64;
+        const int BLK_SIZE = BLK_WIDTH * BLK_WIDTH;
+        DECLARE_ALIGNED(16, int16_t, input[BLK_SIZE]) = { 0 };
+        DECLARE_ALIGNED(32, int32_t, inv_input[BLK_SIZE]) = { 0 };
+        DECLARE_ALIGNED(16, uint8_t, output[BLK_SIZE]) = { 0 };
+        DECLARE_ALIGNED(16, uint16_t, ref_output[BLK_SIZE]) = { 0 };
+        int stride = BLK_WIDTH;
+        ACMRandom rnd(ACMRandom::DeterministicSeed());
+        int rows = tx_size_high[tx_size];
+        int cols = tx_size_wide[tx_size];
+        int randTimes = run_times == 1 ? 500 : 2;
+        for (int cnt = 0; cnt < randTimes; ++cnt) {
+          if (cnt == 0) {
+            const int16_t max_in = (1 << (bd + 1)) - 1;
+            for (int r = 0; r < rows; ++r) {
+              for (int c = 0; c < cols; ++c) {
+                input[r * cols + c] = max_in;
+                output[r * stride + c] = ref_output[r * stride + c] = 128;
+              }
+            }
+          } else {
+            for (int r = 0; r < rows; ++r) {
+              for (int c = 0; c < cols; ++c) {
+                input[r * cols + c] = rnd.Rand8Extremes();
+                output[r * stride + c] = ref_output[r * stride + c] =
+                    rnd.Rand8();
+              }
+            }
+          }
+          fwd_func(input, inv_input, stride, (TX_TYPE)tx_type, bd);
+          aom_usec_timer timer;
+          aom_usec_timer_start(&timer);
+          for (int i = 0; i < run_times; ++i) {
+            ref_func(inv_input, ref_output, stride, (TX_TYPE)tx_type, bd);
+          }
+          aom_usec_timer_mark(&timer);
+          double time1 = static_cast<double>(aom_usec_timer_elapsed(&timer));
+          aom_usec_timer_start(&timer);
+          for (int i = 0; i < run_times; ++i) {
+            target_func(inv_input, output, stride, (TX_TYPE)tx_type, bd);
+          }
+          aom_usec_timer_mark(&timer);
+          double time2 = static_cast<double>(aom_usec_timer_elapsed(&timer));
+          if (run_times > 10) {
+            printf("txfm[%d] %3dx%-3d:%7.2f/%7.2fns", tx_type, cols, rows,
+                   time1, time2);
+            printf("(%3.2f)\n", time1 / time2);
+          }
+          for (int r = 0; r < rows; ++r) {
+            for (int c = 0; c < cols; ++c) {
+              ASSERT_EQ((uint8_t)ref_output[r * stride + c],
+                        output[r * stride + c])
+                  << "[" << r << "," << c << "] " << cnt
+                  << " tx_size: " << tx_size << " tx_type: " << tx_type;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+TEST_P(AV1LbdInvTxfm2d, match) { RunAV1InvTxfm2dTest(GET_PARAM(0), 1); }
+TEST_P(AV1LbdInvTxfm2d, DISABLED_Speed) {
+  RunAV1InvTxfm2dTest(GET_PARAM(0), 10000000);
+}
+
+#if HAVE_SSE2 && defined(__SSE2__)
+#include "av1/common/x86/av1_txfm_sse2.h"
+
+LbdInvTxfm2dFunc ldb_inv_func_sse2_list[TX_SIZES_ALL] = {
+  NULL,                               // TX_4X4
+  av1_lowbd_inv_txfm2d_add_8x8_sse2,  // TX_8X8
+  NULL,                               // TX_16X16
+  NULL,                               // TX_32X32
+#if CONFIG_TX64X64
+  NULL,  // TX_64X64
+#endif   // CONFIG_TX64X64
+  NULL,  // TX_4X8
+  NULL,  // TX_8X4
+  NULL,  // TX_8X16
+  NULL,  // TX_16X8
+  NULL,  // TX_16X32
+  NULL,  // TX_32X16
+#if CONFIG_TX64X64
+  NULL,  // TX_32X64
+  NULL,  // TX_64X32
+#endif   // CONFIG_TX64X64
+  NULL,  // TX_4X16
+  NULL,  // TX_16X4
+  NULL,  // TX_8X32
+  NULL,  // TX_32X8
+#if CONFIG_TX64X64
+  NULL,  // TX_16X64
+  NULL,  // TX_64X16
+#endif   // CONFIG_TX64X64
+};
+
+INSTANTIATE_TEST_CASE_P(SSE2, AV1LbdInvTxfm2d,
+                        ::testing::Values(ldb_inv_func_sse2_list));
+
+#endif  // HAVE_SSE2
+
 }  // namespace

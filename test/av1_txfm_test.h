@@ -74,15 +74,16 @@ void fliplrud(Type *dest, int width, int height, int stride);
 typedef void (*TxfmFunc)(const int32_t *in, int32_t *out, const int8_t cos_bit,
                          const int8_t *range_bit);
 
-typedef void (*Fwd_Txfm2d_Func)(const int16_t *, int32_t *, int, TX_TYPE, int);
-typedef void (*Inv_Txfm2d_Func)(const int32_t *, uint16_t *, int, TX_TYPE, int);
+typedef void (*FwdTxfm2dFunc)(const int16_t *, int32_t *, int, TX_TYPE, int);
+typedef void (*InvTxfm2dFunc)(const int32_t *, uint16_t *, int, TX_TYPE, int);
+typedef void (*LbdInvTxfm2dFunc)(const int32_t *, uint8_t *, int, TX_TYPE, int);
 
 static const int bd = 10;
 static const int input_base = (1 << bd);
 
 #if CONFIG_AV1_ENCODER
 
-static const Fwd_Txfm2d_Func fwd_txfm_func_ls[TX_SIZES_ALL] = {
+static const FwdTxfm2dFunc fwd_txfm_func_ls[TX_SIZES_ALL] = {
   av1_fwd_txfm2d_4x4_c,   av1_fwd_txfm2d_8x8_c,   av1_fwd_txfm2d_16x16_c,
   av1_fwd_txfm2d_32x32_c,
 #if CONFIG_TX64X64
@@ -101,7 +102,7 @@ static const Fwd_Txfm2d_Func fwd_txfm_func_ls[TX_SIZES_ALL] = {
 };
 #endif
 
-static const Inv_Txfm2d_Func inv_txfm_func_ls[TX_SIZES_ALL] = {
+static const InvTxfm2dFunc inv_txfm_func_ls[TX_SIZES_ALL] = {
   av1_inv_txfm2d_add_4x4_c,   av1_inv_txfm2d_add_8x8_c,
   av1_inv_txfm2d_add_16x16_c, av1_inv_txfm2d_add_32x32_c,
 #if CONFIG_TX64X64

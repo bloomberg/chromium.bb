@@ -9,6 +9,9 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "./aom_config.h"
+#include "./av1_rtcd.h"
+#include "av1/common/av1_inv_txfm1d_cfg.h"
 #include "av1/common/x86/av1_txfm_sse2.h"
 
 void idct4_new_sse2(const __m128i *input, __m128i *output, int8_t cos_bit) {
@@ -1594,4 +1597,107 @@ void iadst16_new_sse2(const __m128i *input, __m128i *output, int8_t cos_bit) {
   output[13] = _mm_subs_epi16(__zero, x8[13]);
   output[14] = x8[9];
   output[15] = _mm_subs_epi16(__zero, x8[1]);
+}
+
+static void iidentity8_new_sse2(const __m128i *input, __m128i *output,
+                                int8_t cos_bit) {
+  (void)cos_bit;
+
+  output[0] = _mm_adds_epi16(input[0], input[0]);
+  output[1] = _mm_adds_epi16(input[1], input[1]);
+  output[2] = _mm_adds_epi16(input[2], input[2]);
+  output[3] = _mm_adds_epi16(input[3], input[3]);
+  output[4] = _mm_adds_epi16(input[4], input[4]);
+  output[5] = _mm_adds_epi16(input[5], input[5]);
+  output[6] = _mm_adds_epi16(input[6], input[6]);
+  output[7] = _mm_adds_epi16(input[7], input[7]);
+}
+
+static INLINE __m128i lowbd_get_recon_8x8_sse2(const __m128i pred, __m128i res,
+                                               int fliplr) {
+  const __m128i zero = _mm_setzero_si128();
+  __m128i x0 = _mm_unpacklo_epi8(pred, zero);
+  if (fliplr) {
+    // TODO(binpengsmail@gmail.com):
+    // To replace these shuffle by transpose twice (in different diagonals)
+    // with flipped reading, for shuffle is usually expensive for low-end CPUs
+    res = _mm_shufflelo_epi16(res, 0x1B);
+    res = _mm_shufflehi_epi16(res, 0x1B);
+    res = _mm_shuffle_epi32(res, 0x4E);
+  }
+  x0 = _mm_adds_epi16(res, x0);
+  return _mm_packus_epi16(x0, x0);
+}
+
+static void lowbd_write_buffer_8x8_sse2(__m128i *in, uint8_t *output,
+                                        int stride, int fliplr, int flipud) {
+  __m128i u0, u1, u2, u3, u4, u5, u6, u7;
+  __m128i v0, v1, v2, v3, v4, v5, v6, v7;
+  v0 = _mm_loadl_epi64((__m128i const *)(output + 0 * stride));
+  v1 = _mm_loadl_epi64((__m128i const *)(output + 1 * stride));
+  v2 = _mm_loadl_epi64((__m128i const *)(output + 2 * stride));
+  v3 = _mm_loadl_epi64((__m128i const *)(output + 3 * stride));
+  v4 = _mm_loadl_epi64((__m128i const *)(output + 4 * stride));
+  v5 = _mm_loadl_epi64((__m128i const *)(output + 5 * stride));
+  v6 = _mm_loadl_epi64((__m128i const *)(output + 6 * stride));
+  v7 = _mm_loadl_epi64((__m128i const *)(output + 7 * stride));
+
+  if (flipud) {
+    u0 = lowbd_get_recon_8x8_sse2(v0, in[7], fliplr);
+    u1 = lowbd_get_recon_8x8_sse2(v1, in[6], fliplr);
+    u2 = lowbd_get_recon_8x8_sse2(v2, in[5], fliplr);
+    u3 = lowbd_get_recon_8x8_sse2(v3, in[4], fliplr);
+    u4 = lowbd_get_recon_8x8_sse2(v4, in[3], fliplr);
+    u5 = lowbd_get_recon_8x8_sse2(v5, in[2], fliplr);
+    u6 = lowbd_get_recon_8x8_sse2(v6, in[1], fliplr);
+    u7 = lowbd_get_recon_8x8_sse2(v7, in[0], fliplr);
+  } else {
+    u0 = lowbd_get_recon_8x8_sse2(v0, in[0], fliplr);
+    u1 = lowbd_get_recon_8x8_sse2(v1, in[1], fliplr);
+    u2 = lowbd_get_recon_8x8_sse2(v2, in[2], fliplr);
+    u3 = lowbd_get_recon_8x8_sse2(v3, in[3], fliplr);
+    u4 = lowbd_get_recon_8x8_sse2(v4, in[4], fliplr);
+    u5 = lowbd_get_recon_8x8_sse2(v5, in[5], fliplr);
+    u6 = lowbd_get_recon_8x8_sse2(v6, in[6], fliplr);
+    u7 = lowbd_get_recon_8x8_sse2(v7, in[7], fliplr);
+  }
+
+  _mm_storel_epi64((__m128i *)(output + 0 * stride), u0);
+  _mm_storel_epi64((__m128i *)(output + 1 * stride), u1);
+  _mm_storel_epi64((__m128i *)(output + 2 * stride), u2);
+  _mm_storel_epi64((__m128i *)(output + 3 * stride), u3);
+  _mm_storel_epi64((__m128i *)(output + 4 * stride), u4);
+  _mm_storel_epi64((__m128i *)(output + 5 * stride), u5);
+  _mm_storel_epi64((__m128i *)(output + 6 * stride), u6);
+  _mm_storel_epi64((__m128i *)(output + 7 * stride), u7);
+}
+
+static const transform_1d_sse2 lowbd_txfm8_1d_arr[TX_TYPES_1D] = {
+  idct8_new_sse2, iadst8_new_sse2, iadst8_new_sse2, iidentity8_new_sse2,
+};
+
+void av1_lowbd_inv_txfm2d_add_8x8_sse2(const int32_t *input, uint8_t *output,
+                                       int stride, TX_TYPE tx_type, int bd) {
+  (void)bd;
+  __m128i buf[8];
+  const int8_t *shift = inv_txfm_shift_ls[TX_8X8];
+  const int txw_idx = get_txw_idx(TX_8X8);
+  const int txh_idx = get_txh_idx(TX_8X8);
+  const int cos_bit_col = inv_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_row = inv_cos_bit_row[txw_idx][txh_idx];
+  const int buf_size = 8;
+
+  const transform_1d_sse2 col_txfm = lowbd_txfm8_1d_arr[vtx_tab[tx_type]];
+  const transform_1d_sse2 row_txfm = lowbd_txfm8_1d_arr[htx_tab[tx_type]];
+
+  int ud_flip, lr_flip;
+  get_flip_cfg(tx_type, &ud_flip, &lr_flip);
+  load_buffer_32bit_to_16bit(input, 8, buf, buf_size);
+  transpose_16bit_8x8(buf, buf);
+  row_txfm(buf, buf, cos_bit_row);
+  transpose_16bit_8x8(buf, buf);
+  round_shift_16bit(buf, 8, shift[0]);
+  col_txfm(buf, buf, cos_bit_col);
+  round_shift_16bit(buf, 8, shift[1]);
+  lowbd_write_buffer_8x8_sse2(buf, output, stride, lr_flip, ud_flip);
 }
