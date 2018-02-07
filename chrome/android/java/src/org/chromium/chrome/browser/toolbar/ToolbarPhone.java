@@ -1112,6 +1112,19 @@ public class ToolbarPhone extends ToolbarLayout
                 isLocationBarRtl, locationBarBaseTranslationX));
         mLocationBar.setUrlFocusChangePercent(mUrlExpansionPercent);
 
+        if (mLocationBar.useModernDesign()) {
+            int defaultColor = ColorUtils.getDefaultThemeColor(getResources(), true, isIncognito());
+            int defaultLocationBarColor = getLocationBarColorForToolbarColor(defaultColor);
+            int primaryColor = getToolbarDataProvider().getPrimaryColor();
+            int themedLocationBarColor = getLocationBarColorForToolbarColor(primaryColor);
+
+            updateToolbarBackground(ColorUtils.getColorWithOverlay(
+                    primaryColor, defaultColor, mUrlFocusChangePercent));
+
+            updateModernLocationBarColor(ColorUtils.getColorWithOverlay(
+                    themedLocationBarColor, defaultLocationBarColor, mUrlFocusChangePercent));
+        }
+
         // Force an invalidation of the location bar to properly handle the clipping of the URL
         // bar text as a result of the URL action container translations.
         mLocationBar.invalidate();
