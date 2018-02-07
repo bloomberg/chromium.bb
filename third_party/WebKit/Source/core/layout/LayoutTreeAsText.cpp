@@ -465,6 +465,32 @@ static void WriteTextFragment(TextStream& ts,
   ts << "\n";
 }
 
+static void WritePaintProperties(TextStream& ts,
+                                 const LayoutObject& o,
+                                 int indent) {
+  bool has_fragments = o.FirstFragment().NextFragment();
+  if (has_fragments) {
+    WriteIndent(ts, indent);
+    ts << "fragments:\n";
+  }
+  int fragment_index = 0;
+  for (const auto *fragment = &o.FirstFragment(); fragment;
+       fragment = fragment->NextFragment(), ++fragment_index) {
+    WriteIndent(ts, indent);
+    if (has_fragments)
+      ts << " " << fragment_index << ":";
+    ts << " paint_offset=(" << fragment->PaintOffset().ToString() << ")";
+    if (const auto* local_properties = fragment->LocalBorderBoxProperties()) {
+      // To know where they point into the paint property tree, you can dump
+      // the tree using ShowAllPropertyTrees(frame_view).
+      ts << " state=(t:" << local_properties->Transform()
+         << ", c:" << local_properties->Clip()
+         << ", e:" << local_properties->Effect() << ")";
+    }
+    ts << "\n";
+  }
+}
+
 void Write(TextStream& ts,
            const LayoutObject& o,
            int indent,
@@ -506,6 +532,10 @@ void Write(TextStream& ts,
 
   LayoutTreeAsText::WriteLayoutObject(ts, o, behavior);
   ts << "\n";
+
+  if (behavior & kLayoutAsTextShowPaintProperties) {
+    WritePaintProperties(ts, o, indent + 1);
+  }
 
   if ((behavior & kLayoutAsTextShowLineTrees) && o.IsLayoutBlockFlow()) {
     LayoutTreeAsText::WriteLineBoxTree(ts, ToLayoutBlockFlow(o), indent + 1);
