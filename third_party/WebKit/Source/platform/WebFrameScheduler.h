@@ -129,7 +129,8 @@ class WebFrameScheduler {
   // WebScopedVirtualTimePausers are either destroyed or vote to unpause.  Note
   // the WebScopedVirtualTimePauser returned by this method is initially
   // unpaused.
-  virtual WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser() = 0;
+  virtual WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
+      WebScopedVirtualTimePauser::VirtualTaskDuration) = 0;
 
   // Tells the scheduler that a provisional load has started, the scheduler may
   // reset the task cost estimators and the UserModel. Must be called from the

@@ -72,7 +72,8 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
                                 bool is_reload,
                                 bool is_main_frame) override;
-  WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser() override;
+  WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
+      WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
   void OnFirstMeaningfulPaint() override;
   std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override;
   void AsValueInto(base::trace_event::TracedValue* state) const;

@@ -13,8 +13,10 @@ WebScopedVirtualTimePauser::WebScopedVirtualTimePauser()
     : scheduler_(nullptr) {}
 
 WebScopedVirtualTimePauser::WebScopedVirtualTimePauser(
-    scheduler::RendererSchedulerImpl* scheduler)
-    : scheduler_(scheduler),
+    scheduler::RendererSchedulerImpl* scheduler,
+    VirtualTaskDuration duration)
+    : duration_(duration),
+      scheduler_(scheduler),
       trace_id_(WebScopedVirtualTimePauser::next_trace_id_++) {}
 
 WebScopedVirtualTimePauser::~WebScopedVirtualTimePauser() {
@@ -26,6 +28,7 @@ WebScopedVirtualTimePauser::WebScopedVirtualTimePauser(
     WebScopedVirtualTimePauser&& other) {
   virtual_time_when_paused_ = other.virtual_time_when_paused_;
   paused_ = other.paused_;
+  duration_ = other.duration_;
   scheduler_ = std::move(other.scheduler_);
   other.scheduler_ = nullptr;
   trace_id_ = other.trace_id_;
@@ -37,6 +40,7 @@ WebScopedVirtualTimePauser& WebScopedVirtualTimePauser::operator=(
     DecrementVirtualTimePauseCount();
   virtual_time_when_paused_ = other.virtual_time_when_paused_;
   paused_ = other.paused_;
+  duration_ = other.duration_;
   scheduler_ = std::move(other.scheduler_);
   trace_id_ = other.trace_id_;
   other.scheduler_ = nullptr;
@@ -63,8 +67,10 @@ void WebScopedVirtualTimePauser::PauseVirtualTime(bool paused) {
 
 void WebScopedVirtualTimePauser::DecrementVirtualTimePauseCount() {
   scheduler_->DecrementVirtualTimePauseCount();
-  scheduler_->MaybeAdvanceVirtualTime(virtual_time_when_paused_ +
-                                      base::TimeDelta::FromMilliseconds(10));
+  if (duration_ == VirtualTaskDuration::kNonInstant) {
+    scheduler_->MaybeAdvanceVirtualTime(virtual_time_when_paused_ +
+                                        base::TimeDelta::FromMilliseconds(10));
+  }
 }
 
 int WebScopedVirtualTimePauser::next_trace_id_ = 0;

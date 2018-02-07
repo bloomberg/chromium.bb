@@ -529,7 +529,8 @@ TEST_F(WebViewSchedulerImplTest,
 
   {
     WebScopedVirtualTimePauser virtual_time_pauser =
-        web_frame_scheduler->CreateWebScopedVirtualTimePauser();
+        web_frame_scheduler->CreateWebScopedVirtualTimePauser(
+            WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
     EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 
     virtual_time_pauser.PauseVirtualTime(true);
@@ -555,9 +556,11 @@ TEST_F(WebViewSchedulerImplTest,
           nullptr, WebFrameScheduler::FrameType::kSubframe);
 
   WebScopedVirtualTimePauser virtual_time_pauser1 =
-      web_frame_scheduler->CreateWebScopedVirtualTimePauser();
+      web_frame_scheduler->CreateWebScopedVirtualTimePauser(
+          WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
   WebScopedVirtualTimePauser virtual_time_pauser2 =
-      web_frame_scheduler->CreateWebScopedVirtualTimePauser();
+      web_frame_scheduler->CreateWebScopedVirtualTimePauser(
+          WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
 
   EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 

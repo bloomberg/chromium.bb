@@ -119,7 +119,8 @@ class FakeWebFrameScheduler : public WebFrameScheduler {
   WebViewScheduler* GetWebViewScheduler() const override {
     return web_view_scheduler_;
   }
-  WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser() {
+  WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
+      WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
     return WebScopedVirtualTimePauser();
   }
   void DidStartProvisionalLoad(bool is_main_frame) override {}

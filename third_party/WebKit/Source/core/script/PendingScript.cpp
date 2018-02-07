@@ -41,7 +41,8 @@ WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
   return element->GetDocument()
       .GetFrame()
       ->FrameScheduler()
-      ->CreateWebScopedVirtualTimePauser();
+      ->CreateWebScopedVirtualTimePauser(
+          WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant);
 }
 }  // namespace
 

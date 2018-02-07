@@ -222,7 +222,9 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   // WebScopedVirtualTimePausers are either destroyed or vote to unpause.  Note
   // the WebScopedVirtualTimePauser returned by this method is initially
   // unpaused.
-  virtual WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser() = 0;
+  virtual WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
+      WebScopedVirtualTimePauser::VirtualTaskDuration duration =
+          WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant) = 0;
 
  protected:
   RendererScheduler();
