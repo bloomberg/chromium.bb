@@ -36,6 +36,9 @@ class CastExtensionSystem : public ExtensionSystem {
   // success, or nullptr otherwise.
   const Extension* LoadExtension(const base::FilePath& extension_dir);
 
+  // Load an extension from the contents of a manifest file.
+  const Extension* LoadExtensionByManifest(const std::string& manifest);
+
   // Loads an unpacked platform app from a directory. Returns the extension on
   // success, or nullptr otherwise.
   // Currently this just calls LoadExtension, as apps are not loaded differently

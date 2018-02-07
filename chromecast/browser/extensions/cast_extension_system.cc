@@ -8,7 +8,9 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -28,9 +30,42 @@
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/file_util.h"
+#include "extensions/common/manifest_constants.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
+
+namespace {
+
+std::unique_ptr<base::DictionaryValue> LoadManifestFromString(
+    const std::string& manifest,
+    std::string* error) {
+  JSONStringValueDeserializer deserializer(manifest);
+  std::unique_ptr<base::Value> root(deserializer.Deserialize(nullptr, error));
+  if (!root.get()) {
+    if (error->empty()) {
+      // If |error| is empty, than the file could not be read.
+      // It would be cleaner to have the JSON reader give a specific error
+      // in this case, but other code tests for a file error with
+      // error->empty().  For now, be consistent.
+      *error = "Failed to load manifest";
+    } else {
+      *error = base::StringPrintf(
+          "%s  %s", extensions::manifest_errors::kManifestParseError,
+          error->c_str());
+    }
+    return nullptr;
+  }
+
+  if (!root->is_dict()) {
+    *error = "Invalid manifest file";
+    return nullptr;
+  }
+
+  return base::DictionaryValue::From(std::move(root));
+}
+
+}  // namespace
 
 namespace extensions {
 
@@ -40,6 +75,40 @@ CastExtensionSystem::CastExtensionSystem(BrowserContext* browser_context)
       weak_factory_(this) {}
 
 CastExtensionSystem::~CastExtensionSystem() {}
+
+const Extension* CastExtensionSystem::LoadExtensionByManifest(
+    const std::string& manifest_data) {
+  std::string error;
+  std::unique_ptr<base::DictionaryValue> manifest =
+      LoadManifestFromString(manifest_data, &error);
+  if (!manifest.get()) {
+    LOG(ERROR) << "Failed to load manifest: " << error;
+    return nullptr;
+  }
+
+  scoped_refptr<extensions::Extension> extension(extensions::Extension::Create(
+      base::FilePath(), extensions::Manifest::COMMAND_LINE, *manifest, 0,
+      std::string(), &error));
+  if (!extension.get()) {
+    LOG(ERROR) << "Failed to create extension: " << error;
+    return nullptr;
+  }
+
+  ExtensionRegistry::Get(browser_context_)->AddEnabled(extension.get());
+
+  RegisterExtensionWithRequestContexts(
+      extension.get(),
+      base::BindOnce(
+          &CastExtensionSystem::OnExtensionRegisteredWithRequestContexts,
+          weak_factory_.GetWeakPtr(), extension));
+
+  RendererStartupHelperFactory::GetForBrowserContext(browser_context_)
+      ->OnExtensionLoaded(*extension);
+
+  ExtensionRegistry::Get(browser_context_)->TriggerOnLoaded(extension.get());
+
+  return extension.get();
+}
 
 const Extension* CastExtensionSystem::LoadExtension(
     const base::FilePath& extension_dir) {
