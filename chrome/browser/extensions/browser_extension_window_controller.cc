@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 
+#include <string>
+
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller_list.h"
@@ -32,33 +34,7 @@ int BrowserExtensionWindowController::GetWindowId() const {
 namespace keys = extensions::tabs_constants;
 
 std::string BrowserExtensionWindowController::GetWindowTypeText() const {
-  if (browser_->is_devtools())
-    return keys::kWindowTypeValueDevTools;
-  if (browser_->is_type_popup())
-    return keys::kWindowTypeValuePopup;
-  if (browser_->is_app())
-    return keys::kWindowTypeValueApp;
-  return keys::kWindowTypeValueNormal;
-}
-
-std::unique_ptr<base::DictionaryValue>
-BrowserExtensionWindowController::CreateWindowValueWithTabs(
-    const extensions::Extension* extension) const {
-  std::unique_ptr<base::DictionaryValue> result = CreateWindowValue();
-
-  result->Set(keys::kTabsKey,
-              extensions::ExtensionTabUtil::CreateTabList(browser_, extension));
-
-  return result;
-}
-
-std::unique_ptr<extensions::api::tabs::Tab>
-BrowserExtensionWindowController::CreateTabObject(
-    const extensions::Extension* extension,
-    int tab_index) const {
-  TabStripModel* tab_strip = browser_->tab_strip_model();
-  return extensions::ExtensionTabUtil::CreateTabObject(
-      tab_strip->GetWebContentsAt(tab_index), tab_strip, tab_index);
+  return extensions::ExtensionTabUtil::GetBrowserWindowTypeText(*browser_);
 }
 
 bool BrowserExtensionWindowController::CanClose(Reason* reason) const {

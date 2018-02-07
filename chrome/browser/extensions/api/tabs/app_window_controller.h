@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_TABS_APP_WINDOW_CONTROLLER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_TABS_APP_WINDOW_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -28,12 +29,6 @@ class AppWindowController : public WindowController {
   // extensions::WindowController:
   int GetWindowId() const override;
   std::string GetWindowTypeText() const override;
-  std::unique_ptr<base::DictionaryValue> CreateWindowValueWithTabs(
-      const Extension* extension) const override;
-  std::unique_ptr<api::tabs::Tab> CreateTabObject(
-      const extensions::Extension* extension,
-      int tab_index) const override;
-
   bool CanClose(Reason* reason) const override;
   void SetFullscreenMode(bool is_fullscreen,
                          const GURL& extension_url) const override;

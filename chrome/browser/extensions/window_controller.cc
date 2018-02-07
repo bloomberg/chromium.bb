@@ -13,12 +13,6 @@
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/windows.h"
-#include "ui/base/base_window.h"
-#include "ui/gfx/geometry/rect.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/public/cpp/window_pin_type.h"
-#endif
 
 namespace extensions {
 
@@ -70,47 +64,6 @@ WindowController::~WindowController() {
 
 Browser* WindowController::GetBrowser() const {
   return NULL;
-}
-
-namespace keys = tabs_constants;
-
-std::unique_ptr<base::DictionaryValue> WindowController::CreateWindowValue()
-    const {
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-
-  result->SetInteger(keys::kIdKey, GetWindowId());
-  result->SetString(keys::kWindowTypeKey, GetWindowTypeText());
-  result->SetBoolean(keys::kFocusedKey, window()->IsActive());
-  result->SetBoolean(keys::kIncognitoKey, profile_->IsOffTheRecord());
-  result->SetBoolean(keys::kAlwaysOnTopKey, window()->IsAlwaysOnTop());
-
-  std::string window_state;
-  if (window()->IsMinimized()) {
-    window_state = keys::kShowStateValueMinimized;
-  } else if (window()->IsFullscreen()) {
-    window_state = keys::kShowStateValueFullscreen;
-#if defined(OS_CHROMEOS)
-    if (ash::IsWindowTrustedPinned(window()))
-      window_state = keys::kShowStateValueLockedFullscreen;
-#endif
-  } else if (window()->IsMaximized()) {
-    window_state = keys::kShowStateValueMaximized;
-  } else {
-    window_state = keys::kShowStateValueNormal;
-  }
-  result->SetString(keys::kShowStateKey, window_state);
-
-  gfx::Rect bounds;
-  if (window()->IsMinimized())
-    bounds = window()->GetRestoredBounds();
-  else
-    bounds = window()->GetBounds();
-  result->SetInteger(keys::kLeftKey, bounds.x());
-  result->SetInteger(keys::kTopKey, bounds.y());
-  result->SetInteger(keys::kWidthKey, bounds.width());
-  result->SetInteger(keys::kHeightKey, bounds.height());
-
-  return result;
 }
 
 bool WindowController::MatchesFilter(TypeFilter filter) const {

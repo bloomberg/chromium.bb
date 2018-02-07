@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -390,14 +391,15 @@ ExtensionFunction::ResponseValue SessionsRestoreFunction::GetRestoredTabResult(
 
 ExtensionFunction::ResponseValue
 SessionsRestoreFunction::GetRestoredWindowResult(int window_id) {
-  WindowController* controller = NULL;
+  Browser* browser = nullptr;
   std::string error;
-  if (!windows_util::GetWindowFromWindowID(this, window_id, 0, &controller,
-                                           &error)) {
+  if (!windows_util::GetBrowserFromWindowID(this, window_id, 0, &browser,
+                                            &error)) {
     return Error(error);
   }
   std::unique_ptr<base::DictionaryValue> window_value(
-      controller->CreateWindowValueWithTabs(extension()));
+      ExtensionTabUtil::CreateWindowValueForExtension(
+          *browser, extension(), ExtensionTabUtil::kPopulateTabs));
   std::unique_ptr<windows::Window> window(
       windows::Window::FromValue(*window_value));
   return ArgumentList(Restore::Results::Create(*CreateSessionModelHelper(
