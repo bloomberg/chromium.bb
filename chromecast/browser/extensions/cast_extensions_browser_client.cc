@@ -261,4 +261,8 @@ std::string CastExtensionsBrowserClient::GetApplicationLocale() {
   return "en-US";
 }
 
+bool CastExtensionsBrowserClient::IsAppModeForcedForApp(const ExtensionId& id) {
+  return false;
+}
+
 }  // namespace extensions

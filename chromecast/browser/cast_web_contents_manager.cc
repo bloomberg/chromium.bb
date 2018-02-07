@@ -37,25 +37,19 @@ CastWebContentsManager::CastWebContentsManager(
 CastWebContentsManager::~CastWebContentsManager() = default;
 
 std::unique_ptr<CastWebView> CastWebContentsManager::CreateWebView(
-    CastWebView::Delegate* delegate,
-    const extensions::Extension* extension,
-    const GURL& initial_url,
+    const CastWebView::CreateParams& params,
     scoped_refptr<content::SiteInstance> site_instance,
-    bool transparent,
-    bool allow_media_access,
-    bool is_headless,
-    bool enable_touch_input) {
+    const extensions::Extension* extension,
+    const GURL& initial_url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   if (extension) {
     return std::make_unique<CastWebViewExtension>(
-        extension, initial_url, delegate, this, browser_context_, site_instance,
-        transparent, allow_media_access, is_headless, enable_touch_input);
+        params, this, browser_context_, site_instance, extension, initial_url);
   }
 #endif
-  return std::make_unique<CastWebViewDefault>(
-      delegate, this, browser_context_, site_instance, transparent,
-      allow_media_access, is_headless, enable_touch_input);
+  return std::make_unique<CastWebViewDefault>(params, this, browser_context_,
+                                              site_instance);
 }
 
 void CastWebContentsManager::DelayWebContentsDeletion(

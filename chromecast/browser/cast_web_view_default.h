@@ -25,6 +25,10 @@ class SiteInstance;
 
 namespace chromecast {
 
+namespace shell {
+class RemoteDebuggingServer;
+}
+
 class CastWebContentsManager;
 class CastWindowManager;
 
@@ -33,16 +37,11 @@ class CastWebViewDefault : public CastWebView,
                            content::WebContentsObserver,
                            content::WebContentsDelegate {
  public:
-  // |delegate| and |browser_context| should outlive the lifetime of this
-  // object.
-  CastWebViewDefault(Delegate* delegate,
+  // |web_contents_manager| and |browser_context| should outlive this object.
+  CastWebViewDefault(const CreateParams& params,
                      CastWebContentsManager* web_contents_manager,
                      content::BrowserContext* browser_context,
-                     scoped_refptr<content::SiteInstance> site_instance,
-                     bool transparent,
-                     bool allow_media_access,
-                     bool is_headless,
-                     bool enable_touch_input);
+                     scoped_refptr<content::SiteInstance> site_instance);
   ~CastWebViewDefault() override;
 
   // CastWebView implementation:
@@ -92,16 +91,20 @@ class CastWebViewDefault : public CastWebView,
       override;
 #endif  // defined(OS_ANDROID)
 
-  Delegate* const delegate_;
   CastWebContentsManager* const web_contents_manager_;
   content::BrowserContext* const browser_context_;
+  shell::RemoteDebuggingServer* remote_debugging_server_;
   const scoped_refptr<content::SiteInstance> site_instance_;
+
+  Delegate* const delegate_;
   const bool transparent_;
+  const bool allow_media_access_;
+  const bool enabled_for_dev_;
+
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<shell::CastContentWindow> window_;
   bool did_start_navigation_;
   base::TimeDelta shutdown_delay_;
-  bool allow_media_access_;
 
   DISALLOW_COPY_AND_ASSIGN(CastWebViewDefault);
 };

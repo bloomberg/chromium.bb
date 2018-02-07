@@ -279,6 +279,13 @@ void CastExtensionSystem::InstallUpdate(
   NOTREACHED();
 }
 
+bool CastExtensionSystem::FinishDelayedInstallationIfReady(
+    const std::string& extension_id,
+    bool install_immediately) {
+  NOTREACHED();
+  return false;
+}
+
 void CastExtensionSystem::OnExtensionRegisteredWithRequestContexts(
     scoped_refptr<Extension> extension) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);

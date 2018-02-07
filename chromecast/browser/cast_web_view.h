@@ -28,6 +28,30 @@ class CastWebView {
     virtual void OnLoadingStateChanged(bool loading) = 0;
   };
 
+  // The parameters used to create a CastWebView instance. Passed to
+  // CastWebContentsManager::CreateWebView().
+  struct CreateParams {
+    // The delegate for the CastWebView. Must be non-null.
+    Delegate* delegate = nullptr;
+
+    // Whether this CastWebView has a transparent background.
+    bool transparent = false;
+
+    // Whether this CastWebView is granted media access.
+    bool allow_media_access = false;
+
+    // True if this CastWebView is for a headless build.
+    bool is_headless = false;
+
+    // Enable touch input for this CastWebView intance.
+    bool enable_touch_input = false;
+
+    // Enable development mode for this CastWebView. Whitelists certain
+    // functionality for the WebContents, like remote debugging and debugging
+    // interfaces.
+    bool enabled_for_dev = false;
+  };
+
   virtual ~CastWebView() {}
 
   virtual shell::CastContentWindow* window() const = 0;
