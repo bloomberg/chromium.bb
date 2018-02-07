@@ -51,6 +51,7 @@ crbug.com/765721 [ Linux ] http/tests/navigation/navigation-interrupted-by-fragm
 crbug.com/765721 [ Linux ] virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html [ Pass Leak ]
 
 crbug.com/809609 [ Linux ] editing/pasteboard/drop-file-svg.html [ Pass Leak ]
+crbug.com/809609 [ Linux ] editing/inserting/insert_div_with_style.html [ Pass Leak ]
 
 ###########################################################################
 # WARNING: Memory leaks must be fixed asap. Sheriff is expected to revert #
