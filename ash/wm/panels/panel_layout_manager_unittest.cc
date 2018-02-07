@@ -469,15 +469,11 @@ TEST_F(PanelLayoutManagerTest, MultiplePanelStackingVertical) {
   wm::ActivateWindow(w1.get());
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(WindowIsAbove(w1.get(), w2.get()));
-  // TODO(crbug.com/698887): investigate failure in Mash.
-  if (Shell::GetAshConfig() != Config::MASH)
-    EXPECT_TRUE(WindowIsAbove(w2.get(), w3.get()));
+  EXPECT_TRUE(WindowIsAbove(w2.get(), w3.get()));
 
   wm::ActivateWindow(w2.get());
   shelf_view_test()->RunMessageLoopUntilAnimationsDone();
-  // TODO(crbug.com/698887): investigate failure in Mash.
-  if (Shell::GetAshConfig() != Config::MASH)
-    EXPECT_TRUE(WindowIsAbove(w1.get(), w3.get()));
+  EXPECT_TRUE(WindowIsAbove(w1.get(), w3.get()));
   EXPECT_TRUE(WindowIsAbove(w2.get(), w3.get()));
   EXPECT_TRUE(WindowIsAbove(w2.get(), w1.get()));
 
@@ -496,10 +492,6 @@ TEST_F(PanelLayoutManagerTest, MultiplePanelCallout) {
   EXPECT_TRUE(IsPanelCalloutVisible(w1.get()));
   EXPECT_TRUE(IsPanelCalloutVisible(w2.get()));
   EXPECT_TRUE(IsPanelCalloutVisible(w3.get()));
-
-  // TODO(crbug.com/698887): investigate failure in Mash.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
 
   wm::ActivateWindow(w1.get());
   EXPECT_NO_FATAL_FAILURE(IsCalloutAboveLauncherIcon(w1.get()));
@@ -606,9 +598,7 @@ TEST_F(PanelLayoutManagerTest, FanWindows) {
   Shelf* shelf = GetPrimaryShelf();
   int icon_x1 = shelf->GetScreenBoundsOfItemIconForWindow(w1.get()).x();
   int icon_x2 = shelf->GetScreenBoundsOfItemIconForWindow(w2.get()).x();
-  // TODO(crbug.com/698887): investigate failure in Mash.
-  if (Shell::GetAshConfig() != Config::MASH)
-    EXPECT_EQ(window_x2 - window_x1, window_x3 - window_x2);
+  EXPECT_EQ(window_x2 - window_x1, window_x3 - window_x2);
   // New shelf items for panels are inserted before existing panel items.
   EXPECT_LT(window_x2, window_x1);
   EXPECT_LT(window_x3, window_x2);
