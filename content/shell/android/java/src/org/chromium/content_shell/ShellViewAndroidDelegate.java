@@ -7,7 +7,6 @@ package org.chromium.content_shell;
 import android.graphics.Bitmap;
 import android.view.ViewGroup;
 
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.blink_public.web.WebCursorInfoType;
 import org.chromium.ui.base.ViewAndroidDelegate;
 
@@ -17,31 +16,31 @@ import org.chromium.ui.base.ViewAndroidDelegate;
  */
 public class ShellViewAndroidDelegate extends ViewAndroidDelegate {
     /**
-     * CallbackHelper for cursor update.
+     * An interface delegates a {@link CallbackHelper} for cursor update. see more in {@link
+     * ContentViewPointerTypeTest.OnCursorUpdateHelperImpl}.
      */
-    public static class OnCursorUpdateHelper extends CallbackHelper {
-        private int mPointerType;
-        public void notifyCalled(int type) {
-            mPointerType = type;
-            notifyCalled();
-        }
-        public int getPointerType() {
-            assert getCallCount() > 0;
-            return mPointerType;
-        }
+    public interface OnCursorUpdateHelper {
+        /**
+         * Record the last notifyCalled pointer type, see more {@link CallbackHelper#notifyCalled}.
+         * @param type The pointer type of the notifyCalled.
+         */
+        void notifyCalled(int type);
     }
 
     private final ViewGroup mContainerView;
-    private final OnCursorUpdateHelper mOnCursorUpdateHelper;
+    private OnCursorUpdateHelper mOnCursorUpdateHelper;
 
     public ShellViewAndroidDelegate(ViewGroup containerView) {
         mContainerView = containerView;
-        mOnCursorUpdateHelper = new OnCursorUpdateHelper();
     }
 
     @Override
     public ViewGroup getContainerView() {
         return mContainerView;
+    }
+
+    public void setOnCursorUpdateHelper(OnCursorUpdateHelper helper) {
+        mOnCursorUpdateHelper = helper;
     }
 
     public OnCursorUpdateHelper getOnCursorUpdateHelper() {
@@ -51,12 +50,16 @@ public class ShellViewAndroidDelegate extends ViewAndroidDelegate {
     @Override
     public void onCursorChangedToCustom(Bitmap customCursorBitmap, int hotspotX, int hotspotY) {
         super.onCursorChangedToCustom(customCursorBitmap, hotspotX, hotspotY);
-        mOnCursorUpdateHelper.notifyCalled(WebCursorInfoType.CUSTOM);
+        if (mOnCursorUpdateHelper != null) {
+            mOnCursorUpdateHelper.notifyCalled(WebCursorInfoType.CUSTOM);
+        }
     }
 
     @Override
     public void onCursorChanged(int cursorType) {
         super.onCursorChanged(cursorType);
-        mOnCursorUpdateHelper.notifyCalled(cursorType);
+        if (mOnCursorUpdateHelper != null) {
+            mOnCursorUpdateHelper.notifyCalled(cursorType);
+        }
     }
 }
