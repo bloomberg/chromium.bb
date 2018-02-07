@@ -29,6 +29,8 @@ import java.util.List;
 class HostBrowserLauncher {
     private static final String LAST_RESORT_HOST_BROWSER = "com.android.chrome";
     private static final String LAST_RESORT_HOST_BROWSER_APPLICATION_NAME = "Google Chrome";
+    private static final String EXTRA_CUSTOM_TABS_SESSION =
+            "android.support.customtabs.extra.SESSION";
     private static final String TAG = "cr_HostBrowserLauncher";
 
     // Action for launching {@link WebappLauncherActivity}.
@@ -105,7 +107,7 @@ class HostBrowserLauncher {
         }
 
         if (!TextUtils.isEmpty(runtimeHost)) {
-            launchInHostBrowser(runtimeHost);
+            launchInHostBrowser(metadata, runtimeHost);
             finishCallback.run();
             return;
         }
@@ -113,7 +115,7 @@ class HostBrowserLauncher {
         List<ResolveInfo> infos =
                 WebApkUtils.getInstalledBrowserResolveInfos(mContext.getPackageManager());
         if (hasBrowserSupportingWebApks(infos)) {
-            showChooseHostBrowserDialog(infos, finishCallback);
+            showChooseHostBrowserDialog(infos, metadata, finishCallback);
         } else {
             showInstallHostBrowserDialog(metadata, finishCallback);
         }
@@ -136,12 +138,17 @@ class HostBrowserLauncher {
                 mContext.getDir(HostBrowserClassLoader.DEX_DIR_NAME, Context.MODE_PRIVATE));
     }
 
-    private void launchInHostBrowser(String runtimeHost) {
+    private void launchInHostBrowser(Bundle metadata, String runtimeHost) {
         PackageInfo info;
         try {
             info = mContext.getPackageManager().getPackageInfo(runtimeHost, 0);
         } catch (PackageManager.NameNotFoundException e) {
             Log.e(TAG, "Unable to get the host browser's package info.");
+            return;
+        }
+
+        if (metadata.getBoolean(WebApkMetaDataKeys.DISABLE_FULL_SCREEN_MODE)) {
+            launchInCCT(runtimeHost);
             return;
         }
 
@@ -166,6 +173,23 @@ class HostBrowserLauncher {
             mParentActivity.startActivity(intent);
         } catch (ActivityNotFoundException e) {
             Log.w(TAG, "Unable to launch browser in WebAPK mode.");
+            e.printStackTrace();
+        }
+    }
+
+    /** Launches a WebAPK in a Custom Tab. */
+    private void launchInCCT(String runtimeHost) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(mStartUrl));
+        intent.setPackage(runtimeHost);
+        // Ideally a custom tab session should be created when launching a CCT. We don't want to
+        // create real custom tab sessions because we don't want to import custom tab library in the
+        // shell APK.
+        intent.putExtra(EXTRA_CUSTOM_TABS_SESSION, "");
+        try {
+            mParentActivity.startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            Log.w(TAG, "Unable to launch the WebAPK in a Custom Tab.");
             e.printStackTrace();
         }
     }
@@ -204,12 +228,13 @@ class HostBrowserLauncher {
     }
 
     /** Shows a dialog to choose the host browser. */
-    private void showChooseHostBrowserDialog(List<ResolveInfo> infos, Runnable finishCallback) {
+    private void showChooseHostBrowserDialog(
+            List<ResolveInfo> infos, Bundle metadata, Runnable finishCallback) {
         ChooseHostBrowserDialog.DialogListener listener =
                 new ChooseHostBrowserDialog.DialogListener() {
                     @Override
                     public void onHostBrowserSelected(String selectedHostBrowser) {
-                        launchInHostBrowser(selectedHostBrowser);
+                        launchInHostBrowser(metadata, selectedHostBrowser);
                         WebApkUtils.writeHostBrowserToSharedPref(mContext, selectedHostBrowser);
                         finishCallback.run();
                     }

@@ -66,6 +66,9 @@
         <meta-data android:name="org.chromium.webapk.shell_apk.themeColor" android:value="{{{theme_color}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.backgroundColor" android:value="{{{background_color}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.iconId" android:resource="{{{splash_screen_icon}}}" />
+        {{#disable_full_screen_mode}}
+        <meta-data android:name="org.chromium.webapk.shell_apk.disableFullScreenMode" android:value="{{{disable_full_screen_mode}}}" />
+        {{/disable_full_screen_mode}}
 
         {{!  Hashes of icons should be taken of the icons as they are available on the web. The icon
              bytes should not be transformed (e.g. decoded / encoded) prior to taking the hash.
