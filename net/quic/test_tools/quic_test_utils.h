@@ -316,7 +316,7 @@ class MockQuicConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_CONST_METHOD0(HasPendingHandshake, bool());
   MOCK_CONST_METHOD0(HasOpenDynamicStreams, bool());
   MOCK_METHOD1(OnSuccessfulVersionNegotiation,
-               void(const QuicTransportVersion& version));
+               void(const ParsedQuicVersion& version));
   MOCK_METHOD2(OnConnectivityProbeReceived,
                void(const QuicSocketAddress& self_address,
                     const QuicSocketAddress& peer_address));

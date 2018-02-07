@@ -498,7 +498,7 @@ bool QuicConnection::OnProtocolVersionMismatch(
   }
 
   version_negotiation_state_ = NEGOTIATED_VERSION;
-  visitor_->OnSuccessfulVersionNegotiation(received_version.transport_version);
+  visitor_->OnSuccessfulVersionNegotiation(received_version);
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnSuccessfulVersionNegotiation(
         received_version.transport_version);
@@ -1538,7 +1538,7 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
       } else {
         DCHECK_EQ(header.version, version());
         version_negotiation_state_ = NEGOTIATED_VERSION;
-        visitor_->OnSuccessfulVersionNegotiation(transport_version());
+        visitor_->OnSuccessfulVersionNegotiation(version());
         if (debug_visitor_ != nullptr) {
           debug_visitor_->OnSuccessfulVersionNegotiation(transport_version());
         }
@@ -1549,7 +1549,7 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
       // it should stop sending version since the version negotiation is done.
       packet_generator_.StopSendingVersion();
       version_negotiation_state_ = NEGOTIATED_VERSION;
-      visitor_->OnSuccessfulVersionNegotiation(transport_version());
+      visitor_->OnSuccessfulVersionNegotiation(version());
       if (debug_visitor_ != nullptr) {
         debug_visitor_->OnSuccessfulVersionNegotiation(transport_version());
       }

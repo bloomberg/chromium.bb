@@ -193,7 +193,7 @@ void QuicSession::OnWriteBlocked() {
 }
 
 void QuicSession::OnSuccessfulVersionNegotiation(
-    const QuicTransportVersion& /*version*/) {}
+    const ParsedQuicVersion& /*version*/) {}
 
 void QuicSession::OnConnectivityProbeReceived(
     const QuicSocketAddress& self_address,
