@@ -788,22 +788,27 @@ TEST_F(NotificationViewMDTest, InlineSettings) {
 
   // Inline settings will be shown by clicking settings button.
   EXPECT_FALSE(notification_view()->settings_row_->visible());
-  notification_view()->OnSettingsButtonPressed();
+  gfx::Point settings_cursor_location(1, 1);
+  views::View::ConvertPointToScreen(
+      notification_view()->control_buttons_view_.get()->settings_button(),
+      &settings_cursor_location);
+  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+  generator.MoveMouseTo(settings_cursor_location);
+  generator.ClickLeftButton();
   EXPECT_TRUE(notification_view()->settings_row_->visible());
 
   // By clicking settings button again, it will toggle.
-  notification_view()->OnSettingsButtonPressed();
+  generator.ClickLeftButton();
   EXPECT_FALSE(notification_view()->settings_row_->visible());
 
   // Show inline settings again.
-  notification_view()->OnSettingsButtonPressed();
+  generator.ClickLeftButton();
   EXPECT_TRUE(notification_view()->settings_row_->visible());
 
   // Construct a mouse click event 1 pixel inside the done button.
   gfx::Point done_cursor_location(1, 1);
   views::View::ConvertPointToScreen(notification_view()->settings_done_button_,
                                     &done_cursor_location);
-  ui::test::EventGenerator generator(widget()->GetNativeWindow());
   generator.MoveMouseTo(done_cursor_location);
   generator.ClickLeftButton();
 
@@ -811,7 +816,8 @@ TEST_F(NotificationViewMDTest, InlineSettings) {
   EXPECT_FALSE(notification_view()->settings_row_->visible());
   EXPECT_FALSE(delegate_->disable_notification_called());
 
-  notification_view()->OnSettingsButtonPressed();
+  generator.MoveMouseTo(settings_cursor_location);
+  generator.ClickLeftButton();
   EXPECT_TRUE(notification_view()->settings_row_->visible());
 
   // Construct a mouse click event 1 pixel inside the block all button.

@@ -98,6 +98,9 @@ const SkColor kInputReplyButtonColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
 const SkColor kInputReplyButtonPlaceholderColor =
     SkColorSetARGB(0x60, 0xFF, 0xFF, 0xFF);
 
+// Background of inline settings area.
+const SkColor kSettingsRowBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
+
 // The icon size of inline reply input field.
 constexpr int kInputReplyButtonSize = 20;
 
@@ -579,9 +582,17 @@ void NotificationViewMD::CreateOrUpdateViews(const Notification& notification) {
 }
 
 NotificationViewMD::NotificationViewMD(const Notification& notification)
-    : MessageView(notification), clickable_(notification.clickable()) {
+    : MessageView(notification),
+      ink_drop_container_(new views::InkDropContainerView()),
+      clickable_(notification.clickable()) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), 0));
+
+  set_ink_drop_visible_opacity(1);
+
+  ink_drop_container_->SetPaintToLayer();
+  ink_drop_container_->layer()->SetFillsBoundsOpaquely(false);
+  AddChildView(ink_drop_container_);
 
   control_buttons_view_ =
       std::make_unique<NotificationControlButtonsView>(this);
@@ -713,16 +724,6 @@ gfx::NativeCursor NotificationViewMD::GetCursor(const ui::MouseEvent& event) {
   return views::GetNativeHandCursor();
 }
 
-void NotificationViewMD::OnMouseEntered(const ui::MouseEvent& event) {
-  MessageView::OnMouseEntered(event);
-  UpdateControlButtonsVisibility();
-}
-
-void NotificationViewMD::OnMouseExited(const ui::MouseEvent& event) {
-  MessageView::OnMouseExited(event);
-  UpdateControlButtonsVisibility();
-}
-
 bool NotificationViewMD::OnMousePressed(const ui::MouseEvent& event) {
   if (!event.IsOnlyLeftMouseButton())
     return false;
@@ -741,6 +742,20 @@ bool NotificationViewMD::OnMousePressed(const ui::MouseEvent& event) {
     return true;
 
   return MessageView::OnMousePressed(event);
+}
+
+void NotificationViewMD::OnMouseEvent(ui::MouseEvent* event) {
+  switch (event->type()) {
+    case ui::ET_MOUSE_ENTERED:
+      UpdateControlButtonsVisibility();
+      break;
+    case ui::ET_MOUSE_EXITED:
+      UpdateControlButtonsVisibility();
+      break;
+    default:
+      break;
+  }
+  View::OnMouseEvent(event);
 }
 
 void NotificationViewMD::UpdateWithNotification(
@@ -772,7 +787,7 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
   // Tapping anywhere on |header_row_| can expand the notification, though only
   // |expand_button| can be focused by TAB.
   if (sender == header_row_) {
-    if (IsExpandable()) {
+    if (IsExpandable() && content_row_->visible()) {
       set_manually_expanded_or_collapsed();
       ToggleExpanded();
       Layout();
@@ -804,7 +819,7 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
   if (sender == settings_done_button_) {
     if (block_all_button_->checked())
       MessageCenter::Get()->DisableNotification(id);
-    ToggleInlineSettings();
+    ToggleInlineSettings(*event.AsLocatedEvent());
     return;
   }
 }
@@ -1112,8 +1127,6 @@ void NotificationViewMD::CreateOrUpdateInlineSettingsViews(
   settings_row_ = new views::View();
   settings_row_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, kSettingsRowPadding, 0));
-  settings_row_->SetBackground(
-      views::CreateSolidBackground(kActionsRowBackgroundColor));
 
   block_all_button_ = new InlineSettingsRadioButton(
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_BLOCK_ALL_NOTIFICATIONS));
@@ -1216,27 +1229,43 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
   }
 }
 
-void NotificationViewMD::ToggleInlineSettings() {
+void NotificationViewMD::ToggleInlineSettings(const ui::LocatedEvent& event) {
   DCHECK(settings_row_);
 
   bool inline_settings_visible = !settings_row_->visible();
 
   settings_row_->SetVisible(inline_settings_visible);
   content_row_->SetVisible(!inline_settings_visible);
-  actions_row_->SetVisible(expanded_ && !inline_settings_visible);
-
-  // When inline settings is shown, the background color of the entire
-  // notification should be |kActionsRowBackgroundColor|.
-  header_row_->SetBackground(views::CreateSolidBackground(
-      inline_settings_visible ? kActionsRowBackgroundColor
-                              : kNotificationBackgroundColor));
 
   // Always check "Don't block" when inline settings is shown.
   // If it's already blocked, users should not see inline settings.
   // Toggling should reset the state.
   dont_block_button_->SetChecked(true);
 
+  SetExpanded(!inline_settings_visible);
+
   PreferredSizeChanged();
+
+  if (inline_settings_visible) {
+    SetInkDropMode(InkDropMode::ON);
+
+    // Convert the point of |event| from the coordinate system of
+    // |control_buttons_view_| to that of NotificationViewMD, create a new
+    // LocatedEvent which has the new point.
+    views::View* target = static_cast<views::View*>(event.target());
+    const gfx::Point& location = event.location();
+    gfx::Point converted_location(location);
+    View::ConvertPointToWidget(target, &converted_location);
+    std::unique_ptr<ui::Event> cloned_event = ui::Event::Clone(event);
+    ui::LocatedEvent* cloned_located_event = cloned_event->AsLocatedEvent();
+    cloned_located_event->set_location(converted_location);
+    AnimateBackground(*cloned_located_event);
+  } else {
+    SetInkDropMode(InkDropMode::OFF);
+  }
+
+  Layout();
+  SchedulePaint();
 }
 
 // TODO(yoshiki): Move this to the parent class (MessageView) and share the code
@@ -1268,16 +1297,57 @@ void NotificationViewMD::SetExpanded(bool expanded) {
   PreferredSizeChanged();
 }
 
-void NotificationViewMD::OnSettingsButtonPressed() {
+void NotificationViewMD::OnSettingsButtonPressed(
+    const ui::LocatedEvent& event) {
   if (settings_row_)
-    ToggleInlineSettings();
+    ToggleInlineSettings(event);
   else
-    MessageView::OnSettingsButtonPressed();
+    MessageView::OnSettingsButtonPressed(event);
 }
 
 void NotificationViewMD::Activate() {
   GetWidget()->widget_delegate()->set_can_activate(true);
   GetWidget()->Activate();
+}
+
+void NotificationViewMD::AnimateBackground(const ui::LocatedEvent& event) {
+  if (View::HitTestPoint(event.location())) {
+    AnimateInkDrop(views::InkDropState::ACTION_PENDING,
+                   ui::LocatedEvent::FromIfValid(&event));
+  }
+}
+
+void NotificationViewMD::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  header_row_->SetPaintToLayer();
+  header_row_->layer()->SetFillsBoundsOpaquely(false);
+  block_all_button_->SetPaintToLayer();
+  block_all_button_->layer()->SetFillsBoundsOpaquely(false);
+  dont_block_button_->SetPaintToLayer();
+  dont_block_button_->layer()->SetFillsBoundsOpaquely(false);
+  settings_done_button_->SetPaintToLayer();
+  settings_done_button_->layer()->SetFillsBoundsOpaquely(false);
+  ink_drop_container_->AddInkDropLayer(ink_drop_layer);
+  InstallInkDropMask(ink_drop_layer);
+}
+
+void NotificationViewMD::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  header_row_->DestroyLayer();
+  block_all_button_->DestroyLayer();
+  dont_block_button_->DestroyLayer();
+  settings_done_button_->DestroyLayer();
+  ResetInkDropMask();
+  ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
+}
+
+std::unique_ptr<views::InkDropRipple> NotificationViewMD::CreateInkDropRipple()
+    const {
+  return std::make_unique<views::FloodFillInkDropRipple>(
+      size(), GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
+      ink_drop_visible_opacity());
+}
+
+SkColor NotificationViewMD::GetInkDropBaseColor() const {
+  return kSettingsRowBackgroundColor;
 }
 
 }  // namespace message_center

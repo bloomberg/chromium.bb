@@ -226,14 +226,21 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
 
   void Activate();
 
+  void AnimateBackground(const ui::LocatedEvent& event);
+
   // Overridden from views::View:
   void Layout() override;
   void OnFocus() override;
   void ScrollRectToVisible(const gfx::Rect& rect) override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
-  void OnMouseEntered(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+
+  // Overridden from views::InkDropHostView:
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  SkColor GetInkDropBaseColor() const override;
 
   // Overridden from MessageView:
   void UpdateWithNotification(const Notification& notification) override;
@@ -244,7 +251,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   NotificationControlButtonsView* GetControlButtonsView() const override;
   bool IsExpanded() const override;
   void SetExpanded(bool expanded) override;
-  void OnSettingsButtonPressed() override;
+  void OnSettingsButtonPressed(const ui::LocatedEvent& event) override;
 
   // Overridden from NotificationInputDelegate:
   void OnNotificationInputSubmit(size_t index,
@@ -289,7 +296,9 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   bool IsExpandable();
   void ToggleExpanded();
   void UpdateViewForExpandedState(bool expanded);
-  void ToggleInlineSettings();
+  void ToggleInlineSettings(const ui::LocatedEvent& event);
+
+  views::InkDropContainerView* const ink_drop_container_;
 
   // View containing close and settings buttons
   std::unique_ptr<NotificationControlButtonsView> control_buttons_view_;

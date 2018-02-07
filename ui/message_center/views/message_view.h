@@ -18,6 +18,7 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/message_center/views/slide_out_controller.h"
+#include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -33,7 +34,7 @@ class NotificationControlButtonsView;
 // An base class for a notification entry. Contains background and other
 // elements shared by derived notification views.
 class MESSAGE_CENTER_EXPORT MessageView
-    : public views::View,
+    : public views::InkDropHostView,
       public views::SlideOutController::Delegate {
  public:
   static const char kViewClassName[];
@@ -70,7 +71,7 @@ class MESSAGE_CENTER_EXPORT MessageView
   virtual void OnContainerAnimationEnded();
 
   void OnCloseButtonPressed();
-  virtual void OnSettingsButtonPressed();
+  virtual void OnSettingsButtonPressed(const ui::LocatedEvent& event);
 
   // views::View
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

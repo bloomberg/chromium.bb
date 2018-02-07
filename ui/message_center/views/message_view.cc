@@ -280,7 +280,7 @@ void MessageView::OnCloseButtonPressed() {
                                            true /* by_user */);
 }
 
-void MessageView::OnSettingsButtonPressed() {
+void MessageView::OnSettingsButtonPressed(const ui::LocatedEvent& event) {
   MessageCenter::Get()->ClickOnSettingsButton(notification_id_);
 }
 
