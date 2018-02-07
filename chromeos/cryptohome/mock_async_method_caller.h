@@ -37,11 +37,6 @@ class MockAsyncMethodCaller : public AsyncMethodCaller {
                     const std::string& old_hash,
                     const std::string& new_hash,
                     Callback callback));
-  MOCK_METHOD4(AsyncAddKey,
-               void(const Identification& user_id,
-                    const std::string& passhash,
-                    const std::string& new_key,
-                    Callback callback));
   MOCK_METHOD1(AsyncMountGuest, void(Callback callback));
   MOCK_METHOD2(AsyncRemove,
                void(const Identification& user_id, Callback callback));
