@@ -90,6 +90,8 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
   void SetUp() override {
     request_.method = "GET";
     request_.url = GURL(kDefaultUrl);
+    request_.traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
@@ -275,6 +277,8 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
     HttpRequestInfo request;
     request.method = "GET";
     request.url = GURL("https://www.example.org/foo.dat");
+    request.traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
     return request;
   }
 
@@ -306,6 +310,8 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
 
     request_.method = "POST";
     request_.upload_data_stream = upload_data_stream_.get();
+    request_.traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
   void UseUnreadableFilePostRequest() {
@@ -510,6 +516,8 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
     TestCompletionCallback callback;
     request.method = "GET";
     request.url = url;
+    request.traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
     int rv = trans.Start(&request, callback.callback(), log);
     EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
     callback.WaitForResult();
@@ -2435,6 +2443,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushHeadMethod) {
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, helper.session());
   HttpRequestInfo request = CreateGetPushRequest();
   request.method = "HEAD";
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   TestCompletionCallback callback;
   int rv = trans.Start(&request, callback.callback(), log_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -3309,6 +3319,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerCancelsCrossOriginPush) {
   HttpRequestInfo request1;
   request1.method = "GET";
   request1.url = GURL(kUrl1);
+  request1.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   TestCompletionCallback callback1;
   int rv = trans1->Start(&request1, callback1.callback(), log_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -3346,6 +3358,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerCancelsCrossOriginPush) {
   HttpRequestInfo request2;
   request2.method = "GET";
   request2.url = GURL(kUrl2);
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   TestCompletionCallback callback2;
   rv = trans2.Start(&request2, callback2.callback(), log_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -3582,6 +3596,8 @@ TEST_F(SpdyNetworkTransactionTest, ResponseHeadersVary) {
     HttpRequestInfo request;
     request.method = "GET";
     request.url = GURL(kDefaultUrl);
+    request.traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
     for (int ct = 0; ct < header_count; ct++) {
       const char* header_key = test_cases[i].extra_headers[0][ct * 2];
       const char* header_value = test_cases[i].extra_headers[0][ct * 2 + 1];
@@ -4369,6 +4385,8 @@ TEST_F(SpdyNetworkTransactionTest, GracefulGoaway) {
   HttpRequestInfo request2;
   request2.method = "GET";
   request2.url = GURL("https://www.example.org/foo");
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   int rv = trans2.Start(&request2, callback.callback(), log_);
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   rv = callback.WaitForResult();
@@ -5348,6 +5366,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOrigin) {
   HttpRequestInfo push_request;
   push_request.method = "GET";
   push_request.url = GURL(url_to_push);
+  push_request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   TestCompletionCallback callback1;
   rv = trans1.Start(&push_request, callback1.callback(), log_);
   rv = callback1.GetResult(rv);
@@ -5467,6 +5487,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
   HttpRequestInfo request1;
   request1.method = "GET";
   request1.url = GURL(url_to_fetch1);
+  request1.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   TestCompletionCallback callback1;
   rv = trans1.Start(&request1, callback1.callback(), log_);
   rv = callback1.GetResult(rv);
@@ -5500,6 +5522,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
   HttpRequestInfo push_request;
   push_request.method = "GET";
   push_request.url = GURL(url_to_push);
+  push_request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   TestCompletionCallback callback2;
   rv = trans2.Start(&push_request, callback2.callback(), log_);
   rv = callback2.GetResult(rv);
@@ -6995,6 +7019,8 @@ TEST_F(SpdyNetworkTransactionTest, PushCanceledByServerAfterClaimed) {
   HttpRequestInfo request2;
   request2.method = "GET";
   request2.url = GURL(pushed_url);
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   transaction2.Start(&request2, callback2.callback(), log_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3u, spdy_stream_hi_water_mark(spdy_session));
@@ -7098,6 +7124,8 @@ TEST_F(SpdyNetworkTransactionTest, WebsocketOpensNewConnection) {
   HttpRequestInfo request2;
   request2.method = "GET";
   request2.url = GURL("wss://www.example.org/");
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_TRUE(HostPortPair::FromURL(request_.url)
                   .Equals(HostPortPair::FromURL(request2.url)));
   request2.extra_headers.SetHeader("Connection", "Upgrade");

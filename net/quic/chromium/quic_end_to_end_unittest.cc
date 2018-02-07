@@ -39,6 +39,7 @@
 #include "net/test/test_data_directory.h"
 #include "net/tools/quic/quic_http_response_cache.h"
 #include "net/tools/quic/quic_simple_server.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -109,6 +110,8 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
     request_.method = "GET";
     request_.url = GURL("https://test.example.com/");
     request_.load_flags = 0;
+    request_.traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
     session_params_.enable_quic = true;
     if (GetParam().use_stateless_rejects) {

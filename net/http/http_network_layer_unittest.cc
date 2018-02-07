@@ -21,6 +21,7 @@
 #include "net/spdy/chromium/spdy_session_pool.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/gtest_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -70,6 +71,8 @@ class HttpNetworkLayerTest : public PlatformTest {
     request_info.url = GURL("http://www.google.com/");
     request_info.method = method;
     request_info.load_flags = LOAD_NORMAL;
+    request_info.traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
     std::unique_ptr<HttpTransaction> trans;
     int rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans);
@@ -329,6 +332,8 @@ TEST_F(HttpNetworkLayerTest, GET) {
   request_info.extra_headers.SetHeader(HttpRequestHeaders::kUserAgent,
                                        "Foo/1.0");
   request_info.load_flags = LOAD_NORMAL;
+  request_info.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::unique_ptr<HttpTransaction> trans;
   int rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans);
@@ -368,6 +373,8 @@ TEST_F(HttpNetworkLayerTest, NetworkVerified) {
   request_info.extra_headers.SetHeader(HttpRequestHeaders::kUserAgent,
                                        "Foo/1.0");
   request_info.load_flags = LOAD_NORMAL;
+  request_info.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::unique_ptr<HttpTransaction> trans;
   int rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans);
@@ -401,6 +408,8 @@ TEST_F(HttpNetworkLayerTest, NetworkUnVerified) {
   request_info.extra_headers.SetHeader(HttpRequestHeaders::kUserAgent,
                                        "Foo/1.0");
   request_info.load_flags = LOAD_NORMAL;
+  request_info.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
   std::unique_ptr<HttpTransaction> trans;
   int rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans);
