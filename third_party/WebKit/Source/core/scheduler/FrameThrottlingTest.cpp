@@ -1359,4 +1359,36 @@ TEST_P(FrameThrottlingTest, RebuildCompositedLayerTreeOnLayerRemoval) {
             frame_element->contentDocument()->Lifecycle().GetState());
 }
 
+TEST_P(FrameThrottlingTest, LifecycleUpdateAfterUnthrottledCompositingUpdate) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+
+  LoadURL("https://example.com/");
+  // The frame is initially throttled.
+  main_resource.Complete(R"HTML(
+    <iframe id='frame' sandbox src='iframe.html'
+        style='transform: translateY(480px)'></iframe>
+  )HTML");
+  frame_resource.Complete("<div id='div'>Foo</div>");
+
+  CompositeFrame();
+  auto* frame_element =
+      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
+  auto* frame_document = frame_element->contentDocument();
+  EXPECT_TRUE(frame_document->View()->CanThrottleRendering());
+  EXPECT_FALSE(frame_document->View()->ShouldThrottleRendering());
+
+  frame_document->getElementById("div")->setAttribute(styleAttr,
+                                                      "will-change: transform");
+  GetDocument().View()->UpdateLifecycleToCompositingCleanPlusScrolling();
+
+  {
+    // Then do a full lifecycle with throttling enabled. This should not crash.
+    DocumentLifecycle::AllowThrottlingScope throttling_scope(
+        GetDocument().Lifecycle());
+    EXPECT_TRUE(frame_document->View()->ShouldThrottleRendering());
+    GetDocument().View()->UpdateAllLifecyclePhases();
+  }
+}
+
 }  // namespace blink

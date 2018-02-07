@@ -326,9 +326,10 @@ void GraphicsLayer::Paint(const IntRect* interest_rect,
   if (!PaintWithoutCommit(interest_rect, disabled_mode)) {
     // Generate raster invalidation if needed for chunks with property tree
     // state escaping this layer's state. See the function for more details.
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+        !client_.ShouldThrottleRendering()) {
       EnsureRasterInvalidator().GenerateForPropertyChanges(AllChunkPointers());
-
+    }
     return;
   }
 
@@ -369,6 +370,9 @@ bool GraphicsLayer::PaintWithoutCommit(
     const IntRect* interest_rect,
     GraphicsContext::DisabledMode disabled_mode) {
   DCHECK(DrawsContent());
+
+  if (client_.ShouldThrottleRendering())
+    return false;
 
   if (FirstPaintInvalidationTracking::IsEnabled())
     debug_info_.ClearAnnotatedInvalidateRects();
@@ -1306,8 +1310,10 @@ CompositorElementId GraphicsLayer::GetElementId() const {
 }
 
 sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
-  if (!DrawsContent())
-    return nullptr;
+  DCHECK(DrawsContent());
+
+  if (client_.ShouldThrottleRendering())
+    return sk_sp<PaintRecord>(new PaintRecord);
 
   FloatRect bounds(IntRect(IntPoint(0, 0), ExpandedIntSize(Size())));
   GraphicsContext graphics_context(GetPaintController());

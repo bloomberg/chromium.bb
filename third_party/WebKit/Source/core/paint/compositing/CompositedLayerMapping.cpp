@@ -3621,9 +3621,12 @@ bool CompositedLayerMapping::IsScrollableAreaLayer(
          graphics_layer == LayerForScrollCorner();
 }
 
+bool CompositedLayerMapping::ShouldThrottleRendering() const {
+  return Compositor()->ShouldThrottleRendering();
+}
+
 bool CompositedLayerMapping::IsTrackingRasterInvalidations() const {
-  GraphicsLayerClient* client = Compositor();
-  return client ? client->IsTrackingRasterInvalidations() : false;
+  return Compositor()->IsTrackingRasterInvalidations();
 }
 
 #if DCHECK_IS_ON()

@@ -204,9 +204,10 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
     CompositingReasonsStats& compositing_reasons_stats) {
   DCHECK(target_state >= DocumentLifecycle::kCompositingInputsClean);
 
-  LocalFrameView* view = layout_view_.GetFrameView();
-  if (view->ShouldThrottleRendering())
+  if (ShouldThrottleRendering())
     return;
+
+  LocalFrameView* view = layout_view_.GetFrameView();
   view->ResetNeedsForcedCompositingUpdate();
 
   for (Frame* child =
@@ -765,7 +766,7 @@ void PaintLayerCompositor::RootFixedBackgroundsChanged() {
 std::unique_ptr<JSONObject> PaintLayerCompositor::LayerTreeAsJSON(
     LayerTreeFlags flags) const {
   DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean ||
-         layout_view_.GetFrameView()->ShouldThrottleRendering());
+         ShouldThrottleRendering());
 
   // We skip dumping the scroll and clip layers to keep layerTreeAsText output
   // similar between platforms (unless we explicitly request dumping from the
@@ -1020,6 +1021,10 @@ GraphicsLayer* PaintLayerCompositor::FixedRootBackgroundLayer() const {
   return nullptr;
 }
 
+bool PaintLayerCompositor::ShouldThrottleRendering() const {
+  return layout_view_.GetFrameView()->ShouldThrottleRendering();
+}
+
 static void UpdateTrackingRasterInvalidationsRecursive(
     GraphicsLayer* graphics_layer) {
   if (!graphics_layer)
@@ -1040,9 +1045,8 @@ static void UpdateTrackingRasterInvalidationsRecursive(
 
 void PaintLayerCompositor::UpdateTrackingRasterInvalidations() {
 #if DCHECK_IS_ON()
-  LocalFrameView* view = layout_view_.GetFrameView();
   DCHECK(Lifecycle().GetState() == DocumentLifecycle::kPaintClean ||
-         (view && view->ShouldThrottleRendering()));
+         ShouldThrottleRendering());
 #endif
 
   if (GraphicsLayer* root_layer = RootGraphicsLayer())

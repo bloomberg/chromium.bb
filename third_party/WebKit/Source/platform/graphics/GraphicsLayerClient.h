@@ -88,6 +88,10 @@ class PLATFORM_EXPORT GraphicsLayerClient {
                              GraphicsLayerPaintingPhase,
                              const IntRect& interest_rect) const = 0;
 
+  // Returns true if the GraphicsLayer is under a frame that should not render
+  // (see LocalFrameView::ShouldThrottleRendering()).
+  virtual bool ShouldThrottleRendering() const { return false; }
+
   virtual bool IsTrackingRasterInvalidations() const { return false; }
 
   virtual String DebugName(const GraphicsLayer*) const = 0;
