@@ -57,6 +57,10 @@
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 
+#if BUILDFLAG(ENABLE_WEBRTC)
+#include "content/browser/webrtc/webrtc_event_log_manager.h"
+#endif
+
 using base::UserDataAdapter;
 
 namespace content {
@@ -445,7 +449,6 @@ void BrowserContext::SetDownloadManagerForTesting(
 void BrowserContext::Initialize(
     BrowserContext* browser_context,
     const base::FilePath& path) {
-
   std::string new_id;
   if (GetContentClient() && GetContentClient()->browser()) {
     new_id = GetContentClient()->browser()->GetServiceUserIdForBrowserContext(
@@ -511,6 +514,15 @@ void BrowserContext::Initialize(
     RegisterCommonBrowserInterfaces(connection);
     connection->Start();
   }
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+  if (!browser_context->IsOffTheRecord()) {
+    auto* webrtc_event_log_manager = WebRtcEventLogManager::GetInstance();
+    if (webrtc_event_log_manager) {
+      webrtc_event_log_manager->EnableForBrowserContext(browser_context);
+    }
+  }
+#endif
 }
 
 // static
@@ -560,6 +572,14 @@ BrowserContext::~BrowserContext() {
 
   DCHECK(!GetUserData(kStoragePartitionMapKeyName))
       << "StoragePartitionMap is not shut down properly";
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+  auto* webrtc_event_log_manager = WebRtcEventLogManager::GetInstance();
+  if (webrtc_event_log_manager) {
+    const auto id = WebRtcEventLogManager::GetBrowserContextId(this);
+    webrtc_event_log_manager->DisableForBrowserContext(id);
+  }
+#endif
 
   RemoveBrowserContextFromUserIdMap(this);
 

@@ -25,7 +25,8 @@ class ZoomLevelDelegate;
 
 class TestBrowserContext : public BrowserContext {
  public:
-  TestBrowserContext();
+  explicit TestBrowserContext(
+      base::FilePath browser_context_dir_path = base::FilePath());
   ~TestBrowserContext() override;
 
   // Takes ownership of the temporary directory so that it's not deleted when
