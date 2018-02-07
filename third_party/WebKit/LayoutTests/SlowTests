@@ -202,8 +202,6 @@ crbug.com/357427 http/tests/workers/terminate-during-sync-operation-file.html [ 
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.html [ Slow ]
 crbug.com/402379 [ Debug ] storage/indexeddb/cursor-continue-validity.html [ Slow ]
 crbug.com/402379 [ Debug ] storage/indexeddb/mozilla/indexes.html [ Slow ]
-crbug.com/504706 [ Linux ] http/tests/devtools/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.js [ Slow ]
-crbug.com/504706 [ Linux ] http/tests/devtools/profiler/heap-snapshot-containment-sorting.js [ Slow ]
 crbug.com/480769 http/tests/devtools/service-workers/service-workers-redundant.js [ Slow ]
 crbug.com/480769 virtual/pwa-full-code-cache/http/tests/devtools/service-workers/service-workers-redundant.js [ Slow ]
 crbug.com/480769 http/tests/devtools/service-workers/service-worker-agents.js [ Slow ]

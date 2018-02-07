@@ -549,8 +549,6 @@ crbug.com/776656 shadow-dom/css-style-inherit.html [ Failure ]
 crbug.com/667560 [ Debug ] http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
 crbug.com/778515 http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure ]
 
-crbug.com/785571 http/tests/devtools/console/console-context-selector.js [ Pass Failure ]
-
 crbug.com/667560 [ Win ] http/tests/devtools/console-cross-origin-iframe-logging.js [ Pass Timeout ]
 
 crbug.com/778391 http/tests/devtools/elements/styles-3/styles-add-new-rule-tab.js [ Pass Failure ]
@@ -791,12 +789,6 @@ crbug.com/569139 fast/js/string-replace-2.html [ Failure ]
 crbug.com/569139 fast/js/regexp-caching.html [ Failure ]
 crbug.com/597221 fast/dom/Window/window-postmessage-clone-deep-array.html [ Failure ]
 
-# crbug.com/778784 Is tracking recent flakiness in decode-resize.js. Once that is fixed, the following
-# failures should be uncommented:
-# crbug.com/498539 [ Win ] http/tests/devtools/tracing/decode-resize.js [ Failure Timeout ]
-crbug.com/778784 http/tests/devtools/tracing/decode-resize.js [ Failure Timeout Pass ]
-crbug.com/778784 virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Failure Timeout Pass ]
-
 crbug.com/498539 http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]
 crbug.com/498539 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]
 
@@ -807,12 +799,6 @@ crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure 
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
 
 crbug.com/731731 inspector-protocol/layers/paint-profiler-load-empty.js [ Failure Pass ]
-
-crbug.com/734744 http/tests/devtools/indexeddb/resources-panel.js [ Pass Failure Timeout ]
-
-crbug.com/734793 http/tests/devtools/indexeddb/database-names.js [ Pass Failure Timeout ]
-
-crbug.com/735259 http/tests/devtools/indexeddb/upgrade-events.js [ Pass Failure ]
 
 # Will be re-enabled and rebaselined once we remove the '--enable-file-cookies' flag.
 crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
@@ -1074,8 +1060,6 @@ crbug.com/492664 external/wpt/css/css-writing-modes/line-box-direction-vrl-009.x
 
 crbug.com/637255 [ Win10 ] media/video-transformed.html [ Pass Failure ]
 
-crbug.com/760367 http/tests/devtools/console/console-tainted-globals.js [ NeedsManualRebaseline Timeout ]
-
 # These tests pass but images do not match because tests are stricter than the spec.
 crbug.com/492664 external/wpt/css/css-writing-modes/text-combine-upright-value-all-001.html [ Failure ]
 crbug.com/492664 external/wpt/css/css-writing-modes/text-combine-upright-value-all-002.html [ Failure ]
@@ -1173,9 +1157,6 @@ crbug.com/528062 [ Win ] http/tests/security/xssAuditor/chunked-big-script.html 
 # Part of a larger issue referenced in the bug. This specific issue will be fixed shortly.
 crbug.com/408159 accessibility/is-ignored-change-sends-notification.html [ Timeout ]
 
-crbug.com/504706 [ Linux ] http/tests/devtools/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.js [ Pass ]
-crbug.com/504706 [ Linux ] http/tests/devtools/profiler/heap-snapshot-containment-sorting.js [ Pass ]
-
 # When drawing subpixel smoothed glyphs, CoreGraphics will fake bold the glyphs.
 # In this configuration, the pixel smoothed glyphs will be created from subpixel smoothed glyphs.
 # This means that CoreGraphics may draw outside the reported glyph bounds, and in this case does.
@@ -1198,8 +1179,6 @@ crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html 
 crbug.com/472330 virtual/spv175/fast/borders/border-image-outset-split-inline-vertical-lr.html [ Skip ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
-
-crbug.com/700795 http/tests/devtools/animation/animation-transition-setTiming-crash.js [ Timeout Pass ]
 
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
@@ -2652,8 +2631,6 @@ crbug.com/731535 [ Win7 ] fast/dom/Window/window-resize-contents.html [ Failure 
 crbug.com/732103 [ Mac ] http/tests/shapedetection/shapedetection-cross-origin.html [ Timeout Pass ]
 
 # Sheriff failures 2017-06-14
-crbug.com/733448 http/tests/devtools/extensions/extensions-network.js [ Failure Pass ]
-
 crbug.com/737959 http/tests/misc/object-image-load-outlives-gc-without-crashing.html [ Failure Pass ]
 
 crbug.com/737959 http/tests/misc/video-poster-image-load-outlives-gc-without-crashing.html [ Failure Pass Crash ]
@@ -2743,18 +2720,7 @@ crbug.com/626703 [ Win7 ] external/wpt/domxpath/xml_xpath_runner.html [ Timeout 
 crbug.com/746128 [ Win7 Debug ] media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
 
-crbug.com/v8/4958 http/tests/devtools/console/console-eval-scoped.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 http/tests/devtools/console/console-functions.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 http/tests/devtools/console/console-log-object-with-getter.js [ NeedsManualRebaseline ]
-
-crbug.com/v8/4958 http/tests/devtools/console/console-format-es6.js [ NeedsManualRebaseline Timeout ]
-
-# http/tests/devtools/console/console-format-es6.js and its virtual counterpart needs attention, but is listed as NeedsManualRebaseline directly above for all platforms
-# crbug.com/749738 [ Win7 Debug ] http/tests/devtools/console/console-format-es6.js [ Timeout ]
 crbug.com/749738 [ Win7 Debug ] http/tests/devtools/editor/text-editor-word-jumps.js [ Timeout ]
-
-# Sheriff failures 2017-07-28
-crbug.com/749738 [ Win7 Debug ] http/tests/devtools/console/console-format-es6-2.js [ Timeout ]
 
 # Sheriff failures 2017-08-04
 crbug.com/626703 [ Win7 Release ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Timeout ]
@@ -3082,7 +3048,6 @@ crbug.com/774688 [ Mac ] fast/spatial-navigation/snav-container-white-space.html
 crbug.com/772411 http/tests/media/autoplay-crossorigin.html [ Timeout Failure Pass ]
 crbug.com/777222 http/tests/devtools/change-iframe-src.js [ Pass Failure Timeout ]
 crbug.com/777222 http/tests/devtools/inspect-iframe-from-different-domain.js [ Pass Failure Timeout ]
-crbug.com/777222 http/tests/devtools/startup/console-log-before-frame-navigation.js [ Pass Failure Timeout ]
 
 crbug.com/778745 http/tests/inspector-protocol/cachestorage/read-cached-response.js [ Pass Failure ]
 
@@ -3148,7 +3113,6 @@ crbug.com/783229 external/wpt/cookie-store/one_simple_origin_cookie_static.tenta
 
 # Sheriff failures 2017-11-15
 crbug.com/785179 [ Win7 Debug ] http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Skip ]
-crbug.com/785662 [ Debug ] http/tests/devtools/sources/debugger-ui/reveal-not-skipped.js [ Failure Pass ]
 
 # Sheriff failures 2017-11-16
 crbug.com/785980 [ Win ] http/tests/devtools/network/network-xhr-same-url-as-main-resource.js [ Failure Pass ]
@@ -3232,23 +3196,13 @@ crbug.com/798592 [ Win7 ] virtual/threaded/http/tests/devtools/tracing/timeline-
 crbug.com/798680 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture-manual.html [ Pass Timeout ]
 crbug.com/804682 [ Mac ] external/wpt/service-workers/service-worker/navigation-preload/resource-timing.https.html [ Pass Failure ]
 crbug.com/799137 [ Mac ] virtual/modern-media-controls/media/controls/modern/doubletap-to-jump-backwards-at-start.html [ Pass Timeout ]
-crbug.com/799164 [ Win7 ] http/tests/devtools/startup/dom-storage-open.js [ Pass Timeout ]
 
 # Sheriff failures 2018-01-08
 # This test fails consistently on Nexus4 - see bug for info.
 crbug.com/799814 [ Android ] fast/beacon/beacon-basic.html [ Pass Failure ]
 
-# Sheriff failures 2018-01-18
-# This test has been flaky for some time on Win 7 (dgb)
-crbug.com/800078 [ Win7 ] http/tests/devtools/console/console-link-to-snippet.js [ Pass Failure ]
-
 # This test is flaking (failing, crashing) on mac_chromium_rel_ng.
 crbug.com/800840 [ Mac ] virtual/wheelscrolllatching/fast/compositor-wheel-scroll-latching/touchpad-scroll-impl-to-main.html [ Skip ]
-
-# Sheriff failures 2018-01-19
-# This test is failing regularly on Win 7 (dgb), WebKit Mac10.11 (dgb),
-# WebKit Linux Trusty (dbg).
-crbug.com/803449 http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-restored-breakpoint.js [ Pass Failure ]
 
 # Sheriff failures 2018-01-23
 # Flaking on linux_chromium_rel_ng
