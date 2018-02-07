@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <algorithm>
+
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -207,11 +209,10 @@ Browser* FindBrowserWithActiveWindow() {
 
 Browser* FindBrowserWithWebContents(const WebContents* web_contents) {
   DCHECK(web_contents);
-  for (TabContentsIterator it; !it.done(); it.Next()) {
-    if (*it == web_contents)
-      return it.browser();
-  }
-  return NULL;
+  auto& all_tabs = AllTabContentses();
+  auto it = std::find(all_tabs.begin(), all_tabs.end(), web_contents);
+
+  return (it == all_tabs.end()) ? nullptr : it.browser();
 }
 
 Browser* FindLastActiveWithProfile(Profile* profile) {

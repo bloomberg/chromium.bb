@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/hung_renderer/hung_renderer_core.h"
 
+#include <algorithm>
+
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
@@ -54,16 +56,16 @@ std::vector<content::WebContents*> GetHungWebContentsList(
     content::RenderProcessHost* hung_process) {
   std::vector<content::WebContents*> result;
 
-  // |hung_web_contents| is always first.
-  DCHECK(IsWebContentsHung(hung_web_contents, hung_process));
-  result.push_back(hung_web_contents);
+  auto is_hung = [hung_process](content::WebContents* web_contents) {
+    return IsWebContentsHung(web_contents, hung_process) &&
+           !web_contents->IsCrashed();
+  };
+  std::copy_if(AllTabContentses().begin(), AllTabContentses().end(),
+               std::back_inserter(result), is_hung);
 
-  for (TabContentsIterator it; !it.done(); it.Next()) {
-    if (*it != hung_web_contents && IsWebContentsHung(*it, hung_process) &&
-        !it->IsCrashed())
-      result.push_back(*it);
-  }
-
+  // Move |hung_web_contents| to the front.
+  auto first = std::find(result.begin(), result.end(), hung_web_contents);
+  std::rotate(result.begin(), first, std::next(first));
   return result;
 }
 
