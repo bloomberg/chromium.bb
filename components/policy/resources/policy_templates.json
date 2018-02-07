@@ -8613,7 +8613,7 @@
       'name': 'ForceBrowserSignin',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.win:64-', 'android:65-'],
+      'supported_on': ['chrome.win:64-', 'chrome.mac:66-', 'android:65-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
