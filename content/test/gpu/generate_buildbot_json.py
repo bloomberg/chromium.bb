@@ -610,7 +610,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.13.2',
+          'os': 'Mac-10.13.4',
           'pool': 'Chrome-GPU',
         },
       ],
@@ -623,7 +623,7 @@ FYI_WATERFALL = {
         {
           'gpu': '1002:6821',
           'hidpi': '1',
-          'os': 'Mac-10.13.2',
+          'os': 'Mac-10.13.4',
           'pool': 'Chrome-GPU',
         },
       ],
@@ -636,7 +636,7 @@ FYI_WATERFALL = {
         {
           'gpu': '10de:0fe9',
           'hidpi': '1',
-          'os': 'Mac-10.13.2',
+          'os': 'Mac-10.13.4',
           'pool': 'Chrome-GPU',
         },
       ],
