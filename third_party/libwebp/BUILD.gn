@@ -470,6 +470,7 @@ if (current_toolchain == host_toolchain) {
     }
 
     deps = [
+      ":imageio_util",
       ":libwebp_webp",
       "//third_party/libpng",
       "//third_party/zlib",
@@ -492,6 +493,7 @@ if (current_toolchain == host_toolchain) {
     }
 
     deps = [
+      ":imageio_util",
       ":libwebp_webp",
     ]
     configs += [ ":libwebp_config" ]
@@ -509,6 +511,7 @@ if (current_toolchain == host_toolchain) {
       ":imagedec",
       ":imageio_util",
       ":libwebp",
+      ":libwebp_webp",
       "//base",
       "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
@@ -534,6 +537,7 @@ if (current_toolchain == host_toolchain) {
       ":imageenc",
       ":imageio_util",
       ":libwebp",
+      ":libwebp_webp",
       "//base",
       "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
