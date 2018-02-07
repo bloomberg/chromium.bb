@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
@@ -188,7 +190,9 @@ void AccountChooserDialogView::InitWindow() {
                                 ->GetURLLoaderFactoryForBrowserProcess()));
 }
 
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 AccountChooserPrompt* CreateAccountChooserPromptView(
     PasswordDialogController* controller, content::WebContents* web_contents) {
   return new AccountChooserDialogView(controller, web_contents);
 }
+#endif

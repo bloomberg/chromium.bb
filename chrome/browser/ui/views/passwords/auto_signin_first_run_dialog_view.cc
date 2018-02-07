@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/passwords/auto_signin_first_run_dialog_view.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/passwords/password_dialog_controller.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
@@ -11,6 +12,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_features.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -106,7 +108,9 @@ void AutoSigninFirstRunDialogView::InitWindow() {
   AddChildView(text.release());
 }
 
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 AutoSigninFirstRunPrompt* CreateAutoSigninPromptView(
     PasswordDialogController* controller, content::WebContents* web_contents) {
   return new AutoSigninFirstRunDialogView(controller, web_contents);
 }
+#endif
