@@ -174,6 +174,8 @@ public class CustomTabActivity extends ChromeActivity {
             args.putLong(PageLoadMetrics.EFFECTIVE_CONNECTION_TYPE, effectiveConnectionType);
             args.putLong(PageLoadMetrics.HTTP_RTT, httpRttMs);
             args.putLong(PageLoadMetrics.TRANSPORT_RTT, transportRttMs);
+            args.putBoolean(CustomTabsConnection.DATA_REDUCTION_ENABLED,
+                    DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
             mConnection.notifyPageLoadMetrics(mSession, args);
         }
 
