@@ -352,7 +352,8 @@ TestNetworkDelegate::TestNetworkDelegate()
       experimental_cookie_features_enabled_(false),
       cancel_request_with_policy_violating_referrer_(false),
       will_be_intercepted_on_next_error_(false),
-      before_start_transaction_fails_(false) {}
+      before_start_transaction_fails_(false),
+      add_header_to_first_response_(false) {}
 
 TestNetworkDelegate::~TestNetworkDelegate() {
   for (std::map<int, int>::iterator i = next_states_.begin();
@@ -459,6 +460,8 @@ int TestNetworkDelegate::OnHeadersReceived(
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
   int req_id = request->identifier();
+  bool is_first_response =
+      event_order_[req_id].find("OnHeadersReceived\n") == std::string::npos;
   event_order_[req_id] += "OnHeadersReceived\n";
   InitRequestStatesIfNew(req_id);
   EXPECT_TRUE(next_states_[req_id] & kStageHeadersReceived) <<
@@ -485,7 +488,13 @@ int TestNetworkDelegate::OnHeadersReceived(
 
     if (!allowed_unsafe_redirect_url_.is_empty())
       *allowed_unsafe_redirect_url = allowed_unsafe_redirect_url_;
+  } else if (add_header_to_first_response_ && is_first_response) {
+    *override_response_headers =
+        new HttpResponseHeaders(original_response_headers->raw_headers());
+    (*override_response_headers)
+        ->AddHeader("X-Network-Delegate: Greetings, planet");
   }
+
   headers_received_count_++;
   return OK;
 }
