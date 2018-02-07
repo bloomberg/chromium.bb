@@ -49,6 +49,7 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+#include "chromecast/browser/extension_request_protocol_handler.h"
 #include "extensions/browser/extension_protocols.h"  // nogncheck
 #include "extensions/browser/extension_system.h"     // nogncheck
 #include "extensions/common/constants.h"             // nogncheck
@@ -79,39 +80,6 @@ bool IgnoreCertificateErrors() {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   return cmd_line->HasSwitch(switches::kIgnoreCertificateErrors);
 }
-
-#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
-// extensions::ExtensionSystem::Get will fail until much later in the
-// initialization process so we delay creation until the first request, at which
-// point the ExtensionSystem has been created.
-class DelayedExtensionProtocolHandler
-    : public net::URLRequestJobFactory::ProtocolHandler {
- public:
-  DelayedExtensionProtocolHandler(content::BrowserContext* browser_context,
-                                  bool is_incognito)
-      : browser_context_(browser_context), is_incognito_(is_incognito) {
-    DCHECK(browser_context_);
-  }
-  ~DelayedExtensionProtocolHandler() override {}
-
-  net::URLRequestJob* MaybeCreateJob(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    if (!handler_) {
-      handler_ = extensions::CreateExtensionProtocolHandler(
-          is_incognito_,
-          extensions::ExtensionSystem::Get(browser_context_)->info_map());
-    }
-
-    return handler_->MaybeCreateJob(request, network_delegate);
-  }
-
- private:
-  content::BrowserContext* const browser_context_;
-  const bool is_incognito_;
-  mutable std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler> handler_;
-};
-#endif
 
 }  // namespace
 
@@ -245,8 +213,7 @@ net::URLRequestContextGetter* URLRequestContextFactory::CreateMainGetter(
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   (*protocol_handlers)[extensions::kExtensionScheme] =
       linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-          new DelayedExtensionProtocolHandler(browser_context,
-                                              false /* is_incognito */));
+          new ExtensionRequestProtocolHandler(browser_context));
 #endif
   main_getter_ =
       new MainURLRequestContextGetter(this, browser_context, protocol_handlers,

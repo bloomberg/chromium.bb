@@ -206,6 +206,8 @@ cast_source_set("browser") {
       "cast_extension_host.h",
       "cast_web_view_extension.cc",
       "cast_web_view_extension.h",
+      "extension_request_protocol_handler.cc",
+      "extension_request_protocol_handler.h",
       "extensions/api/identity/identity_api.cc",
       "extensions/api/identity/identity_api.h",
       "extensions/cast_display_info_provider.cc",
