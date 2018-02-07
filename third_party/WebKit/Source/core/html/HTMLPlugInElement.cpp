@@ -100,7 +100,7 @@ int PluginParameters::FindStringInNames(const String& str) {
 HTMLPlugInElement::HTMLPlugInElement(
     const QualifiedName& tag_name,
     Document& doc,
-    bool created_by_parser,
+    const CreateElementFlags flags,
     PreferPlugInsForImagesOption prefer_plug_ins_for_images_option)
     : HTMLFrameOwnerElement(tag_name, doc),
       is_delaying_load_event_(false),
@@ -108,7 +108,7 @@ HTMLPlugInElement::HTMLPlugInElement(
       // EmbeddedContentView updates until after all children are parsed. For
       // HTMLEmbedElement this delay is unnecessary, but it is simpler to make
       // both classes share the same codepath in this class.
-      needs_plugin_update_(!created_by_parser),
+      needs_plugin_update_(!flags.IsCreatedByParser()),
       should_prefer_plug_ins_for_images_(prefer_plug_ins_for_images_option ==
                                          kShouldPreferPlugInsForImages) {}
 

@@ -26,6 +26,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "core/dom/CreateElementFlags.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/canvas/ImageElementBase.h"
@@ -53,7 +54,7 @@ class CORE_EXPORT HTMLImageElement final
   class ViewportChangeListener;
 
   static HTMLImageElement* Create(Document&);
-  static HTMLImageElement* Create(Document&, bool created_by_parser);
+  static HTMLImageElement* Create(Document&, const CreateElementFlags);
   static HTMLImageElement* CreateForJSConstructor(Document&);
   static HTMLImageElement* CreateForJSConstructor(Document&, unsigned width);
   static HTMLImageElement* CreateForJSConstructor(Document&,

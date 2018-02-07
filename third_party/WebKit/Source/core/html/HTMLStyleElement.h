@@ -36,7 +36,7 @@ class CORE_EXPORT HTMLStyleElement final : public HTMLElement,
   USING_GARBAGE_COLLECTED_MIXIN(HTMLStyleElement);
 
  public:
-  static HTMLStyleElement* Create(Document&, bool created_by_parser);
+  static HTMLStyleElement* Create(Document&, const CreateElementFlags);
   ~HTMLStyleElement() override;
 
   using StyleElement::sheet;
@@ -47,7 +47,7 @@ class CORE_EXPORT HTMLStyleElement final : public HTMLElement,
   virtual void Trace(blink::Visitor*);
 
  private:
-  HTMLStyleElement(Document&, bool created_by_parser);
+  HTMLStyleElement(Document&, const CreateElementFlags);
 
   // Always call this asynchronously because this can cause synchronous
   // Document load event and JavaScript execution.

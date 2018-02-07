@@ -36,7 +36,7 @@ static {{namespace}}Element* {{namespace}}{{tag|symbol}}Constructor(
   return {{tag.interface}}::Create(
       {%- if tag.multipleTagNames %}{{namespace}}Names::{{tag|symbol}}Tag, {% endif -%}
       document
-      {%- if tag.constructorNeedsCreatedByParser %}, flags.IsCreatedByParser(){% endif -%}
+      {%- if tag.constructorNeedsCreateElementFlags %}, flags{% endif -%}
   );
 }
 {% endfor %}

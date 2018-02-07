@@ -41,7 +41,7 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
     default_parameters = {
         'JSInterfaceName': {},
         'Conditional': {},
-        'constructorNeedsCreatedByParser': {},
+        'constructorNeedsCreateElementFlags': {},
         'interfaceHeaderDir': {},
         'interfaceName': {},
         'noConstructor': {},

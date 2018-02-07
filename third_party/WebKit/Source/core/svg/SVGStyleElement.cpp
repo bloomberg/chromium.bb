@@ -31,15 +31,15 @@
 namespace blink {
 
 inline SVGStyleElement::SVGStyleElement(Document& document,
-                                        bool created_by_parser)
+                                        const CreateElementFlags flags)
     : SVGElement(SVGNames::styleTag, document),
-      StyleElement(&document, created_by_parser) {}
+      StyleElement(&document, flags.IsCreatedByParser()) {}
 
 SVGStyleElement::~SVGStyleElement() = default;
 
 SVGStyleElement* SVGStyleElement::Create(Document& document,
-                                         bool created_by_parser) {
-  return new SVGStyleElement(document, created_by_parser);
+                                         const CreateElementFlags flags) {
+  return new SVGStyleElement(document, flags);
 }
 
 bool SVGStyleElement::disabled() const {

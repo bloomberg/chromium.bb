@@ -26,6 +26,7 @@
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "core/dom/CreateElementFlags.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "platform/bindings/SharedPersistent.h"
 #include "v8/include/v8.h"
@@ -109,7 +110,7 @@ class CORE_EXPORT HTMLPlugInElement
  protected:
   HTMLPlugInElement(const QualifiedName& tag_name,
                     Document&,
-                    bool created_by_parser,
+                    const CreateElementFlags,
                     PreferPlugInsForImagesOption);
 
   // Node functions:

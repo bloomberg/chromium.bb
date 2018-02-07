@@ -26,6 +26,7 @@
 #define HTMLScriptElement_h
 
 #include "core/CoreExport.h"
+#include "core/dom/CreateElementFlags.h"
 #include "core/html/HTMLElement.h"
 #include "core/script/ScriptElementBase.h"
 #include "core/script/ScriptLoader.h"
@@ -39,7 +40,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
 
  public:
   static HTMLScriptElement* Create(Document&,
-                                   bool was_inserted_by_parser,
+                                   const CreateElementFlags,
                                    bool already_started = false,
                                    bool created_during_document_write = false);
 
@@ -61,7 +62,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
 
  private:
   HTMLScriptElement(Document&,
-                    bool was_inserted_by_parser,
+                    const CreateElementFlags,
                     bool already_started,
                     bool created_during_document_write);
 

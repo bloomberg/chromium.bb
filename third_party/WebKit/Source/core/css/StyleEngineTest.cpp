@@ -268,8 +268,8 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   ASSERT_EQ(capabilities.slope,
             FontSelectionRange({ItalicSlopeValue(), ItalicSlopeValue()}));
 
-  HTMLStyleElement* style_element = HTMLStyleElement::Create(
-      GetDocument(), false);
+  auto* style_element =
+      HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
   style_element->SetInnerHTMLFromString(
       "@font-face {"
       " font-family: 'Cool Font';"
@@ -338,7 +338,7 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   ASSERT_TRUE(keyframes);
   EXPECT_EQ(1u, keyframes->Keyframes().size());
 
-  style_element = HTMLStyleElement::Create(GetDocument(), false);
+  style_element = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
   style_element->SetInnerHTMLFromString(
       "@keyframes dummy-animation { from {} to {} }");
   GetDocument().body()->AppendChild(style_element);
@@ -517,7 +517,7 @@ TEST_F(StyleEngineTest, IgnoreInvalidPropertyValue) {
 }
 
 TEST_F(StyleEngineTest, TextToSheetCache) {
-  HTMLStyleElement* element = HTMLStyleElement::Create(GetDocument(), false);
+  auto* element = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
 
   String sheet_text("div {}");
   TextPosition min_pos = TextPosition::MinimumPosition();
@@ -545,7 +545,7 @@ TEST_F(StyleEngineTest, TextToSheetCache) {
   // StyleSheetContents cache.
   ThreadState::Current()->CollectAllGarbage();
 
-  element = HTMLStyleElement::Create(GetDocument(), false);
+  element = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
   sheet1 = GetStyleEngine().CreateSheet(*element, sheet_text, min_pos, context);
 
   // Check that we did not use a cached StyleSheetContents after the garbage

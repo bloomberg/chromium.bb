@@ -411,13 +411,13 @@ TEST_F(DocumentTest, LinkManifest) {
   EXPECT_EQ(nullptr, GetDocument().LinkManifest());
 
   // Check that we use the first manifest with <link rel=manifest>
-  HTMLLinkElement* link = HTMLLinkElement::Create(GetDocument(), false);
+  auto* link = HTMLLinkElement::Create(GetDocument(), CreateElementFlags());
   link->setAttribute(blink::HTMLNames::relAttr, "manifest");
   link->setAttribute(blink::HTMLNames::hrefAttr, "foo.json");
   GetDocument().head()->AppendChild(link);
   EXPECT_EQ(link, GetDocument().LinkManifest());
 
-  HTMLLinkElement* link2 = HTMLLinkElement::Create(GetDocument(), false);
+  auto* link2 = HTMLLinkElement::Create(GetDocument(), CreateElementFlags());
   link2->setAttribute(blink::HTMLNames::relAttr, "manifest");
   link2->setAttribute(blink::HTMLNames::hrefAttr, "bar.json");
   GetDocument().head()->InsertBefore(link2, link);

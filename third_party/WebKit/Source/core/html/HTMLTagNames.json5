@@ -158,7 +158,7 @@
     },
     {
       name: "embed",
-      constructorNeedsCreatedByParser: true,
+      constructorNeedsCreateElementFlags: true,
     },
     {
       name: "fieldset",
@@ -239,12 +239,12 @@
     },
     {
       name: "img",
-      constructorNeedsCreatedByParser: true,
+      constructorNeedsCreateElementFlags: true,
       interfaceName: "HTMLImageElement",
     },
     {
       name: "input",
-      constructorNeedsCreatedByParser: true,
+      constructorNeedsCreateElementFlags: true,
       interfaceHeaderDir: "core/html/forms",
     },
     {
@@ -277,7 +277,7 @@
     },
     {
       name: "link",
-      constructorNeedsCreatedByParser: true,
+      constructorNeedsCreateElementFlags: true,
     },
     {
       name: "listing",
@@ -322,7 +322,7 @@
     },
     {
       name: "object",
-      constructorNeedsCreatedByParser: true,
+      constructorNeedsCreateElementFlags: true,
     },
     {
       name: "ol",
@@ -399,7 +399,7 @@
     },
     {
       name: "script",
-      constructorNeedsCreatedByParser: true,
+      constructorNeedsCreateElementFlags: true,
     },
     {
       name: "section",
@@ -429,7 +429,7 @@
     },
     {
       name: "style",
-      constructorNeedsCreatedByParser: true,
+      constructorNeedsCreateElementFlags: true,
     },
     {
       name: "sub",

@@ -42,15 +42,15 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLEmbedElement::HTMLEmbedElement(Document& document,
-                                          bool created_by_parser)
+                                          const CreateElementFlags flags)
     : HTMLPlugInElement(embedTag,
                         document,
-                        created_by_parser,
+                        flags,
                         kShouldPreferPlugInsForImages) {}
 
 HTMLEmbedElement* HTMLEmbedElement::Create(Document& document,
-                                           bool created_by_parser) {
-  HTMLEmbedElement* element = new HTMLEmbedElement(document, created_by_parser);
+                                           const CreateElementFlags flags) {
+  auto* element = new HTMLEmbedElement(document, flags);
   element->EnsureUserAgentShadowRoot();
   return element;
 }

@@ -27,6 +27,7 @@
 #include <memory>
 #include "base/single_thread_task_runner.h"
 #include "core/CoreExport.h"
+#include "core/dom/CreateElementFlags.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/IncrementLoadEventDelayCount.h"
 #include "core/html/HTMLElement.h"
@@ -49,7 +50,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   USING_GARBAGE_COLLECTED_MIXIN(HTMLLinkElement);
 
  public:
-  static HTMLLinkElement* Create(Document&, bool created_by_parser);
+  static HTMLLinkElement* Create(Document&, const CreateElementFlags);
   ~HTMLLinkElement() override;
 
   KURL Href() const;
@@ -117,7 +118,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
-  HTMLLinkElement(Document&, bool created_by_parser);
+  HTMLLinkElement(Document&, const CreateElementFlags);
 
   LinkStyle* GetLinkStyle() const;
   LinkImport* GetLinkImport() const;

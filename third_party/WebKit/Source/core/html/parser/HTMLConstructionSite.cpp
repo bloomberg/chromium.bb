@@ -721,15 +721,17 @@ void HTMLConstructionSite::InsertFormattingElement(AtomicHTMLToken* token) {
 }
 
 void HTMLConstructionSite::InsertScriptElement(AtomicHTMLToken* token) {
+  CreateElementFlags flags;
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/scripting-1.html#already-started
   // http://html5.org/specs/dom-parsing.html#dom-range-createcontextualfragment
   // For createContextualFragment, the specifications say to mark it
   // parser-inserted and already-started and later unmark them. However, we
   // short circuit that logic to avoid the subtree traversal to find script
   // elements since scripts can never see those flags or effects thereof.
-  const bool parser_inserted = parser_content_policy_ !=
-                               kAllowScriptingContentAndDoNotMarkAlreadyStarted;
-  const bool already_started = is_parsing_fragment_ && parser_inserted;
+  flags.SetCreatedByParser(parser_content_policy_ !=
+                           kAllowScriptingContentAndDoNotMarkAlreadyStarted);
+  const bool already_started =
+      is_parsing_fragment_ && flags.IsCreatedByParser();
   // TODO(csharrison): This logic only works if the tokenizer/parser was not
   // blocked waiting for scripts when the element was inserted. This usually
   // fails for instance, on second document.write if a script writes twice in a
@@ -739,8 +741,8 @@ void HTMLConstructionSite::InsertScriptElement(AtomicHTMLToken* token) {
   // in are packed in a bitfield from an enum class.
   const bool created_during_document_write =
       OwnerDocumentForCurrentNode().IsInDocumentWrite();
-  HTMLScriptElement* element =
-      HTMLScriptElement::Create(OwnerDocumentForCurrentNode(), parser_inserted,
+  auto* element =
+      HTMLScriptElement::Create(OwnerDocumentForCurrentNode(), flags,
                                 already_started, created_during_document_write);
   if (const Attribute* is_attribute =
           token->GetAttributeItem(HTMLNames::isAttr)) {

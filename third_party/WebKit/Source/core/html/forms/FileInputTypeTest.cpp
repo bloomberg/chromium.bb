@@ -46,7 +46,7 @@ TEST(FileInputTypeTest, createFileList) {
 
 TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles) {
   Document* document = Document::CreateForTest();
-  HTMLInputElement* input = HTMLInputElement::Create(*document, false);
+  auto* input = HTMLInputElement::Create(*document, CreateElementFlags());
   InputType* file_input = FileInputType::Create(*input);
 
   DataObject* native_file_raw_drag_data = DataObject::Create();
@@ -78,7 +78,7 @@ TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles) {
 
 TEST(FileInputTypeTest, setFilesFromPaths) {
   Document* document = Document::CreateForTest();
-  HTMLInputElement* input = HTMLInputElement::Create(*document, false);
+  auto* input = HTMLInputElement::Create(*document, CreateElementFlags());
   InputType* file_input = FileInputType::Create(*input);
   Vector<String> paths;
   paths.push_back("/native/path");

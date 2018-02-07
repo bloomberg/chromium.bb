@@ -279,8 +279,8 @@ void FileInputType::CountUsage() {
 
 void FileInputType::CreateShadowSubtree() {
   DCHECK(GetElement().Shadow());
-  HTMLInputElement* button =
-      HTMLInputElement::Create(GetElement().GetDocument(), false);
+  auto* button = HTMLInputElement::Create(GetElement().GetDocument(),
+                                          CreateElementFlags());
   button->setType(InputTypeNames::button);
   button->setAttribute(
       valueAttr,

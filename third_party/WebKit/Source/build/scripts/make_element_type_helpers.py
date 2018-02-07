@@ -21,7 +21,7 @@ class MakeElementTypeHelpersWriter(json5_generator.Writer):
         'Conditional': {},
         'ImplementedAs': {},
         'JSInterfaceName': {},
-        'constructorNeedsCreatedByParser': {},
+        'constructorNeedsCreateElementFlags': {},
         'interfaceHeaderDir': {},
         'interfaceName': {},
         'noConstructor': {},

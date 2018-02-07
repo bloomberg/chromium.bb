@@ -32,7 +32,7 @@ class SVGStyleElement final : public SVGElement, public StyleElement {
   USING_GARBAGE_COLLECTED_MIXIN(SVGStyleElement);
 
  public:
-  static SVGStyleElement* Create(Document&, bool created_by_parser);
+  static SVGStyleElement* Create(Document&, const CreateElementFlags);
   ~SVGStyleElement() override;
 
   using StyleElement::sheet;
@@ -54,7 +54,7 @@ class SVGStyleElement final : public SVGElement, public StyleElement {
   virtual void Trace(blink::Visitor*);
 
  private:
-  SVGStyleElement(Document&, bool created_by_parser);
+  SVGStyleElement(Document&, const CreateElementFlags);
 
   void ParseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;

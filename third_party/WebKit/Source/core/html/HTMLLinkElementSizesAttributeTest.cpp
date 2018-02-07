@@ -16,8 +16,7 @@ class HTMLLinkElementSizesAttributeTest : public ::testing::Test {};
 TEST(HTMLLinkElementSizesAttributeTest,
      setSizesPropertyValue_updatesAttribute) {
   Document* document = Document::CreateForTest();
-  HTMLLinkElement* link =
-      HTMLLinkElement::Create(*document, /* createdByParser: */ false);
+  auto* link = HTMLLinkElement::Create(*document, CreateElementFlags());
   DOMTokenList* sizes = link->sizes();
   EXPECT_EQ(g_null_atom, sizes->value());
   sizes->setValue("   a b  c ");
@@ -29,7 +28,7 @@ TEST(HTMLLinkElementSizesAttributeTest,
      setSizesAttribute_updatesSizesPropertyValue) {
   Document* document = Document::CreateForTest();
   HTMLLinkElement* link =
-      HTMLLinkElement::Create(*document, /* createdByParser: */ false);
+      HTMLLinkElement::Create(*document, CreateElementFlags());
   DOMTokenList* sizes = link->sizes();
   EXPECT_EQ(g_null_atom, sizes->value());
   link->setAttribute(HTMLNames::sizesAttr, "y  x ");

@@ -43,7 +43,7 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
   USING_GARBAGE_COLLECTED_MIXIN(HTMLObjectElement);
 
  public:
-  static HTMLObjectElement* Create(Document&, bool created_by_parser);
+  static HTMLObjectElement* Create(Document&, const CreateElementFlags);
   ~HTMLObjectElement() override;
   virtual void Trace(blink::Visitor*);
 
@@ -83,7 +83,7 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
   void AttachLayoutTree(AttachContext&) final;
 
  private:
-  HTMLObjectElement(Document&, bool created_by_parser);
+  HTMLObjectElement(Document&, const CreateElementFlags);
 
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;

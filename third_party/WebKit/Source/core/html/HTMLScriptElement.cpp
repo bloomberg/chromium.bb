@@ -41,21 +41,21 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLScriptElement::HTMLScriptElement(Document& document,
-                                            bool was_inserted_by_parser,
+                                            const CreateElementFlags flags,
                                             bool already_started,
                                             bool created_during_document_write)
     : HTMLElement(scriptTag, document),
-      loader_(InitializeScriptLoader(was_inserted_by_parser,
+      loader_(InitializeScriptLoader(flags.IsCreatedByParser(),
                                      already_started,
                                      created_during_document_write)) {}
 
 HTMLScriptElement* HTMLScriptElement::Create(
     Document& document,
-    bool was_inserted_by_parser,
+    const CreateElementFlags flags,
     bool already_started,
     bool created_during_document_write) {
-  return new HTMLScriptElement(document, was_inserted_by_parser,
-                               already_started, created_during_document_write);
+  return new HTMLScriptElement(document, flags, already_started,
+                               created_during_document_write);
 }
 
 bool HTMLScriptElement::IsURLAttribute(const Attribute& attribute) const {
@@ -225,8 +225,9 @@ void HTMLScriptElement::SetScriptElementForBinding(
 }
 
 Element* HTMLScriptElement::CloneElementWithoutAttributesAndChildren() {
-  auto* element = new HTMLScriptElement(GetDocument(), false,
-                                        loader_->AlreadyStarted(), false);
+  auto* element =
+      new HTMLScriptElement(GetDocument(), CreateElementFlags::ByCloneNode(),
+                            loader_->AlreadyStarted(), false);
   const AtomicString& is = FastGetAttribute(HTMLNames::isAttr);
   if (!is.IsNull() && !V0CustomElement::IsValidName(element->localName()))
     V0CustomElementRegistrationContext::SetTypeExtension(element, is);
