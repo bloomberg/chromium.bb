@@ -11,6 +11,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.text.SpannableString;
+import android.text.style.RelativeSizeSpan;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -166,6 +168,8 @@ public class ChooseHostBrowserDialog {
     private static class BrowserArrayAdapter extends ArrayAdapter<BrowserItem> {
         private List<BrowserItem> mBrowsers;
         private Context mContext;
+        private static final float UNSUPPORTED_ICON_OPACITY = 0.26f;
+        private static final float SUPPORTED_ICON_OPACITY = 1f;
 
         public BrowserArrayAdapter(Context context, List<BrowserItem> browsers) {
             super(context, R.layout.host_browser_list_item, browsers);
@@ -191,11 +195,19 @@ public class ChooseHostBrowserDialog {
             if (item.supportsWebApks()) {
                 name.setText(item.getApplicationName());
                 name.setTextColor(WebApkUtils.getColor(res, R.color.black_alpha_87));
+                icon.setAlpha(SUPPORTED_ICON_OPACITY);
             } else {
-                name.setText(mContext.getString(R.string.host_browser_item_not_supporting_webapks,
-                        item.getApplicationName()));
+                String text = mContext.getString(R.string.host_browser_item_not_supporting_webapks,
+                        item.getApplicationName());
+                SpannableString spannableName = new SpannableString(text);
+                float descriptionProportion = res.getDimension(R.dimen.text_size_medium_dense)
+                        / res.getDimension(R.dimen.text_size_large);
+                spannableName.setSpan(new RelativeSizeSpan(descriptionProportion),
+                        item.getApplicationName().length() + 1, spannableName.length(), 0);
+                name.setText(spannableName);
                 name.setSingleLine(false);
                 name.setTextColor(WebApkUtils.getColor(res, R.color.black_alpha_38));
+                icon.setAlpha(UNSUPPORTED_ICON_OPACITY);
             }
             icon.setImageDrawable(item.getApplicationIcon());
             icon.setEnabled(item.supportsWebApks());
