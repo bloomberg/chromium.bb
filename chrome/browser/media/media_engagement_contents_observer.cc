@@ -161,7 +161,9 @@ void MediaEngagementContentsObserver::DidFinishNavigation(
   if (session_ && session_->IsSameOriginWith(new_origin))
     return;
 
-  session_ = GetOrCreateSession(new_origin, GetOpener());
+  bool was_restored =
+      navigation_handle->GetRestoreType() != content::RestoreType::NONE;
+  session_ = GetOrCreateSession(new_origin, GetOpener(), was_restored);
 }
 
 MediaEngagementContentsObserver::PlayerState::PlayerState(base::Clock* clock)
@@ -538,7 +540,8 @@ content::WebContents* MediaEngagementContentsObserver::GetOpener() const {
 scoped_refptr<MediaEngagementSession>
 MediaEngagementContentsObserver::GetOrCreateSession(
     const url::Origin& origin,
-    content::WebContents* opener) const {
+    content::WebContents* opener,
+    bool was_restored) const {
   GURL url = origin.GetURL();
   if (!url.is_valid())
     return nullptr;
@@ -554,5 +557,8 @@ MediaEngagementContentsObserver::GetOrCreateSession(
     return opener_observer->session_;
   }
 
-  return new MediaEngagementSession(service_, origin);
+  return new MediaEngagementSession(
+      service_, origin,
+      was_restored ? MediaEngagementSession::RestoreType::kRestored
+                   : MediaEngagementSession::RestoreType::kNotRestored);
 }

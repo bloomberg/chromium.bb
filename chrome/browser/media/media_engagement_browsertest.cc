@@ -14,21 +14,32 @@
 #include "chrome/browser/media/media_engagement_contents_observer.h"
 #include "chrome/browser/media/media_engagement_preloaded_list.h"
 #include "chrome/browser/media/media_engagement_service.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/session_restore.h"
+#include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/keep_alive_registry/keep_alive_types.h"
+#include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/sessions/session_service_test_helper.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -186,7 +197,17 @@ class MediaEngagementBrowserTest : public InProcessBrowserTest {
                     int media_playbacks,
                     int audible_playbacks,
                     int significant_playbacks) {
-    MediaEngagementScore score = GetService()->CreateEngagementScore(url);
+    ExpectScores(GetService(), url, visits, media_playbacks, audible_playbacks,
+                 significant_playbacks);
+  }
+
+  void ExpectScores(MediaEngagementService* service,
+                    GURL url,
+                    int visits,
+                    int media_playbacks,
+                    int audible_playbacks,
+                    int significant_playbacks) {
+    MediaEngagementScore score = service->CreateEngagementScore(url);
     EXPECT_EQ(visits, score.visits());
     EXPECT_EQ(media_playbacks, score.media_playbacks());
     EXPECT_EQ(audible_playbacks, score.audible_playbacks());
@@ -250,6 +271,15 @@ class MediaEngagementBrowserTest : public InProcessBrowserTest {
 
   MediaEngagementService* GetService() {
     return MediaEngagementService::Get(browser()->profile());
+  }
+
+  // To be used only for a service that wasn't the one created by the test
+  // class.
+  void InjectTimerTaskRunnerToService(MediaEngagementService* service) {
+    service->clock_ = &test_clock_;
+
+    for (auto observer : service->contents_observers_)
+      observer.second->SetTaskRunnerForTest(task_runner_);
   }
 
  private:
@@ -658,4 +688,83 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementPrerenderBrowserTest, Ignored) {
   test_prerender->WaitForStop();
 
   ExpectScores(0, 0, 0, 0);
+}
+
+class MediaEngagementSessionRestoreBrowserTest
+    : public MediaEngagementBrowserTest {
+ public:
+  Browser* QuitBrowserAndRestore() {
+    Profile* profile = browser()->profile();
+
+    SessionStartupPref::SetStartupPref(
+        profile, SessionStartupPref(SessionStartupPref::LAST));
+#if defined(OS_CHROMEOS)
+    SessionServiceTestHelper helper(
+        SessionServiceFactory::GetForProfile(profile));
+    helper.SetForceBrowserNotAliveWithNoWindows(true);
+    helper.ReleaseService();
+#endif  // defined(OS_CHROMEOS)
+
+    std::unique_ptr<ScopedKeepAlive> keep_alive(new ScopedKeepAlive(
+        KeepAliveOrigin::SESSION_RESTORE, KeepAliveRestartOption::DISABLED));
+    CloseBrowserSynchronously(browser());
+
+    chrome::NewEmptyWindow(profile);
+    ui_test_utils::BrowserAddedObserver window_observer;
+    SessionRestoreTestHelper restore_observer;
+
+    Browser* new_browser = window_observer.WaitForSingleNewBrowser();
+    restore_observer.Wait();
+    return new_browser;
+  }
+
+  void WaitForTabsToLoad(Browser* browser) {
+    for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
+      content::WebContents* web_contents =
+          browser->tab_strip_model()->GetWebContentsAt(i);
+      web_contents->GetController().LoadIfNecessary();
+      ASSERT_TRUE(content::WaitForLoadStop(web_contents));
+    }
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(MediaEngagementSessionRestoreBrowserTest,
+                       RestoredSession_NoPlayback_NoMEI) {
+  const GURL& url = http_server().GetURL("/engagement_test_iframe.html");
+
+  LoadTestPage(url);
+
+  Browser* new_browser = QuitBrowserAndRestore();
+  ASSERT_NO_FATAL_FAILURE(WaitForTabsToLoad(new_browser));
+
+  new_browser->tab_strip_model()->CloseAllTabs();
+
+  ExpectScores(MediaEngagementService::Get(new_browser->profile()), url, 1, 0,
+               0, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaEngagementSessionRestoreBrowserTest,
+                       RestoredSession_Playback_MEI) {
+  const GURL& url = http_server().GetURL("/engagement_test.html");
+
+  LoadTestPageAndWaitForPlayAndAudible(url, false);
+  AdvanceMeaningfulPlaybackTime();
+
+  Browser* new_browser = QuitBrowserAndRestore();
+
+  MediaEngagementService* new_service =
+      MediaEngagementService::Get(new_browser->profile());
+  InjectTimerTaskRunnerToService(new_service);
+
+  ASSERT_NO_FATAL_FAILURE(WaitForTabsToLoad(new_browser));
+
+  WasRecentlyAudibleWatcher watcher(
+      new_browser->tab_strip_model()->GetActiveWebContents());
+  watcher.WaitForWasRecentlyAudible();
+
+  AdvanceMeaningfulPlaybackTime();
+
+  new_browser->tab_strip_model()->CloseAllTabs();
+
+  ExpectScores(new_service, url, 2, 2, 2, 2);
 }

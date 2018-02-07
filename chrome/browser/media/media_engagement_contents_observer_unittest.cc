@@ -213,7 +213,7 @@ class MediaEngagementContentsObserverTest
   scoped_refptr<MediaEngagementSession> GetOrCreateSession(
       const url::Origin& origin,
       content::WebContents* opener) {
-    return contents_observer_->GetOrCreateSession(origin, opener);
+    return contents_observer_->GetOrCreateSession(origin, opener, false);
   }
 
   scoped_refptr<MediaEngagementSession> GetSessionFor(

@@ -25,8 +25,14 @@ class MediaEngagementService;
 // information are recorded only once.
 class MediaEngagementSession : public base::RefCounted<MediaEngagementSession> {
  public:
+  enum class RestoreType {
+    kNotRestored = 0,
+    kRestored,
+  };
+
   MediaEngagementSession(MediaEngagementService* service,
-                         const url::Origin& origin);
+                         const url::Origin& origin,
+                         RestoreType restore_status);
 
   // Returns whether the session's origin is same origin with |origin|.
   bool IsSameOriginWith(const url::Origin& origin) const;
@@ -58,7 +64,13 @@ class MediaEngagementSession : public base::RefCounted<MediaEngagementSession> {
   // Record the score and change in score to UKM.
   void RecordUkmMetrics();
 
+  // Returns whether the session has data that needs to be committed into the
+  // database.
   bool HasPendingDataToCommit() const;
+
+  // Records the session information (restored, playback, etc.) into histograms.
+  // NOTE: must be called just before commiting.
+  void RecordStatusHistograms() const;
 
   // Commits any pending data to website settings.
   void CommitPendingData();
@@ -91,6 +103,9 @@ class MediaEngagementSession : public base::RefCounted<MediaEngagementSession> {
 
   // The time between significant playbacks to be recorded to UKM.
   base::TimeDelta time_since_playback_for_ukm_;
+
+  // Whether the session was restored.
+  RestoreType restore_status_ = RestoreType::kNotRestored;
 
   DISALLOW_COPY_AND_ASSIGN(MediaEngagementSession);
 };
