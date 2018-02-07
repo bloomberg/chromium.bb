@@ -1596,12 +1596,6 @@ crbug.com/758385 http/tests/performance-timing/custom-user-timing/po-customusert
 crbug.com/738493 http/tests/performance-timing/longtask-v2/longtask-v8compile.html [ Skip ]
 crbug.com/738493 http/tests/performance-timing/longtask-v2/longtask-executescript.html [ Skip ]
 
-# Expected failures during incremental implementation of mojo notification.
-crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/close-dedicated-worker.html [ Skip ]
-crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/close-dispatch-asynchronous.html [ Skip ]
-crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/close-document.html [ Skip ]
-crbug.com/595685 virtual/mojo-notifications/http/tests/notifications/close-shared-worker.html [ Skip ]
-
 crbug.com/713587 external/wpt/css/css-ui/caret-color-006.html [ Skip ]
 
 # Automatically-added expectations for CSS tests which are temporarily

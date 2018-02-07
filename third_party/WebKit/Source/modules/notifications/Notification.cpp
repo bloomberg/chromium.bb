@@ -30,6 +30,7 @@
 
 #include "modules/notifications/Notification.h"
 
+#include "base/unguessable_token.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
@@ -124,6 +125,18 @@ Notification* Notification::Create(ExecutionContext* context,
 
   Notification* notification =
       new Notification(context, Type::kNonPersistent, data);
+
+  if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
+    // TODO(https://crbug.com/595685): Make |token| a constructor parameter
+    // once persistent notifications have been mojofied too.
+    if (data.tag.IsNull() || data.tag.IsEmpty()) {
+      auto unguessable_token = base::UnguessableToken::Create();
+      notification->SetToken(unguessable_token.ToString().c_str());
+    } else {
+      notification->SetToken(data.tag);
+    }
+  }
+
   notification->SchedulePrepareShow();
 
   Document* document = context->IsDocument() ? ToDocument(context) : nullptr;
@@ -201,8 +214,8 @@ void Notification::DidLoadResources(NotificationResourcesLoader* loader) {
     listener_binding_.Bind(mojo::MakeRequest(&event_listener));
 
     NotificationManager::From(execution_context)
-        ->DisplayNonPersistentNotification(data_, loader->GetResources(),
-                                           std::move(event_listener));
+        ->DisplayNonPersistentNotification(
+            token_, data_, loader->GetResources(), std::move(event_listener));
   } else {
     GetWebNotificationManager()->Show(WebSecurityOrigin(origin), data_,
                                       loader->GetResources(), this);
@@ -220,7 +233,8 @@ void Notification::close() {
   // Persistent notifications won't get such events for programmatic closes.
   if (type_ == Type::kNonPersistent) {
     if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
-      // TODO(crbug.com/796990): Implement Close path via Mojo.
+      NotificationManager::From(GetExecutionContext())
+          ->CloseNonPersistentNotification(token_);
       return;
     }
     GetExecutionContext()

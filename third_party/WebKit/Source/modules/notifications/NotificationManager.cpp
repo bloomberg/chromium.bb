@@ -110,12 +110,20 @@ void NotificationManager::OnPermissionServiceConnectionError() {
 }
 
 void NotificationManager::DisplayNonPersistentNotification(
+    const String& token,
     const WebNotificationData& notification_data,
     std::unique_ptr<WebNotificationResources> notification_resources,
     mojom::blink::NonPersistentNotificationListenerPtr event_listener) {
+  DCHECK(!token.IsEmpty());
   DCHECK(notification_resources);
   GetNotificationService()->DisplayNonPersistentNotification(
-      notification_data, *notification_resources, std::move(event_listener));
+      token, notification_data, *notification_resources,
+      std::move(event_listener));
+}
+
+void NotificationManager::CloseNonPersistentNotification(const String& token) {
+  DCHECK(!token.IsEmpty());
+  GetNotificationService()->CloseNonPersistentNotification(token);
 }
 
 const mojom::blink::NotificationServicePtr&

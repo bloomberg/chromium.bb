@@ -44,10 +44,18 @@ class NotificationManager final
       V8NotificationPermissionCallback* deprecated_callback);
 
   // Shows a notification that is not tied to any service worker.
+  //
+  // Compares |token| against the token of all currently displayed
+  // notifications and if there's a match, replaces the older notification;
+  // else displays a new notification.
   void DisplayNonPersistentNotification(
+      const String& token,
       const WebNotificationData&,
       std::unique_ptr<WebNotificationResources>,
       mojom::blink::NonPersistentNotificationListenerPtr);
+
+  // Closes the notification that was most recently displayed with this token.
+  void CloseNonPersistentNotification(const String& token);
 
   virtual void Trace(blink::Visitor*);
 

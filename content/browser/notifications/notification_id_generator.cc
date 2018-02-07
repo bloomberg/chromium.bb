@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "url/gurl.h"
 
@@ -85,6 +86,16 @@ std::string NotificationIdGenerator::GenerateForNonPersistentNotification(
   }
 
   return stream.str();
+}
+
+std::string NotificationIdGenerator::GenerateForNonPersistentMojoNotification(
+    const url::Origin& origin,
+    const std::string& token) const {
+  DCHECK(!origin.unique());
+  DCHECK(!token.empty());
+  return base::StringPrintf(
+      "%c%c%s%c%s", kNonPersistentNotificationPrefix, kNotificationTagSeparator,
+      origin.Serialize().c_str(), kNotificationTagSeparator, token.c_str());
 }
 
 }  // namespace content

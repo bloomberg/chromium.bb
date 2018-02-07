@@ -36,9 +36,11 @@ class BlinkNotificationServiceImpl : public blink::mojom::NotificationService {
   // blink::mojom::NotificationService implementation.
   void GetPermissionStatus(GetPermissionStatusCallback callback) override;
   void DisplayNonPersistentNotification(
+      const std::string& token,
       const PlatformNotificationData& platform_notification_data,
       const NotificationResources& notification_resources,
       blink::mojom::NonPersistentNotificationListenerPtr listener_ptr) override;
+  void CloseNonPersistentNotification(const std::string& token) override;
 
  private:
   // Called when an error is detected on binding_.
@@ -50,6 +52,9 @@ class BlinkNotificationServiceImpl : public blink::mojom::NotificationService {
       const content::PlatformNotificationData& notification_data,
       const content::NotificationResources& notification_resources,
       blink::mojom::NonPersistentNotificationListenerPtrInfo listener_ptr_info);
+
+  void CloseNonPersistentNotificationOnUIThread(
+      const std::string& notification_id);
 
   // The notification context that owns this service instance.
   PlatformNotificationContextImpl* notification_context_;
