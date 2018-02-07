@@ -4,8 +4,6 @@
 
 #include "content/browser/webrtc/webrtc_local_event_log_manager.h"
 
-#include <limits>
-
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -33,7 +31,9 @@ WebRtcLocalEventLogManager::WebRtcLocalEventLogManager(
       clock_for_testing_(nullptr),
       max_log_file_size_bytes_(kDefaultMaxLocalLogFileSizeBytes) {}
 
-WebRtcLocalEventLogManager::~WebRtcLocalEventLogManager() {}
+WebRtcLocalEventLogManager::~WebRtcLocalEventLogManager() {
+  // This should never actually run, except in unit tests.
+}
 
 bool WebRtcLocalEventLogManager::PeerConnectionAdded(int render_process_id,
                                                      int lid) {
@@ -67,7 +67,7 @@ bool WebRtcLocalEventLogManager::PeerConnectionRemoved(int render_process_id,
   if (local_log != log_files_.end()) {
     // Note that success/failure of stopping the local log file is unrelated
     // to the success/failure of PeerConnectionRemoved().
-    StopLogFile(render_process_id, lid);
+    CloseLogFile(local_log);
   }
 
   active_peer_connections_.erase(peer_connection);
@@ -75,7 +75,7 @@ bool WebRtcLocalEventLogManager::PeerConnectionRemoved(int render_process_id,
   return true;
 }
 
-bool WebRtcLocalEventLogManager::EnableLogging(base::FilePath base_path,
+bool WebRtcLocalEventLogManager::EnableLogging(const base::FilePath& base_path,
                                                size_t max_file_size_bytes) {
   if (!base_path_.empty()) {
     return false;
@@ -113,48 +113,12 @@ bool WebRtcLocalEventLogManager::DisableLogging() {
 
 bool WebRtcLocalEventLogManager::EventLogWrite(int render_process_id,
                                                int lid,
-                                               const std::string& output) {
-  DCHECK_LE(output.length(),
-            static_cast<size_t>(std::numeric_limits<int>::max()));
-
+                                               const std::string& message) {
   auto it = log_files_.find(PeerConnectionKey(render_process_id, lid));
   if (it == log_files_.end()) {
     return false;
   }
-
-  // Observe the file size limit, if any. Note that base::File's interface does
-  // not allow writing more than numeric_limits<int>::max() bytes at a time.
-  int output_len = static_cast<int>(output.length());  // DCHECKed above.
-  LogFile& log_file = it->second;
-  if (log_file.max_file_size_bytes != kWebRtcEventLogManagerUnlimitedFileSize) {
-    DCHECK_LT(log_file.file_size_bytes, log_file.max_file_size_bytes);
-    if (log_file.file_size_bytes + output.length() < log_file.file_size_bytes ||
-        log_file.file_size_bytes + output.length() >
-            log_file.max_file_size_bytes) {
-      output_len = log_file.max_file_size_bytes - log_file.file_size_bytes;
-    }
-  }
-
-  int written = log_file.file.WriteAtCurrentPos(output.c_str(), output_len);
-  if (written < 0 || written != output_len) {  // Error
-    LOG(WARNING) << "WebRTC event log output couldn't be written to local "
-                    "file in its entirety.";
-    CloseLogFile(it);
-    return false;
-  }
-
-  log_file.file_size_bytes += static_cast<size_t>(written);
-  if (log_file.max_file_size_bytes != kWebRtcEventLogManagerUnlimitedFileSize) {
-    DCHECK_LE(log_file.file_size_bytes, log_file.max_file_size_bytes);
-    if (log_file.file_size_bytes >= log_file.max_file_size_bytes) {
-      CloseLogFile(it);
-    }
-  }
-
-  // Truncated output due to exceeding the maximum is reported as an error - the
-  // caller is interested to know that not all of its output was written,
-  // regardless of the reason.
-  return (static_cast<size_t>(written) == output.length());
+  return WriteToLogFile(it, message);
 }
 
 void WebRtcLocalEventLogManager::SetClockForTesting(base::Clock* clock) {
@@ -194,20 +158,13 @@ void WebRtcLocalEventLogManager::StartLogFile(int render_process_id, int lid) {
 
   // If the file was successfully created, it's now ready to be written to.
   DCHECK(log_files_.find({render_process_id, lid}) == log_files_.end());
-  log_files_.emplace(key, LogFile(std::move(file), max_log_file_size_bytes_));
+  log_files_.emplace(
+      key, LogFile(file_path, std::move(file), max_log_file_size_bytes_));
 
   // The observer needs to be able to run on any TaskQueue.
   if (observer_) {
     observer_->OnLocalLogStarted(key, file_path);
   }
-}
-
-void WebRtcLocalEventLogManager::StopLogFile(int render_process_id, int lid) {
-  auto it = log_files_.find(PeerConnectionKey(render_process_id, lid));
-  if (it == log_files_.end()) {
-    return;
-  }
-  CloseLogFile(it);
 }
 
 WebRtcLocalEventLogManager::LogFilesMap::iterator
