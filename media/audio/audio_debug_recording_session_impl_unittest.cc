@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/audio/mock_audio_debug_recording_manager.h"
 #include "media/audio/mock_audio_manager.h"
@@ -85,11 +86,11 @@ class AudioDebugRecordingSessionImplTest : public testing::Test {
 
  private:
   void SetBaseFilePath() {
-    base::FilePath temp_dir;
-    if (!base::GetTempDir(&temp_dir))
-      FAIL();
-    base_file_path_ = temp_dir.Append(base::FilePath(kBaseFileName));
+    CHECK(temp_dir_.CreateUniqueTempDir());
+    base_file_path_ = temp_dir_.GetPath().Append(base::FilePath(kBaseFileName));
   }
+
+  base::ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDebugRecordingSessionImplTest);
 };
