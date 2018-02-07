@@ -625,8 +625,8 @@ void WebNotificationTray::ClickedOutsideBubble() {
 }
 
 bool WebNotificationTray::PerformAction(const ui::Event& event) {
-  UserMetricsRecorder::RecordUserClick(
-      LoginMetricsRecorder::LockScreenUserClickTarget::kNotificationTray);
+  UserMetricsRecorder::RecordUserClickOnTray(
+      LoginMetricsRecorder::TrayClickTarget::kNotificationTray);
   if (IsMessageCenterVisible())
     CloseBubble();
   else
