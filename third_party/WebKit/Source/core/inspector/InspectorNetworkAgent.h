@@ -281,6 +281,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   Member<WorkerGlobalScope> worker_global_scope_;
   v8_inspector::V8InspectorSession* v8_session_;
   Member<NetworkResourcesData> resources_data_;
+  String conditions_token_;
 
   typedef HashMap<ThreadableLoaderClient*, unsigned long>
       ThreadableLoaderClientRequestIdMap;

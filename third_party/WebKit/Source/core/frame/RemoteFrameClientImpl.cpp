@@ -102,11 +102,11 @@ void RemoteFrameClientImpl::FrameFocused() const {
     web_frame_->Client()->FrameFocused();
 }
 
-String RemoteFrameClientImpl::GetDevToolsFrameToken() const {
+base::UnguessableToken RemoteFrameClientImpl::GetDevToolsFrameToken() const {
   if (web_frame_->Client()) {
     return web_frame_->Client()->GetDevToolsFrameToken();
   }
-  return g_empty_string;
+  return base::UnguessableToken::Create();
 }
 
 void RemoteFrameClientImpl::Navigate(const ResourceRequest& request,

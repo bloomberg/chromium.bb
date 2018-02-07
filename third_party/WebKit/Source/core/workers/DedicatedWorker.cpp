@@ -216,12 +216,15 @@ std::unique_ptr<GlobalScopeCreationParams>
 DedicatedWorker::CreateGlobalScopeCreationParams() {
   Document* document = ToDocument(GetExecutionContext());
   const SecurityOrigin* starter_origin = document->GetSecurityOrigin();
+  base::UnguessableToken devtools_worker_token =
+      document->GetFrame() ? document->GetFrame()->GetDevToolsFrameToken()
+                           : base::UnguessableToken::Create();
   return std::make_unique<GlobalScopeCreationParams>(
       script_url_, GetExecutionContext()->UserAgent(),
       document->GetContentSecurityPolicy()->Headers().get(),
       kReferrerPolicyDefault, starter_origin, document->IsSecureContext(),
       CreateWorkerClients(), document->AddressSpace(),
-      OriginTrialContext::GetTokens(document).get(),
+      OriginTrialContext::GetTokens(document).get(), devtools_worker_token,
       std::make_unique<WorkerSettings>(document->GetSettings()),
       kV8CacheOptionsDefault,
       ConnectToWorkerInterfaceProvider(document,

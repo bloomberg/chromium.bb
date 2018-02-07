@@ -44,6 +44,7 @@ void ThreadedWorkletMessagingProxy::Initialize(WorkerClients* worker_clients) {
           document->GetReferrerPolicy(), document->GetSecurityOrigin(),
           document->IsSecureContext(), worker_clients, document->AddressSpace(),
           OriginTrialContext::GetTokens(document).get(),
+          base::UnguessableToken::Create(),
           std::make_unique<WorkerSettings>(document->GetSettings()),
           kV8CacheOptionsDefault);
 

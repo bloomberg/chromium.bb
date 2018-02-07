@@ -663,7 +663,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebEffectiveConnectionType) override;
   blink::WebURLRequest::PreviewsState GetPreviewsStateForFrame() const override;
   void DidBlockFramebust(const blink::WebURL& url) override;
-  blink::WebString GetDevToolsFrameToken() override;
+  base::UnguessableToken GetDevToolsFrameToken() override;
   void AbortClientNavigation() override;
   void DidChangeSelection(bool is_empty_selection) override;
   bool HandleCurrentKeyboardEvent() override;
@@ -1657,7 +1657,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // frame.
   // |devtools_frame_token_| is only defined by the browser and is never
   // sent back from the renderer in the control calls.
-  blink::WebString devtools_frame_token_;
+  base::UnguessableToken devtools_frame_token_;
 
   // Bookkeeping to suppress redundant scroll and focus requests for an already
   // scrolled and focused editable node.

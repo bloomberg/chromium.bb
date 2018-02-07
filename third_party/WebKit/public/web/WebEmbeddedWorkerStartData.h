@@ -31,6 +31,7 @@
 #ifndef WebEmbeddedWorkerStartData_h
 #define WebEmbeddedWorkerStartData_h
 
+#include "base/unguessable_token.h"
 #include "public/platform/WebContentSecurityPolicy.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
@@ -54,7 +55,7 @@ struct WebEmbeddedWorkerStartData {
   WaitForDebuggerMode wait_for_debugger_mode;
   // Unique worker token used by DevTools to attribute different instrumentation
   // to the same worker.
-  WebString devtools_frame_token;
+  base::UnguessableToken devtools_worker_token;
   WebSettings::V8CacheOptions v8_cache_options;
 
   mojom::IPAddressSpace address_space;

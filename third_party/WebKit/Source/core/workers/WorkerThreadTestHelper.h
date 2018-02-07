@@ -104,6 +104,7 @@ class WorkerThreadForTest : public WorkerThread {
         script_url, "fake user agent", headers.get(), kReferrerPolicyDefault,
         security_origin, false /* starter_secure_context */, worker_clients,
         mojom::IPAddressSpace::kLocal, nullptr,
+        base::UnguessableToken::Create(),
         std::make_unique<WorkerSettings>(Settings::Create().get()),
         kV8CacheOptionsDefault);
 

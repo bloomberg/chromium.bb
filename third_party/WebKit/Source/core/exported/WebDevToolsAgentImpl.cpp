@@ -543,9 +543,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
       probe_sink_(web_local_frame_impl_->GetFrame()->GetProbeSink()),
       resource_content_loader_(InspectorResourceContentLoader::Create(
           web_local_frame_impl_->GetFrame())),
-      inspected_frames_(new InspectedFrames(
-          web_local_frame_impl_->GetFrame(),
-          web_local_frame_impl_->GetFrame()->GetDevToolsFrameToken())),
+      inspected_frames_(new InspectedFrames(web_local_frame_impl_->GetFrame())),
       resource_container_(new InspectorResourceContainer(inspected_frames_)),
       include_view_agents_(include_view_agents),
       layer_tree_id_(0) {

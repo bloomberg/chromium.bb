@@ -2208,7 +2208,7 @@ protocol::Response InspectorDOMAgent::getFrameOwner(const String& frame_id,
                                                     int* node_id) {
   Frame* frame = inspected_frames_->Root();
   for (; frame; frame = frame->Tree().TraverseNext(inspected_frames_->Root())) {
-    if (frame->GetDevToolsFrameToken() == frame_id)
+    if (IdentifiersFactory::FrameId(frame) == frame_id)
       break;
   }
   if (!frame || !frame->Owner()->IsLocal())

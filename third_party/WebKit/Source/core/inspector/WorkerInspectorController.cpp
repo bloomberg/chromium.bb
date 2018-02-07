@@ -66,9 +66,7 @@ WorkerInspectorController::~WorkerInspectorController() {
   DCHECK(!thread_);
 }
 
-void WorkerInspectorController::ConnectFrontend(
-    int session_id,
-    const String& parent_instrumentation_token) {
+void WorkerInspectorController::ConnectFrontend(int session_id) {
   if (sessions_.find(session_id) != sessions_.end())
     return;
 
@@ -80,7 +78,7 @@ void WorkerInspectorController::ConnectFrontend(
   if (thread_->GlobalScope()->IsWorkerGlobalScope()) {
     DCHECK(ToWorkerGlobalScope(thread_->GlobalScope())->EnsureFetcher());
     session->Append(new InspectorNetworkAgent(
-        new InspectedFrames(nullptr, parent_instrumentation_token),
+        new InspectedFrames(nullptr),
         ToWorkerGlobalScope(thread_->GlobalScope()), session->V8Session()));
   }
   if (sessions_.IsEmpty())

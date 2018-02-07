@@ -766,10 +766,10 @@ void InspectorNetworkAgent::WillSendRequest(
   WillSendRequestInternal(execution_context, identifier, loader, request,
                           redirect_response, initiator_info, type);
 
-  if (!inspected_frames_->GetDevToolsFrameToken().IsEmpty()) {
+  if (!conditions_token_.IsEmpty()) {
     request.AddHTTPHeaderField(
         HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id,
-        AtomicString(inspected_frames_->GetDevToolsFrameToken()));
+        AtomicString(conditions_token_));
   }
 }
 
@@ -1686,6 +1686,11 @@ InspectorNetworkAgent::InspectorNetworkAgent(
       max_post_data_size_(0) {
   DCHECK((IsMainThread() && !worker_global_scope_) ||
          (!IsMainThread() && worker_global_scope_));
+  const base::UnguessableToken& token =
+      worker_global_scope_ ? worker_global_scope_->GetDevToolsWorkerToken()
+                           : inspected_frames->Root()->GetDevToolsFrameToken();
+  // token.ToString() is latin1.
+  conditions_token_ = String(token.ToString().c_str());
 }
 
 void InspectorNetworkAgent::ShouldForceCORSPreflight(bool* result) {

@@ -743,7 +743,7 @@ void RenderFrameProxy::FrameFocused() {
   Send(new FrameHostMsg_FrameFocused(routing_id_));
 }
 
-blink::WebString RenderFrameProxy::GetDevToolsFrameToken() {
+base::UnguessableToken RenderFrameProxy::GetDevToolsFrameToken() {
   return devtools_frame_token_;
 }
 

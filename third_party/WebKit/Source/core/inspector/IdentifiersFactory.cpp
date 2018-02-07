@@ -67,14 +67,18 @@ String IdentifiersFactory::SubresourceRequestId(unsigned long identifier) {
 String IdentifiersFactory::FrameId(Frame* frame) {
   if (!frame)
     return g_empty_string;
-  return frame->GetDevToolsFrameToken();
+  const base::UnguessableToken& token = frame->GetDevToolsFrameToken();
+  // token.ToString() is latin1.
+  return String(token.ToString().c_str());
 }
 
 // static
 LocalFrame* IdentifiersFactory::FrameById(InspectedFrames* inspected_frames,
                                           const String& frame_id) {
   for (auto* frame : *inspected_frames) {
-    if (frame->Client() && frame->GetDevToolsFrameToken() == frame_id)
+    const base::UnguessableToken& token = frame->GetDevToolsFrameToken();
+    // token.ToString() is latin1.
+    if (frame->Client() && frame_id == token.ToString().c_str())
       return frame;
   }
   return nullptr;

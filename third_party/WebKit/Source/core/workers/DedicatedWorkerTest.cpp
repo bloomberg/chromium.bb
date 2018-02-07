@@ -134,7 +134,8 @@ class DedicatedWorkerMessagingProxyForTest
             kReferrerPolicyDefault, security_origin_.get(),
             false /* starter_secure_context */, nullptr /* worker_clients */,
             mojom::IPAddressSpace::kLocal, nullptr /* origin_trial_tokens */,
-            std::move(worker_settings), kV8CacheOptionsDefault),
+            base::UnguessableToken::Create(), std::move(worker_settings),
+            kV8CacheOptionsDefault),
         WorkerBackingThreadStartupData(
             WorkerBackingThreadStartupData::HeapLimitMode::kDefault,
             WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow));

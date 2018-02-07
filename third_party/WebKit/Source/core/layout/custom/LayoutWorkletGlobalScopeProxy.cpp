@@ -34,7 +34,8 @@ LayoutWorkletGlobalScopeProxy::LayoutWorkletGlobalScopeProxy(
       document->GetReferrerPolicy(), document->GetSecurityOrigin(),
       document->IsSecureContext(), nullptr /* worker_clients */,
       document->AddressSpace(), OriginTrialContext::GetTokens(document).get(),
-      nullptr /* worker_settings */, kV8CacheOptionsDefault);
+      base::UnguessableToken::Create(), nullptr /* worker_settings */,
+      kV8CacheOptionsDefault);
   global_scope_ =
       LayoutWorkletGlobalScope::Create(frame, std::move(creation_params),
                                        *reporting_proxy_, global_scope_number);

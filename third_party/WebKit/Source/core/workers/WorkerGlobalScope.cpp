@@ -330,6 +330,7 @@ WorkerGlobalScope::WorkerGlobalScope(
                                  thread->GetWorkerReportingProxy()),
       url_(creation_params->script_url),
       user_agent_(creation_params->user_agent),
+      devtools_worker_token_(creation_params->devtools_worker_token),
       v8_cache_options_(creation_params->v8_cache_options),
       thread_(thread),
       timers_(GetTaskRunner(TaskType::kJavascriptTimer)),

@@ -302,6 +302,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
           kReferrerPolicyDefault, security_origin_.get(),
           false /* starter_secure_context */, nullptr /* workerClients */,
           mojom::IPAddressSpace::kLocal, nullptr /* originTrialToken */,
+          base::UnguessableToken::Create(),
           std::make_unique<WorkerSettings>(Settings::Create().get()),
           kV8CacheOptionsDefault);
 

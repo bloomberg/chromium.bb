@@ -373,7 +373,9 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   }
 
   void AnnotatedRegionsChanged() override {}
-  String GetDevToolsFrameToken() const override { return g_empty_string; };
+  base::UnguessableToken GetDevToolsFrameToken() const override {
+    return base::UnguessableToken::Create();
+  };
   String evaluateInInspectorOverlayForTesting(const String& script) override {
     return g_empty_string;
   }
@@ -437,7 +439,9 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
   Frame* NextSibling() const override { return nullptr; }
   Frame* FirstChild() const override { return nullptr; }
   void FrameFocused() const override {}
-  String GetDevToolsFrameToken() const override { return g_empty_string; };
+  base::UnguessableToken GetDevToolsFrameToken() const override {
+    return base::UnguessableToken::Create();
+  };
 
   DISALLOW_COPY_AND_ASSIGN(EmptyRemoteFrameClient);
 };

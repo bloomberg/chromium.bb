@@ -64,7 +64,8 @@ class MainThreadWorkletTest : public ::testing::Test {
         document->GetReferrerPolicy(), document->GetSecurityOrigin(),
         document->IsSecureContext(), nullptr /* worker_clients */,
         document->AddressSpace(), OriginTrialContext::GetTokens(document).get(),
-        nullptr /* worker_settings */, kV8CacheOptionsDefault);
+        base::UnguessableToken::Create(), nullptr /* worker_settings */,
+        kV8CacheOptionsDefault);
     global_scope_ = new MainThreadWorkletGlobalScope(
         &page_->GetFrame(), std::move(creation_params), *reporting_proxy_);
   }
