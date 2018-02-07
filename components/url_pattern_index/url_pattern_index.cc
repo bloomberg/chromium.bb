@@ -18,6 +18,7 @@
 #include "components/url_pattern_index/url_pattern.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "url/url_constants.h"
 
 namespace url_pattern_index {
 
@@ -714,8 +715,13 @@ const flat::UrlRule* UrlPatternIndexMatcher::FindMatch(
     bool is_third_party,
     bool disable_generic_rules,
     FindRuleStrategy strategy) const {
-  if (!flat_index_ || !url.is_valid())
+  // Ignore URLs that are greater than the max URL length. Since those will be
+  // disallowed elsewhere in the loading stack, we can save compute time by
+  // avoiding matching here.
+  if (!flat_index_ || !url.is_valid() ||
+      url.spec().length() > url::kMaxURLChars) {
     return nullptr;
+  }
   if ((element_type == flat::ElementType_NONE) ==
       (activation_type == flat::ActivationType_NONE)) {
     return nullptr;
