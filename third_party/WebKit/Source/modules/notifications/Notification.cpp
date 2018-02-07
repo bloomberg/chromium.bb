@@ -233,6 +233,7 @@ void Notification::close() {
   // Persistent notifications won't get such events for programmatic closes.
   if (type_ == Type::kNonPersistent) {
     if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
+      state_ = State::kClosing;
       NotificationManager::From(GetExecutionContext())
           ->CloseNonPersistentNotification(token_);
       return;
