@@ -1530,8 +1530,8 @@ void QuicChromiumClientSession::OnConnectionClosed(
 }
 
 void QuicChromiumClientSession::OnSuccessfulVersionNegotiation(
-    const QuicTransportVersion& version) {
-  logger_->OnSuccessfulVersionNegotiation(version);
+    const ParsedQuicVersion& version) {
+  logger_->OnSuccessfulVersionNegotiation(version.transport_version);
   QuicSpdySession::OnSuccessfulVersionNegotiation(version);
 }
 

@@ -99,7 +99,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
                           ConnectionCloseSource source) override;
   void OnWriteBlocked() override;
   void OnSuccessfulVersionNegotiation(
-      const QuicTransportVersion& version) override;
+      const ParsedQuicVersion& version) override;
   void OnConnectivityProbeReceived(
       const QuicSocketAddress& self_address,
       const QuicSocketAddress& peer_address) override;

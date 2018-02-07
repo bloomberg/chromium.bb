@@ -85,7 +85,7 @@ class QuicEndpoint : public Endpoint,
                           ConnectionCloseSource source) override {}
   void OnWriteBlocked() override {}
   void OnSuccessfulVersionNegotiation(
-      const QuicTransportVersion& version) override {}
+      const ParsedQuicVersion& version) override {}
   void OnConnectivityProbeReceived(
       const QuicSocketAddress& self_address,
       const QuicSocketAddress& peer_address) override {}

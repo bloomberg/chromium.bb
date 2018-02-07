@@ -448,7 +448,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
                           const std::string& error_details,
                           ConnectionCloseSource source) override;
   void OnSuccessfulVersionNegotiation(
-      const QuicTransportVersion& version) override;
+      const ParsedQuicVersion& version) override;
   void OnConnectivityProbeReceived(
       const QuicSocketAddress& self_address,
       const QuicSocketAddress& peer_address) override;

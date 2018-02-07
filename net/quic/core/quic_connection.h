@@ -122,7 +122,7 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
 
   // Called once a specific QUIC version is agreed by both endpoints.
   virtual void OnSuccessfulVersionNegotiation(
-      const QuicTransportVersion& version) = 0;
+      const ParsedQuicVersion& version) = 0;
 
   // Called when a connectivity probe has been received by the connection.
   virtual void OnConnectivityProbeReceived(
