@@ -361,10 +361,10 @@
         },
         "trigger_script": {
           "args": [
-	    "--bot-id=swarm846-c4",
-	    "--bot-id=swarm847-c4"
-          ],
-          "script": "//tools/perf/perf_device_trigger.py"
+	    "--multiple-trigger-configs",
+	    "[{\"id\": \"swarm846-c4\", \"pool\": \"Chrome-perf-fyi\"}, {\"id\": \"swarm847-c4\", \"pool\": \"Chrome-perf-fyi\"}]"
+	  ],
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -373,6 +373,7 @@
               "pool": "Chrome-perf-fyi"
             }
           ],
+	  "shards": 2,
           "expiration": 36000,
           "hard_timeout": 10800,
           "ignore_task_failure": false,
