@@ -46,7 +46,8 @@ class CORE_EXPORT ScriptCustomElementDefinition final
 
   v8::Local<v8::Object> Constructor() const;
 
-  HTMLElement* CreateElementSync(Document&, const QualifiedName&) override;
+  HTMLElement* CreateAutonomousCustomElementSync(Document&,
+                                                 const QualifiedName&) override;
 
   bool HasConnectedCallback() const override;
   bool HasDisconnectedCallback() const override;

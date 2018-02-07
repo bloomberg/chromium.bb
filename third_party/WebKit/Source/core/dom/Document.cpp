@@ -1080,8 +1080,7 @@ Element* Document::CreateElement(const QualifiedName& q_name,
   Element* element;
 
   if (definition) {
-    element =
-        CustomElement::CreateCustomElement(*this, q_name, flags, *definition);
+    element = definition->CreateElement(*this, q_name, flags);
   } else if (V0CustomElement::IsValidName(q_name.LocalName()) &&
              RegistrationContext()) {
     element = RegistrationContext()->CreateCustomTagElement(*this, q_name);

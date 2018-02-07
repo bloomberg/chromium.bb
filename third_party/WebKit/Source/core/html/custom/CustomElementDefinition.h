@@ -54,10 +54,12 @@ class CORE_EXPORT CustomElementDefinition
   ConstructionStack& GetConstructionStack() { return construction_stack_; }
 
   HTMLElement* CreateElementForConstructor(Document&);
-  virtual HTMLElement* CreateElementSync(Document&, const QualifiedName&) = 0;
-  HTMLElement* CreateElementAsync(Document&,
-                                  const QualifiedName&,
-                                  const CreateElementFlags);
+  virtual HTMLElement* CreateAutonomousCustomElementSync(
+      Document&,
+      const QualifiedName&) = 0;
+  HTMLElement* CreateElement(Document&,
+                             const QualifiedName&,
+                             const CreateElementFlags);
 
   void Upgrade(Element*);
 

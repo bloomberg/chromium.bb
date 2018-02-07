@@ -73,12 +73,6 @@ class CORE_EXPORT CustomElement {
   static HTMLElement* CreateCustomElement(Document&,
                                           const QualifiedName&,
                                           const CreateElementFlags);
-  // This function supports both of autonomous custom elements and
-  // customized built-in elements.
-  static HTMLElement* CreateCustomElement(Document&,
-                                          const QualifiedName&,
-                                          const CreateElementFlags,
-                                          CustomElementDefinition&);
 
   static HTMLElement* CreateFailedElement(Document&, const QualifiedName&);
 

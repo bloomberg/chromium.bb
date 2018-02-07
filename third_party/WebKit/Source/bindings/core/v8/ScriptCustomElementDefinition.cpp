@@ -139,7 +139,7 @@ HTMLElement* ScriptCustomElementDefinition::HandleCreateElementSyncException(
   return CustomElement::CreateFailedElement(document, tag_name);
 }
 
-HTMLElement* ScriptCustomElementDefinition::CreateElementSync(
+HTMLElement* ScriptCustomElementDefinition::CreateAutonomousCustomElementSync(
     Document& document,
     const QualifiedName& tag_name) {
   if (!script_state_->ContextIsValid())
