@@ -29,7 +29,7 @@ const char kIteratorName[] = "iterator";
 const char kConstReverseIteratorName[] = "const_reverse_iterator";
 const char kReverseIteratorName[] = "reverse_iterator";
 
-extern const char* kIgnoredTraceWrapperNames[] = {
+const char* kIgnoredTraceWrapperNames[] = {
     "blink::ScriptWrappableVisitor::TraceWrappers",
     "blink::WrapperMarkingData::TraceWrappers"};
 
@@ -61,8 +61,8 @@ Config::TraceWrappersMethodType Config::GetTraceWrappersMethodType(
 
   const std::string& name = method->getNameAsString();
   const std::string& full_name = method->getQualifiedNameAsString();
-  for (int i = 0; i < (sizeof(kIgnoredTraceWrapperNames) /
-                       sizeof(kIgnoredTraceWrapperNames[0]));
+  for (size_t i = 0; i < (sizeof(kIgnoredTraceWrapperNames) /
+                          sizeof(kIgnoredTraceWrapperNames[0]));
        i++) {
     if (full_name == kIgnoredTraceWrapperNames[i])
       return NOT_TRACE_WRAPPERS_METHOD;
