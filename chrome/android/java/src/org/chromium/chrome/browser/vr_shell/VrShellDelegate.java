@@ -226,13 +226,13 @@ public class VrShellDelegate
                 // However, if we're already in VR (in one of the cases where we chose not to exit
                 // VR before the DON flow), we don't need to add the overlay.
                 if (!sInstance.mInVr) addBlackOverlayViewForActivity(sInstance.mActivity);
-                sInstance.mNeedsAnimationCancel = !sInstance.mInVr;
 
                 // We start the Activity with a custom animation that keeps it hidden while starting
                 // up to avoid Android showing stale 2D screenshots when the user is in their VR
                 // headset. The animation lasts up to 10 seconds, but is cancelled when we're
                 // resumed as at that time we'll be showing the black overlay added above.
                 int animation = sInstance.mInVr ? 0 : R.anim.stay_hidden;
+                sInstance.mNeedsAnimationCancel = animation != 0;
                 Bundle options =
                         ActivityOptions.makeCustomAnimation(activity, animation, 0).toBundle();
                 ((ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE))
@@ -671,7 +671,7 @@ public class VrShellDelegate
         // If an activity isn't resumed at the point, it must have been paused.
         mPaused = ApplicationStatus.getStateForActivity(activity) != ActivityState.RESUMED;
         mStopped = ApplicationStatus.getStateForActivity(activity) == ActivityState.STOPPED;
-        mVisible = !mPaused;
+        mVisible = activity.hasWindowFocus();
         updateVrSupportLevel(null);
         mNativeVrShellDelegate = nativeInit();
         mFeedbackFrequency = VrFeedbackStatus.getFeedbackFrequency();
@@ -930,8 +930,18 @@ public class VrShellDelegate
     }
 
     private void onVrIntent() {
+        if (mInVr) return;
+
         mNeedsAnimationCancel = true;
         mEnterVrOnStartup = true;
+
+        // TODO(mthiesse): Assuming we've gone through DON flow saves ~2 seconds on VR entry. See
+        // the comments in enterVr(). This may not always be the case in the future, but for now
+        // it's a reasonable assumption.
+        mDonSucceeded = true;
+        mInVrAtChromeLaunch = true;
+
+        if (!mPaused) enterVrAfterDon();
     }
 
     private void onAutopresentIntent() {
@@ -939,8 +949,10 @@ public class VrShellDelegate
         // we're not in vr.
         assert !mInVr;
         mNeedsAnimationCancel = true;
-        mDonSucceeded = true;
+        mAutopresentWebVr = true;
+
         // We assume that the user is already in VR mode when launched for auto-presentation.
+        mDonSucceeded = true;
         mInVrAtChromeLaunch = true;
     }
 
@@ -983,6 +995,10 @@ public class VrShellDelegate
             if (DEBUG_LOGS) Log.i(TAG, "onNewIntentWithNative: autopresent");
             assert activitySupportsAutopresentation(activity);
             assert instance.getVrSupportLevel() == VrSupportLevel.VR_DAYDREAM;
+
+            // TODO(mthiesse): This needs to be set here to correctly close the CCT when we early
+            // exit here. We should use a different variable or refactor or something to make this
+            // more clear.
             instance.mAutopresentWebVr = true;
             if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEBVR_AUTOPRESENT_FROM_INTENT)) {
                 instance.onEnterVrUnsupported();

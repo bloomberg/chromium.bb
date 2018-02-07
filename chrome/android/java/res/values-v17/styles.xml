@@ -50,9 +50,11 @@
         <item name="android:windowBackground">@color/google_grey_500</item>
     </style>
 
-    <style name="TabbedModeTheme" parent="MainTheme">
+    <style name="TabbedModeThemeBase" parent="MainTheme">
         <item name="android:windowBackground">@android:color/white</item>
     </style>
+
+    <style name="TabbedModeTheme" parent="TabbedModeThemeBase" />
 
     <style name="FirstRunTheme" parent="DialogWhenLarge">
     </style>
