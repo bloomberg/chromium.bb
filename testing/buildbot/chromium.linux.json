@@ -545,6 +545,31 @@
       "cast_test_lists"
     ]
   },
+  "Leak Detection Linux": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "memory.leak_detection",
+          "--upload-results",
+          "--output-format=histograms",
+          "--browser=release",
+          "--xvfb"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "memory.leak_detection",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
+      }
+    ]
+  },
   "Linux Builder": {
     "additional_compile_targets": [
       "all"
