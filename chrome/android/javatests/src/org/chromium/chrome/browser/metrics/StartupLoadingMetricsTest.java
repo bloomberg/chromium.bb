@@ -22,9 +22,12 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
+import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
 
 /**
@@ -187,6 +190,14 @@ public class StartupLoadingMetricsTest {
 
             // Put Chrome in background before the page is committed.
             ApplicationTestUtils.fireHomeScreenIntent(InstrumentationRegistry.getTargetContext());
+
+            // Wait for a tab to be loaded.
+            mActivityTestRule.waitForActivityNativeInitializationComplete();
+            CriteriaHelper.pollUiThread(
+                    () -> mActivityTestRule.getActivity().getActivityTab() != null,
+                    "Tab never selected/initialized.");
+            Tab tab = mActivityTestRule.getActivity().getActivityTab();
+            ChromeTabUtils.waitForTabPageLoaded(tab, (String) null);
         });
         assertHistogramsRecorded(0);
         runAndWaitForPageLoadMetricsRecorded(() -> {
