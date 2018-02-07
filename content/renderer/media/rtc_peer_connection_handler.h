@@ -166,11 +166,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   virtual void getStats(const scoped_refptr<LocalRTCStatsRequest>& request);
 
   // Asynchronously calls native_peer_connection_->getStats on the signaling
-  // thread.  If the |track_id| is empty, the |track_type| parameter is ignored.
+  // thread.
   void GetStats(webrtc::StatsObserver* observer,
                 webrtc::PeerConnectionInterface::StatsOutputLevel level,
-                const std::string& track_id,
-                blink::WebMediaStreamSource::Type track_type);
+                rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> selector);
 
   // Tells the |client_| to close RTCPeerConnection.
   // Make it virtual for testing purpose.

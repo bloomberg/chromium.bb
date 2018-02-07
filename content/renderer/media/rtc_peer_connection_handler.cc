@@ -700,31 +700,33 @@ void GetStatsOnSignalingThread(
     const scoped_refptr<webrtc::PeerConnectionInterface>& pc,
     webrtc::PeerConnectionInterface::StatsOutputLevel level,
     const scoped_refptr<webrtc::StatsObserver>& observer,
-    const std::string& track_id,
-    blink::WebMediaStreamSource::Type track_type) {
+    rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> selector) {
   TRACE_EVENT0("webrtc", "GetStatsOnSignalingThread");
 
-  scoped_refptr<webrtc::MediaStreamTrackInterface> track;
-  if (!track_id.empty()) {
-    if (track_type == blink::WebMediaStreamSource::kTypeAudio) {
-      track = pc->local_streams()->FindAudioTrack(track_id);
-      if (!track.get())
-        track = pc->remote_streams()->FindAudioTrack(track_id);
-    } else {
-      DCHECK_EQ(blink::WebMediaStreamSource::kTypeVideo, track_type);
-      track = pc->local_streams()->FindVideoTrack(track_id);
-      if (!track.get())
-        track = pc->remote_streams()->FindVideoTrack(track_id);
+  if (selector) {
+    bool belongs_to_pc = false;
+    for (const auto& sender : pc->GetSenders()) {
+      if (sender->track() == selector) {
+        belongs_to_pc = true;
+        break;
+      }
     }
-
-    if (!track.get()) {
+    if (!belongs_to_pc) {
+      for (const auto& receiver : pc->GetReceivers()) {
+        if (receiver->track() == selector) {
+          belongs_to_pc = true;
+          break;
+        }
+      }
+    }
+    if (!belongs_to_pc) {
       DVLOG(1) << "GetStats: Track not found.";
       observer->OnComplete(StatsReports());
       return;
     }
   }
 
-  if (!pc->GetStats(observer.get(), track.get(), level)) {
+  if (!pc->GetStats(observer.get(), selector.get(), level)) {
     DVLOG(1) << "GetStats failed.";
     observer->OnComplete(StatsReports());
   }
@@ -1836,16 +1838,20 @@ void RTCPeerConnectionHandler::getStats(
   rtc::scoped_refptr<webrtc::StatsObserver> observer(
       new rtc::RefCountedObject<StatsResponse>(request, task_runner_));
 
-  std::string track_id;
-  blink::WebMediaStreamSource::Type track_type =
-      blink::WebMediaStreamSource::kTypeAudio;
+  rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> selector;
   if (request->hasSelector()) {
-    track_type = request->component().Source().GetType();
-    track_id = request->component().Id().Utf8();
+    auto track_adapter_ref =
+        track_adapter_map_->GetLocalTrackAdapter(request->component());
+    if (!track_adapter_ref) {
+      track_adapter_ref =
+          track_adapter_map_->GetRemoteTrackAdapter(request->component());
+    }
+    if (track_adapter_ref)
+      selector = track_adapter_ref->webrtc_track();
   }
 
   GetStats(observer, webrtc::PeerConnectionInterface::kStatsOutputLevelStandard,
-           track_id, track_type);
+           std::move(selector));
 }
 
 // TODO(tommi,hbos): It's weird to have three {g|G}etStats methods for the
@@ -1855,13 +1861,12 @@ void RTCPeerConnectionHandler::getStats(
 void RTCPeerConnectionHandler::GetStats(
     webrtc::StatsObserver* observer,
     webrtc::PeerConnectionInterface::StatsOutputLevel level,
-    const std::string& track_id,
-    blink::WebMediaStreamSource::Type track_type) {
+    rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> selector) {
   DCHECK(thread_checker_.CalledOnValidThread());
   signaling_thread()->PostTask(
       FROM_HERE,
       base::BindOnce(&GetStatsOnSignalingThread, native_peer_connection_, level,
-                     base::WrapRefCounted(observer), track_id, track_type));
+                     base::WrapRefCounted(observer), std::move(selector)));
 }
 
 void RTCPeerConnectionHandler::GetStats(

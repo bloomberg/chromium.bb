@@ -818,7 +818,10 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsAfterClose) {
   EXPECT_LT(1, request->result()->report_count());
 }
 
-TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithLocalSelector) {
+// TODO(hbos): Re-enable in follow-up which adds GetSenders() to
+// MockPeerConnectionImpl,
+// https://chromium-review.googlesource.com/c/chromium/src/+/899346.
+TEST_F(RTCPeerConnectionHandlerTest, DISABLED_GetStatsWithLocalSelector) {
   blink::WebMediaStream local_stream(
       CreateLocalMediaStream("local_stream"));
   blink::WebMediaConstraints constraints;
