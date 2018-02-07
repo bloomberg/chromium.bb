@@ -739,14 +739,13 @@ void HTMLConstructionSite::InsertScriptElement(AtomicHTMLToken* token) {
       // string position.
       .SetCreatedDuringDocumentWrite(
           OwnerDocumentForCurrentNode().IsInDocumentWrite());
-  auto* element =
-      HTMLScriptElement::Create(OwnerDocumentForCurrentNode(), flags);
-  if (const Attribute* is_attribute =
-          token->GetAttributeItem(HTMLNames::isAttr)) {
-    V0CustomElementRegistrationContext::SetTypeExtension(element,
-                                                         is_attribute->Value());
+  HTMLScriptElement* element = nullptr;
+  if (const auto* is_attribute = token->GetAttributeItem(HTMLNames::isAttr)) {
+    element = ToHTMLScriptElement(OwnerDocumentForCurrentNode().CreateElement(
+        HTMLNames::scriptTag, is_attribute->Value(), flags));
+  } else {
+    element = HTMLScriptElement::Create(OwnerDocumentForCurrentNode(), flags);
   }
-  // TODO(tkent): Handle V1 custom built-in element. crbug.com/808311
   SetAttributes(element, token, parser_content_policy_);
   if (ScriptingContentIsAllowed(parser_content_policy_))
     AttachLater(CurrentNode(), element);
