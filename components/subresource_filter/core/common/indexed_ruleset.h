@@ -104,6 +104,15 @@ class IndexedRulesetMatcher {
       url_pattern_index::proto::ElementType element_type,
       bool disable_generic_rules) const;
 
+  // Like ShouldDisallowResourceLoad, but returns the matching rule that
+  // determines whether the request should be allowed or not. Whitelist rules
+  // override blacklist rules. If no rule matches, returns nullptr.
+  const url_pattern_index::flat::UrlRule* MatchedUrlRule(
+      const GURL& url,
+      const FirstPartyOrigin& first_party,
+      url_pattern_index::proto::ElementType element_type,
+      bool disable_generic_rules) const;
+
  private:
   const flat::IndexedRuleset* root_;
 

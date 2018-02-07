@@ -39,6 +39,16 @@ class SubresourceFilterIndexedRulesetTest : public ::testing::Test {
         element_type, disable_generic_rules);
   }
 
+  bool MatchingRule(base::StringPiece url,
+                    base::StringPiece document_origin = nullptr,
+                    proto::ElementType element_type = testing::kOther,
+                    bool disable_generic_rules = false) const {
+    DCHECK(matcher_);
+    return matcher_->MatchedUrlRule(
+               GURL(url), FirstPartyOrigin(testing::GetOrigin(document_origin)),
+               element_type, disable_generic_rules) != nullptr;
+  }
+
   bool ShouldDeactivate(
       base::StringPiece document_url,
       base::StringPiece parent_document_origin = nullptr,
@@ -128,7 +138,7 @@ TEST_F(SubresourceFilterIndexedRulesetTest, SimpleBlacklistAndWhitelist) {
   Finish();
 
   EXPECT_FALSE(ShouldAllow("http://blacklisted.com?filter=on"));
-  EXPECT_TRUE(ShouldAllow("https://whitelisted.com?filter=on"));
+  EXPECT_TRUE(ShouldAllow("https://whitelisted.com/?filter=on"));
   EXPECT_TRUE(ShouldAllow("https://notblacklisted.com"));
 }
 
@@ -144,6 +154,57 @@ TEST_F(SubresourceFilterIndexedRulesetTest,
       ShouldDeactivate("https://xample.com", nullptr, testing::kDocument));
   EXPECT_FALSE(ShouldAllow("https://example.com"));
   EXPECT_TRUE(ShouldAllow("https://xample.com"));
+}
+
+TEST_F(SubresourceFilterIndexedRulesetTest, MatchingEmptyRuleset) {
+  Finish();
+  EXPECT_FALSE(MatchingRule(nullptr));
+  EXPECT_FALSE(MatchingRule("http://example.com"));
+  EXPECT_FALSE(MatchingRule("http://another.example.com?param=val"));
+}
+
+TEST_F(SubresourceFilterIndexedRulesetTest, MatchingNoRuleApplies) {
+  ASSERT_TRUE(AddSimpleRule("?filter_out="));
+  ASSERT_TRUE(AddSimpleRule("&filter_out="));
+  Finish();
+
+  EXPECT_FALSE(MatchingRule("http://example.com"));
+  EXPECT_FALSE(MatchingRule("http://example.com?filter_not"));
+}
+
+TEST_F(SubresourceFilterIndexedRulesetTest, MatchingSimpleBlacklist) {
+  ASSERT_TRUE(AddSimpleRule("?param="));
+  Finish();
+
+  EXPECT_FALSE(MatchingRule("https://example.com"));
+  EXPECT_TRUE(MatchingRule("http://example.org?param=image1"));
+}
+
+TEST_F(SubresourceFilterIndexedRulesetTest, MatchingSimpleWhitelist) {
+  ASSERT_TRUE(AddSimpleWhitelistRule("example.com/?filter_out="));
+  Finish();
+
+  EXPECT_FALSE(MatchingRule("https://example.com?filter_out=true"));
+}
+
+TEST_F(SubresourceFilterIndexedRulesetTest,
+       MatchingSimpleBlacklistAndWhitelist) {
+  ASSERT_TRUE(AddSimpleRule("?filter="));
+  ASSERT_TRUE(AddSimpleWhitelistRule("whitelisted.com/?filter="));
+  Finish();
+
+  EXPECT_TRUE(MatchingRule("http://blacklisted.com?filter=on"));
+  EXPECT_TRUE(MatchingRule("https://whitelisted.com?filter=on"));
+  EXPECT_FALSE(MatchingRule("https://notblacklisted.com"));
+}
+
+TEST_F(SubresourceFilterIndexedRulesetTest,
+       MatchingOneBlacklistAndOneDeactivationRule) {
+  ASSERT_TRUE(AddSimpleRule("example.com"));
+  ASSERT_TRUE(AddSimpleWhitelistRule("example.com", testing::kDocument));
+  Finish();
+  EXPECT_TRUE(MatchingRule("https://example.com"));
+  EXPECT_FALSE(MatchingRule("https://xample.com"));
 }
 
 }  // namespace subresource_filter

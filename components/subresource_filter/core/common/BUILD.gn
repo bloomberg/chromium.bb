@@ -60,6 +60,8 @@ static_library("test_support") {
 
 static_library("tools_lib") {
   sources = [
+    "tools/filter_tool.cc",
+    "tools/filter_tool.h",
     "tools/indexing_tool.cc",
     "tools/indexing_tool.h",
   ]
@@ -67,6 +69,7 @@ static_library("tools_lib") {
     ":common",
     "//base",
     "//components/url_pattern_index:util",
+    "//url",
   ]
 }
 
@@ -77,6 +80,7 @@ source_set("unit_tests") {
     "first_party_origin_unittest.cc",
     "indexed_ruleset_unittest.cc",
     "scoped_timers_unittest.cc",
+    "tools/filter_tool_unittest.cc",
     "tools/indexing_tool_unittest.cc",
   ]
   deps = [
@@ -93,6 +97,17 @@ source_set("unit_tests") {
 }
 
 if (is_linux || is_mac || is_win) {
+  executable("subresource_filter_tool") {
+    sources = [
+      "tools/filter_tool_main.cc",
+    ]
+    deps = [
+      ":tools_lib",
+      "//base",
+      "//build/config:exe_and_shlib_deps",
+    ]
+  }
+
   executable("subresource_indexing_tool") {
     sources = [
       "tools/indexing_tool_main.cc",
