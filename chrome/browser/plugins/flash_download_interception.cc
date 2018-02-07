@@ -107,11 +107,18 @@ bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
   // intercept the download. The user may be trying to download Flash.
   std::string source_url_str =
       source_url.ReplaceComponents(replacements).GetContent();
-  if (RE2::PartialMatch(source_url_str, kGetFlashURLCanonicalRegex))
-    return false;
 
   std::string target_url_str =
       target_url.ReplaceComponents(replacements).GetContent();
+
+  // Early optimization since RE2 is expensive. http://crbug.com/809775
+  if (target_url_str.find("adobe.com") == std::string::npos &&
+      target_url_str.find("macromedia.com") == std::string::npos)
+    return false;
+
+  if (RE2::PartialMatch(source_url_str, kGetFlashURLCanonicalRegex))
+    return false;
+
   if (RE2::FullMatch(target_url_str, kGetFlashURLCanonicalRegex) ||
       RE2::FullMatch(target_url_str, kGetFlashURLSecondaryGoRegex) ||
       (RE2::FullMatch(target_url_str, kGetFlashURLSecondaryDownloadRegex) &&
