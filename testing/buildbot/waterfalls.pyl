@@ -1569,6 +1569,25 @@
           'isolated_scripts': 'chromium_rel_isolated_scripts',
           'scripts': 'chromium_scripts',
         },
+        'swarming': {
+          'dimension_sets': [
+            {
+              "gpu": "none",
+              "cpu": "x86-64",
+              "os": "Mac-10.9",
+              "pool": "Chrome",
+            },
+          ],
+        },
+        'use_multi_dimension_trigger_script': True,
+        'alternate_swarming_dimensions': [
+          {
+            "gpu": "8086:0a2e",
+            "cpu": "x86-64",
+            "os": "Mac-10.13",
+            "pool": "Chrome",
+          },
+        ],
       },
       'Mac10.9 Tests (dbg)': {
         'test_suites': {

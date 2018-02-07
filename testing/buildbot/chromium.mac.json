@@ -1385,389 +1385,1477 @@
     "gtest_tests": [
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "accessibility_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "base_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "battor_agent_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "blink_heap_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "blink_platform_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "boringssl_crypto_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "boringssl_ssl_tests"
+        "test": "accessibility_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "base_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "battor_agent_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "blink_heap_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "blink_platform_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "boringssl_crypto_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "boringssl_ssl_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ],
           "shards": 10
         },
-        "test": "browser_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "cacheinvalidation_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "capture_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "cast_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "cc_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "chrome_app_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "chromedriver_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "components_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "components_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "crashpad_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "crypto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "device_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "display_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "extensions_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "gcm_unit_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "gfx_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "gn_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "google_apis_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "gpu_ipc_service_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "gpu_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "headless_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "headless_unittests"
+        "test": "browser_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "cacheinvalidation_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "capture_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "cast_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "cc_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "chrome_app_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "chromedriver_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "components_browsertests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "components_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "content_browsertests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "content_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "crashpad_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "crypto_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "device_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "display_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "extensions_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "gcm_unit_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "gfx_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "gn_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "google_apis_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "gpu_ipc_service_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "gpu_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "headless_browsertests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "test": "headless_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ],
           "shards": 2
         },
-        "test": "interactive_ui_tests"
+        "test": "interactive_ui_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "ipc_tests"
+        "test": "ipc_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "jingle_unittests"
+        "test": "jingle_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "libjingle_xmpp_unittests"
+        "test": "libjingle_xmpp_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "mac_installer_unittests"
+        "test": "mac_installer_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "media_blink_unittests"
+        "test": "media_blink_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "media_unittests"
+        "test": "media_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "midi_unittests"
+        "test": "midi_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "mojo_common_unittests"
+        "test": "mojo_common_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "mojo_public_bindings_unittests"
+        "test": "mojo_public_bindings_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "mojo_public_system_unittests"
+        "test": "mojo_public_system_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "mojo_system_unittests"
+        "test": "mojo_system_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "nacl_loader_unittests"
+        "test": "nacl_loader_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "native_theme_unittests"
+        "test": "native_theme_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "net_unittests"
+        "test": "net_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "pdf_unittests"
+        "test": "pdf_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "ppapi_unittests"
+        "test": "ppapi_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "printing_unittests"
+        "test": "printing_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "remoting_unittests"
+        "test": "remoting_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "sandbox_mac_unittests"
+        "test": "sandbox_mac_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "services_unittests"
+        "test": "services_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "skia_unittests"
+        "test": "skia_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "snapshot_unittests"
+        "test": "snapshot_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "sql_unittests"
+        "test": "sql_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "storage_unittests"
+        "test": "storage_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "sync_integration_tests"
+        "test": "sync_integration_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "ui_base_unittests"
+        "test": "ui_base_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "unit_tests"
+        "test": "unit_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "url_unittests"
+        "test": "url_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "views_unittests"
+        "test": "views_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "viz_unittests"
+        "test": "viz_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "webkit_unit_tests"
+        "test": "webkit_unit_tests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
         },
-        "test": "wtf_unittests"
+        "test": "wtf_unittests",
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
       }
     ],
     "isolated_scripts": [
@@ -1778,28 +2866,96 @@
         "isolate_name": "chromedriver_py_tests",
         "name": "chromedriver_py_tests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
         "isolate_name": "content_shell_crash_test",
         "name": "content_shell_crash_test",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
@@ -1810,21 +2966,72 @@
         "name": "telemetry_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ],
           "shards": 4
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
         "isolate_name": "views_perftests",
         "name": "views_perftests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       },
       {
         "isolate_name": "webkit_python_tests",
         "name": "webkit_python_tests",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "gpu": "none",
+              "os": "Mac-10.9",
+              "pool": "Chrome"
+            }
+          ]
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"none\", \"os\": \"Mac-10.9\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}, {\"gpu\": \"8086:0a2e\", \"os\": \"Mac-10.13\", \"cpu\": \"x86-64\", \"pool\": \"Chrome\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
         }
       }
     ],
