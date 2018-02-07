@@ -11,6 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/common/frame_messages.h"
 #include "content/public/common/screen_info.h"
+#include "content/renderer/child_frame_compositor.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
@@ -74,6 +75,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 #if defined(USE_AURA)
                                         public MusEmbeddedFrameDelegate,
 #endif
+                                        public ChildFrameCompositor,
                                         public blink::WebRemoteFrameClient {
  public:
   // This method should be used to create a RenderFrameProxy, which will replace
@@ -251,6 +253,11 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       const viz::FrameSinkId& frame_sink_id) override;
 #endif
 
+  // ChildFrameCompositor:
+  blink::WebLayer* GetLayer() override;
+  void SetLayer(std::unique_ptr<blink::WebLayer> web_layer) override;
+  SkBitmap* GetSadPageBitmap() override;
+
   // The routing ID by which this RenderFrameProxy is known.
   const int routing_id_;
 
@@ -289,6 +296,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // |sent_resize_params_|.
   ResizeParams pending_resize_params_;
 
+  bool crashed_ = false;
+
   viz::FrameSinkId frame_sink_id_;
   viz::LocalSurfaceId local_surface_id_;
   viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
@@ -298,6 +307,9 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 #if defined(USE_AURA)
   std::unique_ptr<MusEmbeddedFrame> mus_embedded_frame_;
 #endif
+
+  // The layer used to embed the out-of-process content.
+  std::unique_ptr<blink::WebLayer> web_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxy);
 };

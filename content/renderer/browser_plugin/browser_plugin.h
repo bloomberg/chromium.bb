@@ -17,6 +17,7 @@
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/public/common/screen_info.h"
+#include "content/renderer/child_frame_compositor.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebDragStatus.h"
@@ -50,6 +51,7 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 #if defined(USE_AURA)
                                      public MusEmbeddedFrameDelegate,
 #endif
+                                     public ChildFrameCompositor,
                                      public MouseLockDispatcher::LockTarget {
  public:
   static BrowserPlugin* GetFromNode(blink::WebNode& node);
@@ -204,6 +206,11 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
       const viz::FrameSinkId& frame_sink_id) override;
 #endif
 
+  // ChildFrameCompositor:
+  blink::WebLayer* GetLayer() override;
+  void SetLayer(std::unique_ptr<blink::WebLayer> web_layer) override;
+  SkBitmap* GetSadPageBitmap() override;
+
   // This indicates whether this BrowserPlugin has been attached to a
   // WebContents and is ready to receive IPCs.
   bool attached_;
@@ -269,6 +276,9 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 
   // Pointer to the RenderWidget that embeds this plugin.
   RenderWidget* embedding_render_widget_ = nullptr;
+
+  // The layer used to embed the out-of-process content.
+  std::unique_ptr<blink::WebLayer> web_layer_;
 
   // Weak factory used in v8 |MakeWeak| callback, since the v8 callback might
   // get called after BrowserPlugin has been destroyed.
