@@ -41,6 +41,11 @@ PictureInPictureController::Status
 PictureInPictureController::IsDocumentAllowed() const {
   DCHECK(GetSupplementable());
 
+  // If document has been detached from a frame, return kFrameDetached status.
+  LocalFrame* frame = GetSupplementable()->GetFrame();
+  if (!frame)
+    return Status::kFrameDetached;
+
   // `picture_in_picture_enabled_` is set to false by the embedder when it
   // or the system forbids the page from using Picture-in-Picture.
   if (!picture_in_picture_enabled_)
@@ -48,7 +53,6 @@ PictureInPictureController::IsDocumentAllowed() const {
 
   // If document is not allowed to use the policy-controlled feature named
   // "picture-in-picture", return kDisabledByFeaturePolicy status.
-  LocalFrame* frame = GetSupplementable()->GetFrame();
   if (IsSupportedInFeaturePolicy(
           blink::FeaturePolicyFeature::kPictureInPicture) &&
       !frame->IsFeatureEnabled(
