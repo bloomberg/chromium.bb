@@ -14,6 +14,7 @@
 
 #include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
+#include "third_party/webrtc/rtc_base/asyncpacketsocket.h"
 
 namespace content {
 
@@ -80,6 +81,20 @@ struct P2PPortRange {
   }
   uint16_t min_port;
   uint16_t max_port;
+};
+
+// Struct that carries information about an outgoing packet.
+struct P2PPacketInfo {
+  P2PPacketInfo() {}
+  P2PPacketInfo(const net::IPEndPoint& destination,
+                const rtc::PacketOptions& packet_options,
+                uint64_t packet_id)
+      : destination(destination),
+        packet_options(packet_options),
+        packet_id(packet_id) {}
+  net::IPEndPoint destination;
+  rtc::PacketOptions packet_options;
+  uint64_t packet_id;
 };
 
 }  // namespace content

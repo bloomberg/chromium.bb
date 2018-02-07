@@ -111,7 +111,6 @@
 #include "content/renderer/mus/renderer_window_tree_client.h"
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/notifications/notification_dispatcher.h"
-#include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -177,6 +176,10 @@
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/display/display_switches.h"
 #include "ui/gl/gl_switches.h"
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+#include "content/renderer/p2p/socket_dispatcher.h"
+#endif
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
