@@ -40,12 +40,14 @@ namespace {
 // The UMA histograms that logs events related to Dice responses.
 const char kDiceResponseHeaderHistogram[] = "Signin.DiceResponseHeader";
 const char kDiceTokenFetchResultHistogram[] = "Signin.DiceTokenFetchResult";
+const char kChromePrimaryAccountStateOnWebSignoutHistogram[] =
+    "Signin.ChromePrimaryAccountStateOnWebSignout";
 
 // Used for UMA. Do not reorder, append new values at the end.
 enum DiceResponseHeader {
   // Received a signin header.
   kSignin = 0,
-  // Received a signout header including the primary account.
+  // Received a signout header including the Chrome primary account.
   kSignoutPrimary = 1,
   // Received a signout header for other account(s).
   kSignoutSecondary = 2,
@@ -68,6 +70,21 @@ enum DiceTokenFetchResult {
   kFetchTimeout = 3,
 
   kDiceTokenFetchResultCount
+};
+
+// Used for UMA. Do not reorder, append new values at the end.
+enum ChromePrimaryAccountStateInGaiaCookies {
+  // The user is not authenticated in Chrome.
+  kNoChromePrimaryAccount = 0,
+  // The user is authenticated in Chrome with the first Gaia account.
+  kChromePrimaryAccountIsFirstGaiaAccount = 1,
+  // The user is authenticated in Chrome with another Gaia account.
+  kChromePrimaryAccountIsSecondaryGaiaAccount = 2,
+  // The user is authenticated in Chrome with an account that is not in Gaia
+  // cookies.
+  kChromePrimaryAccountIsNotInGaiaAccounts = 3,
+
+  kChromePrimaryAccountStateInGaiaCookiesCount
 };
 
 class DiceResponseHandlerFactory : public BrowserContextKeyedServiceFactory {
@@ -127,6 +144,12 @@ void RecordDiceResponseHeader(DiceResponseHeader header) {
 void RecordDiceFetchTokenResult(DiceTokenFetchResult result) {
   UMA_HISTOGRAM_ENUMERATION(kDiceTokenFetchResultHistogram, result,
                             kDiceTokenFetchResultCount);
+}
+
+void RecordGaiaSignoutMetrics(ChromePrimaryAccountStateInGaiaCookies state) {
+  UMA_HISTOGRAM_ENUMERATION(kChromePrimaryAccountStateOnWebSignoutHistogram,
+                            state,
+                            kChromePrimaryAccountStateInGaiaCookiesCount);
 }
 
 }  // namespace
@@ -344,13 +367,17 @@ void DiceResponseHandler::ProcessDiceSignoutHeader(
   // If one of the signed out accounts is the main Chrome account, then force a
   // complete signout. Otherwise simply revoke the corresponding tokens.
   std::string primary_account = signin_manager_->GetAuthenticatedAccountId();
-  std::vector<std::string> secondary_accounts;
+  std::vector<std::string> accounts_to_revoke;
   for (const auto& account_info : account_infos) {
     std::string signed_out_account =
         account_tracker_service_->PickAccountIdForAccount(account_info.gaia_id,
                                                           account_info.email);
     if (signed_out_account == primary_account) {
       RecordDiceResponseHeader(kSignoutPrimary);
+      RecordGaiaSignoutMetrics(
+          (account_info.session_index == 0)
+              ? kChromePrimaryAccountIsFirstGaiaAccount
+              : kChromePrimaryAccountIsSecondaryGaiaAccount);
 
       // If Dice migration is not complete, the token for the main account must
       // not be deleted when signing out of the web.
@@ -365,16 +392,19 @@ void DiceResponseHandler::ProcessDiceSignoutHeader(
       token_fetchers_.clear();
       return;
     } else {
-      secondary_accounts.push_back(signed_out_account);
+      accounts_to_revoke.push_back(signed_out_account);
     }
   }
 
   if (signin::IsDiceEnabledForProfile(signin_client_->GetPrefs()) ||
-      secondary_accounts.size() == account_infos.size()) {
+      accounts_to_revoke.size() == account_infos.size()) {
     RecordDiceResponseHeader(kSignoutSecondary);
+    RecordGaiaSignoutMetrics(primary_account.empty()
+                                 ? kNoChromePrimaryAccount
+                                 : kChromePrimaryAccountIsNotInGaiaAccounts);
   }
 
-  for (const auto& account : secondary_accounts) {
+  for (const auto& account : accounts_to_revoke) {
     VLOG(1) << "[Dice]: Revoking token for account: " << account;
     token_service_->RevokeCredentials(account);
     // If a token fetch is in flight for the same account, cancel it.
