@@ -21,6 +21,8 @@
 #include "content/common/frame_messages.h"
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "ui/base/layout.h"
+#include "ui/gfx/geometry/dip_util.h"
 
 namespace {
 
@@ -280,10 +282,17 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
     // TODO(kenrb): Add the short circuit to avoid hit testing when there is
     // only one RenderWidgetHostView in the map. It is absent right now to
     // make it easier to test the Viz hit testing code in development.
-    viz::Target target = query->FindTargetForLocation(source, point_in_root);
+    float device_scale_factor =
+        ui::GetScaleFactorForNativeView(root_view->GetNativeView());
+    DCHECK(device_scale_factor != 0.0f);
+    gfx::Point point_in_root_in_pixels =
+        gfx::ConvertPointToPixel(device_scale_factor, point_in_root);
+    viz::Target target =
+        query->FindTargetForLocation(source, point_in_root_in_pixels);
     frame_sink_id = target.frame_sink_id;
     if (frame_sink_id.is_valid()) {
-      *transformed_point = gfx::PointF(target.location_in_target);
+      *transformed_point = gfx::ConvertPointToDIP(
+          device_scale_factor, gfx::PointF(target.location_in_target));
     } else {
       *transformed_point = point;
     }
