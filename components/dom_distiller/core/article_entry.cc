@@ -5,7 +5,6 @@
 #include "components/dom_distiller/core/article_entry.h"
 
 #include "base/logging.h"
-#include "components/dom_distiller/core/article_attachments_data.h"
 #include "components/sync/model/sync_change.h"
 
 using sync_pb::EntitySpecifics;
@@ -64,8 +63,7 @@ std::string GetEntryIdFromSyncData(const syncer::SyncData& data) {
 syncer::SyncData CreateLocalData(const ArticleEntry& entry) {
   EntitySpecifics specifics = SpecificsFromEntry(entry);
   const std::string& entry_id = entry.entry_id();
-  return syncer::SyncData::CreateLocalDataWithAttachments(
-      entry_id, entry_id, specifics, GetAttachmentIds(entry.attachments()));
+  return syncer::SyncData::CreateLocalData(entry_id, entry_id, specifics);
 }
 
 }  // namespace dom_distiller
