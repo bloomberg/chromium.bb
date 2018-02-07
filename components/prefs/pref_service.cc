@@ -73,23 +73,14 @@ PrefService::PrefService(
       read_error_callback_(std::move(read_error_callback)) {
   pref_notifier_->SetPrefService(this);
 
-  // TODO(battre): This is a check for crbug.com/435208 to make sure that
-  // access violations are caused by a use-after-free bug and not by an
-  // initialization bug.
-  CHECK(pref_registry_);
-  CHECK(pref_value_store_);
+  DCHECK(pref_registry_);
+  DCHECK(pref_value_store_);
 
   InitFromStorage(async);
 }
 
 PrefService::~PrefService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Reset pointers so accesses after destruction reliably crash.
-  pref_value_store_.reset();
-  pref_registry_ = nullptr;
-  user_pref_store_ = nullptr;
-  pref_notifier_.reset();
 }
 
 void PrefService::InitFromStorage(bool async) {
