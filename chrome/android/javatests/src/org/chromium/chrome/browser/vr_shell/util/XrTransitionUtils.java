@@ -10,7 +10,7 @@ import org.junit.Assert;
 
 import org.chromium.chrome.browser.vr_shell.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr_shell.XrTestFramework;
-import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.ContentViewCore;
 
 /**
  * Class containing utility functions for transitioning between different

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.compositor.bottombar;
 
-import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.ContentViewCore;
 
 /**
  * The delegate that is notified when the OverlayPanel ContentViewCore is ready to be rendered.

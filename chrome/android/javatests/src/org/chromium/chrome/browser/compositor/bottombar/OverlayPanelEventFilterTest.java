@@ -22,8 +22,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.OverlayPanelEventFilter;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.TestContentViewCore;
+import org.chromium.content_public.browser.ContentViewCore;
 
 /**
  * Class responsible for testing the OverlayPanelEventFilter.

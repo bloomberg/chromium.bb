@@ -10,8 +10,8 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 
-import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.ContentViewCore.InternalAccessDelegate;
+import org.chromium.content_public.browser.ContentViewCore;
+import org.chromium.content_public.browser.ContentViewCore.InternalAccessDelegate;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;

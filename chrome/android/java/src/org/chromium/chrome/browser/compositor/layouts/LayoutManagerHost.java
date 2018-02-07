@@ -10,7 +10,7 @@ import android.view.View;
 
 import org.chromium.chrome.browser.compositor.TitleCache;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.ContentViewCore;
 
 /**
  * This is the minimal interface of the host view from the layout side.

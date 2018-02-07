@@ -21,6 +21,7 @@ import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 
 import org.chromium.base.TraceEvent;
+import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.SmartClipProvider;
 import org.chromium.content_public.browser.WebContents;
@@ -33,7 +34,6 @@ import org.chromium.ui.base.EventForwarder;
  */
 public class ContentView extends FrameLayout
         implements ContentViewCore.InternalAccessDelegate, SmartClipProvider {
-
     private static final String TAG = "cr.ContentView";
 
     // Default value to signal that the ContentView's size need not be overridden.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content_public.browser;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -12,7 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.content_public.browser.WebContents;
+import org.chromium.content.browser.ContentViewCoreImpl;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 

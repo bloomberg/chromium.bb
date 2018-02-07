@@ -13,9 +13,9 @@ import android.view.View;
 import org.junit.Assert;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
+import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 
 import java.io.IOException;

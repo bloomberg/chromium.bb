@@ -23,7 +23,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.shell.DrawGL;
-import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 
 import javax.microedition.khronos.egl.EGLConfig;
