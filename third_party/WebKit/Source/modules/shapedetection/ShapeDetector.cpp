@@ -88,7 +88,7 @@ ScriptPromise ShapeDetector::detect(
       image->PaintImageForCurrentFrame().GetSkImage()->makeNonTextureImage();
 
   SkBitmap sk_bitmap;
-  if (!sk_image->asLegacyBitmap(&sk_bitmap, SkImage::kRO_LegacyBitmapMode)) {
+  if (!sk_image->asLegacyBitmap(&sk_bitmap)) {
     // TODO(mcasas): retrieve the pixels from elsewhere.
     NOTREACHED();
     resolver->Reject(DOMException::Create(
@@ -159,8 +159,7 @@ ScriptPromise ShapeDetector::DetectShapesOnImageElement(
 
   SkBitmap sk_bitmap;
 
-  if (!sk_image ||
-      !sk_image->asLegacyBitmap(&sk_bitmap, SkImage::kRO_LegacyBitmapMode)) {
+  if (!sk_image || !sk_image->asLegacyBitmap(&sk_bitmap)) {
     resolver->Reject(DOMException::Create(
         kInvalidStateError, "Failed to get image from current frame."));
     return promise;
