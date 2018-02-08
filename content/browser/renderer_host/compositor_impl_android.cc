@@ -478,10 +478,8 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       lock_manager_(base::ThreadTaskRunnerHandle::Get(), this),
       weak_factory_(this) {
   GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
-#if DCHECK_IS_ON()
   GetHostFrameSinkManager()->SetFrameSinkDebugLabel(frame_sink_id_,
                                                     "CompositorImpl");
-#endif
   DCHECK(client);
 
   SetRootWindow(root_window);

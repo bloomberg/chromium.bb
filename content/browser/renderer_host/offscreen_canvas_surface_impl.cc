@@ -27,10 +27,8 @@ OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl(
       frame_sink_id_(frame_sink_id) {
   client_.set_connection_error_handler(std::move(destroy_callback));
   host_frame_sink_manager_->RegisterFrameSinkId(frame_sink_id_, this);
-#if DCHECK_IS_ON()
   host_frame_sink_manager_->SetFrameSinkDebugLabel(
       frame_sink_id_, "OffscreenCanvasSurfaceImpl");
-#endif
 }
 
 OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {
