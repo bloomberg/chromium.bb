@@ -459,6 +459,46 @@ TEST(CSSSelectorParserTest, InvalidNestingPseudoMatches) {
   }
 }
 
+TEST(CSSSelectorParserTest, InvalidPseudoMatchesArguments) {
+  // Pseudo-elements are not valid within :matches() as per the spec:
+  // https://drafts.csswg.org/selectors-4/#matches
+  const char* test_cases[] = {":matches(::-webkit-progress-bar)",
+                              ":matches(::-webkit-progress-value)",
+                              ":matches(::-webkit-slider-runnable-track)",
+                              ":matches(::-webkit-slider-thumb)",
+                              ":matches(::after)",
+                              ":matches(::backdrop)",
+                              ":matches(::before)",
+                              ":matches(::cue)",
+                              ":matches(::first-letter)",
+                              ":matches(::first-line)",
+                              ":matches(::grammar-error)",
+                              ":matches(::marker)",
+                              ":matches(::placeholder)",
+                              ":matches(::selection)",
+                              ":matches(::slotted)",
+                              ":matches(::spelling-error)",
+                              ":matches(:after)",
+                              ":matches(:before)",
+                              ":matches(:cue)",
+                              ":matches(:first-letter)",
+                              ":matches(:first-line)"};
+
+  CSSParserContext* context = CSSParserContext::Create(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
+  StyleSheetContents* sheet = StyleSheetContents::Create(context);
+
+  for (auto test_case : test_cases) {
+    SCOPED_TRACE(test_case);
+    CSSTokenizer tokenizer(test_case);
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
+    CSSSelectorList list =
+        CSSSelectorParser::ParseSelector(range, context, sheet);
+    EXPECT_FALSE(list.IsValid());
+  }
+}
+
 namespace {
 
 const auto TagLocalName = [](const CSSSelector* selector) {
