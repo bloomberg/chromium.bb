@@ -179,11 +179,6 @@ aom_codec_err_t aom_codec_enc_config_default(aom_codec_iface_t *iface,
   return res;
 }
 
-/* clang-format off */
-#define FLOATING_POINT_BEGIN_SCOPE do {
-#define FLOATING_POINT_END_SCOPE } while (0);
-/* clang-format on */
-
 #if ARCH_X86 || ARCH_X86_64
 /* On X86, disable the x87 unit's internal 80 bit precision for better
  * consistency with the SSE unit's 64 bit precision.
@@ -206,15 +201,17 @@ aom_codec_err_t aom_codec_enc_config_default(aom_codec_iface_t *iface,
 #define FLOATING_POINT_RESTORE_EXCEPTIONS
 #endif  // HAVE_FEXCEPT && CONFIG_DEBUG
 
+/* clang-format off */
 #define FLOATING_POINT_INIT    \
-  FLOATING_POINT_BEGIN_SCOPE   \
+  do {                         \
   FLOATING_POINT_SET_PRECISION \
   FLOATING_POINT_SET_EXCEPTIONS
 
 #define FLOATING_POINT_RESTORE      \
   FLOATING_POINT_RESTORE_EXCEPTIONS \
   FLOATING_POINT_RESTORE_PRECISION  \
-  FLOATING_POINT_END_SCOPE
+  } while (0);
+/* clang-format on */
 
 aom_codec_err_t aom_codec_encode(aom_codec_ctx_t *ctx, const aom_image_t *img,
                                  aom_codec_pts_t pts, unsigned long duration,

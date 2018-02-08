@@ -1545,7 +1545,7 @@ static void open_output_file(struct stream_state *stream,
 #if CONFIG_OBU_NO_IVF
       && stream->config.write_ivf
 #endif
-      ) {
+  ) {
     ivf_write_file_header(stream->file, cfg, global->codec->fourcc, 0);
   }
 }
@@ -1566,7 +1566,7 @@ static void close_output_file(struct stream_state *stream,
 #if CONFIG_OBU_NO_IVF
       && stream->config.write_ivf
 #endif
-      ) {
+  ) {
     if (!fseek(stream->file, 0, SEEK_SET))
       ivf_write_file_header(stream->file, &stream->config.cfg, fourcc,
                             stream->frames_out);
@@ -2374,18 +2374,18 @@ int main(int argc, const char **argv_) {
 
     if (!global.quiet) {
       FOREACH_STREAM(stream, streams) {
-        fprintf(stderr, "\rPass %d/%d frame %4d/%-4d %7" PRId64 "B %7" PRId64
-                        "b/f %7" PRId64
-                        "b/s"
-                        " %7" PRId64 " %s (%.2f fps)\033[K\n",
+        fprintf(stderr,
+                "\rPass %d/%d frame %4d/%-4d %7" PRId64 "B %7" PRId64
+                "b/f %7" PRId64
+                "b/s"
+                " %7" PRId64 " %s (%.2f fps)\033[K\n",
                 pass + 1, global.passes, frames_in, stream->frames_out,
                 (int64_t)stream->nbytes,
                 seen_frames ? (int64_t)(stream->nbytes * 8 / seen_frames) : 0,
-                seen_frames
-                    ? (int64_t)stream->nbytes * 8 *
-                          (int64_t)global.framerate.num / global.framerate.den /
-                          seen_frames
-                    : 0,
+                seen_frames ? (int64_t)stream->nbytes * 8 *
+                                  (int64_t)global.framerate.num /
+                                  global.framerate.den / seen_frames
+                            : 0,
                 stream->cx_time > 9999999 ? stream->cx_time / 1000
                                           : stream->cx_time,
                 stream->cx_time > 9999999 ? "ms" : "us",

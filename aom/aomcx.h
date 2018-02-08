@@ -144,7 +144,7 @@ enum aome_enc_control_id {
   AOME_SET_SCALEMODE = 11,
 
   /*!\brief Codec control function to set encoder enhancement layer id.
-  */
+   */
   AOME_SET_ENHANCEMENT_LAYER_ID = 12,
 
   /*!\brief Codec control function to set encoder internal speed settings.
@@ -220,7 +220,7 @@ enum aome_enc_control_id {
   AOME_SET_MAX_INTRA_BITRATE_PCT,
 
   /*!\brief Codec control function to set number of spatial layers.
-  */
+   */
   AOME_SET_NUMBER_SPATIAL_LAYERS,
 
   /*!\brief Codec control function to set max data rate for Inter frames.
