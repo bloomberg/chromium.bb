@@ -32,6 +32,10 @@ HAS_ARCH_MIPS64EL=1
 DEBIAN_PACKAGES="\
   comerr-dev
   krb5-multidev
+  libappindicator-dev
+  libappindicator1
+  libappindicator3-1
+  libappindicator3-dev
   libasound2
   libasound2-dev
   libasyncns0
@@ -72,6 +76,10 @@ DEBIAN_PACKAGES="\
   libdbus-1-3
   libdbus-1-dev
   libdbus-glib-1-2
+  libdbusmenu-glib-dev
+  libdbusmenu-glib4
+  libdbusmenu-gtk3-4
+  libdbusmenu-gtk4
   libdrm-amdgpu1
   libdrm-dev
   libdrm-nouveau2
@@ -133,6 +141,8 @@ DEBIAN_PACKAGES="\
   libicu57
   libidl-2-0
   libidn11
+  libindicator3-7
+  libindicator7
   libjbig0
   libjpeg62-turbo
   libjson-glib-1.0-0
