@@ -100,6 +100,7 @@ TEST(SubresourceFilterUrlPatternTest, MatchesUrl) {
       {{"examp", kSubdomain, kAnchorNone}, "http://test.example.com/", true},
       {{"t.examp", kSubdomain, kAnchorNone}, "http://test.example.com/", false},
       {{"com^", kSubdomain, kAnchorNone}, "http://test.example.com/", true},
+      {{"com^x", kSubdomain, kBoundary}, "http://a.com/x", true},
       {{"x.com", kSubdomain, kAnchorNone}, "http://ex.com/?url=x.com", false},
       {{"ex.com/", kSubdomain, kBoundary}, "http://ex.com/", true},
       {{"ex.com^", kSubdomain, kBoundary}, "http://ex.com/", true},
@@ -110,6 +111,17 @@ TEST(SubresourceFilterUrlPatternTest, MatchesUrl) {
       {{"http", kSubdomain, kAnchorNone}, "http://http.com/", true},
       {{"/example.com", kSubdomain, kBoundary}, "http://example.com/", false},
       {{"/example.com/", kSubdomain, kBoundary}, "http://example.com/", false},
+      {{".", kSubdomain, kAnchorNone}, "http://a..com/", true},
+      {{"^", kSubdomain, kAnchorNone}, "http://a..com/", false},
+      {{".", kSubdomain, kAnchorNone}, "http://a.com./", false},
+      {{"^", kSubdomain, kAnchorNone}, "http://a.com./", true},
+      {{".", kSubdomain, kAnchorNone}, "http://a.com../", true},
+      {{"^", kSubdomain, kAnchorNone}, "http://a.com../", true},
+      {{"/path", kSubdomain, kAnchorNone}, "http://a.com./path/to/x", true},
+      {{"^path", kSubdomain, kAnchorNone}, "http://a.com./path/to/x", true},
+      {{"/path", kSubdomain, kBoundary}, "http://a.com./path", true},
+      {{"^path", kSubdomain, kBoundary}, "http://a.com./path", true},
+      {{"path", kSubdomain, kBoundary}, "http://a.com./path", false},
   };
 
   for (const auto& test_case : kTestCases) {

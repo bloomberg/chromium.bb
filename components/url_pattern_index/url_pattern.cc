@@ -20,6 +20,7 @@
 #include <ostream>
 
 #include "base/logging.h"
+#include "base/numerics/checked_math.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
 #include "components/url_pattern_index/fuzzy_pattern_matching.h"
 #include "components/url_pattern_index/string_splitter.h"
@@ -101,13 +102,38 @@ size_t FindSubdomainAnchoredSubpattern(base::StringPiece url,
   const bool is_fuzzy =
       (subpattern.find(kSeparatorPlaceholder) != base::StringPiece::npos);
 
-  for (size_t position = 0; position <= url.size(); ++position) {
-    position = is_fuzzy ? FindFuzzy(url, subpattern, position)
-                        : url.find(subpattern, position);
+  // Any match found after the end of the host will be discarded, so just
+  // avoid searching there for the subpattern to begin with.
+  //
+  // Check for overflow.
+  size_t max_match_end = 0;
+  if (!base::CheckAdd(host.end(), subpattern.length())
+           .AssignIfValid(&max_match_end)) {
+    return base::StringPiece::npos;
+  }
+  const base::StringPiece url_match_candidate = url.substr(0, max_match_end);
+  const base::StringPiece url_host = url.substr(0, host.end());
+
+  for (size_t position = static_cast<size_t>(host.begin);
+       position <= static_cast<size_t>(host.end()); ++position) {
+    // Enforce as a loop precondition that we are always anchored at a
+    // sub-domain before calling find. This is to reduce the number of potential
+    // searches for |subpattern|.
+    DCHECK(IsSubdomainAnchored(url, host, position));
+
+    position = is_fuzzy ? FindFuzzy(url_match_candidate, subpattern, position)
+                        : url_match_candidate.find(subpattern, position);
     if (position == base::StringPiece::npos ||
         IsSubdomainAnchored(url, host, position)) {
       return position;
     }
+
+    // Enforce the loop precondition. This skips |position| to the next '.',
+    // within the host, which the loop itself increments to the anchored
+    // sub-domain.
+    position = url_host.find('.', position);
+    if (position == base::StringPiece::npos)
+      break;
   }
   return base::StringPiece::npos;
 }
