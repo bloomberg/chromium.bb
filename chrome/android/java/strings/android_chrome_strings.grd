@@ -227,6 +227,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_RETRY" desc="The label for retry button. [CHAR-LIMIT=20]">
         Retry
       </message>
+      <message name="IDS_TRY_AGAIN" desc="The label for a button allowing the user to try an action again.">
+        Try again
+      </message>
 
       <!-- Main Preferences -->
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
@@ -503,6 +506,21 @@ CHAR-LIMIT guidelines:
       </message>
       <message name="IDS_SETTINGS_PASSWORDS_PREPARING_EXPORT" desc="Text shown to the user above a progress bar, informing the user that passwords are being prepared for export.">
         Preparing passwords…
+      </message>
+      <message name="IDS_SAVE_PASSWORD_PREFERENCES_EXPORT_ERROR_TITLE" desc="The title of a dialog showing an error encountered during exporting passwords from the passwords settings.">
+        Can’t export passwords
+      </message>
+      <message name="IDS_SAVE_PASSWORD_PREFERENCES_EXPORT_LEARN_GOOGLE_DRIVE" desc="The label of a button in an error dialog after exporting passwords from the settings failed. The button takes the user to a help article about using Google Drive.">
+        Learn how to use Google Drive
+      </message>
+      <message name="IDS_SAVE_PASSWORD_PREFERENCES_EXPORT_NO_APP" desc="The explanation of the error when exporting passwords fails because the user has no Android app installed which could consume the exported data. The description is shown in the body of an alert dialog.">
+        Your device doesn’t have an app to store the passwords file.
+      </message>
+      <message name="IDS_SAVE_PASSWORD_PREFERENCES_EXPORT_TIPS" desc="Tips on how to fix an error with exporting passwords. They are shown in the body of an alert dialog.">
+        Try the following tips: make sure there is enough space on your device, try to export again.
+      </message>
+      <message name="IDS_SAVE_PASSWORD_PREFERENCES_EXPORT_ERROR_DETAILS" desc="A short prefix to introduce a technical error message passed to the user from Android after exporting passwords through a temporary file fails. Both the prefix and the error message are shown in the body of an alert dialog.">
+        Details: <ph name="ERROR_DESCRIPTION">%1$s<ex>IOException: No space left on device</ex></ph>
       </message>
 
       <!-- Lock Screen Fragment -->
