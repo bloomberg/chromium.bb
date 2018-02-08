@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -22,19 +23,16 @@ namespace chromeos {
 // The MediaAnalyticsClient implementation used in production.
 class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
  public:
-  MediaAnalyticsClientImpl() : dbus_proxy_(nullptr), weak_ptr_factory_(this) {}
+  MediaAnalyticsClientImpl() = default;
 
   ~MediaAnalyticsClientImpl() override = default;
 
-  void SetMediaPerceptionSignalHandler(
-      const MediaPerceptionSignalHandler& handler) override {
-    DCHECK(media_perception_signal_handler_.is_null())
-        << "MediaPerceptionSignalHandler already set and setting it again.";
-    media_perception_signal_handler_ = handler;
+  void AddObserver(Observer* observer) override {
+    observer_list_.AddObserver(observer);
   }
 
-  void ClearMediaPerceptionSignalHandler() override {
-    media_perception_signal_handler_.Reset();
+  void RemoveObserver(Observer* observer) override {
+    observer_list_.RemoveObserver(observer);
   }
 
   void GetState(DBusMethodCallback<mri::State> callback) override {
@@ -98,50 +96,29 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
   // Handler that is triggered when a MediaPerception proto is received from
   // the media analytics process.
   void OnDetectionSignalReceived(dbus::Signal* signal) {
-    if (media_perception_signal_handler_.is_null()) {
-      return;
-    }
-
-    const uint8_t* bytes = nullptr;
-    size_t length = 0;
-
+    mri::MediaPerception media_perception;
     dbus::MessageReader reader(signal);
-
-    if (!reader.PopArrayOfBytes(&bytes, &length)) {
+    if (!reader.PopArrayOfBytesAsProto(&media_perception)) {
       LOG(ERROR) << "Invalid detection signal: " << signal->ToString();
       return;
     }
 
-    mri::MediaPerception media_perception;
-    if (!media_perception.ParseFromArray(bytes, length)) {
-      LOG(ERROR) << "Failed to parse MediaPerception message.";
-      return;
-    }
-
-    media_perception_signal_handler_.Run(media_perception);
+    for (auto& observer : observer_list_)
+      observer.OnDetectionSignal(media_perception);
   }
 
   void OnState(DBusMethodCallback<mri::State> callback,
                dbus::Response* response) {
-    mri::State state;
     if (!response) {
       LOG(ERROR) << "Call to State failed to get response.";
       std::move(callback).Run(base::nullopt);
       return;
     }
 
-    const uint8_t* bytes = nullptr;
-    size_t length = 0;
-
+    mri::State state;
     dbus::MessageReader reader(response);
-    if (!reader.PopArrayOfBytes(&bytes, &length)) {
+    if (!reader.PopArrayOfBytesAsProto(&state)) {
       LOG(ERROR) << "Invalid D-Bus response: " << response->ToString();
-      std::move(callback).Run(base::nullopt);
-      return;
-    }
-
-    if (!state.ParseFromArray(bytes, length)) {
-      LOG(ERROR) << "Failed to parse State message.";
       std::move(callback).Run(base::nullopt);
       return;
     }
@@ -151,25 +128,16 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
 
   void OnGetDiagnostics(DBusMethodCallback<mri::Diagnostics> callback,
                         dbus::Response* response) {
-    mri::Diagnostics diagnostics;
     if (!response) {
       LOG(ERROR) << "Call to GetDiagnostics failed to get response.";
       std::move(callback).Run(base::nullopt);
       return;
     }
 
-    const uint8_t* bytes = nullptr;
-    size_t length = 0;
-
+    mri::Diagnostics diagnostics;
     dbus::MessageReader reader(response);
-    if (!reader.PopArrayOfBytes(&bytes, &length)) {
+    if (!reader.PopArrayOfBytesAsProto(&diagnostics)) {
       LOG(ERROR) << "Invalid GetDiagnostics response: " << response->ToString();
-      std::move(callback).Run(base::nullopt);
-      return;
-    }
-
-    if (!diagnostics.ParseFromArray(bytes, length)) {
-      LOG(ERROR) << "Failed to parse Diagnostics message.";
       std::move(callback).Run(base::nullopt);
       return;
     }
@@ -177,13 +145,9 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
     std::move(callback).Run(std::move(diagnostics));
   }
 
-  dbus::ObjectProxy* dbus_proxy_;
-
-  // Stores a handler registered for receiving the media_perception.proto byte
-  // array.
-  MediaPerceptionSignalHandler media_perception_signal_handler_;
-
-  base::WeakPtrFactory<MediaAnalyticsClientImpl> weak_ptr_factory_;
+  dbus::ObjectProxy* dbus_proxy_ = nullptr;
+  base::ObserverList<Observer> observer_list_;
+  base::WeakPtrFactory<MediaAnalyticsClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaAnalyticsClientImpl);
 };
