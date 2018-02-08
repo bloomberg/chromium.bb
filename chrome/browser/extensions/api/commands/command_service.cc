@@ -133,8 +133,8 @@ void CommandService::RegisterProfilePrefs(
 CommandService::CommandService(content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)),
       extension_registry_observer_(this) {
-  ExtensionFunctionRegistry::GetInstance()->
-      RegisterFunction<GetAllCommandsFunction>();
+  ExtensionFunctionRegistry::GetInstance()
+      .RegisterFunction<GetAllCommandsFunction>();
 
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
 }

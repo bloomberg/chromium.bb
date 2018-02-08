@@ -4,13 +4,14 @@
 
 #include "extensions/browser/extension_function_registry.h"
 
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extensions_browser_client.h"
 
 // static
-ExtensionFunctionRegistry* ExtensionFunctionRegistry::GetInstance() {
-  return base::Singleton<ExtensionFunctionRegistry>::get();
+ExtensionFunctionRegistry& ExtensionFunctionRegistry::GetInstance() {
+  static base::NoDestructor<ExtensionFunctionRegistry> instance;
+  return *instance;
 }
 
 ExtensionFunctionRegistry::ExtensionFunctionRegistry() {

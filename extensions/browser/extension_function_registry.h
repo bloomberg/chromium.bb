@@ -43,7 +43,7 @@ class ExtensionFunctionRegistry {
         extensions::functions::UNKNOWN;
   };
 
-  static ExtensionFunctionRegistry* GetInstance();
+  static ExtensionFunctionRegistry& GetInstance();
   ExtensionFunctionRegistry();
   ~ExtensionFunctionRegistry();
 

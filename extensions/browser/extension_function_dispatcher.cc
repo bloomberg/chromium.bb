@@ -580,7 +580,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     void* profile_id,
     const ExtensionFunction::ResponseCallback& callback) {
   ExtensionFunction* function =
-      ExtensionFunctionRegistry::GetInstance()->NewFunction(params.name);
+      ExtensionFunctionRegistry::GetInstance().NewFunction(params.name);
   if (!function) {
     LOG(ERROR) << "Unknown Extension API - " << params.name;
     SendAccessDenied(callback, extensions::functions::UNKNOWN);
