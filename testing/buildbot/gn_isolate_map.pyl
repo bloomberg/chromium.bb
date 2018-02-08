@@ -988,14 +988,6 @@
       "../../tools/perf/run_benchmark",
     ],
   },
-  "telemetry_perf_tests_experimental": {
-    "label": "//chrome/test:telemetry_perf_tests_experimental",
-    "type": "script",
-    "script": "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
-    "args": [
-      "../../tools/perf/run_benchmark",
-    ],
-  },
   "performance_test_suite": {
     "label": "//chrome/test:performance_test_suite",
     "type": "script",
