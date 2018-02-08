@@ -50,7 +50,6 @@ MemBackendImpl::~MemBackendImpl() {
   DCHECK(CheckLRUListOrder(lru_list_));
   while (!entries_.empty())
     entries_.begin()->second->Doom();
-  DCHECK_EQ(0, current_size_);
 
   if (!post_cleanup_callback_.is_null())
     base::SequencedTaskRunnerHandle::Get()->PostTask(
@@ -175,7 +174,8 @@ int MemBackendImpl::CreateEntry(const std::string& key,
   if (!did_insert)
     return net::ERR_FAILED;
 
-  MemEntryImpl* cache_entry = new MemEntryImpl(this, key, net_log_);
+  MemEntryImpl* cache_entry =
+      new MemEntryImpl(weak_factory_.GetWeakPtr(), key, net_log_);
   create_result.first->second = cache_entry;
   *entry = cache_entry;
   return net::OK;

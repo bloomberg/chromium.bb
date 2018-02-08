@@ -82,6 +82,7 @@ class DiskCacheEntryTest : public DiskCacheTestWithCache {
   bool SimpleCacheMakeBadChecksumEntry(const std::string& key, int data_size);
   bool SimpleCacheThirdStreamFileExists(const char* key);
   void SyncDoomEntry(const char* key);
+  void UseAfterBackendDestruction();
 };
 
 // This part of the test runs on the background thread.
@@ -4139,6 +4140,24 @@ void DiskCacheEntryTest::SyncDoomEntry(const char* key) {
   callback.WaitForResult();
 }
 
+void DiskCacheEntryTest::UseAfterBackendDestruction() {
+  disk_cache::Entry* entry = NULL;
+  ASSERT_THAT(CreateEntry("the first key", &entry), IsOk());
+  cache_.reset();
+
+  const int kSize = 100;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  CacheTestFillBuffer(buffer->data(), kSize, false);
+
+  // Do some writes and reads, but don't change the result. We're OK
+  // with them failing, just not them crashing.
+  WriteData(entry, 1, 0, buffer.get(), kSize, false);
+  ReadData(entry, 1, 0, buffer.get(), kSize);
+  WriteSparseData(entry, 20000, buffer.get(), kSize);
+
+  entry->Close();
+}
+
 // Check that a newly-created entry with no third-stream writes omits the
 // third stream file.
 TEST_F(DiskCacheEntryTest, SimpleCacheOmittedThirdStream1) {
@@ -4795,6 +4814,26 @@ TEST_F(DiskCacheEntryTest, SimpleCacheLazyStream2CreateFailure) {
             WriteData(entry, /* index = */ 2, /* offset = */ 0, buffer.get(),
                       kSize, /* truncate = */ false));
   entry->Close();
+}
+
+TEST_F(DiskCacheEntryTest, UseAfterBackendDestruction) {
+  // InitCache uses the kNoRandom flag that check-fails on the tested scenario.
+  CreateBackend(0);
+  DisableIntegrityCheck();
+  UseAfterBackendDestruction();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleUseAfterBackendDestruction) {
+  SetSimpleCacheMode();
+  InitCache();
+  UseAfterBackendDestruction();
+}
+
+TEST_F(DiskCacheEntryTest, MemoryOnlyUseAfterBackendDestruction) {
+  // https://crbug.com/741620
+  SetMemoryOnlyMode();
+  InitCache();
+  UseAfterBackendDestruction();
 }
 
 class DiskCacheSimplePrefetchTest : public DiskCacheEntryTest {

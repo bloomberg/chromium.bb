@@ -87,7 +87,7 @@ std::unique_ptr<base::Value> NetLogEntryCreationCallback(
 
 }  // namespace
 
-MemEntryImpl::MemEntryImpl(MemBackendImpl* backend,
+MemEntryImpl::MemEntryImpl(base::WeakPtr<MemBackendImpl> backend,
                            const std::string& key,
                            net::NetLog* net_log)
     : MemEntryImpl(backend,
@@ -101,7 +101,7 @@ MemEntryImpl::MemEntryImpl(MemBackendImpl* backend,
   backend_->ModifyStorageSize(GetStorageSize());
 }
 
-MemEntryImpl::MemEntryImpl(MemBackendImpl* backend,
+MemEntryImpl::MemEntryImpl(base::WeakPtr<MemBackendImpl> backend,
                            int child_id,
                            MemEntryImpl* parent,
                            net::NetLog* net_log)
@@ -136,6 +136,7 @@ int MemEntryImpl::GetStorageSize() const {
 }
 
 void MemEntryImpl::UpdateStateOnUse(EntryModified modified_enum) {
+  // !doomed_ implies backend_ != null as ~MemBackendImpl dooms everything.
   if (!doomed_)
     backend_->OnEntryUpdated(this);
 
@@ -145,6 +146,7 @@ void MemEntryImpl::UpdateStateOnUse(EntryModified modified_enum) {
 }
 
 void MemEntryImpl::Doom() {
+  // !doomed_ implies backend_ != null as ~MemBackendImpl dooms everything.
   if (!doomed_) {
     doomed_ = true;
     backend_->OnEntryDoomed(this);
@@ -280,7 +282,7 @@ size_t MemEntryImpl::EstimateMemoryUsage() const {
 
 // ------------------------------------------------------------------------
 
-MemEntryImpl::MemEntryImpl(MemBackendImpl* backend,
+MemEntryImpl::MemEntryImpl(base::WeakPtr<MemBackendImpl> backend,
                            const ::std::string& key,
                            int child_id,
                            MemEntryImpl* parent,
@@ -302,7 +304,8 @@ MemEntryImpl::MemEntryImpl(MemBackendImpl* backend,
 }
 
 MemEntryImpl::~MemEntryImpl() {
-  backend_->ModifyStorageSize(-GetStorageSize());
+  if (backend_)
+    backend_->ModifyStorageSize(-GetStorageSize());
 
   if (type() == PARENT_ENTRY) {
     if (children_) {
@@ -345,6 +348,12 @@ int MemEntryImpl::InternalReadData(int index, int offset, IOBuffer* buf,
 int MemEntryImpl::InternalWriteData(int index, int offset, IOBuffer* buf,
                                     int buf_len, bool truncate) {
   DCHECK(type() == PARENT_ENTRY || index == kSparseData);
+  if (!backend_) {
+    // We have to fail writes after the backend is destroyed since we can't
+    // ensure we wouldn't use too much memory if it's gone.
+    RecordWriteResult(WRITE_RESULT_EXCEEDED_CACHE_STORAGE_SIZE);
+    return net::ERR_INSUFFICIENT_RESOURCES;
+  }
 
   if (index < 0 || index >= kNumStreams) {
     RecordWriteResult(WRITE_RESULT_INVALID_ARGUMENT);
@@ -458,6 +467,11 @@ int MemEntryImpl::InternalWriteSparseData(int64_t offset,
 
   if (!InitSparseInfo())
     return net::ERR_CACHE_OPERATION_NOT_SUPPORTED;
+
+  // We can't generally do this without the backend since we need it to create
+  // child entries.
+  if (!backend_)
+    return net::ERR_FAILED;
 
   if (offset < 0 || buf_len < 0)
     return net::ERR_INVALID_ARGUMENT;
