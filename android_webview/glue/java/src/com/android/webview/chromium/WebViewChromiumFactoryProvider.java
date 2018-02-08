@@ -165,13 +165,13 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     }
 
     // Protected to allow downstream to override.
-    protected WebViewChromiumAwInit createAwInit(WebViewChromiumFactoryProvider provider) {
-        return new WebViewChromiumAwInit(provider);
+    protected WebViewChromiumAwInit createAwInit() {
+        return new WebViewChromiumAwInit(this);
     }
 
     @TargetApi(Build.VERSION_CODES.N) // For getSystemService() and isUserUnlocked().
     private void initialize(WebViewDelegate webViewDelegate) {
-        mAwInit = createAwInit(this);
+        mAwInit = createAwInit();
         mWebViewDelegate = webViewDelegate;
         Context ctx = mWebViewDelegate.getApplication().getApplicationContext();
 
