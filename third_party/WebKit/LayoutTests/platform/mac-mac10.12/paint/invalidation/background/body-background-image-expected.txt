@@ -25,7 +25,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow BODY",
-          "rect": [8, 240, 784, 288],
+          "rect": [8, 240, 784, 284],
           "reason": "style change"
         }
       ]
