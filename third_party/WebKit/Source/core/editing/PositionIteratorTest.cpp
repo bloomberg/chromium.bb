@@ -82,11 +82,6 @@ TEST_F(PositionIteratorTest, decrementWithSelectElement) {
   EXPECT_EQ(PositionInFlatTree::AfterNode(*select),
             flat_iterator.ComputePosition());
   flat_iterator.Decrement();
-  EXPECT_EQ(PositionInFlatTree::AfterNode(*select),
-            flat_iterator.ComputePosition())
-      << "This is redundant result, we should not have. see "
-         "http://crbug.com/697283";
-  flat_iterator.Decrement();
   EXPECT_EQ(PositionInFlatTree::BeforeNode(*select),
             flat_iterator.ComputePosition());
   flat_iterator.Decrement();
@@ -204,11 +199,6 @@ TEST_F(PositionIteratorTest, incrementWithSelectElement) {
   flat_iterator.Increment();
   EXPECT_EQ(PositionInFlatTree::AfterNode(*select),
             flat_iterator.ComputePosition());
-  flat_iterator.Increment();
-  EXPECT_EQ(PositionInFlatTree::AfterNode(*select),
-            flat_iterator.ComputePosition())
-      << "This is redundant result, we should not have. see "
-         "http://crbug.com/697283";
   flat_iterator.Increment();
   EXPECT_EQ(PositionInFlatTree(GetDocument().body(), 1),
             flat_iterator.ComputePosition());

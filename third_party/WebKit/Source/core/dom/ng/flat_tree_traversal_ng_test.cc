@@ -27,9 +27,9 @@ namespace blink {
 namespace flat_tree_traversal_ng_test {
 
 class FlatTreeTraversalNgTest : public PageTestBase,
-                                private ScopedIncrementalShadowDOMForTest {
+                                private ScopedSlotInFlatTreeForTest {
  public:
-  FlatTreeTraversalNgTest() : ScopedIncrementalShadowDOMForTest(true) {}
+  FlatTreeTraversalNgTest() : ScopedSlotInFlatTreeForTest(true) {}
 
  protected:
   // Sets |mainHTML| to BODY element with |innerHTML| property and attaches
