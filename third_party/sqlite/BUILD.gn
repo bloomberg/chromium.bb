@@ -77,6 +77,9 @@ config("chromium_sqlite3_compile_options") {
     "SQLITE_OMIT_SHARED_CACHE",
     "SQLITE_USE_ALLOCA",
 
+    # Chromium initializes SQLite manually in //sql/connection.cc.
+    "SQLITE_OMIT_AUTOINIT",
+
     # Chromium calls sqlite3_reset() correctly to reset prepared statements.
     "SQLITE_OMIT_AUTORESET",
 
@@ -98,9 +101,6 @@ config("chromium_sqlite3_compile_options") {
 
     # TODO(pwnall): Add SQLITE_OMIT_COMPLETE when we import a SQLite release
     #               including https://www.sqlite.org/src/info/c3e816cca4ddf096
-
-    # TODO(pwnall): Add SQLITE_OMIT_AUTOINIT after the resolution and landing
-    #               of https://crrev.com/c/894692
   ]
 
   # On OSX, SQLite has extra logic for detecting the use of network
