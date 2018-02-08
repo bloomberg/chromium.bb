@@ -17,3 +17,9 @@ include_rules = [
   # to crbug.com/708307.
   "-ios/web/public/test/http_server/http_server.h",
 ]
+
+specific_include_rules = {
+  ".*test\.mm": [
+    "+services/network/public/cpp",
+  ],
+}

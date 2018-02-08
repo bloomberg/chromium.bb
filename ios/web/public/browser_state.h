@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_BROWSER_STATE_H_
 #define IOS_WEB_PUBLIC_BROWSER_STATE_H_
 
+#include <memory>
+
 #include "base/supports_user_data.h"
 #include "services/service_manager/embedder/embedded_service_info.h"
 
@@ -15,6 +17,12 @@ class FilePath;
 namespace net {
 class URLRequestContextGetter;
 }
+
+namespace network {
+namespace mojom {
+class URLLoaderFactory;
+}
+}  // namespace network
 
 namespace service_manager {
 class Connector;
@@ -49,6 +57,9 @@ class BrowserState : public base::SupportsUserData {
   // Returns the request context information associated with this
   // BrowserState.
   virtual net::URLRequestContextGetter* GetRequestContext() = 0;
+
+  // Returns a URLLoaderFactory that is backed by GetRequestContext.
+  network::mojom::URLLoaderFactory* GetURLLoaderFactory();
 
   // Safely cast a base::SupportsUserData to a BrowserState. Returns nullptr
   // if |supports_user_data| is not a BrowserState.
@@ -87,6 +98,7 @@ class BrowserState : public base::SupportsUserData {
                          const base::FilePath& path);
 
  private:
+  class URLLoaderFactory;
   friend class URLDataManagerIOS;
   friend class URLRequestChromeJob;
 
@@ -95,6 +107,8 @@ class BrowserState : public base::SupportsUserData {
   // thread.
   // Not intended for usage outside of //web.
   URLDataManagerIOSBackend* GetURLDataManagerIOSBackendOnIOThread();
+
+  std::unique_ptr<URLLoaderFactory> url_loader_factory_;
 
   // The URLDataManagerIOSBackend instance associated with this BrowserState.
   // Created and destroyed on the IO thread, and should be accessed only from

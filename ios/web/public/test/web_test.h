@@ -22,8 +22,10 @@ class WebTestRenderProcessCrashObserver;
 // mimics a web embedder.
 class WebTest : public PlatformTest {
  protected:
-  WebTest();
-  explicit WebTest(std::unique_ptr<web::WebClient> web_client);
+  explicit WebTest(TestWebThreadBundle::Options options =
+                       TestWebThreadBundle::Options::DEFAULT);
+  WebTest(std::unique_ptr<web::WebClient> web_client,
+          TestWebThreadBundle::Options = TestWebThreadBundle::Options::DEFAULT);
   ~WebTest() override;
 
   // Returns the WebClient that is used for testing.
