@@ -200,7 +200,6 @@ std::unique_ptr<HoverButton> CreateMoreInfoButton(
   }
 
   button->set_id(click_target_id);
-  button->set_auto_compute_tooltip(false);
   button->SetTooltipText(tooltip_text);
   return button;
 }
@@ -921,11 +920,11 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
       const base::string16 secondary_text = l10n_util::GetStringUTF16(
           valid_identity ? IDS_PAGE_INFO_CERTIFICATE_VALID_PARENTHESIZED
                          : IDS_PAGE_INFO_CERTIFICATE_INVALID_PARENTHESIZED);
-      site_settings_view_->AddChildView(
-          CreateMoreInfoButton(
-              this, icon, IDS_PAGE_INFO_CERTIFICATE_BUTTON_TEXT, secondary_text,
-              VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER, tooltip)
-              .release());
+      std::unique_ptr<HoverButton> certificate_button = CreateMoreInfoButton(
+          this, icon, IDS_PAGE_INFO_CERTIFICATE_BUTTON_TEXT, secondary_text,
+          VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_CERTIFICATE_VIEWER, tooltip);
+      certificate_button->set_auto_compute_tooltip(false);
+      site_settings_view_->AddChildView(certificate_button.release());
     } else {
       const base::string16 link_title = l10n_util::GetStringUTF16(
           valid_identity ? IDS_PAGE_INFO_CERTIFICATE_VALID_LINK
