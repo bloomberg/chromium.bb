@@ -471,15 +471,17 @@ class DNSErrorPageTest : public ErrorPageTest {
                     BrowserThread::UI, FROM_HERE,
                     base::BindOnce(&DNSErrorPageTest::RequestCreated,
                                    base::Unretained(owner)));
-                return WriteFileToURLLoader(owner, params,
-                                            "mock-link-doctor.json");
+                return chrome_browser_net::WriteFileToURLLoader(
+                    owner->embedded_test_server(), params,
+                    "mock-link-doctor.json");
               }
 
               // Add an interceptor for the search engine the error page will
               // use.
               if (params->url_request.url.host() ==
                   owner->search_term_url_.host()) {
-                return WriteFileToURLLoader(owner, params, "title3.html");
+                return chrome_browser_net::WriteFileToURLLoader(
+                    owner->embedded_test_server(), params, "title3.html");
               }
 
               return false;
@@ -520,40 +522,6 @@ class DNSErrorPageTest : public ErrorPageTest {
   }
 
   void TearDownOnMainThread() override { url_loader_interceptor_.reset(); }
-
-  static bool WriteFileToURLLoader(
-      DNSErrorPageTest* owner,
-      content::URLLoaderInterceptor::RequestParams* params,
-      std::string path) {
-    base::ScopedAllowBlockingForTesting allow_blocking;
-
-    if (path[0] == '/')
-      path.erase(0, 1);
-
-    if (path == "favicon.ico")
-      return false;
-
-    base::FilePath file_path;
-    PathService::Get(chrome::DIR_TEST_DATA, &file_path);
-    file_path = file_path.AppendASCII(path);
-
-    std::string contents;
-    const bool result = base::ReadFileToString(file_path, &contents);
-    EXPECT_TRUE(result);
-
-    if (path == "mock-link-doctor.json") {
-      GURL url =
-          owner->embedded_test_server()->GetURL("mock.http", "/title2.html");
-
-      std::string placeholder = "http://mock.http/title2.html";
-      contents.replace(contents.find(placeholder), placeholder.length(),
-                       url.spec());
-    }
-
-    content::URLLoaderInterceptor::WriteResponse(
-        net::URLRequestTestJob::test_headers(), contents, params->client.get());
-    return true;
-  }
 
   void SetUpOnMainThread() override {
     // All mock.http requests get served by the embedded test server.
