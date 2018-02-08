@@ -1381,9 +1381,6 @@ crbug.com/769885 [ Linux ] virtual/android/fullscreen/full-screen-frameset.html 
 crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ Failure ]
 crbug.com/492511 [ Mac ] fast/text/international/arabic-justify.html [ Failure ]
 
-# Tests that will start failing after this WebRTC CL is rolled in: https://webrtc-review.googlesource.com/c/src/+/41042
-crbug.com/806005 external/wpt/webrtc/RTCPeerConnection-createAnswer.html [ Pass Failure ]
-
 # Ref tests that fail due to differences in inline box structure, even though they contain the same text.
 # This happens because inline box layout uses fixed-point measurements, which can cause rounding differences.
 crbug.com/321237 [ Mac ] fast/selectors/007a.html [ Failure ]
