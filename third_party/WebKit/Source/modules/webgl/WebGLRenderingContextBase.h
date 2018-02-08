@@ -605,8 +605,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   // For use by WebVR, commits the current canvas content similar
   // to the "commit" JS API.
-  scoped_refptr<StaticBitmapImage> GetStaticBitmapImage(
-      std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
+  scoped_refptr<StaticBitmapImage> GetStaticBitmapImage();
 
  protected:
   friend class EXTDisjointTimerQuery;

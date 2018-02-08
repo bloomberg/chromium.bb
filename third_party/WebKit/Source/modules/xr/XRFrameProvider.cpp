@@ -331,11 +331,9 @@ void XRFrameProvider::SubmitWebGLLayer(XRWebGLLayer* layer) {
   // longer require a texture copy.
   bool needs_copy = device_->external();
 
-  // TODO(bajones): Pass through a callback to indicate that the image can be
-  // recycled.
-  frame_transport_->FrameSubmit(
-      presentation_provider_.get(), webgl_context->ContextGL(), webgl_context,
-      std::move(image_ref), nullptr, frame_id_, needs_copy);
+  frame_transport_->FrameSubmit(presentation_provider_.get(),
+                                webgl_context->ContextGL(), webgl_context,
+                                std::move(image_ref), frame_id_, needs_copy);
 
   // Reset our frame id, since anything we'd want to do (resizing/etc) can
   // no-longer happen to this frame.
