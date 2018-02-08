@@ -91,10 +91,6 @@ class ASH_EXPORT AccessibilityController
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;
   void OnActiveUserPrefServiceChanged(PrefService* prefs) override;
 
-  // TODO(warx): remove this method for browser tests
-  // (https://crbug.com/789285).
-  void SetPrefServiceForTest(PrefService* prefs);
-
   // Test helpers:
   void FlushMojoForTest();
 
@@ -102,10 +98,6 @@ class ASH_EXPORT AccessibilityController
   // Observes either the signin screen prefs or active user prefs and loads
   // initial settings.
   void ObservePrefs(PrefService* prefs);
-
-  // Returns |pref_service_for_test_| if not null, otherwise return
-  // SessionController::GetActivePrefService().
-  PrefService* GetActivePrefService() const;
 
   void UpdateAutoclickFromPref();
   void UpdateHighContrastFromPref();
@@ -134,8 +126,6 @@ class ASH_EXPORT AccessibilityController
   // way (https://crbug.com/800270).
   AccessibilityNotificationVisibility spoken_feedback_notification_ =
       A11Y_NOTIFICATION_NONE;
-
-  PrefService* pref_service_for_test_ = nullptr;
 
   // Used to force the backlights off to darken the screen.
   std::unique_ptr<ScopedBacklightsForcedOff> scoped_backlights_forced_off_;
