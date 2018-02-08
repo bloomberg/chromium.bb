@@ -21,6 +21,7 @@ class SequencedTaskRunner;
 class TaskRunner;
 }
 
+// This class contains the non-CrOS desktop implementation of the detector.
 class UpgradeDetectorImpl : public UpgradeDetector,
                             public variations::VariationsService::Observer {
  public:
