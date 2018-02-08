@@ -992,6 +992,70 @@ TEST_F(ProtocolHandlerRegistryTest, TestPrefPolicyOverlapIgnore) {
   ASSERT_EQ(InMemoryIgnoredHandlerCount(), 4);
 }
 
+TEST_F(ProtocolHandlerRegistryTest, TestURIPercentEncoding) {
+  ProtocolHandler ph =
+      CreateProtocolHandler("web+custom", GURL("https://test.com/url=%s"));
+  registry()->OnAcceptRegisterProtocolHandler(ph);
+
+  // Normal case.
+  GURL translated_url = ph.TranslateUrl(GURL("web+custom://custom/handler"));
+  ASSERT_EQ(translated_url,
+            GURL("https://test.com/url=web%2Bcustom%3A%2F%2Fcustom%2Fhandler"));
+
+  // Percent-encoding.
+  translated_url = ph.TranslateUrl(GURL("web+custom://custom/%20handler"));
+  ASSERT_EQ(
+      translated_url,
+      GURL("https://test.com/url=web%2Bcustom%3A%2F%2Fcustom%2F%2520handler"));
+
+  // Space character.
+  translated_url = ph.TranslateUrl(GURL("web+custom://custom handler"));
+  // TODO(mgiuca): Check whether this(' ') should be encoded as '%20'.
+  ASSERT_EQ(translated_url,
+            GURL("https://test.com/url=web%2Bcustom%3A%2F%2Fcustom+handler"));
+
+  // Query parameters.
+  translated_url = ph.TranslateUrl(GURL("web+custom://custom?foo=bar&bar=baz"));
+  ASSERT_EQ(translated_url,
+            GURL("https://test.com/"
+                 "url=web%2Bcustom%3A%2F%2Fcustom%3Ffoo%3Dbar%26bar%3Dbaz"));
+
+  // Non-ASCII characters.
+  translated_url = ph.TranslateUrl(GURL("web+custom://custom/<>`{}#?\"'😂"));
+  ASSERT_EQ(translated_url, GURL("https://test.com/"
+                                 "url=web%2Bcustom%3A%2F%2Fcustom%2F%3C%3E%60%"
+                                 "7B%7D%23%3F%22'%25F0%259F%2598%2582"));
+
+  // C0 characters. GURL constructor encodes U+001F as "%1F" first, because
+  // U+001F is an illegal char. Then the protocol handler translator encodes it
+  // to "%251F" again. That's why the expected result has double-encoded URL.
+  translated_url = ph.TranslateUrl(GURL("web+custom://custom/\x1fhandler"));
+  ASSERT_EQ(
+      translated_url,
+      GURL("https://test.com/url=web%2Bcustom%3A%2F%2Fcustom%2F%251Fhandler"));
+
+  // Control characters.
+  // TODO(crbug.com/809852): Check why non-special URLs don't encode any
+  // characters above U+001F.
+  translated_url = ph.TranslateUrl(GURL("web+custom://custom/\x7Fhandler"));
+  ASSERT_EQ(
+      translated_url,
+      GURL("https://test.com/url=web%2Bcustom%3A%2F%2Fcustom%2F%7Fhandler"));
+
+  // Path percent-encode set.
+  translated_url =
+      ph.TranslateUrl(GURL("web+custom://custom/handler=#download"));
+  ASSERT_EQ(translated_url,
+            GURL("https://test.com/"
+                 "url=web%2Bcustom%3A%2F%2Fcustom%2Fhandler%3D%23download"));
+
+  // Userinfo percent-encode set.
+  translated_url = ph.TranslateUrl(GURL("web+custom://custom/handler:@id="));
+  ASSERT_EQ(translated_url,
+            GURL("https://test.com/"
+                 "url=web%2Bcustom%3A%2F%2Fcustom%2Fhandler%3A%40id%3D"));
+}
+
 TEST_F(ProtocolHandlerRegistryTest, TestMultiplePlaceholders) {
   ProtocolHandler ph =
       CreateProtocolHandler("test", GURL("http://example.com/%s/url=%s"));
