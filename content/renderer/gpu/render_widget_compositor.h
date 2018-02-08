@@ -160,8 +160,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void ClearViewportLayers() override;
   void RegisterSelection(const blink::WebSelection& selection) override;
   void ClearSelection() override;
-  void SetMutatorClient(
-      std::unique_ptr<blink::WebCompositorMutatorClient>) override;
+  void SetMutatorClient(std::unique_ptr<cc::LayerTreeMutator>) override;
   void ForceRecalculateRasterScales() override;
   void SetEventListenerProperties(
       blink::WebEventListenerClass eventClass,

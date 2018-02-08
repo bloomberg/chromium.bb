@@ -5,17 +5,16 @@
 #ifndef CompositorMutatorClient_h
 #define CompositorMutatorClient_h
 
+#include <memory>
+#include "cc/trees/layer_tree_mutator.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebCompositorMutatorClient.h"
-#include <memory>
 
 namespace blink {
 
 class CompositorMutator;
 
-class PLATFORM_EXPORT CompositorMutatorClient
-    : public WebCompositorMutatorClient {
+class PLATFORM_EXPORT CompositorMutatorClient : public cc::LayerTreeMutator {
  public:
   explicit CompositorMutatorClient(CompositorMutator*);
   virtual ~CompositorMutatorClient();
