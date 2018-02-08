@@ -118,14 +118,14 @@ SyncOperationResult CheckConsistencySync(
     // faster matching later.
     temp_page_info_paths.insert(page_info.file_path);
   }
-  // Try to delete the pages by offline ids collected above.
-  // If there's any database related errors, the function will return false,
-  // and the database operations will be rolled back since the transaction will
-  // not be committed.
-  if (!DeletePagesByOfflineIds(offline_ids_to_delete, db))
-    return SyncOperationResult::DB_OPERATION_ERROR;
 
   if (offline_ids_to_delete.size() > 0) {
+    // Try to delete the pages by offline ids collected above. If there's any
+    // database related errors, the function will return false, and the database
+    // operations will be rolled back since the transaction will not be
+    // committed.
+    if (!DeletePagesByOfflineIds(offline_ids_to_delete, db))
+      return SyncOperationResult::DB_OPERATION_ERROR;
     UMA_HISTOGRAM_COUNTS(
         "OfflinePages.ConsistencyCheck.Temporary.PagesMissingArchiveFileCount",
         static_cast<int32_t>(offline_ids_to_delete.size()));
@@ -144,13 +144,12 @@ SyncOperationResult CheckConsistencySync(
   }
 
   if (files_to_delete.size() > 0) {
+    if (!DeleteFiles(files_to_delete))
+      return SyncOperationResult::FILE_OPERATION_ERROR;
     UMA_HISTOGRAM_COUNTS(
         "OfflinePages.ConsistencyCheck.Temporary.PagesMissingDbEntryCount",
         static_cast<int32_t>(files_to_delete.size()));
   }
-
-  if (!DeleteFiles(files_to_delete))
-    return SyncOperationResult::FILE_OPERATION_ERROR;
 
   return SyncOperationResult::SUCCESS;
 }

@@ -148,8 +148,8 @@ class OfflinePageModelTaskifiedTest
   const OfflinePageModel::DeletedPageInfo& last_deleted_page_info() {
     return last_deleted_page_info_;
   }
-  base::Time last_clear_page_time() {
-    return model_->last_clear_cached_pages_time_;
+  base::Time last_maintenance_tasks_schedule_time() {
+    return model_->last_maintenance_tasks_schedule_time_;
   }
 
  private:
@@ -1239,16 +1239,11 @@ TEST_F(OfflinePageModelTaskifiedTest, GetAllPages) {
 // This test is affected by https://crbug.com/725685, which only affects windows
 // platform.
 #if defined(OS_WIN)
-#define MAYBE_StartUp_ConsistencyCheckExecuted \
-  DISABLED_StartUp_ConsistencyCheckExecuted
+#define MAYBE_ConsistencyCheckExecuted DISABLED_ConsistencyCheckExecuted
 #else
-#define MAYBE_StartUp_ConsistencyCheckExecuted StartUp_ConsistencyCheckExecuted
+#define MAYBE_ConsistencyCheckExecuted ConsistencyCheckExecuted
 #endif
-TEST_F(OfflinePageModelTaskifiedTest, MAYBE_StartUp_ConsistencyCheckExecuted) {
-  // Rebuild the store so that we can insert pages before the model constructs.
-  ResetModel();
-  BuildStore();
-
+TEST_F(OfflinePageModelTaskifiedTest, MAYBE_ConsistencyCheckExecuted) {
   // Insert temporary pages
   page_generator()->SetArchiveDirectory(temporary_dir_path());
   page_generator()->SetNamespace(kDefaultNamespace);
@@ -1282,10 +1277,14 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_StartUp_ConsistencyCheckExecuted) {
   EXPECT_EQ(3UL,
             test_utils::GetFileCountInDirectory(private_archive_dir_path()));
 
-  // Rebuild the model in order to trigger consistency check.
-  BuildModel();
+  // Execute GetAllPages and move the clock forward to cover the delay, in order
+  // to trigger consistency checks.
+  base::MockCallback<MultipleOfflinePageItemCallback> callback;
+  model()->GetAllPages(callback.Get());
   task_runner()->FastForwardBy(
-      OfflinePageModelTaskified::kInitializingTaskDelay);
+      OfflinePageModelTaskified::kMaintenanceTasksDelay +
+      base::TimeDelta::FromMilliseconds(1));
+  PumpLoop();
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   EXPECT_EQ(0UL, test_utils::GetFileCountInDirectory(temporary_dir_path()));
@@ -1294,38 +1293,64 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_StartUp_ConsistencyCheckExecuted) {
 }
 
 TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
-  // Rebuilding store and model in order to set clock before executing the clear
-  // storage during model initialization so that we can check the time.
-  ResetModel();
-  BuildStore();
-  BuildModel();
-
+  // The ClearStorage task should not be executed based on time delays after
+  // launch (aka the model being built).
+  task_runner()->FastForwardBy(base::TimeDelta::FromDays(1));
   PumpLoop();
-  // The clear storage task will be delayed on initialization.
-  EXPECT_EQ(base::Time(), last_clear_page_time());
+  EXPECT_EQ(base::Time(), last_maintenance_tasks_schedule_time());
 
-  // 5 minutes passed and the last clear page time should be
-  // |now - 5mins + 30seconds| since the clear page will be triggered with a 30
-  // seconds delay. The delay is a hard-coded value in the model.
-  const base::TimeDelta short_delta = base::TimeDelta::FromMinutes(5);
-  task_runner()->FastForwardBy(short_delta);
-  auto archiver = BuildArchiver(kTestUrl, ArchiverResult::SUCCESSFULLY_CREATED);
-  int64_t offline_id = SavePageWithExpectedResult(
-      kTestUrl, kTestClientId1, kTestUrl2, kEmptyRequestOrigin,
-      std::move(archiver), SavePageResult::SUCCESS);
+  // GetAllPages should schedule a delayed task that will eventually run
+  // ClearStorage.
+  base::MockCallback<MultipleOfflinePageItemCallback> callback;
+  model()->GetAllPages(callback.Get());
   PumpLoop();
-  EXPECT_EQ(
-      task_runner()->Now() - short_delta + base::TimeDelta::FromSeconds(30),
-      last_clear_page_time());
+  EXPECT_EQ(task_runner()->Now(), last_maintenance_tasks_schedule_time());
+  base::Time last_scheduling_time = task_runner()->Now();
+  // Confirm no runs so far.
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ClearTemporaryPages.Result", 0);
 
+  // After the delay (plus 1 millisecond just in case) ClearStorage should be
+  // enqueued and executed.
+  const base::TimeDelta run_delay =
+      OfflinePageModelTaskified::kMaintenanceTasksDelay +
+      base::TimeDelta::FromMilliseconds(1);
+  task_runner()->FastForwardBy(run_delay);
+  PumpLoop();
+  EXPECT_EQ(last_scheduling_time, last_maintenance_tasks_schedule_time());
+
+  // Calling GetAllPages after only half of the enforced interval between
+  // ClearStorage runs should not schedule ClearStorage.
+  // Note: The previous elapsed delay is discounted from the clock advance here.
   task_runner()->FastForwardBy(
-      OfflinePageModelTaskified::kClearStorageInterval);
-  archiver = BuildArchiver(kTestUrl, ArchiverResult::SUCCESSFULLY_CREATED);
-  offline_id = SavePageWithExpectedResult(
-      kTestUrl, kTestClientId1, kTestUrl2, kEmptyRequestOrigin,
-      std::move(archiver), SavePageResult::SUCCESS);
+      OfflinePageModelTaskified::kClearStorageInterval / 2 - run_delay);
+  ASSERT_GT(task_runner()->Now(), last_scheduling_time);
+  model()->GetAllPages(callback.Get());
+  // And advance the delay too.
+  task_runner()->FastForwardBy(run_delay);
   PumpLoop();
-  EXPECT_EQ(task_runner()->Now(), last_clear_page_time());
+  EXPECT_EQ(last_scheduling_time, last_maintenance_tasks_schedule_time());
+  // Confirm a single run happened so far.
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.ClearTemporaryPages.Result",
+      static_cast<int>(ClearStorageResult::UNNECESSARY), 1);
+
+  // Forwarding by the full interval (plus 1 second just in case) should allow
+  // the task to be enqueued again.
+  task_runner()->FastForwardBy(
+      OfflinePageModelTaskified::kClearStorageInterval / 2 +
+      base::TimeDelta::FromSeconds(1));
+  // Saving a page should also immediately enqueue the ClearStorage task.
+  auto archiver = BuildArchiver(kTestUrl, ArchiverResult::SUCCESSFULLY_CREATED);
+  SavePageWithExpectedResult(kTestUrl, kTestClientId1, kTestUrl2,
+                             kEmptyRequestOrigin, std::move(archiver),
+                             SavePageResult::SUCCESS);
+  last_scheduling_time = task_runner()->Now();
+  // Advance the delay again.
+  task_runner()->FastForwardBy(run_delay);
+  PumpLoop();
+  EXPECT_EQ(last_scheduling_time, last_maintenance_tasks_schedule_time());
+  // Confirm that two runs happened.
   histogram_tester()->ExpectUniqueSample(
       "OfflinePages.ClearTemporaryPages.Result",
       static_cast<int>(ClearStorageResult::UNNECESSARY), 2);
