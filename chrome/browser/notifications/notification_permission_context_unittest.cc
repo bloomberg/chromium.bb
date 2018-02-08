@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -28,6 +29,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif  // defined(OS_ANDROID)
 
 namespace {
 
@@ -151,6 +156,21 @@ TEST_F(NotificationPermissionContextTest, CrossOriginPermissionChecks) {
                 .GetPermissionStatus(nullptr /* render_frame_host */,
                                      requesting_origin, embedding_origin)
                 .content_setting);
+
+// Now block permission for |requesting_origin|.
+
+#if defined(OS_ANDROID)
+  // On Android O+, permission must be reset before it can be blocked. This is
+  // because granting a permission on O+ creates a system-managed notification
+  // channel which determines the value of the content setting, so it is not
+  // allowed to then toggle the value from ALLOW->BLOCK directly. However,
+  // Chrome may reset the permission (which deletes the channel), and *then*
+  // grant/block it (creating a new channel).
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_OREO) {
+    context.ResetPermission(requesting_origin, requesting_origin);
+  }
+#endif  // defined(OS_ANDROID)
 
   UpdateContentSetting(&context, requesting_origin, requesting_origin,
                        CONTENT_SETTING_BLOCK);
