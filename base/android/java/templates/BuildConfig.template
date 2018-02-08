@@ -4,6 +4,15 @@
 
 package org.chromium.base;
 
+#define Q(x) #x
+#define QUOTE(x) Q(x)
+
+#if defined(USE_FINAL)
+#define MAYBE_FINAL final
+#else
+#define MAYBE_FINAL
+#endif
+
 /**
  *  Build configuration. Generated on a per-target basis.
  */
@@ -22,34 +31,37 @@ public class BuildConfig {
 #endif
     }
 
-    // DCHECK_IS_ON does not change between targets, can be final and optimized out.
-#if defined(_DCHECK_IS_ON)
-    public static final boolean DCHECK_IS_ON = true;
+#if defined(_FIREBASE_APP_ID)
+    public static MAYBE_FINAL String FIREBASE_APP_ID = QUOTE(_FIREBASE_APP_ID);
 #else
-    public static final boolean DCHECK_IS_ON = false;
+    public static MAYBE_FINAL String FIREBASE_APP_ID = "";
+#endif
+
+#if defined(_DCHECK_IS_ON)
+    public static MAYBE_FINAL boolean DCHECK_IS_ON = true;
+#else
+    public static MAYBE_FINAL boolean DCHECK_IS_ON = false;
 #endif
 
 #if defined(_IS_UBSAN)
-    public static final boolean IS_UBSAN = true;
+    public static MAYBE_FINAL boolean IS_UBSAN = true;
 #else
-    public static final boolean IS_UBSAN = false;
+    public static MAYBE_FINAL boolean IS_UBSAN = false;
 #endif
 
     // Sorted list of locales that have a compressed .pak within assets.
     // Stored as an array because AssetManager.list() is slow.
-    public static final String[] COMPRESSED_LOCALES =
 #if defined(COMPRESSED_LOCALE_LIST)
-      COMPRESSED_LOCALE_LIST;
+    public static MAYBE_FINAL String[] COMPRESSED_LOCALES = COMPRESSED_LOCALE_LIST;
 #else
-      {};
+    public static MAYBE_FINAL String[] COMPRESSED_LOCALES = {};
 #endif
 
     // Sorted list of locales that have an uncompressed .pak within assets.
     // Stored as an array because AssetManager.list() is slow.
-    public static final String[] UNCOMPRESSED_LOCALES =
 #if defined(UNCOMPRESSED_LOCALE_LIST)
-      UNCOMPRESSED_LOCALE_LIST;
+    public static MAYBE_FINAL String[] UNCOMPRESSED_LOCALES = UNCOMPRESSED_LOCALE_LIST;
 #else
-      {};
+    public static MAYBE_FINAL String[] UNCOMPRESSED_LOCALES = {};
 #endif
 }

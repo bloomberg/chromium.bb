@@ -1181,7 +1181,12 @@ if (enable_java_templates) {
       if (!defined(srcjar_deps)) {
         srcjar_deps = []
       }
-      srcjar_deps += [ ":$_process_resources_target" ]
+      srcjar_deps += [
+        ":$_process_resources_target",
+
+        # This dep is required for any targets that depend on //base:base_java.
+        "//base:base_build_config_gen",
+      ]
     }
 
     test_runner_script(_test_runner_target_name) {
@@ -1649,6 +1654,64 @@ if (enable_java_templates) {
     }
   }
 
+  # Creates org/chromium/base/BuildConfig.java
+  # This doesn't really belong in //build since it genates a file for //base.
+  # However, we don't currently have a better way to include this file in all
+  # apks that depend on //base:base_java.
+  #
+  # Variables:
+  #   use_final_fields: True to use final fields. All other variables are
+  #       ignored when this is false.
+  #   build_config: Path to build_config used for locale list
+  #   enable_multidex: Value for ENABLE_MULTIDEX.
+  #   firebase_app_id: Value for FIREBASE_APP_ID.
+  #
+  template("generate_build_config_srcjar") {
+    java_cpp_template(target_name) {
+      package_path = "org/chromium/base"
+      sources = [
+        "//base/android/java/templates/BuildConfig.template",
+      ]
+      defines = []
+
+      # TODO(agrieve): These two are not target-specific and should be moved
+      #     to BuildHooks.java.
+      # Set these even when !use_final_fields so that they have correct default
+      # values withnin junit_binary().
+      if (is_java_debug || dcheck_always_on) {
+        defines += [ "_DCHECK_IS_ON" ]
+      }
+      if (use_cfi_diag || is_ubsan || is_ubsan_security || is_ubsan_vptr) {
+        defines += [ "_IS_UBSAN" ]
+      }
+
+      if (invoker.use_final_fields) {
+        forward_variables_from(invoker,
+                               [
+                                 "deps",
+                                 "testonly",
+                               ])
+        defines += [ "USE_FINAL" ]
+        if (invoker.enable_multidex) {
+          defines += [ "ENABLE_MULTIDEX" ]
+        }
+        inputs = [
+          invoker.build_config,
+        ]
+        _rebased_build_config = rebase_path(invoker.build_config)
+        defines += [
+          "COMPRESSED_LOCALE_LIST=" +
+              "@FileArg($_rebased_build_config:compressed_locales_java_list)",
+          "UNCOMPRESSED_LOCALE_LIST=" +
+              "@FileArg($_rebased_build_config:uncompressed_locales_java_list)",
+        ]
+        if (defined(invoker.firebase_app_id)) {
+          defines += [ "_FIREBASE_APP_ID=${invoker.firebase_app_id}" ]
+        }
+      }
+    }
+  }
+
   # Declare an Android apk target
   #
   # This target creates an Android APK containing java code, resources, assets,
@@ -1688,6 +1751,8 @@ if (enable_java_templates) {
   #   generate_buildconfig_java: If defined and false, skip generating the
   #     BuildConfig java class describing the build configuration. The default
   #     is true for non-test APKs.
+  #   firebase_app_id: The value for BuildConfig.FIREBASE_APP_ID (optional).
+  #     Identifier is sent with crash reports to enable Java stack deobfuscation.
   #   requires_sdk_api_level_23: If defined and true, the apk is intended for
   #     installation only on Android M or later. In these releases the system
   #     linker does relocation unpacking, so we can enable it unconditionally.
@@ -2104,30 +2169,13 @@ if (enable_java_templates) {
     }
 
     if (_generate_buildconfig_java) {
-      java_cpp_template("${_template_name}__build_config_java") {
-        package_path = "org/chromium/base"
-        sources = [
-          "//base/android/java/templates/BuildConfig.template",
-        ]
+      generate_build_config_srcjar("${_template_name}__build_config_java") {
+        forward_variables_from(invoker, [ "firebase_app_id" ])
+        use_final_fields = true
+        build_config = _build_config
+        enable_multidex = _enable_multidex
         deps = [
           ":$_build_config_target",
-        ]
-
-        defines = []
-        if (_enable_multidex) {
-          defines += [ "ENABLE_MULTIDEX" ]
-        }
-        if (is_java_debug || dcheck_always_on) {
-          defines += [ "_DCHECK_IS_ON" ]
-        }
-        if (use_cfi_diag || is_ubsan || is_ubsan_security || is_ubsan_vptr) {
-          defines += [ "_IS_UBSAN" ]
-        }
-        defines += [
-          "COMPRESSED_LOCALE_LIST=" +
-              "@FileArg($_rebased_build_config:compressed_locales_java_list)",
-          "UNCOMPRESSED_LOCALE_LIST=" +
-              "@FileArg($_rebased_build_config:uncompressed_locales_java_list)",
         ]
       }
       _srcjar_deps += [ ":${_template_name}__build_config_java" ]
