@@ -120,7 +120,7 @@ void OffscreenCanvasFrameDispatcherImpl::PostImageToPlaceholder(
     scoped_refptr<StaticBitmapImage> image,
     unsigned resource_id) {
   scoped_refptr<base::SingleThreadTaskRunner> dispatcher_task_runner =
-      Platform::Current()->CurrentThread()->GetWebTaskRunner();
+      Platform::Current()->CurrentThread()->GetTaskRunner();
 
   PostCrossThreadTask(
       *Platform::Current()->MainThread()->Scheduler()->CompositorTaskRunner(),

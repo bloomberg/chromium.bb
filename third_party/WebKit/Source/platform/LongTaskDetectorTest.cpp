@@ -54,7 +54,7 @@ class LongTaskDetectorTest : public ::testing::Test {
 
   void SimulateTask(double duration_seconds) {
     PostCrossThreadTask(
-        *platform_->CurrentThread()->GetWebTaskRunner(), FROM_HERE,
+        *platform_->CurrentThread()->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(&LongTaskDetectorTest::DummyTaskWithDuration,
                         CrossThreadUnretained(this), duration_seconds));
     platform_->RunUntilIdle();

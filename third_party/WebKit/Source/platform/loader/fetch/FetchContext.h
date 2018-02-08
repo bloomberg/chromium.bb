@@ -252,7 +252,7 @@ class PLATFORM_EXPORT FetchContext
   // (after Detach() is called, this will return a generic timer suitable for
   // post-detach actions like keepalive requests.
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetLoadingTaskRunner() {
-    return Platform::Current()->CurrentThread()->GetWebTaskRunner();
+    return Platform::Current()->CurrentThread()->GetTaskRunner();
   }
 
   // Called when the underlying context is detached. Note that some

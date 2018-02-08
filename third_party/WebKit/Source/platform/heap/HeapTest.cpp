@@ -485,7 +485,7 @@ class ThreadedTesterBase {
           WebThreadCreationParams(WebThreadType::kTestThread)
               .SetThreadName("blink gc testing thread")));
       PostCrossThreadTask(
-          *threads.back()->GetWebTaskRunner(), FROM_HERE,
+          *threads.back()->GetTaskRunner(), FROM_HERE,
           CrossThreadBind(ThreadFunc, CrossThreadUnretained(tester)));
     }
     while (tester->threads_to_finish_) {
@@ -5471,7 +5471,7 @@ class ThreadedStrongificationTester {
         Platform::Current()->CreateThread(
             WebThreadCreationParams(WebThreadType::kTestThread)
                 .SetThreadName("Test Worker Thread"));
-    PostCrossThreadTask(*worker_thread->GetWebTaskRunner(), FROM_HERE,
+    PostCrossThreadTask(*worker_thread->GetTaskRunner(), FROM_HERE,
                         CrossThreadBind(WorkerThreadMain));
 
     // Wait for the worker thread initialization. The worker
@@ -5573,7 +5573,7 @@ class MemberSameThreadCheckTester {
             WebThreadCreationParams(WebThreadType::kTestThread)
                 .SetThreadName("Test Worker Thread"));
     PostCrossThreadTask(
-        *worker_thread->GetWebTaskRunner(), FROM_HERE,
+        *worker_thread->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(&MemberSameThreadCheckTester::WorkerThreadMain,
                         CrossThreadUnretained(this)));
 
@@ -5618,7 +5618,7 @@ class PersistentSameThreadCheckTester {
             WebThreadCreationParams(WebThreadType::kTestThread)
                 .SetThreadName("Test Worker Thread"));
     PostCrossThreadTask(
-        *worker_thread->GetWebTaskRunner(), FROM_HERE,
+        *worker_thread->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(&PersistentSameThreadCheckTester::WorkerThreadMain,
                         CrossThreadUnretained(this)));
 
@@ -5664,7 +5664,7 @@ class MarkingSameThreadCheckTester {
                 .SetThreadName("Test Worker Thread"));
     Persistent<MainThreadObject> main_thread_object = new MainThreadObject();
     PostCrossThreadTask(
-        *worker_thread->GetWebTaskRunner(), FROM_HERE,
+        *worker_thread->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(&MarkingSameThreadCheckTester::WorkerThreadMain,
                         CrossThreadUnretained(this),
                         WrapCrossThreadPersistent(main_thread_object.Get())));
@@ -6464,7 +6464,7 @@ TEST(HeapTest, CrossThreadWeakPersistent) {
           .SetThreadName("Test Worker Thread"));
   DestructorLockingObject* object = nullptr;
   PostCrossThreadTask(
-      *worker_thread->GetWebTaskRunner(), FROM_HERE,
+      *worker_thread->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(WorkerThreadMainForCrossThreadWeakPersistentTest,
                       CrossThreadUnretained(&object)));
   ParkMainThread();

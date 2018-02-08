@@ -126,12 +126,12 @@ class AddingClient final : public GarbageCollectedFinalized<AddingClient>,
     // First schedule an asynchronous task to remove the client.
     // We do not expect a client to be called if the client is removed before
     // a callback invocation task queued inside addClient() is scheduled.
-    Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
+    Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
         FROM_HERE,
         WTF::Bind(&AddingClient::RemoveClient, WrapPersistent(this)));
     resource->AddClient(
         dummy_client_,
-        Platform::Current()->CurrentThread()->GetWebTaskRunner());
+        Platform::Current()->CurrentThread()->GetTaskRunner().get());
   }
   String DebugName() const override { return "AddingClient"; }
 
@@ -158,7 +158,7 @@ TEST_F(RawResourceTest, AddClientDuringCallback) {
   Persistent<AddingClient> adding_client =
       new AddingClient(dummy_client.Get(), raw);
   raw->AddClient(adding_client,
-                 Platform::Current()->CurrentThread()->GetWebTaskRunner());
+                 Platform::Current()->CurrentThread()->GetTaskRunner().get());
   platform_->RunUntilIdle();
   raw->RemoveClient(adding_client);
   EXPECT_FALSE(dummy_client->Called());
@@ -200,9 +200,9 @@ TEST_F(RawResourceTest, RemoveClientDuringCallback) {
   Persistent<RemovingClient> removing_client =
       new RemovingClient(dummy_client.Get());
   raw->AddClient(dummy_client,
-                 Platform::Current()->CurrentThread()->GetWebTaskRunner());
+                 Platform::Current()->CurrentThread()->GetTaskRunner().get());
   raw->AddClient(removing_client,
-                 Platform::Current()->CurrentThread()->GetWebTaskRunner());
+                 Platform::Current()->CurrentThread()->GetTaskRunner().get());
   platform_->RunUntilIdle();
   EXPECT_FALSE(raw->IsAlive());
 }

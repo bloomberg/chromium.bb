@@ -134,7 +134,7 @@ void AudioDestination::Render(const WebVector<float*>& destination_data,
   // is available.
   if (worklet_backing_thread_) {
     PostCrossThreadTask(
-        *worklet_backing_thread_->GetWebTaskRunner(), FROM_HERE,
+        *worklet_backing_thread_->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(&AudioDestination::RequestRender, WrapRefCounted(this),
                         number_of_frames, frames_to_render, delay,
                         delay_timestamp, prior_frames_skipped));

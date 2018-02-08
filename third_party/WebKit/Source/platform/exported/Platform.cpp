@@ -107,7 +107,7 @@ static void MaxObservedSizeFunction(size_t size_in_mb) {
 static void CallOnMainThreadFunction(WTF::MainThreadFunction function,
                                      void* context) {
   PostCrossThreadTask(
-      *Platform::Current()->MainThread()->GetWebTaskRunner(), FROM_HERE,
+      *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(function, CrossThreadUnretained(context)));
 }
 
@@ -187,7 +187,7 @@ WebThread* Platform::MainThread() const {
 }
 
 base::SingleThreadTaskRunner* Platform::FileTaskRunner() const {
-  return file_thread_ ? file_thread_->GetWebTaskRunner() : nullptr;
+  return file_thread_ ? file_thread_->GetTaskRunner().get() : nullptr;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> Platform::BaseFileTaskRunner()
