@@ -5,9 +5,11 @@
 
 # pylint: disable=too-many-lines
 
-"""Script to generate chromium.perf.json and chromium.perf.fyi.json in
+"""Script to generate chromium.perf.json in
 the src/testing/buildbot directory and benchmark.csv in the src/tools/perf
 directory. Maintaining these files by hand is too unwieldy.
+Note: chromium.perf.fyi.json is updated manuall for now until crbug.com/757933
+is complete.
 """
 import collections
 import csv
@@ -78,11 +80,6 @@ def add_tester(waterfall, name, perf_id, platform, target_bits=64,
     waterfall['testers'][name]['swarming_dimensions'] = swarming
     waterfall['testers'][name]['swarming'] = True
 
-  return waterfall
-
-
-def get_fyi_waterfall_config():
-  waterfall = {'builders':{}, 'testers': {}}
   return waterfall
 
 
@@ -871,36 +868,11 @@ def get_json_config_file_for_waterfall(waterfall):
   return os.path.join(buildbot_dir, filename)
 
 
-def get_extras_json_config_file_for_waterfall(waterfall):
-  filename = '%s.extras.json' % waterfall['name']
-  buildbot_dir = os.path.join(path_util.GetChromiumSrcDir(), 'tools', 'perf')
-  return os.path.join(buildbot_dir, filename)
-
-
-def append_extra_tests(waterfall, tests):
-  """Appends extra tests to |tests|.
-
-  Those extra tests are loaded from tools/perf/<waterfall name>.extras.json.
-  """
-  extra_config_file = get_extras_json_config_file_for_waterfall(waterfall)
-  if os.path.isfile(extra_config_file):
-    with open(extra_config_file) as extra_fp:
-      extra_tests = json.load(extra_fp)
-      for key, value in extra_tests.iteritems():
-        if key == 'comment':
-          continue
-        assert key not in tests
-        tests[key] = value
-
-
 def update_all_tests(waterfalls):
   all_tests = {}
   for w in waterfalls:
     tests = generate_all_tests(w)
-    # Note: |all_tests| don't cover those manually-specified tests added by
-    # append_extra_tests().
     all_tests.update(tests)
-    append_extra_tests(w, tests)
     config_file = get_json_config_file_for_waterfall(w)
     with open(config_file, 'w') as fp:
       json.dump(tests, fp, indent=2, separators=(',', ': '), sort_keys=True)
@@ -1065,8 +1037,6 @@ def update_benchmark_csv():
 def main():
   waterfall = get_waterfall_config()
   waterfall['name'] = 'chromium.perf'
-  fyi_waterfall = get_fyi_waterfall_config()
-  fyi_waterfall['name'] = 'chromium.perf.fyi'
 
-  update_all_tests([fyi_waterfall, waterfall])
+  update_all_tests([waterfall])
   update_benchmark_csv()
