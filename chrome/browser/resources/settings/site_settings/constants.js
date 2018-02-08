@@ -30,7 +30,7 @@ settings.ContentSettingsTypes = {
   MIDI_DEVICES: 'midi-sysex',
   USB_DEVICES: 'usb-chooser-data',
   ZOOM_LEVELS: 'zoom-levels',
-  PROTECTED_CONTENT: 'protectedContent',
+  PROTECTED_CONTENT: 'protected-content',
   ADS: 'ads',
   CLIPBOARD: 'clipboard',
   SENSORS: 'sensors',

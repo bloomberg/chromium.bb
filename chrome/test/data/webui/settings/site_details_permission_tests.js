@@ -18,23 +18,15 @@ suite('SiteDetailsPermission', function() {
 
   // Initialize a site-details-permission before each test.
   setup(function() {
-    prefs = {
-      defaults: {
-        camera: {
-          setting: settings.ContentSetting.ALLOW,
-        }
-      },
-      exceptions: {
-        camera: [
-          {
-            embeddingOrigin: '',
-            origin: 'https://www.example.com',
-            setting: settings.ContentSetting.ALLOW,
-            source: settings.SiteSettingSource.PREFERENCE,
-          },
-        ]
-      }
-    };
+    prefs = test_util.createSiteSettingsPrefs(
+        [test_util.createContentSettingTypeToValuePair(
+            settings.ContentSettingsTypes.CAMERA,
+            test_util.createDefaultContentSetting({
+              setting: settings.ContentSetting.ALLOW,
+            }))],
+        [test_util.createContentSettingTypeToValuePair(
+            settings.ContentSettingsTypes.CAMERA,
+            [test_util.createRawSiteException('https://www.example.com')])]);
 
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
     settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
@@ -118,12 +110,13 @@ suite('SiteDetailsPermission', function() {
               'Allow (default)', testElement.$.permission.options[0].text,
               'Default setting string should match prefs');
           browserProxy.resetResolver('getDefaultValueForContentType');
-          const defaultPrefs = {
-            camera: {
-              setting: settings.ContentSetting.BLOCK,
-            }
-          };
-          browserProxy.setDefaultPrefs(defaultPrefs);
+          const defaultPrefs = test_util.createSiteSettingsPrefs(
+              [test_util.createContentSettingTypeToValuePair(
+                  settings.ContentSettingsTypes.CAMERA,
+                  test_util.createDefaultContentSetting(
+                      {setting: settings.ContentSetting.BLOCK}))],
+              []);
+          browserProxy.setPrefs(defaultPrefs);
           return browserProxy.whenCalled('getDefaultValueForContentType');
         })
         .then((args) => {
@@ -132,12 +125,12 @@ suite('SiteDetailsPermission', function() {
               'Block (default)', testElement.$.permission.options[0].text,
               'Default setting string should match prefs');
           browserProxy.resetResolver('getDefaultValueForContentType');
-          const defaultPrefs = {
-            camera: {
-              setting: settings.ContentSetting.ASK,
-            }
-          };
-          browserProxy.setDefaultPrefs(defaultPrefs);
+          const defaultPrefs = test_util.createSiteSettingsPrefs(
+              [test_util.createContentSettingTypeToValuePair(
+                  settings.ContentSettingsTypes.CAMERA,
+                  test_util.createDefaultContentSetting())],
+              []);
+          browserProxy.setPrefs(defaultPrefs);
           return browserProxy.whenCalled('getDefaultValueForContentType');
         })
         .then((args) => {
