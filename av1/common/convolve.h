@@ -88,7 +88,7 @@ static INLINE void av1_get_convolve_filter_params(InterpFilters interp_filters,
                                                   ,
                                                   int w, int h
 #endif
-                                                  ) {
+) {
 #if CONFIG_DUAL_FILTER
   InterpFilter filter_x = av1_extract_interp_filter(interp_filters, 1);
   InterpFilter filter_y = av1_extract_interp_filter(interp_filters, 0);

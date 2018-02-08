@@ -143,7 +143,7 @@ void av1_loop_filter_frame_init(struct AV1Common *cm, int default_filt_lvl,
                                 ,
                                 int plane
 #endif
-                                );
+);
 
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                            struct macroblockd *mbd, int filter_level,

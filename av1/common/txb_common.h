@@ -368,7 +368,7 @@ static INLINE int get_br_ctx(const uint8_t *const levels,
                              ,
                              const TX_TYPE tx_type
 #endif
-                             ) {
+) {
   const int row = c >> bwl;
   const int col = c - (row << bwl);
   const int stride = (1 << bwl) + TX_PAD_HOR;

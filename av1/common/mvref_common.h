@@ -241,7 +241,7 @@ static INLINE void lower_mv_precision(MV *mv, int allow_hp
                                       ,
                                       int is_integer
 #endif
-                                      ) {
+) {
 #if CONFIG_AMVR
   if (is_integer) {
     integer_mv_precision(mv);

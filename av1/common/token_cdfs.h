@@ -7527,6 +7527,6 @@ av1_default_coef_head_cdfs_q3[TX_SIZES][PLANE_TYPES] = {
 typedef coeff_cdf_model coeff_cdf_table[TX_SIZES][PLANE_TYPES];
 static const coeff_cdf_table *av1_default_qctx_coef_cdfs[TOKEN_CDF_Q_CTXS] = {
   &av1_default_coef_head_cdfs_q0, &av1_default_coef_head_cdfs_q1,
-  &av1_default_coef_head_cdfs_q2, &av1_default_coef_head_cdfs_q3,
+  &av1_default_coef_head_cdfs_q2, &av1_default_coef_head_cdfs_q3
 };
 #endif  // CONFIG_LV_MAP

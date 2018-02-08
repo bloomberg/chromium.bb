@@ -396,7 +396,7 @@ void av1_loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl,
                                 ,
                                 int plane
 #endif
-                                ) {
+) {
   int seg_id;
   // n_shift is the multiplier for lf_deltas
   // the multiplier is 1 for when filter_lvl is between 0 and 31;

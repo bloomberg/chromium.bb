@@ -64,8 +64,9 @@ void av1_convolve_2d_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
             _mm_loadu_si128((__m128i *)&src_ptr[(i * src_stride) + j]));
         if (i + 1 < im_h)
           data = _mm256_inserti128_si256(
-              data, _mm_loadu_si128(
-                        (__m128i *)&src_ptr[(i * src_stride) + j + src_stride]),
+              data,
+              _mm_loadu_si128(
+                  (__m128i *)&src_ptr[(i * src_stride) + j + src_stride]),
               1);
         __m256i res = convolve_x(data, coeffs_x, filt);
 
@@ -198,8 +199,9 @@ void av1_convolve_2d_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
       // Load the next line
       if (i + 1 < im_h)
         data = _mm256_inserti128_si256(
-            data, _mm_loadu_si128(
-                      (__m128i *)&src_ptr[(i * src_stride) + j + src_stride]),
+            data,
+            _mm_loadu_si128(
+                (__m128i *)&src_ptr[(i * src_stride) + j + src_stride]),
             1);
 
       __m256i res = convolve_x(data, coeffs_h, filt);

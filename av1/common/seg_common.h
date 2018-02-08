@@ -46,7 +46,7 @@ typedef enum {
   SEG_LVL_ALT_Q = 0,      // Use alternate Quantizer ....
   SEG_LVL_ALT_LF = 1,     // Use alternate loop filter value...
   SEG_LVL_REF_FRAME = 2,  // Optional Segment reference frame
-  SEG_LVL_SKIP = 3,  // Optional Segment (0,0) + skip mode
+  SEG_LVL_SKIP = 3,       // Optional Segment (0,0) + skip mode
 #if CONFIG_SEGMENT_GLOBALMV
   SEG_LVL_GLOBALMV = 4,
 #endif

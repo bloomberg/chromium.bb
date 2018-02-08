@@ -425,8 +425,9 @@ void av1_convolve_y_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
     for (i = 0; i < h; i += 2) {
       data = &src_ptr[i * src_stride + j];
       const __m256i src_67a = _mm256_permute2x128_si256(
-          src6, _mm256_castsi128_si256(
-                    _mm_loadu_si128((__m128i *)(data + 7 * src_stride))),
+          src6,
+          _mm256_castsi128_si256(
+              _mm_loadu_si128((__m128i *)(data + 7 * src_stride))),
           0x20);
 
       src6 = _mm256_castsi128_si256(
@@ -577,8 +578,9 @@ void av1_convolve_y_sr_avx2(const uint8_t *src, int src_stride, uint8_t *dst,
     for (i = 0; i < h; i += 2) {
       data = &src_ptr[i * src_stride + j];
       const __m256i src_67a = _mm256_permute2x128_si256(
-          src6, _mm256_castsi128_si256(
-                    _mm_loadu_si128((__m128i *)(data + 7 * src_stride))),
+          src6,
+          _mm256_castsi128_si256(
+              _mm_loadu_si128((__m128i *)(data + 7 * src_stride))),
           0x20);
 
       src6 = _mm256_castsi128_si256(

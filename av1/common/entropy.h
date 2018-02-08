@@ -145,8 +145,8 @@ static INLINE int av1_get_cat6_extrabits_size(TX_SIZE tx_size,
 #define DCT_MAX_VALUE_HIGH10 65536
 #define DCT_MAX_VALUE_HIGH12 262144
 
-/* Coefficients are predicted via a 3-dimensional probability table. */
-
+/* Coefficients are predicted via a 3-dimensional probability table indexed on
+ * REF_TYPES, COEF_BANDS and COEF_CONTEXTS. */
 #define REF_TYPES 2  // intra=0, inter=1
 
 /* Middle dimension reflects the coefficient position within the transform. */
@@ -167,7 +167,6 @@ static INLINE int av1_get_cat6_extrabits_size(TX_SIZE tx_size,
    in meaning is perfectly OK because our context depends also on the
    coefficient band (and since zigzag positions 0, 1, and 2 are in
    distinct bands). */
-
 #define COEFF_CONTEXTS 6
 #define COEFF_CONTEXTS0 3  // for band 0
 #define BAND_COEFF_CONTEXTS(band) \
@@ -205,7 +204,6 @@ static INLINE const uint8_t *get_band_translate(TX_SIZE tx_size) {
 // 128 lists of probabilities are stored for the following ONE node probs:
 // 1, 3, 5, 7, ..., 253, 255
 // In between probabilities are interpolated linearly
-
 #define COEFF_PROB_MODELS 255
 
 #define UNCONSTRAINED_NODES 3

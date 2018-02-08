@@ -1629,7 +1629,7 @@ static int read_is_inter_block(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #if CONFIG_SEGMENT_GLOBALMV
       || segfeature_active(&cm->seg, segment_id, SEG_LVL_GLOBALMV)
 #endif
-          ) {
+  ) {
     if (!av1_is_valid_scale(&cm->frame_refs[0].sf)) return 0;
   }
   const int ctx = av1_get_intra_inter_context(xd);
@@ -2002,7 +2002,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_EXT_SKIP
       && !mbmi->skip_mode
 #endif  // CONFIG_EXT_SKIP
-      ) {
+  ) {
     // Read idx to indicate current compound inter prediction mode group
     const int masked_compound_used =
         is_any_masked_compound_used(bsize) && cm->allow_masked_compound;
@@ -2050,7 +2050,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_EXT_SKIP
       && !mbmi->skip_mode
 #endif  // CONFIG_EXT_SKIP
-      ) {
+  ) {
     if (is_any_masked_compound_used(bsize)) {
       if (cm->allow_masked_compound) {
         if (!is_interinter_compound_used(COMPOUND_WEDGE, bsize))

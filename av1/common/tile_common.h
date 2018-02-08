@@ -48,7 +48,9 @@ void av1_setup_frame_boundary_info(const struct AV1Common *const cm);
 // tiles horizontally or vertically in the frame.
 int get_tile_size(int mi_frame_size, int log2_tile_num, int *ntiles);
 
-typedef struct { int left, top, right, bottom; } AV1PixelRect;
+typedef struct {
+  int left, top, right, bottom;
+} AV1PixelRect;
 
 // Return the pixel extents of the given tile
 AV1PixelRect av1_get_tile_rect(const TileInfo *tile_info,

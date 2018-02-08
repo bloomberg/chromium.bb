@@ -326,7 +326,9 @@ typedef struct MB_MODE_INFO {
 #endif
 } MB_MODE_INFO;
 
-typedef struct MODE_INFO { MB_MODE_INFO mbmi; } MODE_INFO;
+typedef struct MODE_INFO {
+  MB_MODE_INFO mbmi;
+} MODE_INFO;
 
 #if CONFIG_INTRABC
 #define NO_FILTER_FOR_IBC 1  // Disable in-loop filters for frame with intrabc
@@ -737,33 +739,15 @@ static const int av1_num_ext_tx_set[EXT_TX_SET_TYPES] = {
 };
 
 static const int av1_ext_tx_used[EXT_TX_SET_TYPES][TX_TYPES] = {
-  {
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  },
-  {
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
-  },
-  {
-      1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
-  },
-  {
-      1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
-  },
-  {
-      1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
-  },
-  {
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
-  },
-  {
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
-  },
-  {
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  },
-  {
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  },
+  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
+  { 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
+  { 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0 },
+  { 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0 },
+  { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
+  { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0 },
+  { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+  { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
 };
 
 static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
@@ -791,14 +775,10 @@ static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
 
 // Maps tx set types to the indices.
 static const int ext_tx_set_index[2][EXT_TX_SET_TYPES] = {
-  {
-      // Intra
-      0, -1, 2, -1, 1, -1, -1, -1, -1,
-  },
-  {
-      // Inter
-      0, 3, -1, -1, -1, -1, 2, -1, 1,
-  },
+  { // Intra
+    0, -1, 2, -1, 1, -1, -1, -1, -16 },
+  { // Inter
+    0, 3, -1, -1, -1, -1, 2, -1, 1 },
 };
 
 static INLINE int get_ext_tx_set(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,

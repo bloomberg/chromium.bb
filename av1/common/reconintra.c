@@ -101,12 +101,8 @@ uint8_t has_tr_16x8[16] = {
 uint8_t has_tr_16x16[8] = {
   255, 85, 119, 85, 127, 85, 119, 85,
 };
-uint8_t has_tr_16x32[4] = {
-  255, 119, 127, 119,
-};
-uint8_t has_tr_32x16[4] = {
-  15, 5, 7, 5,
-};
+uint8_t has_tr_16x32[4] = { 255, 119, 127, 119 };
+uint8_t has_tr_32x16[4] = { 15, 5, 7, 5 };
 uint8_t has_tr_32x32[2] = { 95, 87 };
 uint8_t has_tr_32x64[1] = { 127 };
 uint8_t has_tr_64x32[1] = { 19 };
@@ -129,18 +125,10 @@ uint8_t has_tr_8x32[8] = {
 uint8_t has_tr_32x8[8] = {
   15, 0, 5, 0, 7, 0, 5, 0,
 };
-uint8_t has_tr_16x64[2] = {
-  255, 127,
-};
-uint8_t has_tr_64x16[2] = {
-  3, 1,
-};
-uint8_t has_tr_32x128[1] = {
-  15,
-};
-uint8_t has_tr_128x32[1] = {
-  1,
-};
+uint8_t has_tr_16x64[2] = { 255, 127 };
+uint8_t has_tr_64x16[2] = { 3, 1 };
+uint8_t has_tr_32x128[1] = { 15 };
+uint8_t has_tr_128x32[1] = { 1 };
 
 #if CONFIG_EXT_PARTITION
 static const uint8_t *const has_tr_tables[BLOCK_SIZES_ALL] = {
@@ -184,9 +172,9 @@ static const uint8_t *const has_tr_tables[BLOCK_SIZES_ALL] = {
   // 4x16,        16x4,           8x32
   has_tr_8x32, has_tr_32x8, has_tr_16x64,
   // 32x8,        16x64,          64x16
-  has_tr_64x16, has_tr_32x128, has_tr_128x32,
+  has_tr_64x16, has_tr_32x128, has_tr_128x32
 #else
-  NULL, NULL, NULL, NULL, NULL, NULL,
+  NULL, NULL, NULL, NULL, NULL, NULL
 #endif
 };
 #endif  // CONFIG_EXT_PARTITION
@@ -224,7 +212,7 @@ static const uint8_t *const has_tr_vert_tables[BLOCK_SIZES] = {
   // 32X64,    64X32,       64X64
   has_tr_32x64, NULL, has_tr_vert_64x64,
   // 64x128,   128x64,      128x128
-  has_tr_64x128, NULL, has_tr_128x128,
+  has_tr_64x128, NULL, has_tr_128x128
 };
 #else
 static const uint8_t *const has_tr_vert_tables[BLOCK_SIZES] = {
@@ -237,7 +225,7 @@ static const uint8_t *const has_tr_vert_tables[BLOCK_SIZES] = {
   // 16X32,     32X16,       32X32
   has_tr_32x64, NULL, has_tr_vert_64x64,
   // 32X64,     64X32,       64X64
-  has_tr_64x128, NULL, has_tr_128x128,
+  has_tr_64x128, NULL, has_tr_128x128
 };
 #endif
 #endif  // CONFIG_EXT_PARTITION_TYPES
@@ -348,15 +336,9 @@ uint8_t has_bl_16x8[16] = {
 uint8_t has_bl_16x16[8] = {
   84, 16, 84, 0, 84, 16, 84, 0,
 };
-uint8_t has_bl_16x32[4] = {
-  16, 0, 16, 0,
-};
-uint8_t has_bl_32x16[4] = {
-  78, 14, 78, 14,
-};
-uint8_t has_bl_32x32[2] = {
-  4, 4,
-};
+uint8_t has_bl_16x32[4] = { 16, 0, 16, 0 };
+uint8_t has_bl_32x16[4] = { 78, 14, 78, 14 };
+uint8_t has_bl_32x32[2] = { 4, 4 };
 uint8_t has_bl_32x64[1] = { 0 };
 uint8_t has_bl_64x32[1] = { 34 };
 uint8_t has_bl_64x64[1] = { 0 };
@@ -377,18 +359,10 @@ uint8_t has_bl_8x32[8] = {
 uint8_t has_bl_32x8[8] = {
   238, 78, 238, 14, 238, 78, 238, 14,
 };
-uint8_t has_bl_16x64[2] = {
-  0, 0,
-};
-uint8_t has_bl_64x16[2] = {
-  42, 42,
-};
-uint8_t has_bl_32x128[1] = {
-  0,
-};
-uint8_t has_bl_128x32[1] = {
-  0,
-};
+uint8_t has_bl_16x64[2] = { 0, 0 };
+uint8_t has_bl_64x16[2] = { 42, 42 };
+uint8_t has_bl_32x128[1] = { 0 };
+uint8_t has_bl_128x32[1] = { 0 };
 
 #if CONFIG_EXT_PARTITION
 static const uint8_t *const has_bl_tables[BLOCK_SIZES_ALL] = {
@@ -432,9 +406,9 @@ static const uint8_t *const has_bl_tables[BLOCK_SIZES_ALL] = {
   // 4x16,        16x4,           8x32
   has_bl_8x32, has_bl_32x8, has_bl_16x64,
   // 32x8,        16x64,          64x16
-  has_bl_64x16, has_bl_32x128, has_bl_128x32,
+  has_bl_64x16, has_bl_32x128, has_bl_128x32
 #else
-  NULL, NULL, NULL, NULL, NULL, NULL,
+  NULL, NULL, NULL, NULL, NULL, NULL
 #endif
 };
 #endif  // CONFIG_EXT_PARTITION
@@ -472,7 +446,7 @@ static const uint8_t *const has_bl_vert_tables[BLOCK_SIZES] = {
   // 32X64,   64X32,       64X64
   has_bl_32x64, NULL, has_bl_vert_64x64,
   // 64x128,  128x64,      128x128
-  has_bl_64x128, NULL, has_bl_128x128,
+  has_bl_64x128, NULL, has_bl_128x128
 };
 #else
 static const uint8_t *const has_bl_vert_tables[BLOCK_SIZES] = {
@@ -485,7 +459,7 @@ static const uint8_t *const has_bl_vert_tables[BLOCK_SIZES] = {
   // 16X32,    32X16,       32X32
   has_bl_32x64, NULL, has_bl_vert_64x64,
   // 32X64,    64X32,       64X64
-  has_bl_64x128, NULL, has_bl_128x128,
+  has_bl_64x128, NULL, has_bl_128x128
 };
 #endif
 #endif  // CONFIG_EXT_PARTITION_TYPES

@@ -322,7 +322,6 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 // performance because of contention. If the multithreading code changes in
 // the future then the number of workers used by the loopfilter should be
 // revisited.
-
 #if CONFIG_PARALLEL_DEBLOCKING
   // Initialize cur_sb_col to -1 for all SB rows.
   memset(lf_sync->cur_sb_col, -1, sizeof(*lf_sync->cur_sb_col) * sb_rows);

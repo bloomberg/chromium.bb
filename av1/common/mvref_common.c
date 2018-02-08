@@ -102,7 +102,7 @@ static uint8_t add_ref_mv_candidate(
     ,
     int is_integer
 #endif
-    ) {
+) {
 #if CONFIG_INTRABC
   if (!is_inter_block(candidate)) return 0;
 #endif  // CONFIG_INTRABC
@@ -803,7 +803,9 @@ static void setup_ref_mv_list(
     const int blk_col_end = AOMMIN(xd->n8_w, mi_size_wide[BLOCK_64X64]);
 
     const int tpl_sample_pos[3][2] = {
-      { voffset, -2 }, { voffset, hoffset }, { voffset - 2, hoffset },
+      { voffset, -2 },
+      { voffset, hoffset },
+      { voffset - 2, hoffset },
     };
     const int allow_extension = (xd->n8_h >= mi_size_high[BLOCK_8X8]) &&
                                 (xd->n8_h < mi_size_high[BLOCK_64X64]) &&
@@ -1269,7 +1271,7 @@ void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
                            ,
                            int is_integer
 #endif
-                           ) {
+) {
   int i;
   // Make sure all the candidates are properly clamped etc
   for (i = 0; i < MAX_MV_REF_CANDIDATES; ++i) {

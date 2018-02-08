@@ -3306,8 +3306,6 @@ struct aom_read_bit_buffer *av1_init_read_bit_buffer(
   return rb;
 }
 
-//------------------------------------------------------------------------------
-
 #if CONFIG_FRAME_SIZE
 void av1_read_frame_size(struct aom_read_bit_buffer *rb, int num_bits_width,
                          int num_bits_height, int *width, int *height) {
