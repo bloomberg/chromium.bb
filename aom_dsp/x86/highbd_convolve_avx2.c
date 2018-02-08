@@ -192,10 +192,10 @@ void aom_highbd_convolve_avg_avx2(const uint8_t *src8, ptrdiff_t src_stride,
   }
 }
 
+#define CONV8_ROUNDING_BITS (7)
+
 // -----------------------------------------------------------------------------
 // Horizontal and vertical filtering
-
-#define CONV8_ROUNDING_BITS (7)
 
 static const uint8_t signal_pattern_0[32] = { 0, 1, 2, 3, 2, 3, 4, 5, 4, 5, 6,
                                               7, 6, 7, 8, 9, 0, 1, 2, 3, 2, 3,

@@ -401,11 +401,10 @@ static void generate_luma_grain_block(
     for (int j = left_pad; j < luma_block_size_x - right_pad; j++) {
       int wsum = 0;
       for (int pos = 0; pos < num_pos_luma; pos++) {
-        wsum = wsum +
-               params->ar_coeffs_y[pos] *
-                   luma_grain_block[(i + pred_pos_luma[pos][0]) *
-                                        luma_grain_stride +
-                                    j + pred_pos_luma[pos][1]];
+        wsum = wsum + params->ar_coeffs_y[pos] *
+                          luma_grain_block[(i + pred_pos_luma[pos][0]) *
+                                               luma_grain_stride +
+                                           j + pred_pos_luma[pos][1]];
       }
       luma_grain_block[i * luma_grain_stride + j] =
           clamp(luma_grain_block[i * luma_grain_stride + j] +
@@ -445,16 +444,14 @@ static void generate_chroma_grain_blocks(
       int wsum_cr = 0;
       for (int pos = 0; pos < num_pos_chroma; pos++) {
         if (pred_pos_chroma[pos][2] == 0) {
-          wsum_cb = wsum_cb +
-                    params->ar_coeffs_cb[pos] *
-                        cb_grain_block[(i + pred_pos_chroma[pos][0]) *
-                                           chroma_grain_stride +
-                                       j + pred_pos_chroma[pos][1]];
-          wsum_cr = wsum_cr +
-                    params->ar_coeffs_cr[pos] *
-                        cr_grain_block[(i + pred_pos_chroma[pos][0]) *
-                                           chroma_grain_stride +
-                                       j + pred_pos_chroma[pos][1]];
+          wsum_cb = wsum_cb + params->ar_coeffs_cb[pos] *
+                                  cb_grain_block[(i + pred_pos_chroma[pos][0]) *
+                                                     chroma_grain_stride +
+                                                 j + pred_pos_chroma[pos][1]];
+          wsum_cr = wsum_cr + params->ar_coeffs_cr[pos] *
+                                  cr_grain_block[(i + pred_pos_chroma[pos][0]) *
+                                                     chroma_grain_stride +
+                                                 j + pred_pos_chroma[pos][1]];
         } else if (pred_pos_chroma[pos][2] == 1) {
           int av_luma =
               (luma_grain_block[(((i - top_pad) << 1) + top_pad) *

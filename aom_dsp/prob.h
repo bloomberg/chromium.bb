@@ -114,25 +114,27 @@ typedef uint16_t aom_cdf_prob;
                ((CDF_INIT_TOP - 2)) +                      \
            1)                                              \
   , AOM_ICDF(CDF_PROB_TOP), 0
-#define AOM_CDF3(a0, a1)                                     \
-  AOM_ICDF((((a0)-1) * ((CDF_INIT_TOP >> CDF_SHIFT) - 3) +   \
-            ((CDF_INIT_TOP - 3) >> 1)) /                     \
-               ((CDF_INIT_TOP - 3)) +                        \
-           1)                                                \
-  , AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 3) + \
-              ((CDF_INIT_TOP - 3) >> 1)) /                   \
-                 ((CDF_INIT_TOP - 3)) +                      \
-             2),                                             \
+#define AOM_CDF3(a0, a1)                                       \
+  AOM_ICDF((((a0)-1) * ((CDF_INIT_TOP >> CDF_SHIFT) - 3) +     \
+            ((CDF_INIT_TOP - 3) >> 1)) /                       \
+               ((CDF_INIT_TOP - 3)) +                          \
+           1)                                                  \
+  ,                                                            \
+      AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 3) + \
+                ((CDF_INIT_TOP - 3) >> 1)) /                   \
+                   ((CDF_INIT_TOP - 3)) +                      \
+               2),                                             \
       AOM_ICDF(CDF_PROB_TOP), 0
 #define AOM_CDF4(a0, a1, a2)                                   \
   AOM_ICDF((((a0)-1) * ((CDF_INIT_TOP >> CDF_SHIFT) - 4) +     \
             ((CDF_INIT_TOP - 4) >> 1)) /                       \
                ((CDF_INIT_TOP - 4)) +                          \
            1)                                                  \
-  , AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 4) +   \
-              ((CDF_INIT_TOP - 4) >> 1)) /                     \
-                 ((CDF_INIT_TOP - 4)) +                        \
-             2),                                               \
+  ,                                                            \
+      AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 4) + \
+                ((CDF_INIT_TOP - 4) >> 1)) /                   \
+                   ((CDF_INIT_TOP - 4)) +                      \
+               2),                                             \
       AOM_ICDF((((a2)-3) * ((CDF_INIT_TOP >> CDF_SHIFT) - 4) + \
                 ((CDF_INIT_TOP - 4) >> 1)) /                   \
                    ((CDF_INIT_TOP - 4)) +                      \
@@ -143,10 +145,11 @@ typedef uint16_t aom_cdf_prob;
             ((CDF_INIT_TOP - 5) >> 1)) /                       \
                ((CDF_INIT_TOP - 5)) +                          \
            1)                                                  \
-  , AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 5) +   \
-              ((CDF_INIT_TOP - 5) >> 1)) /                     \
-                 ((CDF_INIT_TOP - 5)) +                        \
-             2),                                               \
+  ,                                                            \
+      AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 5) + \
+                ((CDF_INIT_TOP - 5) >> 1)) /                   \
+                   ((CDF_INIT_TOP - 5)) +                      \
+               2),                                             \
       AOM_ICDF((((a2)-3) * ((CDF_INIT_TOP >> CDF_SHIFT) - 5) + \
                 ((CDF_INIT_TOP - 5) >> 1)) /                   \
                    ((CDF_INIT_TOP - 5)) +                      \
@@ -161,10 +164,11 @@ typedef uint16_t aom_cdf_prob;
             ((CDF_INIT_TOP - 6) >> 1)) /                       \
                ((CDF_INIT_TOP - 6)) +                          \
            1)                                                  \
-  , AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 6) +   \
-              ((CDF_INIT_TOP - 6) >> 1)) /                     \
-                 ((CDF_INIT_TOP - 6)) +                        \
-             2),                                               \
+  ,                                                            \
+      AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 6) + \
+                ((CDF_INIT_TOP - 6) >> 1)) /                   \
+                   ((CDF_INIT_TOP - 6)) +                      \
+               2),                                             \
       AOM_ICDF((((a2)-3) * ((CDF_INIT_TOP >> CDF_SHIFT) - 6) + \
                 ((CDF_INIT_TOP - 6) >> 1)) /                   \
                    ((CDF_INIT_TOP - 6)) +                      \
@@ -183,10 +187,11 @@ typedef uint16_t aom_cdf_prob;
             ((CDF_INIT_TOP - 7) >> 1)) /                       \
                ((CDF_INIT_TOP - 7)) +                          \
            1)                                                  \
-  , AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 7) +   \
-              ((CDF_INIT_TOP - 7) >> 1)) /                     \
-                 ((CDF_INIT_TOP - 7)) +                        \
-             2),                                               \
+  ,                                                            \
+      AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 7) + \
+                ((CDF_INIT_TOP - 7) >> 1)) /                   \
+                   ((CDF_INIT_TOP - 7)) +                      \
+               2),                                             \
       AOM_ICDF((((a2)-3) * ((CDF_INIT_TOP >> CDF_SHIFT) - 7) + \
                 ((CDF_INIT_TOP - 7) >> 1)) /                   \
                    ((CDF_INIT_TOP - 7)) +                      \
@@ -209,10 +214,11 @@ typedef uint16_t aom_cdf_prob;
             ((CDF_INIT_TOP - 8) >> 1)) /                       \
                ((CDF_INIT_TOP - 8)) +                          \
            1)                                                  \
-  , AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 8) +   \
-              ((CDF_INIT_TOP - 8) >> 1)) /                     \
-                 ((CDF_INIT_TOP - 8)) +                        \
-             2),                                               \
+  ,                                                            \
+      AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 8) + \
+                ((CDF_INIT_TOP - 8) >> 1)) /                   \
+                   ((CDF_INIT_TOP - 8)) +                      \
+               2),                                             \
       AOM_ICDF((((a2)-3) * ((CDF_INIT_TOP >> CDF_SHIFT) - 8) + \
                 ((CDF_INIT_TOP - 8) >> 1)) /                   \
                    ((CDF_INIT_TOP - 8)) +                      \
@@ -239,10 +245,11 @@ typedef uint16_t aom_cdf_prob;
             ((CDF_INIT_TOP - 9) >> 1)) /                       \
                ((CDF_INIT_TOP - 9)) +                          \
            1)                                                  \
-  , AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 9) +   \
-              ((CDF_INIT_TOP - 9) >> 1)) /                     \
-                 ((CDF_INIT_TOP - 9)) +                        \
-             2),                                               \
+  ,                                                            \
+      AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 9) + \
+                ((CDF_INIT_TOP - 9) >> 1)) /                   \
+                   ((CDF_INIT_TOP - 9)) +                      \
+               2),                                             \
       AOM_ICDF((((a2)-3) * ((CDF_INIT_TOP >> CDF_SHIFT) - 9) + \
                 ((CDF_INIT_TOP - 9) >> 1)) /                   \
                    ((CDF_INIT_TOP - 9)) +                      \
@@ -273,10 +280,11 @@ typedef uint16_t aom_cdf_prob;
             ((CDF_INIT_TOP - 10) >> 1)) /                       \
                ((CDF_INIT_TOP - 10)) +                          \
            1)                                                   \
-  , AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 10) +   \
-              ((CDF_INIT_TOP - 10) >> 1)) /                     \
-                 ((CDF_INIT_TOP - 10)) +                        \
-             2),                                                \
+  ,                                                             \
+      AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 10) + \
+                ((CDF_INIT_TOP - 10) >> 1)) /                   \
+                   ((CDF_INIT_TOP - 10)) +                      \
+               2),                                              \
       AOM_ICDF((((a2)-3) * ((CDF_INIT_TOP >> CDF_SHIFT) - 10) + \
                 ((CDF_INIT_TOP - 10) >> 1)) /                   \
                    ((CDF_INIT_TOP - 10)) +                      \
@@ -311,10 +319,11 @@ typedef uint16_t aom_cdf_prob;
             ((CDF_INIT_TOP - 11) >> 1)) /                        \
                ((CDF_INIT_TOP - 11)) +                           \
            1)                                                    \
-  , AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 11) +    \
-              ((CDF_INIT_TOP - 11) >> 1)) /                      \
-                 ((CDF_INIT_TOP - 11)) +                         \
-             2),                                                 \
+  ,                                                              \
+      AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 11) +  \
+                ((CDF_INIT_TOP - 11) >> 1)) /                    \
+                   ((CDF_INIT_TOP - 11)) +                       \
+               2),                                               \
       AOM_ICDF((((a2)-3) * ((CDF_INIT_TOP >> CDF_SHIFT) - 11) +  \
                 ((CDF_INIT_TOP - 11) >> 1)) /                    \
                    ((CDF_INIT_TOP - 11)) +                       \
@@ -353,10 +362,11 @@ typedef uint16_t aom_cdf_prob;
             ((CDF_INIT_TOP - 12) >> 1)) /                         \
                ((CDF_INIT_TOP - 12)) +                            \
            1)                                                     \
-  , AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 12) +     \
-              ((CDF_INIT_TOP - 12) >> 1)) /                       \
-                 ((CDF_INIT_TOP - 12)) +                          \
-             2),                                                  \
+  ,                                                               \
+      AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 12) +   \
+                ((CDF_INIT_TOP - 12) >> 1)) /                     \
+                   ((CDF_INIT_TOP - 12)) +                        \
+               2),                                                \
       AOM_ICDF((((a2)-3) * ((CDF_INIT_TOP >> CDF_SHIFT) - 12) +   \
                 ((CDF_INIT_TOP - 12) >> 1)) /                     \
                    ((CDF_INIT_TOP - 12)) +                        \
@@ -399,10 +409,11 @@ typedef uint16_t aom_cdf_prob;
             ((CDF_INIT_TOP - 13) >> 1)) /                           \
                ((CDF_INIT_TOP - 13)) +                              \
            1)                                                       \
-  , AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 13) +       \
-              ((CDF_INIT_TOP - 13) >> 1)) /                         \
-                 ((CDF_INIT_TOP - 13)) +                            \
-             2),                                                    \
+  ,                                                                 \
+      AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 13) +     \
+                ((CDF_INIT_TOP - 13) >> 1)) /                       \
+                   ((CDF_INIT_TOP - 13)) +                          \
+               2),                                                  \
       AOM_ICDF((((a2)-3) * ((CDF_INIT_TOP >> CDF_SHIFT) - 13) +     \
                 ((CDF_INIT_TOP - 13) >> 1)) /                       \
                    ((CDF_INIT_TOP - 13)) +                          \
@@ -449,10 +460,11 @@ typedef uint16_t aom_cdf_prob;
             ((CDF_INIT_TOP - 14) >> 1)) /                                \
                ((CDF_INIT_TOP - 14)) +                                   \
            1)                                                            \
-  , AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 14) +            \
-              ((CDF_INIT_TOP - 14) >> 1)) /                              \
-                 ((CDF_INIT_TOP - 14)) +                                 \
-             2),                                                         \
+  ,                                                                      \
+      AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 14) +          \
+                ((CDF_INIT_TOP - 14) >> 1)) /                            \
+                   ((CDF_INIT_TOP - 14)) +                               \
+               2),                                                       \
       AOM_ICDF((((a2)-3) * ((CDF_INIT_TOP >> CDF_SHIFT) - 14) +          \
                 ((CDF_INIT_TOP - 14) >> 1)) /                            \
                    ((CDF_INIT_TOP - 14)) +                               \
@@ -503,10 +515,11 @@ typedef uint16_t aom_cdf_prob;
             ((CDF_INIT_TOP - 15) >> 1)) /                                     \
                ((CDF_INIT_TOP - 15)) +                                        \
            1)                                                                 \
-  , AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 15) +                 \
-              ((CDF_INIT_TOP - 15) >> 1)) /                                   \
-                 ((CDF_INIT_TOP - 15)) +                                      \
-             2),                                                              \
+  ,                                                                           \
+      AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 15) +               \
+                ((CDF_INIT_TOP - 15) >> 1)) /                                 \
+                   ((CDF_INIT_TOP - 15)) +                                    \
+               2),                                                            \
       AOM_ICDF((((a2)-3) * ((CDF_INIT_TOP >> CDF_SHIFT) - 15) +               \
                 ((CDF_INIT_TOP - 15) >> 1)) /                                 \
                    ((CDF_INIT_TOP - 15)) +                                    \
@@ -562,10 +575,11 @@ typedef uint16_t aom_cdf_prob;
             ((CDF_INIT_TOP - 16) >> 1)) /                                     \
                ((CDF_INIT_TOP - 16)) +                                        \
            1)                                                                 \
-  , AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 16) +                 \
-              ((CDF_INIT_TOP - 16) >> 1)) /                                   \
-                 ((CDF_INIT_TOP - 16)) +                                      \
-             2),                                                              \
+  ,                                                                           \
+      AOM_ICDF((((a1)-2) * ((CDF_INIT_TOP >> CDF_SHIFT) - 16) +               \
+                ((CDF_INIT_TOP - 16) >> 1)) /                                 \
+                   ((CDF_INIT_TOP - 16)) +                                    \
+               2),                                                            \
       AOM_ICDF((((a2)-3) * ((CDF_INIT_TOP >> CDF_SHIFT) - 16) +               \
                 ((CDF_INIT_TOP - 16) >> 1)) /                                 \
                    ((CDF_INIT_TOP - 16)) +                                    \

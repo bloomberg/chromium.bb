@@ -650,7 +650,7 @@ static void idct32_rows_dspr2(const int16_t *input, int16_t *output,
           [cospi_16_64] "r"(cospi_16_64), [cospi_24_64] "r"(cospi_24_64),
           [cospi_8_64] "r"(cospi_8_64)
 
-            );
+    );
 
     __asm__ __volatile__(
         "lh       %[load1],             8(%[input])                     \n\t"

@@ -2213,7 +2213,7 @@ void aom_lpf_vertical_4_dual_sse2(uint8_t *s, int p, const uint8_t *blimit0,
 
   // Transpose back
   transpose(src, 16, dst, p, 2);
-#else  // CONFIG_PARALLEL_DEBLOCKING
+#else   // CONFIG_PARALLEL_DEBLOCKING
   transpose16x4(s - 2, p, t_dst + 16 * 2, 16);
 #endif  // !CONFIG_PARALLEL_DEBLOCKING
 }

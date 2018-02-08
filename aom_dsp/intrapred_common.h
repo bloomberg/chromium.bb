@@ -25,6 +25,7 @@ static const int sm_weight_log2_scale = 8;
 #define MAX_BLOCK_DIM 32
 #endif  // CONFIG_TX64X64
 
+/* clang-format off */
 static const uint8_t sm_weight_arrays[2 * MAX_BLOCK_DIM] = {
   // Unused, because we always offset by bs, which is at least 2.
   0, 0,
@@ -47,5 +48,6 @@ static const uint8_t sm_weight_arrays[2 * MAX_BLOCK_DIM] = {
   13, 12, 10, 9, 8, 7, 6, 6, 5, 5, 4, 4, 4,
 #endif  // CONFIG_TX64X64
 };
+/* clang-format on */
 
 #endif  // _AOM_DSP_INTRAPRED_COMMON_H

@@ -902,7 +902,7 @@ void aom_d207e_predictor_32x32_sse2(uint8_t *dst, ptrdiff_t stride,
 
 // -----------------------------------------------------------------------------
 // D63E_PRED
-
+//
 #define D63E_STORE_4X4                        \
   do {                                        \
     *(uint32_t *)dst = _mm_cvtsi128_si32(y0); \
