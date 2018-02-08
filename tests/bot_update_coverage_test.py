@@ -147,6 +147,7 @@ class BotUpdateUnittests(unittest.TestCase):
       'first_sln': 'somename',
       'target_os': None,
       'target_os_only': None,
+      'target_cpu': None,
       'patch_root': None,
       'issue': None,
       'patchset': None,

@@ -70,6 +70,7 @@ GCLIENT_TEMPLATE = """solutions = %(solutions)s
 cache_dir = r%(cache_dir)s
 %(target_os)s
 %(target_os_only)s
+%(target_cpu)s
 """
 
 
@@ -209,12 +210,14 @@ def git(*args, **kwargs):  # pragma: no cover
   return call(*cmd, **kwargs)
 
 
-def get_gclient_spec(solutions, target_os, target_os_only, git_cache_dir):
+def get_gclient_spec(solutions, target_os, target_os_only, target_cpu,
+                     git_cache_dir):
   return GCLIENT_TEMPLATE % {
       'solutions': pprint.pformat(solutions, indent=4),
       'cache_dir': '"%s"' % git_cache_dir,
       'target_os': ('\ntarget_os=%s' % target_os) if target_os else '',
-      'target_os_only': '\ntarget_os_only=%s' % target_os_only
+      'target_os_only': '\ntarget_os_only=%s' % target_os_only,
+      'target_cpu': ('\ntarget_cpu=%s' % target_cpu) if target_cpu else ''
   }
 
 
@@ -314,11 +317,12 @@ def call_gclient(*args, **kwargs):
   return call(*cmd, **kwargs)
 
 
-def gclient_configure(solutions, target_os, target_os_only, git_cache_dir):
+def gclient_configure(solutions, target_os, target_os_only, target_cpu,
+                      git_cache_dir):
   """Should do the same thing as gclient --spec='...'."""
   with codecs.open('.gclient', mode='w', encoding='utf-8') as f:
     f.write(get_gclient_spec(
-        solutions, target_os, target_os_only, git_cache_dir))
+        solutions, target_os, target_os_only, target_cpu, git_cache_dir))
 
 
 def gclient_sync(
@@ -866,11 +870,12 @@ def emit_json(out_file, did_run, gclient_output=None, **kwargs):
 
 
 def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
-                    patch_root, issue, patchset, rietveld_server, gerrit_repo,
-                    gerrit_ref, gerrit_rebase_patch_ref, revision_mapping,
-                    apply_issue_email_file, apply_issue_key_file,
-                    apply_issue_oauth2_file, shallow, refs, git_cache_dir,
-                    cleanup_dir, gerrit_reset, disable_syntax_validation):
+                    target_cpu, patch_root, issue, patchset, rietveld_server,
+                    gerrit_repo, gerrit_ref, gerrit_rebase_patch_ref,
+                    revision_mapping, apply_issue_email_file,
+                    apply_issue_key_file, apply_issue_oauth2_file, shallow,
+                    refs, git_cache_dir, cleanup_dir, gerrit_reset,
+                    disable_syntax_validation):
   # Get a checkout of each solution, without DEPS or hooks.
   # Calling git directly because there is no way to run Gclient without
   # invoking DEPS.
@@ -903,7 +908,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
         applied_gerrit_patch = True
 
   # Ensure our build/ directory is set up with the correct .gclient file.
-  gclient_configure(solutions, target_os, target_os_only, git_cache_dir)
+  gclient_configure(solutions, target_os, target_os_only, target_cpu, git_cache_dir)
 
   # Windows sometimes has trouble deleting files. This can make git commands
   # that rely on locks fail.
@@ -950,7 +955,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   # Reset the deps_file point in the solutions so that hooks get run properly.
   for sln in solutions:
     sln['deps_file'] = sln.get('deps_file', 'DEPS').replace('.DEPS.git', 'DEPS')
-  gclient_configure(solutions, target_os, target_os_only, git_cache_dir)
+  gclient_configure(solutions, target_os, target_os_only, target_cpu, git_cache_dir)
 
   return gclient_output
 
@@ -1157,6 +1162,9 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
           # Also, target os variables for gclient.
           target_os=specs.get('target_os', []),
           target_os_only=specs.get('target_os_only', False),
+
+          # Also, target cpu variables for gclient.
+          target_cpu=specs.get('target_cpu', []),
 
           # Then, pass in information about how to patch.
           patch_root=options.patch_root,
