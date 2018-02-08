@@ -79,7 +79,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void NavigateAndCommitRendererInitiated(bool did_create_new_entry,
                                           const GURL& url) override;
   void SimulateFeaturePolicyHeader(
-      blink::FeaturePolicyFeature feature,
+      blink::mojom::FeaturePolicyFeature feature,
       const std::vector<url::Origin>& whitelist) override;
   const std::vector<std::string>& GetConsoleMessages() override;
 

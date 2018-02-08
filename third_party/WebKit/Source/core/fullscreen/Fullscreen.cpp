@@ -65,7 +65,7 @@ bool AllowedToUseFullscreen(const Frame* frame) {
   if (!frame)
     return false;
 
-  if (!IsSupportedInFeaturePolicy(FeaturePolicyFeature::kFullscreen)) {
+  if (!IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature::kFullscreen)) {
     // 2. If |document|'s browsing context is a top-level browsing context, then
     // return true.
     if (frame->IsMainFrame())
@@ -84,7 +84,7 @@ bool AllowedToUseFullscreen(const Frame* frame) {
 
   // 2. If Feature Policy is enabled, return the policy for "fullscreen"
   // feature.
-  return frame->IsFeatureEnabled(FeaturePolicyFeature::kFullscreen);
+  return frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kFullscreen);
 }
 
 bool AllowedToRequestFullscreen(Document& document) {

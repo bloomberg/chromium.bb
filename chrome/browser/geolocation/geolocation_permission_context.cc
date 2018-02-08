@@ -19,7 +19,7 @@
 GeolocationPermissionContext::GeolocationPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
                             CONTENT_SETTINGS_TYPE_GEOLOCATION,
-                            blink::FeaturePolicyFeature::kGeolocation),
+                            blink::mojom::FeaturePolicyFeature::kGeolocation),
       extensions_context_(profile) {}
 
 GeolocationPermissionContext::~GeolocationPermissionContext() {

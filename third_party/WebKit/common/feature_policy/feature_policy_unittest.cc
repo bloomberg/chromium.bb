@@ -11,14 +11,17 @@ namespace blink {
 
 namespace {
 
-FeaturePolicyFeature kDefaultOnFeature = static_cast<FeaturePolicyFeature>(
-    static_cast<int>(FeaturePolicyFeature::LAST_FEATURE) + 1);
+mojom::FeaturePolicyFeature kDefaultOnFeature =
+    static_cast<mojom::FeaturePolicyFeature>(
+        static_cast<int>(mojom::FeaturePolicyFeature::kLastFeature) + 1);
 
-FeaturePolicyFeature kDefaultSelfFeature = static_cast<FeaturePolicyFeature>(
-    static_cast<int>(FeaturePolicyFeature::LAST_FEATURE) + 2);
+mojom::FeaturePolicyFeature kDefaultSelfFeature =
+    static_cast<mojom::FeaturePolicyFeature>(
+        static_cast<int>(mojom::FeaturePolicyFeature::kLastFeature) + 2);
 
-FeaturePolicyFeature kDefaultOffFeature = static_cast<FeaturePolicyFeature>(
-    static_cast<int>(FeaturePolicyFeature::LAST_FEATURE) + 3);
+mojom::FeaturePolicyFeature kDefaultOffFeature =
+    static_cast<mojom::FeaturePolicyFeature>(
+        static_cast<int>(mojom::FeaturePolicyFeature::kLastFeature) + 3);
 
 }  // namespace
 

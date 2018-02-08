@@ -17,7 +17,7 @@
 #include "platform/wtf/Assertions.h"
 #include "public/platform/WebMediaPlayer.h"
 #include "public/web/WebSettings.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.mojom-blink.h"
 
 namespace blink {
 
@@ -85,7 +85,7 @@ bool HasBeenActivated(const Frame& frame) {
 
   // Check feature policy before traversing the tree.
   if (!RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled() ||
-      !frame.IsFeatureEnabled(FeaturePolicyFeature::kAutoplay)) {
+      !frame.IsFeatureEnabled(mojom::FeaturePolicyFeature::kAutoplay)) {
     return false;
   }
 

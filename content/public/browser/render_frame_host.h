@@ -24,8 +24,10 @@
 
 namespace blink {
 class AssociatedInterfaceProvider;
+namespace mojom {
 enum class FeaturePolicyFeature;
-}
+}  // namespace mojom
+}  // namespace blink
 
 namespace base {
 class UnguessableToken;
@@ -299,7 +301,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Returns true if the given Feature Policy |feature| is enabled for this
   // RenderFrameHost and is allowed to be used by it. Use this in the browser
   // process to determine whether access to a feature is allowed.
-  virtual bool IsFeatureEnabled(blink::FeaturePolicyFeature feature) = 0;
+  virtual bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature) = 0;
 
   // Opens view-source tab for the document last committed in this
   // RenderFrameHost.

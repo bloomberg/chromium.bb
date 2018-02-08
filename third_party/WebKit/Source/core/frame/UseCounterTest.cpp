@@ -528,7 +528,8 @@ TEST_F(FeaturePolicyDisabledDeprecationTest,
        TestCountDeprecationFeaturePolicy) {
   // The specific feature we use here isn't important, but we need the
   // corresponding FP feature as well.
-  FeaturePolicyFeature policy_feature = FeaturePolicyFeature::kGeolocation;
+  mojom::FeaturePolicyFeature policy_feature =
+      mojom::FeaturePolicyFeature::kGeolocation;
   WebFeature feature =
       WebFeature::kGeolocationDisallowedByFeaturePolicyInCrossOriginIframe;
 

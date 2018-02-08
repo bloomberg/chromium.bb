@@ -102,7 +102,7 @@ class TestPermissionContext : public PermissionContextBase {
                         const ContentSettingsType content_settings_type)
       : PermissionContextBase(profile,
                               content_settings_type,
-                              blink::FeaturePolicyFeature::kNotFound),
+                              blink::mojom::FeaturePolicyFeature::kNotFound),
         tab_context_updated_(false) {}
 
   ~TestPermissionContext() override {}

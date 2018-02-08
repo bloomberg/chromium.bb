@@ -67,8 +67,8 @@ void DeviceMotionController::DidAddEventListener(
           "DeviceSensors.DeviceMotionCrossOrigin", WebURL(GetDocument().Url()));
     }
 
-    if (!CheckPolicyFeatures({FeaturePolicyFeature::kAccelerometer,
-                              FeaturePolicyFeature::kGyroscope})) {
+    if (!CheckPolicyFeatures({mojom::FeaturePolicyFeature::kAccelerometer,
+                              mojom::FeaturePolicyFeature::kGyroscope})) {
       DeviceOrientationController::LogToConsolePolicyFeaturesDisabled(
           frame, EventTypeName());
       return;

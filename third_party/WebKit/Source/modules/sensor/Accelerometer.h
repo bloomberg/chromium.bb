@@ -30,7 +30,7 @@ class Accelerometer : public Sensor {
                 const SpatialSensorOptions&,
                 ExceptionState&,
                 device::mojom::blink::SensorType,
-                const Vector<FeaturePolicyFeature>&);
+                const Vector<mojom::FeaturePolicyFeature>&);
 };
 
 }  // namespace blink

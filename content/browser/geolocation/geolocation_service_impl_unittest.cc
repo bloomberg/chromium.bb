@@ -17,7 +17,7 @@
 #include "services/device/public/interfaces/geoposition.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.mojom.h"
 
 using base::test::ScopedFeatureList;
 using blink::mojom::PermissionStatus;
@@ -83,7 +83,7 @@ class GeolocationServiceTest : public RenderViewHostImplTestHarness {
     if (allow_via_feature_policy) {
       RenderFrameHostTester::For(main_rfh())
           ->SimulateFeaturePolicyHeader(
-              blink::FeaturePolicyFeature::kGeolocation,
+              blink::mojom::FeaturePolicyFeature::kGeolocation,
               std::vector<url::Origin>{url::Origin::Create(kEmbeddedUrl)});
     }
     RenderFrameHost* embedded_rfh =

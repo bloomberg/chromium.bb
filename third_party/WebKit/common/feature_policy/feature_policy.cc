@@ -9,7 +9,6 @@
 #include "base/stl_util.h"
 
 namespace blink {
-
 namespace {
 
 // Extracts a Whitelist from a ParsedFeaturePolicyDeclaration.
@@ -30,7 +29,7 @@ ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration()
     : matches_all_origins(false) {}
 
 ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
-    FeaturePolicyFeature feature,
+    mojom::FeaturePolicyFeature feature,
     bool matches_all_origins,
     std::vector<url::Origin> origins)
     : feature(feature),
@@ -118,12 +117,14 @@ std::unique_ptr<FeaturePolicy> FeaturePolicy::CreateFromPolicyWithOrigin(
   return new_policy;
 }
 
-bool FeaturePolicy::IsFeatureEnabled(FeaturePolicyFeature feature) const {
+bool FeaturePolicy::IsFeatureEnabled(
+    mojom::FeaturePolicyFeature feature) const {
   return IsFeatureEnabledForOrigin(feature, origin_);
 }
 
-bool FeaturePolicy::IsFeatureEnabledForOrigin(FeaturePolicyFeature feature,
-                                              const url::Origin& origin) const {
+bool FeaturePolicy::IsFeatureEnabledForOrigin(
+    mojom::FeaturePolicyFeature feature,
+    const url::Origin& origin) const {
   DCHECK(base::ContainsKey(feature_list_, feature));
   DCHECK(base::ContainsKey(inherited_policies_, feature));
   if (!inherited_policies_.at(feature))
@@ -146,7 +147,7 @@ bool FeaturePolicy::IsFeatureEnabledForOrigin(FeaturePolicyFeature feature,
 }
 
 const FeaturePolicy::Whitelist FeaturePolicy::GetWhitelistForFeature(
-    FeaturePolicyFeature feature) const {
+    mojom::FeaturePolicyFeature feature) const {
   DCHECK(base::ContainsKey(feature_list_, feature));
   DCHECK(base::ContainsKey(inherited_policies_, feature));
   // Disabled through inheritance.
@@ -173,8 +174,8 @@ void FeaturePolicy::SetHeaderPolicy(const ParsedFeaturePolicy& parsed_header) {
   DCHECK(whitelists_.empty());
   for (const ParsedFeaturePolicyDeclaration& parsed_declaration :
        parsed_header) {
-    FeaturePolicyFeature feature = parsed_declaration.feature;
-    DCHECK(feature != FeaturePolicyFeature::kNotFound);
+    mojom::FeaturePolicyFeature feature = parsed_declaration.feature;
+    DCHECK(feature != mojom::FeaturePolicyFeature::kNotFound);
     whitelists_[feature] = WhitelistFromDeclaration(parsed_declaration);
   }
 }
@@ -222,8 +223,8 @@ void FeaturePolicy::AddContainerPolicy(
     // If a feature is enabled in the parent frame, and the parent chooses to
     // delegate it to the child frame, using the iframe attribute, then the
     // feature should be enabled in the child frame.
-    FeaturePolicyFeature feature = parsed_declaration.feature;
-    if (feature == FeaturePolicyFeature::kNotFound)
+    mojom::FeaturePolicyFeature feature = parsed_declaration.feature;
+    if (feature == mojom::FeaturePolicyFeature::kNotFound)
       continue;
     if (WhitelistFromDeclaration(parsed_declaration)->Contains(origin_) &&
         parent_policy->IsFeatureEnabled(feature)) {
@@ -239,51 +240,51 @@ void FeaturePolicy::AddContainerPolicy(
 // each feature (in spec, implemented, etc).
 const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
   CR_DEFINE_STATIC_LOCAL(FeatureList, default_feature_list,
-                         ({{FeaturePolicyFeature::kAutoplay,
+                         ({{mojom::FeaturePolicyFeature::kAutoplay,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {FeaturePolicyFeature::kCamera,
+                           {mojom::FeaturePolicyFeature::kCamera,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {FeaturePolicyFeature::kEncryptedMedia,
+                           {mojom::FeaturePolicyFeature::kEncryptedMedia,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {FeaturePolicyFeature::kFullscreen,
+                           {mojom::FeaturePolicyFeature::kFullscreen,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {FeaturePolicyFeature::kGeolocation,
+                           {mojom::FeaturePolicyFeature::kGeolocation,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {FeaturePolicyFeature::kMicrophone,
+                           {mojom::FeaturePolicyFeature::kMicrophone,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {FeaturePolicyFeature::kMidiFeature,
+                           {mojom::FeaturePolicyFeature::kMidiFeature,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {FeaturePolicyFeature::kPayment,
+                           {mojom::FeaturePolicyFeature::kPayment,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {FeaturePolicyFeature::kSpeaker,
+                           {mojom::FeaturePolicyFeature::kSpeaker,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {FeaturePolicyFeature::kVibrate,
+                           {mojom::FeaturePolicyFeature::kVibrate,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {FeaturePolicyFeature::kDocumentCookie,
+                           {mojom::FeaturePolicyFeature::kDocumentCookie,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {FeaturePolicyFeature::kDocumentDomain,
+                           {mojom::FeaturePolicyFeature::kDocumentDomain,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {FeaturePolicyFeature::kDocumentWrite,
+                           {mojom::FeaturePolicyFeature::kDocumentWrite,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {FeaturePolicyFeature::kSyncScript,
+                           {mojom::FeaturePolicyFeature::kSyncScript,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {FeaturePolicyFeature::kSyncXHR,
+                           {mojom::FeaturePolicyFeature::kSyncXHR,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {FeaturePolicyFeature::kUsb,
+                           {mojom::FeaturePolicyFeature::kUsb,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {FeaturePolicyFeature::kWebVr,
+                           {mojom::FeaturePolicyFeature::kWebVr,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {FeaturePolicyFeature::kAccelerometer,
+                           {mojom::FeaturePolicyFeature::kAccelerometer,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {FeaturePolicyFeature::kAmbientLightSensor,
+                           {mojom::FeaturePolicyFeature::kAmbientLightSensor,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {FeaturePolicyFeature::kGyroscope,
+                           {mojom::FeaturePolicyFeature::kGyroscope,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {FeaturePolicyFeature::kMagnetometer,
+                           {mojom::FeaturePolicyFeature::kMagnetometer,
                             FeaturePolicy::FeatureDefault::EnableForSelf},
-                           {FeaturePolicyFeature::kUnsizedMedia,
+                           {mojom::FeaturePolicyFeature::kUnsizedMedia,
                             FeaturePolicy::FeatureDefault::EnableForAll},
-                           {FeaturePolicyFeature::kPictureInPicture,
+                           {mojom::FeaturePolicyFeature::kPictureInPicture,
                             FeaturePolicy::FeatureDefault::EnableForSelf}}));
   return default_feature_list;
 }

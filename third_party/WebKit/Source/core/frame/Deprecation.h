@@ -12,9 +12,11 @@
 #include "platform/wtf/BitVector.h"
 
 namespace blink {
+namespace mojom {
+enum class FeaturePolicyFeature;
+}  // namespace mojom
 
 class LocalFrame;
-enum class FeaturePolicyFeature;
 
 class CORE_EXPORT Deprecation {
   DISALLOW_NEW();
@@ -49,7 +51,7 @@ class CORE_EXPORT Deprecation {
   static void CountDeprecationCrossOriginIframe(const Document&, WebFeature);
 
   static void CountDeprecationFeaturePolicy(const Document&,
-                                            FeaturePolicyFeature);
+                                            mojom::FeaturePolicyFeature);
 
   static String DeprecationMessage(WebFeature);
 

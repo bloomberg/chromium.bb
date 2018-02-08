@@ -160,7 +160,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(VisibilityTimerTabHelper);
 NotificationPermissionContext::NotificationPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
                             CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                            blink::FeaturePolicyFeature::kNotFound),
+                            blink::mojom::FeaturePolicyFeature::kNotFound),
       weak_factory_ui_thread_(this) {}
 
 NotificationPermissionContext::~NotificationPermissionContext() {}

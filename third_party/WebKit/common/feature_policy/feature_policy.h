@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "third_party/WebKit/common/common_export.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.mojom.h"
 #include "url/origin.h"
 
 namespace blink {
@@ -34,7 +34,7 @@ namespace blink {
 // Features
 // --------
 // Features which can be controlled by policy are defined by instances of enum
-// FeaturePolicyFeature, declared in |feature_policy_feature.h|.
+// mojom::FeaturePolicyFeature, declared in |feature_policy.mojom|.
 //
 // Whitelists
 // ----------
@@ -89,7 +89,7 @@ namespace blink {
 // TODO(lunalu): Remove unnecessary types used for transferring over IPC.
 struct BLINK_COMMON_EXPORT ParsedFeaturePolicyDeclaration {
   ParsedFeaturePolicyDeclaration();
-  ParsedFeaturePolicyDeclaration(FeaturePolicyFeature feature,
+  ParsedFeaturePolicyDeclaration(mojom::FeaturePolicyFeature feature,
                                  bool matches_all_origins,
                                  std::vector<url::Origin> origins);
   ParsedFeaturePolicyDeclaration(const ParsedFeaturePolicyDeclaration& rhs);
@@ -97,7 +97,7 @@ struct BLINK_COMMON_EXPORT ParsedFeaturePolicyDeclaration {
       const ParsedFeaturePolicyDeclaration& rhs);
   ~ParsedFeaturePolicyDeclaration();
 
-  FeaturePolicyFeature feature;
+  mojom::FeaturePolicyFeature feature;
   bool matches_all_origins;
   std::vector<url::Origin> origins;
 };
@@ -158,7 +158,7 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
     EnableForAll
   };
 
-  using FeatureList = std::map<FeaturePolicyFeature, FeatureDefault>;
+  using FeatureList = std::map<mojom::FeaturePolicyFeature, FeatureDefault>;
 
   ~FeaturePolicy();
 
@@ -171,15 +171,16 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
       const FeaturePolicy& policy,
       const url::Origin& origin);
 
-  bool IsFeatureEnabled(FeaturePolicyFeature feature) const;
+  bool IsFeatureEnabled(mojom::FeaturePolicyFeature feature) const;
 
   // Returns whether or not the given feature is enabled by this policy for a
   // specific origin.
-  bool IsFeatureEnabledForOrigin(FeaturePolicyFeature feature,
+  bool IsFeatureEnabledForOrigin(mojom::FeaturePolicyFeature feature,
                                  const url::Origin& origin) const;
 
   // Returns the whitelist of a given feature by this policy.
-  const Whitelist GetWhitelistForFeature(FeaturePolicyFeature feature) const;
+  const Whitelist GetWhitelistForFeature(
+      mojom::FeaturePolicyFeature feature) const;
 
   // Sets the declared policy from the parsed Feature-Policy HTTP header.
   // Unrecognized features will be ignored.
@@ -210,13 +211,13 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
 
   // Map of feature names to declared whitelists. Any feature which is missing
   // from this map should use the inherited policy.
-  std::map<FeaturePolicyFeature, std::unique_ptr<Whitelist>> whitelists_;
+  std::map<mojom::FeaturePolicyFeature, std::unique_ptr<Whitelist>> whitelists_;
 
   // Records whether or not each feature was enabled for this frame by its
   // parent frame.
   // TODO(iclelland): Generate, instead of this map, a set of bool flags, one
   // for each feature, as all features are supposed to be represented here.
-  std::map<FeaturePolicyFeature, bool> inherited_policies_;
+  std::map<mojom::FeaturePolicyFeature, bool> inherited_policies_;
 
   const FeatureList& feature_list_;
 

@@ -679,9 +679,10 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   // If intrinsically sized images or videos are disallowed by feature policy,
   // use default size (300 x 150) instead.
   if (IsImageOrVideoElement(element)) {
-    if (IsSupportedInFeaturePolicy(FeaturePolicyFeature::kUnsizedMedia) &&
+    if (IsSupportedInFeaturePolicy(
+            mojom::FeaturePolicyFeature::kUnsizedMedia) &&
         !element->GetDocument().GetFrame()->IsFeatureEnabled(
-            FeaturePolicyFeature::kUnsizedMedia)) {
+            mojom::FeaturePolicyFeature::kUnsizedMedia)) {
       if (!style.Width().IsSpecified())
         style.SetLogicalWidth(Length(LayoutReplaced::kDefaultWidth, kFixed));
       if (!style.Height().IsSpecified())

@@ -31,7 +31,7 @@ LinearAccelerationSensor::LinearAccelerationSensor(
                     options,
                     exception_state,
                     SensorType::LINEAR_ACCELERATION,
-                    {FeaturePolicyFeature::kAccelerometer}) {}
+                    {mojom::FeaturePolicyFeature::kAccelerometer}) {}
 
 void LinearAccelerationSensor::Trace(blink::Visitor* visitor) {
   Accelerometer::Trace(visitor);

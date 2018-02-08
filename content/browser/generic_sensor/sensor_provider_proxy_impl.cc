@@ -17,7 +17,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.mojom.h"
 
 using device::mojom::SensorType;
 
@@ -82,27 +82,27 @@ bool SensorProviderProxyImpl::CheckPermission() const {
 
 namespace {
 
-std::vector<blink::FeaturePolicyFeature> SensorTypeToFeaturePolicyFeatures(
-    SensorType type) {
+std::vector<blink::mojom::FeaturePolicyFeature>
+SensorTypeToFeaturePolicyFeatures(SensorType type) {
   switch (type) {
     case SensorType::AMBIENT_LIGHT:
-      return {blink::FeaturePolicyFeature::kAmbientLightSensor};
+      return {blink::mojom::FeaturePolicyFeature::kAmbientLightSensor};
     case SensorType::ACCELEROMETER:
     case SensorType::LINEAR_ACCELERATION:
-      return {blink::FeaturePolicyFeature::kAccelerometer};
+      return {blink::mojom::FeaturePolicyFeature::kAccelerometer};
     case SensorType::GYROSCOPE:
-      return {blink::FeaturePolicyFeature::kGyroscope};
+      return {blink::mojom::FeaturePolicyFeature::kGyroscope};
     case SensorType::MAGNETOMETER:
-      return {blink::FeaturePolicyFeature::kMagnetometer};
+      return {blink::mojom::FeaturePolicyFeature::kMagnetometer};
     case SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES:
     case SensorType::ABSOLUTE_ORIENTATION_QUATERNION:
-      return {blink::FeaturePolicyFeature::kAccelerometer,
-              blink::FeaturePolicyFeature::kGyroscope,
-              blink::FeaturePolicyFeature::kMagnetometer};
+      return {blink::mojom::FeaturePolicyFeature::kAccelerometer,
+              blink::mojom::FeaturePolicyFeature::kGyroscope,
+              blink::mojom::FeaturePolicyFeature::kMagnetometer};
     case SensorType::RELATIVE_ORIENTATION_EULER_ANGLES:
     case SensorType::RELATIVE_ORIENTATION_QUATERNION:
-      return {blink::FeaturePolicyFeature::kAccelerometer,
-              blink::FeaturePolicyFeature::kGyroscope};
+      return {blink::mojom::FeaturePolicyFeature::kAccelerometer,
+              blink::mojom::FeaturePolicyFeature::kGyroscope};
     default:
       NOTREACHED() << "Unknown sensor type " << type;
       return {};
@@ -112,10 +112,10 @@ std::vector<blink::FeaturePolicyFeature> SensorTypeToFeaturePolicyFeatures(
 }  // namespace
 
 bool SensorProviderProxyImpl::CheckFeaturePolicies(SensorType type) const {
-  const std::vector<blink::FeaturePolicyFeature>& features =
+  const std::vector<blink::mojom::FeaturePolicyFeature>& features =
       SensorTypeToFeaturePolicyFeatures(type);
   return std::all_of(features.begin(), features.end(),
-                     [this](blink::FeaturePolicyFeature feature) {
+                     [this](blink::mojom::FeaturePolicyFeature feature) {
                        return render_frame_host_->IsFeatureEnabled(feature);
                      });
 }

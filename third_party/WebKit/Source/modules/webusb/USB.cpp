@@ -82,8 +82,8 @@ ScriptPromise USB::getDevices(ScriptState* script_state) {
         script_state, DOMException::Create(kNotSupportedError));
   }
 
-  if (IsSupportedInFeaturePolicy(FeaturePolicyFeature::kUsb)) {
-    if (!frame->IsFeatureEnabled(FeaturePolicyFeature::kUsb)) {
+  if (IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature::kUsb)) {
+    if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kUsb)) {
       return ScriptPromise::RejectWithDOMException(
           script_state,
           DOMException::Create(kSecurityError, kFeaturePolicyBlocked));
@@ -110,8 +110,8 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
         script_state, DOMException::Create(kNotSupportedError));
   }
 
-  if (IsSupportedInFeaturePolicy(FeaturePolicyFeature::kUsb)) {
-    if (!frame->IsFeatureEnabled(FeaturePolicyFeature::kUsb)) {
+  if (IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature::kUsb)) {
+    if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kUsb)) {
       return ScriptPromise::RejectWithDOMException(
           script_state,
           DOMException::Create(kSecurityError, kFeaturePolicyBlocked));
@@ -254,8 +254,8 @@ void USB::AddedEventListener(const AtomicString& event_type,
   if (!frame)
     return;
 
-  if (IsSupportedInFeaturePolicy(FeaturePolicyFeature::kUsb)) {
-    if (frame->IsFeatureEnabled(FeaturePolicyFeature::kUsb))
+  if (IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature::kUsb)) {
+    if (frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kUsb))
       EnsureDeviceManagerConnection();
   } else if (frame->IsMainFrame()) {
     EnsureDeviceManagerConnection();

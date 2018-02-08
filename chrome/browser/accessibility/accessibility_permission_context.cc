@@ -5,10 +5,10 @@
 #include "chrome/browser/accessibility/accessibility_permission_context.h"
 
 AccessibilityPermissionContext::AccessibilityPermissionContext(Profile* profile)
-    : PermissionContextBase(profile,
-                            CONTENT_SETTINGS_TYPE_ACCESSIBILITY_EVENTS,
-                            blink::FeaturePolicyFeature::kAccessibilityEvents) {
-}
+    : PermissionContextBase(
+          profile,
+          CONTENT_SETTINGS_TYPE_ACCESSIBILITY_EVENTS,
+          blink::mojom::FeaturePolicyFeature::kAccessibilityEvents) {}
 
 AccessibilityPermissionContext::~AccessibilityPermissionContext() = default;
 

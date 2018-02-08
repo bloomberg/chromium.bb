@@ -16,7 +16,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "media/capture/video/fake_video_capture_device.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -24,7 +24,7 @@ namespace content {
 
 bool IsFeatureEnabled(RenderFrameHost* rfh,
                       bool tests_use_fake_render_frame_hosts,
-                      blink::FeaturePolicyFeature feature) {
+                      blink::mojom::FeaturePolicyFeature feature) {
   if (!base::FeatureList::IsEnabled(features::kUseFeaturePolicyForPermissions))
     return true;
 
@@ -152,13 +152,13 @@ void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
   for (const MediaStreamDevice& device : devices) {
     if (device.type == MEDIA_DEVICE_AUDIO_CAPTURE &&
         !IsFeatureEnabled(host, tests_use_fake_render_frame_hosts_,
-                          blink::FeaturePolicyFeature::kMicrophone)) {
+                          blink::mojom::FeaturePolicyFeature::kMicrophone)) {
       continue;
     }
 
     if (device.type == MEDIA_DEVICE_VIDEO_CAPTURE &&
         !IsFeatureEnabled(host, tests_use_fake_render_frame_hosts_,
-                          blink::FeaturePolicyFeature::kCamera)) {
+                          blink::mojom::FeaturePolicyFeature::kCamera)) {
       continue;
     }
 

@@ -36,7 +36,8 @@ class CORE_EXPORT DeviceSingleWindowEventController
 
   Document& GetDocument() const { return *document_; }
   bool IsSameSecurityOriginAsMainFrame() const;
-  bool CheckPolicyFeatures(const Vector<FeaturePolicyFeature>& features) const;
+  bool CheckPolicyFeatures(
+      const Vector<mojom::FeaturePolicyFeature>& features) const;
 
   void DispatchDeviceEvent(Event*);
 

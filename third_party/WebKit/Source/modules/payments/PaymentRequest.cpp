@@ -746,7 +746,7 @@ bool AllowedToUsePaymentRequest(const Frame* frame) {
   if (!frame)
     return false;
 
-  if (!IsSupportedInFeaturePolicy(FeaturePolicyFeature::kPayment)) {
+  if (!IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature::kPayment)) {
     // 2. If |document|'s browsing context is a top-level browsing context, then
     // return true.
     if (frame->IsMainFrame())
@@ -764,7 +764,7 @@ bool AllowedToUsePaymentRequest(const Frame* frame) {
   }
 
   // 2. If Feature Policy is enabled, return the policy for "payment" feature.
-  return frame->IsFeatureEnabled(FeaturePolicyFeature::kPayment);
+  return frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kPayment);
 }
 
 void WarnIgnoringQueryQuotaForCanMakePayment(

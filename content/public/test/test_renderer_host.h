@@ -122,7 +122,7 @@ class RenderFrameHostTester {
   // can be generalized as needed. Setting a header policy should only be done
   // once per navigation of the RFH.
   virtual void SimulateFeaturePolicyHeader(
-      blink::FeaturePolicyFeature feature,
+      blink::mojom::FeaturePolicyFeature feature,
       const std::vector<url::Origin>& whitelist) = 0;
 
   // Gets all the console messages requested via

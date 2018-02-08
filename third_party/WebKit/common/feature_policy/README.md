@@ -4,7 +4,7 @@
 Feature policy (see [spec](https://wicg.github.io/feature-policy/)) is a
 mechanism that allows developers to selectively enable and disable various
 [browser features and
-APIs](https://cs.chromium.org/chromium/src/third_party/WebKit/common/feature_policy/feature_policy_feature.h)
+APIs](https://cs.chromium.org/chromium/src/third_party/WebKit/common/feature_policy/feature_policy.mojom)
 (e.g, "vibrate", "fullscreen", "usb", etc.). A feature policy can be defined
 via a HTTP header and/or an iframe "allow" attribute.
 

@@ -88,7 +88,7 @@
 #include "platform/wtf/text/CString.h"
 #include "public/platform/WebCORS.h"
 #include "public/platform/WebURLRequest.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.mojom-blink.h"
 
 namespace blink {
 
@@ -767,9 +767,9 @@ bool XMLHttpRequest::InitSend(ExceptionState& exception_state) {
 
   if (!async_) {
     if (GetExecutionContext()->IsDocument() &&
-        IsSupportedInFeaturePolicy(FeaturePolicyFeature::kSyncXHR) &&
+        IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature::kSyncXHR) &&
         !GetDocument()->GetFrame()->IsFeatureEnabled(
-            FeaturePolicyFeature::kSyncXHR)) {
+            mojom::FeaturePolicyFeature::kSyncXHR)) {
       LogConsoleError(GetExecutionContext(),
                       "Synchronous requests are disabled by Feature Policy.");
       HandleNetworkError();

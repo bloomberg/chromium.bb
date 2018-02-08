@@ -8,12 +8,12 @@
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.mojom.h"
 
 ClipboardReadPermissionContext::ClipboardReadPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
                             CONTENT_SETTINGS_TYPE_CLIPBOARD_READ,
-                            blink::FeaturePolicyFeature::kNotFound) {}
+                            blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
 ClipboardReadPermissionContext::~ClipboardReadPermissionContext() {}
 

@@ -238,7 +238,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsBeforeUnloadHangMonitorDisabledForTesting() override;
   bool GetSuddenTerminationDisablerState(
       blink::WebSuddenTerminationDisablerType disabler_type) override;
-  bool IsFeatureEnabled(blink::FeaturePolicyFeature feature) override;
+  bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature) override;
   void ViewSource() override;
 
   // IPC::Sender

@@ -51,7 +51,7 @@
 #include "modules/mediastream/UserMediaController.h"
 #include "platform/mediastream/MediaStreamCenter.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.mojom-blink.h"
 
 namespace blink {
 
@@ -465,25 +465,25 @@ bool UserMediaRequest::IsSecureContextUse(String& error_message) {
     if (Audio()) {
       if (RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
         if (!document->GetFrame()->IsFeatureEnabled(
-                FeaturePolicyFeature::kMicrophone)) {
+                mojom::FeaturePolicyFeature::kMicrophone)) {
           UseCounter::Count(
               document, WebFeature::kMicrophoneDisabledByFeaturePolicyEstimate);
         }
       } else {
         Deprecation::CountDeprecationFeaturePolicy(
-            *document, FeaturePolicyFeature::kMicrophone);
+            *document, mojom::FeaturePolicyFeature::kMicrophone);
       }
     }
     if (Video()) {
       if (RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
         if (!document->GetFrame()->IsFeatureEnabled(
-                FeaturePolicyFeature::kCamera)) {
+                mojom::FeaturePolicyFeature::kCamera)) {
           UseCounter::Count(document,
                             WebFeature::kCameraDisabledByFeaturePolicyEstimate);
         }
       } else {
         Deprecation::CountDeprecationFeaturePolicy(
-            *document, FeaturePolicyFeature::kCamera);
+            *document, mojom::FeaturePolicyFeature::kCamera);
       }
     }
 

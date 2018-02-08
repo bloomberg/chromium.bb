@@ -23,9 +23,9 @@ namespace {
 const double kWaitingIntervalThreshold = 0.01;
 
 bool AreFeaturesEnabled(LocalFrame* frame,
-                        const Vector<FeaturePolicyFeature>& features) {
+                        const Vector<mojom::FeaturePolicyFeature>& features) {
   return std::all_of(features.begin(), features.end(),
-                     [frame](FeaturePolicyFeature feature) {
+                     [frame](mojom::FeaturePolicyFeature feature) {
                        return frame->IsFeatureEnabled(feature);
                      });
 }
@@ -36,7 +36,7 @@ Sensor::Sensor(ExecutionContext* execution_context,
                const SensorOptions& sensor_options,
                ExceptionState& exception_state,
                device::mojom::blink::SensorType type,
-               const Vector<FeaturePolicyFeature>& features)
+               const Vector<mojom::FeaturePolicyFeature>& features)
     : ContextLifecycleObserver(execution_context),
       frequency_(0.0),
       type_(type),
@@ -74,7 +74,7 @@ Sensor::Sensor(ExecutionContext* execution_context,
                const SpatialSensorOptions& options,
                ExceptionState& exception_state,
                device::mojom::blink::SensorType sensor_type,
-               const Vector<FeaturePolicyFeature>& features)
+               const Vector<mojom::FeaturePolicyFeature>& features)
     : Sensor(execution_context,
              static_cast<const SensorOptions&>(options),
              exception_state,

@@ -66,8 +66,8 @@ ScriptPromise XR::requestDevice(ScriptState* script_state) {
         DOMException::Create(kInvalidStateError, kNavigatorDetachedError));
   }
 
-  if (IsSupportedInFeaturePolicy(FeaturePolicyFeature::kWebVr)) {
-    if (!frame->IsFeatureEnabled(FeaturePolicyFeature::kWebVr)) {
+  if (IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature::kWebVr)) {
+    if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebVr)) {
       // Only allow the call to be made if the appropraite feature policy is in
       // place.
       return ScriptPromise::RejectWithDOMException(
