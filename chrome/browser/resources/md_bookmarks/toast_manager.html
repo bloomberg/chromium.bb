@@ -2,11 +2,12 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-announcer/iron-a11y-announcer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://bookmarks/shared_style.html">
 
 <dom-module id="bookmarks-toast-manager">
   <template>
-    <style include="shared-style">
+    <style include="shared-style paper-button-style">
       #content {
         color: #fff;
         display: flex;
@@ -17,9 +18,7 @@
         -webkit-margin-end: 0;
         -webkit-margin-start: 32px;
         color: var(--google-blue-300);
-        font-weight: 500;
         height: 32px;
-        min-width: 52px;
         padding: 8px;
       }
 
