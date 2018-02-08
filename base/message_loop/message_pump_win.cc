@@ -313,7 +313,7 @@ void MessagePumpForUI::RescheduleTimer() {
 
     // Create a WM_TIMER event that will wake us up to check for any pending
     // timers (in case we are running within a nested, external sub-pump).
-    BOOL ret = SetTimer(message_window_.hwnd(), 0, delay_msec, nullptr);
+    UINT_PTR ret = SetTimer(message_window_.hwnd(), 0, delay_msec, nullptr);
     if (ret)
       return;
     // If we can't set timers, we are in big trouble... but cross our fingers
