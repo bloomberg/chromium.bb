@@ -5,6 +5,8 @@
 #include "components/filename_generation/filename_generation.h"
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -20,6 +22,19 @@ namespace filename_generation {
 #else
 #define FPL_HTML_EXTENSION ".html"
 #endif
+
+namespace {
+
+base::FilePath GetLongNamePathInDirectory(
+    int max_length,
+    const base::FilePath::CharType* suffix,
+    const base::FilePath& dir) {
+  base::FilePath::StringType name(max_length, FILE_PATH_LITERAL('a'));
+  base::FilePath path = dir.Append(name + suffix).NormalizePathSeparators();
+  return path;
+}
+
+}  // namespace
 
 static const struct {
   const base::FilePath::CharType* page_title;
@@ -157,6 +172,53 @@ TEST(FilenameGenerationTest, MAYBE_TestSuggestedSaveNames) {
     EXPECT_EQ(kSuggestedSaveNames[i].expected_name, save_name.value())
         << "Test case " << i;
   }
+}
+
+TEST(FilenameGenerationTest, TestBasicTruncation) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  int max_length = base::GetMaximumPathComponentLength(temp_dir.GetPath());
+  ASSERT_NE(-1, max_length);
+
+  base::FilePath::StringType extension(FILE_PATH_LITERAL(".txt"));
+  base::FilePath path(GetLongNamePathInDirectory(
+      max_length, FILE_PATH_LITERAL(".txt"), temp_dir.GetPath()));
+  base::FilePath truncated_path = path;
+
+// The file path will only be truncated o the platforms that have known
+// encoding. Otherwise no truncation will be performed.
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  // The file name length is truncated to max_length.
+  EXPECT_TRUE(TruncateFilename(&truncated_path, max_length));
+  EXPECT_EQ(size_t(max_length), truncated_path.BaseName().value().size());
+#else
+  EXPECT_FALSE(TruncateFilename(&truncated_path, max_length));
+  EXPECT_EQ(truncated_path, path);
+  EXPECT_LT(size_t(max_length), truncated_path.BaseName().value().size());
+#endif
+  // But the extension is kept unchanged.
+  EXPECT_EQ(path.Extension(), truncated_path.Extension());
+}
+
+TEST(FilenameGenerationTest, TestTruncationFail) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  int max_length = base::GetMaximumPathComponentLength(temp_dir.GetPath());
+  ASSERT_NE(-1, max_length);
+
+  base::FilePath path(
+      (FILE_PATH_LITERAL("a.") + base::FilePath::StringType(max_length, 'b'))
+          .c_str());
+  path = temp_dir.GetPath().Append(path);
+
+  base::FilePath truncated_path = path;
+
+  // We cannot truncate a path with very long extension. This will fail and no
+  // truncation will be performed on all platforms.
+  EXPECT_FALSE(TruncateFilename(&truncated_path, max_length));
+  EXPECT_EQ(truncated_path, path);
 }
 
 }  // filename_generation

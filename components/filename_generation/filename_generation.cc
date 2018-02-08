@@ -11,7 +11,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/third_party/icu/icu_utf.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
@@ -20,6 +22,10 @@
 namespace filename_generation {
 
 namespace {
+
+// The lower bound for file name truncation. If the truncation results in a name
+// shorter than this limit, we give up automatic truncation and prompt the user.
+const size_t kTruncatedNameLengthLowerbound = 5;
 
 const base::FilePath::CharType kDefaultHtmlExtension[] =
     FILE_PATH_LITERAL("html");
@@ -130,6 +136,41 @@ base::FilePath GenerateFilename(const base::string16& title,
   base::FilePath::StringType file_name = name_with_proper_ext.value();
   base::i18n::ReplaceIllegalCharactersInPath(&file_name, '_');
   return base::FilePath(file_name);
+}
+
+bool TruncateFilename(base::FilePath* path, size_t limit) {
+  base::FilePath basename(path->BaseName());
+  // It is already short enough.
+  if (basename.value().size() <= limit)
+    return true;
+
+  base::FilePath dir(path->DirName());
+  base::FilePath::StringType ext(basename.Extension());
+  base::FilePath::StringType name(basename.RemoveExtension().value());
+
+  // Impossible to satisfy the limit.
+  if (limit < kTruncatedNameLengthLowerbound + ext.size())
+    return false;
+  limit -= ext.size();
+
+  // Encoding specific truncation logic.
+  base::FilePath::StringType truncated;
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+  // UTF-8.
+  base::TruncateUTF8ToByteSize(name, limit, &truncated);
+#elif defined(OS_WIN)
+  // UTF-16.
+  DCHECK(name.size() > limit);
+  truncated = name.substr(0, CBU16_IS_TRAIL(name[limit]) ? limit - 1 : limit);
+#else
+// We cannot generally assume that the file name encoding is in UTF-8 (see
+// the comment for FilePath::AsUTF8Unsafe), hence no safe way to truncate.
+#endif
+
+  if (truncated.size() < kTruncatedNameLengthLowerbound)
+    return false;
+  *path = dir.Append(truncated + ext);
+  return true;
 }
 
 }  // namespace filename_generation
