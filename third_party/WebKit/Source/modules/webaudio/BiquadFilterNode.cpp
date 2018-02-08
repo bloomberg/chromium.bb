@@ -27,6 +27,9 @@
 
 #include <memory>
 
+#include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
 #include "modules/webaudio/BiquadFilterOptions.h"
 #include "platform/Histogram.h"
@@ -175,19 +178,33 @@ bool BiquadFilterNode::setType(unsigned type) {
 void BiquadFilterNode::getFrequencyResponse(
     NotShared<const DOMFloat32Array> frequency_hz,
     NotShared<DOMFloat32Array> mag_response,
-    NotShared<DOMFloat32Array> phase_response) {
-  DCHECK(frequency_hz);
-  DCHECK(mag_response);
-  DCHECK(phase_response);
+    NotShared<DOMFloat32Array> phase_response,
+    ExceptionState& exception_state) {
+  unsigned frequency_hz_length = frequency_hz.View()->length();
 
-  int n = std::min(
-      frequency_hz.View()->length(),
-      std::min(mag_response.View()->length(), phase_response.View()->length()));
-  if (n) {
-    GetBiquadProcessor()->GetFrequencyResponse(n, frequency_hz.View()->Data(),
-                                               mag_response.View()->Data(),
-                                               phase_response.View()->Data());
+  if (mag_response.View()->length() != frequency_hz_length) {
+    exception_state.ThrowDOMException(
+        kInvalidAccessError,
+        ExceptionMessages::IndexOutsideRange(
+            "magResponse length", mag_response.View()->length(),
+            frequency_hz_length, ExceptionMessages::kInclusiveBound,
+            frequency_hz_length, ExceptionMessages::kInclusiveBound));
+    return;
   }
+
+  if (phase_response.View()->length() != frequency_hz_length) {
+    exception_state.ThrowDOMException(
+        kInvalidAccessError,
+        ExceptionMessages::IndexOutsideRange(
+            "phaseResponse length", phase_response.View()->length(),
+            frequency_hz_length, ExceptionMessages::kInclusiveBound,
+            frequency_hz_length, ExceptionMessages::kInclusiveBound));
+    return;
+  }
+
+  GetBiquadProcessor()->GetFrequencyResponse(
+      frequency_hz_length, frequency_hz.View()->Data(),
+      mag_response.View()->Data(), phase_response.View()->Data());
 }
 
 }  // namespace blink
