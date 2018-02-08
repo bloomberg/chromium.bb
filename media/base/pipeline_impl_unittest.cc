@@ -189,30 +189,48 @@ class PipelineImplTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void StartPipeline() {
+  void StartPipeline(
+      Pipeline::StartType start_type = Pipeline::StartType::kNormal) {
     EXPECT_CALL(callbacks_, OnWaitingForDecryptionKey()).Times(0);
     pipeline_->Start(
-        demuxer_.get(), std::move(scoped_renderer_), &callbacks_,
+        start_type, demuxer_.get(), std::move(scoped_renderer_), &callbacks_,
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
   }
 
+  // Suspension status of the pipeline post Start().
+  enum class PostStartStatus {
+    kNormal,
+    kSuspended,
+  };
+
   // Sets up expectations on the callback and initializes the pipeline. Called
   // after tests have set expectations any filters they wish to use.
-  void StartPipelineAndExpect(PipelineStatus start_status) {
+  void StartPipelineAndExpect(
+      PipelineStatus start_status,
+      Pipeline::StartType start_type = Pipeline::StartType::kNormal,
+      PostStartStatus post_start_status = PostStartStatus::kNormal) {
     EXPECT_CALL(callbacks_, OnStart(start_status));
 
     if (start_status == PIPELINE_OK) {
       EXPECT_CALL(callbacks_, OnMetadata(_)).WillOnce(SaveArg<0>(&metadata_));
-      EXPECT_CALL(*renderer_, SetPlaybackRate(0.0));
-      EXPECT_CALL(*renderer_, SetVolume(1.0f));
-      EXPECT_CALL(*renderer_, StartPlayingFrom(start_time_))
-          .WillOnce(
-              SetBufferingState(&renderer_client_, BUFFERING_HAVE_ENOUGH));
-      EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
+      if (post_start_status == PostStartStatus::kNormal) {
+        EXPECT_CALL(*renderer_, SetPlaybackRate(0.0));
+        EXPECT_CALL(*renderer_, SetVolume(1.0f));
+        EXPECT_CALL(*renderer_, StartPlayingFrom(start_time_))
+            .WillOnce(
+                SetBufferingState(&renderer_client_, BUFFERING_HAVE_ENOUGH));
+        EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
+      }
     }
 
-    StartPipeline();
+    StartPipeline(start_type);
     base::RunLoop().RunUntilIdle();
+
+    if (start_status == PIPELINE_OK)
+      EXPECT_TRUE(pipeline_->IsRunning());
+
+    if (post_start_status != PostStartStatus::kNormal)
+      EXPECT_TRUE(pipeline_->IsSuspended());
   }
 
   void CreateAudioStream() {
@@ -272,10 +290,13 @@ class PipelineImplTest : public ::testing::Test {
     pipeline_->Suspend(
         base::Bind(&CallbackHelper::OnSuspend, base::Unretained(&callbacks_)));
     base::RunLoop().RunUntilIdle();
+    CreateRenderer();
+  }
 
+  void CreateRenderer() {
     // |renderer_| has been deleted, replace it.
-    scoped_renderer_.reset(new StrictMock<MockRenderer>()),
-        renderer_ = scoped_renderer_.get();
+    scoped_renderer_.reset(new StrictMock<MockRenderer>());
+    renderer_ = scoped_renderer_.get();
   }
 
   void ExpectResume(const base::TimeDelta& seek_time) {
@@ -407,6 +428,57 @@ TEST_F(PipelineImplTest, StartThenStopImmediately) {
   base::RunLoop().RunUntilIdle();
 
   pipeline_->Stop();
+}
+
+TEST_F(PipelineImplTest, StartSuspendedAndResumeAudioOnly) {
+  CreateAudioStream();
+  MockDemuxerStreamVector streams;
+  streams.push_back(audio_stream());
+
+  SetDemuxerExpectations(&streams, base::TimeDelta::FromSeconds(3000));
+  StartPipelineAndExpect(PIPELINE_OK,
+                         Pipeline::StartType::kSuspendAfterMetadataForAudioOnly,
+                         PostStartStatus::kSuspended);
+  ASSERT_TRUE(pipeline_->IsSuspended());
+
+  CreateRenderer();
+  base::TimeDelta expected = base::TimeDelta::FromSeconds(2000);
+  ExpectResume(expected);
+  DoResume(expected);
+}
+
+TEST_F(PipelineImplTest, StartSuspendedAndResumeAudioVideo) {
+  CreateAudioStream();
+  CreateVideoStream();
+  MockDemuxerStreamVector streams;
+  streams.push_back(audio_stream());
+  streams.push_back(video_stream());
+
+  SetDemuxerExpectations(&streams, base::TimeDelta::FromSeconds(3000));
+  StartPipelineAndExpect(PIPELINE_OK,
+                         Pipeline::StartType::kSuspendAfterMetadata,
+                         PostStartStatus::kSuspended);
+  ASSERT_TRUE(pipeline_->IsSuspended());
+
+  CreateRenderer();
+  base::TimeDelta expected = base::TimeDelta::FromSeconds(2000);
+  ExpectResume(expected);
+  DoResume(expected);
+}
+
+TEST_F(PipelineImplTest, StartSuspendedFailsOnVideoWithAudioOnlyExpectation) {
+  CreateAudioStream();
+  CreateVideoStream();
+  MockDemuxerStreamVector streams;
+  streams.push_back(audio_stream());
+  streams.push_back(video_stream());
+
+  SetDemuxerExpectations(&streams, base::TimeDelta::FromSeconds(3000));
+  SetRendererExpectations();
+  StartPipelineAndExpect(PIPELINE_OK,
+                         Pipeline::StartType::kSuspendAfterMetadataForAudioOnly,
+                         PostStartStatus::kNormal);
+  ASSERT_FALSE(pipeline_->IsSuspended());
 }
 
 TEST_F(PipelineImplTest, DemuxerErrorDuringStop) {
