@@ -397,10 +397,12 @@ void PaintLayer::UpdateLayerPositionsAfterOverflowScroll() {
   // is not included in clip rects. Therefore, we do not need to clear them
   // when that PaintLayer is scrolled. We also don't need to update layer
   // positions, because they also do not depend on the root's scroll offset.
-  if (IsRootLayer())
-    return;
-  ClearClipRects();
-  UpdateLayerPositionRecursive();
+  if (IsRootLayer()) {
+    GetScrollableArea()->UpdateLayerPositionForStickyDescendants();
+  } else {
+    ClearClipRects();
+    UpdateLayerPositionRecursive();
+  }
 }
 
 void PaintLayer::UpdateTransformationMatrix() {
