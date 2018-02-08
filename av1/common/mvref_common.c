@@ -510,11 +510,7 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
 #endif
 
         for (idx = 0; idx < *refmv_count; ++idx)
-          if (abs(this_refmv.as_mv.row - ref_mv_stack[idx].this_mv.as_mv.row) <
-                  4 &&
-              abs(this_refmv.as_mv.col - ref_mv_stack[idx].this_mv.as_mv.col) <
-                  4)
-            break;
+          if (this_refmv.as_int == ref_mv_stack[idx].this_mv.as_int) break;
 
         if (idx < *refmv_count) ref_mv_stack[idx].weight += 2 * weight_unit;
 
@@ -577,14 +573,8 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
 #endif
 
         for (idx = 0; idx < *refmv_count; ++idx)
-          if (abs(this_refmv.as_mv.row - ref_mv_stack[idx].this_mv.as_mv.row) <
-                  4 &&
-              abs(this_refmv.as_mv.col - ref_mv_stack[idx].this_mv.as_mv.col) <
-                  4 &&
-              abs(comp_refmv.as_mv.row - ref_mv_stack[idx].comp_mv.as_mv.row) <
-                  4 &&
-              abs(comp_refmv.as_mv.col - ref_mv_stack[idx].comp_mv.as_mv.col) <
-                  4)
+          if (this_refmv.as_int == ref_mv_stack[idx].this_mv.as_int &&
+              comp_refmv.as_int == ref_mv_stack[idx].comp_mv.as_int)
             break;
 
         if (idx < *refmv_count) ref_mv_stack[idx].weight += 2 * weight_unit;
