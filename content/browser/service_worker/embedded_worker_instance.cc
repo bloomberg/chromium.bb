@@ -554,18 +554,6 @@ void EmbeddedWorkerInstance::StopIfNotAttachedToDevTools() {
   Stop();
 }
 
-ServiceWorkerStatusCode EmbeddedWorkerInstance::SendIpcMessage(
-    const IPC::Message& message) {
-  DCHECK_NE(kInvalidEmbeddedWorkerThreadId, thread_id_);
-  if (status_ != EmbeddedWorkerStatus::RUNNING &&
-      status_ != EmbeddedWorkerStatus::STARTING) {
-    return SERVICE_WORKER_ERROR_IPC_FAILED;
-  }
-  return registry_->Send(process_id(),
-                         new EmbeddedWorkerContextMsg_MessageToWorker(
-                             thread_id_, embedded_worker_id_, message));
-}
-
 void EmbeddedWorkerInstance::ResumeAfterDownload() {
   if (process_id() == ChildProcessHost::kInvalidUniqueID ||
       status_ != EmbeddedWorkerStatus::STARTING) {

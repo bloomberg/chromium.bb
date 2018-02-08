@@ -134,19 +134,6 @@ void EmbeddedWorkerRegistry::BindWorkerToProcess(int process_id,
   worker_process_map_[process_id].insert(embedded_worker_id);
 }
 
-ServiceWorkerStatusCode EmbeddedWorkerRegistry::Send(
-    int process_id, IPC::Message* message_ptr) {
-  std::unique_ptr<IPC::Message> message(message_ptr);
-  if (!context_)
-    return SERVICE_WORKER_ERROR_ABORT;
-  IPC::Sender* sender = context_->GetDispatcherHost(process_id);
-  if (!sender)
-    return SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND;
-  if (!sender->Send(message.release()))
-    return SERVICE_WORKER_ERROR_IPC_FAILED;
-  return SERVICE_WORKER_OK;
-}
-
 void EmbeddedWorkerRegistry::RemoveWorker(int process_id,
                                           int embedded_worker_id) {
   DCHECK(base::ContainsKey(worker_map_, embedded_worker_id));

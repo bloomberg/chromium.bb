@@ -40,7 +40,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/page_navigator.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -115,16 +114,6 @@ void RunCallbackAfterStartWorker(base::WeakPtr<ServiceWorkerVersion> version,
     return;
   }
   std::move(callback).Run(status);
-}
-
-void KillEmbeddedWorkerProcess(int process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderProcessHost* render_process_host =
-      RenderProcessHost::FromID(process_id);
-  if (render_process_host->GetHandle() != base::kNullProcessHandle) {
-    bad_message::ReceivedBadMessage(render_process_host,
-                                    bad_message::SERVICE_WORKER_BAD_URL);
-  }
 }
 
 void ClearTick(base::TimeTicks* time) {
@@ -239,6 +228,20 @@ void DidGetClients(
         clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::move(callback).Run(std::move(*clients));
+}
+
+void DidNavigateClient(
+    blink::mojom::ServiceWorkerHost::NavigateClientCallback callback,
+    const GURL& url,
+    ServiceWorkerStatusCode status,
+    blink::mojom::ServiceWorkerClientInfoPtr client) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (status != SERVICE_WORKER_OK) {
+    std::move(callback).Run(nullptr /* client */,
+                            "Cannot navigate to URL: " + url.spec());
+    return;
+  }
+  std::move(callback).Run(std::move(client), base::nullopt /* error_msg */);
 }
 
 }  // namespace
@@ -1040,9 +1043,6 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerVersion, message)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToClient,
                         OnPostMessageToClient)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_FocusClient,
-                        OnFocusClient)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_NavigateClient, OnNavigateClient)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1157,6 +1157,86 @@ void ServiceWorkerVersion::OpenPaymentHandlerWindow(
                      weak_factory_.GetWeakPtr(), url,
                      WindowOpenDisposition::NEW_POPUP),
       std::move(callback));
+}
+
+void ServiceWorkerVersion::FocusClient(const std::string& client_uuid,
+                                       FocusClientCallback callback) {
+  if (!context_) {
+    std::move(callback).Run(nullptr /* client */);
+    return;
+  }
+  ServiceWorkerProviderHost* provider_host =
+      context_->GetProviderHostByClientID(client_uuid);
+  if (!provider_host) {
+    // The client may already have been closed, just fail.
+    std::move(callback).Run(nullptr /* client */);
+    return;
+  }
+  if (provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
+    // The client does not belong to the same origin as this ServiceWorker,
+    // possibly due to timing issue or bad message.
+    std::move(callback).Run(nullptr /* client */);
+    return;
+  }
+  if (provider_host->client_type() !=
+      blink::mojom::ServiceWorkerClientType::kWindow) {
+    // focus() should be called only for WindowClient.
+    mojo::ReportBadMessage("Received focus() request for a non-window client.");
+    binding_.Close();
+    return;
+  }
+
+  service_worker_client_utils::FocusWindowClient(provider_host,
+                                                 std::move(callback));
+}
+
+void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
+                                          const GURL& url,
+                                          NavigateClientCallback callback) {
+  if (!context_) {
+    std::move(callback).Run(
+        nullptr /* client */,
+        std::string("The service worker system is shutting down."));
+    return;
+  }
+
+  if (!url.is_valid() || !base::IsValidGUID(client_uuid)) {
+    mojo::ReportBadMessage(
+        "Received unexpected invalid URL/UUID from renderer process.");
+    binding_.Close();
+    return;
+  }
+
+  // Reject requests for URLs that the process is not allowed to access. It's
+  // possible to receive such requests since the renderer-side checks are
+  // slightly different. For example, the view-source scheme will not be
+  // filtered out by Blink.
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+          embedded_worker_->process_id(), url)) {
+    std::move(callback).Run(
+        nullptr /* client */,
+        "The service worker is not allowed to access URL: " + url.spec());
+    return;
+  }
+
+  ServiceWorkerProviderHost* provider_host =
+      context_->GetProviderHostByClientID(client_uuid);
+  if (!provider_host) {
+    std::move(callback).Run(nullptr /* client */,
+                            std::string("The client was not found."));
+    return;
+  }
+  if (provider_host->active_version() != this) {
+    std::move(callback).Run(
+        nullptr /* client */,
+        std::string(
+            "This service worker is not the client's active service worker."));
+    return;
+  }
+
+  service_worker_client_utils::NavigateClient(
+      url, script_url_, provider_host->process_id(), provider_host->frame_id(),
+      context_, base::BindOnce(&DidNavigateClient, std::move(callback), url));
 }
 
 void ServiceWorkerVersion::SkipWaiting(SkipWaitingCallback callback) {
@@ -1314,114 +1394,6 @@ void ServiceWorkerVersion::OnPostMessageToClient(
     return;
   }
   provider_host->PostMessageToClient(this, std::move(message->data));
-}
-
-void ServiceWorkerVersion::OnFocusClient(int request_id,
-                                         const std::string& client_uuid) {
-  if (!context_)
-    return;
-  TRACE_EVENT2("ServiceWorker",
-               "ServiceWorkerVersion::OnFocusClient",
-               "Request id", request_id,
-               "Client id", client_uuid);
-  ServiceWorkerProviderHost* provider_host =
-      context_->GetProviderHostByClientID(client_uuid);
-  if (!provider_host) {
-    // The client may already have been closed, just ignore.
-    return;
-  }
-  if (provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
-    // The client does not belong to the same origin as this ServiceWorker,
-    // possibly due to timing issue or bad message.
-    return;
-  }
-  if (provider_host->client_type() !=
-      blink::mojom::ServiceWorkerClientType::kWindow) {
-    // focus() should be called only for WindowClient. This may happen due to
-    // bad message.
-    return;
-  }
-
-  service_worker_client_utils::FocusWindowClient(
-      provider_host,
-      base::BindOnce(&ServiceWorkerVersion::OnFocusClientFinished,
-                     weak_factory_.GetWeakPtr(), request_id));
-}
-
-void ServiceWorkerVersion::OnFocusClientFinished(
-    int request_id,
-    blink::mojom::ServiceWorkerClientInfoPtr client_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (running_status() != EmbeddedWorkerStatus::RUNNING)
-    return;
-
-  DCHECK(client_info);
-  embedded_worker_->SendIpcMessage(
-      ServiceWorkerMsg_FocusClientResponse(request_id, *client_info));
-}
-
-void ServiceWorkerVersion::OnNavigateClient(int request_id,
-                                            const std::string& client_uuid,
-                                            const GURL& url) {
-  if (!context_)
-    return;
-
-  TRACE_EVENT2("ServiceWorker", "ServiceWorkerVersion::OnNavigateClient",
-               "Request id", request_id, "Client id", client_uuid);
-
-  if (!url.is_valid() || !base::IsValidGUID(client_uuid)) {
-    DVLOG(1) << "Received unexpected invalid URL/UUID from renderer process.";
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(&KillEmbeddedWorkerProcess,
-                                           embedded_worker_->process_id()));
-    return;
-  }
-
-  // Reject requests for URLs that the process is not allowed to access. It's
-  // possible to receive such requests since the renderer-side checks are
-  // slightly different. For example, the view-source scheme will not be
-  // filtered out by Blink.
-  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
-          embedded_worker_->process_id(), url)) {
-    embedded_worker_->SendIpcMessage(
-        ServiceWorkerMsg_NavigateClientError(request_id, url));
-    return;
-  }
-
-  ServiceWorkerProviderHost* provider_host =
-      context_->GetProviderHostByClientID(client_uuid);
-  if (!provider_host || provider_host->active_version() != this) {
-    embedded_worker_->SendIpcMessage(
-        ServiceWorkerMsg_NavigateClientError(request_id, url));
-    return;
-  }
-
-  service_worker_client_utils::NavigateClient(
-      url, script_url_, provider_host->process_id(), provider_host->frame_id(),
-      context_,
-      base::BindOnce(&ServiceWorkerVersion::OnNavigateClientFinished,
-                     weak_factory_.GetWeakPtr(), request_id));
-}
-
-void ServiceWorkerVersion::OnNavigateClientFinished(
-    int request_id,
-    ServiceWorkerStatusCode status,
-    blink::mojom::ServiceWorkerClientInfoPtr client_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (running_status() != EmbeddedWorkerStatus::RUNNING)
-    return;
-
-  if (status != SERVICE_WORKER_OK) {
-    embedded_worker_->SendIpcMessage(
-        ServiceWorkerMsg_NavigateClientError(request_id, GURL()));
-    return;
-  }
-
-  DCHECK(client_info);
-  embedded_worker_->SendIpcMessage(
-      ServiceWorkerMsg_NavigateClientResponse(request_id, *client_info));
 }
 
 void ServiceWorkerVersion::OnPongFromWorker() {
