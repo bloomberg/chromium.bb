@@ -250,6 +250,11 @@ void Notification::close() {
 
   state_ = State::kClosed;
 
+  if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
+    // TODO(https://crbug.com/796991): Implement this via mojo.
+    return;
+  }
+
   const SecurityOrigin* origin = GetExecutionContext()->GetSecurityOrigin();
   DCHECK(origin);
 
