@@ -24,7 +24,6 @@ namespace scheduler {
 class SingleThreadIdleTaskRunner;
 class TaskQueue;
 class WebSchedulerImpl;
-class WebTaskRunnerImpl;
 class WorkerScheduler;
 
 class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
@@ -39,9 +38,7 @@ class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   // WebThread implementation.
   WebScheduler* Scheduler() const override;
   PlatformThreadId ThreadId() const override;
-  base::SingleThreadTaskRunner* GetWebTaskRunner() const override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetSingleThreadTaskRunner()
-      const override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override;
 
   // WebThreadBase implementation.
   scheduler::SingleThreadIdleTaskRunner* GetIdleTaskRunner() const override;
@@ -74,7 +71,6 @@ class PLATFORM_EXPORT WebThreadImplForWorkerScheduler
   scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner_;
   scoped_refptr<TaskQueue> task_queue_;
   scoped_refptr<scheduler::SingleThreadIdleTaskRunner> idle_task_runner_;
-  WebPrivatePtr<WebTaskRunnerImpl> web_task_runner_;
 
   base::AtomicFlag was_shutdown_on_thread_;
 };
