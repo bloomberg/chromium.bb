@@ -75,8 +75,7 @@ class MEDIA_EXPORT PipelineController {
   // Otherwise it is assumed that the media data may have changed.
   //
   // The remaining parameters are just passed directly to pipeline_.Start().
-  void Start(Pipeline::StartType start_type,
-             Demuxer* demuxer,
+  void Start(Demuxer* demuxer,
              Pipeline::Client* client,
              bool is_streaming,
              bool is_static);

@@ -52,8 +52,7 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
                   MediaLog* media_log);
   ~RendererWrapper() final;
 
-  void Start(StartType start_type,
-             Demuxer* demuxer,
+  void Start(Demuxer* demuxer,
              std::unique_ptr<Renderer> renderer,
              std::unique_ptr<TextRenderer> text_renderer,
              base::WeakPtr<PipelineImpl> weak_pipeline);
@@ -149,7 +148,7 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   void InitializeDemuxer(const PipelineStatusCB& done_cb);
   void InitializeRenderer(const PipelineStatusCB& done_cb);
   void DestroyRenderer();
-  void ReportMetadata(StartType start_type);
+  void ReportMetadata();
 
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -220,7 +219,6 @@ PipelineImpl::RendererWrapper::~RendererWrapper() {
 // running on the media thread would result in crashes.
 
 void PipelineImpl::RendererWrapper::Start(
-    StartType start_type,
     Demuxer* demuxer,
     std::unique_ptr<Renderer> renderer,
     std::unique_ptr<TextRenderer> text_renderer,
@@ -256,10 +254,8 @@ void PipelineImpl::RendererWrapper::Start(
   fns.Push(base::Bind(&RendererWrapper::InitializeDemuxer, weak_this_));
 
   // Once the demuxer is initialized successfully, media metadata must be
-  // available - report the metadata to client. If starting without a renderer
-  // we'll complete initialization at this point.
-  fns.Push(
-      base::Bind(&RendererWrapper::ReportMetadata, weak_this_, start_type));
+  // available - report the metadata to client.
+  fns.Push(base::Bind(&RendererWrapper::ReportMetadata, weak_this_));
 
   // Initialize renderer.
   fns.Push(base::Bind(&RendererWrapper::InitializeRenderer, weak_this_));
@@ -874,7 +870,7 @@ void PipelineImpl::RendererWrapper::CompleteSeek(base::TimeDelta seek_time,
 
   SetState(kPlaying);
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PipelineImpl::OnSeekDone, weak_pipeline_, false));
+      FROM_HERE, base::Bind(&PipelineImpl::OnSeekDone, weak_pipeline_));
 }
 
 void PipelineImpl::RendererWrapper::CompleteSuspend(PipelineStatus status) {
@@ -954,7 +950,7 @@ void PipelineImpl::RendererWrapper::DestroyRenderer() {
   }
 }
 
-void PipelineImpl::RendererWrapper::ReportMetadata(StartType start_type) {
+void PipelineImpl::RendererWrapper::ReportMetadata() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   PipelineMetadata metadata;
@@ -990,22 +986,6 @@ void PipelineImpl::RendererWrapper::ReportMetadata(StartType start_type) {
 
   main_task_runner_->PostTask(FROM_HERE, base::Bind(&PipelineImpl::OnMetadata,
                                                     weak_pipeline_, metadata));
-
-  // If suspended start has not been requested, or is not allowed given the
-  // metadata, continue the normal renderer initialization path.
-  if (start_type == StartType::kNormal ||
-      (start_type == StartType::kSuspendAfterMetadataForAudioOnly &&
-       metadata.has_video)) {
-    return;
-  }
-
-  // Abort pending render initialization tasks and suspend the pipeline.
-  pending_callbacks_.reset();
-  DestroyRenderer();
-  shared_state_.suspend_timestamp = base::TimeDelta();
-  SetState(kSuspended);
-  main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PipelineImpl::OnSeekDone, weak_pipeline_, true));
 }
 
 PipelineImpl::PipelineImpl(
@@ -1017,7 +997,6 @@ PipelineImpl::PipelineImpl(
       client_(nullptr),
       playback_rate_(kDefaultPlaybackRate),
       volume_(kDefaultVolume),
-      is_suspended_(false),
       weak_factory_(this) {
   DVLOG(2) << __func__;
   renderer_wrapper_.reset(new RendererWrapper(
@@ -1036,8 +1015,7 @@ PipelineImpl::~PipelineImpl() {
   media_task_runner_->DeleteSoon(FROM_HERE, renderer_wrapper_.release());
 }
 
-void PipelineImpl::Start(StartType start_type,
-                         Demuxer* demuxer,
+void PipelineImpl::Start(Demuxer* demuxer,
                          std::unique_ptr<Renderer> renderer,
                          Client* client,
                          const PipelineStatusCB& seek_cb) {
@@ -1067,7 +1045,7 @@ void PipelineImpl::Start(StartType start_type,
   media_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&RendererWrapper::Start,
-                 base::Unretained(renderer_wrapper_.get()), start_type, demuxer,
+                 base::Unretained(renderer_wrapper_.get()), demuxer,
                  base::Passed(&renderer), base::Passed(&text_renderer),
                  weak_factory_.GetWeakPtr()));
 }
@@ -1174,12 +1152,6 @@ void PipelineImpl::Resume(std::unique_ptr<Renderer> renderer,
 bool PipelineImpl::IsRunning() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return !!client_;
-}
-
-bool PipelineImpl::IsSuspended() const {
-  DVLOG(2) << __func__;
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return is_suspended_;
 }
 
 double PipelineImpl::GetPlaybackRate() const {
@@ -1450,13 +1422,12 @@ void PipelineImpl::OnVideoDecoderChange(const std::string& name) {
   client_->OnVideoDecoderChange(name);
 }
 
-void PipelineImpl::OnSeekDone(bool is_suspended) {
+void PipelineImpl::OnSeekDone() {
   DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());
 
   seek_time_ = kNoTimestamp;
-  is_suspended_ = is_suspended;
 
   DCHECK(!seek_cb_.is_null());
   base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
@@ -1467,7 +1438,6 @@ void PipelineImpl::OnSuspendDone() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());
 
-  is_suspended_ = true;
   DCHECK(!suspend_cb_.is_null());
   base::ResetAndReturn(&suspend_cb_).Run(PIPELINE_OK);
 }

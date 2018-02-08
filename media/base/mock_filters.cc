@@ -23,12 +23,11 @@ MockPipelineClient::~MockPipelineClient() = default;
 MockPipeline::MockPipeline() = default;
 MockPipeline::~MockPipeline() = default;
 
-void MockPipeline::Start(StartType start_type,
-                         Demuxer* demuxer,
+void MockPipeline::Start(Demuxer* demuxer,
                          std::unique_ptr<Renderer> renderer,
                          Client* client,
                          const PipelineStatusCB& seek_cb) {
-  Start(start_type, demuxer, &renderer, client, seek_cb);
+  Start(demuxer, &renderer, client, seek_cb);
 }
 
 void MockPipeline::Resume(std::unique_ptr<Renderer> renderer,
