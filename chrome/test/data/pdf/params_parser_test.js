@@ -7,12 +7,13 @@ var tests = [
    * Test named destinations.
    */
   function testParamsParser() {
-    var paramsParser = new OpenPDFParamsParser(function(name) {
-      if (name == 'RU')
+    var paramsParser = new OpenPDFParamsParser(function(message) {
+      chrome.test.assertEq('getNamedDestination', message.type);
+      if (message.namedDestination == 'RU')
         paramsParser.onNamedDestinationReceived(26);
-      else if (name == 'US')
+      else if (message.namedDestination == 'US')
         paramsParser.onNamedDestinationReceived(0);
-      else if (name == 'UY')
+      else if (message.namedDestination == 'UY')
         paramsParser.onNamedDestinationReceived(22);
       else
         paramsParser.onNamedDestinationReceived(-1);

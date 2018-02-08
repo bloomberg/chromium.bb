@@ -112,10 +112,10 @@ var tests = [
                                 function() {}, function() {}, function() {},
                                 0, 1, 0);
 
-    var paramsParser = new OpenPDFParamsParser(function(name) {
-      if (name == 'US')
+    var paramsParser = new OpenPDFParamsParser(function(message) {
+      if (message.namedDestination == 'US')
         paramsParser.onNamedDestinationReceived(0);
-      else if (name == 'UY')
+      else if (message.namedDestination == 'UY')
         paramsParser.onNamedDestinationReceived(2);
       else
         paramsParser.onNamedDestinationReceived(-1);
