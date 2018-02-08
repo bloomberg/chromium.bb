@@ -1419,11 +1419,9 @@ void BridgedNativeWidget::InitCompositor() {
   DCHECK(layer());
   float scale_factor = GetDeviceScaleFactorFromView(compositor_superview_);
   gfx::Size size_in_dip = GetClientAreaSize();
-  // TODO(fsamuel): A valid viz::LocalSurfaceId() likely needs to be plumbed
-  // here to properly enable surface synchronization.
   compositor_->SetScaleAndSize(scale_factor,
                                ConvertSizeToPixel(scale_factor, size_in_dip),
-                               viz::LocalSurfaceId());
+                               parent_local_surface_id_allocator_.GenerateId());
   compositor_->SetRootLayer(layer());
 }
 
@@ -1496,15 +1494,18 @@ void BridgedNativeWidget::AddCompositorSuperview() {
 void BridgedNativeWidget::UpdateLayerProperties() {
   DCHECK(layer());
   DCHECK(compositor_superview_);
+  float scale_factor = GetDeviceScaleFactorFromView(compositor_superview_);
   gfx::Size size_in_dip = GetClientAreaSize();
+  gfx::Size size_in_pixel = ConvertSizeToPixel(scale_factor, size_in_dip);
+
   layer()->SetBounds(gfx::Rect(size_in_dip));
 
-  float scale_factor = GetDeviceScaleFactorFromView(compositor_superview_);
-  // TODO(fsamuel): A valid viz::LocalSurfaceId() likely needs to be plumbed
-  // here to properly enable surface synchronization.
-  compositor_->SetScaleAndSize(scale_factor,
-                               ConvertSizeToPixel(scale_factor, size_in_dip),
-                               viz::LocalSurfaceId());
+  if (compositor_->size() != size_in_pixel ||
+      compositor_->device_scale_factor() != scale_factor) {
+    compositor_->SetScaleAndSize(
+        scale_factor, size_in_pixel,
+        parent_local_surface_id_allocator_.GenerateId());
+  }
 
   // For a translucent window, the shadow calculation needs to be carried out
   // after the frame from the compositor arrives.
