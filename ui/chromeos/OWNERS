@@ -5,3 +5,6 @@ stevenjb@chromium.org
 
 # Accessibility
 per-file touch_exploration_controller*=dmazzoni@chromium.org
+
+# grdp files
+per-file keyboard_shortcut_viewer_strings.grdp=file://ui/chromeos/ksv/OWNERS
