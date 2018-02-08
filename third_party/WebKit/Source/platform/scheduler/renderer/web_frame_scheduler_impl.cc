@@ -40,9 +40,9 @@ const char* PausedStateToString(bool is_paused) {
   }
 }
 
-const char* StoppedStateToString(bool is_stopped) {
-  if (is_stopped) {
-    return "stopped";
+const char* FrozenStateToString(bool is_frozen) {
+  if (is_frozen) {
+    return "frozen";
   } else {
     return "running";
   }
@@ -83,36 +83,31 @@ WebFrameSchedulerImpl::WebFrameSchedulerImpl(
       parent_web_view_scheduler_(parent_web_view_scheduler),
       blame_context_(blame_context),
       throttling_state_(WebFrameScheduler::ThrottlingState::kNotThrottled),
-      frame_visible_(
-          true,
-          "WebFrameScheduler.FrameVisible",
-          this,
-          &tracing_controller_,
-          VisibilityStateToString),
-      page_visible_(
-          true,
-          "WebFrameScheduler.PageVisible",
-          this,
-          &tracing_controller_,
-          VisibilityStateToString),
-      page_stopped_(
-          false,
-          "WebFrameScheduler.PageStopped",
-          this,
-          &tracing_controller_,
-          StoppedStateToString),
-      frame_paused_(
-          false,
-          "WebFrameScheduler.FramePaused",
-          this,
-          &tracing_controller_,
-          PausedStateToString),
-      cross_origin_(
-          false,
-          "WebFrameScheduler.Origin",
-          this,
-          &tracing_controller_,
-          CrossOriginStateToString),
+      frame_visible_(true,
+                     "WebFrameScheduler.FrameVisible",
+                     this,
+                     &tracing_controller_,
+                     VisibilityStateToString),
+      page_visible_(true,
+                    "WebFrameScheduler.PageVisible",
+                    this,
+                    &tracing_controller_,
+                    VisibilityStateToString),
+      page_frozen_(false,
+                   "WebFrameScheduler.PageFrozen",
+                   this,
+                   &tracing_controller_,
+                   FrozenStateToString),
+      frame_paused_(false,
+                    "WebFrameScheduler.FramePaused",
+                    this,
+                    &tracing_controller_,
+                    PausedStateToString),
+      cross_origin_(false,
+                    "WebFrameScheduler.Origin",
+                    this,
+                    &tracing_controller_,
+                    CrossOriginStateToString),
       frame_type_(frame_type),
       active_connection_count_(0),
       weak_factory_(this) {
@@ -476,7 +471,7 @@ void WebFrameSchedulerImpl::SetPageVisible(bool page_visible) {
   bool was_throttled = ShouldThrottleTimers();
   page_visible_ = page_visible;
   if (page_visible_)
-    page_stopped_ = false;  // visible page must not be stopped.
+    page_frozen_ = false;  // visible page must not be frozen.
   UpdateThrottling(was_throttled);
   UpdateThrottlingState();
 }
@@ -503,11 +498,11 @@ void WebFrameSchedulerImpl::SetPaused(bool frame_paused) {
     pausable_queue_enabled_voter_->SetQueueEnabled(!frame_paused);
 }
 
-void WebFrameSchedulerImpl::SetPageStopped(bool stopped) {
-  if (stopped == page_stopped_)
+void WebFrameSchedulerImpl::SetPageFrozen(bool frozen) {
+  if (frozen == page_frozen_)
     return;
   DCHECK(!page_visible_);
-  page_stopped_ = stopped;
+  page_frozen_ = frozen;
   UpdateThrottlingState();
 }
 
@@ -524,7 +519,7 @@ void WebFrameSchedulerImpl::UpdateThrottlingState() {
 WebFrameScheduler::ThrottlingState
 WebFrameSchedulerImpl::CalculateThrottlingState() const {
   if (RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled() &&
-      page_stopped_) {
+      page_frozen_) {
     DCHECK(!page_visible_);
     return WebFrameScheduler::ThrottlingState::kStopped;
   }

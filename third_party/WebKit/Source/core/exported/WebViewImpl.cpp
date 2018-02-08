@@ -948,13 +948,13 @@ void WebViewImpl::RequestBeginMainFrameNotExpected(bool new_state) {
   }
 }
 
-void WebViewImpl::SetPageStopped(bool stopped) {
+void WebViewImpl::SetPageFrozen(bool frozen) {
   if (!GetPage())
     return;
-  GetPage()->SetLifecycleState(stopped ? PageLifecycleState::kStopped
-                                       : GetPage()->IsPageVisible()
-                                             ? PageLifecycleState::kActive
-                                             : PageLifecycleState::kHidden);
+  GetPage()->SetLifecycleState(frozen ? PageLifecycleState::kFrozen
+                                      : GetPage()->IsPageVisible()
+                                            ? PageLifecycleState::kActive
+                                            : PageLifecycleState::kHidden);
 }
 
 WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {

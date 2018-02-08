@@ -61,7 +61,7 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   void SetPageVisible(bool page_visible) override;
   bool IsPageVisible() const override;
   void SetPaused(bool frame_paused) override;
-  void SetPageStopped(bool) override;
+  void SetPageFrozen(bool) override;
 
   void SetCrossOrigin(bool cross_origin) override;
   bool IsCrossOrigin() const override;
@@ -143,7 +143,7 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   WebFrameScheduler::ThrottlingState throttling_state_;
   TraceableState<bool, kTracingCategoryNameInfo> frame_visible_;
   TraceableState<bool, kTracingCategoryNameInfo> page_visible_;
-  TraceableState<bool, kTracingCategoryNameInfo> page_stopped_;
+  TraceableState<bool, kTracingCategoryNameInfo> page_frozen_;
   TraceableState<bool, kTracingCategoryNameInfo> frame_paused_;
   TraceableState<bool, kTracingCategoryNameInfo> cross_origin_;
   WebFrameScheduler::FrameType frame_type_;

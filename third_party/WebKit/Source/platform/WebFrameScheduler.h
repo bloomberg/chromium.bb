@@ -74,9 +74,9 @@ class WebFrameScheduler {
   // allowed to run on a suspended frame.
   virtual void SetPaused(bool) = 0;
 
-  // Notifies observers of transitioning to and from STOPPED state in
+  // Notifies observers of transitioning to and from FROZEN state in
   // background.
-  virtual void SetPageStopped(bool) {}
+  virtual void SetPageFrozen(bool) {}
 
   // Set whether this frame is cross origin w.r.t. the top level frame. Cross
   // origin frames may use a different scheduling policy from same origin
