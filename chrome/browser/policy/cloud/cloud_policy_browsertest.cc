@@ -248,6 +248,7 @@ class CloudPolicyTest : public InProcessBrowserTest,
 #endif
     policy_manager->core()->client()->Register(
         registration_type, em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
+        em::DeviceRegisterRequest::LIFETIME_INDEFINITE,
         em::LicenseType::UNDEFINED, "bogus", std::string(), std::string(),
         std::string());
     run_loop.Run();

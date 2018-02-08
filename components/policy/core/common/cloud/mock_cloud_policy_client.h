@@ -21,10 +21,11 @@ class MockCloudPolicyClient : public CloudPolicyClient {
   virtual ~MockCloudPolicyClient();
 
   MOCK_METHOD2(SetupRegistration, void(const std::string&, const std::string&));
-  MOCK_METHOD7(
+  MOCK_METHOD8(
       Register,
       void(enterprise_management::DeviceRegisterRequest::Type type,
            enterprise_management::DeviceRegisterRequest::Flavor flavor,
+           enterprise_management::DeviceRegisterRequest::Lifetime lifetime,
            enterprise_management::LicenseType::LicenseTypeEnum license_type,
            const std::string&,
            const std::string&,

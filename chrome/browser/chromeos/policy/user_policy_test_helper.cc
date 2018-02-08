@@ -104,6 +104,7 @@ void UserPolicyTestHelper::WaitForInitialPolicy(Profile* profile) {
   policy_manager->core()->client()->Register(
       registration_type,
       enterprise_management::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
+      enterprise_management::DeviceRegisterRequest::LIFETIME_INDEFINITE,
       enterprise_management::LicenseType::UNDEFINED, "bogus", std::string(),
       std::string(), std::string());
 
