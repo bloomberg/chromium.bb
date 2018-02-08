@@ -31,8 +31,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
-#include "chrome/browser/ui/user_manager.h"
-#include "chrome/browser/ui/webui/profile_helper.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -62,6 +60,8 @@
 #if defined(OS_CHROMEOS)
 #include "components/signin/core/browser/signin_manager_base.h"
 #else
+#include "chrome/browser/ui/user_manager.h"
+#include "chrome/browser/ui/webui/profile_helper.h"
 #include "components/signin/core/browser/signin_manager.h"
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -650,8 +650,10 @@ void PeopleHandler::HandleGetSyncStatus(const base::ListValue* args) {
 }
 
 void PeopleHandler::HandleManageOtherPeople(const base::ListValue* /* args */) {
+#if !defined(OS_CHROMEOS)
   UserManager::Show(base::FilePath(),
                     profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+#endif  // !defined(OS_CHROMEOS)
 }
 
 void PeopleHandler::CloseSyncSetup() {
