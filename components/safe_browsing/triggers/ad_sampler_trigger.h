@@ -6,6 +6,7 @@
 #define COMPONENTS_SAFE_BROWSING_TRIGGERS_AD_SAMPLER_TRIGGER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -80,9 +81,16 @@ class AdSamplerTrigger : public content::WebContentsObserver,
                    net::URLRequestContextGetter* request_context,
                    history::HistoryService* history_service);
 
+  // Called to create an ad sample report.
+  void CreateAdSampleReport();
+
   // Ad samples will be collected with frequency
   // 1/|sampler_frequency_denominator_|
   size_t sampler_frequency_denominator_;
+
+  // The delay (in milliseconds) to wait before starting a report. Can be
+  // ovewritten for tests.
+  int64_t start_report_delay_ms_;
 
   // The delay (in milliseconds) to wait before finishing a report. Can be
   // overwritten for tests.
@@ -95,6 +103,8 @@ class AdSamplerTrigger : public content::WebContentsObserver,
   PrefService* prefs_;
   net::URLRequestContextGetter* request_context_;
   history::HistoryService* history_service_;
+
+  base::WeakPtrFactory<AdSamplerTrigger> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AdSamplerTrigger);
 };
