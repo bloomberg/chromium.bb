@@ -32,6 +32,18 @@ Polymer({
       },
 
       /**
+       * When true, the element is transitioning its opened state. When false,
+       * the element has finished opening/closing.
+       *
+       * @attribute transitioning
+       */
+      transitioning: {
+        type: Boolean,
+        notify: true,
+        readOnly: true
+      },
+
+      /**
        * Set noAnimation to true to disable animations.
        *
        * @attribute noAnimation
@@ -73,16 +85,10 @@ Polymer({
     hostAttributes: {
       role: 'group',
       'aria-hidden': 'true',
-      'aria-expanded': 'false'
     },
 
     listeners: {
-      transitionend: '_transitionEnd'
-    },
-
-    attached: function() {
-      // It will take care of setting correct classes and styles.
-      this._transitionEnd();
+      transitionend: '_onTransitionEnd'
     },
 
     /**
@@ -110,15 +116,13 @@ Polymer({
     updateSize: function(size, animated) {
       // Consider 'auto' as '', to take full size.
       size = size === 'auto' ? '' : size;
-      // No change!
-      if (this._desiredSize === size) {
-        return;
-      }
+
+      var willAnimate = animated && !this.noAnimation &&
+                        this.isAttached && this._desiredSize !== size;
 
       this._desiredSize = size;
 
       this._updateTransition(false);
-      var willAnimate = animated && !this.noAnimation && this._isDisplayed;
       // If we can animate, must do some prep work.
       if (willAnimate) {
         // Animation will start at the current size.
@@ -171,9 +175,9 @@ Polymer({
     },
 
     _openedChanged: function() {
-      this.setAttribute('aria-expanded', this.opened);
       this.setAttribute('aria-hidden', !this.opened);
 
+      this._setTransitioning(true);
       this.toggleClass('iron-collapse-closed', false);
       this.toggleClass('iron-collapse-opened', false);
       this.updateSize(this.opened ? 'auto' : '0px', true);
@@ -190,19 +194,13 @@ Polymer({
       this.toggleClass('iron-collapse-opened', this.opened);
       this._updateTransition(false);
       this.notifyResize();
+      this._setTransitioning(false);
     },
 
-    /**
-     * Simplistic heuristic to detect if element has a parent with display: none
-     *
-     * @private
-     */
-    get _isDisplayed() {
-      var rect = this.getBoundingClientRect();
-      for (var prop in rect) {
-        if (rect[prop] !== 0) return true;
+    _onTransitionEnd: function(event) {
+      if (Polymer.dom(event).rootTarget === this) {
+        this._transitionEnd();
       }
-      return false;
     },
 
     _calcSize: function() {

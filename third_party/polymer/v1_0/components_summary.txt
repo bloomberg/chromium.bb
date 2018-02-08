@@ -42,9 +42,9 @@ Tree link: https://github.com/PolymerElements/iron-checked-element-behavior/tree
 
 Name: iron-collapse
 Repository: https://github.com/PolymerElements/iron-collapse.git
-Tree: v1.2.1
-Revision: 5f994b1ac109925f6849b134e479229a16a752db
-Tree link: https://github.com/PolymerElements/iron-collapse/tree/v1.2.1
+Tree: v2.1.0
+Revision: a805b8dd39cd30631f218298fd5315c4d93d1daa
+Tree link: https://github.com/PolymerElements/iron-collapse/tree/v2.1.0
 
 Name: iron-dropdown
 Repository: https://github.com/PolymerElements/iron-dropdown.git
@@ -156,9 +156,9 @@ Tree link: https://github.com/PolymerElements/iron-scroll-target-behavior/tree/v
 
 Name: iron-scroll-threshold
 Repository: https://github.com/PolymerElements/iron-scroll-threshold.git
-Tree: v1.0.2
-Revision: 3b0ded11ea87703a4f1ef48cea93226fb0e71ef1
-Tree link: https://github.com/PolymerElements/iron-scroll-threshold/tree/v1.0.2
+Tree: v2.0.0
+Revision: e7bba05323f4779042c1e17e290860cf2b1a8ed5
+Tree link: https://github.com/PolymerElements/iron-scroll-threshold/tree/v2.0.0
 
 Name: iron-selector
 Repository: https://github.com/PolymerElements/iron-selector.git
