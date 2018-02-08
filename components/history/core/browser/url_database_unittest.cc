@@ -271,6 +271,11 @@ TEST_F(URLDatabaseTest, EnumeratorForSignificant) {
       TimeDelta::FromDays(kLowQualityMatchAgeLimitInDays + 1));
   EXPECT_TRUE(AddURL(url_no_match_last_visit));
 
+  URLRow url_hidden(GURL("http://www.url_match_higher_typed_count.com/hidden"));
+  url_hidden.set_typed_count(kLowQualityMatchTypedLimit + 1);
+  url_hidden.set_hidden(true);
+  EXPECT_TRUE(AddURL(url_hidden));
+
   URLDatabase::URLEnumerator history_enum;
   EXPECT_TRUE(InitURLEnumeratorForSignificant(&history_enum));
 

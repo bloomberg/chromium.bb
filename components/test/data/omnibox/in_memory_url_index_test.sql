@@ -55,7 +55,7 @@ INSERT INTO "urls" VALUES(8,'http://getsharekit.com/index.html','ShareKit : Drop
 INSERT INTO "urls" VALUES(9,'http://en.wikipedia.org/wiki/Control-Z','Control-Z - Wikipedia, the free encyclopedia',0,0,6,0);
 INSERT INTO "urls" VALUES(10,'http://vmware.com/info?id=724','VMware Account Management Login',1,0,6,0);
 INSERT INTO "urls" VALUES(11,'http://www.tech-recipes.com/rx/2621/os_x_change_path_environment_variable/','OS X: Change your PATH environment variable | Mac system administration | Tech-Recipes',0,1,6,0);  -- Qualifies
-INSERT INTO "urls" VALUES(12,'http://view.atdmt.com/PPJ/iview/194841301/direct;wi.160;hi.600/01?click=','',6,6,0,1);  -- Qualifies
+INSERT INTO "urls" VALUES(12,'http://view.atdmt.com/PPJ/iview/194841301/direct;wi.160;hi.600/01?click=','',6,6,0,0);  -- Qualifies
 INSERT INTO "urls" VALUES(15,'http://www.cnn.com/','CNN.com International - Breaking, World, Business, Sports, Entertainment and Video News',6,6,0,0);  -- Qualifies
 INSERT INTO "urls" VALUES(16,'http://www.zdnet.com/','Technology News, Analysis, Comments and Product Reviews for IT Professionals | ZDNet',6,6,0,0);  -- Qualifies
 INSERT INTO "urls" VALUES(17,'http://www.crash.net/','Crash.Net | Formula 1 & MotoGP | Motorsport News',6,6,0,0);  -- Qualifies
@@ -70,7 +70,7 @@ INSERT INTO "urls" VALUES(25,'http://www.codeguru.com/','CodeGuru : codeguru',6,
 INSERT INTO "urls" VALUES(26,'http://www.codeproject.com/','Your Development Resource - CodeProject',6,6,0,0);  -- Qualifies
 INSERT INTO "urls" VALUES(27,'http://www.tomshardware.com/us/#redir','Tom''s Hardware: Hardware News, Tests and Reviews',6,6,0,0);  -- Qualifies
 INSERT INTO "urls" VALUES(28,'http://www.ddj.com/windows/184416623','Dr. ABRACADABRA''s | Avoiding the Visual C++ Runtime Library | 2 1, 2003',6,6,0,0);  -- Qualifies
-INSERT INTO "urls" VALUES(29,'http://svcs.cnn.com/weather/getForecast?time=34&mode=json_html&zipCode=336736767676&locCode=EGLL&celcius=true&csiID=csi2','',6,6,0,1);  -- Qualifies
+INSERT INTO "urls" VALUES(29,'http://svcs.cnn.com/weather/getForecast?time=34&mode=json_html&zipCode=336736767676&locCode=EGLL&celcius=true&csiID=csi2','',6,6,0,0);  -- Qualifies
 INSERT INTO "urls" VALUES(30,'http://www.drudgery.com/Dogs%20and%20Mice','Life in the Slow Lane',8,2,2,0);  -- Qualifies
 INSERT INTO "urls" VALUES(31,'http://www.redrudgerydo.com/','Music of the Wild Landscape',0,0,6,0);
 INSERT INTO "urls" VALUES(32,'https://NearlyPerfectResult.com/','Practically Perfect Search Result',99,99,0,0);  -- Qualifies
@@ -78,6 +78,8 @@ INSERT INTO "urls" VALUES(33,'http://QuiteUselessSearchResultxyz.com/','Practica
 INSERT INTO "urls" VALUES(34,'http://FubarFubarAndFubar.com/','Situation Normal -- FUBARED',99,99,0,0);  -- Qualifies
 INSERT INTO "urls" VALUES(35,'http://en.wikipedia.org/wiki/1%25_rule_(Internet_culture)','Do Not Need Title',2,2,0,0);  -- Qualifies
 INSERT INTO "urls" VALUES(36,'http://default-engine.com?q=query','Query Query Query',2,2,0,0);  -- Qualifies
+INSERT INTO "urls" VALUES(37,'http://view.atdmt.com/PPJ/iview/194841301/hidden/direct;wi.160;hi.600/01?click=','',6,6,0,1);
+INSERT INTO "urls" VALUES(38,'http://svcs.cnn.com/hidden/weather/getForecast?time=34&mode=json_html&zipCode=336736767676&locCode=EGLL&celcius=true&csiID=csi2','',6,6,0,1);
 
 -- This file creates some visits, enough to test (in InMemoryURLIndexTest)
 -- the visits functionality, certainly not as many visits as are implied

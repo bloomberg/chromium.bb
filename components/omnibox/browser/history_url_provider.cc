@@ -403,7 +403,7 @@ HistoryURLProvider::VisitClassifier::VisitClassifier(
     const GURL url_with_prefix = url_formatter::FixupURL(
         base::UTF16ToUTF8(prefix_it->prefix + input.text()), desired_tld);
     if (url_with_prefix.is_valid() &&
-        db_->GetRowForURL(url_with_prefix, &url_row_)) {
+        db_->GetRowForURL(url_with_prefix, &url_row_) && !url_row_.hidden()) {
       type_ = VISITED;
       return;
     }
