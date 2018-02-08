@@ -105,6 +105,12 @@ void GpuDataManagerImpl::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
   private_->SetGpuInfo(gpu_info);
 }
 
+void GpuDataManagerImpl::GetDisabledWebGLExtensions(
+    std::string* disabled_webgl_extensions) const {
+  base::AutoLock auto_lock(lock_);
+  private_->GetDisabledWebGLExtensions(disabled_webgl_extensions);
+}
+
 void GpuDataManagerImpl::Initialize() {
   base::AutoLock auto_lock(lock_);
   private_->Initialize();

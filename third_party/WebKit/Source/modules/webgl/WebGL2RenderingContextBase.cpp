@@ -38,10 +38,6 @@ namespace {
 
 const GLuint64 kMaxClientWaitTimeout = 0u;
 
-GLsync SyncObjectOrZero(const WebGLSync* object) {
-  return object ? object->Object() : nullptr;
-}
-
 // TODO(kainino): Change outByteLength to GLuint and change the associated
 // range checking (and all uses) - overflow becomes possible in cases below
 bool ValidateSubSourceAndGetData(DOMArrayBufferView* view,
@@ -4166,7 +4162,25 @@ GLenum WebGL2RenderingContextBase::clientWaitSync(WebGLSync* sync,
     return GL_WAIT_FAILED;
   }
 
-  return ContextGL()->ClientWaitSync(SyncObjectOrZero(sync), flags, timeout);
+  // clientWaitSync must poll for updates no more than once per
+  // requestAnimationFrame, so all validation, and the implementation,
+  // must be done inline.
+  if (!(flags == 0 || flags == GL_SYNC_FLUSH_COMMANDS_BIT)) {
+    SynthesizeGLError(GL_INVALID_VALUE, "clientWaitSync", "invalid flags");
+    return GL_WAIT_FAILED;
+  }
+
+  if (sync->IsSignaled()) {
+    return GL_ALREADY_SIGNALED;
+  }
+
+  sync->UpdateCache(ContextGL());
+
+  if (sync->IsSignaled()) {
+    return GL_CONDITION_SATISFIED;
+  }
+
+  return GL_TIMEOUT_EXPIRED;
 }
 
 void WebGL2RenderingContextBase::waitSync(WebGLSync* sync,
@@ -4200,10 +4214,8 @@ ScriptValue WebGL2RenderingContextBase::getSyncParameter(
     case GL_SYNC_STATUS:
     case GL_SYNC_CONDITION:
     case GL_SYNC_FLAGS: {
-      GLint value = 0;
-      GLsizei length = -1;
-      ContextGL()->GetSynciv(SyncObjectOrZero(sync), pname, 1, &length, &value);
-      return WebGLAny(script_state, static_cast<unsigned>(value));
+      sync->UpdateCache(ContextGL());
+      return WebGLAny(script_state, sync->GetCachedResult(pname));
     }
     default:
       SynthesizeGLError(GL_INVALID_ENUM, "getSyncParameter",

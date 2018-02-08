@@ -903,6 +903,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   bool extension_enabled_[kWebGLExtensionNameCount];
   HeapVector<TraceWrapperMember<ExtensionTracker>> extensions_;
+  HashSet<String> disabled_extensions_;
 
   template <typename T>
   void RegisterExtension(Member<T>& extension_ptr,

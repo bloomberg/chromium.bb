@@ -15,8 +15,14 @@ data_path = os.path.join(
 test_harness_script = r"""
   var domAutomationController = {};
   domAutomationController._finished = false;
+  domAutomationController._succeeded = false;
   domAutomationController.send = function(msg) {
     domAutomationController._finished = true;
+    if (msg.toLowerCase() == "finished") {
+      domAutomationController._succeeded = true;
+    } else {
+      domAutomationController._succeeded = false;
+    }
   }
 
   window.domAutomationController = domAutomationController;
@@ -78,7 +84,9 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
              ('GpuProcess_disable_gpu_and_swiftshader',
               'gpu/functional_webgl.html'),
              ('GpuProcess_disabling_workarounds_works', 'chrome:gpu'),
-             ('GpuProcess_swiftshader_for_webgl', 'gpu/functional_webgl.html'))
+             ('GpuProcess_swiftshader_for_webgl', 'gpu/functional_webgl.html'),
+             ('GpuProcess_webgl_disabled_extension',
+              'gpu/functional_webgl_disabled_extension.html'))
 
     # The earlier has_transparent_visuals_gpu_process and
     # no_transparent_visuals_gpu_process tests became no-ops in
@@ -105,8 +113,11 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   def _NavigateAndWait(self, test_path):
     self._Navigate(test_path)
-    self.tab.action_runner.WaitForJavaScriptCondition(
+    tab = self.tab
+    tab.action_runner.WaitForJavaScriptCondition(
       'window.domAutomationController._finished', timeout=10)
+    if not tab.EvaluateJavaScript('window.domAutomationController._succeeded'):
+      self.fail('Test reported that it failed')
 
   def _VerifyGpuProcessPresent(self):
     tab = self.tab
@@ -397,6 +408,13 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       for ext in ext_list:
         if tab.EvaluateJavaScript('!gl_context.getExtension("' + ext + '")'):
           self.fail("Expected " + ext + " support")
+
+  def _GpuProcess_webgl_disabled_extension(self, test_path):
+    # Hit exception from id 257 from kGpuDriverBugListEntries.
+    self.RestartBrowserIfNecessaryWithArgs([
+      '--gpu-driver-bug-list-test-group=2',
+    ])
+    self._NavigateAndWait(test_path)
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.
