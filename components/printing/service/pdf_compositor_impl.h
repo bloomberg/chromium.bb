@@ -49,6 +49,22 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
       const ContentToFrameMap& subframe_content_map,
       mojom::PdfCompositor::CompositeDocumentToPdfCallback callback) override;
 
+ protected:
+  // This is the uniform underlying type for both
+  // mojom::PdfCompositor::CompositePageToPdfCallback and
+  // mojom::PdfCompositor::CompositeDocumentToPdfCallback.
+  using CompositeToPdfCallback =
+      base::OnceCallback<void(PdfCompositor::Status,
+                              mojo::ScopedSharedBufferHandle)>;
+
+  // Make this function virtual so tests can override it.
+  virtual void FulfillRequest(
+      uint64_t frame_guid,
+      base::Optional<uint32_t> page_num,
+      std::unique_ptr<base::SharedMemory> serialized_content,
+      const ContentToFrameMap& subframe_content_map,
+      CompositeToPdfCallback callback);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(PdfCompositorImplTest, IsReadyToComposite);
   FRIEND_TEST_ALL_PREFIXES(PdfCompositorImplTest, MultiLayerDependency);
@@ -58,19 +74,13 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
   // between content id and its actual content.
   using DeserializationContext = base::flat_map<uint32_t, sk_sp<SkPicture>>;
 
-  // This is the uniform underlying type for both
-  // mojom::PdfCompositor::CompositePageToPdfCallback and
-  // mojom::PdfCompositor::CompositeDocumentToPdfCallback.
-  using CompositeToPdfCallback =
-      base::OnceCallback<void(PdfCompositor::Status,
-                              mojo::ScopedSharedBufferHandle)>;
-
-  // Other than content, it also stores the mapping for all the subframe content
-  // to the frames they refer to, and status during frame composition.
-  struct FrameInfo {
-    FrameInfo(std::unique_ptr<base::SharedMemory> content,
-              const ContentToFrameMap& map);
-    ~FrameInfo();
+  // Base structure to store a frame's content and its subframe
+  // content information.
+  struct FrameContentInfo {
+    FrameContentInfo(std::unique_ptr<base::SharedMemory> content,
+                     const ContentToFrameMap& map);
+    FrameContentInfo();
+    ~FrameContentInfo();
 
     // Serialized SkPicture content of this frame.
     std::unique_ptr<base::SharedMemory> serialized_content;
@@ -80,6 +90,12 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
 
     // Subframe content id and its corresponding frame guid.
     ContentToFrameMap subframe_content_map;
+  };
+
+  // Other than content, it also stores the status during frame composition.
+  struct FrameInfo : public FrameContentInfo {
+    FrameInfo();
+    ~FrameInfo();
 
     // The following fields are used for storing composition status.
     // Set to true when this frame's |serialized_content| is composed with
@@ -92,9 +108,11 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
   using FrameMap = base::flat_map<uint64_t, std::unique_ptr<FrameInfo>>;
 
   // Stores the page or document's request information.
-  struct RequestInfo {
+  struct RequestInfo : public FrameContentInfo {
     RequestInfo(uint64_t frame_guid,
                 base::Optional<uint32_t> page_num,
+                std::unique_ptr<base::SharedMemory> content,
+                const ContentToFrameMap& content_info,
                 const base::flat_set<uint64_t>& pending_subframes,
                 CompositeToPdfCallback callback);
     ~RequestInfo();
@@ -149,19 +167,13 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
   DeserializationContext GetDeserializationContext(
       const ContentToFrameMap& subframe_content_map);
 
-  void FullfillRequest(uint64_t frame_guid,
-                       base::Optional<uint32_t> page_num,
-                       std::unique_ptr<base::SharedMemory> serialized_content,
-                       const ContentToFrameMap& subframe_content_map,
-                       CompositeToPdfCallback callback);
-
   const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   const std::string creator_;
 
   // Keep track of all frames' information indexed by frame id.
   FrameMap frame_info_map_;
 
-  std::unique_ptr<RequestInfo> request_;
+  std::vector<std::unique_ptr<RequestInfo>> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(PdfCompositorImpl);
 };

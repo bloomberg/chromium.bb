@@ -33,7 +33,8 @@ void PrintCompositeClient::DoCompositePageToPdf(
     const ContentToFrameMap& subframe_content_map,
     mojom::PdfCompositor::CompositePageToPdfCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto& compositor = GetCompositeRequest(document_cookie, page_num);
+
+  auto& compositor = GetCompositeRequest(document_cookie);
 
   DCHECK(data_size);
   mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
@@ -45,8 +46,7 @@ void PrintCompositeClient::DoCompositePageToPdf(
   compositor->CompositePageToPdf(
       frame_guid, page_num, std::move(buffer_handle), subframe_content_map,
       base::BindOnce(&PrintCompositeClient::OnDidCompositePageToPdf,
-                     base::Unretained(this), page_num, document_cookie,
-                     std::move(callback)));
+                     base::Unretained(this), std::move(callback)));
 }
 
 void PrintCompositeClient::DoCompositeDocumentToPdf(
@@ -57,7 +57,7 @@ void PrintCompositeClient::DoCompositeDocumentToPdf(
     const ContentToFrameMap& subframe_content_map,
     mojom::PdfCompositor::CompositeDocumentToPdfCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto& compositor = GetCompositeRequest(document_cookie, base::nullopt);
+  auto& compositor = GetCompositeRequest(document_cookie);
 
   DCHECK(data_size);
   mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
@@ -74,12 +74,9 @@ void PrintCompositeClient::DoCompositeDocumentToPdf(
 }
 
 void PrintCompositeClient::OnDidCompositePageToPdf(
-    int page_num,
-    int document_cookie,
     printing::mojom::PdfCompositor::CompositePageToPdfCallback callback,
     printing::mojom::PdfCompositor::Status status,
     mojo::ScopedSharedBufferHandle handle) {
-  RemoveCompositeRequest(document_cookie, page_num);
   std::move(callback).Run(status, std::move(handle));
 }
 
@@ -88,35 +85,23 @@ void PrintCompositeClient::OnDidCompositeDocumentToPdf(
     printing::mojom::PdfCompositor::CompositeDocumentToPdfCallback callback,
     printing::mojom::PdfCompositor::Status status,
     mojo::ScopedSharedBufferHandle handle) {
-  RemoveCompositeRequest(document_cookie, base::nullopt);
+  RemoveCompositeRequest(document_cookie);
   std::move(callback).Run(status, std::move(handle));
 }
 
-mojom::PdfCompositorPtr& PrintCompositeClient::GetCompositeRequest(
-    int cookie,
-    base::Optional<int> page_num) {
-  int page_no =
-      page_num == base::nullopt ? kPageNumForWholeDoc : page_num.value();
-  std::pair<int, int> key = std::make_pair(cookie, page_no);
-  auto iter = compositor_map_.find(key);
+mojom::PdfCompositorPtr& PrintCompositeClient::GetCompositeRequest(int cookie) {
+  auto iter = compositor_map_.find(cookie);
   if (iter != compositor_map_.end())
     return iter->second;
 
-  auto iterator = compositor_map_.emplace(key, CreateCompositeRequest()).first;
+  auto iterator =
+      compositor_map_.emplace(cookie, CreateCompositeRequest()).first;
   return iterator->second;
 }
 
-void PrintCompositeClient::RemoveCompositeRequest(
-    int cookie,
-    base::Optional<int> page_num) {
-  int page_no =
-      page_num == base::nullopt ? kPageNumForWholeDoc : page_num.value();
-  std::pair<int, int> key = std::make_pair(cookie, page_no);
-  auto iter = compositor_map_.find(key);
-  if (iter == compositor_map_.end())
-    return;
-
-  compositor_map_.erase(iter);
+void PrintCompositeClient::RemoveCompositeRequest(int cookie) {
+  size_t erased = compositor_map_.erase(cookie);
+  DCHECK_EQ(erased, 1u);
 }
 
 mojom::PdfCompositorPtr PrintCompositeClient::CreateCompositeRequest() {
