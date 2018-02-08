@@ -357,6 +357,12 @@ bool SiteInstanceImpl::IsSameWebSite(BrowserContext* browser_context,
   if (dest_url == blank_page)
     return true;
 
+  // If the source and destination URLs are equal excluding the hash, they have
+  // the same site.  This matters for file URLs, where SameDomainOrHost() would
+  // otherwise return false below.
+  if (src_url.EqualsIgnoringRef(dest_url))
+    return true;
+
   url::Origin src_origin = url::Origin::Create(src_url);
   url::Origin dest_origin = url::Origin::Create(dest_url);
 
