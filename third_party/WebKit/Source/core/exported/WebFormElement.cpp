@@ -46,7 +46,8 @@ bool WebFormElement::AutoComplete() const {
 }
 
 WebString WebFormElement::Action() const {
-  return ConstUnwrap<HTMLFormElement>()->Action();
+  return ConstUnwrap<HTMLFormElement>()->FastGetAttribute(
+      HTMLNames::actionAttr);
 }
 
 WebString WebFormElement::GetName() const {

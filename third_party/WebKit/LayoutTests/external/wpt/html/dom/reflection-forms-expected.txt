@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 6725 tests; 6709 PASS, 16 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 6725 tests; 6710 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS form.title: 32 tests
 PASS form.lang: 32 tests
 PASS form.dir: 62 tests
@@ -8,9 +8,7 @@ PASS form.hidden: 33 tests
 PASS form.accessKey: 32 tests
 PASS form.tabIndex: 24 tests
 PASS form.acceptCharset (<form accept-charset>): 32 tests
-NOTRUN test
-NOTRUN test
-PASS form.action: 36 tests
+PASS form.action: 38 tests
 PASS form.autocomplete: 52 tests
 PASS form.enctype: 62 tests
 PASS form.encoding (<form enctype>): 62 tests

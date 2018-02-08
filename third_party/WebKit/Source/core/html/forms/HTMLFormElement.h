@@ -54,6 +54,9 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   unsigned length() const;
   HTMLElement* item(unsigned index);
 
+  String action() const;
+  void setAction(const AtomicString&);
+
   String enctype() const { return attributes_.EncodingType(); }
   void setEnctype(const AtomicString&);
 

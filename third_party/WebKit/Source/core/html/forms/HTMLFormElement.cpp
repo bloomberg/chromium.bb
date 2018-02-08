@@ -653,12 +653,16 @@ bool HTMLFormElement::NoValidate() const {
   return FastHasAttribute(novalidateAttr);
 }
 
-// FIXME: This function should be removed because it does not do the same thing
-// as the JavaScript binding for action, which treats action as a URL attribute.
-// Last time I (Darin Adler) removed this, someone added it back, so I am
-// leaving it in for now.
-const AtomicString& HTMLFormElement::Action() const {
-  return getAttribute(actionAttr);
+String HTMLFormElement::action() const {
+  Document& document = GetDocument();
+  KURL action_url = document.CompleteURL(attributes_.Action().IsEmpty()
+                                             ? document.Url().GetString()
+                                             : attributes_.Action());
+  return action_url.GetString();
+}
+
+void HTMLFormElement::setAction(const AtomicString& value) {
+  setAttribute(actionAttr, value);
 }
 
 void HTMLFormElement::setEnctype(const AtomicString& value) {
