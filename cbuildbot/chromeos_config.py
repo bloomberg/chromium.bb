@@ -3794,6 +3794,28 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   hw_test_list = HWTestList(ge_build_config)
 
   site_config.AddWithoutTemplate(
+      'success-build',
+      site_config.templates.external,
+      site_config.templates.no_hwtest_builder,
+      site_config.templates.no_vmtest_builder,
+      boards=[],
+      display_label=config_lib.DISPLAY_LABEL_TRYJOB,
+      builder_class_name='test_builders.SucessBuilder',
+      description='Builder always passes as quickly as possible.',
+  )
+
+  site_config.AddWithoutTemplate(
+      'fail-build',
+      site_config.templates.external,
+      site_config.templates.no_hwtest_builder,
+      site_config.templates.no_vmtest_builder,
+      boards=[],
+      display_label=config_lib.DISPLAY_LABEL_TRYJOB,
+      builder_class_name='test_builders.FailBuilder',
+      description='Builder always fails as quickly as possible.',
+  )
+
+  site_config.AddWithoutTemplate(
       'chromiumos-sdk',
       site_config.templates.full,
       site_config.templates.no_hwtest_builder,

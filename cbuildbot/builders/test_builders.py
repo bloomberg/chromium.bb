@@ -27,8 +27,28 @@ from chromite.cbuildbot.stages import vm_test_stages
 
 class SuccessStage(generic_stages.BuilderStage):
   """Build stage declares success!"""
-  def Run(self):
+  def PerformStage(self):
     logging.info('!!!SuccessStage, FTW!!!')
+
+
+class FailStage(generic_stages.BuilderStage):
+  """Build stage always fails."""
+  def PerformStage(self):
+    raise Exception('!!!Oh, no! A Fail Stage!!!')
+
+
+class SucessBuilder(generic_builders.PreCqBuilder):
+  """Very minimal builder that always passes."""
+  def RunTestStages(self):
+    """Run a success stage!"""
+    self._RunStage(SuccessStage)
+
+
+class FailBuilder(generic_builders.PreCqBuilder):
+  """Very minimal builder that always fails."""
+  def RunTestStages(self):
+    """Run fail stage!"""
+    self._RunStage(FailStage)
 
 
 class ManifestVersionedSyncBuilder(generic_builders.Builder):

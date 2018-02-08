@@ -18552,6 +18552,13 @@
             "chrome_internal"
         ]
     },
+    "fail-build": {
+        "boards": [],
+        "builder_class_name": "test_builders.FailBuilder",
+        "description": "Builder always fails as quickly as possible.",
+        "display_label": "tryjob",
+        "vm_tests": []
+    },
     "falco-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
@@ -56116,6 +56123,13 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "success-build": {
+        "boards": [],
+        "builder_class_name": "test_builders.SucessBuilder",
+        "description": "Builder always passes as quickly as possible.",
+        "display_label": "tryjob",
+        "vm_tests": []
     },
     "sumo-chrome-pfq": {
         "_template": "chrome_pfq",
