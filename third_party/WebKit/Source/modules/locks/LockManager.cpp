@@ -215,6 +215,12 @@ ScriptPromise LockManager::acquire(ScriptState* script_state,
     return ScriptPromise();
   }
 
+  if (name.StartsWith("-")) {
+    exception_state.ThrowDOMException(kNotSupportedError,
+                                      "Names cannot start with '-'.");
+    return ScriptPromise();
+  }
+
   if (options.steal() && mode != mojom::blink::LockMode::EXCLUSIVE) {
     exception_state.ThrowDOMException(
         kNotSupportedError,
