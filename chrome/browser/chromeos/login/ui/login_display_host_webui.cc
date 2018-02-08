@@ -298,16 +298,6 @@ void ResetKeyboardOverscrollOverride() {
       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE);
 }
 
-void ScheduleCompletionCallbacks(std::vector<base::OnceClosure>&& callbacks) {
-  for (auto& callback : callbacks) {
-    if (callback.is_null())
-      continue;
-
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  std::move(callback));
-  }
-}
-
 class CloseAfterCommit : public ui::CompositorObserver,
                          public views::WidgetObserver {
  public:
@@ -516,8 +506,6 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
   views::FocusManager::set_arrow_key_traversal_enabled(false);
   ResetLoginWindowAndView();
 
-  ScheduleCompletionCallbacks(std::move(completion_callbacks_));
-
   // TODO(tengs): This should be refactored. See crbug.com/314934.
   if (user_manager::UserManager::Get()->IsCurrentUserNew()) {
     // DriveOptInController will delete itself when finished.
@@ -543,10 +531,8 @@ WebUILoginView* LoginDisplayHostWebUI::GetWebUILoginView() const {
   return login_view_;
 }
 
-void LoginDisplayHostWebUI::Finalize(base::OnceClosure completion_callback) {
+void LoginDisplayHostWebUI::OnFinalize() {
   DVLOG(1) << "Finalizing LoginDisplayHost. User session starting";
-
-  completion_callbacks_.push_back(std::move(completion_callback));
 
   switch (finalize_animation_type_) {
     case ANIMATION_NONE:
@@ -619,12 +605,10 @@ WizardController* LoginDisplayHostWebUI::GetWizardController() {
   return wizard_controller_.get();
 }
 
-void LoginDisplayHostWebUI::StartUserAdding(
-    base::OnceClosure completion_callback) {
+void LoginDisplayHostWebUI::OnStartUserAdding() {
   DisableKeyboardOverscroll();
 
   restore_path_ = RESTORE_ADD_USER_INTO_SESSION;
-  completion_callbacks_.push_back(std::move(completion_callback));
   // Animation is not supported in Mash
   if (!ash_util::IsRunningInMash())
     finalize_animation_type_ = ANIMATION_ADD_USER;

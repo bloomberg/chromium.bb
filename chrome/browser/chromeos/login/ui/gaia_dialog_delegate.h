@@ -27,12 +27,12 @@ class LoginDisplayHostViews;
 class OobeUI;
 
 // This class manages the behavior of the gaia signin dialog.
-// And its lifecyle is managed by the widget created in Show().
+// And its lifecycle is managed by the widget created in Show().
 //   WebDialogView<----delegate_----GaiaDialogDelegate
 //         |
 //         |
 //         V
-//   clientView---->Widget's view hierachy
+//   clientView---->Widget's view hierarchy
 class GaiaDialogDelegate : public ui::WebDialogDelegate {
  public:
   explicit GaiaDialogDelegate(base::WeakPtr<LoginDisplayHostViews> controller);
