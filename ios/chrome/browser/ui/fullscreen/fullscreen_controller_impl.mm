@@ -27,9 +27,17 @@ FullscreenControllerImpl::FullscreenControllerImpl()
                     mediator:mediator_.get()]) {
   DCHECK(broadcaster_);
   [broadcaster_ addObserver:bridge_
+                forSelector:@selector(broadcastScrollViewSize:)];
+  [broadcaster_ addObserver:bridge_
+                forSelector:@selector(broadcastScrollViewContentSize:)];
+  [broadcaster_ addObserver:bridge_
+                forSelector:@selector(broadcastScrollViewContentInset:)];
+  [broadcaster_ addObserver:bridge_
                 forSelector:@selector(broadcastContentScrollOffset:)];
   [broadcaster_ addObserver:bridge_
                 forSelector:@selector(broadcastScrollViewIsScrolling:)];
+  [broadcaster_ addObserver:bridge_
+                forSelector:@selector(broadcastScrollViewIsZooming:)];
   [broadcaster_ addObserver:bridge_
                 forSelector:@selector(broadcastScrollViewIsDragging:)];
   [broadcaster_ addObserver:bridge_
@@ -81,9 +89,17 @@ void FullscreenControllerImpl::Shutdown() {
   if (web_state_list_observer_)
     web_state_list_observer_->Disconnect();
   [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastScrollViewSize:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastScrollViewContentSize:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastScrollViewContentInset:)];
+  [broadcaster_ removeObserver:bridge_
                    forSelector:@selector(broadcastContentScrollOffset:)];
   [broadcaster_ removeObserver:bridge_
                    forSelector:@selector(broadcastScrollViewIsScrolling:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastScrollViewIsZooming:)];
   [broadcaster_ removeObserver:bridge_
                    forSelector:@selector(broadcastScrollViewIsDragging:)];
   [broadcaster_ removeObserver:bridge_

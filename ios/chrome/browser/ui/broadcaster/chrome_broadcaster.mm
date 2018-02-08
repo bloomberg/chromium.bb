@@ -317,6 +317,12 @@ NSInvocation* InvocationForBroadcasterSelector(SEL selector) {
   } else if (type == @encode(CGRect)) {
     CGRect rectValue = value.CGRectValue;
     [invocation setArgument:&rectValue atIndex:2];
+  } else if (type == @encode(CGSize)) {
+    CGSize sizeValue = value.CGSizeValue;
+    [invocation setArgument:&sizeValue atIndex:2];
+  } else if (type == @encode(UIEdgeInsets)) {
+    UIEdgeInsets insetValue = value.UIEdgeInsetsValue;
+    [invocation setArgument:&insetValue atIndex:2];
   } else if (type == @encode(int)) {
     DCHECK(valueAsNumber);
     int intValue = valueAsNumber.intValue;

@@ -13,8 +13,12 @@
 
 @interface MainContentUIState ()
 // Redefine broadcast properties as readwrite.
+@property(nonatomic, assign) CGSize scrollViewSize;
+@property(nonatomic, assign) CGSize contentSize;
+@property(nonatomic, assign) UIEdgeInsets contentInset;
 @property(nonatomic, assign) CGFloat yContentOffset;
 @property(nonatomic, assign, getter=isScrolling) BOOL scrolling;
+@property(nonatomic, assign, getter=isZooming) BOOL zooming;
 @property(nonatomic, assign, getter=isDragging) BOOL dragging;
 // Whether the scroll view is decelerating.
 @property(nonatomic, assign, getter=isDecelerating) BOOL decelerating;
@@ -25,8 +29,12 @@
 @end
 
 @implementation MainContentUIState
+@synthesize scrollViewSize = _scrollViewSize;
+@synthesize contentSize = _contentSize;
+@synthesize contentInset = _contentInset;
 @synthesize yContentOffset = _yContentOffset;
 @synthesize scrolling = _scrolling;
+@synthesize zooming = _zooming;
 @synthesize dragging = _dragging;
 @synthesize decelerating = _decelerating;
 
@@ -82,6 +90,18 @@
 
 #pragma mark Public
 
+- (void)scrollViewSizeDidChange:(CGSize)scrollViewSize {
+  self.state.scrollViewSize = scrollViewSize;
+}
+
+- (void)scrollViewDidResetContentSize:(CGSize)contentSize {
+  self.state.contentSize = contentSize;
+}
+
+- (void)scrollViewDidResetContentInset:(UIEdgeInsets)contentInset {
+  self.state.contentInset = contentInset;
+}
+
 - (void)scrollViewDidScrollToOffset:(CGPoint)offset {
   self.state.yContentOffset = offset.y;
 }
@@ -110,10 +130,19 @@
   self.state.decelerating = NO;
 }
 
+- (void)scrollViewDidStartZooming {
+  self.state.zooming = YES;
+}
+
+- (void)scrollViewDidEndZooming {
+  self.state.zooming = NO;
+}
+
 - (void)scrollWasInterrupted {
   self.state.scrolling = NO;
   self.state.dragging = NO;
   self.state.decelerating = NO;
+  self.state.zooming = NO;
 }
 
 @end
