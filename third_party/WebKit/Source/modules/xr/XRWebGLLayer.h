@@ -11,6 +11,11 @@
 #include "modules/xr/XRLayer.h"
 #include "modules/xr/XRWebGLLayerInit.h"
 #include "platform/graphics/gpu/XRWebGLDrawingBuffer.h"
+#include "platform/wtf/RefCounted.h"
+
+namespace viz {
+class SingleReleaseCallback;
+}
 
 namespace blink {
 
@@ -59,7 +64,8 @@ class XRWebGLLayer final : public XRLayer {
   void OnFrameEnd() override;
   void OnResize() override;
 
-  scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage();
+  scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage(
+      std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
 
   virtual void Trace(blink::Visitor*);
   virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
@@ -67,7 +73,7 @@ class XRWebGLLayer final : public XRLayer {
  private:
   XRWebGLLayer(XRSession*,
                WebGLRenderingContextBase*,
-               XRWebGLDrawingBuffer*,
+               scoped_refptr<XRWebGLDrawingBuffer>,
                WebGLFramebuffer*,
                double framebuffer_scale);
 
@@ -75,7 +81,7 @@ class XRWebGLLayer final : public XRLayer {
   Member<XRViewport> right_viewport_;
 
   TraceWrapperMember<WebGLRenderingContextBase> webgl_context_;
-  std::unique_ptr<XRWebGLDrawingBuffer> drawing_buffer_;
+  scoped_refptr<XRWebGLDrawingBuffer> drawing_buffer_;
   Member<WebGLFramebuffer> framebuffer_;
 
   double framebuffer_scale_ = 1.0;

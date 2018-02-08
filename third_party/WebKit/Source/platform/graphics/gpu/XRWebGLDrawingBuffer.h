@@ -5,28 +5,34 @@
 #ifndef XRWebGLDrawingBuffer_h
 #define XRWebGLDrawingBuffer_h
 
+#include "cc/layers/texture_layer_client.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/RefCounted.h"
 
 namespace blink {
 
 class DrawingBuffer;
 class StaticBitmapImage;
 
-class PLATFORM_EXPORT XRWebGLDrawingBuffer {
+class PLATFORM_EXPORT XRWebGLDrawingBuffer
+    : public RefCounted<XRWebGLDrawingBuffer> {
  public:
-  static XRWebGLDrawingBuffer* Create(DrawingBuffer*,
-                                      GLuint framebuffer,
-                                      const IntSize&,
-                                      bool want_alpha_channel,
-                                      bool want_depth_buffer,
-                                      bool want_stencil_buffer,
-                                      bool want_antialiasing,
-                                      bool want_multiview);
+  static scoped_refptr<XRWebGLDrawingBuffer> Create(DrawingBuffer*,
+                                                    GLuint framebuffer,
+                                                    const IntSize&,
+                                                    bool want_alpha_channel,
+                                                    bool want_depth_buffer,
+                                                    bool want_stencil_buffer,
+                                                    bool want_antialiasing,
+                                                    bool want_multiview);
 
+  gpu::gles2::GLES2Interface* ContextGL();
   bool ContextLost();
 
   const IntSize& size() const { return size_; }
@@ -39,9 +45,35 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer {
 
   void Resize(const IntSize&);
 
-  scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage();
+  scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage(
+      std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
 
  private:
+  struct ColorBuffer : public RefCounted<ColorBuffer> {
+    ColorBuffer(XRWebGLDrawingBuffer*, const IntSize&, GLuint texture_id);
+    ~ColorBuffer();
+
+    // The owning XRWebGLDrawingBuffer. Note that DrawingBuffer is explicitly
+    // destroyed by the beginDestruction method, which will eventually drain all
+    // of its ColorBuffers.
+    scoped_refptr<XRWebGLDrawingBuffer> drawing_buffer;
+    const IntSize size;
+    const GLuint texture_id = 0;
+
+    // The mailbox used to send this buffer to the compositor.
+    gpu::Mailbox mailbox;
+
+    // The sync token for when this buffer was sent to the compositor.
+    gpu::SyncToken produce_sync_token;
+
+    // The sync token for when this buffer was received back from the
+    // compositor.
+    gpu::SyncToken receive_sync_token;
+
+   private:
+    WTF_MAKE_NONCOPYABLE(ColorBuffer);
+  };
+
   XRWebGLDrawingBuffer(DrawingBuffer*,
                        GLuint framebuffer,
                        bool discard_framebuffer_supported,
@@ -52,10 +84,15 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer {
 
   bool Initialize(const IntSize&, bool use_multisampling, bool use_multiview);
 
-  GLuint CreateColorBuffer();
+  scoped_refptr<ColorBuffer> CreateColorBuffer();
+  scoped_refptr<ColorBuffer> CreateOrRecycleColorBuffer();
 
   bool WantExplicitResolve() const;
   void SwapColorBuffers();
+
+  void MailboxReleased(scoped_refptr<ColorBuffer>,
+                       const gpu::SyncToken&,
+                       bool lost_resource);
 
   // Reference to the DrawingBuffer that owns the GL context for this object.
   scoped_refptr<DrawingBuffer> drawing_buffer_;
@@ -63,10 +100,13 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer {
   const GLuint framebuffer_ = 0;
   GLuint resolved_framebuffer_ = 0;
   GLuint multisample_renderbuffer_ = 0;
-  GLuint back_color_buffer_ = 0;
-  GLuint front_color_buffer_ = 0;
+  scoped_refptr<ColorBuffer> back_color_buffer_ = 0;
+  scoped_refptr<ColorBuffer> front_color_buffer_ = 0;
   GLuint depth_stencil_buffer_ = 0;
   IntSize size_;
+
+  // Color buffers that were released by the XR compositor can be used again.
+  Deque<scoped_refptr<ColorBuffer>> recycled_color_buffer_queue_;
 
   bool discard_framebuffer_supported_;
   bool depth_;
