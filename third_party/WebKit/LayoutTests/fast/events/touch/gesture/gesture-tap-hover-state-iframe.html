@@ -48,6 +48,7 @@ function runTests()
         debug('This test requires DRT.');
         return;
     }
+    internals.setIsCursorVisible(document, false);
 
     box1 = document.getElementById('box');
     var frame = document.getElementById('frame');
