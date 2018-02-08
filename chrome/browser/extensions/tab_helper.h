@@ -114,7 +114,7 @@ class TabHelper : public content::WebContentsObserver,
   void InvokeForContentRulesRegistries(const Func& func);
 
   // Different types of action when web app info is available.
-  // OnDidGetApplicationInfo uses this to dispatch calls.
+  // OnDidGetWebApplicationInfo uses this to dispatch calls.
   enum WebAppAction {
     NONE,               // No action at all.
     CREATE_HOSTED_APP,  // Create and install a hosted app.
@@ -188,7 +188,7 @@ class TabHelper : public content::WebContentsObserver,
                           ExtensionReenabler::ReenableResult result);
 
   // Requests application info for the specified page. This is an asynchronous
-  // request. The delegate is notified by way of OnDidGetApplicationInfo when
+  // request. The delegate is notified by way of OnDidGetWebApplicationInfo when
   // the data is available.
   void GetApplicationInfo(WebAppAction action);
 
@@ -212,8 +212,8 @@ class TabHelper : public content::WebContentsObserver,
   // Cached web app info data.
   WebApplicationInfo web_app_info_;
 
-  // Which deferred action to perform when OnDidGetApplicationInfo is notified
-  // from a WebContents.
+  // Which deferred action to perform when OnDidGetWebApplicationInfo is
+  // notified from a WebContents.
   WebAppAction pending_web_app_action_;
 
   // Which navigation entry was active when the GetApplicationInfo request was

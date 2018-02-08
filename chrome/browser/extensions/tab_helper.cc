@@ -196,7 +196,7 @@ void TabHelper::CreateHostedAppFromWebContents() {
     return;
 
   // Start fetching web app info for CreateApplicationShortcut dialog and show
-  // the dialog when the data is available in OnDidGetApplicationInfo.
+  // the dialog when the data is available in OnDidGetWebApplicationInfo.
   GetApplicationInfo(CREATE_HOSTED_APP);
 }
 
