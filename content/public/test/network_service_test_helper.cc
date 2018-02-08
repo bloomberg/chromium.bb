@@ -69,11 +69,11 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
   }
 
   void SimulateCrash() override {
-    LOG(ERROR) << "Intentionally issuing kill signal to current process to"
-               << " simulate NetworkService crash for testing.";
-    // Use |Process::Terminate()| instead of |CHECK()| to avoid 'Fatal error'
-    // dialog on Windows debug.
-    base::Process::Current().Terminate(1, false);
+    LOG(ERROR) << "Intentionally terminating current process to simulate"
+                  " NetworkService crash for testing.";
+    // Use |TerminateCurrentProcessImmediately()| instead of |CHECK()| to avoid
+    // 'Fatal error' dialog on Windows debug.
+    base::Process::TerminateCurrentProcessImmediately(1);
   }
 
   void MockCertVerifierSetDefaultResult(
