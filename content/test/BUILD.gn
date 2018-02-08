@@ -786,6 +786,7 @@ test("content_browsertests") {
     "../browser/renderer_host/media/video_capture_browsertest.cc",
     "../browser/renderer_host/render_process_host_browsertest.cc",
     "../browser/renderer_host/render_view_host_browsertest.cc",
+    "../browser/renderer_host/render_widget_host_browsertest.cc",
     "../browser/renderer_host/render_widget_host_view_browsertest.cc",
     "../browser/renderer_host/render_widget_host_view_child_frame_browsertest.cc",
     "../browser/resource_loading_browsertest.cc",

@@ -7,6 +7,7 @@
 
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
+#include "services/viz/public/cpp/compositing/copy_output_result_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/copy_output_request.mojom.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
@@ -38,6 +39,11 @@ struct StructTraits<viz::mojom::CopyOutputRequestDataView,
   static const base::Optional<gfx::Rect>& area(
       const std::unique_ptr<viz::CopyOutputRequest>& request) {
     return request->area_;
+  }
+
+  static const base::Optional<gfx::Rect>& result_selection(
+      const std::unique_ptr<viz::CopyOutputRequest>& request) {
+    return request->result_selection_;
   }
 
   static const base::Optional<gpu::Mailbox>& mailbox(

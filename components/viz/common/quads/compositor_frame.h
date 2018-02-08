@@ -37,6 +37,8 @@ class VIZ_COMMON_EXPORT CompositorFrame {
     return render_pass_list.back()->output_rect.size();
   }
 
+  bool HasCopyOutputRequests() const;
+
   CompositorFrameMetadata metadata;
   std::vector<TransferableResource> resource_list;
   // This list is in the order that each RenderPass will be drawn. The last one

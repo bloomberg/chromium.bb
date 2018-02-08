@@ -30,6 +30,7 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
       surface_resource_holder_(this),
       is_root_(is_root),
       needs_sync_tokens_(needs_sync_tokens),
+      allow_copy_output_requests_(is_root),
       weak_factory_(this) {
   // This may result in SetBeginFrameSource() being called.
   frame_sink_manager_->RegisterCompositorFrameSinkSupport(frame_sink_id_, this);
@@ -177,24 +178,28 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
     CompositorFrame frame,
     mojom::HitTestRegionListPtr hit_test_region_list,
     uint64_t submit_time) {
-  bool success;
-  SubmitCompositorFrame(local_surface_id, std::move(frame),
-                        std::move(hit_test_region_list), &success);
-  DCHECK(success);
+  const auto result = MaybeSubmitCompositorFrame(
+      local_surface_id, std::move(frame), std::move(hit_test_region_list));
+  DCHECK_EQ(result, ACCEPTED);
 }
 
-void CompositorFrameSinkSupport::SubmitCompositorFrame(
+CompositorFrameSinkSupport::SubmitResult
+CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
-    mojom::HitTestRegionListPtr hit_test_region_list,
-    bool* success) {
-  TRACE_EVENT1("viz", "CompositorFrameSinkSupport::SubmitCompositorFrame",
+    mojom::HitTestRegionListPtr hit_test_region_list) {
+  TRACE_EVENT1("viz", "CompositorFrameSinkSupport::MaybeSubmitCompositorFrame",
                "FrameSinkId", frame_sink_id_.ToString());
   DCHECK(local_surface_id.is_valid());
   DCHECK(!frame.render_pass_list.empty());
   DCHECK(!frame.size_in_pixels().IsEmpty());
-  DCHECK(success);
-  *success = true;
+
+  // Ensure no CopyOutputRequests have been submitted if they are banned.
+  if (!allow_copy_output_requests_ && frame.HasCopyOutputRequests()) {
+    TRACE_EVENT_INSTANT0("viz", "CopyOutputRequests not allowed",
+                         TRACE_EVENT_SCOPE_THREAD);
+    return COPY_OUTPUT_REQUESTS_NOT_ALLOWED;
+  }
 
   uint64_t frame_index = ++last_frame_index_;
   ++ack_pending_count_;
@@ -253,8 +258,7 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
         DidPresentCompositorFrame(frame.metadata.presentation_token,
                                   base::TimeTicks(), base::TimeDelta(), 0);
       }
-      *success = false;
-      return;
+      return SURFACE_INVARIANTS_VIOLATION;
     }
 
     current_surface = CreateSurface(surface_info);
@@ -280,9 +284,9 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
                 weak_factory_.GetWeakPtr(), frame.metadata.presentation_token)
           : Surface::PresentedCallback());
   if (!result) {
+    TRACE_EVENT_INSTANT0("viz", "QueueFrame failed", TRACE_EVENT_SCOPE_THREAD);
     EvictCurrentSurface();
-    *success = false;
-    return;
+    return SURFACE_INVARIANTS_VIOLATION;
   }
 
   if (prev_surface && prev_surface != current_surface) {
@@ -292,6 +296,8 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
 
   if (begin_frame_source_)
     begin_frame_source_->DidFinishFrame(this);
+
+  return ACCEPTED;
 }
 
 void CompositorFrameSinkSupport::UpdateSurfaceReferences(
@@ -458,6 +464,21 @@ HitTestAggregator* CompositorFrameSinkSupport::GetHitTestAggregator() {
 
 Surface* CompositorFrameSinkSupport::GetCurrentSurfaceForTesting() {
   return surface_manager_->GetSurfaceForId(current_surface_id_);
+}
+
+// static
+const char* CompositorFrameSinkSupport::GetSubmitResultAsString(
+    SubmitResult result) {
+  switch (result) {
+    case CompositorFrameSinkSupport::ACCEPTED:
+      return "Accepted";
+    case CompositorFrameSinkSupport::COPY_OUTPUT_REQUESTS_NOT_ALLOWED:
+      return "CopyOutputRequests not allowed";
+    case CompositorFrameSinkSupport::SURFACE_INVARIANTS_VIOLATION:
+      return "Surface invariants violation";
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 void CompositorFrameSinkSupport::OnAggregatedDamage(

@@ -130,30 +130,55 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
     const gfx::Size& output_size,
     const ReadbackRequestCallback& callback,
     const SkColorType preferred_color_type) {
-  // Only ARGB888 and RGB565 supported as of now.
-  bool format_support = ((preferred_color_type == kAlpha_8_SkColorType) ||
-                         (preferred_color_type == kRGB_565_SkColorType) ||
-                         (preferred_color_type == kN32_SkColorType));
-  DCHECK(format_support);
-  if (!CanCopyFromCompositingSurface()) {
+  // TODO(crbug/759310): Only NavigationEntryScreenshotManager needs grayscale.
+  // Move that transformation to there; and then remove |preferred_color_type|
+  // from this API and the end-to-end code path.
+  DCHECK(preferred_color_type == kN32_SkColorType ||
+         preferred_color_type == kAlpha_8_SkColorType);
+
+  if (!CanCopyFromCompositingSurface() ||
+      current_frame_size_in_dip_.IsEmpty()) {
     callback.Run(SkBitmap(), content::READBACK_SURFACE_UNAVAILABLE);
     return;
   }
 
   std::unique_ptr<viz::CopyOutputRequest> request =
       std::make_unique<viz::CopyOutputRequest>(
-          viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
-          base::BindOnce(&CopyFromCompositingSurfaceHasResult, output_size,
+          viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+          base::BindOnce(&CopyFromCompositingSurfaceHasResult, gfx::Size(),
                          preferred_color_type, callback));
-  if (!src_subrect.IsEmpty()) {
-    request->set_area(
-        gfx::ScaleToRoundedRect(src_subrect, active_device_scale_factor_));
+
+  if (src_subrect.IsEmpty()) {
+    request->set_area(gfx::Rect(current_frame_size_in_dip_));
+  } else {
+    request->set_area(src_subrect);
   }
-  support_->RequestCopyOfSurface(std::move(request));
+
+  // If VIZ display compositing is disabled, the request will be issued directly
+  // to CompositorFrameSinkSupport, which requires Surface pixel coordinates.
+  if (!enable_viz_) {
+    request->set_area(
+        gfx::ScaleToRoundedRect(request->area(), active_device_scale_factor_));
+  }
+
+  if (!output_size.IsEmpty()) {
+    request->set_result_selection(gfx::Rect(output_size));
+    request->SetScaleRatio(
+        gfx::Vector2d(request->area().width(), request->area().height()),
+        gfx::Vector2d(output_size.width(), output_size.height()));
+  }
+
+  if (enable_viz_) {
+    client_->DelegatedFrameHostGetLayer()->RequestCopyOfOutput(
+        std::move(request));
+  } else {
+    support_->RequestCopyOfSurface(std::move(request));
+  }
 }
 
 bool DelegatedFrameHost::CanCopyFromCompositingSurface() const {
-  return support_ && HasFallbackSurface() && active_device_scale_factor_ != 0.f;
+  return (enable_viz_ || support_) && HasFallbackSurface() &&
+         active_device_scale_factor_ != 0.f;
 }
 
 viz::FrameSinkId DelegatedFrameHost::GetFrameSinkId() {

@@ -221,6 +221,7 @@ enum BadMessageReason {
   WCI_NEW_WIDGET_PROCESS_MISMATCH = 194,
   AUTH_INVALID_EFFECTIVE_DOMAIN = 195,
   AUTH_INVALID_RELYING_PARTY = 196,
+  RWH_COPY_REQUEST_ATTEMPT = 197,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

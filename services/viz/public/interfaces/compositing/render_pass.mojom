@@ -4,6 +4,7 @@
 
 module viz.mojom;
 
+import "services/viz/public/interfaces/compositing/copy_output_request.mojom";
 import "services/viz/public/interfaces/compositing/filter_operations.mojom";
 import "services/viz/public/interfaces/compositing/quads.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -23,5 +24,7 @@ struct RenderPass {
   bool cache_render_pass = false;
   bool has_damage_from_contributing_content = false;
   bool generate_mipmap = false;
+  // |copy_requests| are only allowed by privileged clients.
+  array<CopyOutputRequest> copy_requests;
   array<DrawQuad> quad_list;
 };

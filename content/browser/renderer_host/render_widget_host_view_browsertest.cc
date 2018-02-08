@@ -32,6 +32,7 @@
 #include "content/test/did_commit_provisional_load_interceptor.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
 #include "ui/display/display_switches.h"
@@ -117,34 +118,6 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
       quit_closure.Run();
   }
 
-  // Copy one frame using the CopyFromSurface API.
-  void RunBasicCopyFromSurfaceTest() {
-    SET_UP_SURFACE_OR_PASS_TEST(nullptr);
-
-    // Repeatedly call CopyFromBackingStore() since, on some platforms (e.g.,
-    // Windows), the operation will fail until the first "present" has been
-    // made.
-    int count_attempts = 0;
-    while (true) {
-      ++count_attempts;
-      base::RunLoop run_loop;
-      GetRenderWidgetHostView()->CopyFromSurface(
-          gfx::Rect(), frame_size(),
-          base::Bind(&RenderWidgetHostViewBrowserTest::FinishCopyFromSurface,
-                     base::Unretained(this), run_loop.QuitClosure()),
-          kN32_SkColorType);
-      run_loop.Run();
-
-      if (frames_captured())
-        break;
-      else
-        GiveItSomeTime();
-    }
-
-    EXPECT_EQ(count_attempts, callback_invoke_count());
-    EXPECT_EQ(1, frames_captured());
-  }
-
  protected:
   // Waits until the source is available for copying.
   void WaitForCopySourceReady() {
@@ -158,7 +131,7 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(10));
+        base::TimeDelta::FromMilliseconds(250));
     run_loop.Run();
   }
 
@@ -258,6 +231,7 @@ class CompositingRenderWidgetHostViewBrowserTest
   void SetUp() override {
     if (compositing_mode_ == SOFTWARE_COMPOSITING)
       UseSoftwareCompositing();
+    EnablePixelOutput();
     RenderWidgetHostViewBrowserTest::SetUp();
   }
 
@@ -295,13 +269,43 @@ class CompositingRenderWidgetHostViewBrowserTest
 // enabled.
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
                        CopyFromSurface) {
-  RunBasicCopyFromSurfaceTest();
+  SET_UP_SURFACE_OR_PASS_TEST(nullptr);
+
+  // Repeatedly call CopyFromSurface() since, on some platforms (e.g., Windows),
+  // the operation will fail until the first "present" has been made.
+  int count_attempts = 0;
+  while (true) {
+    ++count_attempts;
+    base::RunLoop run_loop;
+    GetRenderWidgetHostView()->CopyFromSurface(
+        gfx::Rect(), frame_size(),
+        // TODO(crbug/759310): This should be a OnceCallback.
+        base::BindRepeating(
+            &RenderWidgetHostViewBrowserTest::FinishCopyFromSurface,
+            base::Unretained(this), run_loop.QuitClosure()),
+        kN32_SkColorType);
+    run_loop.Run();
+
+    if (frames_captured())
+      break;
+    else
+      GiveItSomeTime();
+  }
+
+  EXPECT_EQ(count_attempts, callback_invoke_count());
+  EXPECT_EQ(1, frames_captured());
 }
 
 // Tests that the callback passed to CopyFromSurface is always called, even
 // when the RenderWidgetHostView is deleting in the middle of an async copy.
+//
+// TODO(miu): On some bots (e.g., ChromeOS and Cast Shell), this test fails
+// because the RunLoop quits before its QuitClosure() is run. This is because
+// the call to WebContents::Close() leads to something that makes the current
+// thread's RunLoop::Delegate constantly report "should quit." We'll need to
+// find a better way of testing this functionality.
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
-                       CopyFromSurface_CallbackDespiteDelete) {
+                       DISABLED_CopyFromSurface_CallbackDespiteDelete) {
   SET_UP_SURFACE_OR_PASS_TEST(nullptr);
 
   base::RunLoop run_loop;
@@ -310,6 +314,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
       base::Bind(&RenderWidgetHostViewBrowserTest::FinishCopyFromSurface,
                  base::Unretained(this), run_loop.QuitClosure()),
       kN32_SkColorType);
+  shell()->web_contents()->Close();
   run_loop.Run();
 
   EXPECT_EQ(1, callback_invoke_count());
@@ -322,11 +327,6 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
       : readback_response_(READBACK_NO_RESPONSE),
         allowable_error_(0),
         test_url_("data:text/html,<!doctype html>") {}
-
-  void SetUp() override {
-    EnablePixelOutput();
-    CompositingRenderWidgetHostViewBrowserTest::SetUp();
-  }
 
   void ReadbackRequestCallbackTest(base::Closure quit_callback,
                                    const SkBitmap& bitmap,
@@ -374,6 +374,12 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
         expected_copy_from_compositing_surface_bitmap_;
     EXPECT_EQ(expected_bitmap.width(), bitmap.width());
     EXPECT_EQ(expected_bitmap.height(), bitmap.height());
+    if (expected_bitmap.width() != bitmap.width() ||
+        expected_bitmap.height() != bitmap.height()) {
+      readback_response_ = READBACK_INCORRECT_RESULT_SIZE;
+      quit_callback.Run();
+      return;
+    }
     EXPECT_EQ(expected_bitmap.colorType(), bitmap.colorType());
     int fails = 0;
     for (int i = 0; i < bitmap.width() && fails < 10; ++i) {
@@ -484,14 +490,13 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     //      is allowed to transiently fail.  The purpose of these tests is to
     //      confirm correct cropping/scaling behavior; and not that every
     //      readback must succeed.  http://crbug.com/444237
-    uint32_t last_frame_number = 0;
+    int attempt_count = 0;
     do {
-      // Wait for renderer to provide the next frame.
-      while (!GetRenderWidgetHost()->ScheduleComposite())
+      // Wait a little before retrying again. This gives the most up-to-date
+      // frame a chance to propagate from the renderer to the compositor.
+      if (attempt_count > 0)
         GiveItSomeTime();
-      while (rwhv->RendererFrameNumber() == last_frame_number)
-        GiveItSomeTime();
-      last_frame_number = rwhv->RendererFrameNumber();
+      ++attempt_count;
 
       // Request readback.  The callbacks will examine the pixels in the
       // SkBitmap result if readback was successful.
@@ -515,24 +520,28 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
       // If the readback operation did not provide a frame, log the reason
       // to aid in future debugging.  This information will also help determine
       // whether the implementation is broken, or a test bot is in a bad state.
-      #define CASE_LOG_READBACK_WARNING(enum_value) \
-        case enum_value: \
-          LOG(WARNING) << "Readback attempt failed (render frame #" \
-                       << last_frame_number << ").  Reason: " #enum_value; \
-          break
+      // clang-format off
       switch (readback_response_) {
         case READBACK_SUCCESS:
           break;
+        #define CASE_LOG_READBACK_WARNING(enum_value)                    \
+          case enum_value:                                               \
+            LOG(WARNING) << "Readback attempt failed (attempt #"         \
+                         << attempt_count << ").  Reason: " #enum_value; \
+            break
         CASE_LOG_READBACK_WARNING(READBACK_FAILED);
         CASE_LOG_READBACK_WARNING(READBACK_SURFACE_UNAVAILABLE);
         CASE_LOG_READBACK_WARNING(READBACK_BITMAP_ALLOCATION_FAILURE);
         CASE_LOG_READBACK_WARNING(READBACK_NO_TEST_COLORS);
+        CASE_LOG_READBACK_WARNING(READBACK_INCORRECT_RESULT_SIZE);
         default:
           LOG(ERROR)
               << "Invalid readback response value: " << readback_response_;
           NOTREACHED();
       }
-    } while (readback_response_ != READBACK_SUCCESS);
+      // clang-format on
+    } while (readback_response_ != READBACK_SUCCESS &&
+             !testing::Test::HasFailure());
   }
 
   // Sets up |bitmap| to have size |copy_size|. It floods the left half with
@@ -556,6 +565,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
   enum ExtraReadbackResponsesForTest {
     READBACK_NO_RESPONSE = -1337,
     READBACK_NO_TEST_COLORS,
+    READBACK_INCORRECT_RESULT_SIZE,
   };
 
   virtual bool ShouldContinueAfterTestURLLoad() {

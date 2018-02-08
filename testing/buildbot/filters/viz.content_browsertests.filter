@@ -104,3 +104,7 @@
 # process. http://crbug.com/806635
 -WebContentsVideoCaptureDeviceBrowserTest.*
 -WebContentsVideoCaptureDeviceBrowserTestP.*
+
+# Still work TODO to trigger render process kills on either surface invariant
+# violations or copy request permission violations. http://crbug.com/771354
+-RenderWidgetHostBrowserTest.ProhibitsCopyRequestsFromRenderer

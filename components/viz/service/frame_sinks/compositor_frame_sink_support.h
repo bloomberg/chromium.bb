@@ -37,6 +37,13 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
       public CapturableFrameSink,
       public mojom::CompositorFrameSink {
  public:
+  // Possible outcomes of MaybeSubmitCompositorFrame().
+  enum SubmitResult {
+    ACCEPTED,
+    COPY_OUTPUT_REQUESTS_NOT_ALLOWED,
+    SURFACE_INVARIANTS_VIOLATION,
+  };
+
   using AggregatedDamageCallback =
       base::RepeatingCallback<void(const LocalSurfaceId& local_surface_id,
                                    const gfx::Rect& damage_rect)>;
@@ -95,16 +102,18 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   void EvictCurrentSurface();
 
-  // Submits a new CompositorFrame to |local_surface_id|. If |local_surface_id|
-  // hasn't been submitted to before then a new Surface will be created for it.
-  // Sets |success| to false if |frame| was rejected due to invalid data.
-  // SubmitCompositorFrame() that is inherited from mojom::CompositorFrameSink
-  // calls this one and DCHECK's |success|. Callers should prefer to call the
-  // other one unless they really want to check the value of |success|.
-  void SubmitCompositorFrame(const LocalSurfaceId& local_surface_id,
-                             CompositorFrame frame,
-                             mojom::HitTestRegionListPtr hit_test_region_list,
-                             bool* success);
+  // Attempts to submit a new CompositorFrame to |local_surface_id| and returns
+  // whether the frame was accepted or the reason why it was rejected. If
+  // |local_surface_id| hasn't been submitted before then a new Surface will be
+  // created for it.
+  //
+  // This is called by SubmitCompositorFrame(), which DCHECK-fails on a
+  // non-accepted result. Prefer calling SubmitCompositorFrame() instead of this
+  // method unless the result value affects what the caller will do next.
+  SubmitResult MaybeSubmitCompositorFrame(
+      const LocalSurfaceId& local_surface_id,
+      CompositorFrame frame,
+      mojom::HitTestRegionListPtr hit_test_region_list);
 
   // CapturableFrameSink implementation.
   void AttachCaptureClient(CapturableFrameSink::Client* client) override;
@@ -115,7 +124,17 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   HitTestAggregator* GetHitTestAggregator();
 
+  // Permits submitted CompositorFrames to contain CopyOutputRequests, for
+  // special-case testing purposes only.
+  void set_allow_copy_output_requests_for_testing() {
+    allow_copy_output_requests_ = true;
+  }
+
   Surface* GetCurrentSurfaceForTesting();
+
+  // Maps the |result| from MaybeSubmitCompositorFrame() to a human-readable
+  // string.
+  static const char* GetSubmitResultAsString(SubmitResult result);
 
  private:
   friend class FrameSinkManagerTest;
@@ -189,6 +208,12 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   const bool is_root_;
   const bool needs_sync_tokens_;
+
+  // By default, this is equivalent to |is_root_|, but may be overridden for
+  // testing. Generally, for non-roots, there must not be any CopyOutputRequests
+  // contained within submitted CompositorFrames. Otherwise, unprivileged
+  // clients would be able to capture content for which they are not authorized.
+  bool allow_copy_output_requests_;
 
   // A callback that will be run at the start of the destructor if set.
   base::OnceClosure destruction_callback_;

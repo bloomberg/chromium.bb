@@ -2697,6 +2697,17 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
   // TODO(gklassen): Route hit-test data to appropriate HitTestAggregator.
   TRACE_EVENT_FLOW_END0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                         "SubmitCompositorFrame", local_surface_id.hash());
+
+  // Ensure there are no CopyOutputRequests stowed-away in the CompositorFrame.
+  // For security/privacy reasons, renderers are not allowed to make copy
+  // requests because they could use this to gain access to content from another
+  // domain (e.g., in a child frame).
+  if (frame.HasCopyOutputRequests()) {
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RWH_COPY_REQUEST_ATTEMPT);
+    return;
+  }
+
   bool tracing_enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                                      &tracing_enabled);

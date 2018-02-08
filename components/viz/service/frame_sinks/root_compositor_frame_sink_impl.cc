@@ -104,14 +104,18 @@ void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
     display_->SetLocalSurfaceId(local_surface_id, frame.device_scale_factor());
   }
 
-  bool success;
-  support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                  std::move(hit_test_region_list), &success);
-  if (!success) {
-    DLOG(ERROR) << "SubmitCompositorFrame failed for " << local_surface_id;
-    compositor_frame_sink_binding_.Close();
-    OnClientConnectionLost();
-  }
+  const auto result = support_->MaybeSubmitCompositorFrame(
+      local_surface_id, std::move(frame), std::move(hit_test_region_list));
+  if (result == CompositorFrameSinkSupport::ACCEPTED)
+    return;
+
+  const char* reason =
+      CompositorFrameSinkSupport::GetSubmitResultAsString(result);
+  DLOG(ERROR) << "SubmitCompositorFrame failed for " << local_surface_id
+              << " because " << reason;
+  compositor_frame_sink_binding_.CloseWithReason(static_cast<uint32_t>(result),
+                                                 reason);
+  OnClientConnectionLost();
 }
 
 void RootCompositorFrameSinkImpl::DidNotProduceFrame(

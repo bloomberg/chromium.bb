@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/checked_math.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/trees/clip_node.h"
@@ -938,33 +939,74 @@ void EffectTree::TakeCopyRequestsAndTransformToSurface(
   DCHECK(effect_node->has_render_surface);
   DCHECK(effect_node->has_copy_request);
 
-  auto range = copy_requests_.equal_range(node_id);
-  for (auto it = range.first; it != range.second; ++it)
-    requests->push_back(std::move(it->second));
-  copy_requests_.erase(range.first, range.second);
-
-  for (auto& it : *requests) {
-    if (!it->has_area())
-      continue;
-
-    // The area needs to be transformed from the space of content that draws to
-    // the surface to the space of the surface itself.
-    int destination_id = effect_node->transform_id;
-    int source_id;
-    if (effect_node->parent_id != EffectTree::kInvalidNodeId) {
-      // For non-root surfaces, transform only by sub-layer scale.
-      source_id = destination_id;
-    } else {
-      // The root surface doesn't have the notion of sub-layer scale, but
-      // instead has a similar notion of transforming from the space of the root
-      // layer to the space of the screen.
-      DCHECK_EQ(kRootNodeId, destination_id);
-      source_id = TransformTree::kContentsRootNodeId;
-    }
-    gfx::Transform transform;
-    property_trees()->GetToTarget(source_id, node_id, &transform);
-    it->set_area(MathUtil::MapEnclosingClippedRect(transform, it->area()));
+  // The area needs to be transformed from the space of content that draws to
+  // the surface to the space of the surface itself.
+  int destination_id = effect_node->transform_id;
+  int source_id;
+  if (effect_node->parent_id != EffectTree::kInvalidNodeId) {
+    // For non-root surfaces, transform only by sub-layer scale.
+    source_id = destination_id;
+  } else {
+    // The root surface doesn't have the notion of sub-layer scale, but instead
+    // has a similar notion of transforming from the space of the root layer to
+    // the space of the screen.
+    DCHECK_EQ(kRootNodeId, destination_id);
+    source_id = TransformTree::kContentsRootNodeId;
   }
+  gfx::Transform transform;
+  property_trees()->GetToTarget(source_id, node_id, &transform);
+
+  // Move each CopyOutputRequest out of |copy_requests_| and into |requests|,
+  // adjusting the source area and scale ratio of each. If the transform is
+  // something other than a straightforward translate+scale, the copy requests
+  // will be dropped.
+  auto range = copy_requests_.equal_range(node_id);
+  if (transform.IsPositiveScaleOrTranslation()) {
+    // Transform a vector in content space to surface space to determine how the
+    // scale ratio of each CopyOutputRequest should be adjusted. Since the scale
+    // ratios are provided integer coordinates, the basis vector determines the
+    // precision w.r.t. the fractional part of the Transform's scale factors.
+    constexpr gfx::Vector2d kContentVector(1024, 1024);
+    gfx::RectF surface_rect(0, 0, kContentVector.x(), kContentVector.y());
+    transform.TransformRect(&surface_rect);
+
+    for (auto it = range.first; it != range.second; ++it) {
+      viz::CopyOutputRequest* const request = it->second.get();
+      if (request->has_area()) {
+        request->set_area(
+            MathUtil::MapEnclosingClippedRect(transform, request->area()));
+      }
+
+      // Only adjust the scale ratio if the request specifies one, or if it
+      // specifies a result selection. Otherwise, the requestor is expecting a
+      // copy of the exact source pixels. If the adjustment to the scale ratio
+      // would produce out-of-range values, drop the copy request.
+      if (request->is_scaled() || request->has_result_selection()) {
+        float scale_from_x = request->scale_from().x() * surface_rect.width();
+        float scale_from_y = request->scale_from().y() * surface_rect.height();
+        if (std::isnan(scale_from_x) ||
+            !base::IsValueInRangeForNumericType<int>(scale_from_x) ||
+            std::isnan(scale_from_y) ||
+            !base::IsValueInRangeForNumericType<int>(scale_from_y)) {
+          continue;
+        }
+        int scale_to_x = request->scale_to().x();
+        int scale_to_y = request->scale_to().y();
+        if (!base::CheckMul(scale_to_x, kContentVector.x())
+                 .AssignIfValid(&scale_to_x) ||
+            !base::CheckMul(scale_to_y, kContentVector.y())
+                 .AssignIfValid(&scale_to_y)) {
+          continue;
+        }
+        request->SetScaleRatio(gfx::Vector2d(gfx::ToRoundedInt(scale_from_x),
+                                             gfx::ToRoundedInt(scale_from_y)),
+                               gfx::Vector2d(scale_to_x, scale_to_y));
+      }
+
+      requests->push_back(std::move(it->second));
+    }
+  }
+  copy_requests_.erase(range.first, range.second);
 }
 
 bool EffectTree::HasCopyRequests() const {
