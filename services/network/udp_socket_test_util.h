@@ -28,18 +28,16 @@ class UDPSocketTestHelper {
  public:
   explicit UDPSocketTestHelper(mojom::UDPSocketPtr* socket);
   ~UDPSocketTestHelper();
-  int OpenSync(net::AddressFamily address_family);
-  int OpenWithOptionsSync(net::AddressFamily address_family,
-                          mojom::UDPSocketOptionsPtr options);
   int ConnectSync(const net::IPEndPoint& remote_addr,
+                  mojom::UDPSocketOptionsPtr options,
                   net::IPEndPoint* local_addr_out);
   int BindSync(const net::IPEndPoint& local_addr,
+               mojom::UDPSocketOptionsPtr options,
                net::IPEndPoint* local_addr_out);
   int SendToSync(const net::IPEndPoint& remote_addr,
                  const std::vector<uint8_t>& input);
   int SendSync(const std::vector<uint8_t>& input);
-  int SetSendBufferSizeSync(size_t size);
-  int SetReceiveBufferSizeSync(size_t size);
+  int SetBroadcastSync(bool broadcast);
   int JoinGroupSync(const net::IPAddress& group_address);
   int LeaveGroupSync(const net::IPAddress& group_address);
 

@@ -38,20 +38,35 @@ class SocketWrapperImpl : public UDPSocket::SocketWrapper {
       : socket_(bind_type, rand_int_cb, net_log, source) {}
   ~SocketWrapperImpl() override {}
 
-  int Open(net::AddressFamily address_family) override {
-    return socket_.Open(address_family);
+  int Connect(const net::IPEndPoint& remote_addr,
+              mojom::UDPSocketOptionsPtr options,
+              net::IPEndPoint* local_addr_out) override {
+    int result = socket_.Open(remote_addr.GetFamily());
+    if (result == net::OK)
+      result = ConfigureOptions(std::move(options));
+    if (result == net::OK)
+      result = socket_.Connect(remote_addr);
+    if (result == net::OK)
+      result = socket_.GetLocalAddress(local_addr_out);
+
+    if (result != net::OK)
+      socket_.Close();
+    return result;
   }
-  int Connect(const net::IPEndPoint& remote_addr) override {
-    return socket_.Connect(remote_addr);
-  }
-  int Bind(const net::IPEndPoint& local_addr) override {
-    return socket_.Bind(local_addr);
-  }
-  int SetSendBufferSize(uint32_t size) override {
-    return socket_.SetSendBufferSize(size);
-  }
-  int SetReceiveBufferSize(uint32_t size) override {
-    return socket_.SetReceiveBufferSize(size);
+  int Bind(const net::IPEndPoint& local_addr,
+           mojom::UDPSocketOptionsPtr options,
+           net::IPEndPoint* local_addr_out) override {
+    int result = socket_.Open(local_addr.GetFamily());
+    if (result == net::OK)
+      result = ConfigureOptions(std::move(options));
+    if (result == net::OK)
+      result = socket_.Bind(local_addr);
+    if (result == net::OK)
+      result = socket_.GetLocalAddress(local_addr_out);
+
+    if (result != net::OK)
+      socket_.Close();
+    return result;
   }
   int SendTo(
       net::IOBuffer* buf,
@@ -83,11 +98,11 @@ class SocketWrapperImpl : public UDPSocket::SocketWrapper {
                const net::CompletionCallback& callback) override {
     return socket_.RecvFrom(buf, buf_len, address, callback);
   }
-  int GetLocalAddress(net::IPEndPoint* address) const override {
-    return socket_.GetLocalAddress(address);
-  }
 
-  int ConfigureOptions(mojom::UDPSocketOptionsPtr options) override {
+ private:
+  int ConfigureOptions(mojom::UDPSocketOptionsPtr options) {
+    if (!options)
+      return net::OK;
     int result = net::OK;
     if (options->allow_address_reuse)
       result = socket_.AllowAddressReuse();
@@ -101,10 +116,17 @@ class SocketWrapperImpl : public UDPSocket::SocketWrapper {
       result = socket_.SetMulticastTimeToLive(
           base::saturated_cast<int32_t>(options->multicast_time_to_live));
     }
+    if (result == net::OK && options->receive_buffer_size != 0) {
+      result = socket_.SetReceiveBufferSize(
+          base::saturated_cast<int32_t>(options->receive_buffer_size));
+    }
+    if (result == net::OK && options->send_buffer_size != 0) {
+      result = socket_.SetSendBufferSize(
+          base::saturated_cast<int32_t>(options->send_buffer_size));
+    }
     return result;
   }
 
- private:
   net::UDPSocket socket_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketWrapperImpl);
@@ -118,8 +140,7 @@ UDPSocket::PendingSendRequest::~PendingSendRequest() {}
 
 UDPSocket::UDPSocket(mojom::UDPSocketRequest request,
                      mojom::UDPSocketReceiverPtr receiver)
-    : is_opened_(false),
-      is_bound_(false),
+    : is_bound_(false),
       is_connected_(false),
       receiver_(std::move(receiver)),
       remaining_recv_slots_(0),
@@ -133,95 +154,50 @@ void UDPSocket::set_connection_error_handler(base::OnceClosure handler) {
   binding_.set_connection_error_handler(std::move(handler));
 }
 
-void UDPSocket::Open(net::AddressFamily address_family,
-                     mojom::UDPSocketOptionsPtr options,
-                     OpenCallback callback) {
-  if (is_opened_) {
-    std::move(callback).Run(net::ERR_UNEXPECTED);
+void UDPSocket::Connect(const net::IPEndPoint& remote_addr,
+                        mojom::UDPSocketOptionsPtr options,
+                        ConnectCallback callback) {
+  if (IsConnectedOrBound()) {
+    std::move(callback).Run(net::ERR_SOCKET_IS_CONNECTED, base::nullopt);
     return;
   }
-  wrapped_socket_ = std::make_unique<SocketWrapperImpl>(
-      net::DatagramSocket::RANDOM_BIND, base::BindRepeating(&base::RandInt),
-      nullptr, net::NetLogSource());
-  int result = wrapped_socket_->Open(address_family);
-  if (result == net::OK && options)
-    result = wrapped_socket_->ConfigureOptions(std::move(options));
+  DCHECK(!wrapped_socket_);
+  wrapped_socket_ = CreateSocketWrapper();
+  net::IPEndPoint local_addr_out;
+  int result = wrapped_socket_->Connect(remote_addr, std::move(options),
+                                        &local_addr_out);
   if (result != net::OK) {
     wrapped_socket_.reset();
-  } else {
-    is_opened_ = true;
-  }
-  std::move(callback).Run(result);
-}
-
-void UDPSocket::Connect(const net::IPEndPoint& remote_addr,
-                        ConnectCallback callback) {
-  net::IPEndPoint local_addr_out;
-  int result;
-  if (!is_opened_) {
-    result = net::ERR_UNEXPECTED;
     std::move(callback).Run(result, base::nullopt);
     return;
   }
-  if (IsConnectedOrBound()) {
-    result = net::ERR_SOCKET_IS_CONNECTED;
-    std::move(callback).Run(result, base::nullopt);
-    return;
-  }
-  result = wrapped_socket_->Connect(remote_addr);
-  if (result == net::OK) {
-    is_connected_ = true;
-    result = wrapped_socket_->GetLocalAddress(&local_addr_out);
-  }
+  is_connected_ = true;
   std::move(callback).Run(result, local_addr_out);
 }
 
-void UDPSocket::Bind(const net::IPEndPoint& local_addr, BindCallback callback) {
-  net::IPEndPoint local_addr_out;
-
-  int result;
-  if (!is_opened_) {
-    result = net::ERR_UNEXPECTED;
-    std::move(callback).Run(result, base::nullopt);
-    return;
-  }
+void UDPSocket::Bind(const net::IPEndPoint& local_addr,
+                     mojom::UDPSocketOptionsPtr options,
+                     BindCallback callback) {
   if (IsConnectedOrBound()) {
-    result = net::ERR_SOCKET_IS_CONNECTED;
+    std::move(callback).Run(net::ERR_SOCKET_IS_CONNECTED, base::nullopt);
+    return;
+  }
+  DCHECK(!wrapped_socket_);
+  wrapped_socket_ = CreateSocketWrapper();
+  net::IPEndPoint local_addr_out;
+  int result =
+      wrapped_socket_->Bind(local_addr, std::move(options), &local_addr_out);
+  if (result != net::OK) {
+    wrapped_socket_.reset();
     std::move(callback).Run(result, base::nullopt);
     return;
   }
-  result = wrapped_socket_->Bind(local_addr);
-  if (result == net::OK) {
-    is_bound_ = true;
-    result = wrapped_socket_->GetLocalAddress(&local_addr_out);
-  }
-  std::move(callback).Run(result, base::make_optional(local_addr_out));
-}
-
-void UDPSocket::SetSendBufferSize(uint32_t size,
-                                  SetSendBufferSizeCallback callback) {
-  if (!is_opened_) {
-    std::move(callback).Run(net::ERR_UNEXPECTED);
-    return;
-  }
-  int net_result =
-      wrapped_socket_->SetSendBufferSize(base::saturated_cast<int32_t>(size));
-  std::move(callback).Run(net_result);
-}
-
-void UDPSocket::SetReceiveBufferSize(uint32_t size,
-                                     SetReceiveBufferSizeCallback callback) {
-  if (!is_opened_) {
-    std::move(callback).Run(net::ERR_UNEXPECTED);
-    return;
-  }
-  int net_result = wrapped_socket_->SetReceiveBufferSize(
-      base::saturated_cast<int32_t>(size));
-  std::move(callback).Run(net_result);
+  is_bound_ = true;
+  std::move(callback).Run(result, local_addr_out);
 }
 
 void UDPSocket::SetBroadcast(bool broadcast, SetBroadcastCallback callback) {
-  if (!is_opened_) {
+  if (!is_bound_) {
     std::move(callback).Run(net::ERR_UNEXPECTED);
     return;
   }
@@ -296,6 +272,13 @@ void UDPSocket::Send(
       nullptr, data,
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       std::move(callback));
+}
+
+std::unique_ptr<UDPSocket::SocketWrapper> UDPSocket::CreateSocketWrapper()
+    const {
+  return std::make_unique<SocketWrapperImpl>(
+      net::DatagramSocket::RANDOM_BIND, base::BindRepeating(&base::RandInt),
+      nullptr, net::NetLogSource());
 }
 
 bool UDPSocket::IsConnectedOrBound() const {

@@ -41,14 +41,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) UDPSocket : public mojom::UDPSocket {
   class SocketWrapper {
    public:
     virtual ~SocketWrapper() {}
-    // This wrapper class forwards the functions to an concrete udp socket
+    // This wrapper class forwards the functions to a concrete udp socket
     // implementation. Please refer to udp_socket_posix.h/udp_socket_win.h for
     // definitions.
-    virtual int Open(net::AddressFamily address_family) = 0;
-    virtual int Connect(const net::IPEndPoint& remote_addr) = 0;
-    virtual int Bind(const net::IPEndPoint& local_addr) = 0;
-    virtual int SetSendBufferSize(uint32_t size) = 0;
-    virtual int SetReceiveBufferSize(uint32_t size) = 0;
+    virtual int Connect(const net::IPEndPoint& remote_addr,
+                        mojom::UDPSocketOptionsPtr options,
+                        net::IPEndPoint* local_addr_out) = 0;
+    virtual int Bind(const net::IPEndPoint& local_addr,
+                     mojom::UDPSocketOptionsPtr options,
+                     net::IPEndPoint* local_addr_out) = 0;
     virtual int SendTo(
         net::IOBuffer* buf,
         int buf_len,
@@ -67,12 +68,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) UDPSocket : public mojom::UDPSocket {
                          int buf_len,
                          net::IPEndPoint* address,
                          const net::CompletionCallback& callback) = 0;
-    virtual int GetLocalAddress(net::IPEndPoint* address) const = 0;
-
-    // Configures the socket with socket options specified in |options|. This
-    // needs to be called after Open() and before Bind()/Connect().
-    // Returns a net error code.
-    virtual int ConfigureOptions(mojom::UDPSocketOptionsPtr options) = 0;
   };
 
   UDPSocket(mojom::UDPSocketRequest request,
@@ -83,16 +78,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) UDPSocket : public mojom::UDPSocket {
   void set_connection_error_handler(base::OnceClosure handler);
 
   // UDPSocket implementation.
-  void Open(net::AddressFamily address_family,
-            mojom::UDPSocketOptionsPtr options,
-            OpenCallback callback) override;
   void Connect(const net::IPEndPoint& remote_addr,
+               mojom::UDPSocketOptionsPtr options,
                ConnectCallback callback) override;
-  void Bind(const net::IPEndPoint& local_addr, BindCallback callback) override;
-  void SetSendBufferSize(uint32_t size,
-                         SetSendBufferSizeCallback callback) override;
-  void SetReceiveBufferSize(uint32_t size,
-                            SetReceiveBufferSizeCallback callback) override;
+  void Bind(const net::IPEndPoint& local_addr,
+            mojom::UDPSocketOptionsPtr options,
+            BindCallback callback) override;
   void SetBroadcast(bool broadcast, SetBroadcastCallback callback) override;
   void JoinGroup(const net::IPAddress& group_address,
                  JoinGroupCallback callback) override;
@@ -122,6 +113,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) UDPSocket : public mojom::UDPSocket {
     SendToCallback callback;
   };
 
+  // Helper method to create a new SocketWrapper.
+  std::unique_ptr<UDPSocket::SocketWrapper> CreateSocketWrapper() const;
+
   // Returns whether a successful Connect() or Bind() has been executed.
   bool IsConnectedOrBound() const;
 
@@ -139,9 +133,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) UDPSocket : public mojom::UDPSocket {
 
   void OnRecvFromCompleted(int net_result);
   void OnSendToCompleted(int net_result);
-
-  // Whether an Open() has been successfully executed.
-  bool is_opened_;
 
   // Whether a Bind() has been successfully executed.
   bool is_bound_;

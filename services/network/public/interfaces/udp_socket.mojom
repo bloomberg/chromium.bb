@@ -35,6 +35,20 @@ struct UDPSocketOptions {
   // applications with loopback off will not SEND the loopback packets to
   // other applications on the same host. See MSDN: http://goo.gl/6vqbj
   bool multicast_loopback_mode = true;
+  // Sets the OS send buffer size (in bytes) for the socket. This is the
+  // SO_SNDBUF socket option. This socket option matters less for UDP socket (as
+  // compared to TCP), because in theory all UDP data written to the kernel
+  // should directly go out to the network. The kernel usually doesn't need to
+  // buffer send data. Default value is 0, in which case, OS's default value
+  // will be used.
+  int32 send_buffer_size = 0;
+  // Sets the OS receive buffer size (in bytes) for the socket. This is the
+  // SO_RCVBUF socket option. The kernel allocates this much to hold the data
+  // arriving into this socket between the time when data arrives over the
+  // network and when it is read by UDPSocketReceiver. If buffer is full,
+  // new packets will be discarded. Default value is 0, in which case, OS's
+  // default value will be used.
+  int32 receive_buffer_size = 0;
 };
 
 // UDPSocket is an interface that exposes UDP socket functionalities.
@@ -43,58 +57,34 @@ struct UDPSocketOptions {
 // - Acquire a UDPSocket interface pointer and optionally supply a non-null
 //   UDPSocketReceiverPtr. If consumers are not interested in received data, a
 //   null UDPSocketReceiverPtr is acceptable.
-// - Open().
-// - (optional) Set options.
 // - Use either Bind() or Connect() before datagrams can be sent or received.
+// - (optional) Invoke setters (e.g. SetBroadcast()).
 // - Send / request to receive datagrams. Received datagrams will be delivered
 //   to the bound receiver's OnReceived() call.
 // - Close the socket by destroying the interface pointer.
 interface UDPSocket {
-  // Opens the socket. This will request a socket of |address_family| from the
-  // OS and configure it with options specified in |socket_options|.  If
-  // |socket_options| is null, default options will be used. Returns net::OK
-  // on success and a negative net error code on failure. After an error, caller
-  // may retry Open() with different options.
-  Open(net.interfaces.AddressFamily address_family,
-       UDPSocketOptions? socket_options) => (int32 result);
-
   // Binds the address/port for this socket to |local_addr|. Caller can use port
-  // 0 to let the OS pick an available port.
-  // Should only be called after Open(). Returns net::OK and the real
-  // local address used on success and a negative net error code on failure.
-  Bind(net.interfaces.IPEndPoint local_addr) =>
-      (int32 result, net.interfaces.IPEndPoint? local_addr_out);
+  // 0 to let the OS pick an available port. If |socket_options| is not null,
+  // configures the socket with the options before binding the socket.
+  // Returns net::OK and the real local address used on success and a negative
+  // net error code on failure.
+  Bind(net.interfaces.IPEndPoint local_addr, UDPSocketOptions? socket_options)
+      => (int32 result, net.interfaces.IPEndPoint? local_addr_out);
 
   // Connects the socket to |remote_addr|. This automatically binds the socket
   // to an available local port, so this cannot be used with Bind().
-  // Should only be called after Open(). The address family of the local socket
-  // will be of the same net.interfaces.AddressFamily supplied during Open().
-  // Returns net::OK and the local address of socket on success. Subsequent
-  // packets received will be from |remote_addr|. Returns a negative net error
-  // code on failure.
-  Connect(net.interfaces.IPEndPoint remote_addr) =>
+  // If |socket_options| is not null, configures the socket with the options
+  // before connecting the socket.
+  // The address family of the local socket will be of the same
+  // net.interfaces.AddressFamily as |remote_addr|. Returns net::OK and the
+  // local address of socket on success. Subsequent packets received will be
+  // from |remote_addr|. Returns a negative net error code on failure.
+  Connect(net.interfaces.IPEndPoint remote_addr,
+          UDPSocketOptions? socket_options) =>
       (int32 result, net.interfaces.IPEndPoint? local_addr_out);
 
-  // Sets the OS send buffer size (in bytes) for the socket. This is the
-  // SO_SNDBUF socket option. This socket option matters less for UDP socket (as
-  // compared to TCP), because in theory all UDP data written to the kernel
-  // should directly go out to the network. The kernel usually doesn't need to
-  // buffer send data.
-  // Should only be called after Open(). Returns net::OK upon success, and a
-  // net error code upon failure.
-  SetSendBufferSize(uint32 size) => (int32 result);
-
-  // Sets the OS receive buffer size (in bytes) for the socket. This is the
-  // SO_RCVBUF socket option. The kernel allocates this much to hold the data
-  // arriving into this socket between the time when data arrives over the
-  // network and when it is read by UDPSocketReceiver. If buffer is full,
-  // new packets will be discarded.
-  // Should only be called after Open(). Returns net::OK upon success, and a
-  // net error code upon failure.
-  SetReceiveBufferSize(uint32 size) => (int32 result);
-
   // Allows or disallows sending and receiving packets to and from broadcast
-  // addresses. Should only be called after Open(). Returns a net error code.
+  // addresses. Returns a net error code. Should only be called after Bind().
   SetBroadcast(bool broadcast) => (int32 result);
 
   // Joins a multicast group. |group_address| is the group address to join,
