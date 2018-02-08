@@ -6,7 +6,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "core/fetch/BytesConsumerTestUtil.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/blob/BlobData.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,14 +33,9 @@ class BytesConsumerTestClient final
   int num_on_state_change_called_ = 0;
 };
 
-class BytesConsumerTeeTest : public ::testing::Test {
+class BytesConsumerTeeTest : public PageTestBase {
  public:
-  BytesConsumerTeeTest() : page_(DummyPageHolder::Create()) {}
-
-  Document* GetDocument() { return &page_->GetDocument(); }
-
- private:
-  std::unique_ptr<DummyPageHolder> page_;
+  virtual void SetUp() { PageTestBase::SetUp(IntSize()); }
 };
 
 class FakeBlobBytesConsumer : public BytesConsumer {
@@ -88,13 +83,13 @@ class FakeBlobBytesConsumer : public BytesConsumer {
 };
 
 TEST_F(BytesConsumerTeeTest, CreateDone) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(&GetDocument());
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
   EXPECT_FALSE(src->IsCancelled());
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
+  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
 
   auto result1 = (new BytesConsumerTestUtil::TwoPhaseReader(dest1))->Run();
   auto result2 = (new BytesConsumerTestUtil::TwoPhaseReader(dest2))->Run();
@@ -116,7 +111,7 @@ TEST_F(BytesConsumerTeeTest, CreateDone) {
 }
 
 TEST_F(BytesConsumerTeeTest, TwoPhaseRead) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(&GetDocument());
 
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
@@ -128,7 +123,7 @@ TEST_F(BytesConsumerTeeTest, TwoPhaseRead) {
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
+  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
 
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             dest1->GetPublicState());
@@ -150,7 +145,7 @@ TEST_F(BytesConsumerTeeTest, TwoPhaseRead) {
 }
 
 TEST_F(BytesConsumerTeeTest, Error) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(&GetDocument());
 
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "world"));
@@ -158,7 +153,7 @@ TEST_F(BytesConsumerTeeTest, Error) {
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
+  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
 
   EXPECT_EQ(BytesConsumer::PublicState::kErrored, dest1->GetPublicState());
   EXPECT_EQ(BytesConsumer::PublicState::kErrored, dest2->GetPublicState());
@@ -183,14 +178,14 @@ TEST_F(BytesConsumerTeeTest, Error) {
 }
 
 TEST_F(BytesConsumerTeeTest, Cancel) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(&GetDocument());
 
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
+  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
 
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             dest1->GetPublicState());
@@ -210,7 +205,7 @@ TEST_F(BytesConsumerTeeTest, Cancel) {
 }
 
 TEST_F(BytesConsumerTeeTest, CancelShouldNotAffectTheOtherDestination) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(&GetDocument());
 
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
@@ -219,7 +214,7 @@ TEST_F(BytesConsumerTeeTest, CancelShouldNotAffectTheOtherDestination) {
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
+  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
 
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             dest1->GetPublicState());
@@ -244,7 +239,7 @@ TEST_F(BytesConsumerTeeTest, CancelShouldNotAffectTheOtherDestination) {
 }
 
 TEST_F(BytesConsumerTeeTest, CancelShouldNotAffectTheOtherDestination2) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(&GetDocument());
 
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "hello, "));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
@@ -253,7 +248,7 @@ TEST_F(BytesConsumerTeeTest, CancelShouldNotAffectTheOtherDestination2) {
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
+  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
 
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             dest1->GetPublicState());
@@ -282,7 +277,7 @@ TEST_F(BytesConsumerTeeTest, BlobHandle) {
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
+  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
 
   scoped_refptr<BlobDataHandle> dest_blob_data_handle1 =
       dest1->DrainAsBlobDataHandle(
@@ -303,7 +298,7 @@ TEST_F(BytesConsumerTeeTest, BlobHandleWithInvalidSize) {
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
+  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
 
   scoped_refptr<BlobDataHandle> dest_blob_data_handle1 =
       dest1->DrainAsBlobDataHandle(
@@ -317,14 +312,14 @@ TEST_F(BytesConsumerTeeTest, BlobHandleWithInvalidSize) {
 }
 
 TEST_F(BytesConsumerTeeTest, ConsumerCanBeErroredInTwoPhaseRead) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(&GetDocument());
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "a"));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kError));
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
+  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
   BytesConsumerTestClient* client = new BytesConsumerTestClient();
   dest1->SetClient(client);
 
@@ -346,7 +341,7 @@ TEST_F(BytesConsumerTeeTest, ConsumerCanBeErroredInTwoPhaseRead) {
 
 TEST_F(BytesConsumerTeeTest,
        AsyncNotificationShouldBeDispatchedWhenAllDataIsConsumed) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(&GetDocument());
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "a"));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kWait));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
@@ -354,7 +349,7 @@ TEST_F(BytesConsumerTeeTest,
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
+  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
 
   dest1->SetClient(client);
 
@@ -382,14 +377,14 @@ TEST_F(BytesConsumerTeeTest,
 
 TEST_F(BytesConsumerTeeTest,
        AsyncCloseNotificationShouldBeCancelledBySubsequentReadCall) {
-  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(GetDocument());
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(&GetDocument());
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kData, "a"));
   src->Add(BytesConsumerCommand(BytesConsumerCommand::kDone));
   BytesConsumerTestClient* client = new BytesConsumerTestClient();
 
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
+  BytesConsumer::Tee(&GetDocument(), src, &dest1, &dest2);
 
   dest1->SetClient(client);
 

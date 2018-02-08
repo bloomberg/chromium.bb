@@ -6,7 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/NameNodeList.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/heap/Persistent.h"
 #include "platform/heap/ThreadState.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,18 +14,14 @@
 namespace blink {
 namespace {
 
-class LiveNodeListRegistryTest : public ::testing::Test {
+class LiveNodeListRegistryTest : public PageTestBase {
  public:
-  void SetUp() override { page_holder_ = DummyPageHolder::Create(); }
+  void SetUp() override { PageTestBase::SetUp(IntSize()); }
 
  protected:
   const LiveNodeListBase* CreateNodeList() {
-    return NameNodeList::Create(page_holder_->GetDocument(), kNameNodeListType,
-                                g_empty_atom);
+    return NameNodeList::Create(GetDocument(), kNameNodeListType, g_empty_atom);
   }
-
- private:
-  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
 TEST_F(LiveNodeListRegistryTest, InitialState) {

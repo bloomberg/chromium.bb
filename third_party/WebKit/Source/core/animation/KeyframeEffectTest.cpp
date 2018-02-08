@@ -18,15 +18,16 @@
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/Timing.h"
 #include "core/dom/Document.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
-class KeyframeEffectTest : public ::testing::Test {
+class KeyframeEffectTest : public PageTestBase {
  protected:
-  KeyframeEffectTest() : page_holder(DummyPageHolder::Create()) {
+  virtual void SetUp() {
+    PageTestBase::SetUp(IntSize());
     element = GetDocument().createElement("foo");
 
     GetDocument().GetAnimationClock().ResetTimeForTesting(
@@ -35,13 +36,10 @@ class KeyframeEffectTest : public ::testing::Test {
     EXPECT_EQ(0, GetDocument().Timeline().currentTime());
   }
 
-  Document& GetDocument() const { return page_holder->GetDocument(); }
-
   KeyframeEffectModelBase* CreateEmptyEffectModel() {
     return StringKeyframeEffectModel::Create(StringKeyframeVector());
   }
 
-  std::unique_ptr<DummyPageHolder> page_holder;
   Persistent<Element> element;
 };
 
@@ -477,19 +475,6 @@ TEST_F(KeyframeEffectTest, TimeToEffectChangeWithNegativePlaybackRate) {
   player->SetCurrentTimeInternal(200);
   EXPECT_EQ(inf, animation->TimeToForwardsEffectChange());
   EXPECT_EQ(50, animation->TimeToReverseEffectChange());
-}
-
-TEST_F(KeyframeEffectTest, ElementDestructorClearsAnimationTarget) {
-  // This test expects incorrect behaviour should be removed once Element
-  // and KeyframeEffect are moved to Oilpan. See crbug.com/362404 for context.
-  Timing timing;
-  timing.iteration_duration = 5;
-  KeyframeEffect* animation =
-      KeyframeEffect::Create(element.Get(), CreateEmptyEffectModel(), timing);
-  EXPECT_EQ(element.Get(), animation->Target());
-  GetDocument().Timeline().Play(animation);
-  page_holder.reset();
-  element.Clear();
 }
 
 }  // namespace blink
