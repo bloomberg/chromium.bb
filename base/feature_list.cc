@@ -186,36 +186,13 @@ void FeatureList::AddFeaturesToAllocator(PersistentMemoryAllocator* allocator) {
 
 void FeatureList::GetFeatureOverrides(std::string* enable_overrides,
                                       std::string* disable_overrides) {
-  DCHECK(initialized_);
+  GetFeatureOverridesImpl(enable_overrides, disable_overrides, false);
+}
 
-  enable_overrides->clear();
-  disable_overrides->clear();
-
-  // Note: Since |overrides_| is a std::map, iteration will be in alphabetical
-  // order. This not guaranteed to users of this function, but is useful for
-  // tests to assume the order.
-  for (const auto& entry : overrides_) {
-    std::string* target_list = nullptr;
-    switch (entry.second.overridden_state) {
-      case OVERRIDE_USE_DEFAULT:
-      case OVERRIDE_ENABLE_FEATURE:
-        target_list = enable_overrides;
-        break;
-      case OVERRIDE_DISABLE_FEATURE:
-        target_list = disable_overrides;
-        break;
-    }
-
-    if (!target_list->empty())
-      target_list->push_back(',');
-    if (entry.second.overridden_state == OVERRIDE_USE_DEFAULT)
-      target_list->push_back('*');
-    target_list->append(entry.first);
-    if (entry.second.field_trial) {
-      target_list->push_back('<');
-      target_list->append(entry.second.field_trial->trial_name());
-    }
-  }
+void FeatureList::GetCommandLineFeatureOverrides(
+    std::string* enable_overrides,
+    std::string* disable_overrides) {
+  GetFeatureOverridesImpl(enable_overrides, disable_overrides, true);
 }
 
 // static
@@ -396,6 +373,47 @@ void FeatureList::RegisterOverride(StringPiece feature_name,
   // feature name takes effect.
   overrides_.insert(std::make_pair(
       feature_name.as_string(), OverrideEntry(overridden_state, field_trial)));
+}
+
+void FeatureList::GetFeatureOverridesImpl(std::string* enable_overrides,
+                                          std::string* disable_overrides,
+                                          bool command_line_only) {
+  DCHECK(initialized_);
+
+  enable_overrides->clear();
+  disable_overrides->clear();
+
+  // Note: Since |overrides_| is a std::map, iteration will be in alphabetical
+  // order. This is not guaranteed to users of this function, but is useful for
+  // tests to assume the order.
+  for (const auto& entry : overrides_) {
+    if (command_line_only &&
+        (entry.second.field_trial != nullptr ||
+         entry.second.overridden_state == OVERRIDE_USE_DEFAULT)) {
+      continue;
+    }
+
+    std::string* target_list = nullptr;
+    switch (entry.second.overridden_state) {
+      case OVERRIDE_USE_DEFAULT:
+      case OVERRIDE_ENABLE_FEATURE:
+        target_list = enable_overrides;
+        break;
+      case OVERRIDE_DISABLE_FEATURE:
+        target_list = disable_overrides;
+        break;
+    }
+
+    if (!target_list->empty())
+      target_list->push_back(',');
+    if (entry.second.overridden_state == OVERRIDE_USE_DEFAULT)
+      target_list->push_back('*');
+    target_list->append(entry.first);
+    if (entry.second.field_trial) {
+      target_list->push_back('<');
+      target_list->append(entry.second.field_trial->trial_name());
+    }
+  }
 }
 
 bool FeatureList::CheckFeatureIdentity(const Feature& feature) {

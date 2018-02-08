@@ -373,6 +373,11 @@ TEST_F(FeatureListTest, GetFeatureOverrides) {
                                                   &disable_features);
   EXPECT_EQ("A,OffByDefault<Trial,X", SortFeatureListString(enable_features));
   EXPECT_EQ("D", SortFeatureListString(disable_features));
+
+  FeatureList::GetInstance()->GetCommandLineFeatureOverrides(&enable_features,
+                                                             &disable_features);
+  EXPECT_EQ("A,X", SortFeatureListString(enable_features));
+  EXPECT_EQ("D", SortFeatureListString(disable_features));
 }
 
 TEST_F(FeatureListTest, GetFeatureOverrides_UseDefault) {
