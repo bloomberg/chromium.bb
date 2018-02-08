@@ -3793,9 +3793,16 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 #endif
 
 #if CONFIG_AMVR
-      if (cm->seq_force_integer_mv == 2) {
-        aom_wb_write_bit(wb, cm->cur_frame_force_integer_mv);
+      if (cm->allow_screen_content_tools) {
+        if (cm->seq_force_integer_mv == 2) {
+          aom_wb_write_bit(wb, cm->cur_frame_force_integer_mv);
+        } else {
+          assert(cm->cur_frame_force_integer_mv == cm->seq_force_integer_mv);
+        }
+      } else {
+        assert(cm->cur_frame_force_integer_mv == 0);
       }
+
       if (cm->cur_frame_force_integer_mv) {
         cm->allow_high_precision_mv = 0;
       } else {
@@ -4122,9 +4129,16 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #endif
 
 #if CONFIG_AMVR
-    if (cm->seq_force_integer_mv == 2) {
-      aom_wb_write_bit(wb, cm->cur_frame_force_integer_mv);
+    if (cm->allow_screen_content_tools) {
+      if (cm->seq_force_integer_mv == 2) {
+        aom_wb_write_bit(wb, cm->cur_frame_force_integer_mv);
+      } else {
+        assert(cm->cur_frame_force_integer_mv == cm->seq_force_integer_mv);
+      }
+    } else {
+      assert(cm->cur_frame_force_integer_mv == 0);
     }
+
     if (cm->cur_frame_force_integer_mv) {
       cm->allow_high_precision_mv = 0;
     } else {
