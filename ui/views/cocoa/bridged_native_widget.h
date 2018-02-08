@@ -12,6 +12,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #import "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/compositor/layer_owner.h"
@@ -324,6 +325,7 @@ class VIEWS_EXPORT BridgedNativeWidget
   base::scoped_nsobject<NSView> compositor_superview_;
   std::unique_ptr<ui::AcceleratedWidgetMac> compositor_widget_;
   std::unique_ptr<ui::Compositor> compositor_;
+  viz::ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
 
   // Tracks the bounds when the window last started entering fullscreen. Used to
   // provide an answer for GetRestoredBounds(), but not ever sent to Cocoa (it
