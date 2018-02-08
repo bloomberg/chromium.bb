@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "net/base/ip_address.h"
+#include "net/cert/internal/common_cert_errors.h"
 #include "net/cert/internal/test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,6 +56,20 @@ namespace {
   if (!*result)
     return ::testing::AssertionFailure() << "Create failed";
   return ::testing::AssertionSuccess();
+}
+
+::testing::AssertionResult IsPermittedCert(
+    const NameConstraints* name_constraints,
+    const der::Input& subject_rdn_sequence,
+    const GeneralNames* subject_alt_names) {
+  CertErrors errors;
+  name_constraints->IsPermittedCert(subject_rdn_sequence, subject_alt_names,
+                                    &errors);
+  if (!errors.ContainsAnyErrorWithSeverity(CertError::SEVERITY_HIGH))
+    return ::testing::AssertionSuccess();
+  if (!errors.ContainsError(cert_errors::kNotPermittedByNameConstraints))
+    ADD_FAILURE() << "unexpected error " << errors.ToDebugString();
+  return ::testing::AssertionFailure();
 }
 
 }  // namespace
@@ -144,19 +159,20 @@ TEST_P(ParseNameConstraints, DNSNames) {
   std::string san_der;
   std::unique_ptr<GeneralNames> san;
   ASSERT_TRUE(LoadTestSubjectAltName("san-permitted.pem", &san, &san_der));
-  EXPECT_TRUE(name_constraints->IsPermittedCert(der::Input(), san.get()));
+  EXPECT_TRUE(IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 
   ASSERT_TRUE(
       LoadTestSubjectAltName("san-excluded-dnsname.pem", &san, &san_der));
-  EXPECT_FALSE(name_constraints->IsPermittedCert(der::Input(), san.get()));
+  EXPECT_FALSE(
+      IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 
   ASSERT_TRUE(
       LoadTestSubjectAltName("san-excluded-directoryname.pem", &san, &san_der));
-  EXPECT_TRUE(name_constraints->IsPermittedCert(der::Input(), san.get()));
+  EXPECT_TRUE(IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 
   ASSERT_TRUE(
       LoadTestSubjectAltName("san-excluded-ipaddress.pem", &san, &san_der));
-  EXPECT_TRUE(name_constraints->IsPermittedCert(der::Input(), san.get()));
+  EXPECT_TRUE(IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 }
 
 TEST_P(ParseNameConstraints,
@@ -367,29 +383,32 @@ TEST_P(ParseNameConstraints, DirectoryNames) {
             name_constraints->constrained_name_types());
 
   // Within the permitted C=US subtree.
-  EXPECT_TRUE(name_constraints->IsPermittedCert(
-      SequenceValueFromString(&name_us), nullptr /* subject_alt_names */));
+  EXPECT_TRUE(IsPermittedCert(name_constraints.get(),
+                              SequenceValueFromString(&name_us),
+                              nullptr /* subject_alt_names */));
   // Within the permitted C=US subtree, however the excluded C=US,ST=California
   // subtree takes priority.
-  EXPECT_FALSE(name_constraints->IsPermittedCert(
-      SequenceValueFromString(&name_us_ca), nullptr /* subject_alt_names */));
+  EXPECT_FALSE(IsPermittedCert(name_constraints.get(),
+                               SequenceValueFromString(&name_us_ca),
+                               nullptr /* subject_alt_names */));
 
   std::string san_der;
   std::unique_ptr<GeneralNames> san;
   ASSERT_TRUE(LoadTestSubjectAltName("san-permitted.pem", &san, &san_der));
-  EXPECT_TRUE(name_constraints->IsPermittedCert(der::Input(), san.get()));
+  EXPECT_TRUE(IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 
   ASSERT_TRUE(
       LoadTestSubjectAltName("san-excluded-dnsname.pem", &san, &san_der));
-  EXPECT_TRUE(name_constraints->IsPermittedCert(der::Input(), san.get()));
+  EXPECT_TRUE(IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 
   ASSERT_TRUE(
       LoadTestSubjectAltName("san-excluded-directoryname.pem", &san, &san_der));
-  EXPECT_FALSE(name_constraints->IsPermittedCert(der::Input(), san.get()));
+  EXPECT_FALSE(
+      IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 
   ASSERT_TRUE(
       LoadTestSubjectAltName("san-excluded-ipaddress.pem", &san, &san_der));
-  EXPECT_TRUE(name_constraints->IsPermittedCert(der::Input(), san.get()));
+  EXPECT_TRUE(IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 }
 
 TEST_P(ParseNameConstraints, DirectoryNamesExcludeOnly) {
@@ -562,19 +581,20 @@ TEST_P(ParseNameConstraints, IPAdresses) {
   std::string san_der;
   std::unique_ptr<GeneralNames> san;
   ASSERT_TRUE(LoadTestSubjectAltName("san-permitted.pem", &san, &san_der));
-  EXPECT_TRUE(name_constraints->IsPermittedCert(der::Input(), san.get()));
+  EXPECT_TRUE(IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 
   ASSERT_TRUE(
       LoadTestSubjectAltName("san-excluded-dnsname.pem", &san, &san_der));
-  EXPECT_TRUE(name_constraints->IsPermittedCert(der::Input(), san.get()));
+  EXPECT_TRUE(IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 
   ASSERT_TRUE(
       LoadTestSubjectAltName("san-excluded-directoryname.pem", &san, &san_der));
-  EXPECT_TRUE(name_constraints->IsPermittedCert(der::Input(), san.get()));
+  EXPECT_TRUE(IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 
   ASSERT_TRUE(
       LoadTestSubjectAltName("san-excluded-ipaddress.pem", &san, &san_der));
-  EXPECT_FALSE(name_constraints->IsPermittedCert(der::Input(), san.get()));
+  EXPECT_FALSE(
+      IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 }
 
 TEST_P(ParseNameConstraints, IPAdressesExcludeOnly) {
@@ -728,7 +748,7 @@ TEST_P(ParseNameConstraints, OtherNamesInPermitted) {
   std::unique_ptr<GeneralNames> san;
   ASSERT_TRUE(LoadTestSubjectAltName("san-othername.pem", &san, &san_der));
   EXPECT_EQ(!is_critical(),
-            name_constraints->IsPermittedCert(der::Input(), san.get()));
+            IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 }
 
 TEST_P(ParseNameConstraints, OtherNamesInExcluded) {
@@ -751,7 +771,7 @@ TEST_P(ParseNameConstraints, OtherNamesInExcluded) {
   std::unique_ptr<GeneralNames> san;
   ASSERT_TRUE(LoadTestSubjectAltName("san-othername.pem", &san, &san_der));
   EXPECT_EQ(!is_critical(),
-            name_constraints->IsPermittedCert(der::Input(), san.get()));
+            IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 }
 
 TEST_P(ParseNameConstraints, Rfc822NamesInPermitted) {
@@ -774,7 +794,7 @@ TEST_P(ParseNameConstraints, Rfc822NamesInPermitted) {
   std::unique_ptr<GeneralNames> san;
   ASSERT_TRUE(LoadTestSubjectAltName("san-rfc822name.pem", &san, &san_der));
   EXPECT_EQ(!is_critical(),
-            name_constraints->IsPermittedCert(der::Input(), san.get()));
+            IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 }
 
 TEST_P(ParseNameConstraints, Rfc822NamesInExcluded) {
@@ -797,7 +817,7 @@ TEST_P(ParseNameConstraints, Rfc822NamesInExcluded) {
   std::unique_ptr<GeneralNames> san;
   ASSERT_TRUE(LoadTestSubjectAltName("san-rfc822name.pem", &san, &san_der));
   EXPECT_EQ(!is_critical(),
-            name_constraints->IsPermittedCert(der::Input(), san.get()));
+            IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 }
 
 TEST_P(ParseNameConstraints, X400AddresssInPermitted) {
@@ -820,7 +840,7 @@ TEST_P(ParseNameConstraints, X400AddresssInPermitted) {
   std::unique_ptr<GeneralNames> san;
   ASSERT_TRUE(LoadTestSubjectAltName("san-x400address.pem", &san, &san_der));
   EXPECT_EQ(!is_critical(),
-            name_constraints->IsPermittedCert(der::Input(), san.get()));
+            IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 }
 
 TEST_P(ParseNameConstraints, X400AddresssInExcluded) {
@@ -843,7 +863,7 @@ TEST_P(ParseNameConstraints, X400AddresssInExcluded) {
   std::unique_ptr<GeneralNames> san;
   ASSERT_TRUE(LoadTestSubjectAltName("san-x400address.pem", &san, &san_der));
   EXPECT_EQ(!is_critical(),
-            name_constraints->IsPermittedCert(der::Input(), san.get()));
+            IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 }
 
 TEST_P(ParseNameConstraints, EdiPartyNamesInPermitted) {
@@ -866,7 +886,7 @@ TEST_P(ParseNameConstraints, EdiPartyNamesInPermitted) {
   std::unique_ptr<GeneralNames> san;
   ASSERT_TRUE(LoadTestSubjectAltName("san-edipartyname.pem", &san, &san_der));
   EXPECT_EQ(!is_critical(),
-            name_constraints->IsPermittedCert(der::Input(), san.get()));
+            IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 }
 
 TEST_P(ParseNameConstraints, EdiPartyNamesInExcluded) {
@@ -889,7 +909,7 @@ TEST_P(ParseNameConstraints, EdiPartyNamesInExcluded) {
   std::unique_ptr<GeneralNames> san;
   ASSERT_TRUE(LoadTestSubjectAltName("san-edipartyname.pem", &san, &san_der));
   EXPECT_EQ(!is_critical(),
-            name_constraints->IsPermittedCert(der::Input(), san.get()));
+            IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 }
 
 TEST_P(ParseNameConstraints, URIsInPermitted) {
@@ -911,7 +931,7 @@ TEST_P(ParseNameConstraints, URIsInPermitted) {
   std::unique_ptr<GeneralNames> san;
   ASSERT_TRUE(LoadTestSubjectAltName("san-uri.pem", &san, &san_der));
   EXPECT_EQ(!is_critical(),
-            name_constraints->IsPermittedCert(der::Input(), san.get()));
+            IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 }
 
 TEST_P(ParseNameConstraints, URIsInExcluded) {
@@ -933,7 +953,7 @@ TEST_P(ParseNameConstraints, URIsInExcluded) {
   std::unique_ptr<GeneralNames> san;
   ASSERT_TRUE(LoadTestSubjectAltName("san-uri.pem", &san, &san_der));
   EXPECT_EQ(!is_critical(),
-            name_constraints->IsPermittedCert(der::Input(), san.get()));
+            IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 }
 
 TEST_P(ParseNameConstraints, RegisteredIDsInPermitted) {
@@ -956,7 +976,7 @@ TEST_P(ParseNameConstraints, RegisteredIDsInPermitted) {
   std::unique_ptr<GeneralNames> san;
   ASSERT_TRUE(LoadTestSubjectAltName("san-registeredid.pem", &san, &san_der));
   EXPECT_EQ(!is_critical(),
-            name_constraints->IsPermittedCert(der::Input(), san.get()));
+            IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 }
 
 TEST_P(ParseNameConstraints, RegisteredIDsInExcluded) {
@@ -979,7 +999,7 @@ TEST_P(ParseNameConstraints, RegisteredIDsInExcluded) {
   std::unique_ptr<GeneralNames> san;
   ASSERT_TRUE(LoadTestSubjectAltName("san-registeredid.pem", &san, &san_der));
   EXPECT_EQ(!is_critical(),
-            name_constraints->IsPermittedCert(der::Input(), san.get()));
+            IsPermittedCert(name_constraints.get(), der::Input(), san.get()));
 }
 
 TEST_P(ParseNameConstraints,
@@ -1079,9 +1099,9 @@ TEST_P(ParseNameConstraints, IsPermittedCertSubjectEmailAddressIsOk) {
 
   // Name constraints don't contain rfc822Name, so emailAddress in subject is
   // allowed regardless.
-  EXPECT_TRUE(name_constraints->IsPermittedCert(
-      SequenceValueFromString(&name_us_arizona_email),
-      nullptr /* subject_alt_names */));
+  EXPECT_TRUE(IsPermittedCert(name_constraints.get(),
+                              SequenceValueFromString(&name_us_arizona_email),
+                              nullptr /* subject_alt_names */));
 }
 
 TEST_P(ParseNameConstraints, IsPermittedCertSubjectEmailAddressIsNotOk) {
@@ -1099,9 +1119,10 @@ TEST_P(ParseNameConstraints, IsPermittedCertSubjectEmailAddressIsNotOk) {
 
   // Name constraints contain rfc822Name, so emailAddress in subject is not
   // allowed if the constraints were critical.
-  EXPECT_EQ(!is_critical(), name_constraints->IsPermittedCert(
-                                SequenceValueFromString(&name_us_arizona_email),
-                                nullptr /* subject_alt_names */));
+  EXPECT_EQ(!is_critical(),
+            IsPermittedCert(name_constraints.get(),
+                            SequenceValueFromString(&name_us_arizona_email),
+                            nullptr /* subject_alt_names */));
 }
 
 // Hostname in commonName is not allowed (crbug.com/308330), so these are tests
@@ -1121,9 +1142,9 @@ TEST_P(ParseNameConstraints, IsPermittedCertSubjectDnsNames) {
   // The subject is within permitted directoryName constraints, so permitted.
   // (The commonName hostname is not within permitted dNSName constraints, so
   // this would not be permitted if hostnames in commonName were checked.)
-  EXPECT_TRUE(name_constraints->IsPermittedCert(
-      SequenceValueFromString(&name_us_az_foocom),
-      nullptr /* subject_alt_names */));
+  EXPECT_TRUE(IsPermittedCert(name_constraints.get(),
+                              SequenceValueFromString(&name_us_az_foocom),
+                              nullptr /* subject_alt_names */));
 
   std::string name_us_az_permitted;
   ASSERT_TRUE(LoadTestName("name-us-arizona-permitted.example.com.pem",
@@ -1131,9 +1152,9 @@ TEST_P(ParseNameConstraints, IsPermittedCertSubjectDnsNames) {
   // The subject is in permitted directoryName and the commonName is within
   // permitted dNSName constraints, so this should be permitted regardless if
   // hostnames in commonName are checked or not.
-  EXPECT_TRUE(name_constraints->IsPermittedCert(
-      SequenceValueFromString(&name_us_az_permitted),
-      nullptr /* subject_alt_names */));
+  EXPECT_TRUE(IsPermittedCert(name_constraints.get(),
+                              SequenceValueFromString(&name_us_az_permitted),
+                              nullptr /* subject_alt_names */));
 
   std::string name_us_ca_permitted;
   ASSERT_TRUE(LoadTestName("name-us-california-permitted.example.com.pem",
@@ -1141,9 +1162,9 @@ TEST_P(ParseNameConstraints, IsPermittedCertSubjectDnsNames) {
   // The subject is within the excluded C=US,ST=California directoryName, so
   // this should not be allowed, regardless of checking the
   // permitted.example.com in commonName.
-  EXPECT_FALSE(name_constraints->IsPermittedCert(
-      SequenceValueFromString(&name_us_ca_permitted),
-      nullptr /* subject_alt_names */));
+  EXPECT_FALSE(IsPermittedCert(name_constraints.get(),
+                               SequenceValueFromString(&name_us_ca_permitted),
+                               nullptr /* subject_alt_names */));
 }
 
 // IP addresses in commonName are not allowed (crbug.com/308330), so these are
@@ -1163,9 +1184,9 @@ TEST_P(ParseNameConstraints, IsPermittedCertSubjectIpAddresses) {
   // The subject is within permitted directoryName constraints, so permitted.
   // (The commonName IP address is not within permitted iPAddresses constraints,
   // so this would not be permitted if IP addresses in commonName were checked.)
-  EXPECT_TRUE(name_constraints->IsPermittedCert(
-      SequenceValueFromString(&name_us_az_1_1_1_1),
-      nullptr /* subject_alt_names */));
+  EXPECT_TRUE(IsPermittedCert(name_constraints.get(),
+                              SequenceValueFromString(&name_us_az_1_1_1_1),
+                              nullptr /* subject_alt_names */));
 
   std::string name_us_az_192_168_1_1;
   ASSERT_TRUE(
@@ -1173,9 +1194,9 @@ TEST_P(ParseNameConstraints, IsPermittedCertSubjectIpAddresses) {
   // The subject is in permitted directoryName and the commonName is within
   // permitted iPAddress constraints, so this should be permitted regardless if
   // IP addresses in commonName are checked or not.
-  EXPECT_TRUE(name_constraints->IsPermittedCert(
-      SequenceValueFromString(&name_us_az_192_168_1_1),
-      nullptr /* subject_alt_names */));
+  EXPECT_TRUE(IsPermittedCert(name_constraints.get(),
+                              SequenceValueFromString(&name_us_az_192_168_1_1),
+                              nullptr /* subject_alt_names */));
 
   std::string name_us_ca_192_168_1_1;
   ASSERT_TRUE(LoadTestName("name-us-california-192.168.1.1.pem",
@@ -1183,18 +1204,18 @@ TEST_P(ParseNameConstraints, IsPermittedCertSubjectIpAddresses) {
   // The subject is within the excluded C=US,ST=California directoryName, so
   // this should not be allowed, regardless of checking the
   // IP address in commonName.
-  EXPECT_FALSE(name_constraints->IsPermittedCert(
-      SequenceValueFromString(&name_us_ca_192_168_1_1),
-      nullptr /* subject_alt_names */));
+  EXPECT_FALSE(IsPermittedCert(name_constraints.get(),
+                               SequenceValueFromString(&name_us_ca_192_168_1_1),
+                               nullptr /* subject_alt_names */));
 
   std::string name_us_az_ipv6;
   ASSERT_TRUE(LoadTestName("name-us-arizona-ipv6.pem", &name_us_az_ipv6));
   // The subject is within permitted directoryName constraints, so permitted.
   // (The commonName is an ipv6 address which wasn't supported in the past, but
   // since commonName checking is ignored entirely, this is permitted.)
-  EXPECT_TRUE(name_constraints->IsPermittedCert(
-      SequenceValueFromString(&name_us_az_ipv6),
-      nullptr /* subject_alt_names */));
+  EXPECT_TRUE(IsPermittedCert(name_constraints.get(),
+                              SequenceValueFromString(&name_us_az_ipv6),
+                              nullptr /* subject_alt_names */));
 }
 
 }  // namespace net

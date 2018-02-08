@@ -32,6 +32,8 @@ DEFINE_CERT_ERROR_ID(kMissingBasicConstraints,
                      "Does not have Basic Constraints");
 DEFINE_CERT_ERROR_ID(kNotPermittedByNameConstraints,
                      "Not permitted by name constraints");
+DEFINE_CERT_ERROR_ID(kTooManyNameConstraintChecks,
+                     "Too many name constraints checks");
 DEFINE_CERT_ERROR_ID(kSubjectDoesNotMatchIssuer,
                      "subject does not match issuer");
 DEFINE_CERT_ERROR_ID(kVerifySignedDataFailed, "VerifySignedData failed");

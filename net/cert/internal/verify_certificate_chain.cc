@@ -797,10 +797,8 @@ void PathVerifier::BasicCertificateProcessing(
   if (!name_constraints_list_.empty() &&
       (!IsSelfIssued(cert) || is_target_cert)) {
     for (const NameConstraints* nc : name_constraints_list_) {
-      if (!nc->IsPermittedCert(cert.normalized_subject(),
-                               cert.subject_alt_names())) {
-        errors->AddError(cert_errors::kNotPermittedByNameConstraints);
-      }
+      nc->IsPermittedCert(cert.normalized_subject(), cert.subject_alt_names(),
+                          errors);
     }
   }
 

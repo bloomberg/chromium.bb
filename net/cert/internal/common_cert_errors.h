@@ -65,6 +65,9 @@ NET_EXPORT extern const CertErrorId kMissingBasicConstraints;
 // name constraints.
 NET_EXPORT extern const CertErrorId kNotPermittedByNameConstraints;
 
+// The chain has an excessive number of names and/or name constraints.
+NET_EXPORT extern const CertErrorId kTooManyNameConstraintChecks;
+
 // The certificate's issuer field does not match the subject of its alleged
 // issuer.
 NET_EXPORT extern const CertErrorId kSubjectDoesNotMatchIssuer;

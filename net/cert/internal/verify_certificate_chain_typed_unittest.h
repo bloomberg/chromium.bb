@@ -177,6 +177,20 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, Policies) {
   this->RunTest("unknown-non-critical-policy-qualifier/main.test");
 }
 
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ManyNames) {
+  this->RunTest("many-names/ok-all-types.test");
+  this->RunTest("many-names/ok-different-types-dns.test");
+  this->RunTest("many-names/ok-different-types-ips.test");
+  this->RunTest("many-names/ok-different-types-dirnames.test");
+  this->RunTest("many-names/toomany-all-types.test");
+  this->RunTest("many-names/toomany-dns-excluded.test");
+  this->RunTest("many-names/toomany-dns-permitted.test");
+  this->RunTest("many-names/toomany-ips-excluded.test");
+  this->RunTest("many-names/toomany-ips-permitted.test");
+  this->RunTest("many-names/toomany-dirnames-excluded.test");
+  this->RunTest("many-names/toomany-dirnames-permitted.test");
+}
+
 // TODO(eroman): Add test that invalid validity dates where the day or month
 // ordinal not in range, like "March 39, 2016" are rejected.
 
@@ -197,7 +211,8 @@ REGISTER_TYPED_TEST_CASE_P(VerifyCertificateChainSingleRootTest,
                            IssuerAndSubjectNotByteForByteEqual,
                            TrustAnchorNotSelfSigned,
                            KeyRollover,
-                           Policies);
+                           Policies,
+                           ManyNames);
 
 }  // namespace net
 

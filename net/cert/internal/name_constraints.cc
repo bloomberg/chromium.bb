@@ -9,8 +9,10 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/numerics/clamped_math.h"
 #include "base/strings/string_util.h"
 #include "net/cert/internal/cert_errors.h"
+#include "net/cert/internal/common_cert_errors.h"
 #include "net/cert/internal/verify_name_match.h"
 #include "net/der/input.h"
 #include "net/der/parser.h"
@@ -239,9 +241,40 @@ bool NameConstraints::Parse(const der::Input& extension_value,
   return true;
 }
 
-bool NameConstraints::IsPermittedCert(
-    const der::Input& subject_rdn_sequence,
-    const GeneralNames* subject_alt_names) const {
+void NameConstraints::IsPermittedCert(const der::Input& subject_rdn_sequence,
+                                      const GeneralNames* subject_alt_names,
+                                      CertErrors* errors) const {
+  // Checking NameConstraints is O(number_of_names * number_of_constraints).
+  // Impose a hard limit to mitigate the use of name constraints as a DoS
+  // mechanism.
+  const size_t kMaxChecks = 1048576;  // 1 << 20
+  base::ClampedNumeric<size_t> check_count = 0;
+
+  if (subject_alt_names) {
+    check_count +=
+        base::ClampMul(subject_alt_names->dns_names.size(),
+                       base::ClampAdd(excluded_subtrees_.dns_names.size(),
+                                      permitted_subtrees_.dns_names.size()));
+    check_count += base::ClampMul(
+        subject_alt_names->directory_names.size(),
+        base::ClampAdd(excluded_subtrees_.directory_names.size(),
+                       permitted_subtrees_.directory_names.size()));
+    check_count += base::ClampMul(
+        subject_alt_names->ip_addresses.size(),
+        base::ClampAdd(excluded_subtrees_.ip_address_ranges.size(),
+                       permitted_subtrees_.ip_address_ranges.size()));
+  }
+
+  if (!(subject_alt_names && subject_rdn_sequence.Length() == 0)) {
+    check_count += base::ClampAdd(excluded_subtrees_.directory_names.size(),
+                                  permitted_subtrees_.directory_names.size());
+  }
+
+  if (check_count > kMaxChecks) {
+    errors->AddError(cert_errors::kTooManyNameConstraintChecks);
+    return;
+  }
+
   // Subject Alternative Name handling:
   //
   // RFC 5280 section 4.2.1.6:
@@ -265,23 +298,30 @@ bool NameConstraints::IsPermittedCert(
     // either process the constraint or reject the certificate.
     if (constrained_name_types() & subject_alt_names->present_name_types &
         ~kSupportedNameTypes) {
-      return false;
+      errors->AddError(cert_errors::kNotPermittedByNameConstraints);
+      return;
     }
 
     // Check supported name types:
     for (const auto& dns_name : subject_alt_names->dns_names) {
-      if (!IsPermittedDNSName(dns_name))
-        return false;
+      if (!IsPermittedDNSName(dns_name)) {
+        errors->AddError(cert_errors::kNotPermittedByNameConstraints);
+        return;
+      }
     }
 
     for (const auto& directory_name : subject_alt_names->directory_names) {
-      if (!IsPermittedDirectoryName(directory_name))
-        return false;
+      if (!IsPermittedDirectoryName(directory_name)) {
+        errors->AddError(cert_errors::kNotPermittedByNameConstraints);
+        return;
+      }
     }
 
     for (const auto& ip_address : subject_alt_names->ip_addresses) {
-      if (!IsPermittedIP(ip_address))
-        return false;
+      if (!IsPermittedIP(ip_address)) {
+        errors->AddError(cert_errors::kNotPermittedByNameConstraints);
+        return;
+      }
     }
   }
 
@@ -299,10 +339,13 @@ bool NameConstraints::IsPermittedCert(
     bool contained_email_address = false;
     if (!NameContainsEmailAddress(subject_rdn_sequence,
                                   &contained_email_address)) {
-      return false;
+      errors->AddError(cert_errors::kNotPermittedByNameConstraints);
+      return;
     }
-    if (contained_email_address)
-      return false;
+    if (contained_email_address) {
+      errors->AddError(cert_errors::kNotPermittedByNameConstraints);
+      return;
+    }
   }
 
   // RFC 5280 4.1.2.6:
@@ -314,9 +357,12 @@ bool NameConstraints::IsPermittedCert(
   // therefore only needs to avoid the IsPermittedDirectoryName check against an
   // empty subject in such a case.
   if (subject_alt_names && subject_rdn_sequence.Length() == 0)
-    return true;
+    return;
 
-  return IsPermittedDirectoryName(subject_rdn_sequence);
+  if (!IsPermittedDirectoryName(subject_rdn_sequence)) {
+    errors->AddError(cert_errors::kNotPermittedByNameConstraints);
+    return;
+  }
 }
 
 bool NameConstraints::IsPermittedDNSName(base::StringPiece name) const {
