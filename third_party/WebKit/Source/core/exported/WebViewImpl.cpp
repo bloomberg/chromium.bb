@@ -2148,9 +2148,10 @@ void WebViewImpl::MouseCaptureLost() {
 }
 
 void WebViewImpl::SetFocus(bool enable) {
+  if (enable)
+    page_->GetFocusController().SetActive(true);
   page_->GetFocusController().SetFocused(enable);
   if (enable) {
-    page_->GetFocusController().SetActive(true);
     LocalFrame* focused_frame = page_->GetFocusController().FocusedFrame();
     if (focused_frame) {
       Element* element = focused_frame->GetDocument()->FocusedElement();

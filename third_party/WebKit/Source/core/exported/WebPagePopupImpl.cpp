@@ -521,9 +521,9 @@ WebInputEventResult WebPagePopupImpl::HandleInputEvent(
 void WebPagePopupImpl::SetFocus(bool enable) {
   if (!page_)
     return;
-  page_->GetFocusController().SetFocused(enable);
   if (enable)
     page_->GetFocusController().SetActive(true);
+  page_->GetFocusController().SetFocused(enable);
 }
 
 void WebPagePopupImpl::Close() {
