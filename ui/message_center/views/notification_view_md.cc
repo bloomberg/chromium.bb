@@ -194,29 +194,30 @@ const char* CompactTitleMessageView::GetClassName() const {
 }
 
 CompactTitleMessageView::CompactTitleMessageView() {
-  SetLayoutManager(std::make_unique<views::FillLayout>());
-
   const gfx::FontList& font_list = GetTextFontList();
 
-  title_view_ = new views::Label();
-  title_view_->SetFontList(font_list);
-  title_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_view_->SetEnabledColor(kRegularTextColorMD);
-  AddChildView(title_view_);
+  title_ = new views::Label();
+  title_->SetFontList(font_list);
+  title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_->SetEnabledColor(kRegularTextColorMD);
+  AddChildView(title_);
 
-  message_view_ = new views::Label();
-  message_view_->SetFontList(font_list);
-  message_view_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-  message_view_->SetEnabledColor(kDimTextColorMD);
-  AddChildView(message_view_);
+  message_ = new views::Label();
+  message_->SetFontList(font_list);
+  message_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  message_->SetEnabledColor(kDimTextColorMD);
+  AddChildView(message_);
 }
 
-void CompactTitleMessageView::OnPaint(gfx::Canvas* canvas) {
-  base::string16 title = title_;
-  base::string16 message = message_;
+gfx::Size CompactTitleMessageView::CalculatePreferredSize() const {
+  gfx::Size title_size = title_->GetPreferredSize();
+  gfx::Size message_size = message_->GetPreferredSize();
+  return gfx::Size(title_size.width() + message_size.width() +
+                       kCompactTitleMessageViewSpacing,
+                   std::max(title_size.height(), message_size.height()));
+}
 
-  const gfx::FontList& font_list = GetTextFontList();
-
+void CompactTitleMessageView::Layout() {
   // Elides title and message.
   // * If the message is too long, the message occupies at most
   //   kProgressNotificationMessageRatio of the width.
@@ -225,21 +226,24 @@ void CompactTitleMessageView::OnPaint(gfx::Canvas* canvas) {
   //   title is shown.
   // * If they are short enough, the title is left-aligned and the message is
   //   right-aligned.
-  message = gfx::ElideText(
-      message, font_list,
-      title.empty()
-          ? width()
-          : static_cast<int>(kProgressNotificationMessageRatio * width()),
-      gfx::ELIDE_TAIL);
-  const int message_width = gfx::Canvas::GetStringWidthF(message, font_list);
+  const int message_width = std::min(
+      message_->GetPreferredSize().width(),
+      title_->GetPreferredSize().width() > 0
+          ? static_cast<int>(kProgressNotificationMessageRatio * width())
+          : width());
   const int title_width =
       std::max(0, width() - message_width - kCompactTitleMessageViewSpacing);
-  title = gfx::ElideText(title, font_list, title_width, gfx::ELIDE_TAIL);
 
-  title_view_->SetText(title);
-  message_view_->SetText(message);
+  title_->SetBounds(0, 0, title_width, height());
+  message_->SetBounds(width() - message_width, 0, message_width, height());
+}
 
-  views::View::OnPaint(canvas);
+void CompactTitleMessageView::set_title(const base::string16& title) {
+  title_->SetText(title);
+}
+
+void CompactTitleMessageView::set_message(const base::string16& message) {
+  message_->SetText(message);
 }
 
 // LargeImageView //////////////////////////////////////////////////////////////
