@@ -64,6 +64,7 @@ function navigateToLanguageAndCountryCode(language, countryCode) {
 function processLangZoneTerms(initialLoad, language, countryCode) {
   var langSegments = language.split('-');
   if (initialLoad && navigateToLanguageAndCountryCode(language, countryCode)) {
+    document.body.hidden = false;
     return true;
   }
 
