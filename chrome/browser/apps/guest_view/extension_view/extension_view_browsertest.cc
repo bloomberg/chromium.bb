@@ -4,6 +4,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/guest_view_manager.h"
@@ -164,7 +165,12 @@ IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, LoadAPINullExtension) {
   TestLoadApiHelper("testLoadAPINullExtension");
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, QueuedLoadAPIFunction) {
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_QueuedLoadAPIFunction DISABLED_QueuedLoadAPIFunction
+#else
+#define MAYBE_QueuedLoadAPIFunction QueuedLoadAPIFunction
+#endif
+IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, MAYBE_QueuedLoadAPIFunction) {
   TestLoadApiHelper("testQueuedLoadAPIFunction");
 }
 
