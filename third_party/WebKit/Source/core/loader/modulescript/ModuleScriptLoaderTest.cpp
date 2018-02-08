@@ -16,7 +16,7 @@
 #include "core/script/Modulator.h"
 #include "core/script/ModuleScript.h"
 #include "core/testing/DummyModulator.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "core/workers/MainThreadWorkletReportingProxy.h"
@@ -131,7 +131,7 @@ void ModuleScriptLoaderTestModulator::Trace(blink::Visitor* visitor) {
 
 }  // namespace
 
-class ModuleScriptLoaderTest : public ::testing::Test {
+class ModuleScriptLoaderTest : public PageTestBase {
   DISALLOW_COPY_AND_ASSIGN(ModuleScriptLoaderTest);
 
  public:
@@ -146,13 +146,10 @@ class ModuleScriptLoaderTest : public ::testing::Test {
   void TestFetchInvalidURL(TestModuleScriptLoaderClient*);
   void TestFetchURL(TestModuleScriptLoaderClient*);
 
-  LocalFrame& GetFrame() { return dummy_page_holder_->GetFrame(); }
-  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
   ModuleScriptLoaderTestModulator* GetModulator() { return modulator_.Get(); }
 
  protected:
   ScopedTestingPlatformSupport<FetchTestingPlatformSupport> platform_;
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   std::unique_ptr<MainThreadWorkletReportingProxy> reporting_proxy_;
   Persistent<ModuleScriptLoaderTestModulator> modulator_;
   Persistent<MainThreadWorkletGlobalScope> global_scope_;
@@ -160,7 +157,7 @@ class ModuleScriptLoaderTest : public ::testing::Test {
 
 void ModuleScriptLoaderTest::SetUp() {
   platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
-  dummy_page_holder_ = DummyPageHolder::Create(IntSize(500, 500));
+  PageTestBase::SetUp(IntSize(500, 500));
   GetDocument().SetURL(KURL("https://example.test"));
   GetDocument().SetSecurityOrigin(SecurityOrigin::Create(GetDocument().Url()));
 }

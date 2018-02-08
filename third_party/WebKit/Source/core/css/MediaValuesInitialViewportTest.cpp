@@ -5,22 +5,17 @@
 #include "core/css/MediaValuesInitialViewport.h"
 
 #include "core/frame/LocalFrameView.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class MediaValuesInitialViewportTest : public ::testing::Test {
- protected:
-  Document& GetDocument() const { return dummy_page_holder_->GetDocument(); }
-
+class MediaValuesInitialViewportTest : public PageTestBase {
  private:
   void SetUp() override {
-    dummy_page_holder_ = DummyPageHolder::Create(IntSize(320, 480));
+    PageTestBase::SetUp(IntSize(320, 480));
     GetDocument().View()->SetInitialViewportSize(IntSize(320, 480));
   }
-
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
 
 TEST_F(MediaValuesInitialViewportTest, InitialViewportSize) {
