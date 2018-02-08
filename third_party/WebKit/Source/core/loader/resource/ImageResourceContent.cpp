@@ -231,7 +231,7 @@ bool ImageResourceContent::ShouldUpdateImageImmediately() const {
          (image_ && image_->MaybeAnimated());
 }
 
-blink::Image* ImageResourceContent::GetImage() {
+blink::Image* ImageResourceContent::GetImage() const {
   if (!image_ || ErrorOccurred())
     return Image::NullImage();
 
