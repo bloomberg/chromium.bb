@@ -65,7 +65,8 @@ const TestVideoParam kTestVectors[] = {
 
 // Encoding modes tested
 const libaom_test::TestMode kEncodingModeVectors[] = {
-  ::libaom_test::kTwoPassGood, ::libaom_test::kOnePassGood,
+  ::libaom_test::kTwoPassGood,
+  ::libaom_test::kOnePassGood,
   ::libaom_test::kRealTime,
 };
 

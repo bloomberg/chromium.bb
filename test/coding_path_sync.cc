@@ -53,7 +53,9 @@ class CompressedSource {
     // choose the chroma subsampling
     {
       const aom_img_fmt_t fmts[] = {
-        AOM_IMG_FMT_I420, AOM_IMG_FMT_I422, AOM_IMG_FMT_I444,
+        AOM_IMG_FMT_I420,
+        AOM_IMG_FMT_I422,
+        AOM_IMG_FMT_I444,
       };
 
       format_ = fmts[rnd_.PseudoUniform(NELEMENTS(fmts))];

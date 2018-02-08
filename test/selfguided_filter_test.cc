@@ -68,12 +68,10 @@ class AV1SelfguidedFilterTest
       for (j = -16; j < width + 16; ++j)
         input[i * stride + j] = rnd.Rand16() & 0xFF;
 
-    int xqd[2] = {
-      SGRPROJ_PRJ_MIN0 +
-          rnd.PseudoUniform(SGRPROJ_PRJ_MAX0 + 1 - SGRPROJ_PRJ_MIN0),
-      SGRPROJ_PRJ_MIN1 +
-          rnd.PseudoUniform(SGRPROJ_PRJ_MAX1 + 1 - SGRPROJ_PRJ_MIN1)
-    };
+    int xqd[2] = { SGRPROJ_PRJ_MIN0 + rnd.PseudoUniform(SGRPROJ_PRJ_MAX0 + 1 -
+                                                        SGRPROJ_PRJ_MIN0),
+                   SGRPROJ_PRJ_MIN1 + rnd.PseudoUniform(SGRPROJ_PRJ_MAX1 + 1 -
+                                                        SGRPROJ_PRJ_MIN1) };
     // Fix a parameter set, since the speed depends slightly on r.
     // Change this to test different combinations of values of r.
     int eps = 15;
@@ -157,12 +155,10 @@ class AV1SelfguidedFilterTest
         for (k = -16; k < max_w + 16; ++k)
           input[j * stride + k] = rnd.Rand16() & 0xFF;
 
-      int xqd[2] = {
-        SGRPROJ_PRJ_MIN0 +
-            rnd.PseudoUniform(SGRPROJ_PRJ_MAX0 + 1 - SGRPROJ_PRJ_MIN0),
-        SGRPROJ_PRJ_MIN1 +
-            rnd.PseudoUniform(SGRPROJ_PRJ_MAX1 + 1 - SGRPROJ_PRJ_MIN1)
-      };
+      int xqd[2] = { SGRPROJ_PRJ_MIN0 + rnd.PseudoUniform(SGRPROJ_PRJ_MAX0 + 1 -
+                                                          SGRPROJ_PRJ_MIN0),
+                     SGRPROJ_PRJ_MIN1 + rnd.PseudoUniform(SGRPROJ_PRJ_MAX1 + 1 -
+                                                          SGRPROJ_PRJ_MIN1) };
       int eps = rnd.PseudoUniform(1 << SGRPROJ_PARAMS_BITS);
 
       // Test various tile sizes around 256x256
@@ -248,12 +244,10 @@ class AV1HighbdSelfguidedFilterTest
       for (j = -16; j < width + 16; ++j)
         input[i * stride + j] = rnd.Rand16() & mask;
 
-    int xqd[2] = {
-      SGRPROJ_PRJ_MIN0 +
-          rnd.PseudoUniform(SGRPROJ_PRJ_MAX0 + 1 - SGRPROJ_PRJ_MIN0),
-      SGRPROJ_PRJ_MIN1 +
-          rnd.PseudoUniform(SGRPROJ_PRJ_MAX1 + 1 - SGRPROJ_PRJ_MIN1)
-    };
+    int xqd[2] = { SGRPROJ_PRJ_MIN0 + rnd.PseudoUniform(SGRPROJ_PRJ_MAX0 + 1 -
+                                                        SGRPROJ_PRJ_MIN0),
+                   SGRPROJ_PRJ_MIN1 + rnd.PseudoUniform(SGRPROJ_PRJ_MAX1 + 1 -
+                                                        SGRPROJ_PRJ_MIN1) };
     // Fix a parameter set, since the speed depends slightly on r.
     // Change this to test different combinations of values of r.
     int eps = 15;
@@ -342,12 +336,10 @@ class AV1HighbdSelfguidedFilterTest
         for (k = -16; k < max_w + 16; ++k)
           input[j * stride + k] = rnd.Rand16() & mask;
 
-      int xqd[2] = {
-        SGRPROJ_PRJ_MIN0 +
-            rnd.PseudoUniform(SGRPROJ_PRJ_MAX0 + 1 - SGRPROJ_PRJ_MIN0),
-        SGRPROJ_PRJ_MIN1 +
-            rnd.PseudoUniform(SGRPROJ_PRJ_MAX1 + 1 - SGRPROJ_PRJ_MIN1)
-      };
+      int xqd[2] = { SGRPROJ_PRJ_MIN0 + rnd.PseudoUniform(SGRPROJ_PRJ_MAX0 + 1 -
+                                                          SGRPROJ_PRJ_MIN0),
+                     SGRPROJ_PRJ_MIN1 + rnd.PseudoUniform(SGRPROJ_PRJ_MAX1 + 1 -
+                                                          SGRPROJ_PRJ_MIN1) };
       int eps = rnd.PseudoUniform(1 << SGRPROJ_PARAMS_BITS);
 
       // Test various tile sizes around 256x256

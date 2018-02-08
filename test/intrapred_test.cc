@@ -163,7 +163,6 @@ TEST_P(LowbdIntraPredTest, Bitexact) {
 
 // -----------------------------------------------------------------------------
 // High Bit Depth Tests
-
 #define highbd_entry(type, width, height, opt, bd)                          \
   IntraPredFunc<HighbdIntraPred>(                                           \
       &aom_highbd_##type##_predictor_##width##x##height##_##opt,            \
@@ -348,8 +347,10 @@ INSTANTIATE_TEST_CASE_P(SSE2, LowbdIntraPredTest,
 
 #if HAVE_SSSE3
 const IntraPredFunc<IntraPred> LowbdIntraPredTestVectorSsse3[] = {
-  lowbd_entry(d63e, 4, 4, ssse3), lowbd_intrapred(d45e, ssse3),
-  lowbd_intrapred(paeth, ssse3), lowbd_intrapred(smooth, ssse3),
+  lowbd_entry(d63e, 4, 4, ssse3),
+  lowbd_intrapred(d45e, ssse3),
+  lowbd_intrapred(paeth, ssse3),
+  lowbd_intrapred(smooth, ssse3),
 };
 
 INSTANTIATE_TEST_CASE_P(SSSE3, LowbdIntraPredTest,

@@ -13,8 +13,8 @@
 #include "test/av1_convolve_2d_test_util.h"
 
 using libaom_test::ACMRandom;
-using libaom_test::AV1Convolve2D::AV1Convolve2DTest;
 using libaom_test::AV1Convolve2D::AV1Convolve2DSrTest;
+using libaom_test::AV1Convolve2D::AV1Convolve2DTest;
 using std::tr1::make_tuple;
 using std::tr1::tuple;
 #if CONFIG_JNT_COMP

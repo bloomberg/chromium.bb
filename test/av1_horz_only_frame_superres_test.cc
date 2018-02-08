@@ -29,9 +29,9 @@ const int kPerfIters = 1000;
 const int kVPad = 32;
 const int kHPad = 32;
 
-using std::tr1::tuple;
-using std::tr1::make_tuple;
 using libaom_test::ACMRandom;
+using std::tr1::make_tuple;
+using std::tr1::tuple;
 
 template <typename Pixel>
 class TestImage {

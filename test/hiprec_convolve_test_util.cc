@@ -52,7 +52,8 @@ namespace AV1HiprecConvolve {
 ::testing::internal::ParamGenerator<HiprecConvolveParam> BuildParams(
     hiprec_convolve_func filter) {
   const HiprecConvolveParam params[] = {
-    make_tuple(8, 8, 50000, filter), make_tuple(64, 64, 1000, filter),
+    make_tuple(8, 8, 50000, filter),
+    make_tuple(64, 64, 1000, filter),
     make_tuple(32, 8, 10000, filter),
   };
   return ::testing::ValuesIn(params);

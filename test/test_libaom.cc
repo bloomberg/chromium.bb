@@ -62,10 +62,9 @@ int main(int argc, char **argv) {
   if (!(simd_caps & HAS_AVX2)) append_negative_gtest_filter("AVX2");
 #endif  // ARCH_X86 || ARCH_X86_64
 
+// Shared library builds don't support whitebox tests that exercise internal
+// symbols.
 #if !CONFIG_SHARED
-// Shared library builds don't support whitebox tests
-// that exercise internal symbols.
-
 #if CONFIG_AV1
   av1_rtcd();
 #endif  // CONFIG_AV1
