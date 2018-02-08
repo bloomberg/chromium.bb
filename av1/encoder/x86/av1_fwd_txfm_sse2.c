@@ -1944,7 +1944,7 @@ void av1_lowbd_fwd_txfm2d_16x32_sse2(const int16_t *input, int32_t *output,
 void av1_lowbd_fwd_txfm2d_32x16_sse2(const int16_t *input, int32_t *output,
                                      int stride, TX_TYPE tx_type, int bd) {
   (void)bd;
-  __m128i buf0[16], buf1[64];
+  __m128i buf0[32], buf1[64];
   const int8_t *shift = fwd_txfm_shift_ls[TX_32X16];
   const int txw_idx = get_txw_idx(TX_32X16);
   const int txh_idx = get_txh_idx(TX_32X16);
