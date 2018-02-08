@@ -15,31 +15,49 @@ class ResourceChecker(object):
     self.output_api = output_api
     self.file_filter = file_filter
 
-  def IncludeCheck(self, line_number, line):
+  def DisallowIncludeCheck(self, msg, line_number, line):
+    return regex_check.RegexCheck(self.input_api.re, line_number, line,
+              '^\s*(?:\/[\*\/])?\s*(<include)\s*src=', msg)
+
+  # This is intentionally not included in RunChecks(). It's an optional check
+  # that can be used from a PRESUBMIT.py in a directory that does not wish to
+  # use <include> (i.e. uses a different bundling mechanism, does not grit
+  # process, etc.).
+  def DisallowIncludes(self, msg):
+    check = lambda *args: self.DisallowIncludeCheck(msg, *args)
+    return self._RunCheckOnAffectedFiles(check, 'Found resource errors in %s',
+                                         is_error=True)
+
+  def SelfClosingIncludeCheck(self, line_number, line):
     return regex_check.RegexCheck(self.input_api.re, line_number, line,
         "(</include>|<include.*/>)", "Closing <include> tags is unnecessary.")
 
   def RunChecks(self):
+    return self._RunCheckOnAffectedFiles(
+        self.SelfClosingIncludeCheck, 'Found resources style issues in %s')
+
+  def _RunCheckOnAffectedFiles(self, check, msg_template, is_error=False):
     """Check for violations of the Chromium web development style guide. See
        https://chromium.googlesource.com/chromium/src/+/master/styleguide/web/web.md
     """
     results = []
 
-    affected_files = self.input_api.AffectedFiles(file_filter=self.file_filter,
-                                                  include_deletes=False)
-
+    affected_files= self.input_api.AffectedFiles(file_filter=self.file_filter,
+                                                 include_deletes=False)
     for f in affected_files:
       errors = []
 
       for line_number, line in enumerate(f.NewContents(), start=1):
-        error = self.IncludeCheck(line_number, line)
+        error = check(line_number, line)
         if error:
           errors.append(error)
 
       if errors:
         abs_local_path = f.AbsoluteLocalPath()
-        file_indicator = 'Found resources style issues in %s' % abs_local_path
-        prompt_msg = file_indicator + '\n\n' + '\n'.join(errors) + '\n'
-        results.append(self.output_api.PresubmitPromptWarning(prompt_msg))
+        msg = msg_template % abs_local_path + '\n\n' + '\n'.join(errors) + '\n'
+        if is_error:
+          results.append(self.output_api.PresubmitError(msg))
+        else:
+          results.append(self.output_api.PresubmitPromptWarning(msg))
 
     return results
