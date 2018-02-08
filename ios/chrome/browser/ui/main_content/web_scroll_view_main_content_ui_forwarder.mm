@@ -113,6 +113,11 @@
 
 #pragma mark CRWWebViewScrollViewObserver
 
+- (void)webViewScrollViewFrameDidChange:
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
+  [self.updater scrollViewSizeDidChange:webViewScrollViewProxy.frame.size];
+}
+
 - (void)webViewScrollViewDidScroll:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
   [self.updater scrollViewDidScrollToOffset:self.proxy.contentOffset];
@@ -136,6 +141,18 @@
 - (void)webViewScrollViewDidEndDecelerating:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
   [self.updater scrollViewDidEndDecelerating];
+}
+
+- (void)webViewScrollViewDidResetContentSize:
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
+  [self.updater
+      scrollViewDidResetContentSize:webViewScrollViewProxy.contentSize];
+}
+
+- (void)webViewScrollViewDidResetContentInset:
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
+  [self.updater
+      scrollViewDidResetContentInset:webViewScrollViewProxy.contentInset];
 }
 
 #pragma mark - WebStateListObserving

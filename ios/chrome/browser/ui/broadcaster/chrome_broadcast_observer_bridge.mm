@@ -23,12 +23,28 @@ ChromeBroadcastObserverInterface::~ChromeBroadcastObserverInterface() = default;
   return self;
 }
 
+- (void)broadcastScrollViewSize:(CGSize)scrollViewSize {
+  self.observer->OnScrollViewSizeBroadcasted(scrollViewSize);
+}
+
+- (void)broadcastScrollViewContentSize:(CGSize)contentSize {
+  self.observer->OnScrollViewContentSizeBroadcasted(contentSize);
+}
+
+- (void)broadcastScrollViewContentInset:(UIEdgeInsets)contentInset {
+  self.observer->OnScrollViewContentInsetBroadcasted(contentInset);
+}
+
 - (void)broadcastContentScrollOffset:(CGFloat)offset {
   self.observer->OnContentScrollOffsetBroadcasted(offset);
 }
 
 - (void)broadcastScrollViewIsScrolling:(BOOL)scrolling {
   self.observer->OnScrollViewIsScrollingBroadcasted(scrolling);
+}
+
+- (void)broadcastScrollViewIsZooming:(BOOL)zooming {
+  self.observer->OnScrollViewIsZoomingBroadcasted(zooming);
 }
 
 - (void)broadcastScrollViewIsDragging:(BOOL)dragging {

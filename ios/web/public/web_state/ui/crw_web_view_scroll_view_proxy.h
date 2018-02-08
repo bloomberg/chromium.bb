@@ -66,6 +66,8 @@
 // information look at the UIScrollViewDelegate documentation.
 @protocol CRWWebViewScrollViewObserver<NSObject>
 @optional
+- (void)webViewScrollViewFrameDidChange:
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
 - (void)webViewScrollViewDidScroll:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
 - (void)webViewScrollViewWillBeginDragging:
@@ -87,12 +89,18 @@
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
 - (void)webViewScrollViewDidResetContentSize:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
+- (void)webViewScrollViewDidResetContentInset:
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
 
 // The equivalent in UIScrollViewDelegate also takes a parameter (UIView*)view,
 // but CRWWebViewScrollViewObserver doesn't expose it for flexibility of future
 // implementation.
 - (void)webViewScrollViewWillBeginZooming:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
+- (void)webViewScrollViewDidEndZooming:
+            (CRWWebViewScrollViewProxy*)webViewScrollViewProxy
+                               atScale:(CGFloat)scale;
+
 @end
 
 // A protocol to be implemented by objects to listen for changes to the

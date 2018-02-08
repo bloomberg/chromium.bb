@@ -289,10 +289,17 @@
   [_observers webViewScrollViewWillBeginZooming:self];
 }
 
+- (void)scrollViewDidEndZooming:(UIScrollView*)scrollView
+                       withView:(UIView*)view
+                        atScale:(CGFloat)scale {
+  DCHECK_EQ(_scrollView, scrollView);
+  [_observers webViewScrollViewDidEndZooming:self atScale:scale];
+}
+
 #pragma mark -
 
 + (NSArray*)scrollViewObserverKeyPaths {
-  return @[ @"contentSize" ];
+  return @[ @"frame", @"contentSize", @"contentInset" ];
 }
 
 - (void)startObservingScrollView:(UIScrollView*)scrollView {
@@ -310,8 +317,12 @@
                         change:(NSDictionary*)change
                        context:(void*)context {
   DCHECK_EQ(object, _scrollView);
+  if ([keyPath isEqualToString:@"frame"])
+    [_observers webViewScrollViewFrameDidChange:self];
   if ([keyPath isEqualToString:@"contentSize"])
     [_observers webViewScrollViewDidResetContentSize:self];
+  if ([keyPath isEqualToString:@"contentInset"])
+    [_observers webViewScrollViewDidResetContentInset:self];
 }
 
 @end

@@ -15,6 +15,8 @@ void SetUpFullscreenModelForTesting(FullscreenModel* model,
                                     CGFloat toolbar_height) {
   EXPECT_GE(toolbar_height, 0.0);
   model->SetToolbarHeight(toolbar_height);
+  model->SetScrollViewHeight(2 * toolbar_height);
+  model->SetContentHeight(2 * model->GetScrollViewHeight());
   model->ResetForNavigation();
   model->SetYContentOffset(0.0);
 }

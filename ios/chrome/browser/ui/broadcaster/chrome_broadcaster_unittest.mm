@@ -17,15 +17,25 @@
 @interface TestObserver : NSObject<ChromeBroadcastObserver>
 @property(nonatomic) BOOL lastObservedBool;
 @property(nonatomic) CGFloat lastObservedCGFloat;
+@property(nonatomic) CGSize lastObservedCGSize;
+@property(nonatomic) UIEdgeInsets lastObservedUIEdgeInsets;
 @property(nonatomic) NSInteger tabStripVisibleCallCount;
 @property(nonatomic) NSInteger contentScrollOffsetCallCount;
+@property(nonatomic) NSInteger scrollViewSizeCallCount;
+@property(nonatomic) NSInteger contentSizeCallCount;
+@property(nonatomic) NSInteger contentInsetCallCount;
 @end
 
 @implementation TestObserver
 @synthesize lastObservedBool = _lastObservedBool;
 @synthesize lastObservedCGFloat = _lastObservedCGFloat;
+@synthesize lastObservedCGSize = _lastObservedCGSize;
+@synthesize lastObservedUIEdgeInsets = _lastObservedUIEdgeInsets;
 @synthesize tabStripVisibleCallCount = _tabStripVisibleCallCount;
 @synthesize contentScrollOffsetCallCount = _contentScrollOffsetCallCount;
+@synthesize scrollViewSizeCallCount = _scrollViewSizeCallCount;
+@synthesize contentSizeCallCount = _contentSizeCallCount;
+@synthesize contentInsetCallCount = _contentInsetCallCount;
 
 - (void)broadcastScrollViewIsScrolling:(BOOL)visible {
   self.tabStripVisibleCallCount++;
@@ -37,15 +47,34 @@
   self.lastObservedCGFloat = offset;
 }
 
+- (void)broadcastScrollViewSize:(CGSize)scrollViewSize {
+  self.scrollViewSizeCallCount++;
+  self.lastObservedCGSize = scrollViewSize;
+}
+
+- (void)broadcastScrollViewContentSize:(CGSize)contentSize {
+  self.contentSizeCallCount++;
+  self.lastObservedCGSize = contentSize;
+}
+
+- (void)broadcastScrollViewContentInset:(UIEdgeInsets)contentInset {
+  self.contentInsetCallCount++;
+  self.lastObservedUIEdgeInsets = contentInset;
+}
+
 @end
 
 @interface TestObservable : NSObject
 @property(nonatomic) BOOL observableBool;
 @property(nonatomic) CGFloat observableCGFloat;
+@property(nonatomic) CGSize observableCGSize;
+@property(nonatomic) UIEdgeInsets observableUIEdgeInsets;
 @end
 @implementation TestObservable
 @synthesize observableBool = _observableBool;
 @synthesize observableCGFloat = _observableCGFloat;
+@synthesize observableCGSize = _observableCGSize;
+@synthesize observableUIEdgeInsets = _observableUIEdgeInsets;
 @end
 
 typedef PlatformTest ChromeBroadcasterTest;
@@ -145,6 +174,97 @@ TEST_F(ChromeBroadcasterTest, TestObserveFloatFirst) {
   observable.observableCGFloat = 2.0;
   EXPECT_EQ(2.0, observer.lastObservedCGFloat);
   EXPECT_EQ(2, observer.contentScrollOffsetCallCount);
+}
+
+TEST_F(ChromeBroadcasterTest, TestObserveScrollViewSizeFirst) {
+  ChromeBroadcaster* broadcaster = [[ChromeBroadcaster alloc] init];
+  TestObserver* observer = [[TestObserver alloc] init];
+  EXPECT_TRUE(CGSizeEqualToSize(observer.lastObservedCGSize, CGSizeZero));
+  EXPECT_EQ(0, observer.scrollViewSizeCallCount);
+  [broadcaster addObserver:observer
+               forSelector:@selector(broadcastScrollViewSize:)];
+  EXPECT_TRUE(CGSizeEqualToSize(observer.lastObservedCGSize, CGSizeZero));
+  EXPECT_EQ(0, observer.scrollViewSizeCallCount);
+
+  TestObservable* observable = [[TestObservable alloc] init];
+  CGSize kScrollViewSize1 = CGSizeMake(100, 100);
+  observable.observableCGSize = kScrollViewSize1;
+  EXPECT_TRUE(CGSizeEqualToSize(observer.lastObservedCGSize, CGSizeZero));
+  EXPECT_EQ(0, observer.scrollViewSizeCallCount);
+
+  [broadcaster broadcastValue:@"observableCGSize"
+                     ofObject:observable
+                     selector:@selector(broadcastScrollViewSize:)];
+  EXPECT_TRUE(CGSizeEqualToSize(observer.lastObservedCGSize, kScrollViewSize1));
+  EXPECT_EQ(1, observer.scrollViewSizeCallCount);
+
+  CGSize kScrollViewSize2 = CGSizeMake(200, 200);
+  observable.observableCGSize = kScrollViewSize2;
+  EXPECT_TRUE(CGSizeEqualToSize(observer.lastObservedCGSize, kScrollViewSize2));
+  EXPECT_EQ(2, observer.scrollViewSizeCallCount);
+}
+
+TEST_F(ChromeBroadcasterTest, TestObserveContentSizeFirst) {
+  ChromeBroadcaster* broadcaster = [[ChromeBroadcaster alloc] init];
+  TestObserver* observer = [[TestObserver alloc] init];
+  EXPECT_TRUE(CGSizeEqualToSize(observer.lastObservedCGSize, CGSizeZero));
+  EXPECT_EQ(0, observer.contentSizeCallCount);
+  [broadcaster addObserver:observer
+               forSelector:@selector(broadcastScrollViewContentSize:)];
+  EXPECT_TRUE(CGSizeEqualToSize(observer.lastObservedCGSize, CGSizeZero));
+  EXPECT_EQ(0, observer.contentSizeCallCount);
+
+  TestObservable* observable = [[TestObservable alloc] init];
+  CGSize kContentViewSize1 = CGSizeMake(100, 100);
+  observable.observableCGSize = kContentViewSize1;
+  EXPECT_TRUE(CGSizeEqualToSize(observer.lastObservedCGSize, CGSizeZero));
+  EXPECT_EQ(0, observer.contentSizeCallCount);
+
+  [broadcaster broadcastValue:@"observableCGSize"
+                     ofObject:observable
+                     selector:@selector(broadcastScrollViewContentSize:)];
+  EXPECT_TRUE(
+      CGSizeEqualToSize(observer.lastObservedCGSize, kContentViewSize1));
+  EXPECT_EQ(1, observer.contentSizeCallCount);
+
+  CGSize kContentViewSize2 = CGSizeMake(200, 200);
+  observable.observableCGSize = kContentViewSize2;
+  EXPECT_TRUE(
+      CGSizeEqualToSize(observer.lastObservedCGSize, kContentViewSize2));
+  EXPECT_EQ(2, observer.contentSizeCallCount);
+}
+
+TEST_F(ChromeBroadcasterTest, TestObserveContentInsetFirst) {
+  ChromeBroadcaster* broadcaster = [[ChromeBroadcaster alloc] init];
+  TestObserver* observer = [[TestObserver alloc] init];
+  EXPECT_TRUE(UIEdgeInsetsEqualToEdgeInsets(observer.lastObservedUIEdgeInsets,
+                                            UIEdgeInsetsZero));
+  EXPECT_EQ(0, observer.contentInsetCallCount);
+  [broadcaster addObserver:observer
+               forSelector:@selector(broadcastScrollViewContentInset:)];
+  EXPECT_TRUE(UIEdgeInsetsEqualToEdgeInsets(observer.lastObservedUIEdgeInsets,
+                                            UIEdgeInsetsZero));
+  EXPECT_EQ(0, observer.contentInsetCallCount);
+
+  TestObservable* observable = [[TestObservable alloc] init];
+  UIEdgeInsets kInsets1 = UIEdgeInsetsMake(1, 1, 1, 1);
+  observable.observableUIEdgeInsets = kInsets1;
+  EXPECT_TRUE(UIEdgeInsetsEqualToEdgeInsets(observer.lastObservedUIEdgeInsets,
+                                            UIEdgeInsetsZero));
+  EXPECT_EQ(0, observer.contentInsetCallCount);
+
+  [broadcaster broadcastValue:@"observableUIEdgeInsets"
+                     ofObject:observable
+                     selector:@selector(broadcastScrollViewContentInset:)];
+  EXPECT_TRUE(UIEdgeInsetsEqualToEdgeInsets(observer.lastObservedUIEdgeInsets,
+                                            kInsets1));
+  EXPECT_EQ(1, observer.contentInsetCallCount);
+
+  UIEdgeInsets kInsets2 = UIEdgeInsetsMake(2, 2, 2, 2);
+  observable.observableUIEdgeInsets = kInsets2;
+  EXPECT_TRUE(UIEdgeInsetsEqualToEdgeInsets(observer.lastObservedUIEdgeInsets,
+                                            kInsets2));
+  EXPECT_EQ(2, observer.contentInsetCallCount);
 }
 
 TEST_F(ChromeBroadcasterTest, TestBroadcastManyFloats) {

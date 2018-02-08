@@ -16,6 +16,10 @@
 namespace {
 // The toolbar height to use for tests.
 const CGFloat kToolbarHeight = 50.0;
+// The scroll view height used for tests.
+const CGFloat kScrollViewHeight = 400.0;
+// The content height used for tests.
+const CGFloat kContentHeight = 5000.0;
 }  // namespace
 
 // Test fixture for FullscreenModel.
@@ -26,6 +30,8 @@ class FullscreenModelTest : public PlatformTest {
     // Set the toolbar height to kToolbarHeight, and simulate a page load that
     // finishes with a 0.0 y content offset.
     model_.SetToolbarHeight(kToolbarHeight);
+    model_.SetScrollViewHeight(kScrollViewHeight);
+    model_.SetContentHeight(kContentHeight);
     model_.ResetForNavigation();
     model_.SetYContentOffset(0.0);
   }
@@ -56,7 +62,8 @@ TEST_F(FullscreenModelTest, EnableDisable) {
   // Since the model has been disabled the Toolbar is shown, verify that the
   // model state reflects that.
   EXPECT_EQ(observer().progress(), 1.0);
-  EXPECT_FALSE(model().has_base_offset());
+  EXPECT_EQ(model().base_offset(),
+            GetFullscreenBaseOffsetForProgress(&model(), 1.0));
   // Increment again and check that the model is still disabled.
   model().IncrementDisabledCounter();
   EXPECT_FALSE(model().enabled());
@@ -129,15 +136,47 @@ TEST_F(FullscreenModelTest, UserScroll) {
   EXPECT_EQ(model().GetYContentOffset(), kFinalProgress * kToolbarHeight);
 }
 
+// Tests that updating the y content offset of a disabled model only updates its
+// base offset.
+TEST_F(FullscreenModelTest, DisabledScroll) {
+  const CGFloat kProgress = 0.5;
+  model().IncrementDisabledCounter();
+  SimulateFullscreenUserScrollForProgress(&model(), kProgress);
+  EXPECT_EQ(observer().progress(), 1.0);
+  EXPECT_EQ(model().base_offset(),
+            GetFullscreenBaseOffsetForProgress(&model(), 1.0));
+}
+
 // Tests that updating the y content offset programmatically (i.e. while the
-// scroll view is not scrolling) does not produce a new progress value for
-// observers.
+// scroll view is not scrolling) only updates the base offset.
 TEST_F(FullscreenModelTest, ProgrammaticScroll) {
   // Perform a programmatic scroll that would result in a progress of 0.5, and
   // verify that the initial progress value of 1.0 is maintained.
   const CGFloat kProgress = 0.5;
   model().SetYContentOffset(kProgress * kToolbarHeight);
   EXPECT_EQ(observer().progress(), 1.0);
+  EXPECT_EQ(model().base_offset(),
+            GetFullscreenBaseOffsetForProgress(&model(), 1.0));
+}
+
+// Tests that updating the y content offset while zooming only updates the
+// model's base offset.
+TEST_F(FullscreenModelTest, ZoomScroll) {
+  const CGFloat kProgress = 0.5;
+  model().SetScrollViewIsZooming(true);
+  SimulateFullscreenUserScrollForProgress(&model(), kProgress);
+  EXPECT_EQ(observer().progress(), 1.0);
+  EXPECT_EQ(model().base_offset(),
+            GetFullscreenBaseOffsetForProgress(&model(), 1.0));
+}
+
+// Tests that updating the y content offset while the toolbar height is 0 only
+// updates the model's base offset.
+TEST_F(FullscreenModelTest, NoToolbarScroll) {
+  model().SetToolbarHeight(0.0);
+  model().SetYContentOffset(100);
+  EXPECT_EQ(observer().progress(), 1.0);
+  EXPECT_EQ(model().base_offset(), 100);
 }
 
 // Tests that setting scrolling to false sends a scroll end signal to its
