@@ -85,6 +85,13 @@ void RootCompositorFrameSinkImpl::SetAuthoritativeVSyncInterval(
     synthetic_begin_frame_source_->SetAuthoritativeVSyncInterval(interval);
 }
 
+void RootCompositorFrameSinkImpl::SetDisplayVSyncParameters(
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
+  if (synthetic_begin_frame_source_)
+    synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
+}
+
 void RootCompositorFrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
   support_->SetNeedsBeginFrame(needs_begin_frame);
 }

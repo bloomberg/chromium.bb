@@ -51,6 +51,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
                             const gfx::ColorSpace& device_color_space) override;
   void SetOutputIsSecure(bool secure) override;
   void SetAuthoritativeVSyncInterval(base::TimeDelta interval) override;
+  void SetDisplayVSyncParameters(base::TimeTicks timebase,
+                                 base::TimeDelta interval) override;
 
   // mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;

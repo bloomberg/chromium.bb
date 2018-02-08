@@ -296,8 +296,10 @@ void VizProcessTransportFactory::SetDisplayVSyncParameters(
     ui::Compositor* compositor,
     base::TimeTicks timebase,
     base::TimeDelta interval) {
-  // TODO(crbug.com/772524): Deal with vsync later.
-  NOTIMPLEMENTED();
+  auto iter = compositor_data_map_.find(compositor);
+  if (iter == compositor_data_map_.end() || !iter->second.display_private)
+    return;
+  iter->second.display_private->SetDisplayVSyncParameters(timebase, interval);
 }
 
 void VizProcessTransportFactory::IssueExternalBeginFrame(
