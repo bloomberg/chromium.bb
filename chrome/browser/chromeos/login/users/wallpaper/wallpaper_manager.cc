@@ -69,32 +69,6 @@ namespace {
 
 WallpaperManager* wallpaper_manager = nullptr;
 
-// Returns index of the first public session user found in |users|
-// or -1 otherwise.
-int FindPublicSession(const user_manager::UserList& users) {
-  int index = -1;
-  int i = 0;
-  for (user_manager::UserList::const_iterator it = users.begin();
-       it != users.end(); ++it, ++i) {
-    if ((*it)->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
-      index = i;
-      break;
-    }
-  }
-
-  return index;
-}
-
-// Returns true if |users| contains users other than device local account users.
-bool HasNonDeviceLocalAccounts(const user_manager::UserList& users) {
-  for (const auto* user : users) {
-    if (!policy::IsDeviceLocalAccountUser(user->GetAccountId().GetUserEmail(),
-                                          nullptr))
-      return true;
-  }
-  return false;
-}
-
 }  // namespace
 
 void AssertCalledOnWallpaperSequence(base::SequencedTaskRunner* task_runner) {
@@ -108,7 +82,6 @@ const char kWallpaperSequenceTokenName[] = "wallpaper-sequence";
 // WallpaperManager, public: ---------------------------------------------------
 
 WallpaperManager::~WallpaperManager() {
-  show_user_name_on_signin_subscription_.reset();
   weak_factory_.InvalidateWeakPtrs();
 }
 
@@ -129,65 +102,6 @@ void WallpaperManager::Shutdown() {
   CHECK(wallpaper_manager);
   delete wallpaper_manager;
   wallpaper_manager = nullptr;
-}
-
-void WallpaperManager::InitializeWallpaper() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // Apply device customization.
-  if (customization_wallpaper_util::ShouldUseCustomizedDefaultWallpaper()) {
-    SetCustomizedDefaultWallpaperPaths(
-        customization_wallpaper_util::GetCustomizedDefaultWallpaperPath(
-            ash::WallpaperController::kSmallWallpaperSuffix),
-        customization_wallpaper_util::GetCustomizedDefaultWallpaperPath(
-            ash::WallpaperController::kLargeWallpaperSuffix));
-  }
-
-  base::CommandLine* command_line = GetCommandLine();
-  if (command_line->HasSwitch(chromeos::switches::kGuestSession)) {
-    // Guest wallpaper should be initialized when guest login.
-    // Note: This maybe called before login. So IsLoggedInAsGuest can not be
-    // used here to determine if current user is guest.
-    return;
-  }
-
-  if (command_line->HasSwitch(::switches::kTestType))
-    WizardController::SetZeroDelays();
-
-  // Zero delays is also set in autotests.
-  if (WizardController::IsZeroDelayEnabled()) {
-    // Ensure tests have some sort of wallpaper.
-    ash::Shell::Get()->wallpaper_controller()->CreateEmptyWallpaper();
-    return;
-  }
-
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (!user_manager->IsUserLoggedIn()) {
-    if (!StartupUtils::IsDeviceRegistered())
-      WallpaperControllerClient::Get()->ShowSigninWallpaper();
-    else
-      InitializeRegisteredDeviceWallpaper();
-    return;
-  }
-  WallpaperControllerClient::Get()->ShowUserWallpaper(
-      user_manager->GetActiveUser()->GetAccountId());
-}
-
-void WallpaperManager::SetCustomizedDefaultWallpaperPaths(
-    const base::FilePath& default_small_wallpaper_file,
-    const base::FilePath& default_large_wallpaper_file) {
-  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash())
-    return;
-  ash::Shell::Get()->wallpaper_controller()->SetCustomizedDefaultWallpaperPaths(
-      default_small_wallpaper_file, default_large_wallpaper_file);
-}
-
-void WallpaperManager::AddObservers() {
-  show_user_name_on_signin_subscription_ =
-      CrosSettings::Get()->AddSettingsObserver(
-          kAccountsPrefShowUserNamesOnSignIn,
-          base::Bind(&WallpaperManager::InitializeRegisteredDeviceWallpaper,
-                     weak_factory_.GetWeakPtr()));
 }
 
 bool WallpaperManager::IsPolicyControlled(const AccountId& account_id) const {
@@ -211,54 +125,6 @@ WallpaperManager::WallpaperManager() : weak_factory_(this) {
   task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
-}
-
-base::CommandLine* WallpaperManager::GetCommandLine() {
-  base::CommandLine* command_line =
-      command_line_for_testing_ ? command_line_for_testing_
-                                : base::CommandLine::ForCurrentProcess();
-  return command_line;
-}
-
-void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
-  if (user_manager::UserManager::Get()->IsUserLoggedIn())
-    return;
-
-  bool show_users = true;
-  bool result = CrosSettings::Get()->GetBoolean(
-      kAccountsPrefShowUserNamesOnSignIn, &show_users);
-  DCHECK(result) << "Unable to fetch setting "
-                 << kAccountsPrefShowUserNamesOnSignIn;
-  const user_manager::UserList& users =
-      user_manager::UserManager::Get()->GetUsers();
-  int public_session_user_index = FindPublicSession(users);
-  if ((!show_users && public_session_user_index == -1) ||
-      !HasNonDeviceLocalAccounts(users)) {
-    // Boot into the sign in screen.
-    WallpaperControllerClient::Get()->ShowSigninWallpaper();
-    return;
-  }
-
-  // Normal boot, load user wallpaper.
-  int index = public_session_user_index != -1 ? public_session_user_index : 0;
-  WallpaperControllerClient::Get()->ShowUserWallpaper(
-      users[index]->GetAccountId());
-}
-
-bool WallpaperManager::GetUserWallpaperInfo(const AccountId& account_id,
-                                            WallpaperInfo* info) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash()) {
-    // Some unit tests come here without a Shell instance.
-    // TODO(crbug.com/776464): This is intended not to work under mash. Make it
-    // work again after WallpaperManager is removed.
-    return false;
-  }
-  bool is_persistent =
-      !user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
-          account_id);
-  return ash::Shell::Get()->wallpaper_controller()->GetUserWallpaperInfo(
-      account_id, info, is_persistent);
 }
 
 }  // namespace chromeos

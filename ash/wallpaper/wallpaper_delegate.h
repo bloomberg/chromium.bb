@@ -29,9 +29,6 @@ class ASH_EXPORT WallpaperDelegate {
   // another's on the login screen)?
   virtual bool ShouldShowInitialAnimation() = 0;
 
-  // Initialize wallpaper.
-  virtual void InitializeWallpaper() = 0;
-
   // Notifies delegate that wallpaper animation has finished.
   virtual void OnWallpaperAnimationFinished() = 0;
 

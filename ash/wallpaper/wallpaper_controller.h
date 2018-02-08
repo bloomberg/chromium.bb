@@ -246,24 +246,6 @@ class ASH_EXPORT WallpaperController
                                const user_manager::UserType& user_type,
                                bool show_wallpaper);
 
-  // TODO(crbug.com/776464): Convert this to a mojo call to replace
-  // |SetCustomizedDefaultWallpaper|. If possible, send the paths together with
-  // |SetClientAndPaths|.
-  // Sets the paths of customized default wallpaper to be used wherever a
-  // default wallpaper is needed. Note: it doesn't change the default wallpaper
-  // for guest and child accounts.
-  void SetCustomizedDefaultWallpaperPaths(
-      const base::FilePath& customized_default_wallpaper_file_small,
-      const base::FilePath& customized_default_wallpaper_file_large);
-
-  // Creates an empty wallpaper. Some tests require a wallpaper widget is ready
-  // when running. However, the wallpaper widgets are now created
-  // asynchronously. If loading a real wallpaper, there are cases that these
-  // tests crash because the required widget is not ready. This function
-  // synchronously creates an empty widget for those tests to prevent
-  // crashes. An example test is SystemGestureEventFilterTest.ThreeFingerSwipe.
-  void CreateEmptyWallpaper();
-
   // Returns whether a wallpaper policy is enforced for |account_id| (not
   // including device policy).
   bool IsPolicyControlled(const AccountId& account_id,
@@ -384,10 +366,9 @@ class ASH_EXPORT WallpaperController
   void SetDefaultWallpaper(mojom::WallpaperUserInfoPtr user_info,
                            const std::string& wallpaper_files_id,
                            bool show_wallpaper) override;
-  void SetCustomizedDefaultWallpaper(
-      const GURL& wallpaper_url,
-      const base::FilePath& file_path,
-      const base::FilePath& resized_directory) override;
+  void SetCustomizedDefaultWallpaperPaths(
+      const base::FilePath& customized_default_small_path,
+      const base::FilePath& customized_default_large_path) override;
   void SetPolicyWallpaper(mojom::WallpaperUserInfoPtr user_info,
                           const std::string& wallpaper_files_id,
                           const std::string& data) override;
@@ -419,9 +400,16 @@ class ASH_EXPORT WallpaperController
   // Sets dummy values for wallpaper directories.
   void InitializePathsForTesting();
 
-  // Shows a solid color wallpaper as the substitute for default wallpapers and
-  // updates |default_wallpaper_image_|.
+  // Shows a default wallpaper for testing, without changing users' wallpaper
+  // info.
   void ShowDefaultWallpaperForTesting();
+
+  // Creates an empty wallpaper. Some tests require a wallpaper widget is ready
+  // when running. However, the wallpaper widgets are now created
+  // asynchronously. If loading a real wallpaper, there are cases that these
+  // tests crash because the required widget is not ready. This function
+  // synchronously creates an empty widget for those tests to prevent crashes.
+  void CreateEmptyWallpaperForTesting();
 
   // Sets a test client interface with empty file paths.
   void SetClientForTesting(mojom::WallpaperControllerClientPtr client);
@@ -603,8 +591,8 @@ class ASH_EXPORT WallpaperController
   CachedDefaultWallpaper cached_default_wallpaper_;
 
   // The paths of the customized default wallpapers, if they exist.
-  base::FilePath customized_default_wallpaper_small_;
-  base::FilePath customized_default_wallpaper_large_;
+  base::FilePath customized_default_small_path_;
+  base::FilePath customized_default_large_path_;
 
   gfx::Size current_max_display_size_;
 

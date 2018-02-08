@@ -30,7 +30,6 @@
 #include "ui/gfx/image/image_skia.h"
 
 namespace base {
-class CommandLine;
 class SequencedTaskRunner;
 }  // namespace base
 
@@ -57,22 +56,8 @@ class WallpaperManager {
   // WallpaperManager to remove any observers it has registered.
   static void Shutdown();
 
-  // Initializes wallpaper. If logged in, loads user's wallpaper. If not logged
-  // in, uses a solid color wallpaper. If logged in as a stub user, uses an
-  // empty wallpaper.
-  void InitializeWallpaper();
-
   // Gets wallpaper information of logged in user.
   bool GetLoggedInUserWallpaperInfo(wallpaper::WallpaperInfo* info);
-
-  // TODO(crbug.com/776464): Convert it to mojo call.
-  // A wrapper of |WallpaperController::SetCustomizedDefaultWallpaperPaths|.
-  void SetCustomizedDefaultWallpaperPaths(
-      const base::FilePath& default_small_wallpaper_file,
-      const base::FilePath& default_large_wallpaper_file);
-
-  // Adds |this| as an observer to various settings.
-  void AddObservers();
 
   // A wrapper of |WallpaperController::IsPolicyControlled|.
   bool IsPolicyControlled(const AccountId& account_id) const;
@@ -82,31 +67,8 @@ class WallpaperManager {
 
   WallpaperManager();
 
-  // Gets the CommandLine representing the current process's command line.
-  base::CommandLine* GetCommandLine();
-
-  // Initialize wallpaper of registered device after device policy is trusted.
-  // Note that before device is enrolled, it proceeds with untrusted setting.
-  void InitializeRegisteredDeviceWallpaper();
-
-  // A wrapper of |WallpaperController::GetUserWallpaperInfo|.
-  bool GetUserWallpaperInfo(const AccountId& account_id,
-                            wallpaper::WallpaperInfo* info) const;
-
-  // Returns the cached logged-in user wallpaper info, or a dummy value under
-  // mash.
-  wallpaper::WallpaperInfo* GetCachedWallpaperInfo();
-
-  std::unique_ptr<CrosSettings::ObserverSubscription>
-      show_user_name_on_signin_subscription_;
-
-  base::ThreadChecker thread_checker_;
-
   // Wallpaper sequenced task runner.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
-  // If non-NULL, used in place of the real command line.
-  base::CommandLine* command_line_for_testing_ = nullptr;
 
   bool should_cache_wallpaper_ = false;
 

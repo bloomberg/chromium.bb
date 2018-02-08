@@ -72,10 +72,13 @@ class TestWallpaperObserver : public ash::WallpaperControllerObserver {
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
+  // Wait until the wallpaper update is completed.
   void WaitForWallpaperDataChanged() {
     while (!finished_)
       base::RunLoop().Run();
   }
+
+  void Reset() { finished_ = false; }
 
  private:
   bool finished_;
@@ -232,7 +235,10 @@ IN_PROC_BROWSER_TEST_F(CustomizationWallpaperDownloaderBrowserTest,
                        OEMWallpaperIsPresent) {
   ash::WallpaperController* wallpaper_controller =
       ash::Shell::Get()->wallpaper_controller();
+  TestWallpaperObserver observer(wallpaper_controller);
   wallpaper_controller->ShowDefaultWallpaperForTesting();
+  observer.WaitForWallpaperDataChanged();
+  observer.Reset();
 
   WallpaperImageFetcherFactory url_factory(
       GURL(kOEMWallpaperURL), wallpaper_manager_test_utils::kWallpaperSize,
@@ -240,13 +246,13 @@ IN_PROC_BROWSER_TEST_F(CustomizationWallpaperDownloaderBrowserTest,
       wallpaper_manager_test_utils::kLargeCustomWallpaperColor,
       0 /* require_retries */);
 
-  TestWallpaperObserver observer(wallpaper_controller);
   chromeos::ServicesCustomizationDocument* customization =
       chromeos::ServicesCustomizationDocument::GetInstance();
   EXPECT_TRUE(
       customization->LoadManifestFromString(std::string(kServicesManifest)));
 
   observer.WaitForWallpaperDataChanged();
+  observer.Reset();
 
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
       wallpaper_controller->GetWallpaper(),
@@ -258,7 +264,10 @@ IN_PROC_BROWSER_TEST_F(CustomizationWallpaperDownloaderBrowserTest,
                        OEMWallpaperRetryFetch) {
   ash::WallpaperController* wallpaper_controller =
       ash::Shell::Get()->wallpaper_controller();
+  TestWallpaperObserver observer(wallpaper_controller);
   wallpaper_controller->ShowDefaultWallpaperForTesting();
+  observer.WaitForWallpaperDataChanged();
+  observer.Reset();
 
   WallpaperImageFetcherFactory url_factory(
       GURL(kOEMWallpaperURL), wallpaper_manager_test_utils::kWallpaperSize,
@@ -266,13 +275,13 @@ IN_PROC_BROWSER_TEST_F(CustomizationWallpaperDownloaderBrowserTest,
       wallpaper_manager_test_utils::kLargeCustomWallpaperColor,
       1 /* require_retries */);
 
-  TestWallpaperObserver observer(wallpaper_controller);
   chromeos::ServicesCustomizationDocument* customization =
       chromeos::ServicesCustomizationDocument::GetInstance();
   EXPECT_TRUE(
       customization->LoadManifestFromString(std::string(kServicesManifest)));
 
   observer.WaitForWallpaperDataChanged();
+  observer.Reset();
 
   EXPECT_TRUE(wallpaper_manager_test_utils::ImageIsNearColor(
       wallpaper_controller->GetWallpaper(),
