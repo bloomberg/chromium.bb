@@ -3,12 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/test/bind_test_util.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -27,6 +26,15 @@ const size_t kTestBlobStorageMaxBlobMemorySize = 200;
 const uint64_t kTestBlobStorageMaxDiskSpace = 3000;
 const uint64_t kTestBlobStorageMinFileSizeBytes = 20;
 const uint64_t kTestBlobStorageMaxFileSizeBytes = 50;
+
+void SetBlobLimitsOnIO(scoped_refptr<ChromeBlobStorageContext> context,
+                       const storage::BlobStorageLimits& limits) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  CHECK(context);
+  CHECK(context->context());
+  context->context()->set_limits_for_testing(limits);
+}
+
 }  // namespace
 
 // This browser test is aimed towards exercising the blob storage transportation
@@ -43,17 +51,15 @@ class BlobStorageBrowserTest : public ContentBrowserTest {
     limits_.max_file_size = kTestBlobStorageMaxFileSizeBytes;
   }
 
-  void SetBlobLimits() {
-    GetMemoryController()->set_limits_for_testing(limits_);
+  scoped_refptr<ChromeBlobStorageContext> GetBlobContext() {
+    return ChromeBlobStorageContext::GetFor(
+        shell()->web_contents()->GetBrowserContext());
   }
 
-  storage::BlobMemoryController* GetMemoryController() {
-    content::ChromeBlobStorageContext* blob_context =
-        ChromeBlobStorageContext::GetFor(
-            shell()->web_contents()->GetBrowserContext());
-    if (!blob_context->context())
-      return nullptr;
-    return blob_context->context()->mutable_memory_controller();
+  void SetBlobLimits() {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(&SetBlobLimitsOnIO, GetBlobContext(),
+                                           base::ConstRef(limits_)));
   }
 
   void SimpleTest(const GURL& test_url, bool incognito = false) {
@@ -86,17 +92,28 @@ class BlobStorageBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(BlobStorageBrowserTest, BlobCombinations) {
   SetBlobLimits();
   SimpleTest(GetTestUrl("blob_storage", "blob_creation_and_slicing.html"));
-  storage::BlobMemoryController* memory_controller = GetMemoryController();
-  ASSERT_TRUE(memory_controller);
-  // Our exact usages depend on IPC message ordering & garbage collection.
-  // Since this is basically random, we just check bounds.
-  EXPECT_LT(0u, memory_controller->memory_usage());
-  EXPECT_LT(0ul, memory_controller->disk_usage());
-  EXPECT_GT(memory_controller->disk_usage(),
-            static_cast<uint64_t>(memory_controller->memory_usage()));
-  EXPECT_GT(limits_.max_blob_in_memory_space,
-            memory_controller->memory_usage());
-  EXPECT_GT(limits_.effective_max_disk_space, memory_controller->disk_usage());
+
+  auto blob_context = GetBlobContext();
+  base::RunLoop loop;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE, base::BindLambdaForTesting([&]() {
+        const storage::BlobMemoryController& memory_controller =
+            blob_context->context()->memory_controller();
+        // Our exact usages depend on IPC message ordering & garbage collection.
+        // Since this is basically random, we just check bounds.
+        EXPECT_LT(0u, memory_controller.memory_usage());
+        EXPECT_LT(0ul, memory_controller.disk_usage());
+        EXPECT_GT(memory_controller.disk_usage(),
+                  static_cast<uint64_t>(memory_controller.memory_usage()));
+        EXPECT_GT(limits_.max_blob_in_memory_space,
+                  memory_controller.memory_usage());
+        EXPECT_GT(limits_.effective_max_disk_space,
+                  memory_controller.disk_usage());
+
+        loop.Quit();
+      }));
+  loop.Run();
+
   shell()->Close();
 
   // Make sure we run all file / io tasks.
