@@ -37,14 +37,12 @@ class CHROMEOS_EXPORT FakeCrosDisksClient : public CrosDisksClient {
              const std::string& mount_label,
              MountAccessMode access_mode,
              RemountOption remount,
-             const base::Closure& callback,
-             const base::Closure& error_callback) override;
+             VoidDBusMethodCallback callback) override;
 
   // Deletes the directory created in Mount().
   void Unmount(const std::string& device_path,
                UnmountOptions options,
-               const base::Closure& callback,
-               const base::Closure& error_callback) override;
+               VoidDBusMethodCallback callback) override;
   void EnumerateAutoMountableDevices(
       const EnumerateDevicesCallback& callback,
       const base::Closure& error_callback) override;
@@ -54,12 +52,10 @@ class CHROMEOS_EXPORT FakeCrosDisksClient : public CrosDisksClient {
                              const base::Closure& error_callback) override;
   void Format(const std::string& device_path,
               const std::string& filesystem,
-              const base::Closure& callback,
-              const base::Closure& error_callback) override;
+              VoidDBusMethodCallback callback) override;
   void Rename(const std::string& device_path,
               const std::string& volume_name,
-              const base::Closure& callback,
-              const base::Closure& error_callback) override;
+              VoidDBusMethodCallback callback) override;
   void GetDeviceProperties(const std::string& device_path,
                            const GetDevicePropertiesCallback& callback,
                            const base::Closure& error_callback) override;
@@ -141,8 +137,8 @@ class CHROMEOS_EXPORT FakeCrosDisksClient : public CrosDisksClient {
   // Continuation of Mount().
   void DidMount(const std::string& source_path,
                 MountType type,
-                base::OnceClosure callback,
                 const base::FilePath& mounted_path,
+                VoidDBusMethodCallback callback,
                 MountError mount_error);
 
   base::ObserverList<Observer> observer_list_;
