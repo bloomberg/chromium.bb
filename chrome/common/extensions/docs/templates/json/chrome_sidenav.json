@@ -620,16 +620,16 @@
             "href": "/extensions/hosting",
             "items": [
               {
-                "title": "Hosting and Updating",
+                "title": "Webstore Hosting and Updating",
                 "href": "/extensions/hosting"
+              },
+              {
+                "title": "Linux Installation",
+                "href": "/extensions/linux_hosting"
               },
               {
                 "title": "Hosting Policy Changes",
                 "href": "/extensions/hosting_changes"
-              },
-              {
-                "title": "Packaging",
-                "href": "/extensions/packaging"
               },
               {
                 "title": "One-Time Payments",

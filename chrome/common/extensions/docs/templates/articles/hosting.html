@@ -1,19 +1,27 @@
-<h1>Hosting and Updating</h1>
-
-<h2 id="hosting">Hosting</h2>
-
+<h1>Webstore Hosting and Updating</h1>
 <p>
-  Extensions must be uploaded through the
-  <a href="https://chrome.google.com/webstore/developer/dashboard">
-  Developer Dashboard</a>
-  and are
-  <a href="/webstore">distributed</a> in the
+  Most extensions are hosted in the
   <a href="https://chrome.google.com/webstore/category/extensions">
-  Chrome Web Store</a> to
+  Chrome Web Store</a>
+  to best
   <a href="http://blog.chromium.org/2015/05/continuing-to-protect-chrome-users-from.html">
   protect users from malicious extensions</a>.
-  Allow users to add an extension through the web store
-  from a designated website by enabling
+</p>
+<h2 id="hosting">Hosting</h2>
+<p>
+  All extensions are distributed to users as a special ZIP file
+  with a <code>.crx</code> suffix.
+  Extensions hosted in the <a href="/webstore">Chrome Web Store</a>
+  are uploaded through the
+  <a href="/webstore/developer/dashboard">Developer Dashboard</a>
+  as <code>.zip</code> files.
+  The <a href="/webstore/publish">publishing</a> process
+  automatically converts the <code>.zip</code> into a
+  <code>.crx</code> file.
+</p>
+<p>
+  Extensions hosted by the Chrome Web Store can additionaly be installed from a
+  designated website by enabling
   <a href="/webstore/inline_installation">inline installation</a>.
 </p>
 
@@ -25,7 +33,7 @@
         enterprise policy</a>.</li>
     <li>Unpacked extension directories from a local machine while in
       <a href="getstarted#unpacked">developer mode</a>.</li>
-    <li><a href="/linux_hosting">Hosting for Linux</a> installations.</li>
+    <li><a href="/linux_hosting">Linux installation</a>.</li>
   </ol>
 </p>
 
@@ -35,13 +43,13 @@
 <h2 id="updating">Updating</h2>
 
 <p>
-  Extensions are automatically updated without user intervention,
-  just like the Chrome Browser.
+  The Chrome Browser periodically checks for new versions of
+  installed extensions and updates them without user intervention.
 </p>
 
 <p>
-  To update an extension,
-  the version number will need to increase in the manifest:
+  To release an update to an extension,
+   increase the number in the <code>“version”</code> field of the manifest.
 </p>
 
 <pre data-filename="manifest.json">
@@ -61,11 +69,12 @@
 </pre>
 
 <p>
-  Re-<a href="/packaging">package</a> the updated extension and locate it in the
+  Convert the updated extension directory into a ZIP file
+  and locate the old version in the
   <a href="https://chrome.google.com/webstore/developer/dashboard">
   Developer Dashboard</a>.
   Select <strong>Edit</strong>, upload the new package,
   and hit <strong>Publish</strong>.
-  The extension will automatically update for users
+  The browser will will automatically update the extension for users
   after the new version is published.
 </p>
