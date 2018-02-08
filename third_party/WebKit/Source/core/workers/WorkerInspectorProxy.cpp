@@ -45,10 +45,8 @@ WorkerInspectorProxy::~WorkerInspectorProxy() = default;
 
 const String& WorkerInspectorProxy::InspectorId() {
   if (inspector_id_.IsEmpty() && worker_thread_) {
-    const base::UnguessableToken& token =
-        worker_thread_->GetDevToolsWorkerToken();
-    // token.ToString() is latin1.
-    inspector_id_ = String(token.ToString().c_str());
+    inspector_id_ = IdentifiersFactory::IdFromToken(
+        worker_thread_->GetDevToolsWorkerToken());
   }
   return inspector_id_;
 }
@@ -94,14 +92,6 @@ void WorkerInspectorProxy::DispatchMessageFromWorker(int session_id,
   auto it = page_inspectors_.find(session_id);
   if (it != page_inspectors_.end())
     it->value->DispatchMessageFromWorker(this, session_id, message);
-}
-
-void WorkerInspectorProxy::AddConsoleMessageFromWorker(
-    MessageLevel level,
-    const String& message,
-    std::unique_ptr<SourceLocation> location) {
-  execution_context_->AddConsoleMessage(ConsoleMessage::CreateFromWorker(
-      level, message, std::move(location), InspectorId()));
 }
 
 static void ConnectToWorkerGlobalScopeInspectorTask(WorkerThread* worker_thread,
@@ -161,17 +151,6 @@ void WorkerInspectorProxy::SendMessageToInspector(int session_id,
         CrossThreadBind(DispatchOnInspectorBackendTask, session_id, message,
                         CrossThreadUnretained(worker_thread_)));
   }
-}
-
-void WorkerInspectorProxy::WriteTimelineStartedEvent(
-    const String& tracing_session_id) {
-  if (!worker_thread_)
-    return;
-  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                       "TracingSessionIdForWorker", TRACE_EVENT_SCOPE_THREAD,
-                       "data",
-                       InspectorTracingSessionIdForWorkerEvent::Data(
-                           tracing_session_id, InspectorId(), worker_thread_));
 }
 
 void WorkerInspectorProxy::Trace(blink::Visitor* visitor) {

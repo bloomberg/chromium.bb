@@ -17,7 +17,8 @@
 namespace blink {
 
 class InspectedFrames;
-class InspectorWorkerAgent;
+class WorkerInspectorProxy;
+class WorkerThread;
 
 class CORE_EXPORT InspectorTracingAgent final
     : public InspectorBaseAgent<protocol::Tracing::Metainfo> {
@@ -30,11 +31,8 @@ class CORE_EXPORT InspectorTracingAgent final
     virtual void HideReloadingBlanket() = 0;
   };
 
-  static InspectorTracingAgent* Create(Client* client,
-                                       InspectorWorkerAgent* worker_agent,
-                                       InspectedFrames* inspected_frames) {
-    return new InspectorTracingAgent(client, worker_agent, inspected_frames);
-  }
+  InspectorTracingAgent(Client*, InspectedFrames*);
+  ~InspectorTracingAgent() override;
 
   void Trace(blink::Visitor*) override;
 
@@ -45,6 +43,7 @@ class CORE_EXPORT InspectorTracingAgent final
   // InspectorInstrumentation methods
   void FrameStartedLoading(LocalFrame*, FrameLoadType);
   void FrameStoppedLoading(LocalFrame*);
+  void DidStartWorker(WorkerInspectorProxy*, bool);
 
   // Protocol method implementations.
   void start(protocol::Maybe<String> categories,
@@ -61,16 +60,14 @@ class CORE_EXPORT InspectorTracingAgent final
   void RootLayerCleared();
 
  private:
-  InspectorTracingAgent(Client*, InspectorWorkerAgent*, InspectedFrames*);
-
   void EmitMetadataEvents();
   void InnerDisable();
-  String SessionId() const;
   bool IsStarted() const;
+  void WriteTimelineStartedEventForWorker(WorkerThread*);
 
   int layer_tree_id_;
   Client* client_;
-  Member<InspectorWorkerAgent> worker_agent_;
+  String session_id_;
   Member<InspectedFrames> inspected_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectorTracingAgent);

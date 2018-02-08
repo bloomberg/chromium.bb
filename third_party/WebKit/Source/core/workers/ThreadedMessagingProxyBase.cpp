@@ -103,9 +103,8 @@ void ThreadedMessagingProxyBase::ReportConsoleMessage(
   DCHECK(IsParentContextThread());
   if (asked_to_terminate_)
     return;
-  if (worker_inspector_proxy_)
-    worker_inspector_proxy_->AddConsoleMessageFromWorker(level, message,
-                                                         std::move(location));
+  execution_context_->AddConsoleMessage(ConsoleMessage::CreateFromWorker(
+      level, message, std::move(location), worker_thread_.get()));
 }
 
 void ThreadedMessagingProxyBase::ParentObjectDestroyed() {

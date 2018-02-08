@@ -1671,11 +1671,9 @@ InspectorNetworkAgent::InspectorNetworkAgent(
       max_post_data_size_(0) {
   DCHECK((IsMainThread() && !worker_global_scope_) ||
          (!IsMainThread() && worker_global_scope_));
-  const base::UnguessableToken& token =
+  conditions_token_ = IdentifiersFactory::IdFromToken(
       worker_global_scope_ ? worker_global_scope_->GetParentDevToolsToken()
-                           : inspected_frames->Root()->GetDevToolsFrameToken();
-  // token.ToString() is latin1.
-  conditions_token_ = String(token.ToString().c_str());
+                           : inspected_frames->Root()->GetDevToolsFrameToken());
 }
 
 void InspectorNetworkAgent::ShouldForceCORSPreflight(bool* result) {

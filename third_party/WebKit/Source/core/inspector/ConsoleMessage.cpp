@@ -8,6 +8,7 @@
 #include "core/dom/Node.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/IdentifiersFactory.h"
+#include "core/workers/WorkerThread.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Time.h"
 #include "public/web/WebConsoleMessage.h"
@@ -51,10 +52,11 @@ ConsoleMessage* ConsoleMessage::CreateFromWorker(
     MessageLevel level,
     const String& message,
     std::unique_ptr<SourceLocation> location,
-    const String& worker_id) {
+    WorkerThread* worker_thread) {
   ConsoleMessage* console_message = ConsoleMessage::Create(
       kWorkerMessageSource, level, message, std::move(location));
-  console_message->worker_id_ = worker_id;
+  console_message->worker_id_ =
+      IdentifiersFactory::IdFromToken(worker_thread->GetDevToolsWorkerToken());
   return console_message;
 }
 

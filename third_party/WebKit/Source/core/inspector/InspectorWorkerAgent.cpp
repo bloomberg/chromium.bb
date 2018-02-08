@@ -127,15 +127,6 @@ Response InspectorWorkerAgent::sendMessageToTarget(const String& message,
   return Response::Error("Session id must be specified");
 }
 
-void InspectorWorkerAgent::SetTracingSessionId(
-    const String& tracing_session_id) {
-  tracing_session_id_ = tracing_session_id;
-  if (tracing_session_id.IsEmpty())
-    return;
-  for (auto& id_proxy : connected_proxies_)
-    id_proxy.value->WriteTimelineStartedEvent(tracing_session_id);
-}
-
 void InspectorWorkerAgent::ShouldWaitForDebuggerOnWorkerStart(bool* result) {
   if (AutoAttachEnabled() &&
       state_->booleanProperty(WorkerAgentState::kWaitForDebuggerOnStart, false))
@@ -146,8 +137,6 @@ void InspectorWorkerAgent::DidStartWorker(WorkerInspectorProxy* proxy,
                                           bool waiting_for_debugger) {
   DCHECK(GetFrontend() && AutoAttachEnabled());
   ConnectToProxy(proxy, waiting_for_debugger);
-  if (!tracing_session_id_.IsEmpty())
-    proxy->WriteTimelineStartedEvent(tracing_session_id_);
 }
 
 void InspectorWorkerAgent::WorkerTerminated(WorkerInspectorProxy* proxy) {

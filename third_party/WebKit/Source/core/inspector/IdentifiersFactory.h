@@ -26,6 +26,7 @@
 #ifndef IdentifiersFactory_h
 #define IdentifiersFactory_h
 
+#include "base/unguessable_token.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/WTFString.h"
@@ -54,6 +55,8 @@ class CORE_EXPORT IdentifiersFactory {
   static LocalFrame* FrameById(InspectedFrames*, const String&);
 
   static String LoaderId(DocumentLoader*);
+
+  static String IdFromToken(const base::UnguessableToken&);
 
  private:
   static String AddProcessIdPrefixTo(int id);

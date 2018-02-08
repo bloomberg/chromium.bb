@@ -46,19 +46,16 @@ class CORE_EXPORT WorkerInspectorProxy final
   void WorkerThreadCreated(ExecutionContext*, WorkerThread*, const KURL&);
   void WorkerThreadTerminated();
   void DispatchMessageFromWorker(int session_id, const String&);
-  void AddConsoleMessageFromWorker(MessageLevel,
-                                   const String& message,
-                                   std::unique_ptr<SourceLocation>);
 
   void ConnectToInspector(int session_id,
                           PageInspector*);
   void DisconnectFromInspector(int session_id, PageInspector*);
   void SendMessageToInspector(int session_id, const String& message);
-  void WriteTimelineStartedEvent(const String& tracing_session_id);
 
   const String& Url() { return url_; }
   ExecutionContext* GetExecutionContext() { return execution_context_; }
   const String& InspectorId();
+  WorkerThread* GetWorkerThread() { return worker_thread_; }
 
   using WorkerInspectorProxySet =
       PersistentHeapHashSet<WeakMember<WorkerInspectorProxy>>;

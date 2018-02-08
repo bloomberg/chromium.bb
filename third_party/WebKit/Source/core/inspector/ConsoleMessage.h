@@ -17,6 +17,7 @@ namespace blink {
 class DocumentLoader;
 class LocalFrame;
 class SourceLocation;
+class WorkerThread;
 
 class CORE_EXPORT ConsoleMessage final
     : public GarbageCollectedFinalized<ConsoleMessage> {
@@ -44,7 +45,7 @@ class CORE_EXPORT ConsoleMessage final
   static ConsoleMessage* CreateFromWorker(MessageLevel,
                                           const String& message,
                                           std::unique_ptr<SourceLocation>,
-                                          const String& worker_id);
+                                          WorkerThread*);
 
   ~ConsoleMessage();
 
