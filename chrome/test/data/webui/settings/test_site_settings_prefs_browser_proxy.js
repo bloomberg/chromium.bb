@@ -5,60 +5,12 @@
 /**
  * In the real (non-test) code, this data comes from the C++ handler.
  * Only used for tests.
- * @typedef {{defaults: Map<string, !DefaultContentSetting>,
- *            exceptions: !Map<string, !Array<!RawSiteException>>}}
+ * @typedef {{defaults: !Object<settings.ContentSettingsTypes,
+ *                             !DefaultContentSetting>,
+ *            exceptions: !Object<settings.ContentSettingsTypes,
+ *                                !Array<!RawSiteException>>}}
  */
 let SiteSettingsPref;
-
-/**
- * An example empty pref.
- * TODO(https://crbug.com/742706): Use the values from
- * settings.ContentSettingsTypes (see site_settings/constants.js) as the keys
- * for these instead.
- * @type {SiteSettingsPref}
- */
-const prefsEmpty = {
-  defaults: {
-    ads: {},
-    auto_downloads: {},
-    background_sync: {},
-    camera: {},
-    cookies: {},
-    geolocation: {},
-    javascript: {},
-    mic: {},
-    midi_devices: {},
-    notifications: {},
-    plugins: {},
-    images: {},
-    popups: {},
-    protectedContent: {},
-    sound: {},
-    unsandboxed_plugins: {},
-    clipboard: {},
-    sensors: {},
-  },
-  exceptions: {
-    ads: [],
-    auto_downloads: [],
-    background_sync: [],
-    camera: [],
-    cookies: [],
-    geolocation: [],
-    javascript: [],
-    mic: [],
-    midi_devices: [],
-    notifications: [],
-    plugins: [],
-    images: [],
-    popups: [],
-    protectedContent: [],
-    sound: [],
-    unsandboxed_plugins: [],
-    clipboard: [],
-    sensors: [],
-  },
-};
 
 /**
  * A test version of SiteSettingsPrefsBrowserProxy. Provides helper methods
@@ -95,7 +47,7 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     this.hasIncognito_ = false;
 
     /** @private {!SiteSettingsPref} */
-    this.prefs_ = prefsEmpty;
+    this.prefs_ = test_util.createSiteSettingsPrefs([], []);
 
     /** @private {!Array<ZoomLevelEntry>} */
     this.zoomList_ = [];
@@ -130,6 +82,9 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
     this.prefs_ = prefs;
 
     // Notify all listeners that their data may be out of date.
+    for (const type in prefs.defaults) {
+      cr.webUIListenerCallback('contentSettingCategoryChanged', type);
+    }
     for (const type in this.prefs_.exceptions) {
       let exceptionList = this.prefs_.exceptions[type];
       for (let i = 0; i < exceptionList.length; ++i) {
@@ -137,25 +92,6 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
             'contentSettingSitePermissionChanged', type,
             exceptionList[i].origin, '');
       }
-    }
-  }
-
-  /**
-   * Sets the default prefs only. Use this only when there is a need to
-   * distinguish between the callback for permissions changing and the callback
-   * for default permissions changing.
-   * TODO(https://crbug.com/742706): This function is a hack and should be
-   * removed.
-   * @param {!Map<string, !DefaultContentSetting>} defaultPrefs The new
-   *     default prefs to set.
-   */
-  setDefaultPrefs(defaultPrefs) {
-    this.prefs_.defaults = defaultPrefs;
-
-    // Notify all listeners that their data may be out of date.
-    for (const type in settings.ContentSettingsTypes) {
-      cr.webUIListenerCallback(
-          'contentSettingCategoryChanged', settings.ContentSettingsTypes[type]);
     }
   }
 
@@ -214,15 +150,16 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
 
   /** @override */
   setOriginPermissions(origin, contentTypes, blanketSetting) {
-    for (const type in this.prefs_.exceptions) {
+    for (let i = 0; i < contentTypes.length; ++i) {
+      let type = contentTypes[i];
       let exceptionList = this.prefs_.exceptions[type];
-      for (let i = 0; i < exceptionList.length; ++i) {
+      for (let j = 0; j < exceptionList.length; ++j) {
         let effectiveSetting = blanketSetting;
         if (blanketSetting == settings.ContentSetting.DEFAULT) {
           effectiveSetting = this.prefs_.defaults[type].setting;
-          exceptionList[i].source = settings.SiteSettingSource.DEFAULT;
+          exceptionList[j].source = settings.SiteSettingSource.DEFAULT;
         }
-        exceptionList[i].setting = effectiveSetting;
+        exceptionList[j].setting = effectiveSetting;
       }
     }
 
@@ -239,52 +176,7 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   /** @override */
   getDefaultValueForContentType(contentType) {
     this.methodCalled('getDefaultValueForContentType', contentType);
-
-    let pref = undefined;
-    if (contentType == settings.ContentSettingsTypes.ADS) {
-      pref = this.prefs_.defaults.ads;
-    } else if (
-        contentType == settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS) {
-      pref = this.prefs_.defaults.auto_downloads;
-    } else if (contentType == settings.ContentSettingsTypes.BACKGROUND_SYNC) {
-      pref = this.prefs_.defaults.background_sync;
-    } else if (contentType == settings.ContentSettingsTypes.CAMERA) {
-      pref = this.prefs_.defaults.camera;
-    } else if (contentType == settings.ContentSettingsTypes.COOKIES) {
-      pref = this.prefs_.defaults.cookies;
-    } else if (contentType == settings.ContentSettingsTypes.GEOLOCATION) {
-      pref = this.prefs_.defaults.geolocation;
-    } else if (contentType == settings.ContentSettingsTypes.IMAGES) {
-      pref = this.prefs_.defaults.images;
-    } else if (contentType == settings.ContentSettingsTypes.JAVASCRIPT) {
-      pref = this.prefs_.defaults.javascript;
-    } else if (contentType == settings.ContentSettingsTypes.MIC) {
-      pref = this.prefs_.defaults.mic;
-    } else if (contentType == settings.ContentSettingsTypes.MIDI_DEVICES) {
-      pref = this.prefs_.defaults.midi_devices;
-    } else if (contentType == settings.ContentSettingsTypes.NOTIFICATIONS) {
-      pref = this.prefs_.defaults.notifications;
-    } else if (contentType == settings.ContentSettingsTypes.PDF_DOCUMENTS) {
-      pref = this.prefs_.defaults.pdf_documents;
-    } else if (contentType == settings.ContentSettingsTypes.POPUPS) {
-      pref = this.prefs_.defaults.popups;
-    } else if (contentType == settings.ContentSettingsTypes.PLUGINS) {
-      pref = this.prefs_.defaults.plugins;
-    } else if (contentType == settings.ContentSettingsTypes.SOUND) {
-      pref = this.prefs_.defaults.sound;
-    } else if (
-        contentType == settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS) {
-      pref = this.prefs_.defaults.unsandboxed_plugins;
-    } else if (contentType == settings.ContentSettingsTypes.PROTECTED_CONTENT) {
-      pref = this.prefs_.defaults.protectedContent;
-    } else if (contentType == settings.ContentSettingsTypes.CLIPBOARD) {
-      pref = this.prefs_.defaults.clipboard;
-    } else if (contentType == settings.ContentSettingsTypes.SENSORS) {
-      pref = this.prefs_.defaults.sensors;
-    } else {
-      console.log('getDefault received unknown category: ' + contentType);
-    }
-
+    let pref = this.prefs_.defaults[contentType];
     assert(pref != undefined, 'Pref is missing for ' + contentType);
     return Promise.resolve(pref);
   }
@@ -292,55 +184,16 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   /** @override */
   getExceptionList(contentType) {
     this.methodCalled('getExceptionList', contentType);
-
-    let pref = undefined;
-    if (contentType == settings.ContentSettingsTypes.ADS)
-      pref = this.prefs_.exceptions.ads;
-    else if (contentType == settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS)
-      pref = this.prefs_.exceptions.auto_downloads;
-    else if (contentType == settings.ContentSettingsTypes.BACKGROUND_SYNC)
-      pref = this.prefs_.exceptions.background_sync;
-    else if (contentType == settings.ContentSettingsTypes.CAMERA)
-      pref = this.prefs_.exceptions.camera;
-    else if (contentType == settings.ContentSettingsTypes.COOKIES)
-      pref = this.prefs_.exceptions.cookies;
-    else if (contentType == settings.ContentSettingsTypes.GEOLOCATION)
-      pref = this.prefs_.exceptions.geolocation;
-    else if (contentType == settings.ContentSettingsTypes.IMAGES)
-      pref = this.prefs_.exceptions.images;
-    else if (contentType == settings.ContentSettingsTypes.JAVASCRIPT)
-      pref = this.prefs_.exceptions.javascript;
-    else if (contentType == settings.ContentSettingsTypes.MIC)
-      pref = this.prefs_.exceptions.mic;
-    else if (contentType == settings.ContentSettingsTypes.MIDI_DEVICES)
-      pref = this.prefs_.exceptions.midi_devices;
-    else if (contentType == settings.ContentSettingsTypes.NOTIFICATIONS)
-      pref = this.prefs_.exceptions.notifications;
-    else if (contentType == settings.ContentSettingsTypes.PDF_DOCUMENTS)
-      pref = this.prefs_.exceptions.pdf_documents;
-    else if (contentType == settings.ContentSettingsTypes.PLUGINS)
-      pref = this.prefs_.exceptions.plugins;
-    else if (contentType == settings.ContentSettingsTypes.PROTECTED_CONTENT)
-      pref = this.prefs_.exceptions.protectedContent;
-    else if (contentType == settings.ContentSettingsTypes.POPUPS)
-      pref = this.prefs_.exceptions.popups;
-    else if (contentType == settings.ContentSettingsTypes.SOUND)
-      pref = this.prefs_.exceptions.sound;
-    else if (contentType == settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS)
-      pref = this.prefs_.exceptions.unsandboxed_plugins;
-    else if (contentType == settings.ContentSettingsTypes.CLIPBOARD)
-      pref = this.prefs_.exceptions.clipboard;
-    else if (contentType == settings.ContentSettingsTypes.SENSORS)
-      pref = this.prefs_.exceptions.sensors;
-    else
-      console.log('getExceptionList received unknown category: ' + contentType);
-
+    let pref = this.prefs_.exceptions[contentType];
     assert(pref != undefined, 'Pref is missing for ' + contentType);
 
     if (this.hasIncognito_) {
       const incognitoElements = [];
-      for (let i = 0; i < pref.length; ++i)
-        incognitoElements.push(Object.assign({incognito: true}, pref[i]));
+      for (let i = 0; i < pref.length; ++i) {
+        // Copy |pref[i]| to avoid changing the original |pref[i]|.
+        const incognitoPref = Object.assign({}, pref[i]);
+        incognitoElements.push(Object.assign(incognitoPref, {incognito: true}));
+      }
       pref = pref.concat(incognitoElements);
     }
 
@@ -388,25 +241,6 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
 
     const exceptionList = [];
     contentTypes.forEach(function(contentType) {
-      // Convert |contentType| to its corresponding pref name, if different.
-      if (contentType == settings.ContentSettingsTypes.GEOLOCATION) {
-        contentType = 'geolocation';
-      } else if (contentType == settings.ContentSettingsTypes.CAMERA) {
-        contentType = 'camera';
-      } else if (contentType == settings.ContentSettingsTypes.MIC) {
-        contentType = 'mic';
-      } else if (contentType == settings.ContentSettingsTypes.MIDI_DEVICES) {
-        contentType = 'midi_devices';
-      } else if (contentType == settings.ContentSettingsTypes.BACKGROUND_SYNC) {
-        contentType = 'background_sync';
-      } else if (
-          contentType == settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS) {
-        contentType = 'auto_downloads';
-      } else if (
-          contentType == settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS) {
-        contentType = 'unsandboxed_plugins';
-      }
-
       let setting;
       let source;
       this.prefs_.exceptions[contentType].some((originPrefs) => {

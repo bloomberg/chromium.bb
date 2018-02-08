@@ -7,137 +7,20 @@
  * different providers.
  * @type {SiteSettingsPref}
  */
-const prefsMixedProvider = {
-  exceptions: {
-    geolocation: [
-      {
-        embeddingOrigin: '',
-        origin: 'https://[*.]foo.com',
-        setting: 'block',
-        source: 'policy',
-      },
-      {
-        embeddingOrigin: '',
-        origin: 'https://bar.foo.com',
-        setting: 'block',
-        source: 'preference',
-      },
-      {
-        embeddingOrigin: '',
-        origin: 'https://[*.]foo.com',
-        setting: 'block',
-        source: 'preference',
-      },
-    ],
-    images: [],
-  }
-};
+let prefsMixedProvider;
 
 /**
  * An example pref with mixed origin and pattern.
  * @type {SiteSettingsPref}
  */
-const prefsMixedOriginAndPattern = {
-  exceptions: {
-    ads: [],
-    auto_downloads: [],
-    background_sync: [],
-    camera: [],
-    cookies: [],
-    geolocation: [
-      {
-        embeddingOrigin: '',
-        origin: 'https://foo.com',
-        setting: 'allow',
-        source: 'preference',
-      },
-    ],
-    images: [],
-    javascript: [
-      {
-        embeddingOrigin: '',
-        origin: 'https://[*.]foo.com',
-        setting: 'allow',
-        source: 'preference',
-      },
-    ],
-    mic: [],
-    notifications: [],
-    plugins: [],
-    midi_devices: [],
-    protectedContent: [],
-    popups: [],
-    sound: [],
-    unsandboxed_plugins: [],
-    clipboard: [],
-    sensors: [],
-  }
-};
+let prefsMixedOriginAndPattern;
 
 /**
  * An example pref with multiple categories and multiple allow/block
  * state.
  * @type {SiteSettingsPref}
  */
-const prefsVarious = {
-  exceptions: {
-    ads: [],
-    auto_downloads: [],
-    background_sync: [],
-    camera: [],
-    cookies: [],
-    geolocation: [
-      {
-        embeddingOrigin: '',
-        incognito: false,
-        origin: 'https://foo.com',
-        setting: 'allow',
-        source: 'preference',
-      },
-      {
-        embeddingOrigin: '',
-        incognito: false,
-        origin: 'https://bar.com',
-        setting: 'block',
-        source: 'preference',
-      },
-    ],
-    images: [],
-    javascript: [],
-    mic: [],
-    midi_devices: [],
-    notifications: [
-      {
-        embeddingOrigin: '',
-        incognito: false,
-        origin: 'https://google.com',
-        setting: 'block',
-        source: 'preference',
-      },
-      {
-        embeddingOrigin: '',
-        incognito: false,
-        origin: 'https://bar.com',
-        setting: 'block',
-        source: 'preference',
-      },
-      {
-        embeddingOrigin: '',
-        incognito: false,
-        origin: 'https://foo.com',
-        setting: 'block',
-        source: 'preference',
-      },
-    ],
-    plugins: [],
-    protectedContent: [],
-    popups: [],
-    sound: [],
-    unsandboxed_plugins: [],
-    clipboard: [],
-    sensors: [],
-  }
-};
+let prefsVarious;
 
 suite('AllSites', function() {
   /**
@@ -162,6 +45,52 @@ suite('AllSites', function() {
 
   // Initialize a site-list before each test.
   setup(function() {
+    prefsMixedProvider = test_util.createSiteSettingsPrefs(
+        [], [test_util.createContentSettingTypeToValuePair(
+                settings.ContentSettingsTypes.GEOLOCATION, [
+                  test_util.createRawSiteException('https://[*.]foo.com', {
+                    setting: settings.ContentSetting.BLOCK,
+                    source: settings.SiteSettingSource.POLICY,
+                  }),
+                  test_util.createRawSiteException('https://bar.foo.com', {
+                    setting: settings.ContentSetting.BLOCK,
+                  }),
+                  test_util.createRawSiteException('https://[*.]foo.com', {
+                    setting: settings.ContentSetting.BLOCK,
+                  }),
+                ])]);
+
+    prefsMixedOriginAndPattern = test_util.createSiteSettingsPrefs(
+        [], [test_util.createContentSettingTypeToValuePair(
+                settings.ContentSettingsTypes.GEOLOCATION, [
+                  test_util.createRawSiteException('https://foo.com'),
+                  test_util.createRawSiteException('https://[*.]foo.com'),
+                ])]);
+
+    prefsVarious = test_util.createSiteSettingsPrefs([], [
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.GEOLOCATION,
+          [
+            test_util.createRawSiteException('https://foo.com'),
+            test_util.createRawSiteException('https://bar.com', {
+              setting: settings.ContentSetting.BLOCK,
+            })
+          ]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.NOTIFICATIONS,
+          [
+            test_util.createRawSiteException('https://google.com', {
+              setting: settings.ContentSetting.BLOCK,
+            }),
+            test_util.createRawSiteException('https://bar.com', {
+              setting: settings.ContentSetting.BLOCK,
+            }),
+            test_util.createRawSiteException('https://foo.com', {
+              setting: settings.ContentSetting.BLOCK,
+            }),
+          ])
+    ]);
+
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
     settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
@@ -230,13 +159,19 @@ suite('AllSites', function() {
                 'If this fails with 5 instead of the expected 3, then ' +
                     'the de-duping of sites is not working for site_list');
             assertEquals(
-                prefsVarious.exceptions.geolocation[1].origin,
+                prefsVarious
+                    .exceptions[settings.ContentSettingsTypes.GEOLOCATION][1]
+                    .origin,
                 testElement.sites[0].origin);
             assertEquals(
-                prefsVarious.exceptions.geolocation[0].origin,
+                prefsVarious
+                    .exceptions[settings.ContentSettingsTypes.GEOLOCATION][0]
+                    .origin,
                 testElement.sites[1].origin);
             assertEquals(
-                prefsVarious.exceptions.notifications[0].origin,
+                prefsVarious
+                    .exceptions[settings.ContentSettingsTypes.NOTIFICATIONS][0]
+                    .origin,
                 testElement.sites[2].origin);
             assertEquals(undefined, testElement.selectedOrigin);
 
@@ -246,7 +181,9 @@ suite('AllSites', function() {
             assertNotEquals(undefined, clickable);
             MockInteractions.tap(clickable);
             assertEquals(
-                prefsVarious.exceptions.geolocation[0].origin,
+                prefsVarious
+                    .exceptions[settings.ContentSettingsTypes.GEOLOCATION][0]
+                    .origin,
                 settings.getQueryParameters().get('site'));
           });
         });
@@ -280,7 +217,9 @@ suite('AllSites', function() {
                     'the de-duping of sites has been enabled for site_list.');
             if (testElement.sites.length == 1) {
               assertEquals(
-                  prefsMixedOriginAndPattern.exceptions.geolocation[0].origin,
+                  prefsMixedOriginAndPattern
+                      .exceptions[settings.ContentSettingsTypes.GEOLOCATION][0]
+                      .origin,
                   testElement.sites[0].displayName);
             }
 
@@ -292,7 +231,9 @@ suite('AllSites', function() {
             MockInteractions.tap(clickable);
             if (testElement.sites.length == 1) {
               assertEquals(
-                  prefsMixedOriginAndPattern.exceptions.geolocation[0].origin,
+                  prefsMixedOriginAndPattern
+                      .exceptions[settings.ContentSettingsTypes.GEOLOCATION][0]
+                      .origin,
                   testElement.sites[0].displayName);
             }
           });

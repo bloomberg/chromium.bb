@@ -813,6 +813,7 @@ CrSettingsCategoryDefaultSettingTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
     'category_default_setting_tests.js',
   ]),
@@ -837,6 +838,7 @@ CrSettingsCategorySettingExceptionsTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
     'category_setting_exceptions_tests.js',
   ]),
@@ -866,6 +868,7 @@ CrSettingsAllSitesTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
     'all_sites_tests.js',
   ]),
@@ -890,6 +893,7 @@ CrSettingsSiteDetailsTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
     'site_details_tests.js',
   ]),
@@ -914,6 +918,7 @@ CrSettingsSiteDetailsPermissionTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
     'site_details_permission_tests.js',
   ]),
@@ -943,6 +948,7 @@ CrSettingsSiteListTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
     'site_list_tests.js',
   ]),
@@ -975,6 +981,7 @@ CrSettingsZoomLevelsTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
     'zoom_levels_tests.js',
   ]),
@@ -999,6 +1006,7 @@ CrSettingsUsbDevicesTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
     'usb_devices_tests.js',
   ]),
@@ -1023,6 +1031,7 @@ CrSettingsProtocolHandlersTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
     'protocol_handlers_tests.js',
   ]),

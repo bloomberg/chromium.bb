@@ -16,104 +16,74 @@ suite('SiteDetails', function() {
    */
   let prefs;
 
-  // Helper to create a mock permission preference.
-  function createExceptionForTest(override) {
-    return Object.assign(
-        {
-          embeddingOrigin: 'https://foo.com:443',
-          origin: 'https://foo.com:443',
-          setting: settings.ContentSetting.ALLOW,
-          source: settings.SiteSettingSource.PREFERENCE,
-        },
-        override);
-  }
-
   // Initialize a site-details before each test.
   setup(function() {
-    prefs = {
-      defaults: {
-        ads: {
-          setting: settings.ContentSetting.BLOCK,
-        },
-        auto_downloads: {
-          setting: settings.ContentSetting.ASK,
-        },
-        background_sync: {
-          setting: settings.ContentSetting.ALLOW,
-        },
-        camera: {
-          setting: settings.ContentSetting.ASK,
-        },
-        geolocation: {
-          setting: settings.ContentSetting.ASK,
-        },
-        images: {
-          setting: settings.ContentSetting.ALLOW,
-        },
-        javascript: {
-          setting: settings.ContentSetting.ALLOW,
-        },
-        mic: {
-          setting: settings.ContentSetting.ASK,
-        },
-        midi_devices: {
-          setting: settings.ContentSetting.ASK,
-        },
-        notifications: {
-          setting: settings.ContentSetting.ASK,
-        },
-        plugins: {
-          setting: settings.ContentSetting.ASK,
-        },
-        popups: {
-          setting: settings.ContentSetting.BLOCK,
-        },
-        sound: {
-          setting: settings.ContentSetting.ALLOW,
-        },
-        unsandboxed_plugins: {
-          setting: settings.ContentSetting.ASK,
-        },
-        protectedContent: {
-          setting: settings.ContentSetting.ALLOW,
-        },
-        clipboard: {
-          setting: settings.ContentSetting.ALLOW,
-        },
-        sensors: {
-          setting: settings.ContentSetting.ALLOW,
-        },
-      },
-      exceptions: {
-        ads: [createExceptionForTest()],
-        auto_downloads: [createExceptionForTest()],
-        background_sync: [createExceptionForTest()],
-        camera: [createExceptionForTest()],
-        geolocation: [createExceptionForTest()],
-        images: [createExceptionForTest({
-          source: settings.SiteSettingSource.DEFAULT,
-        })],
-        javascript: [createExceptionForTest()],
-        mic: [createExceptionForTest()],
-        midi_devices: [createExceptionForTest()],
-        notifications: [createExceptionForTest({
-          setting: settings.ContentSetting.ASK,
-          source: settings.SiteSettingSource.POLICY,
-        })],
-        plugins: [createExceptionForTest({
-          source: settings.SiteSettingSource.EXTENSION,
-        })],
-        popups: [createExceptionForTest({
-          setting: settings.ContentSetting.BLOCK,
-          source: settings.SiteSettingSource.DEFAULT,
-        })],
-        sound: [createExceptionForTest()],
-        unsandboxed_plugins: [createExceptionForTest()],
-        protectedContent: [createExceptionForTest()],
-        clipboard: [createExceptionForTest()],
-        sensors: [createExceptionForTest()],
-      }
-    };
+    prefs = test_util.createSiteSettingsPrefs([], [
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.COOKIES,
+          [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.IMAGES,
+          [test_util.createRawSiteException('https://foo.com:443', {
+            source: settings.SiteSettingSource.DEFAULT,
+          })]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.JAVASCRIPT,
+          [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.SOUND,
+          [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.PLUGINS,
+          [test_util.createRawSiteException('https://foo.com:443', {
+            source: settings.SiteSettingSource.EXTENSION,
+          })]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.POPUPS,
+          [test_util.createRawSiteException('https://foo.com:443', {
+            setting: settings.ContentSetting.BLOCK,
+            source: settings.SiteSettingSource.DEFAULT,
+          })]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.GEOLOCATION,
+          [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.NOTIFICATIONS,
+          [test_util.createRawSiteException('https://foo.com:443', {
+            setting: settings.ContentSetting.ASK,
+            source: settings.SiteSettingSource.POLICY,
+          })]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.MIC,
+          [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.CAMERA,
+          [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS,
+          [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS,
+          [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.BACKGROUND_SYNC,
+          [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.MIDI_DEVICES,
+          [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.PROTECTED_CONTENT,
+          [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.ADS,
+          [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.CLIPBOARD,
+          [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.SENSORS,
+          [test_util.createRawSiteException('https://foo.com:443')]),
+    ]);
 
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
     settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
@@ -381,49 +351,4 @@ suite('SiteDetails', function() {
         });
   });
 
-  test('resetting permissions will set ads back to default', function() {
-    browserProxy.setPrefs(prefs);
-    loadTimeData.overrideValues({enableSafeBrowsingSubresourceFilter: true});
-    testElement = createSiteDetails('https://foo.com:443');
-
-    const siteDetailsPermission = testElement.root.querySelector('#ads');
-
-    return browserProxy.whenCalled('isOriginValid')
-        .then(() => {
-          return browserProxy.whenCalled('getOriginPermissions');
-        })
-        .then(() => {
-          browserProxy.resetResolver('getOriginPermissions');
-          // Sanity check prefs are correct and that Ads was set to 'Allow'.
-          assertEquals(
-              settings.ContentSetting.ALLOW,
-              siteDetailsPermission.$.permission.value);
-
-          // Since the ads permission will only show 'Allow' and 'Block',
-          // check the user can still clear this setting by resetting all
-          // permissions.
-          MockInteractions.tap(testElement.$.clearAndReset);
-          assertTrue(testElement.$.confirmDeleteDialog.open);
-          const actionButtonList =
-              testElement.$.confirmDeleteDialog.getElementsByClassName(
-                  'action-button');
-          assertEquals(1, actionButtonList.length);
-          MockInteractions.tap(actionButtonList[0]);
-
-          return browserProxy.whenCalled('setOriginPermissions');
-        })
-        .then(() => {
-          return browserProxy.whenCalled('clearFlashPref');
-        })
-        .then(() => {
-          return browserProxy.whenCalled('getOriginPermissions');
-        })
-        .then((args) => {
-          assertTrue(args[1].includes(settings.ContentSettingsTypes.ADS));
-          // Check the ads permission is set to default.
-          assertEquals(
-              settings.ContentSetting.DEFAULT,
-              siteDetailsPermission.$.permission.value);
-        });
-  });
 });

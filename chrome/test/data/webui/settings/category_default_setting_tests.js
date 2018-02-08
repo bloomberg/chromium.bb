@@ -39,10 +39,10 @@ suite('CategoryDefaultSetting', function() {
   function testCategoryEnabled(
       testElement, category, prefs, expectedEnabled,
       expectedEnabledContentSetting) {
+    testElement.category = category;
     browserProxy.reset();
     browserProxy.setPrefs(prefs);
 
-    testElement.category = category;
     return browserProxy.whenCalled('getDefaultValueForContentType')
         .then(function(contentType) {
           assertEquals(category, contentType);
@@ -66,13 +66,15 @@ suite('CategoryDefaultSetting', function() {
      * An example pref where the location category is enabled.
      * @type {SiteSettingsPref}
      */
-    const prefsLocationEnabled = {
-      defaults: {
-        geolocation: {
-          setting: 'allow',
-        },
-      },
-    };
+    const prefsLocationEnabled = test_util.createSiteSettingsPrefs(
+        [
+          test_util.createContentSettingTypeToValuePair(
+              settings.ContentSettingsTypes.GEOLOCATION,
+              test_util.createDefaultContentSetting({
+                setting: settings.ContentSetting.ALLOW,
+              })),
+        ],
+        []);
 
     return testCategoryEnabled(
         testElement, settings.ContentSettingsTypes.GEOLOCATION,
@@ -84,13 +86,13 @@ suite('CategoryDefaultSetting', function() {
      * An example pref where the location category is disabled.
      * @type {SiteSettingsPref}
      */
-    const prefsLocationDisabled = {
-      defaults: {
-        geolocation: {
-          setting: 'block',
-        },
-      },
-    };
+    const prefsLocationDisabled = test_util.createSiteSettingsPrefs(
+        [test_util.createContentSettingTypeToValuePair(
+            settings.ContentSettingsTypes.GEOLOCATION,
+            test_util.createDefaultContentSetting({
+              setting: settings.ContentSetting.BLOCK,
+            }))],
+        []);
 
     return testCategoryEnabled(
         testElement, settings.ContentSettingsTypes.GEOLOCATION,
@@ -98,13 +100,13 @@ suite('CategoryDefaultSetting', function() {
   });
 
   test('test Flash content setting in DETECT/ASK setting', function() {
-    const prefsFlash = {
-      defaults: {
-        plugins: {
-          setting: 'detect_important_content',
-        },
-      },
-    };
+    const prefsFlash = test_util.createSiteSettingsPrefs(
+        [test_util.createContentSettingTypeToValuePair(
+            settings.ContentSettingsTypes.PLUGINS,
+            test_util.createDefaultContentSetting({
+              setting: settings.ContentSetting.IMPORTANT_CONTENT,
+            }))],
+        []);
 
     return testCategoryEnabled(
         testElement, settings.ContentSettingsTypes.PLUGINS, prefsFlash, true,
@@ -112,13 +114,13 @@ suite('CategoryDefaultSetting', function() {
   });
 
   test('test Flash content setting in legacy ALLOW setting', function() {
-    const prefsFlash = {
-      defaults: {
-        plugins: {
-          setting: 'allow',
-        },
-      },
-    };
+    const prefsFlash = test_util.createSiteSettingsPrefs(
+        [test_util.createContentSettingTypeToValuePair(
+            settings.ContentSettingsTypes.PLUGINS,
+            test_util.createDefaultContentSetting({
+              setting: settings.ContentSetting.ALLOW,
+            }))],
+        []);
 
     return testCategoryEnabled(
         testElement, settings.ContentSettingsTypes.PLUGINS, prefsFlash, true,
@@ -126,13 +128,13 @@ suite('CategoryDefaultSetting', function() {
   });
 
   test('test Flash content setting in BLOCK setting', function() {
-    const prefsFlash = {
-      defaults: {
-        plugins: {
-          setting: 'block',
-        },
-      },
-    };
+    const prefsFlash = test_util.createSiteSettingsPrefs(
+        [test_util.createContentSettingTypeToValuePair(
+            settings.ContentSettingsTypes.PLUGINS,
+            test_util.createDefaultContentSetting({
+              setting: settings.ContentSetting.BLOCK,
+            }))],
+        []);
 
     return testCategoryEnabled(
         testElement, settings.ContentSettingsTypes.PLUGINS, prefsFlash, false,
@@ -140,32 +142,42 @@ suite('CategoryDefaultSetting', function() {
   });
 
   test('test content setting from extension', function() {
-    const prefs = {
-      defaults: {
-        mic: {
-          setting: 'block',
-          source: ContentSettingProvider.EXTENSION,
-        },
-      },
-    };
-    browserProxy.reset();
-    browserProxy.setPrefs(prefs);
     testElement.category = settings.ContentSettingsTypes.MIC;
+    return browserProxy.getDefaultValueForContentType(testElement.category)
+        .then((defaultValue) => {
+          // Sanity check - make sure the default content setting is not the
+          // value the extension is about to set.
+          assertEquals(settings.ContentSetting.ASK, defaultValue.setting);
+          browserProxy.resetResolver('getDefaultValueForContentType');
 
-    // Test that extension-enforced content settings don't override user-set
-    // content settings.
-    browserProxy.whenCalled('setDefaultValueForContentType')
-        .then(() => assertNotReached());
-    return browserProxy.whenCalled('getDefaultValueForContentType').then(() => {
-      assertEquals(false, testElement.categoryEnabled);
-    });
+          const prefs = test_util.createSiteSettingsPrefs(
+              [test_util.createContentSettingTypeToValuePair(
+                  settings.ContentSettingsTypes.MIC,
+                  test_util.createDefaultContentSetting({
+                    setting: settings.ContentSetting.BLOCK,
+                    source: ContentSettingProvider.EXTENSION,
+                  }))],
+              []);
+          browserProxy.reset();
+          browserProxy.setPrefs(prefs);
+
+          // Test that extension-enforced content settings don't override
+          // user-set content settings.
+          browserProxy.whenCalled('setDefaultValueForContentType').then(() => {
+            assertNotReached();
+          });
+          return browserProxy.whenCalled('getDefaultValueForContentType');
+        })
+        .then(() => {
+          assertEquals(false, testElement.categoryEnabled);
+        });
   });
 
   function testTristateCategory(
       prefs, category, thirdState, secondaryToggleId) {
+    testElement.category = category;
     browserProxy.setPrefs(prefs);
 
-    testElement.category = category;
     let secondaryToggle = null;
 
     return browserProxy.whenCalled('getDefaultValueForContentType')
@@ -270,13 +282,13 @@ suite('CategoryDefaultSetting', function() {
      * An example pref where the Cookies category is set to delete when
      * session ends.
      */
-    const prefsCookiesSessionOnly = {
-      defaults: {
-        cookies: {
-          setting: 'session_only',
-        },
-      },
-    };
+    const prefsCookiesSessionOnly = test_util.createSiteSettingsPrefs(
+        [test_util.createContentSettingTypeToValuePair(
+            settings.ContentSettingsTypes.COOKIES,
+            test_util.createDefaultContentSetting({
+              setting: settings.ContentSetting.SESSION_ONLY,
+            }))],
+        []);
 
     return testTristateCategory(
         prefsCookiesSessionOnly, settings.ContentSettingsTypes.COOKIES,
