@@ -18,9 +18,11 @@ in order from simplest to most complicated.</p>
 <h3 id="build-app">Build a web app</h3>
 
 <p>Building a web app on top of the web platform is the ideal way
-to reach users across platforms.</p> 
+to reach users across platforms.</p>
 
-<p>If there are web platform features you need that are only available in select browsers,
+<p>We are investigating ways to improve the migration path to the web for developers that depend on exclusive Chrome App APIs
+- in particular the Sockets, HID, fileSystem and Serial APIs.
+If there are web platform features you need that are only available in select browsers,
 you can use feature detection to gracefully degrade or include explanatory text
 when your app is run in a browser that doesn’t support a particular API.
 If there are gaps in the web platform for your application, please
@@ -34,9 +36,17 @@ It is currently limited to handling only certain types of apps.
 In particular,
 apps that contain processing in background pages will not be converted.</p>
 
+<p>In the future,
+Progressive Web Apps (PWAs) will become installable on desktop platforms.
+Users will be able to install web apps to the desktop
+and launch them via icons and shortcuts,
+similar to the way that Chrome Apps can be installed today.
+This functionality is expected to launch sometime during 2018.</p>
+
+
 <h3 id="extension-web-page">Build an extension-enhanced web page</h3>
 
-<p>If there is a capability that your Chrome App has 
+<p>If there is a capability that your Chrome App has
 that the regular web platform can’t provide, it might be available as an
 <a href="https://developer.chrome.com/extensions/api_index">extension API</a>.
 In this case, you can continue using a
@@ -64,17 +74,6 @@ this might be a good enough user experience to be a viable solution.</p>
 Users that do not use Chrome will not be supported,
 and there will be significant friction for your users to install your extension.</p>
 
-<h3 id="native">Build a native app</h3>
-
-If no other options work for you, or don’t work well,
-you may need to create a native app.
-Using a framework such as
-<a href="https://github.com/electron/electron">Electron</a> or
-<a href="http://nwjs.io/">NW.js</a>,
-you will be able to keep your existing JavaScript codebase.
-Note that chrome.* API calls are not by default available on these platforms,
-but similar APIs based on Node.JS are.
-
 <h2 id="app-faqs">FAQs</h2>
 
 <h3 id="users"><strong>Q: My Chrome App has many users.
@@ -99,6 +98,11 @@ What should I do?</strong></h3>
 On all desktop platforms except Mac, users can
 <a href="https://support.google.com/chrome_webstore/answer/3060053?hl=en">add ‘bookmark apps’ to their shelf / desktop</a>,
 which optionally run your web app in its own window.</p>
+
+<p>In the future,
+Progressive Web Apps (PWAs) will become installable on desktop platforms.
+Users will be able to install web apps to the desktop and launch them via icons and shortcuts, similar to the way that Chrome Apps can be installed today.
+This functionality is expected to launch sometime during 2018.</aP
 
 <h3 id="window"><strong>Q: I want my app to run in its own window, not in a tab.
 Is this something I can do with a web app?</strong></h3>
@@ -217,7 +221,7 @@ you will need to request a token and insert it in your web application.</p>
 How do I do that on the web? </strong></h3>
 
 <p>The <a href="https://dev.w3.org/geo/api/spec-source.html">HTML5 geolocation API</a>
-can be used in web apps to locate a user’s position.</p> 
+can be used in web apps to locate a user’s position.</p>
 
 <p>Note: As of Chrome 50,
 the Geolocation API will only work on secure contexts such as HTTPS.
