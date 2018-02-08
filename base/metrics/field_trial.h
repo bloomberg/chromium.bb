@@ -388,7 +388,8 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
 //------------------------------------------------------------------------------
 // Class with a list of all active field trials.  A trial is active if it has
 // been registered, which includes evaluating its state based on its probaility.
-// Only one instance of this class exists.
+// Only one instance of this class exists and outside of testing, will live for
+// the entire life time of the process.
 class BASE_EXPORT FieldTrialList {
  public:
   typedef SharedPersistentMemoryAllocator FieldTrialAllocator;

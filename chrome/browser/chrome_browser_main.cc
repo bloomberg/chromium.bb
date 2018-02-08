@@ -19,6 +19,7 @@
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/debugger.h"
+#include "base/debug/leak_annotations.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -922,11 +923,13 @@ ChromeBrowserMainParts::~ChromeBrowserMainParts() {
 }
 
 void ChromeBrowserMainParts::SetupFieldTrials() {
-  // Initialize FieldTrialList to support FieldTrials that use one-time
-  // randomization.
-  DCHECK(!field_trial_list_);
-  field_trial_list_ = std::make_unique<base::FieldTrialList>(
+  // Initialize FieldTrialList to support FieldTrials. This is intentionally
+  // leaked since it needs to live for the duration of the browser process and
+  // there's no benefit in cleaning it up at exit.
+  base::FieldTrialList* leaked_field_trial_list = new base::FieldTrialList(
       browser_process_->GetMetricsServicesManager()->CreateEntropyProvider());
+  ANNOTATE_LEAKING_OBJECT_PTR(leaked_field_trial_list);
+  ignore_result(leaked_field_trial_list);
 
   auto feature_list = std::make_unique<base::FeatureList>();
 
@@ -1212,9 +1215,10 @@ int ChromeBrowserMainParts::LoadLocalState(
 
   SetupOriginTrialsCommandLine(browser_process_->local_state());
 
-  // Now that the command line has been mutated based on about:flags, we can
-  // initialize field trials. The field trials are needed by IOThread's
-  // initialization which happens in BrowserProcess:PreCreateThreads. Metrics
+  // Initialize field trials now that the Local State file has been read. This
+  // is done as soon as possible (here), so that code using the base::Feature
+  // API can be used from this point on. Field trials are also needed by
+  // IOThread's initialization in BrowserProcess:PreCreateThreads. Metrics
   // initialization is handled in PreMainMessageLoopRunImpl since it posts
   // tasks.
   SetupFieldTrials();
