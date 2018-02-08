@@ -22,18 +22,4 @@ IPC_MESSAGE_CONTROL2(EmbeddedWorkerHostMsg_CountFeature,
                      int64_t /* service_worker_version_id */,
                      uint32_t /* feature */)
 
-// ---------------------------------------------------------------------------
-// For EmbeddedWorkerContext related messages, which are directly sent from
-// browser to the worker thread in the child process. We use a new message class
-// for this for easier cross-thread message dispatching.
-
-#undef IPC_MESSAGE_START
-#define IPC_MESSAGE_START EmbeddedWorkerContextMsgStart
-
-// Browser -> Renderer message to send message.
-IPC_MESSAGE_CONTROL3(EmbeddedWorkerContextMsg_MessageToWorker,
-                     int /* thread_id */,
-                     int /* embedded_worker_id */,
-                     IPC::Message /* message */)
-
 #endif  // CONTENT_COMMON_SERVICE_WORKER_EMBEDDED_WORKER_MESSAGES_H_

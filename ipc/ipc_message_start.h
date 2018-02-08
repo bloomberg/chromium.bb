@@ -59,7 +59,6 @@ enum IPCMessageStart {
   CacheStorageMsgStart,
   ServiceWorkerMsgStart,
   EmbeddedWorkerMsgStart,
-  EmbeddedWorkerContextMsgStart,
   CastMsgStart,
   MediaStreamTrackMetricsHostMsgStart,
   ChromeExtensionMsgStart,

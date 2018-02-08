@@ -463,18 +463,9 @@ bool EmbeddedWorkerTestHelper::Send(IPC::Message* message) {
 }
 
 bool EmbeddedWorkerTestHelper::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(EmbeddedWorkerTestHelper, message)
-    IPC_MESSAGE_HANDLER(EmbeddedWorkerContextMsg_MessageToWorker,
-                        OnMessageToWorkerStub)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  // IPC::TestSink only records messages that are not handled by filters,
-  // so we just forward all messages to the separate sink.
   sink_.OnMessageReceived(message);
 
-  return handled;
+  return false;
 }
 
 void EmbeddedWorkerTestHelper::RegisterMockInstanceClient(
@@ -848,15 +839,6 @@ void EmbeddedWorkerTestHelper::OnStopWorkerStub(int embedded_worker_id) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&EmbeddedWorkerTestHelper::OnStopWorker,
                                 AsWeakPtr(), embedded_worker_id));
-}
-
-void EmbeddedWorkerTestHelper::OnMessageToWorkerStub(
-    int thread_id,
-    int embedded_worker_id,
-    const IPC::Message& message) {
-  EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
-  ASSERT_TRUE(worker);
-  EXPECT_EQ(worker->thread_id(), thread_id);
 }
 
 void EmbeddedWorkerTestHelper::OnActivateEventStub(

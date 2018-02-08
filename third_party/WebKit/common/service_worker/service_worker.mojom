@@ -48,8 +48,21 @@ interface ServiceWorkerHost {
 
   // TODO(leonhsl): Impl all methods.
   // PostMessageToClient();
-  // FocusClient();
-  // NavigateClient();
+
+  // Corresponds to WindowClient#focus(). Requests the browser to focus the
+  // client with |client_uuid|.
+  // On success, |client| contains service worker client information of the
+  // focused window.
+  // Otherwise, |client| is null.
+  FocusClient(string client_uuid) => (ServiceWorkerClientInfo? client);
+
+  // Corresponds to WindowClient#navigate(). Requests the browser to navigate
+  // the client with |client_uuid| to |url|.
+  // On success, |client| contains service worker client information of the
+  // navigated window and |error_msg| is null.
+  // Otherwise, |client| is null and |error_msg| describes the failure.
+  NavigateClient(string client_uuid, url.mojom.Url url)
+    => (ServiceWorkerClientInfo? client, string? error_msg);
 
   // Corresponds to ServiceWorkerGlobalScope#skipWaiting(). Allows this service
   // worker to progress from the registration's waiting position to active even

@@ -112,10 +112,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
     start_worker_received_time_ = start_worker_received_time;
   }
 
-  void OnMessageReceived(int thread_id,
-                         int embedded_worker_id,
-                         const IPC::Message& message);
-
   // WebServiceWorkerContextClient overrides.
   void GetClient(
       const blink::WebString& client_id,

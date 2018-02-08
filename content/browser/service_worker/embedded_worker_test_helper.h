@@ -297,9 +297,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void OnStartWorkerStub(mojom::EmbeddedWorkerStartParamsPtr params);
   void OnResumeAfterDownloadStub(int embedded_worker_id);
   void OnStopWorkerStub(int embedded_worker_id);
-  void OnMessageToWorkerStub(int thread_id,
-                             int embedded_worker_id,
-                             const IPC::Message& message);
   void OnActivateEventStub(
       mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback
           callback);

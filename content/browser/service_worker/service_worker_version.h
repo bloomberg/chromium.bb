@@ -632,6 +632,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OpenPaymentHandlerWindow(
       const GURL& url,
       OpenPaymentHandlerWindowCallback callback) override;
+  void FocusClient(const std::string& client_uuid,
+                   FocusClientCallback callback) override;
+  void NavigateClient(const std::string& client_uuid,
+                      const GURL& url,
+                      NavigateClientCallback callback) override;
   void SkipWaiting(SkipWaitingCallback callback) override;
 
   void OnSetCachedMetadataFinished(int64_t callback_id,
@@ -648,20 +653,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
       const std::string& client_uuid,
       const scoped_refptr<base::RefCountedData<blink::TransferableMessage>>&
           message);
-  void OnFocusClient(int request_id, const std::string& client_uuid);
-  void OnNavigateClient(int request_id,
-                        const std::string& client_uuid,
-                        const GURL& url);
-  void OnNavigateClientFinished(
-      int request_id,
-      ServiceWorkerStatusCode status,
-      blink::mojom::ServiceWorkerClientInfoPtr client_info);
 
   void OnPongFromWorker();
-
-  void OnFocusClientFinished(
-      int request_id,
-      blink::mojom::ServiceWorkerClientInfoPtr client_info);
 
   void DidEnsureLiveRegistrationForStartWorker(
       ServiceWorkerMetrics::EventType purpose,

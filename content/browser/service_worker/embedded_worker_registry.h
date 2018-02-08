@@ -86,8 +86,6 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
       int initial_embedded_worker_id);
   ~EmbeddedWorkerRegistry();
 
-  ServiceWorkerStatusCode Send(int process_id, IPC::Message* message);
-
   // Called when EmbeddedWorkerInstance is ready for IPC. This function
   // prepares a route to the child worker thread.
   // TODO(shimazu): Remove this function once mojofication is completed.

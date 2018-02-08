@@ -39,9 +39,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ServiceWorkerState,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ServiceWorkerResponseError,
                           blink::mojom::ServiceWorkerResponseError::kLast)
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ServiceWorkerClientType,
-                          blink::mojom::ServiceWorkerClientType::kLast)
-
 IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerFetchType,
                           content::ServiceWorkerFetchType::LAST)
 
@@ -85,15 +82,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerResponse)
   IPC_STRUCT_TRAITS_MEMBER(side_data_blob)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(blink::mojom::ServiceWorkerClientInfo)
-  IPC_STRUCT_TRAITS_MEMBER(client_uuid)
-  IPC_STRUCT_TRAITS_MEMBER(page_visibility_state)
-  IPC_STRUCT_TRAITS_MEMBER(is_focused)
-  IPC_STRUCT_TRAITS_MEMBER(url)
-  IPC_STRUCT_TRAITS_MEMBER(frame_type)
-  IPC_STRUCT_TRAITS_MEMBER(client_type)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(content::PushEventPayload)
   IPC_STRUCT_TRAITS_MEMBER(data)
   IPC_STRUCT_TRAITS_MEMBER(is_null)
@@ -123,17 +111,6 @@ IPC_MESSAGE_ROUTED2(
     scoped_refptr<
         base::RefCountedData<blink::TransferableMessage>> /* message */)
 
-// Ask the browser to focus a client (renderer->browser).
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_FocusClient,
-                    int /* request_id */,
-                    std::string /* uuid */)
-
-// Ask the browser to navigate a client (renderer->browser).
-IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_NavigateClient,
-                    int /* request_id */,
-                    std::string /* uuid */,
-                    GURL /* url */)
-
 //---------------------------------------------------------------------------
 // Messages sent from the browser to the child process.
 //
@@ -147,20 +124,5 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerStateChanged,
                      int /* thread_id */,
                      int /* handle_id */,
                      blink::mojom::ServiceWorkerState)
-
-// Sent via EmbeddedWorker as a response of FocusClient.
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_FocusClientResponse,
-                     int /* request_id */,
-                     blink::mojom::ServiceWorkerClientInfo /* client */)
-
-// Sent via EmbeddedWorker as a response of NavigateClient.
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_NavigateClientResponse,
-                     int /* request_id */,
-                     blink::mojom::ServiceWorkerClientInfo /* client */)
-
-// Sent via EmbeddedWorker as an error response of NavigateClient.
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_NavigateClientError,
-                     int /* request_id */,
-                     GURL /* url */)
 
 #endif  // CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_MESSAGES_H_

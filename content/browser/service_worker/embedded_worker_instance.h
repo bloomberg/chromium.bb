@@ -152,11 +152,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // idle workers.
   void StopIfNotAttachedToDevTools();
 
-  // Sends |message| to the embedded worker running in the child process.
-  // It is invalid to call this while the worker is not in STARTING or RUNNING
-  // status.
-  ServiceWorkerStatusCode SendIpcMessage(const IPC::Message& message);
-
   // Resumes the worker if it paused after download.
   void ResumeAfterDownload();
 

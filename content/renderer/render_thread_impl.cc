@@ -118,7 +118,6 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
-#include "content/renderer/service_worker/service_worker_context_message_filter.h"
 #include "content/renderer/service_worker/service_worker_message_filter.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
 #include "content/renderer/shared_worker/shared_worker_factory_impl.h"
@@ -791,8 +790,6 @@ void RenderThreadImpl::Init(
   AddFilter(midi_message_filter_.get());
 
   AddFilter((new CacheStorageMessageFilter(thread_safe_sender()))->GetFilter());
-
-  AddFilter((new ServiceWorkerContextMessageFilter())->GetFilter());
 
 #if defined(USE_AURA)
   if (IsRunningWithMus())
