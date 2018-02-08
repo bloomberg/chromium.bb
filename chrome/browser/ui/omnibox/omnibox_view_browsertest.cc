@@ -342,6 +342,22 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_NO_FATAL_FAILURE(SetupHistory());
   }
 
+  void SetTestToolbarPermanentText(const base::string16& text) {
+    OmniboxView* omnibox_view = nullptr;
+    ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+    OmniboxEditModel* edit_model = omnibox_view->model();
+    ASSERT_NE(nullptr, edit_model);
+
+    if (!test_toolbar_model_) {
+      test_toolbar_model_ = new TestToolbarModel;
+      std::unique_ptr<ToolbarModel> toolbar_model(test_toolbar_model_);
+      browser()->swap_toolbar_models(&toolbar_model);
+    }
+
+    test_toolbar_model_->set_text(text);
+    omnibox_view->Update();
+  }
+
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
@@ -357,6 +373,9 @@ class OmniboxViewTest : public InProcessBrowserTest,
   }
 
  private:
+  // Non-owning pointer.
+  TestToolbarModel* test_toolbar_model_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewTest);
 };
 
@@ -1725,9 +1744,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CopyURLToClipboard) {
   // as URL (not as ordinary user input).
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-  OmniboxEditModel* edit_model = omnibox_view->model();
-  ASSERT_NE(static_cast<OmniboxEditModel*>(NULL), edit_model);
-  edit_model->SetPermanentText(ASCIIToUTF16("http://www.google.com/"));
+  SetTestToolbarPermanentText(ASCIIToUTF16("http://www.google.com"));
 
   const char* target_url = "http://www.google.com/calendar";
   omnibox_view->SetUserText(ASCIIToUTF16(target_url));
@@ -1770,9 +1787,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, CutURLToClipboard) {
   // as URL (not as ordinary user input).
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-  OmniboxEditModel* edit_model = omnibox_view->model();
-  ASSERT_NE(static_cast<OmniboxEditModel*>(NULL), edit_model);
-  edit_model->SetPermanentText(ASCIIToUTF16("http://www.google.com/"));
+  SetTestToolbarPermanentText(ASCIIToUTF16("http://www.google.com"));
 
   const char* target_url = "http://www.google.com/calendar";
   omnibox_view->SetUserText(ASCIIToUTF16(target_url));
@@ -1931,35 +1946,28 @@ size_t GetSelectionSize(OmniboxView* omnibox_view) {
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SelectAllStaysAfterUpdate) {
   OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-  TestToolbarModel* test_toolbar_model = new TestToolbarModel;
-  std::unique_ptr<ToolbarModel> toolbar_model(test_toolbar_model);
-  browser()->swap_toolbar_models(&toolbar_model);
 
   base::string16 url_a(ASCIIToUTF16("http://www.a.com/"));
   base::string16 url_b(ASCIIToUTF16("http://www.b.com/"));
   chrome::FocusLocationBar(browser());
 
-  test_toolbar_model->set_text(url_a);
-  omnibox_view->Update();
+  SetTestToolbarPermanentText(url_a);
   EXPECT_EQ(url_a, omnibox_view->GetText());
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
   // Updating while selected should retain SelectAll().
-  test_toolbar_model->set_text(url_b);
-  omnibox_view->Update();
+  SetTestToolbarPermanentText(url_b);
   EXPECT_EQ(url_b, omnibox_view->GetText());
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
   // Select nothing, then update. Should gain SelectAll().
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RIGHT, 0));
-  test_toolbar_model->set_text(url_a);
-  omnibox_view->Update();
+  SetTestToolbarPermanentText(url_a);
   EXPECT_EQ(url_a, omnibox_view->GetText());
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
   // Test behavior of the "reversed" attribute of OmniboxView::SelectAll().
-  test_toolbar_model->set_text(ASCIIToUTF16("AB"));
-  omnibox_view->Update();
+  SetTestToolbarPermanentText(ASCIIToUTF16("AB"));
   // Should be at beginning. Shift+left should do nothing.
   EXPECT_EQ(2u, GetSelectionSize(omnibox_view));
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, ui::EF_SHIFT_DOWN));
@@ -1967,8 +1975,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SelectAllStaysAfterUpdate) {
   EXPECT_EQ(2u, GetSelectionSize(omnibox_view));
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
-  test_toolbar_model->set_text(ASCIIToUTF16("CD"));
-  omnibox_view->Update();
+  SetTestToolbarPermanentText(ASCIIToUTF16("CD"));
   EXPECT_EQ(2u, GetSelectionSize(omnibox_view));
 
   // At the start, so Shift+Left should do nothing.
@@ -1984,8 +1991,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, SelectAllStaysAfterUpdate) {
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RIGHT, ui::EF_SHIFT_DOWN));
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_RIGHT, ui::EF_SHIFT_DOWN));
-  test_toolbar_model->set_text(ASCIIToUTF16("AB"));
-  omnibox_view->Update();
+  SetTestToolbarPermanentText(ASCIIToUTF16("AB"));
   EXPECT_EQ(2u, GetSelectionSize(omnibox_view));
 
   // We reverse select all on Update() so shift-left won't do anything.

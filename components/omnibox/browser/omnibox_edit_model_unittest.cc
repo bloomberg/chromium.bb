@@ -14,6 +14,7 @@
 #include "components/omnibox/browser/test_omnibox_client.h"
 #include "components/omnibox/browser/test_omnibox_edit_controller.h"
 #include "components/omnibox/browser/test_omnibox_view.h"
+#include "components/toolbar/test_toolbar_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -57,6 +58,7 @@ class OmniboxEditModelTest : public testing::Test {
   }
 
   const TestOmniboxView& view() { return *view_; }
+  TestToolbarModel* toolbar_model() { return controller_->GetToolbarModel(); }
   TestOmniboxEditModel* model() { return model_.get(); }
 
  private:
@@ -68,7 +70,7 @@ class OmniboxEditModelTest : public testing::Test {
 // Tests various permutations of AutocompleteModel::AdjustTextForCopy.
 TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
   struct Data {
-    const char* perm_text;
+    const char* url_for_editing;
     const int sel_start;
     const bool is_all_selected;
 
@@ -128,7 +130,8 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
   };
 
   for (size_t i = 0; i < arraysize(input); ++i) {
-    model()->SetPermanentText(base::ASCIIToUTF16(input[i].perm_text));
+    toolbar_model()->set_text(base::ASCIIToUTF16(input[i].url_for_editing));
+    model()->ResetDisplayUrls();
 
     model()->SetInputInProgress(input[i].is_match_selected_in_popup);
     model()->SetPopupIsOpen(input[i].is_match_selected_in_popup);

@@ -169,11 +169,11 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
                keyword_mode_entry_method_, focus_state_, focus_source_, input_);
 }
 
-void OmniboxEditModel::RestoreState(const base::string16& url,
-                                    const State* state) {
-  // We need to update the permanent text correctly and revert the view
+void OmniboxEditModel::RestoreState(const State* state) {
+  // We need to update the permanent display URLs correctly and revert the view
   // regardless of whether there is saved state.
-  permanent_text_ = url;
+  ResetDisplayUrls();
+
   view_->RevertAll();
   // Restore the autocomplete controller's input, or clear it if this is a new
   // tab.
@@ -208,30 +208,42 @@ AutocompleteMatch OmniboxEditModel::CurrentMatch(
   return match;
 }
 
-bool OmniboxEditModel::SetPermanentText(const base::string16& text) {
+bool OmniboxEditModel::ResetDisplayUrls() {
+  const base::string16 old_current_permanent_url = GetCurrentPermanentUrlText();
+
+  url_for_editing_ = controller()->GetToolbarModel()->GetFormattedFullURL();
+  display_only_url_ =
+      base::FeatureList::IsEnabled(
+          omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains)
+          ? controller()->GetToolbarModel()->GetURLForDisplay()
+          : url_for_editing_;
+
   // When there's new permanent text, and the user isn't interacting with the
   // omnibox, we want to revert the edit to show the new text.  We could simply
   // define "interacting" as "the omnibox has focus", but we still allow updates
-  // when the omnibox has focus as long as the user hasn't begun editing, isn't
-  // seeing zerosuggestions (because changing this text would require changing
-  // or hiding those suggestions), and hasn't toggled on "Show URL" (because
-  // this update will re-enable search term replacement, which will be annoying
-  // if the user is trying to copy the URL).  When the omnibox doesn't have
+  // when the omnibox has focus as long as the user hasn't begun editing, and
+  // isn't seeing zerosuggestions (because changing this text would require
+  // changing or hiding those suggestions).  When the omnibox doesn't have
   // focus, we assume the user may have abandoned their interaction and it's
   // always safe to change the text; this also prevents someone toggling "Show
   // URL" (which sounds as if it might be persistent) from seeing just that URL
   // forever afterwards.
-  const bool visibly_changed_permanent_text =
-      (permanent_text_ != text) &&
-      (!has_focus() || (!user_input_in_progress_ && !PopupIsOpen()));
-
-  permanent_text_ = text;
-  return visibly_changed_permanent_text;
+  return (GetCurrentPermanentUrlText() != old_current_permanent_url) &&
+         (!has_focus() || (!user_input_in_progress_ && !PopupIsOpen()));
 }
 
 GURL OmniboxEditModel::PermanentURL() const {
-  return url_formatter::FixupURL(base::UTF16ToUTF8(permanent_text_),
+  return url_formatter::FixupURL(base::UTF16ToUTF8(url_for_editing_),
                                  std::string());
+}
+
+base::string16 OmniboxEditModel::GetCurrentPermanentUrlText() const {
+  // TODO(tommycli): The focus state is a rough approximation, but we will
+  // need to make this more sophisticated.
+  if (has_focus())
+    return url_for_editing_;
+
+  return display_only_url_;
 }
 
 void OmniboxEditModel::SetUserText(const base::string16& text) {
@@ -309,8 +321,8 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   // probably implies (a), but it doesn't hurt to be sure.)  If these hold, then
   // it's safe to copy the underlying URL.
   if (!user_input_in_progress_ && is_all_selected &&
-      (!PopupIsOpen() ||
-       ((popup_model()->selected_line() == 0) && (*text == permanent_text_)))) {
+      (!PopupIsOpen() || ((popup_model()->selected_line() == 0) &&
+                          (*text == url_for_editing_)))) {
     // It's safe to copy the underlying URL.  These lines ensure that if the
     // scheme was stripped it's added back, and the URL is unescaped (we escape
     // parts of it for display).
@@ -388,8 +400,9 @@ void OmniboxEditModel::Revert() {
   // First home the cursor, so view of text is scrolled to left, then correct
   // it. |SetCaretPos()| doesn't scroll the text, so doing that first wouldn't
   // accomplish anything.
-  view_->SetWindowTextAndCaretPos(permanent_text_, 0, false, true);
-  view_->SetCaretPos(std::min(permanent_text_.length(), start));
+  base::string16 current_permanent_url = GetCurrentPermanentUrlText();
+  view_->SetWindowTextAndCaretPos(current_permanent_url, 0, false, true);
+  view_->SetCaretPos(std::min(current_permanent_url.length(), start));
   client_->OnRevert();
 }
 
@@ -577,7 +590,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
 
   base::string16 input_text(pasted_text);
   if (input_text.empty())
-      input_text = user_input_in_progress_ ? user_text_ : permanent_text_;
+    input_text = user_input_in_progress_ ? user_text_ : url_for_editing_;
   // Create a dummy AutocompleteInput for use in calling SuggestExactInput()
   // to create an alternate navigational match.
   AutocompleteInput alternate_input(input_text, ClassifyPage(),
@@ -898,12 +911,6 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
   SetFocusState(OMNIBOX_FOCUS_VISIBLE, OMNIBOX_FOCUS_CHANGE_EXPLICIT);
   control_key_state_ = control_down ? DOWN_WITHOUT_CHANGE : UP;
 
-  if (base::FeatureList::IsEnabled(
-          omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains)) {
-    // Show the full URL if the user focuses the Omnibox.
-    SetPermanentText(controller()->GetToolbarModel()->GetFormattedFullURL());
-  }
-
   // Try to get ZeroSuggest suggestions if a page is loaded and the user has
   // not been typing in the omnibox.  The |user_input_in_progress_| check is
   // used to detect the case where this function is called after right-clicking
@@ -914,8 +921,8 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
   if (client_->CurrentPageExists() && !user_input_in_progress_) {
     // We avoid PermanentURL() here because it's not guaranteed to give us the
     // actual underlying current URL, e.g. if we're on the NTP and the
-    // |permanent_text_| is empty.
-    input_ = AutocompleteInput(permanent_text_, ClassifyPage(),
+    // |url_for_editing_| is empty.
+    input_ = AutocompleteInput(url_for_editing_, ClassifyPage(),
                                client_->GetSchemeClassifier());
     input_.set_current_url(client_->GetURL());
     input_.set_current_title(client_->GetTitle());
@@ -938,14 +945,6 @@ void OmniboxEditModel::SetCaretVisibility(bool visible) {
 void OmniboxEditModel::OnWillKillFocus() {
   if (user_input_in_progress_ || !in_revert_)
     client_->OnInputStateChanged();
-
-  if (!user_input_in_progress_ &&
-      base::FeatureList::IsEnabled(
-          omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains)) {
-    // If the user has not edited the input and is now leaving Omnibox focus,
-    // restore the elided URL as the permanent text.
-    RestoreState(controller()->GetURLForDisplay(), nullptr);
-  }
 }
 
 void OmniboxEditModel::OnKillFocus() {
@@ -957,6 +956,18 @@ void OmniboxEditModel::OnKillFocus() {
 #if defined(OS_WIN)
   ui::OnScreenKeyboardDisplayManager::GetInstance()->DismissVirtualKeyboard();
 #endif
+
+  // TODO(tommycli): This seems redundant with the RevertAll call in the Views
+  // code. Find a way to consolidate these calls.
+  if (!user_input_in_progress_ &&
+      base::FeatureList::IsEnabled(
+          omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains)) {
+    // Revert all the user has made a partial selection.
+    size_t start = 0, end = 0;
+    view_->GetSelectionBounds(&start, &end);
+    if (view_->IsSelectAll() || start == end)
+      view_->RevertAll();
+  }
 }
 
 bool OmniboxEditModel::WillHandleEscapeKey() const {
@@ -1026,13 +1037,13 @@ void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
     // The popup is neither open nor working on a query already.  So, start an
     // autocomplete query for the current text.  This also sets
     // user_input_in_progress_ to true, which we want: if the user has started
-    // to interact with the popup, changing the permanent_text_ shouldn't change
-    // the displayed text.
+    // to interact with the popup, changing the url_for_editing_ shouldn't
+    // change the displayed text.
     // Note: This does not force the popup to open immediately.
     // TODO(pkasting): We should, in fact, force this particular query to open
     // the popup immediately.
     if (!user_input_in_progress_)
-      InternalSetUserText(permanent_text_);
+      InternalSetUserText(url_for_editing_);
     view_->UpdatePopup();
     return;
   }
@@ -1097,7 +1108,7 @@ void OmniboxEditModel::OnPopupDataChanged(
     view_->OnInlineAutocompleteTextCleared();
 
   const base::string16& user_text =
-      user_input_in_progress_ ? user_text_ : permanent_text_;
+      user_input_in_progress_ ? user_text_ : url_for_editing_;
   if (keyword_state_changed && is_keyword_selected()) {
     // If we reach here, the user most likely entered keyword mode by inserting
     // a space between a keyword name and a search string (as pressing space or

@@ -4,8 +4,6 @@
 
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 
-#include "base/feature_list.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/toolbar/toolbar_model.h"
 
 void OmniboxEditController::OnAutocompleteAccept(
@@ -16,13 +14,6 @@ void OmniboxEditController::OnAutocompleteAccept(
   destination_url_ = destination_url;
   disposition_ = disposition;
   transition_ = transition;
-}
-
-base::string16 OmniboxEditController::GetURLForDisplay() {
-  return base::FeatureList::IsEnabled(
-             omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains)
-             ? GetToolbarModel()->GetURLForDisplay()
-             : GetToolbarModel()->GetFormattedFullURL();
 }
 
 OmniboxEditController::OmniboxEditController()

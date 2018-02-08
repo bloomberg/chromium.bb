@@ -4,10 +4,10 @@
 
 #include "components/omnibox/browser/test_omnibox_edit_controller.h"
 
-ToolbarModel* TestOmniboxEditController::GetToolbarModel() {
+TestToolbarModel* TestOmniboxEditController::GetToolbarModel() {
   return &toolbar_model_;
 }
 
-const ToolbarModel* TestOmniboxEditController::GetToolbarModel() const {
+const TestToolbarModel* TestOmniboxEditController::GetToolbarModel() const {
   return &toolbar_model_;
 }

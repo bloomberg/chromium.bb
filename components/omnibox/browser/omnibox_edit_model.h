@@ -110,9 +110,9 @@ class OmniboxEditModel {
   // the internal state appropriately.
   const State GetStateForTabSwitch();
 
-  // Resets the tab state, updates permanent_text_ to |url|, then restores local
-  // state from |state|. |state| may be NULL if there is no saved state.
-  void RestoreState(const base::string16& url, const State* state);
+  // Resets the tab state, then restores local state from |state|. |state| may
+  // be nullptr if there is no saved state.
+  void RestoreState(const State* state);
 
   // Returns the match for the current text. If the user has not edited the text
   // this is the match corresponding to the permanent text. Returns the
@@ -157,16 +157,17 @@ class OmniboxEditModel {
   void UpdateInput(bool has_selected_text,
                    bool prevent_inline_autocomplete);
 
-  // Sets permanent_text_ to |text|. Returns true if the permanent text changed
-  // and the change should be immediately user-visible, because either the user
-  // is not editing or the edit does not have focus.
-  bool SetPermanentText(const base::string16& text);
+  // Resets the permanent display URLs to those provided by the controller.
+  // Returns true if the display URLs have changed and the change should be
+  // immediately user-visible, because either the user is not editing or the
+  // edit does not have focus.
+  bool ResetDisplayUrls();
 
   // Returns the URL corresponding to the permanent text.
   GURL PermanentURL() const;
 
-  // Returns the raw permanent text.
-  const base::string16& PermanentText() { return permanent_text_; }
+  // Returns the permanent URL text for the current page and Omnibox state.
+  base::string16 GetCurrentPermanentUrlText() const;
 
   // Sets the user_text_ to |text|.  Only the View should call this.
   void SetUserText(const base::string16& text);
@@ -209,7 +210,7 @@ class OmniboxEditModel {
   // OpenMatch() needs to know the original text that drove this action.  If
   // |pasted_text| is non-empty, this is a Paste-And-Go/Search action, and
   // that's the relevant input text.  Otherwise, the relevant input text is
-  // either the user text or the permanent text, depending on if user input is
+  // either the user text or the display URL, depending on if user input is
   // in progress.
   //
   // |match| is passed by value for two reasons:
@@ -469,8 +470,15 @@ class OmniboxEditModel {
   // is in progress or the Omnibox is not focused.
   FocusSource focus_source_;
 
-  // The URL of the currently displayed page.
-  base::string16 permanent_text_;
+  // The text representing the current URL for steady state display. This may
+  // be a simplified version of the current URL with destructive elisions
+  // applied - and should not be considered suitable for editing.
+  base::string16 display_only_url_;
+
+  // The initial text representing the current URL suitable for editing.
+  // This should fully represent the current URL without any meaning-changing
+  // elisions applied - and is suitable for user editing.
+  base::string16 url_for_editing_;
 
   // This flag is true when the user has modified the contents of the edit, but
   // not yet accepted them.  We use this to determine when we need to save
@@ -530,13 +538,13 @@ class OmniboxEditModel {
   // autocomplete popup until, say, "google.com" appears in the edit box, then
   // the user_text_ is still "goog", and "google.com" is "temporary text".
   // When the user hits <esc>, the edit box reverts to "goog".  Hit <esc> again
-  // and the popup is closed and "goog" is replaced by the permanent_text_,
-  // which is the URL of the current page.
+  // and the popup is closed and "goog" is replaced by the permanent display
+  // URL, which is the URL of the current page.
   //
   // original_url_ is only valid when there is temporary text, and is used as
   // the unique identifier of the originally selected item.  Thus, if the user
   // arrows to a different item with the same text, we can still distinguish
-  // them and not revert all the way to the permanent_text_.
+  // them and not revert all the way to the permanent display URL.
   bool has_temporary_text_;
   GURL original_url_;
 
