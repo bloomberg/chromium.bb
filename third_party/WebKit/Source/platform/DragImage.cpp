@@ -170,10 +170,8 @@ std::unique_ptr<DragImage> DragImage::Create(
   SkBitmap bm;
   paint_image = ResizeAndOrientImage(paint_image, orientation, image_scale,
                                      opacity, interpolation_quality);
-  if (!paint_image || !paint_image.GetSkImage()->asLegacyBitmap(
-                          &bm, SkImage::kRO_LegacyBitmapMode)) {
+  if (!paint_image || !paint_image.GetSkImage()->asLegacyBitmap(&bm))
     return nullptr;
-  }
 
   return WTF::WrapUnique(
       new DragImage(bm, device_scale_factor, interpolation_quality));

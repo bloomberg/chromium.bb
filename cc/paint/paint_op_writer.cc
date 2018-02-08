@@ -150,8 +150,7 @@ void PaintOpWriter::Write(const PaintFlags& flags) {
 void PaintOpWriter::Write(const DrawImage& image) {
   if (enable_security_constraints_) {
     SkBitmap bm;
-    if (!image.paint_image().GetSkImage()->asLegacyBitmap(
-            &bm, SkImage::LegacyBitmapMode::kRO_LegacyBitmapMode)) {
+    if (!image.paint_image().GetSkImage()->asLegacyBitmap(&bm)) {
       Write(static_cast<uint8_t>(PaintOp::SerializedImageType::kNoImage));
       return;
     }
