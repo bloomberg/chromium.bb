@@ -1262,6 +1262,9 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
   } else {
     options.env = g_service_worker_env.Pointer();
   }
+  // The data size is usually small, but the values are changed frequently. So,
+  // set a low write buffer size to trigger compaction more often.
+  options.write_buffer_size = 512 * 1024;
 
   Status status = LevelDBStatusToServiceWorkerDBStatus(
       leveldb_env::OpenDB(options, path_.AsUTF8Unsafe(), &db_));
