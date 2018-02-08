@@ -503,48 +503,10 @@ double ToRestrictedDouble(v8::Isolate* isolate,
   return number_value;
 }
 
-// http://heycam.github.io/webidl/#es-ByteString
-String ToByteString(v8::Isolate* isolate,
-                    v8::Local<v8::Value> value,
-                    ExceptionState& exception_state) {
-  // Handle null default value.
-  if (value.IsEmpty())
-    return String();
-
-  // 1. Let x be ToString(v)
-  v8::Local<v8::String> string_object;
-  if (value->IsString()) {
-    string_object = value.As<v8::String>();
-  } else {
-    v8::TryCatch block(isolate);
-    if (!value->ToString(isolate->GetCurrentContext())
-             .ToLocal(&string_object)) {
-      exception_state.RethrowV8Exception(block.Exception());
-      return String();
-    }
-  }
-
-  String x = ToCoreString(string_object);
-
-  // 2. If the value of any element of x is greater than 255, then throw a
-  //    TypeError.
-  if (!x.ContainsOnlyLatin1()) {
-    exception_state.ThrowTypeError("Value is not a valid ByteString.");
-    return String();
-  }
-
-  // 3. Return an IDL ByteString value whose length is the length of x, and
-  //    where the value of each element is the value of the corresponding
-  //    element of x.
-  //    Blink: A ByteString is simply a String with a range constrained per the
-  //    above, so this is the identity operation.
-  return x;
-}
-
 static bool HasUnmatchedSurrogates(const String& string) {
   // By definition, 8-bit strings are confined to the Latin-1 code page and
   // have no surrogates, matched or otherwise.
-  if (string.Is8Bit())
+  if (string.IsEmpty() || string.Is8Bit())
     return false;
 
   const UChar* characters = string.Characters16();
@@ -568,7 +530,7 @@ static bool HasUnmatchedSurrogates(const String& string) {
 }
 
 // Replace unmatched surrogates with REPLACEMENT CHARACTER U+FFFD.
-static String ReplaceUnmatchedSurrogates(const String& string) {
+String ReplaceUnmatchedSurrogates(const String& string) {
   // This roughly implements http://heycam.github.io/webidl/#dfn-obtain-unicode
   // but since Blink strings are 16-bits internally, the output is simply
   // re-encoded to UTF-16.
@@ -641,32 +603,6 @@ static String ReplaceUnmatchedSurrogates(const String& string) {
   // 6. Return U.
   DCHECK_EQ(u.length(), string.length());
   return u.ToString();
-}
-
-String ToUSVString(v8::Isolate* isolate,
-                   v8::Local<v8::Value> value,
-                   ExceptionState& exception_state) {
-  // http://heycam.github.io/webidl/#es-USVString
-  if (value.IsEmpty())
-    return String();
-
-  v8::Local<v8::String> string_object;
-  if (value->IsString()) {
-    string_object = value.As<v8::String>();
-  } else {
-    v8::TryCatch block(isolate);
-    if (!value->ToString(isolate->GetCurrentContext())
-             .ToLocal(&string_object)) {
-      exception_state.RethrowV8Exception(block.Exception());
-      return String();
-    }
-  }
-
-  // USVString is identical to DOMString except that "convert a
-  // DOMString to a sequence of Unicode characters" is used subsequently
-  // when converting to an IDL value
-  String x = ToCoreString(string_object);
-  return ReplaceUnmatchedSurrogates(x);
 }
 
 XPathNSResolver* ToXPathNSResolver(ScriptState* script_state,

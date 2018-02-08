@@ -79,6 +79,12 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   inline void setBooleanMember(bool);
 
+  bool hasByteStringMember() const { return !byte_string_member_.IsNull(); }
+  const String& byteStringMember() const {
+    return byte_string_member_;
+  }
+  inline void setByteStringMember(const String&);
+
   bool hasCreateMember() const { return has_create_member_; }
   bool createMember() const {
     DCHECK(has_create_member_);
@@ -408,6 +414,13 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   inline void setUnrestrictedDoubleMember(double);
 
+  bool hasUsvStringOrNullMember() const { return !usv_string_or_null_member_.IsNull(); }
+  const String& usvStringOrNullMember() const {
+    return usv_string_or_null_member_;
+  }
+  inline void setUsvStringOrNullMember(const String&);
+  inline void setUsvStringOrNullMemberToNull();
+
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
   virtual void Trace(blink::Visitor*);
 
@@ -450,6 +463,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   int32_t applicable_to_type_long_member_;
   String applicable_to_type_string_member_;
   bool boolean_member_;
+  String byte_string_member_;
   bool create_member_;
   Dictionary dictionary_member_;
   double double_or_null_member_;
@@ -499,6 +513,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   HeapVector<DoubleOrString> union_or_null_sequence_member_;
   FloatOrBoolean union_with_typedefs_;
   double unrestricted_double_member_;
+  String usv_string_or_null_member_;
 
   friend class V8TestDictionary;
 };
@@ -515,6 +530,10 @@ void TestDictionary::setApplicableToTypeStringMember(const String& value) {
 void TestDictionary::setBooleanMember(bool value) {
   boolean_member_ = value;
   has_boolean_member_ = true;
+}
+
+void TestDictionary::setByteStringMember(const String& value) {
+  byte_string_member_ = value;
 }
 
 void TestDictionary::setCreateMember(bool value) {
@@ -620,6 +639,13 @@ void TestDictionary::setUint8ArrayMember(NotShared<DOMUint8Array> value) {
 void TestDictionary::setUnrestrictedDoubleMember(double value) {
   unrestricted_double_member_ = value;
   has_unrestricted_double_member_ = true;
+}
+
+void TestDictionary::setUsvStringOrNullMember(const String& value) {
+  usv_string_or_null_member_ = value;
+}
+void TestDictionary::setUsvStringOrNullMemberToNull() {
+  usv_string_or_null_member_ = String();
 }
 
 }  // namespace blink

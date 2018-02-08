@@ -626,4 +626,20 @@ shouldThrow("converter.setTestUSVString()");
 shouldNotThrow("converter.setTestUSVStringDefaultNull()");
 shouldBeEqualToString("converter.testUSVString", "");
 
+["123", "true", "false"].forEach(function(value) {
+    evalAndLog("converter.testUSVStringOrNull = " + value);
+    shouldBeEqualToString("converter.testUSVStringOrNull", value);
+});
+["null", "undefined"].forEach(function(value) {
+    evalAndLog("converter.testUSVStringOrNull = " + value);
+    shouldBeNull("converter.testUSVStringOrNull");
+
+    // Assign a random string to ensure the function call below really has an
+    // effect.
+    converter.testUSVStringOrNull = 'dummy';
+
+    evalAndLog("converter.setTestUSVStringOrNull(" + value + ")");
+    shouldBeNull("converter.testUSVStringOrNull");
+});
+
 </script>

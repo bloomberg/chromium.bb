@@ -169,29 +169,40 @@ struct CORE_EXPORT NativeValueTraits<IDLUnsignedLongLong>
 };
 
 // Strings
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLByteString>
-    : public NativeValueTraitsBase<IDLByteString> {
+template <V8StringResourceMode Mode>
+struct NativeValueTraits<IDLByteStringBase<Mode>>
+    : public NativeValueTraitsBase<IDLByteStringBase<Mode>> {
+  // http://heycam.github.io/webidl/#es-ByteString
   static String NativeValue(v8::Isolate* isolate,
                             v8::Local<v8::Value> value,
                             ExceptionState& exception_state) {
-    return ToByteString(isolate, value, exception_state);
+    V8StringResource<Mode> string_resource(value);
+    // 1. Let x be ToString(v)
+    if (!string_resource.Prepare(isolate, exception_state))
+      return String();
+    String x = string_resource;
+    // 2. If the value of any element of x is greater than 255, then throw a
+    //    TypeError.
+    if (!x.ContainsOnlyLatin1()) {
+      exception_state.ThrowTypeError("Value is not a valid ByteString.");
+      return String();
+    }
+
+    // 3. Return an IDL ByteString value whose length is the length of x, and
+    //    where the value of each element is the value of the corresponding
+    //    element of x.
+    //    Blink: A ByteString is simply a String with a range constrained per
+    //    the above, so this is the identity operation.
+    return x;
   }
 
   static String NullValue() { return String(); }
 };
 
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLString>
-    : public NativeValueTraitsBase<IDLString> {
-  static String NativeValue(v8::Isolate* isolate,
-                            v8::Local<v8::Value> value,
-                            ExceptionState& exception_state) {
-    return NativeValue<V8StringResourceMode::kDefaultMode>(isolate, value,
-                                                           exception_state);
-  }
-
-  template <V8StringResourceMode Mode = kDefaultMode>
+template <V8StringResourceMode Mode>
+struct NativeValueTraits<IDLStringBase<Mode>>
+    : public NativeValueTraitsBase<IDLStringBase<Mode>> {
+  // https://heycam.github.io/webidl/#es-DOMString
   static String NativeValue(v8::Isolate* isolate,
                             v8::Local<v8::Value> value,
                             ExceptionState& exception_state) {
@@ -204,13 +215,20 @@ struct CORE_EXPORT NativeValueTraits<IDLString>
   static String NullValue() { return String(); }
 };
 
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLUSVString>
-    : public NativeValueTraitsBase<IDLUSVString> {
+template <V8StringResourceMode Mode>
+struct NativeValueTraits<IDLUSVStringBase<Mode>>
+    : public NativeValueTraitsBase<IDLUSVStringBase<Mode>> {
+  // http://heycam.github.io/webidl/#es-USVString
   static String NativeValue(v8::Isolate* isolate,
                             v8::Local<v8::Value> value,
                             ExceptionState& exception_state) {
-    return ToUSVString(isolate, value, exception_state);
+    // 1. Let string be the result of converting V to a DOMString.
+    V8StringResource<Mode> string(value);
+    if (!string.Prepare(isolate, exception_state))
+      return String();
+    // 2. Return an IDL USVString value that is the result of converting string
+    //    to a sequence of Unicode scalar values.
+    return ReplaceUnmatchedSurrogates(string);
   }
 
   static String NullValue() { return String(); }

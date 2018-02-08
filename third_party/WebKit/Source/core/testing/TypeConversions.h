@@ -65,6 +65,11 @@ class TypeConversions final : public ScriptWrappable {
   const String& testUSVString() const { return usv_string_; }
   void setTestUSVString(const String& value) { usv_string_ = value; }
 
+  const String& testUSVStringOrNull() const { return usv_string_or_null_; }
+  void setTestUSVStringOrNull(const String& value) {
+    usv_string_or_null_ = value;
+  }
+
  private:
   TypeConversions()
       : long_(0),
@@ -86,6 +91,7 @@ class TypeConversions final : public ScriptWrappable {
   uint16_t unsigned_short_;
   String byte_string_;
   String usv_string_;
+  String usv_string_or_null_;
 };
 
 }  // namespace blink

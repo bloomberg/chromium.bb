@@ -10,7 +10,6 @@
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
-#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8FormData.h"
 #include "bindings/core/v8/V8URLSearchParams.h"
@@ -195,7 +194,8 @@ void RequestInit::SetUpCredentials(ExecutionContext* context,
                                    v8::Local<v8::Value> v8_credentials,
                                    ExceptionState& exception_state) {
   if (v8_credentials->IsString()) {
-    credentials_ = ToUSVString(isolate, v8_credentials, exception_state);
+    credentials_ = NativeValueTraits<IDLUSVString>::NativeValue(
+        isolate, v8_credentials, exception_state);
     if (exception_state.HadException())
       return;
   }
@@ -236,8 +236,9 @@ void RequestInit::SetUpBody(ExecutionContext* context,
     body_ = new FormDataBytesConsumer(context, std::move(form_data));
   } else if (v8_body->IsString()) {
     content_type_ = "text/plain;charset=UTF-8";
-    body_ = new FormDataBytesConsumer(
-        ToUSVString(isolate, v8_body, exception_state));
+    body_ =
+        new FormDataBytesConsumer(NativeValueTraits<IDLUSVString>::NativeValue(
+            isolate, v8_body, exception_state));
   }
 }
 

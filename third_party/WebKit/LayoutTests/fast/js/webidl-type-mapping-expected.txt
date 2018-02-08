@@ -1071,6 +1071,20 @@ PASS converter.setTestUSVStringDefaultNull('\u0100') did not throw exception.
 PASS converter.setTestUSVString() threw exception TypeError: Failed to execute 'setTestUSVString' on 'TypeConversions': 1 argument required, but only 0 present..
 PASS converter.setTestUSVStringDefaultNull() did not throw exception.
 PASS converter.testUSVString is ""
+converter.testUSVStringOrNull = 123
+PASS converter.testUSVStringOrNull is "123"
+converter.testUSVStringOrNull = true
+PASS converter.testUSVStringOrNull is "true"
+converter.testUSVStringOrNull = false
+PASS converter.testUSVStringOrNull is "false"
+converter.testUSVStringOrNull = null
+PASS converter.testUSVStringOrNull is null
+converter.setTestUSVStringOrNull(null)
+PASS converter.testUSVStringOrNull is null
+converter.testUSVStringOrNull = undefined
+PASS converter.testUSVStringOrNull is null
+converter.setTestUSVStringOrNull(undefined)
+PASS converter.testUSVStringOrNull is null
 PASS successfullyParsed is true
 
 TEST COMPLETE

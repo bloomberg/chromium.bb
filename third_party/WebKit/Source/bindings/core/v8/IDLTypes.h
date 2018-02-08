@@ -8,6 +8,7 @@
 #include <type_traits>
 #include "bindings/core/v8/IDLTypesBase.h"
 #include "bindings/core/v8/NativeValueTraits.h"
+#include "bindings/core/v8/V8StringResource.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/Vector.h"
@@ -31,9 +32,19 @@ struct IDLLongLong final : public IDLBaseHelper<int64_t> {};
 struct IDLUnsignedLongLong final : public IDLBaseHelper<uint64_t> {};
 
 // Strings
-struct IDLByteString final : public IDLBaseHelper<String> {};
-struct IDLString final : public IDLBaseHelper<String> {};
-struct IDLUSVString final : public IDLBaseHelper<String> {};
+// The "Base" classes are always templatized and require users to specify how JS
+// null and/or undefined are supposed to be handled.
+template <V8StringResourceMode Mode>
+struct IDLByteStringBase final : public IDLBaseHelper<String> {};
+template <V8StringResourceMode Mode>
+struct IDLStringBase final : public IDLBaseHelper<String> {};
+template <V8StringResourceMode Mode>
+struct IDLUSVStringBase final : public IDLBaseHelper<String> {};
+
+// Define non-template versions of the above for simplicity.
+using IDLByteString = IDLByteStringBase<V8StringResourceMode::kDefaultMode>;
+using IDLString = IDLStringBase<V8StringResourceMode::kDefaultMode>;
+using IDLUSVString = IDLUSVStringBase<V8StringResourceMode::kDefaultMode>;
 
 // Double
 struct IDLDouble final : public IDLBaseHelper<double> {};

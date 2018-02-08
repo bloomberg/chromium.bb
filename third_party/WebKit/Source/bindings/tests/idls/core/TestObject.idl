@@ -364,6 +364,7 @@ interface TestObject {
     // Arguments
     void voidMethodStringArgLongArg(DOMString stringArg, long longArg);
     // Optional arguments
+    void voidMethodByteStringOrNullOptionalUSVStringArg(ByteString? byteStringArg, optional USVString usvStringArg);
     void voidMethodOptionalStringArg(optional DOMString optionalStringArg);
     void voidMethodOptionalTestInterfaceEmptyArg(optional TestInterfaceEmpty optionalTestInterfaceEmptyArg);
     void voidMethodOptionalLongArg(optional long optionalLongArg);

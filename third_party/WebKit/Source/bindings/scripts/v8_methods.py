@@ -376,7 +376,8 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
 
 def v8_value_to_local_cpp_variadic_value(argument, index):
     assert argument.is_variadic
-    idl_type = v8_types.native_value_traits_type_name(argument.idl_type, True)
+    idl_type = v8_types.native_value_traits_type_name(argument.idl_type,
+                                                      argument.extended_attributes, True)
 
     return {
         'assign_expression': 'ToImplArguments<%s>(info, %s, exceptionState)' % (idl_type, index),

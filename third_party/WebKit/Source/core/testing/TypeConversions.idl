@@ -51,4 +51,10 @@ interface TypeConversions {
     attribute USVString testUSVString;
     void setTestUSVString(USVString usvString);
     [ImplementedAs=setTestUSVString] void setTestUSVStringDefaultNull(optional USVString usvString = null);
+
+    // The attribute below is read-only for simplicity; most of the
+    // functionality is tested above, we are only interested in the
+    // nullability aspect (bug 808995).
+    attribute USVString? testUSVStringOrNull;
+    void setTestUSVStringOrNull(USVString? usvStringOrNull);
 };

@@ -135,6 +135,35 @@ CPP_SPECIAL_CONVERSION_RULES = {
 }
 
 
+def string_resource_mode(idl_type, extended_attributes=None):
+    """Returns a V8StringResourceMode value corresponding to the IDL type.
+
+    Args:
+        idl_type:
+            A string IdlType.
+        extended_attributes:
+            A mapping type with extended attribute names and values.
+    """
+    extended_attributes = extended_attributes or {}
+
+    if idl_type.is_nullable:
+        return 'kTreatNullAndUndefinedAsNullString'
+    # TODO(lisabelle): Remove these 4 lines when we have fully supported
+    # annoteted types. (crbug.com/714866)
+    # It is because at that time 'TreatNullAs' will only appear in
+    # type_extended_attributes, not in extended_attributes.
+    if extended_attributes.get('TreatNullAs') == 'EmptyString':
+        return 'kTreatNullAsEmptyString'
+    if extended_attributes.get('TreatNullAs') == 'NullString':
+        return 'kTreatNullAsNullString'
+    type_extended_attributes = idl_type.extended_attributes or {}
+    if type_extended_attributes.get('TreatNullAs') == 'EmptyString':
+        return 'kTreatNullAsEmptyString'
+    if type_extended_attributes.get('TreatNullAs') == 'NullString':
+        return 'kTreatNullAsNullString'
+    return ''
+
+
 def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_type=False, used_as_variadic_argument=False, used_in_cpp_sequence=False):
     """Returns C++ type corresponding to IDL type.
 
@@ -154,24 +183,6 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
             bool, True if the C++ type is used as an element of a container.
             Containers can be an array, a sequence, a dictionary or a record.
     """
-
-    def string_mode():
-        if idl_type.is_nullable:
-            return 'kTreatNullAndUndefinedAsNullString'
-        # TODO(lisabelle): Remove these 4 lines when we have fully supported
-        # annoteted types. (crbug.com/714866)
-        # It is because at that time 'TreatNullAs' will only appear in
-        # type_extended_attributes, not in extended_attributes.
-        if extended_attributes.get('TreatNullAs') == 'EmptyString':
-            return 'kTreatNullAsEmptyString'
-        if extended_attributes.get('TreatNullAs') == 'NullString':
-            return 'kTreatNullAsNullString'
-        type_extended_attributes = idl_type.extended_attributes or {}
-        if type_extended_attributes.get('TreatNullAs') == 'EmptyString':
-            return 'kTreatNullAsEmptyString'
-        if type_extended_attributes.get('TreatNullAs') == 'NullString':
-            return 'kTreatNullAsNullString'
-        return ''
 
     extended_attributes = extended_attributes or {}
     idl_type = idl_type.preprocessed_type
@@ -234,7 +245,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
     if idl_type.is_string_type:
         if not raw_type:
             return 'const String&' if used_as_rvalue_type else 'String'
-        return 'V8StringResource<%s>' % string_mode()
+        return 'V8StringResource<%s>' % string_resource_mode(idl_type, extended_attributes)
 
     if base_idl_type == 'ArrayBufferView' and 'FlexibleArrayBufferView' in extended_attributes:
         return 'FlexibleArrayBufferView'
@@ -602,23 +613,35 @@ def v8_conversion_is_trivial(idl_type):
 IdlType.v8_conversion_is_trivial = property(v8_conversion_is_trivial)
 
 
-def native_value_traits_type_name(idl_type, in_sequence_or_record=False):
+def native_value_traits_type_name(idl_type, extended_attributes, in_sequence_or_record=False):
     idl_type = idl_type.preprocessed_type
 
-    if idl_type.is_nullable:
-        inner_type = native_value_traits_type_name(idl_type.inner_type)
+    if idl_type.is_string_type:
+        # Strings are handled separately because null and/or undefined are
+        # processed by V8StringResource due to the [TreatNullAs] extended
+        # attribute (it also handles nullable string types).
+        name = 'IDL%s' % (idl_type.inner_type.name if idl_type.is_nullable else idl_type.name)
+        resource_mode = string_resource_mode(idl_type, extended_attributes)
+        if resource_mode:
+            name = cpp_template_type('%sBase' % name, resource_mode)
+    elif idl_type.is_nullable:
+        inner_type = native_value_traits_type_name(idl_type.inner_type, extended_attributes)
         # IDLNullable is only required for sequences and such.
         # The IDL compiler already has special cases for nullable operation
         # parameters, dictionary fields, etc.
         if in_sequence_or_record:
-            name = 'IDLNullable<%s>' % native_value_traits_type_name(idl_type.inner_type)
+            name = 'IDLNullable<%s>' % native_value_traits_type_name(idl_type.inner_type,
+                                                                     extended_attributes)
         else:
             name = inner_type
     elif idl_type.native_array_element_type:
-        name = 'IDLSequence<%s>' % native_value_traits_type_name(idl_type.native_array_element_type, True)
+        name = 'IDLSequence<%s>' % native_value_traits_type_name(idl_type.native_array_element_type,
+                                                                 extended_attributes, True)
     elif idl_type.is_record_type:
-        name = 'IDLRecord<%s, %s>' % (native_value_traits_type_name(idl_type.key_type),
-                                      native_value_traits_type_name(idl_type.value_type, True))
+        name = 'IDLRecord<%s, %s>' % (native_value_traits_type_name(idl_type.key_type,
+                                                                    extended_attributes),
+                                      native_value_traits_type_name(idl_type.value_type,
+                                                                    extended_attributes, True))
     elif idl_type.is_basic_type or idl_type.name == 'Promise':
         name = 'IDL%s' % idl_type.name
     elif idl_type.implemented_as is not None:
@@ -698,7 +721,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
     elif idl_type.v8_conversion_needs_exception_state:
         # Effectively, this if branch means everything with v8_conversion_needs_exception_state == True
         # except for unions and dictionary interfaces.
-        base_idl_type = native_value_traits_type_name(idl_type)
+        base_idl_type = native_value_traits_type_name(idl_type, extended_attributes)
         cpp_expression_format = (
             'NativeValueTraits<{idl_type}>::NativeValue({isolate}, {arguments})')
     else:
