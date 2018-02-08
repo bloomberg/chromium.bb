@@ -80,9 +80,7 @@ amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
 		return AMDGPU_INVALID_VA_ADDRESS;
 
 	pthread_mutex_lock(&mgr->bo_va_mutex);
-	/* TODO: using more appropriate way to track the holes */
-	/* first look for a hole */
-	LIST_FOR_EACH_ENTRY_SAFE(hole, n, &mgr->va_holes, list) {
+	LIST_FOR_EACH_ENTRY_SAFE_REV(hole, n, &mgr->va_holes, list) {
 		if (base_required) {
 			if (hole->offset > base_required ||
 			    (hole->offset + hole->size) < (base_required + size))
