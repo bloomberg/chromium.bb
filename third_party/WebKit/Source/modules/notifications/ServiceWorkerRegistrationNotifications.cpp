@@ -20,6 +20,7 @@
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/Histogram.h"
 #include "platform/heap/Handle.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Assertions.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSecurityOrigin.h"
@@ -123,12 +124,16 @@ ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(
       std::make_unique<CallbackPromiseAdapter<NotificationArray, void>>(
           resolver);
 
-  WebNotificationManager* notification_manager =
-      Platform::Current()->GetWebNotificationManager();
-  DCHECK(notification_manager);
+  if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
+    // TODO(https://crbug.com/796991): Implement this via mojo.
+  } else {
+    WebNotificationManager* notification_manager =
+        Platform::Current()->GetWebNotificationManager();
+    DCHECK(notification_manager);
 
-  notification_manager->GetNotifications(
-      options.tag(), registration.WebRegistration(), std::move(callbacks));
+    notification_manager->GetNotifications(
+        options.tag(), registration.WebRegistration(), std::move(callbacks));
+  }
   return promise;
 }
 
@@ -185,13 +190,17 @@ void ServiceWorkerRegistrationNotifications::DidLoadResources(
     NotificationResourcesLoader* loader) {
   DCHECK(loaders_.Contains(loader));
 
-  WebNotificationManager* notification_manager =
-      Platform::Current()->GetWebNotificationManager();
-  DCHECK(notification_manager);
+  if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
+    // TODO(https://crbug.com/796991): Implement this via mojo.
+  } else {
+    WebNotificationManager* notification_manager =
+        Platform::Current()->GetWebNotificationManager();
+    DCHECK(notification_manager);
 
-  notification_manager->ShowPersistent(
-      WebSecurityOrigin(origin.get()), data, loader->GetResources(),
-      registration_->WebRegistration(), std::move(callbacks));
+    notification_manager->ShowPersistent(
+        WebSecurityOrigin(origin.get()), data, loader->GetResources(),
+        registration_->WebRegistration(), std::move(callbacks));
+  }
   loaders_.erase(loader);
 }
 
