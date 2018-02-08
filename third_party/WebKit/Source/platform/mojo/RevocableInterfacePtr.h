@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WeakInterfacePtr_h
-#define WeakInterfacePtr_h
+#ifndef RevocableInterfacePtr_h
+#define RevocableInterfacePtr_h
 
 #include <stdint.h>
 
@@ -23,28 +23,24 @@
 
 namespace blink {
 
-// WeakInterfacePtr is a wrapper around an InterfacePtr that has to be tied to
-// an InterfaceInvalidator when bound to a message pipe. The underlying
+// RevocableInterfacePtr is a wrapper around an InterfacePtr that has to be tied
+// to an InterfaceInvalidator when bound to a message pipe. The underlying
 // connection is closed once the InterfaceInvalidator is destroyed and the
 // interface will behave as if its peer had closed the connection. This is
 // useful for tying the lifetime of interface pointers to another object.
-//
-// TODO(austinct): Add set_connection_error_with_reason_handler() and
-// ResetWithReason() methods if needed. Undesirable for now because of the
-// std::string parameter.
 template <typename Interface>
-class WeakInterfacePtr : public InterfaceInvalidator::Observer {
+class RevocableInterfacePtr : public InterfaceInvalidator::Observer {
  public:
   using PtrType = mojo::InterfacePtr<Interface>;
   using PtrInfoType = mojo::InterfacePtrInfo<Interface>;
   using Proxy = typename Interface::Proxy_;
 
-  // Constructs an unbound WeakInterfacePtr.
-  WeakInterfacePtr() {}
-  WeakInterfacePtr(std::nullptr_t) {}
+  // Constructs an unbound RevocableInterfacePtr.
+  RevocableInterfacePtr() {}
+  RevocableInterfacePtr(std::nullptr_t) {}
 
-  // Takes over the binding of another WeakInterfacePtr.
-  WeakInterfacePtr(WeakInterfacePtr&& other) {
+  // Takes over the binding of another RevocableInterfacePtr.
+  RevocableInterfacePtr(RevocableInterfacePtr&& other) {
     interface_ptr_ = std::move(other.interface_ptr_);
     SetInvalidator(other.invalidator_.get());
     // Reset the other interface ptr to remove it as an observer of the
@@ -52,13 +48,13 @@ class WeakInterfacePtr : public InterfaceInvalidator::Observer {
     other.reset();
   }
 
-  WeakInterfacePtr(PtrInfoType info, InterfaceInvalidator* invalidator) {
+  RevocableInterfacePtr(PtrInfoType info, InterfaceInvalidator* invalidator) {
     Bind(std::move(info), invalidator);
   }
 
-  // Takes over the binding of another WeakInterfacePtr, and closes any message
-  // pipe already bound to this pointer.
-  WeakInterfacePtr& operator=(WeakInterfacePtr&& other) {
+  // Takes over the binding of another RevocableInterfacePtr, and closes any
+  // message pipe already bound to this pointer.
+  RevocableInterfacePtr& operator=(RevocableInterfacePtr&& other) {
     reset();
     interface_ptr_ = std::move(other.interface_ptr);
     SetInvalidator(other.invalidator_.get());
@@ -70,19 +66,19 @@ class WeakInterfacePtr : public InterfaceInvalidator::Observer {
 
   // Assigning nullptr to this class causes it to close the currently bound
   // message pipe (if any) and returns the pointer to the unbound state.
-  WeakInterfacePtr& operator=(decltype(nullptr)) {
+  RevocableInterfacePtr& operator=(decltype(nullptr)) {
     reset();
     return *this;
   }
 
   // Closes the bound message pipe (if any) on destruction.
-  ~WeakInterfacePtr() {
+  ~RevocableInterfacePtr() {
     if (invalidator_) {
       invalidator_->RemoveObserver(this);
     }
   }
 
-  // Binds the WeakInterfacePtr to a remote implementation of Interface.
+  // Binds the RevocableInterfacePtr to a remote implementation of Interface.
   //
   // Calling with an invalid |info| (containing an invalid message pipe handle)
   // has the same effect as reset(). In this case, the InterfacePtr is not
@@ -145,6 +141,12 @@ class WeakInterfacePtr : public InterfaceInvalidator::Observer {
     SetInvalidator(nullptr);
   }
 
+  // Similar to the method above, but also specifies a disconnect reason.
+  void ResetWithReason(uint32_t custom_reason, const std::string& description) {
+    interface_ptr_.ResetWithReason(custom_reason, description);
+    SetInvalidator(nullptr);
+  }
+
   // Whether there are any associated interfaces running on the pipe currently.
   bool HasAssociatedInterfaces() const {
     return interface_ptr_.HasAssociatedInterfaces();
@@ -156,23 +158,29 @@ class WeakInterfacePtr : public InterfaceInvalidator::Observer {
   bool encountered_error() const { return interface_ptr_.encountered_error(); }
 
   // Registers a handler to receive error notifications. The handler will be
-  // called from the sequence that owns this WeakInterfacePtr.
+  // called from the sequence that owns this RevocableInterfacePtr.
   //
-  // This method may only be called after the WeakInterfacePtr has been bound to
-  // a message pipe.
+  // This method may only be called after the RevocableInterfacePtr has been
+  // bound to a message pipe.
   void set_connection_error_handler(base::OnceClosure error_handler) {
     interface_ptr_.set_connection_error_handler(std::move(error_handler));
   }
 
-  // Unbinds the WeakInterfacePtr and returns the information which could be
-  // used to setup a WeakInterfacePtr again. See comments on
+  void set_connection_error_with_reason_handler(
+      mojo::ConnectionErrorWithReasonCallback error_handler) {
+    interface_ptr_.set_connection_error_with_reason_handler(
+        std::move(error_handler));
+  }
+
+  // Unbinds the RevocableInterfacePtr and returns the information which could
+  // be used to setup a RevocableInterfacePtr again. See comments on
   // InterfacePtr::PassInterface for details.
   PtrInfoType PassInterface() {
     SetInvalidator(nullptr);
     return interface_ptr_.PassInterface();
   }
 
-  bool operator==(const WeakInterfacePtr& other) const {
+  bool operator==(const RevocableInterfacePtr& other) const {
     if (this == &other)
       return true;
 
@@ -181,7 +189,7 @@ class WeakInterfacePtr : public InterfaceInvalidator::Observer {
     return !(*this) && !other;
   }
 
-  // Allow WeakInterfacePtr<> to be used in boolean expressions.
+  // Allow RevocableInterfacePtr<> to be used in boolean expressions.
   explicit operator bool() const { return static_cast<bool>(interface_ptr_); }
 
  private:
@@ -210,12 +218,12 @@ class WeakInterfacePtr : public InterfaceInvalidator::Observer {
   PtrType interface_ptr_;
   base::WeakPtr<InterfaceInvalidator> invalidator_;
 
-  DISALLOW_COPY_AND_ASSIGN(WeakInterfacePtr);
+  DISALLOW_COPY_AND_ASSIGN(RevocableInterfacePtr);
 };
 
 template <typename Interface>
 mojo::InterfaceRequest<Interface> MakeRequest(
-    WeakInterfacePtr<Interface>* ptr,
+    RevocableInterfacePtr<Interface>* ptr,
     InterfaceInvalidator* invalidator,
     scoped_refptr<base::SingleThreadTaskRunner> runner = nullptr) {
   mojo::MessagePipe pipe;
@@ -226,4 +234,4 @@ mojo::InterfaceRequest<Interface> MakeRequest(
 
 }  // namespace blink
 
-#endif  // WeakInterfacePtr_h
+#endif  // RevocableInterfacePtr_h

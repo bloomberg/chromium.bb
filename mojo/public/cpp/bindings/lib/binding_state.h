@@ -50,6 +50,8 @@ class MOJO_CPP_BINDINGS_EXPORT BindingStateBase {
   void Close();
   void CloseWithReason(uint32_t custom_reason, const std::string& description);
 
+  void RaiseError() { endpoint_client_->RaiseError(); }
+
   void set_connection_error_handler(base::OnceClosure error_handler) {
     DCHECK(is_bound());
     endpoint_client_->set_connection_error_handler(std::move(error_handler));

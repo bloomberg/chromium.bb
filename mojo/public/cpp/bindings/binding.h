@@ -239,6 +239,11 @@ class Binding {
     return internal_state_.SwapImplForTesting(new_impl);
   }
 
+  // DO NOT USE. Exposed only for internal use and for testing.
+  internal::BindingState<Interface, ImplRefTraits>* internal_state() {
+    return &internal_state_;
+  }
+
  private:
   internal::BindingState<Interface, ImplRefTraits> internal_state_;
 

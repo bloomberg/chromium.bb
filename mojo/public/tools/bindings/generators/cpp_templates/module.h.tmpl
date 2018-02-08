@@ -69,7 +69,7 @@ namespace {{variant}} {
    every use of {Inlined}StructPtr. #}
 #include "mojo/public/cpp/bindings/lib/wtf_clone_equals_util.h"
 #include "mojo/public/cpp/bindings/lib/wtf_hash_util.h"
-#include "third_party/WebKit/Source/platform/mojo/WeakInterfacePtr.h"
+#include "third_party/WebKit/Source/platform/mojo/RevocableInterfacePtr.h"
 #include "third_party/WebKit/Source/platform/wtf/HashFunctions.h"
 #include "third_party/WebKit/Source/platform/wtf/Optional.h"
 #include "third_party/WebKit/Source/platform/wtf/text/WTFString.h"
@@ -85,7 +85,7 @@ namespace {{variant}} {
 #include "mojo/public/cpp/bindings/raw_ptr_impl_ref_traits.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 {%-   if for_blink %}
-#include "third_party/WebKit/Source/platform/mojo/WeakInterfacePtr.h"
+#include "third_party/WebKit/Source/platform/mojo/RevocableInterfacePtr.h"
 {%-   endif %}
 {%- endif %}
 
@@ -131,7 +131,7 @@ using {{enum.name}} = {{enum.name}};  // Alias for definition in the parent name
 class {{interface.name}};
 using {{interface.name}}Ptr = mojo::InterfacePtr<{{interface.name}}>;
 {%-   if for_blink %}
-using Weak{{interface.name}}Ptr = ::blink::WeakInterfacePtr<{{interface.name}}>;
+using Revocable{{interface.name}}Ptr = ::blink::RevocableInterfacePtr<{{interface.name}}>;
 {%-   endif %}
 using {{interface.name}}PtrInfo = mojo::InterfacePtrInfo<{{interface.name}}>;
 using ThreadSafe{{interface.name}}Ptr =

@@ -193,8 +193,8 @@ class MODULES_EXPORT Geolocation final
   GeolocationWatchers watchers_being_invoked_;
   Member<Geoposition> last_position_;
 
-  device::mojom::blink::WeakGeolocationPtr geolocation_;
-  mojom::blink::WeakGeolocationServicePtr geolocation_service_;
+  device::mojom::blink::RevocableGeolocationPtr geolocation_;
+  mojom::blink::RevocableGeolocationServicePtr geolocation_service_;
   bool enable_high_accuracy_ = false;
 
   // Whether a GeoNotifier is waiting for a position update.
