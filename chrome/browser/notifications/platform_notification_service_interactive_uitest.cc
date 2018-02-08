@@ -201,19 +201,6 @@ PlatformNotificationServiceBrowserTest::PlatformNotificationServiceBrowserTest()
 // notification_interactive_uitest.cc to this file.
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
-                       DisplayPersistentNotificationWithoutPermission) {
-  RequestAndDenyPermission();
-
-  std::string script_result;
-  ASSERT_TRUE(RunScript("DisplayPersistentNotification()", &script_result));
-  EXPECT_EQ(
-      "TypeError: No notification permission has been granted for this origin.",
-      script_result);
-
-  ASSERT_EQ(0u, GetDisplayedNotifications(true /* is_persistent */).size());
-}
-
-IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        DisplayPersistentNotificationWithPermission) {
   RequestAndAcceptPermission();
 
