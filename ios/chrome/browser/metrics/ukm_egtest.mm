@@ -290,6 +290,7 @@ void SignOut() {
   // Disable sync.
   SignOut();
   AssertSyncInitialized(false);
+  chrome_test_util::ClearSyncServerData();
 
   [super tearDown];
 }
@@ -452,7 +453,57 @@ void SignOut() {
 
 // testMultiDisableSync not needed, since there can't be multiple profiles.
 
-// TODO(crbug.com/793082): Implement testSecondaryPassphrase.
+// Make sure that UKM is disabled when a secondary passphrase is used.
+// TODO(crbug.com/806784): Re-enable this test on devices.
+#if TARGET_OS_SIMULATOR
+#define MAYBE_testSecondaryPassphrase testSecondaryPassphrase
+#else
+#define MAYBE_testSecondaryPassphrase FLAKY_testSecondaryPassphrase
+#endif
+- (void)MAYBE_testSecondaryPassphrase {
+  uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
+
+  [ChromeEarlGreyUI openSettingsMenu];
+  // Open accounts settings, then sync settings.
+  [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:AccountsSyncButton()]
+      performAction:grey_tap()];
+  // Open sync encryption menu.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"kSettingsSyncId")]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
+                                          l10n_util::GetNSStringWithFixup(
+                                              IDS_IOS_SYNC_ENCRYPTION_TITLE))]
+      performAction:grey_tap()];
+  // Select passphrase encryption.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_SYNC_FULL_ENCRYPTION_DATA)]
+      performAction:grey_tap()];
+  // Type and confirm passphrase, then submit.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityValue(@"Passphrase")]
+      performAction:grey_typeText(@"mypassphrase")];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityValue(@"Confirm passphrase")]
+      performAction:grey_typeText(@"mypassphrase")];
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_SYNC_DECRYPT_BUTTON)]
+      performAction:grey_tap()];
+
+  AssertUKMEnabled(false);
+  // Client ID should have been reset.
+  GREYAssert(original_client_id != metrics::UkmEGTestHelper::client_id(),
+             @"Client ID was not reset.");
+
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
+
+  // Reset sync back to original state.
+  SignOut();
+  chrome_test_util::ClearSyncServerData();
+  SignInWithPromo();
+  AssertUKMEnabled(true);
+}
 
 // Make sure that UKM is disabled when sync is not enabled.
 // TODO(crbug.com/806784): Re-enable this test on devices.
