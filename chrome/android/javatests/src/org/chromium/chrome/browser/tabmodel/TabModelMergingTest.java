@@ -51,7 +51,7 @@ import org.chromium.ui.test.util.UiRestriction;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-@MinAndroidSdkLevel(24)
+@MinAndroidSdkLevel(Build.VERSION_CODES.N)
 public class TabModelMergingTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -63,6 +63,7 @@ public class TabModelMergingTest {
     private static final String TEST_URL_4 = UrlUtils.encodeHtmlDataUri("<html>test_url_4.</html>");
     private static final String TEST_URL_5 = UrlUtils.encodeHtmlDataUri("<html>test_url_5.</html>");
     private static final String TEST_URL_6 = UrlUtils.encodeHtmlDataUri("<html>test_url_6.</html>");
+    private static final String TEST_URL_7 = UrlUtils.encodeHtmlDataUri("<html>test_url_7.</html>");
 
     private ChromeTabbedActivity mActivity1;
     private ChromeTabbedActivity mActivity2;
@@ -90,8 +91,9 @@ public class TabModelMergingTest {
         // Start multi-instance mode so that ChromeTabbedActivity's check for whether the activity
         // is started up correctly doesn't fail.
         ChromeTabbedActivity.onMultiInstanceModeStarted();
-        mActivity2 = MultiWindowTestHelper.createSecondChromeTabbedActivity(mActivity1);
-        CriteriaHelper.pollUiThread(new Criteria() {
+        mActivity2 = MultiWindowTestHelper.createSecondChromeTabbedActivity(
+                mActivity1, new LoadUrlParams(TEST_URL_7));
+        CriteriaHelper.pollUiThread(new Criteria("CTA2 tab state failed to initialize.") {
             @Override
             public boolean isSatisfied() {
                 return mActivity2.areTabModelsInitialized()
@@ -125,10 +127,6 @@ public class TabModelMergingTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                // Load a URL in ChromeTabbedActivity2 so that its first tab isn't chrome://newtab.
-                // chrome://newtab may be skipped when reading tab state during cold start.
-                mActivity2.getActivityTab().loadUrl(new LoadUrlParams(TEST_URL_5));
-
                 // Create normal tabs.
                 mActivity1.getTabCreator(false).createNewTab(new LoadUrlParams(TEST_URL_0),
                         TabLaunchType.FROM_CHROME_UI, null);
@@ -198,7 +196,7 @@ public class TabModelMergingTest {
         });
 
         // Wait for all tabs to be merged into the activity.
-        CriteriaHelper.pollUiThread(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria("Total tab count incorrect.") {
             @Override
             public boolean isSatisfied() {
                 return activity.getTabModelSelector().getTotalTabCount() == expectedNumberOfTabs;
@@ -233,7 +231,7 @@ public class TabModelMergingTest {
                         .startActivitySync(intent);
 
         // Wait for the tab state to be initialized.
-        CriteriaHelper.pollUiThread(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria("Tab state failed to initialize.") {
             @Override
             public boolean isSatisfied() {
                 return newActivity.areTabModelsInitialized()
@@ -298,15 +296,23 @@ public class TabModelMergingTest {
         });
 
         // Destroy both activities.
-        mActivity1.finishAndRemoveTask();
         mActivity2.finishAndRemoveTask();
-        CriteriaHelper.pollUiThread(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria(
+                "CTA2 should be destroyed, current state: " + mActivity2State) {
             @Override
             public boolean isSatisfied() {
-                return mActivity1State == ActivityState.DESTROYED
-                        && mActivity2State == ActivityState.DESTROYED;
+                return mActivity2State == ActivityState.DESTROYED;
             }
         });
+
+        mActivity1.finishAndRemoveTask();
+        CriteriaHelper.pollUiThread(
+                new Criteria("CTA should be destroyed, current state: " + mActivity1State) {
+                    @Override
+                    public boolean isSatisfied() {
+                        return mActivity1State == ActivityState.DESTROYED;
+                    }
+                });
 
         // Start the new ChromeTabbedActivity.
         final ChromeTabbedActivity newActivity = startNewChromeTabbedActivityAndAssert(
@@ -339,7 +345,8 @@ public class TabModelMergingTest {
         // Destroy ChromeTabbedActivity2. ChromeTabbedActivity should have been destroyed during the
         // merge.
         mActivity2.finishAndRemoveTask();
-        CriteriaHelper.pollUiThread(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria("Both activitie should be destroyed."
+                + "CTA state: " + mActivity1State + " - CTA2State: " + mActivity2State) {
             @Override
             public boolean isSatisfied() {
                 return mActivity1State == ActivityState.DESTROYED
