@@ -55,21 +55,6 @@ void WindowControllerList::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-WindowController* WindowControllerList::FindWindowById(int id) const {
-  return FindWindowByIdWithFilter(id, WindowController::GetAllWindowFilter());
-}
-
-WindowController* WindowControllerList::FindWindowByIdWithFilter(
-    int id,
-    WindowController::TypeFilter filter) const {
-  for (ControllerList::const_iterator iter = windows().begin();
-       iter != windows().end(); ++iter) {
-    if ((*iter)->GetWindowId() == id && (*iter)->MatchesFilter(filter))
-      return *iter;
-  }
-  return nullptr;
-}
-
 WindowController* WindowControllerList::FindWindowForFunctionByIdWithFilter(
     const UIThreadExtensionFunction* function,
     int id,

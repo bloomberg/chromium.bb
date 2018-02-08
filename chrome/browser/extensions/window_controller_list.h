@@ -33,14 +33,6 @@ class WindowControllerList {
   void AddObserver(WindowControllerListObserver* observer);
   void RemoveObserver(WindowControllerListObserver* observer);
 
-  // Returns a window matching |id|.
-  WindowController* FindWindowById(int id) const;
-
-  // Returns a window matching |id| using |filter|.
-  WindowController* FindWindowByIdWithFilter(
-      int id,
-      WindowController::TypeFilter filter) const;
-
   // Returns a window matching the context the function was invoked in
   // using |filter|.
   WindowController* FindWindowForFunctionByIdWithFilter(
