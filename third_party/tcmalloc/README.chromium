@@ -112,3 +112,4 @@ Modifications:
 - Remove superfluous size_t value >= 0 check.
 - Make kFooType in tcmalloc.cc truly const.
 - Added support for mips64el.
+- Pulled SuggestedDelayNS() implementation for 32bit architectures which do not support 64bit atomicity
