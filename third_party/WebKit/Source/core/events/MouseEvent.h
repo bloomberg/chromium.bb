@@ -235,7 +235,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   // fractional flag is removed.
   DoublePoint screen_location_;
   DoublePoint client_location_;
-  DoublePoint page_location_;
+  DoublePoint page_location_;  // zoomed CSS pixels
 
  private:
   void InitMouseEventInternal(const AtomicString& type,
@@ -261,9 +261,9 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
   DoublePoint movement_delta_;
 
-  DoublePoint layer_location_;
-  DoublePoint offset_location_;
-  DoublePoint absolute_location_;
+  DoublePoint layer_location_;     // zoomed CSS pixels
+  DoublePoint offset_location_;    // zoomed CSS pixels
+  DoublePoint absolute_location_;  // (un-zoomed) FrameView content space
   PositionType position_type_;
   bool has_cached_relative_position_;
   short button_;

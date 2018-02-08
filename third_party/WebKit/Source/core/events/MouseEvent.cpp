@@ -500,13 +500,14 @@ void MouseEvent::ComputePageLocation() {
   LocalFrame* frame = view() && view()->IsLocalDOMWindow()
                           ? ToLocalDOMWindow(view())->GetFrame()
                           : nullptr;
-  if (frame && frame->View())
-    absolute_location_ = frame->View()->DocumentToAbsolute(page_location_);
-  else
-    absolute_location_ = page_location_;
-
-  float scale_factor = PageZoomFactor(this);
-  absolute_location_.Scale(scale_factor, scale_factor);
+  DoublePoint scaled_page_location =
+      page_location_.ScaledBy(PageZoomFactor(this));
+  if (frame && frame->View()) {
+    absolute_location_ =
+        frame->View()->DocumentToAbsolute(scaled_page_location);
+  } else {
+    absolute_location_ = scaled_page_location;
+  }
 }
 
 void MouseEvent::ReceivedTarget() {
@@ -521,6 +522,7 @@ void MouseEvent::ComputeRelativePosition() {
   // Compute coordinates that are based on the target.
   layer_location_ = page_location_;
   offset_location_ = page_location_;
+  float inverse_zoom_factor = 1 / PageZoomFactor(this);
 
   // Must have an updated layout tree for this math to work correctly.
   target_node->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
@@ -540,9 +542,8 @@ void MouseEvent::ComputeRelativePosition() {
     }
 
     offset_location_ = DoublePoint(local_pos);
-    float scale_factor = 1 / PageZoomFactor(this);
-    if (scale_factor != 1.0f)
-      offset_location_.Scale(scale_factor, scale_factor);
+    if (inverse_zoom_factor != 1.0f)
+      offset_location_.Scale(inverse_zoom_factor, inverse_zoom_factor);
   }
 
   // Adjust layerLocation to be relative to the layer.
@@ -554,8 +555,10 @@ void MouseEvent::ComputeRelativePosition() {
     n = n->parentNode();
 
   if (n) {
+    DoublePoint scaled_page_location =
+        page_location_.ScaledBy(PageZoomFactor(this));
     if (LocalFrameView* view = n->GetLayoutObject()->View()->GetFrameView())
-      layer_location_ = view->DocumentToAbsolute(page_location_);
+      layer_location_ = view->DocumentToAbsolute(scaled_page_location);
 
     // FIXME: This logic is a wrong implementation of convertToLayerCoords.
     for (PaintLayer* layer = n->GetLayoutObject()->EnclosingLayer(); layer;
@@ -563,6 +566,8 @@ void MouseEvent::ComputeRelativePosition() {
       layer_location_ -= DoubleSize(layer->Location().X().ToDouble(),
                                     layer->Location().Y().ToDouble());
     }
+    if (inverse_zoom_factor != 1.0f)
+      layer_location_.Scale(inverse_zoom_factor, inverse_zoom_factor);
   }
 
   has_cached_relative_position_ = true;
