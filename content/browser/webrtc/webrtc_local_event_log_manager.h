@@ -11,6 +11,7 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/sequence_checker.h"
 #include "base/time/clock.h"
 #include "content/browser/webrtc/webrtc_event_log_manager_common.h"
 
@@ -52,6 +53,10 @@ class WebRtcLocalEventLogManager final : public LogFileWriter {
   base::FilePath GetFilePath(const base::FilePath& base_path,
                              int render_process_id,
                              int lid);
+
+  // This object is expected to be created and destroyed on the UI thread,
+  // but live on its owner's internal, IO-capable task queue.
+  SEQUENCE_CHECKER(io_task_sequence_checker_);
 
   // Observer which will be informed whenever a local log file is started or
   // stopped. Through this, the owning WebRtcEventLogManager can be informed,

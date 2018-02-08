@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
@@ -38,9 +39,13 @@ const base::FilePath::CharType kRemoteBoundLogExtension[] =
 WebRtcRemoteEventLogManager::WebRtcRemoteEventLogManager(
     WebRtcRemoteEventLogsObserver* observer)
     : observer_(observer),
-      uploader_factory_(new WebRtcEventLogUploaderImpl::Factory) {}
+      uploader_factory_(new WebRtcEventLogUploaderImpl::Factory) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DETACH_FROM_SEQUENCE(io_task_sequence_checker_);
+}
 
 WebRtcRemoteEventLogManager::~WebRtcRemoteEventLogManager() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(eladalon): Purge from disk files which were being uploaded  while
   // destruction took place, thereby avoiding endless attempts to upload
   // the same file. https://crbug.com/775415
@@ -49,6 +54,7 @@ WebRtcRemoteEventLogManager::~WebRtcRemoteEventLogManager() {
 void WebRtcRemoteEventLogManager::EnableForBrowserContext(
     BrowserContextId browser_context,
     const base::FilePath& browser_context_dir) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
   const base::FilePath remote_bound_logs_dir =
       GetLogsDirectoryPath(browser_context_dir);
   if (!MaybeCreateLogsDirectory(remote_bound_logs_dir)) {
@@ -61,6 +67,7 @@ void WebRtcRemoteEventLogManager::EnableForBrowserContext(
 
 void WebRtcRemoteEventLogManager::DisableForBrowserContext(
     BrowserContextId browser_context) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
   auto active_it = active_logs_counts_.find(browser_context);
   if (active_it != active_logs_counts_.end()) {
     active_logs_counts_.erase(active_it);
@@ -73,6 +80,7 @@ void WebRtcRemoteEventLogManager::DisableForBrowserContext(
 
 bool WebRtcRemoteEventLogManager::PeerConnectionAdded(int render_process_id,
                                                       int lid) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
   PrunePendingLogs();  // Infrequent event - good opportunity to prune.
   const auto result = active_peer_connections_.emplace(render_process_id, lid);
   return result.second;
@@ -82,6 +90,8 @@ bool WebRtcRemoteEventLogManager::PeerConnectionRemoved(
     int render_process_id,
     int lid,
     BrowserContextId browser_context) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   PrunePendingLogs();  // Infrequent event - good opportunity to prune.
 
   const PeerConnectionKey key = PeerConnectionKey(render_process_id, lid);
@@ -106,6 +116,8 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
     BrowserContextId browser_context,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   // TODO(eladalon): Set a tighter limit (following discussion with rschriebman
   // and manj). https://crbug.com/775415
   if (max_file_size_bytes == kWebRtcEventLogManagerUnlimitedFileSize) {
@@ -151,6 +163,8 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
 bool WebRtcRemoteEventLogManager::EventLogWrite(int render_process_id,
                                                 int lid,
                                                 const std::string& message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   auto it = active_logs_.find(PeerConnectionKey(render_process_id, lid));
   if (it == active_logs_.end()) {
     return false;
@@ -160,6 +174,8 @@ bool WebRtcRemoteEventLogManager::EventLogWrite(int render_process_id,
 
 void WebRtcRemoteEventLogManager::RenderProcessHostExitedDestroyed(
     int render_process_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   // Closing files will call MaybeStartUploading(). Avoid letting that upload
   // any recently expired files.
   PrunePendingLogs();
@@ -196,6 +212,8 @@ void WebRtcRemoteEventLogManager::RenderProcessHostExitedDestroyed(
 void WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadComplete(
     const base::FilePath& file_path,
     bool upload_successful) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   // Post a task to deallocate the uploader (can't do this directly,
   // because this function is a callback from the uploader), potentially
   // starting a new upload for the next file.
@@ -211,11 +229,13 @@ void WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadComplete(
 
 void WebRtcRemoteEventLogManager::SetWebRtcEventLogUploaderFactoryForTesting(
     std::unique_ptr<WebRtcEventLogUploader::Factory> uploader_factory) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   uploader_factory_ = std::move(uploader_factory);
 
   // Unit tests would initially set a null uploader factory, so that files would
   // be kept around. Some tests would later change to a different factory
-  // (e.g. one that always simulates upload failure); inthat case, we should
+  // (e.g. one that always simulates upload failure); in that case, we should
   // get rid of the null uploader, since it never terminates.
   uploader_.reset();
   MaybeStartUploading();
@@ -228,6 +248,8 @@ base::FilePath WebRtcRemoteEventLogManager::GetLogsDirectoryPath(
 
 WebRtcRemoteEventLogManager::LogFilesMap::iterator
 WebRtcRemoteEventLogManager::CloseLogFile(LogFilesMap::iterator it) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   const PeerConnectionKey peer_connection = it->first;
 
   it->second.file.Flush();
@@ -244,6 +266,8 @@ WebRtcRemoteEventLogManager::CloseLogFile(LogFilesMap::iterator it) {
 
 bool WebRtcRemoteEventLogManager::MaybeCreateLogsDirectory(
     const base::FilePath& remote_bound_logs_dir) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   if (base::PathExists(remote_bound_logs_dir)) {
     if (!base::DirectoryExists(remote_bound_logs_dir)) {
       LOG(ERROR) << "Path for remote-bound logs is taken by a non-directory.";
@@ -262,6 +286,7 @@ bool WebRtcRemoteEventLogManager::MaybeCreateLogsDirectory(
 void WebRtcRemoteEventLogManager::AddPendingLogs(
     BrowserContextId browser_context,
     const base::FilePath& remote_bound_logs_dir) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
   DCHECK(active_logs_counts_.find(browser_context) ==
          active_logs_counts_.end());
   DCHECK(pending_logs_counts_.find(browser_context) ==
@@ -292,6 +317,8 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
     BrowserContextId browser_context,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   // Randomize a new filename. In the highly unlikely event that this filename
   // is already taken, it will be treated the same way as any other failure
   // to start the log file.
@@ -328,6 +355,8 @@ void WebRtcRemoteEventLogManager::MaybeStopRemoteLogging(
     int render_process_id,
     int lid,
     BrowserContextId browser_context) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   const PeerConnectionKey key(render_process_id, lid);
   const auto it = active_logs_.find(key);
 
@@ -354,6 +383,7 @@ void WebRtcRemoteEventLogManager::MaybeStopRemoteLogging(
 }
 
 void WebRtcRemoteEventLogManager::PrunePendingLogs() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
   const base::Time oldest_non_expired_timestamp =
       base::Time::Now() - kRemoteBoundWebRtcEventLogsMaxRetention;
   for (auto it = pending_logs_.begin(); it != pending_logs_.end();) {
@@ -370,10 +400,13 @@ void WebRtcRemoteEventLogManager::PrunePendingLogs() {
 }
 
 bool WebRtcRemoteEventLogManager::UploadingAllowed() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
   return active_peer_connections_.empty();
 }
 
 void WebRtcRemoteEventLogManager::MaybeStartUploading() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   PrunePendingLogs();  // Avoid uploading freshly expired files.
 
   if (uploader_) {
@@ -399,6 +432,7 @@ void WebRtcRemoteEventLogManager::MaybeStartUploading() {
 }
 
 void WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadCompleteInternal() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
   uploader_.reset();
   MaybeStartUploading();
 }

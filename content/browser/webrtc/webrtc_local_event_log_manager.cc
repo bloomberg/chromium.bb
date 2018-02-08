@@ -8,6 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)
 #define IntToStringType base::IntToString16
@@ -29,14 +30,19 @@ WebRtcLocalEventLogManager::WebRtcLocalEventLogManager(
     WebRtcLocalEventLogsObserver* observer)
     : observer_(observer),
       clock_for_testing_(nullptr),
-      max_log_file_size_bytes_(kDefaultMaxLocalLogFileSizeBytes) {}
+      max_log_file_size_bytes_(kDefaultMaxLocalLogFileSizeBytes) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DETACH_FROM_SEQUENCE(io_task_sequence_checker_);
+}
 
 WebRtcLocalEventLogManager::~WebRtcLocalEventLogManager() {
-  // This should never actually run, except in unit tests.
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 bool WebRtcLocalEventLogManager::PeerConnectionAdded(int render_process_id,
                                                      int lid) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   const auto result = active_peer_connections_.emplace(render_process_id, lid);
 
   if (!result.second) {  // PeerConnection already registered.
@@ -55,6 +61,8 @@ bool WebRtcLocalEventLogManager::PeerConnectionAdded(int render_process_id,
 
 bool WebRtcLocalEventLogManager::PeerConnectionRemoved(int render_process_id,
                                                        int lid) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   const PeerConnectionKey key = PeerConnectionKey(render_process_id, lid);
   auto peer_connection = active_peer_connections_.find(key);
 
@@ -77,6 +85,8 @@ bool WebRtcLocalEventLogManager::PeerConnectionRemoved(int render_process_id,
 
 bool WebRtcLocalEventLogManager::EnableLogging(const base::FilePath& base_path,
                                                size_t max_file_size_bytes) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   if (!base_path_.empty()) {
     return false;
   }
@@ -97,6 +107,8 @@ bool WebRtcLocalEventLogManager::EnableLogging(const base::FilePath& base_path,
 }
 
 bool WebRtcLocalEventLogManager::DisableLogging() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   if (base_path_.empty()) {
     return false;
   }
@@ -114,6 +126,7 @@ bool WebRtcLocalEventLogManager::DisableLogging() {
 bool WebRtcLocalEventLogManager::EventLogWrite(int render_process_id,
                                                int lid,
                                                const std::string& message) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
   auto it = log_files_.find(PeerConnectionKey(render_process_id, lid));
   if (it == log_files_.end()) {
     return false;
@@ -123,6 +136,8 @@ bool WebRtcLocalEventLogManager::EventLogWrite(int render_process_id,
 
 void WebRtcLocalEventLogManager::RenderProcessHostExitedDestroyed(
     int render_process_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   // Remove all of the peer connections associated with this render process.
   auto pc_it = active_peer_connections_.begin();
   while (pc_it != active_peer_connections_.end()) {
@@ -146,10 +161,13 @@ void WebRtcLocalEventLogManager::RenderProcessHostExitedDestroyed(
 }
 
 void WebRtcLocalEventLogManager::SetClockForTesting(base::Clock* clock) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
   clock_for_testing_ = clock;
 }
 
 void WebRtcLocalEventLogManager::StartLogFile(int render_process_id, int lid) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   // Add some information to the name given by the caller.
   base::FilePath file_path = GetFilePath(base_path_, render_process_id, lid);
   CHECK(!file_path.empty()) << "Couldn't set path for local WebRTC log file.";
@@ -193,6 +211,8 @@ void WebRtcLocalEventLogManager::StartLogFile(int render_process_id, int lid) {
 
 WebRtcLocalEventLogManager::LogFilesMap::iterator
 WebRtcLocalEventLogManager::CloseLogFile(LogFilesMap::iterator it) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   const PeerConnectionKey peer_connection = it->first;
 
   it->second.file.Flush();
@@ -209,6 +229,8 @@ base::FilePath WebRtcLocalEventLogManager::GetFilePath(
     const base::FilePath& base_path,
     int render_process_id,
     int lid) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+
   base::Time::Exploded now;
   if (clock_for_testing_) {
     clock_for_testing_->Now().LocalExplode(&now);

@@ -237,7 +237,9 @@ class WebRtcEventLogManagerTest : public ::testing::TestWithParam<bool> {
 
   void SetWebRtcEventLogUploaderFactoryForTesting(
       std::unique_ptr<WebRtcEventLogUploader::Factory> factory) {
-    manager_->SetWebRtcEventLogUploaderFactoryForTesting(std::move(factory));
+    manager_->SetWebRtcEventLogUploaderFactoryForTesting(std::move(factory),
+                                                         VoidReplyClosure());
+    WaitForReply();
   }
 
   std::pair<bool, bool> OnWebRtcEventLogWrite(int render_process_id,
@@ -255,7 +257,8 @@ class WebRtcEventLogManagerTest : public ::testing::TestWithParam<bool> {
     ASSERT_TRUE(
         base::Time::FromLocalExploded(frozen_time_exploded, &frozen_time));
     frozen_clock_.SetNow(frozen_time);
-    manager_->SetClockForTesting(&frozen_clock_);
+    manager_->SetClockForTesting(&frozen_clock_, VoidReplyClosure());
+    WaitForReply();
   }
 
   void SetWebRtcEventLoggingState(PeerConnectionKey key,
@@ -277,7 +280,8 @@ class WebRtcEventLogManagerTest : public ::testing::TestWithParam<bool> {
       std::unique_ptr<WebRtcEventLogManager::PeerConnectionTrackerProxy>
           pc_tracker_proxy) {
     manager_->SetPeerConnectionTrackerProxyForTesting(
-        std::move(pc_tracker_proxy));
+        std::move(pc_tracker_proxy), VoidReplyClosure());
+    WaitForReply();
   }
 
   std::unique_ptr<TestBrowserContext> CreateBrowserContext(
