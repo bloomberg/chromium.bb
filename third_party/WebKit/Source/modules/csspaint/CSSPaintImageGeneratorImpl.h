@@ -7,6 +7,7 @@
 
 #include "core/css/CSSPaintImageGenerator.h"
 #include "core/css/cssom/CSSStyleValue.h"
+#include "modules/ModulesExport.h"
 #include "platform/bindings/ScopedPersistent.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
@@ -20,7 +21,8 @@ class DocumentPaintDefinition;
 class Image;
 class PaintWorklet;
 
-class CSSPaintImageGeneratorImpl final : public CSSPaintImageGenerator {
+class MODULES_EXPORT CSSPaintImageGeneratorImpl final
+    : public CSSPaintImageGenerator {
  public:
   static CSSPaintImageGenerator* Create(const String& name,
                                         const Document&,
@@ -40,6 +42,12 @@ class CSSPaintImageGeneratorImpl final : public CSSPaintImageGenerator {
   // Should be called from the PaintWorkletGlobalScope when a javascript class
   // is registered with the same name.
   void NotifyGeneratorReady();
+
+  bool GetValidDocumentDefinitionForTesting(
+      DocumentPaintDefinition*& definition) const {
+    return GetValidDocumentDefinition(definition);
+  }
+  unsigned GetRegisteredDefinitionCountForTesting() const;
 
   void Trace(blink::Visitor*) override;
 
