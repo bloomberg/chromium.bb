@@ -47,6 +47,7 @@ struct TestURLInfo {
   int visit_count;
   int typed_count;
   int age_in_days;
+  bool hidden = false;
 } test_db[] = {
     {"http://www.google.com/", "Google", 3, 3, 80},
 
@@ -111,6 +112,8 @@ struct TestURLInfo {
     // URLs to test exact-matching behavior.
     {"http://go/", "Intranet URL", 1, 1, 80},
     {"http://gooey/", "Intranet URL 2", 5, 5, 80},
+    // This entry is explicitly added as hidden
+    {"http://g/", "Intranet URL", 7, 7, 80, true},
 
     // URLs for testing offset adjustment.
     {"http://www.\xEA\xB5\x90\xEC\x9C\xA1.kr/", "Korean", 2, 2, 80},
@@ -124,9 +127,7 @@ struct TestURLInfo {
 
     // URLs used by EmptyVisits.
     {"http://pandora.com/", "Pandora", 2, 2, 80},
-    // This entry is explicitly added more recently than
-    // history::kLowQualityMatchAgeLimitInDays.
-    // {"http://pa/", "pa", 0, 0, 80},
+    {"http://pa/", "pa", 0, 0, history::kLowQualityMatchAgeLimitInDays - 1},
 
     // For intranet based tests.
     {"http://intra/one", "Intranet", 2, 2, 80},
@@ -293,15 +294,9 @@ void HistoryURLProviderTest::FillData() {
     const GURL current_url(cur.url);
     client_->GetHistoryService()->AddPageWithDetails(
         current_url, base::UTF8ToUTF16(cur.title), cur.visit_count,
-        cur.typed_count, now - TimeDelta::FromDays(cur.age_in_days), false,
+        cur.typed_count, now - TimeDelta::FromDays(cur.age_in_days), cur.hidden,
         history::SOURCE_BROWSED);
   }
-
-  client_->GetHistoryService()->AddPageWithDetails(
-      GURL("http://pa/"), base::UTF8ToUTF16("pa"), 0, 0,
-      Time::Now() -
-          TimeDelta::FromDays(history::kLowQualityMatchAgeLimitInDays - 1),
-      false, history::SOURCE_BROWSED);
 }
 
 void HistoryURLProviderTest::RunTest(
@@ -517,6 +512,8 @@ TEST_F(HistoryURLProviderTest, PromoteShorterURLs) {
     { "http://gooey/", true },
     { "http://www.google.com/", true }
   };
+  // Note that there is an http://g/ URL that is marked as hidden.  It shouldn't
+  // show up at all.  This test implicitly tests this fact too.
   RunTest(ASCIIToUTF16("g"), std::string(), false, short_5a,
           arraysize(short_5a));
   RunTest(ASCIIToUTF16("go"), std::string(), false, short_5b,
