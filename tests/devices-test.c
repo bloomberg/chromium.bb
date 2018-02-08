@@ -40,6 +40,8 @@
 				WL_SEAT_CAPABILITY_POINTER  |\
 				WL_SEAT_CAPABILITY_TOUCH)
 
+char *server_parameters = "--shell=weston-test-desktop-shell.so";
+
 /* simply test if weston sends the right capabilities when
  * some devices are removed */
 TEST(seat_capabilities_test)
