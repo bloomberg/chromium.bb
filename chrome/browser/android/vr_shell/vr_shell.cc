@@ -320,6 +320,11 @@ void VrShell::ExitCct() {
   Java_VrShellImpl_exitCct(env, j_vr_shell_);
 }
 
+void VrShell::CloseHostedDialog() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_closeCurrentDialog(env, j_vr_shell_);
+}
+
 void VrShell::ToggleCardboardGamepad(bool enabled) {
   // Enable/disable updating gamepad state.
   if (cardboard_gamepad_source_active_ && !enabled) {

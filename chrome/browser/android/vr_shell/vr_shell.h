@@ -136,6 +136,7 @@ class VrShell : device::GvrGamepadDataProvider,
   void Navigate(GURL url);
   void NavigateBack();
   void ExitCct();
+  void CloseHostedDialog();
   void ToggleCardboardGamepad(bool enabled);
   void ToggleGvrGamepad(bool enabled);
   void SetHistoryButtonsEnabled(JNIEnv* env,
