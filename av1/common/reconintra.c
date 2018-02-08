@@ -273,9 +273,11 @@ static int has_top_right(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
 
   if (row_off > 0) {  // Just need to check if enough pixels on the right.
 #if CONFIG_EXT_PARTITION
-    if (col_off + top_right_count_unit >=
-        (block_size_wide[BLOCK_64X64] >> (tx_size_wide_log2[0] + ss_x)))
-      return 0;
+    if (block_size_wide[bsize] > block_size_wide[BLOCK_64X64]) {
+      const int plane_bw_unit_64 = mi_size_wide[BLOCK_64X64] >> ss_x;
+      const int col_off_64 = col_off % plane_bw_unit_64;
+      return col_off_64 + top_right_count_unit < plane_bw_unit_64;
+    }
 #endif
     return col_off + top_right_count_unit < plane_bw_unit;
   } else {
