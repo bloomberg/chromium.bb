@@ -223,7 +223,7 @@ struct MutableNetworkTrafficAnnotationTag {
   }
 
   explicit operator NetworkTrafficAnnotationTag() const {
-    CHECK(is_valid());
+    DCHECK(is_valid());
     return NetworkTrafficAnnotationTag({unique_id_hash_code});
   }
 
@@ -247,7 +247,7 @@ struct MutablePartialNetworkTrafficAnnotationTag {
   int32_t completing_id_hash_code;
 
   explicit operator PartialNetworkTrafficAnnotationTag() const {
-    CHECK(is_valid());
+    DCHECK(is_valid());
     return PartialNetworkTrafficAnnotationTag(
         {unique_id_hash_code, completing_id_hash_code});
   }
@@ -266,7 +266,6 @@ struct MutablePartialNetworkTrafficAnnotationTag {
   int32_t unique_id_hash_code;
 
   explicit operator PartialNetworkTrafficAnnotationTag() const {
-    CHECK(is_valid());
     return PartialNetworkTrafficAnnotationTag({unique_id_hash_code});
   }
 
