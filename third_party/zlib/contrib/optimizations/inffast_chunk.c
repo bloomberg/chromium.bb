@@ -24,10 +24,11 @@
    Entry assumptions:
 
         state->mode == LEN
-        strm->avail_in >= INFLATE_FAST_MIN_INPUT (6 bytes)
+        strm->avail_in >= INFLATE_FAST_MIN_INPUT (6 or 8 bytes)
         strm->avail_out >= INFLATE_FAST_MIN_OUTPUT (258 bytes)
         start >= strm->avail_out
         state->bits < 8
+        (state->hold >> state->bits) == 0
         strm->next_out[0..strm->avail_out] does not overlap with
               strm->next_in[0..strm->avail_in]
         strm->state->window is allocated with an additional
@@ -41,7 +42,7 @@
 
    Notes:
 
-    INFLATE_FAST_MIN_INPUT 6 bytes
+    INFLATE_FAST_MIN_INPUT: 6 or 8 bytes
 
     - The maximum input bits used by a length/distance pair is 15 bits for the
       length code, 5 bits for the length extra, 15 bits for the distance code,
@@ -49,7 +50,21 @@
       Therefore if strm->avail_in >= 6, then there is enough input to avoid
       checking for available input while decoding.
 
-    INFLATE_FAST_MIN_OUTPUT 258 bytes
+    - The wide input data reading option reads 64 input bits at a time. Thus,
+      if strm->avail_in >= 8, then there is enough input to avoid checking for
+      available input while decoding. Reading consumes the input with:
+
+          hold |= read64le(in) << bits;
+          in += 6;
+          bits += 48;
+
+      reporting 6 bytes of new input because |bits| is 0..15 (2 bytes rounded
+      up, worst case) and 6 bytes is enough to decode as noted above. At exit,
+      hold &= (1U << bits) - 1 drops excess input to keep the invariant:
+
+          (state->hold >> state->bits) == 0
+
+    INFLATE_FAST_MIN_OUTPUT: 258 bytes
 
     - The maximum bytes that a single length/distance pair can output is 258
       bytes, which is the maximum length that can be coded.  inflate_fast()
@@ -74,7 +89,7 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
     unsigned whave;             /* valid bytes in the window */
     unsigned wnext;             /* window write index */
     unsigned char FAR *window;  /* allocated sliding window, if wsize != 0 */
-    unsigned long hold;         /* local strm->hold */
+    inflate_holder_t hold;      /* local strm->hold */
     unsigned bits;              /* local strm->bits */
     code const FAR *lcode;      /* local strm->lencode */
     code const FAR *dcode;      /* local strm->distcode */
@@ -113,10 +128,16 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
        input data or output space */
     do {
         if (bits < 15) {
+#ifdef INFLATE_CHUNK_READ_64LE
+            hold |= read64le(in) << bits;
+            in += 6;
+            bits += 48;
+#else
             hold += (unsigned long)(*in++) << bits;
             bits += 8;
             hold += (unsigned long)(*in++) << bits;
             bits += 8;
+#endif
         }
         here = lcode[hold & lmask];
       dolen:
@@ -135,8 +156,14 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
             op &= 15;                           /* number of extra bits */
             if (op) {
                 if (bits < op) {
+#ifdef INFLATE_CHUNK_READ_64LE
+                    hold |= read64le(in) << bits;
+                    in += 6;
+                    bits += 48;
+#else
                     hold += (unsigned long)(*in++) << bits;
                     bits += 8;
+#endif
                 }
                 len += (unsigned)hold & ((1U << op) - 1);
                 hold >>= op;
@@ -144,10 +171,16 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
             }
             Tracevv((stderr, "inflate:         length %u\n", len));
             if (bits < 15) {
+#ifdef INFLATE_CHUNK_READ_64LE
+                hold |= read64le(in) << bits;
+                in += 6;
+                bits += 48;
+#else
                 hold += (unsigned long)(*in++) << bits;
                 bits += 8;
                 hold += (unsigned long)(*in++) << bits;
                 bits += 8;
+#endif
             }
             here = dcode[hold & dmask];
           dodist:
@@ -159,12 +192,18 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
                 dist = (unsigned)(here.val);
                 op &= 15;                       /* number of extra bits */
                 if (bits < op) {
+#ifdef INFLATE_CHUNK_READ_64LE
+                    hold |= read64le(in) << bits;
+                    in += 6;
+                    bits += 48;
+#else
                     hold += (unsigned long)(*in++) << bits;
                     bits += 8;
                     if (bits < op) {
                         hold += (unsigned long)(*in++) << bits;
                         bits += 8;
                     }
+#endif
                 }
                 dist += (unsigned)hold & ((1U << op) - 1);
 #ifdef INFLATE_STRICT
@@ -298,6 +337,8 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
         (INFLATE_FAST_MIN_OUTPUT - 1) - (out - end));
     state->hold = hold;
     state->bits = bits;
+
+    Assert((state->hold >> state->bits) == 0, "invalid input data state");
     return;
 }
 
