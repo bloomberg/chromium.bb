@@ -112,7 +112,7 @@ void PaintTiming::SetFirstMeaningfulPaint(
   InteractiveDetector* interactive_detector(
       InteractiveDetector::From(*GetSupplementable()));
   if (interactive_detector) {
-    interactive_detector->OnFirstMeaningfulPaintDetected(swap_stamp);
+    interactive_detector->OnFirstMeaningfulPaintDetected(swap_stamp, had_input);
   }
 
   // Notify FMP for UMA only if there's no user input before FMP, so that layout

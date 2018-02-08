@@ -32938,6 +32938,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="14" label="Invalid order - first paint / first image paint"/>
   <int value="15" label="Invalid order - first paint / first contentful paint"/>
   <int value="16" label="Invalid order - first paint / first meaningful paint"/>
+  <int value="17" label="Invalid order - first meaningful paint / interactive"/>
 </enum>
 
 <enum name="PageScaleFactorRange">

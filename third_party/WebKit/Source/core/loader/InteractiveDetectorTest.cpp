@@ -5,6 +5,7 @@
 #include "core/loader/InteractiveDetector.h"
 
 #include "core/dom/Document.h"
+#include "core/paint/FirstMeaningfulPaintDetector.h"
 #include "core/testing/PageTestBase.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
@@ -82,7 +83,9 @@ class InteractiveDetectorTest : public ::testing::Test {
 
   void SimulateFMPDetected(double fmp_time, double detection_time) {
     RunTillTimestamp(detection_time);
-    detector_->OnFirstMeaningfulPaintDetected(TimeTicksFromSeconds(fmp_time));
+    detector_->OnFirstMeaningfulPaintDetected(
+        TimeTicksFromSeconds(fmp_time),
+        FirstMeaningfulPaintDetector::kNoUserInput);
   }
 
   void SimulateInteractiveInvalidatingInput(double timestamp) {
@@ -408,12 +411,34 @@ TEST_F(InteractiveDetectorTest, InvalidatingUserInputClampedAtNavStart) {
   SimulateFMPDetected(/* fmp_time */ t0 + 3.0, /* detection_time */ t0 + 4.0);
   // Invalidating input timestamp is earlier than navigation start.
   SimulateInteractiveInvalidatingInput(t0 - 10.0);
-  // Run till 5 seconds after long task 2 end.
+  // Run till 5 seconds after FMP.
   RunTillTimestamp((t0 + 7.1) + 5.0 + 0.1);
   EXPECT_EQ(GetInteractiveTime(), t0 + 3.0);  // TTI at FMP.
   // Invalidating input timestamp is clamped at navigation start.
   EXPECT_EQ(TimeTicksInSeconds(GetDetector()->GetFirstInvalidatingInputTime()),
             t0);
+}
+
+TEST_F(InteractiveDetectorTest, InvalidatedFMP) {
+  double t0 = CurrentTimeTicksInSeconds();
+  SimulateNavigationStart(t0);
+  // Network is forever quiet for this test.
+  SetActiveConnections(1);
+  SimulateInteractiveInvalidatingInput(t0 + 1.0);
+  SimulateDOMContentLoadedEnd(t0 + 2.0);
+  RunTillTimestamp(t0 + 4.0);  // FMP Detection time.
+  GetDetector()->OnFirstMeaningfulPaintDetected(
+      TimeTicksFromSeconds(t0 + 3.0),
+      FirstMeaningfulPaintDetector::kHadUserInput);
+  // Run till 5 seconds after FMP.
+  RunTillTimestamp((t0 + 3.0) + 5.0 + 0.1);
+  // Since FMP was invalidated, we do not have TTI or TTI Detection Time.
+  EXPECT_EQ(GetInteractiveTime(), 0.0);
+  EXPECT_EQ(TimeTicksInSeconds(GetDetector()->GetInteractiveDetectionTime()),
+            0.0);
+  // Invalidating input timestamp is available.
+  EXPECT_EQ(TimeTicksInSeconds(GetDetector()->GetFirstInvalidatingInputTime()),
+            t0 + 1.0);
 }
 
 class InteractiveDetectorTestWithDummyPage : public PageTestBase {
@@ -448,7 +473,9 @@ TEST_F(InteractiveDetectorTestWithDummyPage, TaskLongerThan5sBlocksTTI) {
   // DummyPageHolder automatically fires DomContentLoadedEnd, but not First
   // Meaningful Paint. We therefore manually Invoking the listener on
   // InteractiveDetector.
-  detector->OnFirstMeaningfulPaintDetected(TimeTicksFromSeconds(t0 + 3.0));
+  detector->OnFirstMeaningfulPaintDetected(
+      TimeTicksFromSeconds(t0 + 3.0),
+      FirstMeaningfulPaintDetector::kNoUserInput);
 
   // Post a task with 6 seconds duration.
   PostCrossThreadTask(
@@ -473,7 +500,9 @@ TEST_F(InteractiveDetectorTestWithDummyPage, LongTaskAfterTTIDoesNothing) {
   // DummyPageHolder automatically fires DomContentLoadedEnd, but not First
   // Meaningful Paint. We therefore manually Invoking the listener on
   // InteractiveDetector.
-  detector->OnFirstMeaningfulPaintDetected(TimeTicksFromSeconds(t0 + 3.0));
+  detector->OnFirstMeaningfulPaintDetected(
+      TimeTicksFromSeconds(t0 + 3.0),
+      FirstMeaningfulPaintDetector::kNoUserInput);
 
   // Long task 1.
   PostCrossThreadTask(

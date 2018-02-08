@@ -85,18 +85,33 @@ enum FirstMeaningfulPaintStatus {
   FIRST_MEANINGFUL_PAINT_LAST_ENTRY
 };
 
+// Different events can prevent us from recording a successful time to
+// interactive value, and sometimes several of these failure events can happen
+// simultaneously. In the case of multiple invalidating events, we record the
+// failure reason in decreasing order of priority of the following:
+//
+// 1. Did not reach First Meaningful Paint
+// 2. Did not reach quiescence
+// 3. Page was not in foreground until TTI was detected.
+// 4. There was a non-mouse-move user input before interactive time.
+//
+// Table of conditions and the TTI Status recorded for each case:
+// FMP Reached | Quiesence Reached | Always Foreground | No User Input | Status
+// True        | True              | True              | True          | 0
+// True        | True              | True              | False         | 2
+// True        | True              | False             | *             | 1
+// True        | False             | *                 | *             | 3
+// False       | *                 | *                 | *             | 4
 enum TimeToInteractiveStatus {
   // Time to Interactive recorded successfully.
   TIME_TO_INTERACTIVE_RECORDED = 0,
 
-  // Reasons for not recording Time to Interactive:
   // Main thread and network quiescence reached, but the user backgrounded the
   // page at least once before reaching quiescence.
   TIME_TO_INTERACTIVE_BACKGROUNDED = 1,
 
   // Main thread and network quiescence reached, but there was a non-mouse-move
   // user input that hit the renderer main thread between navigation start and
-  // the
   // interactive time, so the detected interactive time is inaccurate. Note that
   // Time to Interactive is not invalidated if the user input is after
   // interactive time, but before quiescence windows are detected. User input
@@ -111,7 +126,9 @@ enum TimeToInteractiveStatus {
   TIME_TO_INTERACTIVE_DID_NOT_REACH_QUIESCENCE = 3,
 
   // User left page before First Meaningful Paint happened, but after First
-  // Paint.
+  // Paint. This status will also be recorded if the first meaningful paint was
+  // reached on the renderer, but invalidated there due to user input. Input
+  // invalided First Meaningful Paint values do not reach the browser.
   TIME_TO_INTERACTIVE_DID_NOT_REACH_FIRST_MEANINGFUL_PAINT = 4,
 
   TIME_TO_INTERACTIVE_LAST_ENTRY
