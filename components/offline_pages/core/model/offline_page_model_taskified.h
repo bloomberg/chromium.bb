@@ -50,18 +50,16 @@ class OfflinePageModelTaskified : public OfflinePageModel,
                                   public TaskQueue::Delegate {
  public:
   // Initial delay after which a list of items for upgrade will be generated.
-  // TODO(fgorski): We need to measure the cost of opening and closing the DB,
-  // before we split |kInitializingTaskDelay| and
-  // |kInitialUpgradeSelectionDelay| further apart, than 20 seconds.
   static constexpr base::TimeDelta kInitialUpgradeSelectionDelay =
       base::TimeDelta::FromSeconds(45);
 
-  // Initial delay of other tasks triggered at the startup.
-  static constexpr base::TimeDelta kInitializingTaskDelay =
-      base::TimeDelta::FromSeconds(30);
+  // Delay between the scheduling and actual running of maintenance tasks. To
+  // not cause the re-opening of the metadata store this delay should be kept
+  // smaller than OfflinePageMetadataStoreSQL::kClosingDelay.
+  static constexpr base::TimeDelta kMaintenanceTasksDelay =
+      base::TimeDelta::FromSeconds(10);
 
-  // The time that the storage cleanup will be triggered again since the last
-  // one.
+  // Minimum delay between runs of maintenance tasks during a Chrome session.
   static constexpr base::TimeDelta kClearStorageInterval =
       base::TimeDelta::FromMinutes(30);
 
@@ -174,19 +172,12 @@ class OfflinePageModelTaskified : public OfflinePageModel,
       DeletePageResult result,
       const std::vector<OfflinePageModel::DeletedPageInfo>& infos);
 
-  // Methods for clearing temporary pages.
-  void PostClearLegacyTemporaryPagesTask();
-  void ClearLegacyTemporaryPages();
-  void PostClearCachedPagesTask(bool is_initializing);
-  void ClearCachedPages();
-  void OnClearCachedPagesDone(base::Time start_time,
-                              size_t deleted_page_count,
+  // Methods for clearing temporary pages and performing consistency checks. The
+  // latter are executed only once per Chrome session.
+  void ScheduleMaintenanceTasks();
+  void RunMaintenanceTasks(const base::Time now, bool first_run);
+  void OnClearCachedPagesDone(size_t deleted_page_count,
                               ClearStorageTask::ClearStorageResult result);
-
-  // Methods for consistency check.
-  void PostCheckMetadataConsistencyTask(bool is_initializing);
-  void CheckTemporaryPagesConsistency();
-  void CheckPersistentPagesConsistency();
 
   // Method for upgrade to public storage.
   void PostSelectItemsMarkedForUpgrade();
@@ -226,9 +217,9 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   // The task queue used for executing various tasks.
   TaskQueue task_queue_;
 
-  // Time of when the most recent cached pages clearing happened. The value will
-  // not persist across Chrome restarts.
-  base::Time last_clear_cached_pages_time_;
+  // The last scheduling timestamp of the model maintenance tasks that took
+  // place during the current Chrome session.
+  base::Time last_maintenance_tasks_schedule_time_;
 
   // For testing only.
   // This value will be affecting the CreateArchiveTasks that are created by the

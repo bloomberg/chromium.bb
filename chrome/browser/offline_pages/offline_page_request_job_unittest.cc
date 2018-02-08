@@ -293,35 +293,6 @@ class TestOfflinePageArchiver : public OfflinePageArchiver {
   DISALLOW_COPY_AND_ASSIGN(TestOfflinePageArchiver);
 };
 
-std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
-    content::BrowserContext* context) {
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::ThreadTaskRunnerHandle::Get();
-
-  base::FilePath store_path =
-      context->GetPath().Append(chrome::kOfflinePageMetadataDirname);
-  std::unique_ptr<OfflinePageMetadataStoreSQL> metadata_store(
-      new OfflinePageMetadataStoreSQL(task_runner, store_path));
-
-  base::FilePath test_data_dir_path;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_path);
-  base::FilePath private_archives_dir =
-      test_data_dir_path.AppendASCII(kPrivateOfflineFileDir);
-  base::FilePath public_archives_dir =
-      test_data_dir_path.AppendASCII(kPublicOfflineFileDir);
-
-  // Since we're not saving page into temporary dir, it's set the same as the
-  // private dir.
-  std::unique_ptr<ArchiveManager> archive_manager(
-      new ArchiveManager(private_archives_dir, private_archives_dir,
-                         public_archives_dir, task_runner));
-  std::unique_ptr<base::Clock> clock(new base::DefaultClock);
-
-  return std::unique_ptr<KeyedService>(new OfflinePageModelTaskified(
-      std::move(metadata_store), std::move(archive_manager), task_runner,
-      std::move(clock)));
-}
-
 // Helper function to make a character array filled with |size| bytes of
 // test content.
 std::string MakeContentOfSize(int size) {
@@ -341,6 +312,7 @@ class OfflinePageRequestJobTest : public testing::Test {
   ~OfflinePageRequestJobTest() override {}
 
   void SetUp() override;
+  void TearDown() override;
 
   void SimulateHasNetworkConnectivity(bool has_connectivity);
   void RunUntilIdle();
@@ -449,6 +421,15 @@ class OfflinePageRequestJobTest : public testing::Test {
   }
 
  private:
+  static std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
+      content::BrowserContext* context);
+
+  // TODO(https://crbug.com/809610): The static members below will be removed
+  // once the reference to BuildTestOfflinePageModel in SetUp is converted to a
+  // base::OnceCallback.
+  static base::FilePath private_archives_dir_;
+  static base::FilePath public_archives_dir_;
+
   void OnSavePageDone(SavePageResult result, int64_t offline_id);
   std::unique_ptr<net::URLRequest> CreateRequest(
       const GURL& url,
@@ -496,6 +477,8 @@ class OfflinePageRequestJobTest : public testing::Test {
       intercepting_job_factory_;
   std::unique_ptr<TestURLRequestDelegate> url_request_delegate_;
   std::unique_ptr<net::URLRequest> request_;
+  base::ScopedTempDir private_archives_temp_base_dir_;
+  base::ScopedTempDir public_archives_temp_base_dir_;
   base::ScopedTempDir temp_dir_;
   base::FilePath temp_file_path_;
 
@@ -526,9 +509,23 @@ void OfflinePageRequestJobTest::SetUp() {
       OfflinePageTabHelper::FromWebContents(web_contents_.get());
 
   // Set up the factory for testing.
+  // Note: The extra dir into the temp folder is needed so that the helper
+  // dir-copy operation works properly. That operation copies the source dir
+  // final path segment into the destination, and not only its immediate
+  // contents so this same-named path here makes the archive dir variable point
+  // to the correct location.
+  // TODO(romax): add the more recent "temporary" dir here instead of reusing
+  // the private one.
+  ASSERT_TRUE(private_archives_temp_base_dir_.CreateUniqueTempDir());
+  private_archives_dir_ = private_archives_temp_base_dir_.GetPath().AppendASCII(
+      kPrivateOfflineFileDir);
+  ASSERT_TRUE(public_archives_temp_base_dir_.CreateUniqueTempDir());
+  public_archives_dir_ = public_archives_temp_base_dir_.GetPath().AppendASCII(
+      kPublicOfflineFileDir);
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(), BuildTestOfflinePageModel);
+      profile(), &OfflinePageRequestJobTest::BuildTestOfflinePageModel);
 
+  // Initialize OfflinePageModel.
   OfflinePageModelTaskified* model = static_cast<OfflinePageModelTaskified*>(
       OfflinePageModelFactory::GetForBrowserContext(profile()));
 
@@ -538,8 +535,28 @@ void OfflinePageRequestJobTest::SetUp() {
   // metadata already written to the store.
   model->SetSkipClearingOriginalUrlForTesting();
 
-  // Initialize OfflinePageModel.
-  RunUntilIdle();
+  // Move test data files into their respective temporary test directories. The
+  // model's maintenance tasks must not be executed in the meantime otherwise
+  // these files will be wiped by consistency checks.
+  base::FilePath test_data_dir_path;
+  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_path);
+  base::FilePath test_data_private_archives_dir =
+      test_data_dir_path.AppendASCII(kPrivateOfflineFileDir);
+  ASSERT_TRUE(base::CopyDirectory(test_data_private_archives_dir,
+                                  private_archives_dir_.DirName(), true));
+  base::FilePath test_data_public_archives_dir =
+      test_data_dir_path.AppendASCII(kPublicOfflineFileDir);
+  ASSERT_TRUE(base::CopyDirectory(test_data_public_archives_dir,
+                                  public_archives_dir_.DirName(), true));
+}
+
+void OfflinePageRequestJobTest::TearDown() {
+  EXPECT_TRUE(private_archives_temp_base_dir_.Delete());
+  EXPECT_TRUE(public_archives_temp_base_dir_.Delete());
+  // This check confirms that the model's maintenance tasks were not executed
+  // during the test run.
+  histogram_tester_.ExpectTotalCount("OfflinePages.ClearTemporaryPages.Result",
+                                     0);
 }
 
 void OfflinePageRequestJobTest::SimulateHasNetworkConnectivity(bool online) {
@@ -806,10 +823,7 @@ int64_t OfflinePageRequestJobTest::SavePublicPage(
   if (file_path.IsAbsolute()) {
     final_path = file_path;
   } else {
-    base::FilePath test_data_dir_path;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_path);
-    final_path =
-        test_data_dir_path.AppendASCII(kPublicOfflineFileDir).Append(file_path);
+    final_path = public_archives_dir_.Append(file_path);
   }
 
   return SavePage(url, original_url, final_path, file_size, digest);
@@ -825,10 +839,7 @@ int64_t OfflinePageRequestJobTest::SaveInternalPage(
   if (file_path.IsAbsolute()) {
     final_path = file_path;
   } else {
-    base::FilePath test_data_dir_path;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_path);
-    final_path = test_data_dir_path.AppendASCII(kPrivateOfflineFileDir)
-                     .Append(file_path);
+    final_path = private_archives_dir_.Append(file_path);
   }
 
   return SavePage(url, original_url, final_path, file_size, digest);
@@ -860,6 +871,34 @@ int64_t OfflinePageRequestJobTest::SavePage(const GURL& url,
   WaitForAsyncOperation();
   return last_offline_id_;
 }
+
+// static
+std::unique_ptr<KeyedService>
+OfflinePageRequestJobTest::BuildTestOfflinePageModel(
+    content::BrowserContext* context) {
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      base::ThreadTaskRunnerHandle::Get();
+
+  base::FilePath store_path =
+      context->GetPath().Append(chrome::kOfflinePageMetadataDirname);
+  std::unique_ptr<OfflinePageMetadataStoreSQL> metadata_store(
+      new OfflinePageMetadataStoreSQL(task_runner, store_path));
+
+  // Since we're not saving page into temporary dir, it's set the same as the
+  // private dir.
+  std::unique_ptr<ArchiveManager> archive_manager(
+      new ArchiveManager(private_archives_dir_, private_archives_dir_,
+                         public_archives_dir_, task_runner));
+  std::unique_ptr<base::Clock> clock(new base::DefaultClock);
+
+  return std::unique_ptr<KeyedService>(new OfflinePageModelTaskified(
+      std::move(metadata_store), std::move(archive_manager), task_runner,
+      std::move(clock)));
+}
+
+// static
+base::FilePath OfflinePageRequestJobTest::private_archives_dir_;
+base::FilePath OfflinePageRequestJobTest::public_archives_dir_;
 
 void OfflinePageRequestJobTest::OnSavePageDone(SavePageResult result,
                                                int64_t offline_id) {
