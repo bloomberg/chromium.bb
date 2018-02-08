@@ -37,6 +37,7 @@
 #include "net/socket/websocket_transport_client_socket_pool.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/websockets/websocket_basic_stream.h"
+#include "net/websockets/websocket_basic_stream_adapters.h"
 #include "net/websockets/websocket_deflate_parameters.h"
 #include "net/websockets/websocket_deflate_predictor.h"
 #include "net/websockets/websocket_deflate_predictor_impl.h"
@@ -485,9 +486,11 @@ std::unique_ptr<WebSocketStream> WebSocketBasicHandshakeStream::Upgrade() {
   // sure it does not touch it again before it is destroyed.
   state_.DeleteParser();
   WebSocketTransportClientSocketPool::UnlockEndpoint(state_.connection());
-  std::unique_ptr<WebSocketStream> basic_stream(
-      new WebSocketBasicStream(state_.ReleaseConnection(), state_.read_buf(),
-                               sub_protocol_, extensions_));
+  std::unique_ptr<WebSocketStream> basic_stream =
+      std::make_unique<WebSocketBasicStream>(
+          std::make_unique<WebSocketClientSocketHandleAdapter>(
+              state_.ReleaseConnection()),
+          state_.read_buf(), sub_protocol_, extensions_);
   DCHECK(extension_params_.get());
   if (extension_params_->deflate_enabled) {
     UMA_HISTOGRAM_ENUMERATION(
