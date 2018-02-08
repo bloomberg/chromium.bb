@@ -5,11 +5,15 @@
 import("//build/config/android/rules.gni")
 
 android_library("reporter_java") {
+  testonly = true
   chromium_code = true
 
   deps = [
     "//base:base_java",
   ]
+
+  deps += android_extra_test_deps
+
   java_files = [
     "java/src/org/chromium/test/reporter/TestStatusListener.java",
     "java/src/org/chromium/test/reporter/TestStatusReceiver.java",

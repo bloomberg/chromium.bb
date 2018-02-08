@@ -299,6 +299,7 @@ if (is_android) {
   }
 
   android_library("bluetooth_test_java") {
+    testonly = true
     java_files = bluetooth_java_sources_needing_jni
     deps = [
       "//base:base_java",
@@ -306,6 +307,8 @@ if (is_android) {
       "//device/bluetooth:java",
       "//third_party/android_tools:android_support_annotations_java",
     ]
+
+    deps += android_extra_test_deps
 
     srcjar_deps = [ ":bluetooth_test_javagen" ]
   }
