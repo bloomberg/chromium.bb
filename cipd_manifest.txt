@@ -8,16 +8,16 @@ $VerifiedPlatform mac-amd64
 $VerifiedPlatform windows-386 windows-amd64
 
 # vpython.
-infra/tools/luci/vpython/${platform}  git_revision:dd1d2f648cf0e78e8fda8012d7952528a0c9e6ea
+infra/tools/luci/vpython/${platform}  git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c
 
 # LUCI editor
-infra/tools/luci/led/${platform}  git_revision:54b6b3102fbb15ca3e3bd762ff3df7b08057d653
+infra/tools/luci/led/${platform}  git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c
 
 # Mac toolchain installer
 infra/tools/mac_toolchain/${os=mac}-${arch} git_revision:d4dc0c29a004b59dcca1e69ae84eba0c932eb010
 
 # LUCI rpc command line tool
-infra/tools/prpc/${platform} git_revision:bf5820217a310115ae8b971dee6ff6cb894ea3bf
+infra/tools/prpc/${platform} git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c
 
 # LUCI authentication command line tool
-infra/tools/luci-auth/${platform} git_revision:bf5820217a310115ae8b971dee6ff6cb894ea3bf
+infra/tools/luci-auth/${platform} git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c
