@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/common/chrome_paths.h"
@@ -14,6 +15,8 @@
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/test/url_request/url_request_slow_download_job.h"
 #include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_test_job.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
 
@@ -42,6 +45,38 @@ void SetUrlRequestMocksEnabled(bool enabled) {
     // Revert to the default handlers.
     net::URLRequestFilter::GetInstance()->ClearHandlers();
   }
+}
+
+bool WriteFileToURLLoader(net::EmbeddedTestServer* test_server,
+                          content::URLLoaderInterceptor::RequestParams* params,
+                          std::string path) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  if (path[0] == '/')
+    path.erase(0, 1);
+
+  if (path == "favicon.ico")
+    return false;
+
+  base::FilePath file_path;
+  PathService::Get(chrome::DIR_TEST_DATA, &file_path);
+  file_path = file_path.AppendASCII(path);
+
+  std::string contents;
+  const bool result = base::ReadFileToString(file_path, &contents);
+  EXPECT_TRUE(result);
+
+  if (path == "mock-link-doctor.json") {
+    GURL url = test_server->GetURL("mock.http", "/title2.html");
+
+    std::string placeholder = "http://mock.http/title2.html";
+    contents.replace(contents.find(placeholder), placeholder.length(),
+                     url.spec());
+  }
+
+  content::URLLoaderInterceptor::WriteResponse(
+      net::URLRequestTestJob::test_headers(), contents, params->client.get());
+  return true;
 }
 
 }  // namespace chrome_browser_net
