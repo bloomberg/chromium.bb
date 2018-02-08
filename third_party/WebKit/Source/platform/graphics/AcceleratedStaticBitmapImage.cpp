@@ -124,7 +124,7 @@ void AcceleratedStaticBitmapImage::RetainOriginalSkImageForCopyOnWrite() {
   DCHECK(original_skia_image_);
   WebThread* thread = Platform::Current()->CurrentThread();
   original_skia_image_thread_id_ = thread->ThreadId();
-  original_skia_image_task_runner_ = thread->GetWebTaskRunner();
+  original_skia_image_task_runner_ = thread->GetTaskRunner();
 }
 
 IntSize AcceleratedStaticBitmapImage::Size() const {

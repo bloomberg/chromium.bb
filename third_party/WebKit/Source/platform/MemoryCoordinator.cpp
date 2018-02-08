@@ -111,11 +111,11 @@ void MemoryCoordinator::OnPurgeMemory() {
 
   // Thread-specific data never issues a layout, so we are safe here.
   for (auto thread : web_threads_) {
-    if (!thread->GetWebTaskRunner())
+    if (!thread->GetTaskRunner())
       continue;
 
     PostCrossThreadTask(
-        *thread->GetWebTaskRunner(), FROM_HERE,
+        *thread->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(MemoryCoordinator::ClearThreadSpecificMemory));
   }
 }

@@ -119,7 +119,7 @@ void MailboxTextureHolder::Sync(MailboxSyncMode mode) {
 void MailboxTextureHolder::InitCommon() {
   WebThread* thread = Platform::Current()->CurrentThread();
   thread_id_ = thread->ThreadId();
-  texture_thread_task_runner_ = thread->GetWebTaskRunner();
+  texture_thread_task_runner_ = thread->GetTaskRunner();
 }
 
 bool MailboxTextureHolder::IsValid() const {

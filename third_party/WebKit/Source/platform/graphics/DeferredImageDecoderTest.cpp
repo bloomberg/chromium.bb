@@ -229,7 +229,7 @@ TEST_F(DeferredImageDecoderTest, MAYBE_decodeOnOtherThread) {
       WebThreadCreationParams(WebThreadType::kTestThread)
           .SetThreadName("RasterThread"));
   PostCrossThreadTask(
-      *thread->GetWebTaskRunner(), FROM_HERE,
+      *thread->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(&RasterizeMain, CrossThreadUnretained(canvas_.get()),
                       record));
   thread.reset();

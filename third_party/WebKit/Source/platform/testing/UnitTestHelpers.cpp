@@ -53,7 +53,7 @@ base::FilePath BlinkRootFilePath() {
 }  // namespace
 
 void RunPendingTasks() {
-  Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
+  Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
       FROM_HERE, WTF::Bind(&ExitRunLoop));
 
   // We forbid GC in the tasks. Otherwise the registered GCTaskObserver tries
@@ -64,7 +64,7 @@ void RunPendingTasks() {
 }
 
 void RunDelayedTasks(TimeDelta delay) {
-  Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostDelayedTask(
+  Platform::Current()->CurrentThread()->GetTaskRunner()->PostDelayedTask(
       FROM_HERE, WTF::Bind(&ExitRunLoop), delay);
   EnterRunLoop();
 }

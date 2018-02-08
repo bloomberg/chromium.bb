@@ -98,7 +98,7 @@ void HRTFDatabaseLoader::LoadAsynchronously() {
   thread_ = Platform::Current()->CreateThread(
       WebThreadCreationParams(WebThreadType::kHRTFDatabaseLoaderThread));
   // TODO(alexclarke): Should this be posted as a loading task?
-  PostCrossThreadTask(*thread_->GetWebTaskRunner(), FROM_HERE,
+  PostCrossThreadTask(*thread_->GetTaskRunner(), FROM_HERE,
                       CrossThreadBind(&HRTFDatabaseLoader::LoadTask,
                                       CrossThreadUnretained(this)));
 }
@@ -128,7 +128,7 @@ void HRTFDatabaseLoader::WaitForLoaderThreadCompletion() {
 
   WaitableEvent sync;
   // TODO(alexclarke): Should this be posted as a loading task?
-  PostCrossThreadTask(*thread_->GetWebTaskRunner(), FROM_HERE,
+  PostCrossThreadTask(*thread_->GetTaskRunner(), FROM_HERE,
                       CrossThreadBind(&HRTFDatabaseLoader::CleanupTask,
                                       CrossThreadUnretained(this),
                                       CrossThreadUnretained(&sync)));
