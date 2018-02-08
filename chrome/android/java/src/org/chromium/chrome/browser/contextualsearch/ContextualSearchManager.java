@@ -1028,9 +1028,8 @@ public class ContextualSearchManager
         }
 
         @Override
-        public void onContentViewCreated(ContentViewCore contentViewCore) {
+        public void onContentViewCreated() {
             // TODO(mdjones): Move SearchContentViewDelegate ownership to panel.
-            mSearchContentViewDelegate.setOverlayPanelContentViewCore(contentViewCore);
             nativeEnableContextualSearchJsApiForWebContents(
                     mNativeContextualSearchManagerPtr, getSearchPanelWebContents());
         }
@@ -1038,7 +1037,7 @@ public class ContextualSearchManager
         @Override
         public void onContentViewDestroyed() {
             if (mSearchContentViewDelegate != null) {
-                mSearchContentViewDelegate.releaseOverlayPanelContentViewCore();
+                mSearchContentViewDelegate.releaseOverlayPanelContent();
             }
         }
 

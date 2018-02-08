@@ -31,7 +31,6 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.Invalidator.Client;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
@@ -52,7 +51,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.chrome.browser.widget.ControlContainer;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
@@ -116,14 +114,6 @@ public class CompositorViewHolder extends FrameLayout
 
     // If we've drawn at least one frame.
     private boolean mHasDrawnOnce;
-
-    /**
-     * The information about {@link ContentView} for overlay panel. Used to adjust the backing
-     * size of the content accordingly.
-     */
-    private View mOverlayContentView;
-    private int mOverlayContentWidthMeasureSpec = ContentView.DEFAULT_MEASURE_SPEC;
-    private int mOverlayContentHeightMeasureSpec = ContentView.DEFAULT_MEASURE_SPEC;
 
     private boolean mIsInVr;
 
@@ -253,18 +243,6 @@ public class CompositorViewHolder extends FrameLayout
      */
     public void setRootView(View view) {
         mCompositorView.setRootView(view);
-    }
-
-    /**
-     * Set the desired size of the overlay content view.
-     * @param overlayContentView {@link ContentView} used for overlay panel.
-     * @param width The width of the content view in {@link MeasureSpec}.
-     * @param height The height of the content view in {@link MeasureSpec}.
-     */
-    public void setOverlayContentInfo(View overlayContentView, int width, int height) {
-        mOverlayContentView = overlayContentView;
-        mOverlayContentWidthMeasureSpec = width;
-        mOverlayContentHeightMeasureSpec = height;
     }
 
     /**
@@ -492,7 +470,13 @@ public class CompositorViewHolder extends FrameLayout
         View view = getActiveView();
         WebContents webContents = getActiveWebContents();
         if (view == null || webContents == null) return;
-        adjustPhysicalBackingSize(view, webContents, width, height);
+        onPhysicalBackingSizeChanged(webContents, width, height);
+    }
+
+    private void onPhysicalBackingSizeChanged(WebContents webContents, int width, int height) {
+        if (mCompositorView != null) {
+            mCompositorView.onPhysicalBackingSizeChanged(webContents, width, height);
+        }
     }
 
     /**
@@ -899,13 +883,6 @@ public class CompositorViewHolder extends FrameLayout
         setTab(tab);
     }
 
-    @Override
-    public void onOverlayPanelContentViewCoreAdded(ContentViewCore content) {
-        // TODO(dtrainor): Look into rolling this into onContentChanged().
-        initializeContentViewCore(content);
-        setSizeOfUnattachedView(content.getContainerView(), content.getWebContents(), 0);
-    }
-
     private void setTab(Tab tab) {
         if (tab != null) tab.loadIfNeeded();
 
@@ -931,47 +908,19 @@ public class CompositorViewHolder extends FrameLayout
 
     /**
      * Sets the correct size for {@link View} on {@code tab} and sets the correct rendering
-     * parameters on {@link ContentViewCore} on {@code tab}.
+     * parameters on {@link WebContents} on {@code tab}.
      * @param tab The {@link Tab} to initialize.
      */
     private void initializeTab(Tab tab) {
-        ContentViewCore content = tab.getActiveContentViewCore();
-        if (content != null) initializeContentViewCore(content);
-
+        WebContents webContents = tab.getWebContents();
+        if (webContents != null) {
+            onPhysicalBackingSizeChanged(
+                    webContents, mCompositorView.getWidth(), mCompositorView.getHeight());
+        }
         View view = tab.getContentView();
         if (view == null || (tab.isNativePage() && view == tab.getView())) return;
         tab.setTopControlsHeight(getTopControlsHeightPixels(), controlsResizeView());
         tab.setBottomControlsHeight(getBottomControlsHeightPixels());
-    }
-
-    /**
-     * Initializes the rendering surface parameters of {@code contentViewCore}.  Note that this does
-     * not size the actual {@link ContentViewCore}.
-     * @param contentViewCore The {@link ContentViewCore} to initialize.
-     */
-    private void initializeContentViewCore(ContentViewCore contentViewCore) {
-        contentViewCore.setCurrentTouchEventOffsets(0.f, 0.f);
-        adjustPhysicalBackingSize(contentViewCore.getContainerView(),
-                contentViewCore.getWebContents(), mCompositorView.getWidth(),
-                mCompositorView.getHeight());
-    }
-
-    /**
-     * Adjusts the physical backing size of a given contents. This method checks
-     * the associated container view to see if the size needs to be overriden,
-     * such as when used for {@link OverlayPanel}.
-     * @param view {@link View} to get the size info from.
-     * @param webContents {@link WebContents} associated with the backing size to adjust.
-     * @param width The default width.
-     * @param height The default height.
-     */
-    private void adjustPhysicalBackingSize(
-            View view, WebContents webContents, int width, int height) {
-        if (view == mOverlayContentView) {
-            width = MeasureSpec.getSize(mOverlayContentWidthMeasureSpec);
-            height = MeasureSpec.getSize(mOverlayContentHeightMeasureSpec);
-        }
-        mCompositorView.onPhysicalBackingSizeChanged(webContents, width, height);
     }
 
     /**

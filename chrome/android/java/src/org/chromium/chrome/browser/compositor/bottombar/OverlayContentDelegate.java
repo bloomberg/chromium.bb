@@ -81,9 +81,8 @@ public class OverlayContentDelegate {
 
     /**
      * Called once the ContentViewCore has been created and set up completely.
-     * @param contentViewCore The contentViewCore that was created.
      */
-    public void onContentViewCreated(ContentViewCore contentViewCore) {}
+    public void onContentViewCreated() {}
 
     /**
      * Called once the ContentViewCore has been destroyed.
