@@ -15,6 +15,7 @@
 #include "base/containers/linked_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "net/base/interval.h"
@@ -73,12 +74,12 @@ class NET_EXPORT_PRIVATE MemEntryImpl final
   };
 
   // Constructor for parent entries.
-  MemEntryImpl(MemBackendImpl* backend,
+  MemEntryImpl(base::WeakPtr<MemBackendImpl> backend,
                const std::string& key,
                net::NetLog* net_log);
 
   // Constructor for child entries.
-  MemEntryImpl(MemBackendImpl* backend,
+  MemEntryImpl(base::WeakPtr<MemBackendImpl> backend,
                int child_id,
                MemEntryImpl* parent,
                net::NetLog* net_log);
@@ -135,7 +136,7 @@ class NET_EXPORT_PRIVATE MemEntryImpl final
   size_t EstimateMemoryUsage() const;
 
  private:
-  MemEntryImpl(MemBackendImpl* backend,
+  MemEntryImpl(base::WeakPtr<MemBackendImpl> backend,
                const std::string& key,
                int child_id,
                MemEntryImpl* parent,
@@ -185,7 +186,7 @@ class NET_EXPORT_PRIVATE MemEntryImpl final
 
   base::Time last_modified_;
   base::Time last_used_;
-  MemBackendImpl* backend_;   // Back pointer to the cache.
+  base::WeakPtr<MemBackendImpl> backend_;  // Back pointer to the cache.
   bool doomed_;               // True if this entry was removed from the cache.
 
   net::NetLogWithSource net_log_;
