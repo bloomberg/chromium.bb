@@ -15,26 +15,25 @@ from os.path import isfile, join
 
 RESULTS_URL = 'https://chromeperf.appspot.com'
 
-def _upload_perf_results(jsons_to_upload, name, configuration_name,
+def _upload_perf_results(json_to_upload, name, configuration_name,
     build_properties):
   """Upload the contents of result JSON(s) to the perf dashboard."""
   build_properties = json.loads(build_properties)
-  for results_file in jsons_to_upload:
-    args = [
-        '--build-dir', '/b/c/b/obbs_fyi/src/out',
-        '--buildername', build_properties['buildername'],
-        '--buildnumber', build_properties['buildnumber'],
-        '--name', name,
-        '--configuration-name', configuration_name,
-        '--results-file', results_file,
-        '--results-url', RESULTS_URL,
-        '--got-revision-cp', build_properties['got_revision_cp'],
-        '--got-v8-revision', build_properties['got_v8_revision'],
-        '--got-webrtc-revision', build_properties['got_webrtc_revision'],
-        '--chromium-checkout-dir', '/b/c/b/obbs_fyi',
-        '--send-as-histograms',
-    ]
-    upload_results_to_perf_dashboard.main(args)
+  args = [
+      '--build-dir', '/b/c/b/obbs_fyi/src/out',
+      '--buildername', build_properties['buildername'],
+      '--buildnumber', build_properties['buildnumber'],
+      '--name', name,
+      '--configuration-name', configuration_name,
+      '--results-file', json_to_upload,
+      '--results-url', RESULTS_URL,
+      '--got-revision-cp', build_properties['got_revision_cp'],
+      '--got-v8-revision', build_properties['got_v8_revision'],
+      '--got-webrtc-revision', build_properties['got_webrtc_revision'],
+      '--chromium-checkout-dir', '/b/c/b/obbs_fyi',
+      '--send-as-histograms',
+  ]
+  upload_results_to_perf_dashboard.main(args)
 
 
 def _merge_json_output(output_json, jsons_to_merge):
@@ -59,44 +58,34 @@ def _process_perf_results(output_json, configuration_name,
 
   Consists of merging the json-test-format output and uploading the perf test
   output (chartjson and histogram).
-  """
-  shard_json_output_list = []
-  shard_perf_results_file_list = []
 
-  dir_list = [
+  Each directory in the task_output_dir represents one benchmark
+  that was run. Within this directory, there is a subdirectory with the name
+  of the benchmark that was run. In that subdirectory, there is a
+  perftest-output.json file containing the performance results in histogram
+  or dashboard json format and an output.json file containing the json test
+  results for the benchmark.
+  """
+  directory_list = [
       f for f in listdir(task_output_dir)
       if not isfile(join(task_output_dir, f))
   ]
-  benchmark_dir_list = []
-  for directory in dir_list:
-    b_dir_list = [
+  benchmark_directory_list = []
+  for directory in directory_list:
+    benchmark_directory_list += [
       join(task_output_dir, directory, f)
       for f in listdir(join(task_output_dir, directory))
     ]
-    benchmark_dir_list += b_dir_list
-  print 'benchmark_dir_list '
-  print benchmark_dir_list
-  # Each directory in the bot's output_dir should represent one benchmark
-  # that was run. Within this directory, there should be a perftest-output.json
-  # file containing the performance results in histogram or dashboard json
-  # format and an output.json file containing the json test results for the
-  # benchmark.
-  for directory in benchmark_dir_list:
-    shard_perf_results_file_list.append(
-        join(directory, 'perf_results.json'))
-    shard_json_output_list.append(
-        join(directory, 'test_results.json'))
 
-  shard_json_results = []
-  for shard in shard_json_output_list:
-    with open(shard) as json_data:
-      shard_json_results.append(json.load(json_data))
+  test_results_list = []
+  for directory in benchmark_directory_list:
+    with open(join(directory, 'test_results.json')) as json_data:
+      test_results_list.append(json.load(json_data))
+  _merge_json_output(output_json, test_results_list)
 
-  _merge_json_output(output_json, shard_json_results)
-
-  # The name here should be the benchmark name which we need to parse out still.
-  _upload_perf_results(shard_perf_results_file_list, 'still tbd step name',
-      configuration_name, build_properties)
+  for directory in benchmark_directory_list:
+    _upload_perf_results(join(directory, 'perf_results.json'),
+        directory, configuration_name, build_properties)
 
   return 0
 
