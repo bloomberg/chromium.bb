@@ -114,7 +114,7 @@ void WebRtcEventLogManager::EnableForBrowserContext(
     base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(!browser_context->IsOffTheRecord());
-  // Posting to task queue owned by the unretained object - unretained is safe.
+  // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::EnableForBrowserContextInternal,
@@ -127,7 +127,7 @@ void WebRtcEventLogManager::DisableForBrowserContext(
     BrowserContextId browser_context_id,
     base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Posting to task queue owned by the unretained object - unretained is safe.
+  // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::DisableForBrowserContextInternal,
@@ -150,7 +150,7 @@ void WebRtcEventLogManager::PeerConnectionAdded(
     observed_render_process_hosts_.insert(host);
   }
 
-  // Posting to task queue owned by the unretained object - unretained is safe.
+  // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::PeerConnectionAddedInternal,
@@ -178,7 +178,7 @@ void WebRtcEventLogManager::PeerConnectionRemoved(
   }
   const BrowserContext* browser_context = host->GetBrowserContext();
 
-  // Posting to task queue owned by the unretained object - unretained is safe.
+  // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::PeerConnectionRemovedInternal,
@@ -199,7 +199,7 @@ void WebRtcEventLogManager::EnableLocalLogging(
     base::OnceCallback<void(bool)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!base_path.empty());
-  // Posting to task queue owned by the unretained object - unretained is safe.
+  // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::EnableLocalLoggingInternal,
@@ -210,7 +210,7 @@ void WebRtcEventLogManager::EnableLocalLogging(
 void WebRtcEventLogManager::DisableLocalLogging(
     base::OnceCallback<void(bool)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Posting to task queue owned by the unretained object - unretained is safe.
+  // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::DisableLocalLoggingInternal,
@@ -231,7 +231,7 @@ void WebRtcEventLogManager::StartRemoteLogging(
     browser_context_id = GetBrowserContextId(browser_context);
   }
 
-  // Posting to task queue owned by the unretained object - unretained is safe.
+  // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::StartRemoteLoggingInternal,
@@ -247,7 +247,7 @@ void WebRtcEventLogManager::OnWebRtcEventLogWrite(
     base::OnceCallback<void(std::pair<bool, bool>)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const BrowserContext* browser_context = GetBrowserContext(render_process_id);
-  // Posting to task queue owned by the unretained object - unretained is safe.
+  // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::OnWebRtcEventLogWriteInternal,
@@ -260,7 +260,7 @@ void WebRtcEventLogManager::SetLocalLogsObserver(
     WebRtcLocalEventLogsObserver* observer,
     base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Posting to task queue owned by the unretained object - unretained is safe.
+  // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::SetLocalLogsObserverInternal,
@@ -271,7 +271,7 @@ void WebRtcEventLogManager::SetRemoteLogsObserver(
     WebRtcRemoteEventLogsObserver* observer,
     base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Posting to task queue owned by the unretained object - unretained is safe.
+  // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::SetRemoteLogsObserverInternal,
@@ -309,7 +309,7 @@ void WebRtcEventLogManager::RenderProcessHostExitedDestroyed(
   host->RemoveObserver(this);
   observed_render_process_hosts_.erase(host);
 
-  // Posting to task queue owned by the unretained object - unretained is safe.
+  // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::RenderProcessExitedInternal,
@@ -552,7 +552,7 @@ void WebRtcEventLogManager::SetClockForTesting(base::Clock* clock,
     }
   };
 
-  // Posting to task queue owned by the unretained object - unretained is safe.
+  // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(FROM_HERE, base::BindOnce(task, base::Unretained(this),
                                                    clock, std::move(reply)));
 }
@@ -571,7 +571,7 @@ void WebRtcEventLogManager::SetPeerConnectionTrackerProxyForTesting(
     }
   };
 
-  // Posting to task queue owned by the unretained object - unretained is safe.
+  // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(task, base::Unretained(this),
                                 std::move(pc_tracker_proxy), std::move(reply)));
@@ -595,7 +595,7 @@ void WebRtcEventLogManager::SetWebRtcEventLogUploaderFactoryForTesting(
         }
       };
 
-  // Posting to task queue owned by the unretained object - unretained is safe.
+  // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(task, base::Unretained(this),
                                 std::move(uploader_factory), std::move(reply)));
