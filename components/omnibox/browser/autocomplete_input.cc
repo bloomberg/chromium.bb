@@ -140,21 +140,12 @@ void AutocompleteInput::Init(
                 &canonicalized_url);
   PopulateTermsPrefixedByHttpOrHttps(text_, &terms_prefixed_by_http_or_https_);
 
-  // Store the canonicalized URL if the user might be trying to navigate to
-  // it and it looks as if it's actually navigable.
   if (((type_ == metrics::OmniboxInputType::UNKNOWN) ||
        (type_ == metrics::OmniboxInputType::URL)) &&
       canonicalized_url.is_valid() &&
       (!canonicalized_url.IsStandard() || canonicalized_url.SchemeIsFile() ||
        canonicalized_url.SchemeIsFileSystem() ||
-       !canonicalized_url.host().empty()) &&
-      // Treat "URLs" whose host is a TLD ("http://co.uk") as unlikely to be
-      // navigable. This prevents the alternate nav machinery from attempting
-      // TCP connections to these, which can leak user data. See
-      // crbug.com/669785.
-      !net::registry_controlled_domains::IsRegistry(
-          canonicalized_url,
-          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES))
+       !canonicalized_url.host().empty()))
     canonicalized_url_ = canonicalized_url;
 }
 
