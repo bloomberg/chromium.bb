@@ -333,8 +333,8 @@ public class OMADownloadHandlerTest {
         // Write a few pending downloads into shared preferences.
         Set<String> pendingOmaDownloads = new HashSet<>();
         pendingOmaDownloads.add(String.valueOf(downloadId1) + "," + INSTALL_NOTIFY_URI);
-        DownloadManagerService.storeDownloadInfo(
-                ContextUtils.getAppSharedPreferences(), PENDING_OMA_DOWNLOADS, pendingOmaDownloads);
+        DownloadManagerService.storeDownloadInfo(ContextUtils.getAppSharedPreferences(),
+                PENDING_OMA_DOWNLOADS, pendingOmaDownloads, false /* forceCommit */);
 
         pendingOmaDownloads = DownloadManagerService.getStoredDownloadInfo(
                 ContextUtils.getAppSharedPreferences(), PENDING_OMA_DOWNLOADS);

@@ -131,12 +131,14 @@ public class DownloadForegroundService extends Service {
         if (stopForegroundNotification == StopForegroundNotification.KILL) {
             // Regardless of the SDK level, stop foreground and kill if so indicated.
             stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_REMOVE);
+            clearPinnedNotificationId();
 
         } else {
             if (getCurrentSdk() >= 24) {
                 // Android N+ has the option to detach notifications from the service, so detach or
                 // kill the notification as needed when stopping service.
                 stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_DETACH);
+                clearPinnedNotificationId();
 
             } else if (getCurrentSdk() >= 23) {
                 // Android M+ can't detach the notification but doesn't have other caveats. Kill the
@@ -144,6 +146,7 @@ public class DownloadForegroundService extends Service {
                 if (stopForegroundNotification == StopForegroundNotification.DETACH_OR_ADJUST) {
                     stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_REMOVE);
                     relaunchOldNotification(pinnedNotificationId, pinnedNotification);
+                    clearPinnedNotificationId();
                 } else {
                     stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_DETACH);
                     notificationHandledProperly = false;
@@ -154,6 +157,9 @@ public class DownloadForegroundService extends Service {
                 // the task, which might result in the notification being unable to be relaunched
                 // where it needs to be. Relaunch the old notification before stopping the service.
                 if (stopForegroundNotification == StopForegroundNotification.DETACH_OR_ADJUST) {
+                    // Clear pinned id in case the service stops before we can do this properly.
+                    clearPinnedNotificationId();
+
                     relaunchOldNotification(
                             getNewNotificationIdFor(pinnedNotificationId), pinnedNotification);
                     stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_REMOVE);
@@ -163,19 +169,15 @@ public class DownloadForegroundService extends Service {
                 }
 
             } else {
+                // Clear pinned id in case the service stops before we can do this properly.
+                clearPinnedNotificationId();
+
                 // For pre-Lollipop phones (API < 21), we need to kill all notifications because
                 // otherwise the notification gets stuck in the ongoing state.
                 relaunchOldNotification(
                         getNewNotificationIdFor(pinnedNotificationId), pinnedNotification);
                 stopForegroundInternal(ServiceCompat.STOP_FOREGROUND_REMOVE);
             }
-        }
-
-        // If the notification was handled properly (ie. killed or detached), clear observer and
-        // stored pinned ID. Otherwise, continue persisting this information in case it is needed.
-        if (notificationHandledProperly) {
-            removeObserver();
-            clearPinnedNotificationId();
         }
 
         return notificationHandledProperly;
@@ -200,6 +202,7 @@ public class DownloadForegroundService extends Service {
             // that the observers can do any corrections (ie. relaunch notification) if needed.
             DownloadForegroundServiceObservers.alertObserversServiceRestarted(
                     getPinnedNotificationId());
+            clearPinnedNotificationId();
 
             // Allow observers to restart service on their own, if needed.
             stopSelf();
@@ -279,12 +282,6 @@ public class DownloadForegroundService extends Service {
     }
 
     /** Methods for testing. */
-
-    @VisibleForTesting
-    void removeObserver() {
-        DownloadForegroundServiceObservers.removeObserver(
-                DownloadNotificationServiceObserver.class);
-    }
 
     @VisibleForTesting
     int getNewNotificationIdFor(int oldNotificationId) {

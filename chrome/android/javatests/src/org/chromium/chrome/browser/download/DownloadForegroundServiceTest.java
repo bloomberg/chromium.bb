@@ -89,9 +89,6 @@ public class DownloadForegroundServiceTest {
         }
 
         @Override
-        void removeObserver() {}
-
-        @Override
         int getNewNotificationIdFor(int oldNotificationId) {
             return mNextNotificationId;
         }
