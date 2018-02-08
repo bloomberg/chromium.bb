@@ -125,6 +125,10 @@
     'ash': {
       'filepath': 'ash/',
     },
+    'assistant': {
+      'filepath': 'chromeos/assistant/'\
+                  '|chromeos/services/assistant/'
+    },
     'aura': {
       'filepath': 'ui/aura/',
     },
@@ -1674,6 +1678,7 @@
     'arc_power': ['ejcaruso+watch@chromium.org'],
     'ash': ['kalyan.kondapally@intel.com',
             'sadrul@chromium.org'],
+    'assistant': ['croissant-eng+reviews@chromium.org'],
     'aura': ['kalyan.kondapally@intel.com',
              'sadrul@chromium.org'],
     'aura_compositor': ['danakj+watch@chromium.org',
