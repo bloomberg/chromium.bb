@@ -250,13 +250,26 @@ public class CustomTabActivityTest {
     }
 
     /**
+     * Add a bundle specifying a a number of custom menu entries.
+     * @param customTabIntent The intent to modify.
+     * @param numEntries The number of menu entries to add.
+     * @return The pending intent associated with the menu entries.
+     */
+    private PendingIntent addMenuEntriesToIntent(Intent customTabIntent, int numEntries) {
+        return addMenuEntriesToIntent(customTabIntent, numEntries, new Intent());
+    }
+
+    /**
      * Add a bundle specifying a custom menu entry.
-     * @param intent The intent to modify.
+     * @param customTabIntent The intent to modify.
+     * @param numEntries The number of menu entries to add.
+     * @param callbackIntent The intent to use as the base for the pending intent.
      * @return The pending intent associated with the menu entry.
      */
-    private PendingIntent addMenuEntriesToIntent(Intent intent, int numEntries) {
-        PendingIntent pi = PendingIntent.getBroadcast(
-                InstrumentationRegistry.getTargetContext(), 0, new Intent(), 0);
+    private PendingIntent addMenuEntriesToIntent(
+            Intent customTabIntent, int numEntries, Intent callbackIntent) {
+        PendingIntent pi = PendingIntent.getBroadcast(InstrumentationRegistry.getTargetContext(), 0,
+                callbackIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         ArrayList<Bundle> menuItems = new ArrayList<>();
         for (int i = 0; i < numEntries; i++) {
             Bundle bundle = new Bundle();
@@ -264,7 +277,7 @@ public class CustomTabActivityTest {
             bundle.putParcelable(CustomTabsIntent.KEY_PENDING_INTENT, pi);
             menuItems.add(bundle);
         }
-        intent.putParcelableArrayListExtra(CustomTabsIntent.EXTRA_MENU_ITEMS, menuItems);
+        customTabIntent.putParcelableArrayListExtra(CustomTabsIntent.EXTRA_MENU_ITEMS, menuItems);
         return pi;
     }
 
@@ -661,9 +674,11 @@ public class CustomTabActivityTest {
     @SmallTest
     @RetryOnFailure
     public void testCustomMenuEntry() throws InterruptedException, TimeoutException {
-        Intent intent = createMinimalCustomTabIntent();
-        final PendingIntent pi = addMenuEntriesToIntent(intent, 1);
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        Intent customTabIntent = createMinimalCustomTabIntent();
+        Intent baseCallbackIntent = new Intent();
+        baseCallbackIntent.putExtra("FOO", 42);
+        final PendingIntent pi = addMenuEntriesToIntent(customTabIntent, 1, baseCallbackIntent);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(customTabIntent);
 
         final OnFinishedForTest onFinished = new OnFinishedForTest(pi);
         getActivity().getIntentDataProvider().setPendingIntentOnFinishedForTesting(onFinished);
@@ -677,6 +692,14 @@ public class CustomTabActivityTest {
         });
 
         onFinished.waitForCallback("Pending Intent was not sent.");
+        Intent callbackIntent = onFinished.getCallbackIntent();
+        Assert.assertThat(callbackIntent.getDataString(), equalTo(mTestPage));
+
+        // Verify that the callback intent has the page title as the subject, but other extras are
+        // kept intact.
+        Assert.assertThat(
+                callbackIntent.getStringExtra(Intent.EXTRA_SUBJECT), equalTo("The Google"));
+        Assert.assertThat(callbackIntent.getIntExtra("FOO", 0), equalTo(42));
     }
 
     /**
