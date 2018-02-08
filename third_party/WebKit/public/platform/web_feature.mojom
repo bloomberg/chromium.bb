@@ -1699,7 +1699,6 @@ enum WebFeature {
   kBatteryStatusInsecureOrigin = 2199,
   kBatteryStatusCrossOrigin = 2200,
   kBatteryStatusSameOriginABA = 2201,
-  kWebAudioValueSetterIsSetValue = 2202,
   kHasIDClassTagAttribute = 2203,
   kHasBeforeOrAfterPseudoElement = 2204,
   kShapeOutsideMaybeAffectedInlineSize = 2205,

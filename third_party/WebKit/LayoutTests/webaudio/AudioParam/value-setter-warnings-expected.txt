@@ -1,6 +1,5 @@
 CONSOLE ERROR: line 39: [audit.js] this test requires the explicit comparison with the expected result when it runs with run-webkit-tests.
 CONSOLE MESSAGE: line 129: Test: test-0
-CONSOLE WARNING: line 135: AudioParam value setter will become equivalent to AudioParam.setValueAtTime() in M65, around March 2018  See https://webaudio.github.io/web-audio-api/#dom-audioparam-value for more details.
 CONSOLE MESSAGE: line 129: Test: test-1
 CONSOLE MESSAGE: line 129: Test: test-2
 CONSOLE MESSAGE: line 129: Test: test-3

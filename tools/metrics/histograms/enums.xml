@@ -17612,7 +17612,7 @@ Called by update_net_error_codes.py.-->
   <int value="2199" label="BatteryStatusInsecureOrigin"/>
   <int value="2200" label="BatteryStatusCrossOrigin"/>
   <int value="2201" label="BatteryStatusSameOriginABA"/>
-  <int value="2202" label="WebAudioValueSetterIsSetValue"/>
+  <int value="2202" label="WebAudioValueSetterIsSetValue (Obsolete)"/>
   <int value="2203" label="HasIDClassTagAttribute"/>
   <int value="2204" label="HasBeforeOrAfterPseudoElement"/>
   <int value="2205" label="ShapeOutsideMaybeAffectedInlineSize"/>

@@ -44,10 +44,6 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   void getOutputTimestamp(ScriptState*, AudioTimestamp&);
   double baseLatency() const;
 
-  // TODO(crbug.com/764396): Remove these when fixed.
-  void CountValueSetterConflict(bool does_conflict) final;
-  void RecordValueSetterStatistics() final;
-
  protected:
   AudioContext(Document&, const WebAudioLatencyHint&);
 
@@ -59,9 +55,6 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   unsigned context_id_;
   Member<ScriptPromiseResolver> close_resolver_;
 
-  // TODO(crbug.com/764396): Remove these when fixed.
-  unsigned count_value_setter_calls_;
-  unsigned count_value_setter_conflicts_;
 };
 
 }  // namespace blink
