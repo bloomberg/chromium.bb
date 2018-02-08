@@ -795,7 +795,7 @@ void ChildThreadImpl::OnProcessFinalRelease() {
 
 void ChildThreadImpl::EnsureConnected() {
   VLOG(0) << "ChildThreadImpl::EnsureConnected()";
-  base::Process::Current().Terminate(0, false);
+  base::Process::TerminateCurrentProcessImmediately(0);
 }
 
 void ChildThreadImpl::GetRoute(

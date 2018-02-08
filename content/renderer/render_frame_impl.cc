@@ -875,9 +875,10 @@ void HandleChromeDebugURL(const GURL& url) {
     // of base::debug::DumpWithoutCrashing for more details.
     base::debug::DumpWithoutCrashing();
   } else if (url == kChromeUIKillURL) {
-    LOG(ERROR) << "Intentionally issuing kill signal to current process"
-               << " because user navigated to " << url.spec();
-    base::Process::Current().Terminate(1, false);
+    LOG(ERROR) << "Intentionally terminating current process because user"
+                  " navigated to "
+               << url.spec();
+    base::Process::TerminateCurrentProcessImmediately(1);
   } else if (url == kChromeUIHangURL) {
     LOG(ERROR) << "Intentionally hanging ourselves with sleep infinite loop"
                << " because user navigated to " << url.spec();

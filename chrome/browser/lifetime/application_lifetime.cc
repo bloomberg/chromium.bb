@@ -367,7 +367,7 @@ void SessionEnding() {
   // termination as soon as it hides or destroys its windows. Since any
   // execution past that point will be non-deterministically cut short, we
   // might as well put ourselves out of that misery deterministically.
-  base::Process::Current().Terminate(0, false);
+  base::Process::TerminateCurrentProcessImmediately(0);
 }
 
 void ShutdownIfNeeded() {

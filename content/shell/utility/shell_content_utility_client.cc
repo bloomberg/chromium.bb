@@ -41,7 +41,7 @@ class TestServiceImpl : public mojom::TestService {
   }
 
   void DoTerminateProcess(DoTerminateProcessCallback callback) override {
-    base::Process::Current().Terminate(0, false);
+    base::Process::TerminateCurrentProcessImmediately(0);
   }
 
   void CreateFolder(CreateFolderCallback callback) override {

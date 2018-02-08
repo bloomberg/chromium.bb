@@ -352,14 +352,9 @@ void CrashCallback() {
 
   if (rand() % 100 > 30) {
     printf("sweet death...\n");
-#if defined(OS_WIN)
-    // Windows does more work on _exit() than we would like.
-    base::Process::Current().Terminate(kExpectedCrash, false);
-#elif defined(OS_POSIX)
-    // On POSIX, _exit() will terminate the process with minimal cleanup,
-    // and it is cleaner than killing.
-    _exit(kExpectedCrash);
-#endif
+
+    // Terminate the current process without doing normal process-exit cleanup.
+    base::Process::TerminateCurrentProcessImmediately(kExpectedCrash);
   }
 }
 
