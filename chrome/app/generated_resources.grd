@@ -497,8 +497,8 @@ are declared in build/common.gypi.
           <message name="IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB" desc="The name of the Open Audio in New Tab command in the content area context menu">
             &amp;Open audio in new tab
           </message>
-          <message name="IDS_CONTENT_CONTENT_PICTUREINPICTURE" desc="The name of the Picture in Picture command in the content area context menu.">
-            Picture in Picture
+          <message name="IDS_CONTENT_CONTENT_PICTUREINPICTURE" desc="The name of the Picture-in-Picture command in the content area context menu.">
+            Picture-in-Picture
           </message>
 
           <message name="IDS_CONTENT_CONTEXT_UNDO" desc="The name of the Undo command in the content area context menu">
@@ -703,8 +703,8 @@ are declared in build/common.gypi.
           <message name="IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB" desc="In Title Case: The name of the Open Audio in New Tab command in the content area context menu">
             &amp;Open Audio in New Tab
           </message>
-          <message name="IDS_CONTENT_CONTENT_PICTUREINPICTURE" desc="In Title Case: The name of the Picture in Picture command in the content area context menu.">
-            Picture in Picture
+          <message name="IDS_CONTENT_CONTENT_PICTUREINPICTURE" desc="In Title Case: The name of the Picture-in-Picture command in the content area context menu.">
+            Picture-in-Picture
           </message>
 
           <message name="IDS_CONTENT_CONTEXT_UNDO" desc="In Title Case: The name of the Undo command in the content area context menu">
@@ -6061,9 +6061,9 @@ I don't think this site should be blocked!
         Turn on autoupdate
       </message>
 
-      <!-- Picture in Picture -->
-      <message name="IDS_PICTURE_IN_PICTURE_TITLE_TEXT" desc="Title of the picture in picture window. This appears in the system tray and window header.">
-        Picture in Picture
+      <!-- Picture-in-Picture -->
+      <message name="IDS_PICTURE_IN_PICTURE_TITLE_TEXT" desc="Title of the picture-in-picture window. This appears in the system tray and window header.">
+        Picture-in-Picture
       </message>
 
       <!-- Print -->

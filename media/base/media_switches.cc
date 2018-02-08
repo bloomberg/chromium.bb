@@ -189,7 +189,7 @@ const base::Feature kNewAudioRenderingMixingStrategy{
 const base::Feature kOverlayFullscreenVideo{"overlay-fullscreen-video",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable Picture in Picture.
+// Enable Picture-in-Picture.
 const base::Feature kPictureInPicture{"PictureInPicture",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 

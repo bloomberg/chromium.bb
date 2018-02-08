@@ -806,11 +806,11 @@ below:
       <message name="IDS_MEDIA_OVERFLOW_MENU_DOWNLOAD" desc="Media controls overflow menu item label for a download button.">
        Download
       </message>
-      <message name="IDS_MEDIA_OVERFLOW_MENU_PICTURE_IN_PICTURE" desc="Media controls overflow menu item label for a picture in picture button.">
-        Picture in Picture
+      <message name="IDS_MEDIA_OVERFLOW_MENU_PICTURE_IN_PICTURE" desc="Media controls overflow menu item label for a picture-in-picture button.">
+        Picture-in-Picture
       </message>
       <message name="IDS_MEDIA_PICTURE_IN_PICTURE_INTERSTITIAL_TEXT" desc="Text message shown to user when in picture in picture mode. When a video is in picture in picture mode, an interstitial with this text appears where the video player is positioned. The video continues to play back in another window that gives the experience that the video is 'popped out'.">
-        Now in picture in picture mode
+        Now in Picture-in-Picture mode
       </message>
       <message name="IDS_MEDIA_REMOTING_CAST_TEXT" desc="Text message shown to the user when casting a video to a known remote device.">
        Now casting to <ph name="DEVICE_FRIENDLY_NAME">$1<ex>Living Room TV</ex></ph>
