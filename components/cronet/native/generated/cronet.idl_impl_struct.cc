@@ -10,64 +10,72 @@
 
 #include "base/logging.h"
 
-// Struct Cronet_Exception.
-Cronet_Exception::Cronet_Exception() {}
+// Struct Cronet_Error.
+Cronet_Error::Cronet_Error() {}
 
-Cronet_Exception::~Cronet_Exception() {}
+Cronet_Error::~Cronet_Error() {}
 
-Cronet_ExceptionPtr Cronet_Exception_Create() {
-  return new Cronet_Exception();
+Cronet_ErrorPtr Cronet_Error_Create() {
+  return new Cronet_Error();
 }
 
-void Cronet_Exception_Destroy(Cronet_ExceptionPtr self) {
+void Cronet_Error_Destroy(Cronet_ErrorPtr self) {
   delete self;
 }
 
-// Struct Cronet_Exception setters.
-void Cronet_Exception_set_error_code(Cronet_ExceptionPtr self,
-                                     Cronet_Exception_ERROR_CODE error_code) {
+// Struct Cronet_Error setters.
+void Cronet_Error_set_errorCode(Cronet_ErrorPtr self,
+                                Cronet_Error_ERROR_CODE errorCode) {
   DCHECK(self);
-  self->error_code = error_code;
+  self->errorCode = errorCode;
 }
 
-void Cronet_Exception_set_internal_error_code(Cronet_ExceptionPtr self,
-                                              int32_t internal_error_code) {
+void Cronet_Error_set_message(Cronet_ErrorPtr self, CharString message) {
+  DCHECK(self);
+  self->message = message;
+}
+
+void Cronet_Error_set_internal_error_code(Cronet_ErrorPtr self,
+                                          int32_t internal_error_code) {
   DCHECK(self);
   self->internal_error_code = internal_error_code;
 }
 
-void Cronet_Exception_set_immediately_retryable(Cronet_ExceptionPtr self,
-                                                bool immediately_retryable) {
+void Cronet_Error_set_immediately_retryable(Cronet_ErrorPtr self,
+                                            bool immediately_retryable) {
   DCHECK(self);
   self->immediately_retryable = immediately_retryable;
 }
 
-void Cronet_Exception_set_quic_detailed_error_code(
-    Cronet_ExceptionPtr self,
+void Cronet_Error_set_quic_detailed_error_code(
+    Cronet_ErrorPtr self,
     int32_t quic_detailed_error_code) {
   DCHECK(self);
   self->quic_detailed_error_code = quic_detailed_error_code;
 }
 
-// Struct Cronet_Exception getters.
-Cronet_Exception_ERROR_CODE Cronet_Exception_get_error_code(
-    Cronet_ExceptionPtr self) {
+// Struct Cronet_Error getters.
+Cronet_Error_ERROR_CODE Cronet_Error_get_errorCode(Cronet_ErrorPtr self) {
   DCHECK(self);
-  return self->error_code;
+  return self->errorCode;
 }
 
-int32_t Cronet_Exception_get_internal_error_code(Cronet_ExceptionPtr self) {
+CharString Cronet_Error_get_message(Cronet_ErrorPtr self) {
+  DCHECK(self);
+  return self->message.c_str();
+}
+
+int32_t Cronet_Error_get_internal_error_code(Cronet_ErrorPtr self) {
   DCHECK(self);
   return self->internal_error_code;
 }
 
-bool Cronet_Exception_get_immediately_retryable(Cronet_ExceptionPtr self) {
+bool Cronet_Error_get_immediately_retryable(Cronet_ErrorPtr self) {
   DCHECK(self);
   return self->immediately_retryable;
 }
 
-int32_t Cronet_Exception_get_quic_detailed_error_code(
-    Cronet_ExceptionPtr self) {
+int32_t Cronet_Error_get_quic_detailed_error_code(Cronet_ErrorPtr self) {
   DCHECK(self);
   return self->quic_detailed_error_code;
 }
@@ -96,10 +104,10 @@ void Cronet_QuicHint_set_port(Cronet_QuicHintPtr self, int32_t port) {
   self->port = port;
 }
 
-void Cronet_QuicHint_set_alternatePort(Cronet_QuicHintPtr self,
-                                       int32_t alternatePort) {
+void Cronet_QuicHint_set_alternate_port(Cronet_QuicHintPtr self,
+                                        int32_t alternate_port) {
   DCHECK(self);
-  self->alternatePort = alternatePort;
+  self->alternate_port = alternate_port;
 }
 
 // Struct Cronet_QuicHint getters.
@@ -113,9 +121,9 @@ int32_t Cronet_QuicHint_get_port(Cronet_QuicHintPtr self) {
   return self->port;
 }
 
-int32_t Cronet_QuicHint_get_alternatePort(Cronet_QuicHintPtr self) {
+int32_t Cronet_QuicHint_get_alternate_port(Cronet_QuicHintPtr self) {
   DCHECK(self);
-  return self->alternatePort;
+  return self->alternate_port;
 }
 
 // Struct Cronet_PublicKeyPins.
@@ -138,22 +146,22 @@ void Cronet_PublicKeyPins_set_host(Cronet_PublicKeyPinsPtr self,
   self->host = host;
 }
 
-void Cronet_PublicKeyPins_add_pinsSha256(Cronet_PublicKeyPinsPtr self,
-                                         CharString pinsSha256) {
+void Cronet_PublicKeyPins_add_pins_sha256(Cronet_PublicKeyPinsPtr self,
+                                          CharString pins_sha256) {
   DCHECK(self);
-  self->pinsSha256.push_back(pinsSha256);
+  self->pins_sha256.push_back(pins_sha256);
 }
 
-void Cronet_PublicKeyPins_set_includeSubdomains(Cronet_PublicKeyPinsPtr self,
-                                                bool includeSubdomains) {
+void Cronet_PublicKeyPins_set_include_subdomains(Cronet_PublicKeyPinsPtr self,
+                                                 bool include_subdomains) {
   DCHECK(self);
-  self->includeSubdomains = includeSubdomains;
+  self->include_subdomains = include_subdomains;
 }
 
-void Cronet_PublicKeyPins_set_expirationDate(Cronet_PublicKeyPinsPtr self,
-                                             int64_t expirationDate) {
+void Cronet_PublicKeyPins_set_expiration_date(Cronet_PublicKeyPinsPtr self,
+                                              int64_t expiration_date) {
   DCHECK(self);
-  self->expirationDate = expirationDate;
+  self->expiration_date = expiration_date;
 }
 
 // Struct Cronet_PublicKeyPins getters.
@@ -162,26 +170,27 @@ CharString Cronet_PublicKeyPins_get_host(Cronet_PublicKeyPinsPtr self) {
   return self->host.c_str();
 }
 
-uint32_t Cronet_PublicKeyPins_get_pinsSha256Size(Cronet_PublicKeyPinsPtr self) {
+uint32_t Cronet_PublicKeyPins_get_pins_sha256Size(
+    Cronet_PublicKeyPinsPtr self) {
   DCHECK(self);
-  return self->pinsSha256.size();
+  return self->pins_sha256.size();
 }
-CharString Cronet_PublicKeyPins_get_pinsSha256AtIndex(
+CharString Cronet_PublicKeyPins_get_pins_sha256AtIndex(
     Cronet_PublicKeyPinsPtr self,
     uint32_t index) {
   DCHECK(self);
-  DCHECK(index < self->pinsSha256.size());
-  return self->pinsSha256[index].c_str();
+  DCHECK(index < self->pins_sha256.size());
+  return self->pins_sha256[index].c_str();
 }
 
-bool Cronet_PublicKeyPins_get_includeSubdomains(Cronet_PublicKeyPinsPtr self) {
+bool Cronet_PublicKeyPins_get_include_subdomains(Cronet_PublicKeyPinsPtr self) {
   DCHECK(self);
-  return self->includeSubdomains;
+  return self->include_subdomains;
 }
 
-int64_t Cronet_PublicKeyPins_get_expirationDate(Cronet_PublicKeyPinsPtr self) {
+int64_t Cronet_PublicKeyPins_get_expiration_date(Cronet_PublicKeyPinsPtr self) {
   DCHECK(self);
-  return self->expirationDate;
+  return self->expiration_date;
 }
 
 // Struct Cronet_EngineParams.
@@ -198,173 +207,175 @@ void Cronet_EngineParams_Destroy(Cronet_EngineParamsPtr self) {
 }
 
 // Struct Cronet_EngineParams setters.
-void Cronet_EngineParams_set_enableCheckResult(Cronet_EngineParamsPtr self,
-                                               bool enableCheckResult) {
+void Cronet_EngineParams_set_enable_check_result(Cronet_EngineParamsPtr self,
+                                                 bool enable_check_result) {
   DCHECK(self);
-  self->enableCheckResult = enableCheckResult;
+  self->enable_check_result = enable_check_result;
 }
 
-void Cronet_EngineParams_set_userAgent(Cronet_EngineParamsPtr self,
-                                       CharString userAgent) {
+void Cronet_EngineParams_set_user_agent(Cronet_EngineParamsPtr self,
+                                        CharString user_agent) {
   DCHECK(self);
-  self->userAgent = userAgent;
+  self->user_agent = user_agent;
 }
 
-void Cronet_EngineParams_set_acceptLanguage(Cronet_EngineParamsPtr self,
-                                            CharString acceptLanguage) {
+void Cronet_EngineParams_set_accept_language(Cronet_EngineParamsPtr self,
+                                             CharString accept_language) {
   DCHECK(self);
-  self->acceptLanguage = acceptLanguage;
+  self->accept_language = accept_language;
 }
 
-void Cronet_EngineParams_set_storagePath(Cronet_EngineParamsPtr self,
-                                         CharString storagePath) {
+void Cronet_EngineParams_set_storage_path(Cronet_EngineParamsPtr self,
+                                          CharString storage_path) {
   DCHECK(self);
-  self->storagePath = storagePath;
+  self->storage_path = storage_path;
 }
 
-void Cronet_EngineParams_set_enableQuic(Cronet_EngineParamsPtr self,
-                                        bool enableQuic) {
+void Cronet_EngineParams_set_enable_quic(Cronet_EngineParamsPtr self,
+                                         bool enable_quic) {
   DCHECK(self);
-  self->enableQuic = enableQuic;
+  self->enable_quic = enable_quic;
 }
 
-void Cronet_EngineParams_set_enableHttp2(Cronet_EngineParamsPtr self,
-                                         bool enableHttp2) {
+void Cronet_EngineParams_set_enable_http2(Cronet_EngineParamsPtr self,
+                                          bool enable_http2) {
   DCHECK(self);
-  self->enableHttp2 = enableHttp2;
+  self->enable_http2 = enable_http2;
 }
 
-void Cronet_EngineParams_set_enableBrotli(Cronet_EngineParamsPtr self,
-                                          bool enableBrotli) {
+void Cronet_EngineParams_set_enable_brotli(Cronet_EngineParamsPtr self,
+                                           bool enable_brotli) {
   DCHECK(self);
-  self->enableBrotli = enableBrotli;
+  self->enable_brotli = enable_brotli;
 }
 
-void Cronet_EngineParams_set_httpCacheMode(
+void Cronet_EngineParams_set_http_cache_mode(
     Cronet_EngineParamsPtr self,
-    Cronet_EngineParams_HTTP_CACHE_MODE httpCacheMode) {
+    Cronet_EngineParams_HTTP_CACHE_MODE http_cache_mode) {
   DCHECK(self);
-  self->httpCacheMode = httpCacheMode;
+  self->http_cache_mode = http_cache_mode;
 }
 
-void Cronet_EngineParams_set_httpCacheMaxSize(Cronet_EngineParamsPtr self,
-                                              int64_t httpCacheMaxSize) {
+void Cronet_EngineParams_set_http_cache_max_size(Cronet_EngineParamsPtr self,
+                                                 int64_t http_cache_max_size) {
   DCHECK(self);
-  self->httpCacheMaxSize = httpCacheMaxSize;
+  self->http_cache_max_size = http_cache_max_size;
 }
 
-void Cronet_EngineParams_add_quicHints(Cronet_EngineParamsPtr self,
-                                       Cronet_QuicHintPtr quicHints) {
+void Cronet_EngineParams_add_quic_hints(Cronet_EngineParamsPtr self,
+                                        Cronet_QuicHintPtr quic_hints) {
   DCHECK(self);
-  std::unique_ptr<Cronet_QuicHint> tmp_ptr(quicHints);
-  self->quicHints.push_back(std::move(tmp_ptr));
+  std::unique_ptr<Cronet_QuicHint> tmp_ptr(quic_hints);
+  self->quic_hints.push_back(std::move(tmp_ptr));
 }
 
-void Cronet_EngineParams_add_publicKeyPins(
+void Cronet_EngineParams_add_public_key_pins(
     Cronet_EngineParamsPtr self,
-    Cronet_PublicKeyPinsPtr publicKeyPins) {
+    Cronet_PublicKeyPinsPtr public_key_pins) {
   DCHECK(self);
-  std::unique_ptr<Cronet_PublicKeyPins> tmp_ptr(publicKeyPins);
-  self->publicKeyPins.push_back(std::move(tmp_ptr));
+  std::unique_ptr<Cronet_PublicKeyPins> tmp_ptr(public_key_pins);
+  self->public_key_pins.push_back(std::move(tmp_ptr));
 }
 
-void Cronet_EngineParams_set_enablePublicKeyPinningBypassForLocalTrustAnchors(
+void Cronet_EngineParams_set_enable_public_key_pinning_bypass_for_local_trust_anchors(
     Cronet_EngineParamsPtr self,
-    bool enablePublicKeyPinningBypassForLocalTrustAnchors) {
+    bool enable_public_key_pinning_bypass_for_local_trust_anchors) {
   DCHECK(self);
-  self->enablePublicKeyPinningBypassForLocalTrustAnchors =
-      enablePublicKeyPinningBypassForLocalTrustAnchors;
+  self->enable_public_key_pinning_bypass_for_local_trust_anchors =
+      enable_public_key_pinning_bypass_for_local_trust_anchors;
 }
 
-void Cronet_EngineParams_set_experimentalOptions(
+void Cronet_EngineParams_set_experimental_options(
     Cronet_EngineParamsPtr self,
-    CharString experimentalOptions) {
+    CharString experimental_options) {
   DCHECK(self);
-  self->experimentalOptions = experimentalOptions;
+  self->experimental_options = experimental_options;
 }
 
 // Struct Cronet_EngineParams getters.
-bool Cronet_EngineParams_get_enableCheckResult(Cronet_EngineParamsPtr self) {
+bool Cronet_EngineParams_get_enable_check_result(Cronet_EngineParamsPtr self) {
   DCHECK(self);
-  return self->enableCheckResult;
+  return self->enable_check_result;
 }
 
-CharString Cronet_EngineParams_get_userAgent(Cronet_EngineParamsPtr self) {
+CharString Cronet_EngineParams_get_user_agent(Cronet_EngineParamsPtr self) {
   DCHECK(self);
-  return self->userAgent.c_str();
+  return self->user_agent.c_str();
 }
 
-CharString Cronet_EngineParams_get_acceptLanguage(Cronet_EngineParamsPtr self) {
-  DCHECK(self);
-  return self->acceptLanguage.c_str();
-}
-
-CharString Cronet_EngineParams_get_storagePath(Cronet_EngineParamsPtr self) {
-  DCHECK(self);
-  return self->storagePath.c_str();
-}
-
-bool Cronet_EngineParams_get_enableQuic(Cronet_EngineParamsPtr self) {
-  DCHECK(self);
-  return self->enableQuic;
-}
-
-bool Cronet_EngineParams_get_enableHttp2(Cronet_EngineParamsPtr self) {
-  DCHECK(self);
-  return self->enableHttp2;
-}
-
-bool Cronet_EngineParams_get_enableBrotli(Cronet_EngineParamsPtr self) {
-  DCHECK(self);
-  return self->enableBrotli;
-}
-
-Cronet_EngineParams_HTTP_CACHE_MODE Cronet_EngineParams_get_httpCacheMode(
+CharString Cronet_EngineParams_get_accept_language(
     Cronet_EngineParamsPtr self) {
   DCHECK(self);
-  return self->httpCacheMode;
+  return self->accept_language.c_str();
 }
 
-int64_t Cronet_EngineParams_get_httpCacheMaxSize(Cronet_EngineParamsPtr self) {
+CharString Cronet_EngineParams_get_storage_path(Cronet_EngineParamsPtr self) {
   DCHECK(self);
-  return self->httpCacheMaxSize;
+  return self->storage_path.c_str();
 }
 
-uint32_t Cronet_EngineParams_get_quicHintsSize(Cronet_EngineParamsPtr self) {
+bool Cronet_EngineParams_get_enable_quic(Cronet_EngineParamsPtr self) {
   DCHECK(self);
-  return self->quicHints.size();
+  return self->enable_quic;
 }
-Cronet_QuicHintPtr Cronet_EngineParams_get_quicHintsAtIndex(
+
+bool Cronet_EngineParams_get_enable_http2(Cronet_EngineParamsPtr self) {
+  DCHECK(self);
+  return self->enable_http2;
+}
+
+bool Cronet_EngineParams_get_enable_brotli(Cronet_EngineParamsPtr self) {
+  DCHECK(self);
+  return self->enable_brotli;
+}
+
+Cronet_EngineParams_HTTP_CACHE_MODE Cronet_EngineParams_get_http_cache_mode(
+    Cronet_EngineParamsPtr self) {
+  DCHECK(self);
+  return self->http_cache_mode;
+}
+
+int64_t Cronet_EngineParams_get_http_cache_max_size(
+    Cronet_EngineParamsPtr self) {
+  DCHECK(self);
+  return self->http_cache_max_size;
+}
+
+uint32_t Cronet_EngineParams_get_quic_hintsSize(Cronet_EngineParamsPtr self) {
+  DCHECK(self);
+  return self->quic_hints.size();
+}
+Cronet_QuicHintPtr Cronet_EngineParams_get_quic_hintsAtIndex(
     Cronet_EngineParamsPtr self,
     uint32_t index) {
   DCHECK(self);
-  DCHECK(index < self->quicHints.size());
-  return self->quicHints[index].get();
+  DCHECK(index < self->quic_hints.size());
+  return self->quic_hints[index].get();
 }
 
-uint32_t Cronet_EngineParams_get_publicKeyPinsSize(
+uint32_t Cronet_EngineParams_get_public_key_pinsSize(
     Cronet_EngineParamsPtr self) {
   DCHECK(self);
-  return self->publicKeyPins.size();
+  return self->public_key_pins.size();
 }
-Cronet_PublicKeyPinsPtr Cronet_EngineParams_get_publicKeyPinsAtIndex(
+Cronet_PublicKeyPinsPtr Cronet_EngineParams_get_public_key_pinsAtIndex(
     Cronet_EngineParamsPtr self,
     uint32_t index) {
   DCHECK(self);
-  DCHECK(index < self->publicKeyPins.size());
-  return self->publicKeyPins[index].get();
+  DCHECK(index < self->public_key_pins.size());
+  return self->public_key_pins[index].get();
 }
 
-bool Cronet_EngineParams_get_enablePublicKeyPinningBypassForLocalTrustAnchors(
+bool Cronet_EngineParams_get_enable_public_key_pinning_bypass_for_local_trust_anchors(
     Cronet_EngineParamsPtr self) {
   DCHECK(self);
-  return self->enablePublicKeyPinningBypassForLocalTrustAnchors;
+  return self->enable_public_key_pinning_bypass_for_local_trust_anchors;
 }
 
-CharString Cronet_EngineParams_get_experimentalOptions(
+CharString Cronet_EngineParams_get_experimental_options(
     Cronet_EngineParamsPtr self) {
   DCHECK(self);
-  return self->experimentalOptions.c_str();
+  return self->experimental_options.c_str();
 }
 
 // Struct Cronet_HttpHeader.
@@ -422,56 +433,56 @@ void Cronet_UrlResponseInfo_set_url(Cronet_UrlResponseInfoPtr self,
   self->url = url;
 }
 
-void Cronet_UrlResponseInfo_add_urlChain(Cronet_UrlResponseInfoPtr self,
-                                         CharString urlChain) {
+void Cronet_UrlResponseInfo_add_url_chain(Cronet_UrlResponseInfoPtr self,
+                                          CharString url_chain) {
   DCHECK(self);
-  self->urlChain.push_back(urlChain);
+  self->url_chain.push_back(url_chain);
 }
 
-void Cronet_UrlResponseInfo_set_httpStatusCode(Cronet_UrlResponseInfoPtr self,
-                                               int32_t httpStatusCode) {
+void Cronet_UrlResponseInfo_set_http_status_code(Cronet_UrlResponseInfoPtr self,
+                                                 int32_t http_status_code) {
   DCHECK(self);
-  self->httpStatusCode = httpStatusCode;
+  self->http_status_code = http_status_code;
 }
 
-void Cronet_UrlResponseInfo_set_httpStatusText(Cronet_UrlResponseInfoPtr self,
-                                               CharString httpStatusText) {
+void Cronet_UrlResponseInfo_set_http_status_text(Cronet_UrlResponseInfoPtr self,
+                                                 CharString http_status_text) {
   DCHECK(self);
-  self->httpStatusText = httpStatusText;
+  self->http_status_text = http_status_text;
 }
 
-void Cronet_UrlResponseInfo_add_allHeadersList(
+void Cronet_UrlResponseInfo_add_all_headers_list(
     Cronet_UrlResponseInfoPtr self,
-    Cronet_HttpHeaderPtr allHeadersList) {
+    Cronet_HttpHeaderPtr all_headers_list) {
   DCHECK(self);
-  std::unique_ptr<Cronet_HttpHeader> tmp_ptr(allHeadersList);
-  self->allHeadersList.push_back(std::move(tmp_ptr));
+  std::unique_ptr<Cronet_HttpHeader> tmp_ptr(all_headers_list);
+  self->all_headers_list.push_back(std::move(tmp_ptr));
 }
 
-void Cronet_UrlResponseInfo_set_wasCached(Cronet_UrlResponseInfoPtr self,
-                                          bool wasCached) {
+void Cronet_UrlResponseInfo_set_was_cached(Cronet_UrlResponseInfoPtr self,
+                                           bool was_cached) {
   DCHECK(self);
-  self->wasCached = wasCached;
+  self->was_cached = was_cached;
 }
 
-void Cronet_UrlResponseInfo_set_negotiatedProtocol(
+void Cronet_UrlResponseInfo_set_negotiated_protocol(
     Cronet_UrlResponseInfoPtr self,
-    CharString negotiatedProtocol) {
+    CharString negotiated_protocol) {
   DCHECK(self);
-  self->negotiatedProtocol = negotiatedProtocol;
+  self->negotiated_protocol = negotiated_protocol;
 }
 
-void Cronet_UrlResponseInfo_set_proxyServer(Cronet_UrlResponseInfoPtr self,
-                                            CharString proxyServer) {
+void Cronet_UrlResponseInfo_set_proxy_server(Cronet_UrlResponseInfoPtr self,
+                                             CharString proxy_server) {
   DCHECK(self);
-  self->proxyServer = proxyServer;
+  self->proxy_server = proxy_server;
 }
 
-void Cronet_UrlResponseInfo_set_receivedByteCount(
+void Cronet_UrlResponseInfo_set_received_byte_count(
     Cronet_UrlResponseInfoPtr self,
-    int64_t receivedByteCount) {
+    int64_t received_byte_count) {
   DCHECK(self);
-  self->receivedByteCount = receivedByteCount;
+  self->received_byte_count = received_byte_count;
 }
 
 // Struct Cronet_UrlResponseInfo getters.
@@ -480,65 +491,65 @@ CharString Cronet_UrlResponseInfo_get_url(Cronet_UrlResponseInfoPtr self) {
   return self->url.c_str();
 }
 
-uint32_t Cronet_UrlResponseInfo_get_urlChainSize(
+uint32_t Cronet_UrlResponseInfo_get_url_chainSize(
     Cronet_UrlResponseInfoPtr self) {
   DCHECK(self);
-  return self->urlChain.size();
+  return self->url_chain.size();
 }
-CharString Cronet_UrlResponseInfo_get_urlChainAtIndex(
+CharString Cronet_UrlResponseInfo_get_url_chainAtIndex(
     Cronet_UrlResponseInfoPtr self,
     uint32_t index) {
   DCHECK(self);
-  DCHECK(index < self->urlChain.size());
-  return self->urlChain[index].c_str();
+  DCHECK(index < self->url_chain.size());
+  return self->url_chain[index].c_str();
 }
 
-int32_t Cronet_UrlResponseInfo_get_httpStatusCode(
+int32_t Cronet_UrlResponseInfo_get_http_status_code(
     Cronet_UrlResponseInfoPtr self) {
   DCHECK(self);
-  return self->httpStatusCode;
+  return self->http_status_code;
 }
 
-CharString Cronet_UrlResponseInfo_get_httpStatusText(
+CharString Cronet_UrlResponseInfo_get_http_status_text(
     Cronet_UrlResponseInfoPtr self) {
   DCHECK(self);
-  return self->httpStatusText.c_str();
+  return self->http_status_text.c_str();
 }
 
-uint32_t Cronet_UrlResponseInfo_get_allHeadersListSize(
+uint32_t Cronet_UrlResponseInfo_get_all_headers_listSize(
     Cronet_UrlResponseInfoPtr self) {
   DCHECK(self);
-  return self->allHeadersList.size();
+  return self->all_headers_list.size();
 }
-Cronet_HttpHeaderPtr Cronet_UrlResponseInfo_get_allHeadersListAtIndex(
+Cronet_HttpHeaderPtr Cronet_UrlResponseInfo_get_all_headers_listAtIndex(
     Cronet_UrlResponseInfoPtr self,
     uint32_t index) {
   DCHECK(self);
-  DCHECK(index < self->allHeadersList.size());
-  return self->allHeadersList[index].get();
+  DCHECK(index < self->all_headers_list.size());
+  return self->all_headers_list[index].get();
 }
 
-bool Cronet_UrlResponseInfo_get_wasCached(Cronet_UrlResponseInfoPtr self) {
+bool Cronet_UrlResponseInfo_get_was_cached(Cronet_UrlResponseInfoPtr self) {
   DCHECK(self);
-  return self->wasCached;
+  return self->was_cached;
 }
 
-CharString Cronet_UrlResponseInfo_get_negotiatedProtocol(
+CharString Cronet_UrlResponseInfo_get_negotiated_protocol(
     Cronet_UrlResponseInfoPtr self) {
   DCHECK(self);
-  return self->negotiatedProtocol.c_str();
+  return self->negotiated_protocol.c_str();
 }
 
-CharString Cronet_UrlResponseInfo_get_proxyServer(
+CharString Cronet_UrlResponseInfo_get_proxy_server(
     Cronet_UrlResponseInfoPtr self) {
   DCHECK(self);
-  return self->proxyServer.c_str();
+  return self->proxy_server.c_str();
 }
 
-int64_t Cronet_UrlResponseInfo_get_receivedByteCount(
+int64_t Cronet_UrlResponseInfo_get_received_byte_count(
     Cronet_UrlResponseInfoPtr self) {
   DCHECK(self);
-  return self->receivedByteCount;
+  return self->received_byte_count;
 }
 
 // Struct Cronet_UrlRequestParams.
@@ -555,24 +566,24 @@ void Cronet_UrlRequestParams_Destroy(Cronet_UrlRequestParamsPtr self) {
 }
 
 // Struct Cronet_UrlRequestParams setters.
-void Cronet_UrlRequestParams_set_httpMethod(Cronet_UrlRequestParamsPtr self,
-                                            CharString httpMethod) {
+void Cronet_UrlRequestParams_set_http_method(Cronet_UrlRequestParamsPtr self,
+                                             CharString http_method) {
   DCHECK(self);
-  self->httpMethod = httpMethod;
+  self->http_method = http_method;
 }
 
-void Cronet_UrlRequestParams_add_requestHeaders(
+void Cronet_UrlRequestParams_add_request_headers(
     Cronet_UrlRequestParamsPtr self,
-    Cronet_HttpHeaderPtr requestHeaders) {
+    Cronet_HttpHeaderPtr request_headers) {
   DCHECK(self);
-  std::unique_ptr<Cronet_HttpHeader> tmp_ptr(requestHeaders);
-  self->requestHeaders.push_back(std::move(tmp_ptr));
+  std::unique_ptr<Cronet_HttpHeader> tmp_ptr(request_headers);
+  self->request_headers.push_back(std::move(tmp_ptr));
 }
 
-void Cronet_UrlRequestParams_set_disableCache(Cronet_UrlRequestParamsPtr self,
-                                              bool disableCache) {
+void Cronet_UrlRequestParams_set_disable_cache(Cronet_UrlRequestParamsPtr self,
+                                               bool disable_cache) {
   DCHECK(self);
-  self->disableCache = disableCache;
+  self->disable_cache = disable_cache;
 }
 
 void Cronet_UrlRequestParams_set_priority(
@@ -582,25 +593,25 @@ void Cronet_UrlRequestParams_set_priority(
   self->priority = priority;
 }
 
-void Cronet_UrlRequestParams_set_uploadDataProvider(
+void Cronet_UrlRequestParams_set_upload_data_provider(
     Cronet_UrlRequestParamsPtr self,
-    Cronet_UploadDataProviderPtr uploadDataProvider) {
+    Cronet_UploadDataProviderPtr upload_data_provider) {
   DCHECK(self);
-  self->uploadDataProvider = uploadDataProvider;
+  self->upload_data_provider = upload_data_provider;
 }
 
-void Cronet_UrlRequestParams_set_uploadDataProviderExecutor(
+void Cronet_UrlRequestParams_set_upload_data_provider_executor(
     Cronet_UrlRequestParamsPtr self,
-    Cronet_ExecutorPtr uploadDataProviderExecutor) {
+    Cronet_ExecutorPtr upload_data_provider_executor) {
   DCHECK(self);
-  self->uploadDataProviderExecutor = uploadDataProviderExecutor;
+  self->upload_data_provider_executor = upload_data_provider_executor;
 }
 
-void Cronet_UrlRequestParams_set_allowDirectExecutor(
+void Cronet_UrlRequestParams_set_allow_direct_executor(
     Cronet_UrlRequestParamsPtr self,
-    bool allowDirectExecutor) {
+    bool allow_direct_executor) {
   DCHECK(self);
-  self->allowDirectExecutor = allowDirectExecutor;
+  self->allow_direct_executor = allow_direct_executor;
 }
 
 void Cronet_UrlRequestParams_add_annotations(Cronet_UrlRequestParamsPtr self,
@@ -610,28 +621,29 @@ void Cronet_UrlRequestParams_add_annotations(Cronet_UrlRequestParamsPtr self,
 }
 
 // Struct Cronet_UrlRequestParams getters.
-CharString Cronet_UrlRequestParams_get_httpMethod(
+CharString Cronet_UrlRequestParams_get_http_method(
     Cronet_UrlRequestParamsPtr self) {
   DCHECK(self);
-  return self->httpMethod.c_str();
+  return self->http_method.c_str();
 }
 
-uint32_t Cronet_UrlRequestParams_get_requestHeadersSize(
+uint32_t Cronet_UrlRequestParams_get_request_headersSize(
     Cronet_UrlRequestParamsPtr self) {
   DCHECK(self);
-  return self->requestHeaders.size();
+  return self->request_headers.size();
 }
-Cronet_HttpHeaderPtr Cronet_UrlRequestParams_get_requestHeadersAtIndex(
+Cronet_HttpHeaderPtr Cronet_UrlRequestParams_get_request_headersAtIndex(
     Cronet_UrlRequestParamsPtr self,
     uint32_t index) {
   DCHECK(self);
-  DCHECK(index < self->requestHeaders.size());
-  return self->requestHeaders[index].get();
+  DCHECK(index < self->request_headers.size());
+  return self->request_headers[index].get();
 }
 
-bool Cronet_UrlRequestParams_get_disableCache(Cronet_UrlRequestParamsPtr self) {
+bool Cronet_UrlRequestParams_get_disable_cache(
+    Cronet_UrlRequestParamsPtr self) {
   DCHECK(self);
-  return self->disableCache;
+  return self->disable_cache;
 }
 
 Cronet_UrlRequestParams_REQUEST_PRIORITY Cronet_UrlRequestParams_get_priority(
@@ -640,22 +652,22 @@ Cronet_UrlRequestParams_REQUEST_PRIORITY Cronet_UrlRequestParams_get_priority(
   return self->priority;
 }
 
-Cronet_UploadDataProviderPtr Cronet_UrlRequestParams_get_uploadDataProvider(
+Cronet_UploadDataProviderPtr Cronet_UrlRequestParams_get_upload_data_provider(
     Cronet_UrlRequestParamsPtr self) {
   DCHECK(self);
-  return self->uploadDataProvider;
+  return self->upload_data_provider;
 }
 
-Cronet_ExecutorPtr Cronet_UrlRequestParams_get_uploadDataProviderExecutor(
+Cronet_ExecutorPtr Cronet_UrlRequestParams_get_upload_data_provider_executor(
     Cronet_UrlRequestParamsPtr self) {
   DCHECK(self);
-  return self->uploadDataProviderExecutor;
+  return self->upload_data_provider_executor;
 }
 
-bool Cronet_UrlRequestParams_get_allowDirectExecutor(
+bool Cronet_UrlRequestParams_get_allow_direct_executor(
     Cronet_UrlRequestParamsPtr self) {
   DCHECK(self);
-  return self->allowDirectExecutor;
+  return self->allow_direct_executor;
 }
 
 uint32_t Cronet_UrlRequestParams_get_annotationsSize(
@@ -670,3 +682,20 @@ RawDataPtr Cronet_UrlRequestParams_get_annotationsAtIndex(
   DCHECK(index < self->annotations.size());
   return self->annotations[index];
 }
+
+// Struct Cronet_RequestFinishedInfo.
+Cronet_RequestFinishedInfo::Cronet_RequestFinishedInfo() {}
+
+Cronet_RequestFinishedInfo::~Cronet_RequestFinishedInfo() {}
+
+Cronet_RequestFinishedInfoPtr Cronet_RequestFinishedInfo_Create() {
+  return new Cronet_RequestFinishedInfo();
+}
+
+void Cronet_RequestFinishedInfo_Destroy(Cronet_RequestFinishedInfoPtr self) {
+  delete self;
+}
+
+// Struct Cronet_RequestFinishedInfo setters.
+
+// Struct Cronet_RequestFinishedInfo getters.

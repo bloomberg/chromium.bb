@@ -28,7 +28,7 @@ class EngineTest : public ::testing::Test {
 TEST_F(EngineTest, StartCronetEngine) {
   Cronet_EnginePtr engine = Cronet_Engine_Create();
   Cronet_EngineParamsPtr engine_params = Cronet_EngineParams_Create();
-  Cronet_EngineParams_set_userAgent(engine_params, kUserAgent);
+  Cronet_EngineParams_set_user_agent(engine_params, kUserAgent);
   EXPECT_EQ(Cronet_RESULT_SUCCESS,
             Cronet_Engine_StartWithParams(engine, engine_params));
   Cronet_Engine_Destroy(engine);
@@ -62,18 +62,19 @@ TEST_F(EngineTest, StartResults) {
   Cronet_EngineParamsPtr engine_params = Cronet_EngineParams_Create();
   Cronet_EnginePtr engine = Cronet_Engine_Create();
   // Disable runtime CHECK of the result, so it could be verified.
-  Cronet_EngineParams_set_enableCheckResult(engine_params, false);
-  Cronet_EngineParams_set_httpCacheMode(
+  Cronet_EngineParams_set_enable_check_result(engine_params, false);
+  Cronet_EngineParams_set_http_cache_mode(
       engine_params, Cronet_EngineParams_HTTP_CACHE_MODE_DISK);
   EXPECT_EQ(Cronet_RESULT_ILLEGAL_ARGUMENT_STORAGE_PATH_MUST_EXIST,
             Cronet_Engine_StartWithParams(engine, engine_params));
-  Cronet_EngineParams_set_storagePath(engine_params, "InvalidPath");
+  Cronet_EngineParams_set_storage_path(engine_params, "InvalidPath");
   EXPECT_EQ(Cronet_RESULT_ILLEGAL_ARGUMENT_STORAGE_PATH_MUST_EXIST,
             Cronet_Engine_StartWithParams(engine, engine_params));
   base::ScopedTempDir temp_dir;
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath temp_path = base::MakeAbsoluteFilePath(temp_dir.GetPath());
-  Cronet_EngineParams_set_storagePath(engine_params, temp_path.value().c_str());
+  Cronet_EngineParams_set_storage_path(engine_params,
+                                       temp_path.value().c_str());
   // Now the engine should start successfully.
   EXPECT_EQ(Cronet_RESULT_SUCCESS,
             Cronet_Engine_StartWithParams(engine, engine_params));
@@ -98,10 +99,10 @@ TEST_F(EngineTest, InvalidPkpParams) {
   Cronet_EngineParamsPtr engine_params = Cronet_EngineParams_Create();
   Cronet_EnginePtr engine = Cronet_Engine_Create();
   // Disable runtime CHECK of the result, so it could be verified.
-  Cronet_EngineParams_set_enableCheckResult(engine_params, false);
+  Cronet_EngineParams_set_enable_check_result(engine_params, false);
   // Try adding invalid public key pins.
   Cronet_PublicKeyPinsPtr public_key_pins = Cronet_PublicKeyPins_Create();
-  Cronet_EngineParams_add_publicKeyPins(engine_params, public_key_pins);
+  Cronet_EngineParams_add_public_key_pins(engine_params, public_key_pins);
   EXPECT_EQ(Cronet_RESULT_NULL_POINTER_HOSTNAME,
             Cronet_Engine_StartWithParams(engine, engine_params));
   Cronet_PublicKeyPins_set_host(public_key_pins, std::string(256, 'a').c_str());
@@ -115,7 +116,7 @@ TEST_F(EngineTest, InvalidPkpParams) {
   EXPECT_EQ(Cronet_RESULT_NULL_POINTER_SHA256_PINS,
             Cronet_Engine_StartWithParams(engine, engine_params));
   // Detect invalid pin.
-  Cronet_PublicKeyPins_add_pinsSha256(public_key_pins, "invalid_sha256");
+  Cronet_PublicKeyPins_add_pins_sha256(public_key_pins, "invalid_sha256");
   EXPECT_EQ(Cronet_RESULT_ILLEGAL_ARGUMENT_INVALID_PIN,
             Cronet_Engine_StartWithParams(engine, engine_params));
   // THe engine cannot start with these params, and have to be destroyed.
@@ -127,13 +128,13 @@ TEST_F(EngineTest, ValidPkpParams) {
   Cronet_EngineParamsPtr engine_params = Cronet_EngineParams_Create();
   Cronet_EnginePtr engine = Cronet_Engine_Create();
   // Disable runtime CHECK of the result, so it could be verified.
-  Cronet_EngineParams_set_enableCheckResult(engine_params, false);
+  Cronet_EngineParams_set_enable_check_result(engine_params, false);
   // Add valid public key pins.
   Cronet_PublicKeyPinsPtr public_key_pins = Cronet_PublicKeyPins_Create();
   Cronet_PublicKeyPins_set_host(public_key_pins, "valid.host.name");
-  Cronet_PublicKeyPins_add_pinsSha256(
+  Cronet_PublicKeyPins_add_pins_sha256(
       public_key_pins, "sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=");
-  Cronet_EngineParams_add_publicKeyPins(engine_params, public_key_pins);
+  Cronet_EngineParams_add_public_key_pins(engine_params, public_key_pins);
   // The engine should start successfully.
   EXPECT_EQ(Cronet_RESULT_SUCCESS,
             Cronet_Engine_StartWithParams(engine, engine_params));
@@ -150,7 +151,7 @@ TEST_F(EngineTest, StartNetLogToFile) {
 
   Cronet_EnginePtr engine = Cronet_Engine_Create();
   Cronet_EngineParamsPtr engine_params = Cronet_EngineParams_Create();
-  Cronet_EngineParams_set_experimentalOptions(
+  Cronet_EngineParams_set_experimental_options(
       engine_params,
       "{ \"QUIC\" : {\"max_server_configs_stored_in_properties\" : 8} }");
   // Test that net log cannot start/stop before engine start.

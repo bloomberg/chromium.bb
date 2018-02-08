@@ -52,8 +52,8 @@ interface BufferCallback {
   OnDestroy(Buffer buffer);
 };
 
-// Base exception passed to UrlRequestCallback.onFailed().
-struct Exception {
+// Base error passed to UrlRequestCallback.onFailed().
+struct Error {
   enum ERROR_CODE {
     /**
      * Error code indicating the error returned by app callback.
@@ -124,7 +124,13 @@ struct Exception {
   /**
    * Error code, one of ERROR_* values.
    */
-  ERROR_CODE error_code = ERROR_CALLBACK;
+  ERROR_CODE errorCode = ERROR_CALLBACK;
+
+  /**
+   * Message, explaining the error.
+   */
+  string message;
+
   /**
    * Cronet internal error code. This may provide more specific error
    * diagnosis than |error_code|, but the constant values  may change over time.
@@ -201,6 +207,14 @@ enum RESULT {
    * Host name is invalid
    */
   ILLEGAL_ARGUMENT_INVALID_HOSTNAME = -103,
+  /**
+   * Invalid http method
+   */
+  ILLEGAL_ARGUMENT_INVALID_HTTP_METHOD = -104,
+  /**
+   * Invalid http header
+   */
+  ILLEGAL_ARGUMENT_INVALID_HTTP_HEADER = -105,
 
   /**
    * Illegal state
@@ -218,6 +232,22 @@ enum RESULT {
    * The engine has already started
    */
   ILLEGAL_STATE_ENGINE_ALREADY_STARTED = -203,
+  /**
+   * The request has already started
+   */
+  ILLEGAL_STATE_REQUEST_ALREADY_STARTED = -204,
+  /**
+   * The request is not initialized
+   */
+  ILLEGAL_STATE_REQUEST_NOT_INITIALIZED = -205,
+  /**
+   * No redirect to follow
+   */
+  ILLEGAL_STATE_UNEXPECTED_REDIRECT = -206,
+  /**
+   * Unexpected read attempt
+   */
+  ILLEGAL_STATE_UNEXPECTED_READ = -207,
 
   /**
    * Null pointer or empty data
@@ -235,6 +265,34 @@ enum RESULT {
    * The pin expiration date cannot be null
    */
   NULL_POINTER_EXPIRATION_DATE = -303,
+  /**
+   * Engine is required
+   */
+  NULL_POINTER_ENGINE = -304,
+  /**
+   * URL is required
+   */
+  NULL_POINTER_URL = -305,
+  /**
+   * Callback is required
+   */
+  NULL_POINTER_CALLBACK = -306,
+  /**
+   * Executor is required
+   */
+  NULL_POINTER_EXECUTOR = -307,
+  /**
+   * Method is required
+   */
+  NULL_POINTER_METHOD = -308,
+  /**
+   * Invalid header name
+   */
+  NULL_POINTER_HEADER_NAME = -309,
+  /**
+   * Invalid header value
+   */
+  NULL_POINTER_HEADER_VALUE = -310,
 };
 
 /**
@@ -256,17 +314,17 @@ interface Engine {
    * The file can be viewed using a Chrome browser navigated to
    * chrome://net-internals/#import
    * Returns |true| if netlog has started successfully, |false| otherwise.
-   * @param fileName the complete file path. It must not be empty. If the file
+   * @param file_name the complete file path. It must not be empty. If the file
    *            exists, it is truncated before starting. If actively logging,
    *            this method is ignored.
-   * @param logAll {@code true} to include basic events, user cookies,
+   * @param log_all {@code true} to include basic events, user cookies,
    *    credentials and all transferred bytes in the log. This option presents
    *    a privacy risk, since it exposes the user's credentials, and should
    *    only be used with the user's consent and in situations where the log
    *    won't be public.  {@code false} to just include basic events.
    */
   [Sync]
-  StartNetLogToFile(string fileName, bool logAll) => (bool started);
+  StartNetLogToFile(string file_name, bool log_all) => (bool started);
 
   /**
    * Stops NetLog logging and flushes file to disk. If a logging session is
@@ -292,14 +350,14 @@ interface Engine {
    * Returns a human-readable version string of the engine.
    */
   [Sync]
-  GetVersionString() => (string versionString);
+  GetVersionString() => (string version_string);
 
   /**
    * Returns default human-readable version string of the engine. Can be used
    * before StartWithParams() is called.
    */
   [Sync]
-  GetDefaultUserAgent() => (string defaultUserAgent);
+  GetDefaultUserAgent() => (string default_user_agent);
 };
 
 /**
@@ -319,7 +377,7 @@ struct QuicHint {
   /**
    * Alternate port to use for QUIC.
    */
-  int32 alternatePort = 0;
+  int32 alternate_port = 0;
 };
 
 /**
@@ -350,17 +408,17 @@ struct PublicKeyPins {
    * that can be used if the control of the primary private key has been
    * lost, it is highly recommended to supply one.
    */
-  array<string> pinsSha256;
+  array<string> pins_sha256;
 
   /**
    * Indicates whether the pinning policy should be applied to subdomains of |host|.
    */
-  bool includeSubdomains = false;
+  bool include_subdomains = false;
 
   /**
    * The expiration date for the pins in milliseconds since epoch (as in java.util.Date).
    */
-  int64 expirationDate;
+  int64 expiration_date;
 };
 
 /**
@@ -373,44 +431,44 @@ struct EngineParams {
    * Override strict result checking for all operations that return RESULT.
    * If set to true, then failed result will cause native crash via SIGABORT.
    */
-  bool enableCheckResult = true;
+  bool enable_check_result = true;
 
   /**
    * Override of the User-Agent header for all requests. An explicitly
    * set User-Agent header will override a value set using this param.
    */
-  string userAgent;
+  string user_agent;
 
   /**
    * Sets a default value for the Accept-Language header value for UrlRequests
    * created by this engine. Explicitly setting the Accept-Language header
    * value for individual UrlRequests will override this value.
    */
-  string acceptLanguage;
+  string accept_language;
 
   /**
    * Directory for HTTP Cache and Prefs Storage. The directory must exist.
    */
-  string storagePath;
+  string storage_path;
 
   /**
    * Whether <a href="https://www.chromium.org/quic">QUIC</a> protocol
    * is enabled. If QUIC is enabled, then QUIC User Agent Id
    * containing application name and Cronet version is sent to the server.
    */
-  bool enableQuic = false;
+  bool enable_quic = false;
 
   /**
    * Whether <a href="https://tools.ietf.org/html/rfc7540">HTTP/2</a>
    * protocol is enabled.
    */
-  bool enableHttp2 = true;
+  bool enable_http2 = true;
 
   /**
    * Whether <a href="https://tools.ietf.org/html/rfc7932">Brotli</a> compression is
    * enabled. If enabled, Brotli will be advertised in Accept-Encoding request headers.
    */
-  bool enableBrotli = true;
+  bool enable_brotli = true;
 
   /**
    * Enables or disables caching of HTTP data and other information like QUIC
@@ -439,23 +497,23 @@ struct EngineParams {
      */
     DISK = 3
   };
-  HTTP_CACHE_MODE httpCacheMode = DISABLED;
+  HTTP_CACHE_MODE http_cache_mode = DISABLED;
 
   /**
    * Maximum size in bytes used to cache data (advisory and maybe exceeded at
    * times).
    */
-  int64 httpCacheMaxSize = 0;
+  int64 http_cache_max_size = 0;
 
   /**
    * Hints that hosts support QUIC.
    */
-  array<QuicHint> quicHints;
+  array<QuicHint> quic_hints;
 
   /**
    * Pins a set of public keys for given hosts. See |PublicKeyPins| for explanation.
    */
-  array<PublicKeyPins> publicKeyPins;
+  array<PublicKeyPins> public_key_pins;
 
   /**
    * Enables or disables public key pinning bypass for local trust anchors. Disabling the
@@ -467,12 +525,12 @@ struct EngineParams {
    * information see 'How does key pinning interact with local proxies and filters?' at
    * https://www.chromium.org/Home/chromium-security/security-faq
    */
-  bool enablePublicKeyPinningBypassForLocalTrustAnchors = true;
+  bool enable_public_key_pinning_bypass_for_local_trust_anchors = true;
 
   /**
    * JSON formatted experimental options to be used in Cronet Engine.
    */
-  string experimentalOptions;
+  string experimental_options;
 };
 
 /**
@@ -501,44 +559,44 @@ struct UrlResponseInfo {
    * The URL chain. The first entry is the originally requested URL;
    * the following entries are redirects followed.
    */
-  array<string> urlChain;
+  array<string> url_chain;
 
   /**
    * The HTTP status code. When a resource is retrieved from the cache,
    * whether it was revalidated or not, the original status code is returned.
    */
-  int32 httpStatusCode;
+  int32 http_status_code;
 
   /**
    * The HTTP status text of the status line. For example, if the
    * request received a "HTTP/1.1 200 OK" response, this method returns "OK".
    */
-  string httpStatusText;
+  string http_status_text;
 
   /**
    * Returns an unmodifiable list of response header field and value pairs.
    * The headers are in the same order they are received over the wire.
    */
-  array<HttpHeader> allHeadersList;
+  array<HttpHeader> all_headers_list;
 
   /**
    * True if the response came from the cache, including
    * requests that were revalidated over the network before being retrieved
    * from the cache, failed otherwise.
    */
-  bool wasCached;
+  bool was_cached;
 
   /**
    * The protocol (for example 'quic/1+spdy/3') negotiated with the server.
    * An empty string if no protocol was negotiated, the protocol is
    * not known, or when using plain HTTP or HTTPS.
    */
-  string negotiatedProtocol;
+  string negotiated_protocol;
 
   /**
    * The proxy server that was used for the request.
    */
-  string proxyServer;
+  string proxy_server;
 
   /**
    * A minimum count of bytes received from the network to process this
@@ -547,7 +605,7 @@ struct UrlResponseInfo {
    * taken prior to decompression (for example GZIP and Brotli) and includes
    * headers and data from all redirects.
    */
-  int64 receivedByteCount;
+  int64 received_byte_count;
 };
 
 /**
@@ -702,9 +760,9 @@ interface UrlRequestCallback {
    *
    * @param request Request being redirected.
    * @param info Response information.
-   * @param newLocationUrl Location where request is redirected.
+   * @param new_location_url Location where request is redirected.
    */
-  OnRedirectReceived(UrlRequest request, UrlResponseInfo info, string newLocationUrl);
+  OnRedirectReceived(UrlRequest request, UrlResponseInfo info, string new_location_url);
 
   /**
    * Invoked when the final set of headers, after all redirects, is received.
@@ -736,10 +794,10 @@ interface UrlRequestCallback {
    * @param request Request that received data.
    * @param info Response information.
    * @param buffer The buffer that was passed in to UrlRequest.read(), now
-   *         containing the received data. The buffer's position is updated to the end of
-   *         the received data. The buffer's limit is not changed.
+   *         containing the received data.
+   * @param bytes_read The number of bytes read into buffer.
    */
-  OnReadCompleted(UrlRequest request, UrlResponseInfo info, Buffer buffer);
+  OnReadCompleted(UrlRequest request, UrlResponseInfo info, Buffer buffer, uint64 bytes_read);
 
   /**
    * Invoked when request is completed successfully. Once invoked, no other
@@ -760,7 +818,7 @@ interface UrlRequestCallback {
    *         received.
    * @param error information about error.
    */
-  OnFailed(UrlRequest request, UrlResponseInfo info, Exception error);
+  OnFailed(UrlRequest request, UrlResponseInfo info, Error error);
 
   /**
    * Invoked if request was canceled via UrlRequest.cancel(). Once
@@ -781,16 +839,16 @@ interface UploadDataSink {
   /**
    * Called by UploadDataProvider when a read succeeds.
    *
-   * @param finalChunk For chunked uploads, |true| if this is the final
+   * @param final_chunk For chunked uploads, |true| if this is the final
    *     read. It must be |false| for non-chunked uploads.
    */
-  OnReadSucceeded(bool finalChunk);
+  OnReadSucceeded(bool final_chunk);
 
   /**
    * Called by UploadDataProvider when a read fails.
    * @param error to pass on to UrlRequestCallback.onFailed().
    */
-  OnReadError(Exception error);
+  OnReadError(Error error);
 
   /**
    * Called by UploadDataProvider when a rewind succeeds.
@@ -802,7 +860,7 @@ interface UploadDataSink {
    * uploads is not supported.
    * @param error to pass on to UrlRequestCallback.onFailed().
    */
-  OnRewindError(Exception error);
+  OnRewindError(Error error);
 };
 
 /**
@@ -834,12 +892,12 @@ interface UploadDataProvider {
    * the associated UrlRequest is canceled, one or the other must
    * still be called before resources can be safely freed.
    *
-   * @param uploadDataSink The object to notify when the read has completed,
+   * @param upload_data_sink The object to notify when the read has completed,
    *            successfully or otherwise.
    * @param buffer The buffer to copy the read bytes into. Do not change
    *            byteBuffer's limit.
    */
-  Read(UploadDataSink uploadDataSink, Buffer buffer);
+  Read(UploadDataSink upload_data_sink, Buffer buffer);
 
   /**
    * Rewinds upload data. Each call must be followed be a single
@@ -857,10 +915,10 @@ interface UploadDataProvider {
    * follow redirects that preserve the upload body, and for retrying when the
    * server times out stale sockets.
    *
-   * @param uploadDataSink The object to notify when the rewind operation has
+   * @param upload_data_sink The object to notify when the rewind operation has
    *         completed, successfully or otherwise.
    */
-  Rewind(UploadDataSink uploadDataSink);
+  Rewind(UploadDataSink upload_data_sink);
 
   /**
    * Called when this UploadDataProvider is no longer needed by a request, so that resources
@@ -887,23 +945,26 @@ interface UrlRequest {
    * @param callback Callback that gets invoked on different events.
    * @param executor Executor on which all callbacks will be invoked.
    */
+  [Sync]
   InitWithParams(Engine engine,
                  string url,
                  UrlRequestParams params,
                  UrlRequestCallback callback,
-                 Executor executor);
+                 Executor executor) => (RESULT result);
 
   /**
    * Starts the request, all callbacks go to UrlRequestCallback. May only be called
    * once. May not be called if Cancel() has been called.
    */
-  Start();
+  [Sync]
+  Start() => (RESULT result);
 
   /**
    * Follows a pending redirect. Must only be called at most once for each
    * invocation of UrlRequestCallback.OnRedirectReceived().
    */
-  FollowRedirect();
+  [Sync]
+  FollowRedirect() => (RESULT result);
 
   /**
    * Attempts to read part of the response body into the provided buffer.
@@ -922,7 +983,8 @@ interface UrlRequest {
    *        modify buffer's position, limit, or data between its position and
    *        limit until the request calls back into the UrlRequestCallback.
    */
-  Read(Buffer buffer);
+  [Sync]
+  Read(Buffer buffer) => (RESULT result);
 
   /**
    * Cancels the request. Can be called at any time.
@@ -991,18 +1053,18 @@ struct UrlRequestParams {
    *
    * Allowed methods are "GET", "HEAD", "DELETE", "POST" or "PUT".
    */
-  string httpMethod;
+  string http_method;
 
   /**
    * Array of HTTP headers for this request..
    */
-  array<HttpHeader> requestHeaders;
+  array<HttpHeader> request_headers;
 
   /**
    * Disables cache for the request. If context is not set up to use cache,
    * this call has no effect.
    */
-  bool disableCache = false;
+  bool disable_cache = false;
 
   /**
    * Priority of the request which should be one of the REQUEST_PRIORITY values.
@@ -1013,12 +1075,12 @@ struct UrlRequestParams {
    * Upload data provider. Setting this value switches method to "POST" if not
    * explicitly set. Starting the request will fail if a Content-Type header is not set.
    */
-  UploadDataProvider uploadDataProvider;
+  UploadDataProvider upload_data_provider;
 
   /**
    * Upload data provider executor that will be used to invoke uploadDataProvider.
    */
-  Executor uploadDataProviderExecutor;
+  Executor upload_data_provider_executor;
 
   /**
    * Marks that the executors this request will use to notify callbacks (for
@@ -1029,11 +1091,35 @@ struct UrlRequestParams {
    * It should not be used if your callbacks perform disk I/O, acquire locks, or call into
    * other code you don't carefully control and audit.
    */
-  bool allowDirectExecutor = false;
+  bool allow_direct_executor = false;
 
   /**
    * Associates the annotation object with this request. May add more than one.
    * Passed through to a RequestFinishedInfo.Listener.
    */
   array<handle> annotations;
+};
+
+/**
+ * Information about a finished request.
+ * TODO(mef): Define this to include metrics.
+ */
+struct RequestFinishedInfo {
+  /**
+   * The reason why the request finished.
+   */
+  enum FINISHED_REASON {
+    /**
+     * The request succeeded.
+     */
+    SUCCEEDED = 0,
+    /**
+     * The request failed or returned an error.
+     */
+    FAILED = 1,
+    /**
+     * The request was canceled.
+     */
+    CANCELED = 2,
+  };
 };

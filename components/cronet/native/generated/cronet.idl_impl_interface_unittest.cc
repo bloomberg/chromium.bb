@@ -243,8 +243,8 @@ Cronet_RESULT TestCronet_Engine_StartWithParams(Cronet_EnginePtr self,
   return static_cast<Cronet_RESULT>(0);
 }
 bool TestCronet_Engine_StartNetLogToFile(Cronet_EnginePtr self,
-                                         CharString fileName,
-                                         bool logAll) {
+                                         CharString file_name,
+                                         bool log_all) {
   CHECK(self);
   Cronet_EngineContext context = Cronet_Engine_GetContext(self);
   Cronet_EngineTest* test = static_cast<Cronet_EngineTest*>(context);
@@ -385,7 +385,7 @@ void TestCronet_UrlRequestCallback_OnRedirectReceived(
     Cronet_UrlRequestCallbackPtr self,
     Cronet_UrlRequestPtr request,
     Cronet_UrlResponseInfoPtr info,
-    CharString newLocationUrl) {
+    CharString new_location_url) {
   CHECK(self);
   Cronet_UrlRequestCallbackContext context =
       Cronet_UrlRequestCallback_GetContext(self);
@@ -410,7 +410,8 @@ void TestCronet_UrlRequestCallback_OnReadCompleted(
     Cronet_UrlRequestCallbackPtr self,
     Cronet_UrlRequestPtr request,
     Cronet_UrlResponseInfoPtr info,
-    Cronet_BufferPtr buffer) {
+    Cronet_BufferPtr buffer,
+    uint64_t bytes_read) {
   CHECK(self);
   Cronet_UrlRequestCallbackContext context =
       Cronet_UrlRequestCallback_GetContext(self);
@@ -434,7 +435,7 @@ void TestCronet_UrlRequestCallback_OnSucceeded(
 void TestCronet_UrlRequestCallback_OnFailed(Cronet_UrlRequestCallbackPtr self,
                                             Cronet_UrlRequestPtr request,
                                             Cronet_UrlResponseInfoPtr info,
-                                            Cronet_ExceptionPtr error) {
+                                            Cronet_ErrorPtr error) {
   CHECK(self);
   Cronet_UrlRequestCallbackContext context =
       Cronet_UrlRequestCallback_GetContext(self);
@@ -500,7 +501,7 @@ class Cronet_UploadDataSinkTest : public ::testing::Test {
 namespace {
 // Implementation of Cronet_UploadDataSink methods for testing.
 void TestCronet_UploadDataSink_OnReadSucceeded(Cronet_UploadDataSinkPtr self,
-                                               bool finalChunk) {
+                                               bool final_chunk) {
   CHECK(self);
   Cronet_UploadDataSinkContext context = Cronet_UploadDataSink_GetContext(self);
   Cronet_UploadDataSinkTest* test =
@@ -509,7 +510,7 @@ void TestCronet_UploadDataSink_OnReadSucceeded(Cronet_UploadDataSinkPtr self,
   test->OnReadSucceeded_called_ = true;
 }
 void TestCronet_UploadDataSink_OnReadError(Cronet_UploadDataSinkPtr self,
-                                           Cronet_ExceptionPtr error) {
+                                           Cronet_ErrorPtr error) {
   CHECK(self);
   Cronet_UploadDataSinkContext context = Cronet_UploadDataSink_GetContext(self);
   Cronet_UploadDataSinkTest* test =
@@ -526,7 +527,7 @@ void TestCronet_UploadDataSink_OnRewindSucceded(Cronet_UploadDataSinkPtr self) {
   test->OnRewindSucceded_called_ = true;
 }
 void TestCronet_UploadDataSink_OnRewindError(Cronet_UploadDataSinkPtr self,
-                                             Cronet_ExceptionPtr error) {
+                                             Cronet_ErrorPtr error) {
   CHECK(self);
   Cronet_UploadDataSinkContext context = Cronet_UploadDataSink_GetContext(self);
   Cronet_UploadDataSinkTest* test =
@@ -588,9 +589,10 @@ int64_t TestCronet_UploadDataProvider_GetLength(
 
   return static_cast<int64_t>(0);
 }
-void TestCronet_UploadDataProvider_Read(Cronet_UploadDataProviderPtr self,
-                                        Cronet_UploadDataSinkPtr uploadDataSink,
-                                        Cronet_BufferPtr buffer) {
+void TestCronet_UploadDataProvider_Read(
+    Cronet_UploadDataProviderPtr self,
+    Cronet_UploadDataSinkPtr upload_data_sink,
+    Cronet_BufferPtr buffer) {
   CHECK(self);
   Cronet_UploadDataProviderContext context =
       Cronet_UploadDataProvider_GetContext(self);
@@ -601,7 +603,7 @@ void TestCronet_UploadDataProvider_Read(Cronet_UploadDataProviderPtr self,
 }
 void TestCronet_UploadDataProvider_Rewind(
     Cronet_UploadDataProviderPtr self,
-    Cronet_UploadDataSinkPtr uploadDataSink) {
+    Cronet_UploadDataSinkPtr upload_data_sink) {
   CHECK(self);
   Cronet_UploadDataProviderContext context =
       Cronet_UploadDataProvider_GetContext(self);
@@ -664,39 +666,48 @@ class Cronet_UrlRequestTest : public ::testing::Test {
 
 namespace {
 // Implementation of Cronet_UrlRequest methods for testing.
-void TestCronet_UrlRequest_InitWithParams(Cronet_UrlRequestPtr self,
-                                          Cronet_EnginePtr engine,
-                                          CharString url,
-                                          Cronet_UrlRequestParamsPtr params,
-                                          Cronet_UrlRequestCallbackPtr callback,
-                                          Cronet_ExecutorPtr executor) {
+Cronet_RESULT TestCronet_UrlRequest_InitWithParams(
+    Cronet_UrlRequestPtr self,
+    Cronet_EnginePtr engine,
+    CharString url,
+    Cronet_UrlRequestParamsPtr params,
+    Cronet_UrlRequestCallbackPtr callback,
+    Cronet_ExecutorPtr executor) {
   CHECK(self);
   Cronet_UrlRequestContext context = Cronet_UrlRequest_GetContext(self);
   Cronet_UrlRequestTest* test = static_cast<Cronet_UrlRequestTest*>(context);
   CHECK(test);
   test->InitWithParams_called_ = true;
+
+  return static_cast<Cronet_RESULT>(0);
 }
-void TestCronet_UrlRequest_Start(Cronet_UrlRequestPtr self) {
+Cronet_RESULT TestCronet_UrlRequest_Start(Cronet_UrlRequestPtr self) {
   CHECK(self);
   Cronet_UrlRequestContext context = Cronet_UrlRequest_GetContext(self);
   Cronet_UrlRequestTest* test = static_cast<Cronet_UrlRequestTest*>(context);
   CHECK(test);
   test->Start_called_ = true;
+
+  return static_cast<Cronet_RESULT>(0);
 }
-void TestCronet_UrlRequest_FollowRedirect(Cronet_UrlRequestPtr self) {
+Cronet_RESULT TestCronet_UrlRequest_FollowRedirect(Cronet_UrlRequestPtr self) {
   CHECK(self);
   Cronet_UrlRequestContext context = Cronet_UrlRequest_GetContext(self);
   Cronet_UrlRequestTest* test = static_cast<Cronet_UrlRequestTest*>(context);
   CHECK(test);
   test->FollowRedirect_called_ = true;
+
+  return static_cast<Cronet_RESULT>(0);
 }
-void TestCronet_UrlRequest_Read(Cronet_UrlRequestPtr self,
-                                Cronet_BufferPtr buffer) {
+Cronet_RESULT TestCronet_UrlRequest_Read(Cronet_UrlRequestPtr self,
+                                         Cronet_BufferPtr buffer) {
   CHECK(self);
   Cronet_UrlRequestContext context = Cronet_UrlRequest_GetContext(self);
   Cronet_UrlRequestTest* test = static_cast<Cronet_UrlRequestTest*>(context);
   CHECK(test);
   test->Read_called_ = true;
+
+  return static_cast<Cronet_RESULT>(0);
 }
 void TestCronet_UrlRequest_Cancel(Cronet_UrlRequestPtr self) {
   CHECK(self);

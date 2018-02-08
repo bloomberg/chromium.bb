@@ -35,7 +35,8 @@ class RunnablesTest : public ::testing::Test {
       Cronet_UrlRequestCallbackPtr self,
       Cronet_UrlRequestPtr request,
       Cronet_UrlResponseInfoPtr info,
-      Cronet_BufferPtr buffer);
+      Cronet_BufferPtr buffer,
+      uint64_t bytesRead);
 
   bool callback_called() const { return callback_called_; }
 
@@ -102,7 +103,8 @@ void RunnablesTest::UrlRequestCallback_OnReadCompleted(
     Cronet_UrlRequestCallbackPtr self,
     Cronet_UrlRequestPtr request,
     Cronet_UrlResponseInfoPtr info,
-    Cronet_BufferPtr buffer) {
+    Cronet_BufferPtr buffer,
+    uint64_t bytesRead) {
   CHECK(self);
   CHECK(buffer);
   // Destroy the |buffer|.
@@ -182,7 +184,7 @@ TEST_F(RunnablesTest, TestCronetBuffer) {
   Cronet_RunnablePtr runnable = new cronet::OnceClosureRunnable(base::BindOnce(
       RunnablesTest::UrlRequestCallback_OnReadCompleted, callback,
       /* request = */ nullptr,
-      /* response_info = */ nullptr, buffer));
+      /* response_info = */ nullptr, buffer, /* bytes_read = */ 0));
   Cronet_UrlRequestCallback_SetContext(callback, this);
   Cronet_Executor_Execute(executor, runnable);
   scoped_task_environment_.RunUntilIdle();

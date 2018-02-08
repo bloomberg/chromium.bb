@@ -15,20 +15,20 @@
 
 #include "base/macros.h"
 
-// Struct Cronet_Exception.
-struct Cronet_Exception {
+// Struct Cronet_Error.
+struct Cronet_Error {
  public:
-  Cronet_Exception();
-  ~Cronet_Exception();
+  Cronet_Error();
+  ~Cronet_Error();
 
-  Cronet_Exception_ERROR_CODE error_code =
-      Cronet_Exception_ERROR_CODE_ERROR_CALLBACK;
+  Cronet_Error_ERROR_CODE errorCode = Cronet_Error_ERROR_CODE_ERROR_CALLBACK;
+  std::string message;
   int32_t internal_error_code = 0;
   bool immediately_retryable = false;
   int32_t quic_detailed_error_code = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(Cronet_Exception);
+  DISALLOW_COPY_AND_ASSIGN(Cronet_Error);
 };
 
 // Struct Cronet_QuicHint.
@@ -39,7 +39,7 @@ struct Cronet_QuicHint {
 
   std::string host;
   int32_t port = 0;
-  int32_t alternatePort = 0;
+  int32_t alternate_port = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Cronet_QuicHint);
@@ -52,9 +52,9 @@ struct Cronet_PublicKeyPins {
   ~Cronet_PublicKeyPins();
 
   std::string host;
-  std::vector<std::string> pinsSha256;
-  bool includeSubdomains = false;
-  int64_t expirationDate;
+  std::vector<std::string> pins_sha256;
+  bool include_subdomains = false;
+  int64_t expiration_date;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Cronet_PublicKeyPins);
@@ -66,20 +66,20 @@ struct Cronet_EngineParams {
   Cronet_EngineParams();
   ~Cronet_EngineParams();
 
-  bool enableCheckResult = true;
-  std::string userAgent;
-  std::string acceptLanguage;
-  std::string storagePath;
-  bool enableQuic = false;
-  bool enableHttp2 = true;
-  bool enableBrotli = true;
-  Cronet_EngineParams_HTTP_CACHE_MODE httpCacheMode =
+  bool enable_check_result = true;
+  std::string user_agent;
+  std::string accept_language;
+  std::string storage_path;
+  bool enable_quic = false;
+  bool enable_http2 = true;
+  bool enable_brotli = true;
+  Cronet_EngineParams_HTTP_CACHE_MODE http_cache_mode =
       Cronet_EngineParams_HTTP_CACHE_MODE_DISABLED;
-  int64_t httpCacheMaxSize = 0;
-  std::vector<std::unique_ptr<Cronet_QuicHint>> quicHints;
-  std::vector<std::unique_ptr<Cronet_PublicKeyPins>> publicKeyPins;
-  bool enablePublicKeyPinningBypassForLocalTrustAnchors = true;
-  std::string experimentalOptions;
+  int64_t http_cache_max_size = 0;
+  std::vector<std::unique_ptr<Cronet_QuicHint>> quic_hints;
+  std::vector<std::unique_ptr<Cronet_PublicKeyPins>> public_key_pins;
+  bool enable_public_key_pinning_bypass_for_local_trust_anchors = true;
+  std::string experimental_options;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Cronet_EngineParams);
@@ -105,14 +105,14 @@ struct Cronet_UrlResponseInfo {
   ~Cronet_UrlResponseInfo();
 
   std::string url;
-  std::vector<std::string> urlChain;
-  int32_t httpStatusCode;
-  std::string httpStatusText;
-  std::vector<std::unique_ptr<Cronet_HttpHeader>> allHeadersList;
-  bool wasCached;
-  std::string negotiatedProtocol;
-  std::string proxyServer;
-  int64_t receivedByteCount;
+  std::vector<std::string> url_chain;
+  int32_t http_status_code;
+  std::string http_status_text;
+  std::vector<std::unique_ptr<Cronet_HttpHeader>> all_headers_list;
+  bool was_cached;
+  std::string negotiated_protocol;
+  std::string proxy_server;
+  int64_t received_byte_count;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Cronet_UrlResponseInfo);
@@ -124,18 +124,28 @@ struct Cronet_UrlRequestParams {
   Cronet_UrlRequestParams();
   ~Cronet_UrlRequestParams();
 
-  std::string httpMethod;
-  std::vector<std::unique_ptr<Cronet_HttpHeader>> requestHeaders;
-  bool disableCache = false;
+  std::string http_method;
+  std::vector<std::unique_ptr<Cronet_HttpHeader>> request_headers;
+  bool disable_cache = false;
   Cronet_UrlRequestParams_REQUEST_PRIORITY priority =
       Cronet_UrlRequestParams_REQUEST_PRIORITY_REQUEST_PRIORITY_MEDIUM;
-  Cronet_UploadDataProviderPtr uploadDataProvider;
-  Cronet_ExecutorPtr uploadDataProviderExecutor;
-  bool allowDirectExecutor = false;
+  Cronet_UploadDataProviderPtr upload_data_provider;
+  Cronet_ExecutorPtr upload_data_provider_executor;
+  bool allow_direct_executor = false;
   std::vector<RawDataPtr> annotations;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Cronet_UrlRequestParams);
+};
+
+// Struct Cronet_RequestFinishedInfo.
+struct Cronet_RequestFinishedInfo {
+ public:
+  Cronet_RequestFinishedInfo();
+  ~Cronet_RequestFinishedInfo();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(Cronet_RequestFinishedInfo);
 };
 
 #endif  // COMPONENTS_CRONET_NATIVE_GENERATED_CRONET_IDL_IMPL_STRUCT_H_

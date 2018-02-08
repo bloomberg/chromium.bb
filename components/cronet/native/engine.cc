@@ -104,16 +104,16 @@ Cronet_RESULT Cronet_EngineImpl::StartWithParams(
   cronet::EnsureInitialized();
   base::AutoLock lock(lock_);
 
-  enable_check_result_ = params->enableCheckResult;
+  enable_check_result_ = params->enable_check_result;
   if (context_) {
     return CheckResult(Cronet_RESULT_ILLEGAL_STATE_ENGINE_ALREADY_STARTED);
   }
 
   URLRequestContextConfigBuilder context_config_builder;
-  context_config_builder.enable_quic = params->enableQuic;
-  context_config_builder.enable_spdy = params->enableHttp2;
-  context_config_builder.enable_brotli = params->enableBrotli;
-  switch (params->httpCacheMode) {
+  context_config_builder.enable_quic = params->enable_quic;
+  context_config_builder.enable_spdy = params->enable_http2;
+  context_config_builder.enable_brotli = params->enable_brotli;
+  switch (params->http_cache_mode) {
     case Cronet_EngineParams_HTTP_CACHE_MODE_DISABLED:
       context_config_builder.http_cache = URLRequestContextConfig::DISABLED;
       break;
@@ -122,45 +122,45 @@ Cronet_RESULT Cronet_EngineImpl::StartWithParams(
       break;
     case Cronet_EngineParams_HTTP_CACHE_MODE_DISK:
       context_config_builder.http_cache = URLRequestContextConfig::DISK;
-      if (!base::DirectoryExists(base::FilePath(params->storagePath))) {
+      if (!base::DirectoryExists(base::FilePath(params->storage_path))) {
         return CheckResult(
             Cronet_RESULT_ILLEGAL_ARGUMENT_STORAGE_PATH_MUST_EXIST);
       }
       if (!SharedEngineState::GetInstance()->MarkStoragePathInUse(
-              params->storagePath)) {
-        LOG(ERROR) << "Disk cache path " << params->storagePath
+              params->storage_path)) {
+        LOG(ERROR) << "Disk cache path " << params->storage_path
                    << " is already used, cache disabled.";
         return CheckResult(Cronet_RESULT_ILLEGAL_STATE_STORAGE_PATH_IN_USE);
       }
-      in_use_storage_path_ = params->storagePath;
+      in_use_storage_path_ = params->storage_path;
       break;
     default:
       context_config_builder.http_cache = URLRequestContextConfig::DISABLED;
   }
-  context_config_builder.http_cache_max_size = params->httpCacheMaxSize;
-  context_config_builder.storage_path = params->storagePath;
-  context_config_builder.accept_language = params->acceptLanguage;
-  context_config_builder.user_agent = params->userAgent;
-  context_config_builder.experimental_options = params->experimentalOptions;
+  context_config_builder.http_cache_max_size = params->http_cache_max_size;
+  context_config_builder.storage_path = params->storage_path;
+  context_config_builder.accept_language = params->accept_language;
+  context_config_builder.user_agent = params->user_agent;
+  context_config_builder.experimental_options = params->experimental_options;
   context_config_builder.bypass_public_key_pinning_for_local_trust_anchors =
-      params->enablePublicKeyPinningBypassForLocalTrustAnchors;
+      params->enable_public_key_pinning_bypass_for_local_trust_anchors;
 
   std::unique_ptr<URLRequestContextConfig> config =
       context_config_builder.Build();
 
-  for (const auto& publicKeyPins : params->publicKeyPins) {
+  for (const auto& public_key_pins : params->public_key_pins) {
     auto pkp = std::make_unique<URLRequestContextConfig::Pkp>(
-        publicKeyPins->host, publicKeyPins->includeSubdomains,
-        base::Time::FromJavaTime(publicKeyPins->expirationDate));
+        public_key_pins->host, public_key_pins->include_subdomains,
+        base::Time::FromJavaTime(public_key_pins->expiration_date));
     if (pkp->host.empty())
       return CheckResult(Cronet_RESULT_NULL_POINTER_HOSTNAME);
     if (!IsValidHostnameForPkp(pkp->host))
       return CheckResult(Cronet_RESULT_ILLEGAL_ARGUMENT_INVALID_HOSTNAME);
     if (pkp->expiration_date.is_null())
       return CheckResult(Cronet_RESULT_NULL_POINTER_EXPIRATION_DATE);
-    if (publicKeyPins->pinsSha256.empty())
+    if (public_key_pins->pins_sha256.empty())
       return CheckResult(Cronet_RESULT_NULL_POINTER_SHA256_PINS);
-    for (const auto& pin_sha256 : publicKeyPins->pinsSha256) {
+    for (const auto& pin_sha256 : public_key_pins->pins_sha256) {
       net::HashValue pin_hash;
       if (!pin_hash.FromString(pin_sha256))
         return CheckResult(Cronet_RESULT_ILLEGAL_ARGUMENT_INVALID_PIN);
@@ -169,10 +169,10 @@ Cronet_RESULT Cronet_EngineImpl::StartWithParams(
     config->pkp_list.push_back(std::move(pkp));
   }
 
-  for (const auto& quic_hint : params->quicHints) {
+  for (const auto& quic_hint : params->quic_hints) {
     config->quic_hints.push_back(
         std::make_unique<URLRequestContextConfig::QuicHint>(
-            quic_hint->host, quic_hint->port, quic_hint->alternatePort));
+            quic_hint->host, quic_hint->port, quic_hint->alternate_port));
   }
 
   context_ = std::make_unique<CronetURLRequestContext>(
@@ -192,11 +192,11 @@ Cronet_RESULT Cronet_EngineImpl::StartWithParams(
   return CheckResult(Cronet_RESULT_SUCCESS);
 }
 
-bool Cronet_EngineImpl::StartNetLogToFile(CharString fileName, bool logAll) {
+bool Cronet_EngineImpl::StartNetLogToFile(CharString file_name, bool log_all) {
   base::AutoLock lock(lock_);
   if (is_logging_ || !context_)
     return false;
-  is_logging_ = context_->StartNetLogToFile(fileName, logAll);
+  is_logging_ = context_->StartNetLogToFile(file_name, log_all);
   return is_logging_;
 }
 
