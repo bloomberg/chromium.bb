@@ -715,6 +715,7 @@ bool NGBoxFragmentPainter::NodeAtPoint(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
     const LayoutPoint& accumulated_offset,
+    const LayoutPoint& accumulated_offset_for_legacy,
     HitTestAction action) {
   // TODO(eae): Switch to using NG geometry types.
   LayoutSize offset(box_fragment_.Offset().left, box_fragment_.Offset().top);
@@ -747,9 +748,13 @@ bool NGBoxFragmentPainter::NodeAtPoint(
     }
   }
 
+  // TODO(layout-dev): Accumulate |accumulated_offset_for_legacy| properly.
+  LayoutPoint adjusted_location_for_legacy =
+      accumulated_offset_for_legacy + offset;
   if (!skip_children &&
       HitTestChildren(result, box_fragment_.Children(), location_in_container,
-                      adjusted_location, action)) {
+                      adjusted_location, adjusted_location_for_legacy,
+                      action)) {
     return true;
   }
 
@@ -831,6 +836,7 @@ bool NGBoxFragmentPainter::HitTestChildren(
     const Vector<std::unique_ptr<NGPaintFragment>>& children,
     const HitTestLocation& location_in_container,
     const LayoutPoint& accumulated_offset,
+    const LayoutPoint& accumulated_offset_for_legacy,
     HitTestAction action) {
   for (auto iter = children.rbegin(); iter != children.rend(); iter++) {
     const std::unique_ptr<NGPaintFragment>& child = *iter;
@@ -841,16 +847,24 @@ bool NGBoxFragmentPainter::HitTestChildren(
     if (fragment.Type() == NGPhysicalFragment::kFragmentBox) {
       if (FragmentRequiresLegacyFallback(fragment)) {
         stop_hit_testing = fragment.GetLayoutObject()->NodeAtPoint(
-            result, location_in_container, accumulated_offset, action);
+            result, location_in_container, accumulated_offset_for_legacy,
+            action);
       } else {
+        // TODO(layout-dev): Accumulate |accumulated_offset_for_legacy|
+        // properly.
         stop_hit_testing = NGBoxFragmentPainter(*child).NodeAtPoint(
-            result, location_in_container, accumulated_offset, action);
+            result, location_in_container, accumulated_offset,
+            accumulated_offset_for_legacy, action);
       }
 
     } else if (fragment.Type() == NGPhysicalFragment::kFragmentLineBox) {
-      stop_hit_testing =
-          HitTestChildren(result, child->Children(), location_in_container,
-                          accumulated_offset, action);
+      const LayoutSize line_box_offset(fragment.Offset().left,
+                                       fragment.Offset().top);
+      const LayoutPoint adjusted_offset = accumulated_offset + line_box_offset;
+      // TODO(layout-dev): Accumulate |accumulated_offset_for_legacy| properly.
+      stop_hit_testing = HitTestChildren(result, child->Children(),
+                                         location_in_container, adjusted_offset,
+                                         accumulated_offset_for_legacy, action);
 
     } else if (fragment.Type() == NGPhysicalFragment::kFragmentText) {
       // TODO(eae): Should this hit test on the text itself or the containing
