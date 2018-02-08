@@ -556,16 +556,20 @@ void CrashReporterWriter::AddFileContents(const char* filename_msg,
 
 #if defined(OS_ANDROID)
 // Writes the "package" field, which is in the format:
-// $PACKAGE_NAME v$VERSION_CODE ($VERSION_NAME)
+// $FIREBASE_APP_ID v$VERSION_CODE ($VERSION_NAME)
 void WriteAndroidPackage(MimeWriter& writer,
                          base::android::BuildInfo* android_build_info) {
+  // Don't write the field if no Firebase ID is set.
+  if (android_build_info->firebase_app_id()[0] == '\0') {
+    return;
+  }
   // The actual size limits on packageId and versionName are quite generous.
   // Limit to a reasonable size rather than allocating theoretical limits.
   const int kMaxSize = 1024;
   char buf[kMaxSize];
 
   // Not using sprintf to ensure no heap allocations.
-  my_strlcpy(buf, android_build_info->package_name(), kMaxSize);
+  my_strlcpy(buf, android_build_info->firebase_app_id(), kMaxSize);
   my_strlcat(buf, " v", kMaxSize);
   my_strlcat(buf, android_build_info->package_version_code(), kMaxSize);
   my_strlcat(buf, " (", kMaxSize);

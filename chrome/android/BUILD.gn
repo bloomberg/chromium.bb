@@ -449,7 +449,6 @@ junit_binary("chrome_junit_tests") {
     "//ui/android:ui_java",
     "//url/mojom:url_mojom_gurl_java",
   ]
-  srcjar_deps = [ "//base:base_build_config_gen" ]
 
   package_name = manifest_package
 }

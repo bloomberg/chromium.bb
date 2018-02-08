@@ -73,7 +73,8 @@ public class BuildInfo {
                     Build.BRAND, Build.DEVICE, Build.ID, Build.MANUFACTURER, Build.MODEL,
                     String.valueOf(Build.VERSION.SDK_INT), Build.TYPE, packageLabel, packageName,
                     versionCode, versionName, getAndroidBuildFingerprint(), getGMSVersionCode(pm),
-                    installerPackageName, abiString, extractedFileSuffix,
+                    installerPackageName, abiString, BuildConfig.FIREBASE_APP_ID,
+                    extractedFileSuffix,
             };
         } catch (NameNotFoundException e) {
             throw new RuntimeException(e);
@@ -107,7 +108,7 @@ public class BuildInfo {
 
     /** Returns a string that is different each time the apk changes. */
     public static String getExtractedFileSuffix() {
-        return getAll()[15];
+        return getAll()[16];
     }
 
     public static String getPackageLabel() {

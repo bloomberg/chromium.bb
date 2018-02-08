@@ -95,6 +95,5 @@ if (is_android) {
       "//base:base_junit_test_support",
       "//third_party/junit",
     ]
-    srcjar_deps = [ "//base:base_build_config_gen" ]
   }
 }

@@ -2903,7 +2903,6 @@ if (is_android) {
       ":base_junit_test_support",
       "//third_party/hamcrest:hamcrest_java",
     ]
-    srcjar_deps = [ ":base_build_config_gen" ]
   }
 
   java_cpp_enum("base_android_java_enums_srcjar") {
@@ -2917,19 +2916,8 @@ if (is_android) {
     ]
   }
 
-  java_cpp_template("base_build_config_gen") {
-    sources = [
-      "android/java/templates/BuildConfig.template",
-    ]
-    package_path = "org/chromium/base"
-
-    defines = []
-    if (is_java_debug || dcheck_always_on) {
-      defines += [ "_DCHECK_IS_ON" ]
-    }
-    if (use_cfi_diag || is_ubsan || is_ubsan_security || is_ubsan_vptr) {
-      defines += [ "_IS_UBSAN" ]
-    }
+  generate_build_config_srcjar("base_build_config_gen") {
+    use_final_fields = false
   }
 
   java_cpp_template("base_native_libraries_gen") {
