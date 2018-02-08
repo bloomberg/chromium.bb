@@ -1,5 +1,0 @@
-include_rules = [
-  "+net",
-  "+third_party/crc32c",
-  "+third_party/leveldatabase",
-]

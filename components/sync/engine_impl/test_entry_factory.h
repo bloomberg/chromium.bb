@@ -103,32 +103,6 @@ class TestEntryFactory {
   const sync_pb::EntitySpecifics& GetLocalSpecificsForItem(
       int64_t meta_handle) const;
 
-  // Looks up the item referenced by |meta_handle|. If successful, overwrites
-  // the server attachment metadata with |metadata|, sets
-  // IS_UNAPPLIED_UPDATES/IS_UNSYNCED appropriately, and returns true.
-  // Else, return false.
-  bool SetServerAttachmentMetadataForItem(
-      int64_t meta_handle,
-      const sync_pb::AttachmentMetadata metadata);
-
-  // Looks up the item referenced by |meta_handle|. If successful, overwrites
-  // the local attachment metadata with |metadata|, sets
-  // IS_UNAPPLIED_UPDATES/IS_UNSYNCED appropriately, and returns true.
-  // Else, return false.
-  bool SetLocalAttachmentMetadataForItem(
-      int64_t meta_handle,
-      const sync_pb::AttachmentMetadata metadata);
-
-  // Looks up the item referenced by |meta_handle| and returns its server
-  // attachment metadata.
-  const sync_pb::AttachmentMetadata& GetServerAttachmentMetadataForItem(
-      int64_t meta_handle) const;
-
-  // Looks up the item referenced by |meta_handle| and returns its attachment
-  // metadata.
-  const sync_pb::AttachmentMetadata& GetLocalAttachmentMetadataForItem(
-      int64_t meta_handle) const;
-
   // Getters for IS_UNSYNCED and IS_UNAPPLIED_UPDATE bit fields.
   bool GetIsUnsyncedForItem(int64_t meta_handle) const;
   bool GetIsUnappliedForItem(int64_t meta_handle) const;

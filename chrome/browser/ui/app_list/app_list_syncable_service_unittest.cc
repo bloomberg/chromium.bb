@@ -13,7 +13,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
-#include "components/sync/model/attachments/attachment_service_proxy_for_test.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory.h"
 #include "components/sync/model/sync_error_factory_mock.h"
@@ -106,10 +105,8 @@ syncer::SyncData CreateAppRemoteData(const std::string& id,
   if (item_pin_ordinal != kUnset)
     app_list->set_item_pin_ordinal(item_pin_ordinal);
 
-  return syncer::SyncData::CreateRemoteData(
-      std::hash<std::string>{}(id), specifics, base::Time(),
-      syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create());
+  return syncer::SyncData::CreateRemoteData(std::hash<std::string>{}(id),
+                                            specifics, base::Time());
 }
 
 syncer::SyncDataList CreateBadAppRemoteData(const std::string& id) {

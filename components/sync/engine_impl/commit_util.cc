@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/strings/string_util.h"
-#include "components/sync/base/attachment_id_proto.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
@@ -87,15 +86,6 @@ void SetEntrySpecifics(const Entry& meta_entry,
   DCHECK_EQ(meta_entry.GetModelType(), GetModelType(*sync_entry));
 }
 
-void SetAttachmentIds(const Entry& meta_entry,
-                      sync_pb::SyncEntity* sync_entry) {
-  const sync_pb::AttachmentMetadata& attachment_metadata =
-      meta_entry.GetAttachmentMetadata();
-  for (int i = 0; i < attachment_metadata.record_size(); ++i) {
-    *sync_entry->add_attachment_id() = attachment_metadata.record(i).id();
-  }
-}
-
 }  // namespace
 
 void BuildCommitItem(const syncable::Entry& meta_entry,
@@ -160,8 +150,6 @@ void BuildCommitItem(const syncable::Entry& meta_entry,
   }
   sync_entry->set_ctime(TimeToProtoTime(meta_entry.GetCtime()));
   sync_entry->set_mtime(TimeToProtoTime(meta_entry.GetMtime()));
-
-  SetAttachmentIds(meta_entry, sync_entry);
 
   // Handle bookmarks separately.
   if (meta_entry.GetSpecifics().has_bookmark()) {
@@ -299,8 +287,6 @@ void UpdateServerFieldsAfterCommit(
       (committed_entry.folder() ||
        committed_entry.bookmarkdata().bookmark_folder()));
   local_entry->PutServerSpecifics(committed_entry.specifics());
-  local_entry->PutServerAttachmentMetadata(
-      CreateAttachmentMetadata(committed_entry.attachment_id()));
   local_entry->PutServerMtime(ProtoTimeToTime(committed_entry.mtime()));
   local_entry->PutServerCtime(ProtoTimeToTime(committed_entry.ctime()));
   if (committed_entry.has_unique_position()) {

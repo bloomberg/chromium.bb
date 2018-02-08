@@ -27,8 +27,6 @@ struct UserShare;
 // The GCP is created "on the fly" at just the right time, on just the right
 // thread. Given that, we use a factory to instantiate GenericChangeProcessors
 // so that tests can choose to use a fake processor (i.e instead of injection).
-// |sync_factory| is used to create AttachmentServicefor GenericChangeProcessor.
-// It is not retained after CreateGenericChangeProcessor exits.
 class GenericChangeProcessorFactory {
  public:
   GenericChangeProcessorFactory();

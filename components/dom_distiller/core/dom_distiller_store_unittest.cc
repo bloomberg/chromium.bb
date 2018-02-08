@@ -19,8 +19,6 @@
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/dom_distiller_test_util.h"
 #include "components/leveldb_proto/testing/fake_db.h"
-#include "components/sync/model/attachments/attachment_id.h"
-#include "components/sync/model/attachments/attachment_service_proxy_for_test.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -163,10 +161,8 @@ class DomDistillerStoreTest : public testing::Test {
  protected:
   SyncData CreateSyncData(const ArticleEntry& entry) {
     EntitySpecifics specifics = SpecificsFromEntry(entry);
-    return SyncData::CreateRemoteData(
-        next_sync_id_++, specifics, Time::UnixEpoch(),
-        syncer::AttachmentIdList(),
-        syncer::AttachmentServiceProxyForTest::Create());
+    return SyncData::CreateRemoteData(next_sync_id_++, specifics,
+                                      Time::UnixEpoch());
   }
 
   SyncDataList SyncDataFromEntryMap(const EntryMap& model) {

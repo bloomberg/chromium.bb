@@ -139,10 +139,6 @@ class WriteNode : public BaseNode {
   // Should only be called if GetModelType() == TYPED_URLS.
   void SetTypedUrlSpecifics(const sync_pb::TypedUrlSpecifics& specifics);
 
-  // Set the attachment metadata.
-  void SetAttachmentMetadata(
-      const sync_pb::AttachmentMetadata& attachment_metadata);
-
   // Implementation of BaseNode's abstract virtual accessors.
   const syncable::Entry* GetEntry() const override;
 

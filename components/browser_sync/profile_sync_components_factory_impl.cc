@@ -37,10 +37,7 @@
 #include "components/sync/driver/proxy_data_type_controller.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync/engine/attachments/attachment_downloader.h"
-#include "components/sync/engine/attachments/attachment_uploader.h"
 #include "components/sync/engine/sync_engine.h"
-#include "components/sync/model/attachments/attachment_service.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
@@ -380,54 +377,6 @@ TokenServiceProvider::GetTokenServiceTaskRunner() {
 
 OAuth2TokenService* TokenServiceProvider::GetTokenService() {
   return token_service_;
-}
-
-std::unique_ptr<syncer::AttachmentService>
-ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
-    std::unique_ptr<syncer::AttachmentStoreForSync> attachment_store,
-    const syncer::UserShare& user_share,
-    const std::string& store_birthday,
-    syncer::ModelType model_type,
-    syncer::AttachmentService::Delegate* delegate) {
-  std::unique_ptr<syncer::AttachmentUploader> attachment_uploader;
-  std::unique_ptr<syncer::AttachmentDownloader> attachment_downloader;
-  // Only construct an AttachmentUploader and AttachmentDownload if we have sync
-  // credentials. We may not have sync credentials because there may not be a
-  // signed in sync user.
-  if (!user_share.sync_credentials.account_id.empty() &&
-      !user_share.sync_credentials.scope_set.empty()) {
-    scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>
-        token_service_provider(
-            new TokenServiceProvider(ui_thread_, token_service_));
-    // TODO(maniscalco): Use shared (one per profile) thread-safe instances of
-    // AttachmentUploader and AttachmentDownloader instead of creating a new one
-    // per AttachmentService (bug 369536).
-    attachment_uploader = syncer::AttachmentUploader::Create(
-        sync_service_url_, url_request_context_getter_,
-        user_share.sync_credentials.account_id,
-        user_share.sync_credentials.scope_set, token_service_provider,
-        store_birthday, model_type);
-
-    token_service_provider =
-        new TokenServiceProvider(ui_thread_, token_service_);
-    attachment_downloader = syncer::AttachmentDownloader::Create(
-        sync_service_url_, url_request_context_getter_,
-        user_share.sync_credentials.account_id,
-        user_share.sync_credentials.scope_set, token_service_provider,
-        store_birthday, model_type);
-  }
-
-  // It is important that the initial backoff delay is relatively large.  For
-  // whatever reason, the server may fail all requests for a short period of
-  // time.  When this happens we don't want to overwhelm the server with
-  // requests so we use a large initial backoff.
-  const base::TimeDelta initial_backoff_delay =
-      base::TimeDelta::FromMinutes(30);
-  const base::TimeDelta max_backoff_delay = base::TimeDelta::FromHours(4);
-  return syncer::AttachmentService::Create(
-      std::move(attachment_store), std::move(attachment_uploader),
-      std::move(attachment_downloader), delegate, initial_backoff_delay,
-      max_backoff_delay);
 }
 
 syncer::SyncApiComponentFactory::SyncComponents

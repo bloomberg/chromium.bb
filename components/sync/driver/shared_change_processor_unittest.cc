@@ -18,9 +18,6 @@
 #include "components/sync/driver/generic_change_processor.h"
 #include "components/sync/driver/generic_change_processor_factory.h"
 #include "components/sync/driver/sync_api_component_factory.h"
-#include "components/sync/model/attachments/attachment_id.h"
-#include "components/sync/model/attachments/attachment_service.h"
-#include "components/sync/model/attachments/attachment_store.h"
 #include "components/sync/model/data_type_error_handler_mock.h"
 #include "components/sync/model/fake_syncable_service.h"
 #include "components/sync/syncable/test_user_share.h"
@@ -67,14 +64,6 @@ class TestSyncApiComponentFactory : public SyncApiComponentFactory {
       std::unique_ptr<DataTypeErrorHandler> error_handler) override {
     return SyncApiComponentFactory::SyncComponents(nullptr, nullptr);
   }
-  std::unique_ptr<AttachmentService> CreateAttachmentService(
-      std::unique_ptr<AttachmentStoreForSync> attachment_store,
-      const UserShare& user_share,
-      const std::string& store_birthday,
-      ModelType model_type,
-      AttachmentService::Delegate* delegate) override {
-    return AttachmentService::CreateForTest();
-  }
 };
 
 class SyncSharedChangeProcessorTest : public testing::Test,
@@ -83,8 +72,7 @@ class SyncSharedChangeProcessorTest : public testing::Test,
   SyncSharedChangeProcessorTest()
       : FakeSyncClient(&factory_),
         model_thread_("dbthread"),
-        did_connect_(false),
-        has_attachment_service_(false) {}
+        did_connect_(false) {}
 
   ~SyncSharedChangeProcessorTest() override {
     EXPECT_FALSE(db_syncable_service_.get());
@@ -137,25 +125,6 @@ class SyncSharedChangeProcessorTest : public testing::Test,
                    base::Unretained(this), shared_change_processor_)));
   }
 
-  void SetAttachmentStore() {
-    EXPECT_TRUE(model_thread_.task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&SyncSharedChangeProcessorTest::SetAttachmentStoreOnDBThread,
-                   base::Unretained(this))));
-  }
-
-  bool HasAttachmentService() {
-    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-    EXPECT_TRUE(model_thread_.task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &SyncSharedChangeProcessorTest::CheckAttachmentServiceOnDBThread,
-            base::Unretained(this), base::Unretained(&event))));
-    event.Wait();
-    return has_attachment_service_;
-  }
-
  private:
   // Used by SetUp().
   void SetUpDBSyncableService() {
@@ -171,13 +140,6 @@ class SyncSharedChangeProcessorTest : public testing::Test,
     db_syncable_service_.reset();
   }
 
-  void SetAttachmentStoreOnDBThread() {
-    DCHECK(model_thread_.task_runner()->BelongsToCurrentThread());
-    DCHECK(db_syncable_service_.get());
-    db_syncable_service_->set_attachment_store(
-        AttachmentStore::CreateInMemoryStore());
-  }
-
   // Used by Connect().  The SharedChangeProcessor is passed in
   // because we modify |shared_change_processor_| on the main thread
   // (in TearDown()).
@@ -191,13 +153,6 @@ class SyncSharedChangeProcessorTest : public testing::Test,
     did_connect_ = true;
   }
 
-  void CheckAttachmentServiceOnDBThread(base::WaitableEvent* event) {
-    DCHECK(model_thread_.task_runner()->BelongsToCurrentThread());
-    DCHECK(db_syncable_service_.get());
-    has_attachment_service_ = !!db_syncable_service_->attachment_service();
-    event->Signal();
-  }
-
   base::MessageLoop frontend_loop_;
   base::Thread model_thread_;
   TestUserShare test_user_share_;
@@ -207,7 +162,6 @@ class SyncSharedChangeProcessorTest : public testing::Test,
 
   GenericChangeProcessorFactory processor_factory_;
   bool did_connect_;
-  bool has_attachment_service_;
 
   // Used only on DB thread.
   std::unique_ptr<FakeSyncableService> db_syncable_service_;
@@ -217,15 +171,6 @@ class SyncSharedChangeProcessorTest : public testing::Test,
 // nothing further should happen.
 TEST_F(SyncSharedChangeProcessorTest, Basic) {
   Connect();
-}
-
-// Connect the shared change processor to a syncable service with
-// AttachmentStore. Verify that shared change processor implementation
-// creates AttachmentService and passes it back to the syncable service.
-TEST_F(SyncSharedChangeProcessorTest, ConnectWithAttachmentStore) {
-  SetAttachmentStore();
-  Connect();
-  EXPECT_TRUE(HasAttachmentService());
 }
 
 }  // namespace

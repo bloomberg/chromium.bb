@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/model/attachments/attachment.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "url/gurl.h"
 
@@ -165,9 +164,6 @@ class BaseNode {
   // Do not call this function on items that do not support positioning
   // (ie. non-bookmarks).
   int GetPositionIndex() const;
-
-  // Returns this item's attachment ids.
-  const AttachmentIdList GetAttachmentIds() const;
 
   // Returns a base::DictionaryValue serialization of this node.
   std::unique_ptr<base::DictionaryValue> ToValue() const;

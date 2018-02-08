@@ -23,7 +23,6 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/in_memory_history_backend.h"
 #include "components/history/core/test/test_history_database.h"
-#include "components/sync/model/attachments/attachment_service_proxy_for_test.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_change_processor_wrapper_for_test.h"
 #include "components/sync/model/sync_error.h"
@@ -374,9 +373,8 @@ VisitVector TypedUrlSyncableServiceTest::ApplyUrlAndVisitsChange(
   sync_pb::TypedUrlSpecifics* typed_url_specifics =
       entity_specifics.mutable_typed_url();
   WriteToTypedUrlSpecifics(row, visits, typed_url_specifics);
-  syncer::SyncData sync_data = syncer::SyncData::CreateRemoteData(
-      1, entity_specifics, base::Time(), syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create());
+  syncer::SyncData sync_data =
+      syncer::SyncData::CreateRemoteData(1, entity_specifics, base::Time());
   syncer::SyncChange sync_change(FROM_HERE, change_type, sync_data);
   change_list.push_back(sync_change);
   typed_url_sync_service_->ProcessSyncChanges(FROM_HERE, change_list);

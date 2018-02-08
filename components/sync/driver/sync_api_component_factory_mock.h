@@ -47,12 +47,6 @@ class SyncApiComponentFactoryMock : public SyncApiComponentFactory {
   void SetLocalDeviceInfoProvider(
       std::unique_ptr<LocalDeviceInfoProvider> local_device);
 
-  std::unique_ptr<AttachmentService> CreateAttachmentService(
-      std::unique_ptr<AttachmentStoreForSync> attachment_store,
-      const UserShare& user_share,
-      const std::string& store_birthday,
-      ModelType model_type,
-      AttachmentService::Delegate* delegate) override;
   SyncComponents CreateBookmarkSyncComponents(
       SyncService* sync_service,
       std::unique_ptr<DataTypeErrorHandler> error_handler) override;

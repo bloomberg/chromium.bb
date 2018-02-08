@@ -233,46 +233,6 @@ bool MutableEntry::PutPredecessor(const Id& predecessor_id) {
   return true;
 }
 
-void MutableEntry::PutAttachmentMetadata(
-    const sync_pb::AttachmentMetadata& value) {
-  DCHECK(kernel_);
-  const std::string& serialized_value = value.SerializeAsString();
-  if (serialized_value !=
-      kernel_->ref(ATTACHMENT_METADATA).SerializeAsString()) {
-    write_transaction()->TrackChangesTo(kernel_);
-    dir()->UpdateAttachmentIndex(GetMetahandle(),
-                                 kernel_->ref(ATTACHMENT_METADATA), value);
-    // Check for potential sharing - ATTACHMENT_METADATA is often
-    // copied from SERVER_ATTACHMENT_METADATA.
-    if (serialized_value ==
-        kernel_->ref(SERVER_ATTACHMENT_METADATA).SerializeAsString()) {
-      kernel_->copy(SERVER_ATTACHMENT_METADATA, ATTACHMENT_METADATA);
-    } else {
-      kernel_->put(ATTACHMENT_METADATA, value);
-    }
-    MarkDirty();
-  }
-}
-
-void MutableEntry::MarkAttachmentAsOnServer(
-    const sync_pb::AttachmentIdProto& attachment_id) {
-  DCHECK(kernel_);
-  DCHECK(!attachment_id.unique_id().empty());
-  write_transaction()->TrackChangesTo(kernel_);
-  sync_pb::AttachmentMetadata attachment_metadata =
-      kernel_->ref(ATTACHMENT_METADATA);
-  for (int i = 0; i < attachment_metadata.record_size(); ++i) {
-    sync_pb::AttachmentMetadataRecord* record =
-        attachment_metadata.mutable_record(i);
-    if (record->id().unique_id() != attachment_id.unique_id())
-      continue;
-    record->set_is_on_server(true);
-  }
-  kernel_->put(ATTACHMENT_METADATA, attachment_metadata);
-  MarkDirty();
-  MarkForSyncing(this);
-}
-
 // static
 std::unique_ptr<EntryKernel> MutableEntry::CreateEntryKernel(
     WriteTransaction* trans,

@@ -65,13 +65,6 @@ class MutableEntry : public ModelNeutralMutableEntry {
   // ID to put the node in first position.
   bool PutPredecessor(const Id& predecessor_id);
 
-  void PutAttachmentMetadata(const sync_pb::AttachmentMetadata& value);
-
-  // Update attachment metadata for |attachment_id| to indicate that this
-  // attachment has been uploaded to the sync server.
-  void MarkAttachmentAsOnServer(
-      const sync_pb::AttachmentIdProto& attachment_id);
-
  private:
   static std::unique_ptr<EntryKernel> CreateEntryKernel(
       WriteTransaction* trans,

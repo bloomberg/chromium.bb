@@ -15,9 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "components/sync/model/attachments/attachment_service.h"
-#include "components/sync/model/attachments/attachment_service_proxy.h"
-#include "components/sync/model/attachments/attachment_store.h"
 #include "components/sync/model/change_processor.h"
 #include "components/sync/model/data_type_error_handler.h"
 #include "components/sync/model/sync_change_processor.h"
@@ -46,20 +43,15 @@ using SyncDataList = std::vector<SyncData>;
 // As a rule, the GenericChangeProcessor is not thread safe, and should only
 // be used on the same sequence in which it was created.
 class GenericChangeProcessor : public ChangeProcessor,
-                               public SyncChangeProcessor,
-                               public AttachmentService::Delegate {
+                               public SyncChangeProcessor {
  public:
   // Create a change processor for |type| and connect it to the syncer.
-  // |attachment_store| can be null which means that datatype will not use sync
-  // attachments.
-  GenericChangeProcessor(
-      ModelType type,
-      std::unique_ptr<DataTypeErrorHandler> error_handler,
-      const base::WeakPtr<SyncableService>& local_service,
-      const base::WeakPtr<SyncMergeResult>& merge_result,
-      UserShare* user_share,
-      SyncClient* sync_client,
-      std::unique_ptr<AttachmentStoreForSync> attachment_store);
+  GenericChangeProcessor(ModelType type,
+                         std::unique_ptr<DataTypeErrorHandler> error_handler,
+                         const base::WeakPtr<SyncableService>& local_service,
+                         const base::WeakPtr<SyncMergeResult>& merge_result,
+                         UserShare* user_share,
+                         SyncClient* sync_client);
   ~GenericChangeProcessor() override;
 
   // ChangeProcessor interface.
@@ -83,9 +75,6 @@ class GenericChangeProcessor : public ChangeProcessor,
   void AddLocalChangeObserver(LocalChangeObserver* observer) override;
   void RemoveLocalChangeObserver(LocalChangeObserver* observer) override;
 
-  // AttachmentService::Delegate implementation.
-  void OnAttachmentUploaded(const AttachmentId& attachment_id) override;
-
   // Similar to above, but returns a SyncError for use by direct clients
   // of GenericChangeProcessor that may need more error visibility.
   virtual SyncError GetAllSyncDataReturnError(SyncDataList* data) const;
@@ -103,9 +92,6 @@ class GenericChangeProcessor : public ChangeProcessor,
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
   virtual bool CryptoReadyIfNecessary();
 
-  // Gets AttachmentService proxy for datatype.
-  std::unique_ptr<AttachmentService> GetAttachmentService() const;
-
  protected:
   // ChangeProcessor interface.
   void StartImpl() override;  // Does nothing.
@@ -118,28 +104,16 @@ class GenericChangeProcessor : public ChangeProcessor,
                           WriteNode* node,
                           DataTypeErrorHandler* error_handler);
   // Logically part of ProcessSyncChanges.
-  //
-  // |new_attachments| is an output parameter containing newly added attachments
-  // that need to be stored.  This method will append to it.
   SyncError HandleActionAdd(const SyncChange& change,
                             const std::string& type_str,
                             const WriteTransaction& trans,
-                            WriteNode* sync_node,
-                            AttachmentIdSet* new_attachments);
+                            WriteNode* sync_node);
 
   // Logically part of ProcessSyncChanges.
-  //
-  // |new_attachments| is an output parameter containing newly added attachments
-  // that need to be stored.  This method will append to it.
   SyncError HandleActionUpdate(const SyncChange& change,
                                const std::string& type_str,
                                const WriteTransaction& trans,
-                               WriteNode* sync_node,
-                               AttachmentIdSet* new_attachments);
-
-  // Begin uploading attachments that have not yet been uploaded to the sync
-  // server.
-  void UploadAllAttachmentsNotOnServer();
+                               WriteNode* sync_node);
 
   // Notify every registered local change observer that |change| is about to be
   // applied to |current_entry|.
@@ -172,19 +146,9 @@ class GenericChangeProcessor : public ChangeProcessor,
   // and have to keep a local pointer to the user_share.
   UserShare* const share_handle_;
 
-  // AttachmentService for datatype. Can be null if datatype doesn't use
-  // attachments.
-  std::unique_ptr<AttachmentService> attachment_service_;
-
   // List of observers that want to be notified of local changes being written.
   base::ObserverList<LocalChangeObserver> local_change_observers_;
 
-  // Must be destroyed before attachment_service_ to ensure WeakPtrs are
-  // invalidated before attachment_service_ is destroyed.
-  // Can be null if attachment_service_ is null;
-  std::unique_ptr<base::WeakPtrFactory<AttachmentService>>
-      attachment_service_weak_ptr_factory_;
-  AttachmentServiceProxy attachment_service_proxy_;
   base::WeakPtrFactory<GenericChangeProcessor> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GenericChangeProcessor);

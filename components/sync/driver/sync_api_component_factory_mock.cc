@@ -8,8 +8,6 @@
 
 #include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/driver/model_associator.h"
-#include "components/sync/model/attachments/attachment_service.h"
-#include "components/sync/model/attachments/attachment_store.h"
 #include "components/sync/model/change_processor.h"
 
 using testing::_;
@@ -29,16 +27,6 @@ SyncApiComponentFactoryMock::SyncApiComponentFactoryMock(
       local_device_(new LocalDeviceInfoProviderMock()) {}
 
 SyncApiComponentFactoryMock::~SyncApiComponentFactoryMock() {}
-
-std::unique_ptr<AttachmentService>
-SyncApiComponentFactoryMock::CreateAttachmentService(
-    std::unique_ptr<AttachmentStoreForSync> attachment_store,
-    const UserShare& user_share,
-    const std::string& store_birthday,
-    ModelType model_type,
-    AttachmentService::Delegate* delegate) {
-  return AttachmentService::CreateForTest();
-}
 
 SyncApiComponentFactory::SyncComponents
 SyncApiComponentFactoryMock::CreateBookmarkSyncComponents(
