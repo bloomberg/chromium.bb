@@ -419,6 +419,11 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     }
   }
 
+  // There are still a couple of opportunities to find something solid for this
+  // block to hang on to, if we haven't already been able to do so. Keep track
+  // of this, so that we can abort layout if necessary.
+  bool bfc_updated = false;
+
   // The end margin strut of an in-flow fragment contributes to the size of the
   // current fragment if:
   //  - There is block-end border/scrollbar/padding.
@@ -438,27 +443,25 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
                                       ? end_margin_strut.QuirkyContainerSum()
                                       : end_margin_strut.Sum();
     end_bfc_block_offset += margin_strut_sum;
-    bool updated = MaybeUpdateFragmentBfcOffset(end_bfc_block_offset);
 
-    if (updated && abort_when_bfc_resolved_) {
-      // New formatting contexts, and where we have an empty block affected by
-      // clearance should already have their BFC offset resolved, and shouldn't
-      // enter this branch.
-      DCHECK(!previous_inflow_position.empty_block_affected_by_clearance);
+    if (!container_builder_.BfcOffset()) {
+      // If we have collapsed through the block start and all children (if any),
+      // now is the time to determine the BFC offset, because finally we have
+      // found something solid to hang on to (like clearance or a bottom border,
+      // for instance). If we're a new formatting context, though, we shouldn't
+      // be here, because then the offset should already have been determined.
       DCHECK(!ConstraintSpace().IsNewFormattingContext());
-
-      container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
-      return container_builder_.Abort(NGLayoutResult::kBfcOffsetResolved);
-    }
-
-    PositionPendingFloats(end_bfc_block_offset);
-
-    // We only grow the intrinsic block size if we have content (if we didn't
-    // update our BFC offset). E.g.
-    // <div style="margin-bottom: solid 20px"></div>
-    // In the above example the current layout won't have resolved its BFC
-    // offset yet, and shouldn't include the margin strut in its size.
-    if (!updated) {
+      bfc_updated = MaybeUpdateFragmentBfcOffset(end_bfc_block_offset);
+      DCHECK(bfc_updated);
+    } else {
+      // The trailing margin strut will be part of our intrinsic block size, but
+      // only if there is something that separates the end margin strut from the
+      // input margin strut (typically child content, block start
+      // border/padding, or this being a new BFC). If the margin strut from a
+      // previous sibling or ancestor managed to collapse through all our
+      // children (if any at all, that is), it means that the resulting end
+      // margin strut actually pushes us down, and it should obviously not be
+      // doubly accounted for as our block size.
       intrinsic_block_size_ = std::max(
           intrinsic_block_size_,
           previous_inflow_position.logical_block_offset + margin_strut_sum);
@@ -473,27 +476,36 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
                                                 intrinsic_block_size_);
   container_builder_.SetBlockSize(size.block_size);
 
-  // Non-empty blocks always know their position in space.
-  // TODO(ikilpatrick): This check for a break token seems error prone.
-  if (size.block_size || BreakToken()) {
-    // TODO(ikilpatrick): This looks wrong with end_margin_strut above?
+  // If our BFC offset is still unknown, there's one last thing to take into
+  // consideration: Non-empty blocks always know their position in space. If we
+  // have a break token, it means that we know the blocks' position even if
+  // they're empty; it will be at the very start of the fragmentainer.
+  if (!container_builder_.BfcOffset() && (size.block_size || BreakToken())) {
     end_bfc_block_offset += end_margin_strut.Sum();
-    bool updated = MaybeUpdateFragmentBfcOffset(end_bfc_block_offset);
-
-    if (updated && abort_when_bfc_resolved_) {
-      container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
-      return container_builder_.Abort(NGLayoutResult::kBfcOffsetResolved);
-    }
-
-    PositionPendingFloats(end_bfc_block_offset);
+    bfc_updated = MaybeUpdateFragmentBfcOffset(end_bfc_block_offset);
+    DCHECK(bfc_updated);
   }
 
-  // Margins collapsing:
-  //   Do not collapse margins between the last in-flow child and bottom margin
-  //   of its parent if the parent has height != auto()
-  if (!Style().LogicalHeight().IsAuto()) {
-    // TODO(glebl): handle minLogicalHeight, maxLogicalHeight.
-    end_margin_strut = NGMarginStrut();
+  if (bfc_updated && abort_when_bfc_resolved_) {
+    // New formatting contexts, and where we have an empty block affected by
+    // clearance should already have their BFC offset resolved, and shouldn't
+    // enter this branch.
+    DCHECK(!previous_inflow_position.empty_block_affected_by_clearance);
+    DCHECK(!ConstraintSpace().IsNewFormattingContext());
+
+    container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
+    return container_builder_.Abort(NGLayoutResult::kBfcOffsetResolved);
+  }
+
+  if (container_builder_.BfcOffset()) {
+    PositionPendingFloats(end_bfc_block_offset);
+
+    // Do not collapse margins between the last in-flow child and bottom margin
+    // of its parent if the parent has height != auto.
+    if (!Style().LogicalHeight().IsAuto()) {
+      // TODO(layout-ng): handle LogicalMinHeight, LogicalMaxHeight.
+      end_margin_strut = NGMarginStrut();
+    }
   }
 
   container_builder_.SetEndMarginStrut(end_margin_strut);
