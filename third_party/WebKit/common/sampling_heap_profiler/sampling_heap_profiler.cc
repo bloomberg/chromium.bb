@@ -35,8 +35,8 @@ bool g_deterministic;
 Atomic32 g_running;
 Atomic32 g_operations_in_flight;
 Atomic32 g_fast_path_is_closed;
-AtomicWord g_cumulative_counter;
-AtomicWord g_threshold = kDefaultSamplingIntervalBytes;
+AtomicWord g_bytes_left;
+AtomicWord g_current_interval;
 AtomicWord g_sampling_interval = kDefaultSamplingIntervalBytes;
 uint32_t g_last_sample_ordinal = 0;
 SamplingHeapProfiler* g_instance;
@@ -180,6 +180,10 @@ bool SamplingHeapProfiler::InstallAllocatorHooks() {
 
 uint32_t SamplingHeapProfiler::Start() {
   InstallAllocatorHooksOnce();
+  size_t next_interval =
+      GetNextSampleInterval(base::subtle::Acquire_Load(&g_sampling_interval));
+  base::subtle::Release_Store(&g_current_interval, next_interval);
+  base::subtle::Release_Store(&g_bytes_left, next_interval);
   base::subtle::Barrier_AtomicIncrement(&g_running, 1);
   return g_last_sample_ordinal;
 }
@@ -190,8 +194,7 @@ void SamplingHeapProfiler::Stop() {
 }
 
 void SamplingHeapProfiler::SetSamplingInterval(size_t sampling_interval) {
-  // TODO(alph): Update the threshold. Make sure not to leave it in a state
-  // when the threshold is already crossed.
+  // TODO(alph): Reset the sample being collected if running.
   base::subtle::Release_Store(&g_sampling_interval,
                               static_cast<AtomicWord>(sampling_interval));
 }
@@ -228,26 +231,36 @@ void SamplingHeapProfiler::MaybeRecordAlloc(void* address,
   if (UNLIKELY(!base::subtle::NoBarrier_Load(&g_running)))
     return;
 
-  // Lock-free algorithm that adds the allocation size to the cumulative
-  // counter. When the counter reaches threshold, it picks a single thread
-  // that will record the sample and reset the counter.
-  AtomicWord threshold = base::subtle::NoBarrier_Load(&g_threshold);
-  AtomicWord accumulated = base::subtle::NoBarrier_AtomicIncrement(
-      &g_cumulative_counter, static_cast<AtomicWord>(size));
-  if (LIKELY(accumulated < threshold))
+  // Lock-free algorithm decreases number of bytes left to form a sample.
+  // The thread that makes it to reach zero is responsible for recording
+  // a sample.
+  AtomicWord bytes_left = base::subtle::NoBarrier_AtomicIncrement(
+      &g_bytes_left, -static_cast<AtomicWord>(size));
+  if (LIKELY(bytes_left > 0))
     return;
 
-  // Return if it was another thread that in fact crossed the threshold.
-  // That other thread is responsible for recording the sample.
-  if (UNLIKELY(accumulated >= threshold + static_cast<AtomicWord>(size)))
+  // Return if g_bytes_left was already zero or below before we decreased it.
+  // That basically means that another thread in fact crossed the threshold.
+  if (LIKELY(bytes_left + static_cast<AtomicWord>(size) <= 0))
     return;
 
-  DCHECK_NE(size, 0u);
+  // Only one thread that crossed the threshold is running the code below.
+  // It is going to be recording the sample.
+
+  size_t accumulated = base::subtle::Acquire_Load(&g_current_interval);
   size_t next_interval =
       GetNextSampleInterval(base::subtle::NoBarrier_Load(&g_sampling_interval));
-  base::subtle::Release_Store(&g_threshold, next_interval);
-  accumulated =
-      base::subtle::NoBarrier_AtomicExchange(&g_cumulative_counter, 0);
+
+  // Make sure g_current_interval is set before updating g_bytes_left.
+  base::subtle::Release_Store(&g_current_interval, next_interval);
+
+  // Put the next sampling interval to g_bytes_left, thus allowing threads to
+  // start accumulating bytes towards the next sample.
+  // Simulateneously extract the current value (which is negative or zero)
+  // and take it into account when calculating the number of bytes
+  // accumulated for the current sample.
+  accumulated -=
+      base::subtle::NoBarrier_AtomicExchange(&g_bytes_left, next_interval);
 
   g_instance->RecordAlloc(accumulated, size, address, kSkipBaseAllocatorFrames);
 }
