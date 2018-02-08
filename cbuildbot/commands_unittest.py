@@ -1086,6 +1086,32 @@ class GenerateDebugTarballTests(cros_test_lib.TempDirTestCase):
         ])
 
 
+class RunLocalTryjobTests(cros_build_lib_unittest.RunCommandTestCase):
+  """Tests related to RunLocalTryjob."""
+
+  def testRunLocalTryjobsSimple(self):
+    """Test that a minimul command works correctly."""
+    commands.RunLocalTryjob('current_root', 'build_config', [])
+
+    self.assertCommandCalled([
+        'current_root/chromite/bin/cros', 'tryjob', '--local', '--yes',
+        '--buildroot', mock.ANY,
+        'build_config',
+    ], cwd='current_root')
+
+  def testRunLocalTryjobsComplex(self):
+    """Test that a minimul command works correctly."""
+    commands.RunLocalTryjob(
+        'current_root', 'build_config', ['funky', 'stuff'],
+        'git_cache', 'target_root')
+
+    self.assertCommandCalled([
+        'current_root/chromite/bin/cros', 'tryjob', '--local', '--yes',
+        '--buildroot', 'target_root', 'funky', 'stuff',
+        '--git-cache-dir', 'git_cache',
+        'build_config',
+    ], cwd='current_root')
+
 class BuildTarballTests(cros_build_lib_unittest.RunCommandTempDirTestCase):
   """Tests related to building tarball artifacts."""
 
