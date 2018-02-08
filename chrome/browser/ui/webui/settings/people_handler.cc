@@ -65,11 +65,10 @@
 #include "components/signin/core/browser/signin_manager.h"
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-// TODO(scottchen): no longer need icon_util once we start loading real
-// account pictures.
-#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image.h"
 #endif
 
 using browser_sync::ProfileSyncService;
@@ -462,6 +461,8 @@ std::unique_ptr<base::ListValue> PeopleHandler::GetStoredAccountsList() {
   std::vector<AccountInfo> accounts =
       signin_ui_util::GetAccountsForDicePromos(profile_);
 
+  AccountTrackerService* account_tracker =
+      AccountTrackerServiceFactory::GetForProfile(profile_);
   std::unique_ptr<base::ListValue> accounts_list(new base::ListValue);
   accounts_list->Reserve(accounts.size());
 
@@ -471,8 +472,13 @@ std::unique_ptr<base::ListValue> PeopleHandler::GetStoredAccountsList() {
     base::Value& acc = accounts_list->GetList().back();
     acc.SetKey("email", base::Value(account.email));
     acc.SetKey("fullName", base::Value(account.full_name));
-    // TODO(scottchen): should return account.picture_url as encoded image.
-    acc.SetKey("image", base::Value(profiles::GetPlaceholderAvatarIconUrl()));
+    const gfx::Image& account_image =
+        account_tracker->GetAccountImage(account.account_id);
+    if (!account_image.IsEmpty()) {
+      acc.SetKey(
+          "avatarImage",
+          base::Value(webui::GetBitmapDataUrl(account_image.AsBitmap())));
+    }
   }
 
   return accounts_list;

@@ -3,6 +3,8 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/notification-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="profile_info_browser_proxy.html">
 <link rel="import" href="sync_browser_proxy.html">
@@ -19,8 +21,6 @@
       }
 
       .account-icon {
-        background: url(chrome://theme/IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE)
-            center / cover no-repeat;
         border-radius: 20px;
         flex-shrink: 0;
         height: 40px;
@@ -44,6 +44,39 @@
         display: flex;
         flex-direction: column;
       }
+
+      #avatar-container {
+        position: relative;
+      }
+
+      #sync-logo-container {
+        align-items: center;
+        background: var(--google-blue-500);
+        border: 2px solid white;
+        border-radius: 50%;
+        bottom: 0;
+        display: flex;
+        height: 16px;
+        position: absolute;
+        right: -6px;
+        width: 16px;
+      }
+
+      :host-context([dir='rtl']) #sync-logo-container {
+        left: -6px;
+        right: initial;
+      }
+
+      #sync-logo-container[syncing] {
+        background: green;
+      }
+
+      #sync-logo-container iron-icon {
+        fill: white;
+        height: 12px;
+        margin: auto;
+        width: 12px;
+      }
     </style>
     <!-- TODO(scottchen): figure out what to show if sign-in (not just sync)
         is not even allowed by policy (crbug/807061). -->
@@ -61,7 +94,13 @@
     </div>
     <template is="dom-if" if="[[shouldShowAvatarRow_]]">
       <div class="settings-box first two-line">
-        <img class="account-icon" src="[[shownAccount_.image]]">
+        <div id="avatar-container">
+          <img class="account-icon"
+              src="[[getAccountImageSrc_(shownAccount_.avatarImage)]]">
+          <div id="sync-logo-container" syncing$="[[syncStatus.signedIn]]">
+            <iron-icon icon="notification:sync"></iron-icon>
+          </div>
+        </div>
         <div class="middle two-line no-min-width">
           <div class="flex text-elide">
             <span>
@@ -94,12 +133,14 @@
         <dialog is="cr-action-menu" id="menu">
           <template is="dom-repeat" items="[[storedAccounts_]]">
             <button class="dropdown-item" on-tap="onAccountTap_" slot="item">
-              <img class="account-icon small" src="[[item.image]]">
+              <img class="account-icon small"
+                  src="[[getAccountImageSrc_(item.avatarImage)]]">
               <span class="email">[[item.email]]</span>
             </button>
           </template>
           <button class="dropdown-item" on-tap="onSigninTap_" slot="item">
-            <div class="account-icon small"></div>
+            <img class="account-icon small"
+                src="chrome://theme/IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE">
             <span class="email">$i18n{useAnotherAccount}</span>
           </button>
         </dialog>

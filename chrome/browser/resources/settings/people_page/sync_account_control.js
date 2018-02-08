@@ -78,6 +78,16 @@ Polymer({
   },
 
   /**
+   * @param {?string} image
+   * @return {string}
+   * @private
+   */
+  getAccountImageSrc_: function(image) {
+    // image can be undefined if the account has not set an avatar photo.
+    return image || 'chrome://theme/IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE';
+  },
+
+  /**
    * @param {!Array<!settings.StoredAccount>} accounts
    * @private
    */
