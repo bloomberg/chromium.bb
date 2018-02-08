@@ -36,7 +36,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.browser.widget.ThumbnailProviderImpl;
 import org.chromium.chrome.browser.widget.selection.SelectableBottomSheetContent.SelectableBottomSheetContentManager;
@@ -251,9 +250,7 @@ public class DownloadManagerUi
         mToolbar = (DownloadManagerToolbar) mSelectableListLayout.initializeToolbar(
                 R.layout.download_manager_toolbar, mBackendProvider.getSelectionDelegate(), 0, null,
                 R.id.normal_menu_group, R.id.selection_mode_menu_group,
-                FeatureUtilities.isChromeModernDesignEnabled() ? R.color.modern_toolbar_bg
-                                                               : R.color.modern_primary_color,
-                this, true);
+                R.color.modern_primary_color, this, true);
         mToolbar.setManager(this);
         mToolbar.initializeFilterSpinner(mFilterAdapter);
         mToolbar.initializeSearchView(this, R.string.download_manager_search, R.id.search_menu_id);
