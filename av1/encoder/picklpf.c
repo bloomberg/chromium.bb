@@ -53,7 +53,7 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
                                 ,
                                 int plane, int dir
 #endif
-                                ) {
+) {
   AV1_COMMON *const cm = &cpi->common;
   int64_t filt_err;
 
@@ -94,7 +94,7 @@ static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
                                ,
                                int plane, int dir
 #endif
-                               ) {
+) {
   const AV1_COMMON *const cm = &cpi->common;
   const struct loopfilter *const lf = &cm->lf;
   const int min_filter_level = 0;

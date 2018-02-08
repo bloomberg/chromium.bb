@@ -1027,7 +1027,7 @@ static void stitch_images(AV1_COMP *cpi, YV12_BUFFER_CONFIG **const frames,
   build_mask(x_min[center_idx], y_min[center_idx], x_offset, y_offset,
              x_block_width, y_block_height, N_1,
              (const YuvPixelGaussian **)gauss,
-             (YV12_BUFFER_CONFIG * const) frames[center_idx], panorama, mask);
+             (YV12_BUFFER_CONFIG *const)frames[center_idx], panorama, mask);
 
   YV12_BUFFER_CONFIG temporal_arf;
   memset(&temporal_arf, 0, sizeof(temporal_arf));

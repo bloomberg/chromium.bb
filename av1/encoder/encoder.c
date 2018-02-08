@@ -84,12 +84,12 @@ FRAME_COUNTS aggregate_fc_per_type[FRAME_CONTEXTS];
 #define AM_SEGMENT_ID_INACTIVE 7
 #define AM_SEGMENT_ID_ACTIVE 0
 
-#define ALTREF_HIGH_PRECISION_MV 1     // Whether to use high precision mv
-                                       //  for altref computation.
-#define HIGH_PRECISION_MV_QTHRESH 200  // Q threshold for high precision
-                                       // mv. Choose a very high value for
-                                       // now so that HIGH_PRECISION is always
-                                       // chosen.
+// Whether to use high precision mv for altref computation.
+#define ALTREF_HIGH_PRECISION_MV 1
+
+// Q threshold for high precision mv. Choose a very high value for now so that
+// HIGH_PRECISION is always chosen.
+#define HIGH_PRECISION_MV_QTHRESH 200
 
 // #define OUTPUT_YUV_REC
 #ifdef OUTPUT_YUV_SKINMAP
@@ -268,7 +268,7 @@ static void set_high_precision_mv(AV1_COMP *cpi, int allow_high_precision_mv
                                   ,
                                   int cur_frame_force_integer_mv
 #endif
-                                  ) {
+) {
   MACROBLOCK *const mb = &cpi->td.mb;
   cpi->common.allow_high_precision_mv = allow_high_precision_mv;
 
@@ -319,11 +319,11 @@ static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
 
 static void setup_frame(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-// Set up entropy context depending on frame type. The decoder mandates
-// the use of the default context, index 0, for keyframes and inter
-// frames where the error_resilient_mode or intra_only flag is set. For
-// other inter-frames the encoder currently uses only two contexts;
-// context 1 for ALTREF frames and context 0 for the others.
+  // Set up entropy context depending on frame type. The decoder mandates
+  // the use of the default context, index 0, for keyframes and inter
+  // frames where the error_resilient_mode or intra_only flag is set. For
+  // other inter-frames the encoder currently uses only two contexts;
+  // context 1 for ALTREF frames and context 0 for the others.
 
 #if CONFIG_SEGMENT_PRED_LAST
   if (cm->prev_frame) cm->last_frame_seg_map = cm->prev_frame->seg_map;
@@ -3426,14 +3426,12 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   int buf_scaler = 2;
   CHECK_MEM_ERROR(
       cm, cpi->td.mb.above_pred_buf,
-      (uint8_t *)aom_memalign(16,
-                              buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
-                                  sizeof(*cpi->td.mb.above_pred_buf)));
+      (uint8_t *)aom_memalign(16, buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
+                                      sizeof(*cpi->td.mb.above_pred_buf)));
   CHECK_MEM_ERROR(
       cm, cpi->td.mb.left_pred_buf,
-      (uint8_t *)aom_memalign(16,
-                              buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
-                                  sizeof(*cpi->td.mb.left_pred_buf)));
+      (uint8_t *)aom_memalign(16, buf_scaler * MAX_MB_PLANE * MAX_SB_SQUARE *
+                                      sizeof(*cpi->td.mb.left_pred_buf)));
 
   CHECK_MEM_ERROR(cm, cpi->td.mb.wsrc_buf,
                   (int32_t *)aom_memalign(
@@ -5175,7 +5173,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #if CONFIG_EXT_TILE
       || cm->large_scale_tile
 #endif  // CONFIG_EXT_TILE
-      ) {
+  ) {
     no_loopfilter = 1;
 #if CONFIG_LOOP_RESTORATION
     no_restoration = 1;
@@ -5190,7 +5188,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #if CONFIG_EXT_TILE
       || cm->large_scale_tile
 #endif
-      ) {
+  ) {
     no_cdef = 1;
   }
 

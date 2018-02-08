@@ -70,7 +70,9 @@ typedef struct {
   int lps_cost[LEVEL_CONTEXTS][COEFF_BASE_RANGE + 1];
 } LV_MAP_COEFF_COST;
 
-typedef struct { int eob_cost[2][11]; } LV_MAP_EOB_COST;
+typedef struct {
+  int eob_cost[2][11];
+} LV_MAP_EOB_COST;
 
 typedef struct {
   tran_low_t tcoeff[MAX_MB_PLANE][MAX_SB_SQUARE];

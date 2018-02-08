@@ -123,7 +123,9 @@ typedef struct {
   MV_REFERENCE_FRAME ref_frame[2];
 } MODE_DEFINITION;
 
-typedef struct { MV_REFERENCE_FRAME ref_frame[2]; } REF_DEFINITION;
+typedef struct {
+  MV_REFERENCE_FRAME ref_frame[2];
+} REF_DEFINITION;
 
 struct rdcost_block_args {
   const AV1_COMP *cpi;
@@ -435,10 +437,9 @@ static uint64_t cdef_dist_8x8_16bit(uint16_t *dst, int dstride, uint16_t *src,
   const uint64_t c1 = (400 * a << 2 * coeff_shift);
   const uint64_t c2 = (b * 20000 * a * a << 4 * coeff_shift);
 
-  dist =
-      (uint64_t)floor(.5 +
-                      (sum_d2 + sum_s2 - 2 * sum_sd) * .5 * (svar + dvar + c1) /
-                          (sqrt(svar * (double)dvar + c2)));
+  dist = (uint64_t)floor(.5 + (sum_d2 + sum_s2 - 2 * sum_sd) * .5 *
+                                  (svar + dvar + c1) /
+                                  (sqrt(svar * (double)dvar + c2)));
 
   // Calibrate dist to have similar rate for the same QP with MSE only
   // distortion (as in master branch)
@@ -1011,7 +1012,10 @@ static int prune_one_for_sby(const AV1_COMP *cpi, BLOCK_SIZE bsize,
 // 1D Transforms used in inter set, this needs to be changed if
 // ext_tx_used_inter is changed
 static const int ext_tx_used_inter_1D[EXT_TX_SETS_INTER][TX_TYPES_1D] = {
-  { 1, 0, 0, 0 }, { 1, 1, 1, 1 }, { 1, 1, 1, 1 }, { 1, 0, 0, 1 },
+  { 1, 0, 0, 0 },
+  { 1, 1, 1, 1 },
+  { 1, 1, 1, 1 },
+  { 1, 0, 0, 1 },
 };
 
 static void get_energy_distribution_finer(const int16_t *diff, int stride,
@@ -1739,7 +1743,7 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 #if CONFIG_DIST_8X8
       && !x->using_dist_8x8
 #endif
-      ) {
+  ) {
     // Transform domain distortion computation is more efficient as it does
     // not involve an inverse transform, but it is less accurate.
     const int buffer_length = av1_get_max_eob(tx_size);
@@ -5817,7 +5821,7 @@ static int check_best_zero_mv(
     int_mv frame_mv[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME], int this_mode,
     const MV_REFERENCE_FRAME ref_frames[2], const BLOCK_SIZE bsize, int mi_row,
     int mi_col) {
-  int_mv zeromv[2] = { {.as_int = 0 } };
+  int_mv zeromv[2] = { { .as_int = 0 } };
   int comp_pred_mode = ref_frames[1] > INTRA_FRAME;
   (void)mi_row;
   (void)mi_col;
@@ -6115,7 +6119,7 @@ static void estimate_ref_frame_costs(
 #else
     unsigned int *ref_costs_comp
 #endif  // CONFIG_EXT_COMP_REFS
-    ) {
+) {
   int seg_ref_active =
       segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME);
   if (seg_ref_active) {
@@ -8880,7 +8884,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     x->mv_limits = tmp_mv_limits;
     if (bestsme == INT_MAX) continue;
     mvp_full = x->best_mv.as_mv;
-    MV dv = {.row = mvp_full.row * 8, .col = mvp_full.col * 8 };
+    MV dv = { .row = mvp_full.row * 8, .col = mvp_full.col * 8 };
     if (mv_check_bounds(&x->mv_limits, &dv)) continue;
     if (!av1_is_dv_valid(dv, tile, mi_row, mi_col, bsize,
                          cm->seq_params.mib_size_log2))

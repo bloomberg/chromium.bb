@@ -114,7 +114,8 @@ static INLINE int signed_shift_right(int x, int shift) {
 
 // These numbers are empirically obtained.
 static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
-  { 10, 7 }, { 8, 5 },
+  { 10, 7 },
+  { 8, 5 },
 };
 
 static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,

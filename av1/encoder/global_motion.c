@@ -135,9 +135,7 @@ int64_t refine_integerized_param(WarpedMotionParams *wm,
                                  int r_stride, uint8_t *dst, int d_width,
                                  int d_height, int d_stride, int n_refinements,
                                  int64_t best_frame_error) {
-  static const int max_trans_model_params[TRANS_TYPES] = {
-    0, 2, 4, 6,
-  };
+  static const int max_trans_model_params[TRANS_TYPES] = { 0, 2, 4, 6 };
   const int border = ERRORADV_BORDER;
   int i = 0, p;
   int n_params = max_trans_model_params[wmtype];

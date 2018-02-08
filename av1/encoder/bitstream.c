@@ -285,7 +285,7 @@ static void write_is_inter(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #if CONFIG_SEGMENT_GLOBALMV
         || segfeature_active(&cm->seg, segment_id, SEG_LVL_GLOBALMV)
 #endif
-            )
+    )
       if (!av1_is_valid_scale(&cm->frame_refs[0].sf))
         return;  // LAST_FRAME not valid for reference
 
@@ -440,10 +440,9 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
       const int is_cat6 = (extra_bits->base_val == CAT6_MIN_VAL);
       // be written excluding
       // the sign bit.
-      int skip_bits =
-          is_cat6
-              ? CAT6_BIT_SIZE - av1_get_cat6_extrabits_size(tx_size, bit_depth)
-              : 0;
+      int skip_bits = is_cat6 ? CAT6_BIT_SIZE - av1_get_cat6_extrabits_size(
+                                                    tx_size, bit_depth)
+                              : 0;
 
       assert(!(bit_string >> (bit_string_length - skip_bits + 1)));
       if (bit_string_length > 0)
@@ -2254,9 +2253,8 @@ static void encode_restoration_mode(AV1_COMMON *cm,
   if (num_planes > 1) {
     int s = AOMMIN(cm->subsampling_x, cm->subsampling_y);
     if (s && !chroma_none) {
-      aom_wb_write_bit(wb,
-                       cm->rst_info[1].restoration_unit_size !=
-                           cm->rst_info[0].restoration_unit_size);
+      aom_wb_write_bit(wb, cm->rst_info[1].restoration_unit_size !=
+                               cm->rst_info[0].restoration_unit_size);
       assert(cm->rst_info[1].restoration_unit_size ==
                  cm->rst_info[0].restoration_unit_size ||
              cm->rst_info[1].restoration_unit_size ==
@@ -4526,7 +4524,7 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst
                                           ,
                                           uint8_t enhancement_layers_cnt) {
 #else
-                                          ) {
+) {
 #endif
   AV1_COMMON *const cm = &cpi->common;
   struct aom_write_bit_buffer wb = { dst, 0 };

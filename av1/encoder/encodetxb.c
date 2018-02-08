@@ -1103,11 +1103,15 @@ static INLINE int check_br_neighbor(tran_low_t qc) {
 #if FAST_OPTIMIZE_TXB
 #define ALNB_REF_OFFSET_NUM 2
 static const int alnb_ref_offset[ALNB_REF_OFFSET_NUM][2] = {
-  { -1, 0 }, { 0, -1 },
+  { -1, 0 },
+  { 0, -1 },
 };
 #define NB_REF_OFFSET_NUM 4
 static const int nb_ref_offset[NB_REF_OFFSET_NUM][2] = {
-  { -1, 0 }, { 0, -1 }, { 1, 0 }, { 0, 1 },
+  { -1, 0 },
+  { 0, -1 },
+  { 1, 0 },
+  { 0, 1 },
 };
 #endif  // FAST_OPTIMIZE_TXB
 
@@ -1841,7 +1845,8 @@ static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
 
 // These numbers are empirically obtained.
 static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
-  { 17, 13 }, { 16, 10 },
+  { 17, 13 },
+  { 16, 10 },
 };
 
 void hbt_hash_init() {

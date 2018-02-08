@@ -29,7 +29,9 @@ typedef struct _block_hash {
   uint32_t hash_value2;
 } block_hash;
 
-typedef struct _hash_table { Vector **p_lookup_table; } hash_table;
+typedef struct _hash_table {
+  Vector **p_lookup_table;
+} hash_table;
 
 void av1_hash_table_init(hash_table *p_hash_table);
 void av1_hash_table_destroy(hash_table *p_hash_table);

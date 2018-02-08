@@ -83,11 +83,15 @@ static const int av1_ext_tx_set_idx_to_type[2][AOMMAX(EXT_TX_SETS_INTRA,
                                                       EXT_TX_SETS_INTER)] = {
   {
       // Intra
-      EXT_TX_SET_DCTONLY, EXT_TX_SET_DTT4_IDTX_1DDCT, EXT_TX_SET_DTT4_IDTX,
+      EXT_TX_SET_DCTONLY,
+      EXT_TX_SET_DTT4_IDTX_1DDCT,
+      EXT_TX_SET_DTT4_IDTX,
   },
   {
       // Inter
-      EXT_TX_SET_DCTONLY, EXT_TX_SET_ALL16, EXT_TX_SET_DTT9_IDTX_1DDCT,
+      EXT_TX_SET_DCTONLY,
+      EXT_TX_SET_ALL16,
+      EXT_TX_SET_DTT9_IDTX_1DDCT,
       EXT_TX_SET_DCT_IDTX,
   },
 };

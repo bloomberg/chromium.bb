@@ -26,7 +26,9 @@ typedef struct {
   } ref[TOTAL_REFS_PER_FRAME];
 } MBGRAPH_MB_STATS;
 
-typedef struct { MBGRAPH_MB_STATS *mb_stats; } MBGRAPH_FRAME_STATS;
+typedef struct {
+  MBGRAPH_MB_STATS *mb_stats;
+} MBGRAPH_FRAME_STATS;
 
 struct AV1_COMP;
 
