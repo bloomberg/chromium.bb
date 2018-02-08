@@ -48,10 +48,17 @@ WallpaperPolicyHandler::WallpaperPolicyHandler(Delegate* delegate)
           base::BindRepeating(
               &WallpaperPolicyHandler::DeviceWallpaperPolicyChanged,
               weak_factory_.GetWeakPtr()));
+  show_user_names_on_signin_subscription_ =
+      chromeos::CrosSettings::Get()->AddSettingsObserver(
+          chromeos::kAccountsPrefShowUserNamesOnSignIn,
+          base::Bind(
+              &WallpaperPolicyHandler::ShowUserNamesOnSignInPolicyChanged,
+              weak_factory_.GetWeakPtr()));
 }
 
 WallpaperPolicyHandler::~WallpaperPolicyHandler() {
   device_wallpaper_image_subscription_.reset();
+  show_user_names_on_signin_subscription_.reset();
 }
 
 bool WallpaperPolicyHandler::IsDeviceWallpaperPolicyEnforced() {
@@ -63,6 +70,13 @@ bool WallpaperPolicyHandler::IsDeviceWallpaperPolicyEnforced() {
 
   std::string url, hash;
   return GetDeviceWallpaperPolicyStrings(&url, &hash);
+}
+
+bool WallpaperPolicyHandler::ShouldShowUserNamesOnLogin() {
+  bool show_user_names;
+  chromeos::CrosSettings::Get()->GetBoolean(
+      chromeos::kAccountsPrefShowUserNamesOnSignIn, &show_user_names);
+  return show_user_names;
 }
 
 bool WallpaperPolicyHandler::GetDeviceWallpaperPolicyStrings(
@@ -108,6 +122,10 @@ void WallpaperPolicyHandler::DeviceWallpaperPolicyChanged() {
       base::BindOnce(&base::PathExists, device_wallpaper_file_path_),
       base::BindOnce(&WallpaperPolicyHandler::OnDeviceWallpaperFileExists,
                      weak_factory_.GetWeakPtr()));
+}
+
+void WallpaperPolicyHandler::ShowUserNamesOnSignInPolicyChanged() {
+  delegate_->OnShowUserNamesOnLoginPolicyChanged();
 }
 
 void WallpaperPolicyHandler::OnDeviceWallpaperFileExists(bool exists) {

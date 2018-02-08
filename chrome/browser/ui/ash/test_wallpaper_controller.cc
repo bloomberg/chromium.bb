@@ -54,10 +54,9 @@ void TestWallpaperController::SetDefaultWallpaper(
   set_default_wallpaper_count_++;
 }
 
-void TestWallpaperController::SetCustomizedDefaultWallpaper(
-    const GURL& wallpaper_url,
-    const base::FilePath& file_path,
-    const base::FilePath& resized_directory) {
+void TestWallpaperController::SetCustomizedDefaultWallpaperPaths(
+    const base::FilePath& customized_default_small_path,
+    const base::FilePath& customized_default_large_path) {
   NOTIMPLEMENTED();
 }
 

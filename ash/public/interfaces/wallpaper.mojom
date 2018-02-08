@@ -121,16 +121,17 @@ interface WallpaperController {
                       string wallpaper_files_id,
                       bool show_wallpaper);
 
-  // Sets a customized default wallpaper to be used wherever a default wallpaper
-  // is needed. Note: it doesn't change the default wallpaper for guest and
-  // child accounts.
-  // |wallpaper_url|: The url corresponding to this wallpaper.
-  // |file_path|: The path of the wallpaper file.
-  // |resized_directory|: The directory where resized versions are stored. Must
-  //                      be writable.
-  SetCustomizedDefaultWallpaper(url.mojom.Url wallpaper_url,
-                                mojo.common.mojom.FilePath file_path,
-                                mojo.common.mojom.FilePath resized_directory);
+  // Sets the paths of the customized default wallpaper to be used wherever a
+  // default wallpaper is needed. If a default wallpaper is being shown, updates
+  // the screen to replace the old default wallpaper. Note: it doesn't change
+  // the default wallpaper for guest and child accounts.
+  // |customized_default_small_path|: The file path of the small-size customized
+  //                                  default wallpaper, if any.
+  // |customized_default_large_path|: The file path of the large-size customized
+  //                                  default wallpaper, if any.
+  SetCustomizedDefaultWallpaperPaths(
+      mojo.common.mojom.FilePath customized_default_small_path,
+      mojo.common.mojom.FilePath customized_default_large_path);
 
   // Sets wallpaper from policy. If the user has logged in, show the policy
   // wallpaper immediately, otherwise, the policy wallpaper will be shown the
@@ -213,6 +214,10 @@ interface WallpaperController {
 interface WallpaperControllerClient {
   // Opens the wallpaper picker window.
   OpenWallpaperPicker();
+
+  // Signals to the client that ash is ready to set wallpapers. The client is
+  // able to decide whatever the first wallpaper it wants to display.
+  OnReadyToSetWallpaper();
 };
 
 // Used to listen for wallpaper state changed.

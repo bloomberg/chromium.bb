@@ -48,9 +48,9 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
                           wallpaper::WallpaperLayout layout,
                           bool show_wallpaper);
   void SetDefaultWallpaper(const AccountId& account_id, bool show_wallpaper);
-  void SetCustomizedDefaultWallpaper(const GURL& wallpaper_url,
-                                     const base::FilePath& file_path,
-                                     const base::FilePath& resized_directory);
+  void SetCustomizedDefaultWallpaperPaths(
+      const base::FilePath& customized_default_small_path,
+      const base::FilePath& customized_default_large_path);
   void SetPolicyWallpaper(const AccountId& account_id,
                           std::unique_ptr<std::string> data);
   void UpdateCustomWallpaperLayout(const AccountId& account_id,
@@ -70,6 +70,7 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
   // chromeos::WallpaperPolicyHandler::Delegate:
   void OnDeviceWallpaperChanged() override;
   void OnDeviceWallpaperPolicyCleared() override;
+  void OnShowUserNamesOnLoginPolicyChanged() override;
 
   // Flushes the mojo pipe to ash.
   void FlushForTesting();
@@ -78,8 +79,14 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
   // Binds this object to its mojo interface and sets it as the ash client.
   void BindAndSetClient();
 
+  // Updates the wallpaper of a registered device after device policy is
+  // trusted, outside an user session. Note that before device is enrolled, it
+  // proceeds with untrusted setting.
+  void UpdateRegisteredDeviceWallpaper();
+
   // ash::mojom::WallpaperControllerClient:
   void OpenWallpaperPicker() override;
+  void OnReadyToSetWallpaper() override;
 
   // WallpaperController interface in ash.
   ash::mojom::WallpaperControllerPtr wallpaper_controller_;
