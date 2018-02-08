@@ -123,8 +123,11 @@ bool QuicSpdyClientSessionBase::HandlePromised(QuicStreamId /* associated_id */,
   QUIC_DVLOG(1) << "stream " << promised_id << " emplace url " << url;
   (*push_promise_index_->promised_by_url())[url] = promised;
   promised_by_id_[promised_id] = std::move(promised_owner);
-  promised->OnPromiseHeaders(headers);
-  return true;
+  bool result = promised->OnPromiseHeaders(headers);
+  if (result) {
+    DCHECK(promised_by_id_.find(promised_id) != promised_by_id_.end());
+  }
+  return result;
 }
 
 QuicClientPromisedInfo* QuicSpdyClientSessionBase::GetPromisedByUrl(

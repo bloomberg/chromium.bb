@@ -40,32 +40,33 @@ void QuicClientPromisedInfo::Init() {
       QuicTime::Delta::FromSeconds(kPushPromiseTimeoutSecs));
 }
 
-void QuicClientPromisedInfo::OnPromiseHeaders(const SpdyHeaderBlock& headers) {
+bool QuicClientPromisedInfo::OnPromiseHeaders(const SpdyHeaderBlock& headers) {
   // RFC7540, Section 8.2, requests MUST be safe [RFC7231], Section
   // 4.2.1.  GET and HEAD are the methods that are safe and required.
   SpdyHeaderBlock::const_iterator it = headers.find(kHttp2MethodHeader);
   if (it == headers.end()) {
     QUIC_DVLOG(1) << "Promise for stream " << id_ << " has no method";
     Reset(QUIC_INVALID_PROMISE_METHOD);
-    return;
+    return false;
   }
   if (!(it->second == "GET" || it->second == "HEAD")) {
     QUIC_DVLOG(1) << "Promise for stream " << id_ << " has invalid method "
                   << it->second;
     Reset(QUIC_INVALID_PROMISE_METHOD);
-    return;
+    return false;
   }
   if (!SpdyUtils::UrlIsValid(headers)) {
     QUIC_DVLOG(1) << "Promise for stream " << id_ << " has invalid URL "
                   << url_;
     Reset(QUIC_INVALID_PROMISE_URL);
-    return;
+    return false;
   }
   if (!session_->IsAuthorized(SpdyUtils::GetHostNameFromHeaderBlock(headers))) {
     Reset(QUIC_UNAUTHORIZED_PROMISE_URL);
-    return;
+    return false;
   }
   request_headers_ = headers.Clone();
+  return true;
 }
 
 void QuicClientPromisedInfo::OnResponseHeaders(const SpdyHeaderBlock& headers) {

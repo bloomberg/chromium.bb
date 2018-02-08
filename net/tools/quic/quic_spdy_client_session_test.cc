@@ -25,10 +25,10 @@
 
 using google::protobuf::implicit_cast;
 using std::string;
+using testing::_;
 using testing::AnyNumber;
 using testing::Invoke;
 using testing::Truly;
-using testing::_;
 
 namespace net {
 namespace test {
@@ -431,8 +431,8 @@ TEST_P(QuicSpdyClientSessionTest, PushPromiseHandlePromise) {
 
   session_->CreateOutgoingDynamicStream();
 
-  session_->HandlePromised(associated_stream_id_, promised_stream_id_,
-                           push_promise_);
+  EXPECT_TRUE(session_->HandlePromised(associated_stream_id_,
+                                       promised_stream_id_, push_promise_));
 
   EXPECT_NE(session_->GetPromisedById(promised_stream_id_), nullptr);
   EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
@@ -456,8 +456,8 @@ TEST_P(QuicSpdyClientSessionTest, PushPromiseAlreadyClosed) {
 
   session_->ResetPromised(promised_stream_id_, QUIC_REFUSED_STREAM);
   SpdyHeaderBlock promise_headers;
-  session_->HandlePromised(associated_stream_id_, promised_stream_id_,
-                           promise_headers);
+  EXPECT_FALSE(session_->HandlePromised(associated_stream_id_,
+                                        promised_stream_id_, promise_headers));
 
   // Verify that the promise was not created.
   EXPECT_EQ(session_->GetPromisedById(promised_stream_id_), nullptr);
@@ -470,8 +470,8 @@ TEST_P(QuicSpdyClientSessionTest, PushPromiseDuplicateUrl) {
 
   session_->CreateOutgoingDynamicStream();
 
-  session_->HandlePromised(associated_stream_id_, promised_stream_id_,
-                           push_promise_);
+  EXPECT_TRUE(session_->HandlePromised(associated_stream_id_,
+                                       promised_stream_id_, push_promise_));
 
   EXPECT_NE(session_->GetPromisedById(promised_stream_id_), nullptr);
   EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
@@ -486,8 +486,8 @@ TEST_P(QuicSpdyClientSessionTest, PushPromiseDuplicateUrl) {
                                             QUIC_DUPLICATE_PROMISE_URL, 0));
   }
 
-  session_->HandlePromised(associated_stream_id_, promised_stream_id_,
-                           push_promise_);
+  EXPECT_FALSE(session_->HandlePromised(associated_stream_id_,
+                                        promised_stream_id_, push_promise_));
 
   // Verify that the promise was not created.
   EXPECT_EQ(session_->GetPromisedById(promised_stream_id_), nullptr);
@@ -499,7 +499,8 @@ TEST_P(QuicSpdyClientSessionTest, ReceivingPromiseEnhanceYourCalm) {
 
     QuicStreamId id = promised_stream_id_ + i * 2;
 
-    session_->HandlePromised(associated_stream_id_, id, push_promise_);
+    EXPECT_TRUE(
+        session_->HandlePromised(associated_stream_id_, id, push_promise_));
 
     // Verify that the promise is in the unclaimed streams map.
     string promise_url(SpdyUtils::GetPromisedUrlFromHeaderBlock(push_promise_));
@@ -518,7 +519,8 @@ TEST_P(QuicSpdyClientSessionTest, ReceivingPromiseEnhanceYourCalm) {
   } else {
     EXPECT_CALL(*connection_, SendRstStream(id, QUIC_REFUSED_STREAM, 0));
   }
-  session_->HandlePromised(associated_stream_id_, id, push_promise_);
+  EXPECT_FALSE(
+      session_->HandlePromised(associated_stream_id_, id, push_promise_));
 
   // Verify that the promise was not created.
   string promise_url(SpdyUtils::GetPromisedUrlFromHeaderBlock(push_promise_));
@@ -563,8 +565,8 @@ TEST_P(QuicSpdyClientSessionTest, OnInitialHeadersCompleteIsPush) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
   session_->GetOrCreateStream(promised_stream_id_);
-  session_->HandlePromised(associated_stream_id_, promised_stream_id_,
-                           push_promise_);
+  EXPECT_TRUE(session_->HandlePromised(associated_stream_id_,
+                                       promised_stream_id_, push_promise_));
   EXPECT_NE(session_->GetPromisedById(promised_stream_id_), nullptr);
   EXPECT_NE(session_->GetPromisedStream(promised_stream_id_), nullptr);
   EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
@@ -583,8 +585,8 @@ TEST_P(QuicSpdyClientSessionTest, DeletePromised) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
   session_->GetOrCreateStream(promised_stream_id_);
-  session_->HandlePromised(associated_stream_id_, promised_stream_id_,
-                           push_promise_);
+  EXPECT_TRUE(session_->HandlePromised(associated_stream_id_,
+                                       promised_stream_id_, push_promise_));
   QuicClientPromisedInfo* promised =
       session_->GetPromisedById(promised_stream_id_);
   EXPECT_NE(promised, nullptr);
@@ -600,8 +602,8 @@ TEST_P(QuicSpdyClientSessionTest, ResetPromised) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
   session_->GetOrCreateStream(promised_stream_id_);
-  session_->HandlePromised(associated_stream_id_, promised_stream_id_,
-                           push_promise_);
+  EXPECT_TRUE(session_->HandlePromised(associated_stream_id_,
+                                       promised_stream_id_, push_promise_));
   if (session_->use_control_frame_manager()) {
     EXPECT_CALL(*connection_, SendControlFrame(_));
     EXPECT_CALL(*connection_, OnStreamReset(promised_stream_id_,
@@ -616,6 +618,52 @@ TEST_P(QuicSpdyClientSessionTest, ResetPromised) {
   EXPECT_NE(promised, nullptr);
   EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
   EXPECT_EQ(session_->GetPromisedStream(promised_stream_id_), nullptr);
+}
+
+TEST_P(QuicSpdyClientSessionTest, PushPromiseInvalidMethod) {
+  // Initialize crypto before the client session will create a stream.
+  CompleteCryptoHandshake();
+
+  session_->CreateOutgoingDynamicStream();
+
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_));
+    EXPECT_CALL(*connection_, OnStreamReset(promised_stream_id_,
+                                            QUIC_INVALID_PROMISE_METHOD));
+  } else {
+    EXPECT_CALL(*connection_, SendRstStream(promised_stream_id_,
+                                            QUIC_INVALID_PROMISE_METHOD, 0));
+  }
+
+  push_promise_[":method"] = "POST";
+  EXPECT_FALSE(session_->HandlePromised(associated_stream_id_,
+                                        promised_stream_id_, push_promise_));
+
+  EXPECT_EQ(session_->GetPromisedById(promised_stream_id_), nullptr);
+  EXPECT_EQ(session_->GetPromisedByUrl(promise_url_), nullptr);
+}
+
+TEST_P(QuicSpdyClientSessionTest, PushPromiseInvalidHost) {
+  // Initialize crypto before the client session will create a stream.
+  CompleteCryptoHandshake();
+
+  session_->CreateOutgoingDynamicStream();
+
+  if (session_->use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_));
+    EXPECT_CALL(*connection_,
+                OnStreamReset(promised_stream_id_, QUIC_INVALID_PROMISE_URL));
+  } else {
+    EXPECT_CALL(*connection_, SendRstStream(promised_stream_id_,
+                                            QUIC_INVALID_PROMISE_URL, 0));
+  }
+
+  push_promise_[":authority"] = "";
+  EXPECT_FALSE(session_->HandlePromised(associated_stream_id_,
+                                        promised_stream_id_, push_promise_));
+
+  EXPECT_EQ(session_->GetPromisedById(promised_stream_id_), nullptr);
+  EXPECT_EQ(session_->GetPromisedByUrl(promise_url_), nullptr);
 }
 
 }  // namespace
