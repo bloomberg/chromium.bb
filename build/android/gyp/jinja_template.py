@@ -60,6 +60,14 @@ class JinjaProcessor(object):
 
 def _ProcessFile(processor, input_filename, output_filename):
   output = processor.Render(input_filename)
+
+  # If |output| is same with the file content, we skip update and
+  # ninja's restat will avoid rebuilding things that depend on it.
+  if os.path.isfile(output_filename):
+    with codecs.open(output_filename, 'r', 'utf-8') as f:
+      if f.read() == output:
+        return
+
   with codecs.open(output_filename, 'w', 'utf-8') as output_file:
     output_file.write(output)
 
