@@ -187,7 +187,7 @@ void LocationBarView::Init() {
   // Initialize the Omnibox view.
   omnibox_view_ = new OmniboxViewViews(
       this, std::make_unique<ChromeOmniboxClient>(this, profile()),
-      command_updater(), is_popup_mode_, this, font_list);
+      is_popup_mode_, this, font_list);
   omnibox_view_->Init();
   AddChildView(omnibox_view_);
 
