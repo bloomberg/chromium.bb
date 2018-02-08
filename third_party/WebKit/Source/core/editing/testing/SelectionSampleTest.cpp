@@ -32,7 +32,8 @@ TEST_F(SelectionSampleTest, GetSelectionTextFlatTree) {
   GetDocument().body()->UpdateDistribution();
   EXPECT_EQ(
       "<p>"
-      "    ze^ro <b slot=\"one\">one</b> <b slot=\"two\">tw|o</b> three  "
+      "    ze^ro <slot name=\"one\"><b slot=\"one\">one</b></slot> <slot "
+      "name=\"two\"><b slot=\"two\">tw|o</b></slot> three  "
       "</p>",
       SelectionSample::GetSelectionTextInFlatTree(
           *GetDocument().body(), ConvertToSelectionInFlatTree(selection)));

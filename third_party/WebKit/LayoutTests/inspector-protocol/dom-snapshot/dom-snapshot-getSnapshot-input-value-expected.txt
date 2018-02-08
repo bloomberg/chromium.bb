@@ -41,7 +41,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "childNodeIndexes": [
         4,
         5,
-        32
+        33
       ],
       "attributes": [
         {
@@ -65,11 +65,10 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "childNodeIndexes": [
         6,
         7,
-        12,
         13,
-        16,
+        14,
         17,
-        19,
+        18,
         20,
         21,
         22,
@@ -79,7 +78,8 @@ Tests DOMSnapshot.getSnapshot method returning input values.
         26,
         27,
         28,
-        31
+        29,
+        32
       ],
       "attributes": [
         {
@@ -101,10 +101,25 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "nodeValue": "",
       "backendNodeId": "<number>",
       "childNodeIndexes": [
-        8,
-        10
+        8
       ],
       "layoutNodeIndex": 4
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "SLOT",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        9,
+        11
+      ],
+      "attributes": [
+        {
+          "name": "name",
+          "value": "user-agent-custom-assign-slot"
+        }
+      ]
     },
     {
       "nodeType": 1,
@@ -113,7 +128,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "optionSelected": true,
       "backendNodeId": "<number>",
       "childNodeIndexes": [
-        9
+        10
       ],
       "attributes": [
         {
@@ -135,7 +150,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "optionSelected": false,
       "backendNodeId": "<number>",
       "childNodeIndexes": [
-        11
+        12
       ],
       "attributes": [
         {
@@ -164,7 +179,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "inputValue": "InputValue",
       "backendNodeId": "<number>",
       "childNodeIndexes": [
-        14
+        15
       ],
       "attributes": [
         {
@@ -185,7 +200,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "nodeValue": "",
       "backendNodeId": "<number>",
       "childNodeIndexes": [
-        15
+        16
       ],
       "layoutNodeIndex": 7,
       "isClickable": true
@@ -212,7 +227,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "inputValue": "ButtonValue",
       "backendNodeId": "<number>",
       "childNodeIndexes": [
-        18
+        19
       ],
       "attributes": [
         {
@@ -380,7 +395,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "textValue": "TextAreaValue",
       "backendNodeId": "<number>",
       "childNodeIndexes": [
-        29
+        30
       ],
       "attributes": [
         {
@@ -396,7 +411,7 @@ Tests DOMSnapshot.getSnapshot method returning input values.
       "nodeValue": "",
       "backendNodeId": "<number>",
       "childNodeIndexes": [
-        30
+        31
       ],
       "layoutNodeIndex": 22,
       "isClickable": true

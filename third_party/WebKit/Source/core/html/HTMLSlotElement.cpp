@@ -34,6 +34,7 @@
 #include "core/css/StyleChangeReason.h"
 #include "core/css/StyleEngine.h"
 #include "core/dom/ElementShadow.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/SlotAssignment.h"
 #include "core/dom/V0InsertionPoint.h"
@@ -43,6 +44,7 @@
 #include "core/html/AssignedNodesOptions.h"
 #include "core/html_names.h"
 #include "core/probe/CoreProbes.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/bindings/Microtask.h"
 
 namespace blink {
@@ -251,9 +253,11 @@ void HTMLSlotElement::DispatchSlotChangeEvent() {
 }
 
 Node* HTMLSlotElement::AssignedNodeNextTo(const Node& node) const {
-  DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   DCHECK(SupportsAssignment());
-  ContainingShadowRoot()->GetSlotAssignment().ResolveAssignmentNg();
+  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
+    ContainingShadowRoot()->GetSlotAssignment().ResolveAssignmentNg();
+  else
+    DCHECK(!NeedsDistributionRecalc());
   // TODO(crbug.com/776656): Use {node -> index} map to avoid O(N) lookup
   size_t index = assigned_nodes_.Find(&node);
   DCHECK(index != WTF::kNotFound);
@@ -263,9 +267,11 @@ Node* HTMLSlotElement::AssignedNodeNextTo(const Node& node) const {
 }
 
 Node* HTMLSlotElement::AssignedNodePreviousTo(const Node& node) const {
-  DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
   DCHECK(SupportsAssignment());
-  ContainingShadowRoot()->GetSlotAssignment().ResolveAssignmentNg();
+  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
+    ContainingShadowRoot()->GetSlotAssignment().ResolveAssignmentNg();
+  else
+    DCHECK(!NeedsDistributionRecalc());
   // TODO(crbug.com/776656): Use {node -> index} map to avoid O(N) lookup
   size_t index = assigned_nodes_.Find(&node);
   DCHECK(index != WTF::kNotFound);
@@ -303,6 +309,20 @@ AtomicString HTMLSlotElement::GetName() const {
 }
 
 void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
+  if (!GetNonAttachedStyle() && ParentComputedStyle()) {
+    // The select/optgroup/option assumes computed style is stored on optgroup
+    // and option even when they are display:none to update selected indices
+    // correctly. See HTMLOptionElement::IsDisplayNone(). The select and
+    // optgroup elements use a UA shadow with slots for rendering. With slot
+    // elements in the flat tree, we need to ensure that also the slot element
+    // child of optgroups gets their ComputedStyle set in order to inherit and
+    // set the ComputedStyle of display:none option elements.
+    if (Element* host = ParentOrShadowHostElement()) {
+      if (IsHTMLOptGroupElement(host))
+        SetNonAttachedStyle(StyleForLayoutObject());
+    }
+  }
+
   HTMLElement::AttachLayoutTree(context);
 
   if (SupportsAssignment()) {
@@ -322,7 +342,7 @@ void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
 // of IncementalShadowDOM.
 const HeapVector<Member<Node>>&
 HTMLSlotElement::ChildrenInFlatTreeIfAssignmentIsSupported() {
-  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
+  if (RuntimeEnabledFeatures::SlotInFlatTreeEnabled())
     return AssignedNodes();
   DCHECK(!NeedsDistributionRecalc());
   return distributed_nodes_;
@@ -331,9 +351,8 @@ HTMLSlotElement::ChildrenInFlatTreeIfAssignmentIsSupported() {
 void HTMLSlotElement::DetachLayoutTree(const AttachContext& context) {
   if (SupportsAssignment()) {
     const HeapVector<Member<Node>>& flat_tree_children =
-        RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()
-            ? assigned_nodes_
-            : distributed_nodes_;
+        RuntimeEnabledFeatures::SlotInFlatTreeEnabled() ? assigned_nodes_
+                                                        : distributed_nodes_;
     for (auto& node : flat_tree_children)
       node->LazyReattachIfAttached();
   }
@@ -421,7 +440,7 @@ void HTMLSlotElement::RemovedFrom(ContainerNode* insertion_point) {
 }
 
 void HTMLSlotElement::WillRecalcStyle(StyleRecalcChange change) {
-  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
+  if (RuntimeEnabledFeatures::SlotInFlatTreeEnabled())
     return;
   if (change < kIndependentInherit &&
       GetStyleChangeType() < kSubtreeStyleChange) {
@@ -436,7 +455,7 @@ void HTMLSlotElement::WillRecalcStyle(StyleRecalcChange change) {
 }
 
 void HTMLSlotElement::DidRecalcStyle(StyleRecalcChange change) {
-  if (!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
+  if (!RuntimeEnabledFeatures::SlotInFlatTreeEnabled())
     return;
   if (change < kIndependentInherit)
     return;
