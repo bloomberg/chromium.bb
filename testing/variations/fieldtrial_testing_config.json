@@ -2913,6 +2913,29 @@
             ]
         }
     ],
+    "RendererSideResourceScheduler": [
+        {
+            "platforms": [
+                "win",
+                "mac",
+                "linux",
+                "chromeos",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_2_1024",
+                    "params": {
+                        "limit": "1024",
+                        "tight_limit": "2"
+                    },
+                    "enable_features": [
+                        "RendererSideResourceScheduler"
+                    ]
+                }
+            ]
+        }
+    ],
     "ReportCertificateErrors": [
         {
             "platforms": [
