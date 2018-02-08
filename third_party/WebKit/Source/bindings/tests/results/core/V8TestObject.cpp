@@ -5974,6 +5974,39 @@ static void voidMethodStringArgLongArgMethod(const v8::FunctionCallbackInfo<v8::
   impl->voidMethodStringArgLongArg(stringArg, longArg);
 }
 
+static void voidMethodByteStringOrNullOptionalUSVStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodByteStringOrNullOptionalUSVStringArg");
+
+  TestObject* impl = V8TestObject::ToImpl(info.Holder());
+
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  V8StringResource<kTreatNullAndUndefinedAsNullString> byteStringArg;
+  V8StringResource<> usvStringArg;
+  int numArgsPassed = info.Length();
+  while (numArgsPassed > 0) {
+    if (!info[numArgsPassed - 1]->IsUndefined())
+      break;
+    --numArgsPassed;
+  }
+  byteStringArg = NativeValueTraits<IDLByteStringBase<kTreatNullAndUndefinedAsNullString>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
+  if (exceptionState.HadException())
+    return;
+
+  if (UNLIKELY(numArgsPassed <= 1)) {
+    impl->voidMethodByteStringOrNullOptionalUSVStringArg(byteStringArg);
+    return;
+  }
+  usvStringArg = NativeValueTraits<IDLUSVString>::NativeValue(info.GetIsolate(), info[1], exceptionState);
+  if (exceptionState.HadException())
+    return;
+
+  impl->voidMethodByteStringOrNullOptionalUSVStringArg(byteStringArg, usvStringArg);
+}
+
 static void voidMethodOptionalStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
@@ -6395,7 +6428,7 @@ static void voidMethodDefaultNullableByteStringArgMethod(const v8::FunctionCallb
 
   V8StringResource<kTreatNullAndUndefinedAsNullString> defaultStringArg;
   if (!info[0]->IsUndefined()) {
-    defaultStringArg = NativeValueTraits<IDLByteString>::NativeValue(info.GetIsolate(), info[0], exceptionState);
+    defaultStringArg = NativeValueTraits<IDLByteStringBase<kTreatNullAndUndefinedAsNullString>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
     if (exceptionState.HadException())
       return;
   } else {
@@ -12255,6 +12288,12 @@ void V8TestObject::voidMethodStringArgLongArgMethodCallback(const v8::FunctionCa
   TestObjectV8Internal::voidMethodStringArgLongArgMethod(info);
 }
 
+void V8TestObject::voidMethodByteStringOrNullOptionalUSVStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodByteStringOrNullOptionalUSVStringArg");
+
+  TestObjectV8Internal::voidMethodByteStringOrNullOptionalUSVStringArgMethod(info);
+}
+
 void V8TestObject::voidMethodOptionalStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestObject_voidMethodOptionalStringArg");
 
@@ -13579,6 +13618,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodXPathNSResolverArg", V8TestObject::voidMethodXPathNSResolverArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"voidMethodDictionarySequenceArg", V8TestObject::voidMethodDictionarySequenceArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"voidMethodStringArgLongArg", V8TestObject::voidMethodStringArgLongArgMethodCallback, 2, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"voidMethodByteStringOrNullOptionalUSVStringArg", V8TestObject::voidMethodByteStringOrNullOptionalUSVStringArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"voidMethodOptionalStringArg", V8TestObject::voidMethodOptionalStringArgMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"voidMethodOptionalTestInterfaceEmptyArg", V8TestObject::voidMethodOptionalTestInterfaceEmptyArgMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"voidMethodOptionalLongArg", V8TestObject::voidMethodOptionalLongArgMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},

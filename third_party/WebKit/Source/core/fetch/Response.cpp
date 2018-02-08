@@ -8,9 +8,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
-#include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8FormData.h"
 #include "bindings/core/v8/V8URLSearchParams.h"
@@ -186,7 +187,8 @@ Response* Response::Create(ScriptState* script_state,
                       WebFeature::kFetchResponseConstructionWithStream);
     body_buffer = new BodyStreamBuffer(script_state, body_value);
   } else {
-    String string = ToUSVString(isolate, body, exception_state);
+    String string = NativeValueTraits<IDLUSVString>::NativeValue(
+        isolate, body, exception_state);
     if (exception_state.HadException())
       return nullptr;
     body_buffer =

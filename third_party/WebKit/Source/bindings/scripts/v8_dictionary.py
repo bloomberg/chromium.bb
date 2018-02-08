@@ -149,6 +149,7 @@ def member_context(dictionary, member):
         'is_interface_type': idl_type.is_interface_type and not is_deprecated_dictionary,
         'is_nullable': idl_type.is_nullable,
         'is_object': unwrapped_idl_type.name == 'Object' or is_deprecated_dictionary,
+        'is_string_type': idl_type.is_string_type,
         'is_required': member.is_required,
         'name': member.name,
         'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(member),  # [OriginTrialEnabled]
@@ -156,7 +157,7 @@ def member_context(dictionary, member):
         'setter_name': setter_name_for_dictionary_member(member),
         'null_setter_name': null_setter_name_for_dictionary_member(member),
         'v8_default_value': v8_default_value,
-        'v8_value_to_local_cpp_value': unwrapped_idl_type.v8_value_to_local_cpp_value(
+        'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
             extended_attributes, member.name + 'Value',
             member.name + 'CppValue', isolate='isolate', use_exception_state=True),
     }

@@ -374,17 +374,6 @@ CORE_EXPORT float ToRestrictedFloat(v8::Isolate*,
                                     v8::Local<v8::Value>,
                                     ExceptionState&);
 
-// Converts a value to a String, throwing if any code unit is outside 0-255.
-CORE_EXPORT String ToByteString(v8::Isolate*,
-                                v8::Local<v8::Value>,
-                                ExceptionState&);
-
-// Converts a value to a String, replacing unmatched UTF-16 surrogates with
-// replacement characters.
-CORE_EXPORT String ToUSVString(v8::Isolate*,
-                               v8::Local<v8::Value>,
-                               ExceptionState&);
-
 inline double ToCoreDate(v8::Isolate* isolate,
                          v8::Local<v8::Value> object,
                          ExceptionState& exception_state) {
@@ -396,6 +385,9 @@ inline double ToCoreDate(v8::Isolate* isolate,
   }
   return object.As<v8::Date>()->ValueOf();
 }
+
+// USVString conversion helper.
+CORE_EXPORT String ReplaceUnmatchedSurrogates(const String&);
 
 // FIXME: Remove the special casing for XPathNSResolver.
 XPathNSResolver* ToXPathNSResolver(ScriptState*, v8::Local<v8::Value>);

@@ -102,8 +102,15 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   Vector<String> sequenceStringArg;
   Vector<Dictionary> sequenceDictionaryArg;
   HeapVector<LongOrTestDictionary> sequenceLongOrTestDictionaryArg;
+  V8StringResource<kTreatNullAndUndefinedAsNullString> optionalUSVStringArg;
   Dictionary optionalDictionaryArg;
   TestInterfaceEmpty* optionalTestInterfaceEmptyArg;
+  int numArgsPassed = info.Length();
+  while (numArgsPassed > 0) {
+    if (!info[numArgsPassed - 1]->IsUndefined())
+      break;
+    --numArgsPassed;
+  }
   doubleArg = NativeValueTraits<IDLDouble>::NativeValue(info.GetIsolate(), info[0], exceptionState);
   if (exceptionState.HadException())
     return;
@@ -138,17 +145,35 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (exceptionState.HadException())
     return;
 
-  if (!info[7]->IsNullOrUndefined() && !info[7]->IsObject()) {
-    exceptionState.ThrowTypeError("parameter 8 ('optionalDictionaryArg') is not an object.");
+  if (UNLIKELY(numArgsPassed <= 7)) {
+    ExecutionContext* executionContext = ToExecutionContext(
+        info.NewTarget().As<v8::Object>()->CreationContext());
+    Document& document = *ToDocument(ToExecutionContext(
+        info.NewTarget().As<v8::Object>()->CreationContext()));
+    TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(scriptState, executionContext, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, sequenceDictionaryArg, sequenceLongOrTestDictionaryArg, exceptionState);
+    if (exceptionState.HadException()) {
+      return;
+    }
+    v8::Local<v8::Object> wrapper = info.Holder();
+    wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
+    V8SetReturnValue(info, wrapper);
     return;
   }
-  optionalDictionaryArg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[7], exceptionState);
+  optionalUSVStringArg = NativeValueTraits<IDLUSVStringBase<kTreatNullAndUndefinedAsNullString>>::NativeValue(info.GetIsolate(), info[7], exceptionState);
   if (exceptionState.HadException())
     return;
 
-  optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[8]);
+  if (!info[8]->IsNullOrUndefined() && !info[8]->IsObject()) {
+    exceptionState.ThrowTypeError("parameter 9 ('optionalDictionaryArg') is not an object.");
+    return;
+  }
+  optionalDictionaryArg = NativeValueTraits<Dictionary>::NativeValue(info.GetIsolate(), info[8], exceptionState);
+  if (exceptionState.HadException())
+    return;
+
+  optionalTestInterfaceEmptyArg = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), info[9]);
   if (!optionalTestInterfaceEmptyArg) {
-    exceptionState.ThrowTypeError("parameter 9 is not of type 'TestInterfaceEmpty'.");
+    exceptionState.ThrowTypeError("parameter 10 is not of type 'TestInterfaceEmpty'.");
     return;
   }
 
@@ -156,7 +181,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
       info.NewTarget().As<v8::Object>()->CreationContext());
   Document& document = *ToDocument(ToExecutionContext(
       info.NewTarget().As<v8::Object>()->CreationContext()));
-  TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(scriptState, executionContext, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, sequenceDictionaryArg, sequenceLongOrTestDictionaryArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
+  TestInterfaceConstructor* impl = TestInterfaceConstructor::Create(scriptState, executionContext, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, sequenceDictionaryArg, sequenceLongOrTestDictionaryArg, optionalUSVStringArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
   if (exceptionState.HadException()) {
     return;
   }
@@ -252,7 +277,7 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kConstructionContext, "TestInterfaceConstructor");
-  switch (std::min(9, info.Length())) {
+  switch (std::min(10, info.Length())) {
     case 0:
       if (true) {
         TestInterfaceConstructorV8Internal::constructor1(info);
@@ -295,9 +320,15 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
         return;
       }
       break;
+    case 10:
+      if (true) {
+        TestInterfaceConstructorV8Internal::constructor2(info);
+        return;
+      }
+      break;
     default:
       if (info.Length() >= 0) {
-        exceptionState.ThrowTypeError(ExceptionMessages::InvalidArity("[0, 1, 2, 3, 7, 8, 9]", info.Length()));
+        exceptionState.ThrowTypeError(ExceptionMessages::InvalidArity("[0, 1, 2, 3, 7, 8, 9, 10]", info.Length()));
         return;
       }
       exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(0, info.Length()));
