@@ -114,10 +114,12 @@ enum class FullscreenSource {
 // The distance from the toolbar bottom to the anchor point for InfoBars.
 - (NSInteger)infoBarAnchorPointY;
 
-// Toggles the AppKit Fullscreen API. By default, doing so enters Canonical
-// Fullscreen.
+// Enter fullscreen by toggling the AppKit Fullscreen API.
 - (void)enterAppKitFullscreen;
-- (void)exitAppKitFullscreen;
+
+// Exit fullscreen by toggling the AppKit Fullscreen API. If |async| is true,
+// call -toggleFullscreen: asynchronously.
+- (void)exitAppKitFullscreenAsync:(BOOL)async;
 
 // Returns where the fullscreen button should be positioned in the window.
 // Returns NSZeroRect if there is no fullscreen button (if currently in

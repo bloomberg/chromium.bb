@@ -2033,7 +2033,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
   // TODO(erikchen): Fullscreen modes should stack. Should be able to exit
   // Immersive Fullscreen and still be in AppKit Fullscreen.
   if ([self isInAppKitFullscreen])
-    [self exitAppKitFullscreen];
+    [self exitAppKitFullscreenAsync:NO];
   if ([self isInImmersiveFullscreen])
     [self exitImmersiveFullscreen];
 }
