@@ -24,10 +24,10 @@
         (optional) $ update_sdk.py package --dry-run
         $ update_sdk.py package
      2) updating a specified package:
-        $ update_sdk.py download -p build-tools;27.0.1
+        $ update_sdk.py download -p "build-tools;27.0.3"
         (optional) $ update_sdk.py package --dry-run -p build-tools \
-                     --version 27.0.1
-        $ update_sdk.py package -p build-tools --version 27.0.1
+                     --version 27.0.3
+        $ update_sdk.py package -p build-tools --version 27.0.3
 
    Note that `package` could update the package argument to the checkout
    version in .gn file //build/config/android/config.gni. If having git
@@ -66,7 +66,7 @@ _DEFAULT_DOWNLOAD_PACKAGES = [
 ]
 
 _DEFAULT_PACKAGES_DICT = {
-  'build-tools': 'build-tools;27.0.1',
+  'build-tools': 'build-tools;27.0.3',
   'platforms': 'platforms;android-27',
   'sources': 'sources;android-26',
 }
@@ -131,7 +131,7 @@ def _FindPackageVersion(package):
     #   Installed packages:=====================] 100% Computing updates...
     #     Path                        | Version | Description
     #     -------                     | ------- | -------
-    #     build-tools;27.0.1          | 27.0.1  | Android SDK Build-Tools 27.0.1
+    #     build-tools;27.0.3          | 27.0.3  | Android SDK Build-Tools 27.0.3
     #     emulator                    | 26.0.3  | Android Emulator
     #     platforms;android-27        | 1       | Android SDK Platform 27
     #     tools                       | 26.1.1  | Android SDK Tools
@@ -232,7 +232,7 @@ def ChangeVersionInGNI(package, arg_version, gn_args_dict, gni_file_path,
     gn_arg_pattern = re.compile(
         # Match the argument with '=' and whitespaces. Capture a group for it.
         r'(^\s*%s\s*=\s*)' % version_config_name +
-        # version number with double quote. E.g. "27", "27.0.1", "-26.0.0-dev"
+        # version number with double quote. E.g. "27", "27.0.3", "-26.0.0-dev"
         r'([-\w\s."]+)'
         # End of string
         r'$'
@@ -308,7 +308,7 @@ def main():
       help='The packages of the SDK needs to be installed/updated. ' +
            'Note that package name should be a sdk-style path e.g. ' +
            '"platforms;android-27" or "platform-tools". If package ' +
-           'is not specified, update "build-tools;27.0.1", "tools" ' +
+           'is not specified, update "build-tools;27.0.3", "tools" ' +
            '"platform-tools" and "platforms;android-27" by default.')
   download_parser.add_argument('--sdk-root',
                                default=_SDK_ROOT,
