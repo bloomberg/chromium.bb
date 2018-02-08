@@ -19,34 +19,13 @@ UDPSocketTestHelper::UDPSocketTestHelper(mojom::UDPSocketPtr* socket)
 
 UDPSocketTestHelper::~UDPSocketTestHelper() {}
 
-int UDPSocketTestHelper::OpenSync(net::AddressFamily address_family) {
-  mojom::UDPSocketOptionsPtr options;
-  return OpenWithOptionsSync(address_family, std::move(options));
-}
-
-int UDPSocketTestHelper::OpenWithOptionsSync(
-    net::AddressFamily address_family,
-    mojom::UDPSocketOptionsPtr options) {
-  base::RunLoop run_loop;
-  int net_error = net::ERR_FAILED;
-  socket_->get()->Open(
-      address_family, std::move(options),
-      base::BindOnce(
-          [](base::RunLoop* run_loop, int* result_out, int result) {
-            *result_out = result;
-            run_loop->Quit();
-          },
-          base::Unretained(&run_loop), base::Unretained(&net_error)));
-  run_loop.Run();
-  return net_error;
-}
-
 int UDPSocketTestHelper::ConnectSync(const net::IPEndPoint& remote_addr,
+                                     mojom::UDPSocketOptionsPtr options,
                                      net::IPEndPoint* local_addr_out) {
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
   socket_->get()->Connect(
-      remote_addr,
+      remote_addr, std::move(options),
       base::BindOnce(
           [](base::RunLoop* run_loop, int* result_out,
              net::IPEndPoint* local_addr_out, int result,
@@ -64,22 +43,24 @@ int UDPSocketTestHelper::ConnectSync(const net::IPEndPoint& remote_addr,
 }
 
 int UDPSocketTestHelper::BindSync(const net::IPEndPoint& local_addr,
+                                  mojom::UDPSocketOptionsPtr options,
                                   net::IPEndPoint* local_addr_out) {
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
   socket_->get()->Bind(
-      local_addr, base::BindOnce(
-                      [](base::RunLoop* run_loop, int* result_out,
-                         net::IPEndPoint* local_addr_out, int result,
-                         const base::Optional<net::IPEndPoint>& local_addr) {
-                        *result_out = result;
-                        if (local_addr) {
-                          *local_addr_out = local_addr.value();
-                        }
-                        run_loop->Quit();
-                      },
-                      base::Unretained(&run_loop), base::Unretained(&net_error),
-                      base::Unretained(local_addr_out)));
+      local_addr, std::move(options),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, int* result_out,
+             net::IPEndPoint* local_addr_out, int result,
+             const base::Optional<net::IPEndPoint>& local_addr) {
+            *result_out = result;
+            if (local_addr) {
+              *local_addr_out = local_addr.value();
+            }
+            run_loop->Quit();
+          },
+          base::Unretained(&run_loop), base::Unretained(&net_error),
+          base::Unretained(local_addr_out)));
   run_loop.Run();
   return net_error;
 }
@@ -117,30 +98,17 @@ int UDPSocketTestHelper::SendSync(const std::vector<uint8_t>& input) {
   return net_error;
 }
 
-int UDPSocketTestHelper::SetSendBufferSizeSync(size_t size) {
+int UDPSocketTestHelper::SetBroadcastSync(bool broadcast) {
   base::RunLoop run_loop;
   int net_error = net::ERR_FAILED;
-  socket_->get()->SetSendBufferSize(
-      size, base::BindOnce(
-                [](base::RunLoop* run_loop, int* result_out, int result) {
-                  *result_out = result;
-                  run_loop->Quit();
-                },
-                base::Unretained(&run_loop), base::Unretained(&net_error)));
-  run_loop.Run();
-  return net_error;
-}
-
-int UDPSocketTestHelper::SetReceiveBufferSizeSync(size_t size) {
-  base::RunLoop run_loop;
-  int net_error = net::ERR_FAILED;
-  socket_->get()->SetReceiveBufferSize(
-      size, base::BindOnce(
-                [](base::RunLoop* run_loop, int* result_out, int result) {
-                  *result_out = result;
-                  run_loop->Quit();
-                },
-                base::Unretained(&run_loop), base::Unretained(&net_error)));
+  socket_->get()->SetBroadcast(
+      broadcast,
+      base::BindOnce(
+          [](base::RunLoop* run_loop, int* result_out, int result) {
+            *result_out = result;
+            run_loop->Quit();
+          },
+          base::Unretained(&run_loop), base::Unretained(&net_error)));
   run_loop.Run();
   return net_error;
 }

@@ -740,21 +740,18 @@ TEST_F(NetworkContextTest, CreateUDPSocket) {
   network_context->CreateUDPSocket(mojo::MakeRequest(&server_socket),
                                    std::move(receiver_interface_ptr));
   network::test::UDPSocketTestHelper helper(&server_socket);
-  ASSERT_EQ(net::OK, helper.OpenSync(server_addr.GetFamily()));
-  ASSERT_EQ(net::OK, helper.BindSync(server_addr, &server_addr));
+  ASSERT_EQ(net::OK, helper.BindSync(server_addr, nullptr, &server_addr));
 
   // Create a client socket to send datagrams.
   mojom::UDPSocketPtr client_socket;
   mojom::UDPSocketRequest client_socket_request(
       mojo::MakeRequest(&client_socket));
-  mojom::UDPSocketReceiverPtr client_receiver_ptr;
-  network_context->CreateUDPSocket(std::move(client_socket_request),
-                                   std::move(client_receiver_ptr));
+  network_context->CreateUDPSocket(std::move(client_socket_request), nullptr);
 
   net::IPEndPoint client_addr(GetLocalHostWithAnyPort());
   network::test::UDPSocketTestHelper client_helper(&client_socket);
-  ASSERT_EQ(net::OK, client_helper.OpenSync(client_addr.GetFamily()));
-  ASSERT_EQ(net::OK, client_helper.ConnectSync(server_addr, &client_addr));
+  ASSERT_EQ(net::OK,
+            client_helper.ConnectSync(server_addr, nullptr, &client_addr));
 
   // This test assumes that the loopback interface doesn't drop UDP packets for
   // a small number of packets.
