@@ -7540,7 +7540,7 @@ static int64_t interpolation_filter_search(
             best_dual_mode = i;
 
             *rd = tmp_rd;
-            *switchable_rate = av1_get_switchable_rate(cm, x, xd);
+            *switchable_rate = tmp_rs;
             best_filters = mbmi->interp_filters;
             *skip_txfm_sb = tmp_skip_sb;
             *skip_sse_sb = tmp_skip_sse;
@@ -7571,7 +7571,7 @@ static int64_t interpolation_filter_search(
 
           if (tmp_rd < *rd) {
             *rd = tmp_rd;
-            *switchable_rate = av1_get_switchable_rate(cm, x, xd);
+            *switchable_rate = tmp_rs;
             best_filters = mbmi->interp_filters;
             *skip_txfm_sb = tmp_skip_sb;
             *skip_sse_sb = tmp_skip_sse;
@@ -7606,7 +7606,7 @@ static int64_t interpolation_filter_search(
 
           if (tmp_rd < *rd) {
             *rd = tmp_rd;
-            *switchable_rate = av1_get_switchable_rate(cm, x, xd);
+            *switchable_rate = tmp_rs;
             best_filters = mbmi->interp_filters;
             *skip_txfm_sb = tmp_skip_sb;
             *skip_sse_sb = tmp_skip_sse;
