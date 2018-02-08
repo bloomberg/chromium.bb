@@ -113,7 +113,13 @@ public class VrShellDelegate
     private static final String VR_CORE_MARKET_URI =
             "market://details?id=" + VrCoreVersionChecker.VR_CORE_PACKAGE_ID;
 
-    private static final int WINDOW_FADE_ANIMATION_DURATION_MS = 150;
+    // This value is intentionally probably overkill. This is the time we need to wait from when
+    // Chrome is resumed, to when Chrome actually renders a black frame, so that we can cancel the
+    // stay_hidden animation and not see a white monoscopic frame in-headset. 150ms is definitely
+    // too short, 250ms is sometimes too short for debug builds. 500ms should hopefully be safe even
+    // under fairly exceptional conditions, and won't delay entering VR a noticeable amount given
+    // how slow it already is.
+    private static final int WINDOW_FADE_ANIMATION_DURATION_MS = 500;
 
     private static VrShellDelegate sInstance;
     private static VrBroadcastReceiver sVrBroadcastReceiver;
@@ -217,8 +223,13 @@ public class VrShellDelegate
             sInstance.mExpectPauseOrDonSucceeded.removeCallbacksAndMessages(null);
             sInstance.mVrClassesWrapper.setVrModeEnabled(sInstance.mActivity, true);
             if (DEBUG_LOGS) Log.i(TAG, "VrBroadcastReceiver onReceive");
-            sInstance.setWindowModeForVr();
+
             if (sInstance.mPaused) {
+                // Note that even though we are definitely entering VR here, we don't want to set
+                // the window mode yet, as setting the window mode while we're in the background can
+                // racily lead to that window mode change essentially being ignored, with future
+                // attempts to set the same window mode also being ignored.
+
                 if (sInstance.mInVrAtChromeLaunch == null) sInstance.mInVrAtChromeLaunch = false;
                 // We add a black overlay view so that we can show black while the VR UI is loading.
                 // Note that this alone isn't sufficient to prevent 2D UI from showing while
@@ -1336,6 +1347,7 @@ public class VrShellDelegate
     }
 
     private void handleDonFlowSuccess() {
+        setWindowModeForVr();
         if (mInVr) {
             maybeSetPresentResult(true, mDonSucceeded);
             mDonSucceeded = false;
@@ -1402,6 +1414,7 @@ public class VrShellDelegate
 
     private void onStart() {
         mStopped = false;
+        if (mDonSucceeded) setWindowModeForVr();
     }
 
     private void onStop() {
