@@ -54,7 +54,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
-#include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -788,10 +787,6 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   if (change_tab_contents) {
     web_contents_close_handler_->ActiveTabChanged();
     contents_web_view_->SetWebContents(new_contents);
-    SadTabHelper* sad_tab_helper = SadTabHelper::FromWebContents(new_contents);
-    if (sad_tab_helper)
-      sad_tab_helper->ReinstallInWebView();
-
     // The second layout update should be no-op. It will just set the
     // DevTools WebContents.
     UpdateDevToolsForContents(new_contents, true);
@@ -837,7 +832,7 @@ gfx::Rect BrowserView::GetBounds() const {
 
 gfx::Size BrowserView::GetContentsSize() const {
   DCHECK(initialized_);
-  return contents_web_view_->size();
+  return GetTabContentsContainerView()->size();
 }
 
 bool BrowserView::IsMaximized() const {
@@ -1437,6 +1432,10 @@ LocationBarView* BrowserView::GetLocationBarView() const {
   return toolbar_ ? toolbar_->location_bar() : nullptr;
 }
 
+views::View* BrowserView::GetTabContentsContainerView() const {
+  return contents_web_view_;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, TabStripModelObserver implementation:
 
@@ -1896,7 +1895,7 @@ void BrowserView::GetAccessiblePanes(std::vector<views::View*>* panes) {
     panes->push_back(infobar_container_);
   if (download_shelf_.get())
     panes->push_back(download_shelf_.get());
-  panes->push_back(contents_web_view_);
+  panes->push_back(GetTabContentsContainerView());
   if (devtools_web_view_->visible())
     panes->push_back(devtools_web_view_);
 }

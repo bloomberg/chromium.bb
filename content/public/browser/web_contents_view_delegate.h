@@ -19,6 +19,7 @@
 
 namespace gfx {
 class ColorSpace;
+class Size;
 }
 
 namespace content {
@@ -59,6 +60,9 @@ class CONTENT_EXPORT WebContentsViewDelegate {
 
   // Advance focus to the view that follows or precedes the WebContents.
   virtual bool TakeFocus(bool reverse);
+
+  // Allows the delegate to update bounds for a special views.
+  virtual void SizeChanged(const gfx::Size& size);
 
   // This method allows the embedder to specify the display color space (instead
   // of using the color space specified by display::Display) and write it in
