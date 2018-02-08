@@ -12,7 +12,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/sync/model/attachments/attachment_id.h"
 #include "components/sync/syncable/base_transaction.h"
 
 namespace base {
@@ -49,10 +48,6 @@ class ReadTransaction : public BaseTransaction {
   // Fills |context| with the datatype context associated with |type|.
   void GetDataTypeContext(ModelType type,
                           sync_pb::DataTypeContext* context) const;
-
-  // Clear |ids| and fill it with the ids of attachments that need to be
-  // uploaded to the sync server.
-  void GetAttachmentIdsToUpload(ModelType type, AttachmentIdList* ids) const;
 
   // Return the current (opaque) store birthday.
   std::string GetStoreBirthday() const;

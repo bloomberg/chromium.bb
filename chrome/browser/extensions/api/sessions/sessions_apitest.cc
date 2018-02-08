@@ -30,8 +30,6 @@
 #include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
-#include "components/sync/model/attachments/attachment_id.h"
-#include "components/sync/model/attachments/attachment_service_proxy_for_test.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync_sessions/sessions_sync_manager.h"
@@ -266,16 +264,14 @@ void ExtensionSessionsTest::CreateSessionModels() {
     sync_pb::EntitySpecifics entity;
     entity.mutable_session()->CopyFrom(meta);
     initial_data.push_back(syncer::SyncData::CreateRemoteData(
-        1, entity, base::Time(), syncer::AttachmentIdList(),
-        syncer::AttachmentServiceProxyForTest::Create(),
+        1, entity, base::Time(),
         sync_sessions::SessionsSyncManager::TagHashFromSpecifics(
             entity.session())));
     for (size_t i = 0; i < tabs.size(); i++) {
       sync_pb::EntitySpecifics entity;
       entity.mutable_session()->CopyFrom(tabs[i]);
       initial_data.push_back(syncer::SyncData::CreateRemoteData(
-          i + 2, entity, base::Time(), syncer::AttachmentIdList(),
-          syncer::AttachmentServiceProxyForTest::Create(),
+          i + 2, entity, base::Time(),
           sync_sessions::SessionsSyncManager::TagHashFromSpecifics(
               entity.session())));
     }

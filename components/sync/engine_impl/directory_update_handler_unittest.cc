@@ -12,7 +12,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
-#include "components/sync/base/attachment_id_proto.h"
 #include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
@@ -488,57 +487,6 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ContextVersion) {
     trans.directory()->GetDataTypeContext(&trans, SYNCED_NOTIFICATIONS,
                                           &dir_context);
     EXPECT_EQ(old_context.SerializeAsString(), dir_context.SerializeAsString());
-  }
-}
-
-// See that updates containing attachment metadata are applied
-// (i.e. server_attachment_metadata is copied to attachment_metadata).
-TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
-       ProcessAndApplyUpdatesWithAttachments) {
-  DirectoryTypeDebugInfoEmitter emitter(ARTICLES, &type_observers_);
-  DirectoryUpdateHandler handler(dir(), ARTICLES, ui_worker(), &emitter);
-  StatusController status;
-
-  sync_pb::DataTypeProgressMarker progress;
-  progress.set_data_type_id(GetSpecificsFieldNumberFromModelType(ARTICLES));
-  progress.set_token("token");
-  progress.mutable_gc_directive()->set_version_watermark(kDefaultVersion + 10);
-
-  sync_pb::DataTypeContext context;
-  context.set_data_type_id(GetSpecificsFieldNumberFromModelType(ARTICLES));
-  context.set_context("context");
-  context.set_version(1);
-
-  std::unique_ptr<sync_pb::SyncEntity> e1 = CreateUpdate(
-      SyncableIdToProto(Id::CreateFromServerId("e1")), "", ARTICLES);
-  sync_pb::AttachmentIdProto* attachment_id = e1->add_attachment_id();
-  *attachment_id = CreateAttachmentIdProto(0, 0);
-
-  SyncEntityList updates;
-  updates.push_back(e1.get());
-
-  // Process and apply updates.
-  EXPECT_EQ(SYNCER_OK, handler.ProcessGetUpdatesResponse(progress, context,
-                                                         updates, &status));
-  handler.ApplyUpdates(&status);
-
-  ASSERT_TRUE(TypeRootExists(ARTICLES));
-  ASSERT_TRUE(EntryExists(e1->id_string()));
-  {
-    syncable::ReadTransaction trans(FROM_HERE, dir());
-    syncable::Entry e(&trans, syncable::GET_BY_ID,
-                      Id::CreateFromServerId(e1->id_string()));
-
-    // See that the attachment_metadata is correct.
-    sync_pb::AttachmentMetadata attachment_metadata = e.GetAttachmentMetadata();
-    ASSERT_EQ(1, attachment_metadata.record_size());
-    ASSERT_EQ(attachment_id->SerializeAsString(),
-              attachment_metadata.record(0).id().SerializeAsString());
-    ASSERT_TRUE(attachment_metadata.record(0).is_on_server());
-
-    // See that attachment_metadata and server_attachment_metadata are equal.
-    ASSERT_EQ(attachment_metadata.SerializeAsString(),
-              e.GetServerAttachmentMetadata().SerializeAsString());
   }
 }
 
@@ -1187,97 +1135,6 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SomeUndecryptablePassword) {
     EXPECT_FALSE(e1.GetIsUnappliedUpdate());
     EXPECT_TRUE(e2.GetIsUnappliedUpdate());
   }
-}
-
-TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
-       SimpleConflictDifferentAttachmentMetadata) {
-  const bool is_folder = false;
-  sync_pb::EntitySpecifics specifics;
-  *specifics.mutable_article() = sync_pb::ArticleSpecifics();
-  int64_t handle =
-      entry_factory()->CreateSyncedItem("art1", ARTICLES, is_folder);
-
-  sync_pb::AttachmentIdProto local_attachment_id =
-      CreateAttachmentIdProto(0, 0);
-  sync_pb::AttachmentIdProto server_attachment_id =
-      CreateAttachmentIdProto(0, 0);
-
-  // Add an attachment to the local attachment metadata.
-  sync_pb::AttachmentMetadata local_metadata;
-  sync_pb::AttachmentMetadataRecord* local_record = local_metadata.add_record();
-  *local_record->mutable_id() = local_attachment_id;
-  local_record->set_is_on_server(true);
-  entry_factory()->SetLocalAttachmentMetadataForItem(handle, local_metadata);
-
-  // Add a different attachment to the server attachment metadata.
-  sync_pb::AttachmentMetadata server_metadata;
-  sync_pb::AttachmentMetadataRecord* server_record =
-      server_metadata.add_record();
-  *server_record->mutable_id() = server_attachment_id;
-  server_record->set_is_on_server(true);
-  entry_factory()->SetServerAttachmentMetadataForItem(handle, server_metadata);
-
-  // At this point we have a simple conflict.  The server says art1 should have
-  // server_attachment_id, but the local sync engine says it should have
-  // local_attachment_id.
-
-  StatusController status;
-  ApplyArticlesUpdates(&status);
-
-  // See that the server won.
-  const UpdateCounters& counters = GetArticlesUpdateCounters();
-  EXPECT_EQ(1, counters.num_updates_applied);
-  EXPECT_EQ(1, counters.num_local_overwrites);
-  EXPECT_EQ(0, counters.num_server_overwrites);
-  local_metadata = entry_factory()->GetLocalAttachmentMetadataForItem(handle);
-  EXPECT_EQ(server_metadata.SerializeAsString(),
-            local_metadata.SerializeAsString());
-}
-
-TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
-       SimpleConflictSameAttachmentMetadataDifferentOrder) {
-  const bool is_folder = false;
-  sync_pb::EntitySpecifics specifics;
-  *specifics.mutable_article() = sync_pb::ArticleSpecifics();
-  int64_t handle =
-      entry_factory()->CreateSyncedItem("art1", ARTICLES, is_folder);
-
-  sync_pb::AttachmentIdProto id1 = CreateAttachmentIdProto(0, 0);
-  sync_pb::AttachmentIdProto id2 = CreateAttachmentIdProto(0, 0);
-
-  // Add id1, then id2 to the local attachment metadata.
-  sync_pb::AttachmentMetadata local_metadata;
-  sync_pb::AttachmentMetadataRecord* record = local_metadata.add_record();
-  *record->mutable_id() = id1;
-  record->set_is_on_server(true);
-  record = local_metadata.add_record();
-  *record->mutable_id() = id2;
-  record->set_is_on_server(true);
-  entry_factory()->SetLocalAttachmentMetadataForItem(handle, local_metadata);
-
-  // Add id1 and id2 to the server attachment metadata, but in reverse order.
-  sync_pb::AttachmentMetadata server_metadata;
-  record = server_metadata.add_record();
-  *record->mutable_id() = id2;
-  record->set_is_on_server(true);
-  record = local_metadata.add_record();
-  *record->mutable_id() = id1;
-  record->set_is_on_server(true);
-  entry_factory()->SetServerAttachmentMetadataForItem(handle, server_metadata);
-
-  // At this point we have a (false) conflict.
-
-  StatusController status;
-  ApplyArticlesUpdates(&status);
-
-  // See that the server won.
-  const UpdateCounters& counters = GetArticlesUpdateCounters();
-  EXPECT_EQ(1, counters.num_updates_applied);
-  EXPECT_EQ(1, counters.num_local_overwrites);
-  EXPECT_EQ(0, counters.num_server_overwrites);
-  local_metadata = entry_factory()->GetLocalAttachmentMetadataForItem(handle);
-  EXPECT_EQ(server_metadata.SerializeAsString(),
-            local_metadata.SerializeAsString());
 }
 
 }  // namespace syncer

@@ -58,12 +58,6 @@ class SyncableDirectoryTest : public testing::Test {
                    const std::string& entryname,
                    const Id& id);
 
-  void CreateEntryWithAttachmentMetadata(
-      const ModelType& model_type,
-      const std::string& entryname,
-      const Id& id,
-      const sync_pb::AttachmentMetadata& attachment_metadata);
-
   void DeleteEntry(const Id& id);
 
   // When a directory is saved then loaded from disk, it will pass through

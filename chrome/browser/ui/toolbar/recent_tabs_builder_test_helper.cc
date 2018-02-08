@@ -10,8 +10,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/sync/model/attachments/attachment_id.h"
-#include "components/sync/model/attachments/attachment_service_proxy_for_test.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/sessions_sync_manager.h"
@@ -198,25 +196,15 @@ void RecentTabsBuilderTestHelper::ExportToSessionsSyncManager(
         sync_pb::SessionSpecifics* tab_base = entity.mutable_session();
         BuildTabSpecifics(s, w, t, tab_base);
         changes.push_back(syncer::SyncChange(
-            FROM_HERE,
-            syncer::SyncChange::ACTION_ADD,
-            syncer::SyncData::CreateRemoteData(
-                tab_base->tab_node_id(),
-                entity,
-                GetTabTimestamp(s, w, t),
-                syncer::AttachmentIdList(),
-                syncer::AttachmentServiceProxyForTest::Create())));
+            FROM_HERE, syncer::SyncChange::ACTION_ADD,
+            syncer::SyncData::CreateRemoteData(tab_base->tab_node_id(), entity,
+                                               GetTabTimestamp(s, w, t))));
       }
     }
-    changes.push_back(syncer::SyncChange(
-        FROM_HERE,
-        syncer::SyncChange::ACTION_ADD,
-        syncer::SyncData::CreateRemoteData(
-            1,
-            session_entity,
-            GetSessionTimestamp(s),
-            syncer::AttachmentIdList(),
-            syncer::AttachmentServiceProxyForTest::Create())));
+    changes.push_back(
+        syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_ADD,
+                           syncer::SyncData::CreateRemoteData(
+                               1, session_entity, GetSessionTimestamp(s))));
   }
   manager->ProcessSyncChanges(FROM_HERE, changes);
   VerifyExport(manager);

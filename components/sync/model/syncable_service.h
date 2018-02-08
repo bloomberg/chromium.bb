@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/model/attachments/attachment_store.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/model/sync_error.h"
@@ -20,7 +19,6 @@
 
 namespace syncer {
 
-class AttachmentService;
 class SyncErrorFactory;
 
 // TODO(zea): remove SupportsWeakPtr in favor of having all SyncableService
@@ -68,28 +66,6 @@ class SyncableService : public SyncChangeProcessor,
   //          otherwise.
   SyncError ProcessSyncChanges(const base::Location& from_here,
                                const SyncChangeList& change_list) override = 0;
-
-  // Returns AttachmentStore for use by sync when uploading or downloading
-  // attachments.
-  // GetAttachmentStoreForSync is called right before MergeDataAndStartSyncing.
-  // If at that time GetAttachmentStoreForSync returns null then datatype is
-  // considered not using attachments and all attempts to upload/download
-  // attachments will fail. Default implementation returns null. Datatype that
-  // uses sync attachments should create attachment store, implement
-  // GetAttachmentStoreForSync to return result of
-  // AttachmentStore::CreateAttachmentStoreForSync() from attachment store
-  // object.
-  virtual std::unique_ptr<AttachmentStoreForSync> GetAttachmentStoreForSync();
-
-  // Called by sync to provide AttachmentService to be used to download
-  // attachments.
-  // SetAttachmentService is called after GetAttachmentStore and right before
-  // MergeDataAndStartSyncing and only if GetAttachmentStore has returned a
-  // non-null store instance. Default implementation does nothing.
-  // Datatype that uses attachments must take ownerhip of the provided
-  // AttachmentService instance.
-  virtual void SetAttachmentService(
-      std::unique_ptr<AttachmentService> attachment_service);
 
  protected:
   ~SyncableService() override;

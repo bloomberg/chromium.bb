@@ -11,7 +11,6 @@
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/sync/base/attachment_id_proto.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
@@ -410,8 +409,6 @@ void UpdateServerFieldsFromUpdate(syncable::ModelNeutralMutableEntry* target,
                             bookmark.bookmark_url(),
                             bookmark.bookmark_favicon(), target);
   }
-  target->PutServerAttachmentMetadata(
-      CreateAttachmentMetadata(update.attachment_id()));
   if (SyncerProtoUtil::ShouldMaintainPosition(update)) {
     UpdateBookmarkPositioning(update, target);
   }
@@ -466,7 +463,6 @@ void UpdateLocalDataFromServerData(syncable::WriteTransaction* trans,
   entry->PutBaseVersion(entry->GetServerVersion());
   entry->PutIsDel(entry->GetServerIsDel());
   entry->PutIsUnappliedUpdate(false);
-  entry->PutAttachmentMetadata(entry->GetServerAttachmentMetadata());
 }
 
 void MarkDeletedChildrenSynced(syncable::Directory* dir,

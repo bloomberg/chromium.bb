@@ -26,7 +26,7 @@ GenericChangeProcessorFactory::CreateGenericChangeProcessor(
   DCHECK(user_share);
   return std::make_unique<GenericChangeProcessor>(
       type, std::move(error_handler), local_service, merge_result, user_share,
-      sync_client, local_service->GetAttachmentStoreForSync());
+      sync_client);
 }
 
 }  // namespace syncer

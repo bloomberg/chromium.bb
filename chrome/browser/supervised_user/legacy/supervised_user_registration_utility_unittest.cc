@@ -20,8 +20,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/sync/model/attachments/attachment_id.h"
-#include "components/sync/model/attachments/attachment_service_proxy_for_test.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -220,15 +218,9 @@ void SupervisedUserRegistrationUtilityTest::Acknowledge() {
         sync_change.sync_data().GetSpecifics();
     EXPECT_FALSE(specifics.managed_user().acknowledged());
     specifics.mutable_managed_user()->set_acknowledged(true);
-    new_changes.push_back(
-        SyncChange(FROM_HERE,
-                   SyncChange::ACTION_UPDATE,
-                   SyncData::CreateRemoteData(
-                       ++sync_data_id_,
-                       specifics,
-                       base::Time(),
-                       syncer::AttachmentIdList(),
-                       syncer::AttachmentServiceProxyForTest::Create())));
+    new_changes.push_back(SyncChange(
+        FROM_HERE, SyncChange::ACTION_UPDATE,
+        SyncData::CreateRemoteData(++sync_data_id_, specifics, base::Time())));
   }
   service()->ProcessSyncChanges(FROM_HERE, new_changes);
 

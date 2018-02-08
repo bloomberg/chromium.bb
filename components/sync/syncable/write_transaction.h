@@ -56,10 +56,6 @@ class WriteTransaction : public BaseTransaction {
       SyncChangeProcessor::ContextRefreshStatus refresh_status,
       const std::string& context);
 
-  // Update all entries that refer to |attachment_id| indicating that
-  // |attachment_id| has been uploaded to the sync server.
-  void UpdateEntriesMarkAttachmentAsOnServer(const AttachmentId& attachment_id);
-
  protected:
   WriteTransaction() {}
 

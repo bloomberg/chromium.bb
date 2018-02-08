@@ -74,16 +74,4 @@ void WriteTransaction::SetDataTypeContext(
   // See crbug.com/360280
 }
 
-void WriteTransaction::UpdateEntriesMarkAttachmentAsOnServer(
-    const AttachmentId& attachment_id) {
-  syncable::Directory::Metahandles handles;
-  GetDirectory()->GetMetahandlesByAttachmentId(
-      transaction_, attachment_id.GetProto(), &handles);
-  for (syncable::Directory::Metahandles::iterator iter = handles.begin();
-       iter != handles.end(); ++iter) {
-    syncable::MutableEntry entry(transaction_, syncable::GET_BY_HANDLE, *iter);
-    entry.MarkAttachmentAsOnServer(attachment_id.GetProto());
-  }
-}
-
 }  // namespace syncer

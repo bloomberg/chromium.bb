@@ -419,25 +419,6 @@ void ModelNeutralMutableEntry::PutServerUniquePosition(
   }
 }
 
-void ModelNeutralMutableEntry::PutServerAttachmentMetadata(
-    const sync_pb::AttachmentMetadata& value) {
-  DCHECK(kernel_);
-  const std::string& serialized_value = value.SerializeAsString();
-  if (serialized_value !=
-      kernel_->ref(SERVER_ATTACHMENT_METADATA).SerializeAsString()) {
-    base_write_transaction_->TrackChangesTo(kernel_);
-    // Check for potential sharing - SERVER_ATTACHMENT_METADATA is often
-    // copied from ATTACHMENT_METADATA.
-    if (serialized_value ==
-        kernel_->ref(ATTACHMENT_METADATA).SerializeAsString()) {
-      kernel_->copy(ATTACHMENT_METADATA, SERVER_ATTACHMENT_METADATA);
-    } else {
-      kernel_->put(SERVER_ATTACHMENT_METADATA, value);
-    }
-    MarkDirty();
-  }
-}
-
 void ModelNeutralMutableEntry::PutSyncing(bool value) {
   kernel_->put(SYNCING, value);
 }

@@ -17,8 +17,6 @@
 #include "components/sync/base/immutable.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/weak_handle.h"
-#include "components/sync/model/attachments/attachment_id.h"
-#include "components/sync/model/attachments/attachment_service_proxy.h"
 
 namespace sync_pb {
 class EntitySpecifics;
@@ -27,7 +25,6 @@ class SyncEntity;
 
 namespace syncer {
 
-class AttachmentService;
 class SyncDataLocal;
 class SyncDataRemote;
 
@@ -54,26 +51,17 @@ class SyncData {
   // the same as |sync_tag|) must be specfied.  Note: |non_unique_title| is
   // primarily for debug purposes, and will be overwritten if the datatype is
   // encrypted.
-  //
-  // For data with attachments: |attachment_ids| must not contain duplicates.
   static SyncData CreateLocalDelete(const std::string& sync_tag,
                                     ModelType datatype);
   static SyncData CreateLocalData(const std::string& sync_tag,
                                   const std::string& non_unique_title,
                                   const sync_pb::EntitySpecifics& specifics);
-  static SyncData CreateLocalDataWithAttachments(
-      const std::string& sync_tag,
-      const std::string& non_unique_title,
-      const sync_pb::EntitySpecifics& specifics,
-      const AttachmentIdList& attachment_ids);
 
   // Helper method for creating SyncData objects originating from the syncer.
   static SyncData CreateRemoteData(
       int64_t id,
       const sync_pb::EntitySpecifics& specifics,
       const base::Time& last_modified_time,
-      const AttachmentIdList& attachment_ids,
-      const AttachmentServiceProxy& attachment_service,
       const std::string& client_tag_hash = std::string());
 
   // Whether this SyncData holds valid data. The only way to have a SyncData
@@ -95,11 +83,6 @@ class SyncData {
   bool IsLocal() const;
 
   std::string ToString() const;
-
-  // Return a list of this SyncData's attachment ids.
-  //
-  // The attachments may or may not be present on this device.
-  AttachmentIdList GetAttachmentIds() const;
 
   // TODO(zea): Query methods for other sync properties: parent, successor, etc.
 
@@ -135,17 +118,14 @@ class SyncData {
   // The actual shared sync entity being held.
   ImmutableSyncEntity immutable_entity_;
 
-  AttachmentServiceProxy attachment_service_;
-
  private:
   // Whether this SyncData holds valid data.
   bool is_valid_;
 
-  // Clears |entity| and |attachments|.
+  // Clears |entity|.
   SyncData(int64_t id,
            sync_pb::SyncEntity* entity,
-           const base::Time& remote_modification_time,
-           const AttachmentServiceProxy& attachment_service);
+           const base::Time& remote_modification_time);
 };
 
 // A SyncData going to the syncer.
@@ -180,19 +160,6 @@ class SyncDataRemote : public SyncData {
   // Returns the tag hash value. May not always be present, in which case an
   // empty string will be returned.
   const std::string& GetClientTagHash() const;
-
-  // Retrieve the attachments indentified by |attachment_ids|. Invoke
-  // |callback| with the requested attachments.
-  //
-  // |callback| will be invoked when the operation is complete (successfully
-  // or otherwise).
-  //
-  // Retrieving the requested attachments may require reading local storage or
-  // requesting the attachments from the network.
-  //
-  void GetOrDownloadAttachments(
-      const AttachmentIdList& attachment_ids,
-      const AttachmentService::GetOrDownloadCallback& callback);
 };
 
 // gmock printer helper.

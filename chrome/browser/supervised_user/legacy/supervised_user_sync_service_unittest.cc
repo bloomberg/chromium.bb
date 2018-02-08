@@ -18,8 +18,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/sync/model/attachments/attachment_id.h"
-#include "components/sync/model/attachments/attachment_service_proxy_for_test.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -145,12 +143,7 @@ SyncData SupervisedUserSyncServiceTest::CreateRemoteData(
   if (!chrome_avatar.empty())
     specifics.mutable_managed_user()->set_chrome_avatar(chrome_avatar);
 
-  return SyncData::CreateRemoteData(
-      ++sync_data_id_,
-      specifics,
-      base::Time(),
-      syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create());
+  return SyncData::CreateRemoteData(++sync_data_id_, specifics, base::Time());
 }
 
 TEST_F(SupervisedUserSyncServiceTest, MergeEmpty) {

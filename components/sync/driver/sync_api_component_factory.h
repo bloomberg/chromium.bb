@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/data_type_controller.h"
-#include "components/sync/model/attachments/attachment_service.h"
 #include "components/sync/model/data_type_error_handler.h"
 #include "components/sync/model/syncable_service.h"
 
@@ -37,7 +36,6 @@ class SyncClient;
 class SyncPrefs;
 class SyncService;
 class SyncableService;
-struct UserShare;
 
 // This factory provides sync driver code with the model type specific sync/api
 // service (like SyncableService) implementations.
@@ -102,24 +100,6 @@ class SyncApiComponentFactory {
   virtual SyncComponents CreateBookmarkSyncComponents(
       SyncService* sync_service,
       std::unique_ptr<DataTypeErrorHandler> error_handler) = 0;
-
-  // Creates attachment service.
-  // Note: Should only be called from the model type thread.
-  //
-  // |store_birthday| is the store birthday.  Must not be empty.
-  //
-  // |model_type| is the model type this AttachmentService will be used with.
-  //
-  // |delegate| is optional delegate for AttachmentService to notify about
-  // asynchronous events (AttachmentUploaded). Pass null if delegate is not
-  // provided. AttachmentService doesn't take ownership of delegate, the pointer
-  // must be valid throughout AttachmentService lifetime.
-  virtual std::unique_ptr<AttachmentService> CreateAttachmentService(
-      std::unique_ptr<AttachmentStoreForSync> attachment_store,
-      const UserShare& user_share,
-      const std::string& store_birthday,
-      ModelType model_type,
-      AttachmentService::Delegate* delegate) = 0;
 };
 
 }  // namespace syncer

@@ -21,8 +21,6 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
-#include "components/sync/model/attachments/attachment_id.h"
-#include "components/sync/model/attachments/attachment_service_proxy_for_test.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_error_factory.h"
@@ -62,11 +60,7 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
     pref_specifics->set_value(serialized_value);
 
     syncer::SyncData change_data = syncer::SyncData::CreateRemoteData(
-        ++next_sync_data_id_,
-        specifics,
-        base::Time(),
-        syncer::AttachmentIdList(),
-        syncer::AttachmentServiceProxyForTest::Create());
+        ++next_sync_data_id_, specifics, base::Time());
     syncer::SyncChange change(
         FROM_HERE, syncer::SyncChange::ACTION_UPDATE, change_data);
 

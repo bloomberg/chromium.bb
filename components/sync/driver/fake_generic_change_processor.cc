@@ -19,8 +19,7 @@ FakeGenericChangeProcessor::FakeGenericChangeProcessor(ModelType type,
                              base::WeakPtr<SyncableService>(),
                              base::WeakPtr<SyncMergeResult>(),
                              nullptr,
-                             sync_client,
-                             nullptr),
+                             sync_client),
       sync_model_has_user_created_nodes_(true),
       sync_model_has_user_created_nodes_success_(true) {}
 

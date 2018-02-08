@@ -20,8 +20,6 @@ using base::AutoLock;
 
 namespace syncer {
 
-class AttachmentService;
-
 SharedChangeProcessor::SharedChangeProcessor(ModelType type)
     : disconnected_(false),
       type_(type),
@@ -164,12 +162,6 @@ base::WeakPtr<SyncableService> SharedChangeProcessor::Connect(
                                       type_, user_share, error_handler_->Copy(),
                                       local_service, merge_result, sync_client)
                                   .release();
-  // If available, propagate attachment service to the syncable service.
-  std::unique_ptr<AttachmentService> attachment_service =
-      generic_change_processor_->GetAttachmentService();
-  if (attachment_service) {
-    local_service->SetAttachmentService(std::move(attachment_service));
-  }
   return local_service;
 }
 

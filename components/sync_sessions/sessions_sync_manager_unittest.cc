@@ -15,8 +15,6 @@
 #include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/driver/fake_sync_client.h"
 #include "components/sync/driver/sync_api_component_factory.h"
-#include "components/sync/model/attachments/attachment_id.h"
-#include "components/sync/model/attachments/attachment_service_proxy_for_test.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync_sessions/fake_sync_sessions_client.h"
 #include "components/sync_sessions/session_sync_test_helper.h"
@@ -675,8 +673,7 @@ class SessionsSyncManagerTest : public testing::Test {
                             base::Time mtime = base::Time()) const {
     // The server ID is never relevant to these tests, so just use 1.
     return SyncData::CreateRemoteData(
-        1, entity, mtime, syncer::AttachmentIdList(),
-        syncer::AttachmentServiceProxyForTest::Create(),
+        1, entity, mtime,
         SessionsSyncManager::TagHashFromSpecifics(entity.session()));
   }
 
@@ -1882,9 +1879,8 @@ TEST_F(SessionsSyncManagerTest, MergeDeletesBadHash) {
   sync_pb::SessionSpecifics bad_header(
       helper()->BuildForeignSession(bad_header_tag, empty_ids, &empty_tabs));
   entity.mutable_session()->CopyFrom(bad_header);
-  foreign_data.push_back(SyncData::CreateRemoteData(
-      1, entity, base::Time(), syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create(), "bad_header_tag_hash"));
+  foreign_data.push_back(SyncData::CreateRemoteData(1, entity, base::Time(),
+                                                    "bad_header_tag_hash"));
 
   const std::string good_tag_tab = "good_tag_tab";
   sync_pb::SessionSpecifics good_tab;
@@ -1895,9 +1891,8 @@ TEST_F(SessionsSyncManagerTest, MergeDeletesBadHash) {
   sync_pb::SessionSpecifics bad_tab;
   helper()->BuildTabSpecifics(bad_tab_tag, 0, 2, &bad_tab);
   entity.mutable_session()->CopyFrom(bad_tab);
-  foreign_data.push_back(SyncData::CreateRemoteData(
-      1, entity, base::Time(), syncer::AttachmentIdList(),
-      syncer::AttachmentServiceProxyForTest::Create(), "bad_tab_tag_hash"));
+  foreign_data.push_back(
+      SyncData::CreateRemoteData(1, entity, base::Time(), "bad_tab_tag_hash"));
 
   SyncChangeList output;
   InitWithSyncDataTakeOutput(foreign_data, &output);
