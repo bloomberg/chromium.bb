@@ -82,8 +82,8 @@ enum class PlaySoundOption {
   // The sound is always played.
   ALWAYS = 0,
 
-  // The sound is played only if spoken feedback is enabled, or
-  // --ash-enable-system-sounds flag is used.
+  // The sound is played only if spoken feedback is enabled, and
+  // --ash-disable-system-sounds is not set.
   ONLY_IF_SPOKEN_FEEDBACK_ENABLED,
 };
 
