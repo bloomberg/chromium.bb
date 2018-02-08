@@ -121,7 +121,7 @@ PASS dictionaryTest.set({enumMember: 'invalid'}) threw exception TypeError: Fail
 
 Test for setting invalid enum value in union sequence
 PASS dictionaryTest.set({internalEnumOrInternalEnumSequenceMember: 'invalid'}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The provided value 'invalid' is not a valid enum value of type InternalEnum..
-PASS dictionaryTest.set({internalEnumOrInternalEnumSequenceMember: ['invalid']}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The provided value 'invalid' is not a valid enum value of type InternalEnumSequence..
+PASS dictionaryTest.set({internalEnumOrInternalEnumSequenceMember: ['invalid']}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The provided value 'invalid' is not a valid enum value of type InternalEnum..
 Test for setting invalid object value
 PASS dictionaryTest.set({objectMember: 42}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member objectMember is not an object..
 PASS dictionaryTest.set({objectMember: 'invalid'}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': member objectMember is not an object..
