@@ -45,6 +45,10 @@ const char kDisableTouchDragDrop[] = "disable-touch-drag-drop";
 // Enables touch event based drag and drop.
 const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
 
+// Enables touchable app context menus and notification indicators.
+const char kEnableTouchableAppContextMenu[] =
+    "enable-touchable-app-context-menus";
+
 // Forces high-contrast mode in native UI drawing, regardless of system
 // settings. Note that this has limited effect on Windows: only Aura colors will
 // be switched to high contrast, not other system colors.

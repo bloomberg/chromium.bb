@@ -35,9 +35,9 @@
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -204,7 +204,7 @@ void ReflectItemStatus(const ShelfItem& item, ShelfButton* button) {
       break;
   }
 
-  if (app_list::features::IsTouchableAppContextMenuEnabled()) {
+  if (features::IsTouchableAppContextMenuEnabled()) {
     if (item.has_notification)
       button->AddState(ShelfButton::STATE_NOTIFICATION);
     else

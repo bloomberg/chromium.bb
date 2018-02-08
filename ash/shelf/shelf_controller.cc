@@ -25,9 +25,9 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "ui/app_list/app_list_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/message_center.h"
@@ -101,7 +101,7 @@ void SetShelfBehaviorsFromPrefs() {
 
 ShelfController::ShelfController()
     : is_touchable_app_context_menu_enabled_(
-          app_list::features::IsTouchableAppContextMenuEnabled()),
+          features::IsTouchableAppContextMenuEnabled()),
       message_center_observer_(this) {
   // Synchronization is required in the Mash config, since Chrome and Ash run in
   // separate processes; it's optional via kAshDisableShelfModelSynchronization
@@ -393,8 +393,9 @@ void ShelfController::OnNotificationAdded(const std::string& notification_id) {
 
   // TODO(newcomer): Support ARC app notifications.
   if (!notification || notification->notifier_id().type !=
-                           message_center::NotifierId::APPLICATION)
+                           message_center::NotifierId::APPLICATION) {
     return;
+  }
 
   model_.AddNotificationRecord(notification->notifier_id().id, notification_id);
 }

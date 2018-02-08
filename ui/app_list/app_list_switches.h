@@ -17,14 +17,11 @@ APP_LIST_EXPORT extern const char kDisableAppListDismissOnBlur[];
 APP_LIST_EXPORT extern const char kEnableAppList[];
 APP_LIST_EXPORT extern const char kEnableDriveSearchInChromeLauncher[];
 APP_LIST_EXPORT extern const char kDisableDriveSearchInChromeLauncher[];
-APP_LIST_EXPORT extern const char kEnableTouchableAppContextMenu[];
 APP_LIST_EXPORT extern const char kResetAppListInstallState[];
 
 bool APP_LIST_EXPORT IsAppListSyncEnabled();
 
 bool APP_LIST_EXPORT IsFolderUIEnabled();
-
-bool APP_LIST_EXPORT IsTouchableAppContextMenuEnabled();
 
 // Determines whether the app list should not be dismissed on focus loss.
 bool APP_LIST_EXPORT ShouldNotDismissOnBlur();

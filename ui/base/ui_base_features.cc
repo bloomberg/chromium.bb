@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/base/ui_base_features.h"
+#include "ui/base/ui_base_switches_util.h"
 
 namespace features {
 
@@ -24,5 +25,13 @@ const base::Feature kSecondaryUiMd = {"SecondaryUiMd",
                                       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
+
+const base::Feature kTouchableAppContextMenu = {
+    "EnableTouchableAppContextMenu", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsTouchableAppContextMenuEnabled() {
+  return base::FeatureList::IsEnabled(kTouchableAppContextMenu) ||
+         switches::IsTouchableAppContextMenuEnabled();
+}
 
 }  // namespace features
