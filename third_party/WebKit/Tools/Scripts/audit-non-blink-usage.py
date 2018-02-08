@@ -164,6 +164,12 @@ _CONFIG = [
             'base::TimeDelta',
         ],
     },
+    {
+        'paths': [
+            'third_party/WebKit/Source/modules/webdatabase/',
+        ],
+        'allowed': ['sql::.+'],
+    },
 ]
 
 

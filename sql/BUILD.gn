@@ -13,6 +13,8 @@ component("sql") {
     "error_delegate_util.cc",
     "error_delegate_util.h",
     "init_status.h",
+    "initialization.cc",
+    "initialization.h",
     "meta_table.cc",
     "meta_table.h",
     "recovery.cc",
