@@ -1226,7 +1226,7 @@ bool TabsUpdateFunction::RunAsync() {
   int tab_id = -1;
   WebContents* contents = NULL;
   if (!params->tab_id.get()) {
-    Browser* browser = GetCurrentBrowser();
+    Browser* browser = ChromeExtensionFunctionDetails(this).GetCurrentBrowser();
     if (!browser) {
       error_ = keys::kNoCurrentWindowError;
       return false;
@@ -1801,7 +1801,7 @@ bool TabsDetectLanguageFunction::RunAsync() {
     if (!browser || !contents)
       return false;
   } else {
-    browser = GetCurrentBrowser();
+    browser = ChromeExtensionFunctionDetails(this).GetCurrentBrowser();
     if (!browser)
       return false;
     contents = browser->tab_strip_model()->GetActiveWebContents();
@@ -2031,7 +2031,7 @@ content::WebContents* ZoomAPIFunction::GetWebContents(int tab_id) {
                nullptr /* ignore TabStripModel* output */, &web_contents,
                nullptr /* ignore int tab_index output */, &error_);
   } else {
-    Browser* browser = GetCurrentBrowser();
+    Browser* browser = ChromeExtensionFunctionDetails(this).GetCurrentBrowser();
     if (!browser)
       error_ = keys::kNoCurrentWindowError;
     else if (!ExtensionTabUtil::GetDefaultTab(browser, &web_contents, NULL))

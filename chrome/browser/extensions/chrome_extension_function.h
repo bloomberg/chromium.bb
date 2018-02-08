@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "extensions/browser/extension_function.h"
 
-class Browser;
 class Profile;
 
 namespace content {
@@ -27,28 +26,6 @@ class ChromeAsyncExtensionFunction : public UIThreadExtensionFunction {
   ChromeAsyncExtensionFunction();
 
   Profile* GetProfile() const;
-
-  // Gets the "current" browser, if any.
-  //
-  // Many extension APIs operate relative to the current browser, which is the
-  // browser the calling code is running inside of. For example, popups, tabs,
-  // and infobars all have a containing browser, but background pages and
-  // notification bubbles do not.
-  //
-  // If there is no containing window, the current browser defaults to the
-  // foremost one.
-  //
-  // Incognito browsers are not considered unless the calling extension has
-  // incognito access enabled.
-  //
-  // This method can return NULL if there is no matching browser, which can
-  // happen if only incognito windows are open, or early in startup or shutdown
-  // shutdown when there are no active windows.
-  //
-  // TODO(devlin): This method is incredibly non-deterministic (sometimes just
-  // returning "any" browser), and almost never the right thing to use. Instead,
-  // use ExtensionFunction::GetSenderWebContents(). We should get rid of this.
-  Browser* GetCurrentBrowser();
 
   void SetError(const std::string& error);
 

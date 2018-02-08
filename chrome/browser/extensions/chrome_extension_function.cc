@@ -25,11 +25,6 @@ Profile* ChromeAsyncExtensionFunction::GetProfile() const {
   return Profile::FromBrowserContext(context_);
 }
 
-// TODO(stevenjb): Replace this with GetExtensionWindowController().
-Browser* ChromeAsyncExtensionFunction::GetCurrentBrowser() {
-  return chrome_details_.GetCurrentBrowser();
-}
-
 void ChromeAsyncExtensionFunction::SetError(const std::string& error) {
   error_ = error;
 }
