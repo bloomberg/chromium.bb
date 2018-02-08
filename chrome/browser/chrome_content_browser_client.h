@@ -380,7 +380,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const network::ResourceRequest& request,
       content::ResourceContext* resource_context,
       const base::RepeatingCallback<content::WebContents*()>& wc_getter,
-      content::NavigationUIData* navigation_ui_data) override;
+      content::NavigationUIData* navigation_ui_data,
+      int frame_tree_node_id) override;
   void RegisterNonNetworkNavigationURLLoaderFactories(
       content::RenderFrameHost* frame_host,
       NonNetworkURLLoaderFactoryMap* factories) override;

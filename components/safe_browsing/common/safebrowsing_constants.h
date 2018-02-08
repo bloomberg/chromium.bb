@@ -29,6 +29,12 @@ extern const char kSbBackupHttpErrorURLPrefix[];
 
 // The backup URL prefix used when there are local network specific issues.
 extern const char kSbBackupNetworkErrorURLPrefix[];
+
+// When a network::mojom::URLLoader is cancelled because of SafeBrowsing, this
+// custom cancellation reason could be used to notify the implementation side.
+// Please see network::mojom::URLLoader::kClientDisconnectReason for more
+// details.
+extern const char kCustomCancelReasonForURLLoader[];
 }
 
 #endif  // COMPONENTS_SAFE_BROWSING_COMMON_SAFEBROWSING_CONSTANTS_H_

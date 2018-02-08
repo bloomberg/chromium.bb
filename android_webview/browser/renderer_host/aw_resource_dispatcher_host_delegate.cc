@@ -19,17 +19,20 @@
 #include "android_webview/common/url_constants.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler.h"
+#include "components/safe_browsing/features.h"
 #include "components/web_restrictions/browser/web_restrictions_resource_throttle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/features.h"
 #include "url/url_constants.h"
 
 using android_webview::AwContentsIoThreadClient;
@@ -297,17 +300,26 @@ void AwResourceDispatcherHostDelegate::RequestBeginning(
                                                request);
 
   if (ioThreadThrottle->GetSafeBrowsingEnabled()) {
-    content::ResourceThrottle* throttle =
-        MaybeCreateAwSafeBrowsingResourceThrottle(
-            request, resource_type,
-            AwBrowserContext::GetDefault()->GetSafeBrowsingDBManager(),
-            AwBrowserContext::GetDefault()->GetSafeBrowsingUIManager(),
-            AwBrowserContext::GetDefault()->GetSafeBrowsingWhitelistManager());
-    if (throttle == nullptr) {
-      // Should not happen
-      DLOG(WARNING) << "Failed creating safebrowsing throttle";
-    } else {
-      throttles->push_back(base::WrapUnique(throttle));
+    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+    bool safe_browsing_url_loader_throttle_used =
+        base::FeatureList::IsEnabled(
+            safe_browsing::kCheckByURLLoaderThrottle) &&
+        (!content::IsResourceTypeFrame(resource_type) ||
+         content::IsNavigationMojoResponseEnabled());
+    if (!safe_browsing_url_loader_throttle_used) {
+      content::ResourceThrottle* throttle =
+          MaybeCreateAwSafeBrowsingResourceThrottle(
+              request, resource_type,
+              AwBrowserContext::GetDefault()->GetSafeBrowsingDBManager(),
+              AwBrowserContext::GetDefault()->GetSafeBrowsingUIManager(),
+              AwBrowserContext::GetDefault()
+                  ->GetSafeBrowsingWhitelistManager());
+      if (throttle == nullptr) {
+        // Should not happen
+        DLOG(WARNING) << "Failed creating safebrowsing throttle";
+      } else {
+        throttles->push_back(base::WrapUnique(throttle));
+      }
     }
   }
 

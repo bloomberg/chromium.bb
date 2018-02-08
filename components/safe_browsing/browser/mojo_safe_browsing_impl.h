@@ -48,6 +48,7 @@ class MojoSafeBrowsingImpl : public mojom::SafeBrowsing,
                              int32_t load_flags,
                              content::ResourceType resource_type,
                              bool has_user_gesture,
+                             bool originated_from_service_worker,
                              CreateCheckerAndCheckCallback callback) override;
   void Clone(mojom::SafeBrowsingRequest request) override;
 

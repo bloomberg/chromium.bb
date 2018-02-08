@@ -62,7 +62,8 @@ void WebSocketSBHandshakeThrottle::ThrottleHandshake(
   safe_browsing_->CreateCheckerAndCheck(
       render_frame_id, mojo::MakeRequest(&url_checker_), url, "GET",
       net::HttpRequestHeaders(), load_flags,
-      content::RESOURCE_TYPE_SUB_RESOURCE, false,
+      content::RESOURCE_TYPE_SUB_RESOURCE, false /* has_user_gesture */,
+      false /* originated_from_service_worker */,
       base::BindOnce(&WebSocketSBHandshakeThrottle::OnCheckResult,
                      weak_factory_.GetWeakPtr()));
 

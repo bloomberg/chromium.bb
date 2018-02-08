@@ -955,7 +955,8 @@ class CONTENT_EXPORT ContentBrowserClient {
       const network::ResourceRequest& request,
       ResourceContext* resource_context,
       const base::RepeatingCallback<WebContents*()>& wc_getter,
-      NavigationUIData* navigation_ui_data);
+      NavigationUIData* navigation_ui_data,
+      int frame_tree_node_id);
 
   // Allows the embedder to register per-scheme URLLoaderFactory implementations
   // to handle navigation URL requests for schemes not handled by the Network

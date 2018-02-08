@@ -344,13 +344,14 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     DCHECK(!started_);
     started_ = true;
 
+    frame_tree_node_id_ = request_info->frame_tree_node_id;
     web_contents_getter_ = base::BindRepeating(
-        &GetWebContentsFromFrameTreeNodeID, request_info->frame_tree_node_id);
+        &GetWebContentsFromFrameTreeNodeID, frame_tree_node_id_);
 
     std::vector<std::unique_ptr<content::URLLoaderThrottle>> throttles =
         GetContentClient()->browser()->CreateURLLoaderThrottles(
             *resource_request_, resource_context_, web_contents_getter_,
-            navigation_ui_data.get());
+            navigation_ui_data.get(), frame_tree_node_id_);
 
     auto load_single_request = base::BindOnce(
         &URLLoaderRequestController::CreateNonNetworkServiceURLLoader,
@@ -404,7 +405,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
               std::move(factory_for_webui)),
           GetContentClient()->browser()->CreateURLLoaderThrottles(
               *resource_request_, resource_context_, web_contents_getter_,
-              navigation_ui_data_.get()),
+              navigation_ui_data_.get(), frame_tree_node_id_),
           0 /* routing_id */, 0 /* request_id? */,
           network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
           kNavigationUrlLoaderTrafficAnnotation,
@@ -480,7 +481,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
               std::move(single_request_handler)),
           GetContentClient()->browser()->CreateURLLoaderThrottles(
               *resource_request_, resource_context_, web_contents_getter_,
-              navigation_ui_data_.get()),
+              navigation_ui_data_.get(), frame_tree_node_id_),
           frame_tree_node_id_, 0 /* request_id? */,
           network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
           kNavigationUrlLoaderTrafficAnnotation,
@@ -557,7 +558,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
         base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(factory),
         GetContentClient()->browser()->CreateURLLoaderThrottles(
             *resource_request_, resource_context_, web_contents_getter_,
-            navigation_ui_data_.get()),
+            navigation_ui_data_.get(), frame_tree_node_id_),
         frame_tree_node_id_, 0 /* request_id? */, options,
         resource_request_.get(), this, kNavigationUrlLoaderTrafficAnnotation,
         base::ThreadTaskRunnerHandle::Get());

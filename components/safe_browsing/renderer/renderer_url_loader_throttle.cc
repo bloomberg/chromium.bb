@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
+#include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/safe_browsing/common/utils.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/url_request/redirect_info.h"
@@ -59,7 +60,7 @@ void RendererURLLoaderThrottle::WillStartRequest(
       render_frame_id_, mojo::MakeRequest(&url_checker_), request->url,
       request->method, headers, request->load_flags,
       static_cast<content::ResourceType>(request->resource_type),
-      request->has_user_gesture,
+      request->has_user_gesture, request->originated_from_service_worker,
       base::BindOnce(&RendererURLLoaderThrottle::OnCheckUrlResult,
                      weak_factory_.GetWeakPtr()));
   safe_browsing_ = nullptr;
@@ -181,7 +182,8 @@ void RendererURLLoaderThrottle::OnCompleteCheckInternal(
     notifier_bindings_.reset();
     pending_checks_ = 0;
     pending_slow_checks_ = 0;
-    delegate_->CancelWithError(net::ERR_ABORTED);
+    delegate_->CancelWithError(net::ERR_ABORTED,
+                               kCustomCancelReasonForURLLoader);
   }
 }
 

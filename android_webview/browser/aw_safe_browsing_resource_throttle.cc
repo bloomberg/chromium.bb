@@ -6,10 +6,11 @@
 
 #include <memory>
 
-#include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_safe_browsing_whitelist_manager.h"
 #include "android_webview/browser/aw_url_checker_delegate_impl.h"
+#include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
+#include "content/public/browser/resource_request_info.h"
 #include "net/url_request/url_request.h"
 
 namespace android_webview {
@@ -44,7 +45,17 @@ content::ResourceThrottle* MaybeCreateAwSafeBrowsingResourceThrottle(
 }
 
 bool IsCancelledBySafeBrowsing(const net::URLRequest* request) {
-  return request->GetUserData(kCancelledBySafeBrowsingUserDataKey) != nullptr;
+  // Check whether the request is cancelled by
+  // AwSafeBrowsingParallelResourceThrottle.
+  if (request->GetUserData(kCancelledBySafeBrowsingUserDataKey))
+    return true;
+
+  // Check whether the request is cancelled by
+  // safe_browsing::{Browser,Renderer}URLLoaderThrottle.
+  const content::ResourceRequestInfo* request_info =
+      content::ResourceRequestInfo::ForRequest(request);
+  return request_info && request_info->GetCustomCancelReason().as_string() ==
+                             safe_browsing::kCustomCancelReasonForURLLoader;
 }
 
 AwSafeBrowsingParallelResourceThrottle::AwSafeBrowsingParallelResourceThrottle(
