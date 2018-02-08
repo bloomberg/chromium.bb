@@ -46,6 +46,8 @@ STOCK_LICENSE_DIRS = [
 CUSTOM_LICENSE_DIRS = [
     os.path.join(constants.SOURCE_ROOT,
                  'src/third_party/chromiumos-overlay/licenses'),
+    os.path.join(constants.SOURCE_ROOT,
+                 'src/private-overlays/chromeos-overlay/licenses'),
 ]
 
 COPYRIGHT_ATTRIBUTION_DIR = (
