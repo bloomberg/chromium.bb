@@ -741,6 +741,7 @@ test("content_browsertests") {
     "../browser/loader/reload_cache_control_browsertest.cc",
     "../browser/loader/resource_dispatcher_host_browsertest.cc",
     "../browser/loader/resource_scheduler_browsertest.cc",
+    "../browser/loader/web_package_request_handler_browsertest.cc",
     "../browser/manifest/manifest_browsertest.cc",
     "../browser/media/encrypted_media_browsertest.cc",
     "../browser/media/media_browsertest.cc",

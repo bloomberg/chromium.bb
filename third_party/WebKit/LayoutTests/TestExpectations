@@ -64,8 +64,6 @@ crbug.com/807382 virtual/spv175/fast/multicol/multicol-svg.html [ Failure ]
 # spv175+root-layer-scrolls failures. They also fail with root-layer-scrolls without enable-slimming-paint-v175.
 crbug.com/417782 virtual/spv175/paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Crash ]
 
-crbug.com/803774 http/tests/loading/htxg/ [ Skip ]
-
 ########## Ref tests can't be rebaselined ##########
 crbug.com/504613 crbug.com/524248 [ Mac ] paint/images/image-backgrounds-not-antialiased.html [ Failure ]
 
