@@ -2491,6 +2491,9 @@ crbug.com/780398 [ Mac ] plugins/mouse-capture-inside-shadow.html [ Failure Pass
 
 crbug.com/678346 [ Debug ] fast/dom/shadow/selections-in-shadow.html [ Pass Timeout ]
 crbug.com/678346 [ Win7 Mac Debug ] storage/indexeddb/index-cursor.html [ Pass Timeout ]
+crbug.com/810254 [ Win7 ] storage/indexeddb/observer-frame.html [ Pass Timeout ]
+crbug.com/810254 [ Win7 ] storage/indexeddb/observer-workers.html [ Pass Timeout ]
+
 crbug.com/678346 [ Win7 Debug ] storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Pass Timeout ]
 # Temporarily disabled due to conflicting NeedsManualRebaseline below
 # crbug.com/678346 [ Win7 Debug ] storage/indexeddb/structured-clone.html [ Pass Timeout ]
