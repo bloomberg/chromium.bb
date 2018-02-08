@@ -51,7 +51,9 @@
 #include "content/public/common/content_switches.h"
 #include "mash/common/config.h"                                   // nogncheck
 #include "mash/quick_launch/public/interfaces/constants.mojom.h"  // nogncheck
-#endif
+#else  // defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -202,4 +204,21 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
           content::BrowserThread::IO),
       create_wm_state);
 #endif  // defined(USE_AURA)
+}
+
+void ChromeBrowserMainExtraPartsViews::PostBrowserStart() {
+#if !defined(OS_CHROMEOS)
+  relaunch_notification_controller_ =
+      std::make_unique<RelaunchNotificationController>(
+          UpgradeDetector::GetInstance());
+#endif
+}
+
+void ChromeBrowserMainExtraPartsViews::PostMainMessageLoopRun() {
+#if !defined(OS_CHROMEOS)
+  // The relaunch notification controller acts on timer-based events. Tear it
+  // down explicitly here to avoid a case where such an event arrives during
+  // shutdown.
+  relaunch_notification_controller_.reset();
+#endif
 }

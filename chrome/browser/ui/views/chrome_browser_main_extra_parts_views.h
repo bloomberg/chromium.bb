@@ -31,6 +31,10 @@ class WMState;
 }
 #endif
 
+#if !defined(OS_CHROMEOS)
+class RelaunchNotificationController;
+#endif
+
 class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
  public:
   ChromeBrowserMainExtraPartsViews();
@@ -42,6 +46,8 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
   void PreProfileInit() override;
   void ServiceManagerConnectionStarted(
       content::ServiceManagerConnection* connection) override;
+  void PostBrowserStart() override;
+  void PostMainMessageLoopRun() override;
 
  private:
   std::unique_ptr<views::ViewsDelegate> views_delegate_;
@@ -59,6 +65,12 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
 
   // Subscribes to updates about input-devices.
   std::unique_ptr<ui::InputDeviceClient> input_device_client_;
+#endif
+
+#if !defined(OS_CHROMEOS)
+  // Manages the relaunch notification prompts.
+  std::unique_ptr<RelaunchNotificationController>
+      relaunch_notification_controller_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsViews);

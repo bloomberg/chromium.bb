@@ -3300,6 +3300,13 @@ split_static_library("ui") {
         ]
       }
     }
+
+    if (!is_chromeos) {
+      sources += [
+        "views/relaunch_notification/relaunch_notification_controller.cc",
+        "views/relaunch_notification/relaunch_notification_controller.h",
+      ]
+    }
   }
 
   if (use_aura) {
