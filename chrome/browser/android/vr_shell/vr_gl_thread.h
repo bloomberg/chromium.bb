@@ -74,6 +74,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void Navigate(GURL gurl) override;
   void NavigateBack() override;
   void ExitCct() override;
+  void CloseHostedDialog() override;
   void OnUnsupportedMode(vr::UiUnsupportedMode mode) override;
   void OnExitVrPromptResult(vr::ExitVrPromptChoice choice,
                             vr::UiUnsupportedMode reason) override;

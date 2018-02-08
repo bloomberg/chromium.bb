@@ -45,6 +45,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   void ExitFullscreen() override;
   void NavigateBack() override;
   void ExitCct() override;
+  void CloseHostedDialog() override;
   void OnUnsupportedMode(vr::UiUnsupportedMode mode) override;
   void OnExitVrPromptResult(vr::ExitVrPromptChoice choice,
                             vr::UiUnsupportedMode reason) override;

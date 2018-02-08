@@ -87,6 +87,7 @@ static const char* g_ui_element_name_strings[] = {
     "kPermissionDialogBackplane",
     "kHostedUi",
     "kHostedUiBackplane",
+    "kHostedUiCloseButton",
     "kWebVrUrlToastTransientParent",
     "kWebVrUrlToast",
     "kExclusiveScreenToastTransientParent",

@@ -24,6 +24,7 @@ class UiBrowserInterface {
   virtual void Navigate(GURL gurl) = 0;
   virtual void NavigateBack() = 0;
   virtual void ExitCct() = 0;
+  virtual void CloseHostedDialog() = 0;
   virtual void OnUnsupportedMode(UiUnsupportedMode mode) = 0;
   virtual void OnExitVrPromptResult(ExitVrPromptChoice choice,
                                     UiUnsupportedMode reason) = 0;

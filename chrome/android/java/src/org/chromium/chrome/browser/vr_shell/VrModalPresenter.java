@@ -40,4 +40,8 @@ public class VrModalPresenter extends ModalDialogManager.Presenter {
         mVrDialogManager.setDialogView(null);
         mVrDialog = null;
     }
+
+    public void closeCurrentDialog() {
+        cancelCurrentDialog();
+    }
 }

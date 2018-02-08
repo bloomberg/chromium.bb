@@ -113,6 +113,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private VrViewContainer mVrUiViewContainer;
     private FrameLayout mUiView;
     private ModalDialogManager mNonVrModalDialogManager;
+    private VrModalPresenter mVrModalPresenter;
 
     public VrShellImpl(
             ChromeActivity activity, VrShellDelegate delegate, TabModelSelector tabModelSelector) {
@@ -273,8 +274,9 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) return;
         mNonVrModalDialogManager = mActivity.getModalDialogManager();
         mNonVrModalDialogManager.cancelAllDialogs();
+        mVrModalPresenter = new VrModalPresenter(this);
         mActivity.setModalDialogManager(
-                new ModalDialogManager(new VrModalPresenter(this), ModalDialogManager.APP_MODAL));
+                new ModalDialogManager(mVrModalPresenter, ModalDialogManager.APP_MODAL));
 
         ViewGroup decor = (ViewGroup) mActivity.getWindow().getDecorView();
         mUiView = new FrameLayout(decor.getContext());
@@ -479,6 +481,12 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     @CalledByNative
     public void exitCct() {
         mDelegate.exitCct();
+    }
+
+    // Close the current hosted Dialog in VR
+    @CalledByNative
+    public void closeCurrentDialog() {
+        mVrModalPresenter.closeCurrentDialog();
     }
 
     @CalledByNative

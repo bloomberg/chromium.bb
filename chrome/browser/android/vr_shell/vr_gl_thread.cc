@@ -196,6 +196,13 @@ void VrGLThread::ExitCct() {
       FROM_HERE, base::Bind(&VrShell::ExitCct, weak_vr_shell_));
 }
 
+void VrGLThread::CloseHostedDialog() {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindRepeating(&VrShell::CloseHostedDialog, weak_vr_shell_));
+}
+
 void VrGLThread::ToggleCardboardGamepad(bool enabled) {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(

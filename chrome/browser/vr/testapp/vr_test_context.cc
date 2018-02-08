@@ -473,6 +473,8 @@ void VrTestContext::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
   }
 }
 
+void VrTestContext::CloseHostedDialog() {}
+
 void VrTestContext::OnExitVrPromptResult(vr::ExitVrPromptChoice choice,
                                          vr::UiUnsupportedMode reason) {
   if (reason == UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission &&
