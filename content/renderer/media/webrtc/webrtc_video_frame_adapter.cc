@@ -86,9 +86,8 @@ void IsValidFrame(const scoped_refptr<media::VideoFrame>& frame) {
 namespace content {
 
 WebRtcVideoFrameAdapter::WebRtcVideoFrameAdapter(
-    const scoped_refptr<media::VideoFrame>& frame,
-    const CopyTextureFrameCallback& copy_texture_callback)
-    : frame_(frame), copy_texture_callback_(copy_texture_callback) {}
+    const scoped_refptr<media::VideoFrame>& frame)
+    : frame_(frame) {}
 
 WebRtcVideoFrameAdapter::~WebRtcVideoFrameAdapter() {
 }
@@ -107,17 +106,14 @@ int WebRtcVideoFrameAdapter::height() const {
 
 rtc::scoped_refptr<webrtc::I420BufferInterface>
 WebRtcVideoFrameAdapter::ToI420() {
+  // We cant convert texture synchronously due to threading issues, see
+  // https://crbug.com/663452. Instead, return a black frame (yuv = {0, 0x80,
+  // 0x80}).
   if (frame_->HasTextures()) {
-    if (copy_texture_callback_.is_null()) {
-      DLOG(ERROR) << "Texture backed frame cannot be copied.";
-      return nullptr;
-    }
-
-    scoped_refptr<media::VideoFrame> new_frame;
-    copy_texture_callback_.Run(frame_, &new_frame);
-    if (!new_frame)
-      return nullptr;
-    frame_ = new_frame;
+    DLOG(ERROR) << "Texture backed frame cannot be accessed.";
+    return new rtc::RefCountedObject<FrameAdapter<webrtc::I420BufferInterface>>(
+        media::VideoFrame::CreateColorFrame(frame_->visible_rect().size(), 0u,
+                                            0x80, 0x80, frame_->timestamp()));
   }
 
   IsValidFrame(frame_);
