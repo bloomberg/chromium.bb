@@ -283,7 +283,6 @@ public class OverlayPanelContent {
             int height = mContentViewHeight == 0 ? ContentView.DEFAULT_MEASURE_SPEC
                     : MeasureSpec.makeMeasureSpec(mContentViewHeight, MeasureSpec.EXACTLY);
             cv.setDesiredMeasureSpec(width, height);
-            mActivity.getCompositorViewHolder().setOverlayContentInfo(cv, width, height);
         }
 
         // Creates an initially hidden WebContents which gets shown when the panel is opened.
@@ -361,11 +360,9 @@ public class OverlayPanelContent {
         nativeSetInterceptNavigationDelegate(
                 mNativeOverlayPanelContentPtr, mInterceptNavigationDelegate, panelWebContents);
 
-        mContentDelegate.onContentViewCreated(mContentViewCore);
-        if (mContentViewWidth != 0 && mContentViewHeight != 0) {
-            onPhysicalBackingSizeChanged(mContentViewWidth, mContentViewHeight);
-        }
-        panelWebContents.setSize(cv.getWidth(), cv.getHeight());
+        mContentDelegate.onContentViewCreated();
+        onPhysicalBackingSizeChanged(mContentViewWidth, mContentViewHeight);
+        panelWebContents.setSize(mContentViewWidth, mContentViewHeight);
     }
 
     /**
