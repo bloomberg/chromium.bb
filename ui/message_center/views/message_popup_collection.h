@@ -119,6 +119,10 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // next created notification if bottom-aligned or its top if top-aligned.
   int GetBaseline() const;
 
+  // Returns the top of the toast when IsTopDown() is true, otherwise returns
+  // the bottom of the toast.
+  int GetBaselineForToast(ToastContentsView* toast) const;
+
   // Overridden from MessageCenterObserver:
   void OnNotificationAdded(const std::string& notification_id) override;
   void OnNotificationRemoved(const std::string& notification_id,
@@ -157,10 +161,12 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // multipel toasts by clicking. The mode ends when defer_timer_ expires.
   bool user_is_closing_toasts_by_clicking_ = false;
   std::unique_ptr<base::OneShotTimer> defer_timer_;
-  // The top edge to align the position of the next toast during 'close by
-  // clicking" mode.
-  // Only to be used when user_is_closing_toasts_by_clicking_ is true.
-  int target_top_edge_ = 0;
+
+  // The y axis baseline of the last removed notification.
+  // Depending on the alignment specified by IsTopDown(), it's the origin y or
+  // the bottom y of the notification.
+  // Only to be used when |user_is_closing_toasts_by_clicking_| is true.
+  int last_removed_notification_baseline_ = 0;
 
   // This is the number of pause request for timer. If it's more than zero, the
   // timer is paused. If zero, the timer is not paused.

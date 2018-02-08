@@ -25,6 +25,7 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/image/image_unittest_util.h"
 #include "ui/message_center/fake_message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/desktop_popup_alignment_delegate.h"
@@ -83,8 +84,8 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
     // This size fits test machines resolution and also can keep a few toasts
     // w/o ill effects of hitting the screen overflow. This allows us to assume
     // and verify normal layout of the toast stack.
-    SetDisplayInfo(gfx::Rect(0, 0, 600, 390),  // taskbar at the bottom.
-                   gfx::Rect(0, 0, 600, 400));
+    SetDisplayInfo(gfx::Rect(0, 0, 1920, 1070),  // taskbar at the bottom.
+                   gfx::Rect(0, 0, 1920, 1080));
     id_ = 0;
     PrepareForWait();
   }
@@ -140,11 +141,23 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
 
   std::string AddNotification() {
     std::string id = base::IntToString(id_++);
-    std::unique_ptr<Notification> notification(new Notification(
+    std::unique_ptr<Notification> notification = std::make_unique<Notification>(
         NOTIFICATION_TYPE_BASE_FORMAT, id, base::UTF8ToUTF16("test title"),
         base::UTF8ToUTF16("test message"), gfx::Image(),
         base::string16() /* display_source */, GURL(), NotifierId(),
-        RichNotificationData(), new NotificationDelegate()));
+        RichNotificationData(), new NotificationDelegate());
+    MessageCenter::Get()->AddNotification(std::move(notification));
+    return id;
+  }
+
+  std::string AddImageNotification() {
+    std::string id = base::IntToString(id_++);
+    std::unique_ptr<Notification> notification = std::make_unique<Notification>(
+        NOTIFICATION_TYPE_IMAGE, id, base::UTF8ToUTF16("test title"),
+        base::UTF8ToUTF16("test message"), gfx::Image(),
+        base::string16() /* display_source */, GURL(), NotifierId(),
+        RichNotificationData(), new NotificationDelegate());
+    notification->set_image(gfx::test::CreateImage(100, 100));
     MessageCenter::Get()->AddNotification(std::move(notification));
     return id;
   }
@@ -167,6 +180,8 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
   gfx::Rect GetToastRectAt(size_t index) {
     return collection_->GetToastRectAt(index);
   }
+
+  void DecrementDeferCounter() { collection_->DecrementDeferCounter(); }
 
   // Checks:
   //  1) sizes of toast and corresponding widget are equal;
@@ -567,6 +582,33 @@ TEST_F(MessagePopupCollectionTest, LeftPositioningWithLeftTaskbar) {
 
   // Ensure that toasts are on the left.
   EXPECT_LT(r1.x(), GetWorkArea().CenterPoint().x());
+
+  CloseAllToasts();
+  EXPECT_EQ(0u, GetToastCounts());
+  WaitForTransitionsDone();
+}
+
+// Regression test for https://crbug.com/679397
+TEST_F(MessagePopupCollectionTest, MultipleNotificationHeight) {
+  std::string id0 = AddNotification();
+  WaitForTransitionsDone();
+  std::string id1 = AddImageNotification();
+  WaitForTransitionsDone();
+  EXPECT_EQ(2u, GetToastCounts());
+
+  gfx::Rect r0 = GetToast(id0)->bounds();
+
+  MessageCenter::Get()->RemoveNotification(id0, true /* by_user */);
+  DecrementDeferCounter();
+  EXPECT_EQ(1u, GetToastCounts());
+
+  gfx::Rect r1 = GetToast(id1)->bounds();
+
+  // The heights should be different as one is an image notification while
+  // another is a basic notification, but the bottom positions after the
+  // animation should be same even though the heights are different.
+  EXPECT_NE(r0.height(), r1.height());
+  EXPECT_EQ(r0.bottom(), r1.bottom());
 
   CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
