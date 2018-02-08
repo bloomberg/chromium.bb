@@ -57,6 +57,10 @@ source_set("zlib_adler32_simd") {
 config("zlib_inflate_chunk_simd_config") {
   if (!is_ios && (current_cpu == "x86" || current_cpu == "x64")) {
     defines = [ "INFLATE_CHUNK_SIMD_SSE2" ]
+
+    if (current_cpu == "x64") {
+      defines += [ "INFLATE_CHUNK_READ_64LE" ]
+    }
   }
 
   if (current_cpu == "arm" || current_cpu == "arm64") {
