@@ -904,7 +904,7 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_AmbiguousDOM) {
 // This test uses the following structure.
 // kDOMParentURL
 //  \- <div id=outer>  # Trimmed
-//  \- <script id=outer-sibling src=kReferrerURL>  # Trimmed
+//  \- <script id=outer-sibling src=kReferrerURL>  # Reported (parent of ad ID)
 //   \- <script id=sibling src=kFirstRedirectURL>  # Reported (sibling of ad ID)
 //   \- <div data-google-query-id=ad-tag>  # Reported (ad ID)
 //     \- <iframe src=kDOMChildURL foo=bar>  # Reported (child of ad ID)
@@ -1037,9 +1037,12 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_TrimToAdTags) {
   res_dom_child->add_child_ids(2);
   res_dom_child->set_tag_name("iframe");
 
-  // Note that resource |top_script| with URL kReferrerURL would normally appear
-  // as resource #4, but it was trimmed from the report. Hence resource ID 4 is
-  // skipped.
+  ClientSafeBrowsingReportRequest::Resource* res_ad_parent =
+      expected.add_resources();
+  res_ad_parent->set_id(4);
+  res_ad_parent->set_url(kReferrerURL);
+  res_ad_parent->set_parent_id(5);
+  res_ad_parent->set_tag_name("script");
 
   ClientSafeBrowsingReportRequest::Resource* res_sibling =
       expected.add_resources();
@@ -1055,6 +1058,17 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_TrimToAdTags) {
   res_dom_parent->add_child_ids(3);
   res_dom_parent->add_child_ids(4);
   res_dom_parent->add_child_ids(6);
+
+  HTMLElement* elem_dom_parent_script = expected.add_dom();
+  elem_dom_parent_script->set_id(3);
+  elem_dom_parent_script->set_tag("SCRIPT");
+  elem_dom_parent_script->set_resource_id(res_ad_parent->id());
+  elem_dom_parent_script->add_attribute()->set_name("src");
+  elem_dom_parent_script->mutable_attribute(0)->set_value(kReferrerURL);
+  elem_dom_parent_script->add_attribute()->set_name("id");
+  elem_dom_parent_script->mutable_attribute(1)->set_value("outer-sibling");
+  elem_dom_parent_script->add_child_ids(4);
+  elem_dom_parent_script->add_child_ids(5);
 
   HTMLElement* elem_dom_sibling_script = expected.add_dom();
   elem_dom_sibling_script->set_id(4);
