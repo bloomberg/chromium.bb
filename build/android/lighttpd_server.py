@@ -93,6 +93,7 @@ class LighttpdServer(object):
             'Could not find lighttpd at %s.\n'
             'It may need to be installed (e.g. sudo apt-get install lighttpd)'
             % self.lighttpd_path)
+      # pylint: disable=no-member
       self.process = pexpect.spawn(self.lighttpd_path,
                                    ['-D', '-f', self.config_path,
                                     '-m', self.lighttpd_module_path],
@@ -137,6 +138,7 @@ class LighttpdServer(object):
       except (httplib.HTTPException, socket.error) as client_error:
         pass  # Probably too quick connecting: try again
       # Check for server startup error messages
+      # pylint: disable=no-member
       ix = self.process.expect([pexpect.TIMEOUT, pexpect.EOF, '.+'],
                                timeout=timeout)
       if ix == 2:  # stdout spew from the server
