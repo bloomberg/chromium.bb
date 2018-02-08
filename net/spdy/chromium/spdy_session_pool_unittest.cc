@@ -1006,8 +1006,7 @@ TEST_F(SpdySessionPoolTest, FindAvailableSessionForWebsocket) {
 
   SpdyTestUtil spdy_util;
 
-  SpdySerializedFrame req(
-      spdy_util.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
+  SpdySerializedFrame req(spdy_util.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   SpdySerializedFrame settings_ack(spdy_util.ConstructSpdySettingsAck());
   MockWrite writes[] = {CreateMockWrite(req, 0),
                         CreateMockWrite(settings_ack, 2)};

@@ -797,8 +797,7 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyGet(
     const char* const extra_headers[],
     int extra_header_count,
     int stream_id,
-    RequestPriority request_priority,
-    bool direct) {
+    RequestPriority request_priority) {
   SpdyHeaderBlock block;
   block[kHttp2MethodHeader] = "GET";
   AddUrlToHeaderBlock(default_url_.spec(), &block);
