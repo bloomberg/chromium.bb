@@ -101,8 +101,11 @@ Polymer({
           CrOnc.getIPConfigForType(properties, CrOnc.IPType.IPV4));
       var ipv6 = this.getIPConfigUIProperties_(
           CrOnc.getIPConfigForType(properties, CrOnc.IPType.IPV6));
-      if (ipv4 && !ipv6)
-        ipv6 = {IPAddress: this.i18n('loading')};
+      if (properties.ConnectionState == CrOnc.ConnectionState.CONNECTED &&
+          ipv4 && ipv4.IPAddress) {
+        ipv6 = ipv6 || {};
+        ipv6.IPAddress = ipv6.IPAddress || this.i18n('loading');
+      }
       this.ipConfig_ = {ipv4: ipv4, ipv6: ipv6};
     } else {
       this.ipConfig_ = null;
