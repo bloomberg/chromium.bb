@@ -11,9 +11,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>  // for memcpy() and memset().
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/big_endian.h"
 #include "base/macros.h"

@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <algorithm>
 #include <utility>
-#include <vector>
 
 #include "base/strings/stringprintf.h"
 #include "net/proxy_resolution/proxy_service.h"
