@@ -35,7 +35,9 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
 
   // LoginDisplayHost:
   void BeforeSessionStart() final;
+  void Finalize(base::OnceClosure completion_callback) final;
   AppLaunchController* GetAppLaunchController() final;
+  void StartUserAdding(base::OnceClosure completion_callback) final;
   void StartSignInScreen(const LoginScreenContext& context) final;
   void PrewarmAuthentication() final;
   void StartAppLaunch(const std::string& app_id,
@@ -62,6 +64,8 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   virtual void OnStartAppLaunch() = 0;
   virtual void OnStartArcKiosk() = 0;
   virtual void OnBrowserCreated() = 0;
+  virtual void OnStartUserAdding() = 0;
+  virtual void OnFinalize() = 0;
 
   // Deletes |auth_prewarmer_|.
   void OnAuthPrewarmDone();
@@ -98,6 +102,9 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   // Keeps a copy of the old Drag'n'Drop client, so that it would be disabled
   // during a login session and restored afterwards.
   std::unique_ptr<wm::ScopedDragDropDisabler> scoped_drag_drop_disabler_;
+
+  // Called after host deletion.
+  std::vector<base::OnceClosure> completion_callbacks_;
 
   base::WeakPtrFactory<LoginDisplayHostCommon> weak_factory_;
 

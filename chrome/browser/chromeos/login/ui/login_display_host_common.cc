@@ -30,6 +30,16 @@ namespace {
 // network requests are made while the system is idle waiting for user input.
 constexpr int64_t kPolicyServiceInitializationDelayMilliseconds = 100;
 
+void ScheduleCompletionCallbacks(std::vector<base::OnceClosure>&& callbacks) {
+  for (auto& callback : callbacks) {
+    if (callback.is_null())
+      continue;
+
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(callback));
+  }
+}
+
 }  // namespace
 
 LoginDisplayHostCommon::LoginDisplayHostCommon() : weak_factory_(this) {
@@ -56,14 +66,27 @@ LoginDisplayHostCommon::LoginDisplayHostCommon() : weak_factory_(this) {
                  content::NotificationService::AllSources());
 }
 
-LoginDisplayHostCommon::~LoginDisplayHostCommon() {}
+LoginDisplayHostCommon::~LoginDisplayHostCommon() {
+  ScheduleCompletionCallbacks(std::move(completion_callbacks_));
+}
 
 void LoginDisplayHostCommon::BeforeSessionStart() {
   session_starting_ = true;
 }
 
+void LoginDisplayHostCommon::Finalize(base::OnceClosure completion_callback) {
+  completion_callbacks_.push_back(std::move(completion_callback));
+  OnFinalize();
+}
+
 AppLaunchController* LoginDisplayHostCommon::GetAppLaunchController() {
   return app_launch_controller_.get();
+}
+
+void LoginDisplayHostCommon::StartUserAdding(
+    base::OnceClosure completion_callback) {
+  completion_callbacks_.push_back(std::move(completion_callback));
+  OnStartUserAdding();
 }
 
 void LoginDisplayHostCommon::StartSignInScreen(
