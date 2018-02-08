@@ -35,6 +35,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
@@ -84,7 +85,8 @@ class LoginShelfButton : public views::LabelButton {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetFocusPainter(views::Painter::CreateSolidFocusPainter(
         kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF()));
-    SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
+    SetInkDropMode(InkDropMode::ON);
+    set_has_ink_drop_action_on_click(true);
     set_ink_drop_base_color(kShelfInkDropBaseColor);
     set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
     SetTextSubpixelRenderingEnabled(false);
@@ -111,6 +113,11 @@ class LoginShelfButton : public views::LabelButton {
     ink_drop->SetShowHighlightOnHover(false);
     ink_drop->SetShowHighlightOnFocus(false);
     return std::move(ink_drop);
+  }
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
+    gfx::InsetsF insets(ash::kHitRegionPadding, ash::kHitRegionPadding);
+    return std::make_unique<views::RoundRectInkDropMask>(
+        size(), insets, kTrayRoundedBorderRadius);
   }
 
  private:
