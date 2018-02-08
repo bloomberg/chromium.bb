@@ -106,15 +106,20 @@ function PDFViewer(browserApi) {
   this.isUserInitiatedEvent_ = true;
 
   /**
-   * @type {PDFMetrics}
+   * @type {!PDFMetrics}
    */
   this.metrics =
       (chrome.metricsPrivate ? new PDFMetricsImpl() : new PDFMetricsDummy());
   this.metrics.onDocumentOpened();
 
+  /**
+   * @private {!PDFCoordsTransformer}
+   */
+  this.coordsTransformer_ =
+      new PDFCoordsTransformer(this.postMessage_.bind(this));
+
   // Parse open pdf parameters.
-  this.paramsParser_ =
-      new OpenPDFParamsParser(this.getNamedDestination_.bind(this));
+  this.paramsParser_ = new OpenPDFParamsParser(this.postMessage_.bind(this));
   var toolbarEnabled =
       this.paramsParser_.getUiUrlParams(this.originalUrl_).toolbar &&
       !this.isPrintPreview_;
@@ -223,9 +228,6 @@ function PDFViewer(browserApi) {
 
     this.toolbar_.docTitle = getFilenameFromURL(this.originalUrl_);
   }
-
-  this.coordsTransformer_ =
-      new PDFCoordsTransformer(this.plugin_.postMessage.bind(this.plugin_));
 
   document.body.addEventListener('change-page', e => {
     this.viewport_.goToPage(e.detail.page);
@@ -391,7 +393,7 @@ PDFViewer.prototype = {
         return;
       case 65:  // 'a' key.
         if (e.ctrlKey || e.metaKey) {
-          this.plugin_.postMessage({type: 'selectAll'});
+          this.postMessage_({type: 'selectAll'});
           // Since we do selection ourselves.
           e.preventDefault();
         }
@@ -451,7 +453,7 @@ PDFViewer.prototype = {
    */
   rotateClockwise_: function() {
     this.metrics.onRotation();
-    this.plugin_.postMessage({type: 'rotateClockwise'});
+    this.postMessage_({type: 'rotateClockwise'});
   },
 
   /**
@@ -460,7 +462,7 @@ PDFViewer.prototype = {
    */
   rotateCounterClockwise_: function() {
     this.metrics.onRotation();
-    this.plugin_.postMessage({type: 'rotateCounterclockwise'});
+    this.postMessage_({type: 'rotateCounterclockwise'});
   },
 
   /**
@@ -488,7 +490,7 @@ PDFViewer.prototype = {
    * Notify the plugin to print.
    */
   print_: function() {
-    this.plugin_.postMessage({type: 'print'});
+    this.postMessage_({type: 'print'});
   },
 
   /**
@@ -496,17 +498,7 @@ PDFViewer.prototype = {
    * Notify the plugin to save.
    */
   save_: function() {
-    this.plugin_.postMessage({type: 'save'});
-  },
-
-  /**
-   * Fetches the page number corresponding to the given named destination from
-   * the plugin.
-   * @param {string} name The namedDestination to fetch page number from plugin.
-   */
-  getNamedDestination_: function(name) {
-    this.plugin_.postMessage(
-        {type: 'getNamedDestination', namedDestination: name});
+    this.postMessage_({type: 'save'});
   },
 
   /**
@@ -630,8 +622,18 @@ PDFViewer.prototype = {
    * @param {Object} event a password-submitted event.
    */
   onPasswordSubmitted_: function(event) {
-    this.plugin_.postMessage(
+    this.postMessage_(
         {type: 'getPasswordComplete', password: event.detail.password});
+  },
+
+  /**
+   * @private
+   * Post a message to the PPAPI plugin. Some messages will cause an async reply
+   * to be received through handlePluginMessage_().
+   * @param {Object} message Message to post.
+   */
+  postMessage_: function(message) {
+    this.plugin_.postMessage(message);
   },
 
   /**
@@ -747,13 +749,13 @@ PDFViewer.prototype = {
    * reacting to scroll events while zoom is taking place to avoid flickering.
    */
   beforeZoom_: function() {
-    this.plugin_.postMessage({type: 'stopScrolling'});
+    this.postMessage_({type: 'stopScrolling'});
 
     if (this.viewport_.pinchPhase == Viewport.PinchPhase.PINCH_START) {
       var position = this.viewport_.position;
       var zoom = this.viewport_.zoom;
       var pinchPhase = this.viewport_.pinchPhase;
-      this.plugin_.postMessage({
+      this.postMessage_({
         type: 'viewport',
         userInitiated: true,
         zoom: zoom,
@@ -776,7 +778,7 @@ PDFViewer.prototype = {
     var pinchCenter = this.viewport_.pinchCenter || {x: 0, y: 0};
     var pinchPhase = this.viewport_.pinchPhase;
 
-    this.plugin_.postMessage({
+    this.postMessage_({
       type: 'viewport',
       userInitiated: this.isUserInitiatedEvent_,
       zoom: zoom,
@@ -935,7 +937,7 @@ PDFViewer.prototype = {
       case 'getSelectedText':
       case 'print':
       case 'selectAll':
-        this.plugin_.postMessage(message.data);
+        this.postMessage_(message.data);
         break;
     }
   },
@@ -952,7 +954,7 @@ PDFViewer.prototype = {
 
     switch (message.data.type.toString()) {
       case 'loadPreviewPage':
-        this.plugin_.postMessage(message.data);
+        this.postMessage_(message.data);
         return true;
       case 'resetPrintPreviewMode':
         this.loadState_ = LoadState.LOADING;
@@ -977,7 +979,7 @@ PDFViewer.prototype = {
 
         this.pageIndicator_.pageLabels = message.data.pageNumbers;
 
-        this.plugin_.postMessage({
+        this.postMessage_({
           type: 'resetPrintPreviewMode',
           url: message.data.url,
           grayscale: message.data.grayscale,

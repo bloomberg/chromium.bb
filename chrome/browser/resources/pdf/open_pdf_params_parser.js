@@ -11,13 +11,13 @@ var OpenPDFParamsParser;
 /**
  * Creates a new OpenPDFParamsParser. This parses the open pdf parameters
  * passed in the url to set initial viewport settings for opening the pdf.
- * @param {!Function} getNamedDestinationsFunction The function called to fetch
- *     the page number for a named destination.
+ * @param {function(Object)} postMessageCallback
+ *     Function called to fetch information for a named destination.
  * @constructor
  */
-OpenPDFParamsParser = function(getNamedDestinationsFunction) {
+OpenPDFParamsParser = function(postMessageCallback) {
   this.outstandingRequests_ = [];
-  this.getNamedDestinationsFunction_ = getNamedDestinationsFunction;
+  this.postMessageCallback_ = postMessageCallback;
 };
 
 OpenPDFParamsParser.prototype = {
@@ -165,7 +165,10 @@ OpenPDFParamsParser.prototype = {
 
     if (params.page === undefined && 'nameddest' in urlParams) {
       this.outstandingRequests_.push({callback: callback, params: params});
-      this.getNamedDestinationsFunction_(urlParams['nameddest']);
+      this.postMessageCallback_({
+        type: 'getNamedDestination',
+        namedDestination: urlParams['nameddest']
+      });
     } else {
       callback(params);
     }
