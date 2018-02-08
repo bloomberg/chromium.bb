@@ -341,8 +341,19 @@ ui::MenuModelDelegate* NetworkMenuModel::GetMenuModelDelegate() const {
 // NetworkMenuModel, private methods:
 
 void NetworkMenuModel::ShowOther(const std::string& type) const {
-  // Note: this UI is deprecated and generally unused. If |type| is 'cellular'
-  // this will do nothing.
+  // Note: this UI is deprecated and only used in the login screen when no
+  // network is available.
+  if (type == shill::kTypeCellular) {
+    // 'Other mobile network...' shows the detail dialog for a Cellular
+    // network (if it exists) so that the mobile data network and access point
+    // can be configured.
+    const NetworkState* network =
+        NetworkHandler::Get()->network_state_handler()->FirstNetworkByType(
+            NetworkTypePattern::Cellular());
+    if (network)
+      InternetDetailDialog::ShowDialog(network->guid());
+    return;
+  }
   if (chromeos::switches::IsNetworkSettingsConfigEnabled()) {
     chromeos::InternetConfigDialog::ShowDialogForNetworkType(
         chromeos::network_util::TranslateShillTypeToONC(type));
@@ -471,8 +482,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
           ash::network_icon::GetImageForDisconnectedCellNetwork();
       menu_items_.push_back(MenuItem(
           ui::MenuModel::TYPE_COMMAND,
-          l10n_util::GetStringUTF16(
-              IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS),
+          l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_CONFIGURE_CELLULAR),
           icon, std::string(), FLAG_ADD_CELLULAR));
     }
   } else {
