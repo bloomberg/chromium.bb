@@ -70,14 +70,6 @@
 }
 
 /************* Advanced Options screen **************/
-#oobeAdvancedOptionsScreen #oobeBoxIcon {
-  border: 1px solid  rgba(0, 0, 0, 0.2);
-  height: 32px;
-  min-height: 32px;
-  min-width: 32px;
-  width: 32px;
-}
-
 #oobeAdvancedOptionsScreen .advanced-options-entry {
   border-top: var(--oobe-dialog-list-item-border);
   height: 56px;
