@@ -181,7 +181,8 @@ class URLPattern {
   bool MatchesPath(base::StringPiece test) const;
 
   // Returns true if the pattern is vague enough that it implies all hosts,
-  // such as *://*/*.
+  // such as *://*/*, or if it's a common (e)TLD wildcard pattern like
+  // *://*.com/*.
   // This is an expensive method, and should be used sparingly!
   // You should probably use URLPatternSet::ShouldWarnAllHosts(), which is
   // cached.

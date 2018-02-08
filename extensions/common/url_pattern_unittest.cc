@@ -929,4 +929,46 @@ TEST(ExtensionURLPatternTest, TrailingDotDomain) {
   EXPECT_TRUE(trailing_pattern.MatchesURL(trailing_dot_domain));
 }
 
+TEST(ExtensionURLPatternTest, ImpliesAllHosts) {
+  constexpr struct {
+    const char* pattern;
+    bool implies_all_hosts;
+  } tests[] = {
+      // <all_urls> obviously implies all hosts.
+      {"*://*/*", true},
+      {"<all_urls>", true},
+
+      // Matching a single scheme effectively all hosts.
+      {"http://*/*", true},
+      {"https://*/*", true},
+
+      // Specifying a path under any origin is effectively all hosts.
+      {"*://*/maps", true},
+
+      // Matching a given (e)TLD is effectively all hosts.
+      {"https://*.com/*", true},
+      {"*://*.co.uk/*", true},
+
+      // Matching an arbitrary domain with a given path or port is effectively
+      // all hosts.
+      {"*://*.com/maps", true},
+      {"http://*.com:80/*", true},
+
+      // We don't include private registries (like appspot.com) as implying
+      // all hosts - there's legitimate reasons to want to always run on
+      // *.appspot.com, and we shouldn't say that it's close enough to every
+      // site.
+      {"*://*.appspot.com/*", false},
+
+      // All example.com sites is clearly not all hosts.
+      {"*://*.example.com/*", false},
+  };
+
+  for (const auto& test : tests) {
+    const URLPattern pattern(URLPattern::SCHEME_ALL, test.pattern);
+    EXPECT_EQ(test.implies_all_hosts, pattern.ImpliesAllHosts())
+        << test.pattern;
+  }
+}
+
 }  // namespace

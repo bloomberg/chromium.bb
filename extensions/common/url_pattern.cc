@@ -487,21 +487,25 @@ bool URLPattern::MatchesHost(const GURL& test) const {
 
 bool URLPattern::ImpliesAllHosts() const {
   // Check if it matches all urls or is a pattern like http://*/*.
-  if (match_all_urls_ ||
-      (match_subdomains_ && host_.empty() && port_ == "*" && path_ == "/*")) {
+  if (match_all_urls_ || (match_subdomains_ && host_.empty()))
     return true;
-  }
 
   // If this doesn't even match subdomains, it can't possibly imply all hosts.
   if (!match_subdomains_)
     return false;
+
+  // We exclude private registries because we shouldn't warn that an extension
+  // wants to access all hosts just for wanting to run on all e.g. appspot.com
+  // sites.
+  const net::registry_controlled_domains::PrivateRegistryFilter private_filter =
+      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES;
 
   // If there was more than just a TLD in the host (e.g., *.foobar.com), it
   // doesn't imply all hosts. We don't include private TLDs, so that, e.g.,
   // *.appspot.com does not imply all hosts.
   if (net::registry_controlled_domains::HostHasRegistryControlledDomain(
           host_, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES))
+          private_filter))
     return false;
 
   // At this point the host could either be just a TLD ("com") or some unknown
@@ -513,7 +517,7 @@ bool URLPattern::ImpliesAllHosts() const {
   return net::registry_controlled_domains::HostHasRegistryControlledDomain(
       "notatld." + host_,
       net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+      private_filter);
 }
 
 bool URLPattern::MatchesSingleOrigin() const {
