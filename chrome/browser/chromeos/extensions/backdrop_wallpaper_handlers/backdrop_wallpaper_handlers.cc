@@ -78,8 +78,8 @@ void CollectionInfoFetcher::Start(OnCollectionsInfoFetched callback) {
                              net::LOAD_DO_NOT_SEND_AUTH_DATA);
 
   backdrop::GetCollectionsRequest request;
-  // TODO(crbug.com/800945): Supports all languages.
-  request.set_language("en");
+  // The language field may include the country code (e.g. "en-US").
+  request.set_language(g_browser_process->GetApplicationLocale());
   std::string serialized_proto;
   request.SerializeToString(&serialized_proto);
   url_fetcher_->SetUploadData(kProtoMimeType, serialized_proto);
@@ -170,8 +170,8 @@ void ImageInfoFetcher::Start(OnImagesInfoFetched callback) {
                              net::LOAD_DO_NOT_SEND_AUTH_DATA);
 
   backdrop::GetImagesInCollectionRequest request;
-  // TODO(crbug.com/800945): Supports all languages.
-  request.set_language("en");
+  // The language field may include the country code (e.g. "en-US").
+  request.set_language(g_browser_process->GetApplicationLocale());
   request.set_collection_id(collection_id_);
   std::string serialized_proto;
   request.SerializeToString(&serialized_proto);
