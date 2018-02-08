@@ -12,6 +12,7 @@
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 
 namespace content {
+class ResourceContext;
 class WebContents;
 }
 
@@ -52,6 +53,12 @@ class UrlCheckerDelegate
   // A whitelisted URL is considered safe and therefore won't be checked with
   // the SafeBrowsing database.
   virtual bool IsUrlWhitelisted(const GURL& url) = 0;
+
+  // If the method returns true, the entire request won't be checked, including
+  // the original URL and redirects.
+  virtual bool ShouldSkipRequestCheck(
+      content::ResourceContext* resource_context,
+      const GURL& original_url) = 0;
 
   virtual const SBThreatTypeSet& GetThreatTypes() = 0;
   virtual SafeBrowsingDatabaseManager* GetDatabaseManager() = 0;

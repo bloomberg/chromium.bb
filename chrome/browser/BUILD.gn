@@ -361,6 +361,8 @@ split_static_library("browser") {
     "custom_handlers/protocol_handler_registry.h",
     "custom_handlers/protocol_handler_registry_factory.cc",
     "custom_handlers/protocol_handler_registry_factory.h",
+    "data_reduction_proxy_util.cc",
+    "data_reduction_proxy_util.h",
     "data_usage/tab_id_annotator.cc",
     "data_usage/tab_id_annotator.h",
     "data_usage/tab_id_provider.cc",

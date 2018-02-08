@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/data_reduction_proxy_util.h"
 #include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/browser/profiles/profile_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -44,13 +44,9 @@ DataReductionProxyResourceThrottle::MaybeCreate(
     content::ResourceContext* resource_context,
     content::ResourceType resource_type,
     SafeBrowsingService* sb_service) {
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-  // Don't create the throttle if we can't handle the request.
-  if (io_data->IsOffTheRecord() || !io_data->data_reduction_proxy_io_data() ||
-      !io_data->data_reduction_proxy_io_data()->IsEnabled() ||
-      request->url().SchemeIsCryptographic()) {
+  if (!IsDataReductionProxyResourceThrottleEnabledForUrl(resource_context,
+                                                         request->url()))
     return nullptr;
-  }
 
   return new DataReductionProxyResourceThrottle(request, resource_type,
                                                 sb_service);

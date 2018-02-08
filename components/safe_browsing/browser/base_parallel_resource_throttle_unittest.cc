@@ -117,6 +117,11 @@ class TestUrlCheckerDelegate : public UrlCheckerDelegate {
 
   bool IsUrlWhitelisted(const GURL& url) override { return false; }
 
+  bool ShouldSkipRequestCheck(content::ResourceContext* resource_context,
+                              const GURL& original_url) override {
+    return false;
+  }
+
   const SBThreatTypeSet& GetThreatTypes() override { return threat_types_; }
   SafeBrowsingDatabaseManager* GetDatabaseManager() override {
     return database_manager_.get();

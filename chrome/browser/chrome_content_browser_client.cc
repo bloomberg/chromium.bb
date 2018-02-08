@@ -174,6 +174,7 @@
 #include "components/safe_browsing/browser/url_checker_delegate.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/database_manager.h"
+#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/spellcheck/spellcheck_build_features.h"
@@ -233,6 +234,7 @@
 #include "ppapi/host/ppapi_host.h"
 #include "printing/features/features.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
@@ -3062,16 +3064,20 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
                                       base::RetainedRef(context)));
   }
 
+#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
   if (safe_browsing_service_) {
+    content::ResourceContext* resource_context =
+        render_process_host->GetBrowserContext()->GetResourceContext();
     registry->AddInterface(
         base::Bind(
             &safe_browsing::MojoSafeBrowsingImpl::MaybeCreate,
-            render_process_host->GetID(),
+            render_process_host->GetID(), resource_context,
             base::Bind(
                 &ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
-                base::Unretained(this))),
+                base::Unretained(this), resource_context)),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }
+#endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
 
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(features::kModuleDatabase)) {
@@ -3698,28 +3704,43 @@ base::FilePath ChromeContentBrowserClient::GetLoggingFileName(
 
 std::vector<std::unique_ptr<content::URLLoaderThrottle>>
 ChromeContentBrowserClient::CreateURLLoaderThrottles(
-    const base::Callback<content::WebContents*()>& wc_getter,
+    const network::ResourceRequest& request,
+    content::ResourceContext* resource_context,
+    const base::RepeatingCallback<content::WebContents*()>& wc_getter,
     content::NavigationUIData* navigation_ui_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
 
+  bool network_service_enabled =
+      base::FeatureList::IsEnabled(network::features::kNetworkService);
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
 
-  auto safe_browsing_throttle =
-      safe_browsing::BrowserURLLoaderThrottle::MaybeCreate(
-          GetSafeBrowsingUrlCheckerDelegate(), wc_getter);
-  if (safe_browsing_throttle)
-    result.push_back(std::move(safe_browsing_throttle));
+#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+  if (network_service_enabled ||
+      base::FeatureList::IsEnabled(safe_browsing::kCheckByURLLoaderThrottle)) {
+    auto* delegate = GetSafeBrowsingUrlCheckerDelegate(resource_context);
+    if (delegate &&
+        !delegate->ShouldSkipRequestCheck(resource_context, request.url)) {
+      auto safe_browsing_throttle =
+          safe_browsing::BrowserURLLoaderThrottle::MaybeCreate(delegate,
+                                                               wc_getter);
+      if (safe_browsing_throttle)
+        result.push_back(std::move(safe_browsing_throttle));
+    }
+  }
+#endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
 
-  ChromeNavigationUIData* chrome_navigation_ui_data =
-      static_cast<ChromeNavigationUIData*>(navigation_ui_data);
-  if (chrome_navigation_ui_data &&
-      chrome_navigation_ui_data->prerender_mode() != prerender::NO_PRERENDER) {
-    result.push_back(std::make_unique<prerender::PrerenderURLLoaderThrottle>(
-        chrome_navigation_ui_data->prerender_mode(),
-        chrome_navigation_ui_data->prerender_histogram_prefix(),
-        base::BindOnce(GetPrerenderCanceller, wc_getter),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
+  if (network_service_enabled) {
+    ChromeNavigationUIData* chrome_navigation_ui_data =
+        static_cast<ChromeNavigationUIData*>(navigation_ui_data);
+    if (chrome_navigation_ui_data &&
+        chrome_navigation_ui_data->prerender_mode() !=
+            prerender::NO_PRERENDER) {
+      result.push_back(std::make_unique<prerender::PrerenderURLLoaderThrottle>(
+          chrome_navigation_ui_data->prerender_mode(),
+          chrome_navigation_ui_data->prerender_histogram_prefix(),
+          base::BindOnce(GetPrerenderCanceller, wc_getter),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
+    }
   }
 
   return result;
@@ -3923,8 +3944,13 @@ void ChromeContentBrowserClient::SetDefaultQuotaSettingsForTesting(
 }
 
 safe_browsing::UrlCheckerDelegate*
-ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate() {
+ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate(
+    content::ResourceContext* resource_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+  if (!io_data->safe_browsing_enabled()->GetValue())
+    return nullptr;
 
   // |safe_browsing_service_| may be unavailable in tests.
   if (safe_browsing_service_ && !safe_browsing_url_checker_delegate_) {

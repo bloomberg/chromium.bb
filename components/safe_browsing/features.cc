@@ -28,6 +28,20 @@ const base::Feature kAdSamplerCollectButDontSendFeature{
 const base::Feature kAdSamplerTriggerFeature{"SafeBrowsingAdSamplerTrigger",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled in pre-network-service world, SafeBrowsing URL checks are done by
+// applying SafeBrowsing's URLLoaderThrottle subclasses to ThrottlingURLLoader.
+// It affects:
+//   - subresource loading from renderers;
+//   - frame resource loading from the browser, if
+//     content::IsNavigationMojoResponseEnabled() is true.
+//
+// This flag has no effect if network service is enabled. With network service,
+// SafeBrowsing URL checks are always done by SafeBrowsing's URLLoaderThrottle
+// subclasses.
+const base::Feature kCheckByURLLoaderThrottle{
+    "S13nSafeBrowsingCheckByURLLoaderThrottle",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kGaiaPasswordReuseReporting{
     "SyncPasswordReuseEvent", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -60,11 +74,12 @@ constexpr struct {
     {&kAdSamplerCollectButDontSendFeature, false},
     {&kAdSamplerTriggerFeature, false},
     {&kAppendRecentNavigationEvents, true},
+    {&kCheckByURLLoaderThrottle, true},
+    {&kDispatchSafetyNetCheckOffThread, false},
     {&kGaiaPasswordReuseReporting, true},
     {&kGoogleBrandedPhishingWarning, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},
-    {&kDispatchSafetyNetCheckOffThread, false},
 };
 
 // Adds the name and the enabled/disabled status of a given feature.

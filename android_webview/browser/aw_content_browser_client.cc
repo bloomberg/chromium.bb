@@ -66,6 +66,7 @@
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -566,10 +567,12 @@ void AwContentBrowserClient::ExposeInterfacesToRenderer(
     blink::AssociatedInterfaceRegistry* associated_registry,
     content::RenderProcessHost* render_process_host) {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    content::ResourceContext* resource_context =
+        render_process_host->GetBrowserContext()->GetResourceContext();
     registry->AddInterface(
         base::Bind(
             &safe_browsing::MojoSafeBrowsingImpl::MaybeCreate,
-            render_process_host->GetID(),
+            render_process_host->GetID(), resource_context,
             base::Bind(
                 &AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
                 base::Unretained(this))),
@@ -579,18 +582,21 @@ void AwContentBrowserClient::ExposeInterfacesToRenderer(
 
 std::vector<std::unique_ptr<content::URLLoaderThrottle>>
 AwContentBrowserClient::CreateURLLoaderThrottles(
-    const base::Callback<content::WebContents*()>& wc_getter,
+    const network::ResourceRequest& request,
+    content::ResourceContext* resource_context,
+    const base::RepeatingCallback<content::WebContents*()>& wc_getter,
     content::NavigationUIData* navigation_ui_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
 
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
 
-  auto safe_browsing_throttle =
-      safe_browsing::BrowserURLLoaderThrottle::MaybeCreate(
-          GetSafeBrowsingUrlCheckerDelegate(), wc_getter);
-  if (safe_browsing_throttle)
-    result.push_back(std::move(safe_browsing_throttle));
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    auto safe_browsing_throttle =
+        safe_browsing::BrowserURLLoaderThrottle::MaybeCreate(
+            GetSafeBrowsingUrlCheckerDelegate(), wc_getter);
+    if (safe_browsing_throttle)
+      result.push_back(std::move(safe_browsing_throttle));
+  }
 
   return result;
 }

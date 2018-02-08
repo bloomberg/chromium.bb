@@ -62,6 +62,7 @@
 #include "components/previews/content/previews_io_data.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_user_data.h"
+#include "components/safe_browsing/features.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_data.h"
@@ -77,6 +78,7 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/stream_info.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/previews_state.h"
 #include "extensions/features/features.h"
@@ -668,8 +670,16 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
   if (!first_throttle && io_data->safe_browsing_enabled()->GetValue()) {
-    first_throttle = MaybeCreateSafeBrowsingResourceThrottle(
-        request, resource_type, safe_browsing_.get());
+    bool url_loader_throttle_used =
+        base::FeatureList::IsEnabled(
+            safe_browsing::kCheckByURLLoaderThrottle) &&
+        (!content::IsResourceTypeFrame(resource_type) ||
+         content::IsNavigationMojoResponseEnabled());
+
+    if (!url_loader_throttle_used) {
+      first_throttle = MaybeCreateSafeBrowsingResourceThrottle(
+          request, resource_type, safe_browsing_.get());
+    }
   }
 #endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
 
