@@ -45,4 +45,18 @@ promise_test(async t => {
   });
 }, 'Resource names that are not valid UTF-16 are not mangled');
 
+promise_test(async t => {
+  for (const name of ['-', '-foo']) {
+    await promise_rejects(
+      t, 'NotSupportedError',
+      navigator.locks.acquire(name, lock => {}),
+      'Names starting with "-" should be rejected');
+  }
+  let got_lock = false;
+  await navigator.locks.acquire('x-anything', lock => {
+    got_lock = true;
+  });
+  assert_true(got_lock, 'Names with embedded "-" should be accepted');
+}, 'Names cannot start with "-"');
+
 </script>

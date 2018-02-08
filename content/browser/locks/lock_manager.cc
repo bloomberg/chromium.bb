@@ -294,6 +294,11 @@ void LockManager::RequestLock(const std::string& name,
     return;
   }
 
+  if (name.length() > 0 && name[0] == '-') {
+    mojo::ReportBadMessage("Reserved name");
+    return;
+  }
+
   const auto& context = bindings_.dispatch_context();
   int64_t lock_id =
       (wait == WaitMode::PREEMPT) ? kPreemptiveLockId : NextLockId();
