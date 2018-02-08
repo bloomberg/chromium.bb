@@ -136,11 +136,14 @@ bool IsAutoclickEnabled() {
 }
 
 void SetAutoclickDelay(int delay_ms) {
-  AccessibilityManager::Get()->SetAutoclickDelay(delay_ms);
+  GetActiveUserPrefs()->SetInteger(ash::prefs::kAccessibilityAutoclickDelayMs,
+                                   delay_ms);
+  GetActiveUserPrefs()->CommitPendingWrite();
 }
 
 int GetAutoclickDelay() {
-  return AccessibilityManager::Get()->GetAutoclickDelay();
+  return GetActiveUserPrefs()->GetInteger(
+      ash::prefs::kAccessibilityAutoclickDelayMs);
 }
 
 void SetVirtualKeyboardEnabled(bool enabled) {
