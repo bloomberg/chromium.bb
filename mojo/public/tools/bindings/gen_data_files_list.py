@@ -12,10 +12,18 @@ pattern that is passed in.  Only files which match the regex
 will be written to the list.
 """
 
-from optparse import OptionParser
 import os
 import re
 import sys
+
+from cStringIO import StringIO
+from optparse import OptionParser
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                "pylib"))
+
+from mojom.generate.generator import  WriteFile
+
 
 def main():
   parser = OptionParser()
@@ -28,9 +36,13 @@ def main():
   (options, _) = parser.parse_args()
   pattern = re.compile(options.pattern)
   files = [f for f in os.listdir(options.directory) if pattern.match(f)]
-  with file(options.output, 'w') as out:
-    for f in files:
-      print >> out, f
+
+  stream = StringIO()
+  for f in files:
+    print >> stream, f
+
+  WriteFile(stream.getvalue(), options.output)
+  stream.close()
 
 if __name__ == '__main__':
   sys.exit(main())

@@ -61,7 +61,12 @@ import argparse
 import json
 import os
 import re
+import sys
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                "pylib"))
+
+from mojom.generate.generator import WriteFile
 
 def ReadTypemap(path):
   with open(path) as f:
@@ -143,8 +148,8 @@ def main():
     raise IOError('Missing dependencies: %s' % ', '.join(missing))
   for path in params.dependency:
     typemaps.update(ReadTypemap(path))
-  with open(params.output, 'w') as f:
-    json.dump({'c++': typemaps}, f, indent=2)
+
+  WriteFile(json.dumps({'c++': typemaps}, indent=2), params.output)
 
 
 if __name__ == '__main__':

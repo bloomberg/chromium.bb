@@ -339,6 +339,7 @@ template("mojom") {
     parser_target_name = "${target_name}__parser"
     action_foreach(parser_target_name) {
       script = mojom_generator_script
+      inputs = mojom_generator_sources
       sources = invoker.sources
       outputs = [
         "{{source_gen_dir}}/{{source_name_part}}.p",
@@ -722,7 +723,7 @@ template("mojom") {
     }
 
     action(type_mappings_target_name) {
-      inputs = _bindings_configuration_files
+      inputs = _bindings_configuration_files + mojom_generator_sources
       outputs = [
         type_mappings_path,
       ]
