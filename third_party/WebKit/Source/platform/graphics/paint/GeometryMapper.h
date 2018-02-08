@@ -57,8 +57,13 @@ class PLATFORM_EXPORT GeometryMapper {
       const TransformPaintPropertyNode* destination_transform_node,
       FloatRect& mapping_rect);
 
-  // Returns the "clip visual rect" between |local_state| and |ancestor_state|.
-  // See above for the definition of "clip visual rect".
+  // Returns the clip rect between |local_state| and |ancestor_state|. The clip
+  // rect is the total clip rect that should be applied when painting contents
+  // of |local_state| in |ancestor_state| space. Because this clip rect applies
+  // on contents of |local_state|, it's not affected by any effect nodes between
+  // |local_state| and |ancestor_state|.
+  //
+  // Note that the clip of |ancestor_state| is *not* applied.
   //
   // The output FloatClipRect may contain false positives for rounded-ness
   // if a rounded clip is clipped out, and overly conservative results
@@ -69,10 +74,14 @@ class PLATFORM_EXPORT GeometryMapper {
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize);
 
   // Maps from a rect in |local_state| to its visual rect in |ancestor_state|.
-  // This is computed by multiplying the rect by its combined transform between
-  // |local_state| and |ancestor_space|, then flattening into 2D space, then
-  // intersecting by the "clip visual rect" for |local_state|'s clips. See above
-  // for the definition of "clip visual rect".
+  // If there is no effect node between |local_state| (included) and
+  // |ancestor_state| (not included), the result is computed by multiplying the
+  // rect by its combined transform between |local_state| and |ancestor_space|,
+  // then flattening into 2D space, then intersecting by the clip for
+  // |local_state|'s clips. If there are any pixel-moving effect nodes between
+  // |local_state| and |ancestor_state|, for each segment of states separated
+  // by the effect nodes, we'll execute the above process and map the result
+  // rect with the effect.
   //
   // Note that the clip of |ancestor_state| is *not* applied.
   //
