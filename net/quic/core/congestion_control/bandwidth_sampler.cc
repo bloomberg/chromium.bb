@@ -119,8 +119,10 @@ BandwidthSample BandwidthSampler::OnPacketAcknowledgedInner(
   // always larger than the time of the previous packet, otherwise division by
   // zero or integer underflow can occur.
   if (ack_time <= sent_packet.last_acked_packet_ack_time) {
-    QUIC_BUG << "Time of the previously acked packet is larger than the time "
-                "of the current packet.";
+    QUIC_BUG << "Time of the previously acked packet:"
+             << sent_packet.last_acked_packet_ack_time.ToDebuggingValue()
+             << " is larger than the ack time of the current packet:"
+             << ack_time.ToDebuggingValue();
     return BandwidthSample();
   }
   QuicBandwidth ack_rate = QuicBandwidth::FromBytesAndTimeDelta(

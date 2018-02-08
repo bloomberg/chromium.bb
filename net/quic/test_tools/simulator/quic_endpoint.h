@@ -90,7 +90,7 @@ class QuicEndpoint : public Endpoint,
       const QuicSocketAddress& self_address,
       const QuicSocketAddress& peer_address) override {}
   void OnCongestionWindowChange(QuicTime now) override {}
-  void OnConnectionMigration(PeerAddressChangeType type) override {}
+  void OnConnectionMigration(AddressChangeType type) override {}
   void OnPathDegrading() override {}
   void PostProcessAfterData() override {}
   void OnAckNeedsRetransmittableFrame() override {}

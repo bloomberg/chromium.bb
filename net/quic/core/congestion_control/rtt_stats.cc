@@ -29,7 +29,7 @@ RttStats::RttStats()
       smoothed_rtt_(QuicTime::Delta::Zero()),
       previous_srtt_(QuicTime::Delta::Zero()),
       mean_deviation_(QuicTime::Delta::Zero()),
-      initial_rtt_us_(kInitialRttMs * kNumMicrosPerMilli),
+      initial_rtt_(QuicTime::Delta::FromMilliseconds(kInitialRttMs)),
       max_ack_delay_(QuicTime::Delta::Zero()),
       ignore_max_ack_delay_(false) {}
 
@@ -101,7 +101,7 @@ void RttStats::OnConnectionMigration() {
   min_rtt_ = QuicTime::Delta::Zero();
   smoothed_rtt_ = QuicTime::Delta::Zero();
   mean_deviation_ = QuicTime::Delta::Zero();
-  initial_rtt_us_ = kInitialRttMs * kNumMicrosPerMilli;
+  initial_rtt_ = QuicTime::Delta::FromMilliseconds(kInitialRttMs);
   max_ack_delay_ = QuicTime::Delta::Zero();
 }
 

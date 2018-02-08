@@ -33,9 +33,10 @@ enum QuicTransportVersion {
                          // WINDOW_UPDATE every 20 sent packets which do not
                          // contain retransmittable frames.
   QUIC_VERSION_41 = 41,  // RST_STREAM, ACK and STREAM frames match IETF format.
-  QUIC_VERSION_42 = 42,  // Initial packet number is randomly chosen from
-                         // [1:2^31],
+  QUIC_VERSION_42 = 42,  // Allows receiving overlapping stream data.
   QUIC_VERSION_43 = 43,  // Use IETF packet header format.
+  QUIC_VERSION_99 = 99,  // Dumping ground for IETF QUIC changes which are not
+                         // yet ready for production.
 
   // IMPORTANT: if you are adding to this list, follow the instructions at
   // http://sites/quic/adding-and-removing-versions
@@ -100,8 +101,8 @@ using QuicVersionLabelVector = std::vector<QuicVersionLabel>;
 // IMPORTANT: if you are adding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
 static const QuicTransportVersion kSupportedTransportVersions[] = {
-    QUIC_VERSION_43, QUIC_VERSION_42, QUIC_VERSION_41, QUIC_VERSION_39,
-    QUIC_VERSION_38, QUIC_VERSION_37, QUIC_VERSION_35};
+    QUIC_VERSION_99, QUIC_VERSION_43, QUIC_VERSION_42, QUIC_VERSION_41,
+    QUIC_VERSION_39, QUIC_VERSION_38, QUIC_VERSION_37, QUIC_VERSION_35};
 
 // This vector contains all crypto handshake protocols that are supported.
 static const HandshakeProtocol kSupportedHandshakeProtocols[] = {

@@ -6395,6 +6395,12 @@ Called by update_net_error_codes.py.-->
   <int value="14" label="QUIC/36"/>
   <int value="15" label="QUIC/37"/>
   <int value="16" label="QUIC/38"/>
+  <int value="17" label="QUIC/39"/>
+  <int value="18" label="QUIC/40"/>
+  <int value="19" label="QUIC/41"/>
+  <int value="20" label="QUIC/42"/>
+  <int value="21" label="QUIC/43"/>
+  <int value="22" label="QUIC/99"/>
 </enum>
 
 <enum name="ConnectionResult">

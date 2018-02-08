@@ -8,8 +8,6 @@
 #include "net/quic/platform/api/quic_test.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
-using testing::_;
-
 namespace net {
 namespace test {
 namespace {

@@ -346,9 +346,7 @@ CongestionControlType BbrSender::GetCongestionControlType() const {
 }
 
 QuicTime::Delta BbrSender::GetMinRtt() const {
-  return !min_rtt_.IsZero()
-             ? min_rtt_
-             : QuicTime::Delta::FromMicroseconds(rtt_stats_->initial_rtt_us());
+  return !min_rtt_.IsZero() ? min_rtt_ : rtt_stats_->initial_rtt();
 }
 
 QuicByteCount BbrSender::GetTargetCongestionWindow(float gain) const {

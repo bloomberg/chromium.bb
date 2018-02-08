@@ -400,6 +400,11 @@ void QuicConnection::SetMaxPacingRate(QuicBandwidth max_pacing_rate) {
   sent_packet_manager_.SetMaxPacingRate(max_pacing_rate);
 }
 
+void QuicConnection::AdjustNetworkParameters(QuicBandwidth bandwidth,
+                                             QuicTime::Delta rtt) {
+  sent_packet_manager_.AdjustNetworkParameters(bandwidth, rtt);
+}
+
 QuicBandwidth QuicConnection::MaxPacingRate() const {
   return sent_packet_manager_.MaxPacingRate();
 }
@@ -656,9 +661,8 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
     current_packet_content_ = NO_FRAMES_RECEIVED;
     current_peer_migration_type_ = NO_CHANGE;
   }
-  PeerAddressChangeType peer_migration_type =
-      QuicUtils::DetermineAddressChangeType(peer_address_,
-                                            last_packet_source_address_);
+  AddressChangeType peer_migration_type = QuicUtils::DetermineAddressChangeType(
+      peer_address_, last_packet_source_address_);
   // Initiate connection migration if a non-reordered packet is received from a
   // new address.
   if (header.packet_number > received_packet_manager_.GetLargestObserved() &&
@@ -1321,15 +1325,11 @@ const QuicConnectionStats& QuicConnection::GetStats() {
   QuicTime::Delta min_rtt = rtt_stats->min_rtt();
   if (min_rtt.IsZero()) {
     // If min RTT has not been set, use initial RTT instead.
-    min_rtt = QuicTime::Delta::FromMicroseconds(rtt_stats->initial_rtt_us());
+    min_rtt = rtt_stats->initial_rtt();
   }
   stats_.min_rtt_us = min_rtt.ToMicroseconds();
 
-  QuicTime::Delta srtt = rtt_stats->smoothed_rtt();
-  if (srtt.IsZero()) {
-    // If SRTT has not been set, use initial RTT instead.
-    srtt = QuicTime::Delta::FromMicroseconds(rtt_stats->initial_rtt_us());
-  }
+  QuicTime::Delta srtt = rtt_stats->SmoothedOrInitialRtt();
   stats_.srtt_us = srtt.ToMicroseconds();
 
   stats_.estimated_bandwidth = sent_packet_manager_.BandwidthEstimate();
@@ -1918,8 +1918,7 @@ void QuicConnection::OnCongestionChange() {
   // Uses the connection's smoothed RTT. If zero, uses initial_rtt.
   QuicTime::Delta rtt = sent_packet_manager_.GetRttStats()->smoothed_rtt();
   if (rtt.IsZero()) {
-    rtt = QuicTime::Delta::FromMicroseconds(
-        sent_packet_manager_.GetRttStats()->initial_rtt_us());
+    rtt = sent_packet_manager_.GetRttStats()->initial_rtt();
   }
 
   if (debug_visitor_ != nullptr) {
@@ -2575,6 +2574,7 @@ bool QuicConnection::SendConnectivityProbingPacket(
       packet_generator_.SerializeConnectivityProbingPacket());
   DCHECK_EQ(IsRetransmittable(*probing_packet), NO_RETRANSMITTABLE_DATA);
 
+  const QuicTime packet_send_time = clock_->Now();
   WriteResult result = probing_writer->WritePacket(
       probing_packet->encrypted_buffer, probing_packet->encrypted_length,
       self_address().host(), peer_address, per_packet_options_);
@@ -2589,7 +2589,7 @@ bool QuicConnection::SendConnectivityProbingPacket(
   // write the same as a packet loss.
   sent_packet_manager_.OnPacketSent(
       probing_packet.get(), probing_packet->original_packet_number,
-      clock_->Now(), probing_packet->transmission_type,
+      packet_send_time, probing_packet->transmission_type,
       NO_RETRANSMITTABLE_DATA);
 
   if (result.status == WRITE_STATUS_BLOCKED) {
@@ -2638,8 +2638,7 @@ void QuicConnection::OnPeerMigrationValidated() {
 // from a packet with sequence number > the one that triggered the previous
 // migration. This should happen even if a migration is underway, since the
 // most recent migration is the one that we should pay attention to.
-void QuicConnection::StartPeerMigration(
-    PeerAddressChangeType peer_migration_type) {
+void QuicConnection::StartPeerMigration(AddressChangeType peer_migration_type) {
   // TODO(fayang): Currently, all peer address change type are allowed. Need to
   // add a method ShouldAllowPeerAddressChange(PeerAddressChangeType type) to
   // determine whether |type| is allowed.
@@ -2663,8 +2662,7 @@ void QuicConnection::StartPeerMigration(
   OnConnectionMigration(peer_migration_type);
 }
 
-void QuicConnection::OnConnectionMigration(
-    PeerAddressChangeType addr_change_type) {
+void QuicConnection::OnConnectionMigration(AddressChangeType addr_change_type) {
   visitor_->OnConnectionMigration(addr_change_type);
   sent_packet_manager_.OnConnectionMigration(addr_change_type);
 }

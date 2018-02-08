@@ -270,8 +270,7 @@ TEST_F(BbrSenderTest, SimpleTransfer) {
 
   // Verify that pacing rate is based on the initial RTT.
   QuicBandwidth expected_pacing_rate = QuicBandwidth::FromBytesAndTimeDelta(
-      2.885 * kDefaultWindowTCP,
-      QuicTime::Delta::FromMicroseconds(rtt_stats_->initial_rtt_us()));
+      2.885 * kDefaultWindowTCP, rtt_stats_->initial_rtt());
   ExpectApproxEq(expected_pacing_rate.ToBitsPerSecond(),
                  sender_->PacingRate(0).ToBitsPerSecond(), 0.01f);
 
@@ -862,7 +861,7 @@ TEST_F(BbrSenderTest, NoBandwidthDropOnStartup) {
 
   QuicBandwidth initial_rate = QuicBandwidth::FromBytesAndTimeDelta(
       kInitialCongestionWindowPackets * kDefaultTCPMSS,
-      QuicTime::Delta::FromMicroseconds(rtt_stats_->initial_rtt_us()));
+      rtt_stats_->initial_rtt());
   EXPECT_GE(sender_->PacingRate(0), initial_rate);
 
   // Send a packet.

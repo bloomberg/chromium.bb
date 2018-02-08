@@ -93,16 +93,12 @@ QuicSentPacketManager::~QuicSentPacketManager() {}
 void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   if (config.HasReceivedInitialRoundTripTimeUs() &&
       config.ReceivedInitialRoundTripTimeUs() > 0) {
-    rtt_stats_.set_initial_rtt_us(
-        std::max(kMinInitialRoundTripTimeUs,
-                 std::min(kMaxInitialRoundTripTimeUs,
-                          config.ReceivedInitialRoundTripTimeUs())));
+    SetInitialRtt(QuicTime::Delta::FromMicroseconds(
+        config.ReceivedInitialRoundTripTimeUs()));
   } else if (config.HasInitialRoundTripTimeUsToSend() &&
              config.GetInitialRoundTripTimeUsToSend() > 0) {
-    rtt_stats_.set_initial_rtt_us(
-        std::max(kMinInitialRoundTripTimeUs,
-                 std::min(kMaxInitialRoundTripTimeUs,
-                          config.GetInitialRoundTripTimeUsToSend())));
+    SetInitialRtt(QuicTime::Delta::FromMicroseconds(
+        config.GetInitialRoundTripTimeUsToSend()));
   }
   if (GetQuicReloadableFlag(quic_max_ack_delay) &&
       config.HasClientSentConnectionOption(kMAD0, perspective_)) {
@@ -177,20 +173,20 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
 void QuicSentPacketManager::ResumeConnectionState(
     const CachedNetworkParameters& cached_network_params,
     bool max_bandwidth_resumption) {
-  if (cached_network_params.has_min_rtt_ms()) {
-    uint32_t initial_rtt_us =
-        kNumMicrosPerMilli * cached_network_params.min_rtt_ms();
-    rtt_stats_.set_initial_rtt_us(
-        std::max(kMinInitialRoundTripTimeUs,
-                 std::min(kMaxInitialRoundTripTimeUs, initial_rtt_us)));
-  }
-
   QuicBandwidth bandwidth = QuicBandwidth::FromBytesPerSecond(
       max_bandwidth_resumption
           ? cached_network_params.max_bandwidth_estimate_bytes_per_second()
           : cached_network_params.bandwidth_estimate_bytes_per_second());
   QuicTime::Delta rtt =
       QuicTime::Delta::FromMilliseconds(cached_network_params.min_rtt_ms());
+  AdjustNetworkParameters(bandwidth, rtt);
+}
+
+void QuicSentPacketManager::AdjustNetworkParameters(QuicBandwidth bandwidth,
+                                                    QuicTime::Delta rtt) {
+  if (!rtt.IsZero()) {
+    SetInitialRtt(rtt);
+  }
   send_algorithm_->AdjustNetworkParameters(bandwidth, rtt);
 }
 
@@ -778,11 +774,8 @@ const QuicTime::Delta QuicSentPacketManager::GetCryptoRetransmissionDelay()
     const {
   // This is equivalent to the TailLossProbeDelay, but slightly more aggressive
   // because crypto handshake messages don't incur a delayed ack time.
-  QuicTime::Delta srtt = rtt_stats_.smoothed_rtt();
+  QuicTime::Delta srtt = rtt_stats_.SmoothedOrInitialRtt();
   int64_t delay_ms;
-  if (srtt.IsZero()) {
-    srtt = QuicTime::Delta::FromMicroseconds(rtt_stats_.initial_rtt_us());
-  }
   if (conservative_handshake_retransmits_) {
     delay_ms = std::max(kConservativeMinHandshakeTimeoutMs,
                         static_cast<int64_t>(2 * srtt.ToMilliseconds()));
@@ -795,10 +788,7 @@ const QuicTime::Delta QuicSentPacketManager::GetCryptoRetransmissionDelay()
 }
 
 const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
-  QuicTime::Delta srtt = rtt_stats_.smoothed_rtt();
-  if (srtt.IsZero()) {
-    srtt = QuicTime::Delta::FromMicroseconds(rtt_stats_.initial_rtt_us());
-  }
+  QuicTime::Delta srtt = rtt_stats_.SmoothedOrInitialRtt();
   if (enable_half_rtt_tail_loss_probe_ && consecutive_tlp_count_ == 0u) {
     return QuicTime::Delta::FromMilliseconds(
         std::max(kMinTailLossProbeTimeoutMs,
@@ -905,7 +895,7 @@ void QuicSentPacketManager::SetSendAlgorithm(
   pacing_sender_.set_sender(send_algorithm);
 }
 
-void QuicSentPacketManager::OnConnectionMigration(PeerAddressChangeType type) {
+void QuicSentPacketManager::OnConnectionMigration(AddressChangeType type) {
   if (type == PORT_CHANGE || type == IPV4_SUBNET_CHANGE) {
     // Rtt and cwnd do not need to be reset when the peer address change is
     // considered to be caused by NATs.
@@ -959,6 +949,14 @@ const SendAlgorithmInterface* QuicSentPacketManager::GetSendAlgorithm() const {
 void QuicSentPacketManager::SetSessionNotifier(
     SessionNotifierInterface* session_notifier) {
   unacked_packets_.SetSessionNotifier(session_notifier);
+}
+
+void QuicSentPacketManager::SetInitialRtt(QuicTime::Delta rtt) {
+  const QuicTime::Delta min_rtt =
+      QuicTime::Delta::FromMicroseconds(kMinInitialRoundTripTimeUs);
+  const QuicTime::Delta max_rtt =
+      QuicTime::Delta::FromMicroseconds(kMaxInitialRoundTripTimeUs);
+  rtt_stats_.set_initial_rtt(std::max(min_rtt, std::min(max_rtt, rtt)));
 }
 
 }  // namespace net

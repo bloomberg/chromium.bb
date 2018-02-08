@@ -24,7 +24,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AssertionResult;
-using ::testing::AssertionSuccess;
 using ::testing::Combine;
 using ::testing::Contains;
 using ::testing::HasSubstr;
