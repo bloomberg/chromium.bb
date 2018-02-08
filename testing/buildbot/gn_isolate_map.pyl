@@ -724,6 +724,10 @@
     "label": "//mash:all",
     "type": "additional_compile_target",
   },
+  "media_base_junit_tests": {
+    "label": "//media/base/android:media_base_junit_tests",
+    "type": "junit_test",
+  },
   "media_unittests": {
     "label": "//media:media_unittests",
     "type": "windowed_test_launcher",
