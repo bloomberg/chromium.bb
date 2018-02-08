@@ -4574,7 +4574,7 @@ uint32_t write_obu_header(OBU_TYPE obu_type, int obu_extension,
 int write_uleb_obu_size(uint32_t obu_size, uint8_t *dest) {
   size_t coded_obu_size = 0;
 
-  if (aom_uleb_encode(obu_size, sizeof(uint32_t), dest, &coded_obu_size) != 0)
+  if (aom_uleb_encode(obu_size, sizeof(obu_size), dest, &coded_obu_size) != 0)
     return AOM_CODEC_ERROR;
 
   return AOM_CODEC_OK;

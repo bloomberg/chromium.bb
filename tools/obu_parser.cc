@@ -220,7 +220,7 @@ bool DumpObu(const uint8_t *data, int length, int *obu_overhead_bytes) {
     consumed += current_obu_length;
   }
 
-  if (obu_overhead_bytes) *obu_overhead_bytes = obu_overhead;
+  if (obu_overhead_bytes != nullptr) *obu_overhead_bytes = obu_overhead;
 
   return true;
 }

@@ -23,14 +23,21 @@ size_t aom_uleb_size_in_bytes(uint64_t value) {
   return size;
 }
 
-void aom_uleb_decode(const uint8_t *buffer, size_t available, uint64_t *value) {
+int aom_uleb_decode(const uint8_t *buffer, size_t available, uint64_t *value) {
+  int status = -1;
+
   if (buffer && value) {
     for (size_t i = 0; i < kMaximumLeb128Size && i < available; ++i) {
       const uint8_t decoded_byte = *(buffer + i) & kLeb128ByteMask;
       *value |= decoded_byte << (i * 7);
-      if ((*(buffer + i) >> 7) == 0) break;
+      if ((*(buffer + i) >> 7) == 0) {
+        status = 0;
+        break;
+      }
     }
   }
+
+  return status;
 }
 
 int aom_uleb_encode(uint64_t value, size_t available, uint8_t *coded_value,

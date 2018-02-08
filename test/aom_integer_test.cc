@@ -14,6 +14,9 @@
 #include "gtest/gtest.h"
 
 namespace {
+const uint64_t kMaximumLeb128CodedSize = 8;
+const uint8_t kLeb128PadByte = 0x80;                    // Binary: 10000000
+const uint64_t kMaximumLeb128Value = 0xFFFFFFFFFFFFFF;  // 2 ^ 56 - 1
 const uint32_t kSizeTestNumValues = 6;
 const uint32_t kSizeTestExpectedSizes[kSizeTestNumValues] = {
   1, 1, 2, 3, 4, 5
@@ -28,7 +31,7 @@ TEST(AomLeb128, DecodeTest) {
   const uint8_t leb128_bytes[num_leb128_bytes] = { 0xE5, 0x8E, 0x26 };
   const uint64_t expected_value = 0x98765;  // 624485
   uint64_t value = 0;
-  aom_uleb_decode(&leb128_bytes[0], num_leb128_bytes, &value);
+  ASSERT_EQ(aom_uleb_decode(&leb128_bytes[0], num_leb128_bytes, &value), 0);
   ASSERT_EQ(expected_value, value);
 
   // Make sure the decoder stops on the last marked LEB128 byte.
@@ -54,7 +57,7 @@ TEST(AomLeb128, EncodeTest) {
   ASSERT_EQ(expected_value, encoded_value);
 }
 
-TEST(AomLeb128, EncDecTest) {
+TEST(AomLeb128, EncodeDecodeTest) {
   const uint32_t value = 0x98765;  // 624485
   const size_t kWriteBufferSize = 4;
   uint8_t write_buffer[kWriteBufferSize] = { 0 };
@@ -86,7 +89,7 @@ TEST(AomLeb128, FixedSizeEncodeTest) {
   ASSERT_EQ(expected_value, encoded_value);
 }
 
-TEST(AomLeb128, FixedSizeEncDecTest) {
+TEST(AomLeb128, FixedSizeEncodeDecodeTest) {
   const uint32_t value = 0x1;
   const size_t kWriteBufferSize = 4;
   uint8_t write_buffer[kWriteBufferSize] = { 0 };
@@ -108,7 +111,29 @@ TEST(AomLeb128, SizeTest) {
   }
 }
 
-TEST(AomLeb128, FailTest) {
+TEST(AomLeb128, DecodeFailTest) {
+  // Input buffer containing what would be a valid 9 byte LEB128 encoded
+  // unsigned integer.
+  const uint8_t kAllPadBytesBuffer[kMaximumLeb128CodedSize + 1] = {
+    kLeb128PadByte, kLeb128PadByte, kLeb128PadByte,
+    kLeb128PadByte, kLeb128PadByte, kLeb128PadByte,
+    kLeb128PadByte, kLeb128PadByte, 0
+  };
+  uint64_t decoded_value = 0;
+
+  // Test that decode fails when result would be valid 9 byte integer.
+  ASSERT_EQ(aom_uleb_decode(&kAllPadBytesBuffer[0], kMaximumLeb128CodedSize + 1,
+                            &decoded_value),
+            -1);
+
+  // Test that encoded value missing terminator byte within available buffer
+  // range causes decode error.
+  ASSERT_EQ(aom_uleb_decode(&kAllPadBytesBuffer[0], kMaximumLeb128CodedSize,
+                            &decoded_value),
+            -1);
+}
+
+TEST(AomLeb128, EncodeFailTest) {
   const size_t kWriteBufferSize = 4;
   const uint32_t kValidTestValue = 1;
   uint8_t write_buffer[kWriteBufferSize] = { 0 };
@@ -120,7 +145,12 @@ TEST(AomLeb128, FailTest) {
                             NULL),
             -1);
 
-  const uint32_t kValueOutOfRange = 0xFFFFFFFF;
+  const uint32_t kValueOutOfRangeForBuffer = 0xFFFFFFFF;
+  ASSERT_EQ(aom_uleb_encode(kValueOutOfRangeForBuffer, kWriteBufferSize,
+                            &write_buffer[0], &coded_size),
+            -1);
+
+  const uint64_t kValueOutOfRange = kMaximumLeb128Value + 1;
   ASSERT_EQ(aom_uleb_encode(kValueOutOfRange, kWriteBufferSize,
                             &write_buffer[0], &coded_size),
             -1);
