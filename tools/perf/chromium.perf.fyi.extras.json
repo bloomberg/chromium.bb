@@ -277,72 +277,6 @@
     "isolated_scripts": [
       {
         "args": [
-          "dummy_benchmark.histogram_benchmark_1",
-          "-v",
-          "--output-format=histograms",
-          "--output-format=json-test-results",
-          "--xvfb",
-          "--browser=reference"
-        ],
-        "isolate_name": "telemetry_perf_tests_experimental",
-        "name": "benchmark1 dummy_benchmark.histogram_benchmark_1",
-        "override_compile_targets": [
-          "telemetry_perf_tests_experimental"
-        ],
-        "merge": {
-          "args": [
-          ],
-          "script": "//tools/perf/upload_perf_results.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "swarm823-c4",
-              "pool": "Chrome-perf-fyi"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
-          "dummy_benchmark.stable_benchmark_1",
-          "-v",
-          "--output-format=histograms",
-          "--output-format=json-test-results",
-          "--xvfb",
-          "--browser=reference"
-        ],
-        "isolate_name": "telemetry_perf_tests_experimental",
-        "name": "benchmark2 dummy_benchmark.stable_benchmark_1",
-        "override_compile_targets": [
-          "telemetry_perf_tests_experimental"
-        ],
-        "merge": {
-          "args": [
-          ],
-          "script": "//tools/perf/upload_perf_results.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "swarm823-c4",
-              "pool": "Chrome-perf-fyi"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 3600
-        }
-      },
-      {
-        "args": [
           "-v",
           "--output-format=histograms",
           "--output-format=json-test-results",
@@ -356,14 +290,16 @@
         ],
         "merge": {
           "args": [
+            "--configuration-name",
+            "buildbot-test"
           ],
-          "script": "//tools/perf/upload_perf_results.py"
+          "script": "//tools/perf/process_perf_results.py"
         },
         "trigger_script": {
           "args": [
-	    "--multiple-trigger-configs",
-	    "[{\"id\": \"swarm846-c4\", \"pool\": \"Chrome-perf-fyi\"}, {\"id\": \"swarm847-c4\", \"pool\": \"Chrome-perf-fyi\"}]"
-	  ],
+	          "--multiple-trigger-configs",
+	          "[{\"id\": \"swarm846-c4\", \"pool\": \"Chrome-perf-fyi\"}, {\"id\": \"swarm847-c4\", \"pool\": \"Chrome-perf-fyi\"}]"
+      	  ],
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         },
         "swarming": {
@@ -373,7 +309,7 @@
               "pool": "Chrome-perf-fyi"
             }
           ],
-	  "shards": 2,
+	        "shards": 2,
           "expiration": 36000,
           "hard_timeout": 10800,
           "ignore_task_failure": false,
