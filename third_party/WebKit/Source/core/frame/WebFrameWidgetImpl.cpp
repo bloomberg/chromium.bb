@@ -568,9 +568,10 @@ void WebFrameWidgetImpl::MouseCaptureLost() {
 }
 
 void WebFrameWidgetImpl::SetFocus(bool enable) {
+  if (enable)
+    GetPage()->GetFocusController().SetActive(true);
   GetPage()->GetFocusController().SetFocused(enable);
   if (enable) {
-    GetPage()->GetFocusController().SetActive(true);
     LocalFrame* focused_frame = GetPage()->GetFocusController().FocusedFrame();
     if (focused_frame) {
       Element* element = focused_frame->GetDocument()->FocusedElement();

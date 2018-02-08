@@ -556,6 +556,51 @@ TEST_P(WebViewTest, FocusIsInactive) {
   web_view->SetFocus(false);
   web_view->SetIsActive(true);
   EXPECT_FALSE(document->hasFocus());
+  web_view->SetIsActive(false);
+  web_view->SetFocus(true);
+  EXPECT_TRUE(document->hasFocus());
+  web_view->SetIsActive(true);
+  web_view->SetFocus(false);
+  EXPECT_FALSE(document->hasFocus());
+}
+
+TEST_P(WebViewTest, DocumentHasFocus) {
+  WebViewImpl* web_view = web_view_helper_.Initialize();
+  web_view->SetFocus(true);
+
+  WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
+  FrameTestHelpers::LoadHTMLString(
+      web_view->MainFrameImpl(),
+      "<input id=input></input>"
+      "<div id=log></div>"
+      "<script>"
+      "  document.getElementById('input').addEventListener('focus', () => {"
+      "    document.getElementById('log').textContent = 'document.hasFocus(): "
+      "' + document.hasFocus();"
+      "  });"
+      "  document.getElementById('input').addEventListener('blur', () => {"
+      "    document.getElementById('log').textContent = '';"
+      "  });"
+      "  document.getElementById('input').focus();"
+      "</script>",
+      base_url);
+
+  WebLocalFrameImpl* frame = web_view->MainFrameImpl();
+  Document* document = frame->GetFrame()->GetDocument();
+  WebElement log_element = frame->GetDocument().GetElementById("log");
+  EXPECT_TRUE(document->hasFocus());
+  EXPECT_STREQ("document.hasFocus(): true",
+               log_element.TextContent().Utf8().data());
+
+  web_view->SetIsActive(false);
+  web_view->SetFocus(false);
+  EXPECT_FALSE(document->hasFocus());
+  EXPECT_TRUE(log_element.TextContent().IsEmpty());
+
+  web_view->SetFocus(true);
+  EXPECT_TRUE(document->hasFocus());
+  EXPECT_STREQ("document.hasFocus(): true",
+               log_element.TextContent().Utf8().data());
 }
 
 TEST_P(WebViewTest, ActiveState) {
