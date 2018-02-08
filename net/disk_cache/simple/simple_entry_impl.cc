@@ -949,7 +949,7 @@ int SimpleEntryImpl::ReadDataInternal(bool sync_possible,
       last_used_, last_modified_, data_size_, sparse_data_size_));
   Closure task = base::Bind(
       &SimpleSynchronousEntry::ReadData, base::Unretained(synchronous_entry_),
-      SimpleSynchronousEntry::EntryOperationData(stream_index, offset, buf_len),
+      SimpleSynchronousEntry::ReadRequest(stream_index, offset, buf_len),
       crc_request.get(), entry_stat.get(), base::RetainedRef(buf),
       result.get());
   Closure reply =
@@ -1053,8 +1053,8 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
   // just work.
   Closure task = base::Bind(
       &SimpleSynchronousEntry::WriteData, base::Unretained(synchronous_entry_),
-      SimpleSynchronousEntry::EntryOperationData(
-          stream_index, offset, buf_len, truncate, doom_state_ != DOOM_NONE),
+      SimpleSynchronousEntry::WriteRequest(stream_index, offset, buf_len,
+                                           truncate, doom_state_ != DOOM_NONE),
       base::Unretained(buf), entry_stat.get(), result.get());
   Closure reply = base::Bind(&SimpleEntryImpl::WriteOperationComplete, this,
                              stream_index, callback, base::Passed(&entry_stat),
@@ -1095,11 +1095,11 @@ void SimpleEntryImpl::ReadSparseDataInternal(
 
   std::unique_ptr<int> result(new int());
   std::unique_ptr<base::Time> last_used(new base::Time());
-  Closure task = base::Bind(
-      &SimpleSynchronousEntry::ReadSparseData,
-      base::Unretained(synchronous_entry_),
-      SimpleSynchronousEntry::EntryOperationData(sparse_offset, buf_len),
-      base::RetainedRef(buf), last_used.get(), result.get());
+  Closure task =
+      base::Bind(&SimpleSynchronousEntry::ReadSparseData,
+                 base::Unretained(synchronous_entry_),
+                 SimpleSynchronousEntry::SparseRequest(sparse_offset, buf_len),
+                 base::RetainedRef(buf), last_used.get(), result.get());
   Closure reply = base::Bind(&SimpleEntryImpl::ReadSparseOperationComplete,
                              this,
                              callback,
@@ -1151,12 +1151,12 @@ void SimpleEntryImpl::WriteSparseDataInternal(
   last_used_ = last_modified_ = base::Time::Now();
 
   std::unique_ptr<int> result(new int());
-  Closure task = base::Bind(
-      &SimpleSynchronousEntry::WriteSparseData,
-      base::Unretained(synchronous_entry_),
-      SimpleSynchronousEntry::EntryOperationData(sparse_offset, buf_len),
-      base::RetainedRef(buf), max_sparse_data_size, entry_stat.get(),
-      result.get());
+  Closure task =
+      base::Bind(&SimpleSynchronousEntry::WriteSparseData,
+                 base::Unretained(synchronous_entry_),
+                 SimpleSynchronousEntry::SparseRequest(sparse_offset, buf_len),
+                 base::RetainedRef(buf), max_sparse_data_size, entry_stat.get(),
+                 result.get());
   Closure reply = base::Bind(&SimpleEntryImpl::WriteSparseOperationComplete,
                              this,
                              callback,
@@ -1186,12 +1186,11 @@ void SimpleEntryImpl::GetAvailableRangeInternal(
   state_ = STATE_IO_PENDING;
 
   std::unique_ptr<int> result(new int());
-  Closure task = base::Bind(&SimpleSynchronousEntry::GetAvailableRange,
-                            base::Unretained(synchronous_entry_),
-                            SimpleSynchronousEntry::EntryOperationData(
-                                sparse_offset, len),
-                            out_start,
-                            result.get());
+  Closure task =
+      base::Bind(&SimpleSynchronousEntry::GetAvailableRange,
+                 base::Unretained(synchronous_entry_),
+                 SimpleSynchronousEntry::SparseRequest(sparse_offset, len),
+                 out_start, result.get());
   Closure reply = base::Bind(
       &SimpleEntryImpl::GetAvailableRangeOperationComplete,
       this,
