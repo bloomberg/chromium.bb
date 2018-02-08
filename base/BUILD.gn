@@ -2792,6 +2792,9 @@ if (is_android) {
       "//third_party/junit",
       "//third_party/ub-uiautomator:ub_uiautomator_java",
     ]
+
+    deps += android_extra_test_deps
+
     java_files = [
       "test/android/javatests/src/org/chromium/base/test/BaseJUnit4ClassRunner.java",
       "test/android/javatests/src/org/chromium/base/test/BaseChromiumAndroidJUnitRunner.java",

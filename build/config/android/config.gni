@@ -113,6 +113,11 @@ if (is_android) {
     webview_framework_jar = webview_public_framework_jar
   }
 
+  # TODO(crbug.com/807768): Remove this extra dependency.
+  if (!defined(android_extra_test_deps)) {
+    android_extra_test_deps = []
+  }
+
   assert(defined(default_android_sdk_root),
          "SDK release " + android_sdk_release + " not recognized.")
 
