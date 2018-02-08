@@ -6,11 +6,16 @@
 #define COMPONENTS_PAYMENTS_CONTENT_SERVICE_WORKER_PAYMENT_INSTRUMENT_H_
 
 #include "components/payments/content/payment_request_spec.h"
+#include "components/payments/content/web_app_manifest.h"
 #include "components/payments/core/payment_instrument.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
+
+namespace content {
+class BrowserContext;
+class WebContents;
+}  // namespace content
 
 namespace payments {
 
@@ -19,12 +24,25 @@ class PaymentRequestDelegate;
 // Represents a service worker based payment app.
 class ServiceWorkerPaymentInstrument : public PaymentInstrument {
  public:
+  // This constructor is used for a payment app that has been installed in
+  // Chrome.
   ServiceWorkerPaymentInstrument(
-      content::BrowserContext* context,
+      content::BrowserContext* browser_context,
       const GURL& top_level_origin,
       const GURL& frame_origin,
       const PaymentRequestSpec* spec,
       std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info,
+      PaymentRequestDelegate* payment_request_delegate);
+
+  // This contructor is used for a payment app that has not been installed in
+  // Chrome but can be installed when paying with it.
+  ServiceWorkerPaymentInstrument(
+      content::WebContents* web_contents,
+      const GURL& top_level_origin,
+      const GURL& frame_origin,
+      const PaymentRequestSpec* spec,
+      std::unique_ptr<WebAppInstallationInfo> installable_payment_app_info,
+      const std::string& enabled_methods,
       PaymentRequestDelegate* payment_request_delegate);
   ~ServiceWorkerPaymentInstrument() override;
 
@@ -36,10 +54,10 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
       base::OnceCallback<void(ServiceWorkerPaymentInstrument*, bool)>;
 
   // Validates whether this payment instrument can be used for this payment
-  // request. It fires CanMakePaymentEvent to the payment handler to do
-  // validation. The result is returned through callback.If the returned result
-  // is false, then this instrument should not be used for this payment request.
-  // This interface must be called before any other interfaces in this class.
+  // request. It fires CanMakePaymentEvent to the payment app to do validation.
+  // The result is returned through callback.If the returned result is false,
+  // then this instrument should not be used for this payment request. This
+  // interface must be called before any other interfaces in this class.
   void ValidateCanMakePayment(ValidateCanMakePaymentCallback callback);
 
   // PaymentInstrument:
@@ -84,6 +102,13 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
 
   // PaymentAppProvider::CanMakePayment result of this payment instrument.
   bool can_make_payment_result_;
+
+  // Below variables are used for installable ServiceWorkerPaymentInstrument
+  // specifically.
+  bool needs_installation_;
+  content::WebContents* web_contents_;
+  std::unique_ptr<WebAppInstallationInfo> installable_web_app_info_;
+  std::string installable_enabled_method_;
 
   base::WeakPtrFactory<ServiceWorkerPaymentInstrument> weak_ptr_factory_;
 

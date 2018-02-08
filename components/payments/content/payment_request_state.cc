@@ -60,9 +60,8 @@ PaymentRequestState::PaymentRequestState(
         payment_request_delegate_->GetPaymentManifestWebDataService(),
         spec_->method_data(),
         base::BindOnce(&PaymentRequestState::GetAllPaymentAppsCallback,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       web_contents->GetBrowserContext(), top_level_origin,
-                       frame_origin),
+                       weak_ptr_factory_.GetWeakPtr(), web_contents,
+                       top_level_origin, frame_origin),
         base::BindOnce([]() {
           /* Nothing needs to be done after writing cache. This callback is used
            * only in tests. */
@@ -77,24 +76,35 @@ PaymentRequestState::PaymentRequestState(
 PaymentRequestState::~PaymentRequestState() {}
 
 void PaymentRequestState::GetAllPaymentAppsCallback(
-    content::BrowserContext* context,
+    content::WebContents* web_contents,
     const GURL& top_level_origin,
     const GURL& frame_origin,
     content::PaymentAppProvider::PaymentApps apps,
     ServiceWorkerPaymentAppFactory::InstallablePaymentApps installable_apps) {
-  number_of_pending_sw_payment_instruments_ = apps.size();
+  number_of_pending_sw_payment_instruments_ =
+      apps.size() + installable_apps.size();
   if (number_of_pending_sw_payment_instruments_ == 0U) {
     FinishedGetAllSWPaymentInstruments();
     return;
   }
 
-  // TODO(crbug.com/782270): Create installable service worker payment
-  // instruments based on |installable_apps|.
   for (auto& app : apps) {
     std::unique_ptr<ServiceWorkerPaymentInstrument> instrument =
         std::make_unique<ServiceWorkerPaymentInstrument>(
-            context, top_level_origin, frame_origin, spec_,
-            std::move(app.second), payment_request_delegate_);
+            web_contents->GetBrowserContext(), top_level_origin, frame_origin,
+            spec_, std::move(app.second), payment_request_delegate_);
+    instrument->ValidateCanMakePayment(
+        base::BindOnce(&PaymentRequestState::OnSWPaymentInstrumentValidated,
+                       weak_ptr_factory_.GetWeakPtr()));
+    available_instruments_.push_back(std::move(instrument));
+  }
+
+  for (auto& installable_app : installable_apps) {
+    std::unique_ptr<ServiceWorkerPaymentInstrument> instrument =
+        std::make_unique<ServiceWorkerPaymentInstrument>(
+            web_contents, top_level_origin, frame_origin, spec_,
+            std::move(installable_app.second), installable_app.first.spec(),
+            payment_request_delegate_);
     instrument->ValidateCanMakePayment(
         base::BindOnce(&PaymentRequestState::OnSWPaymentInstrumentValidated,
                        weak_ptr_factory_.GetWeakPtr()));
