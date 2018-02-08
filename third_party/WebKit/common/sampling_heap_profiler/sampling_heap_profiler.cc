@@ -8,6 +8,7 @@
 
 #include "base/allocator/allocator_shim.h"
 #include "base/allocator/features.h"
+#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/atomicops.h"
 #include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
@@ -23,16 +24,20 @@ using base::subtle::AtomicWord;
 
 namespace {
 
+// Control how many top frames to skip when recording call stack.
+// These frames correspond to the profiler own frames.
 const uint32_t kSkipBaseAllocatorFrames = 4;
-const size_t kDefaultSamplingInterval = 128 * 1024;
+const uint32_t kSkipPartitionAllocFrames = 2;
+
+const size_t kDefaultSamplingIntervalBytes = 128 * 1024;
 
 bool g_deterministic;
 Atomic32 g_running;
 Atomic32 g_operations_in_flight;
 Atomic32 g_fast_path_is_closed;
 AtomicWord g_cumulative_counter;
-AtomicWord g_threshold = kDefaultSamplingInterval;
-AtomicWord g_sampling_interval = kDefaultSamplingInterval;
+AtomicWord g_threshold = kDefaultSamplingIntervalBytes;
+AtomicWord g_sampling_interval = kDefaultSamplingIntervalBytes;
 uint32_t g_last_sample_ordinal = 0;
 SamplingHeapProfiler* g_instance;
 
@@ -131,6 +136,15 @@ AllocatorDispatch g_allocator_dispatch = {&AllocFn,
                                           &FreeDefiniteSizeFn,
                                           nullptr};
 
+void PartitionAllocHook(void* address, size_t size, const char*) {
+  SamplingHeapProfiler::MaybeRecordAlloc(address, size,
+                                         kSkipPartitionAllocFrames);
+}
+
+void PartitionFreeHook(void* address) {
+  SamplingHeapProfiler::MaybeRecordFree(address);
+}
+
 }  // namespace
 
 SamplingHeapProfiler::Sample::Sample(size_t size,
@@ -154,9 +168,13 @@ bool SamplingHeapProfiler::InstallAllocatorHooks() {
   base::allocator::InsertAllocatorDispatch(&g_allocator_dispatch);
 #else
   base::debug::Alias(&g_allocator_dispatch);
-  CHECK(false)
-      << "Can't enable native sampling heap profiler without the shim.";
+  DLOG(WARNING)
+      << "base::allocator shims are not available for memory sampling.";
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
+
+  base::PartitionAllocHooks::SetAllocationHook(&PartitionAllocHook);
+  base::PartitionAllocHooks::SetFreeHook(&PartitionFreeHook);
+
   return true;
 }
 

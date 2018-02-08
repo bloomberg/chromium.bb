@@ -619,11 +619,11 @@ class BASE_EXPORT PartitionAllocHooks {
     // Chained allocation hooks are not supported. Registering a non-null
     // hook when a non-null hook is already registered indicates somebody is
     // trying to overwrite a hook.
-    DCHECK(!hook || !allocation_hook_) << "Overwriting allocation hook";
+    CHECK(!hook || !allocation_hook_) << "Overwriting allocation hook";
     allocation_hook_ = hook;
   }
   static void SetFreeHook(FreeHook* hook) {
-    DCHECK(!hook || !free_hook_) << "Overwriting free hook";
+    CHECK(!hook || !free_hook_) << "Overwriting free hook";
     free_hook_ = hook;
   }
 
