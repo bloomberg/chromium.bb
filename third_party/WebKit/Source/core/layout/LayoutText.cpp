@@ -1960,8 +1960,6 @@ LayoutRect LayoutText::LocalSelectionRect() const {
 const NGOffsetMapping* LayoutText::GetNGOffsetMapping() const {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return nullptr;
-  // LayoutNG alternatives rely on |TextLength()| property, which is correct
-  // only when fragment painting is enabled.
   return NGOffsetMapping::GetFor(this);
 }
 
