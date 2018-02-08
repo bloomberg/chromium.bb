@@ -70,12 +70,18 @@ class Stylizer(object):
 
 
 def WriteFile(contents, full_path):
+  # If |contents| is same with the file content, we skip updating.
+  if os.path.isfile(full_path):
+    with open(full_path, 'rb') as destination_file:
+      if destination_file.read() == contents:
+        return
+
   # Make sure the containing directory exists.
   full_dir = os.path.dirname(full_path)
   fileutil.EnsureDirectoryExists(full_dir)
 
   # Dump the data to disk.
-  with open(full_path, "w+") as f:
+  with open(full_path, "wb") as f:
     f.write(contents)
 
 
@@ -191,4 +197,3 @@ class Generator(object):
   def GetGlobals(self):
     """Returns global mappings for the template generation."""
     return {}
-

@@ -40,9 +40,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
 
 from mojom.error import Error
 import mojom.fileutil as fileutil
-from mojom.generate import translate
 from mojom.generate import template_expander
-from mojom.generate.generator import AddComputedData
+from mojom.generate import translate
+from mojom.generate.generator import AddComputedData, WriteFile
 from mojom.parse.conditional_features import RemoveDisabledDefinitions
 from mojom.parse.parser import Parse
 
@@ -267,8 +267,7 @@ def _PickleAST(ast, output_file):
   fileutil.EnsureDirectoryExists(full_dir)
 
   try:
-    with open(output_file, "wb") as f:
-      cPickle.dump(ast, f)
+    WriteFile(cPickle.dumps(ast), output_file)
   except (IOError, cPickle.PicklingError) as e:
     print "%s: Error: %s" % (output_file, str(e))
     sys.exit(1)
