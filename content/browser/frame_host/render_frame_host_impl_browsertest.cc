@@ -501,6 +501,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
 // After a navigation, the StreamHandle must be released.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, StreamHandleReleased) {
+  if (IsNavigationMojoResponseEnabled() ||
+      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // This test is specific to the delivery of the main resource in a blob url.
+    // This mechanism is not sued when NavigationMojoResponse or NetworkService
+    // are enabled.
+    return;
+  }
   EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl("", "title1.html")));
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
   RenderFrameHostImpl* main_frame =
