@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.media.router.cast.remoting;
 import com.google.android.gms.cast.ApplicationMetadata;
 import com.google.android.gms.cast.Cast;
 import com.google.android.gms.cast.CastDevice;
-import com.google.android.gms.cast.MediaStatus;
-import com.google.android.gms.cast.RemoteMediaPlayer;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
@@ -17,10 +15,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.media.remote.RemoteMediaPlayerWrapper;
 import org.chromium.chrome.browser.media.router.cast.CastMessageHandler;
 import org.chromium.chrome.browser.media.router.cast.CastSession;
 import org.chromium.chrome.browser.media.router.cast.CastSessionInfo;
-import org.chromium.chrome.browser.media.router.cast.CastSessionUtil;
 import org.chromium.chrome.browser.media.router.cast.ChromeCastSessionManager;
 import org.chromium.chrome.browser.media.router.cast.MediaSource;
 import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
@@ -42,7 +40,7 @@ public class RemotingCastSession implements MediaNotificationListener, CastSessi
     private String mApplicationStatus;
     private ApplicationMetadata mApplicationMetadata;
     private MediaNotificationInfo.Builder mNotificationBuilder;
-    private RemoteMediaPlayer mMediaPlayer;
+    private RemoteMediaPlayerWrapper mMediaPlayerWrapper;
     private boolean mStoppingApplication = false;
 
     public RemotingCastSession(GoogleApiClient apiClient, String sessionId,
@@ -53,35 +51,6 @@ public class RemotingCastSession implements MediaNotificationListener, CastSessi
         mApiClient = apiClient;
         mApplicationMetadata = metadata;
         mSessionId = sessionId;
-
-        mMediaPlayer = new RemoteMediaPlayer();
-        mMediaPlayer.setOnStatusUpdatedListener(new RemoteMediaPlayer.OnStatusUpdatedListener() {
-            @Override
-            public void onStatusUpdated() {
-                MediaStatus mediaStatus = mMediaPlayer.getMediaStatus();
-                if (mediaStatus == null) return;
-
-                int playerState = mediaStatus.getPlayerState();
-                if (playerState == MediaStatus.PLAYER_STATE_PAUSED
-                        || playerState == MediaStatus.PLAYER_STATE_PLAYING) {
-                    mNotificationBuilder.setPaused(playerState != MediaStatus.PLAYER_STATE_PLAYING);
-                    mNotificationBuilder.setActions(MediaNotificationInfo.ACTION_STOP
-                            | MediaNotificationInfo.ACTION_PLAY_PAUSE);
-                } else {
-                    mNotificationBuilder.setActions(MediaNotificationInfo.ACTION_STOP);
-                }
-                MediaNotificationManager.show(mNotificationBuilder.build());
-            }
-        });
-        mMediaPlayer.setOnMetadataUpdatedListener(
-                new RemoteMediaPlayer.OnMetadataUpdatedListener() {
-                    @Override
-                    public void onMetadataUpdated() {
-                        CastSessionUtil.setNotificationMetadata(
-                                mNotificationBuilder, mCastDevice, mMediaPlayer);
-                        MediaNotificationManager.show(mNotificationBuilder.build());
-                    }
-                });
 
         mNotificationBuilder =
                 new MediaNotificationInfo.Builder()
@@ -97,8 +66,11 @@ public class RemotingCastSession implements MediaNotificationListener, CastSessi
                         .setDefaultNotificationLargeIcon(R.drawable.cast_playing_square)
                         .setId(R.id.presentation_notification)
                         .setListener(this);
-        CastSessionUtil.setNotificationMetadata(mNotificationBuilder, mCastDevice, mMediaPlayer);
-        MediaNotificationManager.show(mNotificationBuilder.build());
+
+        mMediaPlayerWrapper =
+                new RemoteMediaPlayerWrapper(mApiClient, mNotificationBuilder, mCastDevice);
+
+        mMediaPlayerWrapper.load(((RemotingMediaSource) source).getMediaUrl());
     }
 
     @Override
@@ -166,6 +138,7 @@ public class RemotingCastSession implements MediaNotificationListener, CastSessi
 
                         mSessionId = null;
                         mApiClient = null;
+                        mMediaPlayerWrapper.clearApiClient();
 
                         ChromeCastSessionManager.get().onSessionEnded();
                         mStoppingApplication = false;
@@ -180,8 +153,7 @@ public class RemotingCastSession implements MediaNotificationListener, CastSessi
 
     @Override
     public void onMediaMessage(String message) {
-        if (mMediaPlayer != null)
-            mMediaPlayer.onMessageReceived(mCastDevice, CastSessionUtil.MEDIA_NAMESPACE, message);
+        mMediaPlayerWrapper.onMediaMessage(message);
     }
 
     @Override
@@ -195,16 +167,12 @@ public class RemotingCastSession implements MediaNotificationListener, CastSessi
 
     @Override
     public void onPlay(int actionSource) {
-        if (mMediaPlayer == null || isApiClientInvalid()) return;
-
-        mMediaPlayer.play(mApiClient);
+        mMediaPlayerWrapper.play();
     }
 
     @Override
     public void onPause(int actionSource) {
-        if (mMediaPlayer == null || isApiClientInvalid()) return;
-
-        mMediaPlayer.pause(mApiClient);
+        mMediaPlayerWrapper.pause();
     }
 
     @Override

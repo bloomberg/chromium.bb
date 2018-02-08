@@ -583,6 +583,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/media/remote/RecordCastAction.java",
   "java/src/org/chromium/chrome/browser/media/remote/RemoteMediaPlayerBridge.java",
   "java/src/org/chromium/chrome/browser/media/remote/RemoteMediaPlayerController.java",
+  "java/src/org/chromium/chrome/browser/media/remote/RemoteMediaPlayerWrapper.java",
   "java/src/org/chromium/chrome/browser/media/remote/RemoteVideoInfo.java",
   "java/src/org/chromium/chrome/browser/media/remote/PositionExtrapolator.java",
   "java/src/org/chromium/chrome/browser/media/router/BaseMediaRouteDialogManager.java",
