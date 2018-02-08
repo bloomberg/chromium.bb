@@ -16,11 +16,17 @@ NetworkServiceURLLoaderFactory::NetworkServiceURLLoaderFactory(
     NetworkContext* context,
     uint32_t process_id)
     : context_(context), process_id_(process_id) {
-  context->keepalive_statistics_recorder()->Register(process_id_);
+  if (context_->network_service()) {
+    context->network_service()->keepalive_statistics_recorder()->Register(
+        process_id_);
+  }
 }
 
 NetworkServiceURLLoaderFactory::~NetworkServiceURLLoaderFactory() {
-  context_->keepalive_statistics_recorder()->Unregister(process_id_);
+  if (context_->network_service()) {
+    context_->network_service()->keepalive_statistics_recorder()->Unregister(
+        process_id_);
+  }
 }
 
 void NetworkServiceURLLoaderFactory::CreateLoaderAndStart(
@@ -40,14 +46,19 @@ void NetworkServiceURLLoaderFactory::CreateLoaderAndStart(
   }
 
   mojom::NetworkServiceClient* network_service_client = nullptr;
-  if (context_->network_service())
+  base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder;
+  if (context_->network_service()) {
     network_service_client = context_->network_service()->client();
+    keepalive_statistics_recorder = context_->network_service()
+                                        ->keepalive_statistics_recorder()
+                                        ->AsWeakPtr();
+  }
   new URLLoader(
       context_->url_request_context_getter(), network_service_client,
       std::move(request), options, url_request, report_raw_headers,
       std::move(client),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      process_id_, context_->keepalive_statistics_recorder()->AsWeakPtr());
+      process_id_, std::move(keepalive_statistics_recorder));
 }
 
 void NetworkServiceURLLoaderFactory::Clone(

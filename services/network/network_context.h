@@ -17,7 +17,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/network/cookie_manager.h"
-#include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/public/interfaces/network_service.mojom.h"
 #include "services/network/public/interfaces/udp_socket.mojom.h"
 #include "services/network/public/interfaces/url_loader_factory.mojom.h"
@@ -81,10 +80,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   NetworkService* network_service() { return network_service_; }
 
-  KeepaliveStatisticsRecorder* keepalive_statistics_recorder() {
-    return &keepalive_statistics_recorder_;
-  }
-
   // mojom::NetworkContext implementation:
   void CreateURLLoaderFactory(mojom::URLLoaderFactoryRequest request,
                               uint32_t process_id) override;
@@ -145,8 +140,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // Put it below |url_request_context_| so that it outlives all the
   // NetworkServiceURLLoaderFactory instances.
   mojo::StrongBindingSet<mojom::URLLoaderFactory> loader_factory_bindings_;
-
-  KeepaliveStatisticsRecorder keepalive_statistics_recorder_;
 
   mojom::NetworkContextParamsPtr params_;
 
