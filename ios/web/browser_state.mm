@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -17,6 +19,9 @@
 #include "ios/web/public/web_client.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web/webui/url_data_manager_ios_backend.h"
+#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/url_loader.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
@@ -101,6 +106,52 @@ class BrowserStateServiceManagerConnectionHolder
 
 }  // namespace
 
+class BrowserState::URLLoaderFactory : public network::mojom::URLLoaderFactory {
+ public:
+  explicit URLLoaderFactory(net::URLRequestContextGetter* request_context)
+      : request_context_(request_context) {}
+
+  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
+                            int32_t routing_id,
+                            int32_t request_id,
+                            uint32_t options,
+                            const network::ResourceRequest& resource_request,
+                            network::mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
+    WebThread::PostTask(
+        web::WebThread::IO, FROM_HERE,
+        base::BindOnce(URLLoaderFactory::CreateLoaderAndStartOnIO,
+                       request_context_, std::move(request), routing_id,
+                       request_id, options, resource_request,
+                       client.PassInterface(), traffic_annotation));
+  }
+
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    NOTREACHED() << "Clone shouldn't be called on iOS";
+  }
+
+ private:
+  static void CreateLoaderAndStartOnIO(
+      scoped_refptr<net::URLRequestContextGetter> request_getter,
+      network::mojom::URLLoaderRequest request,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& resource_request,
+      network::mojom::URLLoaderClientPtrInfo client_info,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+    // Object deletes itself when the pipe or the URLRequestContext goes away.
+    network::mojom::URLLoaderClientPtr client(std::move(client_info));
+    new network::URLLoader(
+        request_getter, nullptr, std::move(request), options, resource_request,
+        false, std::move(client),
+        static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation), 0,
+        nullptr);
+  }
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
+};
+
 // static
 scoped_refptr<CertificatePolicyCache> BrowserState::GetCertificatePolicyCache(
     BrowserState* browser_state) {
@@ -144,6 +195,15 @@ BrowserState::~BrowserState() {
     if (!posted)
       delete url_data_manager_ios_backend_;
   }
+}
+
+network::mojom::URLLoaderFactory* BrowserState::GetURLLoaderFactory() {
+  if (!url_loader_factory_) {
+    url_loader_factory_ =
+        std::make_unique<URLLoaderFactory>(GetRequestContext());
+  }
+
+  return url_loader_factory_.get();
 }
 
 URLDataManagerIOSBackend*
