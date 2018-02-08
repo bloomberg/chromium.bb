@@ -372,8 +372,7 @@ class SpdyTestUtil {
   SpdySerializedFrame ConstructSpdyGet(const char* const extra_headers[],
                                        int extra_header_count,
                                        int stream_id,
-                                       RequestPriority request_priority,
-                                       bool direct);
+                                       RequestPriority request_priority);
 
   // Constructs a SPDY HEADERS frame for a CONNECT request.
   SpdySerializedFrame ConstructSpdyConnect(const char* const extra_headers[],

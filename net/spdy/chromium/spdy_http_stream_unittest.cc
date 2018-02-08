@@ -182,8 +182,7 @@ class SpdyHttpStreamTest : public testing::Test {
 };
 
 TEST_F(SpdyHttpStreamTest, SendRequest) {
-  SpdySerializedFrame req(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
+  SpdySerializedFrame req(spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   MockWrite writes[] = {
       CreateMockWrite(req, 0),
   };
@@ -238,8 +237,7 @@ TEST_F(SpdyHttpStreamTest, SendRequest) {
 }
 
 TEST_F(SpdyHttpStreamTest, RequestInfoDestroyedBeforeRead) {
-  SpdySerializedFrame req(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
+  SpdySerializedFrame req(spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   MockWrite writes[] = {CreateMockWrite(req, 0)};
   SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, "", 0, true));
@@ -295,10 +293,8 @@ TEST_F(SpdyHttpStreamTest, RequestInfoDestroyedBeforeRead) {
 }
 
 TEST_F(SpdyHttpStreamTest, LoadTimingTwoRequests) {
-  SpdySerializedFrame req1(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  SpdySerializedFrame req2(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 3, LOWEST, true));
+  SpdySerializedFrame req1(spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
+  SpdySerializedFrame req2(spdy_util_.ConstructSpdyGet(nullptr, 0, 3, LOWEST));
   MockWrite writes[] = {
       CreateMockWrite(req1, 0), CreateMockWrite(req2, 1),
   };

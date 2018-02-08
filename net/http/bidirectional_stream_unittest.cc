@@ -506,9 +506,9 @@ TEST_F(BidirectionalStreamTest, SimplePostRequest) {
 
 TEST_F(BidirectionalStreamTest, LoadTimingTwoRequests) {
   SpdySerializedFrame req(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, /*stream_id=*/1, LOW, true));
+      spdy_util_.ConstructSpdyGet(nullptr, 0, /*stream_id=*/1, LOW));
   SpdySerializedFrame req2(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, /*stream_id=*/3, LOW, true));
+      spdy_util_.ConstructSpdyGet(nullptr, 0, /*stream_id=*/3, LOW));
   MockWrite writes[] = {
       CreateMockWrite(req, 0), CreateMockWrite(req2, 2),
   };
