@@ -263,9 +263,6 @@
 -PowerPolicyLoginScreenBrowserTest.SetDevicePolicy
 -EnterpriseEnrollmentTest.TestActiveDirectoryEnrollment_Success
 
-# Timeouts. http://crbug.com/810071
--ExtensionViewTests/ExtensionViewLoadApiTest.*
-
 # Crashes in cc::(anonymous namespace)::ZeroCopyGpuBacking::SharedMemoryGuid
 # http://crbug.com/810073
 -MemoryTracingBrowserTest.TestHeapProfilingPseudo

@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
-#include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/guest_view_manager.h"
@@ -23,10 +21,11 @@ using guest_view::GuestViewManager;
 using guest_view::TestGuestViewManager;
 using guest_view::TestGuestViewManagerFactory;
 
-class ExtensionViewTest : public extensions::PlatformAppBrowserTest,
-                          public testing::WithParamInterface<bool> {
+class ExtensionViewTest : public extensions::PlatformAppBrowserTest {
  public:
   ExtensionViewTest() {
+    CHECK(
+        base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames));
     GuestViewManager::set_factory_for_testing(&factory_);
   }
 
@@ -75,27 +74,11 @@ class ExtensionViewTest : public extensions::PlatformAppBrowserTest,
   }
 
  private:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
-
-    bool use_cross_process_frames_for_guests = GetParam();
-    if (use_cross_process_frames_for_guests) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kGuestViewCrossProcessFrames);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kGuestViewCrossProcessFrames);
-    }
-  }
-
   TestGuestViewManagerFactory factory_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-INSTANTIATE_TEST_CASE_P(ExtensionViewTests, ExtensionViewTest, testing::Bool());
-
 // Tests that <extensionview> can be created and added to the DOM.
-IN_PROC_BROWSER_TEST_P(ExtensionViewTest,
+IN_PROC_BROWSER_TEST_F(ExtensionViewTest,
                        TestExtensionViewCreationShouldSucceed) {
   TestHelper("testExtensionViewCreationShouldSucceed",
              "extension_view/creation", "", "");
@@ -103,7 +86,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionViewTest,
 
 // Tests that verify that <extensionview> does not change extension ID if
 // someone tries to change it in JavaScript.
-IN_PROC_BROWSER_TEST_P(ExtensionViewTest, ShimExtensionAttribute) {
+IN_PROC_BROWSER_TEST_F(ExtensionViewTest, ShimExtensionAttribute) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("extension_view/skeleton");
   TestHelper("testExtensionAttribute", "extension_view/extension_attribute",
@@ -112,7 +95,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionViewTest, ShimExtensionAttribute) {
 
 // Tests that verify that <extensionview> does not change src if
 // someone tries to change it in JavaScript.
-IN_PROC_BROWSER_TEST_P(ExtensionViewTest, ShimSrcAttribute) {
+IN_PROC_BROWSER_TEST_F(ExtensionViewTest, ShimSrcAttribute) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("extension_view/skeleton");
   TestHelper("testSrcAttribute", "extension_view/src_attribute",
@@ -131,50 +114,39 @@ class ExtensionViewLoadApiTest : public ExtensionViewTest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(ExtensionViewTests,
-                        ExtensionViewLoadApiTest,
-                        testing::Bool());
-
-IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, LoadAPIFunction) {
+IN_PROC_BROWSER_TEST_F(ExtensionViewLoadApiTest, LoadAPIFunction) {
   TestLoadApiHelper("testLoadAPIFunction");
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, LoadAPISameIdAndSrc) {
+IN_PROC_BROWSER_TEST_F(ExtensionViewLoadApiTest, LoadAPISameIdAndSrc) {
   TestLoadApiHelper("testLoadAPISameIdAndSrc");
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, LoadAPISameIdDifferentSrc) {
+IN_PROC_BROWSER_TEST_F(ExtensionViewLoadApiTest, LoadAPISameIdDifferentSrc) {
   TestLoadApiHelper("testLoadAPISameIdDifferentSrc");
 }
 
-// Flaky, see crbug.com/810007
-IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest,
-                       DISABLED_LoadAPILoadOtherExtension) {
+IN_PROC_BROWSER_TEST_F(ExtensionViewLoadApiTest, LoadAPILoadOtherExtension) {
   TestLoadApiHelper("testLoadAPILoadOtherExtension");
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, LoadAPIInvalidExtension) {
+IN_PROC_BROWSER_TEST_F(ExtensionViewLoadApiTest, LoadAPIInvalidExtension) {
   TestLoadApiHelper("testLoadAPIInvalidExtension");
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, LoadAPIAfterInvalidCall) {
+IN_PROC_BROWSER_TEST_F(ExtensionViewLoadApiTest, LoadAPIAfterInvalidCall) {
   TestLoadApiHelper("testLoadAPIAfterInvalidCall");
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, LoadAPINullExtension) {
+IN_PROC_BROWSER_TEST_F(ExtensionViewLoadApiTest, LoadAPINullExtension) {
   TestLoadApiHelper("testLoadAPINullExtension");
 }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_QueuedLoadAPIFunction DISABLED_QueuedLoadAPIFunction
-#else
-#define MAYBE_QueuedLoadAPIFunction QueuedLoadAPIFunction
-#endif
-IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, MAYBE_QueuedLoadAPIFunction) {
+IN_PROC_BROWSER_TEST_F(ExtensionViewLoadApiTest, QueuedLoadAPIFunction) {
   TestLoadApiHelper("testQueuedLoadAPIFunction");
 }
 
-IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest,
+IN_PROC_BROWSER_TEST_F(ExtensionViewLoadApiTest,
                        QueuedLoadAPILoadOtherExtension) {
   TestLoadApiHelper("testQueuedLoadAPILoadOtherExtension");
 }
