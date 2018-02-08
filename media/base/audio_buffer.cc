@@ -366,7 +366,8 @@ void AudioBuffer::TrimRange(int start, int end) {
   CHECK_LE(frames_to_trim, adjusted_frame_count_);
 
   const int bytes_per_channel = SampleFormatToBytesPerChannel(sample_format_);
-  const int frames_to_copy = adjusted_frame_count_ - end;
+  // Empty buffers do not have frames to copy backed by data_.
+  const int frames_to_copy = data_ ? adjusted_frame_count_ - end : 0;
   if (frames_to_copy > 0) {
     switch (sample_format_) {
       case kSampleFormatPlanarS16:
