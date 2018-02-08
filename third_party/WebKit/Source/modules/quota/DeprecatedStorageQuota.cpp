@@ -175,9 +175,9 @@ void DeprecatedStorageQuota::requestQuota(
     return;
   }
 
-  auto callback =
-      WTF::Bind(&RequestStorageQuotaCallback, WrapPersistent(success_callback),
-                WrapPersistent(error_callback));
+  auto callback = WTF::Bind(&RequestStorageQuotaCallback,
+                            WrapPersistentCallbackFunction(success_callback),
+                            WrapPersistentCallbackFunction(error_callback));
 
   Document* document = ToDocument(execution_context);
   const SecurityOrigin* security_origin = document->GetSecurityOrigin();
