@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "content/browser/webrtc/webrtc_event_log_manager_common.h"
 #include "content/browser/webrtc/webrtc_event_log_uploader.h"
@@ -194,6 +195,10 @@ class CONTENT_EXPORT WebRtcRemoteEventLogManager final
 
   // When an upload is complete, it might be time to upload the next file.
   void OnWebRtcEventLogUploadCompleteInternal();
+
+  // This object is expected to be created and destroyed on the UI thread,
+  // but live on its owner's internal, IO-capable task queue.
+  SEQUENCE_CHECKER(io_task_sequence_checker_);
 
   // This is used to inform WebRtcEventLogManager when remote-bound logging
   // of a peer connection starts/stops, which allows WebRtcEventLogManager to

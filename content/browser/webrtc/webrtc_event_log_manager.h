@@ -278,14 +278,24 @@ class CONTENT_EXPORT WebRtcEventLogManager
   void SetRemoteLogsObserverInternal(WebRtcRemoteEventLogsObserver* observer,
                                      base::OnceClosure reply);
 
-  // Methods for injecting testing utilities in place of actual implementations.
-  // Because these are only intended for testing, we perform these changes
-  // asynchronously, trusting the unit tests to do so carefully enough.
-  void SetClockForTesting(base::Clock* clock);
+  // Injects a fake clock, to be used by tests. For example, this could be
+  // used to inject a frozen clock, thereby allowing unit tests to know what a
+  // local log's filename would end up being.
+  void SetClockForTesting(base::Clock* clock,
+                          base::OnceClosure reply = base::OnceClosure());
+
+  // Injects a PeerConnectionTrackerProxy for testing. The normal tracker proxy
+  // is used to communicate back to WebRTC whether event logging is desired for
+  // a given peer connection. Using this function, those indications can be
+  // intercepted by a unit test.
   void SetPeerConnectionTrackerProxyForTesting(
-      std::unique_ptr<PeerConnectionTrackerProxy> pc_tracker_proxy);
+      std::unique_ptr<PeerConnectionTrackerProxy> pc_tracker_proxy,
+      base::OnceClosure reply = base::OnceClosure());
+
+  // Injects a fake uploader, to be used by unit tests.
   void SetWebRtcEventLogUploaderFactoryForTesting(
-      std::unique_ptr<WebRtcEventLogUploader::Factory> uploader_factory);
+      std::unique_ptr<WebRtcEventLogUploader::Factory> uploader_factory,
+      base::OnceClosure reply = base::OnceClosure());
 
   // Observer which will be informed whenever a local log file is started or
   // stopped. Its callbacks are called synchronously from |task_runner_|,
