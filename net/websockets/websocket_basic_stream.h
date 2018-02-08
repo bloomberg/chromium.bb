@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/websockets/websocket_frame_parser.h"
 #include "net/websockets/websocket_stream.h"
 
@@ -35,10 +36,27 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
  public:
   typedef WebSocketMaskingKey (*WebSocketMaskingKeyGeneratorFunction)();
 
+  // Adapter that allows WebSocketBasicStream to use
+  // either a TCP/IP or TLS socket, or an HTTP/2 stream.
+  class Adapter {
+   public:
+    virtual ~Adapter() = default;
+    virtual int Read(IOBuffer* buf,
+                     int buf_len,
+                     const CompletionCallback& callback) = 0;
+    virtual int Write(
+        IOBuffer* buf,
+        int buf_len,
+        const CompletionCallback& callback,
+        const NetworkTrafficAnnotationTag& traffic_annotation) = 0;
+    virtual void Disconnect() = 0;
+    virtual bool is_initialized() const = 0;
+  };
+
   // This class should not normally be constructed directly; see
   // WebSocketStream::CreateAndConnectStream() and
   // WebSocketBasicHandshakeStream::Upgrade().
-  WebSocketBasicStream(std::unique_ptr<ClientSocketHandle> connection,
+  WebSocketBasicStream(std::unique_ptr<Adapter> connection,
                        const scoped_refptr<GrowableIOBuffer>& http_read_buffer,
                        const std::string& sub_protocol,
                        const std::string& extensions);
@@ -132,7 +150,7 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
 
   // The connection, wrapped in a ClientSocketHandle so that we can prevent it
   // from being returned to the pool.
-  std::unique_ptr<ClientSocketHandle> connection_;
+  std::unique_ptr<Adapter> connection_;
 
   // Frame header for the frame currently being received. Only non-NULL while we
   // are processing the frame. If the frame arrives in multiple chunks, it can

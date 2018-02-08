@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
+#include "net/base/net_export.h"
 #include "net/cert/cert_database.h"
 #include "net/http/http_network_session.h"
 #include "net/socket/client_socket_pool_manager.h"
@@ -41,8 +42,9 @@ class SSLConfigService;
 class TransportClientSocketPool;
 class TransportSecurityState;
 
-class ClientSocketPoolManagerImpl : public ClientSocketPoolManager,
-                                    public CertDatabase::Observer {
+class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
+    : public ClientSocketPoolManager,
+      public CertDatabase::Observer {
  public:
   ClientSocketPoolManagerImpl(
       NetLog* net_log,
