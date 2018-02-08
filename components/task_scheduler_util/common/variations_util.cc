@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -119,6 +120,14 @@ std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams(
   return std::make_unique<base::TaskScheduler::InitParams>(
       *background_worker_pool_params, *background_blocking_worker_pool_params,
       *foreground_worker_pool_params, *foreground_blocking_worker_pool_params);
+}
+
+std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams(
+    base::StringPiece variation_param_prefix) {
+  std::map<std::string, std::string> variation_params;
+  if (!base::GetFieldTrialParams("BrowserScheduler", &variation_params))
+    return nullptr;
+  return GetTaskSchedulerInitParams(variation_param_prefix, variation_params);
 }
 
 #if !defined(OS_IOS)
