@@ -70,7 +70,8 @@ class CONTENT_EXPORT WebRtcRemoteEventLogManager final
                           int lid,
                           BrowserContextId browser_context,
                           const base::FilePath& browser_context_dir,
-                          size_t max_file_size_bytes);
+                          size_t max_file_size_bytes,
+                          const std::string& metadata);
 
   // If an active remote-bound log exists for the given peer connection, this
   // will append |message| to that log. If writing |message| to the log would
@@ -158,7 +159,8 @@ class CONTENT_EXPORT WebRtcRemoteEventLogManager final
                        int lid,
                        BrowserContextId browser_context,
                        const base::FilePath& browser_context_dir,
-                       size_t max_file_size_bytes);
+                       size_t max_file_size_bytes,
+                       const std::string& metadata);
 
   // Checks if the referenced peer connection has an associated active
   // remote-bound log. If it does, the log is changed from ACTIVE to PENDING.
