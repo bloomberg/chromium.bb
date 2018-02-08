@@ -84,10 +84,16 @@ BluetoothPairingDialogUI::BluetoothPairingDialogUI(content::WebUI* web_ui)
   AddBluetoothStrings(source);
   source->AddLocalizedString("title", IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE);
   source->SetJsonPath("strings.js");
+#if BUILDFLAG(OPTIMIZE_WEBUI)
+  source->UseGzip();
+  source->SetDefaultResource(IDR_BLUETOOTH_PAIRING_DIALOG_VULCANIZED_HTML);
+  source->AddResourcePath("crisper.js",
+                          IDR_BLUETOOTH_PAIRING_DIALOG_CRISPER_JS);
+#else
   source->SetDefaultResource(IDR_BLUETOOTH_PAIRING_DIALOG_HTML);
   source->AddResourcePath("bluetooth_pairing_dialog.js",
                           IDR_BLUETOOTH_PAIRING_DIALOG_JS);
-
+#endif
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 

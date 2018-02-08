@@ -5,6 +5,7 @@
 import("//build/config/jumbo.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
+import("//ui/base/ui_features.gni")
 
 group("resources") {
   public_deps = [
@@ -35,6 +36,7 @@ grit("ui_unscaled_resources_grd") {
 }
 
 grit("webui_resources_grd") {
+  defines = [ "optimize_webui=$optimize_webui" ]
   source = "../webui/resources/webui_resources.grd"
 
   # The .grd contains references to generated files.

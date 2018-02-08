@@ -60,10 +60,7 @@ declare_args() {
   # Indicates if the build is using PGO.
   pgo_build = chrome_pgo_phase > 0
 
-  # Optimize parts of Chrome's UI written with web technologies (HTML/CSS/JS)
-  # for runtime performance purposes. This does more work at compile time for
-  # speed benefits at runtime (so we skip in debug builds).
-  optimize_webui = !is_debug
+  # optimize_webui was moved to ui/base/ui_features.gni
 }
 
 # Use brlapi from brltty for braille display support.

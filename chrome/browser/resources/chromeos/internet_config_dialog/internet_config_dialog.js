@@ -63,16 +63,23 @@ Polymer({
   /** @override */
   attached: function() {
     var dialogArgs = chrome.getVariableValue('dialogArguments');
-    assert(dialogArgs);
-    var args = JSON.parse(dialogArgs);
-    var type = /** @type {chrome.networkingPrivate.NetworkType} */ (args.type);
-    assert(type);
-    this.guid_ = args.guid || '';
+    var type;
+    if (dialogArgs) {
+      var args = JSON.parse(dialogArgs);
+      type = args.type;
+      assert(type);
+      this.guid_ = args.guid || '';
+    } else {
+      // For debugging
+      var params = new URLSearchParams(document.location.search.substring(1));
+      type = params.get('type') || 'WiFi';
+      this.guid_ = params.get('guid') || '';
+    }
 
     this.networkProperties_ = {
       GUID: this.guid_,
       Name: '',
-      Type: type,
+      Type: /** @type {chrome.networkingPrivate.NetworkType} */ (type),
     };
 
     this.$.networkConfig.init();
