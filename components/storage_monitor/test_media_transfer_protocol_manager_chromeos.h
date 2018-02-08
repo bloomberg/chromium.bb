@@ -22,7 +22,9 @@ class TestMediaTransferProtocolManagerChromeOS
 
  private:
   // device::MediaTransferProtocolManager implementation.
-  void AddObserver(Observer* observer) override;
+  void AddObserverAndEnumerateStorages(
+      Observer* observer,
+      EnumerateStoragesCallback callback) override;
   void RemoveObserver(Observer* observer) override;
   void GetStorages(GetStoragesCallback callback) const override;
   void GetStorageInfo(const std::string& storage_name,
