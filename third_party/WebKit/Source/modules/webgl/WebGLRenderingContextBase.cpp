@@ -718,8 +718,7 @@ ImageBitmap* WebGLRenderingContextBase::TransferToImageBitmapBase(
   UseCounter::Count(ExecutionContext::From(script_state), feature);
   if (!GetDrawingBuffer())
     return nullptr;
-  return ImageBitmap::Create(
-      GetDrawingBuffer()->TransferToStaticBitmapImage(nullptr));
+  return ImageBitmap::Create(GetDrawingBuffer()->TransferToStaticBitmapImage());
 }
 
 ScriptPromise WebGLRenderingContextBase::commit(
@@ -734,10 +733,7 @@ ScriptPromise WebGLRenderingContextBase::commit(
                           exception_state);
   }
 
-  // TODO(crbug.com/809227): passing in nullptr for the release_callback, so the
-  // texture won't be recycled.  This could potentially impact performance as
-  // creating framebuffers can be expensive.
-  scoped_refptr<StaticBitmapImage> image = GetStaticBitmapImage(nullptr);
+  scoped_refptr<StaticBitmapImage> image = GetStaticBitmapImage();
 
   return Host()->Commit(
       std::move(image), SkIRect::MakeWH(width, height),
@@ -745,8 +741,7 @@ ScriptPromise WebGLRenderingContextBase::commit(
 }
 
 scoped_refptr<StaticBitmapImage>
-WebGLRenderingContextBase::GetStaticBitmapImage(
-    std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
+WebGLRenderingContextBase::GetStaticBitmapImage() {
   if (!GetDrawingBuffer())
     return nullptr;
 
@@ -757,7 +752,7 @@ WebGLRenderingContextBase::GetStaticBitmapImage(
         width, height, kRGBA_8888_SkColorType, ColorParams().GetSkAlphaType());
     return MakeImageSnapshot(image_info);
   }
-  return GetDrawingBuffer()->TransferToStaticBitmapImage(out_release_callback);
+  return GetDrawingBuffer()->TransferToStaticBitmapImage();
 }
 
 scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
