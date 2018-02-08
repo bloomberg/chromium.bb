@@ -105,7 +105,7 @@
       }
 
       paper-toggle-button {
-        @apply(--settings-actionable);
+        @apply --settings-actionable;
         height: var(--settings-row-min-height);
         user-select: none;  /* Prevents text selection while dragging. */
         width: 36px;
@@ -154,7 +154,7 @@
 
       /* See also: .no-min-width below. */
       .text-elide {
-        @apply(--settings-text-elide);
+        @apply --settings-text-elide;
       }
 
       /* By default, flexbox children have min-width calculated to be the width
@@ -174,7 +174,7 @@
        * outside of a settings-box. A list-frame is likely to follow a
        * settings box. */
       .list-frame {
-        @apply(--settings-list-frame-padding);
+        @apply --settings-list-frame-padding;
         align-items: center;
         display: block;
       }
@@ -230,7 +230,7 @@
       /* A settings-box is a horizontal row of text or controls within a
        * setting section (page or subpage). */
       .settings-box {
-        @apply(--cr-section);
+        @apply --cr-section;
       }
 
       .settings-box.two-line {
@@ -273,7 +273,7 @@
 
       /* The lower line of text in a two-line row. */
       .secondary {
-        @apply(--cr-secondary-text);
+        @apply --cr-secondary-text;
       }
 
       /* The |:empty| CSS selector only works when there is no whitespace.

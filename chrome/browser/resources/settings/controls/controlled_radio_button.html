@@ -12,7 +12,7 @@
       :host {
         --ink-to-circle: calc((var(--paper-radio-button-ink-size) -
                                var(--paper-radio-button-size)) / 2);
-        @apply(--settings-actionable);
+        @apply --settings-actionable;
         align-items: center;
         display: flex;
         outline: none;
@@ -86,7 +86,7 @@
       }
 
       :host(:not([controlled_])) {
-        @apply(--settings-actionable);
+        @apply --settings-actionable;
       }
 
       :host([controlled_]) {

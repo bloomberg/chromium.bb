@@ -3,8 +3,8 @@
  * found in the LICENSE file. */
 
 #route-action-buttons {
-  @apply(--layout-horizontal);
-  @apply(--layout-end-justified);
+  @apply --layout-horizontal;
+  @apply --layout-end-justified;
   margin: 0 10px;
   padding: 0;
   white-space: nowrap;

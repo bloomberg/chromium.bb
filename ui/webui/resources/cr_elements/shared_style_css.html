@@ -36,7 +36,7 @@
       }
 
       [actionable] {
-        @apply(--cr-actionable);
+        @apply --cr-actionable;
       }
 
       .subpage-arrow,
@@ -71,8 +71,8 @@
         border-bottom-color: var(--google-grey-300);
       }
       [scrollable] iron-list > :not(.no-outline):focus {
-        @apply(--cr-list-item-focus);
-        @apply(--cr-selectable-focus);
+        @apply --cr-list-item-focus;
+        @apply --cr-selectable-focus;
       }
 
       .scroll-container {
@@ -83,15 +83,15 @@
 
       [selectable]:focus,
       [selectable] > :focus {
-        @apply(--cr-selectable-focus);
+        @apply --cr-selectable-focus;
       }
       [selectable] > * {
-        @apply(--cr-actionable);
+        @apply --cr-actionable;
       }
 
       /** Styles for elements that implement the CrContainerShadowBehavior */
       #cr-container-shadow {
-        @apply(--cr-container-shadow);
+        @apply --cr-container-shadow;
       }
 
       #cr-container-shadow.has-shadow {
