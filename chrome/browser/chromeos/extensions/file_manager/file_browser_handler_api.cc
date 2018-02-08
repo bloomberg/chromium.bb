@@ -39,6 +39,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -305,10 +306,9 @@ bool FileBrowserHandlerInternalSelectFileFunction::RunAsync() {
   }
 
   FileSelector* file_selector = file_selector_factory_->CreateFileSelector();
-  file_selector->SelectFile(suggested_name.BaseName(),
-                            allowed_extensions,
-                            GetCurrentBrowser(),
-                            this);
+  file_selector->SelectFile(
+      suggested_name.BaseName(), allowed_extensions,
+      ChromeExtensionFunctionDetails(this).GetCurrentBrowser(), this);
   return true;
 }
 

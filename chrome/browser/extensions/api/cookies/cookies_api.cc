@@ -87,7 +87,8 @@ network::mojom::CookieManager* ParseStoreCookieManager(
     // GetCurrentBrowser() already takes into account incognito settings.
     // TODO(rdevlin.cronin): Relying on the current execution context is
     // almost never the right answer; clean this up.
-    Browser* current_browser = function->GetCurrentBrowser();
+    Browser* current_browser =
+        ChromeExtensionFunctionDetails(function).GetCurrentBrowser();
     if (!current_browser) {
       function->SetError(keys::kNoCookieStoreFoundError);
       return nullptr;
