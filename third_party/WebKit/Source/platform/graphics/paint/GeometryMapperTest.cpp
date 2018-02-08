@@ -133,7 +133,6 @@ INSTANTIATE_TEST_CASE_P(All,
 // this macro.
 #define CHECK_MAPPINGS()                                                     \
   do {                                                                       \
-    EXPECT_TRUE(expected_clip.Rect().Contains(expected_visual_rect.Rect())); \
     CHECK_LOCAL_TO_ANCESTOR_VISUAL_RECT();                                   \
     CHECK_LOCAL_TO_ANCESTOR_CLIP_RECT();                                     \
     CHECK_SOURCE_TO_DESTINATION_RECT();                                      \
@@ -649,8 +648,7 @@ TEST_P(GeometryMapperTest, FilterWithClipsAndTransforms) {
   expected_transformed_rect = expected_transform.MapRect(input_rect);
   expected_visual_rect = FloatClipRect(output);
   expected_visual_rect.ClearIsTight();
-  expected_clip = FloatClipRect(FloatRect(-10, 0, 150, 150));
-  expected_clip.ClearIsTight();
+  expected_clip = FloatClipRect(FloatRect(50, 60, 90, 90));
   CHECK_MAPPINGS();
 }
 

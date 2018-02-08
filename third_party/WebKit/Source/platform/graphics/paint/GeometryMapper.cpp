@@ -245,18 +245,10 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRect(
   if (local_state.Clip() == ancestor_state.Clip())
     return FloatClipRect();
 
-  FloatClipRect result;
   bool success = false;
-
-  if (local_state.Effect() != ancestor_state.Effect()) {
-    SlowLocalToAncestorVisualRectWithEffects(local_state, ancestor_state,
-                                             result, clip_behavior, success);
-  } else {
-    result = LocalToAncestorClipRectInternal(
-        local_state.Clip(), ancestor_state.Clip(), ancestor_state.Transform(),
-        clip_behavior, success);
-  }
-
+  auto result = LocalToAncestorClipRectInternal(
+      local_state.Clip(), ancestor_state.Clip(), ancestor_state.Transform(),
+      clip_behavior, success);
   DCHECK(success);
   return result;
 }
