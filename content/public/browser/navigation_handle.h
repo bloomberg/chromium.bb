@@ -29,6 +29,7 @@ namespace content {
 struct GlobalRequestID;
 class NavigationData;
 class NavigationThrottle;
+class NavigationUIData;
 class RenderFrameHost;
 class SiteInstance;
 class WebContents;
@@ -144,6 +145,9 @@ class CONTENT_EXPORT NavigationHandle {
 
   // Returns the page transition type.
   virtual ui::PageTransition GetPageTransition() = 0;
+
+  // Returns the NavigationUIData associated with the navigation.
+  virtual const NavigationUIData* GetNavigationUIData() = 0;
 
   // Whether the target URL cannot be handled by the browser's internal protocol
   // handlers.

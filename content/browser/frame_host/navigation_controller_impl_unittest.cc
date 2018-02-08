@@ -19,6 +19,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/gtest_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
@@ -44,6 +45,7 @@
 #include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/test_navigation_ui_data.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
@@ -309,6 +311,7 @@ class LoadCommittedDetailsObserver : public WebContentsObserver {
   bool is_same_document() { return is_same_document_; }
   bool is_main_frame() { return is_main_frame_; }
   bool did_replace_entry() { return did_replace_entry_; }
+  bool has_navigation_ui_data() { return has_navigation_ui_data_; }
 
  private:
   void DidFinishNavigation(NavigationHandle* navigation_handle) override {
@@ -321,6 +324,7 @@ class LoadCommittedDetailsObserver : public WebContentsObserver {
     is_same_document_ = navigation_handle->IsSameDocument();
     is_main_frame_ = navigation_handle->IsInMainFrame();
     did_replace_entry_ = navigation_handle->DidReplaceEntry();
+    has_navigation_ui_data_ = navigation_handle->GetNavigationUIData();
   }
 
   NavigationType navigation_type_;
@@ -328,6 +332,7 @@ class LoadCommittedDetailsObserver : public WebContentsObserver {
   bool is_same_document_;
   bool is_main_frame_;
   bool did_replace_entry_;
+  bool has_navigation_ui_data_;
 };
 
 // PlzNavigate
@@ -5327,6 +5332,57 @@ TEST_F(NavigationControllerTest, PendingEntryIndexUpdatedWithTransient) {
   EXPECT_EQ(nullptr, controller.GetTransientEntry());
   EXPECT_EQ(url_0, controller.GetEntryAtIndex(0)->GetURL());
   EXPECT_EQ(url_1, controller.GetEntryAtIndex(1)->GetURL());
+}
+
+// Tests that NavigationUIData has been passed to the NavigationHandle.
+TEST_F(NavigationControllerTest, MainFrameNavigationUIData) {
+  NavigationControllerImpl& controller = controller_impl();
+  LoadCommittedDetailsObserver observer(contents());
+  const GURL url1("http://foo1");
+
+  NavigationController::LoadURLParams params(url1);
+  params.navigation_ui_data = std::make_unique<TestNavigationUIData>();
+  controller.LoadURLWithParams(params);
+  int entry_id = controller.GetPendingEntry()->GetUniqueID();
+
+  main_test_rfh()->PrepareForCommit();
+  main_test_rfh()->SendNavigate(entry_id, true, url1);
+
+  EXPECT_TRUE(observer.is_main_frame());
+  EXPECT_TRUE(observer.has_navigation_ui_data());
+}
+
+// Tests calling LoadURLParams with NavigationUIData and for a sub frame.
+TEST_F(NavigationControllerTest, SubFrameNavigationUIData) {
+  // Navigate to a page.
+  const GURL url1("http://foo1");
+  NavigationSimulator::NavigateAndCommitFromDocument(url1, main_test_rfh());
+  EXPECT_EQ(1U, navigation_entry_committed_counter_);
+  navigation_entry_committed_counter_ = 0;
+
+  // Add a sub frame.
+  std::string unique_name("uniqueName0");
+  main_test_rfh()->OnCreateChildFrame(
+      process()->GetNextRoutingID(),
+      TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
+      blink::WebTreeScopeType::kDocument, std::string(), unique_name, false,
+      base::UnguessableToken::Create(), blink::FramePolicy(),
+      FrameOwnerProperties());
+  TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
+      contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
+  const GURL subframe_url("http://foo1/subframe");
+
+  LoadCommittedDetailsObserver observer(contents());
+
+  // Navigate sub frame.
+  NavigationController::LoadURLParams params(url1);
+  params.navigation_ui_data = std::make_unique<TestNavigationUIData>();
+  params.frame_tree_node_id = subframe->GetFrameTreeNodeId();
+
+#if DCHECK_IS_ON()
+  // We DCHECK to prevent misuse of the API.
+  EXPECT_DEATH_IF_SUPPORTED(controller_impl().LoadURLWithParams(params), "");
+#endif
 }
 
 }  // namespace content

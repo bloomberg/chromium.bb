@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/session_storage_namespace.h"
@@ -199,12 +200,15 @@ class NavigationController {
     // of that attribute.
     base::Optional<std::string> suggested_filename;
 
+    // This value should only be set for main frame navigations. Subframe
+    // navigations will always get their NavigationUIData from
+    // ContentBrowserClient::GetNavigationUIData.
+    std::unique_ptr<NavigationUIData> navigation_ui_data;
+
     explicit LoadURLParams(const GURL& url);
     ~LoadURLParams();
 
-    // Allows copying of LoadURLParams struct.
-    LoadURLParams(const LoadURLParams& other);
-    LoadURLParams& operator=(const LoadURLParams& other);
+    DISALLOW_COPY_AND_ASSIGN(LoadURLParams);
   };
 
   // Disables checking for a repost and prompting the user. This is used during

@@ -239,7 +239,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     bool is_history_navigation_in_new_child,
     const scoped_refptr<network::ResourceRequestBody>& post_body,
     const base::TimeTicks& navigation_start,
-    NavigationControllerImpl* controller) {
+    NavigationControllerImpl* controller,
+    std::unique_ptr<NavigationUIData> navigation_ui_data) {
   // A form submission happens either because the navigation is a
   // renderer-initiated form submission that took the OpenURL path or a
   // back/forward/reload navigation the does a form resubmission.
@@ -295,7 +296,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           std::string() /* searchable_form_encoding */, initiator,
           GURL() /* client_side_redirect_url */),
       request_params, browser_initiated, false /* from_begin_navigation */,
-      &frame_entry, &entry));
+      &frame_entry, &entry, std::move(navigation_ui_data)));
   return navigation_request;
 }
 
@@ -340,7 +341,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       frame_tree_node, common_params, std::move(begin_params), request_params,
       false,  // browser_initiated
       true,   // from_begin_navigation
-      nullptr, entry));
+      nullptr, entry,
+      nullptr));  // navigation_ui_data
   return navigation_request;
 }
 
@@ -352,12 +354,14 @@ NavigationRequest::NavigationRequest(
     bool browser_initiated,
     bool from_begin_navigation,
     const FrameNavigationEntry* frame_entry,
-    const NavigationEntryImpl* entry)
+    const NavigationEntryImpl* entry,
+    std::unique_ptr<NavigationUIData> navigation_ui_data)
     : frame_tree_node_(frame_tree_node),
       common_params_(common_params),
       begin_params_(std::move(begin_params)),
       request_params_(request_params),
       browser_initiated_(browser_initiated),
+      navigation_ui_data_(std::move(navigation_ui_data)),
       state_(NOT_STARTED),
       restore_type_(RestoreType::NONE),
       is_view_source_(false),
@@ -572,7 +576,8 @@ void NavigationRequest::CreateNavigationHandle() {
           common_params_.started_from_context_menu,
           common_params_.should_check_main_world_csp,
           begin_params_->is_form_submission, common_params_.suggested_filename,
-          common_params_.method, common_params_.post_data,
+          std::move(navigation_ui_data_), common_params_.method,
+          common_params_.post_data,
           Referrer::SanitizeForRequest(common_params_.url,
                                        common_params_.referrer),
           common_params_.has_user_gesture, common_params_.transition,
@@ -1146,8 +1151,8 @@ void NavigationRequest::OnStartChecksComplete(
                                   : frame_tree_node_->parent()->IsMainFrame();
 
   std::unique_ptr<NavigationUIData> navigation_ui_data;
-  if (navigation_handle_->navigation_ui_data())
-    navigation_ui_data = navigation_handle_->navigation_ui_data()->Clone();
+  if (navigation_handle_->GetNavigationUIData())
+    navigation_ui_data = navigation_handle_->GetNavigationUIData()->Clone();
 
   bool is_for_guests_only =
       navigation_handle_->GetStartingSiteInstance()->GetSiteURL().

@@ -50,6 +50,7 @@ NavigationHandle::CreateNavigationHandleForTesting(
           CSPDisposition::CHECK,  // should_check_main_world_csp
           false,                  // is_form_submission
           base::nullopt,          // suggested_filename
+          nullptr,                // navigation_ui_data
           method, resource_request_body, Referrer(),
           false,  // has_user_gesture
           transition);
