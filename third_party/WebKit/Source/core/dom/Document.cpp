@@ -985,9 +985,10 @@ Element* Document::createElement(const AtomicString& local_name,
 
   // 5. Let element be the result of creating an element given ...
   Element* element =
-      CreateElement(q_name, should_create_builtin ? is : g_null_atom,
+      CreateElement(q_name,
                     is_v1 ? CreateElementFlags::ByCreateElementV1()
-                          : CreateElementFlags::ByCreateElementV0());
+                          : CreateElementFlags::ByCreateElementV0(),
+                    should_create_builtin ? is : g_null_atom);
 
   // 8. If 'is' is non-null, set 'is' attribute
   if (!is.IsEmpty())
@@ -1059,9 +1060,10 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
 
   // 3. Let element be the result of creating an element
   Element* element =
-      CreateElement(q_name, should_create_builtin ? is : g_null_atom,
+      CreateElement(q_name,
                     is_v1 ? CreateElementFlags::ByCreateElementV1()
-                          : CreateElementFlags::ByCreateElementV0());
+                          : CreateElementFlags::ByCreateElementV0(),
+                    should_create_builtin ? is : g_null_atom);
 
   // 4. If 'is' is non-null, set 'is' attribute
   if (!is.IsEmpty())
@@ -1073,8 +1075,8 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
 // Entry point of "create an element".
 // https://dom.spec.whatwg.org/#concept-create-element
 Element* Document::CreateElement(const QualifiedName& q_name,
-                                 const AtomicString& is,
-                                 const CreateElementFlags flags) {
+                                 const CreateElementFlags flags,
+                                 const AtomicString& is) {
   CustomElementDefinition* definition = nullptr;
   if (flags.IsCustomElementsV1() &&
       q_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI) {
