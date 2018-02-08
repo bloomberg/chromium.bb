@@ -47,7 +47,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
-#include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
@@ -78,6 +77,8 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "components/user_manager/user_manager.h"
+#else
+#include "chrome/browser/ui/user_manager.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
@@ -272,11 +273,13 @@ bool CanOpenProfileOnStartup(Profile* profile) {
 }
 
 void ShowUserManagerOnStartup(const base::CommandLine& command_line) {
+#if !defined(OS_CHROMEOS)
   profiles::UserManagerAction action =
       command_line.HasSwitch(switches::kShowAppList) ?
           profiles::USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER :
           profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION;
   UserManager::Show(base::FilePath(), action);
+#endif  // !defined(OS_CHROMEOS)
 }
 
 }  // namespace

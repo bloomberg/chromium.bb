@@ -145,7 +145,6 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/gcm/gcm_product_util.h"
-#include "chrome/browser/ui/user_manager.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_desktop_utils.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"
@@ -178,6 +177,7 @@
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 #include "chrome/browser/first_run/upgrade_util.h"
+#include "chrome/browser/ui/user_manager.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -322,9 +322,7 @@ void BrowserProcessImpl::StartTearDown() {
   tearing_down_ = true;
   DCHECK(IsShuttingDown());
 
-#if !defined(OS_ANDROID)
   KeepAliveRegistry::GetInstance()->SetIsShuttingDown();
-#endif  // !defined(OS_ANDROID)
 
   // We need to destroy the MetricsServicesManager, IntranetRedirectDetector,
   // NetworkTimeTracker, and SafeBrowsing ClientSideDetectionService
@@ -358,9 +356,11 @@ void BrowserProcessImpl::StartTearDown() {
   {
     TRACE_EVENT0("shutdown",
                  "BrowserProcessImpl::StartTearDown:ProfileManager");
+#if !defined(OS_CHROMEOS)
     // The desktop User Manager needs to be closed before the guest profile
     // can be destroyed.
     UserManager::Hide();
+#endif  // !defined(OS_CHROMEOS)
     profile_manager_.reset();
   }
 
