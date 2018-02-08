@@ -128,6 +128,17 @@ message DeviceRegisterRequest {
 
   // If specified, represents the license type selected by user on the device.
   optional LicenseType license_type = 9;
+
+  // Enumerates different expected lifetimes of registration.
+  enum Lifetime {
+    // Default case, no expiration.
+    LIFETIME_INDEFINITE = 0;
+    // Lifetime for ephemeral user policy registration.
+    LIFETIME_EPHEMERAL_USER = 1;
+  }
+
+  // Indicates the expected lifetime of registration.
+  optional Lifetime lifetime = 10;
 }
 
 // Response from server to device register request.

@@ -130,6 +130,7 @@ void CloudPolicyClient::SetClientId(const std::string& client_id) {
 
 void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
                                  em::DeviceRegisterRequest::Flavor flavor,
+                                 em::DeviceRegisterRequest::Lifetime lifetime,
                                  em::LicenseType::LicenseTypeEnum license_type,
                                  const std::string& auth_token,
                                  const std::string& client_id,
@@ -163,6 +164,7 @@ void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
   request->set_flavor(flavor);
   if (license_type != em::LicenseType::UNDEFINED)
     request->mutable_license_type()->set_license_type(license_type);
+  request->set_lifetime(lifetime);
 
   policy_fetch_request_job_->SetRetryCallback(
       base::Bind(&CloudPolicyClient::OnRetryRegister,
@@ -176,6 +178,7 @@ void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
 void CloudPolicyClient::RegisterWithCertificate(
     em::DeviceRegisterRequest::Type type,
     em::DeviceRegisterRequest::Flavor flavor,
+    em::DeviceRegisterRequest::Lifetime lifetime,
     em::LicenseType::LicenseTypeEnum license_type,
     const std::string& pem_certificate_chain,
     const std::string& client_id,
@@ -207,6 +210,7 @@ void CloudPolicyClient::RegisterWithCertificate(
   request->set_flavor(flavor);
   if (license_type != em::LicenseType::UNDEFINED)
     request->mutable_license_type()->set_license_type(license_type);
+  request->set_lifetime(lifetime);
 
   signing_service_->SignData(data.SerializeAsString(),
       base::Bind(&CloudPolicyClient::OnRegisterWithCertificateRequestSigned,

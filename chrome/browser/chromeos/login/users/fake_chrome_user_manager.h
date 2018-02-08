@@ -92,6 +92,7 @@ class FakeChromeUserManager : public ChromeUserManager {
                              const UserAccountData& account_data) override;
   bool IsCurrentUserOwner() const override;
   bool IsCurrentUserNew() const override;
+  bool IsCurrentUserCryptohomeDataEphemeral() const override;
   bool IsCurrentUserNonCryptohomeDataEphemeral() const override;
   bool CanCurrentUserLock() const override;
   bool IsUserLoggedIn() const override;
@@ -184,6 +185,9 @@ class FakeChromeUserManager : public ChromeUserManager {
   }
 
   void set_current_user_new(bool new_user) { current_user_new_ = new_user; }
+  void set_current_user_ephemeral(bool user_ephemeral) {
+    current_user_ephemeral_ = user_ephemeral;
+  }
 
   void set_is_enterprise_managed(bool is_enterprise_managed) {
     is_enterprise_managed_ = is_enterprise_managed;
@@ -200,6 +204,7 @@ class FakeChromeUserManager : public ChromeUserManager {
   AccountId owner_account_id_ = EmptyAccountId();
   bool fake_ephemeral_users_enabled_ = false;
   bool current_user_new_ = false;
+  bool current_user_ephemeral_ = false;
 
   MultiProfileUserController* multi_profile_user_controller_ = nullptr;
 

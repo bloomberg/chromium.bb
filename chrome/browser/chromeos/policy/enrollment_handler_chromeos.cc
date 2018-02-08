@@ -376,8 +376,8 @@ void EnrollmentHandlerChromeOS::StartRegistration() {
     client_->Register(
         em::DeviceRegisterRequest::DEVICE,
         EnrollmentModeToRegistrationFlavor(enrollment_config_.mode),
-        license_type_, auth_token_, client_id_, requisition_,
-        current_state_key_);
+        em::DeviceRegisterRequest::LIFETIME_INDEFINITE, license_type_,
+        auth_token_, client_id_, requisition_, current_state_key_);
   }
 }
 
@@ -395,15 +395,16 @@ void EnrollmentHandlerChromeOS::StartAttestationBasedEnrollmentFlow() {
 void EnrollmentHandlerChromeOS::HandleRegistrationCertificateResult(
     chromeos::attestation::AttestationStatus status,
     const std::string& pem_certificate_chain) {
-  if (status == chromeos::attestation::ATTESTATION_SUCCESS)
+  if (status == chromeos::attestation::ATTESTATION_SUCCESS) {
     client_->RegisterWithCertificate(
         em::DeviceRegisterRequest::DEVICE,
         EnrollmentModeToRegistrationFlavor(enrollment_config_.mode),
-        license_type_, pem_certificate_chain, client_id_, requisition_,
-        current_state_key_);
-  else
+        em::DeviceRegisterRequest::LIFETIME_INDEFINITE, license_type_,
+        pem_certificate_chain, client_id_, requisition_, current_state_key_);
+  } else {
     ReportResult(EnrollmentStatus::ForStatus(
         EnrollmentStatus::REGISTRATION_CERT_FETCH_FAILED));
+  }
 }
 
 void EnrollmentHandlerChromeOS::HandlePolicyValidationResult(
