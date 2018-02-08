@@ -451,12 +451,9 @@ void WebDevToolsAgentImpl::Session::InitializeInspectorSession(
   inspector_session_->Append(
       InspectorApplicationCacheAgent::Create(inspected_frames));
 
-  InspectorWorkerAgent* worker_agent =
-      new InspectorWorkerAgent(inspected_frames);
-  inspector_session_->Append(worker_agent);
+  inspector_session_->Append(new InspectorWorkerAgent(inspected_frames));
 
-  tracing_agent_ =
-      InspectorTracingAgent::Create(agent_, worker_agent, inspected_frames);
+  tracing_agent_ = new InspectorTracingAgent(agent_, inspected_frames);
   inspector_session_->Append(tracing_agent_);
 
   page_agent_ = InspectorPageAgent::Create(

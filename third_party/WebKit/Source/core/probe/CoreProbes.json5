@@ -195,6 +195,7 @@
       probes: [
         "frameStartedLoading",
         "frameStoppedLoading",
+        "didStartWorker",
       ]
     },
     Worker: {
