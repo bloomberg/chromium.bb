@@ -749,6 +749,7 @@
       interpolable: true,
       keywords: ["auto", "none"],
       typedom_types: ["Image"],
+      separator: " ",
       custom_apply_functions_all: true,
     },
     {

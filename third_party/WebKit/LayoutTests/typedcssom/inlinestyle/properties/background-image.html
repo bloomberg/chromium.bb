@@ -22,7 +22,8 @@ runInlineStylePropertyMapTests( {
     new CSSURLImageValue(window.location.href + '/resources/1x1-green.jpg'),
     new CSSURLImageValue(window.location.href)
   ],
-  supportsMultiple: false,
+  supportsMultiple: true,
+  separator: ' ',
   invalidObjects: [new CSSUnitValue(4, 'px')]
 });
 </script>

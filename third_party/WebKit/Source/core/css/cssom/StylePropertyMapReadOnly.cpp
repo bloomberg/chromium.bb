@@ -60,8 +60,26 @@ bool ComparePropertyNames(const String& a, const String& b) {
 
 CSSStyleValue* StylePropertyMapReadOnly::get(const String& property_name,
                                              ExceptionState& exception_state) {
-  CSSStyleValueVector style_vector = getAll(property_name, exception_state);
-  return style_vector.IsEmpty() ? nullptr : style_vector[0];
+  const CSSPropertyID property_id = cssPropertyID(property_name);
+  if (property_id == CSSPropertyInvalid) {
+    exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
+    return nullptr;
+  }
+
+  DCHECK(isValidCSSPropertyID(property_id));
+  const CSSValue* value = (property_id == CSSPropertyVariable)
+                              ? GetCustomProperty(AtomicString(property_name))
+                              : GetProperty(property_id);
+  if (!value)
+    return nullptr;
+
+  if (CSSProperty::Get(property_id).IsRepeated()) {
+    CSSStyleValueVector values =
+        StyleValueFactory::CssValueToStyleValueVector(property_id, *value);
+    return values.IsEmpty() ? nullptr : values[0];
+  }
+
+  return StyleValueFactory::CssValueToStyleValue(property_id, *value);
 }
 
 CSSStyleValueVector StylePropertyMapReadOnly::getAll(
