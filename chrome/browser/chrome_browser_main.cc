@@ -975,6 +975,13 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
 
   g_browser_process->metrics_service()->CheckForClonedInstall();
 
+#if defined(OS_WIN)
+  // The last live timestamp is used to assess whether a browser crash occurred
+  // due to a full system crash. Update the last live timestamp on a slow
+  // schedule to get the bast possible accuracy for the assessment.
+  g_browser_process->metrics_service()->StartUpdatingLastLiveTimestamp();
+#endif
+
   // Register a synthetic field trial for the sampling profiler configuration
   // that was already chosen.
   std::string trial_name, group_name;
