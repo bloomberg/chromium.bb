@@ -238,6 +238,11 @@ void ChromeAppListModelUpdater::ContextMenuItemSelected(const std::string& id,
     chrome_item->ContextMenuItemSelected(command_id, event_flags);
 }
 
+app_list::SearchResult* ChromeAppListModelUpdater::FindSearchResult(
+    const std::string& result_id) {
+  return search_model_->FindSearchResult(result_id);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Methods for AppListSyncableService
 

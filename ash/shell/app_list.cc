@@ -227,14 +227,15 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     return search_model_.get();
   }
 
-  void OpenSearchResult(app_list::SearchResult* result,
+  void OpenSearchResult(const std::string& result_id,
                         int event_flags) override {
     const ExampleSearchResult* example_result =
-        static_cast<const ExampleSearchResult*>(result);
+        static_cast<const ExampleSearchResult*>(
+            search_model_->FindSearchResult(result_id));
     WindowTypeShelfItem::ActivateItem(example_result->type(), event_flags);
   }
 
-  void InvokeSearchResultAction(app_list::SearchResult* result,
+  void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
                                 int event_flags) override {
     NOTIMPLEMENTED();

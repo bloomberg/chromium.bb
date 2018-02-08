@@ -260,7 +260,7 @@ void SearchResultTileItemView::ButtonPressed(views::Button* sender,
 
   RecordSearchResultOpenSource(item_, view_delegate_->GetModel(),
                                view_delegate_->GetSearchModel());
-  view_delegate_->OpenSearchResult(item_, event.flags());
+  view_delegate_->OpenSearchResult(item_->id(), event.flags());
 }
 
 void SearchResultTileItemView::GetAccessibleNodeData(
@@ -293,7 +293,7 @@ bool SearchResultTileItemView::OnKeyPressed(const ui::KeyEvent& event) {
 
     RecordSearchResultOpenSource(item_, view_delegate_->GetModel(),
                                  view_delegate_->GetSearchModel());
-    view_delegate_->OpenSearchResult(item_, event.flags());
+    view_delegate_->OpenSearchResult(item_->id(), event.flags());
     return true;
   }
 

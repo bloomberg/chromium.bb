@@ -79,6 +79,8 @@ class ChromeAppListModelUpdater : public app_list::AppListModelObserver,
   void ContextMenuItemSelected(const std::string& id,
                                int command_id,
                                int event_flags) override;
+  app_list::SearchResult* FindSearchResult(
+      const std::string& result_id) override;
 
   // Methods for AppListSyncableService:
   void AddItemToOemFolder(

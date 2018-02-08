@@ -62,9 +62,8 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   app_list::AppListModel* GetModel() override;
   app_list::SearchModel* GetSearchModel() override;
   void StartSearch(const base::string16& raw_query) override;
-  void OpenSearchResult(app_list::SearchResult* result,
-                        int event_flags) override;
-  void InvokeSearchResultAction(app_list::SearchResult* result,
+  void OpenSearchResult(const std::string& result_id, int event_flags) override;
+  void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
                                 int event_flags) override;
   void ViewShown(int64_t display_id) override;
