@@ -555,10 +555,12 @@ TEST_F(QuicDispatcherTest, TooBigSeqNoPacketToTimeWaitListManager) {
 }
 
 TEST_F(QuicDispatcherTest, SupportedTransportVersionsChangeInFlight) {
-  static_assert(arraysize(kSupportedTransportVersions) == 7u,
+  static_assert(arraysize(kSupportedTransportVersions) == 8u,
                 "Supported versions out of sync");
-  SetQuicFlag(&FLAGS_quic_enable_version_42, true);
+  SetQuicReloadableFlag(quic_enable_version_42, true);
+  SetQuicReloadableFlag(quic_allow_receiving_overlapping_data, true);
   SetQuicFlag(&FLAGS_quic_enable_version_43, true);
+  SetQuicFlag(&FLAGS_quic_enable_version_99, true);
   QuicSocketAddress client_address(QuicIpAddress::Loopback4(), 1);
   server_address_ = QuicSocketAddress(QuicIpAddress::Any4(), 5);
   QuicConnectionId connection_id = 1;
@@ -639,7 +641,7 @@ TEST_F(QuicDispatcherTest, SupportedTransportVersionsChangeInFlight) {
                 PACKET_6BYTE_PACKET_NUMBER, 1);
 
   // Turn off version 42.
-  SetQuicFlag(&FLAGS_quic_enable_version_42, false);
+  SetQuicReloadableFlag(quic_enable_version_42, false);
   ++connection_id;
   EXPECT_CALL(*dispatcher_, CreateQuicSession(connection_id, client_address,
                                               QuicStringPiece("hq")))
@@ -650,7 +652,7 @@ TEST_F(QuicDispatcherTest, SupportedTransportVersionsChangeInFlight) {
                 PACKET_6BYTE_PACKET_NUMBER, 1);
 
   // Turn on version 42.
-  SetQuicFlag(&FLAGS_quic_enable_version_42, true);
+  SetQuicReloadableFlag(quic_enable_version_42, true);
   ++connection_id;
   EXPECT_CALL(*dispatcher_, CreateQuicSession(connection_id, client_address,
                                               QuicStringPiece("hq")))

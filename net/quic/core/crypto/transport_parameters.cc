@@ -127,20 +127,22 @@ bool SerializeTransportParameters(const TransportParameters& in,
     }
   }
 
+  CBB initial_max_stream_id_bidi_param;
   if (in.initial_max_stream_id_bidi.present) {
-    CBB initial_max_stream_id_param;
     if (!CBB_add_u16(&params, kInitialMaxStreamIdBidi) ||
-        !CBB_add_u16_length_prefixed(&params, &initial_max_stream_id_param) ||
-        !CBB_add_u32(&initial_max_stream_id_param,
+        !CBB_add_u16_length_prefixed(&params,
+                                     &initial_max_stream_id_bidi_param) ||
+        !CBB_add_u32(&initial_max_stream_id_bidi_param,
                      in.initial_max_stream_id_bidi.value)) {
       return false;
     }
   }
+  CBB initial_max_stream_id_uni_param;
   if (in.initial_max_stream_id_uni.present) {
-    CBB initial_max_stream_id_param;
     if (!CBB_add_u16(&params, kInitialMaxStreamIdUni) ||
-        !CBB_add_u16_length_prefixed(&params, &initial_max_stream_id_param) ||
-        !CBB_add_u32(&initial_max_stream_id_param,
+        !CBB_add_u16_length_prefixed(&params,
+                                     &initial_max_stream_id_uni_param) ||
+        !CBB_add_u32(&initial_max_stream_id_uni_param,
                      in.initial_max_stream_id_uni.value)) {
       return false;
     }
@@ -150,19 +152,19 @@ bool SerializeTransportParameters(const TransportParameters& in,
       return false;
     }
   }
+  CBB max_packet_size_param;
   if (in.max_packet_size.present) {
-    CBB max_packet_size_param;
     if (!CBB_add_u16(&params, kMaxPacketSize) ||
         !CBB_add_u16_length_prefixed(&params, &max_packet_size_param) ||
         !CBB_add_u16(&max_packet_size_param, in.max_packet_size.value)) {
       return false;
     }
   }
+  CBB ack_delay_exponent_param;
   if (in.ack_delay_exponent.present) {
-    CBB max_packet_size_param;
-    if (!CBB_add_u16(&params, kMaxPacketSize) ||
-        !CBB_add_u16_length_prefixed(&params, &max_packet_size_param) ||
-        !CBB_add_u8(&max_packet_size_param, in.ack_delay_exponent.value)) {
+    if (!CBB_add_u16(&params, kAckDelayExponent) ||
+        !CBB_add_u16_length_prefixed(&params, &ack_delay_exponent_param) ||
+        !CBB_add_u8(&ack_delay_exponent_param, in.ack_delay_exponent.value)) {
       return false;
     }
   }
@@ -260,12 +262,8 @@ bool ParseTransportParameters(const uint8_t* in,
         if (CBS_len(&value) == 0) {
           return false;
         }
-        out->stateless_reset_token.resize(CBS_len(&value));
-        if (!CBS_copy_bytes(&value, out->stateless_reset_token.data(),
-                            CBS_len(&value)) ||
-            CBS_len(&value) != 0) {
-          return false;
-        }
+        out->stateless_reset_token.assign(CBS_data(&value),
+                                          CBS_data(&value) + CBS_len(&value));
         break;
       case kAckDelayExponent:
         if (!CBS_get_u8(&value, &out->ack_delay_exponent.value) ||

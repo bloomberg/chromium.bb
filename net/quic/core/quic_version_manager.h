@@ -35,9 +35,12 @@ class QUIC_EXPORT_PRIVATE QuicVersionManager {
   }
 
  private:
+  // FLAGS_quic_enable_version_99
+  bool enable_version_99_;
   // FLAGS_quic_enable_version_43
   bool enable_version_43_;
-  // FLAGS_quic_enable_version_42
+  // FLAGS_quic_reloadable_flag_quic_enable_version_42 and
+  // FLAGS_quic_reloadable_flag_quic_allow_receiving_overlapping_data.
   bool enable_version_42_;
   // The list of versions that may be supported.
   ParsedQuicVersionVector allowed_supported_versions_;

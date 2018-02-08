@@ -1959,17 +1959,6 @@ TEST_P(QuicConnectionTest, TooManySentPackets) {
   ProcessAckPacket(&frame1);
 }
 
-TEST_P(QuicConnectionTest, TooManyReceivedPackets) {
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_CALL(visitor_, OnAckNeedsRetransmittableFrame()).Times(AnyNumber());
-  // Miss 99 of every 100 packets for 5500 packets.
-  for (QuicPacketNumber i = 1; i < kMaxTrackedPackets + 500; i += 100) {
-    ProcessPacket(i);
-    if (!connection_.connected()) {
-      break;
-    }
-  }
-}
 
 TEST_P(QuicConnectionTest, LargestObservedLower) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
@@ -3679,7 +3668,7 @@ TEST_P(QuicConnectionTest, TimeoutAfterSend) {
   EXPECT_EQ(default_timeout, connection_.GetTimeoutAlarm()->deadline());
 
   // Now send more data. This will not move the timeout because
-  // no data has been recieved since the previous write.
+  // no data has been received since the previous write.
   clock_.AdvanceTime(five_ms);
   SendStreamDataToPeer(kClientDataStreamId1, "foo", 3, FIN, nullptr);
   EXPECT_EQ(default_timeout, connection_.GetTimeoutAlarm()->deadline());
@@ -3816,7 +3805,7 @@ TEST_P(QuicConnectionTest, NewTimeoutAfterSendSilentClose) {
   EXPECT_EQ(default_timeout, connection_.GetTimeoutAlarm()->deadline());
 
   // Now send more data. This will not move the timeout because
-  // no data has been recieved since the previous write.
+  // no data has been received since the previous write.
   clock_.AdvanceTime(five_ms);
   SendStreamDataToPeer(kClientDataStreamId1, "foo", 3, FIN, nullptr);
   EXPECT_EQ(default_timeout, connection_.GetTimeoutAlarm()->deadline());

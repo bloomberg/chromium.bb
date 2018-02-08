@@ -141,7 +141,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_tlp, false)
 // If true, stream sequencer buffer allows receiving overlapping stream data.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_allow_receiving_overlapping_data,
-          false)
+          true)
 
 // If true, QuicStreamSendBuffer keeps track of the slice which next write
 // should get data from if writing new data.
@@ -176,3 +176,11 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_close_session_on_too_many_outstanding_sent_packets,
     false)
+
+// If true, enable QUIC v99.
+QUIC_FLAG(bool, FLAGS_quic_enable_version_99, false)
+
+// If both this flag and
+// gfe2_reloadable_flag_quic_allow_receiving_overlapping_data are
+// true, enable QUIC version 42.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_42, false)

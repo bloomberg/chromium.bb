@@ -231,7 +231,7 @@ enum EncryptionLevel : int8_t {
   NUM_ENCRYPTION_LEVELS,
 };
 
-enum PeerAddressChangeType {
+enum AddressChangeType {
   // IP address and port remain unchanged.
   NO_CHANGE,
   // Port changed, but IP address remains unchanged.

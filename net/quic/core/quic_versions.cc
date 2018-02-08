@@ -63,6 +63,8 @@ QuicVersionLabel CreateQuicVersionLabel(ParsedQuicVersion parsed_version) {
       return MakeVersionLabel(proto, '0', '4', '2');
     case QUIC_VERSION_43:
       return MakeVersionLabel(proto, '0', '4', '3');
+    case QUIC_VERSION_99:
+      return MakeVersionLabel(proto, '0', '9', '9');
     default:
       // This shold be an ERROR because we should never attempt to convert an
       // invalid QuicTransportVersion to be written to the wire.
@@ -142,13 +144,22 @@ ParsedQuicVersionVector FilterSupportedVersions(
   ParsedQuicVersionVector filtered_versions;
   filtered_versions.reserve(versions.size());
   for (ParsedQuicVersion version : versions) {
-    if (version.transport_version == QUIC_VERSION_43) {
+    if (version.transport_version == QUIC_VERSION_99) {
+      if (GetQuicFlag(FLAGS_quic_enable_version_99) &&
+          GetQuicFlag(FLAGS_quic_enable_version_43) &&
+          GetQuicReloadableFlag(quic_enable_version_42) &&
+          GetQuicReloadableFlag(quic_allow_receiving_overlapping_data)) {
+        filtered_versions.push_back(version);
+      }
+    } else if (version.transport_version == QUIC_VERSION_43) {
       if (GetQuicFlag(FLAGS_quic_enable_version_43) &&
-          GetQuicFlag(FLAGS_quic_enable_version_42)) {
+          GetQuicReloadableFlag(quic_enable_version_42) &&
+          GetQuicReloadableFlag(quic_allow_receiving_overlapping_data)) {
         filtered_versions.push_back(version);
       }
     } else if (version.transport_version == QUIC_VERSION_42) {
-      if (GetQuicFlag(FLAGS_quic_enable_version_42)) {
+      if (GetQuicReloadableFlag(quic_enable_version_42) &&
+          GetQuicReloadableFlag(quic_allow_receiving_overlapping_data)) {
         filtered_versions.push_back(version);
       }
     } else {
@@ -228,6 +239,7 @@ string QuicVersionToString(QuicTransportVersion transport_version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_41);
     RETURN_STRING_LITERAL(QUIC_VERSION_42);
     RETURN_STRING_LITERAL(QUIC_VERSION_43);
+    RETURN_STRING_LITERAL(QUIC_VERSION_99);
     default:
       return "QUIC_VERSION_UNSUPPORTED";
   }

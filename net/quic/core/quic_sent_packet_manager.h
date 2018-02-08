@@ -122,6 +122,10 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // and the previously encrypted data needs to be encrypted with a new key.
   void RetransmitUnackedPackets(TransmissionType retransmission_type);
 
+  // Notify the sent packet manager of an external network measurement or
+  // prediction for either |bandwidth| or |rtt|; either can be empty.
+  void AdjustNetworkParameters(QuicBandwidth bandwidth, QuicTime::Delta rtt);
+
   // Retransmits the oldest pending packet there is still a tail loss probe
   // pending.  Invoked after OnRetransmissionTimeout.
   bool MaybeRetransmitTailLossProbe();
@@ -209,7 +213,7 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   void CancelRetransmissionsForStream(QuicStreamId stream_id);
 
   // Called when peer address changes and the connection migrates.
-  void OnConnectionMigration(PeerAddressChangeType type);
+  void OnConnectionMigration(AddressChangeType type);
 
   void SetDebugDelegate(DebugDelegate* debug_delegate);
 
@@ -334,6 +338,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // |send_algorithm_|. Takes ownership of |send_algorithm|. Can be called any
   // number of times.
   void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm);
+
+  // Sets the initial RTT of the connection.
+  void SetInitialRtt(QuicTime::Delta rtt);
 
   // Newly serialized retransmittable packets are added to this map, which
   // contains owning pointers to any contained frames.  If a packet is

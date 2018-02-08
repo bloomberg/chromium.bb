@@ -721,7 +721,7 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
   QuicPacketCreatorPeer::SetPacketNumber(&creator_,
                                          UINT64_C(64) * 256 * 256 * 256 * 256);
   creator_.UpdatePacketNumberLength(2, 10000 / kDefaultMaxPacketSize);
-  if (GetParam().version.transport_version <= QUIC_VERSION_39) {
+  if (GetParam().version.transport_version != QUIC_VERSION_41) {
     EXPECT_EQ(PACKET_6BYTE_PACKET_NUMBER,
               QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
   } else {
@@ -749,7 +749,7 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthCwnd) {
 
   creator_.UpdatePacketNumberLength(
       1, UINT64_C(1000) * 256 * 256 * 256 * 256 / kDefaultMaxPacketSize);
-  if (GetParam().version.transport_version <= QUIC_VERSION_39) {
+  if (GetParam().version.transport_version != QUIC_VERSION_41) {
     EXPECT_EQ(PACKET_6BYTE_PACKET_NUMBER,
               QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
   } else {

@@ -365,7 +365,7 @@ TEST_F(QuicVersionsTest, ParsedVersionsToTransportVersions) {
 // yet a typo was made in doing the #defines and it was caught
 // only in some test far removed from here... Better safe than sorry.
 TEST_F(QuicVersionsTest, CheckVersionNumbersForTypos) {
-  static_assert(QUIC_ARRAYSIZE(net::kSupportedTransportVersions) == 7u,
+  static_assert(QUIC_ARRAYSIZE(net::kSupportedTransportVersions) == 8u,
                 "Supported versions out of sync");
   EXPECT_EQ(QUIC_VERSION_35, 35);
   EXPECT_EQ(QUIC_VERSION_37, 37);
@@ -374,6 +374,7 @@ TEST_F(QuicVersionsTest, CheckVersionNumbersForTypos) {
   EXPECT_EQ(QUIC_VERSION_41, 41);
   EXPECT_EQ(QUIC_VERSION_42, 42);
   EXPECT_EQ(QUIC_VERSION_43, 43);
+  EXPECT_EQ(QUIC_VERSION_99, 99);
 }
 }  // namespace
 }  // namespace test

@@ -16,13 +16,13 @@
 #include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
+using testing::_;
 using testing::AnyNumber;
 using testing::IsEmpty;
 using testing::Not;
 using testing::Pointwise;
 using testing::Return;
 using testing::StrictMock;
-using testing::_;
 
 namespace net {
 namespace test {
@@ -1051,15 +1051,14 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeCryptoHandshake) {
 
   // Check the min.
   RttStats* rtt_stats = const_cast<RttStats*>(manager_.GetRttStats());
-  rtt_stats->set_initial_rtt_us(1 * kNumMicrosPerMilli);
+  rtt_stats->set_initial_rtt(QuicTime::Delta::FromMilliseconds(1));
   EXPECT_EQ(clock_.Now() + QuicTime::Delta::FromMilliseconds(10),
             manager_.GetRetransmissionTime());
 
   // Test with a standard smoothed RTT.
-  rtt_stats->set_initial_rtt_us(100 * kNumMicrosPerMilli);
+  rtt_stats->set_initial_rtt(QuicTime::Delta::FromMilliseconds(100));
 
-  QuicTime::Delta srtt =
-      QuicTime::Delta::FromMicroseconds(rtt_stats->initial_rtt_us());
+  QuicTime::Delta srtt = rtt_stats->initial_rtt();
   QuicTime expected_time = clock_.Now() + 1.5 * srtt;
   EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
 
@@ -1092,15 +1091,14 @@ TEST_F(QuicSentPacketManagerTest,
 
   // Check the min.
   RttStats* rtt_stats = const_cast<RttStats*>(manager_.GetRttStats());
-  rtt_stats->set_initial_rtt_us(1 * kNumMicrosPerMilli);
+  rtt_stats->set_initial_rtt(QuicTime::Delta::FromMilliseconds(1));
   EXPECT_EQ(clock_.Now() + QuicTime::Delta::FromMilliseconds(25),
             manager_.GetRetransmissionTime());
 
   // Test with a standard smoothed RTT.
-  rtt_stats->set_initial_rtt_us(100 * kNumMicrosPerMilli);
+  rtt_stats->set_initial_rtt(QuicTime::Delta::FromMilliseconds(100));
 
-  QuicTime::Delta srtt =
-      QuicTime::Delta::FromMicroseconds(rtt_stats->initial_rtt_us());
+  QuicTime::Delta srtt = rtt_stats->initial_rtt();
   QuicTime expected_time = clock_.Now() + 2 * srtt;
   EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
 
@@ -1121,14 +1119,13 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeTailLossProbe) {
 
   // Check the min.
   RttStats* rtt_stats = const_cast<RttStats*>(manager_.GetRttStats());
-  rtt_stats->set_initial_rtt_us(1 * kNumMicrosPerMilli);
+  rtt_stats->set_initial_rtt(QuicTime::Delta::FromMilliseconds(1));
   EXPECT_EQ(clock_.Now() + QuicTime::Delta::FromMilliseconds(10),
             manager_.GetRetransmissionTime());
 
   // Test with a standard smoothed RTT.
-  rtt_stats->set_initial_rtt_us(100 * kNumMicrosPerMilli);
-  QuicTime::Delta srtt =
-      QuicTime::Delta::FromMicroseconds(rtt_stats->initial_rtt_us());
+  rtt_stats->set_initial_rtt(QuicTime::Delta::FromMilliseconds(100));
+  QuicTime::Delta srtt = rtt_stats->initial_rtt();
   QuicTime::Delta expected_tlp_delay = 2 * srtt;
   QuicTime expected_time = clock_.Now() + expected_tlp_delay;
   EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
@@ -1552,40 +1549,37 @@ TEST_F(QuicSentPacketManagerTest, NegotiateNewRTOFromOptionsAtClient) {
 }
 
 TEST_F(QuicSentPacketManagerTest, UseInitialRoundTripTimeToSend) {
-  uint32_t initial_rtt_us = 325000;
-  EXPECT_NE(initial_rtt_us,
-            manager_.GetRttStats()->smoothed_rtt().ToMicroseconds());
+  QuicTime::Delta initial_rtt = QuicTime::Delta::FromMilliseconds(325);
+  EXPECT_NE(initial_rtt, manager_.GetRttStats()->smoothed_rtt());
 
   QuicConfig config;
-  config.SetInitialRoundTripTimeUsToSend(initial_rtt_us);
+  config.SetInitialRoundTripTimeUsToSend(initial_rtt.ToMicroseconds());
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
   manager_.SetFromConfig(config);
 
-  EXPECT_EQ(0, manager_.GetRttStats()->smoothed_rtt().ToMicroseconds());
-  EXPECT_EQ(initial_rtt_us, manager_.GetRttStats()->initial_rtt_us());
+  EXPECT_EQ(QuicTime::Delta::Zero(), manager_.GetRttStats()->smoothed_rtt());
+  EXPECT_EQ(initial_rtt, manager_.GetRttStats()->initial_rtt());
 }
 
 TEST_F(QuicSentPacketManagerTest, ResumeConnectionState) {
   // The sent packet manager should use the RTT from CachedNetworkParameters if
   // it is provided.
-  const int kRttMs = 1234;
+  const QuicTime::Delta kRtt = QuicTime::Delta::FromMilliseconds(1234);
   CachedNetworkParameters cached_network_params;
-  cached_network_params.set_min_rtt_ms(kRttMs);
+  cached_network_params.set_min_rtt_ms(kRtt.ToMilliseconds());
 
-  EXPECT_CALL(*send_algorithm_, AdjustNetworkParameters(
-                                    QuicBandwidth::Zero(),
-                                    QuicTime::Delta::FromMilliseconds(kRttMs)));
+  EXPECT_CALL(*send_algorithm_,
+              AdjustNetworkParameters(QuicBandwidth::Zero(), kRtt));
   manager_.ResumeConnectionState(cached_network_params, false);
-  EXPECT_EQ(kRttMs * kNumMicrosPerMilli,
-            static_cast<uint64_t>(manager_.GetRttStats()->initial_rtt_us()));
+  EXPECT_EQ(kRtt, manager_.GetRttStats()->initial_rtt());
 }
 
 TEST_F(QuicSentPacketManagerTest, ConnectionMigrationUnspecifiedChange) {
   RttStats* rtt_stats = const_cast<RttStats*>(manager_.GetRttStats());
-  int64_t default_init_rtt = rtt_stats->initial_rtt_us();
-  rtt_stats->set_initial_rtt_us(default_init_rtt * 2);
-  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt_us());
+  QuicTime::Delta default_init_rtt = rtt_stats->initial_rtt();
+  rtt_stats->set_initial_rtt(default_init_rtt * 2);
+  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt());
 
   QuicSentPacketManagerPeer::SetConsecutiveRtoCount(&manager_, 1);
   EXPECT_EQ(1u, manager_.GetConsecutiveRtoCount());
@@ -1595,16 +1589,16 @@ TEST_F(QuicSentPacketManagerTest, ConnectionMigrationUnspecifiedChange) {
   EXPECT_CALL(*send_algorithm_, OnConnectionMigration());
   manager_.OnConnectionMigration(IPV4_TO_IPV4_CHANGE);
 
-  EXPECT_EQ(default_init_rtt, rtt_stats->initial_rtt_us());
+  EXPECT_EQ(default_init_rtt, rtt_stats->initial_rtt());
   EXPECT_EQ(0u, manager_.GetConsecutiveRtoCount());
   EXPECT_EQ(0u, manager_.GetConsecutiveTlpCount());
 }
 
 TEST_F(QuicSentPacketManagerTest, ConnectionMigrationIPSubnetChange) {
   RttStats* rtt_stats = const_cast<RttStats*>(manager_.GetRttStats());
-  int64_t default_init_rtt = rtt_stats->initial_rtt_us();
-  rtt_stats->set_initial_rtt_us(default_init_rtt * 2);
-  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt_us());
+  QuicTime::Delta default_init_rtt = rtt_stats->initial_rtt();
+  rtt_stats->set_initial_rtt(default_init_rtt * 2);
+  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt());
 
   QuicSentPacketManagerPeer::SetConsecutiveRtoCount(&manager_, 1);
   EXPECT_EQ(1u, manager_.GetConsecutiveRtoCount());
@@ -1613,16 +1607,16 @@ TEST_F(QuicSentPacketManagerTest, ConnectionMigrationIPSubnetChange) {
 
   manager_.OnConnectionMigration(IPV4_SUBNET_CHANGE);
 
-  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt_us());
+  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt());
   EXPECT_EQ(1u, manager_.GetConsecutiveRtoCount());
   EXPECT_EQ(2u, manager_.GetConsecutiveTlpCount());
 }
 
 TEST_F(QuicSentPacketManagerTest, ConnectionMigrationPortChange) {
   RttStats* rtt_stats = const_cast<RttStats*>(manager_.GetRttStats());
-  int64_t default_init_rtt = rtt_stats->initial_rtt_us();
-  rtt_stats->set_initial_rtt_us(default_init_rtt * 2);
-  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt_us());
+  QuicTime::Delta default_init_rtt = rtt_stats->initial_rtt();
+  rtt_stats->set_initial_rtt(default_init_rtt * 2);
+  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt());
 
   QuicSentPacketManagerPeer::SetConsecutiveRtoCount(&manager_, 1);
   EXPECT_EQ(1u, manager_.GetConsecutiveRtoCount());
@@ -1631,7 +1625,7 @@ TEST_F(QuicSentPacketManagerTest, ConnectionMigrationPortChange) {
 
   manager_.OnConnectionMigration(PORT_CHANGE);
 
-  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt_us());
+  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt());
   EXPECT_EQ(1u, manager_.GetConsecutiveRtoCount());
   EXPECT_EQ(2u, manager_.GetConsecutiveTlpCount());
 }

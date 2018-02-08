@@ -1353,8 +1353,8 @@ TEST_P(EndToEndTest, NegotiateCongestionControl) {
 
 TEST_P(EndToEndTest, ClientSuggestsRTT) {
   // Client suggests initial RTT, verify it is used.
-  const uint32_t kInitialRTT = 20000;
-  client_config_.SetInitialRoundTripTimeUsToSend(kInitialRTT);
+  const QuicTime::Delta kInitialRTT = QuicTime::Delta::FromMicroseconds(20000);
+  client_config_.SetInitialRoundTripTimeUsToSend(kInitialRTT.ToMicroseconds());
 
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
@@ -1371,9 +1371,9 @@ TEST_P(EndToEndTest, ClientSuggestsRTT) {
       GetSentPacketManagerFromFirstServerSession();
 
   EXPECT_EQ(kInitialRTT,
-            client_sent_packet_manager.GetRttStats()->initial_rtt_us());
+            client_sent_packet_manager.GetRttStats()->initial_rtt());
   EXPECT_EQ(kInitialRTT,
-            server_sent_packet_manager->GetRttStats()->initial_rtt_us());
+            server_sent_packet_manager->GetRttStats()->initial_rtt());
   server_thread_->Resume();
 }
 
@@ -1403,7 +1403,7 @@ TEST_P(EndToEndTest, MaxInitialRTT) {
   const RttStats& server_rtt_stats =
       *session->connection()->sent_packet_manager().GetRttStats();
   EXPECT_EQ(static_cast<int64_t>(kMaxInitialRoundTripTimeUs),
-            server_rtt_stats.initial_rtt_us());
+            server_rtt_stats.initial_rtt().ToMicroseconds());
   EXPECT_GE(static_cast<int64_t>(kMaxInitialRoundTripTimeUs),
             server_rtt_stats.smoothed_rtt().ToMicroseconds());
   server_thread_->Resume();
@@ -1433,8 +1433,8 @@ TEST_P(EndToEndTest, MinInitialRTT) {
   EXPECT_FALSE(
       client_sent_packet_manager.GetRttStats()->smoothed_rtt().IsInfinite());
   // Expect the default rtt of 100ms.
-  EXPECT_EQ(static_cast<int64_t>(100 * kNumMicrosPerMilli),
-            server_sent_packet_manager.GetRttStats()->initial_rtt_us());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(100),
+            server_sent_packet_manager.GetRttStats()->initial_rtt());
   // Ensure the bandwidth is valid.
   client_sent_packet_manager.BandwidthEstimate();
   server_sent_packet_manager.BandwidthEstimate();

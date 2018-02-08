@@ -163,7 +163,7 @@ const char* QuicUtils::TransmissionTypeToString(TransmissionType type) {
   return "INVALID_TRANSMISSION_TYPE";
 }
 
-string QuicUtils::PeerAddressChangeTypeToString(PeerAddressChangeType type) {
+string QuicUtils::AddressChangeTypeToString(AddressChangeType type) {
   switch (type) {
     RETURN_STRING_LITERAL(NO_CHANGE);
     RETURN_STRING_LITERAL(PORT_CHANGE);
@@ -173,11 +173,11 @@ string QuicUtils::PeerAddressChangeTypeToString(PeerAddressChangeType type) {
     RETURN_STRING_LITERAL(IPV6_TO_IPV6_CHANGE);
     RETURN_STRING_LITERAL(IPV4_TO_IPV4_CHANGE);
   }
-  return "INVALID_PEER_ADDRESS_CHANGE_TYPE";
+  return "INVALID_ADDRESS_CHANGE_TYPE";
 }
 
 // static
-PeerAddressChangeType QuicUtils::DetermineAddressChangeType(
+AddressChangeType QuicUtils::DetermineAddressChangeType(
     const QuicSocketAddress& old_address,
     const QuicSocketAddress& new_address) {
   if (!old_address.IsInitialized() || !new_address.IsInitialized() ||

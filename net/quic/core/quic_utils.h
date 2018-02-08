@@ -51,12 +51,12 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   // Returns TransmissionType as a char*
   static const char* TransmissionTypeToString(TransmissionType type);
 
-  // Returns PeerAddressChangeType as a std::string.
-  static std::string PeerAddressChangeTypeToString(PeerAddressChangeType type);
+  // Returns AddressChangeType as a std::string.
+  static std::string AddressChangeTypeToString(AddressChangeType type);
 
   // Determines and returns change type of address change from |old_address| to
   // |new_address|.
-  static PeerAddressChangeType DetermineAddressChangeType(
+  static AddressChangeType DetermineAddressChangeType(
       const QuicSocketAddress& old_address,
       const QuicSocketAddress& new_address);
 

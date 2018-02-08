@@ -24,7 +24,7 @@ class RttStatsTest : public QuicTest {
 };
 
 TEST_F(RttStatsTest, DefaultsBeforeUpdate) {
-  EXPECT_LT(0u, rtt_stats_.initial_rtt_us());
+  EXPECT_LT(QuicTime::Delta::Zero(), rtt_stats_.initial_rtt());
   EXPECT_EQ(QuicTime::Delta::Zero(), rtt_stats_.min_rtt());
   EXPECT_EQ(QuicTime::Delta::Zero(), rtt_stats_.smoothed_rtt());
 }

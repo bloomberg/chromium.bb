@@ -37,8 +37,8 @@
 #include "net/tools/quic/test_tools/mock_quic_session_visitor.h"
 
 using std::string;
-using testing::StrictMock;
 using testing::_;
+using testing::StrictMock;
 
 namespace net {
 namespace test {
@@ -435,9 +435,8 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
   // Seed an rtt measurement equal to the initial default rtt.
   RttStats* rtt_stats =
       const_cast<RttStats*>(sent_packet_manager->GetRttStats());
-  rtt_stats->UpdateRtt(
-      QuicTime::Delta::FromMicroseconds(rtt_stats->initial_rtt_us()),
-      QuicTime::Delta::Zero(), QuicTime::Zero());
+  rtt_stats->UpdateRtt(rtt_stats->initial_rtt(), QuicTime::Delta::Zero(),
+                       QuicTime::Zero());
   QuicSustainedBandwidthRecorderPeer::SetBandwidthEstimate(
       &bandwidth_recorder, bandwidth_estimate_kbytes_per_second);
   QuicSustainedBandwidthRecorderPeer::SetMaxBandwidthEstimate(
