@@ -94,10 +94,12 @@
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/app_modal/app_modal_dialog_queue.h"
@@ -110,6 +112,7 @@
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/translate/core/browser/language_state.h"
+#include "components/version_info/channel.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/notification_service.h"
@@ -1548,22 +1551,64 @@ base::string16 BrowserView::GetWindowTitle() const {
 }
 
 base::string16 BrowserView::GetAccessibleWindowTitle() const {
+  return GetAccessibleWindowTitleForChannelAndProfile(chrome::GetChannel(),
+                                                      browser_->profile());
+}
+
+base::string16 BrowserView::GetAccessibleWindowTitleForChannelAndProfile(
+    version_info::Channel channel,
+    Profile* profile) const {
+  // Start with the tab title, which includes properties of the tab
+  // like playing audio or network error.
   const bool include_app_name = false;
   int active_index = browser_->tab_strip_model()->active_index();
-  if (active_index > -1) {
-    if (IsIncognito()) {
-      return l10n_util::GetStringFUTF16(
-          IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT,
-          GetAccessibleTabLabel(include_app_name, active_index));
+  base::string16 title;
+  if (active_index > -1)
+    title = GetAccessibleTabLabel(include_app_name, active_index);
+  else
+    title = browser_->GetWindowTitleForCurrentTab(include_app_name);
+
+  // Add the name of the browser, unless this is an app window.
+  if (!browser()->is_app()) {
+    int message_id;
+    switch (channel) {
+      case version_info::Channel::CANARY:
+        message_id = IDS_ACCESSIBLE_CANARY_BROWSER_WINDOW_TITLE_FORMAT;
+        break;
+      case version_info::Channel::DEV:
+        message_id = IDS_ACCESSIBLE_DEV_BROWSER_WINDOW_TITLE_FORMAT;
+        break;
+      case version_info::Channel::BETA:
+        message_id = IDS_ACCESSIBLE_BETA_BROWSER_WINDOW_TITLE_FORMAT;
+        break;
+      default:
+        // Stable or unknown.
+        message_id = IDS_ACCESSIBLE_BROWSER_WINDOW_TITLE_FORMAT;
+        break;
     }
-    return GetAccessibleTabLabel(include_app_name, active_index);
+    title = l10n_util::GetStringFUTF16(message_id, title);
   }
-  if (IsIncognito()) {
-    return l10n_util::GetStringFUTF16(
-        IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT,
-        browser_->GetWindowTitleForCurrentTab(include_app_name));
+
+  // Finally annotate with the user - add Incognito if it's an incognito
+  // window, otherwise use the avatar name.
+  if (profile->IsOffTheRecord()) {
+    title = l10n_util::GetStringFUTF16(
+        IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT, title);
+  } else if (profile->GetProfileType() == Profile::REGULAR_PROFILE) {
+    base::string16 profile_name =
+        profiles::GetAvatarNameForProfile(profile->GetPath());
+
+    // GetAvatarNameForProfile will return the empty string if there's only one
+    // user account, so the profile name is only appended if someone is
+    // using multiple user accounts. That keeps it concise for most users
+    // who only use one account.
+    if (!profile_name.empty()) {
+      title = l10n_util::GetStringFUTF16(
+          IDS_ACCESSIBLE_WINDOW_TITLE_WITH_PROFILE_FORMAT, profile_name, title);
+    }
   }
-  return browser_->GetWindowTitleForCurrentTab(include_app_name);
+
+  return title;
 }
 
 base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
