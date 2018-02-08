@@ -605,16 +605,6 @@
     "args": ["--autoplay-policy=document-user-activation-required"]
   },
   {
-    "prefix": "htxg",
-    "base": "http/tests/loading/htxg/",
-    "args": ["--enable-features=SignedHTTPExchange"]
-  },
-  {
-    "prefix": "htxg-with-network-service",
-    "base": "http/tests/loading/htxg/",
-    "args": ["--enable-features=SignedHTTPExchange,NetworkService"]
-  },
-  {
     "prefix": "sampling-heap-profiler",
     "base": "inspector-protocol/memory",
     "args": ["--sampling-heap-profiler"]

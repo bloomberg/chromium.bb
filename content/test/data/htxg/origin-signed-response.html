@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<title>Location of origin-signed HTTP response</title>
+<body>
+<script>
+function with_iframe(url) {
+  return new Promise(function(resolve) {
+      const frame = document.createElement('iframe');
+      frame.src = url;
+      frame.onload = function() { resolve(frame); };
+      document.body.appendChild(frame);
+    });
+}
+
+const url = 'origin-signed-response-iframe.htxg';
+with_iframe(url)
+  .then((frame) => {
+    const channel = new MessageChannel();
+    const promise =
+        new Promise((resolve) => { channel.port1.onmessage = resolve; });
+    frame.contentWindow.postMessage(
+      {port: channel.port2}, '*', [channel.port2]);
+    return promise;
+  })
+  .then((event) => {
+    document.title = event.data.location;
+  });
+</script>
+</body>
+
