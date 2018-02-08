@@ -165,10 +165,8 @@ class NET_EXPORT SpdySessionPool
                        const SpdyString& parent_dump_absolute_name) const;
 
   // Called when a SpdySession is ready. It will find appropriate Requests and
-  // fulfill them. |direct| indicates whether or not |spdy_session| uses a
-  // proxy.
+  // fulfill them.
   void OnNewSpdySessionReady(const base::WeakPtr<SpdySession>& spdy_session,
-                             bool direct,
                              const SSLConfig& used_ssl_config,
                              const ProxyInfo& used_proxy_info,
                              bool was_alpn_negotiated,

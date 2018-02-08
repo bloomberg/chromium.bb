@@ -87,7 +87,6 @@ bool SpdyHeadersToHttpResponse(const SpdyHeaderBlock& headers,
 
 void CreateSpdyHeadersFromHttpRequest(const HttpRequestInfo& info,
                                       const HttpRequestHeaders& request_headers,
-                                      bool direct,
                                       SpdyHeaderBlock* headers) {
   (*headers)[kHttp2MethodHeader] = info.method;
   if (info.method == "CONNECT") {

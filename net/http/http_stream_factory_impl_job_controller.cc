@@ -459,8 +459,7 @@ bool HttpStreamFactoryImpl::JobController::OnInitConnection(
 
 void HttpStreamFactoryImpl::JobController::OnNewSpdySessionReady(
     Job* job,
-    const base::WeakPtr<SpdySession>& spdy_session,
-    bool direct) {
+    const base::WeakPtr<SpdySession>& spdy_session) {
   DCHECK(job);
   DCHECK(job->using_spdy());
   DCHECK(!is_preconnect_);
@@ -515,9 +514,8 @@ void HttpStreamFactoryImpl::JobController::OnNewSpdySessionReady(
   // |request_| and |bound_job_| might be deleted already.
   if (spdy_session && spdy_session->IsAvailable()) {
     spdy_session_pool->OnNewSpdySessionReady(
-        spdy_session, direct, used_ssl_config, used_proxy_info,
-        was_alpn_negotiated, negotiated_protocol, using_spdy,
-        source_dependency);
+        spdy_session, used_ssl_config, used_proxy_info, was_alpn_negotiated,
+        negotiated_protocol, using_spdy, source_dependency);
   }
   if (is_job_orphaned) {
     OnOrphanedJobComplete(job);

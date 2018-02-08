@@ -142,9 +142,9 @@ class HttpStreamFactoryImpl::JobController
 
   // Invoked to notify the Request and Factory of the readiness of new
   // SPDY session.
-  void OnNewSpdySessionReady(Job* job,
-                             const base::WeakPtr<SpdySession>& spdy_session,
-                             bool direct) override;
+  void OnNewSpdySessionReady(
+      Job* job,
+      const base::WeakPtr<SpdySession>& spdy_session) override;
 
   // Invoked when the |job| finishes pre-connecting sockets.
   void OnPreconnectsComplete(Job* job) override;

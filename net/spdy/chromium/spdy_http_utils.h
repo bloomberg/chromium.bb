@@ -31,7 +31,6 @@ NET_EXPORT bool SpdyHeadersToHttpResponse(
 NET_EXPORT void CreateSpdyHeadersFromHttpRequest(
     const HttpRequestInfo& info,
     const HttpRequestHeaders& request_headers,
-    bool direct,
     SpdyHeaderBlock* headers);
 
 // Create HttpRequestHeaders from SpdyHeaderBlock.
