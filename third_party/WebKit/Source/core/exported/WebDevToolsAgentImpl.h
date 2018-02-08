@@ -89,7 +89,6 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   bool ScreencastEnabled();
   void LayerTreeViewChanged(WebLayerTreeView*);
   void RootLayerCleared();
-  String NavigationInitiatorInfo(LocalFrame*);
   String EvaluateInOverlayForTesting(const String& script);
 
  private:

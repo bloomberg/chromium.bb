@@ -5,7 +5,6 @@
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 
 #include "content/browser/devtools/protocol/network_handler.h"
-#include "content/browser/devtools/protocol/page_handler.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -185,11 +184,8 @@ void ServiceWorkerDevToolsManager::NavigationPreloadRequestSent(
   auto it = live_hosts_.find(worker_id);
   if (it == live_hosts_.end())
     return;
-  for (auto* network :
-       protocol::NetworkHandler::ForAgentHost(it->second.get())) {
-    network->RequestSent(request_id, std::string(), request,
-                         protocol::Network::Initiator::TypeEnum::Preload);
-  }
+  for (auto* network : protocol::NetworkHandler::ForAgentHost(it->second.get()))
+    network->NavigationPreloadRequestSent(request_id, request);
 }
 
 void ServiceWorkerDevToolsManager::NavigationPreloadResponseReceived(
@@ -203,9 +199,7 @@ void ServiceWorkerDevToolsManager::NavigationPreloadResponseReceived(
   if (it == live_hosts_.end())
     return;
   for (auto* network : protocol::NetworkHandler::ForAgentHost(it->second.get()))
-    network->ResponseReceived(request_id, std::string(), url,
-                              protocol::Page::ResourceTypeEnum::Other, head,
-                              protocol::Maybe<std::string>());
+    network->NavigationPreloadResponseReceived(request_id, url, head);
 }
 
 void ServiceWorkerDevToolsManager::NavigationPreloadCompleted(
@@ -218,8 +212,7 @@ void ServiceWorkerDevToolsManager::NavigationPreloadCompleted(
   if (it == live_hosts_.end())
     return;
   for (auto* network : protocol::NetworkHandler::ForAgentHost(it->second.get()))
-    network->LoadingComplete(request_id,
-                             protocol::Page::ResourceTypeEnum::Other, status);
+    network->NavigationPreloadCompleted(request_id, status);
 }
 
 }  // namespace content

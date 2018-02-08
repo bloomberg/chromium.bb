@@ -214,7 +214,6 @@ class WebDevToolsAgentImpl::Session : public GarbageCollectedFinalized<Session>,
   void Detach();
 
   InspectorSession* inspector_session() { return inspector_session_.Get(); }
-  InspectorNetworkAgent* network_agent() { return network_agent_.Get(); }
   InspectorPageAgent* page_agent() { return page_agent_.Get(); }
   InspectorTracingAgent* tracing_agent() { return tracing_agent_.Get(); }
   InspectorOverlayAgent* overlay_agent() { return overlay_agent_.Get(); }
@@ -245,7 +244,6 @@ class WebDevToolsAgentImpl::Session : public GarbageCollectedFinalized<Session>,
   mojom::blink::DevToolsSessionHostAssociatedPtr host_ptr_;
   IOSession* io_session_;
   Member<InspectorSession> inspector_session_;
-  Member<InspectorNetworkAgent> network_agent_;
   Member<InspectorPageAgent> page_agent_;
   Member<InspectorTracingAgent> tracing_agent_;
   Member<InspectorOverlayAgent> overlay_agent_;
@@ -337,7 +335,6 @@ void WebDevToolsAgentImpl::Session::Trace(blink::Visitor* visitor) {
   visitor->Trace(agent_);
   visitor->Trace(frame_);
   visitor->Trace(inspector_session_);
-  visitor->Trace(network_agent_);
   visitor->Trace(page_agent_);
   visitor->Trace(tracing_agent_);
   visitor->Trace(overlay_agent_);
@@ -426,12 +423,12 @@ void WebDevToolsAgentImpl::Session::InitializeInspectorSession(
       InspectorLayerTreeAgent::Create(inspected_frames, agent_);
   inspector_session_->Append(layer_tree_agent);
 
-  network_agent_ = new InspectorNetworkAgent(inspected_frames, nullptr,
-                                             inspector_session_->V8Session());
-  inspector_session_->Append(network_agent_);
+  InspectorNetworkAgent* network_agent = new InspectorNetworkAgent(
+      inspected_frames, nullptr, inspector_session_->V8Session());
+  inspector_session_->Append(network_agent);
 
   InspectorCSSAgent* css_agent =
-      InspectorCSSAgent::Create(dom_agent, inspected_frames, network_agent_,
+      InspectorCSSAgent::Create(dom_agent, inspected_frames, network_agent,
                                 agent_->resource_content_loader_.Get(),
                                 agent_->resource_container_.Get());
   inspector_session_->Append(css_agent);
@@ -480,7 +477,7 @@ void WebDevToolsAgentImpl::Session::InitializeInspectorSession(
   inspector_session_->Append(
       new InspectorIOAgent(isolate, inspector_session_->V8Session()));
 
-  inspector_session_->Append(new InspectorAuditsAgent(network_agent_));
+  inspector_session_->Append(new InspectorAuditsAgent(network_agent));
 
   tracing_agent_->SetLayerTreeId(agent_->layer_tree_id_);
 
@@ -731,15 +728,6 @@ bool WebDevToolsAgentImpl::HandleInputEvent(const WebInputEvent& event) {
       return true;
   }
   return false;
-}
-
-String WebDevToolsAgentImpl::NavigationInitiatorInfo(LocalFrame* frame) {
-  for (auto& session : sessions_) {
-    String initiator = session->network_agent()->NavigationInitiatorInfo(frame);
-    if (!initiator.IsNull())
-      return initiator;
-  }
-  return String();
 }
 
 void WebDevToolsAgentImpl::FlushProtocolNotifications() {
