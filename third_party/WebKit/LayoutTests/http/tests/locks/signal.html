@@ -108,8 +108,46 @@ promise_test(async t => {
   await navigator.locks.acquire(
     res, {signal: controller.signal}, async lock => { got_lock = true; });
 
-  assert_true(got_lock, 'Lock should be acquired if abort is not signalled.');
+  assert_true(got_lock, 'Lock should be acquired if abort is not signaled.');
 
 }, 'Signal that is not aborted');
+
+promise_test(async t => {
+  const res = uniqueName(t);
+
+  const controller = new AbortController();
+
+  let got_lock = false;
+  const p = navigator.locks.acquire(
+    res, {signal: controller.signal}, lock => { got_lock = true; });
+
+  // Even though lock is grantable, this abort should be processed synchronously.
+  controller.abort();
+
+  await promise_rejects(t, 'AbortError', p, 'Request should abort');
+
+  assert_false(got_lock, 'Request should be aborted if signal is synchronous');
+
+  await navigator.locks.acquire(res, lock => { got_lock = true; });
+  assert_true(got_lock, 'Subsequent request should not be blocked');
+
+}, 'Synchronously signaled abort');
+
+promise_test(async t => {
+  const res = uniqueName(t);
+
+  const controller = new AbortController();
+
+  let got_lock = false;
+  await navigator.locks.acquire(res, async lock => {
+    got_lock = true;
+    // Now that we have the lock, aborting the request should be ignored,
+    // and the acquire() call should not reject.
+    controller.abort();
+  });
+
+  assert_true(got_lock, 'Lock request should have succeeded');
+
+}, 'Abort signaled after lock granted');
 
 </script>
