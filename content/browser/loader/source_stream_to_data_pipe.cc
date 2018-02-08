@@ -18,14 +18,7 @@ SourceStreamToDataPipe::SourceStreamToDataPipe(
       completion_callback_(std::move(completion_callback)),
       writable_handle_watcher_(FROM_HERE,
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL),
-      peer_closed_handle_watcher_(FROM_HERE,
-                                  mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       weak_factory_(this) {
-  peer_closed_handle_watcher_.Watch(
-      dest_.get(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-      base::BindRepeating(&SourceStreamToDataPipe::OnDataPipeClosed,
-                          base::Unretained(this)));
-  peer_closed_handle_watcher_.ArmOrNotify();
   writable_handle_watcher_.Watch(
       dest_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
       base::BindRepeating(&SourceStreamToDataPipe::OnDataPipeWritable,
@@ -47,6 +40,10 @@ void SourceStreamToDataPipe::ReadMore() {
   if (mojo_result == MOJO_RESULT_SHOULD_WAIT) {
     // The pipe is full.  We need to wait for it to have more space.
     writable_handle_watcher_.ArmOrNotify();
+    return;
+  } else if (mojo_result == MOJO_RESULT_FAILED_PRECONDITION) {
+    // The data pipe consumer handle has been closed.
+    OnComplete(net::ERR_ABORTED);
     return;
   } else if (mojo_result != MOJO_RESULT_OK) {
     // The body stream is in a bad state. Bail out.
@@ -95,15 +92,10 @@ void SourceStreamToDataPipe::OnDataPipeWritable(MojoResult result) {
   ReadMore();
 }
 
-void SourceStreamToDataPipe::OnDataPipeClosed(MojoResult result) {
-  OnComplete(net::ERR_ABORTED);
-}
-
 void SourceStreamToDataPipe::OnComplete(int result) {
   // Resets the watchers, pipes and the exchange handler, so that
   // we will never be called back.
   writable_handle_watcher_.Cancel();
-  peer_closed_handle_watcher_.Cancel();
   pending_write_ = nullptr;  // Closes the data pipe if this was holding it.
   dest_.reset();
 
