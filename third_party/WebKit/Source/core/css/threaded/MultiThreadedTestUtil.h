@@ -65,7 +65,7 @@ class MultiThreadedTest : public ::testing::Test {
 
     for (int i = 0; i < num_threads_; ++i) {
       base::SingleThreadTaskRunner* task_runner =
-          threads[i]->PlatformThread().GetWebTaskRunner();
+          threads[i]->PlatformThread().GetTaskRunner().get();
 
       PostCrossThreadTask(*task_runner, FROM_HERE,
                           CrossThreadBind(

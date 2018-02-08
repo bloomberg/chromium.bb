@@ -22,10 +22,9 @@
 namespace blink {
 
 BlinkLeakDetector::BlinkLeakDetector(BlinkLeakDetectorClient* client)
-    : delayed_gc_timer_(
-          Platform::Current()->CurrentThread()->GetWebTaskRunner(),
-          this,
-          &BlinkLeakDetector::TimerFiredGC),
+    : delayed_gc_timer_(Platform::Current()->CurrentThread()->GetTaskRunner(),
+                        this,
+                        &BlinkLeakDetector::TimerFiredGC),
       number_of_gc_needed_(0),
       client_(client) {}
 

@@ -80,7 +80,7 @@ class EmptyDataHandle final : public WebDataConsumerHandle {
    public:
     explicit EmptyDataReader(WebDataConsumerHandle::Client* client)
         : factory_(this) {
-      Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
+      Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
           FROM_HERE, WTF::Bind(&EmptyDataReader::Notify, factory_.GetWeakPtr(),
                                WTF::Unretained(client)));
     }

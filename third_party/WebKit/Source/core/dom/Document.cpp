@@ -7291,7 +7291,7 @@ scoped_refptr<base::SingleThreadTaskRunner> Document::GetTaskRunner(
   // cases, though, there isn't a good candidate (most commonly when either the
   // passed-in document or ContextDocument() used to be attached to a Frame but
   // has since been detached).
-  return Platform::Current()->CurrentThread()->GetWebTaskRunner();
+  return Platform::Current()->CurrentThread()->GetTaskRunner();
 }
 
 Policy* Document::policy() {

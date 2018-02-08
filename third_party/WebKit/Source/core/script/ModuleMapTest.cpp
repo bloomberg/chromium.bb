@@ -98,7 +98,7 @@ class ModuleMapTestModulator final : public DummyModulator {
   }
 
   base::SingleThreadTaskRunner* TaskRunner() override {
-    return Platform::Current()->CurrentThread()->GetWebTaskRunner();
+    return Platform::Current()->CurrentThread()->GetTaskRunner().get();
   };
 
   void FetchNewSingleModule(const ModuleScriptFetchRequest&,
