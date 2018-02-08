@@ -50,7 +50,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
                               public views::WidgetRemovalsObserver,
                               public MultiUserWindowManager::Observer {
  public:
-  explicit LoginDisplayHostWebUI(const gfx::Rect& wallpaper_bounds);
+  LoginDisplayHostWebUI();
   ~LoginDisplayHostWebUI() override;
 
   // LoginDisplayHost:
@@ -77,8 +77,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 
   // Creates WizardController instance.
   WizardController* CreateWizardController();
-
-  const gfx::Rect& wallpaper_bounds() const { return wallpaper_bounds_; }
 
   // Trace id for ShowLoginWebUI event (since there exists at most one login
   // WebUI at a time).
@@ -174,9 +172,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // Called when login-prompt-visible signal is caught.
   void OnLoginPromptVisible();
 
-  // Used to calculate position of the screens and wallpaper.
-  gfx::Rect wallpaper_bounds_;
-
   // Sign in screen controller.
   std::unique_ptr<ExistingUserController> existing_user_controller_;
 
@@ -251,7 +246,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 
   bool is_voice_interaction_oobe_ = false;
 
-  base::WeakPtrFactory<LoginDisplayHostWebUI> animation_weak_ptr_factory_;
+  base::WeakPtrFactory<LoginDisplayHostWebUI> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostWebUI);
 };

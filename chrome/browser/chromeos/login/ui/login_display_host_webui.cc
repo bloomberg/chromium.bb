@@ -194,8 +194,7 @@ void ShowLoginWizardFinish(
              ShouldShowSigninScreen(first_screen)) {
     display_host = new chromeos::LoginDisplayHostViews();
   } else {
-    gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
-    display_host = new chromeos::LoginDisplayHostWebUI(screen_bounds);
+    display_host = new chromeos::LoginDisplayHostWebUI();
   }
 
   // Restore system timezone.
@@ -405,10 +404,9 @@ class LoginDisplayHostWebUI::LoginWidgetDelegate
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostWebUI, public
 
-LoginDisplayHostWebUI::LoginDisplayHostWebUI(const gfx::Rect& wallpaper_bounds)
-    : wallpaper_bounds_(wallpaper_bounds),
-      oobe_startup_sound_played_(StartupUtils::IsOobeCompleted()),
-      animation_weak_ptr_factory_(this) {
+LoginDisplayHostWebUI::LoginDisplayHostWebUI()
+    : oobe_startup_sound_played_(StartupUtils::IsOobeCompleted()),
+      weak_factory_(this) {
   if (ash_util::IsRunningInMash()) {
     // Animation, and initializing hidden, are not currently supported for Mash.
     finalize_animation_type_ = ANIMATION_NONE;
@@ -477,7 +475,7 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI(const gfx::Rect& wallpaper_bounds)
 
   media::SoundsManager* manager = media::SoundsManager::Get();
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  manager->Initialize(chromeos::SOUND_STARTUP,
+  manager->Initialize(SOUND_STARTUP,
                       bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV));
 }
 
@@ -637,7 +635,7 @@ void LoginDisplayHostWebUI::OnStartUserAdding() {
   }
 
   existing_user_controller_.reset();  // Only one controller in a time.
-  existing_user_controller_.reset(new chromeos::ExistingUserController(this));
+  existing_user_controller_.reset(new ExistingUserController(this));
 
   if (!signin_screen_controller_.get()) {
     signin_screen_controller_.reset(
@@ -689,7 +687,7 @@ void LoginDisplayHostWebUI::OnStartSignInScreen(
 
   DVLOG(1) << "Starting sign in screen";
   existing_user_controller_.reset();  // Only one controller in a time.
-  existing_user_controller_.reset(new chromeos::ExistingUserController(this));
+  existing_user_controller_.reset(new ExistingUserController(this));
 
   if (!signin_screen_controller_.get()) {
     signin_screen_controller_.reset(
@@ -938,7 +936,7 @@ void LoginDisplayHostWebUI::ScheduleFadeOutAnimation(int animation_speed_ms) {
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
   animation.AddObserver(new AnimationObserver(
       base::Bind(&LoginDisplayHostWebUI::ShutdownDisplayHost,
-                 animation_weak_ptr_factory_.GetWeakPtr())));
+                 weak_factory_.GetWeakPtr())));
   animation.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(animation_speed_ms));
   layer->SetOpacity(0);
@@ -1012,7 +1010,7 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
 
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.bounds = wallpaper_bounds();
+  params.bounds = CalculateScreenBounds(gfx::Size());
   // Disable fullscreen state for voice interaction OOBE since the shelf should
   // be visible.
   if (!is_voice_interaction_oobe_)
@@ -1131,7 +1129,7 @@ void LoginDisplayHostWebUI::OnLoginPromptVisible() {
 
 // static
 void LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest() {
-  static_cast<chromeos::LoginDisplayHostWebUI*>(default_host())
+  static_cast<LoginDisplayHostWebUI*>(default_host())
       ->GetOobeUI()
       ->GetGaiaScreenView()
       ->DisableRestrictiveProxyCheckForTest();
@@ -1140,7 +1138,7 @@ void LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest() {
 void LoginDisplayHostWebUI::StartVoiceInteractionOobe() {
   is_voice_interaction_oobe_ = true;
   finalize_animation_type_ = ANIMATION_NONE;
-  StartWizard(chromeos::OobeScreen::SCREEN_VOICE_INTERACTION_VALUE_PROP);
+  StartWizard(OobeScreen::SCREEN_VOICE_INTERACTION_VALUE_PROP);
   // We should emit this signal only at login screen (after reboot or sign out).
   login_view_->set_should_emit_login_prompt_visible(false);
 }
@@ -1164,8 +1162,8 @@ void ShowLoginWizard(OobeScreen first_screen) {
 
   VLOG(1) << "Showing OOBE screen: " << GetOobeScreenName(first_screen);
 
-  chromeos::input_method::InputMethodManager* manager =
-      chromeos::input_method::InputMethodManager::Get();
+  input_method::InputMethodManager* manager =
+      input_method::InputMethodManager::Get();
 
   // Set up keyboards. For example, when |locale| is "en-US", enable US qwerty
   // and US dvorak keyboard layouts.
@@ -1184,8 +1182,6 @@ void ShowLoginWizard(OobeScreen first_screen) {
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNaturalScrollDefault));
 
-  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
-
   session_manager::SessionManager::Get()->SetSessionState(
       StartupUtils::IsOobeCompleted()
           ? session_manager::SessionState::LOGIN_PRIMARY
@@ -1199,7 +1195,7 @@ void ShowLoginWizard(OobeScreen first_screen) {
     const bool diagnostic_mode = false;
     const bool auto_launch = true;
     // Manages its own lifetime. See ShutdownDisplayHost().
-    auto* display_host = new LoginDisplayHostWebUI(screen_bounds);
+    auto* display_host = new LoginDisplayHostWebUI();
     display_host->StartAppLaunch(auto_launch_app_id, diagnostic_mode,
                                  auto_launch);
     return;
@@ -1213,7 +1209,7 @@ void ShowLoginWizard(OobeScreen first_screen) {
   if (enrollment_config.should_enroll() &&
       first_screen == OobeScreen::SCREEN_UNKNOWN) {
     // Manages its own lifetime. See ShutdownDisplayHost().
-    auto* display_host = new LoginDisplayHostWebUI(screen_bounds);
+    auto* display_host = new LoginDisplayHostWebUI();
     // Shows networks screen instead of enrollment screen to resume the
     // interrupted auto start enrollment flow because enrollment screen does
     // not handle flaky network. See http://crbug.com/332572

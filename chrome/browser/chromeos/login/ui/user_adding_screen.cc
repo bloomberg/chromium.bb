@@ -49,8 +49,7 @@ class UserAddingScreenImpl : public UserAddingScreen {
 
 void UserAddingScreenImpl::Start() {
   CHECK(!IsRunning());
-  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
-  display_host_ = new chromeos::LoginDisplayHostWebUI(screen_bounds);
+  display_host_ = new chromeos::LoginDisplayHostWebUI();
   display_host_->StartUserAdding(base::BindOnce(
       &UserAddingScreenImpl::OnDisplayHostCompletion, base::Unretained(this)));
 

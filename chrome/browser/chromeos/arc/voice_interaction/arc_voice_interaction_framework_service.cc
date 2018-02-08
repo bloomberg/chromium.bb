@@ -530,10 +530,9 @@ bool ArcVoiceInteractionFrameworkService::ValidateTimeSinceUserInteraction() {
 void ArcVoiceInteractionFrameworkService::StartVoiceInteractionOobe() {
   if (chromeos::LoginDisplayHost::default_host())
     return;
-  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
   // The display host will be destructed at the end of OOBE flow.
   chromeos::LoginDisplayHostWebUI* display_host =
-      new chromeos::LoginDisplayHostWebUI(screen_bounds);
+      new chromeos::LoginDisplayHostWebUI();
   display_host->StartVoiceInteractionOobe();
 }
 
