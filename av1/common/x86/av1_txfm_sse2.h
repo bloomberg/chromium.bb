@@ -178,6 +178,9 @@ void av1_lowbd_fwd_txfm2d_16x16_sse2(const int16_t *input, int32_t *output,
 void av1_lowbd_fwd_txfm2d_16x32_sse2(const int16_t *input, int32_t *output,
                                      int stride, TX_TYPE tx_type, int bd);
 
+void av1_lowbd_fwd_txfm2d_32x8_sse2(const int16_t *input, int32_t *output,
+                                    int stride, TX_TYPE tx_type, int bd);
+
 void av1_lowbd_fwd_txfm2d_32x16_sse2(const int16_t *input, int32_t *output,
                                      int stride, TX_TYPE tx_type, int bd);
 

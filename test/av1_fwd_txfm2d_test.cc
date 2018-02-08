@@ -231,7 +231,7 @@ FwdTxfm2dFunc fwd_func_sse2_list[TX_SIZES_ALL][2] = {
   { NULL, NULL },                                             // TX_4X16
   { NULL, NULL },                                             // TX_16X4
   { av1_fwd_txfm2d_8x32_c, av1_lowbd_fwd_txfm2d_8x32_sse2 },  // TX_8X32
-  { NULL, NULL },                                             // TX_32X8
+  { av1_fwd_txfm2d_32x8_c, av1_lowbd_fwd_txfm2d_32x8_sse2 },  // TX_32X8
 #if CONFIG_TX64X64
   { NULL, NULL },  // TX_16X64
   { NULL, NULL },  // TX_64X16
