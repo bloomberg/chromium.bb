@@ -81,10 +81,8 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
     frame_sink_id_ = viz::FrameSinkId();
   } else {
     GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
-#if DCHECK_IS_ON()
     GetHostFrameSinkManager()->SetFrameSinkDebugLabel(
         frame_sink_id_, "RenderWidgetHostViewChildFrame");
-#endif
     CreateCompositorFrameSinkSupport();
   }
 }

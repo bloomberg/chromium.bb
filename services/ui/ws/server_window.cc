@@ -131,9 +131,7 @@ void ServerWindow::UpdateFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
   auto* host_frame_sink_manager = delegate_->GetVizHostProxy();
   DCHECK(host_frame_sink_manager);
   host_frame_sink_manager->RegisterFrameSinkId(frame_sink_id, this);
-#if DCHECK_IS_ON()
   host_frame_sink_manager->SetFrameSinkDebugLabel(frame_sink_id, GetName());
-#endif
   if (frame_sink_id_.is_valid()) {
     if (parent()) {
       host_frame_sink_manager->UnregisterFrameSinkHierarchy(
@@ -413,11 +411,9 @@ void ServerWindow::SetProperty(const std::string& name,
   } else if (it != properties_.end()) {
     properties_.erase(it);
   }
-#if DCHECK_IS_ON()
   auto* host_frame_sink_manager = delegate_->GetVizHostProxy();
   if (host_frame_sink_manager && name == mojom::WindowManager::kName_Property)
     host_frame_sink_manager->SetFrameSinkDebugLabel(frame_sink_id_, GetName());
-#endif
 
   for (auto& observer : observers_)
     observer.OnWindowSharedPropertyChanged(this, name, value);
