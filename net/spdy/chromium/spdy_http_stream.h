@@ -38,7 +38,6 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   // |spdy_session| must not be NULL.
   SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session,
                  SpdyStreamId pushed_stream_id,
-                 bool direct,
                  NetLogSource source_dependency);
   ~SpdyHttpStream() override;
 
@@ -205,9 +204,6 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   // Has more data been received from the network during the wait for the
   // scheduled read callback.
   bool more_read_data_pending_;
-
-  // Is this spdy stream direct to the origin server (or to a proxy).
-  bool direct_;
 
   bool was_alpn_negotiated_;
 

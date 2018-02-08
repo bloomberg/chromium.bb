@@ -482,7 +482,7 @@ void HttpStreamFactoryImpl::Job::OnNewSpdySessionReadyCallback() {
 
   MaybeCopyConnectionAttemptsFromSocketOrHandle();
 
-  delegate_->OnNewSpdySessionReady(this, spdy_session, spdy_session_direct_);
+  delegate_->OnNewSpdySessionReady(this, spdy_session);
   // |this| may be deleted after this call.
 }
 
@@ -1144,8 +1144,7 @@ int HttpStreamFactoryImpl::Job::DoWaitingUserAction(int result) {
 }
 
 int HttpStreamFactoryImpl::Job::SetSpdyHttpStreamOrBidirectionalStreamImpl(
-    base::WeakPtr<SpdySession> session,
-    bool direct) {
+    base::WeakPtr<SpdySession> session) {
   // TODO(bnc): Restore the code for WebSockets over HTTP/2 once it is
   // implemented.  https://crbug.com/801564.
   if (is_websocket_)
@@ -1160,10 +1159,8 @@ int HttpStreamFactoryImpl::Job::SetSpdyHttpStreamOrBidirectionalStreamImpl(
   // HttpStreamFactoryImpl will be creating all the SpdyHttpStreams, since it
   // will know when SpdySessions become available.
 
-  bool use_relative_url =
-      direct || request_info_.url.SchemeIs(url::kHttpsScheme);
-  stream_ = std::make_unique<SpdyHttpStream>(
-      session, pushed_stream_id_, use_relative_url, net_log_.source());
+  stream_ = std::make_unique<SpdyHttpStream>(session, pushed_stream_id_,
+                                             net_log_.source());
   return OK;
 }
 
@@ -1224,8 +1221,8 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
       connection_->socket()->Disconnect();
     connection_->Reset();
 
-    int set_result = SetSpdyHttpStreamOrBidirectionalStreamImpl(
-        existing_spdy_session_, spdy_session_direct_);
+    int set_result =
+        SetSpdyHttpStreamOrBidirectionalStreamImpl(existing_spdy_session_);
     existing_spdy_session_.reset();
     return set_result;
   }
@@ -1267,8 +1264,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   // iteration later, so if the SpdySession is closed between then, allow
   // reuse state from the underlying socket, sampled by SpdyHttpStream,
   // bubble up to the request.
-  return SetSpdyHttpStreamOrBidirectionalStreamImpl(new_spdy_session_,
-                                                    spdy_session_direct_);
+  return SetSpdyHttpStreamOrBidirectionalStreamImpl(new_spdy_session_);
 }
 
 int HttpStreamFactoryImpl::Job::DoCreateStreamComplete(int result) {

@@ -367,8 +367,7 @@ int SpdyProxyClientSocket::DoSendRequest() {
                  base::Unretained(&request_.extra_headers), &request_line));
 
   SpdyHeaderBlock headers;
-  CreateSpdyHeadersFromHttpRequest(request_, request_.extra_headers, true,
-                                   &headers);
+  CreateSpdyHeadersFromHttpRequest(request_, request_.extra_headers, &headers);
 
   return spdy_stream_->SendRequestHeaders(std::move(headers),
                                           MORE_DATA_TO_SEND);

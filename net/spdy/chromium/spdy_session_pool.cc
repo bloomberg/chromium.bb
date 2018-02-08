@@ -339,7 +339,6 @@ void SpdySessionPool::OnCertDBChanged() {
 
 void SpdySessionPool::OnNewSpdySessionReady(
     const base::WeakPtr<SpdySession>& spdy_session,
-    bool direct,
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
     bool was_alpn_negotiated,
@@ -367,12 +366,9 @@ void SpdySessionPool::OnNewSpdySessionReady(
           std::make_unique<BidirectionalStreamSpdyImpl>(spdy_session,
                                                         source_dependency));
     } else {
-      bool use_relative_url =
-          direct || request->url().SchemeIs(url::kHttpsScheme);
       request->OnStreamReadyOnPooledConnection(
           used_ssl_config, used_proxy_info,
           std::make_unique<SpdyHttpStream>(spdy_session, kNoPushedStreamFound,
-                                           use_relative_url,
                                            source_dependency));
     }
   }

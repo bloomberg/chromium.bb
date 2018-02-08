@@ -211,7 +211,7 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
 
   // Store the serialized request headers.
   CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers,
-                                   /*direct=*/true, &request_headers_);
+                                   &request_headers_);
 
   // Store the request body.
   request_body_stream_ = request_info_->upload_data_stream;

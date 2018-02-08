@@ -120,8 +120,8 @@ int BidirectionalStreamQuicImpl::WriteHeaders() {
   http_request_info.method = request_info_->method;
   http_request_info.extra_headers = request_info_->extra_headers;
 
-  CreateSpdyHeadersFromHttpRequest(
-      http_request_info, http_request_info.extra_headers, true, &headers);
+  CreateSpdyHeadersFromHttpRequest(http_request_info,
+                                   http_request_info.extra_headers, &headers);
   int rv = stream_->WriteHeaders(std::move(headers),
                                  request_info_->end_stream_on_headers, nullptr);
   if (rv >= 0) {

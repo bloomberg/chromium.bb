@@ -363,8 +363,7 @@ int QuicProxyClientSocket::DoSendRequest() {
                  base::Unretained(&request_.extra_headers), &request_line));
 
   SpdyHeaderBlock headers;
-  CreateSpdyHeadersFromHttpRequest(request_, request_.extra_headers, true,
-                                   &headers);
+  CreateSpdyHeadersFromHttpRequest(request_, request_.extra_headers, &headers);
 
   return stream_->WriteHeaders(std::move(headers), false, nullptr);
 }

@@ -117,8 +117,7 @@ class HttpStreamFactoryImpl::Job {
     // SPDY session.
     virtual void OnNewSpdySessionReady(
         Job* job,
-        const base::WeakPtr<SpdySession>& spdy_session,
-        bool direct) = 0;
+        const base::WeakPtr<SpdySession>& spdy_session) = 0;
 
     // Invoked when the |job| finishes pre-connecting sockets.
     virtual void OnPreconnectsComplete(Job* job) = 0;
@@ -339,8 +338,7 @@ class HttpStreamFactoryImpl::Job {
   // and sets to |stream_| or |bidirectional_stream_impl_| respectively. Does
   // nothing if |stream_factory_| is for WebSocket.
   int SetSpdyHttpStreamOrBidirectionalStreamImpl(
-      base::WeakPtr<SpdySession> session,
-      bool direct);
+      base::WeakPtr<SpdySession> session);
 
   // Returns to STATE_INIT_CONNECTION and resets some state.
   void ReturnToStateInitConnection(bool close_connection);

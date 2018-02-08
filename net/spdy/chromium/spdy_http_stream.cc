@@ -34,7 +34,6 @@ const size_t SpdyHttpStream::kRequestBodyBufferSize = 1 << 14;  // 16KB
 
 SpdyHttpStream::SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session,
                                SpdyStreamId pushed_stream_id,
-                               bool direct,
                                NetLogSource source_dependency)
     : MultiplexedHttpStream(
           std::make_unique<MultiplexedSessionHandle>(spdy_session)),
@@ -56,7 +55,6 @@ SpdyHttpStream::SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session,
       request_body_buf_size_(0),
       buffered_read_callback_pending_(false),
       more_read_data_pending_(false),
-      direct_(direct),
       was_alpn_negotiated_(false),
       weak_factory_(this) {
   DCHECK(spdy_session_.get());
@@ -271,8 +269,7 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   }
 
   SpdyHeaderBlock headers;
-  CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers, direct_,
-                                   &headers);
+  CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers, &headers);
   stream_->net_log().AddEvent(
       NetLogEventType::HTTP_TRANSACTION_HTTP2_SEND_REQUEST_HEADERS,
       base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));

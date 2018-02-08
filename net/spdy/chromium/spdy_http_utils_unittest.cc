@@ -15,12 +15,6 @@
 
 namespace net {
 
-namespace {
-
-bool kDirect = true;
-
-}  // namespace
-
 TEST(SpdyHttpUtilsTest, ConvertRequestPriorityToSpdy3Priority) {
   EXPECT_EQ(0, ConvertRequestPriorityToSpdyPriority(HIGHEST));
   EXPECT_EQ(1, ConvertRequestPriorityToSpdyPriority(MEDIUM));
@@ -51,25 +45,7 @@ TEST(SpdyHttpUtilsTest, CreateSpdyHeadersFromHttpRequestHTTP2) {
   request.url = url;
   request.extra_headers.SetHeader(HttpRequestHeaders::kUserAgent, "Chrome/1.1");
   SpdyHeaderBlock headers;
-  CreateSpdyHeadersFromHttpRequest(request, request.extra_headers, kDirect,
-                                   &headers);
-  EXPECT_EQ("GET", headers[":method"]);
-  EXPECT_EQ("https", headers[":scheme"]);
-  EXPECT_EQ("www.google.com", headers[":authority"]);
-  EXPECT_EQ("/index.html", headers[":path"]);
-  EXPECT_TRUE(headers.end() == headers.find(":version"));
-  EXPECT_EQ("Chrome/1.1", headers["user-agent"]);
-}
-
-TEST(SpdyHttpUtilsTest, CreateSpdyHeadersFromHttpRequestProxyHTTP2) {
-  GURL url("https://www.google.com/index.html");
-  HttpRequestInfo request;
-  request.method = "GET";
-  request.url = url;
-  request.extra_headers.SetHeader(HttpRequestHeaders::kUserAgent, "Chrome/1.1");
-  SpdyHeaderBlock headers;
-  CreateSpdyHeadersFromHttpRequest(request, request.extra_headers, !kDirect,
-                                   &headers);
+  CreateSpdyHeadersFromHttpRequest(request, request.extra_headers, &headers);
   EXPECT_EQ("GET", headers[":method"]);
   EXPECT_EQ("https", headers[":scheme"]);
   EXPECT_EQ("www.google.com", headers[":authority"]);
@@ -85,8 +61,7 @@ TEST(SpdyHttpUtilsTest, CreateSpdyHeadersFromHttpRequestConnectHTTP2) {
   request.url = url;
   request.extra_headers.SetHeader(HttpRequestHeaders::kUserAgent, "Chrome/1.1");
   SpdyHeaderBlock headers;
-  CreateSpdyHeadersFromHttpRequest(request, request.extra_headers, kDirect,
-                                   &headers);
+  CreateSpdyHeadersFromHttpRequest(request, request.extra_headers, &headers);
   EXPECT_EQ("CONNECT", headers[":method"]);
   EXPECT_TRUE(headers.end() == headers.find(":scheme"));
   EXPECT_EQ("www.google.com:443", headers[":authority"]);
