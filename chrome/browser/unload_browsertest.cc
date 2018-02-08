@@ -887,7 +887,8 @@ IN_PROC_BROWSER_TEST_F(FastUnloadTest, DISABLED_WindowCloseAfterUnloadCrash) {
 }
 
 // Times out on Windows and Linux.
-#if defined(OS_WIN) || defined(OS_LINUX)
+// Crashes on Mac (http://crbug/810294).
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_WindowCloseAfterBeforeUnloadCrash \
     DISABLED_WindowCloseAfterBeforeUnloadCrash
 #else
