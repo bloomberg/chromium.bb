@@ -2299,8 +2299,8 @@
   <message name="IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS" desc="In the settings tab, the text on the button to display other Wi-Fi networks.">
     Other Wi-Fi network...
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS" desc="In the settings tab, the text on the button to display other cellular networks.">
-    Other mobile network...
+  <message name="IDS_OPTIONS_SETTINGS_CONFIGURE_CELLULAR" desc="In the settings tab, the text on the button to display other cellular networks.">
+    Configure mobile network
   </message>
   <message name="IDS_OPTIONS_SETTINGS_JOIN_WIFI_NETWORKS" desc="The title for the dialog to configure and connect to a wifi network.">
     Join Wi-Fi network
