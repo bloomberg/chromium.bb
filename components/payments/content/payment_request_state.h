@@ -229,7 +229,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
 
   // The PaymentAppProvider::GetAllPaymentAppsCallback.
   void GetAllPaymentAppsCallback(
-      content::BrowserContext* context,
+      content::WebContents* web_contents,
       const GURL& top_level_origin,
       const GURL& frame_origin,
       content::PaymentAppProvider::PaymentApps apps,
