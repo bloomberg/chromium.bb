@@ -33,6 +33,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/wtf/text/CString.h"
+#include "sql/initialization.h"
 #include "third_party/sqlite/sqlite3.h"
 
 // SQLiteFileSystem::registerSQLiteVFS() is implemented in the
@@ -51,7 +52,7 @@ void SQLiteFileSystem::InitializeSQLite() {
   initialize_sqlite_called_ = true;
 #endif  // DCHECK_IS_ON()
 
-  sqlite3_initialize();
+  sql::EnsureSqliteInitialized();
   RegisterSQLiteVFS();
 }
 

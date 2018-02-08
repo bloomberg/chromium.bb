@@ -77,6 +77,11 @@ blink_modules_sources("webdatabase") {
     "sqlite/SQLiteTransaction.h",
   ]
 
+  deps = [
+    "//sql",
+    "//third_party/sqlite",
+  ]
+
   if (is_win) {
     sources += [ "sqlite/SQLiteFileSystemWin.cpp" ]
   } else if (is_posix) {

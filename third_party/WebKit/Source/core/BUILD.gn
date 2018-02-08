@@ -94,7 +94,6 @@ source_set("generated") {
     "//third_party/libwebp",
     "//third_party/libxml",
     "//third_party/libxslt",
-    "//third_party/sqlite",
 
     # FIXME: don't depend on bindings/modules http://crbug.com/358074
     "//third_party/WebKit/Source/bindings/modules:bindings_modules_generated",
@@ -124,7 +123,6 @@ source_set("prerequisites") {
     "//third_party/libxslt",
     "//third_party/ots",
     "//third_party/snappy",
-    "//third_party/sqlite",
     "//third_party/zlib",
     "//ui/gfx/geometry",
     "//url",
@@ -1599,7 +1597,6 @@ target("jumbo_" + core_link_small_target_type, "core_generated") {
     "//third_party/libwebp",
     "//third_party/libxml",
     "//third_party/libxslt",
-    "//third_party/sqlite",
 
     # FIXME: don't depend on bindings/modules http://crbug.com/358074
     "//third_party/WebKit/Source/bindings/modules:bindings_modules_generated",
