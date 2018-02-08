@@ -30,6 +30,11 @@ class PrintCompositeClient
 
   // NOTE: |handle| must be a READ-ONLY base::SharedMemoryHandle, i.e. one
   // acquired by base::SharedMemory::GetReadOnlyHandle().
+
+  // Printing single pages is only used by print preview for early return of
+  // rendered results. In this case, the pages share the content with printed
+  // document. The entire document will always be printed and sent at the end.
+  // This is for compositing such a single preview page.
   void DoCompositePageToPdf(
       int cookie,
       uint64_t frame_guid,
@@ -39,6 +44,8 @@ class PrintCompositeClient
       const ContentToFrameMap& subframe_content_map,
       mojom::PdfCompositor::CompositePageToPdfCallback callback);
 
+  // Used for compositing the entire document for print preview or actual
+  // printing.
   void DoCompositeDocumentToPdf(
       int cookie,
       uint64_t frame_guid,
@@ -57,8 +64,6 @@ class PrintCompositeClient
 
   // Callback functions for getting the replies.
   void OnDidCompositePageToPdf(
-      int page_num,
-      int document_cookie,
       printing::mojom::PdfCompositor::CompositePageToPdfCallback callback,
       printing::mojom::PdfCompositor::Status status,
       mojo::ScopedSharedBufferHandle handle);
@@ -69,12 +74,13 @@ class PrintCompositeClient
       printing::mojom::PdfCompositor::Status status,
       mojo::ScopedSharedBufferHandle handle);
 
-  // Get the request, but doesn't own it.
-  mojom::PdfCompositorPtr& GetCompositeRequest(int cookie,
-                                               base::Optional<int> page_num);
+  // Get the request or create a new one if none exists.
+  // Since printed pages always share content with it document, they share the
+  // same composite request.
+  mojom::PdfCompositorPtr& GetCompositeRequest(int cookie);
 
-  // Find an existing request or create a new one, and own it.
-  void RemoveCompositeRequest(int cookie, base::Optional<int> page_num);
+  // Remove an existing request from |compositor_map_|.
+  void RemoveCompositeRequest(int cookie);
 
   mojom::PdfCompositorPtr CreateCompositeRequest();
 
@@ -83,9 +89,9 @@ class PrintCompositeClient
 
   std::unique_ptr<service_manager::Connector> connector_;
 
-  // Stores the mapping between <document cookie, page number> and their
-  // corresponding requests.
-  std::map<std::pair<int, int>, mojom::PdfCompositorPtr> compositor_map_;
+  // Stores the mapping between document cookies and their corresponding
+  // requests.
+  std::map<int, mojom::PdfCompositorPtr> compositor_map_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintCompositeClient);
 };
