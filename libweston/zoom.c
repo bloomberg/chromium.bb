@@ -125,6 +125,9 @@ weston_output_update_zoom(struct weston_output *output)
 	struct weston_seat *seat = output->zoom.seat;
 	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
 
+	if (!pointer)
+		return;
+
 	assert(output->zoom.active);
 
 	output->zoom.current.x = wl_fixed_to_double(pointer->x);
@@ -151,7 +154,7 @@ weston_output_activate_zoom(struct weston_output *output,
 {
 	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
 
-	if (output->zoom.active)
+	if (!pointer || output->zoom.active)
 		return;
 
 	output->zoom.active = true;

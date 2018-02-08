@@ -105,6 +105,19 @@ weston_pointer_client_create(struct wl_client *client)
 static void
 weston_pointer_client_destroy(struct weston_pointer_client *pointer_client)
 {
+	struct wl_resource *resource;
+
+	wl_resource_for_each(resource, &pointer_client->pointer_resources) {
+		wl_resource_set_user_data(resource, NULL);
+	}
+
+	wl_resource_for_each(resource,
+			     &pointer_client->relative_pointer_resources) {
+		wl_resource_set_user_data(resource, NULL);
+	}
+
+	wl_list_remove(&pointer_client->pointer_resources);
+	wl_list_remove(&pointer_client->relative_pointer_resources);
 	free(pointer_client);
 }
 
@@ -170,11 +183,14 @@ unbind_pointer_client_resource(struct wl_resource *resource)
 	struct wl_client *client = wl_resource_get_client(resource);
 	struct weston_pointer_client *pointer_client;
 
-	pointer_client = weston_pointer_get_pointer_client(pointer, client);
-	assert(pointer_client);
-
 	wl_list_remove(wl_resource_get_link(resource));
-	weston_pointer_cleanup_pointer_client(pointer, pointer_client);
+
+	if (pointer) {
+		pointer_client = weston_pointer_get_pointer_client(pointer,
+								   client);
+		assert(pointer_client);
+		weston_pointer_cleanup_pointer_client(pointer, pointer_client);
+	}
 }
 
 static void unbind_resource(struct wl_resource *resource)
@@ -1092,12 +1108,18 @@ weston_pointer_create(struct weston_seat *seat)
 WL_EXPORT void
 weston_pointer_destroy(struct weston_pointer *pointer)
 {
+	struct weston_pointer_client *pointer_client, *tmp;
+
 	wl_signal_emit(&pointer->destroy_signal, pointer);
 
 	if (pointer->sprite)
 		pointer_unmap_sprite(pointer);
 
-	/* XXX: What about pointer->resource_list? */
+	wl_list_for_each_safe(pointer_client, tmp, &pointer->pointer_clients,
+			      link) {
+		wl_list_remove(&pointer_client->link);
+		weston_pointer_client_destroy(pointer_client);
+	}
 
 	wl_list_remove(&pointer->focus_resource_listener.link);
 	wl_list_remove(&pointer->focus_view_listener.link);
@@ -2317,6 +2339,9 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 {
 	struct weston_pointer *pointer = wl_resource_get_user_data(resource);
 	struct weston_surface *surface = NULL;
+
+	if (!pointer)
+		return;
 
 	if (surface_resource)
 		surface = wl_resource_get_user_data(surface_resource);
