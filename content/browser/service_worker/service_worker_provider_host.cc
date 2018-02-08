@@ -509,7 +509,8 @@ ServiceWorkerProviderHost::GetOrCreateServiceWorkerHandle(
   if (!context_ || !version)
     return nullptr;
   if (!dispatcher_host_) {
-    DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+    DCHECK(ServiceWorkerUtils::IsServicificationEnabled() ||
+           IsNavigationMojoResponseEnabled());
     blink::mojom::ServiceWorkerObjectInfoPtr info;
     // This is called before the dispatcher host is created.
     // |precreated_controller_handle_| instance's lifetime is controlled by its
@@ -608,7 +609,8 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
   if (!controller_)
     return;
 
-  if (ServiceWorkerUtils::IsServicificationEnabled() &&
+  if ((ServiceWorkerUtils::IsServicificationEnabled() ||
+       IsNavigationMojoResponseEnabled()) &&
       precreated_controller_handle_) {
     // S13nServiceWorker: register the pre-created handle for the controller
     // service worker with the dispatcher host, now that it exists.
@@ -619,10 +621,12 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
     precreated_controller_handle_ = nullptr;
   }
 
-  // In S13nServiceWorker case the controller is already sent in navigation
-  // commit, but we still need this for S13nServiceWorker case for setting the
-  // use counter correctly.
-  // TODO(kinuko): Stop doing this in S13nServiceWorker case.
+  // In S13nServiceWorker/NavigationMojoResponse case the controller is already
+  // sent in navigation commit, but we still need this for
+  // S13nServiceWorker/NavigationMojoResponse case for setting the use counter
+  // correctly.
+  // TODO(kinuko): Stop doing this in S13nServiceWorker/NavigationMojoResponse
+  // case.
   SendSetControllerServiceWorker(false /* notify_controllerchange */);
 }
 

@@ -656,6 +656,26 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
         if (navigation_data)
           cloned_navigation_data = navigation_data->Clone();
       }
+
+      // This is similar to what is done in
+      // ServiceWorkerControlleeHandler::MaybeCreateSubresourceLoaderParams().
+      // It takes the matching ControllerServiceWorkerInfo (if any) associated
+      // with the request. It will be sent to the renderer process and used to
+      // intercept requests.
+      // TODO(arthursonzogni): This is needed only for the non-S13nServiceWorker
+      // case. The S13nServiceWorker case is still not supported without the
+      // NetworkService. This block needs to be updated once support for it will
+      // be added.
+      ServiceWorkerProviderHost* sw_provider_host =
+          ServiceWorkerRequestHandler::GetProviderHost(url_request);
+      if (sw_provider_host && sw_provider_host->controller()) {
+        subresource_loader_params_ = SubresourceLoaderParams();
+        subresource_loader_params_->controller_service_worker_info =
+            mojom::ControllerServiceWorkerInfo::New();
+        subresource_loader_params_->controller_service_worker_info
+            ->object_info = sw_provider_host->GetOrCreateServiceWorkerHandle(
+            sw_provider_host->controller());
+      }
     }
 
     // Make a copy of the ResourceResponse before it is passed to another

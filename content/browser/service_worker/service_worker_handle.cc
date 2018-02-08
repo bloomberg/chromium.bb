@@ -12,6 +12,7 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/service_worker_modes.h"
 
 namespace content {
@@ -78,7 +79,8 @@ ServiceWorkerHandle::CreateObjectInfo() {
 
 void ServiceWorkerHandle::RegisterIntoDispatcherHost(
     ServiceWorkerDispatcherHost* dispatcher_host) {
-  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(ServiceWorkerUtils::IsServicificationEnabled() ||
+         IsNavigationMojoResponseEnabled());
   DCHECK(!dispatcher_host_);
   dispatcher_host_ = dispatcher_host;
   dispatcher_host_->RegisterServiceWorkerHandle(base::WrapUnique(this));
@@ -95,7 +97,8 @@ void ServiceWorkerHandle::OnConnectionError() {
   // S13nServiceWorker: This handle may have been precreated before registering
   // to a dispatcher host. Just self-destruct since we're no longer needed.
   if (!dispatcher_host_) {
-    DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+    DCHECK(ServiceWorkerUtils::IsServicificationEnabled() ||
+           IsNavigationMojoResponseEnabled());
     delete this;
     return;
   }

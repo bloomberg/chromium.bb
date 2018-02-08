@@ -572,7 +572,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   std::vector<base::Closure> queued_events_;
 
-  // S13nServiceWorker:
+  // S13nServiceWorker/NavigationMojoResponse:
   // A service worker handle for the controller service worker that is
   // pre-created before the renderer process (and therefore the dispatcher host)
   // is created.

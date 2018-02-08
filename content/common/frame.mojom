@@ -63,9 +63,10 @@ interface FrameNavigationControl {
   // also be provided by the browser as a a means for the renderer to load
   // subresources where applicable.
   //
-  // When S13nServiceWorker is enabled, |controller_service_worker_info| may
-  // also be provided by the browser if the frame that is being navigated
-  // is supposed to be controlled by a Service Worker.
+  // When S13nServiceWorker/NavigationMojoResponse is enabled,
+  // |controller_service_worker_info| may also be provided by the browser if the
+  // frame that is being navigated is supposed to be controlled by a Service
+  // Worker.
   //
   // For automation driver-initiated navigations over the devtools protocol,
   // |devtools_navigation_token_| is used to tag the navigation. This navigation
