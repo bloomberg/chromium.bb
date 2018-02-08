@@ -21,7 +21,7 @@ class PLATFORM_EXPORT WebViewScheduler {
     virtual ~WebViewSchedulerDelegate() = default;
 
     virtual void RequestBeginMainFrameNotExpected(bool new_state) = 0;
-    virtual void SetPageStopped(bool) = 0;
+    virtual void SetPageFrozen(bool) = 0;
   };
 
   virtual ~WebViewScheduler() = default;
@@ -29,7 +29,7 @@ class PLATFORM_EXPORT WebViewScheduler {
   // The scheduler may throttle tasks associated with background pages.
   virtual void SetPageVisible(bool) = 0;
   // The scheduler transitions app to and from STOPPED state in background.
-  virtual void SetPageStopped(bool) = 0;
+  virtual void SetPageFrozen(bool) = 0;
 
   // Creates a new WebFrameScheduler. The caller is responsible for deleting
   // it. All tasks executed by the frame scheduler will be attributed to

@@ -296,13 +296,13 @@ TEST_F(WebFrameSchedulerImplTest, ThrottlingObserver) {
                                stopped_count);
 
   // Setting background page to STOPPED, notifies observers of kStopped.
-  web_view_scheduler_->SetPageStopped(true);
+  web_view_scheduler_->SetPageFrozen(true);
   observer->CheckObserverState(throttled_count, not_throttled_count,
                                ++stopped_count);
 
   // When page is not in the STOPPED state, then page visibility is used,
   // notifying observer of kThrottled.
-  web_view_scheduler_->SetPageStopped(false);
+  web_view_scheduler_->SetPageFrozen(false);
   observer->CheckObserverState(++throttled_count, not_throttled_count,
                                stopped_count);
 

@@ -241,7 +241,7 @@ class CORE_EXPORT WebViewImpl final
 
   // WebViewScheduler::WebViewSchedulerDelegate implementation:
   void RequestBeginMainFrameNotExpected(bool new_state) override;
-  void SetPageStopped(bool stopped) override;
+  void SetPageFrozen(bool frozen) override;
 
   void DidUpdateFullscreenSize();
 

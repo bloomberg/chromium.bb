@@ -49,7 +49,7 @@ class FakeWebViewScheduler : public WebViewScheduler {
   }
 
   void SetPageVisible(bool is_page_visible) override {}
-  void SetPageStopped(bool is_page_stopped) override {}
+  void SetPageFrozen(bool is_page_frozen) override {}
 
   std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
       BlameContext* blame_context,

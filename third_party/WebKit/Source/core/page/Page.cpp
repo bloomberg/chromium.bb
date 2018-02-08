@@ -470,7 +470,7 @@ void Page::SetLifecycleState(PageLifecycleState state) {
     return;
 
   if (RuntimeEnabledFeatures::PageLifecycleEnabled()) {
-    if (state == PageLifecycleState::kStopped) {
+    if (state == PageLifecycleState::kFrozen) {
       for (Frame* frame = main_frame_.Get(); frame;
            frame = frame->Tree().TraverseNext()) {
         frame->DidFreeze();
@@ -479,7 +479,7 @@ void Page::SetLifecycleState(PageLifecycleState state) {
                state == PageLifecycleState::kHidden) {
       // TODO(fmeawad): Only resume the page that just became visible, blocked
       // on task queues per frame.
-      DCHECK(page_lifecycle_state_ == PageLifecycleState::kStopped);
+      DCHECK(page_lifecycle_state_ == PageLifecycleState::kFrozen);
       for (Frame* frame = main_frame_.Get(); frame;
            frame = frame->Tree().TraverseNext()) {
         frame->DidResume();
