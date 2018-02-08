@@ -114,7 +114,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
       InputEvent::InputType,
       const Position& reference_move_position = Position());
 
-  void ApplyStyle(CSSPropertyValueSet*, InputEvent::InputType);
   void ApplyParagraphStyle(CSSPropertyValueSet*, InputEvent::InputType);
   void ApplyParagraphStyleToSelection(CSSPropertyValueSet*,
                                       InputEvent::InputType);
