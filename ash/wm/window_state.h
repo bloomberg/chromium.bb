@@ -236,12 +236,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     minimum_visibility_ = minimum_visibility;
   }
 
-  // Specifies if the window can be dragged by the user via the caption or not.
-  bool can_be_dragged() const { return can_be_dragged_; }
-  void set_can_be_dragged(bool can_be_dragged) {
-    can_be_dragged_ = can_be_dragged;
-  }
-
   // Gets/Sets the bounds of the window before it was moved by the auto window
   // management. As long as it was not auto-managed, it will return NULL.
   base::Optional<gfx::Rect> pre_auto_manage_window_bounds() const {
@@ -415,7 +409,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool hide_shelf_when_fullscreen_;
   bool autohide_shelf_when_maximized_or_fullscreen_;
   bool minimum_visibility_;
-  bool can_be_dragged_;
   bool cached_always_on_top_;
   bool allow_set_bounds_direct_ = false;
 
