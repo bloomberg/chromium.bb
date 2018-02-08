@@ -71,8 +71,7 @@ void FakeCrosDisksClient::Mount(const std::string& source_path,
                                 const std::string& mount_label,
                                 MountAccessMode access_mode,
                                 RemountOption remount,
-                                const base::Closure& callback,
-                                const base::Closure& error_callback) {
+                                VoidDBusMethodCallback callback) {
   // This fake implementation assumes mounted path is device when source_format
   // is empty, or an archive otherwise.
   MountType type =
@@ -100,16 +99,19 @@ void FakeCrosDisksClient::Mount(const std::string& source_path,
       base::BindOnce(&PerformFakeMount, source_path, mounted_path),
       base::BindOnce(&FakeCrosDisksClient::DidMount,
                      weak_ptr_factory_.GetWeakPtr(), source_path, type,
-                     callback, mounted_path));
+                     mounted_path, std::move(callback)));
 }
 
 void FakeCrosDisksClient::DidMount(const std::string& source_path,
                                    MountType type,
-                                   base::OnceClosure callback,
                                    const base::FilePath& mounted_path,
+                                   VoidDBusMethodCallback callback,
                                    MountError mount_error) {
   // Tell the caller of Mount() that the mount request was accepted.
-  std::move(callback).Run();
+  // Note that even if PerformFakeMount fails, this calls with |true| to
+  // emulate the situation that 1) Mount operation is _successfully_ started,
+  // 2) then failed for some reason.
+  std::move(callback).Run(true);
 
   // Notify observers that the mount is completed.
   NotifyMountCompleted(mount_error, source_path, type,
@@ -118,29 +120,27 @@ void FakeCrosDisksClient::DidMount(const std::string& source_path,
 
 void FakeCrosDisksClient::Unmount(const std::string& device_path,
                                   UnmountOptions options,
-                                  const base::Closure& callback,
-                                  const base::Closure& error_callback) {
+                                  VoidDBusMethodCallback callback) {
   DCHECK(!callback.is_null());
-  DCHECK(!error_callback.is_null());
-
-  // Remove the dummy mounted directory if it exists.
-  if (mounted_paths_.count(base::FilePath::FromUTF8Unsafe(device_path)) > 0) {
-    mounted_paths_.erase(base::FilePath::FromUTF8Unsafe(device_path));
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE,
-        {base::MayBlock(), base::TaskPriority::BACKGROUND,
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::Bind(base::IgnoreResult(&base::DeleteFile),
-                   base::FilePath::FromUTF8Unsafe(device_path),
-                   true /* recursive */),
-        callback);
-  }
 
   unmount_call_count_++;
   last_unmount_device_path_ = device_path;
   last_unmount_options_ = options;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, unmount_success_ ? callback : error_callback);
+
+  // Remove the dummy mounted directory if it exists.
+  if (mounted_paths_.erase(base::FilePath::FromUTF8Unsafe(device_path))) {
+    base::PostTaskWithTraitsAndReply(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskPriority::BACKGROUND,
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                       base::FilePath::FromUTF8Unsafe(device_path),
+                       true /* recursive */),
+        base::BindOnce(std::move(callback), unmount_success_));
+  } else {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), unmount_success_));
+  }
   if (!unmount_listener_.is_null())
     unmount_listener_.Run();
 }
@@ -160,36 +160,26 @@ void FakeCrosDisksClient::EnumerateMountEntries(
 
 void FakeCrosDisksClient::Format(const std::string& device_path,
                                  const std::string& filesystem,
-                                 const base::Closure& callback,
-                                 const base::Closure& error_callback) {
+                                 VoidDBusMethodCallback callback) {
   DCHECK(!callback.is_null());
-  DCHECK(!error_callback.is_null());
 
   format_call_count_++;
   last_format_device_path_ = device_path;
   last_format_filesystem_ = filesystem;
-  if (format_success_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
-  } else {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, error_callback);
-  }
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), format_success_));
 }
 
 void FakeCrosDisksClient::Rename(const std::string& device_path,
                                  const std::string& volume_name,
-                                 const base::Closure& callback,
-                                 const base::Closure& error_callback) {
+                                 VoidDBusMethodCallback callback) {
   DCHECK(!callback.is_null());
-  DCHECK(!error_callback.is_null());
 
   rename_call_count_++;
   last_rename_device_path_ = device_path;
   last_rename_volume_name_ = volume_name;
-  if (rename_success_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
-  } else {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, error_callback);
-  }
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), rename_success_));
 }
 
 void FakeCrosDisksClient::GetDeviceProperties(
