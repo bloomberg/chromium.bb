@@ -15,6 +15,7 @@
 #include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/shared_url_loader_factory.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
@@ -109,13 +110,16 @@ ServiceWorkerProviderContext::ServiceWorkerProviderContext(
   state_for_client_ = std::make_unique<ProviderStateForClient>(
       std::move(default_loader_factory));
 
-  if (!CanCreateSubresourceLoaderFactory())
+  if (!CanCreateSubresourceLoaderFactory() &&
+      !IsNavigationMojoResponseEnabled()) {
     return;
+  }
 
-  // S13nServiceWorker:
+  // S13nServiceWorker/NavigationMojoResponse:
   // Set up the URL loader factory for sending subresource requests to
   // the controller.
-  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+  DCHECK(ServiceWorkerUtils::IsServicificationEnabled() ||
+         IsNavigationMojoResponseEnabled());
   if (controller_info) {
     SetController(std::move(controller_info),
                   std::vector<blink::mojom::WebFeature>(),

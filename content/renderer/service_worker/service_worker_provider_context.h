@@ -65,9 +65,11 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // the content::ServiceWorkerProviderHost that notifies of changes to the
   // registration's and workers' status. |request| is bound with |binding_|.
   //
+  // For S13nServiceWorker/NavigationMojoResponse:
+  // |controller_info| contains the endpoint (which is non-null only when
+  // S13nServiceWorker is enabled) and object info that is needed to set up the
+  // controller service worker for the client.
   // For S13nServiceWorker:
-  // |controller_info| contains the endpoint and object info that is needed to
-  // set up the controller service worker for the client.
   // |default_loader_factory| is a default loader factory for network requests,
   // and is used when we create a subresource loader for controllees. This is
   // non-null only if the provider is created for controllees, and if the

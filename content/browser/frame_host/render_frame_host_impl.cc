@@ -3473,7 +3473,6 @@ void RenderFrameHostImpl::CommitNavigation(
       FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type);
 
   std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories;
-  mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
       (!is_same_document || is_first_navigation)) {
     subresource_loader_factories =
@@ -3552,12 +3551,13 @@ void RenderFrameHostImpl::CommitNavigation(
       subresource_loader_factories->factories_info().emplace(
           factory.first, std::move(factory_proxy_info));
     }
+  }
 
-    // Pass the controller service worker info if we have one.
-    if (subresource_loader_params) {
-      controller_service_worker_info =
-          std::move(subresource_loader_params->controller_service_worker_info);
-    }
+  // Pass the controller service worker info if we have one.
+  mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info;
+  if (subresource_loader_params) {
+    controller_service_worker_info =
+        std::move(subresource_loader_params->controller_service_worker_info);
   }
 
   // It is imperative that cross-document navigations always provide a set of
