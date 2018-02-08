@@ -432,7 +432,7 @@ public class CustomTabActivity extends ChromeActivity {
                     (params == null ? null : params.getFinalizeCallback()));
         }
 
-        LayoutManager layoutDriver = new CustomTabLayoutManager(getCompositorViewHolder());
+        LayoutManager layoutDriver = new LayoutManager(getCompositorViewHolder());
         initializeCompositorContent(layoutDriver, findViewById(R.id.url_bar),
                 (ViewGroup) findViewById(android.R.id.content),
                 (ToolbarControlContainer) findViewById(R.id.control_container));
