@@ -31,6 +31,7 @@
 #include "core/html_names.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutIFrame.h"
+#include "core/page/Page.h"
 #include "core/policy/IFramePolicy.h"
 #include "platform/runtime_enabled_features.h"
 
@@ -207,6 +208,24 @@ void HTMLIFrameElement::ParseAttribute(
       }
     }
   } else {
+    // Websites picked up a Chromium article that used this non-specified
+    // attribute which ended up changing shape after the specification process.
+    // This error message and use count will help developers to move to the
+    // proper solution.
+    // To avoid polluting the console, this is being recorded only once per
+    // page.
+    if (name == "gesture" && value == "media" && GetDocument().GetPage() &&
+        !GetDocument().GetPage()->GetUseCounter().HasRecordedMeasurement(
+            WebFeature::kHTMLIFrameElementGestureMedia)) {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kHTMLIFrameElementGestureMedia);
+      GetDocument().AddConsoleMessage(
+          ConsoleMessage::Create(kOtherMessageSource, kWarningMessageLevel,
+                                 "<iframe gesture=\"media\"> is not supported. "
+                                 "Use <iframe allow=\"autoplay\">, "
+                                 "https://goo.gl/ximf56"));
+    }
+
     if (name == srcAttr)
       LogUpdateAttributeIfIsolatedWorldAndInDocument("iframe", params);
     HTMLFrameElementBase::ParseAttribute(params);
