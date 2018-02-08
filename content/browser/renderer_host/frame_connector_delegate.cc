@@ -103,7 +103,7 @@ void FrameConnectorDelegate::SetLocalFrameSize(
     const gfx::Size& local_frame_size) {
   if (use_zoom_for_device_scale_factor_) {
     local_frame_size_in_pixels_ = local_frame_size;
-    local_frame_size_in_dip_ = gfx::ScaleToCeiledSize(
+    local_frame_size_in_dip_ = gfx::ScaleToRoundedSize(
         local_frame_size, 1.f / screen_info_.device_scale_factor);
   } else {
     local_frame_size_in_dip_ = local_frame_size;
@@ -116,8 +116,11 @@ void FrameConnectorDelegate::SetScreenSpaceRect(
     const gfx::Rect& screen_space_rect) {
   if (use_zoom_for_device_scale_factor_) {
     screen_space_rect_in_pixels_ = screen_space_rect;
-    screen_space_rect_in_dip_ = gfx::ScaleToEnclosingRect(
-        screen_space_rect, 1.f / screen_info_.device_scale_factor);
+    screen_space_rect_in_dip_ = gfx::Rect(
+        gfx::ScaleToFlooredPoint(screen_space_rect.origin(),
+                                 1.f / screen_info_.device_scale_factor),
+        gfx::ScaleToCeiledSize(screen_space_rect.size(),
+                               1.f / screen_info_.device_scale_factor));
   } else {
     screen_space_rect_in_dip_ = screen_space_rect;
     screen_space_rect_in_pixels_ = gfx::ScaleToEnclosingRect(
