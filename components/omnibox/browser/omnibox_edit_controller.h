@@ -6,7 +6,6 @@
 #define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_EDIT_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -30,11 +29,6 @@ class OmniboxEditController {
 
   virtual ToolbarModel* GetToolbarModel() = 0;
   virtual const ToolbarModel* GetToolbarModel() const = 0;
-
-  // Returns the text to display in the steady state, when the omnibox does not
-  // have focus. This may be a simplified version of the URL with destructive
-  // elisions applied - and is not suitable for editing.
-  base::string16 GetURLForDisplay();
 
  protected:
   OmniboxEditController();

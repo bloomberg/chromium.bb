@@ -195,8 +195,7 @@ void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
   UpdateSecurityLevel();
   const OmniboxState* state = static_cast<OmniboxState*>(
       web_contents->GetUserData(&OmniboxState::kKey));
-  model()->RestoreState(controller()->GetURLForDisplay(),
-                        state ? &state->model_state : nullptr);
+  model()->RestoreState(state ? &state->model_state : nullptr);
   if (state) {
     // This assumes that the omnibox has already been focused or blurred as
     // appropriate; otherwise, a subsequent OnFocus() or OnBlur() call could
@@ -218,7 +217,7 @@ void OmniboxViewViews::Update() {
   const security_state::SecurityLevel old_security_level = security_level_;
   UpdateSecurityLevel();
 
-  if (model()->SetPermanentText(controller()->GetURLForDisplay())) {
+  if (model()->ResetDisplayUrls()) {
     RevertAll();
 
     // Only select all when we have focus.  If we don't have focus, selecting
@@ -828,7 +827,9 @@ bool OmniboxViewViews::HandleAccessibleAction(
 
 void OmniboxViewViews::OnFocus() {
   views::Textfield::OnFocus();
-  model()->SetPermanentText(controller()->GetURLForDisplay());
+  // TODO(tommycli): This does not seem like it should be necessary.
+  // Investigate why it's needed and see if we can remove it.
+  model()->ResetDisplayUrls();
   // TODO(oshima): Get control key state.
   model()->OnSetFocus(false);
   // Don't call controller()->OnSetFocus, this view has already acquired focus.
@@ -873,11 +874,16 @@ void OmniboxViewViews::OnBlur() {
   // midst of running but hasn't yet opened the popup, it will be halted.
   // If we fully reverted in this case, we'd lose the cursor/highlight
   // information saved above. Note: popup_model() can be null in tests.
+  //
+  // TODO(tommycli): This seems like it should apply to the Cocoa version of
+  // the Omnibox as well. Investigate moving this into the OmniboxEditModel.
   if (!model()->user_input_in_progress() && model()->popup_model() &&
-      model()->popup_model()->IsOpen() && text() != model()->PermanentText())
+      model()->popup_model()->IsOpen() &&
+      text() != model()->GetCurrentPermanentUrlText()) {
     RevertAll();
-  else
+  } else {
     CloseOmniboxPopup();
+  }
 
   OnShiftKeyChanged(false);
 

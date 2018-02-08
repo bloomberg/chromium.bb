@@ -331,6 +331,7 @@ source_set("unit_tests") {
     "//components/search_engines",
     "//components/sessions",
     "//components/strings",
+    "//components/toolbar:test_support",
     "//components/url_formatter",
     "//components/variations",
     "//net:test_support",
