@@ -188,6 +188,20 @@ chromium_strings.grd. -->
           Chrome - <ph name="PAGE_TITLE">$1<ex>Google</ex></ph>
         </message>
       </if>
+      <!-- Accessible window title format - includes the channel, and the same
+           on all browser platforms rather than different on Chrome OS. -->
+      <message name="IDS_ACCESSIBLE_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for the accessible name of a tabbed browser window">
+        <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Google Chrome
+      </message>
+      <message name="IDS_ACCESSIBLE_BETA_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for the accessible name of a tabbed browser window for the beta channel version of the browser">
+        <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Google Chrome Beta
+      </message>
+      <message name="IDS_ACCESSIBLE_DEV_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for the accessible name of a tabbed browser window for the developer (dev) channel version of the browser">
+        <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Google Chrome Dev
+      </message>
+      <message name="IDS_ACCESSIBLE_CANARY_BROWSER_WINDOW_TITLE_FORMAT" desc="The format for the accessible name of a tabbed browser window for the canary (nightly build) channel version of the browser">
+        <ph name="PAGE_TITLE">$1<ex>Google</ex></ph> - Google Chrome Canary
+      </message>
       <if expr="not chromeos">
         <message name="IDS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
           Get help with using Chrome

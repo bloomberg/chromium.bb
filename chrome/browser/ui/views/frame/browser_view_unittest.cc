@@ -17,7 +17,11 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/test/base/testing_profile_manager.h"
+#include "components/version_info/channel.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/webview/webview.h"
 
 namespace {
@@ -37,6 +41,14 @@ gfx::Point ExpectedTabStripOrigin(BrowserView* browser_view) {
                                     browser_view,
                                     &tabstrip_origin);
   return tabstrip_origin;
+}
+
+// Helper function to take a printf-style format string and substitute the
+// browser name (like "Chromium" or "Google Chrome") for %s, and return the
+// result as a base::string16.
+base::string16 SubBrowserName(const char* fmt) {
+  return base::UTF8ToUTF16(base::StringPrintf(
+      fmt, l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str()));
 }
 
 }  // namespace
@@ -203,6 +215,52 @@ TEST_F(BrowserViewTest, BookmarkBarInvisibleOnShutdown) {
   EXPECT_FALSE(bookmark_bar->visible());
 
   BookmarkBarView::DisableAnimationsForTesting(false);
+}
+
+TEST_F(BrowserViewTest, AccessibleWindowTitle) {
+  EXPECT_EQ(SubBrowserName("Untitled - %s"),
+            browser_view()->GetAccessibleWindowTitleForChannelAndProfile(
+                version_info::Channel::STABLE, browser()->profile()));
+  EXPECT_EQ(SubBrowserName("Untitled - %s Beta"),
+            browser_view()->GetAccessibleWindowTitleForChannelAndProfile(
+                version_info::Channel::BETA, browser()->profile()));
+  EXPECT_EQ(SubBrowserName("Untitled - %s Dev"),
+            browser_view()->GetAccessibleWindowTitleForChannelAndProfile(
+                version_info::Channel::DEV, browser()->profile()));
+  EXPECT_EQ(SubBrowserName("Untitled - %s Canary"),
+            browser_view()->GetAccessibleWindowTitleForChannelAndProfile(
+                version_info::Channel::CANARY, browser()->profile()));
+
+  AddTab(browser(), GURL("about:blank"));
+  EXPECT_EQ(SubBrowserName("about:blank - %s"),
+            browser_view()->GetAccessibleWindowTitleForChannelAndProfile(
+                version_info::Channel::STABLE, browser()->profile()));
+
+  Tab* tab = browser_view()->tabstrip()->tab_at(0);
+  TabRendererData start_media;
+  start_media.alert_state = TabAlertState::AUDIO_PLAYING;
+  tab->SetData(std::move(start_media));
+  EXPECT_EQ(SubBrowserName("about:blank - Audio playing - %s"),
+            browser_view()->GetAccessibleWindowTitleForChannelAndProfile(
+                version_info::Channel::STABLE, browser()->profile()));
+
+  TabRendererData network_error;
+  network_error.network_state = TabNetworkState::kError;
+  tab->SetData(std::move(network_error));
+  EXPECT_EQ(SubBrowserName("about:blank - Network error - %s Beta"),
+            browser_view()->GetAccessibleWindowTitleForChannelAndProfile(
+                version_info::Channel::BETA, browser()->profile()));
+
+  TestingProfile* profile = profile_manager()->CreateTestingProfile("Sadia");
+  EXPECT_EQ(SubBrowserName("Sadia: about:blank - Network error - %s Dev"),
+            browser_view()->GetAccessibleWindowTitleForChannelAndProfile(
+                version_info::Channel::DEV, profile));
+
+  EXPECT_EQ(
+      SubBrowserName("about:blank - Network error - %s Canary (Incognito)"),
+      browser_view()->GetAccessibleWindowTitleForChannelAndProfile(
+          version_info::Channel::CANARY,
+          TestingProfile::Builder().BuildIncognito(profile)));
 }
 
 class BrowserViewHostedAppTest : public TestWithBrowserView {

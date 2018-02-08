@@ -73,6 +73,10 @@ class Command;
 class Extension;
 }
 
+namespace version_info {
+enum class Channel;
+}
+
 namespace views {
 class AccessiblePaneView;
 class ExternalFocusTracker;
@@ -497,6 +501,7 @@ class BrowserView : public BrowserWindow,
   // interface to keep these two classes decoupled and testable.
   friend class BrowserViewLayoutDelegateImpl;
   FRIEND_TEST_ALL_PREFIXES(BrowserViewTest, BrowserView);
+  FRIEND_TEST_ALL_PREFIXES(BrowserViewTest, AccessibleWindowTitle);
 
   // If the browser is in immersive full screen mode, it will reveal the
   // tabstrip for a short duration. This is useful for shortcuts that perform
@@ -606,6 +611,11 @@ class BrowserView : public BrowserWindow,
   // set to the chrome command id defined in //chrome/app/chrome_command_ids.h.
   bool FindCommandIdForAccelerator(const ui::Accelerator& accelerator,
                                    int* command_id) const;
+
+  // Called by GetAccessibleWindowTitle, split out to make it testable.
+  base::string16 GetAccessibleWindowTitleForChannelAndProfile(
+      version_info::Channel,
+      Profile* profile) const;
 
   // The BrowserFrame that hosts this view.
   BrowserFrame* frame_ = nullptr;
