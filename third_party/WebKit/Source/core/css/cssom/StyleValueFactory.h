@@ -21,6 +21,7 @@ class CORE_EXPORT StyleValueFactory {
   static CSSStyleValueVector FromString(CSSPropertyID,
                                         const String&,
                                         const CSSParserContext*);
+  static CSSStyleValue* CssValueToStyleValue(CSSPropertyID, const CSSValue&);
   static CSSStyleValueVector CssValueToStyleValueVector(CSSPropertyID,
                                                         const CSSValue&);
   // If you don't have complex CSS properties, use this one.

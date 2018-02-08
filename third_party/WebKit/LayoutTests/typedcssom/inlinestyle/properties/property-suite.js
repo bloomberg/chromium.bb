@@ -12,6 +12,8 @@
  *       the same as something else in Typed OM.
  *   supportsMultiple: boolean; whether the property supports a list of
  *       properties,
+ *   separator: string; for list-valued properties, what string is used to
+ *       separate each item in the list. Defaults to ', '.
  *   invalidObjects: array of CSSStyleValue instances that are invalid for the
  *       property
  * }
@@ -66,10 +68,11 @@ function runInlineStylePropertyMapTests(config) {
   runDeletionTests(config.property, validObject, element);
   runGetPropertiesTests(config.property, validObject, element);
   if (config.supportsMultiple) {
+    const separator = config.separator || ', ';
     runSequenceSetterTests(
-        config.property, validObject, invalidObjects[0], element);
+        config.property, validObject, invalidObjects[0], element, separator);
     runAppendTests(
-        config.property, validObject, invalidObjects[0], element);
+        config.property, validObject, invalidObjects[0], element, separator);
   } else {
     runMultipleValuesNotSupportedTests(
         config.property, validObject, element);
@@ -150,17 +153,17 @@ function runGetterTests(
 }
 
 function runSequenceSetterTests(
-    propertyName, validObject, invalidObject, element) {
+    propertyName, validObject, invalidObject, element, separator) {
   test(function() {
     element.style = '';
     element.attributeStyleMap.set(propertyName, validObject, validObject);
     assert_equals(
-        element.style[propertyName], validObject.toString() + ', ' +
+        element.style[propertyName], validObject.toString() + separator +
         validObject.toString());
     // Force a style recalc to check for crashes in style recalculation.
     getComputedStyle(element)[propertyName];
     assert_equals(
-        element.style[propertyName], validObject.toString() + ', ' +
+        element.style[propertyName], validObject.toString() + separator +
         validObject.toString());
   }, 'Set ' + propertyName + ' to a sequence');
 
@@ -172,7 +175,7 @@ function runSequenceSetterTests(
 }
 
 function runAppendTests(
-    propertyName, validObject, invalidObject, element) {
+    propertyName, validObject, invalidObject, element, separator) {
   test(function() {
     element.style = '';
 
@@ -181,12 +184,12 @@ function runAppendTests(
 
     element.attributeStyleMap.append(propertyName, validObject);
     assert_equals(
-        element.style[propertyName], validObject.toString() + ', ' +
+        element.style[propertyName], validObject.toString() + separator +
         validObject.toString());
     // Force a style recalc to check for crashes in style recalculation.
     getComputedStyle(element)[propertyName];
     assert_equals(
-        element.style[propertyName], validObject.toString() + ', ' +
+        element.style[propertyName], validObject.toString() + separator +
         validObject.toString());
   }, 'Appending a ' + validObject.constructor.name + ' to ' + propertyName);
 
@@ -195,12 +198,12 @@ function runAppendTests(
 
     element.attributeStyleMap.append(propertyName, validObject, validObject);
     assert_equals(
-        element.style[propertyName], validObject.toString() + ', ' +
+        element.style[propertyName], validObject.toString() + separator +
         validObject.toString());
     // Force a style recalc to check for crashes in style recalculation.
     getComputedStyle(element)[propertyName];
     assert_equals(
-        element.style[propertyName], validObject.toString() + ', ' +
+        element.style[propertyName], validObject.toString() + separator +
         validObject.toString());
   }, 'Append a sequence to ' + propertyName);
 
