@@ -425,6 +425,32 @@ TEST_F(SiteInstanceTest, IsSameWebSite) {
   DrainMessageLoop();
 }
 
+// Test that two file URLs are considered same-site if they have the same path,
+// even if they have different fragments.
+TEST_F(SiteInstanceTest, IsSameWebSiteForFileURLs) {
+  // Two identical file URLs should be same-site.
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(nullptr, GURL("file:///foo/bar.html"),
+                                          GURL("file:///foo/bar.html")));
+
+  // File URLs with the same path but different fragment are considered
+  // same-site.
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(nullptr, GURL("file:///foo/bar.html"),
+                                          GURL("file:///foo/bar.html#baz")));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(
+      nullptr, GURL("file:///foo/bar.html#baz"), GURL("file:///foo/bar.html")));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(nullptr,
+                                          GURL("file:///foo/bar.html#baz"),
+                                          GURL("file:///foo/bar.html#qux")));
+  EXPECT_TRUE(SiteInstance::IsSameWebSite(nullptr, GURL("file:///#abc"),
+                                          GURL("file:///#def")));
+
+  // Other cases are cross-site.
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(nullptr, GURL("file:///foo.html"),
+                                           GURL("file:///foo/bar.html")));
+  EXPECT_FALSE(SiteInstance::IsSameWebSite(nullptr, GURL("file:///#bar"),
+                                           GURL("file:///foo/#bar")));
+}
+
 // Test to ensure that there is only one SiteInstance per site in a given
 // BrowsingInstance, when process-per-site is not in use.
 TEST_F(SiteInstanceTest, OneSiteInstancePerSite) {
