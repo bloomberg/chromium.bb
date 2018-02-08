@@ -467,6 +467,7 @@
     'content_junit_tests': {},
     'device_junit_tests': {},
     'junit_unit_tests': {},
+    'media_base_junit_tests': {},
     'net_junit_tests': {},
     'service_junit_tests': {},
     'ui_junit_tests': {},

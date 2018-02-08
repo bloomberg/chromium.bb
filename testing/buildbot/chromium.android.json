@@ -2201,6 +2201,9 @@
         "test": "junit_unit_tests"
       },
       {
+        "test": "media_base_junit_tests"
+      },
+      {
         "test": "net_junit_tests"
       },
       {
@@ -3881,6 +3884,9 @@
       },
       {
         "test": "junit_unit_tests"
+      },
+      {
+        "test": "media_base_junit_tests"
       },
       {
         "test": "net_junit_tests"
