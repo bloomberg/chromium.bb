@@ -790,7 +790,7 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollbarWidthChange) {
       container->FirstFragment().PaintProperties()->OverflowClip();
   EXPECT_EQ(FloatSize(80, 80), overflow_clip->ClipRect().Rect().Size());
 
-  auto* new_style = GetDocument().createElement("style");
+  auto* new_style = GetDocument().CreateRawElement(HTMLNames::styleTag);
   new_style->setTextContent("::-webkit-scrollbar {width: 40px; height: 40px}");
   GetDocument().body()->AppendChild(new_style);
 

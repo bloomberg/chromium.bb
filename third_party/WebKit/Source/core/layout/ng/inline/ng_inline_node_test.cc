@@ -420,7 +420,7 @@ TEST_F(NGInlineNodeTest, InvalidateAddSpan) {
   unsigned item_count_before = Items().size();
 
   Element* parent = ToElement(layout_block_flow_->GetNode());
-  Element* span = GetDocument().createElement("span");
+  Element* span = GetDocument().CreateRawElement(HTMLNames::spanTag);
   parent->appendChild(span);
 
   // NeedsCollectInlines() is marked during the layout.
@@ -446,7 +446,7 @@ TEST_F(NGInlineNodeTest, InvalidateAddInnerSpan) {
 
   Element* parent = GetElementById("x");
   ASSERT_TRUE(parent);
-  Element* span = GetDocument().createElement("span");
+  Element* span = GetDocument().CreateRawElement(HTMLNames::spanTag);
   parent->appendChild(span);
 
   // NeedsCollectInlines() is marked during the layout.
@@ -491,7 +491,7 @@ TEST_F(NGInlineNodeTest, InvalidateAddAbsolute) {
   unsigned item_count_before = Items().size();
 
   Element* parent = ToElement(layout_block_flow_->GetNode());
-  Element* span = GetDocument().createElement("span");
+  Element* span = GetDocument().CreateRawElement(HTMLNames::spanTag);
   parent->appendChild(span);
 
   // NeedsCollectInlines() is marked during the layout.
@@ -556,7 +556,7 @@ TEST_F(NGInlineNodeTest, InvalidateAddFloat) {
   unsigned item_count_before = Items().size();
 
   Element* parent = ToElement(layout_block_flow_->GetNode());
-  Element* span = GetDocument().createElement("span");
+  Element* span = GetDocument().CreateRawElement(HTMLNames::spanTag);
   parent->appendChild(span);
 
   // NeedsCollectInlines() is marked during the layout.

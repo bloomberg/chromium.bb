@@ -69,7 +69,7 @@ TEST_F(VisiblePositionTest, NonNullInvalidatedAfterDOMChange) {
   VisiblePosition null_visible_position;
   VisiblePosition non_null_visible_position = CreateVisiblePosition(position);
 
-  Element* div = GetDocument().createElement("div");
+  Element* div = GetDocument().CreateRawElement(HTMLNames::divTag);
   GetDocument().body()->AppendChild(div);
 
   EXPECT_TRUE(null_visible_position.IsValid());

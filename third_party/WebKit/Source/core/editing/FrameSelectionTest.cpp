@@ -292,7 +292,7 @@ TEST_F(FrameSelectionTest, SelectAllWithInputElement) {
 }
 
 TEST_F(FrameSelectionTest, SelectAllWithUnselectableRoot) {
-  Element* select = GetDocument().createElement("select");
+  Element* select = GetDocument().CreateRawElement(HTMLNames::selectTag);
   GetDocument().ReplaceChild(select, GetDocument().documentElement());
   GetDocument().UpdateStyleAndLayout();
   Selection().SelectAll();

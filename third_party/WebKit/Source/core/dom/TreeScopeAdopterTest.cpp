@@ -15,14 +15,14 @@ TEST(TreeScopeAdopterTest, SimpleMove) {
   Document* doc1 = Document::CreateForTest();
   Document* doc2 = Document::CreateForTest();
 
-  Element* html1 = doc1->createElement("html");
+  Element* html1 = doc1->CreateRawElement(HTMLNames::htmlTag);
   doc1->AppendChild(html1);
-  Element* div1 = doc1->createElement("div");
+  Element* div1 = doc1->CreateRawElement(HTMLNames::divTag);
   html1->AppendChild(div1);
 
-  Element* html2 = doc2->createElement("html");
+  Element* html2 = doc2->CreateRawElement(HTMLNames::htmlTag);
   doc2->AppendChild(html2);
-  Element* div2 = doc1->createElement("div");
+  Element* div2 = doc1->CreateRawElement(HTMLNames::divTag);
   html2->AppendChild(div2);
 
   EXPECT_EQ(div1->ownerDocument(), doc1);
@@ -43,9 +43,9 @@ TEST(TreeScopeAdopterTest, AdoptV1ShadowRootToV0Document) {
   Document* doc1 = Document::CreateForTest();
   Document* doc2 = Document::CreateForTest();
 
-  Element* html1 = doc1->createElement("html");
+  Element* html1 = doc1->CreateRawElement(HTMLNames::htmlTag);
   doc1->AppendChild(html1);
-  Element* div1 = doc1->createElement("div");
+  Element* div1 = doc1->CreateRawElement(HTMLNames::divTag);
   html1->AppendChild(div1);
   EXPECT_EQ(doc1->GetShadowCascadeOrder(),
             ShadowCascadeOrder::kShadowCascadeNone);
@@ -54,9 +54,9 @@ TEST(TreeScopeAdopterTest, AdoptV1ShadowRootToV0Document) {
             ShadowCascadeOrder::kShadowCascadeV0);
   EXPECT_TRUE(doc1->MayContainV0Shadow());
 
-  Element* html2 = doc2->createElement("html");
+  Element* html2 = doc2->CreateRawElement(HTMLNames::htmlTag);
   doc2->AppendChild(html2);
-  Element* div2 = doc1->createElement("div");
+  Element* div2 = doc1->CreateRawElement(HTMLNames::divTag);
   html2->AppendChild(div2);
   div2->AttachShadowRootInternal(ShadowRootType::kOpen);
 
@@ -79,9 +79,9 @@ TEST(TreeScopeAdopterTest, AdoptV0ShadowRootToV1Document) {
   Document* doc1 = Document::CreateForTest();
   Document* doc2 = Document::CreateForTest();
 
-  Element* html1 = doc1->createElement("html");
+  Element* html1 = doc1->CreateRawElement(HTMLNames::htmlTag);
   doc1->AppendChild(html1);
-  Element* div1 = doc1->createElement("div");
+  Element* div1 = doc1->CreateRawElement(HTMLNames::divTag);
   html1->AppendChild(div1);
   EXPECT_EQ(doc1->GetShadowCascadeOrder(),
             ShadowCascadeOrder::kShadowCascadeNone);
@@ -90,9 +90,9 @@ TEST(TreeScopeAdopterTest, AdoptV0ShadowRootToV1Document) {
             ShadowCascadeOrder::kShadowCascadeV1);
   EXPECT_FALSE(doc1->MayContainV0Shadow());
 
-  Element* html2 = doc2->createElement("html");
+  Element* html2 = doc2->CreateRawElement(HTMLNames::htmlTag);
   doc2->AppendChild(html2);
-  Element* div2 = doc1->createElement("div");
+  Element* div2 = doc1->CreateRawElement(HTMLNames::divTag);
   html2->AppendChild(div2);
   div2->CreateShadowRootInternal();
 

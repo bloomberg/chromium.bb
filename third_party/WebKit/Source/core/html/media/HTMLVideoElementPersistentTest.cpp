@@ -282,7 +282,7 @@ TEST_F(HTMLVideoElementPersistentTest, removeVideoWithLayerWhilePersisting) {
   EXPECT_EQ(FullscreenElement(), nullptr);
 
   // Inserting a <span> between the <div> and <video>.
-  Persistent<Element> span = GetDocument().createElement("span");
+  Persistent<Element> span = GetDocument().CreateRawElement(HTMLNames::spanTag);
   DivElement()->AppendChild(span);
   span->AppendChild(VideoElement());
 

@@ -112,8 +112,8 @@ TEST_F(MediaCustomControlsFullscreenDetectorTest, computeIsDominantVideo) {
 
 TEST_F(MediaCustomControlsFullscreenDetectorTest,
        hasNoListenersBeforeAddingToDocument) {
-  HTMLVideoElement* video =
-      ToHTMLVideoElement(GetDocument().createElement("video"));
+  auto* video =
+      ToHTMLVideoElement(GetDocument().CreateRawElement(HTMLNames::videoTag));
 
   EXPECT_FALSE(CheckEventListenerRegistered(GetDocument(),
                                             EventTypeNames::fullscreenchange,
@@ -127,8 +127,8 @@ TEST_F(MediaCustomControlsFullscreenDetectorTest,
 
 TEST_F(MediaCustomControlsFullscreenDetectorTest,
        hasListenersAfterAddToDocumentByScript) {
-  HTMLVideoElement* video =
-      ToHTMLVideoElement(GetDocument().createElement("video"));
+  auto* video =
+      ToHTMLVideoElement(GetDocument().CreateRawElement(HTMLNames::videoTag));
   GetDocument().body()->AppendChild(video);
 
   EXPECT_TRUE(CheckEventListenerRegistered(
@@ -155,8 +155,8 @@ TEST_F(MediaCustomControlsFullscreenDetectorTest,
 
 TEST_F(MediaCustomControlsFullscreenDetectorTest,
        hasListenersAfterDocumentMove) {
-  HTMLVideoElement* video =
-      ToHTMLVideoElement(GetDocument().createElement("video"));
+  auto* video =
+      ToHTMLVideoElement(GetDocument().CreateRawElement(HTMLNames::videoTag));
   GetDocument().body()->AppendChild(video);
 
   NewDocument().body()->AppendChild(VideoElement());

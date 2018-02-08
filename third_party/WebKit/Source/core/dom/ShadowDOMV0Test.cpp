@@ -35,8 +35,8 @@ class ShadowDOMVTest : public SimTest {};
 
 TEST_F(ShadowDOMVTest, FeatureSetId) {
   LoadURL("about:blank");
-  auto* host = GetDocument().createElement("div");
-  auto* content = GetDocument().createElement("content");
+  auto* host = GetDocument().CreateRawElement(HTMLNames::divTag);
+  auto* content = GetDocument().CreateRawElement(HTMLNames::contentTag);
   content->setAttribute("select", "#foo");
   host->CreateShadowRootInternal().AppendChild(content);
   EXPECT_TRUE(HasSelectorForIdInShadow(host, "foo"));
@@ -52,8 +52,8 @@ TEST_F(ShadowDOMVTest, FeatureSetId) {
 
 TEST_F(ShadowDOMVTest, FeatureSetClassName) {
   LoadURL("about:blank");
-  auto* host = GetDocument().createElement("div");
-  auto* content = GetDocument().createElement("content");
+  auto* host = GetDocument().CreateRawElement(HTMLNames::divTag);
+  auto* content = GetDocument().CreateRawElement(HTMLNames::contentTag);
   content->setAttribute("select", ".foo");
   host->CreateShadowRootInternal().AppendChild(content);
   EXPECT_TRUE(HasSelectorForClassInShadow(host, "foo"));
@@ -69,8 +69,8 @@ TEST_F(ShadowDOMVTest, FeatureSetClassName) {
 
 TEST_F(ShadowDOMVTest, FeatureSetAttributeName) {
   LoadURL("about:blank");
-  auto* host = GetDocument().createElement("div");
-  auto* content = GetDocument().createElement("content");
+  auto* host = GetDocument().CreateRawElement(HTMLNames::divTag);
+  auto* content = GetDocument().CreateRawElement(HTMLNames::contentTag);
   content->setAttribute("select", "div[foo]");
   host->CreateShadowRootInternal().AppendChild(content);
   EXPECT_TRUE(HasSelectorForAttributeInShadow(host, "foo"));
@@ -86,8 +86,8 @@ TEST_F(ShadowDOMVTest, FeatureSetAttributeName) {
 
 TEST_F(ShadowDOMVTest, FeatureSetMultipleSelectors) {
   LoadURL("about:blank");
-  auto* host = GetDocument().createElement("div");
-  auto* content = GetDocument().createElement("content");
+  auto* host = GetDocument().CreateRawElement(HTMLNames::divTag);
+  auto* content = GetDocument().CreateRawElement(HTMLNames::contentTag);
   content->setAttribute("select", "#foo,.bar,div[baz]");
   host->CreateShadowRootInternal().AppendChild(content);
   EXPECT_TRUE(HasSelectorForIdInShadow(host, "foo"));
@@ -103,7 +103,7 @@ TEST_F(ShadowDOMVTest, FeatureSetMultipleSelectors) {
 
 TEST_F(ShadowDOMVTest, FeatureSetSubtree) {
   LoadURL("about:blank");
-  auto* host = GetDocument().createElement("div");
+  auto* host = GetDocument().CreateRawElement(HTMLNames::divTag);
   host->CreateShadowRootInternal().SetInnerHTMLFromString(R"HTML(
     <div>
       <div></div>
@@ -121,12 +121,12 @@ TEST_F(ShadowDOMVTest, FeatureSetSubtree) {
 
 TEST_F(ShadowDOMVTest, FeatureSetMultipleShadowRoots) {
   LoadURL("about:blank");
-  auto* host = GetDocument().createElement("div");
+  auto* host = GetDocument().CreateRawElement(HTMLNames::divTag);
   auto& host_shadow = host->CreateShadowRootInternal();
   host_shadow.SetInnerHTMLFromString("<content select='#foo'></content>");
-  auto* child = GetDocument().createElement("div");
+  auto* child = GetDocument().CreateRawElement(HTMLNames::divTag);
   auto& child_root = child->CreateShadowRootInternal();
-  auto* child_content = GetDocument().createElement("content");
+  auto* child_content = GetDocument().CreateRawElement(HTMLNames::contentTag);
   child_content->setAttribute("select", "#bar");
   child_root.AppendChild(child_content);
   host_shadow.AppendChild(child);

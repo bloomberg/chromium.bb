@@ -60,7 +60,7 @@ class CaretDisplayItemClientTest : public RenderingTest {
   }
 
   Element* AppendBlock(const String& data) {
-    Element* block = GetDocument().createElement("div");
+    Element* block = GetDocument().CreateRawElement(HTMLNames::divTag);
     Text* text = GetDocument().createTextNode(data);
     block->AppendChild(text);
     GetDocument().body()->AppendChild(block);

@@ -1013,7 +1013,7 @@ TEST_P(WebViewTest, FinishComposingTextDoesNotAssert) {
 
   // Do arbitrary change to make layout dirty.
   Document& document = *web_view->MainFrameImpl()->GetFrame()->GetDocument();
-  Element* br = document.createElement("br");
+  Element* br = document.CreateRawElement(HTMLNames::brTag);
   document.body()->AppendChild(br);
 
   // Should not hit assertion when calling

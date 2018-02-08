@@ -613,13 +613,13 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
   EXPECT_EQ(GetDocument(), observer.LifecycleContext());
   EXPECT_EQ(0, observer.CountContextDestroyedCalled());
 
-  Element* div_node = GetDocument().createElement("div");
+  Element* div_node = GetDocument().CreateRawElement(HTMLNames::divTag);
   GetDocument().body()->AppendChild(div_node);
 
-  Element* bold_node = GetDocument().createElement("b");
+  Element* bold_node = GetDocument().CreateRawElement(HTMLNames::bTag);
   div_node->AppendChild(bold_node);
 
-  Element* italic_node = GetDocument().createElement("i");
+  Element* italic_node = GetDocument().CreateRawElement(HTMLNames::iTag);
   div_node->AppendChild(italic_node);
 
   Node* text_node = GetDocument().createTextNode("0123456789");
@@ -679,7 +679,7 @@ TEST_F(DocumentTest, SynchronousMutationNotifierMergeTextNodes) {
 TEST_F(DocumentTest, SynchronousMutationNotifierMoveTreeToNewDocument) {
   auto& observer = *new TestSynchronousMutationObserver(GetDocument());
 
-  Node* move_sample = GetDocument().createElement("div");
+  Node* move_sample = GetDocument().CreateRawElement(HTMLNames::divTag);
   move_sample->appendChild(GetDocument().createTextNode("a123"));
   move_sample->appendChild(GetDocument().createTextNode("b456"));
   GetDocument().body()->AppendChild(move_sample);
@@ -703,7 +703,7 @@ TEST_F(DocumentTest, SynchronousMutationNotifieReplaceChild) {
   auto& observer = *new TestSynchronousMutationObserver(GetDocument());
   Element* const replaced_node = GetDocument().body();
   GetDocument().documentElement()->ReplaceChild(
-      GetDocument().createElement("div"), GetDocument().body());
+      GetDocument().CreateRawElement(HTMLNames::divTag), GetDocument().body());
   ASSERT_EQ(2u, observer.ChildrenChangedNodes().size());
   EXPECT_EQ(GetDocument().documentElement(),
             observer.ChildrenChangedNodes()[0]);
@@ -813,9 +813,9 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
   // true. It's necessary to kick unload process.
   GetDocument().ImplicitOpen(kForceSynchronousParsing);
   GetDocument().CancelParsing();
-  GetDocument().AppendChild(GetDocument().createElement("html"));
+  GetDocument().AppendChild(GetDocument().CreateRawElement(HTMLNames::htmlTag));
   SetHtmlInnerHTML("<body><input required></body>");
-  Element* script = GetDocument().createElement("script");
+  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
   script->setTextContent(
       "window.onunload = function() {"
       "document.querySelector('input').reportValidity(); };");

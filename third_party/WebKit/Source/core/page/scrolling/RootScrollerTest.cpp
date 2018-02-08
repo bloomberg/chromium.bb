@@ -215,7 +215,7 @@ TEST_P(RootScrollerTest, defaultEffectiveRootScrollerIsDocumentNode) {
   Initialize("root-scroller.html");
 
   Document* document = MainFrame()->GetDocument();
-  Element* iframe = document->createElement("iframe");
+  Element* iframe = document->CreateRawElement(HTMLNames::iframeTag);
 
   EXPECT_EQ(MainFrame()->GetDocument(),
             EffectiveRootScroller(MainFrame()->GetDocument()));
@@ -1144,11 +1144,11 @@ TEST_P(RootScrollerTest, InvalidDefaultRootScroller) {
 
   Document* document = MainFrame()->GetDocument();
 
-  Element* br = document->createElement("br");
+  Element* br = document->CreateRawElement(HTMLNames::brTag);
   document->ReplaceChild(br, document->documentElement());
   MainFrameView()->UpdateAllLifecyclePhases();
-  Element* html = document->createElement("html");
-  Element* body = document->createElement("body");
+  Element* html = document->CreateRawElement(HTMLNames::htmlTag);
+  Element* body = document->CreateRawElement(HTMLNames::bodyTag);
   html->AppendChild(body);
   body->AppendChild(br);
   document->AppendChild(html);
