@@ -23,7 +23,6 @@ class ChromeWebContentsViewDelegateViewsMac
   void ResetStoredFocus() override;
   bool Focus() override;
   bool TakeFocus(bool reverse) override;
-  void SizeChanged(const gfx::Size& size) override;
 
  private:
   // Used to handle focus management.
