@@ -9,6 +9,7 @@
 #include "cc/ipc/cc_param_traits.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/picture_draw_quad.h"
+#include "components/viz/test/compositor_frame_helpers.h"
 #include "gpu/ipc/common/mailbox_holder_struct_traits.h"
 #include "gpu/ipc/common/mailbox_struct_traits.h"
 #include "gpu/ipc/common/sync_token_struct_traits.h"
@@ -392,12 +393,11 @@ class CCSerializationPerfTest : public testing::Test {
                                      uint32_t num_quads,
                                      uint32_t num_passes,
                                      UseSingleSharedQuadState single_sqs) {
-    viz::CompositorFrame frame;
-    frame.metadata.begin_frame_ack = viz::BeginFrameAck(0, 1, true);
+    viz::CompositorFrame frame = viz::MakeEmptyCompositorFrame();
 
     for (uint32_t i = 0; i < num_passes; ++i) {
       std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
-      render_pass->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
+      render_pass->SetNew(1, gfx::Rect(20, 20), gfx::Rect(), gfx::Transform());
       for (uint32_t j = 0; j < num_quads; ++j) {
         if (j == 0 || single_sqs == UseSingleSharedQuadState::NO)
           render_pass->CreateAndAppendSharedQuadState();
