@@ -13,33 +13,6 @@
 
 namespace base {
 
-namespace internal {
-
-const ThreadPriorityToNiceValuePair kThreadPriorityToNiceValueMap[4] = {
-    {ThreadPriority::BACKGROUND, 10},
-    {ThreadPriority::NORMAL, 0},
-    {ThreadPriority::DISPLAY, -8},
-    {ThreadPriority::REALTIME_AUDIO, -10},
-};
-
-bool SetCurrentThreadPriorityForPlatform(ThreadPriority priority) {
-  sched_param prio = {0};
-  prio.sched_priority = ThreadPriorityToNiceValue(priority);
-  return pthread_setschedparam(pthread_self(), SCHED_OTHER, &prio) == 0;
-}
-
-bool GetCurrentThreadPriorityForPlatform(ThreadPriority* priority) {
-  sched_param prio = {0};
-  int policy;
-  if (pthread_getschedparam(pthread_self(), &policy, &prio) != 0) {
-    return false;
-  }
-  *priority = NiceValueToThreadPriority(prio.sched_priority);
-  return true;
-}
-
-}  // namespace internal
-
 void InitThreading() {}
 
 void TerminateOnThread() {}
@@ -56,6 +29,23 @@ void PlatformThread::SetName(const std::string& name) {
 
   ThreadIdNameManager::GetInstance()->SetName(PlatformThread::CurrentId(),
                                               name);
+}
+
+// static
+bool PlatformThread::CanIncreaseCurrentThreadPriority() {
+  return false;
+}
+
+// static
+void PlatformThread::SetCurrentThreadPriority(ThreadPriority priority) {
+  if (priority != ThreadPriority::NORMAL) {
+    NOTIMPLEMENTED() << "setting ThreadPriority " << static_cast<int>(priority);
+  }
+}
+
+// static
+ThreadPriority PlatformThread::GetCurrentThreadPriority() {
+  return ThreadPriority::NORMAL;
 }
 
 }  // namespace base

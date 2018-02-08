@@ -1001,8 +1001,14 @@ bool VerifyPathControlledByAdmin(const FilePath& path) {
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 int GetMaximumPathComponentLength(const FilePath& path) {
+#if defined(OS_FUCHSIA)
+  // Return a value we do not expect anyone ever to reach, but which is small
+  // enough to guard against e.g. bugs causing multi-megabyte paths.
+  return 1024;
+#else
   AssertBlockingAllowed();
   return pathconf(path.value().c_str(), _PC_NAME_MAX);
+#endif
 }
 
 #if !defined(OS_ANDROID)

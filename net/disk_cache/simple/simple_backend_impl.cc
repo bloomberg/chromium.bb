@@ -31,6 +31,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/backend_cleanup_tracker.h"
 #include "net/disk_cache/cache_util.h"
@@ -85,7 +86,7 @@ void MaybeHistogramFdLimit() {
   int soft_fd_limit = 0;
   int hard_fd_limit = 0;
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
   struct rlimit nofile;
   if (!getrlimit(RLIMIT_NOFILE, &nofile)) {
     soft_fd_limit = nofile.rlim_cur;

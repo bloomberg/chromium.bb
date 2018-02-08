@@ -11,7 +11,7 @@
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
 #include <signal.h>
 #define USE_SIGNALS 1
 #elif defined(OS_WIN)
@@ -145,7 +145,10 @@ void ThreadCPUThrottler::ThrottlingThread::HandleSignal(int signal) {
 
 void ThreadCPUThrottler::ThrottlingThread::Throttle() {
   const int quant_time_us = 200;
-#if defined(OS_WIN)
+#ifdef USE_SIGNALS
+  pthread_kill(throttled_thread_handle_.platform_handle(), SIGUSR2);
+  Sleep(base::TimeDelta::FromMicroseconds(quant_time_us));
+#elif defined(OS_WIN)
   double rate = Acquire_Load(&throttling_rate_percent_) / 100.;
   base::TimeDelta run_duration =
       base::TimeDelta::FromMicroseconds(static_cast<int>(quant_time_us / rate));
@@ -156,8 +159,7 @@ void ThreadCPUThrottler::ThrottlingThread::Throttle() {
   Sleep(sleep_duration);
   ::ResumeThread(throttled_thread_handle_.platform_handle());
 #else
-  pthread_kill(throttled_thread_handle_.platform_handle(), SIGUSR2);
-  Sleep(base::TimeDelta::FromMicroseconds(quant_time_us));
+  ALLOW_UNUSED_LOCAL(quant_time_us);
 #endif
 }
 
@@ -165,7 +167,8 @@ void ThreadCPUThrottler::ThrottlingThread::Start() {
 #ifdef USE_SIGNALS
   InstallSignalHandler();
 #elif !defined(OS_WIN)
-  LOG(ERROR) << "CPU throttling is not supported."
+  LOG(ERROR) << "CPU throttling is not supported.";
+  return;
 #endif
   if (!base::PlatformThread::Create(0, this, &throttling_thread_handle_)) {
     LOG(ERROR) << "Failed to create throttling thread.";
