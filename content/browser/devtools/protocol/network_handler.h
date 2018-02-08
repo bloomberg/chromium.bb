@@ -24,7 +24,6 @@ class URLRequest;
 
 namespace network {
 struct ResourceResponseHead;
-struct ResourceRequest;
 struct URLLoaderCompletionStatus;
 }  // namespace network
 
@@ -39,6 +38,7 @@ class NavigationThrottle;
 class StoragePartition;
 struct GlobalRequestID;
 struct InterceptedRequestInfo;
+struct ResourceRequest;
 
 namespace protocol {
 
@@ -120,25 +120,15 @@ class NetworkHandler : public DevToolsDomainHandler,
       std::unique_ptr<GetResponseBodyForInterceptionCallback> callback)
       override;
 
-  void ApplyOverrides(net::HttpRequestHeaders* headers,
-                      bool* skip_service_worker,
-                      bool* disable_cache);
-  void NavigationRequestWillBeSent(const NavigationRequest& nav_request);
-  void RequestSent(const std::string& request_id,
-                   const std::string& loader_id,
-                   const network::ResourceRequest& request,
-                   const char* initiator_type);
-  void ResponseReceived(const std::string& request_id,
-                        const std::string& loader_id,
-                        const GURL& url,
-                        const char* resource_type,
-                        const network::ResourceResponseHead& head,
-                        Maybe<std::string> frame_id);
-  void LoadingComplete(
+  void NavigationPreloadRequestSent(const std::string& request_id,
+                                    const network::ResourceRequest& request);
+  void NavigationPreloadResponseReceived(
       const std::string& request_id,
-      const char* resource_type,
+      const GURL& url,
+      const network::ResourceResponseHead& head);
+  void NavigationPreloadCompleted(
+      const std::string& request_id,
       const network::URLLoaderCompletionStatus& completion_status);
-
   void NavigationFailed(NavigationRequest* navigation_request);
 
   bool enabled() const { return enabled_; }

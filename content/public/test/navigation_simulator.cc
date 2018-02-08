@@ -825,8 +825,7 @@ bool NavigationSimulator::SimulateRendererInitiatedStart() {
           blink::WebMixedContentContextType::kBlockable,
           false /* is_form_submission */, GURL() /* searchable_form_url */,
           std::string() /* searchable_form_encoding */, url::Origin(),
-          GURL() /* client_side_redirect_url */,
-          nullptr /* detools_initiator_info */);
+          GURL() /* client_side_redirect_url */);
   CommonNavigationParams common_params;
   common_params.url = navigation_url_;
   common_params.method = initial_method_;
