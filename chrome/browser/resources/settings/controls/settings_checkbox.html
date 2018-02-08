@@ -30,7 +30,7 @@
       }
 
       paper-checkbox:not([checked]) .secondary {
-        @apply(--settings-secondary-unchecked);
+        @apply --settings-secondary-unchecked;
       }
 
       cr-policy-pref-indicator {
@@ -38,7 +38,7 @@
       }
 
       .label {
-        @apply(--settings-checkbox-label);
+        @apply --settings-checkbox-label;
       }
     </style>
     <div id="outerRow" noSubLabel$="[[!hasSubLabel_(subLabel, subLabelHtml)]]">

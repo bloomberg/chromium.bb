@@ -29,7 +29,7 @@
         flex-direction: column;
         max-height: 100vh;
         overflow: auto;
-        @apply(--cr-dialog-wrapper);
+        @apply --cr-dialog-wrapper;
       }
 
       /* When needing to flex, force .body-container alone to shrink. */
@@ -50,7 +50,7 @@
 
       :host ::slotted([slot=body]) {
         padding: 12px 16px;
-        @apply(--cr-dialog-body);
+        @apply --cr-dialog-body;
       }
 
       :host ::slotted([slot=title]) {
@@ -58,7 +58,7 @@
         font-size: calc(15 / 13 * 100%);
         line-height: 1;
         padding: 16px 16px;
-        @apply(--cr-dialog-title);
+        @apply --cr-dialog-title;
       }
 
       :host ::slotted([slot=button-container]) {
@@ -85,7 +85,7 @@
         min-height: 60px; /* Minimum reasonably usable height. */
         overflow: auto;
 
-        @apply(--cr-dialog-body-container);
+        @apply --cr-dialog-body-container;
       }
 
       .body-container.bottom-scrollable {
