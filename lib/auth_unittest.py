@@ -21,7 +21,7 @@ class AuthTest(cros_test_lib.MockTestCase):
 
   def setUp(self):
     self.PatchObject(time, 'sleep')
-    self.PatchObject(auth, 'GetAuthUtil', return_value='auth_util')
+    self.PatchObject(auth, 'GetLuciAuth', return_value='luci-auth')
 
   def testLogin(self):
     """Test Login."""

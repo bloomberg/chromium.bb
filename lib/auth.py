@@ -27,32 +27,32 @@ class AccessTokenError(Exception):
   """Error accessing the token."""
 
 
-def GetAuthUtil(instance_id='latest'):
-  """Returns a path to the authutil binary.
+def GetLuciAuth(instance_id='latest'):
+  """Returns a path to the luci-auth binary.
 
-  This will download and install the authutil package if it is not already
+  This will download and install the luci-auth package if it is not already
   deployed.
 
   Args:
     instance_id: The instance-id of the package to install. Defaults to 'latest'
 
   Returns:
-    the path to the authutil binary.
+    the path to the luci-auth binary.
   """
   cache_dir = os.path.join(path_util.GetCacheDir(), 'cipd/packages')
   path = cipd.InstallPackage(
       cipd.GetCIPDFromCache(),
-      'infra/tools/authutil/linux-amd64',
+      'infra/tools/luci-auth/linux-amd64',
       instance_id,
       destination=cache_dir)
 
-  return os.path.join(path, 'authutil')
+  return os.path.join(path, 'luci-auth')
 
 
 def Login(service_account_json=None):
-  """Logs a user into chrome-infra-auth using authutil.
+  """Logs a user into chrome-infra-auth using luci-auth.
 
-  Runs 'authutil login' to get a OAuth2 refresh token.
+  Runs 'luci-auth login' to get a OAuth2 refresh token.
 
   Args:
     service_account_json: A optional path to a service account.
@@ -63,7 +63,7 @@ def Login(service_account_json=None):
   logging.info('Logging into chrome-infra-auth with service_account %s',
                service_account_json)
 
-  cmd = [GetAuthUtil(), 'login']
+  cmd = [GetLuciAuth(), 'login']
   if service_account_json:
     cmd += ['-service-account-json=%s' % service_account_json]
 
@@ -78,9 +78,9 @@ def Login(service_account_json=None):
 
 
 def Token(service_account_json=None):
-  """Get the token using authutil.
+  """Get the token using luci-auth.
 
-  Runs 'authutil token' to get the OAuth2 token.
+  Runs 'luci-auth token' to get the OAuth2 token.
 
   Args:
     service_account_json: A optional path to a service account.
@@ -91,7 +91,7 @@ def Token(service_account_json=None):
   Raises:
     AccessTokenError if token command failed.
   """
-  cmd = [GetAuthUtil(), 'token']
+  cmd = [GetLuciAuth(), 'token']
   if service_account_json:
     cmd += ['-service-account-json=%s' % service_account_json]
 
@@ -140,7 +140,7 @@ def _TokenAndLoginIfNeed(service_account_json=None, force_token_renew=False):
 
 
 def GetAccessToken(service_account_json=None, force_token_renew=False):
-  """Returns an OAuth2 access token using authutil.
+  """Returns an OAuth2 access token using luci-auth.
 
   Retry the _TokenAndLoginIfNeed function when the error threw is an
   AccessTokenError.
