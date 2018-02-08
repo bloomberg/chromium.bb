@@ -1322,6 +1322,7 @@ test("content_unittests") {
     "../browser/loader/signed_exchange_cert_fetcher_unittest.cc",
     "../browser/loader/signed_exchange_header_parser_unittest.cc",
     "../browser/loader/signed_exchange_signature_verifier_unittest.cc",
+    "../browser/loader/source_stream_to_data_pipe_unittest.cc",
     "../browser/loader/temporary_file_stream_unittest.cc",
     "../browser/loader/test_resource_handler.cc",
     "../browser/loader/test_resource_handler.h",

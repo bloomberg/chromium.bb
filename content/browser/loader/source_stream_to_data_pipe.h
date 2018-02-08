@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/network/public/cpp/net_adapters.h"
@@ -19,7 +20,7 @@ namespace content {
 
 // A convenient adapter class to read out data from net::SourceStream
 // and write them into a data pipe.
-class SourceStreamToDataPipe {
+class CONTENT_EXPORT SourceStreamToDataPipe {
  public:
   // Reads out the data from |source| and write into |dest|.
   SourceStreamToDataPipe(std::unique_ptr<net::SourceStream> source,
@@ -44,7 +45,6 @@ class SourceStreamToDataPipe {
 
   scoped_refptr<network::NetToMojoPendingBuffer> pending_write_;
   mojo::SimpleWatcher writable_handle_watcher_;
-  mojo::SimpleWatcher peer_closed_handle_watcher_;
 
   base::WeakPtrFactory<SourceStreamToDataPipe> weak_factory_;
 };
