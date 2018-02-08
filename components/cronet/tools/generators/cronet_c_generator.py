@@ -292,7 +292,6 @@ class Generator(generator.Generator):
 
     return {
       "all_enums": all_enums,
-      "allow_native_structs": self.allow_native_structs,
       "enums": self.module.enums,
       "export_attribute": self.export_attribute,
       "export_header": self.export_header,
