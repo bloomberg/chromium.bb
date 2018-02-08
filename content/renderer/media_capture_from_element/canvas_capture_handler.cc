@@ -289,6 +289,7 @@ void CanvasCaptureHandler::ReadARGBPixelsAsync(
       base::Bind(&CanvasCaptureHandler::OnARGBPixelsReadAsync,
                  weak_ptr_factory_.GetWeakPtr(), image, temp_argb_frame,
                  timestamp, surface_origin != kTopLeft_GrSurfaceOrigin));
+  context_provider->InvalidateGrContext(kTextureBinding_GrGLBackendState);
 }
 
 void CanvasCaptureHandler::ReadYUVPixelsAsync(
