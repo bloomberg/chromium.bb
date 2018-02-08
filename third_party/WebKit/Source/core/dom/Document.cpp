@@ -896,8 +896,8 @@ Element* Document::CreateRawElement(const QualifiedName& qname,
 }
 
 // https://dom.spec.whatwg.org/#dom-document-createelement
-Element* Document::createElement(const AtomicString& name,
-                                 ExceptionState& exception_state) {
+Element* Document::CreateElementForBinding(const AtomicString& name,
+                                           ExceptionState& exception_state) {
   if (!IsValidElementName(this, name)) {
     exception_state.ThrowDOMException(
         kInvalidCharacterError,
@@ -954,9 +954,10 @@ String GetTypeExtension(Document* document,
 }
 
 // https://dom.spec.whatwg.org/#dom-document-createelement
-Element* Document::createElement(const AtomicString& local_name,
-                                 const StringOrDictionary& string_or_options,
-                                 ExceptionState& exception_state) {
+Element* Document::CreateElementForBinding(
+    const AtomicString& local_name,
+    const StringOrDictionary& string_or_options,
+    ExceptionState& exception_state) {
   // 1. If localName does not match Name production, throw InvalidCharacterError
   if (!IsValidElementName(this, local_name)) {
     exception_state.ThrowDOMException(

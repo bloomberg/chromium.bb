@@ -115,7 +115,7 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
 
     timeline_ = DocumentTimeline::Create(&GetDocument());
     timeline_->ResetForTesting();
-    element_ = GetDocument().createElement("test");
+    element_ = GetDocument().CreateElementForBinding("test");
 
     helper_.Initialize(nullptr, nullptr, nullptr, &ConfigureSettings);
     base_url_ = "http://www.test.com/";
@@ -1150,7 +1150,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 
 TEST_F(AnimationCompositorAnimationsTest,
        cancelIncompatibleCompositorAnimations) {
-  Persistent<Element> element = GetDocument().createElement("shared");
+  Persistent<Element> element = GetDocument().CreateElementForBinding("shared");
 
   LayoutObjectProxy* layout_object = LayoutObjectProxy::Create(element.Get());
   element->SetLayoutObject(layout_object);
@@ -1240,7 +1240,7 @@ void UpdateDummyEffectNode(ObjectPaintProperties& properties,
 
 TEST_F(AnimationCompositorAnimationsTest,
        canStartElementOnCompositorTransformSPv2) {
-  Persistent<Element> element = GetDocument().createElement("shared");
+  Persistent<Element> element = GetDocument().CreateElementForBinding("shared");
   LayoutObjectProxy* layout_object = LayoutObjectProxy::Create(element.Get());
   element->SetLayoutObject(layout_object);
 
@@ -1272,7 +1272,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 
 TEST_F(AnimationCompositorAnimationsTest,
        canStartElementOnCompositorEffectSPv2) {
-  Persistent<Element> element = GetDocument().createElement("shared");
+  Persistent<Element> element = GetDocument().CreateElementForBinding("shared");
   LayoutObjectProxy* layout_object = LayoutObjectProxy::Create(element.Get());
   element->SetLayoutObject(layout_object);
 
