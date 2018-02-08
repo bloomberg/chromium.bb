@@ -1,0 +1,17 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x116
+  LayoutNGBlockFlow {HTML} at (0,0) size 800x116
+    LayoutNGBlockFlow {BODY} at (8,16) size 784x92
+      LayoutNGBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 479x19
+          text run at (0,0) width 479: "crbug.com/634445: Rtl text in a ltr flow should truncate the text left-to-right."
+      LayoutNGBlockFlow {P} at (0,36) size 784x20
+        LayoutText {#text} at (0,0) size 404x19
+          text run at (0,0) width 404: "You should see an underline beneath the text but not the ellipsis."
+layer at (8,88) size 350x20
+  LayoutNGBlockFlow {DIV} at (0,72) size 350x20
+    LayoutText {#text} at (6,0) size 344x19
+      text run at (6,0) width 16: "\x{2026}"
+      text run at (22,0) width 244: " \x{5D9}\x{5E0}\x{5D8}\x{5E8}\x{5E0}\x{5D8} \x{5D5}\x{5DB}\x{5D5}' \x{5D1}\x{5DE}\x{5E7}\x{5D5}\x{5DD} \x{5D4}\x{5D8}\x{5E7}\x{5E1}\x{5D8} \x{5D4}\x{5D0}\x{5DE}\x{5D9}\x{5EA}\x{5D9} \x{5D4}\x{5E1}\x{5D5}\x{5E4}\x{5D9}\x{5E2}\x{5D3} "
+      text run at (266,0) width 84: "Lorem ipsum"
