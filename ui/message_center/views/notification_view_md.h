@@ -55,19 +55,17 @@ class CompactTitleMessageView : public views::View {
 
   const char* GetClassName() const override;
 
-  void OnPaint(gfx::Canvas* canvas) override;
+  gfx::Size CalculatePreferredSize() const override;
+  void Layout() override;
 
-  void set_title(const base::string16& title) { title_ = title; }
-  void set_message(const base::string16& message) { message_ = message; }
+  void set_title(const base::string16& title);
+  void set_message(const base::string16& message);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CompactTitleMessageView);
 
-  base::string16 title_;
-  base::string16 message_;
-
-  views::Label* title_view_ = nullptr;
-  views::Label* message_view_ = nullptr;
+  views::Label* title_ = nullptr;
+  views::Label* message_ = nullptr;
 };
 
 class LargeImageView : public views::View {
