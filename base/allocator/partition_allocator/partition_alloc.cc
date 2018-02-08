@@ -35,7 +35,8 @@ static_assert(base::kPageMetadataSize * base::kNumPartitionPagesPerSuperPage <=
                   base::kSystemPageSize,
               "page metadata fits in hole");
 // Limit to prevent callers accidentally overflowing an int size.
-static_assert(base::kGenericMaxDirectMapped <= 1UL << 31,
+static_assert(base::kGenericMaxDirectMapped <=
+                  (1UL << 31) + base::kPageAllocationGranularity,
               "maximum direct mapped allocation");
 // Check that some of our zanier calculations worked out as expected.
 static_assert(base::kGenericSmallestBucket == 8, "generic smallest bucket");
