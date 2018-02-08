@@ -33,7 +33,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [3, 65, 55, 17],
+          "rect": [3, 65, 58, 16],
           "reason": "appeared"
         },
         {
