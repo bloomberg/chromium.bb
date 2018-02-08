@@ -545,9 +545,9 @@ const char kOOPHPStackModeNative[] = "Native";
 const char kOOPHPStackModeNativeWithThreadNames[] = "Native with thread names";
 const char kOOPHPStackModePseudo[] = "Trace events";
 
-const char kEnablePictureInPictureName[] = "Enable picture in picture.";
+const char kEnablePictureInPictureName[] = "Enable Picture-in-Picture.";
 const char kEnablePictureInPictureDescription[] =
-    "Enable the picture in picture feature for videos.";
+    "Enable the Picture-in-Picture feature for videos.";
 
 const char kEnablePixelCanvasRecordingName[] = "Enable pixel canvas recording";
 const char kEnablePixelCanvasRecordingDescription[] =
