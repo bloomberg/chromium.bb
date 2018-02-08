@@ -865,10 +865,18 @@ Element* Document::CreateRawElement(const QualifiedName& qname,
                                     CreateElementFlags flags) {
   Element* element = nullptr;
   if (qname.NamespaceURI() == HTMLNames::xhtmlNamespaceURI) {
+    // https://html.spec.whatwg.org/multipage/dom.html#elements-in-the-dom:element-interface
     element = HTMLElementFactory::CreateRawHTMLElement(qname.LocalName(), *this,
                                                        flags);
-    if (!element)
-      element = HTMLUnknownElement::Create(qname, *this);
+    if (!element) {
+      // 6. If name is a valid custom element name, then return
+      // HTMLElement.
+      // 7. Return HTMLUnknownElement.
+      if (CustomElement::IsValidName(qname.LocalName()))
+        element = HTMLElement::Create(qname, *this);
+      else
+        element = HTMLUnknownElement::Create(qname, *this);
+    }
     saw_elements_in_known_namespaces_ = true;
   } else if (qname.NamespaceURI() == SVGNames::svgNamespaceURI) {
     element =
