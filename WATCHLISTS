@@ -1284,6 +1284,9 @@
                   '|chrome/browser/content_settings/permission*'\
                   '|permission_context',
     },
+    'picture_in_picture': {
+      'filepath': 'third_party/WebKit/Source/modules/picture_in_picture/'
+    },
     'plugin': {
       'filepath': 'chrome/browser/plugin|chrome/plugin/|'\
         'chrome/common/plugin',
@@ -2202,6 +2205,7 @@
                     'mlamouri+watch-permissions@chromium.org',
                     'raymes+watch@chromium.org',
                     'timloh+watch@chromium.org'],
+    'picture_in_picture': ['beaufort.francois+pip@gmail.com'],
     'plugin': ['jam@chromium.org'],
     'polymer': ['michaelpg+watch-polymer@chromium.org'],
     'popup_blocker': ['csharrison+watch-popups@chromium.org'],
