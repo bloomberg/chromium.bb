@@ -201,6 +201,124 @@ uint64_t GetCurrentQPC() {
 uint64_t g_last_process_output_time;
 HRESULT g_last_device_removed_reason;
 
+// Certain AMD GPU drivers like R600, R700, Evergreen and Cayman and some second
+// generation Intel GPU drivers crash if we create a video device with a
+// resolution higher then 1920 x 1088. This function checks if the GPU is in
+// this list and if yes returns true.
+bool IsLegacyGPU(ID3D11Device* device) {
+  constexpr int kAMDGPUId1 = 0x1002;
+  constexpr int kAMDGPUId2 = 0x1022;
+  constexpr int kIntelGPU = 0x8086;
+
+  Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
+  HRESULT hr = device->QueryInterface(IID_PPV_ARGS(&dxgi_device));
+  if (FAILED(hr))
+    return true;
+
+  Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
+  hr = dxgi_device->GetAdapter(adapter.GetAddressOf());
+  if (FAILED(hr))
+    return true;
+
+  DXGI_ADAPTER_DESC adapter_desc = {};
+  hr = adapter->GetDesc(&adapter_desc);
+  if (FAILED(hr))
+    return true;
+
+  // We check if the device is an Intel or an AMD device and whether it is in
+  // the global list defined by the g_AMDUVD3GPUList and g_IntelLegacyGPUList
+  // arrays above. If yes then the device is treated as a legacy device.
+  if (adapter_desc.VendorId == kAMDGPUId1 ||
+      adapter_desc.VendorId == kAMDGPUId2) {
+    for (size_t i = 0; i < arraysize(g_AMDUVD3GPUList); i++) {
+      if (adapter_desc.DeviceId == g_AMDUVD3GPUList[i])
+        return true;
+    }
+  } else if (adapter_desc.VendorId == kIntelGPU) {
+    for (size_t i = 0; i < arraysize(g_IntelLegacyGPUList); i++) {
+      if (adapter_desc.DeviceId == g_IntelLegacyGPUList[i])
+        return true;
+    }
+  }
+
+  return false;
+}
+
+// Returns true if a ID3D11VideoDecoder can be created for |resolution_to_test|
+// on the given |video_device|.
+bool IsResolutionSupportedForDevice(const gfx::Size& resolution_to_test,
+                                    const GUID& decoder_guid,
+                                    ID3D11VideoDevice* video_device) {
+  D3D11_VIDEO_DECODER_DESC desc = {};
+  desc.Guid = decoder_guid;
+  desc.SampleWidth = resolution_to_test.width();
+  desc.SampleHeight = resolution_to_test.height();
+  desc.OutputFormat = DXGI_FORMAT_NV12;
+  UINT config_count = 0;
+  HRESULT hr = video_device->GetVideoDecoderConfigCount(&desc, &config_count);
+  if (FAILED(hr) || config_count == 0)
+    return false;
+
+  D3D11_VIDEO_DECODER_CONFIG config = {};
+  hr = video_device->GetVideoDecoderConfig(&desc, 0, &config);
+  if (FAILED(hr))
+    return false;
+
+  Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder;
+  hr = video_device->CreateVideoDecoder(&desc, &config,
+                                        video_decoder.GetAddressOf());
+  return !!video_decoder;
+}
+
+// Returns a tuple of (LandscapeMax, PortraitMax). If landscape maximum can not
+// be computed, the value of |default_max| is returned for the landscape maximum
+// and a zero size value is returned for portrait max (erring conservatively).
+using ResolutionPair = std::pair<gfx::Size, gfx::Size>;
+ResolutionPair GetMaxResolutionsForGUIDs(
+    const gfx::Size& default_max,
+    ID3D11VideoDevice* video_device,
+    const std::vector<GUID>& valid_guids,
+    const std::vector<gfx::Size>& resolutions_to_test) {
+  TRACE_EVENT0("gpu,startup", "GetMaxResolutionsForGUIDs");
+  ResolutionPair result(default_max, gfx::Size());
+
+  // Enumerate supported video profiles and look for the profile.
+  GUID decoder_guid = GUID_NULL;
+  UINT profile_count = video_device->GetVideoDecoderProfileCount();
+  for (UINT profile_idx = 0; profile_idx < profile_count; profile_idx++) {
+    GUID profile_id = {};
+    if (SUCCEEDED(
+            video_device->GetVideoDecoderProfile(profile_idx, &profile_id)) &&
+        std::find(valid_guids.begin(), valid_guids.end(), profile_id) !=
+            valid_guids.end()) {
+      decoder_guid = profile_id;
+      break;
+    }
+  }
+  if (decoder_guid == GUID_NULL)
+    return result;
+
+  // Verify input is in ascending order by height.
+  DCHECK(std::is_sorted(resolutions_to_test.begin(), resolutions_to_test.end(),
+                        [](const gfx::Size& a, const gfx::Size& b) {
+                          return a.height() < b.height();
+                        }));
+
+  for (const auto& res : resolutions_to_test) {
+    if (!IsResolutionSupportedForDevice(res, decoder_guid, video_device))
+      break;
+    result.first = res;
+  }
+
+  // The max supported portrait resolution should be just be a w/h flip of the
+  // max supported landscape resolution.
+  gfx::Size flipped(result.first.height(), result.first.width());
+  if (IsResolutionSupportedForDevice(flipped, decoder_guid, video_device))
+    result.second = flipped;
+
+  return result;
+}
+
 }  // namespace
 
 namespace media {
@@ -1305,9 +1423,7 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
   TRACE_EVENT0("gpu,startup",
                "DXVAVideoDecodeAccelerator::GetSupportedProfiles");
 
-  // TODO(henryhsu): Need to ensure the profiles are actually supported.
   SupportedProfiles profiles;
-
   for (const wchar_t* mfdll : kMediaFoundationVideoDecoderDLLs) {
     if (!::GetModuleHandle(mfdll)) {
       // Windows N is missing the media foundation DLLs unless the media
@@ -1316,20 +1432,86 @@ DXVAVideoDecodeAccelerator::GetSupportedProfiles(
       return profiles;
     }
   }
+
+  // On Windows 7 the maximum resolution supported by media foundation is
+  // 1920 x 1088. We use 1088 to account for 16x16 macroblocks.
+  ResolutionPair max_h264_resolutions(gfx::Size(1920, 1088), gfx::Size());
+
+  // VPX has no default resolutions since it may not even be supported.
+  ResolutionPair max_vpx_resolutions;
+
+  if (base::win::GetVersion() > base::win::VERSION_WIN7) {
+    // To detect if a driver supports the desired resolutions, we try and create
+    // a DXVA decoder instance for that resolution and profile. If that succeeds
+    // we assume that the driver supports decoding for that resolution.
+    Microsoft::WRL::ComPtr<ID3D11Device> device =
+        gl::QueryD3D11DeviceObjectFromANGLE();
+
+    // Legacy AMD drivers with UVD3 or earlier and some Intel GPU's crash while
+    // creating surfaces larger than 1920 x 1088.
+    if (device && !IsLegacyGPU(device.Get())) {
+      Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device;
+      if (SUCCEEDED(device.CopyTo(IID_PPV_ARGS(&video_device)))) {
+        max_h264_resolutions = GetMaxResolutionsForGUIDs(
+            max_h264_resolutions.first, video_device.Get(),
+            {DXVA2_ModeH264_E, DXVA2_Intel_ModeH264_E},
+            {gfx::Size(2560, 1440), gfx::Size(3840, 2160),
+             gfx::Size(4096, 2160), gfx::Size(4096, 2304)});
+
+        // Despite the name this is the GUID for VP8/VP9.
+        if (preferences.enable_accelerated_vpx_decode &&
+            !workarounds.disable_accelerated_vpx_decode) {
+          max_vpx_resolutions = GetMaxResolutionsForGUIDs(
+              max_vpx_resolutions.first, video_device.Get(),
+              {D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0},
+              {gfx::Size(4096, 2160), gfx::Size(4096, 2304),
+               gfx::Size(7680, 4320)});
+        }
+      }
+    }
+  }
+
   for (const auto& supported_profile : kSupportedProfiles) {
-    if ((!preferences.enable_accelerated_vpx_decode ||
-         workarounds.disable_accelerated_vpx_decode) &&
-        (supported_profile >= VP8PROFILE_MIN) &&
-        (supported_profile <= VP9PROFILE_MAX)) {
+    const bool kIsVPX = supported_profile >= VP8PROFILE_MIN &&
+                        supported_profile <= VP9PROFILE_MAX;
+
+    // Skip adding VPX profiles if it's not supported or disabled.
+    if (kIsVPX && max_vpx_resolutions.first.IsEmpty())
       continue;
+
+    const bool kIsH264 = supported_profile >= H264PROFILE_MIN &&
+                         supported_profile <= H264PROFILE_MAX;
+    DCHECK(kIsH264 || kIsVPX);
+
+    // Windows Media Foundation H.264 decoding does not support decoding videos
+    // with any dimension smaller than 48 pixels:
+    // http://msdn.microsoft.com/en-us/library/windows/desktop/dd797815
+    //
+    // TODO(dalecurtis): These values are too low. We should only be using
+    // hardware decode for videos above ~360p, see http://crbug.com/684792.
+    const gfx::Size kMinResolution =
+        kIsH264 ? gfx::Size(48, 48) : gfx::Size(16, 16);
+
+    {
+      SupportedProfile profile;
+      profile.profile = supported_profile;
+      profile.min_resolution = kMinResolution;
+      profile.max_resolution =
+          kIsH264 ? max_h264_resolutions.first : max_vpx_resolutions.first;
+      profiles.push_back(profile);
     }
 
-    SupportedProfile profile;
-    profile.profile = supported_profile;
-    profile.min_resolution = GetMinResolution(supported_profile);
-    profile.max_resolution = GetMaxResolution(supported_profile);
-    profiles.push_back(profile);
+    const gfx::Size kPortraitMax =
+        kIsH264 ? max_h264_resolutions.second : max_vpx_resolutions.second;
+    if (!kPortraitMax.IsEmpty()) {
+      SupportedProfile profile;
+      profile.profile = supported_profile;
+      profile.min_resolution = kMinResolution;
+      profile.max_resolution = kPortraitMax;
+      profiles.push_back(profile);
+    }
   }
+
   return profiles;
 }
 
@@ -1346,196 +1528,6 @@ void DXVAVideoDecodeAccelerator::PreSandboxInitialization() {
     LoadLibrary(L"mshtmlmedia.dll");
 #endif
   }
-}
-
-// static
-gfx::Size DXVAVideoDecodeAccelerator::GetMinResolution(
-    VideoCodecProfile profile) {
-  TRACE_EVENT0("gpu,startup", "DXVAVideoDecodeAccelerator::GetMinResolution");
-
-  // TODO(dalecurtis): These values are too low. We should only be using
-  // hardware decode for videos above ~360p, see http://crbug.com/684792.
-
-  if (profile >= H264PROFILE_BASELINE && profile <= H264PROFILE_HIGH) {
-    // Windows Media Foundation H.264 decoding does not support decoding videos
-    // with any dimension smaller than 48 pixels:
-    // http://msdn.microsoft.com/en-us/library/windows/desktop/dd797815
-    return gfx::Size(48, 48);
-  }
-
-  // TODO(dalecurtis): Detect this properly for VP8/VP9 profiles.
-  return gfx::Size(16, 16);
-}
-
-// static
-gfx::Size DXVAVideoDecodeAccelerator::GetMaxResolution(
-    VideoCodecProfile profile) {
-  TRACE_EVENT0("gpu,startup", "DXVAVideoDecodeAccelerator::GetMaxResolution");
-
-  // Computes and caches the maximum resolution since it's expensive to
-  // determine and this function is called for every profile in
-  // kSupportedProfiles.
-
-  if (profile >= H264PROFILE_BASELINE && profile <= H264PROFILE_HIGH) {
-    const gfx::Size kDefaultMax = gfx::Size(1920, 1088);
-
-    // On Windows 7 the maximum resolution supported by media foundation is
-    // 1920 x 1088. We use 1088 to account for 16x16 macroblocks.
-    if (base::win::GetVersion() == base::win::VERSION_WIN7)
-      return kDefaultMax;
-
-    static const gfx::Size kCachedH264Resolution = GetMaxResolutionForGUIDs(
-        kDefaultMax, {DXVA2_ModeH264_E, DXVA2_Intel_ModeH264_E},
-        {gfx::Size(2560, 1440), gfx::Size(3840, 2160), gfx::Size(4096, 2160),
-         gfx::Size(4096, 2304)});
-    return kCachedH264Resolution;
-  }
-
-  // Despite the name this is the GUID for VP8/VP9.
-  static const gfx::Size kCachedVPXResolution = GetMaxResolutionForGUIDs(
-      gfx::Size(4096, 2160), {D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0},
-      {gfx::Size(4096, 2304), gfx::Size(7680, 4320)});
-  return kCachedVPXResolution;
-}
-
-gfx::Size DXVAVideoDecodeAccelerator::GetMaxResolutionForGUIDs(
-    const gfx::Size& default_max,
-    const std::vector<GUID>& valid_guids,
-    const std::vector<gfx::Size>& resolutions_to_test) {
-  TRACE_EVENT0("gpu,startup",
-               "DXVAVideoDecodeAccelerator::GetMaxResolutionForGUIDs");
-  gfx::Size max_resolution = default_max;
-
-  // To detect if a driver supports the desired resolutions, we try and create
-  // a DXVA decoder instance for that resolution and profile. If that succeeds
-  // we assume that the driver supports H/W H.264 decoding for that resolution.
-  HRESULT hr = E_FAIL;
-  Microsoft::WRL::ComPtr<ID3D11Device> device;
-  {
-    TRACE_EVENT0("gpu,startup",
-                 "GetMaxResolutionForGUIDs. QueryDeviceObjectFromANGLE");
-
-    device = gl::QueryD3D11DeviceObjectFromANGLE();
-    if (!device)
-      return max_resolution;
-  }
-
-  // Legacy AMD drivers with UVD3 or earlier and some Intel GPU's crash while
-  // creating surfaces larger than 1920 x 1088.
-  if (IsLegacyGPU(device.Get()))
-    return max_resolution;
-
-  Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device;
-  hr = device.CopyTo(IID_PPV_ARGS(&video_device));
-  if (FAILED(hr))
-    return max_resolution;
-
-  GUID decoder_guid = GUID_NULL;
-  {
-    TRACE_EVENT0("gpu,startup", "GetMaxResolutionForGUIDs. GUID search begin");
-    // Enumerate supported video profiles and look for the H264 profile.
-    UINT profile_count = video_device->GetVideoDecoderProfileCount();
-    for (UINT profile_idx = 0; profile_idx < profile_count; profile_idx++) {
-      GUID profile_id = {};
-      hr = video_device->GetVideoDecoderProfile(profile_idx, &profile_id);
-      if (SUCCEEDED(hr) && (std::find(valid_guids.begin(), valid_guids.end(),
-                                      profile_id) != valid_guids.end())) {
-        decoder_guid = profile_id;
-        break;
-      }
-    }
-    if (decoder_guid == GUID_NULL)
-      return max_resolution;
-  }
-
-  {
-    TRACE_EVENT0("gpu,startup",
-                 "GetMaxResolutionForGUIDs. Resolution search begin");
-
-    for (auto& res : resolutions_to_test) {
-      D3D11_VIDEO_DECODER_DESC desc = {};
-      desc.Guid = decoder_guid;
-      desc.SampleWidth = res.width();
-      desc.SampleHeight = res.height();
-      desc.OutputFormat = DXGI_FORMAT_NV12;
-      UINT config_count = 0;
-      hr = video_device->GetVideoDecoderConfigCount(&desc, &config_count);
-      if (FAILED(hr) || config_count == 0)
-        return max_resolution;
-
-      D3D11_VIDEO_DECODER_CONFIG config = {};
-      hr = video_device->GetVideoDecoderConfig(&desc, 0, &config);
-      if (FAILED(hr))
-        return max_resolution;
-
-      Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder;
-      hr = video_device->CreateVideoDecoder(&desc, &config,
-                                            video_decoder.GetAddressOf());
-      if (!video_decoder)
-        return max_resolution;
-
-      max_resolution = res;
-    }
-  }
-
-  return max_resolution;
-}
-
-// static
-bool DXVAVideoDecodeAccelerator::IsLegacyGPU(ID3D11Device* device) {
-  static const int kAMDGPUId1 = 0x1002;
-  static const int kAMDGPUId2 = 0x1022;
-  static const int kIntelGPU = 0x8086;
-
-  static bool legacy_gpu = true;
-  // This flag ensures that we determine the GPU type once.
-  static bool legacy_gpu_determined = false;
-
-  if (legacy_gpu_determined)
-    return legacy_gpu;
-
-  legacy_gpu_determined = true;
-
-  Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
-  HRESULT hr = device->QueryInterface(IID_PPV_ARGS(&dxgi_device));
-  if (FAILED(hr))
-    return legacy_gpu;
-
-  Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
-  hr = dxgi_device->GetAdapter(adapter.GetAddressOf());
-  if (FAILED(hr))
-    return legacy_gpu;
-
-  DXGI_ADAPTER_DESC adapter_desc = {};
-  hr = adapter->GetDesc(&adapter_desc);
-  if (FAILED(hr))
-    return legacy_gpu;
-
-  // We check if the device is an Intel or an AMD device and whether it is in
-  // the global list defined by the g_AMDUVD3GPUList and g_IntelLegacyGPUList
-  // arrays above. If yes then the device is treated as a legacy device.
-  if ((adapter_desc.VendorId == kAMDGPUId1) ||
-      adapter_desc.VendorId == kAMDGPUId2) {
-    {
-      TRACE_EVENT0("gpu,startup",
-                   "DXVAVideoDecodeAccelerator::IsLegacyGPU. AMD check");
-      for (size_t i = 0; i < arraysize(g_AMDUVD3GPUList); i++) {
-        if (adapter_desc.DeviceId == g_AMDUVD3GPUList[i])
-          return legacy_gpu;
-      }
-    }
-  } else if (adapter_desc.VendorId == kIntelGPU) {
-    {
-      TRACE_EVENT0("gpu,startup",
-                   "DXVAVideoDecodeAccelerator::IsLegacyGPU. Intel check");
-      for (size_t i = 0; i < arraysize(g_IntelLegacyGPUList); i++) {
-        if (adapter_desc.DeviceId == g_IntelLegacyGPUList[i])
-          return legacy_gpu;
-      }
-    }
-  }
-  legacy_gpu = false;
-  return legacy_gpu;
 }
 
 bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
