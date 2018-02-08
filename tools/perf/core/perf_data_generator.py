@@ -532,7 +532,7 @@ def generate_isolate_script_entry(swarming_dimensions, test_args,
       'expiration': 10 * 60 * 60, # 10 hour timeout
       'hard_timeout': swarming_timeout if swarming_timeout else 10800, # 3 hours
       'ignore_task_failure': ignore_task_failure,
-      'io_timeout': io_timeout if io_timeout else 1200, # 20 minutes
+      'io_timeout': io_timeout if io_timeout else 600, # 10 minutes
       'dimension_sets': swarming_dimensions,
       'upload_test_results': True,
     }
