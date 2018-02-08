@@ -125,6 +125,9 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // Responsible for laying out the app list UI.
   std::unique_ptr<AppListPresenterDelegate> presenter_delegate_;
 
+  // The view delegate owned by AppListService.
+  AppListViewDelegate* view_delegate_ = nullptr;
+
   // Whether we should show or hide app list widget.
   bool is_visible_ = false;
 

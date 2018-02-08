@@ -52,7 +52,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   void InvokeSearchResultAction(SearchResult* result,
                                 int action_index,
                                 int event_flags) override {}
-  void ViewShown() override {}
+  void ViewShown(int64_t display_id) override {}
   void Dismiss() override;
   void ViewClosing() override {}
   void GetWallpaperProminentColors(
