@@ -56,6 +56,9 @@ class SocketsUdpCreateFunction : public UDPSocketAsyncApiFunction {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SocketsUdpUnitTest, Create);
+
+  network::mojom::UDPSocketPtrInfo socket_;
+  network::mojom::UDPSocketReceiverRequest socket_receiver_request_;
   std::unique_ptr<sockets_udp::Create::Params> params_;
 };
 
@@ -106,6 +109,7 @@ class SocketsUdpBindFunction : public UDPSocketAsyncApiFunction {
   // AsyncApiFunction:
   bool Prepare() override;
   void AsyncWorkStart() override;
+  void OnCompleted(int net_result);
 
  private:
   std::unique_ptr<sockets_udp::Bind::Params> params_;
@@ -197,9 +201,11 @@ class SocketsUdpJoinGroupFunction : public UDPSocketAsyncApiFunction {
 
   // AsyncApiFunction
   bool Prepare() override;
-  void Work() override;
+  void AsyncWorkStart() override;
 
  private:
+  void OnCompleted(int result);
+
   std::unique_ptr<sockets_udp::JoinGroup::Params> params_;
 };
 
@@ -214,9 +220,11 @@ class SocketsUdpLeaveGroupFunction : public UDPSocketAsyncApiFunction {
 
   // AsyncApiFunction
   bool Prepare() override;
-  void Work() override;
+  void AsyncWorkStart() override;
 
  private:
+  void OnCompleted(int result);
+
   std::unique_ptr<sockets_udp::LeaveGroup::Params> params_;
 };
 
@@ -288,9 +296,11 @@ class SocketsUdpSetBroadcastFunction : public UDPSocketAsyncApiFunction {
 
   // AsyncApiFunction
   bool Prepare() override;
-  void Work() override;
+  void AsyncWorkStart() override;
 
  private:
+  void OnCompleted(int net_result);
+
   std::unique_ptr<sockets_udp::SetBroadcast::Params> params_;
 };
 

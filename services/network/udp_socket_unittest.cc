@@ -279,6 +279,12 @@ TEST_F(UDPSocketTest, TestUnexpectedSequences) {
   // Calling Connect() after Bind() should fail because they can't be both used.
   ASSERT_EQ(net::ERR_SOCKET_IS_CONNECTED,
             helper.ConnectSync(local_addr, nullptr, &local_addr));
+
+  // Now Close() the socket.
+  socket_ptr->Close();
+
+  // Re-Bind() is okay.
+  ASSERT_EQ(net::OK, helper.BindSync(local_addr, nullptr, &local_addr));
 }
 
 // Tests that if the underlying socket implementation's Send() returned
@@ -433,6 +439,25 @@ TEST_F(UDPSocketTest, TestReadSend) {
   // results in an early rejection.
   std::vector<uint8_t> large_msg(64 * 1024, 1);
   EXPECT_EQ(net::ERR_MSG_TOO_BIG, helper.SendToSync(client_addr, large_msg));
+
+  // Close and re-Connect client socket.
+  client_socket->Close();
+  client_socket.FlushForTesting();
+
+  // Make sure datagram can still be sent from the re-connected client socket.
+  ASSERT_EQ(net::OK,
+            client_helper.ConnectSync(server_addr, nullptr, &client_addr));
+  server_socket->ReceiveMore(1);
+  std::vector<uint8_t> msg(CreateTestMessage(0, kDatagramSize));
+  EXPECT_EQ(net::OK, client_helper.SendSync(msg));
+
+  receiver.WaitForReceivedResults(kDatagramCount + 1);
+  ASSERT_EQ(kDatagramCount + 1, receiver.results().size());
+
+  auto result = receiver.results()[kDatagramCount];
+  EXPECT_EQ(net::OK, result.net_error);
+  EXPECT_EQ(result.src_addr, client_addr);
+  EXPECT_EQ(msg, result.data.value());
 }
 
 TEST_F(UDPSocketTest, TestReadSendTo) {
@@ -484,6 +509,70 @@ TEST_F(UDPSocketTest, TestReadSendTo) {
   // results in an early rejection.
   std::vector<uint8_t> large_msg(64 * 1024, 1);
   EXPECT_EQ(net::ERR_MSG_TOO_BIG, helper.SendToSync(client_addr, large_msg));
+
+  // Make sure datagram can still be sent from the re-bound server socket.
+  server_socket->Close();
+  ASSERT_EQ(net::OK, helper.BindSync(server_addr, nullptr, &server_addr));
+  client_socket->ReceiveMore(1);
+  std::vector<uint8_t> msg(CreateTestMessage(0, kDatagramSize));
+  EXPECT_EQ(net::OK, helper.SendToSync(client_addr, msg));
+
+  receiver.WaitForReceivedResults(kDatagramCount + 1);
+  ASSERT_EQ(kDatagramCount + 1, receiver.results().size());
+
+  auto result = receiver.results()[kDatagramCount];
+  EXPECT_EQ(net::OK, result.net_error);
+  EXPECT_FALSE(result.src_addr);
+  EXPECT_EQ(msg, result.data.value());
+}
+
+TEST_F(UDPSocketTest, TestReceiveMoreWithBufferSize) {
+  // Create a server socket to listen for incoming datagrams.
+  test::UDPSocketReceiverImpl receiver;
+  mojo::Binding<mojom::UDPSocketReceiver> receiver_binding(&receiver);
+  mojom::UDPSocketReceiverPtr receiver_interface_ptr;
+  receiver_binding.Bind(mojo::MakeRequest(&receiver_interface_ptr));
+
+  mojom::UDPSocketPtr server_socket;
+  UDPSocket impl(mojo::MakeRequest(&server_socket),
+                 std::move(receiver_interface_ptr));
+
+  net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
+  test::UDPSocketTestHelper helper(&server_socket);
+  ASSERT_EQ(net::OK, helper.BindSync(server_addr, nullptr, &server_addr));
+
+  // Create a client socket to send datagrams.
+  mojom::UDPSocketPtr client_socket;
+  UDPSocket client_impl(mojo::MakeRequest(&client_socket), nullptr);
+  net::IPEndPoint client_addr(GetLocalHostWithAnyPort());
+  test::UDPSocketTestHelper client_helper(&client_socket);
+  ASSERT_EQ(net::OK,
+            client_helper.ConnectSync(server_addr, nullptr, &client_addr));
+
+  // Use a buffer size that is 1 byte smaller than the datagram size.
+  // This should result in net::ERR_MSG_TOO_BIG, because the transport can't
+  // complete the read with this small buffer size.
+  size_t buffer_size = kDatagramSize - 1;
+  server_socket->ReceiveMoreWithBufferSize(1, buffer_size);
+  std::vector<uint8_t> test_msg(CreateTestMessage(0, kDatagramSize));
+  ASSERT_EQ(net::OK, client_helper.SendSync(test_msg));
+
+  receiver.WaitForReceivedResults(1);
+  ASSERT_EQ(1u, receiver.results().size());
+  auto result = receiver.results()[0];
+  EXPECT_EQ(net::ERR_MSG_TOO_BIG, result.net_error);
+  EXPECT_FALSE(result.data);
+
+  // Now use a buffer size that is equal to datagram size. This should be okay.
+  server_socket->ReceiveMoreWithBufferSize(1, kDatagramSize);
+  ASSERT_EQ(net::OK, client_helper.SendSync(test_msg));
+
+  receiver.WaitForReceivedResults(2);
+  ASSERT_EQ(2u, receiver.results().size());
+  result = receiver.results()[1];
+  EXPECT_EQ(net::OK, result.net_error);
+  EXPECT_EQ(client_addr, result.src_addr.value());
+  EXPECT_EQ(test_msg, result.data.value());
 }
 
 // Make sure passing an invalid net::IPEndPoint will be detected by
