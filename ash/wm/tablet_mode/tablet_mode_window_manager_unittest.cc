@@ -21,6 +21,7 @@
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
@@ -1515,8 +1516,6 @@ TEST_F(TabletModeWindowManagerTest, AlwaysOnTopWindows) {
   EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMaximized());
   EXPECT_EQ(rect1.ToString(), w1->bounds().ToString());
   EXPECT_EQ(rect2.ToString(), w2->bounds().ToString());
-  EXPECT_TRUE(wm::GetWindowState(w1.get())->can_be_dragged());
-  EXPECT_TRUE(wm::GetWindowState(w2.get())->can_be_dragged());
 
   // Enter tablet mode. Neither window should be managed because they have
   // the always-on-top property set, which means that none of their properties
@@ -1528,8 +1527,6 @@ TEST_F(TabletModeWindowManagerTest, AlwaysOnTopWindows) {
   EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMaximized());
   EXPECT_EQ(rect1.ToString(), w1->bounds().ToString());
   EXPECT_EQ(rect2.ToString(), w2->bounds().ToString());
-  EXPECT_TRUE(wm::GetWindowState(w1.get())->can_be_dragged());
-  EXPECT_TRUE(wm::GetWindowState(w2.get())->can_be_dragged());
 
   // Remove the always-on-top property from both windows while in maximize
   // mode. The windows should become managed, which means they should be
@@ -1543,8 +1540,6 @@ TEST_F(TabletModeWindowManagerTest, AlwaysOnTopWindows) {
   EXPECT_NE(rect1.size().ToString(), w1->bounds().size().ToString());
   EXPECT_NE(rect2.origin().ToString(), w2->bounds().origin().ToString());
   EXPECT_EQ(rect2.size().ToString(), w2->bounds().size().ToString());
-  EXPECT_FALSE(wm::GetWindowState(w1.get())->can_be_dragged());
-  EXPECT_FALSE(wm::GetWindowState(w2.get())->can_be_dragged());
 
   // Applying the always-on-top property to both windows while in maximize
   // mode should cause both windows to return to their original size,
@@ -1556,8 +1551,6 @@ TEST_F(TabletModeWindowManagerTest, AlwaysOnTopWindows) {
   EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMaximized());
   EXPECT_EQ(rect1.ToString(), w1->bounds().ToString());
   EXPECT_EQ(rect2.ToString(), w2->bounds().ToString());
-  EXPECT_TRUE(wm::GetWindowState(w1.get())->can_be_dragged());
-  EXPECT_TRUE(wm::GetWindowState(w2.get())->can_be_dragged());
 
   // The always-on-top windows should not change when leaving tablet mode.
   DestroyTabletModeWindowManager();
@@ -1565,8 +1558,6 @@ TEST_F(TabletModeWindowManagerTest, AlwaysOnTopWindows) {
   EXPECT_FALSE(wm::GetWindowState(w2.get())->IsMaximized());
   EXPECT_EQ(rect1.ToString(), w1->bounds().ToString());
   EXPECT_EQ(rect2.ToString(), w2->bounds().ToString());
-  EXPECT_TRUE(wm::GetWindowState(w1.get())->can_be_dragged());
-  EXPECT_TRUE(wm::GetWindowState(w2.get())->can_be_dragged());
 }
 
 // Tests that windows that can control maximized bounds are not maximized
@@ -1715,6 +1706,22 @@ TEST_F(TabletModeWindowManagerTest, SetPropertyOnUnmanagedWindow) {
   wm::GetWindowState(window.get())->set_allow_set_bounds_direct(true);
   window->SetProperty(aura::client::kAlwaysOnTopKey, true);
   window->Show();
+}
+
+// Test that there is no window resizer in tablet mode.
+TEST_F(TabletModeWindowManagerTest, NoWindowResizerInTabletMode) {
+  gfx::Rect rect(10, 10, 200, 200);
+  std::unique_ptr<aura::Window> window(
+      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
+  std::unique_ptr<WindowResizer> resizer(CreateWindowResizer(
+      window.get(), gfx::Point(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_MOUSE));
+  EXPECT_TRUE(resizer.get());
+  resizer.reset();
+
+  CreateTabletModeWindowManager();
+  resizer = CreateWindowResizer(window.get(), gfx::Point(), HTCAPTION,
+                                ::wm::WINDOW_MOVE_SOURCE_MOUSE);
+  EXPECT_FALSE(resizer.get());
 }
 
 }  // namespace ash

@@ -17,6 +17,7 @@
 #include "ash/shell_port.h"
 #include "ash/wm/default_window_resizer.h"
 #include "ash/wm/panels/panel_window_resizer.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
@@ -50,8 +51,12 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
     return nullptr;
   }
 
-  if (!window_state->can_be_dragged())
+  // Window resize in tablet mode is disabled (except in splitscreen).
+  if (Shell::Get()
+          ->tablet_mode_controller()
+          ->IsTabletModeWindowManagerEnabled()) {
     return nullptr;
+  }
 
   // TODO(varkha): The chaining of window resizers causes some of the logic
   // to be repeated and the logic flow difficult to control. With some windows

@@ -296,15 +296,12 @@ void TabletModeWindowState::AttachState(
     UpdateWindow(window_state, GetMaximizedOrCenteredWindowType(window_state),
                  true /* animated */);
   }
-
-  window_state->set_can_be_dragged(false);
 }
 
 void TabletModeWindowState::DetachState(wm::WindowState* window_state) {
   // From now on, we can use the default session restore mechanism again.
   SetWindowRestoreOverrides(window_state->window(), gfx::Rect(),
                             ui::SHOW_STATE_NORMAL);
-  window_state->set_can_be_dragged(true);
 }
 
 void TabletModeWindowState::UpdateWindow(wm::WindowState* window_state,

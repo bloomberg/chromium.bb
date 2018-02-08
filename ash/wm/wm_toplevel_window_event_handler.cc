@@ -7,6 +7,7 @@
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/wm/resize_shadow_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_observer.h"
@@ -63,8 +64,13 @@ void ShowResizeShadow(aura::Window* window, int component) {
     // TODO: http://crbug.com/640773.
     return;
   }
-  if (!wm::GetWindowState(window)->can_be_dragged())
+
+  // Window resize in tablet mode is disabled (except in splitscreen).
+  if (Shell::Get()
+          ->tablet_mode_controller()
+          ->IsTabletModeWindowManagerEnabled()) {
     return;
+  }
 
   ResizeShadowController* resize_shadow_controller =
       Shell::Get()->resize_shadow_controller();
@@ -77,8 +83,6 @@ void HideResizeShadow(aura::Window* window) {
     // TODO: http://crbug.com/640773.
     return;
   }
-  if (!wm::GetWindowState(window)->can_be_dragged())
-    return;
 
   ResizeShadowController* resize_shadow_controller =
       Shell::Get()->resize_shadow_controller();
