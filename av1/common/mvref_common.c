@@ -524,6 +524,7 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
         }
 
         ++coll_blk_count;
+        return coll_blk_count;
       }
     }
   } else {
@@ -591,6 +592,7 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
         }
 
         ++coll_blk_count;
+        return coll_blk_count;
       }
     }
   }
