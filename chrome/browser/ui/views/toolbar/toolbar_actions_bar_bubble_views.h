@@ -42,6 +42,7 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
 
   // views::BubbleDialogDelegateView:
   base::string16 GetWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
   views::View* CreateExtraView() override;
   bool Cancel() override;
   bool Accept() override;

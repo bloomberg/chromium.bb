@@ -95,6 +95,10 @@ base::string16 ToolbarActionsBarBubbleViews::GetWindowTitle() const {
   return delegate_->GetHeadingText();
 }
 
+bool ToolbarActionsBarBubbleViews::ShouldShowCloseButton() const {
+  return true;
+}
+
 bool ToolbarActionsBarBubbleViews::Cancel() {
   DCHECK(!delegate_notified_of_close_);
   delegate_notified_of_close_ = true;
@@ -131,8 +135,9 @@ void ToolbarActionsBarBubbleViews::Init() {
   views::Label* content_label =
       new views::Label(delegate_->GetBodyText(anchored_to_action_));
   content_label->SetMultiLine(true);
-  int width = views::Widget::GetLocalizedContentsWidth(
-        IDS_EXTENSION_TOOLBAR_REDESIGN_NOTIFICATION_BUBBLE_WIDTH_CHARS);
+  int width = provider->GetDistanceMetric(
+                  ChromeDistanceMetric::DISTANCE_BUBBLE_PREFERRED_WIDTH) -
+              margins().width();
   content_label->SizeToFit(width);
   content_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(content_label);
