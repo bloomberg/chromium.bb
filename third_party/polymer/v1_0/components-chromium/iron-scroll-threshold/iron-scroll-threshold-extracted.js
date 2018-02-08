@@ -66,6 +66,7 @@ Polymer({
 
     _setOverflow: function(scrollTarget) {
       this.style.overflow = scrollTarget === this ? 'auto' : '';
+      this.style.webkitOverflowScrolling = scrollTarget === this ? 'touch' : '';
     },
 
     _scrollHandler: function() {
@@ -73,7 +74,7 @@ Polymer({
       var THROTTLE_THRESHOLD = 200;
       if (!this.isDebouncerActive('_checkTheshold')) {
         this.debounce('_checkTheshold', function() {
-          this.checkScrollThesholds();
+          this.checkScrollThresholds();
         }, THROTTLE_THRESHOLD);
       }
     },
@@ -82,7 +83,7 @@ Polymer({
       if (isAttached) {
         this.debounce('_init', function() {
           this.clearTriggers();
-          this.checkScrollThesholds();
+          this.checkScrollThresholds();
         });
       }
     },
@@ -91,9 +92,9 @@ Polymer({
      * Checks the scroll thresholds.
      * This method is automatically called by iron-scroll-threshold.
      *
-     * @method checkScrollThesholds
+     * @method checkScrollThresholds
      */
-    checkScrollThesholds: function() {
+    checkScrollThresholds: function() {
       if (!this.scrollTarget || (this.lowerTriggered && this.upperTriggered)) {
         return;
       }
@@ -112,6 +113,11 @@ Polymer({
         this._setLowerTriggered(true);
         this.fire('lower-threshold');
       }
+    },
+
+    checkScrollThesholds: function() {
+      // iron-scroll-threshold/issues/16
+      this.checkScrollThresholds();
     },
 
     /**
