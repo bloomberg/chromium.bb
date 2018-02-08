@@ -32,6 +32,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
@@ -113,6 +114,7 @@ DEFINE_UI_CLASS_PROPERTY_TYPE(DeletionTestProperty*);
 
 namespace aura {
 namespace test {
+namespace {
 
 class WindowTest : public AuraTestBaseWithType {
  public:
@@ -139,8 +141,6 @@ class WindowTest : public AuraTestBaseWithType {
 
   DISALLOW_COPY_AND_ASSIGN(WindowTest);
 };
-
-namespace {
 
 // Used for verifying destruction methods are invoked.
 class DestroyTrackingDelegateImpl : public TestWindowDelegate {
@@ -315,8 +315,6 @@ void OffsetBounds(Window* window, int horizontal, int vertical) {
   bounds.Offset(horizontal, vertical);
   window->SetBounds(bounds);
 }
-
-}  // namespace
 
 TEST_P(WindowTest, GetChildById) {
   std::unique_ptr<Window> w1(CreateTestWindowWithId(1, root_window()));
@@ -1673,8 +1671,6 @@ TEST_P(WindowTest, Property) {
   EXPECT_EQ(nullptr, w->GetNativeWindowProperty(native_prop_key));
 }
 
-namespace {
-
 class DeletionTestLayoutManager : public LayoutManager {
  public:
   explicit DeletionTestLayoutManager(DeletionTracker* tracker)
@@ -1695,8 +1691,6 @@ class DeletionTestLayoutManager : public LayoutManager {
 
   DISALLOW_COPY_AND_ASSIGN(DeletionTestLayoutManager);
 };
-
-}  // namespace
 
 TEST_P(WindowTest, DeleteLayoutManagerBeforeOwnedProps) {
   DeletionTracker tracker;
@@ -2696,8 +2690,6 @@ TEST_P(WindowTest, OwnedByParentFalse) {
   EXPECT_EQ(NULL, w2->parent());
 }
 
-namespace {
-
 // Used By DeleteWindowFromOnWindowDestroyed. Destroys a Window from
 // OnWindowDestroyed().
 class OwningWindowDelegate : public TestWindowDelegate {
@@ -2715,8 +2707,6 @@ class OwningWindowDelegate : public TestWindowDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(OwningWindowDelegate);
 };
-
-}  // namespace
 
 // Creates a window with two child windows. When the first child window is
 // destroyed (WindowDelegate::OnWindowDestroyed) it deletes the second child.
@@ -2737,7 +2727,52 @@ TEST_P(WindowTest, DeleteWindowFromOnWindowDestroyed) {
   parent.reset();
 }
 
-namespace {
+// WindowObserver implementation that deletes a window in
+// OnWindowVisibilityChanged().
+class DeleteOnVisibilityChangedObserver : public WindowObserver {
+ public:
+  // |to_observe| is the Window this is added as an observer to. When
+  // OnWindowVisibilityChanged() is called |to_delete| is deleted.
+  explicit DeleteOnVisibilityChangedObserver(Window* to_observe,
+                                             Window* to_delete)
+      : to_observe_(to_observe), to_delete_(to_delete) {
+    to_observe_->AddObserver(this);
+  }
+  ~DeleteOnVisibilityChangedObserver() override {
+    // OnWindowVisibilityChanged() should have been called.
+    DCHECK(!to_delete_);
+  }
+
+  // WindowObserver:
+  void OnWindowVisibilityChanged(Window* window, bool visible) override {
+    to_observe_->RemoveObserver(this);
+    delete to_delete_;
+    to_delete_ = nullptr;
+  }
+
+ private:
+  Window* to_observe_;
+  Window* to_delete_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeleteOnVisibilityChangedObserver);
+};
+
+TEST_P(WindowTest, DeleteParentWindowFromOnWindowVisibiltyChanged) {
+  WindowTracker tracker;
+  Window* root = CreateTestWindowWithId(0, nullptr);
+  tracker.Add(root);
+  Window* child1 = CreateTestWindowWithId(0, root);
+  tracker.Add(child1);
+  tracker.Add(CreateTestWindowWithId(0, root));
+
+  // This deletes |root| (the parent) when OnWindowVisibilityChanged() is
+  // received by |child1|.
+  DeleteOnVisibilityChangedObserver deletion_observer(child1, root);
+  // The Hide() calls trigger deleting |root|, which should delete the whole
+  // tree.
+  root->Hide();
+  EXPECT_TRUE(tracker.windows().empty());
+}
 
 // Used by DelegateNotifiedAsBoundsChange to verify OnBoundsChanged() is
 // invoked.
@@ -2762,8 +2797,6 @@ class BoundsChangeDelegate : public TestWindowDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(BoundsChangeDelegate);
 };
-
-}  // namespace
 
 // Verifies the delegate is notified when the actual bounds of the layer
 // change.
@@ -2843,8 +2876,6 @@ TEST_P(WindowTest, DelegateNotifiedAsBoundsChangeInHiddenLayer) {
   EXPECT_NE("0,0 100x100", window->layer()->bounds().ToString());
 }
 
-namespace {
-
 // Used by AddChildNotifications to track notification counts.
 class AddChildNotificationsObserver : public WindowObserver {
  public:
@@ -2870,8 +2901,6 @@ class AddChildNotificationsObserver : public WindowObserver {
 
   DISALLOW_COPY_AND_ASSIGN(AddChildNotificationsObserver);
 };
-
-}  // namespace
 
 // Assertions around when root window notifications are sent.
 TEST_P(WindowTest, AddChildNotifications) {
@@ -3094,8 +3123,6 @@ TEST_P(WindowTest, OnWindowHierarchyChange) {
   }
 }
 
-namespace {
-
 class TestLayerAnimationObserver : public ui::LayerAnimationObserver {
  public:
   TestLayerAnimationObserver()
@@ -3129,8 +3156,6 @@ class TestLayerAnimationObserver : public ui::LayerAnimationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(TestLayerAnimationObserver);
 };
-
-}  // namespace
 
 TEST_P(WindowTest, WindowDestroyCompletesAnimations) {
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
@@ -3248,5 +3273,6 @@ INSTANTIATE_TEST_CASE_P(/* no prefix */,
                                           BackendType::MUS,
                                           BackendType::MUS_HOSTING_VIZ));
 
+}  // namespace
 }  // namespace test
 }  // namespace aura

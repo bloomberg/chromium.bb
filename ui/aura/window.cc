@@ -1032,23 +1032,18 @@ bool Window::NotifyWindowVisibilityChangedDown(aura::Window* target,
                                                bool visible) {
   if (!NotifyWindowVisibilityChangedAtReceiver(target, visible))
     return false; // |this| was deleted.
-  std::set<const Window*> child_already_processed;
-  bool child_destroyed = false;
-  do {
-    child_destroyed = false;
-    for (Window::Windows::const_iterator it = children_.begin();
-         it != children_.end(); ++it) {
-      if (!child_already_processed.insert(*it).second)
-        continue;
-      if (!(*it)->NotifyWindowVisibilityChangedDown(target, visible)) {
-        // |*it| was deleted, |it| is invalid and |children_| has changed.
-        // We exit the current for-loop and enter a new one.
-        child_destroyed = true;
-        break;
-      }
-    }
-  } while (child_destroyed);
-  return true;
+
+  WindowTracker this_tracker;
+  this_tracker.Add(this);
+  // Copy |children_| in case iterating mutates |children_|, or destroys an
+  // existing child.
+  WindowTracker children(children_);
+
+  while (!this_tracker.windows().empty() && !children.windows().empty())
+    children.Pop()->NotifyWindowVisibilityChangedDown(target, visible);
+
+  const bool this_still_valid = !this_tracker.windows().empty();
+  return this_still_valid;
 }
 
 void Window::NotifyWindowVisibilityChangedUp(aura::Window* target,
