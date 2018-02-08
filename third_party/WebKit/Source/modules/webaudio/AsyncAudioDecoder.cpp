@@ -80,7 +80,7 @@ void AsyncAudioDecoder::DecodeOnBackgroundThread(
   // exist any more.
   if (context) {
     PostCrossThreadTask(
-        *Platform::Current()->MainThread()->GetWebTaskRunner(), FROM_HERE,
+        *Platform::Current()->MainThread()->GetTaskRunner(), FROM_HERE,
         CrossThreadBind(&AsyncAudioDecoder::NotifyComplete,
                         WrapCrossThreadPersistent(audio_data),
                         WrapCrossThreadPersistent(success_callback),

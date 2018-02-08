@@ -23,7 +23,7 @@ void PresentationAvailabilityState::RequestAvailability(
   auto screen_availability = GetScreenAvailability(urls);
   // Reject Promise if screen availability is unsupported for all URLs.
   if (screen_availability == mojom::blink::ScreenAvailability::DISABLED) {
-    Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
+    Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
         FROM_HERE,
         WTF::Bind(
             &PresentationAvailabilityCallbacks::RejectAvailabilityNotSupported,
@@ -39,7 +39,7 @@ void PresentationAvailabilityState::RequestAvailability(
   }
 
   if (screen_availability != mojom::blink::ScreenAvailability::UNKNOWN) {
-    Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
+    Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
         FROM_HERE, WTF::Bind(&PresentationAvailabilityCallbacks::Resolve,
                              std::move(callback),
                              screen_availability ==

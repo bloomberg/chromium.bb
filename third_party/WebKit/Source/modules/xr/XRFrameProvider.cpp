@@ -254,7 +254,7 @@ void XRFrameProvider::OnExclusiveVSync(
   // between frames. Executing mojo tasks back to back within the same
   // execution context caused extreme input delay due to processing
   // multiple frames without yielding, see crbug.com/701444.
-  Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
+  Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
       FROM_HERE, WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
                            WrapWeakPersistent(this), time_delta.InSecondsF()));
 }
@@ -268,7 +268,7 @@ void XRFrameProvider::OnNonExclusiveVSync(double timestamp) {
   if (exclusive_session_)
     return;
 
-  Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
+  Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
       FROM_HERE, WTF::Bind(&XRFrameProvider::ProcessScheduledFrame,
                            WrapWeakPersistent(this), timestamp));
 }

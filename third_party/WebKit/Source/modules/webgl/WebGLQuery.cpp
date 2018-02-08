@@ -26,7 +26,7 @@ WebGLQuery::WebGLQuery(WebGL2RenderingContextBase* ctx)
         ctx->canvas()->GetDocument().GetTaskRunner(TaskType::kUnthrottled);
   } else {
     // Fallback for OffscreenCanvas (no frame scheduler)
-    task_runner_ = Platform::Current()->CurrentThread()->GetWebTaskRunner();
+    task_runner_ = Platform::Current()->CurrentThread()->GetTaskRunner();
   }
   GLuint query;
   ctx->ContextGL()->GenQueriesEXT(1, &query);
