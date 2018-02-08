@@ -706,6 +706,22 @@
       "63ED55E43214C211F82122ED56407FF1A807F2A3",  // Media Router Dev
       "226CF815E39A363090A1E547D53063472B8279FA"   // Media Router Release
     ]
+  },
+  {
+    "channel": "stable",
+    "extension_types": ["platform_app"],
+    "platforms": ["chromeos"],
+    "session_types": ["kiosk"],
+    "whitelist": [
+      "E703483CEF33DEC18B4B6DD84B5C776FB9182BDB",  // https://crbug.com/803362
+      "A3BC37E2148AC4E99BE4B16AF9D42DD1E592BBBE",  // https://crbug.com/803362
+      "1C93BD3CF875F4A73C0B2A163BB8FBDA8B8B3D80",  // https://crbug.com/803362
+      "307E96539209F95A1A8740C713E6998A73657D96",  // https://crbug.com/803362
+      "4F25792AF1AA7483936DE29C07806F203C7170A0",  // https://crbug.com/803362
+      "BD8781D757D830FC2E85470A1B6E8A718B7EE0D9",  // https://crbug.com/803362
+      "4AC2B6C63C6480D150DFDA13E4A5956EB1D0DDBB",  // https://crbug.com/803362
+      "81986D4F846CEDDDB962643FA501D1780DD441BB"   // https://crbug.com/803362
+    ]
   }],
   "signedInDevices": {
     "channel": "dev",
