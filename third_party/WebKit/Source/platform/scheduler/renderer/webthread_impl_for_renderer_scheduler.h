@@ -18,7 +18,6 @@ namespace blink {
 namespace scheduler {
 class RendererSchedulerImpl;
 class WebSchedulerImpl;
-class WebTaskRunnerImpl;
 
 class PLATFORM_EXPORT WebThreadImplForRendererScheduler : public WebThreadBase {
  public:
@@ -28,9 +27,7 @@ class PLATFORM_EXPORT WebThreadImplForRendererScheduler : public WebThreadBase {
   // WebThread implementation.
   WebScheduler* Scheduler() const override;
   PlatformThreadId ThreadId() const override;
-  base::SingleThreadTaskRunner* GetWebTaskRunner() const override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetSingleThreadTaskRunner()
-      const override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override;
 
   // WebThreadBase implementation.
   SingleThreadIdleTaskRunner* GetIdleTaskRunner() const override;
@@ -50,7 +47,6 @@ class PLATFORM_EXPORT WebThreadImplForRendererScheduler : public WebThreadBase {
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
   RendererSchedulerImpl* scheduler_;  // Not owned.
   PlatformThreadId thread_id_;
-  scoped_refptr<WebTaskRunnerImpl> web_task_runner_;
 };
 
 }  // namespace scheduler
