@@ -11,6 +11,7 @@
 #include "core/paint/BoxBorderPainter.h"
 #include "core/paint/NinePieceImagePainter.h"
 #include "core/paint/PaintInfo.h"
+#include "core/paint/PaintLayer.h"
 #include "core/paint/RoundedInnerRectClipper.h"
 #include "core/style/BorderEdge.h"
 #include "core/style/ComputedStyle.h"
@@ -694,6 +695,44 @@ void BoxPainterBase::PaintBorder(const ImageResourceObserver& obj,
                                         include_logical_left_edge,
                                         include_logical_right_edge);
   border_painter.PaintBorder(info, rect);
+}
+
+void BoxPainterBase::PaintMaskImages(const PaintInfo& paint_info,
+                                     const LayoutRect& paint_rect,
+                                     const ImageResourceObserver& obj,
+                                     BackgroundImageGeometry& geometry) {
+  // Figure out if we need to push a transparency layer to render our mask.
+  bool push_transparency_layer = false;
+  bool all_mask_images_loaded = true;
+
+  if (!style_.HasMask() || style_.Visibility() != EVisibility::kVisible)
+    return;
+
+  DCHECK(paint_layer_);
+  if (!paint_layer_->MaskBlendingAppliedByCompositor(paint_info)) {
+    push_transparency_layer = true;
+    StyleImage* mask_box_image = style_.MaskBoxImage().GetImage();
+    const FillLayer& mask_layers = style_.MaskLayers();
+
+    // Don't render a masked element until all the mask images have loaded, to
+    // prevent a flash of unmasked content.
+    if (mask_box_image)
+      all_mask_images_loaded &= mask_box_image->IsLoaded();
+
+    all_mask_images_loaded &= mask_layers.ImagesAreLoaded();
+
+    paint_info.context.BeginLayer(1, SkBlendMode::kDstIn);
+  }
+
+  if (all_mask_images_loaded) {
+    PaintFillLayers(paint_info, Color::kTransparent, style_.MaskLayers(),
+                    paint_rect, geometry);
+    NinePieceImagePainter::Paint(paint_info.context, obj, *document_, node_,
+                                 paint_rect, style_, style_.MaskBoxImage());
+  }
+
+  if (push_transparency_layer)
+    paint_info.context.EndLayer();
 }
 
 }  // namespace blink

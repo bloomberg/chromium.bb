@@ -19,6 +19,7 @@ class LayoutObject;
 class Node;
 struct NGPhysicalOffsetRect;
 struct NGPixelSnappedPhysicalBoxStrut;
+class PaintLayer;
 
 class NGPhysicalFragment;
 
@@ -131,6 +132,9 @@ class CORE_EXPORT NGPhysicalFragment
 
   // Whether there is a PaintLayer associated with the fragment.
   bool HasLayer() const;
+
+  // The PaintLayer associated with the fragment.
+  PaintLayer* Layer() const;
 
   // GetLayoutObject should only be used when necessary for compatibility
   // with LegacyLayout.

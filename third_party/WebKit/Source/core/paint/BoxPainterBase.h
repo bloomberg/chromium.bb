@@ -23,6 +23,7 @@ class FillLayer;
 class FloatRoundedRect;
 class ImageResourceObserver;
 class LayoutRect;
+class PaintLayer;
 struct PaintInfo;
 
 // Base class for box painting. Has no dependencies on the layout tree and thus
@@ -37,13 +38,15 @@ class BoxPainterBase {
                  const ComputedStyle& style,
                  Node* node,
                  LayoutRectOutsets border,
-                 LayoutRectOutsets padding)
+                 LayoutRectOutsets padding,
+                 const PaintLayer* paint_layer)
       : display_item_(display_item),
         document_(document),
         style_(style),
         node_(node),
         border_(border),
-        padding_(padding) {}
+        padding_(padding),
+        paint_layer_(paint_layer) {}
 
   void PaintFillLayers(const PaintInfo&,
                        const Color&,
@@ -60,6 +63,11 @@ class BoxPainterBase {
                       BackgroundBleedAvoidance,
                       BackgroundImageGeometry&,
                       SkBlendMode = SkBlendMode::kSrcOver);
+
+  void PaintMaskImages(const PaintInfo&,
+                       const LayoutRect&,
+                       const ImageResourceObserver&,
+                       BackgroundImageGeometry&);
 
   static void PaintNormalBoxShadow(const PaintInfo&,
                                    const LayoutRect&,
@@ -185,6 +193,7 @@ class BoxPainterBase {
   Member<Node> node_;
   LayoutRectOutsets border_;
   LayoutRectOutsets padding_;
+  const PaintLayer* paint_layer_;
 };
 
 }  // namespace blink
