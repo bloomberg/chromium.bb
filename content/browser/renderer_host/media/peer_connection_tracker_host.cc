@@ -90,6 +90,12 @@ void PeerConnectionTrackerHost::OnRemovePeerConnection(int lid) {
 
 void PeerConnectionTrackerHost::OnUpdatePeerConnection(
     int lid, const std::string& type, const std::string& value) {
+  // TODO(eladalon): Get rid of magic value. https://crbug.com/810383
+  if (type == "stop") {
+    auto* manager = WebRtcEventLogManager::GetInstance();
+    manager->PeerConnectionStopped(render_process_id_, lid);
+  }
+
   WebRTCInternals* webrtc_internals = WebRTCInternals::GetInstance();
   if (webrtc_internals) {
     webrtc_internals->OnUpdatePeerConnection(peer_pid(), lid, type, value);
