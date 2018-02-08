@@ -184,6 +184,12 @@ CHROMEOS_EXPORT bool IsVoiceInteractionFlagsEnabled();
 // Returns true if voice interaction is enabled.
 CHROMEOS_EXPORT bool IsVoiceInteractionEnabled();
 
+// Returns true if Google Assistant flags are enabled.
+CHROMEOS_EXPORT bool IsAssistantFlagsEnabled();
+
+// Returns true if Google Assistant is enabled.
+CHROMEOS_EXPORT bool IsAssistantEnabled();
+
 // Returns true if Settings based network configuration is enabled.
 CHROMEOS_EXPORT bool IsNetworkSettingsConfigEnabled();
 
