@@ -411,6 +411,12 @@ if (CONFIG_INTRA_EDGE)
       "${AOM_ROOT}/av1/common/x86/intra_edge_sse4.c")
 endif ()
 
+if (CONFIG_FILTER_INTRA)
+  set(AOM_AV1_COMMON_INTRIN_SSE4_1
+      ${AOM_AV1_COMMON_INTRIN_SSE4_1}
+      "${AOM_ROOT}/av1/common/x86/filterintra_sse4.c")
+endif ()
+
 set(AOM_AV1_COMMON_SOURCES
     ${AOM_AV1_COMMON_SOURCES}
     "${AOM_ROOT}/av1/common/warped_motion.c"

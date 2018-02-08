@@ -149,6 +149,14 @@ if (NOT BUILD_SHARED_LIBS)
             "${AOM_ROOT}/test/intrabc_test.cc")
     endif ()
 
+    if (CONFIG_FILTER_INTRA)
+      if (HAVE_SSE4_1)
+        set(AOM_UNIT_TEST_COMMON_SOURCES
+            ${AOM_UNIT_TEST_COMMON_SOURCES}
+            "${AOM_ROOT}/test/filterintra_test.cc")
+      endif ()
+    endif ()
+
     if (CONFIG_CFL)
       set(AOM_UNIT_TEST_COMMON_SOURCES
         ${AOM_UNIT_TEST_COMMON_SOURCES}

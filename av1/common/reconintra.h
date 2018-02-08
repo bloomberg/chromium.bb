@@ -66,6 +66,10 @@ static INLINE int av1_allow_intrabc(const AV1_COMMON *const cm) {
 }
 #endif  // CONFIG_INTRABC
 
+#if CONFIG_FILTER_INTRA
+extern const int8_t av1_filter_intra_taps[FILTER_INTRA_MODES][8][8];
+#endif
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
