@@ -65,7 +65,24 @@ bool CSSPaintImageGeneratorImpl::GetValidDocumentDefinition(
   if (!HasDocumentDefinition())
     return false;
   definition = paint_worklet_->GetDocumentDefinitionMap().at(name_);
+  if (definition != kInvalidDocumentPaintDefinition &&
+      definition->GetRegisteredDefinitionCount() !=
+          PaintWorklet::kNumGlobalScopes) {
+    definition = kInvalidDocumentPaintDefinition;
+    return false;
+  }
   return definition != kInvalidDocumentPaintDefinition;
+}
+
+unsigned CSSPaintImageGeneratorImpl::GetRegisteredDefinitionCountForTesting()
+    const {
+  if (!HasDocumentDefinition())
+    return 0;
+  DocumentPaintDefinition* definition =
+      paint_worklet_->GetDocumentDefinitionMap().at(name_);
+  if (definition == kInvalidDocumentPaintDefinition)
+    return 0;
+  return definition->GetRegisteredDefinitionCount();
 }
 
 const Vector<CSSPropertyID>&
