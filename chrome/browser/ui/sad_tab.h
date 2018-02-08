@@ -37,11 +37,6 @@ class SadTab {
 
   virtual ~SadTab() {}
 
-  // Called when the sad tab needs to be reinstalled in its window,
-  // for example because an inactive tab was activated, or because a tab was
-  // dragged to a new browser window.
-  virtual void ReinstallInWebView() {}
-
   // These functions return resource string IDs for UI text. They may be
   // different for each sad tab. (Right now, the first sad tab in a session
   // suggests reloading and subsequent ones suggest sending feedback.)
@@ -64,8 +59,6 @@ class SadTab {
 
  protected:
   SadTab(content::WebContents* web_contents, SadTabKind kind);
-
-  content::WebContents* web_contents() const { return web_contents_; }
 
  private:
   content::WebContents* web_contents_;
