@@ -7,27 +7,37 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/supports_user_data.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
+namespace content {
+class ResourceContext;
+}
+
 namespace safe_browsing {
 
 // This class implements the Mojo interface for renderers to perform
 // SafeBrowsing URL checks.
-class MojoSafeBrowsingImpl : public mojom::SafeBrowsing {
+// A MojoSafeBrowsingImpl instance is destructed when the Mojo message pipe is
+// disconnected or |resource_context_| is destructed.
+class MojoSafeBrowsingImpl : public mojom::SafeBrowsing,
+                             public base::SupportsUserData::Data {
  public:
   ~MojoSafeBrowsingImpl() override;
 
   static void MaybeCreate(
       int render_process_id,
+      content::ResourceContext* resource_context,
       const base::Callback<UrlCheckerDelegate*()>& delegate_getter,
       mojom::SafeBrowsingRequest request);
 
  private:
   MojoSafeBrowsingImpl(scoped_refptr<UrlCheckerDelegate> delegate,
-                       int render_process_id);
+                       int render_process_id,
+                       content::ResourceContext* resource_context);
 
   // mojom::SafeBrowsing implementation.
   void CreateCheckerAndCheck(int32_t render_frame_id,
@@ -46,6 +56,10 @@ class MojoSafeBrowsingImpl : public mojom::SafeBrowsing {
   mojo::BindingSet<mojom::SafeBrowsing> bindings_;
   scoped_refptr<UrlCheckerDelegate> delegate_;
   int render_process_id_ = MSG_ROUTING_NONE;
+
+  // Not owned by this object. It is always valid during the lifetime of this
+  // object.
+  content::ResourceContext* resource_context_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoSafeBrowsingImpl);
 };

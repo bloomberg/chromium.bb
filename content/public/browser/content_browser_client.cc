@@ -27,6 +27,7 @@
 #include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "ui/gfx/image/image_skia.h"
@@ -570,7 +571,9 @@ ContentBrowserClient::GetTaskSchedulerInitParams() {
 
 std::vector<std::unique_ptr<URLLoaderThrottle>>
 ContentBrowserClient::CreateURLLoaderThrottles(
-    const base::Callback<WebContents*()>& wc_getter,
+    const network::ResourceRequest& request,
+    ResourceContext* resource_context,
+    const base::RepeatingCallback<WebContents*()>& wc_getter,
     NavigationUIData* navigation_ui_data) {
   return std::vector<std::unique_ptr<URLLoaderThrottle>>();
 }

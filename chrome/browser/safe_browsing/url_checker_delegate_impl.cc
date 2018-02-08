@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/url_checker_delegate_impl.h"
 
 #include "base/bind.h"
+#include "chrome/browser/data_reduction_proxy_util.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
@@ -12,6 +13,7 @@
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "services/network/public/cpp/features.h"
 
 namespace safe_browsing {
 namespace {
@@ -84,6 +86,17 @@ void UrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
 
 bool UrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {
   return false;
+}
+
+bool UrlCheckerDelegateImpl::ShouldSkipRequestCheck(
+    content::ResourceContext* resource_context,
+    const GURL& original_url) {
+  // When DataReductionProxyResourceThrottle is enabled for a request, it is
+  // responsible for checking whether the resource is safe, so we skip
+  // SafeBrowsing URL checks in that case.
+  return !base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+         IsDataReductionProxyResourceThrottleEnabledForUrl(resource_context,
+                                                           original_url);
 }
 
 const SBThreatTypeSet& UrlCheckerDelegateImpl::GetThreatTypes() {

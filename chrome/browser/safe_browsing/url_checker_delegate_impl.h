@@ -34,6 +34,8 @@ class UrlCheckerDelegateImpl : public UrlCheckerDelegate {
       bool is_main_frame,
       bool has_user_gesture) override;
   bool IsUrlWhitelisted(const GURL& url) override;
+  bool ShouldSkipRequestCheck(content::ResourceContext* resource_context,
+                              const GURL& url) override;
   const SBThreatTypeSet& GetThreatTypes() override;
   SafeBrowsingDatabaseManager* GetDatabaseManager() override;
   BaseUIManager* GetUIManager() override;

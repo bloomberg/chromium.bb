@@ -377,7 +377,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const base::CommandLine& command_line) override;
   std::vector<std::unique_ptr<content::URLLoaderThrottle>>
   CreateURLLoaderThrottles(
-      const base::Callback<content::WebContents*()>& wc_getter,
+      const network::ResourceRequest& request,
+      content::ResourceContext* resource_context,
+      const base::RepeatingCallback<content::WebContents*()>& wc_getter,
       content::NavigationUIData* navigation_ui_data) override;
   void RegisterNonNetworkNavigationURLLoaderFactories(
       content::RenderFrameHost* frame_host,
@@ -454,7 +456,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   static void SetDefaultQuotaSettingsForTesting(
       const storage::QuotaSettings *settings);
 
-  safe_browsing::UrlCheckerDelegate* GetSafeBrowsingUrlCheckerDelegate();
+  safe_browsing::UrlCheckerDelegate* GetSafeBrowsingUrlCheckerDelegate(
+      content::ResourceContext* resource_context);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Set of origins that can use TCP/UDP private APIs from NaCl.

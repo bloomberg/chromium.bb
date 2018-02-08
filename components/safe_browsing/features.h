@@ -21,6 +21,7 @@ namespace safe_browsing {
 // Features list
 extern const base::Feature kAdSamplerCollectButDontSendFeature;
 extern const base::Feature kAdSamplerTriggerFeature;
+extern const base::Feature kCheckByURLLoaderThrottle;
 // Gates logging of GaiaPasswordReuse user events.
 extern const base::Feature kGaiaPasswordReuseReporting;
 extern const base::Feature kGoogleBrandedPhishingWarning;

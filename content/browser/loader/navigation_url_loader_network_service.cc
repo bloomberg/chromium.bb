@@ -344,6 +344,14 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     DCHECK(!started_);
     started_ = true;
 
+    web_contents_getter_ = base::BindRepeating(
+        &GetWebContentsFromFrameTreeNodeID, request_info->frame_tree_node_id);
+
+    std::vector<std::unique_ptr<content::URLLoaderThrottle>> throttles =
+        GetContentClient()->browser()->CreateURLLoaderThrottles(
+            *resource_request_, resource_context_, web_contents_getter_,
+            navigation_ui_data.get());
+
     auto load_single_request = base::BindOnce(
         &URLLoaderRequestController::CreateNonNetworkServiceURLLoader,
         weak_factory_.GetWeakPtr(),
@@ -353,14 +361,12 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
         base::Unretained(service_worker_navigation_handle_core),
         base::Unretained(appcache_handle_core));
 
-    network::ResourceRequest resource_request;
     url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
         base::MakeRefCounted<SingleRequestURLLoaderFactory>(
             std::move(load_single_request)),
-        std::vector<std::unique_ptr<content::URLLoaderThrottle>>(),
-        -1 /* routing_id = */, 0 /* request_id */,
-        network::mojom::kURLLoadOptionNone, &resource_request,
-        /* client = */ this, kNavigationUrlLoaderTrafficAnnotation,
+        std::move(throttles), -1 /* routing_id */, 0 /* request_id */,
+        network::mojom::kURLLoadOptionNone, resource_request_.get(),
+        this /* client */, kNavigationUrlLoaderTrafficAnnotation,
         base::ThreadTaskRunnerHandle::Get());
   }
 
@@ -397,7 +403,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
           base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
               std::move(factory_for_webui)),
           GetContentClient()->browser()->CreateURLLoaderThrottles(
-              web_contents_getter_, navigation_ui_data_.get()),
+              *resource_request_, resource_context_, web_contents_getter_,
+              navigation_ui_data_.get()),
           0 /* routing_id */, 0 /* request_id? */,
           network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
           kNavigationUrlLoaderTrafficAnnotation,
@@ -471,10 +478,9 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           base::MakeRefCounted<SingleRequestURLLoaderFactory>(
               std::move(single_request_handler)),
-          base::FeatureList::IsEnabled(network::features::kNetworkService)
-              ? GetContentClient()->browser()->CreateURLLoaderThrottles(
-                    web_contents_getter_, navigation_ui_data_.get())
-              : std::vector<std::unique_ptr<content::URLLoaderThrottle>>(),
+          GetContentClient()->browser()->CreateURLLoaderThrottles(
+              *resource_request_, resource_context_, web_contents_getter_,
+              navigation_ui_data_.get()),
           frame_tree_node_id_, 0 /* request_id? */,
           network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
           kNavigationUrlLoaderTrafficAnnotation,
@@ -550,7 +556,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
         base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(factory),
         GetContentClient()->browser()->CreateURLLoaderThrottles(
-            web_contents_getter_, navigation_ui_data_.get()),
+            *resource_request_, resource_context_, web_contents_getter_,
+            navigation_ui_data_.get()),
         frame_tree_node_id_, 0 /* request_id? */, options,
         resource_request_.get(), this, kNavigationUrlLoaderTrafficAnnotation,
         base::ThreadTaskRunnerHandle::Get());
@@ -857,11 +864,8 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   AppCacheNavigationHandleCore* appcache_handle_core =
       appcache_handle ? appcache_handle->core() : nullptr;
 
-  std::unique_ptr<network::ResourceRequest> new_request;
-  if (IsRequestHandlerEnabled()) {
-    new_request = CreateResourceRequest(request_info.get(), frame_tree_node_id,
-                                        allow_download_);
-  }
+  std::unique_ptr<network::ResourceRequest> new_request = CreateResourceRequest(
+      request_info.get(), frame_tree_node_id, allow_download_);
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     DCHECK(!request_controller_);

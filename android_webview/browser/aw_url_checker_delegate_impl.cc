@@ -54,6 +54,12 @@ bool AwUrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {
   return whitelist_manager_->IsURLWhitelisted(url);
 }
 
+bool AwUrlCheckerDelegateImpl::ShouldSkipRequestCheck(
+    content::ResourceContext* resource_context,
+    const GURL& original_url) {
+  return false;
+}
+
 const safe_browsing::SBThreatTypeSet&
 AwUrlCheckerDelegateImpl::GetThreatTypes() {
   return threat_types_;
