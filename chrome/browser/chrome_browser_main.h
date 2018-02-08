@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
@@ -156,10 +155,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Please keep |shutdown_watcher| as the first object constructed, and hence
   // it is destroyed last.
   std::unique_ptr<ShutdownWatcherHelper> shutdown_watcher_;
-
-  // Statistical testing infrastructure for the entire browser. nullptr until
-  // |SetupFieldTrials()| is called.
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   ChromeBrowserFieldTrials browser_field_trials_;
 
