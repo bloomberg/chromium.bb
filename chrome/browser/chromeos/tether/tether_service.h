@@ -131,7 +131,8 @@ class TetherService : public KeyedService,
       TestBleAdvertisingNotSupportedAndRecorded_BluetoothIsInitiallyNotPowered);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest,
                            TestBleAdvertisingSupportedButIncorrectlyRecorded);
-  FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestFeatureFlagEnabled);
+  FRIEND_TEST_ALL_PREFIXES(TetherServiceTest,
+                           TestGet_PrimaryUser_FeatureFlagEnabled);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestNoTetherHosts);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestProhibitedByPolicy);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestIsBluetoothPowered);
