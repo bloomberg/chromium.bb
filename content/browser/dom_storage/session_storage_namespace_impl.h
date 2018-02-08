@@ -23,18 +23,18 @@ class SessionStorageNamespaceImpl : public SessionStorageNamespace {
   //
   // The CONTENT_EXPORT allows TestRenderViewHost to instantiate these.
   CONTENT_EXPORT static scoped_refptr<SessionStorageNamespaceImpl> Create(
-      DOMStorageContextWrapper* context);
+      scoped_refptr<DOMStorageContextWrapper> context);
 
   // Constructs a |SessionStorageNamespaceImpl| and assigns |namepace_id|
   // to it.
   static scoped_refptr<SessionStorageNamespaceImpl> Create(
-      DOMStorageContextWrapper* context,
+      scoped_refptr<DOMStorageContextWrapper> context,
       const std::string& namepace_id);
 
   // Constructs a |SessionStorageNamespaceImpl| by cloning
-  // |namespace_to_clone|. Allocates a new ID it.
+  // |namespace_to_clone|. Allocates it a new ID.
   static scoped_refptr<SessionStorageNamespaceImpl> CloneFrom(
-      DOMStorageContextWrapper* context,
+      scoped_refptr<DOMStorageContextWrapper> context,
       const std::string& namepace_id_to_clone);
 
   // SessionStorageNamespace implementation.
@@ -47,10 +47,10 @@ class SessionStorageNamespaceImpl : public SessionStorageNamespace {
 
  private:
   explicit SessionStorageNamespaceImpl(
-      scoped_refptr<DOMStorageSession> session);
+      std::unique_ptr<DOMStorageSession> session);
   ~SessionStorageNamespaceImpl() override;
 
-  scoped_refptr<DOMStorageSession> session_;
+  std::unique_ptr<DOMStorageSession> session_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStorageNamespaceImpl);
 };

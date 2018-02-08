@@ -331,8 +331,11 @@ void DOMStorageContextImpl::NotifyAreaCleared(
 }
 
 std::string DOMStorageContextImpl::AllocateSessionId() {
+  constexpr const static size_t kSessionIdLength = 36;
   std::string guid = base::GenerateGUID();
   std::replace(guid.begin(), guid.end(), '-', '_');
+  // The database deserialization code makes assumptions based on this length.
+  DCHECK_EQ(guid.size(), kSessionIdLength);
   return guid;
 }
 

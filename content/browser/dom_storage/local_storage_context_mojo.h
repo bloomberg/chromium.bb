@@ -14,6 +14,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "content/common/content_export.h"
 #include "content/common/leveldb_wrapper.mojom.h"
@@ -47,7 +48,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
       base::OnceCallback<void(std::vector<LocalStorageUsageInfo>)>;
 
   LocalStorageContextMojo(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
       service_manager::Connector* connector,
       scoped_refptr<DOMStorageTaskRunner> legacy_task_runner,
       const base::FilePath& old_localstorage_path,

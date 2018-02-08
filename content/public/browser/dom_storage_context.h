@@ -26,9 +26,8 @@ class DOMStorageContext {
       void(const std::vector<LocalStorageUsageInfo>&)>
           GetLocalStorageUsageCallback;
 
-  typedef base::Callback<
-      void(const std::vector<SessionStorageUsageInfo>&)>
-          GetSessionStorageUsageCallback;
+  typedef base::OnceCallback<void(const std::vector<SessionStorageUsageInfo>&)>
+      GetSessionStorageUsageCallback;
 
   // Returns a collection of origins using local storage to the given callback.
   virtual void GetLocalStorageUsage(
@@ -37,7 +36,7 @@ class DOMStorageContext {
   // Returns a collection of origins using session storage to the given
   // callback.
   virtual void GetSessionStorageUsage(
-      const GetSessionStorageUsageCallback& callback) = 0;
+      GetSessionStorageUsageCallback callback) = 0;
 
   // Deletes the local storage data for the physical origin of |origin_url|,
   // including all suborigins at the physical origin. |callback| is called when
