@@ -2267,8 +2267,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 
     demuxer_.reset(new MediaUrlDemuxer(media_task_runner_, loaded_url_,
                                        frame_->GetDocument().SiteForCookies()));
-    pipeline_controller_.Start(Pipeline::StartType::kNormal, demuxer_.get(),
-                               this, false, false);
+    pipeline_controller_.Start(demuxer_.get(), this, false, false);
     return;
   }
 
@@ -2318,8 +2317,7 @@ void WebMediaPlayerImpl::StartPipeline() {
   // ... and we're ready to go!
   // TODO(sandersd): On Android, defer Start() if the tab is not visible.
   seeking_ = true;
-  pipeline_controller_.Start(Pipeline::StartType::kNormal, demuxer_.get(), this,
-                             is_streaming, is_static);
+  pipeline_controller_.Start(demuxer_.get(), this, is_streaming, is_static);
 }
 
 void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {
