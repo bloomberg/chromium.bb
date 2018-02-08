@@ -1181,8 +1181,10 @@ Polymer({
   setVpnIPsecProperties_: function(propertiesToSet) {
     var vpn = propertiesToSet.VPN;
     assert(vpn.IPsec);
-    if (vpn.IPsec.AuthenticationType == CrOnc.IPsecAuthenticationType.CERT)
+    if (vpn.IPsec.AuthenticationType == CrOnc.IPsecAuthenticationType.CERT) {
+      vpn.IPsec.ClientCertType = 'PKCS11Id';
       vpn.IPsec.ClientCertPKCS11Id = this.getUserCertPkcs11Id_();
+    }
     vpn.IPsec.IKEVersion = 1;
     vpn.IPsec.SaveCredentials = this.vpnSaveCredentials_;
     vpn.L2TP.SaveCredentials = this.vpnSaveCredentials_;
