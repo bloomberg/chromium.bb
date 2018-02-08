@@ -15,6 +15,7 @@
 #include "third_party/pdfium/public/fpdf_doc.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
 #include "third_party/pdfium/public/fpdf_text.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace chrome_pdf {
 
@@ -77,11 +78,10 @@ class PDFiumPage {
   };
 
   // Returns the (x, y) position of a destination in page coordinates.
-  base::Optional<std::pair<float, float>> GetPageXYTarget(
-      FPDF_DEST destination);
+  base::Optional<gfx::PointF> GetPageXYTarget(FPDF_DEST destination);
 
   // Transforms an (x, y) position in page coordinates to screen coordinates.
-  std::pair<float, float> TransformPageToScreenXY(std::pair<float, float> xy);
+  gfx::PointF TransformPageToScreenXY(const gfx::PointF& xy);
 
   // Given a point in the document that's in this page, returns its character
   // index if it's near a character, and also the type of text.
