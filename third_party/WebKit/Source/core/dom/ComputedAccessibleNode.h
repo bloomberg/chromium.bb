@@ -18,11 +18,40 @@ namespace blink {
 class ScriptPromiseResolver;
 class ScriptState;
 
+class ComputedAccessibleNodePromiseResolver final
+    : public GarbageCollectedFinalized<ComputedAccessibleNodePromiseResolver> {
+ public:
+  static ComputedAccessibleNodePromiseResolver* Create(ScriptState*, Element&);
+
+  ScriptPromise Promise();
+
+  void ComputeAccessibleNode();
+
+  void Trace(blink::Visitor*);
+
+ private:
+  ComputedAccessibleNodePromiseResolver(ScriptState*, Element&);
+  void IdleTaskFired(double deadline_seconds);
+  void UpdateTreeAndResolve();
+  void IdleTaskStartTimeoutEvent();
+
+  enum IdleTaskStatus {
+    kIdleTaskNotStarted,
+    kIdleTaskStarted,
+    kIdleTaskCompleted,
+  };
+  IdleTaskStatus idle_task_status_;
+
+  Member<Element> element_;
+  Member<ScriptPromiseResolver> resolver_;
+  Member<ExecutionContext> context_;
+};
+
 class ComputedAccessibleNode : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ComputedAccessibleNode* Create(Element*);
+  static ComputedAccessibleNode* Create(AXID, WebComputedAXTree*);
   virtual ~ComputedAccessibleNode();
 
   void Trace(Visitor*);
@@ -54,17 +83,15 @@ class ComputedAccessibleNode : public ScriptWrappable {
   ComputedAccessibleNode* nextSibling() const;
 
  private:
-  explicit ComputedAccessibleNode(Element*);
+  explicit ComputedAccessibleNode(AXID, WebComputedAXTree*);
 
   // content::ComputedAXTree callback.
   void OnSnapshotResponse(ScriptPromiseResolver*);
 
   int32_t GetIntAttribute(WebAOMIntAttribute, bool& is_null) const;
   const String GetStringAttribute(WebAOMStringAttribute) const;
-  ComputedAccessibleNode* GetRelationFromCache(AXID) const;
 
-  Member<Element> element_;
-  Member<AXObjectCache> cache_;
+  AXID ax_id_;
 
   // This tree is owned by the RenderFrame.
   blink::WebComputedAXTree* tree_;
