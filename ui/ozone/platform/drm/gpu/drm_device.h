@@ -50,6 +50,8 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
 
   bool is_primary_device() const { return is_primary_device_; }
 
+  bool allow_addfb2_modifiers() const { return allow_addfb2_modifiers_; }
+
   // Open device.
   virtual bool Initialize(bool use_atomic);
 
@@ -205,6 +207,8 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   std::unique_ptr<IOWatcher> watcher_;
 
   bool is_primary_device_;
+
+  bool allow_addfb2_modifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmDevice);
 };
