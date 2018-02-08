@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
@@ -223,7 +224,7 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
     case ::printing::CupsJob::ABORTED:
     case ::printing::CupsJob::CANCELED:
       print_job->set_error_code(ErrorCodeFromReasons(printer_status));
-    // fall through
+      FALLTHROUGH;
     default:
       print_job->set_state(ConvertState(job.state));
       break;
