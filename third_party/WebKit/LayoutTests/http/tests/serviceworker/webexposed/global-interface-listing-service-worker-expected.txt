@@ -720,9 +720,9 @@ interface Lock
     method constructor
 interface LockManager
     attribute @@toStringTag
-    method acquire
     method constructor
     method query
+    method request
 interface MessageChannel
     attribute @@toStringTag
     getter port1

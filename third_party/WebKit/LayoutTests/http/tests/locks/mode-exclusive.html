@@ -12,9 +12,9 @@ promise_test(async t => {
   function log_grant(n) { return () => { granted.push(n); }; }
 
   await Promise.all([
-    navigator.locks.acquire('a', log_grant(1)),
-    navigator.locks.acquire('a', log_grant(2)),
-    navigator.locks.acquire('a', log_grant(3))
+    navigator.locks.request('a', log_grant(1)),
+    navigator.locks.request('a', log_grant(2)),
+    navigator.locks.request('a', log_grant(3))
   ]);
   assert_array_equals(granted, [1, 2, 3]);
 }, 'Lock requests are granted in order');
@@ -24,12 +24,12 @@ promise_test(async t => {
   function log_grant(n) { return () => { granted.push(n); }; }
 
   let inner_promise;
-  await navigator.locks.acquire('a', async lock => {
+  await navigator.locks.request('a', async lock => {
     inner_promise = Promise.all([
       // This will be blocked.
-      navigator.locks.acquire('a', log_grant(1)),
+      navigator.locks.request('a', log_grant(1)),
       // But this should be grantable immediately.
-      navigator.locks.acquire('b', log_grant(2))
+      navigator.locks.request('b', log_grant(2))
     ]);
   });
 

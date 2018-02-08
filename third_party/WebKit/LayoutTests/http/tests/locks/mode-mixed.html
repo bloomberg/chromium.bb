@@ -14,22 +14,22 @@ promise_test(async t => {
   const granted = [];
 
   // These should be granted immediately, and held until unblocked.
-  navigator.locks.acquire('a', {mode: 'shared'}, async lock => {
+  navigator.locks.request('a', {mode: 'shared'}, async lock => {
     granted.push('a-shared-1'); await blocked; });
-  navigator.locks.acquire('a', {mode: 'shared'}, async lock => {
+  navigator.locks.request('a', {mode: 'shared'}, async lock => {
     granted.push('a-shared-2'); await blocked; });
-  navigator.locks.acquire('a', {mode: 'shared'}, async lock => {
+  navigator.locks.request('a', {mode: 'shared'}, async lock => {
     granted.push('a-shared-3'); await blocked; });
 
   // This should be blocked.
   let exclusive_lock;
-  const exclusive_request = navigator.locks.acquire('a', async lock => {
+  const exclusive_request = navigator.locks.request('a', async lock => {
     granted.push('a-exclusive');
     exclusive_lock = lock;
   });
 
   // This should be granted immediately (different name).
-  await navigator.locks.acquire('b', {mode: 'exclusive'}, lock => {
+  await navigator.locks.request('b', {mode: 'exclusive'}, lock => {
     granted.push('b-exclusive'); });
 
   assert_array_equals(

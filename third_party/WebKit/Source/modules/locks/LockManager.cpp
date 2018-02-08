@@ -173,14 +173,14 @@ class LockManager::LockRequestImpl final
 LockManager::LockManager(ExecutionContext* context)
     : ContextLifecycleObserver(context) {}
 
-ScriptPromise LockManager::acquire(ScriptState* script_state,
+ScriptPromise LockManager::request(ScriptState* script_state,
                                    const String& name,
                                    V8LockGrantedCallback* callback,
                                    ExceptionState& exception_state) {
-  return acquire(script_state, name, LockOptions(), callback, exception_state);
+  return request(script_state, name, LockOptions(), callback, exception_state);
 }
 
-ScriptPromise LockManager::acquire(ScriptState* script_state,
+ScriptPromise LockManager::request(ScriptState* script_state,
                                    const String& name,
                                    const LockOptions& options,
                                    V8LockGrantedCallback* callback,

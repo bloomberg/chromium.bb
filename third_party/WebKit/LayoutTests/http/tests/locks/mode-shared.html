@@ -12,12 +12,12 @@ promise_test(async t => {
   function log_grant(n) { return () => { granted.push(n); }; }
 
   await Promise.all([
-    navigator.locks.acquire('a', {mode: 'shared'}, log_grant(1)),
-    navigator.locks.acquire('b', {mode: 'shared'}, log_grant(2)),
-    navigator.locks.acquire('c', {mode: 'shared'}, log_grant(3)),
-    navigator.locks.acquire('a', {mode: 'shared'}, log_grant(4)),
-    navigator.locks.acquire('b', {mode: 'shared'}, log_grant(5)),
-    navigator.locks.acquire('c', {mode: 'shared'}, log_grant(6)),
+    navigator.locks.request('a', {mode: 'shared'}, log_grant(1)),
+    navigator.locks.request('b', {mode: 'shared'}, log_grant(2)),
+    navigator.locks.request('c', {mode: 'shared'}, log_grant(3)),
+    navigator.locks.request('a', {mode: 'shared'}, log_grant(4)),
+    navigator.locks.request('b', {mode: 'shared'}, log_grant(5)),
+    navigator.locks.request('c', {mode: 'shared'}, log_grant(6)),
   ]);
 
   assert_array_equals(granted, [1, 2, 3, 4, 5, 6]);
@@ -26,13 +26,13 @@ promise_test(async t => {
 promise_test(async t => {
   let a_acquired = false, a_acquired_again = false;
 
-  await navigator.locks.acquire('a', {mode: 'shared'}, async lock => {
+  await navigator.locks.request('a', {mode: 'shared'}, async lock => {
     a_acquired = true;
 
     // Since lock is held, this request would be blocked if the
     // lock was not 'shared', causing this test to time out.
 
-    await navigator.locks.acquire('a', {mode: 'shared'}, lock => {
+    await navigator.locks.request('a', {mode: 'shared'}, lock => {
       a_acquired_again = true;
     });
   });

@@ -10,10 +10,10 @@ callback LockGrantedCallback = any (Lock lock);
     Exposed=(Window,Worker),
     RuntimeEnabled=LocksAPI
 ] interface LockManager {
-    [CallWith=ScriptState, RaisesException] Promise<Lock> acquire(
+    [CallWith=ScriptState, RaisesException] Promise<Lock> request(
         DOMString name,
         LockGrantedCallback callback);
-    [CallWith=ScriptState, RaisesException] Promise<Lock> acquire(
+    [CallWith=ScriptState, RaisesException] Promise<Lock> request(
         DOMString name,
         LockOptions options,
         LockGrantedCallback callback);

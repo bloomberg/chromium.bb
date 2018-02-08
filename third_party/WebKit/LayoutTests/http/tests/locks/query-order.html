@@ -14,7 +14,7 @@ function getLockAndHoldUntilReleased(name, options) {
   let release;
   const promise = new Promise(resolve => { release = resolve; });
   return new Promise(resolve => {
-    navigator.locks.acquire(name, options || {}, lock => {
+    navigator.locks.request(name, options || {}, lock => {
       resolve(release);
       return promise;
     }).catch(_ => {});
@@ -34,9 +34,9 @@ promise_test(async t => {
   ]);
 
   // These requests should be blocked.
-  navigator.locks.acquire(res3, {mode: 'shared'}, lock => {});
-  navigator.locks.acquire(res2, {mode: 'shared'}, lock => {});
-  navigator.locks.acquire(res1, {mode: 'shared'}, lock => {});
+  navigator.locks.request(res3, {mode: 'shared'}, lock => {});
+  navigator.locks.request(res2, {mode: 'shared'}, lock => {});
+  navigator.locks.request(res1, {mode: 'shared'}, lock => {});
 
   const state = await navigator.locks.query();
 
@@ -68,7 +68,7 @@ promise_test(async t => {
 
   // Ensure the requests have had a chance to get queued by
   // waiting for something else to make it through the queue.
-  await navigator.locks.acquire(uniqueName(t), lock => {});
+  await navigator.locks.request(uniqueName(t), lock => {});
 
   // Now release the previous holders.
   release2();

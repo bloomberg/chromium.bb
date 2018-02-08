@@ -24,7 +24,7 @@ promise_test(async t => {
 
   // Acquire the lock, and keep it alive via a promise that never resolves.
   let resolve, acquired = new Promise(r => { resolve = r; });
-  navigator.locks.acquire(res, lock => {
+  navigator.locks.request(res, lock => {
     resolve();
 
     // Neither |lock| nor |promise| are retained.
@@ -41,9 +41,9 @@ promise_test(async t => {
   assert_true(observe_lock.wasCollected, 'Lock should be collected');
   assert_true(observe_promise.wasCollected, 'Promise should be collected');
 
-  // Now try and acquire the lock.
+  // Now try and request the lock.
   let lock = 'should be overwritten';
-  await navigator.locks.acquire(res, {ifAvailable: true}, l => {
+  await navigator.locks.request(res, {ifAvailable: true}, l => {
     lock = l;
   });
   assert_equals(lock, null, 'Lock acquisition should have failed');
