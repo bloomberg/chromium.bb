@@ -5402,23 +5402,23 @@ the Bookmarks menu.">
         </message>
       </if>
       <if expr="use_titlecase">
-        <message name="IDS_ALLOWED_CLIPBOARD_TITLE" desc="In Title Case: Title of the info bubble shown when a page has been allowed access to read the contents of the system clipboard.">
+        <message name="IDS_ALLOWED_CLIPBOARD_TITLE" desc="In Title Case: Title of the info bubble shown when a site has been allowed access to read the contents of the system clipboard.">
           Clipboard Read Access Allowed
         </message>
-        <message name="IDS_BLOCKED_CLIPBOARD_TITLE" desc="In Title Case: Title of the info bubble shown when a page has been denied access to read the contents of the system clipboard.">
+        <message name="IDS_BLOCKED_CLIPBOARD_TITLE" desc="In Title Case: Title of the info bubble shown when a site has been denied access to read the contents of the system clipboard.">
           Clipboard Read Access Denied
         </message>
       </if>
       <if expr="not use_titlecase">
-        <message name="IDS_ALLOWED_CLIPBOARD_TITLE" desc="Title of the info bubble shown when a page has been allowed access to read the contents of the system clipboard.">
+        <message name="IDS_ALLOWED_CLIPBOARD_TITLE" desc="Title of the info bubble shown when a site has been allowed access to read the contents of the system clipboard.">
           Clipboard read access allowed
         </message>
-        <message name="IDS_BLOCKED_CLIPBOARD_TITLE" desc="Title of the info bubble shown when a page has been denied access to read the contents of the system clipboard.">
+        <message name="IDS_BLOCKED_CLIPBOARD_TITLE" desc="Title of the info bubble shown when a site has been denied access to read the contents of the system clipboard.">
           Clipboard read access denied
         </message>
       </if>
-      <message name="IDS_ALLOWED_CLIPBOARD_MESSAGE" desc="Info bubble message and location bar icon tooltip text shown when a page has been allowed access to read the contents of the system clipboard.">
-        This page can see text and images copied to the clipboard.
+      <message name="IDS_ALLOWED_CLIPBOARD_MESSAGE" desc="Info bubble message and location bar icon tooltip text shown when a site has been allowed access to read the contents of the system clipboard.">
+        This site can see text and images copied to the clipboard.
       </message>
       <message name="IDS_ALLOWED_CLIPBOARD_BLOCK" desc="Radio button to block read access to the clipboard">
         Always block <ph name="HOST">$1<ex>example.com</ex></ph> from seeing the clipboard
@@ -5426,8 +5426,8 @@ the Bookmarks menu.">
       <message name="IDS_ALLOWED_CLIPBOARD_NO_ACTION" desc="Radio button to keep allowing read access to the system clipboard">
         Continue allowing this site to see the clipboard
       </message>
-      <message name="IDS_BLOCKED_CLIPBOARD_MESSAGE" desc="Info bubble message and location bar icon tooltip text shown when a page has been denied access to read the system clipboard.">
-        This page has been blocked from seeing text and images copied to the clipboard
+      <message name="IDS_BLOCKED_CLIPBOARD_MESSAGE" desc="Info bubble message and location bar icon tooltip text shown when a site has been denied access to read the system clipboard.">
+        This site has been blocked from seeing text and images copied to the clipboard
       </message>
       <message name="IDS_BLOCKED_CLIPBOARD_UNBLOCK" desc="Radio button choice to unblock a site from reading the system clipboard.">
         Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to see the clipboard
