@@ -142,7 +142,14 @@ void SystemTrayBubble::UpdateView(
   }
 
   UpdateBottomPadding();
+
+  // Enfore relayout of |bubble_view_|. The view code will skip the relayout of
+  // |bubble_view_| if its bounds does not change. However, we need to
+  // force |bubble_view_| relayout in order to set the bounds of its newly
+  // created children view to preferred sizes.
+  bubble_view_->InvalidateLayout();
   bubble_view_->GetWidget()->GetContentsView()->Layout();
+
   // Make sure that the bubble is large enough for the default view.
   if (system_tray_type == SystemTrayView::SYSTEM_TRAY_TYPE_DEFAULT) {
     bubble_view_->SetMaxHeight(0);  // Clear max height limit.
