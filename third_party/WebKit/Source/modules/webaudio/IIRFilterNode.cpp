@@ -192,41 +192,27 @@ void IIRFilterNode::getFrequencyResponse(
     NotShared<DOMFloat32Array> mag_response,
     NotShared<DOMFloat32Array> phase_response,
     ExceptionState& exception_state) {
-  if (!frequency_hz.View()) {
-    exception_state.ThrowDOMException(kNotSupportedError,
-                                      "frequencyHz array cannot be null");
-    return;
-  }
-
-  if (!mag_response.View()) {
-    exception_state.ThrowDOMException(kNotSupportedError,
-                                      "magResponse array cannot be null");
-    return;
-  }
-
-  if (!phase_response.View()) {
-    exception_state.ThrowDOMException(kNotSupportedError,
-                                      "phaseResponse array cannot be null");
-    return;
-  }
-
   unsigned frequency_hz_length = frequency_hz.View()->length();
 
-  if (mag_response.View()->length() < frequency_hz_length) {
+  // All the arrays must have the same length.  Just verify that all
+  // the arrays have the same length as the |frequency_hz| array.
+  if (mag_response.View()->length() != frequency_hz_length) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
-        ExceptionMessages::IndexExceedsMinimumBound(
+        kInvalidAccessError,
+        ExceptionMessages::IndexOutsideRange(
             "magResponse length", mag_response.View()->length(),
-            frequency_hz_length));
+            frequency_hz_length, ExceptionMessages::kInclusiveBound,
+            frequency_hz_length, ExceptionMessages::kInclusiveBound));
     return;
   }
 
-  if (phase_response.View()->length() < frequency_hz_length) {
+  if (phase_response.View()->length() != frequency_hz_length) {
     exception_state.ThrowDOMException(
-        kNotSupportedError,
-        ExceptionMessages::IndexExceedsMinimumBound(
+        kInvalidAccessError,
+        ExceptionMessages::IndexOutsideRange(
             "phaseResponse length", phase_response.View()->length(),
-            frequency_hz_length));
+            frequency_hz_length, ExceptionMessages::kInclusiveBound,
+            frequency_hz_length, ExceptionMessages::kInclusiveBound));
     return;
   }
 

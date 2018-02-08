@@ -73,7 +73,8 @@ class BiquadFilterNode final : public AudioNode {
   // set of frequencies (in Hz). The phase response is in radians.
   void getFrequencyResponse(NotShared<const DOMFloat32Array> frequency_hz,
                             NotShared<DOMFloat32Array> mag_response,
-                            NotShared<DOMFloat32Array> phase_response);
+                            NotShared<DOMFloat32Array> phase_response,
+                            ExceptionState&);
 
  private:
   BiquadFilterNode(BaseAudioContext&);
