@@ -570,16 +570,10 @@ static void highbd_warp_plane(WarpedMotionParams *wm, const uint8_t *const ref8,
 
   const uint16_t *const ref = CONVERT_TO_SHORTPTR(ref8);
   uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
-  if (conv_params->round_1)
-    av1_highbd_warp_affine_c(mat, ref, width, height, stride, pred, p_col,
-                             p_row, p_width, p_height, p_stride, subsampling_x,
-                             subsampling_y, bd, conv_params, alpha, beta, gamma,
-                             delta);
-  else
-    av1_highbd_warp_affine(mat, ref, width, height, stride, pred, p_col, p_row,
-                           p_width, p_height, p_stride, subsampling_x,
-                           subsampling_y, bd, conv_params, alpha, beta, gamma,
-                           delta);
+  av1_highbd_warp_affine(mat, ref, width, height, stride, pred, p_col, p_row,
+                         p_width, p_height, p_stride, subsampling_x,
+                         subsampling_y, bd, conv_params, alpha, beta, gamma,
+                         delta);
 }
 
 static int64_t highbd_frame_error(const uint16_t *const ref, int stride,
@@ -875,15 +869,9 @@ static void warp_plane(WarpedMotionParams *wm, const uint8_t *const ref,
   const int16_t beta = wm->beta;
   const int16_t gamma = wm->gamma;
   const int16_t delta = wm->delta;
-
-  if (conv_params->round_1)
-    av1_warp_affine_c(mat, ref, width, height, stride, pred, p_col, p_row,
-                      p_width, p_height, p_stride, subsampling_x, subsampling_y,
-                      conv_params, alpha, beta, gamma, delta);
-  else
-    av1_warp_affine(mat, ref, width, height, stride, pred, p_col, p_row,
-                    p_width, p_height, p_stride, subsampling_x, subsampling_y,
-                    conv_params, alpha, beta, gamma, delta);
+  av1_warp_affine(mat, ref, width, height, stride, pred, p_col, p_row, p_width,
+                  p_height, p_stride, subsampling_x, subsampling_y, conv_params,
+                  alpha, beta, gamma, delta);
 }
 
 static int64_t frame_error(const uint8_t *const ref, int stride,
