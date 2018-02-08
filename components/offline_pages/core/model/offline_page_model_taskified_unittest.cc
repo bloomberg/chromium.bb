@@ -743,6 +743,9 @@ TEST_F(OfflinePageModelTaskifiedTest, GetAllPagesWhenStoreEmpty) {
   EXPECT_TRUE(task_queue()->HasRunningTask());
 
   PumpLoop();
+
+  histogram_tester()->ExpectUniqueSample("OfflinePages.SavedPageCountUponQuery",
+                                         0, 1);
 }
 
 // TODO(romax): remove these 'indicators for newly added tests' when migration
@@ -1234,6 +1237,9 @@ TEST_F(OfflinePageModelTaskifiedTest, GetAllPages) {
   EXPECT_CALL(callback, Run(UnorderedElementsAre(page1, page2)));
   model()->GetAllPages(callback.Get());
   PumpLoop();
+
+  histogram_tester()->ExpectUniqueSample("OfflinePages.SavedPageCountUponQuery",
+                                         2, 1);
 }
 
 // This test is affected by https://crbug.com/725685, which only affects windows

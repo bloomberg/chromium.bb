@@ -86,6 +86,7 @@ enum class URLSearchMode {
 typedef std::vector<int64_t> MultipleOfflineIdResult;
 typedef std::vector<OfflinePageItem> MultipleOfflinePageItemResult;
 
+// TODO(carlosk): All or most of these should use base::OnceCallback.
 typedef base::Callback<void(SavePageResult, int64_t)> SavePageCallback;
 typedef base::Callback<void(AddPageResult, int64_t)> AddPageCallback;
 typedef base::Callback<void(DeletePageResult)> DeletePageCallback;
