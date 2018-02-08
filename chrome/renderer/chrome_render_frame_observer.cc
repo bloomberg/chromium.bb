@@ -465,15 +465,12 @@ void ChromeRenderFrameObserver::SetWindowFeatures(
       content::ConvertMojoWindowFeaturesToWebWindowFeatures(*window_features));
 }
 
+#if defined(OS_ANDROID)
 void ChromeRenderFrameObserver::UpdateBrowserControlsState(
     content::BrowserControlsState constraints,
     content::BrowserControlsState current,
     bool animate) {
-#if defined(OS_ANDROID)
   render_frame()->GetRenderView()->UpdateBrowserControlsState(constraints,
                                                               current, animate);
-#else
-  // TODO(https://crbug.com/676224): remove this reporting.
-  mojo::ReportBadMessage("UpdateBrowserControlsState is OS_ANDROID only.");
-#endif
 }
+#endif
