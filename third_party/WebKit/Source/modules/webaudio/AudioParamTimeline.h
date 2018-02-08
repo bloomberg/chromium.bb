@@ -101,14 +101,6 @@ class AudioParamTimeline {
   float SmoothedValue() { return smoothed_value_; }
   void SetSmoothedValue(float v) { smoothed_value_ = v; }
 
-  // TODO(crbug.com/764396): Remove this when the bug is fixed.
-
-  // Print a warning if the value setter overlaps an event.  Returns
-  // true if a warning was printed.
-  bool WarnIfSetterOverlapsEvent(BaseAudioContext*,
-                                 String param_name,
-                                 bool print_warning);
-
  private:
   class ParamEvent {
    public:

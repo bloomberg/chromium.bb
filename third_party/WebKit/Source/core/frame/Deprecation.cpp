@@ -173,15 +173,6 @@ String DeprecatedWillBeDisabledByFeaturePolicyInCrossOriginIframe(
       function, milestoneString(milestone), allow_string);
 }
 
-String DeprecatedWebAudioValueSetterBehavior() {
-  return String::Format(
-      "AudioParam value setter will become equivalent to "
-      "AudioParam.setValueAtTime() in %s  "
-      "See https://webaudio.github.io/web-audio-api/#dom-audioparam-value for "
-      "more details.",
-      milestoneString(M65));
-}
-
 DeprecationInfo GetDeprecationInfo(WebFeature feature) {
   switch (feature) {
     // Quota
@@ -545,10 +536,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               replacedWillBeRemoved("URL.createObjectURL with media streams",
                                     "HTMLMediaElement.srcObject", M68,
                                     "5618491470118912")};
-
-    case WebFeature::kWebAudioValueSetterIsSetValue:
-      return {"WebAudioValueSetterIsSetValue", Unknown,
-              DeprecatedWebAudioValueSetterBehavior()};
 
     case WebFeature::kChromeLoadTimesRequestTime:
     case WebFeature::kChromeLoadTimesStartLoadTime:

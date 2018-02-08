@@ -189,9 +189,6 @@ void BaseAudioContext::Uninitialize() {
 
   RecordAutoplayStatus();
 
-  // TODO(crbug.com/764396): Remove this when fixed.
-  RecordValueSetterStatistics();
-
   Clear();
 }
 
