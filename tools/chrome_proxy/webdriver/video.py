@@ -124,7 +124,7 @@ class Video(IntegrationTest):
   def testVideoMetrics(self):
     expected = {
       'duration': 3.068,
-      'webkitDecodedFrameCount': 54.0,
+      'webkitDecodedFrameCount': 53.0,
       'videoWidth': 1280.0,
       'videoHeight': 720.0
     }
