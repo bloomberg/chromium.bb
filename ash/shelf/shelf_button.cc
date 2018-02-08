@@ -17,7 +17,7 @@
 #include "base/time/time.h"
 #include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/app_list/app_list_features.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -277,7 +277,7 @@ ShelfButton::ShelfButton(InkDropButtonListener* listener, ShelfView* shelf_view)
       state_(STATE_NORMAL),
       destroyed_flag_(nullptr),
       is_touchable_app_context_menu_enabled_(
-          app_list::features::IsTouchableAppContextMenuEnabled()) {
+          features::IsTouchableAppContextMenuEnabled()) {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetInkDropMode(InkDropMode::ON);
   set_ink_drop_base_color(kShelfInkDropBaseColor);

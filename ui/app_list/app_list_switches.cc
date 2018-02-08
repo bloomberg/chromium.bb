@@ -27,18 +27,10 @@ const char kEnableDriveSearchInChromeLauncher[] =
 const char kDisableDriveSearchInChromeLauncher[] =
     "disable-drive-search-in-app-launcher";
 
-const char kEnableTouchableAppContextMenu[] =
-    "enable-touchable-app-context-menus";
-
 // If set, the app list will forget it has been installed on startup. Note this
 // doesn't prevent the app list from running, it just makes Chrome think the app
 // list hasn't been enabled (as in kEnableAppList) yet.
 const char kResetAppListInstallState[] = "reset-app-list-install-state";
-
-bool IsTouchableAppContextMenuEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kEnableTouchableAppContextMenu);
-}
 
 bool ShouldNotDismissOnBlur() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(

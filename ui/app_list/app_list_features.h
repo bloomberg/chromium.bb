@@ -29,14 +29,10 @@ APP_LIST_EXPORT extern const base::Feature kEnableBackgroundBlur;
 // Enables the Play Store app search.
 APP_LIST_EXPORT extern const base::Feature kEnablePlayStoreAppSearch;
 
-// Enables touchable context menus for app items in the shelf and app list.
-APP_LIST_EXPORT extern const base::Feature kEnableTouchableAppContextMenu;
-
 bool APP_LIST_EXPORT IsAnswerCardEnabled();
 bool APP_LIST_EXPORT IsBackgroundBlurEnabled();
 bool APP_LIST_EXPORT IsFullscreenAppListEnabled();
 bool APP_LIST_EXPORT IsPlayStoreAppSearchEnabled();
-bool APP_LIST_EXPORT IsTouchableAppContextMenuEnabled();
 std::string APP_LIST_EXPORT AnswerServerUrl();
 std::string APP_LIST_EXPORT AnswerServerQuerySuffix();
 
