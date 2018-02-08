@@ -252,6 +252,29 @@ static inline int gpu_mem_free(amdgpu_bo_handle bo,
 }
 
 static inline int
+amdgpu_bo_alloc_wrap(amdgpu_device_handle dev, unsigned size,
+		     unsigned alignment, unsigned heap, uint64_t flags,
+		     amdgpu_bo_handle *bo)
+{
+	struct amdgpu_bo_alloc_request request = {};
+	amdgpu_bo_handle buf_handle;
+	int r;
+
+	request.alloc_size = size;
+	request.phys_alignment = alignment;
+	request.preferred_heap = heap;
+	request.flags = flags;
+
+	r = amdgpu_bo_alloc(dev, &request, &buf_handle);
+	if (r)
+		return r;
+
+	*bo = buf_handle;
+
+	return 0;
+}
+
+static inline int
 amdgpu_bo_alloc_and_map(amdgpu_device_handle dev, unsigned size,
 			unsigned alignment, unsigned heap, uint64_t flags,
 			amdgpu_bo_handle *bo, void **cpu, uint64_t *mc_address,
