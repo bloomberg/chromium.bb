@@ -765,25 +765,6 @@ Element* Editor::FindEventTargetForClipboardEvent(
   return FindEventTargetFromSelection();
 }
 
-void Editor::ApplyStyle(CSSPropertyValueSet* style,
-                        InputEvent::InputType input_type) {
-  const VisibleSelection& selection =
-      GetFrameSelection().ComputeVisibleSelectionInDOMTreeDeprecated();
-  if (selection.IsNone())
-    return;
-  if (selection.IsCaret()) {
-    ComputeAndSetTypingStyle(style, input_type);
-    return;
-  }
-  DCHECK(selection.IsRange()) << selection;
-  if (!style)
-    return;
-  DCHECK(GetFrame().GetDocument());
-  ApplyStyleCommand::Create(*GetFrame().GetDocument(),
-                            EditingStyle::Create(style), input_type)
-      ->Apply();
-}
-
 void Editor::ApplyParagraphStyle(CSSPropertyValueSet* style,
                                  InputEvent::InputType input_type) {
   if (GetFrame()
