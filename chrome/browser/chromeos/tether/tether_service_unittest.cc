@@ -15,6 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/timer/mock_timer.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ui/ash/network/tether_notification_presenter.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -46,6 +47,7 @@
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -270,6 +272,10 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
     TestingProfile::Builder builder;
     profile_ = builder.Build();
 
+    fake_chrome_user_manager_ = new chromeos::FakeChromeUserManager();
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        base::WrapUnique(fake_chrome_user_manager_));
+
     fake_power_manager_client_ =
         std::make_unique<chromeos::FakePowerManagerClient>();
 
@@ -335,6 +341,16 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
     chromeos::DBusThreadManager::Shutdown();
   }
 
+  void SetPrimaryUserLoggedIn() {
+    const AccountId account_id(
+        AccountId::FromUserEmail(profile_->GetProfileUserName()));
+    const user_manager::User* user =
+        fake_chrome_user_manager_->AddPublicAccountUser(account_id);
+    fake_chrome_user_manager_->UserLoggedIn(account_id, user->username_hash(),
+                                            false /* browser_restart */,
+                                            false /* is_child */);
+  }
+
   void CreateTetherService() {
     tether_service_ = base::WrapUnique(new TestTetherService(
         profile_.get(), fake_power_manager_client_.get(),
@@ -355,6 +371,8 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
         network_state_handler()->GetTechnologyState(
             chromeos::NetworkTypePattern::Tether()));
     VerifyTetherActiveStatus(false /* expected_active */);
+
+    SetPrimaryUserLoggedIn();
 
     base::RunLoop().RunUntilIdle();
   }
@@ -432,6 +450,8 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
   const content::TestBrowserThreadBundle thread_bundle_;
 
   std::unique_ptr<TestingProfile> profile_;
+  chromeos::FakeChromeUserManager* fake_chrome_user_manager_;
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   std::unique_ptr<chromeos::FakePowerManagerClient> fake_power_manager_client_;
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
       test_pref_service_;
@@ -653,11 +673,25 @@ TEST_F(TetherServiceTest, TestBleAdvertisingSupportedButIncorrectlyRecorded) {
       chromeos::tether::TetherComponent::ShutdownReason::USER_LOGGED_OUT);
 }
 
-TEST_F(TetherServiceTest, TestFeatureFlagDisabled) {
+TEST_F(TetherServiceTest, TestGet_NotPrimaryUser_FeatureFlagDisabled) {
   EXPECT_FALSE(TetherService::Get(profile_.get()));
 }
 
-TEST_F(TetherServiceTest, TestFeatureFlagEnabled) {
+TEST_F(TetherServiceTest, TestGet_PrimaryUser_FeatureFlagDisabled) {
+  SetPrimaryUserLoggedIn();
+  EXPECT_FALSE(TetherService::Get(profile_.get()));
+}
+
+TEST_F(TetherServiceTest, TestGet_NotPrimaryUser_FeatureFlagEnabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kInstantTethering);
+
+  EXPECT_FALSE(TetherService::Get(profile_.get()));
+}
+
+TEST_F(TetherServiceTest, TestGet_PrimaryUser_FeatureFlagEnabled) {
+  SetPrimaryUserLoggedIn();
+
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kInstantTethering);
 
