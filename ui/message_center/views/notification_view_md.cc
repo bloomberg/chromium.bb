@@ -682,6 +682,16 @@ void NotificationViewMD::Layout() {
     action_buttons_row_->set_clip_path(path);
     inline_reply_->set_clip_path(path);
   }
+
+  // The animation is needed to run inside of the border, which is shown only
+  // when the notification is nested.
+  if (is_nested()) {
+    gfx::Rect ink_drop_bounds = GetLocalBounds();
+    ink_drop_bounds.Inset(gfx::Insets(kNotificationBorderThickness));
+    ink_drop_container_->SetBoundsRect(ink_drop_bounds);
+  } else {
+    ink_drop_container_->SetBoundsRect(GetLocalBounds());
+  }
 }
 
 void NotificationViewMD::OnFocus() {
@@ -1240,11 +1250,10 @@ void NotificationViewMD::ToggleInlineSettings(const ui::LocatedEvent& event) {
 
   PreferredSizeChanged();
 
-  if (inline_settings_visible) {
+  if (inline_settings_visible)
     AddBackgroundAnimation(event);
-  } else {
+  else
     RemoveBackgroundAnimation();
-  }
 
   Layout();
   SchedulePaint();
@@ -1345,8 +1354,8 @@ void NotificationViewMD::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 std::unique_ptr<views::InkDropRipple> NotificationViewMD::CreateInkDropRipple()
     const {
   return std::make_unique<views::FloodFillInkDropRipple>(
-      size(), GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
-      ink_drop_visible_opacity());
+      ink_drop_container_->size(), GetInkDropCenterBasedOnLastEvent(),
+      GetInkDropBaseColor(), ink_drop_visible_opacity());
 }
 
 SkColor NotificationViewMD::GetInkDropBaseColor() const {

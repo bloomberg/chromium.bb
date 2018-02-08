@@ -116,6 +116,8 @@ class MESSAGE_CENTER_EXPORT MessageView
     manually_expanded_or_collapsed_ = true;
   }
 
+  bool is_nested() const { return is_nested_; }
+
  private:
   std::string notification_id_;
   views::View* background_view_ = nullptr;  // Owned by views hierarchy.
