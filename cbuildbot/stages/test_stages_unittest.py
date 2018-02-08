@@ -18,6 +18,7 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib.const import waterfall
 from chromite.lib import constants
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import failures_lib
@@ -380,3 +381,30 @@ class ImageTestStageTest(generic_stages_unittest.AbstractStageTestCase,
         path_util.ToChrootPath(stage.GetImageDirSymlink()),
     ]
     self.assertCommandContains(cmd)
+
+
+class CbuildbotLaunchTestEndToEndTest(
+    generic_stages_unittest.AbstractStageTestCase):
+  """Tests for the CbuildbotLaunchTestStage."""
+
+  def setUp(self):
+    self.tryjob_mock = self.PatchObject(
+        commands, 'RunLocalTryjob', autospec=True)
+    self.tryjob_failure_exception = failures_lib.BuildScriptFailure(
+        cros_build_lib.RunCommandError('msg', 1), 'cros tryjob')
+
+    self._Prepare()
+
+  def ConstructStage(self):
+    return test_stages.CbuildbotLaunchTestStage(self._run)
+
+  def testFullPassRun(self):
+    """Runs through CbuildbotLaunchTestStage.
+
+    This includes 4 runs through CbuildbotLaunchTestBuildStage.
+    """
+    # Tryjob command will: Fail, Pass, Pass, Pass.
+    self.tryjob_mock.side_effect = iter([
+        self.tryjob_failure_exception, None, None, None])
+
+    self.RunStage()

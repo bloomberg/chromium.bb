@@ -1985,6 +1985,18 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       description='Run the chromite network unittests.',
   )
 
+
+  site_config.Add(
+      'cbuildbot-launch-pre-cq',
+      site_config.templates.pre_cq,
+      site_config.templates.internal,
+      site_config.templates.no_hwtest_builder,
+      site_config.templates.no_vmtest_builder,
+      boards=[],
+      builder_class_name='test_builders.CbuildbotLaunchTestBuilder',
+      description='Run cbuildbot_launch test builds.',
+  )
+
   # Pre-cq for lakitu's public overlay.
   site_config.Add(
       'lakitu-external-pre-cq',

@@ -80,13 +80,21 @@ class SignerTestsBuilder(generic_builders.PreCqBuilder):
 
 
 class ChromiteTestsBuilder(generic_builders.PreCqBuilder):
-  """Builder that runs chromite unit tests, including network."""
+  """Builder that runs chromite unit tests."""
   def RunTestStages(self):
     """Run something after sync/reexec."""
     self._RunStage(build_stages.InitSDKStage)
     self._RunStage(test_stages.ChromiteTestStage)
     # TODO(crbug.com/820305): Enable after the flake issue is fixed.
     # self._RunStage(test_stages.CidbIntegrationTestStage)
+
+
+class CbuildbotLaunchTestBuilder(generic_builders.PreCqBuilder):
+  """Builder that runs cbuildbot_launch tests."""
+  def RunTestStages(self):
+    """Run something after sync/reexec."""
+    self._RunStage(build_stages.InitSDKStage)
+    self._RunStage(test_stages.CbuildbotLaunchTestStage)
 
 
 class VMInformationalBuilder(simple_builders.SimpleBuilder):

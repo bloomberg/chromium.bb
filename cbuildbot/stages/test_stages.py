@@ -492,6 +492,96 @@ class CrosSigningTestStage(generic_stages.BuilderStage):
     commands.RunCrosSigningTests(self._build_root)
 
 
+class UnexpectedTryjobResult(Exception):
+  """Thrown if a nested tryjob passes or fails unexpectedly."""
+
+class CbuildbotLaunchTestBuildStage(generic_stages.BuilderStage):
+  """Perform a single build with cbuildbot_launch."""
+  def __init__(self, builder_run, tryjob_buildroot, branch, build_config,
+               expect_success=True, **kwargs):
+    """Init.
+
+    Args:
+      builder_run: See builder_run on ArchiveStage
+      tryjob_buildroot: buildroot to use for test build, NOT current build.
+      branch: Branch to build. None means 'current' branch.
+      build_config: Name of build config to build.
+      expect_success: Is the test build expected to pass?
+    """
+    super(CbuildbotLaunchTestBuildStage, self).__init__(builder_run, **kwargs)
+
+    self.build_config = build_config
+    self.tryjob_buildroot = tryjob_buildroot
+    self.branch = branch
+    self.expect_success = expect_success
+
+  def PerformStage(self):
+    args = ['--branch', self.branch]
+    if self._run.options.git_cache_dir:
+      args.extend(['--git-cache-dir', self._run.options.git_cache_dir])
+
+    try:
+      commands.RunLocalTryjob(
+          self._build_root, self.build_config, args, self.tryjob_buildroot)
+      if not self.expect_success:
+        raise UnexpectedTryjobResult('Build passed unexpectedly.')
+    except failures_lib.BuildScriptFailure:
+      if self.expect_success:
+        raise UnexpectedTryjobResult('Build failed unexpectedly.')
+
+
+class CbuildbotLaunchTestStage(generic_stages.BuilderStage):
+  """Stage that runs Chromite tests, including network tests."""
+
+  def __init__(self, builder_run, **kwargs):
+    """Init.
+
+    Args:
+      builder_run: See builder_run on ArchiveStage
+    """
+    super(CbuildbotLaunchTestStage, self).__init__(builder_run, **kwargs)
+    self.tryjob_buildroot = None
+
+
+  def RunCbuildbotLauncher(
+      self, suffix, branch, build_config, expect_success):
+    """Run a new stage to test a cbuildbot_launch subbuild."""
+    substage = CbuildbotLaunchTestBuildStage(
+        self._run,
+        tryjob_buildroot=self.tryjob_buildroot,
+        branch=branch,
+        build_config=build_config,
+        expect_success=expect_success,
+        suffix=suffix)
+    substage.Run()
+
+  def PerformStage(self):
+    """Run sample cbuildbot_launch tests."""
+    # TODO: Move this tempdir, it's a problem.
+    with osutils.TempDir() as tryjob_buildroot:
+      self.tryjob_buildroot = tryjob_buildroot
+
+      # Iniitial build fails.
+      self.RunCbuildbotLauncher(
+          'Initial Build (fail)', self._run.options.branch, 'fail-build',
+          expect_success=False)
+
+      # Test cleanup after a fail.
+      self.RunCbuildbotLauncher(
+          'Second Build (pass)', self._run.options.branch, 'success-build',
+          expect_success=True)
+
+      # Test reduced cleanup after a pass.
+      self.RunCbuildbotLauncher(
+          'Third Build (pass)', self._run.options.branch, 'success-build',
+          expect_success=True)
+
+      # Test branch transition.
+      self.RunCbuildbotLauncher(
+          'Branch Build (pass)', 'release-R68-10718.B', 'success-build',
+          expect_success=True)
+
+
 class ChromiteTestStage(generic_stages.BuilderStage):
   """Stage that runs Chromite tests, including network tests."""
 
