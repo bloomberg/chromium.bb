@@ -539,6 +539,27 @@ static const struct weston_test_listener test_listener = {
 };
 
 static void
+input_destroy(struct input *inp)
+{
+	if (inp->pointer) {
+		wl_pointer_release(inp->pointer->wl_pointer);
+		free(inp->pointer);
+	}
+	if (inp->keyboard) {
+		wl_keyboard_release(inp->keyboard->wl_keyboard);
+		free(inp->keyboard);
+	}
+	if (inp->touch) {
+		wl_touch_release(inp->touch->wl_touch);
+		free(inp->touch);
+	}
+	wl_list_remove(&inp->link);
+	wl_seat_release(inp->wl_seat);
+	free(inp->seat_name);
+	free(inp);
+}
+
+static void
 input_update_devices(struct input *input)
 {
 	struct pointer *pointer;
@@ -705,6 +726,7 @@ handle_global(void *data, struct wl_registry *registry,
 					 &wl_compositor_interface, version);
 	} else if (strcmp(interface, "wl_seat") == 0) {
 		input = xzalloc(sizeof *input);
+		input->global_name = global->name;
 		input->wl_seat =
 			wl_registry_bind(registry, id,
 					 &wl_seat_interface, version);
@@ -735,8 +757,59 @@ handle_global(void *data, struct wl_registry *registry,
 	}
 }
 
+static struct global *
+client_find_global_with_name(struct client *client, uint32_t name)
+{
+	struct global *global;
+
+	wl_list_for_each(global, &client->global_list, link) {
+		if (global->name == name)
+			return global;
+	}
+
+	return NULL;
+}
+
+static struct input *
+client_find_input_with_name(struct client *client, uint32_t name)
+{
+	struct input *input;
+
+	wl_list_for_each(input, &client->inputs, link) {
+		if (input->global_name == name)
+			return input;
+	}
+
+	return NULL;
+}
+
+static void
+handle_global_remove(void *data, struct wl_registry *registry, uint32_t name)
+{
+	struct client *client = data;
+	struct global *global;
+	struct input *input;
+
+	global = client_find_global_with_name(client, name);
+	assert(global && "Request to remove unknown global");
+
+	if (strcmp(global->interface, "wl_seat") == 0) {
+		input = client_find_input_with_name(client, name);
+		if (input) {
+			if (client->input == input)
+				client->input = NULL;
+			input_destroy(input);
+		}
+	}
+
+	wl_list_remove(&global->link);
+	free(global->interface);
+	free(global);
+}
+
 static const struct wl_registry_listener registry_listener = {
-	handle_global
+	handle_global,
+	handle_global_remove,
 };
 
 void
@@ -807,14 +880,6 @@ log_handler(const char *fmt, va_list args)
 {
 	fprintf(stderr, "libwayland: ");
 	vfprintf(stderr, fmt, args);
-}
-
-static void
-input_destroy(struct input *inp)
-{
-	wl_list_remove(&inp->link);
-	wl_seat_destroy(inp->wl_seat);
-	free(inp);
 }
 
 /* find the test-seat and set it in client.
