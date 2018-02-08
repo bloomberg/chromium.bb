@@ -22,6 +22,8 @@
 #include "net/base/network_change_notifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/socket/tcp_client_socket.h"
+#include "services/network/public/interfaces/network_service.mojom.h"
+#include "services/network/public/interfaces/udp_socket.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "extensions/browser/api/socket/app_firewall_hole_manager.h"
@@ -183,6 +185,8 @@ class SocketCreateFunction : public SocketAsyncApiFunction {
   FRIEND_TEST_ALL_PREFIXES(SocketUnitTest, Create);
   enum SocketType { kSocketTypeInvalid = -1, kSocketTypeTCP, kSocketTypeUDP };
 
+  network::mojom::UDPSocketPtrInfo socket_;
+  network::mojom::UDPSocketReceiverRequest socket_receiver_request_;
   std::unique_ptr<api::socket::Create::Params> params_;
   SocketType socket_type_;
 };
@@ -254,6 +258,8 @@ class SocketBindFunction : public SocketAsyncApiFunction {
   void AsyncWorkStart() override;
 
  private:
+  void OnCompleted(int net_error);
+
   int socket_id_;
   std::string address_;
   uint16_t port_;
@@ -460,9 +466,11 @@ class SocketJoinGroupFunction : public SocketAsyncApiFunction {
 
   // AsyncApiFunction
   bool Prepare() override;
-  void Work() override;
+  void AsyncWorkStart() override;
 
  private:
+  void OnCompleted(int result);
+
   std::unique_ptr<api::socket::JoinGroup::Params> params_;
 };
 
@@ -477,9 +485,11 @@ class SocketLeaveGroupFunction : public SocketAsyncApiFunction {
 
   // AsyncApiFunction
   bool Prepare() override;
-  void Work() override;
+  void AsyncWorkStart() override;
 
  private:
+  void OnCompleted(int result);
+
   std::unique_ptr<api::socket::LeaveGroup::Params> params_;
 };
 

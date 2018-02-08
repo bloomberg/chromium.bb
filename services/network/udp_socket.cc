@@ -23,11 +23,10 @@ namespace network {
 
 namespace {
 
-// TODO(xunjieli): Default read buffer size is too big. Make it customizable.
-const int kMaxReadSize = 64 * 1024;
+const uint32_t kMaxReadSize = 64 * 1024;
 // The limit on data length for a UDP packet is 65,507 for IPv4 and 65,535 for
 // IPv6.
-const int kMaxPacketSize = kMaxReadSize - 1;
+const uint32_t kMaxPacketSize = kMaxReadSize - 1;
 
 class SocketWrapperImpl : public UDPSocket::SocketWrapper {
  public:
@@ -226,6 +225,11 @@ void UDPSocket::LeaveGroup(const net::IPAddress& group_address,
 }
 
 void UDPSocket::ReceiveMore(uint32_t num_additional_datagrams) {
+  ReceiveMoreWithBufferSize(num_additional_datagrams, kMaxReadSize);
+}
+
+void UDPSocket::ReceiveMoreWithBufferSize(uint32_t num_additional_datagrams,
+                                          uint32_t buffer_size) {
   if (!receiver_)
     return;
   if (!IsConnectedOrBound()) {
@@ -241,7 +245,7 @@ void UDPSocket::ReceiveMore(uint32_t num_additional_datagrams) {
   }
   if (!recvfrom_buffer_) {
     DCHECK_EQ(num_additional_datagrams, remaining_recv_slots_);
-    DoRecvFrom();
+    DoRecvFrom(std::min(buffer_size, kMaxReadSize));
   }
 }
 
@@ -274,6 +278,19 @@ void UDPSocket::Send(
       std::move(callback));
 }
 
+void UDPSocket::Close() {
+  if (!IsConnectedOrBound()) {
+    return;
+  }
+  is_connected_ = false;
+  is_bound_ = false;
+  recvfrom_buffer_ = nullptr;
+  send_callback_.Reset();
+  send_buffer_ = nullptr;
+  remaining_recv_slots_ = 0;
+  wrapped_socket_.reset();
+}
+
 std::unique_ptr<UDPSocket::SocketWrapper> UDPSocket::CreateSocketWrapper()
     const {
   return std::make_unique<SocketWrapperImpl>(
@@ -285,20 +302,21 @@ bool UDPSocket::IsConnectedOrBound() const {
   return is_connected_ || is_bound_;
 }
 
-void UDPSocket::DoRecvFrom() {
+void UDPSocket::DoRecvFrom(uint32_t buffer_size) {
   DCHECK(receiver_);
   DCHECK(!recvfrom_buffer_);
   DCHECK_GT(remaining_recv_slots_, 0u);
+  DCHECK_GE(kMaxReadSize, buffer_size);
 
-  recvfrom_buffer_ = new net::IOBuffer(kMaxReadSize);
+  recvfrom_buffer_ = new net::IOBuffer(static_cast<size_t>(buffer_size));
 
   // base::Unretained(this) is safe because socket is owned by |this|.
   int net_result = wrapped_socket_->RecvFrom(
-      recvfrom_buffer_.get(), kMaxReadSize, &recvfrom_address_,
+      recvfrom_buffer_.get(), buffer_size, &recvfrom_address_,
       base::BindRepeating(&UDPSocket::OnRecvFromCompleted,
-                          base::Unretained(this)));
+                          base::Unretained(this), buffer_size));
   if (net_result != net::ERR_IO_PENDING)
-    OnRecvFromCompleted(net_result);
+    OnRecvFromCompleted(buffer_size, net_result);
 }
 
 void UDPSocket::DoSendToOrWrite(
@@ -367,7 +385,7 @@ void UDPSocket::DoSendToOrWriteBuffer(
     OnSendToCompleted(net_result);
 }
 
-void UDPSocket::OnRecvFromCompleted(int net_result) {
+void UDPSocket::OnRecvFromCompleted(uint32_t buffer_size, int net_result) {
   DCHECK(recvfrom_buffer_);
 
   if (net_result >= 0) {
@@ -384,7 +402,7 @@ void UDPSocket::OnRecvFromCompleted(int net_result) {
   DCHECK_GT(remaining_recv_slots_, 0u);
   remaining_recv_slots_--;
   if (remaining_recv_slots_ > 0)
-    DoRecvFrom();
+    DoRecvFrom(buffer_size);
 }
 
 void UDPSocket::OnSendToCompleted(int net_result) {

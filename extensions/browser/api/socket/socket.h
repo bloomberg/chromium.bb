@@ -81,7 +81,9 @@ class Socket : public ApiResource {
   // |socket_destroying| is true if disconnect is due to destruction of the
   // socket.
   virtual void Disconnect(bool socket_destroying) = 0;
-  virtual int Bind(const std::string& address, uint16_t port) = 0;
+  virtual void Bind(const std::string& address,
+                    uint16_t port,
+                    const CompletionCallback& callback) = 0;
 
   // The |callback| will be called with the number of bytes read into the
   // buffer, or a negative number if an error occurred.
@@ -131,7 +133,6 @@ class Socket : public ApiResource {
   virtual int WriteImpl(net::IOBuffer* io_buffer,
                         int io_buffer_size,
                         const net::CompletionCallback& callback) = 0;
-  virtual void OnWriteComplete(int result);
 
   std::string hostname_;
   bool is_connected_;
@@ -151,6 +152,9 @@ class Socket : public ApiResource {
     CompletionCallback callback;
     int bytes_written;
   };
+
+  void OnWriteComplete(int result);
+
   base::queue<WriteRequest> write_queue_;
   scoped_refptr<net::IOBuffer> io_buffer_write_;
 

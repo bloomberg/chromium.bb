@@ -135,10 +135,18 @@ interface UDPSocket {
   //
   // It is very likely that approach 1 will perform better than approach 2,
   // because in approach 2 getting every datagram takes at least the time of a
-  // round trip to the service side.
-  // TODO(xunjieli): Allow consumer to configure the underlying read buffer
-  // size. This is currently set to be 128KB, which is likely to be too big.
+  // round trip to the service side. Default buffer size of 64KiB will be
+  // allocated to receive each datagram.
   ReceiveMore(uint32 num_additional_datagrams);
+
+  // Same as ReceiveMore(), but with an ability to set the buffer size used for
+  // receiving each datagram. Note that |buffer_size| is the application-side
+  // buffer which is different from UDPSocketOptions::receive_buffer_size which
+  // is the OS-side buffer. |buffer_size| larger than 64KiB will be capped at
+  // 64KiB as the limit on data length of a IPv4 UDP packet is 65,507 and 65,535
+  // for IPv6.
+  ReceiveMoreWithBufferSize(
+      uint32 num_additional_datagrams, uint32 buffer_size);
 
   // Sends data to a particular destination, |dest_addr|. Should only be used
   // after Bind(). There is currently no limit on the size of |data|, other
@@ -162,6 +170,9 @@ interface UDPSocket {
   Send(mojo.common.mojom.ReadOnlyBuffer data,
        MutableNetworkTrafficAnnotationTag traffic_annotation)
       => (int32 result);
+
+  // Closes the socket. Connect() or Bind() can be used after Close().
+  Close();
 };
 
 // An interface the consumers of UDPSocket can implement to listen for incoming

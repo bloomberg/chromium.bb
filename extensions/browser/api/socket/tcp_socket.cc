@@ -128,8 +128,10 @@ void TCPSocket::Disconnect(bool socket_destroying) {
   accept_socket_.reset(NULL);
 }
 
-int TCPSocket::Bind(const std::string& address, uint16_t port) {
-  return net::ERR_FAILED;
+void TCPSocket::Bind(const std::string& address,
+                     uint16_t port,
+                     const net::CompletionCallback& callback) {
+  callback.Run(net::ERR_FAILED);
 }
 
 void TCPSocket::Read(int count, const ReadCompletionCallback& callback) {
