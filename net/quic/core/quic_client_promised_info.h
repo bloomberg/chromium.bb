@@ -37,11 +37,11 @@ class QUIC_EXPORT_PRIVATE QuicClientPromisedInfo
 
   void Init();
 
-  // Validate promise headers etc.
-  void OnPromiseHeaders(const SpdyHeaderBlock& request_headers);
+  // Validate promise headers etc. Returns true if headers are valid.
+  bool OnPromiseHeaders(const SpdyHeaderBlock& headers);
 
   // Store response, possibly proceed with final validation.
-  void OnResponseHeaders(const SpdyHeaderBlock& response_headers);
+  void OnResponseHeaders(const SpdyHeaderBlock& headers);
 
   // Rendezvous between this promised stream and a client request that
   // has a matching URL.
