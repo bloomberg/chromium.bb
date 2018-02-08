@@ -2656,10 +2656,10 @@ pp::VarDictionary PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
         base::IsValueInRangeForNumericType<int32_t>(page_index)) {
       dict.Set(pp::Var("page"), pp::Var(static_cast<int32_t>(page_index)));
 
-      base::Optional<std::pair<float, float>> xy =
+      base::Optional<gfx::PointF> xy =
           pages_[page_index]->GetPageXYTarget(dest);
       if (xy)
-        dict.Set(pp::Var("y"), pp::Var(static_cast<int>(xy.value().second)));
+        dict.Set(pp::Var("y"), pp::Var(static_cast<int>(xy.value().y())));
     }
   } else {
     // Extract URI for bookmarks linking to an external page.
@@ -2713,9 +2713,9 @@ int PDFiumEngine::GetNamedDestinationPage(const std::string& destination) {
   return dest ? FPDFDest_GetPageIndex(doc_, dest) : -1;
 }
 
-std::pair<int, int> PDFiumEngine::TransformPagePoint(
-    int page_index,
-    std::pair<int, int> page_xy) {
+gfx::PointF PDFiumEngine::TransformPagePoint(int page_index,
+                                             const gfx::PointF& page_xy) {
+  DCHECK(PageIndexInBounds(page_index));
   return pages_[page_index]->TransformPageToScreenXY(page_xy);
 }
 

@@ -366,16 +366,14 @@ PDFiumPage::Area PDFiumPage::GetDestinationTarget(FPDF_DEST destination,
 
   target->page = page_index;
 
-  base::Optional<std::pair<float, float>> xy = GetPageXYTarget(destination);
-  if (!xy)
-    return DOCLINK_AREA;
+  base::Optional<gfx::PointF> xy = GetPageXYTarget(destination);
+  if (xy)
+    target->y_in_pixels = TransformPageToScreenXY(xy.value()).y();
 
-  target->y_in_pixels = TransformPageToScreenXY(xy.value()).second;
   return DOCLINK_AREA;
 }
 
-base::Optional<std::pair<float, float>> PDFiumPage::GetPageXYTarget(
-    FPDF_DEST destination) {
+base::Optional<gfx::PointF> PDFiumPage::GetPageXYTarget(FPDF_DEST destination) {
   if (!available_)
     return {};
 
@@ -391,18 +389,16 @@ base::Optional<std::pair<float, float>> PDFiumPage::GetPageXYTarget(
   if (!success || !has_x_coord || !has_y_coord)
     return {};
 
-  return {{x, y}};
+  return {gfx::PointF(x, y)};
 }
 
-std::pair<float, float> PDFiumPage::TransformPageToScreenXY(
-    std::pair<float, float> xy) {
-  if (!available_) {
-    return {0, 0};
-  }
+gfx::PointF PDFiumPage::TransformPageToScreenXY(const gfx::PointF& xy) {
+  if (!available_)
+    return gfx::PointF();
 
-  pp::FloatRect page_rect(xy.first, xy.second, 0, 0);
+  pp::FloatRect page_rect(xy.x(), xy.y(), 0, 0);
   pp::FloatRect pixel_rect(FloatPageRectToPixelRect(GetPage(), page_rect));
-  return {pixel_rect.x(), pixel_rect.y()};
+  return gfx::PointF(pixel_rect.x(), pixel_rect.y());
 }
 
 PDFiumPage::Area PDFiumPage::GetURITarget(FPDF_ACTION uri_action,
