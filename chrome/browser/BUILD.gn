@@ -1647,6 +1647,7 @@ split_static_library("browser") {
     "//components/favicon/core",
     "//components/favicon_base",
     "//components/feature_engagement",
+    "//components/filename_generation",
     "//components/flags_ui",
     "//components/gcm_driver",
     "//components/google/core/browser",

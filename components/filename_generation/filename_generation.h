@@ -35,6 +35,14 @@ base::FilePath GenerateFilename(const base::string16& title,
                                 bool can_save_as_complete,
                                 std::string contents_mime_type);
 
+// Truncates path->BaseName() to make path->BaseName().value().size() <= limit.
+// - It keeps the extension as is. Only truncates the body part.
+// - Only truncates if the base filename can maintain a minimum length
+//   (currently a hardcoded internval constant kTruncatedNameLengthLowerbound,
+//   but could be parameterized if ever required).
+//   If it was unable to shorten the name, returns false.
+bool TruncateFilename(base::FilePath* path, size_t limit);
+
 }  // namespace filename_generation
 
 #endif  // COMPONENTS_FILENAME_GENERATION_FILENAME_GENERATION_H_
