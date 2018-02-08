@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
@@ -799,6 +800,61 @@ TEST_F(ClientControlledShellSurfaceTest, ShellSurfaceInSystemModalHitTest) {
   aura::Window* found =
       static_cast<aura::Window*>(targeter.FindTargetForEvent(root, &event));
   EXPECT_FALSE(window->Contains(found));
+}
+
+// Test the snap functionalities in splitscreen in tablet mode.
+TEST_F(ClientControlledShellSurfaceTest, SnapWindowInSplitViewModeTest) {
+  UpdateDisplay("807x607");
+  ash::Shell* shell = ash::Shell::Get();
+  shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  const gfx::Size buffer_size(800, 600);
+  std::unique_ptr<Buffer> buffer1(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface1(new Surface);
+  auto shell_surface1 =
+      exo_test_helper()->CreateClientControlledShellSurface(surface1.get());
+  // Start in maximized.
+  shell_surface1->SetMaximized();
+  surface1->Attach(buffer1.get());
+  surface1->Commit();
+
+  aura::Window* window1 = shell_surface1->GetWidget()->GetNativeWindow();
+  ash::wm::WindowState* window_state1 = ash::wm::GetWindowState(window1);
+  ash::wm::ClientControlledState* state1 =
+      static_cast<ash::wm::ClientControlledState*>(
+          ash::wm::WindowState::TestApi::GetStateImpl(window_state1));
+  EXPECT_EQ(window_state1->GetStateType(),
+            ash::mojom::WindowStateType::MAXIMIZED);
+
+  // Snap window to left.
+  ash::SplitViewController* split_view_controller =
+      shell->split_view_controller();
+  split_view_controller->SnapWindow(window1, ash::SplitViewController::LEFT);
+  state1->set_bounds_locally(true);
+  window1->SetBounds(split_view_controller->GetSnappedWindowBoundsInScreen(
+      window1, ash::SplitViewController::LEFT));
+  state1->set_bounds_locally(false);
+  EXPECT_EQ(window_state1->GetStateType(),
+            ash::mojom::WindowStateType::LEFT_SNAPPED);
+  EXPECT_EQ(shell_surface1->GetWidget()->GetWindowBoundsInScreen(),
+            split_view_controller->GetSnappedWindowBoundsInScreen(
+                window1, ash::SplitViewController::LEFT));
+  EXPECT_TRUE(HasBackdrop());
+  split_view_controller->EndSplitView();
+
+  // Snap window to right.
+  split_view_controller->SnapWindow(window1, ash::SplitViewController::RIGHT);
+  state1->set_bounds_locally(true);
+  window1->SetBounds(split_view_controller->GetSnappedWindowBoundsInScreen(
+      window1, ash::SplitViewController::RIGHT));
+  state1->set_bounds_locally(false);
+  EXPECT_EQ(window_state1->GetStateType(),
+            ash::mojom::WindowStateType::RIGHT_SNAPPED);
+  EXPECT_EQ(shell_surface1->GetWidget()->GetWindowBoundsInScreen(),
+            split_view_controller->GetSnappedWindowBoundsInScreen(
+                window1, ash::SplitViewController::RIGHT));
+  EXPECT_TRUE(HasBackdrop());
 }
 
 }  // namespace exo

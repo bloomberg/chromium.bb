@@ -5,6 +5,10 @@
 #include "ash/wm/window_state.h"
 #include "base/macros.h"
 
+namespace aura {
+class Window;
+}  // namespace aura
+
 namespace ash {
 namespace wm {
 
@@ -23,26 +27,31 @@ class BaseState : public WindowState::State {
   static mojom::WindowStateType GetStateForTransitionEvent(
       const WMEvent* event);
 
-  // Handle workspace related events, such as DISPLAY_BOUNDS_CHANGED.
+  // Handles workspace related events, such as DISPLAY_BOUNDS_CHANGED.
   virtual void HandleWorkspaceEvents(WindowState* window_state,
                                      const WMEvent* event) = 0;
 
-  // Handle state dependent events, such as TOGGLE_MAXIMIZED,
+  // Handles state dependent events, such as TOGGLE_MAXIMIZED,
   // TOGGLE_FULLSCREEN.
   virtual void HandleCompoundEvents(WindowState* window_state,
                                     const WMEvent* event) = 0;
 
-  // Handle bounds change events: SET_BOUNDS and CENTER.
+  // Handles bounds change events: SET_BOUNDS and CENTER.
   virtual void HandleBoundsEvents(WindowState* window_state,
                                   const WMEvent* event) = 0;
 
-  // Handle state transition events, such as MAXIMZIED, MINIMIZED.
+  // Handles state transition events, such as MAXIMZIED, MINIMIZED.
   virtual void HandleTransitionEvents(WindowState* window_state,
                                       const WMEvent* event) = 0;
 
-  // Show/Hide window when minimized state changes.
+  // Shows/Hides window when minimized state changes.
   void UpdateMinimizedState(WindowState* window_state,
                             mojom::WindowStateType previous_state_type);
+
+  // Returns the window bounds for snapped window state.
+  gfx::Rect GetSnappedWindowBoundsInParent(
+      aura::Window* window,
+      const mojom::WindowStateType state_type);
 
   // The current type of the window.
   mojom::WindowStateType state_type_;

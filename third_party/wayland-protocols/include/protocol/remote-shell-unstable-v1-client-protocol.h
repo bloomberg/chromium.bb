@@ -196,6 +196,14 @@ enum zcr_remote_shell_v1_state_type {
 	 * resizing window state
 	 */
 	ZCR_REMOTE_SHELL_V1_STATE_TYPE_RESIZING = 8,
+	/**
+	 * left snapped window state
+	 */
+	ZCR_REMOTE_SHELL_V1_STATE_TYPE_LEFT_SNAPPED = 9,
+	/**
+	 * right snapped window state
+	 */
+	ZCR_REMOTE_SHELL_V1_STATE_TYPE_RIGHT_SNAPPED = 10,
 };
 #endif /* ZCR_REMOTE_SHELL_V1_STATE_TYPE_ENUM */
 
@@ -764,6 +772,8 @@ zcr_remote_surface_v1_add_listener(struct zcr_remote_surface_v1 *zcr_remote_surf
 #define ZCR_REMOTE_SURFACE_V1_UNSET_CAN_MAXIMIZE 30
 #define ZCR_REMOTE_SURFACE_V1_SET_MIN_SIZE 31
 #define ZCR_REMOTE_SURFACE_V1_SET_MAX_SIZE 32
+#define ZCR_REMOTE_SURFACE_V1_SET_SNAPPED_TO_LEFT 33
+#define ZCR_REMOTE_SURFACE_V1_SET_SNAPPED_TO_RIGHT 34
 
 /**
  * @ingroup iface_zcr_remote_surface_v1
@@ -926,6 +936,14 @@ zcr_remote_surface_v1_add_listener(struct zcr_remote_surface_v1 *zcr_remote_surf
  * @ingroup iface_zcr_remote_surface_v1
  */
 #define ZCR_REMOTE_SURFACE_V1_SET_MAX_SIZE_SINCE_VERSION 10
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_SNAPPED_TO_LEFT_SINCE_VERSION 11
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_SNAPPED_TO_RIGHT_SINCE_VERSION 11
 
 /** @ingroup iface_zcr_remote_surface_v1 */
 static inline void
@@ -1492,6 +1510,30 @@ zcr_remote_surface_v1_set_max_size(struct zcr_remote_surface_v1 *zcr_remote_surf
 {
 	wl_proxy_marshal((struct wl_proxy *) zcr_remote_surface_v1,
 			 ZCR_REMOTE_SURFACE_V1_SET_MAX_SIZE, width, height);
+}
+
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ *
+ * Request that surface is snapped to left.
+ */
+static inline void
+zcr_remote_surface_v1_set_snapped_to_left(struct zcr_remote_surface_v1 *zcr_remote_surface_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zcr_remote_surface_v1,
+			 ZCR_REMOTE_SURFACE_V1_SET_SNAPPED_TO_LEFT);
+}
+
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ *
+ * Request that surface is snapped to right.
+ */
+static inline void
+zcr_remote_surface_v1_set_snapped_to_right(struct zcr_remote_surface_v1 *zcr_remote_surface_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zcr_remote_surface_v1,
+			 ZCR_REMOTE_SURFACE_V1_SET_SNAPPED_TO_RIGHT);
 }
 
 #define ZCR_NOTIFICATION_SURFACE_V1_DESTROY 0

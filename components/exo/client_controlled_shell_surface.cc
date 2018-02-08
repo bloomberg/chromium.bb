@@ -84,6 +84,7 @@ class ClientControlledStateDelegate
                                              next_state);
   }
   void HandleBoundsRequest(ash::wm::WindowState* window_state,
+                           ash::mojom::WindowStateType requested_state,
                            const gfx::Rect& bounds) override {
     bool is_resize = window_state->window()->bounds().size() != bounds.size();
 
@@ -95,7 +96,8 @@ class ClientControlledStateDelegate
                              .id();
 
     shell_surface_->OnBoundsChangeEvent(
-        window_state->GetStateType(), display_id, bounds_in_screen, is_resize,
+        window_state->GetStateType(), requested_state, display_id,
+        bounds_in_screen, is_resize,
         window_state->drag_details()
             ? window_state->drag_details()->bounds_change
             : 0);
@@ -243,24 +245,34 @@ ClientControlledShellSurface::~ClientControlledShellSurface() {
 
 void ClientControlledShellSurface::SetMaximized() {
   TRACE_EVENT0("exo", "ClientControlledShellSurface::SetMaximized");
-  pending_show_state_ = ui::SHOW_STATE_MAXIMIZED;
+  pending_window_state_ = ash::mojom::WindowStateType::MAXIMIZED;
 }
 
 void ClientControlledShellSurface::SetMinimized() {
   TRACE_EVENT0("exo", "ClientControlledShellSurface::SetMinimized");
-  pending_show_state_ = ui::SHOW_STATE_MINIMIZED;
+  pending_window_state_ = ash::mojom::WindowStateType::MINIMIZED;
 }
 
 void ClientControlledShellSurface::SetRestored() {
   TRACE_EVENT0("exo", "ClientControlledShellSurface::SetRestored");
-  pending_show_state_ = ui::SHOW_STATE_NORMAL;
+  pending_window_state_ = ash::mojom::WindowStateType::NORMAL;
 }
 
 void ClientControlledShellSurface::SetFullscreen(bool fullscreen) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetFullscreen",
                "fullscreen", fullscreen);
-  pending_show_state_ =
-      fullscreen ? ui::SHOW_STATE_FULLSCREEN : ui::SHOW_STATE_NORMAL;
+  pending_window_state_ = fullscreen ? ash::mojom::WindowStateType::FULLSCREEN
+                                     : ash::mojom::WindowStateType::NORMAL;
+}
+
+void ClientControlledShellSurface::SetSnappedToLeft() {
+  TRACE_EVENT0("exo", "ClientControlledShellSurface::SetSnappedToLeft");
+  pending_window_state_ = ash::mojom::WindowStateType::LEFT_SNAPPED;
+}
+
+void ClientControlledShellSurface::SetSnappedToRight() {
+  TRACE_EVENT0("exo", "ClientControlledShellSurface::SetSnappedToRight");
+  pending_window_state_ = ash::mojom::WindowStateType::RIGHT_SNAPPED;
 }
 
 void ClientControlledShellSurface::SetPinned(ash::mojom::WindowPinType type) {
@@ -384,13 +396,14 @@ void ClientControlledShellSurface::SetCanMaximize(bool can_maximize) {
 
 void ClientControlledShellSurface::OnBoundsChangeEvent(
     ash::mojom::WindowStateType current_state,
+    ash::mojom::WindowStateType requested_state,
     int64_t display_id,
     const gfx::Rect& bounds,
     bool is_resize,
     int bounds_change) {
   if (!bounds.IsEmpty() && !bounds_changed_callback_.is_null()) {
-    bounds_changed_callback_.Run(current_state, display_id, bounds, is_resize,
-                                 bounds_change);
+    bounds_changed_callback_.Run(current_state, requested_state, display_id,
+                                 bounds, is_resize, bounds_change);
   }
 }
 
@@ -409,38 +422,33 @@ void ClientControlledShellSurface::OnDragFinished(bool canceled,
 
 void ClientControlledShellSurface::OnSurfaceCommit() {
   if (!widget_)
-    CreateShellSurfaceWidget(pending_show_state_);
+    CreateShellSurfaceWidget(ash::ToWindowShowState(pending_window_state_));
 
-  if (widget_->GetNativeWindow()->GetProperty(aura::client::kShowStateKey) !=
-      pending_show_state_) {
-    ash::wm::WindowState* window_state = GetWindowState();
+  ash::wm::WindowState* window_state = GetWindowState();
+  if (window_state->GetStateType() != pending_window_state_) {
     if (!IsPinned(window_state)) {
-      ash::mojom::WindowStateType next_window_state =
-          ash::mojom::WindowStateType::NORMAL;
       ash::wm::ClientControlledState::BoundsChangeAnimationType animation_type =
           ash::wm::ClientControlledState::kAnimationNone;
-      switch (pending_show_state_) {
-        case ui::SHOW_STATE_NORMAL:
-          if (widget_->IsMaximized() || widget_->IsFullscreen())
+      switch (pending_window_state_) {
+        case ash::mojom::WindowStateType::NORMAL:
+          if (widget_->IsMaximized() || widget_->IsFullscreen()) {
             animation_type =
                 ash::wm::ClientControlledState::kAnimationCrossFade;
+          }
           break;
-        case ui::SHOW_STATE_MINIMIZED:
-          next_window_state = ash::mojom::WindowStateType::MINIMIZED;
-          break;
-        case ui::SHOW_STATE_MAXIMIZED:
+
+        case ash::mojom::WindowStateType::MAXIMIZED:
+        case ash::mojom::WindowStateType::FULLSCREEN:
+        case ash::mojom::WindowStateType::LEFT_SNAPPED:
+        case ash::mojom::WindowStateType::RIGHT_SNAPPED:
           animation_type = ash::wm::ClientControlledState::kAnimationCrossFade;
-          next_window_state = ash::mojom::WindowStateType::MAXIMIZED;
           break;
-        case ui::SHOW_STATE_FULLSCREEN:
-          animation_type = ash::wm::ClientControlledState::kAnimationCrossFade;
-          next_window_state = ash::mojom::WindowStateType::FULLSCREEN;
-          break;
+
         default:
           break;
       }
-      client_controlled_state_->EnterNextState(window_state, next_window_state,
-                                               animation_type);
+      client_controlled_state_->EnterNextState(
+          window_state, pending_window_state_, animation_type);
     } else {
       VLOG(1) << "State change was requested while it is pinned";
     }

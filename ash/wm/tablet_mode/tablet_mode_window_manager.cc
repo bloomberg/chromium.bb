@@ -95,12 +95,15 @@ void TabletModeWindowManager::OnOverviewModeEnded() {
 }
 
 void TabletModeWindowManager::OnSplitViewModeEnded() {
-  // Maximize all snapped windows upon exiting split view mode.
-  for (auto& pair : window_state_map_) {
-    if (pair.second->GetType() == mojom::WindowStateType::LEFT_SNAPPED ||
-        pair.second->GetType() == mojom::WindowStateType::RIGHT_SNAPPED) {
+  // Maximize all snapped windows upon exiting split view mode. Note the snapped
+  // window might not be tracked in our |window_state_map_|.
+  MruWindowTracker::WindowList windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+  for (auto* window : windows) {
+    wm::WindowState* window_state = wm::GetWindowState(window);
+    if (window_state->IsSnapped()) {
       wm::WMEvent event(wm::WM_EVENT_MAXIMIZE);
-      wm::GetWindowState(pair.first)->OnWMEvent(&event);
+      window_state->OnWMEvent(&event);
     }
   }
 }

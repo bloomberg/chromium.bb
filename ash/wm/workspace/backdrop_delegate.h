@@ -19,7 +19,7 @@ class ASH_EXPORT BackdropDelegate {
  public:
   virtual ~BackdropDelegate() {}
 
-  // A window got added to the layout.
+  // Returns true if |window| should have a backdrop.
   virtual bool HasBackdrop(aura::Window* window) = 0;
 };
 

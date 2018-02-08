@@ -47,6 +47,7 @@ void TestClientControlledStateDelegate::HandleWindowStateRequest(
 
 void TestClientControlledStateDelegate::HandleBoundsRequest(
     ash::wm::WindowState* window_state,
+    ash::mojom::WindowStateType requested_state,
     const gfx::Rect& bounds) {
   ash::wm::ClientControlledState* state_impl =
       static_cast<ash::wm::ClientControlledState*>(
@@ -54,6 +55,21 @@ void TestClientControlledStateDelegate::HandleBoundsRequest(
   state_impl->set_bounds_locally(true);
   window_state->window()->SetBounds(bounds);
   state_impl->set_bounds_locally(false);
+
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeWindow(window_state->window());
+  ClientControlledShellSurface* shell_surface =
+      static_cast<ClientControlledShellSurface*>(widget->widget_delegate());
+
+  if (requested_state != window_state->GetStateType()) {
+    DCHECK(requested_state == ash::mojom::WindowStateType::LEFT_SNAPPED ||
+           requested_state == ash::mojom::WindowStateType::RIGHT_SNAPPED);
+    if (requested_state == ash::mojom::WindowStateType::LEFT_SNAPPED)
+      shell_surface->SetSnappedToLeft();
+    else
+      shell_surface->SetSnappedToRight();
+  }
+  shell_surface->OnSurfaceCommit();
 }
 
 // static
