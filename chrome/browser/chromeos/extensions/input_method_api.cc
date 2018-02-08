@@ -311,19 +311,19 @@ InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
       ->RegisterObserver(this, OnImeMenuListChanged::kEventName);
   EventRouter::Get(context_)
       ->RegisterObserver(this, OnImeMenuItemsChanged::kEventName);
-  ExtensionFunctionRegistry* registry =
+  ExtensionFunctionRegistry& registry =
       ExtensionFunctionRegistry::GetInstance();
-  registry->RegisterFunction<InputMethodPrivateGetInputMethodConfigFunction>();
-  registry->RegisterFunction<InputMethodPrivateGetCurrentInputMethodFunction>();
-  registry->RegisterFunction<InputMethodPrivateSetCurrentInputMethodFunction>();
-  registry->RegisterFunction<InputMethodPrivateGetInputMethodsFunction>();
+  registry.RegisterFunction<InputMethodPrivateGetInputMethodConfigFunction>();
+  registry.RegisterFunction<InputMethodPrivateGetCurrentInputMethodFunction>();
+  registry.RegisterFunction<InputMethodPrivateSetCurrentInputMethodFunction>();
+  registry.RegisterFunction<InputMethodPrivateGetInputMethodsFunction>();
   registry
-      ->RegisterFunction<InputMethodPrivateFetchAllDictionaryWordsFunction>();
-  registry->RegisterFunction<InputMethodPrivateAddWordToDictionaryFunction>();
-  registry->RegisterFunction<InputMethodPrivateGetEncryptSyncEnabledFunction>();
-  registry->RegisterFunction<
-      InputMethodPrivateNotifyImeMenuItemActivatedFunction>();
-  registry->RegisterFunction<InputMethodPrivateOpenOptionsPageFunction>();
+      .RegisterFunction<InputMethodPrivateFetchAllDictionaryWordsFunction>();
+  registry.RegisterFunction<InputMethodPrivateAddWordToDictionaryFunction>();
+  registry.RegisterFunction<InputMethodPrivateGetEncryptSyncEnabledFunction>();
+  registry
+      .RegisterFunction<InputMethodPrivateNotifyImeMenuItemActivatedFunction>();
+  registry.RegisterFunction<InputMethodPrivateOpenOptionsPageFunction>();
 }
 
 InputMethodAPI::~InputMethodAPI() {

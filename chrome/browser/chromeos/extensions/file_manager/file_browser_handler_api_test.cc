@@ -65,7 +65,7 @@ struct TestCase {
 
 bool OverrideFunction(const std::string& name,
                       extensions::ExtensionFunctionFactory factory) {
-  return ExtensionFunctionRegistry::GetInstance()->OverrideFunctionForTesting(
+  return ExtensionFunctionRegistry::GetInstance().OverrideFunctionForTesting(
       name, factory);
 }
 

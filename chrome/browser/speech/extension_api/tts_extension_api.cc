@@ -349,16 +349,16 @@ ExtensionFunction::ResponseAction TtsGetVoicesFunction::Run() {
 }
 
 TtsAPI::TtsAPI(content::BrowserContext* context) {
-  ExtensionFunctionRegistry* registry =
+  ExtensionFunctionRegistry& registry =
       ExtensionFunctionRegistry::GetInstance();
-  registry->RegisterFunction<ExtensionTtsEngineUpdateVoicesFunction>();
-  registry->RegisterFunction<ExtensionTtsEngineSendTtsEventFunction>();
-  registry->RegisterFunction<TtsGetVoicesFunction>();
-  registry->RegisterFunction<TtsIsSpeakingFunction>();
-  registry->RegisterFunction<TtsSpeakFunction>();
-  registry->RegisterFunction<TtsStopSpeakingFunction>();
-  registry->RegisterFunction<TtsPauseFunction>();
-  registry->RegisterFunction<TtsResumeFunction>();
+  registry.RegisterFunction<ExtensionTtsEngineUpdateVoicesFunction>();
+  registry.RegisterFunction<ExtensionTtsEngineSendTtsEventFunction>();
+  registry.RegisterFunction<TtsGetVoicesFunction>();
+  registry.RegisterFunction<TtsIsSpeakingFunction>();
+  registry.RegisterFunction<TtsSpeakFunction>();
+  registry.RegisterFunction<TtsStopSpeakingFunction>();
+  registry.RegisterFunction<TtsPauseFunction>();
+  registry.RegisterFunction<TtsResumeFunction>();
 
   // Ensure we're observing newly added engines for the given context.
   TtsEngineExtensionObserver::GetInstance(Profile::FromBrowserContext(context));
