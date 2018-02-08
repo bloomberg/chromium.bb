@@ -262,7 +262,3 @@
 -EnterpriseEnrollmentTest.TestAuthCodeGetsProperlyReceivedFromGaia
 -PowerPolicyLoginScreenBrowserTest.SetDevicePolicy
 -EnterpriseEnrollmentTest.TestActiveDirectoryEnrollment_Success
-
-# Crashes in cc::(anonymous namespace)::ZeroCopyGpuBacking::SharedMemoryGuid
-# http://crbug.com/810073
--MemoryTracingBrowserTest.TestHeapProfilingPseudo
