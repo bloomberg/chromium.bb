@@ -4698,12 +4698,8 @@ shell_output_destroy_move_layer(struct desktop_shell *shell,
 	struct weston_output *output = data;
 	struct weston_view *view;
 
-	wl_list_for_each(view, &layer->view_list.link, layer_link.link) {
-		if (view->output != output)
-			continue;
-
+	wl_list_for_each(view, &layer->view_list.link, layer_link.link)
 		shell_reposition_view_on_output_destroy(view);
-	}
 }
 
 static void
