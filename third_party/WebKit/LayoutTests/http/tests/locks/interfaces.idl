@@ -20,9 +20,9 @@ partial interface WorkerNavigator {
 
 [Exposed=(Window,Worker), SecureContext]
 interface LockManager {
-  Promise<any> acquire(DOMString name,
+  Promise<any> request(DOMString name,
                        LockGrantedCallback callback);
-  Promise<any> acquire(DOMString name,
+  Promise<any> request(DOMString name,
                        LockOptions options,
                        LockGrantedCallback callback);
 

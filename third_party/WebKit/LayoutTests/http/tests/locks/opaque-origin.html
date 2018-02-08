@@ -34,7 +34,7 @@ const script = `
   "use strict";
   window.onmessage = async () => {
     try {
-      await navigator.locks.acquire('name', lock => {});
+      await navigator.locks.request('name', lock => {});
       window.parent.postMessage({result: "no exception"}, "*");
     } catch (ex) {
       window.parent.postMessage({result: ex.name}, "*");
@@ -48,8 +48,8 @@ promise_test(async t => {
   iframe.contentWindow.postMessage({}, '*');
   const message = await wait_for_message(iframe);
   assert_equals(message.result, 'no exception',
-                'navigator.locks.acquire() should not throw');
-}, 'navigator.locks.acquire() in non-sandboxed iframe should not throw');
+                'navigator.locks.request() should not throw');
+}, 'navigator.locks.request() in non-sandboxed iframe should not throw');
 
 promise_test(async t => {
   const iframe = await load_iframe(script, 'allow-scripts');
@@ -57,5 +57,5 @@ promise_test(async t => {
   const message = await wait_for_message(iframe);
   assert_equals(message.result, 'SecurityError',
                 'Exception should be SecurityError');
-}, 'navigator.locks.acquire() in sandboxed iframe should throw SecurityError');
+}, 'navigator.locks.request() in sandboxed iframe should throw SecurityError');
 </script>

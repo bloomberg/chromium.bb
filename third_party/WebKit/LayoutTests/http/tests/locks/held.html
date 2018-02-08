@@ -15,8 +15,8 @@ function snooze(t, ms) { return new Promise(r => t.step_timeout(r, ms)); }
 
 promise_test(async t => {
   const res = uniqueName(t);
-  const p = navigator.locks.acquire(res, lock => 123);
-  assert_equals(Promise.resolve(p), p, 'acquire() result is a Promise');
+  const p = navigator.locks.request(res, lock => 123);
+  assert_equals(Promise.resolve(p), p, 'request() result is a Promise');
   assert_equals(await p, 123, 'promise resolves to the returned value');
 }, 'callback\'s result is promisified if not async');
 
@@ -32,7 +32,7 @@ promise_test(async t => {
 
   const order = [];
 
-  navigator.locks.acquire(res, lock => {
+  navigator.locks.request(res, lock => {
     granted(lock);
     return lock_release_promise;
   });
@@ -43,7 +43,7 @@ promise_test(async t => {
       order.push('1st lock released');
       resolve();
     }),
-    navigator.locks.acquire(res, () => {
+    navigator.locks.request(res, () => {
       order.push('2nd lock granted');
     })
   ]);
@@ -63,7 +63,7 @@ promise_test(async t => {
 
   const order = [];
 
-  navigator.locks.acquire(res, lock => {
+  navigator.locks.request(res, lock => {
     granted(lock);
     return lock_release_promise;
   });
@@ -74,7 +74,7 @@ promise_test(async t => {
       order.push('reject');
       reject(new Error('this uncaught rejection is expected'));
     }),
-    navigator.locks.acquire(res, () => {
+    navigator.locks.request(res, () => {
       order.push('2nd lock granted');
     })
   ]);
@@ -85,8 +85,8 @@ promise_test(async t => {
 promise_test(async t => {
   const res = uniqueName(t);
   let callback_called = false;
-  await navigator.locks.acquire(res, async lock => {
-    await navigator.locks.acquire(res, {ifAvailable: true}, lock => {
+  await navigator.locks.request(res, async lock => {
+    await navigator.locks.request(res, {ifAvailable: true}, lock => {
       callback_called = true;
       assert_equals(lock, null, 'lock request should fail if held');
     });

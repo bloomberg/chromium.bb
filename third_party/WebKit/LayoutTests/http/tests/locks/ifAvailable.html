@@ -9,7 +9,7 @@
 
 promise_test(async t => {
   let callback_called = false;
-  await navigator.locks.acquire('resource', {ifAvailable: true}, async lock => {
+  await navigator.locks.request('resource', {ifAvailable: true}, async lock => {
     callback_called = true;
     assert_not_equals(lock, null, 'lock should be granted');
   });
@@ -18,9 +18,9 @@ promise_test(async t => {
 
 promise_test(async t => {
   let callback_called = false;
-  await navigator.locks.acquire('resource', async lock => {
+  await navigator.locks.request('resource', async lock => {
     // Request would time out if |ifAvailable| was not specified.
-    const result = await navigator.locks.acquire(
+    const result = await navigator.locks.request(
       'resource', {ifAvailable: true}, async lock => {
         callback_called = true;
         assert_equals(lock, null, 'lock should not be granted');
@@ -33,10 +33,10 @@ promise_test(async t => {
 
 promise_test(async t => {
   let callback_called = false;
-  await navigator.locks.acquire('resource', async lock => {
+  await navigator.locks.request('resource', async lock => {
     try {
       // Request would time out if |ifAvailable| was not specified.
-      await navigator.locks.acquire('resource', {ifAvailable: true}, async lock => {
+      await navigator.locks.request('resource', {ifAvailable: true}, async lock => {
         callback_called = true;
         assert_equals(lock, null, 'lock should not be granted');
         throw 123;
@@ -51,9 +51,9 @@ promise_test(async t => {
 
 promise_test(async t => {
   let callback_called = false;
-  await navigator.locks.acquire('resource', async lock => {
+  await navigator.locks.request('resource', async lock => {
     // Request with a different name - should be grantable.
-    await navigator.locks.acquire('different', {ifAvailable: true}, async lock => {
+    await navigator.locks.request('different', {ifAvailable: true}, async lock => {
       callback_called = true;
       assert_not_equals(lock, null, 'lock should be granted');
     });
@@ -63,8 +63,8 @@ promise_test(async t => {
 
 promise_test(async t => {
   let callback_called = false;
-  await navigator.locks.acquire('resource', {mode: 'shared'}, async lock => {
-    await navigator.locks.acquire(
+  await navigator.locks.request('resource', {mode: 'shared'}, async lock => {
+    await navigator.locks.request(
       'resource', {mode: 'shared', ifAvailable: true}, async lock => {
         callback_called = true;
         assert_not_equals(lock, null, 'lock should be granted');
@@ -75,9 +75,9 @@ promise_test(async t => {
 
 promise_test(async t => {
   let callback_called = false;
-  await navigator.locks.acquire('resource', {mode: 'shared'}, async lock => {
+  await navigator.locks.request('resource', {mode: 'shared'}, async lock => {
     // Request would time out if |ifAvailable| was not specified.
-    await navigator.locks.acquire('resource', {ifAvailable: true}, async lock => {
+    await navigator.locks.request('resource', {ifAvailable: true}, async lock => {
       callback_called = true;
       assert_equals(lock, null, 'lock should not be granted');
     });
@@ -87,9 +87,9 @@ promise_test(async t => {
 
 promise_test(async t => {
   let callback_called = false;
-  await navigator.locks.acquire('resource', async lock => {
+  await navigator.locks.request('resource', async lock => {
     // Request would time out if |ifAvailable| was not specified.
-    await navigator.locks.acquire(
+    await navigator.locks.request(
       'resource', {mode: 'shared', ifAvailable: true}, async lock => {
         callback_called = true;
         assert_equals(lock, null, 'lock should not be granted');
@@ -100,15 +100,15 @@ promise_test(async t => {
 
 promise_test(async t => {
   let callback_called = false;
-  await navigator.locks.acquire('resource', async lock => {
+  await navigator.locks.request('resource', async lock => {
     callback_called = true;
     const test_error = {name: 'test'};
-    const p = navigator.locks.acquire(
+    const p = navigator.locks.request(
       'resource', {ifAvailable: true}, lock => {
         assert_equals(lock, null, 'lock should not be available');
         throw test_error;
       });
-    assert_equals(Promise.resolve(p), p, 'acquire() result is a Promise');
+    assert_equals(Promise.resolve(p), p, 'request() result is a Promise');
     await promise_rejects(t, test_error, p, 'result should reject');
   });
   assert_true(callback_called, 'callback should be called');
@@ -116,15 +116,15 @@ promise_test(async t => {
 
 promise_test(async t => {
   let callback_called = false;
-  await navigator.locks.acquire('resource', async lock => {
+  await navigator.locks.request('resource', async lock => {
     callback_called = true;
     const test_error = {name: 'test'};
-    const p = navigator.locks.acquire(
+    const p = navigator.locks.request(
       'resource', {ifAvailable: true}, async lock => {
         assert_equals(lock, null, 'lock should not be available');
         throw test_error;
       });
-    assert_equals(Promise.resolve(p), p, 'acquire() result is a Promise');
+    assert_equals(Promise.resolve(p), p, 'request() result is a Promise');
     await promise_rejects(t, test_error, p, 'result should reject');
   });
   assert_true(callback_called, 'callback should be called');

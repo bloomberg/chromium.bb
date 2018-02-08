@@ -17,7 +17,7 @@ promise_test(async t => {
   const lock_id = (await postToWorkerAndWait(
     worker, {op: 'request', name: res, mode: 'shared'})).lock_id;
 
-  await navigator.locks.acquire(res, {mode: 'shared'}, async lock => {
+  await navigator.locks.request(res, {mode: 'shared'}, async lock => {
     await postToWorkerAndWait(worker, {op: 'release', lock_id});
   });
 
@@ -35,12 +35,12 @@ promise_test(async t => {
 
   // This request should be blocked.
   let lock_granted = false;
-  const blocked = navigator.locks.acquire(
+  const blocked = navigator.locks.request(
     res, lock => { lock_granted = true; });
 
   // Verify we can't get it.
   let available = undefined;
-  await navigator.locks.acquire(
+  await navigator.locks.request(
     res, {ifAvailable: true}, lock => { available = lock !== null; });
   assert_false(available);
   assert_false(lock_granted);
@@ -96,12 +96,12 @@ promise_test(async t => {
 
   // This request should be blocked.
   let lock_granted = false;
-  const blocked = navigator.locks.acquire(
+  const blocked = navigator.locks.request(
     res, lock => { lock_granted = true; });
 
   // Verify we can't get it.
   let available = undefined;
-  await navigator.locks.acquire(
+  await navigator.locks.request(
     res, {ifAvailable: true}, lock => { available = lock !== null; });
   assert_false(available);
   assert_false(lock_granted);
