@@ -41,7 +41,6 @@ class ChromeWebContentsViewDelegateViews
   bool TakeFocus(bool reverse) override;
   void ShowContextMenu(content::RenderFrameHost* render_frame_host,
                        const content::ContextMenuParams& params) override;
-  void SizeChanged(const gfx::Size& size) override;
 
   // Overridden from ContextMenuDelegate.
   std::unique_ptr<RenderViewContextMenuBase> BuildMenu(

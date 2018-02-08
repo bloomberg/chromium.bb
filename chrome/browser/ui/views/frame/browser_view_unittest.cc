@@ -83,8 +83,7 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   ToolbarView* toolbar = browser_view()->toolbar();
   views::View* contents_container =
       browser_view()->GetContentsContainerForTest();
-  views::WebView* contents_web_view =
-      browser_view()->GetContentsWebViewForTest();
+  views::WebView* contents_web_view = browser_view()->contents_web_view();
   views::WebView* devtools_web_view =
       browser_view()->GetDevToolsWebViewForTest();
 

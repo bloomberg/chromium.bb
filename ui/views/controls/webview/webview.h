@@ -79,6 +79,11 @@ class WEBVIEW_EXPORT WebView : public View,
   // by default.
   void SetResizeBackgroundColor(SkColor resize_background_color);
 
+  // If provided, this View will be shown in place of the web contents
+  // when the web contents is in a crashed state. This is cleared automatically
+  // if the web contents is changed.
+  void SetCrashedOverlayView(View* crashed_overlay_view);
+
   // When used to host UI, we need to explicitly allow accelerators to be
   // processed. Default is false.
   void set_allow_accelerators(bool allow_accelerators) {
@@ -140,6 +145,7 @@ class WEBVIEW_EXPORT WebView : public View,
   void AttachWebContents();
   void DetachWebContents();
   void ReattachForFullscreenChange(bool enter_fullscreen);
+  void UpdateCrashedOverlayView();
   void NotifyAccessibilityWebContentsChanged();
 
   // Create a regular or test web contents (based on whether we're running
@@ -158,6 +164,7 @@ class WEBVIEW_EXPORT WebView : public View,
   bool is_embedding_fullscreen_widget_;
   content::BrowserContext* browser_context_;
   bool allow_accelerators_;
+  View* crashed_overlay_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebView);
 };

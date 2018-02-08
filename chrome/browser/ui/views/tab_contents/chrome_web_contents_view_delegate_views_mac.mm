@@ -41,15 +41,6 @@ bool ChromeWebContentsViewDelegateViewsMac::TakeFocus(bool reverse) {
   return focus_helper_->TakeFocus(reverse);
 }
 
-void ChromeWebContentsViewDelegateViewsMac::SizeChanged(const gfx::Size& size) {
-  SadTabHelper* sad_tab_helper = SadTabHelper::FromWebContents(web_contents());
-  if (!sad_tab_helper)
-    return;
-  SadTabView* sad_tab = static_cast<SadTabView*>(sad_tab_helper->sad_tab());
-  if (sad_tab)
-    sad_tab->GetWidget()->SetBounds(gfx::Rect(size));
-}
-
 #if BUILDFLAG(MAC_VIEWS_BROWSER)
 
 content::WebContentsViewDelegate* CreateWebContentsViewDelegate(

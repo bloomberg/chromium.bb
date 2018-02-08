@@ -22,6 +22,11 @@ class SadTabHelper : public content::WebContentsObserver,
 
   SadTab* sad_tab() { return sad_tab_.get(); }
 
+  // Called when the sad tab needs to be reinstalled in the WebView,
+  // for example because a tab was activated, or because a tab was
+  // dragged to a new browser window.
+  void ReinstallInWebView();
+
  private:
   friend class content::WebContentsUserData<SadTabHelper>;
 
