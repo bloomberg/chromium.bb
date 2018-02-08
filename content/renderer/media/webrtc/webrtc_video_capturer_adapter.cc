@@ -5,19 +5,12 @@
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
 
 #include "base/bind.h"
-#include "base/memory/ref_counted.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
-#include "content/renderer/render_thread_impl.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_util.h"
-#include "media/renderers/paint_canvas_video_renderer.h"
-#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
-#include "skia/ext/platform_canvas.h"
-#include "third_party/libyuv/include/libyuv/convert.h"
 #include "third_party/libyuv/include/libyuv/convert_from.h"
 #include "third_party/libyuv/include/libyuv/scale.h"
 #include "third_party/webrtc/api/video/video_rotation.h"
@@ -32,127 +25,12 @@ namespace {
 void CapturerReleaseOriginalFrame(
     const scoped_refptr<media::VideoFrame>& frame) {}
 
-// Helper class that signals a WaitableEvent when it goes out of scope.
-class ScopedWaitableEvent {
- public:
-  explicit ScopedWaitableEvent(base::WaitableEvent* event) : event_(event) {}
-  ~ScopedWaitableEvent() {
-    if (event_)
-      event_->Signal();
-  }
-
- private:
-  base::WaitableEvent* const event_;
-};
-
 }  // anonymous namespace
-
-// Initializes the GL context environment and provides a method for copying
-// texture backed frames into CPU mappable memory.
-// The class is created and destroyed on the main render thread.
-class WebRtcVideoCapturerAdapter::TextureFrameCopier
-    : public base::RefCounted<WebRtcVideoCapturerAdapter::TextureFrameCopier> {
- public:
-  TextureFrameCopier()
-      : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        canvas_video_renderer_(new media::PaintCanvasVideoRenderer) {
-    RenderThreadImpl* const main_thread = RenderThreadImpl::current();
-    if (main_thread)
-      provider_ = main_thread->SharedMainThreadContextProvider();
-  }
-
-  // Synchronous call to copy a texture backed |frame| into a CPU mappable
-  // |new_frame|. If it is not called on the main render thread, this call posts
-  // a task on main thread by calling CopyTextureFrameOnMainThread() and blocks
-  // until it is completed.
-  void CopyTextureFrame(const scoped_refptr<media::VideoFrame>& frame,
-                        scoped_refptr<media::VideoFrame>* new_frame) {
-    if (main_thread_task_runner_->BelongsToCurrentThread()) {
-      CopyTextureFrameOnMainThread(frame, new_frame, nullptr);
-      return;
-    }
-
-    base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::MANUAL,
-                               base::WaitableEvent::InitialState::NOT_SIGNALED);
-    main_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&TextureFrameCopier::CopyTextureFrameOnMainThread, this,
-                       frame, new_frame, &waiter));
-    waiter.Wait();
-  }
-
- private:
-  friend class base::RefCounted<TextureFrameCopier>;
-  ~TextureFrameCopier() {
-    // |canvas_video_renderer_| should be deleted on the thread it was created.
-    if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-      main_thread_task_runner_->DeleteSoon(FROM_HERE,
-                                           canvas_video_renderer_.release());
-    }
-  }
-
-  void CopyTextureFrameOnMainThread(
-      const scoped_refptr<media::VideoFrame>& frame,
-      scoped_refptr<media::VideoFrame>* new_frame,
-      base::WaitableEvent* waiter) {
-    DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-    DCHECK(frame->format() == media::PIXEL_FORMAT_ARGB ||
-           frame->format() == media::PIXEL_FORMAT_XRGB ||
-           frame->format() == media::PIXEL_FORMAT_I420 ||
-           frame->format() == media::PIXEL_FORMAT_UYVY ||
-           frame->format() == media::PIXEL_FORMAT_NV12);
-    ScopedWaitableEvent event(waiter);
-
-    if (!provider_) {
-      // Return a black frame (yuv = {0, 0x80, 0x80}).
-      *new_frame = media::VideoFrame::CreateColorFrame(
-          frame->visible_rect().size(), 0u, 0x80, 0x80, frame->timestamp());
-      return;
-    }
-
-    SkBitmap bitmap;
-    bitmap.allocPixels(SkImageInfo::MakeN32Premul(
-        frame->visible_rect().width(), frame->visible_rect().height()));
-    cc::SkiaPaintCanvas paint_canvas(bitmap);
-
-    *new_frame = media::VideoFrame::CreateFrame(
-        media::PIXEL_FORMAT_I420, frame->coded_size(), frame->visible_rect(),
-        frame->natural_size(), frame->timestamp());
-    DCHECK(provider_->ContextGL());
-    canvas_video_renderer_->Copy(
-        frame.get(), &paint_canvas,
-        media::Context3D(provider_->ContextGL(), provider_->GrContext()));
-
-    SkPixmap pixmap;
-    const bool result = bitmap.peekPixels(&pixmap);
-    DCHECK(result) << "Error trying to access SkBitmap's pixels";
-    const uint32 source_pixel_format =
-        (kN32_SkColorType == kRGBA_8888_SkColorType) ? cricket::FOURCC_ABGR
-                                                     : cricket::FOURCC_ARGB;
-    libyuv::ConvertToI420(
-        static_cast<const uint8*>(pixmap.addr(0, 0)), pixmap.computeByteSize(),
-        (*new_frame)->visible_data(media::VideoFrame::kYPlane),
-        (*new_frame)->stride(media::VideoFrame::kYPlane),
-        (*new_frame)->visible_data(media::VideoFrame::kUPlane),
-        (*new_frame)->stride(media::VideoFrame::kUPlane),
-        (*new_frame)->visible_data(media::VideoFrame::kVPlane),
-        (*new_frame)->stride(media::VideoFrame::kVPlane), 0 /* crop_x */,
-        0 /* crop_y */, pixmap.width(), pixmap.height(),
-        (*new_frame)->visible_rect().width(),
-        (*new_frame)->visible_rect().height(), libyuv::kRotate0,
-        source_pixel_format);
-  }
-
-  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  scoped_refptr<ui::ContextProviderCommandBuffer> provider_;
-  std::unique_ptr<media::PaintCanvasVideoRenderer> canvas_video_renderer_;
-};
 
 WebRtcVideoCapturerAdapter::WebRtcVideoCapturerAdapter(
     bool is_screencast,
     blink::WebMediaStreamTrack::ContentHintType content_hint)
-    : texture_copier_(new WebRtcVideoCapturerAdapter::TextureFrameCopier()),
-      is_screencast_(is_screencast),
+    : is_screencast_(is_screencast),
       content_hint_(content_hint),
       running_(false) {
   thread_checker_.DetachFromThread();
@@ -203,9 +81,7 @@ void WebRtcVideoCapturerAdapter::OnFrameCaptured(
   // cropping support for texture yet. See http://crbug/503653.
   if (frame->HasTextures()) {
     OnFrame(webrtc::VideoFrame(
-                new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(
-                    frame, base::Bind(&TextureFrameCopier::CopyTextureFrame,
-                                      texture_copier_)),
+                new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(frame),
                 webrtc::kVideoRotation_0, translated_camera_time_us),
             orig_width, orig_height);
     return;
@@ -233,9 +109,7 @@ void WebRtcVideoCapturerAdapter::OnFrameCaptured(
   // If no scaling is needed, return a wrapped version of |frame| directly.
   if (video_frame->natural_size() == video_frame->visible_rect().size()) {
     OnFrame(webrtc::VideoFrame(
-                new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(
-                    video_frame,
-                    WebRtcVideoFrameAdapter::CopyTextureFrameCallback()),
+                new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(video_frame),
                 webrtc::kVideoRotation_0, translated_camera_time_us),
             orig_width, orig_height);
     return;
@@ -274,9 +148,7 @@ void WebRtcVideoCapturerAdapter::OnFrameCaptured(
   }
 
   OnFrame(webrtc::VideoFrame(
-              new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(
-                  scaled_frame,
-                  WebRtcVideoFrameAdapter::CopyTextureFrameCallback()),
+              new rtc::RefCountedObject<WebRtcVideoFrameAdapter>(scaled_frame),
               webrtc::kVideoRotation_0, translated_camera_time_us),
           orig_width, orig_height);
 }

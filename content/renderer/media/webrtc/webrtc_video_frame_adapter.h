@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/callback.h"
 #include "media/base/video_frame.h"
 #include "third_party/webrtc/api/video/video_frame_buffer.h"
 
@@ -18,13 +17,7 @@ namespace content {
 // different threads, but that's safe since it's read-only.
 class WebRtcVideoFrameAdapter : public webrtc::VideoFrameBuffer {
  public:
-  using CopyTextureFrameCallback =
-      base::Callback<void(const scoped_refptr<media::VideoFrame>&,
-                          scoped_refptr<media::VideoFrame>*)>;
-
-  WebRtcVideoFrameAdapter(
-      const scoped_refptr<media::VideoFrame>& frame,
-      const CopyTextureFrameCallback& copy_texture_callback);
+  WebRtcVideoFrameAdapter(const scoped_refptr<media::VideoFrame>& frame);
 
   scoped_refptr<media::VideoFrame> getMediaVideoFrame() const { return frame_; }
 
@@ -39,7 +32,6 @@ class WebRtcVideoFrameAdapter : public webrtc::VideoFrameBuffer {
   ~WebRtcVideoFrameAdapter() override;
 
   scoped_refptr<media::VideoFrame> frame_;
-  const CopyTextureFrameCallback copy_texture_callback_;
 };
 
 }  // namespace content
