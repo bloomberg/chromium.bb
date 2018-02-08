@@ -27,7 +27,7 @@ class Cronet_EngineImpl : public Cronet_Engine {
   void SetContext(Cronet_EngineContext context) override;
   Cronet_EngineContext GetContext() override;
   Cronet_RESULT StartWithParams(Cronet_EngineParamsPtr params) override;
-  bool StartNetLogToFile(CharString fileName, bool logAll) override;
+  bool StartNetLogToFile(CharString file_name, bool log_all) override;
   void StopNetLog() override;
   CharString GetVersionString() override;
   CharString GetDefaultUserAgent() override;

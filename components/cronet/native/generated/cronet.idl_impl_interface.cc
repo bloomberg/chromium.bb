@@ -288,10 +288,10 @@ Cronet_RESULT Cronet_Engine_StartWithParams(Cronet_EnginePtr self,
 }
 
 bool Cronet_Engine_StartNetLogToFile(Cronet_EnginePtr self,
-                                     CharString fileName,
-                                     bool logAll) {
+                                     CharString file_name,
+                                     bool log_all) {
   DCHECK(self);
-  return self->StartNetLogToFile(fileName, logAll);
+  return self->StartNetLogToFile(file_name, log_all);
 }
 
 void Cronet_Engine_StopNetLog(Cronet_EnginePtr self) {
@@ -343,8 +343,8 @@ class Cronet_EngineStub : public Cronet_Engine {
     return StartWithParamsFunc_(this, params);
   }
 
-  bool StartNetLogToFile(CharString fileName, bool logAll) override {
-    return StartNetLogToFileFunc_(this, fileName, logAll);
+  bool StartNetLogToFile(CharString file_name, bool log_all) override {
+    return StartNetLogToFileFunc_(this, file_name, log_all);
   }
 
   void StopNetLog() override { StopNetLogFunc_(this); }
@@ -470,9 +470,9 @@ void Cronet_UrlRequestCallback_OnRedirectReceived(
     Cronet_UrlRequestCallbackPtr self,
     Cronet_UrlRequestPtr request,
     Cronet_UrlResponseInfoPtr info,
-    CharString newLocationUrl) {
+    CharString new_location_url) {
   DCHECK(self);
-  self->OnRedirectReceived(request, info, newLocationUrl);
+  self->OnRedirectReceived(request, info, new_location_url);
 }
 
 void Cronet_UrlRequestCallback_OnResponseStarted(
@@ -487,9 +487,10 @@ void Cronet_UrlRequestCallback_OnReadCompleted(
     Cronet_UrlRequestCallbackPtr self,
     Cronet_UrlRequestPtr request,
     Cronet_UrlResponseInfoPtr info,
-    Cronet_BufferPtr buffer) {
+    Cronet_BufferPtr buffer,
+    uint64_t bytes_read) {
   DCHECK(self);
-  self->OnReadCompleted(request, info, buffer);
+  self->OnReadCompleted(request, info, buffer, bytes_read);
 }
 
 void Cronet_UrlRequestCallback_OnSucceeded(Cronet_UrlRequestCallbackPtr self,
@@ -502,7 +503,7 @@ void Cronet_UrlRequestCallback_OnSucceeded(Cronet_UrlRequestCallbackPtr self,
 void Cronet_UrlRequestCallback_OnFailed(Cronet_UrlRequestCallbackPtr self,
                                         Cronet_UrlRequestPtr request,
                                         Cronet_UrlResponseInfoPtr info,
-                                        Cronet_ExceptionPtr error) {
+                                        Cronet_ErrorPtr error) {
   DCHECK(self);
   self->OnFailed(request, info, error);
 }
@@ -543,8 +544,8 @@ class Cronet_UrlRequestCallbackStub : public Cronet_UrlRequestCallback {
  protected:
   void OnRedirectReceived(Cronet_UrlRequestPtr request,
                           Cronet_UrlResponseInfoPtr info,
-                          CharString newLocationUrl) override {
-    OnRedirectReceivedFunc_(this, request, info, newLocationUrl);
+                          CharString new_location_url) override {
+    OnRedirectReceivedFunc_(this, request, info, new_location_url);
   }
 
   void OnResponseStarted(Cronet_UrlRequestPtr request,
@@ -554,8 +555,9 @@ class Cronet_UrlRequestCallbackStub : public Cronet_UrlRequestCallback {
 
   void OnReadCompleted(Cronet_UrlRequestPtr request,
                        Cronet_UrlResponseInfoPtr info,
-                       Cronet_BufferPtr buffer) override {
-    OnReadCompletedFunc_(this, request, info, buffer);
+                       Cronet_BufferPtr buffer,
+                       uint64_t bytes_read) override {
+    OnReadCompletedFunc_(this, request, info, buffer, bytes_read);
   }
 
   void OnSucceeded(Cronet_UrlRequestPtr request,
@@ -565,7 +567,7 @@ class Cronet_UrlRequestCallbackStub : public Cronet_UrlRequestCallback {
 
   void OnFailed(Cronet_UrlRequestPtr request,
                 Cronet_UrlResponseInfoPtr info,
-                Cronet_ExceptionPtr error) override {
+                Cronet_ErrorPtr error) override {
     OnFailedFunc_(this, request, info, error);
   }
 
@@ -619,13 +621,13 @@ Cronet_UploadDataSinkContext Cronet_UploadDataSink_GetContext(
 }
 
 void Cronet_UploadDataSink_OnReadSucceeded(Cronet_UploadDataSinkPtr self,
-                                           bool finalChunk) {
+                                           bool final_chunk) {
   DCHECK(self);
-  self->OnReadSucceeded(finalChunk);
+  self->OnReadSucceeded(final_chunk);
 }
 
 void Cronet_UploadDataSink_OnReadError(Cronet_UploadDataSinkPtr self,
-                                       Cronet_ExceptionPtr error) {
+                                       Cronet_ErrorPtr error) {
   DCHECK(self);
   self->OnReadError(error);
 }
@@ -636,7 +638,7 @@ void Cronet_UploadDataSink_OnRewindSucceded(Cronet_UploadDataSinkPtr self) {
 }
 
 void Cronet_UploadDataSink_OnRewindError(Cronet_UploadDataSinkPtr self,
-                                         Cronet_ExceptionPtr error) {
+                                         Cronet_ErrorPtr error) {
   DCHECK(self);
   self->OnRewindError(error);
 }
@@ -664,17 +666,17 @@ class Cronet_UploadDataSinkStub : public Cronet_UploadDataSink {
   Cronet_UploadDataSinkContext GetContext() override { return context_; }
 
  protected:
-  void OnReadSucceeded(bool finalChunk) override {
-    OnReadSucceededFunc_(this, finalChunk);
+  void OnReadSucceeded(bool final_chunk) override {
+    OnReadSucceededFunc_(this, final_chunk);
   }
 
-  void OnReadError(Cronet_ExceptionPtr error) override {
+  void OnReadError(Cronet_ErrorPtr error) override {
     OnReadErrorFunc_(this, error);
   }
 
   void OnRewindSucceded() override { OnRewindSuccededFunc_(this); }
 
-  void OnRewindError(Cronet_ExceptionPtr error) override {
+  void OnRewindError(Cronet_ErrorPtr error) override {
     OnRewindErrorFunc_(this, error);
   }
 
@@ -723,16 +725,17 @@ int64_t Cronet_UploadDataProvider_GetLength(Cronet_UploadDataProviderPtr self) {
 }
 
 void Cronet_UploadDataProvider_Read(Cronet_UploadDataProviderPtr self,
-                                    Cronet_UploadDataSinkPtr uploadDataSink,
+                                    Cronet_UploadDataSinkPtr upload_data_sink,
                                     Cronet_BufferPtr buffer) {
   DCHECK(self);
-  self->Read(uploadDataSink, buffer);
+  self->Read(upload_data_sink, buffer);
 }
 
-void Cronet_UploadDataProvider_Rewind(Cronet_UploadDataProviderPtr self,
-                                      Cronet_UploadDataSinkPtr uploadDataSink) {
+void Cronet_UploadDataProvider_Rewind(
+    Cronet_UploadDataProviderPtr self,
+    Cronet_UploadDataSinkPtr upload_data_sink) {
   DCHECK(self);
-  self->Rewind(uploadDataSink);
+  self->Rewind(upload_data_sink);
 }
 
 void Cronet_UploadDataProvider_Close(Cronet_UploadDataProviderPtr self) {
@@ -765,13 +768,13 @@ class Cronet_UploadDataProviderStub : public Cronet_UploadDataProvider {
  protected:
   int64_t GetLength() override { return GetLengthFunc_(this); }
 
-  void Read(Cronet_UploadDataSinkPtr uploadDataSink,
+  void Read(Cronet_UploadDataSinkPtr upload_data_sink,
             Cronet_BufferPtr buffer) override {
-    ReadFunc_(this, uploadDataSink, buffer);
+    ReadFunc_(this, upload_data_sink, buffer);
   }
 
-  void Rewind(Cronet_UploadDataSinkPtr uploadDataSink) override {
-    RewindFunc_(this, uploadDataSink);
+  void Rewind(Cronet_UploadDataSinkPtr upload_data_sink) override {
+    RewindFunc_(this, upload_data_sink);
   }
 
   void Close() override { CloseFunc_(this); }
@@ -813,30 +816,31 @@ Cronet_UrlRequestContext Cronet_UrlRequest_GetContext(
   return self->GetContext();
 }
 
-void Cronet_UrlRequest_InitWithParams(Cronet_UrlRequestPtr self,
-                                      Cronet_EnginePtr engine,
-                                      CharString url,
-                                      Cronet_UrlRequestParamsPtr params,
-                                      Cronet_UrlRequestCallbackPtr callback,
-                                      Cronet_ExecutorPtr executor) {
+Cronet_RESULT Cronet_UrlRequest_InitWithParams(
+    Cronet_UrlRequestPtr self,
+    Cronet_EnginePtr engine,
+    CharString url,
+    Cronet_UrlRequestParamsPtr params,
+    Cronet_UrlRequestCallbackPtr callback,
+    Cronet_ExecutorPtr executor) {
   DCHECK(self);
-  self->InitWithParams(engine, url, params, callback, executor);
+  return self->InitWithParams(engine, url, params, callback, executor);
 }
 
-void Cronet_UrlRequest_Start(Cronet_UrlRequestPtr self) {
+Cronet_RESULT Cronet_UrlRequest_Start(Cronet_UrlRequestPtr self) {
   DCHECK(self);
-  self->Start();
+  return self->Start();
 }
 
-void Cronet_UrlRequest_FollowRedirect(Cronet_UrlRequestPtr self) {
+Cronet_RESULT Cronet_UrlRequest_FollowRedirect(Cronet_UrlRequestPtr self) {
   DCHECK(self);
-  self->FollowRedirect();
+  return self->FollowRedirect();
 }
 
-void Cronet_UrlRequest_Read(Cronet_UrlRequestPtr self,
-                            Cronet_BufferPtr buffer) {
+Cronet_RESULT Cronet_UrlRequest_Read(Cronet_UrlRequestPtr self,
+                                     Cronet_BufferPtr buffer) {
   DCHECK(self);
-  self->Read(buffer);
+  return self->Read(buffer);
 }
 
 void Cronet_UrlRequest_Cancel(Cronet_UrlRequestPtr self) {
@@ -883,19 +887,21 @@ class Cronet_UrlRequestStub : public Cronet_UrlRequest {
   Cronet_UrlRequestContext GetContext() override { return context_; }
 
  protected:
-  void InitWithParams(Cronet_EnginePtr engine,
-                      CharString url,
-                      Cronet_UrlRequestParamsPtr params,
-                      Cronet_UrlRequestCallbackPtr callback,
-                      Cronet_ExecutorPtr executor) override {
-    InitWithParamsFunc_(this, engine, url, params, callback, executor);
+  Cronet_RESULT InitWithParams(Cronet_EnginePtr engine,
+                               CharString url,
+                               Cronet_UrlRequestParamsPtr params,
+                               Cronet_UrlRequestCallbackPtr callback,
+                               Cronet_ExecutorPtr executor) override {
+    return InitWithParamsFunc_(this, engine, url, params, callback, executor);
   }
 
-  void Start() override { StartFunc_(this); }
+  Cronet_RESULT Start() override { return StartFunc_(this); }
 
-  void FollowRedirect() override { FollowRedirectFunc_(this); }
+  Cronet_RESULT FollowRedirect() override { return FollowRedirectFunc_(this); }
 
-  void Read(Cronet_BufferPtr buffer) override { ReadFunc_(this, buffer); }
+  Cronet_RESULT Read(Cronet_BufferPtr buffer) override {
+    return ReadFunc_(this, buffer);
+  }
 
   void Cancel() override { CancelFunc_(this); }
 

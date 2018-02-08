@@ -162,6 +162,7 @@ void {{struct_name}}_set_{{packed_field.field.name}}({{struct_name}}Ptr self, {{
 {%-  set kind = packed_field.field.kind %}
 {%-  if kind|is_array_kind %}
 uint32_t {{struct_name}}_get_{{packed_field.field.name}}Size({{struct_name}}Ptr self);
+{{export_macro}}
 {{kind.kind|c_wrapper_type}} {{struct_name}}_get_{{packed_field.field.name}}AtIndex({{struct_name}}Ptr self, uint32_t index);
 {%-  else %}
 {{packed_field.field.kind|c_wrapper_type}} {{struct_name}}_get_{{packed_field.field.name}}({{struct_name}}Ptr self);
