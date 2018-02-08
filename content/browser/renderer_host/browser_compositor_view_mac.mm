@@ -284,6 +284,10 @@ void BrowserCompositorMac::UpdateDelegatedFrameHostSurface(
     return;
   }
 
+  // Suspend the ui::Compositor until we get a renderer frame of the new size.
+  if (recyclable_compositor_)
+    recyclable_compositor_->Suspend();
+
   delegated_frame_host_surface_id_ =
       parent_local_surface_id_allocator_.GenerateId();
   delegated_frame_host_size_dip_ = size_dip;
@@ -346,14 +350,9 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
     GetViewProperties(nullptr, nullptr, &color_space);
     recyclable_compositor_->compositor()->SetDisplayColorSpace(color_space);
 
-    // Unsuspend the browser compositor after showing the delegated frame host.
-    // If there is not a saved delegated frame, then the delegated frame host
-    // will keep the compositor locked until a delegated frame is swapped.
-    recyclable_compositor_->Unsuspend();
-
-    // If there exists a saved frame ready to display, resize the compositor to
-    // be ready to display that frame (if not, the compositor will be resized
-    // on first surface activation).
+    // If there exists a saved frame ready to display, unsuspend the compositor
+    // now (if one is not ready, the compositor will unsuspend on first surface
+    // activation).
     if (delegated_frame_host_->HasSavedFrame()) {
       if (compositor_scale_factor_ != delegated_frame_host_scale_factor_ ||
           compositor_size_pixels_ != delegated_frame_host_size_pixels_) {
@@ -367,6 +366,7 @@ void BrowserCompositorMac::TransitionToState(State new_state) {
             compositor_scale_factor_, compositor_size_pixels_,
             compositor_surface_id_);
       }
+      recyclable_compositor_->Unsuspend();
     }
 
     state_ = HasAttachedCompositor;
@@ -441,7 +441,7 @@ ui::Layer* BrowserCompositorMac::DelegatedFrameHostGetLayer() const {
 }
 
 bool BrowserCompositorMac::DelegatedFrameHostIsVisible() const {
-  return state_ == HasAttachedCompositor;
+  return state_ == HasAttachedCompositor || state_ == HasDetachedCompositor;
 }
 
 SkColor BrowserCompositorMac::DelegatedFrameHostGetGutterColor() const {
@@ -463,6 +463,9 @@ void BrowserCompositorMac::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   if (!recyclable_compositor_)
     return;
+
+  recyclable_compositor_->Unsuspend();
+
   // Resize the compositor to match the current frame size, if needed.
   if (compositor_size_pixels_ == surface_info.size_in_pixels() &&
       compositor_scale_factor_ == surface_info.device_scale_factor()) {
@@ -480,10 +483,10 @@ void BrowserCompositorMac::OnFirstSurfaceActivation(
   // Disable screen updates until the frame of the new size appears (because the
   // content is drawn in the GPU process, it may change before we want it to).
   if (repaint_state_ == RepaintState::Paused) {
-    gfx::Size compositor_size_dip = gfx::ConvertSizeToDIP(
-        compositor_scale_factor_, compositor_size_pixels_);
-    if (compositor_size_dip == delegated_frame_host_size_pixels_ ||
-        repaint_auto_resize_enabled_) {
+    bool compositor_is_nsview_size =
+        compositor_size_pixels_ == delegated_frame_host_size_pixels_ &&
+        compositor_scale_factor_ == delegated_frame_host_scale_factor_;
+    if (compositor_is_nsview_size || repaint_auto_resize_enabled_) {
       NSDisableScreenUpdates();
       repaint_state_ = RepaintState::ScreenUpdatesDisabled;
     }
