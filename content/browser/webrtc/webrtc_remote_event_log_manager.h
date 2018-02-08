@@ -74,8 +74,10 @@ class CONTENT_EXPORT WebRtcRemoteEventLogManager final
                           const std::string& metadata);
 
   // If an active remote-bound log exists for the given peer connection, this
-  // will append |message| to that log. If writing |message| to the log would
-  // exceed its maximum allowed size, |message| is first truncated.
+  // will append |message| to that log.
+  // If writing |message| to the log would exceed the log's maximum allowed
+  // size, the write is disallowed and the file is closed instead (and changes
+  // from ACTIVE to PENDING).
   // If the log file's capacity is exhausted as a result of this function call,
   // or if a write error occurs, the file is closed, and the remote-bound log
   // changes from ACTIVE to PENDING.
