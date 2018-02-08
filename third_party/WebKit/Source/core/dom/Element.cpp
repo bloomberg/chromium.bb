@@ -282,7 +282,7 @@ Element* Element::CloneElementWithoutChildren() {
 Element* Element::CloneElementWithoutAttributesAndChildren() {
   auto* element = GetDocument().createElement(
       TagQName(), CreateElementFlags::ByCloneNode());
-  const AtomicString& is = FastGetAttribute(HTMLNames::isAttr);
+  const AtomicString& is = IsValue();
   if (!is.IsNull() && !V0CustomElement::IsValidName(element->localName()))
     V0CustomElementRegistrationContext::SetTypeExtension(element, is);
   // TODO(tkent): Handle V1 custom built-in elements. crbug.com/807871
@@ -2402,6 +2402,12 @@ CustomElementDefinition* Element::GetCustomElementDefinition() const {
   if (HasRareData())
     return GetElementRareData()->GetCustomElementDefinition();
   return nullptr;
+}
+
+const AtomicString& Element::IsValue() const {
+  // TODO(tkent): "is value" should be a data member of
+  // Element. crbug.com/807871.
+  return FastGetAttribute(HTMLNames::isAttr);
 }
 
 ShadowRoot* Element::createShadowRoot(const ScriptState* script_state,

@@ -223,7 +223,7 @@ Element* HTMLScriptElement::CloneElementWithoutAttributesAndChildren() {
       CreateElementFlags::ByCloneNode().SetAlreadyStarted(
           loader_->AlreadyStarted());
   auto* element = new HTMLScriptElement(GetDocument(), flags);
-  const AtomicString& is = FastGetAttribute(HTMLNames::isAttr);
+  const AtomicString& is = IsValue();
   if (!is.IsNull() && !V0CustomElement::IsValidName(element->localName()))
     V0CustomElementRegistrationContext::SetTypeExtension(element, is);
   // TODO(tkent): Handle V1 custom built-in elements. crbug.com/807871
