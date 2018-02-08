@@ -11,8 +11,8 @@ cr.exportPath('settings');
 
 /**
  * @typedef {{fullName: (string|undefined),
- *            email: !string,
- *            image: (string|undefined)}}
+ *            email: string,
+ *            avatarImage: (string|undefined)}}
  * @see chrome/browser/ui/webui/settings/people_handler.cc
  */
 settings.StoredAccount;
@@ -183,7 +183,7 @@ cr.define('settings', function() {
 
     /**
      * Start syncing with an account, specified by its email.
-     * @param {!string} email
+     * @param {string} email
      */
     startSyncingWithEmail(email) {}
 
