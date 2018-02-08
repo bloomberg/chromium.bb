@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/app_list/app_list_controller_ash.h"
 
+#include <utility>
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
@@ -23,23 +25,25 @@ AppListControllerDelegateAsh::AppListControllerDelegateAsh(
 
 AppListControllerDelegateAsh::~AppListControllerDelegateAsh() {}
 
-int64_t AppListControllerDelegateAsh::GetAppListDisplayId() {
-  auto* screen = display::Screen::GetScreen();
-  return screen
-             ? screen->GetDisplayNearestWindow(app_list_presenter_->GetWindow())
-                   .id()
-             : display::kInvalidDisplayId;
-}
-
 void AppListControllerDelegateAsh::DismissView() {
   app_list_presenter_->Dismiss();
 }
 
-gfx::Rect AppListControllerDelegateAsh::GetAppInfoDialogBounds() {
+int64_t AppListControllerDelegateAsh::GetAppListDisplayId() {
+  return display_id_;
+}
+
+void AppListControllerDelegateAsh::SetAppListDisplayId(int64_t display_id) {
+  display_id_ = display_id;
+}
+
+void AppListControllerDelegateAsh::GetAppInfoDialogBounds(
+    GetAppInfoDialogBoundsCallback callback) {
   app_list::AppListView* app_list_view = app_list_presenter_->GetView();
+  gfx::Rect bounds = gfx::Rect();
   if (app_list_view)
-    return app_list_view->GetAppInfoDialogBounds();
-  return gfx::Rect();
+    bounds = app_list_view->GetAppInfoDialogBounds();
+  std::move(callback).Run(bounds);
 }
 
 bool AppListControllerDelegateAsh::IsAppPinned(const std::string& app_id) {

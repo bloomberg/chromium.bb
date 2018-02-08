@@ -263,7 +263,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     }
   }
 
-  void ViewShown() override {
+  void ViewShown(int64_t display_id) override {
     // Nothing needs to be done.
   }
 

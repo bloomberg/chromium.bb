@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 
+#include <utility>
+
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -44,12 +46,14 @@ const extensions::Extension* GetExtension(Profile* profile,
 
 }  // namespace
 
+AppListControllerDelegate::AppListControllerDelegate()
+    : weak_ptr_factory_(this) {}
+
 AppListControllerDelegate::~AppListControllerDelegate() {}
 
-void AppListControllerDelegate::ViewClosing() {}
-
-gfx::Rect AppListControllerDelegate::GetAppInfoDialogBounds() {
-  return gfx::Rect();
+void AppListControllerDelegate::GetAppInfoDialogBounds(
+    GetAppInfoDialogBoundsCallback callback) {
+  std::move(callback).Run(gfx::Rect());
 }
 
 void AppListControllerDelegate::OnShowChildDialog() {
@@ -87,8 +91,6 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
     Profile* profile,
     const std::string& extension_id) {
   DCHECK(CanDoShowAppInfoFlow());
-  const extensions::Extension* extension = GetExtension(profile, extension_id);
-  DCHECK(extension);
 
   OnShowChildDialog();
 
@@ -98,10 +100,18 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
 
   // Since the AppListControllerDelegate is a leaky singleton, passing its raw
   // pointer around is OK.
-  ShowAppInfoInAppList(
-      GetAppInfoDialogBounds(), profile, extension,
-      base::Bind(&AppListControllerDelegate::OnCloseChildDialog,
-                 base::Unretained(this)));
+  GetAppInfoDialogBounds(base::BindOnce(
+      [](base::WeakPtr<AppListControllerDelegate> self, Profile* profile,
+         const std::string& extension_id, const gfx::Rect& bounds) {
+        const extensions::Extension* extension =
+            GetExtension(profile, extension_id);
+        DCHECK(extension);
+        ShowAppInfoInAppList(
+            bounds, profile, extension,
+            base::BindRepeating(&AppListControllerDelegate::OnCloseChildDialog,
+                                self));
+      },
+      weak_ptr_factory_.GetWeakPtr(), profile, extension_id));
 }
 
 void AppListControllerDelegate::UninstallApp(Profile* profile,

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 
+#include <utility>
+
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace test {
@@ -15,8 +18,10 @@ TestAppListControllerDelegate::~TestAppListControllerDelegate() {
 }
 
 int64_t TestAppListControllerDelegate::GetAppListDisplayId() {
-  return 0;
+  return display::kInvalidDisplayId;
 }
+
+void TestAppListControllerDelegate::SetAppListDisplayId(int64_t display_id) {}
 
 void TestAppListControllerDelegate::DismissView() {}
 

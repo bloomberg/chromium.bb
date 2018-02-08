@@ -86,16 +86,16 @@ void AppListPresenterImpl::Show(int64_t display_id) {
     ScheduleAnimation();
   } else {
     presenter_delegate_ = factory_->GetDelegate(this);
-    AppListViewDelegate* view_delegate = presenter_delegate_->GetViewDelegate();
-    DCHECK(view_delegate);
+    view_delegate_ = presenter_delegate_->GetViewDelegate();
+    DCHECK(view_delegate_);
     // Note the AppListViewDelegate outlives the AppListView. For Ash, the view
     // is destroyed when dismissed.
-    AppListView* view = new AppListView(view_delegate);
+    AppListView* view = new AppListView(view_delegate_);
     presenter_delegate_->Init(view, display_id, current_apps_page_);
     SetView(view);
   }
   presenter_delegate_->OnShown(display_id);
-  presenter_delegate_->GetViewDelegate()->ViewShown();
+  view_delegate_->ViewShown(display_id);
 }
 
 void AppListPresenterImpl::Dismiss() {
@@ -119,6 +119,7 @@ void AppListPresenterImpl::Dismiss() {
   if (view_->GetWidget()->IsActive())
     view_->GetWidget()->Deactivate();
 
+  view_delegate_->ViewClosing();
   presenter_delegate_->OnDismissed();
   ScheduleAnimation();
   base::RecordAction(base::UserMetricsAction("Launcher_Dismiss"));

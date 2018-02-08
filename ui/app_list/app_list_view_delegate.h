@@ -59,7 +59,7 @@ class APP_LIST_EXPORT AppListViewDelegate {
                                         int event_flags) = 0;
 
   // Invoked when the app list is shown.
-  virtual void ViewShown() = 0;
+  virtual void ViewShown(int64_t display_id) = 0;
 
   // Invoked to dismiss app list. This may leave the view open but hidden from
   // the user.

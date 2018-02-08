@@ -8,9 +8,11 @@
 #include <string>
 
 #include "ash/public/cpp/shelf_types.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "ui/display/types/display_constants.h"
 
 namespace app_list {
 class AppListPresenterImpl;
@@ -22,9 +24,10 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   ~AppListControllerDelegateAsh() override;
 
   // AppListControllerDelegate overrides:
-  int64_t GetAppListDisplayId() override;
   void DismissView() override;
-  gfx::Rect GetAppInfoDialogBounds() override;
+  int64_t GetAppListDisplayId() override;
+  void SetAppListDisplayId(int64_t display_id) override;
+  void GetAppInfoDialogBounds(GetAppInfoDialogBoundsCallback callback) override;
   bool IsAppPinned(const std::string& app_id) override;
   bool IsAppOpen(const std::string& app_id) const override;
   void PinApp(const std::string& app_id) override;
@@ -49,6 +52,9 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
 
  private:
   ash::ShelfLaunchSource AppListSourceToLaunchSource(AppListSource source);
+
+  // The current display id showing the app list.
+  int64_t display_id_ = display::kInvalidDisplayId;
 
   // Not owned.
   app_list::AppListPresenterImpl* app_list_presenter_;

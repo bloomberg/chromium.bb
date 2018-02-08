@@ -51,6 +51,7 @@
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/views/controls/webview/webview.h"
 
@@ -197,10 +198,11 @@ void AppListViewDelegate::InvokeSearchResultAction(
   search_controller_->InvokeResultAction(result, action_index, event_flags);
 }
 
-void AppListViewDelegate::ViewShown() {
+void AppListViewDelegate::ViewShown(int64_t display_id) {
   base::RecordAction(base::UserMetricsAction("Launcher_Show"));
   base::UmaHistogramSparse("Apps.AppListBadgedAppsCount",
                            model_updater_->BadgedItemCount());
+  controller_->SetAppListDisplayId(display_id);
 }
 
 void AppListViewDelegate::Dismiss() {
@@ -208,7 +210,7 @@ void AppListViewDelegate::Dismiss() {
 }
 
 void AppListViewDelegate::ViewClosing() {
-  controller_->ViewClosing();
+  controller_->SetAppListDisplayId(display::kInvalidDisplayId);
 }
 
 void AppListViewDelegate::GetWallpaperProminentColors(
