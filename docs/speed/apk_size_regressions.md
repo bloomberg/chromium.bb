@@ -29,6 +29,9 @@
 
      tools/binary_size/diagnose_bloat.py AFTER_GIT_REV --reference-rev BEFORE_GIT_REV --subrepo v8 --all
 
+You can usually find the before and after revs in the roll commit message
+([example](https://chromium.googlesource.com/chromium/src/+/10c40fd863f4ae106650bba93b845f25c9b733b1))
+
 ### Monochrome.apk Alerts
 
  * The regression most likely already occurred in the upstream
