@@ -24,7 +24,7 @@
       }
 
       #label {
-        color: var(--paper-radio-button-label-color, --primary-text-color);
+        color: var(--paper-radio-button-label-color, var(--primary-text-color));
       }
 
       .circle,
@@ -53,11 +53,12 @@
 
       .circle {
         border: 2px solid var(--paper-radio-button-unchecked-color,
-                              --primary-text-color);
+                              var(--primary-text-color));
       }
 
       :host([checked]) .circle {
-        border-color: var(--paper-radio-button-checked-color, --primary-color);
+        border-color: var(--paper-radio-button-checked-color,
+                          var(--primary-color));
       }
 
       .disc {
@@ -69,19 +70,19 @@
 
       :host([checked]) .disc {
         background-color: var(--paper-radio-button-checked-color,
-                              --primary-color);
+                              var(--primary-color));
         transform: scale(0.5);
       }
 
       paper-ripple {
         color: var(--paper-radio-button-unchecked-ink-color,
-                   --primary-text-color);
+                   var(--primary-text-color));
         opacity: .6;
       }
 
       :host([checked]) paper-ripple {
         color: var(--paper-radio-button-checked-ink-color,
-                   --primary-text-color);
+                   var(--primary-text-color));
       }
 
       :host(:not([controlled_])) {
@@ -100,12 +101,12 @@
 
       :host([controlled_]) .circle {
         border-color: var(--paper-radio-button-unchecked-color,
-                          --primary-text-color);
+                          var(--primary-text-color));
       }
 
       :host([controlled_][checked]) .disc {
         background-color: var(--paper-radio-button-unchecked-color,
-                              --primary-text-color);
+                              var(--primary-text-color));
       }
 
       :host([controlled_]) #labelWrapper {
