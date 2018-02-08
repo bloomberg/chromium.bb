@@ -334,6 +334,13 @@ function initialize() {
         });
         chrome.app.window.current().show();
 
+        // Allow feedback to be sent even if the screenshot failed.
+        if (!screenshotCanvas) {
+          $('screenshot-checkbox').disabled = true;
+          $('screenshot-checkbox').checked = false;
+          return;
+        }
+
         screenshotCanvas.toBlob(function(blob) {
           $('screenshot-image').src = URL.createObjectURL(blob);
           // Only set the alt text when the src url is available, otherwise we'd
