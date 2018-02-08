@@ -63,16 +63,15 @@ class SpaceBuggy(page_module.Page):
         .contentDocument.getElementsByClassName('panel level-select')[0]
         .style.bottom == '-100px'""")
 
-class EpicZenGarden(page_module.Page):
+class EpicPageSet(page_module.Page):
 
-  def __init__(self, page_set):
-    url = 'https://s3.amazonaws.com/mozilla-games/ZenGarden/EpicZenGarden.html'
-    super(EpicZenGarden, self).__init__(
+  def __init__(self, page_set, url, name):
+    super(EpicPageSet, self).__init__(
         url=url,
         page_set=page_set,
         shared_page_state_class=(
             webgl_supported_shared_state.WebGLSupportedSharedState),
-        name='WasmZenGarden')
+        name=name)
 
   @property
   def skipped_gpus(self):
@@ -83,6 +82,29 @@ class EpicZenGarden(page_module.Page):
     action_runner.WaitForJavaScriptCondition("""document
         .getElementById('fullscreen_request').style.display ===
         'inline-block'""")
+
+class EpicZenGarden(EpicPageSet):
+
+  def __init__(self, page_set):
+    url = 'https://s3.amazonaws.com/mozilla-games/ZenGarden/EpicZenGarden.html'
+    super(EpicZenGarden, self).__init__(
+        page_set=page_set, url=url, name='WasmZenGarden')
+
+class EpicSunTemple(EpicPageSet):
+
+  def __init__(self, page_set):
+    url = ("https://s3.amazonaws.com/mozilla-games/tmp/2017-02-21-SunTemple/"
+           "SunTemple.html")
+    super(EpicSunTemple, self).__init__(
+        page_set=page_set, url=url, name='WasmSunTemple')
+
+class EpicStylizedRenderer(EpicPageSet):
+
+  def __init__(self, page_set):
+    url = ("https://s3.amazonaws.com/mozilla-games/tmp/2017-02-21-StylizedRen"
+           "dering/StylizedRendering.html")
+    super(EpicStylizedRenderer, self).__init__(
+        page_set=page_set, url=url, name='WasmStylizedRenderer')
 
 class WasmRealWorldPagesStorySet(story.StorySet):
   """Top apps, used to monitor web assembly apps."""
@@ -95,3 +117,5 @@ class WasmRealWorldPagesStorySet(story.StorySet):
     self.AddStory(Tanks(self))
     self.AddStory(SpaceBuggy(self))
     self.AddStory(EpicZenGarden(self))
+    self.AddStory(EpicSunTemple(self))
+    self.AddStory(EpicStylizedRenderer(self))
