@@ -611,7 +611,7 @@ void VRDisplay::BeginPresent() {
   // schedule a VRDisplay.rAF in case they do so only while presenting.
   if (!pending_vrdisplay_raf_ && !capabilities_->hasExternalDisplay()) {
     double timestamp = WTF::CurrentTimeTicksInSeconds();
-    Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
+    Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
         FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledWindowAnimations,
                              WrapWeakPersistent(this), timestamp));
   }
@@ -944,7 +944,7 @@ void VRDisplay::OnPresentingVSync(
   // this is due to WaitForIncomingMethodCall receiving the OnVSync
   // but queueing it for immediate execution since it doesn't match
   // the interface being waited on.
-  Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
+  Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
       FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledAnimations,
                            WrapWeakPersistent(this), time_delta.InSecondsF()));
 }
