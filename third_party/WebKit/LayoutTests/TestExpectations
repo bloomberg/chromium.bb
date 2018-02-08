@@ -3170,9 +3170,6 @@ crbug.com/779087 external/wpt/feature-policy/autoplay-disabled-by-feature-policy
 
 crbug.com/798572 virtual/enable_wasm/external/wpt/wasm/wasm_service_worker_test.https.html [ Failure ]
 
-# Sheriff failures 2017-12-15
-crbug.com/795250 [ Win7 Linux ] virtual/scroll_customization/fast/events/touch/gesture/gesture-tap-hover-state-iframe.html [ Pass Failure ]
-
 # Does not work on Mac
 crbug.com/793771 [ Mac ] virtual/modern-media-controls/media/controls/modern/scrubbing.html [ Skip ]
 
@@ -3207,10 +3204,6 @@ crbug.com/805788 [ Linux Win7 Win10 ] virtual/threaded/animations/responsive/vie
 crbug.com/805794 [ Linux ] virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-shown.html [ Pass Failure ]
 crbug.com/805794 [ Linux ] virtual/android/url-bar/bottom-fixed-adjusted-when-showing-url-bar.html [ Pass Failure ]
 crbug.com/805794 [ Linux Win ] virtual/threaded/animations/responsive/viewport-unit-translate-responsive.html [ Pass Timeout ]
-
-# Sheriff failures 2018-01-29
-# Flaky on Win7 (dbg)
-crbug.com/806748 [ Win7 ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-tap-hover-state-iframe.html [ Pass Failure ]
 
 # Sheriff failures 2018-02-05
 crbug.com/809152 netinfo/estimate-multiple-frames.html [ Pass Failure ]
