@@ -23,12 +23,18 @@ WelcomeHandler::WelcomeHandler(content::WebUI* web_ui)
       login_ui_service_(LoginUIServiceFactory::GetForProfile(profile_)),
       result_(WelcomeResult::DEFAULT) {
   login_ui_service_->AddObserver(this);
-  base::RecordAction(
-      base::UserMetricsAction("Signin_Impression_FromStartPage"));
 }
 
 WelcomeHandler::~WelcomeHandler() {
   login_ui_service_->RemoveObserver(this);
+
+  // We log that an impression occurred at destruct-time. This can't be done at
+  // construct-time on some platforms because this page is shown immediately
+  // after a new installation of Chrome and loads while the user is deciding
+  // whether or not to opt in to logging.
+  base::RecordAction(
+      base::UserMetricsAction("Signin_Impression_FromStartPage"));
+
   UMA_HISTOGRAM_ENUMERATION("Welcome.SignInPromptResult", result_,
                             WelcomeResult::WELCOME_RESULT_MAX);
 }
