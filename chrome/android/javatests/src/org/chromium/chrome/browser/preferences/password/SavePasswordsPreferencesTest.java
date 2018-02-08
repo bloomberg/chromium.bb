@@ -15,8 +15,10 @@ import static android.support.test.espresso.intent.Intents.intended;
 import static android.support.test.espresso.intent.Intents.intending;
 import static android.support.test.espresso.intent.matcher.BundleMatchers.hasEntry;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasAction;
+import static android.support.test.espresso.intent.matcher.IntentMatchers.hasData;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasExtras;
 import static android.support.test.espresso.intent.matcher.IntentMatchers.hasType;
+import static android.support.test.espresso.intent.matcher.UriMatchers.hasHost;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
@@ -253,6 +255,23 @@ public class SavePasswordsPreferencesTest {
                 System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_BULK);
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
+    }
+
+    /**
+     * Requests showing an arbitrary password export error.
+     * @param preferences is the SavePasswordsPreferences instance being tested.
+     * @param positiveButtonLabelId controls which label the positive button ends up having.
+     */
+    private void requestShowingExportError(Preferences preferences, int positiveButtonLabelId) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                SavePasswordsPreferences fragment =
+                        (SavePasswordsPreferences) preferences.getFragmentForTest();
+                fragment.showExportErrorAndAbort(R.string.save_password_preferences_export_no_app,
+                        null, positiveButtonLabelId);
+            }
+        });
     }
 
     /**
@@ -757,7 +776,7 @@ public class SavePasswordsPreferencesTest {
         // Now pretend that passwords have been serialized.
         mHandler.getExportCallback().onResult("serialized passwords");
 
-        // Before simulating the serialized passwords being received, check that the progress bar is
+        // After simulating the serialized passwords being received, check that the progress bar is
         // hidden.
         Espresso.onView(withText(R.string.settings_passwords_preparing_export))
                 .check(doesNotExist());
@@ -809,6 +828,181 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(allOf(withText(R.string.save_password_preferences_export_action_title),
                                 withParent(withParent(isEnabled()))))
                 .check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check that the user can cancel exporting with the negative button on the error message.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportCancelOnError() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        reauthenticateAndRequestExport();
+
+        // Confirm the export warning.
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .perform(click());
+
+        // Show an arbitrary error. This should replace the progress bar if that has been shown in
+        // the meantime.
+        requestShowingExportError(
+                preferences, R.string.save_password_preferences_export_learn_google_drive);
+
+        // Check that the error prompt is showing.
+        Espresso.onView(withText(R.string.save_password_preferences_export_no_app))
+                .check(matches(isDisplayed()));
+
+        // Hit the negative button on the error prompt.
+        Espresso.onView(withText(R.string.close)).perform(click());
+
+        // Check that the cancellation succeeded by checking that the export menu is available and
+        // enabled.
+        openActionBarOverflowOrOptionsMenu(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        // The text matches a text view, but the potentially disabled entity is some wrapper two
+        // levels up in the view hierarchy, hence the two withParent matchers.
+        Espresso.onView(allOf(withText(R.string.save_password_preferences_export_action_title),
+                                withParent(withParent(isEnabled()))))
+                .check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check that the user can re-trigger the export from an error dialog which has a "retry"
+     * button.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportRetry() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        reauthenticateAndRequestExport();
+
+        // Confirm the export warning.
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .perform(click());
+
+        // Show an arbitrary error but ensure that the positive button label is the one for "try
+        // again".
+        requestShowingExportError(preferences, R.string.try_again);
+
+        // Hit the positive button to try again.
+        Espresso.onView(withText(R.string.try_again)).perform(click());
+
+        // Check that there is again the export warning.
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check that the error dialog lets the user visit a help page to install Google Drive if they
+     * need an app to consume the exported passwords.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportHelpSite() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        reauthenticateAndRequestExport();
+
+        // Confirm the export warning.
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .perform(click());
+
+        // Show an arbitrary error but ensure that the positive button label is the one for the
+        // Google Drive help site.
+        requestShowingExportError(
+                preferences, R.string.save_password_preferences_export_learn_google_drive);
+
+        Intents.init();
+
+        // Before triggering the viewing intent, stub it out to avoid cascading that into further
+        // intents and opening the web browser.
+        intending(hasAction(equalTo(Intent.ACTION_VIEW)))
+                .respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, null));
+
+        // Hit the positive button to navigate to the help site.
+        Espresso.onView(withText(R.string.save_password_preferences_export_learn_google_drive))
+                .perform(click());
+
+        intended(allOf(hasAction(equalTo(Intent.ACTION_VIEW)),
+                hasData(hasHost(equalTo("support.google.com")))));
+
+        Intents.release();
+    }
+
+    /**
+     * Check that if errors are encountered when user is busy confirming the export, the error UI is
+     * shown after the confirmation is completed, so that the user does not see UI changing
+     * unexpectedly under their fingers.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportErrorUiAfterConfirmation() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        reauthenticateAndRequestExport();
+
+        // Request showing an arbitrary error while the confirmation dialog is still up.
+        requestShowingExportError(
+                preferences, R.string.save_password_preferences_export_learn_google_drive);
+
+        // Check that the confirmation dialog is showing and dismiss it.
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .perform(click());
+
+        // Check that now the error is displayed, instead of the progress bar.
+        Espresso.onView(withText(R.string.settings_passwords_preparing_export))
+                .check(doesNotExist());
+        Espresso.onView(withText(R.string.save_password_preferences_export_no_app))
+                .check(matches(isDisplayed()));
+
+        // Close the error dialog and abort the export.
+        Espresso.onView(withText(R.string.close)).perform(click());
+
+        // Ensure that there is still no progress bar.
+        Espresso.onView(withText(R.string.settings_passwords_preparing_export))
+                .check(doesNotExist());
     }
 
     /**

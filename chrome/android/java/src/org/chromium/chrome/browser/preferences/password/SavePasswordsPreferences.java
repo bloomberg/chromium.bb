@@ -162,6 +162,14 @@ public class SavePasswordsPreferences
     @Nullable
     private ProgressBarDialogFragment mProgressBarDialogFragment;
 
+    // If an error dialog should be shown, this contains the arguments for it, such as the error
+    // message. If no error dialog should be shown, this is null.
+    @Nullable
+    private ExportErrorDialogFragment.ErrorDialogParams mErrorDialogParams;
+
+    // True as long as the export warning dialog is showing.
+    private boolean mExportWarningShowing;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -311,7 +319,8 @@ public class SavePasswordsPreferences
                 if (mExportState == EXPORT_STATE_INACTIVE) return;
 
                 if (result.mError != null) {
-                    showExportErrorAndAbort(result.mError);
+                    showExportErrorAndAbort(R.string.save_password_preferences_export_tips,
+                            result.mError, R.string.try_again);
                 } else {
                     mExportFileUri = result.mUri;
                     tryExporting();
@@ -321,64 +330,104 @@ public class SavePasswordsPreferences
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, serializedPasswords);
     }
 
+    /** Starts the password export flow.
+     * Current state of export flow: the user just tapped the menu item for export
+     * The next steps are: passing reauthentication, confirming the export, waiting for exported
+     * data (if needed) and choosing a consumer app for the data.
+     */
+    private void startExporting() {
+        assert mExportState == EXPORT_STATE_INACTIVE;
+        // Disable re-triggering exporting until the current exporting finishes.
+        mExportState = EXPORT_STATE_REQUESTED;
+
+        // Start fetching the serialized passwords now to use the time the user spends
+        // reauthenticating and reading the warning message. If the user cancels the export or
+        // fails the reauthentication, the serialised passwords will simply get ignored when
+        // they arrive.
+        PasswordManagerHandlerProvider.getInstance().getPasswordManagerHandler().serializePasswords(
+                new Callback<String>() {
+                    @Override
+                    public void onResult(String serializedPasswords) {
+                        shareSerializedPasswords(serializedPasswords);
+                    }
+                });
+        if (!ReauthenticationManager.isScreenLockSetUp(getActivity().getApplicationContext())) {
+            Toast.makeText(getActivity().getApplicationContext(),
+                         R.string.password_export_set_lock_screen, Toast.LENGTH_LONG)
+                    .show();
+            // Re-enable exporting, the current one was cancelled by Chrome.
+            mExportState = EXPORT_STATE_INACTIVE;
+        } else if (ReauthenticationManager.authenticationStillValid(
+                           ReauthenticationManager.REAUTH_SCOPE_BULK)) {
+            exportAfterReauth();
+        } else {
+            ReauthenticationManager.displayReauthenticationFragment(
+                    R.string.lockscreen_description_export, getView().getId(), getFragmentManager(),
+                    ReauthenticationManager.REAUTH_SCOPE_BULK);
+        }
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.export_passwords) {
-            assert mExportState == EXPORT_STATE_INACTIVE;
-            // Disable re-triggering exporting until the current exporting finishes.
-            mExportState = EXPORT_STATE_REQUESTED;
-
-            // Start fetching the serialized passwords now to use the time the user spends
-            // reauthenticating and reading the warning message. If the user cancels the export or
-            // fails the reauthentication, the serialised passwords will simply get ignored when
-            // they arrive.
-            PasswordManagerHandlerProvider.getInstance()
-                    .getPasswordManagerHandler()
-                    .serializePasswords(new Callback<String>() {
-                        @Override
-                        public void onResult(String serializedPasswords) {
-                            shareSerializedPasswords(serializedPasswords);
-                        }
-                    });
-            if (!ReauthenticationManager.isScreenLockSetUp(getActivity().getApplicationContext())) {
-                Toast.makeText(getActivity().getApplicationContext(),
-                             R.string.password_export_set_lock_screen, Toast.LENGTH_LONG)
-                        .show();
-                // Re-enable exporting, the current one was cancelled by Chrome.
-                mExportState = EXPORT_STATE_INACTIVE;
-            } else if (ReauthenticationManager.authenticationStillValid(
-                               ReauthenticationManager.REAUTH_SCOPE_BULK)) {
-                exportAfterReauth();
-            } else {
-                ReauthenticationManager.displayReauthenticationFragment(
-                        R.string.lockscreen_description_export, getView().getId(),
-                        getFragmentManager(), ReauthenticationManager.REAUTH_SCOPE_BULK);
-            }
+            startExporting();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    /** Continues with the password export flow after the user successfully reauthenticated. */
+    /**
+     * Continues with the password export flow after the user successfully reauthenticated.
+     * Current state of export flow: the user tapped the menu item for export and passed
+     * reauthentication. The next steps are: confirming the export, waiting for exported data (if
+     * needed) and choosing a consumer app for the data.
+     */
     private void exportAfterReauth() {
+        assert !mExportWarningShowing;
         ExportWarningDialogFragment exportWarningDialogFragment = new ExportWarningDialogFragment();
-        exportWarningDialogFragment.setExportWarningHandler(new DialogInterface.OnClickListener() {
-            /** On positive button response asks the parent to continue with the export flow. */
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (which == AlertDialog.BUTTON_POSITIVE) {
-                    mExportState = EXPORT_STATE_CONFIRMED;
-                    tryExporting();
-                }
-            }
-        });
+        exportWarningDialogFragment.setExportWarningHandler(
+                new ExportWarningDialogFragment.Handler() {
+                    /**
+                     * On positive button response asks the parent to continue with the export flow.
+                     */
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (which == AlertDialog.BUTTON_POSITIVE) {
+                            mExportState = EXPORT_STATE_CONFIRMED;
+                            // If the error dialog has been waiting, display it now, otherwise
+                            // continue the export flow.
+                            if (mErrorDialogParams != null) {
+                                showExportErrorDialogFragment();
+                            } else {
+                                tryExporting();
+                            }
+                        }
+                    }
+
+                    /**
+                     * Mark the dismissal of the dialog, so that waiting UI (such as error
+                     * reporting) can be shown.
+                     */
+                    @Override
+                    public void onDismiss() {
+                        mExportWarningShowing = false;
+                        // If the error dialog has been waiting, display it now.
+                        if (mErrorDialogParams != null) showExportErrorDialogFragment();
+                    }
+                });
+        mExportWarningShowing = true;
         exportWarningDialogFragment.show(getFragmentManager(), null);
     }
 
     /**
      * Starts the exporting intent if both blocking events are completed: serializing and the
      * confirmation flow.
+     * At this point, the user the user has tapped the menu item for export and passed
+     * reauthentication. Upon calling this method, the user has either also confirmed the export, or
+     * the exported data have been prepared. The method is called twice, once for each of those
+     * events. The next step after both the export is confirmed and the data is ready is to offer
+     * the user an intent chooser for sharing the exported passwords.
      */
     private void tryExporting() {
         if (mExportState != EXPORT_STATE_CONFIRMED) return;
@@ -407,14 +456,61 @@ public class SavePasswordsPreferences
 
     /**
      * Call this to abort the export UI flow and display an error description to the user.
-     * @param description A string with a brief explanation of the error.
+     * @param descriptionId The resource ID of a string with a brief explanation of the error.
+     * @param detailedDescription An optional string with more technical details about the error.
+     * @param positiveButtonLabelId The resource ID of the label of the positive button in the error
+     * dialog.
      */
-    private void showExportErrorAndAbort(String description) {
-        // TODO(crbug.com/788701): Implement. Ensure that if ExportWarningDialogFragment is shown,
-        // then Chrome waits until the user closes it to avoid changing UI under their fingers.
+    @VisibleForTesting
+    public void showExportErrorAndAbort(
+            int descriptionId, @Nullable String detailedDescription, int positiveButtonLabelId) {
+        assert mErrorDialogParams == null;
         if (mProgressBarDialogFragment != null) mProgressBarDialogFragment.dismiss();
-        // Re-enable exporting, the current one was just cancelled.
-        mExportState = EXPORT_STATE_INACTIVE;
+
+        mErrorDialogParams = new ExportErrorDialogFragment.ErrorDialogParams();
+        mErrorDialogParams.positiveButtonLabelId = positiveButtonLabelId;
+        mErrorDialogParams.description = getActivity().getResources().getString(descriptionId);
+        if (detailedDescription != null) {
+            mErrorDialogParams.detailedDescription = getActivity().getResources().getString(
+                    R.string.save_password_preferences_export_error_details, detailedDescription);
+        }
+
+        if (!mExportWarningShowing) showExportErrorDialogFragment();
+    }
+
+    /**
+     * This is a helper method to {@link showExportErrorAndAbort}, responsible for showing the
+     * actual UI.*/
+    private void showExportErrorDialogFragment() {
+        assert mErrorDialogParams != null;
+
+        ExportErrorDialogFragment exportErrorDialogFragment = new ExportErrorDialogFragment();
+        int positiveButtonLabelId = mErrorDialogParams.positiveButtonLabelId;
+        exportErrorDialogFragment.initialize(mErrorDialogParams);
+        mErrorDialogParams = null;
+
+        exportErrorDialogFragment.setExportErrorHandler(new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == AlertDialog.BUTTON_POSITIVE) {
+                    if (positiveButtonLabelId
+                            == R.string.save_password_preferences_export_learn_google_drive) {
+                        // Link to the help article about how to use Google Drive.
+                        Intent intent = new Intent(Intent.ACTION_VIEW,
+                                Uri.parse("https://support.google.com/drive/answer/2424384"));
+                        intent.setPackage(getActivity().getPackageName());
+                        getActivity().startActivity(intent);
+                    } else if (positiveButtonLabelId == R.string.try_again) {
+                        mExportState = EXPORT_STATE_INACTIVE;
+                        startExporting();
+                    }
+                } else if (which == AlertDialog.BUTTON_NEGATIVE) {
+                    // Re-enable exporting, the current one was just cancelled.
+                    mExportState = EXPORT_STATE_INACTIVE;
+                }
+            }
+        });
+        exportErrorDialogFragment.show(getFragmentManager(), null);
     }
 
     /**
@@ -434,8 +530,6 @@ public class SavePasswordsPreferences
         try {
             tempFile = File.createTempFile("pwd-export", ".csv", passwordsDir);
         } catch (IOException e) {
-            // TODO(crbug.com/788701): Change e.getMessage to an appropriate error, following the
-            // mocks.
             return new ExportResult(e.getMessage());
         }
         tempFile.deleteOnExit();
@@ -443,15 +537,11 @@ public class SavePasswordsPreferences
                      new FileOutputStream(tempFile), Charset.forName("UTF-8")))) {
             tempWriter.write(serializedPasswords);
         } catch (IOException e) {
-            // TODO(crbug.com/788701): Change e.getMessage to an appropriate error, following the
-            // mocks.
             return new ExportResult(e.getMessage());
         }
         try {
             return new ExportResult(ContentUriUtils.getContentUriFromFile(tempFile));
         } catch (IllegalArgumentException e) {
-            // TODO(crbug.com/788701): Display an error, because the result of Uri.fromFile is not
-            // going to be shareable.
             return new ExportResult(e.getMessage());
         }
     }
@@ -475,8 +565,8 @@ public class SavePasswordsPreferences
             chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             ContextUtils.getApplicationContext().startActivity(chooser);
         } catch (ActivityNotFoundException e) {
-            // TODO(crbug.com/788701): If no app handles it, display the appropriate error.
-            showExportErrorAndAbort(e.getMessage());
+            showExportErrorAndAbort(R.string.save_password_preferences_export_no_app, null,
+                    R.string.save_password_preferences_export_learn_google_drive);
         }
         mExportFileUri = null;
     }

@@ -16,10 +16,19 @@ import org.chromium.chrome.R;
  * Shows the dialog that gives the user some tips for how to treat the exported passwords securely.
  */
 public class ExportWarningDialogFragment extends DialogFragment {
-    // This handler is used to answer the user actions on the dialog.
-    private DialogInterface.OnClickListener mHandler;
+    /**
+     * This interface combines handling the clicks on the buttons and the general dismissal of the
+     * dialog.
+     */
+    public interface Handler extends DialogInterface.OnClickListener {
+        /** Handle the dismissal of the dialog.*/
+        void onDismiss();
+    }
 
-    public void setExportWarningHandler(DialogInterface.OnClickListener handler) {
+    // This handler is used to answer the user actions on the dialog.
+    private Handler mHandler;
+
+    public void setExportWarningHandler(Handler handler) {
         mHandler = handler;
     }
 
@@ -47,5 +56,10 @@ public class ExportWarningDialogFragment extends DialogFragment {
             dismiss();
             return;
         }
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        mHandler.onDismiss();
     }
 }
