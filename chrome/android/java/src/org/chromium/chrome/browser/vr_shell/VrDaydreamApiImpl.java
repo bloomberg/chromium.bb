@@ -130,6 +130,11 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
     }
 
     @Override
+    public Intent setupVrIntent(Intent intent) {
+        return DaydreamApi.setupVrIntent(intent);
+    }
+
+    @Override
     public void close() {
         if (mDaydreamApi == null) return;
         mDaydreamApi.close();

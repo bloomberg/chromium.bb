@@ -178,6 +178,8 @@ public class VrShellDelegate
     // If set to true, we attempt to enter VR mode when the activity is resumed.
     private boolean mEnterVrOnStartup;
 
+    private boolean mInternalIntentUsedToStartVr;
+
     // Set to true if performed VR browsing at least once. That is, this was not simply a WebVr
     // presentation experience.
     private boolean mVrBrowserUsed;
@@ -238,16 +240,28 @@ public class VrShellDelegate
                 // VR before the DON flow), we don't need to add the overlay.
                 if (!sInstance.mInVr) addBlackOverlayViewForActivity(sInstance.mActivity);
 
-                // We start the Activity with a custom animation that keeps it hidden while starting
-                // up to avoid Android showing stale 2D screenshots when the user is in their VR
-                // headset. The animation lasts up to 10 seconds, but is cancelled when we're
-                // resumed as at that time we'll be showing the black overlay added above.
-                int animation = sInstance.mInVr ? 0 : R.anim.stay_hidden;
-                sInstance.mNeedsAnimationCancel = animation != 0;
-                Bundle options =
-                        ActivityOptions.makeCustomAnimation(activity, animation, 0).toBundle();
-                ((ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE))
-                        .moveTaskToFront(activity.getTaskId(), 0, options);
+                if (activity instanceof ChromeTabbedActivity) {
+                    // We can special case singleInstance activities like CTA to avoid having to use
+                    // moveTaskToFront. Using moveTaskToFront prevents us from disabling window
+                    // animations, and causes the system UI to show up during the preview window and
+                    // window animations.
+                    Intent launchIntent = new Intent(activity, activity.getClass());
+                    launchIntent = sInstance.mVrDaydreamApi.setupVrIntent(launchIntent);
+                    sInstance.mInternalIntentUsedToStartVr = true;
+                    sInstance.mVrDaydreamApi.launchInVr(PendingIntent.getActivity(
+                            activity, 0, launchIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+                } else {
+                    // We start the Activity with a custom animation that keeps it hidden while
+                    // starting up to avoid Android showing stale 2D screenshots when the user is in
+                    // their VR headset. The animation lasts up to 10 seconds, but is cancelled when
+                    // we're resumed as at that time we'll be showing the black overlay added above.
+                    int animation = sInstance.mInVr ? 0 : R.anim.stay_hidden;
+                    sInstance.mNeedsAnimationCancel = animation != 0;
+                    Bundle options =
+                            ActivityOptions.makeCustomAnimation(activity, animation, 0).toBundle();
+                    ((ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE))
+                            .moveTaskToFront(activity.getTaskId(), 0, options);
+                }
             } else {
                 if (sInstance.mInVrAtChromeLaunch == null) sInstance.mInVrAtChromeLaunch = true;
                 // If a WebVR app calls requestPresent in response to the displayactivate event
@@ -996,6 +1010,13 @@ public class VrShellDelegate
 
         VrShellDelegate instance = getInstance(activity);
         if (instance == null) return;
+
+        // Nothing to do if we were launched by an internal intent.
+        if (instance.mInternalIntentUsedToStartVr) {
+            instance.mInternalIntentUsedToStartVr = false;
+            return;
+        }
+
         // TODO(ymalik): We should cache whether or not VR mode is set so we don't set it
         // needlessly.
         setVrModeEnabled(activity);
@@ -1042,9 +1063,8 @@ public class VrShellDelegate
      */
     public static void maybeHandleVrIntentPreNative(ChromeActivity activity, Intent intent) {
         if (!VrIntentUtils.isVrIntent(intent)) return;
-        // If we get an intent while we're already in VR, we do nothing. This is mostly
-        // because crbug.com/780673 since on Android O, every intent gets dispatched twice.
-        if (sInstance != null && sInstance.mInVr) return;
+        // If we already have an instance, nothing to do here.
+        if (sInstance != null) return;
         if (DEBUG_LOGS) Log.i(TAG, "maybeHandleVrIntentPreNative: preparing for transition");
         // We add a black overlay view so that we can show black while the VR UI is loading.
         // Note that this alone isn't sufficient to prevent 2D UI from showing when

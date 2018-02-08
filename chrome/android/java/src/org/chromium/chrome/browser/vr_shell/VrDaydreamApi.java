@@ -71,6 +71,13 @@ public interface VrDaydreamApi {
     boolean bootsToVr();
 
     /**
+     * Adds the necessary VR flags to an intent.
+     * @param intent The intent to add VR flags to.
+     * @return the intent with VR flags set.
+     */
+    Intent setupVrIntent(Intent intent);
+
+    /**
      * Closes this DaydreamApi instance.
      */
     void close();
