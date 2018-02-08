@@ -1357,7 +1357,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
 
   // Creates Tab object to ensure the property is correct for the extension.
   std::unique_ptr<api::tabs::Tab> tab_object_a =
-      ExtensionTabUtil::CreateTabObject(web_contents_a, tab_strip_model, 0);
+      ExtensionTabUtil::CreateTabObject(web_contents_a,
+                                        ExtensionTabUtil::kDontScrubTab,
+                                        nullptr, tab_strip_model, 0);
   EXPECT_FALSE(tab_object_a->discarded);
 
   // Discards one tab.
@@ -1365,8 +1367,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
   web_contents_a = tab_strip_model->GetWebContentsAt(1);
 
   // Make sure the property is changed accordingly after discarding the tab.
-  tab_object_a =
-      ExtensionTabUtil::CreateTabObject(web_contents_a, tab_strip_model, 0);
+  tab_object_a = ExtensionTabUtil::CreateTabObject(
+      web_contents_a, ExtensionTabUtil::kDontScrubTab, nullptr, tab_strip_model,
+      0);
   EXPECT_TRUE(tab_object_a->discarded);
 
   // Get non-discarded tabs after discarding one tab.
@@ -1471,6 +1474,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithId) {
   tab_id = ExtensionTabUtil::GetTabId(web_contents);
   EXPECT_EQ(tab_id, api_test_utils::GetInteger(result.get(), "id"));
   EXPECT_TRUE(api_test_utils::GetBoolean(result.get(), "discarded"));
+  // The result should be scrubbed.
+  EXPECT_FALSE(result->FindKey("url"));
 
   // Tests chrome.tabs.discard(tabId) with an already discarded tab. It has to
   // return the error stating that the tab couldn't be discarded.
@@ -1543,6 +1548,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardWithoutId) {
   EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contents),
             api_test_utils::GetInteger(result.get(), "id"));
   EXPECT_TRUE(api_test_utils::GetBoolean(result.get(), "discarded"));
+  // The result should be scrubbed.
+  EXPECT_FALSE(result->FindKey("url"));
 }
 
 // Tests chrome.tabs.discard() without disabling protection time.
@@ -1584,7 +1591,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, AutoDiscardableProperty) {
   // Creates Tab object to ensure the property is correct for the extension.
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
   std::unique_ptr<api::tabs::Tab> tab_object_a =
-      ExtensionTabUtil::CreateTabObject(web_contents_a, tab_strip_model, 0);
+      ExtensionTabUtil::CreateTabObject(web_contents_a,
+                                        ExtensionTabUtil::kDontScrubTab,
+                                        nullptr, tab_strip_model, 0);
   EXPECT_TRUE(tab_object_a->auto_discardable);
 
   // Set up query and update functions with the extension.
@@ -1626,8 +1635,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, AutoDiscardableProperty) {
       api_test_utils::GetBoolean(update_result.get(), "autoDiscardable"));
 
   // Make sure the property is changed accordingly after updating the tab.
-  tab_object_a =
-      ExtensionTabUtil::CreateTabObject(web_contents_a, tab_strip_model, 0);
+  tab_object_a = ExtensionTabUtil::CreateTabObject(
+      web_contents_a, ExtensionTabUtil::kDontScrubTab, nullptr, tab_strip_model,
+      0);
   EXPECT_FALSE(tab_object_a->auto_discardable);
 
   // Get auto-discardable tabs after changing the status of web contents A.

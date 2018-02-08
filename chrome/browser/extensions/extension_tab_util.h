@@ -44,6 +44,11 @@ class ExtensionTabUtil {
     kDontPopulateTabs,
   };
 
+  enum ScrubTabBehavior {
+    kScrubTab,
+    kDontScrubTab,
+  };
+
   struct OpenTabParams {
     OpenTabParams();
     ~OpenTabParams();
@@ -93,31 +98,23 @@ class ExtensionTabUtil {
   static std::string GetBrowserWindowTypeText(const Browser& browser);
 
   // Creates a Tab object (see chrome/common/extensions/api/tabs.json) with
-  // information about the state of a browser tab.  Depending on the
-  // permissions of the extension, the object may or may not include sensitive
-  // data such as the tab's URL.
+  // information about the state of a browser tab for the given |web_contents|.
+  // This will scrub the tab of sensitive data (URL, favicon, title) according
+  // to |scrub_tab_behavior| and |extension|'s permissions. A null extension is
+  // treated as having no permissions.
+  // By default, tab information should always be scrubbed (kScrubTab) for any
+  // data passed to any extension.
   static std::unique_ptr<api::tabs::Tab> CreateTabObject(
       content::WebContents* web_contents,
+      ScrubTabBehavior scrub_tab_behavior,
       const Extension* extension) {
-    return CreateTabObject(web_contents, nullptr, -1, extension);
+    return CreateTabObject(web_contents, scrub_tab_behavior, extension, nullptr,
+                           -1);
   }
   static std::unique_ptr<api::tabs::Tab> CreateTabObject(
       content::WebContents* web_contents,
-      TabStripModel* tab_strip,
-      int tab_index,
-      const Extension* extension);
-
-  // Creates a Tab object but performs no extension permissions checks; the
-  // returned object will contain privacy-sensitive data.
-  // TODO(devlin): These are easy to confuse with the safer, info-scrubbing
-  // versions above. We should get rid of these, and have callers explicitly
-  // pass in a null extension if they do not want values scrubbed.
-  static std::unique_ptr<api::tabs::Tab> CreateTabObject(
-      content::WebContents* web_contents) {
-    return CreateTabObject(web_contents, nullptr, -1);
-  }
-  static std::unique_ptr<api::tabs::Tab> CreateTabObject(
-      content::WebContents* web_contents,
+      ScrubTabBehavior scrub_tab_behavior,
+      const Extension* extension,
       TabStripModel* tab_strip,
       int tab_index);
 

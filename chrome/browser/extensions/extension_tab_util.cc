@@ -265,8 +265,8 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
 
   // Return data about the newly created tab.
   return ExtensionTabUtil::CreateTabObject(navigate_params.target_contents,
-                                           tab_strip, new_index,
-                                           function->extension())
+                                           kScrubTab, function->extension(),
+                                           tab_strip, new_index)
       ->ToValue()
       .release();
 }
@@ -334,32 +334,8 @@ std::string ExtensionTabUtil::GetBrowserWindowTypeText(const Browser& browser) {
 // static
 std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
     WebContents* contents,
-    TabStripModel* tab_strip,
-    int tab_index,
-    const Extension* extension) {
-  std::unique_ptr<api::tabs::Tab> result =
-      CreateTabObject(contents, tab_strip, tab_index);
-  ScrubTabForExtension(extension, contents, result.get());
-  return result;
-}
-
-std::unique_ptr<base::ListValue> ExtensionTabUtil::CreateTabList(
-    const Browser* browser,
-    const Extension* extension) {
-  std::unique_ptr<base::ListValue> tab_list(new base::ListValue());
-  TabStripModel* tab_strip = browser->tab_strip_model();
-  for (int i = 0; i < tab_strip->count(); ++i) {
-    tab_list->Append(
-        CreateTabObject(tab_strip->GetWebContentsAt(i), tab_strip, i, extension)
-            ->ToValue());
-  }
-
-  return tab_list;
-}
-
-// static
-std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
-    content::WebContents* contents,
+    ScrubTabBehavior scrub_tab_behavior,
+    const Extension* extension,
     TabStripModel* tab_strip,
     int tab_index) {
   if (!tab_strip)
@@ -402,7 +378,23 @@ std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
     }
   }
 
+  if (scrub_tab_behavior == kScrubTab)
+    ScrubTabForExtension(extension, contents, tab_object.get());
   return tab_object;
+}
+
+std::unique_ptr<base::ListValue> ExtensionTabUtil::CreateTabList(
+    const Browser* browser,
+    const Extension* extension) {
+  std::unique_ptr<base::ListValue> tab_list(new base::ListValue());
+  TabStripModel* tab_strip = browser->tab_strip_model();
+  for (int i = 0; i < tab_strip->count(); ++i) {
+    tab_list->Append(CreateTabObject(tab_strip->GetWebContentsAt(i), kScrubTab,
+                                     extension, tab_strip, i)
+                         ->ToValue());
+  }
+
+  return tab_list;
 }
 
 // static

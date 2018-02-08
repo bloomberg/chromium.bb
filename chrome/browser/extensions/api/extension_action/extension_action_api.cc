@@ -226,8 +226,9 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
 
   if (event_name) {
     std::unique_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(
-        ExtensionTabUtil::CreateTabObject(web_contents, extension)->ToValue());
+    args->Append(ExtensionTabUtil::CreateTabObject(
+                     web_contents, ExtensionTabUtil::kScrubTab, extension)
+                     ->ToValue());
 
     DispatchEventToExtension(web_contents->GetBrowserContext(),
                              extension_action.extension_id(), histogram_value,

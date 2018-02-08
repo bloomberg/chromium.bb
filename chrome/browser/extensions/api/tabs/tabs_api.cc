@@ -862,7 +862,8 @@ ExtensionFunction::ResponseAction TabsGetSelectedFunction::Run() {
     return RespondNow(Error(keys::kNoSelectedTabError));
   return RespondNow(ArgumentList(
       tabs::Get::Results::Create(*ExtensionTabUtil::CreateTabObject(
-          contents, tab_strip, tab_strip->active_index(), extension()))));
+          contents, ExtensionTabUtil::kScrubTab, extension(), tab_strip,
+          tab_strip->active_index()))));
 }
 
 ExtensionFunction::ResponseAction TabsGetAllInWindowFunction::Run() {
@@ -1045,8 +1046,9 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
       if (loading_status_set && loading != web_contents->IsLoading())
         continue;
 
-      result->Append(ExtensionTabUtil::CreateTabObject(web_contents, tab_strip,
-                                                       i, extension())
+      result->Append(ExtensionTabUtil::CreateTabObject(
+                         web_contents, ExtensionTabUtil::kScrubTab, extension(),
+                         tab_strip, i)
                          ->ToValue());
     }
   }
@@ -1113,7 +1115,8 @@ ExtensionFunction::ResponseAction TabsDuplicateFunction::Run() {
 
   return RespondNow(ArgumentList(
       tabs::Get::Results::Create(*ExtensionTabUtil::CreateTabObject(
-          new_contents, new_tab_strip, new_tab_index, extension()))));
+          new_contents, ExtensionTabUtil::kScrubTab, extension(), new_tab_strip,
+          new_tab_index))));
 }
 
 ExtensionFunction::ResponseAction TabsGetFunction::Run() {
@@ -1130,9 +1133,9 @@ ExtensionFunction::ResponseAction TabsGetFunction::Run() {
     return RespondNow(Error(error));
   }
 
-  return RespondNow(ArgumentList(
-      tabs::Get::Results::Create(*ExtensionTabUtil::CreateTabObject(
-          contents, tab_strip, tab_index, extension()))));
+  return RespondNow(ArgumentList(tabs::Get::Results::Create(
+      *ExtensionTabUtil::CreateTabObject(contents, ExtensionTabUtil::kScrubTab,
+                                         extension(), tab_strip, tab_index))));
 }
 
 ExtensionFunction::ResponseAction TabsGetCurrentFunction::Run() {
@@ -1143,8 +1146,8 @@ ExtensionFunction::ResponseAction TabsGetCurrentFunction::Run() {
   WebContents* caller_contents = GetSenderWebContents();
   std::unique_ptr<base::ListValue> results;
   if (caller_contents && ExtensionTabUtil::GetTabId(caller_contents) >= 0) {
-    results = tabs::Get::Results::Create(
-        *ExtensionTabUtil::CreateTabObject(caller_contents, extension()));
+    results = tabs::Get::Results::Create(*ExtensionTabUtil::CreateTabObject(
+        caller_contents, ExtensionTabUtil::kScrubTab, extension()));
   }
   return RespondNow(results ? ArgumentList(std::move(results)) : NoArguments());
 }
@@ -1434,8 +1437,8 @@ void TabsUpdateFunction::PopulateResult() {
   if (!has_callback())
     return;
 
-  results_ = tabs::Get::Results::Create(
-      *ExtensionTabUtil::CreateTabObject(web_contents_, extension()));
+  results_ = tabs::Get::Results::Create(*ExtensionTabUtil::CreateTabObject(
+      web_contents_, ExtensionTabUtil::kScrubTab, extension()));
 }
 
 void TabsUpdateFunction::OnExecuteCodeFinished(
@@ -1563,10 +1566,10 @@ bool TabsMoveFunction::MoveTab(int tab_id,
           *new_index, web_contents, TabStripModel::ADD_NONE);
 
       if (has_callback()) {
-        tab_values->Append(
-            ExtensionTabUtil::CreateTabObject(web_contents, target_tab_strip,
-                                              *new_index, extension())
-                ->ToValue());
+        tab_values->Append(ExtensionTabUtil::CreateTabObject(
+                               web_contents, ExtensionTabUtil::kScrubTab,
+                               extension(), target_tab_strip, *new_index)
+                               ->ToValue());
       }
 
       return true;
@@ -1585,7 +1588,8 @@ bool TabsMoveFunction::MoveTab(int tab_id,
 
   if (has_callback()) {
     tab_values->Append(ExtensionTabUtil::CreateTabObject(
-                           contents, source_tab_strip, *new_index, extension())
+                           contents, ExtensionTabUtil::kScrubTab, extension(),
+                           source_tab_strip, *new_index)
                            ->ToValue());
   }
 
@@ -2188,8 +2192,9 @@ ExtensionFunction::ResponseAction TabsDiscardFunction::Run() {
 
   // Create the Tab object and return it in case of success.
   if (contents) {
-    return RespondNow(ArgumentList(tabs::Discard::Results::Create(
-        *ExtensionTabUtil::CreateTabObject(contents))));
+    return RespondNow(ArgumentList(
+        tabs::Discard::Results::Create(*ExtensionTabUtil::CreateTabObject(
+            contents, ExtensionTabUtil::kScrubTab, extension()))));
   }
 
   // Return appropriate error message otherwise.
