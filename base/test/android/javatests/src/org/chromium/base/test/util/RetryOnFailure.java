@@ -9,8 +9,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-// Note this annotation may not do anything yet. Check crbug.com/619055
-// for latest status.
+// Note this annotation may be a NOOP. Check http://crbug.com/797002 for latest status (also see
+// http://crbug.com/619055). Current default behavior is to retry all tests on failure.
 /**
  * Mark a test as flaky and should be retried on failure. The test is
  * considered passed by the test script if any retry succeeds.
