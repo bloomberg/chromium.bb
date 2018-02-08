@@ -399,9 +399,9 @@
       'Android arm64 Builder FYI': 'official_goma_minimal_symbols_android_arm64',
       'Win Builder FYI': 'official_goma',
       'Win Clang Builder': 'official_goma_minimal_symbols_clang',
-      'Battor Agent Linux': 'official_goma_minimal_symbols_clang',
-      'Battor Agent Mac': 'official_goma_minimal_symbols_clang',
-      'Battor Agent Win': 'official_goma_minimal_symbols_clang',
+      'Battor Agent Linux': 'release_bot',
+      'Battor Agent Mac': 'release_bot',
+      'Battor Agent Win': 'release_bot',
     },
 
     'chromium.sandbox': {
