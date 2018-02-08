@@ -72,6 +72,7 @@ TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityAutoclickEnabled));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityAutoclickDelayMs));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityHighContrastEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityLargeCursorEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityLargeCursorDipSize));

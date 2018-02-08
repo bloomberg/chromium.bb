@@ -46,7 +46,6 @@ source_set("chromeos") {
     "//apps",
     "//ash",
     "//ash:ash_with_content",
-    "//ash/autoclick/mus/public/interfaces",
     "//ash/public/cpp",
     "//cc/paint",
     "//chrome/app:command_ids",
@@ -214,10 +213,6 @@ source_set("chromeos") {
     "//ui/wm",
     "//ui/wm/public",
     "//url",
-  ]
-
-  data_deps = [
-    "//ash/autoclick/mus:accessibility_autoclick",
   ]
 
   allow_circular_includes_from = [ "//chrome/browser/extensions" ]

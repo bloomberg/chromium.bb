@@ -163,12 +163,6 @@ class AccessibilityManager
   // Returns true if autoclick is enabled.
   bool IsAutoclickEnabled() const;
 
-  // Set the delay for autoclicking after stopping the cursor in milliseconds.
-  void SetAutoclickDelay(int delay_ms);
-
-  // Returns the autoclick delay in milliseconds.
-  int GetAutoclickDelay() const;
-
   // Enables or disables the virtual keyboard.
   void EnableVirtualKeyboard(bool enabled);
   // Returns true if the virtual keyboard is enabled, otherwise false.
@@ -320,8 +314,6 @@ class AccessibilityManager
   void UpdateStickyKeysFromPref();
   void OnSpokenFeedbackChanged();
   void OnHighContrastChanged();
-  void OnAutoclickChanged();
-  void UpdateAutoclickDelayFromPref();
   void UpdateVirtualKeyboardFromPref();
   void OnMonoAudioChanged();
   void UpdateCaretHighlightFromPref();
@@ -395,7 +387,6 @@ class AccessibilityManager
 
   bool sticky_keys_enabled_;
   bool spoken_feedback_enabled_;
-  base::TimeDelta autoclick_delay_ms_;
   bool virtual_keyboard_enabled_;
   bool caret_highlight_enabled_;
   bool cursor_highlight_enabled_;

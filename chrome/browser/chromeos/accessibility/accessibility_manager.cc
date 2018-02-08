@@ -12,8 +12,6 @@
 #include <vector>
 
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
-#include "ash/autoclick/autoclick_controller.h"
-#include "ash/autoclick/mus/public/interfaces/autoclick.mojom.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/root_window_controller.h"
@@ -255,7 +253,6 @@ AccessibilityManager::AccessibilityManager()
           ash::prefs::kAccessibilitySwitchAccessEnabled),
       sticky_keys_enabled_(false),
       spoken_feedback_enabled_(false),
-      autoclick_delay_ms_(ash::AutoclickController::GetDefaultAutoclickDelay()),
       virtual_keyboard_enabled_(false),
       caret_highlight_enabled_(false),
       cursor_highlight_enabled_(false),
@@ -661,48 +658,6 @@ void AccessibilityManager::EnableAutoclick(bool enabled) {
 bool AccessibilityManager::IsAutoclickEnabled() const {
   return profile_ && profile_->GetPrefs()->GetBoolean(
                          ash::prefs::kAccessibilityAutoclickEnabled);
-}
-
-void AccessibilityManager::OnAutoclickChanged() {}
-
-void AccessibilityManager::SetAutoclickDelay(int delay_ms) {
-  if (!profile_)
-    return;
-
-  PrefService* pref_service = profile_->GetPrefs();
-  pref_service->SetInteger(ash::prefs::kAccessibilityAutoclickDelayMs,
-                           delay_ms);
-  pref_service->CommitPendingWrite();
-}
-
-int AccessibilityManager::GetAutoclickDelay() const {
-  return static_cast<int>(autoclick_delay_ms_.InMilliseconds());
-}
-
-void AccessibilityManager::UpdateAutoclickDelayFromPref() {
-  if (!profile_)
-    return;
-
-  base::TimeDelta autoclick_delay_ms = base::TimeDelta::FromMilliseconds(
-      int64_t{profile_->GetPrefs()->GetInteger(
-          ash::prefs::kAccessibilityAutoclickDelayMs)});
-
-  if (autoclick_delay_ms == autoclick_delay_ms_)
-    return;
-  autoclick_delay_ms_ = autoclick_delay_ms;
-
-  if (GetAshConfig() == ash::Config::MASH) {
-    service_manager::Connector* connector =
-        content::ServiceManagerConnection::GetForProcess()->GetConnector();
-    ash::autoclick::mojom::AutoclickControllerPtr autoclick_controller;
-    connector->BindInterface("accessibility_autoclick", &autoclick_controller);
-    autoclick_controller->SetAutoclickDelay(
-        autoclick_delay_ms_.InMilliseconds());
-    return;
-  }
-
-  ash::Shell::Get()->autoclick_controller()->SetAutoclickDelay(
-      autoclick_delay_ms_);
 }
 
 void AccessibilityManager::EnableVirtualKeyboard(bool enabled) {
@@ -1131,14 +1086,6 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         base::Bind(&AccessibilityManager::OnHighContrastChanged,
                    base::Unretained(this)));
     pref_change_registrar_->Add(
-        ash::prefs::kAccessibilityAutoclickEnabled,
-        base::Bind(&AccessibilityManager::OnAutoclickChanged,
-                   base::Unretained(this)));
-    pref_change_registrar_->Add(
-        ash::prefs::kAccessibilityAutoclickDelayMs,
-        base::Bind(&AccessibilityManager::UpdateAutoclickDelayFromPref,
-                   base::Unretained(this)));
-    pref_change_registrar_->Add(
         ash::prefs::kAccessibilityVirtualKeyboardEnabled,
         base::Bind(&AccessibilityManager::UpdateVirtualKeyboardFromPref,
                    base::Unretained(this)));
@@ -1212,7 +1159,6 @@ void AccessibilityManager::SetProfile(Profile* profile) {
     UpdateBrailleImeState();
   UpdateAlwaysShowMenuFromPref();
   UpdateStickyKeysFromPref();
-  UpdateAutoclickDelayFromPref();
   UpdateVirtualKeyboardFromPref();
   UpdateCaretHighlightFromPref();
   UpdateCursorHighlightFromPref();
