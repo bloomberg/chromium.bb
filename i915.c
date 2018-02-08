@@ -298,6 +298,8 @@ static int i915_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t h
 		break;
 	}
 
+	bo->format_modifiers[0] = modifier;
+
 	stride = drv_stride_from_format(format, width, 0);
 
 	ret = i915_align_dimensions(bo, bo->tiling, &stride, &height);
@@ -397,8 +399,6 @@ static int i915_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint32_t
 	uint64_t modifier;
 
 	modifier = drv_pick_modifier(modifiers, count, modifier_order, ARRAY_SIZE(modifier_order));
-
-	bo->format_modifiers[0] = modifier;
 
 	return i915_bo_create_for_modifier(bo, width, height, format, modifier);
 }
