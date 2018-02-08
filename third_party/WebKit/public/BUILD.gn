@@ -149,7 +149,6 @@ source_set("blink_headers") {
     "platform/WebColor.h",
     "platform/WebCommon.h",
     "platform/WebCompositeAndReadbackAsyncCallback.h",
-    "platform/WebCompositorMutatorClient.h",
     "platform/WebCompositorSupport.h",
     "platform/WebComputedAXTree.h",
     "platform/WebConnectionType.h",

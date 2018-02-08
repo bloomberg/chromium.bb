@@ -29,13 +29,13 @@
 #include "WebBrowserControlsState.h"
 #include "WebColor.h"
 #include "WebCommon.h"
-#include "WebCompositorMutatorClient.h"
 #include "WebEventListenerProperties.h"
 #include "WebFloatPoint.h"
 #include "WebImageLayer.h"
 #include "WebOverscrollBehavior.h"
 #include "WebSize.h"
 #include "base/callback.h"
+#include "cc/trees/layer_tree_mutator.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 
 #include "third_party/skia/include/core/SkImage.h"
@@ -179,7 +179,7 @@ class WebLayerTreeView {
   virtual void ClearSelection() {}
 
   // Mutations are plumbed back to the layer tree via the mutator client.
-  virtual void SetMutatorClient(std::unique_ptr<WebCompositorMutatorClient>) {}
+  virtual void SetMutatorClient(std::unique_ptr<cc::LayerTreeMutator>) {}
 
   // For when the embedder itself change scales on the page (e.g. devtools)
   // and wants all of the content at the new scale to be crisp.

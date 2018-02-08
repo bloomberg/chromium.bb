@@ -63,7 +63,6 @@
 #include "media/base/media_switches.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/WebKit/public/platform/WebCompositeAndReadbackAsyncCallback.h"
-#include "third_party/WebKit/public/platform/WebCompositorMutatorClient.h"
 #include "third_party/WebKit/public/platform/WebLayoutAndPaintAsyncCallback.h"
 #include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -910,7 +909,7 @@ void RenderWidgetCompositor::ClearSelection() {
 }
 
 void RenderWidgetCompositor::SetMutatorClient(
-    std::unique_ptr<blink::WebCompositorMutatorClient> client) {
+    std::unique_ptr<cc::LayerTreeMutator> client) {
   TRACE_EVENT0("cc", "RenderWidgetCompositor::setMutatorClient");
   layer_tree_host_->SetLayerTreeMutator(std::move(client));
 }
