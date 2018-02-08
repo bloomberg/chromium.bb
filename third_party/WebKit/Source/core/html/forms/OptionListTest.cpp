@@ -43,7 +43,8 @@ TEST_F(OptionListTest, OptionOnly) {
   Select().SetInnerHTMLFromString(
       "text<input><option id=o1></option><input><option "
       "id=o2></option><input>");
-  HTMLElement* div = ToHTMLElement(Select().GetDocument().createElement("div"));
+  auto* div =
+      ToHTMLElement(Select().GetDocument().CreateRawElement(HTMLNames::divTag));
   div->SetInnerHTMLFromString("<option id=o3></option>");
   Select().AppendChild(div);
   OptionList list = Select().GetOptionList();

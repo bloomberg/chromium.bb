@@ -519,11 +519,8 @@ TEST_F(CanvasRenderingContext2DTest, detectOverdrawWithCompositeOperations) {
 }
 
 TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime) {
-  NonThrowableExceptionState non_throwable_exception_state;
-  Element* canvas_element =
-      GetDocument().createElement("canvas", non_throwable_exception_state);
-  EXPECT_FALSE(non_throwable_exception_state.HadException());
-  HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(canvas_element);
+  auto* canvas =
+      ToHTMLCanvasElement(GetDocument().CreateRawElement(HTMLNames::canvasTag));
   canvas->SetSize(IntSize(40, 40));
   ImageBitmap* image_bitmap_derived = nullptr;
   {

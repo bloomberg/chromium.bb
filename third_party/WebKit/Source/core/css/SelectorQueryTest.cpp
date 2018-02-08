@@ -328,7 +328,7 @@ TEST(SelectorQueryTest, QuirksModeSlowPath) {
 
 TEST(SelectorQueryTest, DisconnectedSubtree) {
   Document* document = HTMLDocument::CreateForTest();
-  Element* scope = document->createElement("div");
+  Element* scope = document->CreateRawElement(HTMLNames::divTag);
   scope->SetInnerHTMLFromString(R"HTML(
     <section>
       <span id=first>
@@ -355,7 +355,7 @@ TEST(SelectorQueryTest, DisconnectedSubtree) {
 
 TEST(SelectorQueryTest, DisconnectedTreeScope) {
   Document* document = HTMLDocument::CreateForTest();
-  Element* host = document->createElement("div");
+  Element* host = document->CreateRawElement(HTMLNames::divTag);
   // TODO(esprehn): Element::attachShadow() should not require a ScriptState,
   // it should handle the use counting in the bindings layer instead of in the
   // C++.

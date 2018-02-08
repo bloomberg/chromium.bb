@@ -39,7 +39,7 @@ TEST_F(ReplaceSelectionCommandTest, pastingEmptySpan) {
           .Build());
 
   DocumentFragment* fragment = GetDocument().createDocumentFragment();
-  fragment->AppendChild(GetDocument().createElement("span"));
+  fragment->AppendChild(GetDocument().CreateRawElement(HTMLNames::spanTag));
 
   // |options| are taken from |Editor::replaceSelectionWithFragment()| with
   // |selectReplacement| and |smartReplace|.

@@ -357,7 +357,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // However this is faster.
   Element* createElement(const QualifiedName&, const CreateElementFlags);
   // Creates an element without custom element processing.
-  Element* CreateRawElement(const QualifiedName&, const CreateElementFlags);
+  Element* CreateRawElement(const QualifiedName&,
+                            const CreateElementFlags = CreateElementFlags());
 
   Element* ElementFromPoint(double x, double y) const;
   HeapVector<Member<Element>> ElementsFromPoint(double x, double y) const;

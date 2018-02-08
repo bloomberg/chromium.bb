@@ -38,7 +38,8 @@ class RangeTest : public EditingTestBase {};
 TEST_F(RangeTest, extractContentsWithDOMMutationEvent) {
   GetDocument().body()->SetInnerHTMLFromString("<span><b>abc</b>def</span>");
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* const script_element = GetDocument().createElement("script");
+  Element* const script_element =
+      GetDocument().CreateRawElement(HTMLNames::scriptTag);
   script_element->setTextContent(
       "let count = 0;"
       "const span = document.querySelector('span');"
@@ -52,7 +53,7 @@ TEST_F(RangeTest, extractContentsWithDOMMutationEvent) {
   Element* const span_element = GetDocument().QuerySelector("span");
   Range* const range =
       Range::Create(GetDocument(), span_element, 0, span_element, 1);
-  Element* const result = GetDocument().createElement("div");
+  Element* const result = GetDocument().CreateRawElement(HTMLNames::divTag);
   result->AppendChild(range->extractContents(ASSERT_NO_EXCEPTION));
 
   EXPECT_EQ("<b>abc</b>", result->InnerHTMLAsString())

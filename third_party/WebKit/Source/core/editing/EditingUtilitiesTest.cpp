@@ -110,7 +110,7 @@ TEST_F(EditingUtilitiesTest, isEditablePositionWithTable) {
   // However, |setBodyContent()| automatically creates HTML, HEAD and BODY
   // element. So, we build DOM tree manually.
   // Note: This is unusual HTML taken from http://crbug.com/574230
-  Element* table = GetDocument().createElement("table");
+  Element* table = GetDocument().CreateRawElement(HTMLNames::tableTag);
   table->SetInnerHTMLFromString("<caption>foo</caption>");
   while (GetDocument().firstChild())
     GetDocument().firstChild()->remove();

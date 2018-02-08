@@ -561,7 +561,7 @@ TEST_F(EventHandlerTest, sendContextMenuEventWithHover) {
       "<style>*:hover { color: red; }</style>"
       "<div>foo</div>");
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().createElement("script");
+  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
   script->SetInnerHTMLFromString(
       "document.addEventListener('contextmenu', event => "
       "event.preventDefault());");
@@ -990,7 +990,7 @@ TEST_F(EventHandlerNavigationTest, MouseButtonsNavigate) {
 TEST_F(EventHandlerNavigationTest, MouseButtonsDontNavigate) {
   SetHtmlInnerHTML("<div>");
   GetDocument().GetSettings()->SetScriptEnabled(true);
-  Element* script = GetDocument().createElement("script");
+  Element* script = GetDocument().CreateRawElement(HTMLNames::scriptTag);
   script->SetInnerHTMLFromString(
       "document.addEventListener('mouseup', event => "
       "event.preventDefault());");

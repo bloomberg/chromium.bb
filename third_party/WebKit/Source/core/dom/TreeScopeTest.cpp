@@ -4,7 +4,6 @@
 
 #include "core/dom/TreeScope.h"
 
-#include "bindings/core/v8/string_or_dictionary.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ShadowRoot.h"
@@ -16,7 +15,7 @@ TEST(TreeScopeTest, CommonAncestorOfSameTrees) {
   Document* document = Document::CreateForTest();
   EXPECT_EQ(document, document->CommonAncestorTreeScope(*document));
 
-  Element* html = document->createElement("html", StringOrDictionary());
+  Element* html = document->CreateRawElement(HTMLNames::htmlTag);
   document->AppendChild(html);
   ShadowRoot& shadow_root = html->CreateShadowRootInternal();
   EXPECT_EQ(shadow_root, shadow_root.CommonAncestorTreeScope(shadow_root));
@@ -28,7 +27,7 @@ TEST(TreeScopeTest, CommonAncestorOfInclusiveTrees) {
   // shadowRoot
 
   Document* document = Document::CreateForTest();
-  Element* html = document->createElement("html", StringOrDictionary());
+  Element* html = document->CreateRawElement(HTMLNames::htmlTag);
   document->AppendChild(html);
   ShadowRoot& shadow_root = html->CreateShadowRootInternal();
 
@@ -42,11 +41,11 @@ TEST(TreeScopeTest, CommonAncestorOfSiblingTrees) {
   //  A      B
 
   Document* document = Document::CreateForTest();
-  Element* html = document->createElement("html", StringOrDictionary());
+  Element* html = document->CreateRawElement(HTMLNames::htmlTag);
   document->AppendChild(html);
-  Element* head = document->createElement("head", StringOrDictionary());
+  Element* head = document->CreateRawElement(HTMLNames::headTag);
   html->AppendChild(head);
-  Element* body = document->createElement("body", StringOrDictionary());
+  Element* body = document->CreateRawElement(HTMLNames::bodyTag);
   html->AppendChild(body);
 
   ShadowRoot& shadow_root_a = head->CreateShadowRootInternal();
@@ -64,17 +63,17 @@ TEST(TreeScopeTest, CommonAncestorOfTreesAtDifferentDepths) {
   // A
 
   Document* document = Document::CreateForTest();
-  Element* html = document->createElement("html", StringOrDictionary());
+  Element* html = document->CreateRawElement(HTMLNames::htmlTag);
   document->AppendChild(html);
-  Element* head = document->createElement("head", StringOrDictionary());
+  Element* head = document->CreateRawElement(HTMLNames::headTag);
   html->AppendChild(head);
-  Element* body = document->createElement("body", StringOrDictionary());
+  Element* body = document->CreateRawElement(HTMLNames::bodyTag);
   html->AppendChild(body);
 
   ShadowRoot& shadow_root_y = head->CreateShadowRootInternal();
   ShadowRoot& shadow_root_b = body->CreateShadowRootInternal();
 
-  Element* div_in_y = document->createElement("div", StringOrDictionary());
+  Element* div_in_y = document->CreateRawElement(HTMLNames::divTag);
   shadow_root_y.AppendChild(div_in_y);
   ShadowRoot& shadow_root_a = div_in_y->CreateShadowRootInternal();
 

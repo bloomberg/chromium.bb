@@ -35,7 +35,7 @@ class EmptyMutationCallback : public MutationObserver::Delegate {
 
 TEST(MutationObserverTest, DisconnectCrash) {
   Persistent<Document> document = HTMLDocument::CreateForTest();
-  HTMLElement* root = ToHTMLElement(document->createElement("html"));
+  auto* root = ToHTMLElement(document->CreateRawElement(HTMLNames::htmlTag));
   document->AppendChild(root);
   root->SetInnerHTMLFromString("<head><title>\n</title></head><body></body>");
   Node* head = root->firstChild()->firstChild();

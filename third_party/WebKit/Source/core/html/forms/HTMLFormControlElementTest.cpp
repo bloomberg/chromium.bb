@@ -135,7 +135,7 @@ TEST_F(HTMLFormControlElementTest, DoNotUpdateLayoutDuringDOMMutation) {
   GetDocument().documentElement()->SetInnerHTMLFromString("<select></select>");
   HTMLFormControlElement* const select =
       ToHTMLFormControlElement(GetDocument().QuerySelector("select"));
-  Element* const optgroup = GetDocument().createElement("optgroup");
+  auto* const optgroup = GetDocument().CreateRawElement(HTMLNames::optgroupTag);
   auto* validation_client = new MockFormValidationMessageClient();
   GetDocument().GetPage()->SetValidationMessageClient(validation_client);
 

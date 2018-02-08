@@ -126,7 +126,7 @@ TEST_F(VisibleUnitsTest, canonicalPositionOfWithHTMLHtmlElement) {
   Node* two = GetDocument().QuerySelector("#two");
   Node* three = GetDocument().QuerySelector("#three");
   Node* four = GetDocument().QuerySelector("#four");
-  Element* html = GetDocument().createElement("html");
+  Element* html = GetDocument().CreateRawElement(HTMLNames::htmlTag);
   // Move two, three and four into second html element.
   html->AppendChild(two);
   html->AppendChild(three);
@@ -897,7 +897,7 @@ TEST_F(VisibleUnitsTest, isVisuallyEquivalentCandidateWithHTMLHtmlElement) {
   Node* two = GetDocument().QuerySelector("#two");
   Node* three = GetDocument().QuerySelector("#three");
   Node* four = GetDocument().QuerySelector("#four");
-  Element* html = GetDocument().createElement("html");
+  Element* html = GetDocument().CreateRawElement(HTMLNames::htmlTag);
   // Move two, three and four into second html element.
   html->AppendChild(two);
   html->AppendChild(three);

@@ -18,15 +18,15 @@ class LayoutTableSectionTest : public RenderingTest {
   }
 
   LayoutTableSection* CreateSection(unsigned rows, unsigned columns) {
-    auto* table = GetDocument().createElement("table");
+    auto* table = GetDocument().CreateRawElement(HTMLNames::tableTag);
     GetDocument().body()->appendChild(table);
-    auto* section = GetDocument().createElement("tbody");
+    auto* section = GetDocument().CreateRawElement(HTMLNames::tbodyTag);
     table->appendChild(section);
     for (unsigned i = 0; i < rows; ++i) {
-      auto* row = GetDocument().createElement("tr");
+      auto* row = GetDocument().CreateRawElement(HTMLNames::trTag);
       section->appendChild(row);
       for (unsigned i = 0; i < columns; ++i)
-        row->appendChild(GetDocument().createElement("td"));
+        row->appendChild(GetDocument().CreateRawElement(HTMLNames::tdTag));
     }
     GetDocument().View()->UpdateAllLifecyclePhases();
     return ToLayoutTableSection(section->GetLayoutObject());

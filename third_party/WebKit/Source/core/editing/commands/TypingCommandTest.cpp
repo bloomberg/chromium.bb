@@ -27,14 +27,14 @@ TEST_F(TypingCommandTest, insertLineBreakWithIllFormedHTML) {
   SetBodyContent("<div contenteditable></div>");
 
   // <input><form></form></input>
-  Element* input1 = GetDocument().createElement("input");
-  Element* form = GetDocument().createElement("form");
+  Element* input1 = GetDocument().CreateRawElement(HTMLNames::inputTag);
+  Element* form = GetDocument().CreateRawElement(HTMLNames::formTag);
   input1->AppendChild(form);
 
   // <tr><input><header></header></input><rbc></rbc></tr>
-  Element* tr = GetDocument().createElement("tr");
-  Element* input2 = GetDocument().createElement("input");
-  Element* header = GetDocument().createElement("header");
+  Element* tr = GetDocument().CreateRawElement(HTMLNames::trTag);
+  Element* input2 = GetDocument().CreateRawElement(HTMLNames::inputTag);
+  Element* header = GetDocument().CreateRawElement(HTMLNames::headerTag);
   Element* rbc = GetDocument().createElement("rbc");
   input2->AppendChild(header);
   tr->AppendChild(input2);
