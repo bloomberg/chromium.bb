@@ -381,8 +381,8 @@ ExtensionFunction::ResponseAction SessionsGetDevicesFunction::Run() {
 
 ExtensionFunction::ResponseValue SessionsRestoreFunction::GetRestoredTabResult(
     content::WebContents* contents) {
-  std::unique_ptr<tabs::Tab> tab(
-      ExtensionTabUtil::CreateTabObject(contents, extension()));
+  std::unique_ptr<tabs::Tab> tab(ExtensionTabUtil::CreateTabObject(
+      contents, ExtensionTabUtil::kScrubTab, extension()));
   std::unique_ptr<api::sessions::Session> restored_session(
       CreateSessionModelHelper(base::Time::Now().ToTimeT(), std::move(tab),
                                std::unique_ptr<windows::Window>()));

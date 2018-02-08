@@ -691,7 +691,13 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
       if (frame_id != ExtensionApiFrameIdMap::kInvalidFrameId)
         raw_properties->SetInteger("frameId", frame_id);
 
-      args->Append(ExtensionTabUtil::CreateTabObject(web_contents)->ToValue());
+      // We intentionally don't scrub the tab data here, since the user chose to
+      // invoke the extension on the page.
+      // NOTE(devlin): We could potentially gate this on whether the extension
+      // has activeTab.
+      args->Append(ExtensionTabUtil::CreateTabObject(
+                       web_contents, ExtensionTabUtil::kDontScrubTab, extension)
+                       ->ToValue());
     } else {
       args->Append(std::make_unique<base::DictionaryValue>());
     }

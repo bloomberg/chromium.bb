@@ -82,7 +82,13 @@ std::unique_ptr<base::DictionaryValue> ChromeMessagingDelegate::MaybeGetTabInfo(
     // Only the tab id is useful to platform apps for internal use. The
     // unnecessary bits will be stripped out in
     // MessagingBindings::DispatchOnConnect().
-    return ExtensionTabUtil::CreateTabObject(web_contents)->ToValue();
+    // Note: We don't bother scrubbing the tab object, because this is only
+    // reached as a result of a tab (or content script) messaging the extension.
+    // We need the extension to see the sender so that it can validate if it
+    // trusts it or not.
+    return ExtensionTabUtil::CreateTabObject(
+               web_contents, ExtensionTabUtil::kDontScrubTab, nullptr)
+        ->ToValue();
   }
   return nullptr;
 }
