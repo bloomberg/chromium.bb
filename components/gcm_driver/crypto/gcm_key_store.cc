@@ -10,6 +10,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
@@ -65,17 +66,18 @@ GCMKeyStore::~GCMKeyStore() {}
 void GCMKeyStore::GetKeys(const std::string& app_id,
                           const std::string& authorized_entity,
                           bool fallback_to_empty_authorized_entity,
-                          const KeysCallback& callback) {
-  LazyInitialize(base::Bind(
-      &GCMKeyStore::GetKeysAfterInitialize, weak_factory_.GetWeakPtr(), app_id,
-      authorized_entity, fallback_to_empty_authorized_entity, callback));
+                          KeysCallback callback) {
+  LazyInitialize(
+      base::BindOnce(&GCMKeyStore::GetKeysAfterInitialize,
+                     weak_factory_.GetWeakPtr(), app_id, authorized_entity,
+                     fallback_to_empty_authorized_entity, std::move(callback)));
 }
 
 void GCMKeyStore::GetKeysAfterInitialize(
     const std::string& app_id,
     const std::string& authorized_entity,
     bool fallback_to_empty_authorized_entity,
-    const KeysCallback& callback) {
+    KeysCallback callback) {
   DCHECK(state_ == State::INITIALIZED || state_ == State::FAILED);
   bool success = false;
 
@@ -88,7 +90,7 @@ void GCMKeyStore::GetKeysAfterInitialize(
         inner_iter = inner_map.find(std::string());
       if (inner_iter != inner_map.end()) {
         const KeyPairAndAuthSecret& key_and_auth = inner_iter->second;
-        callback.Run(key_and_auth.first, key_and_auth.second);
+        std::move(callback).Run(key_and_auth.first, key_and_auth.second);
         success = true;
       }
     }
@@ -96,24 +98,24 @@ void GCMKeyStore::GetKeysAfterInitialize(
 
   UMA_HISTOGRAM_BOOLEAN("GCM.Crypto.GetKeySuccessRate", success);
   if (!success)
-    callback.Run(KeyPair(), std::string() /* auth_secret */);
+    std::move(callback).Run(KeyPair(), std::string() /* auth_secret */);
 }
 
 void GCMKeyStore::CreateKeys(const std::string& app_id,
                              const std::string& authorized_entity,
-                             const KeysCallback& callback) {
-  LazyInitialize(base::Bind(&GCMKeyStore::CreateKeysAfterInitialize,
-                            weak_factory_.GetWeakPtr(), app_id,
-                            authorized_entity, callback));
+                             KeysCallback callback) {
+  LazyInitialize(base::BindOnce(&GCMKeyStore::CreateKeysAfterInitialize,
+                                weak_factory_.GetWeakPtr(), app_id,
+                                authorized_entity, std::move(callback)));
 }
 
 void GCMKeyStore::CreateKeysAfterInitialize(
     const std::string& app_id,
     const std::string& authorized_entity,
-    const KeysCallback& callback) {
+    KeysCallback callback) {
   DCHECK(state_ == State::INITIALIZED || state_ == State::FAILED);
   if (state_ != State::INITIALIZED) {
-    callback.Run(KeyPair(), std::string() /* auth_secret */);
+    std::move(callback).Run(KeyPair(), std::string() /* auth_secret */);
     return;
   }
 
@@ -134,7 +136,7 @@ void GCMKeyStore::CreateKeysAfterInitialize(
   if (!CreateP256KeyPair(&private_key, &public_key)) {
     NOTREACHED() << "Unable to initialize a P-256 key pair.";
 
-    callback.Run(KeyPair(), std::string() /* auth_secret */);
+    std::move(callback).Run(KeyPair(), std::string() /* auth_secret */);
     return;
   }
 
@@ -173,13 +175,13 @@ void GCMKeyStore::CreateKeysAfterInitialize(
 
   database_->UpdateEntries(
       std::move(entries_to_save), std::move(keys_to_remove),
-      base::Bind(&GCMKeyStore::DidStoreKeys, weak_factory_.GetWeakPtr(), *pair,
-                 auth_secret, callback));
+      base::BindOnce(&GCMKeyStore::DidStoreKeys, weak_factory_.GetWeakPtr(),
+                     *pair, auth_secret, std::move(callback)));
 }
 
 void GCMKeyStore::DidStoreKeys(const KeyPair& pair,
                                const std::string& auth_secret,
-                               const KeysCallback& callback,
+                               KeysCallback callback,
                                bool success) {
   UMA_HISTOGRAM_BOOLEAN("GCM.Crypto.CreateKeySuccessRate", success);
 
@@ -189,30 +191,30 @@ void GCMKeyStore::DidStoreKeys(const KeyPair& pair,
     // Our cache is now inconsistent. Reject requests until restarted.
     state_ = State::FAILED;
 
-    callback.Run(KeyPair(), std::string() /* auth_secret */);
+    std::move(callback).Run(KeyPair(), std::string() /* auth_secret */);
     return;
   }
 
-  callback.Run(pair, auth_secret);
+  std::move(callback).Run(pair, auth_secret);
 }
 
 void GCMKeyStore::RemoveKeys(const std::string& app_id,
                              const std::string& authorized_entity,
-                             const base::Closure& callback) {
-  LazyInitialize(base::Bind(&GCMKeyStore::RemoveKeysAfterInitialize,
-                            weak_factory_.GetWeakPtr(), app_id,
-                            authorized_entity, callback));
+                             base::OnceClosure callback) {
+  LazyInitialize(base::BindOnce(&GCMKeyStore::RemoveKeysAfterInitialize,
+                                weak_factory_.GetWeakPtr(), app_id,
+                                authorized_entity, std::move(callback)));
 }
 
 void GCMKeyStore::RemoveKeysAfterInitialize(
     const std::string& app_id,
     const std::string& authorized_entity,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DCHECK(state_ == State::INITIALIZED || state_ == State::FAILED);
 
   const auto& outer_iter = key_data_.find(app_id);
   if (outer_iter == key_data_.end() || state_ != State::INITIALIZED) {
-    callback.Run();
+    std::move(callback).Run();
     return;
   }
 
@@ -241,19 +243,19 @@ void GCMKeyStore::RemoveKeysAfterInitialize(
     }
   }
   if (!had_keys) {
-    callback.Run();
+    std::move(callback).Run();
     return;
   }
   if (inner_map.empty())
     key_data_.erase(app_id);
 
-  database_->UpdateEntries(std::move(entries_to_save),
-                           std::move(keys_to_remove),
-                           base::Bind(&GCMKeyStore::DidRemoveKeys,
-                                      weak_factory_.GetWeakPtr(), callback));
+  database_->UpdateEntries(
+      std::move(entries_to_save), std::move(keys_to_remove),
+      base::BindOnce(&GCMKeyStore::DidRemoveKeys, weak_factory_.GetWeakPtr(),
+                     std::move(callback)));
 }
 
-void GCMKeyStore::DidRemoveKeys(const base::Closure& callback, bool success) {
+void GCMKeyStore::DidRemoveKeys(base::OnceClosure callback, bool success) {
   UMA_HISTOGRAM_BOOLEAN("GCM.Crypto.RemoveKeySuccessRate", success);
 
   if (!success) {
@@ -263,16 +265,17 @@ void GCMKeyStore::DidRemoveKeys(const base::Closure& callback, bool success) {
     state_ = State::FAILED;
   }
 
-  callback.Run();
+  std::move(callback).Run();
 }
 
-void GCMKeyStore::LazyInitialize(const base::Closure& done_closure) {
+void GCMKeyStore::LazyInitialize(base::OnceClosure done_closure) {
   if (delayed_task_controller_.CanRunTaskWithoutDelay()) {
-    done_closure.Run();
+    std::move(done_closure).Run();
     return;
   }
 
-  delayed_task_controller_.AddTask(done_closure);
+  delayed_task_controller_.AddTask(
+      base::AdaptCallbackForRepeating(std::move(done_closure)));
   if (state_ == State::INITIALIZING)
     return;
 
@@ -284,7 +287,7 @@ void GCMKeyStore::LazyInitialize(const base::Closure& done_closure) {
   database_->Init(
       kDatabaseUMAClientName, key_store_path_,
       leveldb_proto::CreateSimpleOptions(),
-      base::Bind(&GCMKeyStore::DidInitialize, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&GCMKeyStore::DidInitialize, weak_factory_.GetWeakPtr()));
 }
 
 void GCMKeyStore::DidInitialize(bool success) {
@@ -298,7 +301,7 @@ void GCMKeyStore::DidInitialize(bool success) {
   }
 
   database_->LoadEntries(
-      base::Bind(&GCMKeyStore::DidLoadKeys, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&GCMKeyStore::DidLoadKeys, weak_factory_.GetWeakPtr()));
 }
 
 void GCMKeyStore::DidLoadKeys(

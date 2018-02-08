@@ -34,8 +34,8 @@ class GCMEncryptionProvider {
  public:
   // Callback to be invoked when the public key and auth secret are available.
   using EncryptionInfoCallback =
-      base::Callback<void(const std::string& p256dh,
-                          const std::string& auth_secret)>;
+      base::OnceCallback<void(const std::string& p256dh,
+                              const std::string& auth_secret)>;
 
   // Callback to be invoked when a message may have been decrypted, as indicated
   // by the |result|. The |message| contains the dispatchable message in success
@@ -59,7 +59,7 @@ class GCMEncryptionProvider {
   // "" for non-InstanceID GCM registrations.
   void GetEncryptionInfo(const std::string& app_id,
                          const std::string& authorized_entity,
-                         const EncryptionInfoCallback& callback);
+                         EncryptionInfoCallback callback);
 
   // Removes all encryption information associated with the |app_id| +
   // |authorized_entity| pair, then invokes |callback|. |authorized_entity|
@@ -89,11 +89,11 @@ class GCMEncryptionProvider {
 
   void DidGetEncryptionInfo(const std::string& app_id,
                             const std::string& authorized_entity,
-                            const EncryptionInfoCallback& callback,
+                            EncryptionInfoCallback callback,
                             const KeyPair& pair,
                             const std::string& auth_secret);
 
-  void DidCreateEncryptionInfo(const EncryptionInfoCallback& callback,
+  void DidCreateEncryptionInfo(EncryptionInfoCallback callback,
                                const KeyPair& pair,
                                const std::string& auth_secret);
 
