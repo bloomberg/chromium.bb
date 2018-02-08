@@ -144,8 +144,7 @@ class VIZ_COMMON_EXPORT RenderPass {
 
   // If non-empty, the renderer should produce a copy of the render pass'
   // contents as a bitmap, and give a copy of the bitmap to each callback in
-  // this list. This property should not be serialized between compositors, as
-  // it only makes sense in the root compositor.
+  // this list.
   std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
 
   QuadList quad_list;

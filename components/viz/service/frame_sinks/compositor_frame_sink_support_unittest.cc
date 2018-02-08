@@ -93,6 +93,26 @@ class CompositorFrameSinkSupportTest : public testing::Test {
               local_surface_id_);
   }
 
+  bool SubmitCompositorFrameWithCopyRequest(
+      std::unique_ptr<CopyOutputRequest> request) {
+    auto frame = MakeDefaultCompositorFrame();
+    frame.render_pass_list.back()->copy_requests.push_back(std::move(request));
+    const auto result = support_->MaybeSubmitCompositorFrame(
+        local_surface_id_, std::move(frame), nullptr);
+    switch (result) {
+      case CompositorFrameSinkSupport::ACCEPTED:
+        return true;
+      case CompositorFrameSinkSupport::COPY_OUTPUT_REQUESTS_NOT_ALLOWED:
+        return false;
+      default:
+        ADD_FAILURE()
+            << "Test broken; fail result not related to copy requests: "
+            << CompositorFrameSinkSupport::GetSubmitResultAsString(result);
+        break;
+    }
+    return false;
+  }
+
   void UnrefResources(ResourceId* ids_to_unref,
                       int* counts_to_unref,
                       size_t num_ids_to_unref) {
@@ -494,25 +514,50 @@ TEST_F(CompositorFrameSinkSupportTest, MonotonicallyIncreasingLocalSurfaceIds) {
   LocalSurfaceId local_surface_id4(5, 3, kArbitraryToken);
   LocalSurfaceId local_surface_id5(8, 1, kArbitraryToken);
   LocalSurfaceId local_surface_id6(9, 3, kArbitraryToken);
-  bool success;
-  support->SubmitCompositorFrame(
-      local_surface_id1, MakeDefaultCompositorFrame(), nullptr, &success);
-  EXPECT_TRUE(success);
-  support->SubmitCompositorFrame(
-      local_surface_id2, MakeDefaultCompositorFrame(), nullptr, &success);
-  EXPECT_TRUE(success);
-  support->SubmitCompositorFrame(
-      local_surface_id3, MakeDefaultCompositorFrame(), nullptr, &success);
-  EXPECT_TRUE(success);
-  support->SubmitCompositorFrame(
-      local_surface_id4, MakeDefaultCompositorFrame(), nullptr, &success);
-  EXPECT_FALSE(success);
-  support->SubmitCompositorFrame(
-      local_surface_id5, MakeDefaultCompositorFrame(), nullptr, &success);
-  EXPECT_FALSE(success);
-  support->SubmitCompositorFrame(
-      local_surface_id6, MakeDefaultCompositorFrame(), nullptr, &success);
-  EXPECT_TRUE(success);
+  auto result = support->MaybeSubmitCompositorFrame(
+      local_surface_id1, MakeDefaultCompositorFrame(), nullptr);
+  EXPECT_EQ(CompositorFrameSinkSupport::ACCEPTED, result);
+  result = support->MaybeSubmitCompositorFrame(
+      local_surface_id2, MakeDefaultCompositorFrame(), nullptr);
+  EXPECT_EQ(CompositorFrameSinkSupport::ACCEPTED, result);
+  result = support->MaybeSubmitCompositorFrame(
+      local_surface_id3, MakeDefaultCompositorFrame(), nullptr);
+  EXPECT_EQ(CompositorFrameSinkSupport::ACCEPTED, result);
+  result = support->MaybeSubmitCompositorFrame(
+      local_surface_id4, MakeDefaultCompositorFrame(), nullptr);
+  EXPECT_EQ(CompositorFrameSinkSupport::SURFACE_INVARIANTS_VIOLATION, result);
+  result = support->MaybeSubmitCompositorFrame(
+      local_surface_id5, MakeDefaultCompositorFrame(), nullptr);
+  EXPECT_EQ(CompositorFrameSinkSupport::SURFACE_INVARIANTS_VIOLATION, result);
+  result = support->MaybeSubmitCompositorFrame(
+      local_surface_id6, MakeDefaultCompositorFrame(), nullptr);
+  EXPECT_EQ(CompositorFrameSinkSupport::ACCEPTED, result);
+
+  support->EvictCurrentSurface();
+  manager_.InvalidateFrameSinkId(kAnotherArbitraryFrameSinkId);
+}
+
+// Verifies that CopyOutputRequests submitted by unprivileged clients are
+// rejected.
+TEST_F(CompositorFrameSinkSupportTest, ProhibitsUnprivilegedCopyRequests) {
+  manager_.RegisterFrameSinkId(kAnotherArbitraryFrameSinkId);
+  manager_.SetFrameSinkDebugLabel(kAnotherArbitraryFrameSinkId,
+                                  "kAnotherArbitraryFrameSinkId");
+  MockCompositorFrameSinkClient mock_client;
+  auto support = std::make_unique<CompositorFrameSinkSupport>(
+      &mock_client, &manager_, kAnotherArbitraryFrameSinkId,
+      false /* not root frame sink */, kNeedsSyncPoints);
+
+  bool did_receive_aborted_copy_result = false;
+  auto request = std::make_unique<CopyOutputRequest>(
+      CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+      base::BindOnce(
+          [](bool* got_nothing, std::unique_ptr<CopyOutputResult> result) {
+            *got_nothing = result->IsEmpty();
+          },
+          &did_receive_aborted_copy_result));
+  EXPECT_FALSE(SubmitCompositorFrameWithCopyRequest(std::move(request)));
+  EXPECT_TRUE(did_receive_aborted_copy_result);
 
   support->EvictCurrentSurface();
   manager_.InvalidateFrameSinkId(kAnotherArbitraryFrameSinkId);
@@ -664,10 +709,9 @@ TEST_F(CompositorFrameSinkSupportTest, ZeroDeviceScaleFactor) {
                    .AddDefaultRenderPass()
                    .SetDeviceScaleFactor(0.f)
                    .Build();
-  bool success;
-  support_->SubmitCompositorFrame(local_surface_id_, std::move(frame), nullptr,
-                                  &success);
-  EXPECT_FALSE(success);
+  const auto result = support_->MaybeSubmitCompositorFrame(
+      local_surface_id_, std::move(frame), nullptr);
+  EXPECT_EQ(CompositorFrameSinkSupport::SURFACE_INVARIANTS_VIOLATION, result);
   EXPECT_FALSE(GetSurfaceForId(id));
 }
 
@@ -680,10 +724,9 @@ TEST_F(CompositorFrameSinkSupportTest, FrameSizeMismatch) {
   auto frame = CompositorFrameBuilder()
                    .AddRenderPass(gfx::Rect(5, 5), gfx::Rect())
                    .Build();
-  bool success;
-  support_->SubmitCompositorFrame(local_surface_id_, std::move(frame), nullptr,
-                                  &success);
-  EXPECT_TRUE(success);
+  auto result = support_->MaybeSubmitCompositorFrame(local_surface_id_,
+                                                     std::move(frame), nullptr);
+  EXPECT_EQ(CompositorFrameSinkSupport::ACCEPTED, result);
   EXPECT_TRUE(GetSurfaceForId(id));
 
   // Submit a frame with size (5,4). This frame should be rejected and the
@@ -691,9 +734,9 @@ TEST_F(CompositorFrameSinkSupportTest, FrameSizeMismatch) {
   frame = CompositorFrameBuilder()
               .AddRenderPass(gfx::Rect(5, 4), gfx::Rect())
               .Build();
-  support_->SubmitCompositorFrame(local_surface_id_, std::move(frame), nullptr,
-                                  &success);
-  EXPECT_FALSE(success);
+  result = support_->MaybeSubmitCompositorFrame(local_surface_id_,
+                                                std::move(frame), nullptr);
+  EXPECT_EQ(CompositorFrameSinkSupport::SURFACE_INVARIANTS_VIOLATION, result);
   manager_.surface_manager()->GarbageCollectSurfaces();
   EXPECT_FALSE(GetSurfaceForId(id));
 }
@@ -709,10 +752,9 @@ TEST_F(CompositorFrameSinkSupportTest, DeviceScaleFactorMismatch) {
                    .AddDefaultRenderPass()
                    .SetDeviceScaleFactor(0.5f)
                    .Build();
-  bool success;
-  support_->SubmitCompositorFrame(local_surface_id_, std::move(frame), nullptr,
-                                  &success);
-  EXPECT_TRUE(success);
+  auto result = support_->MaybeSubmitCompositorFrame(local_surface_id_,
+                                                     std::move(frame), nullptr);
+  EXPECT_EQ(CompositorFrameSinkSupport::ACCEPTED, result);
   EXPECT_TRUE(GetSurfaceForId(id));
 
   // Submit a frame with device scale factor of 0.4. This frame should be
@@ -721,9 +763,9 @@ TEST_F(CompositorFrameSinkSupportTest, DeviceScaleFactorMismatch) {
               .AddDefaultRenderPass()
               .SetDeviceScaleFactor(0.4f)
               .Build();
-  support_->SubmitCompositorFrame(local_surface_id_, std::move(frame), nullptr,
-                                  &success);
-  EXPECT_FALSE(success);
+  result = support_->MaybeSubmitCompositorFrame(local_surface_id_,
+                                                std::move(frame), nullptr);
+  EXPECT_EQ(CompositorFrameSinkSupport::SURFACE_INVARIANTS_VIOLATION, result);
   manager_.surface_manager()->GarbageCollectSurfaces();
   EXPECT_FALSE(GetSurfaceForId(id));
 }

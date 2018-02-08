@@ -43,15 +43,18 @@ void CompositorFrameSinkImpl::SubmitCompositorFrame(
     CompositorFrame frame,
     mojom::HitTestRegionListPtr hit_test_region_list,
     uint64_t submit_time) {
-  bool success;
-  support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                  std::move(hit_test_region_list), &success);
-  if (!success) {
-    DLOG(ERROR) << "SubmitCompositorFrame failed for " << local_surface_id;
-    compositor_frame_sink_binding_.CloseWithReason(
-        1, "Surface invariants violation");
-    OnClientConnectionLost();
-  }
+  const auto result = support_->MaybeSubmitCompositorFrame(
+      local_surface_id, std::move(frame), std::move(hit_test_region_list));
+  if (result == CompositorFrameSinkSupport::ACCEPTED)
+    return;
+
+  const char* reason =
+      CompositorFrameSinkSupport::GetSubmitResultAsString(result);
+  DLOG(ERROR) << "SubmitCompositorFrame failed for " << local_surface_id
+              << " because " << reason;
+  compositor_frame_sink_binding_.CloseWithReason(static_cast<uint32_t>(result),
+                                                 reason);
+  OnClientConnectionLost();
 }
 
 void CompositorFrameSinkImpl::DidNotProduceFrame(

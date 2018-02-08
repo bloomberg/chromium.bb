@@ -20,6 +20,7 @@ struct CopyOutputRequest {
 
   mojo.common.mojom.UnguessableToken? source;
   gfx.mojom.Rect? area;
+  gfx.mojom.Rect? result_selection;
 
   // DEPRECATED: To be removed once tab capture is moved into VIZ.
   // http://crbug.com/754872

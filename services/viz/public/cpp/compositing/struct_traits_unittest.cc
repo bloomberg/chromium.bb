@@ -259,6 +259,7 @@ TEST_F(StructTraitsTest, CopyOutputRequest_BitmapRequest) {
   EXPECT_EQ(scale_from, input->scale_from());
   EXPECT_EQ(scale_to, input->scale_to());
   input->set_area(area);
+  input->set_result_selection(result_rect);
   input->set_source(source);
   EXPECT_TRUE(input->is_scaled());
   std::unique_ptr<CopyOutputRequest> output;
@@ -272,6 +273,8 @@ TEST_F(StructTraitsTest, CopyOutputRequest_BitmapRequest) {
   EXPECT_EQ(source, output->source());
   EXPECT_TRUE(output->has_area());
   EXPECT_EQ(area, output->area());
+  EXPECT_TRUE(output->has_result_selection());
+  EXPECT_EQ(result_rect, output->result_selection());
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(result_rect.width(), result_rect.height());
@@ -718,6 +721,9 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
 }
 
 TEST_F(StructTraitsTest, RenderPass) {
+  // The CopyOutputRequest struct traits require a TaskRunner.
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+
   const RenderPassId render_pass_id = 3u;
   const gfx::Rect output_rect(45, 22, 120, 13);
   const gfx::Transform transform_to_root =
@@ -740,6 +746,9 @@ TEST_F(StructTraitsTest, RenderPass) {
                 filters, background_filters, color_space,
                 has_transparent_background, cache_render_pass,
                 has_damage_from_contributing_content, generate_mipmap);
+  input->copy_requests.push_back(CopyOutputRequest::CreateStubForTesting());
+  const gfx::Rect copy_output_area(24, 42, 75, 57);
+  input->copy_requests.back()->set_area(copy_output_area);
 
   SharedQuadState* shared_state_1 = input->CreateAndAppendSharedQuadState();
   shared_state_1->SetAll(
@@ -798,6 +807,8 @@ TEST_F(StructTraitsTest, RenderPass) {
   EXPECT_EQ(has_damage_from_contributing_content,
             output->has_damage_from_contributing_content);
   EXPECT_EQ(generate_mipmap, output->generate_mipmap);
+  ASSERT_EQ(1u, output->copy_requests.size());
+  EXPECT_EQ(copy_output_area, output->copy_requests.front()->area());
 
   SharedQuadState* out_sqs1 = output->shared_quad_state_list.ElementAt(0);
   EXPECT_EQ(shared_state_1->quad_to_target_transform,

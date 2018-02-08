@@ -91,16 +91,13 @@ bool StructTraits<viz::mojom::CopyOutputRequestDataView,
   }
   request->SetScaleRatio(scale_from, scale_to);
 
-  if (!data.ReadSource(&request->source_))
+  if (!data.ReadSource(&request->source_) || !data.ReadArea(&request->area_) ||
+      !data.ReadResultSelection(&request->result_selection_) ||
+      !data.ReadMailbox(&request->mailbox_) ||
+      !data.ReadSyncToken(&request->sync_token_)) {
     return false;
+  }
 
-  if (!data.ReadArea(&request->area_))
-    return false;
-
-  if (!data.ReadMailbox(&request->mailbox_))
-    return false;
-  if (!data.ReadSyncToken(&request->sync_token_))
-    return false;
   // Mailbox and SyncToken always come together.
   if (!request->mailbox_ != !request->sync_token_)
     return false;

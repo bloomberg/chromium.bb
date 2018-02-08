@@ -331,7 +331,10 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
             &manager_,
             kArbitraryReservedFrameSinkId,
             kChildIsRoot,
-            kNeedsSyncPoints)) {}
+            kNeedsSyncPoints)) {
+    child_support_->set_allow_copy_output_requests_for_testing();
+  }
+
   SurfaceAggregatorValidSurfaceTest()
       : SurfaceAggregatorValidSurfaceTest(false) {}
 
@@ -3075,6 +3078,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
       nullptr, &manager_, FrameSinkId(1, 1), kChildIsRoot, kNeedsSyncPoints);
   auto support2 = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, &manager_, FrameSinkId(2, 2), kChildIsRoot, kNeedsSyncPoints);
+  support2->set_allow_copy_output_requests_for_testing();
   LocalSurfaceId local_frame1_id(7u, base::UnguessableToken::Create());
   SurfaceId surface1_id(support1->frame_sink_id(), local_frame1_id);
 
