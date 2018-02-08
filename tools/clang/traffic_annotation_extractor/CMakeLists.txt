@@ -2,6 +2,8 @@ set(LLVM_LINK_COMPONENTS
   BitReader
   MCParser
   Option
+  X86AsmParser
+  X86CodeGen
   )
 
 add_llvm_executable(traffic_annotation_extractor

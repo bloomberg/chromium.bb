@@ -42,6 +42,7 @@
 #include "clang/Tooling/Refactoring.h"
 #include "clang/Tooling/Tooling.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/TargetSelect.h"
 
 using namespace clang::ast_matchers;
 
@@ -414,6 +415,8 @@ int main(int argc, const char* argv[]) {
                                  options.getSourcePathList());
   Collector collector;
 
+  llvm::InitializeNativeTarget();
+  llvm::InitializeNativeTargetAsmParser();
   int result = RunMatchers(&tool, &collector);
 
   if (result != 0)
