@@ -154,8 +154,7 @@ struct OSMemDump {
 
   // This is private swapped memory in kilobytes reported on Linux and Android
   // only.
-  // TODO(crbug.com/676224): add platform restrictions when preprocessing in
-  // mojoms is supported.
+  [EnableIf=OS_LINUX_OR_OS_ANDROID]
   uint32 private_footprint_swap_kb = 0;
 };
 
