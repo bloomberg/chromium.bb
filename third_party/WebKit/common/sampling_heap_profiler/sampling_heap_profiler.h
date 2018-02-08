@@ -67,7 +67,7 @@ class BLINK_COMMON_EXPORT SamplingHeapProfiler {
                    void* address,
                    uint32_t skip_frames);
   void RecordFree(void* address);
-  void RecordStackTrace(Sample*, unsigned skip_frames);
+  void RecordStackTrace(Sample*, uint32_t skip_frames);
 
   base::ThreadLocalBoolean entered_;
   base::Lock mutex_;
