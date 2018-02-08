@@ -51,7 +51,8 @@ NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
           box.GetLayoutObject()->GeneratingNode(),
           BoxStrutToLayoutRectOutsets(box.PhysicalFragment().BorderWidths()),
           BoxStrutToLayoutRectOutsets(
-              ToNGPhysicalBoxFragment(box.PhysicalFragment()).Padding())),
+              ToNGPhysicalBoxFragment(box.PhysicalFragment()).Padding()),
+          box.PhysicalFragment().Layer()),
       box_fragment_(box),
       border_edges_(
           NGBorderEdges::FromPhysical(box.PhysicalFragment().BorderEdges(),
@@ -357,8 +358,25 @@ void NGBoxFragmentPainter::PaintFloats(const PaintInfo& paint_info,
                         paint_offset);
 }
 
-void NGBoxFragmentPainter::PaintMask(const PaintInfo&, const LayoutPoint&) {
-  // TODO(eae): Implement.
+void NGBoxFragmentPainter::PaintMask(const PaintInfo& paint_info,
+                                     const LayoutPoint& paint_offset) {
+  DCHECK_EQ(PaintPhase::kMask, paint_info.phase);
+  const ComputedStyle& style = box_fragment_.Style();
+  if (!style.HasMask() || style.Visibility() != EVisibility::kVisible)
+    return;
+
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, box_fragment_, paint_info.phase))
+    return;
+
+  // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
+  BackgroundImageGeometry geometry(*static_cast<const LayoutBoxModelObject*>(
+      box_fragment_.GetLayoutObject()));
+
+  DrawingRecorder recorder(paint_info.context, box_fragment_, paint_info.phase);
+  LayoutRect paint_rect =
+      LayoutRect(paint_offset, box_fragment_.Size().ToLayoutSize());
+  PaintMaskImages(paint_info, paint_rect, box_fragment_, geometry);
 }
 
 void NGBoxFragmentPainter::PaintClippingMask(const PaintInfo&,

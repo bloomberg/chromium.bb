@@ -226,6 +226,15 @@ bool NGPhysicalFragment::HasLayer() const {
   return layout_object_->HasLayer();
 }
 
+PaintLayer* NGPhysicalFragment::Layer() const {
+  if (!HasLayer())
+    return nullptr;
+
+  // If the underlying LayoutObject has a layer it's guranteed to be a
+  // LayoutBoxModelObject.
+  return static_cast<LayoutBoxModelObject*>(layout_object_)->Layer();
+}
+
 bool NGPhysicalFragment::IsBlockFlow() const {
   return layout_object_ && layout_object_->IsLayoutBlockFlow();
 }

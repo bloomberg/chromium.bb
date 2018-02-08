@@ -242,44 +242,9 @@ void BoxPainter::PaintMask(const PaintInfo& paint_info,
 
 void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
                                  const LayoutRect& paint_rect) {
-  // Figure out if we need to push a transparency layer to render our mask.
-  bool push_transparency_layer = false;
-  bool all_mask_images_loaded = true;
-
-  if (!layout_box_.HasMask() ||
-      layout_box_.Style()->Visibility() != EVisibility::kVisible)
-    return;
-
-  DCHECK(layout_box_.HasLayer());
-  if (!layout_box_.Layer()->MaskBlendingAppliedByCompositor(paint_info)) {
-    push_transparency_layer = true;
-    StyleImage* mask_box_image = layout_box_.Style()->MaskBoxImage().GetImage();
-    const FillLayer& mask_layers = layout_box_.Style()->MaskLayers();
-
-    // Don't render a masked element until all the mask images have loaded, to
-    // prevent a flash of unmasked content.
-    if (mask_box_image)
-      all_mask_images_loaded &= mask_box_image->IsLoaded();
-
-    all_mask_images_loaded &= mask_layers.ImagesAreLoaded();
-
-    paint_info.context.BeginLayer(1, SkBlendMode::kDstIn);
-  }
-
-  if (all_mask_images_loaded) {
-    BackgroundImageGeometry geometry(layout_box_);
-    BoxModelObjectPainter box_model_painter(layout_box_);
-    box_model_painter.PaintFillLayers(paint_info, Color::kTransparent,
-                                      layout_box_.Style()->MaskLayers(),
-                                      paint_rect, geometry);
-    NinePieceImagePainter::Paint(
-        paint_info.context, layout_box_, layout_box_.GetDocument(),
-        layout_box_.GeneratingNode(), paint_rect, layout_box_.StyleRef(),
-        layout_box_.StyleRef().MaskBoxImage());
-  }
-
-  if (push_transparency_layer)
-    paint_info.context.EndLayer();
+  BackgroundImageGeometry geometry(layout_box_);
+  BoxModelObjectPainter painter(layout_box_);
+  painter.PaintMaskImages(paint_info, paint_rect, layout_box_, geometry);
 }
 
 void BoxPainter::PaintClippingMask(const PaintInfo& paint_info,
