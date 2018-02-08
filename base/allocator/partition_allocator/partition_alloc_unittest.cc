@@ -46,7 +46,7 @@ bool SetAddressSpaceLimit() {
 #if !defined(ARCH_CPU_64_BITS) || !defined(OS_POSIX)
   // 32 bits => address space is limited already.
   return true;
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
   // macOS will accept, but not enforce, |RLIMIT_AS| changes. See
   // https://crbug.com/435269 and rdar://17576114.
   //
@@ -69,7 +69,7 @@ bool SetAddressSpaceLimit() {
 }
 
 bool ClearAddressSpaceLimit() {
-#if !defined(ARCH_CPU_64_BITS) || !defined(OS_POSIX)
+#if !defined(ARCH_CPU_64_BITS) || !defined(OS_POSIX) || defined(OS_FUCHSIA)
   return true;
 #elif defined(OS_POSIX)
   struct rlimit limit;
@@ -1348,7 +1348,7 @@ TEST_F(PartitionAllocTest, LostFreePagesBug) {
 
 // Disable this test on Android because, due to its allocation-heavy behavior,
 // it tends to get OOM-killed rather than pass.
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_MACOSX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
 #define MAYBE_RepeatedReturnNullDirect DISABLED_RepeatedReturnNullDirect
 #else
 #define MAYBE_RepeatedReturnNullDirect RepeatedReturnNullDirect

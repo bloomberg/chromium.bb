@@ -21,6 +21,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "net/base/cache_type.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -53,7 +54,7 @@ const int kChunkSize = 32 * 1024;
 const int kMaxParallelOperations = 10;
 
 void MaybeSetFdLimit(unsigned int max_descriptors) {
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
   base::SetFdLimit(max_descriptors);
 #endif
 }

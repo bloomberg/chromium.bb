@@ -1277,6 +1277,8 @@ jumbo_component("base") {
       "process/process_handle_posix.cc",
       "process/process_posix.cc",
       "rand_util_posix.cc",
+      "threading/platform_thread_internal_posix.cc",
+      "threading/platform_thread_internal_posix.h",
     ]
 
     sources += [

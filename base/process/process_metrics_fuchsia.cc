@@ -4,7 +4,13 @@
 
 #include "base/process/process_metrics.h"
 
+#include <fdio/limits.h>
+
 namespace base {
+
+size_t GetMaxFds() {
+  return FDIO_MAX_FD;
+}
 
 size_t GetSystemCommitCharge() {
   // Not available, doesn't seem likely that it will be (for the whole system).
