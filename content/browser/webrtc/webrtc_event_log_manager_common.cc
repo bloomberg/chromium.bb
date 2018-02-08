@@ -25,7 +25,8 @@ bool LogFileWriter::WriteToLogFile(LogFilesMap::iterator it,
         log_file.file_size_bytes + message.length() >
         log_file.max_file_size_bytes;
     if (size_will_wrap_around || size_limit_will_be_exceeded) {
-      message_len = log_file.max_file_size_bytes - log_file.file_size_bytes;
+      CloseLogFile(it);
+      return false;
     }
   }
 
@@ -45,9 +46,6 @@ bool LogFileWriter::WriteToLogFile(LogFilesMap::iterator it,
     }
   }
 
-  // Truncated message due to exceeding the maximum is reported as an error -
-  // the caller is interested to know that not all of its message was written,
-  // regardless of the reason.
   return (static_cast<size_t>(written) == message.length());
 }
 
