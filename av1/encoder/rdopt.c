@@ -7381,7 +7381,6 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
   const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   const int is_comp_pred = has_second_ref(mbmi);
   const PREDICTION_MODE this_mode = mbmi->mode;
-  const int is_comp_interintra_pred = (mbmi->ref_frame[1] == INTRA_FRAME);
   int_mv *const frame_mv = mode_mv[this_mode];
   const int refs[2] = { mbmi->ref_frame[0],
                         mbmi->ref_frame[1] < 0 ? 0 : mbmi->ref_frame[1] };
@@ -7441,17 +7440,12 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       }
     }
   } else {
-    if (is_comp_interintra_pred && args->single_newmv_valid[refs[0]]) {
-      x->best_mv = args->single_newmv[refs[0]];
-      *rate_mv = args->single_newmv_rate[refs[0]];
-    } else {
-      single_motion_search(cpi, x, bsize, mi_row, mi_col, 0, rate_mv);
-      if (x->best_mv.as_int == INVALID_MV) return INT64_MAX;
+    single_motion_search(cpi, x, bsize, mi_row, mi_col, 0, rate_mv);
+    if (x->best_mv.as_int == INVALID_MV) return INT64_MAX;
 
-      args->single_newmv[refs[0]] = x->best_mv;
-      args->single_newmv_rate[refs[0]] = *rate_mv;
-      args->single_newmv_valid[refs[0]] = 1;
-    }
+    args->single_newmv[refs[0]] = x->best_mv;
+    args->single_newmv_rate[refs[0]] = *rate_mv;
+    args->single_newmv_valid[refs[0]] = 1;
 
     frame_mv[refs[0]] = x->best_mv;
 
