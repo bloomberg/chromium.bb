@@ -972,9 +972,10 @@ void XMLDocumentParser::StartElementNs(const AtomicString& local_name,
 
   QualifiedName q_name(prefix, local_name, adjusted_uri);
   Element* new_element = current_node_->GetDocument().CreateElement(
-      q_name, is,
+      q_name,
       parsing_fragment_ ? CreateElementFlags::ByFragmentParser()
-                        : CreateElementFlags::ByParser());
+                        : CreateElementFlags::ByParser(),
+      is);
   if (!new_element) {
     StopParsing();
     return;

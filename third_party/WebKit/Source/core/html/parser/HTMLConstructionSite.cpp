@@ -414,7 +414,7 @@ void HTMLConstructionSite::InsertHTMLHtmlStartTagBeforeHTML(
   HTMLHtmlElement* element;
   if (const auto* is_attribute = token->GetAttributeItem(HTMLNames::isAttr)) {
     element = ToHTMLHtmlElement(document_->CreateElement(
-        HTMLNames::htmlTag, is_attribute->Value(), GetCreateElementFlags()));
+        HTMLNames::htmlTag, GetCreateElementFlags(), is_attribute->Value()));
   } else {
     element = HTMLHtmlElement::Create(*document_);
   }
@@ -742,7 +742,7 @@ void HTMLConstructionSite::InsertScriptElement(AtomicHTMLToken* token) {
   HTMLScriptElement* element = nullptr;
   if (const auto* is_attribute = token->GetAttributeItem(HTMLNames::isAttr)) {
     element = ToHTMLScriptElement(OwnerDocumentForCurrentNode().CreateElement(
-        HTMLNames::scriptTag, is_attribute->Value(), flags));
+        HTMLNames::scriptTag, flags, is_attribute->Value()));
   } else {
     element = HTMLScriptElement::Create(OwnerDocumentForCurrentNode(), flags);
   }
