@@ -55,7 +55,8 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
     uint32_t texture_target;
     gpu::SyncToken returned_sync_token;
 
-    // Guids for for memory dumps. This guid will always be valid.
+    // Guids for for memory dumps. This guid will be valid once the GpuBacking
+    // has memory allocated.
     virtual base::trace_event::MemoryAllocatorDumpGuid MemoryDumpGuid(
         uint64_t tracing_process_id) = 0;
     // Some gpu resources can be shared memory-backed, and this guid should be

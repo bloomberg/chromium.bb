@@ -649,11 +649,29 @@ void ResourcePool::PoolResource::OnMemoryDump(
     const LayerTreeResourceProvider* resource_provider,
     bool dump_parent,
     bool is_free) const {
+  base::UnguessableToken shm_guid;
+  base::trace_event::MemoryAllocatorDumpGuid backing_guid;
   if (!dump_parent) {
+    if (shared_bitmap_) {
+      // Software resources are in shared memory but are kept closed to avoid
+      // holding an fd open. So there is no SharedMemoryHandle to get a guid
+      // from.
+      DCHECK(!shared_bitmap_->GetSharedMemoryHandle().IsValid());
+      backing_guid = viz::GetSharedBitmapGUIDForTracing(shared_bitmap_->id());
+    } else if (gpu_backing_) {
+      shm_guid = gpu_backing_->SharedMemoryGuid();
+      if (shm_guid.is_empty()) {
+        auto* dump_manager =
+            base::trace_event::MemoryDumpManager::GetInstance();
+        backing_guid =
+            gpu_backing_->MemoryDumpGuid(dump_manager->GetTracingProcessId());
+      }
+    }
+
     // If |dump_parent| is false, the ownership of the resource is in the
     // ResourcePool, so we can see if any memory is allocated. If not, then
     // don't dump it.
-    if (!shared_bitmap_ && !gpu_backing_)
+    if (shm_guid.is_empty() && backing_guid.empty())
       return;
   }
 
@@ -677,32 +695,12 @@ void ResourcePool::PoolResource::OnMemoryDump(
     // the root ownership. The gpu processes uses 0, so 2 is sufficient, and was
     // chosen historically and there is no need to adjust it.
     const int kImportance = 2;
-    if (shared_bitmap_) {
-      // Software resources are in shared memory but are kept closed to avoid
-      // holding an fd open. So there is no SharedMemoryHandle to get a guid
-      // from.
-      DCHECK(!shared_bitmap_->GetSharedMemoryHandle().IsValid());
-      base::trace_event::MemoryAllocatorDumpGuid guid =
-          viz::GetSharedBitmapGUIDForTracing(shared_bitmap_->id());
-      DCHECK(!guid.empty());
-      pmd->CreateSharedGlobalAllocatorDump(guid);
-      pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+    if (!shm_guid.is_empty()) {
+      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shm_guid, kImportance);
     } else {
-      // Gpu compositing resources can be shared memory-backed (e.g.
-      // GpuMemoryBuffers can be backed by it).
-      const base::UnguessableToken& shm_guid = gpu_backing_->SharedMemoryGuid();
-      if (!shm_guid.is_empty()) {
-        pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shm_guid,
-                                             kImportance);
-      } else {
-        auto* dump_manager =
-            base::trace_event::MemoryDumpManager::GetInstance();
-        auto backing_guid =
-            gpu_backing_->MemoryDumpGuid(dump_manager->GetTracingProcessId());
-        DCHECK(!backing_guid.empty());
-        pmd->CreateSharedGlobalAllocatorDump(backing_guid);
-        pmd->AddOwnershipEdge(dump->guid(), backing_guid, kImportance);
-      }
+      DCHECK(!backing_guid.empty());
+      pmd->CreateSharedGlobalAllocatorDump(backing_guid);
+      pmd->AddOwnershipEdge(dump->guid(), backing_guid, kImportance);
     }
   }
 

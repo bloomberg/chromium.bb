@@ -49,6 +49,8 @@ class ZeroCopyGpuBacking : public ResourcePool::GpuBacking {
   }
 
   base::UnguessableToken SharedMemoryGuid() override {
+    if (!gpu_memory_buffer)
+      return {};
     return gpu_memory_buffer->GetHandle().handle.GetGUID();
   }
 
