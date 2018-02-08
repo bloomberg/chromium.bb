@@ -48,7 +48,7 @@ void NullExecutionContext::SetUpSecurityContext() {
 
 scoped_refptr<base::SingleThreadTaskRunner> NullExecutionContext::GetTaskRunner(
     TaskType) {
-  return Platform::Current()->CurrentThread()->GetWebTaskRunner();
+  return Platform::Current()->CurrentThread()->GetTaskRunner();
 }
 
 }  // namespace blink

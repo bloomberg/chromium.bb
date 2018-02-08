@@ -94,7 +94,7 @@ VTTRegion::VTTRegion()
       viewport_anchor_(DoublePoint(kDefaultAnchorPointX, kDefaultAnchorPointY)),
       scroll_(kDefaultScroll),
       current_top_(0),
-      scroll_timer_(Platform::Current()->CurrentThread()->GetWebTaskRunner(),
+      scroll_timer_(Platform::Current()->CurrentThread()->GetTaskRunner(),
                     this,
                     &VTTRegion::ScrollTimerFired) {}
 

@@ -65,7 +65,7 @@ class EmptyFrameScheduler : public WebFrameScheduler {
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       TaskType type) override {
-    return Platform::Current()->MainThread()->GetWebTaskRunner();
+    return Platform::Current()->MainThread()->GetTaskRunner();
   }
 
   void AddThrottlingObserver(ObserverType, Observer*) override {}

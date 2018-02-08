@@ -226,7 +226,7 @@ void DataConsumerHandleTestUtil::ReplayingHandle::Context::Notify() {
     return;
   DCHECK(reader_thread_);
   PostCrossThreadTask(
-      *reader_thread_->GetWebTaskRunner(), FROM_HERE,
+      *reader_thread_->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(&Context::NotifyInternal, WrapRefCounted(this)));
 }
 
