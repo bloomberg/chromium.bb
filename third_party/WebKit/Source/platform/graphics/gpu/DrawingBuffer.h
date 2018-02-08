@@ -204,7 +204,10 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // contents of the front buffer. This is done without any pixel copies. The
   // texture in the ImageBitmap is from the active ContextProvider on the
   // DrawingBuffer.
-  scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage();
+  // If out_release_callback is null, the image is discarded.  If it is non-null
+  // the image must be recycled or discarded by calling *out_release_callback.
+  scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage(
+      std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
 
   bool CopyToPlatformTexture(gpu::gles2::GLES2Interface*,
                              GLenum dst_target,

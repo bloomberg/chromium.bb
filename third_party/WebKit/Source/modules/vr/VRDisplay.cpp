@@ -655,9 +655,12 @@ HeapVector<VRLayerInit> VRDisplay::getLayers() {
   return layers;
 }
 
-scoped_refptr<Image> VRDisplay::GetFrameImage() {
+scoped_refptr<Image> VRDisplay::GetFrameImage(
+    std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   TRACE_EVENT_BEGIN0("gpu", "VRDisplay:GetStaticBitmapImage");
-  scoped_refptr<Image> image_ref = rendering_context_->GetStaticBitmapImage();
+
+  scoped_refptr<Image> image_ref =
+      rendering_context_->GetStaticBitmapImage(out_release_callback);
   TRACE_EVENT_END0("gpu", "VRDisplay::GetStaticBitmapImage");
 
   // Hardware-accelerated rendering should always be texture backed,
@@ -735,7 +738,8 @@ void VRDisplay::submitFrame() {
 
   frame_transport_->FramePreImage(context_gl_);
 
-  scoped_refptr<Image> image_ref = GetFrameImage();
+  std::unique_ptr<viz::SingleReleaseCallback> image_release_callback;
+  scoped_refptr<Image> image_ref = GetFrameImage(&image_release_callback);
   if (!image_ref)
     return;
 
@@ -744,7 +748,8 @@ void VRDisplay::submitFrame() {
 
   frame_transport_->FrameSubmit(vr_presentation_provider_.get(), context_gl_,
                                 drawing_buffer_client, std::move(image_ref),
-                                vr_frame_id_, present_image_needs_copy_);
+                                std::move(image_release_callback), vr_frame_id_,
+                                present_image_needs_copy_);
 
   did_submit_this_frame_ = true;
   // Reset our frame id, since anything we'd want to do (resizing/etc) can
