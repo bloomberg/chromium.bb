@@ -64,12 +64,12 @@ class LocalStorageCachedAreaTest : public testing::Test {
 
   static std::vector<uint8_t> String16ToUint8Vector(
       const base::string16& input) {
-    return LocalStorageCachedArea::String16ToUint8Vector(input);
+    return LocalStorageCachedArea::String16ToUint8Vector(input, false);
   }
 
   static base::string16 Uint8VectorToString16(
       const std::vector<uint8_t>& input) {
-    return LocalStorageCachedArea::Uint8VectorToString16(input);
+    return LocalStorageCachedArea::Uint8VectorToString16(input, false);
   }
 
  protected:

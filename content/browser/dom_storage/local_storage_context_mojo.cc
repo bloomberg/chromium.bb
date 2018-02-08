@@ -369,7 +369,7 @@ class LocalStorageContextMojo::LevelDBWrapperHolder final
 };
 
 LocalStorageContextMojo::LocalStorageContextMojo(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     service_manager::Connector* connector,
     scoped_refptr<DOMStorageTaskRunner> legacy_task_runner,
     const base::FilePath& old_localstorage_path,
@@ -384,8 +384,9 @@ LocalStorageContextMojo::LocalStorageContextMojo(
       old_localstorage_path_(old_localstorage_path),
       is_low_end_device_(base::SysInfo::IsLowEndDevice()),
       weak_ptr_factory_(this) {
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "LocalStorage", task_runner);
+  base::trace_event::MemoryDumpManager::GetInstance()
+      ->RegisterDumpProviderWithSequencedTaskRunner(
+          this, "LocalStorage", task_runner, MemoryDumpProvider::Options());
 }
 
 void LocalStorageContextMojo::OpenLocalStorage(
