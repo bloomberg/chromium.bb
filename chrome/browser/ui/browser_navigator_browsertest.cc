@@ -11,6 +11,7 @@
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -27,6 +28,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -35,6 +37,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -218,6 +221,32 @@ void BrowserNavigatorTest::Observe(
   DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED, type);
   ++created_tab_contents_count_;
 }
+
+// Subclass of TestNavigationObserver that saves ChromeNavigationUIData.
+class TestNavigationUIDataObserver : public content::TestNavigationObserver {
+ public:
+  // Creates an observer that watches navigations to |target_url| on
+  // existing and newly added WebContents.
+  explicit TestNavigationUIDataObserver(const GURL& target_url)
+      : content::TestNavigationObserver(target_url) {
+    WatchExistingWebContents();
+    StartWatchingNewWebContents();
+  }
+
+  const ChromeNavigationUIData* last_navigation_ui_data() const {
+    return static_cast<ChromeNavigationUIData*>(last_navigation_ui_data_.get());
+  }
+
+ private:
+  void OnDidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    last_navigation_ui_data_ =
+        navigation_handle->GetNavigationUIData()->Clone();
+    content::TestNavigationObserver::OnDidFinishNavigation(navigation_handle);
+  }
+
+  std::unique_ptr<content::NavigationUIData> last_navigation_ui_data_ = nullptr;
+};
 
 Browser* BrowserNavigatorTest::NavigateHelper(
     const GURL& url,
@@ -1665,6 +1694,81 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, ReuseRVHWithWebUI) {
   EXPECT_TRUE(webui_rvh->IsRenderViewLive());
   EXPECT_EQ(content::BINDINGS_POLICY_WEB_UI,
             webui_rvh->GetMainFrame()->GetEnabledBindings());
+}
+
+// Test that main frame navigations generate a NavigationUIData with the
+// correct disposition.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MainFrameNavigationUIData) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  {
+    const GURL url = embedded_test_server()->GetURL("/title1.html");
+    TestNavigationUIDataObserver observer(url);
+
+    NavigateParams params(MakeNavigateParams());
+    params.url = url;
+    params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+    ui_test_utils::NavigateToURL(&params);
+    observer.WaitForNavigationFinished();
+
+    EXPECT_EQ(WindowOpenDisposition::NEW_FOREGROUND_TAB,
+              observer.last_navigation_ui_data()->window_open_disposition());
+  }
+
+  {
+    const GURL url = embedded_test_server()->GetURL("/title2.html");
+    TestNavigationUIDataObserver observer(url);
+
+    NavigateParams params(MakeNavigateParams());
+    params.url = url;
+    params.disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
+    ui_test_utils::NavigateToURL(&params);
+    observer.WaitForNavigationFinished();
+
+    EXPECT_EQ(WindowOpenDisposition::NEW_BACKGROUND_TAB,
+              observer.last_navigation_ui_data()->window_open_disposition());
+  }
+}
+
+// Test that subframe navigations generate a NavigationUIData with no
+// disposition.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SubFrameNavigationUIData) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Load page with iframe.
+  const GURL url1 = embedded_test_server()->GetURL("/iframe.html");
+  ui_test_utils::NavigateToURL(browser(), url1);
+
+  // Retrieve the iframe.
+  const auto all_frames = tab->GetAllFrames();
+  const content::RenderFrameHost* main_frame = tab->GetMainFrame();
+  DCHECK_EQ(2u, all_frames.size());
+  auto it = std::find_if(all_frames.begin(), all_frames.end(),
+                         [main_frame](content::RenderFrameHost* frame) {
+                           return main_frame != frame;
+                         });
+  DCHECK(it != all_frames.end());
+  content::RenderFrameHost* iframe = *it;
+
+  // Navigate the iframe with a disposition.
+  NavigateParams params(browser(),
+                        embedded_test_server()->GetURL("/simple.html"),
+                        ui::PAGE_TRANSITION_LINK);
+  params.frame_tree_node_id = iframe->GetFrameTreeNodeId();
+  params.disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
+
+  TestNavigationUIDataObserver observer(
+      embedded_test_server()->GetURL("/simple.html"));
+  ui_test_utils::NavigateToURL(&params);
+  observer.WaitForNavigationFinished();
+
+  // The disposition passed to NavigateToURL should be ignored for sub frame
+  // navigations.
+  EXPECT_EQ(WindowOpenDisposition::CURRENT_TAB,
+            observer.last_navigation_ui_data()->window_open_disposition());
 }
 
 }  // namespace

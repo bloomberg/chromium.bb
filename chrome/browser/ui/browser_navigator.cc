@@ -18,6 +18,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/browser.h"
@@ -302,6 +303,13 @@ void LoadURLInContents(WebContents* target_contents,
   load_url_params.started_from_context_menu = params->started_from_context_menu;
   load_url_params.suggested_filename = params->suggested_filename;
   load_url_params.has_user_gesture = params->user_gesture;
+
+  // |frame_tree_node_id| is -1 for main frame navigations.
+  if (params->frame_tree_node_id == -1) {
+    load_url_params.navigation_ui_data =
+        ChromeNavigationUIData::CreateForMainFrameNavigation(
+            target_contents, params->disposition);
+  }
 
   if (params->uses_post) {
     load_url_params.load_type = NavigationController::LOAD_TYPE_HTTP_POST;

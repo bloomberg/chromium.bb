@@ -77,7 +77,8 @@ IN_PROC_BROWSER_TEST_F(FormSubmissionBrowserTest,
         false,                   // started_from_context_menu
         CSPDisposition::CHECK,   // should_check_main_world_csp
         true,                    // is_form_submission
-        base::nullopt);          // suggested_filename
+        base::nullopt,           // suggested_filename
+        nullptr);                // navigation_ui_data
 
     // Test the expectations with a FormSubmissionThrottle.
     std::unique_ptr<NavigationThrottle> throttle =
@@ -118,7 +119,8 @@ IN_PROC_BROWSER_TEST_F(FormSubmissionBrowserTest,
       false,                         // started_from_context_menu
       CSPDisposition::DO_NOT_CHECK,  // should_check_main_world_csp
       true,                          // is_form_submission
-      base::nullopt);                // suggested_filename
+      base::nullopt,                 // suggested_filename
+      nullptr);                      // navigation_ui_data
 
   // Test that the navigation is allowed because "should_by_pass_main_world_csp"
   // is true, even if it is a form submission and the policy is

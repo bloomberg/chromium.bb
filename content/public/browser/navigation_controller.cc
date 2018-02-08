@@ -24,60 +24,11 @@ NavigationController::LoadURLParams::LoadURLParams(const GURL& url)
 #endif
       has_user_gesture(false),
       should_clear_history_list(false),
-      started_from_context_menu(false) {
+      started_from_context_menu(false),
+      navigation_ui_data(nullptr) {
 }
 
 NavigationController::LoadURLParams::~LoadURLParams() {
-}
-
-NavigationController::LoadURLParams::LoadURLParams(
-    const NavigationController::LoadURLParams& other)
-    : url(other.url),
-      load_type(other.load_type),
-      transition_type(other.transition_type),
-      frame_tree_node_id(other.frame_tree_node_id),
-      referrer(other.referrer),
-      extra_headers(other.extra_headers),
-      is_renderer_initiated(other.is_renderer_initiated),
-      override_user_agent(other.override_user_agent),
-      transferred_global_request_id(other.transferred_global_request_id),
-      base_url_for_data_url(other.base_url_for_data_url),
-      virtual_url_for_data_url(other.virtual_url_for_data_url),
-      post_data(other.post_data),
-      should_replace_current_entry(false),
-#if defined(OS_ANDROID)
-      intent_received_timestamp(other.intent_received_timestamp),
-#endif
-      has_user_gesture(other.has_user_gesture),
-      should_clear_history_list(false),
-      started_from_context_menu(other.started_from_context_menu) {
-}
-
-NavigationController::LoadURLParams&
-NavigationController::LoadURLParams::operator=(
-    const NavigationController::LoadURLParams& other) {
-  url = other.url;
-  load_type = other.load_type;
-  transition_type = other.transition_type;
-  frame_tree_node_id = other.frame_tree_node_id;
-  referrer = other.referrer;
-  redirect_chain = other.redirect_chain;
-  extra_headers = other.extra_headers;
-  is_renderer_initiated = other.is_renderer_initiated;
-  override_user_agent = other.override_user_agent;
-  transferred_global_request_id = other.transferred_global_request_id;
-  base_url_for_data_url = other.base_url_for_data_url;
-  virtual_url_for_data_url = other.virtual_url_for_data_url;
-  post_data = other.post_data;
-  should_replace_current_entry = other.should_replace_current_entry;
-  should_clear_history_list = other.should_clear_history_list;
-#if defined(OS_ANDROID)
-  intent_received_timestamp = other.intent_received_timestamp;
-#endif
-  has_user_gesture = other.has_user_gesture;
-  started_from_context_menu = other.started_from_context_menu;
-
-  return *this;
 }
 
 }  // namespace content

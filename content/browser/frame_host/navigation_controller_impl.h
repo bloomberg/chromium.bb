@@ -236,12 +236,15 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Causes the controller to load the specified entry. The function assumes
   // ownership of the pointer since it is put in the navigation list.
   // NOTE: Do not pass an entry that the controller already owns!
-  void LoadEntry(std::unique_ptr<NavigationEntryImpl> entry);
+  void LoadEntry(std::unique_ptr<NavigationEntryImpl> entry,
+                 std::unique_ptr<NavigationUIData> navigation_ui_data);
 
   // Identifies which frames need to be navigated for the pending
   // NavigationEntry and instructs their Navigator to navigate them.  Returns
   // whether any frame successfully started a navigation.
-  bool NavigateToPendingEntryInternal(ReloadType reload_type);
+  bool NavigateToPendingEntryInternal(
+      ReloadType reload_type,
+      std::unique_ptr<NavigationUIData> navigation_ui_data);
 
   // Recursively identifies which frames need to be navigated for the pending
   // NavigationEntry, starting at |frame| and exploring its children.  Only used
@@ -299,7 +302,9 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
 
   // Actually issues the navigation held in pending_entry.
-  void NavigateToPendingEntry(ReloadType reload_type);
+  void NavigateToPendingEntry(
+      ReloadType reload_type,
+      std::unique_ptr<NavigationUIData> navigation_ui_data);
 
   // Allows the derived class to issue notifications that a load has been
   // committed. This will fill in the active entry to the details structure.

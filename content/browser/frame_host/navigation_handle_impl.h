@@ -67,6 +67,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       CSPDisposition should_check_main_world_csp,
       bool is_form_submission,
       const base::Optional<std::string>& suggested_filename,
+      std::unique_ptr<NavigationUIData> navigation_ui_data,
       const std::string& method = std::string(),
       scoped_refptr<network::ResourceRequestBody> resource_request_body =
           nullptr,
@@ -116,6 +117,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const Referrer& GetReferrer() override;
   bool HasUserGesture() override;
   ui::PageTransition GetPageTransition() override;
+  const NavigationUIData* GetNavigationUIData() override;
   bool IsExternalProtocol() override;
   net::Error GetNetErrorCode() override;
   RenderFrameHostImpl* GetRenderFrameHost() override;
@@ -378,6 +380,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       CSPDisposition should_check_main_world_csp,
       bool is_form_submission,
       const base::Optional<std::string>& suggested_filename,
+      std::unique_ptr<NavigationUIData> navigation_ui_data,
       const std::string& method,
       scoped_refptr<network::ResourceRequestBody> resource_request_body,
       const Referrer& sanitized_referrer,

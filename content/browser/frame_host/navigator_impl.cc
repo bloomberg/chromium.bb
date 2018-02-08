@@ -263,7 +263,8 @@ bool NavigatorImpl::NavigateToEntry(
     bool is_same_document_history_load,
     bool is_history_navigation_in_new_child,
     bool is_pending_entry,
-    const scoped_refptr<network::ResourceRequestBody>& post_body) {
+    const scoped_refptr<network::ResourceRequestBody>& post_body,
+    std::unique_ptr<NavigationUIData> navigation_ui_data) {
   TRACE_EVENT0("browser,navigation", "NavigatorImpl::NavigateToEntry");
 
   GURL dest_url = frame_entry.url();
@@ -334,10 +335,11 @@ bool NavigatorImpl::NavigateToEntry(
 
   navigation_data_.reset(new NavigationMetricsData(navigation_start, dest_url,
                                                    entry.restore_type()));
-  RequestNavigation(
-      frame_tree_node, dest_url, dest_referrer, frame_entry, entry, reload_type,
-      previews_state, is_same_document_history_load,
-      is_history_navigation_in_new_child, post_body, navigation_start);
+  RequestNavigation(frame_tree_node, dest_url, dest_referrer, frame_entry,
+                    entry, reload_type, previews_state,
+                    is_same_document_history_load,
+                    is_history_navigation_in_new_child, post_body,
+                    navigation_start, std::move(navigation_ui_data));
   if (frame_tree_node->IsMainFrame() && frame_tree_node->navigation_request()) {
     // For the trace below we're using the navigation handle as the async
     // trace id, |navigation_start| as the timestamp and reporting the
@@ -380,10 +382,12 @@ bool NavigatorImpl::NavigateToPendingEntry(
     FrameTreeNode* frame_tree_node,
     const FrameNavigationEntry& frame_entry,
     ReloadType reload_type,
-    bool is_same_document_history_load) {
+    bool is_same_document_history_load,
+    std::unique_ptr<NavigationUIData> navigation_ui_data) {
   return NavigateToEntry(frame_tree_node, frame_entry,
                          *controller_->GetPendingEntry(), reload_type,
-                         is_same_document_history_load, false, true, nullptr);
+                         is_same_document_history_load, false, true, nullptr,
+                         std::move(navigation_ui_data));
 }
 
 bool NavigatorImpl::NavigateNewChildFrame(
@@ -420,7 +424,8 @@ bool NavigatorImpl::NavigateNewChildFrame(
   }
 
   return NavigateToEntry(render_frame_host->frame_tree_node(), *frame_entry,
-                         *entry, ReloadType::NONE, false, true, false, nullptr);
+                         *entry, ReloadType::NONE, false, true, false, nullptr,
+                         nullptr /* navigation_ui_data */);
 }
 
 void NavigatorImpl::DidNavigate(
@@ -788,7 +793,7 @@ void NavigatorImpl::RequestTransferURL(
         referrer_to_use, redirect_chain, PageState(), method, -1);
   }
   NavigateToEntry(node, *frame_entry, *entry.get(), ReloadType::NONE, false,
-                  false, false, post_body);
+                  false, false, post_body, nullptr /* navigation_ui_data */);
 }
 
 void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
@@ -1022,7 +1027,8 @@ void NavigatorImpl::RequestNavigation(
     bool is_same_document_history_load,
     bool is_history_navigation_in_new_child,
     const scoped_refptr<network::ResourceRequestBody>& post_body,
-    base::TimeTicks navigation_start) {
+    base::TimeTicks navigation_start,
+    std::unique_ptr<NavigationUIData> navigation_ui_data) {
   DCHECK(frame_tree_node);
 
   // This is not a real navigation. Send the URL to the renderer process
@@ -1060,7 +1066,7 @@ void NavigatorImpl::RequestNavigation(
           frame_tree_node, dest_url, dest_referrer, frame_entry, entry,
           navigation_type, previews_state, is_same_document_history_load,
           is_history_navigation_in_new_child, post_body, navigation_start,
-          controller_);
+          controller_, std::move(navigation_ui_data));
 
   frame_tree_node->CreatedNavigationRequest(std::move(scoped_request));
 
