@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/media_analytics_client.h"
 #include "chromeos/media_perception/media_perception.pb.h"
@@ -22,12 +23,11 @@ class CHROMEOS_EXPORT FakeMediaAnalyticsClient : public MediaAnalyticsClient {
   ~FakeMediaAnalyticsClient() override;
 
   // Inherited from MediaAnalyticsClient.
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
   void GetState(DBusMethodCallback<mri::State> callback) override;
   void SetState(const mri::State& state,
                 DBusMethodCallback<mri::State> callback) override;
-  void SetMediaPerceptionSignalHandler(
-      const MediaPerceptionSignalHandler& handler) override;
-  void ClearMediaPerceptionSignalHandler() override;
   void GetDiagnostics(DBusMethodCallback<mri::Diagnostics> callback) override;
 
   // Inherited from DBusClient.
@@ -53,12 +53,12 @@ class CHROMEOS_EXPORT FakeMediaAnalyticsClient : public MediaAnalyticsClient {
   // Runs callback with the Diagnostics proto provided in SetDiagnostics.
   void OnGetDiagnostics(DBusMethodCallback<mri::Diagnostics> callback);
 
-  // Runs callback with a MediaPerception proto provided in
+  // Notifies observers with a MediaPerception proto provided in
   // FireMediaPerceptionEvent.
   void OnMediaPerception(const mri::MediaPerception& media_perception);
 
-  // A handler for receiving MediaPerception proto messages.
-  MediaPerceptionSignalHandler media_perception_signal_handler_;
+  // Observers for receiving MediaPerception proto messages.
+  base::ObserverList<Observer> observer_list_;
 
   // A fake current state for the media analytics process.
   mri::State current_state_;

@@ -9,13 +9,17 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
+#include "chromeos/dbus/media_analytics_client.h"
 #include "chromeos/media_perception/media_perception.pb.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/api/media_perception_private.h"
 
 namespace extensions {
 
-class MediaPerceptionAPIManager : public BrowserContextKeyedAPI {
+class MediaPerceptionAPIManager
+    : public BrowserContextKeyedAPI,
+      public chromeos::MediaAnalyticsClient::Observer {
  public:
   using APISetAnalyticsComponentCallback = base::OnceCallback<void(
       extensions::api::media_perception_private::ComponentState
@@ -69,10 +73,8 @@ class MediaPerceptionAPIManager : public BrowserContextKeyedAPI {
   void SetStateInternal(const APIStateCallback& callback,
                         const mri::State& state);
 
-  // Event handler for MediaPerception proto messages coming over D-Bus as
-  // signal.
-  void MediaPerceptionSignalHandler(
-      const mri::MediaPerception& media_perception);
+  // MediaAnalyticsClient::Observer overrides.
+  void OnDetectionSignal(const mri::MediaPerception& media_perception) override;
 
   // Callback for State D-Bus method calls to the media analytics process.
   void StateCallback(const APIStateCallback& callback,
@@ -111,6 +113,8 @@ class MediaPerceptionAPIManager : public BrowserContextKeyedAPI {
   // is set.
   std::string mount_point_;
 
+  ScopedObserver<chromeos::MediaAnalyticsClient, MediaPerceptionAPIManager>
+      scoped_observer_;
   base::WeakPtrFactory<MediaPerceptionAPIManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPerceptionAPIManager);

@@ -36,13 +36,12 @@ void FakeMediaAnalyticsClient::SetDiagnostics(
 
 void FakeMediaAnalyticsClient::Init(dbus::Bus* bus) {}
 
-void FakeMediaAnalyticsClient::SetMediaPerceptionSignalHandler(
-    const MediaPerceptionSignalHandler& handler) {
-  media_perception_signal_handler_ = handler;
+void FakeMediaAnalyticsClient::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
 }
 
-void FakeMediaAnalyticsClient::ClearMediaPerceptionSignalHandler() {
-  media_perception_signal_handler_.Reset();
+void FakeMediaAnalyticsClient::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void FakeMediaAnalyticsClient::GetState(
@@ -111,9 +110,8 @@ void FakeMediaAnalyticsClient::OnGetDiagnostics(
 
 void FakeMediaAnalyticsClient::OnMediaPerception(
     const mri::MediaPerception& media_perception) {
-  if (media_perception_signal_handler_.is_null())
-    return;
-  media_perception_signal_handler_.Run(media_perception);
+  for (auto& observer : observer_list_)
+    observer.OnDetectionSignal(media_perception);
 }
 
 }  // namespace chromeos

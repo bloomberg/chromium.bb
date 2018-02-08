@@ -18,11 +18,21 @@ namespace chromeos {
 // running outside of Chrome.
 class CHROMEOS_EXPORT MediaAnalyticsClient : public DBusClient {
  public:
-  // Handler type for signal received from media analytics process.
-  using MediaPerceptionSignalHandler =
-      base::Callback<void(const mri::MediaPerception& media_perception)>;
+  class Observer {
+   public:
+    // Called when DetectionSignal is received.
+    virtual void OnDetectionSignal(
+        const mri::MediaPerception& media_perception) = 0;
+
+   protected:
+    virtual ~Observer() = default;
+  };
 
   ~MediaAnalyticsClient() override;
+
+  // Adds or removes an observer.
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Gets the media analytics process state.
   virtual void GetState(DBusMethodCallback<mri::State> callback) = 0;
@@ -31,15 +41,6 @@ class CHROMEOS_EXPORT MediaAnalyticsClient : public DBusClient {
   // set.
   virtual void SetState(const mri::State& state,
                         DBusMethodCallback<mri::State> callback) = 0;
-
-  // Register event handler for the MediaPerception protos received as signal
-  // from the media analytics process.
-  virtual void SetMediaPerceptionSignalHandler(
-      const MediaPerceptionSignalHandler& handler) = 0;
-
-  // Resets the signal handler previously set by
-  // SetMediaPerceptionSignalHandler.
-  virtual void ClearMediaPerceptionSignalHandler() = 0;
 
   // API for getting diagnostic information from the media analytics process
   // over D-Bus as a Diagnostics proto message.
