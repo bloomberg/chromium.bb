@@ -85,4 +85,9 @@ public class MockVrDaydreamApi implements VrDaydreamApi {
 
     @Override
     public void close() {}
+
+    @Override
+    public Intent setupVrIntent(Intent intent) {
+        return null;
+    }
 }
