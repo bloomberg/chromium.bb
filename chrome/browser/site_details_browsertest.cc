@@ -245,49 +245,6 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
     return extension;
   }
 
-  // Creates a V2 platform app that loads a web iframe in the app's sandbox
-  // page.
-  // TODO(lazyboy): Deprecate this behavior in https://crbug.com/615585.
-  void CreateAppWithSandboxPage(const std::string& name) {
-    std::unique_ptr<TestExtensionDir> dir(new TestExtensionDir);
-
-    DictionaryBuilder manifest;
-    manifest.Set("name", name)
-        .Set("version", "1.0")
-        .Set("manifest_version", 2)
-        .Set("sandbox",
-             DictionaryBuilder()
-                 .Set("pages", ListBuilder().Append("sandbox.html").Build())
-                 .Build())
-        .Set("app",
-             DictionaryBuilder()
-                 .Set("background",
-                      DictionaryBuilder()
-                          .Set("scripts",
-                               ListBuilder().Append("background.js").Build())
-                          .Build())
-                 .Build());
-
-    dir->WriteFile(FILE_PATH_LITERAL("background.js"),
-                   "var sandboxFrame = document.createElement('iframe');"
-                   "sandboxFrame.src = 'sandbox.html';"
-                   "document.body.appendChild(sandboxFrame);");
-
-    std::string iframe_url =
-        embedded_test_server()->GetURL("/title1.html").spec();
-    dir->WriteFile(
-        FILE_PATH_LITERAL("sandbox.html"),
-        base::StringPrintf("<html><body>%s, web iframe:"
-                           "  <iframe width=80 height=80 src=%s></iframe>"
-                           "</body></html>",
-                           name.c_str(), iframe_url.c_str()));
-    dir->WriteManifest(manifest.ToJSON());
-
-    const Extension* extension = LoadExtension(dir->UnpackedPath());
-    EXPECT_TRUE(extension);
-    temp_dirs_.push_back(std::move(dir));
-  }
-
   const Extension* CreateHostedApp(const std::string& name,
                                    const GURL& app_url) {
     std::unique_ptr<TestExtensionDir> dir(new TestExtensionDir);
@@ -920,19 +877,6 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, MAYBE_IsolateExtensions) {
   EXPECT_THAT(GetRenderProcessCount(), DependingOnPolicy(2, 4, 3));
   EXPECT_THAT(details->GetOutOfProcessIframeCount(),
               DependingOnPolicy(0, 2, 2));
-}
-
-// Due to http://crbug.com/612711, we are not isolating iframes from platform
-// apps with --isolate-extenions.
-IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, PlatformAppsNotIsolated) {
-  // --site-per-process will still isolate iframes from platform apps, so skip
-  // the test in that case.
-  if (content::AreAllSitesIsolatedForTesting())
-    return;
-  CreateAppWithSandboxPage("Extension One");
-  scoped_refptr<TestMemoryDetails> details = new TestMemoryDetails();
-  details->StartFetchAndWait();
-  EXPECT_EQ(0, details->GetOutOfProcessIframeCount());
 }
 
 // Exercises accounting in the case where an extension has two different-site
