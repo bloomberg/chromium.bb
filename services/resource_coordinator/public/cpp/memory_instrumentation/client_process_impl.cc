@@ -129,18 +129,19 @@ void ClientProcessImpl::RequestOSMemoryDump(
     bool want_mmaps,
     const std::vector<base::ProcessId>& pids,
     const RequestOSMemoryDumpCallback& callback) {
+  bool global_success = true;
   std::unordered_map<base::ProcessId, mojom::RawOSMemDumpPtr> results;
   for (const base::ProcessId& pid : pids) {
     mojom::RawOSMemDumpPtr result = mojom::RawOSMemDump::New();
     result->platform_private_footprint = mojom::PlatformPrivateFootprint::New();
-    bool success = true;
-    success = success && OSMetrics::FillOSMemoryDump(pid, result.get());
+    bool success = OSMetrics::FillOSMemoryDump(pid, result.get());
     if (want_mmaps)
       success = success && OSMetrics::FillProcessMemoryMaps(pid, result.get());
     if (success)
       results[pid] = std::move(result);
+    global_success = global_success && success;
   }
-  callback.Run(true, std::move(results));
+  callback.Run(global_success, std::move(results));
 }
 
 ClientProcessImpl::Config::Config(service_manager::Connector* connector,
