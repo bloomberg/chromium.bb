@@ -357,7 +357,13 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadFile) {
   EXPECT_FALSE(GetNotification(notification_id()));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadDangerousFile) {
+// Flaky on ChromeOS.  http://crbug.com/810302
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadDangerousFile DISABLED_DownloadDangerousFile
+#else
+#define MAYBE_DownloadDangerousFile DownloadDangerousFile
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadDangerousFile) {
   GURL download_url(embedded_test_server()->GetURL(
       "/downloads/dangerous/dangerous.swf"));
 
@@ -399,7 +405,13 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadDangerousFile) {
   EXPECT_TRUE(base::PathExists(GetDownloadPath().Append(filename.BaseName())));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DiscardDangerousFile) {
+// Flaky on ChromeOS.  http://crbug.com/810302
+#if defined(OS_CHROMEOS)
+#define MAYBE_DiscardDangerousFile DISABLED_DiscardDangerousFile
+#else
+#define MAYBE_DiscardDangerousFile DiscardDangerousFile
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DiscardDangerousFile) {
   GURL download_url(embedded_test_server()->GetURL(
       "/downloads/dangerous/dangerous.swf"));
 
