@@ -79,7 +79,6 @@ public class DownloadNotificationService2 {
     final List<ContentId> mDownloadsInProgress = new ArrayList<ContentId>();
 
     private NotificationManager mNotificationManager;
-    private SharedPreferences mSharedPrefs;
     private Bitmap mDownloadSuccessLargeIcon;
     private DownloadSharedPreferenceHelper mDownloadSharedPreferenceHelper;
     private DownloadForegroundServiceManager mDownloadForegroundServiceManager;
@@ -101,7 +100,6 @@ public class DownloadNotificationService2 {
         mNotificationManager =
                 (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.NOTIFICATION_SERVICE);
-        mSharedPrefs = ContextUtils.getAppSharedPreferences();
         mDownloadSharedPreferenceHelper = DownloadSharedPreferenceHelper.getInstance();
         mDownloadForegroundServiceManager = new DownloadForegroundServiceManager();
     }
@@ -578,7 +576,8 @@ public class DownloadNotificationService2 {
                 DownloadSharedPreferenceEntry newEntry = new DownloadSharedPreferenceEntry(entry.id,
                         newNotificationId, entry.isOffTheRecord, entry.canDownloadWhileMetered,
                         entry.fileName, entry.isAutoResumable, entry.isTransient);
-                downloadSharedPreferenceHelper.addOrReplaceSharedPreferenceEntry(newEntry);
+                downloadSharedPreferenceHelper.addOrReplaceSharedPreferenceEntry(
+                        newEntry, true /* forceCommit */);
                 break;
             }
         }
@@ -658,10 +657,10 @@ public class DownloadNotificationService2 {
 
                 // Right now this only happens in the paused case, so re-build and re-launch the
                 // paused notification, with the updated notification id..
-                notifyDownloadPaused(entry.id, entry.fileName, true /* isResumable */,
-                        entry.isAutoResumable, entry.isOffTheRecord, entry.isTransient,
-                        null /* icon */, true /* hasUserGesture */, true /* forceRebuild */,
-                        PendingState.NOT_PENDING);
+                notifyDownloadPaused(updatedEntry.id, updatedEntry.fileName, true /* isResumable */,
+                        updatedEntry.isAutoResumable, updatedEntry.isOffTheRecord,
+                        updatedEntry.isTransient, null /* icon */, true /* hasUserGesture */,
+                        true /* forceRebuild */, PendingState.NOT_PENDING);
                 return;
             }
         }

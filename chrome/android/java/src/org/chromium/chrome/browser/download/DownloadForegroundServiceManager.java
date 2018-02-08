@@ -262,6 +262,12 @@ public class DownloadForegroundServiceManager {
         boolean notificationHandledProperly = mBoundService.stopDownloadForegroundService(
                 stopForegroundStatus, pinnedNotificationId, pinnedNotification);
         ContextUtils.getApplicationContext().unbindService(mConnection);
+
+        if (notificationHandledProperly) {
+            DownloadForegroundServiceObservers.removeObserver(
+                    DownloadNotificationServiceObserver.class);
+        }
+
         return notificationHandledProperly;
     }
 
