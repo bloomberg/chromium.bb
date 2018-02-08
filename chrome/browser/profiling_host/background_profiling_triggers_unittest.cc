@@ -10,6 +10,7 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -40,7 +41,12 @@ OSMemDumpPtr GetFakeOSMemDump(uint32_t resident_set_kb,
   std::vector<memory_instrumentation::mojom::VmRegionPtr> vm_regions;
   return memory_instrumentation::mojom::OSMemDump::New(
       resident_set_kb, private_footprint_kb, shared_footprint_kb,
-      std::move(vm_regions), 0);
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+      std::move(vm_regions), 0
+#else
+      std::move(vm_regions)
+#endif
+      );
 }
 
 void PopulateMetrics(GlobalMemoryDumpPtr* global_dump,
