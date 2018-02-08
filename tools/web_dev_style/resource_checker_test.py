@@ -26,17 +26,17 @@ class ResourceCheckerTest(SuperMoxTestBase):
     output_api = self.mox.CreateMockAnything()
     self.checker = resource_checker.ResourceChecker(input_api, output_api)
 
-  def ShouldFailIncludeCheck(self, line):
+  def ShouldFailSelfClosingIncludeCheck(self, line):
     """Checks that the '</include>' checker flags |line| as a style error."""
-    error = self.checker.IncludeCheck(1, line)
+    error = self.checker.SelfClosingIncludeCheck(1, line)
     self.assertNotEqual('', error,
         'Should be flagged as style error: ' + line)
     highlight = test_util.GetHighlight(line, error).strip()
     self.assertTrue('include' in highlight and highlight[0] == '<')
 
-  def ShouldPassIncludeCheck(self, line):
+  def ShouldPassSelfClosingIncludeCheck(self, line):
     """Checks that the '</include>' checker doesn't flag |line| as an error."""
-    self.assertEqual('', self.checker.IncludeCheck(1, line),
+    self.assertEqual('', self.checker.SelfClosingIncludeCheck(1, line),
         'Should not be flagged as style error: ' + line)
 
   def testIncludeFails(self):
@@ -48,7 +48,7 @@ class ResourceCheckerTest(SuperMoxTestBase):
         '<include src="blee.js"/>',
     ]
     for line in lines:
-      self.ShouldFailIncludeCheck(line)
+      self.ShouldFailSelfClosingIncludeCheck(line)
 
   def testIncludePasses(self):
     lines = [
@@ -59,7 +59,33 @@ class ResourceCheckerTest(SuperMoxTestBase):
         "</i>include",
     ]
     for line in lines:
-      self.ShouldPassIncludeCheck(line)
+      self.ShouldPassSelfClosingIncludeCheck(line)
+
+  def ShouldPassDisallowIncludeCheck(self, line):
+    self.assertEqual('', self.checker.DisallowIncludeCheck('msg', 1, line),
+                     'Should not be flagged as error')
+
+  def ShouldFailDisallowIncludeCheck(self, line):
+    error = self.checker.DisallowIncludeCheck('msg', 1, line)
+    self.assertNotEqual('', error, 'Should be flagged as error: ' + line)
+    self.assertEquals('<include', test_util.GetHighlight(line, error))
+
+  def testDisallowIncludesFails(self):
+    lines = [
+      '<include src="blah.js">',
+      ' // <include src="blah.js">',
+      '  /* <include  src="blah.js"> */ ',
+    ]
+    for line in lines:
+      self.ShouldFailDisallowIncludeCheck(line)
+
+  def testDisallowIncludesPasses(self):
+    lines = [
+      'if (count < includeCount) {',
+      '// No <include>s allowed.',
+    ]
+    for line in lines:
+      self.ShouldPassDisallowIncludeCheck(line)
 
 
 if __name__ == '__main__':
