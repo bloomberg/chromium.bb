@@ -2497,8 +2497,6 @@ split_static_library("ui") {
         "cocoa/password_reuse_warning_dialog_cocoa.mm",
         "cocoa/password_reuse_warning_view_controller.h",
         "cocoa/password_reuse_warning_view_controller.mm",
-        "cocoa/passwords/password_prompt_view_bridge.h",
-        "cocoa/passwords/password_prompt_view_bridge.mm",
         "cocoa/permission_bubble/chooser_bubble_ui_views_mac.mm",
         "cocoa/session_crashed_bubble.mm",
         "cocoa/simple_message_box_bridge_views.mm",
