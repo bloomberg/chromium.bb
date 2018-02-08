@@ -12,6 +12,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/network_change_manager.h"
 #include "services/network/network_service.h"
 #include "services/network/public/interfaces/network_change_manager.mojom.h"
@@ -96,6 +97,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   mojom::NetworkServiceClient* client() { return client_.get(); }
   net::NetLog* net_log() const;
+  KeepaliveStatisticsRecorder* keepalive_statistics_recorder() {
+    return &keepalive_statistics_recorder_;
+  }
 
  private:
   class MojoNetLog;
@@ -113,6 +117,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   net::NetLog* net_log_;
 
   mojom::NetworkServiceClientPtr client_;
+
+  KeepaliveStatisticsRecorder keepalive_statistics_recorder_;
 
   // Observer that logs network changes to the NetLog. Must be below the NetLog
   // and the NetworkChangeNotifier (Once this class creates it), so it's
