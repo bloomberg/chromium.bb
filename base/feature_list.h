@@ -158,6 +158,11 @@ class BASE_EXPORT FeatureList {
   void GetFeatureOverrides(std::string* enable_overrides,
                            std::string* disable_overrides);
 
+  // Like GetFeatureOverrides(), but only returns overrides that were specified
+  // explicitly on the command-line, omitting the ones from field trials.
+  void GetCommandLineFeatureOverrides(std::string* enable_overrides,
+                                      std::string* disable_overrides);
+
   // Returns whether the given |feature| is enabled. Must only be called after
   // the singleton instance has been registered via SetInstance(). Additionally,
   // a feature with a given name must only have a single corresponding Feature
@@ -265,6 +270,13 @@ class BASE_EXPORT FeatureList {
   void RegisterOverride(StringPiece feature_name,
                         OverrideState overridden_state,
                         FieldTrial* field_trial);
+
+  // Implementation of GetFeatureOverrides() with a parameter that specifies
+  // whether only command-line enabled overrides should be emitted. See that
+  // function's comments for more details.
+  void GetFeatureOverridesImpl(std::string* enable_overrides,
+                               std::string* disable_overrides,
+                               bool command_line_only);
 
   // Verifies that there's only a single definition of a Feature struct for a
   // given feature name. Keeps track of the first seen Feature struct for each

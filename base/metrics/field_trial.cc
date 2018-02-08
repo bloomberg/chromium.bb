@@ -932,6 +932,21 @@ void FieldTrialList::CopyFieldTrialStateToFlags(
     std::string switch_value = SerializeSharedMemoryHandleMetadata(
         global_->readonly_allocator_handle_);
     cmd_line->AppendSwitchASCII(field_trial_handle_switch, switch_value);
+
+    // Append --enable-features and --disable-features switches corresponding
+    // to the features enabled on the command-line, so that child and browser
+    // process command lines match and clearly show what has been specified
+    // explicitly by the user.
+    std::string enabled_features;
+    std::string disabled_features;
+    FeatureList::GetInstance()->GetCommandLineFeatureOverrides(
+        &enabled_features, &disabled_features);
+
+    if (!enabled_features.empty())
+      cmd_line->AppendSwitchASCII(enable_features_switch, enabled_features);
+    if (!disabled_features.empty())
+      cmd_line->AppendSwitchASCII(disable_features_switch, disabled_features);
+
     return;
   }
 
