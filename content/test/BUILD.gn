@@ -738,6 +738,7 @@ test("content_browsertests") {
     "../browser/isolated_origin_browsertest.cc",
     "../browser/loader/cross_site_document_blocking_browsertest.cc",
     "../browser/loader/cross_site_resource_handler_browsertest.cc",
+    "../browser/loader/prefetch_browsertest.cc",
     "../browser/loader/reload_cache_control_browsertest.cc",
     "../browser/loader/resource_dispatcher_host_browsertest.cc",
     "../browser/loader/resource_scheduler_browsertest.cc",
