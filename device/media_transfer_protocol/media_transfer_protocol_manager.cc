@@ -78,8 +78,18 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   // MediaTransferProtocolManager override.
-  void AddObserver(Observer* observer) override {
+  void AddObserverAndEnumerateStorages(
+      Observer* observer,
+      EnumerateStoragesCallback callback) override {
     DCHECK(thread_checker_.CalledOnValidThread());
+
+    // Return all available storage info.
+    std::vector<const mojom::MtpStorageInfo*> storage_info_list;
+    storage_info_list.reserve(storage_info_map_.size());
+    for (const auto& info : storage_info_map_)
+      storage_info_list.push_back(&info.second);
+    std::move(callback).Run(std::move(storage_info_list));
+
     observers_.AddObserver(observer);
   }
 

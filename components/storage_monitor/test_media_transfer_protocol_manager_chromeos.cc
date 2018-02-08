@@ -12,7 +12,10 @@ TestMediaTransferProtocolManagerChromeOS::
 TestMediaTransferProtocolManagerChromeOS::
     ~TestMediaTransferProtocolManagerChromeOS() {}
 
-void TestMediaTransferProtocolManagerChromeOS::AddObserver(Observer* observer) {
+void TestMediaTransferProtocolManagerChromeOS::AddObserverAndEnumerateStorages(
+    Observer* observer,
+    EnumerateStoragesCallback callback) {
+  std::move(callback).Run(std::vector<const device::mojom::MtpStorageInfo*>());
 }
 
 void TestMediaTransferProtocolManagerChromeOS::RemoveObserver(

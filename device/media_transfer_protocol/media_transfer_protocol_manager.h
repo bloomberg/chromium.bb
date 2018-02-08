@@ -28,6 +28,12 @@ namespace device {
 // Other classes can add themselves as observers.
 class MediaTransferProtocolManager {
  public:
+  // A callback to handle the result of AddObserverAndEnumerateStorages().
+  // The argument is the returned vector of available MTP storages info.
+  // The pointers in the vector are guaranteed to be non-NULL.
+  using EnumerateStoragesCallback = base::OnceCallback<void(
+      std::vector<const mojom::MtpStorageInfo*> storage_info_list)>;
+
   // A callback to handle the result of GetStorages().
   // The argument is the returned vector of available MTP storage names.
   using GetStoragesCallback =
@@ -107,8 +113,10 @@ class MediaTransferProtocolManager {
 
   virtual ~MediaTransferProtocolManager() {}
 
-  // Adds an observer.
-  virtual void AddObserver(Observer* observer) = 0;
+  // Adds an observer and runs |callback| with a list of existing storages.
+  virtual void AddObserverAndEnumerateStorages(
+      Observer* observer,
+      EnumerateStoragesCallback callback) = 0;
 
   // Removes an observer.
   virtual void RemoveObserver(Observer* observer) = 0;
