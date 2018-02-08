@@ -147,7 +147,9 @@ class CliCommand(object):
     help_strings = []
     schemes = list(cros_build_lib.iflatten_instance(schemes))
     if commandline.DEVICE_SCHEME_SSH in schemes:
-      help_strings.append('Target a device with [user@]hostname[:port].')
+      help_strings.append('Target a device with [user@]hostname[:port]. '
+                          'IPv4/IPv6 addresses are allowed, but IPv6 must '
+                          'use brackets (e.g. [::1]).')
     if commandline.DEVICE_SCHEME_USB in schemes:
       help_strings.append('Target removable media with usb://[path].')
     if commandline.DEVICE_SCHEME_FILE in schemes:
