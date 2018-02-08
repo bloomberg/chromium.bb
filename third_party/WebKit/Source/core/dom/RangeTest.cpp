@@ -172,8 +172,8 @@ TEST_F(RangeTest, SplitTextNodeRangeOutsideText) {
 }
 
 TEST_F(RangeTest, updateOwnerDocumentIfNeeded) {
-  Element* foo = GetDocument().createElement("foo");
-  Element* bar = GetDocument().createElement("bar");
+  Element* foo = GetDocument().CreateElementForBinding("foo");
+  Element* bar = GetDocument().CreateElementForBinding("bar");
   foo->AppendChild(bar);
 
   Range* range =

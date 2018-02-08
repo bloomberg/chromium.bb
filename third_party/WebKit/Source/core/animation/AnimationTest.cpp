@@ -708,7 +708,7 @@ TEST_F(AnimationAnimationTest, TimeToNextEffectSimpleCancelledBeforeStart) {
 }
 
 TEST_F(AnimationAnimationTest, AttachedAnimations) {
-  Persistent<Element> element = document->createElement("foo");
+  Persistent<Element> element = document->CreateElementForBinding("foo");
 
   Timing timing;
   KeyframeEffect* keyframe_effect =

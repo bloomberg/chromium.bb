@@ -20,7 +20,7 @@
 namespace blink {
 
 Element* AppendElement(Document& document) {
-  Element* element = document.createElement("foo");
+  Element* element = document.CreateElementForBinding("foo");
   document.documentElement()->AppendChild(element);
   return element;
 }

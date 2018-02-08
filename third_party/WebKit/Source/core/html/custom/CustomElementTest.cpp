@@ -185,7 +185,7 @@ TEST(CustomElementTest, StateByCreateElement) {
   std::unique_ptr<DummyPageHolder> page_holder = DummyPageHolder::Create();
   Document& document = page_holder->GetDocument();
   for (const auto& data : create_element_data) {
-    Element* element = document.createElement(data.name);
+    Element* element = document.CreateElementForBinding(data.name);
     EXPECT_EQ(data.state, element->GetCustomElementState()) << data.name;
     EXPECT_EQ(data.v0state, element->GetV0CustomElementState()) << data.name;
 
@@ -224,7 +224,7 @@ TEST(CustomElementTest,
   Document& document = holder->GetDocument();
   EXPECT_TRUE(document.IsHTMLDocument())
       << "this test requires a HTML document";
-  Element* element = document.createElement("A-A", should_not_throw);
+  Element* element = document.CreateElementForBinding("A-A", should_not_throw);
   EXPECT_EQ(definition, element->GetCustomElementDefinition());
 }
 

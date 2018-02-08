@@ -47,7 +47,7 @@ class AnimationKeyframeEffectModel : public PageTestBase {
  protected:
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
-    element = GetDocument().createElement("foo");
+    element = GetDocument().CreateElementForBinding("foo");
   }
 
   void ExpectLengthValue(double expected_value,

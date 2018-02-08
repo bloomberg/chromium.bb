@@ -28,7 +28,7 @@ class KeyframeEffectTest : public PageTestBase {
  protected:
   virtual void SetUp() {
     PageTestBase::SetUp(IntSize());
-    element = GetDocument().createElement("foo");
+    element = GetDocument().CreateElementForBinding("foo");
 
     GetDocument().GetAnimationClock().ResetTimeForTesting(
         GetDocument().Timeline().ZeroTime());

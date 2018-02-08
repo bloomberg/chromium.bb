@@ -25,7 +25,7 @@ class AnimationEffectStackTest : public PageTestBase {
     PageTestBase::SetUp(IntSize());
     GetDocument().GetAnimationClock().ResetTimeForTesting();
     timeline = DocumentTimeline::Create(&GetDocument());
-    element = GetDocument().createElement("foo");
+    element = GetDocument().CreateElementForBinding("foo");
   }
 
   Animation* Play(KeyframeEffect* effect, double start_time) {

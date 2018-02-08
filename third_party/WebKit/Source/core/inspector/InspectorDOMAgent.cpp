@@ -831,7 +831,7 @@ Response InspectorDOMAgent::setNodeName(int node_id,
     return response;
 
   DummyExceptionStateForTesting exception_state;
-  Element* new_elem = old_element->GetDocument().createElement(
+  Element* new_elem = old_element->GetDocument().CreateElementForBinding(
       AtomicString(tag_name), exception_state);
   if (exception_state.HadException())
     return ToResponse(exception_state);
