@@ -73,14 +73,6 @@ class MockWakeLock : public device::mojom::WakeLock {
 
 }  // namespace
 
-class WebRtcEventLogManagerForTesting : public WebRtcEventLogManager {
- public:
-  WebRtcEventLogManagerForTesting() {
-    SetTaskRunnerForTesting(base::ThreadTaskRunnerHandle::Get());
-  }
-  ~WebRtcEventLogManagerForTesting() override = default;
-};
-
 // Derived class for testing only.  Allows the tests to have their own instance
 // for testing and control the period for which WebRTCInternals will bulk up
 // updates (changes down from 500ms to 1ms).
@@ -88,7 +80,9 @@ class WebRTCInternalsForTest : public WebRTCInternals {
  public:
   WebRTCInternalsForTest()
       : WebRTCInternals(1, true),
-        mock_wake_lock_(mojo::MakeRequest(&wake_lock_)) {}
+        mock_wake_lock_(mojo::MakeRequest(&wake_lock_)),
+        synchronous_webrtc_event_log_manager_(
+            base::ThreadTaskRunnerHandle::Get()) {}
 
   ~WebRTCInternalsForTest() override {}
 
@@ -96,7 +90,7 @@ class WebRTCInternalsForTest : public WebRTCInternals {
 
  private:
   MockWakeLock mock_wake_lock_;
-  WebRtcEventLogManagerForTesting synchronous_webrtc_event_log_manager_;
+  WebRtcEventLogManager synchronous_webrtc_event_log_manager_;
 };
 
 class WebRtcInternalsTest : public testing::Test {

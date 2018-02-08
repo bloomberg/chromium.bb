@@ -81,14 +81,18 @@ WebRtcEventLogManager* WebRtcEventLogManager::GetInstance() {
 }
 
 WebRtcEventLogManager::WebRtcEventLogManager()
+    : WebRtcEventLogManager(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
+
+WebRtcEventLogManager::WebRtcEventLogManager(
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : local_logs_observer_(nullptr),
       remote_logs_observer_(nullptr),
       local_logs_manager_(this),
       remote_logs_manager_(this),
       pc_tracker_proxy_(new PeerConnectionTrackerProxyImpl),
-      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
+      task_runner_(task_runner) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!g_webrtc_event_log_manager);
   g_webrtc_event_log_manager = this;
@@ -266,15 +270,9 @@ void WebRtcEventLogManager::SetRemoteLogsObserver(
                      base::Unretained(this), observer, std::move(reply)));
 }
 
-void WebRtcEventLogManager::SetTaskRunnerForTesting(
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-  // Testing function only - threading left for the caller's discretion.
-  task_runner_ = task_runner;
-}
-
 scoped_refptr<base::SequencedTaskRunner>&
 WebRtcEventLogManager::GetTaskRunnerForTesting() {
-  // Testing function only - threading left for the caller's discretion.
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return task_runner_;
 }
 

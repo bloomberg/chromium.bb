@@ -33,7 +33,9 @@ class BrowserContext;
 // as well as of writing the logs to files which were manually indicated by the
 // user from the WebRTCIntenals. (A log may simulatenously be written to both,
 // either, or none.)
-class CONTENT_EXPORT WebRtcEventLogManager
+// This needs to be final, so that posting |base::Unretained(this)| to the
+// internal task runner would not be a problem during destruction.
+class CONTENT_EXPORT WebRtcEventLogManager final
     : public RenderProcessHostObserver,
       public WebRtcLocalEventLogsObserver,
       public WebRtcRemoteEventLogsObserver {
@@ -187,11 +189,11 @@ class CONTENT_EXPORT WebRtcEventLogManager
 
  protected:
   friend class WebRtcEventLogManagerTest;  // Unit tests inject a frozen clock.
+  friend class WebRTCInternalsForTest;     // Unit tests inject a task runner.
 
   WebRtcEventLogManager();
-
   // This can be used by unit tests to ensure that they would run synchronously.
-  void SetTaskRunnerForTesting(
+  explicit WebRtcEventLogManager(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   // This allows unit tests that do not wish to change the task runner to still
