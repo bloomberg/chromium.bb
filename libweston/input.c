@@ -3572,7 +3572,7 @@ init_pointer_constraint(struct wl_resource *pointer_constraints_resource,
 	struct wl_resource *cr;
 	struct weston_pointer_constraint *constraint;
 
-	if (get_pointer_constraint_for_pointer(surface, pointer)) {
+	if (pointer && get_pointer_constraint_for_pointer(surface, pointer)) {
 		wl_resource_post_error(pointer_constraints_resource,
 				       ZWP_POINTER_CONSTRAINTS_V1_ERROR_ALREADY_CONSTRAINED,
 				       "the pointer has a lock/confine request on this surface");
@@ -3587,18 +3587,23 @@ init_pointer_constraint(struct wl_resource *pointer_constraints_resource,
 		return;
 	}
 
-	constraint = weston_pointer_constraint_create(surface, pointer,
-						      region, lifetime,
-						      cr, grab_interface);
-	if (constraint == NULL) {
-		wl_client_post_no_memory(client);
-		return;
+	if (pointer) {
+		constraint = weston_pointer_constraint_create(surface, pointer,
+							      region, lifetime,
+							      cr, grab_interface);
+		if (constraint == NULL) {
+			wl_client_post_no_memory(client);
+			return;
+		}
+	} else {
+		constraint = NULL;
 	}
 
 	wl_resource_set_implementation(cr, implementation, constraint,
 				       pointer_constraint_constrain_resource_destroyed);
 
-	maybe_enable_pointer_constraint(constraint);
+	if (constraint)
+		maybe_enable_pointer_constraint(constraint);
 }
 
 static void
