@@ -160,26 +160,26 @@ static INLINE void flip_buf_sse2(__m128i *in, __m128i *out, int size) {
   }
 }
 
-void av1_fwd_txfm2d_8x8_sse2(const int16_t *input, int32_t *output, int stride,
-                             TX_TYPE tx_type, int bd);
+void av1_lowbd_fwd_txfm2d_8x8_sse2(const int16_t *input, int32_t *output,
+                                   int stride, TX_TYPE tx_type, int bd);
 
-void av1_fwd_txfm2d_8x16_sse2(const int16_t *input, int32_t *output, int stride,
-                              TX_TYPE tx_type, int bd);
+void av1_lowbd_fwd_txfm2d_8x16_sse2(const int16_t *input, int32_t *output,
+                                    int stride, TX_TYPE tx_type, int bd);
 
-void av1_fwd_txfm2d_16x8_sse2(const int16_t *input, int32_t *output, int stride,
-                              TX_TYPE tx_type, int bd);
+void av1_lowbd_fwd_txfm2d_16x8_sse2(const int16_t *input, int32_t *output,
+                                    int stride, TX_TYPE tx_type, int bd);
 
-void av1_fwd_txfm2d_16x16_sse2(const int16_t *input, int32_t *output,
-                               int stride, TX_TYPE tx_type, int bd);
+void av1_lowbd_fwd_txfm2d_16x16_sse2(const int16_t *input, int32_t *output,
+                                     int stride, TX_TYPE tx_type, int bd);
 
-void av1_fwd_txfm2d_16x32_sse2(const int16_t *input, int32_t *output,
-                               int stride, TX_TYPE tx_type, int bd);
+void av1_lowbd_fwd_txfm2d_16x32_sse2(const int16_t *input, int32_t *output,
+                                     int stride, TX_TYPE tx_type, int bd);
 
-void av1_fwd_txfm2d_32x16_sse2(const int16_t *input, int32_t *output,
-                               int stride, TX_TYPE tx_type, int bd);
+void av1_lowbd_fwd_txfm2d_32x16_sse2(const int16_t *input, int32_t *output,
+                                     int stride, TX_TYPE tx_type, int bd);
 
-void av1_fwd_txfm2d_32x32_sse2(const int16_t *input, int32_t *output,
-                               int stride, TX_TYPE tx_type, int bd);
+void av1_lowbd_fwd_txfm2d_32x32_sse2(const int16_t *input, int32_t *output,
+                                     int stride, TX_TYPE tx_type, int bd);
 
 typedef void (*transform_1d_sse2)(const __m128i *input, __m128i *output,
                                   int8_t cos_bit);

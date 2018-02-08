@@ -535,62 +535,15 @@ static void highbd_fwd_txfm_64x64(const int16_t *src_diff, tran_low_t *coeff,
 
 void av1_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
                   TxfmParam *txfm_param) {
-  assert(av1_ext_tx_used[txfm_param->tx_set_type][txfm_param->tx_type]);
-  const TX_SIZE tx_size = txfm_param->tx_size;
-  switch (tx_size) {
-#if CONFIG_TX64X64
-    case TX_64X64:
-      fwd_txfm_64x64(src_diff, coeff, diff_stride, txfm_param);
-      break;
-    case TX_32X64:
-      fwd_txfm_32x64(src_diff, coeff, diff_stride, txfm_param);
-      break;
-    case TX_64X32:
-      fwd_txfm_64x32(src_diff, coeff, diff_stride, txfm_param);
-      break;
-    case TX_16X64:
-      fwd_txfm_16x64(src_diff, coeff, diff_stride, txfm_param);
-      break;
-    case TX_64X16:
-      fwd_txfm_64x16(src_diff, coeff, diff_stride, txfm_param);
-      break;
-#endif  // CONFIG_TX64X64
-    case TX_32X32:
-      fwd_txfm_32x32(src_diff, coeff, diff_stride, txfm_param);
-      break;
-    case TX_16X16:
-      fwd_txfm_16x16(src_diff, coeff, diff_stride, txfm_param);
-      break;
-    case TX_8X8: fwd_txfm_8x8(src_diff, coeff, diff_stride, txfm_param); break;
-    case TX_4X8: fwd_txfm_4x8(src_diff, coeff, diff_stride, txfm_param); break;
-    case TX_8X4: fwd_txfm_8x4(src_diff, coeff, diff_stride, txfm_param); break;
-    case TX_8X16:
-      fwd_txfm_8x16(src_diff, coeff, diff_stride, txfm_param);
-      break;
-    case TX_16X8:
-      fwd_txfm_16x8(src_diff, coeff, diff_stride, txfm_param);
-      break;
-    case TX_16X32:
-      fwd_txfm_16x32(src_diff, coeff, diff_stride, txfm_param);
-      break;
-    case TX_32X16:
-      fwd_txfm_32x16(src_diff, coeff, diff_stride, txfm_param);
-      break;
-    case TX_4X4: fwd_txfm_4x4(src_diff, coeff, diff_stride, txfm_param); break;
-    case TX_4X16:
-      fwd_txfm_4x16(src_diff, coeff, diff_stride, txfm_param);
-      break;
-    case TX_16X4:
-      fwd_txfm_16x4(src_diff, coeff, diff_stride, txfm_param);
-      break;
-    case TX_8X32:
-      fwd_txfm_8x32(src_diff, coeff, diff_stride, txfm_param);
-      break;
-    case TX_32X8:
-      fwd_txfm_32x8(src_diff, coeff, diff_stride, txfm_param);
-      break;
-    default: assert(0); break;
-  }
+  if (txfm_param->bd == 8)
+    av1_lowbd_fwd_txfm(src_diff, coeff, diff_stride, txfm_param);
+  else
+    av1_highbd_fwd_txfm(src_diff, coeff, diff_stride, txfm_param);
+}
+
+void av1_lowbd_fwd_txfm_c(const int16_t *src_diff, tran_low_t *coeff,
+                          int diff_stride, TxfmParam *txfm_param) {
+  av1_highbd_fwd_txfm(src_diff, coeff, diff_stride, txfm_param);
 }
 
 void av1_highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,

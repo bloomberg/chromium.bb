@@ -499,7 +499,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   txfm_param.bd = xd->bd;
   txfm_param.is_hbd = get_bitdepth_data_path_index(xd);
 
-  av1_highbd_fwd_txfm(src_diff, coeff, diff_stride, &txfm_param);
+  av1_fwd_txfm(src_diff, coeff, diff_stride, &txfm_param);
 
   if (xform_quant_idx != AV1_XFORM_QUANT_SKIP_QUANT) {
     const int n_coeffs = av1_get_max_eob(tx_size);
