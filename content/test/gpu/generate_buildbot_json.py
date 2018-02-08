@@ -133,39 +133,6 @@ WATERFALL = {
    },
 
   'testers': {
-    # TODO(kbr): rename Win7 bots to Win10 in tools/build workspace.
-    'Win7 Release (NVIDIA)': {
-      'swarming_dimensions': [
-        {
-          'gpu': WIN7_NVIDIA_QUADRO_P400_STABLE_DRIVER,
-          'os': 'Windows-2008ServerR2-SP1',
-          'pool': 'Chrome-GPU',
-        },
-      ],
-      'build_config': 'Release',
-      'swarming': True,
-      'os_type': 'win',
-      'use_gpu_trigger_script': True,
-      'alternate_swarming_dimensions': [
-        {
-          'gpu': WIN10_NVIDIA_QUADRO_P400_STABLE_DRIVER,
-          'os': WIN10_NVIDIA_QUADRO_P400_STABLE_OS,
-          'pool': 'Chrome-GPU',
-        },
-      ],
-    },
-    'Win7 Debug (NVIDIA)': {
-      'swarming_dimensions': [
-        {
-          'gpu': WIN10_NVIDIA_QUADRO_P400_STABLE_DRIVER,
-          'os': WIN10_NVIDIA_QUADRO_P400_STABLE_OS,
-          'pool': 'Chrome-GPU',
-        },
-      ],
-      'build_config': 'Debug',
-      'swarming': True,
-      'os_type': 'win',
-    },
     'Win10 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
@@ -299,9 +266,6 @@ FYI_WATERFALL = {
   },
 
   'testers': {
-    # TODO(kbr): switch over trybots to point to Win10 bots in
-    # tools/build workspace, and then switch Win7 bots back to running
-    # only on Win7.
     'Win7 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
@@ -314,13 +278,6 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
       'use_gpu_trigger_script': True,
-      'alternate_swarming_dimensions': [
-        {
-          'gpu': WIN10_NVIDIA_QUADRO_P400_STABLE_DRIVER,
-          'os': WIN10_NVIDIA_QUADRO_P400_STABLE_OS,
-          'pool': 'Chrome-GPU',
-        },
-      ],
     },
     'Win7 Debug (NVIDIA)': {
       'swarming_dimensions': [
@@ -334,22 +291,6 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
     },
-    # TODO(kbr): rename Win7 dEQP bot to Win10 in tools/build and
-    # delete this one.
-    'Win7 dEQP Release (NVIDIA)': {
-      'swarming_dimensions': [
-        {
-          'gpu': WIN10_NVIDIA_QUADRO_P400_STABLE_DRIVER,
-          'os': WIN10_NVIDIA_QUADRO_P400_STABLE_OS,
-          'pool': 'Chrome-GPU',
-        },
-      ],
-      'build_config': 'Release',
-      'swarming': True,
-      'os_type': 'win',
-      'type': Types.DEQP,
-      'use_gpu_trigger_script': True,
-    },
     'Win10 dEQP Release (NVIDIA)': {
       'swarming_dimensions': [
         {
@@ -362,23 +303,6 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
       'type': Types.DEQP,
-    },
-    # TODO(kbr): rename Win7 Experimental bot to Win10 in tools/build
-    # and delete this one.
-    'Win7 Experimental Release (NVIDIA)': {
-      'swarming_dimensions': [
-        {
-          'gpu': WIN10_NVIDIA_QUADRO_P400_EXPERIMENTAL_DRIVER,
-          'os': WIN10_NVIDIA_QUADRO_P400_EXPERIMENTAL_OS,
-          'pool': 'Chrome-GPU',
-        },
-      ],
-      'build_config': 'Release',
-      'swarming': True,
-      'os_type': 'win',
-      'type': Types.EXPERIMENTAL,
-      # This should match another config name specified in this file.
-      'stable_tester_name': 'Win10 Release (NVIDIA)',
     },
     'Win10 Experimental Release (NVIDIA)': {
       'swarming_dimensions': [
@@ -885,29 +809,6 @@ FYI_WATERFALL = {
     # a completely different (redundant) bot specification to handle
     # this.
 
-    # TODO(kbr): change trybots in tools/build workspace to point to
-    # Optional Win10 bot, and delete this one.
-    'Optional Win7 Release (NVIDIA)': {
-      'swarming_dimensions': [
-        {
-          'gpu': WIN7_NVIDIA_QUADRO_P400_STABLE_DRIVER,
-          'os': 'Windows-2008ServerR2-SP1',
-          'pool': 'Chrome-GPU',
-        },
-      ],
-      'build_config': 'Release',
-      'swarming': True,
-      'os_type': 'win',
-      'type': Types.OPTIONAL,
-      'use_gpu_trigger_script': True,
-      'alternate_swarming_dimensions': [
-        {
-          'gpu': WIN10_NVIDIA_QUADRO_P400_STABLE_DRIVER,
-          'os': WIN10_NVIDIA_QUADRO_P400_STABLE_OS,
-          'pool': 'Chrome-GPU',
-        },
-      ],
-    },
     'Optional Win10 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
@@ -1833,9 +1734,7 @@ COMMON_GTESTS = {
         'names': [
           'Win7 Release (NVIDIA)',
           'Win7 Debug (NVIDIA)',
-          'Win7 dEQP Release (NVIDIA)',
           'Win10 dEQP Release (NVIDIA)',
-          'Win7 Experimental Release (NVIDIA)',
           'Win10 Experimental Release (NVIDIA)',
           'Win10 Debug (NVIDIA)',
           'Win7 Release (AMD)',
