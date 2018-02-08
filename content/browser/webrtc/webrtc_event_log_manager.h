@@ -111,6 +111,18 @@ class CONTENT_EXPORT WebRtcEventLogManager final
       int lid,  // Renderer-local PeerConnection ID.
       base::OnceCallback<void(bool)> reply = base::OnceCallback<void(bool)>());
 
+  // Call this to let the manager know when a PeerConnection was stopped.
+  // Closing of a peer connection is an irreversible action. Its distinction
+  // from the removal event is that it may happen before the peer connection has
+  // be garbage collected. From WebRtcEventLogManager's perspective, we treat
+  // stopping a peer connection the same as we do its removal. Should a stopped
+  // peer connection be later removed, the removal callback will assume the
+  // value |false|.
+  void PeerConnectionStopped(
+      int render_process_id,
+      int lid,  // Renderer-local PeerConnection ID.
+      base::OnceCallback<void(bool)> reply = base::OnceCallback<void(bool)>());
+
   // Enable local logging of RTC events.
   // Local logging is distinguished from remote logging, in that local logs are
   // kept in response to explicit user input, are saved to a specific location,
