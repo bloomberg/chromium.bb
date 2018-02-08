@@ -439,22 +439,27 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
 
     /**
      * Triggers the client-defined action when the user clicks a custom menu item.
+     * @param activity The {@link ChromeActivity} to use for sending the {@link PendingIntent}.
      * @param menuIndex The index that the menu item is shown in the result of
-     *                  {@link #getMenuTitles()}
+     *                  {@link #getMenuTitles()}.
+     * @param url The URL to attach as additional data to the {@link PendingIntent}.
+     * @param title The title to attach as additional data to the {@link PendingIntent}.
      */
-    public void clickMenuItemWithUrl(ChromeActivity activity, int menuIndex, String url) {
+    public void clickMenuItemWithUrlAndTitle(
+            ChromeActivity activity, int menuIndex, String url, String title) {
         Intent addedIntent = new Intent();
         addedIntent.setData(Uri.parse(url));
+        addedIntent.putExtra(Intent.EXTRA_SUBJECT, title);
         try {
             // Media viewers pass in PendingIntents that contain CHOOSER Intents.  Setting the data
             // in these cases prevents the Intent from firing correctly.
-            String title = mMenuEntries.get(menuIndex).first;
+            String menuTitle = mMenuEntries.get(menuIndex).first;
             PendingIntent pendingIntent = mMenuEntries.get(menuIndex).second;
             pendingIntent.send(
                     activity, 0, isMediaViewer() ? null : addedIntent, mOnFinished, null);
             if (shouldEnableEmbeddedMediaExperience()
-                    && TextUtils.equals(
-                               title, activity.getString(R.string.download_manager_open_with))) {
+                    && TextUtils.equals(menuTitle,
+                               activity.getString(R.string.download_manager_open_with))) {
                 RecordUserAction.record("CustomTabsMenuCustomMenuItem.DownloadsUI.OpenWith");
             }
         } catch (CanceledException e) {
@@ -468,11 +473,13 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      * @param context The context to use for sending the {@link PendingIntent}.
      * @param params The parameters for the custom button.
      * @param url The URL to attach as additional data to the {@link PendingIntent}.
+     * @param title The title to attach as additional data to the {@link PendingIntent}.
      */
-    public void sendButtonPendingIntentWithUrl(
-            Context context, CustomButtonParams params, String url) {
+    public void sendButtonPendingIntentWithUrlAndTitle(
+            Context context, CustomButtonParams params, String url, String title) {
         Intent addedIntent = new Intent();
         addedIntent.setData(Uri.parse(url));
+        addedIntent.putExtra(Intent.EXTRA_SUBJECT, title);
         try {
             params.getPendingIntent().send(context, 0, addedIntent, mOnFinished, null);
         } catch (CanceledException e) {
