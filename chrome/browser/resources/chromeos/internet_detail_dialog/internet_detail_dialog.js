@@ -49,6 +49,11 @@ Polymer({
   /** @override */
   attached: function() {
     this.guid = chrome.getVariableValue('dialogArguments');
+    // For debugging
+    if (!this.guid) {
+      var params = new URLSearchParams(document.location.search.substring(1));
+      this.guid = params.get('guid') || '';
+    }
     if (!this.guid) {
       console.error('Invalid guid');
       this.close_();

@@ -10,17 +10,7 @@ suite('network-config', function() {
 
   suiteSetup(function() {
     api_ = new chrome.FakeNetworkingPrivate();
-    loadTimeData.data = {
-      networkCADoNotCheck: '',
-      networkCAUseDefault: '',
-      networkCertificateName: '',
-      networkCertificateNameHardwareBacked: '',
-      networkCertificateNoneInstalled: '',
-      networkConfigSaveCredentials: '',
-      networkConfigShare: '',
-      showPassword: '',
-    };
-    CrOncStrings.overrideValues();
+    CrOncTest.overrideCrOncStrings();
   });
 
   function setNetworkConfig(networkProperties) {

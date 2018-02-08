@@ -7,9 +7,9 @@
  *     network_config.html and other network configuration UI.
  */
 
-var CrOncStrings = {};
+var CrOncTest = CrOncTest || {};
 
-CrOncStrings.overrideValues = function() {
+CrOncTest.overrideCrOncStrings = function() {
   // From network_element_localized_string_provider.cc:AddOncLocalizedStrings.
   var oncKeys = {
     'OncConnected': 'OncConnected',

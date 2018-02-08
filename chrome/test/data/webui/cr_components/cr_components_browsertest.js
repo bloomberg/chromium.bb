@@ -26,7 +26,7 @@ CrComponentsBrowserTest.prototype = {
 
   /** @override */
   get browsePreload() {
-    throw 'this is abstract and should be overriden by subclasses';
+    throw 'subclasses should override to load a WebUI page that includes it.';
   },
 
   /** @override */
@@ -52,13 +52,11 @@ CrComponentsNetworkConfigTest.prototype = {
   __proto__: CrComponentsBrowserTest.prototype,
 
   /** @override */
-  browsePreload:
-      'chrome://resources/cr_components/chromeos/network/network_config.html',
+  browsePreload: 'chrome://internet-config-dialog',
 
   /** @override */
   extraLibraries: CrComponentsBrowserTest.prototype.extraLibraries.concat([
     ROOT_PATH + 'ui/webui/resources/js/assert.js',
-    ROOT_PATH + 'ui/webui/resources/js/load_time_data.js',
     ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
     '../fake_chrome_event.js',
     '../chromeos/networking_private_constants.js',
