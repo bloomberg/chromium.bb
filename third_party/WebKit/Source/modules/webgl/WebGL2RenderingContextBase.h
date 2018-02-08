@@ -981,6 +981,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
  protected:
   friend class V8WebGL2RenderingContext;
   friend class WebGLGetBufferSubDataAsync;
+  friend class WebGLSync;
 
   WebGL2RenderingContextBase(
       CanvasRenderingContextHost*,

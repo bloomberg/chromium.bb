@@ -84,6 +84,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void HandleGpuSwitch();
 
   void GetDisabledExtensions(std::string* disabled_extensions) const;
+  void GetDisabledWebGLExtensions(std::string* disabled_webgl_extensions) const;
 
   void BlockDomainFrom3DAPIs(
       const GURL& url, GpuDataManagerImpl::DomainGuilt guilt);

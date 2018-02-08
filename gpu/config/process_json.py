@@ -127,9 +127,10 @@ def write_features(entry_id, feature_set, feature_name_prefix,
   data_helper_file.write('};\n\n')
 
 
-def write_disabled_extension_list(entry_id, data, data_file, data_helper_file):
+def write_disabled_extension_list(entry_kind, entry_id, data, data_file,
+                                  data_helper_file):
   if data:
-    var_name = 'kDisabledExtensionsForEntry' + str(entry_id)
+    var_name = 'k%sForEntry%d' % (entry_kind, entry_id)
     # define the list
     data_helper_file.write(
         'const char* const %s[%d] = {\n' % (var_name, len(data)))
@@ -138,11 +139,11 @@ def write_disabled_extension_list(entry_id, data, data_file, data_helper_file):
       data_helper_file.write(',\n')
     data_helper_file.write('};\n\n')
     # use the list
-    data_file.write('arraysize(%s),  // DisabledExtensions size\n' % var_name)
-    data_file.write('%s,  // DisabledExtensions\n' % var_name)
+    data_file.write('arraysize(%s),  // %s size\n' % (var_name, entry_kind))
+    data_file.write('%s,  // %s\n' % (var_name, entry_kind))
   else:
-    data_file.write('0,  // DisabledExtensions size\n')
-    data_file.write('nullptr,  // DisabledExtensions\n')
+    data_file.write('0,  // %s size\n' % entry_kind)
+    data_file.write('nullptr,  // %s\n' % entry_kind)
 
 
 def write_gl_strings(entry_id, is_exception, exception_id, data,
@@ -381,6 +382,9 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
     elif key == 'disabled_extensions':
       assert not is_exception
       continue
+    elif key == 'disabled_webgl_extensions':
+      assert not is_exception
+      continue
     elif key == 'comment':
       continue
     elif key == 'webkit_bugs':
@@ -526,10 +530,12 @@ def write_entry(entry, total_feature_set, feature_name_prefix,
     data_file.write('0,  // feature size\n')
     data_file.write('nullptr,  // features\n')
   # Disabled extensions
-  disabled_extensions = None
-  if 'disabled_extensions' in entry:
-    disabled_extensions = entry['disabled_extensions']
-  write_disabled_extension_list(entry_id, disabled_extensions,
+  write_disabled_extension_list('DisabledExtensions', entry_id,
+                                entry.get('disabled_extensions', None),
+                                data_file, data_helper_file)
+  # Disabled WebGL extensions
+  write_disabled_extension_list('DisabledWebGLExtensions', entry_id,
+                                entry.get('disabled_webgl_extensions', None),
                                 data_file, data_helper_file)
   # webkit_bugs are skipped because there is only one entry that has it.
   # cr_bugs

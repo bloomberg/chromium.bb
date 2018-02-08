@@ -56,10 +56,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'mac', 'linux'])
     self.Skip('WebglExtension_WEBGL_compressed_texture_s3tc_srgb',
         ['win', 'mac', 'linux', 'android'])
+    self.Skip('WebglExtension_EXT_disjoint_timer_query', bug=808744)
 
     # Extensions not available under D3D9
-    self.Fail('WebglExtension_EXT_disjoint_timer_query',
-        ['win', 'd3d9'])
     self.Fail('WebglExtension_EXT_sRGB',
         ['win', 'd3d9'])
 
@@ -70,8 +69,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'd3d9'])
 
     # Android general
-    self.Fail('WebglExtension_EXT_disjoint_timer_query',
-        ['android'])
     self.Fail('WebglExtension_EXT_frag_depth',
         ['android'])
     self.Fail('WebglExtension_EXT_shader_texture_lod',
@@ -524,9 +521,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Fixed on Mesa 12.0
     self.Fail('conformance/rendering/clipping-wide-points.html',
         ['linux', 'intel'], bug=642822)
-
-    self.Fail('WebglExtension_EXT_disjoint_timer_query',
-        ['linux', 'intel'], bug=687210)
 
     # Linux Intel HD 630
     self.Fail('conformance/textures/misc/texture-size-limit.html',

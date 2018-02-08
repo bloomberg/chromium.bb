@@ -32,6 +32,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'mac', 'linux'])
     self.Skip('WebglExtension_WEBGL_compressed_texture_s3tc_srgb',
         ['win', 'mac', 'linux'])
+    self.Skip('WebglExtension_EXT_disjoint_timer_query_webgl2', bug=808744)
 
     # ========================
     # Conformance expectations
@@ -891,8 +892,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux Intel
     self.Fail('conformance2/extensions/ext-color-buffer-float.html',
         ['linux', 'intel'], bug=640389)
-    self.Fail('WebglExtension_EXT_disjoint_timer_query_webgl2',
-        ['linux', 'intel'], bug=687210)
 
     # See https://bugs.freedesktop.org/show_bug.cgi?id=94477
     self.Skip('conformance/glsl/bugs/temp-expressions-should-not-crash.html',

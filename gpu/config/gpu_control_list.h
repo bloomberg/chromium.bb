@@ -191,6 +191,8 @@ class GPU_EXPORT GpuControlList {
     const int* features;
     size_t disabled_extension_size;
     const char* const* disabled_extensions;
+    size_t disabled_webgl_extension_size;
+    const char* const* disabled_webgl_extensions;
     size_t cr_bug_size;
     const uint32_t* cr_bugs;
     Conditions conditions;
@@ -243,6 +245,8 @@ class GPU_EXPORT GpuControlList {
 
   // Collects all disabled extensions.
   std::vector<std::string> GetDisabledExtensions();
+  // Collects all disabled WebGL extensions.
+  std::vector<std::string> GetDisabledWebGLExtensions();
 
   // Returns the description and bugs from active entries provided.
   // Each problems has:

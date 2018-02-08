@@ -30,6 +30,8 @@ class GpuBlacklistTest : public testing::Test {
         kFeatureListForEntry1,  // features
         0,                      // DisabledExtensions size
         nullptr,                // DisabledExtensions
+        0,                      // DisabledWebGLExtensions size
+        nullptr,                // DisabledWebGLExtensions
         0,                      // CrBugs size
         nullptr,                // CrBugs
         {

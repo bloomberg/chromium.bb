@@ -741,6 +741,12 @@ void GpuDataManagerImplPrivate::GetDisabledExtensions(
   *disabled_extensions = gpu_feature_info_.disabled_extensions;
 }
 
+void GpuDataManagerImplPrivate::GetDisabledWebGLExtensions(
+    std::string* disabled_webgl_extensions) const {
+  DCHECK(disabled_webgl_extensions);
+  *disabled_webgl_extensions = gpu_feature_info_.disabled_webgl_extensions;
+}
+
 void GpuDataManagerImplPrivate::BlockDomainFrom3DAPIs(
     const GURL& url, GpuDataManagerImpl::DomainGuilt guilt) {
   BlockDomainFrom3DAPIsAtTime(url, guilt, base::Time::Now());

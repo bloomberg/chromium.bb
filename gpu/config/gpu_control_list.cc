@@ -605,6 +605,19 @@ std::vector<std::string> GpuControlList::GetDisabledExtensions() {
                                   disabled_extensions.end());
 }
 
+std::vector<std::string> GpuControlList::GetDisabledWebGLExtensions() {
+  std::set<std::string> disabled_webgl_extensions;
+  for (auto index : active_entries_) {
+    DCHECK_LT(index, entry_count_);
+    const Entry& entry = entries_[index];
+    for (size_t ii = 0; ii < entry.disabled_webgl_extension_size; ++ii) {
+      disabled_webgl_extensions.insert(entry.disabled_webgl_extensions[ii]);
+    }
+  }
+  return std::vector<std::string>(disabled_webgl_extensions.begin(),
+                                  disabled_webgl_extensions.end());
+}
+
 void GpuControlList::GetReasons(base::ListValue* problem_list,
                                 const std::string& tag,
                                 const std::vector<uint32_t>& entries) const {

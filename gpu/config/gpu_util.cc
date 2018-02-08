@@ -328,6 +328,16 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
     driver_bug_disabled_extensions = list->GetDisabledExtensions();
     all_disabled_extensions.insert(driver_bug_disabled_extensions.begin(),
                                    driver_bug_disabled_extensions.end());
+
+    // Disabling WebGL extensions only occurs via the blacklist, so
+    // the logic is simpler.
+    gl::ExtensionSet disabled_webgl_extensions;
+    std::vector<std::string> disabled_webgl_extension_list =
+        list->GetDisabledWebGLExtensions();
+    disabled_webgl_extensions.insert(disabled_webgl_extension_list.begin(),
+                                     disabled_webgl_extension_list.end());
+    gpu_feature_info.disabled_webgl_extensions =
+        gl::MakeExtensionString(disabled_webgl_extensions);
   }
   gpu::GpuDriverBugList::AppendWorkaroundsFromCommandLine(
       &enabled_driver_bug_workarounds, *command_line);
