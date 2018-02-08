@@ -34,6 +34,9 @@ NVIDIA_QUADRO_P400_ALL_DRIVERS = '10de:1cb3-*'
 # Linux NVIDIA Quadro P400.
 LINUX_QUADRO_P400_STABLE_DRIVER = '10de:1cb3-384.90'
 
+# Intel HD 630 (both Windows and Linux).
+INTEL_HD_630 = '8086:5912'
+
 # "Types" of waterfalls and bots. A bot's type is the union of its own
 # type and the type of its waterfall. Predicates can apply to these
 # sets in order to run tests only on a certain subset of the bots.
@@ -384,7 +387,7 @@ FYI_WATERFALL = {
     'Win10 Release (Intel HD 630)': {
       'swarming_dimensions': [
         {
-          'gpu': '8086:5912',
+          'gpu': INTEL_HD_630,
           'os': 'Windows-10',
           'pool': 'Chrome-GPU',
         },
@@ -656,7 +659,7 @@ FYI_WATERFALL = {
     'Linux Release (Intel HD 630)': {
       'swarming_dimensions': [
         {
-          'gpu': '8086:5912',
+          'gpu': INTEL_HD_630,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
@@ -823,6 +826,19 @@ FYI_WATERFALL = {
       'type': Types.OPTIONAL,
       'use_gpu_trigger_script': True,
     },
+    'Optional Win10 Release (Intel HD 630)': {
+      'swarming_dimensions': [
+        {
+          'gpu': INTEL_HD_630,
+          'os': 'Windows-10',
+          'pool': 'Chrome-GPU',
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
+      'type': Types.OPTIONAL,
+    },
     'Optional Mac Release (Intel)': {
       'swarming_dimensions': [
         {
@@ -867,6 +883,19 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
+          'os': 'Ubuntu',
+          'pool': 'Chrome-GPU',
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'linux',
+      'type': Types.OPTIONAL,
+    },
+    'Optional Linux Release (Intel HD 630)': {
+      'swarming_dimensions': [
+        {
+          'gpu': INTEL_HD_630,
           'os': 'Ubuntu',
           'pool': 'Chrome-GPU',
         },
