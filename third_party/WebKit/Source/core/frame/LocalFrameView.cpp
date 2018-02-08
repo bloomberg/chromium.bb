@@ -4617,11 +4617,14 @@ void LocalFrameView::AdjustScrollOffsetFromUpdateScrollbars() {
 
 ScrollableArea* LocalFrameView::ScrollableAreaWithElementId(
     const CompositorElementId& id) {
-  // With root layer scrolling the LocalFrameView does not scroll.
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-      id == GetCompositorElementId()) {
-    return this;
-  }
+  // Check for the layout viewport, which may not be in scrollable_areas_ if it
+  // is styled overflow: hidden.  (Other overflow: hidden elements won't have
+  // composited scrolling layers per crbug.com/784053, so we don't have to worry
+  // about them.)
+  ScrollableArea* viewport = LayoutViewportScrollableArea();
+  if (id == viewport->GetCompositorElementId())
+    return viewport;
+
   if (scrollable_areas_) {
     // This requires iterating over all scrollable areas. We may want to store a
     // map of ElementId to ScrollableArea if this is an issue for performance.
