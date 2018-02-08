@@ -29,10 +29,6 @@
 #include "services/service_manager/sandbox/linux/bpf_gpu_policy_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 
-#if BUILDFLAG(USE_VAAPI)
-#include <va/va_version.h>
-#endif
-
 using sandbox::bpf_dsl::Policy;
 using sandbox::syscall_broker::BrokerFilePermission;
 using sandbox::syscall_broker::BrokerProcess;
@@ -42,22 +38,6 @@ namespace {
 
 inline bool IsChromeOS() {
 #if defined(OS_CHROMEOS)
-  return true;
-#else
-  return false;
-#endif
-}
-
-inline bool IsArchitectureX86_64() {
-#if defined(__x86_64__)
-  return true;
-#else
-  return false;
-#endif
-}
-
-inline bool IsArchitectureI386() {
-#if defined(__i386__)
   return true;
 #else
   return false;
@@ -82,14 +62,6 @@ inline bool UseV4L2Codec() {
 
 inline bool UseLibV4L2() {
 #if BUILDFLAG(USE_LIBV4L2)
-  return true;
-#else
-  return false;
-#endif
-}
-
-inline bool IsLibVAVersion2() {
-#if BUILDFLAG(USE_VAAPI) && VA_MAJOR_VERSION == 1
   return true;
 #else
   return false;
@@ -270,50 +242,6 @@ void LoadV4L2Libraries(
   }
 }
 
-void LoadStandardLibraries(
-    const service_manager::SandboxSeccompBPF::Options& options) {
-  if (IsArchitectureX86_64() || IsArchitectureI386()) {
-    // Accelerated video dlopen()'s some shared objects
-    // inside the sandbox, so preload them now.
-    if (IsAcceleratedVideoEnabled(options)) {
-      if (IsLibVAVersion2()) {
-        if (IsArchitectureX86_64()) {
-          dlopen("/usr/lib64/va/drivers/i965_drv_video.so", dlopen_flag);
-          dlopen("/usr/lib64/va/drivers/hybrid_drv_video.so", dlopen_flag);
-        } else if (IsArchitectureI386()) {
-          dlopen("/usr/lib/va/drivers/i965_drv_video.so", dlopen_flag);
-        }
-        dlopen("libva.so.2", dlopen_flag);
-#if defined(USE_OZONE)
-        dlopen("libva-drm.so.2", dlopen_flag);
-#endif
-      } else {
-        // If we are linked against libva 1, we have two cases to handle:
-        // - the sysroot includes both libva 1 and 2, in which case the drivers
-        //   are in /usr/lib{64}/va1/
-        // - the sysroot only includes libva 1, in which case the drivers are
-        //   are in /usr/lib{64}/va/
-        // This is ugly, but temporary until all builds have switched to libva 2.
-        if (IsArchitectureX86_64()) {
-          if (!dlopen("/usr/lib64/va1/drivers/i965_drv_video.so", dlopen_flag))
-            dlopen("/usr/lib64/va/drivers/i965_drv_video.so", dlopen_flag);
-          if (!dlopen("/usr/lib64/va1/drivers/hybrid_drv_video.so", dlopen_flag))
-            dlopen("/usr/lib64/va/drivers/hybrid_drv_video.so", dlopen_flag);
-        } else if (IsArchitectureI386()) {
-          if (!dlopen("/usr/lib/va1/drivers/i965_drv_video.so", dlopen_flag))
-            dlopen("/usr/lib/va/drivers/i965_drv_video.so", dlopen_flag);
-        }
-        dlopen("libva.so.1", dlopen_flag);
-#if defined(USE_OZONE)
-        dlopen("libva-drm.so.1", dlopen_flag);
-#elif defined(USE_X11)
-        dlopen("libva-x11.so.1", dlopen_flag);
-#endif
-      }
-    }
-  }
-}
-
 bool LoadLibrariesForGpu(
     const service_manager::SandboxSeccompBPF::Options& options) {
   if (IsChromeOS()) {
@@ -326,7 +254,6 @@ bool LoadLibrariesForGpu(
     if (options.use_amd_specific_policies)
       return LoadAmdGpuLibraries();
   }
-  LoadStandardLibraries(options);
   return true;
 }
 
