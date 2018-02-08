@@ -70,7 +70,7 @@ static const struct wl_message zcr_remote_shell_v1_events[] = {
 };
 
 WL_EXPORT const struct wl_interface zcr_remote_shell_v1_interface = {
-	"zcr_remote_shell_v1", 10,
+	"zcr_remote_shell_v1", 11,
 	3, zcr_remote_shell_v1_requests,
 	5, zcr_remote_shell_v1_events,
 };
@@ -109,6 +109,8 @@ static const struct wl_message zcr_remote_surface_v1_requests[] = {
 	{ "unset_can_maximize", "10", types + 0 },
 	{ "set_min_size", "10ii", types + 0 },
 	{ "set_max_size", "10ii", types + 0 },
+	{ "set_snapped_to_left", "11", types + 0 },
+	{ "set_snapped_to_right", "11", types + 0 },
 };
 
 static const struct wl_message zcr_remote_surface_v1_events[] = {
@@ -122,8 +124,8 @@ static const struct wl_message zcr_remote_surface_v1_events[] = {
 };
 
 WL_EXPORT const struct wl_interface zcr_remote_surface_v1_interface = {
-	"zcr_remote_surface_v1", 10,
-	33, zcr_remote_surface_v1_requests,
+	"zcr_remote_surface_v1", 11,
+	35, zcr_remote_surface_v1_requests,
 	7, zcr_remote_surface_v1_events,
 };
 

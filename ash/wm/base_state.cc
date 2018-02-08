@@ -5,7 +5,10 @@
 #include "ash/wm/base_state.h"
 
 #include "ash/public/cpp/window_state_type.h"
+#include "ash/shell.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_animation_types.h"
+#include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/wm_event.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -114,6 +117,24 @@ void BaseState::UpdateMinimizedState(
       window_state->set_unminimize_to_restore_bounds(false);
     }
   }
+}
+
+gfx::Rect BaseState::GetSnappedWindowBoundsInParent(
+    aura::Window* window,
+    const mojom::WindowStateType state_type) {
+  gfx::Rect bounds_in_parent;
+  if (SplitViewController::ShouldAllowSplitView()) {
+    bounds_in_parent =
+        Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInParent(
+            window, (state_type == mojom::WindowStateType::LEFT_SNAPPED)
+                        ? SplitViewController::LEFT
+                        : SplitViewController::RIGHT);
+  } else {
+    bounds_in_parent = (state_type == mojom::WindowStateType::LEFT_SNAPPED)
+                           ? GetDefaultLeftSnappedWindowBoundsInParent(window)
+                           : GetDefaultRightSnappedWindowBoundsInParent(window);
+  }
+  return bounds_in_parent;
 }
 
 }  // namespace wm

@@ -199,6 +199,14 @@ enum zcr_remote_shell_v1_state_type {
 	 * resizing window state
 	 */
 	ZCR_REMOTE_SHELL_V1_STATE_TYPE_RESIZING = 8,
+	/**
+	 * left snapped window state
+	 */
+	ZCR_REMOTE_SHELL_V1_STATE_TYPE_LEFT_SNAPPED = 9,
+	/**
+	 * right snapped window state
+	 */
+	ZCR_REMOTE_SHELL_V1_STATE_TYPE_RIGHT_SNAPPED = 10,
 };
 #endif /* ZCR_REMOTE_SHELL_V1_STATE_TYPE_ENUM */
 
@@ -974,6 +982,22 @@ struct zcr_remote_surface_v1_interface {
 			     struct wl_resource *resource,
 			     int32_t width,
 			     int32_t height);
+	/**
+	 * set the surface to left snapped
+	 *
+	 * Request that surface is snapped to left.
+	 * @since 11
+	 */
+	void (*set_snapped_to_left)(struct wl_client *client,
+				    struct wl_resource *resource);
+	/**
+	 * set the surface to right snapped
+	 *
+	 * Request that surface is snapped to right.
+	 * @since 11
+	 */
+	void (*set_snapped_to_right)(struct wl_client *client,
+				     struct wl_resource *resource);
 };
 
 #define ZCR_REMOTE_SURFACE_V1_CLOSE 0
@@ -1145,6 +1169,14 @@ struct zcr_remote_surface_v1_interface {
  * @ingroup iface_zcr_remote_surface_v1
  */
 #define ZCR_REMOTE_SURFACE_V1_SET_MAX_SIZE_SINCE_VERSION 10
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_SNAPPED_TO_LEFT_SINCE_VERSION 11
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_SNAPPED_TO_RIGHT_SINCE_VERSION 11
 
 /**
  * @ingroup iface_zcr_remote_surface_v1

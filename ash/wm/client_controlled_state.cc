@@ -65,9 +65,7 @@ void ClientControlledState::HandleTransitionEvents(WindowState* window_state,
     case WM_EVENT_NORMAL:
     case WM_EVENT_MAXIMIZE:
     case WM_EVENT_MINIMIZE:
-    case WM_EVENT_FULLSCREEN:
-    case WM_EVENT_SNAP_LEFT:
-    case WM_EVENT_SNAP_RIGHT: {
+    case WM_EVENT_FULLSCREEN: {
       // Reset window state
       window_state->UpdateWindowPropertiesFromStateType();
       mojom::WindowStateType next_state = GetStateForTransitionEvent(event);
@@ -75,6 +73,27 @@ void ClientControlledState::HandleTransitionEvents(WindowState* window_state,
               << ", state=" << state_type_ << ", next_state=" << next_state;
       // Then ask delegate to handle the window state change.
       delegate_->HandleWindowStateRequest(window_state, next_state);
+      break;
+    }
+    case WM_EVENT_SNAP_LEFT:
+    case WM_EVENT_SNAP_RIGHT: {
+      if (window_state->CanSnap()) {
+        // Get the desired window bounds for the snap state.
+        gfx::Rect bounds = GetSnappedWindowBoundsInParent(
+            window_state->window(),
+            event->type() == WM_EVENT_SNAP_LEFT
+                ? mojom::WindowStateType::LEFT_SNAPPED
+                : mojom::WindowStateType::RIGHT_SNAPPED);
+        window_state->set_bounds_changed_by_user(true);
+
+        window_state->UpdateWindowPropertiesFromStateType();
+        mojom::WindowStateType next_state = GetStateForTransitionEvent(event);
+        VLOG(1) << "Processing State Transtion: event=" << event->type()
+                << ", state=" << state_type_ << ", next_state=" << next_state;
+
+        // Then ask delegate to set the desired bounds for the snap state.
+        delegate_->HandleBoundsRequest(window_state, next_state, bounds);
+      }
       break;
     }
     case WM_EVENT_SHOW_INACTIVE:
@@ -159,7 +178,8 @@ void ClientControlledState::HandleBoundsEvents(WindowState* window_state,
         // In pinned state, it should ignore the SetBounds from window manager
         // or user.
       } else {
-        delegate_->HandleBoundsRequest(window_state, bounds);
+        delegate_->HandleBoundsRequest(window_state,
+                                       window_state->GetStateType(), bounds);
       }
       break;
     }

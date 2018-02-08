@@ -488,7 +488,7 @@ const views::View* CustomFrameViewAsh::GetAvatarIconViewForTest() const {
 void CustomFrameViewAsh::MaybePaintHeaderForSplitview(
     SplitViewController::State state) {
   if (state == SplitViewController::NO_SNAP) {
-    header_view_->SetShouldPaintHeader(/*paint=*/false);
+    SetShouldPaintHeader(/*paint=*/false);
     return;
   }
 
@@ -502,7 +502,7 @@ void CustomFrameViewAsh::MaybePaintHeaderForSplitview(
   // TODO(sammiequon): This works for now, but we may have to check if
   // |frame_|'s native window is in the overview list instead.
   if (window && window == frame_->GetNativeWindow())
-    header_view_->SetShouldPaintHeader(/*paint=*/true);
+    SetShouldPaintHeader(/*paint=*/true);
 }
 
 void CustomFrameViewAsh::SetShouldPaintHeader(bool paint) {

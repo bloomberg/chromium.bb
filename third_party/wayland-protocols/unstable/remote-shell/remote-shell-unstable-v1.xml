@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="10">
+  <interface name="zcr_remote_shell_v1" version="11">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -66,6 +66,8 @@
       <entry name="trusted_pinned" value="6" summary="trusted pinned window state"/>
       <entry name="moving" value="7" summary="moving window state"/>
       <entry name="resizing" value="8" summary="resizing window state"/>
+      <entry name="left_snapped" value="9" summary="left snapped window state"/>
+      <entry name="right_snapped" value="10" summary="right snapped window state"/>
     </enum>
 
     <enum name="error">
@@ -181,7 +183,7 @@
     </event>
   </interface>
 
-  <interface name="zcr_remote_surface_v1" version="10">
+  <interface name="zcr_remote_surface_v1" version="11">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -756,6 +758,19 @@
       </description>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
+    </request>
+
+    <!-- Version 11 additions -->
+    <request name="set_snapped_to_left" since="11">
+      <description summary="set the surface to left snapped">
+        Request that surface is snapped to left.
+      </description>
+    </request>
+
+    <request name="set_snapped_to_right" since="11">
+      <description summary="set the surface to right snapped">
+        Request that surface is snapped to right.
+      </description>
     </request>
 
   </interface>

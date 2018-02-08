@@ -24,6 +24,7 @@ class TestClientControlledStateDelegate
       ash::wm::WindowState* window_state,
       ash::mojom::WindowStateType next_state) override;
   void HandleBoundsRequest(ash::wm::WindowState* window_state,
+                           ash::mojom::WindowStateType requested_state,
                            const gfx::Rect& bounds) override;
 
  private:

@@ -201,7 +201,6 @@ void SplitViewController::SnapWindow(aura::Window* window,
   const wm::WMEvent event((snap_position == LEFT) ? wm::WM_EVENT_SNAP_LEFT
                                                   : wm::WM_EVENT_SNAP_RIGHT);
   wm::GetWindowState(window)->OnWMEvent(&event);
-  wm::ActivateWindow(window);
 
   // Stack the other snapped window below the current active window so that
   // the snapped two windows are always the top two windows while resizing.
@@ -418,7 +417,9 @@ void SplitViewController::OnPostWindowStateTypeChange(
     ash::mojom::WindowStateType old_type) {
   DCHECK(IsSplitViewModeActive());
 
-  if (window_state->IsFullscreen() || window_state->IsMaximized()) {
+  if (window_state->IsSnapped()) {
+    wm::ActivateWindow(window_state->window());
+  } else if (window_state->IsFullscreen() || window_state->IsMaximized()) {
     // End split view mode if one of the snapped windows gets maximized /
     // full-screened. Also end overview mode if overview mode is active at the
     // moment.
@@ -489,10 +490,8 @@ void SplitViewController::OnOverviewModeEnded() {
         Shell::Get()->mru_window_tracker()->BuildMruWindowList();
     for (auto* window : windows) {
       if (CanSnap(window) && window != GetDefaultSnappedWindow()) {
-        if (default_snap_position_ == LEFT)
-          SnapWindow(window, SplitViewController::RIGHT);
-        else if (default_snap_position_ == RIGHT)
-          SnapWindow(window, SplitViewController::LEFT);
+        // OnWindowActivated() will do the right thing to snap the |window|.
+        wm::ActivateWindow(window);
         break;
       }
     }

@@ -369,11 +369,10 @@ void DefaultState::HandleTransitionEvents(WindowState* window_state,
   }
 
   if (next_state_type == current_state_type && window_state->IsSnapped()) {
-    aura::Window* window = window_state->window();
-    gfx::Rect snapped_bounds =
-        event->type() == WM_EVENT_SNAP_LEFT
-            ? GetDefaultLeftSnappedWindowBoundsInParent(window)
-            : GetDefaultRightSnappedWindowBoundsInParent(window);
+    gfx::Rect snapped_bounds = GetSnappedWindowBoundsInParent(
+        window_state->window(), event->type() == WM_EVENT_SNAP_LEFT
+                                    ? mojom::WindowStateType::LEFT_SNAPPED
+                                    : mojom::WindowStateType::RIGHT_SNAPPED);
     window_state->SetBoundsDirectAnimated(snapped_bounds);
     return;
   }
@@ -550,9 +549,7 @@ void DefaultState::UpdateBoundsFromState(
     case mojom::WindowStateType::LEFT_SNAPPED:
     case mojom::WindowStateType::RIGHT_SNAPPED:
       bounds_in_parent =
-          state_type_ == mojom::WindowStateType::LEFT_SNAPPED
-              ? GetDefaultLeftSnappedWindowBoundsInParent(window)
-              : GetDefaultRightSnappedWindowBoundsInParent(window);
+          GetSnappedWindowBoundsInParent(window_state->window(), state_type_);
       break;
 
     case mojom::WindowStateType::DEFAULT:
