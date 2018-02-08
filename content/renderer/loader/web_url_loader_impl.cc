@@ -472,7 +472,9 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
 // Context and held by ResourceDispatcher.
 class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
  public:
-  explicit RequestPeerImpl(Context* context);
+  // If |discard_body| is false this doesn't propagate the received data
+  // to the context.
+  explicit RequestPeerImpl(Context* context, bool discard_body = false);
 
   // RequestPeer methods:
   void OnUploadProgress(uint64_t position, uint64_t size) override;
@@ -488,6 +490,7 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
 
  private:
   scoped_refptr<Context> context_;
+  const bool discard_body_;
   DISALLOW_COPY_AND_ASSIGN(RequestPeerImpl);
 };
 
@@ -748,7 +751,10 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   if (extra_data->download_to_network_cache_only()) {
     peer = std::make_unique<SinkPeer>(this);
   } else {
-    peer = std::make_unique<WebURLLoaderImpl::RequestPeerImpl>(this);
+    const bool discard_body =
+        (resource_request->resource_type == RESOURCE_TYPE_PREFETCH);
+    peer =
+        std::make_unique<WebURLLoaderImpl::RequestPeerImpl>(this, discard_body);
   }
 
   TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::Context::Start", this,
@@ -1078,8 +1084,9 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
 
 // WebURLLoaderImpl::RequestPeerImpl ------------------------------------------
 
-WebURLLoaderImpl::RequestPeerImpl::RequestPeerImpl(Context* context)
-    : context_(context) {}
+WebURLLoaderImpl::RequestPeerImpl::RequestPeerImpl(Context* context,
+                                                   bool discard_body)
+    : context_(context), discard_body_(discard_body) {}
 
 void WebURLLoaderImpl::RequestPeerImpl::OnUploadProgress(uint64_t position,
                                                          uint64_t size) {
@@ -1105,6 +1112,8 @@ void WebURLLoaderImpl::RequestPeerImpl::OnDownloadedData(
 
 void WebURLLoaderImpl::RequestPeerImpl::OnReceivedData(
     std::unique_ptr<ReceivedData> data) {
+  if (discard_body_)
+    return;
   context_->OnReceivedData(std::move(data));
 }
 
@@ -1116,6 +1125,8 @@ void WebURLLoaderImpl::RequestPeerImpl::OnTransferSizeUpdated(
 void WebURLLoaderImpl::RequestPeerImpl::OnReceivedCachedMetadata(
     const char* data,
     int len) {
+  if (discard_body_)
+    return;
   context_->OnReceivedCachedMetadata(data, len);
 }
 
