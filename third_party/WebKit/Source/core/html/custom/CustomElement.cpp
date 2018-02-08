@@ -213,7 +213,7 @@ void CustomElement::TryToUpgrade(Element* element) {
   CustomElementRegistry* registry = CustomElement::Registry(*element);
   if (!registry)
     return;
-  const AtomicString& is_value = element->FastGetAttribute(HTMLNames::isAttr);
+  const AtomicString& is_value = element->IsValue();
   if (CustomElementDefinition* definition =
           registry->DefinitionFor(CustomElementDescriptor(
               is_value.IsNull() ? element->localName() : is_value,

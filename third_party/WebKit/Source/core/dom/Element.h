@@ -769,6 +769,8 @@ class CORE_EXPORT Element : public ContainerNode {
 
   void SetCustomElementDefinition(CustomElementDefinition*);
   CustomElementDefinition* GetCustomElementDefinition() const;
+  // https://dom.spec.whatwg.org/#concept-element-is-value
+  const AtomicString& IsValue() const;
 
   bool ContainsFullScreenElement() const {
     return HasElementFlag(kContainsFullScreenElement);

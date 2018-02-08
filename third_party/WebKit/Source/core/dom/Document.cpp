@@ -1284,7 +1284,7 @@ Node* Document::importNode(Node* imported_node,
       }
       Element* new_element = createElement(old_element->TagQName(),
                                            CreateElementFlags::ByImportNode());
-      const AtomicString& is = old_element->FastGetAttribute(HTMLNames::isAttr);
+      const AtomicString& is = old_element->IsValue();
       if (!is.IsNull() &&
           !V0CustomElement::IsValidName(new_element->localName()))
         V0CustomElementRegistrationContext::SetTypeExtension(new_element, is);

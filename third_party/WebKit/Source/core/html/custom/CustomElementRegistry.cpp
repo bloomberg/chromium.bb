@@ -275,7 +275,7 @@ CustomElementDefinition* CustomElementRegistry::DefinitionForId(
 void CustomElementRegistry::AddCandidate(Element* candidate) {
   AtomicString name = candidate->localName();
   if (!CustomElement::IsValidName(name)) {
-    const AtomicString& is = candidate->FastGetAttribute(HTMLNames::isAttr);
+    const AtomicString& is = candidate->IsValue();
     if (!is.IsNull())
       name = is;
   }
