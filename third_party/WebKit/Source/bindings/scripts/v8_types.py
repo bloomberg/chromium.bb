@@ -789,7 +789,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
         'cpp_type': this_cpp_type,
         'cpp_name': variable_name,
         'declare_variable': declare_variable,
-        'return_expression': bailout_return_value,
+        'return_expression': return_expression,
         'set_expression': set_expression,
     }
 
