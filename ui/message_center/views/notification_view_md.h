@@ -224,7 +224,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
 
   void Activate();
 
-  void AnimateBackground(const ui::LocatedEvent& event);
+  void AddBackgroundAnimation(const ui::LocatedEvent& event);
+  void RemoveBackgroundAnimation();
 
   // Overridden from views::View:
   void Layout() override;

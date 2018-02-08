@@ -352,6 +352,14 @@ bool NotificationHeaderView::IsExpandButtonEnabled() {
   return expand_button_->visible();
 }
 
+void NotificationHeaderView::SetSubpixelRenderingEnabled(bool enabled) {
+  app_name_view_->SetSubpixelRenderingEnabled(enabled);
+  summary_text_divider_->SetSubpixelRenderingEnabled(enabled);
+  summary_text_view_->SetSubpixelRenderingEnabled(enabled);
+  timestamp_divider_->SetSubpixelRenderingEnabled(enabled);
+  timestamp_view_->SetSubpixelRenderingEnabled(enabled);
+}
+
 std::unique_ptr<views::InkDrop> NotificationHeaderView::CreateInkDrop() {
   return std::make_unique<views::InkDropStub>();
 }
