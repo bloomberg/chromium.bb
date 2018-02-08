@@ -14,12 +14,13 @@
 
 namespace {
 
-blink::FeaturePolicyFeature GetFeaturePolicyFeature(ContentSettingsType type) {
+blink::mojom::FeaturePolicyFeature GetFeaturePolicyFeature(
+    ContentSettingsType type) {
   if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
-    return blink::FeaturePolicyFeature::kMicrophone;
+    return blink::mojom::FeaturePolicyFeature::kMicrophone;
 
   DCHECK_EQ(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, type);
-  return blink::FeaturePolicyFeature::kCamera;
+  return blink::mojom::FeaturePolicyFeature::kCamera;
 }
 
 }  // namespace

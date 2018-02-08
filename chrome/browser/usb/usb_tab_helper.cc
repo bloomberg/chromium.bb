@@ -14,7 +14,7 @@
 #include "content/public/common/content_features.h"
 #include "device/usb/mojo/device_manager_impl.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/usb/web_usb_chooser_service_android.h"
@@ -170,7 +170,7 @@ bool UsbTabHelper::AllowedByFeaturePolicy(
   DCHECK(WebContents::FromRenderFrameHost(render_frame_host) == web_contents());
   if (base::FeatureList::IsEnabled(features::kFeaturePolicy)) {
     return render_frame_host->IsFeatureEnabled(
-        blink::FeaturePolicyFeature::kUsb);
+        blink::mojom::FeaturePolicyFeature::kUsb);
   }
   return web_contents()->GetMainFrame() == render_frame_host;
 }

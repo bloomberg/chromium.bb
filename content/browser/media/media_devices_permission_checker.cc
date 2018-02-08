@@ -44,10 +44,10 @@ MediaDevicesManager::BoolDeviceTypes DoCheckPermissionsOnUIThread(
   bool mic_feature_policy = true;
   bool camera_feature_policy = true;
   if (base::FeatureList::IsEnabled(features::kUseFeaturePolicyForPermissions)) {
-    mic_feature_policy =
-        frame_host->IsFeatureEnabled(blink::FeaturePolicyFeature::kMicrophone);
-    camera_feature_policy =
-        frame_host->IsFeatureEnabled(blink::FeaturePolicyFeature::kCamera);
+    mic_feature_policy = frame_host->IsFeatureEnabled(
+        blink::mojom::FeaturePolicyFeature::kMicrophone);
+    camera_feature_policy = frame_host->IsFeatureEnabled(
+        blink::mojom::FeaturePolicyFeature::kCamera);
   }
 
   MediaDevicesManager::BoolDeviceTypes result;

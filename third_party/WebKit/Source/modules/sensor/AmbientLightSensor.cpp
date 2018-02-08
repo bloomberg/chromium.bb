@@ -33,7 +33,7 @@ AmbientLightSensor::AmbientLightSensor(ExecutionContext* execution_context,
              options,
              exception_state,
              SensorType::AMBIENT_LIGHT,
-             {FeaturePolicyFeature::kAmbientLightSensor}) {}
+             {mojom::FeaturePolicyFeature::kAmbientLightSensor}) {}
 
 double AmbientLightSensor::illuminance(bool& is_null) const {
   INIT_IS_NULL_AND_RETURN(is_null, 0.0);

@@ -120,7 +120,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
 
   ParsedFeaturePolicy whitelists;
   BitVector features_specified(
-      static_cast<int>(FeaturePolicyFeature::LAST_FEATURE));
+      static_cast<int>(mojom::FeaturePolicyFeature::kLastFeature));
 
   // RFC2616, section 4.2 specifies that headers appearing multiple times can be
   // combined with a comma. Walk the header string, and parse each comma
@@ -146,7 +146,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
         continue;
       }
 
-      FeaturePolicyFeature feature = feature_names.at(tokens[0]);
+      mojom::FeaturePolicyFeature feature = feature_names.at(tokens[0]);
       // If a policy has already been specified for the current feature, drop
       // the new policy.
       if (features_specified.QuickGet(static_cast<int>(feature)))
@@ -199,25 +199,25 @@ ParsedFeaturePolicy ParseFeaturePolicy(
   return whitelists;
 }
 
-bool IsSupportedInFeaturePolicy(FeaturePolicyFeature feature) {
+bool IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature feature) {
   if (!RuntimeEnabledFeatures::FeaturePolicyEnabled())
     return false;
   switch (feature) {
-    case FeaturePolicyFeature::kFullscreen:
-    case FeaturePolicyFeature::kPayment:
-    case FeaturePolicyFeature::kUsb:
-    case FeaturePolicyFeature::kWebVr:
-    case FeaturePolicyFeature::kAccelerometer:
-    case FeaturePolicyFeature::kAmbientLightSensor:
-    case FeaturePolicyFeature::kGyroscope:
-    case FeaturePolicyFeature::kMagnetometer:
+    case mojom::FeaturePolicyFeature::kFullscreen:
+    case mojom::FeaturePolicyFeature::kPayment:
+    case mojom::FeaturePolicyFeature::kUsb:
+    case mojom::FeaturePolicyFeature::kWebVr:
+    case mojom::FeaturePolicyFeature::kAccelerometer:
+    case mojom::FeaturePolicyFeature::kAmbientLightSensor:
+    case mojom::FeaturePolicyFeature::kGyroscope:
+    case mojom::FeaturePolicyFeature::kMagnetometer:
       return true;
-    case FeaturePolicyFeature::kPictureInPicture:
+    case mojom::FeaturePolicyFeature::kPictureInPicture:
       return RuntimeEnabledFeatures::PictureInPictureAPIEnabled();
-    case FeaturePolicyFeature::kSyncXHR:
+    case mojom::FeaturePolicyFeature::kSyncXHR:
       return true;
-    case FeaturePolicyFeature::kVibrate:
-    case FeaturePolicyFeature::kUnsizedMedia:
+    case mojom::FeaturePolicyFeature::kVibrate:
+    case mojom::FeaturePolicyFeature::kUnsizedMedia:
       return RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled();
     default:
       return false;
@@ -228,46 +228,55 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
   DEFINE_STATIC_LOCAL(FeatureNameMap, default_feature_name_map, ());
   if (default_feature_name_map.IsEmpty()) {
     default_feature_name_map.Set("fullscreen",
-                                 FeaturePolicyFeature::kFullscreen);
-    default_feature_name_map.Set("payment", FeaturePolicyFeature::kPayment);
-    default_feature_name_map.Set("usb", FeaturePolicyFeature::kUsb);
-    default_feature_name_map.Set("camera", FeaturePolicyFeature::kCamera);
+                                 mojom::FeaturePolicyFeature::kFullscreen);
+    default_feature_name_map.Set("payment",
+                                 mojom::FeaturePolicyFeature::kPayment);
+    default_feature_name_map.Set("usb", mojom::FeaturePolicyFeature::kUsb);
+    default_feature_name_map.Set("camera",
+                                 mojom::FeaturePolicyFeature::kCamera);
     default_feature_name_map.Set("encrypted-media",
-                                 FeaturePolicyFeature::kEncryptedMedia);
+                                 mojom::FeaturePolicyFeature::kEncryptedMedia);
     default_feature_name_map.Set("microphone",
-                                 FeaturePolicyFeature::kMicrophone);
-    default_feature_name_map.Set("speaker", FeaturePolicyFeature::kSpeaker);
+                                 mojom::FeaturePolicyFeature::kMicrophone);
+    default_feature_name_map.Set("speaker",
+                                 mojom::FeaturePolicyFeature::kSpeaker);
     default_feature_name_map.Set("geolocation",
-                                 FeaturePolicyFeature::kGeolocation);
-    default_feature_name_map.Set("midi", FeaturePolicyFeature::kMidiFeature);
-    default_feature_name_map.Set("sync-xhr", FeaturePolicyFeature::kSyncXHR);
-    default_feature_name_map.Set("vr", FeaturePolicyFeature::kWebVr);
+                                 mojom::FeaturePolicyFeature::kGeolocation);
+    default_feature_name_map.Set("midi",
+                                 mojom::FeaturePolicyFeature::kMidiFeature);
+    default_feature_name_map.Set("sync-xhr",
+                                 mojom::FeaturePolicyFeature::kSyncXHR);
+    default_feature_name_map.Set("vr", mojom::FeaturePolicyFeature::kWebVr);
     default_feature_name_map.Set("accelerometer",
-                                 FeaturePolicyFeature::kAccelerometer);
-    default_feature_name_map.Set("ambient-light-sensor",
-                                 FeaturePolicyFeature::kAmbientLightSensor);
-    default_feature_name_map.Set("gyroscope", FeaturePolicyFeature::kGyroscope);
+                                 mojom::FeaturePolicyFeature::kAccelerometer);
+    default_feature_name_map.Set(
+        "ambient-light-sensor",
+        mojom::FeaturePolicyFeature::kAmbientLightSensor);
+    default_feature_name_map.Set("gyroscope",
+                                 mojom::FeaturePolicyFeature::kGyroscope);
     default_feature_name_map.Set("magnetometer",
-                                 FeaturePolicyFeature::kMagnetometer);
+                                 mojom::FeaturePolicyFeature::kMagnetometer);
     if (RuntimeEnabledFeatures::PictureInPictureAPIEnabled()) {
-      default_feature_name_map.Set("picture-in-picture",
-                                   FeaturePolicyFeature::kPictureInPicture);
+      default_feature_name_map.Set(
+          "picture-in-picture", mojom::FeaturePolicyFeature::kPictureInPicture);
     }
     if (RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled()) {
-      default_feature_name_map.Set("vibrate", FeaturePolicyFeature::kVibrate);
-      default_feature_name_map.Set("cookie",
-                                   FeaturePolicyFeature::kDocumentCookie);
-      default_feature_name_map.Set("domain",
-                                   FeaturePolicyFeature::kDocumentDomain);
+      default_feature_name_map.Set("vibrate",
+                                   mojom::FeaturePolicyFeature::kVibrate);
+      default_feature_name_map.Set(
+          "cookie", mojom::FeaturePolicyFeature::kDocumentCookie);
+      default_feature_name_map.Set(
+          "domain", mojom::FeaturePolicyFeature::kDocumentDomain);
       default_feature_name_map.Set("docwrite",
-                                   FeaturePolicyFeature::kDocumentWrite);
+                                   mojom::FeaturePolicyFeature::kDocumentWrite);
       default_feature_name_map.Set("sync-script",
-                                   FeaturePolicyFeature::kSyncScript);
+                                   mojom::FeaturePolicyFeature::kSyncScript);
       default_feature_name_map.Set("unsized-media",
-                                   FeaturePolicyFeature::kUnsizedMedia);
+                                   mojom::FeaturePolicyFeature::kUnsizedMedia);
     }
     if (RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled()) {
-      default_feature_name_map.Set("autoplay", FeaturePolicyFeature::kAutoplay);
+      default_feature_name_map.Set("autoplay",
+                                   mojom::FeaturePolicyFeature::kAutoplay);
     }
   }
   return default_feature_name_map;

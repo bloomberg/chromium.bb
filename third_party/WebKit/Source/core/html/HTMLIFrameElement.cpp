@@ -227,7 +227,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
   if (AllowFullscreen()) {
     bool has_fullscreen_policy = false;
     for (const auto& declaration : container_policy) {
-      if (declaration.feature == FeaturePolicyFeature::kFullscreen) {
+      if (declaration.feature == mojom::FeaturePolicyFeature::kFullscreen) {
         has_fullscreen_policy = true;
         if (messages) {
           messages->push_back(
@@ -238,7 +238,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
     }
     if (!has_fullscreen_policy) {
       ParsedFeaturePolicyDeclaration whitelist;
-      whitelist.feature = FeaturePolicyFeature::kFullscreen;
+      whitelist.feature = mojom::FeaturePolicyFeature::kFullscreen;
       whitelist.matches_all_origins = true;
       container_policy.push_back(whitelist);
     }
@@ -248,7 +248,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
   if (AllowPaymentRequest()) {
     bool has_payment_policy = false;
     for (const auto& declaration : container_policy) {
-      if (declaration.feature == FeaturePolicyFeature::kPayment) {
+      if (declaration.feature == mojom::FeaturePolicyFeature::kPayment) {
         has_payment_policy = true;
         if (messages) {
           messages->push_back(
@@ -259,7 +259,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
     }
     if (!has_payment_policy) {
       ParsedFeaturePolicyDeclaration whitelist;
-      whitelist.feature = FeaturePolicyFeature::kPayment;
+      whitelist.feature = mojom::FeaturePolicyFeature::kPayment;
       whitelist.matches_all_origins = true;
       whitelist.origins = std::vector<url::Origin>(0UL);
       container_policy.push_back(whitelist);

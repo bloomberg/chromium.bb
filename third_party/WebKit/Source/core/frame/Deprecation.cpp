@@ -19,7 +19,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/reporting.mojom-blink.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.mojom-blink.h"
 
 using blink::WebFeature;
 
@@ -706,8 +706,9 @@ void Deprecation::CountDeprecationCrossOriginIframe(const Document& document,
   CountDeprecationCrossOriginIframe(frame, feature);
 }
 
-void Deprecation::CountDeprecationFeaturePolicy(const Document& document,
-                                                FeaturePolicyFeature feature) {
+void Deprecation::CountDeprecationFeaturePolicy(
+    const Document& document,
+    mojom::FeaturePolicyFeature feature) {
   // If feature policy is not enabled, don't do anything.
   if (!RuntimeEnabledFeatures::FeaturePolicyEnabled())
     return;
@@ -727,30 +728,30 @@ void Deprecation::CountDeprecationFeaturePolicy(const Document& document,
   // (until the general syntax is shipped) and this is also a good enough
   // approximation for deprecation messages.
   switch (feature) {
-    case FeaturePolicyFeature::kEncryptedMedia:
+    case mojom::FeaturePolicyFeature::kEncryptedMedia:
       CountDeprecationCrossOriginIframe(
           frame,
           WebFeature::
               kEncryptedMediaDisallowedByFeaturePolicyInCrossOriginIframe);
       break;
-    case FeaturePolicyFeature::kGeolocation:
+    case mojom::FeaturePolicyFeature::kGeolocation:
       CountDeprecationCrossOriginIframe(
           frame,
           WebFeature::kGeolocationDisallowedByFeaturePolicyInCrossOriginIframe);
       break;
-    case FeaturePolicyFeature::kMicrophone:
+    case mojom::FeaturePolicyFeature::kMicrophone:
       CountDeprecationCrossOriginIframe(
           frame,
           WebFeature::
               kGetUserMediaMicDisallowedByFeaturePolicyInCrossOriginIframe);
       break;
-    case FeaturePolicyFeature::kCamera:
+    case mojom::FeaturePolicyFeature::kCamera:
       CountDeprecationCrossOriginIframe(
           frame,
           WebFeature::
               kGetUserMediaCameraDisallowedByFeaturePolicyInCrossOriginIframe);
       break;
-    case FeaturePolicyFeature::kMidiFeature:
+    case mojom::FeaturePolicyFeature::kMidiFeature:
       CountDeprecationCrossOriginIframe(
           frame,
           WebFeature::

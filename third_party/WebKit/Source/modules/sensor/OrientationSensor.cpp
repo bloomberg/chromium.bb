@@ -119,7 +119,7 @@ OrientationSensor::OrientationSensor(
     const SensorOptions& options,
     ExceptionState& exception_state,
     device::mojom::blink::SensorType type,
-    const Vector<FeaturePolicyFeature>& features)
+    const Vector<mojom::FeaturePolicyFeature>& features)
     : Sensor(execution_context, options, exception_state, type, features),
       reading_dirty_(true) {}
 

@@ -13,7 +13,7 @@ Accelerometer* Accelerometer::Create(ExecutionContext* execution_context,
                                      ExceptionState& exception_state) {
   return new Accelerometer(execution_context, options, exception_state,
                            SensorType::ACCELEROMETER,
-                           {FeaturePolicyFeature::kAccelerometer});
+                           {mojom::FeaturePolicyFeature::kAccelerometer});
 }
 
 // static
@@ -22,11 +22,12 @@ Accelerometer* Accelerometer::Create(ExecutionContext* execution_context,
   return Create(execution_context, SpatialSensorOptions(), exception_state);
 }
 
-Accelerometer::Accelerometer(ExecutionContext* execution_context,
-                             const SpatialSensorOptions& options,
-                             ExceptionState& exception_state,
-                             SensorType sensor_type,
-                             const Vector<FeaturePolicyFeature>& features)
+Accelerometer::Accelerometer(
+    ExecutionContext* execution_context,
+    const SpatialSensorOptions& options,
+    ExceptionState& exception_state,
+    SensorType sensor_type,
+    const Vector<mojom::FeaturePolicyFeature>& features)
     : Sensor(execution_context,
              options,
              exception_state,

@@ -65,7 +65,6 @@ include_rules = [
   # header-only types, and some selected common code.
   "-third_party/WebKit",
   "+third_party/WebKit/common/feature_policy/feature_policy.h",
-  "+third_party/WebKit/common/feature_policy/feature_policy_feature.h",
   "+third_party/WebKit/public/platform/WebAddressSpace.h",
   "+third_party/WebKit/public/platform/WebContentSecurityPolicy.h",
   "+third_party/WebKit/public/platform/WebCursorInfo.h",

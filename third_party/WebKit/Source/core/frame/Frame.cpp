@@ -238,7 +238,7 @@ bool Frame::ConsumeTransientUserActivation(Frame* frame,
              : UserGestureIndicator::ConsumeUserGesture();
 }
 
-bool Frame::IsFeatureEnabled(FeaturePolicyFeature feature) const {
+bool Frame::IsFeatureEnabled(mojom::FeaturePolicyFeature feature) const {
   FeaturePolicy* feature_policy = GetSecurityContext()->GetFeaturePolicy();
   // The policy should always be initialized before checking it to ensure we
   // properly inherit the parent policy.

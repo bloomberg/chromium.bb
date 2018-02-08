@@ -51,7 +51,7 @@ class MediaDevicesPermissionCheckerTest : public RenderViewHostImplTestHarness {
  protected:
   // The header policy should only be set once on page load, so we refresh the
   // page to simulate that.
-  void RefreshPageAndSetHeaderPolicy(blink::FeaturePolicyFeature feature,
+  void RefreshPageAndSetHeaderPolicy(blink::mojom::FeaturePolicyFeature feature,
                                      bool enabled) {
     NavigateAndCommit(origin_.GetURL());
     std::vector<url::Origin> whitelist;
@@ -108,12 +108,12 @@ TEST_F(MediaDevicesPermissionCheckerTest, CheckPermissionWithFeaturePolicy) {
   EXPECT_TRUE(CheckPermission(MEDIA_DEVICE_TYPE_AUDIO_INPUT));
   EXPECT_TRUE(CheckPermission(MEDIA_DEVICE_TYPE_VIDEO_INPUT));
 
-  RefreshPageAndSetHeaderPolicy(blink::FeaturePolicyFeature::kMicrophone,
+  RefreshPageAndSetHeaderPolicy(blink::mojom::FeaturePolicyFeature::kMicrophone,
                                 /*enabled=*/false);
   EXPECT_FALSE(CheckPermission(MEDIA_DEVICE_TYPE_AUDIO_INPUT));
   EXPECT_TRUE(CheckPermission(MEDIA_DEVICE_TYPE_VIDEO_INPUT));
 
-  RefreshPageAndSetHeaderPolicy(blink::FeaturePolicyFeature::kCamera,
+  RefreshPageAndSetHeaderPolicy(blink::mojom::FeaturePolicyFeature::kCamera,
                                 /*enabled=*/false);
   EXPECT_TRUE(CheckPermission(MEDIA_DEVICE_TYPE_AUDIO_INPUT));
   EXPECT_FALSE(CheckPermission(MEDIA_DEVICE_TYPE_VIDEO_INPUT));

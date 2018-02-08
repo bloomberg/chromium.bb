@@ -32,7 +32,7 @@
 #include "public/platform/WebMediaKeySystemConfiguration.h"
 #include "public/platform/WebMediaKeySystemMediaCapability.h"
 #include "public/platform/WebVector.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.mojom-blink.h"
 
 namespace blink {
 
@@ -279,8 +279,9 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   Document* document = ToDocument(execution_context);
 
   if (RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
-    if (!document->GetFrame() || !document->GetFrame()->IsFeatureEnabled(
-                                     FeaturePolicyFeature::kEncryptedMedia)) {
+    if (!document->GetFrame() ||
+        !document->GetFrame()->IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kEncryptedMedia)) {
       UseCounter::Count(document,
                         WebFeature::kEncryptedMediaDisabledByFeaturePolicy);
       document->AddConsoleMessage(
@@ -294,7 +295,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     }
   } else {
     Deprecation::CountDeprecationFeaturePolicy(
-        *document, FeaturePolicyFeature::kEncryptedMedia);
+        *document, mojom::FeaturePolicyFeature::kEncryptedMedia);
   }
 
   // From https://w3c.github.io/encrypted-media/#requestMediaKeySystemAccess

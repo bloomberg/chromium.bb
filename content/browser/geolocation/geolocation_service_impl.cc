@@ -8,7 +8,7 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_features.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
+#include "third_party/WebKit/common/feature_policy/feature_policy.mojom.h"
 
 namespace content {
 
@@ -75,7 +75,7 @@ void GeolocationServiceImpl::CreateGeolocation(
   if (base::FeatureList::IsEnabled(features::kFeaturePolicy) &&
       base::FeatureList::IsEnabled(features::kUseFeaturePolicyForPermissions) &&
       !render_frame_host_->IsFeatureEnabled(
-          blink::FeaturePolicyFeature::kGeolocation)) {
+          blink::mojom::FeaturePolicyFeature::kGeolocation)) {
     return;
   }
 

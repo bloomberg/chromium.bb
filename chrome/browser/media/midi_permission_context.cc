@@ -7,7 +7,7 @@
 MidiPermissionContext::MidiPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
                             CONTENT_SETTINGS_TYPE_MIDI,
-                            blink::FeaturePolicyFeature::kMidiFeature) {}
+                            blink::mojom::FeaturePolicyFeature::kMidiFeature) {}
 
 MidiPermissionContext::~MidiPermissionContext() {
 }
