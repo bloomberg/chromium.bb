@@ -82,11 +82,26 @@ class MEDIA_EXPORT Pipeline {
 
   virtual ~Pipeline() {}
 
+  // StartType provides the option to start the pipeline without a renderer;
+  // pipeline initialization will stop once metadata has been retrieved. The
+  // flags below indicate when suspended start will be invoked.
+  enum class StartType {
+    kNormal,                            // Follow the normal startup path.
+    kSuspendAfterMetadataForAudioOnly,  // Suspend after metadata for audio
+                                        // only.
+    kSuspendAfterMetadata,              // Always suspend after metadata.
+  };
+
   // Build a pipeline to using the given |demuxer| and |renderer| to construct
   // a filter chain, executing |seek_cb| when the initial seek has completed.
   // Methods on PipelineClient may be called up until Stop() has completed.
   // It is an error to call this method after the pipeline has already started.
-  virtual void Start(Demuxer* demuxer,
+  //
+  // If a |start_type| is specified which allows suspension, pipeline startup
+  // will halt after metadata has been retrieved and the pipeline will be in a
+  // suspended state.
+  virtual void Start(StartType start_type,
+                     Demuxer* demuxer,
                      std::unique_ptr<Renderer> renderer,
                      Client* client,
                      const PipelineStatusCB& seek_cb) = 0;
@@ -140,6 +155,11 @@ class MEDIA_EXPORT Pipeline {
   // returns true, it is expected that Stop() will be called before destroying
   // the pipeline.
   virtual bool IsRunning() const = 0;
+
+  // Returns true if the pipeline has been suspended via Suspend() or during
+  // Start(). If IsSuspended() returns true, it is expected that Resume() will
+  // be called to resume playback.
+  virtual bool IsSuspended() const = 0;
 
   // Gets the current playback rate of the pipeline.  When the pipeline is
   // started, the playback rate will be 0.0.  A rate of 1.0 indicates

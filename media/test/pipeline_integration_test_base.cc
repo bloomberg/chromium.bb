@@ -283,7 +283,7 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
 
   base::RunLoop run_loop;
   pipeline_->Start(
-      demuxer_.get(),
+      Pipeline::StartType::kNormal, demuxer_.get(),
       renderer_factory_->CreateRenderer(prepend_video_decoders_cb,
                                         prepend_audio_decoders_cb),
       this,
@@ -633,7 +633,7 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
   }
 
   pipeline_->Start(
-      demuxer_.get(),
+      Pipeline::StartType::kNormal, demuxer_.get(),
       renderer_factory_->CreateRenderer(CreateVideoDecodersCB(),
                                         CreateAudioDecodersCB()),
       this,

@@ -74,8 +74,9 @@ class MockPipeline : public Pipeline {
   // take unique_ptr* instead of unique_ptr so that they can be mock methods.
   // Private stubs for Start() and Resume() implement the actual Pipeline
   // interface by forwarding to these mock methods.
-  MOCK_METHOD4(Start,
-               void(Demuxer*,
+  MOCK_METHOD5(Start,
+               void(StartType start_type,
+                    Demuxer*,
                     std::unique_ptr<Renderer>*,
                     Client*,
                     const PipelineStatusCB&));
@@ -96,6 +97,8 @@ class MockPipeline : public Pipeline {
   // Stop(). (Or better, remove it from the interface entirely.)
   MOCK_CONST_METHOD0(IsRunning, bool());
 
+  MOCK_CONST_METHOD0(IsSuspended, bool());
+
   // TODO(sandersd): These should be regular getters/setters.
   MOCK_CONST_METHOD0(GetPlaybackRate, double());
   MOCK_METHOD1(SetPlaybackRate, void(double));
@@ -113,7 +116,8 @@ class MockPipeline : public Pipeline {
 
  private:
   // Forwarding stubs (see comment above).
-  void Start(Demuxer* demuxer,
+  void Start(StartType start_type,
+             Demuxer* demuxer,
              std::unique_ptr<Renderer> renderer,
              Client* client,
              const PipelineStatusCB& seek_cb) override;
