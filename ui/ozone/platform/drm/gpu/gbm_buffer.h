@@ -79,7 +79,8 @@ class GbmBuffer : public ScanoutBuffer {
       gbm_bo* bo,
       uint32_t format,
       const gfx::Size& size,
-      uint32_t flags);
+      uint32_t flags,
+      uint64_t modifier);
 
   scoped_refptr<GbmDevice> drm_;
   gbm_bo* bo_;

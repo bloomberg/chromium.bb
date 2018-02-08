@@ -70,7 +70,6 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
     // a bo with modifiers, otherwise, we rely on the "no modifiers"
     // behavior doing the right thing.
     const uint32_t addfb_flags =
-        gbm->allow_addfb2_modifiers() &&
         modifier != DRM_FORMAT_MOD_INVALID ? DRM_MODE_FB_MODIFIERS : 0;
     bool ret = drm_->AddFramebuffer2(
         gbm_bo_get_width(bo), gbm_bo_get_height(bo), framebuffer_pixel_format_,
@@ -190,12 +189,12 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferForBO(
     gbm_bo* bo,
     uint32_t format,
     const gfx::Size& size,
-    uint32_t flags) {
+    uint32_t flags,
+    uint64_t modifier) {
   DCHECK(bo);
   std::vector<base::ScopedFD> fds;
   std::vector<gfx::NativePixmapPlane> planes;
 
-  const uint64_t modifier = gbm_bo_get_format_modifier(bo);
   for (size_t i = 0; i < gbm_bo_get_num_planes(bo); ++i) {
     // The fd returned by gbm_bo_get_fd is not ref-counted and need to be
     // kept open for the lifetime of the buffer.
@@ -241,7 +240,8 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferWithModifiers(
   if (!bo)
     return nullptr;
 
-  return CreateBufferForBO(gbm, bo, format, size, flags);
+  return CreateBufferForBO(gbm, bo, format, size, flags,
+                           gbm_bo_get_format_modifier(bo));
 }
 
 // static
@@ -258,7 +258,15 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
   if (!bo)
     return nullptr;
 
-  return CreateBufferForBO(gbm, bo, format, size, flags);
+  // minigbm knows which modifier it chose for the bo it created, and will
+  // tell us if we ask. However, we have to track it as DRM_FORMAT_MOD_INVALID
+  // at this level so we don't try to pass it to addfb2, which may not support
+  // that.  Only when the bo is created with modifiers
+  // (CreateBufferWithModifiers above) do we track the actual modifier, since
+  // we know we can pass it to addfb2 in that case.
+
+  return CreateBufferForBO(gbm, bo, format, size, flags,
+                           DRM_FORMAT_MOD_INVALID);
 }
 
 // static
