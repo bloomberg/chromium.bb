@@ -197,11 +197,11 @@ void TrimElements(const std::set<int> target_ids,
   }
 
   // Take a second pass and determine which element IDs to keep. We want to keep
-  // both siblings and children of the target ids. We start by identifying the
-  // siblings by finding the common parent of each target element, and keeping
-  // all of its children (ie: the siblings of the target elements).
+  // the immediate parent, the siblings, and the children of the target ids.
+  // By keeping the parent of the target and all of its children, this covers
+  // the target's siblings as well.
   std::vector<int> ids_to_keep;
-  // Keep track of ids that were kept to avoid duplicated. We still need the
+  // Keep track of ids that were kept to avoid duplication. We still need the
   // vector above for handling the children where it is used like a queue.
   std::unordered_set<int> kept_ids;
   for (int target_id : target_ids) {
@@ -213,12 +213,12 @@ void TrimElements(const std::set<int> target_ids,
       return;
     }
 
-    const HTMLElement* parent_element = elements_by_id[parent_id];
-    for (int sibling_id : parent_element->child_ids()) {
-      if (kept_ids.count(sibling_id) == 0) {
-        ids_to_keep.push_back(sibling_id);
-        kept_ids.insert(sibling_id);
-      }
+    // Otherwise, insert the parent ID into the list of ids to keep. This will
+    // capture the parent and siblings of the target element, as well as each of
+    // their children.
+    if (kept_ids.count(parent_id) == 0) {
+      ids_to_keep.push_back(parent_id);
+      kept_ids.insert(parent_id);
     }
   }
 
