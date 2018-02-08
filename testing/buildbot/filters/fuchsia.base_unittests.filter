@@ -60,6 +60,7 @@
 
 # https://crbug.com/752368.
 -FieldTrialListTest.ClearParamsFromSharedMemory
+-FieldTrialListTest.TestCopyFieldTrialStateToFlags
 
 # https://crbug.com/779645 - requires ability to set address-space limits.
 -PartitionAllocTest.RepeatedReturnNull
