@@ -596,7 +596,7 @@ void apply_selfguided_restoration_sse4_1(const uint8_t *dat8, int width,
       const uint8_t *dat8ij = dat8 + i * stride + j;
       __m128i src;
       if (highbd) {
-        src = xx_load_128(CONVERT_TO_SHORTPTR(dat8ij));
+        src = xx_loadu_128(CONVERT_TO_SHORTPTR(dat8ij));
       } else {
         src = _mm_cvtepu8_epi16(xx_loadl_64(dat8ij));
       }
@@ -629,7 +629,7 @@ void apply_selfguided_restoration_sse4_1(const uint8_t *dat8, int width,
         const __m128i tmp = _mm_packus_epi32(w_0, w_1);
         const __m128i max = _mm_set1_epi16((1 << bit_depth) - 1);
         const __m128i res = _mm_min_epi16(tmp, max);
-        xx_store_128(CONVERT_TO_SHORTPTR(dst8 + m), res);
+        xx_storeu_128(CONVERT_TO_SHORTPTR(dst8 + m), res);
       } else {
         // Pack into 8 bits and clamp to [0, 256)
         const __m128i tmp = _mm_packs_epi32(w_0, w_1);

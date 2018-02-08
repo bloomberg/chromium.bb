@@ -685,7 +685,7 @@ void apply_selfguided_restoration_avx2(const uint8_t *dat8, int width,
         const __m256i tmp2 = _mm256_permute4x64_epi64(tmp, 0xd8);
         const __m256i max = _mm256_set1_epi16((1 << bit_depth) - 1);
         const __m256i res = _mm256_min_epi16(tmp2, max);
-        yy_store_256(CONVERT_TO_SHORTPTR(dst8 + m), res);
+        yy_storeu_256(CONVERT_TO_SHORTPTR(dst8 + m), res);
       } else {
         // Pack into 8 bits and clamp to [0, 256)
         // Note that each pack messes up the order of the bits,
@@ -696,7 +696,7 @@ void apply_selfguided_restoration_avx2(const uint8_t *dat8, int width,
             _mm256_packus_epi16(tmp2, tmp2 /* "don't care" value */);
         const __m128i res2 =
             _mm256_castsi256_si128(_mm256_permute4x64_epi64(res, 0xd8));
-        xx_store_128(dst8 + m, res2);
+        xx_storeu_128(dst8 + m, res2);
       }
     }
   }
