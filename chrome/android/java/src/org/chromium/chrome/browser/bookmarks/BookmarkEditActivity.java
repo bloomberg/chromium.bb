@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.SynchronousInitializationActivity;
@@ -87,11 +86,15 @@ public class BookmarkEditActivity extends SynchronousInitializationActivity {
 
         updateViewContent(false);
 
+        View shadow = findViewById(R.id.shadow);
         if (!FeatureUtilities.isChromeModernDesignEnabled()) {
-            findViewById(R.id.shadow).setVisibility(View.VISIBLE);
+            shadow.setVisibility(View.VISIBLE);
             toolbar.setTitleTextAppearance(toolbar.getContext(), R.style.BlackHeadline2);
-            toolbar.setBackgroundColor(
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color));
+        } else {
+            View scrollView = findViewById(R.id.scroll_view);
+            scrollView.getViewTreeObserver().addOnScrollChangedListener(() -> {
+                shadow.setVisibility(scrollView.getScrollY() > 0 ? View.VISIBLE : View.GONE);
+            });
         }
     }
 

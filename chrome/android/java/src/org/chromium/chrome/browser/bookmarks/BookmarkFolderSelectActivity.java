@@ -167,11 +167,20 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
 
         updateFolderList();
 
+        View shadow = findViewById(R.id.shadow);
         if (!FeatureUtilities.isChromeModernDesignEnabled()) {
-            findViewById(R.id.shadow).setVisibility(View.VISIBLE);
+            shadow.setVisibility(View.VISIBLE);
             toolbar.setTitleTextAppearance(toolbar.getContext(), R.style.BlackHeadline2);
-            toolbar.setBackgroundColor(
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color));
+        } else {
+            int listPaddingTop =
+                    getResources().getDimensionPixelSize(R.dimen.bookmark_list_view_padding_top);
+            mBookmarkIdsList.getViewTreeObserver().addOnScrollChangedListener(() -> {
+                if (mBookmarkIdsList.getChildCount() < 1) return;
+
+                shadow.setVisibility(mBookmarkIdsList.getChildAt(0).getTop() < listPaddingTop
+                                ? View.VISIBLE
+                                : View.GONE);
+            });
         }
     }
 

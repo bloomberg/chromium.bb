@@ -576,6 +576,7 @@
     <style name="ModernToolbar" parent="Widget.AppCompat.Toolbar">
         <item name="titleTextAppearance">@style/BlackHeadline1</item>
         <item name="windowActionBarOverlay">true</item>
+        <item name="android:background">@color/modern_primary_color</item>
     </style>
     <style name="ToolbarButton">
         <item name="android:background">?attr/selectableItemBackground</item>

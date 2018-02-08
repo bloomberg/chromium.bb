@@ -198,7 +198,8 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
 
         normalBackgroundColorResId = normalBackgroundColorResId != null
                 ? normalBackgroundColorResId
-                : R.color.default_primary_color;
+                : FeatureUtilities.isChromeModernDesignEnabled() ? R.color.modern_primary_color
+                                                                 : R.color.default_primary_color;
         mNormalBackgroundColor =
                 ApiCompatibilityUtils.getColor(getResources(), normalBackgroundColorResId);
         setBackgroundColor(mNormalBackgroundColor);

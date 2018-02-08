@@ -496,7 +496,7 @@
     <dimen name="selectable_list_action_bar_end_padding">6dp</dimen>
     <dimen name="toolbar_wide_display_start_offset">13dp</dimen>
     <dimen name="toolbar_modern_search_view_start_offset">4dp</dimen>
-    <dimen name="search_toolbar_modern_bg_top_bottom_inset">10dp</dimen>
+    <dimen name="search_toolbar_modern_bg_top_bottom_inset">8dp</dimen>
     <dimen name="search_toolbar_modern_bg_lateral_inset">8dp</dimen>
     <dimen name="selectable_list_toolbar_nav_button_start_offset">4dp</dimen>
     <dimen name="selectable_list_search_icon_end_padding">4dp</dimen>
@@ -509,7 +509,6 @@
     <dimen name="bottom_nav_shadow_height">8dp</dimen>
 
     <!-- Chrome Home dimensions -->
-    <dimen name="chrome_home_empty_view_top_padding">72dp</dimen>
     <dimen name="chrome_home_min_full_half_distance">160dp</dimen>
     <dimen name="chrome_home_progress_bar_height">4dp</dimen>
     <dimen name="chrome_home_incognito_ntp_bottom_margin">32dp</dimen>
