@@ -96,7 +96,10 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool);
 
 // Returns 1 if a superres upscaled frame is unscaled and 0 otherwise.
 static INLINE int av1_superres_unscaled(const AV1_COMMON *cm) {
-  return (cm->superres_scale_denominator == SCALE_NUMERATOR);
+  // Note: for some corner cases (e.g. cm->width of 1), there may be no scaling
+  // required even though cm->superres_scale_denominator != SCALE_NUMERATOR.
+  // So, the following check is more accurate.
+  return (cm->width == cm->superres_upscaled_width);
 }
 #endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 

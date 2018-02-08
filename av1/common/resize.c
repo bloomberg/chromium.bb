@@ -1201,9 +1201,8 @@ YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
   }
 }
 
-// Calculates scaled dimensions given original dimensions and the scale
-// denominator. If 'scale_height' is 1, both width and height are scaled;
-// otherwise, only the width is scaled.
+// Calculates the scaled dimension given the original dimension and the scale
+// denominator.
 static void calculate_scaled_size_helper(int *dim, int denom) {
   if (denom != SCALE_NUMERATOR) {
     // Use this version if we need *dim to be even
