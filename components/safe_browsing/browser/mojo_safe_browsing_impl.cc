@@ -110,9 +110,14 @@ void MojoSafeBrowsingImpl::CreateCheckerAndCheck(
     int32_t load_flags,
     content::ResourceType resource_type,
     bool has_user_gesture,
+    bool originated_from_service_worker,
     CreateCheckerAndCheckCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (delegate_->ShouldSkipRequestCheck(resource_context_, url)) {
+
+  if (delegate_->ShouldSkipRequestCheck(resource_context_, url,
+                                        -1 /* frame_tree_node_id */,
+                                        render_process_id_, render_frame_id,
+                                        originated_from_service_worker)) {
     // This will drop |request|. The result is that the renderer side will
     // consider all URLs in the redirect chain of this request as safe.
     return;

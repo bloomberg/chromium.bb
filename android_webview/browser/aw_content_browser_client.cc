@@ -44,6 +44,7 @@
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
 #include "components/safe_browsing/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/browser/mojo_safe_browsing_impl.h"
+#include "components/safe_browsing/features.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
@@ -566,7 +567,8 @@ void AwContentBrowserClient::ExposeInterfacesToRenderer(
     service_manager::BinderRegistry* registry,
     blink::AssociatedInterfaceRegistry* associated_registry,
     content::RenderProcessHost* render_process_host) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      base::FeatureList::IsEnabled(safe_browsing::kCheckByURLLoaderThrottle)) {
     content::ResourceContext* resource_context =
         render_process_host->GetBrowserContext()->GetResourceContext();
     registry->AddInterface(
@@ -585,17 +587,25 @@ AwContentBrowserClient::CreateURLLoaderThrottles(
     const network::ResourceRequest& request,
     content::ResourceContext* resource_context,
     const base::RepeatingCallback<content::WebContents*()>& wc_getter,
-    content::NavigationUIData* navigation_ui_data) {
+    content::NavigationUIData* navigation_ui_data,
+    int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    auto safe_browsing_throttle =
-        safe_browsing::BrowserURLLoaderThrottle::MaybeCreate(
-            GetSafeBrowsingUrlCheckerDelegate(), wc_getter);
-    if (safe_browsing_throttle)
-      result.push_back(std::move(safe_browsing_throttle));
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      base::FeatureList::IsEnabled(safe_browsing::kCheckByURLLoaderThrottle)) {
+    auto* delegate = GetSafeBrowsingUrlCheckerDelegate();
+    if (delegate && !delegate->ShouldSkipRequestCheck(
+                        resource_context, request.url, frame_tree_node_id,
+                        -1 /* render_process_id */, -1 /* render_frame_id */,
+                        request.originated_from_service_worker)) {
+      auto safe_browsing_throttle =
+          safe_browsing::BrowserURLLoaderThrottle::MaybeCreate(delegate,
+                                                               wc_getter);
+      if (safe_browsing_throttle)
+        result.push_back(std::move(safe_browsing_throttle));
+    }
   }
 
   return result;

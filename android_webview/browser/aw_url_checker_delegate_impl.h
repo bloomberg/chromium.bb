@@ -45,7 +45,11 @@ class AwUrlCheckerDelegateImpl : public safe_browsing::UrlCheckerDelegate {
       bool has_user_gesture) override;
   bool IsUrlWhitelisted(const GURL& url) override;
   bool ShouldSkipRequestCheck(content::ResourceContext* resource_context,
-                              const GURL& original_url) override;
+                              const GURL& original_url,
+                              int frame_tree_node_id,
+                              int render_process_id,
+                              int render_frame_id,
+                              bool originated_from_service_worker) override;
   const safe_browsing::SBThreatTypeSet& GetThreatTypes() override;
   safe_browsing::SafeBrowsingDatabaseManager* GetDatabaseManager() override;
   safe_browsing::BaseUIManager* GetUIManager() override;

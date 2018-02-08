@@ -90,7 +90,11 @@ bool UrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {
 
 bool UrlCheckerDelegateImpl::ShouldSkipRequestCheck(
     content::ResourceContext* resource_context,
-    const GURL& original_url) {
+    const GURL& original_url,
+    int frame_tree_node_id,
+    int render_process_id,
+    int render_frame_id,
+    bool originated_from_service_worker) {
   // When DataReductionProxyResourceThrottle is enabled for a request, it is
   // responsible for checking whether the resource is safe, so we skip
   // SafeBrowsing URL checks in that case.

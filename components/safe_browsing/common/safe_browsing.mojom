@@ -45,9 +45,11 @@ interface SafeBrowsing {
       network.mojom.HttpRequestHeaders headers,
       int32 load_flags,
       content.mojom.ResourceType resource_type,
-      bool has_user_gesture) => (UrlCheckNotifier&? slow_check_notifier,
-                                 bool proceed,
-                                 bool showed_interstitial);
+      bool has_user_gesture,
+      bool originated_from_service_worker)
+          => (UrlCheckNotifier&? slow_check_notifier,
+              bool proceed,
+              bool showed_interstitial);
 
   // Bind an additional pipe to this instance of the SafeBrowsing interface.
   Clone(SafeBrowsing& request);

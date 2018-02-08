@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/renderer/renderer_url_loader_throttle.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
@@ -21,7 +22,8 @@ AwURLLoaderThrottleProvider::AwURLLoaderThrottleProvider(
     : type_(type) {
   DETACH_FROM_THREAD(thread_checker_);
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService) ||
+      base::FeatureList::IsEnabled(safe_browsing::kCheckByURLLoaderThrottle)) {
     content::RenderThread::Get()->GetConnector()->BindInterface(
         content::mojom::kBrowserServiceName,
         mojo::MakeRequest(&safe_browsing_info_));
@@ -50,7 +52,10 @@ AwURLLoaderThrottleProvider::CreateThrottles(
   DCHECK(!is_frame_resource ||
          type_ == content::URLLoaderThrottleProviderType::kFrame);
 
-  if (network_service_enabled && !is_frame_resource) {
+  if ((network_service_enabled ||
+       base::FeatureList::IsEnabled(
+           safe_browsing::kCheckByURLLoaderThrottle)) &&
+      !is_frame_resource) {
     if (safe_browsing_info_)
       safe_browsing_.Bind(std::move(safe_browsing_info_));
     throttles.push_back(

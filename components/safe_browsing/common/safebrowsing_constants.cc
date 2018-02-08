@@ -32,4 +32,6 @@ const char kSbBackupHttpErrorURLPrefix[] =
 const char kSbBackupNetworkErrorURLPrefix[] =
     "https://alt3-safebrowsing.google.com/safebrowsing";
 
+const char kCustomCancelReasonForURLLoader[] = "SafeBrowsing";
+
 }  // namespace safe_browsing

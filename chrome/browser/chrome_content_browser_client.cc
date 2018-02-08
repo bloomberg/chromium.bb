@@ -3707,7 +3707,8 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
     const network::ResourceRequest& request,
     content::ResourceContext* resource_context,
     const base::RepeatingCallback<content::WebContents*()>& wc_getter,
-    content::NavigationUIData* navigation_ui_data) {
+    content::NavigationUIData* navigation_ui_data,
+    int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   bool network_service_enabled =
@@ -3718,8 +3719,10 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   if (network_service_enabled ||
       base::FeatureList::IsEnabled(safe_browsing::kCheckByURLLoaderThrottle)) {
     auto* delegate = GetSafeBrowsingUrlCheckerDelegate(resource_context);
-    if (delegate &&
-        !delegate->ShouldSkipRequestCheck(resource_context, request.url)) {
+    if (delegate && !delegate->ShouldSkipRequestCheck(
+                        resource_context, request.url, frame_tree_node_id,
+                        -1 /* render_process_id */, -1 /* render_frame_id */,
+                        request.originated_from_service_worker)) {
       auto safe_browsing_throttle =
           safe_browsing::BrowserURLLoaderThrottle::MaybeCreate(delegate,
                                                                wc_getter);
