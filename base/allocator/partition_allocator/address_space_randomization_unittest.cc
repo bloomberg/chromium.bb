@@ -131,6 +131,10 @@ double ChiSquared(int m, int n) {
 // Test for correlations between recent bits from the PRNG, or bits that are
 // biased.
 void RandomBitCorrelation(int random_bit) {
+  uintptr_t mask = GetMask();
+  if ((mask & (1ULL << random_bit)) == 0)
+    return;  // bit is always 0.
+
 #ifdef DEBUG
   constexpr int kHistory = 2;
   constexpr int kRepeats = 1000;
@@ -187,22 +191,54 @@ void RandomBitCorrelation(int random_bit) {
   }
 }
 
-// TODO(crbug.com/809367): Flaky on Linux TSAN.
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
-#define MAYBE_Random DISABLED_Random
-#else
-#define MAYBE_Random Random
-#endif
-TEST(AddressSpaceRandomizationTest, MAYBE_Random) {
-  uintptr_t mask = GetMask();
-  if (!mask)
-    return;
-  // Use the mask to determine which bits to test.
-  for (int i = 0; mask != 0; mask >>= 1, i++) {
-    if ((mask & 0x1) == 0)
-      continue;
-    RandomBitCorrelation(i);
+// Tests are fairly slow, so give each random bit its own test.
+#define TEST_RANDOM_BIT(BIT)                                        \
+  TEST(AddressSpaceRandomizationTest, RandomBitCorrelations##BIT) { \
+    RandomBitCorrelation(BIT);                                      \
   }
-}
+
+// The first 12 bits on all platforms are always 0.
+TEST_RANDOM_BIT(12)
+TEST_RANDOM_BIT(13)
+TEST_RANDOM_BIT(14)
+TEST_RANDOM_BIT(15)
+TEST_RANDOM_BIT(16)
+TEST_RANDOM_BIT(17)
+TEST_RANDOM_BIT(18)
+TEST_RANDOM_BIT(19)
+TEST_RANDOM_BIT(20)
+TEST_RANDOM_BIT(21)
+TEST_RANDOM_BIT(22)
+TEST_RANDOM_BIT(23)
+TEST_RANDOM_BIT(24)
+TEST_RANDOM_BIT(25)
+TEST_RANDOM_BIT(26)
+TEST_RANDOM_BIT(27)
+TEST_RANDOM_BIT(28)
+TEST_RANDOM_BIT(29)
+TEST_RANDOM_BIT(30)
+TEST_RANDOM_BIT(31)
+#if defined(ARCH_CPU_64_BITS)
+TEST_RANDOM_BIT(32)
+TEST_RANDOM_BIT(33)
+TEST_RANDOM_BIT(34)
+TEST_RANDOM_BIT(35)
+TEST_RANDOM_BIT(36)
+TEST_RANDOM_BIT(37)
+TEST_RANDOM_BIT(38)
+TEST_RANDOM_BIT(39)
+TEST_RANDOM_BIT(40)
+TEST_RANDOM_BIT(41)
+TEST_RANDOM_BIT(42)
+TEST_RANDOM_BIT(43)
+TEST_RANDOM_BIT(44)
+TEST_RANDOM_BIT(45)
+TEST_RANDOM_BIT(46)
+TEST_RANDOM_BIT(47)
+TEST_RANDOM_BIT(48)
+// No platforms have more than 48 address bits.
+#endif  // defined(ARCH_CPU_64_BITS)
+
+#undef TEST_RANDOM_BIT
 
 }  // namespace base
