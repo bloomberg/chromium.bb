@@ -581,23 +581,7 @@ void WizardController::ShowTermsOfServiceScreen() {
 }
 
 void WizardController::ShowSyncConsentScreen() {
-#if defined(GOOGLE_CHROME_BUILD)
-  const user_manager::UserManager* user_manager =
-      user_manager::UserManager::Get();
-  // Skip for non-regular users.
-  if (user_manager->IsLoggedInAsPublicAccount() ||
-      (user_manager->IsCurrentUserNonCryptohomeDataEphemeral() &&
-       user_manager->GetActiveUser()->GetType() !=
-           user_manager::USER_TYPE_REGULAR)) {
-    ShowArcTermsOfServiceScreen();
-    return;
-  }
-  VLOG(1) << "Showing Sync Consent screen.";
-  UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_SYNC_CONSENT);
-  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_SYNC_CONSENT));
-#else
   ShowArcTermsOfServiceScreen();
-#endif
 }
 
 void WizardController::ShowArcTermsOfServiceScreen() {
@@ -891,7 +875,9 @@ void WizardController::OnTermsOfServiceDeclined() {
 }
 
 void WizardController::OnTermsOfServiceAccepted() {
-  ShowSyncConsentScreen();
+  // If the user accepts the Terms of Service, advance to the PlayStore terms
+  // of serice.
+  ShowArcTermsOfServiceScreen();
 }
 
 void WizardController::OnArcTermsOfServiceSkipped() {
