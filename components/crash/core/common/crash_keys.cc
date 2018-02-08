@@ -4,6 +4,8 @@
 
 #include "components/crash/core/common/crash_keys.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -127,14 +129,14 @@ static PrinterInfoKey printer_info_keys[] = {
     {"prn-info-4", PrinterInfoKey::Tag::kArray},
 };
 
-ScopedPrinterInfo::ScopedPrinterInfo(const base::StringPiece& data) {
-  std::vector<std::string> info = base::SplitString(
-      data.as_string(), ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+ScopedPrinterInfo::ScopedPrinterInfo(base::StringPiece data) {
+  std::vector<base::StringPiece> info = base::SplitStringPiece(
+      data, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (size_t i = 0; i < arraysize(printer_info_keys); ++i) {
-    std::string value;
     if (i < info.size())
-      value = info[i];
-    printer_info_keys[i].Set(value);
+      printer_info_keys[i].Set(info[i]);
+    else
+      printer_info_keys[i].Clear();
   }
 }
 
