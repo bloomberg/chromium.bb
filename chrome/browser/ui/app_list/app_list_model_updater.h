@@ -109,6 +109,8 @@ class AppListModelUpdater {
   virtual size_t BadgedItemCount() = 0;
   // For SearchModel:
   virtual bool SearchEngineIsGoogle() = 0;
+  virtual app_list::SearchResult* FindSearchResult(
+      const std::string& result_id) = 0;
 
  protected:
   virtual ~AppListModelUpdater() {}

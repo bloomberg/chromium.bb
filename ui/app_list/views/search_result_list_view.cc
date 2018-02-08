@@ -160,7 +160,7 @@ void SearchResultListView::SearchResultActivated(SearchResultView* view,
   if (view_delegate_ && view->result()) {
     RecordSearchResultOpenSource(view->result(), view_delegate_->GetModel(),
                                  view_delegate_->GetSearchModel());
-    view_delegate_->OpenSearchResult(view->result(), event_flags);
+    view_delegate_->OpenSearchResult(view->result()->id(), event_flags);
   }
 }
 
@@ -168,7 +168,7 @@ void SearchResultListView::SearchResultActionActivated(SearchResultView* view,
                                                        size_t action_index,
                                                        int event_flags) {
   if (view_delegate_ && view->result()) {
-    view_delegate_->InvokeSearchResultAction(view->result(), action_index,
+    view_delegate_->InvokeSearchResultAction(view->result()->id(), action_index,
                                              event_flags);
   }
 }

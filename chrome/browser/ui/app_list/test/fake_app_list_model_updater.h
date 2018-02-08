@@ -46,6 +46,8 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   size_t BadgedItemCount() override;
   // For SearchModel:
   bool SearchEngineIsGoogle() override;
+  app_list::SearchResult* FindSearchResult(
+      const std::string& result_id) override;
   const std::vector<std::unique_ptr<app_list::SearchResult>>& search_results()
       const {
     return search_results_;

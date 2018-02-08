@@ -28,7 +28,6 @@ namespace app_list {
 class AppListModel;
 class AppListViewDelegateObserver;
 class SearchModel;
-class SearchResult;
 
 class APP_LIST_EXPORT AppListViewDelegate {
  public:
@@ -49,12 +48,13 @@ class APP_LIST_EXPORT AppListViewDelegate {
   virtual void StartSearch(const base::string16& raw_query) = 0;
 
   // Invoked to open the search result.
-  virtual void OpenSearchResult(SearchResult* result,
+  virtual void OpenSearchResult(const std::string& result_id,
                                 int event_flags) = 0;
 
-  // Called to invoke a custom action on |result|.  |action_index| corresponds
-  // to the index of an icon in |result.action_icons()|.
-  virtual void InvokeSearchResultAction(SearchResult* result,
+  // Called to invoke a custom action on a result with |result_id|.
+  // |action_index| corresponds to the index of an icon in
+  // |result.action_icons()|.
+  virtual void InvokeSearchResultAction(const std::string& result_id,
                                         int action_index,
                                         int event_flags) = 0;
 

@@ -109,7 +109,7 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     if (search_result_) {
       RecordSearchResultOpenSource(search_result_, view_delegate_->GetModel(),
                                    view_delegate_->GetSearchModel());
-      view_delegate_->OpenSearchResult(search_result_, event.flags());
+      view_delegate_->OpenSearchResult(search_result_->id(), event.flags());
     }
   }
 

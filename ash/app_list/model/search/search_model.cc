@@ -90,4 +90,12 @@ void SearchModel::PublishResults(
   // Any remaining results in |results_map| will be automatically deleted.
 }
 
+SearchResult* SearchModel::FindSearchResult(const std::string& id) {
+  for (const auto& result : *results_) {
+    if (result->id() == id)
+      return result.get();
+  }
+  return nullptr;
+}
+
 }  // namespace app_list

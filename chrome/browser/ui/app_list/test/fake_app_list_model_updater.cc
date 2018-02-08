@@ -105,6 +105,15 @@ bool FakeAppListModelUpdater::SearchEngineIsGoogle() {
   return search_engine_is_google_;
 }
 
+app_list::SearchResult* FakeAppListModelUpdater::FindSearchResult(
+    const std::string& result_id) {
+  for (auto& result : search_results_) {
+    if (result->id() == result_id)
+      return result.get();
+  }
+  return nullptr;
+}
+
 void FakeAppListModelUpdater::PublishSearchResults(
     std::vector<std::unique_ptr<app_list::SearchResult>> results) {
   search_results_ = std::move(results);

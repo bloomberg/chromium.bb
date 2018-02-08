@@ -186,16 +186,19 @@ void AppListViewDelegate::StartSearch(const base::string16& raw_query) {
   }
 }
 
-void AppListViewDelegate::OpenSearchResult(app_list::SearchResult* result,
+void AppListViewDelegate::OpenSearchResult(const std::string& result_id,
                                            int event_flags) {
-  search_controller_->OpenResult(result, event_flags);
+  app_list::SearchResult* result = model_updater_->FindSearchResult(result_id);
+  if (result)
+    search_controller_->OpenResult(result, event_flags);
 }
 
-void AppListViewDelegate::InvokeSearchResultAction(
-    app_list::SearchResult* result,
-    int action_index,
-    int event_flags) {
-  search_controller_->InvokeResultAction(result, action_index, event_flags);
+void AppListViewDelegate::InvokeSearchResultAction(const std::string& result_id,
+                                                   int action_index,
+                                                   int event_flags) {
+  app_list::SearchResult* result = model_updater_->FindSearchResult(result_id);
+  if (result)
+    search_controller_->InvokeResultAction(result, action_index, event_flags);
 }
 
 void AppListViewDelegate::ViewShown(int64_t display_id) {

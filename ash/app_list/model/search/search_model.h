@@ -6,6 +6,7 @@
 #define ASH_APP_LIST_MODEL_SEARCH_SEARCH_MODEL_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "ash/app_list/model/app_list_model_export.h"
@@ -47,6 +48,8 @@ class APP_LIST_MODEL_EXPORT SearchModel {
   SearchResults* results() { return results_.get(); }
 
   void PublishResults(std::vector<std::unique_ptr<SearchResult>> new_results);
+
+  SearchResult* FindSearchResult(const std::string& id);
 
  private:
   std::unique_ptr<SearchBoxModel> search_box_;

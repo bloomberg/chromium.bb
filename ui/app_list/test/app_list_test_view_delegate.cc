@@ -33,11 +33,11 @@ SearchModel* AppListTestViewDelegate::GetSearchModel() {
   return search_model_.get();
 }
 
-void AppListTestViewDelegate::OpenSearchResult(SearchResult* result,
+void AppListTestViewDelegate::OpenSearchResult(const std::string& result_id,
                                                int event_flags) {
   const SearchModel::SearchResults* results = search_model_->results();
   for (size_t i = 0; i < results->item_count(); ++i) {
-    if (results->GetItemAt(i) == result) {
+    if (results->GetItemAt(i)->id() == result_id) {
       open_search_result_counts_[i]++;
       break;
     }
