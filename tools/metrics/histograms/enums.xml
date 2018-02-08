@@ -17777,6 +17777,7 @@ Called by update_net_error_codes.py.-->
       label="CertificateTransparencyNonCompliantResourceInSubframe"/>
   <int value="2361" label="V8AbortController_Constructor"/>
   <int value="2362" label="ReplaceCharsetInXHRIgnoringCase"/>
+  <int value="2363" label="HTMLIFrameElementGestureMedia"/>
 </enum>
 
 <enum name="FeedbackSource">
