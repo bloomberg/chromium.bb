@@ -310,3 +310,13 @@ TEST(get_device_after_destroy_multiple)
 		get_device_after_destroy();
 	}
 }
+
+TEST(seats_have_names)
+{
+	struct client *cl = create_client_and_test_surface(100, 100, 100, 100);
+	struct input *input;
+
+	wl_list_for_each(input, &cl->inputs, link) {
+		assert(input->seat_name);
+	}
+}

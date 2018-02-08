@@ -635,6 +635,15 @@ seat_handle_name(void *data, struct wl_seat *seat, const char *name)
 	input->seat_name = strdup(name);
 	assert(input->seat_name && "No memory");
 
+	/* We only update the devices and set client input for the test seat */
+	if (strcmp(name, "test-seat") == 0) {
+		assert(!input->client->input &&
+		       "Multiple test seats detected!");
+
+		input_update_devices(input);
+		input->client->input = input;
+	}
+
 	fprintf(stderr, "test-client: got seat %p name: \'%s\'\n",
 		input, name);
 }
@@ -726,6 +735,7 @@ handle_global(void *data, struct wl_registry *registry,
 					 &wl_compositor_interface, version);
 	} else if (strcmp(interface, "wl_seat") == 0) {
 		input = xzalloc(sizeof *input);
+		input->client = client;
 		input->global_name = global->name;
 		input->wl_seat =
 			wl_registry_bind(registry, id,
@@ -882,26 +892,6 @@ log_handler(const char *fmt, va_list args)
 	vfprintf(stderr, fmt, args);
 }
 
-/* find the test-seat and set it in client.
- * Destroy other inputs */
-static void
-client_set_input(struct client *cl)
-{
-	struct input *inp, *inptmp;
-	wl_list_for_each_safe(inp, inptmp, &cl->inputs, link) {
-		assert(inp->seat_name && "BUG: input with no name");
-		if (strcmp(inp->seat_name, "test-seat") == 0) {
-			cl->input = inp;
-			input_update_devices(inp);
-		} else {
-			input_destroy(inp);
-		}
-	}
-
-	/* we keep only one input */
-	assert(wl_list_length(&cl->inputs) == 1);
-}
-
 struct client *
 create_client(void)
 {
@@ -926,9 +916,6 @@ create_client(void)
 	/* this roundtrip makes sure we got all wl_shm.format and wl_seat.*
 	 * events */
 	client_roundtrip(client);
-
-	/* find the right input for us */
-	client_set_input(client);
 
 	/* must have WL_SHM_FORMAT_ARGB32 */
 	assert(client->has_argb);

@@ -74,6 +74,7 @@ struct test {
 };
 
 struct input {
+	struct client *client;
 	uint32_t global_name;
 	struct wl_seat *wl_seat;
 	struct pointer *pointer;
