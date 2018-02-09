@@ -281,10 +281,6 @@ std::unique_ptr<Notification> Notification::CreateSystemNotification(
       type, id, title, message, icon, display_source, origin_url, notifier_id,
       optional_fields, delegate);
   notification->set_accent_color(color);
-  notification->set_small_image(
-      small_image.is_empty() ? gfx::Image()
-                             : gfx::Image(gfx::CreateVectorIcon(
-                                   small_image, kSmallImageSizeMD, color)));
   if (!small_image.is_empty())
     notification->set_vector_small_image(small_image);
   return notification;

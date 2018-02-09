@@ -20,10 +20,6 @@ namespace test {
 class DownloadItemNotificationTest;
 }
 
-namespace gfx {
-struct VectorIcon;
-}
-
 namespace message_center {
 class Notification;
 }
@@ -60,10 +56,7 @@ class DownloadItemNotification : public ImageDecoder::ImageRequest {
   void CloseNotification();
   void Update();
   void UpdateNotificationData(bool display, bool bump_priority);
-  void UpdateNotificationIcon();
-
-  // Set icon of the notification.
-  void SetNotificationIcon(const gfx::VectorIcon& icon, SkColor color);
+  SkColor GetNotificationIconColor();
 
   // Set preview image of the notification. Must be called on IO thread.
   void OnImageLoaded(const std::string& image_data);

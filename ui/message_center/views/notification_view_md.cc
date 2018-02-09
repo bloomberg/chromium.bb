@@ -1039,10 +1039,15 @@ void NotificationViewMD::CreateOrUpdateIconView(
 
 void NotificationViewMD::CreateOrUpdateSmallIconView(
     const Notification& notification) {
-  if (notification.small_image().IsEmpty())
-    header_row_->ClearAppIcon();
-  else
+  if (!notification.vector_small_image().is_empty()) {
+    header_row_->SetAppIcon(
+        gfx::CreateVectorIcon(notification.vector_small_image(),
+                              kSmallImageSizeMD, notification.accent_color()));
+  } else if (!notification.small_image().IsEmpty()) {
     header_row_->SetAppIcon(notification.small_image().AsImageSkia());
+  } else {
+    header_row_->ClearAppIcon();
+  }
 }
 
 void NotificationViewMD::CreateOrUpdateImageView(

@@ -29,7 +29,6 @@
 #include "components/download/public/common/download_item.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
-#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
@@ -44,7 +43,6 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/message_center_switches.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -206,6 +204,7 @@ DownloadItemNotification::DownloadItemNotification(download::DownloadItem* item)
   // overridden by UpdateNotificationData() below.
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.should_make_spoken_feedback_for_popup_updates = false;
+  rich_notification_data.vector_small_image = &kNotificationDownloadIcon;
   notification_ = std::make_unique<message_center::Notification>(
       message_center::NOTIFICATION_TYPE_PROGRESS, GetNotificationId(),
       base::string16(),  // title
@@ -423,7 +422,7 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
         NOTREACHED();
     }
   }
-  UpdateNotificationIcon();
+  notification_->set_accent_color(GetNotificationIconColor());
 
   std::vector<message_center::ButtonInfo> notification_actions;
   std::unique_ptr<std::vector<DownloadCommands::Command>> actions(
@@ -470,29 +469,21 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
   }
 }
 
-void DownloadItemNotification::UpdateNotificationIcon() {
+SkColor DownloadItemNotification::GetNotificationIconColor() {
   if (item_->IsDangerous()) {
     DownloadItemModel model(item_);
-    SetNotificationIcon(
-        kNotificationDownloadIcon,
-        model.MightBeMalicious()
-            ? message_center::kSystemNotificationColorCriticalWarning
-            : message_center::kSystemNotificationColorWarning);
-    return;
+    return model.MightBeMalicious()
+               ? message_center::kSystemNotificationColorCriticalWarning
+               : message_center::kSystemNotificationColorWarning;
   }
 
   switch (item_->GetState()) {
     case download::DownloadItem::IN_PROGRESS:
     case download::DownloadItem::COMPLETE:
-      SetNotificationIcon(kNotificationDownloadIcon,
-                          message_center::kSystemNotificationColorNormal);
-      break;
+      return message_center::kSystemNotificationColorNormal;
 
     case download::DownloadItem::INTERRUPTED:
-      SetNotificationIcon(
-          kNotificationDownloadIcon,
-          message_center::kSystemNotificationColorCriticalWarning);
-      break;
+      return message_center::kSystemNotificationColorCriticalWarning;
 
     case download::DownloadItem::CANCELLED:
       break;
@@ -501,14 +492,8 @@ void DownloadItemNotification::UpdateNotificationIcon() {
       NOTREACHED();
       break;
   }
-}
 
-void DownloadItemNotification::SetNotificationIcon(const gfx::VectorIcon& icon,
-                                                   SkColor color) {
-  notification_->set_accent_color(color);
-  notification_->set_small_image(gfx::Image(
-      gfx::CreateVectorIcon(icon, message_center::kSmallImageSizeMD, color)));
-  notification_->set_vector_small_image(icon);
+  return gfx::kPlaceholderColor;
 }
 
 void DownloadItemNotification::OnImageLoaded(const std::string& image_data) {

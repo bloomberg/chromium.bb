@@ -222,11 +222,6 @@ void CupsPrintJobNotification::UpdateNotificationIcon() {
     case CupsPrintJob::State::STATE_NONE:
       break;
   }
-  if (print_job_->state() != CupsPrintJob::State::STATE_NONE) {
-    notification_->set_small_image(gfx::Image(CreateVectorIcon(
-        notification_->vector_small_image(), message_center::kSmallImageSizeMD,
-        notification_->accent_color())));
-  }
 }
 
 void CupsPrintJobNotification::UpdateNotificationBodyMessage() {
