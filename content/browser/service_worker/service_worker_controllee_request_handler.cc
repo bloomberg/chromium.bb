@@ -268,6 +268,7 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
   auto controller_info = mojom::ControllerServiceWorkerInfo::New();
   controller_info->endpoint =
       provider_host_->GetControllerServiceWorkerPtr().PassInterface();
+  controller_info->client_id = provider_host_->client_uuid();
   controller_info->object_info = provider_host_->GetOrCreateServiceWorkerHandle(
       provider_host_->controller());
   params.controller_service_worker_info = std::move(controller_info);

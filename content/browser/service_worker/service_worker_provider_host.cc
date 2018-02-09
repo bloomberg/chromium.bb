@@ -778,8 +778,11 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
   if (!dispatcher_host_)
     return;
 
+  auto controller_info = mojom::ControllerServiceWorkerInfo::New();
+  controller_info->client_id = client_uuid();
+
   if (!controller_) {
-    container_->SetController(mojom::ControllerServiceWorkerInfo::New(),
+    container_->SetController(std::move(controller_info),
                               {} /* used_features */, notify_controllerchange);
     return;
   }
@@ -787,7 +790,6 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
   DCHECK(associated_registration_);
   DCHECK_EQ(associated_registration_->active_version(), controller_.get());
 
-  auto controller_info = mojom::ControllerServiceWorkerInfo::New();
   // Set the info for the JavaScript ServiceWorkerContainer#controller object.
   controller_info->object_info =
       GetOrCreateServiceWorkerHandle(controller_.get());

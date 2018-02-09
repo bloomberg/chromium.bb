@@ -601,8 +601,14 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   if (ServiceWorkerUtils::IsServicificationEnabled()) {
     DCHECK(request_);
     DCHECK(!legacy_request_);
+    auto params = mojom::DispatchFetchEventParams::New();
+    params->request = *request_;
+    // When S13nServiceWorker is enabled, we come here only for navigations.
+    // FetchEvent#clientId should be the empty string for a navigation, so we
+    // don't need to set |params->client_id| here.
+    params->preload_handle = std::move(preload_handle_);
     version_->event_dispatcher()->DispatchFetchEvent(
-        *request_, std::move(preload_handle_), std::move(response_callback_ptr),
+        std::move(params), std::move(response_callback_ptr),
         base::BindOnce(&ServiceWorkerFetchDispatcher::OnFetchEventFinished,
                        base::Unretained(version_.get()), event_finish_id,
                        url_loader_assets_));

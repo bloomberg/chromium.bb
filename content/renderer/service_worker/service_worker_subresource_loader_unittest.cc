@@ -143,15 +143,16 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
 
   // mojom::ControllerServiceWorker:
   void DispatchFetchEvent(
-      const network::ResourceRequest& request,
+      mojom::DispatchFetchEventParamsPtr params,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override {
     EXPECT_FALSE(ServiceWorkerUtils::IsMainResourceType(
-        static_cast<ResourceType>(request.resource_type)));
-    request_body_ = request.request_body;
+        static_cast<ResourceType>(params->request.resource_type)));
+    request_body_ = params->request.request_body;
 
     fetch_event_count_++;
-    fetch_event_request_ = request;
+    fetch_event_request_ = params->request;
+
     switch (response_mode_) {
       case ResponseMode::kDefault:
         std::move(callback).Run(
@@ -522,7 +523,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, NoController) {
   }
 
   // Make the connector have no controller.
-  connector_->ResetControllerConnection(nullptr);
+  connector_->ResetControllerConnection(nullptr, "" /*client_id*/);
   base::RunLoop().RunUntilIdle();
 
   {

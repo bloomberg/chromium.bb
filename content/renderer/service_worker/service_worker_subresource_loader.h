@@ -10,7 +10,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_fetch_response_callback.mojom.h"
+#include "content/common/service_worker/dispatch_fetch_event_params.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "mojo/public/cpp/bindings/binding.h"

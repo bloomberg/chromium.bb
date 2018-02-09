@@ -230,9 +230,6 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
     return;
   }
 
-  // TODO(falken): Send client id so FetchEvent#clientId works. We have to
-  // plumb it from the provider host to subresource loader somehow.
-  // (crbug.com/780405)
   // TODO(kinuko): Implement request timeout and ask the browser to kill
   // the controller if it takes too long. (crbug.com/774374)
 
@@ -249,8 +246,11 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
             resource_request_.request_body.get());
   }
 
+  auto params = mojom::DispatchFetchEventParams::New();
+  params->request = *inflight_fetch_request_;
+  params->client_id = controller_connector_->client_id();
   controller->DispatchFetchEvent(
-      *inflight_fetch_request_, std::move(response_callback_ptr),
+      std::move(params), std::move(response_callback_ptr),
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,
                      weak_factory_.GetWeakPtr()));
   // |inflight_fetch_request_->request_body| should not be used after this
