@@ -2417,14 +2417,14 @@ bool PDFiumEngine::SelectFindResult(bool forward) {
   size_t new_index;
   const size_t last_index = find_results_.size() - 1;
 
-  if (resume_find_index_.valid()) {
-    new_index = resume_find_index_.GetIndex();
-    resume_find_index_.Invalidate();
-  } else if (current_find_index_.valid()) {
-    size_t current_index = current_find_index_.GetIndex();
+  if (resume_find_index_) {
+    new_index = resume_find_index_.value();
+    resume_find_index_.reset();
+  } else if (current_find_index_) {
+    size_t current_index = current_find_index_.value();
     if ((forward && current_index >= last_index) ||
         (!forward && current_index == 0)) {
-      current_find_index_.Invalidate();
+      current_find_index_.reset();
       client_->NotifySelectedFindResultChanged(-1);
       client_->NotifyNumberOfFindResultsChanged(find_results_.size(), true);
       return true;
@@ -2434,19 +2434,19 @@ bool PDFiumEngine::SelectFindResult(bool forward) {
   } else {
     new_index = forward ? 0 : last_index;
   }
-  current_find_index_.SetIndex(new_index);
+  current_find_index_ = new_index;
 
   // Update the selection before telling the client to scroll, since it could
   // paint then.
   selection_.clear();
-  selection_.push_back(find_results_[current_find_index_.GetIndex()]);
+  selection_.push_back(find_results_[current_find_index_.value()]);
 
   // If the result is not in view, scroll to it.
   pp::Rect bounding_rect;
   pp::Rect visible_rect = GetVisibleRect();
   // Use zoom of 1.0 since |visible_rect| is without zoom.
   const std::vector<pp::Rect>& rects =
-      find_results_[current_find_index_.GetIndex()].GetScreenRects(
+      find_results_[current_find_index_.value()].GetScreenRects(
           pp::Point(), 1.0, current_rotation_);
   for (const auto& rect : rects)
     bounding_rect = bounding_rect.Union(rect);
@@ -2465,22 +2465,23 @@ bool PDFiumEngine::SelectFindResult(bool forward) {
     }
   }
 
-  client_->NotifySelectedFindResultChanged(current_find_index_.GetIndex());
+  client_->NotifySelectedFindResultChanged(current_find_index_.value());
   client_->NotifyNumberOfFindResultsChanged(find_results_.size(), true);
   return true;
 }
 
 void PDFiumEngine::StopFind() {
   SelectionChangeInvalidator selection_invalidator(this);
-
   selection_.clear();
   selecting_ = false;
+
   find_results_.clear();
   next_page_to_search_ = -1;
   last_page_to_search_ = -1;
   last_character_index_to_search_ = -1;
-  current_find_index_.Invalidate();
+  current_find_index_.reset();
   current_find_text_.clear();
+
   UpdateTickMarks();
   find_factory_.CancelAll();
 }
@@ -3673,29 +3674,6 @@ bool PDFiumEngine::MouseDownState::Matches(
   return true;
 }
 
-PDFiumEngine::FindTextIndex::FindTextIndex() : valid_(false), index_(0) {}
-
-PDFiumEngine::FindTextIndex::~FindTextIndex() = default;
-
-void PDFiumEngine::FindTextIndex::Invalidate() {
-  valid_ = false;
-}
-
-size_t PDFiumEngine::FindTextIndex::GetIndex() const {
-  DCHECK(valid_);
-  return index_;
-}
-
-void PDFiumEngine::FindTextIndex::SetIndex(size_t index) {
-  valid_ = true;
-  index_ = index;
-}
-
-size_t PDFiumEngine::FindTextIndex::IncrementIndex() {
-  DCHECK(valid_);
-  return ++index_;
-}
-
 void PDFiumEngine::DeviceToPage(int page_index,
                                 float device_x,
                                 float device_y,
@@ -3918,10 +3896,7 @@ void PDFiumEngine::RotateInternal() {
   // Store the current find index so that we can resume finding at that
   // particular index after we have recomputed the find results.
   std::string current_find_text = current_find_text_;
-  if (current_find_index_.valid())
-    resume_find_index_.SetIndex(current_find_index_.GetIndex());
-  else
-    resume_find_index_.Invalidate();
+  resume_find_index_ = current_find_index_;
 
   // Save the current page.
   int most_visible_page = most_visible_page_;
