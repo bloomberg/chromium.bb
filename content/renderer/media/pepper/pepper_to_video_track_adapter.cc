@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/pepper_to_video_track_adapter.h"
+#include "content/renderer/media/pepper/pepper_to_video_track_adapter.h"
 
 #include <string>
 
