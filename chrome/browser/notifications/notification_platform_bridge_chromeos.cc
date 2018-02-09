@@ -35,7 +35,7 @@ NotificationPlatformBridge* NotificationPlatformBridge::Create() {
 // static
 bool NotificationPlatformBridge::CanHandleType(
     NotificationHandler::Type notification_type) {
-  return notification_type != NotificationHandler::Type::TRANSIENT;
+  return true;
 }
 
 NotificationPlatformBridgeChromeOs::NotificationPlatformBridgeChromeOs()

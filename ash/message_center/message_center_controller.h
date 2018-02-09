@@ -39,6 +39,7 @@ class ASH_EXPORT MessageCenterController
       mojom::AshMessageCenterClientAssociatedPtrInfo client) override;
   void ShowClientNotification(
       const message_center::Notification& notification) override;
+  void CloseClientNotification(const std::string& id) override;
   void UpdateNotifierIcon(const message_center::NotifierId& notifier_id,
                           const gfx::ImageSkia& icon) override;
   void NotifierEnabledChanged(const message_center::NotifierId& notifier_id,
