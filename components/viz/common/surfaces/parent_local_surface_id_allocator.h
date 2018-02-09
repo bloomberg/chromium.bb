@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/viz_common_export.h"
 
@@ -21,12 +22,26 @@ namespace viz {
 class VIZ_COMMON_EXPORT ParentLocalSurfaceIdAllocator {
  public:
   ParentLocalSurfaceIdAllocator();
-  ~ParentLocalSurfaceIdAllocator();
+  ParentLocalSurfaceIdAllocator(ParentLocalSurfaceIdAllocator&& other) =
+      default;
+  ParentLocalSurfaceIdAllocator& operator=(
+      ParentLocalSurfaceIdAllocator&& other) = default;
+  ~ParentLocalSurfaceIdAllocator() = default;
 
-  LocalSurfaceId GenerateId();
+  // When a child-allocated LocalSurfaceId arrives in the parent, the parent
+  // needs to update its understanding of the last generated message so the
+  // messages can continue to monotonically increase.
+  const LocalSurfaceId& UpdateFromChild(
+      const LocalSurfaceId& child_allocated_local_surface_id);
+
+  const LocalSurfaceId& GenerateId();
+
+  const LocalSurfaceId& last_known_local_surface_id() const {
+    return last_known_local_surface_id_;
+  }
 
  private:
-  uint32_t next_id_;
+  LocalSurfaceId last_known_local_surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ParentLocalSurfaceIdAllocator);
 };

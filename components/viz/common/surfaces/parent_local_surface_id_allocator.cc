@@ -4,21 +4,38 @@
 
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 
-#include <stdint.h>
-
 #include "base/rand_util.h"
-#include "base/unguessable_token.h"
 
 namespace viz {
 
-ParentLocalSurfaceIdAllocator::ParentLocalSurfaceIdAllocator() : next_id_(1u) {}
+namespace {
+constexpr uint32_t kInvalidParentSequenceNumber = 0;
+constexpr uint32_t kInitialChildSequenceNumber = 1;
+}  // namespace
 
-ParentLocalSurfaceIdAllocator::~ParentLocalSurfaceIdAllocator() {}
+ParentLocalSurfaceIdAllocator::ParentLocalSurfaceIdAllocator()
+    : last_known_local_surface_id_(kInvalidParentSequenceNumber,
+                                   kInitialChildSequenceNumber,
+                                   base::UnguessableToken()) {}
 
-LocalSurfaceId ParentLocalSurfaceIdAllocator::GenerateId() {
-  LocalSurfaceId id(next_id_, base::UnguessableToken::Create());
-  next_id_++;
-  return id;
+const LocalSurfaceId& ParentLocalSurfaceIdAllocator::UpdateFromChild(
+    const LocalSurfaceId& child_allocated_local_surface_id) {
+  DCHECK_GE(child_allocated_local_surface_id.child_sequence_number(),
+            last_known_local_surface_id_.child_sequence_number());
+
+  last_known_local_surface_id_ =
+      LocalSurfaceId(last_known_local_surface_id_.parent_sequence_number(),
+                     child_allocated_local_surface_id.child_sequence_number(),
+                     last_known_local_surface_id_.nonce());
+  return last_known_local_surface_id_;
+}
+
+const LocalSurfaceId& ParentLocalSurfaceIdAllocator::GenerateId() {
+  last_known_local_surface_id_ =
+      LocalSurfaceId(last_known_local_surface_id_.parent_sequence_number() + 1,
+                     last_known_local_surface_id_.child_sequence_number(),
+                     base::UnguessableToken::Create());
+  return last_known_local_surface_id_;
 }
 
 }  // namespace viz
