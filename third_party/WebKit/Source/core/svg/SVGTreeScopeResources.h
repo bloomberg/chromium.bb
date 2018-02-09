@@ -5,19 +5,15 @@
 #ifndef SVGTreeScopeResources_h
 #define SVGTreeScopeResources_h
 
-#include "base/macros.h"
-#include "core/dom/IdTargetObserver.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashSet.h"
 #include "platform/wtf/text/AtomicStringHash.h"
 
 namespace blink {
 
-class Element;
-class LayoutSVGResourceContainer;
 class SVGElement;
+class SVGResource;
 class TreeScope;
 
 // This class keeps track of SVG resources and pending references to such for a
@@ -29,32 +25,8 @@ class SVGTreeScopeResources
   explicit SVGTreeScopeResources(TreeScope*);
   ~SVGTreeScopeResources();
 
-  class Resource : public IdTargetObserver {
-   public:
-    Resource(TreeScope&, const AtomicString& id);
-    ~Resource() override;
-
-    Element* Target() const { return target_; }
-    LayoutSVGResourceContainer* ResourceContainer() const;
-
-    void AddWatch(SVGElement&);
-    void RemoveWatch(SVGElement&);
-
-    bool IsEmpty() const;
-
-    void Trace(blink::Visitor*);
-
-    void NotifyResourceClients();
-
-   private:
-    void IdTargetChanged() override;
-
-    Member<TreeScope> tree_scope_;
-    Member<Element> target_;
-    HeapHashSet<Member<SVGElement>> pending_clients_;
-  };
-  Resource* ResourceForId(const AtomicString& id);
-  Resource* ExistingResourceForId(const AtomicString& id) const;
+  SVGResource* ResourceForId(const AtomicString& id);
+  SVGResource* ExistingResourceForId(const AtomicString& id) const;
 
   void RemoveUnreferencedResources();
   void RemoveWatchesForElement(SVGElement&);
@@ -62,7 +34,7 @@ class SVGTreeScopeResources
   void Trace(blink::Visitor*);
 
  private:
-  HeapHashMap<AtomicString, Member<Resource>> resources_;
+  HeapHashMap<AtomicString, Member<SVGResource>> resources_;
   Member<TreeScope> tree_scope_;
 
   DISALLOW_COPY_AND_ASSIGN(SVGTreeScopeResources);

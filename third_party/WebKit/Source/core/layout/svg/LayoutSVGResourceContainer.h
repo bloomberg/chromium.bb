@@ -21,11 +21,11 @@
 #define LayoutSVGResourceContainer_h
 
 #include "core/layout/svg/LayoutSVGHiddenContainer.h"
-#include "core/svg/SVGTreeScopeResources.h"
 
 namespace blink {
 
 class SVGElementProxySet;
+class SVGResource;
 
 enum LayoutSVGResourceType {
   kMaskerResourceType,
@@ -64,7 +64,7 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
 
   // Detach all clients from this resource, and add them as watches to the tree
   // scope's resource entry (the argument.)
-  void MakeClientsPending(SVGTreeScopeResources::Resource&);
+  void MakeClientsPending(SVGResource&);
   bool HasClients() const { return !clients_.IsEmpty(); }
 
   void InvalidateCacheAndMarkForLayout(SubtreeLayoutScope* = nullptr);
