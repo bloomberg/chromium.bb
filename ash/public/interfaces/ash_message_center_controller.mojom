@@ -35,6 +35,8 @@ interface AshMessageCenterController {
 
   ShowClientNotification(message_center.mojom.Notification notification);
 
+  CloseClientNotification(string id);
+
   UpdateNotifierIcon(message_center.mojom.NotifierId notifier_id,
                      gfx.mojom.ImageSkia icon);
 

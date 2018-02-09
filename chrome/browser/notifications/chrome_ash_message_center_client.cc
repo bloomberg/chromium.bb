@@ -96,8 +96,7 @@ void ChromeAshMessageCenterClient::Display(
 // NotificationPlatformBridge interface.
 void ChromeAshMessageCenterClient::Close(const std::string& /*profile_id*/,
                                          const std::string& notification_id) {
-  // TODO(estade): tell the controller to close the notification.
-  NOTIMPLEMENTED();
+  controller_->CloseClientNotification(notification_id);
 }
 
 // The unused variables here will not be a part of the future
@@ -106,8 +105,10 @@ void ChromeAshMessageCenterClient::GetDisplayed(
     const std::string& /*profile_id*/,
     bool /*incognito*/,
     const GetDisplayedNotificationsCallback& callback) const {
-  // TODO(estade): get the displayed notifications from the controller.
-  NOTIMPLEMENTED();
+  // Right now, this is only used to get web notifications that were created by
+  // and have outlived a previous browser process. Ash itself doesn't outlive
+  // the browser process, so there's no need to implement.
+  callback.Run(std::make_unique<std::set<std::string>>(), false);
 }
 
 void ChromeAshMessageCenterClient::SetReadyCallback(

@@ -106,6 +106,10 @@ void MessageCenterController::ShowClientNotification(
   MessageCenter::Get()->AddNotification(std::move(message_center_notification));
 }
 
+void MessageCenterController::CloseClientNotification(const std::string& id) {
+  MessageCenter::Get()->RemoveNotification(id, false /* by_user */);
+}
+
 void MessageCenterController::UpdateNotifierIcon(const NotifierId& notifier_id,
                                                  const gfx::ImageSkia& icon) {
   if (notifier_id_)
