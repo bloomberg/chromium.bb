@@ -205,6 +205,15 @@ void av1_lowbd_inv_txfm2d_add_16x8_sse2(const int32_t *input, uint8_t *output,
 
 void av1_lowbd_inv_txfm2d_add_8x16_sse2(const int32_t *input, uint8_t *output,
                                         int stride, TX_TYPE tx_type, int bd);
+
+void av1_lowbd_inv_txfm2d_add_32x32_sse2(const int32_t *input, uint8_t *output,
+                                         int stride, TX_TYPE tx_type, int bd);
+
+void av1_lowbd_inv_txfm2d_add_32x16_sse2(const int32_t *input, uint8_t *output,
+                                         int stride, TX_TYPE tx_type, int bd);
+
+void av1_lowbd_inv_txfm2d_add_16x32_sse2(const int32_t *input, uint8_t *output,
+                                         int stride, TX_TYPE tx_type, int bd);
 #ifdef __cplusplus
 }
 #endif  // __cplusplus

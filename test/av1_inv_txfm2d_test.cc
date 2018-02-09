@@ -229,7 +229,18 @@ class AV1LbdInvTxfm2d : public ::testing::TestWithParam<AV1LbdInvTxfm2dParam> {
     ref_func_ = libaom_test::inv_txfm_func_ls[tx_size_];
     target_func_ = target_list[tx_size_];
   }
-
+  int ValidTypeSize(TX_TYPE tx_type) {
+    int rows = tx_size_wide[tx_size_];
+    int cols = tx_size_high[tx_size_];
+    TX_TYPE_1D vtype = vtx_tab[tx_type];
+    TX_TYPE_1D htype = htx_tab[tx_type];
+    if (rows == 32 && (htype == ADST_1D || htype == FLIPADST_1D)) {
+      return 0;
+    } else if (cols == 32 && (vtype == ADST_1D || vtype == FLIPADST_1D)) {
+      return 0;
+    }
+    return 1;
+  }
   void RunAV1InvTxfm2dTest(TX_TYPE tx_type, int run_times);
 
  private:
@@ -253,6 +264,7 @@ void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type, int run_times) {
   int stride = BLK_WIDTH;
   int rows = tx_size_high[tx_size_];
   int cols = tx_size_wide[tx_size_];
+
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   int randTimes = run_times == 1 ? 500 : 2;
   for (int cnt = 0; cnt < randTimes; ++cnt) {
@@ -265,6 +277,7 @@ void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type, int run_times) {
       }
     }
     fwd_func_(input, inv_input, stride, tx_type, bd);
+
     aom_usec_timer timer;
     aom_usec_timer_start(&timer);
     for (int i = 0; i < run_times; ++i) {
@@ -296,12 +309,17 @@ void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type, int run_times) {
 
 TEST_P(AV1LbdInvTxfm2d, match) {
   for (int i = 0; i < (int)TX_TYPES; ++i) {
-    RunAV1InvTxfm2dTest((TX_TYPE)i, 1);
+    if (ValidTypeSize((TX_TYPE)(i))) {
+      RunAV1InvTxfm2dTest((TX_TYPE)i, 1);
+    }
   }
 }
+
 TEST_P(AV1LbdInvTxfm2d, DISABLED_Speed) {
   for (int i = 0; i < (int)TX_TYPES; ++i) {
-    RunAV1InvTxfm2dTest((TX_TYPE)i, 10000000);
+    if (ValidTypeSize((TX_TYPE)(i))) {
+      RunAV1InvTxfm2dTest((TX_TYPE)i, 1000000);
+    }
   }
 }
 
@@ -312,16 +330,16 @@ const LbdInvTxfm2dFunc kLbdInvFuncSSE2List[TX_SIZES_ALL] = {
   NULL,                                 // TX_4X4
   av1_lowbd_inv_txfm2d_add_8x8_sse2,    // TX_8X8
   av1_lowbd_inv_txfm2d_add_16x16_sse2,  // TX_16X16
-  NULL,                                 // TX_32X32
+  av1_lowbd_inv_txfm2d_add_32x32_sse2,  // TX_32X32
 #if CONFIG_TX64X64
-  NULL,                                // TX_64X64
-#endif                                 // CONFIG_TX64X64
-  NULL,                                // TX_4X8
-  NULL,                                // TX_8X4
-  av1_lowbd_inv_txfm2d_add_8x16_sse2,  // TX_8X16
-  av1_lowbd_inv_txfm2d_add_16x8_sse2,  // TX_16X8
-  NULL,                                // TX_16X32
-  NULL,                                // TX_32X16
+  NULL,                                 // TX_64X64
+#endif                                  // CONFIG_TX64X64
+  NULL,                                 // TX_4X8
+  NULL,                                 // TX_8X4
+  av1_lowbd_inv_txfm2d_add_8x16_sse2,   // TX_8X16
+  av1_lowbd_inv_txfm2d_add_16x8_sse2,   // TX_16X8
+  av1_lowbd_inv_txfm2d_add_16x32_sse2,  // TX_16X32
+  av1_lowbd_inv_txfm2d_add_32x16_sse2,  // TX_32X16
 #if CONFIG_TX64X64
   NULL,  // TX_32X64
   NULL,  // TX_64X32
