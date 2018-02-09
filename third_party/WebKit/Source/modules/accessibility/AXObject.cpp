@@ -695,7 +695,7 @@ bool AXObject::IsClickable() const {
   }
 }
 
-bool AXObject::AccessibilityIsIgnored() {
+bool AXObject::AccessibilityIsIgnored() const {
   Node* node = GetNode();
   if (!node) {
     AXObject* parent = this->ParentObject();
@@ -744,6 +744,13 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
                                     : nullptr);
   cached_ancestor_exposes_active_descendant_ =
       ComputeAncestorExposesActiveDescendant();
+
+  // TODO(dmazzoni): remove this const_cast.
+  if (cached_is_ignored_ != LastKnownIsIgnoredValue()) {
+    const_cast<AXObject*>(this)->ChildrenChanged();
+    last_known_is_ignored_value_ =
+        cached_is_ignored_ ? kIgnoreObject : kIncludeObject;
+  }
 }
 
 bool AXObject::AccessibilityIsIgnoredByDefault(
@@ -977,7 +984,7 @@ const AXObject* AXObject::DisabledAncestor() const {
   return nullptr;
 }
 
-bool AXObject::LastKnownIsIgnoredValue() {
+bool AXObject::LastKnownIsIgnoredValue() const {
   if (last_known_is_ignored_value_ == kDefaultBehavior) {
     last_known_is_ignored_value_ =
         AccessibilityIsIgnored() ? kIgnoreObject : kIncludeObject;
