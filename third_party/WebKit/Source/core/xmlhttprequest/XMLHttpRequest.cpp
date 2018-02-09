@@ -41,6 +41,7 @@
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
+#include "core/fileapi/PublicURLManager.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/Frame.h"
 #include "core/frame/Settings.h"
@@ -735,6 +736,12 @@ void XMLHttpRequest::open(const AtomicString& method,
 
   url_ = url;
 
+  if (url_.ProtocolIs("blob") &&
+      RuntimeEnabledFeatures::MojoBlobURLsEnabled()) {
+    GetExecutionContext()->GetPublicURLManager().Resolve(
+        url_, MakeRequest(&blob_url_loader_factory_));
+  }
+
   async_ = async;
 
   DCHECK(!loader_);
@@ -1102,6 +1109,11 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   resource_loader_options.security_origin = GetSecurityOrigin();
   resource_loader_options.initiator_info.name =
       FetchInitiatorTypeNames::xmlhttprequest;
+  if (blob_url_loader_factory_) {
+    resource_loader_options.url_loader_factory = base::MakeRefCounted<
+        base::RefCountedData<network::mojom::blink::URLLoaderFactoryPtr>>(
+        std::move(blob_url_loader_factory_));
+  }
 
   // When responseType is set to "blob", we redirect the downloaded data to a
   // file-handle directly.

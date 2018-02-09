@@ -33,6 +33,11 @@ class WebWorkerFetchContext {
   // context. It can be called only once.
   virtual std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() = 0;
 
+  // Returns a new WebURLLoaderFactory that wraps the given
+  // network::mojom::URLLoaderFactory.
+  virtual std::unique_ptr<WebURLLoaderFactory> WrapURLLoaderFactory(
+      mojo::ScopedMessagePipeHandle url_loader_factory_handle) = 0;
+
   // Called when a request is about to be sent out to modify the request to
   // handle the request correctly in the loading stack later. (Example: service
   // worker)

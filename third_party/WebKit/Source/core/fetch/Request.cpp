@@ -9,6 +9,7 @@
 #include "core/fetch/BodyStreamBuffer.h"
 #include "core/fetch/FetchManager.h"
 #include "core/fetch/RequestInit.h"
+#include "core/fileapi/PublicURLManager.h"
 #include "core/loader/ThreadableLoader.h"
 #include "platform/bindings/V8PrivateProperty.h"
 #include "platform/loader/cors/CORS.h"
@@ -49,6 +50,11 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
   request->SetRedirect(original->Redirect());
   request->SetIntegrity(original->Integrity());
   request->SetKeepalive(original->Keepalive());
+  if (original->URLLoaderFactory()) {
+    network::mojom::blink::URLLoaderFactoryPtr factory_clone;
+    original->URLLoaderFactory()->Clone(MakeRequest(&factory_clone));
+    request->SetURLLoaderFactory(std::move(factory_clone));
+  }
   return request;
 }
 
@@ -128,6 +134,18 @@ Request* Request::CreateRequestWithRequestOrString(
     // "Set |request|'s url to |parsedURL| and replace |request|'s url list
     // single URL with a copy of |parsedURL|."
     request->SetURL(parsed_url);
+
+    // Parsing URLs should also resolve blob URLs. This is important because
+    // fetching of a blob URL should work even after the URL is revoked as long
+    // as the request was created while the URL was still valid.
+    if (parsed_url.ProtocolIs("blob") &&
+        RuntimeEnabledFeatures::MojoBlobURLsEnabled()) {
+      network::mojom::blink::URLLoaderFactoryPtr url_loader_factory;
+      ExecutionContext::From(script_state)
+          ->GetPublicURLManager()
+          .Resolve(parsed_url, MakeRequest(&url_loader_factory));
+      request->SetURLLoaderFactory(std::move(url_loader_factory));
+    }
 
     // We don't use fallback values. We set these flags directly in below.
     // - "Set |fallbackMode| to "cors"."

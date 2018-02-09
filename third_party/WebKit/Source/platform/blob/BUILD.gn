@@ -34,6 +34,10 @@ blink_platform_sources("blob") {
     "SerializedBlobStructTraits.cpp",
     "SerializedBlobStructTraits.h",
   ]
+
+  deps = [
+    "//services/network/public/interfaces:interfaces_blink",
+  ]
 }
 
 jumbo_source_set("unit_tests") {

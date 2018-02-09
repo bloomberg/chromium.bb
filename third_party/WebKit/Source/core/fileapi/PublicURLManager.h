@@ -32,6 +32,7 @@
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/text/WTFString.h"
+#include "services/network/public/interfaces/url_loader_factory.mojom-blink.h"
 #include "third_party/WebKit/common/blob/blob_url_store.mojom-blink.h"
 
 namespace blink {
@@ -55,6 +56,9 @@ class CORE_EXPORT PublicURLManager final
   String RegisterURL(URLRegistrable*);
   // Revokes the given URL.
   void Revoke(const KURL&);
+  // When mojo Blob URLs are enabled this resolves the provided URL to a
+  // factory capable of creating loaders for the specific URL.
+  void Resolve(const KURL&, network::mojom::blink::URLLoaderFactoryRequest);
 
   // ContextLifecycleObserver interface.
   void ContextDestroyed(ExecutionContext*) override;

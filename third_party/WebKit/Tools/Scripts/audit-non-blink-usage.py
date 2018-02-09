@@ -34,6 +34,7 @@ _CONFIG = [
             'base::Location',
             'base::MakeRefCounted',
             'base::Optional',
+            'base::RefCountedData',
             'base::SingleThreadTaskRunner',
             'base::Time',
             'base::TimeDelta',
