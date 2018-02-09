@@ -406,10 +406,6 @@ scoped_refptr<StaticBitmapImage> CanvasResourceProvider::Snapshot() {
     return nullptr;
   scoped_refptr<StaticBitmapImage> image = StaticBitmapImage::Create(
       GetSkSurface()->makeImageSnapshot(), ContextProviderWrapper());
-  if (IsAccelerated()) {
-    static_cast<AcceleratedStaticBitmapImage*>(image.get())
-        ->RetainOriginalSkImageForCopyOnWrite();
-  }
   return image;
 }
 

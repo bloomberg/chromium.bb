@@ -1839,6 +1839,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "geometry/LayoutRectTest.cpp",
     "geometry/LayoutSizeTest.cpp",
     "geometry/RegionTest.cpp",
+    "graphics/AcceleratedStaticBitmapImageTest.cpp",
     "graphics/BitmapImageTest.cpp",
     "graphics/CompositorElementIdTest.cpp",
     "graphics/ContiguousContainerTest.cpp",

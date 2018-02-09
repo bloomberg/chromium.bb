@@ -26,7 +26,7 @@ namespace blink {
 scoped_refptr<AcceleratedStaticBitmapImage>
 AcceleratedStaticBitmapImage::CreateFromSkImage(
     sk_sp<SkImage> image,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper>
         context_provider_wrapper) {
   CHECK(image && image->isTextureBacked());
   return base::AdoptRef(new AcceleratedStaticBitmapImage(
@@ -117,7 +117,7 @@ AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {
   }
 }
 
-void AcceleratedStaticBitmapImage::RetainOriginalSkImageForCopyOnWrite() {
+void AcceleratedStaticBitmapImage::RetainOriginalSkImage() {
   DCHECK(texture_holder_->IsSkiaTextureHolder());
   original_skia_image_ = texture_holder_->GetSkImage();
   original_skia_image_context_provider_wrapper_ = ContextProviderWrapper();
@@ -183,10 +183,22 @@ PaintImage AcceleratedStaticBitmapImage::PaintImageForCurrentFrame() {
   CheckThread();
   if (!IsValid())
     return PaintImage();
-  CreateImageFromMailboxIfNeeded();
+
+  sk_sp<SkImage> image;
+  if (original_skia_image_ &&
+      original_skia_image_thread_id_ ==
+          Platform::Current()->CurrentThread()->ThreadId()) {
+    // We need to avoid consuming the mailbox in the context where it
+    // originated.  This avoids swapping back and forth between TextureHolder
+    // types.
+    image = original_skia_image_;
+  } else {
+    CreateImageFromMailboxIfNeeded();
+    image = texture_holder_->GetSkImage();
+  }
 
   return CreatePaintImageBuilder()
-      .set_image(texture_holder_->GetSkImage())
+      .set_image(image)
       .set_completion_state(PaintImage::CompletionState::DONE)
       .TakePaintImage();
 }
@@ -243,7 +255,7 @@ void AcceleratedStaticBitmapImage::EnsureMailbox(MailboxSyncMode mode,
       // To ensure that the texture resource stays alive we only really need
       // to retain the source SkImage until the mailbox is consumed, but this
       // works too.
-      RetainOriginalSkImageForCopyOnWrite();
+      RetainOriginalSkImage();
     }
 
     texture_holder_ = WTF::WrapUnique(
