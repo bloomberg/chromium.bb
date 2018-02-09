@@ -1873,7 +1873,6 @@ TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
 
   // Make sure that the tile we invalidated above was not returned to the pool
   // with its invalidated resource ID.
-  host_impl()->resource_pool()->CheckBusyResources();
   gfx::Rect total_invalidated_rect;
   EXPECT_FALSE(host_impl()->resource_pool()->TryAcquireResourceForPartialRaster(
       kInvalidatedId + 1, gfx::Rect(), kInvalidatedId,
@@ -1941,7 +1940,6 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
 
   host_impl->resource_pool()->OnContentReplaced(resource, kInvalidatedId);
   host_impl->resource_pool()->ReleaseResource(std::move(resource));
-  host_impl->resource_pool()->CheckBusyResources();
 
   scoped_refptr<FakeRasterSource> pending_raster_source =
       FakeRasterSource::CreateFilled(kTileSize);
@@ -2001,7 +1999,6 @@ void RunPartialTileDecodeCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
                                                   gfx::ColorSpace());
   host_impl->resource_pool()->OnContentReplaced(resource, kInvalidatedId);
   host_impl->resource_pool()->ReleaseResource(std::move(resource));
-  host_impl->resource_pool()->CheckBusyResources();
 
   const gfx::Size layer_bounds(500, 500);
 

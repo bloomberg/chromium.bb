@@ -142,25 +142,14 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
     PoolResource* resource_ = nullptr;
   };
 
-  // Constructor for creating Gpu memory buffer resources.
-  ResourcePool(LayerTreeResourceProvider* resource_provider,
-               scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-               gfx::BufferUsage usage,
-               const base::TimeDelta& expiration_delay,
-               bool disallow_non_exact_reuse);
+  enum class Mode { kGpu, kSoftware };
 
-  // Constructor for creating standard Gpu resources.
-  ResourcePool(LayerTreeResourceProvider* resource_provider,
-               scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-               // TODO(danakj): Remove this.
-               viz::ResourceTextureHint hint,
-               const base::TimeDelta& expiration_delay,
-               bool disallow_non_exact_reuse);
-
-  // Constructor for creating software resources.
+  // This takes a hint for if the pool will be holding gpu or software
+  // resources, which is used for consistency checking.
   ResourcePool(LayerTreeResourceProvider* resource_provider,
                scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                const base::TimeDelta& expiration_delay,
+               Mode resource_mode,
                bool disallow_non_exact_reuse);
 
   ~ResourcePool() override;
@@ -197,10 +186,6 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
                               size_t max_resource_count);
   void ReduceResourceUsage();
   bool ResourceUsageTooHigh();
-
-  // Must be called regularly to move resources from the busy pool to the unused
-  // pool.
-  void CheckBusyResources();
 
   size_t memory_usage_bytes() const { return in_use_memory_usage_bytes_; }
   size_t resource_count() const { return in_use_resources_.size(); }
@@ -325,9 +310,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   base::TimeTicks GetUsageTimeForLRUResource() const;
 
   LayerTreeResourceProvider* const resource_provider_ = nullptr;
-  const bool use_gpu_resources_ = false;
-  const bool use_gpu_memory_buffers_ = false;
-  const gfx::BufferUsage usage_ = gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
+  const bool using_gpu_resources_ = false;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   const base::TimeDelta resource_expiration_delay_;
   const bool disallow_non_exact_reuse_ = false;

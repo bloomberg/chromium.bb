@@ -62,49 +62,11 @@ constexpr base::TimeDelta ResourcePool::kDefaultExpirationDelay;
 ResourcePool::ResourcePool(
     LayerTreeResourceProvider* resource_provider,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    gfx::BufferUsage usage,
     const base::TimeDelta& expiration_delay,
+    Mode resource_mode,
     bool disallow_non_exact_reuse)
     : resource_provider_(resource_provider),
-      use_gpu_memory_buffers_(true),
-      usage_(usage),
-      task_runner_(std::move(task_runner)),
-      resource_expiration_delay_(expiration_delay),
-      disallow_non_exact_reuse_(disallow_non_exact_reuse),
-      weak_ptr_factory_(this) {
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "cc::ResourcePool", task_runner_.get());
-  // Register this component with base::MemoryCoordinatorClientRegistry.
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
-}
-
-ResourcePool::ResourcePool(
-    LayerTreeResourceProvider* resource_provider,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    viz::ResourceTextureHint hint,
-    const base::TimeDelta& expiration_delay,
-    bool disallow_non_exact_reuse)
-    : resource_provider_(resource_provider),
-      use_gpu_resources_(true),
-      use_gpu_memory_buffers_(false),
-      task_runner_(std::move(task_runner)),
-      resource_expiration_delay_(expiration_delay),
-      disallow_non_exact_reuse_(disallow_non_exact_reuse),
-      weak_ptr_factory_(this) {
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "cc::ResourcePool", task_runner_.get());
-  // Register this component with base::MemoryCoordinatorClientRegistry.
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
-}
-
-ResourcePool::ResourcePool(
-    LayerTreeResourceProvider* resource_provider,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const base::TimeDelta& expiration_delay,
-    bool disallow_non_exact_reuse)
-    : resource_provider_(resource_provider),
-      use_gpu_resources_(false),
-      use_gpu_memory_buffers_(false),
+      using_gpu_resources_(resource_mode == Mode::kGpu),
       task_runner_(std::move(task_runner)),
       resource_expiration_delay_(expiration_delay),
       disallow_non_exact_reuse_(disallow_non_exact_reuse),
@@ -192,8 +154,7 @@ ResourcePool::InUsePoolResource ResourcePool::AcquireResource(
   PoolResource* resource = ReuseResource(size, format, color_space);
   if (!resource)
     resource = CreateResource(size, format, color_space);
-  return InUsePoolResource(resource,
-                           use_gpu_resources_ || use_gpu_memory_buffers_);
+  return InUsePoolResource(resource, using_gpu_resources_);
 }
 
 // Iterate over all three resource lists (unused, in-use, and busy), updating
@@ -271,8 +232,7 @@ ResourcePool::TryAcquireResourceForPartialRaster(
     // These will be updated when raster completes successfully.
     resource->set_invalidated_rect(gfx::Rect());
     resource->set_content_id(0);
-    return InUsePoolResource(resource,
-                             use_gpu_resources_ || use_gpu_memory_buffers_);
+    return InUsePoolResource(resource, using_gpu_resources_);
   }
 
   return InUsePoolResource();
@@ -306,15 +266,20 @@ void ResourcePool::OnResourceReleased(size_t unique_id,
   }
 
   resource->set_resource_id(0);
-  if (use_gpu_memory_buffers_ || use_gpu_resources_)
+  if (using_gpu_resources_)
     resource->gpu_backing()->returned_sync_token = sync_token;
   DidFinishUsingResource(std::move(*busy_it));
   busy_resources_.erase(busy_it);
 }
 
 void ResourcePool::PrepareForExport(const InUsePoolResource& resource) {
+  // Exactly one of gpu or software backing should exist.
+  DCHECK(resource.resource_->gpu_backing() ||
+         resource.resource_->shared_bitmap());
+  DCHECK(!resource.resource_->gpu_backing() ||
+         !resource.resource_->shared_bitmap());
   viz::TransferableResource transferable;
-  if (use_gpu_memory_buffers_ || use_gpu_resources_) {
+  if (resource.resource_->gpu_backing()) {
     transferable = viz::TransferableResource::MakeGLOverlay(
         resource.resource_->gpu_backing()->mailbox, GL_LINEAR,
         resource.resource_->gpu_backing()->texture_target,
@@ -458,10 +423,6 @@ void ResourcePool::UpdateResourceContentIdAndInvalidation(
 
   resource->set_content_id(new_content_id);
   resource->set_invalidated_rect(updated_invalidated_rect);
-}
-
-void ResourcePool::CheckBusyResources() {
-  // TODO(danakj): Delete this.
 }
 
 void ResourcePool::DidFinishUsingResource(

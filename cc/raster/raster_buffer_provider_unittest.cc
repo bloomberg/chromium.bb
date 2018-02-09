@@ -164,7 +164,7 @@ class RasterBufferProviderTest
                 viz::PlatformColor::BestTextureFormat());
         pool_ = std::make_unique<ResourcePool>(
             resource_provider_.get(), base::ThreadTaskRunnerHandle::Get(),
-            gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, base::TimeDelta(), true);
+            base::TimeDelta(), ResourcePool::Mode::kGpu, true);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY:
         Create3dResourceProvider();
@@ -175,7 +175,7 @@ class RasterBufferProviderTest
             viz::PlatformColor::BestTextureFormat());
         pool_ = std::make_unique<ResourcePool>(
             resource_provider_.get(), base::ThreadTaskRunnerHandle::Get(),
-            viz::ResourceTextureHint::kDefault, base::TimeDelta(), true);
+            base::TimeDelta(), ResourcePool::Mode::kGpu, true);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_GPU:
         Create3dResourceProvider();
@@ -185,7 +185,7 @@ class RasterBufferProviderTest
             viz::PlatformColor::BestTextureFormat(), false);
         pool_ = std::make_unique<ResourcePool>(
             resource_provider_.get(), base::ThreadTaskRunnerHandle::Get(),
-            viz::ResourceTextureHint::kFramebuffer, base::TimeDelta(), true);
+            base::TimeDelta(), ResourcePool::Mode::kGpu, true);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
         CreateSoftwareResourceProvider();
@@ -193,7 +193,7 @@ class RasterBufferProviderTest
             resource_provider_.get(), &shared_bitmap_manager_);
         pool_ = std::make_unique<ResourcePool>(
             resource_provider_.get(), base::ThreadTaskRunnerHandle::Get(),
-            base::TimeDelta(), true);
+            base::TimeDelta(), ResourcePool::Mode::kSoftware, true);
         break;
     }
 
