@@ -365,6 +365,10 @@ bool DrmDevice::Initialize(bool use_atomic) {
     return false;
   }
 
+  uint64_t value;
+  allow_addfb2_modifiers_ =
+      GetCapability(DRM_CAP_ADDFB2_MODIFIERS, &value) && value;
+
   watcher_.reset(
       new IOWatcher(file_.GetPlatformFile(), page_flip_manager_.get()));
 
