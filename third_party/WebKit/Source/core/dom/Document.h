@@ -364,7 +364,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // function is equivalent to CreateRawElement().
   // This function is equivalent to CreateElement(qname, flags, g_null_atom),
   // However this is faster.
-  Element* createElement(const QualifiedName&, const CreateElementFlags);
+  Element* CreateElement(const QualifiedName&, const CreateElementFlags);
   // Creates an element without custom element processing.
   Element* CreateRawElement(const QualifiedName&,
                             const CreateElementFlags = CreateElementFlags());
