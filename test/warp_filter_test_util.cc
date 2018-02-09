@@ -101,6 +101,7 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
   const int out_w = GET_PARAM(0), out_h = GET_PARAM(1);
   const int num_iters = GET_PARAM(2);
   int i, j, sub_x, sub_y;
+  const int bd = 8;
 
   uint8_t *input_ = new uint8_t[h * stride];
   uint8_t *input = input_ + border;
@@ -112,7 +113,7 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
   uint8_t *output2 = new uint8_t[output_n];
   int32_t mat[8];
   int16_t alpha, beta, gamma, delta;
-  ConvolveParams conv_params = get_conv_params(0, 0, 0);
+  ConvolveParams conv_params = get_conv_params(0, 0, 0, bd);
   int32_t *dsta = new int32_t[output_n];
   int32_t *dstb = new int32_t[output_n];
 
@@ -140,9 +141,10 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
                 dsta[j] = v;
                 dstb[j] = v;
               }
-              conv_params = get_conv_params_no_round(0, 0, 0, dsta, out_w, 1);
+              conv_params =
+                  get_conv_params_no_round(0, 0, 0, dsta, out_w, 1, bd);
             } else {
-              conv_params = get_conv_params(0, 0, 0);
+              conv_params = get_conv_params(0, 0, 0, bd);
             }
 #if CONFIG_JNT_COMP
             if (jj >= 4) {
@@ -158,7 +160,8 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
                               out_h, out_w, sub_x, sub_y, &conv_params, alpha,
                               beta, gamma, delta);
             if (use_no_round) {
-              conv_params = get_conv_params_no_round(0, 0, 0, dstb, out_w, 1);
+              conv_params =
+                  get_conv_params_no_round(0, 0, 0, dstb, out_w, 1, bd);
             }
 #if CONFIG_JNT_COMP
             if (jj >= 4) {
@@ -241,7 +244,7 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
   uint16_t *output2 = new uint16_t[output_n];
   int32_t mat[8];
   int16_t alpha, beta, gamma, delta;
-  ConvolveParams conv_params = get_conv_params(0, 0, 0);
+  ConvolveParams conv_params = get_conv_params(0, 0, 0, bd);
   int32_t *dsta = new int32_t[output_n];
   int32_t *dstb = new int32_t[output_n];
 
@@ -270,9 +273,10 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
                 dsta[j] = v;
                 dstb[j] = v;
               }
-              conv_params = get_conv_params_no_round(0, 0, 0, dsta, out_w, 1);
+              conv_params =
+                  get_conv_params_no_round(0, 0, 0, dsta, out_w, 1, bd);
             } else {
-              conv_params = get_conv_params(0, 0, 0);
+              conv_params = get_conv_params(0, 0, 0, bd);
             }
 #if CONFIG_JNT_COMP
             if (jj >= 4) {
@@ -289,7 +293,8 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
             if (use_no_round) {
               // TODO(angiebird): Change this to test_impl once we have SIMD
               // implementation
-              conv_params = get_conv_params_no_round(0, 0, 0, dstb, out_w, 1);
+              conv_params =
+                  get_conv_params_no_round(0, 0, 0, dstb, out_w, 1, bd);
             }
 #if CONFIG_JNT_COMP
             if (jj >= 4) {

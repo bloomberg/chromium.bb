@@ -149,7 +149,7 @@ int bsize_num = NELEMENTS(bsize_ls);
 
 TEST_P(Av1ConvolveTest, av1_convolve_vert) {
   const int y_step_q4 = 16;
-  ConvolveParams conv_params = get_conv_params(0, 0, 0);
+  ConvolveParams conv_params = get_conv_params(0, 0, 0, 8);
 
   int in_stride, out_stride, ref_out_stride, avg_out_stride, ref_avg_out_stride;
   uint8_t *in = add_input(MAX_SB_SIZE, MAX_SB_SIZE, &in_stride);
@@ -202,7 +202,7 @@ TEST_P(Av1ConvolveTest, av1_convolve_vert) {
 
 TEST_P(Av1ConvolveTest, av1_convolve_horiz) {
   const int x_step_q4 = 16;
-  ConvolveParams conv_params = get_conv_params(0, 0, 0);
+  ConvolveParams conv_params = get_conv_params(0, 0, 0, 8);
 
   int in_stride, out_stride, ref_out_stride, avg_out_stride, ref_avg_out_stride;
   uint8_t *in = add_input(MAX_SB_SIZE, MAX_SB_SIZE, &in_stride);

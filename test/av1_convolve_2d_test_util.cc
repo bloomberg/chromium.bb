@@ -63,9 +63,9 @@ void AV1Convolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
             av1_get_interp_filter_params((InterpFilter)vfilter);
         for (int do_average = 0; do_average <= 1; ++do_average) {
           ConvolveParams conv_params1 = get_conv_params_no_round(
-              0, do_average, 0, output, MAX_SB_SIZE, 1);
+              0, do_average, 0, output, MAX_SB_SIZE, 1, 8);
           ConvolveParams conv_params2 = get_conv_params_no_round(
-              0, do_average, 0, output2, MAX_SB_SIZE, 1);
+              0, do_average, 0, output2, MAX_SB_SIZE, 1, 8);
 
           const int subx_range = has_subx ? 16 : 1;
           const int suby_range = has_suby ? 16 : 1;
@@ -121,7 +121,7 @@ void AV1Convolve2DTest::RunSpeedTest(convolve_2d_func test_impl) {
       av1_get_interp_filter_params((InterpFilter)vfilter);
   const int do_average = 0;
   ConvolveParams conv_params2 =
-      get_conv_params_no_round(0, do_average, 0, output, MAX_SB_SIZE, 1);
+      get_conv_params_no_round(0, do_average, 0, output, MAX_SB_SIZE, 1, 8);
 
   for (int block_idx = BLOCK_4X4; block_idx < BLOCK_SIZES_ALL; ++block_idx) {
     const int out_w = block_size_wide[block_idx];
@@ -184,9 +184,9 @@ void AV1Convolve2DSrTest::RunCheckOutput(convolve_2d_func test_impl) {
               av1_get_interp_filter_params((InterpFilter)vfilter);
           for (int do_average = 0; do_average <= 1; ++do_average) {
             ConvolveParams conv_params1 =
-                get_conv_params_no_round(0, do_average, 0, NULL, 0, 1);
+                get_conv_params_no_round(0, do_average, 0, NULL, 0, 1, 8);
             ConvolveParams conv_params2 =
-                get_conv_params_no_round(0, do_average, 0, NULL, 0, 1);
+                get_conv_params_no_round(0, do_average, 0, NULL, 0, 1, 8);
 
             const int subx_range = has_subx ? 16 : 1;
             const int suby_range = has_suby ? 16 : 1;
@@ -246,7 +246,7 @@ void AV1Convolve2DSrTest::RunSpeedTest(convolve_2d_func test_impl) {
       av1_get_interp_filter_params((InterpFilter)vfilter);
   const int do_average = 0;
   ConvolveParams conv_params2 =
-      get_conv_params_no_round(0, do_average, 0, NULL, 0, 1);
+      get_conv_params_no_round(0, do_average, 0, NULL, 0, 1, 8);
 
   for (int block_idx = BLOCK_4X4; block_idx < BLOCK_SIZES_ALL; ++block_idx) {
     // Make sure that sizes 2xN and Nx2 are also tested for chroma.
@@ -310,9 +310,9 @@ void AV1JntConvolve2DTest::RunCheckOutput(convolve_2d_func test_impl) {
             av1_get_interp_filter_params((InterpFilter)vfilter);
         for (int do_average = 0; do_average <= 1; ++do_average) {
           ConvolveParams conv_params1 = get_conv_params_no_round(
-              0, do_average, 0, output, MAX_SB_SIZE, 1);
+              0, do_average, 0, output, MAX_SB_SIZE, 1, 8);
           ConvolveParams conv_params2 = get_conv_params_no_round(
-              0, do_average, 0, output2, MAX_SB_SIZE, 1);
+              0, do_average, 0, output2, MAX_SB_SIZE, 1, 8);
 
           // Test special case where jnt_comp_avg is not used
           conv_params1.use_jnt_comp_avg = 0;
@@ -436,9 +436,9 @@ void AV1HighbdConvolve2DTest::RunCheckOutput(
             av1_get_interp_filter_params((InterpFilter)vfilter);
         for (int do_average = 0; do_average <= 1; ++do_average) {
           ConvolveParams conv_params1 = get_conv_params_no_round(
-              0, do_average, 0, output, MAX_SB_SIZE, 1);
+              0, do_average, 0, output, MAX_SB_SIZE, 1, bd);
           ConvolveParams conv_params2 = get_conv_params_no_round(
-              0, do_average, 0, output2, MAX_SB_SIZE, 1);
+              0, do_average, 0, output2, MAX_SB_SIZE, 1, bd);
 
           for (subx = 0; subx < 16; ++subx) {
             for (suby = 0; suby < 16; ++suby) {
@@ -506,9 +506,9 @@ void AV1HighbdJntConvolve2DTest::RunCheckOutput(
             av1_get_interp_filter_params((InterpFilter)vfilter);
         for (int do_average = 0; do_average <= 1; ++do_average) {
           ConvolveParams conv_params1 = get_conv_params_no_round(
-              0, do_average, 0, output, MAX_SB_SIZE, 1);
+              0, do_average, 0, output, MAX_SB_SIZE, 1, bd);
           ConvolveParams conv_params2 = get_conv_params_no_round(
-              0, do_average, 0, output2, MAX_SB_SIZE, 1);
+              0, do_average, 0, output2, MAX_SB_SIZE, 1, bd);
 
           // Test special case where jnt_comp_avg is not used
           conv_params1.use_jnt_comp_avg = 0;

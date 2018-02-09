@@ -26,10 +26,6 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/common/obmc.h"
 
-#if CONFIG_LOWPRECISION_BLEND
-#define LOWPRECISION_BLEND_BITS 4  // reduction in precision bits
-#endif                             // CONFIG_LOWPRECISION_BLEND
-
 // This function will determine whether or not to create a warped
 // prediction.
 static INLINE int allow_warp(const MODE_INFO *const mi,
@@ -829,7 +825,7 @@ void av1_highbd_build_inter_predictor(
   mv.row += SCALE_EXTRA_OFF;
   const int subpel_x = mv.col & SCALE_SUBPEL_MASK;
   const int subpel_y = mv.row & SCALE_SUBPEL_MASK;
-  ConvolveParams conv_params = get_conv_params(ref, ref, plane);
+  ConvolveParams conv_params = get_conv_params(ref, ref, plane, xd->bd);
 
   src += (mv.row >> SCALE_SUBPEL_BITS) * src_stride +
          (mv.col >> SCALE_SUBPEL_BITS);
@@ -994,13 +990,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         int tmp_dst_stride = 8;
         assert(w <= 8 && h <= 8);
         ConvolveParams conv_params = get_conv_params_no_round(
-            0, 0, plane, tmp_dst, tmp_dst_stride, is_compound);
-#if CONFIG_LOWPRECISION_BLEND == 1  // for masked compound modes only
-        if (is_masked_compound_type(mi->mbmi.interinter_compound_type))
-          conv_params.round_1 = LOWPRECISION_BLEND_BITS;
-#elif CONFIG_LOWPRECISION_BLEND == 2  // for all compound modes
-        if (is_compound) conv_params.round_1 = LOWPRECISION_BLEND_BITS;
-#endif                                // CONFIG_LOWPRECISION_BLEND
+            0, 0, plane, tmp_dst, tmp_dst_stride, is_compound, xd->bd);
 #if CONFIG_JNT_COMP
         conv_params.use_jnt_comp_avg = 0;
 #endif  // CONFIG_JNT_COMP
@@ -1200,13 +1190,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     }
 
     ConvolveParams conv_params = get_conv_params_no_round(
-        ref, ref, plane, tmp_dst, MAX_SB_SIZE, is_compound);
-#if CONFIG_LOWPRECISION_BLEND == 1  // for masked compound modes only
-    if (is_masked_compound_type(mi->mbmi.interinter_compound_type))
-      conv_params.round_1 = LOWPRECISION_BLEND_BITS;
-#elif CONFIG_LOWPRECISION_BLEND == 2  // for all compound modes
-    if (is_compound) conv_params.round_1 = LOWPRECISION_BLEND_BITS;
-#endif                                // CONFIG_LOWPRECISION_BLEND
+        ref, ref, plane, tmp_dst, MAX_SB_SIZE, is_compound, xd->bd);
 #if CONFIG_JNT_COMP
     av1_jnt_comp_weight_assign(cm, &mi->mbmi, 0, &conv_params.fwd_offset,
                                &conv_params.bck_offset,
@@ -2034,7 +2018,7 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
   uint8_t *pre;
   int xs, ys, subpel_x, subpel_y;
   const int is_scaled = av1_is_scaled(sf);
-  ConvolveParams conv_params = get_conv_params(ref, 0, plane);
+  ConvolveParams conv_params = get_conv_params(ref, 0, plane, xd->bd);
   WarpTypesAllowed warp_types;
   const WarpedMotionParams *const wm =
       &xd->global_motion[mi->mbmi.ref_frame[ref]];
