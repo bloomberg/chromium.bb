@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
@@ -607,6 +608,13 @@ void AppLauncherHandler::HandleShowAppInfo(const base::ListValue* args) {
       extension_service_->GetExtensionById(extension_id, true);
   if (!extension)
     return;
+
+  if (extension->is_hosted_app() && extension->from_bookmark()) {
+    chrome::ShowSiteSettings(
+        chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()),
+        extensions::AppLaunchInfo::GetFullLaunchURL(extension));
+    return;
+  }
 
   UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialog.Launches",
                             AppInfoLaunchSource::FROM_APPS_PAGE,
