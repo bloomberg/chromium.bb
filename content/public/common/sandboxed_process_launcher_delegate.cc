@@ -18,6 +18,11 @@ bool SandboxedProcessLauncherDelegate::DisableDefaultPolicy() {
   return false;
 }
 
+bool SandboxedProcessLauncherDelegate::GetAppContainerId(
+    std::string* appcontainer_id) {
+  return false;
+}
+
 bool SandboxedProcessLauncherDelegate::PreSpawnTarget(
     sandbox::TargetPolicy* policy) {
   return true;

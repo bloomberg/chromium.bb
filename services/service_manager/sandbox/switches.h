@@ -40,6 +40,10 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kGpuSandboxAllowSysVShm[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kGpuSandboxFailuresFatal[];
 #if defined(OS_WIN)
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAllowThirdPartyModules[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAddGpuAppContainerCaps[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableGpuAppContainer[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableGpuLpac[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kEnableGpuAppContainer[];
 #endif
 
 // Flags spied upon from other layers.
