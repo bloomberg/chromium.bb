@@ -11,7 +11,6 @@
 #include "platform/bindings/ScopedPersistent.h"
 #include "platform/bindings/V8PerContextData.h"
 #include "platform/wtf/RefCounted.h"
-#include "v8/include/v8-debug.h"
 #include "v8/include/v8.h"
 
 namespace blink {
