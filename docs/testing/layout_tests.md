@@ -426,7 +426,7 @@ NOTE: If the test is an html file, this means it's a legacy test so you need to 
   function test() {
     /* TEST CODE */
   }
-  ```  
+  ```
 
 ## Bisecting Regressions
 
@@ -499,7 +499,7 @@ doesn't support rebaselining flag-specific expectations.
 
 ```bash
 cd src/third_party/WebKit
-Tools/Script/run-webkit-tests --additional-driver-flag=--enable-flag --reset-results foo/bar/test.html
+Tools/Scripts/run-webkit-tests --additional-driver-flag=--enable-flag --reset-results foo/bar/test.html
 ```
 
 New baselines will be created in the flag-specific baselines directory, e.g.
@@ -513,14 +513,14 @@ files. You can follow the steps below for easier review.
 1. Copy existing baselines to the flag-specific baselines directory for the
    tests to be rebaselined:
    ```bash
-   Tools/Script/run-webkit-tests --additional-driver-flag=--enable-flag --copy-baselines foo/bar/test.html
+   Tools/Scripts/run-webkit-tests --additional-driver-flag=--enable-flag --copy-baselines foo/bar/test.html
    ```
    Then add the newly created baseline files, commit and upload the patch.
    Note that the above command won't copy baselines for passing tests.
 
 2. Rebaseline the test locally:
    ```bash
-   Tools/Script/run-webkit-tests --additional-driver-flag=--enable-flag --reset-results foo/bar/test.html
+   Tools/Scripts/run-webkit-tests --additional-driver-flag=--enable-flag --reset-results foo/bar/test.html
    ```
    Commit the changes and upload the patch.
 
