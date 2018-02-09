@@ -993,6 +993,10 @@ if (!android_64bit_target_cpu ||
       deps += [ "//tools/cygprofile" ]
     }
 
+    # .gnu.hash support added in Android M. Without this flag, library will also
+    # contain an unused .hash section. (http://crbug.com/742525#c28)
+    ldflags = [ "-Wl,--hash-style=gnu" ]
+
     public_configs = extra_chrome_shared_library_configs
     deps += extra_chrome_shared_library_deps
   }
