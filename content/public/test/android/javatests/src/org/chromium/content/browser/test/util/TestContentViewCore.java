@@ -148,9 +148,6 @@ public class TestContentViewCore implements ContentViewCore {
     public void onFocusChanged(boolean gainFocus, boolean hideKeyboardOnBlur) {}
 
     @Override
-    public void setCurrentTouchEventOffsets(float dx, float dy) {}
-
-    @Override
     public void scrollBy(float dxPix, float dyPix) {}
 
     @Override

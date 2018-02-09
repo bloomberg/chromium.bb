@@ -189,10 +189,6 @@ public class ContentViewCoreImpl
     // if there is no render process.
     public static final int INVALID_RENDER_PROCESS_PID = 0;
 
-    // Offsets for the events that passes through this ContentViewCore.
-    private float mCurrentTouchOffsetX;
-    private float mCurrentTouchOffsetY;
-
     // True if we want to disable Android native event batching and use compositor event queue.
     private boolean mShouldRequestUnbufferedDispatch;
 
@@ -795,13 +791,6 @@ public class ContentViewCoreImpl
             }
         }
         return mContainerViewInternals.super_onGenericMotionEvent(event);
-    }
-
-    @Override
-    public void setCurrentTouchEventOffsets(float dx, float dy) {
-        mCurrentTouchOffsetX = dx;
-        mCurrentTouchOffsetY = dy;
-        getEventForwarder().setCurrentTouchEventOffsets(dx, dy);
     }
 
     @Override
