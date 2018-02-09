@@ -65,7 +65,8 @@ def main():
   for output_format in args.output_format:
     rest_args.append('--output-format=' + output_format)
 
-  rc, perf_results, json_test_results = run_benchmark(args, rest_args)
+  rc, perf_results, json_test_results = run_benchmark(args, rest_args,
+      'histograms' in args.output_format)
 
   if perf_results:
     if args.isolated_script_test_perf_output:
@@ -83,7 +84,7 @@ def main():
 
   return rc
 
-def run_benchmark(args, rest_args):
+def run_benchmark(args, rest_args, histogram_results):
   env = os.environ.copy()
   env['CHROME_HEADLESS'] = '1'
 
@@ -94,8 +95,6 @@ def run_benchmark(args, rest_args):
   tempfile_dir = tempfile.mkdtemp('telemetry')
   valid = True
   num_failures = 0
-  histogram_results_present = 'histograms' in args.output_format
-  chartjson_results_present = 'chartjson' in args.output_format
   perf_results = None
   json_test_results = None
 
@@ -121,12 +120,11 @@ def run_benchmark(args, rest_args):
     # If we have also output chartjson read it in and return it.
     # results-chart.json is the file name output by telemetry when the
     # chartjson output format is included
-    if histogram_results_present:
+    tempfile_name = None
+    if histogram_results:
       tempfile_name = os.path.join(tempfile_dir, 'histograms.json')
-    elif chartjson_results_present:
-      tempfile_name = os.path.join(tempfile_dir, 'results-chart.json')
     else:
-      tempfile_name = None
+      tempfile_name = os.path.join(tempfile_dir, 'results-chart.json')
 
     if tempfile_name is not None:
       with open(tempfile_name) as f:

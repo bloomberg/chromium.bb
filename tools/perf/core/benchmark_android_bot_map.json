@@ -1,0 +1,184 @@
+{
+  "0": {
+    "benchmarks": [
+      "system_health.memory_desktop",
+      "system_health.memory_mobile"
+    ]
+  },
+  "1": {
+    "benchmarks": [
+      "loading.desktop",
+      "smoothness.key_silk_cases",
+      "smoothness.simple_mobile_sites"
+    ]
+  },
+  "2": {
+    "benchmarks": [
+      "blink_perf.image_decoder",
+      "blink_perf.owp_storage",
+      "wasm"
+    ]
+  },
+  "3": {
+    "benchmarks": [
+      "speedometer-future",
+      "speedometer2-future",
+      "v8.browsing_desktop-future",
+      "v8.browsing_mobile-future"
+    ]
+  },
+  "4": {
+    "benchmarks": [
+      "system_health.common_desktop",
+      "v8.browsing_mobile"
+    ]
+  },
+  "5": {
+    "benchmarks": [
+      "dromaeo.domcoretraverse",
+      "memory.desktop",
+      "power.typical_10_mobile",
+      "smoothness.tough_animation_cases",
+      "thread_times.key_mobile_sites_smooth",
+      "webrtc"
+    ]
+  },
+  "6": {
+    "benchmarks": [
+      "blink_perf.shadow_dom",
+      "dromaeo.domcorequery",
+      "power.idle_platform",
+      "smoothness.gpu_rasterization_and_decoding.image_decoding_cases"
+    ]
+  },
+  "7": {
+    "benchmarks": [
+      "battor.trivial_pages",
+      "media.desktop",
+      "octane",
+      "smoothness.gpu_rasterization.tough_scrolling_cases",
+      "smoothness.tough_filters_cases",
+      "thread_times.key_hit_test_cases",
+      "thread_times.key_idle_power_cases",
+      "v8.runtimestats.browsing_mobile"
+    ]
+  },
+  "8": {
+    "benchmarks": [
+      "dummy_benchmark.histogram_benchmark_1",
+      "dummy_benchmark.noisy_benchmark_1",
+      "jetstream",
+      "smoothness.tough_texture_upload_cases",
+      "speedometer",
+      "speedometer2"
+    ]
+  },
+  "9": {
+    "benchmarks": [
+      "memory.top_10_mobile",
+      "smoothness.gpu_rasterization.tough_filters_cases",
+      "smoothness.image_decoding_cases",
+      "smoothness.pathological_mobile_sites",
+      "smoothness.tough_pinch_zoom_cases",
+      "v8.detached_context_age_in_gc"
+    ]
+  },
+  "10": {
+    "benchmarks": [
+      "blink_perf.bindings",
+      "blink_perf.canvas",
+      "rasterize_and_record_micro.partial_invalidation",
+      "smoothness.gpu_rasterization.polymer",
+      "start_with_url.cold.startup_pages",
+      "system_health.webview_startup"
+    ]
+  },
+  "11": {
+    "benchmarks": [
+      "blink_perf.layout",
+      "dromaeo",
+      "dromaeo.domcoreattr",
+      "oortonline_tbmv2",
+      "smoothness.maps",
+      "smoothness.tough_webgl_cases",
+      "thread_times.simple_mobile_sites"
+    ]
+  },
+  "12": {
+    "benchmarks": [
+      "battor.steady_state",
+      "blink_perf.svg",
+      "memory.long_running_idle_gmail_background_tbmv2",
+      "smoothness.gpu_rasterization.top_25_smooth",
+      "smoothness.gpu_rasterization.tough_path_rendering_cases",
+      "thread_times.key_noop_cases"
+    ]
+  },
+  "13": {
+    "benchmarks": [
+      "memory.long_running_idle_gmail_tbmv2",
+      "system_health.common_mobile"
+    ]
+  },
+  "14": {
+    "benchmarks": [
+      "loading.mobile",
+      "media.mobile",
+      "smoothness.tough_webgl_ad_cases",
+      "tab_switching.typical_25",
+      "v8.browsing_desktop"
+    ]
+  },
+  "15": {
+    "benchmarks": [
+      "blink_perf.events",
+      "dummy_benchmark.stable_benchmark_1",
+      "smoothness.top_25_smooth",
+      "smoothness.tough_ad_cases"
+    ]
+  },
+  "16": {
+    "benchmarks": [
+      "dromaeo.domcoremodify",
+      "smoothness.key_desktop_move_cases",
+      "smoothness.sync_scroll.key_mobile_sites_smooth",
+      "thread_times.tough_compositor_cases",
+      "thread_times.tough_scrolling_cases"
+    ]
+  },
+  "17": {
+    "benchmarks": [
+      "blink_perf.dom",
+      "rasterize_and_record_micro.top_25",
+      "smoothness.tough_canvas_cases",
+      "thread_times.key_silk_cases"
+    ]
+  },
+  "18": {
+    "benchmarks": [
+      "blink_perf.css",
+      "blink_perf.parser",
+      "scheduler.tough_scheduling_cases",
+      "smoothness.gpu_rasterization.tough_pinch_zoom_cases",
+      "smoothness.tough_image_decode_cases",
+      "start_with_url.warm.startup_pages"
+    ]
+  },
+  "19": {
+    "benchmarks": [
+      "blink_perf.paint",
+      "kraken",
+      "smoothness.key_mobile_sites_smooth",
+      "tracing.tracing_with_background_memory_infra"
+    ]
+  },
+  "20": {
+    "benchmarks": [
+      "smoothness.desktop_tough_pinch_zoom_cases",
+      "smoothness.tough_path_rendering_cases",
+      "smoothness.tough_scrolling_cases",
+      "v8.runtime_stats.top_25",
+      "v8.runtimestats.browsing_desktop"
+    ]
+  }
+}

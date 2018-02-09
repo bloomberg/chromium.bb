@@ -1,4 +1,9 @@
 {
+  "comment": [
+    "This file contains the current master benchmark list that is run and",
+    "is updated manually.  Please also add new benchmarks to",
+    "tools/perf/core/benchmark_*_bot_map.json"
+  ],
   "Android Nexus5 Perf": {
     "build13-b1--device1": {
       "benchmarks": [

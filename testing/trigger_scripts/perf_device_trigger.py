@@ -41,11 +41,7 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
     super(PerfDeviceTriggerer, self).__init__()
 
   def append_additional_args(self, args):
-    if 'id' in args:
-      # Adds the bot id as an argument to the test.
-      return args + ['--bot', args[args.index('id') + 1]]
-    else:
-      raise Exception('Id must be present for perf device triggering')
+    return args
 
   def select_config_indices(self, args, verbose):
     # For perf we want to trigger a job for every valid config since
