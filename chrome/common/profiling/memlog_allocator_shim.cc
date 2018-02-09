@@ -471,17 +471,17 @@ void EnableTraceEventFiltering() {
 }
 
 void InitAllocatorShim(MemlogSenderPipe* sender_pipe,
-                       mojom::StackMode stack_mode) {
+                       mojom::ProfilingParamsPtr params) {
   // Must be done before hooking any functions that make stack traces.
   base::debug::EnableInProcessStackDumping();
 
-  if (stack_mode == mojom::StackMode::NATIVE_WITH_THREAD_NAMES) {
+  if (params->stack_mode == mojom::StackMode::NATIVE_WITH_THREAD_NAMES) {
     g_include_thread_names = true;
     base::ThreadIdNameManager::GetInstance()->InstallSetNameCallback(
         base::BindRepeating(&SetCurrentThreadName));
   }
 
-  switch (stack_mode) {
+  switch (params->stack_mode) {
     case mojom::StackMode::PSEUDO:
       EnableTraceEventFiltering();
       AllocationContextTracker::SetCaptureMode(CaptureMode::PSEUDO_STACK);

@@ -16,12 +16,9 @@ namespace profiling {
 // TLS slot, which is the entity that's supposed to prevent re-entrancy.
 void InitTLSSlot();
 
-// Begin profiling all allocations in the process. Send the results to
-// |sender_pipe|. |stack_mode| describes the type of stack to record for each
-// allocation. |include_thread_names| describes whether to insert thread names
-// into NATIVE stacks.
+// Begin profiling all allocations in the process.
 void InitAllocatorShim(MemlogSenderPipe* sender_pipe,
-                       mojom::StackMode stack_mode);
+                       mojom::ProfilingParamsPtr params);
 
 // Stop profiling allocations by dropping shim callbacks. There is no way to
 // consistently, synchronously stop the allocator shim without negatively
