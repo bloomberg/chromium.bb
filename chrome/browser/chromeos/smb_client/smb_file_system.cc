@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/smb_client/smb_file_system.h"
 
+#include <algorithm>
+
 #include "base/memory/ptr_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,6 +24,14 @@ namespace {
 // for NETWORK providers. This work around is to supply an icon but make it
 // bogus so it falls back to the generic icon.
 constexpr char kUnknownImageDataUri[] = "data:image/png;base64,X";
+
+// Initial number of entries to send during read directory. This number is
+// smaller than kReadDirectoryMaxBatchSize since we want the initial page to
+// load as quickly as possible.
+constexpr uint32_t kReadDirectoryInitialBatchSize = 64;
+
+// Maximum number of entries to send at a time for read directory,
+constexpr uint32_t kReadDirectoryMaxBatchSize = 2048;
 
 using file_system_provider::ProvidedFileSystemInterface;
 
@@ -421,11 +431,22 @@ void SmbFileSystem::HandleRequestReadDirectoryCallback(
     const storage::AsyncFileUtil::ReadDirectoryCallback& callback,
     smbprovider::ErrorType error,
     const smbprovider::DirectoryEntryListProto& entries) const {
+  uint32_t batch_size = kReadDirectoryInitialBatchSize;
   storage::AsyncFileUtil::EntryList entry_list;
+
+  // Loop through the entries and send when the desired batch size is hit.
   for (const smbprovider::DirectoryEntryProto& entry : entries.entries()) {
     entry_list.emplace_back(entry.name(), MapEntryType(entry.is_directory()));
+
+    if (entry_list.size() == batch_size) {
+      callback.Run(base::File::FILE_OK, entry_list, true /* has_more */);
+      entry_list.clear();
+
+      // Double the batch size until it gets to the maximum size.
+      batch_size = std::min(batch_size * 2, kReadDirectoryMaxBatchSize);
+    }
   }
-  // TODO(allenvic): Implement has_more (crbug.com/796246).
+
   callback.Run(TranslateError(error), entry_list, false /* has_more */);
 }
 
