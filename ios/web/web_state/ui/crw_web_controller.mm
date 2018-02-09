@@ -4448,14 +4448,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [_navigationStates setState:web::WKNavigationState::REDIRECTED
                 forNavigation:navigation];
 
-  // It is fine to ignore returned NavigationContext. Context does not change
-  // for redirect and old context stored _navigationStates is valid and it
-  // should not be replaced.
-  [self registerLoadRequestForURL:webViewURL
-                         referrer:[self currentReferrer]
-                       transition:ui::PAGE_TRANSITION_SERVER_REDIRECT
-           sameDocumentNavigation:NO];
-  [_navigationStates contextForNavigation:navigation]->SetUrl(webViewURL);
+  // Update URL for navigation context and navigation item.
+  web::NavigationContextImpl* context =
+      [_navigationStates contextForNavigation:navigation];
+  context->SetUrl(webViewURL);
+  web::NavigationItem* item = web::GetItemWithUniqueID(
+      self.navigationManagerImpl, context->GetNavigationItemUniqueID());
+  item->SetVirtualURL(webViewURL);
+  item->SetURL(webViewURL);
 }
 
 - (void)webView:(WKWebView*)webView
