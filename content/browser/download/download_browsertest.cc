@@ -1782,26 +1782,28 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, Resume_Hash) {
   TestDownloadHttpResponse::Parameters parameters;
 
   // As a control, let's try GetHash() on an uninterrupted download.
-  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
-  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
-  TestDownloadHttpResponse::StartServing(parameters, server_url);
+  GURL url1 = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url1 = embedded_test_server()->GetURL(url1.host(), url1.path());
+  TestDownloadHttpResponse::StartServing(parameters, server_url1);
   DownloadItem* uninterrupted_download(
-      StartDownloadAndReturnItem(shell(), server_url));
+      StartDownloadAndReturnItem(shell(), server_url1));
   WaitForCompletion(uninterrupted_download);
   EXPECT_EQ(expected_hash, uninterrupted_download->GetHash());
 
   SetupErrorInjectionDownloads();
   // Now with interruptions.
+  GURL url2 = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url2 = embedded_test_server()->GetURL(url2.host(), url2.path());
   parameters.inject_error_cb = inject_error_callback();
   parameters.injected_errors.push(100);
   parameters.injected_errors.push(211);
   parameters.injected_errors.push(337);
   parameters.injected_errors.push(400);
   parameters.injected_errors.push(512);
-  TestDownloadHttpResponse::StartServing(parameters, server_url);
+  TestDownloadHttpResponse::StartServing(parameters, server_url2);
 
   // Start and watch for interrupt.
-  DownloadItem* download(StartDownloadAndReturnItem(shell(), server_url));
+  DownloadItem* download(StartDownloadAndReturnItem(shell(), server_url2));
   WaitForInterrupt(download);
 
   download->Resume();
