@@ -32,6 +32,8 @@ base::LazyInstance<base::ThreadLocalPointer<void>>::Leaky
     g_stack_frame_pointer = LAZY_INSTANCE_INITIALIZER;
 #endif
 
+bool g_fatal_exception_occurred = false;
+
 }  // namespace
 
 namespace base {
@@ -240,10 +242,17 @@ void CheckException(JNIEnv* env) {
     env->ExceptionDescribe();
     env->ExceptionClear();
 
-    // Set the exception_string in BuildInfo so that breakpad can read it.
-    // RVO should avoid any extra copies of the exception string.
-    base::android::BuildInfo::GetInstance()->SetJavaExceptionInfo(
-        GetJavaExceptionInfo(env, java_throwable));
+    if (g_fatal_exception_occurred) {
+      // Another exception (probably OOM) occurred during GetJavaExceptionInfo.
+      base::android::BuildInfo::GetInstance()->SetJavaExceptionInfo(
+          "Java OOM'ed in exception handling, check logcat");
+    } else {
+      g_fatal_exception_occurred = true;
+      // Set the exception_string in BuildInfo so that breakpad can read it.
+      // RVO should avoid any extra copies of the exception string.
+      base::android::BuildInfo::GetInstance()->SetJavaExceptionInfo(
+          GetJavaExceptionInfo(env, java_throwable));
+    }
   }
 
   // Now, feel good about it and die.
@@ -271,6 +280,7 @@ std::string GetJavaExceptionInfo(JNIEnv* env, jthrowable java_throwable) {
   ScopedJavaLocalRef<jobject> bytearray_output_stream(env,
       env->NewObject(bytearray_output_stream_clazz.obj(),
                      bytearray_output_stream_constructor));
+  CheckException(env);
 
   // Create an instance of PrintStream.
   ScopedJavaLocalRef<jclass> printstream_clazz =
@@ -282,19 +292,19 @@ std::string GetJavaExceptionInfo(JNIEnv* env, jthrowable java_throwable) {
   ScopedJavaLocalRef<jobject> printstream(env,
       env->NewObject(printstream_clazz.obj(), printstream_constructor,
                      bytearray_output_stream.obj()));
+  CheckException(env);
 
   // Call Throwable.printStackTrace(PrintStream)
   env->CallVoidMethod(java_throwable, throwable_printstacktrace,
       printstream.obj());
+  CheckException(env);
 
   // Call ByteArrayOutputStream.toString()
   ScopedJavaLocalRef<jstring> exception_string(
       env, static_cast<jstring>(
           env->CallObjectMethod(bytearray_output_stream.obj(),
                                 bytearray_output_stream_tostring)));
-  if (ClearException(env)) {
-    return "Java OOM'd in exception handling, check logcat";
-  }
+  CheckException(env);
 
   return ConvertJavaStringToUTF8(exception_string);
 }
