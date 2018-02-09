@@ -2380,7 +2380,6 @@ drm_output_repaint(struct weston_output *output_base,
 {
 	struct drm_pending_state *pending_state = repaint_data;
 	struct drm_output *output = to_drm_output(output_base);
-	struct drm_backend *backend = to_drm_backend(output_base->compositor);
 	struct drm_output_state *state = NULL;
 	struct drm_plane_state *scanout_state;
 
@@ -2404,10 +2403,6 @@ drm_output_repaint(struct weston_output *output_base,
 						   output->scanout_plane);
 	if (!scanout_state || !scanout_state->fb)
 		goto err;
-
-	wl_array_remove_uint32(&backend->unused_connectors,
-			       output->connector_id);
-	wl_array_remove_uint32(&backend->unused_crtcs, output->crtc_id);
 
 	return 0;
 
@@ -4625,6 +4620,9 @@ drm_output_enable(struct weston_output *base)
 	weston_compositor_stack_plane(b->compositor,
 				      &output->scanout_plane->base,
 				      &b->compositor->primary_plane);
+
+	wl_array_remove_uint32(&b->unused_connectors, output->connector_id);
+	wl_array_remove_uint32(&b->unused_crtcs, output->crtc_id);
 
 	weston_log("Output %s, (connector %d, crtc %d)\n",
 		   output->base.name, output->connector_id, output->crtc_id);
