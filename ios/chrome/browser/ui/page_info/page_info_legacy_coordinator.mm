@@ -15,7 +15,6 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/chrome_coordinator+fullscreen_disabling.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #include "ios/chrome/browser/ui/page_info/page_info_model.h"
 #import "ios/chrome/browser/ui/page_info/page_info_view_controller.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
@@ -108,8 +107,7 @@ NSString* const kPageInfoWillHideNotification =
                     object:nil];
 
   // Disable fullscreen while the page info UI is displayed.
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
-    [self didStartFullscreenDisablingUI];
+  [self didStartFullscreenDisablingUI];
 
   // TODO(crbug.com/760387): Get rid of PageInfoModel completely.
   PageInfoModelBubbleBridge* bridge = new PageInfoModelBubbleBridge();
@@ -137,8 +135,7 @@ NSString* const kPageInfoWillHideNotification =
                     object:nil];
 
   // Stop disabling fullscreen since the page info UI was stopped.
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
-    [self didStopFullscreenDisablingUI];
+  [self didStopFullscreenDisablingUI];
 
   [self.pageInfoViewController dismiss];
   self.pageInfoViewController = nil;

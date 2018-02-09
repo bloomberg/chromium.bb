@@ -9,7 +9,6 @@
 #include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/chrome_coordinator+fullscreen_disabling.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_configuration_provider.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_provider.h"
@@ -108,10 +107,8 @@
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kToolsMenuWillHideNotification
                     object:nil];
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen) &&
-      self.browserState) {
+  if (self.browserState)
     [self didStopFullscreenDisablingUI];
-  }
 
   ToolsPopupController* tempTPC = _toolsPopupController;
   [_toolsPopupController containerView].userInteractionEnabled = NO;
@@ -156,10 +153,8 @@
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kToolsMenuWillShowNotification
                     object:nil];
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen) &&
-      self.browserState) {
+  if (self.browserState)
     [self didStartFullscreenDisablingUI];
-  }
   if ([self.configurationProvider
           respondsToSelector:@selector
           (prepareForToolsMenuPresentationByCoordinator:)]) {

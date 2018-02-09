@@ -16,7 +16,6 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
@@ -138,13 +137,11 @@
   self.toolbarViewController.locationBarView = self.locationBarCoordinator.view;
   self.toolbarViewController.dispatcher = self.dispatcher;
 
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    _fullscreenObserver =
-        std::make_unique<FullscreenUIUpdater>(self.toolbarViewController);
-    FullscreenControllerFactory::GetInstance()
-        ->GetForBrowserState(self.browserState)
-        ->AddObserver(_fullscreenObserver.get());
-  }
+  _fullscreenObserver =
+      std::make_unique<FullscreenUIUpdater>(self.toolbarViewController);
+  FullscreenControllerFactory::GetInstance()
+      ->GetForBrowserState(self.browserState)
+      ->AddObserver(_fullscreenObserver.get());
 
   DCHECK(self.toolbarViewController.toolsMenuButton);
   self.toolsMenuButtonObserverBridge = [[ToolsMenuButtonObserverBridge alloc]
@@ -173,12 +170,10 @@
   [self.locationBarCoordinator stop];
   [self stopObservingTTSNotifications];
 
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    FullscreenControllerFactory::GetInstance()
-        ->GetForBrowserState(self.browserState)
-        ->RemoveObserver(_fullscreenObserver.get());
-    _fullscreenObserver = nullptr;
-  }
+  FullscreenControllerFactory::GetInstance()
+      ->GetForBrowserState(self.browserState)
+      ->RemoveObserver(_fullscreenObserver.get());
+  _fullscreenObserver = nullptr;
 }
 
 #pragma mark - Public

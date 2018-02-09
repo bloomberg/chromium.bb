@@ -20,7 +20,6 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_view.h"
@@ -276,8 +275,7 @@ void LocationBarControllerImpl::OnKillFocus() {
   }
 
   // Stop disabling fullscreen since the loation bar is no longer focused.
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
-    fullscreen_disabler_ = nullptr;
+  fullscreen_disabler_ = nullptr;
 
   UpdateRightDecorations();
   [delegate_ locationBarHasResignedFirstResponder];
@@ -303,11 +301,9 @@ void LocationBarControllerImpl::OnSetFocus() {
 
   // Disable fullscreen while focused so that the location bar cannot be scolled
   // offscreen.
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    fullscreen_disabler_ = std::make_unique<ScopedFullscreenDisabler>(
-        FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-            browser_state_));
-  }
+  fullscreen_disabler_ = std::make_unique<ScopedFullscreenDisabler>(
+      FullscreenControllerFactory::GetInstance()->GetForBrowserState(
+          browser_state_));
 
   UpdateRightDecorations();
   [delegate_ locationBarHasBecomeFirstResponder];

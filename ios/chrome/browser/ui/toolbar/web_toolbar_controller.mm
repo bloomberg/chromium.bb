@@ -43,7 +43,6 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/external_search_commands.h"
 #import "ios/chrome/browser/ui/commands/start_voice_search_command.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_view.h"
@@ -109,8 +108,7 @@ using ios::material::TimingFunction;
 @interface WebToolbarController ()<DropAndNavigateDelegate,
                                    LocationBarDelegate,
                                    LocationBarURLLoader,
-                                   OmniboxPopupPositioner,
-                                   ToolbarViewDelegate> {
+                                   OmniboxPopupPositioner> {
   // Top-level view for web content.
   UIView* _webToolbar;
   UIButton* _backButton;
@@ -549,9 +547,6 @@ using ios::material::TimingFunction;
   }
 
   [self startObservingTTSNotifications];
-
-  if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
-    [self.view setDelegate:self];
 
   if (idiom == IPHONE_IDIOM) {
     [[self stackButton] addTarget:dispatcher
@@ -1032,28 +1027,6 @@ using ios::material::TimingFunction;
 - (UIView*)popupParentView {
   NOTREACHED();
   return nil;
-}
-
-#pragma mark -
-#pragma mark ToolbarViewDelegate methods.
-
-- (void)toolbarDidLayout {
-  CGRect frame = self.view.frame;
-  if (frame.origin.y == _lastKnownToolbarYOrigin)
-    return;
-  [self updateToolbarAlphaForFrame:frame];
-  _lastKnownToolbarYOrigin = frame.origin.y;
-}
-
-- (void)windowDidChange {
-  if (![_lastKnownTraitCollection
-          containsTraitsInCollection:self.view.traitCollection]) {
-    [self updateToolbarButtons];
-  }
-}
-
-- (void)traitCollectionDidChange {
-  [self updateToolbarButtons];
 }
 
 #pragma mark -

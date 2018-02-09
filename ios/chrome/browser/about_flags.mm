@@ -42,7 +42,6 @@
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
 #include "ios/chrome/browser/ui/activity_services/canonical_url_feature.h"
 #include "ios/chrome/browser/ui/external_search/features.h"
-#include "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/history/history_base_feature.h"
 #include "ios/chrome/browser/ui/main/main_feature_flags.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_clipping_feature.h"
@@ -211,9 +210,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"memex-tab-switcher", flag_descriptions::kMemexTabSwitcherName,
      flag_descriptions::kMemexTabSwitcherDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kMemexTabSwitcher)},
-    {"new-fullscreen-controller", flag_descriptions::kNewFullscreenName,
-     flag_descriptions::kNewFullscreenDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(fullscreen::features::kNewFullscreen)},
     {"clean-toolbar", flag_descriptions::kCleanToolbarName,
      flag_descriptions::kCleanToolbarDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kCleanToolbar)},

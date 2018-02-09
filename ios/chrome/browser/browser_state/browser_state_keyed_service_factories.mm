@@ -55,7 +55,6 @@
 #include "ios/chrome/browser/ui/browser_list/browser_list_factory.h"
 #include "ios/chrome/browser/ui/browser_list/browser_list_session_service_factory.h"
 #include "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
-#include "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/overlays/overlay_service_factory.h"
 #include "ios/chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
@@ -125,8 +124,6 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   TranslateAcceptLanguagesFactory::GetInstance();
   UrlLanguageHistogramFactory::GetInstance();
   BrowserDownloadServiceFactory::GetInstance();
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    FullscreenControllerFactory::GetInstance();
-  }
+  FullscreenControllerFactory::GetInstance();
   OverlayServiceFactory::GetInstance();
 }

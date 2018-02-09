@@ -11,8 +11,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/settings_test_util.h"
@@ -70,10 +68,7 @@ void AssertURLIs(const GURL& expectedURL) {
 #pragma mark - Tests
 
 // Fullscreens tests for Chrome.
-@interface FullscreenTestCase : ChromeTestCase {
-  base::test::ScopedFeatureList _featureList;
-}
-
+@interface FullscreenTestCase : ChromeTestCase
 @end
 
 @implementation FullscreenTestCase

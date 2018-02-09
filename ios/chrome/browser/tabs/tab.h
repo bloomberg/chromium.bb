@@ -18,8 +18,6 @@
 @class CastController;
 @class ExternalAppLauncher;
 @class FormInputAccessoryViewController;
-@class LegacyFullscreenController;
-@protocol LegacyFullscreenControllerDelegate;
 class GURL;
 @class OpenInController;
 @class OverscrollActionsController;
@@ -103,12 +101,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 @property(nonatomic, readonly) id<FindInPageControllerDelegate>
     findInPageControllerDelegate;
 
-// The delegate to use for the legacy fullscreen controller.  It should not be
-// set if the new fullscreen is enabled.
-// TODO(crbug.com/778823): Remove this property.
-@property(nonatomic, weak) id<LegacyFullscreenControllerDelegate>
-    legacyFullscreenControllerDelegate;
-
 @property(nonatomic, readonly)
     OverscrollActionsController* overscrollActionsController;
 @property(nonatomic, weak) id<OverscrollActionsControllerDelegate>
@@ -176,10 +168,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // Called before capturing a snapshot for Tab.
 - (void)willUpdateSnapshot;
-
-// Ensures the toolbar visibility matches |visible|.
-// TODO(crbug.com/778823): Remove this code.
-- (void)updateFullscreenWithToolbarVisible:(BOOL)visible;
 
 // Whether or not desktop user agent is used for the currently visible page.
 @property(nonatomic, readonly) BOOL usesDesktopUserAgent;

@@ -33,7 +33,6 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #include "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
-#include "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #include "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
@@ -725,11 +724,9 @@ UIColor* BackgroundColor() {
     [self removeAutoscrollTimer];
 
   // Disable fullscreen during drags.
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    _fullscreenDisabler = std::make_unique<ScopedFullscreenDisabler>(
-        FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-            _tabModel.browserState));
-  }
+  _fullscreenDisabler = std::make_unique<ScopedFullscreenDisabler>(
+      FullscreenControllerFactory::GetInstance()->GetForBrowserState(
+          _tabModel.browserState));
 }
 
 - (void)continueDrag:(UILongPressGestureRecognizer*)gesture {
@@ -758,8 +755,7 @@ UIColor* BackgroundColor() {
   DCHECK([[gesture view] isKindOfClass:[TabView class]]);
 
   // Stop disabling fullscreen.
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
-    _fullscreenDisabler = nullptr;
+  _fullscreenDisabler = nullptr;
 
   NSUInteger fromIndex = [self modelIndexForTabView:_draggedTab];
   // TODO(rohitrao): We're seeing crashes where fromIndex is NSNotFound,
@@ -788,8 +784,7 @@ UIColor* BackgroundColor() {
   DCHECK([[gesture view] isKindOfClass:[TabView class]]);
 
   // Stop disabling fullscreen.
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
-    _fullscreenDisabler = nullptr;
+  _fullscreenDisabler = nullptr;
 
   // Reset drag state and trigger a relayout to moved tabs back into their
   // correct positions.
