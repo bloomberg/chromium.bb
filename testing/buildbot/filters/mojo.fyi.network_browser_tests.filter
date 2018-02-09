@@ -18,10 +18,6 @@
 -DeclarativeContentApiTest.UninstallWhileActivePageAction
 -DevToolsSanityTest.TestRawHeadersWithRedirectAndHSTS
 -DisabledSignInIsolationBrowserTest.SyntheticTrial
-# DnsProbeBrowserTests that are flaky.
--DnsProbeBrowserTest.CorrectionsLoadStopped
--DnsProbeBrowserTest.CorrectionsLoadStoppedSlowProbe
--DnsProbeBrowserTest.NoInternetProbeResultWithSlowBrokenCorrections
 -DomainReliabilityBrowserTest.Upload
 -EnabledSignInIsolationBrowserTest.SyntheticTrial
 -ExpectCTBrowserTest.TestDynamicExpectCTHeaderProcessing
@@ -151,11 +147,19 @@
 -ContentSettingsTest.RedirectCrossOrigin
 -ContentSettingsTest.RedirectLoopCookies
 
+# https://crbug.com/810329 DnsProbe browsertests that rely on delaying requests:
+-DnsProbeBrowserTest.NxdomainProbeResultWithWorkingSlowCorrections
+# Addendum to the above: These three were previously marked as flaky. After
+# resolving https://crbug.com/810329, they will need to be monitored to see
+# if flake is still an issue.
+-DnsProbeBrowserTest.CorrectionsLoadStoppedSlowProbe
+-DnsProbeBrowserTest.CorrectionsLoadStopped
+-DnsProbeBrowserTest.NoInternetProbeResultWithSlowBrokenCorrections
+
 # crbug.com/776589 Intercepting requests with net::URLRequestFilter.
 -ClientHintsBrowserTest.ClientHintsLifetimeNotAttachedCookiesBlocked
 -ContinueWhereILeftOffTest.CookiesClearedOnExit
 -DevToolsSanityTest.TestNetworkPushTime
--DnsProbeBrowserTest.NxdomainProbeResultWithWorkingSlowCorrections
 -DownloadExtensionTest.DownloadExtensionTest_Download_FileSystemURL
 -LoadImageBrowserTest.LoadImage
 -MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/0
