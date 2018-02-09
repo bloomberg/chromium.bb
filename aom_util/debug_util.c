@@ -115,9 +115,9 @@ void mismatch_move_frame_idx_r() {
   frame_buf_idx_r = (frame_buf_idx_r + 1) % max_frame_buf_num;
 }
 
-void mismatch_record_block_pre(const uint8_t *src, int src_stride, int plane,
-                               int pixel_c, int pixel_r, int blk_w, int blk_h,
-                               int highbd) {
+void mismatch_record_block_pre(const uint8_t *src, int src_stride,
+                               int frame_offset, int plane, int pixel_c,
+                               int pixel_r, int blk_w, int blk_h, int highbd) {
   if (pixel_c + blk_w >= frame_stride || pixel_r + blk_h >= frame_height) {
     printf("frame_buf undersized\n");
     assert(0);
@@ -133,22 +133,24 @@ void mismatch_record_block_pre(const uint8_t *src, int src_stride, int plane,
   }
 #if 0
   int ref_frame_idx = 3;
+  int ref_frame_offset = 4;
   int ref_plane = 1;
   int ref_pixel_c = 162;
   int ref_pixel_r = 16;
   if (frame_idx_w == ref_frame_idx && plane == ref_plane &&
-      ref_pixel_c >= pixel_c && ref_pixel_c < pixel_c + blk_w &&
-      ref_pixel_r >= pixel_r && ref_pixel_r < pixel_r + blk_h) {
+      frame_offset == ref_frame_offset && ref_pixel_c >= pixel_c &&
+      ref_pixel_c < pixel_c + blk_w && ref_pixel_r >= pixel_r &&
+      ref_pixel_r < pixel_r + blk_h) {
     printf(
-        "\nrecord_block_pre frame_idx %d plane %d pixel_c %d pixel_r %d blk_w "
+        "\nrecord_block_pre frame_idx %d frame_offset %d plane %d pixel_c %d pixel_r %d blk_w "
         "%d blk_h %d\n",
-        frame_idx_w, plane, pixel_c, pixel_r, blk_w, blk_h);
+        frame_idx_w, frame_offset, plane, pixel_c, pixel_r, blk_w, blk_h);
   }
 #endif
 }
-void mismatch_record_block_tx(const uint8_t *src, int src_stride, int plane,
-                              int pixel_c, int pixel_r, int blk_w, int blk_h,
-                              int highbd) {
+void mismatch_record_block_tx(const uint8_t *src, int src_stride,
+                              int frame_offset, int plane, int pixel_c,
+                              int pixel_r, int blk_w, int blk_h, int highbd) {
   if (pixel_c + blk_w >= frame_stride || pixel_r + blk_h >= frame_height) {
     printf("frame_buf undersized\n");
     assert(0);
@@ -164,22 +166,23 @@ void mismatch_record_block_tx(const uint8_t *src, int src_stride, int plane,
   }
 #if 0
   int ref_frame_idx = 3;
+  int ref_frame_offset = 4;
   int ref_plane = 1;
   int ref_pixel_c = 162;
   int ref_pixel_r = 16;
-  if (frame_idx_w == ref_frame_idx && plane == ref_plane &&
+  if (frame_idx_w == ref_frame_idx && plane == ref_plane && frame_offset == ref_frame_offset &&
       ref_pixel_c >= pixel_c && ref_pixel_c < pixel_c + blk_w &&
       ref_pixel_r >= pixel_r && ref_pixel_r < pixel_r + blk_h) {
     printf(
-        "\nrecord_block_tx frame_idx %d plane %d pixel_c %d pixel_r %d blk_w "
+        "\nrecord_block_tx frame_idx %d frame_offset %d plane %d pixel_c %d pixel_r %d blk_w "
         "%d blk_h %d\n",
-        frame_idx_w, plane, pixel_c, pixel_r, blk_w, blk_h);
+        frame_idx_w, frame_offset, plane, pixel_c, pixel_r, blk_w, blk_h);
   }
 #endif
 }
-void mismatch_check_block_pre(const uint8_t *src, int src_stride, int plane,
-                              int pixel_c, int pixel_r, int blk_w, int blk_h,
-                              int highbd) {
+void mismatch_check_block_pre(const uint8_t *src, int src_stride,
+                              int frame_offset, int plane, int pixel_c,
+                              int pixel_r, int blk_w, int blk_h, int highbd) {
   if (pixel_c + blk_w >= frame_stride || pixel_r + blk_h >= frame_height) {
     printf("frame_buf undersized\n");
     assert(0);
@@ -199,9 +202,10 @@ void mismatch_check_block_pre(const uint8_t *src, int src_stride, int plane,
   }
   if (mismatch) {
     printf(
-        "\ncheck_block_pre failed frame_idx %d plane %d pixel_c %d pixel_r "
+        "\ncheck_block_pre failed frame_idx %d frame_offset %d plane %d "
+        "pixel_c %d pixel_r "
         "%d blk_w %d blk_h %d\n",
-        frame_idx_r, plane, pixel_c, pixel_r, blk_w, blk_h);
+        frame_idx_r, frame_offset, plane, pixel_c, pixel_r, blk_w, blk_h);
     printf("enc\n");
     for (int rr = 0; rr < blk_h; ++rr) {
       for (int cc = 0; cc < blk_w; ++cc) {
@@ -222,9 +226,9 @@ void mismatch_check_block_pre(const uint8_t *src, int src_stride, int plane,
     assert(0);
   }
 }
-void mismatch_check_block_tx(const uint8_t *src, int src_stride, int plane,
-                             int pixel_c, int pixel_r, int blk_w, int blk_h,
-                             int highbd) {
+void mismatch_check_block_tx(const uint8_t *src, int src_stride,
+                             int frame_offset, int plane, int pixel_c,
+                             int pixel_r, int blk_w, int blk_h, int highbd) {
   if (pixel_c + blk_w >= frame_stride || pixel_r + blk_h >= frame_height) {
     printf("frame_buf undersized\n");
     assert(0);
@@ -244,9 +248,10 @@ void mismatch_check_block_tx(const uint8_t *src, int src_stride, int plane,
   }
   if (mismatch) {
     printf(
-        "\ncheck_block_tx failed frame_idx %d plane %d pixel_c %d pixel_r "
+        "\ncheck_block_tx failed frame_idx %d frame_offset %d plane %d pixel_c "
+        "%d pixel_r "
         "%d blk_w %d blk_h %d\n",
-        frame_idx_r, plane, pixel_c, pixel_r, blk_w, blk_h);
+        frame_idx_r, frame_offset, plane, pixel_c, pixel_r, blk_w, blk_h);
     printf("enc\n");
     for (int rr = 0; rr < blk_h; ++rr) {
       for (int cc = 0; cc < blk_w; ++cc) {

@@ -4987,8 +4987,9 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
                                  pd->subsampling_y))
           continue;
-        mismatch_record_block_pre(pd->dst.buf, pd->dst.stride, plane, pixel_c,
-                                  pixel_r, pd->width, pd->height,
+        mismatch_record_block_pre(pd->dst.buf, pd->dst.stride, cm->frame_offset,
+                                  plane, pixel_c, pixel_r, pd->width,
+                                  pd->height,
                                   xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH);
       }
     }
