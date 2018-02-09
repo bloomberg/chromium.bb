@@ -196,8 +196,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kReducedReferrerGranularity))
     WebRuntimeFeatures::EnableReducedReferrerGranularity(true);
 
-  if (command_line.HasSwitch(switches::kRootLayerScrolls))
+  if (base::FeatureList::IsEnabled(features::kRootLayerScrolling) ||
+      command_line.HasSwitch(switches::kRootLayerScrolls)) {
     WebRuntimeFeatures::EnableRootLayerScrolling(true);
+  }
 
   if (command_line.HasSwitch(switches::kDisablePermissionsAPI))
     WebRuntimeFeatures::EnablePermissionsAPI(false);
@@ -229,8 +231,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kScrollAnchorSerialization))
     WebRuntimeFeatures::EnableScrollAnchorSerialization(true);
 
-  if (command_line.HasSwitch(switches::kEnableSlimmingPaintV175))
+  if (base::FeatureList::IsEnabled(features::kSlimmingPaintV175) ||
+      command_line.HasSwitch(switches::kEnableSlimmingPaintV175)) {
     WebRuntimeFeatures::EnableFeatureFromString("SlimmingPaintV175", true);
+  }
+
   if (command_line.HasSwitch(switches::kEnableSlimmingPaintV2))
     WebRuntimeFeatures::EnableSlimmingPaintV2(true);
 
