@@ -4459,8 +4459,13 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
   {
       // TX_4X4
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
+#if CONFIG_LV_MAP
+      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
+      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
+#else
       { row_scan_4x4, av1_row_iscan_4x4, row_scan_4x4_neighbors },
       { col_scan_4x4, av1_col_iscan_4x4, col_scan_4x4_neighbors },
+#endif
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
@@ -4478,8 +4483,13 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
   {
       // TX_8X8
       { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
+#if CONFIG_LV_MAP
+      { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
+      { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
+#else
       { row_scan_8x8, av1_row_iscan_8x8, row_scan_8x8_neighbors },
       { col_scan_8x8, av1_col_iscan_8x8, col_scan_8x8_neighbors },
+#endif
       { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
       { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
       { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
@@ -4498,8 +4508,15 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
       // TX_16X16
       { default_scan_16x16, av1_default_iscan_16x16,
         default_scan_16x16_neighbors },
+#if CONFIG_LV_MAP
+      { default_scan_16x16, av1_default_iscan_16x16,
+        default_scan_16x16_neighbors },
+      { default_scan_16x16, av1_default_iscan_16x16,
+        default_scan_16x16_neighbors },
+#else
       { row_scan_16x16, av1_row_iscan_16x16, row_scan_16x16_neighbors },
       { col_scan_16x16, av1_col_iscan_16x16, col_scan_16x16_neighbors },
+#endif
       { default_scan_16x16, av1_default_iscan_16x16,
         default_scan_16x16_neighbors },
       { default_scan_16x16, av1_default_iscan_16x16,
