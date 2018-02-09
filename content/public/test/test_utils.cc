@@ -156,14 +156,16 @@ void RunAllPendingInMessageLoop(BrowserThread::ID thread_id) {
 void RunAllTasksUntilIdle() {
   while (true) {
     // Setup a task observer to determine if MessageLoop tasks run in the
-    // current loop iteration. This must be done before
-    // TaskScheduler::FlushForTesting() since this may spin the MessageLoop.
+    // current loop iteration and loop in case the MessageLoop posts tasks to
+    // the Task Scheduler after the initial flush.
     TaskObserver task_observer;
     base::MessageLoop::current()->AddTaskObserver(&task_observer);
 
-    base::TaskScheduler::GetInstance()->FlushForTesting();
+    base::RunLoop run_loop;
+    base::TaskScheduler::GetInstance()->FlushAsyncForTesting(
+        run_loop.QuitWhenIdleClosure());
+    run_loop.Run();
 
-    base::RunLoop().RunUntilIdle();
     base::MessageLoop::current()->RemoveTaskObserver(&task_observer);
 
     if (!task_observer.processed())

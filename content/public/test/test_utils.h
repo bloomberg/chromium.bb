@@ -58,8 +58,10 @@ void RunAllPendingInMessageLoop();
 // thread.
 void RunAllPendingInMessageLoop(BrowserThread::ID thread_id);
 
-// Runs until the blocking pool, task scheduler, and the current message loop
-// are all empty (have no more scheduled tasks) and no tasks are running.
+// Runs until the task scheduler and the current message loop are all empty
+// (have no more immediate tasks, delayed tasks may still exist). Tasks may
+// still be running from sources outside of the task scheduler and the current
+// message loop.
 void RunAllTasksUntilIdle();
 
 // Get task to quit the given RunLoop. It allows a few generations of pending
