@@ -8,7 +8,7 @@
   width: 10px;
   height: 10px;
   background-color: black;
-  scale: 1.1;
+  scale: 1.1 1;
 }
 .expected {
   background-color: green;
@@ -24,53 +24,53 @@
 assertInterpolation({
   property: 'scale',
   from: 'none',
-  to: '1.5',
+  to: '1.5 1',
 }, [
-  {at: -1, is: '0.5'},
+  {at: -1, is: '0.5 1'},
   {at: 0, is: 'none'},
-  {at: 0.25, is: '1.125'},
-  {at: 0.75, is: '1.375'},
-  {at: 1, is: '1.5'},
-  {at: 2, is: '2'},
+  {at: 0.25, is: '1.125 1'},
+  {at: 0.75, is: '1.375 1'},
+  {at: 1, is: '1.5 1'},
+  {at: 2, is: '2 1'},
 ]);
 
 assertInterpolation({
   property: 'scale',
   from: neutralKeyframe,
-  to: '1.5',
+  to: '1.5 1',
 }, [
-  {at: -1, is: '0.7'},
-  {at: 0, is: '1.1'},
-  {at: 0.25, is: '1.2'},
-  {at: 0.75, is: '1.4'},
-  {at: 1, is: '1.5'},
-  {at: 2, is: '1.9'},
+  {at: -1, is: '0.7 1'},
+  {at: 0, is: '1.1 1'},
+  {at: 0.25, is: '1.2 1'},
+  {at: 0.75, is: '1.4 1'},
+  {at: 1, is: '1.5 1'},
+  {at: 2, is: '1.9 1'},
 ]);
 
 assertInterpolation({
   property: 'scale',
   from: 'unset',
-  to: '1.5',
+  to: '1.5 1',
 }, [
-  {at: -1, is: '0.5'},
+  {at: -1, is: '0.5 1'},
   {at: 0, is: 'none'},
-  {at: 0.25, is: '1.125'},
-  {at: 0.75, is: '1.375'},
-  {at: 1, is: '1.5'},
-  {at: 2, is: '2'},
+  {at: 0.25, is: '1.125 1'},
+  {at: 0.75, is: '1.375 1'},
+  {at: 1, is: '1.5 1'},
+  {at: 2, is: '2 1'},
 ]);
 
 assertInterpolation({
   property: 'scale',
-  from: '-10',
-  to: '10',
+  from: '-10 1',
+  to: '10 1',
 }, [
-  {at: -1, is: '-30'},
-  {at: 0, is: '-10'},
-  {at: 0.25, is: '-5'},
-  {at: 0.75, is: '5'},
-  {at: 1, is: '10'},
-  {at: 2, is: '30'},
+  {at: -1, is: '-30 1'},
+  {at: 0, is: '-10 1'},
+  {at: 0.25, is: '-5 1'},
+  {at: 0.75, is: '5 1'},
+  {at: 1, is: '10 1'},
+  {at: 2, is: '30 1'},
 ]);
 
 assertInterpolation({

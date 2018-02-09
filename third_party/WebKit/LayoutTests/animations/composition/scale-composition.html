@@ -4,17 +4,17 @@
 <script>
 assertComposition({
   property: 'scale',
-  underlying: '2',
-  addFrom: '3',
-  addTo: '4',
+  underlying: '2 1',
+  addFrom: '3 1',
+  addTo: '4 1',
 }, [
-  {at: -0.5, is: '5'},
-  {at: 0, is: '6'},
-  {at: 0.25, is: '6.5'},
-  {at: 0.5, is: '7'},
-  {at: 0.75, is: '7.5'},
-  {at: 1, is: '8'},
-  {at: 1.5, is: '9'},
+  {at: -0.5, is: '5 1'},
+  {at: 0, is: '6 1'},
+  {at: 0.25, is: '6.5 1'},
+  {at: 0.5, is: '7 1'},
+  {at: 0.75, is: '7.5 1'},
+  {at: 1, is: '8 1'},
+  {at: 1.5, is: '9 1'},
 ]);
 
 assertComposition({
@@ -36,14 +36,14 @@ assertComposition({
   property: 'scale',
   underlying: 'none',
   addFrom: 'none',
-  replaceTo: '1.5',
+  replaceTo: '1.5 1',
 }, [
-  {at: -1, is: '0.5'},
+  {at: -1, is: '0.5 1'},
   {at: 0, is: '1'},
-  {at: 0.25, is: '1.125'},
-  {at: 0.75, is: '1.375'},
-  {at: 1, is: '1.5'},
-  {at: 2, is: '2'},
+  {at: 0.25, is: '1.125 1'},
+  {at: 0.75, is: '1.375 1'},
+  {at: 1, is: '1.5 1'},
+  {at: 2, is: '2 1'},
 ]);
 
 assertComposition({

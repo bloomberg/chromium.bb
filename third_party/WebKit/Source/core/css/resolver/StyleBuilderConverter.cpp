@@ -1567,7 +1567,7 @@ scoped_refptr<ScaleTransformOperation> StyleBuilderConverter::ConvertScale(
   const CSSValueList& list = ToCSSValueList(value);
   DCHECK_LE(list.length(), 3u);
   double sx = ToCSSPrimitiveValue(list.Item(0)).GetDoubleValue();
-  double sy = 1;
+  double sy = sx;
   double sz = 1;
   if (list.length() >= 2)
     sy = ToCSSPrimitiveValue(list.Item(1)).GetDoubleValue();

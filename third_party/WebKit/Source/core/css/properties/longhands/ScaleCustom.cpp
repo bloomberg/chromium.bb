@@ -49,8 +49,6 @@ const CSSValue* Scale::CSSValueFromComputedStyleInternal(
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*CSSPrimitiveValue::Create(
       style.Scale()->X(), CSSPrimitiveValue::UnitType::kNumber));
-  if (style.Scale()->Y() == 1 && style.Scale()->Z() == 1)
-    return list;
   list->Append(*CSSPrimitiveValue::Create(
       style.Scale()->Y(), CSSPrimitiveValue::UnitType::kNumber));
   if (style.Scale()->Z() != 1) {
