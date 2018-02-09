@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -915,6 +916,12 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
         add_types |= TabStripModel::ADD_PINNED;
       GetModel(attached_tabstrip_)->InsertWebContentsAt(
           index + i, drag_data_[i].contents, add_types);
+
+      // If a sad tab is showing, the SadTabView needs to be updated.
+      SadTabHelper* sad_tab_helper =
+          SadTabHelper::FromWebContents(drag_data_[i].contents);
+      if (sad_tab_helper)
+        sad_tab_helper->ReinstallInWebView();
     }
 
     tabs = GetTabsMatchingDraggedContents(attached_tabstrip_);
@@ -973,7 +980,6 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
     // Hide the tab so that the user doesn't see it animate closed.
     drag_data_[i].attached_tab->SetVisible(false);
     drag_data_[i].attached_tab->set_detached();
-
     attached_model->DetachWebContentsAt(index);
 
     // Detaching may end up deleting the tab, drop references to it.

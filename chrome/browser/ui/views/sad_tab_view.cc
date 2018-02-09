@@ -10,22 +10,27 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/harmony/bulleted_label_list_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views_mode_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -48,8 +53,16 @@ views::Label* CreateFormattedLabel(const base::string16& message) {
 
 }  // namespace
 
+// static
+const char SadTabView::kViewClassName[] = "SadTabView";
+
 SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
     : SadTab(web_contents, kind) {
+  // This view gets inserted as a child of a WebView, but we don't want the
+  // WebView to delete us if the WebView gets deleted before the SadTabHelper
+  // does.
+  set_owned_by_client();
+
   SetBackground(views::CreateThemedSolidBackground(
       this, ui::NativeTheme::kColorId_DialogBackground));
 
@@ -120,29 +133,46 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
   layout->AddPaddingRow(2, provider->GetDistanceMetric(
                                views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
 
-  views::Widget::InitParams sad_tab_params(
-      views::Widget::InitParams::TYPE_CONTROL);
+  AttachToWebView();
 
-  // It is not possible to create a native_widget_win that has no parent in
-  // and later re-parent it.
-  // TODO(avi): This is a cheat. Can this be made cleaner?
-  sad_tab_params.parent = web_contents->GetNativeView();
-
-  set_owned_by_client();
-
-  views::Widget* sad_tab = new views::Widget;
-  sad_tab->Init(sad_tab_params);
-  sad_tab->SetContentsView(this);
-
-  views::Widget::ReparentNativeView(sad_tab->GetNativeView(),
-                                    web_contents->GetNativeView());
-  gfx::Rect bounds = web_contents->GetContainerBounds();
-  sad_tab->SetBounds(gfx::Rect(bounds.size()));
+  // Make the accessibility role of this view an alert dialog, and
+  // put focus on the action button. This causes screen readers to
+  // immediately announce the text of this view.
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kDialog);
+  action_button_->RequestFocus();
 }
 
 SadTabView::~SadTabView() {
-  if (GetWidget())
-    GetWidget()->Close();
+  if (owner_)
+    owner_->SetCrashedOverlayView(nullptr);
+}
+
+void SadTabView::ReinstallInWebView() {
+  if (owner_) {
+    owner_->SetCrashedOverlayView(nullptr);
+    owner_ = nullptr;
+  }
+  AttachToWebView();
+}
+
+void SadTabView::AttachToWebView() {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  // This can be null during prefetch.
+  if (!browser)
+    return;
+
+  // In unit tests, browser->window() might not be a real BrowserView.
+  if (!browser->window()->GetNativeWindow())
+    return;
+
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  DCHECK(browser_view);
+
+  views::WebView* web_view = browser_view->contents_web_view();
+  if (web_view->GetWebContents() == web_contents()) {
+    owner_ = web_view;
+    owner_->SetCrashedOverlayView(this);
+  }
 }
 
 void SadTabView::LinkClicked(views::Link* source, int event_flags) {
@@ -167,12 +197,20 @@ void SadTabView::Layout() {
   View::Layout();
 }
 
+const char* SadTabView::GetClassName() const {
+  return kViewClassName;
+}
+
 void SadTabView::OnPaint(gfx::Canvas* canvas) {
   if (!painted_) {
     RecordFirstPaint();
     painted_ = true;
   }
   View::OnPaint(canvas);
+}
+
+void SadTabView::RemovedFromWidget() {
+  owner_ = nullptr;
 }
 
 SadTab* SadTab::Create(content::WebContents* web_contents,

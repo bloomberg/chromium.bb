@@ -41,9 +41,6 @@ bool WebContentsViewDelegate::TakeFocus(bool reverse) {
   return false;
 }
 
-void WebContentsViewDelegate::SizeChanged(const gfx::Size& size) {
-}
-
 void WebContentsViewDelegate::OverrideDisplayColorSpace(
     gfx::ColorSpace* color_space) {}
 

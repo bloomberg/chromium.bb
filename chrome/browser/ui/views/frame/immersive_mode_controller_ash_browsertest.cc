@@ -89,8 +89,7 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest, Layout) {
   TabStrip* tabstrip = browser_view()->tabstrip();
   ToolbarView* toolbar = browser_view()->toolbar();
-  views::WebView* contents_web_view =
-      browser_view()->GetContentsWebViewForTest();
+  views::WebView* contents_web_view = browser_view()->contents_web_view();
   views::View* top_container = browser_view()->top_container();
 
   // Immersive fullscreen starts out disabled.
