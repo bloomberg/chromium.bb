@@ -425,7 +425,8 @@ public class ToolbarPhone extends ToolbarLayout
      */
     public Drawable createModernLocationBarBackground() {
         Drawable drawable = ApiCompatibilityUtils.getDrawable(
-                getResources(), R.drawable.modern_toolbar_background);
+                getResources(), R.drawable.modern_toolbar_background_white);
+        drawable.mutate();
         drawable.setColorFilter(
                 ApiCompatibilityUtils.getColor(getResources(), R.color.modern_light_grey),
                 PorterDuff.Mode.SRC_IN);
