@@ -41,16 +41,6 @@ struct StructTraits<net::interfaces::HostResolverRequestInfoDataView,
                    std::unique_ptr<net::HostResolver::RequestInfo>* output);
 };
 
-template <>
-struct StructTraits<net::interfaces::AddressListDataView, net::AddressList> {
-  static std::vector<net::IPEndPoint> addresses(const net::AddressList& obj) {
-    return obj.endpoints();
-  }
-
-  static bool Read(net::interfaces::AddressListDataView data,
-                   net::AddressList* out);
-};
-
 }  // namespace mojo
 
 #endif  // NET_DNS_MOJO_HOST_STRUCT_TRAITS_H_
