@@ -184,11 +184,10 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   LayoutRect box_rect(box_origin, LayoutSize(inline_text_box_.LogicalWidth(),
                                              inline_text_box_.LogicalHeight()));
 
-  int length = inline_text_box_.Len();
+  unsigned length = inline_text_box_.Len();
   const String& layout_item_string =
       inline_text_box_.GetLineLayoutItem().GetText();
-  // TODO(szager): Figure out why this CHECK sometimes fails, it shouldn't.
-  CHECK(inline_text_box_.Start() + length <= layout_item_string.length());
+
   String first_line_string;
   if (inline_text_box_.IsFirstLineStyle()) {
     first_line_string = layout_item_string;
@@ -197,6 +196,17 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
             inline_text_box_.IsFirstLineStyle()),
         first_line_string,
         inline_text_box_.GetLineLayoutItem().PreviousCharacter());
+    // TODO(crbug.com/795498): this is a hack. The root issue is that
+    // capitalizing letters can change the length of the backing string.
+    // That needs to be taken into account when computing the size of the box
+    // or its painting.
+    length = std::min(length, first_line_string.length());
+
+    // TODO(szager): Figure out why this CHECK sometimes fails, it shouldn't.
+    CHECK(inline_text_box_.Start() + length <= first_line_string.length());
+  } else {
+    // TODO(szager): Figure out why this CHECK sometimes fails, it shouldn't.
+    CHECK(inline_text_box_.Start() + length <= layout_item_string.length());
   }
   StringView string =
       StringView(inline_text_box_.IsFirstLineStyle() ? first_line_string
