@@ -227,9 +227,6 @@ const char kDisableMachineCertRequest[] = "disable-machine-cert-request";
 // Disables material design Error screen.
 const char kDisableMdErrorScreen[] = "disable-md-error-screen";
 
-// Disables material design OOBE UI.
-const char kDisableMdOobe[] = "disable-md-oobe";
-
 // Disables mtp write support.
 const char kDisableMtpWriteSupport[] = "disable-mtp-write-support";
 
