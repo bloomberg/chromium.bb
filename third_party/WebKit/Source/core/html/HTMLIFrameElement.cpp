@@ -183,8 +183,7 @@ void HTMLIFrameElement::ParseAttribute(
       csp_ = value;
       FrameOwnerPropertiesChanged();
     }
-  } else if (RuntimeEnabledFeatures::FeaturePolicyEnabled() &&
-             name == allowAttr) {
+  } else if (name == allowAttr) {
     if (allow_ != value) {
       allow_ = value;
       Vector<String> messages;

@@ -1085,9 +1085,7 @@ void DocumentLoader::InstallNewDocument(
   // be initialized and replicated to the browser process after commit messages
   // are sent in didCommitNavigation().
   document->ApplyFeaturePolicyFromHeader(
-      RuntimeEnabledFeatures::FeaturePolicyEnabled()
-          ? response_.HttpHeaderField(HTTPNames::Feature_Policy)
-          : g_empty_string);
+      response_.HttpHeaderField(HTTPNames::Feature_Policy));
 
   GetFrameLoader().DispatchDidClearDocumentOfWindowObject();
 }

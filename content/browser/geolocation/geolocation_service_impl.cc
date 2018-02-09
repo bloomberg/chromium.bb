@@ -72,8 +72,7 @@ void GeolocationServiceImpl::Bind(
 void GeolocationServiceImpl::CreateGeolocation(
     mojo::InterfaceRequest<device::mojom::Geolocation> request,
     bool user_gesture) {
-  if (base::FeatureList::IsEnabled(features::kFeaturePolicy) &&
-      base::FeatureList::IsEnabled(features::kUseFeaturePolicyForPermissions) &&
+  if (base::FeatureList::IsEnabled(features::kUseFeaturePolicyForPermissions) &&
       !render_frame_host_->IsFeatureEnabled(
           blink::mojom::FeaturePolicyFeature::kGeolocation)) {
     return;

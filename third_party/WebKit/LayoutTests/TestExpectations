@@ -682,13 +682,6 @@ crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/xmlhttpreques
 crbug.com/736308 virtual/outofblink-cors/http/tests/xmlhttprequest/xmlhttprequest-sync-no-progress-events.html [ Failure ]
 # ====== Out of Blink CORS related tests END ======
 
-# ====== Fullscreen tests failing with feature policy ======
-# TODO(loonybear): Turn tests on once feature policy implements allowfullscreen.
-crbug.com/666761 virtual/feature-policy/http/tests/feature-policy/fullscreen-allowed-by-container-policy-relocate.html [ Failure ]
-crbug.com/666761 virtual/feature-policy/http/tests/feature-policy/fullscreen-allowed-by-container-policy.html [ Failure ]
-crbug.com/666761 virtual/feature-policy/http/tests/feature-policy/fullscreen-disabled.php [ Failure ]
-crbug.com/666761 virtual/feature-policy/http/tests/feature-policy/fullscreen-enabledforall.php [ Failure ]
-
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vlr-005.xht [ Failure ]
 crbug.com/492664 [ Linux ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-vrl-004.xht [ Failure ]
 crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/bidi-embed-002.html [ Failure ]

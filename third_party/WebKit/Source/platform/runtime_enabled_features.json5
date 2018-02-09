@@ -388,26 +388,19 @@
       name: "FastMobileScrolling",
     },
     {
-      name: "FeaturePolicy",
-      status: "stable",
-    },
-    {
       name: "FeaturePolicyAutoplayFeature",
-      status: "stable",
-      depends_on: ["FeaturePolicy"]
+      status: "stable"
     },
     {
-      name: "FeaturePolicyExperimentalFeatures",
+      name: "FeaturePolicyExperimentalFeatures"
     },
     {
       name: "FeaturePolicyForPermissions",
-      status: "stable",
-      depends_on: ["FeaturePolicy"]
+      status: "stable"
     },
     {
       name: "FeaturePolicyJavaScriptInterface",
-      status: "experimental",
-      depends_on: ["FeaturePolicy"]
+      status: "experimental"
     },
     {
       name: "FetchRequestCache",

@@ -509,36 +509,4 @@ TEST_F(DeprecationTest, InspectorDisablesDeprecation) {
   EXPECT_TRUE(use_counter_.HasRecordedMeasurement(feature));
 }
 
-class FeaturePolicyDisabledDeprecationTest
-    : public ::testing::Test,
-      private ScopedFeaturePolicyForTest {
- public:
-  FeaturePolicyDisabledDeprecationTest() : ScopedFeaturePolicyForTest(false) {
-    dummy_ = DummyPageHolder::Create();
-  }
-
- protected:
-  Document& GetDocument() { return dummy_->GetDocument(); }
-  UseCounter& GetUseCounter() { return dummy_->GetPage().GetUseCounter(); }
-
-  std::unique_ptr<DummyPageHolder> dummy_;
-};
-
-TEST_F(FeaturePolicyDisabledDeprecationTest,
-       TestCountDeprecationFeaturePolicy) {
-  // The specific feature we use here isn't important, but we need the
-  // corresponding FP feature as well.
-  mojom::FeaturePolicyFeature policy_feature =
-      mojom::FeaturePolicyFeature::kGeolocation;
-  WebFeature feature =
-      WebFeature::kGeolocationDisallowedByFeaturePolicyInCrossOriginIframe;
-
-  // Verify that there is, in fact, no policy attacted to the document
-  ASSERT_EQ(GetDocument().GetFeaturePolicy(), nullptr);
-  // Trigger the deprecation counter as if the feature was used.
-  Deprecation::CountDeprecationFeaturePolicy(GetDocument(), policy_feature);
-  // Verify that no usage was recorded.
-  EXPECT_FALSE(GetUseCounter().HasRecordedMeasurement(feature));
-}
-
 }  // namespace blink
