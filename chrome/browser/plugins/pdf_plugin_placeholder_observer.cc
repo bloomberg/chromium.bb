@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "chrome/common/render_messages.h"
+#include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/render_frame_host.h"
@@ -23,7 +23,7 @@
 namespace {
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-void OnDownloadStarted(content::DownloadItem* item,
+void OnDownloadStarted(download::DownloadItem* item,
                        download::DownloadInterruptReason interrupt_reason) {
   if (item && interrupt_reason == download::DOWNLOAD_INTERRUPT_REASON_NONE)
     item->SetOpenWhenComplete(true);

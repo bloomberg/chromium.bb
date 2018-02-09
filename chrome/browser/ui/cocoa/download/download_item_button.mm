@@ -27,7 +27,7 @@
   [self.cell setStateFromDownload:downloadModel];
 
   // Set path to draggable download on completion.
-  if (downloadModel->download()->GetState() == content::DownloadItem::COMPLETE)
+  if (downloadModel->download()->GetState() == download::DownloadItem::COMPLETE)
     downloadPath_ = downloadModel->download()->GetTargetFilePath();
 }
 

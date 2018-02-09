@@ -33,7 +33,7 @@ class TestDownloadShelf : public DownloadShelf,
   void ManagerGoingDown(content::DownloadManager* manager) override;
 
  protected:
-  void DoAddDownload(content::DownloadItem* download) override;
+  void DoAddDownload(download::DownloadItem* download) override;
   void DoOpen() override;
   void DoClose(CloseReason reason) override;
   void DoHide() override;

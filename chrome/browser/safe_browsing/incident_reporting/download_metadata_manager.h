@@ -19,6 +19,9 @@ class SequencedTaskRunner;
 
 namespace content {
 class BrowserContext;
+}
+
+namespace download {
 class DownloadItem;
 }
 
@@ -47,7 +50,7 @@ class DownloadMetadataManager : public content::DownloadManager::Observer {
   // Sets |request| as the relevant metadata to persist for |download| upon
   // completion. |request| will be persisted when the download completes, or
   // discarded if the download is cancelled.
-  virtual void SetRequest(content::DownloadItem* download,
+  virtual void SetRequest(download::DownloadItem* download,
                           const ClientDownloadRequest* request);
 
   // Gets the persisted DownloadDetails for |browser_context|. |callback| will
@@ -63,7 +66,7 @@ class DownloadMetadataManager : public content::DownloadManager::Observer {
 
   // content::DownloadManager:Observer methods.
   void OnDownloadCreated(content::DownloadManager* download_manager,
-                         content::DownloadItem* item) override;
+                         download::DownloadItem* item) override;
   void ManagerGoingDown(content::DownloadManager* download_manager) override;
 
  private:

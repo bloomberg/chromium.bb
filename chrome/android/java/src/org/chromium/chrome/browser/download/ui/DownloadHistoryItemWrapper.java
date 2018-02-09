@@ -19,13 +19,13 @@ import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
+import org.chromium.components.download.DownloadState;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.url_formatter.UrlFormatter;
-import org.chromium.content_public.browser.DownloadState;
 import org.chromium.ui.widget.Toast;
 
 import java.io.File;

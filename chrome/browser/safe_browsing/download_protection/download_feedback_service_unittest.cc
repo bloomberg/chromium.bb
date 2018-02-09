@@ -209,7 +209,7 @@ TEST_F(DownloadFeedbackServiceTest, SingleFeedbackCompleteAndDiscardDownload) {
   const std::string ping_request = "ping";
   const std::string ping_response = "resp";
 
-  content::DownloadItem::AcquireFileCallback download_discarded_callback;
+  download::DownloadItem::AcquireFileCallback download_discarded_callback;
 
   content::MockDownloadItem item;
   EXPECT_CALL(item, GetDangerType())
@@ -248,7 +248,7 @@ TEST_F(DownloadFeedbackServiceTest, SingleFeedbackCompleteAndKeepDownload) {
   const std::string ping_request = "ping";
   const std::string ping_response = "resp";
 
-  content::DownloadItem::AcquireFileCallback download_discarded_callback;
+  download::DownloadItem::AcquireFileCallback download_discarded_callback;
 
   content::MockDownloadItem item;
   EXPECT_CALL(item, GetDangerType())
@@ -290,7 +290,7 @@ TEST_F(DownloadFeedbackServiceTest, MultiplePendingFeedbackComplete) {
   const std::string ping_response = "resp";
   const size_t kNumDownloads = 3;
 
-  content::DownloadItem::AcquireFileCallback
+  download::DownloadItem::AcquireFileCallback
       download_discarded_callback[kNumDownloads];
 
   base::FilePath file_path[kNumDownloads];
@@ -360,7 +360,7 @@ TEST_F(DownloadFeedbackServiceTest, MultiFeedbackWithIncomplete) {
   const std::string ping_response = "resp";
   const size_t kNumDownloads = 3;
 
-  content::DownloadItem::AcquireFileCallback
+  download::DownloadItem::AcquireFileCallback
       download_discarded_callback[kNumDownloads];
 
   base::FilePath file_path[kNumDownloads];

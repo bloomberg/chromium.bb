@@ -11,7 +11,7 @@
 #include <string>
 
 #include "components/download/public/common/download_interrupt_reasons.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "crypto/secure_hash.h"
 
 namespace content {
@@ -31,7 +31,8 @@ class DownloadDestinationObserver {
   virtual void DestinationUpdate(
       int64_t bytes_so_far,
       int64_t bytes_per_sec,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices) = 0;
+      const std::vector<download::DownloadItem::ReceivedSlice>&
+          received_slices) = 0;
 
   virtual void DestinationError(
       download::DownloadInterruptReason reason,

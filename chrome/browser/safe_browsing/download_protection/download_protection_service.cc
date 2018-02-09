@@ -21,6 +21,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/safe_browsing/common/safebrowsing_switches.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
 #include "net/cert/x509_util.h"
@@ -37,13 +38,16 @@ const double kWhitelistDownloadSampleRate = 0.01;
 // The number of user gestures we trace back for download attribution.
 const int kDownloadAttributionUserGestureLimit = 2;
 
-void AddEventUrlToReferrerChain(const content::DownloadItem& item,
+void AddEventUrlToReferrerChain(const download::DownloadItem& item,
                                 ReferrerChain* out_referrer_chain) {
   ReferrerChainEntry* event_url_entry = out_referrer_chain->Add();
   event_url_entry->set_url(item.GetURL().spec());
   event_url_entry->set_type(ReferrerChainEntry::EVENT_URL);
   event_url_entry->set_referrer_url(
-      item.GetWebContents()->GetLastCommittedURL().spec());
+      content::DownloadItemUtils::GetWebContents(
+          const_cast<download::DownloadItem*>(&item))
+          ->GetLastCommittedURL()
+          .spec());
   event_url_entry->set_is_retargeting(false);
   event_url_entry->set_navigation_time_msec(base::Time::Now().ToJavaTime());
   for (const GURL& url : item.GetUrlChain())
@@ -120,7 +124,7 @@ bool DownloadProtectionService::IsHashManuallyBlacklisted(
 }
 
 void DownloadProtectionService::CheckClientDownload(
-    content::DownloadItem* item,
+    download::DownloadItem* item,
     const CheckDownloadCallback& callback) {
   scoped_refptr<CheckClientDownloadRequest> request(
       new CheckClientDownloadRequest(item, callback, this, database_manager_,
@@ -130,7 +134,7 @@ void DownloadProtectionService::CheckClientDownload(
 }
 
 void DownloadProtectionService::CheckDownloadUrl(
-    content::DownloadItem* item,
+    download::DownloadItem* item,
     const CheckDownloadCallback& callback) {
   DCHECK(!item->GetUrlChain().empty());
   scoped_refptr<DownloadUrlSBClient> client(new DownloadUrlSBClient(
@@ -142,7 +146,7 @@ void DownloadProtectionService::CheckDownloadUrl(
 }
 
 bool DownloadProtectionService::IsSupportedDownload(
-    const content::DownloadItem& item,
+    const download::DownloadItem& item,
     const base::FilePath& target_path) const {
   DownloadCheckResultReason reason = REASON_MAX;
   ClientDownloadRequest::DownloadType type =
@@ -219,7 +223,7 @@ void DownloadProtectionService::PPAPIDownloadCheckRequestFinished(
 }
 
 void DownloadProtectionService::ShowDetailsForDownload(
-    const content::DownloadItem& item,
+    const download::DownloadItem& item,
     content::PageNavigator* navigator) {
   GURL learn_more_url(chrome::kDownloadScanningLearnMoreURL);
   learn_more_url = google_util::AppendGoogleLocaleParam(
@@ -234,7 +238,7 @@ void DownloadProtectionService::ShowDetailsForDownload(
 }
 
 void DownloadProtectionService::SetDownloadPingToken(
-    content::DownloadItem* item,
+    download::DownloadItem* item,
     const std::string& token) {
   if (item) {
     item->SetUserData(kDownloadPingTokenKey,
@@ -243,7 +247,7 @@ void DownloadProtectionService::SetDownloadPingToken(
 }
 
 std::string DownloadProtectionService::GetDownloadPingToken(
-    const content::DownloadItem* item) {
+    const download::DownloadItem* item) {
   base::SupportsUserData::Data* token_data =
       item->GetUserData(kDownloadPingTokenKey);
   if (token_data)
@@ -253,11 +257,12 @@ std::string DownloadProtectionService::GetDownloadPingToken(
 }
 
 void DownloadProtectionService::MaybeSendDangerousDownloadOpenedReport(
-    const content::DownloadItem* item,
+    const download::DownloadItem* item,
     bool show_download_in_folder) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::string token = GetDownloadPingToken(item);
-  content::BrowserContext* browser_context = item->GetBrowserContext();
+  content::BrowserContext* browser_context =
+      content::DownloadItemUtils::GetBrowserContext(item);
   Profile* profile = Profile::FromBrowserContext(browser_context);
   if (sb_service_ &&
       !token.empty() &&  // Only dangerous downloads have token stored.
@@ -357,7 +362,7 @@ void DownloadProtectionService::GetCertificateWhitelistStrings(
 
 std::unique_ptr<ReferrerChainData>
 DownloadProtectionService::IdentifyReferrerChain(
-    const content::DownloadItem& item) {
+    const download::DownloadItem& item) {
   // If navigation_observer_manager_ is null, return immediately. This could
   // happen in tests.
   if (!navigation_observer_manager_)
@@ -365,7 +370,9 @@ DownloadProtectionService::IdentifyReferrerChain(
 
   std::unique_ptr<ReferrerChain> referrer_chain =
       std::make_unique<ReferrerChain>();
-  content::WebContents* web_contents = item.GetWebContents();
+  content::WebContents* web_contents =
+      content::DownloadItemUtils::GetWebContents(
+          const_cast<download::DownloadItem*>(&item));
   int download_tab_id = SessionTabHelper::IdForTab(web_contents);
   UMA_HISTOGRAM_BOOLEAN(
       "SafeBrowsing.ReferrerHasInvalidTabID.DownloadAttribution",

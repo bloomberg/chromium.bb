@@ -19,8 +19,8 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -49,7 +49,7 @@ class Manifest;
 // Downloads and installs extensions from the web store.
 class WebstoreInstaller : public content::NotificationObserver,
                           public ExtensionRegistryObserver,
-                          public content::DownloadItem::Observer,
+                          public download::DownloadItem::Observer,
                           public content::WebContentsObserver,
                           public base::RefCountedThreadSafe<
                               WebstoreInstaller,
@@ -85,9 +85,9 @@ class WebstoreInstaller : public content::NotificationObserver,
   class Delegate {
    public:
     virtual void OnExtensionDownloadStarted(const std::string& id,
-                                            content::DownloadItem* item);
+                                            download::DownloadItem* item);
     virtual void OnExtensionDownloadProgress(const std::string& id,
-                                             content::DownloadItem* item);
+                                             download::DownloadItem* item);
     virtual void OnExtensionInstallSuccess(const std::string& id) = 0;
     virtual void OnExtensionInstallFailure(const std::string& id,
                                            const std::string& error,
@@ -169,7 +169,7 @@ class WebstoreInstaller : public content::NotificationObserver,
   // Gets the Approval associated with the |download|, or NULL if there's none.
   // Note that the Approval is owned by |download|.
   static const Approval* GetAssociatedApproval(
-      const content::DownloadItem& download);
+      const download::DownloadItem& download);
 
   // Creates a WebstoreInstaller for downloading and installing the extension
   // with the given |id| from the Chrome Web Store. If |delegate| is not NULL,
@@ -222,12 +222,12 @@ class WebstoreInstaller : public content::NotificationObserver,
 
   // DownloadManager::DownloadUrl callback.
   void OnDownloadStarted(const std::string& extension_id,
-                         content::DownloadItem* item,
+                         download::DownloadItem* item,
                          download::DownloadInterruptReason interrupt_reason);
 
   // DownloadItem::Observer implementation:
-  void OnDownloadUpdated(content::DownloadItem* download) override;
-  void OnDownloadDestroyed(content::DownloadItem* download) override;
+  void OnDownloadUpdated(download::DownloadItem* download) override;
+  void OnDownloadDestroyed(download::DownloadItem* download) override;
 
   // Downloads next pending module in |pending_modules_|.
   void DownloadNextPendingModule();
@@ -244,7 +244,7 @@ class WebstoreInstaller : public content::NotificationObserver,
   void UpdateDownloadProgress();
 
   // Creates and starts CrxInstaller for the downloaded extension package.
-  void StartCrxInstaller(const content::DownloadItem& item);
+  void StartCrxInstaller(const download::DownloadItem& item);
 
   // Reports an install |error| to the delegate for the given extension if this
   // managed its installation. This also removes the associated PendingInstall.
@@ -256,7 +256,7 @@ class WebstoreInstaller : public content::NotificationObserver,
   void ReportSuccess();
 
   // Records stats regarding an interrupted webstore download item.
-  void RecordInterrupt(const content::DownloadItem* download) const;
+  void RecordInterrupt(const download::DownloadItem* download) const;
 
   content::NotificationRegistrar registrar_;
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
@@ -267,7 +267,7 @@ class WebstoreInstaller : public content::NotificationObserver,
   InstallSource install_source_;
   // The DownloadItem is owned by the DownloadManager and is valid from when
   // OnDownloadStarted is called (with no error) until OnDownloadDestroyed().
-  content::DownloadItem* download_item_;
+  download::DownloadItem* download_item_;
   // Used to periodically update the extension's download status. This will
   // trigger at least every second, though sometimes more frequently (depending
   // on number of modules, etc).

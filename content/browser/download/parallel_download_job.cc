@@ -14,6 +14,7 @@
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -136,8 +137,8 @@ void ParallelDownloadJob::OnInputStreamReady(
 void ParallelDownloadJob::BuildParallelRequests() {
   DCHECK(!requests_sent_);
   DCHECK(!is_paused());
-  if (is_canceled_ ||
-      download_item_->GetState() != DownloadItem::DownloadState::IN_PROGRESS) {
+  if (is_canceled_ || download_item_->GetState() !=
+                          download::DownloadItem::DownloadState::IN_PROGRESS) {
     return;
   }
 
@@ -148,7 +149,7 @@ void ParallelDownloadJob::BuildParallelRequests() {
   // Get the next |kParallelRequestCount - 1| slices and fork
   // new requests. For the remaining slices, they will be handled once some
   // of the workers finish their job.
-  DownloadItem::ReceivedSlices slices_to_download =
+  download::DownloadItem::ReceivedSlices slices_to_download =
       FindSlicesToDownload(download_item_->GetReceivedSlices());
 
   DCHECK(!slices_to_download.empty());
@@ -199,14 +200,14 @@ void ParallelDownloadJob::BuildParallelRequests() {
 }
 
 void ParallelDownloadJob::ForkSubRequests(
-    const DownloadItem::ReceivedSlices& slices_to_download) {
+    const download::DownloadItem::ReceivedSlices& slices_to_download) {
   if (slices_to_download.size() < 2)
     return;
 
   // If the initial request is working on the first hole, don't create parallel
   // request for this hole.
   bool skip_first_slice = true;
-  DownloadItem::ReceivedSlices initial_slices_to_download =
+  download::DownloadItem::ReceivedSlices initial_slices_to_download =
       FindSlicesToDownload(initial_received_slices_);
   if (initial_slices_to_download.size() > 1) {
     DCHECK_EQ(initial_request_offset_, initial_slices_to_download[0].offset);
@@ -239,7 +240,8 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
 
   StoragePartition* storage_partition =
       BrowserContext::GetStoragePartitionForSite(
-          download_item_->GetBrowserContext(), download_item_->GetSiteUrl());
+          DownloadItemUtils::GetBrowserContext(download_item_),
+          download_item_->GetSiteUrl());
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("parallel_download_job", R"(

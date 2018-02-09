@@ -7,7 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "chrome/browser/download/download_item_model.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "content/public/browser/page_navigator.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/menu/menu_runner.h"

@@ -30,6 +30,7 @@
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/mock_download_item.h"
@@ -67,7 +68,7 @@ using ::testing::ReturnRefOfCopy;
 using ::testing::SetArgPointee;
 using ::testing::WithArg;
 using ::testing::_;
-using content::DownloadItem;
+using download::DownloadItem;
 using safe_browsing::DownloadFileType;
 
 namespace {
@@ -101,14 +102,14 @@ struct DetermineDownloadTargetResult {
   DetermineDownloadTargetResult();
 
   base::FilePath target_path;
-  content::DownloadItem::TargetDisposition disposition;
+  download::DownloadItem::TargetDisposition disposition;
   download::DownloadDangerType danger_type;
   base::FilePath intermediate_path;
   download::DownloadInterruptReason interrupt_reason;
 };
 
 DetermineDownloadTargetResult::DetermineDownloadTargetResult()
-    : disposition(content::DownloadItem::TARGET_DISPOSITION_OVERWRITE),
+    : disposition(download::DownloadItem::TARGET_DISPOSITION_OVERWRITE),
       danger_type(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS),
       interrupt_reason(download::DOWNLOAD_INTERRUPT_REASON_NONE) {}
 
@@ -134,7 +135,7 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   // well in this unit test, we are currently going to rely on the extension
   // browser test to provide test coverage here. Instead we are going to mock it
   // out for unit tests.
-  void NotifyExtensions(content::DownloadItem* download,
+  void NotifyExtensions(download::DownloadItem* download,
                         const base::FilePath& suggested_virtual_path,
                         const NotifyExtensionsCallback& callback) override {
     callback.Run(base::FilePath(),
@@ -146,7 +147,7 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   // ChromeDownloadManagerDelegate reponds to various DownloadTargetDeterminer
   // results.
   void ReserveVirtualPath(
-      content::DownloadItem* download,
+      download::DownloadItem* download,
       const base::FilePath& virtual_path,
       bool create_directory,
       DownloadPathReservationTracker::FilenameConflictAction conflict_action,
@@ -161,7 +162,7 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
 
   MOCK_METHOD5(
       MockReserveVirtualPath,
-      base::FilePath(content::DownloadItem*,
+      base::FilePath(download::DownloadItem*,
                      const base::FilePath&,
                      bool,
                      DownloadPathReservationTracker::FilenameConflictAction,
@@ -289,8 +290,6 @@ std::unique_ptr<content::MockDownloadItem>
 ChromeDownloadManagerDelegateTest::CreateActiveDownloadItem(int32_t id) {
   std::unique_ptr<content::MockDownloadItem> item(
       new ::testing::NiceMock<content::MockDownloadItem>());
-  ON_CALL(*item, GetBrowserContext())
-      .WillByDefault(Return(profile()));
   ON_CALL(*item, GetDangerType())
       .WillByDefault(Return(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
   ON_CALL(*item, GetForcedFilePath())
@@ -311,14 +310,13 @@ ChromeDownloadManagerDelegateTest::CreateActiveDownloadItem(int32_t id) {
       .WillByDefault(ReturnRefOfCopy(base::FilePath()));
   ON_CALL(*item, GetTransitionType())
       .WillByDefault(Return(ui::PAGE_TRANSITION_LINK));
-  ON_CALL(*item, GetWebContents())
-      .WillByDefault(Return(web_contents()));
   ON_CALL(*item, HasUserGesture())
       .WillByDefault(Return(false));
   ON_CALL(*item, IsDangerous())
       .WillByDefault(Return(false));
   ON_CALL(*item, IsTemporary())
       .WillByDefault(Return(false));
+  content::DownloadItemUtils::AttachInfo(item.get(), profile(), web_contents());
   EXPECT_CALL(*download_manager_, GetDownload(id))
       .WillRepeatedly(Return(item.get()));
   return item;
@@ -502,7 +500,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, ConflictAction) {
       .WillOnce(WithArg<3>(ScheduleCallback2(
           DownloadConfirmationResult::CONFIRMED, kExpectedPath)));
   DetermineDownloadTarget(download_item.get(), &result);
-  EXPECT_EQ(content::DownloadItem::TARGET_DISPOSITION_PROMPT,
+  EXPECT_EQ(download::DownloadItem::TARGET_DISPOSITION_PROMPT,
             result.disposition);
   EXPECT_EQ(kExpectedPath, result.target_path);
 
@@ -626,9 +624,9 @@ TEST_F(ChromeDownloadManagerDelegateTest, WithoutHistoryDbNextId) {
   delegate()->GetNextId(id_callback);
   delegate()->GetNextId(id_callback);
   // When download database fails to initialize, id will be set to
-  // |content::DownloadItem::kInvalidId|.
+  // |download::DownloadItem::kInvalidId|.
   delegate()->GetDownloadIdReceiverCallback().Run(
-      content::DownloadItem::kInvalidId);
+      download::DownloadItem::kInvalidId);
   std::vector<uint32_t> expected_ids = std::vector<uint32_t>{1u, 2u};
   EXPECT_EQ(expected_ids, download_ids());
 }
@@ -1050,10 +1048,10 @@ TEST_F(ChromeDownloadManagerDelegateTest, RequestConfirmation_Android) {
   for (const auto& test_case : kTestCases) {
     std::unique_ptr<content::MockDownloadItem> download_item =
         CreateActiveDownloadItem(1);
-    EXPECT_CALL(*download_item, GetWebContents())
-        .WillRepeatedly(Return(test_case.web_contents == WebContents::AVAILABLE
-                                   ? web_contents()
-                                   : nullptr));
+    content::DownloadItemUtils::AttachInfo(
+        download_item.get(), profile(),
+        test_case.web_contents == WebContents::AVAILABLE ? web_contents()
+                                                         : nullptr);
     EXPECT_CALL(*download_item, GetURL()).WillRepeatedly(ReturnRef(url));
     infobar_counter.CheckAndResetInfobarCount();
 

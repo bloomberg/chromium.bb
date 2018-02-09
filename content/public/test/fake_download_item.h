@@ -13,13 +13,13 @@
 #include "base/observer_list.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace content {
 
-class FakeDownloadItem : public DownloadItem {
+class FakeDownloadItem : public download::DownloadItem {
  public:
   FakeDownloadItem();
   ~FakeDownloadItem() override;
@@ -137,7 +137,7 @@ class FakeDownloadItem : public DownloadItem {
   int64_t CurrentSpeed() const override;
   int PercentComplete() const override;
   bool AllDataSaved() const override;
-  const std::vector<DownloadItem::ReceivedSlice>& GetReceivedSlices()
+  const std::vector<download::DownloadItem::ReceivedSlice>& GetReceivedSlices()
       const override;
   bool CanShowInFolder() override;
   bool CanOpenDownload() override;
@@ -145,8 +145,6 @@ class FakeDownloadItem : public DownloadItem {
   bool GetOpenWhenComplete() const override;
   bool GetAutoOpened() override;
   bool GetOpened() const override;
-  BrowserContext* GetBrowserContext() const override;
-  WebContents* GetWebContents() const override;
   void OnContentCheckCompleted(
       download::DownloadDangerType danger_type,
       download::DownloadInterruptReason reason) override;
@@ -171,7 +169,7 @@ class FakeDownloadItem : public DownloadItem {
   base::Time last_access_time_;
   // MAX_DOWNLOAD_STATE is used as the uninitialized state.
   DownloadState download_state_ =
-      DownloadItem::DownloadState::MAX_DOWNLOAD_STATE;
+      download::DownloadItem::DownloadState::MAX_DOWNLOAD_STATE;
   scoped_refptr<const net::HttpResponseHeaders> response_headers_;
   std::string mime_type_;
   GURL original_url_;

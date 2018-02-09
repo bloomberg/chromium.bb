@@ -30,7 +30,7 @@ AllDownloadItemNotifier::AllDownloadItemNotifier(
 AllDownloadItemNotifier::~AllDownloadItemNotifier() {
   if (manager_)
     manager_->RemoveObserver(this);
-  for (std::set<content::DownloadItem*>::const_iterator it = observing_.begin();
+  for (std::set<DownloadItem*>::const_iterator it = observing_.begin();
        it != observing_.end(); ++it) {
     (*it)->RemoveObserver(this);
   }
@@ -55,25 +55,25 @@ void AllDownloadItemNotifier::ManagerGoingDown(
 
 void AllDownloadItemNotifier::OnDownloadCreated(
     content::DownloadManager* manager,
-    content::DownloadItem* item) {
+    DownloadItem* item) {
   item->AddObserver(this);
   observing_.insert(item);
   observer_->OnDownloadCreated(manager, item);
 }
 
-void AllDownloadItemNotifier::OnDownloadUpdated(content::DownloadItem* item) {
+void AllDownloadItemNotifier::OnDownloadUpdated(DownloadItem* item) {
   observer_->OnDownloadUpdated(manager_, item);
 }
 
-void AllDownloadItemNotifier::OnDownloadOpened(content::DownloadItem* item) {
+void AllDownloadItemNotifier::OnDownloadOpened(DownloadItem* item) {
   observer_->OnDownloadOpened(manager_, item);
 }
 
-void AllDownloadItemNotifier::OnDownloadRemoved(content::DownloadItem* item) {
+void AllDownloadItemNotifier::OnDownloadRemoved(DownloadItem* item) {
   observer_->OnDownloadRemoved(manager_, item);
 }
 
-void AllDownloadItemNotifier::OnDownloadDestroyed(content::DownloadItem* item) {
+void AllDownloadItemNotifier::OnDownloadDestroyed(DownloadItem* item) {
   item->RemoveObserver(this);
   observing_.erase(item);
 }

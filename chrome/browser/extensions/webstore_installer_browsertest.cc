@@ -80,9 +80,9 @@ class WebstoreInstallerBrowserTest
 
   // Overridden from WebstoreInstaller::Delegate:
   void OnExtensionDownloadStarted(const std::string& id,
-                                  content::DownloadItem* item) override;
+                                  download::DownloadItem* item) override;
   void OnExtensionDownloadProgress(const std::string& id,
-                                   content::DownloadItem* item) override;
+                                   download::DownloadItem* item) override;
   void OnExtensionInstallSuccess(const std::string& id) override;
   void OnExtensionInstallFailure(
       const std::string& id,
@@ -95,12 +95,12 @@ class WebstoreInstallerBrowserTest
 };
 
 void WebstoreInstallerBrowserTest::OnExtensionDownloadStarted(
-    const std::string& id, content::DownloadItem* item) {
-}
+    const std::string& id,
+    download::DownloadItem* item) {}
 
 void WebstoreInstallerBrowserTest::OnExtensionDownloadProgress(
-    const std::string& id, content::DownloadItem* item) {
-}
+    const std::string& id,
+    download::DownloadItem* item) {}
 
 void WebstoreInstallerBrowserTest::OnExtensionInstallSuccess(
     const std::string& id) {

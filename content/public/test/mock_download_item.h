@@ -14,14 +14,14 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace content {
 
-class MockDownloadItem : public DownloadItem {
+class MockDownloadItem : public download::DownloadItem {
  public:
   MockDownloadItem();
   ~MockDownloadItem() override;
@@ -93,8 +93,9 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(AllDataSaved, bool());
   MOCK_CONST_METHOD0(GetTotalBytes, int64_t());
   MOCK_CONST_METHOD0(GetReceivedBytes, int64_t());
-  MOCK_CONST_METHOD0(GetReceivedSlices,
-                     const std::vector<DownloadItem::ReceivedSlice>&());
+  MOCK_CONST_METHOD0(
+      GetReceivedSlices,
+      const std::vector<download::DownloadItem::ReceivedSlice>&());
   MOCK_CONST_METHOD0(GetStartTime, base::Time());
   MOCK_CONST_METHOD0(GetEndTime, base::Time());
   MOCK_METHOD0(CanShowInFolder, bool());
@@ -105,8 +106,6 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(GetOpened, bool());
   MOCK_CONST_METHOD0(GetLastAccessTime, base::Time());
   MOCK_CONST_METHOD0(IsTransient, bool());
-  MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
-  MOCK_CONST_METHOD0(GetWebContents, WebContents*());
   MOCK_METHOD2(OnContentCheckCompleted,
                void(download::DownloadDangerType,
                     download::DownloadInterruptReason));

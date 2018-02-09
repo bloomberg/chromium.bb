@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/download/public/common/download_item.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
@@ -29,7 +30,6 @@
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/navigation_entry.h"
@@ -76,7 +76,7 @@ class DownloadRequestData : public base::SupportsUserData::Data {
   static const int kKey;
 
   std::unique_ptr<download::DownloadSaveInfo> save_info_;
-  uint32_t download_id_ = DownloadItem::kInvalidId;
+  uint32_t download_id_ = download::DownloadItem::kInvalidId;
   std::string guid_;
   bool fetch_error_body_ = false;
   bool transient_ = false;
@@ -122,7 +122,7 @@ std::unique_ptr<net::URLRequest>
 DownloadRequestCore::CreateRequestOnIOThread(uint32_t download_id,
                                              DownloadUrlParameters* params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(download_id == DownloadItem::kInvalidId ||
+  DCHECK(download_id == download::DownloadItem::kInvalidId ||
          !params->content_initiated())
       << "Content initiated downloads shouldn't specify a download ID";
 
@@ -148,7 +148,7 @@ DownloadRequestCore::DownloadRequestCore(
     download::DownloadSource download_source)
     : delegate_(delegate),
       request_(request),
-      download_id_(DownloadItem::kInvalidId),
+      download_id_(download::DownloadItem::kInvalidId),
       fetch_error_body_(false),
       transient_(false),
       bytes_read_(0),
@@ -314,8 +314,8 @@ bool DownloadRequestCore::OnRequestRedirected() {
   DVLOG(20) << __func__ << "() " << DebugString();
   if (is_partial_request_) {
     // A redirect while attempting a partial resumption indicates a potential
-    // middle box. Trigger another interruption so that the DownloadItem can
-    // retry.
+    // middle box. Trigger another interruption so that the
+    // download::DownloadItem can retry.
     abort_reason_ = download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE;
     return false;
   }

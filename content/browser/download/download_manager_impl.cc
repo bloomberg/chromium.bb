@@ -236,13 +236,13 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
       int64_t received_bytes,
       int64_t total_bytes,
       const std::string& hash,
-      DownloadItem::DownloadState state,
+      download::DownloadItem::DownloadState state,
       download::DownloadDangerType danger_type,
       download::DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
       bool transient,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices)
+      const std::vector<download::DownloadItem::ReceivedSlice>& received_slices)
       override {
     return new DownloadItemImpl(
         delegate, guid, download_id, current_path, target_path, url_chain,
@@ -281,16 +281,16 @@ base::FilePath GetTemporaryDownloadDirectory() {
 
 // Responsible for persisting the in-progress metadata associated with a
 // download.
-class InProgressDownloadObserver : public DownloadItem::Observer {
+class InProgressDownloadObserver : public download::DownloadItem::Observer {
  public:
   explicit InProgressDownloadObserver(
       download::InProgressCache* in_progress_cache);
   ~InProgressDownloadObserver() override;
 
  private:
-  // DownloadItem::Observer
-  void OnDownloadUpdated(DownloadItem* download) override;
-  void OnDownloadRemoved(DownloadItem* download) override;
+  // download::DownloadItem::Observer
+  void OnDownloadUpdated(download::DownloadItem* download) override;
+  void OnDownloadRemoved(download::DownloadItem* download) override;
 
   // The persistent cache to store in-progress metadata.
   download::InProgressCache* in_progress_cache_;
@@ -304,19 +304,20 @@ InProgressDownloadObserver::InProgressDownloadObserver(
 
 InProgressDownloadObserver::~InProgressDownloadObserver() = default;
 
-void InProgressDownloadObserver::OnDownloadUpdated(DownloadItem* download) {
+void InProgressDownloadObserver::OnDownloadUpdated(
+    download::DownloadItem* download) {
   // TODO(crbug.com/778425): Properly handle fail/resume/retry for downloads
   // that are in the INTERRUPTED state for a long time.
   if (!in_progress_cache_)
     return;
 
   switch (download->GetState()) {
-    case DownloadItem::DownloadState::COMPLETE:
-    case DownloadItem::DownloadState::CANCELLED:
+    case download::DownloadItem::DownloadState::COMPLETE:
+    case download::DownloadItem::DownloadState::CANCELLED:
       if (in_progress_cache_)
         in_progress_cache_->RemoveEntry(download->GetGuid());
       break;
-    case DownloadItem::DownloadState::IN_PROGRESS:
+    case download::DownloadItem::DownloadState::IN_PROGRESS:
       // TODO(crbug.com/778425): After RetrieveEntry has been implemented, do a
       // check to make sure the entry exists in the cache.
       break;
@@ -325,7 +326,8 @@ void InProgressDownloadObserver::OnDownloadUpdated(DownloadItem* download) {
   }
 }
 
-void InProgressDownloadObserver::OnDownloadRemoved(DownloadItem* download) {
+void InProgressDownloadObserver::OnDownloadRemoved(
+    download::DownloadItem* download) {
   if (!in_progress_cache_)
     return;
 
@@ -366,7 +368,7 @@ void DownloadManagerImpl::GetNextId(const DownloadIdCallback& callback) {
     delegate_->GetNextId(callback);
     return;
   }
-  static uint32_t next_id = content::DownloadItem::kInvalidId + 1;
+  static uint32_t next_id = download::DownloadItem::kInvalidId + 1;
   callback.Run(next_id++);
 }
 
@@ -380,7 +382,8 @@ void DownloadManagerImpl::DetermineDownloadTarget(
   if (!delegate_ || !delegate_->DetermineDownloadTarget(item, callback)) {
     base::FilePath target_path = item->GetForcedFilePath();
     // TODO(asanka): Determine a useful path if |target_path| is empty.
-    callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+    callback.Run(target_path,
+                 download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                  download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, target_path,
                  download::DOWNLOAD_INTERRUPT_REASON_NONE);
   }
@@ -461,7 +464,7 @@ void DownloadManagerImpl::Shutdown() {
   // file.
   for (const auto& it : downloads_) {
     DownloadItemImpl* download = it.second.get();
-    if (download->GetState() == DownloadItem::IN_PROGRESS)
+    if (download->GetState() == download::DownloadItem::IN_PROGRESS)
       download->Cancel(false);
   }
   downloads_.clear();
@@ -491,7 +494,7 @@ void DownloadManagerImpl::StartDownload(
   DVLOG(20) << __func__ << "() result="
             << download::DownloadInterruptReasonToString(info->result);
   uint32_t download_id = info->download_id;
-  const bool new_download = (download_id == content::DownloadItem::kInvalidId);
+  const bool new_download = (download_id == download::DownloadItem::kInvalidId);
   if (new_download)
     RecordDownloadConnectionSecurity(info->url(), info->url_chain);
   base::Callback<void(uint32_t)> got_id(base::Bind(
@@ -511,7 +514,7 @@ void DownloadManagerImpl::StartDownloadWithId(
     bool new_download,
     uint32_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_NE(content::DownloadItem::kInvalidId, id);
+  DCHECK_NE(download::DownloadItem::kInvalidId, id);
   DownloadItemImpl* download = nullptr;
   if (new_download) {
     download = CreateActiveItem(id, *info);
@@ -519,7 +522,8 @@ void DownloadManagerImpl::StartDownloadWithId(
     auto item_iterator = downloads_.find(id);
     // Trying to resume an interrupted download.
     if (item_iterator == downloads_.end() ||
-        (item_iterator->second->GetState() == DownloadItem::CANCELLED)) {
+        (item_iterator->second->GetState() ==
+         download::DownloadItem::CANCELLED)) {
       // If the download is no longer known to the DownloadManager, then it was
       // removed after it was resumed. Ignore. If the download is cancelled
       // while resuming, then also ignore the request.
@@ -581,8 +585,8 @@ void DownloadManagerImpl::StartDownloadWithId(
         std::move(stream), id, download->DestinationObserverAsWeakPtr()));
   }
   // It is important to leave info->save_info intact in the case of an interrupt
-  // so that the DownloadItem can salvage what it can out of a failed resumption
-  // attempt.
+  // so that the download::DownloadItem can salvage what it can out of a failed
+  // resumption attempt.
 
   download->Start(std::move(download_file), std::move(info->request_handle),
                   *info);
@@ -611,9 +615,8 @@ void DownloadManagerImpl::CheckForHistoryFilesRemoval() {
 
 void DownloadManagerImpl::CheckForFileRemoval(DownloadItemImpl* download_item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if ((download_item->GetState() == DownloadItem::COMPLETE) &&
-      !download_item->GetFileExternallyRemoved() &&
-      delegate_) {
+  if ((download_item->GetState() == download::DownloadItem::COMPLETE) &&
+      !download_item->GetFileExternallyRemoved() && delegate_) {
     delegate_->CheckForFileExistence(
         download_item,
         base::BindOnce(&DownloadManagerImpl::OnFileExistenceChecked,
@@ -663,7 +666,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
     const DownloadItemImplCreated& item_created,
     uint32_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_NE(content::DownloadItem::kInvalidId, id);
+  DCHECK_NE(download::DownloadItem::kInvalidId, id);
   DCHECK(!base::ContainsKey(downloads_, id));
   DownloadItemImpl* download_item = item_factory_->CreateSavePageItem(
       this, id, main_file_path, page_url, mime_type, std::move(request_handle));
@@ -824,7 +827,7 @@ int DownloadManagerImpl::RemoveDownloadsByURLAndTime(
     // Increment done here to protect against invalidation below.
     ++it;
 
-    if (download->GetState() != DownloadItem::IN_PROGRESS &&
+    if (download->GetState() != download::DownloadItem::IN_PROGRESS &&
         url_filter.Run(download->GetURL()) &&
         download->GetStartTime() >= remove_begin &&
         (remove_end.is_null() || download->GetStartTime() < remove_end)) {
@@ -845,7 +848,7 @@ void DownloadManagerImpl::DownloadUrl(
 
   RecordDownloadCountWithSource(DownloadCountTypes::DOWNLOAD_TRIGGERED_COUNT,
                                 params->download_source());
-  BeginDownloadInternal(std::move(params), content::DownloadItem::kInvalidId);
+  BeginDownloadInternal(std::move(params), download::DownloadItem::kInvalidId);
 }
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {
@@ -856,7 +859,7 @@ void DownloadManagerImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-DownloadItem* DownloadManagerImpl::CreateDownloadItem(
+download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     const std::string& guid,
     uint32_t id,
     const base::FilePath& current_path,
@@ -875,13 +878,13 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     int64_t received_bytes,
     int64_t total_bytes,
     const std::string& hash,
-    DownloadItem::DownloadState state,
+    download::DownloadItem::DownloadState state,
     download::DownloadDangerType danger_type,
     download::DownloadInterruptReason interrupt_reason,
     bool opened,
     base::Time last_access_time,
     bool transient,
-    const std::vector<DownloadItem::ReceivedSlice>& received_slices) {
+    const std::vector<download::DownloadItem::ReceivedSlice>& received_slices) {
   if (base::ContainsKey(downloads_, id)) {
     NOTREACHED();
     return nullptr;
@@ -937,7 +940,7 @@ bool DownloadManagerImpl::IsManagerInitialized() const {
 int DownloadManagerImpl::InProgressCount() const {
   int count = 0;
   for (const auto& it : downloads_) {
-    if (it.second->GetState() == DownloadItem::IN_PROGRESS)
+    if (it.second->GetState() == download::DownloadItem::IN_PROGRESS)
       ++count;
   }
   return count;
@@ -946,7 +949,7 @@ int DownloadManagerImpl::InProgressCount() const {
 int DownloadManagerImpl::NonMaliciousInProgressCount() const {
   int count = 0;
   for (const auto& it : downloads_) {
-    if (it.second->GetState() == DownloadItem::IN_PROGRESS &&
+    if (it.second->GetState() == download::DownloadItem::IN_PROGRESS &&
         it.second->GetDangerType() !=
             download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL &&
         it.second->GetDangerType() !=
@@ -961,13 +964,14 @@ int DownloadManagerImpl::NonMaliciousInProgressCount() const {
   return count;
 }
 
-DownloadItem* DownloadManagerImpl::GetDownload(uint32_t download_id) {
+download::DownloadItem* DownloadManagerImpl::GetDownload(uint32_t download_id) {
   return base::ContainsKey(downloads_, download_id)
              ? downloads_[download_id].get()
              : nullptr;
 }
 
-DownloadItem* DownloadManagerImpl::GetDownloadByGuid(const std::string& guid) {
+download::DownloadItem* DownloadManagerImpl::GetDownloadByGuid(
+    const std::string& guid) {
   return base::ContainsKey(downloads_by_guid_, guid) ? downloads_by_guid_[guid]
                                                      : nullptr;
 }
@@ -999,7 +1003,7 @@ void DownloadManagerImpl::OpenDownload(DownloadItemImpl* download) {
   int num_unopened = 0;
   for (const auto& it : downloads_) {
     DownloadItemImpl* item = it.second.get();
-    if ((item->GetState() == DownloadItem::COMPLETE) &&
+    if ((item->GetState() == download::DownloadItem::COMPLETE) &&
         !item->GetOpened())
       ++num_unopened;
   }

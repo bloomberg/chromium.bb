@@ -9,7 +9,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "content/public/browser/page_navigator.h"
 #include "ui/gfx/image/image.h"
 
@@ -32,7 +32,7 @@ class DownloadCommands {
   };
 
   // |download_item| must outlive DownloadCommands.
-  explicit DownloadCommands(content::DownloadItem* download_item);
+  explicit DownloadCommands(download::DownloadItem* download_item);
   virtual ~DownloadCommands();
 
   gfx::Image GetCommandIcon(Command command);
@@ -57,7 +57,7 @@ class DownloadCommands {
   GURL GetLearnMoreURLForInterruptedDownload() const;
   void CopyFileAsImageToClipboard();
 
-  content::DownloadItem* const download_item_;
+  download::DownloadItem* const download_item_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };

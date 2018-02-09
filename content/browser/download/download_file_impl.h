@@ -22,11 +22,11 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_save_info.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/base_file.h"
 #include "content/browser/download/rate_estimator.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/common/download_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -56,7 +56,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // DownloadFile functions.
   void Initialize(const InitializeCallback& initialize_callback,
                   const CancelRequestCallback& cancel_request_callback,
-                  const DownloadItem::ReceivedSlices& received_slices,
+                  const download::DownloadItem::ReceivedSlices& received_slices,
                   bool is_parallelizable) override;
   void AddInputStream(std::unique_ptr<DownloadManager::InputStream> stream,
                       int64_t offset,
@@ -120,9 +120,10 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     // abort status at the end. The best way to do this is to add a separate
     // mojo interface for control messages when creating this object. See
     // http://crbug.com/748240. An alternative strategy is to let the
-    // DownloadManager pass the status code to DownloadItem or DownloadFile.
-    // However, a DownloadFile can have multiple SourceStreams, so we have to
-    // maintain a map between data pipe and DownloadItem/DownloadFile somewhere.
+    // DownloadManager pass the status code to download::DownloadItem or
+    // DownloadFile. However, a DownloadFile can have multiple SourceStreams, so
+    // we have to maintain a map between data pipe and
+    // download::DownloadItem/DownloadFile somewhere.
     download::DownloadInterruptReason GetCompletionStatus() const;
 
     using CompletionCallback = base::OnceCallback<void(SourceStream*)>;
@@ -347,7 +348,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   base::TimeDelta download_time_with_parallel_streams_;
   base::TimeDelta download_time_without_parallel_streams_;
 
-  std::vector<DownloadItem::ReceivedSlice> received_slices_;
+  std::vector<download::DownloadItem::ReceivedSlice> received_slices_;
 
   // Used to track whether the download is paused or not. This value is ignored
   // when network service is disabled as download pause/resumption is handled

@@ -15,9 +15,10 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/download/public/common/download_item.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_item_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -32,10 +33,10 @@ namespace {
 
 // Implements DownloadDangerPrompt using a TabModalConfirmDialog.
 class DownloadDangerPromptImpl : public DownloadDangerPrompt,
-                                 public content::DownloadItem::Observer,
+                                 public download::DownloadItem::Observer,
                                  public TabModalConfirmDialogDelegate {
  public:
-  DownloadDangerPromptImpl(content::DownloadItem* item,
+  DownloadDangerPromptImpl(download::DownloadItem* item,
                            content::WebContents* web_contents,
                            bool show_context,
                            const OnDone& done);
@@ -45,8 +46,8 @@ class DownloadDangerPromptImpl : public DownloadDangerPrompt,
   void InvokeActionForTesting(Action action) override;
 
  private:
-  // content::DownloadItem::Observer:
-  void OnDownloadUpdated(content::DownloadItem* download) override;
+  // download::DownloadItem::Observer:
+  void OnDownloadUpdated(download::DownloadItem* download) override;
 
   // TabModalConfirmDialogDelegate:
   base::string16 GetTitle() override;
@@ -59,7 +60,7 @@ class DownloadDangerPromptImpl : public DownloadDangerPrompt,
 
   void RunDone(Action action);
 
-  content::DownloadItem* download_;
+  download::DownloadItem* download_;
   // If show_context_ is true, this is a download confirmation dialog by
   // download API, otherwise it is download recovery dialog from a regular
   // download.
@@ -72,7 +73,7 @@ class DownloadDangerPromptImpl : public DownloadDangerPrompt,
 };
 
 DownloadDangerPromptImpl::DownloadDangerPromptImpl(
-    content::DownloadItem* download,
+    download::DownloadItem* download,
     content::WebContents* web_contents,
     bool show_context,
     const OnDone& done)
@@ -87,7 +88,8 @@ DownloadDangerPromptImpl::DownloadDangerPromptImpl(
   // user, so we start a new SamplingEvent and track it.
   sampling_event_.reset(new ExperienceSamplingEvent(
       ExperienceSamplingEvent::kDownloadDangerPrompt, download->GetURL(),
-      download->GetReferrerUrl(), download->GetBrowserContext()));
+      download->GetReferrerUrl(),
+      content::DownloadItemUtils::GetBrowserContext(download)));
 }
 
 DownloadDangerPromptImpl::~DownloadDangerPromptImpl() {
@@ -112,7 +114,7 @@ void DownloadDangerPromptImpl::InvokeActionForTesting(Action action) {
 }
 
 void DownloadDangerPromptImpl::OnDownloadUpdated(
-    content::DownloadItem* download) {
+    download::DownloadItem* download) {
   // If the download is nolonger dangerous (accepted externally) or the download
   // is in a terminal state, then the download danger prompt is no longer
   // necessary.
@@ -233,7 +235,8 @@ void DownloadDangerPromptImpl::RunDone(Action action) {
       const bool accept = action == DownloadDangerPrompt::ACCEPT;
       RecordDownloadDangerPrompt(accept, *download_);
       if (!download_->GetURL().is_empty() &&
-          !download_->GetBrowserContext()->IsOffTheRecord()) {
+          !content::DownloadItemUtils::GetBrowserContext(download_)
+               ->IsOffTheRecord()) {
         ClientSafeBrowsingReportRequest::ReportType report_type
             = show_context_ ?
                 ClientSafeBrowsingReportRequest::DANGEROUS_DOWNLOAD_BY_API :
@@ -252,7 +255,7 @@ void DownloadDangerPromptImpl::RunDone(Action action) {
 
 // static
 DownloadDangerPrompt* DownloadDangerPrompt::Create(
-    content::DownloadItem* item,
+    download::DownloadItem* item,
     content::WebContents* web_contents,
     bool show_context,
     const OnDone& done) {

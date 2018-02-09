@@ -11,6 +11,7 @@ source_set("internal") {
 
   sources = [
     "download_interrupt_reasons_impl.cc",
+    "download_utils.cc",
   ]
 
   deps = [

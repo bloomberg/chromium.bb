@@ -11,11 +11,12 @@
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "content/public/browser/download_item_utils.h"
 
 namespace safe_browsing {
 
 DownloadUrlSBClient::DownloadUrlSBClient(
-    content::DownloadItem* item,
+    download::DownloadItem* item,
     DownloadProtectionService* service,
     const CheckDownloadCallback& callback,
     const scoped_refptr<SafeBrowsingUIManager>& ui_manager,
@@ -36,14 +37,16 @@ DownloadUrlSBClient::DownloadUrlSBClient(
   DCHECK(item_);
   DCHECK(service_);
   download_item_observer_.Add(item_);
-  Profile* profile = Profile::FromBrowserContext(item_->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(item_));
   extended_reporting_level_ =
       profile ? GetExtendedReportingLevel(*profile->GetPrefs())
               : SBER_LEVEL_OFF;
 }
 
 // Implements DownloadItem::Observer.
-void DownloadUrlSBClient::OnDownloadDestroyed(content::DownloadItem* download) {
+void DownloadUrlSBClient::OnDownloadDestroyed(
+    download::DownloadItem* download) {
   download_item_observer_.Remove(item_);
   item_ = nullptr;
 }
@@ -121,7 +124,8 @@ void DownloadUrlSBClient::ReportMalware(SBThreatType threat_type) {
   hit_report.is_metrics_reporting_active =
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
 
-  ui_manager_->MaybeReportSafeBrowsingHit(hit_report, item_->GetWebContents());
+  ui_manager_->MaybeReportSafeBrowsingHit(
+      hit_report, content::DownloadItemUtils::GetWebContents(item_));
 }
 
 void DownloadUrlSBClient::IdentifyReferrerChain() {

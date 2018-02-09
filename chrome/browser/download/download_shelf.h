@@ -18,8 +18,11 @@ class Canvas;
 }
 
 namespace content {
-class DownloadItem;
 class DownloadManager;
+}
+
+namespace download {
+class DownloadItem;
 }
 
 namespace ui {
@@ -83,7 +86,7 @@ class DownloadShelf {
   // DownloadItemModel::ShouldRemoveFromShelfWhenComplete()). These transient
   // downloads are added to the shelf after a delay. If the download completes
   // before the delay duration, it will not be added to the shelf at all.
-  void AddDownload(content::DownloadItem* download);
+  void AddDownload(download::DownloadItem* download);
 
   // The browser view needs to know when we are going away to properly return
   // the resize corner size to WebKit so that we don't draw on top of it.
@@ -113,7 +116,7 @@ class DownloadShelf {
   bool is_hidden() { return is_hidden_; }
 
  protected:
-  virtual void DoAddDownload(content::DownloadItem* download) = 0;
+  virtual void DoAddDownload(download::DownloadItem* download) = 0;
   virtual void DoOpen() = 0;
   virtual void DoClose(CloseReason reason) = 0;
   virtual void DoHide() = 0;
@@ -131,7 +134,7 @@ class DownloadShelf {
  private:
   // Show the download on the shelf immediately. Also displayes the download
   // started animation if necessary.
-  void ShowDownload(content::DownloadItem* download);
+  void ShowDownload(download::DownloadItem* download);
 
   // Similar to ShowDownload() but refers to the download using an ID. This
   // download should belong to the DownloadManager returned by

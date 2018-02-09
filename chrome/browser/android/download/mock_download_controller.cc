@@ -18,8 +18,7 @@ MockDownloadController::MockDownloadController()
 MockDownloadController::~MockDownloadController() {}
 
 void MockDownloadController::OnDownloadStarted(
-    content::DownloadItem* download_item) {
-}
+    download::DownloadItem* download_item) {}
 
 void MockDownloadController::StartContextMenuDownload(
     const content::ContextMenuParams& params,
@@ -44,7 +43,7 @@ void MockDownloadController::CreateAndroidDownload(
     const DownloadInfo& info) {}
 
 void MockDownloadController::AboutToResumeDownload(
-    content::DownloadItem* download_item) {}
+    download::DownloadItem* download_item) {}
 
 }  // namespace android
 }  // namespace chrome

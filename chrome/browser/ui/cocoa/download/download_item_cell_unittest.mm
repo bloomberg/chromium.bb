@@ -60,7 +60,7 @@ TEST_F(DownloadItemCellTest, IndeterminateProgress) {
   ON_CALL(item, IsPaused()).WillByDefault(Return(false));
   ON_CALL(item, PercentComplete()).WillByDefault(Return(-1));
   ON_CALL(item, GetState())
-      .WillByDefault(Return(content::DownloadItem::IN_PROGRESS));
+      .WillByDefault(Return(download::DownloadItem::IN_PROGRESS));
   ON_CALL(item, GetFileNameToReportUser())
       .WillByDefault(Return(base::FilePath("foo.bar")));
   DownloadItemModel model(&item);

@@ -25,7 +25,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::DownloadItem;
+using download::DownloadItem;
 using content::MockDownloadItem;
 using testing::AnyNumber;
 using testing::Return;
@@ -150,7 +150,7 @@ DownloadPathReservationTrackerTest::GetLongNamePathInDownloadsDirectory(
 }
 
 void SetDownloadItemState(content::MockDownloadItem* download_item,
-                          content::DownloadItem::DownloadState state) {
+                          download::DownloadItem::DownloadState state) {
   EXPECT_CALL(*download_item, GetState())
       .WillRepeatedly(Return(state));
   download_item->NotifyObserversDownloadUpdated();

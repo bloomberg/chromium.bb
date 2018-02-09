@@ -2405,7 +2405,7 @@ class CountingDownloadFile : public DownloadFileImpl {
 
   void Initialize(const InitializeCallback& callback,
                   const CancelRequestCallback& cancel_request_callback,
-                  const DownloadItem::ReceivedSlices& received_slices,
+                  const download::DownloadItem::ReceivedSlices& received_slices,
                   bool is_parallelizable) override {
     DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
     active_files_++;
@@ -2461,7 +2461,7 @@ class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
   ~TestShellDownloadManagerDelegate() override {}
 
   bool ShouldOpenDownload(
-      DownloadItem* item,
+      download::DownloadItem* item,
       const DownloadOpenDelayedCallback& callback) override {
     if (delay_download_open_) {
       delayed_callbacks_.push_back(callback);
@@ -2505,7 +2505,7 @@ class DownloadCreateObserver : DownloadManager::Observer {
   }
 
   void OnDownloadCreated(DownloadManager* manager,
-                         DownloadItem* download) override {
+                         download::DownloadItem* download) override {
     if (!item_)
       item_ = download;
 
@@ -2513,7 +2513,7 @@ class DownloadCreateObserver : DownloadManager::Observer {
       base::ResetAndReturn(&completion_closure_).Run();
   }
 
-  DownloadItem* WaitForFinished() {
+  download::DownloadItem* WaitForFinished() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!item_) {
       base::RunLoop run_loop;
@@ -2525,11 +2525,12 @@ class DownloadCreateObserver : DownloadManager::Observer {
 
  private:
   DownloadManager* manager_;
-  DownloadItem* item_;
+  download::DownloadItem* item_;
   base::Closure completion_closure_;
 };
 
-bool IsDownloadInState(DownloadItem::DownloadState state, DownloadItem* item) {
+bool IsDownloadInState(download::DownloadItem::DownloadState state,
+                       download::DownloadItem* item) {
   return item->GetState() == state;
 }
 
@@ -2593,9 +2594,10 @@ class DevToolsDownloadContentTest : public DevToolsProtocolTest {
             new CountingDownloadFileFactory()));
   }
 
-  void WaitForCompletion(DownloadItem* download) {
+  void WaitForCompletion(download::DownloadItem* download) {
     DownloadUpdatedObserver(
-        download, base::Bind(&IsDownloadInState, DownloadItem::COMPLETE))
+        download,
+        base::Bind(&IsDownloadInState, download::DownloadItem::COMPLETE))
         .WaitForEvent();
   }
 
@@ -2642,7 +2644,7 @@ class DevToolsDownloadContentTest : public DevToolsProtocolTest {
   }
 
   // Start a download and return the item.
-  DownloadItem* StartDownloadAndReturnItem(Shell* shell, GURL url) {
+  download::DownloadItem* StartDownloadAndReturnItem(Shell* shell, GURL url) {
     std::unique_ptr<DownloadCreateObserver> observer(
         new DownloadCreateObserver(DownloadManagerForShell(shell)));
     shell->LoadURL(url);
@@ -2675,13 +2677,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, SingleDownload) {
   SetDownloadBehavior("allow", "download");
   // Create a download, wait until it's started, and confirm
   // we're in the expected state.
-  DownloadItem* download = StartDownloadAndReturnItem(
+  download::DownloadItem* download = StartDownloadAndReturnItem(
       shell(),
       GURL(net::URLRequestMockHTTPJob::GetMockUrl("download-test.lib")));
-  ASSERT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
+  ASSERT_EQ(download::DownloadItem::IN_PROGRESS, download->GetState());
 
   WaitForCompletion(download);
-  ASSERT_EQ(DownloadItem::COMPLETE, download->GetState());
+  ASSERT_EQ(download::DownloadItem::COMPLETE, download->GetState());
 }
 
 // Check that downloads can be cancelled gracefully.
@@ -2694,9 +2696,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DownloadCancelled) {
   SetDownloadBehavior("allow", "download");
   // Create a download, wait until it's started, and confirm
   // we're in the expected state.
-  DownloadItem* download = StartDownloadAndReturnItem(
+  download::DownloadItem* download = StartDownloadAndReturnItem(
       shell(), GURL(net::URLRequestSlowDownloadJob::kUnknownSizeUrl));
-  ASSERT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
+  ASSERT_EQ(download::DownloadItem::IN_PROGRESS, download->GetState());
 
   // Cancel the download and wait for download system quiesce.
   download->Cancel(true);
@@ -2716,11 +2718,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DeniedDownload) {
 
   SetDownloadBehavior("deny");
   // Create a download, wait and confirm it was cancelled.
-  DownloadItem* download = StartDownloadAndReturnItem(
+  download::DownloadItem* download = StartDownloadAndReturnItem(
       shell(),
       GURL(net::URLRequestMockHTTPJob::GetMockUrl("download-test.lib")));
   EnsureNoPendingDownloads();
-  ASSERT_EQ(DownloadItem::CANCELLED, download->GetState());
+  ASSERT_EQ(download::DownloadItem::CANCELLED, download->GetState());
 }
 
 // Check that defaulting downloads works as expected.
@@ -2733,9 +2735,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DefaultDownload) {
   SetDownloadBehavior("default");
   // Create a download, wait until it's started, and confirm
   // we're in the expected state.
-  DownloadItem* download = StartDownloadAndReturnItem(
+  download::DownloadItem* download = StartDownloadAndReturnItem(
       shell(), GURL(net::URLRequestSlowDownloadJob::kUnknownSizeUrl));
-  ASSERT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
+  ASSERT_EQ(download::DownloadItem::IN_PROGRESS, download->GetState());
 
   // Cancel the download and wait for download system quiesce.
   download->Cancel(true);
@@ -2757,11 +2759,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DefaultDownloadHeadless) {
 
   SetDownloadBehavior("default");
   // Create a download, wait and confirm it was cancelled.
-  DownloadItem* download = StartDownloadAndReturnItem(
+  download::DownloadItem* download = StartDownloadAndReturnItem(
       shell(),
       GURL(net::URLRequestMockHTTPJob::GetMockUrl("download-test.lib")));
   EnsureNoPendingDownloads();
-  ASSERT_EQ(DownloadItem::CANCELLED, download->GetState());
+  ASSERT_EQ(download::DownloadItem::CANCELLED, download->GetState());
 }
 
 // Check that download logic is reset when creating a new target.
@@ -2776,11 +2778,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, ResetDownloadState) {
   Shell* new_window = CreateBrowser();
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   // Create a download, wait and confirm it wasn't cancelled.
-  DownloadItem* download = StartDownloadAndReturnItem(
+  download::DownloadItem* download = StartDownloadAndReturnItem(
       new_window,
       GURL(net::URLRequestMockHTTPJob::GetMockUrl("download-test.lib")));
   WaitForCompletion(download);
-  ASSERT_EQ(DownloadItem::COMPLETE, download->GetState());
+  ASSERT_EQ(download::DownloadItem::COMPLETE, download->GetState());
 }
 
 // Check that downloading multiple (in this case, 2) files does not result in
@@ -2794,26 +2796,27 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, MultiDownload) {
   SetDownloadBehavior("allow", "download1");
   // Create a download, wait until it's started, and confirm
   // we're in the expected state.
-  DownloadItem* download1 = StartDownloadAndReturnItem(
+  download::DownloadItem* download1 = StartDownloadAndReturnItem(
       shell(), GURL(net::URLRequestSlowDownloadJob::kUnknownSizeUrl));
-  ASSERT_EQ(DownloadItem::IN_PROGRESS, download1->GetState());
+  ASSERT_EQ(download::DownloadItem::IN_PROGRESS, download1->GetState());
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   SetDownloadBehavior("allow", "download2");
   // Start the second download and wait until it's done.
   GURL url(net::URLRequestMockHTTPJob::GetMockUrl("download-test.lib"));
-  DownloadItem* download2 = StartDownloadAndReturnItem(shell(), url);
+  download::DownloadItem* download2 = StartDownloadAndReturnItem(shell(), url);
   WaitForCompletion(download2);
 
-  ASSERT_EQ(DownloadItem::IN_PROGRESS, download1->GetState());
-  ASSERT_EQ(DownloadItem::COMPLETE, download2->GetState());
+  ASSERT_EQ(download::DownloadItem::IN_PROGRESS, download1->GetState());
+  ASSERT_EQ(download::DownloadItem::COMPLETE, download2->GetState());
 
   // Allow the first request to finish.
   std::unique_ptr<DownloadTestObserver> observer2(CreateWaiter(shell(), 1));
   NavigateToURL(shell(),
                 GURL(net::URLRequestSlowDownloadJob::kFinishDownloadUrl));
   observer2->WaitForFinished();  // Wait for the third request.
-  EXPECT_EQ(1u, observer2->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+  EXPECT_EQ(
+      1u, observer2->NumDownloadsSeenInState(download::DownloadItem::COMPLETE));
 
   // Get the important info from other threads and check it.
   EXPECT_TRUE(EnsureNoPendingDownloads());

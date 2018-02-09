@@ -41,7 +41,7 @@ class DownloadController : public DownloadControllerBase {
   void CreateAndroidDownload(
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const DownloadInfo& info) override;
-  void AboutToResumeDownload(content::DownloadItem* download_item) override;
+  void AboutToResumeDownload(download::DownloadItem* download_item) override;
 
   // UMA histogram enum for download cancellation reasons. Keep this
   // in sync with MobileDownloadCancelReason in histograms.xml. This should be
@@ -87,17 +87,17 @@ class DownloadController : public DownloadControllerBase {
   bool HasFileAccessPermission();
 
   // DownloadControllerBase implementation.
-  void OnDownloadStarted(content::DownloadItem* download_item) override;
+  void OnDownloadStarted(download::DownloadItem* download_item) override;
   void StartContextMenuDownload(const content::ContextMenuParams& params,
                                 content::WebContents* web_contents,
                                 bool is_link,
                                 const std::string& extra_headers) override;
 
   // DownloadItem::Observer interface.
-  void OnDownloadUpdated(content::DownloadItem* item) override;
+  void OnDownloadUpdated(download::DownloadItem* item) override;
 
   // The download item contains dangerous file types.
-  void OnDangerousDownload(content::DownloadItem *item);
+  void OnDangerousDownload(download::DownloadItem* item);
 
   base::android::ScopedJavaLocalRef<jobject> GetContentViewCoreFromWebContents(
       content::WebContents* web_contents);
@@ -111,7 +111,8 @@ class DownloadController : public DownloadControllerBase {
       const DownloadInfo& info, bool allowed);
 
   // Check if an interrupted download item can be auto resumed.
-  bool IsInterruptedDownloadAutoResumable(content::DownloadItem* download_item);
+  bool IsInterruptedDownloadAutoResumable(
+      download::DownloadItem* download_item);
 
   std::string default_file_name_;
 

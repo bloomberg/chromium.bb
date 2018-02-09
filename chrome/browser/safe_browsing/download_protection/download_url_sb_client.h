@@ -10,9 +10,9 @@
 
 #include "base/scoped_observer.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
+#include "components/download/public/common/download_item.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_item.h"
 
 using content::BrowserThread;
 
@@ -24,20 +24,20 @@ class SafeBrowsingUIManager;
 // SafeBrowsing::Client class used to lookup the bad binary URL list.
 
 class DownloadUrlSBClient : public SafeBrowsingDatabaseManager::Client,
-                            public content::DownloadItem::Observer,
+                            public download::DownloadItem::Observer,
                             public base::RefCountedThreadSafe<
                                 DownloadUrlSBClient,
                                 content::BrowserThread::DeleteOnUIThread> {
  public:
   DownloadUrlSBClient(
-      content::DownloadItem* item,
+      download::DownloadItem* item,
       DownloadProtectionService* service,
       const CheckDownloadCallback& callback,
       const scoped_refptr<SafeBrowsingUIManager>& ui_manager,
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager);
 
   // Implements DownloadItem::Observer.
-  void OnDownloadDestroyed(content::DownloadItem* download) override;
+  void OnDownloadDestroyed(download::DownloadItem* download) override;
 
   void StartCheck();
 
@@ -63,7 +63,7 @@ class DownloadUrlSBClient : public SafeBrowsingDatabaseManager::Client,
   void UpdateDownloadCheckStats(SBStatsType stat_type);
 
   // The DownloadItem we are checking. Must be accessed only on UI thread.
-  content::DownloadItem* item_;
+  download::DownloadItem* item_;
 
   // Copies of data from |item_| for access on other threads.
   std::string sha256_hash_;
@@ -80,7 +80,7 @@ class DownloadUrlSBClient : public SafeBrowsingDatabaseManager::Client,
   base::TimeTicks start_time_;
   ExtendedReportingLevel extended_reporting_level_;
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
-  ScopedObserver<content::DownloadItem, content::DownloadItem::Observer>
+  ScopedObserver<download::DownloadItem, download::DownloadItem::Observer>
       download_item_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUrlSBClient);

@@ -40,6 +40,7 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -72,7 +73,7 @@ using ::testing::ReturnRefOfCopy;
 using ::testing::Truly;
 using ::testing::WithArg;
 using ::testing::_;
-using content::DownloadItem;
+using download::DownloadItem;
 using ConflictAction = DownloadPathReservationTracker::FilenameConflictAction;
 using safe_browsing::FileTypePolicies;
 using safe_browsing::DownloadFileType;
@@ -175,13 +176,15 @@ class MockDownloadTargetDeterminerDelegate
     : public DownloadTargetDeterminerDelegate {
  public:
   MOCK_METHOD3(CheckDownloadUrl,
-               void(content::DownloadItem*, const base::FilePath&,
+               void(download::DownloadItem*,
+                    const base::FilePath&,
                     const CheckDownloadUrlCallback&));
   MOCK_METHOD3(NotifyExtensions,
-               void(content::DownloadItem*, const base::FilePath&,
+               void(download::DownloadItem*,
+                    const base::FilePath&,
                     const NotifyExtensionsCallback&));
   MOCK_METHOD4(RequestConfirmation,
-               void(content::DownloadItem*,
+               void(download::DownloadItem*,
                     const base::FilePath&,
                     DownloadConfirmationReason,
                     const ConfirmationCallback&));
@@ -344,9 +347,8 @@ DownloadTargetDeterminerTest::CreateActiveDownloadItem(
       DownloadItem::TARGET_DISPOSITION_PROMPT :
       DownloadItem::TARGET_DISPOSITION_OVERWRITE;
   EXPECT_TRUE((test_case.test_type != FORCED) || !forced_file_path.empty());
+  content::DownloadItemUtils::AttachInfo(item.get(), profile(), web_contents());
 
-  ON_CALL(*item, GetBrowserContext())
-      .WillByDefault(Return(profile()));
   ON_CALL(*item, GetDangerType())
       .WillByDefault(Return(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
   ON_CALL(*item, GetForcedFilePath())
@@ -375,8 +377,6 @@ DownloadTargetDeterminerTest::CreateActiveDownloadItem(
       .WillByDefault(ReturnRefOfCopy(download_url));
   ON_CALL(*item, GetUrlChain())
       .WillByDefault(ReturnRefOfCopy(url_chain));
-  ON_CALL(*item, GetWebContents())
-      .WillByDefault(Return(web_contents()));
   ON_CALL(*item, HasUserGesture())
       .WillByDefault(Return(true));
   ON_CALL(*item, IsDangerous())
@@ -564,7 +564,7 @@ void MockDownloadTargetDeterminerDelegate::NullDetermineLocalPath(
 // file is in a subdirectory called 'overridden'. If the extension is '.remove',
 // the extension is removed.
 void NotifyExtensionsOverridePath(
-    content::DownloadItem* download,
+    download::DownloadItem* download,
     const base::FilePath& path,
     const DownloadTargetDeterminerDelegate::NotifyExtensionsCallback&
         callback) {
@@ -984,7 +984,7 @@ TEST_F(DownloadTargetDeterminerTest, InactiveDownload) {
     std::unique_ptr<content::MockDownloadItem> item =
         CreateActiveDownloadItem(1, download_test_case);
     EXPECT_CALL(*item.get(), GetState())
-        .WillRepeatedly(Return(content::DownloadItem::CANCELLED));
+        .WillRepeatedly(Return(download::DownloadItem::CANCELLED));
 
     EXPECT_CALL(*delegate(), RequestConfirmation(_, _, _, _)).Times(0);
     EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _)).Times(0);
@@ -1046,8 +1046,8 @@ TEST_F(DownloadTargetDeterminerTest, ReservationFailed_Confirmation) {
     download_test_case.expected_disposition =
         test_case.expected_confirmation_reason ==
                 DownloadConfirmationReason::NONE
-            ? content::DownloadItem::TARGET_DISPOSITION_OVERWRITE
-            : content::DownloadItem::TARGET_DISPOSITION_PROMPT;
+            ? download::DownloadItem::TARGET_DISPOSITION_OVERWRITE
+            : download::DownloadItem::TARGET_DISPOSITION_PROMPT;
     std::unique_ptr<content::MockDownloadItem> item = CreateActiveDownloadItem(
         static_cast<int>(test_case.result), download_test_case);
     RunTestCase(download_test_case, base::FilePath(), item.get());

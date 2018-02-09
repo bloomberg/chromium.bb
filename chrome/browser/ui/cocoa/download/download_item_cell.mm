@@ -12,7 +12,7 @@
 #import "chrome/browser/ui/cocoa/download/background_theme.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "chrome/grit/theme_resources.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "content/public/browser/download_manager.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSColor+Luminance.h"
@@ -80,7 +80,7 @@ const CGFloat kCompleteAnimationDuration = 2.5;
 // Duration of the 'download interrupted' animation, in seconds.
 const CGFloat kInterruptedAnimationDuration = 2.5;
 
-using content::DownloadItem;
+using download::DownloadItem;
 
 // This is a helper class to animate the fading out of the status text.
 @interface DownloadItemCellAnimation : NSAnimation {

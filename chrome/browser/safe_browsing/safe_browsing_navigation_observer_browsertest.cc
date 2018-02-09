@@ -19,10 +19,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/download/public/common/download_item.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/features.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
@@ -33,7 +34,7 @@
 #include "url/gurl.h"
 #include "url/url_canon.h"
 
-using content::DownloadItem;
+using download::DownloadItem;
 using content::DownloadManager;
 
 namespace safe_browsing {
@@ -371,8 +372,8 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
   void IdentifyReferrerChainForDownload(
       DownloadItem* download,
       ReferrerChain* referrer_chain) {
-    int download_tab_id =
-        SessionTabHelper::IdForTab(download->GetWebContents());
+    int download_tab_id = SessionTabHelper::IdForTab(
+        content::DownloadItemUtils::GetWebContents(download));
     auto result = observer_manager_->IdentifyReferrerChainByEventURL(
         download->GetURL(), download_tab_id,
         2,  // kDownloadAttributionUserGestureLimit
@@ -381,7 +382,7 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
         SafeBrowsingNavigationObserverManager::NAVIGATION_EVENT_NOT_FOUND) {
       DCHECK_EQ(0, referrer_chain->size());
       observer_manager_->IdentifyReferrerChainByWebContents(
-          download->GetWebContents(),
+          content::DownloadItemUtils::GetWebContents(download),
           2,  // kDownloadAttributionUserGestureLimit
           referrer_chain);
     }

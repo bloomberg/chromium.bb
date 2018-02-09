@@ -9,38 +9,38 @@
 
 namespace history {
 
-content::DownloadItem::DownloadState ToContentDownloadState(
+download::DownloadItem::DownloadState ToContentDownloadState(
     DownloadState state) {
   switch (state) {
     case DownloadState::IN_PROGRESS:
-      return content::DownloadItem::IN_PROGRESS;
+      return download::DownloadItem::IN_PROGRESS;
     case DownloadState::COMPLETE:
-      return content::DownloadItem::COMPLETE;
+      return download::DownloadItem::COMPLETE;
     case DownloadState::CANCELLED:
-      return content::DownloadItem::CANCELLED;
+      return download::DownloadItem::CANCELLED;
     case DownloadState::INTERRUPTED:
-      return content::DownloadItem::INTERRUPTED;
+      return download::DownloadItem::INTERRUPTED;
     case DownloadState::INVALID:
     case DownloadState::BUG_140687:
       NOTREACHED();
-      return content::DownloadItem::MAX_DOWNLOAD_STATE;
+      return download::DownloadItem::MAX_DOWNLOAD_STATE;
   }
   NOTREACHED();
-  return content::DownloadItem::MAX_DOWNLOAD_STATE;
+  return download::DownloadItem::MAX_DOWNLOAD_STATE;
 }
 
 DownloadState ToHistoryDownloadState(
-    content::DownloadItem::DownloadState state) {
+    download::DownloadItem::DownloadState state) {
   switch (state) {
-    case content::DownloadItem::IN_PROGRESS:
+    case download::DownloadItem::IN_PROGRESS:
       return DownloadState::IN_PROGRESS;
-    case content::DownloadItem::COMPLETE:
+    case download::DownloadItem::COMPLETE:
       return DownloadState::COMPLETE;
-    case content::DownloadItem::CANCELLED:
+    case download::DownloadItem::CANCELLED:
       return DownloadState::CANCELLED;
-    case content::DownloadItem::INTERRUPTED:
+    case download::DownloadItem::INTERRUPTED:
       return DownloadState::INTERRUPTED;
-    case content::DownloadItem::MAX_DOWNLOAD_STATE:
+    case download::DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();
       return DownloadState::INVALID;
   }
@@ -120,13 +120,13 @@ uint32_t ToContentDownloadId(DownloadId id) {
 }
 
 DownloadId ToHistoryDownloadId(uint32_t id) {
-  DCHECK_NE(id, content::DownloadItem::kInvalidId);
+  DCHECK_NE(id, download::DownloadItem::kInvalidId);
   return static_cast<DownloadId>(id);
 }
 
-std::vector<content::DownloadItem::ReceivedSlice> ToContentReceivedSlices(
+std::vector<download::DownloadItem::ReceivedSlice> ToContentReceivedSlices(
     const std::vector<DownloadSliceInfo>& slice_infos) {
-  std::vector<content::DownloadItem::ReceivedSlice> result;
+  std::vector<download::DownloadItem::ReceivedSlice> result;
 
   for (const auto& slice_info : slice_infos)
     result.emplace_back(slice_info.offset, slice_info.received_bytes);
@@ -135,7 +135,7 @@ std::vector<content::DownloadItem::ReceivedSlice> ToContentReceivedSlices(
 }
 
 std::vector<DownloadSliceInfo> GetHistoryDownloadSliceInfos(
-    const content::DownloadItem& item) {
+    const download::DownloadItem& item) {
   std::vector<DownloadSliceInfo> result;
 
   for (const auto& slice : item.GetReceivedSlices())

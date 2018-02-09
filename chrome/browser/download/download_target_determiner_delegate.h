@@ -17,7 +17,7 @@ namespace base {
 class FilePath;
 }
 
-namespace content {
+namespace download {
 class DownloadItem;
 }
 
@@ -69,7 +69,7 @@ class DownloadTargetDeterminerDelegate {
   // Notifies extensions of the impending filename determination. |virtual_path|
   // is the current suggested virtual path. The |callback| should be invoked to
   // indicate whether any extensions wish to override the path.
-  virtual void NotifyExtensions(content::DownloadItem* download,
+  virtual void NotifyExtensions(download::DownloadItem* download,
                                 const base::FilePath& virtual_path,
                                 const NotifyExtensionsCallback& callback) = 0;
 
@@ -87,7 +87,7 @@ class DownloadTargetDeterminerDelegate {
   //
   // |callback| should be invoked on completion with the results.
   virtual void ReserveVirtualPath(
-      content::DownloadItem* download,
+      download::DownloadItem* download,
       const base::FilePath& virtual_path,
       bool create_directory,
       DownloadPathReservationTracker::FilenameConflictAction conflict_action,
@@ -95,7 +95,7 @@ class DownloadTargetDeterminerDelegate {
 
   // Display a prompt to the user requesting that a download target be chosen.
   // Should invoke |callback| upon completion.
-  virtual void RequestConfirmation(content::DownloadItem* download,
+  virtual void RequestConfirmation(download::DownloadItem* download,
                                    const base::FilePath& virtual_path,
                                    DownloadConfirmationReason reason,
                                    const ConfirmationCallback& callback) = 0;
@@ -104,13 +104,13 @@ class DownloadTargetDeterminerDelegate {
   // local path to use for storing the downloaded file. If |virtual_path| is
   // already local, then it should return the same path. |callback| should be
   // invoked to return the path.
-  virtual void DetermineLocalPath(content::DownloadItem* download,
+  virtual void DetermineLocalPath(download::DownloadItem* download,
                                   const base::FilePath& virtual_path,
                                   const LocalPathCallback& callback) = 0;
 
   // Check whether the download URL is malicious and invoke |callback| with a
   // suggested danger type for the download.
-  virtual void CheckDownloadUrl(content::DownloadItem* download,
+  virtual void CheckDownloadUrl(download::DownloadItem* download,
                                 const base::FilePath& virtual_path,
                                 const CheckDownloadUrlCallback& callback) = 0;
 

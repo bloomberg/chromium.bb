@@ -15,7 +15,8 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
@@ -44,11 +45,11 @@ class AndroidUIControllerDelegate : public DownloadUIController::Delegate {
 
  private:
   // DownloadUIController::Delegate
-  void OnNewDownloadReady(content::DownloadItem* item) override;
+  void OnNewDownloadReady(download::DownloadItem* item) override;
 };
 
 void AndroidUIControllerDelegate::OnNewDownloadReady(
-    content::DownloadItem* item) {
+    download::DownloadItem* item) {
   DownloadControllerBase::Get()->OnDownloadStarted(item);
 }
 
@@ -64,14 +65,15 @@ class DownloadShelfUIControllerDelegate
 
  private:
   // DownloadUIController::Delegate
-  void OnNewDownloadReady(content::DownloadItem* item) override;
+  void OnNewDownloadReady(download::DownloadItem* item) override;
 
   Profile* profile_;
 };
 
 void DownloadShelfUIControllerDelegate::OnNewDownloadReady(
-    content::DownloadItem* item) {
-  content::WebContents* web_contents = item->GetWebContents();
+    download::DownloadItem* item) {
+  content::WebContents* web_contents =
+      content::DownloadItemUtils::GetWebContents(item);
   // For the case of DevTools web contents, we'd like to use target browser
   // shelf although saving from the DevTools web contents.
   if (web_contents && DevToolsWindow::IsDevToolsWindow(web_contents)) {
@@ -130,14 +132,14 @@ DownloadUIController::~DownloadUIController() {
 }
 
 void DownloadUIController::OnDownloadCreated(content::DownloadManager* manager,
-                                             content::DownloadItem* item) {
+                                             download::DownloadItem* item) {
   // SavePackage downloads are created in a state where they can be shown in the
   // browser. Call OnDownloadUpdated() once to notify the UI immediately.
   OnDownloadUpdated(manager, item);
 }
 
 void DownloadUIController::OnDownloadUpdated(content::DownloadManager* manager,
-                                             content::DownloadItem* item) {
+                                             download::DownloadItem* item) {
   DownloadItemModel item_model(item);
 
   // Ignore if we've already notified the UI about |item| or if it isn't a new
@@ -147,11 +149,12 @@ void DownloadUIController::OnDownloadUpdated(content::DownloadManager* manager,
 
   // Wait until the target path is determined or the download is canceled.
   if (item->GetTargetFilePath().empty() &&
-      item->GetState() != content::DownloadItem::CANCELLED)
+      item->GetState() != download::DownloadItem::CANCELLED)
     return;
 
 #if !defined(OS_ANDROID)
-  content::WebContents* web_contents = item->GetWebContents();
+  content::WebContents* web_contents =
+      content::DownloadItemUtils::GetWebContents(item);
   if (web_contents) {
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
     // If the download occurs in a new tab, and it's not a save page
@@ -169,7 +172,7 @@ void DownloadUIController::OnDownloadUpdated(content::DownloadManager* manager,
   }
 #endif
 
-  if (item->GetState() == content::DownloadItem::CANCELLED)
+  if (item->GetState() == download::DownloadItem::CANCELLED)
     return;
 
   DownloadItemModel(item).SetWasUINotified(true);

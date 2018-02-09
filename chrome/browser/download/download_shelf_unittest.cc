@@ -12,6 +12,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/test_download_shelf.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
@@ -24,7 +25,7 @@ using ::testing::Return;
 using ::testing::ReturnRefOfCopy;
 using ::testing::SaveArg;
 using ::testing::_;
-using content::DownloadItem;
+using download::DownloadItem;
 
 namespace {
 
@@ -74,8 +75,8 @@ DownloadShelfTest::DownloadShelfTest() : profile_(new TestingProfile()) {
   ON_CALL(*download_item_, IsTemporary()).WillByDefault(Return(false));
   ON_CALL(*download_item_, ShouldOpenFileBasedOnExtension())
       .WillByDefault(Return(false));
-  ON_CALL(*download_item_, GetBrowserContext())
-      .WillByDefault(Return(profile()));
+  content::DownloadItemUtils::AttachInfo(download_item_.get(), profile(),
+                                         nullptr);
 
   download_manager_.reset(
       new ::testing::NiceMock<content::MockDownloadManager>());

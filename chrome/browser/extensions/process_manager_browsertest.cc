@@ -890,7 +890,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
     EXPECT_TRUE(ExecuteScript(popup, script));
     observer.WaitForFinished();
     EXPECT_EQ(
-        1u, observer.NumDownloadsSeenInState(content::DownloadItem::COMPLETE));
+        1u, observer.NumDownloadsSeenInState(download::DownloadItem::COMPLETE));
 
     // This is a top-level navigation that should have resulted in a download.
     // Ensure that the popup stayed at its original location.

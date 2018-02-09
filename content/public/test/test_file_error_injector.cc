@@ -44,7 +44,7 @@ class DownloadFileWithError: public DownloadFileImpl {
 
   void Initialize(const InitializeCallback& initialize_callback,
                   const CancelRequestCallback& cancel_request_callback,
-                  const DownloadItem::ReceivedSlices& received_slices,
+                  const download::DownloadItem::ReceivedSlices& received_slices,
                   bool is_parallelizable) override;
 
   // DownloadFile interface.
@@ -125,7 +125,7 @@ DownloadFileWithError::DownloadFileWithError(
       destruction_callback_(dtor_callback) {
   // DownloadFiles are created on the UI thread and are destroyed on the
   // download task runner. Schedule the ConstructionCallback on the
-  // download task runner, so that if a DownloadItem schedules a
+  // download task runner, so that if a download::DownloadItem schedules a
   // DownloadFile to be destroyed and creates another one (as happens during
   // download resumption), then the DestructionCallback for the old DownloadFile
   // is run before the ConstructionCallback for the next DownloadFile.
@@ -140,7 +140,7 @@ DownloadFileWithError::~DownloadFileWithError() {
 void DownloadFileWithError::Initialize(
     const InitializeCallback& initialize_callback,
     const CancelRequestCallback& cancel_request_callback,
-    const DownloadItem::ReceivedSlices& received_slices,
+    const download::DownloadItem::ReceivedSlices& received_slices,
     bool is_parallelizable) {
   download::DownloadInterruptReason error_to_return =
       download::DOWNLOAD_INTERRUPT_REASON_NONE;

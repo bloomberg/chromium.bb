@@ -23,17 +23,13 @@ class MockNotifierObserver : public AllDownloadItemNotifier::Observer {
   virtual ~MockNotifierObserver() {}
 
   MOCK_METHOD2(OnDownloadCreated,
-               void(content::DownloadManager* manager,
-                    content::DownloadItem* item));
+               void(content::DownloadManager* manager, DownloadItem* item));
   MOCK_METHOD2(OnDownloadUpdated,
-               void(content::DownloadManager* manager,
-                    content::DownloadItem* item));
+               void(content::DownloadManager* manager, DownloadItem* item));
   MOCK_METHOD2(OnDownloadOpened,
-               void(content::DownloadManager* manager,
-                    content::DownloadItem* item));
+               void(content::DownloadManager* manager, DownloadItem* item));
   MOCK_METHOD2(OnDownloadRemoved,
-               void(content::DownloadManager* manager,
-                    content::DownloadItem* item));
+               void(content::DownloadManager* manager, DownloadItem* item));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockNotifierObserver);
@@ -50,7 +46,7 @@ class AllDownloadItemNotifierTest : public testing::Test {
 
   content::MockDownloadItem& item() { return item_; }
 
-  content::DownloadItem::Observer* NotifierAsItemObserver() const {
+  DownloadItem::Observer* NotifierAsItemObserver() const {
     return notifier_.get();
   }
 

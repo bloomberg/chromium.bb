@@ -25,7 +25,7 @@ class DownloadShelfMac : public DownloadShelf {
   Browser* browser() const override;
 
  protected:
-  void DoAddDownload(content::DownloadItem* download) override;
+  void DoAddDownload(download::DownloadItem* download) override;
   void DoOpen() override;
   void DoClose(CloseReason reason) override;
   void DoHide() override;

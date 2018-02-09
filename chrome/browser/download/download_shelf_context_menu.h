@@ -12,7 +12,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_commands.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "ui/base/models/simple_menu_model.h"
 
 // This class is responsible for the download shelf context menu. Platform
@@ -21,14 +21,14 @@
 // The DownloadItem corresponding to the context menu is observed for removal or
 // destruction.
 class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
-                                 public content::DownloadItem::Observer {
+                                 public download::DownloadItem::Observer {
  public:
   ~DownloadShelfContextMenu() override;
 
-  content::DownloadItem* download_item() const { return download_item_; }
+  download::DownloadItem* download_item() const { return download_item_; }
 
  protected:
-  explicit DownloadShelfContextMenu(content::DownloadItem* download_item);
+  explicit DownloadShelfContextMenu(download::DownloadItem* download_item);
 
   // Returns the correct menu model depending on the state of the download item.
   // Returns NULL if the download was destroyed.
@@ -47,8 +47,8 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   // destroyed or when this object is being destroyed.
   void DetachFromDownloadItem();
 
-  // content::DownloadItem::Observer
-  void OnDownloadDestroyed(content::DownloadItem* download) override;
+  // download::DownloadItem::Observer
+  void OnDownloadDestroyed(download::DownloadItem* download) override;
 
   ui::SimpleMenuModel* GetInProgressMenuModel();
   ui::SimpleMenuModel* GetInProgressPausedMenuModel();
@@ -67,7 +67,7 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   std::unique_ptr<ui::SimpleMenuModel> malicious_download_menu_model_;
 
   // Information source.
-  content::DownloadItem* download_item_;
+  download::DownloadItem* download_item_;
   std::unique_ptr<DownloadCommands> download_commands_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadShelfContextMenu);

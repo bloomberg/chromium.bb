@@ -15,10 +15,10 @@
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "components/download/public/common/download_item.h"
 #include "content/browser/background_fetch/background_fetch_constants.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/browser/download_item.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -97,7 +97,8 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
 
   // ---- Data associated with the in-progress download ------------------------
   std::string download_guid_;
-  DownloadItem::DownloadState download_state_ = DownloadItem::IN_PROGRESS;
+  download::DownloadItem::DownloadState download_state_ =
+      download::DownloadItem::IN_PROGRESS;
 
   int response_code_ = 0;
   std::string response_text_;

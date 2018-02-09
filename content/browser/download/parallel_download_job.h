@@ -71,7 +71,8 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl,
 
   // Build one http request for each slice from the second slice.
   // The first slice represents the original request.
-  void ForkSubRequests(const DownloadItem::ReceivedSlices& slices_to_download);
+  void ForkSubRequests(
+      const download::DownloadItem::ReceivedSlices& slices_to_download);
 
   // Create one range request, virtual for testing. Range request will start
   // from |offset| to |length|. Range request will be half open, e.g.
@@ -84,7 +85,7 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl,
   // A snapshot of received slices when creating the parallel download job.
   // Download item's received slices may be different from this snapshot when
   // |BuildParallelRequests| is called.
-  DownloadItem::ReceivedSlices initial_received_slices_;
+  download::DownloadItem::ReceivedSlices initial_received_slices_;
 
   // The length of the response body of the original request.
   // Used to estimate the remaining size of the content when the initial

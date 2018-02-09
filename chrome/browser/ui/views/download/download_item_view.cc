@@ -43,6 +43,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/vector_icons/vector_icons.h"
+#include "content/public/browser/download_item_utils.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -70,7 +71,7 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
-using content::DownloadItem;
+using download::DownloadItem;
 using extensions::ExperienceSamplingEvent;
 
 namespace {
@@ -974,7 +975,7 @@ void DownloadItemView::ShowWarningDialog() {
                                : ExperienceSamplingEvent::kDangerousDownload;
   sampling_event_.reset(new ExperienceSamplingEvent(
       event_name, download()->GetURL(), download()->GetReferrerUrl(),
-      download()->GetBrowserContext()));
+      content::DownloadItemUtils::GetBrowserContext(download())));
 
   dropdown_state_ = NORMAL;
   if (mode_ == DANGEROUS_MODE) {

@@ -28,11 +28,12 @@ class MockDownloadFile : public DownloadFile {
   virtual ~MockDownloadFile();
 
   // DownloadFile functions.
-  MOCK_METHOD4(Initialize,
-               void(const InitializeCallback&,
-                    const CancelRequestCallback&,
-                    const DownloadItem::ReceivedSlices& received_slices,
-                    bool is_parallelizable));
+  MOCK_METHOD4(
+      Initialize,
+      void(const InitializeCallback&,
+           const CancelRequestCallback&,
+           const download::DownloadItem::ReceivedSlices& received_slices,
+           bool is_parallelizable));
   void AddInputStream(
       std::unique_ptr<DownloadManager::InputStream> input_stream,
       int64_t offset,

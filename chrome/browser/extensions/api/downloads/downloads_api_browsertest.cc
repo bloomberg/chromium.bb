@@ -37,10 +37,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/download/public/common/download_item.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -69,7 +69,7 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
-using content::DownloadItem;
+using download::DownloadItem;
 using content::DownloadManager;
 
 namespace errors = download_extension_errors;
@@ -427,7 +427,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
     url_chain.push_back(GURL());
     for (size_t i = 0; i < count; ++i) {
       DownloadItem* item = GetOnRecordManager()->CreateDownloadItem(
-          base::GenerateGUID(), content::DownloadItem::kInvalidId + 1 + i,
+          base::GenerateGUID(), download::DownloadItem::kInvalidId + 1 + i,
           downloads_directory().Append(history_info[i].filename),
           downloads_directory().Append(history_info[i].filename), url_chain,
           GURL(), GURL(), GURL(), GURL(), std::string(),
@@ -441,7 +441,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
           std::string(),          // hash
           history_info[i].state,  // state
           history_info[i].danger_type,
-          (history_info[i].state != content::DownloadItem::CANCELLED
+          (history_info[i].state != download::DownloadItem::CANCELLED
                ? download::DOWNLOAD_INTERRUPT_REASON_NONE
                : download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED),
           false,    // opened

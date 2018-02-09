@@ -45,7 +45,7 @@ TEST_VIEW(MDDownloadItemViewTest, view_)
 // prod for crashes. It isn't intended to cover every possible state.
 TEST_F(MDDownloadItemViewTest, TestStates) {
   ON_CALL(item_, GetState())
-      .WillByDefault(testing::Return(content::DownloadItem::IN_PROGRESS));
+      .WillByDefault(testing::Return(download::DownloadItem::IN_PROGRESS));
   set_state_and_display();
 
   ON_CALL(item_, GetDangerType())
@@ -58,7 +58,7 @@ TEST_F(MDDownloadItemViewTest, TestStates) {
   set_state_and_display();
 
   ON_CALL(item_, GetState())
-      .WillByDefault(testing::Return(content::DownloadItem::COMPLETE));
+      .WillByDefault(testing::Return(download::DownloadItem::COMPLETE));
   set_state_and_display();
 }
 

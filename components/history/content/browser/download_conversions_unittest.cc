@@ -20,7 +20,7 @@ TEST(DownloadConversionsTest, ToContentReceivedSlices) {
   DownloadId id = 1;
   info.emplace_back(id, offset1, received1);
   info.emplace_back(id, offset2, received2);
-  std::vector<content::DownloadItem::ReceivedSlice> received_slices =
+  std::vector<download::DownloadItem::ReceivedSlice> received_slices =
       ToContentReceivedSlices(info);
   EXPECT_EQ(2u, received_slices.size());
   EXPECT_EQ(offset1, received_slices[0].offset);

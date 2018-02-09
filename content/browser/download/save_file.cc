@@ -5,8 +5,8 @@
 #include "content/browser/download/save_file.h"
 
 #include "base/logging.h"
+#include "components/download/public/common/download_item.h"
 #include "content/browser/download/download_task_runner.h"
-#include "content/public/browser/download_item.h"
 
 namespace content {
 
@@ -15,7 +15,7 @@ namespace content {
 //               Unfortunately, as it is, constructors of SaveFile don't always
 //               have access to the SavePackage at this point.
 SaveFile::SaveFile(const SaveFileCreateInfo* info, bool calculate_hash)
-    : file_(DownloadItem::kInvalidId), info_(info) {
+    : file_(download::DownloadItem::kInvalidId), info_(info) {
   DCHECK(GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
 
   DCHECK(info);

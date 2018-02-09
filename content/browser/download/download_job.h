@@ -33,7 +33,7 @@ class CONTENT_EXPORT DownloadJob {
   // DownloadJob owns download file.
   void Start(DownloadFile* download_file_,
              const DownloadFile::InitializeCallback& callback,
-             const DownloadItem::ReceivedSlices& received_slices);
+             const download::DownloadItem::ReceivedSlices& received_slices);
   virtual void Cancel(bool user_cancel);
   virtual void Pause();
   virtual void Resume(bool resume_request);

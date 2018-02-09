@@ -24,8 +24,11 @@ class DownloadShelf;
 @class HoverButton;
 
 namespace content {
-class DownloadItem;
 class PageNavigator;
+}
+
+namespace download {
+class DownloadItem;
 }
 
 // A controller class that manages the download shelf for one window. It is
@@ -116,7 +119,7 @@ class PageNavigator;
 
 // Add a new download item to the leftmost position of the download shelf. The
 // item should not have been already added to this shelf.
-- (void)addDownloadItem:(content::DownloadItem*)downloadItem;
+- (void)addDownloadItem:(download::DownloadItem*)downloadItem;
 
 // Similar to addDownloadItem above, but adds a DownloadItemController.
 - (void)add:(DownloadItemController*)download;

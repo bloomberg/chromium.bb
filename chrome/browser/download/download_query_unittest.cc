@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/test/mock_download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,7 +30,7 @@ using ::testing::ReturnRef;
 using ::testing::_;
 using base::Time;
 using base::Value;
-using content::DownloadItem;
+using download::DownloadItem;
 typedef DownloadQuery::DownloadVector DownloadVector;
 
 namespace {
@@ -67,6 +68,7 @@ class DownloadQueryTest : public testing::Test {
       mocks_.push_back(owned_mocks_.back().get());
       EXPECT_CALL(mock(mocks_.size() - 1), GetId()).WillRepeatedly(Return(
           mocks_.size() - 1));
+      content::DownloadItemUtils::AttachInfo(mocks_.back(), nullptr, nullptr);
     }
   }
 
@@ -196,10 +198,6 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_Limit) {
 
 TEST_F(DownloadQueryTest, DownloadQueryTest_FilterGenericQueryFilename) {
   CreateMocks(2);
-  EXPECT_CALL(mock(0), GetBrowserContext()).WillRepeatedly(Return(
-      static_cast<content::BrowserContext*>(NULL)));
-  EXPECT_CALL(mock(1), GetBrowserContext()).WillRepeatedly(Return(
-      static_cast<content::BrowserContext*>(NULL)));
   base::FilePath match_filename(FILE_PATH_LITERAL("query"));
   EXPECT_CALL(mock(0), GetTargetFilePath()).WillRepeatedly(ReturnRef(
       match_filename));
@@ -219,10 +217,6 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_FilterGenericQueryFilename) {
 
 TEST_F(DownloadQueryTest, DownloadQueryTest_FilterGenericQueryOriginalUrl) {
   CreateMocks(2);
-  EXPECT_CALL(mock(0), GetBrowserContext()).WillRepeatedly(Return(
-      static_cast<content::BrowserContext*>(NULL)));
-  EXPECT_CALL(mock(1), GetBrowserContext()).WillRepeatedly(Return(
-      static_cast<content::BrowserContext*>(NULL)));
   base::FilePath fail_filename(FILE_PATH_LITERAL("fail"));
   EXPECT_CALL(mock(0), GetTargetFilePath()).WillRepeatedly(ReturnRef(
       fail_filename));
@@ -243,10 +237,6 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_FilterGenericQueryOriginalUrl) {
 TEST_F(DownloadQueryTest,
        DownloadQueryTest_FilterGenericQueryOriginalUrlUnescaping) {
   CreateMocks(2);
-  EXPECT_CALL(mock(0), GetBrowserContext()).WillRepeatedly(Return(
-      static_cast<content::BrowserContext*>(NULL)));
-  EXPECT_CALL(mock(1), GetBrowserContext()).WillRepeatedly(Return(
-      static_cast<content::BrowserContext*>(NULL)));
   base::FilePath fail_filename(FILE_PATH_LITERAL("fail"));
   EXPECT_CALL(mock(0), GetTargetFilePath()).WillRepeatedly(ReturnRef(
       fail_filename));
@@ -266,10 +256,6 @@ TEST_F(DownloadQueryTest,
 
 TEST_F(DownloadQueryTest, DownloadQueryTest_FilterGenericQueryUrl) {
   CreateMocks(2);
-  EXPECT_CALL(mock(0), GetBrowserContext()).WillRepeatedly(Return(
-      static_cast<content::BrowserContext*>(NULL)));
-  EXPECT_CALL(mock(1), GetBrowserContext()).WillRepeatedly(Return(
-      static_cast<content::BrowserContext*>(NULL)));
   base::FilePath fail_filename(FILE_PATH_LITERAL("fail"));
   EXPECT_CALL(mock(0), GetTargetFilePath()).WillRepeatedly(ReturnRef(
       fail_filename));
@@ -289,10 +275,6 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_FilterGenericQueryUrl) {
 
 TEST_F(DownloadQueryTest, DownloadQueryTest_FilterGenericQueryUrlUnescaping) {
   CreateMocks(2);
-  EXPECT_CALL(mock(0), GetBrowserContext()).WillRepeatedly(Return(
-      static_cast<content::BrowserContext*>(NULL)));
-  EXPECT_CALL(mock(1), GetBrowserContext()).WillRepeatedly(Return(
-      static_cast<content::BrowserContext*>(NULL)));
   base::FilePath fail_filename(FILE_PATH_LITERAL("fail"));
   EXPECT_CALL(mock(0), GetTargetFilePath()).WillRepeatedly(ReturnRef(
       fail_filename));
@@ -312,10 +294,6 @@ TEST_F(DownloadQueryTest, DownloadQueryTest_FilterGenericQueryUrlUnescaping) {
 
 TEST_F(DownloadQueryTest, DownloadQueryTest_FilterGenericQueryFilenameI18N) {
   CreateMocks(2);
-  EXPECT_CALL(mock(0), GetBrowserContext()).WillRepeatedly(Return(
-      static_cast<content::BrowserContext*>(NULL)));
-  EXPECT_CALL(mock(1), GetBrowserContext()).WillRepeatedly(Return(
-      static_cast<content::BrowserContext*>(NULL)));
   const base::FilePath::StringType kTestString(
 #if defined(OS_POSIX)
       "/\xe4\xbd\xa0\xe5\xa5\xbd\xe4\xbd\xa0\xe5\xa5\xbd"

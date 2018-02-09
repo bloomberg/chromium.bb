@@ -22,8 +22,11 @@ class DownloadShelfContextMenuMac;
 @class GTMWidthBasedTweaker;
 
 namespace content {
-class DownloadItem;
 class PageNavigator;
+}
+
+namespace download {
+class DownloadItem;
 }
 
 namespace extensions {
@@ -120,7 +123,7 @@ class MenuModel;
 @property(nonatomic, assign) DownloadShelfController* shelf;
 
 // Initialize controller for |downloadItem|.
-- (id)initWithDownload:(content::DownloadItem*)downloadItem
+- (id)initWithDownload:(download::DownloadItem*)downloadItem
              navigator:(content::PageNavigator*)navigator;
 
 // Updates the UI and menu state from |downloadModel|.
@@ -146,7 +149,7 @@ class MenuModel;
 - (NSSize)preferredSize;
 
 // Returns the DownloadItem model object belonging to this item.
-- (content::DownloadItem*)download;
+- (download::DownloadItem*)download;
 
 // Returns the MenuModel for the download item context menu. The returned
 // MenuModel is owned by the DownloadItemController and will be valid until the

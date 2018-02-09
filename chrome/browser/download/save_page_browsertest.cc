@@ -41,11 +41,11 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/download/public/common/download_item.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -65,7 +65,7 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
-using content::DownloadItem;
+using download::DownloadItem;
 using content::DownloadManager;
 using content::RenderFrameHost;
 using content::RenderProcessHost;
@@ -464,7 +464,7 @@ class DelayingDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   ~DelayingDownloadManagerDelegate() override {}
 
   bool ShouldCompleteDownload(
-      content::DownloadItem* item,
+      download::DownloadItem* item,
       const base::Closure& user_complete_callback) override {
     return false;
   }
@@ -484,7 +484,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveHTMLOnlyTabDestroy) {
   std::unique_ptr<DelayingDownloadManagerDelegate> delaying_delegate(
       new DelayingDownloadManagerDelegate(browser()->profile()));
   delaying_delegate->GetDownloadIdReceiverCallback().Run(
-      content::DownloadItem::kInvalidId + 1);
+      download::DownloadItem::kInvalidId + 1);
   DownloadCoreServiceFactory::GetForBrowserContext(browser()->profile())
       ->SetDownloadManagerDelegateForTesting(std::move(delaying_delegate));
   DownloadManager* manager = GetDownloadManager();
@@ -791,7 +791,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveDownloadableIFrame) {
 
     ASSERT_TRUE(VerifySavePackageExpectations(browser(), download_url));
     persisted.WaitForPersisted();
-    std::vector<content::DownloadItem*> downloads;
+    std::vector<download::DownloadItem*> downloads;
     GetDownloadManager()->GetAllDownloads(&downloads);
     for (auto* download : downloads)
       download->Remove();

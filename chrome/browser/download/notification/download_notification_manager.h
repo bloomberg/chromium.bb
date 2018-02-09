@@ -11,7 +11,7 @@
 #include "chrome/browser/download/download_ui_controller.h"
 #include "chrome/browser/download/notification/download_item_notification.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 
 class DownloadNotificationManagerForProfile;
 
@@ -22,7 +22,7 @@ class DownloadNotificationManager : public DownloadUIController::Delegate {
 
   void OnAllDownloadsRemoving(Profile* profile);
   // DownloadUIController::Delegate:
-  void OnNewDownloadReady(content::DownloadItem* item) override;
+  void OnNewDownloadReady(download::DownloadItem* item) override;
 
   DownloadNotificationManagerForProfile* GetForProfile(Profile* profile) const;
 
@@ -35,19 +35,19 @@ class DownloadNotificationManager : public DownloadUIController::Delegate {
 };
 
 class DownloadNotificationManagerForProfile
-    : public content::DownloadItem::Observer {
+    : public download::DownloadItem::Observer {
  public:
   DownloadNotificationManagerForProfile(
       Profile* profile, DownloadNotificationManager* parent_manager);
   ~DownloadNotificationManagerForProfile() override;
 
   // DownloadItem::Observer overrides:
-  void OnDownloadUpdated(content::DownloadItem* download) override;
-  void OnDownloadOpened(content::DownloadItem* download) override;
-  void OnDownloadRemoved(content::DownloadItem* download) override;
-  void OnDownloadDestroyed(content::DownloadItem* download) override;
+  void OnDownloadUpdated(download::DownloadItem* download) override;
+  void OnDownloadOpened(download::DownloadItem* download) override;
+  void OnDownloadRemoved(download::DownloadItem* download) override;
+  void OnDownloadDestroyed(download::DownloadItem* download) override;
 
-  void OnNewDownloadReady(content::DownloadItem* item);
+  void OnNewDownloadReady(download::DownloadItem* item);
 
   DownloadItemNotification* GetNotificationItemByGuid(const std::string& guid);
 
@@ -56,8 +56,8 @@ class DownloadNotificationManagerForProfile
 
   Profile* profile_ = nullptr;
   DownloadNotificationManager* parent_manager_;  // weak
-  std::set<content::DownloadItem*> downloading_items_;
-  std::map<content::DownloadItem*, std::unique_ptr<DownloadItemNotification>>
+  std::set<download::DownloadItem*> downloading_items_;
+  std::map<download::DownloadItem*, std::unique_ptr<DownloadItemNotification>>
       items_;
 };
 

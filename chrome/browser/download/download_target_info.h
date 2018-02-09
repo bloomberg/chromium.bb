@@ -11,7 +11,7 @@
 #include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 
 struct DownloadTargetInfo {
   DownloadTargetInfo();
@@ -27,7 +27,7 @@ struct DownloadTargetInfo {
   // it will be TARGET_DISPOSITION_OVERWRITE.
   // TODO(asanka): This should be has_user_confirmation or somesuch that
   // indicates that the user has seen and confirmed the download path.
-  content::DownloadItem::TargetDisposition target_disposition;
+  download::DownloadItem::TargetDisposition target_disposition;
 
   // Danger type of the download.
   download::DownloadDangerType danger_type;

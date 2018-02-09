@@ -21,19 +21,19 @@ namespace download {
 
 namespace {
 
-// Converts a content::DownloadItem::DownloadState to DriverEntry::State.
+// Converts a DownloadItem::DownloadState to DriverEntry::State.
 DriverEntry::State ToDriverEntryState(
-    content::DownloadItem::DownloadState state) {
+    DownloadItem::DownloadState state) {
   switch (state) {
-    case content::DownloadItem::IN_PROGRESS:
+    case DownloadItem::IN_PROGRESS:
       return DriverEntry::State::IN_PROGRESS;
-    case content::DownloadItem::COMPLETE:
+    case DownloadItem::COMPLETE:
       return DriverEntry::State::COMPLETE;
-    case content::DownloadItem::CANCELLED:
+    case DownloadItem::CANCELLED:
       return DriverEntry::State::CANCELLED;
-    case content::DownloadItem::INTERRUPTED:
+    case DownloadItem::INTERRUPTED:
       return DriverEntry::State::INTERRUPTED;
-    case content::DownloadItem::MAX_DOWNLOAD_STATE:
+    case DownloadItem::MAX_DOWNLOAD_STATE:
       return DriverEntry::State::UNKNOWN;
     default:
       NOTREACHED();
@@ -44,17 +44,17 @@ DriverEntry::State ToDriverEntryState(
 FailureType FailureTypeFromInterruptReason(
     download::DownloadInterruptReason reason) {
   switch (reason) {
-    case download::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
-    case download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE:
-    case download::DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG:
-    case download::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE:
-    case download::DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED:
-    case download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED:
-    case download::DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED:
-    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED:
-    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM:
-    case download::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN:
-    case download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED:
+    case DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
+    case DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE:
+    case DOWNLOAD_INTERRUPT_REASON_FILE_NAME_TOO_LONG:
+    case DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE:
+    case DOWNLOAD_INTERRUPT_REASON_FILE_VIRUS_INFECTED:
+    case DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED:
+    case DOWNLOAD_INTERRUPT_REASON_FILE_SECURITY_CHECK_FAILED:
+    case DOWNLOAD_INTERRUPT_REASON_SERVER_UNAUTHORIZED:
+    case DOWNLOAD_INTERRUPT_REASON_SERVER_CERT_PROBLEM:
+    case DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN:
+    case DOWNLOAD_INTERRUPT_REASON_USER_CANCELED:
       return FailureType::NOT_RECOVERABLE;
     default:
       return FailureType::RECOVERABLE;
@@ -70,7 +70,7 @@ void LogDownloadInterruptReason(download::DownloadInterruptReason reason) {
 
 // static
 DriverEntry DownloadDriverImpl::CreateDriverEntry(
-    const content::DownloadItem* item) {
+    const DownloadItem* item) {
   DCHECK(item);
   DriverEntry entry;
   entry.guid = item->GetGuid();
@@ -80,7 +80,7 @@ DriverEntry DownloadDriverImpl::CreateDriverEntry(
   entry.bytes_downloaded = item->GetReceivedBytes();
   entry.expected_total_size = item->GetTotalBytes();
   entry.current_file_path =
-      item->GetState() == content::DownloadItem::DownloadState::COMPLETE
+      item->GetState() == DownloadItem::DownloadState::COMPLETE
           ? item->GetTargetFilePath()
           : item->GetFullPath();
   entry.completion_time = item->GetEndTime();
@@ -186,7 +186,7 @@ void DownloadDriverImpl::Remove(const std::string& guid) {
 void DownloadDriverImpl::DoRemoveDownload(const std::string& guid) {
   if (!download_manager_)
     return;
-  content::DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
+  DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
   // Cancels the download and removes the persisted records in content layer.
   if (item) {
     item->Remove();
@@ -196,7 +196,7 @@ void DownloadDriverImpl::DoRemoveDownload(const std::string& guid) {
 void DownloadDriverImpl::Pause(const std::string& guid) {
   if (!download_manager_)
     return;
-  content::DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
+  DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
   if (item)
     item->Pause();
 }
@@ -204,7 +204,7 @@ void DownloadDriverImpl::Pause(const std::string& guid) {
 void DownloadDriverImpl::Resume(const std::string& guid) {
   if (!download_manager_)
     return;
-  content::DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
+  DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
   if (item)
     item->Resume();
 }
@@ -212,7 +212,7 @@ void DownloadDriverImpl::Resume(const std::string& guid) {
 base::Optional<DriverEntry> DownloadDriverImpl::Find(const std::string& guid) {
   if (!download_manager_)
     return base::nullopt;
-  content::DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
+  DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
   if (item)
     return CreateDriverEntry(item);
   return base::nullopt;
@@ -223,7 +223,7 @@ std::set<std::string> DownloadDriverImpl::GetActiveDownloads() {
   if (!download_manager_)
     return guids;
 
-  std::vector<content::DownloadItem*> items;
+  std::vector<DownloadItem*> items;
   download_manager_->GetAllDownloads(&items);
 
   for (auto* item : items) {
@@ -241,13 +241,13 @@ size_t DownloadDriverImpl::EstimateMemoryUsage() const {
 }
 
 void DownloadDriverImpl::OnDownloadUpdated(content::DownloadManager* manager,
-                                           content::DownloadItem* item) {
+                                           DownloadItem* item) {
   DCHECK(client_);
   // Blocks the observer call if we asked to remove the download.
   if (guid_to_remove_.find(item->GetGuid()) != guid_to_remove_.end())
     return;
 
-  using DownloadState = content::DownloadItem::DownloadState;
+  using DownloadState = DownloadItem::DownloadState;
   DownloadState state = item->GetState();
   download::DownloadInterruptReason reason = item->GetLastReason();
   DriverEntry entry = CreateDriverEntry(item);
@@ -256,7 +256,7 @@ void DownloadDriverImpl::OnDownloadUpdated(content::DownloadManager* manager,
     client_->OnDownloadSucceeded(entry);
   } else if (state == DownloadState::IN_PROGRESS) {
     client_->OnDownloadUpdated(entry);
-  } else if (reason != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
+  } else if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
     if (client_->IsTrackingDownload(item->GetGuid()))
       LogDownloadInterruptReason(reason);
     client_->OnDownloadFailed(entry, FailureTypeFromInterruptReason(reason));
@@ -264,13 +264,13 @@ void DownloadDriverImpl::OnDownloadUpdated(content::DownloadManager* manager,
 }
 
 void DownloadDriverImpl::OnDownloadRemoved(content::DownloadManager* manager,
-                                           content::DownloadItem* download) {
+                                           DownloadItem* download) {
   guid_to_remove_.erase(download->GetGuid());
   // |download| is about to be deleted.
 }
 
 void DownloadDriverImpl::OnDownloadCreated(content::DownloadManager* manager,
-                                           content::DownloadItem* item) {
+                                           DownloadItem* item) {
   if (guid_to_remove_.find(item->GetGuid()) != guid_to_remove_.end()) {
     // Client has removed the download before content persistence layer created
     // the record, remove the download immediately.

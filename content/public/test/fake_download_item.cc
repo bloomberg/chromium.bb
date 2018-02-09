@@ -124,7 +124,7 @@ void FakeDownloadItem::SetState(const DownloadState& state) {
   download_state_ = state;
 }
 
-DownloadItem::DownloadState FakeDownloadItem::GetState() const {
+download::DownloadItem::DownloadState FakeDownloadItem::GetState() const {
   return download_state_;
 }
 
@@ -326,7 +326,8 @@ base::FilePath FakeDownloadItem::GetFileNameToReportUser() const {
   return base::FilePath();
 }
 
-DownloadItem::TargetDisposition FakeDownloadItem::GetTargetDisposition() const {
+download::DownloadItem::TargetDisposition
+FakeDownloadItem::GetTargetDisposition() const {
   NOTREACHED();
   return TargetDisposition();
 }
@@ -375,10 +376,10 @@ int64_t FakeDownloadItem::GetTotalBytes() const {
   return total_bytes_;
 }
 
-const std::vector<DownloadItem::ReceivedSlice>&
+const std::vector<download::DownloadItem::ReceivedSlice>&
 FakeDownloadItem::GetReceivedSlices() const {
   NOTREACHED();
-  static const std::vector<DownloadItem::ReceivedSlice> slices;
+  static const std::vector<download::DownloadItem::ReceivedSlice> slices;
   return slices;
 }
 
@@ -410,16 +411,6 @@ bool FakeDownloadItem::GetAutoOpened() {
 bool FakeDownloadItem::GetOpened() const {
   NOTREACHED();
   return false;
-}
-
-BrowserContext* FakeDownloadItem::GetBrowserContext() const {
-  NOTREACHED();
-  return nullptr;
-}
-
-WebContents* FakeDownloadItem::GetWebContents() const {
-  NOTREACHED();
-  return nullptr;
 }
 
 void FakeDownloadItem::OnContentCheckCompleted(

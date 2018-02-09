@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/test/mock_download_item.h"
@@ -43,7 +43,7 @@ class MockDownloadManagerService : public DownloadManagerService {
   }
 
  protected:
-  content::DownloadItem* GetDownloadByGuid(const std::string&) {
+  download::DownloadItem* GetDownloadByGuid(const std::string&) {
     return download_.get();
   }
 

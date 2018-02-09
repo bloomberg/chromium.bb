@@ -5,13 +5,13 @@
 #include "chrome/browser/download/drag_download_item.h"
 
 #include "chrome/browser/ui/cocoa/download/download_util_mac.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "ui/gfx/image/image.h"
 
-void DragDownloadItem(const content::DownloadItem* download,
+void DragDownloadItem(const download::DownloadItem* download,
                       gfx::Image* icon,
                       gfx::NativeView view) {
-  DCHECK_EQ(content::DownloadItem::COMPLETE, download->GetState());
+  DCHECK_EQ(download::DownloadItem::COMPLETE, download->GetState());
   NSPasteboard* pasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
   download_util::AddFileToPasteboard(pasteboard, download->GetTargetFilePath());
 

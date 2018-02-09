@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -14,8 +14,8 @@
 // Use AddObserver() / RemoveObserver() on the appropriate download object to
 // receive state updates.
 
-#ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_ITEM_H_
-#define CONTENT_PUBLIC_BROWSER_DOWNLOAD_ITEM_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_ITEM_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_ITEM_H_
 
 #include <stdint.h>
 
@@ -29,8 +29,8 @@
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
-#include "content/common/content_export.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -39,27 +39,20 @@ namespace base {
 class FilePath;
 class Time;
 class TimeDelta;
-}
+}  // namespace base
 
 namespace net {
 class HttpResponseHeaders;
 }
 
-namespace content {
-
-class BrowserContext;
-class DownloadManager;
-class WebContents;
+namespace download {
 
 // One DownloadItem per download. This is the model class that stores all the
-// state for a download. Multiple views, such as a tab's download shelf and the
-// Destination tab's download view, may refer to a given DownloadItem.
-//
-// This is intended to be used only on the UI thread.
-class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
+// state for a download.
+class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
  public:
   // A Java counterpart will be generated for this enum.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content_public.browser
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.download
   enum DownloadState {
     // Download is actively progressing.
     IN_PROGRESS = 0,
@@ -100,7 +93,7 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
 
   // Interface that observers of a particular download must implement in order
   // to receive updates to the download's status.
-  class CONTENT_EXPORT Observer {
+  class COMPONENTS_DOWNLOAD_EXPORT Observer {
    public:
     virtual void OnDownloadUpdated(DownloadItem* download) {}
     virtual void OnDownloadOpened(DownloadItem* download) {}
@@ -117,7 +110,7 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // A slice of the target file that has been received so far, used when
   // parallel downloading is enabled. Slices should have different offsets
   // so that they don't overlap.
-  struct CONTENT_EXPORT ReceivedSlice {
+  struct COMPONENTS_DOWNLOAD_EXPORT ReceivedSlice {
     ReceivedSlice(int64_t offset, int64_t received_bytes)
         : offset(offset), received_bytes(received_bytes) {}
 
@@ -203,7 +196,7 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // |DOWNLOAD_INTERRUPT_REASON_NONE| if there is no previous interrupt reason.
   // Interrupted downloads and resumed downloads return the last known interrupt
   // reason.
-  virtual download::DownloadInterruptReason GetLastReason() const = 0;
+  virtual DownloadInterruptReason GetLastReason() const = 0;
 
   // The download is currently paused. Calling Resume() will transition out of
   // this paused state.
@@ -354,7 +347,7 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   virtual bool IsDangerous() const = 0;
 
   // Why |safety_state_| is not SAFE.
-  virtual download::DownloadDangerType GetDangerType() const = 0;
+  virtual DownloadDangerType GetDangerType() const = 0;
 
   //    Progress State accessors -----------------------------------------------
 
@@ -426,16 +419,6 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // for target file path determination.
   virtual bool IsTransient() const = 0;
 
-  //    Misc State accessors ---------------------------------------------------
-
-  // BrowserContext that indirectly owns this download. Always valid.
-  virtual BrowserContext* GetBrowserContext() const = 0;
-
-  // WebContents associated with the download. Returns nullptr if the
-  // WebContents is unknown or if the download was not performed on behalf of a
-  // renderer.
-  virtual WebContents* GetWebContents() const = 0;
-
   // External state transitions/setters ----------------------------------------
 
   // TODO(rdsmith): These should all be removed; the download item should
@@ -448,9 +431,8 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // TODO(crbug.com/733291): Move DownloadInterruptReason out of here and add a
   // new  Interrupt method instead. Same for other methods supporting
   // interruptions.
-  virtual void OnContentCheckCompleted(
-      download::DownloadDangerType danger_type,
-      download::DownloadInterruptReason reason) = 0;
+  virtual void OnContentCheckCompleted(DownloadDangerType danger_type,
+                                       DownloadInterruptReason reason) = 0;
 
   // Mark the download to be auto-opened when completed.
   virtual void SetOpenWhenComplete(bool open) = 0;
@@ -468,10 +450,9 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
 
   // Debug/testing -------------------------------------------------------------
   virtual std::string DebugString(bool verbose) const = 0;
-  virtual void SimulateErrorForTesting(
-      download::DownloadInterruptReason reason) = 0;
+  virtual void SimulateErrorForTesting(DownloadInterruptReason reason) = 0;
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_PUBLIC_BROWSER_DOWNLOAD_ITEM_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_ITEM_H_

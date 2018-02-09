@@ -11,7 +11,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/icon_manager.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "content/public/browser/download_manager.h"
 
 @class DownloadItemController;
@@ -24,18 +24,18 @@ class Image;
 // model. The owning object (DownloadItemController) must explicitly call
 // |LoadIcon| if it wants to display the icon associated with this download.
 
-class DownloadItemMac : content::DownloadItem::Observer {
+class DownloadItemMac : download::DownloadItem::Observer {
  public:
-  DownloadItemMac(content::DownloadItem* download,
+  DownloadItemMac(download::DownloadItem* download,
                   DownloadItemController* controller);
 
   // Destructor.
   ~DownloadItemMac() override;
 
-  // content::DownloadItem::Observer implementation
-  void OnDownloadUpdated(content::DownloadItem* download) override;
-  void OnDownloadOpened(content::DownloadItem* download) override;
-  void OnDownloadDestroyed(content::DownloadItem* download) override;
+  // download::DownloadItem::Observer implementation
+  void OnDownloadUpdated(download::DownloadItem* download) override;
+  void OnDownloadOpened(download::DownloadItem* download) override;
+  void OnDownloadDestroyed(download::DownloadItem* download) override;
 
   DownloadItemModel* download_model() { return &download_model_; }
 

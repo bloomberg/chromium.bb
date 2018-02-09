@@ -42,7 +42,7 @@ class DownloadSuggestionsProvider
     : public ntp_snippets::ContentSuggestionsProvider,
       public offline_pages::OfflinePageModel::Observer,
       public content::DownloadManager::Observer,
-      public content::DownloadItem::Observer,
+      public download::DownloadItem::Observer,
       public DownloadHistory::Observer {
  public:
   DownloadSuggestionsProvider(
@@ -98,14 +98,14 @@ class DownloadSuggestionsProvider
 
   // content::DownloadManager::Observer implementation.
   void OnDownloadCreated(content::DownloadManager* manager,
-                         content::DownloadItem* item) override;
+                         download::DownloadItem* item) override;
   void ManagerGoingDown(content::DownloadManager* manager) override;
 
-  // content::DownloadItem::Observer implementation.
-  void OnDownloadUpdated(content::DownloadItem* item) override;
-  void OnDownloadOpened(content::DownloadItem* item) override;
-  void OnDownloadRemoved(content::DownloadItem* item) override;
-  void OnDownloadDestroyed(content::DownloadItem* item) override;
+  // download::DownloadItem::Observer implementation.
+  void OnDownloadUpdated(download::DownloadItem* item) override;
+  void OnDownloadOpened(download::DownloadItem* item) override;
+  void OnDownloadRemoved(download::DownloadItem* item) override;
+  void OnDownloadDestroyed(download::DownloadItem* item) override;
 
   // DownloadHistory::Observer implementation.
   void OnHistoryQueryComplete() override;
@@ -140,7 +140,7 @@ class DownloadSuggestionsProvider
 
   // Converts DownloadItem to a ContentSuggestion for the |provided_category_|.
   ntp_snippets::ContentSuggestion ConvertDownloadItem(
-      const content::DownloadItem& download_item) const;
+      const download::DownloadItem& download_item) const;
 
   // Returns true if a download published and last visited times are considered
   // too old for the download to be shown.
@@ -156,7 +156,7 @@ class DownloadSuggestionsProvider
   //     then);
   // - the item is not present in the cache yet.
   // Returns |true| if the item has been added.
-  bool CacheAssetDownloadIfNeeded(const content::DownloadItem* item);
+  bool CacheAssetDownloadIfNeeded(const download::DownloadItem* item);
 
   // Removes item corresponding to |suggestion_id| either from offline pages or
   // asset download cache (depends on the |suggestion_id|). Returns |false| if
@@ -230,7 +230,7 @@ class DownloadSuggestionsProvider
   // dismissed and not invalidated). Order is undefined. If the model has less
   // than |kMaxSuggestionsCount| asset downloads, then all of them which satisfy
   // the criteria above are cached, otherwise only |kMaxSuggestionsCount|.
-  std::vector<const content::DownloadItem*> cached_asset_downloads_;
+  std::vector<const download::DownloadItem*> cached_asset_downloads_;
 
   bool is_asset_downloads_initialization_complete_;
 

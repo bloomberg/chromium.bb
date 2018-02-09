@@ -22,15 +22,13 @@ const char* DownloadsCounter::GetPrefName() const {
 void DownloadsCounter::Count() {
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(profile_);
-  std::vector<content::DownloadItem*> downloads;
+  std::vector<download::DownloadItem*> downloads;
   download_manager->GetAllDownloads(&downloads);
   base::Time begin_time = GetPeriodStart();
 
-  ReportResult(std::count_if(
-      downloads.begin(),
-      downloads.end(),
-      [begin_time](const content::DownloadItem* item) {
-        return item->GetStartTime() >= begin_time &&
-            DownloadHistory::IsPersisted(item);
-      }));
+  ReportResult(std::count_if(downloads.begin(), downloads.end(),
+                             [begin_time](const download::DownloadItem* item) {
+                               return item->GetStartTime() >= begin_time &&
+                                      DownloadHistory::IsPersisted(item);
+                             }));
 }

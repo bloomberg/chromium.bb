@@ -29,6 +29,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_item_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/features/features.h"
 #include "net/base/filename_util.h"
@@ -53,7 +54,7 @@
 #endif
 
 using content::BrowserThread;
-using content::DownloadItem;
+using download::DownloadItem;
 using safe_browsing::DownloadFileType;
 
 namespace {
@@ -851,8 +852,9 @@ void DownloadTargetDeterminer::ScheduleCallbackAndDeleteSelf(
 }
 
 Profile* DownloadTargetDeterminer::GetProfile() const {
-  DCHECK(download_->GetBrowserContext());
-  return Profile::FromBrowserContext(download_->GetBrowserContext());
+  DCHECK(content::DownloadItemUtils::GetBrowserContext(download_));
+  return Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(download_));
 }
 
 DownloadConfirmationReason DownloadTargetDeterminer::NeedsConfirmation(
@@ -988,7 +990,7 @@ void DownloadTargetDeterminer::OnDownloadDestroyed(
 
 // static
 void DownloadTargetDeterminer::Start(
-    content::DownloadItem* download,
+    download::DownloadItem* download,
     const base::FilePath& initial_virtual_path,
     DownloadPathReservationTracker::FilenameConflictAction conflict_action,
     DownloadPrefs* download_prefs,

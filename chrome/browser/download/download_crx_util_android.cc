@@ -8,14 +8,14 @@
 
 namespace download_crx_util {
 
-bool IsExtensionDownload(const content::DownloadItem& download_item) {
+bool IsExtensionDownload(const download::DownloadItem& download_item) {
   // Extensions are not supported on Android. We want to treat them as
   // normal file downloads.
   return false;
 }
 
 bool OffStoreInstallAllowedByPrefs(Profile* profile,
-                                   const content::DownloadItem& item) {
+                                   const download::DownloadItem& item) {
   // Extensions are not supported on Android, return the safe default.
   return false;
 }

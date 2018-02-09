@@ -16,7 +16,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/download/content/public/all_download_item_notifier.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 
 namespace base {
 class DictionaryValue;
@@ -58,35 +58,35 @@ class DownloadsListTracker
 
   // AllDownloadItemNotifier::Observer:
   void OnDownloadCreated(content::DownloadManager* manager,
-                         content::DownloadItem* download_item) override;
+                         download::DownloadItem* download_item) override;
   void OnDownloadUpdated(content::DownloadManager* manager,
-                         content::DownloadItem* download_item) override;
+                         download::DownloadItem* download_item) override;
   void OnDownloadRemoved(content::DownloadManager* manager,
-                         content::DownloadItem* download_item) override;
+                         download::DownloadItem* download_item) override;
 
  protected:
   // Testing constructor.
   DownloadsListTracker(content::DownloadManager* download_manager,
                        content::WebUI* web_ui,
-                       base::Callback<bool(const content::DownloadItem&)>);
+                       base::Callback<bool(const download::DownloadItem&)>);
 
   // Creates a dictionary value that's sent to the page as JSON.
   virtual std::unique_ptr<base::DictionaryValue> CreateDownloadItemValue(
-      content::DownloadItem* item) const;
+      download::DownloadItem* item) const;
 
   // Exposed for testing.
-  bool IsIncognito(const content::DownloadItem& item) const;
+  bool IsIncognito(const download::DownloadItem& item) const;
 
-  const content::DownloadItem* GetItemForTesting(size_t index) const;
+  const download::DownloadItem* GetItemForTesting(size_t index) const;
 
   void SetChunkSizeForTesting(size_t chunk_size);
 
  private:
   struct StartTimeComparator {
-    bool operator() (const content::DownloadItem* a,
-                     const content::DownloadItem* b) const;
+    bool operator()(const download::DownloadItem* a,
+                    const download::DownloadItem* b) const;
   };
-  using SortedSet = std::set<content::DownloadItem*, StartTimeComparator>;
+  using SortedSet = std::set<download::DownloadItem*, StartTimeComparator>;
 
   // Called by both constructors to initialize common state.
   void Init();
@@ -95,7 +95,7 @@ class DownloadsListTracker
   void RebuildSortedItems();
 
   // Whether |item| should show on the current page.
-  bool ShouldShow(const content::DownloadItem& item) const;
+  bool ShouldShow(const download::DownloadItem& item) const;
 
   // Returns the index of |item| in |sorted_items_|.
   size_t GetIndex(const SortedSet::iterator& item) const;
@@ -118,7 +118,7 @@ class DownloadsListTracker
 
   // Callback used to determine if an item should show on the page. Set to
   // |ShouldShow()| in default constructor, passed in while testing.
-  base::Callback<bool(const content::DownloadItem&)> should_show_;
+  base::Callback<bool(const download::DownloadItem&)> should_show_;
 
   // When this is true, all changes to downloads that affect the page are sent
   // via JavaScript.

@@ -28,6 +28,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/render_process_host.h"
@@ -46,7 +47,7 @@ using base::android::ScopedJavaLocalRef;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::ContextMenuParams;
-using content::DownloadItem;
+using download::DownloadItem;
 using content::DownloadManager;
 using content::WebContents;
 
@@ -374,7 +375,8 @@ void DownloadController::OnDownloadStarted(
   if (!download_item->IsDangerous())
     Java_DownloadController_onDownloadStarted(env);
 
-  WebContents* web_contents = download_item->GetWebContents();
+  WebContents* web_contents =
+      content::DownloadItemUtils::GetWebContents(download_item);
   if (web_contents) {
     TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
     if (tab && !tab->GetJavaObject().is_null()) {
@@ -436,10 +438,11 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
 }
 
 void DownloadController::OnDangerousDownload(DownloadItem* item) {
-  WebContents* web_contents = item->GetWebContents();
+  WebContents* web_contents = content::DownloadItemUtils::GetWebContents(item);
   if (!web_contents) {
     auto download_manager_getter = std::make_unique<DownloadManagerGetter>(
-        BrowserContext::GetDownloadManager(item->GetBrowserContext()));
+        BrowserContext::GetDownloadManager(
+            content::DownloadItemUtils::GetBrowserContext(item)));
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&RemoveDownloadItem,
@@ -468,7 +471,7 @@ void DownloadController::StartContextMenuDownload(
 }
 
 bool DownloadController::IsInterruptedDownloadAutoResumable(
-    content::DownloadItem* download_item) {
+    download::DownloadItem* download_item) {
   if (!download_item->GetURL().SchemeIsHTTPOrHTTPS())
     return false;
 

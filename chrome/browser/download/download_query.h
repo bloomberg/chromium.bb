@@ -14,7 +14,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 
 namespace base {
 class Value;
@@ -43,12 +43,12 @@ class Value;
 // query.Search(all_items.begin(), all_items.end(), &results);
 class DownloadQuery {
  public:
-  typedef std::vector<content::DownloadItem*> DownloadVector;
+  typedef std::vector<download::DownloadItem*> DownloadVector;
 
   // FilterCallback is a Callback that takes a DownloadItem and returns true if
   // the item matches the filter and false otherwise.
   // query.AddFilter(base::Bind(&YourFilterFunction));
-  typedef base::Callback<bool(const content::DownloadItem&)> FilterCallback;
+  typedef base::Callback<bool(const download::DownloadItem&)> FilterCallback;
 
   // All times are ISO 8601 strings.
   enum FilterType {
@@ -97,7 +97,7 @@ class DownloadQuery {
   };
 
   static bool MatchesQuery(const std::vector<base::string16>& query_terms,
-                           const content::DownloadItem& item);
+                           const download::DownloadItem& item);
 
   DownloadQuery();
   ~DownloadQuery();
@@ -114,7 +114,7 @@ class DownloadQuery {
   bool AddFilter(const FilterCallback& filter);
   bool AddFilter(FilterType type, const base::Value& value);
   void AddFilter(download::DownloadDangerType danger);
-  void AddFilter(content::DownloadItem::DownloadState state);
+  void AddFilter(download::DownloadItem::DownloadState state);
 
   // Adds a new sorter of type |type| with direction |direction|.  After
   // filtering DownloadItem*s, Search() will sort the results primarily by the
@@ -148,10 +148,11 @@ class DownloadQuery {
   typedef std::vector<FilterCallback> FilterCallbackVector;
   typedef std::vector<Sorter> SorterVector;
 
-  bool FilterRegex(const std::string& regex_str,
-                   const base::Callback<std::string(
-                       const content::DownloadItem&)>& accessor);
-  bool Matches(const content::DownloadItem& item) const;
+  bool FilterRegex(
+      const std::string& regex_str,
+      const base::Callback<std::string(const download::DownloadItem&)>&
+          accessor);
+  bool Matches(const download::DownloadItem& item) const;
   void FinishSearch(DownloadVector* results) const;
 
   FilterCallbackVector filters_;

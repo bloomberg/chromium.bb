@@ -30,15 +30,15 @@ namespace {
 // memory.
 class WasInProgressData : public base::SupportsUserData::Data {
  public:
-  static bool Get(content::DownloadItem* item) {
+  static bool Get(download::DownloadItem* item) {
     return item->GetUserData(kKey) != NULL;
   }
 
-  static void Clear(content::DownloadItem* item) {
+  static void Clear(download::DownloadItem* item) {
     item->RemoveUserData(kKey);
   }
 
-  explicit WasInProgressData(content::DownloadItem* item) {
+  explicit WasInProgressData(download::DownloadItem* item) {
     item->SetUserData(kKey, base::WrapUnique(this));
   }
 
@@ -71,7 +71,7 @@ bool DownloadStatusUpdater::GetProgress(float* progress,
       content::DownloadManager::DownloadVector items;
       notifier->GetManager()->GetAllDownloads(&items);
       for (auto* item : items) {
-        if (item->GetState() == content::DownloadItem::IN_PROGRESS) {
+        if (item->GetState() == download::DownloadItem::IN_PROGRESS) {
           ++*download_count;
           if (item->GetTotalBytes() <= 0) {
             // There may or may not be more data coming down this pipe.
@@ -99,12 +99,12 @@ void DownloadStatusUpdater::AddManager(content::DownloadManager* manager) {
     OnDownloadCreated(manager, item);
 }
 
-void DownloadStatusUpdater::OnDownloadCreated(
-    content::DownloadManager* manager, content::DownloadItem* item) {
+void DownloadStatusUpdater::OnDownloadCreated(content::DownloadManager* manager,
+                                              download::DownloadItem* item) {
   // Ignore downloads loaded from history, which are in a terminal state.
   // TODO(benjhayden): Use the Observer interface to distinguish between
   // historical and started downloads.
-  if (item->GetState() == content::DownloadItem::IN_PROGRESS) {
+  if (item->GetState() == download::DownloadItem::IN_PROGRESS) {
     UpdateAppIconDownloadProgress(item);
     new WasInProgressData(item);
   }
@@ -112,9 +112,9 @@ void DownloadStatusUpdater::OnDownloadCreated(
   // should not call UpdateAppIconDownloadProgress().
 }
 
-void DownloadStatusUpdater::OnDownloadUpdated(
-    content::DownloadManager* manager, content::DownloadItem* item) {
-  if (item->GetState() == content::DownloadItem::IN_PROGRESS) {
+void DownloadStatusUpdater::OnDownloadUpdated(content::DownloadManager* manager,
+                                              download::DownloadItem* item) {
+  if (item->GetState() == download::DownloadItem::IN_PROGRESS) {
     // If the item was interrupted/cancelled and then resumed/restarted, then
     // set WasInProgress so that UpdateAppIconDownloadProgress() will be called
     // when it completes.
@@ -135,7 +135,7 @@ void DownloadStatusUpdater::OnDownloadUpdated(
 
 #if defined(OS_ANDROID) || (defined(USE_AURA) && !defined(OS_WIN))
 void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
-    content::DownloadItem* download) {
+    download::DownloadItem* download) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   const views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui) {

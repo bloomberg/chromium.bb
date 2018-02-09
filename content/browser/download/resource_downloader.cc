@@ -116,7 +116,7 @@ ResourceDownloader::InterceptNavigationResponse(
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
   auto downloader = std::make_unique<ResourceDownloader>(
       delegate, std::move(resource_request), web_contents_getter, GURL(),
-      GURL(), GURL(), DownloadItem::kInvalidId);
+      GURL(), GURL(), download::DownloadItem::kInvalidId);
   downloader->InterceptResponse(std::move(response), std::move(url_chain),
                                 suggested_filename, cert_status,
                                 std::move(url_loader_client_endpoints));

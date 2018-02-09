@@ -34,12 +34,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/download/download_crx_util.h"
+#include "components/download/public/common/download_item.h"
 #include "components/history/content/browser/download_conversions.h"
 #include "components/history/core/browser/download_database.h"
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "extensions/features/features.h"
 
@@ -63,17 +63,17 @@ class DownloadHistoryData : public base::SupportsUserData::Data {
     PERSISTED,
   };
 
-  static DownloadHistoryData* Get(content::DownloadItem* item) {
+  static DownloadHistoryData* Get(download::DownloadItem* item) {
     base::SupportsUserData::Data* data = item->GetUserData(kKey);
     return static_cast<DownloadHistoryData*>(data);
   }
 
-  static const DownloadHistoryData* Get(const content::DownloadItem* item) {
+  static const DownloadHistoryData* Get(const download::DownloadItem* item) {
     const base::SupportsUserData::Data* data = item->GetUserData(kKey);
     return static_cast<const DownloadHistoryData*>(data);
   }
 
-  explicit DownloadHistoryData(content::DownloadItem* item) {
+  explicit DownloadHistoryData(download::DownloadItem* item) {
     item->SetUserData(kKey, base::WrapUnique(this));
   }
 
@@ -113,8 +113,7 @@ class DownloadHistoryData : public base::SupportsUserData::Data {
 const char DownloadHistoryData::kKey[] =
   "DownloadItem DownloadHistoryData";
 
-history::DownloadRow GetDownloadRow(
-    content::DownloadItem* item) {
+history::DownloadRow GetDownloadRow(download::DownloadItem* item) {
   std::string by_ext_id, by_ext_name;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::DownloadedByExtension* by_ext =
@@ -238,7 +237,7 @@ DownloadHistory::Observer::Observer() {}
 DownloadHistory::Observer::~Observer() {}
 
 // static
-bool DownloadHistory::IsPersisted(const content::DownloadItem* item) {
+bool DownloadHistory::IsPersisted(const download::DownloadItem* item) {
   const DownloadHistoryData* data = DownloadHistoryData::Get(item);
   return data && (data->state() == DownloadHistoryData::PERSISTED);
 }
@@ -247,7 +246,7 @@ DownloadHistory::DownloadHistory(content::DownloadManager* manager,
                                  std::unique_ptr<HistoryAdapter> history)
     : notifier_(manager, this),
       history_(std::move(history)),
-      loading_id_(content::DownloadItem::kInvalidId),
+      loading_id_(download::DownloadItem::kInvalidId),
       history_size_(0),
       initial_history_query_complete_(false),
       weak_ptr_factory_(this) {
@@ -283,7 +282,7 @@ void DownloadHistory::RemoveObserver(DownloadHistory::Observer* observer) {
 }
 
 bool DownloadHistory::WasRestoredFromHistory(
-    const content::DownloadItem* download) const {
+    const download::DownloadItem* download) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const DownloadHistoryData* data = DownloadHistoryData::Get(download);
 
@@ -303,7 +302,7 @@ void DownloadHistory::QueryCallback(std::unique_ptr<InfoVector> infos) {
   for (InfoVector::const_iterator it = infos->begin();
        it != infos->end(); ++it) {
     loading_id_ = history::ToContentDownloadId(it->id);
-    content::DownloadItem* item = notifier_.GetManager()->CreateDownloadItem(
+    download::DownloadItem* item = notifier_.GetManager()->CreateDownloadItem(
         it->guid, loading_id_, it->current_path, it->target_path, it->url_chain,
         it->referrer_url, it->site_url, it->tab_url, it->tab_referrer_url,
         it->mime_type, it->original_mime_type, it->start_time, it->end_time,
@@ -338,7 +337,7 @@ void DownloadHistory::QueryCallback(std::unique_ptr<InfoVector> infos) {
     observer.OnHistoryQueryComplete();
 }
 
-void DownloadHistory::MaybeAddToHistory(content::DownloadItem* item) {
+void DownloadHistory::MaybeAddToHistory(download::DownloadItem* item) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   uint32_t download_id = item->GetId();
@@ -379,8 +378,8 @@ void DownloadHistory::ItemAdded(uint32_t download_id, bool success) {
   if (!notifier_.GetManager())
     return;
 
-  content::DownloadItem* item = notifier_.GetManager()->GetDownload(
-      download_id);
+  download::DownloadItem* item =
+      notifier_.GetManager()->GetDownload(download_id);
   if (!item) {
     // This item will have called OnDownloadDestroyed().  If the item should
     // have been removed from history, then it would have also called
@@ -419,8 +418,8 @@ void DownloadHistory::ItemAdded(uint32_t download_id, bool success) {
   OnDownloadUpdated(notifier_.GetManager(), item);
 }
 
-void DownloadHistory::OnDownloadCreated(
-    content::DownloadManager* manager, content::DownloadItem* item) {
+void DownloadHistory::OnDownloadCreated(content::DownloadManager* manager,
+                                        download::DownloadItem* item) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // All downloads should pass through OnDownloadCreated exactly once.
@@ -429,16 +428,16 @@ void DownloadHistory::OnDownloadCreated(
   if (item->GetId() == loading_id_) {
     data->SetState(DownloadHistoryData::PERSISTED);
     data->set_was_restored_from_history(true);
-    loading_id_ = content::DownloadItem::kInvalidId;
+    loading_id_ = download::DownloadItem::kInvalidId;
   }
-  if (item->GetState() == content::DownloadItem::IN_PROGRESS) {
+  if (item->GetState() == download::DownloadItem::IN_PROGRESS) {
     data->set_info(GetDownloadRow(item));
   }
   MaybeAddToHistory(item);
 }
 
-void DownloadHistory::OnDownloadUpdated(
-    content::DownloadManager* manager, content::DownloadItem* item) {
+void DownloadHistory::OnDownloadUpdated(content::DownloadManager* manager,
+                                        download::DownloadItem* item) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DownloadHistoryData* data = DownloadHistoryData::Get(item);
@@ -465,20 +464,20 @@ void DownloadHistory::OnDownloadUpdated(
     for (Observer& observer : observers_)
       observer.OnDownloadStored(item, current_info);
   }
-  if (item->GetState() == content::DownloadItem::IN_PROGRESS) {
+  if (item->GetState() == download::DownloadItem::IN_PROGRESS) {
     data->set_info(current_info);
   } else {
     data->clear_info();
   }
 }
 
-void DownloadHistory::OnDownloadOpened(
-    content::DownloadManager* manager, content::DownloadItem* item) {
+void DownloadHistory::OnDownloadOpened(content::DownloadManager* manager,
+                                       download::DownloadItem* item) {
   OnDownloadUpdated(manager, item);
 }
 
-void DownloadHistory::OnDownloadRemoved(
-    content::DownloadManager* manager, content::DownloadItem* item) {
+void DownloadHistory::OnDownloadRemoved(content::DownloadManager* manager,
+                                        download::DownloadItem* item) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DownloadHistoryData* data = DownloadHistoryData::Get(item);

@@ -26,15 +26,15 @@
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/download/public/common/download_item.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
-using content::DownloadItem;
+using download::DownloadItem;
 
 // Download shelf autoclose behavior:
 //

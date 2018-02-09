@@ -12,9 +12,11 @@
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
 
-namespace content {
-
+namespace download {
 class DownloadItem;
+}
+
+namespace content {
 
 class LayoutTestDownloadManagerDelegate : public ShellDownloadManagerDelegate {
  public:
@@ -22,7 +24,7 @@ class LayoutTestDownloadManagerDelegate : public ShellDownloadManagerDelegate {
   ~LayoutTestDownloadManagerDelegate() override;
 
   // ShellDownloadManagerDelegate implementation.
-  bool ShouldOpenDownload(DownloadItem* item,
+  bool ShouldOpenDownload(download::DownloadItem* item,
                           const DownloadOpenDelayedCallback& callback) override;
 
  private:

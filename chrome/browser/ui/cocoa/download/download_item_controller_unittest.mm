@@ -46,7 +46,7 @@ class DownloadItemControllerTest : public CocoaProfileTest {
 
     download_item_.reset(new ::testing::NiceMock<content::MockDownloadItem>);
     ON_CALL(*download_item_, GetState())
-        .WillByDefault(Return(content::DownloadItem::IN_PROGRESS));
+        .WillByDefault(Return(download::DownloadItem::IN_PROGRESS));
     ON_CALL(*download_item_, GetFileNameToReportUser())
         .WillByDefault(Return(base::FilePath()));
     ON_CALL(*download_item_, GetDangerType())
@@ -58,8 +58,9 @@ class DownloadItemControllerTest : public CocoaProfileTest {
     ON_CALL(*download_item_, GetURL()).WillByDefault(ReturnRefOfCopy(GURL()));
     ON_CALL(*download_item_, GetReferrerUrl())
         .WillByDefault(ReturnRefOfCopy(GURL()));
-    ON_CALL(*download_item_, GetTargetDisposition()).WillByDefault(
-        Return(content::DownloadItem::TARGET_DISPOSITION_OVERWRITE));
+    ON_CALL(*download_item_, GetTargetDisposition())
+        .WillByDefault(
+            Return(download::DownloadItem::TARGET_DISPOSITION_OVERWRITE));
 
     id shelf_controller =
         [OCMockObject mockForClass:[DownloadShelfController class]];

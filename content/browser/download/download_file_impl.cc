@@ -246,7 +246,7 @@ DownloadFileImpl::~DownloadFileImpl() {
 void DownloadFileImpl::Initialize(
     const InitializeCallback& initialize_callback,
     const CancelRequestCallback& cancel_request_callback,
-    const DownloadItem::ReceivedSlices& received_slices,
+    const download::DownloadItem::ReceivedSlices& received_slices,
     bool is_parallelizable) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -319,7 +319,8 @@ void DownloadFileImpl::OnSourceStreamAdded(SourceStream* source_stream) {
   // vector if necessary.
   if (received_slices_.empty() && TotalBytesReceived() > 0) {
     size_t index = AddOrMergeReceivedSliceIntoSortedArray(
-        DownloadItem::ReceivedSlice(0, TotalBytesReceived()), received_slices_);
+        download::DownloadItem::ReceivedSlice(0, TotalBytesReceived()),
+        received_slices_);
     DCHECK_EQ(index, 0u);
   }
   // If the file is initialized, start to write data, or wait until file opened.
@@ -753,7 +754,7 @@ void DownloadFileImpl::WillWriteToDisk(size_t data_len) {
 
 void DownloadFileImpl::AddNewSlice(int64_t offset, int64_t length) {
   size_t index = AddOrMergeReceivedSliceIntoSortedArray(
-      DownloadItem::ReceivedSlice(offset, length), received_slices_);
+      download::DownloadItem::ReceivedSlice(offset, length), received_slices_);
   // Check if the slice is added as a new slice, or merged with an existing one.
   bool slice_added = (offset == received_slices_[index].offset);
   // Update the index of exising SourceStreams.
@@ -780,7 +781,7 @@ bool DownloadFileImpl::IsDownloadCompleted() {
     return true;
 
   // Verify that all the file slices have been downloaded.
-  std::vector<DownloadItem::ReceivedSlice> slices_to_download =
+  std::vector<download::DownloadItem::ReceivedSlice> slices_to_download =
       FindSlicesToDownload(received_slices_);
   if (slices_to_download.size() > 1) {
     // If there are 1 or more holes in the file, download is not finished.

@@ -50,10 +50,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/download/downloader/in_progress/in_progress_cache_impl.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_item.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/page_navigator.h"
@@ -84,7 +85,7 @@
 #endif
 
 using content::BrowserThread;
-using content::DownloadItem;
+using download::DownloadItem;
 using content::DownloadManager;
 using safe_browsing::DownloadFileType;
 using safe_browsing::DownloadProtectionService;
@@ -260,7 +261,7 @@ void OnDownloadAcquireFileAccessPermissionDone(
 
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
     : profile_(profile),
-      next_download_id_(content::DownloadItem::kInvalidId),
+      next_download_id_(download::DownloadItem::kInvalidId),
       download_prefs_(new DownloadPrefs(profile)),
       disk_access_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
@@ -308,16 +309,16 @@ void ChromeDownloadManagerDelegate::SetNextId(uint32_t next_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!profile_->IsOffTheRecord());
 
-  // |content::DownloadItem::kInvalidId| will be returned only when download
+  // |download::DownloadItem::kInvalidId| will be returned only when download
   // database failed to initialize.
-  bool download_db_available = (next_id != content::DownloadItem::kInvalidId);
+  bool download_db_available = (next_id != download::DownloadItem::kInvalidId);
   RecordDatabaseAvailability(download_db_available);
   if (download_db_available) {
     next_download_id_ = next_id;
   } else {
     // Still download files without download database, all download history in
     // this browser session will not be persisted.
-    next_download_id_ = content::DownloadItem::kInvalidId + 1;
+    next_download_id_ = download::DownloadItem::kInvalidId + 1;
   }
 
   IdCallbackVector callbacks;
@@ -336,7 +337,7 @@ void ChromeDownloadManagerDelegate::GetNextId(
         profile_->GetOriginalProfile())->GetDelegate()->GetNextId(callback);
     return;
   }
-  if (next_download_id_ == content::DownloadItem::kInvalidId) {
+  if (next_download_id_ == download::DownloadItem::kInvalidId) {
     id_callbacks_.push_back(callback);
     return;
   }
@@ -347,7 +348,7 @@ void ChromeDownloadManagerDelegate::ReturnNextId(
     const content::DownloadIdCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!profile_->IsOffTheRecord());
-  DCHECK_NE(content::DownloadItem::kInvalidId, next_download_id_);
+  DCHECK_NE(download::DownloadItem::kInvalidId, next_download_id_);
   callback.Run(next_download_id_++);
 }
 
@@ -595,7 +596,8 @@ void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
   }
 
 #if !defined(OS_ANDROID)
-  content::WebContents* web_contents = download->GetWebContents();
+  content::WebContents* web_contents =
+      content::DownloadItemUtils::GetWebContents(download);
   Browser* browser =
       web_contents ? chrome::FindBrowserWithWebContents(web_contents) : NULL;
   std::unique_ptr<chrome::ScopedTabbedBrowserDisplayer> browser_displayer;
@@ -623,7 +625,8 @@ void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
 
 bool ChromeDownloadManagerDelegate::IsMostRecentDownloadItemAtFilePath(
     DownloadItem* download) {
-  Profile* profile = Profile::FromBrowserContext(download->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(download));
   std::vector<Profile*> profiles_to_check = {profile->GetOriginalProfile()};
   if (profile->HasOffTheRecordProfile()) {
     profiles_to_check.push_back(profile->GetOffTheRecordProfile());
@@ -731,7 +734,7 @@ void ChromeDownloadManagerDelegate::NotifyExtensions(
 }
 
 void ChromeDownloadManagerDelegate::ReserveVirtualPath(
-    content::DownloadItem* download,
+    download::DownloadItem* download,
     const base::FilePath& virtual_path,
     bool create_directory,
     DownloadPathReservationTracker::FilenameConflictAction conflict_action,
@@ -762,6 +765,8 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
   DCHECK(!download->IsTransient());
 
 #if defined(OS_ANDROID)
+  content::WebContents* web_contents =
+      content::DownloadItemUtils::GetWebContents(download);
   switch (reason) {
     case DownloadConfirmationReason::NONE:
       NOTREACHED();
@@ -774,9 +779,9 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
       return;
 
     case DownloadConfirmationReason::PREFERENCE:
-      if (download->GetWebContents()) {
-        location_dialog_bridge_->ShowDialog(download->GetWebContents(),
-                                            suggested_path, callback);
+      if (web_contents) {
+        location_dialog_bridge_->ShowDialog(web_contents, suggested_path,
+                                            callback);
       } else {
         // For now, if there are no WebContents, continue anyways.
         callback.Run(DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
@@ -800,10 +805,10 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
       return;
 
     case DownloadConfirmationReason::TARGET_CONFLICT:
-      if (download->GetWebContents()) {
+      if (web_contents) {
         android::ChromeDuplicateDownloadInfoBarDelegate::Create(
-            InfoBarService::FromWebContents(download->GetWebContents()),
-            download, suggested_path, callback);
+            InfoBarService::FromWebContents(web_contents), download,
+            suggested_path, callback);
         return;
       }
       FALLTHROUGH;

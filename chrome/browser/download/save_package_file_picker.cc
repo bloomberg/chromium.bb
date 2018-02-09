@@ -45,15 +45,14 @@ namespace {
 // exists only for testing.
 bool g_should_prompt_for_filename = true;
 
-void OnSavePackageDownloadCreated(content::DownloadItem* download) {
+void OnSavePackageDownloadCreated(download::DownloadItem* download) {
   ChromeDownloadManagerDelegate::DisableSafeBrowsing(download);
 }
 
 #if defined(OS_CHROMEOS)
-void OnSavePackageDownloadCreatedChromeOS(
-    Profile* profile,
-    const base::FilePath& drive_path,
-    content::DownloadItem* download) {
+void OnSavePackageDownloadCreatedChromeOS(Profile* profile,
+                                          const base::FilePath& drive_path,
+                                          download::DownloadItem* download) {
   drive::DownloadHandler::GetForProfile(profile)->SetDownloadParams(
       drive_path, download);
   OnSavePackageDownloadCreated(download);

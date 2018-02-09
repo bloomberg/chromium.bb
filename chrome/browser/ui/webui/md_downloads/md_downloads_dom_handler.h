@@ -22,10 +22,13 @@ class ListValue;
 }
 
 namespace content {
-class DownloadItem;
 class DownloadManager;
 class WebContents;
 class WebUI;
+}
+
+namespace download {
+class DownloadItem;
 }
 
 class Profile;
@@ -98,14 +101,14 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
   // Actually remove downloads with an ID in |removals_|. This cannot be undone.
   void FinalizeRemovals();
 
-  using DownloadVector = std::vector<content::DownloadItem*>;
+  using DownloadVector = std::vector<download::DownloadItem*>;
 
   // Remove all downloads in |to_remove|. Safe downloads can be revived,
   // dangerous ones are immediately removed. Protected for testing.
   void RemoveDownloads(const DownloadVector& to_remove);
 
   // Helper function to handle save download event.
-  void SaveDownload(content::DownloadItem* download);
+  void SaveDownload(download::DownloadItem* download);
 
  private:
   using IdSet = std::set<uint32_t>;
@@ -124,7 +127,7 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
   // user accepts the dangerous download. The native prompt will observe
   // |dangerous| until either the dialog is dismissed or |dangerous| is no
   // longer an in-progress dangerous download.
-  virtual void ShowDangerPrompt(content::DownloadItem* dangerous);
+  virtual void ShowDangerPrompt(download::DownloadItem* dangerous);
 
   // Conveys danger acceptance from the DownloadDangerPrompt to the
   // DownloadItem.
@@ -136,10 +139,10 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
   bool IsDeletingHistoryAllowed();
 
   // Returns the download that is referred to in a given value.
-  content::DownloadItem* GetDownloadByValue(const base::ListValue* args);
+  download::DownloadItem* GetDownloadByValue(const base::ListValue* args);
 
   // Returns the download with |id| or NULL if it doesn't exist.
-  content::DownloadItem* GetDownloadById(uint32_t id);
+  download::DownloadItem* GetDownloadById(uint32_t id);
 
   // Removes the download specified by an ID from JavaScript in |args|.
   void RemoveDownloadInArgs(const base::ListValue* args);

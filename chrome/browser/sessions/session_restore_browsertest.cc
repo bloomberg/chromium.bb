@@ -1503,15 +1503,15 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabWithDownloadDoesNotGetRestored) {
 
     observer.WaitForFinished();
     EXPECT_EQ(1u, in_progress_counter.NumDownloadsSeenInState(
-                      content::DownloadItem::IN_PROGRESS));
+                      download::DownloadItem::IN_PROGRESS));
     EXPECT_EQ(
-        1u, observer.NumDownloadsSeenInState(content::DownloadItem::COMPLETE));
+        1u, observer.NumDownloadsSeenInState(download::DownloadItem::COMPLETE));
 
     // We still need to verify that the second download that completed above is
     // the new one that we initiated. This would be true iff the DownloadManager
     // has exactly two downloads and they correspond to |first_download_url| and
     // |second_download_url|.
-    std::vector<content::DownloadItem*> downloads;
+    std::vector<download::DownloadItem*> downloads;
     download_manager->GetAllDownloads(&downloads);
     ASSERT_EQ(2u, downloads.size());
     std::set<GURL> download_urls{downloads[0]->GetURL(),

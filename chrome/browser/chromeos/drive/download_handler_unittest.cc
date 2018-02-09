@@ -96,7 +96,7 @@ class DownloadHandlerTest : public testing::Test {
 
     // Set expectations for download item.
     EXPECT_CALL(download_item_, GetState())
-        .WillRepeatedly(testing::Return(content::DownloadItem::IN_PROGRESS));
+        .WillRepeatedly(testing::Return(download::DownloadItem::IN_PROGRESS));
 
     download_handler_.reset(new DownloadHandler(&test_file_system_));
     download_handler_->Initialize(download_manager_.get(), temp_dir_.GetPath());

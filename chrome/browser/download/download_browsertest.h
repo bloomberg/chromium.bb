@@ -21,7 +21,7 @@ class DownloadTestObserverNotInProgress : public content::DownloadTestObserver {
   void StartObserving();
 
  private:
-  bool IsDownloadInFinalState(content::DownloadItem* download) override;
+  bool IsDownloadInFinalState(download::DownloadItem* download) override;
 
   bool started_observing_;
 

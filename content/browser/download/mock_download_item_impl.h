@@ -18,9 +18,7 @@
 
 namespace content {
 
-class BrowserContext;
 class DownloadManager;
-class WebContents;
 
 class MockDownloadItemImpl : public DownloadItemImpl {
  public:
@@ -34,8 +32,8 @@ class MockDownloadItemImpl : public DownloadItemImpl {
                     download::DownloadDangerType,
                     const base::FilePath&,
                     download::DownloadInterruptReason));
-  MOCK_METHOD1(AddObserver, void(DownloadItem::Observer*));
-  MOCK_METHOD1(RemoveObserver, void(DownloadItem::Observer*));
+  MOCK_METHOD1(AddObserver, void(download::DownloadItem::Observer*));
+  MOCK_METHOD1(RemoveObserver, void(download::DownloadItem::Observer*));
   MOCK_METHOD0(UpdateObservers, void());
   MOCK_METHOD0(CanShowInFolder, bool());
   MOCK_METHOD0(CanOpenDownload, bool());
@@ -113,8 +111,6 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(GetLastModifiedTime, const std::string&());
   MOCK_CONST_METHOD0(GetETag, const std::string&());
   MOCK_CONST_METHOD0(GetLastReason, download::DownloadInterruptReason());
-  MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
-  MOCK_CONST_METHOD0(GetWebContents, WebContents*());
   MOCK_CONST_METHOD0(GetFileNameToReportUser, base::FilePath());
   MOCK_METHOD1(SetDisplayName, void(const base::FilePath&));
   // May be called when vlog is on.

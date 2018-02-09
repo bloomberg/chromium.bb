@@ -9,10 +9,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_item_model.h"
 #import "chrome/browser/ui/cocoa/download/download_item_controller.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "ui/gfx/image/image.h"
 
-using content::DownloadItem;
+using download::DownloadItem;
 
 // DownloadItemMac -------------------------------------------------------------
 
@@ -27,7 +27,7 @@ DownloadItemMac::~DownloadItemMac() {
   download_model_.download()->RemoveObserver(this);
 }
 
-void DownloadItemMac::OnDownloadUpdated(content::DownloadItem* download) {
+void DownloadItemMac::OnDownloadUpdated(DownloadItem* download) {
   DCHECK_EQ(download, download_model_.download());
 
   if (!download_model_.ShouldShowInShelf()) {
@@ -67,11 +67,11 @@ void DownloadItemMac::OnDownloadUpdated(content::DownloadItem* download) {
   }
 }
 
-void DownloadItemMac::OnDownloadDestroyed(content::DownloadItem* download) {
+void DownloadItemMac::OnDownloadDestroyed(DownloadItem* download) {
   [item_controller_ remove];  // We're deleted now!
 }
 
-void DownloadItemMac::OnDownloadOpened(content::DownloadItem* download) {
+void DownloadItemMac::OnDownloadOpened(DownloadItem* download) {
   DCHECK_EQ(download, download_model_.download());
   [item_controller_ downloadWasOpened];
 }

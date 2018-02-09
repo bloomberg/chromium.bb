@@ -26,7 +26,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
+#include "content/public/browser/download_item_utils.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/common/mime_util/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -35,7 +36,7 @@
 #include "ui/gfx/text_elider.h"
 
 using base::TimeDelta;
-using content::DownloadItem;
+using download::DownloadItem;
 using safe_browsing::DownloadFileType;
 
 namespace {
@@ -621,8 +622,8 @@ bool DownloadItemModel::ShouldNotifyUI() const {
   if (download_->IsTransient())
     return false;
 
-  Profile* profile =
-      Profile::FromBrowserContext(download_->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(download_));
   DownloadCoreService* download_core_service =
       DownloadCoreServiceFactory::GetForBrowserContext(profile);
   DownloadHistory* download_history =
@@ -765,7 +766,7 @@ base::string16 DownloadItemModel::GetInProgressStatusString() const {
 void DownloadItemModel::OpenUsingPlatformHandler() {
   DownloadCoreService* download_core_service =
       DownloadCoreServiceFactory::GetForBrowserContext(
-          download_->GetBrowserContext());
+          content::DownloadItemUtils::GetBrowserContext(download_));
   if (!download_core_service)
     return;
 

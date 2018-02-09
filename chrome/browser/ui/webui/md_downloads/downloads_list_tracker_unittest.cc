@@ -22,7 +22,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::DownloadItem;
+using download::DownloadItem;
 using content::MockDownloadItem;
 using DownloadVector = std::vector<DownloadItem*>;
 using testing::_;
@@ -82,7 +82,7 @@ class TestDownloadsListTracker : public DownloadsListTracker {
 
  protected:
   std::unique_ptr<base::DictionaryValue> CreateDownloadItemValue(
-      content::DownloadItem* item) const override {
+      download::DownloadItem* item) const override {
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     CHECK_LE(item->GetId(), static_cast<uint64_t>(INT_MAX));
     dict->SetInteger("id", item->GetId());

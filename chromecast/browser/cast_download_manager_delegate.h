@@ -21,13 +21,13 @@ class CastDownloadManagerDelegate : public content::DownloadManagerDelegate,
   // content::DownloadManagerDelegate implementation:
   void GetNextId(const content::DownloadIdCallback& callback) override;
   bool DetermineDownloadTarget(
-      content::DownloadItem* item,
+      download::DownloadItem* item,
       const content::DownloadTargetCallback& callback) override;
   bool ShouldOpenFileBasedOnExtension(const base::FilePath& path) override;
-  bool ShouldCompleteDownload(content::DownloadItem* item,
+  bool ShouldCompleteDownload(download::DownloadItem* item,
                               const base::Closure& complete_callback) override;
   bool ShouldOpenDownload(
-      content::DownloadItem* item,
+      download::DownloadItem* item,
       const content::DownloadOpenDelayedCallback& callback) override;
 
  private:

@@ -12,7 +12,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/download/public/common/download_danger_type.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 
 using safe_browsing::ClientDownloadResponse;
 using safe_browsing::ClientSafeBrowsingReportRequest;
@@ -52,7 +52,7 @@ const char* GetDangerTypeString(
 void DownloadDangerPrompt::SendSafeBrowsingDownloadReport(
     ClientSafeBrowsingReportRequest::ReportType report_type,
     bool did_proceed,
-    const content::DownloadItem& download) {
+    const download::DownloadItem& download) {
   safe_browsing::SafeBrowsingService* sb_service =
       g_browser_process->safe_browsing_service();
   ClientSafeBrowsingReportRequest report;
@@ -90,7 +90,7 @@ void DownloadDangerPrompt::SendSafeBrowsingDownloadReport(
 
 void DownloadDangerPrompt::RecordDownloadDangerPrompt(
     bool did_proceed,
-    const content::DownloadItem& download) {
+    const download::DownloadItem& download) {
   int64_t file_type_uma_value =
       safe_browsing::FileTypePolicies::GetInstance()->UmaValueForFile(
           download.GetTargetFilePath());

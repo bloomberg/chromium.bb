@@ -57,8 +57,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/api/downloads.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_item.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -86,7 +86,7 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
-using content::DownloadItem;
+using download::DownloadItem;
 using content::DownloadManager;
 
 namespace download_extension_errors {
@@ -203,7 +203,8 @@ const char* const kStateStrings[] = {
   kStateInterrupted,
   kStateInterrupted,
 };
-static_assert(arraysize(kStateStrings) == DownloadItem::MAX_DOWNLOAD_STATE,
+static_assert(arraysize(kStateStrings) ==
+                  download::DownloadItem::MAX_DOWNLOAD_STATE,
               "kStateStrings should have MAX_DOWNLOAD_STATE elements");
 
 const char* DangerString(download::DownloadDangerType danger) {
@@ -224,17 +225,18 @@ download::DownloadDangerType DangerEnumFromString(const std::string& danger) {
   return download::DOWNLOAD_DANGER_TYPE_MAX;
 }
 
-const char* StateString(DownloadItem::DownloadState state) {
+const char* StateString(download::DownloadItem::DownloadState state) {
   DCHECK(state >= 0);
-  DCHECK(state < static_cast<DownloadItem::DownloadState>(
-      arraysize(kStateStrings)));
-  if (state < 0 || state >= static_cast<DownloadItem::DownloadState>(
-      arraysize(kStateStrings)))
+  DCHECK(state < static_cast<download::DownloadItem::DownloadState>(
+                     arraysize(kStateStrings)));
+  if (state < 0 || state >= static_cast<download::DownloadItem::DownloadState>(
+                                arraysize(kStateStrings)))
     return "";
   return kStateStrings[state];
 }
 
-DownloadItem::DownloadState StateEnumFromString(const std::string& state) {
+download::DownloadItem::DownloadState StateEnumFromString(
+    const std::string& state) {
   for (size_t i = 0; i < arraysize(kStateStrings); ++i) {
     if ((kStateStrings[i] != NULL) && (state == kStateStrings[i]))
       return static_cast<DownloadItem::DownloadState>(i);
@@ -957,18 +959,16 @@ const char DownloadedByExtension::kKey[] =
   "DownloadItem DownloadedByExtension";
 
 DownloadedByExtension* DownloadedByExtension::Get(
-    content::DownloadItem* item) {
+    download::DownloadItem* item) {
   base::SupportsUserData::Data* data = item->GetUserData(kKey);
   return (data == NULL) ? NULL :
       static_cast<DownloadedByExtension*>(data);
 }
 
-DownloadedByExtension::DownloadedByExtension(
-    content::DownloadItem* item,
-    const std::string& id,
-    const std::string& name)
-  : id_(id),
-    name_(name) {
+DownloadedByExtension::DownloadedByExtension(download::DownloadItem* item,
+                                             const std::string& id,
+                                             const std::string& name)
+    : id_(id), name_(name) {
   item->SetUserData(kKey, base::WrapUnique(this));
 }
 

@@ -91,7 +91,7 @@ class ResourceDownloader : public UrlDownloadHandler,
   // URLLoader for sending out the request.
   network::mojom::URLLoaderPtr url_loader_;
 
-  // ID of the download, or DownloadItem::kInvalidId if this is a new
+  // ID of the download, or download::DownloadItem::kInvalidId if this is a new
   // download.
   uint32_t download_id_;
 

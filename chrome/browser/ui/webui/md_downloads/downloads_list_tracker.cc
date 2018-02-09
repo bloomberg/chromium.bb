@@ -21,8 +21,9 @@
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_system.h"
@@ -31,7 +32,7 @@
 #include "ui/base/l10n/time_format.h"
 
 using content::BrowserContext;
-using content::DownloadItem;
+using download::DownloadItem;
 using content::DownloadManager;
 
 using DownloadVector = DownloadManager::DownloadVector;
@@ -185,7 +186,7 @@ DownloadsListTracker::DownloadsListTracker(
 
 std::unique_ptr<base::DictionaryValue>
 DownloadsListTracker::CreateDownloadItemValue(
-    content::DownloadItem* download_item) const {
+    download::DownloadItem* download_item) const {
   // TODO(asanka): Move towards using download_model here for getting status and
   // progress. The difference currently only matters to Drive downloads and
   // those don't show up on the downloads page, but should.
@@ -225,9 +226,12 @@ DownloadsListTracker::CreateDownloadItemValue(
     // language. This won't work if the extension was uninstalled, so the name
     // might be the wrong language.
     bool include_disabled = true;
-    const extensions::Extension* extension = extensions::ExtensionSystem::Get(
-        Profile::FromBrowserContext(download_item->GetBrowserContext()))->
-        extension_service()->GetExtensionById(by_ext->id(), include_disabled);
+    const extensions::Extension* extension =
+        extensions::ExtensionSystem::Get(
+            Profile::FromBrowserContext(
+                content::DownloadItemUtils::GetBrowserContext(download_item)))
+            ->extension_service()
+            ->GetExtensionById(by_ext->id(), include_disabled);
     if (extension)
       by_ext_name = extension->name();
   }
@@ -256,7 +260,7 @@ DownloadsListTracker::CreateDownloadItemValue(
   const char* state = nullptr;
 
   switch (download_item->GetState()) {
-    case content::DownloadItem::IN_PROGRESS: {
+    case download::DownloadItem::IN_PROGRESS: {
       if (download_item->IsDangerous()) {
         state = "DANGEROUS";
         danger_type = GetDangerTypeString(download_item->GetDangerType());
@@ -270,7 +274,7 @@ DownloadsListTracker::CreateDownloadItemValue(
       break;
     }
 
-    case content::DownloadItem::INTERRUPTED:
+    case download::DownloadItem::INTERRUPTED:
       state = "INTERRUPTED";
       progress_status_text = download_model.GetTabProgressStatusText();
 
@@ -289,17 +293,17 @@ DownloadsListTracker::CreateDownloadItemValue(
       }
       break;
 
-    case content::DownloadItem::CANCELLED:
+    case download::DownloadItem::CANCELLED:
       state = "CANCELLED";
       retry = true;
       break;
 
-    case content::DownloadItem::COMPLETE:
+    case download::DownloadItem::COMPLETE:
       DCHECK(!download_item->IsDangerous());
       state = "COMPLETE";
       break;
 
-    case content::DownloadItem::MAX_DOWNLOAD_STATE:
+    case download::DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();
   }
 
@@ -344,8 +348,9 @@ bool DownloadsListTracker::ShouldShow(const DownloadItem& item) const {
          DownloadQuery::MatchesQuery(search_terms_, item);
 }
 
-bool DownloadsListTracker::StartTimeComparator::operator() (
-    const content::DownloadItem* a, const content::DownloadItem* b) const {
+bool DownloadsListTracker::StartTimeComparator::operator()(
+    const download::DownloadItem* a,
+    const download::DownloadItem* b) const {
   return a->GetStartTime() > b->GetStartTime();
 }
 

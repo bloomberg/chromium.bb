@@ -16,7 +16,7 @@ namespace content {
 DownloadCreateInfo::DownloadCreateInfo(
     const base::Time& start_time,
     std::unique_ptr<download::DownloadSaveInfo> save_info)
-    : download_id(DownloadItem::kInvalidId),
+    : download_id(download::DownloadItem::kInvalidId),
       start_time(start_time),
       total_bytes(0),
       offset(0),

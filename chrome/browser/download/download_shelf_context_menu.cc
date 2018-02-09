@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/pdf/adobe_reader_info_win.h"
 #endif
 
-using content::DownloadItem;
+using download::DownloadItem;
 
 DownloadShelfContextMenu::~DownloadShelfContextMenu() {
   DetachFromDownloadItem();

@@ -18,18 +18,18 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/download/public/common/download_item.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_stats.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/common/quarantine.h"
 #include "crypto/secure_hash.h"
 #include "net/base/net_errors.h"
 
-#define CONDITIONAL_TRACE(trace)                  \
-  do {                                            \
-    if (download_id_ != DownloadItem::kInvalidId) \
-      TRACE_EVENT_##trace;                        \
+#define CONDITIONAL_TRACE(trace)                            \
+  do {                                                      \
+    if (download_id_ != download::DownloadItem::kInvalidId) \
+      TRACE_EVENT_##trace;                                  \
   } while (0)
 
 namespace content {

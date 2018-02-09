@@ -53,8 +53,8 @@ class ParallelDownloadUtilsRecoverErrorTest
     : public ::testing::TestWithParam<int64_t> {};
 
 TEST_F(ParallelDownloadUtilsTest, FindSlicesToDownload) {
-  std::vector<DownloadItem::ReceivedSlice> downloaded_slices;
-  std::vector<DownloadItem::ReceivedSlice> slices_to_download =
+  std::vector<download::DownloadItem::ReceivedSlice> downloaded_slices;
+  std::vector<download::DownloadItem::ReceivedSlice> slices_to_download =
       FindSlicesToDownload(downloaded_slices);
   EXPECT_EQ(1u, slices_to_download.size());
   EXPECT_EQ(0, slices_to_download[0].offset);
@@ -99,25 +99,25 @@ TEST_F(ParallelDownloadUtilsTest, FindSlicesToDownload) {
 }
 
 TEST_F(ParallelDownloadUtilsTest, AddOrMergeReceivedSliceIntoSortedArray) {
-  std::vector<DownloadItem::ReceivedSlice> slices;
-  DownloadItem::ReceivedSlice slice1(500, 500);
+  std::vector<download::DownloadItem::ReceivedSlice> slices;
+  download::DownloadItem::ReceivedSlice slice1(500, 500);
   EXPECT_EQ(0u, AddOrMergeReceivedSliceIntoSortedArray(slice1, slices));
   EXPECT_EQ(1u, slices.size());
   EXPECT_EQ(slice1, slices[0]);
 
   // Adding a slice that can be merged with existing slice.
-  DownloadItem::ReceivedSlice slice2(1000, 400);
+  download::DownloadItem::ReceivedSlice slice2(1000, 400);
   EXPECT_EQ(0u, AddOrMergeReceivedSliceIntoSortedArray(slice2, slices));
   EXPECT_EQ(1u, slices.size());
   EXPECT_EQ(500, slices[0].offset);
   EXPECT_EQ(900, slices[0].received_bytes);
 
-  DownloadItem::ReceivedSlice slice3(0, 50);
+  download::DownloadItem::ReceivedSlice slice3(0, 50);
   EXPECT_EQ(0u, AddOrMergeReceivedSliceIntoSortedArray(slice3, slices));
   EXPECT_EQ(2u, slices.size());
   EXPECT_EQ(slice3, slices[0]);
 
-  DownloadItem::ReceivedSlice slice4(100, 50);
+  download::DownloadItem::ReceivedSlice slice4(100, 50);
   EXPECT_EQ(1u, AddOrMergeReceivedSliceIntoSortedArray(slice4, slices));
   EXPECT_EQ(3u, slices.size());
   EXPECT_EQ(slice3, slices[0]);
@@ -125,7 +125,7 @@ TEST_F(ParallelDownloadUtilsTest, AddOrMergeReceivedSliceIntoSortedArray) {
 
   // A new slice can only merge with an existing slice earlier in the file, not
   // later in the file.
-  DownloadItem::ReceivedSlice slice5(50, 50);
+  download::DownloadItem::ReceivedSlice slice5(50, 50);
   EXPECT_EQ(0u, AddOrMergeReceivedSliceIntoSortedArray(slice5, slices));
   EXPECT_EQ(3u, slices.size());
   EXPECT_EQ(0, slices[0].offset);
@@ -136,7 +136,7 @@ TEST_F(ParallelDownloadUtilsTest, AddOrMergeReceivedSliceIntoSortedArray) {
 // Ensure the minimum slice size is correctly applied.
 TEST_F(ParallelDownloadUtilsTest, FindSlicesForRemainingContentMinSliceSize) {
   // Minimum slice size is smaller than total length, only one slice returned.
-  DownloadItem::ReceivedSlices slices =
+  download::DownloadItem::ReceivedSlices slices =
       FindSlicesForRemainingContent(0, 100, 3, 150);
   EXPECT_EQ(1u, slices.size());
   EXPECT_EQ(0, slices[0].offset);
@@ -168,26 +168,26 @@ TEST_F(ParallelDownloadUtilsTest, FindSlicesForRemainingContentMinSliceSize) {
   // Extreme case where size is smaller than request number.
   slices = FindSlicesForRemainingContent(0, 1, 3, 1);
   EXPECT_EQ(1u, slices.size());
-  EXPECT_EQ(DownloadItem::ReceivedSlice(0, 0), slices[0]);
+  EXPECT_EQ(download::DownloadItem::ReceivedSlice(0, 0), slices[0]);
 
   // Normal case.
   slices = FindSlicesForRemainingContent(0, 100, 3, 5);
   EXPECT_EQ(3u, slices.size());
-  EXPECT_EQ(DownloadItem::ReceivedSlice(0, 33), slices[0]);
-  EXPECT_EQ(DownloadItem::ReceivedSlice(33, 33), slices[1]);
-  EXPECT_EQ(DownloadItem::ReceivedSlice(66, 0), slices[2]);
+  EXPECT_EQ(download::DownloadItem::ReceivedSlice(0, 33), slices[0]);
+  EXPECT_EQ(download::DownloadItem::ReceivedSlice(33, 33), slices[1]);
+  EXPECT_EQ(download::DownloadItem::ReceivedSlice(66, 0), slices[2]);
 }
 
 TEST_F(ParallelDownloadUtilsTest, GetMaxContiguousDataBlockSizeFromBeginning) {
-  std::vector<DownloadItem::ReceivedSlice> slices;
+  std::vector<download::DownloadItem::ReceivedSlice> slices;
   slices.emplace_back(500, 500);
   EXPECT_EQ(0, GetMaxContiguousDataBlockSizeFromBeginning(slices));
 
-  DownloadItem::ReceivedSlice slice1(0, 200);
+  download::DownloadItem::ReceivedSlice slice1(0, 200);
   AddOrMergeReceivedSliceIntoSortedArray(slice1, slices);
   EXPECT_EQ(200, GetMaxContiguousDataBlockSizeFromBeginning(slices));
 
-  DownloadItem::ReceivedSlice slice2(200, 300);
+  download::DownloadItem::ReceivedSlice slice2(200, 300);
   AddOrMergeReceivedSliceIntoSortedArray(slice2, slices);
   EXPECT_EQ(1000, GetMaxContiguousDataBlockSizeFromBeginning(slices));
 }

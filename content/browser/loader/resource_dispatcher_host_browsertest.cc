@@ -75,7 +75,7 @@ class ResourceDispatcherHostBrowserTest : public ContentBrowserTest,
   }
 
   void OnDownloadCreated(DownloadManager* manager,
-                         DownloadItem* item) override {
+                         download::DownloadItem* item) override {
     if (!got_downloads_)
       got_downloads_ = !!manager->InProgressCount();
   }
