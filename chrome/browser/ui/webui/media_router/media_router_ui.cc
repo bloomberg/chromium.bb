@@ -343,11 +343,6 @@ MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
   std::unique_ptr<content::WebUIDataSource> html_source(
       content::WebUIDataSource::Create(chrome::kChromeUIMediaRouterHost));
 
-  content::WebContents* wc = web_ui->GetWebContents();
-  DCHECK(wc);
-  content::BrowserContext* context = wc->GetBrowserContext();
-  router_ = MediaRouterFactory::GetApiForBrowserContext(context);
-
   AddLocalizedStrings(html_source.get());
   AddMediaRouterUIResources(html_source.get());
   // Ownership of |html_source| is transferred to the BrowserContext.
@@ -429,10 +424,12 @@ void MediaRouterUI::InitWithStartPresentationContext(
 
 void MediaRouterUI::InitCommon(content::WebContents* initiator) {
   DCHECK(initiator);
-  DCHECK(router_);
 
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT1("media_router", "UI", initiator,
                                       "MediaRouterUI::InitCommon", this);
+
+  router_ = GetMediaRouter();
+  DCHECK(router_);
 
   // Presentation requests from content must show the origin requesting
   // presentation: crbug.com/704964
@@ -495,7 +492,6 @@ void MediaRouterUI::InitForTest(
     MediaRouterWebUIMessageHandler* handler,
     std::unique_ptr<StartPresentationContext> context,
     std::unique_ptr<MediaRouterFileDialog> file_dialog) {
-  router_ = router;
   handler_ = handler;
   start_presentation_context_ = std::move(context);
   InitForTest(std::move(file_dialog));
@@ -592,6 +588,13 @@ void MediaRouterUI::Close() {
 void MediaRouterUI::UIInitialized() {
   TRACE_EVENT_NESTABLE_ASYNC_END0("media_router", "UI", initiator_);
   ui_initialized_ = true;
+
+  // Workaround for MediaRouterElementsBrowserTest, in which MediaRouterUI is
+  // created without calling one of the |Init*()| methods.
+  // TODO(imcheng): We should be able to instantiate |issue_observer_| during
+  // InitCommon by storing an initial Issue in this class.
+  if (!router_)
+    router_ = GetMediaRouter();
 
   // Register for Issue updates.
   issues_observer_ =
@@ -1125,4 +1128,8 @@ void MediaRouterUI::UpdateSinks() {
   handler_->UpdateSinks(GetEnabledSinks());
 }
 
+MediaRouter* MediaRouterUI::GetMediaRouter() {
+  return MediaRouterFactory::GetApiForBrowserContext(
+      web_ui()->GetWebContents()->GetBrowserContext());
+}
 }  // namespace media_router

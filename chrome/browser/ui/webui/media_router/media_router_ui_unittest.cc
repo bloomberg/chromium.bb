@@ -117,6 +117,19 @@ class PresentationRequestCallbacks {
   content::PresentationError expected_error_;
 };
 
+class TestMediaRouterUI : public MediaRouterUI {
+ public:
+  TestMediaRouterUI(content::WebUI* web_ui, MediaRouter* router)
+      : MediaRouterUI(web_ui), router_(router) {}
+  ~TestMediaRouterUI() override = default;
+
+  MediaRouter* GetMediaRouter() override { return router_; }
+
+ private:
+  MediaRouter* router_;
+  DISALLOW_COPY_AND_ASSIGN(TestMediaRouterUI);
+};
+
 class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
  public:
   MediaRouterUITest()
@@ -162,7 +175,8 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
     web_ui_contents_.reset(
         WebContents::Create(WebContents::CreateParams(profile)));
     web_ui_.set_web_contents(web_ui_contents_.get());
-    media_router_ui_ = std::make_unique<MediaRouterUI>(&web_ui_);
+    media_router_ui_ =
+        std::make_unique<TestMediaRouterUI>(&web_ui_, &mock_router_);
     message_handler_ = std::make_unique<MockMediaRouterWebUIMessageHandler>(
         media_router_ui_.get());
 
@@ -213,7 +227,7 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
   content::TestWebUI web_ui_;
   std::unique_ptr<WebContents> web_ui_contents_;
   std::unique_ptr<StartPresentationContext> start_presentation_context_;
-  std::unique_ptr<MediaRouterUI> media_router_ui_;
+  std::unique_ptr<TestMediaRouterUI> media_router_ui_;
   std::unique_ptr<MockMediaRouterWebUIMessageHandler> message_handler_;
   MockMediaRouterFileDialog* mock_file_dialog_ = nullptr;
   std::vector<MediaSinksObserver*> media_sinks_observers_;
@@ -787,7 +801,8 @@ TEST_F(MediaRouterUITest, SetsForcedCastModeWithPresentationURLs) {
   web_ui_contents_.reset(
       WebContents::Create(WebContents::CreateParams(profile())));
   web_ui_.set_web_contents(web_ui_contents_.get());
-  media_router_ui_ = std::make_unique<MediaRouterUI>(&web_ui_);
+  media_router_ui_ =
+      std::make_unique<TestMediaRouterUI>(&web_ui_, &mock_router_);
   message_handler_ = std::make_unique<MockMediaRouterWebUIMessageHandler>(
       media_router_ui_.get());
   message_handler_->SetWebUIForTest(&web_ui_);
@@ -797,26 +812,18 @@ TEST_F(MediaRouterUITest, SetsForcedCastModeWithPresentationURLs) {
         return true;
       }));
   EXPECT_CALL(mock_router_, RegisterMediaRoutesObserver(_)).Times(AnyNumber());
-  // For some reason we push two sets of cast modes to the dialog, even when
-  // initializing the dialog with a presentation request.  The WebUI can handle
-  // the forced mode that is not in the initial cast mode set, but is this a
-  // bug?
-  CastModeSet expected_modes({MediaCastMode::TAB_MIRROR,
-                              MediaCastMode::DESKTOP_MIRROR,
-                              MediaCastMode::LOCAL_FILE});
-  EXPECT_CALL(*message_handler_,
-              UpdateCastModes(
-                  expected_modes, "",
-                  base::Optional<MediaCastMode>(MediaCastMode::PRESENTATION)));
-  expected_modes.insert(MediaCastMode::PRESENTATION);
-  EXPECT_CALL(*message_handler_,
-              UpdateCastModes(
-                  expected_modes, "google.com",
-                  base::Optional<MediaCastMode>(MediaCastMode::PRESENTATION)));
-  media_router_ui_->UIInitialized();
+
+  CastModeSet expected_modes(
+      {MediaCastMode::TAB_MIRROR, MediaCastMode::DESKTOP_MIRROR,
+       MediaCastMode::LOCAL_FILE, MediaCastMode::PRESENTATION});
   media_router_ui_->InitForTest(
       &mock_router_, web_contents(), message_handler_.get(),
       std::move(start_presentation_context_), nullptr);
+  EXPECT_EQ(expected_modes, media_router_ui_->cast_modes());
+  EXPECT_EQ(base::Optional<MediaCastMode>(MediaCastMode::PRESENTATION),
+            media_router_ui_->forced_cast_mode());
+  EXPECT_EQ("google.com", media_router_ui_->GetPresentationRequestSourceName());
+
   // |media_router_ui_| takes ownership of |request_callbacks|.
   media_router_ui_.reset();
 }

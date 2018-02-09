@@ -9,6 +9,8 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/media/router/discovery/dial/dial_registry.h"
+#include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
+#include "chrome/browser/media/router/test/noop_dual_media_sink_service.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -32,6 +34,13 @@ class DialAPITest : public ExtensionApiTest {
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,
         "ddchlicdkolnonkihahngkmmmjnjlkkf");
+  }
+
+  void SetUp() override {
+    // Stub out DualMediaSinkService so it does not interfere with the test.
+    media_router::DualMediaSinkService::SetInstanceForTest(
+        new media_router::NoopDualMediaSinkService());
+    ExtensionApiTest::SetUp();
   }
 };
 
