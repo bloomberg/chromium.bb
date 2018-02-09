@@ -22,6 +22,7 @@
 // https://docs.google.com/document/d/1VnvAqeWFG9JFZfgG5evBqrLGDZYRE5w6G5jEDORekPY
 // for details.
 enum NativeScrollBehavior { "disable-native-scroll", "perform-before-native-scroll", "perform-after-native-scroll" };
+callback ScrollStateCallback = void (ScrollState scrollState);
 
 // https://dom.spec.whatwg.org/#interface-element
 

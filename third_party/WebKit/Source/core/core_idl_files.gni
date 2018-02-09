@@ -306,7 +306,6 @@ core_idl_files =
                     "mojo/test/MojoInterfaceRequestEvent.idl",
                     "page/PagePopupController.idl",
                     "page/scrolling/ScrollState.idl",
-                    "page/scrolling/ScrollStateCallback.idl",
                     "resize_observer/ResizeObserver.idl",
                     "resize_observer/ResizeObserverEntry.idl",
                     "streams/UnderlyingSourceBase.idl",

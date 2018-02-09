@@ -27,6 +27,7 @@
 #include "core/dom/Element.h"
 
 #include <memory>
+
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
@@ -563,18 +564,20 @@ void Element::scrollIntoViewIfNeeded(bool center_if_needed) {
   }
 }
 
-void Element::setDistributeScroll(ScrollStateCallback* scroll_state_callback,
-                                  String native_scroll_behavior) {
-  scroll_state_callback->SetNativeScrollBehavior(
-      ScrollStateCallback::ToNativeScrollBehavior(native_scroll_behavior));
-  GetScrollCustomizationCallbacks().SetDistributeScroll(this,
-                                                        scroll_state_callback);
+void Element::setDistributeScroll(V8ScrollStateCallback* scroll_state_callback,
+                                  const String& native_scroll_behavior) {
+  GetScrollCustomizationCallbacks().SetDistributeScroll(
+      this, ScrollStateCallbackV8Impl::Create(scroll_state_callback,
+                                              native_scroll_behavior));
 }
 
-void Element::setApplyScroll(ScrollStateCallback* scroll_state_callback,
-                             String native_scroll_behavior) {
-  scroll_state_callback->SetNativeScrollBehavior(
-      ScrollStateCallback::ToNativeScrollBehavior(native_scroll_behavior));
+void Element::setApplyScroll(V8ScrollStateCallback* scroll_state_callback,
+                             const String& native_scroll_behavior) {
+  SetApplyScroll(ScrollStateCallbackV8Impl::Create(scroll_state_callback,
+                                                   native_scroll_behavior));
+}
+
+void Element::SetApplyScroll(ScrollStateCallback* scroll_state_callback) {
   GetScrollCustomizationCallbacks().SetApplyScroll(this, scroll_state_callback);
 }
 
@@ -633,13 +636,13 @@ void Element::CallDistributeScroll(ScrollState& scroll_state) {
   }
   if (callback->NativeScrollBehavior() !=
       WebNativeScrollBehavior::kPerformAfterNativeScroll)
-    callback->handleEvent(&scroll_state);
+    callback->Invoke(&scroll_state);
   if (callback->NativeScrollBehavior() !=
       WebNativeScrollBehavior::kDisableNativeScroll)
     NativeDistributeScroll(scroll_state);
   if (callback->NativeScrollBehavior() ==
       WebNativeScrollBehavior::kPerformAfterNativeScroll)
-    callback->handleEvent(&scroll_state);
+    callback->Invoke(&scroll_state);
 }
 
 void Element::NativeApplyScroll(ScrollState& scroll_state) {
@@ -720,13 +723,13 @@ void Element::CallApplyScroll(ScrollState& scroll_state) {
   }
   if (callback->NativeScrollBehavior() !=
       WebNativeScrollBehavior::kPerformAfterNativeScroll)
-    callback->handleEvent(&scroll_state);
+    callback->Invoke(&scroll_state);
   if (callback->NativeScrollBehavior() !=
       WebNativeScrollBehavior::kDisableNativeScroll)
     NativeApplyScroll(scroll_state);
   if (callback->NativeScrollBehavior() ==
       WebNativeScrollBehavior::kPerformAfterNativeScroll)
-    callback->handleEvent(&scroll_state);
+    callback->Invoke(&scroll_state);
 }
 
 int Element::OffsetLeft() {

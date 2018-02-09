@@ -5,6 +5,7 @@
 #ifndef ScrollStateCallback_h
 #define ScrollStateCallback_h
 
+#include "bindings/core/v8/v8_scroll_state_callback.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebNativeScrollBehavior.h"
 
@@ -15,29 +16,50 @@ class ScrollState;
 class ScrollStateCallback
     : public GarbageCollectedFinalized<ScrollStateCallback> {
  public:
-  ScrollStateCallback()
-      : native_scroll_behavior_(WebNativeScrollBehavior::kDisableNativeScroll) {
-  }
-
   virtual ~ScrollStateCallback() = default;
 
   virtual void Trace(blink::Visitor* visitor) {}
-  virtual void handleEvent(ScrollState*) = 0;
 
-  void SetNativeScrollBehavior(WebNativeScrollBehavior native_scroll_behavior) {
-    DCHECK_LT(static_cast<int>(native_scroll_behavior), 3);
-    native_scroll_behavior_ = native_scroll_behavior;
-  }
+  virtual void Invoke(ScrollState*) = 0;
 
-  WebNativeScrollBehavior NativeScrollBehavior() {
+  WebNativeScrollBehavior NativeScrollBehavior() const {
     return native_scroll_behavior_;
   }
 
-  static WebNativeScrollBehavior ToNativeScrollBehavior(
-      String native_scroll_behavior);
-
  protected:
-  WebNativeScrollBehavior native_scroll_behavior_;
+  explicit ScrollStateCallback(
+      WebNativeScrollBehavior native_scroll_behavior =
+          WebNativeScrollBehavior::kDisableNativeScroll)
+      : native_scroll_behavior_(native_scroll_behavior) {}
+
+ private:
+  const WebNativeScrollBehavior native_scroll_behavior_;
+};
+
+class ScrollStateCallbackV8Impl : public ScrollStateCallback {
+ public:
+  static ScrollStateCallbackV8Impl* Create(
+      V8ScrollStateCallback* callback,
+      const String& native_scroll_behavior) {
+    DCHECK(callback);
+    return new ScrollStateCallbackV8Impl(
+        callback, ParseNativeScrollBehavior(native_scroll_behavior));
+  }
+
+  ~ScrollStateCallbackV8Impl() = default;
+
+  void Invoke(ScrollState*) override;
+
+ private:
+  static WebNativeScrollBehavior ParseNativeScrollBehavior(
+      const String& native_scroll_behavior);
+
+  explicit ScrollStateCallbackV8Impl(
+      V8ScrollStateCallback* callback,
+      WebNativeScrollBehavior native_scroll_behavior)
+      : ScrollStateCallback(native_scroll_behavior), callback_(callback) {}
+
+  V8ScrollStateCallback::Persistent<V8ScrollStateCallback> callback_;
 };
 
 }  // namespace blink

@@ -45,8 +45,9 @@ namespace blink {
 class AccessibleNode;
 class Attr;
 class Attribute;
-class ComputedAccessibleNode;
+class CSSPropertyValueSet;
 class CSSStyleDeclaration;
+class ComputedAccessibleNode;
 class CustomElementDefinition;
 class DOMRect;
 class DOMRectList;
@@ -54,6 +55,7 @@ class DOMStringMap;
 class DOMTokenList;
 class Document;
 class ElementAnimations;
+class ElementIntersectionObserverData;
 class ElementRareData;
 class ElementShadow;
 class ExceptionState;
@@ -64,7 +66,6 @@ class InputDeviceCapabilities;
 class Locale;
 class MutableCSSPropertyValueSet;
 class NamedNodeMap;
-class ElementIntersectionObserverData;
 class PseudoElement;
 class PseudoStyleRequest;
 class ResizeObservation;
@@ -78,9 +79,9 @@ class ShadowRootInit;
 class SpaceSplitString;
 class StringOrTrustedHTML;
 class StringOrTrustedScriptURL;
-class CSSPropertyValueSet;
 class StylePropertyMap;
 class V0CustomElementDefinition;
+class V8ScrollStateCallback;
 
 enum SpellcheckAttributeState {
   kSpellcheckAttributeTrue,
@@ -587,9 +588,12 @@ class CORE_EXPORT Element : public ContainerNode {
                                                 const FocusOptions&);
   virtual void blur();
 
-  void setDistributeScroll(ScrollStateCallback*, String native_scroll_behavior);
+  void setDistributeScroll(V8ScrollStateCallback*,
+                           const String& native_scroll_behavior);
   void NativeDistributeScroll(ScrollState&);
-  void setApplyScroll(ScrollStateCallback*, String native_scroll_behavior);
+  void setApplyScroll(V8ScrollStateCallback*,
+                      const String& native_scroll_behavior);
+  void SetApplyScroll(ScrollStateCallback*);
   void RemoveApplyScroll();
   void NativeApplyScroll(ScrollState&);
 

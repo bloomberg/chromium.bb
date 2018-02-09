@@ -71,7 +71,7 @@ bool ViewportScrollCallback::ScrollBrowserControls(ScrollState& state) {
   return false;
 }
 
-void ViewportScrollCallback::handleEvent(ScrollState* state) {
+void ViewportScrollCallback::Invoke(ScrollState* state) {
   DCHECK(state);
   if (!root_frame_viewport_)
     return;
