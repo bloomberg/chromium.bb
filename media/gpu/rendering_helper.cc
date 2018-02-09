@@ -94,6 +94,7 @@ void RenderingHelper::InitializeOneOff(base::WaitableEvent* done) {
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
   ui::OzonePlatform::InitializeForGPU(params);
+  ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif
 
   if (!gl::init::InitializeGLOneOff())
