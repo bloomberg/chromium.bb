@@ -138,7 +138,9 @@ Polymer({
   onMenuButtonTap_: function() {
     const actionMenu =
         /** @type {!CrActionMenuElement} */ (this.$$('#menu'));
-    actionMenu.showAt(assert(this.$$('#dots')));
+    actionMenu.showAt(assert(this.$$('#dots')), {
+      anchorAlignmentY: AnchorAlignment.AFTER_END,
+    });
   },
 
   /**
