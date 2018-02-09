@@ -903,8 +903,7 @@ void ProfileSyncService::OnEngineInitialized(
   } else {
     SigninClient* signin_client = signin_->GetOriginal()->signin_client();
     DCHECK(signin_client);
-    std::string signin_scoped_device_id =
-        signin_client->GetSigninScopedDeviceId();
+    signin_scoped_device_id = signin_client->GetSigninScopedDeviceId();
   }
 
   // Initialize local device info.
