@@ -12,4 +12,9 @@ source_set("sandbox") {
     "//services/service_manager/sandbox",
     "//testing/gtest",
   ]
+
+  if (is_win) {
+    sources += [ "sandbox_win_unittest.cc" ]
+    deps += [ "//sandbox/win:sandbox" ]
+  }
 }

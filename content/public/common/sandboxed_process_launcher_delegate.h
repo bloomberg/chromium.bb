@@ -32,6 +32,7 @@ class CONTENT_EXPORT SandboxedProcessLauncherDelegate
 #if defined(OS_WIN)
   // SandboxDelegate:
   bool DisableDefaultPolicy() override;
+  bool GetAppContainerId(std::string* appcontainer_id) override;
   bool PreSpawnTarget(sandbox::TargetPolicy* policy) override;
   void PostSpawnTarget(base::ProcessHandle process) override;
 

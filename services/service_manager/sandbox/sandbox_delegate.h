@@ -5,6 +5,8 @@
 #ifndef SERVICES_SERVICE_MANAGER_SANDBOX_SANDBOX_DELEGATE_H_
 #define SERVICES_SERVICE_MANAGER_SANDBOX_SANDBOX_DELEGATE_H_
 
+#include <string>
+
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
@@ -27,6 +29,10 @@ class SandboxDelegate {
   // Whether to disable the default policy specified in
   // AddPolicyForSandboxedProcess.
   virtual bool DisableDefaultPolicy() = 0;
+
+  // Get the AppContainer ID for the sandbox. If this returns false then the
+  // AppContainer will not be enabled for the process.
+  virtual bool GetAppContainerId(std::string* appcontainer_id) = 0;
 
   // Called right before spawning the process. Returns false on failure.
   virtual bool PreSpawnTarget(sandbox::TargetPolicy* policy) = 0;

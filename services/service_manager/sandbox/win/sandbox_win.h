@@ -59,6 +59,21 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxWin {
       sandbox::TargetPolicy* policy,
       bool enable_opm);
 
+  // Add the AppContainer sandbox profile to the policy. |sandbox_type|
+  // determines what policy is enabled. |appcontainer_id| is used to create
+  // a unique package SID, it can be anything the caller wants.
+  static sandbox::ResultCode AddAppContainerProfileToPolicy(
+      const base::CommandLine& command_line,
+      service_manager::SandboxType sandbox_type,
+      const std::string& appcontainer_id,
+      sandbox::TargetPolicy* policy);
+
+  // Returns whether the AppContainer sandbox is enabled or not for a specific
+  // sandbox type from |command_line| and |sandbox_type|.
+  static bool IsAppContainerEnabledForSandbox(
+      const base::CommandLine& command_line,
+      service_manager::SandboxType sandbox_type);
+
   static bool InitBrokerServices(sandbox::BrokerServices* broker_services);
   static bool InitTargetServices(sandbox::TargetServices* target_services);
 };

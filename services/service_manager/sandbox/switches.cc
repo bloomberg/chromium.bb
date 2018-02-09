@@ -67,6 +67,18 @@ const char kGpuSandboxFailuresFatal[] = "gpu-sandbox-failures-fatal";
 // Allows third party modules to inject by disabling the BINARY_SIGNATURE
 // mitigation policy on Win10+. Also has other effects in ELF.
 const char kAllowThirdPartyModules[] = "allow-third-party-modules";
+
+// Add additional capabilities to the AppContainer sandbox on the GPU process.
+const char kAddGpuAppContainerCaps[] = "add-gpu-appcontainer-caps";
+
+// Disables AppContainer sandbox on the GPU process.
+const char kDisableGpuAppContainer[] = "disable-gpu-appcontainer";
+
+// Disables low-privilege AppContainer sandbox on the GPU process.
+const char kDisableGpuLpac[] = "disable-gpu-lpac";
+
+// Enables AppContainer sandbox on the GPU process.
+const char kEnableGpuAppContainer[] = "enable-gpu-appcontainer";
 #endif
 
 // Flags spied upon from other layers.
