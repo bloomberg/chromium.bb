@@ -113,7 +113,7 @@ class ToolbarControllerTest : public CocoaProfileTest {
     extensions::ExtensionSystem::Get(profile())
         ->extension_service()
         ->AddExtension(extension.get());
-    extensions::LoadErrorReporter::Init(true);
+    extensions::LoadErrorReporter::Init(false);
     ToolbarActionsModel* model =
         extensions::extension_action_test_util::CreateToolbarModelForProfile(
             profile());

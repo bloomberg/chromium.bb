@@ -334,7 +334,7 @@ class ExtensionMessageBubbleTest : public BrowserWithTestWindowTest {
   }
 
   void Init() {
-    LoadErrorReporter::Init(true);
+    LoadErrorReporter::Init(false);
     // The two lines of magical incantation required to get the extension
     // service to work inside a unit test and access the extension prefs.
     static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()))
