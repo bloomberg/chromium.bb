@@ -2037,25 +2037,25 @@ static inv_txfm_func inv_txfm_func_ls[TX_SIZES_ALL] = {
   NULL,                               // 16x16 transform
   NULL,                               // 32x32 transform
 #if CONFIG_TX64X64
-  NULL,  // 64x64 transform
+  NULL,  // 64x64
 #endif   // CONFIG_TX64X64
-  NULL,  // 4x8 transform
-  NULL,  // 8x4 transform
-  NULL,  // 8x16 transform
-  NULL,  // 16x8 transform
-  NULL,  // 16x32 transform
-  NULL,  // 32x16 transform
+  NULL,  // 4x8
+  NULL,  // 8x4
+  NULL,  // 8x16
+  NULL,  // 16x8
+  NULL,  // 16x32
+  NULL,  // 32x16
 #if CONFIG_TX64X64
-  NULL,  // 32x64 transform
-  NULL,  // 64x32 transform
+  NULL,  // 32x64
+  NULL,  // 64x32
 #endif   // CONFIG_TX64X64
-  NULL,  // 4x16 transform
-  NULL,  // 16x4 transform
-  NULL,  // 8x32 transform
-  NULL,  // 32x8 transform
+  NULL,  // 4x16
+  NULL,  // 16x4
+  NULL,  // 8x32
+  NULL,  // 32x8
 #if CONFIG_TX64X64
-  NULL,  // 16x64 transform
-  NULL,  // 64x16 transform
+  NULL,  // 16x64
+  NULL,  // 64x16
 #endif   // CONFIG_TX64X64
 };
 

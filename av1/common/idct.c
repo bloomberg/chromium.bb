@@ -1733,8 +1733,9 @@ void av1_inverse_transform_block(const MACROBLOCKD *xd,
                   &txfm_param);
   assert(av1_ext_tx_used[txfm_param.tx_set_type][txfm_param.tx_type]);
 
-  if (txfm_param.is_hbd)
+  if (txfm_param.is_hbd) {
     av1_highbd_inv_txfm_add(dqcoeff, dst, stride, &txfm_param);
-  else
+  } else {
     av1_inv_txfm_add(dqcoeff, dst, stride, &txfm_param);
+  }
 }
