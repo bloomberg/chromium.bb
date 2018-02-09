@@ -339,10 +339,16 @@ template("msvc_toolchain") {
     tool("stamp") {
       command = stamp_command
       description = stamp_description
+      pool = "//build/toolchain:action_pool($default_toolchain)"
     }
     tool("copy") {
       command = copy_command
       description = copy_description
+      pool = "//build/toolchain:action_pool($default_toolchain)"
+    }
+
+    tool("action") {
+      pool = "//build/toolchain:action_pool($default_toolchain)"
     }
   }
 }

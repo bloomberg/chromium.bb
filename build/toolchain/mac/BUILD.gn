@@ -436,6 +436,10 @@ template("mac_toolchain") {
       description = "COMPILE_XCASSETS {{output}}"
       pool = ":bundle_pool($default_toolchain)"
     }
+
+    tool("action") {
+      pool = "//build/toolchain:action_pool($default_toolchain)"
+    }
   }
 }
 

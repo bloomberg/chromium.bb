@@ -577,6 +577,10 @@ template("gcc_toolchain") {
       description = copy_description
     }
 
+    tool("action") {
+      pool = "//build/toolchain:action_pool($default_toolchain)"
+    }
+
     forward_variables_from(invoker, [ "deps" ])
   }
 }

@@ -3,9 +3,23 @@
 # found in the LICENSE file.
 
 import("//build/toolchain/concurrent_links.gni")
+import("//build/toolchain/goma.gni")
+
+declare_args() {
+  # Pool for non goma tasks.
+  action_pool_depth = -1
+}
+
+if (action_pool_depth == -1 || use_goma) {
+  action_pool_depth = exec_script("get_cpu_count.py", [], "value")
+}
 
 if (current_toolchain == default_toolchain) {
   pool("link_pool") {
     depth = concurrent_links
+  }
+
+  pool("action_pool") {
+    depth = action_pool_depth
   }
 }
