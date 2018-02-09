@@ -817,4 +817,8 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
   AVERAGE_TILE_CDFS(compound_index_cdf);
   AVERAGE_TILE_CDFS(comp_group_idx_cdf);
 #endif  // CONFIG_JNT_COMP
+
+#if CONFIG_EXT_SKIP
+  AVERAGE_TILE_CDFS(skip_mode_cdfs)
+#endif
 }
