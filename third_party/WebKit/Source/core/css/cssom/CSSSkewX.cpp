@@ -42,15 +42,13 @@ void CSSSkewX::setAx(CSSNumericValue* value, ExceptionState& exception_state) {
 
 CSSSkewX* CSSSkewX::FromCSSValue(const CSSFunctionValue& value) {
   DCHECK_GT(value.length(), 0U);
-  switch (value.FunctionType()) {
-    case CSSValueSkewX:
-      DCHECK_EQ(value.length(), 1U);
-      return CSSSkewX::Create(
-          CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0))));
-    default:
-      NOTREACHED();
-      return nullptr;
+  DCHECK_EQ(value.FunctionType(), CSSValueSkewX);
+  if (value.length() == 1U) {
+    return CSSSkewX::Create(
+        CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0))));
   }
+  NOTREACHED();
+  return nullptr;
 }
 
 const DOMMatrix* CSSSkewX::AsMatrix(ExceptionState&) const {
