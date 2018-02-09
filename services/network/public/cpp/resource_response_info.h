@@ -113,9 +113,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   // True if the response was fetched by a ServiceWorker.
   bool was_fetched_via_service_worker;
 
-  // True when the request whoes mode is |CORS| or |CORS-with-forced-preflight|
+  // True when a request whose mode is |CORS| or |CORS-with-forced-preflight|
   // is sent to a ServiceWorker but FetchEvent.respondWith is not called. So the
-  // renderer have to resend the request with skip service worker flag
+  // renderer has to resend the request with skip service worker flag
   // considering the CORS preflight logic.
   bool was_fallback_required_by_service_worker;
 
@@ -123,7 +123,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   // ServiceWorkerResponseInfo::url_list_via_service_worker().
   std::vector<GURL> url_list_via_service_worker;
 
-  // The type of the response which was fetched by the ServiceWorker.
+  // The type of the response, if it was returned by a service worker. This is
+  // kDefault if the response was not returned by a service worker.
   mojom::FetchResponseType response_type_via_service_worker;
 
   // The time immediately before starting ServiceWorker. If the response is not

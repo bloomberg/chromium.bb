@@ -66,14 +66,24 @@ void TextTrackLoader::CancelLoad() {
   ClearResource();
 }
 
+void TextTrackLoader::ResponseReceived(Resource*,
+                                       const ResourceResponse& response,
+                                       std::unique_ptr<WebDataConsumerHandle>) {
+  if (response.IsOpaqueResponseFromServiceWorker()) {
+    CorsPolicyPreventedLoad(GetDocument().GetSecurityOrigin(),
+                            response.OriginalURLViaServiceWorker());
+  }
+}
+
 bool TextTrackLoader::RedirectReceived(Resource* resource,
                                        const ResourceRequest& request,
                                        const ResourceResponse&) {
   DCHECK_EQ(GetResource(), resource);
   if (resource->GetResourceRequest().GetFetchRequestMode() ==
           network::mojom::FetchRequestMode::kCORS ||
-      GetDocument().GetSecurityOrigin()->CanRequestNoSuborigin(request.Url()))
+      GetDocument().GetSecurityOrigin()->CanRequestNoSuborigin(request.Url())) {
     return true;
+  }
 
   CorsPolicyPreventedLoad(GetDocument().GetSecurityOrigin(), request.Url());
   if (!cue_load_timer_.IsActive())
