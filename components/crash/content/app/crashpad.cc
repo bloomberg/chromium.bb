@@ -46,6 +46,8 @@ namespace crash_reporter {
 
 namespace {
 
+base::FilePath* g_database_path;
+
 crashpad::CrashReportDatabase* g_database;
 
 bool LogMessageHandler(int severity,
@@ -85,6 +87,13 @@ bool LogMessageHandler(int severity,
   // Rather than including the code to force the crash here, allow the caller to
   // do it.
   return false;
+}
+
+void InitializeDatabasePath(const base::FilePath& database_path) {
+  DCHECK(!g_database_path);
+
+  // Intentionally leaked.
+  g_database_path = new base::FilePath(database_path);
 }
 
 void InitializeCrashpadImpl(bool initial_client,
@@ -172,6 +181,8 @@ void InitializeCrashpadImpl(bool initial_client,
   const bool should_initialize_database_and_set_upload_policy = initial_client;
 #endif
   if (should_initialize_database_and_set_upload_policy) {
+    InitializeDatabasePath(database_path);
+
     g_database =
         crashpad::CrashReportDatabase::Initialize(database_path).release();
 
@@ -275,6 +286,14 @@ void RequestSingleCrashUpload(const std::string& local_id) {
 #endif
 }
 
+base::FilePath GetCrashpadDatabasePath() {
+#if defined(OS_WIN)
+  return base::FilePath(GetCrashpadDatabasePath_ExportThunk());
+#else
+  return base::FilePath(GetCrashpadDatabasePathImpl());
+#endif
+}
+
 void GetReportsImpl(std::vector<Report>* reports) {
   reports->clear();
 
@@ -341,6 +360,13 @@ void RequestSingleCrashUploadImpl(const std::string& local_id) {
   crashpad::UUID uuid;
   uuid.InitializeFromString(local_id);
   g_database->RequestUpload(uuid);
+}
+
+base::FilePath::StringType::const_pointer GetCrashpadDatabasePathImpl() {
+  if (!g_database_path)
+    return nullptr;
+
+  return g_database_path->value().c_str();
 }
 
 }  // namespace crash_reporter

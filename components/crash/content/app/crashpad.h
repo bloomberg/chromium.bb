@@ -114,11 +114,17 @@ void RequestSingleCrashUpload(const std::string& local_id);
 
 void DumpWithoutCrashing();
 
+// Returns the Crashpad database path, only valid in the browser.
+base::FilePath GetCrashpadDatabasePath();
+
 // The implementation function for GetReports.
 void GetReportsImpl(std::vector<Report>* reports);
 
 // The implementation function for RequestSingleCrashUpload.
 void RequestSingleCrashUploadImpl(const std::string& local_id);
+
+// The implementation function for GetCrashpadDatabasePath.
+base::FilePath::StringType::const_pointer GetCrashpadDatabasePathImpl();
 
 namespace internal {
 

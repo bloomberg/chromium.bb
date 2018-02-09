@@ -31,6 +31,10 @@ HANDLE InjectDumpForHungInput_ExportThunk(HANDLE process) {
   return nullptr;
 }
 
+const wchar_t* GetCrashpadDatabasePath_ExportThunk() {
+  return nullptr;
+}
+
 #if defined(ARCH_CPU_X86_64)
 
 void RegisterNonABICompliantCodeRange_ExportThunk(void* start,
