@@ -510,8 +510,16 @@ void ContentSettingsObserver::GetAllowedClientHintsFromSource(
   if (content_setting_rules_->client_hints_rules.empty())
     return;
 
+  // Pass the host of the URL of the top webframe.
   client_hints::GetAllowedClientHintsFromSource(
-      url, content_setting_rules_->client_hints_rules, client_hints);
+      url,
+      GURL(render_frame()
+               ->GetWebFrame()
+               ->Top()
+               ->GetSecurityOrigin()
+               .ToString()
+               .Ascii()),
+      content_setting_rules_->client_hints_rules, client_hints);
 }
 
 void ContentSettingsObserver::DidNotAllowPlugins() {

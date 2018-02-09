@@ -71,8 +71,10 @@ GetAdditionalNavigationRequestClientHintsHeaders(
 
   blink::WebEnabledClientHints web_client_hints;
 
-  GetAllowedClientHintsFromSource(url, client_hints_host_settings,
-                                  &web_client_hints);
+  // Since this is a navigation request, |url| is also the URL of the document.
+  GetAllowedClientHintsFromSource(
+      url /* resource url */, url.GetOrigin() /* document origin */,
+      client_hints_host_settings, &web_client_hints);
 
   std::unique_ptr<net::HttpRequestHeaders> additional_headers(
       base::MakeUnique<net::HttpRequestHeaders>());

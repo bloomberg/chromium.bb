@@ -230,7 +230,8 @@ class FrameFetchContextMockedLocalFrameClientTest
   void SetUp() override {
     url = KURL("https://example.test/foo");
     http_url = KURL("http://example.test/foo");
-    main_resource_url = KURL("https://www.example.test");
+    main_resource_url = KURL("https://example.test");
+    different_host_url = KURL("https://different.example.test/foo");
     client = new ::testing::NiceMock<FrameFetchContextMockLocalFrameClient>();
     dummy_page_holder =
         DummyPageHolder::Create(IntSize(500, 500), nullptr, client);
@@ -246,6 +247,7 @@ class FrameFetchContextMockedLocalFrameClientTest
   KURL url;
   KURL http_url;
   KURL main_resource_url;
+  KURL different_host_url;
 
   Persistent<::testing::NiceMock<FrameFetchContextMockLocalFrameClient>> client;
 };
@@ -1067,6 +1069,8 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   HistogramTester histogram_tester;
 
   {
+    ASSERT_EQ(url.Host(), main_resource_url.Host());
+    ASSERT_EQ("https", url.Protocol());
     ResourceRequest resource_request(url);
     resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
     resource_request.SetFetchCredentialsMode(
@@ -1087,7 +1091,34 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   }
 
   {
+    // Try with a different resource that has a different origin than the main
+    // frame.
+    ASSERT_NE(different_host_url.Host(), main_resource_url.Host());
+    ASSERT_EQ("https", different_host_url.Protocol());
+    ResourceRequest resource_request(different_host_url);
+    resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
+    resource_request.SetFetchCredentialsMode(
+        network::mojom::FetchCredentialsMode::kOmit);
+    ResourceResponse response(different_host_url);
+    response.SetHTTPHeaderField("accept-ch", "dpr");
+    response.SetHTTPHeaderField("accept-ch-lifetime", "3600");
+    Resource* resource = MockResource::Create(resource_request);
+    resource->SetResponse(response);
+    fetch_context->DispatchDidReceiveResponse(
+        CreateUniqueIdentifier(), response, resource_request.GetFrameType(),
+        resource_request.GetRequestContext(), resource,
+        FetchContext::ResourceResponseType::kNotFromMemoryCache);
+
+    // There should not be a change in the usage count.
+    histogram_tester.ExpectBucketCount(
+        "Blink.UseCounter.Features",
+        static_cast<int>(WebFeature::kPersistentClientHintHeader), 1);
+  }
+
+  {
     // Next, try with a HTTP URL.
+    ASSERT_EQ(http_url.Host(), main_resource_url.Host());
+    ASSERT_EQ("http", http_url.Protocol());
     ResourceRequest resource_request(http_url);
     resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
     resource_request.SetFetchCredentialsMode(
