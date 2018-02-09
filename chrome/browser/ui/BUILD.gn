@@ -3814,6 +3814,7 @@ static_library("test_support") {
 
   if (toolkit_views) {
     sources += [
+      "extensions/browser_action_test_util.h",
       "views/payments/test_chrome_payment_request_delegate.cc",
       "views/payments/test_chrome_payment_request_delegate.h",
     ]

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "base/macros.h"
-#include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"

@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/extensions/browser_action_test_util.h"
+#include "chrome/browser/ui/extensions/browser_action_test_util.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "extensions/common/extension_builder.h"
 #include "ui/base/material_design/material_design_controller.h"
