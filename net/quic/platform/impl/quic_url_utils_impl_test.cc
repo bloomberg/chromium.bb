@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/platform/api/quic_url_utils.h"
+#include "net/quic/platform/impl/quic_url_utils_impl.h"
 
 #include <cstdint>
 
@@ -15,9 +15,9 @@ namespace net {
 namespace test {
 namespace {
 
-class QuicUrlUtilsTest : public QuicTest {};
+using QuicUrlUtilsImplTest = QuicTest;
 
-TEST_F(QuicUrlUtilsTest, GetPushPromiseUrl) {
+TEST_F(QuicUrlUtilsImplTest, GetPushPromiseUrl) {
   // Test acception/rejection of various input combinations.
   // |input_headers| is an array of pairs. The first value of each pair is a
   // string that will be used as one of the inputs of GetPushPromiseUrl(). The
