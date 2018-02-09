@@ -1305,9 +1305,9 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       }
 
       // Decode backward references.
-      const int bit_bwd = READ_REF_BIT(comp_bwdref_p);
+      const int bit_bwd = READ_REF_BIT2(comp_bwdref_p);
       if (!bit_bwd) {
-        const int bit1_bwd = READ_REF_BIT(comp_bwdref_p1);
+        const int bit1_bwd = READ_REF_BIT2(comp_bwdref_p1);
         ref_frame[idx] = cm->comp_bwd_ref[bit1_bwd];
       } else {
         ref_frame[idx] = cm->comp_bwd_ref[2];

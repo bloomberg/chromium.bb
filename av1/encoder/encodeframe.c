@@ -1145,21 +1145,21 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
 #endif  // CONFIG_ENTROPY_STATS
             }
             if (allow_update_cdf) {
-              update_cdf(av1_get_pred_cdf_comp_bwdref_p(cm, xd),
+              update_cdf(av1_get_pred_cdf_comp_bwdref_p(xd),
                          ref1 == ALTREF_FRAME, 2);
             }
 #if CONFIG_ENTROPY_STATS
-            counts->comp_bwdref[av1_get_pred_context_comp_bwdref_p(cm, xd)][0]
+            counts->comp_bwdref[av1_get_pred_context_comp_bwdref_p(xd)][0]
                                [ref1 == ALTREF_FRAME]++;
 #endif  // CONFIG_ENTROPY_STATS
             if (ref1 != ALTREF_FRAME) {
               if (allow_update_cdf) {
-                update_cdf(av1_get_pred_cdf_comp_bwdref_p1(cm, xd),
+                update_cdf(av1_get_pred_cdf_comp_bwdref_p1(xd),
                            ref1 == ALTREF2_FRAME, 2);
               }
 #if CONFIG_ENTROPY_STATS
-              counts->comp_bwdref[av1_get_pred_context_comp_bwdref_p1(cm, xd)]
-                                 [1][ref1 == ALTREF2_FRAME]++;
+              counts->comp_bwdref[av1_get_pred_context_comp_bwdref_p1(xd)][1]
+                                 [ref1 == ALTREF2_FRAME]++;
 #endif  // CONFIG_ENTROPY_STATS
             }
 #if CONFIG_EXT_COMP_REFS

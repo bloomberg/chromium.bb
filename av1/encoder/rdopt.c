@@ -6172,9 +6172,8 @@ static void estimate_ref_frame_costs(
     ref_costs_single[ALTREF2_FRAME] += x->single_ref_cost[ctx_p6][5][1];
 
     if (cm->reference_mode != SINGLE_REFERENCE) {
-      const int bwdref_comp_ctx_p = av1_get_pred_context_comp_bwdref_p(cm, xd);
-      const int bwdref_comp_ctx_p1 =
-          av1_get_pred_context_comp_bwdref_p1(cm, xd);
+      const int bwdref_comp_ctx_p = av1_get_pred_context_comp_bwdref_p(xd);
+      const int bwdref_comp_ctx_p1 = av1_get_pred_context_comp_bwdref_p1(xd);
       const int ref_comp_ctx_p = av1_get_pred_context_comp_ref_p(cm, xd);
       const int ref_comp_ctx_p1 = av1_get_pred_context_comp_ref_p1(cm, xd);
       const int ref_comp_ctx_p2 = av1_get_pred_context_comp_ref_p2(cm, xd);

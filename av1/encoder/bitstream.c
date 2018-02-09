@@ -730,10 +730,10 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       }
 
       const int bit_bwd = mbmi->ref_frame[1] == ALTREF_FRAME;
-      WRITE_REF_BIT(bit_bwd, comp_bwdref_p);
+      WRITE_REF_BIT2(bit_bwd, comp_bwdref_p);
 
       if (!bit_bwd) {
-        WRITE_REF_BIT(mbmi->ref_frame[1] == ALTREF2_FRAME, comp_bwdref_p1);
+        WRITE_REF_BIT2(mbmi->ref_frame[1] == ALTREF2_FRAME, comp_bwdref_p1);
       }
 
     } else {
