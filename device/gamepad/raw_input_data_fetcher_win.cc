@@ -189,7 +189,7 @@ void RawInputDataFetcher::EnumerateDevices() {
         pad.connected = true;
 
         pad.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
-        pad.vibration_actuator.not_null = false;
+        pad.vibration_actuator.not_null = device->SupportsVibration();
 
         const int vendor_int = device->GetVendorId();
         const int product_int = device->GetProductId();
@@ -239,6 +239,46 @@ RawInputGamepadDeviceWin* RawInputDataFetcher::DeviceFromSourceId(
       return entry.second.get();
   }
   return nullptr;
+}
+
+void RawInputDataFetcher::PlayEffect(
+    int source_id,
+    mojom::GamepadHapticEffectType type,
+    mojom::GamepadEffectParametersPtr params,
+    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
+  RawInputGamepadDeviceWin* device = DeviceFromSourceId(source_id);
+  if (!device) {
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultError);
+    return;
+  }
+
+  if (!device->SupportsVibration()) {
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultNotSupported);
+    return;
+  }
+
+  device->PlayEffect(type, std::move(params), std::move(callback));
+}
+
+void RawInputDataFetcher::ResetVibration(
+    int source_id,
+    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
+  RawInputGamepadDeviceWin* device = DeviceFromSourceId(source_id);
+  if (!device) {
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultError);
+    return;
+  }
+
+  if (!device->SupportsVibration()) {
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultNotSupported);
+    return;
+  }
+
+  device->ResetVibration(std::move(callback));
 }
 
 LRESULT RawInputDataFetcher::OnInput(HRAWINPUT input_handle) {

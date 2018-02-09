@@ -14,9 +14,9 @@ class Dualshock4ControllerLinux : public Dualshock4ControllerBase {
   Dualshock4ControllerLinux(int fd);
   ~Dualshock4ControllerLinux() override;
 
- private:
-  void WriteOutputReport(void* report, size_t report_length) override;
+  size_t WriteOutputReport(void* report, size_t report_length) override;
 
+ private:
   int fd_;
 };
 

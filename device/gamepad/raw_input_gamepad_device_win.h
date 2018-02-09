@@ -15,6 +15,7 @@
 #include <memory>
 
 #include "device/gamepad/abstract_haptic_gamepad.h"
+#include "device/gamepad/dualshock4_controller_win.h"
 #include "device/gamepad/hid_dll_functions_win.h"
 #include "device/gamepad/public/cpp/gamepad.h"
 
@@ -45,6 +46,9 @@ class RawInputGamepadDeviceWin : public AbstractHapticGamepad {
   // Return true if this device is a gamepad.
   bool IsValid() const { return is_valid_; }
 
+  // Return true if this device supports vibration effects.
+  bool SupportsVibration() const;
+
   // Updates the current gamepad state with data from a RAWINPUT event.
   void UpdateGamepad(RAWINPUT* input);
 
@@ -52,7 +56,7 @@ class RawInputGamepadDeviceWin : public AbstractHapticGamepad {
   void ReadPadState(Gamepad* pad) const;
 
   // Set the vibration magnitude for the strong and weak vibration actuators.
-  void SetVibration(double strong_magnitude, double weak_magnitude) override {}
+  void SetVibration(double strong_magnitude, double weak_magnitude) override;
 
  private:
   // Axis state and capabilities for a single RawInput axis.
@@ -62,6 +66,9 @@ class RawInputGamepadDeviceWin : public AbstractHapticGamepad {
     bool active;
     unsigned long bitmask;
   };
+
+  // Stop vibration and release held resources.
+  void DoShutdown() override;
 
   // Fetch information about this device. Returns true if the device appears to
   // be a valid gamepad.
@@ -115,6 +122,9 @@ class RawInputGamepadDeviceWin : public AbstractHapticGamepad {
   // memory pointed to by |preparsed_data_|.
   std::unique_ptr<uint8_t[]> ppd_buffer_;
   PHIDP_PREPARSED_DATA preparsed_data_ = nullptr;
+
+  // Dualshock4-specific functionality (e.g., haptics), if available.
+  std::unique_ptr<Dualshock4ControllerWin> dualshock4_;
 };
 
 }  // namespace device
