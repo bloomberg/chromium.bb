@@ -220,6 +220,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia', 'opengl'], bug=795030)
     self.Flaky('deqp/functional/gles3/shaderpackingfunction.html',
         ['win', 'nvidia', 'opengl'], bug=795030)
+    self.Fail('conformance2/rendering/' +
+        'blitframebuffer-srgb-and-linear-drawbuffers.html',
+        ['win', 'nvidia', 'opengl'], bug=2355) # ANGLE bug ID
 
     # Win / AMD
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
