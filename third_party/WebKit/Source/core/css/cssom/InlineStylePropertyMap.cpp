@@ -11,14 +11,16 @@
 namespace blink {
 
 const CSSValue* InlineStylePropertyMap::GetProperty(CSSPropertyID property_id) {
-  return owner_element_->EnsureMutableInlineStyle().GetPropertyCSSValue(
-      property_id);
+  const CSSPropertyValueSet* inline_style = owner_element_->InlineStyle();
+  return inline_style ? inline_style->GetPropertyCSSValue(property_id)
+                      : nullptr;
 }
 
 const CSSValue* InlineStylePropertyMap::GetCustomProperty(
     AtomicString property_name) {
-  return owner_element_->EnsureMutableInlineStyle().GetPropertyCSSValue(
-      property_name);
+  const CSSPropertyValueSet* inline_style = owner_element_->InlineStyle();
+  return inline_style ? inline_style->GetPropertyCSSValue(property_name)
+                      : nullptr;
 }
 
 void InlineStylePropertyMap::SetProperty(CSSPropertyID property_id,
