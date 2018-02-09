@@ -16,8 +16,12 @@ class ScriptsSmokeTest(unittest.TestCase):
 
   perf_dir = os.path.dirname(__file__)
 
-  def RunPerfScript(self, command):
-    args = [sys.executable] + command.split(' ')
+  def RunPerfScript(self, command, venv=False):
+    main_command = [sys.executable]
+    # TODO(crbug.com/805552): Remove if/else block
+    if venv:
+      main_command = ['vpython']
+    args = main_command + command.split(' ')
     proc = subprocess.Popen(args, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, cwd=self.perf_dir)
     stdout = proc.communicate()[0]
@@ -45,7 +49,8 @@ class ScriptsSmokeTest(unittest.TestCase):
     self.assertIn('optional arguments:', stdout)
 
   def testRunRecordWprList(self):
-    return_code, stdout = self.RunPerfScript('record_wpr --list-benchmarks')
+    return_code, stdout = self.RunPerfScript('record_wpr --list-benchmarks',
+        venv=True)
     # TODO(nednguyen): Remove this once we figure out why importing
     # small_profile_extender fails on Android dbg.
     # crbug.com/561668
