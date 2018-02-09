@@ -26,7 +26,7 @@
           {
             "type": "string",
             "name": "processName",
-            "description": "Name of the process to open. Initially only 'crosh' is supported. Another processes may be added in future."
+            "description": "Name of the process to open. May be 'crosh' or 'vmshell'."
           },
           {
             "type": "array",
