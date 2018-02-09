@@ -53,6 +53,11 @@ void PowerButtonTestBase::SetUp() {
       std::make_unique<LockStateControllerTestApi>(lock_state_controller_);
 }
 
+void PowerButtonTestBase::TearDown() {
+  AshTestBase::TearDown();
+  chromeos::DBusThreadManager::Shutdown();
+}
+
 void PowerButtonTestBase::ResetPowerButtonController() {
   ShellTestApi().ResetPowerButtonControllerForTest();
   InitPowerButtonControllerMembers(

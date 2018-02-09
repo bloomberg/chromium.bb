@@ -59,6 +59,10 @@ class AccessibilityControllerTest : public AshTestBase {
 
     AshTestBase::SetUp();
   }
+  void TearDown() override {
+    AshTestBase::TearDown();
+    chromeos::DBusThreadManager::Shutdown();
+  }
 
  protected:
   // Owned by chromeos::DBusThreadManager.

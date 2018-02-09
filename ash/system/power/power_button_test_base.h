@@ -39,6 +39,7 @@ class PowerButtonTestBase : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override;
+  void TearDown() override;
 
  protected:
   // Resets the PowerButtonController and associated members.
