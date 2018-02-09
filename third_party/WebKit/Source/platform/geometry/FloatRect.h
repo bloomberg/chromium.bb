@@ -183,6 +183,7 @@ class PLATFORM_EXPORT FloatRect {
 
 #if DCHECK_IS_ON()
   bool MayNotHaveExactIntRectRepresentation() const;
+  bool EqualWithinEpsilon(const FloatRect& other, float epsilon) const;
 #endif
 
   String ToString() const;
