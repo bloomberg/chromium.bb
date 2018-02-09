@@ -24,21 +24,53 @@ const CSSValue* Rotate::ParseSingleValue(CSSParserTokenRange& range,
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
 
-  for (unsigned i = 0; i < 3; i++) {  // 3 dimensions of rotation
-    CSSValue* dimension =
-        CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeAll);
-    if (!dimension) {
-      if (i == 0)
-        break;
-      return nullptr;
-    }
-    list->Append(*dimension);
-  }
-
   CSSValue* rotation = CSSPropertyParserHelpers::ConsumeAngle(
       range, &context, WTF::Optional<WebFeature>());
-  if (!rotation)
-    return nullptr;
+
+  CSSValueID axis_id = range.Peek().Id();
+  if (axis_id == CSSValueX) {
+    CSSPropertyParserHelpers::ConsumeIdent(range);
+    list->Append(
+        *CSSPrimitiveValue::Create(1, CSSPrimitiveValue::UnitType::kNumber));
+    list->Append(
+        *CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kNumber));
+    list->Append(
+        *CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kNumber));
+  } else if (axis_id == CSSValueY) {
+    CSSPropertyParserHelpers::ConsumeIdent(range);
+    list->Append(
+        *CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kNumber));
+    list->Append(
+        *CSSPrimitiveValue::Create(1, CSSPrimitiveValue::UnitType::kNumber));
+    list->Append(
+        *CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kNumber));
+  } else if (axis_id == CSSValueZ) {
+    CSSPropertyParserHelpers::ConsumeIdent(range);
+    list->Append(
+        *CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kNumber));
+    list->Append(
+        *CSSPrimitiveValue::Create(0, CSSPrimitiveValue::UnitType::kNumber));
+    list->Append(
+        *CSSPrimitiveValue::Create(1, CSSPrimitiveValue::UnitType::kNumber));
+  } else {
+    for (unsigned i = 0; i < 3; i++) {  // 3 dimensions of rotation
+      CSSValue* dimension =
+          CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeAll);
+      if (!dimension) {
+        if (i == 0)
+          break;
+        return nullptr;
+      }
+      list->Append(*dimension);
+    }
+  }
+
+  if (!rotation) {
+    rotation = CSSPropertyParserHelpers::ConsumeAngle(
+        range, &context, WTF::Optional<WebFeature>());
+    if (!rotation)
+      return nullptr;
+  }
   list->Append(*rotation);
 
   return list;

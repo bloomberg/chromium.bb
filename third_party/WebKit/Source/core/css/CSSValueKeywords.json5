@@ -1112,6 +1112,11 @@
     "translateZ",
     "translate3d",
 
+    // scale
+    "x",
+    "y",
+    "z",
+
     // offset-path
     "path",
     "ray",
@@ -1122,8 +1127,8 @@
 
     // scroll-snap-type
     // none
-    "x",
-    "y",
+    // x
+    // y
     // block
     // inline
     // both
