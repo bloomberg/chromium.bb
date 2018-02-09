@@ -963,19 +963,33 @@ class CORE_EXPORT LocalFrameView final
       ForceThrottlingInvalidationBehavior = kDontForceThrottlingInvalidation,
       NotifyChildrenBehavior = kNotifyChildren);
 
-  // The following three functions may change when https://crbug.com/680606 is
+  // The following eight functions may change when https://crbug.com/680606 is
   // resolved.
 
-  // Indicates that the local root's subtree needs to have its non-fast
-  // scrollable regions updated by ScrollingCoordinator. Should only ever be
-  // called on the local root's view.
-  bool ScrollGestureRegionIsDirty() const;
+  // The following functions all relate to state on the local root's subtree.
+  // These should only ever be called on the local root's view.
 
-  // Updates a flag on the local root's LocalFrameView to mark the local
-  // subtree as needing to update its regions with ScrollingCoordinator.
-  // Only ScrollingCoordinator should ever call this function with |dirty| set
-  // to |false|.
+  // Non-fast scrollable regions need updating by ScrollingCoordinator.
+  bool ScrollGestureRegionIsDirty() const;
+  // Touch event target rects need updating by ScrollingCoordinator.
+  bool TouchEventTargetRectsAreDirty() const;
+  // ScrollingCoordinator should update whether or not scrolling for this
+  // subtree has to happen on the main thread.
+  bool ShouldScrollOnMainThreadIsDirty() const;
+
+  // The following functions update flags on the local root's LocalFrameView to
+  // mark the local subtree as needing to update its state with
+  // ScrollingCoordinator. Only ScrollingCoordinator should ever call these
+  // functions with |dirty| set to |false|.
   void SetScrollGestureRegionIsDirty(bool dirty);
+  void SetTouchEventTargetRectsAreDirty(bool dirty);
+  void SetShouldScrollOnMainThreadIsDirty(bool dirty);
+
+  // Keeps track of whether the scrollable state for the LocalRoot has changed
+  // since ScrollingCoordinator last checked. Only ScrollingCoordinator should
+  // ever call the clearing function.
+  bool FrameIsScrollableDidChange();
+  void ClearFrameIsScrollableDidChange();
 
   // Should be called whenever this LocalFrameView adds or removes a
   // scrollable area, or gains/loses a composited layer.
@@ -1342,6 +1356,9 @@ class CORE_EXPORT LocalFrameView final
   bool needs_intersection_observation_;
   bool needs_forced_compositing_update_;
   bool scroll_gesture_region_is_dirty_;
+  bool touch_event_target_rects_are_dirty_;
+  bool should_scroll_on_main_thread_is_dirty_;
+  bool was_scrollable_;
 
   Member<ElementVisibilityObserver> visibility_observer_;
 

@@ -354,8 +354,10 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
 
   if (diff.TransformChanged()) {
     if (ScrollingCoordinator* scrolling_coordinator =
-            GetDocument().GetFrame()->GetPage()->GetScrollingCoordinator())
-      scrolling_coordinator->NotifyTransformChanged(*this);
+            GetDocument().GetFrame()->GetPage()->GetScrollingCoordinator()) {
+      if (LocalFrame* frame = GetFrame())
+        scrolling_coordinator->NotifyTransformChanged(frame, *this);
+    }
   }
   // Non-atomic inlines should be LayoutInline or LayoutText, not LayoutBox.
   DCHECK(!IsInline() || IsAtomicInlineLevel());
