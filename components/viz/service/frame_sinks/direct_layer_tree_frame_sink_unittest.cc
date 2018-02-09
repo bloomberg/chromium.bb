@@ -203,8 +203,9 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
   EXPECT_FALSE(hit_test_region_list->regions.size());
 
   // Add a SurfaceDrawQuad to one render pass, and add a SolidColorDrawQuad to
-  // another render pass. |hit_test_region_list_| should contain one child
-  // region corresponding to that SurfaceDrawQuad.
+  // another render pass, and add a SurfaceDrawQuad with a transform that's not
+  // invertible. |hit_test_region_list_| should contain one child
+  // region corresponding to that first SurfaceDrawQuad.
   const SurfaceId child_surface_id(
       FrameSinkId(1, 1), LocalSurfaceId(1, base::UnguessableToken::Create()));
   auto pass2 = RenderPass::Create();
@@ -243,6 +244,31 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
   SendRenderPassList(&pass_list);
   task_runner_->RunUntilIdle();
 
+  const SurfaceId child_surface_id4(
+      FrameSinkId(4, 1), LocalSurfaceId(1, base::UnguessableToken::Create()));
+  auto pass4 = RenderPass::Create();
+  pass4->output_rect = display_rect_;
+  pass4->id = 4;
+  auto* shared_quad_state4 = pass4->CreateAndAppendSharedQuadState();
+  gfx::Rect rect4(display_rect_);
+  // A degenerate matrix of all zeros is not invertible.
+  gfx::Transform transform4;
+  transform4.matrix().set(0, 0, 0.f);
+  transform4.matrix().set(1, 1, 0.f);
+  transform4.matrix().set(2, 2, 0.f);
+  transform4.matrix().set(3, 3, 0.f);
+  shared_quad_state4->SetAll(
+      transform4, rect4 /* quad_layer_rect */,
+      rect4 /* visible_quad_layer_rect */, rect4 /*clip_rect */,
+      false /* is_clipped */, false /* are_contents_opaque */,
+      0.5f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
+  auto* quad4 = pass4->quad_list.AllocateAndConstruct<SurfaceDrawQuad>();
+  quad4->SetNew(shared_quad_state4, rect4 /* rect */, rect4 /* visible_rect */,
+                child_surface_id4 /* primary_surface_id */,
+                base::Optional<SurfaceId>() /* fallback_surface_id */,
+                SK_ColorBLACK, false /* stretch_content_to_fill_bounds */);
+  pass_list.push_back(std::move(pass4));
+
   const auto* hit_test_region_list1 =
       frame_sink_manager_.hit_test_manager()->GetActiveHitTestRegionList(
           display_->CurrentSurfaceId());
@@ -257,7 +283,9 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
   EXPECT_EQ(mojom::kHitTestChildSurface,
             hit_test_region_list1->regions[0]->flags);
   EXPECT_EQ(gfx::Rect(20, 20), hit_test_region_list1->regions[0]->rect);
-  EXPECT_EQ(transform2, hit_test_region_list1->regions[0]->transform);
+  gfx::Transform transform2_inverse;
+  EXPECT_TRUE(transform2.GetInverse(&transform2_inverse));
+  EXPECT_EQ(transform2_inverse, hit_test_region_list1->regions[0]->transform);
 }
 
 }  // namespace
