@@ -311,7 +311,8 @@ def get_waterfall_config():
            'build134-m1', 'build135-m1', 'build136-m1'
           ],
        'perf_tests': [
-         ('media_perftests', 'build134-m1')]
+         ('media_perftests', 'build134-m1'),
+         ('views_perftests', 'build135-m1')]
       }
     ])
   waterfall = add_tester(
@@ -447,6 +448,7 @@ def get_waterfall_config():
            'build161-m1', 'build162-m1'],
        'perf_tests': [
          ('net_perftests', 'build159-m1'),
+         ('views_perftests', 'build160-m1'),
        ]
       }
     ])
@@ -502,7 +504,9 @@ def get_waterfall_config():
          ('load_library_perf_tests', 'build29-a9'),
          ('net_perftests', 'build29-a9'),
          ('tracing_perftests', 'build29-a9'),
-         ('media_perftests', 'build30-a9')]
+         ('media_perftests', 'build30-a9'),
+         ('views_perftests', 'build31-a9')
+       ]
       }
     ])
 
@@ -906,7 +910,9 @@ NON_TELEMETRY_BENCHMARKS = {
     'load_library_perf_tests': BenchmarkMetadata(None, None, False),
     'media_perftests': BenchmarkMetadata('crouleau@chromium.org', None, False),
     'performance_browser_tests': BenchmarkMetadata(
-        'miu@chromium.org', None, False)
+        'miu@chromium.org', None, False),
+    'views_perftests': BenchmarkMetadata(
+        'tapted@chromium.org', 'Internals>Views', False)
 }
 
 
