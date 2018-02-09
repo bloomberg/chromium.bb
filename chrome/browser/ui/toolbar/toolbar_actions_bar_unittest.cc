@@ -149,7 +149,7 @@ ToolbarActionsBarUnitTest::~ToolbarActionsBarUnitTest() {}
 
 void ToolbarActionsBarUnitTest::SetUp() {
   BrowserWithTestWindowTest::SetUp();
-  extensions::LoadErrorReporter::Init(true);
+  extensions::LoadErrorReporter::Init(false);
 
   // The toolbar typically displays extension icons, so create some extension
   // test infrastructure.
