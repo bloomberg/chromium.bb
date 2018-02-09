@@ -129,7 +129,6 @@ class MockInputRouter : public InputRouter {
                 bool frame_handler) override {}
   void ProgressFling(base::TimeTicks time) override {}
   void StopFling() override {}
-  bool FlingCancellationIsDeferred() override { return false; }
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override {

@@ -1781,23 +1781,10 @@ RenderWidgetHostViewAndroid::GetRenderViewHostDelegateView() const {
 InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   if (overscroll_controller_ &&
-      blink::WebInputEvent::IsGestureEventType(input_event.GetType())) {
-    blink::WebGestureEvent gesture_event =
-        static_cast<const blink::WebGestureEvent&>(input_event);
-    if (overscroll_controller_->WillHandleGestureEvent(gesture_event)) {
-      // Terminate an active fling when a GSU generated from the fling progress
-      // (GSU with inertial state) is consumed by the overscroll_controller_ and
-      // overscrolling mode is not |OVERSCROLL_NONE|. The early fling
-      // termination generates a GSE which completes the overscroll action.
-      if (gesture_event.GetType() ==
-              blink::WebInputEvent::kGestureScrollUpdate &&
-          gesture_event.data.scroll_update.inertial_phase ==
-              blink::WebGestureEvent::kMomentumPhase) {
-        host_->StopFling();
-      }
-
-      return INPUT_EVENT_ACK_STATE_CONSUMED;
-    }
+      blink::WebInputEvent::IsGestureEventType(input_event.GetType()) &&
+      overscroll_controller_->WillHandleGestureEvent(
+          static_cast<const blink::WebGestureEvent&>(input_event))) {
+    return INPUT_EVENT_ACK_STATE_CONSUMED;
   }
 
   if (content_view_core_ && content_view_core_->FilterInputEvent(input_event))

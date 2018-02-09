@@ -117,7 +117,6 @@ void InputRouterImpl::SendWheelEvent(
 
 void InputRouterImpl::SendKeyboardEvent(
     const NativeWebKeyboardEventWithLatencyInfo& key_event) {
-  gesture_event_queue_.StopFling();
   gesture_event_queue_.FlingHasBeenHalted();
   mojom::WidgetInputHandler::DispatchEventCallback callback = base::BindOnce(
       &InputRouterImpl::KeyboardEventHandled, weak_this_, key_event);
@@ -127,8 +126,7 @@ void InputRouterImpl::SendKeyboardEvent(
 
 void InputRouterImpl::SendGestureEvent(
     const GestureEventWithLatencyInfo& original_gesture_event) {
-  input_stream_validator_.Validate(original_gesture_event.event,
-                                   FlingCancellationIsDeferred());
+  input_stream_validator_.Validate(original_gesture_event.event);
 
   GestureEventWithLatencyInfo gesture_event(original_gesture_event);
 
@@ -216,14 +214,6 @@ void InputRouterImpl::ProgressFling(base::TimeTicks current_time) {
 
 void InputRouterImpl::StopFling() {
   gesture_event_queue_.StopFling();
-}
-
-bool InputRouterImpl::FlingCancellationIsDeferred() {
-  return gesture_event_queue_.FlingCancellationIsDeferred();
-}
-
-void InputRouterImpl::DidStopFlingingOnBrowser() {
-  client_->DidStopFlinging();
 }
 
 void InputRouterImpl::CancelTouchTimeout() {
@@ -351,10 +341,6 @@ void InputRouterImpl::OnFilteringTouchEvent(const WebTouchEvent& touch_event) {
   output_stream_validator_.Validate(touch_event);
 }
 
-bool InputRouterImpl::TouchscreenFlingInProgress() {
-  return gesture_event_queue_.TouchscreenFlingInProgress();
-}
-
 void InputRouterImpl::SendGestureEventImmediately(
     const GestureEventWithLatencyInfo& gesture_event) {
   mojom::WidgetInputHandler::DispatchEventCallback callback = base::BindOnce(
@@ -375,12 +361,6 @@ void InputRouterImpl::SendGeneratedWheelEvent(
     const MouseWheelEventWithLatencyInfo& wheel_event) {
   client_->ForwardWheelEventWithLatencyInfo(wheel_event.event,
                                             wheel_event.latency);
-}
-
-void InputRouterImpl::SendGeneratedGestureScrollEvents(
-    const GestureEventWithLatencyInfo& gesture_event) {
-  client_->ForwardGestureEventWithLatencyInfo(gesture_event.event,
-                                              gesture_event.latency);
 }
 
 void InputRouterImpl::SetNeedsBeginFrameForFlingProgress() {
