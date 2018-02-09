@@ -743,7 +743,7 @@ void BaseAudioContext::HandleStoppableSourceNodes() {
   DCHECK(IsAudioThread());
   DCHECK(IsGraphOwner());
 
-  if (active_source_nodes_.size())
+  if (finished_source_handlers_.size())
     ScheduleMainThreadCleanup();
 }
 
