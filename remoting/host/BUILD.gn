@@ -298,6 +298,7 @@ static_library("host") {
   defines = [ "WEBRTC_CHROMIUM_BUILD" ]
 
   deps = [
+    "//base:debugging_flags",
     "//base:i18n",
     "//components/policy/core/common",
     "//crypto",
