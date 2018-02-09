@@ -595,8 +595,16 @@ void TextSuggestionController::ReplaceRangeWithText(const EphemeralRange& range,
   GetFrame().Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder().SetBaseAndExtent(range).Build());
 
+  // TODO(editing-dev): We should check whether |TextSuggestionController| is
+  // available or not.
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
   // Dispatch 'beforeinput'.
-  Element* const target = GetFrame().GetEditor().FindEventTargetFromSelection();
+  Element* const target = GetFrame().GetEditor().FindEventTargetFrom(
+      GetFrame().Selection().ComputeVisibleSelectionInDOMTree());
+
   DataTransfer* const data_transfer = DataTransfer::Create(
       DataTransfer::DataTransferType::kInsertReplacementText,
       DataTransferAccessPolicy::kDataTransferReadable,
