@@ -15,7 +15,6 @@
 #include "chromecast/media/cma/base/coded_frame_provider.h"
 #include "chromecast/media/cma/base/decoder_config_adapter.h"
 #include "chromecast/media/cma/pipeline/av_pipeline_impl.h"
-#include "chromecast/media/cma/pipeline/cdm_decryptor.h"
 #include "chromecast/public/graphics_types.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "media/base/video_decoder_config.h"
@@ -125,10 +124,6 @@ const EncryptionScheme& VideoPipelineImpl::GetEncryptionScheme(
     StreamId id) const {
   DCHECK_LT(id, encryption_schemes_.size());
   return encryption_schemes_[static_cast<int>(id)];
-}
-
-std::unique_ptr<StreamDecryptor> VideoPipelineImpl::CreateDecryptor() {
-  return std::make_unique<CdmDecryptor>();
 }
 
 void VideoPipelineImpl::UpdateStatistics() {
