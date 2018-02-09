@@ -280,7 +280,7 @@ bool SpellingServiceClient::ParseResponse(
 
 SpellingServiceClient::TextCheckCallbackData::TextCheckCallbackData(
     std::unique_ptr<net::URLFetcher> fetcher,
-    TextCheckCompleteCallback&& callback,
+    TextCheckCompleteCallback callback,
     base::string16 text)
     : fetcher(std::move(fetcher)), callback(std::move(callback)), text(text) {}
 
