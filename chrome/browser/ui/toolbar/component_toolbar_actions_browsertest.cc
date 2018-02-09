@@ -5,8 +5,8 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/mock_component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"

@@ -462,7 +462,6 @@ static_library("extensions") {
     "bookmark_app_helper.h",
     "bookmark_app_navigation_throttle.cc",
     "bookmark_app_navigation_throttle.h",
-    "browser_action_test_util.h",
     "browser_context_keyed_service_factories.cc",
     "browser_context_keyed_service_factories.h",
     "browser_extension_window_controller.cc",
