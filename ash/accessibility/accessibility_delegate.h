@@ -63,18 +63,6 @@ class ASH_EXPORT AccessibilityDelegate {
   // Returns if tap dragging is enabled.
   virtual bool IsTapDraggingEnabled() const = 0;
 
-  // Invoked to enable or disable select-to-speak.
-  virtual void SetSelectToSpeakEnabled(bool enabled) = 0;
-
-  // Returns if select-to-speak is enabled.
-  virtual bool IsSelectToSpeakEnabled() const = 0;
-
-  // Invoked to enable or disable switch access.
-  virtual void SetSwitchAccessEnabled(bool enabled) = 0;
-
-  // Returns if switch access is enabled.
-  virtual bool IsSwitchAccessEnabled() const = 0;
-
   // Returns true when the accessibility menu should be shown.
   virtual bool ShouldShowAccessibilityMenu() const = 0;
 
