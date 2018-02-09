@@ -7,7 +7,6 @@ Polymer({
 
     hostAttributes: {
       role: 'radiogroup',
-      tabindex: 0
     },
 
     properties: {
@@ -53,7 +52,7 @@ Polymer({
     /**
      * Selects the given value.
      */
-     select: function(value) {
+    select: function(value) {
       var newItem = this._valueToItem(value);
       if (newItem && newItem.hasAttribute('disabled')) {
         return;
