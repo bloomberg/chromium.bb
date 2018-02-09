@@ -152,11 +152,6 @@ WebPagePopup* WebViewFrameWidget::GetPagePopup() const {
   return web_view_->GetPagePopup();
 }
 
-bool WebViewFrameWidget::GetCompositionCharacterBounds(
-    WebVector<WebRect>& bounds) {
-  return web_view_->GetCompositionCharacterBounds(bounds);
-}
-
 void WebViewFrameWidget::UpdateBrowserControlsState(
     WebBrowserControlsState constraints,
     WebBrowserControlsState current,

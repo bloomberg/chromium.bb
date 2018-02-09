@@ -15,6 +15,7 @@ class WebRange;
 class WebString;
 template <typename T>
 class WebVector;
+struct WebRect;
 
 class WebInputMethodController {
  public:
@@ -72,6 +73,13 @@ class WebInputMethodController {
   // Fetches the character range of the current composition, also called the
   // "marked range."
   virtual WebRange CompositionRange() { return WebRange(); };
+
+  // Populate |bounds| with the composition character bounds for the ongoing
+  // composition. Returns false if there is no focused input or any ongoing
+  // composition.
+  virtual bool GetCompositionCharacterBounds(WebVector<WebRect>& bounds) {
+    return false;
+  }
 };
 
 }  // namespace blink

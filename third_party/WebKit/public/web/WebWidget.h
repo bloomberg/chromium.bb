@@ -53,8 +53,6 @@ class WebCoalescedInputEvent;
 class WebLayoutAndPaintAsyncCallback;
 class WebPagePopup;
 struct WebPoint;
-template <typename T>
-class WebVector;
 
 class WebWidget {
  public:
@@ -225,13 +223,6 @@ class WebWidget {
   virtual void UpdateBrowserControlsState(WebBrowserControlsState constraints,
                                           WebBrowserControlsState current,
                                           bool animate) {}
-
-  // Populate |bounds| with the composition character bounds for the ongoing
-  // composition. Returns false if there is no focused input or any ongoing
-  // composition.
-  virtual bool GetCompositionCharacterBounds(WebVector<WebRect>& bounds) {
-    return false;
-  }
 
   // Called by client to request showing the context menu.
   virtual void ShowContextMenu(WebMenuSourceType) {}

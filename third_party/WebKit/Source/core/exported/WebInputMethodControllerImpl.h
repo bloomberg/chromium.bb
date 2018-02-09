@@ -45,6 +45,7 @@ class CORE_EXPORT WebInputMethodControllerImpl
   int ComputeWebTextInputNextPreviousFlags() override;
   WebTextInputType TextInputType() override;
   WebRange CompositionRange() override;
+  bool GetCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
 
   WebRange GetSelectionOffsets() const;
 

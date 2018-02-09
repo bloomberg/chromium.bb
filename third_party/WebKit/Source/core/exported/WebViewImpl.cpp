@@ -2293,40 +2293,6 @@ void WebViewImpl::DidLosePointerLock() {
     MainFrameImpl()->FrameWidget()->DidLosePointerLock();
 }
 
-// TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
-// well. This code needs to be refactored  (http://crbug.com/629721).
-bool WebViewImpl::GetCompositionCharacterBounds(WebVector<WebRect>& bounds) {
-  WebInputMethodController* controller = GetActiveWebInputMethodController();
-  if (!controller)
-    return false;
-
-  WebRange range = controller->CompositionRange();
-  if (range.IsEmpty())
-    return false;
-
-  WebLocalFrame* frame = FocusedFrame();
-
-  // Only consider frames whose local root is the main frame. For other
-  // local frames which have different local roots, the corresponding
-  // WebFrameWidget will handle this task.
-  if (frame->LocalRoot() != MainFrameImpl())
-    return false;
-
-  size_t character_count = range.length();
-  size_t offset = range.StartOffset();
-  WebVector<WebRect> result(character_count);
-  WebRect webrect;
-  for (size_t i = 0; i < character_count; ++i) {
-    if (!frame->FirstRectForCharacterRange(offset + i, 1, webrect)) {
-      DLOG(ERROR) << "Could not retrieve character rectangle at " << i;
-      return false;
-    }
-    result[i] = webrect;
-  }
-  bounds.Swap(result);
-  return true;
-}
-
 // WebView --------------------------------------------------------------------
 
 WebSettingsImpl* WebViewImpl::SettingsImpl() {

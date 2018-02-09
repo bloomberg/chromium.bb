@@ -493,7 +493,6 @@ class CORE_EXPORT WebViewImpl final
 
   // TODO(lfg): Remove once WebViewFrameWidget is deleted.
   void ScheduleAnimationForWidget();
-  bool GetCompositionCharacterBounds(WebVector<WebRect>&) override;
 
   void UpdateBaseBackgroundColor();
 
