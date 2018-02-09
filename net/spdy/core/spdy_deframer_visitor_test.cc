@@ -58,20 +58,6 @@ class SpdyDeframerVisitorTest : public ::testing::Test {
             decoder_.spdy_framer_error() == Http2DecoderAdapter::SPDY_NO_ERROR);
   }
 
-  SpdySerializedFrame SerializeFrame(const SpdyFrameIR& frame) {
-    return encoder_.SerializeFrame(frame);
-  }
-
-  SpdyString SerializeFrames(
-      const std::vector<std::unique_ptr<SpdyFrameIR>>& frames) {
-    SpdyString result;
-    for (const auto& frame_ptr : frames) {
-      auto sf = SerializeFrame(*frame_ptr);
-      result.append(sf.data(), sf.size());
-    }
-    return result;
-  }
-
   //       bool
 
   SpdyFramer encoder_;
