@@ -80,7 +80,7 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
   }
 
   {
-    TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateAnimations");
+    TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateAnimationsAndOpacity");
 
     // Process all animations and pre-binding work. I.e., induce any
     // time-related "dirtiness" on the scene graph.
