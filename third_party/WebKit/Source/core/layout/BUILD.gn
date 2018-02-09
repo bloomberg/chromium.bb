@@ -9,8 +9,6 @@ blink_core_sources("layout") {
 
   sources = [
     "BackgroundBleedAvoidance.h",
-    "BaselineAlignment.cpp",
-    "BaselineAlignment.h",
     "BidiRun.h",
     "BidiRunForLine.cpp",
     "BidiRunForLine.h",
@@ -33,6 +31,8 @@ blink_core_sources("layout") {
     "GeneratedChildren.h",
     "Grid.cpp",
     "Grid.h",
+    "GridBaselineAlignment.cpp",
+    "GridBaselineAlignment.h",
     "GridLayoutUtils.cpp",
     "GridLayoutUtils.h",
     "GridTrackSizingAlgorithm.cpp",

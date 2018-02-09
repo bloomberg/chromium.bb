@@ -257,9 +257,9 @@ void LayoutGrid::RepeatTracksSizingIfNeeded(
   // https://drafts.csswg.org/css-align-3/#baseline-align-content
   // https://drafts.csswg.org/css-align-3/#baseline-align-self
   bool baseline_affect_intrinsic_width =
-      BaselineMayAffectIntrinsicSize(kForColumns);
+      track_sizing_algorithm_.BaselineMayAffectIntrinsicSize(kForColumns);
   bool baseline_affect_intrinsic_height =
-      BaselineMayAffectIntrinsicSize(kForRows);
+      track_sizing_algorithm_.BaselineMayAffectIntrinsicSize(kForRows);
 
   // In orthogonal flow cases column track's size is determined by using the
   // computed row track's size, which it was estimated during the first cycle of
@@ -306,10 +306,9 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
       SimplifiedLayout())
     return;
 
-  row_axis_alignment_context_.clear();
-  col_axis_alignment_context_.clear();
-
   SubtreeLayoutScope layout_scope(*this);
+
+  track_sizing_algorithm_.ClearBaselineAlignment();
 
   {
     // LayoutState needs this deliberate scope to pop before updating scroll
@@ -1112,10 +1111,6 @@ void LayoutGrid::DirtyGrid() {
 
   grid_.SetNeedsItemsPlacement(true);
   grid_items_overflowing_grid_area_.resize(0);
-  // TODO (jfernandez): Should we store the baseline context data into the Grid
-  // structure ?
-  row_axis_alignment_context_.clear();
-  col_axis_alignment_context_.clear();
 }
 
 Vector<LayoutUnit> LayoutGrid::TrackSizesForComputedStyle(
@@ -1638,27 +1633,6 @@ LayoutUnit LayoutGrid::InlineBlockBaseline(LineDirectionMode direction) const {
   return SynthesizedBaselineFromContentBox(*this, direction) + margin_height;
 }
 
-bool LayoutGrid::IsHorizontalGridAxis(GridAxis axis) const {
-  return axis == kGridRowAxis ? IsHorizontalWritingMode()
-                              : !IsHorizontalWritingMode();
-}
-
-bool LayoutGrid::IsParallelToBlockAxisForChild(const LayoutBox& child,
-                                               GridAxis axis) const {
-  return axis == kGridColumnAxis
-             ? !GridLayoutUtils::IsOrthogonalChild(*this, child)
-             : GridLayoutUtils::IsOrthogonalChild(*this, child);
-}
-
-bool LayoutGrid::IsDescentBaselineForChild(const LayoutBox& child,
-                                           GridAxis baseline_axis) const {
-  return IsHorizontalGridAxis(baseline_axis) &&
-         ((child.StyleRef().IsFlippedBlocksWritingMode() &&
-           !StyleRef().IsFlippedBlocksWritingMode()) ||
-          (child.StyleRef().IsFlippedLinesWritingMode() &&
-           StyleRef().IsFlippedBlocksWritingMode()));
-}
-
 bool LayoutGrid::IsBaselineAlignmentForChild(const LayoutBox& child,
                                              GridAxis baseline_axis) const {
   if (child.IsOutOfFlowPositioned())
@@ -1671,168 +1645,24 @@ bool LayoutGrid::IsBaselineAlignmentForChild(const LayoutBox& child,
   return IsBaselinePosition(align) && !has_auto_margins;
 }
 
-const BaselineGroup& LayoutGrid::GetBaselineGroupForChild(
-    const LayoutBox& child,
-    GridAxis baseline_axis) const {
-  DCHECK(IsBaselineAlignmentForChild(child, baseline_axis));
-  auto& grid = track_sizing_algorithm_.GetGrid();
-  bool is_column_axis_baseline = baseline_axis == kGridColumnAxis;
-  bool is_row_axis_context = is_column_axis_baseline;
-  const auto& span = is_row_axis_context
-                         ? grid.GridItemSpan(child, kForRows)
-                         : grid.GridItemSpan(child, kForColumns);
-  auto& contexts_map = is_row_axis_context ? row_axis_alignment_context_
-                                           : col_axis_alignment_context_;
-  auto* context = contexts_map.at(span.StartLine());
-  DCHECK(context);
-  ItemPosition align =
-      SelfAlignmentForChild(baseline_axis, child).GetPosition();
-  return context->GetSharedGroup(child, align);
-}
-
-LayoutUnit LayoutGrid::MarginOverForChild(const LayoutBox& child,
-                                          GridAxis axis) const {
-  return IsHorizontalGridAxis(axis) ? child.MarginRight() : child.MarginTop();
-}
-
-LayoutUnit LayoutGrid::MarginUnderForChild(const LayoutBox& child,
-                                           GridAxis axis) const {
-  return IsHorizontalGridAxis(axis) ? child.MarginLeft() : child.MarginBottom();
-}
-
-LayoutUnit LayoutGrid::LogicalAscentForChild(const LayoutBox& child,
-                                             GridAxis baseline_axis) const {
-  LayoutUnit ascent = AscentForChild(child, baseline_axis);
-  return IsDescentBaselineForChild(child, baseline_axis)
-             ? DescentForChild(child, ascent, baseline_axis)
-             : ascent;
-}
-
-LayoutUnit LayoutGrid::AscentForChild(const LayoutBox& child,
-                                      GridAxis baseline_axis) const {
-  LayoutUnit margin = IsDescentBaselineForChild(child, baseline_axis)
-                          ? MarginUnderForChild(child, baseline_axis)
-                          : MarginOverForChild(child, baseline_axis);
-  LayoutUnit baseline = IsParallelToBlockAxisForChild(child, baseline_axis)
-                            ? child.FirstLineBoxBaseline()
-                            : LayoutUnit(-1);
-  // We take border-box's under edge if no valid baseline.
-  if (baseline == -1) {
-    if (IsHorizontalGridAxis(baseline_axis)) {
-      return StyleRef().IsFlippedBlocksWritingMode()
-                 ? child.Size().Width().ToInt() + margin
-                 : margin;
-    }
-    return child.Size().Height() + margin;
-  }
-  return baseline + margin;
-}
-
-LayoutUnit LayoutGrid::DescentForChild(const LayoutBox& child,
-                                       LayoutUnit ascent,
-                                       GridAxis baseline_axis) const {
-  if (IsParallelToBlockAxisForChild(child, baseline_axis))
-    return child.MarginLogicalHeight() + child.LogicalHeight() - ascent;
-  return child.MarginLogicalWidth() + child.LogicalWidth() - ascent;
-}
-
-bool LayoutGrid::IsBaselineContextComputed(GridAxis baseline_axis) const {
-  return baseline_axis == kGridColumnAxis
-             ? !row_axis_alignment_context_.IsEmpty()
-             : !col_axis_alignment_context_.IsEmpty();
-}
-
-bool LayoutGrid::BaselineMayAffectIntrinsicSize(
-    GridTrackSizingDirection direction) const {
-  const auto& contexts_map = direction == kForColumns
-                                 ? col_axis_alignment_context_
-                                 : row_axis_alignment_context_;
-  for (const auto& context : contexts_map) {
-    auto track_size =
-        track_sizing_algorithm_.GetGridTrackSize(direction, context.key);
-    // TODO(lajava): Should we consider flexible tracks as well ?
-    if (!track_size.IsContentSized())
-      continue;
-    for (const auto& group : context.value->SharedGroups()) {
-      if (group.size() > 1) {
-        auto grid_area_size =
-            track_sizing_algorithm_.Tracks(direction)[context.key].BaseSize();
-        if (group.MaxAscent() + group.MaxDescent() > grid_area_size)
-          return true;
-      }
-    }
-  }
-  return false;
-}
-
-
 void LayoutGrid::ComputeBaselineAlignmentContext() {
   for (auto* child = FirstInFlowChildBox(); child;
        child = child->NextInFlowSiblingBox()) {
-    UpdateBaselineAlignmentContextIfNeeded(*child, kGridRowAxis);
-    UpdateBaselineAlignmentContextIfNeeded(*child, kGridColumnAxis);
-  }
-}
-
-void LayoutGrid::UpdateBaselineAlignmentContextIfNeeded(
-    LayoutBox& child,
-    GridAxis baseline_axis) {
-  // TODO (lajava): We must ensure this method is not called as part of an
-  // intrinsic size computation.
-  if (!IsBaselineAlignmentForChild(child, baseline_axis))
-    return;
-
-  child.LayoutIfNeeded();
-
-  // Determine Ascent and Descent values of this child with respect to
-  // its grid container.
-  LayoutUnit ascent = AscentForChild(child, baseline_axis);
-  LayoutUnit descent = DescentForChild(child, ascent, baseline_axis);
-  if (IsDescentBaselineForChild(child, baseline_axis))
-    std::swap(ascent, descent);
-
-  // Looking up for a shared alignment context perpendicular to the
-  // baseline axis.
-  auto& grid = track_sizing_algorithm_.GetGrid();
-  bool is_column_axis_baseline = baseline_axis == kGridColumnAxis;
-  bool is_row_axis_context = is_column_axis_baseline;
-  const auto& span = is_row_axis_context
-                         ? grid.GridItemSpan(child, kForRows)
-                         : grid.GridItemSpan(child, kForColumns);
-  auto& contexts_map = is_row_axis_context ? row_axis_alignment_context_
-                                           : col_axis_alignment_context_;
-  auto add_result = contexts_map.insert(span.StartLine(), nullptr);
-
-  // Looking for a compatible baseline-sharing group.
-  ItemPosition align =
-      SelfAlignmentForChild(baseline_axis, child).GetPosition();
-  if (add_result.is_new_entry) {
-    add_result.stored_value->value =
-        std::make_unique<BaselineContext>(child, align, ascent, descent);
-  } else {
-    auto* context = add_result.stored_value->value.get();
-    context->UpdateSharedGroup(child, align, ascent, descent);
+    track_sizing_algorithm_.UpdateBaselineAlignmentContextIfNeeded(
+        *child, kGridRowAxis);
+    track_sizing_algorithm_.UpdateBaselineAlignmentContextIfNeeded(
+        *child, kGridColumnAxis);
   }
 }
 
 LayoutUnit LayoutGrid::ColumnAxisBaselineOffsetForChild(
     const LayoutBox& child) const {
-  if (!IsBaselineAlignmentForChild(child, kGridColumnAxis))
-    return LayoutUnit();
-  auto& group = GetBaselineGroupForChild(child, kGridColumnAxis);
-  if (group.size() > 1)
-    return group.MaxAscent() - LogicalAscentForChild(child, kGridColumnAxis);
-  return LayoutUnit();
+  return track_sizing_algorithm_.BaselineOffsetForChild(child, kGridColumnAxis);
 }
 
 LayoutUnit LayoutGrid::RowAxisBaselineOffsetForChild(
     const LayoutBox& child) const {
-  if (!IsBaselineAlignmentForChild(child, kGridRowAxis))
-    return LayoutUnit();
-  auto& group = GetBaselineGroupForChild(child, kGridRowAxis);
-  if (group.size() > 1)
-    return group.MaxAscent() - LogicalAscentForChild(child, kGridRowAxis);
-  return LayoutUnit();
+  return track_sizing_algorithm_.BaselineOffsetForChild(child, kGridRowAxis);
 }
 
 GridAxisPosition LayoutGrid::ColumnAxisPositionForChild(
