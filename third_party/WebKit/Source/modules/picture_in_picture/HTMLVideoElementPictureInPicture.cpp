@@ -98,8 +98,9 @@ void HTMLVideoElementPictureInPicture::SetBooleanAttribute(
   // TODO(crbug.com/806249): Reject pending PiP requests.
 
   Document& document = element.GetDocument();
-  if (PictureInPictureController::Ensure(document).PictureInPictureElement() ==
-      &element) {
+  TreeScope& scope = element.GetTreeScope();
+  if (PictureInPictureController::Ensure(document).PictureInPictureElement(
+          scope) == &element) {
     // TODO(crbug.com/806249): Call element.exitPictureInPicture().
 
     PictureInPictureController::Ensure(document).UnsetPictureInPictureElement();
