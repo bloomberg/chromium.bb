@@ -713,7 +713,9 @@ class CORE_EXPORT LocalFrameView final
   IntPoint AbsoluteToRootFrame(const IntPoint&) const;
   LayoutRect AbsoluteToRootFrame(const LayoutRect&) const;
   IntRect RootFrameToDocument(const IntRect&);
+  IntPoint RootFrameToDocument(const IntPoint&);
   FloatPoint RootFrameToDocument(const FloatPoint&);
+  LayoutPoint RootFrameToAbsolute(const LayoutPoint&) const;
   DoublePoint DocumentToAbsolute(const DoublePoint&) const;
   FloatPoint DocumentToAbsolute(const FloatPoint&) const;
   LayoutPoint DocumentToAbsolute(const LayoutPoint&) const;

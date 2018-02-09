@@ -72,6 +72,7 @@
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/fullscreen/Fullscreen.h"
+#include "core/geometry/DOMRect.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/ImageDocument.h"
@@ -11716,6 +11717,96 @@ TEST_P(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
 
   EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(inputRect));
   EXPECT_EQ(1, WebView().FakePageScaleAnimationPageScaleForTesting());
+}
+
+TEST_P(WebFrameSimTest, DoubleTapZoomWhileScrolled) {
+  WebView().Resize(WebSize(490, 500));
+  WebView().SetDefaultPageScaleLimits(0.5f, 4);
+  WebView().EnableFakePageScaleAnimationForTesting(true);
+
+  WebView().GetSettings()->SetTextAutosizingEnabled(false);
+  WebView().GetSettings()->SetViewportMetaEnabled(true);
+  WebView().GetSettings()->SetViewportEnabled(true);
+  WebView().GetSettings()->SetMainFrameResizesAreOrientationChanges(true);
+  WebView().GetSettings()->SetShrinksViewportContentToFit(true);
+  WebView().GetSettings()->SetViewportStyle(WebViewportStyle::kMobile);
+  WebView().GetSettings()->SetAutoZoomFocusedNodeToLegibleScale(true);
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        ::-webkit-scrollbar {
+          width: 0px;
+          height: 0px;
+        }
+        body {
+          margin: 0px;
+          width: 10000px;
+          height: 10000px;
+        }
+        #target {
+          position: absolute;
+          left: 2000px;
+          top: 3000px;
+          width: 100px;
+          height: 100px;
+          background-color: blue;
+        }
+      </style>
+      <div id="target"></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  LocalFrame* frame = ToLocalFrame(WebView().GetPage()->MainFrame());
+  LocalFrameView* frame_view = frame->View();
+  VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
+  FloatRect target_rect_in_document(2000, 3000, 100, 100);
+
+  ASSERT_EQ(0.5f, visual_viewport.Scale());
+
+  // Center the target in the screen.
+  frame_view->GetScrollableArea()->SetScrollOffset(
+      ScrollOffset(2000 - 440, 3000 - 450), kProgrammaticScroll);
+  Element* target = GetDocument().QuerySelector("#target");
+  DOMRect* rect = target->getBoundingClientRect();
+  ASSERT_EQ(440, rect->left());
+  ASSERT_EQ(450, rect->top());
+
+  // Double-tap on the target. Expect that we zoom in and the target is
+  // contained in the visual viewport.
+  {
+    WebView().AnimateDoubleTapZoom(WebPoint(445, 455));
+    EXPECT_TRUE(WebView().FakeDoubleTapAnimationPendingForTesting());
+    ScrollOffset new_offset = ToScrollOffset(
+        WebView().FakePageScaleAnimationTargetPositionForTesting());
+    float new_scale = WebView().FakePageScaleAnimationPageScaleForTesting();
+    visual_viewport.SetScale(new_scale);
+    frame_view->GetScrollableArea()->SetScrollOffset(new_offset,
+                                                     kProgrammaticScroll);
+
+    EXPECT_FLOAT_EQ(1, visual_viewport.Scale());
+    EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(
+        target_rect_in_document));
+  }
+
+  // Reset the testing getters.
+  WebView().EnableFakePageScaleAnimationForTesting(true);
+
+  // Double-tap on the target again. We should zoom out and the target should
+  // remain on screen.
+  {
+    WebView().AnimateDoubleTapZoom(WebPoint(445, 455));
+    EXPECT_TRUE(WebView().FakeDoubleTapAnimationPendingForTesting());
+    IntPoint target_offset =
+        WebView().FakePageScaleAnimationTargetPositionForTesting();
+    float new_scale = WebView().FakePageScaleAnimationPageScaleForTesting();
+
+    EXPECT_FLOAT_EQ(0.5f, new_scale);
+    EXPECT_TRUE(target_rect_in_document.Contains(target_offset));
+  }
 }
 
 TEST_P(WebFrameSimTest, ChangeBackgroundColor) {
