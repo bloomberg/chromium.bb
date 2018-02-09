@@ -33,7 +33,7 @@ namespace {
 
 // The current schema version of the MEI data. If this value is higher
 // than the stored value, all MEI data will be wiped.
-static const int kSchemaVersion = 3;
+static const int kSchemaVersion = 4;
 
 bool MediaEngagementFilterAdapter(
     const GURL& predicate,
