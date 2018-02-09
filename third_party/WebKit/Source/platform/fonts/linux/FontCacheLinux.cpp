@@ -35,9 +35,6 @@
 
 namespace blink {
 
-FontCache::FontCache()
-    : purge_prevent_count_(0), font_manager_(sk_ref_sp(static_font_manager_)) {}
-
 static AtomicString& MutableSystemFontFamily() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(AtomicString, system_font_family, ());
   return system_font_family;
@@ -85,7 +82,6 @@ void FontCache::GetFontForCharacter(
   }
 }
 
-#if !defined(OS_ANDROID)
 scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
     const FontDescription& font_description,
     UChar32 c,
@@ -167,7 +163,5 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
   platform_data->SetSyntheticItalic(should_set_synthetic_italic);
   return FontDataFromFontPlatformData(platform_data.get(), kDoNotRetain);
 }
-
-#endif  // !defined(OS_ANDROID)
 
 }  // namespace blink

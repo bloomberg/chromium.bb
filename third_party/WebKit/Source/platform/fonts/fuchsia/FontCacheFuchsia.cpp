@@ -44,22 +44,20 @@ void FontCache::SetSystemFontFamily(const AtomicString& family_name) {
   MutableSystemFontFamily() = family_name;
 }
 
-void FontCache::GetFontForCharacter(
-    UChar32 c,
-    const char* preferred_locale,
-    FontCache::PlatformFallbackFont* fallback_font) {
-  // TODO(fuchsia): Implement this when UI support is ready. crbug.com/750946
-  NOTIMPLEMENTED();
-}
-
 scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
-    const FontDescription&,
-    UChar32,
+    const FontDescription& font_description,
+    UChar32 c,
     const SimpleFontData* font_data_to_substitute,
-    FontFallbackPriority priority) {
-  // TODO(fuchsia): Implement this when UI support is ready. crbug.com/750946
-  NOTIMPLEMENTED();
-  return nullptr;
+    FontFallbackPriority fallback_priority) {
+  sk_sp<SkFontMgr> font_mgr(SkFontMgr::RefDefault());
+  AtomicString family_name = GetFamilyNameForCharacter(
+      font_mgr.get(), c, font_description, fallback_priority);
+  if (family_name.IsEmpty())
+    return GetLastResortFallbackFont(font_description, kDoNotRetain);
+  return FontDataFromFontPlatformData(
+      GetFontPlatformData(font_description,
+                          FontFaceCreationParams(family_name)),
+      kDoNotRetain);
 }
 
 }  // namespace blink
