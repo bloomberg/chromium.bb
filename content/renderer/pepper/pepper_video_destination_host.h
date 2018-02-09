@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/pepper_to_video_track_adapter.h"
+#include "content/renderer/media/pepper/pepper_to_video_track_adapter.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/host/resource_host.h"
 

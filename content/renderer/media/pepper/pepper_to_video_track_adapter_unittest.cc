@@ -10,7 +10,7 @@
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_registry.h"
 #include "content/renderer/media/mock_media_stream_video_sink.h"
-#include "content/renderer/media/pepper_to_video_track_adapter.h"
+#include "content/renderer/media/pepper/pepper_to_video_track_adapter.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/test/ppapi_unittest.h"
