@@ -4,7 +4,7 @@
 
 mojom = "//services/identity/public/mojom/scope_set.mojom"
 public_headers = [ "//services/identity/public/cpp/scope_set.h" ]
-traits_headers = [ "//services/identity/public/cpp/scope_set_struct_traits.h" ]
+traits_headers = [ "//services/identity/public/cpp/scope_set_mojom_traits.h" ]
 public_deps = [
   "//services/identity/public/cpp:cpp_types",
 ]
