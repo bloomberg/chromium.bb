@@ -89,11 +89,6 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   bool IsGpuFeatureInfoAvailable() const;
   gpu::GpuFeatureStatus GetFeatureStatus(gpu::GpuFeatureType feature) const;
 
-  // This collects preliminary GPU info, load GpuBlacklist, and compute the
-  // preliminary blacklisted features; it should only be called at browser
-  // startup time in UI thread before the IO restriction is turned on.
-  void Initialize();
-
   // Only update if the current GPUInfo is not finalized.  If blacklist is
   // loaded, run through blacklist and update blacklisted features.
   void UpdateGpuInfo(const gpu::GPUInfo& gpu_info);
