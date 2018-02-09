@@ -26278,6 +26278,7 @@ from previous Chrome versions.
   <int value="280644887" label="mash"/>
   <int value="283232244" label="OmniboxUIExperimentNarrowDropdown:enabled"/>
   <int value="293134455" label="AutofillSendBillingCustomerNumber:disabled"/>
+  <int value="293996306" label="ArrayPrototypeValues:disabled"/>
   <int value="301869874" label="NTPPhysicalWebPageSuggestions:disabled"/>
   <int value="303058039" label="AccountConsistency:disabled"/>
   <int value="304901781" label="NewUsbBackend:enabled"/>
@@ -26999,6 +27000,7 @@ from previous Chrome versions.
   <int value="2089897928" label="enable-audio-focus"/>
   <int value="2092605092" label="ChromeHomeShowGoogleGWhenUrlCleared:disabled"/>
   <int value="2093235103" label="default-tile-width"/>
+  <int value="2093949489" label="ArrayPrototypeValues:enabled"/>
   <int value="2097048479" label="disable-auto-hiding-toolbar-threshold"/>
   <int value="2098714203" label="enable-generic-sensors"/>
   <int value="2098907258" label="UseSurfaceLayerForVideo:disabled"/>

@@ -3717,6 +3717,11 @@ const FeatureEntry kFeatureEntries[] = {
                                     kSimplifyHttpsIndicatorVariations,
                                     "SimplifyHttpsIndicator")},
 
+    {"enable-array-prototype-values",
+     flag_descriptions::kArrayPrototypeValuesName,
+     flag_descriptions::kArrayPrototypeValuesDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kArrayPrototypeValues)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

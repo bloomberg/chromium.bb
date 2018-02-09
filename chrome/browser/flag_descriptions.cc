@@ -43,6 +43,10 @@ const char kAppBannersDescription[] =
 const char kAshSidebarName[] = "Sidebar";
 const char kAshSidebarDescription[] = "Enable the experimental sidebar.";
 
+const char kArrayPrototypeValuesName[] = "Array.prototype.values ES6 method";
+const char kArrayPrototypeValuesDescription[] =
+    "Enables Array.prototype.values method";
+
 const char kAsyncImageDecodingName[] = "AsyncImageDecoding";
 const char kAsyncImageDecodingDescription[] =
     "Enables asynchronous decoding of images from raster for web content";
