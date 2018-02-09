@@ -60,6 +60,10 @@ HANDLE InjectDumpForHungInput_ExportThunk(HANDLE process) {
       nullptr);
 }
 
+const wchar_t* GetCrashpadDatabasePath_ExportThunk() {
+  return crash_reporter::GetCrashpadDatabasePathImpl();
+}
+
 #if defined(ARCH_CPU_X86_64)
 
 void RegisterNonABICompliantCodeRange_ExportThunk(void* start,

@@ -55,6 +55,9 @@ void SetUploadConsent_ExportThunk(bool consent);
 // This method is used solely to classify hung input.
 HANDLE InjectDumpForHungInput_ExportThunk(HANDLE process);
 
+// Returns the crashpad database path.
+const wchar_t* GetCrashpadDatabasePath_ExportThunk();
+
 #if defined(ARCH_CPU_X86_64)
 // V8 support functions.
 void RegisterNonABICompliantCodeRange_ExportThunk(void* start,
