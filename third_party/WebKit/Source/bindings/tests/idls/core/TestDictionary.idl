@@ -52,6 +52,8 @@ dictionary TestDictionary {
     [TreatNullAs=EmptyString] DOMString applicableToTypeStringMember;
     (double or sequence<double>) unionMemberWithSequenceDefault = [];
     (TestEnum or sequence<TestEnum>) testEnumOrTestEnumSequenceMember;
+    (TestEnum? or sequence<TestEnum>) testEnumOrNullOrTestEnumSequenceMember;
+    (TestEnum or sequence<TestEnum?>) testEnumOrTestEnumOrNullSequenceMember;
     sequence<double?> doubleOrNullSequenceMember;
     (double? or sequence<double?>) doubleOrNullOrDoubleOrNullSequenceMember;
     sequence<DOMString?> stringOrNullSequenceMember;

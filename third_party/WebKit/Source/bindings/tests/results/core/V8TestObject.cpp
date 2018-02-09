@@ -1561,6 +1561,7 @@ static void testEnumOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
   // Returns undefined without setting the value if the value is invalid.
   DummyExceptionStateForTesting dummyExceptionState;
   const char* validValues[] = {
+      nullptr,
       "",
       "EnumValue1",
       "EnumValue2",
