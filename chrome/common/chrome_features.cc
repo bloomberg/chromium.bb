@@ -35,7 +35,7 @@ const base::Feature kShow10_9ObsoleteInfobar{"Show109ObsoleteInfobar",
 
 // Enables the fullscreen toolbar to reveal itself if it's hidden.
 const base::Feature kFullscreenToolbarReveal{"FullscreenToolbarReveal",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(MAC_VIEWS_BROWSER)
 // Causes Views browser builds to use Views browser windows by default rather
