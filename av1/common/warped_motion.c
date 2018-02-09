@@ -516,7 +516,6 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
             if (conv_params->use_jnt_comp_avg) {
               if (conv_params->do_average) {
                 *p += sum * conv_params->bck_offset;
-                *p >>= (DIST_PRECISION_BITS - 1);
               } else {
                 *p = sum * conv_params->fwd_offset;
               }
@@ -820,7 +819,6 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
             if (conv_params->use_jnt_comp_avg) {
               if (conv_params->do_average) {
                 *p += sum * conv_params->bck_offset;
-                *p >>= (DIST_PRECISION_BITS - 1);
               } else {
                 *p = sum * conv_params->fwd_offset;
               }

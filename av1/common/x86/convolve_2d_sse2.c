@@ -695,22 +695,22 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
             __m128i mul = _mm_mullo_epi16(d32_0, wt1);
             __m128i weighted_res = _mm_sll_epi32(mul, left_shift);
             __m128i sum = _mm_add_epi32(_mm_loadu_si128(p + 0), weighted_res);
-            d32_0 = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
+            d32_0 = sum;
 
             mul = _mm_mullo_epi16(d32_1, wt1);
             weighted_res = _mm_sll_epi32(mul, left_shift);
             sum = _mm_add_epi32(_mm_loadu_si128(p + 1), weighted_res);
-            d32_1 = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
+            d32_1 = sum;
 
             mul = _mm_mullo_epi16(d32_2, wt1);
             weighted_res = _mm_sll_epi32(mul, left_shift);
             sum = _mm_add_epi32(_mm_loadu_si128(p + 2), weighted_res);
-            d32_2 = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
+            d32_2 = sum;
 
             mul = _mm_mullo_epi16(d32_3, wt1);
             weighted_res = _mm_sll_epi32(mul, left_shift);
             sum = _mm_add_epi32(_mm_loadu_si128(p + 3), weighted_res);
-            d32_3 = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
+            d32_3 = sum;
           } else {
             d32_0 = _mm_sll_epi32(_mm_mullo_epi16(d32_0, wt0), left_shift);
             d32_1 = _mm_sll_epi32(_mm_mullo_epi16(d32_1, wt0), left_shift);
@@ -757,12 +757,12 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
             __m128i mul = _mm_mullo_epi16(d32_0, wt1);
             __m128i weighted_res = _mm_sll_epi32(mul, left_shift);
             __m128i sum = _mm_add_epi32(_mm_loadu_si128(p + 0), weighted_res);
-            d32_0 = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
+            d32_0 = sum;
 
             mul = _mm_mullo_epi16(d32_1, wt1);
             weighted_res = _mm_sll_epi32(mul, left_shift);
             sum = _mm_add_epi32(_mm_loadu_si128(p + 1), weighted_res);
-            d32_1 = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
+            d32_1 = sum;
           } else {
             d32_0 = _mm_sll_epi32(_mm_mullo_epi16(d32_0, wt0), left_shift);
             d32_1 = _mm_sll_epi32(_mm_mullo_epi16(d32_1, wt0), left_shift);
@@ -798,7 +798,7 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
             __m128i mul = _mm_mullo_epi16(d32_0, wt1);
             __m128i weighted_res = _mm_sll_epi32(mul, left_shift);
             __m128i sum = _mm_add_epi32(_mm_loadu_si128(p + 0), weighted_res);
-            d32_0 = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
+            d32_0 = sum;
           } else {
             d32_0 = _mm_sll_epi32(_mm_mullo_epi16(d32_0, wt0), left_shift);
           }
@@ -829,7 +829,7 @@ void av1_jnt_convolve_2d_copy_sse2(const uint8_t *src, int src_stride,
             __m128i mul = _mm_mullo_epi16(d32_0, wt1);
             __m128i weighted_res = _mm_sll_epi32(mul, left_shift);
             __m128i sum = _mm_add_epi32(_mm_loadl_epi64(p), weighted_res);
-            d32_0 = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
+            d32_0 = sum;
           } else {
             d32_0 = _mm_sll_epi32(_mm_mullo_epi16(d32_0, wt0), left_shift);
           }

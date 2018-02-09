@@ -1106,17 +1106,19 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                 xs, ys, xd);
         }  // for (ref = 0; ref < 1 + is_compound; ++ref)
         if (conv_params.do_post_rounding) {
+          int round_bits = FILTER_BITS * 2 + is_compound - conv_params.round_0 -
+                           conv_params.round_1;
+#if CONFIG_JNT_COMP
+          if (conv_params.use_jnt_comp_avg)
+            round_bits += DIST_PRECISION_BITS - 1;
+#endif  // CONFIG_JNT_COMP
           if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-            av1_highbd_convolve_rounding(
-                tmp_dst, tmp_dst_stride, dst, dst_buf->stride, b4_w, b4_h,
-                FILTER_BITS * 2 + is_compound - conv_params.round_0 -
-                    conv_params.round_1,
-                xd->bd);
+            av1_highbd_convolve_rounding(tmp_dst, tmp_dst_stride, dst,
+                                         dst_buf->stride, b4_w, b4_h,
+                                         round_bits, xd->bd);
           else
-            av1_convolve_rounding(
-                tmp_dst, tmp_dst_stride, dst, dst_buf->stride, b4_w, b4_h,
-                FILTER_BITS * 2 + is_compound - conv_params.round_0 -
-                    conv_params.round_1);
+            av1_convolve_rounding(tmp_dst, tmp_dst_stride, dst, dst_buf->stride,
+                                  b4_w, b4_h, round_bits);
         }
         ++col;
       }
@@ -1250,16 +1252,17 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
     // TODO(angiebird): This part needs optimization
     if (conv_params.do_post_rounding) {
+      int round_bits = FILTER_BITS * 2 + is_compound - conv_params.round_0 -
+                       conv_params.round_1;
+#if CONFIG_JNT_COMP
+      if (conv_params.use_jnt_comp_avg) round_bits += DIST_PRECISION_BITS - 1;
+#endif  // CONFIG_JNT_COMP
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-        av1_highbd_convolve_rounding(
-            tmp_dst, MAX_SB_SIZE, dst, dst_buf->stride, w, h,
-            FILTER_BITS * 2 + is_compound - conv_params.round_0 -
-                conv_params.round_1,
-            xd->bd);
+        av1_highbd_convolve_rounding(tmp_dst, MAX_SB_SIZE, dst, dst_buf->stride,
+                                     w, h, round_bits, xd->bd);
       else
         av1_convolve_rounding(tmp_dst, MAX_SB_SIZE, dst, dst_buf->stride, w, h,
-                              FILTER_BITS * 2 + is_compound -
-                                  conv_params.round_0 - conv_params.round_1);
+                              round_bits);
     }
   }
 }

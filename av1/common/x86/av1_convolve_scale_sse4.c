@@ -314,10 +314,8 @@ static void vfilter(const int32_t *src, int src_stride, int32_t *dst,
       __m128i result;
       if (conv_params->use_jnt_comp_avg) {
         if (conv_params->do_average) {
-          result =
-              _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128((__m128i *)dst_x),
-                                           _mm_mullo_epi32(subbed, bck_offset)),
-                             DIST_PRECISION_BITS - 1);
+          result = _mm_add_epi32(_mm_loadu_si128((__m128i *)dst_x),
+                                 _mm_mullo_epi32(subbed, bck_offset));
         } else {
           result = _mm_mullo_epi32(subbed, fwd_offset);
         }
@@ -344,8 +342,6 @@ static void vfilter(const int32_t *src, int src_stride, int32_t *dst,
       if (conv_params->use_jnt_comp_avg) {
         if (conv_params->do_average) {
           dst[y * dst_stride + x] += res * conv_params->bck_offset;
-
-          dst[y * dst_stride + x] >>= (DIST_PRECISION_BITS - 1);
         } else {
           dst[y * dst_stride + x] = res * conv_params->fwd_offset;
         }
@@ -430,10 +426,8 @@ static void vfilter8(const int32_t *src, int src_stride, int32_t *dst,
       __m128i result;
       if (conv_params->use_jnt_comp_avg) {
         if (conv_params->do_average) {
-          result =
-              _mm_srai_epi32(_mm_add_epi32(_mm_loadu_si128((__m128i *)dst_x),
-                                           _mm_mullo_epi32(subbed, bck_offset)),
-                             DIST_PRECISION_BITS - 1);
+          result = _mm_add_epi32(_mm_loadu_si128((__m128i *)dst_x),
+                                 _mm_mullo_epi32(subbed, bck_offset));
         } else {
           result = _mm_mullo_epi32(subbed, fwd_offset);
         }
@@ -460,8 +454,6 @@ static void vfilter8(const int32_t *src, int src_stride, int32_t *dst,
       if (conv_params->use_jnt_comp_avg) {
         if (conv_params->do_average) {
           dst[y * dst_stride + x] += res * conv_params->bck_offset;
-
-          dst[y * dst_stride + x] >>= (DIST_PRECISION_BITS - 1);
         } else {
           dst[y * dst_stride + x] = res * conv_params->fwd_offset;
         }

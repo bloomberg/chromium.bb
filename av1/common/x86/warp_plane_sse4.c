@@ -315,7 +315,7 @@ void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
             if (comp_avg) {
               const __m128i sum = _mm_add_epi32(_mm_loadu_si128(p),
                                                 _mm_mullo_epi32(res_lo, wt1));
-              res_lo = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
+              res_lo = sum;
             } else {
               res_lo = _mm_mullo_epi32(res_lo, wt0);
             }
@@ -337,7 +337,7 @@ void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
               if (comp_avg) {
                 const __m128i sum = _mm_add_epi32(_mm_loadu_si128(p + 1),
                                                   _mm_mullo_epi32(res_hi, wt1));
-                res_hi = _mm_srai_epi32(sum, DIST_PRECISION_BITS - 1);
+                res_hi = sum;
               } else {
                 res_hi = _mm_mullo_epi32(res_hi, wt0);
               }
