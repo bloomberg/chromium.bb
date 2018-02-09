@@ -522,7 +522,7 @@ std::unique_ptr<CupsPrintersManager> CupsPrintersManager::Create(
   return std::make_unique<CupsPrintersManagerImpl>(
       SyncedPrintersManagerFactory::GetInstance()->GetForBrowserContext(
           profile),
-      UsbPrinterDetector::Create(), ZeroconfPrinterDetector::Create(profile),
+      UsbPrinterDetector::Create(), ZeroconfPrinterDetector::Create(),
       CreatePpdProvider(profile),
       PrinterEventTrackerFactory::GetInstance()->GetForBrowserContext(profile));
 }
