@@ -39,7 +39,7 @@ class ControllerServiceWorkerImpl : public mojom::ControllerServiceWorker {
 
   // mojom::ControllerServiceWorker:
   void DispatchFetchEvent(
-      const network::ResourceRequest& request,
+      mojom::DispatchFetchEventParamsPtr params,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override;
   void Clone(mojom::ControllerServiceWorkerRequest request) override;

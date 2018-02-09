@@ -51,7 +51,9 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   };
 
   // Use this ctor when no |controller_ptr| is available at creation time.
-  // |state_| is set to kDisconnected. TODO(kinuko): deprecate this one.
+  // |state_| is set to kDisconnected.
+  // TODO(bashi): Remove this one constructor. We need to update
+  // WorkerFetchContextImpl to remove this constructor.
   explicit ControllerServiceWorkerConnector(
       mojom::ServiceWorkerContainerHost* container_host);
 
@@ -59,7 +61,8 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   // creation time. |state_| is set to either kConnected or kNoController.
   ControllerServiceWorkerConnector(
       mojom::ServiceWorkerContainerHost* container_host,
-      mojom::ControllerServiceWorkerPtr controller_ptr);
+      mojom::ControllerServiceWorkerPtr controller_ptr,
+      const std::string& client_id);
 
   // This may return nullptr if the connection to the ContainerHost (in the
   // browser process) is already terminated.
@@ -74,9 +77,12 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   // Resets the controller connection with the given |controller_ptr|, this
   // can be called when a new controller is given, e.g. due to claim().
   void ResetControllerConnection(
-      mojom::ControllerServiceWorkerPtr controller_ptr);
+      mojom::ControllerServiceWorkerPtr controller_ptr,
+      const std::string& client_id);
 
   State state() const { return state_; }
+
+  const std::string& client_id() const { return client_id_; }
 
  private:
   State state_ = State::kDisconnected;
@@ -98,6 +104,11 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   mojom::ControllerServiceWorkerPtr controller_service_worker_;
 
   base::ObserverList<Observer> observer_list_;
+
+  // The web-exposed client id, used for FetchEvent#clientId (i.e.,
+  // ServiceWorkerProviderHost::client_uuid and not
+  // ServiceWorkerProviderHost::provider_id).
+  std::string client_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ControllerServiceWorkerConnector);
 };
