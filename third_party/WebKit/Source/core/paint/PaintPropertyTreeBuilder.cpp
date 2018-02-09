@@ -1354,6 +1354,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateOutOfFlowContext() {
 
       context_.fixed_position = context_.current;
       context_.fixed_position.containing_block_changed_under_filter = false;
+      context_.fixed_position.fixed_position_children_fixed_to_root = true;
 
       // Fixed position transform and scroll nodes should not be affected.
       context_.fixed_position.transform = initial_fixed_transform;

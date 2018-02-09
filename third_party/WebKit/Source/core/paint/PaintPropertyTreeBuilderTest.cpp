@@ -3672,21 +3672,11 @@ TEST_P(PaintPropertyTreeBuilderTest,
   ASSERT_TRUE(multicol_container->FirstFragment().NextFragment());
   ASSERT_FALSE(
       multicol_container->FirstFragment().NextFragment()->NextFragment());
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
-      !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    EXPECT_EQ(LayoutPoint(8, 8),
-              multicol_container->FirstFragment().PaintOffset());
-    EXPECT_EQ(
-        LayoutPoint(59, -12),
-        multicol_container->FirstFragment().NextFragment()->PaintOffset());
-  } else {
-    // TODO(crbug.com/793051): The paint offsets are incorrect.
-    EXPECT_EQ(LayoutPoint(8, 33),
-              multicol_container->FirstFragment().PaintOffset());
-    EXPECT_EQ(
-        LayoutPoint(59, 13),
-        multicol_container->FirstFragment().NextFragment()->PaintOffset());
-  }
+
+  EXPECT_EQ(LayoutPoint(8, 8),
+            multicol_container->FirstFragment().PaintOffset());
+  EXPECT_EQ(LayoutPoint(59, -12),
+            multicol_container->FirstFragment().NextFragment()->PaintOffset());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, FragmentsUnderMultiColumn) {
