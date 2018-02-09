@@ -6,7 +6,6 @@
 
 #include "bindings/modules/v8/OriginTrialFeaturesForModules.h"
 #include "bindings/modules/v8/serialization/SerializedScriptValueForModulesFactory.h"
-#include "bindings/modules/v8/wasm/WasmResponseExtensions.h"
 #include "platform/bindings/V8PerIsolateData.h"
 
 namespace blink {
@@ -20,7 +19,6 @@ void ModuleBindingsInitializer::Init() {
   InitPartialInterfacesInModules();
   SerializedScriptValueFactory::Initialize(
       new SerializedScriptValueForModulesFactory);
-  WasmResponseExtensions::Initialize(V8PerIsolateData::MainThreadIsolate());
 }
 
 }  // namespace blink

@@ -45,6 +45,7 @@
 #include "bindings/core/v8/V8ErrorHandler.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8IdleTaskRunner.h"
+#include "bindings/core/v8/V8WasmResponseExtensions.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
@@ -537,6 +538,8 @@ static void InitializeV8Common(v8::Isolate* isolate) {
   }
 
   V8ContextSnapshot::EnsureInterfaceTemplates(isolate);
+
+  WasmResponseExtensions::Initialize(isolate);
 }
 
 namespace {

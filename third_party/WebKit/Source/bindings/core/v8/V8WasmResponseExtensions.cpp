@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/modules/v8/wasm/WasmResponseExtensions.h"
+#include "bindings/core/v8/V8WasmResponseExtensions.h"
 
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ExceptionState.h"

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WasmResponseExtensions_h
-#define WasmResponseExtensions_h
+#ifndef V8WasmResponseExtensions_h
+#define V8WasmResponseExtensions_h
 
-#include "modules/ModulesExport.h"
+#include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
 #include "v8/include/v8.h"
 
@@ -13,7 +13,7 @@ namespace blink {
 
 // Injects Web Platform - specific overloads for WebAssembly APIs.
 // See https://github.com/WebAssembly/design/blob/master/Web.md
-class MODULES_EXPORT WasmResponseExtensions {
+class CORE_EXPORT WasmResponseExtensions {
   STATIC_ONLY(WasmResponseExtensions);
 
  public:
@@ -22,4 +22,4 @@ class MODULES_EXPORT WasmResponseExtensions {
 
 }  // namespace blink
 
-#endif  // WasmResponseextensions_h
+#endif  // V8WasmResponseextensions_h
