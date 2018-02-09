@@ -1705,7 +1705,7 @@
           ],
           'expiration': 10800,
         },
-        # 'os_type': 'android',
+        'os_type': 'android',
       },
       'Android N5X Swarm': {
         'test_suites': {
@@ -1720,7 +1720,7 @@
           ],
           'expiration': 10800,
         },
-        # 'os_type': 'android',
+        'os_type': 'android',
       },
       'Linux Swarm': {
         'test_suites': {
