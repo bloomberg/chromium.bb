@@ -56,8 +56,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   bool HardwareAccelerationEnabled() const;
   void DisableSwiftShader();
 
-  void Initialize();
-
   void UpdateGpuInfo(const gpu::GPUInfo& gpu_info);
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info);
   gpu::GpuFeatureInfo GetGpuFeatureInfo() const;
@@ -143,8 +141,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   explicit GpuDataManagerImplPrivate(GpuDataManagerImpl* owner);
 
-  void RunPostInitTasks();
-
   // Notify all observers whenever there is a GPU info update.
   void NotifyGpuInfoUpdate();
 
@@ -197,18 +193,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   bool gpu_process_accessible_;
 
-  // True if Initialize() has been completed.
-  bool is_initialized_;
-
-  // True if all future Initialize calls should be ignored.
-  bool finalized_;
-
   // True if --single-process or --in-process-gpu is passed in.
   bool in_process_gpu_;
-
-  // If one tries to call a member before initialization then it is defered
-  // until Initialize() is completed.
-  std::vector<base::Closure> post_init_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImplPrivate);
 };

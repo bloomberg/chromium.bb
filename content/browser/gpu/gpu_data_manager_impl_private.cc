@@ -313,9 +313,6 @@ void UpdateGpuInfoOnIO(const gpu::GPUInfo& gpu_info) {
 void GpuDataManagerImplPrivate::BlacklistWebGLForTesting() {
   // This function is for testing only, so disable histograms.
   update_histograms_ = false;
-  // Prevent all further initialization.
-  finalized_ = true;
-  is_initialized_ = true;
 
   gpu::GpuFeatureInfo gpu_feature_info;
   for (int ii = 0; ii < gpu::NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
@@ -445,21 +442,6 @@ void GpuDataManagerImplPrivate::UnblockDomainFrom3DAPIs(const GURL& url) {
   timestamps_of_gpu_resets_.clear();
 }
 
-void GpuDataManagerImplPrivate::Initialize() {
-  TRACE_EVENT0("startup", "GpuDataManagerImpl::Initialize");
-  if (finalized_) {
-    DVLOG(0) << "GpuDataManagerImpl marked as finalized; skipping Initialize";
-    return;
-  }
-
-  RunPostInitTasks();
-
-  if (in_process_gpu_) {
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    AppendGpuCommandLine(command_line);
-  }
-}
-
 void GpuDataManagerImplPrivate::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
   bool sandboxed = gpu_info_.sandboxed;
   gpu_info_ = gpu_info;
@@ -558,12 +540,6 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
 }
 
 void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {
-  if (!is_initialized_) {
-    post_init_tasks_.push_back(
-        base::Bind(&GpuDataManagerImplPrivate::DisableHardwareAcceleration,
-                   base::Unretained(this)));
-    return;
-  }
   card_disabled_ = true;
   bool reset_gpu_feature_info = true;
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
@@ -752,12 +728,9 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
       domain_blocking_enabled_(true),
       owner_(owner),
       gpu_process_accessible_(true),
-      is_initialized_(false),
-      finalized_(false),
       in_process_gpu_(false) {
   DCHECK(owner_);
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableSoftwareRasterizer))
     DisableSwiftShader();
   if (command_line->HasSwitch(switches::kDisableGpu))
@@ -766,6 +739,7 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
   if (command_line->HasSwitch(switches::kSingleProcess) ||
       command_line->HasSwitch(switches::kInProcessGPU)) {
     in_process_gpu_ = true;
+    AppendGpuCommandLine(command_line);
   }
 
 #if defined(OS_MACOSX)
@@ -782,15 +756,6 @@ GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {
 #if defined(OS_MACOSX)
   CGDisplayRemoveReconfigurationCallback(DisplayReconfigCallback, owner_);
 #endif
-}
-
-void GpuDataManagerImplPrivate::RunPostInitTasks() {
-  // Set initialized before running callbacks.
-  is_initialized_ = true;
-
-  for (const auto& callback : post_init_tasks_)
-    callback.Run();
-  post_init_tasks_.clear();
 }
 
 void GpuDataManagerImplPrivate::NotifyGpuInfoUpdate() {

@@ -898,20 +898,16 @@ int BrowserMainLoop::PreCreateThreads() {
   ui::WindowResizeHelperMac::Get()->Init(base::ThreadTaskRunnerHandle::Get());
 #endif
 
-  GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
-
-#if defined(USE_X11)
-  // GpuDataManagerVisualProxy() just adds itself as an observer of
-  // |gpu_data_manager|, which is safe to do before Initialize().
-  gpu_data_manager_visual_proxy_.reset(
-      new internal::GpuDataManagerVisualProxy(gpu_data_manager));
-#endif
-
   // 1) Need to initialize in-process GpuDataManager before creating threads.
   // It's unsafe to append the gpu command line switches to the global
   // CommandLine::ForCurrentProcess object after threads are created.
   // 2) Must be after parts_->PreCreateThreads to pick up chrome://flags.
-  gpu_data_manager->Initialize();
+  GpuDataManagerImpl::GetInstance();
+
+#if defined(USE_X11)
+  gpu_data_manager_visual_proxy_.reset(new internal::GpuDataManagerVisualProxy(
+      GpuDataManagerImpl::GetInstance()));
+#endif
 
 #if !defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID)
   // Single-process is an unsupported and not fully tested mode, so

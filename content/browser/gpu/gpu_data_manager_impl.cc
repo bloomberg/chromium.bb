@@ -106,11 +106,6 @@ void GpuDataManagerImpl::GetDisabledWebGLExtensions(
   private_->GetDisabledWebGLExtensions(disabled_webgl_extensions);
 }
 
-void GpuDataManagerImpl::Initialize() {
-  base::AutoLock auto_lock(lock_);
-  private_->Initialize();
-}
-
 void GpuDataManagerImpl::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
   base::AutoLock auto_lock(lock_);
   private_->UpdateGpuInfo(gpu_info);
