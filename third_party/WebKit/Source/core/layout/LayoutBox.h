@@ -1098,6 +1098,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void MarkOrthogonalWritingModeRoot();
   void UnmarkOrthogonalWritingModeRoot();
 
+  bool IsCustomItem() const;
+
   bool IsDeprecatedFlexItem() const {
     return !IsInline() && !IsFloatingOrOutOfFlowPositioned() && Parent() &&
            Parent()->IsDeprecatedFlexibleBox();

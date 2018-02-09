@@ -4358,7 +4358,7 @@ DISABLE_CFI_PERF
 bool LayoutBlockFlow::CreatesNewFormattingContext() const {
   if (IsInline() || IsFloatingOrOutOfFlowPositioned() || HasOverflowClip() ||
       IsFlexItemIncludingDeprecated() || IsTableCell() || IsTableCaption() ||
-      IsFieldset() || IsDocumentElement() || IsGridItem() ||
+      IsFieldset() || IsCustomItem() || IsDocumentElement() || IsGridItem() ||
       IsWritingModeRoot() || Style()->Display() == EDisplay::kFlowRoot ||
       Style()->ContainsPaint() || Style()->ContainsLayout() ||
       Style()->SpecifiesColumns() ||

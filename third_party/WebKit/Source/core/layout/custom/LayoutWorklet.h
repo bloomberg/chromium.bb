@@ -7,10 +7,13 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/custom/DocumentLayoutDefinition.h"
+#include "core/layout/custom/PendingLayoutRegistry.h"
 #include "core/workers/Worklet.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
+
+class Node;
 
 extern DocumentLayoutDefinition* const kInvalidDocumentLayoutDefinition;
 
@@ -38,6 +41,8 @@ class CORE_EXPORT LayoutWorklet : public Worklet,
     return &document_definition_map_;
   }
 
+  void AddPendingLayout(const AtomicString& name, Node*);
+
   void Trace(blink::Visitor*) override;
 
  protected:
@@ -51,6 +56,7 @@ class CORE_EXPORT LayoutWorklet : public Worklet,
   WorkletGlobalScopeProxy* CreateGlobalScope() final;
 
   DocumentDefinitionMap document_definition_map_;
+  Member<PendingLayoutRegistry> pending_layout_registry_;
 
   static const char* SupplementName();
 };

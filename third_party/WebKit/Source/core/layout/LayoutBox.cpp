@@ -53,6 +53,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/api/LineLayoutBox.h"
+#include "core/layout/custom/LayoutCustom.h"
 #include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/ng/ng_fragmentation_utils.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
@@ -5062,6 +5063,13 @@ void LayoutBox::MarkOrthogonalWritingModeRoot() {
 void LayoutBox::UnmarkOrthogonalWritingModeRoot() {
   DCHECK(GetFrameView());
   GetFrameView()->RemoveOrthogonalWritingModeRoot(*this);
+}
+
+// Children of LayoutCustom object's are only considered "items" when it has a
+// loaded algorithm.
+bool LayoutBox::IsCustomItem() const {
+  return Parent() && Parent()->IsLayoutCustom() &&
+         ToLayoutCustom(Parent())->State() == LayoutCustomState::kBlock;
 }
 
 bool LayoutBox::IsRenderedLegend() const {

@@ -525,6 +525,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsProgress() const { return IsOfType(kLayoutObjectProgress); }
   bool IsQuote() const { return IsOfType(kLayoutObjectQuote); }
   bool IsLayoutButton() const { return IsOfType(kLayoutObjectLayoutButton); }
+  bool IsLayoutCustom() const { return IsOfType(kLayoutObjectLayoutCustom); }
   bool IsLayoutFullScreen() const {
     return IsOfType(kLayoutObjectLayoutFullScreen);
   }
@@ -1954,6 +1955,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectProgress,
     kLayoutObjectQuote,
     kLayoutObjectLayoutButton,
+    kLayoutObjectLayoutCustom,
     kLayoutObjectLayoutFlowThread,
     kLayoutObjectLayoutFullScreen,
     kLayoutObjectLayoutFullScreenPlaceholder,
