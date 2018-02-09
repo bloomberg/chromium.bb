@@ -3,9 +3,3 @@ include_rules = [
   "+components/cast_channel",
   "+third_party/zlib",
 ]
-
-specific_include_rules = {
-  "cast_channel_apitest\.cc": [
-    "+chrome/browser/media/router",
-  ],
-}

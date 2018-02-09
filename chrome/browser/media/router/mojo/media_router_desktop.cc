@@ -42,7 +42,8 @@ void MediaRouterDesktop::OnUserGesture() {
   // media source.
   UpdateMediaSinks(MediaSourceForDesktop().id());
 
-  media_sink_service_->OnUserGesture();
+  if (media_sink_service_)
+    media_sink_service_->OnUserGesture();
 
 #if defined(OS_WIN)
   EnsureMdnsDiscoveryEnabled();
@@ -64,7 +65,7 @@ MediaRouterDesktop::GetProviderIdForPresentation(
 
 MediaRouterDesktop::MediaRouterDesktop(content::BrowserContext* context)
     : MediaRouterMojoImpl(context),
-      media_sink_service_(DualMediaSinkService::GetInstance()),
+      media_sink_service_(nullptr),
       weak_factory_(this) {
   InitializeMediaRouteProviders();
 #if defined(OS_WIN)
@@ -149,6 +150,9 @@ void MediaRouterDesktop::BindToMojoRequest(
 void MediaRouterDesktop::ProvideSinksToExtension() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG(1) << "ProvideSinksToExtension";
+  if (!media_sink_service_)
+    media_sink_service_ = DualMediaSinkService::GetInstance();
+
   // If calling |ProvideSinksToExtension| for the first time, add a callback to
   // be notified of sink updates.
   if (!media_sink_service_subscription_) {
@@ -204,7 +208,8 @@ void MediaRouterDesktop::InitializeWiredDisplayMediaRouteProvider() {
 #if defined(OS_WIN)
 void MediaRouterDesktop::EnsureMdnsDiscoveryEnabled() {
   if (media_router::CastDiscoveryEnabled()) {
-    media_sink_service_->StartMdnsDiscovery();
+    if (media_sink_service_)
+      media_sink_service_->StartMdnsDiscovery();
   } else {
     media_route_providers_[MediaRouteProviderId::EXTENSION]
         ->EnableMdnsDiscovery();

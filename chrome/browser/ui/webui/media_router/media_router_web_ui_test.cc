@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/media_router/media_router_web_ui_test.h"
 
-#include "chrome/browser/media/router/media_router_factory.h"
-#include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/ui/toolbar/mock_media_router_action_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
@@ -47,18 +45,14 @@ MediaRouterWebUITest::MediaRouterWebUITest(bool require_mock_ui_service)
 MediaRouterWebUITest::~MediaRouterWebUITest() {}
 
 TestingProfile::TestingFactories MediaRouterWebUITest::GetTestingFactories() {
-  TestingProfile::TestingFactories factories = {
-      {media_router::MediaRouterFactory::GetInstance(),
-       &media_router::MockMediaRouter::Create}};
   if (require_mock_ui_service_) {
-    factories.emplace_back(
-        media_router::MediaRouterUIServiceFactory::GetInstance(),
-        BuildMockMediaRouterUIService);
-    factories.emplace_back(ToolbarActionsModelFactory::GetInstance(),
-                           BuildToolbarActionsModel);
+    return {
+        {media_router::MediaRouterUIServiceFactory::GetInstance(),
+         BuildMockMediaRouterUIService},
+        {ToolbarActionsModelFactory::GetInstance(), BuildToolbarActionsModel}};
   }
 
-  return factories;
+  return BrowserWithTestWindowTest::GetTestingFactories();
 }
 
 BrowserWindow* MediaRouterWebUITest::CreateBrowserWindow() {
