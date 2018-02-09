@@ -88,12 +88,6 @@ class ImageResource::ImageResourceInfoImpl final
   bool IsSchedulingReload() const override {
     return resource_->is_scheduling_reload_;
   }
-  bool HasDevicePixelRatioHeaderValue() const override {
-    return resource_->has_device_pixel_ratio_header_value_;
-  }
-  float DevicePixelRatioHeaderValue() const override {
-    return resource_->device_pixel_ratio_header_value_;
-  }
   const ResourceResponse& GetResponse() const override {
     return resource_->GetResponse();
   }
@@ -218,8 +212,6 @@ ImageResource::ImageResource(const ResourceRequest& resource_request,
                              bool is_placeholder)
     : Resource(resource_request, kImage, options),
       content_(content),
-      device_pixel_ratio_header_value_(1.0),
-      has_device_pixel_ratio_header_value_(false),
       is_scheduling_reload_(false),
       placeholder_option_(
           is_placeholder ? PlaceholderOption::kShowAndReloadPlaceholderAlways
@@ -467,16 +459,6 @@ void ImageResource::ResponseReceived(
   // (e.g. a 304) with a partial set of updated headers that were folded into
   // the cached response.
   Resource::ResponseReceived(response, std::move(handle));
-
-  device_pixel_ratio_header_value_ =
-      GetResponse()
-          .HttpHeaderField(HTTPNames::Content_DPR)
-          .ToFloat(&has_device_pixel_ratio_header_value_);
-  if (!has_device_pixel_ratio_header_value_ ||
-      device_pixel_ratio_header_value_ <= 0.0) {
-    device_pixel_ratio_header_value_ = 1.0;
-    has_device_pixel_ratio_header_value_ = false;
-  }
 
   if (placeholder_option_ ==
           PlaceholderOption::kShowAndReloadPlaceholderAlways &&
