@@ -535,10 +535,6 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifyRedirect) {
 // the appropriate error code on the handle.
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
                        VerifyCertErrorFailure) {
-  if (!IsBrowserSideNavigationEnabled()) {
-    return;
-  }
-
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
   ASSERT_TRUE(https_server.Start());
@@ -770,10 +766,6 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
 
 // Ensure that a NavigationThrottle can respond CANCEL when a navigation fails.
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleCancelFailure) {
-  if (!IsBrowserSideNavigationEnabled()) {
-    return;
-  }
-
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
   ASSERT_TRUE(https_server.Start());
@@ -921,10 +913,6 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleDefer) {
 // Ensure that a NavigationThrottle can defer and resume the navigation at
 // navigation start and navigation failure.
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleDeferFailure) {
-  if (!IsBrowserSideNavigationEnabled()) {
-    return;
-  }
-
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
   ASSERT_TRUE(https_server.Start());
@@ -999,12 +987,6 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
     SCOPED_TRACE(::testing::Message() << test_case.will_start_result << ", "
                                       << test_case.will_redirect_result << ", "
                                       << test_case.deferred_block);
-
-    if (!IsBrowserSideNavigationEnabled() &&
-        test_case.will_redirect_result ==
-            NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE) {
-      continue;
-    }
 
     std::unique_ptr<TestNavigationThrottleInstaller>
         subframe_throttle_installer;
@@ -1306,21 +1288,18 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
     EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, observer.net_error_code());
   }
 
-  // Using BLOCK_REQUEST on redirect is available only with PlzNavigate.
-  if (IsBrowserSideNavigationEnabled()) {
-    // Set up a NavigationThrottle that will block the navigation in
-    // WillRedirectRequest.
-    TestNavigationThrottleInstaller installer(
-        shell()->web_contents(), NavigationThrottle::PROCEED,
-        NavigationThrottle::BLOCK_REQUEST, NavigationThrottle::PROCEED,
-        NavigationThrottle::PROCEED);
-    NavigationHandleObserver observer(shell()->web_contents(), kRedirectingUrl);
+  // Set up a NavigationThrottle that will block the navigation in
+  // WillRedirectRequest.
+  TestNavigationThrottleInstaller installer(
+      shell()->web_contents(), NavigationThrottle::PROCEED,
+      NavigationThrottle::BLOCK_REQUEST, NavigationThrottle::PROCEED,
+      NavigationThrottle::PROCEED);
+  NavigationHandleObserver observer(shell()->web_contents(), kRedirectingUrl);
 
-    // Try to navigate to the url. The navigation should be canceled and the
-    // NavigationHandle should have the right error code.
-    EXPECT_FALSE(NavigateToURL(shell(), kRedirectingUrl));
-    EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, observer.net_error_code());
-  }
+  // Try to navigate to the url. The navigation should be canceled and the
+  // NavigationHandle should have the right error code.
+  EXPECT_FALSE(NavigateToURL(shell(), kRedirectingUrl));
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, observer.net_error_code());
 }
 
 // Checks that there's no UAF if NavigationHandleImpl::WillStartRequest cancels
@@ -1529,13 +1508,6 @@ class NavigationLogger : public WebContentsObserver {
 // NavigationHandle is used for committing the error page.
 // See https://crbug.com/695421
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, BlockedOnRedirect) {
-  // Returning BLOCK_REQUEST is not supported yet without PlzNavigate. It will
-  // call a CHECK(false).
-  // TODO(arthursonzogni) Provide support for BLOCK_REQUEST without PlzNavigate
-  // once https://crbug.com/695421 is fixed.
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   const GURL kUrl = embedded_test_server()->GetURL("/title1.html");
   const GURL kRedirectingUrl =
       embedded_test_server()->GetURL("/server-redirect?" + kUrl.spec());
@@ -1869,16 +1841,14 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
       // credentials should load correctly. It doesn't work correctly when
       // PlzNavigate is disabled. See https://crbug.com/756846.
       {GURL("http://user@a.com/frame_tree/page_with_one_frame.html"),
-       GURL("http://user@a.com/title1.html"),
-       !IsBrowserSideNavigationEnabled()},
+       GURL("http://user@a.com/title1.html"), false},
 
       // Same usernames and passwords in both frames.
       // Relative URLs on top-level pages that were loaded with embedded
       // credentials should load correctly. It doesn't work correctly when
       // PlzNavigate is disabled. See https://crbug.com/756846.
       {GURL("http://user:pass@a.com/frame_tree/page_with_one_frame.html"),
-       GURL("http://user:pass@a.com/title1.html"),
-       !IsBrowserSideNavigationEnabled()},
+       GURL("http://user:pass@a.com/title1.html"), false},
 
       // Different usernames.
       {GURL("http://user@a.com/frame_tree/page_with_one_frame.html"),
@@ -2019,9 +1989,6 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplDownloadBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
                        ThrottleFailureWithErrorPageContent) {
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
   ASSERT_TRUE(https_server.Start());

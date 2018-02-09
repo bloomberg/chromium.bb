@@ -2239,28 +2239,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
   EXPECT_EQ(url_b, observer.last_navigation_url());
   EXPECT_EQ(2, shell()->web_contents()->GetController().GetEntryCount());
 
-  // PlzNavigate: Ensure that we have created a new process for the subframe.
-  if (IsBrowserSideNavigationEnabled()) {
-    EXPECT_EQ(
-        " Site A ------------ proxies for B\n"
-        "   +--Site B ------- proxies for A\n"
-        "Where A = http://a.com/\n"
-        "      B = http://b.com/",
-        DepictFrameTree(root));
-    EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
-              child->current_frame_host()->GetSiteInstance());
-  }
+  // Ensure that we have created a new process for the subframe.
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
 
-  // The FrameTreeNode should update its URL (so that we don't affect other uses
-  // of the API), but the frame's last_successful_url shouldn't change and the
-  // origin should be empty.
-  // PlzNavigate: We have switched RenderFrameHosts for the subframe, so the
-  // last successful url should be empty (since the frame only loaded an error
-  // page).
-  if (IsBrowserSideNavigationEnabled())
-    EXPECT_EQ(GURL(), child->current_frame_host()->last_successful_url());
-  else
-    EXPECT_EQ(url_a, child->current_frame_host()->last_successful_url());
+  // We have switched RenderFrameHosts for the subframe, so the last successful
+  // url should be empty (since the frame only loaded an error page).
+  EXPECT_EQ(GURL(), child->current_frame_host()->last_successful_url());
   EXPECT_EQ(url_b, child->current_url());
   EXPECT_EQ("null", child->current_origin().Serialize());
 
@@ -6559,39 +6550,24 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // Check that the current RenderFrameHost has stopped loading.
-  if (root->child_at(0)->current_frame_host()->is_loading()) {
-    if (!IsBrowserSideNavigationEnabled())
-      ADD_FAILURE() << "Blocked RenderFrameHost shouldn't be loading anything";
+  if (root->child_at(0)->current_frame_host()->is_loading())
     load_observer.Wait();
-  }
 
   // The last successful url shouldn't be the blocked url.
   EXPECT_EQ(old_subframe_url,
             root->child_at(0)->current_frame_host()->last_successful_url());
 
-  if (IsBrowserSideNavigationEnabled()) {
-    // The blocked frame should go to an error page. Errors currently commit
-    // with the URL of the blocked page.
-    EXPECT_EQ(blocked_url, root->child_at(0)->current_url());
+  // The blocked frame should go to an error page. Errors currently commit
+  // with the URL of the blocked page.
+  EXPECT_EQ(blocked_url, root->child_at(0)->current_url());
 
-    // The page should get the title of an error page (i.e "Error") and not the
-    // title of the blocked page.
-    std::string frame_title;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        root->child_at(0), "domAutomationController.send(document.title)",
-        &frame_title));
-    EXPECT_EQ("Error", frame_title);
-  } else {
-    // The blocked frame should stay at the old location.
-    EXPECT_EQ(old_subframe_url, root->child_at(0)->current_url());
-
-    // The blocked frame should keep the old title.
-    std::string frame_title;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        root->child_at(0), "domAutomationController.send(document.title)",
-        &frame_title));
-    EXPECT_EQ("Title Of Awesomeness", frame_title);
-  }
+  // The page should get the title of an error page (i.e "Error") and not the
+  // title of the blocked page.
+  std::string frame_title;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root->child_at(0), "domAutomationController.send(document.title)",
+      &frame_title));
+  EXPECT_EQ("Error", frame_title);
 
   // Navigate to a URL without CSP.
   EXPECT_TRUE(NavigateToURL(
@@ -6653,39 +6629,24 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // Check that the current RenderFrameHost has stopped loading.
-  if (root->child_at(0)->current_frame_host()->is_loading()) {
-    if (!IsBrowserSideNavigationEnabled())
-      ADD_FAILURE() << "Blocked RenderFrameHost shouldn't be loading anything";
+  if (root->child_at(0)->current_frame_host()->is_loading())
     load_observer2.Wait();
-  }
 
   // The last successful url shouldn't be the blocked url.
   EXPECT_EQ(old_subframe_url,
             root->child_at(0)->current_frame_host()->last_successful_url());
 
-  if (IsBrowserSideNavigationEnabled()) {
-    // The blocked frame should go to an error page. Errors currently commit
-    // with the URL of the blocked page.
-    EXPECT_EQ(blocked_url, root->child_at(0)->current_url());
+  // The blocked frame should go to an error page. Errors currently commit
+  // with the URL of the blocked page.
+  EXPECT_EQ(blocked_url, root->child_at(0)->current_url());
 
-    // The page should get the title of an error page (i.e "Error") and not the
-    // title of the blocked page.
-    std::string frame_title;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        root->child_at(0), "domAutomationController.send(document.title)",
-        &frame_title));
-    EXPECT_EQ("Error", frame_title);
-  } else {
-    // The blocked frame should stay at the old location.
-    EXPECT_EQ(old_subframe_url, root->child_at(0)->current_url());
-
-    // The blocked frame should keep the old title.
-    std::string frame_title;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        root->child_at(0), "domAutomationController.send(document.title)",
-        &frame_title));
-    EXPECT_EQ("Title Of Awesomeness", frame_title);
-  }
+  // The page should get the title of an error page (i.e "Error") and not the
+  // title of the blocked page.
+  std::string frame_title;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root->child_at(0), "domAutomationController.send(document.title)",
+      &frame_title));
+  EXPECT_EQ("Error", frame_title);
 }
 
 // Test that a cross-origin frame's navigation can be blocked by CSP frame-src.
@@ -6741,39 +6702,24 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // Check that the current RenderFrameHost has stopped loading.
-  if (navigating_frame->current_frame_host()->is_loading()) {
-    if (!IsBrowserSideNavigationEnabled())
-      ADD_FAILURE() << "Blocked RenderFrameHost shouldn't be loading anything";
+  if (navigating_frame->current_frame_host()->is_loading())
     load_observer2.Wait();
-  }
 
   // The last successful url shouldn't be the blocked url.
   EXPECT_EQ(old_subframe_url,
             navigating_frame->current_frame_host()->last_successful_url());
 
-  if (IsBrowserSideNavigationEnabled()) {
-    // The blocked frame should go to an error page. Errors currently commit
-    // with the URL of the blocked page.
-    EXPECT_EQ(blocked_url, navigating_frame->current_url());
+  // The blocked frame should go to an error page. Errors currently commit
+  // with the URL of the blocked page.
+  EXPECT_EQ(blocked_url, navigating_frame->current_url());
 
-    // The page should get the title of an error page (i.e "Error") and not the
-    // title of the blocked page.
-    std::string frame_title;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        navigating_frame, "domAutomationController.send(document.title)",
-        &frame_title));
-    EXPECT_EQ("Error", frame_title);
-  } else {
-    // The blocked frame should stay at the old location.
-    EXPECT_EQ(old_subframe_url, navigating_frame->current_url());
-
-    // The blocked frame should keep the old title.
-    std::string frame_title;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        navigating_frame, "domAutomationController.send(document.title)",
-        &frame_title));
-    EXPECT_EQ("Title Of Awesomeness", frame_title);
-  }
+  // The page should get the title of an error page (i.e "Error") and not the
+  // title of the blocked page.
+  std::string frame_title;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      navigating_frame, "domAutomationController.send(document.title)",
+      &frame_title));
+  EXPECT_EQ("Error", frame_title);
 
   // Navigate the subframe to a URL without CSP.
   NavigateFrameToURL(srcdoc_frame,
@@ -7966,66 +7912,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
-// Checks that everything is cleaned up even when the frame tree is destroyed
-// during a transfer.  See also https://crbug.com/657195.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       FrameTreeDestroyedInMiddleOfTransfer) {
-  // Transfer navigations don't occur with PlzNavigate.
-  if (IsBrowserSideNavigationEnabled())
-    return;
-  GURL page_url(embedded_test_server()->GetURL(
-      "main.com", "/frame_tree/page_with_one_frame.html"));
-  GURL initial_frame_url(embedded_test_server()->GetURL(
-      "main.com", "/cross-site/baz.com/title1.html"));
-
-  {
-    // Navigation below is needed to make OpenPopup (next statement) work.
-    EXPECT_TRUE(
-        NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
-
-    // Create a separate Shell + WebContents - these will be destroyed during
-    // the test at a very special moment.
-    Shell* other_shell = OpenPopup(shell()->web_contents(), GURL(), "popup");
-
-    // Load the test page, while monitoring navigations of the frame (to catch
-    // when the frame navigation will initiate a transfer to another renderer).
-    TestNavigationManager navigation_manager(other_shell->web_contents(),
-                                             initial_frame_url);
-    other_shell->LoadURL(page_url);
-
-    // Wait until |navigation_manager| detects a WillProcessResponse associated
-    // with the frame navigation.
-    ASSERT_TRUE(navigation_manager.WaitForResponse());
-
-    // At this point we have almost (but not quite) triggered a transfer
-    // request. The transfer will be initiated when resuming the navigation.
-    // Posting a task to destroy the frame being navigated means that the
-    // destruction won't happen now, but will happen right after initiating the
-    // transfer AND before the transfer completes. i.e. This task will be
-    // executed on the message queue before the task to process the
-    // DidStartProvisionalLoad IPC from the renderer.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&WebContents::Close,
-                       base::Unretained(other_shell->web_contents())));
-
-    // Resume the navigation. This will 1) initiate the transfer and 2) shortly
-    // after destroy the |other_shell| via WebContents::Close task posted above.
-    // Destroying the NavigationHandle at this special moment used to trigger
-    // https://crbug.com/657195.
-    navigation_manager.WaitForNavigationFinished();
-  }
-
-  // Start a URLRequest to the same URL. This should succeed. This would have
-  // hit the 20 seconds delay before https://crbug.com/657195 was fixed.
-  EXPECT_TRUE(NavigateToURL(shell(), page_url));
-  EXPECT_EQ(page_url, shell()->web_contents()->GetLastCommittedURL());
-
-  // Note: even if the test fails and for some reason, the test has not timed
-  // out by this point, the test teardown code will still hit a DCHECK when it
-  // calls AssertNoURLRequests() in the shell's URLRequestContext destructor.
-}
-
 IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
                        TestFeaturePolicyReplicationOnSameOriginNavigation) {
   GURL start_url(
@@ -9144,10 +9030,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // possible.  See https://crbug.com/756790.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        TwoCrossSitePendingNavigationsAndMainFrameWins) {
-  // This test assumes PlzNavigate is enabled.
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -9220,10 +9102,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // https://crbug.com/756790.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        TwoCrossSitePendingNavigationsAndSubframeWins) {
-  // This test assumes PlzNavigate is enabled.
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -9337,10 +9215,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // See https://crbug.com/756790.
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        TwoCrossSitePendingNavigationsWithOpener) {
-  // This test assumes PlzNavigate is enabled.
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();

@@ -680,10 +680,6 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, ProcessLimit) {
 // https://crbug.com/738634.
 IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
                        ProcessReuseWithResponseStartedFromIsolatedOrigin) {
-  // This test requires PlzNavigate.
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   // Set the process limit to 1.
   RenderProcessHost::SetMaxRendererProcessCount(1);
 
@@ -730,10 +726,6 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
 // an origin lock mismatch. See https://crbug.com/773809.
 IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
                        ProcessReuseWithLazilyAssignedSiteInstance) {
-  // This test requires PlzNavigate.
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   // Set the process limit to 1.
   RenderProcessHost::SetMaxRendererProcessCount(1);
 
@@ -785,10 +777,6 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
 // response. See https://crbug.com/773809.
 IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
                        ProcessReuseWithLazilyAssignedIsolatedSiteInstance) {
-  // This test requires PlzNavigate.
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   // Set the process limit to 1.
   RenderProcessHost::SetMaxRendererProcessCount(1);
 
@@ -840,10 +828,6 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
 // https://crbug.com/738634.
 IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
                        ProcessReuseWithResponseStartedFromUnisolatedOrigin) {
-  // This test requires PlzNavigate.
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   // Set the process limit to 1.
   RenderProcessHost::SetMaxRendererProcessCount(1);
 
@@ -883,10 +867,6 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
 IN_PROC_BROWSER_TEST_F(
     IsolatedOriginTest,
     IsolatedSubframeDoesNotReuseUnsuitableProcessWithPendingSiteEntry) {
-  // This test requires PlzNavigate.
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   // Set the process limit to 1.
   RenderProcessHost::SetMaxRendererProcessCount(1);
 
@@ -949,10 +929,6 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     IsolatedOriginTest,
     IsolatedServiceWorkerDoesNotReuseUnsuitableProcessWithPendingSiteEntry) {
-  // This test requires PlzNavigate.
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   // Set the process limit to 1.
   RenderProcessHost::SetMaxRendererProcessCount(1);
 

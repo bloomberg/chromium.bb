@@ -7194,13 +7194,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(manager.WaitForRequestStart());
 
   // This should create a NavigationHandle.
-  NavigationHandleImpl* handle = main_frame->GetNavigationHandle();
   NavigationRequest* request = root->navigation_request();
-  if (IsBrowserSideNavigationEnabled()) {
-    EXPECT_TRUE(request);
-  } else {
-    EXPECT_TRUE(handle);
-  }
+  EXPECT_TRUE(request);
 
   // The current page does a PushState.
   NavigationHandleCommitObserver push_state_observer(shell()->web_contents(),
@@ -7218,13 +7213,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(push_state_observer.was_renderer_initiated());
 
   // This shouldn't affect the ongoing navigation.
-  if (IsBrowserSideNavigationEnabled()) {
-    EXPECT_TRUE(root->navigation_request());
-    EXPECT_EQ(request, root->navigation_request());
-  } else {
-    EXPECT_TRUE(main_frame->GetNavigationHandle());
-    EXPECT_EQ(handle, main_frame->GetNavigationHandle());
-  }
+  EXPECT_TRUE(root->navigation_request());
+  EXPECT_EQ(request, root->navigation_request());
 
   // Let the navigation finish. It should commit successfully.
   manager.WaitForNavigationFinished();
@@ -7296,10 +7286,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, StopDuringLoad) {
   GURL slow_url = embedded_test_server()->GetURL("/slow?60");
   shell()->LoadURL(slow_url);
   shell()->web_contents()->Stop();
-
-  // For non-PlzNavigate case, this happens asynchronously.
-  if (!IsBrowserSideNavigationEnabled())
-    same_tab_observer.Wait();
 
   const NavigationController& controller =
       shell()->web_contents()->GetController();

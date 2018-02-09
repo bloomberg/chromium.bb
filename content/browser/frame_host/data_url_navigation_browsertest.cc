@@ -559,13 +559,6 @@ IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest, HTML_FormPost_Block) {
 // subframe is blocked.
 IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest,
                        HTML_NavigationFromFrame_Block) {
-  // This test fails and is disabled in site-per-process + no plznavigate mode.
-  // request->originDocument is null in FrameLoader::prepareForRequest,
-  // allowing the navigation by default. See https://crbug.com/647839
-  if (AreAllSitesIsolatedForTesting() && !IsBrowserSideNavigationEnabled()) {
-    return;
-  }
-
   NavigateToURL(shell(),
                 embedded_test_server()->GetURL("a.com", "/simple_page.html"));
   AddIFrame(
@@ -616,13 +609,6 @@ IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest,
 // blocked even if the top frame is already a data URL.
 IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest,
                        HTML_NavigationFromFrame_TopFrameIsDataURL_Block) {
-  // This test fails and is disabled in site-per-process + no plznavigate mode.
-  // request->originDocument is null in FrameLoader::prepareForRequest,
-  // allowing the navigation by default. See https://crbug.com/647839
-  if (AreAllSitesIsolatedForTesting() && !IsBrowserSideNavigationEnabled()) {
-    return;
-  }
-
   const GURL top_url(
       base::StringPrintf("data:text/html, <iframe src='%s'></iframe>",
                          embedded_test_server()

@@ -1484,8 +1484,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerSpoofingTest,
 // navigation.  See https://crbug.com/760342.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        ResetVisibleURLOnCrossProcessNavigationInterrupted) {
-  if (!IsBrowserSideNavigationEnabled())
-    return;
   const std::string kVictimPath = "/victim.html";
   const std::string kAttackPath = "/attack.html";
   net::test_server::ControllableHttpResponse victim_response(
@@ -3262,17 +3260,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // a.com window.
   NavigateToURL(new_shell, embedded_test_server()->GetURL(
                                "b.com", "/cross-site/a.com/title1.html"));
-  if (AreAllSitesIsolatedForTesting() || IsBrowserSideNavigationEnabled()) {
-    // In --site-per-process mode, both windows will actually be in the same
-    // process.
-    // PlzNavigate: the SiteInstance for the navigation is determined after the
-    // redirect. So both windows will actually be in the same process.
-    EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
-              new_shell->web_contents()->GetSiteInstance());
-  } else {
-    EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
-              new_shell->web_contents()->GetSiteInstance());
-  }
+  // The SiteInstance for the navigation is determined after the redirect.
+  // So both windows will actually be in the same process.
+  EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
+            new_shell->web_contents()->GetSiteInstance());
 
   std::string result;
   EXPECT_TRUE(ExecuteScriptAndExtractString(
@@ -3285,17 +3276,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       "  }\n"
       "})())",
       &result));
-  if (AreAllSitesIsolatedForTesting() || IsBrowserSideNavigationEnabled()) {
-    EXPECT_THAT(result,
-                ::testing::MatchesRegex("http://a.com:\\d+/title1.html"));
-  } else {
-    // Accessing a property with normal security checks should throw a
-    // SecurityError if the same-origin windows are in different processes.
-    EXPECT_THAT(result,
-                ::testing::MatchesRegex("SecurityError: Blocked a frame with "
-                                        "origin \"http://a.com:\\d+\" from "
-                                        "accessing a cross-origin frame."));
-  }
+  EXPECT_THAT(result, ::testing::MatchesRegex("http://a.com:\\d+/title1.html"));
 }
 
 // Test coverage for attempts to open subframe links in new windows, to prevent
@@ -3726,8 +3707,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // https://crbug.com/793432.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        JavaScriptLoadDoesntResetSpeculativeRFH) {
-  if (!IsBrowserSideNavigationEnabled())
-    return;
   EXPECT_TRUE(embedded_test_server()->Start());
 
   GURL site1 = embedded_test_server()->GetURL("a.com", "/title1.html");

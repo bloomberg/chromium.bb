@@ -26,10 +26,6 @@ class FormSubmissionBrowserTest : public ContentBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(FormSubmissionBrowserTest,
                        CheckContentSecurityPolicyFormAction) {
-  // The FormSubmissionThrottle isn't used without PlzNavigate.
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   const struct {
     GURL main_page_url;
     GURL form_page_url;
@@ -93,10 +89,6 @@ IN_PROC_BROWSER_TEST_F(FormSubmissionBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(FormSubmissionBrowserTest,
                        CheckContentSecurityPolicyFormActionBypassCSP) {
-  // The FormSubmissionThrottle isn't used without PlzNavigate.
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   GURL main_url = embedded_test_server()->GetURL(
       "/form_submission_throttle/form_action_none.html");
   GURL form_url = embedded_test_server()->GetURL("/simple_page.html");

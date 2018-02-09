@@ -172,13 +172,6 @@ class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
   }
 };
 
-// Timestamps logged close to each other under low resolution timers
-// are more likely to record the same value. Allow for this by relaxing
-// constraints on systems with these timers.
-bool TimeTicksGT(const base::TimeTicks& x, const base::TimeTicks& y) {
-  return base::TimeTicks::IsHighResolution() ? x > y : x >= y;
-}
-
 // FrameReplicationState is normally maintained in the browser process,
 // but the function below provides a way for tests to construct a partial
 // FrameReplicationState within the renderer process.  We say "partial",
@@ -612,19 +605,15 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   policy_info.default_policy = blink::kWebNavigationPolicyCurrentTab;
   blink::WebNavigationPolicy policy =
       frame()->DecidePolicyForNavigation(policy_info);
-  if (!IsBrowserSideNavigationEnabled()) {
-    EXPECT_EQ(blink::kWebNavigationPolicyCurrentTab, policy);
-  } else {
-    // If this is a renderer-initiated navigation that just begun, it should
-    // stop and be sent to the browser.
-    EXPECT_EQ(blink::kWebNavigationPolicyHandledByClient, policy);
+  // If this is a renderer-initiated navigation that just begun, it should
+  // stop and be sent to the browser.
+  EXPECT_EQ(blink::kWebNavigationPolicyHandledByClient, policy);
 
-    // If this a navigation that is ready to commit, it should be handled
-    // locally.
-    request.SetCheckForBrowserSideNavigation(false);
-    policy = frame()->DecidePolicyForNavigation(policy_info);
-    EXPECT_EQ(blink::kWebNavigationPolicyCurrentTab, policy);
-  }
+  // If this a navigation that is ready to commit, it should be handled
+  // locally.
+  request.SetCheckForBrowserSideNavigation(false);
+  policy = frame()->DecidePolicyForNavigation(policy_info);
+  EXPECT_EQ(blink::kWebNavigationPolicyCurrentTab, policy);
 
   // Verify that form posts to WebUI URLs will be sent to the browser process.
   blink::WebURLRequest form_request(GURL("chrome://foo"));
@@ -2053,10 +2042,9 @@ TEST_F(RenderViewImplTest, BrowserNavigationStartSanitized) {
 }
 
 // Checks that a browser-initiated navigation in an initial document that has
-// been accessed does not use browser-side timestamp (there may be arbitrary
+// been accessed uses browser-side timestamp (there may be arbitrary
 // content and/or scripts injected, including beforeunload handler that shows
 // a confirmation dialog).
-// If PlzNavigate is enabled, browser-side timestamp is always used.
 TEST_F(RenderViewImplTest, NavigationStartWhenInitialDocumentWasAccessed) {
   // Trigger a didAccessInitialDocument notification.
   ExecuteJavaScriptForTests("document.title = 'Hi!';");
@@ -2066,10 +2054,7 @@ TEST_F(RenderViewImplTest, NavigationStartWhenInitialDocumentWasAccessed) {
 
   FrameHostMsg_DidStartProvisionalLoad::Param nav_params =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-  if (!IsBrowserSideNavigationEnabled())
-    EXPECT_GT(std::get<2>(nav_params), common_params.navigation_start);
-  else
-    EXPECT_EQ(common_params.navigation_start, std::get<2>(nav_params));
+  EXPECT_EQ(common_params.navigation_start, std::get<2>(nav_params));
 }
 
 TEST_F(RenderViewImplTest, NavigationStartForReload) {
@@ -2092,15 +2077,8 @@ TEST_F(RenderViewImplTest, NavigationStartForReload) {
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
 
-  if (!IsBrowserSideNavigationEnabled()) {
-    // The browser navigation_start should not be used because beforeunload was
-    // fired during Navigate.
-    EXPECT_PRED2(TimeTicksGT, std::get<2>(host_nav_params),
-                 common_params.navigation_start);
-  } else {
-    // PlzNavigate: the browser navigation_start is always used.
-    EXPECT_EQ(common_params.navigation_start, std::get<2>(host_nav_params));
-  }
+  // The browser navigation_start is always used.
+  EXPECT_EQ(common_params.navigation_start, std::get<2>(host_nav_params));
 }
 
 TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
@@ -2123,16 +2101,9 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
                        RequestNavigationParams());
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-  if (!IsBrowserSideNavigationEnabled()) {
-    // The browser navigation_start should not be used because beforeunload was
-    // fired during GoToOffsetWithParams.
-    EXPECT_PRED2(TimeTicksGT, std::get<2>(host_nav_params),
-                 common_params_back.navigation_start);
-  } else {
-    // PlzNavigate: the browser navigation_start is always used.
-    EXPECT_EQ(common_params_back.navigation_start,
-              std::get<2>(host_nav_params));
-  }
+
+  // The browser navigation_start is always used.
+  EXPECT_EQ(common_params_back.navigation_start, std::get<2>(host_nav_params));
   render_thread_->sink().ClearMessages();
 
   // Go forward.
@@ -2146,13 +2117,8 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
                        RequestNavigationParams());
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params2 =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
-  if (!IsBrowserSideNavigationEnabled()) {
-    EXPECT_PRED2(TimeTicksGT, std::get<2>(host_nav_params2),
-                 common_params_forward.navigation_start);
-  } else {
-    EXPECT_EQ(common_params_forward.navigation_start,
-              std::get<2>(host_nav_params2));
-  }
+  EXPECT_EQ(common_params_forward.navigation_start,
+            std::get<2>(host_nav_params2));
 }
 
 TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
