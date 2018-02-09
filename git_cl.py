@@ -294,44 +294,6 @@ def _git_amend_head(message, committer_timestamp):
   return RunGit(['commit', '--amend', '-m', message], env=env)
 
 
-def add_git_similarity(parser):
-  parser.add_option(
-      '--similarity', metavar='SIM', type=int, action='store',
-      help='Sets the percentage that a pair of files need to match in order to'
-           ' be considered copies (default 50)')
-  parser.add_option(
-      '--find-copies', action='store_true',
-      help='Allows git to look for copies.')
-  parser.add_option(
-      '--no-find-copies', action='store_false', dest='find_copies',
-      help='Disallows git from looking for copies.')
-
-  old_parser_args = parser.parse_args
-
-  def Parse(args):
-    options, args = old_parser_args(args)
-
-    if options.similarity is None:
-      options.similarity = _git_get_branch_config_value(
-          'git-cl-similarity', default=50, value_type=int)
-    else:
-      print('Note: Saving similarity of %d%% in git config.'
-            % options.similarity)
-      _git_set_branch_config_value('git-cl-similarity', options.similarity)
-
-    options.similarity = max(0, min(options.similarity, 100))
-
-    if options.find_copies is None:
-      options.find_copies = _git_get_branch_config_value(
-          'git-find-copies', default=True, value_type=bool)
-    else:
-      _git_set_branch_config_value('git-find-copies', bool(options.find_copies))
-
-    return options, args
-
-  parser.parse_args = Parse
-
-
 def _get_properties_from_options(options):
   properties = dict(x.split('=', 1) for x in options.properties)
   for key, val in properties.iteritems():
@@ -742,7 +704,7 @@ def write_try_results_json(output_file, builds):
   write_json(output_file, converted)
 
 
-def print_stats(similarity, find_copies, args):
+def print_stats(args):
   """Prints statistics about the change to the user."""
   # --no-ext-diff is broken in some versions of Git, so try to work around
   # this by overriding the environment (but there is still a problem if the
@@ -751,18 +713,12 @@ def print_stats(similarity, find_copies, args):
   if 'GIT_EXTERNAL_DIFF' in env:
     del env['GIT_EXTERNAL_DIFF']
 
-  if find_copies:
-    similarity_options = ['-l100000', '-C%s' % similarity]
-  else:
-    similarity_options = ['-M%s' % similarity]
-
   try:
     stdout = sys.stdout.fileno()
   except AttributeError:
     stdout = None
   return subprocess2.call(
-      ['git',
-       'diff', '--no-ext-diff', '--stat'] + similarity_options + args,
+      ['git', 'diff', '--no-ext-diff', '--stat', '-l100000', '-C50'] + args,
       stdout=stdout, env=env)
 
 
@@ -1668,7 +1624,7 @@ class Changelist(object):
               'uploading now might not include those changes.')
         confirm_or_exit(action='upload')
 
-    print_stats(options.similarity, options.find_copies, git_diff_args)
+    print_stats(git_diff_args)
     ret = self.CMDUploadChange(options, git_diff_args, custom_cl_base, change)
     if not ret:
       if options.use_commit_queue:
@@ -2284,10 +2240,6 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
 
     if options.private or settings.GetDefaultPrivateFlag() == "True":
       upload_args.append('--private')
-
-    upload_args.extend(['--git_similarity', str(options.similarity)])
-    if not options.find_copies:
-      upload_args.extend(['--git_no_find_copies'])
 
     # Include the upstream repo's URL in the change -- this is useful for
     # projects that have their source spread across multiple repos.
@@ -5034,7 +4986,6 @@ def CMDupload(parser, args):
                     help='email address to use to connect to Rietveld')
 
   orig_args = args
-  add_git_similarity(parser)
   auth.add_auth_options(parser)
   _add_codereview_select_options(parser)
   (options, args) = parser.parse_args(args)
@@ -5134,7 +5085,6 @@ def CMDland(parser, args):
                     help="external contributor for patch (appended to " +
                          "description and used as author for git). Should be " +
                          "formatted as 'First Last <email@example.com>'")
-  add_git_similarity(parser)
   auth.add_auth_options(parser)
   (options, args) = parser.parse_args(args)
   auth_config = auth.extract_auth_config_from_options(options)
@@ -5260,7 +5210,7 @@ def CMDland(parser, args):
 
   branches = [merge_base, cl.GetBranchRef()]
   if not options.force:
-    print_stats(options.similarity, options.find_copies, branches)
+    print_stats(branches)
 
   # We want to squash all this branch's commits into one commit with the proper
   # description. We do this by doing a "reset --soft" to the base branch (which

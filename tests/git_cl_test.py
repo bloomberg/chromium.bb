@@ -759,49 +759,22 @@ class TestGitCl(TestCase):
             ((['git', 'config', 'gerrit.host'],), 'True' if gerrit else '')]
 
   @classmethod
-  def _upload_calls(cls, similarity, find_copies, private):
-    return (cls._rietveld_git_base_calls(similarity, find_copies) +
+  def _upload_calls(cls, private):
+    return (cls._rietveld_git_base_calls() +
             cls._git_upload_calls(private))
 
   @classmethod
-  def _rietveld_upload_no_rev_calls(cls, similarity, find_copies):
-    return (cls._rietveld_git_base_calls(similarity, find_copies) + [
+  def _rietveld_upload_no_rev_calls(cls):
+    return (cls._rietveld_git_base_calls() + [
       ((['git', 'config', 'core.editor'],), ''),
     ])
 
   @classmethod
-  def _rietveld_git_base_calls(cls, similarity, find_copies):
-    if similarity is None:
-      similarity = '50'
-      similarity_call = ((['git', 'config',
-                         'branch.master.git-cl-similarity'],), CERR1)
-    else:
-      similarity_call = ((['git', 'config',
-                           'branch.master.git-cl-similarity', similarity],), '')
+  def _rietveld_git_base_calls(cls):
+    stat_call = ((['git', 'diff', '--no-ext-diff', '--stat',
+                  '-l100000', '-C50', 'fake_ancestor_sha', 'HEAD'],), '+dat')
 
-    if find_copies is None:
-      find_copies = True
-      find_copies_call = ((['git', 'config', '--bool',
-                          'branch.master.git-find-copies'],), CERR1)
-    else:
-      val = str(find_copies).lower()
-      find_copies_call = ((['git', 'config', '--bool',
-                          'branch.master.git-find-copies', val],), '')
-
-    if find_copies:
-      stat_call = ((['git', 'diff', '--no-ext-diff', '--stat',
-                     '-l100000', '-C'+similarity,
-                     'fake_ancestor_sha', 'HEAD'],), '+dat')
-    else:
-      stat_call = ((['git', 'diff', '--no-ext-diff', '--stat',
-                   '-M'+similarity, 'fake_ancestor_sha', 'HEAD'],), '+dat')
-
-    return [
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-      similarity_call,
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-      find_copies_call,
-    ] + cls._is_gerrit_calls() + [
+    return cls._is_gerrit_calls() + [
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.rietveldissue'],), CERR1),
       ((['git', 'config', 'branch.master.gerritissue'],), CERR1),
@@ -889,7 +862,7 @@ class TestGitCl(TestCase):
     ]
 
   @staticmethod
-  def _cmd_line(description, args, similarity, find_copies, private, cc):
+  def _cmd_line(description, args, private, cc):
     """Returns the upload command line passed to upload.RealMain()."""
     return [
         'upload', '--assume_yes', '--server', 'https://codereview.example.com',
@@ -899,10 +872,7 @@ class TestGitCl(TestCase):
         ','.join(
             ['joe@example.com', 'chromium-reviews+test-more-cc@chromium.org'] +
             cc),
-    ] + (['--private']
-         if private else []) + ['--git_similarity', similarity or '50'] + (
-             ['--git_no_find_copies']
-             if find_copies is False else []) + ['fake_ancestor_sha', 'HEAD']
+    ] + (['--private'] if private else []) + ['fake_ancestor_sha', 'HEAD']
 
   def _run_reviewer_test(
       self,
@@ -915,22 +885,11 @@ class TestGitCl(TestCase):
       cc=None):
     """Generic reviewer test framework."""
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
-    try:
-      similarity = upload_args[upload_args.index('--similarity')+1]
-    except ValueError:
-      similarity = None
-
-    if '--find-copies' in upload_args:
-      find_copies = True
-    elif '--no-find-copies' in upload_args:
-      find_copies = False
-    else:
-      find_copies = None
 
     private = '--private' in upload_args
     cc = cc or []
 
-    self.calls = self._upload_calls(similarity, find_copies, private)
+    self.calls = self._upload_calls(private)
 
     def RunEditor(desc, _, **kwargs):
       self.assertEquals(
@@ -945,8 +904,7 @@ class TestGitCl(TestCase):
     self.mock(git_cl.gclient_utils, 'RunEditor', RunEditor)
 
     def check_upload(args):
-      cmd_line = self._cmd_line(final_description, reviewers, similarity,
-                                find_copies, private, cc)
+      cmd_line = self._cmd_line(final_description, reviewers, private, cc)
       self.assertEquals(cmd_line, args)
       return 1, 2
     self.mock(git_cl.upload, 'RealMain', check_upload)
@@ -958,22 +916,6 @@ class TestGitCl(TestCase):
         [],
         'desc\n\nBUG=',
         '# Blah blah comment.\ndesc\n\nBUG=',
-        'desc\n\nBUG=',
-        [])
-
-  def test_keep_similarity(self):
-    self._run_reviewer_test(
-        ['--similarity', '70'],
-        'desc\n\nBUG=',
-        '# Blah blah comment.\ndesc\n\nBUG=',
-        'desc\n\nBUG=',
-        [])
-
-  def test_keep_find_copies(self):
-    self._run_reviewer_test(
-        ['--no-find-copies'],
-        'desc\n\nBUG=',
-        '# Blah blah comment.\ndesc\n\nBUG=\n',
         'desc\n\nBUG=',
         [])
 
@@ -1032,7 +974,7 @@ class TestGitCl(TestCase):
   def test_reviewer_send_mail_no_rev(self):
     # Fails without a reviewer.
     stdout = StringIO.StringIO()
-    self.calls = self._rietveld_upload_no_rev_calls(None, None) + [
+    self.calls = self._rietveld_upload_no_rev_calls() + [
         ((['DieWithError', 'Must specify reviewers to send email.'],),
           SystemExitMock())
     ]
@@ -1090,11 +1032,6 @@ class TestGitCl(TestCase):
     self.mock(RietveldMock, 'add_comment', staticmethod(
               lambda i, c: self._mocked_call(['add_comment', i, c])))
     self.calls = [
-      ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-      ((['git', 'config', 'branch.feature.git-cl-similarity'],), CERR1),
-      ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-      ((['git', 'config', '--bool', 'branch.feature.git-find-copies'],),
-       CERR1),
       ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
       ((['git', 'config', 'branch.feature.rietveldissue'],), '123'),
       ((['git', 'config', 'rietveld.autoupdate'],), ''),
@@ -1385,13 +1322,7 @@ class TestGitCl(TestCase):
   def _gerrit_base_calls(cls, issue=None, fetched_description=None,
                          fetched_status=None, other_cl_owner=None,
                          custom_cl_base=None):
-    calls = [
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-      ((['git', 'config', 'branch.master.git-cl-similarity'],), CERR1),
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-      ((['git', 'config', '--bool', 'branch.master.git-find-copies'],), CERR1),
-    ]
-    calls += cls._is_gerrit_calls(True)
+    calls = cls._is_gerrit_calls(True)
     calls += [
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.rietveldissue'],), CERR1),
