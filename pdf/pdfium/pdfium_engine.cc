@@ -2651,10 +2651,9 @@ pp::VarDictionary PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
   FPDF_DEST dest = FPDFBookmark_GetDest(doc_, bookmark);
   // Some bookmarks don't have a page to select.
   if (dest) {
-    unsigned long page_index = FPDFDest_GetPageIndex(doc_, dest);
-    if (page_index < pages_.size() &&
-        base::IsValueInRangeForNumericType<int32_t>(page_index)) {
-      dict.Set(pp::Var("page"), pp::Var(static_cast<int32_t>(page_index)));
+    int page_index = FPDFDest_GetDestPageIndex(doc_, dest);
+    if (PageIndexInBounds(page_index)) {
+      dict.Set(pp::Var("page"), pp::Var(page_index));
 
       base::Optional<gfx::PointF> xy =
           pages_[page_index]->GetPageXYTarget(dest);
@@ -2710,7 +2709,7 @@ int PDFiumEngine::GetNamedDestinationPage(const std::string& destination) {
     if (bookmark)
       dest = FPDFBookmark_GetDest(doc_, bookmark);
   }
-  return dest ? FPDFDest_GetPageIndex(doc_, dest) : -1;
+  return dest ? FPDFDest_GetDestPageIndex(doc_, dest) : -1;
 }
 
 gfx::PointF PDFiumEngine::TransformPagePoint(int page_index,
