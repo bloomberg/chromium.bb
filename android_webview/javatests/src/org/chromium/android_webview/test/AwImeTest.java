@@ -94,7 +94,7 @@ public class AwImeTest {
     private void focusOnWebViewAndEnableEditing() throws Exception {
         ThreadUtils.runOnUiThreadBlocking((Runnable) () -> mTestContainerView.requestFocus());
 
-        mActivityTestRule.enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
+        AwActivityTestRule.enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
         // View focus may not have been propagated to the renderer process yet. If document is not
         // yet focused, and focusing on an element is an invalid operation. See crbug.com/622151
         // for details.

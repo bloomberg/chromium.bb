@@ -56,10 +56,10 @@ public class NetworkChangeNotifierNoNativeTest {
         Looper.prepare();
         NetworkChangeNotifier ncn = NetworkChangeNotifier.init();
         Assert.assertFalse(ncn.registerNetworkCallbackFailed());
-        Assert.assertFalse(ncn.isProcessBoundToNetwork());
+        Assert.assertFalse(NetworkChangeNotifier.isProcessBoundToNetwork());
         NetworkChangeNotifier.registerToReceiveNotificationsAlways();
         Assert.assertFalse(ncn.registerNetworkCallbackFailed());
-        Assert.assertFalse(ncn.isProcessBoundToNetwork());
+        Assert.assertFalse(NetworkChangeNotifier.isProcessBoundToNetwork());
     }
 
     /**

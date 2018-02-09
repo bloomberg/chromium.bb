@@ -95,7 +95,7 @@ public class DropdownPopupWindow {
      */
     public void show() {
         // An ugly hack to keep the popup from expanding on top of the keyboard.
-        mListPopupWindow.setInputMethodMode(mListPopupWindow.INPUT_METHOD_NEEDED);
+        mListPopupWindow.setInputMethodMode(ListPopupWindow.INPUT_METHOD_NEEDED);
 
         assert mAdapter != null : "Set the adapter before showing the popup.";
         final int contentWidth = UiUtils.computeMaxWidthOfListAdapterItems(mAdapter);

@@ -77,7 +77,7 @@ public class AwStrictModeTest {
     @Feature({"AndroidWebView"})
     public void testSetJavaScriptAndLoadData() throws Exception {
         startEverythingSync();
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwTestContainerView.getAwContents());
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwTestContainerView.getAwContents());
         mActivityTestRule.loadDataSync(mAwTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), "", "text/html", false);
     }

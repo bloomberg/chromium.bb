@@ -104,6 +104,7 @@ ERRORPRONE_WARNINGS_TO_ERROR = [
   # Add warnings to this after fixing/suppressing all instances in our codebase.
   'FloatingPointLiteralPrecision',
   'ParameterName',
+  'StaticQualifiedUsingExpression',
 ]
 
 

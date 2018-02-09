@@ -147,8 +147,8 @@ public class WebXrTransitionTest {
             }
         }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
         uiDevice.pressBack();
-        mXrTestFramework.waitOnJavaScriptStep(mXrTestFramework.getFirstTabWebContents());
-        mXrTestFramework.endTest(mXrTestFramework.getFirstTabWebContents());
+        TestFramework.waitOnJavaScriptStep(mXrTestFramework.getFirstTabWebContents());
+        TestFramework.endTest(mXrTestFramework.getFirstTabWebContents());
     }
 
     /**

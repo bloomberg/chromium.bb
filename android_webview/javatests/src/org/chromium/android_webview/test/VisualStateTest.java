@@ -299,7 +299,7 @@ public class VisualStateTest {
         final AwContents awContents = testView.getAwContents();
         awContentsRef.set(awContents);
         final ContentViewCore contentViewCore = testView.getContentViewCore();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
 
         // JS will notify this observer once it has changed the background color of the page.
         final JavascriptEventObserver jsObserver = new JavascriptEventObserver();
@@ -366,7 +366,7 @@ public class VisualStateTest {
         final AwContents awContents = testView.getAwContents();
         awContentsRef.set(awContents);
         final ContentViewCore contentViewCore = testView.getContentViewCore();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
         awContents.getSettings().setFullscreenSupported(true);
 
         // JS will notify this observer once it has entered fullscreen.
@@ -422,7 +422,7 @@ public class VisualStateTest {
                 createDetachedTestContainerViewOnMainSync(awContentsClient);
         final AwContents awContents = testView.getAwContents();
 
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
 
         // JS will notify this observer once it has changed the background color of the page.
         final Object pageChangeNotifier = new Object() {

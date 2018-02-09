@@ -216,7 +216,7 @@ public class AwContentsClientShouldInterceptRequestTest {
         final String pageToPostToUrl = addAboutPageToTestServer(mWebServer);
         final String pageWithFormUrl = addPageToTestServer(mWebServer, "/page_with_form.html",
                 CommonResources.makeHtmlPageWithSimplePostFormTo(pageToPostToUrl));
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
 
         int callCount = mShouldInterceptRequestHelper.getCallCount();
         mActivityTestRule.loadUrlAsync(mAwContents, pageWithFormUrl);
@@ -239,7 +239,7 @@ public class AwContentsClientShouldInterceptRequestTest {
         final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
         final String pageWithLinkUrl = addPageToTestServer(mWebServer, "/page_with_link.html",
                 CommonResources.makeHtmlPageWithSimpleLinkTo(aboutPageUrl));
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
 
         int callCount = mShouldInterceptRequestHelper.getCallCount();
         mActivityTestRule.loadUrlAsync(mAwContents, pageWithLinkUrl);
@@ -299,7 +299,7 @@ public class AwContentsClientShouldInterceptRequestTest {
                 + "  xhr.setRequestHeader('" + headerName + "', '" + headerValue + "'); "
                 + "  xhr.send(null);"
                 + "</script>"));
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
 
         int callCount = mShouldInterceptRequestHelper.getCallCount();
         mActivityTestRule.loadUrlAsync(mAwContents, mainPageUrl);
@@ -513,7 +513,7 @@ public class AwContentsClientShouldInterceptRequestTest {
                 + "  console.info('xhr.statusText = ' + xhr.statusText);"
                 + "  return '[' + xhr.status + '][' + xhr.statusText + ']';"
                 + "})();";
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
 
         final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
         mActivityTestRule.loadUrlSync(
@@ -568,7 +568,7 @@ public class AwContentsClientShouldInterceptRequestTest {
         final String clientResponseHeaderName = "Client-Via";
         final String clientResponseHeaderValue = "shouldInterceptRequest";
         final String syncGetUrl = mWebServer.getResponseUrl("/intercept_me");
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
 
         final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
         mActivityTestRule.loadUrlSync(
@@ -595,7 +595,7 @@ public class AwContentsClientShouldInterceptRequestTest {
         final String syncGetUrl = mWebServer.getResponseUrl("/intercept_me");
         final Map<String, String> headers = new HashMap<String, String>();
         headers.put(clientResponseHeaderName, clientResponseHeaderValue);
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
 
         final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
         mActivityTestRule.loadUrlSync(
@@ -612,7 +612,7 @@ public class AwContentsClientShouldInterceptRequestTest {
     @Feature({"AndroidWebView"})
     public void testNullHttpResponseHeaders() throws Throwable {
         final String syncGetUrl = mWebServer.getResponseUrl("/intercept_me");
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
 
         final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
         mActivityTestRule.loadUrlSync(

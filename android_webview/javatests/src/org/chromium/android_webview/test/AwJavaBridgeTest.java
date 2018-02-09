@@ -64,7 +64,7 @@ public class AwJavaBridgeTest {
             }
         }
 
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
                 () -> awContents.addJavascriptInterface(new Test(), "test"));
 
@@ -91,8 +91,8 @@ public class AwJavaBridgeTest {
                 mActivityTestRule.createAwTestContainerViewOnMainSync(client2);
         final AwContents awContents2 = view2.getAwContents();
 
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents1);
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents2);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents1);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents2);
 
         class Test {
             Test(int value) {
@@ -128,7 +128,7 @@ public class AwJavaBridgeTest {
     @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testTwoWebViewsSecondCreatedAfterLoadingInFirst() throws Throwable {
         final AwContents awContents1 = mTestContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents1);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents1);
 
         class Test {
             Test(int value) {
@@ -154,7 +154,7 @@ public class AwJavaBridgeTest {
         final AwTestContainerView view2 =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(client2);
         final AwContents awContents2 = view2.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents2);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents2);
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
                 () -> awContents2.addJavascriptInterface(new Test(2), "test"));

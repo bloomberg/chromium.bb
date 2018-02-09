@@ -93,7 +93,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
     }
 
     private void clickOnLinkUsingJs() throws Throwable {
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
         JSUtils.clickOnLinkUsingJs(InstrumentationRegistry.getInstrumentation(), mAwContents,
                 mContentsClient.getOnEvaluateJavaScriptResultHelper(), "link");
     }
@@ -405,7 +405,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
     @Feature({"AndroidWebView", "Navigation"})
     public void testCalledWhenNavigatingFromJavaScriptUsingAssign() throws Throwable {
         standardSetup();
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
 
         final String redirectTargetUrl = createRedirectTargetPage();
         mActivityTestRule.loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
@@ -421,7 +421,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
     @Feature({"AndroidWebView", "Navigation"})
     public void testCalledWhenNavigatingFromJavaScriptUsingReplace() throws Throwable {
         standardSetup();
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
 
         final String redirectTargetUrl = createRedirectTargetPage();
         mActivityTestRule.loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
@@ -645,7 +645,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         final String pageWithLinkToRedirectUrl = addPageToTestServer(
                 "/page_with_link_to_redirect.html", CommonResources.makeHtmlPageWithSimpleLinkTo(
                         "<title>" + pageTitle + "</title>", redirectUrl));
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
 
         // There is a slight difference between navigations caused by calling load and navigations
         // caused by clicking on a link:
@@ -983,7 +983,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
             // handler selection window and the test can't dismiss that.
             mActivityTestRule.getActivity().setIgnoreStartActivity(true);
             setupWithProvidedContentsClient(new TestDefaultContentsClient());
-            mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+            AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
             final String pageTitle = "Click Title";
             final String htmlWithLink = "<html><title>" + pageTitle + "</title>"
                     + "<body><a id='link' href='" + ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL
@@ -1018,7 +1018,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
             final String testUrl = mWebServer.setResponse("/" + CommonResources.ABOUT_FILENAME,
                     CommonResources.ABOUT_HTML, CommonResources.getTextHtmlHeaders(true));
             setupWithProvidedContentsClient(new TestDefaultContentsClient());
-            mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+            AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
             final String pageTitle = "Click Title";
             final String htmlWithLink = "<html><title>" + pageTitle + "</title>"
                     + "<body><a id='link' href='" + testUrl + "'>Click this!</a></body></html>";

@@ -96,7 +96,7 @@ public class GeolocationTest {
         mContentsClient = contentsClient;
         mAwContents = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient)
                               .getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
                 () -> mAwContents.getSettings().setGeolocationEnabled(true));
     }

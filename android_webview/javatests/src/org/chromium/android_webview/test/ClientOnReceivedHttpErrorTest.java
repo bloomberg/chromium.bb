@@ -138,7 +138,7 @@ public class ClientOnReceivedHttpErrorTest {
         final String badUrl = mWebServer.setResponseWithNotFoundStatus("/404.html", headers);
         final String pageWithLinkUrl = mWebServer.setResponse("/page_with_link.html",
                 CommonResources.makeHtmlPageWithSimpleLinkTo(badUrl), null);
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
         mActivityTestRule.loadUrlAsync(mAwContents, pageWithLinkUrl);
         mActivityTestRule.waitForPixelColorAtCenterOfView(
                 mAwContents, mTestContainerView, CommonResources.LINK_COLOR);
