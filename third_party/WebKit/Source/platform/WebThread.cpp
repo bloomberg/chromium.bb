@@ -35,10 +35,6 @@ static_assert(sizeof(blink::PlatformThreadId) >= sizeof(pid_t),
 #error Unexpected platform
 #endif
 
-base::SingleThreadTaskRunner* WebThread::GetWebTaskRunner() const {
-  return GetTaskRunner().get();
-}
-
 scoped_refptr<base::SingleThreadTaskRunner>
 WebThread::GetSingleThreadTaskRunner() const {
   return GetTaskRunner();

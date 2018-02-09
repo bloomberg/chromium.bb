@@ -114,7 +114,7 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestDefaultTask) {
   }));
 
   PostCrossThreadTask(
-      *thread_->GetWebTaskRunner(), FROM_HERE,
+      *thread_->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(&MockTask::Run, WTF::CrossThreadUnretained(&task)));
   completion.Wait();
 }
@@ -132,7 +132,7 @@ TEST_F(WebThreadImplForWorkerSchedulerTest,
   }));
 
   PostCrossThreadTask(
-      *thread_->GetWebTaskRunner(), FROM_HERE,
+      *thread_->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(&MockTask::Run, WTF::CrossThreadUnretained(&task)));
   thread_.reset();
 }
@@ -151,7 +151,7 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestIdleTask) {
   thread_->PostIdleTask(
       FROM_HERE, base::BindOnce(&MockIdleTask::Run, WTF::Unretained(&task)));
   // We need to post a wake-up task or idle work will never happen.
-  PostDelayedCrossThreadTask(*thread_->GetWebTaskRunner(), FROM_HERE,
+  PostDelayedCrossThreadTask(*thread_->GetTaskRunner(), FROM_HERE,
                              CrossThreadBind([] {}),
                              TimeDelta::FromMilliseconds(50));
 
@@ -165,7 +165,7 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestTaskObserver) {
   RunOnWorkerThread(FROM_HERE,
                     base::Bind(&AddTaskObserver, thread_.get(), &observer));
   PostCrossThreadTask(
-      *thread_->GetWebTaskRunner(), FROM_HERE,
+      *thread_->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(&RunTestTask, WTF::CrossThreadUnretained(&calls)));
   RunOnWorkerThread(FROM_HERE,
                     base::Bind(&RemoveTaskObserver, thread_.get(), &observer));
@@ -188,10 +188,10 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestShutdown) {
 
   RunOnWorkerThread(FROM_HERE, base::Bind(&ShutdownOnThread, thread_.get()));
   PostCrossThreadTask(
-      *thread_->GetWebTaskRunner(), FROM_HERE,
+      *thread_->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(&MockTask::Run, WTF::CrossThreadUnretained(&task)));
   PostDelayedCrossThreadTask(
-      *thread_->GetWebTaskRunner(), FROM_HERE,
+      *thread_->GetTaskRunner(), FROM_HERE,
       CrossThreadBind(&MockTask::Run,
                       WTF::CrossThreadUnretained(&delayed_task)),
       TimeDelta::FromMilliseconds(50));
