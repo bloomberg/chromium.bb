@@ -6,22 +6,33 @@ rolldeps() {
   roll-dep -r "${REVIEWERS}" "$@" src/third_party/freetype/src/
 }
 
+previousrev() {
+  STEP="original revision" &&
+  PREVIOUS_FREETYPE_REV=$(git grep "'freetype_revision':" HEAD~1 -- DEPS | grep -Eho "[0-9a-fA-F]{32}")
+}
+
 addtrybots() {
   STEP="add trybots" &&
   OLD_MSG=$(git show -s --format=%B HEAD) &&
   git commit --amend -m"$OLD_MSG" -m"CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.linux:linux_chromium_msan_rel_ng"
 }
 
+addpdfiumbug() {
+  STEP="add pdfium bug" &&
+  OLD_MSG=$(git show -s --format=%B HEAD) &&
+  git commit --amend -m"$OLD_MSG" -m"PDFium-Issue: pdfium:"
+}
+
 checkmodules() {
   STEP="check modules.cfg: check list of modules and dependencies" &&
-  ! git -C third_party/freetype/src/ diff --name-only HEAD@{1} | grep -q modules.cfg
+  ! git -C third_party/freetype/src/ diff --name-only ${PREVIOUS_FREETYPE_REV} | grep -q modules.cfg
 }
 
 mergeinclude() {
   INCLUDE=$1 &&
   STEP="merge ${INCLUDE}: check for merge conflicts" &&
   TMPFILE=$(mktemp) &&
-  git -C third_party/freetype/src/ cat-file blob HEAD@{1}:include/freetype/config/${INCLUDE} >> ${TMPFILE} &&
+  git -C third_party/freetype/src/ cat-file blob ${PREVIOUS_FREETYPE_REV}:include/freetype/config/${INCLUDE} >> ${TMPFILE} &&
   git merge-file third_party/freetype/include/freetype-custom-config/${INCLUDE} ${TMPFILE} third_party/freetype/src/include/freetype/config/${INCLUDE} &&
   rm ${TMPFILE} &&
   git add third_party/freetype/include/freetype-custom-config/${INCLUDE}
@@ -42,7 +53,9 @@ commit() {
 }
 
 rolldeps "$@" &&
+previousrev &&
 addtrybots &&
+addpdfiumbug &&
 checkmodules &&
 mergeinclude ftoption.h &&
 mergeinclude ftconfig.h &&
