@@ -27,7 +27,7 @@ import zipfile
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://chromium.googlesource.com/chromium/src/+/master/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION = '321529'
+CLANG_REVISION = '324578'
 
 use_head_revision = bool(os.environ.get('LLVM_FORCE_HEAD_REVISION', '0')
                          in ('1', 'YES'))
@@ -35,7 +35,7 @@ if use_head_revision:
   CLANG_REVISION = 'HEAD'
 
 # This is incremented when pushing a new build of Clang at the same revision.
-CLANG_SUB_REVISION=2
+CLANG_SUB_REVISION=1
 
 PACKAGE_VERSION = "%s-%s" % (CLANG_REVISION, CLANG_SUB_REVISION)
 
@@ -68,7 +68,7 @@ LLVM_BUILD_TOOLS_DIR = os.path.abspath(
     os.path.join(LLVM_DIR, '..', 'llvm-build-tools'))
 STAMP_FILE = os.path.normpath(
     os.path.join(LLVM_DIR, '..', 'llvm-build', 'cr_build_revision'))
-VERSION = '6.0.0'
+VERSION = '7.0.0'
 ANDROID_NDK_DIR = os.path.join(
     CHROMIUM_DIR, 'third_party', 'android_ndk')
 
@@ -887,11 +887,6 @@ def main():
   if (use_head_revision or args.llvm_force_head_revision or
       args.force_local_build):
     AddSvnToPathOnWin()
-
-  if use_head_revision:
-    # TODO(hans): Trunk was updated; remove after the next roll.
-    global VERSION
-    VERSION = '7.0.0'
 
   global CLANG_REVISION, PACKAGE_VERSION
   if args.print_revision:
