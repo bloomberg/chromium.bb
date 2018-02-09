@@ -1089,23 +1089,8 @@ Element* Document::CreateElement(const QualifiedName& q_name,
   if (definition)
     return definition->CreateElement(*this, q_name, flags);
 
-  Element* element;
-  if (V0CustomElement::IsValidName(q_name.LocalName()) &&
-      RegistrationContext()) {
-    element = RegistrationContext()->CreateCustomTagElement(*this, q_name);
-  } else {
-    element = CreateRawElement(q_name, flags);
-    if (!is.IsEmpty() && flags.IsCustomElementsV0())
-      V0CustomElementRegistrationContext::SetTypeExtension(element, is);
-  }
-  // 7.3. If namespace is the HTML namespace, and either localName is a
-  // valid custom element name or is is non-null, then set result’s
-  // custom element state to "undefined".
-  if (q_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI &&
-      (CustomElement::IsValidName(q_name.LocalName()) || !is.IsEmpty()))
-    element->SetCustomElementState(CustomElementState::kUndefined);
-
-  return element;
+  return CustomElement::CreateUncustomizedOrUndefinedElement(*this, q_name,
+                                                             flags, is);
 }
 
 ScriptValue Document::registerElement(ScriptState* script_state,

@@ -74,6 +74,13 @@ class CORE_EXPORT CustomElement {
                                           const QualifiedName&,
                                           const CreateElementFlags);
 
+  // Creates "uncustomized" or "undefined" state element. This should be
+  // used when CustomElementDefinition is not found.
+  static Element* CreateUncustomizedOrUndefinedElement(
+      Document&,
+      const QualifiedName&,
+      const CreateElementFlags,
+      const AtomicString& is_value);
   static HTMLElement* CreateFailedElement(Document&, const QualifiedName&);
 
   static void Enqueue(Element*, CustomElementReaction*);
@@ -95,7 +102,6 @@ class CORE_EXPORT CustomElement {
   // disallows these as custom element names.
   // https://html.spec.whatwg.org/#valid-custom-element-name
   static bool IsHyphenatedSpecElementName(const AtomicString&);
-  static HTMLElement* CreateUndefinedElement(Document&, const QualifiedName&);
 };
 
 }  // namespace blink

@@ -46,6 +46,7 @@
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/custom/CEReactionsScope.h"
+#include "core/html/custom/CustomElement.h"
 #include "core/html/custom/CustomElementDefinition.h"
 #include "core/html/custom/CustomElementDescriptor.h"
 #include "core/html/custom/CustomElementRegistry.h"
@@ -927,17 +928,8 @@ Element* HTMLConstructionSite::CreateElement(
       element = definition->CreateElement(document, tag_name,
                                           GetCreateElementFlags());
     } else {
-      element = document.CreateElement(tag_name, GetCreateElementFlags());
-      // Step 7.3 of "create an element". The above createElement()
-      // doesn't take care of "is" attribute.
-      if (!is.IsNull()) {
-        if (namespace_uri == HTMLNames::xhtmlNamespaceURI &&
-            element->GetCustomElementState() ==
-                CustomElementState::kUncustomized)
-          element->SetCustomElementState(CustomElementState::kUndefined);
-        if (!V0CustomElement::IsValidName(tag_name.LocalName()))
-          V0CustomElementRegistrationContext::SetTypeExtension(element, is);
-      }
+      element = CustomElement::CreateUncustomizedOrUndefinedElement(
+          document, tag_name, GetCreateElementFlags(), is);
     }
     // Definition for the created element does not exist here and it cannot be
     // custom or failed.
