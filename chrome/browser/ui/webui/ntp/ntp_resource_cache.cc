@@ -351,6 +351,16 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
   new_tab_guest_html_ = base::RefCountedString::TakeString(&full_html);
 }
 
+// TODO(alancutter): Consider moving this utility function up somewhere where it
+// can be shared with md_bookmarks_ui.cc.
+// Ampersands are used by menus to determine which characters to use as shortcut
+// keys. This functionality is not implemented for NTP.
+static base::string16 GetLocalizedString(int message_id) {
+  base::string16 result = l10n_util::GetStringUTF16(message_id);
+  result.erase(std::remove(result.begin(), result.end(), '&'), result.end());
+  return result;
+}
+
 void NTPResourceCache::CreateNewTabHTML() {
   // TODO(estade): these strings should be defined in their relevant handlers
   // (in GetLocalizedValues) and should have more legible names.
@@ -361,57 +371,63 @@ void NTPResourceCache::CreateNewTabHTML() {
   load_time_data.SetString(
       "bookmarkbarattached",
       prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar) ? "true" : "false");
-  load_time_data.SetString("title",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
+  load_time_data.SetString("title", GetLocalizedString(IDS_NEW_TAB_TITLE));
   load_time_data.SetString("webStoreTitle",
-      l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
-  load_time_data.SetString("webStoreTitleShort",
-      l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE_SHORT));
+                           GetLocalizedString(IDS_EXTENSION_WEB_STORE_TITLE));
+  load_time_data.SetString(
+      "webStoreTitleShort",
+      GetLocalizedString(IDS_EXTENSION_WEB_STORE_TITLE_SHORT));
   load_time_data.SetString("attributionintro",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_ATTRIBUTION_INTRO));
+                           GetLocalizedString(IDS_NEW_TAB_ATTRIBUTION_INTRO));
   load_time_data.SetString("appuninstall",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
+                           GetLocalizedString(IDS_EXTENSIONS_UNINSTALL));
   load_time_data.SetString("appoptions",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_OPTIONS));
+                           GetLocalizedString(IDS_NEW_TAB_APP_OPTIONS));
   load_time_data.SetString("appdetails",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_DETAILS));
+                           GetLocalizedString(IDS_NEW_TAB_APP_DETAILS));
   load_time_data.SetString("appinfodialog",
-      l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_SHOW_INFO));
+                           GetLocalizedString(IDS_APP_CONTEXT_MENU_SHOW_INFO));
   load_time_data.SetString("appcreateshortcut",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_CREATE_SHORTCUT));
+                           GetLocalizedString(IDS_NEW_TAB_APP_CREATE_SHORTCUT));
   load_time_data.SetString("appDefaultPageName",
-      l10n_util::GetStringUTF16(IDS_APP_DEFAULT_PAGE_NAME));
-  load_time_data.SetString("applaunchtypepinned",
-      l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_PINNED));
-  load_time_data.SetString("applaunchtyperegular",
-      l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_REGULAR));
-  load_time_data.SetString("applaunchtypewindow",
-      l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_WINDOW));
-  load_time_data.SetString("applaunchtypefullscreen",
-      l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN));
-  load_time_data.SetString("syncpromotext",
-      l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL));
+                           GetLocalizedString(IDS_APP_DEFAULT_PAGE_NAME));
+  load_time_data.SetString(
+      "applaunchtypepinned",
+      GetLocalizedString(IDS_APP_CONTEXT_MENU_OPEN_PINNED));
+  load_time_data.SetString(
+      "applaunchtyperegular",
+      GetLocalizedString(IDS_APP_CONTEXT_MENU_OPEN_REGULAR));
+  load_time_data.SetString(
+      "applaunchtypewindow",
+      GetLocalizedString(IDS_APP_CONTEXT_MENU_OPEN_WINDOW));
+  load_time_data.SetString(
+      "applaunchtypefullscreen",
+      GetLocalizedString(IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN));
+  load_time_data.SetString(
+      "syncpromotext", GetLocalizedString(IDS_SYNC_START_SYNC_BUTTON_LABEL));
   load_time_data.SetString("syncLinkText",
-      l10n_util::GetStringUTF16(IDS_SYNC_ADVANCED_OPTIONS));
+                           GetLocalizedString(IDS_SYNC_ADVANCED_OPTIONS));
   load_time_data.SetBoolean("shouldShowSyncLogin",
                             AppLauncherLoginHandler::ShouldShow(profile_));
-  load_time_data.SetString("learnMore",
-      l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  load_time_data.SetString("learnMore", GetLocalizedString(IDS_LEARN_MORE));
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   load_time_data.SetString(
       "webStoreLink", google_util::AppendGoogleLocaleParam(
                           extension_urls::GetWebstoreLaunchURL(), app_locale)
                           .spec());
-  load_time_data.SetString("appInstallHintText",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_INSTALL_HINT_LABEL));
-  load_time_data.SetString("learn_more",
-      l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  load_time_data.SetString("tile_grid_screenreader_accessible_description",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_TILE_GRID_ACCESSIBLE_DESCRIPTION));
-  load_time_data.SetString("page_switcher_change_title",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_PAGE_SWITCHER_CHANGE_TITLE));
-  load_time_data.SetString("page_switcher_same_title",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_PAGE_SWITCHER_SAME_TITLE));
+  load_time_data.SetString(
+      "appInstallHintText",
+      GetLocalizedString(IDS_NEW_TAB_APP_INSTALL_HINT_LABEL));
+  load_time_data.SetString("learn_more", GetLocalizedString(IDS_LEARN_MORE));
+  load_time_data.SetString(
+      "tile_grid_screenreader_accessible_description",
+      GetLocalizedString(IDS_NEW_TAB_TILE_GRID_ACCESSIBLE_DESCRIPTION));
+  load_time_data.SetString(
+      "page_switcher_change_title",
+      GetLocalizedString(IDS_NEW_TAB_PAGE_SWITCHER_CHANGE_TITLE));
+  load_time_data.SetString(
+      "page_switcher_same_title",
+      GetLocalizedString(IDS_NEW_TAB_PAGE_SWITCHER_SAME_TITLE));
   // On Mac OS X 10.7+, horizontal scrolling can be treated as a back or
   // forward gesture. Pass through a flag that indicates whether or not that
   // feature is enabled.
