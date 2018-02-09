@@ -31,7 +31,7 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/StringBuilder.h"
-#include "third_party/WebKit/common/sandbox_flags.h"
+#include "third_party/WebKit/public/common/frame/sandbox_flags.h"
 
 namespace blink {
 

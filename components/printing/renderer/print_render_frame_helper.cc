@@ -39,7 +39,7 @@
 #include "printing/pdf_metafile_skia.h"
 #include "printing/units.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
-#include "third_party/WebKit/common/sandbox_flags.h"
+#include "third_party/WebKit/public/common/frame/sandbox_flags.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebDoubleSize.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
