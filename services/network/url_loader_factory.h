@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_NETWORK_SERVICE_URL_LOADER_FACTORY_H_
-#define SERVICES_NETWORK_NETWORK_SERVICE_URL_LOADER_FACTORY_H_
+#ifndef SERVICES_NETWORK_URL_LOADER_FACTORY_H_
+#define SERVICES_NETWORK_URL_LOADER_FACTORY_H_
 
 #include "base/macros.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -15,12 +15,12 @@ class NetworkContext;
 
 // This class is an implementation of mojom::URLLoaderFactory that
 // creates a mojom::URLLoader.
-class NetworkServiceURLLoaderFactory : public mojom::URLLoaderFactory {
+class URLLoaderFactory : public mojom::URLLoaderFactory {
  public:
   // NOTE: |context| must outlive this instance.
-  NetworkServiceURLLoaderFactory(NetworkContext* context, uint32_t process_id);
+  URLLoaderFactory(NetworkContext* context, uint32_t process_id);
 
-  ~NetworkServiceURLLoaderFactory() override;
+  ~URLLoaderFactory() override;
 
   // mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(mojom::URLLoaderRequest request,
@@ -38,9 +38,9 @@ class NetworkServiceURLLoaderFactory : public mojom::URLLoaderFactory {
   NetworkContext* context_;
   uint32_t process_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkServiceURLLoaderFactory);
+  DISALLOW_COPY_AND_ASSIGN(URLLoaderFactory);
 };
 
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_NETWORK_SERVICE_URL_LOADER_FACTORY_H_
+#endif  // SERVICES_NETWORK_URL_LOADER_FACTORY_H_
