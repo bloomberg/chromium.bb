@@ -10,9 +10,9 @@ import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.download.DownloadPromptStatus;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
-import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 
@@ -56,8 +56,10 @@ public class DownloadPreferences
         }
 
         if (mLocationPromptEnabledPref != null) {
+            // Location prompt is marked enabled if the prompt status is not don't show.
             boolean isLocationPromptEnabled =
-                    PrefServiceBridge.getInstance().getBoolean(Pref.PROMPT_FOR_DOWNLOAD_ANDROID);
+                    PrefServiceBridge.getInstance().getPromptForDownloadAndroid()
+                    != DownloadPromptStatus.DONT_SHOW;
             mLocationPromptEnabledPref.setChecked(isLocationPromptEnabled);
         }
     }
@@ -67,8 +69,17 @@ public class DownloadPreferences
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         if (PREF_LOCATION_PROMPT_ENABLED.equals(preference.getKey())) {
-            PrefServiceBridge.getInstance().setBoolean(
-                    Pref.PROMPT_FOR_DOWNLOAD_ANDROID, (boolean) newValue);
+            if ((boolean) newValue) {
+                // Only update if the interstitial has been shown before.
+                if (PrefServiceBridge.getInstance().getPromptForDownloadAndroid()
+                        != DownloadPromptStatus.SHOW_INITIAL) {
+                    PrefServiceBridge.getInstance().setPromptForDownloadAndroid(
+                            DownloadPromptStatus.SHOW_PREFERENCE);
+                }
+            } else {
+                PrefServiceBridge.getInstance().setPromptForDownloadAndroid(
+                        DownloadPromptStatus.DONT_SHOW);
+            }
         }
         return true;
     }

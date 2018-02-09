@@ -1296,6 +1296,19 @@ static void JNI_PrefServiceBridge_SetDownloadAndSaveFileDefaultDirectory(
                                 base::FilePath(FILE_PATH_LITERAL(path)));
 }
 
+static jint JNI_PrefServiceBridge_GetPromptForDownloadAndroid(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return GetPrefService()->GetInteger(prefs::kPromptForDownloadAndroid);
+}
+
+static void JNI_PrefServiceBridge_SetPromptForDownloadAndroid(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const jint status) {
+  GetPrefService()->SetInteger(prefs::kPromptForDownloadAndroid, status);
+}
+
 const char* PrefServiceBridge::GetPrefNameExposedToJava(int pref_index) {
   DCHECK_GE(pref_index, 0);
   DCHECK_LT(pref_index, Pref::PREF_NUM_PREFS);

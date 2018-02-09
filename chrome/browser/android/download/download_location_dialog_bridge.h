@@ -30,6 +30,8 @@ class DownloadLocationDialogBridge {
                   const base::android::JavaParamRef<jobject>& obj,
                   const base::android::JavaParamRef<jstring>& returned_path);
 
+  void OnCanceled(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+
  private:
   jboolean is_dialog_showing_;
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;

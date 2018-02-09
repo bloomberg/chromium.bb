@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -24,10 +25,12 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_core_service_impl.h"
+#include "chrome/browser/download/download_prompt_status.h"
 #include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/trusted_sources_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
@@ -228,7 +231,12 @@ void DownloadPrefs::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kOpenPdfDownloadInSystemReader, false);
 #endif
 #if defined(OS_ANDROID)
-  registry->RegisterBooleanPref(prefs::kPromptForDownloadAndroid, false);
+  DownloadPromptStatus download_prompt_status =
+      (base::FeatureList::IsEnabled(features::kDownloadsLocationChange))
+          ? DownloadPromptStatus::SHOW_INITIAL
+          : DownloadPromptStatus::DONT_SHOW;
+  registry->RegisterIntegerPref(prefs::kPromptForDownloadAndroid,
+                                static_cast<int>(download_prompt_status));
 #endif
 }
 
@@ -310,7 +318,10 @@ bool DownloadPrefs::PromptForDownload() const {
 
 // Return the Android prompt for download only.
 #if defined(OS_ANDROID)
-  return *prompt_for_download_android_;
+  // As long as they haven't indicated in preferences they do not want the
+  // dialog shown, show the dialog.
+  return *prompt_for_download_android_ !=
+         static_cast<int>(DownloadPromptStatus::DONT_SHOW);
 #endif
 
   return *prompt_for_download_;

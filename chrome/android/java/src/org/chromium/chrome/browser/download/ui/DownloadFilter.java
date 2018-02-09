@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.preferences.download.DownloadDirectoryList;
 
 import java.util.Locale;
 
@@ -43,7 +44,7 @@ public class DownloadFilter {
      *
      * Changing the ordering of these items requires changing the FILTER_* values in
      * {@link DownloadHistoryAdapter} and the values in mCanonicalDirectoryPairs in
-     * {@link org.chromium.chrome.browser.preferences.download.DownloadDirectoryAdapter}
+     * {@link DownloadDirectoryList}.
      */
     static final int[][] FILTER_LIST = new int[][] {
             {R.drawable.ic_file_download_24dp, R.string.download_manager_ui_all_downloads},

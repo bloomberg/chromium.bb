@@ -28,7 +28,6 @@ enum Pref {
 const char* const kPrefsExposedToJava[] = {
     prefs::kAllowDeletingBrowserHistory, prefs::kIncognitoModeAvailability,
     dom_distiller::prefs::kReaderForAccessibility,
-    prefs::kPromptForDownloadAndroid,
-};
+    prefs::kPromptForDownloadAndroid};
 
 #endif  // CHROME_BROWSER_ANDROID_PREFERENCES_PREFS_H_
