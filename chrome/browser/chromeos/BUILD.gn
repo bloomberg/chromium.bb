@@ -1577,6 +1577,8 @@ source_set("chromeos") {
     "ui/screen_capture_notification_ui_chromeos.h",
     "upgrade_detector_chromeos.cc",
     "upgrade_detector_chromeos.h",
+    "virtual_machines/virtual_machines_util.cc",
+    "virtual_machines/virtual_machines_util.h",
 
     # Extension API implementations.
     "extensions/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.cc",

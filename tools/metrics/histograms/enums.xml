@@ -12529,6 +12529,7 @@ Called by update_net_error_codes.py.-->
   <int value="418" label="DeviceLoginScreenSitePerProcess"/>
   <int value="419" label="RelaunchNotification"/>
   <int value="420" label="RelaunchNotificationPeriod"/>
+  <int value="421" label="VirtualMachinesAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

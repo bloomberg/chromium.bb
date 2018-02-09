@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 420
+#   For your editing convenience: highest ID currently used: 421
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -11231,6 +11231,27 @@
       'desc': '''Allows you to set the time period over which <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> relaunch notifications are shown to apply a pending update.
 
       This policy setting can be used to control the time period, in milliseconds, over which a user is progressively informed that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> must be relaunched (or <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> must be restarted) for an update. Over this time period, the user will be repeatedly informed of the need for an update based on the setting of the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME">RelaunchNotification</ph> policy. If not set, the default period of 604800000 milliseconds (one week) is used.''',
+    },
+    {
+      'name': 'VirtualMachinesAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:66-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 421,
+      'caption': '''Allow devices to run virtual machines on Chrome OS''',
+      'tags': ['system-security'],
+      'desc': '''Allows you to control whether virtual machines are allowed to run on Chrome OS.
+
+      If the policy is set to True, the device is allowed to run virtual machines.
+      If the policy is set to False, the device will not be allowed to run virtual machines.
+      When this policy is changed to False, it applies to starting new virtual machines but does not shut down virtual machines which are already running.
+      When this policy is not set on a managed device, the device will not be allowed to run virtual machines.
+      Unmanaged devices are allowed to run virtual machines.''',
     },
   ],
 
