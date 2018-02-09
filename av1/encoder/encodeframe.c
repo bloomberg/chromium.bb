@@ -1168,14 +1168,14 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
         } else {
           const int bit = (ref0 >= BWDREF_FRAME);
           if (allow_update_cdf)
-            update_cdf(av1_get_pred_cdf_single_ref_p1(cm, xd), bit, 2);
+            update_cdf(av1_get_pred_cdf_single_ref_p1(xd), bit, 2);
 #if CONFIG_ENTROPY_STATS
           counts->single_ref[av1_get_pred_context_single_ref_p1(xd)][0][bit]++;
 #endif  // CONFIG_ENTROPY_STATS
           if (bit) {
             assert(ref0 <= ALTREF_FRAME);
             if (allow_update_cdf) {
-              update_cdf(av1_get_pred_cdf_single_ref_p2(cm, xd),
+              update_cdf(av1_get_pred_cdf_single_ref_p2(xd),
                          ref0 == ALTREF_FRAME, 2);
             }
 #if CONFIG_ENTROPY_STATS
@@ -1184,7 +1184,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
 #endif  // CONFIG_ENTROPY_STATS
             if (ref0 != ALTREF_FRAME) {
               if (allow_update_cdf) {
-                update_cdf(av1_get_pred_cdf_single_ref_p6(cm, xd),
+                update_cdf(av1_get_pred_cdf_single_ref_p6(xd),
                            ref0 == ALTREF2_FRAME, 2);
               }
 #if CONFIG_ENTROPY_STATS
@@ -1195,14 +1195,14 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           } else {
             const int bit1 = !(ref0 == LAST2_FRAME || ref0 == LAST_FRAME);
             if (allow_update_cdf)
-              update_cdf(av1_get_pred_cdf_single_ref_p3(cm, xd), bit1, 2);
+              update_cdf(av1_get_pred_cdf_single_ref_p3(xd), bit1, 2);
 #if CONFIG_ENTROPY_STATS
             counts
                 ->single_ref[av1_get_pred_context_single_ref_p3(xd)][2][bit1]++;
 #endif  // CONFIG_ENTROPY_STATS
             if (!bit1) {
               if (allow_update_cdf) {
-                update_cdf(av1_get_pred_cdf_single_ref_p4(cm, xd),
+                update_cdf(av1_get_pred_cdf_single_ref_p4(xd),
                            ref0 != LAST_FRAME, 2);
               }
 #if CONFIG_ENTROPY_STATS
@@ -1211,7 +1211,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
 #endif  // CONFIG_ENTROPY_STATS
             } else {
               if (allow_update_cdf) {
-                update_cdf(av1_get_pred_cdf_single_ref_p5(cm, xd),
+                update_cdf(av1_get_pred_cdf_single_ref_p5(xd),
                            ref0 != LAST3_FRAME, 2);
               }
 #if CONFIG_ENTROPY_STATS
