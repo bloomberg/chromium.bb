@@ -40,13 +40,12 @@ static bool IsHTTPErrorStatusCode(int status_code) {
   return status_code >= 400;
 }
 
-XHRReplayData* XHRReplayData::Create(ExecutionContext* execution_context,
-                                     const AtomicString& method,
+// static
+XHRReplayData* XHRReplayData::Create(const AtomicString& method,
                                      const KURL& url,
                                      bool async,
                                      bool include_credentials) {
-  return new XHRReplayData(execution_context, method, url, async,
-                           include_credentials);
+  return new XHRReplayData(method, url, async, include_credentials);
 }
 
 void XHRReplayData::AddHeader(const AtomicString& key,
@@ -54,24 +53,19 @@ void XHRReplayData::AddHeader(const AtomicString& key,
   headers_.Set(key, value);
 }
 
-XHRReplayData::XHRReplayData(ExecutionContext* execution_context,
-                             const AtomicString& method,
+XHRReplayData::XHRReplayData(const AtomicString& method,
                              const KURL& url,
                              bool async,
                              bool include_credentials)
-    : execution_context_(execution_context),
-      method_(method),
+    : method_(method),
       url_(url),
       async_(async),
       include_credentials_(include_credentials) {}
 
-void XHRReplayData::Trace(blink::Visitor* visitor) {
-  visitor->Trace(execution_context_);
-}
-
 // ResourceData
 NetworkResourcesData::ResourceData::ResourceData(
     NetworkResourcesData* network_resources_data,
+    ExecutionContext* execution_context,
     const String& request_id,
     const String& loader_id,
     const KURL& requested_url)
@@ -85,7 +79,8 @@ NetworkResourcesData::ResourceData::ResourceData(
       http_status_code_(0),
       raw_header_size_(0),
       pending_encoded_data_length_(0),
-      cached_resource_(nullptr) {}
+      cached_resource_(nullptr),
+      execution_context_(execution_context) {}
 
 void NetworkResourcesData::ResourceData::Trace(blink::Visitor* visitor) {
   visitor->Trace(network_resources_data_);
@@ -93,6 +88,7 @@ void NetworkResourcesData::ResourceData::Trace(blink::Visitor* visitor) {
   visitor->template RegisterWeakMembers<
       NetworkResourcesData::ResourceData,
       &NetworkResourcesData::ResourceData::ClearWeakMembers>(this);
+  visitor->Trace(execution_context_);
 }
 
 void NetworkResourcesData::ResourceData::SetContent(const String& content,
@@ -194,13 +190,14 @@ void NetworkResourcesData::Trace(blink::Visitor* visitor) {
 }
 
 void NetworkResourcesData::ResourceCreated(
+    ExecutionContext* context,
     const String& request_id,
     const String& loader_id,
     const KURL& requested_url,
     scoped_refptr<EncodedFormData> post_data) {
   EnsureNoDataForRequestId(request_id);
   ResourceData* data =
-      new ResourceData(this, request_id, loader_id, requested_url);
+      new ResourceData(this, context, request_id, loader_id, requested_url);
   request_id_to_resource_data_map_.Set(request_id, data);
   if (post_data &&
       PrepareToAddResourceData(request_id, post_data->SizeInBytes())) {

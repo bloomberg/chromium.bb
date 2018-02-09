@@ -51,8 +51,7 @@ class TextResourceDecoder;
 
 class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
  public:
-  static XHRReplayData* Create(ExecutionContext*,
-                               const AtomicString& method,
+  static XHRReplayData* Create(const AtomicString& method,
                                const KURL&,
                                bool async,
                                bool include_credentials);
@@ -63,18 +62,15 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
   bool Async() const { return async_; }
   const HTTPHeaderMap& Headers() const { return headers_; }
   bool IncludeCredentials() const { return include_credentials_; }
-  ExecutionContext* GetExecutionContext() const { return execution_context_; }
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(blink::Visitor*) {}
 
  private:
-  XHRReplayData(ExecutionContext*,
-                const AtomicString& method,
+  XHRReplayData(const AtomicString& method,
                 const KURL&,
                 bool async,
                 bool include_credentials);
 
-  Member<ExecutionContext> execution_context_;
   AtomicString method_;
   KURL url_;
   bool async_;
@@ -90,6 +86,7 @@ class NetworkResourcesData final
 
    public:
     ResourceData(NetworkResourcesData*,
+                 ExecutionContext*,
                  const String& request_id,
                  const String& loader_id,
                  const KURL&);
@@ -166,7 +163,7 @@ class NetworkResourcesData final
       post_data_ = post_data;
     }
     scoped_refptr<EncodedFormData> PostData() const { return post_data_; }
-
+    ExecutionContext* GetExecutionContext() const { return execution_context_; }
     void Trace(blink::Visitor*);
 
    private:
@@ -199,6 +196,7 @@ class NetworkResourcesData final
     scoped_refptr<BlobDataHandle> downloaded_file_blob_;
     Vector<AtomicString> certificate_;
     scoped_refptr<EncodedFormData> post_data_;
+    Member<ExecutionContext> execution_context_;
   };
 
   static NetworkResourcesData* Create(size_t total_buffer_size,
@@ -207,7 +205,8 @@ class NetworkResourcesData final
   }
   ~NetworkResourcesData();
 
-  void ResourceCreated(const String& request_id,
+  void ResourceCreated(ExecutionContext*,
+                       const String& request_id,
                        const String& loader_id,
                        const KURL&,
                        scoped_refptr<EncodedFormData>);
