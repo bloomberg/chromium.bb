@@ -27,7 +27,7 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
     return new CSSSkew(ax, ay);
   }
 
-  // Internal ways of creating CSSSkews.
+  // Internal ways of creating CSSSkew.
   static CSSSkew* FromCSSValue(const CSSFunctionValue&);
 
   // Getters and setters for the ax and ay attributes defined in the IDL.
