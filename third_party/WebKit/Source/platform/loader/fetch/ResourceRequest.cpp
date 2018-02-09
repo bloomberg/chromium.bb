@@ -303,15 +303,10 @@ void ResourceRequest::ClearHTTPReferrer() {
 
 void ResourceRequest::SetHTTPOrigin(const SecurityOrigin* origin) {
   SetHTTPHeaderField(HTTPNames::Origin, origin->ToAtomicString());
-  if (origin->HasSuborigin()) {
-    SetHTTPHeaderField(HTTPNames::Suborigin,
-                       AtomicString(origin->GetSuborigin()->GetName()));
-  }
 }
 
 void ResourceRequest::ClearHTTPOrigin() {
   http_header_fields_.Remove(HTTPNames::Origin);
-  http_header_fields_.Remove(HTTPNames::Suborigin);
 }
 
 void ResourceRequest::AddHTTPOriginIfNeeded(const SecurityOrigin* origin) {

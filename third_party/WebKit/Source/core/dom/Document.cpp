@@ -2975,7 +2975,7 @@ void Document::open(Document* entered_document,
   }
 
   if (entered_document) {
-    if (!GetSecurityOrigin()->IsSameSchemeHostPortAndSuborigin(
+    if (!GetSecurityOrigin()->IsSameSchemeHostPort(
             entered_document->GetSecurityOrigin())) {
       exception_state.ThrowSecurityError(
           "Can only call open() on same-origin documents.");
@@ -3664,9 +3664,8 @@ void Document::write(const String& text,
     return;
   }
 
-  if (entered_document &&
-      !GetSecurityOrigin()->IsSameSchemeHostPortAndSuborigin(
-          entered_document->GetSecurityOrigin())) {
+  if (entered_document && !GetSecurityOrigin()->IsSameSchemeHostPort(
+                              entered_document->GetSecurityOrigin())) {
     exception_state.ThrowSecurityError(
         "Can only call write() on same-origin documents.");
     return;
@@ -5137,13 +5136,6 @@ String Document::cookie(ExceptionState& exception_state) const {
     UseCounter::Count(*this, WebFeature::kFileAccessedCookies);
   }
 
-  // Suborigins are cookie-averse and thus should always return the empty
-  // string, unless the 'unsafe-cookies' option is provided.
-  if (GetSecurityOrigin()->HasSuborigin() &&
-      !GetSecurityOrigin()->GetSuborigin()->PolicyContains(
-          Suborigin::SuboriginPolicyOptions::kUnsafeCookies))
-    return String();
-
   KURL cookie_url = CookieURL();
   if (cookie_url.IsEmpty())
     return String();
@@ -5174,13 +5166,6 @@ void Document::setCookie(const String& value, ExceptionState& exception_state) {
   } else if (GetSecurityOrigin()->IsLocal()) {
     UseCounter::Count(*this, WebFeature::kFileAccessedCookies);
   }
-
-  // Suborigins are cookie-averse and thus setting should be a no-op, unless
-  // the 'unsafe-cookies' option is provided.
-  if (GetSecurityOrigin()->HasSuborigin() &&
-      !GetSecurityOrigin()->GetSuborigin()->PolicyContains(
-          Suborigin::SuboriginPolicyOptions::kUnsafeCookies))
-    return;
 
   KURL cookie_url = CookieURL();
   if (cookie_url.IsEmpty())
@@ -6086,7 +6071,6 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
     SetSecurityOrigin(SecurityOrigin::CreateUnique());
     InitContentSecurityPolicy();
     ApplyFeaturePolicy({});
-    // Unique security origins cannot have a suborigin
     return;
   }
 
@@ -6353,12 +6337,6 @@ void Document::UpdateSecurityOrigin(scoped_refptr<SecurityOrigin> origin) {
 
 String Document::origin() const {
   return GetSecurityOrigin()->ToString();
-}
-
-String Document::suborigin() const {
-  return GetSecurityOrigin()->HasSuborigin()
-             ? GetSecurityOrigin()->GetSuborigin()->GetName()
-             : String();
 }
 
 void Document::DidUpdateSecurityOrigin() {

@@ -68,16 +68,6 @@ String GetErrorString(const network::mojom::CORSError error,
       return String::Format(
           "%sInvalid response. Origin '%s' is therefore not allowed access.",
           redirect_denied.Utf8().data(), origin.ToString().Utf8().data());
-    case network::mojom::CORSError::kSubOriginMismatch:
-      return String::Format(
-          "%sThe 'Access-Control-Allow-Suborigin' header has a value '%s' that "
-          "is not equal to the supplied suborigin. Origin '%s' is therefore "
-          "not allowed access.",
-          redirect_denied.Utf8().data(),
-          response_header.Get(HTTPNames::Access_Control_Allow_Suborigin)
-              .Utf8()
-              .data(),
-          origin.ToString().Utf8().data());
     case network::mojom::CORSError::kWildcardOriginNotAllowed:
       return String::Format(
           "%sThe value of the 'Access-Control-Allow-Origin' header in the "
@@ -201,8 +191,6 @@ WTF::Optional<network::mojom::CORSError> CheckAccess(
   return network::cors::CheckAccess(
       response_url, response_status_code,
       GetHeaderValue(response_header, HTTPNames::Access_Control_Allow_Origin),
-      GetHeaderValue(response_header,
-                     HTTPNames::Access_Control_Allow_Suborigin),
       GetHeaderValue(response_header,
                      HTTPNames::Access_Control_Allow_Credentials),
       credentials_mode, origin.ToUrlOrigin());

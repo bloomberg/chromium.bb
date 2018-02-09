@@ -150,8 +150,6 @@ TEST_F(CSPSourceTest, SchemeIsEmpty) {
                      CSPSource::kNoWildcard);
     EXPECT_TRUE(source.Matches(KURL(base, "http://a.com")));
     EXPECT_TRUE(source.Matches(KURL(base, "https://a.com")));
-    EXPECT_TRUE(source.Matches(KURL(base, "http-so://a.com")));
-    EXPECT_TRUE(source.Matches(KURL(base, "https-so://a.com")));
     EXPECT_FALSE(source.Matches(KURL(base, "ftp://a.com")));
   }
 
@@ -163,9 +161,6 @@ TEST_F(CSPSourceTest, SchemeIsEmpty) {
                      CSPSource::kNoWildcard);
     EXPECT_FALSE(source.Matches(KURL(base, "http://a.com")));
     EXPECT_TRUE(source.Matches(KURL(base, "https://a.com")));
-    EXPECT_FALSE(source.Matches(KURL(base, "http-so://a.com")));
-    // TODO(jochen): Maybe it should return false?
-    EXPECT_TRUE(source.Matches(KURL(base, "https-so://a.com")));
     EXPECT_FALSE(source.Matches(KURL(base, "ftp://a.com")));
   }
 

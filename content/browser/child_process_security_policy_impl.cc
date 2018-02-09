@@ -348,8 +348,6 @@ ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl() {
   RegisterPseudoScheme(url::kAboutScheme);
   RegisterPseudoScheme(url::kJavaScriptScheme);
   RegisterPseudoScheme(kViewSourceScheme);
-  RegisterPseudoScheme(url::kHttpSuboriginScheme);
-  RegisterPseudoScheme(url::kHttpsSuboriginScheme);
 }
 
 ChildProcessSecurityPolicyImpl::~ChildProcessSecurityPolicyImpl() {
@@ -750,15 +748,6 @@ bool ChildProcessSecurityPolicyImpl::CanSetAsOriginHeader(int child_id,
   if (!url.is_valid())
     return false;  // Can't set invalid URLs as origin headers.
 
-  const std::string& scheme = url.scheme();
-
-  // Suborigin URLs are a special case and are allowed to be an origin header.
-  if (scheme == url::kHttpSuboriginScheme ||
-      scheme == url::kHttpsSuboriginScheme) {
-    DCHECK(IsPseudoScheme(scheme));
-    return true;
-  }
-
   // about:srcdoc cannot be used as an origin
   if (url == kAboutSrcDocURL)
     return false;
@@ -773,8 +762,10 @@ bool ChildProcessSecurityPolicyImpl::CanSetAsOriginHeader(int child_id,
   // document origin.
   {
     base::AutoLock lock(lock_);
-    if (base::ContainsKey(schemes_okay_to_appear_as_origin_headers_, scheme))
+    if (base::ContainsKey(schemes_okay_to_appear_as_origin_headers_,
+                          url.scheme())) {
       return true;
+    }
   }
   return false;
 }

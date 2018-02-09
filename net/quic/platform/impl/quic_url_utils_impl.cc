@@ -130,8 +130,7 @@ std::string QuicUrlUtilsImpl::GetPushPromiseUrl(QuicStringPiece scheme,
   GURL origin_url(canonical_scheme + "//" + std::string(authority));
   if (!origin_url.is_valid() || !origin_url.SchemeIsHTTPOrHTTPS() ||
       // The following checks are merely defense in depth.
-      origin_url.SchemeIsSuborigin() || origin_url.has_username() ||
-      origin_url.has_password() ||
+      origin_url.has_username() || origin_url.has_password() ||
       (origin_url.has_path() && origin_url.path_piece() != "/") ||
       origin_url.has_query() || origin_url.has_ref()) {
     return std::string();

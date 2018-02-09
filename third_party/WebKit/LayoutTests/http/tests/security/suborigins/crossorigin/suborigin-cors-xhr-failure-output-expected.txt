@@ -1,5 +1,0 @@
-CONSOLE ERROR: Failed to load http://127.0.0.1:8000/security/resources/cors-script.php?cors=false&without-preflight: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http-so://foobar.127.0.0.1:8000' is therefore not allowed access.
-This is a testharness.js-based test.
-PASS Lack of Access-Control-Allow-Suborigin on response causes failure
-Harness: the test ran to completion.
-

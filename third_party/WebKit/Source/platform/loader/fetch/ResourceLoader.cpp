@@ -430,7 +430,7 @@ CORSStatus ResourceLoader::DetermineCORSStatus(const ResourceResponse& response,
 
   DCHECK(source_origin);
 
-  if (source_origin->CanRequestNoSuborigin(response.Url()))
+  if (source_origin->CanRequest(response.Url()))
     return CORSStatus::kSameOrigin;
 
   // RequestContext, FetchRequestMode and FetchCredentialsMode never change

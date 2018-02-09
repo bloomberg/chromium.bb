@@ -61,9 +61,6 @@ class CONTENT_EXPORT LocalStorageContextMojo
   // |callback| is called when the deletion is sent to the database and
   // GetStorageUsage() will not return entries for |origin| anymore.
   void DeleteStorage(const url::Origin& origin, base::OnceClosure callback);
-  // Like DeleteStorage(), but also deletes storage for all sub-origins.
-  void DeleteStorageForPhysicalOrigin(const url::Origin& origin,
-                                      base::OnceClosure callback);
   void Flush();
   void FlushOriginForTesting(const url::Origin& origin);
 
@@ -131,11 +128,6 @@ class CONTENT_EXPORT LocalStorageContextMojo
   void OnGotMetaData(GetStorageUsageCallback callback,
                      leveldb::mojom::DatabaseError status,
                      std::vector<leveldb::mojom::KeyValuePtr> data);
-
-  void OnGotStorageUsageForDeletePhysicalOrigin(
-      const url::Origin& origin,
-      base::OnceClosure callback,
-      std::vector<LocalStorageUsageInfo> usage);
 
   void OnGotStorageUsageForShutdown(std::vector<LocalStorageUsageInfo> usage);
   void OnShutdownComplete(leveldb::mojom::DatabaseError error);

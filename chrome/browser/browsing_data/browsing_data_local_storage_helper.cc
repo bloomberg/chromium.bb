@@ -23,10 +23,9 @@ using content::DOMStorageContext;
 
 namespace {
 
-// Only websafe state and suborigins are considered browsing data.
+// Only websafe state is considered browsing data.
 bool HasStorageScheme(const GURL& origin_url) {
-  return BrowsingDataHelper::HasWebScheme(origin_url) ||
-         origin_url.SchemeIsSuborigin();
+  return BrowsingDataHelper::HasWebScheme(origin_url);
 }
 
 void GetUsageInfoCallback(
@@ -77,8 +76,7 @@ void BrowsingDataLocalStorageHelper::StartFetching(
 void BrowsingDataLocalStorageHelper::DeleteOrigin(const GURL& origin_url,
                                                   base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  dom_storage_context_->DeleteLocalStorageForPhysicalOrigin(
-      origin_url, std::move(callback));
+  dom_storage_context_->DeleteLocalStorage(origin_url, std::move(callback));
 }
 
 //---------------------------------------------------------
@@ -94,15 +92,10 @@ void CannedBrowsingDataLocalStorageHelper::AddLocalStorage(
     return;
   pending_local_storage_info_.insert(origin_url);
   url::Origin origin = url::Origin::Create(origin_url);
-  if (!origin.suborigin().empty()) {
-    pending_origins_to_pending_suborigins_.insert(
-        std::make_pair(origin.GetPhysicalOrigin().GetURL(), origin_url));
-  }
 }
 
 void CannedBrowsingDataLocalStorageHelper::Reset() {
   pending_local_storage_info_.clear();
-  pending_origins_to_pending_suborigins_.clear();
 }
 
 bool CannedBrowsingDataLocalStorageHelper::empty() const {
@@ -135,31 +128,7 @@ void CannedBrowsingDataLocalStorageHelper::DeleteOrigin(
     const GURL& origin_url,
     base::OnceClosure callback) {
   pending_local_storage_info_.erase(origin_url);
-  // All suborigins associated with |origin_url| must be removed.
-  // BrowsingDataLocalStorageHelper::DeleteOrigin takes care of doing that on
-  // the backend so it's not necessary to call it for each suborigin, but it is
-  // necessary to clear up the pending storage here.
   BrowsingDataLocalStorageHelper::DeleteOrigin(origin_url, std::move(callback));
-  if (pending_origins_to_pending_suborigins_.count(origin_url) > 0) {
-    auto it = pending_origins_to_pending_suborigins_.find(origin_url);
-    while (it != pending_origins_to_pending_suborigins_.end()) {
-      pending_local_storage_info_.erase(it->second);
-      pending_origins_to_pending_suborigins_.erase(it);
-      it = pending_origins_to_pending_suborigins_.find(origin_url);
-    }
-  }
-
-  // Similarly, if |origin_url| has a suborigin, the physical origin associated
-  // with that suborigin must also be deleted. This is also taken care of on the
-  // backend, so it's only necessary to clean up the pending storage.
-  url::Origin origin = url::Origin::Create(origin_url);
-  if (!origin.suborigin().empty()) {
-    GURL physical_origin(origin.GetPhysicalOrigin().GetURL());
-    pending_local_storage_info_.erase(physical_origin);
-    pending_origins_to_pending_suborigins_.erase(physical_origin);
-  }
-
-  pending_origins_to_pending_suborigins_.erase(origin_url);
 }
 
 CannedBrowsingDataLocalStorageHelper::~CannedBrowsingDataLocalStorageHelper() {}

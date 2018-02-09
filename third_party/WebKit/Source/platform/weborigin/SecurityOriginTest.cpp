@@ -36,7 +36,6 @@
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "platform/weborigin/Suborigin.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,13 +46,7 @@ namespace blink {
 
 const uint16_t kMaxAllowedPort = UINT16_MAX;
 
-class SecurityOriginTest : public ::testing::Test {
- public:
-  void SetUp() override {
-    url::AddStandardScheme("http-so", url::SCHEME_WITH_PORT);
-    url::AddStandardScheme("https-so", url::SCHEME_WITH_PORT);
-  }
-};
+class SecurityOriginTest : public ::testing::Test {};
 
 TEST_F(SecurityOriginTest, ValidPortsCreateNonUniqueOrigins) {
   uint16_t ports[] = {0, 80, 443, 5000, kMaxAllowedPort};
@@ -213,142 +206,7 @@ TEST_F(SecurityOriginTest, IsSecureViaTrustworthy) {
   }
 }
 
-TEST_F(SecurityOriginTest, Suborigins) {
-  ScopedSuboriginsForTest suborigins(true);
-
-  scoped_refptr<SecurityOrigin> origin =
-      SecurityOrigin::CreateFromString("https://test.com");
-  Suborigin suborigin;
-  suborigin.SetName("foobar");
-  EXPECT_FALSE(origin->HasSuborigin());
-  origin->AddSuborigin(suborigin);
-  EXPECT_TRUE(origin->HasSuborigin());
-  EXPECT_EQ("foobar", origin->GetSuborigin()->GetName());
-
-  origin = SecurityOrigin::CreateFromString("https-so://foobar.test.com");
-  EXPECT_EQ("https", origin->Protocol());
-  EXPECT_EQ("test.com", origin->Host());
-  EXPECT_EQ("foobar", origin->GetSuborigin()->GetName());
-
-  origin = SecurityOrigin::CreateFromString("https-so://foobar.test.com");
-  EXPECT_TRUE(origin->HasSuborigin());
-  EXPECT_EQ("foobar", origin->GetSuborigin()->GetName());
-
-  origin = SecurityOrigin::CreateFromString("https://foobar+test.com");
-  EXPECT_FALSE(origin->HasSuborigin());
-
-  origin = SecurityOrigin::CreateFromString("https.so://foobar+test.com");
-  EXPECT_FALSE(origin->HasSuborigin());
-
-  origin = SecurityOrigin::CreateFromString("https://_test.com");
-  EXPECT_FALSE(origin->HasSuborigin());
-
-  origin = SecurityOrigin::CreateFromString("https-so://_test.com");
-  EXPECT_TRUE(origin->HasSuborigin());
-  EXPECT_EQ("_test", origin->GetSuborigin()->GetName());
-
-  origin = SecurityOrigin::CreateFromString("https-so-so://foobar.test.com");
-  EXPECT_FALSE(origin->HasSuborigin());
-
-  origin = base::AdoptRef<SecurityOrigin>(new SecurityOrigin);
-  EXPECT_FALSE(origin->HasSuborigin());
-
-  origin = SecurityOrigin::CreateFromString("https-so://foobar.test.com");
-  Suborigin empty_suborigin;
-  EXPECT_DEATH(origin->AddSuborigin(empty_suborigin), "");
-}
-
-TEST_F(SecurityOriginTest, SuboriginsParsing) {
-  ScopedSuboriginsForTest suborigins(true);
-  String protocol, real_protocol, host, real_host, suborigin;
-
-  protocol = "https";
-  host = "test.com";
-  EXPECT_FALSE(SecurityOrigin::DeserializeSuboriginAndProtocolAndHost(
-      protocol, host, suborigin, real_protocol, real_host));
-
-  protocol = "https-so";
-  host = "foobar.test.com";
-  suborigin = "";
-  real_protocol = "";
-  real_host = "";
-  EXPECT_TRUE(SecurityOrigin::DeserializeSuboriginAndProtocolAndHost(
-      protocol, host, suborigin, real_protocol, real_host));
-  EXPECT_EQ("https", real_protocol);
-  EXPECT_EQ("test.com", real_host);
-  EXPECT_EQ("foobar", suborigin);
-
-  protocol = "https-so";
-  host = ".test.com";
-  suborigin = String();
-  real_protocol = String();
-  real_host = String();
-  EXPECT_FALSE(SecurityOrigin::DeserializeSuboriginAndProtocolAndHost(
-      protocol, host, suborigin, real_protocol, real_host));
-  EXPECT_TRUE(real_protocol.IsNull());
-  EXPECT_TRUE(real_host.IsNull());
-  EXPECT_TRUE(suborigin.IsNull());
-
-  protocol = "https-so";
-  host = "test";
-  suborigin = String();
-  real_protocol = String();
-  real_host = String();
-  EXPECT_FALSE(SecurityOrigin::DeserializeSuboriginAndProtocolAndHost(
-      protocol, host, suborigin, real_protocol, real_host));
-  EXPECT_TRUE(real_protocol.IsNull());
-  EXPECT_TRUE(real_host.IsNull());
-  EXPECT_TRUE(suborigin.IsNull());
-
-  scoped_refptr<SecurityOrigin> origin;
-  StringBuilder builder;
-
-  origin = SecurityOrigin::CreateFromString("https-so://foobar.test.com");
-  origin->BuildRawString(builder, true);
-  EXPECT_EQ("https-so://foobar.test.com", builder.ToString());
-  EXPECT_EQ("https-so://foobar.test.com", origin->ToString());
-  builder.Clear();
-  origin->BuildRawString(builder, false);
-  EXPECT_EQ("https://test.com", builder.ToString());
-  EXPECT_EQ("https://test.com", origin->ToPhysicalOriginString());
-
-  Suborigin suborigin_obj;
-  suborigin_obj.SetName("foobar");
-  builder.Clear();
-  origin = SecurityOrigin::CreateFromString("https://test.com");
-  origin->AddSuborigin(suborigin_obj);
-  origin->BuildRawString(builder, true);
-  EXPECT_EQ("https-so://foobar.test.com", builder.ToString());
-  EXPECT_EQ("https-so://foobar.test.com", origin->ToString());
-  builder.Clear();
-  origin->BuildRawString(builder, false);
-  EXPECT_EQ("https://test.com", builder.ToString());
-  EXPECT_EQ("https://test.com", origin->ToPhysicalOriginString());
-}
-
-TEST_F(SecurityOriginTest, SuboriginsIsSameSchemeHostPortAndSuborigin) {
-  ScopedSuboriginsForTest suborigins(true);
-  scoped_refptr<const SecurityOrigin> origin =
-      SecurityOrigin::CreateFromString("https-so://foobar.test.com");
-  scoped_refptr<const SecurityOrigin> other1 =
-      SecurityOrigin::CreateFromString("https-so://bazbar.test.com");
-  scoped_refptr<const SecurityOrigin> other2 =
-      SecurityOrigin::CreateFromString("http-so://foobar.test.com");
-  scoped_refptr<const SecurityOrigin> other3 =
-      SecurityOrigin::CreateFromString("https-so://foobar.test.com:1234");
-  scoped_refptr<const SecurityOrigin> other4 =
-      SecurityOrigin::CreateFromString("https://test.com");
-
-  EXPECT_TRUE(origin->IsSameSchemeHostPortAndSuborigin(origin.get()));
-  EXPECT_FALSE(origin->IsSameSchemeHostPortAndSuborigin(other1.get()));
-  EXPECT_FALSE(origin->IsSameSchemeHostPortAndSuborigin(other2.get()));
-  EXPECT_FALSE(origin->IsSameSchemeHostPortAndSuborigin(other3.get()));
-  EXPECT_FALSE(origin->IsSameSchemeHostPortAndSuborigin(other4.get()));
-}
-
 TEST_F(SecurityOriginTest, CanAccess) {
-  ScopedSuboriginsForTest suborigins(true);
-
   struct TestCase {
     bool can_access;
     const char* origin1;
@@ -358,9 +216,6 @@ TEST_F(SecurityOriginTest, CanAccess) {
   TestCase tests[] = {
       {true, "https://foobar.com", "https://foobar.com"},
       {false, "https://foobar.com", "https://bazbar.com"},
-      {false, "https://foobar.com", "https-so://name.foobar.com"},
-      {false, "https-so://name.foobar.com", "https://foobar.com"},
-      {true, "https-so://name.foobar.com", "https-so://name.foobar.com"},
   };
 
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(tests); ++i) {
@@ -373,20 +228,15 @@ TEST_F(SecurityOriginTest, CanAccess) {
 }
 
 TEST_F(SecurityOriginTest, CanRequest) {
-  ScopedSuboriginsForTest suborigins(true);
-
   struct TestCase {
     bool can_request;
-    bool can_request_no_suborigin;
     const char* origin;
     const char* url;
   };
 
   TestCase tests[] = {
-      {true, true, "https://foobar.com", "https://foobar.com"},
-      {false, false, "https://foobar.com", "https://bazbar.com"},
-      {true, false, "https-so://name.foobar.com", "https://foobar.com"},
-      {false, false, "https-so://name.foobar.com", "https://bazbar.com"},
+      {true, "https://foobar.com", "https://foobar.com"},
+      {false, "https://foobar.com", "https://bazbar.com"},
   };
 
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(tests); ++i) {
@@ -394,8 +244,6 @@ TEST_F(SecurityOriginTest, CanRequest) {
         SecurityOrigin::CreateFromString(tests[i].origin);
     blink::KURL url(tests[i].url);
     EXPECT_EQ(tests[i].can_request, origin->CanRequest(url));
-    EXPECT_EQ(tests[i].can_request_no_suborigin,
-              origin->CanRequestNoSuborigin(url));
   }
 }
 
@@ -411,8 +259,6 @@ TEST_F(SecurityOriginTest, PortAndEffectivePortMethod) {
       {0, 443, "https://example.com"},
       {0, 443, "https://example.com:443"},
       {444, 444, "https://example.com:444"},
-      {0, 80, "http-so://suborigin.example.com"},
-      {81, 81, "http-so://suborigin.example.com:81"},
   };
 
   for (const auto& test : cases) {
@@ -441,36 +287,6 @@ TEST_F(SecurityOriginTest, CreateFromTuple) {
   for (const auto& test : cases) {
     scoped_refptr<const SecurityOrigin> origin =
         SecurityOrigin::Create(test.scheme, test.host, test.port);
-    EXPECT_EQ(test.origin, origin->ToString()) << test.origin;
-  }
-}
-
-TEST_F(SecurityOriginTest, CreateFromTupleWithSuborigin) {
-  struct TestCase {
-    const char* scheme;
-    const char* host;
-    unsigned short port;
-    const char* suborigin;
-    const char* origin;
-  } cases[] = {
-      {"http", "example.com", 80, "", "http://example.com"},
-      {"http", "example.com", 81, "", "http://example.com:81"},
-      {"https", "example.com", 443, "", "https://example.com"},
-      {"https", "example.com", 444, "", "https://example.com:444"},
-      {"file", "", 0, "", "file://"},
-      {"file", "example.com", 0, "", "file://"},
-      {"http", "example.com", 80, "foobar", "http-so://foobar.example.com"},
-      {"http", "example.com", 81, "foobar", "http-so://foobar.example.com:81"},
-      {"https", "example.com", 443, "foobar", "https-so://foobar.example.com"},
-      {"https", "example.com", 444, "foobar",
-       "https-so://foobar.example.com:444"},
-      {"file", "", 0, "foobar", "file://"},
-      {"file", "example.com", 0, "foobar", "file://"},
-  };
-
-  for (const auto& test : cases) {
-    scoped_refptr<const SecurityOrigin> origin = SecurityOrigin::Create(
-        test.scheme, test.host, test.port, test.suborigin);
     EXPECT_EQ(test.origin, origin->ToString()) << test.origin;
   }
 }
@@ -649,9 +465,7 @@ TEST_F(SecurityOriginTest, EffectiveDomainSetFromDom) {
     const char* expected_effective_domain;
     const char* origin;
   } kDomainTestCases[] = {
-      {"example.com", "example.com", "http-so://suborigin.example.com"},
-      {"example.com", "example.com", "http://www.suborigin.example.com"},
-  };
+      {"example.com", "example.com", "http://www.suborigin.example.com"}};
 
   for (const auto& test : kDomainTestCases) {
     scoped_refptr<SecurityOrigin> origin =

@@ -203,14 +203,8 @@ base::Optional<CORSError> HandleRedirect(
   }
 
   if (!current_security_origin.CanRequest(new_url)) {
-    new_request.ClearHTTPHeaderField(WebString(HTTPNames::Suborigin));
     new_request.SetHTTPHeaderField(WebString(HTTPNames::Origin),
                                    new_security_origin.ToString());
-    if (!new_security_origin.Suborigin().IsEmpty()) {
-      new_request.SetHTTPHeaderField(WebString(HTTPNames::Suborigin),
-                                     new_security_origin.Suborigin());
-    }
-
     options.cors_flag = true;
   }
   return base::nullopt;

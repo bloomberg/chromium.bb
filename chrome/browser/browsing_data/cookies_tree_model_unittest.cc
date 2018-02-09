@@ -2005,44 +2005,4 @@ TEST_F(CookiesTreeModelTest, CookiesFilterWithoutSource) {
   EXPECT_EQ("A", GetDisplayedCookies(&cookies_model));
 }
 
-TEST_F(CookiesTreeModelTest, Suborigins) {
-  LocalDataContainer* container = new LocalDataContainer(
-      mock_browsing_data_cookie_helper_, mock_browsing_data_database_helper_,
-      mock_browsing_data_local_storage_helper_,
-      mock_browsing_data_session_storage_helper_,
-      mock_browsing_data_appcache_helper_,
-      mock_browsing_data_indexed_db_helper_,
-      mock_browsing_data_file_system_helper_, mock_browsing_data_quota_helper_,
-      mock_browsing_data_channel_id_helper_,
-      mock_browsing_data_service_worker_helper_,
-      mock_browsing_data_shared_worker_helper_,
-      mock_browsing_data_cache_storage_helper_,
-      mock_browsing_data_flash_lso_helper_,
-      mock_browsing_data_media_license_helper_);
-  CookiesTreeModel cookies_model(container, special_storage_policy());
-
-  mock_browsing_data_local_storage_helper_
-      ->AddLocalStorageSamplesWithSuborigins();
-  mock_browsing_data_local_storage_helper_->Notify();
-  {
-    SCOPED_TRACE(
-        "Suborigins get their own storage partitions and are folded into their "
-        "respective hosts");
-    // root
-    // host4 -> local storage -> http-so://foobar.host4:4
-    //                        -> http://host4:4
-    // host3 -> local storage -> http-so://foobar.host3:3
-    // host2 -> local storage -> http://host2:2
-    // host1 -> local storage -> http://host1:1
-    EXPECT_EQ(14, cookies_model.GetRoot()->GetTotalNodeCount());
-    EXPECT_EQ(
-        "http://host1:1/,http://host2:2/,http-so://foobar.host3:3/,"
-        "http-so://foobar.host4:4/,http://host4:4/",
-        GetDisplayedLocalStorages(&cookies_model));
-    // Delete host4, which should delete foobar_host4:4 in addition to host4:4
-    DeleteStoredObjects(cookies_model.GetRoot()->GetChild(3));
-    EXPECT_EQ(10, cookies_model.GetRoot()->GetTotalNodeCount());
-  }
-}
-
 }  // namespace

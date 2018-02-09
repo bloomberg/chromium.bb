@@ -77,13 +77,6 @@ unsigned short WebSecurityOrigin::EffectivePort() const {
   return private_->EffectivePort();
 }
 
-WebString WebSecurityOrigin::Suborigin() const {
-  DCHECK(private_);
-  return private_->HasSuborigin()
-             ? WebString(private_->GetSuborigin()->GetName())
-             : WebString();
-}
-
 bool WebSecurityOrigin::IsUnique() const {
   DCHECK(private_);
   return private_->IsUnique();

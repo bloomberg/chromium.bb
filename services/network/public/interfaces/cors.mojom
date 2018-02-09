@@ -16,7 +16,6 @@ enum CORSError {
   kDisallowedByMode,
   kInvalidResponse,
   kAllowOriginMismatch,
-  kSubOriginMismatch,
   kWildcardOriginNotAllowed,
   kMissingAllowOriginHeader,
   kMultipleAllowOriginValues,

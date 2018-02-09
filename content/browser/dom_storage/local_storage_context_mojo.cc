@@ -431,14 +431,6 @@ void LocalStorageContextMojo::DeleteStorage(const url::Origin& origin,
   }
 }
 
-void LocalStorageContextMojo::DeleteStorageForPhysicalOrigin(
-    const url::Origin& origin,
-    base::OnceClosure callback) {
-  GetStorageUsage(base::BindOnce(
-      &LocalStorageContextMojo::OnGotStorageUsageForDeletePhysicalOrigin,
-      weak_ptr_factory_.GetWeakPtr(), origin, std::move(callback)));
-}
-
 void LocalStorageContextMojo::Flush() {
   if (connection_state_ != CONNECTION_FINISHED) {
     RunWhenConnected(base::BindOnce(&LocalStorageContextMojo::Flush,
@@ -973,25 +965,6 @@ void LocalStorageContextMojo::OnGotMetaData(
     result.push_back(std::move(info));
   }
   std::move(callback).Run(std::move(result));
-}
-
-void LocalStorageContextMojo::OnGotStorageUsageForDeletePhysicalOrigin(
-    const url::Origin& origin,
-    base::OnceClosure callback,
-    std::vector<LocalStorageUsageInfo> usage) {
-  // Wait for callbacks for each entry in |usage| and a callback for |origin|.
-  base::RepeatingClosure barrier =
-      base::BarrierClosure(usage.size() + 1, std::move(callback));
-  for (const auto& info : usage) {
-    url::Origin origin_candidate = url::Origin::Create(info.origin);
-    if (!origin_candidate.IsSameOriginWith(origin) &&
-        origin_candidate.IsSamePhysicalOriginWith(origin)) {
-      DeleteStorage(origin_candidate, barrier);
-    } else {
-      barrier.Run();
-    }
-  }
-  DeleteStorage(origin, barrier);
 }
 
 void LocalStorageContextMojo::OnGotStorageUsageForShutdown(

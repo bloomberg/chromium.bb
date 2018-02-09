@@ -50,7 +50,6 @@ namespace header_names {
 const char kAccessControlAllowCredentials[] =
     "Access-Control-Allow-Credentials";
 const char kAccessControlAllowOrigin[] = "Access-Control-Allow-Origin";
-const char kAccessControlAllowSuborigin[] = "Access-Control-Allow-Suborigin";
 
 }  // namespace header_names
 
@@ -59,24 +58,13 @@ base::Optional<mojom::CORSError> CheckAccess(
     const GURL& response_url,
     const int response_status_code,
     const base::Optional<std::string>& allow_origin_header,
-    const base::Optional<std::string>& allow_suborigin_header,
     const base::Optional<std::string>& allow_credentials_header,
     mojom::FetchCredentialsMode credentials_mode,
     const url::Origin& origin) {
   if (!response_status_code)
     return mojom::CORSError::kInvalidResponse;
 
-  // Check Suborigins, unless the Access-Control-Allow-Origin is '*', which
-  // implies that all Suborigins are okay as well.
-  bool allow_all_origins = allow_origin_header == kAsterisk;
-  if (!origin.suborigin().empty() && !allow_all_origins) {
-    if (allow_suborigin_header != kAsterisk &&
-        allow_suborigin_header != origin.suborigin()) {
-      return mojom::CORSError::kSubOriginMismatch;
-    }
-  }
-
-  if (allow_all_origins) {
+  if (allow_origin_header == kAsterisk) {
     // A wildcard Access-Control-Allow-Origin can not be used if credentials are
     // to be sent, even with Access-Control-Allow-Credentials set to true.
     // See https://fetch.spec.whatwg.org/#cors-protocol-and-credentials.

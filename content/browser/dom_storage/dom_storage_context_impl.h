@@ -132,7 +132,6 @@ class CONTENT_EXPORT DOMStorageContextImpl
   void GetLocalStorageUsage(std::vector<LocalStorageUsageInfo>* infos,
                             bool include_file_info);
   void GetSessionStorageUsage(std::vector<SessionStorageUsageInfo>* infos);
-  void DeleteLocalStorageForPhysicalOrigin(const GURL& origin_url);
   void DeleteLocalStorage(const GURL& origin_url);
   void DeleteSessionStorage(const SessionStorageUsageInfo& usage_info);
 

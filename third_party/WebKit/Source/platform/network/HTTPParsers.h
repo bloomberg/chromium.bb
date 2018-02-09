@@ -46,7 +46,6 @@
 namespace blink {
 
 class HTTPHeaderMap;
-class Suborigin;
 class ResourceResponse;
 
 enum ContentTypeOptionsDisposition {
@@ -123,13 +122,6 @@ ParseCacheControlDirectives(const AtomicString& cache_control_header,
                             const AtomicString& pragma_header);
 PLATFORM_EXPORT void ParseCommaDelimitedHeader(const String& header_value,
                                                CommaDelimitedHeaderSet&);
-// Returns true on success, otherwise false. The Suborigin argument must be a
-// non-null return argument. |messages| is a list of messages based on any
-// parse warnings or errors. Even if parseSuboriginHeader returns true, there
-// may be Strings in |messages|.
-PLATFORM_EXPORT bool ParseSuboriginHeader(const String& header,
-                                          Suborigin*,
-                                          WTF::Vector<String>& messages);
 
 PLATFORM_EXPORT ContentTypeOptionsDisposition
 ParseContentTypeOptionsHeader(const String& header);

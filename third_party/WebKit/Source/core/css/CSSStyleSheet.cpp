@@ -256,7 +256,7 @@ bool CSSStyleSheet::CanAccessRules() const {
   Document* document = OwnerDocument();
   if (!document)
     return true;
-  if (document->GetSecurityOrigin()->CanRequestNoSuborigin(base_url))
+  if (document->GetSecurityOrigin()->CanRequest(base_url))
     return true;
   if (allow_rule_access_from_origin_ &&
       document->GetSecurityOrigin()->CanAccess(

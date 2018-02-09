@@ -816,8 +816,7 @@ void KURL::InitProtocolMetadata() {
     protocol_ = WTF::g_http_atom;
   } else {
     protocol_ = protocol.ToAtomicString();
-    protocol_is_in_http_family_ =
-        protocol_ == "http-so" || protocol_ == "https-so";
+    protocol_is_in_http_family_ = false;
   }
   DCHECK_EQ(protocol_, protocol_.DeprecatedLower());
 }

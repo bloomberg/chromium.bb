@@ -22,7 +22,7 @@ class MockCredentialManager {
       icon: new url.mojom.Url({url: icon}),
       password: password,
       federation: new url.mojom.Origin(
-          {scheme: '', host: '', port: 0, suborigin: '', unique: true})
+          {scheme: '', host: '', port: 0, unique: true})
     });
   }
 

@@ -637,7 +637,7 @@ ResourceRequestBlockedReason ResourceFetcher::PrepareRequest(
     return ResourceRequestBlockedReason::kOther;
 
   params.MutableOptions().cors_flag =
-      !origin || !origin->CanRequestNoSuborigin(params.Url());
+      !origin || !origin->CanRequest(params.Url());
 
   if (options.cors_handling_by_resource_fetcher ==
       kEnableCORSHandlingByResourceFetcher) {
@@ -646,10 +646,7 @@ ResourceRequestBlockedReason ResourceFetcher::PrepareRequest(
       case network::mojom::FetchCredentialsMode::kOmit:
         break;
       case network::mojom::FetchCredentialsMode::kSameOrigin:
-        allow_stored_credentials =
-            !params.Options().cors_flag ||
-            (origin &&
-             origin->HasSuboriginAndShouldAllowCredentialsFor(params.Url()));
+        allow_stored_credentials = !params.Options().cors_flag;
         break;
       case network::mojom::FetchCredentialsMode::kInclude:
         allow_stored_credentials = true;
@@ -1495,13 +1492,7 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
                                       resource->GetType(),
                                       resource->Options().initiator_info);
 
-    // Resource requests from suborigins should not be intercepted by the
-    // service worker of the physical origin. This has the effect that, for now,
-    // suborigins do not work with service workers. See
-    // https://w3c.github.io/webappsec-suborigins/.
     const SecurityOrigin* source_origin = Context().GetSecurityOrigin();
-    if (source_origin && source_origin->HasSuborigin())
-      request.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
 
     // TODO(shaochuan): Saving modified ResourceRequest back to |resource|,
     // remove once dispatchWillSendRequest() takes const ResourceRequest.

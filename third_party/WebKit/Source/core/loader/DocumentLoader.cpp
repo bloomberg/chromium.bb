@@ -883,20 +883,6 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
   if (history_item_ && IsBackForwardLoadType(load_type_))
     document->SetStateForNewFormElements(history_item_->GetDocumentState());
 
-  String suborigin_header = response_.HttpHeaderField(HTTPNames::Suborigin);
-  if (!suborigin_header.IsNull()) {
-    Vector<String> messages;
-    Suborigin suborigin;
-    if (ParseSuboriginHeader(suborigin_header, &suborigin, messages))
-      document->EnforceSuborigin(suborigin);
-
-    for (auto& message : messages) {
-      document->AddConsoleMessage(
-          ConsoleMessage::Create(kSecurityMessageSource, kErrorMessageLevel,
-                                 "Error with Suborigin header: " + message));
-    }
-  }
-
   document->GetClientHintsPreferences().UpdateFrom(client_hints_preferences_);
 
   // TODO(japhet): There's no reason to wait until commit to set these bits.

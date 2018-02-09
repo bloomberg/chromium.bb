@@ -218,7 +218,6 @@ class CORE_EXPORT ApplicationCacheHost final
   std::unique_ptr<WebApplicationCacheHost> host_;
 
   FRIEND_TEST_ALL_PREFIXES(DocumentTest, SandboxDisablesAppCache);
-  FRIEND_TEST_ALL_PREFIXES(DocumentTest, SuboriginDisablesAppCache);
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationCacheHost);
 };

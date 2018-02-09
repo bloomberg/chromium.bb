@@ -48,27 +48,6 @@ TEST_F(CannedBrowsingDataLocalStorageTest, Delete) {
   EXPECT_EQ(2u, helper->GetLocalStorageCount());
   helper->DeleteOrigin(origin1, base::BindOnce(&base::DoNothing));
   EXPECT_EQ(1u, helper->GetLocalStorageCount());
-
-  // Local storage for a suborigin
-  // (https://www.chromestatus.com/feature/5569465034997760) should be deleted
-  // when the corresponding physical origin is deleted.
-  const GURL suborigin_on_origin_3("http-so://suborigin.foo.example.com");
-  helper->AddLocalStorage(suborigin_on_origin_3);
-  EXPECT_EQ(2u, helper->GetLocalStorageCount());
-  helper->DeleteOrigin(origin3, base::BindOnce(&base::DoNothing));
-  EXPECT_EQ(0u, helper->GetLocalStorageCount());
-  helper->AddLocalStorage(suborigin_on_origin_3);
-  EXPECT_EQ(1u, helper->GetLocalStorageCount());
-  helper->DeleteOrigin(origin3, base::BindOnce(&base::DoNothing));
-  EXPECT_EQ(0u, helper->GetLocalStorageCount());
-
-  // Similarly, the suborigin should be deleted when the corresponding
-  // physical origin is deleted.
-  helper->AddLocalStorage(origin3);
-  helper->AddLocalStorage(suborigin_on_origin_3);
-  EXPECT_EQ(2u, helper->GetLocalStorageCount());
-  helper->DeleteOrigin(suborigin_on_origin_3, base::BindOnce(&base::DoNothing));
-  EXPECT_EQ(0u, helper->GetLocalStorageCount());
 }
 
 TEST_F(CannedBrowsingDataLocalStorageTest, IgnoreExtensionsAndDevTools) {

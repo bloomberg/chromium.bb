@@ -75,8 +75,6 @@ class WebSecurityOrigin {
   // (e.g. "http" => 80).
   BLINK_PLATFORM_EXPORT unsigned short EffectivePort() const;
 
-  BLINK_PLATFORM_EXPORT WebString Suborigin() const;
-
   // A unique WebSecurityOrigin is the least privileged WebSecurityOrigin.
   BLINK_PLATFORM_EXPORT bool IsUnique() const;
 

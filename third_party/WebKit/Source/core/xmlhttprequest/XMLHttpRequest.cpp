@@ -1054,7 +1054,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
     }
   }
 
-  same_origin_request_ = GetSecurityOrigin()->CanRequestNoSuborigin(url_);
+  same_origin_request_ = GetSecurityOrigin()->CanRequest(url_);
 
   if (!same_origin_request_ && with_credentials_) {
     UseCounter::Count(&execution_context,

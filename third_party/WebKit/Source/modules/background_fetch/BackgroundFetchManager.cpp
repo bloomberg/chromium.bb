@@ -121,8 +121,7 @@ bool ShouldBlockCORSPreflight(ExecutionContext* execution_context,
   // https://fetch.spec.whatwg.org/#main-fetch
   // TODO(crbug.com/711354): Make sure that cross-origin redirects are disabled.
   bool same_origin =
-      execution_context->GetSecurityOrigin()->CanRequestNoSuborigin(
-          request_url);
+      execution_context->GetSecurityOrigin()->CanRequest(request_url);
   if (same_origin)
     return false;
 

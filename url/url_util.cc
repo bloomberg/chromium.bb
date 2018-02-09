@@ -38,15 +38,11 @@ const SchemeWithType kStandardURLSchemes[] = {
     {kWsScheme, SCHEME_WITH_PORT},   // WebSocket.
     {kWssScheme, SCHEME_WITH_PORT},  // WebSocket secure.
     {kFileSystemScheme, SCHEME_WITHOUT_AUTHORITY},
-    {kHttpSuboriginScheme, SCHEME_WITH_PORT},
-    {kHttpsSuboriginScheme, SCHEME_WITH_PORT},
 };
 
 const SchemeWithType kReferrerURLSchemes[] = {
     {kHttpScheme, SCHEME_WITH_PORT},
     {kHttpsScheme, SCHEME_WITH_PORT},
-    {kHttpSuboriginScheme, SCHEME_WITH_PORT},
-    {kHttpsSuboriginScheme, SCHEME_WITH_PORT},
 };
 
 const char* kSecureSchemes[] = {

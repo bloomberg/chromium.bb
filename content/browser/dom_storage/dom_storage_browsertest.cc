@@ -71,7 +71,7 @@ class DOMStorageBrowserTest : public ContentBrowserTest {
                         shell()->web_contents()->GetBrowserContext())
                         ->GetDOMStorageContext();
     base::RunLoop loop;
-    context->DeleteLocalStorageForPhysicalOrigin(origin, loop.QuitClosure());
+    context->DeleteLocalStorage(origin, loop.QuitClosure());
     loop.Run();
   }
 };

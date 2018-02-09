@@ -5422,8 +5422,7 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
     if (params->origin.scheme() != url::kFileScheme ||
         !render_view_->GetWebkitPreferences()
              .allow_universal_access_from_file_urls) {
-      CHECK(params->origin.IsSamePhysicalOriginWith(
-          url::Origin::Create(params->url)))
+      CHECK(params->origin.IsSameOriginWith(url::Origin::Create(params->url)))
           << " url:" << params->url << " origin:" << params->origin;
     }
   }

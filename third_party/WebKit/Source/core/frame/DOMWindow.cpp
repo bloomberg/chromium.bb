@@ -28,7 +28,6 @@
 #include "core/probe/CoreProbes.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/weborigin/Suborigin.h"
 
 namespace blink {
 
@@ -190,17 +189,8 @@ void DOMWindow::postMessage(scoped_refptr<SerializedScriptValue> message,
     return;
 
   const SecurityOrigin* security_origin = source_document->GetSecurityOrigin();
-  bool has_suborigin = source_document->GetSecurityOrigin()->HasSuborigin();
-  Suborigin::SuboriginPolicyOptions unsafe_send_opt =
-      Suborigin::SuboriginPolicyOptions::kUnsafePostMessageSend;
 
-  String source_origin =
-      (has_suborigin &&
-       security_origin->GetSuborigin()->PolicyContains(unsafe_send_opt))
-          ? security_origin->ToPhysicalOriginString()
-          : security_origin->ToString();
-  String source_suborigin =
-      has_suborigin ? security_origin->GetSuborigin()->GetName() : String();
+  String source_origin = security_origin->ToString();
 
   KURL target_url = IsLocalDOMWindow()
                         ? blink::ToLocalDOMWindow(this)->document()->Url()
@@ -233,9 +223,8 @@ void DOMWindow::postMessage(scoped_refptr<SerializedScriptValue> message,
         WebFeature::kPostMessageOutgoingWouldBeBlockedByConnectSrc);
   }
 
-  MessageEvent* event =
-      MessageEvent::Create(std::move(channels), std::move(message),
-                           source_origin, String(), source, source_suborigin);
+  MessageEvent* event = MessageEvent::Create(
+      std::move(channels), std::move(message), source_origin, String(), source);
 
   SchedulePostMessage(event, std::move(target), source_document);
 }

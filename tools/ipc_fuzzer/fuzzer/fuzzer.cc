@@ -1520,17 +1520,14 @@ struct FuzzTraits<url::Origin> {
     std::string scheme = p->scheme();
     std::string host = p->host();
     uint16_t port = p->port();
-    std::string suborigin = p->suborigin();
     if (!FuzzParam(&scheme, fuzzer))
       return false;
     if (!FuzzParam(&host, fuzzer))
       return false;
     if (!FuzzParam(&port, fuzzer))
       return false;
-    if (!FuzzParam(&suborigin, fuzzer))
-      return false;
     *p = url::Origin::UnsafelyCreateOriginWithoutNormalization(scheme, host,
-                                                               port, suborigin);
+                                                               port);
 
     // Force a unique origin 1% of the time:
     if (RandInRange(100) == 1)
