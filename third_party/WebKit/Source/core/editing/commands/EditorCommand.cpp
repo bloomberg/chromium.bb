@@ -53,6 +53,7 @@
 #include "core/editing/commands/FormatBlockCommand.h"
 #include "core/editing/commands/IndentOutdentCommand.h"
 #include "core/editing/commands/InsertListCommand.h"
+#include "core/editing/commands/RemoveFormatCommand.h"
 #include "core/editing/commands/ReplaceSelectionCommand.h"
 #include "core/editing/commands/TypingCommand.h"
 #include "core/editing/commands/UnlinkCommand.h"
@@ -2010,7 +2011,9 @@ static bool ExecuteRemoveFormat(LocalFrame& frame,
                                 Event*,
                                 EditorCommandSource,
                                 const String&) {
-  frame.GetEditor().RemoveFormattingAndStyle();
+  DCHECK(frame.GetDocument());
+  RemoveFormatCommand::Create(*frame.GetDocument())->Apply();
+
   return true;
 }
 
