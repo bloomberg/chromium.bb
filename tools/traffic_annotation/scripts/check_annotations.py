@@ -57,7 +57,9 @@ class NetworkTrafficAnnotationChecker():
 
   def _FindPossibleBuildPath(self):
     """Returns the first folder in //out that looks like a build dir."""
-    out = os.path.abspath(os.path.join(self.this_dir, '..', '..', 'out'))
+    # Assuming this file is in 'tools/traffic_annotation/scripts', three
+    # directories deeper is 'src' and hopefully there is an 'out' in it.
+    out = os.path.abspath(os.path.join(self.this_dir, '..', '..', '..', 'out'))
     if os.path.exists(out):
       for folder in os.listdir(out):
         candidate = os.path.join(out, folder)
@@ -113,9 +115,6 @@ class NetworkTrafficAnnotationChecker():
 
     args = [self.auditor_path, "--test-only", "--limit=%i" % limit,
             "--build-path=" + self.build_path, "--error-resilient"] + file_paths
-
-    if sys.platform.startswith("win"):
-      args.insert(0, sys.executable)
 
     command = subprocess.Popen(args, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
