@@ -19,15 +19,19 @@ namespace zucchini {
 // A file reader wrapper.
 class MappedFileReader {
  public:
-  // Opens |file_path| and maps it to memory for reading.
-  explicit MappedFileReader(const base::FilePath& file_path);
+  // Maps |file| to memory for reading. Also validates |file|. Errors are
+  // available via HasError() and error().
+  explicit MappedFileReader(base::File&& file);
 
-  bool IsValid() const { return buffer_.IsValid(); }
   const uint8_t* data() const { return buffer_.data(); }
   size_t length() const { return buffer_.length(); }
   zucchini::ConstBufferView region() const { return {data(), length()}; }
 
+  bool HasError() { return !error_.empty() || !buffer_.IsValid(); }
+  const std::string& error() { return error_; }
+
  private:
+  std::string error_;
   base::MemoryMappedFile buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(MappedFileReader);
@@ -37,14 +41,20 @@ class MappedFileReader {
 // Keep() is called.
 class MappedFileWriter {
  public:
-  // Creates |file_path| and maps it to memory for writing.
-  MappedFileWriter(const base::FilePath& file_path, size_t length);
+  // Maps |file| to memory for writing. |file_path| is needed for auto delete on
+  // UNIX systems, but can be empty if auto delete is not needed. Errors are
+  // available via HasError() and error().
+  MappedFileWriter(const base::FilePath& file_path,
+                   base::File&& file,
+                   size_t length);
   ~MappedFileWriter();
 
-  bool IsValid() const { return buffer_.IsValid(); }
   uint8_t* data() { return buffer_.data(); }
   size_t length() const { return buffer_.length(); }
   zucchini::MutableBufferView region() { return {data(), length()}; }
+
+  bool HasError() { return !error_.empty() || !buffer_.IsValid(); }
+  const std::string& error() { return error_; }
 
   // Indicates that the file should not be deleted on destruction. Returns true
   // iff the operation succeeds.
@@ -57,6 +67,7 @@ class MappedFileWriter {
     kManualDeleteOnClose
   };
 
+  std::string error_;
   base::FilePath file_path_;
   base::File file_handle_;
   base::MemoryMappedFile buffer_;
