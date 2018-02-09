@@ -6726,6 +6726,7 @@ interface ShadowRoot : DocumentFragment
     getter host
     getter innerHTML
     getter mode
+    getter pictureInPictureElement
     getter pointerLockElement
     getter styleSheets
     method constructor

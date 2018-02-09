@@ -89,8 +89,12 @@ void PictureInPictureController::UnsetPictureInPictureElement() {
   picture_in_picture_element_ = nullptr;
 }
 
-HTMLVideoElement* PictureInPictureController::PictureInPictureElement() const {
-  return picture_in_picture_element_;
+Element* PictureInPictureController::PictureInPictureElement(
+    TreeScope& scope) const {
+  if (!picture_in_picture_element_)
+    return nullptr;
+
+  return scope.AdjustedElement(*picture_in_picture_element_);
 }
 
 void PictureInPictureController::Trace(blink::Visitor* visitor) {
