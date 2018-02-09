@@ -116,6 +116,8 @@ ios_web_view_sources = [
   "internal/signin/web_view_account_tracker_service_factory.mm",
   "internal/signin/web_view_gaia_cookie_manager_service_factory.h",
   "internal/signin/web_view_gaia_cookie_manager_service_factory.mm",
+  "internal/signin/web_view_identity_manager_factory.h",
+  "internal/signin/web_view_identity_manager_factory.mm",
   "internal/signin/web_view_oauth2_token_service_factory.h",
   "internal/signin/web_view_oauth2_token_service_factory.mm",
   "internal/signin/web_view_profile_oauth2_token_service_ios_provider_impl.h",
@@ -209,6 +211,7 @@ ios_web_view_deps = [
   "//ios/web/public/global_state",
   "//net",
   "//net:extras",
+  "//services/identity/public/cpp",
   "//ui/base",
   "//url",
 ]
