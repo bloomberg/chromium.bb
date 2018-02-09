@@ -9027,6 +9027,12 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Migration resumed"/>
 </enum>
 
+<enum name="DirectIntentType">
+  <int value="0" label="Fallback URL activated"/>
+  <int value="1" label="Intent URL clicked on SERP"/>
+  <int value="2" label="Intent URL clicked elsewhere"/>
+</enum>
+
 <enum name="DirectoryDatabaseRepairResult">
   <int value="0" label="Succeeded"/>
   <int value="1" label="Failed"/>

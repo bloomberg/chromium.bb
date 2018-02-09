@@ -11,6 +11,7 @@ import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.provider.Browser;
+import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.webkit.WebView;
@@ -63,6 +64,14 @@ public class ExternalNavigationHandler {
     // referrer field passed to the market:// URL in the case where the app is not present.
     @VisibleForTesting
     static final String EXTRA_MARKET_REFERRER = "market_referrer";
+
+    // These values are persisted in histograms. Please do not renumber. Append only.
+    @IntDef({AIA_INTENT_FALLBACK_USED, AIA_INTENT_SERP, AIA_INTENT_OTHER, AIA_INTENT_BOUNDARY})
+    public @interface AiaIntent {}
+    private static final int AIA_INTENT_FALLBACK_USED = 0;
+    private static final int AIA_INTENT_SERP = 1;
+    private static final int AIA_INTENT_OTHER = 2;
+    private static final int AIA_INTENT_BOUNDARY = 3;
 
     private final ExternalNavigationDelegate mDelegate;
 
@@ -136,6 +145,12 @@ public class ExternalNavigationHandler {
                 && (params.getRedirectHandler() == null
                         // For instance, if this is a chained fallback URL, we ignore it.
                         || !params.getRedirectHandler().shouldNotOverrideUrlLoading())) {
+            if (InstantAppsHandler.isIntentToInstantApp(intent)) {
+                RecordHistogram.recordEnumeratedHistogram(
+                        "Android.InstantApps.DirectInstantAppsIntent", AIA_INTENT_FALLBACK_USED,
+                        AIA_INTENT_BOUNDARY);
+            }
+
             return clobberCurrentTabWithFallbackUrl(browserFallbackUrl, params);
         }
         return result;
@@ -478,11 +493,15 @@ public class ExternalNavigationHandler {
         boolean shouldProxyForInstantApps = isDirectInstantAppsIntent
                 && mDelegate.isSerpReferrer(params.getTab());
         if (shouldProxyForInstantApps) {
+            RecordHistogram.recordEnumeratedHistogram("Android.InstantApps.DirectInstantAppsIntent",
+                    AIA_INTENT_SERP, AIA_INTENT_BOUNDARY);
             intent.putExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER, true);
         } else if (isDirectInstantAppsIntent) {
             // For security reasons, we disable all intent:// URLs to Instant Apps that are
             // not coming from SERP.
             if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Intent URL to an Instant App");
+            RecordHistogram.recordEnumeratedHistogram("Android.InstantApps.DirectInstantAppsIntent",
+                    AIA_INTENT_OTHER, AIA_INTENT_BOUNDARY);
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         } else {
             // Make sure this extra is not sent unless we've done the verification.
