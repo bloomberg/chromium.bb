@@ -4676,6 +4676,9 @@ drm_output_deinit(struct weston_output *base)
 	*unused = output->connector_id;
 	unused = wl_array_add(&b->unused_crtcs, sizeof(*unused));
 	*unused = output->crtc_id;
+
+	/* Force programming unused connectors and crtcs. */
+	b->state_invalid = true;
 }
 
 static void
@@ -4741,7 +4744,6 @@ static int
 drm_output_disable(struct weston_output *base)
 {
 	struct drm_output *output = to_drm_output(base);
-	struct drm_backend *b = to_drm_backend(base->compositor);
 
 	if (output->page_flip_pending || output->vblank_pending ||
 	    output->atomic_complete_pending) {
@@ -4755,9 +4757,6 @@ drm_output_disable(struct weston_output *base)
 		drm_output_deinit(&output->base);
 
 	output->disable_pending = 0;
-
-	/* Force resetting unused connectors and crtcs. */
-	b->state_invalid = true;
 
 	return 0;
 }
