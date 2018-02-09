@@ -4406,7 +4406,15 @@ TEST_F(RenderWidgetHostViewAuraOverScrollAsyncWheelEventsEnabledTest,
 
 // Tests that a fling in the opposite direction of the overscroll cancels the
 // overscroll instead of completing it.
-TEST_F(RenderWidgetHostViewAuraOverscrollTest, ReverseFlingCancelsOverscroll) {
+// Flaky on Fuchsia:  http://crbug.com/810690.
+#if defined(OS_FUCHSIA)
+#define MAYBE_ReverseFlingCancelsOverscroll \
+  DISABLED_ReverseFlingCancelsOverscroll
+#else
+#define MAYBE_ReverseFlingCancelsOverscroll ReverseFlingCancelsOverscroll
+#endif
+TEST_F(RenderWidgetHostViewAuraOverscrollTest,
+       MAYBE_ReverseFlingCancelsOverscroll) {
   SetUpOverscrollEnvironment();
 
   {
