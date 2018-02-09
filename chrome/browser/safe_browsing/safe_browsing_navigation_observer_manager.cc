@@ -501,12 +501,21 @@ void SafeBrowsingNavigationObserverManager::AppendRecentNavigations(
     ReferrerChain* out_referrer_chain) {
   if (recent_navigation_count <= 0u)
     return;
+  int current_referrer_chain_size = out_referrer_chain->size();
+  double last_navigation_time_msec =
+      current_referrer_chain_size == 0
+          ? base::Time::Now().ToJavaTime()
+          : out_referrer_chain->Get(current_referrer_chain_size - 1)
+                .navigation_time_msec();
   auto it = navigation_event_list_.navigation_events().rbegin();
   while (it != navigation_event_list_.navigation_events().rend() &&
          recent_navigation_count > 0u) {
-    AddToReferrerChain(out_referrer_chain, it->get(), GURL(),
-                       ReferrerChainEntry::RECENT_NAVIGATION);
-    recent_navigation_count--;
+    // Skip navigations that happened after |last_navigation_time_msec|.
+    if (it->get()->last_updated.ToJavaTime() < last_navigation_time_msec) {
+      AddToReferrerChain(out_referrer_chain, it->get(), GURL(),
+                         ReferrerChainEntry::RECENT_NAVIGATION);
+      recent_navigation_count--;
+    }
     it++;
   }
 }
