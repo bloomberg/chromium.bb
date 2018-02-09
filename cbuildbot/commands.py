@@ -188,6 +188,39 @@ def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None,
   RunBuildScript(buildroot, cmd, chromite_cmd=True, extra_env=extra_env)
 
 
+def ListChrootSnapshots(buildroot):
+  """Wrapper around cros_sdk --snapshot-list."""
+  cmd = ['cros_sdk', '--snapshot-list']
+
+  cmd_snapshots = RunBuildScript(buildroot, cmd, chromite_cmd=True,
+                                 redirect_stdout=True)
+  return cmd_snapshots.output.splitlines()
+
+
+def RevertChrootToSnapshot(buildroot, snapshot_name):
+  """Wrapper around cros_sdk --snapshot-restore."""
+  cmd = ['cros_sdk', '--snapshot-restore', snapshot_name]
+
+  result = RunBuildScript(buildroot, cmd, chromite_cmd=True, error_code_ok=True)
+  return result.returncode == 0
+
+
+def CreateChrootSnapshot(buildroot, snapshot_name):
+  """Wrapper around cros_sdk --snapshot-create."""
+  cmd = ['cros_sdk', '--snapshot-create', snapshot_name]
+
+  result = RunBuildScript(buildroot, cmd, chromite_cmd=True, error_code_ok=True)
+  return result.returncode == 0
+
+
+def DeleteChrootSnapshot(buildroot, snapshot_name):
+  """Wrapper around cros_sdk --snapshot-delete."""
+  cmd = ['cros_sdk', '--snapshot-delete', snapshot_name]
+
+  result = RunBuildScript(buildroot, cmd, chromite_cmd=True, error_code_ok=True)
+  return result.returncode == 0
+
+
 def RunChrootUpgradeHooks(buildroot, chrome_root=None, extra_env=None):
   """Run the chroot upgrade hooks in the chroot.
 
