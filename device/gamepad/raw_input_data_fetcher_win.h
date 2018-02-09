@@ -21,6 +21,7 @@
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/hid_dll_functions_win.h"
 #include "device/gamepad/public/cpp/gamepad.h"
+#include "device/gamepad/public/mojom/gamepad.mojom.h"
 #include "device/gamepad/raw_input_gamepad_device_win.h"
 
 namespace device {
@@ -38,6 +39,14 @@ class RawInputDataFetcher : public GamepadDataFetcher,
 
   void GetGamepadData(bool devices_changed_hint) override;
   void PauseHint(bool paused) override;
+  void PlayEffect(
+      int source_id,
+      mojom::GamepadHapticEffectType,
+      mojom::GamepadEffectParametersPtr,
+      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback) override;
+  void ResetVibration(
+      int source_id,
+      mojom::GamepadHapticsManager::ResetVibrationActuatorCallback) override;
 
  private:
   void OnAddedToProvider() override;

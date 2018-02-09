@@ -57,4 +57,9 @@ void Dualshock4ControllerBase::SetVibration(double strong_magnitude,
   WriteOutputReport(control_report, report_length);
 }
 
+size_t Dualshock4ControllerBase::WriteOutputReport(void* report,
+                                                   size_t report_length) {
+  return 0;
+}
+
 }  // namespace device

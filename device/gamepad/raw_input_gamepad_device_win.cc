@@ -38,6 +38,11 @@ RawInputGamepadDeviceWin::RawInputGamepadDeviceWin(
 
   if (hid_functions_->IsValid())
     is_valid_ = QueryDeviceInfo();
+
+  if (is_valid_ &&
+      Dualshock4ControllerWin::IsDualshock4(vendor_id_, product_id_)) {
+    dualshock4_ = std::make_unique<Dualshock4ControllerWin>(handle_);
+  }
 }
 
 RawInputGamepadDeviceWin::~RawInputGamepadDeviceWin() = default;
@@ -46,6 +51,12 @@ RawInputGamepadDeviceWin::~RawInputGamepadDeviceWin() = default;
 bool RawInputGamepadDeviceWin::IsGamepadUsageId(uint16_t usage) {
   return usage == kGenericDesktopJoystick || usage == kGenericDesktopGamePad ||
          usage == kGenericDesktopMultiAxisController;
+}
+
+void RawInputGamepadDeviceWin::DoShutdown() {
+  if (dualshock4_)
+    dualshock4_->Shutdown();
+  dualshock4_ = nullptr;
 }
 
 void RawInputGamepadDeviceWin::UpdateGamepad(RAWINPUT* input) {
@@ -131,6 +142,16 @@ void RawInputGamepadDeviceWin::ReadPadState(Gamepad* pad) const {
 
   for (unsigned int i = 0; i < axes_length_; i++)
     pad->axes[i] = axes_[i].value;
+}
+
+bool RawInputGamepadDeviceWin::SupportsVibration() const {
+  return dualshock4_ != nullptr;
+}
+
+void RawInputGamepadDeviceWin::SetVibration(double strong_magnitude,
+                                            double weak_magnitude) {
+  if (dualshock4_)
+    dualshock4_->SetVibration(strong_magnitude, weak_magnitude);
 }
 
 bool RawInputGamepadDeviceWin::QueryDeviceInfo() {
