@@ -5,9 +5,9 @@
 mojom = "//services/identity/public/mojom/account_state.mojom"
 public_headers = [ "//services/identity/public/cpp/account_state.h" ]
 traits_headers =
-    [ "//services/identity/public/cpp/account_state_struct_traits.h" ]
+    [ "//services/identity/public/cpp/account_state_mojom_traits.h" ]
 sources = [
-  "//services/identity/public/cpp/account_state_struct_traits.cc",
+  "//services/identity/public/cpp/account_state_mojom_traits.cc",
 ]
 
 type_mappings = [ "identity.mojom.AccountState=identity::AccountState" ]

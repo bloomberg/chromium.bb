@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_IDENTITY_PUBLIC_CPP_ACCOUNT_STATE_STRUCT_TRAITS_H_
-#define SERVICES_IDENTITY_PUBLIC_CPP_ACCOUNT_STATE_STRUCT_TRAITS_H_
+#ifndef SERVICES_IDENTITY_PUBLIC_CPP_ACCOUNT_STATE_MOJOM_TRAITS_H_
+#define SERVICES_IDENTITY_PUBLIC_CPP_ACCOUNT_STATE_MOJOM_TRAITS_H_
 
 #include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/mojom/account_state.mojom.h"
@@ -27,4 +27,4 @@ struct StructTraits<identity::mojom::AccountState::DataView,
 
 }  // namespace mojo
 
-#endif  // SERVICES_IDENTITY_PUBLIC_CPP_ACCOUNT_STATE_STRUCT_TRAITS_H_
+#endif  // SERVICES_IDENTITY_PUBLIC_CPP_ACCOUNT_STATE_MOJOM_TRAITS_H_
