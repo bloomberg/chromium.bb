@@ -9,6 +9,7 @@ description("Tests RTCPeerConnection onnegotiationneeded.");
 
 var stream = null;
 var pc = null;
+var onNegotiationNeededCalled = false;
 
 function error() {
     testFailed('Stream generation failed.');
@@ -25,7 +26,13 @@ function getUserMedia(dictionary, callback) {
 }
 
 function onNegotiationNeeded(event) {
+    if (onNegotiationNeededCalled) {
+        testFailed('onNegotiationNeeded was called multiple times.');
+        finishJSTest();
+        return;
+    }
     testPassed('onNegotiationNeeded was called.');
+    onNegotiationNeededCalled = true;
 
     finishJSTest();
 }
@@ -38,6 +45,14 @@ function gotStream(s) {
     pc.onnegotiationneeded = onNegotiationNeeded;
 
     pc.addStream(stream);
+    Promise.resolve()
+    .then(() => {
+        if (onNegotiationNeededCalled) {
+            testFailed('onNegotiationNeeded called too soon.');
+            return;
+        }
+        testPassed('Promise.resolve().then() runs before onNegotiationNeeded');
+    });
 }
 
 getUserMedia({audio:true, video:true}, gotStream);

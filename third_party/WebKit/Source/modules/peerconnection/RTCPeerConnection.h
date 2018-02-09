@@ -258,6 +258,7 @@ class MODULES_EXPORT RTCPeerConnection final
   void ScheduleDispatchEvent(Event*);
   void ScheduleDispatchEvent(Event*, BoolFunction);
   void DispatchScheduledEvent();
+  void MaybeFireNegotiationNeeded();
   MediaStreamTrack* GetTrack(const WebMediaStreamTrack&) const;
   HeapVector<Member<RTCRtpReceiver>>::iterator FindReceiver(
       const WebRTCRtpReceiver& web_receiver);
@@ -332,6 +333,7 @@ class MODULES_EXPORT RTCPeerConnection final
   std::unique_ptr<WebFrameScheduler::ActiveConnectionHandle>
       connection_handle_for_scheduler_;
 
+  bool negotiation_needed_;
   bool stopped_;
   bool closed_;
 

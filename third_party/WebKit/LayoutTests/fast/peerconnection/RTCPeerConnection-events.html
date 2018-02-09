@@ -33,8 +33,13 @@ function onStateChange(event) {
 function onNegotiationNeeded(event) {
     testPassed('onNegotiationNeeded was called.');
     pc.onsignalingstatechange = onStateChange;
+    pc.onnegotiationneeded = onNegotiationNeededAgain;
     pc.close();
     testPassed('onNegotiationNeeded done.')
+}
+
+function onNegotiationNeededAgain(event) {
+    testFailed('onNegotiationNeededAgain should never be called.');
 }
 
 function gotStream(s) {

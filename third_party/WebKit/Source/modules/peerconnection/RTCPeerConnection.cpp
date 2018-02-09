@@ -526,6 +526,7 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
               this,
               &RTCPeerConnection::DispatchScheduledEvent,
               context->GetTaskRunner(TaskType::kNetworking))),
+      negotiation_needed_(false),
       stopped_(false),
       closed_(false),
       has_data_channels_(false) {
@@ -1514,7 +1515,17 @@ void RTCPeerConnection::OnStreamRemoveTrack(MediaStream* stream,
 
 void RTCPeerConnection::NegotiationNeeded() {
   DCHECK(!closed_);
-  ScheduleDispatchEvent(Event::Create(EventTypeNames::negotiationneeded));
+  negotiation_needed_ = true;
+  Microtask::EnqueueMicrotask(
+      WTF::Bind(&RTCPeerConnection::MaybeFireNegotiationNeeded,
+                WrapWeakPersistent(this)));
+}
+
+void RTCPeerConnection::MaybeFireNegotiationNeeded() {
+  if (!negotiation_needed_ || closed_)
+    return;
+  negotiation_needed_ = false;
+  DispatchEvent(Event::Create(EventTypeNames::negotiationneeded));
 }
 
 void RTCPeerConnection::DidGenerateICECandidate(
