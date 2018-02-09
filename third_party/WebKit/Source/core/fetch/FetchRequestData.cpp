@@ -87,6 +87,9 @@ FetchRequestData* FetchRequestData::Clone(ScriptState* script_state) {
     buffer_ = new1;
     request->buffer_ = new2;
   }
+  if (url_loader_factory_) {
+    url_loader_factory_->Clone(MakeRequest(&request->url_loader_factory_));
+  }
   return request;
 }
 
@@ -97,6 +100,7 @@ FetchRequestData* FetchRequestData::Pass(ScriptState* script_state) {
     buffer_ = new BodyStreamBuffer(script_state, BytesConsumer::CreateClosed());
     buffer_->CloseAndLockAndDisturb();
   }
+  request->url_loader_factory_ = std::move(url_loader_factory_);
   return request;
 }
 

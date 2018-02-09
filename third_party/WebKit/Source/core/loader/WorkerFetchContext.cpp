@@ -5,6 +5,7 @@
 #include "core/loader/WorkerFetchContext.h"
 
 #include "base/single_thread_task_runner.h"
+#include "core/fileapi/PublicURLManager.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "core/loader/MixedContentChecker.h"
@@ -222,11 +223,34 @@ const SecurityOrigin* WorkerFetchContext::GetSecurityOrigin() const {
 
 std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
     const ResourceRequest& request,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const ResourceLoaderOptions& options) {
   CountUsage(WebFeature::kOffMainThreadFetch);
+  WrappedResourceRequest wrapped(request);
+
+  network::mojom::blink::URLLoaderFactoryPtr url_loader_factory;
+  if (options.url_loader_factory) {
+    options.url_loader_factory->data->Clone(MakeRequest(&url_loader_factory));
+  }
+  // Resolve any blob: URLs that haven't been resolved yet. The XHR and fetch()
+  // API implementations resolve blob URLs earlier because there can be
+  // arbitrarily long delays between creating requests with those APIs and
+  // actually creating the URL loader here. Other subresource loading will
+  // immediately create the URL loader so resolving those blob URLs here is
+  // simplest.
+  if (request.Url().ProtocolIs("blob") &&
+      RuntimeEnabledFeatures::MojoBlobURLsEnabled() && !url_loader_factory) {
+    global_scope_->GetPublicURLManager().Resolve(
+        request.Url(), MakeRequest(&url_loader_factory));
+  }
+  if (url_loader_factory) {
+    return web_context_
+        ->WrapURLLoaderFactory(url_loader_factory.PassInterface().PassHandle())
+        ->CreateURLLoader(wrapped, task_runner);
+  }
+
   if (!url_loader_factory_)
     url_loader_factory_ = web_context_->CreateURLLoaderFactory();
-  WrappedResourceRequest wrapped(request);
   return url_loader_factory_->CreateURLLoader(wrapped, task_runner);
 }
 

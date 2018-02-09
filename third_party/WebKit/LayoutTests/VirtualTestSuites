@@ -613,5 +613,10 @@
     "prefix": "navigation-mojo-response",
     "base": "external/wpt/service-workers/service-worker",
     "args": ["--enable-features=NavigationMojoResponse"]
+  },
+  {
+    "prefix": "mojo-blob-urls",
+    "base": "external/wpt/FileAPI/url",
+    "args": ["--enable-blink-features=MojoBlobURLs"]
   }
 ]

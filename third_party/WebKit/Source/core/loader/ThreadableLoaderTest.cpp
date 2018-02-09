@@ -240,6 +240,11 @@ class WebWorkerFetchContextForTest : public WebWorkerFetchContext {
     return std::make_unique<WebURLLoaderFactoryWithMock>(
         Platform::Current()->GetURLLoaderMockFactory());
   }
+  std::unique_ptr<WebURLLoaderFactory> WrapURLLoaderFactory(
+      mojo::ScopedMessagePipeHandle) override {
+    return std::make_unique<WebURLLoaderFactoryWithMock>(
+        Platform::Current()->GetURLLoaderMockFactory());
+  }
 
   void WillSendRequest(WebURLRequest&) override {}
   bool IsControlledByServiceWorker() const override { return false; }

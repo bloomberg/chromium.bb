@@ -342,6 +342,13 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
+  // Returns a new WebURLLoaderFactory that wraps the given
+  // network::mojom::URLLoaderFactory.
+  virtual std::unique_ptr<WebURLLoaderFactory> WrapURLLoaderFactory(
+      mojo::ScopedMessagePipeHandle url_loader_factory_handle) {
+    return nullptr;
+  }
+
   // Returns a WebDataConsumerHandle for a given mojo data pipe endpoint.
   virtual std::unique_ptr<WebDataConsumerHandle> CreateDataConsumerHandle(
       mojo::ScopedDataPipeConsumerHandle handle) {

@@ -67,7 +67,8 @@ class WorkerFetchContext final : public BaseFetchContext {
   const SecurityOrigin* GetSecurityOrigin() const override;
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest&,
-      scoped_refptr<base::SingleThreadTaskRunner>) override;
+      scoped_refptr<base::SingleThreadTaskRunner>,
+      const ResourceLoaderOptions&) override;
   void PrepareRequest(ResourceRequest&, RedirectType) override;
   bool IsControlledByServiceWorker() const override;
   int ApplicationCacheHostID() const override;

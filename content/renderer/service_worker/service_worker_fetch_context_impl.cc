@@ -5,6 +5,7 @@
 #include "content/renderer/service_worker/service_worker_fetch_context_impl.h"
 
 #include "base/feature_list.h"
+#include "content/common/wrapper_shared_url_loader_factory.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/renderer/loader/request_extra_data.h"
@@ -39,6 +40,17 @@ ServiceWorkerFetchContextImpl::CreateURLLoaderFactory() {
   DCHECK(url_loader_factory_);
   return std::make_unique<content::WebURLLoaderFactoryImpl>(
       resource_dispatcher_->GetWeakPtr(), std::move(url_loader_factory_));
+}
+
+std::unique_ptr<blink::WebURLLoaderFactory>
+ServiceWorkerFetchContextImpl::WrapURLLoaderFactory(
+    mojo::ScopedMessagePipeHandle url_loader_factory_handle) {
+  return std::make_unique<content::WebURLLoaderFactoryImpl>(
+      resource_dispatcher_->GetWeakPtr(),
+      base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
+          network::mojom::URLLoaderFactoryPtrInfo(
+              std::move(url_loader_factory_handle),
+              network::mojom::URLLoaderFactory::Version_)));
 }
 
 void ServiceWorkerFetchContextImpl::WillSendRequest(

@@ -752,6 +752,7 @@ void FetchManager::Loader::PerformHTTPFetch() {
     }
     request.SetKeepalive(true);
   }
+
   // "3. Append `Host`, ..."
   // FIXME: Implement this when the spec is fixed.
 
@@ -768,6 +769,13 @@ void FetchManager::Loader::PerformHTTPFetch() {
   ResourceLoaderOptions resource_loader_options;
   resource_loader_options.data_buffering_policy = kDoNotBufferData;
   resource_loader_options.security_origin = request_->Origin().get();
+  if (request_->URLLoaderFactory()) {
+    network::mojom::blink::URLLoaderFactoryPtr factory_clone;
+    request_->URLLoaderFactory()->Clone(MakeRequest(&factory_clone));
+    resource_loader_options.url_loader_factory = base::MakeRefCounted<
+        base::RefCountedData<network::mojom::blink::URLLoaderFactoryPtr>>(
+        std::move(factory_clone));
+  }
 
   ThreadableLoaderOptions threadable_loader_options;
 

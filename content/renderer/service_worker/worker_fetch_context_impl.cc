@@ -152,6 +152,17 @@ WorkerFetchContextImpl::CreateURLLoaderFactory() {
   return factory;
 }
 
+std::unique_ptr<blink::WebURLLoaderFactory>
+WorkerFetchContextImpl::WrapURLLoaderFactory(
+    mojo::ScopedMessagePipeHandle url_loader_factory_handle) {
+  return std::make_unique<content::WebURLLoaderFactoryImpl>(
+      resource_dispatcher_->GetWeakPtr(),
+      base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
+          network::mojom::URLLoaderFactoryPtrInfo(
+              std::move(url_loader_factory_handle),
+              network::mojom::URLLoaderFactory::Version_)));
+}
+
 void WorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
   RequestExtraData* extra_data = new RequestExtraData();
   extra_data->set_service_worker_provider_id(service_worker_provider_id_);

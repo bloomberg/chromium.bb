@@ -228,7 +228,8 @@ class PLATFORM_EXPORT FetchContext
 
   virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest&,
-      scoped_refptr<base::SingleThreadTaskRunner>) {
+      scoped_refptr<base::SingleThreadTaskRunner>,
+      const ResourceLoaderOptions&) {
     NOTREACHED();
     return nullptr;
   }

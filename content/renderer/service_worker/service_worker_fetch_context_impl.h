@@ -25,6 +25,8 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
   // blink::WebWorkerFetchContext implementation:
   void InitializeOnWorkerThread() override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
+  std::unique_ptr<blink::WebURLLoaderFactory> WrapURLLoaderFactory(
+      mojo::ScopedMessagePipeHandle url_loader_factory_handle) override;
   void WillSendRequest(blink::WebURLRequest&) override;
   bool IsControlledByServiceWorker() const override;
   blink::WebURL SiteForCookies() const override;

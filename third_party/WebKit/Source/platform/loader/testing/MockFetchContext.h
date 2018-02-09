@@ -86,7 +86,8 @@ class MockFetchContext : public FetchContext {
 
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest& request,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      const ResourceLoaderOptions&) override {
     if (!url_loader_factory_) {
       url_loader_factory_ =
           Platform::Current()->CreateDefaultURLLoaderFactory();
