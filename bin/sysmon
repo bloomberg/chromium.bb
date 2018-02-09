@@ -3,6 +3,5 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 set -eu
-cd "$(dirname "$(readlink -f "$0")")"
-. ./find_virtualenv.sh
-exec_python_module chromite.scripts.sysmon "$@"
+readonly bindir=$(cd "$(dirname "$(readlink -f "$0")")"; pwd)
+exec "$bindir/venv_python" -m chromite.scripts.sysmon
