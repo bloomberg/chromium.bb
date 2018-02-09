@@ -309,9 +309,9 @@ Decryptor* MojoCdm::GetDecryptor() {
 }
 
 int MojoCdm::GetCdmId() const {
-  base::AutoLock auto_lock(lock_);
   // Can be called on a different thread.
-  DCHECK_NE(CdmContext::kInvalidCdmId, cdm_id_);
+  base::AutoLock auto_lock(lock_);
+  DVLOG(2) << __func__ << ": cdm_id = " << cdm_id_;
   return cdm_id_;
 }
 

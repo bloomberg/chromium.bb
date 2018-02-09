@@ -13,7 +13,7 @@ namespace media {
 MojoCdmProxyService::MojoCdmProxyService(
     std::unique_ptr<::media::CdmProxy> cdm_proxy,
     MojoCdmServiceContext* context)
-    : cdm_proxy_(std::move(cdm_proxy)), context_(context) {
+    : cdm_proxy_(std::move(cdm_proxy)), context_(context), weak_factory_(this) {
   DVLOG(1) << __func__;
   DCHECK(cdm_proxy_);
   DCHECK(context_);
@@ -32,10 +32,9 @@ void MojoCdmProxyService::Initialize(
   DVLOG(2) << __func__;
   client_.Bind(std::move(client));
 
-  cdm_id_ = context_->RegisterCdmProxy(this);
-
-  // TODO(xhwang): Pass the CDM ID back to the client.
-  cdm_proxy_->Initialize(this, std::move(callback));
+  cdm_proxy_->Initialize(
+      this, base::BindOnce(&MojoCdmProxyService::OnInitialized,
+                           weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void MojoCdmProxyService::Process(media::CdmProxy::Function function,
@@ -76,6 +75,16 @@ void MojoCdmProxyService::NotifyHardwareReset() {
 base::WeakPtr<CdmContext> MojoCdmProxyService::GetCdmContext() {
   DVLOG(2) << __func__;
   return cdm_proxy_->GetCdmContext();
+}
+
+void MojoCdmProxyService::OnInitialized(InitializeCallback callback,
+                                        ::media::CdmProxy::Status status,
+                                        ::media::CdmProxy::Protocol protocol,
+                                        uint32_t crypto_session_id) {
+  if (status == ::media::CdmProxy::Status::kOk)
+    cdm_id_ = context_->RegisterCdmProxy(this);
+
+  std::move(callback).Run(status, protocol, crypto_session_id, cdm_id_);
 }
 
 }  // namespace media

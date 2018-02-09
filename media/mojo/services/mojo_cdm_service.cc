@@ -39,15 +39,14 @@ MojoCdmService::MojoCdmService(CdmFactory* cdm_factory,
       cdm_id_(CdmContext::kInvalidCdmId),
       weak_factory_(this) {
   DCHECK(cdm_factory_);
-  DCHECK(context_);
+  // |context_| can be null.
 }
 
 MojoCdmService::~MojoCdmService() {
-  if (cdm_id_ == CdmContext::kInvalidCdmId)
+  if (!context_ || cdm_id_ == CdmContext::kInvalidCdmId)
     return;
 
   CdmManager::GetInstance()->UnregisterCdm(cdm_id_);
-
   context_->UnregisterCdm(cdm_id_);
 }
 
@@ -156,8 +155,11 @@ void MojoCdmService::OnCdmCreated(
 
   cdm_ = cdm;
 
-  cdm_id_ = context_->RegisterCdm(this);
-  CdmManager::GetInstance()->RegisterCdm(cdm_id_, cdm);
+  if (context_) {
+    cdm_id_ = context_->RegisterCdm(this);
+    CdmManager::GetInstance()->RegisterCdm(cdm_id_, cdm);
+    DVLOG(1) << __func__ << ": CDM successfully registered with ID " << cdm_id_;
+  }
 
   // If |cdm| has a decryptor, create the MojoDecryptorService
   // and pass the connection back to the client.
@@ -169,9 +171,16 @@ void MojoCdmService::OnCdmCreated(
         base::Bind(&MojoCdmService::OnDecryptorConnectionError, weak_this_)));
   }
 
-  DVLOG(1) << __func__ << ": CDM successfully created with ID " << cdm_id_;
+  // If the |context_| is not null, we should support connecting the |cdm| with
+  // the media player in the same process, which also has access to the
+  // |context_|. Hence pass back the |cdm_id_| obtained from the |context_|.
+  // Otherwise, if the |cdm| has a valid CDM ID by itself, this CDM can proxy
+  // all or parts of its functionalities to another remote CDM or CdmProxy. In
+  // this case, just we pass the remote CDM ID back.
+  int cdm_id = context_ ? cdm_id_ : cdm_context->GetCdmId();
+
   cdm_promise_result->success = true;
-  std::move(callback).Run(std::move(cdm_promise_result), cdm_id_,
+  std::move(callback).Run(std::move(cdm_promise_result), cdm_id,
                           std::move(decryptor_service));
 }
 

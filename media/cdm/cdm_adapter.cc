@@ -659,7 +659,7 @@ Decryptor* CdmAdapter::GetDecryptor() {
 
 int CdmAdapter::GetCdmId() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  return kInvalidCdmId;
+  return helper_->GetCdmProxyCdmId();
 }
 
 void CdmAdapter::RegisterNewKeyCB(StreamType stream_type,
