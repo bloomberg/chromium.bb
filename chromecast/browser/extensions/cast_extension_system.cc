@@ -98,7 +98,7 @@ const Extension* CastExtensionSystem::LoadExtensionByManifest(
 
   RegisterExtensionWithRequestContexts(
       extension.get(),
-      base::BindOnce(
+      base::BindRepeating(
           &CastExtensionSystem::OnExtensionRegisteredWithRequestContexts,
           weak_factory_.GetWeakPtr(), extension));
 
@@ -145,8 +145,9 @@ const Extension* CastExtensionSystem::LoadExtension(
 
   RegisterExtensionWithRequestContexts(
       extension.get(),
-      base::Bind(&CastExtensionSystem::OnExtensionRegisteredWithRequestContexts,
-                 weak_factory_.GetWeakPtr(), extension));
+      base::BindRepeating(
+          &CastExtensionSystem::OnExtensionRegisteredWithRequestContexts,
+          weak_factory_.GetWeakPtr(), extension));
 
   RendererStartupHelperFactory::GetForBrowserContext(browser_context_)
       ->OnExtensionLoaded(*extension);
