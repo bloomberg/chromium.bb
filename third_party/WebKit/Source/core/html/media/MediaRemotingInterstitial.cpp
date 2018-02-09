@@ -43,7 +43,7 @@ MediaRemotingInterstitial::MediaRemotingInterstitial(
 
   cast_text_message_ = HTMLDivElement::Create(GetDocument());
   cast_text_message_->SetShadowPseudoId(
-      AtomicString("-internal-media-remoting-cast-text-message"));
+      AtomicString("-internal-media-interstitial-message"));
   AppendChild(cast_text_message_);
 
   toast_message_ = HTMLDivElement::Create(GetDocument());
