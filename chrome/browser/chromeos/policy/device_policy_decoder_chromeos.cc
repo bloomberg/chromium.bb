@@ -1032,6 +1032,16 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           std::make_unique<base::Value>(container.site_per_process()), nullptr);
     }
   }
+
+  if (policy.has_virtual_machines_allowed()) {
+    const em::VirtualMachinesAllowedProto& container(
+        policy.virtual_machines_allowed());
+    policies->Set(
+        key::kVirtualMachinesAllowed, POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+        std::make_unique<base::Value>(container.virtual_machines_allowed()),
+        nullptr);
+  }
 }
 
 }  // namespace

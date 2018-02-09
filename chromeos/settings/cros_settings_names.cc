@@ -306,4 +306,8 @@ const char kUnaffiliatedArcAllowed[] = "cros.device.unaffiliated_arc_allowed";
 // as per RFC 1035, then no hostname will be used.
 const char kDeviceHostnameTemplate[] = "cros.network.hostname_template";
 
+// A boolean pref that indicates whether running virtual machines on Chrome OS
+// is allowed.
+const char kVirtualMachinesAllowed[] = "cros.device.virtual_machines_allowed";
+
 }  // namespace chromeos

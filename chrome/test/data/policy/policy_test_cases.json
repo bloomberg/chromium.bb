@@ -3547,6 +3547,16 @@
     "note": "Chrome OS device policy used by session_manager only"
   },
 
+  "VirtualMachinesAllowed": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "virtual_machines_allowed": false
+    },
+    "pref_mappings": [
+      { "pref": "cros.virtual_machines_allowed"}
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

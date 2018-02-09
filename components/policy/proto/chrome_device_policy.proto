@@ -978,6 +978,11 @@ message DeviceLoginScreenSitePerProcessProto {
   optional bool site_per_process = 1;
 }
 
+// Setting to control if running virtual machines on Chrome OS is allowed.
+message VirtualMachinesAllowedProto {
+  optional bool virtual_machines_allowed = 1 [default = true];
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1064,4 +1069,5 @@ message ChromeDeviceSettingsProto {
       device_login_screen_isolate_origins = 67;
   optional DeviceLoginScreenSitePerProcessProto
       device_login_screen_site_per_process = 68;
+  optional VirtualMachinesAllowedProto virtual_machines_allowed = 69;
 }
