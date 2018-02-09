@@ -33,7 +33,7 @@ import java.lang.reflect.Proxy;
  */
 public class FontPreloadingWorkaround {
     private static final String TAG = "FontWorkaround";
-    private static final String METADATA_KEY = "preloaded_fonts";
+    private static final String FONT_PRELOADING_KEY = "preloaded_fonts";
 
     /**
      * Try to install the workaround if it's necessary and possible.
@@ -52,7 +52,7 @@ public class FontPreloadingWorkaround {
             // name associated with this application context.
             ApplicationInfo appInfo = appContext.getPackageManager().getApplicationInfo(
                     appContext.getPackageName(), PackageManager.GET_META_DATA);
-            if (appInfo.metaData == null || !appInfo.metaData.containsKey(METADATA_KEY)) {
+            if (appInfo.metaData == null || !appInfo.metaData.containsKey(FONT_PRELOADING_KEY)) {
                 return;
             }
 
@@ -64,8 +64,6 @@ public class FontPreloadingWorkaround {
             packageManagerField.setAccessible(true);
             Class<?> packageManagerInterface = Class.forName("android.content.pm.IPackageManager");
             ClassLoader packageManagerClassLoader = packageManagerInterface.getClassLoader();
-            Method getAppInfoMethod = packageManagerInterface.getMethod(
-                    "getApplicationInfo", String.class, int.class, int.class);
 
             // Retrieve the current IPackageManager instance.
             Object packageManager = packageManagerGetter.invoke(null);
@@ -73,7 +71,7 @@ public class FontPreloadingWorkaround {
             // Make the proxy.
             Object wrappedPackageManager = Proxy.newProxyInstance(packageManagerClassLoader,
                     new Class[] {packageManagerInterface},
-                    new PackageManagerWrapper(packageManager, getAppInfoMethod));
+                    new PackageManagerWrapper(packageManager));
 
             // Replace the real object with the proxy.
             packageManagerField.set(null, wrappedPackageManager);
@@ -86,24 +84,21 @@ public class FontPreloadingWorkaround {
 
     private static class PackageManagerWrapper implements InvocationHandler {
         Object mRealPackageManager;
-        Method mGetAppInfoMethod;
 
-        public PackageManagerWrapper(Object realPackageManager, Method getAppInfoMethod) {
+        public PackageManagerWrapper(Object realPackageManager) {
             mRealPackageManager = realPackageManager;
-            mGetAppInfoMethod = getAppInfoMethod;
         }
 
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             Object result;
             try {
                 result = method.invoke(mRealPackageManager, args);
-                // If we're calling getApplicationInfo with the GET_META_DATA flag, then remove the
+                // If we're calling a method that returns ApplicationInfo, then remove the
                 // font preloading metadata from the result to avoid a possible crash.
-                if (method.equals(mGetAppInfoMethod)
-                        && (((Integer) args[1]) & PackageManager.GET_META_DATA) != 0) {
+                if (method.getReturnType() == ApplicationInfo.class) {
                     ApplicationInfo appInfo = (ApplicationInfo) result;
                     if (appInfo.metaData != null) {
-                        appInfo.metaData.remove(METADATA_KEY);
+                        appInfo.metaData.remove(FONT_PRELOADING_KEY);
                     }
                 }
             } catch (InvocationTargetException e) {
