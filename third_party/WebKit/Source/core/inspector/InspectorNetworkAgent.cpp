@@ -84,6 +84,8 @@
 
 namespace blink {
 
+using GetRequestPostDataCallback =
+    protocol::Network::Backend::GetRequestPostDataCallback;
 using GetResponseBodyCallback =
     protocol::Network::Backend::GetResponseBodyCallback;
 using protocol::Response;
@@ -153,13 +155,8 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
  public:
   InspectorFileReaderLoaderClient(
       scoped_refptr<BlobDataHandle> blob,
-      const String& mime_type,
-      const String& text_encoding_name,
-      std::unique_ptr<GetResponseBodyCallback> callback)
-      : blob_(std::move(blob)),
-        mime_type_(mime_type),
-        text_encoding_name_(text_encoding_name),
-        callback_(std::move(callback)) {
+      base::OnceCallback<void(scoped_refptr<SharedBuffer>)> callback)
+      : blob_(std::move(blob)), callback_(std::move(callback)) {
     loader_ = FileReaderLoader::Create(FileReaderLoader::kReadByClient, this);
   }
 
@@ -179,36 +176,112 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
     raw_data_->Append(data, data_length);
   }
 
-  void DidFinishLoading() override {
-    String result;
-    bool base64_encoded;
-    if (InspectorPageAgent::SharedBufferContent(raw_data_, mime_type_,
-                                                text_encoding_name_, &result,
-                                                &base64_encoded))
-      callback_->sendSuccess(result, base64_encoded);
-    else
-      callback_->sendFailure(Response::Error("Couldn't encode data"));
-    Dispose();
-  }
+  void DidFinishLoading() override { Done(raw_data_); }
 
-  void DidFail(FileError::ErrorCode) override {
-    callback_->sendFailure(Response::Error("Couldn't read BLOB"));
-    Dispose();
-  }
+  void DidFail(FileError::ErrorCode) override { Done(nullptr); }
 
  private:
-  void Dispose() {
-    raw_data_ = nullptr;
+  void Done(scoped_refptr<SharedBuffer> output) {
+    std::move(callback_).Run(output);
     delete this;
   }
 
   scoped_refptr<BlobDataHandle> blob_;
   String mime_type_;
   String text_encoding_name_;
-  std::unique_ptr<GetResponseBodyCallback> callback_;
+  base::OnceCallback<void(scoped_refptr<SharedBuffer>)> callback_;
   std::unique_ptr<FileReaderLoader> loader_;
   scoped_refptr<SharedBuffer> raw_data_;
   DISALLOW_COPY_AND_ASSIGN(InspectorFileReaderLoaderClient);
+};
+
+static void ResponseBodyFileReaderLoaderDone(
+    const String& mime_type,
+    const String& text_encoding_name,
+    std::unique_ptr<GetResponseBodyCallback> callback,
+    scoped_refptr<SharedBuffer> raw_data) {
+  if (!raw_data) {
+    callback->sendFailure(Response::Error("Couldn't read BLOB"));
+    return;
+  }
+  String result;
+  bool base64_encoded;
+  if (InspectorPageAgent::SharedBufferContent(
+          raw_data, mime_type, text_encoding_name, &result, &base64_encoded)) {
+    callback->sendSuccess(result, base64_encoded);
+  } else {
+    callback->sendFailure(Response::Error("Couldn't encode data"));
+  }
+}
+
+class InspectorPostBodyParser
+    : public WTF::RefCounted<InspectorPostBodyParser> {
+ public:
+  explicit InspectorPostBodyParser(
+      std::unique_ptr<GetRequestPostDataCallback> callback)
+      : callback_(std::move(callback)), error_(false) {}
+
+  void Parse(ExecutionContext* context, EncodedFormData* request_body) {
+    if (!request_body || request_body->IsEmpty())
+      return;
+
+    parts_.Grow(request_body->Elements().size());
+    for (size_t i = 0; i < request_body->Elements().size(); i++) {
+      const FormDataElement& data = request_body->Elements()[i];
+      switch (data.type_) {
+        case FormDataElement::kData:
+          parts_[i] = String::FromUTF8WithLatin1Fallback(data.data_.data(),
+                                                         data.data_.size());
+          break;
+        case FormDataElement::kEncodedBlob:
+          ReadDataBlob(context, data.optional_blob_data_handle_, &parts_[i]);
+          break;
+        case FormDataElement::kEncodedFile:
+        case FormDataElement::kDataPipe:
+          // Do nothing, not supported
+          break;
+      }
+    }
+  }
+
+ private:
+  friend class WTF::RefCounted<InspectorPostBodyParser>;
+
+  ~InspectorPostBodyParser() {
+    if (error_)
+      return;
+    String result;
+    for (const auto& part : parts_)
+      result.append(part);
+    callback_->sendSuccess(result);
+  }
+
+  void BlobReadCallback(String* destination,
+                        scoped_refptr<SharedBuffer> raw_data) {
+    if (raw_data) {
+      *destination = String::FromUTF8WithLatin1Fallback(raw_data->Data(),
+                                                        raw_data->size());
+    } else {
+      error_ = true;
+    }
+  }
+
+  void ReadDataBlob(ExecutionContext* context,
+                    scoped_refptr<blink::BlobDataHandle> blob_handle,
+                    String* destination) {
+    if (!blob_handle)
+      return;
+    auto* reader = new InspectorFileReaderLoaderClient(
+        blob_handle,
+        WTF::Bind(&InspectorPostBodyParser::BlobReadCallback,
+                  WTF::RetainedRef(this), WTF::Unretained(destination)));
+    reader->Start(context);
+  }
+
+  std::unique_ptr<GetRequestPostDataCallback> callback_;
+  bool error_;
+  Vector<String> parts_;
+  DISALLOW_COPY_AND_ASSIGN(InspectorPostBodyParser);
 };
 
 KURL UrlWithoutFragment(const KURL& url) {
@@ -369,10 +442,16 @@ static bool FormDataToString(scoped_refptr<EncodedFormData> body,
   *content = "";
   if (!body || body->IsEmpty())
     return false;
+  if (max_body_size != 0 && body->SizeInBytes() > max_body_size)
+    return true;
+
+  for (const auto& element : body->Elements()) {
+    if (element.type_ != FormDataElement::kData)
+      return true;
+  }
   Vector<char> bytes;
   body->Flatten(bytes);
-  if (max_body_size == 0 || body->SizeInBytes() <= max_body_size)
-    *content = String::FromUTF8WithLatin1Fallback(bytes.data(), bytes.size());
+  *content = String::FromUTF8WithLatin1Fallback(bytes.data(), bytes.size());
   return true;
 }
 
@@ -659,8 +738,8 @@ void InspectorNetworkAgent::WillSendRequestInternal(
   else if (request.HttpBody())
     post_data = request.HttpBody()->DeepCopy();
 
-  resources_data_->ResourceCreated(request_id, loader_id, request.Url(),
-                                   post_data);
+  resources_data_->ResourceCreated(execution_context, request_id, loader_id,
+                                   request.Url(), post_data);
   if (initiator_info.name == FetchInitiatorTypeNames::xmlhttprequest)
     type = InspectorPageAgent::kXHRResource;
 
@@ -1006,8 +1085,7 @@ void InspectorNetworkAgent::WillLoadXHR(
   pending_request_ = client;
   pending_request_type_ = InspectorPageAgent::kXHRResource;
   pending_xhr_replay_data_ = XHRReplayData::Create(
-      xhr->GetExecutionContext(), method, UrlWithoutFragment(url), async,
-      include_credentials);
+      method, UrlWithoutFragment(url), async, include_credentials);
   for (const auto& header : headers)
     pending_xhr_replay_data_->AddHeader(header.key, header.value);
 }
@@ -1361,8 +1439,10 @@ void InspectorNetworkAgent::GetResponseBodyBlob(
       resources_data_->Data(request_id);
   BlobDataHandle* blob = resource_data->DownloadedFileBlob();
   InspectorFileReaderLoaderClient* client = new InspectorFileReaderLoaderClient(
-      blob, resource_data->MimeType(), resource_data->TextEncodingName(),
-      std::move(callback));
+      blob,
+      WTF::Bind(ResponseBodyFileReaderLoaderDone, resource_data->MimeType(),
+                resource_data->TextEncodingName(),
+                WTF::Passed(std::move(callback))));
   if (worker_global_scope_) {
     client->Start(worker_global_scope_);
     return;
@@ -1405,10 +1485,11 @@ Response InspectorNetworkAgent::replayXHR(const String& request_id) {
   String actual_request_id = request_id;
 
   XHRReplayData* xhr_replay_data = resources_data_->XhrReplayData(request_id);
-  if (!xhr_replay_data)
+  auto data = resources_data_->Data(request_id);
+  if (!xhr_replay_data || !data)
     return Response::Error("Given id does not correspond to XHR");
 
-  ExecutionContext* execution_context = xhr_replay_data->GetExecutionContext();
+  ExecutionContext* execution_context = data->GetExecutionContext();
   if (execution_context->IsContextDestroyed()) {
     resources_data_->SetXHRReplayData(request_id, nullptr);
     return Response::Error("Document is already detached");
@@ -1426,7 +1507,6 @@ Response InspectorNetworkAgent::replayXHR(const String& request_id) {
     xhr->setRequestHeader(header.key, header.value,
                           IGNORE_EXCEPTION_FOR_TESTING);
   }
-  auto data = resources_data_->Data(request_id);
   xhr->SendForInspectorXHRReplay(data ? data->PostData() : nullptr,
                                  IGNORE_EXCEPTION_FOR_TESTING);
 
@@ -1681,15 +1761,27 @@ void InspectorNetworkAgent::ShouldForceCORSPreflight(bool* result) {
     *result = true;
 }
 
-Response InspectorNetworkAgent::getRequestPostData(const String& request_id,
-                                                   String* post_data) {
+void InspectorNetworkAgent::getRequestPostData(
+    const String& request_id,
+    std::unique_ptr<GetRequestPostDataCallback> callback) {
   NetworkResourcesData::ResourceData const* resource_data =
       resources_data_->Data(request_id);
-  if (!resource_data)
-    return Response::Error("No resource with given id was found");
-  if (FormDataToString(resource_data->PostData(), 0, post_data))
-    return Response::OK();
-  return Response::Error("No post data available for the request");
+  if (!resource_data) {
+    callback->sendFailure(
+        Response::Error("No resource with given id was found"));
+    return;
+  }
+  scoped_refptr<EncodedFormData> post_data = resource_data->PostData();
+  if (!post_data || post_data->IsEmpty()) {
+    callback->sendFailure(
+        Response::Error("No post data available for the request"));
+    return;
+  }
+
+  scoped_refptr<InspectorPostBodyParser> parser =
+      base::MakeRefCounted<InspectorPostBodyParser>(std::move(callback));
+  // TODO(crbug.com/810554): Extend protocol to fetch body parts separately
+  parser->Parse(resource_data->GetExecutionContext(), post_data.get());
 }
 
 }  // namespace blink

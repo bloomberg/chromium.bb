@@ -236,8 +236,8 @@ class CORE_EXPORT InspectorNetworkAgent final
       const String& origin,
       std::unique_ptr<protocol::Array<String>>* certificate) override;
 
-  protocol::Response getRequestPostData(const String& request_id,
-                                        String* post_data) override;
+  void getRequestPostData(const String& request_id,
+                          std::unique_ptr<GetRequestPostDataCallback>) override;
 
   // Called from other agents.
   protocol::Response GetResponseBody(const String& request_id,

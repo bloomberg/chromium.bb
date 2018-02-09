@@ -97,7 +97,7 @@
                 "domain": "Network",
                 "exclude": ["clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "canEmulateNetworkConditions",
                             "setRequestInterception", "continueInterceptedRequest", "getResponseBodyForInterception"],
-                "async": ["getResponseBody"]
+                "async": ["getResponseBody", "getRequestPostData"]
             },
             {
                 "domain": "Target",
