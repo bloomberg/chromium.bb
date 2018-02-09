@@ -42,7 +42,6 @@
 #include "services/network/http_server_properties_pref_delegate.h"
 #include "services/network/ignore_errors_cert_verifier.h"
 #include "services/network/network_service.h"
-#include "services/network/network_service_url_loader_factory.h"
 #include "services/network/proxy_config_service_mojo.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -52,6 +51,7 @@
 #include "services/network/throttling/throttling_network_transaction_factory.h"
 #include "services/network/udp_socket_factory.h"
 #include "services/network/url_loader.h"
+#include "services/network/url_loader_factory.h"
 #include "services/network/url_request_context_builder_mojo.h"
 
 namespace network {
@@ -157,8 +157,7 @@ void NetworkContext::CreateURLLoaderFactory(
     mojom::URLLoaderFactoryRequest request,
     uint32_t process_id) {
   loader_factory_bindings_.AddBinding(
-      std::make_unique<NetworkServiceURLLoaderFactory>(this, process_id),
-      std::move(request));
+      std::make_unique<URLLoaderFactory>(this, process_id), std::move(request));
 }
 
 void NetworkContext::HandleViewCacheRequest(const GURL& url,

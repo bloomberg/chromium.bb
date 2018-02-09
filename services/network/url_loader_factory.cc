@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/network_service_url_loader_factory.h"
+#include "services/network/url_loader_factory.h"
 
 #include "base/logging.h"
 #include "services/network/network_context.h"
@@ -12,9 +12,7 @@
 
 namespace network {
 
-NetworkServiceURLLoaderFactory::NetworkServiceURLLoaderFactory(
-    NetworkContext* context,
-    uint32_t process_id)
+URLLoaderFactory::URLLoaderFactory(NetworkContext* context, uint32_t process_id)
     : context_(context), process_id_(process_id) {
   if (context_->network_service()) {
     context->network_service()->keepalive_statistics_recorder()->Register(
@@ -22,14 +20,14 @@ NetworkServiceURLLoaderFactory::NetworkServiceURLLoaderFactory(
   }
 }
 
-NetworkServiceURLLoaderFactory::~NetworkServiceURLLoaderFactory() {
+URLLoaderFactory::~URLLoaderFactory() {
   if (context_->network_service()) {
     context_->network_service()->keepalive_statistics_recorder()->Unregister(
         process_id_);
   }
 }
 
-void NetworkServiceURLLoaderFactory::CreateLoaderAndStart(
+void URLLoaderFactory::CreateLoaderAndStart(
     mojom::URLLoaderRequest request,
     int32_t routing_id,
     int32_t request_id,
@@ -61,8 +59,7 @@ void NetworkServiceURLLoaderFactory::CreateLoaderAndStart(
       process_id_, std::move(keepalive_statistics_recorder));
 }
 
-void NetworkServiceURLLoaderFactory::Clone(
-    mojom::URLLoaderFactoryRequest request) {
+void URLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest request) {
   context_->CreateURLLoaderFactory(std::move(request), process_id_);
 }
 
