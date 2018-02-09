@@ -254,6 +254,10 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         return isTextInputType(mTextInputType);
     }
 
+    private boolean isHardwareKeyboardAttached() {
+        return mCurrentConfig.keyboard != Configuration.KEYBOARD_NOKEYS;
+    }
+
     /**
      * Set the container view.
      * @param containerView {@link View} which this ImeAdapter works on.
@@ -279,6 +283,18 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         return mNativeImeAdapterAndroid != 0 && mIsConnected;
     }
 
+    // Whether the focused node allows the soft keyboard to be displayed. A content editable
+    // region is editable but may disallow the soft keyboard from being displayed. Composition
+    // should still be allowed with a physical keyboard so mInputConnection will be non-null.
+    private boolean focusedNodeAllowsSoftKeyboard() {
+        return mTextInputType != TextInputType.NONE && mTextInputMode != WebTextInputMode.NONE;
+    }
+
+    // Whether the focused node is editable or not.
+    private boolean focusedNodeEditable() {
+        return mTextInputType != TextInputType.NONE;
+    }
+
     /**
      * @see View#onCreateInputConnection(EditorInfo)
      * @param allowKeyboardLearning Whether to allow keyboard (IME) app to do personalized learning.
@@ -296,7 +312,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         // Without this line, some third-party IMEs will try to compose text even when
         // not on an editable node. Even when we return null here, key events can still go
         // through ImeAdapter#dispatchKeyEvent().
-        if (mTextInputType == TextInputType.NONE) {
+        if (!focusedNodeEditable()) {
             setInputConnection(null);
             if (DEBUG_LOGS) Log.i(TAG, "onCreateInputConnection returns null.");
             return null;
@@ -398,10 +414,11 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         TraceEvent.begin("ImeAdapter.updateState");
         try {
             if (DEBUG_LOGS) {
-                Log.i(TAG, "updateState: type [%d->%d], flags [%d], show [%b], ", mTextInputType,
-                        textInputType, textInputFlags, showIfNeeded);
+                Log.i(TAG, "updateState: type [%d->%d], flags [%d], mode[%d], show [%b], ",
+                        mTextInputType, textInputType, textInputFlags, textInputMode, showIfNeeded);
             }
             boolean needsRestart = false;
+            boolean hide = false;
             if (mRestartInputOnNextStateUpdate) {
                 needsRestart = true;
                 mRestartInputOnNextStateUpdate = false;
@@ -410,21 +427,26 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
             mTextInputFlags = textInputFlags;
             if (mTextInputMode != textInputMode) {
                 mTextInputMode = textInputMode;
+                hide = textInputMode == WebTextInputMode.NONE && !isHardwareKeyboardAttached();
                 needsRestart = true;
             }
             if (mTextInputType != textInputType) {
                 mTextInputType = textInputType;
-                needsRestart = true;
-
-                boolean editable = textInputType != TextInputType.NONE;
-                boolean password = textInputType == TextInputType.PASSWORD;
-                if (mNodeEditable != editable || mNodePassword != password) {
-                    for (ImeEventObserver observer : mEventObservers) {
-                        observer.onNodeAttributeUpdated(editable, password);
-                    }
-                    mNodeEditable = editable;
-                    mNodePassword = password;
+                if (textInputType == TextInputType.NONE) {
+                    hide = true;
+                } else {
+                    needsRestart = true;
                 }
+            }
+
+            boolean editable = focusedNodeEditable();
+            boolean password = textInputType == TextInputType.PASSWORD;
+            if (mNodeEditable != editable || mNodePassword != password) {
+                for (ImeEventObserver observer : mEventObservers) {
+                    observer.onNodeAttributeUpdated(editable, password);
+                }
+                mNodeEditable = editable;
+                mNodePassword = password;
             }
             if (mCursorAnchorInfoController != null
                     && (!TextUtils.equals(mLastText, text) || mLastSelectionStart != selectionStart
@@ -439,14 +461,16 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
             mLastCompositionStart = compositionStart;
             mLastCompositionEnd = compositionEnd;
 
-            if (textInputType == TextInputType.NONE) {
+            if (hide) {
                 hideKeyboard();
             } else {
                 if (needsRestart) restartInput();
-                // There is no API for us to get notified of user's dismissal of keyboard.
-                // Therefore, we should try to show keyboard even when text input type hasn't
-                // changed.
-                if (showIfNeeded) showSoftKeyboard();
+                if (showIfNeeded && focusedNodeAllowsSoftKeyboard()) {
+                    // There is no API for us to get notified of user's dismissal of keyboard.
+                    // Therefore, we should try to show keyboard even when text input type hasn't
+                    // changed.
+                    showSoftKeyboard();
+                }
             }
 
             if (mInputConnection != null) {
@@ -537,7 +561,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
             mInputMethodManagerWrapper.hideSoftInputFromWindow(view.getWindowToken(), 0, null);
         }
         // Detach input connection by returning null from onCreateInputConnection().
-        if (mTextInputType == TextInputType.NONE && mInputConnection != null) {
+        if (!focusedNodeEditable() && mInputConnection != null) {
             ChromiumBaseInputConnection inputConnection = mInputConnection;
             restartInput(); // resets mInputConnection
             // crbug.com/666982: Restart input may not happen if view is detached from window, but
@@ -564,12 +588,21 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         if (DEBUG_LOGS) {
             Log.i(TAG, "onKeyboardConfigurationChanged: mTextInputType [%d]", mTextInputType);
         }
-        if (mTextInputType != TextInputType.NONE) {
+        if (focusedNodeAllowsSoftKeyboard()) {
             restartInput();
             // By default, we show soft keyboard on keyboard changes. This is useful
             // when the user switches from hardware keyboard to software keyboard.
             // TODO(changwan): check if we can skip this for hardware keyboard configurations.
             showSoftKeyboard();
+        } else if (focusedNodeEditable()) {
+            // The focused node is editable but disllows the virtual keyboard. We may need to
+            // show soft keyboard (for IME composition window only) if a hardware keyboard is
+            // present.
+            restartInput();
+            if (!isHardwareKeyboardAttached())
+                hideKeyboard();
+            else
+                showSoftKeyboard();
         }
     }
 

@@ -7,7 +7,6 @@ package org.chromium.content.browser.input;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
@@ -678,33 +677,6 @@ public class ImeTest {
         }));
     }
 
-    private void attachPhysicalKeyboard() {
-        Configuration hardKeyboardConfig = new Configuration(
-                mRule.getContentViewCore().getContext().getResources().getConfiguration());
-        hardKeyboardConfig.keyboard = Configuration.KEYBOARD_QWERTY;
-        hardKeyboardConfig.keyboardHidden = Configuration.KEYBOARDHIDDEN_YES;
-        hardKeyboardConfig.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_NO;
-        onConfigurationChanged(hardKeyboardConfig);
-    }
-
-    private void detachPhysicalKeyboard() {
-        Configuration softKeyboardConfig = new Configuration(
-                mRule.getContentViewCore().getContext().getResources().getConfiguration());
-        softKeyboardConfig.keyboard = Configuration.KEYBOARD_NOKEYS;
-        softKeyboardConfig.keyboardHidden = Configuration.KEYBOARDHIDDEN_NO;
-        softKeyboardConfig.hardKeyboardHidden = Configuration.HARDKEYBOARDHIDDEN_YES;
-        onConfigurationChanged(softKeyboardConfig);
-    }
-
-    private void onConfigurationChanged(final Configuration config) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mRule.getContentViewCore().onConfigurationChanged(config);
-            }
-        });
-    }
-
     private void reloadPage() throws Throwable {
         // Reload the page, then focus will be lost and keyboard should be hidden.
         mRule.fullyLoadUrl(mRule.getContentViewCore().getWebContents().getLastCommittedUrl());
@@ -715,12 +687,12 @@ public class ImeTest {
     @Feature({"TextInput"})
     @SuppressWarnings("TryFailThrowable") // TODO(tedchoc): Remove after fixing timeout.
     public void testPhysicalKeyboard_AttachDetach() throws Throwable {
-        attachPhysicalKeyboard();
+        mRule.attachPhysicalKeyboard();
         // We still call showSoftKeyboard, which will be ignored by physical keyboard.
         mRule.waitForKeyboardStates(1, 0, 1, new Integer[] {TextInputType.TEXT});
         mRule.setComposingText("a", 1);
         mRule.waitForKeyboardStates(1, 0, 1, new Integer[] {TextInputType.TEXT});
-        detachPhysicalKeyboard();
+        mRule.detachPhysicalKeyboard();
         mRule.assertWaitForKeyboardStatus(true);
         // Now we really show soft keyboard. We also call mRule.restartInput when configuration
         // changes.
@@ -733,7 +705,7 @@ public class ImeTest {
         // because render widget gets restarted. But the end result should be the same.
         mRule.assertWaitForKeyboardStatus(false);
 
-        detachPhysicalKeyboard();
+        mRule.detachPhysicalKeyboard();
 
         try {
             // We should not show soft keyboard here because focus has been lost.
