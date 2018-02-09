@@ -93,6 +93,8 @@ if (is_win) {
       "fallback_crash_handler_win.h",
       "fallback_crash_handling_win.cc",
       "fallback_crash_handling_win.h",
+      "minidump_with_crashpad_info.cc",
+      "minidump_with_crashpad_info.h",
       "run_as_crashpad_handler_win.cc",
       "run_as_crashpad_handler_win.h",
     ]
@@ -103,6 +105,7 @@ if (is_win) {
       "//third_party/crashpad/crashpad/client",
       "//third_party/crashpad/crashpad/handler",
       "//third_party/crashpad/crashpad/minidump",
+      "//third_party/crashpad/crashpad/util",
     ]
   }
 
