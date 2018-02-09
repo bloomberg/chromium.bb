@@ -54,6 +54,7 @@ import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.SPenSupport;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.ResourceManager;
@@ -365,17 +366,18 @@ public class CompositorViewHolder extends FrameLayout
     @Override
     public boolean dispatchDragEvent(DragEvent e) {
         if (mTabVisible == null) return false;
-        ContentViewCore contentViewCore = mTabVisible.getContentViewCore();
-        if (contentViewCore == null) return false;
+        WebContents webContents = mTabVisible.getWebContents();
+        if (webContents == null) return false;
 
         if (mLayoutManager != null) mLayoutManager.getViewportPixel(mCacheViewport);
-        contentViewCore.setCurrentTouchEventOffsets(-mCacheViewport.left, -mCacheViewport.top);
+        EventForwarder forwarder = webContents.getEventForwarder();
+        forwarder.setCurrentTouchEventOffsets(-mCacheViewport.left, -mCacheViewport.top);
         boolean ret = super.dispatchDragEvent(e);
 
         int action = e.getAction();
         if (action == DragEvent.ACTION_DRAG_EXITED || action == DragEvent.ACTION_DRAG_ENDED
                 || action == DragEvent.ACTION_DROP) {
-            contentViewCore.setCurrentTouchEventOffsets(0.f, 0.f);
+            forwarder.setCurrentTouchEventOffsets(0.f, 0.f);
         }
         return ret;
     }
@@ -541,19 +543,20 @@ public class CompositorViewHolder extends FrameLayout
         // TODO(dtrainor): Factor this out to LayoutDriver.
         if (e == null || mTabVisible == null) return;
 
-        ContentViewCore contentViewCore = mTabVisible.getContentViewCore();
-        if (contentViewCore == null) return;
+        WebContents webContents = mTabVisible.getWebContents();
+        if (webContents == null) return;
 
         int actionMasked = SPenSupport.convertSPenEventAction(e.getActionMasked());
 
         if (actionMasked == MotionEvent.ACTION_DOWN
                 || actionMasked == MotionEvent.ACTION_HOVER_ENTER) {
             if (mLayoutManager != null) mLayoutManager.getViewportPixel(mCacheViewport);
-            contentViewCore.setCurrentTouchEventOffsets(-mCacheViewport.left, -mCacheViewport.top);
+            webContents.getEventForwarder().setCurrentTouchEventOffsets(
+                    -mCacheViewport.left, -mCacheViewport.top);
         } else if (canClear && (actionMasked == MotionEvent.ACTION_UP
                                        || actionMasked == MotionEvent.ACTION_CANCEL
                                        || actionMasked == MotionEvent.ACTION_HOVER_EXIT)) {
-            contentViewCore.setCurrentTouchEventOffsets(0.f, 0.f);
+            webContents.getEventForwarder().setCurrentTouchEventOffsets(0.f, 0.f);
         }
     }
 

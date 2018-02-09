@@ -280,15 +280,6 @@ public interface ContentViewCore {
     void onFocusChanged(boolean gainFocus, boolean hideKeyboardOnBlur);
 
     /**
-     * Sets the current amount to offset incoming touch events by (including MotionEvent and
-     * DragEvent). This is used to handle content moving and not lining up properly with the
-     * android input system.
-     * @param dx The X offset in pixels to shift touch events.
-     * @param dy The Y offset in pixels to shift touch events.
-     */
-    void setCurrentTouchEventOffsets(float dx, float dy);
-
-    /**
      * @see View#scrollBy(int, int)
      * Currently the ContentView scrolling happens in the native side. In
      * the Java view system, it is always pinned at (0, 0). scrollBy() and scrollTo()
