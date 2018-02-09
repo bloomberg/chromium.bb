@@ -51,13 +51,13 @@ readonly HAS_ARCH_ARM64=${HAS_ARCH_ARM64:=0}
 readonly HAS_ARCH_MIPS=${HAS_ARCH_MIPS:=0}
 readonly HAS_ARCH_MIPS64EL=${HAS_ARCH_MIPS64EL:=0}
 
-readonly REQUIRED_TOOLS="curl gunzip"
+readonly REQUIRED_TOOLS="curl xzcat"
 
 ######################################################################
 # Package Config
 ######################################################################
 
-readonly PACKAGES_EXT=gz
+readonly PACKAGES_EXT=xz
 readonly RELEASE_FILE="Release"
 readonly RELEASE_FILE_GPG="Release.gpg"
 
@@ -187,11 +187,11 @@ CreateTarBall() {
   tar -I "xz -9 -T0" -cf ${TARBALL} -C ${INSTALL_ROOT} .
 }
 
-ExtractPackageGz() {
+ExtractPackageXz() {
   local src_file="$1"
   local dst_file="$2"
   local repo="$3"
-  gunzip -c "${src_file}" | egrep '^(Package:|Filename:|SHA256:) ' |
+  xzcat "${src_file}" | egrep '^(Package:|Filename:|SHA256:) ' |
     sed "s|Filename: |Filename: ${repo}|" > "${dst_file}"
 }
 
@@ -210,7 +210,7 @@ GeneratePackageListDist() {
 
   DownloadOrCopy "${package_list_arch}" "${package_list}"
   VerifyPackageListing "${package_file_arch}" "${package_list}" ${repo} ${dist}
-  ExtractPackageGz "${package_list}" "${TMP_PACKAGE_LIST}" ${repo}
+  ExtractPackageXz "${package_list}" "${TMP_PACKAGE_LIST}" ${repo}
 }
 
 GeneratePackageListCommon() {
@@ -716,7 +716,7 @@ CheckForDebianGPGKeyring() {
 #
 # VerifyPackageListing
 #
-#     Verifies the downloaded Packages.bz2 file has the right checksums.
+#     Verifies the downloaded Packages.xz file has the right checksums.
 #
 VerifyPackageListing() {
   local file_path="$1"
