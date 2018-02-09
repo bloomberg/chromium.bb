@@ -18735,6 +18735,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="FileMetricsProviderHappening">
+  <obsolete>
+    Deprecated February, 2018.
+  </obsolete>
   <int value="0" label="OnDidCreateMetricsLog"/>
   <int value="1" label="ScheduleSourcesCheck"/>
   <int value="2" label="CheckAndMergeMetricSources"/>
