@@ -24,7 +24,7 @@
 #include "content/common/frame_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "third_party/WebKit/common/sandbox_flags.h"
+#include "third_party/WebKit/public/common/frame/sandbox_flags.h"
 
 namespace content {
 

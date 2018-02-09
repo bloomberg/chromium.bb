@@ -14,11 +14,12 @@ include_rules = [
   "+services/video_capture/public/interfaces",
   "+services/viz/public/interfaces",
 
-  # No inclusion of WebKit from the browser, other than strictly enum/POD,
+  # No inclusion of WebKit from the browser, other than the ones in
+  # WebKit/public/common, or the ones that are strictly enum/POD,
   # header-only types, and some selected common code.
   "-third_party/WebKit",
-  "+third_party/WebKit/common/feature_policy/feature_policy.h",
-  "+third_party/WebKit/common/page/page_visibility_state.mojom.h",
+  "+third_party/WebKit/common",  # TODO(kinuko): Remove this.
+  "+third_party/WebKit/public/common",
   "+third_party/WebKit/public/platform/WebAddressSpace.h",
   "+third_party/WebKit/public/platform/WebContentSecurityPolicy.h",
   "+third_party/WebKit/public/platform/WebDisplayMode.h",
@@ -82,9 +83,4 @@ include_rules = [
   "+third_party/WebKit/public/web/WebTreeScopeType.h",
   "+third_party/WebKit/public/web/WebTriggeringEventInfo.h",
   "+third_party/WebKit/public/web/win/WebFontRendering.h",
-
-  # Unlike other WebKit directories WebKit/common is for the files that
-  # are commonly referenced by renderer-side and browser-side code, and
-  # does not use Blink types like WTF.
-  "+third_party/WebKit/common"
 ]

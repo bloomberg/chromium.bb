@@ -31,7 +31,7 @@
 #ifndef WebPresentationReceiverFlags_h
 #define WebPresentationReceiverFlags_h
 
-#include "third_party/WebKit/common/sandbox_flags.h"
+#include "third_party/WebKit/public/common/frame/sandbox_flags.h"
 
 namespace blink {
 

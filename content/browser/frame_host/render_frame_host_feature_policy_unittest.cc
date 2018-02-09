@@ -11,8 +11,8 @@
 #include "content/test/test_render_frame_host.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.mojom.h"
-#include "third_party/WebKit/common/frame_policy.h"
-#include "third_party/WebKit/common/sandbox_flags.h"
+#include "third_party/WebKit/public/common/frame/frame_policy.h"
+#include "third_party/WebKit/public/common/frame/sandbox_flags.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

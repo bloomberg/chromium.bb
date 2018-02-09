@@ -28,7 +28,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/input_messages.h"
-#include "third_party/WebKit/common/frame_policy.h"
+#include "third_party/WebKit/public/common/frame/frame_policy.h"
 
 namespace content {
 

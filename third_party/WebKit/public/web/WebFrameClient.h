@@ -72,7 +72,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom-shared.h"
-#include "third_party/WebKit/common/sandbox_flags.h"
+#include "third_party/WebKit/public/common/frame/sandbox_flags.h"
 #include "v8/include/v8.h"
 
 namespace service_manager {

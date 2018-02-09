@@ -33,8 +33,7 @@ jumbo_component("blink_common") {
     "device_memory/approximated_device_memory.h",
     "feature_policy/feature_policy.cc",
     "feature_policy/feature_policy.h",
-    "frame_policy.cc",
-    "frame_policy.h",
+    "frame/frame_policy.cc",
     "message_port/cloneable_message.cc",
     "message_port/cloneable_message.h",
     "message_port/cloneable_message_struct_traits.cc",
@@ -56,7 +55,10 @@ jumbo_component("blink_common") {
     "page/launching_process_state.h",
     "sampling_heap_profiler/sampling_heap_profiler.cc",
     "sampling_heap_profiler/sampling_heap_profiler.h",
-    "sandbox_flags.h",
+
+    # TODO(kinuko): Split out the target for public headers.
+    "../public/common/frame/frame_policy.h",
+    "../public/common/frame/sandbox_flags.h",
   ]
 
   public_deps = [
