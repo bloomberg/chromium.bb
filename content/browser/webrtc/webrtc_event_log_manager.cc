@@ -16,6 +16,9 @@ namespace {
 
 using BrowserContextId = WebRtcEventLogManager::BrowserContextId;
 
+const BrowserContextId kNullBrowserContextId =
+    reinterpret_cast<BrowserContextId>(nullptr);
+
 class PeerConnectionTrackerProxyImpl
     : public WebRtcEventLogManager::PeerConnectionTrackerProxy {
  public:
@@ -48,13 +51,9 @@ class PeerConnectionTrackerProxyImpl
 };
 
 const BrowserContext* GetBrowserContext(int render_process_id) {
-  // Since this function is only allowed to be called from the UI thread,
-  // it is also reasonable to demand that it only be called with a valid
-  // render_process_id (since those only become invalidated on the UI thread).
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
-  CHECK(host);
-  return host->GetBrowserContext();
+  RenderProcessHost* const host = RenderProcessHost::FromID(render_process_id);
+  return host ? host->GetBrowserContext() : nullptr;
 }
 
 }  // namespace
@@ -68,6 +67,13 @@ BrowserContextId WebRtcEventLogManager::GetBrowserContextId(
     const BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return reinterpret_cast<BrowserContextId>(browser_context);
+}
+
+BrowserContextId WebRtcEventLogManager::GetBrowserContextId(
+    int render_process_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  const BrowserContext* browser_context = GetBrowserContext(render_process_id);
+  return GetBrowserContextId(browser_context);
 }
 
 WebRtcEventLogManager* WebRtcEventLogManager::CreateSingletonInstance() {
@@ -113,7 +119,9 @@ void WebRtcEventLogManager::EnableForBrowserContext(
     const BrowserContext* browser_context,
     base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(browser_context);
   CHECK(!browser_context->IsOffTheRecord());
+
   // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
@@ -127,6 +135,8 @@ void WebRtcEventLogManager::DisableForBrowserContext(
     BrowserContextId browser_context_id,
     base::OnceClosure reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_NE(browser_context_id, kNullBrowserContextId);
+
   // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
@@ -142,6 +152,12 @@ void WebRtcEventLogManager::PeerConnectionAdded(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
+  if (!host) {
+    // RPH died before processing of this notification.
+    MaybeReply(std::move(reply), false);
+    return;
+  }
+
   auto it = observed_render_process_hosts_.find(host);
   if (it == observed_render_process_hosts_.end()) {
     // This is the first PeerConnection which we see that's associated
@@ -164,26 +180,21 @@ void WebRtcEventLogManager::PeerConnectionRemoved(
     base::OnceCallback<void(bool)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
-  if (!host) {
-    // TODO(eladalon): This should not be possible, but it happens in
-    // WebRtcMediaRecorderTest.PeerConnection. We should fix that and remove
-    // this check, using GetBrowserContext() instead.
-    // https://crbug.com/775415
-    if (reply) {
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::BindOnce(std::move(reply), false));
-    }
+  const BrowserContextId browser_context_id =
+      GetBrowserContextId(render_process_id);
+  if (browser_context_id == kNullBrowserContextId) {
+    // RPH died before processing of this notification. This is handled by
+    // RenderProcessExited() / RenderProcessHostDestroyed.
+    MaybeReply(std::move(reply), false);
     return;
   }
-  const BrowserContext* browser_context = host->GetBrowserContext();
 
   // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::PeerConnectionRemovedInternal,
                      base::Unretained(this), render_process_id, lid,
-                     GetBrowserContextId(browser_context), std::move(reply)));
+                     browser_context_id, std::move(reply)));
 }
 
 void WebRtcEventLogManager::PeerConnectionStopped(
@@ -226,6 +237,12 @@ void WebRtcEventLogManager::StartRemoteLogging(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const BrowserContext* browser_context = GetBrowserContext(render_process_id);
+  if (!browser_context) {
+    // RPH died before processing of this notification.
+    MaybeReply(std::move(reply), false);
+    return;
+  }
+
   base::Optional<BrowserContextId> browser_context_id;
   if (!browser_context->IsOffTheRecord()) {
     browser_context_id = GetBrowserContextId(browser_context);
@@ -246,7 +263,14 @@ void WebRtcEventLogManager::OnWebRtcEventLogWrite(
     const std::string& message,
     base::OnceCallback<void(std::pair<bool, bool>)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   const BrowserContext* browser_context = GetBrowserContext(render_process_id);
+  if (!browser_context) {
+    // RPH died before processing of this notification.
+    MaybeReply(std::move(reply), false, false);
+    return;
+  }
+
   // The object outlives the task queue - base::Unretained(this) is safe.
   task_runner_->PostTask(
       FROM_HERE,
@@ -538,6 +562,34 @@ void WebRtcEventLogManager::SetRemoteLogsObserverInternal(
   if (reply) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(reply));
   }
+}
+
+void WebRtcEventLogManager::MaybeReply(base::OnceClosure reply) {
+  if (!reply) {
+    return;
+  }
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(reply));
+}
+
+void WebRtcEventLogManager::MaybeReply(base::OnceCallback<void(bool)> reply,
+                                       bool value) {
+  if (!reply) {
+    return;
+  }
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(std::move(reply), value));
+}
+
+void WebRtcEventLogManager::MaybeReply(
+    base::OnceCallback<void(std::pair<bool, bool>)> reply,
+    bool first,
+    bool second) {
+  if (!reply) {
+    return;
+  }
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(std::move(reply), std::make_pair(first, second)));
 }
 
 void WebRtcEventLogManager::SetClockForTesting(base::Clock* clock,

@@ -60,6 +60,12 @@ class CONTENT_EXPORT WebRtcEventLogManager final
   static BrowserContextId GetBrowserContextId(
       const BrowserContext* browser_context);
 
+  // Fetches the BrowserContext associated with the render process ID, then
+  // returns its BrowserContextId. (If the render process has already died,
+  // it would have no BrowserContext associated, so kNullBrowserContextId will
+  // be returned.)
+  static BrowserContextId GetBrowserContextId(int render_process_id);
+
   // Ensures that no previous instantiation of the class was performed, then
   // instantiates the class and returns the object. Subsequent calls to
   // GetInstance() will return this object.
@@ -295,6 +301,13 @@ class CONTENT_EXPORT WebRtcEventLogManager final
 
   void SetRemoteLogsObserverInternal(WebRtcRemoteEventLogsObserver* observer,
                                      base::OnceClosure reply);
+
+  // Non-empty replies get posted to BrowserThread::UI.
+  void MaybeReply(base::OnceClosure reply);
+  void MaybeReply(base::OnceCallback<void(bool)> reply, bool value);
+  void MaybeReply(base::OnceCallback<void(std::pair<bool, bool>)> reply,
+                  bool first,
+                  bool second);
 
   // Injects a fake clock, to be used by tests. For example, this could be
   // used to inject a frozen clock, thereby allowing unit tests to know what a
