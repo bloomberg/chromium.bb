@@ -151,7 +151,7 @@ void MessagePopupCollection::UpdateWidgets() {
       // the iterator in a way that is safe even if the current iterator is
       // invalidated during the loop.
       MessageView* view = (*iter++)->message_view();
-      if (view->IsMouseHovered() || view->manually_expanded_or_collapsed())
+      if (view->IsMouseHovered() || view->IsManuallyExpandedOrCollapsed())
         continue;
       view->SetExpanded(false);
     }

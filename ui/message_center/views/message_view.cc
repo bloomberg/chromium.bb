@@ -136,6 +136,15 @@ bool MessageView::IsExpanded() const {
   return false;
 }
 
+bool MessageView::IsManuallyExpandedOrCollapsed() const {
+  // Not implemented by default.
+  return false;
+}
+
+void MessageView::SetManuallyExpandedOrCollapsed(bool value) {
+  // Not implemented by default.
+}
+
 void MessageView::OnContainerAnimationStarted() {
   // Not implemented by default.
 }

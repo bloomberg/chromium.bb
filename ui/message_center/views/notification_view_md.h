@@ -250,6 +250,9 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   NotificationControlButtonsView* GetControlButtonsView() const override;
   bool IsExpanded() const override;
   void SetExpanded(bool expanded) override;
+  bool IsManuallyExpandedOrCollapsed() const override;
+  void SetManuallyExpandedOrCollapsed(bool value) override;
+
   void OnSettingsButtonPressed(const ui::LocatedEvent& event) override;
 
   // Overridden from NotificationInputDelegate:
@@ -304,6 +307,10 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
 
   // Whether this notification is expanded or not.
   bool expanded_ = false;
+
+  // True if the notification is expanded/collapsed by user interaction.
+  // If true, MessagePopupCollection will not auto-collapse the notification.
+  bool manually_expanded_or_collapsed_ = false;
 
   // Whether hiding icon on the right side when expanded.
   bool hide_icon_on_expanded_ = false;

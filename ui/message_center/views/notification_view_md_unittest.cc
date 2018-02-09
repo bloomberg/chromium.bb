@@ -680,7 +680,7 @@ TEST_F(NotificationViewMDTest, ExpandLongMessage) {
 
   // Test |manually_expanded_or_collapsed| being set when the toggle is done by
   // user interaction.
-  EXPECT_FALSE(notification_view()->manually_expanded_or_collapsed());
+  EXPECT_FALSE(notification_view()->IsManuallyExpandedOrCollapsed());
 
   // Construct a mouse click event 1 pixel inside the header.
   gfx::Point done_cursor_location(1, 1);
@@ -690,7 +690,7 @@ TEST_F(NotificationViewMDTest, ExpandLongMessage) {
   generator.MoveMouseTo(done_cursor_location);
   generator.ClickLeftButton();
 
-  EXPECT_TRUE(notification_view()->manually_expanded_or_collapsed());
+  EXPECT_TRUE(notification_view()->IsManuallyExpandedOrCollapsed());
 }
 
 TEST_F(NotificationViewMDTest, TestAccentColor) {
