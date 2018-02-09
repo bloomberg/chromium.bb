@@ -19,6 +19,7 @@
 #include "bindings/core/v8/double_or_string.h"
 #include "bindings/core/v8/float_or_boolean.h"
 #include "bindings/core/v8/long_or_boolean.h"
+#include "bindings/core/v8/test_enum_or_test_enum_or_null_sequence.h"
 #include "bindings/core/v8/test_enum_or_test_enum_sequence.h"
 #include "bindings/core/v8/test_interface_2_or_uint8_array.h"
 #include "bindings/tests/idls/core/TestInterface2.h"
@@ -302,6 +303,18 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   void setStringSequenceMember(const Vector<String>&);
 
+  bool hasTestEnumOrNullOrTestEnumSequenceMember() const { return !test_enum_or_null_or_test_enum_sequence_member_.IsNull(); }
+  const TestEnumOrTestEnumSequence& testEnumOrNullOrTestEnumSequenceMember() const {
+    return test_enum_or_null_or_test_enum_sequence_member_;
+  }
+  void setTestEnumOrNullOrTestEnumSequenceMember(const TestEnumOrTestEnumSequence&);
+
+  bool hasTestEnumOrTestEnumOrNullSequenceMember() const { return !test_enum_or_test_enum_or_null_sequence_member_.IsNull(); }
+  const TestEnumOrTestEnumOrNullSequence& testEnumOrTestEnumOrNullSequenceMember() const {
+    return test_enum_or_test_enum_or_null_sequence_member_;
+  }
+  void setTestEnumOrTestEnumOrNullSequenceMember(const TestEnumOrTestEnumOrNullSequence&);
+
   bool hasTestEnumOrTestEnumSequenceMember() const { return !test_enum_or_test_enum_sequence_member_.IsNull(); }
   const TestEnumOrTestEnumSequence& testEnumOrTestEnumSequenceMember() const {
     return test_enum_or_test_enum_sequence_member_;
@@ -496,6 +509,8 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   Vector<std::pair<String, String>> string_or_null_record_member_;
   Vector<String> string_or_null_sequence_member_;
   Vector<String> string_sequence_member_;
+  TestEnumOrTestEnumSequence test_enum_or_null_or_test_enum_sequence_member_;
+  TestEnumOrTestEnumOrNullSequence test_enum_or_test_enum_or_null_sequence_member_;
   TestEnumOrTestEnumSequence test_enum_or_test_enum_sequence_member_;
   TestInterface2OrUint8Array test_interface_2_or_uint8_array_member_;
   Member<TestInterfaceGarbageCollected> test_interface_garbage_collected_member_;

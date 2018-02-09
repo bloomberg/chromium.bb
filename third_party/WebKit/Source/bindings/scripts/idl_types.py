@@ -560,6 +560,16 @@ class IdlNullableType(IdlTypeBase):
     def name(self):
         return self.inner_type.name + 'OrNull'
 
+    @property
+    def enum_values(self):
+        # Nullable enums are handled by preprending a None value to the list of
+        # enum values. This None value is converted to nullptr on the C++ side,
+        # which matches the JavaScript 'null' in the enum parsing code.
+        inner_values = self.inner_type.enum_values
+        if inner_values:
+            return [None] + inner_values
+        return None
+
     def resolve_typedefs(self, typedefs):
         self.inner_type = self.inner_type.resolve_typedefs(typedefs)
         return self
