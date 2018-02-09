@@ -261,17 +261,17 @@ void Internals::ResetToConsistentState(Page* page) {
   g_s_features_backup->Restore();
   page->SetIsCursorVisible(true);
   page->SetPageScaleFactor(1);
-  page->DeprecatedLocalMainFrame()
-      ->View()
-      ->LayoutViewportScrollableArea()
-      ->SetScrollOffset(ScrollOffset(), kProgrammaticScroll);
+  LocalFrame* frame = page->DeprecatedLocalMainFrame();
+  frame->View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(), kProgrammaticScroll);
   OverrideUserPreferredLanguagesForTesting(Vector<AtomicString>());
   if (page->DeprecatedLocalMainFrame()->GetEditor().IsOverwriteModeEnabled())
     page->DeprecatedLocalMainFrame()->GetEditor().ToggleOverwriteModeEnabled();
 
   if (ScrollingCoordinator* scrolling_coordinator =
-          page->GetScrollingCoordinator())
-    scrolling_coordinator->Reset();
+          page->GetScrollingCoordinator()) {
+    scrolling_coordinator->Reset(frame);
+  }
 
   KeyboardEventManager::SetCurrentCapsLockState(
       OverrideCapsLockState::kDefault);

@@ -210,6 +210,9 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       needs_intersection_observation_(false),
       needs_forced_compositing_update_(false),
       scroll_gesture_region_is_dirty_(false),
+      touch_event_target_rects_are_dirty_(false),
+      should_scroll_on_main_thread_is_dirty_(false),
+      was_scrollable_(false),
       main_thread_scrolling_reasons_(0),
       paint_frame_count_(0),
       unique_id_(NewUniqueObjectId()) {
@@ -3947,6 +3950,29 @@ bool LocalFrameView::ScrollGestureRegionIsDirty() const {
   return scroll_gesture_region_is_dirty_;
 }
 
+bool LocalFrameView::TouchEventTargetRectsAreDirty() const {
+  DCHECK(GetFrame().IsLocalRoot());
+  return touch_event_target_rects_are_dirty_;
+}
+
+bool LocalFrameView::ShouldScrollOnMainThreadIsDirty() const {
+  DCHECK(GetFrame().IsLocalRoot());
+  return should_scroll_on_main_thread_is_dirty_;
+}
+
+bool LocalFrameView::FrameIsScrollableDidChange() {
+  DCHECK(GetFrame().IsLocalRoot());
+  return was_scrollable_ == LayoutViewportScrollableArea()->IsScrollable();
+}
+
+void LocalFrameView::ClearFrameIsScrollableDidChange() {
+  if (GetFrame().IsLocalRoot()) {
+    was_scrollable_ = LayoutViewportScrollableArea()->IsScrollable();
+    return;
+  }
+  GetFrame().LocalFrameRoot().View()->ClearFrameIsScrollableDidChange();
+}
+
 void LocalFrameView::SetScrollGestureRegionIsDirty(bool dirty) {
   if (GetFrame().IsLocalRoot()) {
     // TODO(wjmaclean): It would be nice to move the !NeedsLayout() check from
@@ -3959,6 +3985,24 @@ void LocalFrameView::SetScrollGestureRegionIsDirty(bool dirty) {
   }
 
   GetFrame().LocalFrameRoot().View()->SetScrollGestureRegionIsDirty(dirty);
+}
+
+void LocalFrameView::SetTouchEventTargetRectsAreDirty(bool dirty) {
+  if (GetFrame().IsLocalRoot()) {
+    touch_event_target_rects_are_dirty_ = dirty;
+    return;
+  }
+
+  GetFrame().LocalFrameRoot().View()->SetTouchEventTargetRectsAreDirty(dirty);
+}
+
+void LocalFrameView::SetShouldScrollOnMainThreadIsDirty(bool dirty) {
+  if (GetFrame().IsLocalRoot()) {
+    should_scroll_on_main_thread_is_dirty_ = dirty;
+    return;
+  }
+
+  GetFrame().LocalFrameRoot().View()->SetShouldScrollOnMainThreadIsDirty(dirty);
 }
 
 void LocalFrameView::ScrollableAreasDidChange() {
@@ -5368,8 +5412,10 @@ void LocalFrameView::UpdateRenderThrottlingStatus(
        frame_->GetPage()->GetEventHandlerRegistry().HasEventHandlers(
            EventHandlerRegistry::kTouchStartOrMoveEventBlockingLowLatency));
   if (was_throttled != CanThrottleRendering() && scrolling_coordinator &&
-      has_handlers)
-    scrolling_coordinator->TouchEventTargetRectsDidChange();
+      has_handlers) {
+    scrolling_coordinator->TouchEventTargetRectsDidChange(
+        &GetFrame().LocalFrameRoot());
+  }
 
   if (frame_->FrameScheduler()) {
     frame_->FrameScheduler()->SetFrameVisible(!hidden_for_throttling_);
