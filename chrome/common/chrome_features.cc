@@ -462,6 +462,8 @@ const base::Feature kPreloadLockScreen{"PreloadLockScreen",
 // Enables the new Print Preview UI.
 const base::Feature kNewPrintPreview{"NewPrintPreview",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNupPrinting{"NupPrinting",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_WIN) && !defined(OS_MACOSX)

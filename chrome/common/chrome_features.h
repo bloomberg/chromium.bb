@@ -241,6 +241,7 @@ extern const base::Feature kPreloadLockScreen;
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 extern const base::Feature kNewPrintPreview;
+extern const base::Feature kNupPrinting;
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_WIN) && !defined(OS_MACOSX)
