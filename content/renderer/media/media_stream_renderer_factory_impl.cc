@@ -11,7 +11,7 @@
 #include "content/renderer/media/track_audio_renderer.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
-#include "content/renderer/media/webrtc_audio_renderer.h"
+#include "content/renderer/media/webrtc/webrtc_audio_renderer.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"

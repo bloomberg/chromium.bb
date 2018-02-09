@@ -14,7 +14,7 @@
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_constraints_util_sets.h"
 #include "content/renderer/media/media_stream_video_source.h"
-#include "content/renderer/media/webrtc/processed_local_audio_source.h"
+#include "content/renderer/media/processed_local_audio_source.h"
 #include "media/base/limits.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebString.h"

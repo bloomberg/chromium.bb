@@ -12,7 +12,7 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/media/media_stream_video_source.h"
-#include "content/renderer/media/webrtc_uma_histograms.h"
+#include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
 #include "media/base/limits.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "skia/ext/platform_canvas.h"
