@@ -20,6 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::DoAll;
 using ::testing::Mock;
 using ::testing::NiceMock;
@@ -52,9 +53,14 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   PipelineStatusCB StartPipeline(bool is_streaming, bool is_static) {
     EXPECT_FALSE(pipeline_controller_.IsStable());
     PipelineStatusCB start_cb;
-    EXPECT_CALL(*pipeline_, Start(_, _, _, _)).WillOnce(SaveArg<3>(&start_cb));
-    pipeline_controller_.Start(&demuxer_, this, is_streaming, is_static);
+    EXPECT_CALL(*pipeline_, Start(_, _, _, _, _))
+        .WillOnce(SaveArg<4>(&start_cb));
+    pipeline_controller_.Start(Pipeline::StartType::kNormal, &demuxer_, this,
+                               is_streaming, is_static);
     Mock::VerifyAndClear(pipeline_);
+    EXPECT_CALL(*pipeline_, IsSuspended())
+        .Times(AnyNumber())
+        .WillOnce(Return(false));
     EXPECT_FALSE(pipeline_controller_.IsStable());
     return start_cb;
   }
@@ -85,6 +91,9 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
     EXPECT_CALL(*pipeline_, Suspend(_)).WillOnce(SaveArg<0>(&suspend_cb));
     pipeline_controller_.Suspend();
     Mock::VerifyAndClear(pipeline_);
+    EXPECT_CALL(*pipeline_, IsSuspended())
+        .Times(AnyNumber())
+        .WillOnce(Return(true));
     EXPECT_TRUE(pipeline_controller_.IsSuspended());
     EXPECT_FALSE(pipeline_controller_.IsStable());
     EXPECT_FALSE(pipeline_controller_.IsPipelineSuspended());
@@ -101,6 +110,9 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
         .WillRepeatedly(Return(base::TimeDelta()));
     pipeline_controller_.Resume();
     Mock::VerifyAndClear(pipeline_);
+    EXPECT_CALL(*pipeline_, IsSuspended())
+        .Times(AnyNumber())
+        .WillOnce(Return(false));
     EXPECT_FALSE(pipeline_controller_.IsSuspended());
     EXPECT_FALSE(pipeline_controller_.IsStable());
     EXPECT_FALSE(pipeline_controller_.IsPipelineSuspended());
@@ -168,6 +180,37 @@ TEST_F(PipelineControllerTest, Startup) {
   EXPECT_FALSE(last_seeked_time_updated_);
   EXPECT_FALSE(was_suspended_);
   EXPECT_TRUE(pipeline_controller_.IsStable());
+}
+
+TEST_F(PipelineControllerTest, StartSuspendedAndResume) {
+  EXPECT_FALSE(pipeline_controller_.IsStable());
+  PipelineStatusCB start_cb;
+  EXPECT_CALL(*pipeline_, Start(_, _, _, _, _)).WillOnce(SaveArg<4>(&start_cb));
+  pipeline_controller_.Start(Pipeline::StartType::kSuspendAfterMetadata,
+                             &demuxer_, this, false, true);
+  Mock::VerifyAndClear(pipeline_);
+  EXPECT_CALL(*pipeline_, IsSuspended()).WillRepeatedly(Return(true));
+  EXPECT_FALSE(pipeline_controller_.IsStable());
+  Complete(start_cb);
+  EXPECT_TRUE(was_seeked_);
+  was_seeked_ = false;
+
+  EXPECT_FALSE(pipeline_controller_.IsStable());
+  EXPECT_TRUE(pipeline_controller_.IsPipelineSuspended());
+  EXPECT_TRUE(pipeline_controller_.IsSuspended());
+  Mock::VerifyAndClear(pipeline_);
+
+  EXPECT_CALL(*pipeline_, IsSuspended()).WillRepeatedly(Return(false));
+  PipelineStatusCB resume_cb = ResumePipeline();
+  EXPECT_TRUE(was_resuming_);
+  EXPECT_FALSE(was_resumed_);
+
+  Complete(resume_cb);
+  EXPECT_TRUE(was_resumed_);
+  EXPECT_TRUE(pipeline_controller_.IsStable());
+
+  // |was_seeked_| should not be affected by Suspend()/Resume() at all.
+  EXPECT_FALSE(was_seeked_);
 }
 
 TEST_F(PipelineControllerTest, SuspendResume) {
