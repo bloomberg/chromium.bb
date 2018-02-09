@@ -153,8 +153,8 @@ function getNextWordStart(text, indexAfter, nodeGroupItem) {
       }
       return node.wordStarts[i] + nodeGroupItem.startChar + startCharInParent;
     }
-    // Default.
-    return indexAfter;
+    // Default: We are just off the edge of this node.
+    return node.name.length + nodeGroupItem.startChar + startCharInParent;
   } else {
     // Try to parse using a regex, which is imperfect.
     // Fall back to the given index if we can't find a match.
@@ -175,7 +175,7 @@ function getNextWordStart(text, indexAfter, nodeGroupItem) {
 function getNextWordEnd(text, indexAfter, nodeGroupItem) {
   if (nodeGroupItem.hasInlineText && nodeGroupItem.node.children.length > 0) {
     let node = findInlineTextNodeByCharacterIndex(
-        nodeGroupItem.node, indexAfter - nodeGroupItem.startChar);
+        nodeGroupItem.node, indexAfter - nodeGroupItem.startChar + 1);
     let startCharInParent = getStartCharIndexInParent(node);
     for (var i = 0; i < node.wordEnds.length; i++) {
       if (node.wordEnds[i] + nodeGroupItem.startChar + startCharInParent - 1 <
@@ -396,6 +396,9 @@ var SelectToSpeak = function() {
   /** @private {?AutomationNode} */
   this.currentBlockParent_ = null;
 
+  /** @private {boolean} */
+  this.visible_ = true;
+
   /**
    * The interval ID from a call to setInterval, which is set whenever
    * speech is in progress.
@@ -558,6 +561,7 @@ SelectToSpeak.prototype = {
       // Only go into selection mode if we aren't already tracking the mouse.
       this.isSelectionKeyDown_ = true;
     } else if (!this.trackingMouse_) {
+      // Some other key was pressed.
       this.isSearchKeyDown_ = false;
     }
 
@@ -569,13 +573,14 @@ SelectToSpeak.prototype = {
    * @param {!Event} evt
    */
   onKeyUp_: function(evt) {
-    if (evt.keyCode == SelectToSpeak.READ_SELECTION_KEY_CODE &&
-        this.isSelectionKeyDown_ && this.keysPressedTogether_.size == 2 &&
-        this.keysPressedTogether_.has(evt.keyCode) &&
-        this.keysPressedTogether_.has(SelectToSpeak.SEARCH_KEY_CODE)) {
+    if (evt.keyCode == SelectToSpeak.READ_SELECTION_KEY_CODE) {
+      if (this.isSelectionKeyDown_ && this.keysPressedTogether_.size == 2 &&
+          this.keysPressedTogether_.has(evt.keyCode) &&
+          this.keysPressedTogether_.has(SelectToSpeak.SEARCH_KEY_CODE)) {
+        chrome.tts.isSpeaking(this.cancelIfSpeaking_.bind(this));
+        chrome.automation.getFocus(this.requestSpeakSelectedText_.bind(this));
+      }
       this.isSelectionKeyDown_ = false;
-      chrome.tts.isSpeaking(this.cancelIfSpeaking_.bind(this));
-      chrome.automation.getFocus(this.requestSpeakSelectedText_.bind(this));
     } else if (evt.keyCode == SelectToSpeak.SEARCH_KEY_CODE) {
       this.isSearchKeyDown_ = false;
 
@@ -844,7 +849,7 @@ SelectToSpeak.prototype = {
                   // character index of the event. Add 1 for the space character
                   // between words, and another to make it to the start of the
                   // next node name.
-                  if (event.charIndex + 1 >= next.startChar) {
+                  if (event.charIndex + 2 >= next.startChar) {
                     // Move to the next node.
                     this.currentNodeGroupIndex_ += 1;
                     this.currentNode_ = next;
@@ -1050,17 +1055,14 @@ SelectToSpeak.prototype = {
   },
 
   /**
-   * Updates the speech and focus ring states based on a node's current state.
+   * Hides the speech and focus ring states if necessary based on a node's
+   * current state.
    *
    * @param {NodeGroupItem} nodeGroupItem The node to use for updates
    * @param {boolean} inForeground Whether the node is in the foreground window.
    */
   updateFromNodeState_: function(nodeGroupItem, inForeground) {
-    let node = nodeGroupItem.hasInlineText ?
-        findInlineTextNodeByCharacterIndex(
-            nodeGroupItem.node, this.currentNodeWord_.start) :
-        nodeGroupItem.node;
-    switch (getNodeState(node)) {
+    switch (getNodeState(nodeGroupItem.node)) {
       case NodeState.NODE_STATE_INVALID:
         // If the node is invalid, stop speaking entirely.
         this.stopAll_();
@@ -1070,44 +1072,62 @@ SelectToSpeak.prototype = {
         // Don't clear the current node because we may still use it
         // if it becomes visibile later.
         this.clearFocusRing_();
+        this.visible_ = false;
         break;
       case NodeState.NODE_STATE_NORMAL:
       default:
-        if (inForeground) {
-          if (this.wordHighlight_ && this.currentNodeWord_ != null) {
-            // Only show the highlight if this is an inline text box.
-            // Otherwise we'd be highlighting entire nodes, like images.
-            // Highlight should be only for text.
-            // Note that boundsForRange doesn't work on staticText.
-            if (node.role == RoleType.INLINE_TEXT_BOX) {
-              let charIndexInParent = getStartCharIndexInParent(node);
-              chrome.accessibilityPrivate.setHighlights(
-                  [node.boundsForRange(
-                      this.currentNodeWord_.start - charIndexInParent,
-                      this.currentNodeWord_.end - charIndexInParent)],
-                  this.highlightColor_);
-            } else {
-              chrome.accessibilityPrivate.setHighlights(
-                  [], this.highlightColor_);
-            }
-          }
-          // Show the parent element of the currently verbalized node with the
-          // focus ring. This is a nicer user-facing behavior than jumping from
-          // node to node, as nodes may not correspond well to paragraphs or
-          // blocks.
-          // TODO: Better test: has no siblings in the group, highlight just
-          // the one node. if it has siblings, highlight the parent.
-          if (this.currentBlockParent_ != null &&
-              node.role == RoleType.INLINE_TEXT_BOX) {
-            chrome.accessibilityPrivate.setFocusRing(
-                [this.currentBlockParent_.location], this.color_);
-          } else {
-            chrome.accessibilityPrivate.setFocusRing(
-                [node.location], this.color_);
-          }
-        } else {
+        if (inForeground && !this.visible_) {
+          this.visible_ = true;
+          // Just came to the foreground.
+          this.updateHighlightAndFocus_(nodeGroupItem);
+        } else if (!inForeground) {
           this.clearFocusRing_();
+          this.visible_ = false;
         }
+    }
+  },
+
+  /**
+   * Updates the speech and focus ring states based on a node's current state.
+   *
+   * @param {NodeGroupItem} nodeGroupItem The node to use for updates
+   */
+  updateHighlightAndFocus_: function(nodeGroupItem) {
+    if (!this.visible_) {
+      return;
+    }
+    let node = nodeGroupItem.hasInlineText && this.currentNodeWord_ ?
+        findInlineTextNodeByCharacterIndex(
+            nodeGroupItem.node, this.currentNodeWord_.start) :
+        nodeGroupItem.node;
+    if (this.wordHighlight_ && this.currentNodeWord_ != null) {
+      // Only show the highlight if this is an inline text box.
+      // Otherwise we'd be highlighting entire nodes, like images.
+      // Highlight should be only for text.
+      // Note that boundsForRange doesn't work on staticText.
+      if (node.role == RoleType.INLINE_TEXT_BOX) {
+        let charIndexInParent = getStartCharIndexInParent(node);
+        chrome.accessibilityPrivate.setHighlights(
+            [node.boundsForRange(
+                this.currentNodeWord_.start - charIndexInParent,
+                this.currentNodeWord_.end - charIndexInParent)],
+            this.highlightColor_);
+      } else {
+        chrome.accessibilityPrivate.setHighlights([], this.highlightColor_);
+      }
+    }
+    // Show the parent element of the currently verbalized node with the
+    // focus ring. This is a nicer user-facing behavior than jumping from
+    // node to node, as nodes may not correspond well to paragraphs or
+    // blocks.
+    // TODO: Better test: has no siblings in the group, highlight just
+    // the one node. if it has siblings, highlight the parent.
+    if (this.currentBlockParent_ != null &&
+        node.role == RoleType.INLINE_TEXT_BOX) {
+      chrome.accessibilityPrivate.setFocusRing(
+          [this.currentBlockParent_.location], this.color_);
+    } else {
+      chrome.accessibilityPrivate.setFocusRing([node.location], this.color_);
     }
   },
 
@@ -1123,6 +1143,7 @@ SelectToSpeak.prototype = {
       // Just directly update Select To Speak from node state.
       this.updateFromNodeState_(this.currentNode_, false);
     } else {
+      this.updateHighlightAndFocus_(this.currentNode_);
       // Do a hit test to make sure the node is not in a background window
       // or minimimized. On the result checkCurrentNodeMatchesHitTest_ will be
       // called, and we will use that result plus the currentNode's state to
@@ -1189,7 +1210,7 @@ SelectToSpeak.prototype = {
         this.currentNode_.node.name.length);
     if ((this.currentNodeWord_ == null ||
          nodeStart >= this.currentNodeWord_.end) &&
-        nodeStart != nodeEnd) {
+        nodeStart < nodeEnd) {
       // Only update the bounds if they have increased from the
       // previous node. Because tts may send multiple callbacks
       // for the end of one word and the beginning of the next,

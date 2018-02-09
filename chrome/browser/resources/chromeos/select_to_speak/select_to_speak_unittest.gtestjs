@@ -141,6 +141,19 @@ TEST_F('SelectToSpeakUnitTest', 'getNextWordStart', function() {
   assertEquals(10, getNextWordStart('once upon a kitty cat', 10, node));
 });
 
+TEST_F('SelectToSpeakUnitTest', 'getNextWordStartMultipleChildren',
+    function() {
+  let inlineText1 = {wordStarts: [0, 6], name: 'kitty cat ', indexInParent: 0};
+  let inlineText2 = {wordStarts: [0, 3], name: 'is cute', indexInParent: 1};
+  let staticText = {children: [inlineText1, inlineText2],
+                    name: 'kitty cat is cute'};
+  inlineText1.parent = staticText;
+  inlineText2.parent = staticText;
+  let node = {node: staticText, startChar: 0, hasInlineText: true};
+  assertEquals(10, getNextWordStart('kitty cat is cute', 7, node));
+  assertEquals(13, getNextWordStart('kitty cat is cute', 11, node));
+});
+
 TEST_F('SelectToSpeakUnitTest', 'getNextWordEnd', function() {
   let inlineText = {wordEnds: [5, 9], name: 'kitty cat'};
   let staticText = {children: [inlineText], name: 'kitty cat'};
@@ -157,6 +170,19 @@ TEST_F('SelectToSpeakUnitTest', 'getNextWordEnd', function() {
   // Should return the default if the inlineText children are missing.
   staticText.children = [];
   assertEquals(5, getNextWordEnd('kitty cat', 4, node));
+});
+
+TEST_F('SelectToSpeakUnitTest', 'getNextWordEndMultipleChildren',
+    function() {
+  let inlineText1 = {wordEnds: [5, 9], name: 'kitty cat ', indexInParent: 0};
+  let inlineText2 = {wordEnds: [2, 7], name: 'is cute', indexInParent: 1};
+  let staticText = {children: [inlineText1, inlineText2],
+                    name: 'kitty cat is cute'};
+  inlineText1.parent = staticText;
+  inlineText2.parent = staticText;
+  let node = {node: staticText, startChar: 0, hasInlineText: true};
+  assertEquals(12, getNextWordEnd('kitty cat is cute', 10, node));
+  assertEquals(17, getNextWordEnd('kitty cat is cute', 13, node));
 });
 
 TEST_F('SelectToSpeakUnitTest', 'findAllMatching', function() {
