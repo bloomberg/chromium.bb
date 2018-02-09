@@ -1647,7 +1647,7 @@ static const transform_1d_sse2 lowbd_txfm8_1d_arr[TX_TYPES_1D] = {
   idct8_new_sse2, iadst8_new_sse2, iadst8_new_sse2, iidentity8_new_sse2,
 };
 
-static const transform_1d_sse2 lowbd_txfm16_1d_arr[] = {
+static const transform_1d_sse2 lowbd_txfm16_1d_arr[TX_TYPES_1D] = {
   idct16_new_sse2, iadst16_new_sse2, iadst16_new_sse2, iidentity16_new_sse2,
 };
 
@@ -1694,12 +1694,12 @@ static INLINE __m128i lowbd_get_recon_16x16_sse2(const __m128i pred,
 }
 
 static void lowbd_write_buffer_16xn_sse2(__m128i *in, uint8_t *output,
-                                         int stride, int flipud, int hight) {
-  int j = flipud ? (hight - 1) : 0;
+                                         int stride, int flipud, int height) {
+  int j = flipud ? (height - 1) : 0;
   const int step = flipud ? -1 : 1;
-  for (int i = 0; i < hight; ++i, j += step) {
+  for (int i = 0; i < height; ++i, j += step) {
     __m128i v = _mm_loadu_si128((__m128i const *)(output + i * stride));
-    __m128i u = lowbd_get_recon_16x16_sse2(v, in[j], in[j + hight]);
+    __m128i u = lowbd_get_recon_16x16_sse2(v, in[j], in[j + height]);
     _mm_storeu_si128((__m128i *)(output + i * stride), u);
   }
 }

@@ -285,10 +285,10 @@ void AV1LbdInvTxfm2d::RunAV1InvTxfm2dTest(TX_TYPE tx_type, int run_times) {
     }
     for (int r = 0; r < rows; ++r) {
       for (int c = 0; c < cols; ++c) {
-        ASSERT_EQ((uint8_t)ref_output[r * stride + c], output[r * stride + c])
+        uint8_t ref_value = static_cast<uint8_t>(ref_output[r * stride + c]);
+        ASSERT_EQ(ref_value, output[r * stride + c])
             << "[" << r << "," << c << "] " << cnt << " tx_size: " << tx_size_
             << " tx_type: " << tx_type;
-        break;
       }
     }
   }
