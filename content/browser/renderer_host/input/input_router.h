@@ -72,9 +72,6 @@ class InputRouter : public IPC::Listener {
 
   // Used to stop an active fling if such exists.
   virtual void StopFling() = 0;
-
-  // Used to check if a fling cancellation is deferred due to boosting or not.
-  virtual bool FlingCancellationIsDeferred() = 0;
 };
 
 }  // namespace content

@@ -61,9 +61,7 @@ bool GestureEventQueue::QueueEvent(
   // and generates wheel events with momentum phase which are handled in the
   // renderer normally.
   if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingStart &&
-      (gesture_event.event.source_device == blink::kWebGestureDeviceTouchpad ||
-       gesture_event.event.source_device ==
-           blink::kWebGestureDeviceTouchscreen)) {
+      gesture_event.event.source_device == blink::kWebGestureDeviceTouchpad) {
     fling_controller_.ProcessGestureFlingStart(gesture_event);
     fling_in_progress_ = true;
     return false;
@@ -89,14 +87,6 @@ void GestureEventQueue::ProgressFling(base::TimeTicks current_time) {
 void GestureEventQueue::StopFling() {
   fling_in_progress_ = false;
   fling_controller_.StopFling();
-}
-
-bool GestureEventQueue::FlingCancellationIsDeferred() const {
-  return fling_controller_.FlingCancellationIsDeferred();
-}
-
-bool GestureEventQueue::TouchscreenFlingInProgress() const {
-  return fling_controller_.TouchscreenFlingInProgress();
 }
 
 bool GestureEventQueue::ShouldDiscardFlingCancelEvent(

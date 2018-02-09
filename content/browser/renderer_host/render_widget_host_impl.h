@@ -632,7 +632,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void ProgressFling(base::TimeTicks current_time);
   void StopFling();
-  bool FlingCancellationIsDeferred() const;
 
   void DidReceiveFirstFrameAfterNavigation();
 

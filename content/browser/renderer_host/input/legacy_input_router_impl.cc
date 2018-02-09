@@ -215,14 +215,6 @@ void LegacyInputRouterImpl::StopFling() {
   gesture_event_queue_.StopFling();
 }
 
-bool LegacyInputRouterImpl::FlingCancellationIsDeferred() {
-  return gesture_event_queue_.FlingCancellationIsDeferred();
-}
-
-void LegacyInputRouterImpl::DidStopFlingingOnBrowser() {
-  client_->DidStopFlinging();
-}
-
 bool LegacyInputRouterImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(LegacyInputRouterImpl, message)
@@ -276,10 +268,6 @@ void LegacyInputRouterImpl::OnFilteringTouchEvent(
   output_stream_validator_.Validate(touch_event);
 }
 
-bool LegacyInputRouterImpl::TouchscreenFlingInProgress() {
-  return gesture_event_queue_.TouchscreenFlingInProgress();
-}
-
 void LegacyInputRouterImpl::OnGestureEventAck(
     const GestureEventWithLatencyInfo& event,
     InputEventAckSource ack_source,
@@ -298,12 +286,6 @@ void LegacyInputRouterImpl::SendGeneratedWheelEvent(
     const MouseWheelEventWithLatencyInfo& wheel_event) {
   client_->ForwardWheelEventWithLatencyInfo(wheel_event.event,
                                             wheel_event.latency);
-}
-
-void LegacyInputRouterImpl::SendGeneratedGestureScrollEvents(
-    const GestureEventWithLatencyInfo& gesture_event) {
-  client_->ForwardGestureEventWithLatencyInfo(gesture_event.event,
-                                              gesture_event.latency);
 }
 
 void LegacyInputRouterImpl::SetNeedsBeginFrameForFlingProgress() {

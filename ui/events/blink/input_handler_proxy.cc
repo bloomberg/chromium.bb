@@ -823,9 +823,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
     const WebGestureEvent& gesture_event) {
-  // Touchpad and touchscreen flings are handled on browser.
-  DCHECK_NE(blink::kWebGestureDeviceTouchpad, gesture_event.source_device);
-  DCHECK_NE(blink::kWebGestureDeviceTouchscreen, gesture_event.source_device);
+  // Touchpad flings are handled on browser.
+  DCHECK(!(gesture_event.source_device == blink::kWebGestureDeviceTouchpad));
 #ifndef NDEBUG
   expect_scroll_update_end_ = false;
 #endif
@@ -838,6 +837,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
   scroll_status.main_thread_scrolling_reasons =
       cc::MainThreadScrollingReason::kNotScrollingOnMain;
   switch (gesture_event.source_device) {
+    case blink::kWebGestureDeviceTouchscreen:
     case blink::kWebGestureDeviceSyntheticAutoscroll:
       if (!gesture_scroll_on_impl_thread_) {
         scroll_status.thread = cc::InputHandler::SCROLL_ON_MAIN_THREAD;
@@ -847,7 +847,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
         scroll_status = input_handler_->FlingScrollBegin();
       }
       break;
-    case blink::kWebGestureDeviceTouchscreen:
     case blink::kWebGestureDeviceTouchpad:
     case blink::kWebGestureDeviceUninitialized:
     case blink::kWebGestureDeviceCount:
@@ -1279,6 +1278,7 @@ bool InputHandlerProxy::ScrollBy(const WebFloatSize& increment,
   bool did_scroll = false;
 
   switch (fling_parameters_.source_device) {
+    case blink::kWebGestureDeviceTouchscreen:
     case blink::kWebGestureDeviceSyntheticAutoscroll: {
       clipped_increment = ToClientScrollIncrement(clipped_increment);
       cc::ScrollStateData scroll_state_data;
@@ -1293,7 +1293,6 @@ bool InputHandlerProxy::ScrollBy(const WebFloatSize& increment,
       HandleOverscroll(fling_parameters_.point, scroll_result, false);
       did_scroll = scroll_result.did_scroll;
     } break;
-    case blink::kWebGestureDeviceTouchscreen:
     case blink::kWebGestureDeviceTouchpad:
     case blink::kWebGestureDeviceUninitialized:
     case blink::kWebGestureDeviceCount:
@@ -1340,10 +1339,10 @@ void InputHandlerProxy::UpdateCurrentFlingState(
     const WebGestureEvent& fling_start_event,
     const gfx::Vector2dF& velocity) {
   DCHECK_EQ(WebInputEvent::kGestureFlingStart, fling_start_event.GetType());
-  // Flings with touchpad and touchscreen source devices are handled on browser.
-  DCHECK(fling_start_event.source_device != blink::kWebGestureDeviceTouchpad &&
-         fling_start_event.source_device !=
-             blink::kWebGestureDeviceTouchscreen);
+  // When wheel scroll latching is enabled touchpad flings are handled on
+  // browser.
+  DCHECK(fling_start_event.source_device != blink::kWebGestureDeviceTouchpad ||
+         !touchpad_and_wheel_scroll_latching_enabled_);
   current_fling_velocity_ = velocity;
   fling_curve_ = client_->CreateFlingAnimationCurve(
       fling_start_event.source_device,
