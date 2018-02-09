@@ -348,8 +348,12 @@ bool StyleInvalidator::InvalidateShadowRootChildren(
       return false;
     RecursionCheckpoint checkpoint(&recursion_data);
     SiblingData sibling_data;
-    if (UNLIKELY(root->NeedsStyleInvalidation()))
-      PushInvalidationSetsForContainerNode(*root, recursion_data, sibling_data);
+    if (!recursion_data.WholeSubtreeInvalid()) {
+      if (UNLIKELY(root->NeedsStyleInvalidation())) {
+        PushInvalidationSetsForContainerNode(*root, recursion_data,
+                                             sibling_data);
+      }
+    }
     for (Element* child = ElementTraversal::FirstChild(*root); child;
          child = ElementTraversal::NextSibling(*child)) {
       bool child_recalced = Invalidate(*child, recursion_data, sibling_data);
