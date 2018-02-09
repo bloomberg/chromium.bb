@@ -40,12 +40,8 @@ using content::BrowserThread;
 
 namespace extensions {
 
-ShellExtensionsBrowserClient::ShellExtensionsBrowserClient(
-    BrowserContext* context,
-    PrefService* pref_service)
-    : browser_context_(context),
-      pref_service_(pref_service),
-      api_client_(new ShellExtensionsAPIClient),
+ShellExtensionsBrowserClient::ShellExtensionsBrowserClient()
+    : api_client_(new ShellExtensionsAPIClient),
       extension_cache_(new NullExtensionCache()) {
   // app_shell does not have a concept of channel yet, so leave UNKNOWN to
   // enable all channel-dependent extension APIs.
@@ -66,6 +62,7 @@ bool ShellExtensionsBrowserClient::AreExtensionsDisabled(
 }
 
 bool ShellExtensionsBrowserClient::IsValidContext(BrowserContext* context) {
+  DCHECK(browser_context_);
   return context == browser_context_;
 }
 
@@ -148,6 +145,7 @@ bool ShellExtensionsBrowserClient::AllowCrossRendererResourceLoad(
 
 PrefService* ShellExtensionsBrowserClient::GetPrefServiceForContext(
     BrowserContext* context) {
+  DCHECK(pref_service_);
   return pref_service_;
 }
 
@@ -294,6 +292,15 @@ bool ShellExtensionsBrowserClient::IsLockScreenContext(
 std::string ShellExtensionsBrowserClient::GetApplicationLocale() {
   // TODO(michaelpg): Use system locale.
   return "en-US";
+}
+
+void ShellExtensionsBrowserClient::InitWithBrowserContext(
+    content::BrowserContext* context,
+    PrefService* pref_service) {
+  DCHECK(!browser_context_);
+  DCHECK(!pref_service_);
+  browser_context_ = context;
+  pref_service_ = pref_service;
 }
 
 }  // namespace extensions

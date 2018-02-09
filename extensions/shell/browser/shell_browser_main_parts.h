@@ -19,18 +19,17 @@
 class PrefService;
 
 namespace content {
-class BrowserContext;
 struct MainFunctionParams;
 }
 
 namespace extensions {
 
 class DesktopController;
-class ExtensionsBrowserClient;
-class ExtensionsClient;
 class ShellBrowserContext;
 class ShellBrowserMainDelegate;
 class ShellDeviceClient;
+class ShellExtensionsClient;
+class ShellExtensionsBrowserClient;
 class ShellExtensionSystem;
 class ShellOAuth2TokenService;
 class ShellUpdateQueryParamsDelegate;
@@ -61,17 +60,9 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   void PostMainMessageLoopRun() override;
   void PostDestroyThreads() override;
 
- protected:
-  // app_shell embedders may need custom extensions client interfaces.
-  // This class takes ownership of the returned objects.
-  virtual ExtensionsClient* CreateExtensionsClient();
-  virtual ExtensionsBrowserClient* CreateExtensionsBrowserClient(
-      content::BrowserContext* context,
-      PrefService* service);
-
  private:
-  // Creates and initializes the ExtensionSystem.
-  void CreateExtensionSystem();
+  // Initializes the ExtensionSystem.
+  void InitExtensionSystem();
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<ShellNetworkController> network_controller_;
@@ -89,8 +80,8 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<DesktopController> desktop_controller_;
 
   std::unique_ptr<ShellDeviceClient> device_client_;
-  std::unique_ptr<ExtensionsClient> extensions_client_;
-  std::unique_ptr<ExtensionsBrowserClient> extensions_browser_client_;
+  std::unique_ptr<ShellExtensionsClient> extensions_client_;
+  std::unique_ptr<ShellExtensionsBrowserClient> extensions_browser_client_;
   std::unique_ptr<ShellUpdateQueryParamsDelegate> update_query_params_delegate_;
   std::unique_ptr<ShellOAuth2TokenService> oauth2_token_service_;
 

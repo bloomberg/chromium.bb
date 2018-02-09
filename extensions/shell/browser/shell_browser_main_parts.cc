@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "apps/browser_context_keyed_service_factories.h"
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -158,20 +159,38 @@ int ShellBrowserMainParts::PreCreateThreads() {
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
+  extensions_client_ = std::make_unique<ShellExtensionsClient>();
+  ExtensionsClient::Set(extensions_client_.get());
+
+  // BrowserContextKeyedAPIServiceFactories require an ExtensionsBrowserClient.
+  extensions_browser_client_ = std::make_unique<ShellExtensionsBrowserClient>();
+  ExtensionsBrowserClient::Set(extensions_browser_client_.get());
+
+  apps::EnsureBrowserContextKeyedServiceFactoriesBuilt();
+  EnsureBrowserContextKeyedServiceFactoriesBuilt();
+  shell::EnsureBrowserContextKeyedServiceFactoriesBuilt();
+
   // Initialize our "profile" equivalent.
-  browser_context_.reset(new ShellBrowserContext(this));
+  browser_context_ = std::make_unique<ShellBrowserContext>(this);
 
   // app_shell only supports a single user, so all preferences live in the user
   // data directory, including the device-wide local state.
   local_state_ = shell_prefs::CreateLocalState(browser_context_->GetPath());
   user_pref_service_ =
       shell_prefs::CreateUserPrefService(browser_context_.get());
+  extensions_browser_client_->InitWithBrowserContext(browser_context_.get(),
+                                                     user_pref_service_.get());
 
 #if defined(OS_CHROMEOS)
   chromeos::CrasAudioHandler::Initialize(
       new chromeos::AudioDevicesPrefHandlerImpl(local_state_.get()));
   audio_controller_.reset(new ShellAudioController());
 #endif
+
+  // Create BrowserContextKeyedServices now that we have an
+  // ExtensionsBrowserClient that BrowserContextKeyedAPIServices can query.
+  BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
+      browser_context_.get());
 
 #if defined(USE_AURA)
   aura::Env::GetInstance()->set_context_factory(content::GetContextFactory());
@@ -188,29 +207,11 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   device_client_.reset(new ShellDeviceClient);
 
-  extensions_client_.reset(CreateExtensionsClient());
-  ExtensionsClient::Set(extensions_client_.get());
-
-  extensions_browser_client_.reset(CreateExtensionsBrowserClient(
-      browser_context_.get(), user_pref_service_.get()));
-  ExtensionsBrowserClient::Set(extensions_browser_client_.get());
-
   update_query_params_delegate_.reset(new ShellUpdateQueryParamsDelegate);
   update_client::UpdateQueryParams::SetDelegate(
       update_query_params_delegate_.get());
 
-  // Create our custom ExtensionSystem first because other
-  // KeyedServices depend on it.
-  // TODO(yoz): Move this after EnsureBrowserContextKeyedServiceFactoriesBuilt.
-  CreateExtensionSystem();
-
-  // Register additional KeyedService factories here. See
-  // ChromeBrowserMainExtraPartsProfiles for details.
-  EnsureBrowserContextKeyedServiceFactoriesBuilt();
-  ShellExtensionSystemFactory::GetInstance();
-
-  BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
-      browser_context_.get());
+  InitExtensionSystem();
 
   // Initialize OAuth2 support from command line.
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
@@ -300,17 +301,7 @@ void ShellBrowserMainParts::PostDestroyThreads() {
 #endif
 }
 
-ExtensionsClient* ShellBrowserMainParts::CreateExtensionsClient() {
-  return new ShellExtensionsClient();
-}
-
-ExtensionsBrowserClient* ShellBrowserMainParts::CreateExtensionsBrowserClient(
-    content::BrowserContext* context,
-    PrefService* service) {
-  return new ShellExtensionsBrowserClient(context, service);
-}
-
-void ShellBrowserMainParts::CreateExtensionSystem() {
+void ShellBrowserMainParts::InitExtensionSystem() {
   DCHECK(browser_context_);
   extension_system_ = static_cast<ShellExtensionSystem*>(
       ExtensionSystem::Get(browser_context_.get()));

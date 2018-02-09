@@ -35,10 +35,10 @@ bool IgnoreCertificateErrors() {
 ShellBrowserContext::ShellBrowserContext(
     ShellBrowserMainParts* browser_main_parts)
     : content::ShellBrowserContext(false /* off_the_record */,
-                                   nullptr /* net_log */),
+                                   nullptr /* net_log */,
+                                   true /* delay_services_creation */),
       storage_policy_(new ShellSpecialStoragePolicy),
-      browser_main_parts_(browser_main_parts) {
-}
+      browser_main_parts_(browser_main_parts) {}
 
 ShellBrowserContext::~ShellBrowserContext() {
 }
