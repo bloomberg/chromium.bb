@@ -357,10 +357,14 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
 
   // Pass the pref name associated to the search suggest toggle, and use it to
   // also guard the remote suggestions feature.
+  // This pref should only be used if article suggestions expandable header is
+  // disabled.
   // TODO(https://crbug.com/710636): Cleanup this clunky dependency once the
   // preference design is stable.
   std::string additional_toggle_pref;
-  if (base::FeatureList::IsEnabled(
+  if (!base::FeatureList::IsEnabled(
+          ntp_snippets::kArticleSuggestionsExpandableHeader) &&
+      base::FeatureList::IsEnabled(
           chrome::android::kContentSuggestionsSettings)) {
     additional_toggle_pref = prefs::kSearchSuggestEnabled;
   }
