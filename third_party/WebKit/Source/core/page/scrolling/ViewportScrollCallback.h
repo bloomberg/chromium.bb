@@ -41,12 +41,12 @@ class ViewportScrollCallback : public ScrollStateCallback {
                                       root_frame_viewport);
   }
 
-  virtual ~ViewportScrollCallback();
+  ~ViewportScrollCallback() override;
 
-  void handleEvent(ScrollState*) override;
+  void Invoke(ScrollState*) override;
   void SetScroller(ScrollableArea*);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   // ViewportScrollCallback does not assume ownership of BrowserControls or of

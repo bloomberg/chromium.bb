@@ -156,7 +156,7 @@ void TopDocumentRootScrollerController::RecomputeGlobalRootScroller() {
   // Use disable-native-scroll since the ViewportScrollCallback needs to
   // apply scroll actions both before (BrowserControls) and after (overscroll)
   // scrolling the element so it will apply scroll to the element itself.
-  target->setApplyScroll(viewport_apply_scroll_, "disable-native-scroll");
+  target->SetApplyScroll(viewport_apply_scroll_);
 
   Element* old_root_scroller = global_root_scroller_;
 
