@@ -6403,11 +6403,6 @@ I don't think this site should be blocked!
           Open PDF in Preview
           </message>
         </if>
-        <if expr="is_win">
-          <message name="IDS_PRINT_PREVIEW_FRIENDLY_WIN_NETWORK_PRINTER_NAME" desc="Friendly name for a printer with a given name on a given server. This uses the same format as the Windows print dialog.">
-            <ph name="PRINTER_NAME">$1<ex>HP LaserJet</ex></ph> on <ph name="SERVER_NAME">$2<ex>printserver</ex></ph>
-          </message>
-        </if>
       </if>
 
       <!-- Load State -->
