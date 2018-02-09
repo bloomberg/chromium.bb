@@ -348,9 +348,16 @@ void WizardController::Init(OobeScreen first_screen) {
   // an eligible controller is detected later.
   SetControllerDetectedPref(false);
 
-  if ((screen_pref.empty() ||
-       GetLocalState()->HasPrefPath(prefs::kOobeMdMode)) ||
-      GetLocalState()->GetBoolean(prefs::kOobeMdMode))
+  // Show Material Design unless explicitly disabled or for an untested UX,
+  // or when resuming an OOBE that had it disabled or unset. We use an if/else
+  // here to try and not set state when it is the default value so it can
+  // change and affect the OOBE again.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableMdOobe))
+    SetShowMdOobe(false);
+  else if ((screen_pref.empty() ||
+            GetLocalState()->HasPrefPath(prefs::kOobeMdMode)) ||
+           GetLocalState()->GetBoolean(prefs::kOobeMdMode))
     SetShowMdOobe(true);
 
   // TODO(drcrash): Remove this after testing (http://crbug.com/647411).
