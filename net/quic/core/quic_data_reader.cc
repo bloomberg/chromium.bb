@@ -215,8 +215,11 @@ uint8_t QuicDataReader::PeekByte() const {
 // Low-level optimization is useful here because this function will be
 // called frequently, leading to outsize benefits.
 bool QuicDataReader::ReadVarInt62(uint64_t* result) {
+  DCHECK_EQ(endianness_, NETWORK_BYTE_ORDER);
+
   size_t remaining = BytesRemaining();
-  const char* next = data_ + pos_;
+  const unsigned char* next =
+      reinterpret_cast<const unsigned char*>(data_ + pos_);
   if (remaining != 0) {
     switch (*next & 0xc0) {
       case 0xc0:

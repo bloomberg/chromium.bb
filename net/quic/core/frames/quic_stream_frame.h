@@ -36,13 +36,13 @@ struct QUIC_EXPORT_PRIVATE QuicStreamFrame {
   const char* data_buffer;
   QuicStreamOffset offset;  // Location of this data in the stream.
 
- private:
   QuicStreamFrame(QuicStreamId stream_id,
                   bool fin,
                   QuicStreamOffset offset,
                   const char* data_buffer,
                   QuicPacketLength data_length);
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(QuicStreamFrame);
 };
 static_assert(sizeof(QuicStreamFrame) <= 64,

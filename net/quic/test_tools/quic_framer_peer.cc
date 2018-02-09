@@ -8,6 +8,8 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_map_util.h"
 
+using std::string;
+
 namespace net {
 namespace test {
 
@@ -38,6 +40,80 @@ void QuicFramerPeer::SetLargestPacketNumber(QuicFramer* framer,
 void QuicFramerPeer::SetPerspective(QuicFramer* framer,
                                     Perspective perspective) {
   framer->perspective_ = perspective;
+}
+
+// static
+bool QuicFramerPeer::ProcessIetfStreamFrame(QuicFramer* framer,
+                                            QuicDataReader* reader,
+                                            uint8_t frame_type,
+                                            QuicStreamFrame* frame) {
+  return framer->ProcessIetfStreamFrame(reader, frame_type, frame);
+}
+// static
+bool QuicFramerPeer::AppendIetfStreamFrame(QuicFramer* framer,
+                                           const QuicStreamFrame& frame,
+                                           bool last_frame_in_packet,
+                                           QuicDataWriter* writer) {
+  return framer->AppendIetfStreamFrame(frame, last_frame_in_packet, writer);
+}
+// static
+bool QuicFramerPeer::ProcessIetfAckFrame(QuicFramer* framer,
+                                         QuicDataReader* reader,
+                                         uint8_t frame_type,
+                                         QuicAckFrame* ack_frame) {
+  return framer->ProcessIetfAckFrame(reader, frame_type, ack_frame);
+}
+// static
+bool QuicFramerPeer::AppendIetfAckFrameAndTypeByte(QuicFramer* framer,
+                                                   const QuicAckFrame& frame,
+                                                   QuicDataWriter* writer) {
+  return framer->AppendIetfAckFrameAndTypeByte(frame, writer);
+}
+
+// static
+bool QuicFramerPeer::AppendIetfConnectionCloseFrame(
+    QuicFramer* framer,
+    const QuicConnectionCloseFrame& frame,
+    QuicDataWriter* writer) {
+  return framer->AppendIetfConnectionCloseFrame(frame, writer);
+}
+// static
+bool QuicFramerPeer::AppendIetfConnectionCloseFrame(
+    QuicFramer* framer,
+    const QuicIetfTransportErrorCodes code,
+    const string& phrase,
+    QuicDataWriter* writer) {
+  return framer->AppendIetfConnectionCloseFrame(code, phrase, writer);
+}
+// static
+bool QuicFramerPeer::AppendIetfApplicationCloseFrame(
+    QuicFramer* framer,
+    const QuicConnectionCloseFrame& frame,
+    QuicDataWriter* writer) {
+  return framer->AppendIetfApplicationCloseFrame(frame, writer);
+}
+// static
+bool QuicFramerPeer::AppendIetfApplicationCloseFrame(QuicFramer* framer,
+                                                     const uint16_t code,
+                                                     const string& phrase,
+                                                     QuicDataWriter* writer) {
+  return framer->AppendIetfApplicationCloseFrame(code, phrase, writer);
+}
+// static
+bool QuicFramerPeer::ProcessIetfConnectionCloseFrame(
+    QuicFramer* framer,
+    QuicDataReader* reader,
+    const uint8_t frame_type,
+    QuicConnectionCloseFrame* frame) {
+  return framer->ProcessIetfConnectionCloseFrame(reader, frame_type, frame);
+}
+// static
+bool QuicFramerPeer::ProcessIetfApplicationCloseFrame(
+    QuicFramer* framer,
+    QuicDataReader* reader,
+    const uint8_t frame_type,
+    QuicConnectionCloseFrame* frame) {
+  return framer->ProcessIetfApplicationCloseFrame(reader, frame_type, frame);
 }
 
 // static

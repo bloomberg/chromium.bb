@@ -89,12 +89,16 @@ class QUIC_EXPORT_PRIVATE QuicDataWriter {
 
   size_t capacity() const { return capacity_; }
 
+  size_t remaining() const { return capacity_ - length_; }
+
  private:
   // Returns the location that the data should be written at, or nullptr if
   // there is not enough room. Call EndWrite with the returned offset and the
   // given length to pad out for the next write.
   char* BeginWrite(size_t length);
 
+  // TODO(fkastenholz, b/73004262) change buffer_, et al, to be uint8_t, not
+  // char.
   char* buffer_;
   size_t capacity_;  // Allocation size of payload (or -1 if buffer is const).
   size_t length_;    // Current length of the buffer.
