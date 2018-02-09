@@ -60,11 +60,39 @@ message KeyProviderData {
   repeated Entry entry = 1;
 }
 
+// Cryptographic signature algorithm type for challenge requests. Used with
+// challenge-response cryptohome keys.
+enum ChallengeSignatureAlgorithm {
+  RSASSA_PKCS1_V1_5_SHA1 = 1;
+  RSASSA_PKCS1_V1_5_SHA256 = 2;
+  RSASSA_PKCS1_V1_5_SHA384 = 3;
+  RSASSA_PKCS1_V1_5_SHA512 = 4;
+}
+
+// Description of a public key of an asymmetric cryptographic key. Used with
+// challenge-response cryptohome keys.
+message ChallengePublicKeyInfo {
+  // DER-encoded blob of the X.509 Subject Public Key Info.
+  optional bytes public_key_spki_der = 1;
+  // Supported signature algorithms, in the order of preference (starting from
+  // the most preferred). Absence of this field denotes that the key cannot be
+  // used for signing.
+  repeated ChallengeSignatureAlgorithm signature_algorithm = 2;
+}
+
+// Non-secret data describing the key.
 message KeyData {
   // The KeyType should specify the handling needed by Cryptohome
   // and not a provider KeyType.
   enum KeyType {
+    // Password-based key. The password's text or its hashed/transformed
+    // representation is transmitted in the |secret| field of the Key message.
     KEY_TYPE_PASSWORD = 0;
+    // The challenge-response type of key. The secret data for such key is not
+    // passed clear-text through D-Bus calls, but is instead handled by
+    // cryptohome internally. In order to authenticate using such key,
+    // cryptohome will issue one or multiple challenge requests.
+    KEY_TYPE_CHALLENGE_RESPONSE = 1;
   }
   optional KeyType type = 1;
   // All keys must be labeled when persisted to disk, but when KeyData
@@ -80,6 +108,9 @@ message KeyData {
   // of passwords or custom provider key typing.
   // This will be size-limited by serialized size (e.g., 4096 bytes).
   optional KeyProviderData provider_data = 6;
+  // Is set when |type| is |KEY_TYPE_CHALLENGE_RESPONSE|. Specifies the list of
+  // keys that should be used for challenge requests.
+  repeated ChallengePublicKeyInfo challenge_response_key = 7;
 }
 
 // Key is not presently persisted to disk, but it acts as the single authority
