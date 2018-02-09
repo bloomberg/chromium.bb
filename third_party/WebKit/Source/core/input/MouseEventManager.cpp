@@ -785,16 +785,15 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
   //    that ends as a result of a mouse release does not send a mouse release
   //    event. As a result, m_mousePressed also ends up remaining true until
   //    the next mouse release event seen by the EventHandler.
-  // 3. When pressing Esc key while dragging and the object is outside of the
-  //    we get a mouse leave event here
   if ((!is_pen &&
        event.Event().button != WebPointerProperties::Button::kLeft) ||
-      (is_pen && event.Event().button != pen_drag_button) ||
-      event.Event().GetType() == WebInputEvent::kMouseLeave) {
+      (is_pen && event.Event().button != pen_drag_button)) {
     mouse_pressed_ = false;
   }
 
-  if (!mouse_pressed_)
+  //  When pressing Esc key while dragging and the object is outside of the
+  //  we get a mouse leave event here.
+  if (!mouse_pressed_ || event.Event().GetType() == WebInputEvent::kMouseLeave)
     return WebInputEventResult::kNotHandled;
 
   // We disable the drag and drop actions on pen input on windows.
