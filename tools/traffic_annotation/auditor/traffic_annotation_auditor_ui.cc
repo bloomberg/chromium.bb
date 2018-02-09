@@ -463,6 +463,8 @@ int main(int argc, char* argv[]) {
       if (i + 1 == outputs_limit)
         break;
     }
+  } else {
+    printf("/Completed.");
   }
 
   return static_cast<int>(errors.size());

@@ -124,7 +124,7 @@ class NetworkTrafficAnnotationChecker():
     if stdout_text:
       print(stdout_text)
     if stderr_text:
-      print("[Run Time Errors]:\n%s" % stderr_text)
+      print("\n[Runtime Messages]:\n%s" % stderr_text)
     return command.returncode
 
 
