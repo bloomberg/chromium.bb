@@ -99,7 +99,7 @@ public class PostMessageTest {
         mContentsClient = new TestAwContentsClient();
         mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = mTestContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
 
         try {
             InstrumentationRegistry.getInstrumentation().runOnMainSync(

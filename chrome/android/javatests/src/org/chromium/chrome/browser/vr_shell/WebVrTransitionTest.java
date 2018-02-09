@@ -183,8 +183,8 @@ public class WebVrTransitionTest {
             }
         }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
         uiDevice.pressBack();
-        mVrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
-        mVrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+        TestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
+        TestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
     }
 
     /**

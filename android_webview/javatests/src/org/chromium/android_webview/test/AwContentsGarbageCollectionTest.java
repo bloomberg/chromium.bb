@@ -306,7 +306,7 @@ public class AwContentsGarbageCollectionTest {
         for (int i = 0; i < MAX_IDLE_INSTANCES + 1; ++i) {
             containerViews[i] =
                     mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
-            mActivityTestRule.enableJavaScriptOnUiThread(containerViews[i].getAwContents());
+            AwActivityTestRule.enableJavaScriptOnUiThread(containerViews[i].getAwContents());
             final AwContents awContents = containerViews[i].getAwContents();
             final Test jsObject = new Test(i, awContents);
             InstrumentationRegistry.getInstrumentation().runOnMainSync(

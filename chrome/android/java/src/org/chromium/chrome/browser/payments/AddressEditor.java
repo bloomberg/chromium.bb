@@ -347,7 +347,7 @@ public class AddressEditor
                 (adminAreaCodes != null && adminAreaNames != null && adminAreaCodes.length != 0
                         && adminAreaCodes.length == adminAreaNames.length)
                         ? EditorFieldModel.createDropdown(null /* label */,
-                                  mAutofillProfileBridge.getAdminAreaDropdownList(
+                                  AutofillProfileBridge.getAdminAreaDropdownList(
                                           adminAreaCodes, adminAreaNames),
                                   mContext.getString(R.string.select))
                         : EditorFieldModel.createTextInput(

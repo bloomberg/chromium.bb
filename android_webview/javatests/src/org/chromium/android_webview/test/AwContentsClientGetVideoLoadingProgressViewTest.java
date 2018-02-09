@@ -81,7 +81,7 @@ public class AwContentsClientGetVideoLoadingProgressViewTest
                 mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
         awContents.getSettings().setFullscreenSupported(true);
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
         mActivityTestRule.loadUrlSync(
                 awContents, contentsClient.getOnPageFinishedHelper(), VIDEO_TEST_URL);
         Thread.sleep(5 * 1000);

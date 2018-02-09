@@ -100,7 +100,7 @@ public class MediaAccessPermissionRequestTest {
         final AwTestContainerView testContainerView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
         int callCount = helper.getCallCount();
         mActivityTestRule.loadUrlAsync(awContents, mWebRTCPage, null);
         helper.waitForCallback(callCount);
@@ -127,7 +127,7 @@ public class MediaAccessPermissionRequestTest {
         final AwTestContainerView testContainerView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
         int callCount = helper.getCallCount();
         mActivityTestRule.loadUrlAsync(awContents, mWebRTCPage, null);
         helper.waitForCallback(callCount);
@@ -160,7 +160,7 @@ public class MediaAccessPermissionRequestTest {
         final AwTestContainerView testContainerView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
         int callCount = helper.getCallCount();
         mActivityTestRule.loadUrlAsync(awContents, mWebRTCPage, null);
         helper.waitForCallback(callCount);
@@ -206,7 +206,7 @@ public class MediaAccessPermissionRequestTest {
         final AwTestContainerView testContainerView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
         int callCount = helper.getCallCount();
         mActivityTestRule.loadUrlAsync(awContents, mWebRTCPage, null);
         helper.waitForCallback(callCount);

@@ -105,7 +105,7 @@ public class NavigationHistoryTest {
         Assert.assertEquals(0, history.getEntryCount());
 
         final String pageWithHashTagRedirectUrl = addPageWithHashTagRedirectToServer(mWebServer);
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
 
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), pageWithHashTagRedirectUrl);

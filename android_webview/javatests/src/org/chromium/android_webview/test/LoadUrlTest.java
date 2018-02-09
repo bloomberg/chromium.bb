@@ -107,7 +107,7 @@ public class LoadUrlTest {
         final AwTestContainerView testContainerView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
         mActivityTestRule.loadDataSync(
                 awContents, contentsClient.getOnPageFinishedHelper(), data, "text/html", true);
         String textContent =
@@ -208,7 +208,7 @@ public class LoadUrlTest {
         final AwTestContainerView testContainerView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
 
         String[] extraHeaders = {
                 "X-ExtraHeaders1", "extra-header-data1", "x-extraHeaders2", "EXTRA-HEADER-DATA2"};
@@ -239,7 +239,7 @@ public class LoadUrlTest {
                 mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
 
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
 
         final String url = mTestServer.getURL("/echoheader?user-agent");
         String[] extraHeaders = {"user-agent", "Borewicz 07 & Bond 007"};
@@ -261,7 +261,7 @@ public class LoadUrlTest {
         final AwTestContainerView testContainerView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
         String[] extraHeaders = {
                 "X-ExtraHeaders1", "extra-header-data1", "x-extraHeaders2", "EXTRA-HEADER-DATA2"};
         final String url =
@@ -285,7 +285,7 @@ public class LoadUrlTest {
         final String echoRedirectedUrlHeader = "echo header";
         final String echoInitialUrlHeader = "data content";
 
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
 
         String[] extraHeaders = {
                 "X-ExtraHeaders1", "extra-header-data1", "x-extraHeaders2", "EXTRA-HEADER-DATA2"};
@@ -316,7 +316,7 @@ public class LoadUrlTest {
         final AwTestContainerView testContainerView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
 
         String[] extraHeaders = {
                 "X-ExtraHeaders1", "extra-header-data1", "x-extraHeaders2", "EXTRA-HEADER-DATA2"};
@@ -365,7 +365,7 @@ public class LoadUrlTest {
         final AwTestContainerView testContainerView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
 
         contentsClient.setOnReceivedTitleCallback(
                 () -> awContents.loadUrl("javascript:testProperty=42;void(0);"));

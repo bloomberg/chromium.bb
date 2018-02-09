@@ -289,7 +289,7 @@ public class AndroidScrollIntegrationTest {
             final String onscrollObserverName, final String extraContent) throws Exception {
         final JavascriptEventObserver firstFrameObserver = new JavascriptEventObserver();
         final String firstFrameObserverName = "firstFrameObserver";
-        mActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
+        AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() ->
                 firstFrameObserver.register(testContainerView.getWebContents(),
@@ -314,7 +314,7 @@ public class AndroidScrollIntegrationTest {
         final ScrollTestContainerView testContainerView =
                 (ScrollTestContainerView) mActivityTestRule.createAwTestContainerViewOnMainSync(
                         contentsClient);
-        mActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
+        AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         final double deviceDIPScale =
                 DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDipScale();
@@ -352,7 +352,7 @@ public class AndroidScrollIntegrationTest {
         final ScrollTestContainerView testContainerView =
                 (ScrollTestContainerView) mActivityTestRule.createAwTestContainerViewOnMainSync(
                         contentsClient);
-        mActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
+        AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         final double deviceDIPScale =
                 DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDipScale();
@@ -384,7 +384,7 @@ public class AndroidScrollIntegrationTest {
         final ScrollTestContainerView testContainerView =
                 (ScrollTestContainerView) mActivityTestRule.createAwTestContainerViewOnMainSync(
                         contentsClient);
-        mActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
+        AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         final double deviceDIPScale =
                 DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDipScale();
@@ -416,7 +416,7 @@ public class AndroidScrollIntegrationTest {
         final ScrollTestContainerView testContainerView =
                 (ScrollTestContainerView) mActivityTestRule.createAwTestContainerViewOnMainSync(
                         contentsClient);
-        mActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
+        AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         final double deviceDIPScale =
                 DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDipScale();
@@ -457,7 +457,7 @@ public class AndroidScrollIntegrationTest {
         final ScrollTestContainerView testContainerView =
                 (ScrollTestContainerView) mActivityTestRule.createAwTestContainerViewOnMainSync(
                         contentsClient);
-        mActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
+        AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         final int dragSteps = 10;
         final int dragStepSize = 24;
@@ -512,7 +512,7 @@ public class AndroidScrollIntegrationTest {
                         contentsClient);
         final OverScrollByCallbackHelper overScrollByCallbackHelper =
                 testContainerView.getOverScrollByCallbackHelper();
-        mActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
+        AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         final int overScrollDeltaX = 30;
         final int oneStep = 1;
@@ -546,7 +546,7 @@ public class AndroidScrollIntegrationTest {
                         contentsClient);
         final OverScrollByCallbackHelper overScrollByCallbackHelper =
                 testContainerView.getOverScrollByCallbackHelper();
-        mActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
+        AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         final int overScrollDeltaY = 30;
         final int oneStep = 1;
@@ -573,7 +573,7 @@ public class AndroidScrollIntegrationTest {
         final ScrollTestContainerView testContainerView =
                 (ScrollTestContainerView) mActivityTestRule.createAwTestContainerViewOnMainSync(
                         contentsClient);
-        mActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
+        AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         loadTestPageAndWaitForFirstFrame(testContainerView, contentsClient, null, "");
 
@@ -603,7 +603,7 @@ public class AndroidScrollIntegrationTest {
                 (ScrollTestContainerView) mActivityTestRule.createAwTestContainerViewOnMainSync(
                         parentContentsClient);
         final AwContents parentContents = parentContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(parentContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(parentContents);
 
         final String popupPath = "/popup.html";
         final String parentPageHtml = CommonResources.makeHtmlPageFrom("", "<script>"
@@ -623,7 +623,7 @@ public class AndroidScrollIntegrationTest {
 
         final ScrollTestContainerView testContainerView =
                 (ScrollTestContainerView) popupInfo.popupContainerView;
-        mActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
+        AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
         loadTestPageAndWaitForFirstFrame(
                 testContainerView, popupInfo.popupContentsClient, null, "");
 
@@ -652,7 +652,7 @@ public class AndroidScrollIntegrationTest {
         final ScrollTestContainerView testContainerView =
                 (ScrollTestContainerView) mActivityTestRule.createAwTestContainerViewOnMainSync(
                         contentsClient);
-        mActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
+        AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         loadTestPageAndWaitForFirstFrame(testContainerView, contentsClient, null, "");
 
@@ -685,7 +685,7 @@ public class AndroidScrollIntegrationTest {
         final ScrollTestContainerView testContainerView =
                 (ScrollTestContainerView) mActivityTestRule.createAwTestContainerViewOnMainSync(
                         contentsClient);
-        mActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
+        AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         final double deviceDIPScale =
                 DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDipScale();
@@ -745,7 +745,7 @@ public class AndroidScrollIntegrationTest {
                 (ScrollTestContainerView) mActivityTestRule.createAwTestContainerViewOnMainSync(
                         contentsClient);
         final TestGestureStateListener testGestureStateListener = new TestGestureStateListener();
-        mActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
+        AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         final int dragSteps = 10;
         final int dragStepSize = 24;
@@ -786,7 +786,7 @@ public class AndroidScrollIntegrationTest {
         final OverScrollByCallbackHelper overScrollByCallbackHelper =
                 testContainerView.getOverScrollByCallbackHelper();
         final AwContents awContents = testContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
 
         loadTestPageAndWaitForFirstFrame(testContainerView, contentsClient, null, "");
 
@@ -851,7 +851,7 @@ public class AndroidScrollIntegrationTest {
         final ScrollTestContainerView testContainerView =
                 (ScrollTestContainerView) mActivityTestRule.createAwTestContainerViewOnMainSync(
                         contentsClient);
-        mActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
+        AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         final int targetScrollYPix = 322;
 

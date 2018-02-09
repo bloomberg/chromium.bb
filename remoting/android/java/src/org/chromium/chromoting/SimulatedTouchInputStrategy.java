@@ -53,8 +53,7 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
         mRenderData = renderData;
         mInjector = injector;
 
-        ViewConfiguration config = ViewConfiguration.get(context);
-        mDoubleTapDurationInMs = config.getDoubleTapTimeout();
+        mDoubleTapDurationInMs = ViewConfiguration.getDoubleTapTimeout();
 
         // In order to detect whether the user is attempting to double tap a target, we define a
         // region around the first point within which the second tap must occur.  The standard way
@@ -73,6 +72,7 @@ public class SimulatedTouchInputStrategy implements InputStrategyInterface {
         // Our solution is to use the original value from getScaledDoubleTapSlop() (which includes
         // scaling to account for display differences between devices) and apply a fudge/scale
         // factor to make the interaction more intuitive and useful for our scenario.
+        ViewConfiguration config = ViewConfiguration.get(context);
         int scaledDoubleTapSlopInPx = config.getScaledDoubleTapSlop();
         scaledDoubleTapSlopInPx *= DOUBLE_TAP_SLOP_SCALE_FACTOR;
         mDoubleTapSlopSquareInPx = scaledDoubleTapSlopInPx * scaledDoubleTapSlopInPx;

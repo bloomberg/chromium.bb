@@ -66,7 +66,7 @@ public class WebViewModalDialogOverrideTest {
         AwTestContainerView view = mActivityTestRule.createAwTestContainerViewOnMainSync(client);
         final AwContents awContents = view.getAwContents();
 
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
         mActivityTestRule.loadDataSync(
                 awContents, client.getOnPageFinishedHelper(), EMPTY_PAGE, "text/html", false);
         mActivityTestRule.executeJavaScriptAndWaitForResult(
@@ -100,7 +100,7 @@ public class WebViewModalDialogOverrideTest {
         AwTestContainerView view = mActivityTestRule.createAwTestContainerViewOnMainSync(client);
         final AwContents awContents = view.getAwContents();
 
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
         mActivityTestRule.loadDataSync(
                 awContents, client.getOnPageFinishedHelper(), EMPTY_PAGE, "text/html", false);
         String result = mActivityTestRule.executeJavaScriptAndWaitForResult(
@@ -130,7 +130,7 @@ public class WebViewModalDialogOverrideTest {
         };
         AwTestContainerView view = mActivityTestRule.createAwTestContainerViewOnMainSync(client);
         final AwContents awContents = view.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
 
         mActivityTestRule.loadDataSync(
                 awContents, client.getOnPageFinishedHelper(), EMPTY_PAGE, "text/html", false);
@@ -161,7 +161,7 @@ public class WebViewModalDialogOverrideTest {
         };
         AwTestContainerView view = mActivityTestRule.createAwTestContainerViewOnMainSync(client);
         final AwContents awContents = view.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
 
         mActivityTestRule.loadDataSync(
                 awContents, client.getOnPageFinishedHelper(), EMPTY_PAGE, "text/html", false);
@@ -218,11 +218,11 @@ public class WebViewModalDialogOverrideTest {
         };
         AwTestContainerView view = mActivityTestRule.createAwTestContainerViewOnMainSync(client);
         final AwContents awContents = view.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
 
         mActivityTestRule.loadDataSync(awContents, client.getOnPageFinishedHelper(),
                 BEFORE_UNLOAD_URL, "text/html", false);
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
         // JavaScript onbeforeunload dialogs require a user gesture.
         tapViewAndWait(view);
 

@@ -464,7 +464,7 @@ public class LoadDataWithBaseUrlTest {
         while (i < doc.length()) doc.setCharAt(i++, 'A');
         doc.append("--><script>window.gotToEndOfBody=true;</script></body></html>");
 
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
         loadDataWithBaseUrlSync(doc.toString(), "text/html", false, null, null);
         Assert.assertEquals("true",
                 mActivityTestRule.executeJavaScriptAndWaitForResult(

@@ -515,7 +515,7 @@ public class AwAutofillTest {
                     }
                 });
         mAwContents = mTestContainerView.getAwContents();
-        mRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
     }
 
     @Test

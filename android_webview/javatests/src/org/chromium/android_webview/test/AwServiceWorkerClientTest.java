@@ -62,7 +62,7 @@ public class AwServiceWorkerClientTest {
         mActivityTestRule.getAwBrowserContext().getServiceWorkerController().setServiceWorkerClient(
                 mServiceWorkerClient);
         mAwContents = mTestContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
     }
 
     @After

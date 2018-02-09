@@ -179,7 +179,7 @@ public class PopupWindowTest {
         TestAwContentsClient popupContentsClient = popupInfo.popupContentsClient;
         Assert.assertEquals(POPUP_TITLE, mActivityTestRule.getTitleOnUiThread(popupContents));
 
-        mActivityTestRule.enableJavaScriptOnUiThread(popupContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(popupContents);
 
         // Now long press on some texts and see if the text handles show up.
         DOMUtils.longPressNode(popupContents.getContentViewCore(), "plain_text");

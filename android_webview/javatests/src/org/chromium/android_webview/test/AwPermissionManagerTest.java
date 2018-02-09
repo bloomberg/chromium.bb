@@ -79,7 +79,7 @@ public class AwPermissionManagerTest {
         final AwTestContainerView testContainerView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
         final AwContents awContents = testContainerView.getAwContents();
-        mActivityTestRule.enableJavaScriptOnUiThread(awContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
         mActivityTestRule.loadUrlAsync(awContents, mPage, null);
         pollTitleAs("second-granted", awContents);
     }

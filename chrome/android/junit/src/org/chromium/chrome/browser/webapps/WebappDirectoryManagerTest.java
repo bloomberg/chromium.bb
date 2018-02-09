@@ -233,7 +233,7 @@ public class WebappDirectoryManagerTest {
     @Test
     @Feature({"Webapps"})
     public void testCountsOldWebApkUpdateFiles() throws Exception {
-        File directory = new File(mWebappDirectoryManager.getWebApkUpdateDirectory(), WEBAPK_ID_1);
+        File directory = new File(WebappDirectoryManager.getWebApkUpdateDirectory(), WEBAPK_ID_1);
         directory.mkdirs();
         registerWebapp(WEBAPK_ID_1);
         WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID_1);
@@ -254,7 +254,7 @@ public class WebappDirectoryManagerTest {
     @Test
     @Feature({"Webapps"})
     public void testDoesNotCountFilesForNewlyScheduledUpdates() throws Exception {
-        File directory = new File(mWebappDirectoryManager.getWebApkUpdateDirectory(), WEBAPK_ID_1);
+        File directory = new File(WebappDirectoryManager.getWebApkUpdateDirectory(), WEBAPK_ID_1);
         directory.mkdirs();
         registerWebapp(WEBAPK_ID_1);
         WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(WEBAPK_ID_1);

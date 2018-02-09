@@ -350,6 +350,6 @@ public class ThumbnailDiskStorageTest {
     }
 
     private Set<Integer> getIconSizes(String contentId) {
-        return mTestThumbnailDiskStorage.sIconSizesMap.get(contentId);
+        return ThumbnailDiskStorage.sIconSizesMap.get(contentId);
     }
 }

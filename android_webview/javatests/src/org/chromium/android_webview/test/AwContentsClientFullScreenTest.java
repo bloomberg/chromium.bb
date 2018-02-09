@@ -69,7 +69,7 @@ public class AwContentsClientFullScreenTest {
                 mActivityTestRule.getActivity(), mActivityTestRule.isHardwareAcceleratedTest());
         mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         mContentViewCore = mTestContainerView.getContentViewCore();
-        mActivityTestRule.enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
+        AwActivityTestRule.enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
         mTestContainerView.getAwContents().getSettings().setFullscreenSupported(true);
     }
 

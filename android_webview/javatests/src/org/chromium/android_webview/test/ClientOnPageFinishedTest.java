@@ -210,7 +210,7 @@ public class ClientOnPageFinishedTest {
     public void testNotCalledForHistoryApi() throws Throwable {
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
                 mContentsClient.getOnPageFinishedHelper();
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
 
         TestWebServer webServer = TestWebServer.start();
         try {
@@ -263,7 +263,7 @@ public class ClientOnPageFinishedTest {
                 mContentsClient.getOnPageFinishedHelper();
         TestCallbackHelperContainer.OnPageStartedHelper onPageStartedHelper =
                 mContentsClient.getOnPageStartedHelper();
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
 
         TestWebServer webServer = TestWebServer.start();
         try {
@@ -317,7 +317,7 @@ public class ClientOnPageFinishedTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testNotCalledOnDomModificationAfterNonCommittedLoadFromApi() throws Throwable {
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
         TestWebServer webServer = TestWebServer.start();
         try {
             final String noContentUrl = webServer.setResponseWithNoContentStatus("/nocontent.html");
@@ -333,7 +333,7 @@ public class ClientOnPageFinishedTest {
     @Feature({"AndroidWebView"})
     public void testNotCalledOnDomModificationWithJavascriptUrlAfterNonCommittedLoadFromApi()
             throws Throwable {
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
         TestWebServer webServer = TestWebServer.start();
         try {
             final CountDownLatch latch = new CountDownLatch(1);
@@ -408,7 +408,7 @@ public class ClientOnPageFinishedTest {
 
     private void doTestOnPageFinishedNotCalledOnDomMutation(TestWebServer webServer, String syncUrl)
             throws Throwable {
-        mActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
+        AwActivityTestRule.enableJavaScriptOnUiThread(mAwContents);
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
                 mContentsClient.getOnPageFinishedHelper();
         final int onPageFinishedCallCount = onPageFinishedHelper.getCallCount();
