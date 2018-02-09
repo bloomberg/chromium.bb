@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/command_line.h"
+#include "build/build_config.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/child/child_process.h"
 #include "content/public/common/service_manager_connection.h"
@@ -14,9 +16,43 @@
 #include "content/utility/utility_blink_platform_impl.h"
 #include "content/utility/utility_service_factory.h"
 #include "ipc/ipc_sync_channel.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/sandbox/switches.h"
+
+#if !defined(OS_ANDROID)
+#include "content/public/common/resource_usage_reporter.mojom.h"
+#include "net/proxy_resolution/proxy_resolver_v8.h"
+#endif
 
 namespace content {
+
+#if !defined(OS_ANDROID)
+class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
+ public:
+  ResourceUsageReporterImpl() {}
+  ~ResourceUsageReporterImpl() override {}
+
+ private:
+  void GetUsageData(GetUsageDataCallback callback) override {
+    mojom::ResourceUsageDataPtr data = mojom::ResourceUsageData::New();
+    size_t total_heap_size = net::ProxyResolverV8::GetTotalHeapSize();
+    if (total_heap_size) {
+      data->reports_v8_stats = true;
+      data->v8_bytes_allocated = total_heap_size;
+      data->v8_bytes_used = net::ProxyResolverV8::GetUsedHeapSize();
+    }
+    std::move(callback).Run(std::move(data));
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ResourceUsageReporterImpl);
+};
+
+void CreateResourceUsageReporter(mojom::ResourceUsageReporterRequest request) {
+  mojo::MakeStrongBinding(base::MakeUnique<ResourceUsageReporterImpl>(),
+                          std::move(request));
+}
+#endif  // !defined(OS_ANDROID)
 
 UtilityThreadImpl::UtilityThreadImpl()
     : ChildThreadImpl(ChildThreadImpl::Options::Builder()
@@ -75,6 +111,13 @@ void UtilityThreadImpl::Init() {
       base::Bind(&UtilityThreadImpl::BindServiceFactoryRequest,
                  base::Unretained(this)),
       base::ThreadTaskRunnerHandle::Get());
+#if !defined(OS_ANDROID)
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          service_manager::switches::kNoneSandboxAndElevatedPrivileges)) {
+    registry->AddInterface(base::BindRepeating(CreateResourceUsageReporter),
+                           base::ThreadTaskRunnerHandle::Get());
+  }
+#endif  // !defined(OS_ANDROID)
 
   content::ServiceManagerConnection* connection = GetServiceManagerConnection();
   if (connection) {

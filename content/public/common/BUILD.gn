@@ -205,6 +205,8 @@ jumbo_source_set("common_sources") {
     "resource_request_body_android.h",
     "resource_type.cc",
     "resource_type.h",
+    "resource_usage_reporter_type_converters.cc",
+    "resource_usage_reporter_type_converters.h",
     "result_codes.h",
     "sandbox_init.h",
     "sandboxed_process_launcher_delegate.cc",
@@ -368,6 +370,7 @@ mojom("interfaces") {
     "download_stream.mojom",
     "fullscreen_video_element.mojom",
     "push_messaging_status.mojom",
+    "resource_usage_reporter.mojom",
     "webplugininfo.mojom",
     "window_container_type.mojom",
   ]

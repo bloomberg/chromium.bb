@@ -37,6 +37,7 @@ jumbo_source_set("utility") {
     "//media:media_features",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
+    "//net:net_with_v8",
     "//sandbox",
     "//services/data_decoder:lib",
     "//services/data_decoder/public/cpp",

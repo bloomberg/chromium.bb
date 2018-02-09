@@ -33,14 +33,13 @@
 #include "chrome/common/media/media_resource_provider.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/resource_usage_reporter.mojom.h"
-#include "chrome/common/resource_usage_reporter_type_converters.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/security_filter_peer.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/resource_usage_reporter_type_converters.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/simple_connection_filter.h"
@@ -57,7 +56,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/common/associated_interfaces/associated_interface_registry.h"
-#include "third_party/WebKit/public/platform/WebCache.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
@@ -135,110 +133,6 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(RendererResourceDelegate);
 };
 
-static const int kWaitForWorkersStatsTimeoutMS = 20;
-
-class ResourceUsageReporterImpl : public chrome::mojom::ResourceUsageReporter {
- public:
-  explicit ResourceUsageReporterImpl(
-      base::WeakPtr<ChromeRenderThreadObserver> observer)
-      : workers_to_go_(0), observer_(observer), weak_factory_(this) {}
-  ~ResourceUsageReporterImpl() override {}
-
- private:
-  static void CollectOnWorkerThread(
-      const scoped_refptr<base::TaskRunner>& master,
-      base::WeakPtr<ResourceUsageReporterImpl> impl) {
-    size_t total_bytes = 0;
-    size_t used_bytes = 0;
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    if (isolate) {
-      v8::HeapStatistics heap_stats;
-      isolate->GetHeapStatistics(&heap_stats);
-      total_bytes = heap_stats.total_heap_size();
-      used_bytes = heap_stats.used_heap_size();
-    }
-    master->PostTask(FROM_HERE,
-                     base::Bind(&ResourceUsageReporterImpl::ReceiveStats, impl,
-                                total_bytes, used_bytes));
-  }
-
-  void ReceiveStats(size_t total_bytes, size_t used_bytes) {
-    usage_data_->v8_bytes_allocated += total_bytes;
-    usage_data_->v8_bytes_used += used_bytes;
-    workers_to_go_--;
-    if (!workers_to_go_)
-      SendResults();
-  }
-
-  void SendResults() {
-    if (!callback_.is_null())
-      callback_.Run(std::move(usage_data_));
-    callback_.Reset();
-    weak_factory_.InvalidateWeakPtrs();
-    workers_to_go_ = 0;
-  }
-
-  void GetUsageData(const GetUsageDataCallback& callback) override {
-    DCHECK(callback_.is_null());
-    weak_factory_.InvalidateWeakPtrs();
-    usage_data_ = chrome::mojom::ResourceUsageData::New();
-    usage_data_->reports_v8_stats = true;
-    callback_ = callback;
-
-    // Since it is not safe to call any Blink or V8 functions until Blink has
-    // been initialized (which also initializes V8), early out and send 0 back
-    // for all resources.
-    if (!observer_) {
-      SendResults();
-      return;
-    }
-
-    WebCache::ResourceTypeStats stats;
-    WebCache::GetResourceTypeStats(&stats);
-    usage_data_->web_cache_stats =
-        chrome::mojom::ResourceTypeStats::From(stats);
-
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    if (isolate) {
-      v8::HeapStatistics heap_stats;
-      isolate->GetHeapStatistics(&heap_stats);
-      usage_data_->v8_bytes_allocated = heap_stats.total_heap_size();
-      usage_data_->v8_bytes_used = heap_stats.used_heap_size();
-    }
-    base::Closure collect = base::Bind(
-        &ResourceUsageReporterImpl::CollectOnWorkerThread,
-        base::ThreadTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr());
-    workers_to_go_ = RenderThread::Get()->PostTaskToAllWebWorkers(collect);
-    if (workers_to_go_) {
-      // The guard task to send out partial stats
-      // in case some workers are not responsive.
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::Bind(&ResourceUsageReporterImpl::SendResults,
-                                weak_factory_.GetWeakPtr()),
-          base::TimeDelta::FromMilliseconds(kWaitForWorkersStatsTimeoutMS));
-    } else {
-      // No worker threads so just send out the main thread data right away.
-      SendResults();
-    }
-  }
-
-  chrome::mojom::ResourceUsageDataPtr usage_data_;
-  GetUsageDataCallback callback_;
-  int workers_to_go_;
-  base::WeakPtr<ChromeRenderThreadObserver> observer_;
-
-  base::WeakPtrFactory<ResourceUsageReporterImpl> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResourceUsageReporterImpl);
-};
-
-void CreateResourceUsageReporter(
-    base::WeakPtr<ChromeRenderThreadObserver> observer,
-    chrome::mojom::ResourceUsageReporterRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<ResourceUsageReporterImpl>(observer),
-                          std::move(request));
-}
-
 }  // namespace
 
 bool ChromeRenderThreadObserver::is_incognito_process_ = false;
@@ -268,9 +162,6 @@ ChromeRenderThreadObserver::ChromeRenderThreadObserver()
       native_scheme);
 
   auto registry = base::MakeUnique<service_manager::BinderRegistry>();
-  registry->AddInterface(
-      base::Bind(CreateResourceUsageReporter, weak_factory_.GetWeakPtr()),
-      base::ThreadTaskRunnerHandle::Get());
   registry->AddInterface(visited_link_slave_->GetBindCallback(),
                          base::ThreadTaskRunnerHandle::Get());
   if (content::ChildThread::Get()) {

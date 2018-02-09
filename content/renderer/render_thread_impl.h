@@ -829,6 +829,8 @@ class CONTENT_EXPORT RenderThreadImpl
   mojo::Binding<viz::mojom::CompositingModeWatcher>
       compositing_mode_watcher_binding_;
 
+  base::WeakPtrFactory<RenderThreadImpl> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };
 
