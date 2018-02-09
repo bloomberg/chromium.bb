@@ -454,7 +454,13 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DiscardDangerousFile) {
   EXPECT_FALSE(base::PathExists(GetDownloadPath().Append(filename.BaseName())));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadImageFile) {
+// Flaky on ChromeOS.  http://crbug.com/810738
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadImageFile DISABLED_DownloadImageFile
+#else
+#define MAYBE_DownloadImageFile DownloadImageFile
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadImageFile) {
   GURL download_url(embedded_test_server()->GetURL(
       "/downloads/image-octet-stream.png"));
 
