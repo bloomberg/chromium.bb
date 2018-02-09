@@ -70,6 +70,15 @@ bool FloatRect::MayNotHaveExactIntRectRepresentation() const {
          fabs(MaxX()) > kMaxExactlyExpressible ||
          fabs(MaxY()) > kMaxExactlyExpressible;
 }
+
+bool FloatRect::EqualWithinEpsilon(const FloatRect& other,
+                                   float epsilon) const {
+  return std::abs(other.X() - X()) <= epsilon &&
+         std::abs(other.Y() - Y()) <= epsilon &&
+         std::abs(other.Width() - Width()) <= epsilon &&
+         std::abs(other.Height() - Height()) <= epsilon;
+}
+
 #endif
 
 bool FloatRect::IsExpressibleAsIntRect() const {
