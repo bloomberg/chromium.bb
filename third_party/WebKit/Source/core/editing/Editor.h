@@ -222,7 +222,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   void PasteAsPlainText(const String&, bool smart_replace, EditorCommandSource);
 
   Element* FindEventTargetFrom(const VisibleSelection&) const;
-  Element* FindEventTargetFromSelection() const;
   Element* FindEventTargetForClipboardEvent(EditorCommandSource) const;
 
   bool FindString(const String&, FindOptions);
