@@ -14,9 +14,11 @@
 namespace keyboard_shortcut_viewer {
 
 // The categories the shortcut belongs to. Used to group shortcuts in the
-// viewer.
+// viewer. This order is significant as it determines the order in which the
+// categories will be displayed in the view.
 enum class ShortcutCategory {
-  kPopular = 0,
+  kUnknown = 0,
+  kPopular,
   kTabAndWindow,
   kPageAndBrowser,
   kSystemAndDisplay,

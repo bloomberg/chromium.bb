@@ -127,6 +127,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
   }
 
   void BackButtonPressed() override {}
+  void ActiveChanged(search_box::SearchBoxViewBase* sender) override {}
 
   AppListTestViewDelegate view_delegate_;
   views::Widget* widget_;

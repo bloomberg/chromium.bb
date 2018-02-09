@@ -82,6 +82,7 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
   bool OnTextfieldEvent();
 
   // Overridden from views::View:
+  gfx::Size CalculatePreferredSize() const override;
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   void OnEnabledChanged() override;
   const char* GetClassName() const override;
@@ -109,9 +110,15 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
 
   void OnOnSearchBoxFocusedChanged();
 
+  // Whether the trimmed query in the search box is empty.
+  bool IsSearchBoxTrimmedQueryEmpty() const;
+
  protected:
   // Fires query change notification.
   void NotifyQueryChanged();
+
+  // Nofifies the active status change.
+  void NotifyActiveChanged();
 
   // Sets the background color.
   void SetBackgroundColor(SkColor light_vibrant);
@@ -122,13 +129,10 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
   SkColor search_box_color() const { return search_box_color_; }
 
   // Updates the search box's background color.
-  void UpdateBackgroundColor(SkColor color);
+  virtual void UpdateBackgroundColor(SkColor color);
 
   // Updates the visibility of close button.
   void UpdateCloseButtonVisisbility();
-
-  // Whether the trimmed query in the search box is empty.
-  bool IsSearchBoxTrimmedQueryEmpty() const;
 
   // Overridden from views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
@@ -148,6 +152,7 @@ class SEARCH_BOX_EXPORT SearchBoxViewBase : public views::WidgetDelegateView,
   bool is_tablet_mode() const { return is_tablet_mode_; }
 
   void SetSearchBoxBackgroundCornerRadius(int corner_radius);
+  void SetSearchBoxBackgroundColor(SkColor color);
 
   void SetSearchIconImage(gfx::ImageSkia image);
 
