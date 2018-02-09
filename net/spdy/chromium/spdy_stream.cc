@@ -491,6 +491,13 @@ void SpdyStream::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
     return;
   }
 
+  if (io_state_ == STATE_HALF_CLOSED_REMOTE) {
+    const SpdyString error("DATA received on half-closed (remove) stream.");
+    LogStreamError(ERR_SPDY_PROTOCOL_ERROR, error);
+    session_->ResetStream(stream_id_, ERROR_CODE_STREAM_CLOSED, error);
+    return;
+  }
+
   // Track our bandwidth.
   recv_bytes_ += buffer ? buffer->GetRemainingSize() : 0;
   recv_last_byte_time_ = base::TimeTicks::Now();

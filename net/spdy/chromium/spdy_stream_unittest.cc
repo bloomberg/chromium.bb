@@ -1565,6 +1565,61 @@ TEST_F(SpdyStreamTest, ReceivedBytes) {
   EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_CONNECTION_CLOSED));
 }
 
+// Regression test for https://crbug.com/810763.
+TEST_F(SpdyStreamTest, DataOnHalfClosedRemoveStream) {
+  SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
+      kDefaultUrl, 1, kPostBodyLength, LOWEST, nullptr, 0));
+  AddWrite(req);
+
+  SpdyHeaderBlock response_headers;
+  response_headers[kHttp2StatusHeader] = "200";
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyResponseHeaders(
+      1, std::move(response_headers), /* fin = */ true));
+  AddRead(resp);
+
+  SpdySerializedFrame data_frame(
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBody, kPostBodyLength, true));
+  AddRead(data_frame);
+
+  SpdySerializedFrame rst(
+      spdy_util_.ConstructSpdyRstStream(1, ERROR_CODE_STREAM_CLOSED));
+  AddWrite(rst);
+
+  AddReadEOF();
+
+  SequencedSocketData data(GetReads(), GetNumReads(), GetWrites(),
+                           GetNumWrites());
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
+
+  base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
+
+  base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
+      SPDY_BIDIRECTIONAL_STREAM, session, url_, LOWEST, NetLogWithSource());
+  ASSERT_TRUE(stream);
+
+  StreamDelegateDoNothing delegate(stream);
+  stream->SetDelegate(&delegate);
+
+  EXPECT_TRUE(stream->GetUrlFromHeaders().is_empty());
+
+  SpdyHeaderBlock headers(
+      spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kPostBodyLength));
+  EXPECT_THAT(stream->SendRequestHeaders(std::move(headers), MORE_DATA_TO_SEND),
+              IsError(ERR_IO_PENDING));
+  EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
+
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_PROTOCOL_ERROR));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+}
+
 }  // namespace test
 
 }  // namespace net
