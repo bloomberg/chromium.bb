@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -47,7 +48,7 @@ class CHROMEOS_EXPORT ProcessProxyRegistry {
 
   // Starts new ProcessProxy (which starts new process).
   // Returns ID used for the created process. Returns -1 on failure.
-  int OpenProcess(const std::string& command,
+  int OpenProcess(const base::CommandLine& cmdline,
                   const std::string& user_id_hash,
                   const OutputCallback& callback);
   // Sends data to the process identified by |id|.

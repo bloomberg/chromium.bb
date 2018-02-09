@@ -29,6 +29,15 @@
             "description": "Name of the process to open. Initially only 'crosh' is supported. Another processes may be added in future."
           },
           {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "name": "args",
+            "optional": true,
+            "description": "Command line arguments to pass to the process."
+          },
+          {
             "type": "function",
             "name": "callback",
             "optional": false,
@@ -46,7 +55,7 @@
       {
         "name": "closeTerminalProcess",
         "type": "function",
-        "description": "Closes previousy opened process.",
+        "description": "Closes previously opened process.",
         "parameters": [
           {
             "name": "pid",

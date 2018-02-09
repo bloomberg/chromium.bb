@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_TERMINAL_TERMINAL_PRIVATE_API_H_
 
 #include <string>
+#include <vector>
 
 #include "extensions/browser/extension_function.h"
 
@@ -34,10 +35,9 @@ class TerminalPrivateOpenTerminalProcessFunction
 
   void OpenOnRegistryTaskRunner(const ProcessOutputCallback& output_callback,
                                 const OpenProcessCallback& callback,
+                                const std::vector<std::string>& arguments,
                                 const std::string& user_id_hash);
   void RespondOnUIThread(int terminal_id);
-
-  std::string command_;
 };
 
 // Send input to the terminal process specified by the terminal ID, which is set
