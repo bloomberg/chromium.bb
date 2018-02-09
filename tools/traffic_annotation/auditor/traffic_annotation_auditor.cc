@@ -188,6 +188,11 @@ bool TrafficAnnotationAuditor::RunClangTool(
   base::SetCurrentDirectory(source_path_);
   bool result = base::GetAppOutput(cmdline, &clang_tool_raw_output_);
 
+  // If running clang tool had no output, it means that the script running it
+  // could not perform the task.
+  if (clang_tool_raw_output_.empty())
+    result = false;
+
   if (!result) {
     if (use_compile_commands && !clang_tool_raw_output_.empty()) {
       printf(
