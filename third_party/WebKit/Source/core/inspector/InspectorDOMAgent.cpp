@@ -1313,9 +1313,11 @@ Response InspectorDOMAgent::getNodeForLocation(
   Response response = PushDocumentUponHandlelessOperation();
   if (!response.isSuccess())
     return response;
+  LayoutPoint document_point(x, y);
   HitTestRequest request(HitTestRequest::kMove | HitTestRequest::kReadOnly |
                          HitTestRequest::kAllowChildFrameContent);
-  HitTestResult result(request, IntPoint(x, y));
+  HitTestResult result(request,
+                       document_->View()->DocumentToAbsolute(document_point));
   document_->GetFrame()->ContentLayoutObject()->HitTest(result);
   if (!include_user_agent_shadow_dom)
     result.SetToShadowHostIfInRestrictedShadowRoot();
