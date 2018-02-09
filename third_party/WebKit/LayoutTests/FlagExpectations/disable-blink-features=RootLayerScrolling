@@ -2718,8 +2718,6 @@ crbug.com/722212 virtual/mouseevent_fractional/fast/events/pointerevents/mouse-p
 # Crashes on win
 crbug.com/722943 media/audio-repaint.html [ Skip ]
 
-crbug.com/708175 external/wpt/IndexedDB/interleaved-cursors.html [ Failure Pass ]
-
 crbug.com/715718 external/wpt/media-source/mediasource-activesourcebuffers.html [ Failure Pass ]
 crbug.com/715718 external/wpt/media-source/mediasource-remove.html [ Failure Pass ]
 crbug.com/715718 [ Win ] external/wpt/xhr/FormData-append.html [ Failure Pass ]
