@@ -331,7 +331,7 @@ function mediaControlsOverlayPlayButtonInternal(videoElement) {
 }
 
 function pictureInPictureInterstitial(videoElement) {
-  var controlID = '-internal-picture-in-picture-message';
+  var controlID = '-internal-picture-in-picture-icon';
 
   var interstitial = getElementByPseudoId(window.internals.shadowRoot(videoElement).firstChild, controlID);
   if (!interstitial)
@@ -340,7 +340,7 @@ function pictureInPictureInterstitial(videoElement) {
 }
 
 function checkPictureInPictureInterstitialDoesNotExist(videoElement) {
-  var controlID = '-internal-picture-in-picture-message';
+  var controlID = '-internal-picture-in-picture-icon';
 
   var interstitial = getElementByPseudoId(internals.oldestShadowRoot(videoElement), controlID);
   if (interstitial)
