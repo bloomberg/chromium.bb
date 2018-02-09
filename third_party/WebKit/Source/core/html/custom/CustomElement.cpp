@@ -106,31 +106,36 @@ HTMLElement* CustomElement::CreateCustomElement(Document& document,
     return definition->CreateElement(document, tag_name, flags);
   }
   // 7. Otherwise:
-  return CreateUndefinedElement(document, tag_name);
+  return ToHTMLElement(CreateUncustomizedOrUndefinedElement(
+      document, tag_name, flags, g_null_atom));
 }
 
-// Create a HTMLElement
-HTMLElement* CustomElement::CreateUndefinedElement(
+// Step 7 of https://dom.spec.whatwg.org/#concept-create-element in
+// addition to Custom Element V0 handling.
+Element* CustomElement::CreateUncustomizedOrUndefinedElement(
     Document& document,
-    const QualifiedName& tag_name) {
-  bool should_create_builtin = ShouldCreateCustomizedBuiltinElement(tag_name);
-  DCHECK(ShouldCreateCustomElement(tag_name) || should_create_builtin);
-
-  HTMLElement* element;
+    const QualifiedName& tag_name,
+    const CreateElementFlags flags,
+    const AtomicString& is_value) {
+  Element* element;
   if (V0CustomElement::IsValidName(tag_name.LocalName()) &&
       document.RegistrationContext()) {
-    Element* v0element = document.RegistrationContext()->CreateCustomTagElement(
-        document, tag_name);
-    SECURITY_DCHECK(v0element->IsHTMLElement());
-    element = ToHTMLElement(v0element);
-  } else if (should_create_builtin) {
-    element = ToHTMLElement(document.CreateRawElement(
-        tag_name, CreateElementFlags::ByCreateElement()));
+    element = document.RegistrationContext()->CreateCustomTagElement(document,
+                                                                     tag_name);
   } else {
-    element = HTMLElement::Create(tag_name, document);
+    // 7.1. Let interface be the element interface for localName and namespace.
+    // 7.2. Set result to a new element that implements interface, with ...
+    element = document.CreateRawElement(tag_name, flags);
+    if (!is_value.IsEmpty() && flags.IsCustomElementsV0())
+      V0CustomElementRegistrationContext::SetTypeExtension(element, is_value);
   }
 
-  element->SetCustomElementState(CustomElementState::kUndefined);
+  // 7.3. If namespace is the HTML namespace, and either localName is a
+  // valid custom element name or is is non-null, then set result’s
+  // custom element state to "undefined".
+  if (tag_name.NamespaceURI() == HTMLNames::xhtmlNamespaceURI &&
+      (CustomElement::IsValidName(tag_name.LocalName()) || !is_value.IsEmpty()))
+    element->SetCustomElementState(CustomElementState::kUndefined);
 
   return element;
 }
