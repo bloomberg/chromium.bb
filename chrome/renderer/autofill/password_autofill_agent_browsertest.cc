@@ -236,6 +236,16 @@ const char kTwoNoUsernameFormsHTML[] =
     "  <INPUT type='submit' value='Login'/>"
     "</FORM>";
 
+const char kDivWrappedFormHTML[] =
+    "<DIV id='outer'>"
+    "  <DIV id='inner'>"
+    "    <FORM id='form' action='http://www.bidule.com'>"
+    "      <INPUT type='text' id='username'/>"
+    "      <INPUT type='password' id='password'/>"
+    "    </FORM>"
+    "  </DIV>"
+    "</DIV>";
+
 // Sets the "readonly" attribute of |element| to the value given by |read_only|.
 void SetElementReadOnly(WebInputElement& element, bool read_only) {
   element.SetAttribute(WebString::FromUTF8("readonly"),
@@ -2528,6 +2538,56 @@ TEST_F(PasswordAutofillAgentTest,
       "var username = document.getElementById('username');"
       "username.style = 'display:none';";
   ExecuteJavaScriptForTests(hide_elements.c_str());
+
+  base::RunLoop().RunUntilIdle();
+
+  ExpectSameDocumentNavigationWithUsernameAndPasswords(
+      "Bob", "mypassword", "",
+      PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
+}
+
+// In this test, a <div> wrapping a form is hidden via display:none after an
+// Ajax request. The test verifies that we offer to save the password, as hiding
+// the <div> also hiding the <form>.
+TEST_F(PasswordAutofillAgentTest, PromptForAJAXSubmitAfterHidingParentElement) {
+  LoadHTML(kDivWrappedFormHTML);
+  UpdateUsernameAndPasswordElements();
+
+  SimulateUsernameTyping("Bob");
+  SimulatePasswordTyping("mypassword");
+
+  FireAjaxSucceeded();
+
+  std::string hide_element =
+      "var outerDiv = document.getElementById('outer');"
+      "outerDiv.style = 'display:none';";
+  ExecuteJavaScriptForTests(hide_element.c_str());
+
+  base::RunLoop().RunUntilIdle();
+
+  ExpectSameDocumentNavigationWithUsernameAndPasswords(
+      "Bob", "mypassword", "",
+      PasswordForm::SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR);
+}
+
+// In this test, a <div> wrapping a form is removed from the DOM after an Ajax
+// request. The test verifies that we offer to save the password, as removing
+// the <div> also removes the <form>.
+TEST_F(PasswordAutofillAgentTest,
+       PromptForAJAXSubmitAfterDeletingParentElement) {
+  LoadHTML(kDivWrappedFormHTML);
+  UpdateUsernameAndPasswordElements();
+
+  SimulateUsernameTyping("Bob");
+  SimulatePasswordTyping("mypassword");
+
+  FireAjaxSucceeded();
+
+  std::string delete_element =
+      "var outerDiv = document.getElementById('outer');"
+      "var innerDiv = document.getElementById('inner');"
+      "outerDiv.removeChild(innerDiv);";
+  ExecuteJavaScriptForTests(delete_element.c_str());
 
   base::RunLoop().RunUntilIdle();
 
