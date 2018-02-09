@@ -31,7 +31,7 @@ bool GpuMemoryBufferImageCopy::EnsureMemoryBuffer(int width, int height) {
       return false;
 
     gpu_memory_buffer_ = gpu_memory_buffer_manager->CreateGpuMemoryBuffer(
-        gfx::Size(width, height), gfx::BufferFormat::RGBX_8888,
+        gfx::Size(width, height), gfx::BufferFormat::RGBA_8888,
         gfx::BufferUsage::SCANOUT, gpu::kNullSurfaceHandle);
     if (!gpu_memory_buffer_)
       return false;
@@ -55,7 +55,7 @@ gfx::GpuMemoryBuffer* GpuMemoryBufferImageCopy::CopyImage(Image* image) {
 
   // Bind the write framebuffer to our memory buffer.
   GLuint image_id = gl_->CreateImageCHROMIUM(
-      gpu_memory_buffer_->AsClientBuffer(), width, height, GL_RGB);
+      gpu_memory_buffer_->AsClientBuffer(), width, height, GL_RGBA);
   if (!image_id)
     return nullptr;
   GLuint dest_texture_id;
