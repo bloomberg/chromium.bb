@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 
+#include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {
@@ -73,6 +74,21 @@ const NGPhysicalFragment* NGPhysicalLineBoxFragment::LastLogicalLeaf() const {
   }
   DCHECK_NE(runner, this);
   return runner;
+}
+
+bool NGPhysicalLineBoxFragment::HasSoftWrapToNextLine() const {
+  DCHECK(BreakToken());
+  DCHECK(BreakToken()->IsInlineType());
+  const NGInlineBreakToken& break_token = ToNGInlineBreakToken(*BreakToken());
+  return !break_token.IsFinished() && !break_token.IsForcedBreak();
+}
+
+// TODO(xiaochengh): Try avoid passing |previous_line|.
+bool NGPhysicalLineBoxFragment::HasSoftWrapFromPreviousLine(
+    const NGPhysicalLineBoxFragment* previous_line) const {
+  if (!previous_line)
+    return false;
+  return previous_line->HasSoftWrapToNextLine();
 }
 
 }  // namespace blink
