@@ -107,6 +107,8 @@ class PLATFORM_EXPORT TranslateTransformOperation final
     DCHECK(IsMatchingOperationType(type));
   }
 
+  bool HasNonTrivial3DComponent() const override { return z_ != 0.0; }
+
   Length x_;
   Length y_;
   double z_;

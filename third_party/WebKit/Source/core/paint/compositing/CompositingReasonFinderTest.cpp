@@ -11,6 +11,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/TestingPlatformSupport.h"
 
 namespace blink {
 
@@ -26,6 +27,63 @@ class CompositingReasonFinderTest : public RenderingTest {
   }
 };
 
+class CompositingReasonFinderTestPlatform : public TestingPlatformSupport {
+ public:
+  bool IsLowEndDevice() override { return true; }
+};
+
+TEST_F(CompositingReasonFinderTest, DontPromoteTrivial3DLowEnd) {
+  ScopedTestingPlatformSupport<CompositingReasonFinderTestPlatform> platform;
+
+  SetBodyInnerHTML(R"HTML(
+    <div id='target'
+      style='width: 100px; height: 100px; transform: translateZ(0)'></div>
+  )HTML");
+
+  Element* target = GetDocument().getElementById("target");
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
+  EXPECT_EQ(kNotComposited, paint_layer->GetCompositingState());
+}
+
+TEST_F(CompositingReasonFinderTest, PromoteNonTrivial3DLowEnd) {
+  ScopedTestingPlatformSupport<CompositingReasonFinderTestPlatform> platform;
+
+  SetBodyInnerHTML(R"HTML(
+    <div id='target'
+      style='width: 100px; height: 100px; transform: translateZ(1px)'></div>
+  )HTML");
+
+  Element* target = GetDocument().getElementById("target");
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
+  EXPECT_EQ(kPaintsIntoOwnBacking, paint_layer->GetCompositingState());
+}
+
+TEST_F(CompositingReasonFinderTest, PromoteTrivial3DByDefault) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='target'
+      style='width: 100px; height: 100px; transform: translateZ(0)'></div>
+  )HTML");
+
+  Element* target = GetDocument().getElementById("target");
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
+  EXPECT_EQ(kPaintsIntoOwnBacking, paint_layer->GetCompositingState());
+}
+
+TEST_F(CompositingReasonFinderTest, PromoteNonTrivial3DByDefault) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='target'
+      style='width: 100px; height: 100px; transform: translateZ(1px)'></div>
+  )HTML");
+
+  Element* target = GetDocument().getElementById("target");
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
+  EXPECT_EQ(kPaintsIntoOwnBacking, paint_layer->GetCompositingState());
+}
+
 TEST_F(CompositingReasonFinderTest, PromoteOpaqueFixedPosition) {
   ScopedCompositeOpaqueFixedPositionForTest composite_fixed_position(true);
 
@@ -39,8 +97,6 @@ TEST_F(CompositingReasonFinderTest, PromoteOpaqueFixedPosition) {
     box-shadow: 10px 10px 5px #888888;'></div>
     <div id='spacer' style='height: 2000px'></div>
   )HTML");
-
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   // The translucent fixed box should not be promoted.
   Element* element = GetDocument().getElementById("translucent");
@@ -74,7 +130,6 @@ TEST_F(CompositingReasonFinderTest, OnlyAnchoredStickyPositionPromoted) {
       <div style='height: 2000px;'></div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(kPaintsIntoOwnBacking,
             ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky-top"))
@@ -100,7 +155,6 @@ TEST_F(CompositingReasonFinderTest, OnlyScrollingStickyPositionPromoted) {
       <div id='sticky-no-scrolling' class='sticky'></div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(
       kPaintsIntoOwnBacking,
@@ -131,7 +185,6 @@ TEST_F(CompositingReasonFinderTest, OnlyNonTransformedFixedLayersPromoted) {
       <div id="spacer"></div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(RuntimeEnabledFeatures::CompositeOpaqueScrollersEnabled());
   Element* parent = GetDocument().getElementById("parent");
@@ -181,7 +234,6 @@ TEST_F(CompositingReasonFinderTest, OnlyOpaqueFixedLayersPromoted) {
       <div id="spacer"></div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_TRUE(RuntimeEnabledFeatures::CompositeOpaqueScrollersEnabled());
   Element* parent = GetDocument().getElementById("parent");
@@ -319,7 +371,6 @@ TEST_F(CompositingReasonFinderTest, CompositeNestedSticky) {
       </div>
     </div>
   )HTML");
-  GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* outer_sticky = GetDocument().getElementById("outerSticky");
   PaintLayer* outer_sticky_layer =

@@ -49,22 +49,32 @@ class PLATFORM_EXPORT TransformOperations {
   bool operator!=(const TransformOperations& o) const { return !(*this == o); }
 
   void Apply(const FloatSize& sz, TransformationMatrix& t) const {
-    for (unsigned i = 0; i < operations_.size(); ++i)
-      operations_[i]->Apply(t, sz);
+    for (auto& operation : operations_)
+      operation->Apply(t, sz);
   }
 
   // Return true if any of the operation types are 3D operation types (even if
   // the values describe affine transforms)
   bool Has3DOperation() const {
-    for (unsigned i = 0; i < operations_.size(); ++i)
-      if (operations_[i]->Is3DOperation())
+    for (auto& operation : operations_)
+      if (operation->Is3DOperation())
         return true;
     return false;
   }
 
+  // Returns true if any operation has a non-trivial component in the Z
+  // axis.
+  bool HasNonTrivial3DComponent() const {
+    for (auto& operation : operations_) {
+      if (operation->HasNonTrivial3DComponent())
+        return true;
+    }
+    return false;
+  }
+
   bool DependsOnBoxSize() const {
-    for (unsigned i = 0; i < operations_.size(); ++i) {
-      if (operations_[i]->DependsOnBoxSize())
+    for (auto& operation : operations_) {
+      if (operation->DependsOnBoxSize())
         return true;
     }
     return false;

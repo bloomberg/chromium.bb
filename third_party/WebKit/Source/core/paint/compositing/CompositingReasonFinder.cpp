@@ -13,6 +13,8 @@
 #include "core/page/scrolling/RootScrollerUtil.h"
 #include "core/paint/PaintLayer.h"
 
+#include "public/platform/Platform.h"
+
 namespace blink {
 
 CompositingReasonFinder::CompositingReasonFinder(LayoutView& layout_view)
@@ -136,7 +138,12 @@ bool CompositingReasonFinder::RequiresCompositingForTransform(
   // may have transforms, but the layoutObject may be an inline that doesn't
   // support them.
   return layout_object.HasTransformRelatedProperty() &&
-         layout_object.StyleRef().Has3DTransform();
+         layout_object.StyleRef().Has3DTransform() &&
+         // Don't composite "trivial" 3D transforms such as translateZ(0) on
+         // low-end devices. These devices are much more sensitive to memory
+         // and per-composited-layer commit overhead.
+         (!Platform::Current()->IsLowEndDevice() ||
+          layout_object.StyleRef().Transform().HasNonTrivial3DComponent());
 }
 
 CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
