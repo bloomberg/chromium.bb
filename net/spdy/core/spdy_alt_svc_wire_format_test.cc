@@ -158,8 +158,6 @@ void FuzzAlternativeService(int i,
   }
 }
 
-class SpdyAltSvcWireFormatTest : public ::testing::Test {};
-
 // Tests of public API.
 
 TEST(SpdyAltSvcWireFormatTest, DefaultValues) {

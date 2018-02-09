@@ -62,139 +62,6 @@ class MockDebugVisitor : public SpdyFramerDebugVisitorInterface {
                     size_t frame_len));
 };
 
-class SpdyFramerTestUtil {
- public:
-  // Decompress a single frame using the decompression context held by
-  // the SpdyFramer.  The implemention is meant for use only in tests
-  // and will CHECK fail if the input is anything other than a single,
-  // well-formed compressed frame.
-  //
-  // Returns a new decompressed SpdySerializedFrame.
-  template <class SpdyFrameType>
-  static SpdySerializedFrame DecompressFrame(Http2DecoderAdapter* deframer,
-                                             const SpdyFrameType& frame) {
-    DecompressionVisitor visitor;
-    deframer->set_visitor(&visitor);
-    CHECK_EQ(frame.size(), deframer->ProcessInput(frame.data(), frame.size()));
-    CHECK_EQ(Http2DecoderAdapter::SPDY_READY_FOR_FRAME, deframer->state());
-    deframer->set_visitor(nullptr);
-    SpdyFramer serializer(SpdyFramer::DISABLE_COMPRESSION);
-    return serializer.SerializeFrame(visitor.GetFrame());
-  }
-
-  class DecompressionVisitor : public SpdyFramerVisitorInterface {
-   public:
-    DecompressionVisitor() : finished_(false) {}
-
-    const SpdyFrameIR& GetFrame() const {
-      CHECK(finished_);
-      return *frame_;
-    }
-
-    SpdyHeadersHandlerInterface* OnHeaderFrameStart(
-        SpdyStreamId stream_id) override {
-      if (headers_handler_ == nullptr) {
-        headers_handler_ = SpdyMakeUnique<TestHeadersHandler>();
-      }
-      return headers_handler_.get();
-    }
-
-    void OnHeaderFrameEnd(SpdyStreamId stream_id) override {
-      CHECK(!finished_);
-      frame_->set_header_block(headers_handler_->decoded_block().Clone());
-      finished_ = true;
-      headers_handler_.reset();
-    }
-
-    void OnHeaders(SpdyStreamId stream_id,
-                   bool has_priority,
-                   int weight,
-                   SpdyStreamId parent_stream_id,
-                   bool exclusive,
-                   bool fin,
-                   bool end) override {
-      auto headers = SpdyMakeUnique<SpdyHeadersIR>(stream_id);
-      headers->set_has_priority(has_priority);
-      headers->set_weight(weight);
-      headers->set_parent_stream_id(parent_stream_id);
-      headers->set_exclusive(exclusive);
-      headers->set_fin(fin);
-      frame_ = std::move(headers);
-    }
-
-    void OnPushPromise(SpdyStreamId stream_id,
-                       SpdyStreamId promised_stream_id,
-                       bool end) override {
-      frame_ = SpdyMakeUnique<SpdyPushPromiseIR>(stream_id, promised_stream_id);
-    }
-
-    // TODO(birenroy): Add support for CONTINUATION.
-    void OnContinuation(SpdyStreamId stream_id, bool end) override {
-      LOG(FATAL);
-    }
-
-    // All other methods just LOG(FATAL).
-    void OnError(Http2DecoderAdapter::SpdyFramerError error) override {
-      LOG(FATAL);
-    }
-    void OnDataFrameHeader(SpdyStreamId stream_id,
-                           size_t length,
-                           bool fin) override {
-      LOG(FATAL) << "Unexpected data frame header";
-    }
-    void OnStreamFrameData(SpdyStreamId stream_id,
-                           const char* data,
-                           size_t len) override {
-      LOG(FATAL);
-    }
-
-    void OnStreamEnd(SpdyStreamId stream_id) override { LOG(FATAL); }
-
-    void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {
-      LOG(FATAL);
-    }
-
-    void OnRstStream(SpdyStreamId stream_id,
-                     SpdyErrorCode error_code) override {
-      LOG(FATAL);
-    }
-    void OnSetting(SpdySettingsIds id, uint32_t value) override { LOG(FATAL); }
-    void OnPing(SpdyPingId unique_id, bool is_ack) override { LOG(FATAL); }
-    void OnSettingsEnd() override { LOG(FATAL); }
-    void OnGoAway(SpdyStreamId last_accepted_stream_id,
-                  SpdyErrorCode error_code) override {
-      LOG(FATAL);
-    }
-
-    void OnWindowUpdate(SpdyStreamId stream_id,
-                        int delta_window_size) override {
-      LOG(FATAL);
-    }
-
-    void OnPriority(SpdyStreamId stream_id,
-                    SpdyStreamId parent_stream_id,
-                    int weight,
-                    bool exclusive) override {
-      // Do nothing.
-    }
-
-    bool OnUnknownFrame(SpdyStreamId stream_id, uint8_t frame_type) override {
-      LOG(FATAL);
-      return false;
-    }
-
-   private:
-    std::unique_ptr<TestHeadersHandler> headers_handler_;
-    std::unique_ptr<SpdyFrameWithHeaderBlockIR> frame_;
-    bool finished_;
-
-    DISALLOW_COPY_AND_ASSIGN(DecompressionVisitor);
-  };
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SpdyFramerTestUtil);
-};
-
 MATCHER_P(IsFrameUnionOf, frame_list, "") {
   size_t size_verified = 0;
   for (const auto& frame : *frame_list) {
@@ -712,24 +579,6 @@ class TestSpdyUnknownIR : public SpdyUnknownIR {
   using SpdyUnknownIR::set_length;
 };
 
-// Retrieves serialized headers from a HEADERS frame.
-SpdyStringPiece GetSerializedHeaders(const SpdySerializedFrame& frame,
-                                     const SpdyFramer& framer) {
-  SpdyFrameReader reader(frame.data(), frame.size());
-  reader.Seek(3);  // Seek past the frame length.
-
-  uint8_t serialized_type;
-  reader.ReadUInt8(&serialized_type);
-
-  SpdyFrameType type = ParseFrameType(serialized_type);
-  DCHECK_EQ(SpdyFrameType::HEADERS, type);
-  uint8_t flags;
-  reader.ReadUInt8(&flags);
-
-  return SpdyStringPiece(frame.data() + kHeadersFrameMinimumSize,
-                         frame.size() - kHeadersFrameMinimumSize);
-}
-
 enum Output { USE, NOT_USE };
 
 class SpdyFramerTest : public ::testing::TestWithParam<Output> {
@@ -761,17 +610,6 @@ class SpdyFramerTest : public ::testing::TestWithParam<Output> {
         reinterpret_cast<const unsigned char*>(actual_frame.data());
     CompareCharArraysWithHexError(description, actual, actual_frame.size(),
                                   expected, expected_len);
-  }
-
-  void CompareFrames(const SpdyString& description,
-                     const SpdySerializedFrame& expected_frame,
-                     const SpdySerializedFrame& actual_frame) {
-    CompareCharArraysWithHexError(
-        description,
-        reinterpret_cast<const unsigned char*>(expected_frame.data()),
-        expected_frame.size(),
-        reinterpret_cast<const unsigned char*>(actual_frame.data()),
-        actual_frame.size());
   }
 
   bool use_output_ = false;

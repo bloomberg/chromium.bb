@@ -10,17 +10,8 @@ namespace net {
 // StreamId mask from the SpdyHeader
 const unsigned int kStreamIdMask = 0x7fffffff;
 
-// Control flag mask from the SpdyHeader
-const unsigned int kControlFlagMask = 0x8000;
-
 // Mask the lower 24 bits.
 const unsigned int kLengthMask = 0xffffff;
-
-// Legal flags on data packets.
-const int kDataFlagsMask = 0x01;
-
-// Legal flags on control packets.
-const int kControlFlagsMask = 0x03;
 
 }  // namespace net
 

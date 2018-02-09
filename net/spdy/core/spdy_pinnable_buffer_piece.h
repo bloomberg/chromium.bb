@@ -27,8 +27,6 @@ struct SPDY_EXPORT_PRIVATE SpdyPinnableBufferPiece {
 
   const char* buffer() const { return buffer_; }
 
-  size_t length() const { return length_; }
-
   explicit operator SpdyStringPiece() const {
     return SpdyStringPiece(buffer_, length_);
   }
