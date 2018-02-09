@@ -40754,6 +40754,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SqliteVfsEvents">
+  <obsolete>
+    Removed 2018/02/06.
+  </obsolete>
   <summary>I/O events from browser-process SQLite VFS wrapper.</summary>
   <int value="0" label="VFS_OPEN">Calls to xOpen().</int>
   <int value="1" label="VFS_DELETE">Calls to xDelete().</int>
