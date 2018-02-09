@@ -223,6 +223,14 @@ typedef struct SequenceHeader {
   BLOCK_SIZE sb_size;  // Size of the superblock used for this frame
   int mib_size;        // Size of the superblock in units of MI blocks
   int mib_size_log2;   // Log 2 of above.
+  int force_screen_content_tools;  // 0 - force off
+                                   // 1 - force on
+                                   // 2 - adaptive
+#if CONFIG_AMVR
+  int force_integer_mv;  // 0 - Not to force. MV can be in 1/4 or 1/8
+                         // 1 - force to integer
+                         // 2 - adaptive
+#endif
 #if CONFIG_MONO_VIDEO
   int monochrome;
 #endif  // CONFIG_MONO_VIDEO
@@ -314,9 +322,6 @@ typedef struct AV1Common {
 
   int allow_high_precision_mv;
 #if CONFIG_AMVR
-  int seq_force_integer_mv;        // 0 - Not to force. MV can be in 1/4 or 1/8
-                                   // 1 - force to integer
-                                   // 2 - adaptive
   int cur_frame_force_integer_mv;  // 0 the default in AOM, 1 only integer
 #endif
 

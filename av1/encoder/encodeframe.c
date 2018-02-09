@@ -4244,12 +4244,17 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_zero(rdc->comp_pred_diff);
 
   if (frame_is_intra_only(cm)) {
-    cm->allow_screen_content_tools =
-        cpi->oxcf.content == AOM_CONTENT_SCREEN ||
-        is_screen_content(cpi->source->y_buffer,
-                          cpi->source->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-                          cpi->source->y_stride, cpi->source->y_width,
-                          cpi->source->y_height);
+    if (cm->seq_params.force_screen_content_tools == 2) {
+      cm->allow_screen_content_tools =
+          cpi->oxcf.content == AOM_CONTENT_SCREEN ||
+          is_screen_content(cpi->source->y_buffer,
+                            cpi->source->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
+                            cpi->source->y_stride, cpi->source->y_width,
+                            cpi->source->y_height);
+    } else {
+      cm->allow_screen_content_tools =
+          cm->seq_params.force_screen_content_tools;
+    }
   }
 
 #if CONFIG_INTRABC

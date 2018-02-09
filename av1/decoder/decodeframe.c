@@ -2438,6 +2438,24 @@ void read_sequence_header(SequenceHeader *seq_params,
   }
 
   setup_sb_size(seq_params, rb);
+
+  if (aom_rb_read_bit(rb)) {
+    seq_params->force_screen_content_tools = 2;
+  } else {
+    seq_params->force_screen_content_tools = aom_rb_read_bit(rb);
+  }
+
+#if CONFIG_AMVR
+  if (seq_params->force_screen_content_tools > 0) {
+    if (aom_rb_read_bit(rb)) {
+      seq_params->force_integer_mv = 2;
+    } else {
+      seq_params->force_integer_mv = aom_rb_read_bit(rb);
+    }
+  } else {
+    seq_params->force_integer_mv = 2;
+  }
+#endif
 }
 #endif  // CONFIG_REFERENCE_BUFFER || CONFIG_OBU
 
@@ -2756,10 +2774,30 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   cm->intra_only = cm->frame_type == INTRA_ONLY_FRAME;
 #endif
   cm->error_resilient_mode = aom_rb_read_bit(rb);
+
 #if CONFIG_REFERENCE_BUFFER
 #if !CONFIG_OBU
   if (frame_is_intra_only(cm)) read_sequence_header(&cm->seq_params, rb);
 #endif  // !CONFIG_OBU
+
+  if (cm->seq_params.force_screen_content_tools == 2) {
+    cm->allow_screen_content_tools = aom_rb_read_bit(rb);
+  } else {
+    cm->allow_screen_content_tools = cm->seq_params.force_screen_content_tools;
+  }
+
+#if CONFIG_AMVR
+  if (cm->allow_screen_content_tools) {
+    if (cm->seq_params.force_integer_mv == 2) {
+      cm->cur_frame_force_integer_mv = aom_rb_read_bit(rb);
+    } else {
+      cm->cur_frame_force_integer_mv = cm->seq_params.force_integer_mv;
+    }
+  } else {
+    cm->cur_frame_force_integer_mv = 0;
+  }
+#endif  // CONFIG_AMVR
+
   if (cm->seq_params.frame_id_numbers_present_flag) {
     int frame_id_length = cm->seq_params.frame_id_length;
     int diff_len = cm->seq_params.delta_frame_id_length;
@@ -2838,21 +2876,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
       pbi->need_resync = 0;
     }
-    cm->allow_screen_content_tools = aom_rb_read_bit(rb);
 #if CONFIG_INTRABC
     if (cm->allow_screen_content_tools) cm->allow_intrabc = aom_rb_read_bit(rb);
 #endif  // CONFIG_INTRABC
-#if CONFIG_AMVR
-    if (cm->allow_screen_content_tools) {
-      if (aom_rb_read_bit(rb)) {
-        cm->seq_force_integer_mv = 2;
-      } else {
-        cm->seq_force_integer_mv = aom_rb_read_bit(rb);
-      }
-    } else {
-      cm->seq_force_integer_mv = 2;
-    }
-#endif
     cm->use_prev_frame_mvs = 0;
   } else {
     if (cm->intra_only || cm->error_resilient_mode) cm->use_prev_frame_mvs = 0;
@@ -2900,7 +2926,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
         pbi->need_resync = 0;
       }
-      cm->allow_screen_content_tools = aom_rb_read_bit(rb);
 #if CONFIG_INTRABC
       if (cm->allow_screen_content_tools)
         cm->allow_intrabc = aom_rb_read_bit(rb);
@@ -2972,16 +2997,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif
 
 #if CONFIG_AMVR
-      if (cm->allow_screen_content_tools) {
-        if (cm->seq_force_integer_mv == 2) {
-          cm->cur_frame_force_integer_mv = aom_rb_read_bit(rb);
-        } else {
-          cm->cur_frame_force_integer_mv = cm->seq_force_integer_mv;
-        }
-      } else {
-        cm->cur_frame_force_integer_mv = 0;
-      }
-
       if (cm->cur_frame_force_integer_mv) {
         cm->allow_high_precision_mv = 0;
       } else {

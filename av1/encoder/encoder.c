@@ -3261,8 +3261,10 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cpi->ext_refresh_frame_context_pending = 0;
 
   highbd_set_var_fns(cpi);
+
+  cm->seq_params.force_screen_content_tools = 2;
 #if CONFIG_AMVR
-  cm->seq_force_integer_mv = 2;
+  cm->seq_params.force_integer_mv = 2;
 #endif
 }
 
@@ -7011,13 +7013,14 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 #if CONFIG_AMVR
   cpi->cur_poc++;
   if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools) {
-    if (cpi->common.seq_force_integer_mv == 2) {
+    if (cpi->common.seq_params.force_integer_mv == 2) {
       struct lookahead_entry *previous_entry =
           cpi->lookahead->buf + cpi->previsous_index;
       cpi->common.cur_frame_force_integer_mv = is_integer_mv(
           cpi, cpi->source, &previous_entry->img, cpi->previsou_hash_table);
     } else {
-      cpi->common.cur_frame_force_integer_mv = cpi->common.seq_force_integer_mv;
+      cpi->common.cur_frame_force_integer_mv =
+          cpi->common.seq_params.force_integer_mv;
     }
   } else {
     cpi->common.cur_frame_force_integer_mv = 0;
