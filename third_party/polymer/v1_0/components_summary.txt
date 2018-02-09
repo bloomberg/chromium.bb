@@ -240,15 +240,15 @@ Tree link: https://github.com/PolymerElements/paper-progress/tree/v2.0.1
 
 Name: paper-radio-button
 Repository: https://github.com/PolymerElements/paper-radio-button.git
-Tree: v1.4.0
-Revision: 853490b37537ed1675e14c3f68a40db0be45fe9a
-Tree link: https://github.com/PolymerElements/paper-radio-button/tree/v1.4.0
+Tree: v2.0.0
+Revision: 7ec23aea273d04b8426866e914cfa662331698b8
+Tree link: https://github.com/PolymerElements/paper-radio-button/tree/v2.0.0
 
 Name: paper-radio-group
 Repository: https://github.com/PolymerElements/paper-radio-group.git
-Tree: v1.2.0
-Revision: 1505d1a57fbeabcb779de3e9f0e9857acd8b5f13
-Tree link: https://github.com/PolymerElements/paper-radio-group/tree/v1.2.0
+Tree: v2.1.0
+Revision: 0d87ce662f6d86b0343cd929ab9f503dc126c764
+Tree link: https://github.com/PolymerElements/paper-radio-group/tree/v2.1.0
 
 Name: paper-ripple
 Repository: https://github.com/PolymerElements/paper-ripple.git

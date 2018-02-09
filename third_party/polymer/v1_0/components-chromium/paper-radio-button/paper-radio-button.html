@@ -62,7 +62,7 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
         line-height: 0;
         white-space: nowrap;
         cursor: pointer;
-        @apply(--paper-font-common-base);
+        @apply --paper-font-common-base;
         --calculated-paper-radio-button-size: var(--paper-radio-button-size, 16px);
         /* -1px is a sentinel for the default and is replace in `attached`. */
         --calculated-paper-radio-button-ink-size: var(--paper-radio-button-ink-size, -1px);
@@ -73,14 +73,14 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
       }
 
       #radioContainer {
-        @apply(--layout-inline);
-        @apply(--layout-center-center);
+        @apply --layout-inline;
+        @apply --layout-center-center;
         position: relative;
         width: var(--calculated-paper-radio-button-size);
         height: var(--calculated-paper-radio-button-size);
         vertical-align: middle;
         
-        @apply(--paper-radio-button-radio-container);
+        @apply --paper-radio-button-radio-container;
       }
 
       #ink {
@@ -90,14 +90,14 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
         right: auto;
         width: var(--calculated-paper-radio-button-ink-size);
         height: var(--calculated-paper-radio-button-ink-size);
-        color: var(--paper-radio-button-unchecked-ink-color, --primary-text-color);
+        color: var(--paper-radio-button-unchecked-ink-color, var(--primary-text-color));
         opacity: 0.6;
         pointer-events: none;
         transform: translate(-50%, -50%);
       }
 
       #ink[checked] {
-        color: var(--paper-radio-button-checked-ink-color, --primary-color);
+        color: var(--paper-radio-button-checked-ink-color, var(--primary-color));
       }
 
       #offRadio, #onRadio {
@@ -111,20 +111,20 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
       }
 
       #offRadio {
-        border: 2px solid var(--paper-radio-button-unchecked-color, --primary-text-color);
+        border: 2px solid var(--paper-radio-button-unchecked-color, var(--primary-text-color));
         background-color: var(--paper-radio-button-unchecked-background-color, transparent);
         transition: border-color 0.28s;
       }
 
       #onRadio {
-        background-color: var(--paper-radio-button-checked-color, --primary-color);
+        background-color: var(--paper-radio-button-checked-color, var(--primary-color));
         transform: scale(0);
         transition: transform ease 0.28s;
         will-change: transform;
       }
 
       :host([checked]) #offRadio {
-        border-color: var(--paper-radio-button-checked-color, --primary-color);
+        border-color: var(--paper-radio-button-checked-color, var(--primary-color));
       }
 
       :host([checked]) #onRadio {
@@ -138,13 +138,13 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
         vertical-align: middle;
         margin-left: var(--paper-radio-button-label-spacing, 10px);
         white-space: normal;
-        color: var(--paper-radio-button-label-color, --primary-text-color);
+        color: var(--paper-radio-button-label-color, var(--primary-text-color));
 
-        @apply(--paper-radio-button-label);
+        @apply --paper-radio-button-label;
       }
 
       :host([checked]) #radioLabel {
-        @apply(--paper-radio-button-label-checked);
+        @apply --paper-radio-button-label-checked;
       }
 
       :host-context([dir="rtl"]) #radioLabel {
@@ -159,12 +159,12 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
       /* disabled state */
 
       :host([disabled]) #offRadio {
-        border-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
+        border-color: var(--paper-radio-button-unchecked-color, var(--primary-text-color));
         opacity: 0.5;
       }
 
       :host([disabled][checked]) #onRadio {
-        background-color: var(--paper-radio-button-unchecked-color, --primary-text-color);
+        background-color: var(--paper-radio-button-unchecked-color, var(--primary-text-color));
         opacity: 0.5;
       }
 
@@ -179,7 +179,7 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
       <div id="onRadio"></div>
     </div>
 
-    <div id="radioLabel"><content></content></div>
+    <div id="radioLabel"><slot></slot></div>
   </template>
 
   </dom-module>
