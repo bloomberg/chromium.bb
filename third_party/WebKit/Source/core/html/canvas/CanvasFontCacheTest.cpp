@@ -7,7 +7,7 @@
 #include <memory>
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/html/canvas/CanvasContextCreationAttributes.h"
+#include "core/html/canvas/CanvasContextCreationAttributesCore.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/PageTestBase.h"
@@ -51,8 +51,8 @@ void CanvasFontCacheTest::SetUp() {
   GetDocument().View()->UpdateAllLifecyclePhases();
   canvas_element_ = ToHTMLCanvasElement(GetDocument().getElementById("c"));
   String canvas_type("2d");
-  CanvasContextCreationAttributes attributes;
-  attributes.setAlpha(true);
+  CanvasContextCreationAttributesCore attributes;
+  attributes.alpha = true;
   canvas_element_->GetCanvasRenderingContext(canvas_type, attributes);
   Context2d();  // Calling this for the checks
 }

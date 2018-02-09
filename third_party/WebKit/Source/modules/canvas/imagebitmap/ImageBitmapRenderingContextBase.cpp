@@ -16,10 +16,10 @@ namespace blink {
 
 ImageBitmapRenderingContextBase::ImageBitmapRenderingContextBase(
     CanvasRenderingContextHost* host,
-    const CanvasContextCreationAttributes& attrs)
+    const CanvasContextCreationAttributesCore& attrs)
     : CanvasRenderingContext(host, attrs),
       image_layer_bridge_(
-          new ImageLayerBridge(attrs.alpha() ? kNonOpaque : kOpaque)) {}
+          new ImageLayerBridge(attrs.alpha ? kNonOpaque : kOpaque)) {}
 
 ImageBitmapRenderingContextBase::~ImageBitmapRenderingContextBase() = default;
 

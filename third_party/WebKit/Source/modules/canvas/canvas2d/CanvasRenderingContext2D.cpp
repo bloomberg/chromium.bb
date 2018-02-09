@@ -112,7 +112,7 @@ class CanvasRenderingContext2DAutoRestoreSkCanvas {
 
 CanvasRenderingContext2D::CanvasRenderingContext2D(
     HTMLCanvasElement* canvas,
-    const CanvasContextCreationAttributes& attrs)
+    const CanvasContextCreationAttributesCore& attrs)
     : CanvasRenderingContext(canvas, attrs),
       context_lost_mode_(kNotLostContext),
       context_restorable_(true),
@@ -804,7 +804,7 @@ void CanvasRenderingContext2D::DrawTextInternal(
     return;
 
   // Currently, SkPictureImageFilter does not support subpixel text
-  // anti-aliasing, which is expected when !creationAttributes().alpha(), so we
+  // anti-aliasing, which is expected when !creationAttributes().alpha, so we
   // need to fall out of display list mode when drawing text to an opaque
   // canvas. crbug.com/583809
   if (!IsComposited()) {
@@ -914,7 +914,7 @@ WebLayer* CanvasRenderingContext2D::PlatformLayer() const {
 
 void CanvasRenderingContext2D::getContextAttributes(
     CanvasRenderingContext2DSettings& settings) const {
-  settings.setAlpha(CreationAttributes().alpha());
+  settings.setAlpha(CreationAttributes().alpha);
   settings.setColorSpace(ColorSpaceAsString());
   settings.setPixelFormat(PixelFormatAsString());
 }

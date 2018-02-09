@@ -52,8 +52,8 @@ CanvasRenderingContext2D* CanvasRenderingContext2DAPITest::Context2d() const {
 
 void CanvasRenderingContext2DAPITest::CreateContext(OpacityMode opacity_mode) {
   String canvas_type("2d");
-  CanvasContextCreationAttributes attributes;
-  attributes.setAlpha(opacity_mode == kNonOpaque);
+  CanvasContextCreationAttributesCore attributes;
+  attributes.alpha = opacity_mode == kNonOpaque;
   canvas_element_->GetCanvasRenderingContext(canvas_type, attributes);
   Context2d();  // Calling this for the checks
 }
@@ -298,8 +298,8 @@ void ResetCanvasForAccessibilityRectTest(Document& document) {
       ToHTMLCanvasElement(document.getElementById("canvas"));
 
   String canvas_type("2d");
-  CanvasContextCreationAttributes attributes;
-  attributes.setAlpha(true);
+  CanvasContextCreationAttributesCore attributes;
+  attributes.alpha = true;
   canvas->GetCanvasRenderingContext(canvas_type, attributes);
 
   EXPECT_NE(nullptr, canvas->RenderingContext());

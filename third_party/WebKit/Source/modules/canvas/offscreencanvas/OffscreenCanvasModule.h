@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class CanvasContextCreationAttributes;
+class CanvasContextCreationAttributesModule;
 class OffscreenCanvas;
 
 class MODULES_EXPORT OffscreenCanvasModule {
@@ -23,7 +23,7 @@ class MODULES_EXPORT OffscreenCanvasModule {
   static void getContext(ExecutionContext*,
                          OffscreenCanvas&,
                          const String&,
-                         const CanvasContextCreationAttributes&,
+                         const CanvasContextCreationAttributesModule&,
                          ExceptionState&,
                          OffscreenRenderingContext&);
 };

@@ -5,8 +5,9 @@
 #include "modules/canvas/offscreencanvas/OffscreenCanvasModule.h"
 
 #include "core/dom/ExecutionContext.h"
-#include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
+#include "modules/canvas/htmlcanvas/CanvasContextCreationAttributesHelpers.h"
+#include "modules/canvas/htmlcanvas/CanvasContextCreationAttributesModule.h"
 #include "modules/canvas/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
 
 namespace blink {
@@ -15,7 +16,7 @@ void OffscreenCanvasModule::getContext(
     ExecutionContext* execution_context,
     OffscreenCanvas& offscreen_canvas,
     const String& id,
-    const CanvasContextCreationAttributes& attributes,
+    const CanvasContextCreationAttributesModule& attributes,
     ExceptionState& exception_state,
     OffscreenRenderingContext& result) {
   if (offscreen_canvas.IsNeutered()) {
@@ -27,7 +28,7 @@ void OffscreenCanvasModule::getContext(
   // OffscreenCanvas cannot be transferred after getContext, so this execution
   // context will always be the right one from here on.
   CanvasRenderingContext* context = offscreen_canvas.GetCanvasRenderingContext(
-      execution_context, id, attributes);
+      execution_context, id, ToCanvasContextCreationAttributes(attributes));
   if (context)
     context->SetOffscreenCanvasGetContextResult(result);
 }

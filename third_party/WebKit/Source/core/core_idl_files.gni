@@ -615,7 +615,6 @@ core_dictionary_idl_files =
                     "geometry/DOMRectInit.idl",
                     "html/FocusOptions.idl",
                     "html/AssignedNodesOptions.idl",
-                    "html/canvas/CanvasContextCreationAttributes.idl",
                     "html/canvas/ImageDataColorSettings.idl",
                     "html/track/TrackEventInit.idl",
                     "imagebitmap/ImageBitmapOptions.idl",

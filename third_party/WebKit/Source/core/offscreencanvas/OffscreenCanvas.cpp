@@ -12,7 +12,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/html/canvas/CanvasAsyncBlobCreator.h"
-#include "core/html/canvas/CanvasContextCreationAttributes.h"
+#include "core/html/canvas/CanvasContextCreationAttributesCore.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "core/html/canvas/ImageData.h"
@@ -153,13 +153,13 @@ ScriptPromise OffscreenCanvas::CreateImageBitmap(
 bool OffscreenCanvas::IsOpaque() const {
   if (!context_)
     return false;
-  return !context_->CreationAttributes().hasAlpha();
+  return !context_->CreationAttributes().alpha;
 }
 
 CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
     ExecutionContext* execution_context,
     const String& id,
-    const CanvasContextCreationAttributes& attributes) {
+    const CanvasContextCreationAttributesCore& attributes) {
   execution_context_ = execution_context;
 
   CanvasRenderingContext::ContextType context_type =

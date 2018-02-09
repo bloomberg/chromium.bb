@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class CanvasContextCreationAttributes;
+class CanvasContextCreationAttributesCore;
 class EXTColorBufferFloat;
 class EXTTextureFilterAnisotropic;
 class OESTextureFloatLinear;
@@ -31,7 +31,7 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
 
     CanvasRenderingContext* Create(
         CanvasRenderingContextHost*,
-        const CanvasContextCreationAttributes&) override;
+        const CanvasContextCreationAttributesCore&) override;
     CanvasRenderingContext::ContextType GetContextType() const override {
       return CanvasRenderingContext::kContextWebgl2;
     }
@@ -56,7 +56,7 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
       CanvasRenderingContextHost*,
       std::unique_ptr<WebGraphicsContext3DProvider>,
       bool using_gpu_compositing,
-      const CanvasContextCreationAttributes& requested_attributes);
+      const CanvasContextCreationAttributesCore& requested_attributes);
 
   Member<EXTColorBufferFloat> ext_color_buffer_float_;
   Member<EXTDisjointTimerQueryWebGL2> ext_disjoint_timer_query_web_gl2_;

@@ -5,16 +5,17 @@
 #include "modules/canvas/htmlcanvas/HTMLCanvasElementModule.h"
 
 #include "core/dom/DOMNodeIds.h"
-#include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
+#include "modules/canvas/htmlcanvas/CanvasContextCreationAttributesHelpers.h"
+#include "modules/canvas/htmlcanvas/CanvasContextCreationAttributesModule.h"
 
 namespace blink {
 
 void HTMLCanvasElementModule::getContext(
     HTMLCanvasElement& canvas,
     const String& type,
-    const CanvasContextCreationAttributes& attributes,
+    const CanvasContextCreationAttributesModule& attributes,
     ExceptionState& exception_state,
     RenderingContext& result) {
   if (canvas.SurfaceLayerBridge()) {
@@ -27,8 +28,8 @@ void HTMLCanvasElementModule::getContext(
     return;
   }
 
-  CanvasRenderingContext* context =
-      canvas.GetCanvasRenderingContext(type, attributes);
+  CanvasRenderingContext* context = canvas.GetCanvasRenderingContext(
+      type, ToCanvasContextCreationAttributes(attributes));
   if (context) {
     context->SetCanvasGetContextResult(result);
   }

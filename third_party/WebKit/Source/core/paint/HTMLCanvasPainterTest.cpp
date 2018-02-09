@@ -5,7 +5,7 @@
 #include "core/paint/HTMLCanvasPainter.h"
 
 #include "core/frame/LocalFrameView.h"
-#include "core/html/canvas/CanvasContextCreationAttributes.h"
+#include "core/html/canvas/CanvasContextCreationAttributesCore.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/HTMLCanvasElement.h"
 #include "core/paint/PaintControllerPaintTest.h"
@@ -86,8 +86,8 @@ TEST_P(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree) {
   GetDocument().body()->SetInnerHTMLFromString("<canvas width=300 height=200>");
   HTMLCanvasElement* element =
       ToHTMLCanvasElement(GetDocument().body()->firstChild());
-  CanvasContextCreationAttributes attributes;
-  attributes.setAlpha(true);
+  CanvasContextCreationAttributesCore attributes;
+  attributes.alpha = true;
   CanvasRenderingContext* context =
       element->GetCanvasRenderingContext("2d", attributes);
   IntSize size(300, 200);

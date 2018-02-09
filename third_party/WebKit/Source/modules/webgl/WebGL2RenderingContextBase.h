@@ -987,7 +987,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
       CanvasRenderingContextHost*,
       std::unique_ptr<WebGraphicsContext3DProvider>,
       bool using_gpu_compositing,
-      const CanvasContextCreationAttributes& requested_attributes);
+      const CanvasContextCreationAttributesCore& requested_attributes);
 
   // DrawingBuffer::Client implementation.
   void DrawingBufferClientRestorePixelUnpackBufferBinding() override;

@@ -6,7 +6,7 @@
 #define OffscreenCanvasRenderingContext2D_h
 
 #include <memory>
-#include "core/html/canvas/CanvasContextCreationAttributes.h"
+#include "core/html/canvas/CanvasContextCreationAttributesCore.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "modules/canvas/canvas2d/BaseRenderingContext2D.h"
@@ -31,7 +31,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
     CanvasRenderingContext* Create(
         CanvasRenderingContextHost* host,
-        const CanvasContextCreationAttributes& attrs) override {
+        const CanvasContextCreationAttributesCore& attrs) override {
       DCHECK(host->IsOffscreenCanvas());
       return new OffscreenCanvasRenderingContext2D(
           static_cast<OffscreenCanvas*>(host), attrs);
@@ -107,7 +107,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   void ValidateStateStack() const final;
 
-  bool HasAlpha() const final { return CreationAttributes().alpha(); }
+  bool HasAlpha() const final { return CreationAttributes().alpha; }
   bool isContextLost() const override;
 
   ImageBitmap* TransferToImageBitmap(ScriptState*) final;
@@ -117,7 +117,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
  protected:
   OffscreenCanvasRenderingContext2D(
       OffscreenCanvas*,
-      const CanvasContextCreationAttributes& attrs);
+      const CanvasContextCreationAttributesCore& attrs);
 
   virtual void NeedsFinalizeFrame() {
     CanvasRenderingContext::NeedsFinalizeFrame();

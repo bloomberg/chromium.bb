@@ -22,7 +22,7 @@
 
 namespace blink {
 
-class CanvasContextCreationAttributes;
+class CanvasContextCreationAttributesCore;
 class CanvasResourceProvider;
 class ImageBitmap;
 class
@@ -73,7 +73,7 @@ class CORE_EXPORT OffscreenCanvas final
   CanvasRenderingContext* GetCanvasRenderingContext(
       ExecutionContext*,
       const String&,
-      const CanvasContextCreationAttributes&);
+      const CanvasContextCreationAttributesCore&);
 
   static void RegisterRenderingContextFactory(
       std::unique_ptr<CanvasRenderingContextFactory>);

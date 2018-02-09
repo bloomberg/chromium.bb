@@ -21,12 +21,6 @@
 //
 // N.B.: Web IDL doesn't support multiple inheritance of dictionaries.
 
-enum CanvasColorSpace {
-    "srgb", // default
-    "rec2020",
-    "p3",
-};
-
 enum CanvasPixelFormat {
     "8-8-8-8", // default
     "10-10-10-2",
@@ -35,7 +29,7 @@ enum CanvasPixelFormat {
 };
 
 [PermissiveDictionaryConversion]
-dictionary CanvasContextCreationAttributes {
+dictionary CanvasContextCreationAttributesModule {
     // This is an experimental feature, but it is not hidden behind a flag in
     // the bindings because origin trial bindings don't work in extensions.
     // The trial's runtime flag is instead checked inside
@@ -54,4 +48,5 @@ dictionary CanvasContextCreationAttributes {
     boolean premultipliedAlpha = true;
     boolean preserveDrawingBuffer = false;
     boolean failIfMajorPerformanceCaveat = false;
+    [RuntimeEnabled=WebXR] XRDevice compatibleXRDevice = null;
 };

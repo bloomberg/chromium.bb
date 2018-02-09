@@ -139,7 +139,7 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(
     CanvasRenderingContextHost* host,
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
     bool using_gpu_compositing,
-    const CanvasContextCreationAttributes& requested_attributes)
+    const CanvasContextCreationAttributesCore& requested_attributes)
     : WebGLRenderingContextBase(host,
                                 std::move(context_provider),
                                 using_gpu_compositing,
@@ -5443,9 +5443,9 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
   if (!framebuffer_binding) {
     // We can use creationAttributes() because in WebGL 2, they are required to
     // be honored.
-    bool has_depth = CreationAttributes().depth();
-    bool has_stencil = CreationAttributes().stencil();
-    bool has_alpha = CreationAttributes().alpha();
+    bool has_depth = CreationAttributes().depth;
+    bool has_stencil = CreationAttributes().stencil;
+    bool has_alpha = CreationAttributes().alpha;
     bool missing_image = (attachment == GL_DEPTH && !has_depth) ||
                          (attachment == GL_STENCIL && !has_stencil);
     if (missing_image) {

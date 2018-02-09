@@ -33,7 +33,7 @@
 namespace blink {
 
 class ANGLEInstancedArrays;
-class CanvasContextCreationAttributes;
+class CanvasContextCreationAttributesCore;
 class EXTBlendMinMax;
 class EXTColorBufferHalfFloat;
 class EXTFragDepth;
@@ -64,7 +64,7 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
 
     CanvasRenderingContext* Create(
         CanvasRenderingContextHost*,
-        const CanvasContextCreationAttributes&) override;
+        const CanvasContextCreationAttributesCore&) override;
 
     CanvasRenderingContext::ContextType GetContextType() const override {
       return CanvasRenderingContext::kContextWebgl;
@@ -89,7 +89,7 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   WebGLRenderingContext(CanvasRenderingContextHost*,
                         std::unique_ptr<WebGraphicsContext3DProvider>,
                         bool using_gpu_compositing,
-                        const CanvasContextCreationAttributes&);
+                        const CanvasContextCreationAttributesCore&);
 
   // Enabled extension objects.
   Member<ANGLEInstancedArrays> angle_instanced_arrays_;

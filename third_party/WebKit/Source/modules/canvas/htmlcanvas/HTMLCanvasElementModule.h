@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class CanvasContextCreationAttributes;
+class CanvasContextCreationAttributesModule;
 class HTMLCanvasElement;
 class OffscreenCanvas;
 
@@ -23,7 +23,7 @@ class MODULES_EXPORT HTMLCanvasElementModule {
  public:
   static void getContext(HTMLCanvasElement&,
                          const String&,
-                         const CanvasContextCreationAttributes&,
+                         const CanvasContextCreationAttributesModule&,
                          ExceptionState&,
                          RenderingContext&);
   static OffscreenCanvas* transferControlToOffscreen(HTMLCanvasElement&,

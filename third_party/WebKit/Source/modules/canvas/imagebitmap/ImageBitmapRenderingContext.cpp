@@ -12,7 +12,7 @@ namespace blink {
 
 ImageBitmapRenderingContext::ImageBitmapRenderingContext(
     CanvasRenderingContextHost* host,
-    const CanvasContextCreationAttributes& attrs)
+    const CanvasContextCreationAttributesCore& attrs)
     : ImageBitmapRenderingContextBase(host, attrs) {}
 
 ImageBitmapRenderingContext::~ImageBitmapRenderingContext() = default;
@@ -36,7 +36,7 @@ void ImageBitmapRenderingContext::transferFromImageBitmap(
 
 CanvasRenderingContext* ImageBitmapRenderingContext::Factory::Create(
     CanvasRenderingContextHost* host,
-    const CanvasContextCreationAttributes& attrs) {
+    const CanvasContextCreationAttributesCore& attrs) {
   if (!RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled())
     return nullptr;
   return new ImageBitmapRenderingContext(host, attrs);

@@ -149,7 +149,6 @@
 #include "core/html/HTMLUnknownElement.h"
 #include "core/html/PluginDocument.h"
 #include "core/html/WindowNameCollection.h"
-#include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasFontCache.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/HTMLCanvasElement.h"

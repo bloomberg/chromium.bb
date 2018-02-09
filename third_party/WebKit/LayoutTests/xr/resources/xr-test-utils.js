@@ -11,54 +11,71 @@ function xr_session_promise_test(
   addFakeDevice(device);
 
   promise_test((t) => {
-    return navigator.xr.requestDevice().then(
-        (device) => new Promise((resolve, reject) => {
-          // Run the test with each set of sessionOptions from the array one at a time.
-          function nextSessionTest(i) {
-            if (i == sessionOptions.length) {
-              resolve();
-            }
-            // Perform the session request in a user gesture.
-            runWithUserGesture(() => {
-              let nextOptions = sessionOptions[i];
-              let testSession = null;
-              device.requestSession(nextOptions)
-                  .then((session) => {
-                    testSession = session;
-                    return func(session, t);
-                  })
-                  .then(() => {
-                    // Wrap in a try in case the session was ended in the
-                    // test itself.
-                    try {
-                      // If there's another test to run after this one make sure
-                      // to end the session so that we don't accidentally try to
-                      // have, for example, two exclusive sessions at once.
-                      if (i < sessionOptions.length - 1) {
-                        testSession.end();
-                      }
-                    } finally {
-                      nextSessionTest(++i);
-                    }
-                  })
-                  .catch((err) => {
-                    let optionsString = '{';
-                    let firstOption = true;
-                    for (let option in nextOptions) {
-                      if (!firstOption) {
-                        optionsString += ',';
-                      }
-                      optionsString += ` ${option}: ${nextOptions[option]}`;
-                      firstOption = false;
-                    }
-                    optionsString += ' }';
-                    reject(`Test failed while running with the following options: ${optionsString} ${err}`);
-                  });
-            });
+    return navigator.xr.requestDevice()
+        .then((device) => {
+          if (gl) {
+            return gl.setCompatibleXRDevice(device).then(
+                () => Promise.resolve(device));
+          } else {
+            return Promise.resolve(device);
           }
+        })
+        .then(
+            (device) => new Promise((resolve, reject) => {
+              // Run the test with each set of sessionOptions from the array one
+              // at a time.
+              function nextSessionTest(i) {
+                if (i == sessionOptions.length) {
+                  if (sessionOptions.length == 0) {
+                    reject('No option for the session. Test Did not run.');
+                  } else {
+                    resolve();
+                  }
+                }
+                // Perform the session request in a user gesture.
+                runWithUserGesture(() => {
+                  let nextOptions = sessionOptions[i];
+                  let testSession = null;
+                  device.requestSession(nextOptions)
+                      .then((session) => {
+                        testSession = session;
+                        return func(session, t);
+                      })
+                      .then(() => {
+                        // Wrap in a try in case the session was ended in the
+                        // test itself.
+                        try {
+                          // If there's another test to run after this one make
+                          // sure to end the session so that we don't
+                          // accidentally try to have, for example, two
+                          // exclusive sessions at once.
+                          if (i < sessionOptions.length - 1) {
+                            testSession.end();
+                          }
+                        } finally {
+                          nextSessionTest(++i);
+                        }
+                      })
+                      .catch((err) => {
+                        let optionsString = '{';
+                        let firstOption = true;
+                        for (let option in nextOptions) {
+                          if (!firstOption) {
+                            optionsString += ',';
+                          }
+                          optionsString += ` ${option}: ${nextOptions[option]}`;
+                          firstOption = false;
+                        }
+                        optionsString += ' }';
+                        reject(
+                            `Test failed while running with the following options:
+                            ${optionsString} ${err}`);
+                      });
+                });
+              }
 
-          nextSessionTest(0);
-        }));
+              nextSessionTest(0);
+            }));
   }, name, properties);
 }
 

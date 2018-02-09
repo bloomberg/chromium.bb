@@ -28,7 +28,7 @@ class MODULES_EXPORT ImageBitmapRenderingContext final
 
     CanvasRenderingContext* Create(
         CanvasRenderingContextHost*,
-        const CanvasContextCreationAttributes&) override;
+        const CanvasContextCreationAttributesCore&) override;
     CanvasRenderingContext::ContextType GetContextType() const override {
       return CanvasRenderingContext::kContextImageBitmap;
     }
@@ -48,7 +48,7 @@ class MODULES_EXPORT ImageBitmapRenderingContext final
 
  private:
   ImageBitmapRenderingContext(CanvasRenderingContextHost*,
-                              const CanvasContextCreationAttributes&);
+                              const CanvasContextCreationAttributesCore&);
 };
 
 DEFINE_TYPE_CASTS(ImageBitmapRenderingContext,

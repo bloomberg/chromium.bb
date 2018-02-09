@@ -185,12 +185,12 @@ void CanvasRenderingContext2DTest::CreateContext(
     String color_space,
     LinearPixelMathState LinearPixelMath_state) {
   String canvas_type("2d");
-  CanvasContextCreationAttributes attributes;
-  attributes.setAlpha(opacity_mode == kNonOpaque);
+  CanvasContextCreationAttributesCore attributes;
+  attributes.alpha = opacity_mode == kNonOpaque;
   if (!color_space.IsEmpty()) {
-    attributes.setColorSpace(color_space);
+    attributes.color_space = color_space;
     if (LinearPixelMath_state == kLinearPixelMathEnabled) {
-      attributes.setPixelFormat("float16");
+      attributes.pixel_format = "float16";
     }
   }
   canvas_element_->GetCanvasRenderingContext(canvas_type, attributes);
@@ -533,7 +533,7 @@ TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime) {
     image_bitmap_derived = ImageBitmap::Create(image_bitmap_from_canvas,
                                                crop_rect, default_options);
   }
-  CanvasContextCreationAttributes attributes;
+  CanvasContextCreationAttributesCore attributes;
   CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(
       canvas->GetCanvasRenderingContext("2d", attributes));
   DummyExceptionStateForTesting exception_state;
@@ -576,7 +576,7 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas) {
   // Creating a different accelerated image buffer
   HTMLCanvasElement* anotherCanvas =
       ToHTMLCanvasElement(GetDocument().getElementById("d"));
-  CanvasContextCreationAttributes attributes;
+  CanvasContextCreationAttributesCore attributes;
   anotherCanvas->GetCanvasRenderingContext("2d", attributes);
   IntSize size2(10, 5);
   auto fake_accelerate_surface2 = std::make_unique<FakeCanvas2DLayerBridge>(
@@ -840,9 +840,9 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
 
   Persistent<HTMLCanvasElement> canvas =
       Persistent<HTMLCanvasElement>(CanvasElement());
-  CanvasContextCreationAttributes attributes;
-  attributes.setAlpha(true);
-  attributes.setColorSpace("srgb");
+  CanvasContextCreationAttributesCore attributes;
+  attributes.alpha = true;
+  attributes.color_space = "srgb";
   CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(
       canvas->GetCanvasRenderingContext("2d", attributes));
   StringOrCanvasGradientOrCanvasPattern fill_style;
@@ -1056,10 +1056,10 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
 
       // Create a canvas and call putImageData and getImageData to make sure
       // the conversion is done correctly.
-      CanvasContextCreationAttributes attributes;
-      attributes.setAlpha(true);
-      attributes.setColorSpace(canvas_color_space_names[k]);
-      attributes.setPixelFormat(canvas_pixel_format_names[k]);
+      CanvasContextCreationAttributesCore attributes;
+      attributes.alpha = true;
+      attributes.color_space = canvas_color_space_names[k];
+      attributes.pixel_format = canvas_pixel_format_names[k];
       CanvasRenderingContext2D* context =
           static_cast<CanvasRenderingContext2D*>(
               canvas_element.GetCanvasRenderingContext("2d", attributes));
