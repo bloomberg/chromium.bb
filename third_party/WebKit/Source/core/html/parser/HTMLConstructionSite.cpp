@@ -927,7 +927,7 @@ Element* HTMLConstructionSite::CreateElement(
       element = definition->CreateElement(document, tag_name,
                                           GetCreateElementFlags());
     } else {
-      element = document.createElement(tag_name, GetCreateElementFlags());
+      element = document.CreateElement(tag_name, GetCreateElementFlags());
       // Step 7.3 of "create an element". The above createElement()
       // doesn't take care of "is" attribute.
       if (!is.IsNull()) {

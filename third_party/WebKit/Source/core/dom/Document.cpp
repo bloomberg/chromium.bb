@@ -1027,7 +1027,7 @@ Element* Document::createElementNS(const AtomicString& namespace_uri,
       CreateQualifiedName(namespace_uri, qualified_name, exception_state));
   if (q_name == QualifiedName::Null())
     return nullptr;
-  return createElement(q_name, CreateElementFlags::ByCreateElement());
+  return CreateElement(q_name, CreateElementFlags::ByCreateElement());
 }
 
 // https://dom.spec.whatwg.org/#internal-createelementns-steps
@@ -1293,7 +1293,7 @@ Node* Document::importNode(Node* imported_node,
             kNamespaceError, "The imported node has an invalid namespace.");
         return nullptr;
       }
-      Element* new_element = createElement(old_element->TagQName(),
+      Element* new_element = CreateElement(old_element->TagQName(),
                                            CreateElementFlags::ByImportNode());
       const AtomicString& is = old_element->IsValue();
       if (!is.IsNull() &&
@@ -1436,7 +1436,7 @@ bool Document::HasValidNamespaceForAttributes(const QualifiedName& q_name) {
 }
 
 // FIXME: This should really be in a possible ElementFactory class
-Element* Document::createElement(const QualifiedName& q_name,
+Element* Document::CreateElement(const QualifiedName& q_name,
                                  CreateElementFlags flags) {
   Element* element = nullptr;
 

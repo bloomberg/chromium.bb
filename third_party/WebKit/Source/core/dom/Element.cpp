@@ -280,7 +280,7 @@ Element* Element::CloneElementWithoutChildren() {
 }
 
 Element* Element::CloneElementWithoutAttributesAndChildren() {
-  auto* element = GetDocument().createElement(
+  auto* element = GetDocument().CreateElement(
       TagQName(), CreateElementFlags::ByCloneNode());
   const AtomicString& is = IsValue();
   if (!is.IsNull() && !V0CustomElement::IsValidName(element->localName()))

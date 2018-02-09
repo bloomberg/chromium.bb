@@ -334,7 +334,7 @@ HTMLElement* CreateHTMLElement(Document& document, const QualifiedName& name) {
   DCHECK_EQ(name.NamespaceURI(), HTMLNames::xhtmlNamespaceURI)
       << "Unexpected namespace: " << name;
   return ToHTMLElement(
-      document.createElement(name, CreateElementFlags::ByCloneNode()));
+      document.CreateElement(name, CreateElementFlags::ByCloneNode()));
 }
 
 HTMLElement* EnclosingList(const Node* node) {
