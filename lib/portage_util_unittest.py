@@ -567,7 +567,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(self._revved_ebuild_subdir, revved_ebuild)
     self.assertExists(self.revved_ebuild_path)
 
-  def testRevUnchangedEBuildFilesChanged(self):
+  def testRevChangedEBuildFilesChanged(self):
     """Test Uprev of a single-project ebuild whose files/ content has changed.
 
     The 'files' directory is changed in git and some other directory is
@@ -575,6 +575,21 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     """
     self.git_files_changed = ['files']
     self.createRevWorkOnMocks(self._mock_ebuild_subdir, rev=True)
+    self.m_ebuild.cros_workon_vars = portage_util.EBuild.GetCrosWorkonVars(
+        self.m_ebuild.ebuild_path, 'test-package')
+    result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)
+    self.assertEqual(result[0], 'category/test_package-0.0.1-r2')
+    self.assertEqual(self._revved_ebuild_subdir, revved_ebuild)
+    self.assertExists(self.revved_ebuild_path)
+
+  def testRevUnchangedEBuildFilesChanged(self):
+    """Test Uprev of a single-project ebuild whose files/ content has changed.
+
+    The 'files' directory is changed in git and some other directory is
+    mentioned in CROS_WORKON_SUBDIRS_TO_REV. files/ should always force uprev.
+    """
+    self.git_files_changed = ['files']
+    self.createRevWorkOnMocks(self._mock_ebuild_subdir, rev=False)
     self.m_ebuild.cros_workon_vars = portage_util.EBuild.GetCrosWorkonVars(
         self.m_ebuild.ebuild_path, 'test-package')
     result, revved_ebuild = self.RevWorkOnEBuild(self.tempdir, MANIFEST)

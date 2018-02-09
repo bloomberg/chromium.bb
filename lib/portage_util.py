@@ -980,10 +980,10 @@ class EBuild(object):
                            os.path.join(os.path.dirname(self.ebuild_path),
                                         'files')])
 
-    unstable_ebuild_changed = bool(output)
+    unstable_ebuild_or_files_changed = bool(output)
 
     # If there has been any change in the tests list, choose to uprev.
-    if (not test_dirs_changed and not unstable_ebuild_changed and
+    if (not test_dirs_changed and not unstable_ebuild_or_files_changed and
         not self._ShouldRevEBuild(commit_ids, srcdirs, subdirs_to_rev)):
       logging.info('Skipping uprev of ebuild %s, none of the rev_subdirs have '
                    'been modified, no files/, nor has the -9999 ebuild.' %
@@ -999,7 +999,8 @@ class EBuild(object):
                       variables, redirect_file)
 
     old_ebuild_path = self.ebuild_path
-    if EBuild._AlmostSameEBuilds(old_ebuild_path, new_stable_ebuild_path):
+    if (EBuild._AlmostSameEBuilds(old_ebuild_path, new_stable_ebuild_path) and
+        not unstable_ebuild_or_files_changed):
       logging.info('Old and new ebuild %s are exactly identical; '
                    'skipping uprev', new_stable_ebuild_path)
       os.unlink(new_stable_ebuild_path)
