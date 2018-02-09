@@ -141,16 +141,42 @@ SurpriseWallpaper.prototype.updateRandomWallpaper_ = function() {
 };
 
 /**
- * Sets wallpaper to one of the wallpapers displayed in wallpaper picker. If
- * the wallpaper download fails, retry one hour later. Wallpapers that are
- * disabled for surprise me are excluded.
+ * Sets wallpaper to be a random one. The wallpaper url is retrieved either from
+ * the stored manifest file, or by fetching the wallpaper info from the server.
  * @param {string} dateString String representation of current local date.
  * @private
  */
 SurpriseWallpaper.prototype.setRandomWallpaper_ = function(dateString) {
-  var self = this;
+  var onSuccess = function(url, layout) {
+    WallpaperUtil.saveWallpaperInfo(
+        url, layout, Constants.WallpaperSourceEnum.Daily, '');
+    WallpaperUtil.saveToLocalStorage(
+        Constants.AccessLastSurpriseWallpaperChangedDate, dateString,
+        function() {
+          WallpaperUtil.saveToSyncStorage(
+              Constants.AccessLastSurpriseWallpaperChangedDate, dateString);
+        });
+  };
+
+  chrome.commandLinePrivate.hasSwitch('new-wallpaper-picker', result => {
+    if (result)
+      this.setRandomWallpaperFromServer_(onSuccess);
+    else
+      this.setRandomWallpaperFromManifest_(onSuccess);
+  });
+};
+
+/**
+ * Sets wallpaper to be a random one found in the stored manifest file. If the
+ * wallpaper download fails, retry one hour later. Wallpapers that are disabled
+ * for surprise me are excluded.
+ * @param {function} onSuccess The success callback
+ * @private
+ */
+SurpriseWallpaper.prototype.setRandomWallpaperFromManifest_ = function(
+    onSuccess) {
   Constants.WallpaperLocalStorage.get(
-      Constants.AccessLocalManifestKey, function(items) {
+      Constants.AccessLocalManifestKey, items => {
         var manifest = items[Constants.AccessLocalManifestKey];
         if (manifest && manifest.wallpaper_list) {
           var filtered = manifest.wallpaper_list.filter(function(element) {
@@ -165,23 +191,61 @@ SurpriseWallpaper.prototype.setRandomWallpaper_ = function(dateString) {
           // should be used here.
           var wallpaperURL =
               wallpaper.base_url + Constants.HighResolutionSuffix;
-          var onSuccess = function() {
-            WallpaperUtil.saveWallpaperInfo(
-                wallpaperURL, wallpaper.default_layout,
-                Constants.WallpaperSourceEnum.Daily, '');
-            WallpaperUtil.saveToLocalStorage(
-                Constants.AccessLastSurpriseWallpaperChangedDate, dateString,
-                function() {
-                  WallpaperUtil.saveToSyncStorage(
-                      Constants.AccessLastSurpriseWallpaperChangedDate,
-                      dateString);
-                });
-          };
           WallpaperUtil.setOnlineWallpaper(
-              wallpaperURL, wallpaper.default_layout, onSuccess,
-              self.retryLater_.bind(self));
+              wallpaperURL, wallpaper.default_layout,
+              onSuccess.bind(null, wallpaperURL, wallpaper.default_layout),
+              this.retryLater_.bind(this));
         }
       });
+};
+
+/**
+ * Sets wallpaper to be a random one retrieved from the backend service. If the
+ * wallpaper download fails, retry one hour later.
+ * @param {function} onSuccess The success callback
+ * @private
+ */
+SurpriseWallpaper.prototype.setRandomWallpaperFromServer_ = function(
+    onSuccess) {
+  // The first step is to get the list of wallpaper collections (ie. categories)
+  // and randomly select one.
+  chrome.wallpaperPrivate.getCollectionsInfo(collectionsInfo => {
+    if (chrome.runtime.lastError) {
+      this.retryLater_();
+      return;
+    }
+    if (collectionsInfo.length == 0) {
+      // Although the fetch succeeds, it's theoretically possible that the
+      // collection list is empty, in this case do nothing.
+      return;
+    }
+
+    var randomCollectionIndex =
+        Math.floor(Math.random() * collectionsInfo.length);
+    var collectionId = collectionsInfo[randomCollectionIndex]['collectionId'];
+    // The second step is to get the list of wallpapers that belong to the
+    // particular collection, and randomly select one.
+    chrome.wallpaperPrivate.getImagesInfo(collectionId, imagesInfo => {
+      if (chrome.runtime.lastError) {
+        this.retryLater_();
+        return;
+      }
+      if (imagesInfo.length == 0) {
+        // Although the fetch succeeds, it's theoretically possible that the
+        // image list is empty, in this case do nothing.
+        // TODO(crbug.com/800945): Consider fetching another collection.
+        return;
+      }
+      var randomImageIndex = Math.floor(Math.random() * imagesInfo.length);
+      var url = imagesInfo[randomImageIndex]['imageUrl'];
+      // The backend service doesn't specify the desired layout. Use the default
+      // layout here.
+      var layout = Constants.WallpaperThumbnailDefaultLayout;
+      WallpaperUtil.setOnlineWallpaper(
+          url, layout, onSuccess.bind(null, url, layout),
+          this.retryLater_.bind(this));
+    });
+  });
 };
 
 /**

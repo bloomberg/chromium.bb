@@ -5,11 +5,12 @@
 
 var TestConstants = {
   isPowerwashed: 0,
+  isUsingNewWallpaperPicker: false,
   wallpaperURL: 'https://test.com/test.jpg',
   // A dummy string which is used to mock an image.
   IMAGE: '*#*@#&',
   // A dummy array which is used to mock the file content.
-  FILESTRING: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+  FILESTRING: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 };
 
 // mock FileReader object in HTML5 File System
@@ -230,8 +231,7 @@ var chrome = {
         }
         callback(items);
       },
-      set: function(items, callback) {
-      }
+      set: function(items, callback) {}
     },
     sync: {
       get: function(key, callback) {
@@ -247,8 +247,7 @@ var chrome = {
         }
         callback(items);
       },
-      set: function(items, callback) {
-      }
+      set: function(items, callback) {}
     },
     onChanged: {
       addListener: function(listener) {
@@ -266,39 +265,32 @@ var chrome = {
       }
     }
   },
-  app: {
-    runtime: {
-      onLaunched: {
-        addListener: function(listener) {
-        }
-      }
-    }
-  },
-  alarms: {
-    onAlarm: {
-      addListener: function(listener) {
-      }
-    }
-  },
+  app: {runtime: {onLaunched: {addListener: function(listener) {}}}},
+  alarms: {onAlarm: {addListener: function(listener) {}}},
   wallpaperPrivate: {
     getStrings: function(callback) {
       callback({isExperimental: false});
     },
-    setCustomWallpaper: function(data, layout, isGenerateThumbnail, fileName,
-                                 callback) {
-    },
+    setCustomWallpaper: function(
+        data, layout, isGenerateThumbnail, fileName, callback) {},
     getSyncSetting: function(callback) {
       var setting = {};
       setting.syncThemes = true;
       callback(setting);
     },
-    onWallpaperChangedBy3rdParty: {
-      addListener: function(listener) {
-      }
+    onWallpaperChangedBy3rdParty: {addListener: function(listener) {}},
+    getCollectionsInfo: function(callback) {
+      callback([{collectionId: 'dummyId'}]);
+    },
+    getImagesInfo: function(collectionId, callback) {
+      callback([{imageUrl: TestConstants.wallpaperURL}]);
     }
   },
-  runtime: {
-    lastError: null
+  runtime: {lastError: null},
+  commandLinePrivate: {
+    hasSwitch: function(arg, callback) {
+      callback(TestConstants.isUsingNewWallpaperPicker);
+    }
   }
 };
 

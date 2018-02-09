@@ -122,6 +122,7 @@ function testSyncOnlineWallpaper() {
 
 // Test the surprise wallpaper's UMA stats is recorded correctly.
 function testSurpriseWallpaper() {
+  TestConstants.isUsingNewWallpaperPicker = false;
   var mockSetWallpaperIfExists = mockController.createFunctionMock(
       chrome.wallpaperPrivate, 'setWallpaperIfExists');
   mockSetWallpaperIfExists.addExpectation(
@@ -131,6 +132,16 @@ function testSurpriseWallpaper() {
 
   var mockRecordWallpaperUMA = mockController.createFunctionMock(
       chrome.wallpaperPrivate, 'recordWallpaperUMA');
+  mockRecordWallpaperUMA.addExpectation(Constants.WallpaperSourceEnum.Daily);
+
+  var dateString = new Date().toDateString();
+  SurpriseWallpaper.getInstance().setRandomWallpaper_(dateString);
+
+  // Repeat the above process for the new wallpaper picker. Test that the UMA
+  // stats is also recorded correctly.
+  TestConstants.isUsingNewWallpaperPicker = true;
+  mockSetWallpaperIfExists.addExpectation(
+      TestConstants.wallpaperURL, 'CENTER_CROPPED');
   mockRecordWallpaperUMA.addExpectation(Constants.WallpaperSourceEnum.Daily);
 
   var dateString = new Date().toDateString();
