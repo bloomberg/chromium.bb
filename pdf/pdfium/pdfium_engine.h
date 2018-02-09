@@ -127,8 +127,6 @@ class PDFiumEngine : public PDFEngine,
   void UnsupportedFeature(int type);
   void FontSubstituted();
 
-  std::string current_find_text() const { return current_find_text_; }
-
   FPDF_DOCUMENT doc() { return doc_; }
   FPDF_FORMHANDLE form() { return form_; }
 
@@ -176,26 +174,6 @@ class PDFiumEngine : public PDFEngine,
     PDFiumPage::LinkTarget target_;
 
     DISALLOW_COPY_AND_ASSIGN(MouseDownState);
-  };
-
-  // Used to store the state of a text search.
-  class FindTextIndex {
-   public:
-    FindTextIndex();
-    ~FindTextIndex();
-
-    bool valid() const { return valid_; }
-    void Invalidate();
-
-    size_t GetIndex() const;
-    void SetIndex(size_t index);
-    size_t IncrementIndex();
-
-   private:
-    bool valid_;    // Whether |index_| is valid or not.
-    size_t index_;  // The current search result, 0-based.
-
-    DISALLOW_COPY_AND_ASSIGN(FindTextIndex);
   };
 
   friend class SelectionChangeInvalidator;
@@ -720,10 +698,10 @@ class PDFiumEngine : public PDFEngine,
   // Where to stop searching.
   int last_page_to_search_ = -1;
   int last_character_index_to_search_ = -1;  // -1 if search until end of page.
-  // Which result the user has currently selected.
-  FindTextIndex current_find_index_;
-  // Where to resume searching.
-  FindTextIndex resume_find_index_;
+  // Which result the user has currently selected. (0-based)
+  base::Optional<size_t> current_find_index_;
+  // Where to resume searching. (0-based)
+  base::Optional<size_t> resume_find_index_;
 
   // Permissions bitfield.
   unsigned long permissions_;
