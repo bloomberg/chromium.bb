@@ -109,8 +109,8 @@ bool SubSurface::IsSurfaceSynchronized() const {
   return parent_ && parent_->IsSynchronized();
 }
 
-bool SubSurface::IsTouchEnabled(Surface* surface) const {
-  return !parent_ || parent_->IsTouchEnabled(surface);
+bool SubSurface::IsInputEnabled(Surface* surface) const {
+  return !parent_ || parent_->IsInputEnabled(surface);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

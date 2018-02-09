@@ -162,10 +162,7 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   bool EventLocationInsideBounds(aura::Window* window,
                                  const ui::LocatedEvent& event) const override {
     Surface* surface = Surface::AsSurface(window);
-    if (!surface)
-      return false;
-
-    if (event.IsTouchEvent() && !surface->IsTouchEnabled(surface))
+    if (!surface || !surface->IsInputEnabled(surface))
       return false;
 
     gfx::Point local_point = event.location();
@@ -628,8 +625,8 @@ bool Surface::IsSynchronized() const {
   return delegate_ && delegate_->IsSurfaceSynchronized();
 }
 
-bool Surface::IsTouchEnabled(Surface* surface) const {
-  return !delegate_ || delegate_->IsTouchEnabled(surface);
+bool Surface::IsInputEnabled(Surface* surface) const {
+  return !delegate_ || delegate_->IsInputEnabled(surface);
 }
 
 bool Surface::HasHitTestRegion() const {

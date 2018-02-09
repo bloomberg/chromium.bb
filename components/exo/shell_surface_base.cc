@@ -684,7 +684,7 @@ void ShellSurfaceBase::OnSurfaceCommit() {
   widget_->OnSizeConstraintsChanged();
 }
 
-bool ShellSurfaceBase::IsTouchEnabled(Surface*) const {
+bool ShellSurfaceBase::IsInputEnabled(Surface*) const {
   return true;
 }
 

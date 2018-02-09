@@ -213,7 +213,7 @@ bool SurfaceTreeHost::IsSurfaceSynchronized() const {
   return false;
 }
 
-bool SurfaceTreeHost::IsTouchEnabled(Surface*) const {
+bool SurfaceTreeHost::IsInputEnabled(Surface*) const {
   return true;
 }
 

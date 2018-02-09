@@ -86,7 +86,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
   bool IsSurfaceSynchronized() const override;
-  bool IsTouchEnabled(Surface* surface) const override;
+  bool IsInputEnabled(Surface* surface) const override;
   void OnSetFrame(SurfaceFrameType type) override {}
   void OnSetFrameColors(SkColor active_color, SkColor inactive_color) override {
   }
