@@ -7,6 +7,7 @@
 #include <ostream>
 
 #include "net/spdy/core/spdy_bug_tracker.h"
+#include "net/spdy/platform/api/spdy_flags.h"
 
 namespace net {
 
@@ -135,7 +136,25 @@ bool ParseSettingsId(uint16_t wire_setting_id, SpdySettingsIds* setting_id) {
   }
 
   *setting_id = static_cast<SpdySettingsIds>(wire_setting_id);
-  return true;
+  if (GetSpdyReloadableFlag(http2_check_settings_id_007)) {
+    // This switch ensures that the casted value is valid. The default case is
+    // explicitly omitted to have compile-time guarantees that new additions to
+    // |SpdySettingsIds| must also be handled here.
+    switch (*setting_id) {
+      case SETTINGS_HEADER_TABLE_SIZE:
+      case SETTINGS_ENABLE_PUSH:
+      case SETTINGS_MAX_CONCURRENT_STREAMS:
+      case SETTINGS_INITIAL_WINDOW_SIZE:
+      case SETTINGS_MAX_FRAME_SIZE:
+      case SETTINGS_MAX_HEADER_LIST_SIZE:
+      case SETTINGS_ENABLE_CONNECT_PROTOCOL:
+        // FALLTHROUGH_INTENDED
+        return true;
+    }
+    return false;
+  } else {
+    return true;
+  }
 }
 
 bool SettingsIdToString(SpdySettingsIds id, const char** settings_id_string) {
