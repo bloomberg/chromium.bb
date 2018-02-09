@@ -183,7 +183,7 @@ void AppViewGuest::CreateWebContents(
       enabled_extensions.GetByID(GetOwnerSiteURL().host());
 
   if (!guest_extension || !guest_extension->is_platform_app() ||
-      !embedder_extension | !embedder_extension->is_platform_app()) {
+      !embedder_extension || !embedder_extension->is_platform_app()) {
     callback.Run(nullptr);
     return;
   }
