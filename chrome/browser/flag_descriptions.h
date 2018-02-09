@@ -323,6 +323,9 @@ extern const char kEnableNewPrintPreviewDescription[];
 extern const char kEnableNightLightName[];
 extern const char kEnableNightLightDescription[];
 
+extern const char kEnableNupPrintingName[];
+extern const char kEnableNupPrintingDescription[];
+
 extern const char kEnableOptimizationHintsName[];
 extern const char kEnableOptimizationHintsDescription[];
 

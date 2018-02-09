@@ -2848,6 +2848,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-new-print-preview", flag_descriptions::kEnableNewPrintPreview,
      flag_descriptions::kEnableNewPrintPreviewDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNewPrintPreview)},
+    {"enable-nup-printing", flag_descriptions::kEnableNupPrintingName,
+     flag_descriptions::kEnableNupPrintingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kNupPrinting)},
 #endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_WIN) && !defined(OS_MACOSX)
     {"print-pdf-as-image", flag_descriptions::kPrintPdfAsImageName,
@@ -3422,8 +3425,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableManualFallbacksFillingName,
      flag_descriptions::kEnableManualFallbacksFillingDescription,
      kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kManualFallbacksFilling)},
+     FEATURE_VALUE_TYPE(password_manager::features::kManualFallbacksFilling)},
 
 #if !defined(OS_ANDROID)
     {"voice-search-on-local-ntp", flag_descriptions::kVoiceSearchOnLocalNtpName,

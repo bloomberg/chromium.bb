@@ -488,6 +488,10 @@ const char kEnableNightLightDescription[] =
     "Enable the Night Light feature which controls the color temperature of "
     "the screen.";
 
+const char kEnableNupPrintingName[] = "Enable N-up printing";
+const char kEnableNupPrintingDescription[] =
+    "Enable N-up printing in the print preview panel.";
+
 const char kEnableOptimizationHintsName[] = "Optimization Hints";
 const char kEnableOptimizationHintsDescription[] =
     "Enable the Optimization Hints feature which incorporates server hints"
