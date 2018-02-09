@@ -33,7 +33,11 @@ class ZoomLevelDelegate;
 
 class ShellBrowserContext : public BrowserContext {
  public:
-  ShellBrowserContext(bool off_the_record, net::NetLog* net_log);
+  // If |delay_services_creation| is true, the owner is responsible for calling
+  // CreateBrowserContextServices() for this BrowserContext.
+  ShellBrowserContext(bool off_the_record,
+                      net::NetLog* net_log,
+                      bool delay_services_creation = false);
   ~ShellBrowserContext() override;
 
   void set_guest_manager_for_testing(

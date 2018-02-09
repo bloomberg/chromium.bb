@@ -19,14 +19,13 @@ namespace extensions {
 
 class ExtensionsAPIClient;
 
-// An ExtensionsBrowserClient that supports a single content::BrowserContent
+// An ExtensionsBrowserClient that supports a single content::BrowserContext
 // with no related incognito context.
+// Must be initialized via InitWithBrowserContext() once the BrowserContext is
+// created.
 class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
  public:
-  // |context| is the single BrowserContext used for IsValidContext() below.
-  // |pref_service| is used for GetPrefServiceForContext() below.
-  ShellExtensionsBrowserClient(content::BrowserContext* context,
-                               PrefService* pref_service);
+  ShellExtensionsBrowserClient();
   ~ShellExtensionsBrowserClient() override;
 
   // ExtensionsBrowserClient overrides:
@@ -105,15 +104,22 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
   bool IsLockScreenContext(content::BrowserContext* context) override;
   std::string GetApplicationLocale() override;
 
+  // |context| is the single BrowserContext used for IsValidContext().
+  // |pref_service| is used for GetPrefServiceForContext().
+  void InitWithBrowserContext(content::BrowserContext* context,
+                              PrefService* pref_service);
+
   // Sets the API client.
   void SetAPIClientForTest(ExtensionsAPIClient* api_client);
 
  private:
-  // The single BrowserContext for app_shell. Not owned.
-  content::BrowserContext* browser_context_;
+  // The single BrowserContext for app_shell. Not owned. Must be initialized
+  // when ready by calling InitWithBrowserContext().
+  content::BrowserContext* browser_context_ = nullptr;
 
-  // The PrefService for |browser_context_|. Not owned.
-  PrefService* pref_service_;
+  // The PrefService for |browser_context_|. Not owned. Must be initialized when
+  // ready by calling InitWithBrowserContext().
+  PrefService* pref_service_ = nullptr;
 
   // Support for extension APIs.
   std::unique_ptr<ExtensionsAPIClient> api_client_;

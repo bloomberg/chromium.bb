@@ -53,15 +53,18 @@ ShellBrowserContext::ShellResourceContext::GetRequestContext() {
 }
 
 ShellBrowserContext::ShellBrowserContext(bool off_the_record,
-                                         net::NetLog* net_log)
+                                         net::NetLog* net_log,
+                                         bool delay_services_creation)
     : resource_context_(new ShellResourceContext),
       ignore_certificate_errors_(false),
       off_the_record_(off_the_record),
       net_log_(net_log),
       guest_manager_(nullptr) {
   InitWhileIOAllowed();
-  BrowserContextDependencyManager::GetInstance()->
-      CreateBrowserContextServices(this);
+  if (!delay_services_creation) {
+    BrowserContextDependencyManager::GetInstance()
+        ->CreateBrowserContextServices(this);
+  }
 }
 
 ShellBrowserContext::~ShellBrowserContext() {

@@ -8,6 +8,7 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -113,11 +114,13 @@ bool ShellNaClBrowserDelegate::MapUrlToLocalFilePath(
     bool use_blocking_api,
     const base::FilePath& profile_directory,
     base::FilePath* file_path) {
-  scoped_refptr<InfoMap> info_map =
-      ExtensionSystem::Get(browser_context_)->info_map();
+  ExtensionSystem* extension_system = ExtensionSystem::Get(browser_context_);
+  DCHECK(extension_system);
+
   // Check that the URL is recognized by the extension system.
   const Extension* extension =
-      info_map->extensions().GetExtensionOrAppByURL(file_url);
+      extension_system->info_map()->extensions().GetExtensionOrAppByURL(
+          file_url);
   if (!extension)
     return false;
 
