@@ -11,7 +11,7 @@ import subprocess
 import sys
 
 _SSH = ['ssh']
-_SCP = ['scp']
+_SCP = ['scp', '-C']  # Use gzip compression.
 
 COPY_TO_TARGET = 0
 COPY_FROM_TARGET = 1
