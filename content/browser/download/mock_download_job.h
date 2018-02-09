@@ -26,7 +26,7 @@ class MockDownloadJob : public DownloadJob {
   // DownloadJob implementation.
   MOCK_METHOD2(Start,
                void(const DownloadFile::InitializeCallback&,
-                    const DownloadItem::ReceivedSlices&));
+                    const download::DownloadItem::ReceivedSlices&));
   MOCK_METHOD1(Cancel, void(bool));
   MOCK_METHOD0(Pause, void());
   MOCK_METHOD1(Resume, void(bool));

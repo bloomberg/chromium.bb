@@ -32,7 +32,7 @@ using ::testing::AnyNumber;
   std::unique_ptr<content::MockDownloadItem> download_;
 }
 - (id)initWithMockDownload:(std::unique_ptr<content::MockDownloadItem>)download;
-- (content::DownloadItem*)download;
+- (download::DownloadItem*)download;
 - (content::MockDownloadItem*)mockDownload;
 @end
 
@@ -45,7 +45,7 @@ using ::testing::AnyNumber;
   return self;
 }
 
-- (content::DownloadItem*)download {
+- (download::DownloadItem*)download {
   return download_.get();
 }
 
@@ -144,7 +144,7 @@ id DownloadShelfControllerTest::CreateItemController() {
   ON_CALL(*download.get(), GetOpened())
       .WillByDefault(Return(false));
   ON_CALL(*download.get(), GetState())
-      .WillByDefault(Return(content::DownloadItem::IN_PROGRESS));
+      .WillByDefault(Return(download::DownloadItem::IN_PROGRESS));
 
   base::scoped_nsobject<WrappedMockDownloadItem> wrappedMockDownload(
       [[WrappedMockDownloadItem alloc]

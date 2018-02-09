@@ -23,9 +23,9 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/services/file_util/public/cpp/sandboxed_zip_analyzer.h"
+#include "components/download/public/common/download_item.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/safe_browsing/db/database_manager.h"
-#include "content/public/browser/download_item.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -44,10 +44,10 @@ class CheckClientDownloadRequest
     : public base::RefCountedThreadSafe<CheckClientDownloadRequest,
                                         BrowserThread::DeleteOnUIThread>,
       public net::URLFetcherDelegate,
-      public content::DownloadItem::Observer {
+      public download::DownloadItem::Observer {
  public:
   CheckClientDownloadRequest(
-      content::DownloadItem* item,
+      download::DownloadItem* item,
       const CheckDownloadCallback& callback,
       DownloadProtectionService* service,
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
@@ -56,9 +56,9 @@ class CheckClientDownloadRequest
   void Start();
   void StartTimeout();
   void Cancel();
-  void OnDownloadDestroyed(content::DownloadItem* download) override;
+  void OnDownloadDestroyed(download::DownloadItem* download) override;
   void OnURLFetchComplete(const net::URLFetcher* source) override;
-  static bool IsSupportedDownload(const content::DownloadItem& item,
+  static bool IsSupportedDownload(const download::DownloadItem& item,
                                   const base::FilePath& target_path,
                                   DownloadCheckResultReason* reason,
                                   ClientDownloadRequest::DownloadType* type);
@@ -111,7 +111,7 @@ class CheckClientDownloadRequest
 
   // The DownloadItem we are checking. Will be NULL if the request has been
   // canceled. Must be accessed only on UI thread.
-  content::DownloadItem* item_;
+  download::DownloadItem* item_;
   // Copies of data from |item_| for access on other threads.
   std::vector<GURL> url_chain_;
   GURL referrer_url_;

@@ -8,7 +8,7 @@
 #include <set>
 
 #include "base/macros.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "content/public/browser/download_manager.h"
 
 // AllDownloadItemNotifier observes ALL the DownloadItems on a given
@@ -36,7 +36,7 @@
 namespace download {
 
 class AllDownloadItemNotifier : public content::DownloadManager::Observer,
-                                public content::DownloadItem::Observer {
+                                public DownloadItem::Observer {
  public:
   // All of the methods take the DownloadManager so that subclasses can observe
   // multiple managers at once and easily distinguish which manager a given item
@@ -49,13 +49,13 @@ class AllDownloadItemNotifier : public content::DownloadManager::Observer,
     virtual void OnManagerInitialized(content::DownloadManager* manager) {}
     virtual void OnManagerGoingDown(content::DownloadManager* manager) {}
     virtual void OnDownloadCreated(content::DownloadManager* manager,
-                                   content::DownloadItem* item) {}
+                                   download::DownloadItem* item) {}
     virtual void OnDownloadUpdated(content::DownloadManager* manager,
-                                   content::DownloadItem* item) {}
+                                   download::DownloadItem* item) {}
     virtual void OnDownloadOpened(content::DownloadManager* manager,
-                                  content::DownloadItem* item) {}
+                                  download::DownloadItem* item) {}
     virtual void OnDownloadRemoved(content::DownloadManager* manager,
-                                   content::DownloadItem* item) {}
+                                   download::DownloadItem* item) {}
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
@@ -77,17 +77,17 @@ class AllDownloadItemNotifier : public content::DownloadManager::Observer,
   void OnManagerInitialized() override;
   void ManagerGoingDown(content::DownloadManager* manager) override;
   void OnDownloadCreated(content::DownloadManager* manager,
-                         content::DownloadItem* item) override;
+                         download::DownloadItem* item) override;
 
   // DownloadItem::Observer
-  void OnDownloadUpdated(content::DownloadItem* item) override;
-  void OnDownloadOpened(content::DownloadItem* item) override;
-  void OnDownloadRemoved(content::DownloadItem* item) override;
-  void OnDownloadDestroyed(content::DownloadItem* item) override;
+  void OnDownloadUpdated(DownloadItem* item) override;
+  void OnDownloadOpened(DownloadItem* item) override;
+  void OnDownloadRemoved(DownloadItem* item) override;
+  void OnDownloadDestroyed(DownloadItem* item) override;
 
   content::DownloadManager* manager_;
   AllDownloadItemNotifier::Observer* observer_;
-  std::set<content::DownloadItem*> observing_;
+  std::set<DownloadItem*> observing_;
 
   DISALLOW_COPY_AND_ASSIGN(AllDownloadItemNotifier);
 };

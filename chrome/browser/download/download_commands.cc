@@ -28,6 +28,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "content/public/browser/download_item_utils.h"
 #include "net/base/url_util.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -150,7 +151,7 @@ int GetDownloadNotificationMenuIcon(DownloadCommands::Command command) {
 
 }  // namespace
 
-DownloadCommands::DownloadCommands(content::DownloadItem* download_item)
+DownloadCommands::DownloadCommands(download::DownloadItem* download_item)
     : download_item_(download_item) {
   DCHECK(download_item);
 }
@@ -220,16 +221,17 @@ bool DownloadCommands::IsCommandEnabled(Command command) const {
     case PAUSE:
       return !download_item_->IsDone() && !download_item_->IsPaused() &&
              !download_item_->IsSavePackageDownload() &&
-             download_item_->GetState() == content::DownloadItem::IN_PROGRESS;
+             download_item_->GetState() == download::DownloadItem::IN_PROGRESS;
     case RESUME:
       return download_item_->CanResume() &&
              (download_item_->IsPaused() ||
-              download_item_->GetState() != content::DownloadItem::IN_PROGRESS);
+              download_item_->GetState() !=
+                  download::DownloadItem::IN_PROGRESS);
     case COPY_TO_CLIPBOARD:
-      return (download_item_->GetState() == content::DownloadItem::COMPLETE &&
+      return (download_item_->GetState() == download::DownloadItem::COMPLETE &&
               download_item_->GetReceivedBytes() <= kMaxImageClipboardSize);
     case ANNOTATE:
-      return download_item_->GetState() == content::DownloadItem::COMPLETE;
+      return download_item_->GetState() == download::DownloadItem::COMPLETE;
     case DISCARD:
     case KEEP:
     case LEARN_MORE_SCANNING:
@@ -249,7 +251,7 @@ bool DownloadCommands::IsCommandChecked(Command command) const {
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
       if (CanOpenPdfInSystemViewer()) {
         DownloadPrefs* prefs = DownloadPrefs::FromBrowserContext(
-            download_item_->GetBrowserContext());
+            content::DownloadItemUtils::GetBrowserContext(download_item_));
         return prefs->ShouldOpenPdfInSystemReader();
       }
 #endif
@@ -289,7 +291,7 @@ void DownloadCommands::ExecuteCommand(Command command) {
     case ALWAYS_OPEN_TYPE: {
       bool is_checked = IsCommandChecked(ALWAYS_OPEN_TYPE);
       DownloadPrefs* prefs = DownloadPrefs::FromBrowserContext(
-          download_item_->GetBrowserContext());
+          content::DownloadItemUtils::GetBrowserContext(download_item_));
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
       if (CanOpenPdfInSystemViewer()) {
         prefs->SetShouldOpenPdfInSystemReader(!is_checked);
@@ -324,7 +326,8 @@ void DownloadCommands::ExecuteCommand(Command command) {
       if (download_item_->GetDangerType() ==
               download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT &&
           !download_item_->GetURL().is_empty() &&
-          !download_item_->GetBrowserContext()->IsOffTheRecord()) {
+          !content::DownloadItemUtils::GetBrowserContext(download_item_)
+               ->IsOffTheRecord()) {
         safe_browsing::SafeBrowsingService* sb_service =
             g_browser_process->safe_browsing_service();
         // Compiles the uncommon download warning report.
@@ -387,7 +390,8 @@ void DownloadCommands::ExecuteCommand(Command command) {
 #if defined(OS_CHROMEOS)
       if (DownloadItemModel(download_item_).HasSupportedImageMimeType()) {
         chromeos::NoteTakingHelper::Get()->LaunchAppForNewNote(
-            Profile::FromBrowserContext(download_item_->GetBrowserContext()),
+            Profile::FromBrowserContext(
+                content::DownloadItemUtils::GetBrowserContext(download_item_)),
             download_item_->GetTargetFilePath());
       }
 #endif  // defined(OS_CHROMEOS)
@@ -396,8 +400,8 @@ void DownloadCommands::ExecuteCommand(Command command) {
 }
 
 Browser* DownloadCommands::GetBrowser() const {
-  Profile* profile =
-      Profile::FromBrowserContext(download_item_->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(download_item_));
   chrome::ScopedTabbedBrowserDisplayer browser_displayer(profile);
   DCHECK(browser_displayer.browser());
   return browser_displayer.browser();
@@ -426,7 +430,7 @@ bool DownloadCommands::CanOpenPdfInSystemViewer() const {
 }
 
 void DownloadCommands::CopyFileAsImageToClipboard() {
-  if (download_item_->GetState() != content::DownloadItem::COMPLETE ||
+  if (download_item_->GetState() != download::DownloadItem::COMPLETE ||
       download_item_->GetReceivedBytes() > kMaxImageClipboardSize) {
     return;
   }

@@ -49,6 +49,7 @@
 #include "components/safe_browsing/db/test_database_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -424,7 +425,6 @@ class DownloadProtectionServiceTest : public testing::Test {
       const base::FilePath::StringType& final_path_literal) {
     base::FilePath tmp_path = temp_dir_.GetPath().Append(tmp_path_literal);
     base::FilePath final_path = temp_dir_.GetPath().Append(final_path_literal);
-
     PrepareBasicDownloadItemWithFullPaths(item, url_chain_items, referrer_url,
                                           tmp_path, final_path);
   }
@@ -485,7 +485,7 @@ class DownloadProtectionServiceTest : public testing::Test {
     run_loop.Run();
   }
 
-  void OnClientDownloadRequest(content::DownloadItem* download,
+  void OnClientDownloadRequest(download::DownloadItem* download,
                                const ClientDownloadRequest* request) {
     if (request)
       last_client_download_request_.reset(new ClientDownloadRequest(*request));
@@ -790,8 +790,8 @@ TEST_F(DownloadProtectionServiceTest,
     // Case (1): is_extended_reporting && is_incognito.
     //           ClientDownloadRequest should NOT be sent.
     SetExtendedReportingPreference(true);
-    EXPECT_CALL(item, GetBrowserContext())
-        .WillRepeatedly(Return(profile_->GetOffTheRecordProfile()));
+    content::DownloadItemUtils::AttachInfo(
+        &item, profile_->GetOffTheRecordProfile(), nullptr);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -804,8 +804,8 @@ TEST_F(DownloadProtectionServiceTest,
     // Case (2): !is_extended_reporting && is_incognito.
     //           ClientDownloadRequest should NOT be sent.
     SetExtendedReportingPreference(false);
-    EXPECT_CALL(item, GetBrowserContext())
-        .WillRepeatedly(Return(profile_->GetOffTheRecordProfile()));
+    content::DownloadItemUtils::AttachInfo(
+        &item, profile_->GetOffTheRecordProfile(), nullptr);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -817,8 +817,7 @@ TEST_F(DownloadProtectionServiceTest,
   {
     // Case (3): !is_extended_reporting && !is_incognito.
     //           ClientDownloadRequest should NOT be sent.
-    EXPECT_CALL(item, GetBrowserContext())
-        .WillRepeatedly(Return(profile_.get()));
+    content::DownloadItemUtils::AttachInfo(&item, profile_.get(), nullptr);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -832,8 +831,7 @@ TEST_F(DownloadProtectionServiceTest,
     //           Download matches URL whitelist.
     //           ClientDownloadRequest should be sent.
     SetExtendedReportingPreference(true);
-    EXPECT_CALL(item, GetBrowserContext())
-        .WillRepeatedly(Return(profile_.get()));
+    content::DownloadItemUtils::AttachInfo(&item, profile_.get(), nullptr);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -862,8 +860,7 @@ TEST_F(DownloadProtectionServiceTest,
     // Case (5): is_extended_reporting && !is_incognito &&
     //           Download matches certificate whitelist.
     //           ClientDownloadRequest should be sent.
-    EXPECT_CALL(item, GetBrowserContext())
-        .WillRepeatedly(Return(profile_.get()));
+    content::DownloadItemUtils::AttachInfo(&item, profile_.get(), nullptr);
     EXPECT_CALL(
         *sb_service_->mock_database_manager(),
         MatchDownloadWhitelistUrl(GURL("http://www.whitelist.com/a.exe")))
@@ -883,8 +880,7 @@ TEST_F(DownloadProtectionServiceTest,
     // Case (6): is_extended_reporting && !is_incognito &&
     //           Download matches both URL and certificate whitelists.
     //           ClientDownloadRequest should be sent.
-    EXPECT_CALL(item, GetBrowserContext())
-        .WillRepeatedly(Return(profile_.get()));
+    content::DownloadItemUtils::AttachInfo(&item, profile_.get(), nullptr);
     EXPECT_CALL(
         *sb_service_->mock_database_manager(),
         MatchDownloadWhitelistUrl(GURL("http://www.whitelist.com/a.exe")))
@@ -934,8 +930,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
     // Case (1): is_extended_reporting && is_incognito.
     //           ClientDownloadRequest should NOT be sent.
     SetExtendedReportingPreference(true);
-    EXPECT_CALL(item, GetBrowserContext())
-        .WillRepeatedly(Return(profile_->GetOffTheRecordProfile()));
+    content::DownloadItemUtils::AttachInfo(
+        &item, profile_->GetOffTheRecordProfile(), nullptr);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -947,8 +943,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
   {
     // Case (2): is_extended_reporting && !is_incognito.
     //           A "light" ClientDownloadRequest should be sent.
-    EXPECT_CALL(item, GetBrowserContext())
-        .WillRepeatedly(Return(profile_.get()));
+    content::DownloadItemUtils::AttachInfo(&item, profile_.get(), nullptr);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -973,8 +968,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
     // Case (3): !is_extended_reporting && is_incognito.
     //           ClientDownloadRequest should NOT be sent.
     SetExtendedReportingPreference(false);
-    EXPECT_CALL(item, GetBrowserContext())
-        .WillRepeatedly(Return(profile_->GetOffTheRecordProfile()));
+    content::DownloadItemUtils::AttachInfo(
+        &item, profile_->GetOffTheRecordProfile(), nullptr);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -986,8 +981,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
   {
     // Case (4): !is_extended_reporting && !is_incognito.
     //           ClientDownloadRequest should NOT be sent.
-    EXPECT_CALL(item, GetBrowserContext())
-        .WillRepeatedly(Return(profile_.get()));
+    content::DownloadItemUtils::AttachInfo(&item, profile_.get(), nullptr);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
@@ -1790,7 +1784,7 @@ TEST_F(DownloadProtectionServiceTest,
   EXPECT_CALL(item, GetTabReferrerUrl())
       .WillRepeatedly(ReturnRef(tab_referrer));
   EXPECT_CALL(item, GetRemoteAddress()).WillRepeatedly(Return(remote_address));
-  EXPECT_CALL(item, GetBrowserContext()).WillRepeatedly(Return(profile_.get()));
+  content::DownloadItemUtils::AttachInfo(&item, profile_.get(), nullptr);
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
@@ -2451,13 +2445,13 @@ TEST_F(DownloadProtectionServiceTest,
 
   // No report sent if user is in incognito mode.
   DownloadProtectionService::SetDownloadPingToken(&item, "token");
-  EXPECT_CALL(item, GetBrowserContext())
-      .WillRepeatedly(Return(profile_->GetOffTheRecordProfile()));
+  content::DownloadItemUtils::AttachInfo(
+      &item, profile_->GetOffTheRecordProfile(), nullptr);
   download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
   EXPECT_EQ(0, sb_service_->download_report_count());
 
   // No report sent if user is not in extended reporting group.
-  EXPECT_CALL(item, GetBrowserContext()).WillRepeatedly(Return(profile_.get()));
+  content::DownloadItemUtils::AttachInfo(&item, profile_.get(), nullptr);
   SetExtendedReportingPreference(false);
   download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
   EXPECT_EQ(0, sb_service_->download_report_count());
@@ -2487,8 +2481,7 @@ TEST_F(DownloadProtectionServiceTest,
       "http://example.com/",                                        // referrer
       FILE_PATH_LITERAL("a.tmp"),                                   // tmp_path
       FILE_PATH_LITERAL("a.exe"));  // final_path
-  ON_CALL(item, GetWebContents()).WillByDefault(Return(web_contents.get()));
-
+  content::DownloadItemUtils::AttachInfo(&item, nullptr, web_contents.get());
   std::unique_ptr<ReferrerChainData> referrer_chain_data =
       download_service_->IdentifyReferrerChain(item);
   ReferrerChain* referrer_chain = referrer_chain_data->GetReferrerChain();

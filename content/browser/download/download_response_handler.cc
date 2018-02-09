@@ -147,8 +147,8 @@ void DownloadResponseHandler::OnReceiveRedirect(
     const network::ResourceResponseHead& head) {
   if (is_partial_request_) {
     // A redirect while attempting a partial resumption indicates a potential
-    // middle box. Trigger another interruption so that the DownloadItem can
-    // retry.
+    // middle box. Trigger another interruption so that the
+    // download::DownloadItem can retry.
     abort_reason_ = download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE;
     OnComplete(network::URLLoaderCompletionStatus(net::OK));
     return;

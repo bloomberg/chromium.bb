@@ -106,6 +106,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/download/public/common/download_item.h"
 #include "components/infobars/core/infobar.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
@@ -137,7 +138,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/interstitial_page.h"
@@ -470,8 +470,8 @@ void DownloadAndVerifyFile(
   EXPECT_FALSE(base::PathExists(downloaded));
   ui_test_utils::NavigateToURL(browser, url);
   observer.WaitForFinished();
-  EXPECT_EQ(
-      1u, observer.NumDownloadsSeenInState(content::DownloadItem::COMPLETE));
+  EXPECT_EQ(1u,
+            observer.NumDownloadsSeenInState(download::DownloadItem::COMPLETE));
   EXPECT_TRUE(base::PathExists(downloaded));
   base::FileEnumerator enumerator(dir, false, base::FileEnumerator::FILES);
   EXPECT_EQ(file, enumerator.Next().BaseName());

@@ -22,6 +22,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/test/mock_download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -224,8 +225,8 @@ IN_PROC_BROWSER_TEST_P(DownloadDangerPromptTest, MAYBE_TestAll) {
   ON_CALL(download(), GetURL()).WillByDefault(ReturnRef(download_url));
   ON_CALL(download(), GetReferrerUrl())
       .WillByDefault(ReturnRef(GURL::EmptyGURL()));
-  ON_CALL(download(), GetBrowserContext())
-      .WillByDefault(Return(browser()->profile()));
+  content::DownloadItemUtils::AttachInfo(&download(), browser()->profile(),
+                                         nullptr);
   base::FilePath empty_file_path;
   ON_CALL(download(), GetTargetFilePath())
       .WillByDefault(ReturnRef(empty_file_path));
@@ -351,8 +352,6 @@ class DownloadDangerPromptBrowserTest : public DialogBrowserTest {
     ON_CALL(download_, GetURL()).WillByDefault(ReturnRef(download_url_));
     ON_CALL(download_, GetReferrerUrl())
         .WillByDefault(ReturnRef(GURL::EmptyGURL()));
-    ON_CALL(download_, GetBrowserContext())
-        .WillByDefault(Return(browser()->profile()));
     ON_CALL(download_, GetTargetFilePath())
         .WillByDefault(ReturnRef(empty_file_path_));
     ON_CALL(download_, IsDangerous()).WillByDefault(Return(true));
@@ -361,7 +360,8 @@ class DownloadDangerPromptBrowserTest : public DialogBrowserTest {
 
     // Set up test-specific parameters
     ON_CALL(download_, GetDangerType()).WillByDefault(Return(danger_type_));
-
+    content::DownloadItemUtils::AttachInfo(&download_, browser()->profile(),
+                                           nullptr);
     DownloadDangerPrompt::Create(
         &download_, browser()->tab_strip_model()->GetActiveWebContents(),
         invocation_type_ == FROM_DOWNLOAD_API, DownloadDangerPrompt::OnDone());

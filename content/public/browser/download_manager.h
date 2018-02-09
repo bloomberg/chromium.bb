@@ -37,7 +37,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/common/download_stream.mojom.h"
 #include "net/base/net_errors.h"
@@ -75,15 +75,16 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
   // to the DownloadManager's collection of downloads.
   class CONTENT_EXPORT Observer {
    public:
-    // A DownloadItem was created. This item may be visible before the filename
-    // is determined; in this case the return value of GetTargetFileName() will
-    // be null.  This method may be called an arbitrary number of times, e.g.
-    // when loading history on startup.  As a result, consumers should avoid
-    // doing large amounts of work in OnDownloadCreated().  TODO(<whoever>):
-    // When we've fully specified the possible states of the DownloadItem in
-    // download_item.h, we should remove the caveat above.
-    virtual void OnDownloadCreated(
-        DownloadManager* manager, DownloadItem* item) {}
+    // A download::DownloadItem was created. This item may be visible before the
+    // filename is determined; in this case the return value of
+    // GetTargetFileName() will be null.  This method may be called an arbitrary
+    // number of times, e.g. when loading history on startup.  As a result,
+    // consumers should avoid doing large amounts of work in
+    // OnDownloadCreated().  TODO(<whoever>): When we've fully specified the
+    // possible states of the download::DownloadItem in download_item.h, we
+    // should remove the caveat above.
+    virtual void OnDownloadCreated(DownloadManager* manager,
+                                   download::DownloadItem* item) {}
 
     // Called when the download manager has finished loading the data.
     virtual void OnManagerInitialized() {}
@@ -96,7 +97,7 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
     virtual ~Observer() {}
   };
 
-  typedef std::vector<DownloadItem*> DownloadVector;
+  typedef std::vector<download::DownloadItem*> DownloadVector;
 
   // Add all download items to |downloads|, no matter the type or state, without
   // clearing |downloads| first.
@@ -145,7 +146,7 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
 
   // Called by the embedder, after creating the download manager, to let it know
   // about downloads from previous runs of the browser.
-  virtual DownloadItem* CreateDownloadItem(
+  virtual download::DownloadItem* CreateDownloadItem(
       const std::string& guid,
       uint32_t id,
       const base::FilePath& current_path,
@@ -164,13 +165,14 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
       int64_t received_bytes,
       int64_t total_bytes,
       const std::string& hash,
-      DownloadItem::DownloadState state,
+      download::DownloadItem::DownloadState state,
       download::DownloadDangerType danger_type,
       download::DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
       bool transient,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices) = 0;
+      const std::vector<download::DownloadItem::ReceivedSlice>&
+          received_slices) = 0;
 
   // Enum to describe which dependency was initialized in PostInitialization.
   enum DownloadInitializationDependency {
@@ -208,12 +210,14 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
   // Get the download item for |id| if present, no matter what type of download
   // it is or state it's in.
   // DEPRECATED: Don't add new callers for GetDownload(uint32_t). Instead keep
-  // track of the GUID and use GetDownloadByGuid(), or observe the DownloadItem
-  // if you need to keep track of a specific download. (http://crbug.com/593020)
-  virtual DownloadItem* GetDownload(uint32_t id) = 0;
+  // track of the GUID and use GetDownloadByGuid(), or observe the
+  // download::DownloadItem if you need to keep track of a specific download.
+  // (http://crbug.com/593020)
+  virtual download::DownloadItem* GetDownload(uint32_t id) = 0;
 
   // Get the download item for |guid|.
-  virtual DownloadItem* GetDownloadByGuid(const std::string& guid) = 0;
+  virtual download::DownloadItem* GetDownloadByGuid(
+      const std::string& guid) = 0;
 };
 
 }  // namespace content

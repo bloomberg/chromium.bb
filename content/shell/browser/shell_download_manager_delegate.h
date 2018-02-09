@@ -25,9 +25,9 @@ class ShellDownloadManagerDelegate : public DownloadManagerDelegate {
   void SetDownloadManager(DownloadManager* manager);
 
   void Shutdown() override;
-  bool DetermineDownloadTarget(DownloadItem* download,
+  bool DetermineDownloadTarget(download::DownloadItem* download,
                                const DownloadTargetCallback& callback) override;
-  bool ShouldOpenDownload(DownloadItem* item,
+  bool ShouldOpenDownload(download::DownloadItem* item,
                           const DownloadOpenDelayedCallback& callback) override;
   void GetNextId(const DownloadIdCallback& callback) override;
 

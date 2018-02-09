@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 
 // A subsystem may use a DownloadCompletionBlocker in conjunction with
 // DownloadManagerDelegate::ShouldCompleteDownload() in order to block the

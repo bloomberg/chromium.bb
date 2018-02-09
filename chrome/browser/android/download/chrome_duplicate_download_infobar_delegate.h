@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "chrome/browser/android/download/duplicate_download_infobar_delegate.h"
 #include "chrome/browser/download/download_target_determiner_delegate.h"
+#include "components/download/public/common/download_item.h"
 #include "components/infobars/core/infobar_delegate.h"
-#include "content/public/browser/download_item.h"
 
 class InfoBarService;
 
@@ -20,23 +20,23 @@ namespace android {
 // An infobar delegate that starts from the given file path.
 class ChromeDuplicateDownloadInfoBarDelegate
     : public DuplicateDownloadInfoBarDelegate,
-      public content::DownloadItem::Observer {
+      public download::DownloadItem::Observer {
  public:
   ~ChromeDuplicateDownloadInfoBarDelegate() override;
 
   static void Create(
       InfoBarService* infobar_service,
-      content::DownloadItem* download_item,
+      download::DownloadItem* download_item,
       const base::FilePath& file_path,
       const DownloadTargetDeterminerDelegate::ConfirmationCallback&
           file_selected_callback);
 
-  // content::DownloadItem::Observer
-  void OnDownloadDestroyed(content::DownloadItem* download_item) override;
+  // download::DownloadItem::Observer
+  void OnDownloadDestroyed(download::DownloadItem* download_item) override;
 
  private:
   ChromeDuplicateDownloadInfoBarDelegate(
-      content::DownloadItem* download_item,
+      download::DownloadItem* download_item,
       const base::FilePath& file_path,
       const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback);
 
@@ -63,7 +63,7 @@ class ChromeDuplicateDownloadInfoBarDelegate
 
   // The download item that is requesting the infobar. Could get deleted while
   // the infobar is showing.
-  content::DownloadItem* download_item_;
+  download::DownloadItem* download_item_;
 
   // The target file path to be downloaded. This is used to show users the
   // file name that will be used.

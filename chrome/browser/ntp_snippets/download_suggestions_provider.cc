@@ -29,7 +29,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
-using content::DownloadItem;
+using download::DownloadItem;
 using content::DownloadManager;
 using ntp_snippets::Category;
 using ntp_snippets::CategoryInfo;
@@ -432,7 +432,7 @@ void DownloadSuggestionsProvider::OnDownloadRemoved(DownloadItem* item) {
 }
 
 void DownloadSuggestionsProvider::OnDownloadDestroyed(
-    content::DownloadItem* item) {
+    download::DownloadItem* item) {
   DCHECK(is_asset_downloads_initialization_complete_);
 
   item->RemoveObserver(this);
@@ -622,7 +622,7 @@ bool DownloadSuggestionsProvider::IsDownloadOutdated(
 }
 
 bool DownloadSuggestionsProvider::CacheAssetDownloadIfNeeded(
-    const content::DownloadItem* item) {
+    const download::DownloadItem* item) {
   if (!IsAssetDownloadCompleted(*item)) {
     return false;
   }

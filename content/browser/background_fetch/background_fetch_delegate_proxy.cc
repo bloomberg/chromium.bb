@@ -7,10 +7,10 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "components/download/public/common/download_item.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/background_fetch_response.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
 

@@ -33,6 +33,7 @@ include_rules = [
   #   2) it's not linked into the content library
   "+components/content_view",
   "+components/crash",
+  "+components/download/public/common",
   "+components/url_formatter",
   "+components/network_session_configurator/browser",
   "+components/viz/common/resources",

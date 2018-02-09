@@ -9,7 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/image_decoder.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/native_theme/native_theme.h"
@@ -30,11 +30,11 @@ class Notification;
 
 class DownloadItemNotification : public ImageDecoder::ImageRequest {
  public:
-  explicit DownloadItemNotification(content::DownloadItem* item);
+  explicit DownloadItemNotification(download::DownloadItem* item);
   ~DownloadItemNotification() override;
 
-  void OnDownloadUpdated(content::DownloadItem* item);
-  void OnDownloadRemoved(content::DownloadItem* item);
+  void OnDownloadUpdated(download::DownloadItem* item);
+  void OnDownloadRemoved(download::DownloadItem* item);
 
   // Disables popup by setting low priority.
   void DisablePopup();
@@ -111,11 +111,11 @@ class DownloadItemNotification : public ImageDecoder::ImageRequest {
   // prevents updates after close.
   bool closed_ = false;
 
-  content::DownloadItem::DownloadState previous_download_state_ =
-      content::DownloadItem::MAX_DOWNLOAD_STATE;  // As uninitialized state
+  download::DownloadItem::DownloadState previous_download_state_ =
+      download::DownloadItem::MAX_DOWNLOAD_STATE;  // As uninitialized state
   bool previous_dangerous_state_ = false;
   std::unique_ptr<message_center::Notification> notification_;
-  content::DownloadItem* item_;
+  download::DownloadItem* item_;
   std::unique_ptr<std::vector<DownloadCommands::Command>> button_actions_;
 
   // Status of the preview image decode.

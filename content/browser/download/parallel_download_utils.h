@@ -7,10 +7,10 @@
 
 #include <vector>
 
+#include "components/download/public/common/download_item.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/download_item.h"
 
 namespace content {
 
@@ -41,7 +41,7 @@ constexpr char kParallelRequestRemainingTimeFinchKey[] =
 // Each slice contains at least |min_slice_size| bytes unless |total_length|
 // is less than |min_slice_size|.
 // The last slice is half opened.
-CONTENT_EXPORT std::vector<DownloadItem::ReceivedSlice>
+CONTENT_EXPORT std::vector<download::DownloadItem::ReceivedSlice>
 FindSlicesForRemainingContent(int64_t current_offset,
                               int64_t total_length,
                               int request_count,
@@ -49,16 +49,17 @@ FindSlicesForRemainingContent(int64_t current_offset,
 
 // Given an array of slices that are received, returns an array of slices to
 // download. |received_slices| must be ordered by offsets.
-CONTENT_EXPORT std::vector<DownloadItem::ReceivedSlice> FindSlicesToDownload(
-    const std::vector<DownloadItem::ReceivedSlice>& received_slices);
+CONTENT_EXPORT std::vector<download::DownloadItem::ReceivedSlice>
+FindSlicesToDownload(
+    const std::vector<download::DownloadItem::ReceivedSlice>& received_slices);
 
 // Adds or merges a new received slice into a vector of sorted slices. If the
 // slice can be merged with the slice preceding it, merge the 2 slices.
 // Otherwise, insert the slice and keep the vector sorted. Returns the index
 // of the newly updated slice.
 CONTENT_EXPORT size_t AddOrMergeReceivedSliceIntoSortedArray(
-    const DownloadItem::ReceivedSlice& new_slice,
-    std::vector<DownloadItem::ReceivedSlice>& received_slices);
+    const download::DownloadItem::ReceivedSlice& new_slice,
+    std::vector<download::DownloadItem::ReceivedSlice>& received_slices);
 
 // Returns if a preceding stream can still download the part of content that
 // was arranged to |error_stream|.
@@ -84,13 +85,14 @@ CONTENT_EXPORT base::TimeDelta GetParallelRequestDelayConfig();
 CONTENT_EXPORT base::TimeDelta GetParallelRequestRemainingTimeConfig();
 
 // Print the states of received slices for debugging.
-CONTENT_EXPORT void DebugSlicesInfo(const DownloadItem::ReceivedSlices& slices);
+CONTENT_EXPORT void DebugSlicesInfo(
+    const download::DownloadItem::ReceivedSlices& slices);
 
 // Given an ordered array of slices, get the maximum size of a contiguous data
 // block that starts from offset 0. If the first slice doesn't start from offset
 // 0, return 0.
 CONTENT_EXPORT int64_t GetMaxContiguousDataBlockSizeFromBeginning(
-    const DownloadItem::ReceivedSlices& slices);
+    const download::DownloadItem::ReceivedSlices& slices);
 
 // Returns whether parallel download is enabled.
 CONTENT_EXPORT bool IsParallelDownloadEnabled();

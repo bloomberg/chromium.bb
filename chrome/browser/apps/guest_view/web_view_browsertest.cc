@@ -2886,7 +2886,7 @@ class DownloadHistoryWaiter : public DownloadHistory::Observer {
     run_loop.Run();
   }
 
-  void OnDownloadStored(content::DownloadItem* item,
+  void OnDownloadStored(download::DownloadItem* item,
                         const history::DownloadRow& info) override {
     stored_downloads_.insert(item);
     if (!quit_closure_.is_null() &&
@@ -2901,7 +2901,7 @@ class DownloadHistoryWaiter : public DownloadHistory::Observer {
       base::ResetAndReturn(&quit_closure_).Run();
   }
 
-  std::unordered_set<content::DownloadItem*> stored_downloads_;
+  std::unordered_set<download::DownloadItem*> stored_downloads_;
   size_t stored_download_target_ = 0;
   bool history_query_complete_ = false;
   base::Closure quit_closure_;
@@ -2987,7 +2987,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation) {
 
   std::set<std::string> cookies;
   for (auto* download : downloads) {
-    ASSERT_EQ(content::DownloadItem::COMPLETE, download->GetState());
+    ASSERT_EQ(download::DownloadItem::COMPLETE, download->GetState());
     ASSERT_TRUE(base::PathExists(download->GetTargetFilePath()));
     std::string content;
     ASSERT_TRUE(
@@ -3133,13 +3133,13 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation_CrossSession) {
   // fail. The latter fails because the underlying storage partition was not
   // persisted.
 
-  content::DownloadItem* succeeded_download = downloads[0];
-  content::DownloadItem* failed_download = downloads[1];
+  download::DownloadItem* succeeded_download = downloads[0];
+  download::DownloadItem* failed_download = downloads[1];
 
-  if (downloads[0]->GetState() == content::DownloadItem::INTERRUPTED)
+  if (downloads[0]->GetState() == download::DownloadItem::INTERRUPTED)
     std::swap(succeeded_download, failed_download);
 
-  ASSERT_EQ(content::DownloadItem::COMPLETE, succeeded_download->GetState());
+  ASSERT_EQ(download::DownloadItem::COMPLETE, succeeded_download->GetState());
   ASSERT_TRUE(base::PathExists(succeeded_download->GetTargetFilePath()));
   std::string content;
   ASSERT_TRUE(base::ReadFileToString(succeeded_download->GetTargetFilePath(),
@@ -3148,7 +3148,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadCookieIsolation_CrossSession) {
   // partition.
   EXPECT_STREQ("cookie=first", content.c_str());
 
-  ASSERT_EQ(content::DownloadItem::INTERRUPTED, failed_download->GetState());
+  ASSERT_EQ(download::DownloadItem::INTERRUPTED, failed_download->GetState());
   EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_FORBIDDEN,
             failed_download->GetLastReason());
 }

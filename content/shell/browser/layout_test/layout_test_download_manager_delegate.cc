@@ -14,7 +14,8 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "content/shell/browser/layout_test/blink_test_controller.h"
 #include "net/base/filename_util.h"
@@ -33,10 +34,11 @@ LayoutTestDownloadManagerDelegate::~LayoutTestDownloadManagerDelegate(){
 }
 
 bool LayoutTestDownloadManagerDelegate::ShouldOpenDownload(
-      DownloadItem* item,
-      const DownloadOpenDelayedCallback& callback) {
+    download::DownloadItem* item,
+    const DownloadOpenDelayedCallback& callback) {
   if (BlinkTestController::Get() &&
-      BlinkTestController::Get()->IsMainWindow(item->GetWebContents()) &&
+      BlinkTestController::Get()->IsMainWindow(
+          DownloadItemUtils::GetWebContents(item)) &&
       item->GetMimeType() == "text/html") {
     BlinkTestController::Get()->OpenURL(
         net::FilePathToFileURL(item->GetFullPath()));

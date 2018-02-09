@@ -15,8 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/download/content/public/all_download_item_notifier.h"
+#include "components/download/public/common/download_item.h"
 #include "components/history/core/browser/history_service.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 
 namespace history {
@@ -59,7 +59,7 @@ class DownloadHistory : public download::AllDownloadItemNotifier::Observer {
 
     // Fires when a download is added to or updated in the database, just after
     // the task is posted to the history thread.
-    virtual void OnDownloadStored(content::DownloadItem* item,
+    virtual void OnDownloadStored(download::DownloadItem* item,
                                   const history::DownloadRow& info) {}
 
     // Fires when RemoveDownloads messages are sent to the DB thread.
@@ -80,7 +80,7 @@ class DownloadHistory : public download::AllDownloadItemNotifier::Observer {
   // within a DownloadManager::Observer::OnDownloadCreated handler since the
   // persisted state may not yet have been updated for a download that was
   // restored from history.
-  static bool IsPersisted(const content::DownloadItem* item);
+  static bool IsPersisted(const download::DownloadItem* item);
 
   // Neither |manager| nor |history| may be NULL.
   // DownloadService creates DownloadHistory some time after DownloadManager is
@@ -99,17 +99,17 @@ class DownloadHistory : public download::AllDownloadItemNotifier::Observer {
   // vs. downloads that were created due to being restored from history. Note
   // that the return value is only reliable for downloads that were restored by
   // this specific DownloadHistory instance.
-  bool WasRestoredFromHistory(const content::DownloadItem* item) const;
+  bool WasRestoredFromHistory(const download::DownloadItem* item) const;
 
  private:
-  typedef std::set<content::DownloadItem*> ItemSet;
+  typedef std::set<download::DownloadItem*> ItemSet;
 
   // Callback from |history_| containing all entries in the downloads database
   // table.
   void QueryCallback(std::unique_ptr<std::vector<history::DownloadRow>> infos);
 
   // May add |item| to |history_|.
-  void MaybeAddToHistory(content::DownloadItem* item);
+  void MaybeAddToHistory(download::DownloadItem* item);
 
   // Callback from |history_| when an item was successfully inserted into the
   // database.
@@ -117,13 +117,13 @@ class DownloadHistory : public download::AllDownloadItemNotifier::Observer {
 
   // AllDownloadItemNotifier::Observer
   void OnDownloadCreated(content::DownloadManager* manager,
-                         content::DownloadItem* item) override;
+                         download::DownloadItem* item) override;
   void OnDownloadUpdated(content::DownloadManager* manager,
-                         content::DownloadItem* item) override;
+                         download::DownloadItem* item) override;
   void OnDownloadOpened(content::DownloadManager* manager,
-                        content::DownloadItem* item) override;
+                        download::DownloadItem* item) override;
   void OnDownloadRemoved(content::DownloadManager* manager,
-                         content::DownloadItem* item) override;
+                         download::DownloadItem* item) override;
 
   // Schedule a record to be removed from |history_| the next time
   // RemoveDownloadsBatch() runs. Schedule RemoveDownloadsBatch() to be run soon

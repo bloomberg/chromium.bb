@@ -46,7 +46,7 @@ class MockDownloadDestinationObserver : public DownloadDestinationObserver {
   MOCK_METHOD3(DestinationUpdate,
                void(int64_t,
                     int64_t,
-                    const std::vector<DownloadItem::ReceivedSlice>&));
+                    const std::vector<download::DownloadItem::ReceivedSlice>&));
   void DestinationError(
       download::DownloadInterruptReason reason,
       int64_t bytes_so_far,
@@ -129,7 +129,7 @@ class ParallelDownloadJobTest : public testing::Test {
 
   void CreateParallelJob(int64_t initial_request_offset,
                          int64_t content_length,
-                         const DownloadItem::ReceivedSlices& slices,
+                         const download::DownloadItem::ReceivedSlices& slices,
                          int request_count,
                          int64_t min_slice_size,
                          int min_remaining_time) {
@@ -165,7 +165,8 @@ class ParallelDownloadJobTest : public testing::Test {
 
   void BuildParallelRequests() { job_->BuildParallelRequests(); }
 
-  void set_received_slices(const DownloadItem::ReceivedSlices& slices) {
+  void set_received_slices(
+      const download::DownloadItem::ReceivedSlices& slices) {
     received_slices_ = slices;
   }
 
@@ -207,7 +208,7 @@ class ParallelDownloadJobTest : public testing::Test {
 
   // The received slices used to return in
   // |MockDownloadItemImpl::GetReceivedSlices| mock function.
-  DownloadItem::ReceivedSlices received_slices_;
+  download::DownloadItem::ReceivedSlices received_slices_;
 };
 
 // Test if parallel requests can be built correctly for a new download without
@@ -216,7 +217,7 @@ TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithoutSlices) {
   // Totally 2 requests for 100 bytes.
   // Original request:  Range:0-, for 50 bytes.
   // Task 1:  Range:50-, for 50 bytes.
-  CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 2, 1, 10);
+  CreateParallelJob(0, 100, download::DownloadItem::ReceivedSlices(), 2, 1, 10);
   BuildParallelRequests();
   EXPECT_EQ(1u, job_->workers().size());
   VerifyWorker(50, 0);
@@ -226,7 +227,7 @@ TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithoutSlices) {
   // Original request:  Range:0-, for 33 bytes.
   // Task 1:  Range:33-, for 33 bytes.
   // Task 2:  Range:66-, for 34 bytes.
-  CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 3, 1, 10);
+  CreateParallelJob(0, 100, download::DownloadItem::ReceivedSlices(), 3, 1, 10);
   BuildParallelRequests();
   EXPECT_EQ(2u, job_->workers().size());
   VerifyWorker(33, 0);
@@ -234,18 +235,18 @@ TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithoutSlices) {
   DestroyParallelJob();
 
   // Less than 2 requests, do nothing.
-  CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 1, 1, 10);
+  CreateParallelJob(0, 100, download::DownloadItem::ReceivedSlices(), 1, 1, 10);
   BuildParallelRequests();
   EXPECT_TRUE(job_->workers().empty());
   DestroyParallelJob();
 
-  CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 0, 1, 10);
+  CreateParallelJob(0, 100, download::DownloadItem::ReceivedSlices(), 0, 1, 10);
   BuildParallelRequests();
   EXPECT_TRUE(job_->workers().empty());
   DestroyParallelJob();
 
   // Content-length is 0, do nothing.
-  CreateParallelJob(0, 0, DownloadItem::ReceivedSlices(), 3, 1, 10);
+  CreateParallelJob(0, 0, download::DownloadItem::ReceivedSlices(), 3, 1, 10);
   BuildParallelRequests();
   EXPECT_TRUE(job_->workers().empty());
   DestroyParallelJob();
@@ -259,7 +260,8 @@ TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithSlices) {
   // Original request:  Range:12-43.
   // Task 1:  Range:44-70, for 27 bytes.
   // Task 2:  Range:71-, for 29 bytes.
-  DownloadItem::ReceivedSlices slices = {DownloadItem::ReceivedSlice(0, 17)};
+  download::DownloadItem::ReceivedSlices slices = {
+      download::DownloadItem::ReceivedSlice(0, 17)};
   CreateParallelJob(12, 88, slices, 3, 1, 10);
   BuildParallelRequests();
   EXPECT_EQ(2u, job_->workers().size());
@@ -273,7 +275,7 @@ TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithSlices) {
   // 40 bytes left for 4 requests. Only 1 additional request.
   // Original request: Range:60-79, for 20 bytes.
   // Task 1:  Range:80-, for 20 bytes.
-  slices = {DownloadItem::ReceivedSlice(0, 60)};
+  slices = {download::DownloadItem::ReceivedSlice(0, 60)};
   CreateParallelJob(60, 40, slices, 4, 20, 10);
   BuildParallelRequests();
   EXPECT_EQ(1u, job_->workers().size());
@@ -281,7 +283,7 @@ TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithSlices) {
   DestroyParallelJob();
 
   // Content-Length is 0, no additional requests.
-  slices = {DownloadItem::ReceivedSlice(0, 100)};
+  slices = {download::DownloadItem::ReceivedSlice(0, 100)};
   CreateParallelJob(100, 0, slices, 3, 1, 10);
   BuildParallelRequests();
   EXPECT_TRUE(job_->workers().empty());
@@ -292,9 +294,10 @@ TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithSlices) {
   // The request count is 2, however the file contains 3 holes, and we don't
   // know if the last slice is completed, so there should be 3 requests in
   // parallel and the last request is an out-of-range request.
-  slices = {
-      DownloadItem::ReceivedSlice(10, 10), DownloadItem::ReceivedSlice(20, 10),
-      DownloadItem::ReceivedSlice(40, 10), DownloadItem::ReceivedSlice(90, 10)};
+  slices = {download::DownloadItem::ReceivedSlice(10, 10),
+            download::DownloadItem::ReceivedSlice(20, 10),
+            download::DownloadItem::ReceivedSlice(40, 10),
+            download::DownloadItem::ReceivedSlice(90, 10)};
   CreateParallelJob(0, 12, slices, 2, 1, 10);
   BuildParallelRequests();
   EXPECT_EQ(3u, job_->workers().size());
@@ -307,12 +310,13 @@ TEST_F(ParallelDownloadJobTest, CreateNewDownloadRequestsWithSlices) {
 // Ensure that in download resumption, if the first hole is filled before
 // sending multiple requests, the new requests can be correctly calculated.
 TEST_F(ParallelDownloadJobTest, CreateResumptionRequestsFirstSliceFilled) {
-  DownloadItem::ReceivedSlices slices = {DownloadItem::ReceivedSlice(0, 10),
-                                         DownloadItem::ReceivedSlice(40, 10),
-                                         DownloadItem::ReceivedSlice(80, 10)};
+  download::DownloadItem::ReceivedSlices slices = {
+      download::DownloadItem::ReceivedSlice(0, 10),
+      download::DownloadItem::ReceivedSlice(40, 10),
+      download::DownloadItem::ReceivedSlice(80, 10)};
 
   // The updated slices that has filled the first hole.
-  DownloadItem::ReceivedSlices updated_slices = slices;
+  download::DownloadItem::ReceivedSlices updated_slices = slices;
   updated_slices[0].received_bytes = 40;
 
   CreateParallelJob(10, 90, slices, 3, 1, 10);
@@ -334,7 +338,8 @@ TEST_F(ParallelDownloadJobTest, CreateResumptionRequestsFirstSliceFilled) {
 // This may not happen under current implementation, but should be also handled
 // correctly.
 TEST_F(ParallelDownloadJobTest, CreateResumptionRequestsTwoSlicesToFill) {
-  DownloadItem::ReceivedSlices slices = {DownloadItem::ReceivedSlice(40, 10)};
+  download::DownloadItem::ReceivedSlices slices = {
+      download::DownloadItem::ReceivedSlice(40, 10)};
 
   CreateParallelJob(0, 100, slices, 3, 1, 10);
   BuildParallelRequests();
@@ -343,8 +348,9 @@ TEST_F(ParallelDownloadJobTest, CreateResumptionRequestsTwoSlicesToFill) {
   VerifyWorker(50, 0);
   DestroyParallelJob();
 
-  DownloadItem::ReceivedSlices updated_slices = {
-      DownloadItem::ReceivedSlice(0, 10), DownloadItem::ReceivedSlice(40, 10)};
+  download::DownloadItem::ReceivedSlices updated_slices = {
+      download::DownloadItem::ReceivedSlice(0, 10),
+      download::DownloadItem::ReceivedSlice(40, 10)};
 
   CreateParallelJob(0, 100, slices, 3, 1, 10);
   // Now let download item to return an updated received slice, that the first
@@ -366,7 +372,7 @@ TEST_F(ParallelDownloadJobTest, CreateResumptionRequestsTwoSlicesToFill) {
 // Ensure cancel before building the requests will result in no requests are
 // built.
 TEST_F(ParallelDownloadJobTest, EarlyCancelBeforeBuildRequests) {
-  CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 2, 1, 10);
+  CreateParallelJob(0, 100, download::DownloadItem::ReceivedSlices(), 2, 1, 10);
   EXPECT_CALL(*mock_request_handle_, CancelRequest(_));
 
   // Job is canceled before building parallel requests.
@@ -382,7 +388,7 @@ TEST_F(ParallelDownloadJobTest, EarlyCancelBeforeBuildRequests) {
 // Ensure cancel before adding the byte stream will result in workers being
 // canceled.
 TEST_F(ParallelDownloadJobTest, EarlyCancelBeforeByteStreamReady) {
-  CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 2, 1, 10);
+  CreateParallelJob(0, 100, download::DownloadItem::ReceivedSlices(), 2, 1, 10);
   EXPECT_CALL(*mock_request_handle_, CancelRequest(_));
 
   BuildParallelRequests();
@@ -406,7 +412,7 @@ TEST_F(ParallelDownloadJobTest, EarlyCancelBeforeByteStreamReady) {
 // Ensure pause before adding the byte stream will result in workers being
 // paused.
 TEST_F(ParallelDownloadJobTest, EarlyPauseBeforeByteStreamReady) {
-  CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 2, 1, 10);
+  CreateParallelJob(0, 100, download::DownloadItem::ReceivedSlices(), 2, 1, 10);
   EXPECT_CALL(*mock_request_handle_, PauseRequest());
 
   BuildParallelRequests();
@@ -431,7 +437,8 @@ TEST_F(ParallelDownloadJobTest, EarlyPauseBeforeByteStreamReady) {
 // Test that parallel request is not created if the remaining content can be
 // finish downloading soon.
 TEST_F(ParallelDownloadJobTest, RemainingContentWillFinishSoon) {
-  DownloadItem::ReceivedSlices slices = {DownloadItem::ReceivedSlice(0, 99)};
+  download::DownloadItem::ReceivedSlices slices = {
+      download::DownloadItem::ReceivedSlice(0, 99)};
   CreateParallelJob(99, 1, slices, 3, 1, 10);
   BuildParallelRequests();
   EXPECT_EQ(0u, job_->workers().size());
@@ -452,12 +459,12 @@ TEST_F(ParallelDownloadJobTest, ParallelRequestNotCreatedUntilFileInitialized) {
       std::move(save_info), base::FilePath(),
       std::make_unique<DownloadManager::InputStream>(
           std::unique_ptr<ByteStreamReader>(input_stream)),
-      DownloadItem::kInvalidId, observer_factory.GetWeakPtr());
-  CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 2, 0, 0);
+      download::DownloadItem::kInvalidId, observer_factory.GetWeakPtr());
+  CreateParallelJob(0, 100, download::DownloadItem::ReceivedSlices(), 2, 0, 0);
   job_->Start(download_file.get(),
               base::Bind(&ParallelDownloadJobTest::OnFileInitialized,
                          base::Unretained(this)),
-              DownloadItem::ReceivedSlices());
+              download::DownloadItem::ReceivedSlices());
   EXPECT_FALSE(file_initialized_);
   EXPECT_EQ(0u, job_->workers().size());
   EXPECT_CALL(*input_stream, RegisterCallback(_));
@@ -477,7 +484,8 @@ TEST_F(ParallelDownloadJobTest, ParallelRequestNotCreatedUntilFileInitialized) {
 // Interruption from IO thread after the file initialized and before building
 // the parallel requests, should correctly stop the download.
 TEST_F(ParallelDownloadJobTest, InterruptOnStartup) {
-  DownloadItem::ReceivedSlices slices = {DownloadItem::ReceivedSlice(0, 99)};
+  download::DownloadItem::ReceivedSlices slices = {
+      download::DownloadItem::ReceivedSlice(0, 99)};
   CreateParallelJob(99, 1, slices, 3, 1, 10);
 
   // Start to build the requests without any error.
@@ -488,7 +496,8 @@ TEST_F(ParallelDownloadJobTest, InterruptOnStartup) {
 
   // Simulate and inject an error from IO thread after file initialized.
   EXPECT_CALL(*download_item_.get(), GetState())
-      .WillRepeatedly(Return(DownloadItem::DownloadState::INTERRUPTED));
+      .WillRepeatedly(
+          Return(download::DownloadItem::DownloadState::INTERRUPTED));
 
   // Because of the error, no parallel requests are built.
   task_environment_.RunUntilIdle();

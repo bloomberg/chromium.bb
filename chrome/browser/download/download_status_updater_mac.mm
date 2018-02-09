@@ -11,7 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/supports_user_data.h"
 #import "chrome/browser/ui/cocoa/dock_icon.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "url/gurl.h"
 
 namespace {
@@ -123,7 +123,7 @@ void UpdateAppIcon(int download_count,
   [dock_icon updateIcon];
 }
 
-void CreateNSProgress(content::DownloadItem* download) {
+void CreateNSProgress(download::DownloadItem* download) {
   NSURL* source_url = [NSURL URLWithString:
       base::SysUTF8ToNSString(download->GetURL().possibly_invalid_spec())];
   base::FilePath destination_path = download->GetFullPath();
@@ -167,7 +167,7 @@ void CreateNSProgress(content::DownloadItem* download) {
       base::MakeUnique<CrNSProgressUserData>(progress, destination_path));
 }
 
-void UpdateNSProgress(content::DownloadItem* download,
+void UpdateNSProgress(download::DownloadItem* download,
                       CrNSProgressUserData* progress_data) {
   NSProgress* progress = progress_data->progress();
   progress.totalUnitCount = download->GetTotalBytes();
@@ -192,7 +192,7 @@ void UpdateNSProgress(content::DownloadItem* download,
   }
 }
 
-void DestroyNSProgress(content::DownloadItem* download,
+void DestroyNSProgress(download::DownloadItem* download,
                        CrNSProgressUserData* progress_data) {
   download->RemoveUserData(&kCrNSProgressUserDataKey);
 }
@@ -200,8 +200,7 @@ void DestroyNSProgress(content::DownloadItem* download,
 }  // namespace
 
 void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
-    content::DownloadItem* download) {
-
+    download::DownloadItem* download) {
   // Always update overall progress.
 
   float progress = 0;
@@ -219,7 +218,7 @@ void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
     // renamed to its final name. Setting the progress after the final rename
     // results in the file being stuck in an in-progress state on the dock. See
     // http://crbug.com/166683.
-    if (download->GetState() == content::DownloadItem::IN_PROGRESS &&
+    if (download->GetState() == download::DownloadItem::IN_PROGRESS &&
         !download->GetFullPath().empty() &&
         download->GetFullPath() != download->GetTargetFilePath()) {
       if (!progress_data)
@@ -232,11 +231,11 @@ void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
   }
 
   // Handle downloads that ended.
-  if (download->GetState() != content::DownloadItem::IN_PROGRESS &&
+  if (download->GetState() != download::DownloadItem::IN_PROGRESS &&
       !download->GetTargetFilePath().empty()) {
     NSString* download_path =
         base::mac::FilePathToNSString(download->GetTargetFilePath());
-    if (download->GetState() == content::DownloadItem::COMPLETE) {
+    if (download->GetState() == download::DownloadItem::COMPLETE) {
       // Bounce the dock icon.
       [[NSDistributedNotificationCenter defaultCenter]
           postNotificationName:@"com.apple.DownloadFileFinished"

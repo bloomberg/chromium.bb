@@ -24,9 +24,12 @@ namespace url {
 class Origin;
 }
 
+namespace download {
+class DownloadItem;
+}
+
 namespace content {
 
-class DownloadItem;
 class IndexedDBContextImpl;
 class StoragePartition;
 
@@ -59,7 +62,7 @@ class IndexedDBInternalsUI : public WebUIController {
                          const url::Origin& origin,
                          const base::FilePath& temp_path,
                          size_t connection_count,
-                         DownloadItem* item,
+                         download::DownloadItem* item,
                          download::DownloadInterruptReason interrupt_reason);
 
   void ForceCloseOrigin(const base::ListValue* args);

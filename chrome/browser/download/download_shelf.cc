@@ -22,8 +22,9 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -32,7 +33,7 @@
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/canvas.h"
 
-using content::DownloadItem;
+using download::DownloadItem;
 
 namespace {
 
@@ -196,7 +197,7 @@ void DownloadShelf::ShowDownload(DownloadItem* download) {
       DownloadItemModel(download).ShouldRemoveFromShelfWhenComplete())
     return;
   if (!DownloadCoreServiceFactory::GetForBrowserContext(
-           download->GetBrowserContext())
+           content::DownloadItemUtils::GetBrowserContext(download))
            ->IsShelfEnabled())
     return;
 

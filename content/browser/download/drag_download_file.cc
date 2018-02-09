@@ -13,11 +13,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/download/public/common/download_item.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -30,13 +30,14 @@ typedef base::Callback<void(bool)> OnCompleted;
 }  // namespace
 
 // On windows, DragDownloadFile runs on a thread other than the UI thread.
-// DownloadItem and DownloadManager may not be accessed on any thread other than
-// the UI thread. DragDownloadFile may run on either the "drag" thread or the UI
-// thread depending on the platform, but DragDownloadFileUI strictly always runs
-// on the UI thread. On platforms where DragDownloadFile runs on the UI thread,
-// none of the PostTasks are necessary, but it simplifies the code to do them
-// anyway.
-class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
+// download::DownloadItem and DownloadManager may not be accessed on any thread
+// other than the UI thread. DragDownloadFile may run on either the "drag"
+// thread or the UI thread depending on the platform, but DragDownloadFileUI
+// strictly always runs on the UI thread. On platforms where DragDownloadFile
+// runs on the UI thread, none of the PostTasks are necessary, but it simplifies
+// the code to do them anyway.
+class DragDownloadFile::DragDownloadFileUI
+    : public download::DownloadItem::Observer {
  public:
   DragDownloadFileUI(
       const GURL& url,
@@ -121,10 +122,10 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
       download_item_->RemoveObserver(this);
   }
 
-  void OnDownloadStarted(DownloadItem* item,
+  void OnDownloadStarted(download::DownloadItem* item,
                          download::DownloadInterruptReason interrupt_reason) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (!item || item->GetState() != DownloadItem::IN_PROGRESS) {
+    if (!item || item->GetState() != download::DownloadItem::IN_PROGRESS) {
       DCHECK(!item ||
              item->GetLastReason() != download::DOWNLOAD_INTERRUPT_REASON_NONE);
       on_completed_task_runner_->PostTask(FROM_HERE,
@@ -136,18 +137,19 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
     download_item_->AddObserver(this);
   }
 
-  // DownloadItem::Observer:
-  void OnDownloadUpdated(DownloadItem* item) override {
+  // download::DownloadItem::Observer:
+  void OnDownloadUpdated(download::DownloadItem* item) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK_EQ(download_item_, item);
-    DownloadItem::DownloadState state = download_item_->GetState();
-    if (state == DownloadItem::COMPLETE ||
-        state == DownloadItem::CANCELLED ||
-        state == DownloadItem::INTERRUPTED) {
+    download::DownloadItem::DownloadState state = download_item_->GetState();
+    if (state == download::DownloadItem::COMPLETE ||
+        state == download::DownloadItem::CANCELLED ||
+        state == download::DownloadItem::INTERRUPTED) {
       if (!on_completed_.is_null()) {
         on_completed_task_runner_->PostTask(
             FROM_HERE,
-            base::BindOnce(on_completed_, state == DownloadItem::COMPLETE));
+            base::BindOnce(on_completed_,
+                           state == download::DownloadItem::COMPLETE));
         on_completed_.Reset();
       }
       download_item_->RemoveObserver(this);
@@ -156,12 +158,12 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
     // Ignore other states.
   }
 
-  void OnDownloadDestroyed(DownloadItem* item) override {
+  void OnDownloadDestroyed(download::DownloadItem* item) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK_EQ(download_item_, item);
     if (!on_completed_.is_null()) {
       const bool is_complete =
-          download_item_->GetState() == DownloadItem::COMPLETE;
+          download_item_->GetState() == download::DownloadItem::COMPLETE;
       on_completed_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(on_completed_, is_complete));
       on_completed_.Reset();
@@ -176,7 +178,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
   Referrer referrer_;
   std::string referrer_encoding_;
   WebContents* web_contents_;
-  DownloadItem* download_item_;
+  download::DownloadItem* download_item_;
 
   // Only used in the callback from DownloadManager::DownloadUrl().
   base::WeakPtrFactory<DragDownloadFileUI> weak_ptr_factory_;

@@ -195,7 +195,7 @@ SavePackage::~SavePackage() {
     Cancel(true);
   }
 
-  // We should no longer be observing the DownloadItem at this point.
+  // We should no longer be observing the download::DownloadItem at this point.
   CHECK(!download_);
 
   DCHECK_EQ(all_save_items_count_,
@@ -333,7 +333,7 @@ void SavePackage::OnMHTMLGenerated(int64_t size) {
   if (!download_)
     return;
 
-  CHECK_EQ(download_->GetState(), DownloadItem::IN_PROGRESS);
+  CHECK_EQ(download_->GetState(), download::DownloadItem::IN_PROGRESS);
   if (size <= 0) {
     Cancel(false);
     return;
@@ -651,7 +651,7 @@ void SavePackage::Stop(bool cancel_download_item) {
   finished_ = true;
   wait_state_ = FAILED;
 
-  // Inform the DownloadItem we have canceled whole save page job.
+  // Inform the download::DownloadItem we have canceled whole save page job.
   if (download_) {
     if (cancel_download_item)
       download_->Cancel(false);
@@ -715,10 +715,10 @@ void SavePackage::Finish() {
 
   if (download_) {
     if (save_type_ != SAVE_PAGE_TYPE_AS_MHTML) {
-      CHECK_EQ(download_->GetState(), DownloadItem::IN_PROGRESS);
+      CHECK_EQ(download_->GetState(), download::DownloadItem::IN_PROGRESS);
       download_->DestinationUpdate(
           all_save_items_count_, CurrentSpeed(),
-          std::vector<DownloadItem::ReceivedSlice>());
+          std::vector<download::DownloadItem::ReceivedSlice>());
       download_->OnAllDataSaved(all_save_items_count_,
                                 std::unique_ptr<crypto::SecureHash>());
     }
@@ -744,13 +744,13 @@ void SavePackage::SaveFinished(SaveItemId save_item_id,
 
   PutInProgressItemToSavedMap(save_item);
 
-  // Inform the DownloadItem to update UI.
+  // Inform the download::DownloadItem to update UI.
   // We use the received bytes as number of saved files.
   if (download_) {
-    CHECK_EQ(download_->GetState(), DownloadItem::IN_PROGRESS);
+    CHECK_EQ(download_->GetState(), download::DownloadItem::IN_PROGRESS);
     download_->DestinationUpdate(
         completed_count(), CurrentSpeed(),
-        std::vector<DownloadItem::ReceivedSlice>());
+        std::vector<download::DownloadItem::ReceivedSlice>());
   }
 
   if (save_item->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_DOM &&

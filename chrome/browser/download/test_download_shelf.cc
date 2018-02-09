@@ -43,7 +43,7 @@ void TestDownloadShelf::ManagerGoingDown(content::DownloadManager* manager) {
   download_manager_ = NULL;
 }
 
-void TestDownloadShelf::DoAddDownload(content::DownloadItem* download) {
+void TestDownloadShelf::DoAddDownload(download::DownloadItem* download) {
   did_add_download_ = true;
 }
 

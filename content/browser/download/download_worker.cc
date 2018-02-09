@@ -53,14 +53,14 @@ CreateUrlDownloadHandler(
             delegate, std::move(params), std::move(request),
             url_loader_factory_getter,
             base::BindRepeating(&GetEmptyWebContents), GURL(), GURL(), GURL(),
-            DownloadItem::kInvalidId, true)
+            download::DownloadItem::kInvalidId, true)
             .release());
   } else {
     // Build the URLRequest, BlobDataHandle is hold in original request for
     // image download.
     std::unique_ptr<net::URLRequest> url_request =
-        DownloadRequestCore::CreateRequestOnIOThread(DownloadItem::kInvalidId,
-                                                     params.get());
+        DownloadRequestCore::CreateRequestOnIOThread(
+            download::DownloadItem::kInvalidId, params.get());
 
     return std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>(
         UrlDownloader::BeginDownload(delegate, std::move(url_request),

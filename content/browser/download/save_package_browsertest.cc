@@ -45,7 +45,7 @@ class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
     *skip_dir_check = false;
   }
 
-  bool ShouldCompleteDownload(DownloadItem* download,
+  bool ShouldCompleteDownload(download::DownloadItem* download,
                               const base::Closure& closure) override {
     return true;
   }
@@ -59,11 +59,11 @@ class DownloadicidalObserver : public DownloadManager::Observer {
   explicit DownloadicidalObserver(bool remove_download)
       : remove_download_(remove_download) {}
   void OnDownloadCreated(DownloadManager* manager,
-                         DownloadItem* item) override {
+                         download::DownloadItem* item) override {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(
                        [](bool remove_download, const base::Closure& closure,
-                          DownloadItem* item) {
+                          download::DownloadItem* item) {
                          remove_download ? item->Remove() : item->Cancel(true);
                          closure.Run();
                        },

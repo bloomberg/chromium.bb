@@ -311,7 +311,7 @@ void IndexedDBInternalsUI::OnDownloadDataReady(
       url, content::Referrer(referrer, blink::kWebReferrerPolicyDefault)));
 
   // This is how to watch for the download to finish: first wait for it
-  // to start, then attach a DownloadItem::Observer to observe the
+  // to start, then attach a download::DownloadItem::Observer to observe the
   // state change to the finished state.
   dl_params->set_callback(base::Bind(&IndexedDBInternalsUI::OnDownloadStarted,
                                      base::Unretained(this), partition_path,
@@ -324,15 +324,15 @@ void IndexedDBInternalsUI::OnDownloadDataReady(
 
 // The entire purpose of this class is to delete the temp file after
 // the download is complete.
-class FileDeleter : public DownloadItem::Observer {
+class FileDeleter : public download::DownloadItem::Observer {
  public:
   explicit FileDeleter(const base::FilePath& temp_dir) : temp_dir_(temp_dir) {}
   ~FileDeleter() override;
 
-  void OnDownloadUpdated(DownloadItem* download) override;
-  void OnDownloadOpened(DownloadItem* item) override {}
-  void OnDownloadRemoved(DownloadItem* item) override {}
-  void OnDownloadDestroyed(DownloadItem* item) override {}
+  void OnDownloadUpdated(download::DownloadItem* download) override;
+  void OnDownloadOpened(download::DownloadItem* item) override {}
+  void OnDownloadRemoved(download::DownloadItem* item) override {}
+  void OnDownloadDestroyed(download::DownloadItem* item) override {}
 
  private:
   const base::FilePath temp_dir_;
@@ -340,13 +340,13 @@ class FileDeleter : public DownloadItem::Observer {
   DISALLOW_COPY_AND_ASSIGN(FileDeleter);
 };
 
-void FileDeleter::OnDownloadUpdated(DownloadItem* item) {
+void FileDeleter::OnDownloadUpdated(download::DownloadItem* item) {
   switch (item->GetState()) {
-    case DownloadItem::IN_PROGRESS:
+    case download::DownloadItem::IN_PROGRESS:
       break;
-    case DownloadItem::COMPLETE:
-    case DownloadItem::CANCELLED:
-    case DownloadItem::INTERRUPTED: {
+    case download::DownloadItem::COMPLETE:
+    case download::DownloadItem::CANCELLED:
+    case download::DownloadItem::INTERRUPTED: {
       item->RemoveObserver(this);
       delete this;
       break;
@@ -369,7 +369,7 @@ void IndexedDBInternalsUI::OnDownloadStarted(
     const Origin& origin,
     const base::FilePath& temp_path,
     size_t connection_count,
-    DownloadItem* item,
+    download::DownloadItem* item,
     download::DownloadInterruptReason interrupt_reason) {
   if (interrupt_reason != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
     LOG(ERROR) << "Error downloading database dump: "

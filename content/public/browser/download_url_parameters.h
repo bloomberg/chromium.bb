@@ -26,9 +26,12 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace download {
+class DownloadItem;
+}
+
 namespace content {
 
-class DownloadItem;
 class WebContents;
 
 // Pass an instance of DownloadUrlParameters to DownloadManager::DownloadUrl()
@@ -53,11 +56,13 @@ class CONTENT_EXPORT DownloadUrlParameters {
   // download fails, then the DownloadInterruptReason parameter will indicate
   // the failure.
   //
-  // DownloadItem* may be nullptr if no DownloadItem was created. DownloadItems
-  // are not created when a resource throttle or a resource handler blocks the
-  // download request. I.e. the download triggered a warning of some sort and
-  // the user chose to not to proceed with the download as a result.
-  typedef base::Callback<void(DownloadItem*, download::DownloadInterruptReason)>
+  // download::DownloadItem* may be nullptr if no download::DownloadItem was
+  // created. download::DownloadItems are not created when a resource throttle
+  // or a resource handler blocks the download request. I.e. the download
+  // triggered a warning of some sort and the user chose to not to proceed with
+  // the download as a result.
+  typedef base::Callback<void(download::DownloadItem*,
+                              download::DownloadInterruptReason)>
       OnStartedCallback;
 
   typedef std::pair<std::string, std::string> RequestHeadersNameValuePair;

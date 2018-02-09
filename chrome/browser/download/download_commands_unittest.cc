@@ -11,7 +11,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::DownloadItem;
+using download::DownloadItem;
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::Return;

@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 
 namespace chromecast {
 namespace shell {
@@ -22,15 +22,15 @@ CastDownloadManagerDelegate::~CastDownloadManagerDelegate() {}
 void CastDownloadManagerDelegate::GetNextId(
       const content::DownloadIdCallback& callback) {
   // See default behavior of DownloadManagerImpl::GetNextId()
-  static uint32_t next_id = content::DownloadItem::kInvalidId + 1;
+  static uint32_t next_id = download::DownloadItem::kInvalidId + 1;
   callback.Run(next_id++);
 }
 
 bool CastDownloadManagerDelegate::DetermineDownloadTarget(
-    content::DownloadItem* item,
+    download::DownloadItem* item,
     const content::DownloadTargetCallback& callback) {
   base::FilePath empty;
-  callback.Run(empty, content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+  callback.Run(empty, download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, empty,
                download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
   return true;
@@ -42,13 +42,13 @@ bool CastDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
 }
 
 bool CastDownloadManagerDelegate::ShouldCompleteDownload(
-    content::DownloadItem* item,
+    download::DownloadItem* item,
     const base::Closure& callback) {
   return false;
 }
 
 bool CastDownloadManagerDelegate::ShouldOpenDownload(
-    content::DownloadItem* item,
+    download::DownloadItem* item,
     const content::DownloadOpenDelayedCallback& callback) {
   return false;
 }

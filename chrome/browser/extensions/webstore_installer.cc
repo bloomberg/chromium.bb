@@ -75,7 +75,7 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
-using content::DownloadItem;
+using download::DownloadItem;
 using content::DownloadManager;
 using content::NavigationController;
 using content::DownloadUrlParameters;
@@ -232,13 +232,11 @@ GURL WebstoreInstaller::GetWebstoreInstallURL(
 
 void WebstoreInstaller::Delegate::OnExtensionDownloadStarted(
     const std::string& id,
-    content::DownloadItem* item) {
-}
+    download::DownloadItem* item) {}
 
 void WebstoreInstaller::Delegate::OnExtensionDownloadProgress(
     const std::string& id,
-    content::DownloadItem* item) {
-}
+    download::DownloadItem* item) {}
 
 WebstoreInstaller::Approval::Approval()
     : profile(NULL),

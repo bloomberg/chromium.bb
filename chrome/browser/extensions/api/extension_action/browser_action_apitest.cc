@@ -1020,7 +1020,7 @@ IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, DownloadViaPost) {
   downloads_observer.WaitForFinished();
   EXPECT_EQ(0u, downloads_observer.NumDangerousDownloadsSeen());
   EXPECT_EQ(1u, downloads_observer.NumDownloadsSeenInState(
-                    content::DownloadItem::COMPLETE));
+                    download::DownloadItem::COMPLETE));
   EXPECT_TRUE(base::PathExists(downloads_directory->GetPath().AppendASCII(
       "download-test3-attachment.gif")));
 

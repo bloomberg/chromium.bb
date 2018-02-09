@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// The DownloadItemFactory is used to produce different DownloadItems.
+// The DownloadItemFactory is used to produce different download::DownloadItems.
 // It is separate from the DownloadManager to allow download manager
 // unit tests to control the items produced.
 
@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 
 class GURL;
 
@@ -25,7 +25,6 @@ class FilePath;
 
 namespace content {
 
-class DownloadItem;
 class DownloadItemImpl;
 class DownloadItemImplDelegate;
 class DownloadRequestHandleInterface;
@@ -55,13 +54,14 @@ public:
       int64_t received_bytes,
       int64_t total_bytes,
       const std::string& hash,
-      DownloadItem::DownloadState state,
+      download::DownloadItem::DownloadState state,
       download::DownloadDangerType danger_type,
       download::DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
       bool transient,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices) = 0;
+      const std::vector<download::DownloadItem::ReceivedSlice>&
+          received_slices) = 0;
 
   virtual DownloadItemImpl* CreateActiveItem(
       DownloadItemImplDelegate* delegate,

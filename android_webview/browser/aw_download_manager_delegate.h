@@ -19,12 +19,12 @@ class AwDownloadManagerDelegate : public content::DownloadManagerDelegate,
 
   // content::DownloadManagerDelegate implementation.
   bool DetermineDownloadTarget(
-      content::DownloadItem* item,
+      download::DownloadItem* item,
       const content::DownloadTargetCallback& callback) override;
-  bool ShouldCompleteDownload(content::DownloadItem* item,
+  bool ShouldCompleteDownload(download::DownloadItem* item,
                               const base::Closure& complete_callback) override;
   bool ShouldOpenDownload(
-      content::DownloadItem* item,
+      download::DownloadItem* item,
       const content::DownloadOpenDelayedCallback& callback) override;
   void GetNextId(const content::DownloadIdCallback& callback) override;
 };

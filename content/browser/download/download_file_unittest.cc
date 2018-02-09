@@ -83,8 +83,10 @@ class MockByteStreamReader : public ByteStreamReader {
 
 class MockDownloadDestinationObserver : public DownloadDestinationObserver {
  public:
-  MOCK_METHOD3(DestinationUpdate, void(
-      int64_t, int64_t, const std::vector<DownloadItem::ReceivedSlice>&));
+  MOCK_METHOD3(DestinationUpdate,
+               void(int64_t,
+                    int64_t,
+                    const std::vector<download::DownloadItem::ReceivedSlice>&));
   void DestinationError(
       download::DownloadInterruptReason reason,
       int64_t bytes_so_far,
@@ -176,8 +178,10 @@ class DownloadFileTest : public testing::Test {
   ~DownloadFileTest() override {}
 
   void SetUpdateDownloadInfo(
-      int64_t bytes, int64_t bytes_per_sec,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices) {
+      int64_t bytes,
+      int64_t bytes_per_sec,
+      const std::vector<download::DownloadItem::ReceivedSlice>&
+          received_slices) {
     bytes_ = bytes;
     bytes_per_sec_ = bytes_per_sec;
   }
@@ -206,13 +210,14 @@ class DownloadFileTest : public testing::Test {
 
   bool CreateDownloadFile(int offset, bool calculate_hash) {
     return CreateDownloadFile(offset, 0, calculate_hash,
-                              DownloadItem::ReceivedSlices());
+                              download::DownloadItem::ReceivedSlices());
   }
 
-  bool CreateDownloadFile(int offset,
-                          int length,
-                          bool calculate_hash,
-                          const DownloadItem::ReceivedSlices& received_slices) {
+  bool CreateDownloadFile(
+      int offset,
+      int length,
+      bool calculate_hash,
+      const download::DownloadItem::ReceivedSlices& received_slices) {
     // There can be only one.
     DCHECK(!download_file_.get());
 
@@ -233,7 +238,7 @@ class DownloadFileTest : public testing::Test {
         std::move(save_info), base::FilePath(),
         std::make_unique<DownloadManager::InputStream>(
             std::unique_ptr<ByteStreamReader>(input_stream_)),
-        DownloadItem::kInvalidId, observer_factory_.GetWeakPtr()));
+        download::DownloadItem::kInvalidId, observer_factory_.GetWeakPtr()));
 
     EXPECT_CALL(*input_stream_, Read(_, _))
         .WillOnce(Return(ByteStreamReader::STREAM_EMPTY))
@@ -923,7 +928,7 @@ TEST_F(DownloadFileTest, MultipleStreamsWrite) {
   int64_t stream_1_length = GetBuffersLength(kTestData7, 2);
 
   ASSERT_TRUE(CreateDownloadFile(0, stream_0_length, true,
-                                 DownloadItem::ReceivedSlices()));
+                                 download::DownloadItem::ReceivedSlices()));
 
   PrepareStream(&input_stream_, 0, false, true, kTestData6, 2);
   PrepareStream(&additional_streams_[0], stream_0_length, true, true,
@@ -963,7 +968,7 @@ TEST_F(DownloadFileTest, MutipleStreamsLimitedLength) {
   int64_t stream_2_length = GetBuffersLength(kTestData6, 2);
 
   ASSERT_TRUE(CreateDownloadFile(0, stream_0_length, true,
-                                 DownloadItem::ReceivedSlices()));
+                                 download::DownloadItem::ReceivedSlices()));
 
   PrepareStream(&input_stream_, 0, false, true, kTestData6, 2);
   PrepareStream(&additional_streams_[0], stream_0_length, true, false,
@@ -1013,9 +1018,9 @@ TEST_F(DownloadFileTest, MutipleStreamsLimitedLength) {
 TEST_F(DownloadFileTest, MultipleStreamsFirstStreamWriteAllData) {
   int64_t stream_0_length = GetBuffersLength(kTestData8, 4);
 
-  ASSERT_TRUE(CreateDownloadFile(0,
-                                 download::DownloadSaveInfo::kLengthFullContent,
-                                 true, DownloadItem::ReceivedSlices()));
+  ASSERT_TRUE(
+      CreateDownloadFile(0, download::DownloadSaveInfo::kLengthFullContent,
+                         true, download::DownloadItem::ReceivedSlices()));
 
   PrepareStream(&input_stream_, 0, false, true, kTestData8, 4);
 
@@ -1049,7 +1054,7 @@ TEST_F(DownloadFileTest, SecondStreamStartingOffsetAlreadyWritten) {
   int64_t stream_0_length = GetBuffersLength(kTestData6, 2);
 
   ASSERT_TRUE(CreateDownloadFile(0, stream_0_length, true,
-                                 DownloadItem::ReceivedSlices()));
+                                 download::DownloadItem::ReceivedSlices()));
 
   Sequence seq;
   SetupDataAppend(kTestData6, 2, input_stream_, seq, 0);

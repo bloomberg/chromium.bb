@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
 
@@ -23,13 +23,13 @@ namespace content {
 
 // Detects an arbitrary change on a download item.
 // TODO: Rewrite other observers to use this (or be replaced by it).
-class DownloadUpdatedObserver : public DownloadItem::Observer {
+class DownloadUpdatedObserver : public download::DownloadItem::Observer {
  public:
-  typedef base::Callback<bool(DownloadItem*)> EventFilter;
+  typedef base::Callback<bool(download::DownloadItem*)> EventFilter;
 
   // The filter passed may be called multiple times, even after it
   // returns true.
-  DownloadUpdatedObserver(DownloadItem* item, EventFilter filter);
+  DownloadUpdatedObserver(download::DownloadItem* item, EventFilter filter);
   ~DownloadUpdatedObserver() override;
 
   // Returns when either the event has been seen (at least once since
@@ -39,11 +39,11 @@ class DownloadUpdatedObserver : public DownloadItem::Observer {
   bool WaitForEvent();
 
  private:
-  // DownloadItem::Observer
-  void OnDownloadUpdated(DownloadItem* item) override;
-  void OnDownloadDestroyed(DownloadItem* item) override;
+  // download::DownloadItem::Observer
+  void OnDownloadUpdated(download::DownloadItem* item) override;
+  void OnDownloadDestroyed(download::DownloadItem* item) override;
 
-  DownloadItem* item_;
+  download::DownloadItem* item_;
   EventFilter filter_;
   bool waiting_;
   bool event_seen_;
@@ -60,7 +60,7 @@ class DownloadUpdatedObserver : public DownloadItem::Observer {
 //
 // Callers may either probe for the finished state, or wait on it.
 class DownloadTestObserver : public DownloadManager::Observer,
-                             public DownloadItem::Observer {
+                             public download::DownloadItem::Observer {
  public:
   // Action an observer should take if a dangerous download is encountered.
   enum DangerousDownloadAction {
@@ -85,36 +85,38 @@ class DownloadTestObserver : public DownloadManager::Observer,
   // Return true if we reached one of the finish conditions.
   bool IsFinished() const;
 
-  // DownloadItem::Observer
-  void OnDownloadUpdated(DownloadItem* download) override;
-  void OnDownloadDestroyed(DownloadItem* download) override;
+  // download::DownloadItem::Observer
+  void OnDownloadUpdated(download::DownloadItem* download) override;
+  void OnDownloadDestroyed(download::DownloadItem* download) override;
 
   // DownloadManager::Observer
-  void OnDownloadCreated(DownloadManager* manager, DownloadItem* item) override;
+  void OnDownloadCreated(DownloadManager* manager,
+                         download::DownloadItem* item) override;
   void ManagerGoingDown(DownloadManager* manager) override;
 
   size_t NumDangerousDownloadsSeen() const;
 
-  size_t NumDownloadsSeenInState(DownloadItem::DownloadState state) const;
+  size_t NumDownloadsSeenInState(
+      download::DownloadItem::DownloadState state) const;
 
  protected:
   // Only to be called by derived classes' constructors.
   virtual void Init();
 
   // Called to see if a download item is in a final state.
-  virtual bool IsDownloadInFinalState(DownloadItem* download) = 0;
+  virtual bool IsDownloadInFinalState(download::DownloadItem* download) = 0;
 
  private:
-  typedef std::set<DownloadItem*> DownloadSet;
+  typedef std::set<download::DownloadItem*> DownloadSet;
 
   // Maps states to the number of times they have been encountered
-  typedef std::map<DownloadItem::DownloadState, size_t> StateMap;
+  typedef std::map<download::DownloadItem::DownloadState, size_t> StateMap;
 
   // Called when we know that a download item is in a final state.
   // Note that this is not the same as it first transitioning in to the
   // final state; multiple notifications may occur once the item is in
   // that state.  So we keep our own track of transitions into final.
-  void DownloadInFinalState(DownloadItem* download);
+  void DownloadInFinalState(download::DownloadItem* download);
 
   void SignalIfFinished();
 
@@ -127,14 +129,14 @@ class DownloadTestObserver : public DownloadManager::Observer,
   // The observed download manager.
   DownloadManager* download_manager_;
 
-  // The set of DownloadItem's that have transitioned to their finished state
-  // since construction of this object.  When the size of this array
-  // reaches wait_count_, we're done.
+  // The set of download::DownloadItem's that have transitioned to their
+  // finished state since construction of this object.  When the size of this
+  // array reaches wait_count_, we're done.
   DownloadSet finished_downloads_;
 
-  // The set of DownloadItem's we are currently observing.  Generally there
-  // won't be any overlap with the above; once we see the final state
-  // on a DownloadItem, we'll stop observing it.
+  // The set of download::DownloadItem's we are currently observing.  Generally
+  // there won't be any overlap with the above; once we see the final state on a
+  // download::DownloadItem, we'll stop observing it.
   DownloadSet downloads_observed_;
 
   // The map of states to the number of times they have been observed since
@@ -173,8 +175,8 @@ class DownloadTestObserver : public DownloadManager::Observer,
 class DownloadTestObserverTerminal : public DownloadTestObserver {
  public:
   // Create an object that will be considered finished when |wait_count|
-  // download items have entered a terminal state (DownloadItem::IsDone() is
-  // true).
+  // download items have entered a terminal state
+  // (download::DownloadItem::IsDone() is true).
   DownloadTestObserverTerminal(
       DownloadManager* download_manager,
       size_t wait_count,
@@ -183,7 +185,7 @@ class DownloadTestObserverTerminal : public DownloadTestObserver {
   ~DownloadTestObserverTerminal() override;
 
  private:
-  bool IsDownloadInFinalState(DownloadItem* download) override;
+  bool IsDownloadInFinalState(download::DownloadItem* download) override;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTestObserverTerminal);
 };
@@ -203,7 +205,7 @@ class DownloadTestObserverInProgress : public DownloadTestObserver {
   ~DownloadTestObserverInProgress() override;
 
  private:
-  bool IsDownloadInFinalState(DownloadItem* download) override;
+  bool IsDownloadInFinalState(download::DownloadItem* download) override;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTestObserverInProgress);
 };
@@ -220,7 +222,7 @@ class DownloadTestObserverInterrupted : public DownloadTestObserver {
   ~DownloadTestObserverInterrupted() override;
 
  private:
-  bool IsDownloadInFinalState(DownloadItem* download) override;
+  bool IsDownloadInFinalState(download::DownloadItem* download) override;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadTestObserverInterrupted);
 };
@@ -233,7 +235,7 @@ class DownloadTestObserverInterrupted : public DownloadTestObserver {
 // This almost certainly means that a Download cancel has propagated through
 // the system.
 class DownloadTestFlushObserver : public DownloadManager::Observer,
-                                  public DownloadItem::Observer {
+                                  public download::DownloadItem::Observer {
  public:
   explicit DownloadTestFlushObserver(DownloadManager* download_manager);
   ~DownloadTestFlushObserver() override;
@@ -241,15 +243,16 @@ class DownloadTestFlushObserver : public DownloadManager::Observer,
   void WaitForFlush();
 
   // DownloadsManager observer methods.
-  void OnDownloadCreated(DownloadManager* manager, DownloadItem* item) override;
+  void OnDownloadCreated(DownloadManager* manager,
+                         download::DownloadItem* item) override;
   void ManagerGoingDown(DownloadManager* manager) override;
 
-  // DownloadItem observer methods.
-  void OnDownloadUpdated(DownloadItem* download) override;
-  void OnDownloadDestroyed(DownloadItem* download) override;
+  // download::DownloadItem observer methods.
+  void OnDownloadUpdated(download::DownloadItem* download) override;
+  void OnDownloadDestroyed(download::DownloadItem* download) override;
 
  private:
-  typedef std::set<DownloadItem*> DownloadSet;
+  typedef std::set<download::DownloadItem*> DownloadSet;
 
   // If we're waiting for that flush point, check the number
   // of downloads in the IN_PROGRESS state and take appropriate
@@ -264,8 +267,8 @@ class DownloadTestFlushObserver : public DownloadManager::Observer,
   DISALLOW_COPY_AND_ASSIGN(DownloadTestFlushObserver);
 };
 
-// Waits for a callback indicating that the DownloadItem is about to be created,
-// or that an error occurred and it won't be created.
+// Waits for a callback indicating that the download::DownloadItem is about to
+// be created, or that an error occurred and it won't be created.
 class DownloadTestItemCreationObserver
     : public base::RefCountedThreadSafe<DownloadTestItemCreationObserver> {
  public:
@@ -291,7 +294,7 @@ class DownloadTestItemCreationObserver
   ~DownloadTestItemCreationObserver();
 
   void DownloadItemCreationCallback(
-      DownloadItem* item,
+      download::DownloadItem* item,
       download::DownloadInterruptReason interrupt_reason);
 
   // The download creation information we received.
@@ -308,25 +311,25 @@ class DownloadTestItemCreationObserver
 };
 
 // Class for mornitoring whether a save package download finishes.
-class SavePackageFinishedObserver : public DownloadItem::Observer,
+class SavePackageFinishedObserver : public download::DownloadItem::Observer,
                                     public DownloadManager::Observer {
  public:
   SavePackageFinishedObserver(DownloadManager* manager,
                               const base::Closure& callback);
   ~SavePackageFinishedObserver() override;
 
-  // DownloadItem::Observer:
-  void OnDownloadUpdated(DownloadItem* download) override;
-  void OnDownloadDestroyed(DownloadItem* download) override;
+  // download::DownloadItem::Observer:
+  void OnDownloadUpdated(download::DownloadItem* download) override;
+  void OnDownloadDestroyed(download::DownloadItem* download) override;
 
   // DownloadManager::Observer:
   void OnDownloadCreated(DownloadManager* manager,
-                         DownloadItem* download) override;
+                         download::DownloadItem* download) override;
   void ManagerGoingDown(DownloadManager* manager) override;
 
  private:
   DownloadManager* download_manager_;
-  DownloadItem* download_;
+  download::DownloadItem* download_;
   base::Closure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePackageFinishedObserver);

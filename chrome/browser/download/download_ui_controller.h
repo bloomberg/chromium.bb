@@ -25,7 +25,7 @@ class DownloadUIController
 
     // This method is invoked to notify the UI of the new download |item|. Note
     // that |item| may be in any state by the time this method is invoked.
-    virtual void OnNewDownloadReady(content::DownloadItem* item) = 0;
+    virtual void OnNewDownloadReady(download::DownloadItem* item) = 0;
   };
 
   // |manager| is the download manager to observe for new downloads. If
@@ -42,9 +42,9 @@ class DownloadUIController
 
  private:
   void OnDownloadCreated(content::DownloadManager* manager,
-                         content::DownloadItem* item) override;
+                         download::DownloadItem* item) override;
   void OnDownloadUpdated(content::DownloadManager* manager,
-                         content::DownloadItem* item) override;
+                         download::DownloadItem* item) override;
 
   download::AllDownloadItemNotifier download_notifier_;
 

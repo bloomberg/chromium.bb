@@ -232,8 +232,9 @@ constexpr const base::FilePath::CharType* kDangerousFileTypes[] = {
     FILE_PATH_LITERAL(".dht"),         FILE_PATH_LITERAL(".shtml"),      // 306
     FILE_PATH_LITERAL(".shtm"),        FILE_PATH_LITERAL(".sht"),        // 308
     // NOTE! When you add a type here, please add the UMA value as a comment.
-    // These must all match DownloadItem.DangerousFileType in enums.xml.
-    // From 263 onward, they should also match SBClientDownloadExtensions.
+    // These must all match download::DownloadItem.DangerousFileType in
+    // enums.xml. From 263 onward, they should also match
+    // SBClientDownloadExtensions.
 };
 
 // The maximum size in KB for the file size metric, file size larger than this

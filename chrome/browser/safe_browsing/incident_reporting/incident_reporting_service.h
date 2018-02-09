@@ -263,7 +263,7 @@ class IncidentReportingService : public content::NotificationObserver {
                             std::unique_ptr<ClientIncidentResponse> response);
 
   // DownloadProtectionService::ClientDownloadRequestCallback implementation.
-  void OnClientDownloadRequest(content::DownloadItem* download,
+  void OnClientDownloadRequest(download::DownloadItem* download,
                                const ClientDownloadRequest* request);
 
   // content::NotificationObserver methods.

@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "components/download/public/common/download_item.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/download_url_parameters.h"
 
@@ -92,7 +92,7 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
   virtual void ShowDownloadInShell(DownloadItemImpl* download);
 
   // Handle any delegate portions of a state change operation on the
-  // DownloadItem.
+  // download::DownloadItem.
   virtual void DownloadRemoved(DownloadItemImpl* download);
 
   // Assert consistent state for delgate object at various transitions.

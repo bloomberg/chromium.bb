@@ -18,8 +18,11 @@ class TrustedSourcesManager;
 
 namespace content {
 class BrowserContext;
-class DownloadItem;
 class DownloadManager;
+}
+
+namespace download {
+class DownloadItem;
 }
 
 namespace user_prefs {
@@ -54,7 +57,7 @@ class DownloadPrefs {
       content::BrowserContext* browser_context);
 
   // Identify whether the downloaded item was downloaded from a trusted source.
-  bool IsFromTrustedSource(const content::DownloadItem& item);
+  bool IsFromTrustedSource(const download::DownloadItem& item);
 
   base::FilePath DownloadPath() const;
   void SetDownloadPath(const base::FilePath& path);

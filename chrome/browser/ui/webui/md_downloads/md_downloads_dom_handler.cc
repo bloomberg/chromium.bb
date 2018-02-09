@@ -33,10 +33,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/download/public/common/download_item.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -163,14 +163,14 @@ void MdDownloadsDOMHandler::HandleGetDownloads(const base::ListValue* args) {
 
 void MdDownloadsDOMHandler::HandleOpenFile(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_OPEN_FILE);
-  content::DownloadItem* file = GetDownloadByValue(args);
+  download::DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->OpenDownload();
 }
 
 void MdDownloadsDOMHandler::HandleDrag(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_DRAG);
-  content::DownloadItem* file = GetDownloadByValue(args);
+  download::DownloadItem* file = GetDownloadByValue(args);
   if (!file)
     return;
 
@@ -179,7 +179,7 @@ void MdDownloadsDOMHandler::HandleDrag(const base::ListValue* args) {
   if (!web_contents)
     return;
 
-  if (file->GetState() != content::DownloadItem::COMPLETE)
+  if (file->GetState() != download::DownloadItem::COMPLETE)
     return;
 
   gfx::Image* icon = g_browser_process->icon_manager()->LookupIconFromFilepath(
@@ -195,12 +195,11 @@ void MdDownloadsDOMHandler::HandleDrag(const base::ListValue* args) {
 
 void MdDownloadsDOMHandler::HandleSaveDangerous(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SAVE_DANGEROUS);
-  content::DownloadItem* file = GetDownloadByValue(args);
+  download::DownloadItem* file = GetDownloadByValue(args);
   SaveDownload(file);
 }
 
-void MdDownloadsDOMHandler::SaveDownload(
-    content::DownloadItem* download) {
+void MdDownloadsDOMHandler::SaveDownload(download::DownloadItem* download) {
   if (!download)
     return;
   // If danger type is NOT DANGEROUS_FILE, chrome shows users a download danger
@@ -233,21 +232,21 @@ void MdDownloadsDOMHandler::HandleDiscardDangerous(
 
 void MdDownloadsDOMHandler::HandleShow(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_SHOW);
-  content::DownloadItem* file = GetDownloadByValue(args);
+  download::DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->ShowDownloadInShell();
 }
 
 void MdDownloadsDOMHandler::HandlePause(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_PAUSE);
-  content::DownloadItem* file = GetDownloadByValue(args);
+  download::DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->Pause();
 }
 
 void MdDownloadsDOMHandler::HandleResume(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_RESUME);
-  content::DownloadItem* file = GetDownloadByValue(args);
+  download::DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->Resume();
 }
@@ -275,7 +274,7 @@ void MdDownloadsDOMHandler::HandleUndo(const base::ListValue* args) {
   }
 
   for (auto id : last_removed_ids) {
-    content::DownloadItem* download = GetDownloadById(id);
+    download::DownloadItem* download = GetDownloadById(id);
     if (!download)
       continue;
 
@@ -294,7 +293,7 @@ void MdDownloadsDOMHandler::HandleUndo(const base::ListValue* args) {
 
 void MdDownloadsDOMHandler::HandleCancel(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_CANCEL);
-  content::DownloadItem* file = GetDownloadByValue(args);
+  download::DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->Cancel(true);
 }
@@ -332,7 +331,7 @@ void MdDownloadsDOMHandler::RemoveDownloads(const DownloadVector& to_remove) {
 
     DownloadItemModel item_model(download);
     if (!item_model.ShouldShowInShelf() ||
-        download->GetState() == content::DownloadItem::IN_PROGRESS) {
+        download->GetState() == download::DownloadItem::IN_PROGRESS) {
       continue;
     }
 
@@ -375,7 +374,7 @@ void MdDownloadsDOMHandler::FinalizeRemovals() {
     removals_.pop_back();
 
     for (const auto id : remove) {
-      content::DownloadItem* download = GetDownloadById(id);
+      download::DownloadItem* download = GetDownloadById(id);
       if (download)
         download->Remove();
     }
@@ -383,7 +382,7 @@ void MdDownloadsDOMHandler::FinalizeRemovals() {
 }
 
 void MdDownloadsDOMHandler::ShowDangerPrompt(
-    content::DownloadItem* dangerous_item) {
+    download::DownloadItem* dangerous_item) {
   DownloadDangerPrompt* danger_prompt = DownloadDangerPrompt::Create(
       dangerous_item,
       GetWebUIWebContents(),
@@ -398,7 +397,7 @@ void MdDownloadsDOMHandler::DangerPromptDone(
     int download_id, DownloadDangerPrompt::Action action) {
   if (action != DownloadDangerPrompt::ACCEPT)
     return;
-  content::DownloadItem* item = NULL;
+  download::DownloadItem* item = NULL;
   if (GetMainNotifierManager())
     item = GetMainNotifierManager()->GetDownload(download_id);
   if (!item && GetOriginalNotifierManager())
@@ -416,7 +415,7 @@ bool MdDownloadsDOMHandler::IsDeletingHistoryAllowed() {
              GetPrefs()->GetBoolean(prefs::kAllowDeletingBrowserHistory);
 }
 
-content::DownloadItem* MdDownloadsDOMHandler::GetDownloadByValue(
+download::DownloadItem* MdDownloadsDOMHandler::GetDownloadByValue(
     const base::ListValue* args) {
   std::string download_id;
   if (!args->GetString(0, &download_id)) {
@@ -433,8 +432,8 @@ content::DownloadItem* MdDownloadsDOMHandler::GetDownloadByValue(
   return GetDownloadById(static_cast<uint32_t>(id));
 }
 
-content::DownloadItem* MdDownloadsDOMHandler::GetDownloadById(uint32_t id) {
-  content::DownloadItem* item = NULL;
+download::DownloadItem* MdDownloadsDOMHandler::GetDownloadById(uint32_t id) {
+  download::DownloadItem* item = NULL;
   if (GetMainNotifierManager())
     item = GetMainNotifierManager()->GetDownload(id);
   if (!item && GetOriginalNotifierManager())
@@ -454,7 +453,7 @@ void MdDownloadsDOMHandler::CheckForRemovedFiles() {
 }
 
 void MdDownloadsDOMHandler::RemoveDownloadInArgs(const base::ListValue* args) {
-  content::DownloadItem* file = GetDownloadByValue(args);
+  download::DownloadItem* file = GetDownloadByValue(args);
   if (!file)
     return;
 

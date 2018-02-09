@@ -13,8 +13,8 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_item.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
@@ -51,10 +51,11 @@ class CONTENT_EXPORT DownloadFile {
   // Upon completion, |initialize_callback| will be called on the UI
   // thread as per the comment above, passing DOWNLOAD_INTERRUPT_REASON_NONE
   // on success, or a network download interrupt reason on failure.
-  virtual void Initialize(const InitializeCallback& initialize_callback,
-                          const CancelRequestCallback& cancel_request_callback,
-                          const DownloadItem::ReceivedSlices& received_slices,
-                          bool is_parallelizable) = 0;
+  virtual void Initialize(
+      const InitializeCallback& initialize_callback,
+      const CancelRequestCallback& cancel_request_callback,
+      const download::DownloadItem::ReceivedSlices& received_slices,
+      bool is_parallelizable) = 0;
 
   // Add an input stream to write into a slice of the file, used for
   // parallel download.

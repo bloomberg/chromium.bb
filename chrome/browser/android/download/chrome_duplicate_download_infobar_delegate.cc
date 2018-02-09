@@ -16,6 +16,7 @@
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_item_utils.h"
 
 namespace {
 
@@ -43,7 +44,7 @@ ChromeDuplicateDownloadInfoBarDelegate::
 // static
 void ChromeDuplicateDownloadInfoBarDelegate::Create(
     InfoBarService* infobar_service,
-    content::DownloadItem* download_item,
+    download::DownloadItem* download_item,
     const base::FilePath& file_path,
     const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback) {
   infobar_service->AddInfoBar(DuplicateDownloadInfoBar::CreateInfoBar(
@@ -52,19 +53,21 @@ void ChromeDuplicateDownloadInfoBarDelegate::Create(
 }
 
 void ChromeDuplicateDownloadInfoBarDelegate::OnDownloadDestroyed(
-    content::DownloadItem* download_item) {
+    download::DownloadItem* download_item) {
   DCHECK_EQ(download_item, download_item_);
   download_item_ = nullptr;
 }
 
 ChromeDuplicateDownloadInfoBarDelegate::ChromeDuplicateDownloadInfoBarDelegate(
-    content::DownloadItem* download_item,
+    download::DownloadItem* download_item,
     const base::FilePath& file_path,
     const DownloadTargetDeterminerDelegate::ConfirmationCallback&
         file_selected_callback)
     : download_item_(download_item),
       file_path_(file_path),
-      is_off_the_record_(download_item->GetBrowserContext()->IsOffTheRecord()),
+      is_off_the_record_(
+          content::DownloadItemUtils::GetBrowserContext(download_item)
+              ->IsOffTheRecord()),
       file_selected_callback_(file_selected_callback) {
   download_item_->AddObserver(this);
   RecordDuplicateInfobarType(INFOBAR_SHOWN);

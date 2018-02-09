@@ -7,7 +7,7 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-namespace content {
+namespace download {
 class DownloadItem;
 }
 
@@ -18,7 +18,7 @@ class Image;
 // Helper function for download views to use when acting as a drag source for a
 // DownloadItem. If |icon| is NULL, no image will be accompany the drag. |view|
 // is only required for Mac OS X, elsewhere it can be NULL.
-void DragDownloadItem(const content::DownloadItem* download,
+void DragDownloadItem(const download::DownloadItem* download,
                       gfx::Image* icon,
                       gfx::NativeView view);
 

@@ -82,7 +82,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   void DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  content::DownloadItem* CreateDownloadItem(
+  download::DownloadItem* CreateDownloadItem(
       const std::string& guid,
       uint32_t id,
       const base::FilePath& current_path,
@@ -101,21 +101,22 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       int64_t received_bytes,
       int64_t total_bytes,
       const std::string& hash,
-      content::DownloadItem::DownloadState state,
+      download::DownloadItem::DownloadState state,
       download::DownloadDangerType danger_type,
       download::DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
       bool transient,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices) override;
+      const std::vector<download::DownloadItem::ReceivedSlice>& received_slices)
+      override;
   void PostInitialization(DownloadInitializationDependency dependency) override;
   bool IsManagerInitialized() const override;
   int InProgressCount() const override;
   int NonMaliciousInProgressCount() const override;
   BrowserContext* GetBrowserContext() const override;
   void CheckForHistoryFilesRemoval() override;
-  DownloadItem* GetDownload(uint32_t id) override;
-  DownloadItem* GetDownloadByGuid(const std::string& guid) override;
+  download::DownloadItem* GetDownload(uint32_t id) override;
+  download::DownloadItem* GetDownloadByGuid(const std::string& guid) override;
 
   // UrlDownloadHandler::Delegate implementation.
   void OnUrlDownloadStarted(
@@ -153,7 +154,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       int frame_tree_node_id);
 
  private:
-  using DownloadSet = std::set<DownloadItem*>;
+  using DownloadSet = std::set<download::DownloadItem*>;
   using DownloadGuidMap = std::unordered_map<std::string, DownloadItemImpl*>;
   using DownloadItemImplVector = std::vector<DownloadItemImpl*>;
 
@@ -274,7 +275,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   base::ObserverList<Observer> observers_;
 
   // Stores information about in-progress download items.
-  std::unique_ptr<DownloadItem::Observer> in_progress_download_observer_;
+  std::unique_ptr<download::DownloadItem::Observer>
+      in_progress_download_observer_;
 
   // The current active browser context.
   BrowserContext* browser_context_;

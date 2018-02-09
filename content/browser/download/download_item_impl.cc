@@ -5,12 +5,12 @@
 // File method ordering: Methods in this file are in the same order as
 // in download_item_impl.h, with the following exception: The public
 // interface Start is placed in chronological order with the other
-// (private) routines that together define a DownloadItem's state
+// (private) routines that together define a download::DownloadItem's state
 // transitions as the download progresses.  See "Download progression
 // cascade" later in this file.
 
-// A regular DownloadItem (created for a download in this session of the
-// browser) normally goes through the following states:
+// A regular download::DownloadItem (created for a download in this session of
+// the browser) normally goes through the following states:
 //      * Created (when download starts)
 //      * Destination filename determined
 //      * Entered into the history database.
@@ -59,6 +59,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
@@ -127,13 +128,13 @@ bool IsCancellation(download::DownloadInterruptReason reason) {
          reason == download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
 }
 
-std::string GetDownloadTypeNames(DownloadItem::DownloadType type) {
+std::string GetDownloadTypeNames(download::DownloadItem::DownloadType type) {
   switch (type) {
-    case DownloadItem::TYPE_ACTIVE_DOWNLOAD:
+    case download::DownloadItem::TYPE_ACTIVE_DOWNLOAD:
       return "NEW_DOWNLOAD";
-    case DownloadItem::TYPE_HISTORY_IMPORT:
+    case download::DownloadItem::TYPE_HISTORY_IMPORT:
       return "HISTORY_IMPORT";
-    case DownloadItem::TYPE_SAVE_PAGE_AS:
+    case download::DownloadItem::TYPE_SAVE_PAGE_AS:
       return "SAVE_PAGE_AS";
     default:
       NOTREACHED();
@@ -170,7 +171,7 @@ std::string GetDownloadDangerNames(download::DownloadDangerType type) {
 class DownloadItemActivatedData
     : public base::trace_event::ConvertableToTraceFormat {
  public:
-  DownloadItemActivatedData(DownloadItem::DownloadType download_type,
+  DownloadItemActivatedData(download::DownloadItem::DownloadType download_type,
                             uint32_t download_id,
                             std::string original_url,
                             std::string final_url,
@@ -211,7 +212,7 @@ class DownloadItemActivatedData
   }
 
  private:
-  DownloadItem::DownloadType download_type_;
+  download::DownloadItem::DownloadType download_type_;
   uint32_t download_id_;
   std::string original_url_;
   std::string final_url_;
@@ -223,8 +224,6 @@ class DownloadItemActivatedData
 };
 
 }  // namespace
-
-const uint32_t DownloadItem::kInvalidId = 0;
 
 // The maximum number of attempts we will make to resume automatically.
 const int DownloadItemImpl::kMaxAutoResumeAttempts = 5;
@@ -309,13 +308,13 @@ DownloadItemImpl::DownloadItemImpl(
     int64_t received_bytes,
     int64_t total_bytes,
     const std::string& hash,
-    DownloadItem::DownloadState state,
+    download::DownloadItem::DownloadState state,
     download::DownloadDangerType danger_type,
     download::DownloadInterruptReason interrupt_reason,
     bool opened,
     base::Time last_access_time,
     bool transient,
-    const std::vector<DownloadItem::ReceivedSlice>& received_slices)
+    const std::vector<download::DownloadItem::ReceivedSlice>& received_slices)
     : request_info_(url_chain,
                     referrer_url,
                     site_url,
@@ -356,6 +355,7 @@ DownloadItemImpl::DownloadItemImpl(
          state_ == CANCELLED_INTERNAL);
   DCHECK(base::IsValidGUID(guid_));
   Init(false /* not actively downloading */, TYPE_HISTORY_IMPORT);
+  AttachDownloadItemData();
 }
 
 // Constructing for a regular download:
@@ -425,6 +425,7 @@ DownloadItemImpl::DownloadItemImpl(
                                        DownloadCreateInfo(), true);
   delegate_->Attach();
   Init(true /* actively downloading */, TYPE_SAVE_PAGE_AS);
+  AttachDownloadItemData();
 }
 
 DownloadItemImpl::~DownloadItemImpl() {
@@ -654,7 +655,7 @@ const std::string& DownloadItemImpl::GetGuid() const {
   return guid_;
 }
 
-DownloadItem::DownloadState DownloadItemImpl::GetState() const {
+download::DownloadItem::DownloadState DownloadItemImpl::GetState() const {
   return InternalToExternalState(state_);
 }
 
@@ -821,7 +822,8 @@ base::FilePath DownloadItemImpl::GetFileNameToReportUser() const {
   return GetTargetFilePath().BaseName();
 }
 
-DownloadItem::TargetDisposition DownloadItemImpl::GetTargetDisposition() const {
+download::DownloadItem::TargetDisposition
+DownloadItemImpl::GetTargetDisposition() const {
   return destination_info_.target_disposition;
 }
 
@@ -835,7 +837,7 @@ bool DownloadItemImpl::GetFileExternallyRemoved() const {
 
 void DownloadItemImpl::DeleteFile(const base::Callback<void(bool)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (GetState() != DownloadItem::COMPLETE) {
+  if (GetState() != download::DownloadItem::COMPLETE) {
     // Pass a null WeakPtr so it doesn't call OnDownloadedFileRemoved.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -911,7 +913,7 @@ int64_t DownloadItemImpl::GetReceivedBytes() const {
   return destination_info_.received_bytes;
 }
 
-const std::vector<DownloadItem::ReceivedSlice>&
+const std::vector<download::DownloadItem::ReceivedSlice>&
 DownloadItemImpl::GetReceivedSlices() const {
   return received_slices_;
 }
@@ -934,7 +936,7 @@ bool DownloadItemImpl::CanOpenDownload() {
   // We can open the file or mark it for opening on completion if the download
   // is expected to complete successfully. Exclude temporary downloads, since
   // they aren't owned by the download system.
-  const bool is_complete = GetState() == DownloadItem::COMPLETE;
+  const bool is_complete = GetState() == download::DownloadItem::COMPLETE;
   return (!IsDone() || is_complete) && !IsTemporary() &&
          !file_externally_removed_ &&
          delegate_->IsMostRecentDownloadItemAtFilePath(this);
@@ -962,20 +964,6 @@ base::Time DownloadItemImpl::GetLastAccessTime() const {
 
 bool DownloadItemImpl::IsTransient() const {
   return transient_;
-}
-
-BrowserContext* DownloadItemImpl::GetBrowserContext() const {
-  return delegate_->GetBrowserContext();
-}
-
-WebContents* DownloadItemImpl::GetWebContents() const {
-  // TODO(rdsmith): Remove null check after removing GetWebContents() from
-  // paths that might be used by DownloadItems created from history import.
-  // Currently such items have null request_handle_s, where other items
-  // (regular and SavePackage downloads) have actual objects off the pointer.
-  if (job_)
-    return job_->GetWebContents();
-  return nullptr;
 }
 
 void DownloadItemImpl::OnContentCheckCompleted(
@@ -1179,6 +1167,24 @@ ResumeMode DownloadItemImpl::GetResumeMode() const {
   return ResumeMode::IMMEDIATE_CONTINUE;
 }
 
+void DownloadItemImpl::AttachDownloadItemData() {
+  DownloadItemUtils::AttachInfo(this, GetBrowserContext(), GetWebContents());
+}
+
+BrowserContext* DownloadItemImpl::GetBrowserContext() const {
+  return delegate_->GetBrowserContext();
+}
+
+WebContents* DownloadItemImpl::GetWebContents() const {
+  // TODO(rdsmith): Remove null check after removing GetWebContents() from
+  // paths that might be used by download::DownloadItems created from history
+  // import. Currently such items have null request_handle_s, where other items
+  // (regular and SavePackage downloads) have actual objects off the pointer.
+  if (job_)
+    return job_->GetWebContents();
+  return nullptr;
+}
+
 void DownloadItemImpl::UpdateValidatorsOnResumption(
     const DownloadCreateInfo& new_create_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1294,7 +1300,7 @@ void DownloadItemImpl::MarkAsComplete() {
 void DownloadItemImpl::DestinationUpdate(
     int64_t bytes_so_far,
     int64_t bytes_per_sec,
-    const std::vector<DownloadItem::ReceivedSlice>& received_slices) {
+    const std::vector<download::DownloadItem::ReceivedSlice>& received_slices) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // If the download is in any other state we don't expect any
   // DownloadDestinationObserver callbacks. An interruption or a cancellation
@@ -1360,8 +1366,9 @@ void DownloadItemImpl::DestinationCompleted(
 
 // **** Download progression cascade
 
-void DownloadItemImpl::Init(bool active,
-                            DownloadItem::DownloadType download_type) {
+void DownloadItemImpl::Init(
+    bool active,
+    download::DownloadItem::DownloadType download_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::string file_name;
@@ -1416,6 +1423,7 @@ void DownloadItemImpl::Start(
   if (job_->IsParallelizable()) {
     RecordParallelizableDownloadCount(START_COUNT, IsParallelDownloadEnabled());
   }
+  AttachDownloadItemData();
 
   deferred_interrupt_reason_ = download::DOWNLOAD_INTERRUPT_REASON_NONE;
 
@@ -1664,7 +1672,7 @@ void DownloadItemImpl::OnTargetResolved() {
   // OnTargetResolved() can result in an externally visible state where the
   // download is interrupted but doesn't have a target path associated with it.
   //
-  // While not terrible, this complicates the DownloadItem<->Observer
+  // While not terrible, this complicates the download::DownloadItem<->Observer
   // relationship since an observer that needs a target path in order to respond
   // properly to an interruption will need to wait for another OnDownloadUpdated
   // notification.  This requirement currently affects all of our UIs.
@@ -1690,11 +1698,11 @@ void DownloadItemImpl::OnTargetResolved() {
 // SavePackageFilePickerChromeOS), GData calls MaybeCompleteDownload() like it
 // does for non-SavePackage downloads, but SavePackage downloads never satisfy
 // IsDownloadReadyForCompletion(). GDataDownloadObserver manually calls
-// DownloadItem::UpdateObservers() when the upload completes so that SavePackage
-// notices that the upload has completed and runs its normal Finish() pathway.
-// MaybeCompleteDownload() is never the mechanism by which SavePackage completes
-// downloads. SavePackage always uses its own Finish() to mark downloads
-// complete.
+// download::DownloadItem::UpdateObservers() when the upload completes so that
+// SavePackage notices that the upload has completed and runs its normal
+// Finish() pathway. MaybeCompleteDownload() is never the mechanism by which
+// SavePackage completes downloads. SavePackage always uses its own Finish() to
+// mark downloads complete.
 void DownloadItemImpl::MaybeCompleteDownload() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!IsSavePackageDownload());
@@ -1907,9 +1915,9 @@ void DownloadItemImpl::InterruptWithPartialState(
       // if the state of the download remains constant until that stage
       // completes.
       //
-      // current_path_ may be empty because it is possible for DownloadItem to
-      // receive a DestinationError prior to the download file initialization
-      // complete callback.
+      // current_path_ may be empty because it is possible for
+      // download::DownloadItem to receive a DestinationError prior to the
+      // download file initialization complete callback.
       if (!IsCancellation(reason)) {
         UpdateProgress(bytes_so_far, 0);
         SetHashState(std::move(hash_state));
@@ -2345,8 +2353,8 @@ void DownloadItemImpl::ResumeInterruptedDownload(
                                 traffic_annotation));
   download_params->set_file_path(GetFullPath());
   if (received_slices_.size() > 0) {
-    std::vector<DownloadItem::ReceivedSlice> slices_to_download
-        = FindSlicesToDownload(received_slices_);
+    std::vector<download::DownloadItem::ReceivedSlice> slices_to_download =
+        FindSlicesToDownload(received_slices_);
     download_params->set_offset(slices_to_download[0].offset);
   } else {
     download_params->set_offset(GetReceivedBytes());
@@ -2387,7 +2395,7 @@ void DownloadItemImpl::ResumeInterruptedDownload(
 }
 
 // static
-DownloadItem::DownloadState DownloadItemImpl::InternalToExternalState(
+download::DownloadItem::DownloadState DownloadItemImpl::InternalToExternalState(
     DownloadInternalState internal_state) {
   switch (internal_state) {
     case INITIAL_INTERNAL:

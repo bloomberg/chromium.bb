@@ -40,12 +40,12 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/native_app_modal_dialog.h"
+#include "components/download/public/common/download_item.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -199,12 +199,12 @@ class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
  public:
   explicit TestDownloadManagerDelegate(Profile* profile)
       : ChromeDownloadManagerDelegate(profile) {
-    GetDownloadIdReceiverCallback().Run(content::DownloadItem::kInvalidId + 1);
+    GetDownloadIdReceiverCallback().Run(download::DownloadItem::kInvalidId + 1);
   }
   ~TestDownloadManagerDelegate() override {}
 
   bool DetermineDownloadTarget(
-      content::DownloadItem* item,
+      download::DownloadItem* item,
       const content::DownloadTargetCallback& callback) override {
     content::DownloadTargetCallback dangerous_callback =
         base::Bind(&TestDownloadManagerDelegate::SetDangerous, callback);
@@ -214,7 +214,7 @@ class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
 
   static void SetDangerous(const content::DownloadTargetCallback& callback,
                            const base::FilePath& target_path,
-                           content::DownloadItem::TargetDisposition disp,
+                           download::DownloadItem::TargetDisposition disp,
                            download::DownloadDangerType danger_type,
                            const base::FilePath& intermediate_path,
                            download::DownloadInterruptReason reason) {
@@ -293,9 +293,8 @@ class BrowserCloseManagerBrowserTest
         browser, slow_download_url, WindowOpenDisposition::NEW_BACKGROUND_TAB,
         ui_test_utils::BROWSER_TEST_NONE);
     observer.WaitForFinished();
-    EXPECT_EQ(
-        1UL,
-        observer.NumDownloadsSeenInState(content::DownloadItem::IN_PROGRESS));
+    EXPECT_EQ(1UL, observer.NumDownloadsSeenInState(
+                       download::DownloadItem::IN_PROGRESS));
   }
 
   void PrepareForDialog(content::WebContents* web_contents) {

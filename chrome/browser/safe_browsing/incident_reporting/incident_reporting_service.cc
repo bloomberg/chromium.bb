@@ -39,6 +39,7 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
@@ -1008,10 +1009,11 @@ void IncidentReportingService::OnReportUploadResult(
 }
 
 void IncidentReportingService::OnClientDownloadRequest(
-    content::DownloadItem* download,
+    download::DownloadItem* download,
     const ClientDownloadRequest* request) {
-  if (download->GetBrowserContext() &&
-      !download->GetBrowserContext()->IsOffTheRecord()) {
+  if (content::DownloadItemUtils::GetBrowserContext(download) &&
+      !content::DownloadItemUtils::GetBrowserContext(download)
+           ->IsOffTheRecord()) {
     download_metadata_manager_.SetRequest(download, request);
   }
 }

@@ -454,8 +454,8 @@ NSTextField* MakeLabel(
 }
 
 - (void)setStateFromDownload:(DownloadItemModel*)downloadModel {
-  const content::DownloadItem& download = *downloadModel->download();
-  const content::DownloadItem::DownloadState state = download.GetState();
+  const download::DownloadItem& download = *downloadModel->download();
+  const download::DownloadItem::DownloadState state = download.GetState();
   if (download.IsDangerous()) {
     if (!dangerView_) {
       for (NSView* view in [self normalViews]) {
@@ -484,7 +484,7 @@ NSTextField* MakeLabel(
   }
   downloadPath_ = download.GetFullPath();
   button_.dragDelegate =
-      (state == content::DownloadItem::COMPLETE ? self : nil);
+      (state == download::DownloadItem::COMPLETE ? self : nil);
 
   [button_
       cr_setAccessibilityLabel:l10n_util::GetNSStringWithFixup(
@@ -498,8 +498,8 @@ NSTextField* MakeLabel(
 
   button_.enabled = [&] {
     switch (state) {
-      case content::DownloadItem::IN_PROGRESS:
-      case content::DownloadItem::COMPLETE:
+      case download::DownloadItem::IN_PROGRESS:
+      case download::DownloadItem::COMPLETE:
         return YES;
       default:
         return NO;
@@ -510,7 +510,7 @@ NSTextField* MakeLabel(
       base::SysUTF16ToNSString(downloadModel->GetStatusText());
 
   switch (state) {
-    case content::DownloadItem::COMPLETE:
+    case download::DownloadItem::COMPLETE:
       [self setCanceled:NO];
       [progressIndicator_
           setState:MDDownloadItemProgressIndicatorState::kComplete
@@ -533,7 +533,7 @@ NSTextField* MakeLabel(
             [self finish];
           }];
       break;
-    case content::DownloadItem::IN_PROGRESS:
+    case download::DownloadItem::IN_PROGRESS:
       [self setCanceled:NO];
       [progressIndicator_
             setState:MDDownloadItemProgressIndicatorState::kInProgress
@@ -541,8 +541,8 @@ NSTextField* MakeLabel(
           animations:nil
           completion:nil];
       break;
-    case content::DownloadItem::CANCELLED:
-    case content::DownloadItem::INTERRUPTED:
+    case download::DownloadItem::CANCELLED:
+    case download::DownloadItem::INTERRUPTED:
       [self setCanceled:YES];
       [progressIndicator_
             setState:MDDownloadItemProgressIndicatorState::kInProgress
@@ -550,7 +550,7 @@ NSTextField* MakeLabel(
           animations:nil
           completion:nil];
       break;
-    case content::DownloadItem::MAX_DOWNLOAD_STATE:
+    case download::DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();
       break;
   }

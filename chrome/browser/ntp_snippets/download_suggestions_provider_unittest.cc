@@ -24,7 +24,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::DownloadItem;
+using download::DownloadItem;
 using content::FakeDownloadItem;
 using content::MockDownloadManager;
 using ntp_snippets::Category;

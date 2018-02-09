@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_ANDROID_DOWNLOAD_DANGEROUS_DOWNLOAD_INFOBAR_DELEGATE_H_
 
 #include "base/macros.h"
+#include "components/download/public/common/download_item.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
-#include "content/public/browser/download_item.h"
 
 class InfoBarService;
 
@@ -16,20 +16,19 @@ class InfoBarService;
 // since such navigations won't automatically cancel the underlying download.
 class DangerousDownloadInfoBarDelegate
     : public ConfirmInfoBarDelegate,
-      public content::DownloadItem::Observer {
+      public download::DownloadItem::Observer {
  public:
-  static void Create(
-      InfoBarService* infobar_service,
-      content::DownloadItem* download_item);
+  static void Create(InfoBarService* infobar_service,
+                     download::DownloadItem* download_item);
 
   ~DangerousDownloadInfoBarDelegate() override;
 
-  // content::DownloadItem::Observer:
-  void OnDownloadDestroyed(content::DownloadItem* download_item) override;
+  // download::DownloadItem::Observer:
+  void OnDownloadDestroyed(download::DownloadItem* download_item) override;
 
  private:
   explicit DangerousDownloadInfoBarDelegate(
-      content::DownloadItem* download_item);
+      download::DownloadItem* download_item);
 
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
@@ -42,7 +41,7 @@ class DangerousDownloadInfoBarDelegate
 
   // The download item that is requesting the infobar. Could get deleted while
   // the infobar is showing.
-  content::DownloadItem* download_item_;
+  download::DownloadItem* download_item_;
   base::string16 message_text_;
 
   DISALLOW_COPY_AND_ASSIGN(DangerousDownloadInfoBarDelegate);

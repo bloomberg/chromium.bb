@@ -8,7 +8,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "net/base/mime_util.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window.h"
@@ -26,13 +26,14 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/download_handler.h"
+#include "content/public/browser/download_item_utils.h"
 #endif
 
-void DragDownloadItem(const content::DownloadItem* download,
+void DragDownloadItem(const download::DownloadItem* download,
                       gfx::Image* icon,
                       gfx::NativeView view) {
   DCHECK(download);
-  DCHECK_EQ(content::DownloadItem::COMPLETE, download->GetState());
+  DCHECK_EQ(download::DownloadItem::COMPLETE, download->GetState());
 
   aura::Window* root_window = view->GetRootWindow();
   if (!root_window || !aura::client::GetDragDropClient(root_window))
@@ -49,7 +50,8 @@ void DragDownloadItem(const content::DownloadItem* download,
   base::FilePath full_path = download->GetTargetFilePath();
 #if defined(OS_CHROMEOS)
   // Overwrite |full_path| with drive cache file path when appropriate.
-  Profile* profile = Profile::FromBrowserContext(download->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(download));
   drive::DownloadHandler* drive_download_handler =
       drive::DownloadHandler::GetForProfile(profile);
   if (drive_download_handler &&

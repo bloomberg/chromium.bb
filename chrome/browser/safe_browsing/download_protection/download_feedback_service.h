@@ -20,7 +20,7 @@ namespace base {
 class TaskRunner;
 }
 
-namespace content {
+namespace download {
 class DownloadItem;
 }
 
@@ -49,17 +49,17 @@ class DownloadFeedbackService {
   // classification.
   static void MaybeStorePingsForDownload(DownloadCheckResult result,
                                          bool upload_requested,
-                                         content::DownloadItem* download,
+                                         download::DownloadItem* download,
                                          const std::string& ping,
                                          const std::string& response);
 
   // Test if pings have been stored for |download|.
-  static bool IsEnabledForDownload(const content::DownloadItem& download);
+  static bool IsEnabledForDownload(const download::DownloadItem& download);
 
   // Get the ping values stored in |download|. Returns false if no ping values
   // are present.
   static bool GetPingsForDownloadForTesting(
-      const content::DownloadItem& download,
+      const download::DownloadItem& download,
       std::string* ping,
       std::string* response);
 
@@ -70,7 +70,7 @@ class DownloadFeedbackService {
   // Begin download feedback for |download|. Then delete download file if
   // |download_command| is DISCARD, or run the KEEP command otherwise.This must
   // only be called if IsEnabledForDownload is true for |download|.
-  void BeginFeedbackForDownload(content::DownloadItem* download,
+  void BeginFeedbackForDownload(download::DownloadItem* download,
                                 DownloadCommands::Command download_command);
 
  private:

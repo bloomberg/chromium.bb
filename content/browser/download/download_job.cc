@@ -64,9 +64,10 @@ WebContents* DownloadJob::GetWebContents() const {
   return request_handle_ ? request_handle_->GetWebContents() : nullptr;
 }
 
-void DownloadJob::Start(DownloadFile* download_file_,
-                        const DownloadFile::InitializeCallback& callback,
-                        const DownloadItem::ReceivedSlices& received_slices) {
+void DownloadJob::Start(
+    DownloadFile* download_file_,
+    const DownloadFile::InitializeCallback& callback,
+    const download::DownloadItem::ReceivedSlices& received_slices) {
   GetDownloadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&DownloadFile::Initialize,

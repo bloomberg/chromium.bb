@@ -19,7 +19,7 @@
 #include "chrome/browser/download/download_target_info.h"
 #include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "components/download/public/common/download_danger_type.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "ppapi/features/features.h"
 
@@ -49,8 +49,7 @@ class DownloadPrefs;
 //
 // The only public entrypoint is the static Start() method which creates an
 // instance of DownloadTargetDeterminer.
-class DownloadTargetDeterminer
-    : public content::DownloadItem::Observer {
+class DownloadTargetDeterminer : public download::DownloadItem::Observer {
  public:
   using CompletionCallback =
       base::Callback<void(std::unique_ptr<DownloadTargetInfo>)>;
@@ -72,7 +71,7 @@ class DownloadTargetDeterminer
   //
   // Start() should be called on the UI thread.
   static void Start(
-      content::DownloadItem* download,
+      download::DownloadItem* download,
       const base::FilePath& initial_virtual_path,
       DownloadPathReservationTracker::FilenameConflictAction conflict_action,
       DownloadPrefs* download_prefs,
@@ -137,7 +136,7 @@ class DownloadTargetDeterminer
   // Construct a DownloadTargetDeterminer object. Constraints on the arguments
   // are as per Start() above.
   DownloadTargetDeterminer(
-      content::DownloadItem* download,
+      download::DownloadItem* download,
       const base::FilePath& initial_virtual_path,
       DownloadPathReservationTracker::FilenameConflictAction conflict_action,
       DownloadPrefs* download_prefs,
@@ -308,8 +307,8 @@ class DownloadTargetDeterminer
   safe_browsing::DownloadFileType::DangerLevel GetDangerLevel(
       PriorVisitsToReferrer visits) const;
 
-  // content::DownloadItem::Observer
-  void OnDownloadDestroyed(content::DownloadItem* download) override;
+  // download::DownloadItem::Observer
+  void OnDownloadDestroyed(download::DownloadItem* download) override;
 
   // state
   State next_state_;
@@ -325,7 +324,7 @@ class DownloadTargetDeterminer
   std::string mime_type_;
   bool is_filetype_handled_safely_;
 
-  content::DownloadItem* download_;
+  download::DownloadItem* download_;
   const bool is_resumption_;
   DownloadPrefs* download_prefs_;
   DownloadTargetDeterminerDelegate* delegate_;

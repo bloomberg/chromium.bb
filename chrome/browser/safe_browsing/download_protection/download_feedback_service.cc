@@ -13,7 +13,7 @@
 #include "base/supports_user_data.h"
 #include "base/task_runner.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
 
 namespace safe_browsing {
 
@@ -27,14 +27,14 @@ class DownloadFeedbackPings : public base::SupportsUserData::Data {
                         const std::string& ping_response);
 
   // Stores the ping data in the given |download|.
-  static void CreateForDownload(content::DownloadItem* download,
+  static void CreateForDownload(download::DownloadItem* download,
                                 const std::string& ping_request,
                                 const std::string& ping_response);
 
   // Returns the DownloadFeedbackPings object associated with |download|.  May
   // return NULL.
   static DownloadFeedbackPings* FromDownload(
-      const content::DownloadItem& download);
+      const download::DownloadItem& download);
 
   const std::string& ping_request() const { return ping_request_; }
 
@@ -51,7 +51,7 @@ DownloadFeedbackPings::DownloadFeedbackPings(const std::string& ping_request,
 
 // static
 void DownloadFeedbackPings::CreateForDownload(
-    content::DownloadItem* download,
+    download::DownloadItem* download,
     const std::string& ping_request,
     const std::string& ping_response) {
   download->SetUserData(kPingKey, std::make_unique<DownloadFeedbackPings>(
@@ -60,7 +60,7 @@ void DownloadFeedbackPings::CreateForDownload(
 
 // static
 DownloadFeedbackPings* DownloadFeedbackPings::FromDownload(
-    const content::DownloadItem& download) {
+    const download::DownloadItem& download) {
   return static_cast<DownloadFeedbackPings*>(download.GetUserData(kPingKey));
 }
 
@@ -83,7 +83,7 @@ DownloadFeedbackService::~DownloadFeedbackService() {
 void DownloadFeedbackService::MaybeStorePingsForDownload(
     DownloadCheckResult result,
     bool upload_requested,
-    content::DownloadItem* download,
+    download::DownloadItem* download,
     const std::string& ping,
     const std::string& response) {
   // We never upload SAFE files.
@@ -105,13 +105,13 @@ void DownloadFeedbackService::MaybeStorePingsForDownload(
 
 // static
 bool DownloadFeedbackService::IsEnabledForDownload(
-    const content::DownloadItem& download) {
+    const download::DownloadItem& download) {
   return !!DownloadFeedbackPings::FromDownload(download);
 }
 
 // static
 bool DownloadFeedbackService::GetPingsForDownloadForTesting(
-    const content::DownloadItem& download,
+    const download::DownloadItem& download,
     std::string* ping,
     std::string* response) {
   DownloadFeedbackPings* pings = DownloadFeedbackPings::FromDownload(download);
@@ -131,7 +131,7 @@ void DownloadFeedbackService::RecordEligibleDownloadShown(
 }
 
 void DownloadFeedbackService::BeginFeedbackForDownload(
-    content::DownloadItem* download,
+    download::DownloadItem* download,
     DownloadCommands::Command download_command) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   UMA_HISTOGRAM_ENUMERATION("SBDownloadFeedback.Activations",

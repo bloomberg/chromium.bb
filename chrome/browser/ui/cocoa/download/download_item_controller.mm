@@ -27,7 +27,8 @@
 #import "chrome/browser/ui/cocoa/ui_localizer.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
-#include "content/public/browser/download_item.h"
+#include "components/download/public/common/download_item.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/page_navigator.h"
 #include "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/cocoa/a11y_util.h"
@@ -37,7 +38,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/text_elider.h"
 
-using content::DownloadItem;
+using download::DownloadItem;
 using extensions::ExperienceSamplingEvent;
 
 namespace {
@@ -360,10 +361,10 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (void)initExperienceSamplingEvent:(const char*)event {
   sampling_event_.reset(new ExperienceSamplingEvent(
-      event,
-      bridge_->download_model()->download()->GetURL(),
+      event, bridge_->download_model()->download()->GetURL(),
       bridge_->download_model()->download()->GetReferrerUrl(),
-      bridge_->download_model()->download()->GetBrowserContext()));
+      content::DownloadItemUtils::GetBrowserContext(
+          bridge_->download_model()->download())));
 }
 
 - (void)updateExperienceSamplingEvent:(const char*)event {

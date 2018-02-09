@@ -24,14 +24,14 @@
 #include "base/time/time.h"
 #include "base/time/time_to_iso8601.h"
 #include "base/values.h"
+#include "components/download/public/common/download_item.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/download_item.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
 using download::DownloadDangerType;
-using content::DownloadItem;
+using download::DownloadItem;
 
 namespace {
 

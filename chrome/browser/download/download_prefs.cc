@@ -31,10 +31,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
+#include "components/download/public/common/download_item.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/save_page_type.h"
 
@@ -265,7 +265,7 @@ DownloadPrefs* DownloadPrefs::FromBrowserContext(
   return FromDownloadManager(BrowserContext::GetDownloadManager(context));
 }
 
-bool DownloadPrefs::IsFromTrustedSource(const content::DownloadItem& item) {
+bool DownloadPrefs::IsFromTrustedSource(const download::DownloadItem& item) {
   if (!trusted_sources_manager_)
     trusted_sources_manager_.reset(TrustedSourcesManager::Create());
   return trusted_sources_manager_->IsFromTrustedSource(item.GetURL());

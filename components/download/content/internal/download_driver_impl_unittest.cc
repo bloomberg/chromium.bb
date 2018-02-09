@@ -97,7 +97,7 @@ TEST_F(DownloadDriverImplTest, TestHardRecover) {
 // Ensure driver remove call before download created will result in content
 // layer remove call and not propagating the event to driver's client.
 TEST_F(DownloadDriverImplTest, RemoveBeforeCreated) {
-  using DownloadState = content::DownloadItem::DownloadState;
+  using DownloadState = download::DownloadItem::DownloadState;
 
   EXPECT_CALL(mock_manager_, IsManagerInitialized())
       .Times(1)
@@ -133,7 +133,7 @@ TEST_F(DownloadDriverImplTest, RemoveBeforeCreated) {
 
 // Ensures download updates from download items are propagated correctly.
 TEST_F(DownloadDriverImplTest, DownloadItemUpdateEvents) {
-  using DownloadState = content::DownloadItem::DownloadState;
+  using DownloadState = download::DownloadItem::DownloadState;
   using DownloadInterruptReason = download::DownloadInterruptReason;
 
   EXPECT_CALL(mock_manager_, IsManagerInitialized())
@@ -182,7 +182,7 @@ TEST_F(DownloadDriverImplTest, DownloadItemUpdateEvents) {
 }
 
 TEST_F(DownloadDriverImplTest, TestGetActiveDownloadsCall) {
-  using DownloadState = content::DownloadItem::DownloadState;
+  using DownloadState = download::DownloadItem::DownloadState;
   content::FakeDownloadItem item1;
   item1.SetState(DownloadState::IN_PROGRESS);
   item1.SetGuid(base::GenerateGUID());
@@ -199,7 +199,7 @@ TEST_F(DownloadDriverImplTest, TestGetActiveDownloadsCall) {
   item4.SetState(DownloadState::INTERRUPTED);
   item4.SetGuid(base::GenerateGUID());
 
-  std::vector<content::DownloadItem*> items{&item1, &item2, &item3, &item4};
+  std::vector<download::DownloadItem*> items{&item1, &item2, &item3, &item4};
 
   ON_CALL(mock_manager_, GetAllDownloads(_))
       .WillByDefault(PopulateVector(items));
@@ -217,7 +217,7 @@ TEST_F(DownloadDriverImplTest, TestGetActiveDownloadsCall) {
 }
 
 TEST_F(DownloadDriverImplTest, TestCreateDriverEntry) {
-  using DownloadState = content::DownloadItem::DownloadState;
+  using DownloadState = download::DownloadItem::DownloadState;
   content::FakeDownloadItem item;
   const std::string kGuid("dummy guid");
   const std::vector<GURL> kUrls = {GURL("http://www.example.com/foo.html"),

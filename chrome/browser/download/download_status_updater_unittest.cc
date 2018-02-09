@@ -29,21 +29,22 @@ class TestDownloadStatusUpdater : public DownloadStatusUpdater {
  public:
   TestDownloadStatusUpdater()
       : notification_count_(0), acceptable_notification_item_(nullptr) {}
-  void SetAcceptableNotificationItem(content::DownloadItem* item) {
+  void SetAcceptableNotificationItem(download::DownloadItem* item) {
     acceptable_notification_item_ = item;
   }
   size_t NotificationCount() {
     return notification_count_;
   }
  protected:
-  void UpdateAppIconDownloadProgress(content::DownloadItem* download) override {
+  void UpdateAppIconDownloadProgress(
+      download::DownloadItem* download) override {
     ++notification_count_;
     if (acceptable_notification_item_)
       EXPECT_EQ(acceptable_notification_item_, download);
   }
  private:
   size_t notification_count_;
-  content::DownloadItem* acceptable_notification_item_;
+  download::DownloadItem* acceptable_notification_item_;
 };
 
 class DownloadStatusUpdaterTest : public testing::Test {
@@ -102,13 +103,13 @@ class DownloadStatusUpdaterTest : public testing::Test {
     if (manager_items_.size() <= static_cast<size_t>(manager_index))
       manager_items_.resize(manager_index+1);
 
-    std::vector<content::DownloadItem*> item_list;
+    std::vector<download::DownloadItem*> item_list;
     for (int i = 0; i < item_count; ++i) {
       std::unique_ptr<content::MockDownloadItem> item =
           base::MakeUnique<StrictMock<content::MockDownloadItem>>();
-      content::DownloadItem::DownloadState state =
-          i < in_progress_count ? content::DownloadItem::IN_PROGRESS
-              : content::DownloadItem::CANCELLED;
+      download::DownloadItem::DownloadState state =
+          i < in_progress_count ? download::DownloadItem::IN_PROGRESS
+                                : download::DownloadItem::CANCELLED;
       EXPECT_CALL(*item, GetState()).WillRepeatedly(Return(state));
       manager_items_[manager_index].push_back(item.get());
       all_owned_items_.push_back(std::move(item));
@@ -150,7 +151,7 @@ class DownloadStatusUpdaterTest : public testing::Test {
   void CompleteItem(int manager_index, int item_index) {
     content::MockDownloadItem* item(Item(manager_index, item_index));
     EXPECT_CALL(*item, GetState())
-        .WillRepeatedly(Return(content::DownloadItem::COMPLETE));
+        .WillRepeatedly(Return(download::DownloadItem::COMPLETE));
     updater_->OnDownloadUpdated(managers_[manager_index].get(), item);
   }
 
@@ -169,9 +170,9 @@ class DownloadStatusUpdaterTest : public testing::Test {
   // top-level vector is the manager index, and the inner vector is the list of
   // items of that manager. The inner vector is a vector<DownloadItem*> for
   // compatibility with the return value of DownloadManager::GetAllDownloads().
-  std::vector<std::vector<content::DownloadItem*>> manager_items_;
+  std::vector<std::vector<download::DownloadItem*>> manager_items_;
   // An owning container for items in |manager_items_|.
-  std::vector<std::unique_ptr<content::DownloadItem>> all_owned_items_;
+  std::vector<std::unique_ptr<download::DownloadItem>> all_owned_items_;
   int manager_observer_index_;
 
   std::vector<content::DownloadManager::Observer*> manager_observers_;
@@ -213,7 +214,7 @@ TEST_F(DownloadStatusUpdaterTest, OneManagerNoItems) {
 }
 
 // Test updater with non-null manager, including transition an item to
-// |content::DownloadItem::COMPLETE| and adding a new item.
+// |download::DownloadItem::COMPLETE| and adding a new item.
 TEST_F(DownloadStatusUpdaterTest, OneManagerManyItems) {
   SetupManagers(1);
   AddItems(0, 3, 2);

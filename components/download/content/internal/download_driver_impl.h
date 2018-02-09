@@ -28,7 +28,7 @@ class DownloadDriverImpl : public DownloadDriver,
                            public AllDownloadItemNotifier::Observer {
  public:
   // Creates a driver entry based on a download item.
-  static DriverEntry CreateDriverEntry(const content::DownloadItem* item);
+  static DriverEntry CreateDriverEntry(const download::DownloadItem* item);
 
   // Create the driver.
   DownloadDriverImpl(content::DownloadManager* manager);
@@ -55,11 +55,11 @@ class DownloadDriverImpl : public DownloadDriver,
   void OnManagerInitialized(content::DownloadManager* manager) override;
   void OnManagerGoingDown(content::DownloadManager* manager) override;
   void OnDownloadCreated(content::DownloadManager* manager,
-                         content::DownloadItem* item) override;
+                         download::DownloadItem* item) override;
   void OnDownloadUpdated(content::DownloadManager* manager,
-                         content::DownloadItem* item) override;
+                         download::DownloadItem* item) override;
   void OnDownloadRemoved(content::DownloadManager* manager,
-                         content::DownloadItem* item) override;
+                         download::DownloadItem* item) override;
 
   void OnHardRecoverComplete(bool success);
 

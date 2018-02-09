@@ -9,8 +9,11 @@
 #include "components/safe_browsing/proto/csd.pb.h"
 
 namespace content {
-class DownloadItem;
 class WebContents;
+}
+
+namespace download {
+class DownloadItem;
 }
 
 // Prompts the user for whether to Keep a dangerous DownloadItem using native
@@ -41,7 +44,7 @@ class DownloadDangerPrompt {
   // CANCEL or DISMISS action is invoked. |done| may be called with the CANCEL
   // action even when |item| is either no longer dangerous or no longer in
   // progress, or if the tab corresponding to |web_contents| is closing.
-  static DownloadDangerPrompt* Create(content::DownloadItem* item,
+  static DownloadDangerPrompt* Create(download::DownloadItem* item,
                                       content::WebContents* web_contents,
                                       bool show_context,
                                       const OnDone& done);
@@ -59,17 +62,18 @@ class DownloadDangerPrompt {
   static void SendSafeBrowsingDownloadReport(
       safe_browsing::ClientSafeBrowsingReportRequest::ReportType report_type,
       bool did_proceed,
-      const content::DownloadItem& download);
+      const download::DownloadItem& download);
 
  protected:
   // Records UMA stats for a download danger prompt event.
-  static void RecordDownloadDangerPrompt(bool did_proceed,
-                                         const content::DownloadItem& download);
+  static void RecordDownloadDangerPrompt(
+      bool did_proceed,
+      const download::DownloadItem& download);
 
  private:
   // Returns a toolkit-views based download danger prompt.
   static DownloadDangerPrompt* CreateDownloadDangerPromptViews(
-      content::DownloadItem* item,
+      download::DownloadItem* item,
       content::WebContents* web_contents,
       bool show_context,
       const OnDone& done);

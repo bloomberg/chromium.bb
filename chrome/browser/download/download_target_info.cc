@@ -7,7 +7,7 @@
 #include "chrome/common/safe_browsing/file_type_policies.h"
 
 DownloadTargetInfo::DownloadTargetInfo()
-    : target_disposition(content::DownloadItem::TARGET_DISPOSITION_OVERWRITE),
+    : target_disposition(download::DownloadItem::TARGET_DISPOSITION_OVERWRITE),
       danger_type(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS),
       danger_level(safe_browsing::DownloadFileType::NOT_DANGEROUS),
       is_filetype_handled_safely(false),

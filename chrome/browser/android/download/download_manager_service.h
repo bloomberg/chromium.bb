@@ -20,7 +20,7 @@
 
 using base::android::JavaParamRef;
 
-namespace content {
+namespace download {
 class DownloadItem;
 }
 
@@ -31,13 +31,14 @@ class DownloadManagerService
       public DownloadHistory::Observer {
  public:
   static void OnDownloadCanceled(
-      content::DownloadItem* download,
+      download::DownloadItem* download,
       DownloadController::DownloadCancelReason reason);
 
   static DownloadManagerService* GetInstance();
 
   static base::android::ScopedJavaLocalRef<jobject> CreateJavaDownloadInfo(
-      JNIEnv* env, content::DownloadItem* item);
+      JNIEnv* env,
+      download::DownloadItem* item);
 
   DownloadManagerService();
   ~DownloadManagerService() override;
@@ -101,11 +102,11 @@ class DownloadManagerService
 
   // AllDownloadItemNotifier::Observer methods.
   void OnDownloadCreated(content::DownloadManager* manager,
-                         content::DownloadItem* item) override;
+                         download::DownloadItem* item) override;
   void OnDownloadUpdated(content::DownloadManager* manager,
-                         content::DownloadItem* item) override;
+                         download::DownloadItem* item) override;
   void OnDownloadRemoved(content::DownloadManager* manager,
-                         content::DownloadItem* item) override;
+                         download::DownloadItem* item) override;
 
  protected:
   // Called to get the content::DownloadManager instance.

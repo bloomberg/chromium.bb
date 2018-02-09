@@ -15,7 +15,7 @@
 #include "chrome/browser/download/download_target_info.h"
 #include "chrome/common/safe_browsing/download_file_types.pb.h"
 
-namespace content {
+namespace download {
 class DownloadItem;
 }
 
@@ -34,7 +34,7 @@ class DownloadItemModel {
  public:
   // Constructs a DownloadItemModel. The caller must ensure that |download|
   // outlives this object.
-  explicit DownloadItemModel(content::DownloadItem* download);
+  explicit DownloadItemModel(download::DownloadItem* download);
   ~DownloadItemModel();
 
   // Returns a long descriptive string for a download that's in the INTERRUPTED
@@ -163,7 +163,7 @@ class DownloadItemModel {
   // Set whether the download is being revived.
   void SetIsBeingRevived(bool is_being_revived);
 
-  content::DownloadItem* download() { return download_; }
+  download::DownloadItem* download() { return download_; }
 
   // Returns a string representations of the current download progress sizes. If
   // the total size of the download is known, this string looks like: "100/200
@@ -179,7 +179,7 @@ class DownloadItemModel {
   // The DownloadItem that this model represents. Note that DownloadItemModel
   // itself shouldn't maintain any state since there can be more than one
   // DownloadItemModel in use with the same DownloadItem.
-  content::DownloadItem* download_;
+  download::DownloadItem* download_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemModel);
 };

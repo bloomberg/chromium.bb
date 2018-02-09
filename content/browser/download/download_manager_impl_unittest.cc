@@ -25,6 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_item.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_factory.h"
@@ -35,7 +36,6 @@
 #include "content/browser/download/mock_download_file.h"
 #include "content/browser/download/mock_download_item_impl.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_context.h"
@@ -85,13 +85,14 @@ class MockDownloadManagerDelegate : public DownloadManagerDelegate {
   MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD1(GetNextId, void(const DownloadIdCallback&));
   MOCK_METHOD2(DetermineDownloadTarget,
-               bool(DownloadItem* item,
+               bool(download::DownloadItem* item,
                     const DownloadTargetCallback&));
   MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const base::FilePath&));
   MOCK_METHOD2(ShouldCompleteDownload,
-               bool(DownloadItem*, const base::Closure&));
+               bool(download::DownloadItem*, const base::Closure&));
   MOCK_METHOD2(ShouldOpenDownload,
-               bool(DownloadItem*, const DownloadOpenDelayedCallback&));
+               bool(download::DownloadItem*,
+                    const DownloadOpenDelayedCallback&));
   MOCK_METHOD4(GetSaveDir, void(BrowserContext*,
                                 base::FilePath*, base::FilePath*, bool*));
   MOCK_METHOD5(ChooseSavePath, void(
@@ -151,13 +152,14 @@ class MockDownloadItemFactory
       int64_t received_bytes,
       int64_t total_bytes,
       const std::string& hash,
-      DownloadItem::DownloadState state,
+      download::DownloadItem::DownloadState state,
       download::DownloadDangerType danger_type,
       download::DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
       bool transient,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices) override;
+      const std::vector<download::DownloadItem::ReceivedSlice>& received_slices)
+      override;
   DownloadItemImpl* CreateActiveItem(DownloadItemImplDelegate* delegate,
                                      uint32_t download_id,
                                      const DownloadCreateInfo& info) override;
@@ -228,13 +230,13 @@ DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
     int64_t received_bytes,
     int64_t total_bytes,
     const std::string& hash,
-    DownloadItem::DownloadState state,
+    download::DownloadItem::DownloadState state,
     download::DownloadDangerType danger_type,
     download::DownloadInterruptReason interrupt_reason,
     bool opened,
     base::Time last_access_time,
     bool transient,
-    const std::vector<DownloadItem::ReceivedSlice>& received_slices) {
+    const std::vector<download::DownloadItem::ReceivedSlice>& received_slices) {
   DCHECK(items_.find(download_id) == items_.end());
   MockDownloadItemImpl* result =
       new StrictMock<MockDownloadItemImpl>(&item_delegate_);
@@ -371,8 +373,8 @@ class MockDownloadManagerObserver : public DownloadManager::Observer {
  public:
   MockDownloadManagerObserver() {}
   ~MockDownloadManagerObserver() {}
-  MOCK_METHOD2(OnDownloadCreated, void(
-        DownloadManager*, DownloadItem*));
+  MOCK_METHOD2(OnDownloadCreated,
+               void(DownloadManager*, download::DownloadItem*));
   MOCK_METHOD1(ManagerGoingDown, void(DownloadManager*));
   MOCK_METHOD2(SelectFileDialogDisplayed, void(DownloadManager*, int32_t));
 };
@@ -394,7 +396,8 @@ class DownloadManagerTest : public testing::Test {
 
   DownloadManagerTest()
       : callback_called_(false),
-        target_disposition_(DownloadItem::TARGET_DISPOSITION_OVERWRITE),
+        target_disposition_(
+            download::DownloadItem::TARGET_DISPOSITION_OVERWRITE),
         danger_type_(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS),
         interrupt_reason_(download::DOWNLOAD_INTERRUPT_REASON_NONE),
         next_download_id_(0) {}
@@ -439,7 +442,7 @@ class DownloadManagerTest : public testing::Test {
     while (MockDownloadItemImpl*
            item = mock_download_item_factory_->PopItem()) {
       EXPECT_CALL(*item, GetState())
-          .WillOnce(Return(DownloadItem::CANCELLED));
+          .WillOnce(Return(download::DownloadItem::CANCELLED));
     }
     EXPECT_CALL(GetMockObserver(), ManagerGoingDown(download_manager_.get()))
         .WillOnce(Return());
@@ -498,7 +501,7 @@ class DownloadManagerTest : public testing::Test {
 
   void DownloadTargetDeterminedCallback(
       const base::FilePath& target_path,
-      DownloadItem::TargetDisposition disposition,
+      download::DownloadItem::TargetDisposition disposition,
       download::DownloadDangerType danger_type,
       const base::FilePath& intermediate_path,
       download::DownloadInterruptReason interrupt_reason) {
@@ -529,7 +532,7 @@ class DownloadManagerTest : public testing::Test {
   // Target detetermined callback.
   bool callback_called_;
   base::FilePath target_path_;
-  DownloadItem::TargetDisposition target_disposition_;
+  download::DownloadItem::TargetDisposition target_disposition_;
   download::DownloadDangerType danger_type_;
   base::FilePath intermediate_path_;
   download::DownloadInterruptReason interrupt_reason_;
@@ -590,7 +593,7 @@ TEST_F(DownloadManagerTest, DetermineDownloadTarget_True) {
   // Put a mock we have a handle to on the download manager.
   MockDownloadItemImpl& item(AddItemToManager());
   EXPECT_CALL(item, GetState())
-      .WillRepeatedly(Return(DownloadItem::IN_PROGRESS));
+      .WillRepeatedly(Return(download::DownloadItem::IN_PROGRESS));
 
   EXPECT_CALL(GetMockDownloadManagerDelegate(),
               DetermineDownloadTarget(&item, _))
@@ -615,7 +618,8 @@ TEST_F(DownloadManagerTest, DetermineDownloadTarget_False) {
   DetermineDownloadTarget(&item);
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(path, target_path_);
-  EXPECT_EQ(DownloadItem::TARGET_DISPOSITION_OVERWRITE, target_disposition_);
+  EXPECT_EQ(download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+            target_disposition_);
   EXPECT_EQ(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, danger_type_);
   EXPECT_EQ(path, intermediate_path_);
   EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason_);
@@ -626,22 +630,26 @@ TEST_F(DownloadManagerTest, GetDownloadByGuid) {
     AddItemToManager();
 
   MockDownloadItemImpl& item = GetMockDownloadItem(0);
-  DownloadItem* result = download_manager_->GetDownloadByGuid(item.GetGuid());
+  download::DownloadItem* result =
+      download_manager_->GetDownloadByGuid(item.GetGuid());
   ASSERT_TRUE(result);
-  ASSERT_EQ(static_cast<DownloadItem*>(&item), result);
+  ASSERT_EQ(static_cast<download::DownloadItem*>(&item), result);
 
   ASSERT_FALSE(download_manager_->GetDownloadByGuid(""));
 
   const char kGuid[] = "8DF158E8-C980-4618-BB03-EBA3242EB48B";
-  DownloadItem* persisted_item = download_manager_->CreateDownloadItem(
-      kGuid, 10, base::FilePath(), base::FilePath(), std::vector<GURL>(),
-      GURL("http://example.com/a"), GURL("http://example.com/a"),
-      GURL("http://example.com/a"), GURL("http://example.com/a"),
-      "application/octet-stream", "application/octet-stream", base::Time::Now(),
-      base::Time::Now(), std::string(), std::string(), 10, 10, std::string(),
-      DownloadItem::INTERRUPTED, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false,
-      base::Time::Now(), true, std::vector<DownloadItem::ReceivedSlice>());
+  download::DownloadItem* persisted_item =
+      download_manager_->CreateDownloadItem(
+          kGuid, 10, base::FilePath(), base::FilePath(), std::vector<GURL>(),
+          GURL("http://example.com/a"), GURL("http://example.com/a"),
+          GURL("http://example.com/a"), GURL("http://example.com/a"),
+          "application/octet-stream", "application/octet-stream",
+          base::Time::Now(), base::Time::Now(), std::string(), std::string(),
+          10, 10, std::string(), download::DownloadItem::INTERRUPTED,
+          download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+          download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false,
+          base::Time::Now(), true,
+          std::vector<download::DownloadItem::ReceivedSlice>());
   ASSERT_TRUE(persisted_item);
 
   ASSERT_EQ(persisted_item, download_manager_->GetDownloadByGuid(kGuid));
@@ -663,7 +671,7 @@ TEST_F(DownloadManagerTest, RemoveDownloadsByURL) {
     MockDownloadItemImpl& item(AddItemToManager());
     EXPECT_CALL(item, GetStartTime()).WillRepeatedly(Return(now));
     EXPECT_CALL(item, GetState())
-        .WillRepeatedly(Return(DownloadItem::COMPLETE));
+        .WillRepeatedly(Return(download::DownloadItem::COMPLETE));
   }
 
   EXPECT_CALL(GetMockDownloadItem(0), Remove());

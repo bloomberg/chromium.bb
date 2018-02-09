@@ -250,7 +250,7 @@ void DownloadResourceHandler::OnStart(
   // download entirely.
   if (create_info->result ==
           download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED &&
-      create_info->download_id == DownloadItem::kInvalidId) {
+      create_info->download_id == download::DownloadItem::kInvalidId) {
     if (!callback.is_null())
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,

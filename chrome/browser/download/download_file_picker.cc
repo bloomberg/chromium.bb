@@ -8,12 +8,13 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "components/download/public/common/download_item.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
 
-using content::DownloadItem;
+using download::DownloadItem;
 using content::DownloadManager;
 using content::WebContents;
 
@@ -55,13 +56,13 @@ DownloadFilePicker::DownloadFilePicker(DownloadItem* item,
     : suggested_path_(suggested_path),
       file_selected_callback_(callback),
       should_record_file_picker_result_(false) {
-  const DownloadPrefs* prefs =
-      DownloadPrefs::FromBrowserContext(item->GetBrowserContext());
+  const DownloadPrefs* prefs = DownloadPrefs::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(item));
   DCHECK(prefs);
   // Only record UMA if we aren't prompting the user for all downloads.
   should_record_file_picker_result_ = !prefs->PromptForDownload();
 
-  WebContents* web_contents = item->GetWebContents();
+  WebContents* web_contents = content::DownloadItemUtils::GetWebContents(item);
   if (!web_contents || !web_contents->GetNativeView())
     return;
 

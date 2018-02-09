@@ -18,6 +18,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
@@ -201,34 +202,34 @@ class DownloadMetadataManagerTestBase : public ::testing::Test {
     test_item_.reset(new NiceMock<content::MockDownloadItem>);
     ON_CALL(*test_item_, GetId())
         .WillByDefault(Return(kTestDownloadId));
-    ON_CALL(*test_item_, GetBrowserContext())
-        .WillByDefault(Return(&profile_));
     ON_CALL(*test_item_, GetEndTime())
         .WillByDefault(Return(base::Time::FromJsTime(kTestDownloadEndTimeMs)));
     ON_CALL(*test_item_, GetState())
-        .WillByDefault(Return(content::DownloadItem::COMPLETE));
+        .WillByDefault(Return(download::DownloadItem::COMPLETE));
+    content::DownloadItemUtils::AttachInfo(test_item_.get(), &profile_,
+                                           nullptr);
     dm_observer_->OnDownloadCreated(&download_manager_, test_item_.get());
 
     // Add another item.
     other_item_.reset(new NiceMock<content::MockDownloadItem>);
     ON_CALL(*other_item_, GetId())
         .WillByDefault(Return(kOtherDownloadId));
-    ON_CALL(*other_item_, GetBrowserContext())
-        .WillByDefault(Return(&profile_));
-    ON_CALL(*test_item_, GetEndTime())
+    ON_CALL(*other_item_, GetEndTime())
         .WillByDefault(Return(base::Time::FromJsTime(kTestDownloadEndTimeMs)));
+    content::DownloadItemUtils::AttachInfo(other_item_.get(), &profile_,
+                                           nullptr);
     dm_observer_->OnDownloadCreated(&download_manager_, other_item_.get());
 
     // Add an item with an id of zero.
     zero_item_.reset(new NiceMock<content::MockDownloadItem>);
     ON_CALL(*zero_item_, GetId())
         .WillByDefault(Return(0));
-    ON_CALL(*zero_item_, GetBrowserContext())
-        .WillByDefault(Return(&profile_));
     ON_CALL(*zero_item_, GetEndTime())
         .WillByDefault(Return(base::Time::FromJsTime(kTestDownloadEndTimeMs)));
     ON_CALL(*zero_item_, GetState())
-        .WillByDefault(Return(content::DownloadItem::COMPLETE));
+        .WillByDefault(Return(download::DownloadItem::COMPLETE));
+    content::DownloadItemUtils::AttachInfo(zero_item_.get(), &profile_,
+                                           nullptr);
     dm_observer_->OnDownloadCreated(&download_manager_, zero_item_.get());
 
     ON_CALL(download_manager_, GetAllDownloads(_))
@@ -536,13 +537,13 @@ TEST_F(DownloadMetadataManagerTestBase, ActiveDownloadNoRequest) {
 
   // The test item is in progress.
   ON_CALL(*test_item_, GetState())
-      .WillByDefault(Return(content::DownloadItem::IN_PROGRESS));
+      .WillByDefault(Return(download::DownloadItem::IN_PROGRESS));
   test_item_->NotifyObserversDownloadUpdated();
   test_item_->NotifyObserversDownloadUpdated();
 
   // The test item completes.
   ON_CALL(*test_item_, GetState())
-      .WillByDefault(Return(content::DownloadItem::COMPLETE));
+      .WillByDefault(Return(download::DownloadItem::COMPLETE));
   test_item_->NotifyObserversDownloadUpdated();
 
   RunAllTasks();
@@ -566,7 +567,7 @@ TEST_F(DownloadMetadataManagerTestBase, ActiveDownloadWithRequest) {
 
   // The test item is in progress.
   ON_CALL(*test_item_, GetState())
-      .WillByDefault(Return(content::DownloadItem::IN_PROGRESS));
+      .WillByDefault(Return(download::DownloadItem::IN_PROGRESS));
   test_item_->NotifyObserversDownloadUpdated();
 
   // A request is set for it.
@@ -577,7 +578,7 @@ TEST_F(DownloadMetadataManagerTestBase, ActiveDownloadWithRequest) {
 
   // The test item completes.
   ON_CALL(*test_item_, GetState())
-      .WillByDefault(Return(content::DownloadItem::COMPLETE));
+      .WillByDefault(Return(download::DownloadItem::COMPLETE));
   test_item_->NotifyObserversDownloadUpdated();
 
   RunAllTasks();

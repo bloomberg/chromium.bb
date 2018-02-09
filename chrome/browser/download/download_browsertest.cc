@@ -78,6 +78,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_item.h"
 #include "components/history/content/browser/download_conversions.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/download_row.h"
@@ -87,7 +88,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/proto/csd.pb.h"
-#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/notification_source.h"
@@ -128,7 +128,7 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
-using content::DownloadItem;
+using download::DownloadItem;
 using content::DownloadManager;
 using content::DownloadUrlParameters;
 using content::WebContents;
@@ -178,7 +178,7 @@ class CreatedObserver : public content::DownloadManager::Observer {
 
  private:
   void OnDownloadCreated(content::DownloadManager* manager,
-                         content::DownloadItem* item) override {
+                         download::DownloadItem* item) override {
     DCHECK_EQ(manager_, manager);
     if (waiting_)
       base::RunLoop::QuitCurrentWhenIdleDeprecated();
@@ -190,7 +190,7 @@ class CreatedObserver : public content::DownloadManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(CreatedObserver);
 };
 
-class PercentWaiter : public content::DownloadItem::Observer {
+class PercentWaiter : public download::DownloadItem::Observer {
  public:
   explicit PercentWaiter(DownloadItem* item) : item_(item) {
     item_->AddObserver(this);
@@ -211,7 +211,7 @@ class PercentWaiter : public content::DownloadItem::Observer {
   }
 
  private:
-  void OnDownloadUpdated(content::DownloadItem* item) override {
+  void OnDownloadUpdated(download::DownloadItem* item) override {
     DCHECK_EQ(item_, item);
     if (!error_ &&
         ((prev_percent_ > item_->PercentComplete()) ||
@@ -225,13 +225,13 @@ class PercentWaiter : public content::DownloadItem::Observer {
       base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
-  void OnDownloadDestroyed(content::DownloadItem* item) override {
+  void OnDownloadDestroyed(download::DownloadItem* item) override {
     DCHECK_EQ(item_, item);
     item_->RemoveObserver(this);
     item_ = NULL;
   }
 
-  content::DownloadItem* item_;
+  download::DownloadItem* item_;
   bool waiting_ = false;
   bool error_ = false;
   int prev_percent_ = 0;
@@ -382,7 +382,7 @@ class HistoryObserver : public DownloadHistory::Observer {
     callback_ = callback;
   }
 
-  void OnDownloadStored(content::DownloadItem* item,
+  void OnDownloadStored(download::DownloadItem* item,
                         const history::DownloadRow& info) override {
     if (!callback_.is_null() && (!callback_.Run(info)))
         return;
@@ -929,7 +929,7 @@ class DownloadTest : public InProcessBrowserTest {
       // won't be.
       creation_observer->WaitForDownloadItemCreation();
 
-      EXPECT_NE(content::DownloadItem::kInvalidId,
+      EXPECT_NE(download::DownloadItem::kInvalidId,
                 creation_observer->download_id());
     } else {
       // Navigate to URL normally, wait until done.
@@ -966,7 +966,7 @@ class DownloadTest : public InProcessBrowserTest {
       EXPECT_EQ(download_url, item->GetURL());
       EXPECT_EQ(download_info.reason, item->GetLastReason());
 
-      if (item->GetState() == content::DownloadItem::COMPLETE) {
+      if (item->GetState() == download::DownloadItem::COMPLETE) {
         // Clean up the file, in case it ended up in the My Documents folder.
         base::ScopedAllowBlockingForTesting allow_blocking;
         base::FilePath destination_folder = GetDownloadDirectory(browser());
@@ -3089,8 +3089,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {
   // after the zero-th contain a deduplication counter.
   for (int index = 0; index < 5; ++index) {
     DownloadAndWait(browser(), url);
-    content::DownloadItem* item = manager->GetDownload(
-        content::DownloadItem::kInvalidId + 1 + index);
+    download::DownloadItem* item =
+        manager->GetDownload(download::DownloadItem::kInvalidId + 1 + index);
     ASSERT_TRUE(item);
     ASSERT_EQ(DownloadItem::COMPLETE, item->GetState());
     base::FilePath target_path(item->GetTargetFilePath());

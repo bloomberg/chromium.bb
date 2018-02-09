@@ -26,7 +26,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/text_utils.h"
 
-using content::DownloadItem;
+using download::DownloadItem;
 using safe_browsing::DownloadFileType;
 using ::testing::Mock;
 using ::testing::NiceMock;

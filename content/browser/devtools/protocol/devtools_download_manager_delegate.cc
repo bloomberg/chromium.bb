@@ -11,6 +11,7 @@
 #include "content/browser/devtools/protocol/devtools_download_manager_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "net/base/filename_util.h"
 
@@ -81,12 +82,13 @@ void DevToolsDownloadManagerDelegate::Shutdown() {
 }
 
 bool DevToolsDownloadManagerDelegate::DetermineDownloadTarget(
-    content::DownloadItem* item,
+    download::DownloadItem* item,
     const content::DownloadTargetCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DevToolsDownloadManagerHelper* download_helper =
-      DevToolsDownloadManagerHelper::FromWebContents(item->GetWebContents());
+      DevToolsDownloadManagerHelper::FromWebContents(
+          DownloadItemUtils::GetWebContents(item));
 
   // Check if we should failback to delegate.
   if (proxy_download_delegate_ && !download_helper)
@@ -99,7 +101,7 @@ bool DevToolsDownloadManagerDelegate::DetermineDownloadTarget(
           DevToolsDownloadManagerHelper::DownloadBehavior::ALLOW) {
     base::FilePath empty_path = base::FilePath();
     callback.Run(empty_path,
-                 content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+                 download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                  download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, empty_path,
                  download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
     return true;
@@ -124,10 +126,11 @@ bool DevToolsDownloadManagerDelegate::DetermineDownloadTarget(
 }
 
 bool DevToolsDownloadManagerDelegate::ShouldOpenDownload(
-    content::DownloadItem* item,
+    download::DownloadItem* item,
     const content::DownloadOpenDelayedCallback& callback) {
   DevToolsDownloadManagerHelper* download_helper =
-      DevToolsDownloadManagerHelper::FromWebContents(item->GetWebContents());
+      DevToolsDownloadManagerHelper::FromWebContents(
+          DownloadItemUtils::GetWebContents(item));
 
   if (download_helper)
     return true;
@@ -138,7 +141,7 @@ bool DevToolsDownloadManagerDelegate::ShouldOpenDownload(
 
 void DevToolsDownloadManagerDelegate::GetNextId(
     const content::DownloadIdCallback& callback) {
-  static uint32_t next_id = content::DownloadItem::kInvalidId + 1;
+  static uint32_t next_id = download::DownloadItem::kInvalidId + 1;
   // Be sure to follow the proxy delegate Ids to avoid compatibility problems
   // with the download manager.
   if (proxy_download_delegate_) {
@@ -176,7 +179,7 @@ void DevToolsDownloadManagerDelegate::OnDownloadPathGenerated(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   callback.Run(suggested_path,
-               content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+               download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
                suggested_path.AddExtension(FILE_PATH_LITERAL(".crdownload")),
                download::DOWNLOAD_INTERRUPT_REASON_NONE);
