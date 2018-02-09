@@ -47,6 +47,9 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   // VisualRect of itself including contents, in the local coordinate.
   NGPhysicalOffsetRect VisualRectWithContents() const;
 
+  void AddSelfOutlineRects(Vector<LayoutRect>*,
+                           const LayoutPoint& additional_offset) const;
+
   scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const;
 
  private:

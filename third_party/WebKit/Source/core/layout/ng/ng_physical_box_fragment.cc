@@ -77,17 +77,45 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::SelfVisualRect() const {
     return {{}, Size()};
 
   LayoutObject* layout_object = GetLayoutObject();
+  DCHECK(layout_object);
   if (layout_object->IsBox()) {
-    // TODO(kojii): Should move the logic to a common place.
     LayoutRect visual_rect({}, Size().ToLayoutSize());
-    visual_rect.Expand(
-        ToLayoutBox(layout_object)->ComputeVisualEffectOverflowOutsets());
+    visual_rect.Expand(style.BoxDecorationOutsets());
+
+    if (style.HasOutline()) {
+      Vector<LayoutRect> outline_rects;
+      // The result rects are in coordinates of this object's border box.
+      AddSelfOutlineRects(&outline_rects, LayoutPoint());
+      LayoutRect rect = UnionRectEvenIfEmpty(outline_rects);
+      rect.Inflate(style.OutlineOutsetExtent());
+      visual_rect.Unite(rect);
+    }
+
     return NGPhysicalOffsetRect(visual_rect);
   }
 
   // TODO(kojii): Implement for inline boxes.
   DCHECK(layout_object->IsLayoutInline());
   return {{}, Size()};
+}
+
+void NGPhysicalBoxFragment::AddSelfOutlineRects(
+    Vector<LayoutRect>* outline_rects,
+    const LayoutPoint& additional_offset) const {
+  DCHECK(outline_rects);
+  // TODO(kojii): Implement. This is quite incomplete yet.
+
+  // bool include_block_visual_overflow =
+  // layout_object->OutlineRectsShouldIncludeBlockVisualOverflow();
+
+  //
+  LayoutRect outline_rect(additional_offset, Size().ToLayoutSize());
+  // LayoutRect outline_rect = VisualRect();
+  // outline_rect.MoveBy(additional_offset);
+  // outline_rect.Inflate(-Style().OutlineOffset());
+  // outline_rect.Inflate(-Style().OutlineWidth());
+
+  outline_rects->push_back(outline_rect);
 }
 
 NGPhysicalOffsetRect NGPhysicalBoxFragment::VisualRectWithContents() const {

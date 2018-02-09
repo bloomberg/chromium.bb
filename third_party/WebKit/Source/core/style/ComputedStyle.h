@@ -2171,6 +2171,8 @@ class ComputedStyle : public ComputedStyleBase,
            BoxShadow();
   }
 
+  LayoutRectOutsets BoxDecorationOutsets() const;
+
   // Background utility functions.
   FillLayer& AccessBackgroundLayers() { return MutableBackgroundInternal(); }
   const FillLayer& BackgroundLayers() const { return BackgroundInternal(); }
