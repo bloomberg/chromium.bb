@@ -653,6 +653,11 @@ PresentationServiceDelegateImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+void PresentationServiceDelegateImpl::SetMediaRouterForTest(
+    MediaRouter* router) {
+  router_ = router;
+}
+
 bool PresentationServiceDelegateImpl::HasScreenAvailabilityListenerForTest(
     int render_process_id,
     int render_frame_id,
