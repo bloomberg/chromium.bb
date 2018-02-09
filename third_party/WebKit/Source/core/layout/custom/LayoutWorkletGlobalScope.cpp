@@ -23,9 +23,11 @@ LayoutWorkletGlobalScope* LayoutWorkletGlobalScope::Create(
     LocalFrame* frame,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerReportingProxy& reporting_proxy,
+    PendingLayoutRegistry* pending_layout_registry,
     size_t global_scope_number) {
-  auto* global_scope = new LayoutWorkletGlobalScope(
-      frame, std::move(creation_params), reporting_proxy);
+  auto* global_scope =
+      new LayoutWorkletGlobalScope(frame, std::move(creation_params),
+                                   reporting_proxy, pending_layout_registry);
   String context_name("LayoutWorklet #");
   context_name.append(String::Number(global_scope_number));
   global_scope->ScriptController()->InitializeContextIfNeeded(context_name);
@@ -38,10 +40,12 @@ LayoutWorkletGlobalScope* LayoutWorkletGlobalScope::Create(
 LayoutWorkletGlobalScope::LayoutWorkletGlobalScope(
     LocalFrame* frame,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    WorkerReportingProxy& reporting_proxy)
+    WorkerReportingProxy& reporting_proxy,
+    PendingLayoutRegistry* pending_layout_registry)
     : MainThreadWorkletGlobalScope(frame,
                                    std::move(creation_params),
-                                   reporting_proxy) {}
+                                   reporting_proxy),
+      pending_layout_registry_(pending_layout_registry) {}
 
 LayoutWorkletGlobalScope::~LayoutWorkletGlobalScope() = default;
 
@@ -54,7 +58,7 @@ void LayoutWorkletGlobalScope::Dispose() {
 
 // https://drafts.css-houdini.org/css-layout-api/#dom-layoutworkletglobalscope-registerlayout
 void LayoutWorkletGlobalScope::registerLayout(
-    const String& name,
+    const AtomicString& name,
     const ScriptValue& constructor_value,
     ExceptionState& exception_state) {
   if (name.IsEmpty()) {
@@ -135,8 +139,11 @@ void LayoutWorkletGlobalScope::registerLayout(
       return;
     }
 
-    // TODO(ikilpatrick): Notify the pending layout objects awaiting for this
-    // class to be registered.
+    // Notify all of the pending layouts that all of the layout classes with
+    // |name| have been registered and are ready to use.
+    if (existing_document_definition->GetRegisteredDefinitionCount() ==
+        LayoutWorklet::kNumGlobalScopes)
+      pending_layout_registry_->NotifyLayoutReady(name);
   } else {
     DocumentLayoutDefinition* document_definition =
         new DocumentLayoutDefinition(definition);
@@ -145,12 +152,13 @@ void LayoutWorkletGlobalScope::registerLayout(
 }
 
 CSSLayoutDefinition* LayoutWorkletGlobalScope::FindDefinition(
-    const String& name) {
+    const AtomicString& name) {
   return layout_definitions_.at(name);
 }
 
 void LayoutWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(layout_definitions_);
+  visitor->Trace(pending_layout_registry_);
   MainThreadWorkletGlobalScope::Trace(visitor);
 }
 

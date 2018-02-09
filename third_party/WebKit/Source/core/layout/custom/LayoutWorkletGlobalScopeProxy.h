@@ -23,7 +23,9 @@ class CORE_EXPORT LayoutWorkletGlobalScopeProxy
  public:
   static LayoutWorkletGlobalScopeProxy* From(WorkletGlobalScopeProxy*);
 
-  LayoutWorkletGlobalScopeProxy(LocalFrame*, size_t global_scope_number);
+  LayoutWorkletGlobalScopeProxy(LocalFrame*,
+                                PendingLayoutRegistry*,
+                                size_t global_scope_number);
   ~LayoutWorkletGlobalScopeProxy() override = default;
 
   // Implements WorkletGlobalScopeProxy.

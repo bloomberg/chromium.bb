@@ -10,6 +10,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/layout/custom/DocumentLayoutDefinition.h"
 #include "core/layout/custom/LayoutWorkletGlobalScopeProxy.h"
+#include "core/layout/custom/PendingLayoutRegistry.h"
 
 namespace blink {
 
@@ -34,7 +35,8 @@ LayoutWorklet* LayoutWorklet::Create(LocalFrame* frame) {
 
 LayoutWorklet::LayoutWorklet(LocalFrame* frame)
     : Worklet(frame->GetDocument()),
-      Supplement<LocalDOMWindow>(*frame->DomWindow()) {}
+      Supplement<LocalDOMWindow>(*frame->DomWindow()),
+      pending_layout_registry_(new PendingLayoutRegistry()) {}
 
 LayoutWorklet::~LayoutWorklet() = default;
 
@@ -42,8 +44,13 @@ const char* LayoutWorklet::SupplementName() {
   return "LayoutWorklet";
 }
 
+void LayoutWorklet::AddPendingLayout(const AtomicString& name, Node* node) {
+  pending_layout_registry_->AddPendingLayout(name, node);
+}
+
 void LayoutWorklet::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_definition_map_);
+  visitor->Trace(pending_layout_registry_);
   Worklet::Trace(visitor);
   Supplement<LocalDOMWindow>::Trace(visitor);
 }
@@ -55,7 +62,7 @@ bool LayoutWorklet::NeedsToCreateGlobalScope() {
 WorkletGlobalScopeProxy* LayoutWorklet::CreateGlobalScope() {
   DCHECK(NeedsToCreateGlobalScope());
   return new LayoutWorkletGlobalScopeProxy(
-      ToDocument(GetExecutionContext())->GetFrame(),
+      ToDocument(GetExecutionContext())->GetFrame(), pending_layout_registry_,
       GetNumberOfGlobalScopes() + 1);
 }
 

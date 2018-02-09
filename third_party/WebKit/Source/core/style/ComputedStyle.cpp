@@ -191,6 +191,14 @@ StyleRecalcChange ComputedStyle::StylePropagationDiff(
       old_style->HasTextCombine() != new_style->HasTextCombine())
     return kReattach;
 
+  // We need to perform a reattach if a "display: layout(foo)" has changed to a
+  // "display: layout(bar)". This is because one custom layout could be
+  // registered and the other may not, affecting the box-tree construction.
+  if (old_style->DisplayLayoutCustomName() !=
+      new_style->DisplayLayoutCustomName()) {
+    return kReattach;
+  }
+
   bool independent_equal = old_style->IndependentInheritedEqual(*new_style);
   bool non_independent_equal =
       old_style->NonIndependentInheritedEqual(*new_style);
