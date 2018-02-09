@@ -6,123 +6,55 @@
 
 #include <stdint.h>
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "build/build_config.h"
 #include "core/dom/DOMException.h"
-#include "core/frame/LocalFrame.h"
 #include "platform/bindings/ScriptState.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/Platform.h"
-#include "public/web/WebFrameClient.h"
+#include "third_party/WebKit/Source/bindings/core/v8/ScriptPromiseResolver.h"
+#include "third_party/WebKit/Source/core/frame/LocalFrame.h"
 #include "third_party/WebKit/Source/core/frame/WebLocalFrameImpl.h"
+#include "third_party/WebKit/Source/platform/wtf/text/WTFString.h"
+#include "third_party/WebKit/public/web/WebFrameClient.h"
 
 namespace blink {
 
-namespace {
-#if (defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN))
-const double kIdleTaskStartTimeoutDelayMs = 1000.0;
-#else
-const double kIdleTaskStartTimeoutDelayMs = 4000.0;  // For ChromeOS, Mobile
-#endif
+ComputedAccessibleNode* ComputedAccessibleNode::Create(Element* element) {
+  return new ComputedAccessibleNode(element);
 }
 
-ComputedAccessibleNodePromiseResolver*
-ComputedAccessibleNodePromiseResolver::Create(ScriptState* script_state,
-                                              Element& element) {
-  return new ComputedAccessibleNodePromiseResolver(script_state, element);
-}
-
-ComputedAccessibleNodePromiseResolver::ComputedAccessibleNodePromiseResolver(
-    ScriptState* script_state,
-    Element& element)
-    : idle_task_status_(kIdleTaskNotStarted),
-      element_(element),
-      resolver_(ScriptPromiseResolver::Create(script_state)),
-      context_(ExecutionContext::From(script_state)) {}
-
-ScriptPromise ComputedAccessibleNodePromiseResolver::Promise() {
-  return resolver_->Promise();
-}
-
-void ComputedAccessibleNodePromiseResolver::Trace(blink::Visitor* visitor) {
-  visitor->Trace(element_);
-  visitor->Trace(resolver_);
-  visitor->Trace(context_);
-}
-
-void ComputedAccessibleNodePromiseResolver::ComputeAccessibleNode() {
+ComputedAccessibleNode::ComputedAccessibleNode(Element* element)
+    : element_(element) {
   DCHECK(RuntimeEnabledFeatures::AccessibilityObjectModelEnabled());
-  DCHECK(Platform::Current()->CurrentThread()->Scheduler());
-  idle_task_status_ = kIdleTaskNotStarted;
-  Platform::Current()->CurrentThread()->Scheduler()->PostIdleTask(
-      FROM_HERE,
-      WTF::Bind(&ComputedAccessibleNodePromiseResolver::IdleTaskFired,
-                WrapPersistent(this)));
-
-  // We post the below task to check if the above idle task isn't late.
-  // There's no risk of concurrency as both tasks are on the same thread.
-  context_->GetTaskRunner(TaskType::kMiscPlatformAPI)
-      ->PostDelayedTask(
-          FROM_HERE,
-          WTF::Bind(
-              &ComputedAccessibleNodePromiseResolver::IdleTaskStartTimeoutEvent,
-              WrapPersistent(this)),
-          TimeDelta::FromMillisecondsD(kIdleTaskStartTimeoutDelayMs));
-}
-
-void ComputedAccessibleNodePromiseResolver::IdleTaskFired(
-    double deadline_seconds) {
-  UpdateTreeAndResolve();
-}
-
-void ComputedAccessibleNodePromiseResolver::UpdateTreeAndResolve() {
-  idle_task_status_ = kIdleTaskStarted;
-  Document& document = element_->GetDocument();
-  document.View()->UpdateLifecycleToCompositingCleanPlusScrolling();
-  AXObjectCache* cache = element_->GetDocument().GetOrCreateAXObjectCache();
+  AXObjectCache* cache = element->GetDocument().GetOrCreateAXObjectCache();
   DCHECK(cache);
-  AXID ax_id = cache->GetAXID(element_);
+  cache_ = cache;
 
-  LocalFrame* local_frame = element_->ownerDocument()->GetFrame();
+  LocalFrame* local_frame = element->ownerDocument()->GetFrame();
   WebFrameClient* client = WebLocalFrameImpl::FromFrame(local_frame)->Client();
-  WebComputedAXTree* tree = client->GetOrCreateWebComputedAXTree();
-  tree->ComputeAccessibilityTree();
-
-  ComputedAccessibleNode* accessible_node =
-      ComputedAccessibleNode::Create(ax_id, tree);
-  resolver_->Resolve(accessible_node);
-  idle_task_status_ = kIdleTaskCompleted;
+  tree_ = client->GetOrCreateWebComputedAXTree();
 }
-
-void ComputedAccessibleNodePromiseResolver::IdleTaskStartTimeoutEvent() {
-  if (idle_task_status_ != kIdleTaskNotStarted)
-    return;
-
-  // If the idle task does not start after a delay threshold, just start it
-  // manually.
-  UpdateTreeAndResolve();
-}
-
-ComputedAccessibleNode* ComputedAccessibleNode::Create(
-    AXID ax_id,
-    WebComputedAXTree* tree) {
-  // TODO(meredithl): Change to GetOrCreate and check cache for existing node
-  // with this ID.
-  return new ComputedAccessibleNode(ax_id, tree);
-}
-
-ComputedAccessibleNode::ComputedAccessibleNode(AXID ax_id,
-                                               WebComputedAXTree* tree)
-    : ax_id_(ax_id), tree_(tree) {}
 
 ComputedAccessibleNode::~ComputedAccessibleNode() {}
+
+ScriptPromise ComputedAccessibleNode::ComputeAccessibleProperties(
+    ScriptState* script_state) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  // TODO(meredithl): Post this task asynchronously, with a callback into
+  // this->OnSnapshotResponse.
+  if (!tree_->ComputeAccessibilityTree()) {
+    // TODO(meredithl): Change this exception to something relevant to AOM.
+    resolver->Reject(DOMException::Create(kUnknownError));
+  } else {
+    OnSnapshotResponse(resolver);
+  }
+
+  return promise;
+}
 
 int32_t ComputedAccessibleNode::GetIntAttribute(WebAOMIntAttribute attr,
                                                 bool& is_null) const {
   int32_t out = 0;
   is_null = true;
-  if (tree_->GetIntAttributeForAXNode(ax_id_, attr, &out)) {
+  if (tree_->GetIntAttributeForAXNode(cache_->GetAXID(element_), attr, &out)) {
     is_null = false;
   }
   return out;
@@ -131,7 +63,8 @@ int32_t ComputedAccessibleNode::GetIntAttribute(WebAOMIntAttribute attr,
 const String ComputedAccessibleNode::GetStringAttribute(
     WebAOMStringAttribute attr) const {
   WebString out;
-  if (tree_->GetStringAttributeForAXNode(ax_id_, attr, &out)) {
+  if (tree_->GetStringAttributeForAXNode(cache_->GetAXID(element_), attr,
+                                         &out)) {
     return out;
   }
   return String();
@@ -148,7 +81,7 @@ const String ComputedAccessibleNode::placeholder() const {
 }
 const String ComputedAccessibleNode::role() const {
   WebString out;
-  if (tree_->GetRoleForAXNode(ax_id_, &out)) {
+  if (tree_->GetRoleForAXNode(cache_->GetAXID(element_), &out)) {
     return out;
   }
   return String();
@@ -199,44 +132,52 @@ int32_t ComputedAccessibleNode::setSize(bool& is_null) const {
   return GetIntAttribute(WebAOMIntAttribute::AOM_ATTR_SET_SIZE, is_null);
 }
 
+ComputedAccessibleNode* ComputedAccessibleNode::GetRelationFromCache(
+    AXID axid) const {
+  Element* element = cache_->GetElementFromAXID(axid);
+  if (!element)
+    return nullptr;
+  return element->GetComputedAccessibleNode();
+}
+
 ComputedAccessibleNode* ComputedAccessibleNode::parent() const {
-  int32_t parent_ax_id;
-  if (!tree_->GetParentIdForAXNode(ax_id_, &parent_ax_id)) {
+  int32_t axid;
+  if (!tree_->GetParentIdForAXNode(cache_->GetAXID(element_), &axid)) {
     return nullptr;
   }
-  return ComputedAccessibleNode::Create(parent_ax_id, tree_);
+  return GetRelationFromCache(axid);
 }
 
 ComputedAccessibleNode* ComputedAccessibleNode::firstChild() const {
-  int32_t child_ax_id;
-  if (!tree_->GetFirstChildIdForAXNode(ax_id_, &child_ax_id)) {
+  int32_t axid;
+  if (!tree_->GetFirstChildIdForAXNode(cache_->GetAXID(element_), &axid)) {
     return nullptr;
   }
-  return ComputedAccessibleNode::Create(child_ax_id, tree_);
+  return GetRelationFromCache(axid);
 }
 
 ComputedAccessibleNode* ComputedAccessibleNode::lastChild() const {
-  int32_t child_ax_id;
-  if (!tree_->GetLastChildIdForAXNode(ax_id_, &child_ax_id)) {
+  int32_t axid;
+  if (!tree_->GetLastChildIdForAXNode(cache_->GetAXID(element_), &axid)) {
     return nullptr;
   }
-  return ComputedAccessibleNode::Create(child_ax_id, tree_);
+  return GetRelationFromCache(axid);
 }
 
 ComputedAccessibleNode* ComputedAccessibleNode::previousSibling() const {
-  int32_t sibling_ax_id;
-  if (!tree_->GetPreviousSiblingIdForAXNode(ax_id_, &sibling_ax_id)) {
+  int32_t axid;
+  if (!tree_->GetPreviousSiblingIdForAXNode(cache_->GetAXID(element_), &axid)) {
     return nullptr;
   }
-  return ComputedAccessibleNode::Create(sibling_ax_id, tree_);
+  return GetRelationFromCache(axid);
 }
 
 ComputedAccessibleNode* ComputedAccessibleNode::nextSibling() const {
-  int32_t sibling_ax_id;
-  if (!tree_->GetNextSiblingIdForAXNode(ax_id_, &sibling_ax_id)) {
+  int32_t axid;
+  if (!tree_->GetNextSiblingIdForAXNode(cache_->GetAXID(element_), &axid)) {
     return nullptr;
   }
-  return ComputedAccessibleNode::Create(sibling_ax_id, tree_);
+  return GetRelationFromCache(axid);
 }
 
 void ComputedAccessibleNode::OnSnapshotResponse(
@@ -246,6 +187,8 @@ void ComputedAccessibleNode::OnSnapshotResponse(
 
 void ComputedAccessibleNode::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
+  visitor->Trace(element_);
+  visitor->Trace(cache_);
 }
 
 }  // namespace blink
