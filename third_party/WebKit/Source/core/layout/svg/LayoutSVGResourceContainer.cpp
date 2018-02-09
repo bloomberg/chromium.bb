@@ -22,6 +22,7 @@
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/svg/SVGElementProxy.h"
+#include "core/svg/SVGResource.h"
 #include "core/svg/SVGTreeScopeResources.h"
 #include "platform/wtf/AutoReset.h"
 
@@ -29,7 +30,7 @@ namespace blink {
 
 namespace {
 
-SVGTreeScopeResources::Resource* ResourceForContainer(
+SVGResource* ResourceForContainer(
     const LayoutSVGResourceContainer& resource_container) {
   const SVGElement& element = *resource_container.GetElement();
   return element.GetTreeScope()
@@ -75,7 +76,7 @@ void LayoutSVGResourceContainer::WillBeDestroyed() {
   LayoutSVGHiddenContainer::WillBeDestroyed();
   // The resource is being torn down. If we have any clients, move those to be
   // pending on the resource (if one exists.)
-  if (SVGTreeScopeResources::Resource* resource = ResourceForContainer(*this))
+  if (SVGResource* resource = ResourceForContainer(*this))
     MakeClientsPending(*resource);
 }
 
@@ -86,14 +87,13 @@ void LayoutSVGResourceContainer::StyleDidChange(
   // The resource has (read: may have) been attached. Notify any pending
   // clients that they can now try to add themselves as clients to the
   // resource.
-  if (SVGTreeScopeResources::Resource* resource = ResourceForContainer(*this)) {
+  if (SVGResource* resource = ResourceForContainer(*this)) {
     if (resource->Target() == GetElement())
       resource->NotifyResourceClients();
   }
 }
 
-void LayoutSVGResourceContainer::MakeClientsPending(
-    SVGTreeScopeResources::Resource& resource) {
+void LayoutSVGResourceContainer::MakeClientsPending(SVGResource& resource) {
   RemoveAllClientsFromCache();
 
   for (auto* client : clients_) {

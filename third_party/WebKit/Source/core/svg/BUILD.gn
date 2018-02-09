@@ -254,6 +254,8 @@ blink_core_sources("svg") {
     "SVGRectElement.h",
     "SVGRectTearOff.cpp",
     "SVGRectTearOff.h",
+    "SVGResource.cpp",
+    "SVGResource.h",
     "SVGResourceClient.h",
     "SVGSVGElement.cpp",
     "SVGSVGElement.h",

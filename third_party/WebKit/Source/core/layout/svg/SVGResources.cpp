@@ -28,6 +28,7 @@
 #include "core/style/ComputedStyle.h"
 #include "core/svg/SVGGradientElement.h"
 #include "core/svg/SVGPatternElement.h"
+#include "core/svg/SVGResource.h"
 #include "core/svg/SVGTreeScopeResources.h"
 #include "core/svg/SVGURIReference.h"
 #include "core/svg_names.h"
@@ -157,8 +158,7 @@ template <typename ContainerType>
 ContainerType* AttachToResource(SVGTreeScopeResources& tree_scope_resources,
                                 const AtomicString& id,
                                 SVGElement& element) {
-  SVGTreeScopeResources::Resource* resource =
-      tree_scope_resources.ResourceForId(id);
+  SVGResource* resource = tree_scope_resources.ResourceForId(id);
   if (!resource)
     return nullptr;
   if (LayoutSVGResourceContainer* container = resource->ResourceContainer()) {
