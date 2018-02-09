@@ -70,10 +70,6 @@ namespace gcm {
 class GCMDriver;
 }
 
-namespace message_center {
-class MessageCenter;
-}
-
 namespace metrics {
 class MetricsService;
 }
@@ -172,9 +168,6 @@ class BrowserProcess {
   // NotificationPlatformBridge + NotificationDisplayService
   virtual NotificationUIManager* notification_ui_manager() = 0;
   virtual NotificationPlatformBridge* notification_platform_bridge() = 0;
-
-  // MessageCenter is a global list of currently displayed notifications.
-  virtual message_center::MessageCenter* message_center() = 0;
 
   // Returns the state object for the thread that we perform I/O
   // coordination on (network requests, communication with renderers,
