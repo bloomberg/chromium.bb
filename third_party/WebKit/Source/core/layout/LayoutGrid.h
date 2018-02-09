@@ -27,8 +27,8 @@
 #define LayoutGrid_h
 
 #include <memory>
-#include "core/layout/BaselineAlignment.h"
 #include "core/layout/Grid.h"
+#include "core/layout/GridLayoutUtils.h"
 #include "core/layout/GridTrackSizingAlgorithm.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/OrderIterator.h"
@@ -41,7 +41,6 @@ struct GridArea;
 struct GridSpan;
 
 enum GridAxisPosition { kGridAxisStart, kGridAxisEnd, kGridAxisCenter };
-enum GridAxis { kGridRowAxis, kGridColumnAxis };
 
 class LayoutGrid final : public LayoutBlock {
  public:
@@ -98,12 +97,13 @@ class LayoutGrid final : public LayoutBlock {
                          size_t span,
                          Optional<LayoutUnit> available_size) const;
   bool CachedHasDefiniteLogicalHeight() const;
-  bool IsOrthogonalChild(const LayoutBox&) const;
-  bool IsBaselineContextComputed(GridAxis) const;
-  bool IsBaselineAlignmentForChild(const LayoutBox&,
+  bool IsBaselineAlignmentForChild(const LayoutBox& child,
                                    GridAxis = kGridColumnAxis) const;
-  const BaselineGroup& GetBaselineGroupForChild(const LayoutBox&,
-                                                GridAxis) const;
+
+  StyleSelfAlignmentData SelfAlignmentForChild(
+      GridAxis,
+      const LayoutBox& child,
+      const ComputedStyle* = nullptr) const;
 
   LayoutUnit GridGap(GridTrackSizingDirection) const;
   LayoutUnit GridItemOffset(GridTrackSizingDirection) const;
@@ -246,10 +246,6 @@ class LayoutGrid final : public LayoutBlock {
   StyleSelfAlignmentData AlignSelfForChild(
       const LayoutBox&,
       const ComputedStyle* = nullptr) const;
-  StyleSelfAlignmentData SelfAlignmentForChild(
-      GridAxis,
-      const LayoutBox& child,
-      const ComputedStyle* = nullptr) const;
   StyleSelfAlignmentData DefaultAlignment(GridAxis, const ComputedStyle&) const;
   bool DefaultAlignmentIsStretchOrNormal(GridAxis, const ComputedStyle&) const;
   void ApplyStretchAlignmentToChildIfNeeded(LayoutBox&);
@@ -282,21 +278,7 @@ class LayoutGrid final : public LayoutBlock {
   LayoutUnit FirstLineBoxBaseline() const override;
   LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;
 
-  bool IsHorizontalGridAxis(GridAxis) const;
-  bool IsParallelToBlockAxisForChild(const LayoutBox&, GridAxis) const;
-  bool IsDescentBaselineForChild(const LayoutBox&, GridAxis) const;
-
-  LayoutUnit MarginOverForChild(const LayoutBox&, GridAxis) const;
-  LayoutUnit MarginUnderForChild(const LayoutBox&, GridAxis) const;
-  LayoutUnit LogicalAscentForChild(const LayoutBox&, GridAxis) const;
-  LayoutUnit AscentForChild(const LayoutBox&, GridAxis) const;
-  LayoutUnit DescentForChild(const LayoutBox&,
-                             LayoutUnit ascent,
-                             GridAxis) const;
-
-  bool BaselineMayAffectIntrinsicSize(GridTrackSizingDirection) const;
   void ComputeBaselineAlignmentContext();
-  void UpdateBaselineAlignmentContextIfNeeded(LayoutBox&, GridAxis);
 
   LayoutUnit ColumnAxisBaselineOffsetForChild(const LayoutBox&) const;
   LayoutUnit RowAxisBaselineOffsetForChild(const LayoutBox&) const;
@@ -305,10 +287,6 @@ class LayoutGrid final : public LayoutBlock {
                      Optional<LayoutUnit> available_size) const;
 
   size_t GridItemSpan(const LayoutBox&, GridTrackSizingDirection);
-
-  GridTrackSizingDirection FlowAwareDirectionForChild(
-      const LayoutBox&,
-      GridTrackSizingDirection) const;
 
   size_t NumTracks(GridTrackSizingDirection, const Grid&) const;
 
@@ -320,15 +298,6 @@ class LayoutGrid final : public LayoutBlock {
   static LayoutUnit SynthesizedBaselineFromBorderBox(const LayoutBox&,
                                                      LineDirectionMode);
   static const StyleContentAlignmentData& ContentAlignmentNormalBehavior();
-
-  typedef HashMap<unsigned,
-                  std::unique_ptr<BaselineContext>,
-                  DefaultHash<unsigned>::Hash,
-                  WTF::UnsignedWithZeroKeyHashTraits<unsigned>>
-      BaselineContextsMap;
-
-  BaselineContextsMap row_axis_alignment_context_;
-  BaselineContextsMap col_axis_alignment_context_;
 
   Grid grid_;
   GridTrackSizingAlgorithm track_sizing_algorithm_;

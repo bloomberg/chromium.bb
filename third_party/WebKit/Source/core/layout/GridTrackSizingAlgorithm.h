@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/macros.h"
+#include "core/layout/GridBaselineAlignment.h"
 #include "core/layout/LayoutBox.h"
 #include "core/style/GridPositionsResolver.h"
 #include "core/style/GridTrackSize.h"
@@ -95,6 +96,14 @@ class GridTrackSizingAlgorithm final {
                                  size_t translated_index) const;
   LayoutUnit MinContentSize() const { return min_content_size_; };
   LayoutUnit MaxContentSize() const { return max_content_size_; };
+
+  void UpdateBaselineAlignmentContextIfNeeded(LayoutBox&, GridAxis);
+  LayoutUnit BaselineOffsetForChild(const LayoutBox&, GridAxis) const;
+  bool BaselineMayAffectIntrinsicSize(
+      GridTrackSizingDirection direction) const {
+    return baseline_alignment_.BaselineMayAffectIntrinsicSize(*this, direction);
+  }
+  void ClearBaselineAlignment() { baseline_alignment_.Clear(); }
 
   Vector<GridTrack>& Tracks(GridTrackSizingDirection);
   const Vector<GridTrack>& Tracks(GridTrackSizingDirection) const;
@@ -212,6 +221,8 @@ class GridTrackSizingAlgorithm final {
   };
   SizingState sizing_state_;
 
+  GridBaselineAlignment baseline_alignment_;
+
   // This is a RAII class used to ensure that the track sizing algorithm is
   // executed as it is suppossed to be, i.e., first resolve columns and then
   // rows. Only if required a second iteration is run following the same order,
@@ -268,7 +279,8 @@ class GridTrackSizingAlgorithmStrategy {
       GridTrackSizingDirection,
       Optional<LayoutUnit> = WTF::nullopt) const;
   LayoutUnit ComputeTrackBasedSize() const;
-  Optional<LayoutUnit> ExtentForBaselineAlignment(LayoutBox&) const;
+
+  Optional<LayoutUnit> ExtentForBaselineAlignment(const LayoutBox& child) const;
 
   GridTrackSizingDirection Direction() const { return algorithm_.direction_; }
   double FindFrUnitSize(const GridSpan& tracks_span,

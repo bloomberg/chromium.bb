@@ -4,6 +4,7 @@
 
 #include "core/layout/GridLayoutUtils.h"
 
+#include "core/layout/LayoutGrid.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {
