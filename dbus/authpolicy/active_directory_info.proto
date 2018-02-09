@@ -203,7 +203,11 @@ message JoinDomainRequest {
   // DeviceKerberosEncryptionTypes policy is used to determine encryption types.
   optional KerberosEncryptionTypes kerberos_encryption_types = 5
       [default = ENC_TYPES_STRONG];
-  // Next ID to use: 6
+  // The DM token used by Chrome to authenticate to DM server. Passed during
+  // domain join so authpolicyd can set it in device policy as it's done for
+  // cloud management.
+  optional string dm_token = 6;
+  // Next ID to use: 7
 }
 
 // Message sent by Chrome to authpolicyd with AuthenticateUser call.
