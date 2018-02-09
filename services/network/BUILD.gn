@@ -125,6 +125,7 @@ source_set("tests") {
     "proxy_resolving_client_socket_unittest.cc",
     "resource_scheduler_unittest.cc",
     "restricted_cookie_manager_unittest.cc",
+    "test/test_url_loader_factory_unittest.cc",
     "throttling/throttling_controller_unittest.cc",
     "udp_socket_factory_unittest.cc",
     "udp_socket_unittest.cc",
@@ -161,6 +162,8 @@ source_set("test_support") {
     "test/test_data_pipe_getter.h",
     "test/test_url_loader_client.cc",
     "test/test_url_loader_client.h",
+    "test/test_url_loader_factory.cc",
+    "test/test_url_loader_factory.h",
     "udp_socket_test_util.cc",
     "udp_socket_test_util.h",
   ]
