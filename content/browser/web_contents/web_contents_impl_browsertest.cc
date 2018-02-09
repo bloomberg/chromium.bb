@@ -1463,55 +1463,29 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(delegate.get()->request_to_lock_mouse_called_);
 }
 
-namespace {
-class TestResourceDispatcherHostDelegate
-    : public ShellResourceDispatcherHostDelegate {
- public:
-  explicit TestResourceDispatcherHostDelegate(bool* saw_override)
-      : saw_override_(saw_override) {}
-
-  void RequestBeginning(
-      net::URLRequest* request,
-      ResourceContext* resource_context,
-      AppCacheService* appcache_service,
-      ResourceType resource_type,
-      std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    ShellResourceDispatcherHostDelegate::RequestBeginning(
-        request, resource_context, appcache_service, resource_type, throttles);
-
-    net::HttpRequestHeaders headers = request->extra_request_headers();
-    std::string user_agent;
-    CHECK(headers.GetHeader(net::HttpRequestHeaders::kUserAgent, &user_agent));
-    if (user_agent.find("foo") != std::string::npos)
-      *saw_override_ = true;
-  }
-
- private:
-  bool* saw_override_;
-};
-}  // namespace
-
 // Checks that user agent override string is only used when it's overridden.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UserAgentOverride) {
-  bool saw_override = false;
-  TestResourceDispatcherHostDelegate new_delegate(&saw_override);
-  ResourceDispatcherHostDelegate* old_delegate =
-      ResourceDispatcherHostImpl::Get()->delegate();
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ResourceDispatcherHost::SetDelegate,
-                     base::Unretained(ResourceDispatcherHostImpl::Get()),
-                     &new_delegate));
-
   ASSERT_TRUE(embedded_test_server()->Start());
-  const GURL kUrl(embedded_test_server()->GetURL("/simple_page.html"));
+  const std::string kHeaderPath =
+      std::string("/echoheader?") + net::HttpRequestHeaders::kUserAgent;
+  const GURL kUrl(embedded_test_server()->GetURL(kHeaderPath));
+  const std::string kUserAgentOverride = "foo";
+
   NavigateToURL(shell(), kUrl);
-  ASSERT_FALSE(saw_override);
+  std::string header_value;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      shell()->web_contents(),
+      "window.domAutomationController.send(document.body.textContent);",
+      &header_value));
+  EXPECT_NE(kUserAgentOverride, header_value);
 
   shell()->web_contents()->SetUserAgentOverride("foo");
   NavigateToURL(shell(), kUrl);
-  ASSERT_FALSE(saw_override);
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      shell()->web_contents(),
+      "window.domAutomationController.send(document.body.textContent);",
+      &header_value));
+  EXPECT_NE(kUserAgentOverride, header_value);
 
   shell()
       ->web_contents()
@@ -1521,13 +1495,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UserAgentOverride) {
   TestNavigationObserver tab_observer(shell()->web_contents(), 1);
   shell()->web_contents()->GetController().Reload(ReloadType::NORMAL, false);
   tab_observer.Wait();
-  ASSERT_TRUE(saw_override);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ResourceDispatcherHost::SetDelegate,
-                     base::Unretained(ResourceDispatcherHostImpl::Get()),
-                     old_delegate));
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      shell()->web_contents(),
+      "window.domAutomationController.send(document.body.textContent);",
+      &header_value));
+  EXPECT_EQ(kUserAgentOverride, header_value);
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,

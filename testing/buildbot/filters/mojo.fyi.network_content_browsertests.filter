@@ -76,7 +76,6 @@
 -RequestDataResourceDispatcherHostBrowserTest.SameOriginNested
 -SitePerProcessIgnoreCertErrorsBrowserTest.SubresourceWithCertificateErrors
 -WebContentsImplBrowserTest.DownloadImage_Deny_FileImage
--WebContentsImplBrowserTest.UserAgentOverride
 -WorkerTest.WorkerTlsClientAuthFetch
 -WorkerTest.WorkerTlsClientAuthImportScripts
 
