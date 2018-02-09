@@ -313,6 +313,7 @@ class PLATFORM_EXPORT ResourceResponse final {
       network::mojom::FetchResponseType value) {
     response_type_via_service_worker_ = value;
   }
+  bool IsOpaqueResponseFromServiceWorker() const;
 
   // See ServiceWorkerResponseInfo::url_list_via_service_worker.
   const Vector<KURL>& UrlListViaServiceWorker() const {
