@@ -19,6 +19,9 @@ class SEARCH_BOX_EXPORT SearchBoxViewDelegate {
   // Invoked when the back button has been pressed.
   virtual void BackButtonPressed() = 0;
 
+  // Invoked when search box active status has changed.
+  virtual void ActiveChanged(SearchBoxViewBase* sender) = 0;
+
  protected:
   virtual ~SearchBoxViewDelegate() {}
 };
