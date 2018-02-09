@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/printers_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
@@ -102,7 +103,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, RemoveAndEditPrinters) {
             GetPrinterStore(1)->GetConfiguredPrinters()[0].description());
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, ConflictResolution) {
+// Flaky on ChromeOS:  http://crbug.com/810408
+#if defined(OS_CHROMEOS)
+#define MAYBE_ConflictResolution DISABLED_ConflictResolution
+#else
+#define MAYBE_ConflictResolution ConflictResolution
+#endif
+IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, MAYBE_ConflictResolution) {
   ASSERT_TRUE(SetupSync());
 
   AddPrinter(GetPrinterStore(0), CreateTestPrinter(0));
