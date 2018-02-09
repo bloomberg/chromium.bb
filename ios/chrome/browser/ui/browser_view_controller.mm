@@ -150,13 +150,11 @@
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_foreground_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_end_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_scroll_to_top_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
-#import "ios/chrome/browser/ui/fullscreen/legacy_fullscreen_controller.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_presentation.h"
 #import "ios/chrome/browser/ui/history_popup/tab_history_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/image_util/image_saver.h"
@@ -417,7 +415,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     CRWWebStateDelegate,
                                     DialogPresenterDelegate,
                                     FullscreenUIElement,
-                                    LegacyFullscreenControllerDelegate,
                                     InfobarContainerStateDelegate,
                                     KeyCommandsPlumbing,
                                     MainContentUI,
@@ -1206,44 +1203,42 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (_broadcasting == broadcasting)
     return;
   _broadcasting = broadcasting;
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    // TODO(crbug.com/790886): Use the Browser's broadcaster once Browsers are
-    // supported.
-    FullscreenController* fullscreenController =
-        FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-            _browserState);
-    ChromeBroadcaster* broadcaster = fullscreenController->broadcaster();
-    if (_broadcasting) {
-      _toolbarUIUpdater = [[LegacyToolbarUIUpdater alloc]
-          initWithToolbarUI:[[ToolbarUIState alloc] init]
-               toolbarOwner:self
-               webStateList:[_model webStateList]];
-      [_toolbarUIUpdater startUpdating];
-      StartBroadcastingToolbarUI(_toolbarUIUpdater.toolbarUI, broadcaster);
-
-      _mainContentUIUpdater = [[MainContentUIStateUpdater alloc]
-          initWithState:[[MainContentUIState alloc] init]];
-      _webMainContentUIForwarder = [[WebScrollViewMainContentUIForwarder alloc]
-          initWithUpdater:_mainContentUIUpdater
+  // TODO(crbug.com/790886): Use the Browser's broadcaster once Browsers are
+  // supported.
+  FullscreenController* fullscreenController =
+      FullscreenControllerFactory::GetInstance()->GetForBrowserState(
+          _browserState);
+  ChromeBroadcaster* broadcaster = fullscreenController->broadcaster();
+  if (_broadcasting) {
+    _toolbarUIUpdater = [[LegacyToolbarUIUpdater alloc]
+        initWithToolbarUI:[[ToolbarUIState alloc] init]
+             toolbarOwner:self
              webStateList:[_model webStateList]];
-      StartBroadcastingMainContentUI(self, broadcaster);
+    [_toolbarUIUpdater startUpdating];
+    StartBroadcastingToolbarUI(_toolbarUIUpdater.toolbarUI, broadcaster);
 
-      _fullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(self);
-      fullscreenController->AddObserver(_fullscreenUIUpdater.get());
+    _mainContentUIUpdater = [[MainContentUIStateUpdater alloc]
+        initWithState:[[MainContentUIState alloc] init]];
+    _webMainContentUIForwarder = [[WebScrollViewMainContentUIForwarder alloc]
+        initWithUpdater:_mainContentUIUpdater
+           webStateList:[_model webStateList]];
+    StartBroadcastingMainContentUI(self, broadcaster);
 
-      fullscreenController->SetWebStateList([_model webStateList]);
-    } else {
-      StopBroadcastingToolbarUI(broadcaster);
-      StopBroadcastingMainContentUI(broadcaster);
-      [_toolbarUIUpdater stopUpdating];
-      _toolbarUIUpdater = nil;
-      _mainContentUIUpdater = nil;
-      [_webMainContentUIForwarder disconnect];
-      _webMainContentUIForwarder = nil;
-      fullscreenController->RemoveObserver(_fullscreenUIUpdater.get());
-      _fullscreenUIUpdater = nullptr;
-      fullscreenController->SetWebStateList(nullptr);
-    }
+    _fullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(self);
+    fullscreenController->AddObserver(_fullscreenUIUpdater.get());
+
+    fullscreenController->SetWebStateList([_model webStateList]);
+  } else {
+    StopBroadcastingToolbarUI(broadcaster);
+    StopBroadcastingMainContentUI(broadcaster);
+    [_toolbarUIUpdater stopUpdating];
+    _toolbarUIUpdater = nil;
+    _mainContentUIUpdater = nil;
+    [_webMainContentUIForwarder disconnect];
+    _webMainContentUIForwarder = nil;
+    fullscreenController->RemoveObserver(_fullscreenUIUpdater.get());
+    _fullscreenUIUpdater = nullptr;
+    fullscreenController->SetWebStateList(nullptr);
   }
 }
 
@@ -2940,9 +2935,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
   tab.dialogDelegate = self;
   tab.passKitDialogProvider = self;
-  if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    tab.legacyFullscreenControllerDelegate = self;
-  }
   if (!IsIPadIdiom()) {
     tab.overscrollActionsControllerDelegate = self;
   }
@@ -3006,9 +2998,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
   tab.dialogDelegate = nil;
   tab.passKitDialogProvider = nil;
-  if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    tab.legacyFullscreenControllerDelegate = nil;
-  }
   if (!IsIPadIdiom()) {
     tab.overscrollActionsControllerDelegate = nil;
   }
@@ -3656,141 +3645,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
       web::PolicyForNavigation(url, referrer));
 }
 
-#pragma mark - LegacyFullscreenControllerDelegate methods
-
-// TODO(crbug.com/798064): Remove these methods and their helpers once the
-// fullscreen migration is complete.
-- (void)redrawHeader {
-  for (HeaderDefinition* header in self.headerViews) {
-    [header.view setNeedsLayout];
-  }
-}
-
-- (CGFloat)headerHeightForLegacyFullscreen {
-  return self.headerHeight;
-}
-
 - (BOOL)isTabWithIDCurrent:(NSString*)sessionID {
   return self.visible && [sessionID isEqualToString:[_model currentTab].tabId];
-}
-
-- (CGFloat)currentHeaderOffset {
-  NSArray<HeaderDefinition*>* headers = [self headerViews];
-  if (!headers.count)
-    return 0.0;
-
-  // Prerender tab does not have a toolbar, return |headerHeight| as promised by
-  // API documentation.
-  if (_insertedTabWasPrerenderedTab)
-    return self.headerHeight;
-
-  UIView* topHeader = headers[0].view;
-  return -(topHeader.frame.origin.y - self.headerOffset);
-}
-
-- (void)fullScreenController:(LegacyFullscreenController*)fullScreenController
-    drawHeaderViewFromOffset:(CGFloat)headerOffset
-                     animate:(BOOL)animate {
-  if ([self.sideSwipeController inSwipe])
-    return;
-
-  CGRect footerFrame = CGRectZero;
-  UIView* footer = nil;
-  // Only animate the voice search bar if the tab is a voice search results tab.
-  if ([_model currentTab].isVoiceSearchResultsTab) {
-    footer = [self footerView];
-    footerFrame = footer.frame;
-    footerFrame.origin.y = [self footerYForHeaderOffset:headerOffset];
-  }
-
-  NSArray<HeaderDefinition*>* headers = [self headerViews];
-  void (^block)(void) = ^{
-    [self setFramesForHeaders:headers atOffset:headerOffset];
-    footer.frame = footerFrame;
-  };
-  void (^completion)(BOOL) = ^(BOOL finished) {
-    [self fullScreenController:fullScreenController
-        headerAnimationCompleted:finished
-                          offset:headerOffset];
-  };
-  if (animate) {
-    [UIView
-        animateWithDuration:kLegacyFullscreenControllerToolbarAnimationDuration
-                      delay:0.0
-                    options:UIViewAnimationOptionBeginFromCurrentState
-                 animations:block
-                 completion:completion];
-  } else {
-    block();
-    completion(YES);
-  }
-}
-
-- (void)fullScreenController:(LegacyFullscreenController*)fullScreenController
-    drawHeaderViewFromOffset:(CGFloat)headerOffset
-              onWebViewProxy:(id<CRWWebViewProxy>)webViewProxy
-     changeTopContentPadding:(BOOL)changeTopContentPadding
-           scrollingToOffset:(CGFloat)contentOffset {
-  DCHECK(webViewProxy);
-  if ([self.sideSwipeController inSwipe])
-    return;
-
-  CGRect footerFrame;
-  UIView* footer = nil;
-  // Only animate the voice search bar if the tab is a voice search results tab.
-  if ([_model currentTab].isVoiceSearchResultsTab) {
-    footer = [self footerView];
-    footerFrame = footer.frame;
-    footerFrame.origin.y = [self footerYForHeaderOffset:headerOffset];
-  }
-
-  NSArray<HeaderDefinition*>* headers = [self headerViews];
-  void (^block)(void) = ^{
-    [self setFramesForHeaders:headers atOffset:headerOffset];
-    footer.frame = footerFrame;
-    webViewProxy.scrollViewProxy.contentOffset = CGPointMake(
-        webViewProxy.scrollViewProxy.contentOffset.x, contentOffset);
-    if (changeTopContentPadding)
-      webViewProxy.topContentPadding = contentOffset;
-  };
-  void (^completion)(BOOL) = ^(BOOL finished) {
-    [self fullScreenController:fullScreenController
-        headerAnimationCompleted:finished
-                          offset:headerOffset];
-  };
-
-  [UIView
-      animateWithDuration:kLegacyFullscreenControllerToolbarAnimationDuration
-                    delay:0.0
-                  options:UIViewAnimationOptionBeginFromCurrentState
-               animations:block
-               completion:completion];
-}
-
-#pragma mark - LegacyFullscreenControllerDelegate helpers
-
-// Returns the y coordinate for the footer's frame when animating the footer
-// in/out of fullscreen.
-- (CGFloat)footerYForHeaderOffset:(CGFloat)headerOffset {
-  UIView* footer = [self footerView];
-  CGFloat headerHeight = [self headerHeight];
-  if (!footer || headerHeight == 0)
-    return 0.0;
-
-  CGFloat footerHeight = CGRectGetHeight(footer.frame);
-  CGFloat offset = headerOffset * footerHeight / headerHeight;
-  return std::ceil(CGRectGetHeight(self.view.bounds) - footerHeight + offset);
-}
-
-// Called when the animation for setting the header view's offset is finished.
-// |completed| should indicate if the animation finished completely or was
-// interrupted. |offset| should indicate the header offset after the animation.
-// |dragged| should indicate if the header moved due to the user dragging.
-- (void)fullScreenController:(LegacyFullscreenController*)controller
-    headerAnimationCompleted:(BOOL)completed
-                      offset:(CGFloat)offset {
-  if (completed)
-    [controller setToolbarInsetsForHeaderOffset:offset];
 }
 
 #pragma mark - OverscrollActionsControllerDelegate methods.
@@ -4077,6 +3933,20 @@ bubblePresenterForFeature:(const base::Feature&)feature
     self.currentWebState->GetWebViewProxy().topContentPadding =
         AlignValueToPixel(progress * [self toolbarHeight]);
   }
+}
+
+- (CGFloat)currentHeaderOffset {
+  NSArray<HeaderDefinition*>* headers = [self headerViews];
+  if (!headers.count)
+    return 0.0;
+
+  // Prerender tab does not have a toolbar, return |headerHeight| as promised by
+  // API documentation.
+  if (_insertedTabWasPrerenderedTab)
+    return self.headerHeight;
+
+  UIView* topHeader = headers[0].view;
+  return -(topHeader.frame.origin.y - self.headerOffset);
 }
 
 #pragma mark - KeyCommandsPlumbing

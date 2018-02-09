@@ -4,19 +4,6 @@
 
 source_set("fullscreen") {
   sources = [
-    "fullscreen_features.h",
-    "fullscreen_features.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-
-  deps = [
-    "//base",
-  ]
-}
-
-source_set("new_fullscreen") {
-  sources = [
     "animated_scoped_fullscreen_disabler.h",
     "animated_scoped_fullscreen_disabler.mm",
     "fullscreen_controller.h",
@@ -24,15 +11,18 @@ source_set("new_fullscreen") {
     "fullscreen_controller_observer.h",
     "fullscreen_ui_updater.h",
     "scoped_fullscreen_disabler.h",
+    # Remove after downstream no longer checks for the feature.
+    "fullscreen_features.h",
+    "fullscreen_features.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
-  allow_circular_includes_from = [ ":new_fullscreen_internal" ]
+  allow_circular_includes_from = [ ":internal" ]
 
   deps = [
-    ":new_fullscreen_internal",
-    ":new_fullscreen_ui",
+    ":internal",
+    ":ui",
     "//base",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
@@ -42,7 +32,14 @@ source_set("new_fullscreen") {
   ]
 }
 
-source_set("new_fullscreen_coordinators") {
+source_set("new_fullscreen") {
+  # Dummy source set with old name for 3-way patch.
+  public_deps = [
+    ":fullscreen",
+  ]
+}
+
+source_set("coordinators") {
   sources = [
     "chrome_coordinator+fullscreen_disabling.h",
     "chrome_coordinator+fullscreen_disabling.mm",
@@ -51,13 +48,13 @@ source_set("new_fullscreen_coordinators") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
-    ":new_fullscreen",
+    ":fullscreen",
     "//base",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
   ]
 }
 
-source_set("new_fullscreen_internal") {
+source_set("internal") {
   sources = [
     "fullscreen_controller_factory.mm",
     "fullscreen_controller_impl.h",
@@ -83,8 +80,7 @@ source_set("new_fullscreen_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
-    ":fullscreen",
-    ":new_fullscreen_ui",
+    ":ui",
     "//base",
     "//components/keyed_service/ios",
     "//ios/chrome/browser/browser_state",
@@ -96,7 +92,7 @@ source_set("new_fullscreen_internal") {
   ]
 }
 
-source_set("new_fullscreen_ui") {
+source_set("ui") {
   sources = [
     "fullscreen_animator.h",
     "fullscreen_animator.mm",
@@ -118,7 +114,7 @@ source_set("new_fullscreen_ui") {
   ]
 }
 
-source_set("new_unit_tests") {
+source_set("unit_tests") {
   testonly = true
   sources = [
     "fullscreen_mediator_unittest.mm",
@@ -131,9 +127,9 @@ source_set("new_unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
-    ":new_fullscreen",
-    ":new_fullscreen_internal",
-    ":new_fullscreen_ui",
+    ":fullscreen",
+    ":internal",
+    ":ui",
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/broadcaster",
     "//ios/chrome/browser/ui/fullscreen/test",
@@ -143,47 +139,6 @@ source_set("new_unit_tests") {
     "//ios/web/public",
     "//ios/web/public/test/fakes",
     "//testing/gtest",
-  ]
-}
-
-source_set("legacy_fullscreen") {
-  sources = [
-    "legacy_fullscreen_controller.h",
-    "legacy_fullscreen_controller.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-
-  deps = [
-    "//base",
-    "//ios/chrome/browser/ui:notifications",
-    "//ios/chrome/browser/ui/history_popup/requirements",
-    "//ios/chrome/browser/ui/overscroll_actions",
-    "//ios/chrome/browser/ui/page_info:coordinator",
-    "//ios/chrome/browser/ui/side_swipe",
-    "//ios/chrome/browser/ui/tabs/requirements",
-    "//ios/chrome/browser/ui/toolbar/public",
-    "//ios/chrome/browser/ui/tools_menu/public",
-    "//ios/chrome/browser/ui/voice",
-    "//ios/web",
-  ]
-}
-
-source_set("legacy_unit_tests") {
-  testonly = true
-  sources = [
-    "legacy_fullscreen_controller_unittest.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-
-  deps = [
-    ":legacy_fullscreen",
-    "//ios/web",
-    "//ios/web/public",
-    "//ios/web/public/test/fakes",
-    "//testing/gtest",
-    "//third_party/ocmock",
   ]
 }
 

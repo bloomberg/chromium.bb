@@ -74,8 +74,6 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
-#import "ios/chrome/browser/ui/fullscreen/legacy_fullscreen_controller.h"
 #import "ios/chrome/browser/ui/open_in_controller.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -154,9 +152,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   // Last visited timestamp.
   double _lastVisitedTimestamp;
 
-  // The Full Screen Controller responsible for hiding/showing the toolbar.
-  LegacyFullscreenController* _legacyFullscreenController;
-
   // The Overscroll controller responsible for displaying the
   // overscrollActionsView above the toolbar.
   OverscrollActionsController* _overscrollActionsController;
@@ -192,8 +187,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 @synthesize delegate = delegate_;
 @synthesize dialogDelegate = dialogDelegate_;
 @synthesize tabHeadersDelegate = tabHeadersDelegate_;
-@synthesize legacyFullscreenControllerDelegate =
-    legacyFullscreenControllerDelegate_;
 
 #pragma mark - Initializers
 
@@ -271,28 +264,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 
 - (id<FindInPageControllerDelegate>)findInPageControllerDelegate {
   return self;
-}
-
-- (void)setLegacyFullscreenControllerDelegate:
-    (id<LegacyFullscreenControllerDelegate>)fullScreenControllerDelegate {
-  DCHECK(!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen));
-  if (fullScreenControllerDelegate == legacyFullscreenControllerDelegate_)
-    return;
-  // Lazily create a LegacyFullscreenController.
-  // The check for fullScreenControllerDelegate is necessary to avoid recreating
-  // a LegacyFullscreenController during teardown.
-  if (!_legacyFullscreenController && fullScreenControllerDelegate) {
-    _legacyFullscreenController = [[LegacyFullscreenController alloc]
-        initWithDelegate:fullScreenControllerDelegate
-                webState:self.webState
-               sessionID:self.tabId];
-    // If the content of the page was loaded without knowledge of the
-    // toolbar position it will be misplaced under the toolbar instead of
-    // right below. This happens e.g. in the case of preloading. This is to make
-    // sure the content is moved to the right place.
-    [_legacyFullscreenController moveContentBelowHeader];
-  }
-  legacyFullscreenControllerDelegate_ = fullScreenControllerDelegate;
 }
 
 - (void)setOverscrollActionsControllerDelegate:
@@ -414,30 +385,17 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 }
 
 - (void)wasShown {
-  if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    [self updateFullscreenWithToolbarVisible:YES];
-  }
   if (self.webState)
     self.webState->WasShown();
 }
 
 - (void)wasHidden {
-  if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    [self updateFullscreenWithToolbarVisible:YES];
-  }
   if (self.webState)
     self.webState->WasHidden();
 }
 
 - (void)willUpdateSnapshot {
   [_overscrollActionsController clear];
-}
-
-#pragma mark - Public API (relating to Fullscreen)
-
-- (void)updateFullscreenWithToolbarVisible:(BOOL)visible {
-  DCHECK(!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen));
-  [_legacyFullscreenController moveHeaderToRestingPosition:visible];
 }
 
 #pragma mark - Public API (relatinge to User agent)
@@ -509,32 +467,12 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 #pragma mark - FindInPageControllerDelegate protocol
 
 - (void)willAdjustScrollPosition {
-  if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    // Skip the next attempt to correct the scroll offset for the toolbar
-    // height.  Used when programatically scrolling down the y offset.
-    [_legacyFullscreenController shouldSkipNextScrollOffsetForHeader];
-  }
 }
 
 #pragma mark - CRWWebStateObserver protocol
 
 - (void)webState:(web::WebState*)webState
-    didCommitNavigationWithDetails:(const web::LoadCommittedDetails&)details {
-  DCHECK([self navigationManager]);
-  if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    // TODO(crbug.com/381201): Move this call to DidFinishNavigation callback.
-    [_legacyFullscreenController disableFullScreen];
-  }
-}
-
-- (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
-  if (!navigation->IsSameDocument() &&
-      !base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    // Move the toolbar to visible during page load.
-    [_legacyFullscreenController disableFullScreen];
-  }
-
   [self.dialogDelegate cancelDialogForTab:self];
   [_openInController disable];
 }
@@ -554,25 +492,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
     scoped_refptr<net::HttpResponseHeaders> headers =
         _webStateImpl->GetHttpResponseHeaders();
     [self handleExportableFile:headers.get()];
-  } else {
-    if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-      [_legacyFullscreenController disableFullScreen];
-    }
-  }
-}
-
-- (void)webStateDidChangeVisibleSecurityState:(web::WebState*)webState {
-  if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    // Disable fullscreen if SSL cert is invalid.
-    web::NavigationItem* item = [self navigationManager]->GetTransientItem();
-    if (item) {
-      web::SecurityStyle securityStyle = item->GetSSL().security_style;
-      if (securityStyle == web::SECURITY_STYLE_AUTHENTICATION_BROKEN) {
-        [_legacyFullscreenController disableFullScreen];
-      }
-    }
-
-    [self updateFullscreenWithToolbarVisible:YES];
   }
 }
 
@@ -583,13 +502,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 
 - (void)renderProcessGoneForWebState:(web::WebState*)webState {
   DCHECK(webState == _webStateImpl);
-  if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    UIApplicationState state =
-        [UIApplication sharedApplication].applicationState;
-    if (webState->IsVisible() && state == UIApplicationStateActive) {
-      [_legacyFullscreenController disableFullScreen];
-    }
-  }
   [self.dialogDelegate cancelDialogForTab:self];
 }
 
@@ -603,27 +515,12 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   [_overscrollActionsController invalidate];
   _overscrollActionsController = nil;
 
-  // Clean up legacy fullscreen.
-  if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    self.legacyFullscreenControllerDelegate = nil;
-    [_legacyFullscreenController invalidate];
-    _legacyFullscreenController = nil;
-  }
-
   // Cancel any queued dialogs.
   [self.dialogDelegate cancelDialogForTab:self];
 
   _webStateImpl->RemoveObserver(_webStateObserver.get());
   _webStateObserver.reset();
   _webStateImpl = nullptr;
-}
-
-- (void)webStateDidStopLoading:(web::WebState*)webState {
-  if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    // This is the maximum that a page will ever load and it is safe to allow
-    // fullscreen mode.
-    [_legacyFullscreenController enableFullScreen];
-  }
 }
 
 #pragma mark - CRWWebDelegate protocol

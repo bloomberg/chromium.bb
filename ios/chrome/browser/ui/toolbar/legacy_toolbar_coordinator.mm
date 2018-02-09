@@ -8,7 +8,6 @@
 #import "ios/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_updater.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
@@ -65,16 +64,14 @@
 }
 
 - (void)start {
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
-    [self startObservingFullscreen];
+  [self startObservingFullscreen];
 }
 
 - (void)stop {
   [self.toolbarController setBackgroundAlpha:1.0];
   [self.toolbarController browserStateDestroyed];
   [self.toolbarController stop];
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
-    [self stopObservingFullscreen];
+  [self stopObservingFullscreen];
   self.toolbarController = nil;
 }
 
@@ -290,7 +287,6 @@
 // Creates a FullscreenUIUpdater for the toolbar controller and adds it as a
 // FullscreenControllerObserver.
 - (void)startObservingFullscreen {
-  DCHECK(base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen));
   if (_fullscreenUpdater)
     return;
   if (!self.browserState)
@@ -306,7 +302,6 @@
 
 // Removes the FullscreenUIUpdater as a FullscreenControllerObserver.
 - (void)stopObservingFullscreen {
-  DCHECK(base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen));
   if (!_fullscreenUpdater)
     return;
   if (!self.browserState)

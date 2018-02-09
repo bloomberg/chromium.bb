@@ -28,7 +28,7 @@ source_set("public") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/bubble",
-    "//ios/chrome/browser/ui/fullscreen:new_fullscreen_ui",
+    "//ios/chrome/browser/ui/fullscreen:ui",
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/qr_scanner/requirements",
     "//ios/chrome/browser/ui/tools_menu/public",

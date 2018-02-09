@@ -20,7 +20,6 @@
 #import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_side_swipe_provider.h"
 #import "ios/chrome/browser/ui/side_swipe/card_side_swipe_view.h"
@@ -327,15 +326,10 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     return;
 
   if (gesture.state == UIGestureRecognizerStateBegan) {
-    if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-      // Disable fullscreen while the side swipe gesture is occurring.
-      fullscreenDisabler_ = std::make_unique<ScopedFullscreenDisabler>(
-          FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-              browserState_));
-    } else {
-      // If the toolbar is hidden, move it to visible.
-      [[model_ currentTab] updateFullscreenWithToolbarVisible:YES];
-    }
+    // Disable fullscreen while the side swipe gesture is occurring.
+    fullscreenDisabler_ = std::make_unique<ScopedFullscreenDisabler>(
+        FullscreenControllerFactory::GetInstance()->GetForBrowserState(
+            browserState_));
     SnapshotTabHelper::FromWebState([model_ currentTab].webState)
         ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
     [[NSNotificationCenter defaultCenter]
@@ -404,8 +398,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
                       object:nil];
 
     // Stop disabling fullscreen.
-    if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
-      fullscreenDisabler_ = nullptr;
+    fullscreenDisabler_ = nullptr;
   }
 }
 
@@ -428,16 +421,11 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
 // Show swipe to navigate.
 - (void)handleSwipeToNavigate:(SideSwipeGestureRecognizer*)gesture {
   if (gesture.state == UIGestureRecognizerStateBegan) {
-    if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-      // If the toolbar is hidden, move it to visible.
-      [[model_ currentTab] updateFullscreenWithToolbarVisible:YES];
-    } else {
-      // Make sure the Toolbar is visible by disabling Fullscreen.
-      animatedFullscreenDisabler_ =
-          std::make_unique<AnimatedScopedFullscreenDisabler>(
-              FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-                  browserState_));
-    }
+    // Make sure the Toolbar is visible by disabling Fullscreen.
+    animatedFullscreenDisabler_ =
+        std::make_unique<AnimatedScopedFullscreenDisabler>(
+            FullscreenControllerFactory::GetInstance()->GetForBrowserState(
+                browserState_));
 
     inSwipe_ = YES;
     [swipeDelegate_ updateAccessoryViewsForSideSwipeWithVisibility:NO];
@@ -470,8 +458,7 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
              gesture.state == UIGestureRecognizerStateFailed) {
     // Enable fullscreen functionality after the Toolbar has been shown, and
     // the gesture is over.
-    if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
-      animatedFullscreenDisabler_ = nullptr;
+    animatedFullscreenDisabler_ = nullptr;
   }
 
   __weak Tab* weakCurrentTab = [model_ currentTab];
@@ -507,11 +494,6 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
   if (gesture.state == UIGestureRecognizerStateBegan) {
     Tab* currentTab = [model_ currentTab];
     DCHECK(currentTab.webState);
-
-    if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-      // If the toolbar is hidden, move it to visible.
-      [currentTab updateFullscreenWithToolbarVisible:YES];
-    }
 
     inSwipe_ = YES;
 
