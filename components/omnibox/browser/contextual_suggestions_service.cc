@@ -58,6 +58,8 @@ void AddVariationHeaders(const std::unique_ptr<net::URLFetcher>& fetcher) {
 //     urls: {
 //       url : <current_url>
 //       // timestamp_usec is the timestamp for the page visit time.
+//       // It is actually in *milliseconds* since the Unix epoch, not
+//       // microseconds (as the name would have you believe).
 //       timestamp_usec: <visit_time>
 //     }
 //     // stream_type = 1 corresponds to zero suggest suggestions.
@@ -71,6 +73,10 @@ std::string FormatRequestBodyExperimentalService(const std::string& current_url,
   auto url_list = std::make_unique<base::ListValue>();
   auto url_entry = std::make_unique<base::DictionaryValue>();
   url_entry->SetString("url", current_url);
+  // Warning: syncer::TimeToProtoTime() generates the timestamp in
+  // *milliseconds* since the Unix epoch.  Labeling the parameter as usec is
+  // wrong.  However, live clients are already sending this parameter, so
+  // it's worth attempting to correct it so the semantics are right.
   url_entry->SetString("timestamp_usec",
                        std::to_string(syncer::TimeToProtoTime(visit_time)));
   url_list->Append(std::move(url_entry));
