@@ -56,10 +56,9 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
     return inline_offset_to_container_box_;
   }
 
-  // Update VisualRect() for this object and all its descendants from
-  // LayoutObject. Corresponding LayoutObject::VisualRect() must be computed and
-  // set beforehand.
-  void UpdateVisualRectFromLayoutObject();
+  // Update VisualRect for fragments without LayoutObjects (i.e., line boxes,)
+  // after its descendants were updated.
+  void UpdateVisualRectForNonLayoutObjectChildren();
 
   void AddSelfOutlineRect(Vector<LayoutRect>*, const LayoutPoint& offset) const;
 
@@ -69,6 +68,7 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   bool ShouldClipOverflow() const;
   bool HasSelfPaintingLayer() const;
   LayoutRect VisualRect() const override { return visual_rect_; }
+  void SetVisualRect(const LayoutRect& rect) { visual_rect_ = rect; }
   LayoutRect VisualOverflowRect() const;
   LayoutRect OverflowClipRect(const LayoutPoint& location,
                               OverlayScrollbarClipBehavior) const {
@@ -144,14 +144,10 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   static FragmentRange InlineFragmentsFor(const LayoutObject*);
 
  private:
-  void SetVisualRect(const LayoutRect& rect) { visual_rect_ = rect; }
-
   void PopulateDescendants(
       const NGPhysicalOffset inline_offset_to_container_box,
       HashMap<const LayoutObject*, NGPaintFragment*>* first_fragment_map,
       HashMap<const LayoutObject*, NGPaintFragment*>* last_fragment_map);
-
-  void UpdateVisualRectFromLayoutObject(const NGPhysicalOffset&);
 
   //
   // Following fields are computed in the layout phase.

@@ -7,6 +7,8 @@
 
 #include "core/CoreExport.h"
 #include "platform/LayoutUnit.h"
+#include "platform/geometry/LayoutPoint.h"
+#include "platform/geometry/LayoutSize.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
 
@@ -44,11 +46,14 @@ struct CORE_EXPORT NGPhysicalOffset {
 
   // Conversions from/to existing code. New code prefers type safety for
   // logical/physical distinctions.
-  explicit NGPhysicalOffset(const LayoutPoint&);
+  explicit NGPhysicalOffset(const LayoutPoint& point)
+      : left(point.X()), top(point.Y()) {}
+  explicit NGPhysicalOffset(const LayoutSize& size)
+      : left(size.Width()), top(size.Height()) {}
 
   // Conversions from/to existing code. New code prefers type safety for
   // logical/physical distinctions.
-  LayoutPoint ToLayoutPoint() const;
+  LayoutPoint ToLayoutPoint() const { return {left, top}; }
 
   String ToString() const;
 };
