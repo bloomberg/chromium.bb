@@ -4742,8 +4742,6 @@ drm_output_disable(struct weston_output *base)
 {
 	struct drm_output *output = to_drm_output(base);
 	struct drm_backend *b = to_drm_backend(base->compositor);
-	struct drm_pending_state *pending_state;
-	int ret;
 
 	if (output->page_flip_pending || output->vblank_pending ||
 	    output->atomic_complete_pending) {
@@ -4752,16 +4750,14 @@ drm_output_disable(struct weston_output *base)
 	}
 
 	weston_log("Disabling output %s\n", output->base.name);
-	pending_state = drm_pending_state_alloc(b);
-	drm_output_get_disable_state(pending_state, output);
-	ret = drm_pending_state_apply_sync(pending_state);
-	if (ret)
-		weston_log("Couldn't disable output %s\n", output->base.name);
 
 	if (output->base.enabled)
 		drm_output_deinit(&output->base);
 
 	output->disable_pending = 0;
+
+	/* Force resetting unused connectors and crtcs. */
+	b->state_invalid = true;
 
 	return 0;
 }
