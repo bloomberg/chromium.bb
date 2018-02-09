@@ -31,8 +31,6 @@ class CORE_EXPORT ImageResourceInfo : public GarbageCollectedMixin {
   ~ImageResourceInfo() = default;
   virtual const KURL& Url() const = 0;
   virtual bool IsSchedulingReload() const = 0;
-  virtual bool HasDevicePixelRatioHeaderValue() const = 0;
-  virtual float DevicePixelRatioHeaderValue() const = 0;
   virtual const ResourceResponse& GetResponse() const = 0;
   virtual bool ShouldShowPlaceholder() const = 0;
   virtual bool IsCacheValidator() const = 0;

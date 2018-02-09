@@ -147,15 +147,9 @@ class CORE_EXPORT ImageResource final
 
   Member<ImageResourceContent> content_;
 
-  // TODO(hiroshige): move |m_devicePixelRatioHeaderValue| and
-  // |m_hasDevicePixelRatioHeaderValue| to ImageResourceContent and update
-  // it via ImageResourceContent::updateImage().
-  float device_pixel_ratio_header_value_;
-
   Member<MultipartImageResourceParser> multipart_parser_;
   MultipartParsingState multipart_parsing_state_ =
       MultipartParsingState::kWaitingForFirstPart;
-  bool has_device_pixel_ratio_header_value_;
 
   // Indicates if the ImageResource is currently scheduling a reload, e.g.
   // because reloadIfLoFi() was called.

@@ -214,6 +214,9 @@ class CORE_EXPORT ImageResourceContent final
 
   Member<ImageResourceInfo> info_;
 
+  float device_pixel_ratio_header_value_;
+  bool has_device_pixel_ratio_header_value_;
+
   scoped_refptr<blink::Image> image_;
 
   HashCountedSet<ImageResourceObserver*> observers_;

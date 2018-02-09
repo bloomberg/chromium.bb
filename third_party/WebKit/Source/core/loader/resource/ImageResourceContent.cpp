@@ -40,8 +40,6 @@ class NullImageResourceInfo final
  private:
   const KURL& Url() const override { return url_; }
   bool IsSchedulingReload() const override { return false; }
-  bool HasDevicePixelRatioHeaderValue() const override { return false; }
-  float DevicePixelRatioHeaderValue() const override { return 1.0; }
   const ResourceResponse& GetResponse() const override { return response_; }
   bool ShouldShowPlaceholder() const override { return false; }
   bool IsCacheValidator() const override { return false; }
@@ -98,7 +96,10 @@ int64_t EstimateOriginalImageSizeForPlaceholder(
 }  // namespace
 
 ImageResourceContent::ImageResourceContent(scoped_refptr<blink::Image> image)
-    : is_refetchable_data_from_disk_cache_(true), image_(std::move(image)) {
+    : is_refetchable_data_from_disk_cache_(true),
+      device_pixel_ratio_header_value_(1.0),
+      has_device_pixel_ratio_header_value_(false),
+      image_(std::move(image)) {
   DEFINE_STATIC_LOCAL(NullImageResourceInfo, null_info,
                       (new NullImageResourceInfo()));
   info_ = &null_info;
@@ -288,6 +289,15 @@ void ImageResourceContent::NotifyObservers(
 }
 
 scoped_refptr<Image> ImageResourceContent::CreateImage(bool is_multipart) {
+  device_pixel_ratio_header_value_ =
+      info_->GetResponse()
+          .HttpHeaderField(HTTPNames::Content_DPR)
+          .ToFloat(&has_device_pixel_ratio_header_value_);
+  if (!has_device_pixel_ratio_header_value_ ||
+      device_pixel_ratio_header_value_ <= 0.0) {
+    device_pixel_ratio_header_value_ = 1.0;
+    has_device_pixel_ratio_header_value_ = false;
+  }
   if (info_->GetResponse().MimeType() == "image/svg+xml")
     return SVGImage::Create(this, is_multipart);
   return BitmapImage::Create(this, is_multipart);
@@ -594,11 +604,11 @@ bool ImageResourceContent::HasCacheControlNoStoreHeader() const {
 }
 
 float ImageResourceContent::DevicePixelRatioHeaderValue() const {
-  return info_->DevicePixelRatioHeaderValue();
+  return device_pixel_ratio_header_value_;
 }
 
 bool ImageResourceContent::HasDevicePixelRatioHeaderValue() const {
-  return info_->HasDevicePixelRatioHeaderValue();
+  return has_device_pixel_ratio_header_value_;
 }
 
 const ResourceResponse& ImageResourceContent::GetResponse() const {
