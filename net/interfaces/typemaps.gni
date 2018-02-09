@@ -4,6 +4,7 @@
 
 typemaps = [
   "//net/interfaces/address_family.typemap",
+  "//net/interfaces/address_list.typemap",
   "//net/interfaces/host_resolver.typemap",
   "//net/interfaces/ip_address.typemap",
   "//net/interfaces/ip_endpoint.typemap",
