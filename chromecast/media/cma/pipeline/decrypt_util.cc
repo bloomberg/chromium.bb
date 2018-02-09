@@ -13,37 +13,20 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "chromecast/media/base/decrypt_context_impl.h"
-#include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/public/media/cast_decrypt_config.h"
 #include "media/base/decoder_buffer.h"
 
 namespace chromecast {
 namespace media {
-
 namespace {
-
-class DecoderBufferClear : public DecoderBufferBase {
- public:
-  explicit DecoderBufferClear(scoped_refptr<DecoderBufferBase> buffer);
-
-  // DecoderBufferBase implementation.
-  StreamId stream_id() const override;
-  int64_t timestamp() const override;
-  void set_timestamp(base::TimeDelta timestamp) override;
-  const uint8_t* data() const override;
-  uint8_t* writable_data() const override;
-  size_t data_size() const override;
-  const CastDecryptConfig* decrypt_config() const override;
-  bool end_of_stream() const override;
-  scoped_refptr<::media::DecoderBuffer> ToMediaBuffer() const override;
-
- private:
-  ~DecoderBufferClear() override;
-
-  scoped_refptr<DecoderBufferBase> const buffer_;
-
-  DISALLOW_COPY_AND_ASSIGN(DecoderBufferClear);
-};
+void OnBufferDecrypted(scoped_refptr<DecoderBufferBase> buffer,
+                       BufferDecryptedCB buffer_decrypted_cb,
+                       bool success) {
+  scoped_refptr<DecoderBufferBase> out_buffer =
+      success ? base::MakeRefCounted<DecoderBufferClear>(buffer) : buffer;
+  std::move(buffer_decrypted_cb).Run(std::move(out_buffer), success);
+}
+}  // namespace
 
 DecoderBufferClear::DecoderBufferClear(scoped_refptr<DecoderBufferBase> buffer)
     : buffer_(buffer) {}
@@ -89,21 +72,12 @@ DecoderBufferClear::ToMediaBuffer() const {
   return buffer_->ToMediaBuffer();
 }
 
-void OnBufferDecrypted(scoped_refptr<DecoderBufferBase> buffer,
-                       const BufferDecryptedCB& buffer_decrypted_cb,
-                       bool success) {
-  scoped_refptr<DecoderBufferBase> out_buffer =
-      success ? new DecoderBufferClear(buffer) : buffer;
-  buffer_decrypted_cb.Run(out_buffer, success);
-}
-}  // namespace
-
 void DecryptDecoderBuffer(scoped_refptr<DecoderBufferBase> buffer,
                           DecryptContextImpl* decrypt_ctxt,
-                          const BufferDecryptedCB& buffer_decrypted_cb) {
-  decrypt_ctxt->DecryptAsync(
-      buffer.get(), buffer->writable_data(), 0,
-      base::BindOnce(&OnBufferDecrypted, buffer, buffer_decrypted_cb));
+                          BufferDecryptedCB buffer_decrypted_cb) {
+  decrypt_ctxt->DecryptAsync(buffer.get(), buffer->writable_data(), 0,
+                             base::BindOnce(&OnBufferDecrypted, buffer,
+                                            std::move(buffer_decrypted_cb)));
 }
 
 }  // namespace media
