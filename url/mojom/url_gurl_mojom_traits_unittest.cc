@@ -73,7 +73,7 @@ TEST(MojoGURLStructTraitsTest, Basic) {
 
   // Test basic Origin serialization.
   Origin non_unique = Origin::UnsafelyCreateOriginWithoutNormalization(
-      "http", "www.google.com", 80, "");
+      "http", "www.google.com", 80);
   Origin output;
   EXPECT_TRUE(proxy->BounceOrigin(non_unique, &output));
   EXPECT_EQ(non_unique, output);
@@ -83,10 +83,10 @@ TEST(MojoGURLStructTraitsTest, Basic) {
   EXPECT_TRUE(proxy->BounceOrigin(unique, &output));
   EXPECT_TRUE(output.unique());
 
-  Origin with_sub_origin = Origin::CreateFromNormalizedTupleWithSuborigin(
-      "http", "www.google.com", 80, "suborigin");
-  EXPECT_TRUE(proxy->BounceOrigin(with_sub_origin, &output));
-  EXPECT_EQ(with_sub_origin, output);
+  Origin normalized =
+      Origin::CreateFromNormalizedTuple("http", "www.google.com", 80);
+  EXPECT_TRUE(proxy->BounceOrigin(normalized, &output));
+  EXPECT_EQ(normalized, output);
   EXPECT_FALSE(output.unique());
 }
 

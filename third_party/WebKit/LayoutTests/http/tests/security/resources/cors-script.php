@@ -17,15 +17,6 @@ if (!(empty($custom_header_arg))) {
   header('Access-Control-Allow-Headers: ' . $custom_header_arg);
 }
 
-$suborigin_arg = strtolower($_GET['suborigin']);
-if (!(empty($suborigin_arg))) {
-  header('Access-Control-Allow-Suborigin: ' . $suborigin_arg);
-}
-
-if ($_SERVER['HTTP_SUBORIGIN'] == 'foobar') {
-  header('Access-Control-Allow-Suborigin: foobar');
-}
-
 header('Content-Type: application/javascript');
 
 $delay = $_GET['delay'];

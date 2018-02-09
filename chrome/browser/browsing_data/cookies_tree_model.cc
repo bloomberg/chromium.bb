@@ -78,23 +78,11 @@ std::string CanonicalizeHost(const GURL& url) {
   // would become google.com.mail.1, and then a standard string comparison works
   // to order hosts by registry controlled domain first. Leading dots are
   // ignored, ".google.com" is the same as "google.com".
-  //
-  // Suborigins, an experimental web platform feature defined in
-  // https://w3c.github.io/webappsec-suborigins/, are treated as part of the
-  // physical origin they are associated with. From a users perspective, they
-  // are part of and should be visualized as part of that host. For example,
-  // given a a suborigin 'foobar' at 'https://example.com', this is serialized
-  // into the URL as 'https-so://foobar.example.com'. Thus, the host for this
-  // URL is canonicalized as 'example.com' to treat it as being part of that
-  // host, and thus the suborigin is striped from the URL.
   if (url.SchemeIsFile()) {
-    return std::string(url::kFileScheme) +
-           url::kStandardSchemeSeparator;
+    return std::string(url::kFileScheme) + url::kStandardSchemeSeparator;
   }
 
-  // Pass through url::Origin to get the real host, which has the effect of
-  // stripping the suborigin from the URL.
-  std::string host = url::Origin::Create(url).host();
+  std::string host = url.host();
   std::string retval =
       net::registry_controlled_domains::GetDomainAndRegistry(
           host,

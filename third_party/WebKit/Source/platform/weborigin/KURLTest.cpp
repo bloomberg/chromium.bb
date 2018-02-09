@@ -499,30 +499,14 @@ TEST(KURLTest, ReplaceInvalid) {
 }
 
 TEST(KURLTest, Valid_HTTP_FTP_URLsHaveHosts) {
-  // Since the suborigin schemes are added at the content layer, its
-  // necessary it explicitly add them as standard schemes for this test. If
-  // this is needed in the future across mulitple KURLTests, then KURLTest
-  // should probably be converted to a test fixture with a proper SetUp()
-  // method.
-  url::AddStandardScheme("http-so", url::SCHEME_WITH_PORT);
-  url::AddStandardScheme("https-so", url::SCHEME_WITH_PORT);
-
   KURL kurl("foo://www.google.com/");
   EXPECT_TRUE(kurl.SetProtocol("http"));
   EXPECT_TRUE(kurl.ProtocolIs("http"));
   EXPECT_TRUE(kurl.ProtocolIsInHTTPFamily());
   EXPECT_TRUE(kurl.IsValid());
 
-  EXPECT_TRUE(kurl.SetProtocol("http-so"));
-  EXPECT_TRUE(kurl.ProtocolIs("http-so"));
-  EXPECT_TRUE(kurl.IsValid());
-
   EXPECT_TRUE(kurl.SetProtocol("https"));
   EXPECT_TRUE(kurl.ProtocolIs("https"));
-  EXPECT_TRUE(kurl.IsValid());
-
-  EXPECT_TRUE(kurl.SetProtocol("https-so"));
-  EXPECT_TRUE(kurl.ProtocolIs("https-so"));
   EXPECT_TRUE(kurl.IsValid());
 
   EXPECT_TRUE(kurl.SetProtocol("ftp"));
@@ -536,14 +520,8 @@ TEST(KURLTest, Valid_HTTP_FTP_URLsHaveHosts) {
   EXPECT_TRUE(kurl.ProtocolIs("http"));
   EXPECT_EQ(kurl.Protocol(), "http");
 
-  kurl = KURL("http-so://foo");
-  EXPECT_TRUE(kurl.ProtocolIs("http-so"));
-
   kurl = KURL("https://foo");
   EXPECT_TRUE(kurl.ProtocolIs("https"));
-
-  kurl = KURL("https-so://foo");
-  EXPECT_TRUE(kurl.ProtocolIs("https-so"));
 
   kurl = KURL("ftp://foo");
   EXPECT_TRUE(kurl.ProtocolIs("ftp"));
@@ -553,17 +531,7 @@ TEST(KURLTest, Valid_HTTP_FTP_URLsHaveHosts) {
   kurl.SetHost("");
   EXPECT_FALSE(kurl.IsValid());
 
-  kurl = KURL("http-so://host/");
-  EXPECT_TRUE(kurl.IsValid());
-  kurl.SetHost("");
-  EXPECT_FALSE(kurl.IsValid());
-
   kurl = KURL("https://host/");
-  EXPECT_TRUE(kurl.IsValid());
-  kurl.SetHost("");
-  EXPECT_FALSE(kurl.IsValid());
-
-  kurl = KURL("https-so://host/");
   EXPECT_TRUE(kurl.IsValid());
   kurl.SetHost("");
   EXPECT_FALSE(kurl.IsValid());

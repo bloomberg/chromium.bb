@@ -43,8 +43,8 @@ bool CSPSourceList::Allow(const CSPSourceList& source_list,
   // schemes, including custom schemes, must be explicitly listed in a source
   // list.
   if (source_list.allow_star) {
-    if (url.SchemeIsHTTPOrHTTPS() || url.SchemeIsSuborigin() ||
-        url.SchemeIsWSOrWSS() || url.SchemeIs("ftp")) {
+    if (url.SchemeIsHTTPOrHTTPS() || url.SchemeIsWSOrWSS() ||
+        url.SchemeIs("ftp")) {
       return true;
     }
     if (context->self_source() && url.SchemeIs(context->self_source()->scheme))

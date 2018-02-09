@@ -1480,8 +1480,6 @@ jumbo_component("platform") {
     "weborigin/SecurityPolicy.cpp",
     "weborigin/SecurityPolicy.h",
     "weborigin/SecurityViolationReportingPolicy.h",
-    "weborigin/Suborigin.cpp",
-    "weborigin/Suborigin.h",
     "weborigin/URLSecurityOriginMap.h",
   ]
 
@@ -1924,7 +1922,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "weborigin/SchemeRegistryTest.cpp",
     "weborigin/SecurityOriginTest.cpp",
     "weborigin/SecurityPolicyTest.cpp",
-    "weborigin/SuboriginTest.cpp",
   ]
 
   if (is_win) {

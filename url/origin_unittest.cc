@@ -70,35 +70,23 @@ TEST(OriginTest, ConstructFromTuple) {
     const char* const scheme;
     const char* const host;
     const uint16_t port;
-    const char* const suborigin;
   } cases[] = {
-      {"http", "example.com", 80, ""},
-      {"http", "example.com", 123, ""},
-      {"https", "example.com", 443, ""},
-      {"http-so", "foobar.example.com", 80, "foobar"},
-      {"http-so", "foobar.example.com", 123, "foobar"},
-      {"https-so", "foobar.example.com", 443, "foobar"},
+      {"http", "example.com", 80},
+      {"http", "example.com", 123},
+      {"https", "example.com", 443},
   };
 
   for (const auto& test_case : cases) {
     testing::Message scope_message;
-    if (test_case.suborigin != std::string()) {
-      scope_message << test_case.scheme << "-so://" << test_case.suborigin
-                    << "." << test_case.host << ":" << test_case.port;
-    } else {
-      scope_message << test_case.scheme << "://" << test_case.host << ":"
-                    << test_case.port;
-    }
+    scope_message << test_case.scheme << "://" << test_case.host << ":"
+                  << test_case.port;
     SCOPED_TRACE(scope_message);
-    url::Origin origin_with_suborigin =
-        url::Origin::CreateFromNormalizedTupleWithSuborigin(
-            test_case.scheme, test_case.host, test_case.port,
-            test_case.suborigin);
+    url::Origin origin = url::Origin::CreateFromNormalizedTuple(
+        test_case.scheme, test_case.host, test_case.port);
 
-    EXPECT_EQ(test_case.scheme, origin_with_suborigin.scheme());
-    EXPECT_EQ(test_case.host, origin_with_suborigin.host());
-    EXPECT_EQ(test_case.port, origin_with_suborigin.port());
-    EXPECT_EQ(test_case.suborigin, origin_with_suborigin.suborigin());
+    EXPECT_EQ(test_case.scheme, origin.scheme());
+    EXPECT_EQ(test_case.host, origin.host());
+    EXPECT_EQ(test_case.port, origin.port());
   }
 }
 
@@ -191,132 +179,15 @@ TEST(OriginTest, Serialization) {
     GURL url(test_case.url);
     EXPECT_TRUE(url.is_valid());
     url::Origin origin = url::Origin::Create(url);
-    EXPECT_TRUE(origin.suborigin().empty());
     std::string serialized = origin.Serialize();
-    std::string serialized_physical_origin =
-        origin.GetPhysicalOrigin().Serialize();
     ExpectParsedUrlsEqual(GURL(serialized), origin.GetURL());
 
     EXPECT_EQ(test_case.expected, serialized);
-    EXPECT_EQ(test_case.expected, serialized_physical_origin);
 
     // The '<<' operator should produce the same serialization as Serialize().
     std::stringstream out;
     out << origin;
     EXPECT_EQ(test_case.expected, out.str());
-  }
-}
-
-TEST(OriginTest, SuboriginSerialization) {
-  struct TestCases {
-    const char* const url;
-    const char* const expected;
-    const char* const expected_physical_origin;
-    const char* const expected_suborigin;
-  } cases[] = {
-      {"http-so://foobar.example.com/", "http-so://foobar.example.com",
-       "http://example.com", "foobar"},
-      {"http-so://foobar.example.com:123/", "http-so://foobar.example.com:123",
-       "http://example.com:123", "foobar"},
-      {"https-so://foobar.example.com/", "https-so://foobar.example.com",
-       "https://example.com", "foobar"},
-      {"https-so://foobar.example.com:123/",
-       "https-so://foobar.example.com:123", "https://example.com:123",
-       "foobar"},
-      {"http://example.com/", "http://example.com", "http://example.com", ""},
-      {"http-so://foobar.example.com/some/path", "http-so://foobar.example.com",
-       "http://example.com", "foobar"},
-      {"http-so://foobar.example.com/some/path?query",
-       "http-so://foobar.example.com", "http://example.com", "foobar"},
-      {"http-so://foobar.example.com/some/path#fragment",
-       "http-so://foobar.example.com", "http://example.com", "foobar"},
-      {"http-so://foobar.example.com/some/path?query#fragment",
-       "http-so://foobar.example.com", "http://example.com", "foobar"},
-      {"http-so://foobar.example.com:1234/some/path?query#fragment",
-       "http-so://foobar.example.com:1234", "http://example.com:1234",
-       "foobar"},
-  };
-
-  for (const auto& test_case : cases) {
-    SCOPED_TRACE(test_case.url);
-    GURL url(test_case.url);
-    EXPECT_TRUE(url.is_valid());
-    url::Origin origin = url::Origin::Create(url);
-    std::string serialized = origin.Serialize();
-    std::string serialized_physical_origin =
-        origin.GetPhysicalOrigin().Serialize();
-    EXPECT_FALSE(origin.unique());
-    EXPECT_EQ(test_case.expected_suborigin, origin.suborigin());
-    ExpectParsedUrlsEqual(GURL(serialized), origin.GetURL());
-
-    EXPECT_EQ(test_case.expected, serialized);
-    EXPECT_EQ(test_case.expected_physical_origin, serialized_physical_origin);
-
-    // The '<<' operator should produce the same serialization as Serialize().
-    std::stringstream out;
-    out << origin;
-    EXPECT_EQ(test_case.expected, out.str());
-  }
-
-  const char* const failure_cases[] = {
-      "http-so://.",  "http-so://foo",  "http-so://.foo",  "http-so://foo.",
-      "https-so://.", "https-so://foo", "https-so://.foo", "https-so://foo.",
-  };
-
-  for (auto* test_case : failure_cases) {
-    SCOPED_TRACE(test_case);
-    GURL url(test_case);
-    EXPECT_TRUE(url.is_valid());
-    url::Origin origin = url::Origin::Create(url);
-    std::string serialized = origin.Serialize();
-    std::string serialized_physical_origin =
-        origin.GetPhysicalOrigin().Serialize();
-    EXPECT_TRUE(origin.unique());
-    EXPECT_EQ("", origin.suborigin());
-    ExpectParsedUrlsEqual(GURL(serialized), origin.GetURL());
-
-    EXPECT_EQ("null", serialized);
-    EXPECT_EQ("null", serialized_physical_origin);
-  }
-}
-
-TEST(OriginTest, SuboriginIsSameOriginWith) {
-  struct TestCases {
-    const char* const url1;
-    const char* const url2;
-    bool is_same_origin;
-    bool is_same_physical_origin;
-  } cases[]{
-      {"http-so://foobar1.example.com/", "http-so://foobar1.example.com", true,
-       true},
-      {"http-so://foobar2.example.com/", "https-so://foobar2.example.com",
-       false, false},
-      {"http-so://foobar3.example.com/", "http://example.com", false, true},
-      {"https-so://foobar4.example.com/", "https-so://foobar4.example.com",
-       true, true},
-      {"https-so://foobar5.example.com/", "https://example.com", false, true},
-      {"http-so://foobar6.example.com/", "http-so://bazbar.example.com", false,
-       true},
-      {"http-so://foobar7.example.com/", "http-so://foobar7.google.com", false,
-       false},
-  };
-
-  for (const auto& test_case : cases) {
-    SCOPED_TRACE(test_case.url1);
-    url::Origin origin1 = url::Origin::Create(GURL(test_case.url1));
-    url::Origin origin2 = url::Origin::Create(GURL(test_case.url2));
-
-    EXPECT_TRUE(origin1.IsSameOriginWith(origin1));
-    EXPECT_TRUE(origin2.IsSameOriginWith(origin2));
-    EXPECT_EQ(test_case.is_same_origin, origin1.IsSameOriginWith(origin2));
-    EXPECT_EQ(test_case.is_same_origin, origin2.IsSameOriginWith(origin1));
-
-    EXPECT_TRUE(origin1.IsSamePhysicalOriginWith(origin1));
-    EXPECT_TRUE(origin2.IsSamePhysicalOriginWith(origin2));
-    EXPECT_EQ(test_case.is_same_physical_origin,
-              origin1.IsSamePhysicalOriginWith(origin2));
-    EXPECT_EQ(test_case.is_same_physical_origin,
-              origin2.IsSamePhysicalOriginWith(origin1));
   }
 }
 
@@ -364,7 +235,7 @@ TEST(OriginTest, UnsafelyCreate) {
     SCOPED_TRACE(testing::Message() << test.scheme << "://" << test.host << ":"
                                     << test.port);
     url::Origin origin = url::Origin::UnsafelyCreateOriginWithoutNormalization(
-        test.scheme, test.host, test.port, "");
+        test.scheme, test.host, test.port);
     EXPECT_EQ(test.scheme, origin.scheme());
     EXPECT_EQ(test.host, origin.host());
     EXPECT_EQ(test.port, origin.port());
@@ -401,7 +272,7 @@ TEST(OriginTest, UnsafelyCreateUniqueOnInvalidInput) {
     SCOPED_TRACE(testing::Message() << test.scheme << "://" << test.host << ":"
                                     << test.port);
     url::Origin origin = url::Origin::UnsafelyCreateOriginWithoutNormalization(
-        test.scheme, test.host, test.port, "");
+        test.scheme, test.host, test.port);
     EXPECT_EQ("", origin.scheme());
     EXPECT_EQ("", origin.host());
     EXPECT_EQ(0, origin.port());
@@ -431,7 +302,7 @@ TEST(OriginTest, UnsafelyCreateUniqueViaEmbeddedNulls) {
                                     << test.port);
     url::Origin origin = url::Origin::UnsafelyCreateOriginWithoutNormalization(
         std::string(test.scheme, test.scheme_length),
-        std::string(test.host, test.host_length), test.port, "");
+        std::string(test.host, test.host_length), test.port);
     EXPECT_EQ("", origin.scheme());
     EXPECT_EQ("", origin.host());
     EXPECT_EQ(0, origin.port());

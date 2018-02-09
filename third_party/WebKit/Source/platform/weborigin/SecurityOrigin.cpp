@@ -129,14 +129,6 @@ SecurityOrigin::SecurityOrigin(const KURL& url)
   if (host_.IsNull())
     host_ = g_empty_string;
 
-  // Suborigins are serialized into the host, so extract it if necessary.
-  String suborigin_name;
-  if (DeserializeSuboriginAndProtocolAndHost(protocol_, host_, suborigin_name,
-                                             protocol_, host_)) {
-
-    suborigin_.SetName(suborigin_name);
-  }
-
   if (!effective_port_)
     effective_port_ = DefaultPortForProtocol(protocol_);
 
@@ -167,7 +159,6 @@ SecurityOrigin::SecurityOrigin(const SecurityOrigin* other)
     : protocol_(other->protocol_.IsolatedCopy()),
       host_(other->host_.IsolatedCopy()),
       domain_(other->domain_.IsolatedCopy()),
-      suborigin_(other->suborigin_),
       port_(other->port_),
       effective_port_(other->effective_port_),
       is_unique_(other->is_unique_),
@@ -205,23 +196,18 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::CreateFromUrlOrigin(
 
   DCHECK(String::FromUTF8(origin.scheme().c_str()).ContainsOnlyASCII());
   DCHECK(String::FromUTF8(origin.host().c_str()).ContainsOnlyASCII());
-  DCHECK(String::FromUTF8(origin.suborigin().c_str()).ContainsOnlyASCII());
 
   return Create(String::FromUTF8(origin.scheme().c_str()),
-                String::FromUTF8(origin.host().c_str()), origin.port(),
-                String::FromUTF8(origin.suborigin().c_str()));
+                String::FromUTF8(origin.host().c_str()), origin.port());
 }
 
 url::Origin SecurityOrigin::ToUrlOrigin() const {
   return IsUnique()
              ? url::Origin()
-             : url::Origin::CreateFromNormalizedTupleWithSuborigin(
+             : url::Origin::CreateFromNormalizedTuple(
                    StringUTF8Adaptor(protocol_).AsStringPiece().as_string(),
                    StringUTF8Adaptor(host_).AsStringPiece().as_string(),
-                   effective_port_,
-                   StringUTF8Adaptor(suborigin_.GetName())
-                       .AsStringPiece()
-                       .as_string());
+                   effective_port_);
 }
 
 scoped_refptr<SecurityOrigin> SecurityOrigin::IsolatedCopy() const {
@@ -248,17 +234,6 @@ bool SecurityOrigin::IsSecure(const KURL& url) {
   return false;
 }
 
-bool SecurityOrigin::HasSameSuboriginAs(const SecurityOrigin* other) const {
-  if (HasSuborigin() != other->HasSuborigin())
-    return false;
-
-  if (HasSuborigin() &&
-      GetSuborigin()->GetName() != other->GetSuborigin()->GetName())
-    return false;
-
-  return true;
-}
-
 bool SecurityOrigin::SerializesAsNull() const {
   if (IsUnique())
     return true;
@@ -277,9 +252,6 @@ bool SecurityOrigin::CanAccess(const SecurityOrigin* other) const {
     return true;
 
   if (IsUnique() || other->IsUnique())
-    return false;
-
-  if (!HasSameSuboriginAs(other))
     return false;
 
   // document.domain handling, as per
@@ -345,10 +317,6 @@ bool SecurityOrigin::CanRequest(const KURL& url) const {
     return true;
 
   return false;
-}
-
-bool SecurityOrigin::CanRequestNoSuborigin(const KURL& url) const {
-  return !HasSuborigin() && CanRequest(url);
 }
 
 bool SecurityOrigin::TaintsCanvas(const KURL& url) const {
@@ -418,16 +386,6 @@ void SecurityOrigin::GrantUniversalAccess() {
   universal_access_ = true;
 }
 
-void SecurityOrigin::AddSuborigin(const Suborigin& suborigin) {
-  DCHECK(RuntimeEnabledFeatures::SuboriginsEnabled());
-  // Changing suborigins midstream is bad. Very bad. It should not happen.
-  // This is, in fact,  one of the very basic invariants that makes
-  // suborigins an effective security tool.
-  CHECK(suborigin_.GetName().IsNull() ||
-        (suborigin_.GetName() == suborigin.GetName()));
-  suborigin_.SetTo(suborigin);
-}
-
 void SecurityOrigin::BlockLocalAccessFromLocalOrigin() {
   DCHECK(IsLocal());
   block_local_access_from_local_origin_ = true;
@@ -458,14 +416,8 @@ AtomicString SecurityOrigin::ToAtomicString() const {
     return AtomicString("file://");
 
   StringBuilder result;
-  BuildRawString(result, true);
+  BuildRawString(result);
   return result.ToAtomicString();
-}
-
-String SecurityOrigin::ToPhysicalOriginString() const {
-  if (SerializesAsNull())
-    return "null";
-  return ToRawStringIgnoreSuborigin();
 }
 
 String SecurityOrigin::ToRawString() const {
@@ -473,54 +425,13 @@ String SecurityOrigin::ToRawString() const {
     return "file://";
 
   StringBuilder result;
-  BuildRawString(result, true);
+  BuildRawString(result);
   return result.ToString();
 }
 
-String SecurityOrigin::ToRawStringIgnoreSuborigin() const {
-  if (protocol_ == "file")
-    return "file://";
-
-  StringBuilder result;
-  BuildRawString(result, false);
-  return result.ToString();
-}
-
-bool SecurityOrigin::DeserializeSuboriginAndProtocolAndHost(
-    const String& scheme_with_suffix,
-    const String& host_with_prefix,
-    String& suborigin,
-    String& scheme,
-    String& host) {
-  String parsed_scheme;
-  if (scheme_with_suffix == "http-so")
-    parsed_scheme = "http";
-  else if (scheme_with_suffix == "https-so")
-    parsed_scheme = "https";
-  else
-    return false;
-
-  size_t suborigin_end = host_with_prefix.find('.');
-  // Suborigins cannot be empty.
-  if (suborigin_end == 0 || suborigin_end == WTF::kNotFound)
-    return false;
-
-  scheme = parsed_scheme;
-  suborigin = host_with_prefix.Substring(0, suborigin_end);
-  host = host_with_prefix.Substring(suborigin_end + 1);
-  return true;
-}
-
-void SecurityOrigin::BuildRawString(StringBuilder& builder,
-                                    bool include_suborigin) const {
+void SecurityOrigin::BuildRawString(StringBuilder& builder) const {
   builder.Append(protocol_);
-  if (include_suborigin && HasSuborigin()) {
-    builder.Append("-so://");
-    builder.Append(suborigin_.GetName());
-    builder.Append('.');
-  } else {
-    builder.Append("://");
-  }
+  builder.Append("://");
   builder.Append(host_);
 
   if (port_) {
@@ -543,16 +454,6 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::Create(const String& protocol,
   return Create(KURL(NullURL(), protocol + "://" + host + port_part + "/"));
 }
 
-scoped_refptr<SecurityOrigin> SecurityOrigin::Create(const String& protocol,
-                                                     const String& host,
-                                                     uint16_t port,
-                                                     const String& suborigin) {
-  scoped_refptr<SecurityOrigin> origin = Create(protocol, host, port);
-  if (!suborigin.IsEmpty())
-    origin->suborigin_.SetName(suborigin);
-  return origin;
-}
-
 bool SecurityOrigin::IsSameSchemeHostPort(const SecurityOrigin* other) const {
   if (this == other)
     return true;
@@ -573,27 +474,6 @@ bool SecurityOrigin::IsSameSchemeHostPort(const SecurityOrigin* other) const {
     return false;
 
   return true;
-}
-
-bool SecurityOrigin::IsSameSchemeHostPortAndSuborigin(
-    const SecurityOrigin* other) const {
-  if (!HasSameSuboriginAs(other))
-    return false;
-
-  return IsSameSchemeHostPort(other);
-}
-
-bool SecurityOrigin::HasSuboriginAndShouldAllowCredentialsFor(
-    const KURL& url) const {
-  if (!HasSuborigin())
-    return false;
-
-  if (!GetSuborigin()->PolicyContains(
-          Suborigin::SuboriginPolicyOptions::kUnsafeCredentials))
-    return false;
-
-  scoped_refptr<const SecurityOrigin> other = SecurityOrigin::Create(url);
-  return IsSameSchemeHostPort(other.get());
 }
 
 bool SecurityOrigin::AreSameSchemeHostPort(const KURL& a, const KURL& b) {

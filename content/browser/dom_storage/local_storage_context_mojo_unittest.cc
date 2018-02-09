@@ -654,52 +654,6 @@ TEST_F(LocalStorageContextMojoTest, DeleteStorageWithPendingWrites) {
   }
 }
 
-TEST_F(LocalStorageContextMojoTest, DeleteStorageForPhysicalOrigin) {
-  url::Origin origin1a = url::Origin::Create(GURL("http://foobar.com"));
-  url::Origin origin1b =
-      url::Origin::Create(GURL("http-so://suborigin.foobar.com"));
-  url::Origin origin2 = url::Origin::Create(GURL("https://foobar.com"));
-  auto key = StdStringToUint8Vector("key");
-  auto value = StdStringToUint8Vector("value");
-
-  mojom::LevelDBWrapperPtr wrapper;
-  context()->OpenLocalStorage(origin1a, MakeRequest(&wrapper));
-  wrapper->Put(key, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
-  wrapper.reset();
-  context()->OpenLocalStorage(origin1b, MakeRequest(&wrapper));
-  wrapper->Put(key, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
-  wrapper.reset();
-
-  context()->OpenLocalStorage(origin2, MakeRequest(&wrapper));
-  wrapper->Put(key, value, base::nullopt, "source",
-               base::BindOnce(&NoOpSuccess));
-  wrapper.reset();
-
-  // Make sure all data gets committed to disk.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(mock_data().empty());
-
-  context()->DeleteStorageForPhysicalOrigin(origin1b,
-                                            base::BindOnce(&base::DoNothing));
-  base::RunLoop().RunUntilIdle();
-
-  // Data from origin2 should exist, including meta-data, but nothing should
-  // exist for origin1.
-  EXPECT_EQ(3u, mock_data().size());
-  for (const auto& it : mock_data()) {
-    if (Uint8VectorToStdString(it.first) == "VERSION")
-      continue;
-    EXPECT_EQ(std::string::npos,
-              Uint8VectorToStdString(it.first).find(origin1a.Serialize()));
-    EXPECT_EQ(std::string::npos,
-              Uint8VectorToStdString(it.first).find(origin1b.Serialize()));
-    EXPECT_NE(std::string::npos,
-              Uint8VectorToStdString(it.first).find(origin2.Serialize()));
-  }
-}
-
 TEST_F(LocalStorageContextMojoTest, Migration) {
   url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
   url::Origin origin2 = url::Origin::Create(GURL("http://example.com"));

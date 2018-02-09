@@ -476,7 +476,7 @@ void ServiceWorkerContainer::DispatchMessageEvent(
   DispatchEvent(MessageEvent::Create(
       ports, std::move(msg.message),
       GetExecutionContext()->GetSecurityOrigin()->ToString(),
-      String() /* lastEventId */, source, String() /* suborigin */));
+      String() /* lastEventId */, source));
 }
 
 void ServiceWorkerContainer::CountFeature(mojom::WebFeature feature) {

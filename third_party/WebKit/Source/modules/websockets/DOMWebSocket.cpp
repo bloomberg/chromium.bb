@@ -372,13 +372,6 @@ void DOMWebSocket::Connect(const String& url,
     }
   }
 
-  if (GetExecutionContext()->GetSecurityOrigin()->HasSuborigin()) {
-    state_ = kClosed;
-    exception_state.ThrowSecurityError(
-        "Connecting to a WebSocket from a suborigin is not allowed.");
-    return;
-  }
-
   String protocol_string;
   if (!protocols.IsEmpty())
     protocol_string = JoinStrings(protocols, SubprotocolSeperator());

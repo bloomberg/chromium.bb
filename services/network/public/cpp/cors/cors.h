@@ -27,8 +27,6 @@ COMPONENT_EXPORT(NETWORK_CPP)
 extern const char kAccessControlAllowCredentials[];
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const char kAccessControlAllowOrigin[];
-COMPONENT_EXPORT(NETWORK_CPP)
-extern const char kAccessControlAllowSuborigin[];
 
 }  // namespace header_names
 
@@ -38,7 +36,6 @@ base::Optional<mojom::CORSError> CheckAccess(
     const GURL& response_url,
     const int response_status_code,
     const base::Optional<std::string>& allow_origin_header,
-    const base::Optional<std::string>& allow_suborigin_header,
     const base::Optional<std::string>& allow_credentials_header,
     network::mojom::FetchCredentialsMode credentials_mode,
     const url::Origin& origin);

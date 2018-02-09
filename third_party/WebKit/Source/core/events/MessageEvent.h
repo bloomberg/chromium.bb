@@ -51,42 +51,35 @@ class CORE_EXPORT MessageEvent final : public Event {
   static MessageEvent* Create(MessagePortArray* ports,
                               const String& origin = String(),
                               const String& last_event_id = String(),
-                              EventTarget* source = nullptr,
-                              const String& suborigin = String()) {
-    return new MessageEvent(origin, last_event_id, source, ports, suborigin);
+                              EventTarget* source = nullptr) {
+    return new MessageEvent(origin, last_event_id, source, ports);
   }
   static MessageEvent* Create(MessagePortArray* ports,
                               scoped_refptr<SerializedScriptValue> data,
                               const String& origin = String(),
                               const String& last_event_id = String(),
-                              EventTarget* source = nullptr,
-                              const String& suborigin = String()) {
+                              EventTarget* source = nullptr) {
     return new MessageEvent(std::move(data), origin, last_event_id, source,
-                            ports, suborigin);
+                            ports);
   }
   static MessageEvent* Create(Vector<MessagePortChannel> channels,
                               scoped_refptr<SerializedScriptValue> data,
                               const String& origin = String(),
                               const String& last_event_id = String(),
-                              EventTarget* source = nullptr,
-                              const String& suborigin = String()) {
+                              EventTarget* source = nullptr) {
     return new MessageEvent(std::move(data), origin, last_event_id, source,
-                            std::move(channels), suborigin);
+                            std::move(channels));
   }
   static MessageEvent* Create(const String& data,
-                              const String& origin = String(),
-                              const String& suborigin = String()) {
-    return new MessageEvent(data, origin, suborigin);
+                              const String& origin = String()) {
+    return new MessageEvent(data, origin);
   }
-  static MessageEvent* Create(Blob* data,
-                              const String& origin = String(),
-                              const String& suborigin = String()) {
-    return new MessageEvent(data, origin, suborigin);
+  static MessageEvent* Create(Blob* data, const String& origin = String()) {
+    return new MessageEvent(data, origin);
   }
   static MessageEvent* Create(DOMArrayBuffer* data,
-                              const String& origin = String(),
-                              const String& suborigin = String()) {
-    return new MessageEvent(data, origin, suborigin);
+                              const String& origin = String()) {
+    return new MessageEvent(data, origin);
   }
   static MessageEvent* Create(const AtomicString& type,
                               const MessageEventInit& initializer,
@@ -119,7 +112,6 @@ class CORE_EXPORT MessageEvent final : public Event {
                         MessagePortArray*);
 
   const String& origin() const { return origin_; }
-  const String& suborigin() const { return suborigin_; }
   const String& lastEventId() const { return last_event_id_; }
   EventTarget* source() const { return source_.Get(); }
   MessagePortArray ports();
@@ -194,28 +186,21 @@ class CORE_EXPORT MessageEvent final : public Event {
   MessageEvent(const String& origin,
                const String& last_event_id,
                EventTarget* source,
-               MessagePortArray*,
-               const String& suborigin);
+               MessagePortArray*);
   MessageEvent(scoped_refptr<SerializedScriptValue> data,
                const String& origin,
                const String& last_event_id,
                EventTarget* source,
-               MessagePortArray*,
-               const String& suborigin);
+               MessagePortArray*);
   MessageEvent(scoped_refptr<SerializedScriptValue> data,
                const String& origin,
                const String& last_event_id,
                EventTarget* source,
-               Vector<MessagePortChannel>,
-               const String& suborigin);
+               Vector<MessagePortChannel>);
 
-  MessageEvent(const String& data,
-               const String& origin,
-               const String& suborigin);
-  MessageEvent(Blob* data, const String& origin, const String& suborigin);
-  MessageEvent(DOMArrayBuffer* data,
-               const String& origin,
-               const String& suborigin);
+  MessageEvent(const String& data, const String& origin);
+  MessageEvent(Blob* data, const String& origin);
+  MessageEvent(DOMArrayBuffer* data, const String& origin);
 
   DataType data_type_;
   ScriptValue data_as_script_value_;
@@ -232,7 +217,6 @@ class CORE_EXPORT MessageEvent final : public Event {
   Member<MessagePortArray> ports_;
   bool is_ports_dirty_ = true;
   Vector<MessagePortChannel> channels_;
-  String suborigin_;
 };
 
 }  // namespace blink

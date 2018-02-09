@@ -94,17 +94,12 @@ TEST(CSPSourceTest, AllowScheme) {
     context.SetSelf(url::Origin::Create(GURL("http://a.com")));
     EXPECT_TRUE(Allow(source, GURL("http://a.com"), &context));
     EXPECT_TRUE(Allow(source, GURL("https://a.com"), &context));
-    EXPECT_TRUE(Allow(source, GURL("http-so://a.com"), &context));
-    EXPECT_TRUE(Allow(source, GURL("https-so://a.com"), &context));
     EXPECT_FALSE(Allow(source, GURL("ftp://a.com"), &context));
 
     // Self's is https.
     context.SetSelf(url::Origin::Create(GURL("https://a.com")));
     EXPECT_FALSE(Allow(source, GURL("http://a.com"), &context));
     EXPECT_TRUE(Allow(source, GURL("https://a.com"), &context));
-    EXPECT_FALSE(Allow(source, GURL("http-so://a.com"), &context));
-    // TODO(jochen): Maybe it should return false?
-    EXPECT_TRUE(Allow(source, GURL("https-so://a.com"), &context));
     EXPECT_FALSE(Allow(source, GURL("ftp://a.com"), &context));
 
     // Self's scheme is not in the http familly.

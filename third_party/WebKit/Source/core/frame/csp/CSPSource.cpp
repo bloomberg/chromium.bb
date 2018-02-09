@@ -64,14 +64,8 @@ CSPSource::SchemeMatchingResult CSPSource::SchemeMatches(
     return SchemeMatchingResult::kMatchingExact;
 
   if ((scheme == "http" && protocol == "https") ||
-      (scheme == "http" && protocol == "https-so") ||
       (scheme == "ws" && protocol == "wss")) {
     return SchemeMatchingResult::kMatchingUpgrade;
-  }
-
-  if ((scheme == "http" && protocol == "http-so") ||
-      (scheme == "https" && protocol == "https-so")) {
-    return SchemeMatchingResult::kMatchingExact;
   }
 
   return SchemeMatchingResult::kNotMatching;

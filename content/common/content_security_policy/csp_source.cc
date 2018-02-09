@@ -52,18 +52,9 @@ SchemeMatchingResult SourceAllowScheme(const CSPSource& source,
   // Implicitly allow using a more secure version of a protocol when the
   // non-secure one is allowed.
   if ((allowed_scheme == url::kHttpScheme && url.SchemeIs(url::kHttpsScheme)) ||
-      (allowed_scheme == url::kHttpScheme &&
-       url.SchemeIs(url::kHttpsSuboriginScheme)) ||
       (allowed_scheme == url::kWsScheme && url.SchemeIs(url::kWssScheme))) {
     return SchemeMatchingResult::MatchingUpgrade;
   }
-  if ((allowed_scheme == url::kHttpScheme &&
-       url.SchemeIs(url::kHttpSuboriginScheme)) ||
-      (allowed_scheme == url::kHttpsScheme &&
-       url.SchemeIs(url::kHttpsSuboriginScheme))) {
-    return SchemeMatchingResult::MatchingExact;
-  }
-
   return SchemeMatchingResult::NotMatching;
 }
 

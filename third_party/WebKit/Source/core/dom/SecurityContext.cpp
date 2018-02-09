@@ -105,23 +105,6 @@ String SecurityContext::addressSpaceForBindings() const {
   return "public";
 }
 
-// Enforces the given suborigin as part of the security origin for this
-// security context. |name| must not be empty, although it may be null. A null
-// name represents a lack of a suborigin.
-// See: https://w3c.github.io/webappsec-suborigins/index.html
-void SecurityContext::EnforceSuborigin(const Suborigin& suborigin) {
-  if (!RuntimeEnabledFeatures::SuboriginsEnabled())
-    return;
-
-  DCHECK(!suborigin.GetName().IsEmpty());
-  DCHECK(RuntimeEnabledFeatures::SuboriginsEnabled());
-  DCHECK(security_origin_.get());
-  DCHECK(!security_origin_->HasSuborigin() ||
-         security_origin_->GetSuborigin()->GetName() == suborigin.GetName());
-  security_origin_->AddSuborigin(suborigin);
-  DidUpdateSecurityOrigin();
-}
-
 void SecurityContext::InitializeFeaturePolicy(
     const ParsedFeaturePolicy& parsed_header,
     const ParsedFeaturePolicy& container_policy,

@@ -585,7 +585,7 @@ void FetchManager::Loader::Start() {
   // Note we don't support to call this method with |CORS flag|
   // "- |request|'s mode is |navigate|".
   if ((SecurityOrigin::Create(request_->Url())
-           ->IsSameSchemeHostPortAndSuborigin(request_->Origin().get())) ||
+           ->IsSameSchemeHostPort(request_->Origin().get())) ||
       (request_->Url().ProtocolIsData() && request_->SameOriginDataURLFlag()) ||
       (request_->Mode() == network::mojom::FetchRequestMode::kNavigate)) {
     // "The result of performing a scheme fetch using request."

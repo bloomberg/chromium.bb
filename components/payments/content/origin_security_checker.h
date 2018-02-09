@@ -17,7 +17,7 @@ class OriginSecurityChecker {
   static bool IsOriginSecure(const GURL& url);
 
   // Returns true for a valid |url| with a cryptographic scheme, e.g., HTTPS,
-  // HTTPS-SO, WSS.
+  // WSS.
   static bool IsSchemeCryptographic(const GURL& url);
 
   // Returns true for a valid |url| with localhost or file:// scheme origin.

@@ -228,8 +228,7 @@ void GetSecurityInfo(
 // |kHttpFormWarningFeature| feature.
 bool IsHttpWarningInFormEnabled();
 
-// Returns true for a valid |url| with a cryptographic scheme, e.g., HTTPS,
-// HTTPS-SO, WSS.
+// Returns true for a valid |url| with a cryptographic scheme, e.g., HTTPS, WSS.
 bool IsSchemeCryptographic(const GURL& url);
 
 // Returns true for a valid |url| with localhost or file:// scheme origin.

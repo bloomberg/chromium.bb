@@ -2311,8 +2311,6 @@ TEST(URLCanonTest, DefaultPortForScheme) {
       {"ws", 80},
       {"wss", 443},
       {"gopher", 70},
-      {"http-so", 80},
-      {"https-so", 443},
       {"fake-scheme", PORT_UNSPECIFIED},
       {"HTTP", PORT_UNSPECIFIED},
       {"HTTPS", PORT_UNSPECIFIED},
@@ -2320,8 +2318,6 @@ TEST(URLCanonTest, DefaultPortForScheme) {
       {"WS", PORT_UNSPECIFIED},
       {"WSS", PORT_UNSPECIFIED},
       {"GOPHER", PORT_UNSPECIFIED},
-      {"HTTP-SO", PORT_UNSPECIFIED},
-      {"HTTPS-SO", PORT_UNSPECIFIED},
   };
 
   for (auto& test_case : cases) {

@@ -26,11 +26,6 @@ struct StructTraits<url::mojom::blink::Origin::DataView,
       const scoped_refptr<const ::blink::SecurityOrigin>& origin) {
     return origin->EffectivePort();
   }
-  static WTF::String suborigin(
-      const scoped_refptr<const ::blink::SecurityOrigin>& origin) {
-    WTF::String suborigin = origin->GetSuborigin()->GetName();
-    return suborigin.IsNull() ? "" : suborigin;
-  }
   static bool unique(
       const scoped_refptr<const ::blink::SecurityOrigin>& origin) {
     return origin->IsUnique();
@@ -42,13 +37,10 @@ struct StructTraits<url::mojom::blink::Origin::DataView,
     } else {
       WTF::String scheme;
       WTF::String host;
-      WTF::String suborigin;
-      if (!data.ReadScheme(&scheme) || !data.ReadHost(&host) ||
-          !data.ReadSuborigin(&suborigin))
+      if (!data.ReadScheme(&scheme) || !data.ReadHost(&host))
         return false;
 
-      *out =
-          ::blink::SecurityOrigin::Create(scheme, host, data.port(), suborigin);
+      *out = ::blink::SecurityOrigin::Create(scheme, host, data.port());
     }
 
     // If a unique origin was created, but the unique flag wasn't set, then

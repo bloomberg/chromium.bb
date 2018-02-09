@@ -34,7 +34,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "platform/PlatformExport.h"
-#include "platform/weborigin/Suborigin.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/text/WTFString.h"
@@ -56,10 +55,6 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   static scoped_refptr<SecurityOrigin> Create(const String& protocol,
                                               const String& host,
                                               uint16_t port);
-  static scoped_refptr<SecurityOrigin> Create(const String& protocol,
-                                              const String& host,
-                                              uint16_t port,
-                                              const String& suborigin);
   static scoped_refptr<SecurityOrigin> CreateFromUrlOrigin(const url::Origin&);
   url::Origin ToUrlOrigin() const;
 
@@ -108,26 +103,12 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // SecurityOrigin. For example, call this function before allowing
   // script from one security origin to read or write objects from
   // another SecurityOrigin.
-  //
-  // This takes suborigins into account.
   bool CanAccess(const SecurityOrigin*) const;
 
   // Returns true if this SecurityOrigin can read content retrieved from
   // the given URL. For example, call this function before issuing
   // XMLHttpRequests.
   bool CanRequest(const KURL&) const;
-
-  // Same as canRequest, except that it adds an additional check to make sure
-  // that the SecurityOrigin does not have a suborigin name. If you're not
-  // familiar with Suborigins, you probably want canRequest() for now.
-  // Suborigins is a spec in progress, and where it should be enforced is still
-  // in flux. See https://crbug.com/336894 for more details.
-  //
-  // TODO(jww): Once the Suborigin spec has become more settled, and we are
-  // confident in the correctness of our implementation, canRequest should be
-  // made to check the suborigin and this should be turned into
-  // canRequestBypassSuborigin check, which should be the exceptional case.
-  bool CanRequestNoSuborigin(const KURL&) const;
 
   // Returns true if drawing an image from this URL taints a canvas from
   // this security origin. For example, call this function before
@@ -176,9 +157,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   bool CanAccessDatabase() const { return !IsUnique(); }
   bool CanAccessLocalStorage() const { return !IsUnique(); }
   bool CanAccessSharedWorkers() const { return !IsUnique(); }
-  bool CanAccessServiceWorkers() const {
-    return !IsUnique() && !HasSuborigin();
-  }
+  bool CanAccessServiceWorkers() const { return !IsUnique(); }
   bool CanAccessCookies() const { return !IsUnique(); }
   bool CanAccessPasswordManager() const { return !IsUnique(); }
   bool CanAccessFileSystem() const { return !IsUnique(); }
@@ -206,19 +185,6 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // addition, the SandboxOrigin flag is inherited by iframes.
   bool IsUnique() const { return is_unique_; }
 
-  // Assigns a suborigin namespace to the SecurityOrigin. addSuborigin() must
-  // only ever be called once per SecurityOrigin(). If it is called on a
-  // SecurityOrigin that has already had a suborigin assigned, it will hit a
-  // CHECK().
-  bool HasSuborigin() const { return !suborigin_.GetName().IsNull(); }
-  const Suborigin* GetSuborigin() const { return &suborigin_; }
-  void AddSuborigin(const Suborigin&);
-
-  // Returns true when this SecurityOrigin has a suborigin, its policy
-  // allows sending credentials to the same physical origin, and the specified
-  // origin is the same physical origin.
-  bool HasSuboriginAndShouldAllowCredentialsFor(const KURL&) const;
-
   // By default 'file:' URLs may access other 'file:' URLs. This method
   // denies access. If either SecurityOrigin sets this flag, the access
   // check will fail.
@@ -237,12 +203,6 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   String ToString() const;
   AtomicString ToAtomicString() const;
 
-  // Same as ToString(), but ignores Suborigin, if present. This is
-  // generally not what you want.
-  //
-  // https://w3c.github.io/webappsec-suborigins/#physical-origin
-  String ToPhysicalOriginString() const;
-
   // Similar to ToString(), but does not take into account any factors that
   // could make the string return "null".
   String ToRawString() const;
@@ -251,7 +211,6 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // (and whether it was set) but considering the host. It is used for
   // postMessage.
   bool IsSameSchemeHostPort(const SecurityOrigin*) const;
-  bool IsSameSchemeHostPortAndSuborigin(const SecurityOrigin*) const;
 
   static bool AreSameSchemeHostPort(const KURL& a, const KURL& b);
 
@@ -280,10 +239,6 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
 
  private:
   friend class SecurityOriginTest;
-  FRIEND_TEST_ALL_PREFIXES(SecurityOriginTest, Suborigins);
-  FRIEND_TEST_ALL_PREFIXES(SecurityOriginTest, SuboriginsParsing);
-  FRIEND_TEST_ALL_PREFIXES(SecurityOriginTest,
-                           SuboriginsIsSameSchemeHostPortAndSuborigin);
 
   SecurityOrigin();
   explicit SecurityOrigin(const KURL&);
@@ -291,30 +246,13 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
 
   // FIXME: Rename this function to something more semantic.
   bool PassesFileCheck(const SecurityOrigin*) const;
-  void BuildRawString(StringBuilder&, bool include_suborigin) const;
-
-  String ToRawStringIgnoreSuborigin() const;
-
-  // Parses a serialization of a Suborigin. Returns true if successful with
-  // the results stored in |suborigin|, |scheme| and |host|. Otherwise,
-  // returns false leaving the out parameters untouched.
-  //
-  // https://w3c.github.io/webappsec-suborigins/#serializing
-  static bool DeserializeSuboriginAndProtocolAndHost(
-      const String& scheme_with_suffix,
-      const String& host_with_prefix,
-      String& suborigin,
-      String& scheme,
-      String& host);
-
-  bool HasSameSuboriginAs(const SecurityOrigin* other) const;
+  void BuildRawString(StringBuilder&) const;
 
   bool SerializesAsNull() const;
 
   String protocol_;
   String host_;
   String domain_;
-  Suborigin suborigin_;
   uint16_t port_;
   uint16_t effective_port_;
   const bool is_unique_;

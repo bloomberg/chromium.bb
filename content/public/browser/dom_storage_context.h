@@ -38,16 +38,6 @@ class DOMStorageContext {
   virtual void GetSessionStorageUsage(
       GetSessionStorageUsageCallback callback) = 0;
 
-  // Deletes the local storage data for the physical origin of |origin_url|,
-  // including all suborigins at the physical origin. |callback| is called when
-  // the deletion is sent to the database and GetLocalStorageUsage() will not
-  // return entries for |origin_url| anymore.
-  //
-  // See https://w3c.github.io/webappsec-suborigins/.
-  virtual void DeleteLocalStorageForPhysicalOrigin(
-      const GURL& origin_url,
-      base::OnceClosure callback) = 0;
-
   // Deletes the local storage for the origin of |origin_url|. |callback| is
   // called when the deletion is sent to the database and GetLocalStorageUsage()
   // will not return entries for |origin_url| anymore.

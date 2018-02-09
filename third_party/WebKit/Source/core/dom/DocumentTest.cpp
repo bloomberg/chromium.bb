@@ -857,27 +857,6 @@ TEST_F(DocumentTest, SandboxDisablesAppCache) {
   EXPECT_TRUE(mock_web_host->without_manifest_was_called_);
 }
 
-TEST_F(DocumentTest, SuboriginDisablesAppCache) {
-  ScopedSuboriginsForTest suborigins(true);
-  scoped_refptr<SecurityOrigin> origin =
-      SecurityOrigin::CreateFromString("https://test.com");
-  Suborigin suborigin;
-  suborigin.SetName("foobar");
-  origin->AddSuborigin(suborigin);
-  GetDocument().SetSecurityOrigin(origin);
-  GetDocument().SetURL(KURL("https://test.com/foobar/document"));
-
-  ApplicationCacheHost* appcache_host =
-      GetDocument().Loader()->GetApplicationCacheHost();
-  appcache_host->host_ = std::make_unique<MockWebApplicationCacheHost>();
-  appcache_host->SelectCacheWithManifest(
-      KURL("https://test.com/foobar/manifest"));
-  MockWebApplicationCacheHost* mock_web_host =
-      static_cast<MockWebApplicationCacheHost*>(appcache_host->host_.get());
-  EXPECT_FALSE(mock_web_host->with_manifest_was_called_);
-  EXPECT_TRUE(mock_web_host->without_manifest_was_called_);
-}
-
 // Verifies that calling EnsurePaintLocationDataValidForNode cleans compositor
 // inputs only when necessary. We generally want to avoid cleaning the inputs,
 // as it is more expensive than just doing layout.

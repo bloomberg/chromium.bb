@@ -1036,10 +1036,6 @@
       status: "test",
     },
     {
-      name: "Suborigins",
-      status: "experimental",
-    },
-    {
       name: "TimerThrottlingForBackgroundTabs",
       status: "stable",
     },

@@ -94,7 +94,6 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/weborigin/Suborigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebScreenInfo.h"
@@ -655,13 +654,7 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
     // the timer was scheduled.
     const SecurityOrigin* security_origin = document()->GetSecurityOrigin();
     bool valid_target =
-        intended_target_origin->IsSameSchemeHostPortAndSuborigin(
-            security_origin);
-    if (security_origin->HasSuborigin() &&
-        security_origin->GetSuborigin()->PolicyContains(
-            Suborigin::SuboriginPolicyOptions::kUnsafePostMessageReceive))
-      valid_target =
-          intended_target_origin->IsSameSchemeHostPort(security_origin);
+        intended_target_origin->IsSameSchemeHostPort(security_origin);
 
     if (!valid_target) {
       String message = ExceptionMessages::FailedToExecute(

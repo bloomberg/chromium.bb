@@ -138,8 +138,6 @@ void CORSURLLoader::OnReceiveResponse(
         GetHeaderString(response_head.headers,
                         cors::header_names::kAccessControlAllowOrigin),
         GetHeaderString(response_head.headers,
-                        cors::header_names::kAccessControlAllowSuborigin),
-        GetHeaderString(response_head.headers,
                         cors::header_names::kAccessControlAllowCredentials),
         fetch_credentials_mode_, security_origin_);
     if (cors_error) {

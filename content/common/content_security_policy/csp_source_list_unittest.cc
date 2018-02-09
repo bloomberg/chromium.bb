@@ -42,8 +42,6 @@ TEST(CSPSourceList, AllowStar) {
                             std::vector<CSPSource>());  // source_list
   EXPECT_TRUE(Allow(source_list, GURL("http://not-example.com"), &context));
   EXPECT_TRUE(Allow(source_list, GURL("https://not-example.com"), &context));
-  EXPECT_TRUE(Allow(source_list, GURL("http-so://not-example.com"), &context));
-  EXPECT_TRUE(Allow(source_list, GURL("https-so://not-example.com"), &context));
   EXPECT_TRUE(Allow(source_list, GURL("ws://not-example.com"), &context));
   EXPECT_TRUE(Allow(source_list, GURL("wss://not-example.com"), &context));
   EXPECT_TRUE(Allow(source_list, GURL("ftp://not-example.com"), &context));

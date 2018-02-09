@@ -151,7 +151,6 @@ DocumentThreadableLoader::DocumentThreadableLoader(
       resource_loader_options_(resource_loader_options),
       out_of_blink_cors_(RuntimeEnabledFeatures::OutOfBlinkCORSEnabled()),
       cors_flag_(false),
-      suborigin_force_credentials_(false),
       security_origin_(resource_loader_options_.security_origin),
       is_using_data_consumer_handle_(false),
       async_(blocking_behavior == kLoadAsynchronously),
@@ -270,17 +269,8 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
     SECURITY_CHECK(WebCORS::IsNoCORSAllowedContext(
         request_context_, request.GetServiceWorkerMode()));
   } else {
-    cors_flag_ = !GetSecurityOrigin()->CanRequestNoSuborigin(request.Url());
+    cors_flag_ = !GetSecurityOrigin()->CanRequest(request.Url());
   }
-
-  // Per https://w3c.github.io/webappsec-suborigins/#security-model-opt-outs,
-  // credentials are forced when credentials mode is "same-origin", the
-  // 'unsafe-credentials' option is set, and the request's physical origin is
-  // the same as the URL's.
-
-  suborigin_force_credentials_ =
-      GetSecurityOrigin()->HasSuboriginAndShouldAllowCredentialsFor(
-          request.Url());
 
   // The CORS flag variable is not yet used at the step in the spec that
   // corresponds to this line, but divert |cors_flag_| here for convenience.
@@ -622,8 +612,6 @@ bool DocumentThreadableLoader::RedirectReceivedBlinkCORS(
   DCHECK(client_);
   DCHECK_EQ(resource, GetResource());
   DCHECK(async_);
-
-  suborigin_force_credentials_ = false;
 
   checker_.RedirectReceived();
 
@@ -985,8 +973,6 @@ void DocumentThreadableLoader::HandleResponseBlinkCORS(
   // response may come here (wasFetchedViaServiceWorker() returns false) since
   // such a request doesn't have to go through the CORS algorithm by calling
   // loadFallbackRequestForServiceWorker().
-  // FIXME: We should use |m_sameOriginRequest| when we will support Suborigins
-  // (crbug.com/336894) for Service Worker.
   DCHECK(fallback_request_for_service_worker_.IsNull() ||
          GetSecurityOrigin()->CanRequest(
              fallback_request_for_service_worker_.Url()));
@@ -1297,7 +1283,7 @@ void DocumentThreadableLoader::LoadRequest(
       // mode is in use. See the following issues:
       // - https://github.com/whatwg/fetch/issues/130
       // - https://github.com/whatwg/fetch/issues/169
-      allow_stored_credentials = !cors_flag_ || suborigin_force_credentials_;
+      allow_stored_credentials = !cors_flag_;
       break;
     case network::mojom::FetchCredentialsMode::kInclude:
       allow_stored_credentials = true;

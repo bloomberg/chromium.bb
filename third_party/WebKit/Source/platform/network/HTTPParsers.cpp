@@ -39,7 +39,6 @@
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/HeaderFieldTokenizer.h"
 #include "platform/network/http_names.h"
-#include "platform/weborigin/Suborigin.h"
 #include "platform/wtf/DateMath.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/text/CString.h"
@@ -134,90 +133,6 @@ inline bool IsASCIILowerAlphaOrDigit(CharType c) {
 template <typename CharType>
 inline bool IsASCIILowerAlphaOrDigitOrHyphen(CharType c) {
   return IsASCIILowerAlphaOrDigit(c) || c == '-';
-}
-
-Suborigin::SuboriginPolicyOptions GetSuboriginPolicyOptionFromString(
-    const String& policy_option_name) {
-  if (policy_option_name == "'unsafe-postmessage-send'")
-    return Suborigin::SuboriginPolicyOptions::kUnsafePostMessageSend;
-
-  if (policy_option_name == "'unsafe-postmessage-receive'")
-    return Suborigin::SuboriginPolicyOptions::kUnsafePostMessageReceive;
-
-  if (policy_option_name == "'unsafe-cookies'")
-    return Suborigin::SuboriginPolicyOptions::kUnsafeCookies;
-
-  if (policy_option_name == "'unsafe-credentials'")
-    return Suborigin::SuboriginPolicyOptions::kUnsafeCredentials;
-
-  return Suborigin::SuboriginPolicyOptions::kNone;
-}
-
-// suborigin-name = LOWERALPHA *( LOWERALPHA / DIGIT )
-//
-// Does not trim whitespace before or after the suborigin-name.
-const UChar* ParseSuboriginName(const UChar* begin,
-                                const UChar* end,
-                                String& name,
-                                WTF::Vector<String>& messages) {
-  // Parse the name of the suborigin (no spaces, single string)
-  if (begin == end) {
-    messages.push_back(String("No Suborigin name specified."));
-    return nullptr;
-  }
-
-  const UChar* position = begin;
-
-  if (!SkipExactly<UChar, IsASCIILower>(position, end)) {
-    messages.push_back("Invalid character \'" + String(position, 1) +
-                       "\' in suborigin. First character must be a lower case "
-                       "alphabetic character.");
-    return nullptr;
-  }
-
-  SkipWhile<UChar, IsASCIILowerAlphaOrDigit>(position, end);
-  if (position != end && !IsASCIISpace(*position)) {
-    messages.push_back("Invalid character \'" + String(position, 1) +
-                       "\' in suborigin.");
-    return nullptr;
-  }
-
-  size_t length = position - begin;
-  name = String(begin, length).DeprecatedLower();
-  return position;
-}
-
-const UChar* ParseSuboriginPolicyOption(const UChar* begin,
-                                        const UChar* end,
-                                        String& option,
-                                        WTF::Vector<String>& messages) {
-  const UChar* position = begin;
-
-  if (*position != '\'') {
-    messages.push_back("Invalid character \'" + String(position, 1) +
-                       "\' in suborigin policy. Suborigin policy options must "
-                       "start and end with a single quote.");
-    return nullptr;
-  }
-  position = position + 1;
-
-  SkipWhile<UChar, IsASCIILowerAlphaOrDigitOrHyphen>(position, end);
-  if (position == end || IsASCIISpace(*position)) {
-    messages.push_back(String("Expected \' to end policy option."));
-    return nullptr;
-  }
-
-  if (*position != '\'') {
-    messages.push_back("Invalid character \'" + String(position, 1) +
-                       "\' in suborigin policy.");
-    return nullptr;
-  }
-
-  DCHECK_GT(position, begin);
-  size_t length = (position + 1) - begin;
-
-  option = String(begin, length);
-  return position + 1;
 }
 
 // Parse a number with ignoring trailing [0-9.].
@@ -670,59 +585,6 @@ void ParseCommaDelimitedHeader(const String& header_value,
   header_value.Split(",", results);
   for (auto& value : results)
     header_set.insert(value.StripWhiteSpace(IsWhitespace));
-}
-
-bool ParseSuboriginHeader(const String& header,
-                          Suborigin* suborigin,
-                          WTF::Vector<String>& messages) {
-  Vector<String> headers;
-  header.Split(',', true, headers);
-
-  if (headers.size() > 1)
-    messages.push_back(
-        "Multiple Suborigin headers found. Ignoring all but the first.");
-
-  Vector<UChar> characters;
-  headers[0].AppendTo(characters);
-
-  const UChar* position = characters.data();
-  const UChar* end = position + characters.size();
-
-  SkipWhile<UChar, IsASCIISpace>(position, end);
-
-  String name;
-  position = ParseSuboriginName(position, end, name, messages);
-  // For now it is appropriate to simply return false if the name is empty and
-  // act as if the header doesn't exist. If suborigin policy options are created
-  // that can apply to the empty suborigin, than this will have to change.
-  if (!position || name.IsEmpty())
-    return false;
-
-  suborigin->SetName(name);
-
-  while (position < end) {
-    SkipWhile<UChar, IsASCIISpace>(position, end);
-    if (position == end)
-      return true;
-
-    String option_name;
-    position = ParseSuboriginPolicyOption(position, end, option_name, messages);
-
-    if (!position) {
-      suborigin->Clear();
-      return false;
-    }
-
-    Suborigin::SuboriginPolicyOptions option =
-        GetSuboriginPolicyOptionFromString(option_name);
-    if (option == Suborigin::SuboriginPolicyOptions::kNone)
-      messages.push_back("Ignoring unknown suborigin policy option " +
-                         option_name + ".");
-    else
-      suborigin->AddPolicyOption(option);
-  }
-
-  return true;
 }
 
 bool ParseMultipartHeadersFromBody(const char* bytes,

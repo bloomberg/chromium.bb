@@ -157,8 +157,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   const AtomicString& HttpOrigin() const {
     return HttpHeaderField(HTTPNames::Origin);
   }
-  // Note that these will also set and clear, respectively, the
-  // Suborigin header, if appropriate.
   void SetHTTPOrigin(const SecurityOrigin*);
   void ClearHTTPOrigin();
 

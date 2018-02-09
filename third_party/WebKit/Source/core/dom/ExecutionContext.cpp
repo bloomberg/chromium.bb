@@ -119,7 +119,7 @@ bool ExecutionContext::ShouldSanitizeScriptError(
   const KURL& url = CompleteURL(source_url);
   if (url.ProtocolIsData())
     return false;
-  return !(GetSecurityOrigin()->CanRequestNoSuborigin(url) ||
+  return !(GetSecurityOrigin()->CanRequest(url) ||
            cors_status == kSharableCrossOrigin);
 }
 

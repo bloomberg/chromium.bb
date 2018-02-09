@@ -28,7 +28,6 @@ namespace {
 
 const char kHttpsUrl[] = "https://foo.test/";
 const char kHttpUrl[] = "http://foo.test/";
-const char kHttpsSoUrl[] = "https-so://foo.test/";
 const char kLocalhostUrl[] = "http://localhost";
 const char kFileOrigin[] = "file://example_file";
 const char kWssUrl[] = "wss://foo.test/";
@@ -610,8 +609,6 @@ TEST(SecurityStateTest, FieldEdit) {
 TEST(SecurityStateTest, CryptographicSchemeUrl) {
   // HTTPS is a cryptographic scheme.
   EXPECT_TRUE(IsSchemeCryptographic(GURL(kHttpsUrl)));
-  // HTTPS-SO is a cryptographic scheme.
-  EXPECT_TRUE(IsSchemeCryptographic(GURL(kHttpsSoUrl)));
   // WSS is a cryptographic scheme.
   EXPECT_TRUE(IsSchemeCryptographic(GURL(kWssUrl)));
   // HTTP is not a cryptographic scheme.

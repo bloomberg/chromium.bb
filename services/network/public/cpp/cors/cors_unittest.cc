@@ -18,71 +18,10 @@ TEST_F(CORSTest, CheckAccessDetectsInvalidResponse) {
   base::Optional<mojom::CORSError> error = cors::CheckAccess(
       GURL(), 0 /* response_status_code */,
       base::nullopt /* allow_origin_header */,
-      base::nullopt /* allow_suborigin_header */,
       base::nullopt /* allow_credentials_header */,
       network::mojom::FetchCredentialsMode::kOmit, url::Origin());
   ASSERT_TRUE(error);
   EXPECT_EQ(mojom::CORSError::kInvalidResponse, *error);
-}
-
-// Tests if cors::CheckAccess detects kSubOriginMismatch error correctly.
-TEST_F(CORSTest, CheckAccessDetectsSubOriginMismatch) {
-  const GURL response_url("http://example.com/data");
-  const std::string suborigin("suborigin");
-  const std::string serialized_origin("http-so://suborigin.example.com");
-  const url::Origin origin = url::Origin::Create(GURL(serialized_origin));
-  const int response_status_code = 200;
-  const std::string allow_all_header("*");
-
-  // Access-Control-Allow-Origin is '*'.
-  base::Optional<mojom::CORSError> error1 =
-      cors::CheckAccess(response_url, response_status_code,
-                        allow_all_header /* allow_origin_header */,
-                        base::nullopt /* allow_suborigin_header */,
-                        base::nullopt /* allow_credentials_header */,
-                        network::mojom::FetchCredentialsMode::kOmit, origin);
-  EXPECT_FALSE(error1);
-
-  // Access-Control-Allow-Origin matches the serialized origin, and
-  // Access-Control-Allow-Suborigin is '*'.
-  base::Optional<mojom::CORSError> error2 =
-      cors::CheckAccess(response_url, response_status_code,
-                        serialized_origin /* allow_origin_header */,
-                        allow_all_header /* allow_suborigin_header */,
-                        base::nullopt /* allow_credentials_header */,
-                        network::mojom::FetchCredentialsMode::kOmit, origin);
-  EXPECT_FALSE(error2);
-
-  // Access-Control-Allow-Origin matches the serialized origin, and
-  // Access-Control-Allow-Suborigin matches the suborigin.
-  base::Optional<mojom::CORSError> error3 =
-      cors::CheckAccess(response_url, response_status_code,
-                        serialized_origin /* allow_origin_header */,
-                        suborigin /* allow_suborigin_header */,
-                        base::nullopt /* allow_credentials_header */,
-                        network::mojom::FetchCredentialsMode::kOmit, origin);
-  EXPECT_FALSE(error3);
-
-  // Access-Control-Allow-Suborigin is required, but missed.
-  base::Optional<mojom::CORSError> error4 =
-      cors::CheckAccess(response_url, response_status_code,
-                        base::nullopt /* allow_origin_header */,
-                        base::nullopt /* allow_suborigin_header */,
-                        base::nullopt /* allow_credentials_header */,
-                        network::mojom::FetchCredentialsMode::kOmit, origin);
-  ASSERT_TRUE(error4);
-  EXPECT_EQ(mojom::CORSError::kSubOriginMismatch, *error4);
-
-  // Even if the origin matches, suborigin should also match if |origin| has
-  // suborigin.
-  base::Optional<mojom::CORSError> error5 =
-      cors::CheckAccess(response_url, response_status_code,
-                        serialized_origin /* allow_origin_header */,
-                        base::nullopt /* allow_suborigin_header */,
-                        base::nullopt /* allow_credentials_header */,
-                        network::mojom::FetchCredentialsMode::kOmit, origin);
-  ASSERT_TRUE(error5);
-  EXPECT_EQ(mojom::CORSError::kSubOriginMismatch, *error5);
 }
 
 // Tests if cors::CheckAccess detects kWildcardOriginNotAllowed error correctly.
@@ -96,7 +35,6 @@ TEST_F(CORSTest, CheckAccessDetectsWildcardOriginNotAllowed) {
   base::Optional<mojom::CORSError> error1 =
       cors::CheckAccess(response_url, response_status_code,
                         allow_all_header /* allow_origin_header */,
-                        base::nullopt /* allow_suborigin_header */,
                         base::nullopt /* allow_credentials_header */,
                         network::mojom::FetchCredentialsMode::kOmit, origin);
   EXPECT_FALSE(error1);
@@ -106,7 +44,6 @@ TEST_F(CORSTest, CheckAccessDetectsWildcardOriginNotAllowed) {
   base::Optional<mojom::CORSError> error2 =
       cors::CheckAccess(response_url, response_status_code,
                         allow_all_header /* allow_origin_header */,
-                        base::nullopt /* allow_suborigin_header */,
                         base::nullopt /* allow_credentials_header */,
                         network::mojom::FetchCredentialsMode::kInclude, origin);
   ASSERT_TRUE(error2);
@@ -123,7 +60,6 @@ TEST_F(CORSTest, CheckAccessDetectsMissingAllowOriginHeader) {
   base::Optional<mojom::CORSError> error =
       cors::CheckAccess(response_url, response_status_code,
                         base::nullopt /* allow_origin_header */,
-                        base::nullopt /* allow_suborigin_header */,
                         base::nullopt /* allow_credentials_header */,
                         network::mojom::FetchCredentialsMode::kOmit, origin);
   ASSERT_TRUE(error);
@@ -142,7 +78,6 @@ TEST_F(CORSTest, CheckAccessDetectsMultipleAllowOriginValues) {
   base::Optional<mojom::CORSError> error1 = cors::CheckAccess(
       response_url, response_status_code,
       space_separated_multiple_origins /* allow_origin_header */,
-      base::nullopt /* allow_suborigin_header */,
       base::nullopt /* allow_credentials_header */,
       network::mojom::FetchCredentialsMode::kOmit, origin);
   ASSERT_TRUE(error1);
@@ -153,7 +88,6 @@ TEST_F(CORSTest, CheckAccessDetectsMultipleAllowOriginValues) {
   base::Optional<mojom::CORSError> error2 = cors::CheckAccess(
       response_url, response_status_code,
       comma_separated_multiple_origins /* allow_origin_header */,
-      base::nullopt /* allow_suborigin_header */,
       base::nullopt /* allow_credentials_header */,
       network::mojom::FetchCredentialsMode::kOmit, origin);
   ASSERT_TRUE(error2);
@@ -169,7 +103,6 @@ TEST_F(CORSTest, CheckAccessDetectsInvalidAllowOriginValue) {
   base::Optional<mojom::CORSError> error =
       cors::CheckAccess(response_url, response_status_code,
                         std::string("invalid.origin") /* allow_origin_header */,
-                        base::nullopt /* allow_suborigin_header */,
                         base::nullopt /* allow_credentials_header */,
                         network::mojom::FetchCredentialsMode::kOmit, origin);
   ASSERT_TRUE(error);
@@ -185,7 +118,6 @@ TEST_F(CORSTest, CheckAccessDetectsAllowOriginMismatch) {
   base::Optional<mojom::CORSError> error1 =
       cors::CheckAccess(response_url, response_status_code,
                         origin.Serialize() /* allow_origin_header */,
-                        base::nullopt /* allow_suborigin_header */,
                         base::nullopt /* allow_credentials_header */,
                         network::mojom::FetchCredentialsMode::kOmit, origin);
   ASSERT_FALSE(error1);
@@ -193,7 +125,6 @@ TEST_F(CORSTest, CheckAccessDetectsAllowOriginMismatch) {
   base::Optional<mojom::CORSError> error2 = cors::CheckAccess(
       response_url, response_status_code,
       std::string("http://not.google.com") /* allow_origin_header */,
-      base::nullopt /* allow_suborigin_header */,
       base::nullopt /* allow_credentials_header */,
       network::mojom::FetchCredentialsMode::kOmit, origin);
   ASSERT_TRUE(error2);
@@ -206,7 +137,6 @@ TEST_F(CORSTest, CheckAccessDetectsAllowOriginMismatch) {
 
   base::Optional<mojom::CORSError> error3 = cors::CheckAccess(
       response_url, response_status_code, null_string /* allow_origin_header */,
-      base::nullopt /* allow_suborigin_header */,
       base::nullopt /* allow_credentials_header */,
       network::mojom::FetchCredentialsMode::kOmit, null_origin);
   EXPECT_FALSE(error3);
@@ -222,7 +152,6 @@ TEST_F(CORSTest, CheckAccessDetectsDisallowCredentialsNotSetToTrue) {
   base::Optional<mojom::CORSError> error1 =
       cors::CheckAccess(response_url, response_status_code,
                         origin.Serialize() /* allow_origin_header */,
-                        base::nullopt /* allow_suborigin_header */,
                         std::string("true") /* allow_credentials_header */,
                         network::mojom::FetchCredentialsMode::kInclude, origin);
   ASSERT_FALSE(error1);
@@ -230,7 +159,6 @@ TEST_F(CORSTest, CheckAccessDetectsDisallowCredentialsNotSetToTrue) {
   base::Optional<mojom::CORSError> error2 =
       cors::CheckAccess(response_url, response_status_code,
                         origin.Serialize() /* allow_origin_header */,
-                        base::nullopt /* allow_suborigin_header */,
                         base::nullopt /* allow_credentials_header */,
                         network::mojom::FetchCredentialsMode::kInclude, origin);
   ASSERT_TRUE(error2);
