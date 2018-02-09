@@ -85,6 +85,10 @@ class PLATFORM_EXPORT LayoutRectOutsets {
 
   void ClampNegativeToZero();
 
+  void Unite(const LayoutRectOutsets&);
+
+  void FlipHorizontally() { std::swap(left_, right_); }
+
   // Produces a new LayoutRectOutsets in line orientation
   // (https://www.w3.org/TR/css-writing-modes-3/#line-orientation), whose
   // - |top| is the logical 'over',

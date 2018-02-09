@@ -200,15 +200,11 @@ void NGPaintFragment::UpdateVisualRectFromLayoutObject(
 void NGPaintFragment::AddSelfOutlineRect(
     Vector<LayoutRect>* outline_rects,
     const LayoutPoint& additional_offset) const {
-  DCHECK(outline_rects);
-  //
-  LayoutRect outline_rect(additional_offset, Size().ToLayoutSize());
-  // LayoutRect outline_rect = VisualRect();
-  // outline_rect.MoveBy(additional_offset);
-  // outline_rect.Inflate(-Style().OutlineOffset());
-  // outline_rect.Inflate(-Style().OutlineWidth());
-
-  outline_rects->push_back(outline_rect);
+  const NGPhysicalFragment& fragment = PhysicalFragment();
+  if (fragment.IsBox()) {
+    ToNGPhysicalBoxFragment(fragment).AddSelfOutlineRects(outline_rects,
+                                                          additional_offset);
+  }
 }
 
 void NGPaintFragment::PaintInlineBoxForDescendants(

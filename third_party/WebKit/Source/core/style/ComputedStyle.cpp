@@ -1963,6 +1963,22 @@ bool ComputedStyle::BorderObscuresBackground() const {
   return true;
 }
 
+LayoutRectOutsets ComputedStyle::BoxDecorationOutsets() const {
+  DCHECK(HasVisualOverflowingEffect());
+  LayoutRectOutsets outsets;
+
+  if (const ShadowList* box_shadow = BoxShadow())
+    outsets = LayoutRectOutsets(box_shadow->RectOutsetsIncludingOriginal());
+
+  if (HasBorderImageOutsets())
+    outsets.Unite(BorderImageOutsets());
+
+  if (HasMaskBoxImageOutsets())
+    outsets.Unite(MaskBoxImageOutsets());
+
+  return outsets;
+}
+
 void ComputedStyle::GetBorderEdgeInfo(BorderEdge edges[],
                                       bool include_logical_left_edge,
                                       bool include_logical_right_edge) const {

@@ -5083,59 +5083,28 @@ void LayoutBox::AddVisualEffectOverflow() {
 }
 
 LayoutRectOutsets LayoutBox::ComputeVisualEffectOverflowOutsets() {
-  DCHECK(Style()->HasVisualOverflowingEffect());
+  const ComputedStyle& style = StyleRef();
+  DCHECK(style.HasVisualOverflowingEffect());
 
-  LayoutUnit top;
-  LayoutUnit right;
-  LayoutUnit bottom;
-  LayoutUnit left;
-
-  if (const ShadowList* box_shadow = Style()->BoxShadow()) {
-    // FIXME: Use LayoutUnit edge outsets, and then simplify this.
-    FloatRectOutsets outsets = box_shadow->RectOutsetsIncludingOriginal();
-    top = LayoutUnit(outsets.Top());
-    right = LayoutUnit(outsets.Right());
-    bottom = LayoutUnit(outsets.Bottom());
-    left = LayoutUnit(outsets.Left());
-  }
-
-  if (Style()->HasBorderImageOutsets()) {
-    LayoutRectOutsets border_outsets = Style()->BorderImageOutsets();
-    top = std::max(top, border_outsets.Top());
-    right = std::max(right, border_outsets.Right());
-    bottom = std::max(bottom, border_outsets.Bottom());
-    left = std::max(left, border_outsets.Left());
-  }
-
-  if (Style()->HasMaskBoxImageOutsets()) {
-    LayoutRectOutsets outsets = Style()->MaskBoxImageOutsets();
-    top = std::max(top, outsets.Top());
-    right = std::max(right, outsets.Right());
-    bottom = std::max(bottom, outsets.Bottom());
-    left = std::max(left, outsets.Left());
-  }
+  LayoutRectOutsets outsets = style.BoxDecorationOutsets();
 
   // Box-shadow and border-image-outsets are in physical direction. Flip into
   // block direction.
   if (UNLIKELY(HasFlippedBlocksWritingMode()))
-    std::swap(left, right);
+    outsets.FlipHorizontally();
 
-  if (Style()->HasOutline()) {
+  if (style.HasOutline()) {
     Vector<LayoutRect> outline_rects;
     // The result rects are in coordinates of this object's border box.
     AddOutlineRects(outline_rects, LayoutPoint(),
                     OutlineRectsShouldIncludeBlockVisualOverflow());
     LayoutRect rect = UnionRectEvenIfEmpty(outline_rects);
     SetOutlineMayBeAffectedByDescendants(rect.Size() != Size());
-
-    int outline_outset = Style()->OutlineOutsetExtent();
-    top = std::max(top, -rect.Y() + outline_outset);
-    right = std::max(right, rect.MaxX() - Size().Width() + outline_outset);
-    bottom = std::max(bottom, rect.MaxY() - Size().Height() + outline_outset);
-    left = std::max(left, -rect.X() + outline_outset);
+    rect.Inflate(style.OutlineOutsetExtent());
+    outsets.Unite(rect.ToOutsets(Size()));
   }
 
-  return LayoutRectOutsets(top, right, bottom, left);
+  return outsets;
 }
 
 DISABLE_CFI_PERF
