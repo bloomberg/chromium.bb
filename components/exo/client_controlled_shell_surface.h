@@ -160,7 +160,7 @@ class ClientControlledShellSurface
 
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
-  bool IsTouchEnabled(Surface* surface) const override;
+  bool IsInputEnabled(Surface* surface) const override;
 
   // Overridden from views::WidgetDelegate:
   bool CanMaximize() const override;

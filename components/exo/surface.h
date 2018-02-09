@@ -181,8 +181,8 @@ class Surface final : public ui::PropertyHandler {
   // Returns true if surface is in synchronized mode.
   bool IsSynchronized() const;
 
-  // Returns true if surface should receive touch events.
-  bool IsTouchEnabled(Surface* surface) const;
+  // Returns true if surface should receive input events.
+  bool IsInputEnabled(Surface* surface) const;
 
   // Returns false if the hit test region is empty.
   bool HasHitTestRegion() const;

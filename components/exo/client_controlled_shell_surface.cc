@@ -482,14 +482,15 @@ void ClientControlledShellSurface::OnSurfaceCommit() {
     orientation_compositor_lock_.reset();
 }
 
-bool ClientControlledShellSurface::IsTouchEnabled(Surface* surface) const {
-  // The target for input events is selected by recursively hit-testing surfaces
-  // in the surface tree. During client-driven dragging/resizing, capture is set
-  // on the root surface. When capture is reset to a different target, mouse
-  // events are redirected from the old to the new target, but touch/gesture
-  // events are cancelled. To avoid prematurely ending the drag/resize, ensure
-  // that the target and capture windows are the same by disabling touch input
-  // for all but the root surface.
+bool ClientControlledShellSurface::IsInputEnabled(Surface* surface) const {
+  // Client-driven dragging/resizing relies on implicit grab, which ensures that
+  // mouse/touch events are delivered to the focused surface until release, even
+  // if they fall outside surface bounds. However, if the client destroys the
+  // surface with implicit grab, the drag/resize is prematurely ended. Prevent
+  // this by delivering all input events to the root surface, which shares the
+  // lifetime of the shell surface.
+  // TODO(domlaskowski): Remove once the client is provided with an API to hook
+  // into server-driven dragging/resizing.
   return surface == root_surface();
 }
 
