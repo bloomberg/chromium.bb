@@ -915,15 +915,15 @@ bool BaseAudioContext::IsAllowedToStart() const {
       DCHECK(document->GetFrame() &&
              document->GetFrame()->IsCrossOriginSubframe());
       document->AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, kWarningMessageLevel,
-          "An AudioContext in a cross origin iframe must be created or "
-          "resumed from a user gesture to enable audio output."));
+          kOtherMessageSource, kWarningMessageLevel,
+          "The AudioContext was not allowed to start. It must be resumed (or "
+          "created) from a user gesture event handler."));
       break;
     case AutoplayPolicy::Type::kDocumentUserActivationRequired:
       document->AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, kWarningMessageLevel,
-          "An AudioContext must be created or resumed after the document "
-          "received a user gesture to enable audio playback."));
+          kOtherMessageSource, kWarningMessageLevel,
+          "The AudioContext was not allowed to start. It must be resume (or "
+          "created) after a user gesture on the page. https://goo.gl/7K7WLu"));
       break;
   }
 
