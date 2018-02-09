@@ -81,3 +81,6 @@ Current patches:
     Removes CELT, DIRAC, DAALA, and SPEEX support form the ogg parser. We don't
     support these codecs and the parsers have bugs. http://crbug.com/654612
 
+  libavformat/mov.c
+    find_prev_closest_index(): It's possible *ctts_index == ctts_count. Thus add
+    a check to prevent access violation. https://crbug.com/804097
