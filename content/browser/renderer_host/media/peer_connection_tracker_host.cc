@@ -90,6 +90,8 @@ void PeerConnectionTrackerHost::OnRemovePeerConnection(int lid) {
 
 void PeerConnectionTrackerHost::OnUpdatePeerConnection(
     int lid, const std::string& type, const std::string& value) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // TODO(eladalon): Get rid of magic value. https://crbug.com/810383
   if (type == "stop") {
     auto* manager = WebRtcEventLogManager::GetInstance();
