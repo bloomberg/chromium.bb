@@ -42,6 +42,10 @@ class MEDIA_MOJO_EXPORT MojoCdmService : public mojom::ContentDecryptionModule {
       int cdm_id);
 
   // Constructs a MojoCdmService and strongly binds it to the |request|.
+  // - |cdm_factory| is used to create CDM instances. Must not be null.
+  // - |context| is used to keep track of all CDM instances such that we can
+  //   connect the CDM with a media player (e.g. decoder). Can be null if the
+  //   CDM does not need to be connected with any media player in this process.
   MojoCdmService(CdmFactory* cdm_factory, MojoCdmServiceContext* context);
 
   ~MojoCdmService() final;

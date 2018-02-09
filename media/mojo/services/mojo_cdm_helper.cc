@@ -5,6 +5,7 @@
 #include "media/mojo/services/mojo_cdm_helper.h"
 
 #include "base/stl_util.h"
+#include "media/base/cdm_context.h"
 #include "media/cdm/cdm_helpers.h"
 #include "media/mojo/services/mojo_cdm_allocator.h"
 #include "media/mojo/services/mojo_cdm_file_io.h"
@@ -51,6 +52,10 @@ cdm::CdmProxy* MojoCdmHelper::CreateCdmProxy(cdm::CdmProxyClient* client) {
   cdm_proxy_ =
       std::make_unique<MojoCdmProxy>(this, std::move(cdm_proxy_ptr), client);
   return cdm_proxy_.get();
+}
+
+int MojoCdmHelper::GetCdmProxyCdmId() {
+  return cdm_proxy_ ? cdm_proxy_->GetCdmId() : CdmContext::kInvalidCdmId;
 }
 
 cdm::Buffer* MojoCdmHelper::CreateCdmBuffer(size_t capacity) {

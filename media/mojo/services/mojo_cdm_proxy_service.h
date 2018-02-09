@@ -11,6 +11,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "media/base/cdm_context.h"
 #include "media/cdm/cdm_proxy.h"
 #include "media/mojo/interfaces/cdm_proxy.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
@@ -54,6 +56,11 @@ class MEDIA_MOJO_EXPORT MojoCdmProxyService : public mojom::CdmProxy,
   int GetCdmIdForTesting() const { return cdm_id_; }
 
  private:
+  void OnInitialized(InitializeCallback callback,
+                     ::media::CdmProxy::Status status,
+                     ::media::CdmProxy::Protocol protocol,
+                     uint32_t crypto_session_id);
+
   std::unique_ptr<::media::CdmProxy> cdm_proxy_;
   MojoCdmServiceContext* const context_ = nullptr;
 
@@ -61,6 +68,9 @@ class MEDIA_MOJO_EXPORT MojoCdmProxyService : public mojom::CdmProxy,
 
   // Set to a valid CDM ID if the |cdm_proxy_| is successfully initialized.
   int cdm_id_ = CdmContext::kInvalidCdmId;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<MojoCdmProxyService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoCdmProxyService);
 };

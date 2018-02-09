@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "media/base/cdm_context.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 
 namespace media {
@@ -91,7 +92,7 @@ void MojoCdmProxy::Initialize() {
       base::BindOnce(&MojoCdmProxy::OnInitialized, weak_factory_.GetWeakPtr()),
       media::CdmProxy::Status::kFail,
       media::CdmProxy::Protocol::kIntelConvergedSecurityAndManageabilityEngine,
-      0);
+      0, CdmContext::kInvalidCdmId);
   cdm_proxy_ptr_->Initialize(std::move(client_ptr_info), std::move(callback));
 }
 
@@ -163,11 +164,18 @@ void MojoCdmProxy::NotifyHardwareReset() {
   client_->NotifyHardwareReset();
 }
 
+int MojoCdmProxy::GetCdmId() {
+  DVLOG(2) << __func__ << ": cdm_id = " << cdm_id_;
+  return cdm_id_;
+}
+
 void MojoCdmProxy::OnInitialized(media::CdmProxy::Status status,
                                  media::CdmProxy::Protocol protocol,
-                                 uint32_t crypto_session_id) {
+                                 uint32_t crypto_session_id,
+                                 int cdm_id) {
   DVLOG(3) << __func__ << ": status = " << status
            << ", crypto_session_id = " << crypto_session_id;
+  cdm_id_ = cdm_id;
   client_->OnInitialized(ToCdmStatus(status), ToCdmProtocol(protocol),
                          crypto_session_id);
 }

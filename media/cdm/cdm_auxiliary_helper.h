@@ -53,6 +53,10 @@ class MEDIA_EXPORT CdmAuxiliaryHelper : public CdmAllocator,
   // needed anymore.
   virtual cdm::CdmProxy* CreateCdmProxy(cdm::CdmProxyClient* client);
 
+  // Returns a CDM ID associated with the last returned CdmProxy. Should only
+  // be called after the CdmProxy has been initialized.
+  virtual int GetCdmProxyCdmId();
+
   // CdmAllocator implementation.
   cdm::Buffer* CreateCdmBuffer(size_t capacity) override;
   std::unique_ptr<VideoFrameImpl> CreateCdmVideoFrame() override;

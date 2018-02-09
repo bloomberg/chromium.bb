@@ -43,6 +43,7 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
   void SetFileReadCB(FileReadCB file_read_cb) final;
   cdm::FileIO* CreateCdmFileIO(cdm::FileIOClient* client) final;
   cdm::CdmProxy* CreateCdmProxy(cdm::CdmProxyClient* client) final;
+  int GetCdmProxyCdmId() final;
   cdm::Buffer* CreateCdmBuffer(size_t capacity) final;
   std::unique_ptr<VideoFrameImpl> CreateCdmVideoFrame() final;
   void QueryStatus(QueryStatusCB callback) final;
