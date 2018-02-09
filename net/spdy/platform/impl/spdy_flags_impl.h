@@ -10,6 +10,7 @@
 namespace net {
 
 NET_EXPORT_PRIVATE extern bool h2_on_stream_pad_length;
+NET_EXPORT_PRIVATE extern bool http2_check_settings_id_007;
 
 inline bool GetSpdyReloadableFlagImpl(bool flag) {
   return flag;
