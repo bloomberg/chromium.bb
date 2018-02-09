@@ -194,6 +194,14 @@ class WebRtcEventLogManagerTest : public ::testing::TestWithParam<bool> {
     return result;
   }
 
+  bool PeerConnectionStopped(int render_process_id, int lid) {
+    bool result;
+    manager_->PeerConnectionStopped(render_process_id, lid,
+                                    BoolReplyClosure(&result));
+    WaitForReply();
+    return result;
+  }
+
   bool EnableLocalLogging(
       size_t max_size_bytes = kWebRtcEventLogManagerUnlimitedFileSize) {
     return EnableLocalLogging(local_logs_base_path_, max_size_bytes);
@@ -2372,6 +2380,67 @@ TEST_F(WebRtcEventLogManagerTest,
   upload_suppressing_rph_.reset();
 
   WaitForPendingTasks(&run_loop);
+}
+
+TEST_F(WebRtcEventLogManagerTest,
+       PeerConnectionAddedOverDestroyedRphReturnsFalse) {
+  const int render_process_id = rph_->GetID();
+  rph_.reset();
+  EXPECT_FALSE(PeerConnectionAdded(render_process_id, kPeerConnectionId));
+}
+
+TEST_F(WebRtcEventLogManagerTest,
+       PeerConnectionRemovedOverDestroyedRphReturnsFalse) {
+  const int render_process_id = rph_->GetID();
+
+  // Setup - make sure the |false| returned by the function being tested is
+  // related to the RPH being dead, and not due other restrictions.
+  ASSERT_TRUE(PeerConnectionAdded(render_process_id, kPeerConnectionId));
+
+  // Test
+  rph_.reset();
+  EXPECT_FALSE(PeerConnectionRemoved(render_process_id, kPeerConnectionId));
+}
+
+TEST_F(WebRtcEventLogManagerTest,
+       PeerConnectionStoppedOverDestroyedRphReturnsFalse) {
+  const int render_process_id = rph_->GetID();
+
+  // Setup - make sure the |false| returned by the function being tested is
+  // related to the RPH being dead, and not due other restrictions.
+  ASSERT_TRUE(PeerConnectionAdded(render_process_id, kPeerConnectionId));
+
+  // Test
+  rph_.reset();
+  EXPECT_FALSE(PeerConnectionStopped(render_process_id, kPeerConnectionId));
+}
+
+TEST_F(WebRtcEventLogManagerTest,
+       StartRemoteLoggingOverDestroyedRphReturnsFalse) {
+  const int render_process_id = rph_->GetID();
+
+  // Setup - make sure the |false| returned by the function being tested is
+  // related to the RPH being dead, and not due other restrictions.
+  ASSERT_TRUE(PeerConnectionAdded(render_process_id, kPeerConnectionId));
+
+  // Test
+  rph_.reset();
+  EXPECT_FALSE(StartRemoteLogging(render_process_id, kPeerConnectionId));
+}
+
+TEST_F(WebRtcEventLogManagerTest,
+       OnWebRtcEventLogWriteOverDestroyedRphReturnsFalseAndFalse) {
+  const int render_process_id = rph_->GetID();
+
+  // Setup - make sure the |false| returned by the function being tested is
+  // related to the RPH being dead, and not due other restrictions.
+  ASSERT_TRUE(PeerConnectionAdded(render_process_id, kPeerConnectionId));
+  ASSERT_TRUE(EnableLocalLogging());
+
+  // Test
+  rph_.reset();
+  EXPECT_EQ(OnWebRtcEventLogWrite(render_process_id, kPeerConnectionId, "log"),
+            std::make_pair(false, false));
 }
 
 INSTANTIATE_TEST_CASE_P(UploadCompleteResult,
