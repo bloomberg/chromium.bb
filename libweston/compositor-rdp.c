@@ -1062,7 +1062,7 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 		 *
 		 * https://blogs.msdn.microsoft.com/oldnewthing/20130123-00/?p=5473 explains the 120 value
 		 */
-		value = (flags & 0xff) / 120.0;
+		value = -(flags & 0xff) / 120.0;
 		if (flags & PTR_FLAGS_WHEEL_NEGATIVE)
 			value = -value;
 
