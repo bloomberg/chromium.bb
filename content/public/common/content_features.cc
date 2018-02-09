@@ -282,6 +282,10 @@ const base::Feature kRequireCSSExtensionForFile{
 const base::Feature kResourceLoadScheduler{"ResourceLoadScheduler",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Use common overflow scroll mechanism for frames. See http://crbug.com/417782.
+const base::Feature kRootLayerScrolling{"RootLayerScrolling",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Run video capture service in the Browser process as opposed to a dedicated
 // utility process
 const base::Feature kRunVideoCaptureServiceInBrowserProcess{
@@ -337,9 +341,9 @@ const base::Feature kSignInProcessIsolation{"sign-in-process-isolation",
 const base::Feature kSitePerProcess{"site-per-process",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Paint invalidation based on slimming paint. See https://goo.gl/eQczQW
-const base::Feature kSlimmingPaintInvalidation{
-    "SlimmingPaintInvalidation", base::FEATURE_ENABLED_BY_DEFAULT};
+// Slimming Paint V1.75. See http://crbug.com/771643.
+const base::Feature kSlimmingPaintV175{"SlimmingPaintV175",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Stop scheduler task queues in background after allowed grace time.
 const base::Feature kStopInBackground {

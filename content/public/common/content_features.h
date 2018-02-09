@@ -73,6 +73,7 @@ CONTENT_EXPORT extern const base::Feature kRenderingPipelineThrottling;
 CONTENT_EXPORT extern const base::Feature kReportRendererPeakMemoryStats;
 CONTENT_EXPORT extern const base::Feature kRequireCSSExtensionForFile;
 CONTENT_EXPORT extern const base::Feature kResourceLoadScheduler;
+CONTENT_EXPORT extern const base::Feature kRootLayerScrolling;
 CONTENT_EXPORT extern const base::Feature
     kRunVideoCaptureServiceInBrowserProcess;
 CONTENT_EXPORT extern const base::Feature kScrollAnchoring;
@@ -87,7 +88,7 @@ CONTENT_EXPORT extern const base::Feature kSharedArrayBuffer;
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchange;
 CONTENT_EXPORT extern const base::Feature kSignInProcessIsolation;
 CONTENT_EXPORT extern const base::Feature kSitePerProcess;
-CONTENT_EXPORT extern const base::Feature kSlimmingPaintInvalidation;
+CONTENT_EXPORT extern const base::Feature kSlimmingPaintV175;
 CONTENT_EXPORT extern const base::Feature kStopInBackground;
 CONTENT_EXPORT extern const base::Feature kStopLoadingInBackground;
 CONTENT_EXPORT extern const base::Feature kTimerThrottlingForHiddenFrames;
