@@ -4,6 +4,7 @@
 
 import("//build/config/locales.gni")
 import("//ppapi/features/features.gni")
+import("//printing/features/features.gni")
 import("//tools/grit/grit_rule.gni")
 
 if (is_android) {
@@ -67,7 +68,10 @@ group("strings") {
 
 grit("components_strings") {
   source = "../components_strings.grd"
-  defines = [ "enable_plugins=$enable_plugins" ]
+  defines = [
+    "enable_plugins=$enable_plugins",
+    "enable_print_preview=$enable_print_preview",
+  ]
 
   outputs = [
     "grit/components_strings.h",
