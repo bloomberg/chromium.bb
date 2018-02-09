@@ -3506,7 +3506,8 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
                             (*overlay_texture)->texture.target(),
                             (*overlay_texture)->texture.id(), 0);
   DCHECK(gl_->CheckFramebufferStatus(GL_FRAMEBUFFER) ==
-         GL_FRAMEBUFFER_COMPLETE);
+             GL_FRAMEBUFFER_COMPLETE ||
+         IsContextLost());
 
   // Clear to 0 to ensure the background is transparent.
   gl_->ClearColor(0, 0, 0, 0);
