@@ -80,6 +80,8 @@ class PLATFORM_EXPORT ScaleTransformOperation final
     return x_ == s->x_ && y_ == s->y_ && z_ == s->z_;
   }
 
+  virtual bool HasNonTrivial3DComponent() const { return z_ != 1.0; }
+
   scoped_refptr<TransformOperation> Zoom(double factor) final { return this; }
 
   ScaleTransformOperation(double sx, double sy, double sz, OperationType type)

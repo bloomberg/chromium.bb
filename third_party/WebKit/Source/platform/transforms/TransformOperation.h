@@ -101,6 +101,8 @@ class PLATFORM_EXPORT TransformOperation
            op_type == kInterpolated;
   }
 
+  virtual bool HasNonTrivial3DComponent() const { return Is3DOperation(); }
+
   virtual bool DependsOnBoxSize() const { return false; }
 };
 
