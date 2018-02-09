@@ -53,7 +53,8 @@ def main():
     return 2
 
   return RunFuchsia(bootfs, args.device, args.kernel, args.dry_run,
-                    forward_ssh_port=args.forward_ssh_port)
+                    forward_ssh_port=args.forward_ssh_port,
+                    vm_cpu_cores=args.vm_cpu_cores)
 
 
 if __name__ == '__main__':

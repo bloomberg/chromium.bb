@@ -218,6 +218,9 @@ def AddRunnerCommandLineArguments(parser):
                            'one from the SDK')
   parser.add_argument('--device', '-d', action='store_true', default=False,
                       help='Run on hardware device instead of QEMU.')
+  parser.add_argument('--vm-cpu-cores', type=int, default=4,
+                      help='Sets the number of CPU cores to provide if '
+                      'launching in a VM with QEMU.')
   parser.add_argument('--dry-run', '-n', action='store_true', default=False,
                       help='Just print commands, don\'t execute them.')
   parser.add_argument('--kernel', type=os.path.realpath,
@@ -620,7 +623,8 @@ def _HandleOutputFromProcess(process, symbols_mapping):
 
 
 def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
-               test_launcher_summary_output=None, forward_ssh_port=None):
+               test_launcher_summary_output=None, forward_ssh_port=None,
+               vm_cpu_cores=4):
   if not kernel_path:
     # TODO(wez): Parameterize this on the |target_cpu| from GN.
     kernel_path = os.path.join(_TargetCpuToSdkBinPath(bootfs_data.target_cpu),
@@ -662,7 +666,7 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
         '-nographic',
         '-kernel', kernel_path,
         '-initrd', bootfs_data.bootfs,
-        '-smp', '4',
+        '-smp', str(vm_cpu_cores),
 
         # Use stdio for the guest OS only; don't attach the QEMU interactive
         # monitor.
