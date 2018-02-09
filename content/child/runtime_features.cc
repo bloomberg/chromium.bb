@@ -97,9 +97,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableOriginTrials(
       base::FeatureList::IsEnabled(features::kOriginTrials));
 
-  WebRuntimeFeatures::EnableFeaturePolicy(
-      base::FeatureList::IsEnabled(features::kFeaturePolicy));
-
   if (!base::FeatureList::IsEnabled(features::kWebUsb))
     WebRuntimeFeatures::EnableWebUsb(false);
 

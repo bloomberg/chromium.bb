@@ -230,19 +230,17 @@ void WebRemoteFrameImpl::SetReplicatedName(const WebString& name) {
 
 void WebRemoteFrameImpl::SetReplicatedFeaturePolicyHeader(
     const ParsedFeaturePolicy& parsed_header) {
-  if (RuntimeEnabledFeatures::FeaturePolicyEnabled()) {
-    FeaturePolicy* parent_feature_policy = nullptr;
-    if (Parent()) {
-      Frame* parent_frame = GetFrame()->Client()->Parent();
-      parent_feature_policy =
-          parent_frame->GetSecurityContext()->GetFeaturePolicy();
-    }
-    ParsedFeaturePolicy container_policy;
-    if (GetFrame()->Owner())
-      container_policy = GetFrame()->Owner()->ContainerPolicy();
-    GetFrame()->GetSecurityContext()->InitializeFeaturePolicy(
-        parsed_header, container_policy, parent_feature_policy);
+  FeaturePolicy* parent_feature_policy = nullptr;
+  if (Parent()) {
+    Frame* parent_frame = GetFrame()->Client()->Parent();
+    parent_feature_policy =
+        parent_frame->GetSecurityContext()->GetFeaturePolicy();
   }
+  ParsedFeaturePolicy container_policy;
+  if (GetFrame()->Owner())
+    container_policy = GetFrame()->Owner()->ContainerPolicy();
+  GetFrame()->GetSecurityContext()->InitializeFeaturePolicy(
+      parsed_header, container_policy, parent_feature_policy);
 }
 
 void WebRemoteFrameImpl::AddReplicatedContentSecurityPolicyHeader(

@@ -200,8 +200,6 @@ ParsedFeaturePolicy ParseFeaturePolicy(
 }
 
 bool IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature feature) {
-  if (!RuntimeEnabledFeatures::FeaturePolicyEnabled())
-    return false;
   switch (feature) {
     case mojom::FeaturePolicyFeature::kFullscreen:
     case mojom::FeaturePolicyFeature::kPayment:

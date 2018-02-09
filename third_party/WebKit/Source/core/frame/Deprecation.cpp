@@ -696,10 +696,6 @@ void Deprecation::CountDeprecationCrossOriginIframe(const Document& document,
 void Deprecation::CountDeprecationFeaturePolicy(
     const Document& document,
     mojom::FeaturePolicyFeature feature) {
-  // If feature policy is not enabled, don't do anything.
-  if (!RuntimeEnabledFeatures::FeaturePolicyEnabled())
-    return;
-
   LocalFrame* frame = document.GetFrame();
   if (!frame)
     return;

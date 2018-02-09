@@ -6022,9 +6022,6 @@ void Document::ApplyFeaturePolicyFromHeader(
 }
 
 void Document::ApplyFeaturePolicy(const ParsedFeaturePolicy& declared_policy) {
-  if (!RuntimeEnabledFeatures::FeaturePolicyEnabled())
-    return;
-
   FeaturePolicy* parent_feature_policy = nullptr;
   ParsedFeaturePolicy container_policy;
 

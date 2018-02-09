@@ -2796,9 +2796,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNoCreditCardAbortDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNoCreditCardAbort)},
 #endif  // OS_ANDROID
-    {"enable-feature-policy", flag_descriptions::kFeaturePolicyName,
-     flag_descriptions::kFeaturePolicyDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kFeaturePolicy)},
 #if defined(OS_CHROMEOS)
     {"enable-emoji-handwriting-voice-on-ime-menu",
      flag_descriptions::kEnableEhvInputName,
