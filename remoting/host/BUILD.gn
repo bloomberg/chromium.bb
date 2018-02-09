@@ -765,6 +765,9 @@ if (enable_me2me_host) {
         "host_main.cc",
         "host_main.h",
       ]
+      deps = [
+        "//base:debugging_flags",
+      ]
     }
     if (is_mac) {
       group("remoting_me2me_host") {

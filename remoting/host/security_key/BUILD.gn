@@ -54,6 +54,9 @@ source_set("main") {
     "remote_security_key_main.cc",
     "remote_security_key_main.h",
   ]
+  deps = [
+    "//base:debugging_flags",
+  ]
 }
 
 if (is_win) {
