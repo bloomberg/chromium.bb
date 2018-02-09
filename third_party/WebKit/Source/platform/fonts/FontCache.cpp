@@ -61,10 +61,6 @@
 
 namespace blink {
 
-#if !defined(OS_WIN) && !defined(OS_LINUX)
-FontCache::FontCache() : purge_prevent_count_(0), font_manager_(nullptr) {}
-#endif  // !defined(OS_WIN) && !defined(OS_LINUX)
-
 SkFontMgr* FontCache::static_font_manager_ = nullptr;
 
 // The default variable-width font size. We use this as the default font
@@ -83,6 +79,11 @@ bool FontCache::use_skia_font_fallback_ = false;
 FontCache* FontCache::GetFontCache() {
   return &FontGlobalContext::GetFontCache();
 }
+
+#if !defined(OS_WIN)
+FontCache::FontCache()
+    : purge_prevent_count_(0), font_manager_(sk_ref_sp(static_font_manager_)) {}
+#endif  // !defined(OS_WIN) && !defined(OS_LINUX)
 
 #if !defined(OS_MACOSX)
 FontPlatformData* FontCache::SystemFontPlatformData(
