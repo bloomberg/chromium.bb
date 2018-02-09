@@ -33,8 +33,8 @@ class {{test_class_name}}Test : public ::testing::Test {
   void TearDown() override {
   }
 
-  {{test_class_name}}Test() {}
-  ~{{test_class_name}}Test() override {}
+  {{test_class_name}}Test() = default;
+  ~{{test_class_name}}Test() override = default;
 
  public:
 {%- for method in interface.methods -%}
@@ -54,7 +54,7 @@ namespace {
 {%-   endif %}) {
   CHECK(self);
   {{interface_name}}Context context = {{interface_name}}_GetContext(self);
-  {{interface_name}}Test* test = static_cast<{{interface_name}}Test*>(context);
+  auto* test = static_cast<{{interface_name}}Test*>(context);
   CHECK(test);
   test->{{method.name}}_called_ = true;
   {%-  if method.response_parameters and method.sync %}

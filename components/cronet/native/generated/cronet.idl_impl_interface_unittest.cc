@@ -17,8 +17,8 @@ class Cronet_BufferTest : public ::testing::Test {
 
   void TearDown() override {}
 
-  Cronet_BufferTest() {}
-  ~Cronet_BufferTest() override {}
+  Cronet_BufferTest() = default;
+  ~Cronet_BufferTest() override = default;
 
  public:
   bool InitWithDataAndCallback_called_ = false;
@@ -39,21 +39,21 @@ void TestCronet_Buffer_InitWithDataAndCallback(
     Cronet_BufferCallbackPtr callback) {
   CHECK(self);
   Cronet_BufferContext context = Cronet_Buffer_GetContext(self);
-  Cronet_BufferTest* test = static_cast<Cronet_BufferTest*>(context);
+  auto* test = static_cast<Cronet_BufferTest*>(context);
   CHECK(test);
   test->InitWithDataAndCallback_called_ = true;
 }
 void TestCronet_Buffer_InitWithAlloc(Cronet_BufferPtr self, uint64_t size) {
   CHECK(self);
   Cronet_BufferContext context = Cronet_Buffer_GetContext(self);
-  Cronet_BufferTest* test = static_cast<Cronet_BufferTest*>(context);
+  auto* test = static_cast<Cronet_BufferTest*>(context);
   CHECK(test);
   test->InitWithAlloc_called_ = true;
 }
 uint64_t TestCronet_Buffer_GetSize(Cronet_BufferPtr self) {
   CHECK(self);
   Cronet_BufferContext context = Cronet_Buffer_GetContext(self);
-  Cronet_BufferTest* test = static_cast<Cronet_BufferTest*>(context);
+  auto* test = static_cast<Cronet_BufferTest*>(context);
   CHECK(test);
   test->GetSize_called_ = true;
 
@@ -62,7 +62,7 @@ uint64_t TestCronet_Buffer_GetSize(Cronet_BufferPtr self) {
 RawDataPtr TestCronet_Buffer_GetData(Cronet_BufferPtr self) {
   CHECK(self);
   Cronet_BufferContext context = Cronet_Buffer_GetContext(self);
-  Cronet_BufferTest* test = static_cast<Cronet_BufferTest*>(context);
+  auto* test = static_cast<Cronet_BufferTest*>(context);
   CHECK(test);
   test->GetData_called_ = true;
 
@@ -95,8 +95,8 @@ class Cronet_BufferCallbackTest : public ::testing::Test {
 
   void TearDown() override {}
 
-  Cronet_BufferCallbackTest() {}
-  ~Cronet_BufferCallbackTest() override {}
+  Cronet_BufferCallbackTest() = default;
+  ~Cronet_BufferCallbackTest() override = default;
 
  public:
   bool OnDestroy_called_ = false;
@@ -111,8 +111,7 @@ void TestCronet_BufferCallback_OnDestroy(Cronet_BufferCallbackPtr self,
                                          Cronet_BufferPtr buffer) {
   CHECK(self);
   Cronet_BufferCallbackContext context = Cronet_BufferCallback_GetContext(self);
-  Cronet_BufferCallbackTest* test =
-      static_cast<Cronet_BufferCallbackTest*>(context);
+  auto* test = static_cast<Cronet_BufferCallbackTest*>(context);
   CHECK(test);
   test->OnDestroy_called_ = true;
 }
@@ -136,8 +135,8 @@ class Cronet_RunnableTest : public ::testing::Test {
 
   void TearDown() override {}
 
-  Cronet_RunnableTest() {}
-  ~Cronet_RunnableTest() override {}
+  Cronet_RunnableTest() = default;
+  ~Cronet_RunnableTest() override = default;
 
  public:
   bool Run_called_ = false;
@@ -151,7 +150,7 @@ namespace {
 void TestCronet_Runnable_Run(Cronet_RunnablePtr self) {
   CHECK(self);
   Cronet_RunnableContext context = Cronet_Runnable_GetContext(self);
-  Cronet_RunnableTest* test = static_cast<Cronet_RunnableTest*>(context);
+  auto* test = static_cast<Cronet_RunnableTest*>(context);
   CHECK(test);
   test->Run_called_ = true;
 }
@@ -175,8 +174,8 @@ class Cronet_ExecutorTest : public ::testing::Test {
 
   void TearDown() override {}
 
-  Cronet_ExecutorTest() {}
-  ~Cronet_ExecutorTest() override {}
+  Cronet_ExecutorTest() = default;
+  ~Cronet_ExecutorTest() override = default;
 
  public:
   bool Execute_called_ = false;
@@ -191,7 +190,7 @@ void TestCronet_Executor_Execute(Cronet_ExecutorPtr self,
                                  Cronet_RunnablePtr command) {
   CHECK(self);
   Cronet_ExecutorContext context = Cronet_Executor_GetContext(self);
-  Cronet_ExecutorTest* test = static_cast<Cronet_ExecutorTest*>(context);
+  auto* test = static_cast<Cronet_ExecutorTest*>(context);
   CHECK(test);
   test->Execute_called_ = true;
 }
@@ -215,8 +214,8 @@ class Cronet_EngineTest : public ::testing::Test {
 
   void TearDown() override {}
 
-  Cronet_EngineTest() {}
-  ~Cronet_EngineTest() override {}
+  Cronet_EngineTest() = default;
+  ~Cronet_EngineTest() override = default;
 
  public:
   bool StartWithParams_called_ = false;
@@ -236,7 +235,7 @@ Cronet_RESULT TestCronet_Engine_StartWithParams(Cronet_EnginePtr self,
                                                 Cronet_EngineParamsPtr params) {
   CHECK(self);
   Cronet_EngineContext context = Cronet_Engine_GetContext(self);
-  Cronet_EngineTest* test = static_cast<Cronet_EngineTest*>(context);
+  auto* test = static_cast<Cronet_EngineTest*>(context);
   CHECK(test);
   test->StartWithParams_called_ = true;
 
@@ -247,7 +246,7 @@ bool TestCronet_Engine_StartNetLogToFile(Cronet_EnginePtr self,
                                          bool log_all) {
   CHECK(self);
   Cronet_EngineContext context = Cronet_Engine_GetContext(self);
-  Cronet_EngineTest* test = static_cast<Cronet_EngineTest*>(context);
+  auto* test = static_cast<Cronet_EngineTest*>(context);
   CHECK(test);
   test->StartNetLogToFile_called_ = true;
 
@@ -256,14 +255,14 @@ bool TestCronet_Engine_StartNetLogToFile(Cronet_EnginePtr self,
 void TestCronet_Engine_StopNetLog(Cronet_EnginePtr self) {
   CHECK(self);
   Cronet_EngineContext context = Cronet_Engine_GetContext(self);
-  Cronet_EngineTest* test = static_cast<Cronet_EngineTest*>(context);
+  auto* test = static_cast<Cronet_EngineTest*>(context);
   CHECK(test);
   test->StopNetLog_called_ = true;
 }
 Cronet_RESULT TestCronet_Engine_Shutdown(Cronet_EnginePtr self) {
   CHECK(self);
   Cronet_EngineContext context = Cronet_Engine_GetContext(self);
-  Cronet_EngineTest* test = static_cast<Cronet_EngineTest*>(context);
+  auto* test = static_cast<Cronet_EngineTest*>(context);
   CHECK(test);
   test->Shutdown_called_ = true;
 
@@ -272,7 +271,7 @@ Cronet_RESULT TestCronet_Engine_Shutdown(Cronet_EnginePtr self) {
 CharString TestCronet_Engine_GetVersionString(Cronet_EnginePtr self) {
   CHECK(self);
   Cronet_EngineContext context = Cronet_Engine_GetContext(self);
-  Cronet_EngineTest* test = static_cast<Cronet_EngineTest*>(context);
+  auto* test = static_cast<Cronet_EngineTest*>(context);
   CHECK(test);
   test->GetVersionString_called_ = true;
 
@@ -281,7 +280,7 @@ CharString TestCronet_Engine_GetVersionString(Cronet_EnginePtr self) {
 CharString TestCronet_Engine_GetDefaultUserAgent(Cronet_EnginePtr self) {
   CHECK(self);
   Cronet_EngineContext context = Cronet_Engine_GetContext(self);
-  Cronet_EngineTest* test = static_cast<Cronet_EngineTest*>(context);
+  auto* test = static_cast<Cronet_EngineTest*>(context);
   CHECK(test);
   test->GetDefaultUserAgent_called_ = true;
 
@@ -319,8 +318,8 @@ class Cronet_UrlRequestStatusListenerTest : public ::testing::Test {
 
   void TearDown() override {}
 
-  Cronet_UrlRequestStatusListenerTest() {}
-  ~Cronet_UrlRequestStatusListenerTest() override {}
+  Cronet_UrlRequestStatusListenerTest() = default;
+  ~Cronet_UrlRequestStatusListenerTest() override = default;
 
  public:
   bool OnStatus_called_ = false;
@@ -337,8 +336,7 @@ void TestCronet_UrlRequestStatusListener_OnStatus(
   CHECK(self);
   Cronet_UrlRequestStatusListenerContext context =
       Cronet_UrlRequestStatusListener_GetContext(self);
-  Cronet_UrlRequestStatusListenerTest* test =
-      static_cast<Cronet_UrlRequestStatusListenerTest*>(context);
+  auto* test = static_cast<Cronet_UrlRequestStatusListenerTest*>(context);
   CHECK(test);
   test->OnStatus_called_ = true;
 }
@@ -364,8 +362,8 @@ class Cronet_UrlRequestCallbackTest : public ::testing::Test {
 
   void TearDown() override {}
 
-  Cronet_UrlRequestCallbackTest() {}
-  ~Cronet_UrlRequestCallbackTest() override {}
+  Cronet_UrlRequestCallbackTest() = default;
+  ~Cronet_UrlRequestCallbackTest() override = default;
 
  public:
   bool OnRedirectReceived_called_ = false;
@@ -389,8 +387,7 @@ void TestCronet_UrlRequestCallback_OnRedirectReceived(
   CHECK(self);
   Cronet_UrlRequestCallbackContext context =
       Cronet_UrlRequestCallback_GetContext(self);
-  Cronet_UrlRequestCallbackTest* test =
-      static_cast<Cronet_UrlRequestCallbackTest*>(context);
+  auto* test = static_cast<Cronet_UrlRequestCallbackTest*>(context);
   CHECK(test);
   test->OnRedirectReceived_called_ = true;
 }
@@ -401,8 +398,7 @@ void TestCronet_UrlRequestCallback_OnResponseStarted(
   CHECK(self);
   Cronet_UrlRequestCallbackContext context =
       Cronet_UrlRequestCallback_GetContext(self);
-  Cronet_UrlRequestCallbackTest* test =
-      static_cast<Cronet_UrlRequestCallbackTest*>(context);
+  auto* test = static_cast<Cronet_UrlRequestCallbackTest*>(context);
   CHECK(test);
   test->OnResponseStarted_called_ = true;
 }
@@ -415,8 +411,7 @@ void TestCronet_UrlRequestCallback_OnReadCompleted(
   CHECK(self);
   Cronet_UrlRequestCallbackContext context =
       Cronet_UrlRequestCallback_GetContext(self);
-  Cronet_UrlRequestCallbackTest* test =
-      static_cast<Cronet_UrlRequestCallbackTest*>(context);
+  auto* test = static_cast<Cronet_UrlRequestCallbackTest*>(context);
   CHECK(test);
   test->OnReadCompleted_called_ = true;
 }
@@ -427,8 +422,7 @@ void TestCronet_UrlRequestCallback_OnSucceeded(
   CHECK(self);
   Cronet_UrlRequestCallbackContext context =
       Cronet_UrlRequestCallback_GetContext(self);
-  Cronet_UrlRequestCallbackTest* test =
-      static_cast<Cronet_UrlRequestCallbackTest*>(context);
+  auto* test = static_cast<Cronet_UrlRequestCallbackTest*>(context);
   CHECK(test);
   test->OnSucceeded_called_ = true;
 }
@@ -439,8 +433,7 @@ void TestCronet_UrlRequestCallback_OnFailed(Cronet_UrlRequestCallbackPtr self,
   CHECK(self);
   Cronet_UrlRequestCallbackContext context =
       Cronet_UrlRequestCallback_GetContext(self);
-  Cronet_UrlRequestCallbackTest* test =
-      static_cast<Cronet_UrlRequestCallbackTest*>(context);
+  auto* test = static_cast<Cronet_UrlRequestCallbackTest*>(context);
   CHECK(test);
   test->OnFailed_called_ = true;
 }
@@ -450,8 +443,7 @@ void TestCronet_UrlRequestCallback_OnCanceled(Cronet_UrlRequestCallbackPtr self,
   CHECK(self);
   Cronet_UrlRequestCallbackContext context =
       Cronet_UrlRequestCallback_GetContext(self);
-  Cronet_UrlRequestCallbackTest* test =
-      static_cast<Cronet_UrlRequestCallbackTest*>(context);
+  auto* test = static_cast<Cronet_UrlRequestCallbackTest*>(context);
   CHECK(test);
   test->OnCanceled_called_ = true;
 }
@@ -485,8 +477,8 @@ class Cronet_UploadDataSinkTest : public ::testing::Test {
 
   void TearDown() override {}
 
-  Cronet_UploadDataSinkTest() {}
-  ~Cronet_UploadDataSinkTest() override {}
+  Cronet_UploadDataSinkTest() = default;
+  ~Cronet_UploadDataSinkTest() override = default;
 
  public:
   bool OnReadSucceeded_called_ = false;
@@ -504,8 +496,7 @@ void TestCronet_UploadDataSink_OnReadSucceeded(Cronet_UploadDataSinkPtr self,
                                                bool final_chunk) {
   CHECK(self);
   Cronet_UploadDataSinkContext context = Cronet_UploadDataSink_GetContext(self);
-  Cronet_UploadDataSinkTest* test =
-      static_cast<Cronet_UploadDataSinkTest*>(context);
+  auto* test = static_cast<Cronet_UploadDataSinkTest*>(context);
   CHECK(test);
   test->OnReadSucceeded_called_ = true;
 }
@@ -513,16 +504,14 @@ void TestCronet_UploadDataSink_OnReadError(Cronet_UploadDataSinkPtr self,
                                            Cronet_ErrorPtr error) {
   CHECK(self);
   Cronet_UploadDataSinkContext context = Cronet_UploadDataSink_GetContext(self);
-  Cronet_UploadDataSinkTest* test =
-      static_cast<Cronet_UploadDataSinkTest*>(context);
+  auto* test = static_cast<Cronet_UploadDataSinkTest*>(context);
   CHECK(test);
   test->OnReadError_called_ = true;
 }
 void TestCronet_UploadDataSink_OnRewindSucceded(Cronet_UploadDataSinkPtr self) {
   CHECK(self);
   Cronet_UploadDataSinkContext context = Cronet_UploadDataSink_GetContext(self);
-  Cronet_UploadDataSinkTest* test =
-      static_cast<Cronet_UploadDataSinkTest*>(context);
+  auto* test = static_cast<Cronet_UploadDataSinkTest*>(context);
   CHECK(test);
   test->OnRewindSucceded_called_ = true;
 }
@@ -530,8 +519,7 @@ void TestCronet_UploadDataSink_OnRewindError(Cronet_UploadDataSinkPtr self,
                                              Cronet_ErrorPtr error) {
   CHECK(self);
   Cronet_UploadDataSinkContext context = Cronet_UploadDataSink_GetContext(self);
-  Cronet_UploadDataSinkTest* test =
-      static_cast<Cronet_UploadDataSinkTest*>(context);
+  auto* test = static_cast<Cronet_UploadDataSinkTest*>(context);
   CHECK(test);
   test->OnRewindError_called_ = true;
 }
@@ -562,8 +550,8 @@ class Cronet_UploadDataProviderTest : public ::testing::Test {
 
   void TearDown() override {}
 
-  Cronet_UploadDataProviderTest() {}
-  ~Cronet_UploadDataProviderTest() override {}
+  Cronet_UploadDataProviderTest() = default;
+  ~Cronet_UploadDataProviderTest() override = default;
 
  public:
   bool GetLength_called_ = false;
@@ -582,8 +570,7 @@ int64_t TestCronet_UploadDataProvider_GetLength(
   CHECK(self);
   Cronet_UploadDataProviderContext context =
       Cronet_UploadDataProvider_GetContext(self);
-  Cronet_UploadDataProviderTest* test =
-      static_cast<Cronet_UploadDataProviderTest*>(context);
+  auto* test = static_cast<Cronet_UploadDataProviderTest*>(context);
   CHECK(test);
   test->GetLength_called_ = true;
 
@@ -596,8 +583,7 @@ void TestCronet_UploadDataProvider_Read(
   CHECK(self);
   Cronet_UploadDataProviderContext context =
       Cronet_UploadDataProvider_GetContext(self);
-  Cronet_UploadDataProviderTest* test =
-      static_cast<Cronet_UploadDataProviderTest*>(context);
+  auto* test = static_cast<Cronet_UploadDataProviderTest*>(context);
   CHECK(test);
   test->Read_called_ = true;
 }
@@ -607,8 +593,7 @@ void TestCronet_UploadDataProvider_Rewind(
   CHECK(self);
   Cronet_UploadDataProviderContext context =
       Cronet_UploadDataProvider_GetContext(self);
-  Cronet_UploadDataProviderTest* test =
-      static_cast<Cronet_UploadDataProviderTest*>(context);
+  auto* test = static_cast<Cronet_UploadDataProviderTest*>(context);
   CHECK(test);
   test->Rewind_called_ = true;
 }
@@ -616,8 +601,7 @@ void TestCronet_UploadDataProvider_Close(Cronet_UploadDataProviderPtr self) {
   CHECK(self);
   Cronet_UploadDataProviderContext context =
       Cronet_UploadDataProvider_GetContext(self);
-  Cronet_UploadDataProviderTest* test =
-      static_cast<Cronet_UploadDataProviderTest*>(context);
+  auto* test = static_cast<Cronet_UploadDataProviderTest*>(context);
   CHECK(test);
   test->Close_called_ = true;
 }
@@ -648,8 +632,8 @@ class Cronet_UrlRequestTest : public ::testing::Test {
 
   void TearDown() override {}
 
-  Cronet_UrlRequestTest() {}
-  ~Cronet_UrlRequestTest() override {}
+  Cronet_UrlRequestTest() = default;
+  ~Cronet_UrlRequestTest() override = default;
 
  public:
   bool InitWithParams_called_ = false;
@@ -675,7 +659,7 @@ Cronet_RESULT TestCronet_UrlRequest_InitWithParams(
     Cronet_ExecutorPtr executor) {
   CHECK(self);
   Cronet_UrlRequestContext context = Cronet_UrlRequest_GetContext(self);
-  Cronet_UrlRequestTest* test = static_cast<Cronet_UrlRequestTest*>(context);
+  auto* test = static_cast<Cronet_UrlRequestTest*>(context);
   CHECK(test);
   test->InitWithParams_called_ = true;
 
@@ -684,7 +668,7 @@ Cronet_RESULT TestCronet_UrlRequest_InitWithParams(
 Cronet_RESULT TestCronet_UrlRequest_Start(Cronet_UrlRequestPtr self) {
   CHECK(self);
   Cronet_UrlRequestContext context = Cronet_UrlRequest_GetContext(self);
-  Cronet_UrlRequestTest* test = static_cast<Cronet_UrlRequestTest*>(context);
+  auto* test = static_cast<Cronet_UrlRequestTest*>(context);
   CHECK(test);
   test->Start_called_ = true;
 
@@ -693,7 +677,7 @@ Cronet_RESULT TestCronet_UrlRequest_Start(Cronet_UrlRequestPtr self) {
 Cronet_RESULT TestCronet_UrlRequest_FollowRedirect(Cronet_UrlRequestPtr self) {
   CHECK(self);
   Cronet_UrlRequestContext context = Cronet_UrlRequest_GetContext(self);
-  Cronet_UrlRequestTest* test = static_cast<Cronet_UrlRequestTest*>(context);
+  auto* test = static_cast<Cronet_UrlRequestTest*>(context);
   CHECK(test);
   test->FollowRedirect_called_ = true;
 
@@ -703,7 +687,7 @@ Cronet_RESULT TestCronet_UrlRequest_Read(Cronet_UrlRequestPtr self,
                                          Cronet_BufferPtr buffer) {
   CHECK(self);
   Cronet_UrlRequestContext context = Cronet_UrlRequest_GetContext(self);
-  Cronet_UrlRequestTest* test = static_cast<Cronet_UrlRequestTest*>(context);
+  auto* test = static_cast<Cronet_UrlRequestTest*>(context);
   CHECK(test);
   test->Read_called_ = true;
 
@@ -712,14 +696,14 @@ Cronet_RESULT TestCronet_UrlRequest_Read(Cronet_UrlRequestPtr self,
 void TestCronet_UrlRequest_Cancel(Cronet_UrlRequestPtr self) {
   CHECK(self);
   Cronet_UrlRequestContext context = Cronet_UrlRequest_GetContext(self);
-  Cronet_UrlRequestTest* test = static_cast<Cronet_UrlRequestTest*>(context);
+  auto* test = static_cast<Cronet_UrlRequestTest*>(context);
   CHECK(test);
   test->Cancel_called_ = true;
 }
 bool TestCronet_UrlRequest_IsDone(Cronet_UrlRequestPtr self) {
   CHECK(self);
   Cronet_UrlRequestContext context = Cronet_UrlRequest_GetContext(self);
-  Cronet_UrlRequestTest* test = static_cast<Cronet_UrlRequestTest*>(context);
+  auto* test = static_cast<Cronet_UrlRequestTest*>(context);
   CHECK(test);
   test->IsDone_called_ = true;
 
@@ -730,7 +714,7 @@ void TestCronet_UrlRequest_GetStatus(
     Cronet_UrlRequestStatusListenerPtr listener) {
   CHECK(self);
   Cronet_UrlRequestContext context = Cronet_UrlRequest_GetContext(self);
-  Cronet_UrlRequestTest* test = static_cast<Cronet_UrlRequestTest*>(context);
+  auto* test = static_cast<Cronet_UrlRequestTest*>(context);
   CHECK(test);
   test->GetStatus_called_ = true;
 }
