@@ -66,12 +66,15 @@ component("google_toolbox_for_mac") {
       "src/Foundation/GTMLightweightProxy.m",
 
       # GTMLogger is used by breakpad, which is still used on iOS.
+      # GTMLogger and GTMSQLite are used by Phenotype, a dependency of GrowthKit.
       "src/Foundation/GTMLogger.h",
       "src/Foundation/GTMLogger.m",
       "src/Foundation/GTMNSDictionary+URLArguments.h",
       "src/Foundation/GTMNSDictionary+URLArguments.m",
       "src/Foundation/GTMNSString+URLArguments.h",
       "src/Foundation/GTMNSString+URLArguments.m",
+      "src/Foundation/GTMSQLite.h",
+      "src/Foundation/GTMSQLite.m",
       "src/iPhone/GTMFadeTruncatingLabel.h",
       "src/iPhone/GTMFadeTruncatingLabel.m",
       "src/iPhone/GTMRoundedRectPath.h",
@@ -86,6 +89,8 @@ component("google_toolbox_for_mac") {
     # when minimum iOS version support is increased to iOS 9 and up.
     # This should be removed once all deprecation violations have been fixed.
     cflags = [ "-Wno-deprecated-declarations" ]
+
+    libs = [ "sqlite3" ]
   }
 
   if (is_component_build) {
