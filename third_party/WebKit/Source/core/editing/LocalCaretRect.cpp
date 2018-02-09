@@ -108,7 +108,13 @@ LocalCaretRect LocalSelectionRectOfPositionTemplate(
   if (adjusted.IsNull())
     return LocalCaretRect();
 
-  // TODO(xiaochengh): Plug in NG implementation here.
+  if (const LayoutBlockFlow* context =
+          NGInlineFormattingContextOf(adjusted.GetPosition())) {
+    // TODO(editing-dev): Use selection height instead of caret height, or
+    // decide if we need to keep the distinction between caret height and
+    // selection height in NG.
+    return ComputeNGLocalCaretRect(*context, adjusted);
+  }
 
   // TODO(editing-dev): This DCHECK is for ensuring the correctness of
   // breaking |ComputeInlineBoxPosition| into |ComputeInlineAdjustedPosition|
