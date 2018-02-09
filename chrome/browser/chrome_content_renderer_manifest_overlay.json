@@ -5,7 +5,6 @@
     "service_manager:connector": {
       "provides": {
         "browser": [
-          "chrome::mojom::ResourceUsageReporter",
           "chrome::mojom::SearchBouncer",
           "profiling::mojom::ProfilingClient"
         ]

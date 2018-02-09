@@ -9,6 +9,7 @@
           "content::mojom::ChildControl",
           "content::mojom::ChildHistogramFetcher",
           "content::mojom::ChildHistogramFetcherFactory",
+          "content::mojom::ResourceUsageReporter",
           "IPC::mojom::ChannelBootstrap"
         ],
         "service_manager:service_factory": [
