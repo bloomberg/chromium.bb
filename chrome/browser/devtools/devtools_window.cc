@@ -84,8 +84,14 @@ base::LazyInstance<std::vector<base::Callback<void(DevToolsWindow*)>>>::Leaky
 
 static const char kKeyUpEventName[] = "keyup";
 static const char kKeyDownEventName[] = "keydown";
+static const char kDefaultFrontendURL[] =
+    "chrome-devtools://devtools/bundled/devtools_app.html";
 static const char kNodeFrontendURL[] =
     "chrome-devtools://devtools/bundled/node_app.html";
+static const char kWorkerFrontendURL[] =
+    "chrome-devtools://devtools/bundled/worker_app.html";
+static const char kJSFrontendURL[] =
+    "chrome-devtools://devtools/bundled/js_app.html";
 
 bool FindInspectedBrowserAndTabIndex(
     WebContents* inspected_web_contents, Browser** browser, int* tab) {
@@ -538,14 +544,8 @@ void DevToolsWindow::OpenDevToolsWindow(
                    type == DevToolsAgentHost::kTypeSharedWorker;
 
   if (!agent_host->GetFrontendURL().empty()) {
-    FrontendType frontend_type = kFrontendRemote;
-    if (is_worker) {
-      frontend_type = kFrontendWorker;
-    } else if (type == "node") {
-      frontend_type = kFrontendV8;
-    }
     DevToolsWindow::OpenExternalFrontend(profile, agent_host->GetFrontendURL(),
-                                         agent_host, frontend_type);
+                                         agent_host);
     return;
   }
 
@@ -607,19 +607,32 @@ void DevToolsWindow::ToggleDevToolsWindow(
 void DevToolsWindow::OpenExternalFrontend(
     Profile* profile,
     const std::string& frontend_url,
-    const scoped_refptr<content::DevToolsAgentHost>& agent_host,
-    FrontendType frontend_type) {
+    const scoped_refptr<content::DevToolsAgentHost>& agent_host) {
   DevToolsWindow* window = FindDevToolsWindow(agent_host.get());
-  if (!window) {
+  if (window) {
+    window->ScheduleShow(DevToolsToggleAction::Show());
+    return;
+  }
+
+  std::string type = agent_host->GetType();
+  if (type == "node") {
+    // Direct node targets will always open using ToT front-end.
+    window = Create(profile, nullptr, kFrontendV8, std::string(), false,
+                    std::string(), std::string(), agent_host->IsAttached());
+  } else {
+    bool is_worker = type == DevToolsAgentHost::kTypeServiceWorker ||
+                     type == DevToolsAgentHost::kTypeSharedWorker;
+
+    FrontendType frontend_type =
+        is_worker ? kFrontendRemoteWorker : kFrontendRemote;
     window = Create(profile, nullptr, frontend_type,
                     DevToolsUI::GetProxyURL(frontend_url).spec(), false,
                     std::string(), std::string(), agent_host->IsAttached());
-    if (!window)
-      return;
-    window->bindings_->AttachTo(agent_host);
-    window->close_on_detach_ = false;
   }
-
+  if (!window)
+    return;
+  window->bindings_->AttachTo(agent_host);
+  window->close_on_detach_ = false;
   window->ScheduleShow(DevToolsToggleAction::Show());
 }
 
@@ -990,38 +1003,43 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
                                     bool can_dock,
                                     const std::string& panel,
                                     bool has_other_clients) {
-  std::string url = frontend_url;
-  if (url.empty()) {
-    url = frontend_type == kFrontendNode ? kNodeFrontendURL
-                                         : chrome::kChromeUIDevToolsURL;
-  }
-
-  std::string url_string(url +
-                         ((url.find("?") == std::string::npos) ? "?" : "&"));
+  std::string url;
+  std::string remote_base =
+      "?remoteBase=" + DevToolsUI::GetRemoteBaseURL().spec();
+  // remoteFrontend is here for backwards compatibility only.
+  std::string remote_frontend =
+      frontend_url + ((frontend_url.find("?") == std::string::npos)
+                          ? "?remoteFrontend=true"
+                          : "&remoteFrontend=true");
   switch (frontend_type) {
-    case kFrontendRemote:
-      url_string += "&remoteFrontend=true";
+    case kFrontendDefault:
+      url = kDefaultFrontendURL + remote_base;
+      if (can_dock)
+        url += "&can_dock=true";
+      if (panel.size())
+        url += "&panel=" + panel;
       break;
     case kFrontendWorker:
-      url_string += "&isSharedWorker=true";
+      url = kWorkerFrontendURL + remote_base;
       break;
     case kFrontendV8:
-      url_string += "&v8only=true";
+      url = kJSFrontendURL + remote_base;
       break;
-    case kFrontendDefault:
-    default:
+    case kFrontendNode:
+      url = kNodeFrontendURL + remote_base;
+      break;
+    case kFrontendRemote:
+      url = remote_frontend;
+      break;
+    case kFrontendRemoteWorker:
+      // isSharedWorker is here for backwards compatibility only.
+      url = remote_frontend + "&isSharedWorker=true";
       break;
   }
 
-  if (frontend_url.empty())
-    url_string += "&remoteBase=" + DevToolsUI::GetRemoteBaseURL().spec();
-  if (can_dock)
-    url_string += "&can_dock=true";
-  if (panel.size())
-    url_string += "&panel=" + panel;
   if (has_other_clients)
-    url_string += "&hasOtherClients=true";
-  return DevToolsUIBindings::SanitizeFrontendURL(GURL(url_string));
+    url += "&hasOtherClients=true";
+  return DevToolsUIBindings::SanitizeFrontendURL(GURL(url));
 }
 
 // static

@@ -37,6 +37,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/SourceLocation.h"
+#include "build/build_config.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/fileapi/FileReaderLoader.h"
@@ -103,11 +104,18 @@ static const char kMaxPostDataSize[] = "maxPostBodySize";
 }
 
 namespace {
+
+#if defined(OS_ANDROID)
+// 10MB
+static size_t g_maximum_total_buffer_size = 10 * 1000 * 1000;
+// 5MB
+static size_t g_maximum_resource_buffer_size = 5 * 1000 * 1000;
+#else
 // 100MB
 static size_t g_maximum_total_buffer_size = 100 * 1000 * 1000;
-
 // 10MB
 static size_t g_maximum_resource_buffer_size = 10 * 1000 * 1000;
+#endif
 
 // Pattern may contain stars ('*') which match to any (possibly empty) string.
 // Stars implicitly assumed at the begin/end of pattern.

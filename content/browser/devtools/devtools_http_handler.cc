@@ -15,6 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -77,8 +78,6 @@ const char kTargetDevtoolsFrontendUrlField[] = "devtoolsFrontendUrl";
 const int32_t kSendBufferSizeForDevTools = 256 * 1024 * 1024;  // 256Mb
 const int32_t kReceiveBufferSizeForDevTools = 100 * 1024 * 1024;  // 100Mb
 
-const char kFrontEndURL[] =
-    "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/inspector.html";
 }  // namespace
 
 // ServerWrapper -------------------------------------------------------------
@@ -455,15 +454,22 @@ void ServerWrapper::OnClose(int connection_id) {
 }
 
 std::string DevToolsHttpHandler::GetFrontendURLInternal(
+    scoped_refptr<DevToolsAgentHost> agent_host,
     const std::string& id,
     const std::string& host) {
-  return base::StringPrintf(
-      "%s%sws=%s%s%s",
-      frontend_url_.c_str(),
-      frontend_url_.find("?") == std::string::npos ? "?" : "&",
-      host.c_str(),
-      kPageUrlPrefix,
-      id.c_str());
+  std::string frontend_url;
+  if (delegate_->HasBundledFrontendResources()) {
+    frontend_url = "/devtools/inspector.html";
+  } else {
+    std::string type = agent_host->GetType();
+    bool is_worker = type == DevToolsAgentHost::kTypeServiceWorker ||
+                     type == DevToolsAgentHost::kTypeSharedWorker;
+    frontend_url = base::StringPrintf(
+        "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/%s.html",
+        GetWebKitRevision().c_str(), is_worker ? "worker_app" : "inspector");
+  }
+  return base::StringPrintf("%s?ws=%s%s%s", frontend_url.c_str(), host.c_str(),
+                            kPageUrlPrefix, id.c_str());
 }
 
 static bool ParseJsonPath(
@@ -750,11 +756,6 @@ DevToolsHttpHandler::DevToolsHttpHandler(
                        output_directory, debug_frontend_dir, browser_guid_,
                        delegate_->HasBundledFrontendResources()));
   }
-  if (delegate_->HasBundledFrontendResources())
-    frontend_url_ = "/devtools/inspector.html";
-  else
-    frontend_url_ =
-        base::StringPrintf(kFrontEndURL, GetWebKitRevision().c_str());
 }
 
 void DevToolsHttpHandler::ServerStarted(
@@ -858,7 +859,8 @@ std::unique_ptr<base::DictionaryValue> DevToolsHttpHandler::SerializeDescriptor(
   dictionary->SetString(kTargetWebSocketDebuggerUrlField,
                         base::StringPrintf("ws://%s%s%s", host.c_str(),
                                            kPageUrlPrefix, id.c_str()));
-  std::string devtools_frontend_url = GetFrontendURLInternal(id, host);
+  std::string devtools_frontend_url =
+      GetFrontendURLInternal(agent_host, id, host);
   dictionary->SetString(kTargetDevtoolsFrontendUrlField, devtools_frontend_url);
 
   return dictionary;

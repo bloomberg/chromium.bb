@@ -241,10 +241,11 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
 
   enum FrontendType {
     kFrontendDefault,
-    kFrontendRemote,
     kFrontendWorker,
     kFrontendV8,
-    kFrontendNode
+    kFrontendNode,
+    kFrontendRemote,
+    kFrontendRemoteWorker,
   };
 
   DevToolsWindow(FrontendType frontend_type,
@@ -258,8 +259,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   static void OpenExternalFrontend(
       Profile* profile,
       const std::string& frontend_uri,
-      const scoped_refptr<content::DevToolsAgentHost>& agent_host,
-      FrontendType frontend_type);
+      const scoped_refptr<content::DevToolsAgentHost>& agent_host);
 
   static DevToolsWindow* Create(Profile* profile,
                                 content::WebContents* inspected_web_contents,

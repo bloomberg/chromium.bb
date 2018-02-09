@@ -96,8 +96,10 @@ class DevToolsHttpHandler {
   void DecompressAndSendJsonProtocol(int connection_id);
 
   // Returns the front end url without the host at the beginning.
-  std::string GetFrontendURLInternal(const std::string& target_id,
-                                     const std::string& host);
+  std::string GetFrontendURLInternal(
+      scoped_refptr<DevToolsAgentHost> agent_host,
+      const std::string& target_id,
+      const std::string& host);
 
   std::unique_ptr<base::DictionaryValue> SerializeDescriptor(
       scoped_refptr<DevToolsAgentHost> agent_host,
@@ -105,7 +107,6 @@ class DevToolsHttpHandler {
 
   // The thread used by the devtools handler to run server socket.
   std::unique_ptr<base::Thread> thread_;
-  std::string frontend_url_;
   std::string browser_guid_;
   std::unique_ptr<ServerWrapper> server_wrapper_;
   std::unique_ptr<net::IPEndPoint> server_ip_address_;
