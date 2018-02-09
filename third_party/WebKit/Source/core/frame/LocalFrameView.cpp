@@ -3709,17 +3709,28 @@ LayoutRect LocalFrameView::AbsoluteToRootFrame(
 }
 
 IntRect LocalFrameView::RootFrameToDocument(const IntRect& rect_in_root_frame) {
-  IntPoint offset =
-      FlooredIntPoint(RootFrameToDocument(rect_in_root_frame.Location()));
+  IntPoint offset = RootFrameToDocument(rect_in_root_frame.Location());
   IntRect local_rect = rect_in_root_frame;
   local_rect.SetLocation(offset);
   return local_rect;
+}
+
+IntPoint LocalFrameView::RootFrameToDocument(
+    const IntPoint& point_in_root_frame) {
+  return FlooredIntPoint(RootFrameToDocument(FloatPoint(point_in_root_frame)));
 }
 
 FloatPoint LocalFrameView::RootFrameToDocument(
     const FloatPoint& point_in_root_frame) {
   FloatPoint local_frame = ConvertFromRootFrame(point_in_root_frame);
   return local_frame + LayoutViewportScrollableArea()->GetScrollOffset();
+}
+
+LayoutPoint LocalFrameView::RootFrameToAbsolute(
+    const LayoutPoint& point_in_root_frame) const {
+  LayoutPoint local_frame = ConvertFromRootFrame(point_in_root_frame);
+  // With RLS turned on, this will be a no-op.
+  return local_frame + LayoutSize(GetScrollOffset());
 }
 
 DoublePoint LocalFrameView::DocumentToAbsolute(

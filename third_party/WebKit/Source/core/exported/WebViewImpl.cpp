@@ -1102,7 +1102,7 @@ WebRect WebViewImpl::ComputeBlockBound(const WebPoint& point_in_root_frame,
     return WebRect();
 
   // Use the point-based hit test to find the node.
-  LayoutPoint point = MainFrameImpl()->GetFrameView()->RootFrameToContents(
+  LayoutPoint point = MainFrameImpl()->GetFrameView()->RootFrameToAbsolute(
       LayoutPoint(point_in_root_frame));
   HitTestRequest::HitTestRequestType hit_type =
       HitTestRequest::kReadOnly | HitTestRequest::kActive |
@@ -1125,9 +1125,9 @@ WebRect WebViewImpl::ComputeBlockBound(const WebPoint& point_in_root_frame,
 
   // Return the bounding box in the root frame's coordinate space.
   if (node) {
-    IntRect point_in_root_frame = node->Node::PixelSnappedBoundingBox();
+    IntRect absolute_rect = node->GetLayoutObject()->AbsoluteBoundingBoxRect();
     LocalFrame* frame = node->GetDocument().GetFrame();
-    return frame->View()->ContentsToRootFrame(point_in_root_frame);
+    return frame->View()->AbsoluteToRootFrame(absolute_rect);
   }
   return WebRect();
 }
@@ -1246,7 +1246,7 @@ void WebViewImpl::ComputeScaleAndScrollForBlockRect(
   scroll.y = rect.y;
 
   scale = ClampPageScaleFactorToLimits(scale);
-  scroll = MainFrameImpl()->GetFrameView()->RootFrameToContents(scroll);
+  scroll = MainFrameImpl()->GetFrameView()->RootFrameToDocument(scroll);
   scroll =
       GetPage()->GetVisualViewport().ClampDocumentOffsetAtScale(scroll, scale);
 }
@@ -1392,7 +1392,7 @@ void WebViewImpl::AnimateDoubleTapZoom(const IntPoint& point_in_root_frame) {
   if (should_zoom_out) {
     scale = MinimumPageScaleFactor();
     IntPoint target_position =
-        MainFrameImpl()->GetFrameView()->RootFrameToContents(
+        MainFrameImpl()->GetFrameView()->RootFrameToDocument(
             point_in_root_frame);
     is_animating = StartPageScaleAnimation(
         target_position, true, scale, doubleTapZoomAnimationDurationInSeconds);
