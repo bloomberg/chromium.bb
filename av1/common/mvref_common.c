@@ -221,7 +221,8 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              int_mv *gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
                              int max_row_offset, int *processed_rows) {
-  const int end_mi = AOMMIN(xd->n8_w, cm->mi_cols - mi_col);
+  int end_mi = AOMMIN(xd->n8_w, cm->mi_cols - mi_col);
+  end_mi = AOMMIN(end_mi, mi_size_wide[BLOCK_64X64]);
   const int n8_w_8 = mi_size_wide[BLOCK_8X8];
   const int n8_w_16 = mi_size_wide[BLOCK_16X16];
   int i;
@@ -292,7 +293,8 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              int_mv *gm_mv_candidates,
 #endif  // USE_CUR_GM_REFMV
                              int max_col_offset, int *processed_cols) {
-  const int end_mi = AOMMIN(xd->n8_h, cm->mi_rows - mi_row);
+  int end_mi = AOMMIN(xd->n8_h, cm->mi_rows - mi_row);
+  end_mi = AOMMIN(end_mi, mi_size_high[BLOCK_64X64]);
   const int n8_h_8 = mi_size_high[BLOCK_8X8];
   const int n8_h_16 = mi_size_high[BLOCK_16X16];
   int i;
@@ -401,6 +403,8 @@ static int has_top_right(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const int sb_mi_size = mi_size_wide[cm->seq_params.sb_size];
   const int mask_row = mi_row & (sb_mi_size - 1);
   const int mask_col = mi_col & (sb_mi_size - 1);
+
+  if (bs > mi_size_wide[BLOCK_64X64]) return 0;
 
   // In a split partition all apart from the bottom right has a top right
   int has_tr = !((mask_row & bs) && (mask_col & bs));
@@ -795,16 +799,20 @@ static void setup_ref_mv_list(
     int coll_blk_count[MODE_CTX_REF_FRAMES] = { 0 };
     const int voffset = AOMMAX(mi_size_high[BLOCK_8X8], xd->n8_h);
     const int hoffset = AOMMAX(mi_size_wide[BLOCK_8X8], xd->n8_w);
+    const int blk_row_end = AOMMIN(xd->n8_h, mi_size_high[BLOCK_64X64]);
+    const int blk_col_end = AOMMIN(xd->n8_w, mi_size_wide[BLOCK_64X64]);
 
     const int tpl_sample_pos[3][2] = {
       { voffset, -2 }, { voffset, hoffset }, { voffset - 2, hoffset },
     };
     const int allow_extension = (xd->n8_h >= mi_size_high[BLOCK_8X8]) &&
-                                (xd->n8_w >= mi_size_wide[BLOCK_8X8]);
+                                (xd->n8_h < mi_size_high[BLOCK_64X64]) &&
+                                (xd->n8_w >= mi_size_wide[BLOCK_8X8]) &&
+                                (xd->n8_w < mi_size_wide[BLOCK_64X64]);
 
-    for (int blk_row = 0; blk_row < xd->n8_h;
+    for (int blk_row = 0; blk_row < blk_row_end;
          blk_row += mi_size_high[BLOCK_8X8]) {
-      for (int blk_col = 0; blk_col < xd->n8_w;
+      for (int blk_col = 0; blk_col < blk_col_end;
            blk_col += mi_size_wide[BLOCK_8X8]) {
         // (TODO: yunqing) prev_frame_mvs_base is not used here, tpl_mvs is
         // used.
