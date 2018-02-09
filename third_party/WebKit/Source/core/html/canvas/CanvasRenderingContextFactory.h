@@ -9,7 +9,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
-#include "core/html/canvas/CanvasContextCreationAttributes.h"
+#include "core/html/canvas/CanvasContextCreationAttributesCore.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "platform/wtf/Allocator.h"
 
@@ -27,7 +27,7 @@ class CORE_EXPORT CanvasRenderingContextFactory {
 
   virtual CanvasRenderingContext* Create(
       CanvasRenderingContextHost*,
-      const CanvasContextCreationAttributes&) = 0;
+      const CanvasContextCreationAttributesCore&) = 0;
 
   virtual CanvasRenderingContext::ContextType GetContextType() const = 0;
   virtual void OnError(HTMLCanvasElement*, const String& error){};

@@ -19,7 +19,7 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
     : public CanvasRenderingContext {
  public:
   ImageBitmapRenderingContextBase(CanvasRenderingContextHost*,
-                                  const CanvasContextCreationAttributes&);
+                                  const CanvasContextCreationAttributesCore&);
   virtual ~ImageBitmapRenderingContextBase();
 
   void Trace(blink::Visitor*);

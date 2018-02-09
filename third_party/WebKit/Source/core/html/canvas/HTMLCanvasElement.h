@@ -60,7 +60,7 @@ namespace blink {
 
 class Canvas2DLayerBridge;
 class CanvasColorParams;
-class CanvasContextCreationAttributes;
+class CanvasContextCreationAttributesCore;
 class CanvasRenderingContext;
 class CanvasRenderingContextFactory;
 class GraphicsContext;
@@ -109,7 +109,7 @@ class CORE_EXPORT HTMLCanvasElement final
   // Called by Document::getCSSCanvasContext as well as above getContext().
   CanvasRenderingContext* GetCanvasRenderingContext(
       const String&,
-      const CanvasContextCreationAttributes&);
+      const CanvasContextCreationAttributesCore&);
 
   String toDataURL(const String& mime_type,
                    const ScriptValue& quality_argument,

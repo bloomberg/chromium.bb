@@ -4,6 +4,12 @@
 
 // https://github.com/junov/CanvasColorSpace/blob/master/CanvasColorSpaceProposal.md#imageda
 
+enum CanvasColorSpace {
+    "srgb", // default
+    "rec2020",
+    "p3",
+};
+
 enum ImageDataStorageFormat {
   "uint8", // default
   "uint16",

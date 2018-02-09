@@ -445,7 +445,7 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
         layer->Bounds() == graphics_layer_->PlatformLayer()->Bounds()) {
       // Determine whether the rendering context's external texture layer is
       // opaque.
-      if (!context->CreationAttributes().alpha()) {
+      if (!context->CreationAttributes().alpha) {
         graphics_layer_->SetContentsOpaque(true);
       } else {
         graphics_layer_->SetContentsOpaque(

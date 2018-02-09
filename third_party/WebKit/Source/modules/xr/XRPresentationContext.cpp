@@ -10,7 +10,7 @@ namespace blink {
 
 XRPresentationContext::XRPresentationContext(
     CanvasRenderingContextHost* host,
-    const CanvasContextCreationAttributes& attrs)
+    const CanvasContextCreationAttributesCore& attrs)
     : ImageBitmapRenderingContextBase(host, attrs) {}
 
 XRPresentationContext::~XRPresentationContext() {}
@@ -22,7 +22,7 @@ void XRPresentationContext::SetCanvasGetContextResult(
 
 CanvasRenderingContext* XRPresentationContext::Factory::Create(
     CanvasRenderingContextHost* host,
-    const CanvasContextCreationAttributes& attrs) {
+    const CanvasContextCreationAttributesCore& attrs) {
   if (!RuntimeEnabledFeatures::WebXREnabled())
     return nullptr;
   return new XRPresentationContext(host, attrs);

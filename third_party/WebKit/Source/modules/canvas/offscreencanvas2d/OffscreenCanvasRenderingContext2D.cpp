@@ -29,7 +29,7 @@ OffscreenCanvasRenderingContext2D::~OffscreenCanvasRenderingContext2D() =
 
 OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
     OffscreenCanvas* canvas,
-    const CanvasContextCreationAttributes& attrs)
+    const CanvasContextCreationAttributesCore& attrs)
     : CanvasRenderingContext(canvas, attrs) {
   ExecutionContext* execution_context = canvas->GetTopExecutionContext();
   if (execution_context->IsDocument()) {

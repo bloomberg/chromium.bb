@@ -27,7 +27,7 @@
 #ifndef CanvasRenderingContext2D_h
 #define CanvasRenderingContext2D_h
 
-#include "core/html/canvas/CanvasContextCreationAttributes.h"
+#include "core/html/canvas/CanvasContextCreationAttributesCore.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "core/style/FilterOperations.h"
@@ -79,7 +79,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
     CanvasRenderingContext* Create(
         CanvasRenderingContextHost* host,
-        const CanvasContextCreationAttributes& attrs) override {
+        const CanvasContextCreationAttributesCore& attrs) override {
       DCHECK(!host->IsOffscreenCanvas());
       return new CanvasRenderingContext2D(static_cast<HTMLCanvasElement*>(host),
                                           attrs);
@@ -214,7 +214,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   friend class CanvasRenderingContext2DAutoRestoreSkCanvas;
 
   CanvasRenderingContext2D(HTMLCanvasElement*,
-                           const CanvasContextCreationAttributes&);
+                           const CanvasContextCreationAttributesCore&);
   void DispatchContextLostEvent(TimerBase*);
   void DispatchContextRestoredEvent(TimerBase*);
   void TryRestoreContextEvent(TimerBase*);
@@ -246,7 +246,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   bool Is2d() const override { return true; }
   bool IsComposited() const override;
   bool IsAccelerated() const override;
-  bool HasAlpha() const override { return CreationAttributes().alpha(); }
+  bool HasAlpha() const override { return CreationAttributes().alpha; }
   void SetIsHidden(bool) override;
   void Stop() final;
 

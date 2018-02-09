@@ -61,7 +61,7 @@ static bool ShouldCreateContext(WebGraphicsContext3DProvider* context_provider,
 
 CanvasRenderingContext* WebGL2RenderingContext::Factory::Create(
     CanvasRenderingContextHost* host,
-    const CanvasContextCreationAttributes& attrs) {
+    const CanvasContextCreationAttributesCore& attrs) {
   bool using_gpu_compositing;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider(
       CreateWebGraphicsContext3DProvider(host, attrs, 2,
@@ -94,7 +94,7 @@ WebGL2RenderingContext::WebGL2RenderingContext(
     CanvasRenderingContextHost* host,
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
     bool using_gpu_compositing,
-    const CanvasContextCreationAttributes& requested_attributes)
+    const CanvasContextCreationAttributesCore& requested_attributes)
     : WebGL2RenderingContextBase(host,
                                  std::move(context_provider),
                                  using_gpu_compositing,

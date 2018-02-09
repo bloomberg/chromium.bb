@@ -12,5 +12,5 @@ enum OffscreenRenderingContextType { "2d", "webgl", "webgl2" };
 [
     ImplementedAs=OffscreenCanvasModule
 ] partial interface OffscreenCanvas {
-    [CallWith=ExecutionContext, RaisesException, RuntimeEnabled=ExperimentalCanvasFeatures] OffscreenRenderingContext? getContext(OffscreenRenderingContextType contextType, optional CanvasContextCreationAttributes attributes);
+    [CallWith=ExecutionContext, RaisesException, RuntimeEnabled=ExperimentalCanvasFeatures] OffscreenRenderingContext? getContext(OffscreenRenderingContextType contextType, optional CanvasContextCreationAttributesModule attributes);
 };

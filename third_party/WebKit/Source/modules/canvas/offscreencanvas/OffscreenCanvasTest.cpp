@@ -69,7 +69,7 @@ void OffscreenCanvasTest::SetUp() {
   DummyExceptionStateForTesting exception_state;
   offscreen_canvas_ = HTMLCanvasElementModule::transferControlToOffscreen(
       *canvas_element_, exception_state);
-  CanvasContextCreationAttributes attrs;
+  CanvasContextCreationAttributesCore attrs;
   context_ = static_cast<OffscreenCanvasRenderingContext2D*>(
       offscreen_canvas_->GetCanvasRenderingContext(&GetDocument(), String("2d"),
                                                    attrs));

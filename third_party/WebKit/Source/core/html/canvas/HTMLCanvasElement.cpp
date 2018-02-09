@@ -49,7 +49,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/canvas/CanvasAsyncBlobCreator.h"
-#include "core/html/canvas/CanvasContextCreationAttributes.h"
+#include "core/html/canvas/CanvasContextCreationAttributesCore.h"
 #include "core/html/canvas/CanvasFontCache.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
@@ -253,7 +253,7 @@ void HTMLCanvasElement::RegisterRenderingContextFactory(
 
 CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
     const String& type,
-    const CanvasContextCreationAttributes& attributes) {
+    const CanvasContextCreationAttributesCore& attributes) {
   CanvasRenderingContext::ContextType context_type =
       CanvasRenderingContext::ContextTypeFromId(type);
 
@@ -300,13 +300,13 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
   }
 
   LayoutObject* layout_object = GetLayoutObject();
-  if (layout_object && Is2d() && !context_->CreationAttributes().alpha()) {
+  if (layout_object && Is2d() && !context_->CreationAttributes().alpha) {
     // In the alpha false case, canvas is initially opaque even though there is
     // no ImageBuffer, so we need to trigger an invalidation.
     DidDraw();
   }
 
-  if (attributes.lowLatency() &&
+  if (attributes.low_latency &&
       RuntimeEnabledFeatures::LowLatencyCanvasEnabled()) {
     CreateLayer();
     SetNeedsUnbufferedInputEvents(true);
@@ -691,7 +691,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
   if (HasImageBuffer()) {
     if (!context.ContextDisabled()) {
       SkBlendMode composite_operator =
-          !context_ || context_->CreationAttributes().alpha()
+          !context_ || context_->CreationAttributes().alpha
               ? SkBlendMode::kSrcOver
               : SkBlendMode::kSrc;
       FloatRect src_rect = FloatRect(FloatPoint(), FloatSize(Size()));
@@ -708,7 +708,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
     }
   } else {
     // When alpha is false, we should draw to opaque black.
-    if (!context_->CreationAttributes().alpha())
+    if (!context_->CreationAttributes().alpha)
       context.FillRect(FloatRect(r), Color(0, 0, 0));
   }
 
@@ -753,7 +753,7 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::ToStaticBitmapImage(
     return nullptr;
   scoped_refptr<StaticBitmapImage> image_bitmap = nullptr;
   if (Is3d()) {
-    if (context_->CreationAttributes().premultipliedAlpha()) {
+    if (context_->CreationAttributes().premultiplied_alpha) {
       context_->PaintRenderingResultsToCanvas(source_buffer);
       if (webgl_resource_provider_)
         image_bitmap = webgl_resource_provider_->Snapshot();
@@ -1366,7 +1366,7 @@ void HTMLCanvasElement::SetPlaceholderFrame(
 }
 
 bool HTMLCanvasElement::IsOpaque() const {
-  return context_ && !context_->CreationAttributes().alpha();
+  return context_ && !context_->CreationAttributes().alpha;
 }
 
 bool HTMLCanvasElement::IsSupportedInteractiveCanvasFallback(

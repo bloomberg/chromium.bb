@@ -28,7 +28,7 @@
 
 #include "base/macros.h"
 #include "core/CoreExport.h"
-#include "core/html/canvas/CanvasContextCreationAttributes.h"
+#include "core/html/canvas/CanvasContextCreationAttributesCore.h"
 #include "core/html/canvas/HTMLCanvasElement.h"
 #include "core/layout/HitTestCanvasResult.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
@@ -187,7 +187,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
 
   void DetachHost() { host_ = nullptr; }
 
-  const CanvasContextCreationAttributes& CreationAttributes() const {
+  const CanvasContextCreationAttributesCore& CreationAttributes() const {
     return creation_attributes_;
   }
 
@@ -196,7 +196,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
 
  protected:
   CanvasRenderingContext(CanvasRenderingContextHost*,
-                         const CanvasContextCreationAttributes&);
+                         const CanvasContextCreationAttributesCore&);
 
  private:
   void Dispose();
@@ -205,7 +205,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   HashSet<String> clean_urls_;
   HashSet<String> dirty_urls_;
   CanvasColorParams color_params_;
-  CanvasContextCreationAttributes creation_attributes_;
+  CanvasContextCreationAttributesCore creation_attributes_;
   bool finalize_frame_scheduled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CanvasRenderingContext);

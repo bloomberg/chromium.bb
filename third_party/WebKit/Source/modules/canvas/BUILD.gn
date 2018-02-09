@@ -25,6 +25,8 @@ blink_modules_sources("canvas") {
     "canvas2d/HitRegion.cpp",
     "canvas2d/HitRegion.h",
     "canvas2d/Path2D.h",
+    "htmlcanvas/CanvasContextCreationAttributesHelpers.cpp",
+    "htmlcanvas/CanvasContextCreationAttributesHelpers.h",
     "htmlcanvas/HTMLCanvasElementModule.cpp",
     "htmlcanvas/HTMLCanvasElementModule.h",
     "imagebitmap/ImageBitmapRenderingContext.cpp",

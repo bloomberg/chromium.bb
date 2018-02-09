@@ -484,7 +484,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
     device::mojom::blink::VRRequestPresentOptionsPtr options =
         device::mojom::blink::VRRequestPresentOptions::New();
     options->preserve_drawing_buffer =
-        rendering_context_->CreationAttributes().preserveDrawingBuffer();
+        rendering_context_->CreationAttributes().preserve_drawing_buffer;
 
     display_->RequestPresent(
         frame_transport_->GetSubmitFrameClient(),

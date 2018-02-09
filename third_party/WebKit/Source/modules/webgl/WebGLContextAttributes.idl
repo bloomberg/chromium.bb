@@ -34,4 +34,5 @@ dictionary WebGLContextAttributes {
     boolean premultipliedAlpha = true;
     boolean preserveDrawingBuffer = false;
     boolean failIfMajorPerformanceCaveat = false;
+    [RuntimeEnabled=WebXR] XRDevice compatibleXRDevice = null;
 };

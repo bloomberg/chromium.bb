@@ -26,7 +26,7 @@ class MODULES_EXPORT XRPresentationContext final
 
     CanvasRenderingContext* Create(
         CanvasRenderingContextHost*,
-        const CanvasContextCreationAttributes&) override;
+        const CanvasContextCreationAttributesCore&) override;
     CanvasRenderingContext::ContextType GetContextType() const override {
       return CanvasRenderingContext::kContextXRPresent;
     }
@@ -42,7 +42,7 @@ class MODULES_EXPORT XRPresentationContext final
 
  private:
   XRPresentationContext(CanvasRenderingContextHost*,
-                        const CanvasContextCreationAttributes&);
+                        const CanvasContextCreationAttributesCore&);
 };
 
 DEFINE_TYPE_CASTS(XRPresentationContext,

@@ -706,4 +706,7 @@ typedef unrestricted float GLclampf;
     void viewport(GLint x, GLint y, GLsizei width, GLsizei height);
 
     [RuntimeEnabled=ExperimentalCanvasFeatures, CallWith=ScriptState, RaisesException] Promise commit();
+
+    // WebXR Device API support
+    [RuntimeEnabled=WebXR, SecureContext, CallWith=ScriptState] Promise setCompatibleXRDevice(XRDevice device);
 };

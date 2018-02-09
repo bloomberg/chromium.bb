@@ -62,6 +62,13 @@ XRWebGLLayer* XRWebGLLayer::Create(
     return nullptr;
   }
 
+  if (!webgl_context->IsXRDeviceCompatible(session->device())) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        "The session's device is not the compatible device for this context.");
+    return nullptr;
+  }
+
   bool want_antialiasing = initializer.antialias();
   bool want_depth_buffer = initializer.depth();
   bool want_stencil_buffer = initializer.stencil();
