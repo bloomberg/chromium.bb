@@ -53,7 +53,6 @@
 #include "core/editing/commands/DeleteSelectionCommand.h"
 #include "core/editing/commands/IndentOutdentCommand.h"
 #include "core/editing/commands/InsertListCommand.h"
-#include "core/editing/commands/RemoveFormatCommand.h"
 #include "core/editing/commands/ReplaceSelectionCommand.h"
 #include "core/editing/commands/SimplifyMarkupCommand.h"
 #include "core/editing/commands/TypingCommand.h"
@@ -727,11 +726,6 @@ void Editor::RespondToChangedContents(const Position& position) {
 
   GetSpellChecker().RespondToChangedContents();
   frame_->Client()->DidChangeContents();
-}
-
-void Editor::RemoveFormattingAndStyle() {
-  DCHECK(GetFrame().GetDocument());
-  RemoveFormatCommand::Create(*GetFrame().GetDocument())->Apply();
 }
 
 void Editor::RegisterCommandGroup(CompositeEditCommand* command_group_wrapper) {
