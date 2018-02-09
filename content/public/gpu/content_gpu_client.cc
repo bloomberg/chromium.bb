@@ -14,14 +14,6 @@ gpu::SyncPointManager* ContentGpuClient::GetSyncPointManager() {
   return nullptr;
 }
 
-const gpu::GPUInfo* ContentGpuClient::GetGPUInfo() {
-  return nullptr;
-}
-
-const gpu::GpuFeatureInfo* ContentGpuClient::GetGpuFeatureInfo() {
-  return nullptr;
-}
-
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 std::unique_ptr<media::CdmProxy> ContentGpuClient::CreateCdmProxy(
     const std::string& cdm_guid) {

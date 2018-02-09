@@ -56,17 +56,10 @@ class CastSysInfo {
   // Returns the name of the software AP interface.
   virtual std::string GetApInterface() = 0;
 
-  // Returns the GL_VENDOR string of GPU driver. Must match the value that would
-  // be obtained from a GL context, but implementations must *not* create a GL
-  // context.
+  // The following three APIs are deprecated and never called.
+  // TODO(halliwell): Remove them in the next system update.
   virtual std::string GetGlVendor() = 0;
-  // Returns the GL_RENDERER string of GPU driver. Must match the value that
-  // would be obtained from a GL context, but implementations must *not* create
-  // a GL context.
   virtual std::string GetGlRenderer() = 0;
-  // Returns the GL_VERSION string of GPU driver. Must match the value that
-  // would be obtained from a GL context, but implementations must *not* create
-  // a GL context.
   virtual std::string GetGlVersion() = 0;
 };
 

@@ -15,8 +15,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace gpu {
-struct GpuFeatureInfo;
-struct GPUInfo;
 struct GpuPreferences;
 class SyncPointManager;
 }
@@ -51,10 +49,6 @@ class CONTENT_EXPORT ContentGpuClient {
   // Allows client to supply a SyncPointManager instance instead of having
   // content internally create one.
   virtual gpu::SyncPointManager* GetSyncPointManager();
-
-  // Allows client to re-use GPUInfo and GpuFeatureInfo if already computed.
-  virtual const gpu::GPUInfo* GetGPUInfo();
-  virtual const gpu::GpuFeatureInfo* GetGpuFeatureInfo();
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // Creates a media::CdmProxy for the type of Content Decryption Module (CDM)
