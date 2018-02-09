@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 237 tests; 222 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 237 tests; 225 PASS, 12 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS CSS Typed OM IDL test
 PASS CSSStyleValue interface: existence and properties of interface object
 PASS CSSStyleValue interface object length
@@ -33,7 +33,7 @@ PASS CSSUnparsedValue interface object name
 PASS CSSUnparsedValue interface: existence and properties of interface prototype object
 PASS CSSUnparsedValue interface: existence and properties of interface prototype object's "constructor" property
 PASS Testing Symbol.iterator property of iterable interface CSSUnparsedValue
-FAIL Testing value iterable interface CSSUnparsedValue assert_equals: values function is not the same as Array one expected (undefined) undefined but got (function) function "function values() { [native code] }"
+PASS Testing value iterable interface CSSUnparsedValue
 PASS CSSUnparsedValue interface: attribute length
 FAIL CSSUnparsedValue interface: operation entries() assert_throws: calling operation with this = {} didn't throw TypeError function "function() {
             fn.apply(obj, args);
@@ -129,7 +129,7 @@ PASS CSSNumericArray interface object name
 PASS CSSNumericArray interface: existence and properties of interface prototype object
 PASS CSSNumericArray interface: existence and properties of interface prototype object's "constructor" property
 PASS Testing Symbol.iterator property of iterable interface CSSNumericArray
-FAIL Testing value iterable interface CSSNumericArray assert_equals: values function is not the same as Array one expected (undefined) undefined but got (function) function "function values() { [native code] }"
+PASS Testing value iterable interface CSSNumericArray
 PASS CSSNumericArray interface: attribute length
 FAIL CSSNumericArray interface: operation entries() assert_throws: calling operation with this = {} didn't throw TypeError function "function() {
             fn.apply(obj, args);
@@ -147,7 +147,7 @@ PASS CSSTransformValue interface object name
 PASS CSSTransformValue interface: existence and properties of interface prototype object
 PASS CSSTransformValue interface: existence and properties of interface prototype object's "constructor" property
 PASS Testing Symbol.iterator property of iterable interface CSSTransformValue
-FAIL Testing value iterable interface CSSTransformValue assert_equals: values function is not the same as Array one expected (undefined) undefined but got (function) function "function values() { [native code] }"
+PASS Testing value iterable interface CSSTransformValue
 PASS CSSTransformValue interface: attribute length
 PASS CSSTransformValue interface: attribute is2D
 PASS CSSTransformValue interface: operation toMatrix()
