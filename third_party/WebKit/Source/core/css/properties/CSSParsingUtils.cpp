@@ -57,8 +57,12 @@ bool IsLeftOrRightKeyword(CSSValueID id) {
       id);
 }
 
-bool IsAutoOrNormalOrStretch(CSSValueID id) {
-  return CSSPropertyParserHelpers::IdentMatches<CSSValueAuto, CSSValueNormal,
+bool IsAuto(CSSValueID id) {
+  return CSSPropertyParserHelpers::IdentMatches<CSSValueAuto>(id);
+}
+
+bool IsNormalOrStretch(CSSValueID id) {
+  return CSSPropertyParserHelpers::IdentMatches<CSSValueNormal,
                                                 CSSValueStretch>(id);
 }
 
@@ -548,7 +552,7 @@ CSSValue* ConsumeSelfPositionOverflowPosition(
     IsPositionKeyword is_position_keyword) {
   DCHECK(is_position_keyword);
   CSSValueID id = range.Peek().Id();
-  if (IsAutoOrNormalOrStretch(id))
+  if (IsAuto(id) || IsNormalOrStretch(id))
     return CSSPropertyParserHelpers::ConsumeIdent(range);
 
   if (IsBaselineKeyword(id))
@@ -566,17 +570,26 @@ CSSValue* ConsumeSelfPositionOverflowPosition(
   return self_position;
 }
 
-CSSValue* ConsumeSimplifiedItemPosition(CSSParserTokenRange& range,
-                                        IsPositionKeyword is_position_keyword) {
+CSSValue* ConsumeSimplifiedDefaultPosition(
+    CSSParserTokenRange& range,
+    IsPositionKeyword is_position_keyword) {
   DCHECK(is_position_keyword);
   CSSValueID id = range.Peek().Id();
-  if (IsAutoOrNormalOrStretch(id) || is_position_keyword(id))
+  if (IsNormalOrStretch(id) || is_position_keyword(id))
     return CSSPropertyParserHelpers::ConsumeIdent(range);
 
   if (IsBaselineKeyword(id))
     return ConsumeBaselineKeyword(range);
 
   return nullptr;
+}
+
+CSSValue* ConsumeSimplifiedSelfPosition(CSSParserTokenRange& range,
+                                        IsPositionKeyword is_position_keyword) {
+  DCHECK(is_position_keyword);
+  return IsAuto(range.Peek().Id())
+             ? CSSPropertyParserHelpers::ConsumeIdent(range)
+             : ConsumeSimplifiedDefaultPosition(range, is_position_keyword);
 }
 
 CSSValue* ConsumeContentDistributionOverflowPosition(
@@ -2385,22 +2398,28 @@ bool ConsumePlaceAlignment(CSSParserTokenRange& range,
   DCHECK(!justify_value);
 
   bool is_baseline = IsBaselineKeyword(range.Peek().Id());
-  align_value = consume_alignment_value(range, IsSelfPositionKeyword);
+  bool is_content_alignment =
+      consume_alignment_value == ConsumeSimplifiedContentPosition;
+  align_value = consume_alignment_value(range, is_content_alignment
+                                                   ? IsContentPositionKeyword
+                                                   : IsSelfPositionKeyword);
   if (!align_value)
     return false;
 
   // justify-content property does not allow the <baseline-position> values.
-  if (consume_alignment_value == ConsumeSimplifiedContentPosition) {
+  if (is_content_alignment) {
     if (range.AtEnd() && is_baseline)
       return false;
     if (IsBaselineKeyword(range.Peek().Id()))
       return false;
   }
 
-  justify_value =
-      range.AtEnd()
-          ? align_value
-          : consume_alignment_value(range, IsSelfPositionOrLeftOrRightKeyword);
+  justify_value = range.AtEnd()
+                      ? align_value
+                      : consume_alignment_value(
+                            range, is_content_alignment
+                                       ? IsContentPositionOrLeftOrRightKeyword
+                                       : IsSelfPositionOrLeftOrRightKeyword);
 
   return justify_value && range.AtEnd();
 }

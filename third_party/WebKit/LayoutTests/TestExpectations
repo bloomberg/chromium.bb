@@ -2302,10 +2302,6 @@ crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-vertical-rl-03.
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-vertical-rl-04.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-vertical-rl-05.html [ Failure ]
 
-# [css-align]
-crbug.com/726148 external/wpt/css/css-align/default-alignment/parse-justify-items-002.html [ Failure ]
-crbug.com/726147 external/wpt/css/css-align/default-alignment/parse-justify-items-004.html [ Failure ]
-
 # [selectors-4]
 crbug.com/706118 external/wpt/css/selectors/focus-within-004.html [ Failure ]
 crbug.com/576815 external/wpt/css/selectors/selectors-dir-selector-ltr-001.html [ Failure ]

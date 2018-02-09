@@ -221,7 +221,8 @@ void ComputedStyle::PropagateIndependentInheritedProperties(
 StyleSelfAlignmentData ResolvedSelfAlignment(
     const StyleSelfAlignmentData& value,
     ItemPosition normal_value_behavior) {
-  if (value.GetPosition() == ItemPosition::kNormal ||
+  if (value.GetPosition() == ItemPosition::kLegacy ||
+      value.GetPosition() == ItemPosition::kNormal ||
       value.GetPosition() == ItemPosition::kAuto)
     return {normal_value_behavior, OverflowAlignment::kDefault};
   return value;

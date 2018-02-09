@@ -49,7 +49,9 @@ bool IsContentPositionOrLeftOrRightKeyword(CSSValueID);
 
 CSSValue* ConsumeSelfPositionOverflowPosition(CSSParserTokenRange&,
                                               IsPositionKeyword);
-CSSValue* ConsumeSimplifiedItemPosition(CSSParserTokenRange&,
+CSSValue* ConsumeSimplifiedDefaultPosition(CSSParserTokenRange&,
+                                           IsPositionKeyword);
+CSSValue* ConsumeSimplifiedSelfPosition(CSSParserTokenRange&,
                                         IsPositionKeyword);
 CSSValue* ConsumeContentDistributionOverflowPosition(CSSParserTokenRange&,
                                                      IsPositionKeyword);
