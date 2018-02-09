@@ -30,8 +30,8 @@ class DiceAccountsMenu : public ui::SimpleMenuModel::Delegate {
 
   // Builds the accounts menu. Each account from |accounts| is placed in a menu
   // item showing the email and the corresponding icon from |icons|. The last
-  // item in the accounts menu is the "Use another accounts" button. Separators
-  // are added at the top, bottom and between each item to increase the spacing.
+  // item in the accounts menu is the "Use another accounts" button. The spacing
+  // within the items is increased to match bubble |HoverButton|s.
   DiceAccountsMenu(const std::vector<AccountInfo>& accounts,
                    const std::vector<gfx::Image>& icons,
                    Callback account_selected_callback);
