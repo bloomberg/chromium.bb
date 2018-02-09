@@ -12,7 +12,7 @@
 int main(int argc, char** argv) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kSingleProcess);
-  gl::GLSurfaceTestSupport::InitializeOneOff();
-  android_webview::DeferredGpuCommandService::SetInstance();
+  gl::GLSurfaceTestSupport::InitializeNoExtensionsOneOff();
+  android_webview::DeferredGpuCommandService::GetInstance();
   return base::TestSuite(argc, argv).Run();
 }

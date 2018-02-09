@@ -8,6 +8,7 @@
 #include "android_webview/browser/render_thread_manager.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event.h"
@@ -17,19 +18,12 @@
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
-#include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
 #include "ui/gl/gl_share_group.h"
-#include "ui/gl/gl_switches.h"
 
 namespace android_webview {
-
-namespace {
-base::LazyInstance<scoped_refptr<DeferredGpuCommandService>>::DestructorAtExit
-    g_service = LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
 
 base::LazyInstance<base::ThreadLocalBoolean>::DestructorAtExit
     ScopedAllowGL::allow_gl;
@@ -43,53 +37,58 @@ ScopedAllowGL::ScopedAllowGL() {
   DCHECK(!allow_gl.Get().Get());
   allow_gl.Get().Set(true);
 
-  if (g_service.Get().get())
-    g_service.Get()->RunTasks();
+  DeferredGpuCommandService* service = DeferredGpuCommandService::GetInstance();
+  DCHECK(service);
+  service->RunTasks();
 }
 
 ScopedAllowGL::~ScopedAllowGL() {
   allow_gl.Get().Set(false);
 
-  DeferredGpuCommandService* service = g_service.Get().get();
-  if (service) {
-    service->RunTasks();
-    if (service->IdleQueueSize()) {
-      service->RequestProcessGL(true);
-    }
+  DeferredGpuCommandService* service = DeferredGpuCommandService::GetInstance();
+  DCHECK(service);
+  service->RunTasks();
+  if (service->IdleQueueSize()) {
+    service->RequestProcessGL(true);
   }
 }
 
 // static
-void DeferredGpuCommandService::SetInstance() {
-  if (!g_service.Get().get()) {
-    // TODO(zmo): Collect GPU info here instead.
-    gpu::GPUInfo gpu_info =
-        content::GpuDataManager::GetInstance()->GetGPUInfo();
-    DCHECK(base::CommandLine::InitializedForCurrentProcess());
-    gpu::GpuFeatureInfo gpu_feature_info = gpu::ComputeGpuFeatureInfo(
-        gpu_info,
-        false,  // ignore_gpu_blacklist
-        false,  // disable_gpu_driver_bug_workarounds
-        false,  // log_gpu_control_list_decisions
-        base::CommandLine::ForCurrentProcess(), nullptr);
-    g_service.Get() = new DeferredGpuCommandService(gpu_info, gpu_feature_info);
+DeferredGpuCommandService*
+DeferredGpuCommandService::CreateDeferredGpuCommandService() {
+  gpu::GPUInfo gpu_info;
+  gpu::GpuFeatureInfo gpu_feature_info;
+  DCHECK(base::CommandLine::InitializedForCurrentProcess());
+  gpu::GpuPreferences gpu_preferences =
+      content::GetGpuPreferencesFromCommandLine();
+  bool success = gpu::InitializeGLThreadSafe(
+      base::CommandLine::ForCurrentProcess(),
+      gpu_preferences.ignore_gpu_blacklist,
+      gpu_preferences.disable_gpu_driver_bug_workarounds,
+      gpu_preferences.log_gpu_control_list_decisions, &gpu_info,
+      &gpu_feature_info);
+  if (!success) {
+    LOG(FATAL) << "gpu::InitializeGLThreadSafe() failed.";
   }
+  return new DeferredGpuCommandService(gpu_preferences, gpu_info,
+                                       gpu_feature_info);
 }
 
 // static
 DeferredGpuCommandService* DeferredGpuCommandService::GetInstance() {
-  DCHECK(g_service.Get().get());
-  return g_service.Get().get();
+  static base::NoDestructor<scoped_refptr<DeferredGpuCommandService>> service(
+      CreateDeferredGpuCommandService());
+  return service->get();
 }
 
 DeferredGpuCommandService::DeferredGpuCommandService(
+    const gpu::GpuPreferences& gpu_preferences,
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info)
-    : gpu::InProcessCommandBuffer::Service(
-          content::GetGpuPreferencesFromCommandLine(),
-          nullptr,
-          nullptr,
-          gpu_feature_info),
+    : gpu::InProcessCommandBuffer::Service(gpu_preferences,
+                                           nullptr,
+                                           nullptr,
+                                           gpu_feature_info),
       sync_point_manager_(new gpu::SyncPointManager()),
       gpu_info_(gpu_info) {}
 
@@ -212,6 +211,10 @@ void DeferredGpuCommandService::Release() const {
 
 bool DeferredGpuCommandService::BlockThreadOnWaitSyncToken() const {
   return true;
+}
+
+bool DeferredGpuCommandService::CanSupportThreadedTextureMailbox() const {
+  return gpu_info_.can_support_threaded_texture_mailbox;
 }
 
 }  // namespace android_webview

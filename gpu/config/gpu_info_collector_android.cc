@@ -5,29 +5,11 @@
 #include "gpu/config/gpu_info_collector.h"
 
 #include <stddef.h>
-#include <stdint.h>
 
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
-#include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/native_library.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
-#include "gpu/config/gpu_switches.h"
-#include "ui/gl/egl_util.h"
-#include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_context.h"
-#include "ui/gl/gl_features.h"
-#include "ui/gl/gl_surface.h"
-
-#if BUILDFLAG(USE_STATIC_ANGLE)
-#include <EGL/egl.h>
-#endif  // BUILDFLAG(USE_STATIC_ANGLE)
 
 namespace {
 
@@ -72,212 +54,6 @@ std::string GetDriverVersionFromString(const std::string& version_string) {
   return driver_version.first;
 }
 
-gpu::CollectInfoResult CollectDriverInfo(gpu::GPUInfo* gpu_info) {
-#if BUILDFLAG(USE_STATIC_ANGLE)
-#pragma push_macro("eglGetProcAddress")
-#undef eglGetProcAddress
-#define LOOKUP_FUNC(x) \
-  auto x##Fn = reinterpret_cast<gl::x##Proc>(eglGetProcAddress(#x))
-#else  // BUILDFLAG(USE_STATIC_ANGLE)
-  // Go through the process of loading GL libs and initializing an EGL
-  // context so that we can get GL vendor/version/renderer strings.
-  base::NativeLibrary gles_library, egl_library;
-  base::NativeLibraryLoadError error;
-  gles_library =
-      base::LoadNativeLibrary(base::FilePath("libGLESv2.so"), &error);
-  if (!gles_library) {
-    LOG(ERROR) << "Failed to load libGLESv2.so";
-    return gpu::kCollectInfoFatalFailure;
-  }
-
-  egl_library = base::LoadNativeLibrary(base::FilePath("libEGL.so"), &error);
-  if (!egl_library) {
-    LOG(ERROR) << "Failed to load libEGL.so";
-    return gpu::kCollectInfoFatalFailure;
-  }
-
-  typedef void* (*eglGetProcAddressProc)(const char* name);
-
-  auto eglGetProcAddressFn = reinterpret_cast<eglGetProcAddressProc>(
-      base::GetFunctionPointerFromNativeLibrary(egl_library,
-                                                "eglGetProcAddress"));
-  if (!eglGetProcAddressFn) {
-    LOG(ERROR) << "eglGetProcAddress not found.";
-    return gpu::kCollectInfoFatalFailure;
-  }
-
-  auto get_func = [eglGetProcAddressFn, gles_library, egl_library](
-      const char* name) {
-    void *proc;
-    proc = base::GetFunctionPointerFromNativeLibrary(egl_library, name);
-    if (proc)
-      return proc;
-    proc = base::GetFunctionPointerFromNativeLibrary(gles_library, name);
-    if (proc)
-      return proc;
-    proc = eglGetProcAddressFn(name);
-    if (proc)
-      return proc;
-    LOG(FATAL) << "Failed to look up " << name;
-    return (void *)nullptr;
-  };
-
-#define LOOKUP_FUNC(x) auto x##Fn = reinterpret_cast<gl::x##Proc>(get_func(#x))
-#endif  // BUILDFLAG(USE_STATIC_ANGLE)
-
-  LOOKUP_FUNC(eglGetError);
-  LOOKUP_FUNC(eglQueryString);
-  LOOKUP_FUNC(eglGetCurrentContext);
-  LOOKUP_FUNC(eglGetCurrentDisplay);
-  LOOKUP_FUNC(eglGetCurrentSurface);
-  LOOKUP_FUNC(eglGetDisplay);
-  LOOKUP_FUNC(eglInitialize);
-  LOOKUP_FUNC(eglChooseConfig);
-  LOOKUP_FUNC(eglCreateContext);
-  LOOKUP_FUNC(eglCreatePbufferSurface);
-  LOOKUP_FUNC(eglMakeCurrent);
-  LOOKUP_FUNC(eglDestroySurface);
-  LOOKUP_FUNC(eglDestroyContext);
-
-  LOOKUP_FUNC(glGetString);
-  LOOKUP_FUNC(glGetIntegerv);
-
-#undef LOOKUP_FUNC
-#if BUILDFLAG(USE_STATIC_ANGLE)
-#pragma pop_macro("eglGetProcAddress")
-#endif  // BUILDFLAG(USE_STATIC_ANGLE)
-
-  EGLDisplay curr_display = eglGetCurrentDisplayFn();
-  EGLContext curr_context = eglGetCurrentContextFn();
-  EGLSurface curr_draw_surface = eglGetCurrentSurfaceFn(EGL_DRAW);
-  EGLSurface curr_read_surface = eglGetCurrentSurfaceFn(EGL_READ);
-
-  EGLDisplay temp_display = EGL_NO_DISPLAY;
-  EGLContext temp_context = EGL_NO_CONTEXT;
-  EGLSurface temp_surface = EGL_NO_SURFACE;
-
-  const EGLint kConfigAttribs[] = {
-      EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-      EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
-      EGL_NONE};
-  const EGLint kContextAttribs[] = {
-      EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT,
-          EGL_LOSE_CONTEXT_ON_RESET_EXT,
-      EGL_CONTEXT_CLIENT_VERSION, 2,
-      EGL_NONE};
-  const EGLint kSurfaceAttribs[] = {
-      EGL_WIDTH, 1,
-      EGL_HEIGHT, 1,
-      EGL_NONE};
-
-  EGLint major, minor;
-
-  EGLConfig config;
-  EGLint num_configs;
-
-  auto errorstr = [eglGetErrorFn]() {
-    uint32_t err = eglGetErrorFn();
-    return base::StringPrintf("%s (%x)", ui::GetEGLErrorString(err), err);
-  };
-
-  temp_display = eglGetDisplayFn(EGL_DEFAULT_DISPLAY);
-
-  if (temp_display == EGL_NO_DISPLAY) {
-    LOG(ERROR) << "failed to get display. " << errorstr();
-    return gpu::kCollectInfoFatalFailure;
-  }
-
-  eglInitializeFn(temp_display, &major, &minor);
-
-  bool egl_create_context_robustness_supported =
-      strstr(reinterpret_cast<const char*>(
-                 eglQueryStringFn(temp_display, EGL_EXTENSIONS)),
-             "EGL_EXT_create_context_robustness") != NULL;
-
-  if (!eglChooseConfigFn(temp_display, kConfigAttribs, &config, 1,
-                         &num_configs)) {
-    LOG(ERROR) << "failed to choose an egl config. " << errorstr();
-    return gpu::kCollectInfoFatalFailure;
-  }
-
-  temp_context = eglCreateContextFn(
-      temp_display, config, EGL_NO_CONTEXT,
-      kContextAttribs + (egl_create_context_robustness_supported ? 0 : 2));
-  if (temp_context == EGL_NO_CONTEXT) {
-    LOG(ERROR)
-        << "failed to create a temporary context for fetching driver strings. "
-        << errorstr();
-    return gpu::kCollectInfoFatalFailure;
-  }
-
-  temp_surface =
-      eglCreatePbufferSurfaceFn(temp_display, config, kSurfaceAttribs);
-
-  if (temp_surface == EGL_NO_SURFACE) {
-    eglDestroyContextFn(temp_display, temp_context);
-    LOG(ERROR)
-        << "failed to create a pbuffer surface for fetching driver strings. "
-        << errorstr();
-    return gpu::kCollectInfoFatalFailure;
-  }
-
-  eglMakeCurrentFn(temp_display, temp_surface, temp_surface, temp_context);
-
-  gpu_info->gl_vendor = reinterpret_cast<const char*>(glGetStringFn(GL_VENDOR));
-  gpu_info->gl_version =
-      reinterpret_cast<const char*>(glGetStringFn(GL_VERSION));
-  gpu_info->gl_renderer =
-      reinterpret_cast<const char*>(glGetStringFn(GL_RENDERER));
-  gpu_info->gl_extensions =
-      reinterpret_cast<const char*>(glGetStringFn(GL_EXTENSIONS));
-
-  std::string egl_extensions = eglQueryStringFn(temp_display, EGL_EXTENSIONS);
-
-  GLint max_samples = 0;
-  glGetIntegervFn(GL_MAX_SAMPLES, &max_samples);
-  gpu_info->max_msaa_samples = base::IntToString(max_samples);
-
-  bool supports_robustness =
-      gpu_info->gl_extensions.find("GL_EXT_robustness") != std::string::npos ||
-      gpu_info->gl_extensions.find("GL_KHR_robustness") != std::string::npos ||
-      gpu_info->gl_extensions.find("GL_ARB_robustness") != std::string::npos;
-
-  if (supports_robustness) {
-    glGetIntegervFn(
-        GL_RESET_NOTIFICATION_STRATEGY_ARB,
-        reinterpret_cast<GLint*>(&gpu_info->gl_reset_notification_strategy));
-  }
-
-  gpu_info->can_support_threaded_texture_mailbox =
-      egl_extensions.find("EGL_KHR_fence_sync") != std::string::npos &&
-      egl_extensions.find("EGL_KHR_image_base") != std::string::npos &&
-      egl_extensions.find("EGL_KHR_gl_texture_2D_image") != std::string::npos &&
-      gpu_info->gl_extensions.find("GL_OES_EGL_image") != std::string::npos;
-
-  std::string glsl_version_string;
-  if (const char* glsl_version_cstring = reinterpret_cast<const char*>(
-          glGetStringFn(GL_SHADING_LANGUAGE_VERSION)))
-    glsl_version_string = glsl_version_cstring;
-
-  std::string glsl_version = GetVersionFromString(glsl_version_string).first;
-  gpu_info->pixel_shader_version = glsl_version;
-  gpu_info->vertex_shader_version = glsl_version;
-
-  if (curr_display != EGL_NO_DISPLAY &&
-      curr_context != EGL_NO_CONTEXT) {
-    eglMakeCurrentFn(curr_display, curr_draw_surface, curr_read_surface,
-                     curr_context);
-  } else {
-    eglMakeCurrentFn(temp_display, EGL_NO_SURFACE, EGL_NO_SURFACE,
-                     EGL_NO_CONTEXT);
-  }
-
-  eglDestroySurfaceFn(temp_display, temp_surface);
-  eglDestroyContextFn(temp_display, temp_context);
-
-  return gpu::kCollectInfoSuccess;
-}
-
 }
 
 namespace gpu {
@@ -298,21 +74,8 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
 }
 
 CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
-  // When command buffer is compiled as a standalone library, the process might
-  // not have a Java environment.
-  if (base::android::IsVMInitialized()) {
-    gpu_info->machine_model_name =
-        base::android::BuildInfo::GetInstance()->model();
-  }
-
-  // Create a short-lived context on the UI thread to collect the GL strings.
-  // Make sure we restore the existing context if there is one.
-  CollectInfoResult result = CollectDriverInfo(gpu_info);
-  if (result == kCollectInfoSuccess)
-    result = CollectDriverInfoGL(gpu_info);
-  gpu_info->basic_info_state = result;
-  gpu_info->context_info_state = result;
-  return result;
+  NOTREACHED();
+  return kCollectInfoNone;
 }
 
 CollectInfoResult CollectDriverInfoGL(GPUInfo* gpu_info) {

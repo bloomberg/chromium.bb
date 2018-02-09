@@ -25,9 +25,6 @@
 class BackgroundModeManager;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
-#if defined(OS_ANDROID)
-class GpuDriverInfoManager;
-#endif
 class GpuModeManager;
 class IconManager;
 class IntranetRedirectDetector;
@@ -212,10 +209,6 @@ class BrowserProcess {
   virtual IconManager* icon_manager() = 0;
 
   virtual GpuModeManager* gpu_mode_manager() = 0;
-
-#if defined(OS_ANDROID)
-  virtual GpuDriverInfoManager* gpu_driver_info_manager() = 0;
-#endif
 
   // Create and bind remote debugging server to a given |ip| and |port|.
   // Passing empty |ip| results in binding to localhost:
