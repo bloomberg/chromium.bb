@@ -72,7 +72,7 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
   }
 
   message_center::MessageCenter* message_center() {
-    return g_browser_process->message_center();
+    return message_center::MessageCenter::Get();
   }
 
   Profile* profile() { return browser()->profile(); }

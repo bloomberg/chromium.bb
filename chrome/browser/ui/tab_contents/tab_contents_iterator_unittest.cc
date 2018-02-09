@@ -23,7 +23,6 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
-#include "ui/message_center/message_center.h"
 
 #if defined(OS_WIN)
 #include "components/metrics/metrics_pref_names.h"
@@ -175,7 +174,6 @@ TEST_F(BrowserListTest, MAYBE_AttemptRestart) {
   TestingPrefServiceSimple* testing_pref_service =
       profile_manager()->local_state()->Get();
 
-  message_center::MessageCenter::Initialize();
   EXPECT_FALSE(testing_pref_service->GetBoolean(prefs::kWasRestarted));
   chrome::AttemptRestart();
   EXPECT_TRUE(testing_pref_service->GetBoolean(prefs::kWasRestarted));

@@ -7,11 +7,16 @@
 #include <memory>
 #include <utility>
 
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
+#include "ui/message_center/message_center.h"
 
 // static
 NotificationUIManager* NotificationUIManager::Create() {
-  return new MessageCenterNotificationManager(
-      g_browser_process->message_center());
+  // If there's no MessageCenter, there should be no NotificationUIManager to
+  // manage it.
+  auto* message_center = message_center::MessageCenter::Get();
+  if (!message_center)
+    return nullptr;
+
+  return new MessageCenterNotificationManager(message_center);
 }

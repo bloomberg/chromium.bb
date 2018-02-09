@@ -264,6 +264,8 @@ void BrowserProcessImpl::Init() {
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 #endif
 
+  // TODO(estade): don't initialize the MessageCenter until we know it's needed
+  // (i.e. because a NotificationPlatformBridgeMessageCenter has been created).
   message_center::MessageCenter::Initialize();
 
   update_client::UpdateQueryParams::SetDelegate(
@@ -675,11 +677,6 @@ NotificationPlatformBridge* BrowserProcessImpl::notification_platform_bridge() {
 #else
   return nullptr;
 #endif
-}
-
-message_center::MessageCenter* BrowserProcessImpl::message_center() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return message_center::MessageCenter::Get();
 }
 
 policy::ChromeBrowserPolicyConnector*
@@ -1187,7 +1184,7 @@ void BrowserProcessImpl::CreateNotificationUIManager() {
 #if !defined(OS_ANDROID)
   DCHECK(!notification_ui_manager_);
   notification_ui_manager_.reset(NotificationUIManager::Create());
-  created_notification_ui_manager_ = true;
+  created_notification_ui_manager_ = !!notification_ui_manager_;
 #endif
 }
 

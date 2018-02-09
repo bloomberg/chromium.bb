@@ -34,7 +34,6 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "printing/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/message_center/message_center.h"
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 #include "chrome/browser/background/background_mode_manager.h"
@@ -302,10 +301,6 @@ NotificationUIManager* TestingBrowserProcess::notification_ui_manager() {
 NotificationPlatformBridge*
 TestingBrowserProcess::notification_platform_bridge() {
   return notification_platform_bridge_.get();
-}
-
-message_center::MessageCenter* TestingBrowserProcess::message_center() {
-  return message_center::MessageCenter::Get();
 }
 
 IntranetRedirectDetector* TestingBrowserProcess::intranet_redirect_detector() {

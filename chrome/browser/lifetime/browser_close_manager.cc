@@ -184,5 +184,8 @@ void BrowserCloseManager::CloseBrowsers() {
     }
   }
 
-  g_browser_process->notification_ui_manager()->CancelAll();
+  NotificationUIManager* notification_manager =
+      g_browser_process->notification_ui_manager();
+  if (notification_manager)
+    notification_manager->CancelAll();
 }
