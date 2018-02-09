@@ -12,6 +12,7 @@
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableSection.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/ClipPathClipper.h"
 #include "core/paint/FindPaintOffsetAndVisualRectNeedingUpdate.h"
@@ -419,6 +420,47 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
 
   fragment_data.SetVisualRect(new_visual_rect);
   fragment_data.SetLocationInBacking(new_location);
+
+  // For LayoutNG, update NGPaintFragments.
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  // TODO(kojii): multi-col needs additional logic. What's needed is to be
+  // figured out.
+  if (object.IsLayoutNGMixin()) {
+    if (NGPaintFragment* fragment = ToLayoutBlockFlow(object).PaintFragment())
+      fragment->SetVisualRect(new_visual_rect);
+
+    // Also check IsInline below. Inline block is LayoutBlockFlow but is also in
+    // an inline formatting context.
+  }
+
+  if (object.IsInline()) {
+    // An inline LayoutObject can produce multiple NGPaintFragment. Compute
+    // VisualRect for each fragment from |new_visual_rect|.
+    auto fragments = NGPaintFragment::InlineFragmentsFor(&object);
+    if (fragments.IsEmpty())
+      return;
+    // Compute the offset of |new_visual_rect| from the local coordinate.
+    LayoutRect local_object_rect = object.LocalVisualRect();
+    NGPhysicalOffset object_offset = NGPhysicalOffset(
+        new_visual_rect.Location() - local_object_rect.Location());
+    // Compute VisualRect for each fragment, by mapping each local VisualRect to
+    // the coordinate space of |new_visual_rect|.
+    // TODO(kojii): This logic needs to incorporate writing-mode.
+    for (NGPaintFragment* fragment : fragments) {
+      const NGPhysicalFragment& physical_fragment =
+          fragment->PhysicalFragment();
+      NGPhysicalOffsetRect fragment_rect = physical_fragment.SelfVisualRect();
+      fragment_rect.offset += object_offset;
+      // LayoutBox::LocalVisualRect() is in its local coordinate space, not in
+      // its inline formatting context, and that |object_offset| includes the
+      // offset to the inline container box.
+      if (!object.IsBox())
+        fragment_rect.offset += fragment->InlineOffsetToContainerBox();
+      fragment->SetVisualRect(fragment_rect.ToLayoutRect());
+    }
+  }
 }
 
 void PaintInvalidator::InvalidatePaint(
@@ -584,30 +626,10 @@ void PaintInvalidator::InvalidatePaint(
     }
   }
 
-  if (RuntimeEnabledFeatures::LayoutNGEnabled() && object.IsLayoutNGMixin()) {
-    // If the LayoutObject has a paint fragment, it means this LayoutObject and
-    // its descendants are painted by NG painter.
-    // In the inline NG paint phase, this is a block flow with inline children.
-    if (NGPaintFragment* paint_fragment =
-            ToLayoutBlockFlow(object).PaintFragment()) {
-      // At this point, PaintInvalidator has updated VisualRect of the
-      // LayoutObject. Update NGPaintFragment from the LayoutObject.
-      //
-      // VisualRect of descendants are not updated yet, but this code does not
-      // rely on them.
-      //
-      // TODO(kojii): When we have NGPaintFragment, we should walk
-      // NGPaintFragment tree instead, computes VisualRect from fragments,
-      // and update LayoutObject from it if needed for compat.
-      paint_fragment->UpdateVisualRectFromLayoutObject();
-    }
-  }
-
   if (object.MayNeedPaintInvalidationSubtree()) {
     context.subtree_flags |=
         PaintInvalidatorContext::kSubtreeInvalidationChecking;
   }
-
 
   if (context.subtree_flags && context.NeedsVisualRectUpdate(object)) {
     // If any subtree flag is set, we also need to pass needsVisualRectUpdate
