@@ -233,11 +233,8 @@ bool TrayPower::MaybeShowUsbChargerNotification() {
             message_center::NotifierId(
                 message_center::NotifierId::SYSTEM_COMPONENT, kNotifierPower),
             message_center::RichNotificationData(),
-            new UsbNotificationDelegate(this), kNotificationLowPowerBatteryIcon,
+            new UsbNotificationDelegate(this), kNotificationLowPowerChargerIcon,
             message_center::SystemNotificationWarningLevel::WARNING);
-    // TODO(tetsui): Workaround of https://crbug.com/757724. Remove after the
-    // bug is fixed.
-    notification->set_vector_small_image(gfx::kNoneIcon);
     notification->set_priority(message_center::SYSTEM_PRIORITY);
     message_center_->AddNotification(std::move(notification));
     return true;

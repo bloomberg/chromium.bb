@@ -98,9 +98,6 @@ std::unique_ptr<Notification> CreateNotification(
           message_center::RichNotificationData(), nullptr,
           GetBatteryImageMD(notification_state),
           GetWarningLevelMD(notification_state));
-  // TODO(tetsui): Workaround of https://crbug.com/757724. Remove after the
-  // bug is fixed.
-  notification->set_vector_small_image(gfx::kNoneIcon);
   notification->SetSystemPriority();
   return notification;
 }
