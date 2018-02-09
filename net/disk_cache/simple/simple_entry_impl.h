@@ -278,9 +278,8 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
       int stream_index,
       int offset,
       const CompletionCallback& completion_callback,
-      std::unique_ptr<SimpleSynchronousEntry::CRCRequest> crc_request,
       std::unique_ptr<SimpleEntryStat> entry_stat,
-      std::unique_ptr<int> result);
+      std::unique_ptr<SimpleSynchronousEntry::ReadResult> read_result);
 
   // Called after an asynchronous write completes.
   // |buf| parameter brings back a reference to net::IOBuffer to the original
@@ -311,11 +310,9 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
                              State state_to_restore,
                              int result);
 
-  // Reports reads result potentially refining status based on |crc_result|.
-  // |crc_result| is permitted to be null.
   void RecordReadResultConsideringChecksum(
-      int result,
-      std::unique_ptr<SimpleSynchronousEntry::CRCRequest> crc_result) const;
+      const std::unique_ptr<SimpleSynchronousEntry::ReadResult>& read_result)
+      const;
 
   // Called after completion of an operation, to either incoproprate file info
   // received from I/O done on the worker pool, or to simply bump the

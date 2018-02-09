@@ -118,29 +118,30 @@ class SimpleSynchronousEntry {
     uint32_t data_crc32;
   };
 
-  struct CRCRequest {
-    CRCRequest()
-        : data_crc32(0),
-          request_verify(false),
-          performed_verify(false),
-          verify_ok(false) {}
-
-    // Initial CRC, to be updated with CRC of block.
-    uint32_t data_crc32;
-
-    // If true, CRC should be verified if at end of stream.
-    bool request_verify;
-
-    // If true, CRC was actually checked.
-    bool performed_verify;
-    bool verify_ok;
-  };
-
   struct ReadRequest {
+    // Also sets request_update_crc to false.
     ReadRequest(int index_p, int offset_p, int buf_len_p);
     int index;
     int offset;
     int buf_len;
+
+    // Partial CRC of data immediately preceeding this read. Only relevant if
+    // request_update_crc is set.
+    uint32_t previous_crc32;
+    bool request_update_crc;
+    bool request_verify_crc;  // only relevant if request_update_crc is set
+  };
+
+  struct ReadResult {
+    ReadResult()
+        : crc_updated(false),
+          crc_performed_verify(false),
+          crc_verify_ok(false) {}
+    int result;
+    uint32_t updated_crc32;  // only relevant if crc_updated set
+    bool crc_updated;
+    bool crc_performed_verify;  // only relevant if crc_updated set
+    bool crc_verify_ok;         // only relevant if crc_updated set
   };
 
   struct WriteRequest {
@@ -217,13 +218,10 @@ class SimpleSynchronousEntry {
   //
   // All of these methods will put the //net return value into |*out_result|.
 
-  // |crc_request| can be nullptr here, to denote that no CRC computation is
-  // requested.
   void ReadData(const ReadRequest& in_entry_op,
-                CRCRequest* crc_request,
                 SimpleEntryStat* entry_stat,
                 net::IOBuffer* out_buf,
-                int* out_result);
+                ReadResult* out_result);
   void WriteData(const WriteRequest& in_entry_op,
                  net::IOBuffer* in_buf,
                  SimpleEntryStat* out_entry_stat,
