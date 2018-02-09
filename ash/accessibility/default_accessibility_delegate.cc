@@ -71,22 +71,6 @@ bool DefaultAccessibilityDelegate::IsTapDraggingEnabled() const {
   return tap_dragging_enabled_;
 }
 
-void DefaultAccessibilityDelegate::SetSelectToSpeakEnabled(bool enabled) {
-  select_to_speak_enabled_ = enabled;
-}
-
-bool DefaultAccessibilityDelegate::IsSelectToSpeakEnabled() const {
-  return select_to_speak_enabled_;
-}
-
-void DefaultAccessibilityDelegate::SetSwitchAccessEnabled(bool enabled) {
-  switch_access_enabled_ = enabled;
-}
-
-bool DefaultAccessibilityDelegate::IsSwitchAccessEnabled() const {
-  return switch_access_enabled_;
-}
-
 bool DefaultAccessibilityDelegate::ShouldShowAccessibilityMenu() const {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
