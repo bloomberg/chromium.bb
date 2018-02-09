@@ -1717,7 +1717,8 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Android.InstantApps.InstantAppsEligiblePageLoaded">
+<action name="Android.InstantApps.InstantAppsEligiblePageLoaded"
+    not_user_triggered="true">
   <owner>mariakhomenko@chromium.org</owner>
   <description>
     A page finished loading in Chrome that could have been loaded in an Instant
