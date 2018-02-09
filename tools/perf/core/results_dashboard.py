@@ -11,10 +11,7 @@
 import calendar
 import datetime
 import httplib
-try:
-   import httplib2
-except ImportError:
-  pass
+import httplib2
 import json
 import os
 import subprocess

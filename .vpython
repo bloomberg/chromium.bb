@@ -124,3 +124,10 @@ wheel: <
   name: "infra/python/wheels/simplejson/${vpython_platform}"
   version: "version:3.13.2"
 >
+
+# Used by:
+#   tools/perf/core/results_dashboard.py
+wheel: <
+  name: "infra/python/wheels/httplib2-py2_py3"
+  version: "version:0.10.3"
+>
