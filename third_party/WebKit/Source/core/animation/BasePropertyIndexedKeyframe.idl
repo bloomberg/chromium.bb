@@ -7,5 +7,5 @@
 dictionary BasePropertyIndexedKeyframe {
   (double? or sequence<double?>) offset = [];
   (DOMString or sequence<DOMString>) easing = [];
-  (CompositeOperation or sequence<CompositeOperation>) composite = [];
+  (CompositeOperation? or sequence<CompositeOperation?>) composite = [];
 };

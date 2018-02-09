@@ -35,10 +35,10 @@ class V8ObjectBuilder;
 //   * A non-null timing function, which applies to the period of time between
 //     this keyframe and the next keyframe in the same effect and influences
 //     the interpolation between them.
-//   * An optional keyframe-specific composite operation, which specifies a
-//     specific composite operation used to combine values in this keyframe
-//     with an underlying value. If this is missing, the keyframe effect
-//     composite operation is used instead.
+//   * An possibly-null keyframe-specific composite operation, which specifies a
+//     specific composite operation used to combine values in this keyframe with
+//     an underlying value. If this is null, the keyframe effect composite
+//     operation is used instead.
 //
 // For spec details, refer to: http://w3c.github.io/web-animations/#keyframe
 //
