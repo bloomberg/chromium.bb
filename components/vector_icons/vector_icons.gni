@@ -40,7 +40,9 @@ template("aggregate_vector_icons") {
       "vector_icons.cc.template",
       "vector_icons.h.template",
     ]
-    inputs = rebase_path(templates + invoker.icons, ".", invoker.icon_directory)
+    inputs =
+        rebase_path(templates + invoker.icons, ".", invoker.icon_directory) +
+        [ "//components/vector_icons/aggregate_vector_icons.py" ]
 
     outputs = [
       output_cc,

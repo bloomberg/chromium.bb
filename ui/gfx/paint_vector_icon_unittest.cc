@@ -51,7 +51,7 @@ TEST(VectorIconTest, RelativeMoveToAfterClose) {
       R_LINE_TO, 50, 51,
       END,
   };
-  const VectorIcon icon = {elements, nullptr};
+  const VectorIcon icon = {elements, arraysize(elements)};
 
   PaintVectorIcon(&canvas, icon, 100, SK_ColorMAGENTA);
   sk_sp<cc::PaintRecord> record = recorder.finishRecordingAsPicture();
@@ -88,7 +88,7 @@ TEST(VectorIconTest, FlipsInRtl) {
       CLOSE,
       END,
   };
-  const VectorIcon icon = {elements, nullptr};
+  const VectorIcon icon = {elements, arraysize(elements)};
   PaintVectorIcon(&canvas, icon, canvas_size, color);
 
   // Count the number of pixels in the canvas.

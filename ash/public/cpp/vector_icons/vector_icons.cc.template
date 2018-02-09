@@ -10,11 +10,11 @@
 #include "base/logging.h"
 #include "ui/gfx/vector_icon_types.h"
 
-#define PATH_ELEMENT_TEMPLATE(path_name, ...) \
-static constexpr gfx::PathElement path_name[] = {__VA_ARGS__};
+// Some of the icons in this target are passed over Mojo and thus rely on having
+// a unique ID, so make sure there's a prefix that won't be reused elsewhere.
+#define VECTOR_ICON_ID_PREFIX "ash_public::"
 
-#define VECTOR_ICON_TEMPLATE(icon_name, path_name, path_name_1x) \
-const gfx::VectorIcon icon_name = { path_name , path_name_1x };
+#include "components/vector_icons/cc_macros.h"
 
 namespace ash {
 
