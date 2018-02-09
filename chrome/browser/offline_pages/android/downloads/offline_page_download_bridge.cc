@@ -21,6 +21,7 @@
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/offline_pages/recent_tab_helper.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
@@ -224,20 +225,7 @@ content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter(
                     web_contents->GetMainFrame()->GetRoutingID());
 }
 
-void OnOfflinePageAcquireFileAccessPermissionDone(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-    bool granted) {
-  if (!granted)
-    return;
-
-  content::WebContents* web_contents = web_contents_getter.Run();
-  if (!web_contents)
-    return;
-
-  GURL url = web_contents->GetLastCommittedURL();
-  if (url.is_empty())
-    return;
-
+void DownloadAsFile(content::WebContents* web_contents, const GURL& url) {
   content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(
       web_contents->GetBrowserContext());
   std::unique_ptr<content::DownloadUrlParameters> dl_params(
@@ -257,6 +245,40 @@ void OnOfflinePageAcquireFileAccessPermissionDone(
   dl_params->set_prompt(false);
   dl_params->set_download_source(download::DownloadSource::OFFLINE_PAGE);
   dlm->DownloadUrl(std::move(dl_params));
+}
+
+void OnOfflinePageAcquireFileAccessPermissionDone(
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const ScopedJavaGlobalRef<jobject>& j_tab_ref,
+    const std::string& origin,
+    bool granted) {
+  if (!granted)
+    return;
+
+  content::WebContents* web_contents = web_contents_getter.Run();
+  if (!web_contents)
+    return;
+
+  GURL url = web_contents->GetLastCommittedURL();
+  if (url.is_empty())
+    return;
+
+  // If the page is not a HTML page, route to DownloadManager.
+  if (!offline_pages::OfflinePageUtils::CanDownloadAsOfflinePage(
+          url, web_contents->GetContentsMimeType())) {
+    DownloadAsFile(web_contents, url);
+    return;
+  }
+
+  // Otherwise, save the HTML page as archive.
+  GURL original_url =
+      offline_pages::OfflinePageUtils::GetOriginalURLFromWebContents(
+          web_contents);
+  OfflinePageUtils::CheckDuplicateDownloads(
+      chrome::GetBrowserContextRedirectedInIncognito(
+          web_contents->GetBrowserContext()),
+      url,
+      base::Bind(&DuplicateCheckDone, url, original_url, j_tab_ref, origin));
 }
 
 }  // namespace
@@ -286,32 +308,17 @@ void JNI_OfflinePageDownloadBridge_StartDownload(
   if (!web_contents)
     return;
 
-  GURL url = web_contents->GetLastCommittedURL();
-  if (url.is_empty())
-    return;
   std::string origin = ConvertJavaStringToUTF8(env, j_origin);
-
-  GURL original_url =
-      offline_pages::OfflinePageUtils::GetOriginalURLFromWebContents(
-          web_contents);
-
-  // If the page is not a HTML page, route to DownloadManager.
-  if (!offline_pages::OfflinePageUtils::CanDownloadAsOfflinePage(
-          url, web_contents->GetContentsMimeType())) {
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter =
-        GetWebContentsGetter(web_contents);
-    DownloadControllerBase::Get()->AcquireFileAccessPermission(
-        web_contents_getter,
-        base::Bind(&OnOfflinePageAcquireFileAccessPermissionDone,
-                   web_contents_getter));
-    return;
-  }
-
   ScopedJavaGlobalRef<jobject> j_tab_ref(env, j_tab);
 
-  OfflinePageUtils::CheckDuplicateDownloads(
-      tab->GetProfile()->GetOriginalProfile(), url,
-      base::Bind(&DuplicateCheckDone, url, original_url, j_tab_ref, origin));
+  // Ensure that the storage permission is granted since the target file
+  // is going to be placed in the public directory.
+  content::ResourceRequestInfo::WebContentsGetter web_contents_getter =
+      GetWebContentsGetter(web_contents);
+  DownloadControllerBase::Get()->AcquireFileAccessPermission(
+      web_contents_getter,
+      base::Bind(&OnOfflinePageAcquireFileAccessPermissionDone,
+                 web_contents_getter, j_tab_ref, origin));
 }
 
 static jlong JNI_OfflinePageDownloadBridge_Init(

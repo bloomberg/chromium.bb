@@ -19,6 +19,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
@@ -41,6 +42,10 @@
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/download/mock_download_controller.h"
+#endif
 
 namespace offline_pages {
 namespace {
@@ -81,6 +86,7 @@ class OfflinePageUtilsTest
   ~OfflinePageUtilsTest() override;
 
   void SetUp() override;
+  void TearDown() override;
   void RunUntilIdle();
 
   void SavePage(const GURL& url,
@@ -123,6 +129,9 @@ class OfflinePageUtilsTest
   std::unique_ptr<content::WebContents> web_contents_;
   base::test::ScopedFeatureList scoped_feature_list_;
   int64_t last_cache_size_;
+#if defined(OS_ANDROID)
+  chrome::android::MockDownloadController download_controller_;
+#endif
 };
 
 OfflinePageUtilsTest::OfflinePageUtilsTest() = default;
@@ -149,6 +158,17 @@ void OfflinePageUtilsTest::SetUp() {
   // Make sure to create offline pages and requests.
   CreateOfflinePages();
   CreateRequests();
+
+// This is needed in order to skip the logic to request storage permission.
+#if defined(OS_ANDROID)
+  DownloadControllerBase::SetDownloadControllerBase(&download_controller_);
+#endif
+}
+
+void OfflinePageUtilsTest::TearDown() {
+#if defined(OS_ANDROID)
+  DownloadControllerBase::SetDownloadControllerBase(nullptr);
+#endif
 }
 
 void OfflinePageUtilsTest::RunUntilIdle() {
@@ -344,6 +364,17 @@ TEST_F(OfflinePageUtilsTest, ScheduleDownload) {
   RunUntilIdle();
   EXPECT_EQ(1, FindRequestByNamespaceAndURL(kDownloadNamespace, kTestPage4Url));
 }
+
+#if defined(OS_ANDROID)
+TEST_F(OfflinePageUtilsTest, ScheduleDownloadWithFailedFileAcecssRequest) {
+  DownloadControllerBase::Get()->SetApproveFileAccessRequestForTesting(false);
+  OfflinePageUtils::ScheduleDownload(
+      web_contents(), kDownloadNamespace, kTestPage4Url,
+      OfflinePageUtils::DownloadUIActionFlags::NONE);
+  RunUntilIdle();
+  EXPECT_EQ(0, FindRequestByNamespaceAndURL(kDownloadNamespace, kTestPage4Url));
+}
+#endif
 
 TEST_F(OfflinePageUtilsTest, EqualsIgnoringFragment) {
   EXPECT_TRUE(OfflinePageUtils::EqualsIgnoringFragment(
