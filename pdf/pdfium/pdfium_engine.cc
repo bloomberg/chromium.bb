@@ -670,6 +670,34 @@ pp::MouseInputEvent NormalizeMouseEvent(pp::Instance* instance,
   return normalized_event;
 }
 
+// These values are intended for the JS to handle, and it doesn't have access
+// to the PDFDEST_VIEW_* defines.
+std::string ConvertViewIntToViewString(unsigned long view_int) {
+  switch (view_int) {
+    case PDFDEST_VIEW_XYZ:
+      return "XYZ";
+    case PDFDEST_VIEW_FIT:
+      return "Fit";
+    case PDFDEST_VIEW_FITH:
+      return "FitH";
+    case PDFDEST_VIEW_FITV:
+      return "FitV";
+    case PDFDEST_VIEW_FITR:
+      return "FitR";
+    case PDFDEST_VIEW_FITB:
+      return "FitB";
+    case PDFDEST_VIEW_FITBH:
+      return "FitBH";
+    case PDFDEST_VIEW_FITBV:
+      return "FitBV";
+    case PDFDEST_VIEW_UNKNOWN_MODE:
+      return "";
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
 }  // namespace
 
 bool InitializeSDK() {
@@ -2698,7 +2726,8 @@ pp::VarDictionary PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
   return dict;
 }
 
-int PDFiumEngine::GetNamedDestinationPage(const std::string& destination) {
+base::Optional<PDFEngine::NamedDestination> PDFiumEngine::GetNamedDestination(
+    const std::string& destination) {
   // Look for the destination.
   FPDF_DEST dest = FPDF_GetNamedDestByName(doc_, destination.c_str());
   if (!dest) {
@@ -2710,7 +2739,20 @@ int PDFiumEngine::GetNamedDestinationPage(const std::string& destination) {
     if (bookmark)
       dest = FPDFBookmark_GetDest(doc_, bookmark);
   }
-  return dest ? FPDFDest_GetDestPageIndex(doc_, dest) : -1;
+
+  if (!dest)
+    return {};
+
+  int page = FPDFDest_GetDestPageIndex(doc_, dest);
+  if (page < 0)
+    return {};
+
+  PDFEngine::NamedDestination result;
+  result.page = page;
+  unsigned long view_int =
+      FPDFDest_GetView(dest, &result.num_params, result.params);
+  result.view = ConvertViewIntToViewString(view_int);
+  return result;
 }
 
 gfx::PointF PDFiumEngine::TransformPagePoint(int page_index,

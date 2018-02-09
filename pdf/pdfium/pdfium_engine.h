@@ -79,7 +79,8 @@ class PDFiumEngine : public PDFEngine,
   void SelectAll() override;
   int GetNumberOfPages() override;
   pp::VarArray GetBookmarks() override;
-  int GetNamedDestinationPage(const std::string& destination) override;
+  base::Optional<PDFEngine::NamedDestination> GetNamedDestination(
+      const std::string& destination) override;
   gfx::PointF TransformPagePoint(int page_index,
                                  const gfx::PointF& page_xy) override;
   int GetMostVisiblePage() override;

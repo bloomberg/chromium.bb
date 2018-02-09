@@ -671,12 +671,14 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     PostMessage(reply);
   } else if (type == kJSGetNamedDestinationType &&
              dict.Get(pp::Var(kJSGetNamedDestination)).is_string()) {
-    int page_number = engine_->GetNamedDestinationPage(
-        dict.Get(pp::Var(kJSGetNamedDestination)).AsString());
+    base::Optional<PDFEngine::NamedDestination> named_destination =
+        engine_->GetNamedDestination(
+            dict.Get(pp::Var(kJSGetNamedDestination)).AsString());
     pp::VarDictionary reply;
     reply.Set(pp::Var(kType), pp::Var(kJSGetNamedDestinationReplyType));
-    if (page_number >= 0)
-      reply.Set(pp::Var(kJSNamedDestinationPageNumber), page_number);
+    reply.Set(
+        pp::Var(kJSNamedDestinationPageNumber),
+        named_destination ? static_cast<int>(named_destination->page) : -1);
     PostMessage(reply);
   } else if (type == kJSTransformPagePointType &&
              dict.Get(pp::Var(kJSPageNumber)).is_int() &&
