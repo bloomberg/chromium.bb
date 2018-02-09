@@ -29,6 +29,7 @@
 #include "base/single_thread_task_runner.h"
 #include "modules/webdatabase/DatabaseBasicTypes.h"
 #include "modules/webdatabase/DatabaseError.h"
+#include "modules/webdatabase/SQLTransaction.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
 #include "modules/webdatabase/sqlite/SQLiteDatabase.h"
 #include "platform/bindings/ScriptWrappable.h"
@@ -43,13 +44,9 @@ class ChangeVersionData;
 class DatabaseAuthorizer;
 class DatabaseContext;
 class ExecutionContext;
-class SQLTransaction;
-class SQLTransactionCallback;
 class SQLTransactionClient;
 class SQLTransactionCoordinator;
-class SQLTransactionErrorCallback;
 class V8DatabaseCallback;
-class VoidCallback;
 
 class Database final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -77,15 +74,19 @@ class Database final : public ScriptWrappable {
   String version() const;
   void changeVersion(const String& old_version,
                      const String& new_version,
-                     SQLTransactionCallback*,
-                     SQLTransactionErrorCallback*,
-                     VoidCallback* success_callback);
-  void transaction(SQLTransactionCallback*,
-                   SQLTransactionErrorCallback*,
-                   VoidCallback* success_callback);
-  void readTransaction(SQLTransactionCallback*,
-                       SQLTransactionErrorCallback*,
-                       VoidCallback* success_callback);
+                     V8SQLTransactionCallback*,
+                     V8SQLTransactionErrorCallback*,
+                     V8VoidCallback* success_callback);
+  void transaction(V8SQLTransactionCallback*,
+                   V8SQLTransactionErrorCallback*,
+                   V8VoidCallback* success_callback);
+  void readTransaction(V8SQLTransactionCallback*,
+                       V8SQLTransactionErrorCallback*,
+                       V8VoidCallback* success_callback);
+
+  void PerformTransaction(SQLTransaction::OnProcessCallback*,
+                          SQLTransaction::OnErrorCallback*,
+                          SQLTransaction::OnSuccessCallback*);
 
   bool Opened();
   bool IsNew() const { return new_; }
@@ -148,9 +149,9 @@ class Database final : public ScriptWrappable {
   void SetCachedVersion(const String&);
   bool GetActualVersionForTransaction(String& version);
 
-  void RunTransaction(SQLTransactionCallback*,
-                      SQLTransactionErrorCallback*,
-                      VoidCallback* success_callback,
+  void RunTransaction(SQLTransaction::OnProcessCallback*,
+                      SQLTransaction::OnErrorCallback*,
+                      SQLTransaction::OnSuccessCallback*,
                       bool read_only,
                       const ChangeVersionData* = nullptr);
   Vector<String> PerformGetTableNames();

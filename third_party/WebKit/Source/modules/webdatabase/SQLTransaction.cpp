@@ -29,40 +29,64 @@
 #include "modules/webdatabase/SQLTransaction.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8VoidCallback.h"
+#include "bindings/modules/v8/V8SQLTransactionCallback.h"
+#include "bindings/modules/v8/V8SQLTransactionErrorCallback.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/html/VoidCallback.h"
 #include "core/probe/CoreProbes.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseThread.h"
 #include "modules/webdatabase/SQLError.h"
-#include "modules/webdatabase/SQLStatementCallback.h"
-#include "modules/webdatabase/SQLStatementErrorCallback.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
-#include "modules/webdatabase/SQLTransactionCallback.h"
 #include "modules/webdatabase/SQLTransactionClient.h"  // FIXME: Should be used in the backend only.
-#include "modules/webdatabase/SQLTransactionErrorCallback.h"
 #include "modules/webdatabase/StorageLog.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
 
-SQLTransaction* SQLTransaction::Create(
-    Database* db,
-    SQLTransactionCallback* callback,
-    VoidCallback* success_callback,
-    SQLTransactionErrorCallback* error_callback,
-    bool read_only) {
+void SQLTransaction::OnProcessV8Impl::Trace(blink::Visitor* visitor) {
+  visitor->Trace(callback_);
+  OnProcessCallback::Trace(visitor);
+}
+
+bool SQLTransaction::OnProcessV8Impl::OnProcess(SQLTransaction* transaction) {
+  return callback_->handleEvent(transaction);
+}
+
+void SQLTransaction::OnSuccessV8Impl::Trace(blink::Visitor* visitor) {
+  visitor->Trace(callback_);
+  OnSuccessCallback::Trace(visitor);
+}
+
+void SQLTransaction::OnSuccessV8Impl::OnSuccess() {
+  callback_->handleEvent();
+}
+
+void SQLTransaction::OnErrorV8Impl::Trace(blink::Visitor* visitor) {
+  visitor->Trace(callback_);
+  OnErrorCallback::Trace(visitor);
+}
+
+bool SQLTransaction::OnErrorV8Impl::OnError(SQLError* error) {
+  return callback_->handleEvent(error);
+}
+
+SQLTransaction* SQLTransaction::Create(Database* db,
+                                       OnProcessCallback* callback,
+                                       OnSuccessCallback* success_callback,
+                                       OnErrorCallback* error_callback,
+                                       bool read_only) {
   return new SQLTransaction(db, callback, success_callback, error_callback,
                             read_only);
 }
 
 SQLTransaction::SQLTransaction(Database* db,
-                               SQLTransactionCallback* callback,
-                               VoidCallback* success_callback,
-                               SQLTransactionErrorCallback* error_callback,
+                               OnProcessCallback* callback,
+                               OnSuccessCallback* success_callback,
+                               OnErrorCallback* error_callback,
                                bool read_only)
     : database_(db),
       callback_(callback),
@@ -158,9 +182,9 @@ SQLTransactionState SQLTransaction::DeliverTransactionCallback() {
 
   // Spec 4.3.2 4: Invoke the transaction callback with the new SQLTransaction
   // object.
-  if (SQLTransactionCallback* callback = callback_.Release()) {
+  if (OnProcessCallback* callback = callback_.Release()) {
     execute_sql_allowed_ = true;
-    should_deliver_error_callback = !callback->handleEvent(this);
+    should_deliver_error_callback = !callback->OnProcess(this);
     execute_sql_allowed_ = false;
   }
 
@@ -183,7 +207,7 @@ SQLTransactionState SQLTransaction::DeliverTransactionErrorCallback() {
 
   // Spec 4.3.2.10: If exists, invoke error callback with the last
   // error to have occurred in this transaction.
-  if (SQLTransactionErrorCallback* error_callback = error_callback_.Release()) {
+  if (OnErrorCallback* error_callback = error_callback_.Release()) {
     // If we get here with an empty m_transactionError, then the backend
     // must be waiting in the idle state waiting for this state to finish.
     // Hence, it's thread safe to fetch the backend transactionError without
@@ -193,7 +217,7 @@ SQLTransactionState SQLTransaction::DeliverTransactionErrorCallback() {
       transaction_error_ = SQLErrorData::Create(*backend_->TransactionError());
     }
     DCHECK(transaction_error_);
-    error_callback->handleEvent(SQLError::Create(*transaction_error_));
+    error_callback->OnError(SQLError::Create(*transaction_error_));
 
     transaction_error_ = nullptr;
   }
@@ -245,8 +269,8 @@ SQLTransactionState SQLTransaction::DeliverSuccessCallback() {
   probe::AsyncTask async_task(database_->GetExecutionContext(), this);
 
   // Spec 4.3.2.8: Deliver success callback.
-  if (VoidCallback* success_callback = success_callback_.Release())
-    success_callback->handleEvent();
+  if (OnSuccessCallback* success_callback = success_callback_.Release())
+    success_callback->OnSuccess();
 
   ClearCallbacks();
 
@@ -277,8 +301,8 @@ void SQLTransaction::PerformPendingCallback() {
 
 void SQLTransaction::ExecuteSQL(const String& sql_statement,
                                 const Vector<SQLValue>& arguments,
-                                SQLStatementCallback* callback,
-                                SQLStatementErrorCallback* callback_error,
+                                SQLStatement::OnSuccessCallback* callback,
+                                SQLStatement::OnErrorCallback* callback_error,
                                 ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   if (!execute_sql_allowed_) {
@@ -314,8 +338,8 @@ void SQLTransaction::executeSql(ScriptState* script_state,
 void SQLTransaction::executeSql(ScriptState* script_state,
                                 const String& sql_statement,
                                 const Optional<Vector<ScriptValue>>& arguments,
-                                SQLStatementCallback* callback,
-                                SQLStatementErrorCallback* callback_error,
+                                V8SQLStatementCallback* callback,
+                                V8SQLStatementErrorCallback* callback_error,
                                 ExceptionState& exception_state) {
   Vector<SQLValue> sql_values;
   if (arguments) {
@@ -330,7 +354,9 @@ void SQLTransaction::executeSql(ScriptState* script_state,
       }
     }
   }
-  ExecuteSQL(sql_statement, sql_values, callback, callback_error,
+  ExecuteSQL(sql_statement, sql_values,
+             SQLStatement::OnSuccessV8Impl::Create(callback),
+             SQLStatement::OnErrorV8Impl::Create(callback_error),
              exception_state);
 }
 
@@ -364,7 +390,7 @@ void SQLTransaction::ClearCallbacks() {
   error_callback_.Clear();
 }
 
-SQLTransactionErrorCallback* SQLTransaction::ReleaseErrorCallback() {
+SQLTransaction::OnErrorCallback* SQLTransaction::ReleaseErrorCallback() {
   return error_callback_.Release();
 }
 
