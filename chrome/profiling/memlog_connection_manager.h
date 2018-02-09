@@ -71,10 +71,9 @@ class MemlogConnectionManager {
 
   void OnNewConnection(base::ProcessId pid,
                        mojom::ProfilingClientPtr client,
-                       mojo::ScopedHandle sender_pipe_end,
                        mojo::ScopedHandle receiver_pipe_end,
                        mojom::ProcessType process_type,
-                       profiling::mojom::StackMode stack_mode);
+                       mojom::ProfilingParamsPtr params);
 
   std::vector<base::ProcessId> GetConnectionPids();
 

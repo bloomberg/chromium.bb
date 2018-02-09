@@ -49,15 +49,14 @@ void ProfilingClient::BindToInterface(mojom::ProfilingClientRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void ProfilingClient::StartProfiling(mojo::ScopedHandle memlog_sender_pipe,
-                                     mojom::StackMode stack_mode) {
+void ProfilingClient::StartProfiling(mojom::ProfilingParamsPtr params) {
   if (started_profiling_)
     return;
   started_profiling_ = true;
 
   base::PlatformFile platform_file;
   CHECK_EQ(MOJO_RESULT_OK, mojo::UnwrapPlatformFile(
-                               std::move(memlog_sender_pipe), &platform_file));
+                               std::move(params->sender_pipe), &platform_file));
 
   base::ScopedPlatformFile scoped_platform_file(platform_file);
   memlog_sender_pipe_.reset(
@@ -73,7 +72,7 @@ void ProfilingClient::StartProfiling(mojo::ScopedHandle memlog_sender_pipe,
   }
 
   base::trace_event::MallocDumpProvider::GetInstance()->DisableMetrics();
-  InitAllocatorShim(memlog_sender_pipe_.get(), stack_mode);
+  InitAllocatorShim(memlog_sender_pipe_.get(), std::move(params));
 }
 
 void ProfilingClient::FlushMemlogPipe(uint32_t barrier_id) {

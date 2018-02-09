@@ -353,11 +353,14 @@ void ProfilingProcessHost::AddClientToProfilingService(
   // This code doesn't actually hang onto the client_for_browser interface
   // poiner beyond sending this message to start since there are no other
   // messages we need to send.
+  mojom::ProfilingParamsPtr params = mojom::ProfilingParams::New();
+  params->sender_pipe =
+      mojo::WrapPlatformFile(pipes.PassSender().release().handle);
+  params->stack_mode = stack_mode_;
   profiling_service_->AddProfilingClient(
       pid, std::move(client),
-      mojo::WrapPlatformFile(pipes.PassSender().release().handle),
       mojo::WrapPlatformFile(pipes.PassReceiver().release().handle),
-      process_type, stack_mode_);
+      process_type, std::move(params));
 }
 
 // static

@@ -19,17 +19,13 @@ class MemlogSenderPipe;
 
 // The ProfilingClient listens on the interface for a StartProfiling message. On
 // receiving the message, it begins profiling the current process.
-// It is also possible to use the ProfilingClient to begin profiling the current
-// process without connecting to the service manager interface, if the caller
-// has a |sender_pipe| to pass to StartProfiling.
 class ProfilingClient : public mojom::ProfilingClient {
  public:
   ProfilingClient();
   ~ProfilingClient() override;
 
   // mojom::ProfilingClient overrides:
-  void StartProfiling(mojo::ScopedHandle memlog_sender_pipe,
-                      mojom::StackMode stack_mode) override;
+  void StartProfiling(mojom::ProfilingParamsPtr params) override;
   void FlushMemlogPipe(uint32_t barrier_id) override;
 
   void OnServiceManagerConnected(content::ServiceManagerConnection* connection);
