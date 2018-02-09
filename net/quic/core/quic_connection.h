@@ -914,10 +914,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   QuicFramer framer_;
 
-  // If true, server will respect client's connectivity probing packets and send
-  // connectivity probing to the source address of the received probing.
-  bool server_reply_to_connectivity_probes_;
-
   // Contents received in the current packet, especially used to identify
   // whether the current packet is a padded PING packet.
   PacketContent current_packet_content_;

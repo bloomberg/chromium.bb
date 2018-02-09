@@ -1321,13 +1321,8 @@ TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtServer) {
                                   kPeerAddress);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
 
-  if (GetQuicReloadableFlag(quic_server_reply_to_connectivity_probing)) {
-    EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
-    EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(1);
-  } else {
-    EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(1);
-    EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(0);
-  }
+  EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
+  EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(1);
 
   // Process a padded PING packet from a new peer address on server side
   // is effectively receiving a connectivity probing.
@@ -1343,11 +1338,7 @@ TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtServer) {
       clock_.Now()));
 
   ProcessReceivedPacket(kSelfAddress, kNewPeerAddress, *received);
-  if (GetQuicReloadableFlag(quic_server_reply_to_connectivity_probing)) {
-    EXPECT_EQ(kPeerAddress, connection_.peer_address());
-  } else {
-    EXPECT_EQ(kNewPeerAddress, connection_.peer_address());
-  }
+  EXPECT_EQ(kPeerAddress, connection_.peer_address());
 
   // Process another packet with the old peer address on server side will not
   // start peer migration.
@@ -1372,13 +1363,9 @@ TEST_P(QuicConnectionTest, MigrateAfterProbingAtServer) {
                                   kPeerAddress);
   EXPECT_EQ(kPeerAddress, connection_.peer_address());
 
-  if (GetQuicReloadableFlag(quic_server_reply_to_connectivity_probing)) {
-    EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
-    EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(1);
-  } else {
-    EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(1);
-    EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(0);
-  }
+  EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
+  EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(1);
+
   // Process a padded PING packet from a new peer address on server side
   // is effectively receiving a connectivity probing.
   const QuicSocketAddress kNewPeerAddress =
@@ -1392,19 +1379,11 @@ TEST_P(QuicConnectionTest, MigrateAfterProbingAtServer) {
                           probing_packet->encrypted_length),
       clock_.Now()));
   ProcessReceivedPacket(kSelfAddress, kNewPeerAddress, *received);
-  if (GetQuicReloadableFlag(quic_server_reply_to_connectivity_probing)) {
-    EXPECT_EQ(kPeerAddress, connection_.peer_address());
-  } else {
-    EXPECT_EQ(kNewPeerAddress, connection_.peer_address());
-  }
+  EXPECT_EQ(kPeerAddress, connection_.peer_address());
 
   // Process another non-probing packet with the new peer address on server
   // side will start peer migration.
-  if (GetQuicReloadableFlag(quic_server_reply_to_connectivity_probing)) {
-    EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(1);
-  } else {
-    EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
-  }
+  EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(1);
 
   ProcessFramePacketWithAddresses(QuicFrame(&stream_frame), kSelfAddress,
                                   kNewPeerAddress);
@@ -1461,9 +1440,7 @@ TEST_P(QuicConnectionTest, ReceiveConnectivityProbingAtClient) {
   // Process a padded PING packet with a different self address on client side
   // is effectively receiving a connectivity probing.
   EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(0);
-  if (GetQuicReloadableFlag(quic_server_reply_to_connectivity_probing)) {
-    EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(1);
-  }
+  EXPECT_CALL(visitor_, OnConnectivityProbeReceived(_, _)).Times(1);
 
   const QuicSocketAddress kNewSelfAddress =
       QuicSocketAddress(QuicIpAddress::Loopback6(), /*port=*/23456);

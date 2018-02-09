@@ -182,8 +182,6 @@ QuicConnection::QuicConnection(
     : framer_(supported_versions,
               helper->GetClock()->ApproximateNow(),
               perspective),
-      server_reply_to_connectivity_probes_(
-          GetQuicReloadableFlag(quic_server_reply_to_connectivity_probing)),
       current_packet_content_(NO_FRAMES_RECEIVED),
       current_peer_migration_type_(NO_CHANGE),
       helper_(helper),
@@ -654,15 +652,12 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
     return false;
   }
 
-  if (server_reply_to_connectivity_probes_) {
-    QUIC_FLAG_COUNT_N(
-        quic_reloadable_flag_quic_server_reply_to_connectivity_probing, 1, 4);
-    // Initialize the current packet content stats.
-    current_packet_content_ = NO_FRAMES_RECEIVED;
-    current_peer_migration_type_ = NO_CHANGE;
-  }
+  // Initialize the current packet content stats.
+  current_packet_content_ = NO_FRAMES_RECEIVED;
+  current_peer_migration_type_ = NO_CHANGE;
   AddressChangeType peer_migration_type = QuicUtils::DetermineAddressChangeType(
       peer_address_, last_packet_source_address_);
+
   // Initiate connection migration if a non-reordered packet is received from a
   // new address.
   if (header.packet_number > received_packet_manager_.GetLargestObserved() &&
@@ -675,17 +670,10 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
     } else if (active_peer_migration_type_ == NO_CHANGE) {
       // Only migrate connection to a new peer address if there is no
       // pending change underway.
-      if (server_reply_to_connectivity_probes_) {
-        // Cache the current migration change type, which will start peer
-        // migration immediately if this packet is not a connectivity probing
-        // packet.
-        QUIC_FLAG_COUNT_N(
-            quic_reloadable_flag_quic_server_reply_to_connectivity_probing, 2,
-            4);
-        current_peer_migration_type_ = peer_migration_type;
-      } else {
-        StartPeerMigration(peer_migration_type);
-      }
+      // Cache the current migration change type, which will start peer
+      // migration immediately if this packet is not a connectivity probing
+      // packet.
+      current_peer_migration_type_ = peer_migration_type;
     }
   }
 
@@ -1017,38 +1005,32 @@ void QuicConnection::OnPacketComplete() {
   QUIC_DVLOG(1) << ENDPOINT << "Got packet " << last_header_.packet_number
                 << " for " << last_header_.connection_id;
 
-  if (server_reply_to_connectivity_probes_) {
-    QUIC_FLAG_COUNT_N(
-        quic_reloadable_flag_quic_server_reply_to_connectivity_probing, 3, 4);
-    if (perspective_ == Perspective::IS_CLIENT) {
-      QUIC_DVLOG(1) << ENDPOINT
-                    << "Received a speculative connectivity probing packet for "
+  if (perspective_ == Perspective::IS_CLIENT) {
+    QUIC_DVLOG(1) << ENDPOINT
+                  << "Received a speculative connectivity probing packet for "
+                  << last_header_.connection_id << " frome ip:port: "
+                  << last_packet_source_address_.ToString() << " to ip:port "
+                  << last_packet_destination_address_.ToString();
+    // TODO(zhongyi): change the method name.
+    visitor_->OnConnectivityProbeReceived(last_packet_destination_address_,
+                                          last_packet_source_address_);
+  } else if (current_packet_content_ == SECOND_FRAME_IS_PADDING) {
+    QUIC_DVLOG(1) << ENDPOINT << "Received a padded PING packet";
+    if (last_packet_source_address_ != peer_address_ ||
+        last_packet_destination_address_ != self_address_) {
+      // Padded PING packet associated with self/peer address change is a
+      // connectivity probing packet.
+      QUIC_DVLOG(1) << ENDPOINT << "Received a connectivity probing packet for "
                     << last_header_.connection_id << " frome ip:port: "
                     << last_packet_source_address_.ToString() << " to ip:port "
                     << last_packet_destination_address_.ToString();
-      // TODO(zhongyi): change the method name.
       visitor_->OnConnectivityProbeReceived(last_packet_destination_address_,
                                             last_packet_source_address_);
-    } else if (current_packet_content_ == SECOND_FRAME_IS_PADDING) {
-      QUIC_DVLOG(1) << ENDPOINT << "Received a padded PING packet";
-      if (last_packet_source_address_ != peer_address_ ||
-          last_packet_destination_address_ != self_address_) {
-        // Padded PING packet associated with self/peer address change is a
-        // connectivity probing packet.
-        QUIC_DVLOG(1) << ENDPOINT
-                      << "Received a connectivity probing packet for "
-                      << last_header_.connection_id << " frome ip:port: "
-                      << last_packet_source_address_.ToString()
-                      << " to ip:port "
-                      << last_packet_destination_address_.ToString();
-        visitor_->OnConnectivityProbeReceived(last_packet_destination_address_,
-                                              last_packet_source_address_);
-      }
-    } else if (current_peer_migration_type_ != NO_CHANGE) {
-      StartPeerMigration(current_peer_migration_type_);
     }
-    current_peer_migration_type_ = NO_CHANGE;
+  } else if (current_peer_migration_type_ != NO_CHANGE) {
+    StartPeerMigration(current_peer_migration_type_);
   }
+  current_peer_migration_type_ = NO_CHANGE;
 
   // An ack will be sent if a missing retransmittable packet was received;
   const bool was_missing =
@@ -2764,11 +2746,6 @@ void QuicConnection::CheckIfApplicationLimited() {
 }
 
 void QuicConnection::UpdatePacketContent(PacketContent type) {
-  if (!server_reply_to_connectivity_probes_) {
-    return;
-  }
-  QUIC_FLAG_COUNT_N(
-      quic_reloadable_flag_quic_server_reply_to_connectivity_probing, 4, 4);
   if (current_packet_content_ == NOT_PADDED_PING) {
     // We have already learned the current packet is not a connectivity
     // probing packet. Peer migration should have already been started earlier
