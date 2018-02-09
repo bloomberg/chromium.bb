@@ -452,31 +452,10 @@ void GpuDataManagerImplPrivate::Initialize() {
     return;
   }
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
-#if defined(OS_ANDROID)
-  // TODO(zmo): Get rid of this on the browser side soon.
-  if (!command_line->HasSwitch(switches::kIgnoreGpuBlacklist) &&
-      !command_line->HasSwitch(switches::kUseGpuInTests)) {
-    // Skip collecting the basic driver info if SetGpuInfo() is already called.
-    if (!IsEssentialGpuInfoAvailable()) {
-      TRACE_EVENT0("startup",
-                   "GpuDataManagerImpl::Initialize:CollectBasicGraphicsInfo");
-      gpu::CollectBasicGraphicsInfo(&gpu_info_);
-    }
-
-    std::unique_ptr<gpu::GpuBlacklist> gpu_blacklist(
-        gpu::GpuBlacklist::Create());
-    std::set<int> features = gpu_blacklist->MakeDecision(
-        gpu::GpuControlList::kOsAndroid, "", gpu_info_);
-    if (features.count(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) == 1)
-      blacklist_accelerated_video_decode_ = true;
-  }
-#endif
-
   RunPostInitTasks();
 
   if (in_process_gpu_) {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     AppendGpuCommandLine(command_line);
   }
 }
@@ -514,18 +493,6 @@ void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
 
 gpu::GpuFeatureInfo GpuDataManagerImplPrivate::GetGpuFeatureInfo() const {
   return gpu_feature_info_;
-}
-
-void GpuDataManagerImplPrivate::AppendRendererCommandLine(
-    base::CommandLine* command_line) const {
-  DCHECK(command_line);
-
-#if defined(OS_ANDROID)
-  // TODO(zmo): Move this to renderer side checking with GPU channel.
-  if (blacklist_accelerated_video_decode_) {
-    command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
-  }
-#endif
 }
 
 void GpuDataManagerImplPrivate::AppendGpuCommandLine(
@@ -617,11 +584,6 @@ bool GpuDataManagerImplPrivate::HardwareAccelerationEnabled() const {
 
 void GpuDataManagerImplPrivate::DisableSwiftShader() {
   swiftshader_disabled_ = true;
-}
-
-void GpuDataManagerImplPrivate::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
-  DCHECK(!is_initialized_);
-  gpu_info_ = gpu_info;
 }
 
 void GpuDataManagerImplPrivate::GetBlacklistReasons(

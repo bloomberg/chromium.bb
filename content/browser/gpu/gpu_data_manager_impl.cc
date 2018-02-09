@@ -100,11 +100,6 @@ void GpuDataManagerImpl::GetDisabledExtensions(
   private_->GetDisabledExtensions(disabled_extensions);
 }
 
-void GpuDataManagerImpl::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
-  base::AutoLock auto_lock(lock_);
-  private_->SetGpuInfo(gpu_info);
-}
-
 void GpuDataManagerImpl::GetDisabledWebGLExtensions(
     std::string* disabled_webgl_extensions) const {
   base::AutoLock auto_lock(lock_);
@@ -130,12 +125,6 @@ void GpuDataManagerImpl::UpdateGpuFeatureInfo(
 gpu::GpuFeatureInfo GpuDataManagerImpl::GetGpuFeatureInfo() const {
   base::AutoLock auto_lock(lock_);
   return private_->GetGpuFeatureInfo();
-}
-
-void GpuDataManagerImpl::AppendRendererCommandLine(
-    base::CommandLine* command_line) const {
-  base::AutoLock auto_lock(lock_);
-  private_->AppendRendererCommandLine(command_line);
 }
 
 void GpuDataManagerImpl::AppendGpuCommandLine(

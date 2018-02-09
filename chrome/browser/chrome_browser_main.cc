@@ -192,7 +192,6 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/gpu/gpu_driver_info_manager_android.h"
 #include "chrome/browser/metrics/thread_watcher_android.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #else
@@ -1169,18 +1168,6 @@ int ChromeBrowserMainParts::PreCreateThreads() {
     for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
       chrome_extra_parts_[i]->PreCreateThreads();
   }
-
-#if defined(OS_ANDROID)
-  // It is important to call gpu_profile_cache()->Initialize() before
-  // starting the gpu process. Internally it properly setup the black listed
-  // features. Which it is used to decide whether to start or not the gpu
-  // process from BrowserMainLoop::BrowserThreadsStarted.
-
-  // Retrieve cached GL strings from local state and use them for GPU
-  // blacklist decisions. Currently this is only done on Android.
-  if (g_browser_process->gpu_driver_info_manager())
-    g_browser_process->gpu_driver_info_manager()->Initialize();
-#endif  // OS_ANDROID
 
   // Create an instance of GpuModeManager to watch gpu mode pref change.
   g_browser_process->gpu_mode_manager();

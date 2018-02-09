@@ -11,7 +11,6 @@
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_metrics_service_client.h"
 #include "android_webview/browser/aw_result_codes.h"
-#include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/net/aw_network_change_notifier_factory.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_paths.h"
@@ -137,10 +136,6 @@ void AwBrowserMainParts::PreMainMessageLoopRun() {
 
   // TODO(meacer): Remove when PlzNavigate ships.
   content::RenderFrameHost::AllowDataUrlNavigationForAndroidWebView();
-
-  // This only works because webview uses in-process gpu
-  // which is not started up early by BrowserMainLoop.
-  DeferredGpuCommandService::SetInstance();
 }
 
 bool AwBrowserMainParts::MainMessageLoopRun(int* result_code) {

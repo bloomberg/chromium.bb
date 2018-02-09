@@ -238,12 +238,6 @@ IconManager* TestingBrowserProcess::icon_manager() {
   return nullptr;
 }
 
-#if defined(OS_ANDROID)
-GpuDriverInfoManager* TestingBrowserProcess::gpu_driver_info_manager() {
-  return nullptr;
-}
-#endif
-
 GpuModeManager* TestingBrowserProcess::gpu_mode_manager() {
   return nullptr;
 }

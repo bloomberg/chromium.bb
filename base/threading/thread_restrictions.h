@@ -18,6 +18,7 @@ class KeyStorageLinux;
 namespace android_webview {
 class AwFormDatabaseService;
 class CookieManager;
+class ScopedAllowInitGLBindings;
 }
 
 namespace cc {
@@ -210,6 +211,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   // This can only be instantiated by friends. Use ScopedAllowBlockingForTesting
   // in unit tests to avoid the friend requirement.
   FRIEND_TEST_ALL_PREFIXES(ThreadRestrictionsTest, ScopedAllowBlocking);
+  friend class android_webview::ScopedAllowInitGLBindings;
   friend class cronet::CronetPrefsManager;
   friend class cronet::CronetURLRequestContext;
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703

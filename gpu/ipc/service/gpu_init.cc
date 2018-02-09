@@ -239,8 +239,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     use_swiftshader = ShouldEnableSwiftShader(command_line, false);
     if (use_swiftshader) {
       gl::init::ShutdownGL(true);
-      gl_initialized = gl::init::InitializeGLNoExtensionsOneOff();
-      if (!gl_initialized) {
+      if (!gl::init::InitializeGLNoExtensionsOneOff()) {
         VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff with SwiftShader "
                 << "failed";
         return false;
@@ -261,8 +260,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     gl::init::SetDisabledExtensionsPlatform(
         gpu_feature_info_.disabled_extensions);
   }
-  gl_initialized = gl::init::InitializeExtensionSettingsOneOffPlatform();
-  if (!gl_initialized) {
+  if (!gl::init::InitializeExtensionSettingsOneOffPlatform()) {
     VLOG(1) << "gl::init::InitializeExtensionSettingsOneOffPlatform failed";
     return false;
   }
@@ -360,8 +358,8 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   }
 
   if (!use_swiftshader) {
-    gpu::CollectContextGraphicsInfo(&gpu_info_);
-    gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(
+    CollectContextGraphicsInfo(&gpu_info_);
+    gpu_feature_info_ = ComputeGpuFeatureInfo(
         gpu_info_, gpu_preferences.ignore_gpu_blacklist,
         gpu_preferences.disable_gpu_driver_bug_workarounds,
         gpu_preferences.log_gpu_control_list_decisions, command_line, nullptr);
