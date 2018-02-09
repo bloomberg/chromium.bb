@@ -21,8 +21,6 @@ import colorama
 
 
 ERRORPRONE_WARNINGS_TO_TURN_OFF = [
-  # TODO(crbug.com/801208): Follow steps in bug.
-  'FloatingPointLiteralPrecision',
   # TODO(crbug.com/801210): Follow steps in bug.
   'SynchronizeOnNonFinalField',
   # TODO(crbug.com/801253): Follow steps in bug.
@@ -104,6 +102,7 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
 
 ERRORPRONE_WARNINGS_TO_ERROR = [
   # Add warnings to this after fixing/suppressing all instances in our codebase.
+  'FloatingPointLiteralPrecision',
   'ParameterName',
 ]
 
