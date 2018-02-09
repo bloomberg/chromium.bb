@@ -9,6 +9,8 @@
 #include <sys/ioctl.h>
 #include <termios.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -45,7 +47,7 @@ ProcessProxy::ProcessProxy() : process_launched_(false), callback_set_(false) {
   ClearFdPair(pt_pair_);
 }
 
-int ProcessProxy::Open(const std::string& command,
+int ProcessProxy::Open(const base::CommandLine& cmdline,
                        const std::string& user_id_hash) {
   if (process_launched_)
     return -1;
@@ -54,7 +56,7 @@ int ProcessProxy::Open(const std::string& command,
     return -1;
   }
 
-  int process_id = LaunchProcess(command, user_id_hash, pt_pair_[PT_SLAVE_FD]);
+  int process_id = LaunchProcess(cmdline, user_id_hash, pt_pair_[PT_SLAVE_FD]);
   process_launched_ = process_id >= 0;
 
   if (process_launched_) {
@@ -220,7 +222,7 @@ bool ProcessProxy::CreatePseudoTerminalPair(int *pt_pair) {
   return true;
 }
 
-int ProcessProxy::LaunchProcess(const std::string& command,
+int ProcessProxy::LaunchProcess(const base::CommandLine& cmdline,
                                 const std::string& user_id_hash,
                                 int slave_fd) {
   base::LaunchOptions options;
@@ -238,8 +240,7 @@ int ProcessProxy::LaunchProcess(const std::string& command,
   options.environ["CROS_USER_ID_HASH"] = user_id_hash;
 
   // Launch the process.
-  process_.reset(new base::Process(base::LaunchProcess(
-      base::CommandLine(base::FilePath(command)), options)));
+  process_.reset(new base::Process(base::LaunchProcess(cmdline, options)));
 
   // TODO(rvargas) crbug/417532: This is somewhat wrong but the interface of
   // Open vends pid_t* so ownership is quite vague anyway, and Process::Close

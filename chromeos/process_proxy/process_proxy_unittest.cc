@@ -11,6 +11,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
@@ -186,8 +187,9 @@ class ProcessProxyTest : public testing::Test {
   void InitRegistryTest(base::OnceClosure done_closure) {
     registry_ = ProcessProxyRegistry::Get();
 
+    base::CommandLine cmdline{{kCatCommand}};
     terminal_id_ = registry_->OpenProcess(
-        kCatCommand, kFakeUserHash,
+        cmdline, kFakeUserHash,
         base::Bind(&ProcessProxyTest::HandleRead, base::Unretained(this)));
 
     EXPECT_GE(terminal_id_, 0);

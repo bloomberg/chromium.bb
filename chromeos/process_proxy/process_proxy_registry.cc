@@ -5,6 +5,7 @@
 #include "chromeos/process_proxy/process_proxy_registry.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/lazy_task_runner.h"
@@ -79,7 +80,7 @@ scoped_refptr<base::SequencedTaskRunner> ProcessProxyRegistry::GetTaskRunner() {
   return task_runner.Get();
 }
 
-int ProcessProxyRegistry::OpenProcess(const std::string& command,
+int ProcessProxyRegistry::OpenProcess(const base::CommandLine& cmdline,
                                       const std::string& user_id_hash,
                                       const OutputCallback& output_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -90,7 +91,7 @@ int ProcessProxyRegistry::OpenProcess(const std::string& command,
   // Create and open new proxy.
   scoped_refptr<ProcessProxy> proxy(new ProcessProxy());
   // TODO(tbarzic): Use a random int as an id here instead of process pid.
-  int terminal_id = proxy->Open(command, user_id_hash);
+  int terminal_id = proxy->Open(cmdline, user_id_hash);
   if (terminal_id < 0)
     return -1;
 
