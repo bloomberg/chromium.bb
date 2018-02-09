@@ -17,8 +17,9 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
+#include "base/time/time_to_iso8601.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "crypto/sha2.h"
@@ -73,15 +74,6 @@ void RecordUMAForHPKPReportFailure(const GURL& report_uri,
                                    int net_error,
                                    int http_response_code) {
   base::UmaHistogramSparse("Net.PublicKeyPinReportSendingFailure2", -net_error);
-}
-
-std::string TimeToISO8601(const base::Time& t) {
-  base::Time::Exploded exploded;
-  t.UTCExplode(&exploded);
-  return base::StringPrintf(
-      "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ", exploded.year, exploded.month,
-      exploded.day_of_month, exploded.hour, exploded.minute, exploded.second,
-      exploded.millisecond);
 }
 
 std::unique_ptr<base::ListValue> GetPEMEncodedChainAsList(
@@ -174,9 +166,9 @@ bool GetHPKPReport(const HostPortPair& host_port_pair,
     return false;
   }
 
-  report.SetString("date-time", TimeToISO8601(now));
+  report.SetString("date-time", base::TimeToISO8601(now));
   report.SetString("effective-expiration-date",
-                   TimeToISO8601(pkp_state.expiry));
+                   base::TimeToISO8601(pkp_state.expiry));
   if (!base::JSONWriter::Write(report, serialized_report)) {
     LOG(ERROR) << "Failed to serialize HPKP violation report.";
     return false;
@@ -709,7 +701,7 @@ bool SerializeExpectStapleReport(const HostPortPair& host_port_pair,
                                  std::string* out_serialized_report) {
   DCHECK(ssl_info.is_issued_by_known_root);
   base::DictionaryValue report;
-  report.SetString("date-time", TimeToISO8601(base::Time::Now()));
+  report.SetString("date-time", base::TimeToISO8601(base::Time::Now()));
   report.SetString("hostname", host_port_pair.host());
   report.SetInteger("port", host_port_pair.port());
   report.SetString("response-status",

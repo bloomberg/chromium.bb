@@ -31,9 +31,9 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time_to_iso8601.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -242,15 +242,6 @@ DownloadItem::DownloadState StateEnumFromString(const std::string& state) {
   return DownloadItem::MAX_DOWNLOAD_STATE;
 }
 
-std::string TimeToISO8601(const base::Time& t) {
-  base::Time::Exploded exploded;
-  t.UTCExplode(&exploded);
-  return base::StringPrintf(
-      "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ", exploded.year, exploded.month,
-      exploded.day_of_month, exploded.hour, exploded.minute, exploded.second,
-      exploded.millisecond);
-}
-
 std::unique_ptr<base::DictionaryValue> DownloadItemToJSON(
     DownloadItem* download_item,
     content::BrowserContext* browser_context) {
@@ -272,7 +263,8 @@ std::unique_ptr<base::DictionaryValue> DownloadItemToJSON(
   json->SetBoolean(kCanResumeKey, download_item->CanResume());
   json->SetBoolean(kPausedKey, download_item->IsPaused());
   json->SetString(kMimeKey, download_item->GetMimeType());
-  json->SetString(kStartTimeKey, TimeToISO8601(download_item->GetStartTime()));
+  json->SetString(kStartTimeKey,
+                  base::TimeToISO8601(download_item->GetStartTime()));
   json->SetDouble(kBytesReceivedKey, download_item->GetReceivedBytes());
   json->SetDouble(kTotalBytesKey, download_item->GetTotalBytes());
   json->SetBoolean(kIncognitoKey, browser_context->IsOffTheRecord());
@@ -285,11 +277,13 @@ std::unique_ptr<base::DictionaryValue> DownloadItemToJSON(
                         download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED));
   }
   if (!download_item->GetEndTime().is_null())
-    json->SetString(kEndTimeKey, TimeToISO8601(download_item->GetEndTime()));
+    json->SetString(kEndTimeKey,
+                    base::TimeToISO8601(download_item->GetEndTime()));
   base::TimeDelta time_remaining;
   if (download_item->TimeRemaining(&time_remaining)) {
     base::Time now = base::Time::Now();
-    json->SetString(kEstimatedEndTimeKey, TimeToISO8601(now + time_remaining));
+    json->SetString(kEstimatedEndTimeKey,
+                    base::TimeToISO8601(now + time_remaining));
   }
   DownloadedByExtension* by_ext = DownloadedByExtension::Get(download_item);
   if (by_ext) {
