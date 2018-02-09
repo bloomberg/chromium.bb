@@ -93,8 +93,6 @@ class DISPLAY_MANAGER_EXPORT UpdateDisplayConfigurationTask
   // Used to signal that the task has finished.
   ResponseCallback callback_;
 
-  bool force_dpms_;
-
   bool requesting_displays_;
 
   // List of updated displays.

@@ -27,7 +27,6 @@ UpdateDisplayConfigurationTask::UpdateDisplayConfigurationTask(
       power_flags_(power_flags),
       force_configure_(force_configure),
       callback_(callback),
-      force_dpms_(false),
       requesting_displays_(false),
       weak_ptr_factory_(this) {
   delegate_->AddObserver(this);
@@ -72,10 +71,6 @@ void UpdateDisplayConfigurationTask::OnDisplaysUpdated(
           << " flags=" << power_flags_
           << " force_configure=" << force_configure_
           << " display_count=" << cached_displays_.size();
-  // If there has been any change in the requested power state and the displays
-  // aren't being turned off force a change in DPMS state.
-  force_dpms_ = ShouldForceDpms() && ShouldConfigure();
-
   if (ShouldConfigure()) {
     EnterState(base::Bind(&UpdateDisplayConfigurationTask::OnStateEntered,
                           weak_ptr_factory_.GetWeakPtr()));
