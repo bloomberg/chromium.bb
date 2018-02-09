@@ -76,6 +76,7 @@ class PasswordManagerPorter : public ui::SelectFileDialog::Listener,
   void FileSelected(const base::FilePath& path,
                     int index,
                     void* params) override;
+  void FileSelectionCanceled(void* params) override;
 
   virtual void ImportPasswordsFromPath(const base::FilePath& path);
 

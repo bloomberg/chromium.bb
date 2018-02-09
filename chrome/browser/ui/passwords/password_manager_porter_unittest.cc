@@ -72,6 +72,15 @@ class TestSelectFileDialog : public ui::SelectFileDialog {
   DISALLOW_COPY_AND_ASSIGN(TestSelectFileDialog);
 };
 
+class TestSelectFilePolicy : public ui::SelectFilePolicy {
+ public:
+  bool CanOpenSelectFileDialog() override { return true; }
+  void SelectFileDenied() override {}
+
+ private:
+  DISALLOW_ASSIGN(TestSelectFilePolicy);
+};
+
 class TestSelectFileDialogFactory : public ui::SelectFileDialogFactory {
  public:
   explicit TestSelectFileDialogFactory(const base::FilePath& forced_path)
@@ -85,18 +94,57 @@ class TestSelectFileDialogFactory : public ui::SelectFileDialogFactory {
   }
 
  private:
-  class TestSelectFilePolicy : public ui::SelectFilePolicy {
-   public:
-    bool CanOpenSelectFileDialog() override { return true; }
-    void SelectFileDenied() override {}
-
-   private:
-    DISALLOW_ASSIGN(TestSelectFilePolicy);
-  };
-
   // The path that will be selected by created dialogs.
   base::FilePath forced_path_;
 
+  DISALLOW_ASSIGN(TestSelectFileDialogFactory);
+};
+
+// A fake ui::SelectFileDialog, which will cancel the file selection instead of
+// selecting a file.
+class FakeCancellingSelectFileDialog : public ui::SelectFileDialog {
+ public:
+  FakeCancellingSelectFileDialog(Listener* listener,
+                                 std::unique_ptr<ui::SelectFilePolicy> policy)
+      : ui::SelectFileDialog(listener, std::move(policy)) {}
+
+ protected:
+  void SelectFileImpl(Type type,
+                      const base::string16& title,
+                      const base::FilePath& default_path,
+                      const FileTypeInfo* file_types,
+                      int file_type_index,
+                      const base::FilePath::StringType& default_extension,
+                      gfx::NativeWindow owning_window,
+                      void* params) override {
+    listener_->FileSelectionCanceled(params);
+  }
+
+  bool IsRunning(gfx::NativeWindow owning_window) const override {
+    return false;
+  }
+  void ListenerDestroyed() override {}
+  bool HasMultipleFileTypeChoicesImpl() override { return false; }
+
+ private:
+  ~FakeCancellingSelectFileDialog() override = default;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeCancellingSelectFileDialog);
+};
+
+class FakeCancellingSelectFileDialogFactory
+    : public ui::SelectFileDialogFactory {
+ public:
+  FakeCancellingSelectFileDialogFactory() {}
+
+  ui::SelectFileDialog* Create(
+      ui::SelectFileDialog::Listener* listener,
+      std::unique_ptr<ui::SelectFilePolicy> policy) override {
+    return new FakeCancellingSelectFileDialog(
+        listener, std::make_unique<TestSelectFilePolicy>());
+  }
+
+ private:
   DISALLOW_ASSIGN(TestSelectFileDialogFactory);
 };
 
@@ -196,6 +244,22 @@ TEST_F(PasswordManagerPorterTest, PasswordExport) {
 
   EXPECT_CALL(*mock_password_manager_exporter_, PreparePasswordsForExport());
   EXPECT_CALL(*mock_password_manager_exporter_, SetDestination(selected_file_));
+
+  porter.set_web_contents(web_contents());
+  porter.Store();
+}
+
+TEST_F(PasswordManagerPorterTest, CancelExportFileSelection) {
+  ui::SelectFileDialog::SetFactory(new FakeCancellingSelectFileDialogFactory());
+
+  // PasswordManagerPorter will take ownership of this, but we keep a pointer.
+  MockPasswordManagerExporter* mock_password_manager_exporter_ =
+      new StrictMock<MockPasswordManagerExporter>();
+  PasswordManagerPorter porter((std::unique_ptr<MockPasswordManagerExporter>(
+      mock_password_manager_exporter_)));
+
+  EXPECT_CALL(*mock_password_manager_exporter_, PreparePasswordsForExport());
+  EXPECT_CALL(*mock_password_manager_exporter_, Cancel());
 
   porter.set_web_contents(web_contents());
   porter.Store();

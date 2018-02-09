@@ -205,6 +205,12 @@ void PasswordManagerPorter::FileSelected(const base::FilePath& path,
   }
 }
 
+void PasswordManagerPorter::FileSelectionCanceled(void* params) {
+  if (reinterpret_cast<uintptr_t>(params) == PASSWORD_EXPORT) {
+    exporter_->Cancel();
+  }
+}
+
 void PasswordManagerPorter::ImportPasswordsFromPath(
     const base::FilePath& path) {
   // Set up a |PasswordImportConsumer| to process each password entry.
