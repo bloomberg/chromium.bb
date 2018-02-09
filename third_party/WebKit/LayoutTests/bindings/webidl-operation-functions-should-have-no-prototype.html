@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <script>
-
-description("WebIDL operation functions should not have a prototype property.");
-
-shouldBeFalse('"prototype" in document.appendChild');
-
+test(() => {
+  assert_false("prototype" in document.appendChild,
+               "WebIDL operation functions should not have a prototype property.");
+});
 </script>
