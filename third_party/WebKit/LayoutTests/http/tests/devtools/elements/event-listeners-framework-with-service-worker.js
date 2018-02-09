@@ -27,7 +27,7 @@
   ApplicationTestRunner.waitForServiceWorker(step1);
   ApplicationTestRunner.registerServiceWorker(scriptURL, scope);
 
-  var objectEventListenersPane = self.runtime.sharedInstance(Sources.ObjectEventListenersSidebarPane);
+  var objectEventListenersPane = self.runtime.sharedInstance(DOMDebugger.ObjectEventListenersSidebarPane);
 
   function isDedicatedWorker() {
     var target = UI.context.flavor(SDK.ExecutionContext).target();
