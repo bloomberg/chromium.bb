@@ -150,22 +150,25 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       scoped_refptr<ServiceWorkerVersion> worker,
       blink::TransferableMessage message,
       const url::Origin& source_origin,
-      ServiceWorkerProviderHost* sender_provider_host,
+      int source_provider_id,
       StatusCallback callback);
-  template <typename SourceInfoPtr>
+  // |source_service_worker_provider_id| and |source_client_info| are mutually
+  // exclusive. |source_service_worker_provider_id| is passed if the message
+  // source is a service worker, and otherwise |source_client_info| is passed.
   void DispatchExtendableMessageEventInternal(
       scoped_refptr<ServiceWorkerVersion> worker,
       blink::TransferableMessage message,
       const url::Origin& source_origin,
       const base::Optional<base::TimeDelta>& timeout,
       StatusCallback callback,
-      SourceInfoPtr source_info);
-  template <typename SourceInfoPtr>
+      int source_service_worker_provider_id,
+      blink::mojom::ServiceWorkerClientInfoPtr source_client_info);
   void DispatchExtendableMessageEventAfterStartWorker(
       scoped_refptr<ServiceWorkerVersion> worker,
       blink::TransferableMessage message,
       const url::Origin& source_origin,
-      SourceInfoPtr source_info,
+      int source_service_worker_provider_id,
+      blink::mojom::ServiceWorkerClientInfoPtr source_client_info,
       const base::Optional<base::TimeDelta>& timeout,
       StatusCallback callback,
       ServiceWorkerStatusCode status);
