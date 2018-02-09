@@ -45,6 +45,7 @@ namespace blink {
 class AccessibleNode;
 class Attr;
 class Attribute;
+class ComputedAccessibleNode;
 class CSSStyleDeclaration;
 class CustomElementDefinition;
 class DOMRect;
@@ -294,6 +295,8 @@ class CORE_EXPORT Element : public ContainerNode {
 
   AccessibleNode* ExistingAccessibleNode() const;
   AccessibleNode* accessibleNode();
+
+  ComputedAccessibleNode* GetComputedAccessibleNode();
 
   void DidMoveToNewDocument(Document&) override;
 

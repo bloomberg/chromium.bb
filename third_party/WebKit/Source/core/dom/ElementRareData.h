@@ -142,6 +142,8 @@ class ElementRareData : public NodeRareData {
     return accessible_node_;
   }
 
+  ComputedAccessibleNode* EnsureComputedAccessibleNode(Element* owner_element);
+
   AttrNodeList& EnsureAttrNodeList();
   AttrNodeList* GetAttrNodeList() { return attr_node_list_.Get(); }
   void RemoveAttrNodeList() { attr_node_list_.Clear(); }
