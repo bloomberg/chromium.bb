@@ -48,7 +48,10 @@
       },
       "requires": {
         "*": [ "accessibility", "app" ],
-        "accessibility_autoclick": [ "mash:launchable" ],
+        "accessibility_autoclick": [
+          "ash:autoclick",
+          "mash:launchable"
+        ],
         "ash_pref_connector": [ "pref_connector" ],
         "catalog": [ "directory" ],
         "local_state": [ "pref_client" ],
