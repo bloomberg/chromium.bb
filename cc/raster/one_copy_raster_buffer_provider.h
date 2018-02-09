@@ -31,6 +31,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
       LayerTreeResourceProvider* resource_provider,
       int max_copy_texture_chromium_size,
       bool use_partial_raster,
+      bool use_gpu_memory_buffer_resources,
       int max_staging_buffer_usage_in_bytes,
       viz::ResourceFormat preferred_tile_format);
   ~OneCopyRasterBufferProvider() override;
@@ -54,8 +55,11 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
   void Shutdown() override;
 
   // Playback raster source and copy result into |resource|.
-  void PlaybackAndCopyOnWorkerThread(
-      LayerTreeResourceProvider::ScopedWriteLockRaster* resource_lock,
+  gpu::SyncToken PlaybackAndCopyOnWorkerThread(
+      const gpu::Mailbox& mailbox,
+      GLenum mailbox_texture_target,
+      bool mailbox_texture_is_overlay_candidate,
+      bool mailbox_texture_storage_allocated,
       const gpu::SyncToken& sync_token,
       const RasterSource* raster_source,
       const gfx::Rect& raster_full_rect,
@@ -63,16 +67,20 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
       const gfx::AxisTransform2d& transform,
       const gfx::Size& resource_size,
       viz::ResourceFormat resource_format,
+      const gfx::ColorSpace& color_space,
       const RasterSource::PlaybackSettings& playback_settings,
       uint64_t previous_content_id,
       uint64_t new_content_id);
 
  private:
+  class OneCopyGpuBacking;
+
   class RasterBufferImpl : public RasterBuffer {
    public:
     RasterBufferImpl(OneCopyRasterBufferProvider* client,
                      LayerTreeResourceProvider* resource_provider,
                      const ResourcePool::InUsePoolResource& in_use_resource,
+                     OneCopyGpuBacking* backing,
                      uint64_t previous_content_id);
     ~RasterBufferImpl() override;
 
@@ -86,22 +94,35 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
         const RasterSource::PlaybackSettings& playback_settings) override;
 
     void set_sync_token(const gpu::SyncToken& sync_token) {
-      sync_token_ = sync_token;
+      before_raster_sync_token_ = sync_token;
     }
 
    private:
+    // These fields may only be used on the compositor thread.
     OneCopyRasterBufferProvider* const client_;
+    OneCopyGpuBacking* backing_;
+
+    // These fields are for use on the worker thread.
     const gfx::Size resource_size_;
     const viz::ResourceFormat resource_format_;
-    LayerTreeResourceProvider::ScopedWriteLockRaster lock_;
+    const gfx::ColorSpace color_space_;
     const uint64_t previous_content_id_;
-
-    gpu::SyncToken sync_token_;
+    const gpu::SyncToken returned_sync_token_;
+    const gpu::Mailbox mailbox_;
+    const GLenum mailbox_texture_target_;
+    const bool mailbox_texture_is_overlay_candidate_;
+    // Set to true once allocation is done in the worker thread.
+    bool mailbox_texture_storage_allocated_;
+    // A SyncToken for the worker thread to consume before using the mailbox
+    // texture it is given.
+    gpu::SyncToken before_raster_sync_token_;
+    // A SyncToken to be returned from the worker thread, and waited on before
+    // using the rastered resource.
+    gpu::SyncToken after_raster_sync_token_;
 
     DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
   };
 
-  void WaitSyncToken(const gpu::SyncToken& sync_token);
   void PlaybackToStagingBuffer(
       StagingBuffer* staging_buffer,
       const RasterSource* raster_source,
@@ -113,11 +134,17 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
       const RasterSource::PlaybackSettings& playback_settings,
       uint64_t previous_content_id,
       uint64_t new_content_id);
-  void CopyOnWorkerThread(
-      StagingBuffer* staging_buffer,
-      LayerTreeResourceProvider::ScopedWriteLockRaster* resource_lock,
-      const RasterSource* raster_source,
-      const gfx::Rect& rect_to_copy);
+  gpu::SyncToken CopyOnWorkerThread(StagingBuffer* staging_buffer,
+                                    const RasterSource* raster_source,
+                                    const gfx::Rect& rect_to_copy,
+                                    viz::ResourceFormat resource_format,
+                                    const gfx::Size& resource_size,
+                                    const gpu::Mailbox& mailbox,
+                                    GLenum mailbox_texture_target,
+                                    bool mailbox_texture_is_overlay_candidate,
+                                    bool mailbox_texture_storage_allocated,
+                                    const gpu::SyncToken& sync_token,
+                                    const gfx::ColorSpace& color_space);
   gfx::BufferUsage StagingBufferUsage() const;
 
   viz::ContextProvider* const compositor_context_provider_;
@@ -125,6 +152,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
   LayerTreeResourceProvider* const resource_provider_;
   const int max_bytes_per_copy_operation_;
   const bool use_partial_raster_;
+  const bool use_gpu_memory_buffer_resources_;
 
   // Context lock must be acquired when accessing this member.
   int bytes_scheduled_since_last_flush_;

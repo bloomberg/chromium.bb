@@ -87,7 +87,6 @@ ResourcePool::ResourcePool(
     : resource_provider_(resource_provider),
       use_gpu_resources_(true),
       use_gpu_memory_buffers_(false),
-      hint_(hint),
       task_runner_(std::move(task_runner)),
       resource_expiration_delay_(expiration_delay),
       disallow_non_exact_reuse_(disallow_non_exact_reuse),
@@ -106,7 +105,6 @@ ResourcePool::ResourcePool(
     : resource_provider_(resource_provider),
       use_gpu_resources_(false),
       use_gpu_memory_buffers_(false),
-      hint_(viz::ResourceTextureHint::kDefault),
       task_runner_(std::move(task_runner)),
       resource_expiration_delay_(expiration_delay),
       disallow_non_exact_reuse_(disallow_non_exact_reuse),
@@ -146,14 +144,7 @@ ResourcePool::PoolResource* ResourcePool::ReuseResource(
   for (auto it = unused_resources_.begin(); it != unused_resources_.end();
        ++it) {
     PoolResource* resource = it->get();
-// TODO(danakj): When gpu raster buffer providers make their own backings,
-// then they need to switch to the else branch.
-#if DCHECK_IS_ON()
-    if (use_gpu_resources_)
-      DCHECK(resource_provider_->CanLockForWrite(resource->resource_id()));
-    else
-      DCHECK(!resource->resource_id());
-#endif
+    DCHECK(!resource->resource_id());
 
     if (resource->format() != format)
       continue;
@@ -179,17 +170,8 @@ ResourcePool::PoolResource* ResourcePool::CreateResource(
     const gfx::ColorSpace& color_space) {
   DCHECK(ResourceUtil::VerifySizeInBytes<size_t>(size, format));
 
-  viz::ResourceId resource_id;
-  if (use_gpu_memory_buffers_) {
-    resource_id = 0;
-  } else if (use_gpu_resources_) {
-    resource_id = resource_provider_->CreateGpuTextureResource(
-        size, hint_, format, color_space);
-  } else {
-    resource_id = 0;
-  }
   auto pool_resource = std::make_unique<PoolResource>(
-      next_resource_unique_id_++, size, format, color_space, resource_id);
+      next_resource_unique_id_++, size, format, color_space);
 
   total_memory_usage_bytes_ +=
       ResourceUtil::UncheckedSizeInBytes<size_t>(size, format);
@@ -275,14 +257,7 @@ ResourcePool::TryAcquireResourceForPartialRaster(
   // |in_use_resources_| and return it.
   if (iter_resource_to_return != unused_resources_.end()) {
     PoolResource* resource = iter_resource_to_return->get();
-// TODO(danakj): When gpu raster buffer providers make their own backings,
-// then they need to switch to the else branch.
-#if DCHECK_IS_ON()
-    if (use_gpu_resources_)
-      DCHECK(resource_provider_->CanLockForWrite(resource->resource_id()));
-    else
-      DCHECK(!resource->resource_id());
-#endif
+    DCHECK(!resource->resource_id());
 
     // Transfer resource to |in_use_resources_|.
     in_use_resources_[resource->unique_id()] =
@@ -331,31 +306,21 @@ void ResourcePool::OnResourceReleased(size_t unique_id,
   }
 
   resource->set_resource_id(0);
-  // TODO(danakj): Use this branch for gpu resources that aren't gpu memory
-  // buffers.
-  if (use_gpu_memory_buffers_)
+  if (use_gpu_memory_buffers_ || use_gpu_resources_)
     resource->gpu_backing()->returned_sync_token = sync_token;
   DidFinishUsingResource(std::move(*busy_it));
   busy_resources_.erase(busy_it);
 }
 
 void ResourcePool::PrepareForExport(const InUsePoolResource& resource) {
-  // TODO(danakj): Add branches for gpu too once a gpu-backed raster provider
-  // does this.
-  if (use_gpu_resources_)
-    return;
-
   viz::TransferableResource transferable;
-  if (use_gpu_memory_buffers_) {
+  if (use_gpu_memory_buffers_ || use_gpu_resources_) {
     transferable = viz::TransferableResource::MakeGLOverlay(
         resource.resource_->gpu_backing()->mailbox, GL_LINEAR,
         resource.resource_->gpu_backing()->texture_target,
         resource.resource_->gpu_backing()->mailbox_sync_token,
         resource.resource_->size(),
-        /*is_overlay_candidate=*/true);
-    // Clear the SyncToken that we have sent away to the display compositor. It
-    // will be owned by the ResourceProvider now.
-    resource.resource_->gpu_backing()->mailbox_sync_token = gpu::SyncToken();
+        resource.resource_->gpu_backing()->overlay_candidate);
   } else {
     transferable = viz::TransferableResource::MakeSoftware(
         resource.resource_->shared_bitmap()->id(),
@@ -424,15 +389,11 @@ void ResourcePool::ReleaseResource(InUsePoolResource in_use_resource) {
     busy_resources_.push_front(std::move(it->second));
   in_use_resources_.erase(it);
 
-  // TODO(danakj): When gpu raster buffer providers make their own backings,
-  // then they need to switch to this branch.
-  if (!use_gpu_resources_) {
-    // If the resource was exported, then it has a resource id. By removing the
-    // resource id, we will be notified in the ReleaseCallback when the resource
-    // is no longer exported and can be reused.
-    if (pool_resource->resource_id())
-      resource_provider_->RemoveImportedResource(pool_resource->resource_id());
-  }
+  // If the resource was exported, then it has a resource id. By removing the
+  // resource id, we will be notified in the ReleaseCallback when the resource
+  // is no longer exported and can be reused.
+  if (pool_resource->resource_id())
+    resource_provider_->RemoveImportedResource(pool_resource->resource_id());
 
   // Now that we have evictable resources, schedule an eviction call for this
   // resource if necessary.
@@ -485,10 +446,6 @@ void ResourcePool::DeleteResource(std::unique_ptr<PoolResource> resource) {
       resource->size(), resource->format());
   total_memory_usage_bytes_ -= resource_bytes;
   --total_resource_count_;
-  // TODO(danakj): When gpu raster buffer providers make their own backings,
-  // then they need to switch off this branch.
-  if (use_gpu_resources_)
-    resource_provider_->DeleteResource(resource->resource_id());
 }
 
 void ResourcePool::UpdateResourceContentIdAndInvalidation(
@@ -504,31 +461,7 @@ void ResourcePool::UpdateResourceContentIdAndInvalidation(
 }
 
 void ResourcePool::CheckBusyResources() {
-  // TODO(danakj): When gpu raster buffer providers make their own backings,
-  // then they need to switch to this branch.
-  if (!use_gpu_resources_) {
-    // The ReleaseCallback tells ResourcePool when they are no longer busy, so
-    // there is nothing to do here.
-    return;
-  }
-
-  for (auto it = busy_resources_.begin(); it != busy_resources_.end();) {
-    PoolResource* resource = it->get();
-
-    if (resource_provider_->CanLockForWrite(resource->resource_id())) {
-      if (evict_busy_resources_when_unused_)
-        DeleteResource(std::move(*it));
-      else
-        DidFinishUsingResource(std::move(*it));
-      it = busy_resources_.erase(it);
-    } else if (resource_provider_->IsLost(resource->resource_id())) {
-      // Remove lost resources from pool.
-      DeleteResource(std::move(*it));
-      it = busy_resources_.erase(it);
-    } else {
-      ++it;
-    }
-  }
+  // TODO(danakj): Delete this.
 }
 
 void ResourcePool::DidFinishUsingResource(
@@ -603,18 +536,14 @@ bool ResourcePool::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     MemoryAllocatorDump::kUnitsBytes,
                     total_memory_usage_bytes_);
   } else {
-    bool dump_parent = use_gpu_resources_;
     for (const auto& resource : unused_resources_) {
-      resource->OnMemoryDump(pmd, resource_provider_, dump_parent,
-                             true /* is_free */);
+      resource->OnMemoryDump(pmd, resource_provider_, true /* is_free */);
     }
     for (const auto& resource : busy_resources_) {
-      resource->OnMemoryDump(pmd, resource_provider_, dump_parent,
-                             false /* is_free */);
+      resource->OnMemoryDump(pmd, resource_provider_, false /* is_free */);
     }
     for (const auto& entry : in_use_resources_) {
-      entry.second->OnMemoryDump(pmd, resource_provider_, dump_parent,
-                                 false /* is_free */);
+      entry.second->OnMemoryDump(pmd, resource_provider_, false /* is_free */);
     }
   }
   return true;
@@ -634,38 +563,32 @@ void ResourcePool::OnMemoryStateChange(base::MemoryState state) {
 ResourcePool::PoolResource::PoolResource(size_t unique_id,
                                          const gfx::Size& size,
                                          viz::ResourceFormat format,
-                                         const gfx::ColorSpace& color_space,
-                                         viz::ResourceId resource_id)
+                                         const gfx::ColorSpace& color_space)
     : unique_id_(unique_id),
       size_(size),
       format_(format),
-      color_space_(color_space),
-      resource_id_(resource_id) {}
+      color_space_(color_space) {}
 
 ResourcePool::PoolResource::~PoolResource() = default;
 
 void ResourcePool::PoolResource::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd,
     const LayerTreeResourceProvider* resource_provider,
-    bool dump_parent,
     bool is_free) const {
   base::UnguessableToken shm_guid;
   base::trace_event::MemoryAllocatorDumpGuid backing_guid;
-  if (!dump_parent) {
-    if (shared_bitmap_) {
-      // Software resources are in shared memory but are kept closed to avoid
-      // holding an fd open. So there is no SharedMemoryHandle to get a guid
-      // from.
-      DCHECK(!shared_bitmap_->GetSharedMemoryHandle().IsValid());
-      backing_guid = viz::GetSharedBitmapGUIDForTracing(shared_bitmap_->id());
-    } else if (gpu_backing_) {
-      shm_guid = gpu_backing_->SharedMemoryGuid();
-      if (shm_guid.is_empty()) {
-        auto* dump_manager =
-            base::trace_event::MemoryDumpManager::GetInstance();
-        backing_guid =
-            gpu_backing_->MemoryDumpGuid(dump_manager->GetTracingProcessId());
-      }
+  if (shared_bitmap_) {
+    // Software resources are in shared memory but are kept closed to avoid
+    // holding an fd open. So there is no SharedMemoryHandle to get a guid
+    // from.
+    DCHECK(!shared_bitmap_->GetSharedMemoryHandle().IsValid());
+    backing_guid = viz::GetSharedBitmapGUIDForTracing(shared_bitmap_->id());
+  } else if (gpu_backing_) {
+    shm_guid = gpu_backing_->SharedMemoryGuid();
+    if (shm_guid.is_empty()) {
+      auto* dump_manager = base::trace_event::MemoryDumpManager::GetInstance();
+      backing_guid =
+          gpu_backing_->MemoryDumpGuid(dump_manager->GetTracingProcessId());
     }
 
     // If |dump_parent| is false, the ownership of the resource is in the
@@ -681,14 +604,21 @@ void ResourcePool::PoolResource::OnMemoryDump(
       base::StringPrintf("cc/tile_memory/provider_%d/resource_%zd",
                          resource_provider->tracing_id(), unique_id_);
   MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
-  if (dump_parent) {
-    // This string matches the one emitted by ResourceProvider. The one above
-    // has a different name, and does not need to match, it is connected by the
-    // AddSuballocation() call.
-    std::string parent_node =
-        base::StringPrintf("cc/resource_memory/provider_%d/resource_%d",
-                           resource_provider->tracing_id(), resource_id_);
-    pmd->AddSuballocation(dump->guid(), parent_node);
+  // The importance value used here needs to be greater than the importance
+  // used in other places that use this GUID to inform the system that this is
+  // the root ownership. The gpu processes uses 0, so 2 is sufficient, and was
+  // chosen historically and there is no need to adjust it.
+  const int kImportance = 2;
+  if (shared_bitmap_) {
+    // Software resources are in shared memory but are kept closed to avoid
+    // holding an fd open. So there is no SharedMemoryHandle to get a guid
+    // from.
+    DCHECK(!shared_bitmap_->GetSharedMemoryHandle().IsValid());
+    base::trace_event::MemoryAllocatorDumpGuid guid =
+        viz::GetSharedBitmapGUIDForTracing(shared_bitmap_->id());
+    DCHECK(!guid.empty());
+    pmd->CreateSharedGlobalAllocatorDump(guid);
+    pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
   } else {
     // The importance value used here needs to be greater than the importance
     // used in other places that use this GUID to inform the system that this is
