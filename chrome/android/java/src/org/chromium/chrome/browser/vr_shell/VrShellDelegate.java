@@ -1063,8 +1063,11 @@ public class VrShellDelegate
      */
     public static void maybeHandleVrIntentPreNative(ChromeActivity activity, Intent intent) {
         if (!VrIntentUtils.isVrIntent(intent)) return;
-        // If we already have an instance, nothing to do here.
-        if (sInstance != null) return;
+        // If we're already in VR, or launching from an internal intent, we don't want to set system
+        // ui visibility here, or we'll incorrectly restore window mode later.
+        if (sInstance != null && (sInstance.mInVr || sInstance.mInternalIntentUsedToStartVr)) {
+            return;
+        }
         if (DEBUG_LOGS) Log.i(TAG, "maybeHandleVrIntentPreNative: preparing for transition");
         // We add a black overlay view so that we can show black while the VR UI is loading.
         // Note that this alone isn't sufficient to prevent 2D UI from showing when
