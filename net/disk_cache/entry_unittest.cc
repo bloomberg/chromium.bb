@@ -3557,6 +3557,31 @@ TEST_F(DiskCacheEntryTest, SimpleCacheDoomCreateOptimisticMassDoom) {
   entry2->Close();
 }
 
+TEST_F(DiskCacheEntryTest, SimpleCacheDoomOpenOptimistic) {
+  // Test that we optimize the doom -> optimize sequence when optimistic ops
+  // are on.
+  SetSimpleCacheMode();
+  InitCache();
+  const char kKey[] = "the key";
+
+  // Create entry and initiate its Doom.
+  disk_cache::Entry* entry1 = nullptr;
+  ASSERT_THAT(CreateEntry(kKey, &entry1), IsOk());
+  ASSERT_TRUE(entry1 != nullptr);
+  entry1->Close();
+
+  net::TestCompletionCallback doom_callback;
+  cache_->DoomEntry(kKey, doom_callback.callback());
+
+  // Try to open entry. This should detect a miss immediately, since it's
+  // the only thing after a doom.
+  disk_cache::Entry* entry2 = nullptr;
+  net::TestCompletionCallback open_callback;
+  EXPECT_EQ(net::ERR_FAILED,
+            cache_->OpenEntry(kKey, &entry2, open_callback.callback()));
+  doom_callback.WaitForResult();
+}
+
 TEST_F(DiskCacheEntryTest, SimpleCacheDoomDoom) {
   // Test sequence:
   // Create, Doom, Create, Doom (1st entry), Open.

@@ -389,6 +389,19 @@ int SimpleBackendImpl::OpenEntry(const std::string& key,
   scoped_refptr<SimpleEntryImpl> simple_entry =
       CreateOrFindActiveOrDoomedEntry(entry_hash, key, &post_doom);
   if (!simple_entry) {
+    if (post_doom->empty() &&
+        entry_operations_mode_ == SimpleEntryImpl::OPTIMISTIC_OPERATIONS) {
+      // The entry is doomed, and no other backend operations are queued for the
+      // entry, thus the open must fail and it's safe to return synchronously.
+      net::NetLogWithSource log_for_entry(net::NetLogWithSource::Make(
+          net_log_, net::NetLogSourceType::DISK_CACHE_ENTRY));
+      log_for_entry.AddEvent(
+          net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_CALL);
+      log_for_entry.AddEventWithNetErrorCode(
+          net::NetLogEventType::SIMPLE_CACHE_ENTRY_OPEN_END, net::ERR_FAILED);
+      return net::ERR_FAILED;
+    }
+
     Callback<int(const net::CompletionCallback&)> operation =
         base::Bind(&SimpleBackendImpl::OpenEntry,
                    base::Unretained(this), key, entry);
