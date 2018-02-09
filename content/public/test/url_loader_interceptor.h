@@ -25,20 +25,27 @@ class URLLoaderFactoryGetter;
 //     -http(s)://mock.failed.request/foo URLs internally, copying the behavior
 //      of net::URLRequestFailedJob
 //
+// Prefer not to use this class. In order of easy of use & simplicity:
+//  -if you need to serve static data, use net::test::EmbeddedTestServer and
+//   serve data from the source tree (e.g. in content/test/data)
+//  -if you need to control the response data at runtime, then use
+//   net::test_server::EmbeddedTestServer::RegisterRequestHandler
+//  -if you need to delay when the server sends the response, use
+//   net::test_server::ControllableHttpResponse
+//  -otherwise, if you need full control over the net::Error and/or want to
+//   inspect and/or modify the C++ structs used by URLoader interface, then use
+//   this helper class
+//
 // Notes:
 //  -intercepting frame requests doesn't work yet for non network-service case
 //   (will work once http://crbug.com/747130 is fixed)
-//  -the callback is always called on the IO thread
+//  -the callback is always called on the UI or IO threads depending on the
+//   factory that was hooked
 //    -this is done to avoid changing message order
 //  -intercepting resource requests for subresources when the network service is
 //   enabled changes message order by definition (since they would normally go
 //   directly from renderer->network process, but now they're routed through the
 //   browser). This is why |intercept_subresources| is false by default.
-//  -of course this only works when MojoLoading is enabled, which is default
-//   for all shipping configs (TODO(jam): delete this comment when old path is
-//   deleted)
-//  -it doesn't yet intercept other request types, e.g. browser-initiated
-//   requests that aren't for frames
 class URLLoaderInterceptor {
  public:
   struct RequestParams {
