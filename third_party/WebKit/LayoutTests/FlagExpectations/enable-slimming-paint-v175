@@ -12,9 +12,6 @@ crbug.com/803649 css3/masking/clip-path-columns-shape.html [ Failure ]
 crbug.com/803649 css3/masking/clip-path-columns-svg-clippath-usou.html [ Failure ]
 crbug.com/808325 virtual/gpu/fast/canvas/canvas-css-clip-path.html [ Failure ]
 
-# Rounding differences? Seems odd no matter what and can be rebaselined when we enable SPv175.
-crbug.com/589265 fast/backgrounds/size/contain-and-cover-zoomed.html [ Failure ]
-
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
