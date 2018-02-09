@@ -382,8 +382,6 @@ class ASH_EXPORT WallpaperController
   void RemovePolicyWallpaper(mojom::WallpaperUserInfoPtr user_info,
                              const std::string& wallpaper_files_id) override;
   void OpenWallpaperPickerIfAllowed() override;
-  void SetWallpaper(const SkBitmap& wallpaper,
-                    const wallpaper::WallpaperInfo& wallpaper_info) override;
   void AddObserver(mojom::WallpaperObserverAssociatedPtrInfo observer) override;
   void GetWallpaperColors(GetWallpaperColorsCallback callback) override;
   void IsActiveUserWallpaperControlledByPolicy(
