@@ -28,13 +28,13 @@
 
 #include "modules/webdatabase/SQLStatement.h"
 
+#include "bindings/modules/v8/V8SQLStatementCallback.h"
+#include "bindings/modules/v8/V8SQLStatementErrorCallback.h"
 #include "core/probe/CoreProbes.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/SQLError.h"
 #include "modules/webdatabase/SQLStatementBackend.h"
-#include "modules/webdatabase/SQLStatementCallback.h"
-#include "modules/webdatabase/SQLStatementErrorCallback.h"
 #include "modules/webdatabase/SQLTransaction.h"
 #include "modules/webdatabase/sqlite/SQLiteDatabase.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
@@ -42,16 +42,36 @@
 
 namespace blink {
 
+void SQLStatement::OnSuccessV8Impl::Trace(blink::Visitor* visitor) {
+  visitor->Trace(callback_);
+  OnSuccessCallback::Trace(visitor);
+}
+
+bool SQLStatement::OnSuccessV8Impl::OnSuccess(SQLTransaction* transaction,
+                                              SQLResultSet* result_set) {
+  return callback_->handleEvent(transaction, result_set);
+}
+
+void SQLStatement::OnErrorV8Impl::Trace(blink::Visitor* visitor) {
+  visitor->Trace(callback_);
+  OnErrorCallback::Trace(visitor);
+}
+
+bool SQLStatement::OnErrorV8Impl::OnError(SQLTransaction* transaction,
+                                          SQLError* error) {
+  return callback_->handleEvent(transaction, error);
+}
+
 SQLStatement* SQLStatement::Create(Database* database,
-                                   SQLStatementCallback* callback,
-                                   SQLStatementErrorCallback* error_callback) {
+                                   OnSuccessCallback* callback,
+                                   OnErrorCallback* error_callback) {
   return new SQLStatement(database, callback, error_callback);
 }
 
 SQLStatement::SQLStatement(Database* database,
-                           SQLStatementCallback* callback,
-                           SQLStatementErrorCallback* error_callback)
-    : statement_callback_(callback), statement_error_callback_(error_callback) {
+                           OnSuccessCallback* callback,
+                           OnErrorCallback* error_callback)
+    : success_callback_(callback), error_callback_(error_callback) {
   DCHECK(IsMainThread());
 
   if (HasCallback() || HasErrorCallback()) {
@@ -62,8 +82,8 @@ SQLStatement::SQLStatement(Database* database,
 
 void SQLStatement::Trace(blink::Visitor* visitor) {
   visitor->Trace(backend_);
-  visitor->Trace(statement_callback_);
-  visitor->Trace(statement_error_callback_);
+  visitor->Trace(success_callback_);
+  visitor->Trace(error_callback_);
 }
 
 void SQLStatement::SetBackend(SQLStatementBackend* backend) {
@@ -71,11 +91,11 @@ void SQLStatement::SetBackend(SQLStatementBackend* backend) {
 }
 
 bool SQLStatement::HasCallback() {
-  return statement_callback_;
+  return success_callback_;
 }
 
 bool SQLStatement::HasErrorCallback() {
-  return statement_error_callback_;
+  return error_callback_;
 }
 
 bool SQLStatement::PerformCallback(SQLTransaction* transaction) {
@@ -84,9 +104,8 @@ bool SQLStatement::PerformCallback(SQLTransaction* transaction) {
 
   bool callback_error = false;
 
-  SQLStatementCallback* callback = statement_callback_.Release();
-  SQLStatementErrorCallback* error_callback =
-      statement_error_callback_.Release();
+  OnSuccessCallback* callback = success_callback_.Release();
+  OnErrorCallback* error_callback = error_callback_.Release();
   SQLErrorData* error = backend_->SqlError();
 
   probe::AsyncTask async_task(transaction->GetDatabase()->GetExecutionContext(),
@@ -95,12 +114,13 @@ bool SQLStatement::PerformCallback(SQLTransaction* transaction) {
   // Call the appropriate statement callback and track if it resulted in an
   // error, because then we need to jump to the transaction error callback.
   if (error) {
-    if (error_callback)
+    if (error_callback) {
       callback_error =
-          error_callback->handleEvent(transaction, SQLError::Create(*error));
+          error_callback->OnError(transaction, SQLError::Create(*error));
+    }
   } else if (callback) {
     callback_error =
-        !callback->handleEvent(transaction, backend_->SqlResultSet());
+        !callback->OnSuccess(transaction, backend_->SqlResultSet());
   }
 
   return callback_error;

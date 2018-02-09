@@ -42,24 +42,98 @@ namespace blink {
 class Database;
 class ExceptionState;
 class SQLErrorData;
-class SQLStatementCallback;
-class SQLStatementErrorCallback;
 class SQLTransactionBackend;
-class SQLTransactionCallback;
-class SQLTransactionErrorCallback;
 class SQLValue;
 class ScriptValue;
-class VoidCallback;
+class V8SQLTransactionCallback;
+class V8SQLTransactionErrorCallback;
+class V8VoidCallback;
 
 class SQLTransaction final : public ScriptWrappable,
                              public SQLTransactionStateMachine<SQLTransaction> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  class OnProcessCallback
+      : public GarbageCollectedFinalized<OnProcessCallback> {
+   public:
+    virtual ~OnProcessCallback() = default;
+    virtual void Trace(blink::Visitor*) {}
+    virtual bool OnProcess(SQLTransaction*) = 0;
+
+   protected:
+    OnProcessCallback() = default;
+  };
+
+  class OnProcessV8Impl : public OnProcessCallback {
+   public:
+    static OnProcessV8Impl* Create(V8SQLTransactionCallback* callback) {
+      return callback ? new OnProcessV8Impl(callback) : nullptr;
+    }
+    void Trace(blink::Visitor*) override;
+    bool OnProcess(SQLTransaction*) override;
+
+   private:
+    explicit OnProcessV8Impl(V8SQLTransactionCallback* callback)
+        : callback_(callback) {}
+
+    Member<V8SQLTransactionCallback> callback_;
+  };
+
+  class OnSuccessCallback
+      : public GarbageCollectedFinalized<OnSuccessCallback> {
+   public:
+    virtual ~OnSuccessCallback() = default;
+    virtual void Trace(blink::Visitor*) {}
+    virtual void OnSuccess() = 0;
+
+   protected:
+    OnSuccessCallback() = default;
+  };
+
+  class OnSuccessV8Impl : public OnSuccessCallback {
+   public:
+    static OnSuccessV8Impl* Create(V8VoidCallback* callback) {
+      return callback ? new OnSuccessV8Impl(callback) : nullptr;
+    }
+    void Trace(blink::Visitor*) override;
+    void OnSuccess() override;
+
+   private:
+    explicit OnSuccessV8Impl(V8VoidCallback* callback) : callback_(callback) {}
+
+    Member<V8VoidCallback> callback_;
+  };
+
+  class OnErrorCallback : public GarbageCollectedFinalized<OnErrorCallback> {
+   public:
+    virtual ~OnErrorCallback() = default;
+    virtual void Trace(blink::Visitor*) {}
+    virtual bool OnError(SQLError*) = 0;
+
+   protected:
+    OnErrorCallback() = default;
+  };
+
+  class OnErrorV8Impl : public OnErrorCallback {
+   public:
+    static OnErrorV8Impl* Create(V8SQLTransactionErrorCallback* callback) {
+      return callback ? new OnErrorV8Impl(callback) : nullptr;
+    }
+    void Trace(blink::Visitor*) override;
+    bool OnError(SQLError*) override;
+
+   private:
+    explicit OnErrorV8Impl(V8SQLTransactionErrorCallback* callback)
+        : callback_(callback) {}
+
+    Member<V8SQLTransactionErrorCallback> callback_;
+  };
+
   static SQLTransaction* Create(Database*,
-                                SQLTransactionCallback*,
-                                VoidCallback* success_callback,
-                                SQLTransactionErrorCallback*,
+                                OnProcessCallback*,
+                                OnSuccessCallback*,
+                                OnErrorCallback*,
                                 bool read_only);
   ~SQLTransaction();
   void Trace(blink::Visitor*);
@@ -68,20 +142,20 @@ class SQLTransaction final : public ScriptWrappable,
 
   void ExecuteSQL(const String& sql_statement,
                   const Vector<SQLValue>& arguments,
-                  SQLStatementCallback*,
-                  SQLStatementErrorCallback*,
+                  SQLStatement::OnSuccessCallback*,
+                  SQLStatement::OnErrorCallback*,
                   ExceptionState&);
   void executeSql(ScriptState*, const String& sql_statement, ExceptionState&);
   void executeSql(ScriptState*,
                   const String& sql_statement,
                   const Optional<Vector<ScriptValue>>& arguments,
-                  SQLStatementCallback*,
-                  SQLStatementErrorCallback*,
+                  V8SQLStatementCallback*,
+                  V8SQLStatementErrorCallback*,
                   ExceptionState&);
 
   Database* GetDatabase() { return database_.Get(); }
 
-  SQLTransactionErrorCallback* ReleaseErrorCallback();
+  OnErrorCallback* ReleaseErrorCallback();
 
   // APIs called from the backend published:
   void RequestTransitToState(SQLTransactionState);
@@ -92,9 +166,9 @@ class SQLTransaction final : public ScriptWrappable,
 
  private:
   SQLTransaction(Database*,
-                 SQLTransactionCallback*,
-                 VoidCallback* success_callback,
-                 SQLTransactionErrorCallback*,
+                 OnProcessCallback*,
+                 OnSuccessCallback*,
+                 OnErrorCallback*,
                  bool read_only);
 
   void ClearCallbacks();
@@ -117,9 +191,9 @@ class SQLTransaction final : public ScriptWrappable,
 
   Member<Database> database_;
   Member<SQLTransactionBackend> backend_;
-  Member<SQLTransactionCallback> callback_;
-  Member<VoidCallback> success_callback_;
-  Member<SQLTransactionErrorCallback> error_callback_;
+  Member<OnProcessCallback> callback_;
+  Member<OnSuccessCallback> success_callback_;
+  Member<OnErrorCallback> error_callback_;
 
   bool execute_sql_allowed_;
   std::unique_ptr<SQLErrorData> transaction_error_;

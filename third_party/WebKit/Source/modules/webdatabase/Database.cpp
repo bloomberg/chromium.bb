@@ -26,10 +26,10 @@
 #include "modules/webdatabase/Database.h"
 
 #include <memory>
+
 #include "bindings/modules/v8/v8_database_callback.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/html/VoidCallback.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/probe/CoreProbes.h"
 #include "modules/webdatabase/ChangeVersionData.h"
@@ -41,12 +41,9 @@
 #include "modules/webdatabase/DatabaseThread.h"
 #include "modules/webdatabase/DatabaseTracker.h"
 #include "modules/webdatabase/SQLError.h"
-#include "modules/webdatabase/SQLTransaction.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
-#include "modules/webdatabase/SQLTransactionCallback.h"
 #include "modules/webdatabase/SQLTransactionClient.h"
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
-#include "modules/webdatabase/SQLTransactionErrorCallback.h"
 #include "modules/webdatabase/StorageLog.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/sqlite/SQLiteTransaction.h"
@@ -861,36 +858,53 @@ void Database::CloseImmediately() {
 
 void Database::changeVersion(const String& old_version,
                              const String& new_version,
-                             SQLTransactionCallback* callback,
-                             SQLTransactionErrorCallback* error_callback,
-                             VoidCallback* success_callback) {
+                             V8SQLTransactionCallback* callback,
+                             V8SQLTransactionErrorCallback* error_callback,
+                             V8VoidCallback* success_callback) {
   ChangeVersionData data(old_version, new_version);
-  RunTransaction(callback, error_callback, success_callback, false, &data);
+  RunTransaction(SQLTransaction::OnProcessV8Impl::Create(callback),
+                 SQLTransaction::OnErrorV8Impl::Create(error_callback),
+                 SQLTransaction::OnSuccessV8Impl::Create(success_callback),
+                 false, &data);
 }
 
-void Database::transaction(SQLTransactionCallback* callback,
-                           SQLTransactionErrorCallback* error_callback,
-                           VoidCallback* success_callback) {
+void Database::transaction(V8SQLTransactionCallback* callback,
+                           V8SQLTransactionErrorCallback* error_callback,
+                           V8VoidCallback* success_callback) {
+  RunTransaction(SQLTransaction::OnProcessV8Impl::Create(callback),
+                 SQLTransaction::OnErrorV8Impl::Create(error_callback),
+                 SQLTransaction::OnSuccessV8Impl::Create(success_callback),
+                 false);
+}
+
+void Database::readTransaction(V8SQLTransactionCallback* callback,
+                               V8SQLTransactionErrorCallback* error_callback,
+                               V8VoidCallback* success_callback) {
+  RunTransaction(SQLTransaction::OnProcessV8Impl::Create(callback),
+                 SQLTransaction::OnErrorV8Impl::Create(error_callback),
+                 SQLTransaction::OnSuccessV8Impl::Create(success_callback),
+                 true);
+}
+
+void Database::PerformTransaction(
+    SQLTransaction::OnProcessCallback* callback,
+    SQLTransaction::OnErrorCallback* error_callback,
+    SQLTransaction::OnSuccessCallback* success_callback) {
   RunTransaction(callback, error_callback, success_callback, false);
 }
 
-void Database::readTransaction(SQLTransactionCallback* callback,
-                               SQLTransactionErrorCallback* error_callback,
-                               VoidCallback* success_callback) {
-  RunTransaction(callback, error_callback, success_callback, true);
-}
-
 static void CallTransactionErrorCallback(
-    SQLTransactionErrorCallback* callback,
+    SQLTransaction::OnErrorCallback* callback,
     std::unique_ptr<SQLErrorData> error_data) {
-  callback->handleEvent(SQLError::Create(*error_data));
+  callback->OnError(SQLError::Create(*error_data));
 }
 
-void Database::RunTransaction(SQLTransactionCallback* callback,
-                              SQLTransactionErrorCallback* error_callback,
-                              VoidCallback* success_callback,
-                              bool read_only,
-                              const ChangeVersionData* change_version_data) {
+void Database::RunTransaction(
+    SQLTransaction::OnProcessCallback* callback,
+    SQLTransaction::OnErrorCallback* error_callback,
+    SQLTransaction::OnSuccessCallback* success_callback,
+    bool read_only,
+    const ChangeVersionData* change_version_data) {
   if (!GetExecutionContext())
     return;
 
@@ -900,14 +914,15 @@ void Database::RunTransaction(SQLTransactionCallback* callback,
 // into Database so that we only create the SQLTransaction if we're
 // actually going to run it.
 #if DCHECK_IS_ON()
-  SQLTransactionErrorCallback* original_error_callback = error_callback;
+  SQLTransaction::OnErrorCallback* original_error_callback = error_callback;
 #endif
   SQLTransaction* transaction = SQLTransaction::Create(
       this, callback, success_callback, error_callback, read_only);
   SQLTransactionBackend* transaction_backend =
       RunTransaction(transaction, read_only, change_version_data);
   if (!transaction_backend) {
-    SQLTransactionErrorCallback* callback = transaction->ReleaseErrorCallback();
+    SQLTransaction::OnErrorCallback* callback =
+        transaction->ReleaseErrorCallback();
 #if DCHECK_IS_ON()
     DCHECK_EQ(callback, original_error_callback);
 #endif
