@@ -2122,7 +2122,7 @@ gl_renderer_query_dmabuf_formats(struct weston_compositor *wc,
 	}
 
 	if (fallback) {
-		memcpy(formats, fallback_formats, num * sizeof(int));
+		memcpy(*formats, fallback_formats, num * sizeof(int));
 		*num_formats = num;
 		return;
 	}
