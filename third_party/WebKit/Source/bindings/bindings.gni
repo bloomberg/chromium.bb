@@ -154,6 +154,8 @@ bindings_core_v8_files =
                     "core/v8/V8StringResource.h",
                     "core/v8/V8V0CustomElementLifecycleCallbacks.cpp",
                     "core/v8/V8V0CustomElementLifecycleCallbacks.h",
+                    "core/v8/V8WasmResponseExtensions.cpp",
+                    "core/v8/V8WasmResponseExtensions.h",
                     "core/v8/V8WorkerOrWorkletEventListener.cpp",
                     "core/v8/V8WorkerOrWorkletEventListener.h",
                     "core/v8/WindowProxy.cpp",

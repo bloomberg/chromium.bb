@@ -190,3 +190,53 @@ function InstantiateFromInvalidDownload() {
     .then(assert_unreached,
           AssertCompileError);
 }
+
+function TestStreamingCompileExistsInWorker() {
+  let resolve;
+  // Create a promise which fulfills when the worker finishes.
+  let promise = new Promise(function(res, rej) {
+    resolve = res;
+  });
+
+  let blobURL = URL.createObjectURL(new Blob(
+      [
+        '(',
+        function() {
+          // Return true if the WebAssembly.compileStreaming exists.
+          // WebAssembly.compileStreaming is not executed on the worker because
+          // fetch() does not work on a worker. It just causes a timeout.
+          self.postMessage(typeof WebAssembly.compileStreaming !== "undefined");
+        }.toString(),
+        ')()'
+      ],
+      {type: 'application/javascript'}));
+
+  let worker = new Worker(blobURL);
+  worker.addEventListener('message', e => resolve(e.data));
+  return promise.then(exists => assert_true(exists));
+}
+
+function TestStreamingInstantiateExistsInWorker() {
+  let resolve;
+  // Create a promise which fulfills when the worker finishes.
+  let promise = new Promise(function(res, rej) {
+    resolve = res;
+  });
+
+  let blobURL = URL.createObjectURL(new Blob(
+      [
+        '(',
+        function() {
+          // Return true if the WebAssembly.instantiateStreaming exists.
+          // WebAssembly.instantiateStreaming is not executed on the worker because
+          // fetch() does not work on a worker. It just causes a timeout.
+          self.postMessage(typeof WebAssembly.instantiateStreaming !== "undefined");
+        }.toString(),
+        ')()'
+      ],
+      {type: 'application/javascript'}));
+
+  let worker = new Worker(blobURL);
+  worker.addEventListener('message', e => resolve(e.data));
+  return promise.then(exists => assert_true(exists));
+}
