@@ -102,6 +102,10 @@ public class BuildInfo {
         return msg;
     }
 
+    public static String getPackageVersionCode() {
+        return getAll()[9];
+    }
+
     public static String getPackageVersionName() {
         return getAll()[10];
     }

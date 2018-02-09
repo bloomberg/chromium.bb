@@ -10,6 +10,7 @@ import android.content.Context;
 import android.util.Log;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
@@ -128,9 +129,12 @@ public class PureJavaExceptionReporter {
         addPairedString(GMS_CORE_VERSION, allInfo[BuildInfo.GMS_CORE_VERSION_INDEX]);
         addPairedString(INSTALLER_PACKAGE_NAME, allInfo[BuildInfo.INSTALLER_PACKAGE_NAME_INDEX]);
         addPairedString(ABI_NAME, allInfo[BuildInfo.ABI_NAME_INDEX]);
-        addPairedString(PACKAGE, BuildInfo.getPackageName());
         addPairedString(EXCEPTION_INFO, Log.getStackTraceString(javaException));
         addPairedString(EARLY_JAVA_EXCEPTION, "true");
+        addPairedString(PACKAGE,
+                BuildConfig.FIREBASE_APP_ID + " v" + BuildInfo.getPackageVersionCode() + " ("
+                        + BuildInfo.getPackageVersionName() + ")");
+
         addString(mBoundary);
     }
 
