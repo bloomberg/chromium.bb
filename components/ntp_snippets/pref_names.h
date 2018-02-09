@@ -12,6 +12,10 @@ namespace prefs {
 // an enterprise policy.
 extern const char kEnableSnippets[];
 
+// Whether the list of NTP snippets is visible in UI. This is set to false when
+// the user toggles the list off.
+extern const char kArticlesListVisible[];
+
 // The pref name under which remote suggestion categories (including their ID
 // and title) are stored.
 extern const char kRemoteSuggestionCategories[];

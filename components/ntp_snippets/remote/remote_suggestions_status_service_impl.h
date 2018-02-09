@@ -40,9 +40,20 @@ class RemoteSuggestionsStatusServiceImpl
                            NoSigninNeeded);
   FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceImplTest,
                            DisabledViaPref);
+  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceImplTest,
+                           DisabledViaAdditionalPref);
+  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceImplTest,
+                           EnabledAfterListFolded);
+  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceImplTest,
+                           DisabledWhenListFoldedOnStart);
+  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceImplTest,
+                           EnablingAfterFoldedStart);
+  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceImplTest,
+                           EnablingAfterFoldedStartSignedIn);
 
-  // Callback for the PrefChangeRegistrar.
+  // Callbacks for the PrefChangeRegistrar.
   void OnSnippetsEnabledChanged();
+  void OnListVisibilityChanged();
 
   void OnStateChanged(RemoteSuggestionsStatus new_status);
 
@@ -60,8 +71,12 @@ class RemoteSuggestionsStatusServiceImpl
   // Name of a preference to be used as an additional toggle to guard the
   // remote suggestions provider.
   std::string additional_toggle_pref_;
-
   bool is_signed_in_;
+  // Whether the list of remote suggestions was ever visible during the session.
+  // In case it was visible and then gets hidden, the service will only be
+  // disabled on the next startup of browser, provided that the list is still
+  // hidden then.
+  bool list_visible_during_session_;
   PrefService* pref_service_;
 
   PrefChangeRegistrar pref_change_registrar_;

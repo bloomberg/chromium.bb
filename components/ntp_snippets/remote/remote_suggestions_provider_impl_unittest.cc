@@ -318,6 +318,7 @@ class MockRemoteSuggestionsStatusService
 
   MOCK_METHOD1(Init, void(const StatusChangeCallback& callback));
   MOCK_METHOD1(OnSignInStateChanged, void(bool));
+  MOCK_METHOD1(OnListVisibilityToggled, void(bool));
 };
 
 std::string BoolToString(bool value) {
