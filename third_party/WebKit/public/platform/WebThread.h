@@ -79,10 +79,9 @@ class BLINK_PLATFORM_EXPORT WebThread {
     return nullptr;
   }
 
-  // DOUBLY DEPRECATED: GetWebTaskRunner() and GetSingleThreadTaskRunner()
-  // will be consolidated into (deprecated) GetTaskRunner().
+  // DOUBLY DEPRECATED: GetSingleThreadTaskRunner() will be replaced with
+  // (deprecated) GetTaskRunner().
   // Use GetTaskRunner() instead, but be sure to read the comments above first!
-  base::SingleThreadTaskRunner* GetWebTaskRunner() const;
   scoped_refptr<base::SingleThreadTaskRunner> GetSingleThreadTaskRunner() const;
 
   virtual bool IsCurrentThread() const = 0;
