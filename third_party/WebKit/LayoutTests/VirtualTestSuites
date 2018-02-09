@@ -577,22 +577,22 @@
   {
     "prefix": "incremental-shadow-dom",
     "base": "external/wpt/shadow-dom",
-    "args": ["--enable-blink-features=IncrementalShadowDOM"]
+    "args": ["--enable-blink-features=SlotInFlatTree,IncrementalShadowDOM"]
   },
   {
     "prefix": "incremental-shadow-dom",
     "base": "fast/dom/shadow",
-    "args": ["--enable-blink-features=IncrementalShadowDOM"]
+    "args": ["--enable-blink-features=SlotInFlatTree,IncrementalShadowDOM"]
   },
   {
     "prefix": "incremental-shadow-dom",
     "base": "shadow-dom",
-    "args": ["--enable-blink-features=IncrementalShadowDOM"]
+    "args": ["--enable-blink-features=SlotInFlatTree,IncrementalShadowDOM"]
   },
   {
     "prefix": "incremental-shadow-dom",
     "base": "external/wpt/css/css-scoping",
-    "args": ["--enable-blink-features=IncrementalShadowDOM"]
+    "args": ["--enable-blink-features=SlotInFlatTree,IncrementalShadowDOM"]
   },
   {
     "prefix": "modern-media-controls",
