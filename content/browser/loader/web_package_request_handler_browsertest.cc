@@ -42,9 +42,8 @@ class WebPackageRequestHandlerBrowserTest
 IN_PROC_BROWSER_TEST_P(WebPackageRequestHandlerBrowserTest, Simple) {
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url =
-      embedded_test_server()->GetURL("/htxg/origin-signed-response.html");
-  base::string16 title = base::ASCIIToUTF16("https://example.com/test.html");
+  GURL url = embedded_test_server()->GetURL("/htxg/test.example.org_test.htxg");
+  base::string16 title = base::ASCIIToUTF16("https://test.example.org/test/");
   TitleWatcher title_watcher(shell()->web_contents(), title);
   NavigateToURL(shell(), url);
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());

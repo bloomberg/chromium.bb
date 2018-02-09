@@ -1,0 +1,37 @@
+The certificate message files (*.msg) and the signed exchange files (*.htxg) in
+this directory are generated using the following commands.
+
+gen-certurl and gen-signedexchange are available in webpackage repository [1].
+But currently, these commands are under review yet [2].
+ [1] https://github.com/WICG/webpackage
+ [2] https://github.com/WICG/webpackage/pull/119
+TODO(https://crbug.com/803774): Update when the commands are upstreamed.
+
+
+# Get the private key of "*.example.org".
+sed -ne '/-BEGIN PRIVATE KEY-/,/-END PRIVATE KEY-/p' \
+  ../../../../net/data/ssl/certificates/wildcard.pem \
+  > /tmp/wildcard_example.org.private.pem
+
+# Get the public key of "*.example.org".
+sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' \
+  ../../../../net/data/ssl/certificates/wildcard.pem \
+  > /tmp/wildcard_example.org.public.pem
+
+# Generate the certificate message file.
+gen-certurl  \
+  /tmp/wildcard_example.org.public.pem > wildcard_example.org.public.pem.msg
+
+# Generate the signed exchange file.
+gen-signedexchange \
+  -uri https://test.example.org/test/ \
+  -status 200 \
+  -content test.html \
+  -certificate /tmp/wildcard_example.org.public.pem \
+  -certUrl https://cert.example.org/cert.msg \
+  -validityUrl https://cert.example.org/resource.validity.msg \
+  -privateKey /tmp/wildcard_example.org.private.pem \
+  -o test.example.org_test.htxg \
+  -miRecordSize=100
+
+
