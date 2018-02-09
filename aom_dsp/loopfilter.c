@@ -835,7 +835,7 @@ void aom_highbd_lpf_horizontal_16_dual_c(uint16_t *s, int p,
                                          const uint8_t *blimit,
                                          const uint8_t *limit,
                                          const uint8_t *thresh, int bd) {
-  highbd_mb_lpf_horizontal_edge_w(s, p, blimit, limit, thresh, 1, bd);
+  highbd_mb_lpf_horizontal_edge_w(s, p, blimit, limit, thresh, 2, bd);
 }
 
 static void highbd_mb_lpf_vertical_edge_w(uint16_t *s, int p,

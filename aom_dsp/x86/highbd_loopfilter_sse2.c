@@ -434,6 +434,7 @@ void aom_highbd_lpf_horizontal_16_dual_sse2(uint16_t *s, int p,
                                             const uint8_t *_limit,
                                             const uint8_t *_thresh, int bd) {
   highbd_lpf_horz_edge_8_4p(s, p, _blimit, _limit, _thresh, bd);
+  highbd_lpf_horz_edge_8_4p(s + 4, p, _blimit, _limit, _thresh, bd);
 }
 
 static INLINE void store_horizontal_8(const __m128i *p2, const __m128i *p1,

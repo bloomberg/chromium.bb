@@ -431,6 +431,7 @@ add_proto qw/void aom_lpf_vertical_16/, "uint8_t *s, int pitch, const uint8_t *b
 specialize qw/aom_lpf_vertical_16 sse2/;
 
 add_proto qw/void aom_lpf_vertical_16_dual/, "uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh";
+specialize qw/aom_lpf_vertical_16_dual sse2/;
 
 add_proto qw/void aom_lpf_vertical_6/, "uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh";
 specialize qw/aom_lpf_vertical_6 sse2/;
