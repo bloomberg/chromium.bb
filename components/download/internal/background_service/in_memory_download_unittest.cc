@@ -80,10 +80,11 @@ class InMemoryDownloadTest : public testing::Test {
 
   // Helper method to create a download with request_params.
   void CreateDownload(const RequestParams& request_params) {
-    download_ = std::make_unique<InMemoryDownload>(
+    download_ = std::make_unique<InMemoryDownloadImpl>(
         base::GenerateGUID(), request_params, TRAFFIC_ANNOTATION_FOR_TESTS,
         delegate(), request_context_getter_,
-        base::BindOnce(&BlobStorageContextGetter, blob_storage_context_.get()),
+        base::BindRepeating(&BlobStorageContextGetter,
+                            blob_storage_context_.get()),
         io_thread_->task_runner());
   }
 
@@ -98,7 +99,7 @@ class InMemoryDownloadTest : public testing::Test {
   // Message loop for the main thread.
   base::MessageLoop main_loop;
 
-  std::unique_ptr<InMemoryDownload> download_;
+  std::unique_ptr<InMemoryDownloadImpl> download_;
   MockDelegate mock_delegate_;
 
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;

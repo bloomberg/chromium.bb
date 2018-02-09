@@ -11,6 +11,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/download/content/public/all_download_item_notifier.h"
+#include "components/download/internal/background_service/test/mock_download_driver_client.h"
 #include "content/public/test/fake_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "net/http/http_response_headers.h"
@@ -44,17 +45,6 @@ MATCHER_P(DriverEntryEqual, entry, "") {
 }
 
 }  // namespace
-
-class MockDriverClient : public DownloadDriver::Client {
- public:
-  MOCK_METHOD1(OnDriverReady, void(bool));
-  MOCK_METHOD1(OnDriverHardRecoverComplete, void(bool));
-  MOCK_METHOD1(OnDownloadCreated, void(const DriverEntry&));
-  MOCK_METHOD2(OnDownloadFailed, void(const DriverEntry&, FailureType));
-  MOCK_METHOD1(OnDownloadSucceeded, void(const DriverEntry&));
-  MOCK_METHOD1(OnDownloadUpdated, void(const DriverEntry&));
-  MOCK_CONST_METHOD1(IsTrackingDownload, bool(const std::string&));
-};
 
 class DownloadDriverImplTest : public testing::Test {
  public:

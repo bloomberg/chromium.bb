@@ -1,9 +1,9 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_TEST_NOOP_STORE_H_
-#define COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_TEST_NOOP_STORE_H_
+#ifndef COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_NOOP_STORE_H_
+#define COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_NOOP_STORE_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -14,9 +14,7 @@ namespace download {
 struct Entry;
 
 // A Store implementation that doesn't do anything but honors the interface
-// requirements.
-// TODO(dtrainor, shaktisahu): Remove this if it's no longer necessary after the
-// real Store implementation is added.
+// requirements. Used in incognito mode without any database IO.
 class NoopStore : public Store {
  public:
   NoopStore();
@@ -43,4 +41,4 @@ class NoopStore : public Store {
 
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_TEST_NOOP_STORE_H_
+#endif  // COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_NOOP_STORE_H_

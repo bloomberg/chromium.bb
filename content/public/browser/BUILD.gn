@@ -318,7 +318,7 @@ jumbo_source_set("browser_sources") {
     # We expose skia headers in the public API.
     "//skia",
 
-    # We expose storage headers for quota in the public API.
+    # We expose storage headers for quota and blob storage context in the public API.
     "//storage/browser",
     "//third_party/WebKit/public:mojo_bindings",
   ]

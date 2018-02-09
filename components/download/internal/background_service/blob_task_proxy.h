@@ -26,7 +26,7 @@ namespace download {
 class BlobTaskProxy {
  public:
   using BlobContextGetter =
-      base::OnceCallback<base::WeakPtr<storage::BlobStorageContext>()>;
+      base::RepeatingCallback<base::WeakPtr<storage::BlobStorageContext>()>;
   using BlobDataHandleCallback =
       base::OnceCallback<void(std::unique_ptr<storage::BlobDataHandle>,
                               storage::BlobStatus status)>;

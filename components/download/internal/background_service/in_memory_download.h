@@ -31,21 +31,13 @@ namespace download {
 
 struct RequestParams;
 
-// Object to start a single download and hold in-memory download data.
+// Class to start a single download and hold in-memory download data.
 // Used by download service in Incognito mode, where download files shouldn't
 // be persisted to disk.
 //
 // Life cycle: The object is created before creating the network request.
 // Call Start() to send the network request.
-//
-// Threading contract:
-// 1. This object lives on the main thread.
-// 2. Reading/writing IO buffer from network is done on another thread,
-// based on |request_context_getter_|. When complete, main thread is notified.
-// 3. After network IO is done, Blob related work is done on IO thread with
-// |blob_task_proxy_|, then notify the result to main thread.
-
-class InMemoryDownload : public net::URLFetcherDelegate {
+class InMemoryDownload {
  public:
   // Report download progress with in-memory download backend.
   class Delegate {
@@ -55,6 +47,18 @@ class InMemoryDownload : public net::URLFetcherDelegate {
 
    protected:
     virtual ~Delegate() = default;
+  };
+
+  // Factory to create in memory download.
+  class Factory {
+   public:
+    virtual std::unique_ptr<InMemoryDownload> Create(
+        const std::string& guid,
+        const RequestParams& request_params,
+        const net::NetworkTrafficAnnotationTag& traffic_annotation,
+        Delegate* delegate) = 0;
+
+    virtual ~Factory() = default;
   };
 
   // States of the download.
@@ -79,7 +83,56 @@ class InMemoryDownload : public net::URLFetcherDelegate {
     COMPLETE,
   };
 
-  InMemoryDownload(
+  virtual ~InMemoryDownload();
+
+  // Send the download request.
+  virtual void Start() = 0;
+
+  // Get a copy of blob data handle.
+  virtual std::unique_ptr<storage::BlobDataHandle> ResultAsBlob() = 0;
+
+  // Returns the estimate of dynamically allocated memory in bytes.
+  virtual size_t EstimateMemoryUsage() const = 0;
+
+  const std::string& guid() const { return guid_; }
+  uint64_t bytes_downloaded() const { return bytes_downloaded_; }
+  State state() const { return state_; }
+  const base::Time& completion_time() const { return completion_time_; }
+  scoped_refptr<const net::HttpResponseHeaders> response_headers() const {
+    return response_headers_;
+  }
+
+ protected:
+  InMemoryDownload(const std::string& guid);
+
+  // GUID of the download.
+  const std::string guid_;
+
+  State state_;
+
+  // Completion time of download when data is saved as blob.
+  base::Time completion_time_;
+
+  // HTTP response headers.
+  scoped_refptr<const net::HttpResponseHeaders> response_headers_;
+
+  uint64_t bytes_downloaded_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InMemoryDownload);
+};
+
+// Implementation of InMemoryDownload and uses URLFetcher as network backend.
+// Threading contract:
+// 1. This object lives on the main thread.
+// 2. Reading/writing IO buffer from network is done on another thread,
+// based on |request_context_getter_|. When complete, main thread is notified.
+// 3. After network IO is done, Blob related work is done on IO thread with
+// |blob_task_proxy_|, then notify the result to main thread.
+class InMemoryDownloadImpl : public net::URLFetcherDelegate,
+                             public InMemoryDownload {
+ public:
+  InMemoryDownloadImpl(
       const std::string& guid,
       const RequestParams& request_params,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
@@ -87,19 +140,14 @@ class InMemoryDownload : public net::URLFetcherDelegate {
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       BlobTaskProxy::BlobContextGetter blob_context_getter,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
-  ~InMemoryDownload() override;
-
-  // Send the download request.
-  void Start();
-
-  // Get a copy of blob data handle.
-  std::unique_ptr<storage::BlobDataHandle> ResultAsBlob();
-
-  const std::string& guid() const { return guid_; }
-  uint64_t bytes_downloaded() const { return bytes_downloaded_; }
-  State state() const { return state_; }
+  ~InMemoryDownloadImpl() override;
 
  private:
+  // InMemoryDownload implementation.
+  void Start() override;
+  std::unique_ptr<storage::BlobDataHandle> ResultAsBlob() override;
+  size_t EstimateMemoryUsage() const override;
+
   // net::URLFetcherDelegate implementation.
   void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                   int64_t current,
@@ -118,9 +166,6 @@ class InMemoryDownload : public net::URLFetcherDelegate {
 
   // Notifies the delegate about completion.
   void NotifyDelegateDownloadComplete();
-
-  // GUID of the download.
-  const std::string guid_;
 
   // Request parameters of the download.
   const RequestParams request_params_;
@@ -146,16 +191,12 @@ class InMemoryDownload : public net::URLFetcherDelegate {
   // Used to access blob storage context.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-  State state_;
-
   Delegate* delegate_;
 
-  uint64_t bytes_downloaded_;
-
   // Bounded to main thread task runner.
-  base::WeakPtrFactory<InMemoryDownload> weak_ptr_factory_;
+  base::WeakPtrFactory<InMemoryDownloadImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(InMemoryDownload);
+  DISALLOW_COPY_AND_ASSIGN(InMemoryDownloadImpl);
 };
 
 }  // namespace download

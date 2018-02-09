@@ -54,6 +54,7 @@
 #include "services/file/user_id_map.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 
@@ -187,6 +188,12 @@ class BrowserContextServiceManagerConnectionHolder
 
   DISALLOW_COPY_AND_ASSIGN(BrowserContextServiceManagerConnectionHolder);
 };
+
+base::WeakPtr<storage::BlobStorageContext> BlobStorageContextGetter(
+    scoped_refptr<ChromeBlobStorageContext> blob_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return blob_context->context()->AsWeakPtr();
+}
 
 }  // namespace
 
@@ -350,6 +357,15 @@ void BrowserContext::CreateFileBackedBlob(
                      base::WrapRefCounted(blob_context), path, offset, size,
                      expected_modification_time),
       std::move(callback));
+}
+
+// static
+BrowserContext::BlobContextGetter BrowserContext::GetBlobStorageContext(
+    BrowserContext* browser_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  scoped_refptr<ChromeBlobStorageContext> chrome_blob_context =
+      ChromeBlobStorageContext::GetFor(browser_context);
+  return base::BindRepeating(&BlobStorageContextGetter, chrome_blob_context);
 }
 
 // static
