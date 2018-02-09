@@ -33,6 +33,7 @@
 #include "third_party/pdfium/public/fpdf_dataavail.h"
 #include "third_party/pdfium/public/fpdf_text.h"
 #include "third_party/pdfium/testing/test_support.h"
+#include "v8/include/v8-platform.h"
 
 namespace {
 
@@ -235,10 +236,10 @@ bool PDFiumFuzzerHelper::RenderPage(FPDF_DOCUMENT doc,
 struct TestCase {
   TestCase() {
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-    InitializeV8ForPDFium(ProgramPath(), "", &natives_blob, &snapshot_blob,
-                          &platform);
+    platform = InitializeV8ForPDFiumWithStartupData(
+        ProgramPath(), "", &natives_blob, &snapshot_blob);
 #else
-    InitializeV8ForPDFium(ProgramPath(), &platform);
+    platform = InitializeV8ForPDFium(ProgramPath());
 #endif
 
     memset(&config, '\0', sizeof(config));
@@ -254,10 +255,11 @@ struct TestCase {
     FSDK_SetUnSpObjProcessHandler(&unsupport_info);
   }
 
-  v8::Platform* platform;
+  std::unique_ptr<v8::Platform> platform;
   v8::StartupData natives_blob;
   v8::StartupData snapshot_blob;
   FPDF_LIBRARY_CONFIG config;
   UNSUPPORT_INFO unsupport_info;
 };
-static TestCase* testCase = new TestCase();
+
+static TestCase* test_case = new TestCase();
