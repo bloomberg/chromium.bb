@@ -53,7 +53,7 @@ constexpr int kEnableQuietModeDay = 2;
 constexpr int kMaximumSmallIconCount = 3;
 
 constexpr int kTrayItemInnerIconSize = 16;
-;
+
 constexpr gfx::Size kTrayItemOuterSize(26, 26);
 constexpr int kTrayMainAxisInset = 3;
 constexpr int kTrayCrossAxisInset = 0;

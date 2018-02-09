@@ -124,10 +124,13 @@ def AggregateVectorIcons(working_directory, file_list, output_cc, output_h):
             CamelCase(icon_name, "Path1x"), vector_commands_1x))
 
       # Define the value of kFooBarIcon.
-      third_arg = "nullptr" if vector_commands_1x is None else CamelCase(
-                  icon_name, "Path1x")
-      output_cc.write("VECTOR_ICON_TEMPLATE({}, {}, {})\n".format(CamelCase(
-          icon_name, "Icon"), CamelCase(icon_name, "Path"), third_arg))
+      if vector_commands_1x is None:
+        output_cc.write("VECTOR_ICON_TEMPLATE({}, {})\n".format(CamelCase(
+            icon_name, "Icon"), CamelCase(icon_name, "Path")))
+      else:
+        output_cc.write("VECTOR_ICON_TEMPLATE2({}, {}, {})\n".format(CamelCase(
+            icon_name, "Icon"), CamelCase(icon_name, "Path"), CamelCase(
+                  icon_name, "Path1x")))
 
   output_cc.close()
 
