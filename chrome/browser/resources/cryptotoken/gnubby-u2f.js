@@ -151,8 +151,8 @@ Gnubby.prototype.version = function(cb) {
       cb(-GnubbyDevice.OK, v1.buffer);
       return;
     }
-    if (rc == 0x6700) {
-      // Wrong length. Try with non-ISO 7816-4-conforming layout defined in
+    if (rc) {
+      // Error. Try with non-ISO 7816-4-conforming layout defined in
       // earlier U2F drafts.
       apdu = new Uint8Array(
           [0x00, Gnubby.U2F_VERSION, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
