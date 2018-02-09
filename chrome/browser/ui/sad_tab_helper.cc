@@ -39,6 +39,11 @@ SadTabHelper::SadTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
 }
 
+void SadTabHelper::ReinstallInWebView() {
+  if (sad_tab_)
+    sad_tab_->ReinstallInWebView();
+}
+
 void SadTabHelper::RenderViewReady() {
   sad_tab_.reset();
 }

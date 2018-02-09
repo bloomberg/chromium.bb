@@ -54,11 +54,11 @@ content::WebContents* WebView::GetWebContents() {
 void WebView::SetWebContents(content::WebContents* replacement) {
   if (replacement == web_contents())
     return;
+  SetCrashedOverlayView(nullptr);
   DetachWebContents();
   WebContentsObserver::Observe(replacement);
   // web_contents() now returns |replacement| from here onwards.
-  SetFocusBehavior(web_contents() ? FocusBehavior::ALWAYS
-                                  : FocusBehavior::NEVER);
+  UpdateCrashedOverlayView();
   if (wc_owner_.get() != replacement)
     wc_owner_.reset();
   if (embed_fullscreen_widget_mode_enabled_) {
@@ -91,6 +91,25 @@ void WebView::SetResizeBackgroundColor(SkColor resize_background_color) {
   holder_->set_resize_background_color(resize_background_color);
 }
 
+void WebView::SetCrashedOverlayView(View* crashed_overlay_view) {
+  if (crashed_overlay_view_ == crashed_overlay_view)
+    return;
+
+  if (crashed_overlay_view_) {
+    RemoveChildView(crashed_overlay_view_);
+    if (!crashed_overlay_view_->owned_by_client())
+      delete crashed_overlay_view_;
+  }
+
+  crashed_overlay_view_ = crashed_overlay_view;
+  if (crashed_overlay_view_) {
+    AddChildView(crashed_overlay_view_);
+    crashed_overlay_view_->SetBoundsRect(gfx::Rect(size()));
+  }
+
+  UpdateCrashedOverlayView();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebView, View overrides:
 
@@ -111,6 +130,9 @@ std::unique_ptr<content::WebContents> WebView::SwapWebContents(
 }
 
 void WebView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (crashed_overlay_view_)
+    crashed_overlay_view_->SetBoundsRect(gfx::Rect(size()));
+
   // In most cases, the holder is simply sized to fill this WebView's bounds.
   // Only WebContentses that are in fullscreen mode and being screen-captured
   // will engage the special layout/sizing behavior.
@@ -181,12 +203,12 @@ bool WebView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void WebView::OnFocus() {
-  if (web_contents())
+  if (web_contents() && !web_contents()->IsCrashed())
     web_contents()->Focus();
 }
 
 void WebView::AboutToRequestFocusFromTabTraversal(bool reverse) {
-  if (web_contents())
+  if (web_contents() && !web_contents()->IsCrashed())
     web_contents()->FocusThroughTabTraversal(reverse);
 }
 
@@ -195,7 +217,7 @@ void WebView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 gfx::NativeViewAccessible WebView::GetNativeViewAccessible() {
-  if (web_contents()) {
+  if (web_contents() && !web_contents()->IsCrashed()) {
     content::RenderWidgetHostView* host_view =
         web_contents()->GetRenderWidgetHostView();
     if (host_view)
@@ -216,10 +238,12 @@ bool WebView::EmbedsFullscreenWidget() const {
 // WebView, content::WebContentsObserver implementation:
 
 void WebView::RenderViewReady() {
+  UpdateCrashedOverlayView();
   NotifyAccessibilityWebContentsChanged();
 }
 
 void WebView::RenderViewDeleted(content::RenderViewHost* render_view_host) {
+  UpdateCrashedOverlayView();
   NotifyAccessibilityWebContentsChanged();
 }
 
@@ -264,6 +288,7 @@ void WebView::OnWebContentsFocused(
 }
 
 void WebView::RenderProcessGone(base::TerminationStatus status) {
+  UpdateCrashedOverlayView();
   NotifyAccessibilityWebContentsChanged();
 }
 
@@ -315,6 +340,22 @@ void WebView::ReattachForFullscreenChange(bool enter_fullscreen) {
     OnBoundsChanged(bounds());
   }
   NotifyAccessibilityWebContentsChanged();
+}
+
+void WebView::UpdateCrashedOverlayView() {
+  if (web_contents() && web_contents()->IsCrashed() && crashed_overlay_view_) {
+    SetFocusBehavior(FocusBehavior::NEVER);
+    holder_->SetVisible(false);
+    crashed_overlay_view_->SetVisible(true);
+    return;
+  }
+
+  SetFocusBehavior(web_contents() ? FocusBehavior::ALWAYS
+                                  : FocusBehavior::NEVER);
+
+  if (crashed_overlay_view_)
+    crashed_overlay_view_->SetVisible(false);
+  holder_->SetVisible(true);
 }
 
 void WebView::NotifyAccessibilityWebContentsChanged() {

@@ -97,15 +97,6 @@ void ChromeWebContentsViewDelegateViews::ShowContextMenu(
                 params));
 }
 
-void ChromeWebContentsViewDelegateViews::SizeChanged(const gfx::Size& size) {
-  SadTabHelper* sad_tab_helper = SadTabHelper::FromWebContents(web_contents_);
-  if (!sad_tab_helper)
-    return;
-  SadTabView* sad_tab = static_cast<SadTabView*>(sad_tab_helper->sad_tab());
-  if (sad_tab)
-    sad_tab->GetWidget()->SetBounds(gfx::Rect(size));
-}
-
 content::WebContentsViewDelegate* CreateWebContentsViewDelegate(
     content::WebContents* web_contents) {
   return new ChromeWebContentsViewDelegateViews(web_contents);

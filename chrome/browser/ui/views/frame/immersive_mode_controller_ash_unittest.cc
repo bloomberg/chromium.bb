@@ -72,7 +72,7 @@ class ImmersiveModeControllerAshTest : public TestWithBrowserView {
   // Set whether the browser is in tab fullscreen.
   void SetTabFullscreen(bool tab_fullscreen) {
     content::WebContents* web_contents =
-        browser_view()->GetContentsWebViewForTest()->GetWebContents();
+        browser_view()->contents_web_view()->GetWebContents();
     std::unique_ptr<FullscreenNotificationObserver> waiter(
         new FullscreenNotificationObserver());
     if (tab_fullscreen) {
@@ -120,8 +120,7 @@ TEST_F(ImmersiveModeControllerAshTest, Layout) {
 
   TabStrip* tabstrip = browser_view()->tabstrip();
   ToolbarView* toolbar = browser_view()->toolbar();
-  views::WebView* contents_web_view =
-      browser_view()->GetContentsWebViewForTest();
+  views::WebView* contents_web_view = browser_view()->contents_web_view();
 
   // Immersive fullscreen starts out disabled.
   ASSERT_FALSE(browser_view()->GetWidget()->IsFullscreen());

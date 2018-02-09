@@ -38,7 +38,7 @@ class BrowserViewTest : public InProcessBrowserTest {
   }
 
   views::WebView* contents_web_view() {
-    return browser_view()->GetContentsWebViewForTest();
+    return browser_view()->contents_web_view();
   }
 
   void OpenDevToolsWindow(bool docked) {
