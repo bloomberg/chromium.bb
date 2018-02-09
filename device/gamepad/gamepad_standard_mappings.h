@@ -80,6 +80,7 @@ GamepadButton AxisPositiveAsButton(float input);
 GamepadButton ButtonFromButtonAndAxis(GamepadButton button, float axis);
 GamepadButton NullButton();
 void DpadFromAxis(Gamepad* mapped, float dir);
+float RenormalizeAndClampAxis(float value, float min, float max);
 
 }  // namespace device
 
