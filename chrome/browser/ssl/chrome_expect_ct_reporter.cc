@@ -16,7 +16,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
+#include "base/time/time.h"
+#include "base/time/time_to_iso8601.h"
 #include "base/values.h"
 #include "chrome/common/chrome_features.h"
 #include "net/base/load_flags.h"
@@ -45,15 +46,6 @@ bool HasHeaderValues(net::URLRequest* request,
     }
   }
   return false;
-}
-
-std::string TimeToISO8601(const base::Time& t) {
-  base::Time::Exploded exploded;
-  t.UTCExplode(&exploded);
-  return base::StringPrintf(
-      "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ", exploded.year, exploded.month,
-      exploded.day_of_month, exploded.hour, exploded.minute, exploded.second,
-      exploded.millisecond);
 }
 
 std::unique_ptr<base::ListValue> GetPEMEncodedChainAsList(
@@ -175,8 +167,9 @@ void ChromeExpectCTReporter::OnExpectCTFailed(
       "expect-ct-report", std::make_unique<base::DictionaryValue>());
   report->SetString("hostname", host_port_pair.host());
   report->SetInteger("port", host_port_pair.port());
-  report->SetString("date-time", TimeToISO8601(base::Time::Now()));
-  report->SetString("effective-expiration-date", TimeToISO8601(expiration));
+  report->SetString("date-time", base::TimeToISO8601(base::Time::Now()));
+  report->SetString("effective-expiration-date",
+                    base::TimeToISO8601(expiration));
   report->Set("served-certificate-chain",
               GetPEMEncodedChainAsList(served_certificate_chain));
   report->Set("validated-certificate-chain",

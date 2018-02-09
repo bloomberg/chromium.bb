@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "base/time/time_to_iso8601.h"
 
 namespace google_apis {
 namespace util {
@@ -158,12 +159,7 @@ std::string FormatTimeAsString(const base::Time& time) {
   if (time.is_null())
     return kNullTimeString;
 
-  base::Time::Exploded exploded;
-  time.UTCExplode(&exploded);
-  return base::StringPrintf(
-      "%04d-%02d-%02dT%02d:%02d:%02d.%03dZ",
-      exploded.year, exploded.month, exploded.day_of_month,
-      exploded.hour, exploded.minute, exploded.second, exploded.millisecond);
+  return base::TimeToISO8601(time);
 }
 
 std::string FormatTimeAsStringLocaltime(const base::Time& time) {

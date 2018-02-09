@@ -940,6 +940,8 @@ jumbo_component("base") {
     "time/time.h",
     "time/time_override.cc",
     "time/time_override.h",
+    "time/time_to_iso8601.cc",
+    "time/time_to_iso8601.h",
     "timer/elapsed_timer.cc",
     "timer/elapsed_timer.h",
     "timer/hi_res_timer_manager.h",
