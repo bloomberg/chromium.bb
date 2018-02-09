@@ -207,8 +207,11 @@ bool QuicDataWriter::WriteTag(uint32_t tag) {
 // Low-level optimization is useful here because this function will be
 // called frequently, leading to outsize benefits.
 bool QuicDataWriter::WriteVarInt62(uint64_t value) {
+  DCHECK_EQ(endianness_, NETWORK_BYTE_ORDER);
+
   size_t remaining = capacity_ - length_;
   char* next = buffer_ + length_;
+
   if ((value & UINT64_C(0xc000000000000000)) == 0) {
     // We know the high 2 bits are 0 so |value| is legal.
     // We can do the encoding.

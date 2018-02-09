@@ -143,7 +143,8 @@ class QUIC_EXPORT_PRIVATE QuicDataReader {
   // To be called when a read fails for any reason.
   void OnFailure();
 
-  // The data buffer that we're reading from.
+  // TODO(fkastenholz, b/73004262) change buffer_, et al, to be uint8_t, not
+  // char. The data buffer that we're reading from.
   const char* data_;
 
   // The length of the data buffer that we're reading from.

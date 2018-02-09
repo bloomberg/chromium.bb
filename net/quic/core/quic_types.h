@@ -29,6 +29,10 @@ typedef uint64_t QuicStreamOffset;
 typedef std::array<char, 32> DiversificationNonce;
 typedef std::vector<std::pair<QuicPacketNumber, QuicTime>> PacketTimeVector;
 
+typedef uint64_t QuicIetfStreamDataLength;
+typedef uint64_t QuicIetfStreamId;
+typedef uint64_t QuicIetfStreamOffset;
+
 // A struct for functions which consume data payloads and fins.
 struct QUIC_EXPORT_PRIVATE QuicConsumedData {
   QuicConsumedData(size_t bytes_consumed, bool fin_consumed);
@@ -53,7 +57,7 @@ struct QUIC_EXPORT_PRIVATE QuicConsumedData {
 enum QuicAsyncStatus {
   QUIC_SUCCESS = 0,
   QUIC_FAILURE = 1,
-  // QUIC_PENDING results from an operation that will occur asynchonously. When
+  // QUIC_PENDING results from an operation that will occur asynchronously. When
   // the operation is complete, a callback's |Run| method will be called.
   QUIC_PENDING = 2,
 };
@@ -132,6 +136,48 @@ enum QuicFrameType : int8_t {
   MTU_DISCOVERY_FRAME,
   NUM_FRAME_TYPES
 };
+
+// Ietf frame types. These are defined in the IETF QUIC Specification.
+// Explicit values are given in the enum so that we can be sure that
+// the symbol will map to the correct stream type.
+// All types are defined here, even if we have not yet implmented the
+// quic/core/stream/.... stuff needed.
+enum QuicIetfFrameType : int8_t {
+  IETF_PADDING = 0x00,
+  IETF_RST_STREAM = 0x01,
+  IETF_CONNECTION_CLOSE = 0x02,
+  IETF_APPLICATION_CLOSE = 0x03,
+  IETF_MAX_DATA = 0x04,
+  IETF_MAX_STREAM_DATA = 0x05,
+  IETF_MAX_STREAM_ID = 0x06,
+  IETF_PING = 0x07,
+  IETF_BLOCKED = 0x08,
+  IETF_STREAM_BLOCKED = 0x09,
+  IETF_STREAM_ID_BLOCKED = 0x0a,
+  IETF_NEW_CONNECTION_ID = 0x0b,
+  IETF_STOP_SENDING = 0x0c,
+  IETF_PONG = 0x0d,
+  IETF_ACK = 0x0e,
+  // the low-3 bits of the stream frame type value are actually flags
+  // declaring what parts of the frame are/are-not present, as well as
+  // some other control information. The code would then do something
+  // along the lines of "if ((frame_type & 0xf8) == 0x10)" to determine
+  // whether the frame is a stream frame or not, and then examine each
+  // bit specifically when/as needed.
+  IETF_STREAM = 0x10
+};
+// Masks for the bits that indicate the frame is a Stream frame vs the
+// bits used as flags.
+#define IETF_STREAM_FRAME_TYPE_MASK 0xf8
+#define IETF_STREAM_FRAME_FLAG_MASK 0x07
+#define IS_IETF_STREAM_FRAME(_stype_) \
+  (((_stype_)&IETF_STREAM_FRAME_TYPE_MASK) == IETF_STREAM)
+
+// These are the values encoded in the low-order 3 bits of the
+// IETF_STREAMx frame type.
+#define IETF_STREAM_FRAME_FIN_BIT 0x01
+#define IETF_STREAM_FRAME_LEN_BIT 0x02
+#define IETF_STREAM_FRAME_OFF_BIT 0x04
 
 enum QuicConnectionIdLength {
   PACKET_0BYTE_CONNECTION_ID = 0,
@@ -307,6 +353,21 @@ struct LostPacket {
 
 // A vector of lost packets.
 typedef std::vector<LostPacket> LostPacketVector;
+
+enum QuicIetfTransportErrorCodes : uint16_t {
+  NO_IETF_QUIC_ERROR = 0x0,
+  INTERNAL_ERROR = 0x1,
+  FLOW_CONTROL_ERROR = 0x3,
+  STREAM_ID_ERROR = 0x4,
+  STREAM_STATE_ERROR = 0x5,
+  FINAL_OFFSET_ERROR = 0x6,
+  FRAME_FORMAT_ERROR = 0x7,
+  TRANSPORT_PARAMETER_ERROR = 0x8,
+  VERSION_NEGOTIATION_ERROR = 0x9,
+  PROTOCOL_VIOLATION = 0xA,
+  UNSOLICITED_PONG = 0xB,
+  FRAME_ERROR_base = 0x100,  // add frame type to this base
+};
 
 }  // namespace net
 

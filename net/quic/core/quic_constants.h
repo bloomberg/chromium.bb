@@ -206,6 +206,8 @@ const QuicControlFrameId kInvalidControlFrameId = 0;
 // The max length a stream can have.
 const QuicByteCount kMaxStreamLength = (UINT64_C(1) << 62) - 1;
 
+// The max value that can be encoded using IETF Var Ints.
+const uint64_t kMaxIetfVarInt = UINT64_C(0x3fffffffffffffff);
 }  // namespace net
 
 #endif  // NET_QUIC_CORE_QUIC_CONSTANTS_H_

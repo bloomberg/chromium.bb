@@ -501,6 +501,48 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   bool AppendPaddingFrame(const QuicPaddingFrame& frame,
                           QuicDataWriter* writer);
 
+  // IETF defined frame append/process methods.
+  bool ProcessIetfStreamFrame(QuicDataReader* reader,
+                              uint8_t frame_type,
+                              QuicStreamFrame* frame);
+  // Append a stream frame and data to the packet.
+  bool AppendIetfStreamFrame(const QuicStreamFrame& frame,
+                             bool last_frame_in_packet,
+                             QuicDataWriter* writer);
+
+  // Add/process an IETF-Formatted Connection and Application close frames.
+  bool AppendIetfConnectionCloseFrame(const QuicConnectionCloseFrame& frame,
+                                      QuicDataWriter* writer);
+  bool AppendIetfConnectionCloseFrame(const QuicIetfTransportErrorCodes code,
+                                      const std::string& phrase,
+                                      QuicDataWriter* writer);
+  bool AppendIetfApplicationCloseFrame(const QuicConnectionCloseFrame& frame,
+                                       QuicDataWriter* writer);
+  bool AppendIetfApplicationCloseFrame(const uint16_t code,
+                                       const std::string& phrase,
+                                       QuicDataWriter* writer);
+  bool AppendIetfCloseFrame(const QuicIetfFrameType type,
+                            const uint16_t code,
+                            const std::string& phrase,
+                            QuicDataWriter* writer);
+  bool ProcessIetfConnectionCloseFrame(QuicDataReader* reader,
+                                       const uint8_t frame_type,
+                                       QuicConnectionCloseFrame* frame);
+  bool ProcessIetfApplicationCloseFrame(QuicDataReader* reader,
+                                        const uint8_t frame_type,
+                                        QuicConnectionCloseFrame* frame);
+  bool ProcessIetfCloseFrame(QuicDataReader* reader,
+                             const uint8_t frame_type,
+                             QuicConnectionCloseFrame* frame);
+
+  // Parse an IETF-format Ack frame from the packet
+  bool ProcessIetfAckFrame(QuicDataReader* reader,
+                           uint8_t frame_type,
+                           QuicAckFrame* ack_frame);
+  // Append an IETf-format Ack frame to the packet
+  bool AppendIetfAckFrameAndTypeByte(const QuicAckFrame& frame,
+                                     QuicDataWriter* writer);
+
   bool RaiseError(QuicErrorCode error);
 
   void set_error(QuicErrorCode error) { error_ = error; }

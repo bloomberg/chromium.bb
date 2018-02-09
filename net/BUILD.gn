@@ -5112,6 +5112,7 @@ test("net_unittests") {
     "quic/core/quic_framer_test.cc",
     "quic/core/quic_header_list_test.cc",
     "quic/core/quic_headers_stream_test.cc",
+    "quic/core/quic_ietf_framer_test.cc",
     "quic/core/tls_handshaker_test.cc",
     "quic/http/decoder/payload_decoders/quic_http_altsvc_payload_decoder_test.cc",
     "quic/http/decoder/payload_decoders/quic_http_continuation_payload_decoder_test.cc",

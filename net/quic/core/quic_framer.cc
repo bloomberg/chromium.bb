@@ -40,6 +40,11 @@ namespace {
 #define ENDPOINT \
   (perspective_ == Perspective::IS_SERVER ? "Server: " : "Client: ")
 
+// How much to shift the timestamp in the IETF Ack frame.
+// TODO(fkastenholz) when we get real IETF QUIC, need to get
+// the currect shift from the transport parameters.
+const int kIetfAckTimestampShift = 3;
+
 // Number of bits the packet number length bits are shifted from the right
 // edge of the header.
 const uint8_t kPublicHeaderSequenceNumberShift = 4;
@@ -1324,6 +1329,70 @@ bool QuicFramer::ProcessStreamFrame(QuicDataReader* reader,
   return true;
 }
 
+bool QuicFramer::ProcessIetfStreamFrame(QuicDataReader* reader,
+                                        uint8_t frame_type,
+                                        QuicStreamFrame* frame) {
+  // Read stream id from the frame. It's always present.
+  QuicIetfStreamId streamid;
+  if (!reader->ReadVarInt62(&streamid)) {
+    set_detailed_error("Unable to read stream_id.");
+    return false;
+  }
+  if (streamid > 0xffffffff) {
+    set_detailed_error("stream_id is too large.");
+    return false;
+  }
+  frame->stream_id = static_cast<QuicStreamId>(streamid);
+
+  // If we have a data offset, read it. If not, set to 0.
+  if (frame_type & IETF_STREAM_FRAME_OFF_BIT) {
+    QuicStreamOffset offset;
+    if (!reader->ReadVarInt62(&offset)) {
+      set_detailed_error("Unable to read stream data offset.");
+      return false;
+    }
+    frame->offset = offset;
+  } else {
+    // no offset in the frame, ensure it's 0 in the Frame.
+    frame->offset = 0;
+  }
+
+  // If we have a data length, read it. If not, set to 0.
+  if (frame_type & IETF_STREAM_FRAME_LEN_BIT) {
+    QuicIetfStreamDataLength length;
+    if (!reader->ReadVarInt62(&length)) {
+      set_detailed_error("Unable to read stream data length.");
+      return false;
+    }
+    if (length > 0xffff) {
+      set_detailed_error("stream data offset is too large.");
+      return false;
+    }
+    frame->data_length = length;
+  } else {
+    // no length in the frame, it is the number of bytes remaining in the
+    // packet.
+    frame->data_length = reader->BytesRemaining();
+  }
+
+  if (frame_type & IETF_STREAM_FRAME_FIN_BIT) {
+    frame->fin = true;
+  } else {
+    frame->fin = false;
+  }
+
+  // TODO(ianswett): Don't use QuicStringPiece as an intermediary.
+  QuicStringPiece data;
+  if (!reader->ReadStringPiece(&data, frame->data_length)) {
+    set_detailed_error("Unable to read frame data.");
+    return false;
+  }
+  frame->data_buffer = data.data();
+  frame->data_length = static_cast<QuicIetfStreamDataLength>(data.length());
+
+  return true;
+}
+
 bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
                                  uint8_t frame_type,
                                  QuicAckFrame* ack_frame) {
@@ -1500,6 +1569,81 @@ bool QuicFramer::ProcessTimestampsInAckFrame(uint8_t num_received_packets,
       ack_frame->received_packet_times.push_back(
           std::make_pair(seq_num, creation_time_ + last_timestamp_));
     }
+  }
+  return true;
+}
+
+// IETF Ack Frame consists of
+//   Largest Ack'ed
+//   Ack Delay
+//   Ack Block Count
+//   First Ack Block
+//    additional gap/ack-blocks
+bool QuicFramer::ProcessIetfAckFrame(QuicDataReader* reader,
+                                     uint8_t frame_type,
+                                     QuicAckFrame* ack_frame) {
+  QuicPacketNumber largest_acked;
+  if (!reader->ReadVarInt62(&largest_acked)) {
+    set_detailed_error("Unable to read largest acked.");
+    return false;
+  }
+  ack_frame->largest_acked = static_cast<QuicPacketNumber>(largest_acked);
+  uint64_t ack_delay_time_in_us;
+  if (!reader->ReadVarInt62(&ack_delay_time_in_us)) {
+    set_detailed_error("Unable to read ack-delay-time.");
+    return false;
+  }
+
+  // TODO(fkastenholz) when we get real IETF QUIC, need to get
+  // the currect shift from the transport parameters.
+  ack_delay_time_in_us = (ack_delay_time_in_us << kIetfAckTimestampShift);
+  if (ack_delay_time_in_us == 0x3ffffffffff8) {  // May want a more
+                                                 // realistic max?
+    ack_frame->ack_delay_time = QuicTime::Delta::Infinite();
+  } else {
+    ack_frame->ack_delay_time =
+        QuicTime::Delta::FromMicroseconds(ack_delay_time_in_us);
+  }
+  // Get number of ack blocks from the packet
+  uint64_t ack_block_count;
+  if (!reader->ReadVarInt62(&ack_block_count)) {
+    set_detailed_error("Unable to ack block count.");
+    return false;
+  }
+
+  // there always is a first ack block
+  uint64_t ack_block_value;
+  if (!reader->ReadVarInt62(&ack_block_value)) {
+    set_detailed_error("Unable to read first ack block value.");
+    return false;
+  }
+  // Calculate the packets being acked in the first block.
+  //  +1 because AddRange is [low,high)
+  QuicPacketNumber block_high = largest_acked + 1;
+  QuicPacketNumber block_low = largest_acked - ack_block_value;
+  ack_frame->packets.AddRange(block_low, block_high);
+
+  while (ack_block_count != 0) {
+    uint64_t gap_block_value;
+
+    // Get the sizes of the gap and ack blocks,
+    if (!reader->ReadVarInt62(&gap_block_value)) {
+      set_detailed_error("Unable to read gap block value.");
+      return false;
+    }
+    if (!reader->ReadVarInt62(&ack_block_value)) {
+      set_detailed_error("Unable to read gap block value.");
+      return false;
+    }
+    // Slide the high/low values of the ack block down to the next
+    // block in the frame. +2 is because the value encoded in the
+    // frame is (length_of_block- 1). Then add the range.
+    block_high = block_high - (ack_block_value + gap_block_value + 2);
+    block_low = block_low - (ack_block_value + gap_block_value + 2);
+    ack_frame->packets.AddRange(block_low, block_high);
+
+    // Another one done.
+    ack_block_count--;
   }
   return true;
 }
@@ -2081,6 +2225,80 @@ bool QuicFramer::AppendStreamFrame(const QuicStreamFrame& frame,
   return true;
 }
 
+// Add a new ietf-format stream frame.
+// Bits controlling whether there is a frame-length and frame-offset
+// are in the QuicStreamFrame.
+bool QuicFramer::AppendIetfStreamFrame(const QuicStreamFrame& frame,
+                                       bool last_frame_in_packet,
+                                       QuicDataWriter* writer) {
+  // figure out whether we will have FIN, LEN, and/or OFFSET fields
+  // in the packet and create a type-byte with the proper flag settings.
+  uint8_t frame_type = static_cast<uint8_t>(IETF_STREAM);
+  if (frame.fin) {
+    frame_type |= IETF_STREAM_FRAME_FIN_BIT;
+  }
+  // Calculate how long the header and type byte will be. This
+  // is done so that we can determine how much data can be placed in
+  // the packet _after_ doing the header. Start the length with the
+  // encoded size of the streamid and type byte.
+
+  // We will include the frame offset if it is not 0
+  if (frame.offset != 0) {
+    frame_type |= IETF_STREAM_FRAME_OFF_BIT;
+  }
+
+  // If not the last frame in the packet, include the length field.
+  if (!last_frame_in_packet) {
+    frame_type |= IETF_STREAM_FRAME_LEN_BIT;
+  }
+
+  // Put the type-byte in the header.
+  if (writer->WriteUInt8(frame_type) == false) {
+    set_detailed_error("Unable to write frame-type.");
+    return false;
+  }
+
+  // Stream ID always goes in the header...
+  if (writer->WriteVarInt62(static_cast<uint64_t>(frame.stream_id)) == false) {
+    set_detailed_error("Writing stream id failed.");
+    return false;
+  }
+
+  // Offset may go in the header...
+  if (frame_type & IETF_STREAM_FRAME_OFF_BIT) {
+    if (writer->WriteVarInt62(static_cast<uint64_t>(frame.offset)) == false) {
+      set_detailed_error("Writing data offset failed.");
+      return false;
+    }
+  }
+
+  // Frame data length...
+  if (frame_type & IETF_STREAM_FRAME_LEN_BIT) {
+    if (writer->WriteVarInt62(frame.data_length) == false) {
+      set_detailed_error("Writing data length failed.");
+      return false;
+    }
+  }
+
+  // now move the data in
+  if (data_producer_ == nullptr) {
+    // data comes from the frame's buffer -- append the necessary
+    // number of bytes to the frame.
+    if (!writer->WriteBytes(frame.data_buffer, frame.data_length)) {
+      set_detailed_error("Writing frame data failed.");
+      return false;
+    }
+  } else {
+    DCHECK_EQ(nullptr, frame.data_buffer);
+    if (!data_producer_->WriteStreamData(frame.stream_id, frame.offset,
+                                         frame.data_length, writer)) {
+      set_detailed_error("Writing frame data failed.");
+      return false;
+    }
+  }
+  return true;
+}
+
 void QuicFramer::set_version(const ParsedQuicVersion version) {
   DCHECK(IsSupportedVersion(version)) << ParsedQuicVersionToString(version);
   version_ = version;
@@ -2350,6 +2568,123 @@ bool QuicFramer::AppendStopWaitingFrame(const QuicPacketHeader& header,
 
   return true;
 }
+// Append IETF Format Ack Frame. The IETF Ack Frame format is, basically,
+//   Largest Ack'ed
+//   ACK Delay
+//   ACK Block Count (after the first)
+//   Blocks
+//    which is a series of alternating ACK and GAP blocks, each
+//    containing the number of packets in the respective ACK- or
+//    GAP-block, minus 1. So, for example, if the Blocks were
+//    0/0/0/0/0 then it means 1-packet-acked, 1 packet in a gap,
+//    1-packet-acked, 1-packet-gap, 1-packet-acked & the first
+//    packet has seq# LargestAcked, the last one has seq# LargestAcked-4.
+
+bool QuicFramer::AppendIetfAckFrameAndTypeByte(const QuicAckFrame& frame,
+                                               QuicDataWriter* writer) {
+  if (!writer->WriteUInt8(IETF_ACK)) {
+    set_detailed_error("No room for frame-type");
+    return false;
+  }
+
+  QuicPacketNumber largest_acked = LargestAcked(frame);
+  if (!writer->WriteVarInt62(largest_acked)) {
+    set_detailed_error("No room for largest-acked in ack frame");
+    return false;
+  }
+
+  uint64_t ack_delay_time_us;
+  if (frame.ack_delay_time.IsInfinite()) {
+    QUIC_BUG << "Ack frame time delay is infinite";
+    return false;
+  }
+  DCHECK_LE(0u, frame.ack_delay_time.ToMicroseconds());
+  ack_delay_time_us = frame.ack_delay_time.ToMicroseconds();
+
+  // TODO(fkastenholz) when we get real IETF QUIC, need to get
+  // the currect shift from the transport parameters.
+  ack_delay_time_us = ack_delay_time_us >> kIetfAckTimestampShift;
+  if (!writer->WriteVarInt62(ack_delay_time_us)) {
+    set_detailed_error("No room for ack-delay in ack frame");
+    return false;
+  }
+
+  // Do the block-count
+  uint64_t ack_block_count = frame.packets.NumIntervals();
+  if (ack_block_count == 0) {
+    QUIC_BUG << "Trying to build an ack frame with no ack blocks";
+    return false;
+  }
+
+  // Calculate the block count we will put into the frame.
+  // ID says the value is "The number of Additional ACK Block (and
+  // Gap) fields after the First ACK Block." We interpret this as
+  //  - n(==0) means just the First ACK Block
+  //  - n(>0)  means a First Ack block followed by N pairs
+  //           of Gap/Ack. So if N is 1, there is a First,
+  //           a Gap, and a final Ack.
+  if (!writer->WriteVarInt62(ack_block_count - 1)) {
+    set_detailed_error("No room for ack block count in ack frame");
+    return false;
+  }
+  auto itr = frame.packets.rbegin();  // first range
+  // Do the first block.
+  // The ranges in frame.packets are [low...high), so
+  //  a) we should never see 0 and
+  //  b) we need to subtract 1 when writing the value out.
+  uint64_t block_length = itr->max() - itr->min();
+  if (block_length == 0) {
+    QUIC_BUG << "Have a 0-length range in QuicAckFrame::packets";
+    return false;
+  }
+
+  if (!writer->WriteVarInt62(block_length - 1)) {
+    set_detailed_error("No room for first ack block in ack frame");
+    return false;
+  }
+  size_t previous_ack_end = itr->min();
+  ack_block_count--;
+
+  // TODO(fkastenholz) this loop adds all blocks to the frame,
+  // failing if the frame buffer is not large enough. In the future,
+  // we should put in as many as we can, adjusting the count to
+  // indicate just what we put in. Or at least have an option to do this.
+  while (ack_block_count) {
+    // Do the gap separating the two ack-blocks
+    // Math note: value of the gap is nr of packets separating the two
+    // acks. If we have two sets of ack'd packets, 1,2,3 and 7,8,...x
+    //  A) The gap size is 3 (the gap is packets 4,5,6), which is
+    //     encoded in the frame as 2.
+    //  B) The two frame.packets ranges are [1,4) and [7,x) so the
+    //     gap calculation is (7-4)-1 ==> (3)-1 ==> 2.
+
+    // next range
+    itr++;
+
+    // Mind the gap
+    size_t gap = previous_ack_end - itr->max() - 1;
+
+    if (!writer->WriteVarInt62(gap)) {
+      set_detailed_error("No room for gap block in ack frame");
+      return false;
+    }
+
+    // Add the ack-block (itr already points to it)
+    block_length = itr->max() - itr->min();
+    if (block_length == 0) {
+      QUIC_BUG << "Have a 0-length range in QuicAckFrame::packets";
+      return false;
+    }
+
+    if (!writer->WriteVarInt62(block_length - 1)) {
+      set_detailed_error("No room for nth ack block in ack frame");
+      return false;
+    }
+    previous_ack_end = itr->min();
+    ack_block_count--;
+  }
+  return true;
+}
 
 bool QuicFramer::AppendRstStreamFrame(const QuicRstStreamFrame& frame,
                                       QuicDataWriter* writer) {
@@ -2482,6 +2817,110 @@ QuicStringPiece QuicFramer::TruncateErrorString(QuicStringPiece error) {
     return error;
   }
   return QuicStringPiece(error.data(), kMaxErrorStringLength);
+}
+
+bool QuicFramer::AppendIetfConnectionCloseFrame(
+    const QuicConnectionCloseFrame& frame,
+    QuicDataWriter* writer) {
+  return AppendIetfCloseFrame(IETF_CONNECTION_CLOSE,
+                              static_cast<uint16_t>(frame.error_code),
+                              frame.error_details, writer);
+}
+
+bool QuicFramer::AppendIetfConnectionCloseFrame(
+    const QuicIetfTransportErrorCodes code,
+    const string& phrase,
+    QuicDataWriter* writer) {
+  return AppendIetfCloseFrame(
+      IETF_CONNECTION_CLOSE, static_cast<const uint16_t>(code), phrase, writer);
+}
+
+bool QuicFramer::AppendIetfApplicationCloseFrame(
+    const QuicConnectionCloseFrame& frame,
+    QuicDataWriter* writer) {
+  return AppendIetfCloseFrame(IETF_APPLICATION_CLOSE,
+                              static_cast<const uint16_t>(frame.error_code),
+                              frame.error_details, writer);
+}
+bool QuicFramer::AppendIetfApplicationCloseFrame(const uint16_t code,
+                                                 const string& phrase,
+                                                 QuicDataWriter* writer) {
+  return AppendIetfCloseFrame(IETF_APPLICATION_CLOSE, code, phrase, writer);
+}
+// Generate either an IETF-Connection- or IETF-Application-close frame.
+// General format is
+//    type-byte
+//    error code (fixed 16 bits)
+//    phrase length (varint)
+//    phrase  (string)
+bool QuicFramer::AppendIetfCloseFrame(const QuicIetfFrameType type,
+                                      const uint16_t code,
+                                      const string& phrase,
+                                      QuicDataWriter* writer) {
+  if (!writer->WriteUInt8(type)) {
+    set_detailed_error("Can not write close frame type byte");
+    return false;
+  }
+  if (!writer->WriteUInt16(code)) {
+    set_detailed_error("Can not write close frame code");
+    return false;
+  }
+  if (!writer->WriteVarInt62(phrase.size())) {
+    set_detailed_error("Can not write phrase-length");
+    return false;
+  }
+  if (!phrase.empty()) {
+    // append the phrase
+    if (!writer->WriteBytes(static_cast<const void*>(phrase.c_str()),
+                            phrase.size())) {
+      set_detailed_error("Can not write phrase");
+      return false;
+    }
+  }
+  return true;
+}
+
+// Parse either an IETF-Connection- or IETF-Application-close frame.
+// General format is
+//    type-byte
+//    error code (fixed 16 bits)
+//    phrase length (varint)
+//    phrase  (string)
+bool QuicFramer::ProcessIetfConnectionCloseFrame(
+    QuicDataReader* reader,
+    const uint8_t frame_type,
+    QuicConnectionCloseFrame* frame) {
+  return ProcessIetfCloseFrame(reader, frame_type, frame);
+}
+bool QuicFramer::ProcessIetfApplicationCloseFrame(
+    QuicDataReader* reader,
+    const uint8_t frame_type,
+    QuicConnectionCloseFrame* frame) {
+  return ProcessIetfCloseFrame(reader, frame_type, frame);
+}
+bool QuicFramer::ProcessIetfCloseFrame(QuicDataReader* reader,
+                                       const uint8_t frame_type,
+                                       QuicConnectionCloseFrame* frame) {
+  uint16_t code;
+  if (!reader->ReadUInt16(&code)) {
+    set_detailed_error("Unable to read clode frame code.");
+    return false;
+  }
+  frame->error_code = static_cast<QuicErrorCode>(code);
+
+  uint64_t phrase_length;
+  if (!reader->ReadVarInt62(&phrase_length)) {
+    set_detailed_error("Unable to read phrase length");
+    return false;
+  }
+  QuicStringPiece phrase;
+  if (!reader->ReadStringPiece(&phrase, static_cast<size_t>(phrase_length))) {
+    set_detailed_error("Can not read extended close information phrase");
+    return false;
+  }
+  frame->error_details = phrase.as_string();
+
+  return true;
 }
 
 }  // namespace net
