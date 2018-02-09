@@ -3,6 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 set -eu
-cd "$(dirname "$(readlink -f "$0")")"
-. ./find_virtualenv.sh
-exec_python_module code "$@"
+readonly rootdir=$(cd "$(dirname "$(readlink -f "$0")")/.."; pwd)
+export PYTHONPATH=$rootdir/venv
+exec vpython -vpython-spec "$rootdir/.vpython" "$@"
