@@ -164,7 +164,7 @@ static UV_PREDICTION_MODE read_intra_mode_uv(FRAME_CONTEXT *ec_ctx,
       aom_read_symbol(r, ec_ctx->uv_mode_cdf[cfl_allowed][y_mode],
                       UV_INTRA_MODES - !cfl_allowed, ACCT_STR);
 #else
-      read_intra_mode(r, ec_ctx->uv_mode_cdf[y_mode]);
+      (UV_PREDICTION_MODE)read_intra_mode(r, ec_ctx->uv_mode_cdf[y_mode]);
 #endif  // CONFIG_CFL
   return uv_mode;
 }

@@ -338,7 +338,6 @@ static INLINE int is_intrabc_block(const MB_MODE_INFO *mbmi) {
 }
 #endif
 
-#if CONFIG_CFL
 static INLINE PREDICTION_MODE get_uv_mode(UV_PREDICTION_MODE mode) {
   assert(mode < UV_INTRA_MODES);
   static const PREDICTION_MODE uv2y[] = {
@@ -355,15 +354,14 @@ static INLINE PREDICTION_MODE get_uv_mode(UV_PREDICTION_MODE mode) {
     SMOOTH_V_PRED,  // UV_SMOOTH_V_PRED
     SMOOTH_H_PRED,  // UV_SMOOTH_H_PRED
     PAETH_PRED,     // UV_PAETH_PRED
+#if CONFIG_CFL
     DC_PRED,        // UV_CFL_PRED
+#endif              // CONFIG_CFL
     INTRA_INVALID,  // UV_INTRA_MODES
     INTRA_INVALID,  // UV_MODE_INVALID
   };
   return uv2y[mode];
 }
-#else
-static INLINE PREDICTION_MODE get_uv_mode(PREDICTION_MODE mode) { return mode; }
-#endif  // CONFIG_CFL
 
 static INLINE int is_inter_block(const MB_MODE_INFO *mbmi) {
 #if CONFIG_INTRABC

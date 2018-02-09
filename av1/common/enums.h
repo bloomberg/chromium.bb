@@ -472,7 +472,6 @@ typedef enum ATTRIBUTE_PACKED {
   INTRA_INVALID = MB_MODE_COUNT  // For uv_mode in inter blocks
 } PREDICTION_MODE;
 
-#if CONFIG_CFL
 // TODO(ltrudeau) Do we really want to pack this?
 // TODO(ltrudeau) Do we match with PREDICTION_MODE?
 typedef enum ATTRIBUTE_PACKED {
@@ -489,16 +488,12 @@ typedef enum ATTRIBUTE_PACKED {
   UV_SMOOTH_V_PRED,  // Vertical interpolation
   UV_SMOOTH_H_PRED,  // Horizontal interpolation
   UV_PAETH_PRED,     // Predict from the direction of smallest gradient
-  UV_CFL_PRED,       // Chroma-from-Luma
+#if CONFIG_CFL
+  UV_CFL_PRED,  // Chroma-from-Luma
+#endif          // CONFIG_CFL
   UV_INTRA_MODES,
   UV_MODE_INVALID,  // For uv_mode in inter blocks
 } UV_PREDICTION_MODE;
-#else
-#define UV_INTRA_MODES (INTRA_MODES)
-#define UV_PREDICTION_MODE PREDICTION_MODE
-#define UV_DC_PRED (DC_PRED)
-#define UV_MODE_INVALID (INTRA_INVALID)
-#endif  // CONFIG_CFL
 
 typedef enum ATTRIBUTE_PACKED {
   SIMPLE_TRANSLATION,
