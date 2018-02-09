@@ -1,10 +1,10 @@
 {
-  "swarm846-c4": {
+  "0": {
     "benchmarks": [
       "dummy_benchmark.stable_benchmark_1"
     ]
   },
-  "swarm847-c4": {
+  "1": {
     "benchmarks": [
       "dummy_benchmark.histogram_benchmark_1"
     ]

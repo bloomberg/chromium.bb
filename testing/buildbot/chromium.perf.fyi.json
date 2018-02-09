@@ -463,8 +463,6 @@
       {
         "args": [
           "-v",
-          "--output-format=histograms",
-          "--output-format=json-test-results",
           "--xvfb",
           "--browser=reference"
         ],
@@ -496,7 +494,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"id\": \"swarm846-c4\", \"pool\": \"Chrome-perf-fyi\"}, {\"id\": \"swarm847-c4\", \"pool\": \"Chrome-perf-fyi\"}]"
+            "[{\"id\": \"swarm846-c4\"}, {\"id\": \"swarm847-c4\"}]"
           ],
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
