@@ -125,6 +125,9 @@ bool PasswordManagerPorter::Store() {
   // In unittests a null WebContents means: "Abort creating the file Selector."
   if (!web_contents_)
     return true;
+
+  // Start serialising while the user selects a file.
+  exporter_->PreparePasswordsForExport();
   PresentFileSelector(web_contents_,
                       PasswordManagerPorter::Type::PASSWORD_EXPORT);
 
@@ -214,7 +217,4 @@ void PasswordManagerPorter::ImportPasswordsFromPath(
 
 void PasswordManagerPorter::ExportPasswordsToPath(const base::FilePath& path) {
   exporter_->SetDestination(path);
-
-  // TODO(crbug.com/785237) Do this independently from setting the destination.
-  exporter_->PreparePasswordsForExport();
 }
