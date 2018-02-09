@@ -97,8 +97,9 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
 
  private:
   struct TextCheckCallbackData {
+   public:
     TextCheckCallbackData(std::unique_ptr<net::URLFetcher> fetcher,
-                          TextCheckCompleteCallback&& callback,
+                          TextCheckCompleteCallback callback,
                           base::string16 text);
     ~TextCheckCallbackData();
 
@@ -111,6 +112,9 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
 
     // The text checked by the Spelling service.
     base::string16 text;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(TextCheckCallbackData);
   };
 
   // net::URLFetcherDelegate implementation.
