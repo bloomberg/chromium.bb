@@ -1390,9 +1390,8 @@ const char kOpenPdfDownloadInSystemReader[] =
 #endif
 
 #if defined(OS_ANDROID)
-// Boolean which specifies whether we should ask the user if we should download
-// a file (true) or just download it automatically, specifically for Android.
-// This is set to true as the prompt is intially shown to all Android users.
+// Int (as defined by DownloadPromptStatus) which specifies whether we should
+// ask the user where they want to download the file (only for Android).
 const char kPromptForDownloadAndroid[] = "download.prompt_for_download_android";
 #endif
 

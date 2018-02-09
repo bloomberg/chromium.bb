@@ -13,6 +13,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.download.DownloadPromptStatus;
 import org.chromium.chrome.browser.preferences.languages.LanguageItem;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.ContentSettingException;
@@ -1065,6 +1066,21 @@ public final class PrefServiceBridge {
         nativeSetDownloadAndSaveFileDefaultDirectory(directory);
     }
 
+    /**
+     * @return The status of prompt for download pref, defined by {@link DownloadPromptStatus}.
+     */
+    @DownloadPromptStatus
+    public int getPromptForDownloadAndroid() {
+        return nativeGetPromptForDownloadAndroid();
+    }
+
+    /**
+     * @param status New status to update the prompt for download preference.
+     */
+    public void setPromptForDownloadAndroid(@DownloadPromptStatus int status) {
+        nativeSetPromptForDownloadAndroid(status);
+    }
+
     private native boolean nativeGetBoolean(int preference);
     private native void nativeSetBoolean(int preference, boolean value);
     private native boolean nativeGetAcceptCookiesEnabled();
@@ -1180,4 +1196,6 @@ public final class PrefServiceBridge {
     private native void nativeSetLanguageBlockedState(String language, boolean blocked);
     private native String nativeGetDownloadDefaultDirectory();
     private native void nativeSetDownloadAndSaveFileDefaultDirectory(String directory);
+    private native int nativeGetPromptForDownloadAndroid();
+    private native void nativeSetPromptForDownloadAndroid(int status);
 }

@@ -28871,6 +28871,7 @@ Called by update_use_counter_css.py.-->
   <int value="6" label="No external storage"/>
   <int value="7" label="Cannot determine download target"/>
   <int value="8" label="Cancelled by native for other reasons"/>
+  <int value="9" label="Cancelled by user action"/>
 </enum>
 
 <enum name="MobileDownloadDuplicateInfobar">

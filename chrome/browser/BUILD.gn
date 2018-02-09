@@ -416,6 +416,7 @@ split_static_library("browser") {
     "download/download_permission_request.h",
     "download/download_prefs.cc",
     "download/download_prefs.h",
+    "download/download_prompt_status.h",
     "download/download_query.cc",
     "download/download_query.h",
     "download/download_request_limiter.cc",

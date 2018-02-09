@@ -1775,6 +1775,12 @@ if (is_android) {
     ]
   }
 
+  java_cpp_enum("download_enum_javagen") {
+    sources = [
+      "browser/download/download_prompt_status.h",
+    ]
+  }
+
   source_set("chrome_android_core") {
     sources = [
       "app/android/chrome_android_initializer.cc",

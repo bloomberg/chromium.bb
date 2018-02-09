@@ -25,6 +25,7 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_confirmation_result.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_prompt_status.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/download_target_info.h"
@@ -324,6 +325,11 @@ void DownloadTargetDeterminerTest::SetUp() {
   download_prefs_->SetDownloadPath(test_download_dir());
   delegate_.SetupDefaults();
   SetUpFileTypePolicies();
+#if defined(OS_ANDROID)
+  profile()->GetTestingPrefService()->SetInteger(
+      prefs::kPromptForDownloadAndroid,
+      static_cast<int>(DownloadPromptStatus::DONT_SHOW));
+#endif
 }
 
 void DownloadTargetDeterminerTest::TearDown() {
@@ -404,8 +410,12 @@ void DownloadTargetDeterminerTest::SetPromptForDownload(bool prompt) {
   profile()->GetTestingPrefService()->
       SetBoolean(prefs::kPromptForDownload, prompt);
 #if defined(OS_ANDROID)
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPromptForDownloadAndroid, prompt);
+  DownloadPromptStatus download_prompt_status =
+      prompt ? DownloadPromptStatus::SHOW_PREFERENCE
+             : DownloadPromptStatus::DONT_SHOW;
+  profile()->GetTestingPrefService()->SetInteger(
+      prefs::kPromptForDownloadAndroid,
+      static_cast<int>(download_prompt_status));
 #endif
 }
 
