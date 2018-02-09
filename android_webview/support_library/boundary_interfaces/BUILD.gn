@@ -7,10 +7,10 @@ import("//build/config/android/rules.gni")
 
 android_library("boundary_interface_java") {
   java_files = [
-    "src/org/chromium/support_lib_boundary/VisualStateCallbackInterface.java",
-    "src/org/chromium/support_lib_boundary/WebSettingsInterface.java",
-    "src/org/chromium/support_lib_boundary/WebViewProvider.java",
-    "src/org/chromium/support_lib_boundary/WebViewProviderFactory.java",
+    "src/org/chromium/support_lib_boundary/VisualStateCallbackBoundaryInterface.java",
+    "src/org/chromium/support_lib_boundary/WebSettingsBoundaryInterface.java",
+    "src/org/chromium/support_lib_boundary/WebViewProviderBoundaryInterface.java",
+    "src/org/chromium/support_lib_boundary/WebViewProviderFactoryBoundaryInterface.java",
   ]
 
   # We can't use ANY deps here, the support library should be able to build
