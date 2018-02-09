@@ -38,6 +38,7 @@ source_set("unit_tests") {
     ":internal",
     "//base/test:test_support",
     "//components/download/content/public",
+    "//components/download/internal/background_service/test:test_support",
     "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",

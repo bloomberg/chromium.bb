@@ -24,6 +24,15 @@ BackgroundFetchDownloadClient::~BackgroundFetchDownloadClient() = default;
 void BackgroundFetchDownloadClient::OnServiceInitialized(
     bool state_lost,
     const std::vector<download::DownloadMetaData>& downloads) {
+  content::BackgroundFetchDelegate* delegate =
+      browser_context_->GetBackgroundFetchDelegate();
+
+  // TODO(crbug.com/766082): Support incognito mode in
+  // BackgroundFetchDelegateFactory, currently |delegate| will be nullptr in
+  // incognito mode.
+  if (!delegate)
+    return;
+
   delegate_ = static_cast<BackgroundFetchDelegateImpl*>(
                   browser_context_->GetBackgroundFetchDelegate())
                   ->GetWeakPtr();

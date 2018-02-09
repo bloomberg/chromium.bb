@@ -17,8 +17,7 @@ namespace download {
 std::unique_ptr<BlobTaskProxy> BlobTaskProxy::Create(
     BlobContextGetter blob_context_getter,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
-  return std::make_unique<BlobTaskProxy>(std::move(blob_context_getter),
-                                         io_task_runner);
+  return std::make_unique<BlobTaskProxy>(blob_context_getter, io_task_runner);
 }
 
 BlobTaskProxy::BlobTaskProxy(
@@ -30,9 +29,8 @@ BlobTaskProxy::BlobTaskProxy(
   // Unretained the raw pointer because owner on UI thread should destroy this
   // object on IO thread.
   io_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&BlobTaskProxy::InitializeOnIO, base::Unretained(this),
-                     std::move(blob_context_getter)));
+      FROM_HERE, base::BindOnce(&BlobTaskProxy::InitializeOnIO,
+                                base::Unretained(this), blob_context_getter));
 }
 
 BlobTaskProxy::~BlobTaskProxy() {
@@ -41,7 +39,7 @@ BlobTaskProxy::~BlobTaskProxy() {
 
 void BlobTaskProxy::InitializeOnIO(BlobContextGetter blob_context_getter) {
   io_task_runner_->BelongsToCurrentThread();
-  blob_storage_context_ = std::move(blob_context_getter).Run();
+  blob_storage_context_ = blob_context_getter.Run();
 }
 
 void BlobTaskProxy::SaveAsBlob(std::unique_ptr<std::string> data,

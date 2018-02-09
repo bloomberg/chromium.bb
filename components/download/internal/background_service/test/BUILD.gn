@@ -4,8 +4,10 @@
 
 # Test target for download internal tests to depend on.
 source_set("test_support") {
-  visibility =
-      [ "//components/download/internal/background_service:unit_tests" ]
+  visibility = [
+    "//components/download/content/internal:unit_tests",
+    "//components/download/internal/background_service:unit_tests",
+  ]
 
   testonly = true
 
@@ -18,12 +20,12 @@ source_set("test_support") {
     "entry_utils.h",
     "mock_controller.cc",
     "mock_controller.h",
+    "mock_download_driver_client.cc",
+    "mock_download_driver_client.h",
     "mock_log_sink.cc",
     "mock_log_sink.h",
     "mock_model_client.cc",
     "mock_model_client.h",
-    "noop_store.cc",
-    "noop_store.h",
     "test_device_status_listener.cc",
     "test_device_status_listener.h",
     "test_download_driver.cc",
