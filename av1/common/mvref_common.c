@@ -445,10 +445,9 @@ static int has_top_right(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 }
 
 #if CONFIG_MFMV
-static int check_sb_border(const AV1_COMMON *cm, const int mi_row,
-                           const int mi_col, const int row_offset,
-                           const int col_offset) {
-  const int sb_mi_size = mi_size_wide[cm->seq_params.sb_size];
+static int check_sb_border(const int mi_row, const int mi_col,
+                           const int row_offset, const int col_offset) {
+  const int sb_mi_size = mi_size_wide[BLOCK_64X64];
   const int row = mi_row & (sb_mi_size - 1);
   const int col = mi_col & (sb_mi_size - 1);
 
@@ -825,7 +824,7 @@ static void setup_ref_mv_list(
       const int blk_row = tpl_sample_pos[i][0];
       const int blk_col = tpl_sample_pos[i][1];
 
-      if (!check_sb_border(cm, mi_row, mi_col, blk_row, blk_col)) continue;
+      if (!check_sb_border(mi_row, mi_col, blk_row, blk_col)) continue;
       // (TODO: yunqing) prev_frame_mvs_base is not used here, tpl_mvs is used.
       // Can be modified the same way.
       coll_blk_count[ref_frame] += add_tpl_ref_mv(
