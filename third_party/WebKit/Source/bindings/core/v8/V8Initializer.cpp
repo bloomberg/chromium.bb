@@ -72,7 +72,6 @@
 #include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
-#include "v8/include/v8-debug.h"
 #include "v8/include/v8-profiler.h"
 
 namespace blink {

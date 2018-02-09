@@ -37,7 +37,6 @@
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/web/WebKit.h"
-#include "v8/include/v8-debug.h"
 #include "v8/include/v8.h"
 
 namespace blink {
