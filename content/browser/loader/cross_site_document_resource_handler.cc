@@ -378,7 +378,8 @@ void CrossSiteDocumentResourceHandler::OnReadCompleted(
       // indicate this resource should only be consumed by XHR/fetch (and we've
       // already verified that this response isn't a permissable cross-origin
       // XHR/fetch).
-      if (confirmed_blockable != CrossSiteDocumentClassifier::kYes) {
+      if (confirmed_blockable != CrossSiteDocumentClassifier::kYes &&
+          non_stylesheet_mime_type_ /* see https://crbug.com/809259 */) {
         auto result =
             CrossSiteDocumentClassifier::SniffForFetchOnlyResource(data);
         found_parser_breaker = (result == CrossSiteDocumentClassifier::kYes);
@@ -632,6 +633,12 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   needs_sniffing_ =
       (canonical_mime_type_ == CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS) ||
       !(has_range_header || has_nosniff_header);
+
+  // Stylesheets shouldn't be sniffed for JSON parser breakers - see
+  // https://crbug.com/809259.
+  non_stylesheet_mime_type_ =
+      !response->head.mime_type.empty() &&
+      !base::LowerCaseEqualsASCII(response->head.mime_type, "text/css");
 
   return true;
 }

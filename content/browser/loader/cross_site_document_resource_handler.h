@@ -138,6 +138,9 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   CrossSiteDocumentMimeType canonical_mime_type_ =
       CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS;
 
+  // True if the response had a non-empty Content-Type other than text/css.
+  bool non_stylesheet_mime_type_ = false;
+
   // Indicates whether this request was made by a plugin and was not using CORS.
   // Such requests are exempt from blocking, while other plugin requests must be
   // blocked if the CORS check fails.
