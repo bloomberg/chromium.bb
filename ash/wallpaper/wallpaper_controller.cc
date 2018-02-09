@@ -1346,13 +1346,6 @@ void WallpaperController::OpenWallpaperPickerIfAllowed() {
   }
 }
 
-void WallpaperController::SetWallpaper(const SkBitmap& wallpaper,
-                                       const WallpaperInfo& info) {
-  if (wallpaper.isNull())
-    return;
-  SetWallpaperImage(gfx::ImageSkia::CreateFrom1xBitmap(wallpaper), info);
-}
-
 void WallpaperController::AddObserver(
     mojom::WallpaperObserverAssociatedPtrInfo observer) {
   mojom::WallpaperObserverAssociatedPtr observer_ptr;

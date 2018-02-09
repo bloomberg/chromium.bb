@@ -7,7 +7,6 @@ module ash.mojom;
 import "ash/public/interfaces/user_info.mojom";
 import "components/signin/public/interfaces/account_id.mojom";
 import "mojo/common/file_path.mojom";
-import "mojo/common/time.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 import "url/mojom/url.mojom";
 
@@ -17,28 +16,6 @@ enum WallpaperLayout {
   CENTER_CROPPED,
   STRETCH,
   TILE,
-};
-
-// These values match wallpaper::WallpaperType.
-enum WallpaperType {
-  DAILY,
-  CUSTOMIZED,
-  DEFAULT,
-  ONLINE,
-  POLICY,
-  THIRDPARTY,
-  DEVICE,
-};
-
-// TODO(crbug.com/776464): Remove this after WallpaperManager is removed.
-// WallpaperInfo will be an internal concept within WallpaperController.
-//
-// This corresponds to wallpaper::WallpaperInfo.
-struct WallpaperInfo {
-  string location;
-  WallpaperLayout layout;
-  WallpaperType type;
-  mojo.common.mojom.Time date;
 };
 
 // User info needed to set wallpapers. Clients must specify the user because
@@ -183,15 +160,6 @@ interface WallpaperController {
   // Opens the wallpaper picker if the active user is not controlled by policy
   // and it's allowed to change wallpaper per the user type and the login state.
   OpenWallpaperPickerIfAllowed();
-
-  // TODO(crbug.com/776464): This is only used by WallpaperManager. Remove this
-  // after WallpaperManager is removed.
-  //
-  // Set the wallpaper bitmap and info used for the ash desktop background.
-  // A null or empty |wallpaper| bitmap is treated as a no-op.
-  // TODO(crbug.com/655875): Optimize ash wallpaper transport; avoid sending
-  // large bitmaps over Mojo; use shared memory like BitmapUploader, etc.
-  SetWallpaper(skia.mojom.Bitmap? wallpaper, WallpaperInfo info);
 
   // Calling this method triggers an initial notification of the wallpaper
   // state. Observers are automatically removed as their connections are closed.

@@ -8,10 +8,6 @@
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "components/wallpaper/wallpaper_info.h"
 
-namespace base {
-class Time;
-}  // namespace base
-
 namespace mojo {
 
 template <>
@@ -52,82 +48,6 @@ struct EnumTraits<ash::mojom::WallpaperLayout, wallpaper::WallpaperLayout> {
     NOTREACHED();
     return false;
   }
-};
-
-template <>
-struct EnumTraits<ash::mojom::WallpaperType, wallpaper::WallpaperType> {
-  static ash::mojom::WallpaperType ToMojom(wallpaper::WallpaperType input) {
-    switch (input) {
-      case wallpaper::DAILY:
-        return ash::mojom::WallpaperType::DAILY;
-      case wallpaper::CUSTOMIZED:
-        return ash::mojom::WallpaperType::CUSTOMIZED;
-      case wallpaper::DEFAULT:
-        return ash::mojom::WallpaperType::DEFAULT;
-      case wallpaper::ONLINE:
-        return ash::mojom::WallpaperType::ONLINE;
-      case wallpaper::POLICY:
-        return ash::mojom::WallpaperType::POLICY;
-      case wallpaper::THIRDPARTY:
-        return ash::mojom::WallpaperType::THIRDPARTY;
-      case wallpaper::DEVICE:
-        return ash::mojom::WallpaperType::DEVICE;
-      case wallpaper::WALLPAPER_TYPE_COUNT:
-        break;
-    }
-    NOTREACHED();
-    return ash::mojom::WallpaperType::DAILY;
-  }
-
-  static bool FromMojom(ash::mojom::WallpaperType input,
-                        wallpaper::WallpaperType* out) {
-    switch (input) {
-      case ash::mojom::WallpaperType::DAILY:
-        *out = wallpaper::DAILY;
-        return true;
-      case ash::mojom::WallpaperType::CUSTOMIZED:
-        *out = wallpaper::CUSTOMIZED;
-        return true;
-      case ash::mojom::WallpaperType::DEFAULT:
-        *out = wallpaper::DEFAULT;
-        return true;
-      case ash::mojom::WallpaperType::ONLINE:
-        *out = wallpaper::ONLINE;
-        return true;
-      case ash::mojom::WallpaperType::POLICY:
-        *out = wallpaper::POLICY;
-        return true;
-      case ash::mojom::WallpaperType::THIRDPARTY:
-        *out = wallpaper::THIRDPARTY;
-        return true;
-      case ash::mojom::WallpaperType::DEVICE:
-        *out = wallpaper::DEVICE;
-        return true;
-    }
-    NOTREACHED();
-    return false;
-  }
-};
-
-template <>
-struct ASH_PUBLIC_EXPORT
-    StructTraits<ash::mojom::WallpaperInfoDataView, wallpaper::WallpaperInfo> {
-  static const std::string& location(const wallpaper::WallpaperInfo& i) {
-    return i.location;
-  }
-  static const wallpaper::WallpaperLayout& layout(
-      const wallpaper::WallpaperInfo& i) {
-    return i.layout;
-  }
-  static const wallpaper::WallpaperType& type(
-      const wallpaper::WallpaperInfo& i) {
-    return i.type;
-  }
-  static const base::Time& date(const wallpaper::WallpaperInfo& i) {
-    return i.date;
-  }
-  static bool Read(ash::mojom::WallpaperInfoDataView data,
-                   wallpaper::WallpaperInfo* out);
 };
 
 }  // namespace mojo

@@ -102,12 +102,6 @@ void TestWallpaperController::OpenWallpaperPickerIfAllowed() {
   NOTIMPLEMENTED();
 }
 
-void TestWallpaperController::SetWallpaper(
-    const SkBitmap& wallpaper,
-    const wallpaper::WallpaperInfo& wallpaper_info) {
-  NOTIMPLEMENTED();
-}
-
 void TestWallpaperController::AddObserver(
     ash::mojom::WallpaperObserverAssociatedPtrInfo observer) {
   NOTIMPLEMENTED();
