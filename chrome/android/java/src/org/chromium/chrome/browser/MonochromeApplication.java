@@ -28,7 +28,7 @@ public class MonochromeApplication extends ChromeApplication {
         // created and set in all processes.
         boolean bindToCaller = false;
         boolean ignoreVisibilityForImportance = false;
-        ChildProcessCreationParams.registerDefault(new ChildProcessCreationParams(getPackageName(),
+        ChildProcessCreationParams.set(new ChildProcessCreationParams(getPackageName(),
                 true /* isExternalService */, LibraryProcessType.PROCESS_CHILD, bindToCaller,
                 ignoreVisibilityForImportance));
     }
