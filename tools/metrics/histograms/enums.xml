@@ -43687,6 +43687,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="78544924" label="supervised_users_blacklist"/>
   <int value="78917933" label="one_google_bar_service"/>
   <int value="79227717" label="dns_transaction"/>
+  <int value="79442849" label="sigined_exchange_cert_fetcher"/>
   <int value="79957943" label="safe_browsing_chunk_backup_request"/>
   <int value="80832574" label="history_notice_utils_popup"/>
   <int value="81157007" label="resource_dispatcher_host"/>
