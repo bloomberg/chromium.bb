@@ -870,9 +870,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   mojom::MediaMetricsProviderPtr media_metrics_provider_;
 
-  base::Callback<mojom::VideoDecodeStatsRecorderPtr()>
-      create_decode_stats_recorder_cb_;
-
   base::Optional<bool> stale_state_override_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
