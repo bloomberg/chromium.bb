@@ -540,9 +540,6 @@ crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/untriage
 
 # ====== IncrementalShadowDOM-only failures until here ======
 
-crbug.com/776656 fast/dom/shadow/shadow-dom-event-dispatching-details-summary.html [ Failure ]
-crbug.com/776656 shadow-dom/css-style-inherit.html [ Failure ]
-
 crbug.com/667560 [ Debug ] http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
 crbug.com/778515 http/tests/devtools/elements/styles-3/styles-add-new-rule.js [ Pass Failure ]
 
