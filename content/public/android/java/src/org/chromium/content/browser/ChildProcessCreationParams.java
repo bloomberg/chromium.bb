@@ -21,13 +21,13 @@ public class ChildProcessCreationParams {
 
     private static ChildProcessCreationParams sParams;
 
-    /** Registers default params. This should be called once on start up. */
-    public static void registerDefault(ChildProcessCreationParams params) {
+    /** Set params. This should be called once on start up. */
+    public static void set(ChildProcessCreationParams params) {
         assert sParams == null;
         sParams = params;
     }
 
-    public static ChildProcessCreationParams getDefault() {
+    public static ChildProcessCreationParams get() {
         return sParams;
     }
 
@@ -55,23 +55,23 @@ public class ChildProcessCreationParams {
     }
 
     public static String getPackageNameForService() {
-        ChildProcessCreationParams params = ChildProcessCreationParams.getDefault();
+        ChildProcessCreationParams params = ChildProcessCreationParams.get();
         return params != null ? params.mPackageNameForService
                               : ContextUtils.getApplicationContext().getPackageName();
     }
 
     public static boolean getIsSandboxedServiceExternal() {
-        ChildProcessCreationParams params = ChildProcessCreationParams.getDefault();
+        ChildProcessCreationParams params = ChildProcessCreationParams.get();
         return params != null && params.mIsSandboxedServiceExternal;
     }
 
     public static boolean getBindToCallerCheck() {
-        ChildProcessCreationParams params = ChildProcessCreationParams.getDefault();
+        ChildProcessCreationParams params = ChildProcessCreationParams.get();
         return params != null && params.mBindToCallerCheck;
     }
 
     public static boolean getIgnoreVisibilityForImportance() {
-        ChildProcessCreationParams params = ChildProcessCreationParams.getDefault();
+        ChildProcessCreationParams params = ChildProcessCreationParams.get();
         return params != null && params.mIgnoreVisibilityForImportance;
     }
 

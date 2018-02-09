@@ -525,7 +525,7 @@ public class ChildProcessLauncherHelper {
     }
 
     private static Bundle populateServiceBundle(Bundle bundle) {
-        ChildProcessCreationParams creationParams = ChildProcessCreationParams.getDefault();
+        ChildProcessCreationParams creationParams = ChildProcessCreationParams.get();
         if (creationParams != null) {
             creationParams.addIntentExtras(bundle);
         }

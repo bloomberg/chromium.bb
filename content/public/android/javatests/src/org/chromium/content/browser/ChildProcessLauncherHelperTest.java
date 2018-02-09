@@ -149,10 +149,9 @@ public class ChildProcessLauncherHelperTest {
 
         // Launch a service from this process. Since slot 0 is already bound by the Helper, it
         // will fail to start and the ChildProcessLauncher will retry and use the slot 1.
-        ChildProcessCreationParams.registerDefault(
-                new ChildProcessCreationParams(context.getPackageName(),
-                        false /* isExternalService */, LibraryProcessType.PROCESS_CHILD,
-                        true /* bindToCallerCheck */, false /* ignoreVisibilityForImportance */));
+        ChildProcessCreationParams.set(new ChildProcessCreationParams(context.getPackageName(),
+                false /* isExternalService */, LibraryProcessType.PROCESS_CHILD,
+                true /* bindToCallerCheck */, false /* ignoreVisibilityForImportance */));
         ChildProcessLauncherHelper launcher =
                 startSandboxedChildProcess(BLOCK_UNTIL_SETUP, true /* doSetupConnection */);
 
@@ -259,10 +258,9 @@ public class ChildProcessLauncherHelperTest {
     @Feature({"ProcessManagement"})
     public void testWarmUpWithBindToCaller() {
         Context context = InstrumentationRegistry.getTargetContext();
-        ChildProcessCreationParams.registerDefault(
-                new ChildProcessCreationParams(context.getPackageName(),
-                        false /* isExternalService */, LibraryProcessType.PROCESS_CHILD,
-                        true /* bindToCallerCheck */, false /* ignoreVisibilityForImportance */));
+        ChildProcessCreationParams.set(new ChildProcessCreationParams(context.getPackageName(),
+                false /* isExternalService */, LibraryProcessType.PROCESS_CHILD,
+                true /* bindToCallerCheck */, false /* ignoreVisibilityForImportance */));
         testWarmUpImpl();
     }
 
