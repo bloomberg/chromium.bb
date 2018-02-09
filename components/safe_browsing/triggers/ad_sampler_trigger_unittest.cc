@@ -183,7 +183,13 @@ TEST_F(AdSamplerTriggerTest, PageWithNoAds) {
                                       NO_SAMPLE_NO_AD, 3);
 }
 
-TEST_F(AdSamplerTriggerTest, PageWithMultipleAds) {
+#if defined(THREAD_SANITIZER)
+// Flaky on TSAN: https://crbug.com/810840
+#define MAYBE_PageWithMultipleAds DISABLED_PageWithMultipleAds
+#else
+#define MAYBE_PageWithMultipleAds PageWithMultipleAds
+#endif
+TEST_F(AdSamplerTriggerTest, MAYBE_PageWithMultipleAds) {
   // Make sure the trigger fires when there are ads on the page. We expect
   // one call for each ad detected.
   CreateTriggerWithFrequency(/*denominator=*/1);
