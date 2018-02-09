@@ -96,8 +96,6 @@ std::unique_ptr<ServiceWorkerNavigationHandleCore> CreateNavigationHandleCore(
   return navigation_handle_core;
 }
 
-static const int kRenderFrameId = 1;
-
 class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
  public:
   TestingServiceWorkerDispatcherHost(int process_id,
@@ -142,6 +140,26 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
     instance_host_ptr->OnStopped();
     base::RunLoop().RunUntilIdle();
   }
+};
+
+// A helper that holds on to ExtendableMessageEventPtr so it doesn't get
+// destroyed after the message event handler runs.
+class ExtendableMessageEventTestHelper : public EmbeddedWorkerTestHelper {
+ public:
+  ExtendableMessageEventTestHelper()
+      : EmbeddedWorkerTestHelper(base::FilePath()) {}
+
+  void OnExtendableMessageEvent(
+      mojom::ExtendableMessageEventPtr event,
+      mojom::ServiceWorkerEventDispatcher::
+          DispatchExtendableMessageEventCallback callback) override {
+    event_ = std::move(event);
+    std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
+                            base::Time::Now());
+  }
+
+ private:
+  mojom::ExtendableMessageEventPtr event_;
 };
 
 class ServiceWorkerDispatcherHostTest : public testing::Test {
@@ -217,17 +235,6 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
         helper_->mock_render_process_id(), kProviderId);
   }
 
-  void PrepareProviderForServiceWorkerContext(ServiceWorkerVersion* version,
-                                              const GURL& pattern) {
-    std::unique_ptr<ServiceWorkerProviderHost> host =
-        CreateProviderHostForServiceWorkerContext(
-            helper_->mock_render_process_id(),
-            true /* is_parent_frame_secure */, version, context()->AsWeakPtr(),
-            &remote_endpoint_);
-    provider_host_ = host.get();
-    context()->AddProviderHost(std::move(host));
-  }
-
   void DispatchExtendableMessageEvent(
       scoped_refptr<ServiceWorkerVersion> worker,
       blink::TransferableMessage message,
@@ -236,21 +243,7 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
       ServiceWorkerDispatcherHost::StatusCallback callback) {
     dispatcher_host_->DispatchExtendableMessageEvent(
         std::move(worker), std::move(message), source_origin,
-        sender_provider_host, std::move(callback));
-  }
-
-  ServiceWorkerRemoteProviderEndpoint PrepareServiceWorkerProviderHost(
-      int provider_id,
-      const GURL& document_url) {
-    ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-    std::unique_ptr<ServiceWorkerProviderHost> host =
-        CreateProviderHostWithDispatcherHost(
-            helper_->mock_render_process_id(), provider_id,
-            context()->AsWeakPtr(), kRenderFrameId, dispatcher_host_.get(),
-            &remote_endpoint);
-    host->SetDocumentUrl(document_url);
-    context()->AddProviderHost(std::move(host));
-    return remote_endpoint;
+        sender_provider_host->provider_id(), std::move(callback));
   }
 
   TestBrowserThreadBundle browser_thread_bundle_;
@@ -384,20 +377,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent) {
   GURL pattern = GURL("http://www.example.com/");
   GURL script_url = GURL("http://www.example.com/service_worker.js");
 
+  Initialize(std::make_unique<ExtendableMessageEventTestHelper>());
   SetUpRegistration(pattern, script_url);
-  PrepareProviderForServiceWorkerContext(version_.get(), pattern);
-
-  // Set the running hosted version so that we can retrieve a valid service
-  // worker object information for the source attribute of the message event.
-  provider_host_->running_hosted_version_ = version_;
-
-  // |info| keeps the 1st reference to |sender_worker_handle|.
-  blink::mojom::ServiceWorkerObjectInfoPtr info =
-      provider_host_->GetOrCreateServiceWorkerHandle(version_.get());
-  ServiceWorkerHandle* sender_worker_handle =
-      dispatcher_host_->FindServiceWorkerHandle(provider_host_->provider_id(),
-                                                version_->version_id());
-  EXPECT_EQ(1u, sender_worker_handle->bindings_.size());
 
   // Set mock clock on version_ to check timeout behavior.
   tick_clock_.SetNowTicks(base::TimeTicks::Now());
@@ -421,25 +402,29 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent) {
   base::TimeDelta remaining_time = version_->remaining_timeout();
   EXPECT_EQ(base::TimeDelta::FromSeconds(6), remaining_time);
 
-  // Dispatch ExtendableMessageEvent.
+  ServiceWorkerHandle* sender_worker_handle =
+      dispatcher_host_->FindServiceWorkerHandle(
+          version_->provider_host()->provider_id(), version_->version_id());
+  EXPECT_FALSE(sender_worker_handle);
+  // Simulate dispatching an ExtendableMessageEvent which comes from
+  // |version_|'s own remote provider.
   blink::TransferableMessage message;
   SetUpDummyMessagePort(&message.ports);
   called = false;
   status = SERVICE_WORKER_ERROR_MAX_VALUE;
   DispatchExtendableMessageEvent(
       version_, std::move(message),
-      url::Origin::Create(version_->scope().GetOrigin()), provider_host_,
+      url::Origin::Create(version_->scope().GetOrigin()),
+      version_->provider_host(),
       base::BindOnce(&SaveStatusCallback, &called, &status));
-  // The 2nd reference to |sender_worker_handle| has been passed via the above
-  // dispatch of ExtendableMessageEvent.
-  EXPECT_EQ(2u, sender_worker_handle->bindings_.size());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
   EXPECT_EQ(SERVICE_WORKER_OK, status);
-
-  // The remote handler of ExtendableMessageEvent has released the reference to
-  // |service_worker_handle|, please see impl of
-  // EmbeddedWorkerTestHelper::OnExtendableMessageEvent() for details.
+  // A service worker object info of |version_| should be created as the source
+  // of the ExtendableMessageEvent dispatched above.
+  sender_worker_handle = dispatcher_host_->FindServiceWorkerHandle(
+      version_->provider_host()->provider_id(), version_->version_id());
+  EXPECT_TRUE(sender_worker_handle);
   EXPECT_EQ(1u, sender_worker_handle->bindings_.size());
 
   // Timeout of message event should not have extended life of service worker.
