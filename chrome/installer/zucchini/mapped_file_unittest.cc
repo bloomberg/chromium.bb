@@ -4,6 +4,7 @@
 
 #include "chrome/installer/zucchini/mapped_file.h"
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -25,29 +26,33 @@ class MappedFileWriterTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
 };
 
-TEST_F(MappedFileWriterTest, ErrorCreating) {
-  // Create a directory |file_path_|, so |file_writer| fails when it tries to
-  // open a file with the same name for write.
-  ASSERT_TRUE(base::CreateDirectory(file_path_));
-  {
-    MappedFileWriter file_writer(file_path_, 10);
-    EXPECT_FALSE(file_writer.IsValid());
-  }
-  EXPECT_TRUE(base::PathExists(file_path_));
-}
-
 TEST_F(MappedFileWriterTest, Keep) {
   EXPECT_FALSE(base::PathExists(file_path_));
   {
-    MappedFileWriter file_writer(file_path_, 10);
+    using base::File;
+    File file(file_path_, File::FLAG_CREATE_ALWAYS | File::FLAG_READ |
+                              File::FLAG_WRITE | File::FLAG_SHARE_DELETE |
+                              File::FLAG_CAN_DELETE_ON_CLOSE);
+    MappedFileWriter file_writer(file_path_, std::move(file), 10);
+    EXPECT_FALSE(file_writer.HasError());
     EXPECT_TRUE(file_writer.Keep());
+    EXPECT_FALSE(file_writer.HasError());
+    EXPECT_TRUE(file_writer.error().empty());
   }
   EXPECT_TRUE(base::PathExists(file_path_));
 }
 
 TEST_F(MappedFileWriterTest, DeleteOnClose) {
   EXPECT_FALSE(base::PathExists(file_path_));
-  { MappedFileWriter file_writer(file_path_, 10); }
+  {
+    using base::File;
+    File file(file_path_, File::FLAG_CREATE_ALWAYS | File::FLAG_READ |
+                              File::FLAG_WRITE | File::FLAG_SHARE_DELETE |
+                              File::FLAG_CAN_DELETE_ON_CLOSE);
+    MappedFileWriter file_writer(file_path_, std::move(file), 10);
+    EXPECT_FALSE(file_writer.HasError());
+    EXPECT_TRUE(file_writer.error().empty());
+  }
   EXPECT_FALSE(base::PathExists(file_path_));
 }
 
