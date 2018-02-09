@@ -153,8 +153,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-#include "content/renderer/media/rtc_certificate_generator.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
+#include "content/renderer/media/webrtc/rtc_certificate_generator.h"
 #endif
 
 using blink::Platform;

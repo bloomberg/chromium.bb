@@ -5,9 +5,9 @@
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter.h"
 
 #include "content/renderer/media/media_stream_audio_track.h"
+#include "content/renderer/media/processed_local_audio_source.h"
 #include "content/renderer/media/webrtc/media_stream_video_webrtc_sink.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/processed_local_audio_source.h"
 
 namespace content {
 

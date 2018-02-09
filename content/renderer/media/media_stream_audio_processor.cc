@@ -24,7 +24,7 @@
 #include "build/build_config.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/renderer/media/webrtc_audio_device_impl.h"
+#include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_fifo.h"
 #include "media/base/audio_parameters.h"

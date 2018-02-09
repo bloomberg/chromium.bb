@@ -16,7 +16,7 @@
 #include "content/child/scoped_web_callbacks.h"
 #include "content/renderer/media/media_stream_audio_track.h"
 #include "content/renderer/media/media_stream_track.h"
-#include "content/renderer/media/webrtc_uma_histograms.h"
+#include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
 #include "content/renderer/media_recorder/audio_track_recorder.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_codecs.h"

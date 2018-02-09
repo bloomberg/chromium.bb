@@ -54,7 +54,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-#include "content/renderer/media/rtc_certificate.h"
+#include "content/renderer/media/webrtc/rtc_certificate.h"
 #include "third_party/webrtc/rtc_base/rtccertificate.h"  // nogncheck
 #endif
 

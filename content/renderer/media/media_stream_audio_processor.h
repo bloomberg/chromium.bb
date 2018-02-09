@@ -21,7 +21,7 @@
 #include "content/public/common/media_stream_request.h"
 #include "content/renderer/media/aec_dump_message_filter.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
-#include "content/renderer/media/webrtc_audio_device_impl.h"
+#include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/modules/audio_processing/include/audio_processing.h"
