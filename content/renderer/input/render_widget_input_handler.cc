@@ -228,11 +228,15 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
   blink::WebFrame* result_frame =
       blink::WebFrame::FromFrameOwnerElement(result_node);
   if (result_frame && result_frame->IsWebRemoteFrame()) {
-    return RenderFrameProxy::FromWebFrame(result_frame->ToWebRemoteFrame())
-        ->frame_sink_id();
+    viz::FrameSinkId frame_sink_id =
+        RenderFrameProxy::FromWebFrame(result_frame->ToWebRemoteFrame())
+            ->frame_sink_id();
+    if (frame_sink_id.is_valid())
+      return frame_sink_id;
   }
   // Return the FrameSinkId for the current widget if the point did not hit
-  // test to a remote frame.
+  // test to a remote frame, or the remote frame doesn't have a valid
+  // FrameSinkId yet.
   return viz::FrameSinkId(RenderThread::Get()->GetClientId(),
                           widget_->routing_id());
 }
