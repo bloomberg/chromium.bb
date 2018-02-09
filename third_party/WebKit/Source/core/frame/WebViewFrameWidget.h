@@ -74,7 +74,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void WillCloseLayerTreeView() override;
   WebColor BackgroundColor() const override;
   WebPagePopup* GetPagePopup() const override;
-  bool GetCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
   void UpdateBrowserControlsState(WebBrowserControlsState constraints,
                                   WebBrowserControlsState current,
                                   bool animate) override;

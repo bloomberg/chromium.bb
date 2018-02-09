@@ -659,37 +659,6 @@ void WebFrameWidgetImpl::WillCloseLayerTreeView() {
   layer_tree_view_closed_ = true;
 }
 
-// TODO(ekaramad):This method is almost duplicated in WebViewImpl as well. This
-// code needs to be refactored  (http://crbug.com/629721).
-bool WebFrameWidgetImpl::GetCompositionCharacterBounds(
-    WebVector<WebRect>& bounds) {
-  WebInputMethodController* controller = GetActiveWebInputMethodController();
-  if (!controller)
-    return false;
-
-  WebRange range = controller->CompositionRange();
-  if (range.IsEmpty())
-    return false;
-
-  LocalFrame* frame = FocusedLocalFrameInWidget();
-
-  WebLocalFrameImpl* web_local_frame = WebLocalFrameImpl::FromFrame(frame);
-  size_t character_count = range.length();
-  size_t offset = range.StartOffset();
-  WebVector<WebRect> result(character_count);
-  WebRect webrect;
-  for (size_t i = 0; i < character_count; ++i) {
-    if (!web_local_frame->FirstRectForCharacterRange(offset + i, 1, webrect)) {
-      DLOG(ERROR) << "Could not retrieve character rectangle at " << i;
-      return false;
-    }
-    result[i] = webrect;
-  }
-
-  bounds.Swap(result);
-  return true;
-}
-
 void WebFrameWidgetImpl::SetRemoteViewportIntersection(
     const WebRect& viewport_intersection) {
   // Remote viewports are only applicable to local frames with remote ancestors.

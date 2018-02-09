@@ -19,7 +19,9 @@
 #include "core/input_type_names.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
+#include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebRange.h"
 
@@ -160,6 +162,28 @@ WebRange WebInputMethodControllerImpl::CompositionRange() {
   editable->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   return PlainTextRange::Create(*editable, range);
+}
+
+bool WebInputMethodControllerImpl::GetCompositionCharacterBounds(
+    WebVector<WebRect>& bounds) {
+  WebRange range = CompositionRange();
+  if (range.IsEmpty())
+    return false;
+
+  size_t character_count = range.length();
+  size_t offset = range.StartOffset();
+  WebVector<WebRect> result(character_count);
+  WebRect webrect;
+  for (size_t i = 0; i < character_count; ++i) {
+    if (!web_frame_->FirstRectForCharacterRange(offset + i, 1, webrect)) {
+      DLOG(ERROR) << "Could not retrieve character rectangle at " << i;
+      return false;
+    }
+    result[i] = webrect;
+  }
+
+  bounds.Swap(result);
+  return true;
 }
 
 WebRange WebInputMethodControllerImpl::GetSelectionOffsets() const {

@@ -2392,10 +2392,11 @@ void RenderWidget::GetCompositionCharacterBounds(
     return;
 #endif
 
-  if (!GetWebWidget())
+  blink::WebInputMethodController* controller = GetInputMethodController();
+  if (!controller)
     return;
   blink::WebVector<blink::WebRect> bounds_from_blink;
-  if (!GetWebWidget()->GetCompositionCharacterBounds(bounds_from_blink))
+  if (!controller->GetCompositionCharacterBounds(bounds_from_blink))
     return;
 
   for (size_t i = 0; i < bounds_from_blink.size(); ++i) {
