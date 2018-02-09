@@ -643,7 +643,10 @@ CSSValueList* ComputedStyleUtils::ValueForItemPositionWithOverflowAlignment(
     if (data.GetPosition() >= ItemPosition::kCenter &&
         data.Overflow() != OverflowAlignment::kDefault)
       result->Append(*CSSIdentifierValue::Create(data.Overflow()));
-    result->Append(*CSSIdentifierValue::Create(data.GetPosition()));
+    if (data.GetPosition() == ItemPosition::kLegacy)
+      result->Append(*CSSIdentifierValue::Create(CSSValueNormal));
+    else
+      result->Append(*CSSIdentifierValue::Create(data.GetPosition()));
   }
   DCHECK_LE(result->length(), 2u);
   return result;

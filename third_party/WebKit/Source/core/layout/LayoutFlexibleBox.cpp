@@ -1228,6 +1228,7 @@ static LayoutUnit AlignmentOffset(LayoutUnit available_free_space,
                                   LayoutUnit max_ascent,
                                   bool is_wrap_reverse) {
   switch (position) {
+    case ItemPosition::kLegacy:
     case ItemPosition::kAuto:
     case ItemPosition::kNormal:
       NOTREACHED();

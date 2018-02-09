@@ -637,13 +637,12 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   if (style.GetPosition() == EPosition::kSticky)
     style.SetSubtreeIsSticky(true);
 
-  // If the inherited value of justify-items includes the 'legacy' keyword,
-  // 'auto' computes to the the inherited value.  Otherwise, 'auto' computes to
-  // 'normal'.
-  if (style.JustifyItemsPosition() == ItemPosition::kAuto) {
-    if (parent_style.JustifyItemsPositionType() == ItemPositionType::kLegacy) {
-      style.SetJustifyItems(parent_style.JustifyItems());
-    }
+  // If the inherited value of justify-items includes the 'legacy'
+  // keyword (plus 'left', 'right' or 'center'), 'legacy' computes to
+  // the the inherited value.  Otherwise, 'auto' computes to 'normal'.
+  if (parent_style.JustifyItemsPositionType() == ItemPositionType::kLegacy &&
+      style.JustifyItemsPosition() == ItemPosition::kLegacy) {
+    style.SetJustifyItems(parent_style.JustifyItems());
   }
 
   AdjustEffectiveTouchAction(style, parent_style, element, is_svg_root);

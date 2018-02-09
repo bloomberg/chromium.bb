@@ -23,11 +23,11 @@ bool PlaceSelf::ParseShorthand(
 
   CSSValue* align_self_value = nullptr;
   CSSValue* justify_self_value = nullptr;
-
   if (!CSSParsingUtils::ConsumePlaceAlignment(
-          range, CSSParsingUtils::ConsumeSimplifiedItemPosition,
-          align_self_value, justify_self_value))
+          range, CSSParsingUtils::ConsumeSimplifiedSelfPosition,
+          align_self_value, justify_self_value)) {
     return false;
+  }
 
   DCHECK(align_self_value);
   DCHECK(justify_self_value);

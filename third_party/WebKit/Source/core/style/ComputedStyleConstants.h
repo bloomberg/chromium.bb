@@ -193,6 +193,7 @@ inline Containment& operator|=(Containment& a, Containment b) {
 }
 
 enum class ItemPosition : unsigned {
+  kLegacy,
   kAuto,
   kNormal,
   kStretch,
