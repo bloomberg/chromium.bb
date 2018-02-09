@@ -213,7 +213,8 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
   }
 #endif
 
-  // crbug.com/701137
+  // On Android, for https://crbug.com/701137.
+  // On Desktop, for https://crbug.com/741984.
   if (sysno == __NR_mincore) {
     return Allow();
   }
