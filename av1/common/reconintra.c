@@ -1398,6 +1398,10 @@ static int is_smooth(const MB_MODE_INFO *mbmi, int plane) {
     return (mode == SMOOTH_PRED || mode == SMOOTH_V_PRED ||
             mode == SMOOTH_H_PRED);
   } else {
+    // uv_mode is not set for inter blocks, so need to explicitly
+    // detect that case.
+    if (is_inter_block(mbmi)) return 0;
+
     const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
     return (uv_mode == UV_SMOOTH_PRED || uv_mode == UV_SMOOTH_V_PRED ||
             uv_mode == UV_SMOOTH_H_PRED);
