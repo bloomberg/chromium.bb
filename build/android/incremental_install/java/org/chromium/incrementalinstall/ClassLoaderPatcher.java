@@ -45,12 +45,9 @@ final class ClassLoaderPatcher {
     @SuppressLint({
             "SetWorldReadable", "SetWorldWritable",
     })
-    File[] loadDexFiles(File dexDir) throws ReflectiveOperationException, FileNotFoundException {
+    File[] loadDexFiles(File dexDir) throws ReflectiveOperationException, IOException {
         Log.i(TAG, "Installing dex files from: " + dexDir);
-        File[] dexFilesArr = dexDir.listFiles();
-        if (dexFilesArr == null) {
-            throw new FileNotFoundException("Dex dir does not exist: " + dexDir);
-        }
+
         // The optimized dex files will be owned by this process' user.
         // Store them within the app's data dir rather than on /data/local/tmp
         // so that they are still deleted (by the OS) when we uninstall
@@ -58,6 +55,20 @@ final class ClassLoaderPatcher {
         File incrementalDexesDir = new File(mAppFilesSubDir, "optimized-dexes");
         File isolatedDexesDir = new File(mAppFilesSubDir, "isolated-dexes");
         File optimizedDir;
+
+        // In O, optimizedDirectory is ignored, and the files are always put in an "oat"
+        // directory that is a sibling to the dex files themselves. SELinux policies
+        // prevent using odex files from /data/local/tmp, so we must first copy them
+        // into the app's data directory in order to get the odex files to live there.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            safeCopyAllFiles(dexDir, incrementalDexesDir);
+            dexDir = incrementalDexesDir;
+        }
+
+        File[] dexFilesArr = dexDir.listFiles((File f) -> f.isFile()); // Ignore "oat" directory.
+        if (dexFilesArr == null) {
+            throw new FileNotFoundException("Dex dir does not exist: " + dexDir);
+        }
 
         if (mIsPrimaryProcess) {
             ensureAppFilesSubDirExists();
@@ -92,8 +103,6 @@ final class ClassLoaderPatcher {
         }
 
         Log.i(TAG, "Code cache dir: " + optimizedDir);
-        // TODO(agrieve): Might need to record classpath ordering if we ever have duplicate
-        //     class names (since then order will matter here).
         Log.i(TAG, "Loading " + dexFilesArr.length + " dex files");
 
         Object dexPathList = Reflect.getField(mClassLoader, "pathList");
@@ -117,21 +126,29 @@ final class ClassLoaderPatcher {
         // simplify things (it's fast compared to dexing).
         // https://code.google.com/p/android/issues/detail?id=79480
         File localLibsDir = new File(mAppFilesSubDir, "lib");
-        File copyLibsLockFile = new File(mAppFilesSubDir, "libcopy.lock");
+        safeCopyAllFiles(libDir, localLibsDir);
+        addNativeLibrarySearchPath(localLibsDir);
+    }
+
+    @SuppressLint("SetWorldReadable")
+    private void safeCopyAllFiles(File srcDir, File dstDir) throws IOException {
+        // The library copying is not necessary on older devices, but we do it anyways to
+        // simplify things (it's fast compared to dexing).
+        // https://code.google.com/p/android/issues/detail?id=79480
+        File lockFile = new File(mAppFilesSubDir, dstDir.getName() + ".lock");
         if (mIsPrimaryProcess) {
-            // Primary process: Copies native libraries into the app's data directory.
             ensureAppFilesSubDirExists();
-            LockFile lockFile = LockFile.acquireRuntimeLock(copyLibsLockFile);
-            if (lockFile == null) {
-                LockFile.waitForRuntimeLock(copyLibsLockFile, 10 * 1000);
+            LockFile lock = LockFile.acquireRuntimeLock(lockFile);
+            if (lock == null) {
+                LockFile.waitForRuntimeLock(lockFile, 10 * 1000);
             } else {
                 try {
-                    localLibsDir.mkdir();
-                    localLibsDir.setReadable(true, false);
-                    localLibsDir.setExecutable(true, false);
-                    copyChangedFiles(libDir, localLibsDir);
+                    dstDir.mkdir();
+                    dstDir.setReadable(true, false);
+                    dstDir.setExecutable(true, false);
+                    copyChangedFiles(srcDir, dstDir);
                 } finally {
-                    lockFile.release();
+                    lock.release();
                 }
             }
         } else {
@@ -143,9 +160,8 @@ final class ClassLoaderPatcher {
                         + "and try again.");
             }
             // Other processes: Waits for primary process to finish copying.
-            LockFile.waitForRuntimeLock(copyLibsLockFile, 10 * 1000);
+            LockFile.waitForRuntimeLock(lockFile, 10 * 1000);
         }
-        addNativeLibrarySearchPath(localLibsDir);
     }
 
     @SuppressWarnings("unchecked")
