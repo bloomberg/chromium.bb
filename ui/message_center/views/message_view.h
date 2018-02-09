@@ -62,6 +62,8 @@ class MESSAGE_CENTER_EXPORT MessageView
 
   virtual void SetExpanded(bool expanded);
   virtual bool IsExpanded() const;
+  virtual bool IsManuallyExpandedOrCollapsed() const;
+  virtual void SetManuallyExpandedOrCollapsed(bool value);
 
   // Invoked when the container view of MessageView (e.g. MessageCenterView in
   // ash) is starting the animation that possibly hides some part of
@@ -95,10 +97,6 @@ class MESSAGE_CENTER_EXPORT MessageView
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
   std::string notification_id() const { return notification_id_; }
 
-  bool manually_expanded_or_collapsed() const {
-    return manually_expanded_or_collapsed_;
-  }
-
  protected:
   // Creates and add close button to view hierarchy when necessary. Derived
   // classes should call this after its view hierarchy is populated to ensure
@@ -112,10 +110,6 @@ class MESSAGE_CENTER_EXPORT MessageView
   views::View* background_view() { return background_view_; }
   views::ScrollView* scroller() { return scroller_; }
 
-  void set_manually_expanded_or_collapsed() {
-    manually_expanded_or_collapsed_ = true;
-  }
-
   bool is_nested() const { return is_nested_; }
 
  private:
@@ -127,10 +121,6 @@ class MESSAGE_CENTER_EXPORT MessageView
 
   // Flag if the notification is set to pinned or not.
   bool pinned_ = false;
-
-  // True if the notification is expanded/collapsed by user interaction.
-  // If true, MessagePopupCollection will not auto-collapse the notification.
-  bool manually_expanded_or_collapsed_ = false;
 
   std::unique_ptr<views::Painter> focus_painter_;
 

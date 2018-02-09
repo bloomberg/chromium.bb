@@ -790,7 +790,7 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
   // |expand_button| can be focused by TAB.
   if (sender == header_row_) {
     if (IsExpandable() && content_row_->visible()) {
-      set_manually_expanded_or_collapsed();
+      SetManuallyExpandedOrCollapsed(true);
       ToggleExpanded();
       Layout();
       SchedulePaint();
@@ -1286,6 +1286,14 @@ void NotificationViewMD::SetExpanded(bool expanded) {
   UpdateViewForExpandedState(expanded_);
   content_row_->InvalidateLayout();
   PreferredSizeChanged();
+}
+
+bool NotificationViewMD::IsManuallyExpandedOrCollapsed() const {
+  return manually_expanded_or_collapsed_;
+}
+
+void NotificationViewMD::SetManuallyExpandedOrCollapsed(bool value) {
+  manually_expanded_or_collapsed_ = value;
 }
 
 void NotificationViewMD::OnSettingsButtonPressed(
