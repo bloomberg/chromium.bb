@@ -192,12 +192,20 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   void InitializeTilesWithResourcesForTesting(const std::vector<Tile*>& tiles) {
     for (size_t i = 0; i < tiles.size(); ++i) {
       TileDrawInfo& draw_info = tiles[i]->draw_info();
-      draw_info.SetResource(
+      ResourcePool::InUsePoolResource resource =
           resource_pool_->AcquireResource(
               tiles[i]->desired_texture_size(),
               raster_buffer_provider_->GetResourceFormat(false),
-              client_->GetRasterColorSpace().color_space),
-          false, false);
+              client_->GetRasterColorSpace().color_space);
+      raster_buffer_provider_->AcquireBufferForRaster(resource, 0, 0);
+      // The raster here never really happened, cuz tests. So just add an
+      // arbitrary sync token.
+      if (resource.gpu_backing()) {
+        resource.gpu_backing()->mailbox_sync_token.Set(
+            gpu::GPU_IO, gpu::CommandBufferId::FromUnsafeValue(1), 1);
+      }
+      resource_pool_->PrepareForExport(resource);
+      draw_info.SetResource(std::move(resource), false, false);
       draw_info.set_resource_ready_for_draw();
     }
   }

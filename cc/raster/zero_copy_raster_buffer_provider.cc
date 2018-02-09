@@ -107,6 +107,7 @@ class ZeroCopyRasterBufferImpl : public RasterBuffer {
       backing_->mailbox = gpu::Mailbox::Generate();
       gl->ProduceTextureDirectCHROMIUM(backing_->texture_id,
                                        backing_->mailbox.name);
+      backing_->overlay_candidate = true;
 
       gl->BindTexture(backing_->texture_target, backing_->texture_id);
       gl->TexParameteri(backing_->texture_target, GL_TEXTURE_MIN_FILTER,

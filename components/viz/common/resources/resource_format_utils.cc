@@ -219,4 +219,25 @@ unsigned int TextureStorageFormat(ResourceFormat format) {
   return GL_RGBA8_OES;
 }
 
+bool IsGpuMemoryBufferFormatSupported(ResourceFormat format) {
+  switch (format) {
+    case BGRA_8888:
+    case RED_8:
+    case R16_EXT:
+    case RGBA_4444:
+    case RGBA_8888:
+    case ETC1:
+    case RGBA_F16:
+      return true;
+    // These formats have no BufferFormat equivalent.
+    case ALPHA_8:
+    case LUMINANCE_8:
+    case RGB_565:
+    case LUMINANCE_F16:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace viz

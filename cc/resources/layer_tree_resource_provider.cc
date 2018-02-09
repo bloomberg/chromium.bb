@@ -360,7 +360,7 @@ viz::ResourceId LayerTreeResourceProvider::CreateGpuTextureResource(
                              size, viz::internal::Resource::INTERNAL, hint,
                              viz::ResourceType::kTexture, format, color_space));
   if (use_overlay && settings_.use_texture_storage_image &&
-      IsGpuMemoryBufferFormatSupported(format, gfx::BufferUsage::SCANOUT)) {
+      viz::IsGpuMemoryBufferFormatSupported(format)) {
     resource->usage = gfx::BufferUsage::SCANOUT;
     resource->target = GetImageTextureTarget(
         compositor_context_provider_->ContextCapabilities(), resource->usage,
@@ -747,29 +747,6 @@ bool LayerTreeResourceProvider::IsRenderBufferFormatSupported(
   return false;
 }
 
-bool LayerTreeResourceProvider::IsGpuMemoryBufferFormatSupported(
-    viz::ResourceFormat format,
-    gfx::BufferUsage usage) const {
-  switch (format) {
-    case viz::BGRA_8888:
-    case viz::RED_8:
-    case viz::R16_EXT:
-    case viz::RGBA_4444:
-    case viz::RGBA_8888:
-    case viz::ETC1:
-    case viz::RGBA_F16:
-      return true;
-    // These formats have no BufferFormat equivalent.
-    case viz::ALPHA_8:
-    case viz::LUMINANCE_8:
-    case viz::RGB_565:
-    case viz::LUMINANCE_F16:
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}
-
 viz::ResourceFormat LayerTreeResourceProvider::YuvResourceFormat(
     int bits) const {
   if (bits > 8) {
@@ -785,6 +762,13 @@ bool LayerTreeResourceProvider::IsLost(viz::ResourceId id) {
 }
 
 void LayerTreeResourceProvider::LoseResourceForTesting(viz::ResourceId id) {
+  auto it = imported_resources_.find(id);
+  if (it != imported_resources_.end()) {
+    ImportedResource& imported = it->second;
+    imported.returned_lost = true;
+    return;
+  }
+
   viz::internal::Resource* resource = GetResource(id);
   DCHECK(resource);
   resource->lost = true;

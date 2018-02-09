@@ -13,6 +13,7 @@
 #include "cc/resources/scoped_resource.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_context_provider.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -32,12 +33,29 @@ class ResourcePoolTest : public testing::Test {
   }
 
  protected:
+  class StubGpuBacking : public ResourcePool::GpuBacking {
+   public:
+    base::trace_event::MemoryAllocatorDumpGuid MemoryDumpGuid(
+        uint64_t tracing_process_id) override {
+      return {};
+    }
+    base::UnguessableToken SharedMemoryGuid() override { return {}; }
+  };
+
+  void SetBackingOnResource(const ResourcePool::InUsePoolResource& resource) {
+    auto backing = std::make_unique<StubGpuBacking>();
+    backing->mailbox_sync_token.Set(
+        gpu::GPU_IO, gpu::CommandBufferId::FromUnsafeValue(1), 1);
+    resource.set_gpu_backing(std::move(backing));
+  }
+
   void CheckAndReturnResource(ResourcePool::InUsePoolResource resource) {
     EXPECT_TRUE(!!resource);
     resource_pool_->ReleaseResource(std::move(resource));
     resource_pool_->CheckBusyResources();
   }
 
+  TestSharedBitmapManager shared_bitmap_manager_;
   scoped_refptr<TestContextProvider> context_provider_;
   std::unique_ptr<LayerTreeResourceProvider> resource_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -52,8 +70,7 @@ TEST_F(ResourcePoolTest, AcquireRelease) {
       resource_pool_->AcquireResource(size, format, color_space);
   EXPECT_EQ(size, resource.size());
   EXPECT_EQ(format, resource.format());
-  EXPECT_TRUE(
-      resource_provider_->CanLockForWrite(resource.gpu_backing_resource_id()));
+  EXPECT_EQ(color_space, resource.color_space());
 
   resource_pool_->ReleaseResource(std::move(resource));
 }
@@ -79,11 +96,6 @@ TEST_F(ResourcePoolTest, AccountingSingleResource) {
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
 
   resource_pool_->ReleaseResource(std::move(resource));
-  EXPECT_EQ(resource_bytes, resource_pool_->GetTotalMemoryUsageForTesting());
-  EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
-  EXPECT_EQ(1u, resource_pool_->GetBusyResourceCountForTesting());
-
-  resource_pool_->CheckBusyResources();
   EXPECT_EQ(resource_bytes, resource_pool_->GetTotalMemoryUsageForTesting());
   EXPECT_EQ(0u, resource_pool_->memory_usage_bytes());
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
@@ -112,27 +124,30 @@ TEST_F(ResourcePoolTest, SimpleResourceReuse) {
 
   CheckAndReturnResource(
       resource_pool_->AcquireResource(size, format, color_space1));
-  EXPECT_EQ(1u, resource_provider_->num_resources());
+  EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
 
   // Same size/format should re-use resource.
   ResourcePool::InUsePoolResource resource =
       resource_pool_->AcquireResource(size, format, color_space1);
-  EXPECT_EQ(1u, resource_provider_->num_resources());
+  EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   CheckAndReturnResource(std::move(resource));
-  EXPECT_EQ(1u, resource_provider_->num_resources());
+  EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
+  EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
 
   // Different size/format should allocate new resource.
   resource = resource_pool_->AcquireResource(gfx::Size(50, 50),
                                              viz::LUMINANCE_8, color_space1);
-  EXPECT_EQ(2u, resource_provider_->num_resources());
+  EXPECT_EQ(2u, resource_pool_->GetTotalResourceCountForTesting());
   CheckAndReturnResource(std::move(resource));
-  EXPECT_EQ(2u, resource_provider_->num_resources());
+  EXPECT_EQ(2u, resource_pool_->GetTotalResourceCountForTesting());
+  EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
 
   // Different color space should allocate new resource.
   resource = resource_pool_->AcquireResource(size, format, color_space2);
-  EXPECT_EQ(3u, resource_provider_->num_resources());
+  EXPECT_EQ(3u, resource_pool_->GetTotalResourceCountForTesting());
   CheckAndReturnResource(std::move(resource));
-  EXPECT_EQ(3u, resource_provider_->num_resources());
+  EXPECT_EQ(3u, resource_pool_->GetTotalResourceCountForTesting());
+  EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
 }
 
 TEST_F(ResourcePoolTest, LostResource) {
@@ -147,13 +162,15 @@ TEST_F(ResourcePoolTest, LostResource) {
 
   ResourcePool::InUsePoolResource resource =
       resource_pool_->AcquireResource(size, format, color_space);
-  EXPECT_EQ(1u, resource_provider_->num_resources());
 
-  resource_provider_->LoseResourceForTesting(
-      resource.gpu_backing_resource_id());
+  SetBackingOnResource(resource);
+  resource_pool_->PrepareForExport(resource);
+
+  resource_provider_->LoseResourceForTesting(resource.resource_id_for_export());
+
+  EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   resource_pool_->ReleaseResource(std::move(resource));
-  resource_pool_->CheckBusyResources();
-  EXPECT_EQ(0u, resource_provider_->num_resources());
+  EXPECT_EQ(0u, resource_pool_->GetTotalResourceCountForTesting());
 }
 
 TEST_F(ResourcePoolTest, BusyResourcesNotFreed) {
@@ -175,12 +192,17 @@ TEST_F(ResourcePoolTest, BusyResourcesNotFreed) {
 
   ResourcePool::InUsePoolResource resource =
       resource_pool_->AcquireResource(size, format, color_space);
-  EXPECT_EQ(1u, resource_provider_->num_resources());
   EXPECT_EQ(40000u, resource_pool_->GetTotalMemoryUsageForTesting());
   EXPECT_EQ(1u, resource_pool_->resource_count());
 
+  SetBackingOnResource(resource);
+  resource_pool_->PrepareForExport(resource);
+
+  std::vector<viz::TransferableResource> transfers;
+  resource_provider_->PrepareSendToParent({resource.resource_id_for_export()},
+                                          &transfers);
+
   resource_pool_->ReleaseResource(std::move(resource));
-  EXPECT_EQ(1u, resource_provider_->num_resources());
   EXPECT_EQ(40000u, resource_pool_->GetTotalMemoryUsageForTesting());
   EXPECT_EQ(0u, resource_pool_->memory_usage_bytes());
   EXPECT_EQ(1u, resource_pool_->GetBusyResourceCountForTesting());
@@ -192,9 +214,8 @@ TEST_F(ResourcePoolTest, BusyResourcesNotFreed) {
                                 base::TimeDelta::FromMillisecondsD(200));
   run_loop.Run();
 
-  // Busy resources are still help, since they may be in flight to the display
+  // Busy resources are still held, since they may be in flight to the display
   // compositor and should not be freed.
-  EXPECT_EQ(1u, resource_provider_->num_resources());
   EXPECT_EQ(40000u, resource_pool_->GetTotalMemoryUsageForTesting());
   EXPECT_EQ(0u, resource_pool_->memory_usage_bytes());
   EXPECT_EQ(1u, resource_pool_->GetBusyResourceCountForTesting());
@@ -219,20 +240,27 @@ TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {
 
   ResourcePool::InUsePoolResource resource =
       resource_pool_->AcquireResource(size, format, color_space);
-  EXPECT_EQ(1u, resource_provider_->num_resources());
   EXPECT_EQ(40000u, resource_pool_->GetTotalMemoryUsageForTesting());
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(1u, resource_pool_->resource_count());
+  EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
+
+  // Export the resource to the display compositor.
+  SetBackingOnResource(resource);
+  resource_pool_->PrepareForExport(resource);
+  std::vector<viz::TransferableResource> transfers;
+  resource_provider_->PrepareSendToParent({resource.resource_id_for_export()},
+                                          &transfers);
 
   resource_pool_->ReleaseResource(std::move(resource));
-  EXPECT_EQ(1u, resource_provider_->num_resources());
   EXPECT_EQ(40000u, resource_pool_->GetTotalMemoryUsageForTesting());
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
+  EXPECT_EQ(0u, resource_pool_->resource_count());
   EXPECT_EQ(1u, resource_pool_->GetBusyResourceCountForTesting());
 
   // Transfer the resource from the busy pool to the unused pool.
-  resource_pool_->CheckBusyResources();
-  EXPECT_EQ(1u, resource_provider_->num_resources());
+  resource_provider_->ReceiveReturnsFromParent(
+      viz::TransferableResource::ReturnResources(transfers));
   EXPECT_EQ(40000u, resource_pool_->GetTotalMemoryUsageForTesting());
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(0u, resource_pool_->resource_count());
@@ -245,7 +273,6 @@ TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {
                                 base::TimeDelta::FromMillisecondsD(200));
   run_loop.Run();
 
-  EXPECT_EQ(0u, resource_provider_->num_resources());
   EXPECT_EQ(0u, resource_pool_->GetTotalMemoryUsageForTesting());
 }
 
@@ -260,7 +287,7 @@ TEST_F(ResourcePoolTest, UpdateContentId) {
   ResourcePool::InUsePoolResource resource =
       resource_pool_->AcquireResource(size, format, color_space);
   resource_pool_->OnContentReplaced(resource, content_id);
-  auto original_id = resource.gpu_backing_resource_id();
+  auto original_id = resource.unique_id_for_testing();
   resource_pool_->ReleaseResource(std::move(resource));
   resource_pool_->CheckBusyResources();
 
@@ -269,7 +296,7 @@ TEST_F(ResourcePoolTest, UpdateContentId) {
   ResourcePool::InUsePoolResource reacquired_resource =
       resource_pool_->TryAcquireResourceForPartialRaster(
           new_content_id, new_invalidated_rect, content_id, &invalidated_rect);
-  EXPECT_EQ(original_id, reacquired_resource.gpu_backing_resource_id());
+  EXPECT_EQ(original_id, reacquired_resource.unique_id_for_testing());
   EXPECT_EQ(new_invalidated_rect, invalidated_rect);
   resource_pool_->ReleaseResource(std::move(reacquired_resource));
 }
@@ -287,7 +314,7 @@ TEST_F(ResourcePoolTest, UpdateContentIdAndInvalidatedRect) {
   ResourcePool::InUsePoolResource resource =
       resource_pool_->AcquireResource(size, format, color_space);
   resource_pool_->OnContentReplaced(resource, content_ids[0]);
-  auto original_id = resource.gpu_backing_resource_id();
+  auto original_id = resource.unique_id_for_testing();
 
   // Attempt to acquire this resource. It is in use, so its ID and invalidated
   // rect should be updated, but a new resource will be returned.
@@ -315,7 +342,7 @@ TEST_F(ResourcePoolTest, UpdateContentIdAndInvalidatedRect) {
   reacquired_resource = resource_pool_->TryAcquireResourceForPartialRaster(
       content_ids[2], second_invalidated_rect, content_ids[1],
       &total_invalidated_rect);
-  EXPECT_EQ(original_id, reacquired_resource.gpu_backing_resource_id());
+  EXPECT_EQ(original_id, reacquired_resource.unique_id_for_testing());
   EXPECT_EQ(expected_total_invalidated_rect, total_invalidated_rect);
   resource_pool_->ReleaseResource(std::move(reacquired_resource));
 }
@@ -327,7 +354,7 @@ TEST_F(ResourcePoolTest, ReuseResource) {
   // Create unused resource with size 100x100.
   ResourcePool::InUsePoolResource original =
       resource_pool_->AcquireResource(gfx::Size(100, 100), format, color_space);
-  auto original_id = original.gpu_backing_resource_id();
+  auto original_id = original.unique_id_for_testing();
   CheckAndReturnResource(std::move(original));
 
   // Try some cases that are too large, none should succeed.
@@ -357,15 +384,15 @@ TEST_F(ResourcePoolTest, ReuseResource) {
   if (resource_pool_->AllowsNonExactReUseForTesting()) {
     ResourcePool::InUsePoolResource reused = resource_pool_->AcquireResource(
         gfx::Size(50, 100), format, color_space);
-    EXPECT_EQ(original_id, reused.gpu_backing_resource_id());
+    EXPECT_EQ(original_id, reused.unique_id_for_testing());
     CheckAndReturnResource(std::move(reused));
     reused = resource_pool_->AcquireResource(gfx::Size(100, 50), format,
                                              color_space);
-    EXPECT_EQ(original_id, reused.gpu_backing_resource_id());
+    EXPECT_EQ(original_id, reused.unique_id_for_testing());
     CheckAndReturnResource(std::move(reused));
     reused =
         resource_pool_->AcquireResource(gfx::Size(71, 71), format, color_space);
-    EXPECT_EQ(original_id, reused.gpu_backing_resource_id());
+    EXPECT_EQ(original_id, reused.unique_id_for_testing());
     CheckAndReturnResource(std::move(reused));
   } else {
     EXPECT_EQ(nullptr, resource_pool_->ReuseResource(gfx::Size(50, 100), format,
@@ -396,6 +423,8 @@ TEST_F(ResourcePoolTest, PurgedMemory) {
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   ResourcePool::InUsePoolResource resource =
       resource_pool_->AcquireResource(size, format, color_space);
+  SetBackingOnResource(resource);
+  resource_pool_->PrepareForExport(resource);
 
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
@@ -406,6 +435,12 @@ TEST_F(ResourcePoolTest, PurgedMemory) {
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
   resource_pool_->OnMemoryStateChange(base::MemoryState::NORMAL);
+
+  // Export the resource to the display compositor, so it will be busy once
+  // released.
+  std::vector<viz::TransferableResource> transfers;
+  resource_provider_->PrepareSendToParent({resource.resource_id_for_export()},
+                                          &transfers);
 
   // Release the resource making it busy.
   resource_pool_->OnMemoryStateChange(base::MemoryState::NORMAL);
@@ -421,7 +456,8 @@ TEST_F(ResourcePoolTest, PurgedMemory) {
 
   // The resource moves from busy to available.
   resource_pool_->OnMemoryStateChange(base::MemoryState::NORMAL);
-  resource_pool_->CheckBusyResources();
+  resource_provider_->ReceiveReturnsFromParent(
+      viz::TransferableResource::ReturnResources(transfers));
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
 
@@ -443,6 +479,8 @@ TEST_F(ResourcePoolTest, MemoryStateSuspended) {
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
   ResourcePool::InUsePoolResource resource =
       resource_pool_->AcquireResource(size, format, color_space);
+  SetBackingOnResource(resource);
+  resource_pool_->PrepareForExport(resource);
 
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
@@ -453,6 +491,12 @@ TEST_F(ResourcePoolTest, MemoryStateSuspended) {
   EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
   resource_pool_->OnMemoryStateChange(base::MemoryState::NORMAL);
+
+  // Export the resource to the display compositor, so it will be busy once
+  // released.
+  std::vector<viz::TransferableResource> transfers;
+  resource_provider_->PrepareSendToParent({resource.resource_id_for_export()},
+                                          &transfers);
 
   // Release the resource making it busy.
   resource_pool_->OnMemoryStateChange(base::MemoryState::NORMAL);
@@ -468,7 +512,8 @@ TEST_F(ResourcePoolTest, MemoryStateSuspended) {
 
   // The resource moves from busy to available, but since we are SUSPENDED
   // it is not kept.
-  resource_pool_->CheckBusyResources();
+  resource_provider_->ReceiveReturnsFromParent(
+      viz::TransferableResource::ReturnResources(transfers));
   EXPECT_EQ(0u, resource_pool_->GetTotalResourceCountForTesting());
   EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
 }
