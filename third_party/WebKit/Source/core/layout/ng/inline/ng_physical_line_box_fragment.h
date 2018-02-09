@@ -36,6 +36,13 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   const NGPhysicalFragment* FirstLogicalLeaf() const;
   const NGPhysicalFragment* LastLogicalLeaf() const;
 
+  // Whether the content soft-wraps to the next line.
+  bool HasSoftWrapToNextLine() const;
+
+  // Whether the content is following a soft-wrap from the previous line.
+  // TODO(xiaochengh): Try to avoid passing the previous line.
+  bool HasSoftWrapFromPreviousLine(const NGPhysicalLineBoxFragment*) const;
+
   scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const {
     Vector<scoped_refptr<NGPhysicalFragment>> children_copy(children_);
     return base::AdoptRef(new NGPhysicalLineBoxFragment(

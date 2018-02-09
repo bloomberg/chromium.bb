@@ -9,7 +9,6 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/ng/geometry/ng_physical_offset_rect.h"
-#include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "core/layout/ng/inline/ng_offset_mapping.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
@@ -50,22 +49,6 @@ struct CaretPositionResolution {
   NGCaretPosition caret_position;
 };
 
-// TODO(xiaochengh): Try to avoid passing the seemingly redundant line boxes.
-// TODO(xiaochengh): Move this function to NGPhysicalFragment.
-bool IsFragmentAfterLineWrap(const NGPhysicalFragment& fragment,
-                             const NGPhysicalLineBoxFragment& current_line,
-                             const NGPhysicalLineBoxFragment* last_line) {
-  if (!last_line)
-    return false;
-  // A fragment after line wrap must be the first logical leaf in its line.
-  if (&fragment != current_line.FirstLogicalLeaf())
-    return false;
-  DCHECK(last_line->BreakToken());
-  DCHECK(last_line->BreakToken()->IsInlineType());
-  DCHECK(!last_line->BreakToken()->IsFinished());
-  return !ToNGInlineBreakToken(last_line->BreakToken())->IsForcedBreak();
-}
-
 bool CanResolveCaretPositionBeforeFragment(
     const NGPhysicalFragment& fragment,
     TextAffinity affinity,
@@ -73,21 +56,10 @@ bool CanResolveCaretPositionBeforeFragment(
     const NGPhysicalLineBoxFragment* last_line) {
   if (affinity == TextAffinity::kDownstream)
     return true;
-  return !IsFragmentAfterLineWrap(fragment, current_line, last_line);
-}
-
-// TODO(xiaochengh): Try to avoid passing the seemingly redundant line box.
-// TODO(xiaochengh): Move this function to NGPhysicalFragment.
-bool IsFragmentBeforeLineWrap(const NGPhysicalFragment& fragment,
-                              const NGPhysicalLineBoxFragment& current_line) {
-  // A fragment before line wrap must be the last logical leaf in its line.
-  if (&fragment != current_line.LastLogicalLeaf())
-    return false;
-  DCHECK(current_line.BreakToken());
-  DCHECK(current_line.BreakToken()->IsInlineType());
-  const NGInlineBreakToken& break_token =
-      ToNGInlineBreakToken(*current_line.BreakToken());
-  return !break_token.IsFinished() && !break_token.IsForcedBreak();
+  // A fragment after line wrap must be the first logical leaf in its line.
+  if (&fragment != current_line.FirstLogicalLeaf())
+    return true;
+  return !current_line.HasSoftWrapFromPreviousLine(last_line);
 }
 
 bool CanResolveCaretPositionAfterFragment(
@@ -96,7 +68,10 @@ bool CanResolveCaretPositionAfterFragment(
     const NGPhysicalLineBoxFragment& current_line) {
   if (affinity == TextAffinity::kUpstream)
     return true;
-  return !IsFragmentBeforeLineWrap(fragment, current_line);
+  // A fragment before line wrap must be the last logical leaf in its line.
+  if (&fragment != current_line.LastLogicalLeaf())
+    return true;
+  return !current_line.HasSoftWrapToNextLine();
 }
 
 CaretPositionResolution TryResolveCaretPositionInTextFragment(
