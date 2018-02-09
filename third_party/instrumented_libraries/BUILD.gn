@@ -100,7 +100,7 @@ if (use_locally_built_instrumented_libraries) {
       ":dee",
       ":freetype",
       ":harfbuzz",
-      ":libappindicator1",
+      ":libappindicator3-1",
       ":libasound2",
       ":libatk-bridge2.0-0",
       ":libatspi2.0-0",
@@ -121,6 +121,8 @@ if (use_locally_built_instrumented_libraries) {
       ":libgpg-error0",
       ":libgtk-3-0",
       ":libgtk2.0-0",
+      ":libido3-0.1-0",
+      ":libindicator3-7",
       ":libnspr4",
       ":libp11-kit0",
       ":libpci3",
@@ -327,12 +329,14 @@ if (use_locally_built_instrumented_libraries) {
     ]
   }
 
-  instrumented_library("libappindicator1") {
+  instrumented_library("libappindicator3-1") {
     extra_configure_flags = [
       "--disable-static",
 
       # See above.
       "--disable-introspection",
+
+      "--with-gtk=3",
     ]
     pre_build = "scripts/pre-build/autogen.sh"
   }
@@ -578,6 +582,29 @@ if (use_locally_built_instrumented_libraries) {
       "--enable-x11-backend",
     ]
     pre_build = "scripts/pre-build/libgtk-3-0.sh"
+  }
+
+  instrumented_library("libido3-0.1-0") {
+    package_cflags = [ "-Wno-return-type" ]
+    extra_configure_flags = [
+      "--disable-static",
+
+      # See above.
+      "--disable-introspection",
+
+      "--with-gtk=3",
+    ]
+    pre_build = "scripts/pre-build/autogen.sh"
+  }
+
+  instrumented_library("libindicator3-7") {
+    extra_configure_flags = [
+      "--disable-static",
+
+      # See above.
+      "--disable-introspection",
+    ]
+    pre_build = "scripts/pre-build/autogen.sh"
   }
 
   instrumented_library("libnspr4") {
