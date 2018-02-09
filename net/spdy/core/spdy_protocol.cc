@@ -131,7 +131,8 @@ const char* FrameTypeToString(SpdyFrameType frame_type) {
 }
 
 bool ParseSettingsId(uint16_t wire_setting_id, SpdySettingsIds* setting_id) {
-  if (wire_setting_id < SETTINGS_MIN || wire_setting_id > SETTINGS_MAX) {
+  if (wire_setting_id != SETTINGS_EXPERIMENT_SCHEDULER &&
+      (wire_setting_id < SETTINGS_MIN || wire_setting_id > SETTINGS_MAX)) {
     return false;
   }
 
@@ -148,6 +149,7 @@ bool ParseSettingsId(uint16_t wire_setting_id, SpdySettingsIds* setting_id) {
       case SETTINGS_MAX_FRAME_SIZE:
       case SETTINGS_MAX_HEADER_LIST_SIZE:
       case SETTINGS_ENABLE_CONNECT_PROTOCOL:
+      case SETTINGS_EXPERIMENT_SCHEDULER:
         // FALLTHROUGH_INTENDED
         return true;
     }
@@ -179,6 +181,9 @@ bool SettingsIdToString(SpdySettingsIds id, const char** settings_id_string) {
       return true;
     case SETTINGS_ENABLE_CONNECT_PROTOCOL:
       *settings_id_string = "SETTINGS_ENABLE_CONNECT_PROTOCOL";
+      return true;
+    case SETTINGS_EXPERIMENT_SCHEDULER:
+      *settings_id_string = "SETTINGS_EXPERIMENT_SCHEDULER";
       return true;
   }
 

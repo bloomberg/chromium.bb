@@ -159,7 +159,9 @@ enum SpdySettingsIds : uint16_t {
   // Enable Websockets over HTTP/2, see
   // https://tools.ietf.org/html/draft-ietf-httpbis-h2-websockets-00.
   SETTINGS_ENABLE_CONNECT_PROTOCOL = 0x8,
-  SETTINGS_MAX = SETTINGS_ENABLE_CONNECT_PROTOCOL
+  SETTINGS_MAX = SETTINGS_ENABLE_CONNECT_PROTOCOL,
+  // Experimental setting used to configure an alternative write scheduler.
+  SETTINGS_EXPERIMENT_SCHEDULER = 0xFF45,
 };
 
 // This explicit operator is needed, otherwise compiler finds
