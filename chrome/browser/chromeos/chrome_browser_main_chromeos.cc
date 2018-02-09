@@ -264,6 +264,22 @@ bool ShallAttemptTpmOwnership() {
 #endif
 }
 
+void RegisterStubPathOverridesIfNecessary() {
+  // These overrides need to occur before BrowserPolicyConnectorChromeOS
+  // (for one) is created. The DCHECK ensures that is the case.
+  DCHECK(!g_browser_process);
+
+  base::FilePath user_data_dir;
+  if (base::SysInfo::IsRunningOnChromeOS() ||
+      !PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+    return;
+  }
+
+  // Override some paths with stub locations so that cloud policy and enterprise
+  // enrollment work on desktop builds, for ease of development.
+  chromeos::RegisterStubPathOverrides(user_data_dir);
+}
+
 }  // namespace
 
 namespace internal {
@@ -550,7 +566,7 @@ class SystemTokenCertDBInitializer {
   base::WeakPtrFactory<SystemTokenCertDBInitializer> weak_ptr_factory_;
 };
 
-}  //  namespace internal
+}  // namespace internal
 
 // ChromeBrowserMainPartsChromeos ----------------------------------------------
 
@@ -598,6 +614,8 @@ int ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
                         .value();
   }
 
+  RegisterStubPathOverridesIfNecessary();
+
 #if defined(GOOGLE_CHROME_BUILD)
   const char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
   std::string channel;
@@ -622,15 +640,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   // device_event_log must be initialized after the message loop.
   device_event_log::Initialize(0 /* default max entries */);
-
-  base::FilePath user_data_dir;
-  if (!base::SysInfo::IsRunningOnChromeOS() &&
-      PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-    // Override some paths with stub locations so that cloud policy and
-    // enterprise enrollment work on desktop builds, for ease of
-    // development.
-    chromeos::RegisterStubPathOverrides(user_data_dir);
-  }
 
   dbus_services_.reset(new internal::DBusServices(parameters()));
 
