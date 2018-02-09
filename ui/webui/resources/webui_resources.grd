@@ -369,11 +369,6 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_HTML_WEBUI_LISTENER_TRACKER"
                  file="html/webui_listener_tracker.html" type="chrome_html"
                  compress="gzip" />
-      <if expr="not is_android and not is_ios">
-        <structure name="IDR_WEBUI_HTML_SEARCH_HIGHLIGHT_UTILS"
-                   file="html/search_highlight_utils.html" type="chrome_html"
-                   compress="gzip" />
-      </if>
 
       <structure name="IDR_WEBUI_JS_ACTION_LINK"
                  file="js/action_link.js" type="chrome_html" compress="gzip" />
@@ -535,13 +530,8 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_JS_WEBUI_RESOURCE_TEST"
                  file="js/webui_resource_test.js" type="chrome_html"
                  compress="gzip" />
-      <if expr="not is_android and not is_ios">
-        <structure name="IDR_WEBUI_JS_SEARCH_HIGHLIGHT_UTILS"
-                   file="js/search_highlight_utils.js" type="chrome_html"
-                   compress="gzip" />
-      </if>
 
-      <if expr="not is_android">
+      <if expr="not is_android and not is_ios">
         <part file="cr_components/cr_components_resources.grdp" />
         <part file="cr_elements_resources.grdp" />
         <part file="cr_polymer_resources.grdp" />
