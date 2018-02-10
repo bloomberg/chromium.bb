@@ -18,8 +18,6 @@
 #endif
 
 using chrome_test_util::ButtonWithAccessibilityLabel;
-using chrome_test_util::ButtonWithAccessibilityLabelId;
-using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::SettingsMenuPrivacyButton;
 
 @interface ClearBrowsingDataSettingsTestCase : ChromeTestCase
@@ -36,21 +34,6 @@ using chrome_test_util::SettingsMenuPrivacyButton;
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(
                                           clearBrowsingDataDialogLabel)]
       performAction:grey_tap()];
-}
-
-// Test that opening the clear browsing data dialog does not cause a crash.
-// TODO(crbug.com/760084): Disabled as the user default do not longer exists
-- (void)DISABLED_testOpeningClearBrowsingData {
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  NSString* oldSetting =
-      [defaults stringForKey:@"EnableNewClearBrowsingDataUI"];
-  [defaults setObject:@"Enabled" forKey:@"EnableNewClearBrowsingDataUI"];
-
-  [self openClearBrowsingDataDialog];
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
-      performAction:grey_tap()];
-
-  [defaults setObject:oldSetting forKey:@"EnableNewClearBrowsingDataUI"];
 }
 
 @end
