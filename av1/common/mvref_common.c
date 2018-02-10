@@ -1006,6 +1006,85 @@ static void setup_ref_mv_list(
                    xd->n8_w << MI_SIZE_LOG2, xd->n8_h << MI_SIZE_LOG2, xd);
     }
   } else {
+#if CONFIG_OPT_REF_MV
+    // Handle single reference frame extension
+    int mi_width = AOMMIN(mi_size_wide[BLOCK_64X64], xd->n8_w);
+    mi_width = AOMMIN(mi_width, cm->mi_cols - mi_col);
+    int mi_height = AOMMIN(mi_size_high[BLOCK_64X64], xd->n8_h);
+    mi_height = AOMMIN(mi_height, cm->mi_rows - mi_row);
+    int mi_size = AOMMIN(mi_width, mi_height);
+
+    for (int idx = 0; abs(max_row_offset) >= 1 && idx < mi_size &&
+                      refmv_count[ref_frame] < MAX_MV_REF_CANDIDATES;) {
+      const MODE_INFO *const candidate_mi = xd->mi[-xd->mi_stride + idx];
+      const MB_MODE_INFO *const candidate = &candidate_mi->mbmi;
+      const int candidate_bsize = candidate->sb_type;
+
+      // TODO(jingning): Refactor the following code.
+      for (int rf_idx = 0; rf_idx < 2; ++rf_idx) {
+        if (candidate->ref_frame[rf_idx] > INTRA_FRAME) {
+          int_mv this_mv = candidate->mv[rf_idx];
+          if (cm->ref_frame_sign_bias[candidate->ref_frame[rf_idx]] !=
+              cm->ref_frame_sign_bias[ref_frame]) {
+            this_mv.as_mv.row = -this_mv.as_mv.row;
+            this_mv.as_mv.col = -this_mv.as_mv.col;
+          }
+          int stack_idx;
+          for (stack_idx = 0; stack_idx < refmv_count[ref_frame]; ++stack_idx) {
+            int_mv stack_mv = ref_mv_stack[ref_frame][stack_idx].this_mv;
+            if (this_mv.as_int == stack_mv.as_int) break;
+          }
+
+          if (stack_idx == refmv_count[ref_frame]) {
+            ref_mv_stack[ref_frame][stack_idx].this_mv = this_mv;
+
+            // TODO(jingning): Set an arbitrary small number here. The weight
+            // doesn't matter as long as it is properly initialized.
+            ref_mv_stack[ref_frame][stack_idx].weight = 2;
+            ++refmv_count[ref_frame];
+          }
+        }
+      }
+      idx += mi_size_wide[candidate_bsize];
+    }
+
+    for (int idx = 0; abs(max_col_offset) >= 1 && idx < mi_size &&
+                      refmv_count[ref_frame] < MAX_MV_REF_CANDIDATES;) {
+      const MODE_INFO *const candidate_mi = xd->mi[idx * xd->mi_stride - 1];
+      const MB_MODE_INFO *const candidate = &candidate_mi->mbmi;
+      const int candidate_bsize = candidate->sb_type;
+
+      // TODO(jingning): Refactor the following code.
+      for (int rf_idx = 0; rf_idx < 2; ++rf_idx) {
+        if (candidate->ref_frame[rf_idx] > INTRA_FRAME) {
+          int_mv this_mv = candidate->mv[rf_idx];
+          if (cm->ref_frame_sign_bias[candidate->ref_frame[rf_idx]] !=
+              cm->ref_frame_sign_bias[ref_frame]) {
+            this_mv.as_mv.row = -this_mv.as_mv.row;
+            this_mv.as_mv.col = -this_mv.as_mv.col;
+          }
+          int stack_idx;
+          for (stack_idx = 0; stack_idx < refmv_count[ref_frame]; ++stack_idx) {
+            int_mv stack_mv = ref_mv_stack[ref_frame][stack_idx].this_mv;
+            if (this_mv.as_int == stack_mv.as_int) break;
+          }
+
+          if (stack_idx == refmv_count[ref_frame]) {
+            ref_mv_stack[ref_frame][stack_idx].this_mv = this_mv;
+
+            // TODO(jingning): Set an arbitrary small number here. The weight
+            // doesn't matter as long as it is properly initialized.
+            ref_mv_stack[ref_frame][stack_idx].weight = 2;
+            ++refmv_count[ref_frame];
+          }
+        }
+      }
+      idx += mi_size_high[candidate_bsize];
+    }
+
+    for (int idx = refmv_count[ref_frame]; idx < MAX_MV_REF_CANDIDATES; ++idx)
+      mv_ref_list[rf[0]][idx].as_int = gm_mv_candidates[0].as_int;
+#endif
     for (int idx = 0;
          idx < AOMMIN(MAX_MV_REF_CANDIDATES, refmv_count[ref_frame]); ++idx) {
       mv_ref_list[rf[0]][idx].as_int =
@@ -1259,10 +1338,16 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif  // USE_CUR_GM_REFMV
                     mi_row, mi_col, mode_context, compound_search);
 
+#if !CONFIG_OPT_REF_MV
   if (ref_frame <= ALTREF_FRAME)
     find_mv_refs_idx(cm, xd, mi, ref_frame, mv_ref_list[rf[0]], mi_row, mi_col,
                      sync, data, compound_mode_context, zeromv[0],
                      ref_mv_count[ref_frame]);
+#else
+  (void)compound_mode_context;
+  (void)data;
+  (void)sync;
+#endif
 }
 
 void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
