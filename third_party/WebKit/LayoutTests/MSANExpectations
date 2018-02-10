@@ -44,8 +44,11 @@ crbug.com/667560 [ Linux ] http/tests/devtools/startup/console/console-format-st
 crbug.com/751906 [ Linux ] http/tests/devtools/console/console-correct-suggestions.js [ Timeout Pass ]
 
 crbug.com/736370 [ Linux ] external/wpt/editing/run/removeformat.html [ Timeout ]
+crbug.com/810960 [ Linux ] external/wpt/IndexedDB/nested-cloning-large.html [ Timeout ]
 crbug.com/736554 [ Linux ] external/wpt/IndexedDB/nested-cloning-large-multiple.html [ Timeout ]
 crbug.com/736554 [ Linux ] virtual/mojo-blobs/external/wpt/IndexedDB/nested-cloning-large-multiple.html [ Timeout ]
+
+crbug.com/810963 [ Linux ] external/wpt/dom/interfaces.html [ Timeout ]
 
 # Intentionally failed allocations, via partitionAllocGenericFlags()
 crbug.com/577889 [ Linux ] fast/js/typed-array-allocation-failure.html [ Crash ]
