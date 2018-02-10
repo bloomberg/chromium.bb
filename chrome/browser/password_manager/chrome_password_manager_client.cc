@@ -616,10 +616,14 @@ autofill::AutofillManager*
 ChromePasswordManagerClient::GetAutofillManagerForMainFrame() {
   autofill::ContentAutofillDriverFactory* factory =
       autofill::ContentAutofillDriverFactory::FromWebContents(web_contents());
-  return factory
-             ? factory->DriverForFrame(web_contents()->GetMainFrame())
-                   ->autofill_manager()
-             : nullptr;
+  if (factory) {
+    autofill::ContentAutofillDriver* driver =
+        factory->DriverForFrame(web_contents()->GetMainFrame());
+    // |driver| can be NULL if the tab is being closed.
+    if (driver)
+      return driver->autofill_manager();
+  }
+  return nullptr;
 }
 
 void ChromePasswordManagerClient::SetTestObserver(
