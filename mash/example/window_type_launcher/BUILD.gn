@@ -18,7 +18,7 @@ service("window_type_launcher") {
 
   deps = [
     "//base",
-    "//mash/public/interfaces",
+    "//mash/public/mojom",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",

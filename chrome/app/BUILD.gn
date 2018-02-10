@@ -380,7 +380,7 @@ static_library("test_support") {
   if (enable_mus) {
     deps += [
       "//mash/common",
-      "//mash/quick_launch/public/interfaces:constants",
+      "//mash/quick_launch/public/mojom:constants",
       "//services/ui/public/interfaces:constants",
     ]
   }

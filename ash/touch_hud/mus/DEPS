@@ -2,7 +2,7 @@ include_rules = [
   "-ash",
   "+ash/public",
   "+ash/touch_hud",
-  "+mash/public/interfaces",
+  "+mash/public/mojom",
   "+mojo/public",
   "+services/service_manager/public",
   "+services/ui/public",

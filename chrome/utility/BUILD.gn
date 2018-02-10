@@ -155,7 +155,7 @@ static_library("utility") {
       "//components/font_service:lib",
       "//components/font_service/public/interfaces",
       "//mash/quick_launch:lib",
-      "//mash/quick_launch/public/interfaces",
+      "//mash/quick_launch/public/mojom",
       "//services/ui:lib",
       "//services/ui/public/interfaces",
     ]

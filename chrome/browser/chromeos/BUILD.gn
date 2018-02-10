@@ -151,7 +151,7 @@ source_set("chromeos") {
     "//gpu",
     "//gpu/ipc/host",
     "//gpu/ipc/service",
-    "//mash/public/interfaces",
+    "//mash/public/mojom",
     "//media",
     "//media/mojo/interfaces",
     "//mojo/common",

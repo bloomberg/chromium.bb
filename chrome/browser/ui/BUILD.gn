@@ -1732,7 +1732,7 @@ split_static_library("ui") {
       "//components/web_modal",
       "//components/zoom",
       "//device/bluetooth",
-      "//mash/public/interfaces",
+      "//mash/public/mojom",
       "//services/device/public/cpp:device_features",
       "//services/device/public/interfaces",
       "//services/metrics/public/cpp:metrics_cpp",

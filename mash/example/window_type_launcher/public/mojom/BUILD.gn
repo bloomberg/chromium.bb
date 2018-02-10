@@ -4,7 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-group("interfaces") {
+group("mojom") {
   deps = [
     ":constants",
   ]

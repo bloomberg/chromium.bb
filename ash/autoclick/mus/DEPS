@@ -3,7 +3,7 @@ include_rules = [
   "+ash/autoclick/common",
   "+ash/autoclick/mus",
   "+ash/public",
-  "+mash/public/interfaces",
+  "+mash/public/mojom",
   "+mojo/public",
   "+services/service_manager/public",
   "+services/ui/public",

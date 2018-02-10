@@ -17,7 +17,7 @@ service("views_examples") {
 
   deps = [
     "//base",
-    "//mash/public/interfaces",
+    "//mash/public/mojom",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
     "//services/ui/public/interfaces",

@@ -8,7 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/font_service/public/interfaces/constants.mojom.h"
-#include "mash/quick_launch/public/interfaces/constants.mojom.h"
+#include "mash/quick_launch/public/mojom/constants.mojom.h"
 #include "mash/quick_launch/quick_launch.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 

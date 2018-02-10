@@ -10,7 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "mash/public/interfaces/launchable.mojom.h"
+#include "mash/public/mojom/launchable.mojom.h"
 #include "services/catalog/public/mojom/catalog.mojom.h"
 #include "services/catalog/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/c/main.h"
