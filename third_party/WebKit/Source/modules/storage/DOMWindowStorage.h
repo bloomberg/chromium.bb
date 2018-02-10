@@ -19,6 +19,8 @@ class DOMWindowStorage final : public GarbageCollected<DOMWindowStorage>,
   USING_GARBAGE_COLLECTED_MIXIN(DOMWindowStorage);
 
  public:
+  static const char kSupplementName[];
+
   static DOMWindowStorage& From(LocalDOMWindow&);
   static Storage* sessionStorage(LocalDOMWindow&, ExceptionState&);
   static Storage* localStorage(LocalDOMWindow&, ExceptionState&);
@@ -32,7 +34,6 @@ class DOMWindowStorage final : public GarbageCollected<DOMWindowStorage>,
 
  private:
   explicit DOMWindowStorage(LocalDOMWindow&);
-  static const char* SupplementName();
 
   mutable Member<Storage> session_storage_;
   mutable Member<Storage> local_storage_;

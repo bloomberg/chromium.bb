@@ -21,12 +21,13 @@ class WorkerNavigatorNetworkInformation final
   USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorNetworkInformation);
 
  public:
+  static const char kSupplementName[];
+
   static WorkerNavigatorNetworkInformation& From(WorkerNavigator&,
                                                  ExecutionContext*);
   static WorkerNavigatorNetworkInformation* ToWorkerNavigatorNetworkInformation(
       WorkerNavigator&,
       ExecutionContext*);
-  static const char* SupplementName();
 
   static NetworkInformation* connection(ScriptState*, WorkerNavigator&);
 

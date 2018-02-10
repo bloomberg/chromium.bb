@@ -10,11 +10,11 @@
 namespace blink {
 
 NavigatorBluetooth& NavigatorBluetooth::From(Navigator& navigator) {
-  NavigatorBluetooth* supplement = static_cast<NavigatorBluetooth*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorBluetooth* supplement =
+      Supplement<Navigator>::From<NavigatorBluetooth>(navigator);
   if (!supplement) {
     supplement = new NavigatorBluetooth(navigator);
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
   return *supplement;
 }
@@ -37,8 +37,7 @@ void NavigatorBluetooth::Trace(blink::Visitor* visitor) {
 NavigatorBluetooth::NavigatorBluetooth(Navigator& navigator)
     : Supplement<Navigator>(navigator) {}
 
-const char* NavigatorBluetooth::SupplementName() {
-  return "NavigatorBluetooth";
-}
+// static
+const char NavigatorBluetooth::kSupplementName[] = "NavigatorBluetooth";
 
 }  // namespace blink

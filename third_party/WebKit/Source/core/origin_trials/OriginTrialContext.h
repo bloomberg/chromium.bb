@@ -37,10 +37,10 @@ class CORE_EXPORT OriginTrialContext final
       public Supplement<ExecutionContext> {
   USING_GARBAGE_COLLECTED_MIXIN(OriginTrialContext)
  public:
+  static const char kSupplementName[];
+
   OriginTrialContext(ExecutionContext&,
                      std::unique_ptr<WebTrialTokenValidator>);
-
-  static const char* SupplementName();
 
   // Returns the OriginTrialContext for a specific ExecutionContext, if one
   // exists.

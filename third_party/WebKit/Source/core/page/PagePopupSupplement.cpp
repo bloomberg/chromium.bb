@@ -42,13 +42,11 @@ PagePopupSupplement::PagePopupSupplement(LocalFrame& frame,
   DCHECK(popup_client);
 }
 
-const char* PagePopupSupplement::SupplementName() {
-  return "PagePopupSupplement";
-}
+const char PagePopupSupplement::kSupplementName[] = "PagePopupSupplement";
 
 PagePopupSupplement& PagePopupSupplement::From(LocalFrame& frame) {
-  PagePopupSupplement* supplement = static_cast<PagePopupSupplement*>(
-      Supplement<LocalFrame>::From(&frame, SupplementName()));
+  PagePopupSupplement* supplement =
+      Supplement<LocalFrame>::From<PagePopupSupplement>(&frame);
   DCHECK(supplement);
   return *supplement;
 }
@@ -65,13 +63,12 @@ void PagePopupSupplement::Install(LocalFrame& frame,
                                   PagePopup& popup,
                                   PagePopupClient* popup_client) {
   DCHECK(popup_client);
-  ProvideTo(frame, SupplementName(),
-            new PagePopupSupplement(frame, popup, popup_client));
+  ProvideTo(frame, new PagePopupSupplement(frame, popup, popup_client));
 }
 
 void PagePopupSupplement::Uninstall(LocalFrame& frame) {
   PagePopupSupplement::From(frame).Dispose();
-  frame.RemoveSupplement(SupplementName());
+  frame.RemoveSupplement<PagePopupSupplement>();
 }
 
 void PagePopupSupplement::Trace(blink::Visitor* visitor) {

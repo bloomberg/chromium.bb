@@ -38,11 +38,12 @@ class MODULES_EXPORT PresentationController
   WTF_MAKE_NONCOPYABLE(PresentationController);
 
  public:
+  static const char kSupplementName[];
+
   ~PresentationController() override;
 
   static PresentationController* Create(LocalFrame&, WebPresentationClient*);
 
-  static const char* SupplementName();
   static PresentationController* From(LocalFrame&);
 
   static void ProvideTo(LocalFrame&, WebPresentationClient*);

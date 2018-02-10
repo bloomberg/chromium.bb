@@ -38,11 +38,11 @@ void HTMLMediaElementRemotePlayback::SetBooleanAttribute(
 HTMLMediaElementRemotePlayback& HTMLMediaElementRemotePlayback::From(
     HTMLMediaElement& element) {
   HTMLMediaElementRemotePlayback* supplement =
-      static_cast<HTMLMediaElementRemotePlayback*>(
-          Supplement<HTMLMediaElement>::From(element, SupplementName()));
+      Supplement<HTMLMediaElement>::From<HTMLMediaElementRemotePlayback>(
+          element);
   if (!supplement) {
     supplement = new HTMLMediaElementRemotePlayback();
-    ProvideTo(element, SupplementName(), supplement);
+    ProvideTo(element, supplement);
   }
   return *supplement;
 }
@@ -63,9 +63,8 @@ RemotePlayback* HTMLMediaElementRemotePlayback::remote(
 }
 
 // static
-const char* HTMLMediaElementRemotePlayback::SupplementName() {
-  return "HTMLMediaElementRemotePlayback";
-}
+const char HTMLMediaElementRemotePlayback::kSupplementName[] =
+    "HTMLMediaElementRemotePlayback";
 
 void HTMLMediaElementRemotePlayback::Trace(blink::Visitor* visitor) {
   visitor->Trace(remote_);

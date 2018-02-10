@@ -105,6 +105,9 @@ static void SampleGamepads(ListType* into) {
   }
 }
 
+// static
+const char NavigatorGamepad::kSupplementName[] = "NavigatorGamepad";
+
 NavigatorGamepad* NavigatorGamepad::From(Document& document) {
   if (!document.GetFrame() || !document.GetFrame()->DomWindow())
     return nullptr;
@@ -113,11 +116,11 @@ NavigatorGamepad* NavigatorGamepad::From(Document& document) {
 }
 
 NavigatorGamepad& NavigatorGamepad::From(Navigator& navigator) {
-  NavigatorGamepad* supplement = static_cast<NavigatorGamepad*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorGamepad* supplement =
+      Supplement<Navigator>::From<NavigatorGamepad>(navigator);
   if (!supplement) {
     supplement = new NavigatorGamepad(navigator);
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
   return *supplement;
 }
@@ -197,10 +200,6 @@ NavigatorGamepad::NavigatorGamepad(Navigator& navigator)
 }
 
 NavigatorGamepad::~NavigatorGamepad() = default;
-
-const char* NavigatorGamepad::SupplementName() {
-  return "NavigatorGamepad";
-}
 
 void NavigatorGamepad::RegisterWithDispatcher() {
   GamepadDispatcher::Instance().AddController(this);

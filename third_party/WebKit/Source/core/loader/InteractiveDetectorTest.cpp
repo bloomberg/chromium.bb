@@ -39,14 +39,12 @@ struct TaskTiming {
   TaskTiming(double start, double end) : start(start), end(end) {}
 };
 
-static constexpr char kSupplementName[] = "InteractiveDetector";
-
 class InteractiveDetectorTest : public ::testing::Test {
  public:
   InteractiveDetectorTest() : document_(Document::CreateForTest()) {
     InteractiveDetector* detector = new InteractiveDetector(
         *document_, new NetworkActivityCheckerForTest(document_));
-    Supplement<Document>::ProvideTo(*document_, kSupplementName, detector);
+    Supplement<Document>::ProvideTo(*document_, detector);
     detector_ = detector;
   }
 

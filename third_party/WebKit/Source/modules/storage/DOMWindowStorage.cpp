@@ -27,17 +27,15 @@ void DOMWindowStorage::Trace(blink::Visitor* visitor) {
 }
 
 // static
-const char* DOMWindowStorage::SupplementName() {
-  return "DOMWindowStorage";
-}
+const char DOMWindowStorage::kSupplementName[] = "DOMWindowStorage";
 
 // static
 DOMWindowStorage& DOMWindowStorage::From(LocalDOMWindow& window) {
-  DOMWindowStorage* supplement = static_cast<DOMWindowStorage*>(
-      Supplement<LocalDOMWindow>::From(window, SupplementName()));
+  DOMWindowStorage* supplement =
+      Supplement<LocalDOMWindow>::From<DOMWindowStorage>(window);
   if (!supplement) {
     supplement = new DOMWindowStorage(window);
-    ProvideTo(window, SupplementName(), supplement);
+    ProvideTo(window, supplement);
   }
   return *supplement;
 }

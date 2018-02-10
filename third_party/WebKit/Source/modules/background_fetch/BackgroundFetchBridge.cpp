@@ -20,23 +20,20 @@ BackgroundFetchBridge* BackgroundFetchBridge::From(
     ServiceWorkerRegistration* service_worker_registration) {
   DCHECK(service_worker_registration);
 
-  BackgroundFetchBridge* bridge = static_cast<BackgroundFetchBridge*>(
-      Supplement<ServiceWorkerRegistration>::From(service_worker_registration,
-                                                  SupplementName()));
+  BackgroundFetchBridge* bridge =
+      Supplement<ServiceWorkerRegistration>::From<BackgroundFetchBridge>(
+          service_worker_registration);
 
   if (!bridge) {
     bridge = new BackgroundFetchBridge(*service_worker_registration);
-    Supplement<ServiceWorkerRegistration>::ProvideTo(
-        *service_worker_registration, SupplementName(), bridge);
+    ProvideTo(*service_worker_registration, bridge);
   }
 
   return bridge;
 }
 
 // static
-const char* BackgroundFetchBridge::SupplementName() {
-  return "BackgroundFetchBridge";
-}
+const char BackgroundFetchBridge::kSupplementName[] = "BackgroundFetchBridge";
 
 BackgroundFetchBridge::BackgroundFetchBridge(
     ServiceWorkerRegistration& registration)

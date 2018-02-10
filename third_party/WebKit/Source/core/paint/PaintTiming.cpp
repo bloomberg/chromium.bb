@@ -39,15 +39,15 @@ Performance* GetPerformanceInstance(LocalFrame* frame) {
 
 }  // namespace
 
-static const char kSupplementName[] = "PaintTiming";
+// static
+const char PaintTiming::kSupplementName[] = "PaintTiming";
 
 // static
 PaintTiming& PaintTiming::From(Document& document) {
-  PaintTiming* timing = static_cast<PaintTiming*>(
-      Supplement<Document>::From(document, kSupplementName));
+  PaintTiming* timing = Supplement<Document>::From<PaintTiming>(document);
   if (!timing) {
     timing = new PaintTiming(document);
-    Supplement<Document>::ProvideTo(document, kSupplementName, timing);
+    ProvideTo(document, timing);
   }
   return *timing;
 }

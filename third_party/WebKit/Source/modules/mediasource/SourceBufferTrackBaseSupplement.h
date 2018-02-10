@@ -19,6 +19,8 @@ class SourceBufferTrackBaseSupplement
   USING_GARBAGE_COLLECTED_MIXIN(SourceBufferTrackBaseSupplement);
 
  public:
+  static const char kSupplementName[];
+
   static SourceBuffer* sourceBuffer(TrackBase&);
   static void SetSourceBuffer(TrackBase&, SourceBuffer*);
 

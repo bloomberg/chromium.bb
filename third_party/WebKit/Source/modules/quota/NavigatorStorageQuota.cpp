@@ -39,16 +39,14 @@ namespace blink {
 NavigatorStorageQuota::NavigatorStorageQuota(Navigator& navigator)
     : Supplement<Navigator>(navigator) {}
 
-const char* NavigatorStorageQuota::SupplementName() {
-  return "NavigatorStorageQuota";
-}
+const char NavigatorStorageQuota::kSupplementName[] = "NavigatorStorageQuota";
 
 NavigatorStorageQuota& NavigatorStorageQuota::From(Navigator& navigator) {
-  NavigatorStorageQuota* supplement = static_cast<NavigatorStorageQuota*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorStorageQuota* supplement =
+      Supplement<Navigator>::From<NavigatorStorageQuota>(navigator);
   if (!supplement) {
     supplement = new NavigatorStorageQuota(navigator);
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
   return *supplement;
 }

@@ -26,18 +26,17 @@ void SensorProviderProxy::InitializeIfNeeded() {
                 WrapWeakPersistent(this)));
 }
 
-const char* SensorProviderProxy::SupplementName() {
-  return "SensorProvider";
-}
+// static
+const char SensorProviderProxy::kSupplementName[] = "SensorProvider";
 
 // static
 SensorProviderProxy* SensorProviderProxy::From(LocalFrame* frame) {
   DCHECK(frame);
-  SensorProviderProxy* provider_proxy = static_cast<SensorProviderProxy*>(
-      Supplement<LocalFrame>::From(*frame, SupplementName()));
+  SensorProviderProxy* provider_proxy =
+      Supplement<LocalFrame>::From<SensorProviderProxy>(*frame);
   if (!provider_proxy) {
     provider_proxy = new SensorProviderProxy(*frame);
-    Supplement<LocalFrame>::ProvideTo(*frame, SupplementName(), provider_proxy);
+    Supplement<LocalFrame>::ProvideTo(*frame, provider_proxy);
   }
   provider_proxy->InitializeIfNeeded();
   return provider_proxy;

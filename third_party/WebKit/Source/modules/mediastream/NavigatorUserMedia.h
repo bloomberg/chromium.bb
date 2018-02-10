@@ -18,13 +18,14 @@ class NavigatorUserMedia final : public GarbageCollected<NavigatorUserMedia>,
                                  public Supplement<Navigator> {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorUserMedia)
  public:
+  static const char kSupplementName[];
+
   static MediaDevices* mediaDevices(Navigator&);
   virtual void Trace(blink::Visitor*);
 
  private:
   explicit NavigatorUserMedia(Navigator&);
   MediaDevices* GetMediaDevices();
-  static const char* SupplementName();
   static NavigatorUserMedia& From(Navigator&);
 
   Member<MediaDevices> media_devices_;

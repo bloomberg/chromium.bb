@@ -32,14 +32,14 @@ IndexedDBClient::IndexedDBClient(WorkerClients& clients)
     : Supplement<WorkerClients>(clients) {}
 
 IndexedDBClient* IndexedDBClient::From(ExecutionContext* context) {
-  if (context->IsDocument())
-    return static_cast<IndexedDBClient*>(Supplement<LocalFrame>::From(
-        ToDocument(*context).GetFrame(), SupplementName()));
+  if (context->IsDocument()) {
+    return Supplement<LocalFrame>::From<IndexedDBClient>(
+        ToDocument(*context).GetFrame());
+  }
 
   WorkerClients* clients = ToWorkerGlobalScope(*context).Clients();
   DCHECK(clients);
-  return static_cast<IndexedDBClient*>(
-      Supplement<WorkerClients>::From(clients, SupplementName()));
+  return Supplement<WorkerClients>::From<IndexedDBClient>(clients);
 }
 
 bool IndexedDBClient::AllowIndexedDB(ExecutionContext* context,
@@ -62,9 +62,8 @@ bool IndexedDBClient::AllowIndexedDB(ExecutionContext* context,
       ->AllowIndexedDB(name);
 }
 
-const char* IndexedDBClient::SupplementName() {
-  return "IndexedDBClient";
-}
+// static
+const char IndexedDBClient::kSupplementName[] = "IndexedDBClient";
 
 void IndexedDBClient::Trace(blink::Visitor* visitor) {
   Supplement<LocalFrame>::Trace(visitor);
@@ -78,13 +77,12 @@ void IndexedDBClient::TraceWrappers(
 }
 
 void ProvideIndexedDBClientTo(LocalFrame& frame, IndexedDBClient* client) {
-  Supplement<LocalFrame>::ProvideTo(frame, IndexedDBClient::SupplementName(),
-                                    client);
+  Supplement<LocalFrame>::ProvideTo(frame, client);
 }
 
 void ProvideIndexedDBClientToWorker(WorkerClients* clients,
                                     IndexedDBClient* client) {
-  clients->ProvideSupplement(IndexedDBClient::SupplementName(), client);
+  Supplement<WorkerClients>::ProvideTo(*clients, client);
 }
 
 }  // namespace blink

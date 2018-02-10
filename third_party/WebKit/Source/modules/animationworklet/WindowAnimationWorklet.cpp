@@ -39,11 +39,11 @@ void WindowAnimationWorklet::Trace(blink::Visitor* visitor) {
 
 // static
 WindowAnimationWorklet& WindowAnimationWorklet::From(LocalDOMWindow& window) {
-  WindowAnimationWorklet* supplement = static_cast<WindowAnimationWorklet*>(
-      Supplement<LocalDOMWindow>::From(window, SupplementName()));
+  WindowAnimationWorklet* supplement =
+      Supplement<LocalDOMWindow>::From<WindowAnimationWorklet>(window);
   if (!supplement) {
     supplement = new WindowAnimationWorklet(window.GetFrame()->GetDocument());
-    ProvideTo(window, SupplementName(), supplement);
+    ProvideTo(window, supplement);
   }
   return *supplement;
 }
@@ -54,8 +54,6 @@ WindowAnimationWorklet::WindowAnimationWorklet(Document* document)
   DCHECK(GetExecutionContext());
 }
 
-const char* WindowAnimationWorklet::SupplementName() {
-  return "WindowAnimationWorklet";
-}
+const char WindowAnimationWorklet::kSupplementName[] = "WindowAnimationWorklet";
 
 }  // namespace blink

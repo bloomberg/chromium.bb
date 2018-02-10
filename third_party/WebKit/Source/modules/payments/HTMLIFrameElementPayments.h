@@ -20,6 +20,8 @@ class HTMLIFrameElementPayments final
   USING_GARBAGE_COLLECTED_MIXIN(HTMLIFrameElementPayments);
 
  public:
+  static const char kSupplementName[];
+
   static bool FastHasAttribute(const QualifiedName&, const HTMLIFrameElement&);
   static void SetBooleanAttribute(const QualifiedName&,
                                   HTMLIFrameElement&,
@@ -31,8 +33,6 @@ class HTMLIFrameElementPayments final
 
  private:
   HTMLIFrameElementPayments();
-
-  static const char* SupplementName();
 };
 
 }  // namespace blink

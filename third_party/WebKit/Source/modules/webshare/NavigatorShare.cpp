@@ -82,11 +82,11 @@ void NavigatorShare::ShareClientImpl::OnConnectionError() {
 NavigatorShare::~NavigatorShare() = default;
 
 NavigatorShare& NavigatorShare::From(Navigator& navigator) {
-  NavigatorShare* supplement = static_cast<NavigatorShare*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorShare* supplement =
+      Supplement<Navigator>::From<NavigatorShare>(navigator);
   if (!supplement) {
     supplement = new NavigatorShare();
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
   return *supplement;
 }
@@ -98,9 +98,7 @@ void NavigatorShare::Trace(blink::Visitor* visitor) {
 
 NavigatorShare::NavigatorShare() = default;
 
-const char* NavigatorShare::SupplementName() {
-  return "NavigatorShare";
-}
+const char NavigatorShare::kSupplementName[] = "NavigatorShare";
 
 ScriptPromise NavigatorShare::share(ScriptState* script_state,
                                     const ShareData& share_data) {

@@ -42,6 +42,8 @@ class DocumentXPathEvaluator final
   USING_GARBAGE_COLLECTED_MIXIN(DocumentXPathEvaluator);
 
  public:
+  static const char kSupplementName[];
+
   static DocumentXPathEvaluator& From(Document&);
 
   static XPathExpression* createExpression(Document&,
@@ -61,8 +63,6 @@ class DocumentXPathEvaluator final
 
  private:
   explicit DocumentXPathEvaluator(Document&);
-
-  static const char* SupplementName() { return "DocumentXPathEvaluator"; }
 
   Member<XPathEvaluator> xpath_evaluator_;
 };

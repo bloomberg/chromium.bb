@@ -164,7 +164,7 @@ class ServiceWorkerContainerTest : public PageTestBase {
 
   void Provide(std::unique_ptr<WebServiceWorkerProvider> provider) {
     Supplement<Document>::ProvideTo(
-        GetDocument(), ServiceWorkerContainerClient::SupplementName(),
+        GetDocument(),
         new ServiceWorkerContainerClient(GetDocument(), std::move(provider)));
   }
 

@@ -62,16 +62,14 @@ void NavigatorWebMIDI::Trace(blink::Visitor* visitor) {
   Supplement<Navigator>::Trace(visitor);
 }
 
-const char* NavigatorWebMIDI::SupplementName() {
-  return "NavigatorWebMIDI";
-}
+const char NavigatorWebMIDI::kSupplementName[] = "NavigatorWebMIDI";
 
 NavigatorWebMIDI& NavigatorWebMIDI::From(Navigator& navigator) {
-  NavigatorWebMIDI* supplement = static_cast<NavigatorWebMIDI*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorWebMIDI* supplement =
+      Supplement<Navigator>::From<NavigatorWebMIDI>(navigator);
   if (!supplement) {
     supplement = new NavigatorWebMIDI(navigator);
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
   return *supplement;
 }

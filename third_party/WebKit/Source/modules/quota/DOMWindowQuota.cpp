@@ -40,17 +40,15 @@ namespace blink {
 DOMWindowQuota::DOMWindowQuota(LocalDOMWindow& window)
     : Supplement<LocalDOMWindow>(window) {}
 
-const char* DOMWindowQuota::SupplementName() {
-  return "DOMWindowQuota";
-}
+const char DOMWindowQuota::kSupplementName[] = "DOMWindowQuota";
 
 // static
 DOMWindowQuota& DOMWindowQuota::From(LocalDOMWindow& window) {
-  DOMWindowQuota* supplement = static_cast<DOMWindowQuota*>(
-      Supplement<LocalDOMWindow>::From(window, SupplementName()));
+  DOMWindowQuota* supplement =
+      Supplement<LocalDOMWindow>::From<DOMWindowQuota>(window);
   if (!supplement) {
     supplement = new DOMWindowQuota(window);
-    ProvideTo(window, SupplementName(), supplement);
+    ProvideTo(window, supplement);
   }
   return *supplement;
 }

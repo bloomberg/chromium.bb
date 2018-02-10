@@ -44,6 +44,8 @@ class DOMWindowQuota final : public GarbageCollected<DOMWindowQuota>,
   USING_GARBAGE_COLLECTED_MIXIN(DOMWindowQuota);
 
  public:
+  static const char kSupplementName[];
+
   static DOMWindowQuota& From(LocalDOMWindow&);
   static DeprecatedStorageInfo* webkitStorageInfo(LocalDOMWindow&);
   DeprecatedStorageInfo* webkitStorageInfo() const;
@@ -52,7 +54,6 @@ class DOMWindowQuota final : public GarbageCollected<DOMWindowQuota>,
 
  private:
   explicit DOMWindowQuota(LocalDOMWindow&);
-  static const char* SupplementName();
 
   mutable Member<DeprecatedStorageInfo> storage_info_;
 };

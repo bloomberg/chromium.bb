@@ -25,13 +25,15 @@ class GlobalCacheStorageImpl final
   USING_GARBAGE_COLLECTED_MIXIN(GlobalCacheStorageImpl);
 
  public:
+  static const char kSupplementName[];
+
   static GlobalCacheStorageImpl& From(T& supplementable,
                                       ExecutionContext* execution_context) {
-    GlobalCacheStorageImpl* supplement = static_cast<GlobalCacheStorageImpl*>(
-        Supplement<T>::From(supplementable, GetName()));
+    GlobalCacheStorageImpl* supplement =
+        Supplement<T>::template From<GlobalCacheStorageImpl>(supplementable);
     if (!supplement) {
       supplement = new GlobalCacheStorageImpl;
-      Supplement<T>::ProvideTo(supplementable, GetName(), supplement);
+      Supplement<T>::ProvideTo(supplementable, supplement);
     }
     return *supplement;
   }
@@ -78,10 +80,13 @@ class GlobalCacheStorageImpl final
  private:
   GlobalCacheStorageImpl() = default;
 
-  static const char* GetName() { return "CacheStorage"; }
-
   Member<CacheStorage> caches_;
 };
+
+// static
+template <typename T>
+const char GlobalCacheStorageImpl<T>::kSupplementName[] =
+    "GlobalCacheStorageImpl";
 
 }  // namespace
 

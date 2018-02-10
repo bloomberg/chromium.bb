@@ -25,13 +25,15 @@ class GlobalFetchImpl final
   USING_GARBAGE_COLLECTED_MIXIN(GlobalFetchImpl);
 
  public:
+  static const char kSupplementName[];
+
   static ScopedFetcher* From(T& supplementable,
                              ExecutionContext* execution_context) {
-    GlobalFetchImpl* supplement = static_cast<GlobalFetchImpl*>(
-        Supplement<T>::From(supplementable, SupplementName()));
+    GlobalFetchImpl* supplement =
+        Supplement<T>::template From<GlobalFetchImpl>(supplementable);
     if (!supplement) {
       supplement = new GlobalFetchImpl(execution_context);
-      Supplement<T>::ProvideTo(supplementable, SupplementName(), supplement);
+      Supplement<T>::ProvideTo(supplementable, supplement);
     }
     return supplement;
   }
@@ -69,10 +71,12 @@ class GlobalFetchImpl final
   explicit GlobalFetchImpl(ExecutionContext* execution_context)
       : fetch_manager_(FetchManager::Create(execution_context)) {}
 
-  static const char* SupplementName() { return "GlobalFetch"; }
-
   Member<FetchManager> fetch_manager_;
 };
+
+// static
+template <typename T>
+const char GlobalFetchImpl<T>::kSupplementName[] = "GlobalFetchImpl";
 
 }  // namespace
 

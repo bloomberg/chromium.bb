@@ -13,9 +13,10 @@ namespace blink {
 class MODULES_EXPORT DeviceOrientationAbsoluteController final
     : public DeviceOrientationController {
  public:
+  static const char kSupplementName[];
+
   ~DeviceOrientationAbsoluteController() override;
 
-  static const char* SupplementName();
   static DeviceOrientationAbsoluteController& From(Document&);
 
   // Inherited from DeviceSingleWindowEventController.

@@ -26,10 +26,11 @@ class MODULES_EXPORT ScreenWakeLock final
   WTF_MAKE_NONCOPYABLE(ScreenWakeLock);
 
  public:
+  static const char kSupplementName[];
+
   static bool keepAwake(Screen&);
   static void setKeepAwake(Screen&, bool);
 
-  static const char* SupplementName();
   static ScreenWakeLock* From(LocalFrame*);
 
   ~ScreenWakeLock() = default;

@@ -8,18 +8,15 @@ namespace blink {
 
 AnimationWorkletProxyClient* AnimationWorkletProxyClient::From(
     WorkerClients* clients) {
-  return static_cast<AnimationWorkletProxyClient*>(
-      Supplement<WorkerClients>::From(clients, SupplementName()));
+  return Supplement<WorkerClients>::From<AnimationWorkletProxyClient>(clients);
 }
 
-const char* AnimationWorkletProxyClient::SupplementName() {
-  return "AnimationWorkletProxyClient";
-}
+const char AnimationWorkletProxyClient::kSupplementName[] =
+    "AnimationWorkletProxyClient";
 
 void ProvideAnimationWorkletProxyClientTo(WorkerClients* clients,
                                           AnimationWorkletProxyClient* client) {
-  clients->ProvideSupplement(AnimationWorkletProxyClient::SupplementName(),
-                             client);
+  clients->ProvideSupplement(client);
 }
 
 }  // namespace blink

@@ -20,6 +20,8 @@ class DocumentXSLT final : public GarbageCollected<DocumentXSLT>,
   USING_GARBAGE_COLLECTED_MIXIN(DocumentXSLT);
 
  public:
+  static const char kSupplementName[];
+
   Document* TransformSourceDocument() {
     return transform_source_document_.Get();
   }
@@ -30,7 +32,6 @@ class DocumentXSLT final : public GarbageCollected<DocumentXSLT>,
   }
 
   static DocumentXSLT& From(Document&);
-  static const char* SupplementName();
 
   // The following static methods don't use any instance of DocumentXSLT.
   // They are just using DocumentXSLT namespace.

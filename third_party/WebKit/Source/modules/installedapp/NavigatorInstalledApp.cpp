@@ -34,11 +34,11 @@ NavigatorInstalledApp* NavigatorInstalledApp::From(Document& document) {
 }
 
 NavigatorInstalledApp& NavigatorInstalledApp::From(Navigator& navigator) {
-  NavigatorInstalledApp* supplement = static_cast<NavigatorInstalledApp*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorInstalledApp* supplement =
+      Supplement<Navigator>::From<NavigatorInstalledApp>(navigator);
   if (!supplement) {
     supplement = new NavigatorInstalledApp(navigator);
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
   return *supplement;
 }
@@ -105,9 +105,7 @@ InstalledAppController* NavigatorInstalledApp::Controller() {
   return InstalledAppController::From(*GetSupplementable()->GetFrame());
 }
 
-const char* NavigatorInstalledApp::SupplementName() {
-  return "NavigatorInstalledApp";
-}
+const char NavigatorInstalledApp::kSupplementName[] = "NavigatorInstalledApp";
 
 void NavigatorInstalledApp::Trace(blink::Visitor* visitor) {
   Supplement<Navigator>::Trace(visitor);

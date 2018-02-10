@@ -22,12 +22,14 @@ class NavigatorLocksImpl final : public GarbageCollected<NavigatorLocksImpl<T>>,
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorLocksImpl);
 
  public:
+  static const char kSupplementName[];
+
   static NavigatorLocksImpl& From(T& navigator) {
     NavigatorLocksImpl* supplement = static_cast<NavigatorLocksImpl*>(
-        Supplement<T>::From(navigator, SupplementName()));
+        Supplement<T>::template From<NavigatorLocksImpl>(navigator));
     if (!supplement) {
       supplement = new NavigatorLocksImpl(navigator);
-      Supplement<T>::ProvideTo(navigator, SupplementName(), supplement);
+      Supplement<T>::ProvideTo(navigator, supplement);
     }
     return *supplement;
   }
@@ -54,10 +56,12 @@ class NavigatorLocksImpl final : public GarbageCollected<NavigatorLocksImpl<T>>,
  private:
   explicit NavigatorLocksImpl(T& navigator) : Supplement<T>(navigator) {}
 
-  static const char* SupplementName() { return "NavigatorLocksImpl"; }
-
   mutable TraceWrapperMember<LockManager> lock_manager_;
 };
+
+// static
+template <typename T>
+const char NavigatorLocksImpl<T>::kSupplementName[] = "NavigatorLocksImpl";
 
 }  // namespace
 

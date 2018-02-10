@@ -13,9 +13,8 @@ namespace blink {
 AudioOutputDeviceClient::AudioOutputDeviceClient(LocalFrame& frame)
     : Supplement<LocalFrame>(frame) {}
 
-const char* AudioOutputDeviceClient::SupplementName() {
-  return "AudioOutputDeviceClient";
-}
+const char AudioOutputDeviceClient::kSupplementName[] =
+    "AudioOutputDeviceClient";
 
 AudioOutputDeviceClient* AudioOutputDeviceClient::From(
     ExecutionContext* context) {
@@ -26,14 +25,13 @@ AudioOutputDeviceClient* AudioOutputDeviceClient::From(
   if (!document->GetFrame())
     return nullptr;
 
-  return static_cast<AudioOutputDeviceClient*>(
-      Supplement<LocalFrame>::From(document->GetFrame(), SupplementName()));
+  return Supplement<LocalFrame>::From<AudioOutputDeviceClient>(
+      document->GetFrame());
 }
 
 void ProvideAudioOutputDeviceClientTo(LocalFrame& frame,
                                       AudioOutputDeviceClient* client) {
-  Supplement<LocalFrame>::ProvideTo(
-      frame, AudioOutputDeviceClient::SupplementName(), client);
+  Supplement<LocalFrame>::ProvideTo(frame, client);
 }
 
 void AudioOutputDeviceClient::Trace(blink::Visitor* visitor) {

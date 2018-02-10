@@ -63,6 +63,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
   WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeClient);
 
  public:
+  static const char kSupplementName[];
+
   explicit ServiceWorkerGlobalScopeClient(WebServiceWorkerContextClient&);
 
   // Called from ServiceWorkerClients.
@@ -150,7 +152,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
                 const WebURL&,
                 std::unique_ptr<WebServiceWorkerClientCallbacks>);
 
-  static const char* SupplementName();
   static ServiceWorkerGlobalScopeClient* From(ExecutionContext*);
 
   void Trace(blink::Visitor*) override;

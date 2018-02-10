@@ -46,6 +46,8 @@ class WorkerNavigatorStorageQuota final
   USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorStorageQuota);
 
  public:
+  static const char kSupplementName[];
+
   static WorkerNavigatorStorageQuota& From(WorkerNavigator&);
 
   static StorageManager* storage(WorkerNavigator&);
@@ -56,7 +58,6 @@ class WorkerNavigatorStorageQuota final
 
  private:
   explicit WorkerNavigatorStorageQuota();
-  static const char* SupplementName();
 
   mutable Member<StorageManager> storage_manager_;
 };

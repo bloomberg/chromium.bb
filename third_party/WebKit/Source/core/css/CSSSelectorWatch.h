@@ -48,6 +48,8 @@ class CORE_EXPORT CSSSelectorWatch final
   USING_GARBAGE_COLLECTED_MIXIN(CSSSelectorWatch);
 
  public:
+  static const char kSupplementName[];
+
   virtual ~CSSSelectorWatch() = default;
 
   static CSSSelectorWatch& From(Document&);

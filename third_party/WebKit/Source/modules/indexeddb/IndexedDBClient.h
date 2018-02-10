@@ -49,6 +49,8 @@ class IndexedDBClient : public GarbageCollected<IndexedDBClient>,
   WTF_MAKE_NONCOPYABLE(IndexedDBClient);
 
  public:
+  static const char kSupplementName[];
+
   static IndexedDBClient* Create(LocalFrame&);
   static IndexedDBClient* Create(WorkerClients&);
 
@@ -58,7 +60,6 @@ class IndexedDBClient : public GarbageCollected<IndexedDBClient>,
   bool AllowIndexedDB(ExecutionContext*, const String& name);
 
   static IndexedDBClient* From(ExecutionContext*);
-  static const char* SupplementName();
 
  private:
   explicit IndexedDBClient(LocalFrame&);

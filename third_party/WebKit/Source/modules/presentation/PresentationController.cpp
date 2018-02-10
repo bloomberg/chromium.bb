@@ -36,22 +36,18 @@ PresentationController* PresentationController::Create(
 }
 
 // static
-const char* PresentationController::SupplementName() {
-  return "PresentationController";
-}
+const char PresentationController::kSupplementName[] = "PresentationController";
 
 // static
 PresentationController* PresentationController::From(LocalFrame& frame) {
-  return static_cast<PresentationController*>(
-      Supplement<LocalFrame>::From(frame, SupplementName()));
+  return Supplement<LocalFrame>::From<PresentationController>(frame);
 }
 
 // static
 void PresentationController::ProvideTo(LocalFrame& frame,
                                        WebPresentationClient* client) {
   Supplement<LocalFrame>::ProvideTo(
-      frame, PresentationController::SupplementName(),
-      PresentationController::Create(frame, client));
+      frame, PresentationController::Create(frame, client));
 }
 
 WebPresentationClient* PresentationController::Client() {

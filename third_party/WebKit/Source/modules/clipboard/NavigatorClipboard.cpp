@@ -10,13 +10,16 @@
 
 namespace blink {
 
+// static
+const char NavigatorClipboard::kSupplementName[] = "NavigatorClipboard";
+
 Clipboard* NavigatorClipboard::clipboard(ScriptState* script_state,
                                          Navigator& navigator) {
-  NavigatorClipboard* supplement = static_cast<NavigatorClipboard*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorClipboard* supplement =
+      Supplement<Navigator>::From<NavigatorClipboard>(navigator);
   if (!supplement) {
     supplement = new NavigatorClipboard(navigator);
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
 
   return supplement->clipboard_;
@@ -33,10 +36,6 @@ NavigatorClipboard::NavigatorClipboard(Navigator& navigator)
       new Clipboard(GetSupplementable()->GetFrame()
                         ? GetSupplementable()->GetFrame()->GetDocument()
                         : nullptr);
-}
-
-const char* NavigatorClipboard::SupplementName() {
-  return "NavigatorClipboard";
 }
 
 }  // namespace blink

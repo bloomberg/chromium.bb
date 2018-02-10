@@ -29,8 +29,9 @@ class PushMessagingBridge final
   WTF_MAKE_NONCOPYABLE(PushMessagingBridge);
 
  public:
+  static const char kSupplementName[];
+
   static PushMessagingBridge* From(ServiceWorkerRegistration*);
-  static const char* SupplementName();
 
   virtual ~PushMessagingBridge();
 

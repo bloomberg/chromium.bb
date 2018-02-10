@@ -25,6 +25,8 @@ class CORE_EXPORT ScreenOrientationController
   USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationController);
 
  public:
+  static const char kSupplementName[];
+
   virtual ~ScreenOrientationController() = default;
 
   static ScreenOrientationController* From(LocalFrame&);
@@ -48,9 +50,6 @@ class CORE_EXPORT ScreenOrientationController
   // To be called by an ScreenOrientationController to register its
   // implementation.
   static void ProvideTo(LocalFrame&, ScreenOrientationController*);
-
- private:
-  static const char* SupplementName();
 };
 
 }  // namespace blink

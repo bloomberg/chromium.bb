@@ -18,13 +18,12 @@ PaymentAppServiceWorkerRegistration::~PaymentAppServiceWorkerRegistration() =
 PaymentAppServiceWorkerRegistration& PaymentAppServiceWorkerRegistration::From(
     ServiceWorkerRegistration& registration) {
   PaymentAppServiceWorkerRegistration* supplement =
-      static_cast<PaymentAppServiceWorkerRegistration*>(
-          Supplement<ServiceWorkerRegistration>::From(registration,
-                                                      SupplementName()));
+      Supplement<ServiceWorkerRegistration>::From<
+          PaymentAppServiceWorkerRegistration>(registration);
 
   if (!supplement) {
     supplement = new PaymentAppServiceWorkerRegistration(&registration);
-    ProvideTo(registration, SupplementName(), supplement);
+    ProvideTo(registration, supplement);
   }
 
   return *supplement;
@@ -57,8 +56,7 @@ PaymentAppServiceWorkerRegistration::PaymentAppServiceWorkerRegistration(
     : registration_(registration) {}
 
 // static
-const char* PaymentAppServiceWorkerRegistration::SupplementName() {
-  return "PaymentAppServiceWorkerRegistration";
-}
+const char PaymentAppServiceWorkerRegistration::kSupplementName[] =
+    "PaymentAppServiceWorkerRegistration";
 
 }  // namespace blink

@@ -20,6 +20,8 @@ class NavigatorPresentation final
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorPresentation);
 
  public:
+  static const char kSupplementName[];
+
   static NavigatorPresentation& From(Navigator&);
   static Presentation* presentation(Navigator&);
 
@@ -28,7 +30,6 @@ class NavigatorPresentation final
  private:
   NavigatorPresentation();
 
-  static const char* SupplementName();
   Presentation* presentation();
 
   Member<Presentation> presentation_;

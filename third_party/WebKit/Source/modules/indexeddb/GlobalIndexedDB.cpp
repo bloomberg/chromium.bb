@@ -21,12 +21,14 @@ class GlobalIndexedDBImpl final
   USING_GARBAGE_COLLECTED_MIXIN(GlobalIndexedDBImpl);
 
  public:
+  static const char kSupplementName[];
+
   static GlobalIndexedDBImpl& From(T& supplementable) {
-    GlobalIndexedDBImpl* supplement = static_cast<GlobalIndexedDBImpl*>(
-        Supplement<T>::From(supplementable, GetName()));
+    GlobalIndexedDBImpl* supplement =
+        Supplement<T>::template From<GlobalIndexedDBImpl>(supplementable);
     if (!supplement) {
       supplement = new GlobalIndexedDBImpl;
-      Supplement<T>::ProvideTo(supplementable, GetName(), supplement);
+      Supplement<T>::ProvideTo(supplementable, supplement);
     }
     return *supplement;
   }
@@ -45,10 +47,12 @@ class GlobalIndexedDBImpl final
  private:
   GlobalIndexedDBImpl() = default;
 
-  static const char* GetName() { return "IndexedDB"; }
-
   Member<IDBFactory> idb_factory_;
 };
+
+// static
+template <typename T>
+const char GlobalIndexedDBImpl<T>::kSupplementName[] = "GlobalIndexedDBImpl";
 
 }  // namespace
 

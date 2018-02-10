@@ -23,9 +23,8 @@ STATIC_ASSERT_MATCHING_ENUM(StorageArea::kLocalStorage,
 STATIC_ASSERT_MATCHING_ENUM(StorageArea::kSessionStorage,
                             ContentSettingsClient::StorageType::kSession);
 
-const char* StorageNamespaceController::SupplementName() {
-  return "StorageNamespaceController";
-}
+const char StorageNamespaceController::kSupplementName[] =
+    "StorageNamespaceController";
 
 StorageNamespaceController::StorageNamespaceController(WebViewClient* client)
     : inspector_agent_(nullptr), web_view_client_(client) {}
@@ -47,8 +46,7 @@ StorageNamespace* StorageNamespaceController::SessionStorage(
 void StorageNamespaceController::ProvideStorageNamespaceTo(
     Page& page,
     WebViewClient* client) {
-  StorageNamespaceController::ProvideTo(page, SupplementName(),
-                                        new StorageNamespaceController(client));
+  ProvideTo(page, new StorageNamespaceController(client));
 }
 
 std::unique_ptr<StorageNamespace>

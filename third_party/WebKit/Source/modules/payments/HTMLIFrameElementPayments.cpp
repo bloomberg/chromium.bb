@@ -13,9 +13,8 @@ namespace blink {
 HTMLIFrameElementPayments::HTMLIFrameElementPayments() = default;
 
 // static
-const char* HTMLIFrameElementPayments::SupplementName() {
-  return "HTMLIFrameElementPayments";
-}
+const char HTMLIFrameElementPayments::kSupplementName[] =
+    "HTMLIFrameElementPayments";
 
 // static
 bool HTMLIFrameElementPayments::FastHasAttribute(
@@ -37,11 +36,10 @@ void HTMLIFrameElementPayments::SetBooleanAttribute(const QualifiedName& name,
 HTMLIFrameElementPayments& HTMLIFrameElementPayments::From(
     HTMLIFrameElement& iframe) {
   HTMLIFrameElementPayments* supplement =
-      static_cast<HTMLIFrameElementPayments*>(
-          Supplement<HTMLIFrameElement>::From(iframe, SupplementName()));
+      Supplement<HTMLIFrameElement>::From<HTMLIFrameElementPayments>(iframe);
   if (!supplement) {
     supplement = new HTMLIFrameElementPayments();
-    ProvideTo(iframe, SupplementName(), supplement);
+    ProvideTo(iframe, supplement);
   }
   return *supplement;
 }

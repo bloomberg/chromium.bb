@@ -30,8 +30,9 @@ class NotificationManager final
   WTF_MAKE_NONCOPYABLE(NotificationManager);
 
  public:
+  static const char kSupplementName[];
+
   static NotificationManager* From(ExecutionContext*);
-  static const char* SupplementName();
 
   ~NotificationManager();
 

@@ -29,21 +29,19 @@ NotificationManager* NotificationManager::From(
   DCHECK(execution_context);
   DCHECK(execution_context->IsContextThread());
 
-  NotificationManager* manager = static_cast<NotificationManager*>(
-      Supplement<ExecutionContext>::From(execution_context, SupplementName()));
+  NotificationManager* manager =
+      Supplement<ExecutionContext>::From<NotificationManager>(
+          execution_context);
   if (!manager) {
     manager = new NotificationManager(*execution_context);
-    Supplement<ExecutionContext>::ProvideTo(*execution_context,
-                                            SupplementName(), manager);
+    Supplement<ExecutionContext>::ProvideTo(*execution_context, manager);
   }
 
   return manager;
 }
 
 // static
-const char* NotificationManager::SupplementName() {
-  return "NotificationManager";
-}
+const char NotificationManager::kSupplementName[] = "NotificationManager";
 
 NotificationManager::NotificationManager(ExecutionContext& execution_context)
     : Supplement<ExecutionContext>(execution_context) {}

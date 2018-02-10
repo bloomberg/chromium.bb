@@ -39,6 +39,8 @@ class SpeechRecognitionController final
   USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognitionController);
 
  public:
+  static const char kSupplementName[];
+
   virtual ~SpeechRecognitionController();
 
   void Start(SpeechRecognition* recognition,
@@ -56,10 +58,8 @@ class SpeechRecognitionController final
 
   static SpeechRecognitionController* Create(
       std::unique_ptr<SpeechRecognitionClient>);
-  static const char* SupplementName();
   static SpeechRecognitionController* From(Page* page) {
-    return static_cast<SpeechRecognitionController*>(
-        Supplement<Page>::From(page, SupplementName()));
+    return Supplement<Page>::From<SpeechRecognitionController>(page);
   }
 
   virtual void Trace(blink::Visitor* visitor) {

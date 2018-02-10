@@ -12,22 +12,19 @@
 
 namespace blink {
 
+// static
+const char ReportingContext::kSupplementName[] = "ReportingContext";
+
 ReportingContext::ReportingContext(ExecutionContext& context)
     : Supplement<ExecutionContext>(context), execution_context_(context) {}
 
 // static
-const char* ReportingContext::SupplementName() {
-  return "ReportingContext";
-}
-
-// static
 ReportingContext* ReportingContext::From(ExecutionContext* context) {
-  ReportingContext* reporting_context = static_cast<ReportingContext*>(
-      Supplement<ExecutionContext>::From(context, SupplementName()));
+  ReportingContext* reporting_context =
+      Supplement<ExecutionContext>::From<ReportingContext>(context);
   if (!reporting_context) {
     reporting_context = new ReportingContext(*context);
-    Supplement<ExecutionContext>::ProvideTo(*context, SupplementName(),
-                                            reporting_context);
+    Supplement<ExecutionContext>::ProvideTo(*context, reporting_context);
   }
   return reporting_context;
 }

@@ -24,6 +24,8 @@ class MODULES_EXPORT HTMLMediaElementAudioOutputDevice final
   USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementAudioOutputDevice);
 
  public:
+  static const char kSupplementName[];
+
   virtual void Trace(blink::Visitor*);
   static String sinkId(HTMLMediaElement&);
   static ScriptPromise setSinkId(ScriptState*,
@@ -34,7 +36,6 @@ class MODULES_EXPORT HTMLMediaElementAudioOutputDevice final
 
  private:
   HTMLMediaElementAudioOutputDevice();
-  static const char* SupplementName();
 
   String sink_id_;
 };

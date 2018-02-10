@@ -20,6 +20,8 @@ class CSSTiming : public GarbageCollectedFinalized<CSSTiming>,
   USING_GARBAGE_COLLECTED_MIXIN(CSSTiming);
 
  public:
+  static const char kSupplementName[];
+
   virtual ~CSSTiming() = default;
 
   void RecordAuthorStyleSheetParseTime(double seconds);

@@ -56,8 +56,9 @@ class CORE_EXPORT Fullscreen final
   USING_GARBAGE_COLLECTED_MIXIN(Fullscreen);
 
  public:
+  static const char kSupplementName[];
+
   virtual ~Fullscreen();
-  static const char* SupplementName();
   static Fullscreen& From(Document&);
   static Fullscreen* FromIfExists(Document&);
   static Element* FullscreenElementFrom(Document&);

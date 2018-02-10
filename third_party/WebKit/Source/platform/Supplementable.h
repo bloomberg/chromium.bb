@@ -53,26 +53,39 @@ namespace blink {
 // string as the key and not the characters themselves. Hence, 2 strings with
 // the same characters will be treated as 2 different keys.
 //
-// In practice, it is recommended that Supplements implements a static method
-// for returning its key to use. For example:
+// In practice, this is mostly hidden. Each Supplement must expose a static
+// const char array which provides a human-readable key. Access to supplements
+// requires passing the Supplement type, so these cannot collide for unequal
+// types.
 //
-//     class MyClass : public Supplement<MySupplementable> {
-//         ...
-//         static const char* supplementName();
+// Use extreme caution when deriving a supplementable class, as misuse can cause
+// type confusion.
+//
+// Typical use is expected to look like this:
+//
+//     class NavigatorFoo : public Supplement<Navigator> {
+//      public:
+//       static const char kSupplementName[];
+//
+//       NavigatorFoo& From(Navigator&);
 //     }
 //
-//     const char* MyClass::supplementName()
+//     // static
+//     const char NavigatorFoo::kSupplementName[] = "NavigatorFoo";
+//
+//     NavigatorFoo& NavigatorFoo::From(Navigator& navigator)
 //     {
-//         return "MyClass";
+//       NavigatorFoo* supplement =
+//           Supplement<Navigator>::From<NavigatorFoo>(navigator);
+//       if (!supplement) {
+//         supplement = new NavigatorFoo(navigator);
+//         ProvideTo(navigator, supplement);
+//       }
+//       return *supplement;
 //     }
 //
-// An example of the using the key:
-//
-//     MyClass* MyClass::from(MySupplementable* host)
-//     {
-//         return static_cast<MyClass*>(
-//             Supplement<MySupplementable>::from(host, supplementName()));
-//     }
+// The hash map key will automatically be determined from the supplement type
+// used.
 //
 // What you should know about thread checks
 // ========================================
@@ -117,20 +130,22 @@ class Supplement : public GarbageCollectedMixin,
   // is completely removed).
   T* GetSupplementable() const { return supplementable_; }
 
+  template <typename SupplementType>
   static void ProvideTo(Supplementable<T>& supplementable,
-                        const char* key,
-                        Supplement<T>* supplement) {
-    supplementable.ProvideSupplement(key, supplement);
+                        SupplementType* supplement) {
+    supplementable.ProvideSupplement(supplement);
   }
 
-  static Supplement<T>* From(const Supplementable<T>& supplementable,
-                             const char* key) {
-    return supplementable.RequireSupplement(key);
+  template <typename SupplementType>
+  static SupplementType* From(const Supplementable<T>& supplementable) {
+    return supplementable.template RequireSupplement<SupplementType>();
   }
 
-  static Supplement<T>* From(const Supplementable<T>* supplementable,
-                             const char* key) {
-    return supplementable ? supplementable->RequireSupplement(key) : nullptr;
+  template <typename SupplementType>
+  static SupplementType* From(const Supplementable<T>* supplementable) {
+    return supplementable
+               ? supplementable->template RequireSupplement<SupplementType>()
+               : nullptr;
   }
 
   virtual void Trace(blink::Visitor* visitor) {
@@ -146,25 +161,41 @@ class Supplementable : public GarbageCollectedMixin {
   WTF_MAKE_NONCOPYABLE(Supplementable);
 
  public:
-  void ProvideSupplement(const char* key, Supplement<T>* supplement) {
+  template <typename SupplementType>
+  void ProvideSupplement(SupplementType* supplement) {
 #if DCHECK_IS_ON()
     DCHECK_EQ(creation_thread_id_, CurrentThread());
 #endif
-    this->supplements_.Set(key, supplement);
+    static_assert(
+        std::is_array<decltype(SupplementType::kSupplementName)>::value,
+        "Declare a const char array kSupplementName. See Supplementable.h for "
+        "details.");
+    this->supplements_.Set(SupplementType::kSupplementName, supplement);
   }
 
-  void RemoveSupplement(const char* key) {
+  template <typename SupplementType>
+  void RemoveSupplement() {
 #if DCHECK_IS_ON()
     DCHECK_EQ(creation_thread_id_, CurrentThread());
 #endif
-    this->supplements_.erase(key);
+    static_assert(
+        std::is_array<decltype(SupplementType::kSupplementName)>::value,
+        "Declare a const char array kSupplementName. See Supplementable.h for "
+        "details.");
+    this->supplements_.erase(SupplementType::kSupplementName);
   }
 
-  Supplement<T>* RequireSupplement(const char* key) const {
+  template <typename SupplementType>
+  SupplementType* RequireSupplement() const {
 #if DCHECK_IS_ON()
     DCHECK_EQ(attached_thread_id_, CurrentThread());
 #endif
-    return this->supplements_.at(key);
+    static_assert(
+        std::is_array<decltype(SupplementType::kSupplementName)>::value,
+        "Declare a const char array kSupplementName. See Supplementable.h for "
+        "details.");
+    return static_cast<SupplementType*>(
+        this->supplements_.at(SupplementType::kSupplementName));
   }
 
   void ReattachThread() {

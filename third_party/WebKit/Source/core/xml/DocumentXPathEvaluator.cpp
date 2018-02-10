@@ -31,15 +31,18 @@
 
 namespace blink {
 
+// static
+const char DocumentXPathEvaluator::kSupplementName[] = "DocumentXPathEvaluator";
+
 DocumentXPathEvaluator::DocumentXPathEvaluator(Document& document)
     : Supplement<Document>(document) {}
 
 DocumentXPathEvaluator& DocumentXPathEvaluator::From(Document& document) {
-  DocumentXPathEvaluator* cache = static_cast<DocumentXPathEvaluator*>(
-      Supplement<Document>::From(document, SupplementName()));
+  DocumentXPathEvaluator* cache =
+      Supplement<Document>::From<DocumentXPathEvaluator>(document);
   if (!cache) {
     cache = new DocumentXPathEvaluator(document);
-    Supplement<Document>::ProvideTo(document, SupplementName(), cache);
+    Supplement<Document>::ProvideTo(document, cache);
   }
   return *cache;
 }

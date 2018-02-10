@@ -21,6 +21,8 @@ class CORE_EXPORT DOMWindowPerformance final
   USING_GARBAGE_COLLECTED_MIXIN(DOMWindowPerformance);
 
  public:
+  static const char kSupplementName[];
+
   static DOMWindowPerformance& From(LocalDOMWindow&);
   static Performance* performance(LocalDOMWindow&);
 
@@ -29,7 +31,6 @@ class CORE_EXPORT DOMWindowPerformance final
 
  private:
   explicit DOMWindowPerformance(LocalDOMWindow&);
-  static const char* SupplementName();
 
   Performance* performance();
 

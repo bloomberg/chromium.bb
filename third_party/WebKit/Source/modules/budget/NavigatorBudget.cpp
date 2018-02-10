@@ -15,20 +15,17 @@ NavigatorBudget::NavigatorBudget(Navigator& navigator)
     : Supplement<Navigator>(navigator) {}
 
 // static
-const char* NavigatorBudget::SupplementName() {
-  return "NavigatorBudget";
-}
+const char NavigatorBudget::kSupplementName[] = "NavigatorBudget";
 
 // static
 NavigatorBudget& NavigatorBudget::From(Navigator& navigator) {
   // Get the unique NavigatorBudget associated with this navigator.
-  NavigatorBudget* navigator_budget = static_cast<NavigatorBudget*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorBudget* navigator_budget =
+      Supplement<Navigator>::From<NavigatorBudget>(navigator);
   if (!navigator_budget) {
     // If there isn't one already, create it now and associate it.
     navigator_budget = new NavigatorBudget(navigator);
-    Supplement<Navigator>::ProvideTo(navigator, SupplementName(),
-                                     navigator_budget);
+    ProvideTo(navigator, navigator_budget);
   }
   return *navigator_budget;
 }

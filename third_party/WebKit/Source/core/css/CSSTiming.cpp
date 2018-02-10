@@ -8,14 +8,14 @@
 
 namespace blink {
 
-static const char kSupplementName[] = "CSSTiming";
+// static
+const char CSSTiming::kSupplementName[] = "CSSTiming";
 
 CSSTiming& CSSTiming::From(Document& document) {
-  CSSTiming* timing = static_cast<CSSTiming*>(
-      Supplement<Document>::From(document, kSupplementName));
+  CSSTiming* timing = Supplement<Document>::From<CSSTiming>(document);
   if (!timing) {
     timing = new CSSTiming(document);
-    Supplement<Document>::ProvideTo(document, kSupplementName, timing);
+    ProvideTo(document, timing);
   }
   return *timing;
 }

@@ -29,16 +29,14 @@ void NavigatorBeacon::Trace(blink::Visitor* visitor) {
   Supplement<Navigator>::Trace(visitor);
 }
 
-const char* NavigatorBeacon::SupplementName() {
-  return "NavigatorBeacon";
-}
+const char NavigatorBeacon::kSupplementName[] = "NavigatorBeacon";
 
 NavigatorBeacon& NavigatorBeacon::From(Navigator& navigator) {
-  NavigatorBeacon* supplement = static_cast<NavigatorBeacon*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorBeacon* supplement =
+      Supplement<Navigator>::From<NavigatorBeacon>(navigator);
   if (!supplement) {
     supplement = new NavigatorBeacon(navigator);
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
   return *supplement;
 }

@@ -26,11 +26,11 @@ class MODULES_EXPORT PictureInPictureController
   WTF_MAKE_NONCOPYABLE(PictureInPictureController);
 
  public:
+  static const char kSupplementName[];
+
   virtual ~PictureInPictureController();
 
   static PictureInPictureController& Ensure(Document&);
-
-  static const char* SupplementName();
 
   // Returns whether system allows Picture-in-Picture feature or not for
   // the associated document.

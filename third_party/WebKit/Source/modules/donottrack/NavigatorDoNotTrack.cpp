@@ -43,16 +43,14 @@ void NavigatorDoNotTrack::Trace(blink::Visitor* visitor) {
   Supplement<Navigator>::Trace(visitor);
 }
 
-const char* NavigatorDoNotTrack::SupplementName() {
-  return "NavigatorDoNotTrack";
-}
+const char NavigatorDoNotTrack::kSupplementName[] = "NavigatorDoNotTrack";
 
 NavigatorDoNotTrack& NavigatorDoNotTrack::From(Navigator& navigator) {
-  NavigatorDoNotTrack* supplement = static_cast<NavigatorDoNotTrack*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorDoNotTrack* supplement =
+      Supplement<Navigator>::From<NavigatorDoNotTrack>(navigator);
   if (!supplement) {
     supplement = new NavigatorDoNotTrack(navigator);
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
   return *supplement;
 }

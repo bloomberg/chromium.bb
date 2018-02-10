@@ -15,19 +15,17 @@ ServiceWorkerRegistrationPush::ServiceWorkerRegistrationPush(
 
 ServiceWorkerRegistrationPush::~ServiceWorkerRegistrationPush() = default;
 
-const char* ServiceWorkerRegistrationPush::SupplementName() {
-  return "ServiceWorkerRegistrationPush";
-}
+const char ServiceWorkerRegistrationPush::kSupplementName[] =
+    "ServiceWorkerRegistrationPush";
 
 ServiceWorkerRegistrationPush& ServiceWorkerRegistrationPush::From(
     ServiceWorkerRegistration& registration) {
   ServiceWorkerRegistrationPush* supplement =
-      static_cast<ServiceWorkerRegistrationPush*>(
-          Supplement<ServiceWorkerRegistration>::From(registration,
-                                                      SupplementName()));
+      Supplement<ServiceWorkerRegistration>::From<
+          ServiceWorkerRegistrationPush>(registration);
   if (!supplement) {
     supplement = new ServiceWorkerRegistrationPush(&registration);
-    ProvideTo(registration, SupplementName(), supplement);
+    ProvideTo(registration, supplement);
   }
   return *supplement;
 }

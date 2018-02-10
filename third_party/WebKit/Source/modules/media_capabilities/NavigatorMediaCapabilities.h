@@ -20,6 +20,8 @@ class NavigatorMediaCapabilities final
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorMediaCapabilities);
 
  public:
+  static const char kSupplementName[];
+
   static MediaCapabilities* mediaCapabilities(Navigator&);
 
   void Trace(blink::Visitor*) override;
@@ -28,7 +30,6 @@ class NavigatorMediaCapabilities final
   explicit NavigatorMediaCapabilities(Navigator&);
 
   static NavigatorMediaCapabilities& From(Navigator&);
-  static const char* SupplementName();
 
   // The MediaCapabilities instance of this Navigator.
   Member<MediaCapabilities> capabilities_;

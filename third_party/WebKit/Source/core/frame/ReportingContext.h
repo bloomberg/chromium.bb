@@ -22,9 +22,9 @@ class CORE_EXPORT ReportingContext final
       public Supplement<ExecutionContext> {
   USING_GARBAGE_COLLECTED_MIXIN(ReportingContext)
  public:
-  explicit ReportingContext(ExecutionContext&);
+  static const char kSupplementName[];
 
-  static const char* SupplementName();
+  explicit ReportingContext(ExecutionContext&);
 
   // Returns the ReportingContext for an ExecutionContext. If one does not
   // already exist for the given context, one is created.

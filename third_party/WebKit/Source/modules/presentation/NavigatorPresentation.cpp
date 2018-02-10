@@ -12,17 +12,15 @@ namespace blink {
 NavigatorPresentation::NavigatorPresentation() = default;
 
 // static
-const char* NavigatorPresentation::SupplementName() {
-  return "NavigatorPresentation";
-}
+const char NavigatorPresentation::kSupplementName[] = "NavigatorPresentation";
 
 // static
 NavigatorPresentation& NavigatorPresentation::From(Navigator& navigator) {
-  NavigatorPresentation* supplement = static_cast<NavigatorPresentation*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorPresentation* supplement =
+      Supplement<Navigator>::From<NavigatorPresentation>(navigator);
   if (!supplement) {
     supplement = new NavigatorPresentation();
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
   return *supplement;
 }

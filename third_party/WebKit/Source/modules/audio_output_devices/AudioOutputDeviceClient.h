@@ -18,6 +18,8 @@ class WebString;
 
 class MODULES_EXPORT AudioOutputDeviceClient : public Supplement<LocalFrame> {
  public:
+  static const char kSupplementName[];
+
   explicit AudioOutputDeviceClient(LocalFrame&);
   virtual ~AudioOutputDeviceClient() = default;
 
@@ -32,7 +34,6 @@ class MODULES_EXPORT AudioOutputDeviceClient : public Supplement<LocalFrame> {
 
   // Supplement requirements.
   static AudioOutputDeviceClient* From(ExecutionContext*);
-  static const char* SupplementName();
 };
 
 MODULES_EXPORT void ProvideAudioOutputDeviceClientTo(LocalFrame&,

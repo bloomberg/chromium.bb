@@ -25,17 +25,15 @@ void DOMWindowPerformance::TraceWrappers(
 }
 
 // static
-const char* DOMWindowPerformance::SupplementName() {
-  return "DOMWindowPerformance";
-}
+const char DOMWindowPerformance::kSupplementName[] = "DOMWindowPerformance";
 
 // static
 DOMWindowPerformance& DOMWindowPerformance::From(LocalDOMWindow& window) {
-  DOMWindowPerformance* supplement = static_cast<DOMWindowPerformance*>(
-      Supplement<LocalDOMWindow>::From(window, SupplementName()));
+  DOMWindowPerformance* supplement =
+      Supplement<LocalDOMWindow>::From<DOMWindowPerformance>(window);
   if (!supplement) {
     supplement = new DOMWindowPerformance(window);
-    ProvideTo(window, SupplementName(), supplement);
+    ProvideTo(window, supplement);
   }
   return *supplement;
 }

@@ -32,6 +32,8 @@ class MODULES_EXPORT NavigatorVR final
   WTF_MAKE_NONCOPYABLE(NavigatorVR);
 
  public:
+  static const char kSupplementName[];
+
   static NavigatorVR* From(Document&);
   static NavigatorVR& From(Navigator&);
   ~NavigatorVR() override;
@@ -71,8 +73,6 @@ class MODULES_EXPORT NavigatorVR final
   friend class VRGetDevicesCallback;
 
   explicit NavigatorVR(Navigator&);
-
-  static const char* SupplementName();
 
   void FireVRDisplayPresentChange(VRDisplay*);
 

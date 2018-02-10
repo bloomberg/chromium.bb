@@ -21,6 +21,9 @@
 
 namespace blink {
 
+// static
+const char FontFaceSetWorker::kSupplementName[] = "FontFaceSetWorker";
+
 FontFaceSetWorker::FontFaceSetWorker(WorkerGlobalScope& worker)
     : FontFaceSet(worker), Supplement<WorkerGlobalScope>(worker) {
   PauseIfNeeded();
@@ -101,11 +104,11 @@ bool FontFaceSetWorker::ResolveFontStyle(const String& font_string,
 }
 
 FontFaceSetWorker* FontFaceSetWorker::From(WorkerGlobalScope& worker) {
-  FontFaceSetWorker* fonts = static_cast<FontFaceSetWorker*>(
-      Supplement<WorkerGlobalScope>::From(worker, SupplementName()));
+  FontFaceSetWorker* fonts =
+      Supplement<WorkerGlobalScope>::From<FontFaceSetWorker>(worker);
   if (!fonts) {
     fonts = FontFaceSetWorker::Create(worker);
-    Supplement<WorkerGlobalScope>::ProvideTo(worker, SupplementName(), fonts);
+    ProvideTo(worker, fonts);
   }
 
   return fonts;

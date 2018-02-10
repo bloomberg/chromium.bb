@@ -19,16 +19,14 @@ void NavigatorMediaSession::Trace(blink::Visitor* visitor) {
   Supplement<Navigator>::Trace(visitor);
 }
 
-const char* NavigatorMediaSession::SupplementName() {
-  return "NavigatorMediaSession";
-}
+const char NavigatorMediaSession::kSupplementName[] = "NavigatorMediaSession";
 
 NavigatorMediaSession& NavigatorMediaSession::From(Navigator& navigator) {
-  NavigatorMediaSession* supplement = static_cast<NavigatorMediaSession*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorMediaSession* supplement =
+      Supplement<Navigator>::From<NavigatorMediaSession>(navigator);
   if (!supplement) {
     supplement = new NavigatorMediaSession(navigator);
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
   return *supplement;
 }

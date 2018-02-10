@@ -24,6 +24,8 @@ class MODULES_EXPORT StorageNamespaceController final
   USING_GARBAGE_COLLECTED_MIXIN(StorageNamespaceController);
 
  public:
+  static const char kSupplementName[];
+
   StorageNamespace* SessionStorage(bool optional_create = true);
   ~StorageNamespaceController();
 
@@ -31,8 +33,7 @@ class MODULES_EXPORT StorageNamespaceController final
 
   static void ProvideStorageNamespaceTo(Page&, WebViewClient*);
   static StorageNamespaceController* From(Page* page) {
-    return static_cast<StorageNamespaceController*>(
-        Supplement<Page>::From(page, SupplementName()));
+    return Supplement<Page>::From<StorageNamespaceController>(page);
   }
 
   void Trace(blink::Visitor*);
@@ -46,7 +47,6 @@ class MODULES_EXPORT StorageNamespaceController final
   explicit StorageNamespaceController(WebViewClient*);
 
   std::unique_ptr<StorageNamespace> CreateSessionStorageNamespace();
-  static const char* SupplementName();
 
   std::unique_ptr<StorageNamespace> session_storage_;
   Member<InspectorDOMStorageAgent> inspector_agent_;

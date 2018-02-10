@@ -29,6 +29,8 @@ class MODULES_EXPORT InstalledAppController final
   WTF_MAKE_NONCOPYABLE(InstalledAppController);
 
  public:
+  static const char kSupplementName[];
+
   virtual ~InstalledAppController();
 
   // Gets a list of related apps from the current page's manifest that belong
@@ -37,7 +39,6 @@ class MODULES_EXPORT InstalledAppController final
 
   static void ProvideTo(LocalFrame&, WebRelatedAppsFetcher*);
   static InstalledAppController* From(LocalFrame&);
-  static const char* SupplementName();
 
   void Trace(blink::Visitor*) override;
 

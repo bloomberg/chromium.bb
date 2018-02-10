@@ -128,18 +128,17 @@ ScriptPromise HTMLMediaElementAudioOutputDevice::setSinkId(
   return promise;
 }
 
-const char* HTMLMediaElementAudioOutputDevice::SupplementName() {
-  return "HTMLMediaElementAudioOutputDevice";
-}
+const char HTMLMediaElementAudioOutputDevice::kSupplementName[] =
+    "HTMLMediaElementAudioOutputDevice";
 
 HTMLMediaElementAudioOutputDevice& HTMLMediaElementAudioOutputDevice::From(
     HTMLMediaElement& element) {
   HTMLMediaElementAudioOutputDevice* supplement =
-      static_cast<HTMLMediaElementAudioOutputDevice*>(
-          Supplement<HTMLMediaElement>::From(element, SupplementName()));
+      Supplement<HTMLMediaElement>::From<HTMLMediaElementAudioOutputDevice>(
+          element);
   if (!supplement) {
     supplement = new HTMLMediaElementAudioOutputDevice();
-    ProvideTo(element, SupplementName(), supplement);
+    ProvideTo(element, supplement);
   }
   return *supplement;
 }

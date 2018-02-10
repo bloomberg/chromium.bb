@@ -41,14 +41,14 @@ PushMessagingBridge* PushMessagingBridge::From(
     ServiceWorkerRegistration* service_worker_registration) {
   DCHECK(service_worker_registration);
 
-  PushMessagingBridge* bridge = static_cast<PushMessagingBridge*>(
-      Supplement<ServiceWorkerRegistration>::From(service_worker_registration,
-                                                  SupplementName()));
+  PushMessagingBridge* bridge =
+      Supplement<ServiceWorkerRegistration>::From<PushMessagingBridge>(
+          service_worker_registration);
 
   if (!bridge) {
     bridge = new PushMessagingBridge(*service_worker_registration);
     Supplement<ServiceWorkerRegistration>::ProvideTo(
-        *service_worker_registration, SupplementName(), bridge);
+        *service_worker_registration, bridge);
   }
 
   return bridge;
@@ -60,9 +60,7 @@ PushMessagingBridge::PushMessagingBridge(
 
 PushMessagingBridge::~PushMessagingBridge() = default;
 
-const char* PushMessagingBridge::SupplementName() {
-  return "PushMessagingBridge";
-}
+const char PushMessagingBridge::kSupplementName[] = "PushMessagingBridge";
 
 ScriptPromise PushMessagingBridge::GetPermissionState(
     ScriptState* script_state,

@@ -20,6 +20,8 @@ class NavigatorCredentials final
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorCredentials);
 
  public:
+  static const char kSupplementName[];
+
   static NavigatorCredentials& From(Navigator&);
   // NavigatorCredentials.idl
   static CredentialsContainer* credentials(Navigator&);
@@ -29,8 +31,6 @@ class NavigatorCredentials final
  private:
   explicit NavigatorCredentials(Navigator&);
   CredentialsContainer* credentials();
-
-  static const char* SupplementName();
 
   Member<CredentialsContainer> credentials_container_;
 };

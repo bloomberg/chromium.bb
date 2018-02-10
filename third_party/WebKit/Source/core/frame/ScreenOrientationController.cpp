@@ -12,8 +12,7 @@ ScreenOrientationController::ScreenOrientationController(LocalFrame& frame)
 // static
 ScreenOrientationController* ScreenOrientationController::From(
     LocalFrame& frame) {
-  return static_cast<ScreenOrientationController*>(
-      Supplement<LocalFrame>::From(frame, SupplementName()));
+  return Supplement<LocalFrame>::From<ScreenOrientationController>(frame);
 }
 
 void ScreenOrientationController::Trace(blink::Visitor* visitor) {
@@ -24,12 +23,11 @@ void ScreenOrientationController::Trace(blink::Visitor* visitor) {
 void ScreenOrientationController::ProvideTo(
     LocalFrame& frame,
     ScreenOrientationController* controller) {
-  Supplement<LocalFrame>::ProvideTo(frame, SupplementName(), controller);
+  Supplement<LocalFrame>::ProvideTo(frame, controller);
 }
 
 // static
-const char* ScreenOrientationController::SupplementName() {
-  return "ScreenOrientationController";
-}
+const char ScreenOrientationController::kSupplementName[] =
+    "ScreenOrientationController";
 
 }  // namespace blink

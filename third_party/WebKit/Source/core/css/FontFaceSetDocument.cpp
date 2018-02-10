@@ -43,6 +43,9 @@
 
 namespace blink {
 
+// static
+const char FontFaceSetDocument::kSupplementName[] = "FontFaceSetDocument";
+
 FontFaceSetDocument::FontFaceSetDocument(Document& document)
     : FontFaceSet(document), Supplement<Document>(document) {
   PauseIfNeeded();
@@ -176,25 +179,25 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
 }
 
 FontFaceSetDocument* FontFaceSetDocument::From(Document& document) {
-  FontFaceSetDocument* fonts = static_cast<FontFaceSetDocument*>(
-      Supplement<Document>::From(document, SupplementName()));
+  FontFaceSetDocument* fonts =
+      Supplement<Document>::From<FontFaceSetDocument>(document);
   if (!fonts) {
     fonts = FontFaceSetDocument::Create(document);
-    Supplement<Document>::ProvideTo(document, SupplementName(), fonts);
+    Supplement<Document>::ProvideTo(document, fonts);
   }
 
   return fonts;
 }
 
 void FontFaceSetDocument::DidLayout(Document& document) {
-  if (FontFaceSetDocument* fonts = static_cast<FontFaceSetDocument*>(
-          Supplement<Document>::From(document, SupplementName())))
+  if (FontFaceSetDocument* fonts =
+          Supplement<Document>::From<FontFaceSetDocument>(document))
     fonts->DidLayout();
 }
 
 size_t FontFaceSetDocument::ApproximateBlankCharacterCount(Document& document) {
-  if (FontFaceSetDocument* fonts = static_cast<FontFaceSetDocument*>(
-          Supplement<Document>::From(document, SupplementName())))
+  if (FontFaceSetDocument* fonts =
+          Supplement<Document>::From<FontFaceSetDocument>(document))
     return fonts->ApproximateBlankCharacterCount();
   return 0;
 }

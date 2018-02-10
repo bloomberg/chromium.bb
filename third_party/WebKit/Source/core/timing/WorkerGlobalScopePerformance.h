@@ -47,6 +47,8 @@ class CORE_EXPORT WorkerGlobalScopePerformance final
   USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopePerformance);
 
  public:
+  static const char kSupplementName[];
+
   static WorkerGlobalScopePerformance& From(WorkerGlobalScope&);
 
   static WorkerPerformance* performance(WorkerGlobalScope&);
@@ -58,7 +60,6 @@ class CORE_EXPORT WorkerGlobalScopePerformance final
   explicit WorkerGlobalScopePerformance(WorkerGlobalScope&);
 
   WorkerPerformance* performance(WorkerGlobalScope*);
-  static const char* SupplementName();
 
   TraceWrapperMember<WorkerPerformance> performance_;
 };

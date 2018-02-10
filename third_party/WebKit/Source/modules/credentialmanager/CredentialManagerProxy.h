@@ -33,6 +33,8 @@ class MODULES_EXPORT CredentialManagerProxy
   USING_GARBAGE_COLLECTED_MIXIN(CredentialManagerProxy);
 
  public:
+  static const char kSupplementName[];
+
   explicit CredentialManagerProxy(Document*);
   virtual ~CredentialManagerProxy();
 
@@ -54,8 +56,6 @@ class MODULES_EXPORT CredentialManagerProxy
   static CredentialManagerProxy* From(Document*);
 
  private:
-  static const char* SupplementName();
-
   // TODO(crbug.com/740081): Merge |credential_manager_| and |authenticator_|
   // into a single Mojo interface.
   ::password_manager::mojom::blink::CredentialManagerPtr credential_manager_;

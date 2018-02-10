@@ -158,21 +158,18 @@ bool DocumentXSLT::SheetLoaded(Document& document, ProcessingInstruction* pi) {
   return true;
 }
 
-const char* DocumentXSLT::SupplementName() {
-  return "DocumentXSLT";
-}
+// static
+const char DocumentXSLT::kSupplementName[] = "DocumentXSLT";
 
 bool DocumentXSLT::HasTransformSourceDocument(Document& document) {
-  return static_cast<DocumentXSLT*>(
-      Supplement<Document>::From(document, SupplementName()));
+  return Supplement<Document>::From<DocumentXSLT>(document);
 }
 
 DocumentXSLT& DocumentXSLT::From(Document& document) {
-  DocumentXSLT* supplement = static_cast<DocumentXSLT*>(
-      Supplement<Document>::From(document, SupplementName()));
+  DocumentXSLT* supplement = Supplement<Document>::From<DocumentXSLT>(document);
   if (!supplement) {
     supplement = new DocumentXSLT(document);
-    Supplement<Document>::ProvideTo(document, SupplementName(), supplement);
+    Supplement<Document>::ProvideTo(document, supplement);
   }
   return *supplement;
 }

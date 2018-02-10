@@ -19,12 +19,13 @@ class MODULES_EXPORT MediaKeysController final
   USING_GARBAGE_COLLECTED_MIXIN(MediaKeysController);
 
  public:
+  static const char kSupplementName[];
+
   WebEncryptedMediaClient* EncryptedMediaClient(ExecutionContext*);
 
   static void ProvideMediaKeysTo(Page&);
   static MediaKeysController* From(Page* page) {
-    return static_cast<MediaKeysController*>(
-        Supplement<Page>::From(page, SupplementName()));
+    return Supplement<Page>::From<MediaKeysController>(page);
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -33,7 +34,6 @@ class MODULES_EXPORT MediaKeysController final
 
  private:
   MediaKeysController();
-  static const char* SupplementName();
 };
 
 }  // namespace blink

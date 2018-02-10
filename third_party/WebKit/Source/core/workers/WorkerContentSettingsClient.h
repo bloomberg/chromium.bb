@@ -50,6 +50,8 @@ class CORE_EXPORT WorkerContentSettingsClient final
   USING_GARBAGE_COLLECTED_MIXIN(WorkerContentSettingsClient);
 
  public:
+  static const char kSupplementName[];
+
   static WorkerContentSettingsClient* Create(
       std::unique_ptr<WebContentSettingsClient>);
   virtual ~WorkerContentSettingsClient();
@@ -60,7 +62,6 @@ class CORE_EXPORT WorkerContentSettingsClient final
                                    const SecurityOrigin*,
                                    const KURL&);
 
-  static const char* SupplementName();
   static WorkerContentSettingsClient* From(ExecutionContext&);
 
   void Trace(blink::Visitor* visitor) override {

@@ -38,16 +38,14 @@ namespace blink {
 DOMWindowCrypto::DOMWindowCrypto(LocalDOMWindow& window)
     : Supplement<LocalDOMWindow>(window) {}
 
-const char* DOMWindowCrypto::SupplementName() {
-  return "DOMWindowCrypto";
-}
+const char DOMWindowCrypto::kSupplementName[] = "DOMWindowCrypto";
 
 DOMWindowCrypto& DOMWindowCrypto::From(LocalDOMWindow& window) {
-  DOMWindowCrypto* supplement = static_cast<DOMWindowCrypto*>(
-      Supplement<LocalDOMWindow>::From(window, SupplementName()));
+  DOMWindowCrypto* supplement =
+      Supplement<LocalDOMWindow>::From<DOMWindowCrypto>(window);
   if (!supplement) {
     supplement = new DOMWindowCrypto(window);
-    ProvideTo(window, SupplementName(), supplement);
+    ProvideTo(window, supplement);
   }
   return *supplement;
 }

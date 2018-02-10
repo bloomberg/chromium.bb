@@ -20,14 +20,14 @@ class WorkerNavigatorPermissions final
   USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorPermissions);
 
  public:
+  static const char kSupplementName[];
+
   static WorkerNavigatorPermissions& From(WorkerNavigator&);
   static Permissions* permissions(WorkerNavigator&);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  static const char* SupplementName();
-
   WorkerNavigatorPermissions();
 
   Member<Permissions> permissions_;
