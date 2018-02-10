@@ -327,12 +327,16 @@ TEST_F(TabActivityWatcherTest, InputEvents) {
   widget_1->ForwardMouseEvent(CreateMouseEvent(WebInputEvent::kMouseMove));
   widget_1->ForwardMouseEvent(CreateMouseEvent(WebInputEvent::kMouseMove));
   expected_metrics_1[TabManager_TabMetrics::kMouseEventCountName] = 5;
-  test_contents_1->WasHidden();
+  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
   {
     SCOPED_TRACE("");
     ExpectNewEntry(kTestUrls[0], expected_metrics_1);
   }
-  test_contents_1->WasShown();
+  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 0);
+  {
+    SCOPED_TRACE("");
+    ExpectNewEntry(kTestUrls[1], expected_metrics_2);
+  }
 
   // After a navigation, test that the counts are reset.
   WebContentsTester::For(test_contents_1)->NavigateAndCommit(kTestUrls[2]);
@@ -340,7 +344,7 @@ TEST_F(TabActivityWatcherTest, InputEvents) {
   widget_1 = test_contents_1->GetRenderViewHost()->GetWidget();
   widget_1->ForwardMouseEvent(CreateMouseEvent(WebInputEvent::kMouseMove));
   expected_metrics_1[TabManager_TabMetrics::kMouseEventCountName] = 1;
-  test_contents_1->WasHidden();
+  tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
   {
     SCOPED_TRACE("");
     ExpectNewEntry(kTestUrls[2], expected_metrics_1);
@@ -349,9 +353,9 @@ TEST_F(TabActivityWatcherTest, InputEvents) {
   tab_strip_model->CloseAllTabs();
 }
 
-// Tests that logging happens when the browser window is hidden (even if the
-// WebContents is still the active tab).
-TEST_F(TabActivityWatcherTest, HideWindow) {
+// Tests that logging doesn't occur when the WebContents is hidden while still
+// the active tab, e.g. when the browser window hides before closing.
+TEST_F(TabActivityWatcherTest, HideWebContents) {
   Browser::CreateParams params(profile(), true);
   std::unique_ptr<Browser> browser =
       CreateBrowserWithTestWindowForParams(&params);
@@ -362,14 +366,12 @@ TEST_F(TabActivityWatcherTest, HideWindow) {
                                                         GURL(kTestUrls[0]));
   tab_strip_model->ActivateTabAt(0, false);
 
-  // Hiding the window triggers the log.
+  // Hiding the window doesn't trigger a log entry, unless the window was
+  // minimized.
+  // TODO(michaelpg): Test again with the window minimized using the
+  // FakeBrowserWindow from window_activity_watcher_unittest.cc.
   test_contents->WasHidden();
-  {
-    SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[0], kBasicMetricValues);
-  }
-
-  // Showing the window does not.
+  EXPECT_EQ(0, ukm_entry_checker_.NumNewEntriesRecorded(kEntryName));
   test_contents->WasShown();
   EXPECT_EQ(0, ukm_entry_checker_.NumNewEntriesRecorded(kEntryName));
 
