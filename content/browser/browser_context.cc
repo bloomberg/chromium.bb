@@ -50,7 +50,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/file/file_service.h"
-#include "services/file/public/interfaces/constants.mojom.h"
+#include "services/file/public/mojom/constants.mojom.h"
 #include "services/file/user_id_map.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/service.mojom.h"

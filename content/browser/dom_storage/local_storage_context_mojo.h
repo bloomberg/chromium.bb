@@ -19,7 +19,7 @@
 #include "content/common/content_export.h"
 #include "content/common/leveldb_wrapper.mojom.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/file/public/interfaces/file_system.mojom.h"
+#include "services/file/public/mojom/file_system.mojom.h"
 #include "url/origin.h"
 
 namespace service_manager {

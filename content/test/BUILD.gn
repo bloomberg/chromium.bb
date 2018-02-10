@@ -1712,7 +1712,7 @@ test("content_unittests") {
     "//services/device/public/cpp/generic_sensor",
     "//services/device/public/interfaces",
     "//services/file:lib",
-    "//services/file/public/interfaces",
+    "//services/file/public/mojom",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/metrics/public/interfaces",
     "//services/network:network_service",

@@ -7,7 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
-#include "services/file/public/interfaces/file_system.mojom.h"
+#include "services/file/public/mojom/file_system.mojom.h"
 
 namespace filesystem {
 class LockTable;

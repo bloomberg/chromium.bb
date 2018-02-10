@@ -25,7 +25,7 @@
 #include "content/browser/leveldb_wrapper_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/local_storage_usage_info.h"
-#include "services/file/public/interfaces/constants.mojom.h"
+#include "services/file/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "sql/connection.h"
 #include "storage/browser/quota/special_storage_policy.h"

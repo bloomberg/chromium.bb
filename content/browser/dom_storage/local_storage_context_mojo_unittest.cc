@@ -28,7 +28,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "services/file/file_service.h"
-#include "services/file/public/interfaces/constants.mojom.h"
+#include "services/file/public/mojom/constants.mojom.h"
 #include "services/file/user_id_map.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
