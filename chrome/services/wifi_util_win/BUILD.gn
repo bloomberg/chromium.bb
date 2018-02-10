@@ -19,7 +19,7 @@ source_set("lib") {
   ]
 
   public_deps = [
-    "//chrome/services/wifi_util_win/public/interfaces",
+    "//chrome/services/wifi_util_win/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 }
