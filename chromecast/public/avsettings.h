@@ -43,6 +43,7 @@ class AvSettings {
   };
 
   // Defines the type of audio volume control of the device.
+  // GENERATED_JAVA_ENUM_PACKAGE: com.google.android.apps.mediashell.avsettings
   enum AudioVolumeControlType {
     UNKNOWN_VOLUME,
 
