@@ -2032,19 +2032,19 @@ typedef void (*inv_txfm_func)(const int32_t *input, uint8_t *output, int stride,
                               TX_TYPE tx_type, int bd);
 
 static inv_txfm_func inv_txfm_func_ls[TX_SIZES_ALL] = {
-  NULL,                               // 4x4 transform
-  av1_lowbd_inv_txfm2d_add_8x8_sse2,  // 8x8 transform
-  NULL,                               // 16x16 transform
-  NULL,                               // 32x32 transform
+  NULL,                                 // 4x4
+  av1_lowbd_inv_txfm2d_add_8x8_sse2,    // 8x8
+  av1_lowbd_inv_txfm2d_add_16x16_sse2,  // 16x16
+  av1_lowbd_inv_txfm2d_add_32x32_sse2,  // 32x32
 #if CONFIG_TX64X64
-  NULL,  // 64x64
-#endif   // CONFIG_TX64X64
-  NULL,  // 4x8
-  NULL,  // 8x4
-  NULL,  // 8x16
-  NULL,  // 16x8
-  NULL,  // 16x32
-  NULL,  // 32x16
+  NULL,                                 // 64x64
+#endif                                  // CONFIG_TX64X64
+  NULL,                                 // 4x8
+  NULL,                                 // 8x4
+  av1_lowbd_inv_txfm2d_add_8x16_sse2,   // 8x16
+  av1_lowbd_inv_txfm2d_add_16x8_sse2,   // 16x8
+  av1_lowbd_inv_txfm2d_add_16x32_sse2,  // 16x32
+  av1_lowbd_inv_txfm2d_add_32x16_sse2,  // 32x16
 #if CONFIG_TX64X64
   NULL,  // 32x64
   NULL,  // 64x32
