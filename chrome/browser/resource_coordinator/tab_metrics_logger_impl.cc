@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "content/public/browser/render_frame_host.h"
@@ -175,15 +177,23 @@ void TabMetricsLoggerImpl::LogBackgroundTab(ukm::SourceId ukm_source_id,
     return;
 
   content::WebContents* web_contents = tab_metrics.web_contents;
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (!browser)
-    return;
 
   // UKM recording is disabled in OTR.
   if (web_contents->GetBrowserContext()->IsOffTheRecord())
     return;
 
+  // Verify that the browser is not closing.
+  const Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser ||
+      base::ContainsKey(
+          BrowserList::GetInstance()->currently_closing_browsers(), browser)) {
+    return;
+  }
+
   const TabStripModel* tab_strip_model = browser->tab_strip_model();
+  if (tab_strip_model->closing_all())
+    return;
+
   int index = tab_strip_model->GetIndexOfWebContents(web_contents);
   DCHECK_NE(index, TabStripModel::kNoTab);
 
