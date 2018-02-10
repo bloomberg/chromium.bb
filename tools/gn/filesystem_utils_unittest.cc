@@ -179,6 +179,10 @@ TEST(FilesystemUtils, MakeAbsoluteFilePathRelativeIfPossible) {
       base::FilePath(L"out\\Debug"),
       MakeAbsoluteFilePathRelativeIfPossible(
           base::FilePath(L"C:\\src"), base::FilePath(L"C:\\src\\out\\Debug")));
+  EXPECT_EQ(base::FilePath(L".\\gn"),
+            MakeAbsoluteFilePathRelativeIfPossible(
+                base::FilePath(L"C:\\src\\out\\Debug"),
+                base::FilePath(L"C:\\src\\out\\Debug\\gn")));
   EXPECT_EQ(
       base::FilePath(L"..\\.."),
       MakeAbsoluteFilePathRelativeIfPossible(
@@ -197,6 +201,9 @@ TEST(FilesystemUtils, MakeAbsoluteFilePathRelativeIfPossible) {
   EXPECT_EQ(base::FilePath("out/Debug"),
             MakeAbsoluteFilePathRelativeIfPossible(
                 base::FilePath("/src"), base::FilePath("/src/out/Debug")));
+  EXPECT_EQ(base::FilePath("./gn"), MakeAbsoluteFilePathRelativeIfPossible(
+                                        base::FilePath("/src/out/Debug"),
+                                        base::FilePath("/src/out/Debug/gn")));
   EXPECT_EQ(base::FilePath("../.."),
             MakeAbsoluteFilePathRelativeIfPossible(
                 base::FilePath("/src/out/Debug"), base::FilePath("/src")));

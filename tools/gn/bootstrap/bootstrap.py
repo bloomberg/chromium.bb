@@ -936,6 +936,13 @@ def build_gn_with_gn(temp_gn, build_dir, options):
   cmd.append('gn')
   check_call(cmd)
 
+  # build.ninja currently refers back to gn from the temporary directory.
+  # Regenerate the build files using the gn we just built so that the reference
+  # gets updated to "./gn".
+  cmd = [os.path.join(build_dir, 'gn'), 'gen', build_dir,
+         '--args=%s' % gn_gen_args]
+  check_call(cmd)
+
   if not options.debug and not is_win:
     check_call(['strip', os.path.join(build_dir, 'gn')])
 
