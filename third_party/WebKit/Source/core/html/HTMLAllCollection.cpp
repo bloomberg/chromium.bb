@@ -40,26 +40,11 @@ HTMLAllCollection::HTMLAllCollection(ContainerNode& node)
 
 HTMLAllCollection::~HTMLAllCollection() = default;
 
-Element* HTMLAllCollection::NamedItemWithIndex(const AtomicString& name,
-                                               unsigned index) const {
-  UpdateIdNameCache();
-
-  const NamedItemCache& cache = GetNamedItemCache();
-  if (const auto* elements = cache.GetElementsById(name)) {
-    if (index < elements->size())
-      return elements->at(index);
-    index -= elements->size();
-  }
-
-  if (const auto* elements = cache.GetElementsByName(name)) {
-    if (index < elements->size())
-      return elements->at(index);
-  }
-
-  return nullptr;
+Element* HTMLAllCollection::AnonymousIndexedGetter(unsigned index) {
+  return HTMLCollection::item(index);
 }
 
-void HTMLAllCollection::namedGetter(const AtomicString& name,
+void HTMLAllCollection::NamedGetter(const AtomicString& name,
                                     HTMLCollectionOrElement& return_value) {
   HTMLCollection* items = GetDocument().DocumentAllNamedItems(name);
 
