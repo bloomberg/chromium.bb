@@ -119,7 +119,7 @@ jumbo_source_set("browser") {
     "//printing/features",
     "//services/catalog:constants",
     "//services/catalog/public/cpp",
-    "//services/catalog/public/interfaces:constants",
+    "//services/catalog/public/mojom:constants",
     "//services/data_decoder/public/cpp",
     "//services/data_decoder/public/mojom",
     "//services/device:lib",

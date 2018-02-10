@@ -12,7 +12,7 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "services/catalog/public/cpp/resource_loader.h"
-#include "services/catalog/public/interfaces/constants.mojom.h"
+#include "services/catalog/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/env.h"
 #include "ui/base/ime/input_method_initializer.h"

@@ -58,7 +58,7 @@ source_set("lib") {
     "//components/viz/service",
     "//mojo/common:common_base",
     "//services/catalog/public/cpp",
-    "//services/catalog/public/interfaces:constants",
+    "//services/catalog/public/mojom:constants",
     "//services/service_manager/public/cpp",
     "//services/ui/clipboard:lib",
     "//services/ui/ime:lib",
