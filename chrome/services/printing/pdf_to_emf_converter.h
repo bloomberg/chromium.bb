@@ -9,7 +9,7 @@
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "chrome/services/printing/public/interfaces/pdf_to_emf_converter.mojom.h"
+#include "chrome/services/printing/public/mojom/pdf_to_emf_converter.mojom.h"
 #include "printing/pdf_render_settings.h"
 
 namespace printing {

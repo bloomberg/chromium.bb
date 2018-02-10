@@ -6,7 +6,7 @@
 #define CHROME_SERVICES_PRINTING_PDF_TO_EMF_CONVERTER_FACTORY_H_
 
 #include "base/macros.h"
-#include "chrome/services/printing/public/interfaces/pdf_to_emf_converter.mojom.h"
+#include "chrome/services/printing/public/mojom/pdf_to_emf_converter.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace printing {

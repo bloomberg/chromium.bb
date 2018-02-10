@@ -20,7 +20,7 @@ source_set("lib") {
   ]
 
   public_deps = [
-    "//chrome/services/printing/public/interfaces",
+    "//chrome/services/printing/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 
