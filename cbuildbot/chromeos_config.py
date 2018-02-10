@@ -2434,6 +2434,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'edgar',
       'elm',
       'eve',
+      'eve-arcnext',
       'falco',
       'fizz',
       'gale',
@@ -2493,7 +2494,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'auron',
       'auron_paine',
-      'eve-arcnext',
       'grunt',
       'nami',
       'octopus',
