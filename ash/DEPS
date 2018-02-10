@@ -17,7 +17,7 @@ include_rules = [
   "+components/wallpaper",
   "+gpu/config",
   "+media",
-  "+mash/public/interfaces",
+  "+mash/public/mojom",
   "+mash/shelf/public",
   "+mojo/common",
   "+mojo/public",

@@ -11,7 +11,7 @@
 #include "ash/autoclick/common/autoclick_controller_common_delegate.h"
 #include "ash/autoclick/mus/public/interfaces/autoclick.mojom.h"
 #include "base/macros.h"
-#include "mash/public/interfaces/launchable.mojom.h"
+#include "mash/public/mojom/launchable.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/identity.h"

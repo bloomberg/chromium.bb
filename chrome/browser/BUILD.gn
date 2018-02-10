@@ -2870,7 +2870,7 @@ split_static_library("browser") {
       "//chrome/browser/chromeos",
       "//components/font_service:lib",
       "//components/font_service/public/interfaces",
-      "//mash/quick_launch/public/interfaces:constants",
+      "//mash/quick_launch/public/mojom:constants",
       "//services/ui/public/cpp/input_devices",
       "//services/ui/public/cpp/input_devices:input_device_controller",
       "//services/ui/public/interfaces",

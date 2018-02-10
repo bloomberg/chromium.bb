@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "components/font_service/font_service_app.h"
 #include "components/font_service/public/interfaces/constants.mojom.h"
-#include "mash/quick_launch/public/interfaces/constants.mojom.h"
+#include "mash/quick_launch/public/mojom/constants.mojom.h"
 #include "mash/quick_launch/quick_launch.h"
 #include "services/ui/common/image_cursors_set.h"
 #include "services/ui/public/interfaces/constants.mojom.h"

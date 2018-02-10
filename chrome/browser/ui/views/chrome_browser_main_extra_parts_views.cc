@@ -50,7 +50,7 @@
 #include "chrome/browser/chromeos/ash_config.h"
 #include "content/public/common/content_switches.h"
 #include "mash/common/config.h"                                   // nogncheck
-#include "mash/quick_launch/public/interfaces/constants.mojom.h"  // nogncheck
+#include "mash/quick_launch/public/mojom/constants.mojom.h"       // nogncheck
 #else  // defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller.h"
 #endif  // defined(OS_CHROMEOS)

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LAUNCHABLE_H_
 
 #include "base/macros.h"
-#include "mash/public/interfaces/launchable.mojom.h"
+#include "mash/public/mojom/launchable.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace chromeos {

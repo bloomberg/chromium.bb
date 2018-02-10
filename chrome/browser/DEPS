@@ -38,7 +38,7 @@ include_rules = [
   "+google_update",
   "+installer_util_strings",  # For generated headers
   "+jni",
-  "+mash/public/interfaces",
+  "+mash/public/mojom",
   "+media/audio", # For media audio hang monitor.
   "+media/base",  # For media switches
   "+media/cdm/cdm_paths.h",
@@ -112,7 +112,7 @@ include_rules = [
   # Should be removed once the actual network service ships.
   "+content/public/network",
 
-  "+mash/quick_launch/public/interfaces",
+  "+mash/quick_launch/public/mojom",
 
   # Other libraries.
   "+libxml",
