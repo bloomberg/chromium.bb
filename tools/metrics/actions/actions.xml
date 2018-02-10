@@ -18193,20 +18193,6 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="StatusArea_SelectToSpeakDisabled">
-  <owner>katie@chromium.org</owner>
-  <description>
-    Ash system menu: Accessibility: Disable Select-to-Speak.
-  </description>
-</action>
-
-<action name="StatusArea_SelectToSpeakEnabled">
-  <owner>katie@chromium.org</owner>
-  <description>
-    Ash system menu: Accessibility: Enable Select-to-Speak.
-  </description>
-</action>
-
 <action name="StatusArea_SignOut">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
