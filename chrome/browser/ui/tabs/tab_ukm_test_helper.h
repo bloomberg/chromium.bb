@@ -6,17 +6,10 @@
 #define CHROME_BROWSER_UI_TABS_TAB_UKM_TEST_HELPER_H_
 
 #include <map>
-#include <memory>
-#include <utility>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/ukm/test_ukm_recorder.h"
-#include "content/public/browser/web_contents.h"
-#include "ui/base/page_transition_types.h"
 
 // A UKM entry consists of named metrics with int64_t values. Use a map to
 // specify expected metrics to test against an actual entry for tests.
@@ -25,38 +18,6 @@
 using UkmMetricMap = std::map<const char*, base::Optional<int64_t>>;
 using SourceUkmMetricMap =
     std::map<ukm::SourceId, std::pair<GURL, UkmMetricMap>>;
-
-class TestWebContentsObserver;
-
-// Base class for tests that rely on logging tab activity. Inherits from
-// ChromeRenderViewHostTestHarness to use TestWebContents and Profile.
-class TabActivityTestBase : public ChromeRenderViewHostTestHarness {
- public:
-  TabActivityTestBase();
-  ~TabActivityTestBase() override;
-
-  // Simulates a navigation to |url| using the given transition type.
-  void Navigate(content::WebContents* web_contents,
-                const GURL& url,
-                ui::PageTransition page_transition);
-
-  // Creates a new WebContents suitable for testing, adds it to the tab strip
-  // and commits a navigation to |initial_url|. The WebContents is owned by the
-  // TabStripModel, so its tab must be closed later, e.g. via CloseAllTabs().
-  content::WebContents* AddWebContentsAndNavigate(
-      TabStripModel* tab_strip_model,
-      const GURL& initial_url,
-      ui::PageTransition page_transition = ui::PAGE_TRANSITION_LINK);
-
-  // Sets |new_index| as the active tab in its tab strip, hiding the previously
-  // active tab.
-  void SwitchToTabAt(TabStripModel* tab_strip_model, int new_index);
-
- private:
-  // Owns the observers we've created.
-  std::vector<std::unique_ptr<TestWebContentsObserver>> observers_;
-  DISALLOW_COPY_AND_ASSIGN(TabActivityTestBase);
-};
 
 // Helper class to check entries have been logged as expected into UKM.
 class UkmEntryChecker {

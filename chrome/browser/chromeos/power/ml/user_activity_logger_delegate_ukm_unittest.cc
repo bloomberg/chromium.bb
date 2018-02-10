@@ -10,8 +10,10 @@
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tabs/tab_activity_simulator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_ukm_test_helper.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
@@ -27,7 +29,8 @@ using ukm::builders::UserActivity;
 using ukm::builders::UserActivityId;
 using content::WebContentsTester;
 
-class UserActivityLoggerDelegateUkmTest : public TabActivityTestBase {
+class UserActivityLoggerDelegateUkmTest
+    : public ChromeRenderViewHostTestHarness {
  public:
   UserActivityLoggerDelegateUkmTest() {
     // These values are arbitrary but must correspond with the values
@@ -99,7 +102,7 @@ class UserActivityLoggerDelegateUkmTest : public TabActivityTestBase {
     DCHECK(tab_strip_model);
     DCHECK(!url.is_empty());
     content::WebContents* contents =
-        AddWebContentsAndNavigate(tab_strip_model, url);
+        tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model, url);
     if (is_active) {
       tab_strip_model->ActivateTabAt(tab_strip_model->count() - 1, false);
     }
@@ -108,6 +111,8 @@ class UserActivityLoggerDelegateUkmTest : public TabActivityTestBase {
 
  protected:
   UkmEntryChecker ukm_entry_checker_;
+  TabActivitySimulator tab_activity_simulator_;
+
   const GURL url1_ = GURL("https://example1.com/");
   const GURL url2_ = GURL("https://example2.com/");
   const GURL url3_ = GURL("https://example3.com/");
