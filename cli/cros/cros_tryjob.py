@@ -493,7 +493,8 @@ List Examples:
     how_group.add_argument(
         '--chrome_version', dest='passthrough', action='append_option_value',
         help='Used with SPEC logic to force a particular '
-             'git revision of chrome rather than the latest.')
+             'git revision of chrome rather than the latest. '
+             'HEAD is a valid value.')
 
     # Overrides for the build configs testing behaviors.
     test_group = parser.add_argument_group(

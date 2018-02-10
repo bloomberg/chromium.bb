@@ -106,6 +106,34 @@ class TestGclientWriteConfigFile(
   'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
 """)
 
+  def testChromiumSpecWithGitHead(self):
+    """Test WriteConfigFile with chromium checkout at a given git revision."""
+    gclient.WriteConfigFile('gclient', self._TEST_CWD, False, 'HEAD')
+    self._AssertGclientConfigSpec("""solutions = [{'custom_deps': {},
+  'custom_vars': {},
+  'deps_file': '.DEPS.git',
+  'managed': True,
+  'name': 'src',
+  'url': 'https://chromium.googlesource.com/chromium/src.git@HEAD'}]
+""")
+
+  def testChromeSpecWithGitHead(self):
+    """Test WriteConfigFile with chrome checkout at a given git revision."""
+    gclient.WriteConfigFile('gclient', self._TEST_CWD, True, 'HEAD')
+    self._AssertGclientConfigSpec("""solutions = [{'custom_deps': {},
+  'custom_vars': {},
+  'deps_file': '.DEPS.git',
+  'managed': True,
+  'name': 'src',
+  'url': 'https://chromium.googlesource.com/chromium/src.git@HEAD'},
+ {'custom_deps': {},
+  'custom_vars': {},
+  'deps_file': '.DEPS.git',
+  'managed': True,
+  'name': 'src-internal',
+  'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
+""")
+
   def testChromeSpecWithGitHashNoManaged(self):
     """Like testChromeSpecWithGitHash() but with "managed" sets to False."""
     gclient.WriteConfigFile('gclient', self._TEST_CWD, True,
