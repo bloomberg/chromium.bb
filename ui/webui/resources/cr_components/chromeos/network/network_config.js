@@ -1184,6 +1184,7 @@ Polymer({
     if (vpn.IPsec.AuthenticationType == CrOnc.IPsecAuthenticationType.CERT) {
       vpn.IPsec.ClientCertType = 'PKCS11Id';
       vpn.IPsec.ClientCertPKCS11Id = this.getUserCertPkcs11Id_();
+      vpn.IPsec.ServerCAPEMs = this.getServerCaPems_();
     }
     vpn.IPsec.IKEVersion = 1;
     vpn.IPsec.SaveCredentials = this.vpnSaveCredentials_;

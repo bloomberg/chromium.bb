@@ -99,10 +99,6 @@ CHROMEOS_EXPORT void SetShillProperties(const ConfigType cert_config_type,
 CHROMEOS_EXPORT void SetEmptyShillProperties(const ConfigType cert_config_type,
                                              base::Value* properties);
 
-// Returns true if all required configuration properties are set and not empty.
-bool IsCertificateConfigured(const client_cert::ConfigType cert_config_type,
-                             const base::DictionaryValue& service_properties);
-
 // Determines the type of the CertificatePattern configuration, i.e. is it a
 // pattern within an EAP, IPsec or OpenVPN configuration.
 CHROMEOS_EXPORT void OncToClientCertConfig(

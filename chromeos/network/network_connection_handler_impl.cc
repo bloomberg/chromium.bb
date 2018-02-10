@@ -40,6 +40,50 @@ bool IsAuthenticationError(const std::string& error) {
           error == shill::kErrorEapAuthenticationFailed);
 }
 
+std::string GetStringFromDictionary(const base::DictionaryValue& dict,
+                                    const std::string& key) {
+  std::string s;
+  dict.GetStringWithoutPathExpansion(key, &s);
+  return s;
+}
+
+bool IsCertificateConfigured(const client_cert::ConfigType cert_config_type,
+                             const base::DictionaryValue& service_properties) {
+  // VPN certificate properties are read from the Provider dictionary.
+  const base::DictionaryValue* provider_properties = NULL;
+  service_properties.GetDictionaryWithoutPathExpansion(shill::kProviderProperty,
+                                                       &provider_properties);
+  switch (cert_config_type) {
+    case client_cert::CONFIG_TYPE_NONE:
+      return true;
+    case client_cert::CONFIG_TYPE_OPENVPN:
+      // We don't know whether a pasphrase or certificates are required, so
+      // always return true here (otherwise we will never attempt to connect).
+      // TODO(stevenjb/cernekee): Fix this?
+      return true;
+    case client_cert::CONFIG_TYPE_IPSEC: {
+      if (!provider_properties)
+        return false;
+
+      std::string client_cert_id;
+      provider_properties->GetStringWithoutPathExpansion(
+          shill::kL2tpIpsecClientCertIdProperty, &client_cert_id);
+      return !client_cert_id.empty();
+    }
+    case client_cert::CONFIG_TYPE_EAP: {
+      std::string cert_id = GetStringFromDictionary(service_properties,
+                                                    shill::kEapCertIdProperty);
+      std::string key_id =
+          GetStringFromDictionary(service_properties, shill::kEapKeyIdProperty);
+      std::string identity = GetStringFromDictionary(
+          service_properties, shill::kEapIdentityProperty);
+      return !cert_id.empty() && !key_id.empty() && !identity.empty();
+    }
+  }
+  NOTREACHED();
+  return false;
+}
+
 bool VPNRequiresCredentials(const std::string& service_path,
                             const std::string& provider_type,
                             const base::DictionaryValue& provider_properties) {
@@ -460,6 +504,8 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     // Note: if we get here then a certificate *may* be required, so we want
     // to ensure that certificates have loaded successfully before attempting
     // to connect.
+    NET_LOG(DEBUG) << "Client cert type for: " << service_path << ": "
+                   << client_cert_type;
 
     // User must be logged in to connect to a network requiring a certificate.
     if (!logged_in_ || !cert_loader_) {
@@ -482,9 +528,10 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
         ErrorCallbackForPendingRequest(service_path, kErrorCertificateRequired);
         return;
       }
-    } else if (check_error_state && !client_cert::IsCertificateConfigured(
-                                        client_cert_type, service_properties)) {
+    } else if (check_error_state &&
+               !IsCertificateConfigured(client_cert_type, service_properties)) {
       // Network may not be configured.
+      NET_LOG(ERROR) << "Certificate not configured for: " << service_path;
       ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
       return;
     }
@@ -521,14 +568,16 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     return;
   }
 
-  // Otherwise, we probably still need to configure the network since
-  // 'Connectable' is false. If |check_error_state| is true, signal an
-  // error, otherwise attempt to connect to possibly gain additional error
-  // state from Shill (or in case 'Connectable' is improperly unset).
-  if (check_error_state)
+  if (type != shill::kTypeVPN && check_error_state) {
+    // For non VPNs, 'Connectable' must be false here, so fail immediately if
+    // |check_error_state| is true. (For VPNs 'Connectable' is not reliable).
     ErrorCallbackForPendingRequest(service_path, kErrorConfigurationRequired);
-  else
-    CallShillConnect(service_path);
+    return;
+  }
+
+  // Otherwise attempt to connect to possibly gain additional error state from
+  // Shill (or in case 'Connectable' is improperly set to false).
+  CallShillConnect(service_path);
 }
 
 bool NetworkConnectionHandlerImpl::IsNetworkProhibitedByPolicy(
