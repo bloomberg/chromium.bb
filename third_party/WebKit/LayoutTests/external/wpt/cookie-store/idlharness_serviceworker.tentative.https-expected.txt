@@ -1,0 +1,43 @@
+This is a testharness.js-based test.
+PASS Interface test
+FAIL ServiceWorkerGlobalScope interface: attribute cookieStore assert_true: The prototype object must have a property "cookieStore" expected true got false
+PASS Window interface: existence and properties of interface object
+PASS CookieStore interface: existence and properties of interface object
+PASS CookieStore interface object length
+PASS CookieStore interface object name
+PASS CookieStore interface: existence and properties of interface prototype object
+PASS CookieStore interface: existence and properties of interface prototype object's "constructor" property
+PASS CookieStore interface: operation getAll(USVString, CookieStoreGetOptions)
+PASS CookieStore interface: operation getAll(CookieStoreGetOptions)
+PASS CookieStore interface: operation get(USVString, CookieStoreGetOptions)
+PASS CookieStore interface: operation get(CookieStoreGetOptions)
+PASS CookieStore interface: operation has(USVString, CookieStoreGetOptions)
+PASS CookieStore interface: operation has(CookieStoreGetOptions)
+PASS CookieStore interface: operation set(USVString, USVString, CookieStoreSetOptions)
+PASS CookieStore interface: operation set(CookieStoreSetOptions)
+PASS CookieStore interface: operation delete(USVString, CookieStoreSetOptions)
+PASS CookieStore interface: operation delete(CookieStoreSetOptions)
+PASS CookieStore must be primary interface of [object CookieStore]
+PASS Stringification of [object CookieStore]
+PASS CookieStore interface: [object CookieStore] must inherit property "getAll(USVString, CookieStoreGetOptions)" with the proper type
+PASS CookieStore interface: calling getAll(USVString, CookieStoreGetOptions) on [object CookieStore] with too few arguments must throw TypeError
+PASS CookieStore interface: [object CookieStore] must inherit property "getAll(CookieStoreGetOptions)" with the proper type
+PASS CookieStore interface: calling getAll(CookieStoreGetOptions) on [object CookieStore] with too few arguments must throw TypeError
+PASS CookieStore interface: [object CookieStore] must inherit property "get(USVString, CookieStoreGetOptions)" with the proper type
+PASS CookieStore interface: calling get(USVString, CookieStoreGetOptions) on [object CookieStore] with too few arguments must throw TypeError
+PASS CookieStore interface: [object CookieStore] must inherit property "get(CookieStoreGetOptions)" with the proper type
+PASS CookieStore interface: calling get(CookieStoreGetOptions) on [object CookieStore] with too few arguments must throw TypeError
+PASS CookieStore interface: [object CookieStore] must inherit property "has(USVString, CookieStoreGetOptions)" with the proper type
+PASS CookieStore interface: calling has(USVString, CookieStoreGetOptions) on [object CookieStore] with too few arguments must throw TypeError
+PASS CookieStore interface: [object CookieStore] must inherit property "has(CookieStoreGetOptions)" with the proper type
+PASS CookieStore interface: calling has(CookieStoreGetOptions) on [object CookieStore] with too few arguments must throw TypeError
+PASS CookieStore interface: [object CookieStore] must inherit property "set(USVString, USVString, CookieStoreSetOptions)" with the proper type
+PASS CookieStore interface: calling set(USVString, USVString, CookieStoreSetOptions) on [object CookieStore] with too few arguments must throw TypeError
+PASS CookieStore interface: [object CookieStore] must inherit property "set(CookieStoreSetOptions)" with the proper type
+PASS CookieStore interface: calling set(CookieStoreSetOptions) on [object CookieStore] with too few arguments must throw TypeError
+PASS CookieStore interface: [object CookieStore] must inherit property "delete(USVString, CookieStoreSetOptions)" with the proper type
+PASS CookieStore interface: calling delete(USVString, CookieStoreSetOptions) on [object CookieStore] with too few arguments must throw TypeError
+PASS CookieStore interface: [object CookieStore] must inherit property "delete(CookieStoreSetOptions)" with the proper type
+PASS CookieStore interface: calling delete(CookieStoreSetOptions) on [object CookieStore] with too few arguments must throw TypeError
+Harness: the test ran to completion.
+
