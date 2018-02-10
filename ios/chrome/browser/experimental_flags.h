@@ -45,9 +45,6 @@ bool IsLRUSnapshotCacheEnabled();
 // Whether memory debugging tools are enabled.
 bool IsMemoryDebuggingEnabled();
 
-// Whether the Clear Browsing Data counters and time selection UI is enabled.
-bool IsNewClearBrowsingDataUIEnabled();
-
 // Whether startup crash is enabled.
 bool IsStartupCrashEnabled();
 

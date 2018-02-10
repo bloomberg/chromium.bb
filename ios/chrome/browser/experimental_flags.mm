@@ -94,12 +94,6 @@ bool IsMemoryDebuggingEnabled() {
 #endif  // CHROMIUM_BUILD
 }
 
-// TODO(crbug.com/760084): Remove this method and replace with base::Feature or
-// remove it all.
-bool IsNewClearBrowsingDataUIEnabled() {
-  return false;
-}
-
 bool IsStartupCrashEnabled() {
   return [[NSUserDefaults standardUserDefaults] boolForKey:kEnableStartupCrash];
 }

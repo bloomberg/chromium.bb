@@ -29,9 +29,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/browsing_data/browsing_data_counter_wrapper.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_removal_controller.h"
-#include "ios/chrome/browser/browsing_data/ios_browsing_data_counter_factory.h"
 #include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
@@ -84,7 +82,6 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierGoogleAccount,
   SectionIdentifierClearSyncAndSavedSiteData,
   SectionIdentifierSavedSiteData,
-  SectionIdentifierTimeRange,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
@@ -106,25 +103,13 @@ const int kMaxTimesHistoryNoticeShown = 1;
 }  // namespace
 
 // Collection view item identifying a clear browsing data content view.
-@interface ClearDataItem : CollectionViewTextItem {
-  // Data volume counter associated with the item.
-  std::unique_ptr<BrowsingDataCounterWrapper> _counter;
-}
+@interface ClearDataItem : CollectionViewTextItem
 
 // Mask of the data to be cleared.
 @property(nonatomic, assign) int dataTypeMask;
 
 // Pref name associated with the item.
 @property(nonatomic, assign) const char* prefName;
-
-// Sets the counter associated with the data type represented by the item.
-- (void)setCounter:(std::unique_ptr<BrowsingDataCounterWrapper>)counter;
-
-// Checks if the item has a counter.
-- (BOOL)hasCounter;
-
-// Restarts the counter.
-- (void)restartCounter;
 
 @end
 
@@ -133,19 +118,6 @@ const int kMaxTimesHistoryNoticeShown = 1;
 @synthesize dataTypeMask = _dataTypeMask;
 @synthesize prefName = _prefName;
 
-- (void)setCounter:(std::unique_ptr<BrowsingDataCounterWrapper>)counter {
-  _counter = std::move(counter);
-}
-
-- (BOOL)hasCounter {
-  return !!_counter;
-}
-
-- (void)restartCounter {
-  if (_counter)
-    _counter->RestartCounter();
-}
-
 @end
 
 @interface ClearBrowsingDataCollectionViewController ()<
@@ -153,8 +125,6 @@ const int kMaxTimesHistoryNoticeShown = 1;
   ios::ChromeBrowserState* _browserState;  // weak
 
   browsing_data::TimePeriod _timePeriod;
-
-  IOSChromeBrowsingDataRemover::CallbackSubscription _callbackSubscription;
 }
 
 @property(nonatomic, assign)
@@ -173,9 +143,6 @@ const int kMaxTimesHistoryNoticeShown = 1;
 // Returns the accessibility identifier for the cell corresponding to
 // |itemType|.
 - (NSString*)getAccessibilityIdentifierFromItemType:(NSInteger)itemType;
-
-// Restarts the counters for data types specified in the mask.
-- (void)restartCounters:(int)data_mask;
 
 @end
 
@@ -197,41 +164,15 @@ const int kMaxTimesHistoryNoticeShown = 1;
     self.accessibilityTraits |= UIAccessibilityTraitButton;
 
     _browserState = browserState;
-    if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
-      int prefValue = browserState->GetPrefs()->GetInteger(
-          browsing_data::prefs::kDeleteTimePeriod);
-      prefValue = MAX(0, prefValue);
-      const int maxValue =
-          static_cast<int>(browsing_data::TimePeriod::TIME_PERIOD_LAST);
-      if (prefValue > maxValue) {
-        prefValue = maxValue;
-      }
-      _timePeriod = static_cast<browsing_data::TimePeriod>(prefValue);
-    } else {
-      _timePeriod = browsing_data::TimePeriod::ALL_TIME;
-    }
+    _timePeriod = browsing_data::TimePeriod::ALL_TIME;
 
     self.title = l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE);
     self.collectionViewAccessibilityIdentifier =
         kClearBrowsingDataCollectionViewId;
 
-    if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
-      __weak ClearBrowsingDataCollectionViewController* weakSelf = self;
-      void (^dataClearedCallback)(
-          const IOSChromeBrowsingDataRemover::NotificationDetails&) =
-          ^(const IOSChromeBrowsingDataRemover::NotificationDetails& details) {
-            ClearBrowsingDataCollectionViewController* strongSelf = weakSelf;
-            [strongSelf restartCounters:details.removal_mask];
-          };
-      _callbackSubscription =
-          IOSChromeBrowsingDataRemover::RegisterOnBrowsingDataRemovedCallback(
-              base::BindBlockArc(dataClearedCallback));
-    }
-
     // TODO(crbug.com/764578): -loadModel should not be called from
     // initializer. A possible fix is to move this call to -viewDidLoad.
     [self loadModel];
-    [self restartCounters:IOSChromeBrowsingDataRemover::REMOVE_ALL];
   }
   return self;
 }
@@ -273,13 +214,6 @@ const int kMaxTimesHistoryNoticeShown = 1;
   [super loadModel];
   CollectionViewModel* model = self.collectionViewModel;
 
-  // Time range section.
-  if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
-    [model addSectionWithIdentifier:SectionIdentifierTimeRange];
-    [model addItem:[self timeRangeItem]
-        toSectionWithIdentifier:SectionIdentifierTimeRange];
-  }
-
   // Data types section.
   [model addSectionWithIdentifier:SectionIdentifierDataTypes];
   CollectionViewItem* browsingHistoryItem =
@@ -297,13 +231,6 @@ const int kMaxTimesHistoryNoticeShown = 1;
                           titleID:IDS_IOS_CLEAR_COOKIES
                              mask:IOSChromeBrowsingDataRemover::REMOVE_SITE_DATA
                          prefName:browsing_data::prefs::kDeleteCookies];
-  if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
-    if (_browserState->GetPrefs()->GetBoolean(
-            browsing_data::prefs::kDeleteCookies)) {
-      cookiesSiteDataItem.detailText =
-          l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
-    }
-  }
   [model addItem:cookiesSiteDataItem
       toSectionWithIdentifier:SectionIdentifierDataTypes];
 
@@ -385,39 +312,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
   clearDataItem.accessibilityIdentifier =
       [self getAccessibilityIdentifierFromItemType:itemType];
 
-  __weak ClearBrowsingDataCollectionViewController* weakSelf = self;
-  void (^updateUICallback)(const browsing_data::BrowsingDataCounter::Result&) =
-      ^(const browsing_data::BrowsingDataCounter::Result& result) {
-        ClearBrowsingDataCollectionViewController* strongSelf = weakSelf;
-        NSString* counterText = [strongSelf getCounterTextFromResult:result];
-        [strongSelf updateCounter:itemType detailText:counterText];
-      };
-
-  [clearDataItem setCounter:BrowsingDataCounterWrapper::CreateCounterWrapper(
-                                prefName, _browserState, prefs,
-                                base::BindBlockArc(updateUICallback))];
   return clearDataItem;
-}
-
-- (void)updateCounter:(NSInteger)itemType detailText:(NSString*)detailText {
-  NSIndexPath* indexPath = [self.collectionViewModel
-      indexPathForItemType:itemType
-         sectionIdentifier:SectionIdentifierDataTypes];
-
-  CollectionViewModel* model = self.collectionViewModel;
-  if (!model) {
-    return;
-  }
-  ClearDataItem* clearDataItem = base::mac::ObjCCastStrict<ClearDataItem>(
-      [model itemAtIndexPath:indexPath]);
-  // Because there is no counter for cookies, an explanatory text is displayed.
-  if (![clearDataItem hasCounter] &&
-      itemType != ItemTypeDataTypeCookiesSiteData) {
-    return;
-  }
-  clearDataItem.detailText = detailText;
-  [self reconfigureCellsForItems:@[ clearDataItem ]];
-  [self.collectionView.collectionViewLayout invalidateLayout];
 }
 
 - (CollectionViewItem*)footerForGoogleAccountSectionItem {
@@ -528,19 +423,10 @@ const int kMaxTimesHistoryNoticeShown = 1;
           [self.collectionViewModel itemAtIndexPath:indexPath]);
       if (clearDataItem.accessoryType == MDCCollectionViewCellAccessoryNone) {
         clearDataItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
-        if (experimental_flags::IsNewClearBrowsingDataUIEnabled() &&
-            itemType == ItemTypeDataTypeCookiesSiteData) {
-          [self updateCounter:itemType
-                   detailText:l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER)];
-        }
         _browserState->GetPrefs()->SetBoolean(clearDataItem.prefName, true);
       } else {
         clearDataItem.accessoryType = MDCCollectionViewCellAccessoryNone;
         _browserState->GetPrefs()->SetBoolean(clearDataItem.prefName, false);
-        if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
-          // Hide counter text.
-          [self updateCounter:itemType detailText:nil];
-        }
       }
       [self reconfigureCellsForItems:@[ clearDataItem ]];
       break;
@@ -747,39 +633,6 @@ const int kMaxTimesHistoryNoticeShown = 1;
       NOTREACHED();
       return nil;
     }
-  }
-}
-
-- (void)restartCounters:(int)data_mask {
-  CollectionViewModel* model = self.collectionViewModel;
-  if (!model)
-    return;
-
-  if (data_mask & IOSChromeBrowsingDataRemover::REMOVE_HISTORY) {
-    NSIndexPath* indexPath = [self.collectionViewModel
-        indexPathForItemType:ItemTypeDataTypeBrowsingHistory
-           sectionIdentifier:SectionIdentifierDataTypes];
-    ClearDataItem* historyItem = base::mac::ObjCCastStrict<ClearDataItem>(
-        [model itemAtIndexPath:indexPath]);
-    [historyItem restartCounter];
-  }
-
-  if (data_mask & IOSChromeBrowsingDataRemover::REMOVE_PASSWORDS) {
-    NSIndexPath* indexPath = [self.collectionViewModel
-        indexPathForItemType:ItemTypeDataTypeSavedPasswords
-           sectionIdentifier:SectionIdentifierDataTypes];
-    ClearDataItem* passwordsItem = base::mac::ObjCCastStrict<ClearDataItem>(
-        [model itemAtIndexPath:indexPath]);
-    [passwordsItem restartCounter];
-  }
-
-  if (data_mask & IOSChromeBrowsingDataRemover::REMOVE_FORM_DATA) {
-    NSIndexPath* indexPath = [self.collectionViewModel
-        indexPathForItemType:ItemTypeDataTypeAutofill
-           sectionIdentifier:SectionIdentifierDataTypes];
-    ClearDataItem* autofillItem = base::mac::ObjCCastStrict<ClearDataItem>(
-        [model itemAtIndexPath:indexPath]);
-    [autofillItem restartCounter];
   }
 }
 
