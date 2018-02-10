@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
@@ -75,10 +76,17 @@ public class SectionList
             if (SnippetsBridge.isCategoryEnabled(categoryStatus)) {
                 resetSection(category, categoryStatus, alwaysAllowEmptySections,
                         shouldReportPrefetchedSuggestionsMetrics(category));
+            } else {
+                // If articles category is currently disabled, we may still need to show an
+                // expandable header for the section.
+                maybeAddSectionForHeader(category);
             }
         }
 
-        maybeHideArticlesHeader();
+        if (!ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)) {
+            maybeHideArticlesHeader();
+        }
         recordDisplayedSuggestions(categories);
     }
 
@@ -339,6 +347,25 @@ public class SectionList
         if (articlesSection == null) return;
 
         articlesSection.setHeaderVisibility(false);
+    }
+
+    /**
+     * A section that allows zero items should be created for showing the section header if it is
+     * not yet created.
+     * @param category The category that needs a correspond section shown for the header.
+     */
+    private void maybeAddSectionForHeader(@CategoryInt int category) {
+        if (!ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER))
+            return;
+        if (category != KnownCategories.ARTICLES) return;
+
+        // TODO(huayinz): check whether preference can be changed by the user.
+        SuggestionsSection section = mSections.get(category);
+        if (section != null) return;
+
+        int status = mUiDelegate.getSuggestionsSource().getCategoryStatus(category);
+        resetSection(category, status, true, shouldReportPrefetchedSuggestionsMetrics(category));
     }
 
     /**
