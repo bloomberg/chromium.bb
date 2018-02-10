@@ -3312,7 +3312,7 @@ split_static_library("browser") {
       ]
     }
     if (is_win || enable_print_preview) {
-      deps += [ "//chrome/services/printing/public/interfaces" ]
+      deps += [ "//chrome/services/printing/public/mojom" ]
     }
     if (enable_print_preview) {
       # Full printing on top of the above.

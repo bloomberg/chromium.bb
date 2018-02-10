@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/services/printing/public/interfaces/pdf_render_settings_struct_traits.h"
+#include "chrome/services/printing/public/mojom/pdf_render_settings_mojom_traits.h"
 
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 
