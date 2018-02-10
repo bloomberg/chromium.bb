@@ -30,6 +30,7 @@
 
 namespace blink {
 
+class Element;
 class HTMLCollectionOrElement;
 
 class HTMLAllCollection final : public HTMLCollection {
@@ -38,9 +39,8 @@ class HTMLAllCollection final : public HTMLCollection {
  public:
   static HTMLAllCollection* Create(ContainerNode&, CollectionType);
   ~HTMLAllCollection() override;
-
-  Element* NamedItemWithIndex(const AtomicString& name, unsigned index) const;
-  void namedGetter(const AtomicString& name, HTMLCollectionOrElement&);
+  Element* AnonymousIndexedGetter(unsigned index);
+  void NamedGetter(const AtomicString& name, HTMLCollectionOrElement&);
 
  private:
   explicit HTMLAllCollection(ContainerNode&);

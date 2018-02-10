@@ -15517,7 +15517,7 @@ Called by update_net_error_codes.py.-->
   <int value="147" label="DOMNodeInsertedIntoDocumentEvent"/>
   <int value="148" label="DOMCharacterDataModifiedEvent"/>
   <int value="149" label="DocumentAllTags"/>
-  <int value="150" label="DocumentAllLegacyCall"/>
+  <int value="150" label="OBSOLETE_DocumentAllLegacyCall"/>
   <int value="151" label="HTMLAppletElementLegacyCall"/>
   <int value="152" label="HTMLEmbedElementLegacyCall"/>
   <int value="153" label="HTMLObjectElementLegacyCall"/>
@@ -16645,15 +16645,15 @@ Called by update_net_error_codes.py.-->
   <int value="1249" label="CSSAtRuleApply"/>
   <int value="1250" label="CSSSelectorPseudoAny"/>
   <int value="1251" label="PannerNodeSetVelocity"/>
-  <int value="1252" label="DocumentAllItemNoArguments"/>
-  <int value="1253" label="DocumentAllItemNamed"/>
-  <int value="1254" label="DocumentAllItemIndexed"/>
-  <int value="1255" label="DocumentAllItemIndexedWithNonNumber"/>
-  <int value="1256" label="DocumentAllLegacyCallNoArguments"/>
-  <int value="1257" label="DocumentAllLegacyCallNamed"/>
-  <int value="1258" label="DocumentAllLegacyCallIndexed"/>
-  <int value="1259" label="DocumentAllLegacyCallIndexedWithNonNumber"/>
-  <int value="1260" label="DocumentAllLegacyCallTwoArguments"/>
+  <int value="1252" label="OBSOLETE_DocumentAllItemNoArguments"/>
+  <int value="1253" label="OBSOLETE_DocumentAllItemNamed"/>
+  <int value="1254" label="OBSOLETE_DocumentAllItemIndexed"/>
+  <int value="1255" label="OBSOLETE_DocumentAllItemIndexedWithNonNumber"/>
+  <int value="1256" label="OBSOLETE_DocumentAllLegacyCallNoArguments"/>
+  <int value="1257" label="OBSOLETE_DocumentAllLegacyCallNamed"/>
+  <int value="1258" label="OBSOLETE_DocumentAllLegacyCallIndexed"/>
+  <int value="1259" label="OBSOLETE_DocumentAllLegacyCallIndexedWithNonNumber"/>
+  <int value="1260" label="OBSOLETE_DocumentAllLegacyCallTwoArguments"/>
   <int value="1261" label="HTMLLabelElementFormIsDifferentFromControlForm"/>
   <int value="1262" label="HTMLLabelElementHasNoControlAndFormIsAncestor"/>
   <int value="1263" label="HTMLLabelElementControlForNonFormAssociatedElement"/>

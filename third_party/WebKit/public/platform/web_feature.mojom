@@ -101,7 +101,6 @@ enum WebFeature {
   kDOMNodeRemovedFromDocumentEvent = 146,
   kDOMNodeInsertedIntoDocumentEvent = 147,
   kDOMCharacterDataModifiedEvent = 148,
-  kDocumentAllLegacyCall = 150,
   kGetMatchedCSSRules = 155,
   kPrefixedAudioDecodedByteCount = 164,
   kPrefixedVideoDecodedByteCount = 165,
@@ -853,15 +852,6 @@ enum WebFeature {
 
   kCSSAtRuleApply = 1249, // Removed
   kCSSSelectorPseudoAny = 1250,
-  kDocumentAllItemNoArguments = 1252,
-  kDocumentAllItemNamed = 1253,
-  kDocumentAllItemIndexed = 1254,
-  kDocumentAllItemIndexedWithNonNumber = 1255,
-  kDocumentAllLegacyCallNoArguments = 1256,
-  kDocumentAllLegacyCallNamed = 1257,
-  kDocumentAllLegacyCallIndexed = 1258,
-  kDocumentAllLegacyCallIndexedWithNonNumber = 1259,
-  kDocumentAllLegacyCallTwoArguments = 1260,
   kHTMLLabelElementControlForNonFormAssociatedElement = 1263,
   kHTMLMediaElementLoadNetworkEmptyNotPaused = 1265,
   kV8Window_WebkitSpeechGrammar_ConstructorGetter = 1267,
