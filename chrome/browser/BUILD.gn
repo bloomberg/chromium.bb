@@ -2924,7 +2924,7 @@ split_static_library("browser") {
       "//chrome/common:metrics_constants_util_win",
       "//chrome/common:version_header",
       "//chrome/install_static:install_static_util",
-      "//chrome/services/util_win/public/interfaces",
+      "//chrome/services/util_win/public/mojom",
       "//chrome_elf:blacklist",
       "//chrome_elf:constants",
       "//chrome_elf:dll_hash",

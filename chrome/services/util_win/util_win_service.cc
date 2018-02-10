@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "build/build_config.h"
-#include "chrome/services/util_win/public/interfaces/shell_util_win.mojom.h"
+#include "chrome/services/util_win/public/mojom/shell_util_win.mojom.h"
 #include "chrome/services/util_win/shell_util_win_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 

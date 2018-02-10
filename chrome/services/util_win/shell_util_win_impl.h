@@ -6,7 +6,7 @@
 #define CHROME_SERVICES_UTIL_WIN_SHELL_UTIL_WIN_IMPL_H_
 
 #include "base/macros.h"
-#include "chrome/services/util_win/public/interfaces/shell_util_win.mojom.h"
+#include "chrome/services/util_win/public/mojom/shell_util_win.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 class ShellUtilWinImpl : public chrome::mojom::ShellUtilWin {

@@ -256,7 +256,7 @@
 #include "chrome/browser/chrome_browser_main_win.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/module_event_sink_impl_win.h"
-#include "chrome/services/util_win/public/interfaces/constants.mojom.h"
+#include "chrome/services/util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/wifi_util_win/public/interfaces/constants.mojom.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #elif defined(OS_MACOSX)
