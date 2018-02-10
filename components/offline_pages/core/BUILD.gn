@@ -83,6 +83,7 @@ static_library("core") {
   deps = [
     ":switches",
     "//base",
+    "//components/filename_generation",
     "//components/keyed_service/core",
     "//crypto",
     "//net",
