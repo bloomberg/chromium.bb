@@ -203,6 +203,11 @@ void av1_lowbd_inv_txfm2d_add_16x16_sse2(const int32_t *input, uint8_t *output,
 void av1_lowbd_inv_txfm2d_add_32x32_sse2(const int32_t *input, uint8_t *output,
                                          int stride, TX_TYPE tx_type, int bd);
 
+#if CONFIG_TX64X64
+void av1_lowbd_inv_txfm2d_add_64x64_sse2(const int32_t *input, uint8_t *output,
+                                         int stride, TX_TYPE tx_type, int bd);
+#endif
+
 void av1_lowbd_inv_txfm2d_add_8x16_sse2(const int32_t *input, uint8_t *output,
                                         int stride, TX_TYPE tx_type, int bd);
 
@@ -215,11 +220,27 @@ void av1_lowbd_inv_txfm2d_add_16x32_sse2(const int32_t *input, uint8_t *output,
 void av1_lowbd_inv_txfm2d_add_32x16_sse2(const int32_t *input, uint8_t *output,
                                          int stride, TX_TYPE tx_type, int bd);
 
+#if CONFIG_TX64X64
+void av1_lowbd_inv_txfm2d_add_32x64_sse2(const int32_t *input, uint8_t *output,
+                                         int stride, TX_TYPE tx_type, int bd);
+
+void av1_lowbd_inv_txfm2d_add_64x32_sse2(const int32_t *input, uint8_t *output,
+                                         int stride, TX_TYPE tx_type, int bd);
+#endif
+
 void av1_lowbd_inv_txfm2d_add_8x32_sse2(const int32_t *input, uint8_t *output,
                                         int stride, TX_TYPE tx_type, int bd);
 
 void av1_lowbd_inv_txfm2d_add_32x8_sse2(const int32_t *input, uint8_t *output,
                                         int stride, TX_TYPE tx_type, int bd);
+
+#if CONFIG_TX64X64
+void av1_lowbd_inv_txfm2d_add_16x64_sse2(const int32_t *input, uint8_t *output,
+                                         int stride, TX_TYPE tx_type, int bd);
+
+void av1_lowbd_inv_txfm2d_add_64x16_sse2(const int32_t *input, uint8_t *output,
+                                         int stride, TX_TYPE tx_type, int bd);
+#endif
 
 #ifdef __cplusplus
 }

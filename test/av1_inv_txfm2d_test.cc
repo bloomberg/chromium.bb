@@ -235,9 +235,9 @@ class AV1LbdInvTxfm2d : public ::testing::TestWithParam<AV1LbdInvTxfm2dParam> {
     const int cols = tx_size_high[tx_size_];
     const TX_TYPE_1D vtype = vtx_tab[tx_type];
     const TX_TYPE_1D htype = htx_tab[tx_type];
-    if (rows == 32 && (htype == ADST_1D || htype == FLIPADST_1D)) {
+    if (rows >= 32 && (htype == ADST_1D || htype == FLIPADST_1D)) {
       return false;
-    } else if (cols == 32 && (vtype == ADST_1D || vtype == FLIPADST_1D)) {
+    } else if (cols >= 32 && (vtype == ADST_1D || vtype == FLIPADST_1D)) {
       return false;
     }
     return true;
@@ -334,7 +334,7 @@ const LbdInvTxfm2dFunc kLbdInvFuncSSE2List[TX_SIZES_ALL] = {
   av1_lowbd_inv_txfm2d_add_16x16_sse2,  // TX_16X16
   av1_lowbd_inv_txfm2d_add_32x32_sse2,  // TX_32X32
 #if CONFIG_TX64X64
-  NULL,                                 // TX_64X64
+  av1_lowbd_inv_txfm2d_add_64x64_sse2,  // 64x64
 #endif                                  // CONFIG_TX64X64
   NULL,                                 // TX_4X8
   NULL,                                 // TX_8X4
@@ -343,17 +343,17 @@ const LbdInvTxfm2dFunc kLbdInvFuncSSE2List[TX_SIZES_ALL] = {
   av1_lowbd_inv_txfm2d_add_16x32_sse2,  // TX_16X32
   av1_lowbd_inv_txfm2d_add_32x16_sse2,  // TX_32X16
 #if CONFIG_TX64X64
-  NULL,                                // TX_32X64
-  NULL,                                // TX_64X32
-#endif                                 // CONFIG_TX64X64
-  NULL,                                // TX_4X16
-  NULL,                                // TX_16X4
-  av1_lowbd_inv_txfm2d_add_8x32_sse2,  // 8x32
-  av1_lowbd_inv_txfm2d_add_32x8_sse2,  // 32x8
+  av1_lowbd_inv_txfm2d_add_32x64_sse2,  // TX_32X64
+  av1_lowbd_inv_txfm2d_add_64x32_sse2,  // TX_64X32
+#endif                                  // CONFIG_TX64X64
+  NULL,                                 // TX_4X16
+  NULL,                                 // TX_16X4
+  av1_lowbd_inv_txfm2d_add_8x32_sse2,   // 8x32
+  av1_lowbd_inv_txfm2d_add_32x8_sse2,   // 32x8
 #if CONFIG_TX64X64
-  NULL,  // TX_16X64
-  NULL,  // TX_64X16
-#endif   // CONFIG_TX64X64
+  av1_lowbd_inv_txfm2d_add_16x64_sse2,  // 16x64
+  av1_lowbd_inv_txfm2d_add_64x16_sse2,  // 64x16
+#endif                                  // CONFIG_TX64X64
 };
 INSTANTIATE_TEST_CASE_P(SSE2, AV1LbdInvTxfm2d,
                         Combine(Values(kLbdInvFuncSSE2List),
