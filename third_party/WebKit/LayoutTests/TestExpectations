@@ -3288,7 +3288,6 @@ crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/tim
 crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-with-style-recalc-invalidations.js [ Timeout ]
 crbug.com/417782 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint.js [ Failure ]
 crbug.com/417782 compositing/masks/mask-layer-size.html [ Failure ]
-crbug.com/417782 paint/invalidation/clip/clip-path-constant-repaint.html [ Failure ]
 
 crbug.com/808112 [ Android ] fast/scrolling/scrollable-area-overflow-auto-display-none.html [ Failure Pass ]
 crbug.com/808112 [ Android ] fast/scrolling/scrollable-area-overflow-not-set.html [ Failure Crash Pass ]
