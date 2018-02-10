@@ -7,6 +7,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/common/content_features.h"
+#include "third_party/WebKit/common/sampling_heap_profiler/sampling_heap_profiler.h"
 
 namespace content {
 namespace protocol {
@@ -19,6 +20,29 @@ MemoryHandler::~MemoryHandler() {}
 
 void MemoryHandler::Wire(UberDispatcher* dispatcher) {
   Memory::Dispatcher::wire(dispatcher, this);
+}
+
+Response MemoryHandler::GetBrowserSamplingProfile(
+    std::unique_ptr<Memory::SamplingProfile>* out_profile) {
+  std::unique_ptr<Array<Memory::SamplingProfileNode>> samples =
+      Array<Memory::SamplingProfileNode>::create();
+  std::vector<blink::SamplingHeapProfiler::Sample> raw_samples =
+      blink::SamplingHeapProfiler::GetInstance()->GetSamples(0);
+
+  for (auto& sample : raw_samples) {
+    std::unique_ptr<Array<String>> stack = Array<String>::create();
+    for (auto* frame : sample.stack)
+      stack->addItem(base::StringPrintf("%p", frame));
+    samples->addItem(Memory::SamplingProfileNode::Create()
+                         .SetSize(sample.size)
+                         .SetCount(sample.count)
+                         .SetStack(std::move(stack))
+                         .Build());
+  }
+
+  *out_profile =
+      Memory::SamplingProfile::Create().SetSamples(std::move(samples)).Build();
+  return Response::OK();
 }
 
 Response MemoryHandler::SetPressureNotificationsSuppressed(

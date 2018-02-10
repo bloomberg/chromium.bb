@@ -1019,7 +1019,7 @@ experimental domain CSS
   # Enables the selector recording.
   command startRuleUsageTracking
 
-  # Stop tracking rule usage and return the list of rules that were used since last call to 
+  # Stop tracking rule usage and return the list of rules that were used since last call to
   # `takeCoverageDelta` (or since start of coverage instrumentation)
   command stopRuleUsageTracking
     returns
@@ -3166,8 +3166,15 @@ experimental domain Memory
   # Stop collecting native memory profile.
   command stopSampling
 
-  # Retrieve native memory allocations profile collected since process startup.
+  # Retrieve native memory allocations profile
+  # collected since renderer process startup.
   command getAllTimeSamplingProfile
+    returns
+      SamplingProfile profile
+
+  # Retrieve native memory allocations profile
+  # collected since browser process startup.
+  command getBrowserSamplingProfile
     returns
       SamplingProfile profile
 
