@@ -42,7 +42,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/services/printing/pdf_to_emf_converter_factory.h"
-#include "chrome/services/util_win/public/interfaces/constants.mojom.h"
+#include "chrome/services/util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/util_win/util_win_service.h"
 #endif
 
