@@ -441,10 +441,20 @@ base::FilePath MakeAbsoluteFilePathRelativeIfPossible(
     relative_components.push_back(base::FilePath::kParentDirectory);
   for (size_t j = i; j < target_components.size(); j++)
     relative_components.push_back(target_components[j]);
-  base::FilePath relative(base::FilePath::kCurrentDirectory);
-  for (const auto& component : relative_components)
-    relative = relative.Append(component);
-  return relative;
+  if (relative_components.size() <= 1) {
+    // In case the file pointed-to is an executable, prepend the current
+    // directory to the path -- if the path was "gn", use "./gn" instead.  If
+    // the file path is used in a command, this prevents issues where "gn" might
+    // not be in the PATH (or it is in the path, and the wrong gn is used).
+    relative_components.insert(relative_components.begin(),
+                               base::FilePath::kCurrentDirectory);
+  }
+  // base::FilePath::Append(component) replaces the file path with |component|
+  // if the path is base::Filepath::kCurrentDirectory.  We want to preserve the
+  // leading "./", so we build the path ourselves and use that to construct the
+  // base::FilePath.
+  base::FilePath::StringType separator(&base::FilePath::kSeparators[0], 1);
+  return base::FilePath(base::JoinString(relative_components, separator));
 }
 
 void NormalizePath(std::string* path, const base::StringPiece& source_root) {
