@@ -249,9 +249,6 @@ const int kTouchDownContextResetTimeout = 500;
 // same location as the cursor.
 const int kSynthesizedMouseMessagesTimeDifference = 500;
 
-// Currently this flag is always false - see http://crbug.com/763223
-const bool kUsePointerEventsForTouch = false;
-
 }  // namespace
 
 // A scoping class that prevents a window from being able to redraw in response
@@ -371,6 +368,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       sent_window_size_changing_(false),
       left_button_down_on_caption_(false),
       background_fullscreen_hack_(false),
+      pointer_events_for_touch_(features::IsUsingWMPointerForTouch()),
       autohide_factory_(this),
       weak_factory_(this) {}
 
@@ -1429,7 +1427,8 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
   // Get access to a modifiable copy of the system menu.
   GetSystemMenu(hwnd(), false);
 
-  RegisterTouchWindow(hwnd(), TWF_WANTPALM);
+  if (!pointer_events_for_touch_)
+    RegisterTouchWindow(hwnd(), TWF_WANTPALM);
 
   // We need to allow the delegate to size its contents since the window may not
   // receive a size notification when its initial bounds are specified at window
@@ -1748,7 +1747,7 @@ LRESULT HWNDMessageHandler::OnPointerEvent(UINT message,
     case PT_PEN:
       return HandlePointerEventTypePen(message, w_param, l_param);
     case PT_TOUCH:
-      if (kUsePointerEventsForTouch)
+      if (pointer_events_for_touch_)
         return HandlePointerEventTypeTouch(message, w_param, l_param);
       FALLTHROUGH;
     default:
@@ -2299,6 +2298,16 @@ void HWNDMessageHandler::OnTimeChange() {
 LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
                                          WPARAM w_param,
                                          LPARAM l_param) {
+  if (pointer_events_for_touch_) {
+    // Release any associated memory with this event.
+    CloseTouchInputHandle(reinterpret_cast<HTOUCHINPUT>(l_param));
+
+    // Claim the event is handled. This shouldn't ever happen
+    // because we don't register touch windows when we are using
+    // pointer events.
+    return 0;
+  }
+
   // Handle touch events only on Aura for now.
   int num_points = LOWORD(w_param);
   std::unique_ptr<TOUCHINPUT[]> input(new TOUCHINPUT[num_points]);
@@ -2720,6 +2729,7 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
     return -1;
   }
 
+  last_touch_or_pen_message_time_ = ::GetMessageTime();
   // Ignore enter/leave events, otherwise they will be converted in
   // |GetTouchEventType| to ET_TOUCH_PRESSED/ET_TOUCH_RELEASED events, which
   // is not correct.
@@ -2763,14 +2773,29 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
       ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0, event_time, 1);
 
   // There are cases where the code handling the message destroys the
-  // window, so use the weak ptr to check if destruction occured or not.
+  // window, so use the weak ptr to check if destruction occurred or not.
   base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
   delegate_->HandleTouchEvent(event);
 
   if (event_type == ui::ET_TOUCH_RELEASED)
     id_generator_.ReleaseNumber(pointer_id);
-  if (ref)
-    SetMsgHandled(TRUE);
+  if (ref) {
+    bool handled = event.handled();
+
+    // For events that are unhandled, perform a hit test to see if they
+    // are inside the client area. If they are indicate that they've already
+    // been handled because we don't want Windows to dispatch compatibility
+    // events for these since we've already dispatched a ui::Event for them.
+    if (!handled) {
+      LPARAM l_param_ht = MAKELPARAM(pointer_info.ptPixelLocationRaw.x,
+                                     pointer_info.ptPixelLocationRaw.y);
+      LRESULT hittest = SendMessage(hwnd(), WM_NCHITTEST, 0, l_param_ht);
+
+      if (hittest == HTCLIENT)
+        handled = true;
+    }
+    SetMsgHandled(handled);
+  }
   return 0;
 }
 

@@ -759,6 +759,10 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // partially or fully transparent.
   bool is_translucent_ = false;
 
+  // True if the window should process WM_POINTER for touch events and
+  // not WM_TOUCH events.
+  bool pointer_events_for_touch_;
+
   // This is a map of the HMONITOR to full screeen window instance. It is safe
   // to keep a raw pointer to the HWNDMessageHandler instance as we track the
   // window destruction and ensure that the map is cleaned up.
