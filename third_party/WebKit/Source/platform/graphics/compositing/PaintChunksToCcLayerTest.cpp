@@ -147,7 +147,8 @@ struct TestChunks {
     size_t i = items.size();
     items.AllocateAndConstruct<DrawingDisplayItem>(
         DefaultId().client, DefaultId().type, std::move(record));
-    chunks.emplace_back(i, i + 1, DefaultId(), PropertyTreeState(t, c, e));
+    chunks.emplace_back(i, i + 1, DefaultId(),
+                        PaintChunkProperties(PropertyTreeState(t, c, e)));
   }
 
   Vector<const PaintChunk*> GetChunkList() const {

@@ -395,8 +395,8 @@ bool GraphicsLayer::PaintWithoutCommit(
   GraphicsContext context(GetPaintController(), disabled_mode, nullptr);
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
-    GetPaintController().UpdateCurrentPaintChunkProperties(WTF::nullopt,
-                                                           layer_state_->state);
+    GetPaintController().UpdateCurrentPaintChunkProperties(
+        WTF::nullopt, PaintChunkProperties(layer_state_->state));
   }
 
   previous_interest_rect_ = *interest_rect;

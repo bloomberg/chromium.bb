@@ -26,7 +26,7 @@ namespace blink {
 struct PLATFORM_EXPORT PaintChunkProperties {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
-  PaintChunkProperties(const PropertyTreeState& state)
+  explicit PaintChunkProperties(const PropertyTreeState& state)
       : property_tree_state(state), backface_hidden(false) {}
 
   PaintChunkProperties()
