@@ -5,16 +5,14 @@
 import("//build/config/android/config.gni")
 
 group("stack_py") {
-  _py_files = read_file(
-          "//build/secondary/third_party/android_platform/development/scripts/stack.pydeps",
-          "list lines")
+  _pydeps_file = "//build/secondary/third_party/android_platform/development/scripts/stack.pydeps"
+  _py_files = read_file(_pydeps_file, "list lines")
 
   set_sources_assignment_filter([ "#*" ])
   sources = _py_files
-  data = sources
-
-  data += [
-    "//third_party/android_platform/development/scripts/stack",
-    "//third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
-  ]
+  data = sources + [
+           _pydeps_file,
+           "//third_party/android_platform/development/scripts/stack",
+           "//third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
+         ]
 }

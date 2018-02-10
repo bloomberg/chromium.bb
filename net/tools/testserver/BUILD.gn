@@ -8,5 +8,5 @@ group("testserver_py") {
   # Filter out comments.
   set_sources_assignment_filter([ "#*" ])
   sources = _py_files
-  data = sources
+  data = sources + [ "testserver.pydeps" ]
 }

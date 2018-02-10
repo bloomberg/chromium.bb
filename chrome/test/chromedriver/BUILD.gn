@@ -338,8 +338,8 @@ group("chromedriver_py_tests") {
   # Filter out comments.
   set_sources_assignment_filter([ "#*" ])
   sources = _py_files
-
   data = sources + [
+           "test/run_py_tests.pydeps",
            "//chrome/test/data/chromedriver/",
            "//testing/xvfb.py",
          ]
