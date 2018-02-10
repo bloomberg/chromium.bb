@@ -852,8 +852,9 @@ def CheckOwners(input_api, output_api, source_file_filter=None):
             'This is a dry run, but these failures would be reported on ' +
             'commit:\n' + text)
     else:
-      return [output_api.PresubmitError("OWNERS check failed: this change has "
-          "no Rietveld issue number, so we can't check it for approvals.")]
+      return [output_api.PresubmitError(
+          'OWNERS check failed: this CL has no Gerrit change number, '
+          'so we can\'t check it for approvals.')]
   else:
     needed = 'OWNER reviewers'
     output_fn = output_api.PresubmitNotifyResult
