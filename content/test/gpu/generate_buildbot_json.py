@@ -1753,19 +1753,29 @@ COMMON_GTESTS = {
   'vr_browser_tests': {
     'tester_configs': [
       {
-        'predicate': Predicates.DEFAULT_AND_OPTIONAL,
-        'os_types': ['win'],
-        'swarming_dimension_sets': [
-          {
-            'gpu': NVIDIA_QUADRO_P400_ALL_DRIVERS,
-            'os': WIN10_NVIDIA_QUADRO_P400_STABLE_OS,
-          },
-          {
-            'gpu': INTEL_HD_630,
-            'os': 'Windows-10',
-          }
-        ],
+        'predicate': Predicates.FYI_ONLY,
+        'os_types': ['win']
       },
+    ],
+    # We currently only want to run this on Win10 Release (NVIDIA)
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Win7 Release (NVIDIA)',
+          'Win7 Debug (NVIDIA)',
+          'Win10 dEQP Release (NVIDIA)',
+          'Win10 Experimental Release (NVIDIA)',
+          'Win10 Debug (NVIDIA)',
+          'Win7 Release (AMD)',
+          'Win7 Debug (AMD)',
+          'Win7 dEQP Release (AMD)',
+          'Win10 Release (Intel HD 630)',
+          'Win10 Release (NVIDIA Quadro P400)',
+          'Win7 x64 Release (NVIDIA)',
+          'Win7 x64 Debug (NVIDIA)',
+          'Win7 x64 dEQP Release (NVIDIA)',
+        ],
+      }
     ],
     'args': [
       '--enable-gpu',
