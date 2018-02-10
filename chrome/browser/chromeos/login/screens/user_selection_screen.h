@@ -105,10 +105,6 @@ class UserSelectionScreen
       const std::vector<std::string>* public_session_recommended_locales,
       base::DictionaryValue* user_dict);
 
-  // Fills |user_dict| with |user| known preferences.
-  static void FillKnownUserPrefs(user_manager::User* user,
-                                 base::DictionaryValue* user_dict);
-
   // Fills |user_dict| with |user| multi-profile related preferences.
   static void FillMultiProfileUserPrefs(user_manager::User* user,
                                         base::DictionaryValue* user_dict,
@@ -121,11 +117,13 @@ class UserSelectionScreen
   // TODO: Public sesssions exist in login screen, but not lock screen.
   // We will need public session locales in the future when we change login
   // screen to view-based as well. See crbug.com/732452.
-  static void FillUserMojoStruct(const user_manager::User* user,
-                                 bool is_owner,
-                                 bool is_signin_to_add,
-                                 proximity_auth::mojom::AuthType auth_type,
-                                 ash::mojom::LoginUserInfo* user_info);
+  static void FillUserMojoStruct(
+      const user_manager::User* user,
+      bool is_owner,
+      bool is_signin_to_add,
+      proximity_auth::mojom::AuthType auth_type,
+      const std::vector<std::string>* public_session_recommended_locales,
+      ash::mojom::LoginUserInfo* user_info);
 
   std::unique_ptr<base::ListValue> UpdateAndReturnUserListForWebUI();
   std::vector<ash::mojom::LoginUserInfoPtr> UpdateAndReturnUserListForMojo();

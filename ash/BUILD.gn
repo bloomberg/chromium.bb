@@ -1036,6 +1036,7 @@ component("ash") {
     "//ash/wayland",
     "//mash/public/interfaces",
     "//mojo/common:common_base",
+    "//mojo/common:values_struct_traits",
     "//services/ui/common:mus_common",
     "//services/ui/public/cpp",
     "//services/ui/public/cpp/input_devices",

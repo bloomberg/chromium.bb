@@ -62,6 +62,12 @@ struct StructTraits<common::mojom::ListValueDataView,
 };
 
 template <>
+struct CloneTraits<std::unique_ptr<base::ListValue>, false> {
+  static std::unique_ptr<base::ListValue> Clone(
+      const std::unique_ptr<base::ListValue>& input);
+};
+
+template <>
 struct MapTraits<base::DictionaryValue> {
   using Key = std::string;
   using Value = base::Value;
