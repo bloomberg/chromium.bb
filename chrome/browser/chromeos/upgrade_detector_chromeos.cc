@@ -93,7 +93,7 @@ void UpgradeDetectorChromeos::Shutdown() {
 void UpgradeDetectorChromeos::UpdateStatusChanged(
     const UpdateEngineClient::Status& status) {
   if (status.status == UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
-    upgrade_detected_time_ = base::Time::Now();
+    set_upgrade_detected_time(base::TimeTicks::Now());
 
     channels_requester_.reset(new UpgradeDetectorChromeos::ChannelsRequester());
     channels_requester_->RequestChannels(
@@ -112,7 +112,7 @@ void UpgradeDetectorChromeos::OnUpdateOverCellularOneTimePermissionGranted() {
 }
 
 void UpgradeDetectorChromeos::NotifyOnUpgrade() {
-  base::TimeDelta delta = base::Time::Now() - upgrade_detected_time_;
+  base::TimeDelta delta = base::TimeTicks::Now() - upgrade_detected_time();
   int64_t time_passed = delta.InDays();
 
   const int kSevereThreshold = 7;

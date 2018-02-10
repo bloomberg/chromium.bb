@@ -8,6 +8,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/upgrade_observer.h"
 #include "ui/base/idle/idle.h"
@@ -51,6 +52,11 @@ class UpgradeDetector {
   virtual ~UpgradeDetector();
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  // Returns the time at which an available upgrade was detected.
+  base::TimeTicks upgrade_detected_time() const {
+    return upgrade_detected_time_;
+  }
 
   // Whether the user should be notified about an upgrade.
   bool notify_upgrade() const { return notify_upgrade_; }
@@ -147,6 +153,10 @@ class UpgradeDetector {
     upgrade_available_ = available;
   }
 
+  void set_upgrade_detected_time(base::TimeTicks upgrade_detected_time) {
+    upgrade_detected_time_ = upgrade_detected_time;
+  }
+
   void set_best_effort_experiment_updates_available(bool available) {
     best_effort_experiment_updates_available_ = available;
   }
@@ -185,6 +195,9 @@ class UpgradeDetector {
   // Whether any software updates are available (experiment updates are tracked
   // separately via additional member variables below).
   UpgradeAvailable upgrade_available_;
+
+  // The time at which an available upgrade was detected.
+  base::TimeTicks upgrade_detected_time_;
 
   // Whether "best effort" experiment updates are available.
   bool best_effort_experiment_updates_available_;
