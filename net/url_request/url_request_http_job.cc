@@ -681,9 +681,11 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(const CookieList& cookie_list) {
     if (!request_info_.url.SchemeIsCryptographic())
       LogCookieAgeForNonSecureRequest(cookie_list, *request_);
 
-    request_info_.extra_headers.SetHeader(
-        HttpRequestHeaders::kCookie,
-        CanonicalCookie::BuildCookieLine(cookie_list));
+    std::string cookie_line = CanonicalCookie::BuildCookieLine(cookie_list);
+    UMA_HISTOGRAM_COUNTS_10000("Cookie.HeaderLength", cookie_line.length());
+    request_info_.extra_headers.SetHeader(HttpRequestHeaders::kCookie,
+                                          cookie_line);
+
     // Disable privacy mode as we are sending cookies anyway.
     request_info_.privacy_mode = PRIVACY_MODE_DISABLED;
   }
