@@ -266,7 +266,7 @@
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/metrics/public/interfaces/ukm_interface.mojom-shared.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom-shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom-blink.h"
 

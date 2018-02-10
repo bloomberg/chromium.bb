@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "services/metrics/public/interfaces/constants.mojom.h"
+#include "services/metrics/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace ukm {

@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/metrics/metrics_hashes.h"
-#include "services/metrics/public/interfaces/ukm_interface.mojom.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom.h"
 
 namespace ukm {
 

@@ -12,7 +12,7 @@
 #include "base/containers/flat_map.h"
 #include "base/sequence_checker.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "services/metrics/public/interfaces/ukm_interface.mojom.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom.h"
 
 namespace metrics {
 class UkmBrowserTest;

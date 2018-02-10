@@ -27,7 +27,7 @@ component("metrics_cpp") {
 
   public_deps = [
     "//base",
-    "//services/metrics/public/interfaces",
+    "//services/metrics/public/mojom",
     "//url",
   ]
 

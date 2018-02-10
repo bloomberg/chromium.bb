@@ -60,7 +60,7 @@ source_set("lib") {
     "//mojo/public/cpp/bindings",
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/cpp:ukm_builders",
-    "//services/metrics/public/interfaces",
+    "//services/metrics/public/mojom",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/resource_coordinator/tracing:lib",
     "//services/service_manager/public/cpp/standalone_service:standalone_service",
