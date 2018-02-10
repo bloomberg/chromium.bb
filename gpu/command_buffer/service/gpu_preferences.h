@@ -168,6 +168,9 @@ struct GPU_EXPORT GpuPreferences {
 
   // Ignores GPU blacklist.
   bool ignore_gpu_blacklist = false;
+
+  // Please update gpu_preferences_util_unittest.cc when making additions or
+  // changes to this struct.
 };
 
 }  // namespace gpu
