@@ -27,7 +27,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/catalog/entry.h"
 #include "services/catalog/instance.h"
-#include "services/catalog/public/interfaces/constants.mojom.h"
+#include "services/catalog/public/mojom/constants.mojom.h"
 #include "services/service_manager/connect_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"

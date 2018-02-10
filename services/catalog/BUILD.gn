@@ -40,7 +40,7 @@ source_set("lib") {
     "//base",
     "//components/filesystem:lib",
     "//services/catalog/public/cpp",
-    "//services/catalog/public/interfaces",
+    "//services/catalog/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 

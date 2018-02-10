@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/catalog/entry.h"
-#include "services/catalog/public/interfaces/catalog.mojom.h"
+#include "services/catalog/public/mojom/catalog.mojom.h"
 #include "services/catalog/store.h"
 
 namespace catalog {

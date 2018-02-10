@@ -45,7 +45,7 @@ source_set("service_manager") {
     "//base",
     "//mojo/public/cpp/bindings",
     "//services/catalog:lib",
-    "//services/catalog/public/interfaces:constants",
+    "//services/catalog/public/mojom:constants",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/service_manager/runner/host:lib",

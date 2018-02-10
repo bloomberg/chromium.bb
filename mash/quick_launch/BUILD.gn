@@ -18,7 +18,7 @@ source_set("lib") {
     "//base",
     "//mash/public/interfaces",
     "//mojo/public/cpp/bindings",
-    "//services/catalog/public/interfaces",
+    "//services/catalog/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//ui/views",
