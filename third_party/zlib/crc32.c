@@ -30,8 +30,11 @@
 
 #include "deflate.h"
 #include "x86.h"
-#include "crc32_simd.h"
 #include "zutil.h"      /* for STDC and FAR definitions */
+
+#if defined(CRC32_SIMD_SSE42_PCLMUL)
+#include "crc32_simd.h"
+#endif
 
 /* Definitions for doing the crc four data bytes at a time. */
 #if !defined(NOBYFOUR) && defined(Z_U4)
