@@ -62,8 +62,9 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
       const std::string& relying_party_id);
 
   // mojom:Authenticator
-  void MakeCredential(webauth::mojom::MakePublicKeyCredentialOptionsPtr options,
-                      MakeCredentialCallback callback) override;
+  void MakeCredential(
+      webauth::mojom::PublicKeyCredentialCreationOptionsPtr options,
+      MakeCredentialCallback callback) override;
 
   void GetAssertion(
       webauth::mojom::PublicKeyCredentialRequestOptionsPtr options,

@@ -177,7 +177,7 @@ void AuthenticatorImpl::Bind(webauth::mojom::AuthenticatorRequest request) {
 
 // mojom::Authenticator
 void AuthenticatorImpl::MakeCredential(
-    webauth::mojom::MakePublicKeyCredentialOptionsPtr options,
+    webauth::mojom::PublicKeyCredentialCreationOptionsPtr options,
     MakeCredentialCallback callback) {
   if (u2f_request_) {
     std::move(callback).Run(

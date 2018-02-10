@@ -10,9 +10,9 @@
 #include "bindings/core/v8/array_buffer_or_array_buffer_view.h"
 #include "modules/credentialmanager/Credential.h"
 #include "modules/credentialmanager/FederatedCredential.h"
-#include "modules/credentialmanager/MakePublicKeyCredentialOptions.h"
 #include "modules/credentialmanager/PasswordCredential.h"
 #include "modules/credentialmanager/PublicKeyCredential.h"
+#include "modules/credentialmanager/PublicKeyCredentialCreationOptions.h"
 #include "modules/credentialmanager/PublicKeyCredentialDescriptor.h"
 #include "modules/credentialmanager/PublicKeyCredentialParameters.h"
 #include "modules/credentialmanager/PublicKeyCredentialRequestOptions.h"
@@ -40,7 +40,7 @@ using password_manager::mojom::blink::CredentialInfoPtr;
 using password_manager::mojom::blink::CredentialType;
 using password_manager::mojom::blink::CredentialManagerError;
 using webauth::mojom::blink::AuthenticatorStatus;
-using webauth::mojom::blink::MakePublicKeyCredentialOptionsPtr;
+using webauth::mojom::blink::PublicKeyCredentialCreationOptionsPtr;
 using webauth::mojom::blink::PublicKeyCredentialDescriptor;
 using webauth::mojom::blink::PublicKeyCredentialDescriptorPtr;
 using webauth::mojom::blink::PublicKeyCredentialRpEntity;
@@ -232,12 +232,12 @@ TypeConverter<PublicKeyCredentialParametersPtr,
 }
 
 // static
-MakePublicKeyCredentialOptionsPtr
-TypeConverter<MakePublicKeyCredentialOptionsPtr,
-              blink::MakePublicKeyCredentialOptions>::
-    Convert(const blink::MakePublicKeyCredentialOptions& options) {
+PublicKeyCredentialCreationOptionsPtr
+TypeConverter<PublicKeyCredentialCreationOptionsPtr,
+              blink::PublicKeyCredentialCreationOptions>::
+    Convert(const blink::PublicKeyCredentialCreationOptions& options) {
   auto mojo_options =
-      webauth::mojom::blink::MakePublicKeyCredentialOptions::New();
+      webauth::mojom::blink::PublicKeyCredentialCreationOptions::New();
   mojo_options->relying_party = PublicKeyCredentialRpEntity::From(options.rp());
   mojo_options->user = PublicKeyCredentialUserEntity::From(options.user());
   if (!mojo_options->relying_party | !mojo_options->user) {
