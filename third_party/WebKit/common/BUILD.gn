@@ -98,6 +98,7 @@ jumbo_source_set("blink_common_unittests_sources") {
     "origin_manifest/origin_manifest_unittest.cc",
     "origin_trials/trial_token_unittest.cc",
     "origin_trials/trial_token_validator_unittest.cc",
+    "sampling_heap_profiler/sampling_heap_profiler_unittest.cc",
     "test/run_all_unittests.cc",
   ]
 

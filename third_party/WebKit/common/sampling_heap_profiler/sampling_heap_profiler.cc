@@ -4,6 +4,7 @@
 
 #include "third_party/WebKit/common/sampling_heap_profiler/sampling_heap_profiler.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include "base/allocator/allocator_shim.h"
@@ -301,6 +302,8 @@ void SamplingHeapProfiler::RecordAlloc(size_t total_allocated,
     while (base::subtle::NoBarrier_Load(&g_operations_in_flight)) {
     }
   }
+  for (auto observer : observers_)
+    observer->SampleAdded(sample.ordinal, size, count);
   // TODO(alph): We can do better by keeping the fast-path open when
   // we know insert won't cause rehashing.
   samples_.insert(std::make_pair(address, std::move(sample)));
@@ -325,7 +328,12 @@ void SamplingHeapProfiler::RecordFree(void* address) {
     return;
   base::AutoLock lock(mutex_);
   entered_.Set(true);
-  samples_.erase(address);
+  auto it = samples_.find(address);
+  if (it != samples_.end()) {
+    for (auto observer : observers_)
+      observer->SampleRemoved(it->second.ordinal);
+    samples_.erase(it);
+  }
   entered_.Set(false);
 }
 
@@ -339,6 +347,20 @@ SamplingHeapProfiler* SamplingHeapProfiler::GetInstance() {
 // static
 void SamplingHeapProfiler::SuppressRandomnessForTest() {
   g_deterministic = true;
+}
+
+void SamplingHeapProfiler::AddSamplesObserver(SamplesObserver* observer) {
+  base::AutoLock lock(mutex_);
+  CHECK(!entered_.Get());
+  observers_.push_back(observer);
+}
+
+void SamplingHeapProfiler::RemoveSamplesObserver(SamplesObserver* observer) {
+  base::AutoLock lock(mutex_);
+  CHECK(!entered_.Get());
+  auto it = std::find(observers_.begin(), observers_.end(), observer);
+  CHECK(it != observers_.end());
+  observers_.erase(it);
 }
 
 std::vector<SamplingHeapProfiler::Sample> SamplingHeapProfiler::GetSamples(
