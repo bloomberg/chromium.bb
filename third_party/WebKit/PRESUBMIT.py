@@ -36,7 +36,7 @@ def _CheckForWrongMojomIncludes(input_api, output_api):
     # used to avoid exporting Blink types outside Blink.
     def source_file_filter(path):
         return input_api.FilterSourceFile(path,
-                                          black_list=[r'third_party/WebKit/common/'])
+                                          black_list=[r'third_party/WebKit/common/', r'third_party/WebKit/public/common'])
 
     pattern = input_api.re.compile(r'#include\s+.+\.mojom(.*)\.h[>"]')
     public_folder = input_api.os_path.normpath('third_party/WebKit/public/')

@@ -33,7 +33,7 @@
 
 #include "public/platform/modules/serviceworker/WebServiceWorker.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
-#include "third_party/WebKit/common/message_port/transferable_message.h"
+#include "third_party/WebKit/public/common/message_port/transferable_message.h"
 
 #include <memory>
 

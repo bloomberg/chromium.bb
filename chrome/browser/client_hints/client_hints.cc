@@ -18,8 +18,8 @@
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
-#include "third_party/WebKit/common/client_hints/client_hints.h"
-#include "third_party/WebKit/common/device_memory/approximated_device_memory.h"
+#include "third_party/WebKit/public/common/client_hints/client_hints.h"
+#include "third_party/WebKit/public/common/device_memory/approximated_device_memory.h"
 #include "third_party/WebKit/public/platform/WebClientHintsType.h"
 #include "url/gurl.h"
 

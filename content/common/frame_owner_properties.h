@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "content/common/content_export.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy.h"
+#include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 
 namespace content {

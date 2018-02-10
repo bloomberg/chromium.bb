@@ -6,7 +6,6 @@
 #define Sensor_h
 
 #include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "common/feature_policy/feature_policy.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMHighResTimeStamp.h"
 #include "core/dom/DOMTimeStamp.h"
@@ -19,6 +18,7 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
+#include "public/common/feature_policy/feature_policy.h"
 
 namespace blink {
 

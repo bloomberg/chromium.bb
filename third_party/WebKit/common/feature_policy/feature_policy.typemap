@@ -4,7 +4,7 @@
 
 mojom = "//third_party/WebKit/common/feature_policy/feature_policy.mojom"
 public_headers = [
-  "//third_party/WebKit/common/feature_policy/feature_policy.h",
+  "//third_party/WebKit/public/common/feature_policy/feature_policy.h",
   "//third_party/WebKit/public/common/frame/sandbox_flags.h",
 ]
 traits_headers = [
