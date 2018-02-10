@@ -5058,7 +5058,11 @@ bubblePresenterForFeature:(const base::Feature&)feature
 #pragma mark - UpgradeCenterClient
 
 - (void)showUpgrade:(UpgradeCenter*)center {
+  if (!_model)
+    return;
+
   // Add an infobar on all the open tabs.
+  DCHECK(_model.webStateList);
   WebStateList* webStateList = _model.webStateList;
   for (int index = 0; index < webStateList->count(); ++index) {
     web::WebState* webState = webStateList->GetWebStateAt(index);
