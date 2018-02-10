@@ -205,6 +205,8 @@ fuzzer_test("ctap_response_fuzzer") {
   ]
   deps = [
     ":fido",
+    "//base",
+    "//base:i18n",
   ]
   seed_corpus = "ctap_response_fuzzer_corpus/"
   libfuzzer_options = [ "max_len=65537" ]
