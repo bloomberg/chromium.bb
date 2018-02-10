@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/common/media_galleries/metadata_types.h"
-#include "chrome/services/media_gallery_util/public/interfaces/media_parser.mojom.h"
+#include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
 
 namespace content {
 class BrowserContext;
