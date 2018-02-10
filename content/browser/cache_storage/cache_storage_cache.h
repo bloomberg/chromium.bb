@@ -23,6 +23,7 @@
 #include "net/disk_cache/disk_cache.h"
 #include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "third_party/WebKit/public/platform/modules/cache_storage/cache_storage.mojom.h"
+#include "url/origin.h"
 
 namespace crypto {
 class SymmetricKey;
@@ -85,7 +86,7 @@ class CONTENT_EXPORT CacheStorageCache {
   enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA };
 
   static std::unique_ptr<CacheStorageCache> CreateMemoryCache(
-      const GURL& origin,
+      const url::Origin& origin,
       const std::string& cache_name,
       CacheStorage* cache_storage,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
@@ -93,7 +94,7 @@ class CONTENT_EXPORT CacheStorageCache {
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       std::unique_ptr<crypto::SymmetricKey> cache_padding_key);
   static std::unique_ptr<CacheStorageCache> CreatePersistentCache(
-      const GURL& origin,
+      const url::Origin& origin,
       const std::string& cache_name,
       CacheStorage* cache_storage,
       const base::FilePath& path,
@@ -247,7 +248,7 @@ class CONTENT_EXPORT CacheStorageCache {
       base::IDMap<std::unique_ptr<CacheStorageBlobToDiskCache>>;
 
   CacheStorageCache(
-      const GURL& origin,
+      const url::Origin& origin,
       const std::string& cache_name,
       const base::FilePath& path,
       CacheStorage* cache_storage,
@@ -447,7 +448,7 @@ class CONTENT_EXPORT CacheStorageCache {
   // Be sure to check |backend_state_| before use.
   std::unique_ptr<disk_cache::Backend> backend_;
 
-  GURL origin_;
+  url::Origin origin_;
   const std::string cache_name_;
   base::FilePath path_;
 

@@ -7,6 +7,7 @@
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/common/quota/quota_types.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -37,7 +38,7 @@ void CacheStorageQuotaClient::GetOriginUsage(const GURL& origin_url,
     return;
   }
 
-  cache_manager_->GetOriginUsage(origin_url, callback);
+  cache_manager_->GetOriginUsage(url::Origin::Create(origin_url), callback);
 }
 
 void CacheStorageQuotaClient::GetOriginsForType(
@@ -83,7 +84,7 @@ void CacheStorageQuotaClient::DeleteOriginData(
     return;
   }
 
-  cache_manager_->DeleteOriginData(origin, callback);
+  cache_manager_->DeleteOriginData(url::Origin::Create(origin), callback);
 }
 
 bool CacheStorageQuotaClient::DoesSupport(

@@ -419,7 +419,7 @@ struct CacheStorageCache::QueryCacheContext {
 
 // static
 std::unique_ptr<CacheStorageCache> CacheStorageCache::CreateMemoryCache(
-    const GURL& origin,
+    const url::Origin& origin,
     const std::string& cache_name,
     CacheStorage* cache_storage,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
@@ -438,7 +438,7 @@ std::unique_ptr<CacheStorageCache> CacheStorageCache::CreateMemoryCache(
 
 // static
 std::unique_ptr<CacheStorageCache> CacheStorageCache::CreatePersistentCache(
-    const GURL& origin,
+    const url::Origin& origin,
     const std::string& cache_name,
     CacheStorage* cache_storage,
     const base::FilePath& path,
@@ -510,7 +510,7 @@ void CacheStorageCache::WriteSideData(ErrorCallback callback,
   // GetUsageAndQuota is called before entering a scheduled operation since it
   // can call Size, another scheduled operation.
   quota_manager_proxy_->GetUsageAndQuota(
-      base::ThreadTaskRunnerHandle::Get().get(), origin_,
+      base::ThreadTaskRunnerHandle::Get().get(), origin_.GetURL(),
       blink::mojom::StorageType::kTemporary,
       base::AdaptCallbackForRepeating(
           base::BindOnce(&CacheStorageCache::WriteSideDataDidGetQuota,
@@ -558,7 +558,7 @@ void CacheStorageCache::BatchOperation(
     // Put runs, the cache might already be full and the origin will be larger
     // than it's supposed to be.
     quota_manager_proxy_->GetUsageAndQuota(
-        base::ThreadTaskRunnerHandle::Get().get(), origin_,
+        base::ThreadTaskRunnerHandle::Get().get(), origin_.GetURL(),
         blink::mojom::StorageType::kTemporary,
         base::AdaptCallbackForRepeating(base::BindOnce(
             &CacheStorageCache::BatchDidGetUsageAndQuota,
@@ -727,11 +727,11 @@ void CacheStorageCache::SetObserver(CacheStorageCacheObserver* observer) {
 }
 
 CacheStorageCache::~CacheStorageCache() {
-  quota_manager_proxy_->NotifyOriginNoLongerInUse(origin_);
+  quota_manager_proxy_->NotifyOriginNoLongerInUse(origin_.GetURL());
 }
 
 CacheStorageCache::CacheStorageCache(
-    const GURL& origin,
+    const url::Origin& origin,
     const std::string& cache_name,
     const base::FilePath& path,
     CacheStorage* cache_storage,
@@ -757,7 +757,7 @@ CacheStorageCache::CacheStorageCache(
       cache_observer_(nullptr),
       memory_only_(path.empty()),
       weak_ptr_factory_(this) {
-  DCHECK(!origin_.is_empty());
+  DCHECK(!origin_.unique());
   DCHECK(quota_manager_proxy_.get());
   DCHECK(cache_padding_key_.get());
 
@@ -767,7 +767,7 @@ CacheStorageCache::CacheStorageCache(
     last_reported_size_ = cache_size_ + cache_padding_;
   }
 
-  quota_manager_proxy_->NotifyOriginInUse(origin_);
+  quota_manager_proxy_->NotifyOriginInUse(origin_.GetURL());
 }
 
 void CacheStorageCache::QueryCache(
@@ -1546,7 +1546,7 @@ void CacheStorageCache::UpdateCacheSizeGotSize(
   last_reported_size_ = PaddedCacheSize();
 
   quota_manager_proxy_->NotifyStorageModified(
-      storage::QuotaClient::kServiceWorkerCache, origin_,
+      storage::QuotaClient::kServiceWorkerCache, origin_.GetURL(),
       blink::mojom::StorageType::kTemporary, size_delta);
 
   if (cache_storage_)

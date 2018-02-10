@@ -108,7 +108,7 @@ void CacheStorageDispatcherHost::OnCacheStorageHas(
     return;
   }
   context_->cache_manager()->HasCache(
-      origin.GetURL(), base::UTF16ToUTF8(cache_name),
+      origin, base::UTF16ToUTF8(cache_name),
       base::BindOnce(&CacheStorageDispatcherHost::OnCacheStorageHasCallback,
                      this, thread_id, request_id));
 }
@@ -125,7 +125,7 @@ void CacheStorageDispatcherHost::OnCacheStorageOpen(
     return;
   }
   context_->cache_manager()->OpenCache(
-      origin.GetURL(), base::UTF16ToUTF8(cache_name),
+      origin, base::UTF16ToUTF8(cache_name),
       base::BindOnce(&CacheStorageDispatcherHost::OnCacheStorageOpenCallback,
                      this, thread_id, request_id));
 }
@@ -142,7 +142,7 @@ void CacheStorageDispatcherHost::OnCacheStorageDelete(
     return;
   }
   context_->cache_manager()->DeleteCache(
-      origin.GetURL(), base::UTF16ToUTF8(cache_name),
+      origin, base::UTF16ToUTF8(cache_name),
       base::BindOnce(&CacheStorageDispatcherHost::OnCacheStorageDeleteCallback,
                      this, thread_id, request_id));
 }
@@ -157,7 +157,7 @@ void CacheStorageDispatcherHost::OnCacheStorageKeys(int thread_id,
     return;
   }
   context_->cache_manager()->EnumerateCaches(
-      origin.GetURL(),
+      origin,
       base::BindOnce(&CacheStorageDispatcherHost::OnCacheStorageKeysCallback,
                      this, thread_id, request_id));
 }
@@ -181,13 +181,13 @@ void CacheStorageDispatcherHost::OnCacheStorageMatch(
 
   if (match_params.cache_name.is_null()) {
     context_->cache_manager()->MatchAllCaches(
-        origin.GetURL(), std::move(scoped_request), match_params,
+        origin, std::move(scoped_request), match_params,
         base::BindOnce(&CacheStorageDispatcherHost::OnCacheStorageMatchCallback,
                        this, thread_id, request_id));
     return;
   }
   context_->cache_manager()->MatchCache(
-      origin.GetURL(), base::UTF16ToUTF8(match_params.cache_name.string()),
+      origin, base::UTF16ToUTF8(match_params.cache_name.string()),
       std::move(scoped_request), match_params,
       base::BindOnce(&CacheStorageDispatcherHost::OnCacheStorageMatchCallback,
                      this, thread_id, request_id));

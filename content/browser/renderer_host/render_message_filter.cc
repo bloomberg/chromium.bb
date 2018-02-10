@@ -282,7 +282,7 @@ void RenderMessageFilter::DidGenerateCacheableMetadataInCacheStorage(
     memcpy(buf->data(), &data.front(), data.size());
 
   cache_storage_context_->cache_manager()->OpenCache(
-      cache_storage_origin.GetURL(), cache_storage_cache_name,
+      cache_storage_origin, cache_storage_cache_name,
       base::BindOnce(&RenderMessageFilter::OnCacheStorageOpenCallback,
                      weak_ptr_factory_.GetWeakPtr(), url,
                      expected_response_time, buf, data.size()));

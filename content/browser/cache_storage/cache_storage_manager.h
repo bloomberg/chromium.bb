@@ -20,7 +20,7 @@
 #include "content/public/browser/cache_storage_usage_info.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/quota/quota_client.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -55,29 +55,29 @@ class CONTENT_EXPORT CacheStorageManager {
 
   // Map a database identifier (computed from an origin) to the path.
   static base::FilePath ConstructOriginPath(const base::FilePath& root_path,
-                                            const GURL& origin);
+                                            const url::Origin& origin);
 
   virtual ~CacheStorageManager();
 
   // Methods to support the CacheStorage spec. These methods call the
   // corresponding CacheStorage method on the appropriate thread.
-  void OpenCache(const GURL& origin,
+  void OpenCache(const url::Origin& origin,
                  const std::string& cache_name,
                  CacheStorage::CacheAndErrorCallback callback);
-  void HasCache(const GURL& origin,
+  void HasCache(const url::Origin& origin,
                 const std::string& cache_name,
                 CacheStorage::BoolAndErrorCallback callback);
-  void DeleteCache(const GURL& origin,
+  void DeleteCache(const url::Origin& origin,
                    const std::string& cache_name,
                    CacheStorage::BoolAndErrorCallback callback);
-  void EnumerateCaches(const GURL& origin,
+  void EnumerateCaches(const url::Origin& origin,
                        CacheStorage::IndexCallback callback);
-  void MatchCache(const GURL& origin,
+  void MatchCache(const url::Origin& origin,
                   const std::string& cache_name,
                   std::unique_ptr<ServiceWorkerFetchRequest> request,
                   const CacheStorageCacheQueryParams& match_params,
                   CacheStorageCache::ResponseCallback callback);
-  void MatchAllCaches(const GURL& origin,
+  void MatchAllCaches(const url::Origin& origin,
                       std::unique_ptr<ServiceWorkerFetchRequest> request,
                       const CacheStorageCacheQueryParams& match_params,
                       CacheStorageCache::ResponseCallback callback);
@@ -91,8 +91,9 @@ class CONTENT_EXPORT CacheStorageManager {
   void AddObserver(CacheStorageContextImpl::Observer* observer);
   void RemoveObserver(CacheStorageContextImpl::Observer* observer);
 
-  void NotifyCacheListChanged(const GURL& origin);
-  void NotifyCacheContentChanged(const GURL& origin, const std::string& name);
+  void NotifyCacheListChanged(const url::Origin& origin);
+  void NotifyCacheContentChanged(const url::Origin& origin,
+                                 const std::string& name);
 
   base::WeakPtr<CacheStorageManager> AsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -105,7 +106,7 @@ class CONTENT_EXPORT CacheStorageManager {
   friend class cache_storage_manager_unittest::CacheStorageManagerTest;
   friend class CacheStorageQuotaClient;
 
-  typedef std::map<GURL, std::unique_ptr<CacheStorage>> CacheStorageMap;
+  typedef std::map<url::Origin, std::unique_ptr<CacheStorage>> CacheStorageMap;
 
   CacheStorageManager(
       const base::FilePath& path,
@@ -113,7 +114,7 @@ class CONTENT_EXPORT CacheStorageManager {
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
 
   // The returned CacheStorage* is owned by this manager.
-  CacheStorage* FindOrCreateCacheStorage(const GURL& origin);
+  CacheStorage* FindOrCreateCacheStorage(const url::Origin& origin);
 
   // QuotaClient and Browsing Data Deletion support
   void GetAllOriginsUsage(
@@ -122,17 +123,17 @@ class CONTENT_EXPORT CacheStorageManager {
       std::unique_ptr<std::vector<CacheStorageUsageInfo>> usage_info,
       const CacheStorageContext::GetUsageInfoCallback& callback);
 
-  void GetOriginUsage(const GURL& origin_url,
+  void GetOriginUsage(const url::Origin& origin_url,
                       const storage::QuotaClient::GetUsageCallback& callback);
   void GetOrigins(const storage::QuotaClient::GetOriginsCallback& callback);
   void GetOriginsForHost(
       const std::string& host,
       const storage::QuotaClient::GetOriginsCallback& callback);
-  void DeleteOriginData(const GURL& origin,
+  void DeleteOriginData(const url::Origin& origin,
                         const storage::QuotaClient::DeletionCallback& callback);
-  void DeleteOriginData(const GURL& origin);
+  void DeleteOriginData(const url::Origin& origin);
   void DeleteOriginDidClose(
-      const GURL& origin,
+      const url::Origin& origin,
       const storage::QuotaClient::DeletionCallback& callback,
       std::unique_ptr<CacheStorage> cache_storage,
       int64_t origin_size);
