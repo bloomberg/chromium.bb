@@ -253,6 +253,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   std::vector<base::TimeTicks> webvr_time_pose_;
   std::vector<base::TimeTicks> webvr_time_js_submit_;
+  std::vector<base::TimeTicks> webvr_time_copied_;
   std::vector<bool> webvr_frame_oustanding_;
   std::vector<gfx::Transform> webvr_head_pose_;
 

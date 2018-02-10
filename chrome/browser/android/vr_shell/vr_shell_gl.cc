@@ -105,10 +105,6 @@ static constexpr base::TimeDelta kWebVrSlowAcquireThreshold =
 // Drop at most one frame in MaxDropRate.
 static constexpr int kWebVrUnstuffMaxDropRate = 11;
 
-// If GVR submit isn't blocking, we don't know how long rendering actually took.
-// Use a decay factor to assume it's a bit less than the current average.
-static constexpr float kWebVrSlowSubmitDecayFactor = 0.95f;
-
 static constexpr int kNumSamplesPerPixelBrowserUi = 2;
 static constexpr int kNumSamplesPerPixelWebVr = 1;
 
@@ -611,6 +607,7 @@ void VrShellGl::InitializeRenderer() {
   webvr_time_pose_.assign(kPoseRingBufferSize, base::TimeTicks());
   webvr_frame_oustanding_.assign(kPoseRingBufferSize, false);
   webvr_time_js_submit_.assign(kPoseRingBufferSize, base::TimeTicks());
+  webvr_time_copied_.assign(kPoseRingBufferSize, base::TimeTicks());
 
   // For kFramePrimaryBuffer (primary VrShell and WebVR content)
   specs_.push_back(gvr_api_->CreateBufferSpec());
@@ -1113,6 +1110,8 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
   }
   std::unique_ptr<gl::GLFenceEGL> fence = nullptr;
   if (ShouldDrawWebVr() && surfaceless_rendering_) {
+    webvr_time_copied_[frame_index % kPoseRingBufferSize] =
+        base::TimeTicks::Now();
     if (webvr_use_gpu_fence_) {
       // Continue with submit once the previous frame's GL fence signals that
       // it is done rendering. This avoids blocking in GVR's Submit. Fence is
@@ -1178,21 +1177,20 @@ void VrShellGl::AddWebVrRenderTimeEstimate(int16_t frame_index, bool did_wait) {
   if (webvr_use_gpu_fence_ && !prev_js_submit.is_null()) {
     // If we don't wait for rendering to complete, estimate render time for the
     // *previous* frame based on fence completion wait time.
+    base::TimeDelta prev_render = base::TimeTicks::Now() - prev_js_submit;
     if (did_wait) {
-      // Fence wasn't complete, we waited for rendering to finish.
-      base::TimeDelta prev_render = base::TimeTicks::Now() - prev_js_submit;
+      // Fence wasn't complete on first check. We've now waited for rendering to
+      // finish, so the elapsed time is the actual render time.
       webvr_render_time_.AddSample(prev_render);
     } else {
-      // Fence was already done. True completion time could have been anywhere
-      // between the last GVR submit and now. Just decay the average down a
-      // bit. We could try to estimate based on the difference between
-      // submit_start and prev_js_submit, but that tends to be an
-      // underestimate.
-      base::TimeDelta prev_render_delta =
-          webvr_render_time_.GetAverageOrDefault(
-              vsync_helper_.DisplayVSyncInterval()) *
-          kWebVrSlowSubmitDecayFactor;
-      webvr_render_time_.AddSample(prev_render_delta);
+      // Fence was already complete when we checked. It completed sometime
+      // between the saved webvr_time_copied_ and now. Use the midpoint of
+      // that as an estimate.
+      base::TimeDelta lower_limit =
+          webvr_time_copied_[frame_index % kPoseRingBufferSize] -
+          prev_js_submit;
+      base::TimeDelta midpoint = (lower_limit + prev_render) / 2;
+      webvr_render_time_.AddSample(midpoint);
     }
   }
 }
