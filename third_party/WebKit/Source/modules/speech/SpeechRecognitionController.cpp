@@ -29,9 +29,8 @@
 
 namespace blink {
 
-const char* SpeechRecognitionController::SupplementName() {
-  return "SpeechRecognitionController";
-}
+const char SpeechRecognitionController::kSupplementName[] =
+    "SpeechRecognitionController";
 
 SpeechRecognitionController::SpeechRecognitionController(
     std::unique_ptr<SpeechRecognitionClient> client)
@@ -50,8 +49,7 @@ void ProvideSpeechRecognitionTo(
     Page& page,
     std::unique_ptr<SpeechRecognitionClient> client) {
   SpeechRecognitionController::ProvideTo(
-      page, SpeechRecognitionController::SupplementName(),
-      SpeechRecognitionController::Create(std::move(client)));
+      page, SpeechRecognitionController::Create(std::move(client)));
 }
 
 }  // namespace blink

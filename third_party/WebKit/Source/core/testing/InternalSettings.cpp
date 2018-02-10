@@ -110,15 +110,14 @@ void InternalSettings::Backup::RestoreTo(Settings* settings) {
 }
 
 InternalSettings* InternalSettings::From(Page& page) {
-  if (!Supplement<Page>::From(page, SupplementName()))
-    Supplement<Page>::ProvideTo(page, SupplementName(),
-                                new InternalSettings(page));
-  return static_cast<InternalSettings*>(
-      Supplement<Page>::From(page, SupplementName()));
+  InternalSettings* supplement = Supplement<Page>::From<InternalSettings>(page);
+  if (!supplement) {
+    supplement = new InternalSettings(page);
+    ProvideTo(page, supplement);
+  }
+  return supplement;
 }
-const char* InternalSettings::SupplementName() {
-  return "InternalSettings";
-}
+const char InternalSettings::kSupplementName[] = "InternalSettings";
 
 InternalSettings::~InternalSettings() = default;
 

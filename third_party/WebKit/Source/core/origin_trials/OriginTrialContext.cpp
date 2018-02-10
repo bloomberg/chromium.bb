@@ -92,27 +92,23 @@ OriginTrialContext::OriginTrialContext(
       trial_token_validator_(std::move(validator)) {}
 
 // static
-const char* OriginTrialContext::SupplementName() {
-  return "OriginTrialContext";
-}
+const char OriginTrialContext::kSupplementName[] = "OriginTrialContext";
 
 // static
 const OriginTrialContext* OriginTrialContext::From(
     const ExecutionContext* context) {
-  return static_cast<const OriginTrialContext*>(
-      Supplement<ExecutionContext>::From(context, SupplementName()));
+  return Supplement<ExecutionContext>::From<OriginTrialContext>(context);
 }
 
 // static
 OriginTrialContext* OriginTrialContext::FromOrCreate(
     ExecutionContext* context) {
-  OriginTrialContext* origin_trials = const_cast<OriginTrialContext*>(
-      From(static_cast<const ExecutionContext*>(context)));
+  OriginTrialContext* origin_trials =
+      Supplement<ExecutionContext>::From<OriginTrialContext>(context);
   if (!origin_trials) {
     origin_trials = new OriginTrialContext(
         *context, Platform::Current()->CreateTrialTokenValidator());
-    Supplement<ExecutionContext>::ProvideTo(*context, SupplementName(),
-                                            origin_trials);
+    Supplement<ExecutionContext>::ProvideTo(*context, origin_trials);
   }
   return origin_trials;
 }

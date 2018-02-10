@@ -19,6 +19,8 @@ class NavigatorUSB final : public GarbageCollected<NavigatorUSB>,
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorUSB);
 
  public:
+  static const char kSupplementName[];
+
   // Gets, or creates, NavigatorUSB supplement on Navigator.
   // See platform/Supplementable.h
   static NavigatorUSB& From(Navigator&);
@@ -30,7 +32,6 @@ class NavigatorUSB final : public GarbageCollected<NavigatorUSB>,
 
  private:
   explicit NavigatorUSB(Navigator&);
-  static const char* SupplementName();
 
   Member<USB> usb_;
 };

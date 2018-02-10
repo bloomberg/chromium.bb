@@ -340,23 +340,20 @@ void EnqueueEvent(const AtomicString& type,
 
 }  // anonymous namespace
 
-const char* Fullscreen::SupplementName() {
-  return "Fullscreen";
-}
+const char Fullscreen::kSupplementName[] = "Fullscreen";
 
 Fullscreen& Fullscreen::From(Document& document) {
   Fullscreen* fullscreen = FromIfExists(document);
   if (!fullscreen) {
     fullscreen = new Fullscreen(document);
-    Supplement<Document>::ProvideTo(document, SupplementName(), fullscreen);
+    ProvideTo(document, fullscreen);
   }
 
   return *fullscreen;
 }
 
 Fullscreen* Fullscreen::FromIfExistsSlow(Document& document) {
-  return static_cast<Fullscreen*>(
-      Supplement<Document>::From(document, SupplementName()));
+  return Supplement<Document>::From<Fullscreen>(document);
 }
 
 Element* Fullscreen::FullscreenElementFrom(Document& document) {

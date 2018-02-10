@@ -42,6 +42,8 @@ class ContextFeaturesCache final
   USING_GARBAGE_COLLECTED_MIXIN(ContextFeaturesCache);
 
  public:
+  static const char kSupplementName[];
+
   class Entry {
    public:
     enum Value { kIsEnabled, kIsDisabled, kNeedsRefresh };
@@ -68,7 +70,6 @@ class ContextFeaturesCache final
                           // it can be changed dynamically.
   };
 
-  static const char* SupplementName();
   static ContextFeaturesCache& From(Document&);
 
   Entry& EntryFor(ContextFeatures::FeatureType type) {
@@ -91,16 +92,14 @@ class ContextFeaturesCache final
   Entry entries_[ContextFeatures::kFeatureTypeSize];
 };
 
-const char* ContextFeaturesCache::SupplementName() {
-  return "ContextFeaturesCache";
-}
+const char ContextFeaturesCache::kSupplementName[] = "ContextFeaturesCache";
 
 ContextFeaturesCache& ContextFeaturesCache::From(Document& document) {
-  ContextFeaturesCache* cache = static_cast<ContextFeaturesCache*>(
-      Supplement<Document>::From(document, SupplementName()));
+  ContextFeaturesCache* cache =
+      Supplement<Document>::From<ContextFeaturesCache>(document);
   if (!cache) {
     cache = new ContextFeaturesCache(document);
-    Supplement<Document>::ProvideTo(document, SupplementName(), cache);
+    ProvideTo(document, cache);
   }
 
   return *cache;

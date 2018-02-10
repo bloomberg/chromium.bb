@@ -20,6 +20,8 @@ class DocumentParserTiming final
   USING_GARBAGE_COLLECTED_MIXIN(DocumentParserTiming);
 
  public:
+  static const char kSupplementName[];
+
   virtual ~DocumentParserTiming() = default;
 
   static DocumentParserTiming& From(Document&);

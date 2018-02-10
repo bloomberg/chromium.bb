@@ -38,9 +38,7 @@ std::unique_ptr<ContextFeaturesClient> ContextFeaturesClient::Empty() {
   return std::make_unique<ContextFeaturesClient>();
 }
 
-const char* ContextFeatures::SupplementName() {
-  return "ContextFeatures";
-}
+const char ContextFeatures::kSupplementName[] = "ContextFeatures";
 
 ContextFeatures& ContextFeatures::DefaultSwitch() {
   DEFINE_STATIC_LOCAL(
@@ -65,13 +63,11 @@ bool ContextFeatures::MutationEventsEnabled(Document* document) {
 
 void ProvideContextFeaturesTo(Page& page,
                               std::unique_ptr<ContextFeaturesClient> client) {
-  Supplement<Page>::ProvideTo(page, ContextFeatures::SupplementName(),
-                              ContextFeatures::Create(std::move(client)));
+  Supplement<Page>::ProvideTo(page, ContextFeatures::Create(std::move(client)));
 }
 
 void ProvideContextFeaturesToDocumentFrom(Document& document, Page& page) {
-  ContextFeatures* provided = static_cast<ContextFeatures*>(
-      Supplement<Page>::From(page, ContextFeatures::SupplementName()));
+  ContextFeatures* provided = Supplement<Page>::From<ContextFeatures>(page);
   if (!provided)
     return;
   document.SetContextFeatures(*provided);

@@ -44,10 +44,11 @@ class MODULES_EXPORT NavigatorContentUtils final
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorContentUtils);
 
  public:
+  static const char kSupplementName[];
+
   virtual ~NavigatorContentUtils();
 
   static NavigatorContentUtils* From(Navigator&);
-  static const char* SupplementName();
 
   static void registerProtocolHandler(Navigator&,
                                       const String& scheme,

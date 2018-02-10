@@ -12,20 +12,18 @@ namespace blink {
 WorkerNavigatorPermissions::WorkerNavigatorPermissions() = default;
 
 // static
-const char* WorkerNavigatorPermissions::SupplementName() {
-  return "WorkerNavigatorPermissions";
-}
+const char WorkerNavigatorPermissions::kSupplementName[] =
+    "WorkerNavigatorPermissions";
 
 // static
 WorkerNavigatorPermissions& WorkerNavigatorPermissions::From(
     WorkerNavigator& worker_navigator) {
   WorkerNavigatorPermissions* supplement =
-      static_cast<WorkerNavigatorPermissions*>(
-          Supplement<WorkerNavigator>::From(worker_navigator,
-                                            SupplementName()));
+      Supplement<WorkerNavigator>::From<WorkerNavigatorPermissions>(
+          worker_navigator);
   if (!supplement) {
     supplement = new WorkerNavigatorPermissions();
-    ProvideTo(worker_navigator, SupplementName(), supplement);
+    ProvideTo(worker_navigator, supplement);
   }
   return *supplement;
 }

@@ -49,11 +49,12 @@ class DraggedIsolatedFileSystemImpl final
   USING_GARBAGE_COLLECTED_MIXIN(DraggedIsolatedFileSystemImpl);
 
  public:
+  static const char kSupplementName[];
+
   static DOMFileSystem* GetDOMFileSystem(DataObject* host,
                                          ExecutionContext*,
                                          const DataObjectItem&);
 
-  static const char* SupplementName();
   static DraggedIsolatedFileSystemImpl* From(DataObject*);
 
   void Trace(blink::Visitor*) override;

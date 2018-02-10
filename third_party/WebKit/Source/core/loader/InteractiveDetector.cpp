@@ -14,8 +14,6 @@
 
 namespace blink {
 
-constexpr char kSupplementName[] = "InteractiveDetector";
-
 // Required length of main thread and network quiet window for determining
 // Time to Interactive.
 constexpr auto kTimeToInteractiveWindow = TimeDelta::FromSeconds(5);
@@ -23,16 +21,19 @@ constexpr auto kTimeToInteractiveWindow = TimeDelta::FromSeconds(5);
 // requests for this duration of time.
 constexpr int kNetworkQuietMaximumConnections = 2;
 
+// static
+const char InteractiveDetector::kSupplementName[] = "InteractiveDetector";
+
 InteractiveDetector* InteractiveDetector::From(Document& document) {
-  InteractiveDetector* detector = static_cast<InteractiveDetector*>(
-      Supplement<Document>::From(document, kSupplementName));
+  InteractiveDetector* detector =
+      Supplement<Document>::From<InteractiveDetector>(document);
   if (!detector) {
     if (!document.IsInMainFrame()) {
       return nullptr;
     }
     detector = new InteractiveDetector(document,
                                        new NetworkActivityChecker(&document));
-    Supplement<Document>::ProvideTo(document, kSupplementName, detector);
+    Supplement<Document>::ProvideTo(document, detector);
   }
   return detector;
 }

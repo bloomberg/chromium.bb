@@ -21,6 +21,8 @@ class NavigatorNetworkInformation final
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorNetworkInformation);
 
  public:
+  static const char kSupplementName[];
+
   static NavigatorNetworkInformation& From(Navigator&);
   static NavigatorNetworkInformation* ToNavigatorNetworkInformation(Navigator&);
   static NetworkInformation* connection(Navigator&);
@@ -30,8 +32,6 @@ class NavigatorNetworkInformation final
  private:
   explicit NavigatorNetworkInformation(Navigator&);
   NetworkInformation* connection();
-
-  static const char* SupplementName();
 
   Member<NetworkInformation> connection_;
 };

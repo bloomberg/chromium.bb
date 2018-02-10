@@ -62,21 +62,18 @@ void InstalledAppController::GetInstalledRelatedApps(
 void InstalledAppController::ProvideTo(
     LocalFrame& frame,
     WebRelatedAppsFetcher* related_apps_fetcher) {
-  InstalledAppController* controller =
-      new InstalledAppController(frame, related_apps_fetcher);
-  Supplement<LocalFrame>::ProvideTo(frame, SupplementName(), controller);
+  Supplement<LocalFrame>::ProvideTo(
+      frame, new InstalledAppController(frame, related_apps_fetcher));
 }
 
 InstalledAppController* InstalledAppController::From(LocalFrame& frame) {
-  InstalledAppController* controller = static_cast<InstalledAppController*>(
-      Supplement<LocalFrame>::From(frame, SupplementName()));
+  InstalledAppController* controller =
+      Supplement<LocalFrame>::From<InstalledAppController>(frame);
   DCHECK(controller);
   return controller;
 }
 
-const char* InstalledAppController::SupplementName() {
-  return "InstalledAppController";
-}
+const char InstalledAppController::kSupplementName[] = "InstalledAppController";
 
 InstalledAppController::InstalledAppController(
     LocalFrame& frame,

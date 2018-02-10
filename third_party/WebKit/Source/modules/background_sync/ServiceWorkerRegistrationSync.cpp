@@ -15,19 +15,17 @@ ServiceWorkerRegistrationSync::ServiceWorkerRegistrationSync(
 
 ServiceWorkerRegistrationSync::~ServiceWorkerRegistrationSync() = default;
 
-const char* ServiceWorkerRegistrationSync::SupplementName() {
-  return "ServiceWorkerRegistrationSync";
-}
+const char ServiceWorkerRegistrationSync::kSupplementName[] =
+    "ServiceWorkerRegistrationSync";
 
 ServiceWorkerRegistrationSync& ServiceWorkerRegistrationSync::From(
     ServiceWorkerRegistration& registration) {
   ServiceWorkerRegistrationSync* supplement =
-      static_cast<ServiceWorkerRegistrationSync*>(
-          Supplement<ServiceWorkerRegistration>::From(registration,
-                                                      SupplementName()));
+      Supplement<ServiceWorkerRegistration>::From<
+          ServiceWorkerRegistrationSync>(registration);
   if (!supplement) {
     supplement = new ServiceWorkerRegistrationSync(&registration);
-    ProvideTo(registration, SupplementName(), supplement);
+    ProvideTo(registration, supplement);
   }
   return *supplement;
 }

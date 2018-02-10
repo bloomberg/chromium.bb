@@ -20,6 +20,8 @@ class NavigatorPermissions final
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorPermissions);
 
  public:
+  static const char kSupplementName[];
+
   static NavigatorPermissions& From(Navigator&);
   static Permissions* permissions(Navigator&);
 
@@ -27,8 +29,6 @@ class NavigatorPermissions final
 
  private:
   NavigatorPermissions();
-
-  static const char* SupplementName();
 
   Member<Permissions> permissions_;
 };

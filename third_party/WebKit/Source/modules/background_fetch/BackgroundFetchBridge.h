@@ -30,6 +30,8 @@ class BackgroundFetchBridge final
   WTF_MAKE_NONCOPYABLE(BackgroundFetchBridge);
 
  public:
+  static const char kSupplementName[];
+
   using AbortCallback =
       base::OnceCallback<void(mojom::blink::BackgroundFetchError)>;
   using GetDeveloperIdsCallback =
@@ -42,7 +44,6 @@ class BackgroundFetchBridge final
       base::OnceCallback<void(mojom::blink::BackgroundFetchError)>;
 
   static BackgroundFetchBridge* From(ServiceWorkerRegistration*);
-  static const char* SupplementName();
 
   virtual ~BackgroundFetchBridge();
 

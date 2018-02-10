@@ -22,13 +22,13 @@ class NavigatorClipboard final : public GarbageCollected<NavigatorClipboard>,
   WTF_MAKE_NONCOPYABLE(NavigatorClipboard);
 
  public:
+  static const char kSupplementName[];
   static Clipboard* clipboard(ScriptState*, Navigator&);
 
   void Trace(blink::Visitor*);
 
  private:
   explicit NavigatorClipboard(Navigator&);
-  static const char* SupplementName();
 
   Member<Clipboard> clipboard_;
 };

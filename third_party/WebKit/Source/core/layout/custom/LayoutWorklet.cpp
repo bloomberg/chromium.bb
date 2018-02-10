@@ -19,11 +19,11 @@ DocumentLayoutDefinition* const kInvalidDocumentLayoutDefinition = nullptr;
 
 // static
 LayoutWorklet* LayoutWorklet::From(LocalDOMWindow& window) {
-  LayoutWorklet* supplement = static_cast<LayoutWorklet*>(
-      Supplement<LocalDOMWindow>::From(window, SupplementName()));
+  LayoutWorklet* supplement =
+      Supplement<LocalDOMWindow>::From<LayoutWorklet>(window);
   if (!supplement && window.GetFrame()) {
     supplement = Create(window.GetFrame());
-    ProvideTo(window, SupplementName(), supplement);
+    ProvideTo(window, supplement);
   }
   return supplement;
 }
@@ -40,9 +40,7 @@ LayoutWorklet::LayoutWorklet(LocalFrame* frame)
 
 LayoutWorklet::~LayoutWorklet() = default;
 
-const char* LayoutWorklet::SupplementName() {
-  return "LayoutWorklet";
-}
+const char LayoutWorklet::kSupplementName[] = "LayoutWorklet";
 
 void LayoutWorklet::AddPendingLayout(const AtomicString& name, Node* node) {
   pending_layout_registry_->AddPendingLayout(name, node);

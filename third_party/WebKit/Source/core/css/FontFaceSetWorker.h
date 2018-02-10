@@ -27,6 +27,8 @@ class CORE_EXPORT FontFaceSetWorker final
   USING_GARBAGE_COLLECTED_MIXIN(FontFaceSetWorker);
 
  public:
+  static const char kSupplementName[];
+
   ~FontFaceSetWorker() override;
 
   ScriptPromise ready(ScriptState*) override;
@@ -42,8 +44,6 @@ class CORE_EXPORT FontFaceSetWorker final
   void BeginFontLoading(FontFace*);
 
   static FontFaceSetWorker* From(WorkerGlobalScope&);
-
-  static const char* SupplementName() { return "FontFaceSetWorker"; }
 
   void Trace(Visitor*) override;
 

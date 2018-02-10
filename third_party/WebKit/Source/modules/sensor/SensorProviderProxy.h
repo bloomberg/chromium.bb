@@ -24,6 +24,8 @@ class SensorProviderProxy final
   WTF_MAKE_NONCOPYABLE(SensorProviderProxy);
 
  public:
+  static const char kSupplementName[];
+
   static SensorProviderProxy* From(LocalFrame*);
 
   ~SensorProviderProxy();
@@ -38,7 +40,6 @@ class SensorProviderProxy final
   friend class SensorProxy;  // To call getSensorProvider().
 
   explicit SensorProviderProxy(LocalFrame&);
-  static const char* SupplementName();
   void InitializeIfNeeded();
   bool IsInitialized() const { return sensor_provider_.is_bound(); }
 

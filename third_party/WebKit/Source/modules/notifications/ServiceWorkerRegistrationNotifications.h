@@ -37,6 +37,8 @@ class ServiceWorkerRegistrationNotifications final
   WTF_MAKE_NONCOPYABLE(ServiceWorkerRegistrationNotifications);
 
  public:
+  static const char kSupplementName[];
+
   static ScriptPromise showNotification(ScriptState*,
                                         ServiceWorkerRegistration&,
                                         const String& title,
@@ -55,7 +57,6 @@ class ServiceWorkerRegistrationNotifications final
   ServiceWorkerRegistrationNotifications(ExecutionContext*,
                                          ServiceWorkerRegistration*);
 
-  static const char* SupplementName();
   static ServiceWorkerRegistrationNotifications& From(
       ExecutionContext*,
       ServiceWorkerRegistration&);

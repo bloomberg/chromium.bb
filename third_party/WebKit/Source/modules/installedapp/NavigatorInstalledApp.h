@@ -24,6 +24,8 @@ class NavigatorInstalledApp final
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorInstalledApp);
 
  public:
+  static const char kSupplementName[];
+
   static NavigatorInstalledApp* From(Document&);
   static NavigatorInstalledApp& From(Navigator&);
 
@@ -36,7 +38,6 @@ class NavigatorInstalledApp final
 
  private:
   explicit NavigatorInstalledApp(Navigator&);
-  static const char* SupplementName();
 };
 
 }  // namespace blink

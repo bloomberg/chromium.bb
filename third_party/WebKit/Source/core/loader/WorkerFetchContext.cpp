@@ -43,10 +43,9 @@ class WorkerFetchContextHolder final
 
  public:
   static WorkerFetchContextHolder* From(WorkerClients& clients) {
-    return static_cast<WorkerFetchContextHolder*>(
-        Supplement<WorkerClients>::From(clients, SupplementName()));
+    return Supplement<WorkerClients>::From<WorkerFetchContextHolder>(clients);
   }
-  static const char* SupplementName() { return "WorkerFetchContextHolder"; }
+  static const char kSupplementName[];
 
   explicit WorkerFetchContextHolder(
       std::unique_ptr<WebWorkerFetchContext> web_context)
@@ -67,6 +66,10 @@ class WorkerFetchContextHolder final
 
 }  // namespace
 
+// static
+const char WorkerFetchContextHolder::kSupplementName[] =
+    "WorkerFetchContextHolder";
+
 WorkerFetchContext::~WorkerFetchContext() = default;
 
 WorkerFetchContext* WorkerFetchContext::Create(
@@ -76,8 +79,8 @@ WorkerFetchContext* WorkerFetchContext::Create(
   WorkerClients* worker_clients = global_scope.Clients();
   DCHECK(worker_clients);
   WorkerFetchContextHolder* holder =
-      static_cast<WorkerFetchContextHolder*>(Supplement<WorkerClients>::From(
-          *worker_clients, WorkerFetchContextHolder::SupplementName()));
+      Supplement<WorkerClients>::From<WorkerFetchContextHolder>(
+          *worker_clients);
   if (!holder)
     return nullptr;
   std::unique_ptr<WebWorkerFetchContext> web_context = holder->TakeContext();
@@ -392,8 +395,7 @@ void ProvideWorkerFetchContextToWorker(
     std::unique_ptr<WebWorkerFetchContext> web_context) {
   DCHECK(clients);
   WorkerFetchContextHolder::ProvideTo(
-      *clients, WorkerFetchContextHolder::SupplementName(),
-      new WorkerFetchContextHolder(std::move(web_context)));
+      *clients, new WorkerFetchContextHolder(std::move(web_context)));
 }
 
 }  // namespace blink

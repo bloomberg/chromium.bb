@@ -51,6 +51,8 @@ class MODULES_EXPORT NavigatorGamepad final
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorGamepad);
 
  public:
+  static const char kSupplementName[];
+
   static NavigatorGamepad* From(Document&);
   static NavigatorGamepad& From(Navigator&);
   ~NavigatorGamepad() override;
@@ -62,8 +64,6 @@ class MODULES_EXPORT NavigatorGamepad final
 
  private:
   explicit NavigatorGamepad(Navigator&);
-
-  static const char* SupplementName();
 
   void DispatchOneEvent();
   void DidRemoveGamepadEventListeners();

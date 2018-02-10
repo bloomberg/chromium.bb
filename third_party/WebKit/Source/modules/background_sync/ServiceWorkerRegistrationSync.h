@@ -21,6 +21,8 @@ class ServiceWorkerRegistrationSync final
   WTF_MAKE_NONCOPYABLE(ServiceWorkerRegistrationSync);
 
  public:
+  static const char kSupplementName[];
+
   virtual ~ServiceWorkerRegistrationSync();
   static ServiceWorkerRegistrationSync& From(ServiceWorkerRegistration&);
 
@@ -31,7 +33,6 @@ class ServiceWorkerRegistrationSync final
 
  private:
   explicit ServiceWorkerRegistrationSync(ServiceWorkerRegistration*);
-  static const char* SupplementName();
 
   Member<ServiceWorkerRegistration> registration_;
   Member<SyncManager> sync_manager_;

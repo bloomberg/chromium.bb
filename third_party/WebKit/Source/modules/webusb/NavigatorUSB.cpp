@@ -10,11 +10,11 @@
 namespace blink {
 
 NavigatorUSB& NavigatorUSB::From(Navigator& navigator) {
-  NavigatorUSB* supplement = static_cast<NavigatorUSB*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorUSB* supplement =
+      Supplement<Navigator>::From<NavigatorUSB>(navigator);
   if (!supplement) {
     supplement = new NavigatorUSB(navigator);
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
   return *supplement;
 }
@@ -37,8 +37,6 @@ NavigatorUSB::NavigatorUSB(Navigator& navigator) {
     usb_ = USB::Create(*navigator.GetFrame());
 }
 
-const char* NavigatorUSB::SupplementName() {
-  return "NavigatorUSB";
-}
+const char NavigatorUSB::kSupplementName[] = "NavigatorUSB";
 
 }  // namespace blink

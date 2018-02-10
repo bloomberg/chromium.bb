@@ -19,19 +19,17 @@ PictureInPictureController::~PictureInPictureController() = default;
 PictureInPictureController& PictureInPictureController::Ensure(
     Document& document) {
   PictureInPictureController* controller =
-      static_cast<PictureInPictureController*>(
-          Supplement<Document>::From(document, SupplementName()));
+      Supplement<Document>::From<PictureInPictureController>(document);
   if (!controller) {
     controller = new PictureInPictureController(document);
-    ProvideTo(document, SupplementName(), controller);
+    ProvideTo(document, controller);
   }
   return *controller;
 }
 
 // static
-const char* PictureInPictureController::SupplementName() {
-  return "PictureInPictureController";
-}
+const char PictureInPictureController::kSupplementName[] =
+    "PictureInPictureController";
 
 bool PictureInPictureController::PictureInPictureEnabled() const {
   return IsDocumentAllowed() == Status::kEnabled;

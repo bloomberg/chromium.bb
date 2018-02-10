@@ -24,6 +24,8 @@ class MODULES_EXPORT HTMLMediaElementRemotePlayback final
   USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementRemotePlayback);
 
  public:
+  static const char kSupplementName[];
+
   static bool FastHasAttribute(const QualifiedName&, const HTMLMediaElement&);
   static void SetBooleanAttribute(const QualifiedName&,
                                   HTMLMediaElement&,
@@ -35,8 +37,6 @@ class MODULES_EXPORT HTMLMediaElementRemotePlayback final
   virtual void Trace(blink::Visitor*);
 
  private:
-  static const char* SupplementName();
-
   Member<RemotePlayback> remote_;
 };
 

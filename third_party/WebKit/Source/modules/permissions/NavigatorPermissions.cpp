@@ -12,17 +12,15 @@ namespace blink {
 NavigatorPermissions::NavigatorPermissions() = default;
 
 // static
-const char* NavigatorPermissions::SupplementName() {
-  return "NavigatorPermissions";
-}
+const char NavigatorPermissions::kSupplementName[] = "NavigatorPermissions";
 
 // static
 NavigatorPermissions& NavigatorPermissions::From(Navigator& navigator) {
-  NavigatorPermissions* supplement = static_cast<NavigatorPermissions*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorPermissions* supplement =
+      Supplement<Navigator>::From<NavigatorPermissions>(navigator);
   if (!supplement) {
     supplement = new NavigatorPermissions();
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
   return *supplement;
 }

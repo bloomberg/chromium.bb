@@ -41,18 +41,17 @@ namespace blink {
 DOMWindowSpeechSynthesis::DOMWindowSpeechSynthesis(LocalDOMWindow& window)
     : Supplement<LocalDOMWindow>(window) {}
 
-const char* DOMWindowSpeechSynthesis::SupplementName() {
-  return "DOMWindowSpeechSynthesis";
-}
+const char DOMWindowSpeechSynthesis::kSupplementName[] =
+    "DOMWindowSpeechSynthesis";
 
 // static
 DOMWindowSpeechSynthesis& DOMWindowSpeechSynthesis::From(
     LocalDOMWindow& window) {
-  DOMWindowSpeechSynthesis* supplement = static_cast<DOMWindowSpeechSynthesis*>(
-      Supplement<LocalDOMWindow>::From(window, SupplementName()));
+  DOMWindowSpeechSynthesis* supplement =
+      Supplement<LocalDOMWindow>::From<DOMWindowSpeechSynthesis>(window);
   if (!supplement) {
     supplement = new DOMWindowSpeechSynthesis(window);
-    ProvideTo(window, SupplementName(), supplement);
+    ProvideTo(window, supplement);
   }
   return *supplement;
 }

@@ -21,12 +21,12 @@ class PushController final : public GarbageCollected<PushController>,
   WTF_MAKE_NONCOPYABLE(PushController);
 
  public:
+  static const char kSupplementName[];
+
   PushController(LocalFrame&, WebPushClient*);
 
-  static const char* SupplementName();
   static PushController* From(LocalFrame* frame) {
-    return static_cast<PushController*>(
-        Supplement<LocalFrame>::From(frame, SupplementName()));
+    return Supplement<LocalFrame>::From<PushController>(frame);
   }
   static WebPushClient& ClientFrom(LocalFrame*);
 

@@ -10,9 +10,8 @@
 
 namespace blink {
 
-const char* MediaKeysController::SupplementName() {
-  return "MediaKeysController";
-}
+// static
+const char MediaKeysController::kSupplementName[] = "MediaKeysController";
 
 MediaKeysController::MediaKeysController() = default;
 
@@ -25,8 +24,7 @@ WebEncryptedMediaClient* MediaKeysController::EncryptedMediaClient(
 }
 
 void MediaKeysController::ProvideMediaKeysTo(Page& page) {
-  MediaKeysController::ProvideTo(page, SupplementName(),
-                                 new MediaKeysController());
+  MediaKeysController::ProvideTo(page, new MediaKeysController());
 }
 
 }  // namespace blink

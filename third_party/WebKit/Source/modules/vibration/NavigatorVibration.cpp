@@ -43,20 +43,17 @@ NavigatorVibration::~NavigatorVibration() = default;
 
 // static
 NavigatorVibration& NavigatorVibration::From(Navigator& navigator) {
-  NavigatorVibration* navigator_vibration = static_cast<NavigatorVibration*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorVibration* navigator_vibration =
+      Supplement<Navigator>::From<NavigatorVibration>(navigator);
   if (!navigator_vibration) {
     navigator_vibration = new NavigatorVibration(navigator);
-    Supplement<Navigator>::ProvideTo(navigator, SupplementName(),
-                                     navigator_vibration);
+    ProvideTo(navigator, navigator_vibration);
   }
   return *navigator_vibration;
 }
 
 // static
-const char* NavigatorVibration::SupplementName() {
-  return "NavigatorVibration";
-}
+const char NavigatorVibration::kSupplementName[] = "NavigatorVibration";
 
 // static
 bool NavigatorVibration::vibrate(Navigator& navigator, unsigned time) {

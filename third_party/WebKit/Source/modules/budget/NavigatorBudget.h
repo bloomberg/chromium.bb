@@ -20,6 +20,8 @@ class NavigatorBudget final : public GarbageCollected<NavigatorBudget>,
   WTF_MAKE_NONCOPYABLE(NavigatorBudget);
 
  public:
+  static const char kSupplementName[];
+
   static NavigatorBudget& From(Navigator&);
 
   static BudgetService* budget(ExecutionContext*, Navigator&);
@@ -29,7 +31,6 @@ class NavigatorBudget final : public GarbageCollected<NavigatorBudget>,
 
  private:
   explicit NavigatorBudget(Navigator&);
-  static const char* SupplementName();
 
   Member<BudgetService> budget_;
 };

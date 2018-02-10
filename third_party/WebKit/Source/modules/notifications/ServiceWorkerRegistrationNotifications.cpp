@@ -150,22 +150,20 @@ void ServiceWorkerRegistrationNotifications::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-const char* ServiceWorkerRegistrationNotifications::SupplementName() {
-  return "ServiceWorkerRegistrationNotifications";
-}
+const char ServiceWorkerRegistrationNotifications::kSupplementName[] =
+    "ServiceWorkerRegistrationNotifications";
 
 ServiceWorkerRegistrationNotifications&
 ServiceWorkerRegistrationNotifications::From(
     ExecutionContext* execution_context,
     ServiceWorkerRegistration& registration) {
   ServiceWorkerRegistrationNotifications* supplement =
-      static_cast<ServiceWorkerRegistrationNotifications*>(
-          Supplement<ServiceWorkerRegistration>::From(registration,
-                                                      SupplementName()));
+      Supplement<ServiceWorkerRegistration>::From<
+          ServiceWorkerRegistrationNotifications>(registration);
   if (!supplement) {
     supplement = new ServiceWorkerRegistrationNotifications(execution_context,
                                                             &registration);
-    ProvideTo(registration, SupplementName(), supplement);
+    ProvideTo(registration, supplement);
   }
   return *supplement;
 }

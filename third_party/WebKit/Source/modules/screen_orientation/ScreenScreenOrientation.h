@@ -21,6 +21,8 @@ class ScreenScreenOrientation final
   USING_GARBAGE_COLLECTED_MIXIN(ScreenScreenOrientation);
 
  public:
+  static const char kSupplementName[];
+
   static ScreenScreenOrientation& From(Screen&);
 
   static ScreenOrientation* orientation(ScriptState*, Screen&);
@@ -28,8 +30,6 @@ class ScreenScreenOrientation final
   virtual void Trace(blink::Visitor*);
 
  private:
-  static const char* SupplementName();
-
   Member<ScreenOrientation> orientation_;
 };
 

@@ -12,16 +12,14 @@ namespace blink {
 NavigatorNFC::NavigatorNFC(Navigator& navigator)
     : Supplement<Navigator>(navigator) {}
 
-const char* NavigatorNFC::SupplementName() {
-  return "NavigatorNFC";
-}
+const char NavigatorNFC::kSupplementName[] = "NavigatorNFC";
 
 NavigatorNFC& NavigatorNFC::From(Navigator& navigator) {
-  NavigatorNFC* supplement = static_cast<NavigatorNFC*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorNFC* supplement =
+      Supplement<Navigator>::From<NavigatorNFC>(navigator);
   if (!supplement) {
     supplement = new NavigatorNFC(navigator);
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
   return *supplement;
 }

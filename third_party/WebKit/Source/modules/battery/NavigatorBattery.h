@@ -20,6 +20,8 @@ class NavigatorBattery final : public GarbageCollected<NavigatorBattery>,
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorBattery);
 
  public:
+  static const char kSupplementName[];
+
   static NavigatorBattery& From(Navigator&);
 
   static ScriptPromise getBattery(ScriptState*, Navigator&);
@@ -29,7 +31,6 @@ class NavigatorBattery final : public GarbageCollected<NavigatorBattery>,
 
  private:
   explicit NavigatorBattery(Navigator&);
-  static const char* SupplementName();
 
   Member<BatteryManager> battery_manager_;
 };

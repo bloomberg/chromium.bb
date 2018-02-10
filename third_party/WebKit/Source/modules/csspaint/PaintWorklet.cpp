@@ -21,11 +21,11 @@ DocumentPaintDefinition* const kInvalidDocumentPaintDefinition = nullptr;
 
 // static
 PaintWorklet* PaintWorklet::From(LocalDOMWindow& window) {
-  PaintWorklet* supplement = static_cast<PaintWorklet*>(
-      Supplement<LocalDOMWindow>::From(window, SupplementName()));
+  PaintWorklet* supplement =
+      Supplement<LocalDOMWindow>::From<PaintWorklet>(window);
   if (!supplement && window.GetFrame()) {
     supplement = Create(window.GetFrame());
-    ProvideTo(window, SupplementName(), supplement);
+    ProvideTo(window, supplement);
   }
   return supplement;
 }
@@ -107,9 +107,8 @@ scoped_refptr<Image> PaintWorklet::Paint(const String& name,
   return paint_definition->Paint(observer, container_size, data);
 }
 
-const char* PaintWorklet::SupplementName() {
-  return "PaintWorklet";
-}
+// static
+const char PaintWorklet::kSupplementName[] = "PaintWorklet";
 
 void PaintWorklet::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_generator_registry_);

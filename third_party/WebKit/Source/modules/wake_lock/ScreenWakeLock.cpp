@@ -30,19 +30,17 @@ void ScreenWakeLock::setKeepAwake(Screen& screen, bool keep_awake) {
 }
 
 // static
-const char* ScreenWakeLock::SupplementName() {
-  return "ScreenWakeLock";
-}
+const char ScreenWakeLock::kSupplementName[] = "ScreenWakeLock";
 
 // static
 ScreenWakeLock* ScreenWakeLock::From(LocalFrame* frame) {
   if (!RuntimeEnabledFeatures::WakeLockEnabled())
     return nullptr;
-  ScreenWakeLock* supplement = static_cast<ScreenWakeLock*>(
-      Supplement<LocalFrame>::From(frame, SupplementName()));
+  ScreenWakeLock* supplement =
+      Supplement<LocalFrame>::From<ScreenWakeLock>(frame);
   if (!supplement) {
     supplement = new ScreenWakeLock(*frame);
-    Supplement<LocalFrame>::ProvideTo(*frame, SupplementName(), supplement);
+    ProvideTo(*frame, supplement);
   }
   return supplement;
 }

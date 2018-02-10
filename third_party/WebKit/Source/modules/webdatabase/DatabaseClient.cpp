@@ -47,17 +47,14 @@ void DatabaseClient::Trace(blink::Visitor* visitor) {
 }
 
 DatabaseClient* DatabaseClient::FromPage(Page* page) {
-  return static_cast<DatabaseClient*>(
-      Supplement<Page>::From(page, SupplementName()));
+  return Supplement<Page>::From<DatabaseClient>(page);
 }
 
 DatabaseClient* DatabaseClient::From(ExecutionContext* context) {
   return DatabaseClient::FromPage(ToDocument(context)->GetPage());
 }
 
-const char* DatabaseClient::SupplementName() {
-  return "DatabaseClient";
-}
+const char DatabaseClient::kSupplementName[] = "DatabaseClient";
 
 bool DatabaseClient::AllowDatabase(ExecutionContext* context,
                                    const String& name,
@@ -88,7 +85,7 @@ void DatabaseClient::SetInspectorAgent(InspectorDatabaseAgent* agent) {
 }
 
 void ProvideDatabaseClientTo(Page& page, DatabaseClient* client) {
-  page.ProvideSupplement(DatabaseClient::SupplementName(), client);
+  page.ProvideSupplement(client);
 }
 
 }  // namespace blink

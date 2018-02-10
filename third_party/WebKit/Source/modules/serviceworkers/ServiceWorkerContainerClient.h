@@ -27,6 +27,8 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
   WTF_MAKE_NONCOPYABLE(ServiceWorkerContainerClient);
 
  public:
+  static const char kSupplementName[];
+
   ServiceWorkerContainerClient(Document&,
                                std::unique_ptr<WebServiceWorkerProvider>);
   ServiceWorkerContainerClient(WorkerClients&,
@@ -35,7 +37,6 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
 
   WebServiceWorkerProvider* Provider() { return provider_.get(); }
 
-  static const char* SupplementName();
   static ServiceWorkerContainerClient* From(ExecutionContext*);
 
   void Trace(blink::Visitor* visitor) override {

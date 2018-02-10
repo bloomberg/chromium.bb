@@ -22,6 +22,8 @@ class ServiceWorkerRegistrationBackgroundFetch final
   WTF_MAKE_NONCOPYABLE(ServiceWorkerRegistrationBackgroundFetch);
 
  public:
+  static const char kSupplementName[];
+
   virtual ~ServiceWorkerRegistrationBackgroundFetch();
 
   static ServiceWorkerRegistrationBackgroundFetch& From(
@@ -34,7 +36,6 @@ class ServiceWorkerRegistrationBackgroundFetch final
 
  private:
   explicit ServiceWorkerRegistrationBackgroundFetch(ServiceWorkerRegistration*);
-  static const char* SupplementName();
 
   Member<ServiceWorkerRegistration> registration_;
   Member<BackgroundFetchManager> background_fetch_manager_;

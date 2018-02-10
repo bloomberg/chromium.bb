@@ -68,16 +68,14 @@ bool WorkerContentSettingsClient::AllowRunningInsecureContent(
   return enabled_per_settings;
 }
 
-const char* WorkerContentSettingsClient::SupplementName() {
-  return "WorkerContentSettingsClient";
-}
+const char WorkerContentSettingsClient::kSupplementName[] =
+    "WorkerContentSettingsClient";
 
 WorkerContentSettingsClient* WorkerContentSettingsClient::From(
     ExecutionContext& context) {
   WorkerClients* clients = ToWorkerGlobalScope(context).Clients();
   DCHECK(clients);
-  return static_cast<WorkerContentSettingsClient*>(
-      Supplement<WorkerClients>::From(*clients, SupplementName()));
+  return Supplement<WorkerClients>::From<WorkerContentSettingsClient>(*clients);
 }
 
 WorkerContentSettingsClient::WorkerContentSettingsClient(
@@ -89,8 +87,7 @@ void ProvideContentSettingsClientToWorker(
     std::unique_ptr<WebContentSettingsClient> client) {
   DCHECK(clients);
   WorkerContentSettingsClient::ProvideTo(
-      *clients, WorkerContentSettingsClient::SupplementName(),
-      WorkerContentSettingsClient::Create(std::move(client)));
+      *clients, WorkerContentSettingsClient::Create(std::move(client)));
 }
 
 }  // namespace blink

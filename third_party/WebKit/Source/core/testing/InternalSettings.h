@@ -49,6 +49,8 @@ class InternalSettings final : public InternalSettingsGenerated,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static const char kSupplementName[];
+
   class Backup {
     DISALLOW_NEW();
 
@@ -149,7 +151,6 @@ class InternalSettings final : public InternalSettingsGenerated,
 
   Settings* GetSettings() const;
   Page* GetPage() const { return GetSupplementable(); }
-  static const char* SupplementName();
 
   Backup backup_;
 };

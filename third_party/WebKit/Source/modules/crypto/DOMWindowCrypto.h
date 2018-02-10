@@ -44,6 +44,8 @@ class DOMWindowCrypto final : public GarbageCollected<DOMWindowCrypto>,
   USING_GARBAGE_COLLECTED_MIXIN(DOMWindowCrypto);
 
  public:
+  static const char kSupplementName[];
+
   static DOMWindowCrypto& From(LocalDOMWindow&);
   static Crypto* crypto(LocalDOMWindow&);
   Crypto* crypto() const;
@@ -52,7 +54,6 @@ class DOMWindowCrypto final : public GarbageCollected<DOMWindowCrypto>,
 
  private:
   explicit DOMWindowCrypto(LocalDOMWindow&);
-  static const char* SupplementName();
 
   mutable Member<Crypto> crypto_;
 };

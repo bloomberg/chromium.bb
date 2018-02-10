@@ -55,6 +55,8 @@ class DevToolsFrontendImpl final
   USING_GARBAGE_COLLECTED_MIXIN(DevToolsFrontendImpl);
 
  public:
+  static const char kSupplementName[];
+
   static void BindMojoRequest(LocalFrame*,
                               mojom::blink::DevToolsFrontendAssociatedRequest);
   static DevToolsFrontendImpl* From(LocalFrame*);
@@ -66,7 +68,6 @@ class DevToolsFrontendImpl final
  private:
   DevToolsFrontendImpl(LocalFrame&,
                        mojom::blink::DevToolsFrontendAssociatedRequest);
-  static const char* SupplementName();
   void DestroyOnHostGone();
 
   // mojom::blink::DevToolsFrontend implementation.

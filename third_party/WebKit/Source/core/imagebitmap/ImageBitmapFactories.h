@@ -67,6 +67,8 @@ class ImageBitmapFactories final
   USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapFactories);
 
  public:
+  static const char kSupplementName[];
+
   static ScriptPromise createImageBitmap(ScriptState*,
                                          EventTarget&,
                                          const ImageBitmapSourceUnion&,
@@ -94,9 +96,6 @@ class ImageBitmapFactories final
 
   void Trace(blink::Visitor*);
   void TraceWrappers(const ScriptWrappableVisitor*) const override;
-
- protected:
-  static const char* SupplementName();
 
  private:
   class ImageBitmapLoader final

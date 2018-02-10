@@ -16,10 +16,11 @@ class WorkletGlobalScope;
 class CORE_EXPORT AnimationWorkletProxyClient
     : public Supplement<WorkerClients> {
  public:
+  static const char kSupplementName[];
+
   AnimationWorkletProxyClient() = default;
 
   static AnimationWorkletProxyClient* From(WorkerClients*);
-  static const char* SupplementName();
 
   virtual void SetGlobalScope(WorkletGlobalScope*) = 0;
   virtual void Dispose() = 0;

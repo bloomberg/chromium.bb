@@ -32,18 +32,16 @@ void DeviceOrientationController::DidUpdateData() {
   DispatchDeviceEvent(LastEvent());
 }
 
-const char* DeviceOrientationController::SupplementName() {
-  return "DeviceOrientationController";
-}
+const char DeviceOrientationController::kSupplementName[] =
+    "DeviceOrientationController";
 
 DeviceOrientationController& DeviceOrientationController::From(
     Document& document) {
   DeviceOrientationController* controller =
-      static_cast<DeviceOrientationController*>(
-          Supplement<Document>::From(document, SupplementName()));
+      Supplement<Document>::From<DeviceOrientationController>(document);
   if (!controller) {
     controller = new DeviceOrientationController(document);
-    Supplement<Document>::ProvideTo(document, SupplementName(), controller);
+    ProvideTo(document, controller);
   }
   return *controller;
 }

@@ -50,6 +50,8 @@ class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
   USING_GARBAGE_COLLECTED_MIXIN(FontFaceSetDocument);
 
  public:
+  static const char kSupplementName[];
+
   ~FontFaceSetDocument() override;
 
   ScriptPromise ready(ScriptState*) override;
@@ -70,8 +72,6 @@ class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
   static FontFaceSetDocument* From(Document&);
   static void DidLayout(Document&);
   static size_t ApproximateBlankCharacterCount(Document&);
-
-  static const char* SupplementName() { return "FontFaceSetDocument"; }
 
   virtual void Trace(blink::Visitor*);
   virtual void TraceWrappers(const ScriptWrappableVisitor*) const;

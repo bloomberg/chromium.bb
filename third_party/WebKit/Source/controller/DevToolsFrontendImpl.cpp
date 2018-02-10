@@ -48,7 +48,6 @@ void DevToolsFrontendImpl::BindMojoRequest(
   if (!local_frame)
     return;
   local_frame->ProvideSupplement(
-      SupplementName(),
       new DevToolsFrontendImpl(*local_frame, std::move(request)));
 }
 
@@ -56,14 +55,11 @@ void DevToolsFrontendImpl::BindMojoRequest(
 DevToolsFrontendImpl* DevToolsFrontendImpl::From(LocalFrame* local_frame) {
   if (!local_frame)
     return nullptr;
-  return static_cast<DevToolsFrontendImpl*>(
-      local_frame->RequireSupplement(SupplementName()));
+  return local_frame->RequireSupplement<DevToolsFrontendImpl>();
 }
 
 // static
-const char* DevToolsFrontendImpl::SupplementName() {
-  return "DevToolsFrontendImpl";
-}
+const char DevToolsFrontendImpl::kSupplementName[] = "DevToolsFrontendImpl";
 
 DevToolsFrontendImpl::DevToolsFrontendImpl(
     LocalFrame& frame,
@@ -131,7 +127,7 @@ void DevToolsFrontendImpl::ShowContextMenu(LocalFrame* target_frame,
 void DevToolsFrontendImpl::DestroyOnHostGone() {
   if (devtools_host_)
     devtools_host_->DisconnectClient();
-  GetSupplementable()->RemoveSupplement(SupplementName());
+  GetSupplementable()->RemoveSupplement<DevToolsFrontendImpl>();
 }
 
 void DevToolsFrontendImpl::Trace(blink::Visitor* visitor) {

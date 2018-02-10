@@ -20,13 +20,10 @@ WebPushClient& PushController::ClientFrom(LocalFrame* frame) {
   return *client;
 }
 
-const char* PushController::SupplementName() {
-  return "PushController";
-}
+const char PushController::kSupplementName[] = "PushController";
 
 void ProvidePushControllerTo(LocalFrame& frame, WebPushClient* client) {
-  PushController::ProvideTo(frame, PushController::SupplementName(),
-                            new PushController(frame, client));
+  PushController::ProvideTo(frame, new PushController(frame, client));
 }
 
 }  // namespace blink

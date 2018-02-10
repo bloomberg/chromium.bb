@@ -23,7 +23,7 @@ WorkerNavigatorNetworkInformation& WorkerNavigatorNetworkInformation::From(
       ToWorkerNavigatorNetworkInformation(navigator, context);
   if (!supplement) {
     supplement = new WorkerNavigatorNetworkInformation(navigator, context);
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
   return *supplement;
 }
@@ -32,13 +32,12 @@ WorkerNavigatorNetworkInformation*
 WorkerNavigatorNetworkInformation::ToWorkerNavigatorNetworkInformation(
     WorkerNavigator& navigator,
     ExecutionContext* context) {
-  return static_cast<WorkerNavigatorNetworkInformation*>(
-      Supplement<WorkerNavigator>::From(navigator, SupplementName()));
+  return Supplement<WorkerNavigator>::From<WorkerNavigatorNetworkInformation>(
+      navigator);
 }
 
-const char* WorkerNavigatorNetworkInformation::SupplementName() {
-  return "WorkerNavigatorNetworkInformation";
-}
+const char WorkerNavigatorNetworkInformation::kSupplementName[] =
+    "WorkerNavigatorNetworkInformation";
 
 NetworkInformation* WorkerNavigatorNetworkInformation::connection(
     ScriptState* script_state,

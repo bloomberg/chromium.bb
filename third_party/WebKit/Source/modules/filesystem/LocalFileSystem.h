@@ -57,6 +57,8 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
   WTF_MAKE_NONCOPYABLE(LocalFileSystem);
 
  public:
+  static const char kSupplementName[];
+
   LocalFileSystem(LocalFrame&, std::unique_ptr<FileSystemClient>);
   LocalFileSystem(WorkerClients&, std::unique_ptr<FileSystemClient>);
   ~LocalFileSystem();
@@ -71,7 +73,6 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
 
   FileSystemClient& Client() const { return *client_; }
 
-  static const char* SupplementName();
   static LocalFileSystem* From(ExecutionContext&);
 
   void Trace(blink::Visitor*) override;

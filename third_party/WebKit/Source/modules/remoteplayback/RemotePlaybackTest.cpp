@@ -389,7 +389,7 @@ TEST_F(RemotePlaybackTest, IsListening) {
   MockPresentationController* mock_controller =
       new MockPresentationController(frame, &presentation_client_);
   Supplement<LocalFrame>::ProvideTo(
-      frame, PresentationController::SupplementName(), mock_controller);
+      frame, static_cast<PresentationController*>(mock_controller));
 
   EXPECT_CALL(*mock_controller,
               AddAvailabilityObserver(::testing::Eq(remote_playback)))

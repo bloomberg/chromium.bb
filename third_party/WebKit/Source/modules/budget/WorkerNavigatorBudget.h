@@ -24,6 +24,8 @@ class WorkerNavigatorBudget final
   WTF_MAKE_NONCOPYABLE(WorkerNavigatorBudget);
 
  public:
+  static const char kSupplementName[];
+
   static WorkerNavigatorBudget& From(WorkerNavigator&);
 
   static BudgetService* budget(ExecutionContext*, WorkerNavigator&);
@@ -33,7 +35,6 @@ class WorkerNavigatorBudget final
 
  private:
   explicit WorkerNavigatorBudget(WorkerNavigator&);
-  static const char* SupplementName();
 
   Member<BudgetService> budget_;
 };

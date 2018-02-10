@@ -21,6 +21,8 @@ class NavigatorBeacon final : public GarbageCollectedFinalized<NavigatorBeacon>,
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorBeacon);
 
  public:
+  static const char kSupplementName[];
+
   static NavigatorBeacon& From(Navigator&);
   virtual ~NavigatorBeacon();
 
@@ -34,8 +36,6 @@ class NavigatorBeacon final : public GarbageCollectedFinalized<NavigatorBeacon>,
 
  private:
   explicit NavigatorBeacon(Navigator&);
-
-  static const char* SupplementName();
 
   bool SendBeaconImpl(ScriptState*,
                       const String&,

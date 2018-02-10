@@ -15,22 +15,19 @@ WorkerNavigatorBudget::WorkerNavigatorBudget(WorkerNavigator& worker_navigator)
     : Supplement<WorkerNavigator>(worker_navigator) {}
 
 // static
-const char* WorkerNavigatorBudget::SupplementName() {
-  return "WorkerNavigatorBudget";
-}
+const char WorkerNavigatorBudget::kSupplementName[] = "WorkerNavigatorBudget";
 
 // static
 WorkerNavigatorBudget& WorkerNavigatorBudget::From(
     WorkerNavigator& worker_navigator) {
   // Get the unique WorkerNavigatorBudget associated with this workerNavigator.
   WorkerNavigatorBudget* worker_navigator_budget =
-      static_cast<WorkerNavigatorBudget*>(Supplement<WorkerNavigator>::From(
-          worker_navigator, SupplementName()));
+      Supplement<WorkerNavigator>::From<WorkerNavigatorBudget>(
+          worker_navigator);
   if (!worker_navigator_budget) {
     // If there isn't one already, create it now and associate it.
     worker_navigator_budget = new WorkerNavigatorBudget(worker_navigator);
-    Supplement<WorkerNavigator>::ProvideTo(worker_navigator, SupplementName(),
-                                           worker_navigator_budget);
+    ProvideTo(worker_navigator, worker_navigator_budget);
   }
   return *worker_navigator_budget;
 }

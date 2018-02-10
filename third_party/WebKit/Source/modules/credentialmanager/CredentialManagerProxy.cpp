@@ -25,12 +25,13 @@ CredentialManagerProxy::~CredentialManagerProxy() {}
 // static
 CredentialManagerProxy* CredentialManagerProxy::From(Document* document) {
   DCHECK(document);
-  if (!Supplement<Document>::From(document, SupplementName())) {
-    ProvideTo(*document, CredentialManagerProxy::SupplementName(),
-              new CredentialManagerProxy(document));
+  auto* supplement =
+      Supplement<Document>::From<CredentialManagerProxy>(document);
+  if (!supplement) {
+    supplement = new CredentialManagerProxy(document);
+    ProvideTo(*document, supplement);
   }
-  return static_cast<CredentialManagerProxy*>(
-      Supplement<Document>::From(document, SupplementName()));
+  return supplement;
 }
 
 // static
@@ -41,8 +42,6 @@ CredentialManagerProxy* CredentialManagerProxy::From(
 }
 
 // static
-const char* CredentialManagerProxy::SupplementName() {
-  return "CredentialManagerProxy";
-}
+const char CredentialManagerProxy::kSupplementName[] = "CredentialManagerProxy";
 
 }  // namespace blink

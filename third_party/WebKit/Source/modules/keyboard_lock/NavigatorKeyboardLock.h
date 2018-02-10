@@ -26,6 +26,8 @@ class NavigatorKeyboardLock final
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorKeyboardLock);
 
  public:
+  static const char kSupplementName[];
+
   // Requests to receive a set of key codes
   // (https://w3c.github.io/uievents/#dom-keyboardevent-code) in string format.
   // The Promise will be rejected if the user or browser does not allow the web
@@ -52,7 +54,6 @@ class NavigatorKeyboardLock final
 
  private:
   explicit NavigatorKeyboardLock(Navigator&);
-  static const char* SupplementName();
 
   static NavigatorKeyboardLock& From(Navigator&);
 

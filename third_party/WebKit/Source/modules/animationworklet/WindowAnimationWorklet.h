@@ -23,6 +23,8 @@ class MODULES_EXPORT WindowAnimationWorklet final
   USING_GARBAGE_COLLECTED_MIXIN(WindowAnimationWorklet);
 
  public:
+  static const char kSupplementName[];
+
   static AnimationWorklet* animationWorklet(LocalDOMWindow&);
 
   void ContextDestroyed(ExecutionContext*) override;
@@ -33,7 +35,6 @@ class MODULES_EXPORT WindowAnimationWorklet final
   static WindowAnimationWorklet& From(LocalDOMWindow&);
 
   explicit WindowAnimationWorklet(Document*);
-  static const char* SupplementName();
 
   Member<AnimationWorklet> animation_worklet_;
 };

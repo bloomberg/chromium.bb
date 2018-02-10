@@ -37,6 +37,8 @@ class NavigatorGeolocation final
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorGeolocation);
 
  public:
+  static const char kSupplementName[];
+
   static NavigatorGeolocation& From(Navigator&);
   static Geolocation* geolocation(Navigator&);
   Geolocation* geolocation();
@@ -46,8 +48,6 @@ class NavigatorGeolocation final
 
  private:
   explicit NavigatorGeolocation(Navigator&);
-
-  static const char* SupplementName();
 
   TraceWrapperMember<Geolocation> geolocation_;
 };

@@ -30,6 +30,8 @@ class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
   USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementEncryptedMedia);
 
  public:
+  static const char kSupplementName[];
+
   static MediaKeys* mediaKeys(HTMLMediaElement&);
   static ScriptPromise setMediaKeys(ScriptState*,
                                     HTMLMediaElement&,
@@ -46,7 +48,6 @@ class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
   WebContentDecryptionModule* ContentDecryptionModule();
 
   static HTMLMediaElementEncryptedMedia& From(HTMLMediaElement&);
-  static const char* SupplementName();
 
   ~HTMLMediaElementEncryptedMedia();
 

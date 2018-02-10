@@ -74,15 +74,17 @@ class FileReader::ThrottlingController final
   USING_GARBAGE_COLLECTED_MIXIN(FileReader::ThrottlingController);
 
  public:
+  static const char kSupplementName[];
+
   static ThrottlingController* From(ExecutionContext* context) {
     if (!context)
       return nullptr;
 
-    ThrottlingController* controller = static_cast<ThrottlingController*>(
-        Supplement<ExecutionContext>::From(*context, SupplementName()));
+    ThrottlingController* controller =
+        Supplement<ExecutionContext>::From<ThrottlingController>(*context);
     if (!controller) {
       controller = new ThrottlingController(*context);
-      ProvideTo(*context, SupplementName(), controller);
+      ProvideTo(*context, controller);
     }
     return controller;
   }
@@ -173,10 +175,6 @@ class FileReader::ThrottlingController final
     }
   }
 
-  static const char* SupplementName() {
-    return "FileReaderThrottlingController";
-  }
-
   const size_t max_running_readers_;
 
   using FileReaderDeque = HeapDeque<Member<FileReader>>;
@@ -185,6 +183,10 @@ class FileReader::ThrottlingController final
   FileReaderDeque pending_readers_;
   FileReaderHashSet running_readers_;
 };
+
+// static
+const char FileReader::ThrottlingController::kSupplementName[] =
+    "FileReaderThrottlingController";
 
 FileReader* FileReader::Create(ExecutionContext* context) {
   return new FileReader(context);

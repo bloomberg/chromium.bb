@@ -28,6 +28,8 @@ class CORE_EXPORT LayoutWorklet : public Worklet,
   WTF_MAKE_NONCOPYABLE(LayoutWorklet);
 
  public:
+  static const char kSupplementName[];
+
   // At the moment, layout worklet allows at most two global scopes at any time.
   static const size_t kNumGlobalScopes;
   static LayoutWorklet* From(LocalDOMWindow&);
@@ -57,8 +59,6 @@ class CORE_EXPORT LayoutWorklet : public Worklet,
 
   DocumentDefinitionMap document_definition_map_;
   Member<PendingLayoutRegistry> pending_layout_registry_;
-
-  static const char* SupplementName();
 };
 
 }  // namespace blink

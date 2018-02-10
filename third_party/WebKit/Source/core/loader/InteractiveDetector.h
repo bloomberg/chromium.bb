@@ -32,6 +32,8 @@ class CORE_EXPORT InteractiveDetector
   USING_GARBAGE_COLLECTED_MIXIN(InteractiveDetector);
 
  public:
+  static const char kSupplementName[];
+
   // This class can be easily switched out to allow better testing of
   // InteractiveDetector.
   class CORE_EXPORT NetworkActivityChecker {

@@ -19,11 +19,11 @@ NavigatorKeyboardLock::NavigatorKeyboardLock(Navigator& navigator)
     : Supplement<Navigator>(navigator) {}
 
 NavigatorKeyboardLock& NavigatorKeyboardLock::From(Navigator& navigator) {
-  NavigatorKeyboardLock* supplement = static_cast<NavigatorKeyboardLock*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorKeyboardLock* supplement =
+      Supplement<Navigator>::From<NavigatorKeyboardLock>(navigator);
   if (!supplement) {
     supplement = new NavigatorKeyboardLock(navigator);
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
   return *supplement;
 }
@@ -101,9 +101,7 @@ void NavigatorKeyboardLock::LockRequestFinished(
 }
 
 // static
-const char* NavigatorKeyboardLock::SupplementName() {
-  return "NavigatorKeyboardLock";
-}
+const char NavigatorKeyboardLock::kSupplementName[] = "NavigatorKeyboardLock";
 
 void NavigatorKeyboardLock::Trace(blink::Visitor* visitor) {
   visitor->Trace(request_keylock_resolver_);

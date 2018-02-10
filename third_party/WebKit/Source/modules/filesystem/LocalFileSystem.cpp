@@ -194,38 +194,34 @@ void LocalFileSystem::TraceWrappers(
   Supplement<WorkerClients>::TraceWrappers(visitor);
 }
 
-const char* LocalFileSystem::SupplementName() {
-  return "LocalFileSystem";
-}
+const char LocalFileSystem::kSupplementName[] = "LocalFileSystem";
 
 LocalFileSystem* LocalFileSystem::From(ExecutionContext& context) {
   if (context.IsDocument()) {
     LocalFileSystem* file_system =
-        static_cast<LocalFileSystem*>(Supplement<LocalFrame>::From(
-            ToDocument(context).GetFrame(), SupplementName()));
+        Supplement<LocalFrame>::From<LocalFileSystem>(
+            ToDocument(context).GetFrame());
     DCHECK(file_system);
     return file_system;
   }
 
   WorkerClients* clients = ToWorkerGlobalScope(context).Clients();
   DCHECK(clients);
-  LocalFileSystem* file_system = static_cast<LocalFileSystem*>(
-      Supplement<WorkerClients>::From(clients, SupplementName()));
+  LocalFileSystem* file_system =
+      Supplement<WorkerClients>::From<LocalFileSystem>(clients);
   DCHECK(file_system);
   return file_system;
 }
 
 void ProvideLocalFileSystemTo(LocalFrame& frame,
                               std::unique_ptr<FileSystemClient> client) {
-  frame.ProvideSupplement(LocalFileSystem::SupplementName(),
-                          new LocalFileSystem(frame, std::move(client)));
+  frame.ProvideSupplement(new LocalFileSystem(frame, std::move(client)));
 }
 
 void ProvideLocalFileSystemToWorker(WorkerClients* worker_clients,
                                     std::unique_ptr<FileSystemClient> client) {
   Supplement<WorkerClients>::ProvideTo(
-      *worker_clients, LocalFileSystem::SupplementName(),
-      new LocalFileSystem(*worker_clients, std::move(client)));
+      *worker_clients, new LocalFileSystem(*worker_clients, std::move(client)));
 }
 
 }  // namespace blink

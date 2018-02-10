@@ -13,20 +13,17 @@ ContextFeatureSettings::ContextFeatureSettings(ExecutionContext& context)
     : Supplement<ExecutionContext>(context) {}
 
 // static
-const char* ContextFeatureSettings::SupplementName() {
-  return "ContextFeatureSettings";
-}
+const char ContextFeatureSettings::kSupplementName[] = "ContextFeatureSettings";
 
 // static
 ContextFeatureSettings* ContextFeatureSettings::From(
     ExecutionContext* context,
     CreationMode creation_mode) {
-  ContextFeatureSettings* settings = static_cast<ContextFeatureSettings*>(
-      Supplement<ExecutionContext>::From(context, SupplementName()));
+  ContextFeatureSettings* settings =
+      Supplement<ExecutionContext>::From<ContextFeatureSettings>(context);
   if (!settings && creation_mode == CreationMode::kCreateIfNotExists) {
     settings = new ContextFeatureSettings(*context);
-    Supplement<ExecutionContext>::ProvideTo(*context, SupplementName(),
-                                            settings);
+    Supplement<ExecutionContext>::ProvideTo(*context, settings);
   }
   return settings;
 }

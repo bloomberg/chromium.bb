@@ -16,21 +16,16 @@ DeviceOrientationAbsoluteController::DeviceOrientationAbsoluteController(
 DeviceOrientationAbsoluteController::~DeviceOrientationAbsoluteController() =
     default;
 
-const char* DeviceOrientationAbsoluteController::SupplementName() {
-  return "DeviceOrientationAbsoluteController";
-}
+const char DeviceOrientationAbsoluteController::kSupplementName[] =
+    "DeviceOrientationAbsoluteController";
 
 DeviceOrientationAbsoluteController& DeviceOrientationAbsoluteController::From(
     Document& document) {
   DeviceOrientationAbsoluteController* controller =
-      static_cast<DeviceOrientationAbsoluteController*>(
-          Supplement<Document>::From(
-              document, DeviceOrientationAbsoluteController::SupplementName()));
+      Supplement<Document>::From<DeviceOrientationAbsoluteController>(document);
   if (!controller) {
     controller = new DeviceOrientationAbsoluteController(document);
-    Supplement<Document>::ProvideTo(
-        document, DeviceOrientationAbsoluteController::SupplementName(),
-        controller);
+    Supplement<Document>::ProvideTo(document, controller);
   }
   return *controller;
 }

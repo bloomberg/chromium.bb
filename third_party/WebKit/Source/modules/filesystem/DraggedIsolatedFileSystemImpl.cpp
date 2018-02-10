@@ -57,15 +57,14 @@ DOMFileSystem* DraggedIsolatedFileSystemImpl::GetDOMFileSystem(
 }
 
 // static
-const char* DraggedIsolatedFileSystemImpl::SupplementName() {
-  DCHECK(IsMainThread());
-  return "DraggedIsolatedFileSystemImpl";
-}
+const char DraggedIsolatedFileSystemImpl::kSupplementName[] =
+    "DraggedIsolatedFileSystemImpl";
 
 DraggedIsolatedFileSystemImpl* DraggedIsolatedFileSystemImpl::From(
     DataObject* data_object) {
-  return static_cast<DraggedIsolatedFileSystemImpl*>(
-      Supplement<DataObject>::From(data_object, SupplementName()));
+  DCHECK(IsMainThread());
+  return Supplement<DataObject>::From<DraggedIsolatedFileSystemImpl>(
+      data_object);
 }
 
 void DraggedIsolatedFileSystemImpl::Trace(blink::Visitor* visitor) {
@@ -75,11 +74,10 @@ void DraggedIsolatedFileSystemImpl::Trace(blink::Visitor* visitor) {
 
 void DraggedIsolatedFileSystemImpl::PrepareForDataObject(
     DataObject* data_object) {
+  DCHECK(IsMainThread());
   DraggedIsolatedFileSystemImpl* file_system =
       new DraggedIsolatedFileSystemImpl();
-  DraggedIsolatedFileSystemImpl::ProvideTo(
-      *data_object, DraggedIsolatedFileSystemImpl::SupplementName(),
-      file_system);
+  ProvideTo(*data_object, file_system);
 }
 
 }  // namespace blink

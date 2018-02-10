@@ -16,18 +16,16 @@ NavigatorCredentials::NavigatorCredentials(Navigator& navigator)
     : Supplement<Navigator>(navigator) {}
 
 NavigatorCredentials& NavigatorCredentials::From(Navigator& navigator) {
-  NavigatorCredentials* supplement = static_cast<NavigatorCredentials*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorCredentials* supplement =
+      Supplement<Navigator>::From<NavigatorCredentials>(navigator);
   if (!supplement) {
     supplement = new NavigatorCredentials(navigator);
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
   return *supplement;
 }
 
-const char* NavigatorCredentials::SupplementName() {
-  return "NavigatorCredentials";
-}
+const char NavigatorCredentials::kSupplementName[] = "NavigatorCredentials";
 
 CredentialsContainer* NavigatorCredentials::credentials(Navigator& navigator) {
   return NavigatorCredentials::From(navigator).credentials();

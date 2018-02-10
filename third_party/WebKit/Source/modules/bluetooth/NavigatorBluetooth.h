@@ -19,6 +19,8 @@ class NavigatorBluetooth final : public GarbageCollected<NavigatorBluetooth>,
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorBluetooth);
 
  public:
+  static const char kSupplementName[];
+
   // Gets, or creates, NavigatorBluetooth supplement on Navigator.
   // See platform/Supplementable.h
   static NavigatorBluetooth& From(Navigator&);
@@ -32,7 +34,6 @@ class NavigatorBluetooth final : public GarbageCollected<NavigatorBluetooth>,
 
  private:
   explicit NavigatorBluetooth(Navigator&);
-  static const char* SupplementName();
 
   Member<Bluetooth> bluetooth_;
 };

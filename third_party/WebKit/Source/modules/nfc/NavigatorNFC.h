@@ -19,6 +19,8 @@ class NavigatorNFC final : public GarbageCollected<NavigatorNFC>,
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorNFC);
 
  public:
+  static const char kSupplementName[];
+
   // Gets, or creates, NavigatorNFC supplement on Navigator.
   static NavigatorNFC& From(Navigator&);
 
@@ -29,7 +31,6 @@ class NavigatorNFC final : public GarbageCollected<NavigatorNFC>,
 
  private:
   explicit NavigatorNFC(Navigator&);
-  static const char* SupplementName();
 
   TraceWrapperMember<NFC> nfc_;
 };

@@ -23,16 +23,14 @@ DeviceMotionController::DeviceMotionController(Document& document)
 
 DeviceMotionController::~DeviceMotionController() = default;
 
-const char* DeviceMotionController::SupplementName() {
-  return "DeviceMotionController";
-}
+const char DeviceMotionController::kSupplementName[] = "DeviceMotionController";
 
 DeviceMotionController& DeviceMotionController::From(Document& document) {
-  DeviceMotionController* controller = static_cast<DeviceMotionController*>(
-      Supplement<Document>::From(document, SupplementName()));
+  DeviceMotionController* controller =
+      Supplement<Document>::From<DeviceMotionController>(document);
   if (!controller) {
     controller = new DeviceMotionController(document);
-    Supplement<Document>::ProvideTo(document, SupplementName(), controller);
+    ProvideTo(document, controller);
   }
   return *controller;
 }

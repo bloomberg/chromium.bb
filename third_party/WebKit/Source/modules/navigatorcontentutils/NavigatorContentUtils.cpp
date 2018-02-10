@@ -126,8 +126,7 @@ static bool VerifyCustomHandlerScheme(const String& scheme,
 }
 
 NavigatorContentUtils* NavigatorContentUtils::From(Navigator& navigator) {
-  return static_cast<NavigatorContentUtils*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  return Supplement<Navigator>::From<NavigatorContentUtils>(navigator);
 }
 
 NavigatorContentUtils::~NavigatorContentUtils() = default;
@@ -186,15 +185,12 @@ void NavigatorContentUtils::Trace(blink::Visitor* visitor) {
   Supplement<Navigator>::Trace(visitor);
 }
 
-const char* NavigatorContentUtils::SupplementName() {
-  return "NavigatorContentUtils";
-}
+const char NavigatorContentUtils::kSupplementName[] = "NavigatorContentUtils";
 
 void NavigatorContentUtils::ProvideTo(Navigator& navigator,
                                       NavigatorContentUtilsClient* client) {
   Supplement<Navigator>::ProvideTo(
-      navigator, NavigatorContentUtils::SupplementName(),
-      new NavigatorContentUtils(navigator, client));
+      navigator, new NavigatorContentUtils(navigator, client));
 }
 
 }  // namespace blink

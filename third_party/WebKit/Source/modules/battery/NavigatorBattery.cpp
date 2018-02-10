@@ -40,16 +40,14 @@ ScriptPromise NavigatorBattery::getBattery(ScriptState* script_state) {
   return battery_manager_->StartRequest(script_state);
 }
 
-const char* NavigatorBattery::SupplementName() {
-  return "NavigatorBattery";
-}
+const char NavigatorBattery::kSupplementName[] = "NavigatorBattery";
 
 NavigatorBattery& NavigatorBattery::From(Navigator& navigator) {
-  NavigatorBattery* supplement = static_cast<NavigatorBattery*>(
-      Supplement<Navigator>::From(navigator, SupplementName()));
+  NavigatorBattery* supplement =
+      Supplement<Navigator>::From<NavigatorBattery>(navigator);
   if (!supplement) {
     supplement = new NavigatorBattery(navigator);
-    ProvideTo(navigator, SupplementName(), supplement);
+    ProvideTo(navigator, supplement);
   }
   return *supplement;
 }

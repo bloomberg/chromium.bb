@@ -318,6 +318,10 @@ void SetMediaKeysHandler::Trace(blink::Visitor* visitor) {
   ScriptPromiseResolver::Trace(visitor);
 }
 
+// static
+const char HTMLMediaElementEncryptedMedia::kSupplementName[] =
+    "HTMLMediaElementEncryptedMedia";
+
 HTMLMediaElementEncryptedMedia::HTMLMediaElementEncryptedMedia(
     HTMLMediaElement& element)
     : media_element_(&element),
@@ -328,18 +332,14 @@ HTMLMediaElementEncryptedMedia::~HTMLMediaElementEncryptedMedia() {
   DVLOG(EME_LOG_LEVEL) << __func__;
 }
 
-const char* HTMLMediaElementEncryptedMedia::SupplementName() {
-  return "HTMLMediaElementEncryptedMedia";
-}
-
 HTMLMediaElementEncryptedMedia& HTMLMediaElementEncryptedMedia::From(
     HTMLMediaElement& element) {
   HTMLMediaElementEncryptedMedia* supplement =
-      static_cast<HTMLMediaElementEncryptedMedia*>(
-          Supplement<HTMLMediaElement>::From(element, SupplementName()));
+      Supplement<HTMLMediaElement>::From<HTMLMediaElementEncryptedMedia>(
+          element);
   if (!supplement) {
     supplement = new HTMLMediaElementEncryptedMedia(element);
-    ProvideTo(element, SupplementName(), supplement);
+    ProvideTo(element, supplement);
   }
   return *supplement;
 }

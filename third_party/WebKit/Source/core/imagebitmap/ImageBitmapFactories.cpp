@@ -207,9 +207,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(
                                           options);
 }
 
-const char* ImageBitmapFactories::SupplementName() {
-  return "ImageBitmapFactories";
-}
+const char ImageBitmapFactories::kSupplementName[] = "ImageBitmapFactories";
 
 ImageBitmapFactories& ImageBitmapFactories::From(EventTarget& event_target) {
   if (LocalDOMWindow* window = event_target.ToLocalDOMWindow())
@@ -222,11 +220,11 @@ ImageBitmapFactories& ImageBitmapFactories::From(EventTarget& event_target) {
 
 template <class GlobalObject>
 ImageBitmapFactories& ImageBitmapFactories::FromInternal(GlobalObject& object) {
-  ImageBitmapFactories* supplement = static_cast<ImageBitmapFactories*>(
-      Supplement<GlobalObject>::From(object, SupplementName()));
+  ImageBitmapFactories* supplement =
+      Supplement<GlobalObject>::template From<ImageBitmapFactories>(object);
   if (!supplement) {
     supplement = new ImageBitmapFactories;
-    Supplement<GlobalObject>::ProvideTo(object, SupplementName(), supplement);
+    Supplement<GlobalObject>::ProvideTo(object, supplement);
   }
   return *supplement;
 }

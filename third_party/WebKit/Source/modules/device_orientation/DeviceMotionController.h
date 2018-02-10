@@ -18,9 +18,10 @@ class MODULES_EXPORT DeviceMotionController final
   USING_GARBAGE_COLLECTED_MIXIN(DeviceMotionController);
 
  public:
+  static const char kSupplementName[];
+
   ~DeviceMotionController() override;
 
-  static const char* SupplementName();
   static DeviceMotionController& From(Document&);
 
   // DeviceSingleWindowEventController
