@@ -1,3 +1,5 @@
+-RenderWidgetHostInputEventRouterTest.DoNotCoalesceGestureEvents
+-RenderWidgetHostInputEventRouterTest.DoNotCoalesceTouchEvents
 -RenderWidgetHostTest.FrameToken_RendererCrash
 -RenderWidgetHostTest.NewContentRenderingTimeout
 -RenderWidgetHostTest.SwapCompositorFrameWithBadSourceId

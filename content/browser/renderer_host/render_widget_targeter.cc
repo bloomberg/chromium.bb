@@ -17,7 +17,9 @@ namespace {
 
 bool MergeEventIfPossible(const blink::WebInputEvent& event,
                           ui::WebScopedInputEvent* blink_event) {
-  if (ui::CanCoalesce(event, **blink_event)) {
+  if (!blink::WebInputEvent::IsTouchEventType(event.GetType()) &&
+      !blink::WebInputEvent::IsGestureEventType(event.GetType()) &&
+      ui::CanCoalesce(event, **blink_event)) {
     ui::Coalesce(event, blink_event->get());
     return true;
   }

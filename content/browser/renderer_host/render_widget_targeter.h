@@ -86,6 +86,9 @@ class RenderWidgetTargeter {
     async_hit_test_timeout_delay_ = delay;
   }
 
+  unsigned num_requests_in_queue_for_testing() { return requests_.size(); }
+  bool is_request_in_flight_for_testing() { return request_in_flight_; }
+
  private:
   // Attempts to target and dispatch all events in the queue. It stops if it has
   // to query a client, or if the queue becomes empty.
