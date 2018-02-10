@@ -343,13 +343,13 @@ const LbdInvTxfm2dFunc kLbdInvFuncSSE2List[TX_SIZES_ALL] = {
   av1_lowbd_inv_txfm2d_add_16x32_sse2,  // TX_16X32
   av1_lowbd_inv_txfm2d_add_32x16_sse2,  // TX_32X16
 #if CONFIG_TX64X64
-  NULL,  // TX_32X64
-  NULL,  // TX_64X32
-#endif   // CONFIG_TX64X64
-  NULL,  // TX_4X16
-  NULL,  // TX_16X4
-  NULL,  // TX_8X32
-  NULL,  // TX_32X8
+  NULL,                                // TX_32X64
+  NULL,                                // TX_64X32
+#endif                                 // CONFIG_TX64X64
+  NULL,                                // TX_4X16
+  NULL,                                // TX_16X4
+  av1_lowbd_inv_txfm2d_add_8x32_sse2,  // 8x32
+  av1_lowbd_inv_txfm2d_add_32x8_sse2,  // 32x8
 #if CONFIG_TX64X64
   NULL,  // TX_16X64
   NULL,  // TX_64X16
