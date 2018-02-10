@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/debug/alias.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -514,6 +515,14 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> CreateDevMode(HANDLE printer,
 
   int size = out->dmSize;
   int extra_size = out->dmDriverExtra;
+
+  // The CHECK_GE() below can fail. Alias the variable values so they are
+  // recorded in crash dumps.
+  // See https://crbug.com/780016 and https://crbug.com/806016 for example
+  // crashes.
+  base::debug::Alias(&size);
+  base::debug::Alias(&extra_size);
+  base::debug::Alias(&buffer_size);
   CHECK_GE(buffer_size, size + extra_size);
   return out;
 }
