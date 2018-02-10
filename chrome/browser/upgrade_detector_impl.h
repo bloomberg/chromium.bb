@@ -102,10 +102,6 @@ class UpgradeDetectorImpl : public UpgradeDetector,
   // True if auto update is turned on.
   bool is_auto_update_enabled_;
 
-  // When the upgrade was detected - either a software update or a variations
-  // update, whichever happened first.
-  base::TimeTicks upgrade_detected_time_;
-
   // The date the binaries were built.
   base::Time build_date_;
 

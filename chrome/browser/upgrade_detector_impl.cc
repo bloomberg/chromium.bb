@@ -302,7 +302,7 @@ void UpgradeDetectorImpl::StartUpgradeNotificationTimer() {
   if (upgrade_notification_timer_.IsRunning())
     return;
 
-  upgrade_detected_time_ = base::TimeTicks::Now();
+  set_upgrade_detected_time(base::TimeTicks::Now());
 
   // Start the repeating timer for notifying the user after a certain period.
   // The called function will eventually figure out that enough time has passed
@@ -469,7 +469,7 @@ void UpgradeDetectorImpl::OnAutoupdatesEnabledResult(
 
 void UpgradeDetectorImpl::NotifyOnUpgrade() {
   const base::TimeDelta time_passed =
-      base::TimeTicks::Now() - upgrade_detected_time_;
+      base::TimeTicks::Now() - upgrade_detected_time();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NotifyOnUpgradeWithTimePassed(time_passed);
 }

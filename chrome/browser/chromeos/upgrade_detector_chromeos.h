@@ -55,7 +55,6 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   // has passed and we should start notifying the user.
   base::RepeatingTimer upgrade_notification_timer_;
   bool initialized_;
-  base::Time upgrade_detected_time_;
 
   std::unique_ptr<ChannelsRequester> channels_requester_;
 
