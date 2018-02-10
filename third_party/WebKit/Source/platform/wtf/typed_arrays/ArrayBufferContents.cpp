@@ -33,42 +33,9 @@
 #endif
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/CheckedNumeric.h"
-#include "platform/wtf/Vector.h"
 #include "platform/wtf/allocator/Partitions.h"
+
 namespace WTF {
-
-namespace {
-
-// Partitions are expensive; limit them so we don't run out of memory.
-constexpr size_t kMaxPartitions = 4;
-
-typedef std::unique_ptr<base::PartitionAllocatorGeneric> PartitionPtr;
-// Use a vector of key/value pairs as a small map.
-typedef std::pair<void*, PartitionPtr> PartitionEntry;
-typedef WTF::Vector<PartitionEntry, kMaxPartitions> PartitionVector;
-
-base::PartitionRootGeneric* FindOrCreatePartition(void* partition_key) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(PartitionVector, partitions, ());
-  for (auto& entry : partitions) {
-    if (entry.first == partition_key) {
-      return entry.second->root();
-    }
-  }
-  if (partitions.size() < kMaxPartitions) {
-    partitions.emplace_back(std::make_pair(
-        partition_key, PartitionPtr(new base::PartitionAllocatorGeneric)));
-    auto& partition = partitions.back().second;
-    partition->init();
-    return partition->root();
-  }
-  // Use the global partition if we're at the limit.
-  // TODO(crbug.com/799573) Make sure the main frame doesn't use the global
-  // partition.
-  return Partitions::ArrayBufferPartition();
-}
-
-}  // namespace
 
 void ArrayBufferContents::DefaultAdjustAmountOfExternalAllocatedMemoryFunction(
     int64_t diff) {
@@ -141,37 +108,20 @@ void ArrayBufferContents::CopyTo(ArrayBufferContents& other) {
   other.holder_->CopyMemoryFrom(*holder_);
 }
 
-void* ArrayBufferContents::AllocateMemoryWithFlags(
-    base::PartitionRootGeneric* partition_root,
-    size_t size,
-    InitializationPolicy policy,
-    int flags) {
-  // Allocate extra space for a partition pointer at the beginning.
-  size_t alloc_size = CheckAdd(size, sizeof(void*)).ValueOrDie();
-  void* base_ptr = PartitionAllocGenericFlags(
-      partition_root, flags, alloc_size,
+void* ArrayBufferContents::AllocateMemoryWithFlags(size_t size,
+                                                   InitializationPolicy policy,
+                                                   int flags) {
+  void* data = PartitionAllocGenericFlags(
+      Partitions::ArrayBufferPartition(), flags, size,
       WTF_HEAP_PROFILER_TYPE_NAME(ArrayBufferContents));
-  if (!base_ptr)
-    return nullptr;
-  void** partition_root_ptr = reinterpret_cast<void**>(base_ptr);
-  *partition_root_ptr = partition_root;
-  void* data = reinterpret_cast<void*>(partition_root_ptr + 1);
-  if (policy == kZeroInitialize)
+  if (policy == kZeroInitialize && data)
     memset(data, '\0', size);
   return data;
 }
 
 void* ArrayBufferContents::AllocateMemoryOrNull(size_t size,
                                                 InitializationPolicy policy) {
-  return AllocateMemoryWithFlags(Partitions::ArrayBufferPartition(), size,
-                                 policy, base::PartitionAllocReturnNull);
-}
-
-void* ArrayBufferContents::AllocateMemoryOrNull(void* partition_key,
-                                                size_t size,
-                                                InitializationPolicy policy) {
-  return AllocateMemoryWithFlags(FindOrCreatePartition(partition_key), size,
-                                 policy, base::PartitionAllocReturnNull);
+  return AllocateMemoryWithFlags(size, policy, base::PartitionAllocReturnNull);
 }
 
 // This method is used by V8's WebAssembly implementation to reserve a large
@@ -202,11 +152,7 @@ void* ArrayBufferContents::ReserveMemory(size_t size) {
 }
 
 void ArrayBufferContents::FreeMemory(void* data) {
-  // The partition pointer is just before |data|. See |AllocateMemoryWithFlags|.
-  base::PartitionRootGeneric** partition_root_ptr =
-      reinterpret_cast<base::PartitionRootGeneric**>(data) - 1;
-  void* base_ptr = reinterpret_cast<void*>(partition_root_ptr);
-  (*partition_root_ptr)->Free(base_ptr);
+  Partitions::ArrayBufferPartition()->Free(data);
 }
 
 void ArrayBufferContents::ReleaseReservedMemory(void* data, size_t size) {
