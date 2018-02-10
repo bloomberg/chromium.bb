@@ -1338,7 +1338,15 @@ std::unique_ptr<DatagramClientSocket> QuicStreamFactory::CreateSocket(
 }
 
 void QuicStreamFactory::OnSSLConfigChanged() {
-  CloseAllSessions(ERR_CERT_DATABASE_CHANGED, QUIC_CONNECTION_CANCELLED);
+  // TODO(zhongyi): remove quic_stream_factory from being a
+  // SSLConfigService::Observer when channel ID is deprecated.
+  // (See http://crbug.com/809272.)
+
+  // Mark all active sessions as going away.
+  while (!active_sessions_.empty()) {
+    QuicChromiumClientSession* session = active_sessions_.begin()->second;
+    OnSessionGoingAway(session);
+  }
 }
 
 void QuicStreamFactory::OnCertDBChanged() {

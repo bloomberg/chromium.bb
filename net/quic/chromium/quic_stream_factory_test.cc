@@ -4798,7 +4798,6 @@ TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   socket_data.AddWrite(ConstructInitialSettingsPacket());
-  socket_data.AddWrite(ConstructClientRstPacket(2, QUIC_RST_ACKNOWLEDGEMENT));
   socket_data.AddSocketDataToFactory(socket_factory_.get());
 
   MockQuicData socket_data2;
@@ -4815,18 +4814,16 @@ TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
-  HttpRequestInfo request_info;
-  EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+  EXPECT_TRUE(stream);
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
 
   ssl_config_service_->NotifySSLConfigChange();
-  EXPECT_EQ(ERR_CERT_DATABASE_CHANGED,
-            stream->ReadResponseHeaders(callback_.callback()));
   EXPECT_FALSE(factory_->require_confirmation());
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
 
   // Now attempting to request a stream to the same origin should create
   // a new session.
-
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(
       ERR_IO_PENDING,
@@ -4835,8 +4832,15 @@ TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {
                        net_log_, &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
-  stream = CreateStream(&request2);
-  stream.reset();  // Will reset stream 3.
+  std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
+  EXPECT_TRUE(stream2);
+
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_NE(session, GetActiveSession(host_port_pair_));
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+
+  stream2.reset();
+  stream.reset();
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
