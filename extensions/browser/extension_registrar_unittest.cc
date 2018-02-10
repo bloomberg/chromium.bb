@@ -64,9 +64,8 @@ class TestExtensionRegistrarDelegate : public ExtensionRegistrar::Delegate {
   MOCK_METHOD2(PreAddExtension,
                void(const Extension* extension,
                     const Extension* old_extension));
-  MOCK_METHOD2(PostActivateExtension,
-               void(scoped_refptr<const Extension> extension,
-                    bool is_newly_added));
+  MOCK_METHOD1(PostActivateExtension,
+               void(scoped_refptr<const Extension> extension));
   MOCK_METHOD1(PostDeactivateExtension,
                void(scoped_refptr<const Extension> extension));
   MOCK_METHOD3(LoadExtensionForReload,
@@ -109,7 +108,7 @@ class ExtensionRegistrarTest : public ExtensionsTest {
         .WillByDefault(Return(true));
     ON_CALL(delegate_, ShouldBlockExtension(extension_.get()))
         .WillByDefault(Return(false));
-    EXPECT_CALL(delegate_, PostActivateExtension(_, _)).Times(0);
+    EXPECT_CALL(delegate_, PostActivateExtension(_)).Times(0);
     EXPECT_CALL(delegate_, PostDeactivateExtension(_)).Times(0);
   }
 
@@ -122,25 +121,17 @@ class ExtensionRegistrarTest : public ExtensionsTest {
     EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(&delegate_));
 
     // Re-add the expectations for functions that must not be called.
-    EXPECT_CALL(delegate_, PostActivateExtension(_, _)).Times(0);
+    EXPECT_CALL(delegate_, PostActivateExtension(_)).Times(0);
     EXPECT_CALL(delegate_, PostDeactivateExtension(_)).Times(0);
   }
 
   // Adds the extension as enabled and verifies the result.
   void AddEnabledExtension() {
-    AddEnabledExtensionImpl(/*is_newly_added=*/true);
-  }
-
-  void AddReloadedExtension() {
-    AddEnabledExtensionImpl(/*is_newly_added=*/false);
-  }
-
-  void AddEnabledExtensionImpl(bool is_newly_added) {
     SCOPED_TRACE("AddEnabledExtension");
     ExtensionRegistry* extension_registry =
         ExtensionRegistry::Get(browser_context());
 
-    EXPECT_CALL(delegate_, PostActivateExtension(extension_, is_newly_added));
+    EXPECT_CALL(delegate_, PostActivateExtension(extension_));
     registrar_->AddExtension(extension_);
     ExpectInSet(ExtensionRegistry::ENABLED);
     EXPECT_FALSE(IsExtensionReady());
@@ -264,7 +255,7 @@ class ExtensionRegistrarTest : public ExtensionsTest {
     ExtensionRegistry* extension_registry =
         ExtensionRegistry::Get(browser_context());
 
-    EXPECT_CALL(delegate_, PostActivateExtension(extension_, false));
+    EXPECT_CALL(delegate_, PostActivateExtension(extension_));
     registrar_->EnableExtension(extension_->id());
     ExpectInSet(ExtensionRegistry::ENABLED);
     EXPECT_FALSE(IsExtensionReady());
@@ -514,7 +505,7 @@ TEST_F(ExtensionRegistrarTest, ReloadExtension) {
   ReloadEnabledExtension();
 
   // Add the now-reloaded extension back into the registrar.
-  AddReloadedExtension();
+  AddEnabledExtension();
 }
 
 TEST_F(ExtensionRegistrarTest, RemoveReloadedExtension) {

@@ -464,8 +464,7 @@ class ExtensionService
   void PreAddExtension(const extensions::Extension* extension,
                        const extensions::Extension* old_extension) override;
   void PostActivateExtension(
-      scoped_refptr<const extensions::Extension> extension,
-      bool is_newly_added) override;
+      scoped_refptr<const extensions::Extension> extension) override;
   void PostDeactivateExtension(
       scoped_refptr<const extensions::Extension> extension) override;
   void LoadExtensionForReload(const extensions::ExtensionId& extension_id,

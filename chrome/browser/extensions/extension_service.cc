@@ -902,8 +902,7 @@ void ExtensionService::RecordPermissionMessagesHistogram(
 // TODO(michaelpg): Group with other ExtensionRegistrar::Delegate overrides
 // according to header file once diffs have settled down.
 void ExtensionService::PostActivateExtension(
-    scoped_refptr<const Extension> extension,
-    bool is_newly_added) {
+    scoped_refptr<const Extension> extension) {
   // TODO(kalman): Convert ExtensionSpecialStoragePolicy to a
   // BrowserContextKeyedService and use ExtensionRegistryObserver.
   profile_->GetExtensionSpecialStoragePolicy()->GrantRightsForExtension(

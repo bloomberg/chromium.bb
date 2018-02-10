@@ -56,11 +56,8 @@ class ExtensionRegistrar {
 
     // Handles updating the browser context when an extension is activated
     // (becomes enabled).
-    // |is_newly_added| specifies if the extension has just been added.
-    // Otherwise, the extension was already added; it may have been activated
-    // before and then disabled/reloaded.
-    virtual void PostActivateExtension(scoped_refptr<const Extension> extension,
-                                       bool is_newly_added) = 0;
+    virtual void PostActivateExtension(
+        scoped_refptr<const Extension> extension) = 0;
 
     // Handles updating the browser context when an enabled extension is
     // deactivated (whether disabled or removed).

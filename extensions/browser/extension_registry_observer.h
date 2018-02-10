@@ -14,7 +14,6 @@ class BrowserContext;
 
 namespace extensions {
 
-class Extension;
 class ExtensionRegistry;
 
 // Observer for ExtensionRegistry. Exists in a separate header file to reduce

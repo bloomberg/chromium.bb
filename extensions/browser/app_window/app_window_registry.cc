@@ -32,8 +32,7 @@ void AppWindowRegistry::Observer::OnAppWindowHidden(AppWindow* app_window) {
 }
 
 void AppWindowRegistry::Observer::OnAppWindowShown(AppWindow* app_window,
-                                                   bool was_shown) {
-}
+                                                   bool was_hidden) {}
 
 void AppWindowRegistry::Observer::OnAppWindowActivated(AppWindow* app_window) {
 }

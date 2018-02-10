@@ -427,7 +427,7 @@ void ExtensionRegistrar::ActivateExtension(const Extension* extension,
   // know about it.
   registry_->TriggerOnLoaded(extension);
 
-  delegate_->PostActivateExtension(extension, is_newly_added);
+  delegate_->PostActivateExtension(extension);
 
   // When an existing extension is re-enabled, it may be necessary to spin up
   // its lazy background page.
