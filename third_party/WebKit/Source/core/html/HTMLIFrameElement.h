@@ -28,7 +28,7 @@
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLIFrameElementSandbox.h"
 #include "platform/Supplementable.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy.h"
+#include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
 
 namespace blink {
 class Policy;

@@ -10,7 +10,7 @@
 #include "platform/network/http_names.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
-#include "third_party/WebKit/common/client_hints/client_hints.h"
+#include "third_party/WebKit/public/common/client_hints/client_hints.h"
 
 namespace blink {
 

@@ -9,8 +9,8 @@
 
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "third_party/WebKit/common/common_export.h"
-#include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.mojom-shared.h"
+#include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/public/common/frame/sandbox_flags.h"
 
 namespace mojo {

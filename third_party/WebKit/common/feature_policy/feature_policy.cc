@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/WebKit/common/feature_policy/feature_policy.h"
+#include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -236,8 +236,8 @@ void FeaturePolicy::AddContainerPolicy(
 }
 
 // static
-// See third_party/WebKit/common/feature_policy/feature_policy.h for status of
-// each feature (in spec, implemented, etc).
+// See third_party/WebKit/public/common/feature_policy/feature_policy.h for
+// status of each feature (in spec, implemented, etc).
 const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
   CR_DEFINE_STATIC_LOCAL(FeatureList, default_feature_list,
                          ({{mojom::FeaturePolicyFeature::kAutoplay,

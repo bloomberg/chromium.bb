@@ -4,8 +4,10 @@
 
 mojom = "//third_party/WebKit/common/message_port/message_port.mojom"
 public_headers =
-    [ "//third_party/WebKit/common/message_port/cloneable_message.h" ]
-traits_headers = [ "//third_party/WebKit/common/message_port/cloneable_message_struct_traits.h" ]
+    [ "//third_party/WebKit/public/common/message_port/cloneable_message.h" ]
+traits_headers = [
+  "//third_party/WebKit/common/message_port/cloneable_message_struct_traits.h",
+]
 
 deps = [
   "//mojo/common:struct_traits",

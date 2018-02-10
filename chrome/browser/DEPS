@@ -129,9 +129,12 @@ include_rules = [
   "+third_party/sqlite",
   "+third_party/zlib",
 
-  # No inclusion of WebKit from the browser, other than strictly enum/POD,
+  # No inclusion of WebKit from the browser, other than the ones in
+  # WebKit/public/common, or the ones that are strictly enum/POD,
   # header-only types, and some selected common code.
   "-third_party/WebKit",
+  "+third_party/WebKit/common",  # TODO(kinuko): Remove this.
+  "+third_party/WebKit/public/common",
   "+third_party/WebKit/public/platform/WebCache.h",
   "+third_party/WebKit/public/platform/WebDisplayMode.h",
   "+third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h",
@@ -153,11 +156,6 @@ include_rules = [
   "+third_party/WebKit/public/web/WebPresentationReceiverFlags.h",
   "+third_party/WebKit/public/web/WebTextDirection.h",
   "+third_party/WebKit/public/web/WebTriggeringEventInfo.h",
-
-  # Unlike other WebKit directories WebKit/common is for the files that
-  # are commonly referenced by renderer-side and browser-side code, and
-  # does not use Blink types like WTF.
-  "+third_party/WebKit/common",
 
   # Allow mojo generated files in WebKit. These files use STL types and
   # don't use WTF types.

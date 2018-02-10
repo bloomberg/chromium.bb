@@ -35,7 +35,7 @@
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorker.h"
 #include "public/platform/web_feature.mojom-shared.h"
-#include "third_party/WebKit/common/message_port/transferable_message.h"
+#include "third_party/WebKit/public/common/message_port/transferable_message.h"
 
 #include <memory>
 

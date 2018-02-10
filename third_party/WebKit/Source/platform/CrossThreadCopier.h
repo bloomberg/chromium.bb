@@ -41,7 +41,7 @@
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Functional.h"  // FunctionThreadAffinity
 #include "platform/wtf/TypeTraits.h"
-#include "third_party/WebKit/common/message_port/message_port_channel.h"
+#include "third_party/WebKit/public/common/message_port/message_port_channel.h"
 
 namespace base {
 template <typename, typename>

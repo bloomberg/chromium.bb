@@ -4,7 +4,7 @@
 
 #include "core/frame/NavigatorDeviceMemory.h"
 
-#include "third_party/WebKit/common/device_memory/approximated_device_memory.h"
+#include "third_party/WebKit/public/common/device_memory/approximated_device_memory.h"
 
 namespace blink {
 

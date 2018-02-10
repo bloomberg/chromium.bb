@@ -22,7 +22,7 @@
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/common/message_port/message_port_channel.h"
+#include "third_party/WebKit/public/common/message_port/message_port_channel.h"
 
 namespace blink {
 namespace {

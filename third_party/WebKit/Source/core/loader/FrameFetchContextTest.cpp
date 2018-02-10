@@ -62,7 +62,7 @@
 #include "services/network/public/interfaces/request_context_frame_type.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/common/device_memory/approximated_device_memory.h"
+#include "third_party/WebKit/public/common/device_memory/approximated_device_memory.h"
 #include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
 
 namespace blink {

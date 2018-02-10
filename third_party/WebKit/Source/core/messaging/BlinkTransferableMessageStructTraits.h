@@ -10,7 +10,7 @@
 #include "core/messaging/BlinkTransferableMessage.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "third_party/WebKit/common/message_port/message_port.mojom-blink.h"
-#include "third_party/WebKit/common/message_port/message_port_channel.h"
+#include "third_party/WebKit/public/common/message_port/message_port_channel.h"
 
 namespace mojo {
 
