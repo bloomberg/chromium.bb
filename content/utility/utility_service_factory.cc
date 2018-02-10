@@ -20,7 +20,7 @@
 #include "content/utility/utility_thread_impl.h"
 #include "media/media_features.h"
 #include "services/data_decoder/data_decoder_service.h"
-#include "services/data_decoder/public/interfaces/constants.mojom.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/mojom/service.mojom.h"

@@ -29,7 +29,7 @@ source_set("lib") {
   ]
 
   public_deps = [
-    "//services/data_decoder/public/interfaces",
+    "//services/data_decoder/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 }

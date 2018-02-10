@@ -22,7 +22,7 @@
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/json_file_sanitizer.h"
 #include "extensions/common/manifest.h"
-#include "services/data_decoder/public/interfaces/json_parser.mojom.h"
+#include "services/data_decoder/public/mojom/json_parser.mojom.h"
 #include "services/service_manager/public/cpp/identity.h"
 
 class SkBitmap;

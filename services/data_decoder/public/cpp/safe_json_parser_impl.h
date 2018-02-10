@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
-#include "services/data_decoder/public/interfaces/json_parser.mojom.h"
+#include "services/data_decoder/public/mojom/json_parser.mojom.h"
 
 namespace base {
 class Value;

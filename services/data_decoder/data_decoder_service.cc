@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/data_decoder/image_decoder_impl.h"
 #include "services/data_decoder/json_parser_impl.h"
-#include "services/data_decoder/public/interfaces/image_decoder.mojom.h"
+#include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 #include "services/data_decoder/xml_parser.h"
 #include "services/service_manager/public/cpp/service_context.h"
 

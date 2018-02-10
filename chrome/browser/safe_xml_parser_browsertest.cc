@@ -14,8 +14,8 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_utils.h"
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"
-#include "services/data_decoder/public/interfaces/constants.mojom.h"
-#include "services/data_decoder/public/interfaces/xml_parser.mojom.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
+#include "services/data_decoder/public/mojom/xml_parser.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace {

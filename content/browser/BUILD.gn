@@ -121,7 +121,7 @@ jumbo_source_set("browser") {
     "//services/catalog/public/cpp",
     "//services/catalog/public/interfaces:constants",
     "//services/data_decoder/public/cpp",
-    "//services/data_decoder/public/interfaces",
+    "//services/data_decoder/public/mojom",
     "//services/device:lib",
     "//services/device/public/cpp:device_features",
     "//services/device/public/interfaces",
