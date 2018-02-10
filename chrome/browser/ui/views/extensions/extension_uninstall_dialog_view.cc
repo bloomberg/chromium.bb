@@ -141,7 +141,7 @@ ExtensionUninstallDialogViews::~ExtensionUninstallDialogViews() {
 
 void ExtensionUninstallDialogViews::Show() {
   ToolbarActionView* anchor_view =
-      GetExtensionAnchorView(extension()->id(), parent());
+      parent() ? GetExtensionAnchorView(extension()->id(), parent()) : nullptr;
   view_ = new ExtensionUninstallDialogDelegateView(
       this, anchor_view, extension(), triggering_extension(), &icon());
   if (anchor_view) {
