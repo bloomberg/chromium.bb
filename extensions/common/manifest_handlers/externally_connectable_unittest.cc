@@ -270,6 +270,14 @@ TEST_F(ExternallyConnectableTest, AllURLsNotWhitelisted) {
   EXPECT_FALSE(info->matches.MatchesAllURLs());
 }
 
+TEST_F(ExternallyConnectableTest, AllHttpsURLsNotWhitelisted) {
+  scoped_refptr<Extension> extension = LoadAndExpectSuccess(
+      "externally_connectable_all_https_urls_not_whitelisted.json");
+  ExternallyConnectableInfo* info = GetExternallyConnectableInfo(extension);
+  EXPECT_FALSE(info->matches.MatchesAllURLs());
+  EXPECT_FALSE(info->matches.MatchesURL(GURL("https://example.com")));
+}
+
 TEST_F(ExternallyConnectableTest, AllURLsWhitelisted) {
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("externally_connectable_all_urls_whitelisted.json");
@@ -279,6 +287,21 @@ TEST_F(ExternallyConnectableTest, AllURLsWhitelisted) {
   EXPECT_TRUE(info->matches.ContainsPattern(pattern));
   EXPECT_TRUE(info->matches.MatchesURL(GURL("https://example.com")));
   EXPECT_TRUE(info->matches.MatchesURL(GURL("http://build.chromium.org")));
+}
+
+TEST_F(ExternallyConnectableTest, AllHttpsURLsWhitelisted) {
+  scoped_refptr<Extension> extension = LoadAndExpectSuccess(
+      "externally_connectable_all_https_urls_whitelisted.json");
+  ExternallyConnectableInfo* info = GetExternallyConnectableInfo(extension);
+
+  URLPattern all_urls_pattern(URLPattern::SCHEME_ALL, "<all_urls>");
+  EXPECT_FALSE(info->matches.ContainsPattern(all_urls_pattern));
+
+  URLPattern https_urls_pattern(URLPattern::SCHEME_ALL, "https://*/*");
+  EXPECT_TRUE(info->matches.ContainsPattern(https_urls_pattern));
+
+  EXPECT_TRUE(info->matches.MatchesURL(GURL("https://example.com")));
+  EXPECT_FALSE(info->matches.MatchesURL(GURL("http://build.chromium.org")));
 }
 
 TEST_F(ExternallyConnectableTest, WarningWildcardHost) {
