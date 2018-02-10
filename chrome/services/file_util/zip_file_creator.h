@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "chrome/services/file_util/public/interfaces/zip_file_creator.mojom.h"
+#include "chrome/services/file_util/public/mojom/zip_file_creator.mojom.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 

@@ -75,7 +75,7 @@
 
 #if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
 #include "chrome/services/file_util/file_util_service.h"  // nogncheck
-#include "chrome/services/file_util/public/interfaces/constants.mojom.h"  // nogncheck
+#include "chrome/services/file_util/public/mojom/constants.mojom.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)

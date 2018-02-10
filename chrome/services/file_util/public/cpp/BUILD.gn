@@ -6,7 +6,7 @@ import("//build/config/features.gni")
 
 source_set("cpp") {
   public_deps = [
-    "//chrome/services/file_util/public/interfaces",
+    "//chrome/services/file_util/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 

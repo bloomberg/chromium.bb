@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/task_scheduler/post_task.h"
-#include "chrome/services/file_util/public/interfaces/constants.mojom.h"
+#include "chrome/services/file_util/public/mojom/constants.mojom.h"
 #include "components/filesystem/directory_impl.h"
 #include "components/filesystem/lock_table.h"
 #include "content/public/browser/browser_thread.h"

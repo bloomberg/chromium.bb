@@ -5,7 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//build/config/features.gni")
 
-mojom("interfaces") {
+mojom("mojom") {
   sources = [
     "constants.mojom",
   ]

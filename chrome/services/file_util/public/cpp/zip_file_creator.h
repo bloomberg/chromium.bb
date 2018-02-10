@@ -11,7 +11,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/task_scheduler/post_task.h"
-#include "chrome/services/file_util/public/interfaces/zip_file_creator.mojom.h"
+#include "chrome/services/file_util/public/mojom/zip_file_creator.mojom.h"
 
 namespace service_manager {
 class Connector;

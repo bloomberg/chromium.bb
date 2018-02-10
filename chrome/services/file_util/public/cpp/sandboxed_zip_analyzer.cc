@@ -10,8 +10,8 @@
 #include "base/files/file_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
-#include "chrome/services/file_util/public/interfaces/constants.mojom.h"
-#include "chrome/services/file_util/public/interfaces/safe_archive_analyzer.mojom.h"
+#include "chrome/services/file_util/public/mojom/constants.mojom.h"
+#include "chrome/services/file_util/public/mojom/safe_archive_analyzer.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/service_manager/public/cpp/connector.h"
 

@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/services/file_util/public/interfaces/safe_archive_analyzer.mojom.h"
+#include "chrome/services/file_util/public/mojom/safe_archive_analyzer.mojom.h"
 
 namespace safe_browsing {
 struct ArchiveAnalyzerResults;

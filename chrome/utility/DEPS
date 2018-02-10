@@ -3,7 +3,7 @@ include_rules = [
   "+chrome/installer/util",
   "+chrome/profiling",
   "+chrome/services/file_util/file_util_service.h",
-  "+chrome/services/file_util/public/interfaces",
+  "+chrome/services/file_util/public/mojom",
   "+chrome/services/media_gallery_util/media_gallery_util_service.h",
   "+chrome/services/media_gallery_util/public/interfaces",
   # TODO(crbug.com/798782): remove dependency to pdf_to_emf_converter_factory.h
