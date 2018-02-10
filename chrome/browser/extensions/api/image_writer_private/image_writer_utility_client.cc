@@ -11,7 +11,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/services/removable_storage_writer/public/interfaces/constants.mojom.h"
+#include "chrome/services/removable_storage_writer/public/mojom/constants.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/connector.h"
