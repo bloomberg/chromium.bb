@@ -308,6 +308,7 @@ public class VrShellTransitionTest {
         Assert.assertTrue(activity.isInOverviewMode());
 
         MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
+        mockApi.setForwardSetupIntent(true);
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
         Assert.assertTrue(VrTransitionUtils.forceEnterVr());
         VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
