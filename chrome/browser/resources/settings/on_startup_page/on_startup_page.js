@@ -47,19 +47,9 @@ Polymer({
   /** @private */
   getNtpExtension_: function() {
     settings.OnStartupBrowserProxyImpl.getInstance().getNtpExtension().then(
-        function(ntpExtension) {
+        ntpExtension => {
           this.ntpExtension_ = ntpExtension;
-        }.bind(this));
-  },
-
-  /**
-   * @param {?NtpExtension} ntpExtension
-   * @param {number} restoreOnStartup Value of prefs.session.restore_on_startup.
-   * @return {boolean}
-   * @private
-   */
-  showIndicator_: function(ntpExtension, restoreOnStartup) {
-    return !!ntpExtension && restoreOnStartup == this.prefValues_.OPEN_NEW_TAB;
+        });
   },
 
   /**
