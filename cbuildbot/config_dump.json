@@ -17117,6 +17117,7 @@
     },
     "eve-arcnext-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "eve-arcnext"
         ],
@@ -35429,6 +35430,7 @@
             "daisy_spring-paladin",
             "edgar-paladin",
             "elm-paladin",
+            "eve-arcnext-paladin",
             "eve-paladin",
             "falco-full-compile-paladin",
             "falco-paladin",
@@ -35552,6 +35554,7 @@
             "daisy_spring-paladin",
             "edgar-paladin",
             "elm-paladin",
+            "eve-arcnext-paladin",
             "eve-paladin",
             "falco-full-compile-paladin",
             "falco-paladin",
