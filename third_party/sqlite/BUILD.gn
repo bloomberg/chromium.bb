@@ -29,10 +29,10 @@ config("chromium_sqlite3_compile_options") {
     "SQLITE_SECURE_DELETE",
 
     # Custom flag to tweak pcache pools.
-    # TODO(shess): This shouldn't use faux-SQLite naming.
+    # TODO(pwnall): This shouldn't use faux-SQLite naming.
     "SQLITE_SEPARATE_CACHE_POOLS",
 
-    # TODO(shess): SQLite adds mutexes to protect structures which cross
+    # TODO(pwnall): SQLite adds mutexes to protect structures which cross
     # threads. In theory Chromium should be able to turn this to "2" which
     # should give a slight speed boost. "2" is safe as long as a single
     # connection is not used by more than one thread at a time.
@@ -46,13 +46,13 @@ config("chromium_sqlite3_compile_options") {
     # Allow 256MB mmap footprint per connection.  Should not be too open-ended
     # as that could cause memory fragmentation.  50MB encompasses the 99th
     # percentile of Chrome databases in the wild.
-    # TODO(shess): A 64-bit-specific value could be 1G or more.
-    # TODO(shess): Figure out if exceeding this is costly.
+    # TODO(pwnall): A 64-bit-specific value could be 1G or more.
+    # TODO(pwnall): Figure out if exceeding this is costly.
     "SQLITE_MAX_MMAP_SIZE=268435456",
 
     # Use a read-only memory map when mmap'ed I/O is enabled to prevent memory
     # stompers from directly corrupting the database.
-    # TODO(shess): Upstream the ability to use this define.
+    # TODO(pwnall): Upstream the ability to use this define.
     "SQLITE_MMAP_READ_ONLY=1",
 
     # By default SQLite pre-allocates 100 pages of pcache data, which will not
@@ -60,12 +60,12 @@ config("chromium_sqlite3_compile_options") {
     # memory-usage goals.
     "SQLITE_DEFAULT_PCACHE_INITSZ=0",
 
-    # NOTE(shess): Some defines can affect the amalgamation.  Those should be
-    # added to google_generate_amalgamation.sh, and the amalgamation
-    # re-generated.  Usually this involves disabling features which include
-    # keywords or syntax, for instance SQLITE_OMIT_VIRTUALTABLE omits the
-    # virtual table syntax entirely.  Missing an item usually results in
-    # syntax working but execution failing.  Review:
+    # Some defines can affect the amalgamation. Those should be added to
+    # google_generate_amalgamation.sh, and the amalgamation re-generated.
+    # Usually this involves disabling features which include keywords or
+    # syntax, for instance SQLITE_OMIT_VIRTUALTABLE omits the virtual table
+    # syntax entirely. Missing an item usually results in syntax working but
+    # execution failing. Review:
     #   src/src/parse.py
     #   src/tool/mkkeywordhash.c
 
@@ -320,7 +320,8 @@ fuzzer_test("sqlite3_prepare_v2_fuzzer") {
 }
 
 fuzzer_test("sqlite3_ossfuzz_fuzzer") {
-  # TODO(mmoroz, shess): remove fuzz/ossfuzz.c after next sqlite3 update.
+  # TODO(mmoroz, pwnall): remove fuzz/ossfuzz.c in favor of test/osfuzz.c in
+  #                       sqlite's source code
   sources = [
     "fuzz/ossfuzz.c",
   ]
