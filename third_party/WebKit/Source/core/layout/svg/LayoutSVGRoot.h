@@ -163,7 +163,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   void UpdateCachedBoundaries();
   SVGTransformChange BuildLocalToBorderBoxTransform();
 
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) final;
+  PositionWithAffinity PositionForPoint(const LayoutPoint&) const final;
 
   LayoutObjectChildList children_;
   IntSize container_size_;

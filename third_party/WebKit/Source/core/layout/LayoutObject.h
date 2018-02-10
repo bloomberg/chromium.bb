@@ -1167,10 +1167,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                            const LayoutPoint& accumulated_offset,
                            HitTestAction);
 
-  virtual PositionWithAffinity PositionForPoint(const LayoutPoint&);
-  PositionWithAffinity CreatePositionWithAffinity(int offset, TextAffinity);
-  PositionWithAffinity CreatePositionWithAffinity(int offset);
-  PositionWithAffinity CreatePositionWithAffinity(const Position&);
+  virtual PositionWithAffinity PositionForPoint(const LayoutPoint&) const;
+  PositionWithAffinity CreatePositionWithAffinity(int offset,
+                                                  TextAffinity) const;
+  PositionWithAffinity CreatePositionWithAffinity(int offset) const;
+  PositionWithAffinity CreatePositionWithAffinity(const Position&) const;
 
   virtual void DirtyLinesFromChangedChild(
       LayoutObject*,

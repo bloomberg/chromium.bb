@@ -3183,7 +3183,7 @@ void LayoutObject::RemoveCursorImageClient(const CursorList* cursor_list) {
   }
 }
 
-PositionWithAffinity LayoutObject::PositionForPoint(const LayoutPoint&) {
+PositionWithAffinity LayoutObject::PositionForPoint(const LayoutPoint&) const {
   return CreatePositionWithAffinity(CaretMinOffset());
 }
 
@@ -3506,7 +3506,7 @@ Element* LayoutObject::OffsetParent(const Element* base) const {
 
 PositionWithAffinity LayoutObject::CreatePositionWithAffinity(
     int offset,
-    TextAffinity affinity) {
+    TextAffinity affinity) const {
   // If this is a non-anonymous layoutObject in an editable area, then it's
   // simple.
   if (Node* node = NonPseudoNode()) {
@@ -3533,27 +3533,27 @@ PositionWithAffinity LayoutObject::CreatePositionWithAffinity(
   // find a single non-anonymous layoutObject.
 
   // Find a nearby non-anonymous layoutObject.
-  LayoutObject* child = this;
-  while (LayoutObject* parent = child->Parent()) {
+  const LayoutObject* child = this;
+  while (const LayoutObject* parent = child->Parent()) {
     // Find non-anonymous content after.
-    for (LayoutObject* layout_object = child->NextInPreOrder(parent);
+    for (const LayoutObject* layout_object = child->NextInPreOrder(parent);
          layout_object; layout_object = layout_object->NextInPreOrder(parent)) {
-      if (Node* node = layout_object->NonPseudoNode()) {
+      if (const Node* node = layout_object->NonPseudoNode()) {
         return PositionWithAffinity(FirstPositionInOrBeforeNode(*node));
       }
     }
 
     // Find non-anonymous content before.
-    for (LayoutObject* layout_object = child->PreviousInPreOrder();
+    for (const LayoutObject* layout_object = child->PreviousInPreOrder();
          layout_object; layout_object = layout_object->PreviousInPreOrder()) {
       if (layout_object == parent)
         break;
-      if (Node* node = layout_object->NonPseudoNode())
+      if (const Node* node = layout_object->NonPseudoNode())
         return PositionWithAffinity(LastPositionInOrAfterNode(*node));
     }
 
     // Use the parent itself unless it too is anonymous.
-    if (Node* node = parent->NonPseudoNode())
+    if (const Node* node = parent->NonPseudoNode())
       return PositionWithAffinity(FirstPositionInOrBeforeNode(*node));
 
     // Repeat at the next level up.
@@ -3564,12 +3564,13 @@ PositionWithAffinity LayoutObject::CreatePositionWithAffinity(
   return PositionWithAffinity();
 }
 
-PositionWithAffinity LayoutObject::CreatePositionWithAffinity(int offset) {
+PositionWithAffinity LayoutObject::CreatePositionWithAffinity(
+    int offset) const {
   return CreatePositionWithAffinity(offset, TextAffinity::kDownstream);
 }
 
 PositionWithAffinity LayoutObject::CreatePositionWithAffinity(
-    const Position& position) {
+    const Position& position) const {
   if (position.IsNotNull())
     return PositionWithAffinity(position);
 

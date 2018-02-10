@@ -434,7 +434,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   void SimplifiedNormalFlowInlineLayout();
   bool RecalcInlineChildrenOverflowAfterStyleChange();
 
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) override;
+  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
 
   LayoutUnit LowestFloatLogicalBottom(EClear = EClear::kBoth) const;
 

@@ -365,7 +365,8 @@ void LayoutSVGRoot::WillBeRemovedFromTree() {
   LayoutReplaced::WillBeRemovedFromTree();
 }
 
-PositionWithAffinity LayoutSVGRoot::PositionForPoint(const LayoutPoint& point) {
+PositionWithAffinity LayoutSVGRoot::PositionForPoint(
+    const LayoutPoint& point) const {
   FloatPoint absolute_point = FloatPoint(point);
   absolute_point =
       local_to_border_box_transform_.Inverse().MapPoint(absolute_point);

@@ -73,7 +73,7 @@ class LayoutSVGText final : public LayoutSVGBlock {
   bool NodeAtFloatPoint(HitTestResult&,
                         const FloatPoint& point_in_parent,
                         HitTestAction) override;
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) override;
+  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
 
   void UpdateLayout() override;
 

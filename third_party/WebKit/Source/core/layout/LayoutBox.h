@@ -1067,7 +1067,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void LogicalExtentAfterUpdatingLogicalWidth(const LayoutUnit& logical_top,
                                               LogicalExtentComputedValues&);
 
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) override;
+  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
 
   void RemoveFloatingOrPositionedChildFromBlockLists();
 

@@ -211,7 +211,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   LayoutUnit TextIndentOffset() const;
 
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) override;
+  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
 
   LayoutUnit BlockDirectionOffset(const LayoutSize& offset_from_block) const;
   LayoutUnit InlineDirectionOffset(const LayoutSize& offset_from_block) const;
@@ -519,9 +519,9 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   PositionWithAffinity PositionForPointRespectingEditingBoundaries(
       LineLayoutBox child,
-      const LayoutPoint& point_in_parent_coordinates);
+      const LayoutPoint& point_in_parent_coordinates) const;
   PositionWithAffinity PositionForPointIfOutsideAtomicInlineLevel(
-      const LayoutPoint&);
+      const LayoutPoint&) const;
 
   virtual bool UpdateLogicalWidthAndColumnWidth();
 
