@@ -5097,4 +5097,30 @@ TEST_P(PaintPropertyTreeBuilderTest, ShortColumnTallContent) {
   EXPECT_EQ(10u, NumFragments(flow_thread));
 }
 
+TEST_P(PaintPropertyTreeBuilderTest,
+       UpdateUnderChangedEffectUnderCompositedLayer) {
+  // SPv1 has no effect tree.
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+  SetBodyInnerHTML(R"HTML(
+    <div id="opacity" style="isolation: isolate; width: 100px: height: 100px">
+      <div id="target"
+          style="will-change: transform; width: 100px: height: 100gpx">
+      </div>
+    </div>
+  )HTML");
+
+  Element* opacity_element = GetDocument().getElementById("opacity");
+  const auto* target = GetLayoutObjectByElementId("target");
+
+  EXPECT_FALSE(ToLayoutBoxModelObject(target)->Layer()->NeedsRepaint());
+
+  opacity_element->setAttribute(HTMLNames::styleAttr, "opacity: 0.5");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+
+  // In SPv175 mode, all paint chunks contained by the new opacity effect
+  // node need to be re-painted.
+  EXPECT_TRUE(ToLayoutBoxModelObject(target)->Layer()->NeedsRepaint());
+}
+
 }  // namespace blink

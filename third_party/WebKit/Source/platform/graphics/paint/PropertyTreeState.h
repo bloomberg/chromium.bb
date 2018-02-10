@@ -68,6 +68,10 @@ inline bool operator==(const PropertyTreeState& a, const PropertyTreeState& b) {
          a.Effect() == b.Effect();
 }
 
+inline bool operator!=(const PropertyTreeState& a, const PropertyTreeState& b) {
+  return !(a == b);
+}
+
 }  // namespace blink
 
 #endif  // PropertyTreeState_h
