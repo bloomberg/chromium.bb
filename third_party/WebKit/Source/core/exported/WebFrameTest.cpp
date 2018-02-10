@@ -11918,6 +11918,26 @@ TEST_P(WebFrameSimTest, ScrollOriginChangeUpdatesLayerPositions) {
   EXPECT_EQ(0, area->LayerForScrolling()->GetPosition().X());
 }
 
+TEST_P(WebFrameSimTest, RtlInitialScrollOffsetWithViewport) {
+  WebView().GetSettings()->SetViewportEnabled(true);
+  WebView().GetSettings()->SetViewportMetaEnabled(true);
+
+  WebView().Resize(WebSize(400, 400));
+  WebView().SetDefaultPageScaleLimits(0.25f, 2);
+
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  main_resource.Complete(R"HTML(
+    <meta name='viewport' content='width=device-width, minimum-scale=1'>
+    <body dir='rtl'>
+    <div style='width: 3000px; height: 20px'></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+  ScrollableArea* area = GetDocument().View()->LayoutViewportScrollableArea();
+  ASSERT_EQ(ScrollOffset(0, 0), area->GetScrollOffset());
+}
+
 TEST_P(ParameterizedWebFrameTest, NoLoadingCompletionCallbacksInDetach) {
   class LoadingObserverFrameClient
       : public FrameTestHelpers::TestWebFrameClient {

@@ -810,13 +810,13 @@ void LayoutView::UpdateAfterLayout() {
   // factor.  The call to ResizeAfterLayout() will calculate the layout viewport
   // size based on the page minimum scale factor, and then update the
   // LocalFrameView with the new size.
-  if (HasOverflowClip())
-    GetScrollableArea()->ClampScrollOffsetAfterOverflowChange();
   LocalFrame& frame = GetFrameView()->GetFrame();
   if (!GetDocument().Printing())
     GetFrameView()->AdjustViewSize();
   if (frame.IsMainFrame())
     frame.GetChromeClient().ResizeAfterLayout();
+  if (HasOverflowClip())
+    GetScrollableArea()->ClampScrollOffsetAfterOverflowChange();
   LayoutBlockFlow::UpdateAfterLayout();
 }
 
