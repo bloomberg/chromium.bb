@@ -20,6 +20,8 @@ class MemoryHandler : public DevToolsDomainHandler,
 
   void Wire(UberDispatcher* dispatcher) override;
 
+  Response GetBrowserSamplingProfile(
+      std::unique_ptr<Memory::SamplingProfile>* out_profile) override;
   Response SetPressureNotificationsSuppressed(bool suppressed) override;
   Response SimulatePressureNotification(const std::string& level) override;
 
