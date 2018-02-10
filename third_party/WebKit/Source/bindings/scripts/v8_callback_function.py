@@ -68,11 +68,11 @@ def forward_declarations(callback_function):
             return find_forward_declaration(idl_type.element_type)
         return None
 
-    declarations = ['ScriptWrappable']
+    declarations = set(['ScriptWrappable'])
     for argument in callback_function.arguments:
         name = find_forward_declaration(argument.idl_type)
         if name:
-            declarations.append(name)
+            declarations.add(name)
     return declarations
 
 

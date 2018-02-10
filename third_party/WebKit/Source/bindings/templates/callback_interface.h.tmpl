@@ -11,12 +11,11 @@
 
 namespace blink {
 
-{# TODO(yukishiino): Stop inheriting {{cpp_class}} as it\'s not necessary for
-   most cases. Those who need a common base class between this class and
-   another class should define an adapter class for themselves. #}
-class {{exported}}{{v8_class}} final
-    : public {{cpp_class}},
-      public CallbackInterfaceBase {
+{% for forward_declaration in forward_declarations %}
+class {{forward_declaration}};
+{% endfor %}
+
+class {{exported}}{{v8_class}} final : public CallbackInterfaceBase {
  public:
   static {{v8_class}}* Create(v8::Local<v8::Object> callback_object) {
     return new {{v8_class}}(callback_object);
@@ -32,7 +31,7 @@ class {{exported}}{{v8_class}} final
      function returns a return value or throws an exception. #}
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  {{method.cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}}) override;
+  {{method.cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}});
 
 {% endfor %}
 

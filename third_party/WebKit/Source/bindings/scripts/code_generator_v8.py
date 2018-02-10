@@ -217,6 +217,9 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
         # Add the include for interface itself
         if IdlType(interface_name).is_typed_array:
             template_context['header_includes'].add('core/typed_arrays/DOMTypedArray.h')
+        elif interface.is_callback:
+            if len(interface.constants) > 0:  # legacy callback interface
+                includes.add(interface_info['include_path'])
         else:
             template_context['header_includes'].add(interface_info['include_path'])
         template_context['header_includes'].update(
