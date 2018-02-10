@@ -127,7 +127,7 @@ jumbo_source_set("browser") {
     "//services/device/public/interfaces",
     "//services/device/public/interfaces:generic_sensor",
     "//services/file:lib",
-    "//services/file/public/interfaces",
+    "//services/file/public/mojom",
     "//services/metrics",
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/network:network_service",

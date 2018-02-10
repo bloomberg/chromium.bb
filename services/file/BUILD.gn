@@ -23,7 +23,7 @@ source_set("lib") {
     "//components/leveldb/public/interfaces",
     "//mojo/common",
     "//mojo/common:common_base",
-    "//services/file/public/interfaces",
+    "//services/file/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//url",
