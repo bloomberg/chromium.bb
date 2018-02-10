@@ -331,7 +331,9 @@ void SamplingHeapProfiler::RecordFree(void* address) {
 
 // static
 SamplingHeapProfiler* SamplingHeapProfiler::GetInstance() {
-  return base::Singleton<SamplingHeapProfiler>::get();
+  return base::Singleton<
+      SamplingHeapProfiler,
+      base::LeakySingletonTraits<SamplingHeapProfiler>>::get();
 }
 
 // static

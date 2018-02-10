@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 #include "base/trace_event/trace_event.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "third_party/WebKit/common/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/ime/input_method_initializer.h"
 
@@ -71,6 +73,19 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
       initialization_started_ = true;
 
       const base::TimeTicks start_time_step1 = base::TimeTicks::Now();
+
+      if (parameters.command_line.HasSwitch(switches::kSamplingHeapProfiler)) {
+        blink::SamplingHeapProfiler* profiler =
+            blink::SamplingHeapProfiler::GetInstance();
+        unsigned sampling_interval = 0;
+        bool parsed =
+            base::StringToUint(parameters.command_line.GetSwitchValueASCII(
+                                   switches::kSamplingHeapProfiler),
+                               &sampling_interval);
+        if (parsed && sampling_interval > 0)
+          profiler->SetSamplingInterval(sampling_interval * 1024);
+        profiler->Start();
+      }
 
       SkGraphics::Init();
 
