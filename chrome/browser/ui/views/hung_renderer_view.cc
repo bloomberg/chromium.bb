@@ -194,7 +194,7 @@ HungRendererDialogView* HungRendererDialogView::Create(
     gfx::NativeWindow context) {
   if (!g_instance_) {
     g_instance_ = new HungRendererDialogView;
-    views::DialogDelegate::CreateDialogWidget(g_instance_, context, NULL);
+    views::DialogDelegate::CreateDialogWidget(g_instance_, context, nullptr);
   }
   return g_instance_;
 }
@@ -248,7 +248,7 @@ HungRendererDialogView::HungRendererDialogView()
 }
 
 HungRendererDialogView::~HungRendererDialogView() {
-  hung_pages_table_->SetModel(NULL);
+  hung_pages_table_->SetModel(nullptr);
 }
 
 void HungRendererDialogView::ShowForWebContents(
@@ -309,10 +309,7 @@ void HungRendererDialogView::EndForWebContents(
   DCHECK(contents);
   if (hung_pages_table_model_->RowCount() == 0 ||
       hung_pages_table_model_->GetRenderWidgetHost() == render_widget_host) {
-    GetWidget()->Close();
-    // Close is async, make sure we drop our references to the tab immediately
-    // (it may be going away).
-    hung_pages_table_model_->InitForWebContents(nullptr, nullptr);
+    CloseDialogWithNoAction();
   }
 }
 
@@ -334,7 +331,7 @@ bool HungRendererDialogView::ShouldShowCloseButton() const {
 
 void HungRendererDialogView::WindowClosing() {
   // We are going to be deleted soon, so make sure our instance is destroyed.
-  g_instance_ = NULL;
+  g_instance_ = nullptr;
 }
 
 int HungRendererDialogView::GetDialogButtons() const {
@@ -398,7 +395,7 @@ void HungRendererDialogView::TabUpdated() {
 }
 
 void HungRendererDialogView::TabDestroyed() {
-  GetWidget()->Close();
+  CloseDialogWithNoAction();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -464,4 +461,13 @@ void HungRendererDialogView::UpdateLabels() {
       IDS_BROWSER_HANGMONITOR_RENDERER, hung_pages_table_model_->RowCount()));
   // Update the "Exit" button.
   DialogModelChanged();
+}
+
+void HungRendererDialogView::CloseDialogWithNoAction() {
+  // Drop references to the tab immediately because
+  // - Close is async and we don't want hanging references, and
+  // - While the dialog is active, [X] maps to restarting the hang timer, but
+  //   while closing we don't want that action.
+  hung_pages_table_model_->InitForWebContents(nullptr, nullptr);
+  GetWidget()->Close();
 }

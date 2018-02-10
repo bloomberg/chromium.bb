@@ -169,6 +169,8 @@ class HungRendererDialogView : public views::DialogDelegateView,
 
   void UpdateLabels();
 
+  void CloseDialogWithNoAction();
+
   // The label describing the list.
   views::Label* info_label_;
 
