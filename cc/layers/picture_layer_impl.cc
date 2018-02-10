@@ -65,8 +65,9 @@ const int kTileMinimalAlignment = 4;
 
 // Large contents scale can cause overflow issues. Cap the ideal contents scale
 // by this constant, since scales larger than this are usually not correct or
-// their scale doesn't matter as long as it's large. See
-// Renderer4.IdealContentsScale UMA for distribution of existing contents
+// their scale doesn't matter as long as it's large. Content scales usually
+// closely match the default device-scale factor (so it's usually <= 5). See
+// Renderer4.IdealContentsScale UMA (deprecated) for distribution of content
 // scales.
 const float kMaxIdealContentsScale = 10000.f;
 
@@ -1522,8 +1523,6 @@ void PictureLayerImpl::UpdateIdealScales() {
                std::max(GetIdealContentsScale(), min_contents_scale));
   ideal_source_scale_ =
       ideal_contents_scale_ / ideal_page_scale_ / ideal_device_scale_;
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.IdealContentsScale",
-                              ideal_contents_scale_, 1, 10000, 50);
 }
 
 void PictureLayerImpl::GetDebugBorderProperties(
