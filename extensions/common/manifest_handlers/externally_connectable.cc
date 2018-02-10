@@ -123,7 +123,17 @@ std::unique_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
         return std::unique_ptr<ExternallyConnectableInfo>();
       }
 
-      if (allow_all_urls && pattern.match_all_urls()) {
+      bool matches_all_hosts =
+          pattern.match_all_urls() ||  // <all_urls>
+          (pattern.host().empty() &&
+           pattern.match_subdomains());  // e.g., https://*/*
+
+      // TODO(devlin): We should use URLPattern methods here instead, since we
+      // already have some instrumentation there to look up if something matches
+      // all urls or TLD-like structs. But there's some differences here, too -
+      // this method canonicalizes the host, and includes unknown domains. We
+      // should consolidate.
+      if (allow_all_urls && matches_all_hosts) {
         matches.AddPattern(pattern);
         continue;
       }
