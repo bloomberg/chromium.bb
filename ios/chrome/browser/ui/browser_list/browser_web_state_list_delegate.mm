@@ -20,7 +20,7 @@ BrowserWebStateListDelegate::BrowserWebStateListDelegate() = default;
 BrowserWebStateListDelegate::~BrowserWebStateListDelegate() = default;
 
 void BrowserWebStateListDelegate::WillAddWebState(web::WebState* web_state) {
-  FindTabHelper::CreateForWebState(web_state, nil);
+  FindTabHelper::CreateForWebState(web_state);
   SadTabTabHelper::CreateForWebState(web_state, nil);
   IOSChromeSessionTabHelper::CreateForWebState(web_state);
   IOSSecurityStateTabHelper::CreateForWebState(web_state);

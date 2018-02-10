@@ -39,8 +39,6 @@ static NSString* gSearchTerm;
 }
 
 @interface FindInPageController () <DOMAltering, CRWWebStateObserver>
-// The find in page controller delegate.  Can be nil.
-@property(nonatomic, readonly) id<FindInPageControllerDelegate> delegate;
 
 // The web view's scroll view.
 - (CRWWebViewScrollViewProxy*)webViewScrollView;
@@ -73,7 +71,6 @@ static NSString* gSearchTerm;
 @implementation FindInPageController {
   // Object that manages find_in_page.js injection into the web view.
   __weak JsFindinpageManager* _findInPageJsManager;
-  __weak id<FindInPageControllerDelegate> _delegate;
 
   // Access to the web view from the web state.
   id<CRWWebViewProxy> _webViewProxy;
@@ -90,7 +87,6 @@ static NSString* gSearchTerm;
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 }
 
-@synthesize delegate = _delegate;
 @synthesize findInPageModel = _findInPageModel;
 
 + (void)setSearchTerm:(NSString*)string {
@@ -101,8 +97,7 @@ static NSString* gSearchTerm;
   return gSearchTerm;
 }
 
-- (id)initWithWebState:(web::WebState*)webState
-              delegate:(id<FindInPageControllerDelegate>)delegate {
+- (id)initWithWebState:(web::WebState*)webState {
   self = [super init];
   if (self) {
     DCHECK(webState);
@@ -112,7 +107,6 @@ static NSString* gSearchTerm;
         [_webState->GetJSInjectionReceiver()
             instanceOfClass:[JsFindinpageManager class]]);
     _findInPageJsManager.findInPageModel = _findInPageModel;
-    _delegate = delegate;
     _webStateObserverBridge =
         std::make_unique<web::WebStateObserverBridge>(self);
     _webState->AddObserver(_webStateObserverBridge.get());
@@ -171,7 +165,6 @@ static NSString* gSearchTerm;
               scrollPoint:(CGPoint)scrollPoint
         completionHandler:(ProceduralBlock)completionHandler {
   if (finished) {
-    [_delegate willAdjustScrollPosition];
     scrollPoint = [self limitOverscroll:[_webViewProxy scrollViewProxy]
                                 atPoint:scrollPoint];
     [[_webViewProxy scrollViewProxy] setContentOffset:scrollPoint animated:YES];
@@ -234,7 +227,6 @@ static NSString* gSearchTerm;
                                                     CGPoint point) {
     FindInPageController* strongSelf = weakSelf;
     if (finished) {
-      [[strongSelf delegate] willAdjustScrollPosition];
       point = [strongSelf limitOverscroll:[strongSelf webViewScrollView]
                                   atPoint:point];
       [[strongSelf webViewScrollView] setContentOffset:point animated:YES];
@@ -249,7 +241,6 @@ static NSString* gSearchTerm;
   __weak FindInPageController* weakSelf = self;
   [_findInPageJsManager nextMatchWithCompletionHandler:^(CGPoint point) {
     FindInPageController* strongSelf = weakSelf;
-    [[strongSelf delegate] willAdjustScrollPosition];
     point = [strongSelf limitOverscroll:[strongSelf webViewScrollView]
                                 atPoint:point];
     [[strongSelf webViewScrollView] setContentOffset:point animated:YES];
@@ -265,7 +256,6 @@ static NSString* gSearchTerm;
   __weak FindInPageController* weakSelf = self;
   [_findInPageJsManager previousMatchWithCompletionHandler:^(CGPoint point) {
     FindInPageController* strongSelf = weakSelf;
-    [[strongSelf delegate] willAdjustScrollPosition];
     point = [strongSelf limitOverscroll:[strongSelf webViewScrollView]
                                 atPoint:point];
     [[strongSelf webViewScrollView] setContentOffset:point animated:YES];

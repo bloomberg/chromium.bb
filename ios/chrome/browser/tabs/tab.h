@@ -31,7 +31,6 @@ class GURL;
 @class Tab;
 @protocol TabHeadersDelegate;
 @class TabModel;
-@protocol FindInPageControllerDelegate;
 
 namespace ios {
 class ChromeBrowserState;
@@ -98,8 +97,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 @property(nonatomic, readonly) BOOL canGoForward;
 @property(nonatomic, weak) id<TabDelegate> delegate;
 @property(nonatomic, weak) id<TabHeadersDelegate> tabHeadersDelegate;
-@property(nonatomic, readonly) id<FindInPageControllerDelegate>
-    findInPageControllerDelegate;
 
 @property(nonatomic, readonly)
     OverscrollActionsController* overscrollActionsController;

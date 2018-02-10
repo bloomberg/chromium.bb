@@ -18,20 +18,13 @@ class WebState;
 extern NSString* const kFindBarTextFieldWillBecomeFirstResponderNotification;
 extern NSString* const kFindBarTextFieldDidResignFirstResponderNotification;
 
-@protocol FindInPageControllerDelegate<NSObject>
-// Informs the delegate when the scroll position is about to be changed on the
-// page.
-- (void)willAdjustScrollPosition;
-@end
-
 @interface FindInPageController : NSObject
 
 // Find In Page model.
 @property(nonatomic, readonly, strong) FindInPageModel* findInPageModel;
 
 // Designated initializer.
-- (id)initWithWebState:(web::WebState*)webState
-              delegate:(id<FindInPageControllerDelegate>)delegate;
+- (id)initWithWebState:(web::WebState*)webState;
 // Inject the find in page scripts into the web state.
 - (void)initFindInPage;
 // Is Find In Page available right now (given the state of the WebState)?
