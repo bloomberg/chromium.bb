@@ -22,21 +22,6 @@ import time
 import urlparse
 
 
-DIR_SOURCE_ROOT = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
-                 os.pardir))
-
-
-# Path that are needed to import necessary modules when launching a testserver.
-os.environ['PYTHONPATH'] = os.environ.get('PYTHONPATH', '') + (':%s:%s:%s:%s:%s'
-    % (os.path.join(DIR_SOURCE_ROOT, 'third_party'),
-       os.path.join(DIR_SOURCE_ROOT, 'third_party', 'tlslite'),
-       os.path.join(DIR_SOURCE_ROOT, 'third_party', 'pyftpdlib', 'src'),
-       os.path.join(DIR_SOURCE_ROOT, 'net', 'tools', 'testserver'),
-       os.path.join(DIR_SOURCE_ROOT, 'components', 'sync', 'tools',
-                    'testserver')))
-
-
 SERVER_TYPES = {
     'http': '',
     'ftp': '-f',
@@ -47,8 +32,26 @@ SERVER_TYPES = {
 }
 
 
+_DIR_SOURCE_ROOT = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
+                 os.pardir))
+
+
+_logger = logging.getLogger(__name__)
+
+
+# Path that are needed to import necessary modules when launching a testserver.
+os.environ['PYTHONPATH'] = os.environ.get('PYTHONPATH', '') + (':%s:%s:%s:%s:%s'
+    % (os.path.join(_DIR_SOURCE_ROOT, 'third_party'),
+       os.path.join(_DIR_SOURCE_ROOT, 'third_party', 'tlslite'),
+       os.path.join(_DIR_SOURCE_ROOT, 'third_party', 'pyftpdlib', 'src'),
+       os.path.join(_DIR_SOURCE_ROOT, 'net', 'tools', 'testserver'),
+       os.path.join(_DIR_SOURCE_ROOT, 'components', 'sync', 'tools',
+                    'testserver')))
+
+
 # The timeout (in seconds) of starting up the Python test server.
-TEST_SERVER_STARTUP_TIMEOUT = 10
+_TEST_SERVER_STARTUP_TIMEOUT = 10
 
 
 def _GetServerTypeCommandLine(server_type):
@@ -137,9 +140,9 @@ class TestServerThread(threading.Thread):
     """
     assert self.host_port == 0 and self.pipe_out and self.pipe_in
     (in_fds, _, _) = select.select([self.pipe_in, ], [], [],
-                                   TEST_SERVER_STARTUP_TIMEOUT)
+                                   _TEST_SERVER_STARTUP_TIMEOUT)
     if len(in_fds) == 0:
-      logging.error('Failed to wait to the Python test server to be started.')
+      _logger.error('Failed to wait to the Python test server to be started.')
       return False
     # First read the data length as an unsigned 4-byte value.  This
     # is _not_ using network byte ordering since the Python test server packs
@@ -152,13 +155,13 @@ class TestServerThread(threading.Thread):
       (data_length,) = struct.unpack('=L', data_length)
       assert data_length
     if not data_length:
-      logging.error('Failed to get length of server data.')
+      _logger.error('Failed to get length of server data.')
       return False
     server_data_json = os.read(self.pipe_in, data_length)
     if not server_data_json:
-      logging.error('Failed to get server data.')
+      _logger.error('Failed to get server data.')
       return False
-    logging.info('Got port json data: %s', server_data_json)
+    _logger.info('Got port json data: %s', server_data_json)
 
     parsed_server_data = None
     try:
@@ -167,11 +170,11 @@ class TestServerThread(threading.Thread):
       pass
 
     if not isinstance(parsed_server_data, dict):
-      logging.error('Failed to parse server_data: %s' % server_data_json)
+      _logger.error('Failed to parse server_data: %s' % server_data_json)
       return False
 
     if not isinstance(parsed_server_data.get('port'), int):
-      logging.error('Failed to get port information from the server data.')
+      _logger.error('Failed to get port information from the server data.')
       return False
 
     self.host_port = parsed_server_data['port']
@@ -224,10 +227,10 @@ class TestServerThread(threading.Thread):
           pass
 
   def run(self):
-    logging.info('Start running the thread!')
+    _logger.info('Start running the thread!')
     self.wait_event.clear()
     self._GenerateCommandLineArguments()
-    command = DIR_SOURCE_ROOT
+    command = _DIR_SOURCE_ROOT
     if self.arguments['server-type'] == 'sync':
       command = [os.path.join(command, 'components', 'sync', 'tools',
                               'testserver',
@@ -235,17 +238,17 @@ class TestServerThread(threading.Thread):
     else:
       command = [os.path.join(command, 'net', 'tools', 'testserver',
                               'testserver.py')] + self.command_line
-    logging.info('Running: %s', command)
+    _logger.info('Running: %s', command)
 
     # Disable PYTHONUNBUFFERED because it has a bad interaction with the
     # testserver. Remove once this interaction is fixed.
     unbuf = os.environ.pop('PYTHONUNBUFFERED', None)
 
-    # Pass DIR_SOURCE_ROOT as the child's working directory so that relative
+    # Pass _DIR_SOURCE_ROOT as the child's working directory so that relative
     # paths in the arguments are resolved correctly.
     self.process = subprocess.Popen(
         command, preexec_fn=self._CloseUnnecessaryFDsForTestServerProcess,
-        cwd=DIR_SOURCE_ROOT)
+        cwd=_DIR_SOURCE_ROOT)
     if unbuf:
       os.environ['PYTHONUNBUFFERED'] = unbuf
     if self.process:
@@ -284,7 +287,7 @@ class TestServerThread(threading.Thread):
       os.close(self.pipe_out)
       self.pipe_in = None
       self.pipe_out = None
-    logging.info('Test-server has died.')
+    _logger.info('Test-server has died.')
     self.wait_event.set()
 
   def Stop(self):
@@ -325,7 +328,7 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
   def _StartTestServer(self):
     """Starts the test server thread."""
-    logging.info('Handling request to spawn a test server.')
+    _logger.info('Handling request to spawn a test server.')
     content_type = self.headers.getheader('content-type')
     if content_type != 'application/json':
       raise Exception('Bad content-type for start request.')
@@ -336,9 +339,9 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       content_length = int(content_length)
     except:
       raise Exception('Bad content-length for start request.')
-    logging.info(content_length)
+    _logger.info(content_length)
     test_server_argument_json = self.rfile.read(content_length)
-    logging.info(test_server_argument_json)
+    _logger.info(test_server_argument_json)
 
     if len(self.server.test_servers) >= self.server.max_instances:
       self._SendResponse(400, 'Invalid request', {},
@@ -358,7 +361,7 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       if new_server.forwarder_ocsp_device_port:
         response['ocsp_port'] = new_server.forwarder_ocsp_device_port
       self._SendResponse(200, 'OK', {}, json.dumps(response))
-      logging.info('Test server is running on port %d forwarded to %d.' %
+      _logger.info('Test server is running on port %d forwarded to %d.' %
               (new_server.forwarder_device_port, new_server.host_port))
       port = new_server.forwarder_device_port
       assert not self.server.test_servers.has_key(port)
@@ -366,7 +369,7 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     else:
       new_server.Stop()
       self._SendResponse(500, 'Test Server Error.', {}, '')
-      logging.info('Encounter problem during starting a test server.')
+      _logger.info('Encounter problem during starting a test server.')
 
   def _KillTestServer(self, params):
     """Stops the test server instance."""
@@ -385,34 +388,40 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     server = self.server.test_servers.pop(port)
 
-    logging.info('Handling request to kill a test server on port: %d.', port)
+    _logger.info('Handling request to kill a test server on port: %d.', port)
     server.Stop()
 
     # Make sure the status of test server is correct before sending response.
     if self.server.port_forwarder.WaitHostPortAvailable(port):
       self._SendResponse(200, 'OK', {}, 'killed')
-      logging.info('Test server on port %d is killed', port)
+      _logger.info('Test server on port %d is killed', port)
     else:
       self._SendResponse(500, 'Test Server Error.', {}, '')
-      logging.info('Encounter problem during killing a test server.')
+      _logger.info('Encounter problem during killing a test server.')
+
+  def log_message(self, format, *args):
+    # Suppress the default HTTP logging behavior if the logging level is higher
+    # than INFO.
+    if _logger.getEffectiveLevel() <= logging.INFO:
+      pass
 
   def do_POST(self):
     parsed_path = urlparse.urlparse(self.path)
     action = parsed_path.path
-    logging.info('Action for POST method is: %s.', action)
+    _logger.info('Action for POST method is: %s.', action)
     if action == '/start':
       self._StartTestServer()
     else:
       self._SendResponse(400, 'Unknown request.', {}, '')
-      logging.info('Encounter unknown request: %s.', action)
+      _logger.info('Encounter unknown request: %s.', action)
 
   def do_GET(self):
     parsed_path = urlparse.urlparse(self.path)
     action = parsed_path.path
     params = urlparse.parse_qs(parsed_path.query, keep_blank_values=1)
-    logging.info('Action for GET method is: %s.', action)
+    _logger.info('Action for GET method is: %s.', action)
     for param in params:
-      logging.info('%s=%s', param, params[param][0])
+      _logger.info('%s=%s', param, params[param][0])
     if action == '/kill':
       self._KillTestServer(params)
     elif action == '/ping':
@@ -420,10 +429,10 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       # to serve the requests. We don't need to test the status of the test
       # server when handling ping request.
       self._SendResponse(200, 'OK', {}, 'ready')
-      logging.info('Handled ping request and sent response.')
+      _logger.info('Handled ping request and sent response.')
     else:
       self._SendResponse(400, 'Unknown request', {}, '')
-      logging.info('Encounter unknown request: %s.', action)
+      _logger.info('Encounter unknown request: %s.', action)
 
 
 class SpawningServer(object):
@@ -433,14 +442,14 @@ class SpawningServer(object):
     self.server = BaseHTTPServer.HTTPServer(('', test_server_spawner_port),
                                             SpawningServerRequestHandler)
     self.server_port = self.server.server_port
-    logging.info('Started test server spawner on port: %d.', self.server_port)
+    _logger.info('Started test server spawner on port: %d.', self.server_port)
 
     self.server.port_forwarder = port_forwarder
     self.server.test_servers = {}
     self.server.max_instances = max_instances
 
   def _Listen(self):
-    logging.info('Starting test server spawner.')
+    _logger.info('Starting test server spawner.')
     self.server.serve_forever()
 
   def Start(self):
@@ -464,8 +473,8 @@ class SpawningServer(object):
     to avoid sharing the test server instance.
     """
     if self.server.test_servers:
-      logging.warning('Not all test servers were stopped.')
+      _logger.warning('Not all test servers were stopped.')
       for port in self.server.test_servers:
-        logging.warning('Stopping test server on port %d' % port)
+        _logger.warning('Stopping test server on port %d' % port)
         self.server.test_servers[port].Stop()
       self.server.test_servers = {}

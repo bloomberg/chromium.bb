@@ -45,6 +45,13 @@ def ConfigureLogging(args):
 
   logging.basicConfig(level=(logging.DEBUG if args.verbose else logging.INFO))
 
+  # The test server spawner is too noisy with INFO level logging, so tweak
+  # its verbosity a bit by adjusting its logging level.
+  if args.verbose:
+    logging.getLogger('chrome_test_server_spawner').setLevel(logging.DEBUG)
+  else:
+    logging.getLogger('chrome_test_server_spawner').setLevel(logging.WARN)
+
 
 def GetDeploymentTargetForArgs(args):
   """Constructs a deployment target object using parameters taken from
