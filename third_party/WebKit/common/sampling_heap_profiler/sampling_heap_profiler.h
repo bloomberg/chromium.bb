@@ -43,6 +43,16 @@ class BLINK_COMMON_EXPORT SamplingHeapProfiler {
     uint32_t ordinal;
   };
 
+  class SamplesObserver {
+   public:
+    virtual ~SamplesObserver() = default;
+    virtual void SampleAdded(uint32_t id, size_t size, size_t count) = 0;
+    virtual void SampleRemoved(uint32_t id) = 0;
+  };
+
+  void AddSamplesObserver(SamplesObserver*);
+  void RemoveSamplesObserver(SamplesObserver*);
+
   uint32_t Start();
   void Stop();
   void SetSamplingInterval(size_t sampling_interval);
@@ -72,6 +82,7 @@ class BLINK_COMMON_EXPORT SamplingHeapProfiler {
   base::ThreadLocalBoolean entered_;
   base::Lock mutex_;
   std::unordered_map<void*, Sample> samples_;
+  std::vector<SamplesObserver*> observers_;
 
   friend struct base::DefaultSingletonTraits<SamplingHeapProfiler>;
 
