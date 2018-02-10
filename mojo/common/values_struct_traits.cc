@@ -32,6 +32,12 @@ bool StructTraits<common::mojom::ListValueDataView,
   return true;
 }
 
+std::unique_ptr<base::ListValue>
+CloneTraits<std::unique_ptr<base::ListValue>, false>::Clone(
+    const std::unique_ptr<base::ListValue>& input) {
+  return input ? input->CreateDeepCopy() : nullptr;
+}
+
 bool StructTraits<common::mojom::DictionaryValueDataView,
                   std::unique_ptr<base::DictionaryValue>>::
     Read(common::mojom::DictionaryValueDataView data,

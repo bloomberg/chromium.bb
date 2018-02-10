@@ -4,8 +4,10 @@
 
 #include "chrome/browser/chromeos/login/ui/login_display_views.h"
 
+#include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_views.h"
+#include "chrome/browser/chromeos/login/user_selection_screen_proxy.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "components/user_manager/known_user.h"
@@ -13,23 +15,19 @@
 namespace chromeos {
 
 namespace {
-
-// TODO(jdufault): Deduplicate this and
-// user_selection_screen::GetOwnerAccountId().
-AccountId GetOwnerAccountId() {
-  std::string owner_email;
-  chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner,
-                                           &owner_email);
-  const AccountId owner = user_manager::known_user::GetAccountId(
-      owner_email, std::string() /*id*/, AccountType::UNKNOWN);
-  return owner;
-}
-
+constexpr char kLoginDisplay[] = "login";
 }  // namespace
 
 LoginDisplayViews::LoginDisplayViews(Delegate* delegate,
                                      LoginDisplayHostViews* host)
-    : LoginDisplay(delegate), host_(host) {}
+    : LoginDisplay(delegate),
+      host_(host),
+      user_selection_screen_proxy_(
+          std::make_unique<UserSelectionScreenProxy>()),
+      user_selection_screen_(
+          std::make_unique<ChromeUserSelectionScreen>(kLoginDisplay)) {
+  user_selection_screen_->SetView(user_selection_screen_proxy_.get());
+}
 
 LoginDisplayViews::~LoginDisplayViews() = default;
 
@@ -41,36 +39,15 @@ void LoginDisplayViews::Init(const user_manager::UserList& filtered_users,
                              bool show_new_user) {
   host_->SetUsers(filtered_users);
 
-  // Convert |filtered_users| to mojo structures.
-  const AccountId owner_account = GetOwnerAccountId();
-  std::vector<ash::mojom::LoginUserInfoPtr> users;
-  for (user_manager::User* user : filtered_users) {
-    auto mojo_user = ash::mojom::LoginUserInfo::New();
-
-    const bool is_owner = user->GetAccountId() == owner_account;
-
-    const bool is_public_account =
-        user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
-    const proximity_auth::mojom::AuthType initial_auth_type =
-        is_public_account
-            ? proximity_auth::mojom::AuthType::EXPAND_THEN_USER_CLICK
-            : (chromeos::UserSelectionScreen::ShouldForceOnlineSignIn(user)
-                   ? proximity_auth::mojom::AuthType::ONLINE_SIGN_IN
-                   : proximity_auth::mojom::AuthType::OFFLINE_PASSWORD);
-
-    chromeos::UserSelectionScreen::FillUserMojoStruct(
-        user, is_owner, false /*is_signin_to_add*/, initial_auth_type,
-        mojo_user.get());
-
-    users.push_back(std::move(mojo_user));
-  }
-
   // Load the login screen.
   auto* client = LoginScreenClient::Get();
   client->SetDelegate(host_);
   client->ShowLoginScreen(
       base::BindOnce([](bool did_show) { CHECK(did_show); }));
-  client->LoadUsers(std::move(users), show_guest);
+
+  user_selection_screen_->Init(filtered_users);
+  client->LoadUsers(user_selection_screen_->UpdateAndReturnUserListForMojo(),
+                    show_guest);
 }
 
 void LoginDisplayViews::OnPreferencesChanged() {
