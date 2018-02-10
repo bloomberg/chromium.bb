@@ -2457,6 +2457,8 @@ split_static_library("ui") {
         "views/dropdown_bar_host_mac.mm",
         "views/frame/browser_frame_mac.h",
         "views/frame/browser_frame_mac.mm",
+        "views/frame/browser_native_widget_window_mac.h",
+        "views/frame/browser_native_widget_window_mac.mm",
         "views/frame/browser_non_client_frame_view_factory_mac.mm",
         "views/frame/browser_non_client_frame_view_mac.h",
         "views/frame/browser_non_client_frame_view_mac.mm",
