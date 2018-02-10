@@ -54,7 +54,7 @@
 #include "chrome/utility/extensions/extensions_handler.h"
 #include "extensions/utility/utility_handler.h"
 #if defined(OS_WIN)
-#include "chrome/services/wifi_util_win/public/interfaces/constants.mojom.h"
+#include "chrome/services/wifi_util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/wifi_util_win/wifi_util_win_service.h"
 #endif
 #endif

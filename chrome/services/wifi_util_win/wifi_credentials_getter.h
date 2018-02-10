@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "chrome/services/wifi_util_win/public/interfaces/wifi_credentials_getter.mojom.h"
+#include "chrome/services/wifi_util_win/public/mojom/wifi_credentials_getter.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 class WiFiCredentialsGetter : public chrome::mojom::WiFiCredentialsGetter {
