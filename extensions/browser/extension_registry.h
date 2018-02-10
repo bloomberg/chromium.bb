@@ -14,6 +14,7 @@
 #include "base/version.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/uninstall_reason.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/features/features.h"
 
@@ -26,8 +27,10 @@ class BrowserContext;
 }
 
 namespace extensions {
+
 class Extension;
 class ExtensionRegistryObserver;
+enum class UnloadedExtensionReason;
 
 // ExtensionRegistry holds sets of the installed extensions for a given
 // BrowserContext. An incognito browser context and its master browser context
