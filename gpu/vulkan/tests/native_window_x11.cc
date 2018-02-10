@@ -16,7 +16,7 @@ gfx::AcceleratedWidget CreateNativeWindow(const gfx::Rect& bounds) {
   swa.event_mask = StructureNotifyMask | ExposureMask;
   swa.override_redirect = x11::True;
   XID window = XCreateWindow(
-      display, RootWindow(display, DefaultScreen(display)),  // parent
+      display, XRootWindow(display, DefaultScreen(display)),  // parent
       bounds.x(), bounds.y(), bounds.width(), bounds.height(),
       0,               // border width
       CopyFromParent,  // depth
