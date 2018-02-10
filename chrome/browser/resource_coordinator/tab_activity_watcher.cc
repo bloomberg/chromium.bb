@@ -7,6 +7,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_logger_impl.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/window_activity_watcher.h"
 #include "content/public/browser/browser_context.h"
@@ -136,6 +138,21 @@ bool TabActivityWatcher::ShouldTrackBrowser(Browser* browser) {
 
 void TabActivityWatcher::OnWasHidden(content::WebContents* web_contents) {
   DCHECK(web_contents);
+
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser)
+    return;
+
+  if (browser->tab_strip_model()->GetActiveWebContents() == web_contents &&
+      !browser->window()->IsMinimized()) {
+    // The active tab is considered to be in the foreground unless its window is
+    // minimized. It might still get hidden, e.g. when the browser is about to
+    // close, but that shouldn't count as a backgrounded event.
+    //
+    // TODO(michaelpg): On Mac, hiding the application (e.g. via Cmd+H) should
+    // log tabs as backgrounded. Check NSApplication's isHidden property.
+    return;
+  }
 
   MaybeLogTab(web_contents);
 }
