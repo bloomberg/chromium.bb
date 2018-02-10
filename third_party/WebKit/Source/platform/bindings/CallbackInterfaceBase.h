@@ -20,7 +20,8 @@ namespace blink {
 //
 // As the signatures of callback interface's operations vary, this class does
 // not implement any operation. Subclasses will implement it.
-class PLATFORM_EXPORT CallbackInterfaceBase {
+class PLATFORM_EXPORT CallbackInterfaceBase
+    : public GarbageCollectedFinalized<CallbackInterfaceBase> {
  public:
   // Whether the callback interface is a "single operation callback interface"
   // or not.
@@ -31,6 +32,8 @@ class PLATFORM_EXPORT CallbackInterfaceBase {
   };
 
   virtual ~CallbackInterfaceBase() = default;
+
+  virtual void Trace(blink::Visitor*) {}
 
   v8::Isolate* GetIsolate() {
     return callback_relevant_script_state_->GetIsolate();

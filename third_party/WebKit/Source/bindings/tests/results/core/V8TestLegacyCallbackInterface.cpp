@@ -12,6 +12,7 @@
 
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
+#include "bindings/tests/idls/core/TestLegacyCallbackInterface.h"
 
 namespace blink {
 

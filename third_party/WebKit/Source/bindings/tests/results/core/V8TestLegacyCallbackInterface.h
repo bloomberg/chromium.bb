@@ -11,7 +11,6 @@
 #ifndef V8TestLegacyCallbackInterface_h
 #define V8TestLegacyCallbackInterface_h
 
-#include "bindings/tests/idls/core/TestLegacyCallbackInterface.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 

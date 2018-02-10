@@ -12,15 +12,14 @@
 #ifndef V8TestCallbackInterface_h
 #define V8TestCallbackInterface_h
 
-#include "bindings/tests/idls/core/TestCallbackInterface.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/CallbackInterfaceBase.h"
 
 namespace blink {
 
-class CORE_EXPORT V8TestCallbackInterface final
-    : public TestCallbackInterface,
-      public CallbackInterfaceBase {
+class TestInterfaceEmpty;
+
+class CORE_EXPORT V8TestCallbackInterface final : public CallbackInterfaceBase {
  public:
   static V8TestCallbackInterface* Create(v8::Local<v8::Object> callback_object) {
     return new V8TestCallbackInterface(callback_object);
@@ -30,39 +29,39 @@ class CORE_EXPORT V8TestCallbackInterface final
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  void voidMethod() override;
+  void voidMethod();
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  bool booleanMethod() override;
+  bool booleanMethod();
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  void voidMethodBooleanArg(bool boolArg) override;
+  void voidMethodBooleanArg(bool boolArg);
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  void voidMethodSequenceArg(const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) override;
+  void voidMethodSequenceArg(const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg);
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  void voidMethodFloatArg(float floatArg) override;
+  void voidMethodFloatArg(float floatArg);
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) override;
+  void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg);
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  void voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) override;
+  void voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg);
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  void callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg) override;
+  void callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg);
 
   // Performs "call a user object's operation".
   // https://heycam.github.io/webidl/#call-a-user-objects-operation
-  void customVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) override;
+  void customVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg);
 
  private:
   explicit V8TestCallbackInterface(v8::Local<v8::Object> callback_object)

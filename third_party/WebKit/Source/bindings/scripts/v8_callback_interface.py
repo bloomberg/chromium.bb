@@ -94,11 +94,12 @@ def callback_interface_context(callback_interface, _):
 
     return {
         'cpp_class': callback_interface.name,
-        'v8_class': v8_utilities.v8_class_name(callback_interface),
+        'forward_declarations': sorted(forward_declarations(callback_interface)),
         'header_includes': set(CALLBACK_INTERFACE_H_INCLUDES),
         'is_single_operation_callback_interface': is_single_operation,
         'methods': [method_context(operation)
                     for operation in callback_interface.operations],
+        'v8_class': v8_utilities.v8_class_name(callback_interface),
     }
 
 
@@ -114,6 +115,23 @@ def legacy_callback_interface_context(callback_interface, _):
         'interface_name': callback_interface.name,
         'v8_class': v8_utilities.v8_class_name(callback_interface),
     }
+
+
+def forward_declarations(callback_interface):
+    def find_forward_declaration(idl_type):
+        if idl_type.is_interface_type or idl_type.is_dictionary:
+            return idl_type.implemented_as
+        elif idl_type.is_array_or_sequence_type:
+            return find_forward_declaration(idl_type.element_type)
+        return None
+
+    declarations = set()
+    for operation in callback_interface.operations:
+        for argument in operation.arguments:
+            name = find_forward_declaration(argument.idl_type)
+            if name:
+                declarations.add(name)
+    return declarations
 
 
 def add_includes_for_operation(operation):
