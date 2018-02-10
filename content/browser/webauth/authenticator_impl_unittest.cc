@@ -32,8 +32,8 @@ using ::testing::_;
 
 using webauth::mojom::AuthenticatorPtr;
 using webauth::mojom::AuthenticatorStatus;
-using webauth::mojom::MakePublicKeyCredentialOptions;
-using webauth::mojom::MakePublicKeyCredentialOptionsPtr;
+using webauth::mojom::PublicKeyCredentialCreationOptions;
+using webauth::mojom::PublicKeyCredentialCreationOptionsPtr;
 using webauth::mojom::PublicKeyCredentialRpEntity;
 using webauth::mojom::PublicKeyCredentialRpEntityPtr;
 using webauth::mojom::PublicKeyCredentialUserEntity;
@@ -191,8 +191,9 @@ GetTestPublicKeyCredentialParameters(int32_t algorithm_identifier) {
   return parameters;
 }
 
-MakePublicKeyCredentialOptionsPtr GetTestMakePublicKeyCredentialOptions() {
-  auto options = MakePublicKeyCredentialOptions::New();
+PublicKeyCredentialCreationOptionsPtr
+GetTestPublicKeyCredentialCreationOptions() {
+  auto options = PublicKeyCredentialCreationOptions::New();
   options->relying_party = GetTestPublicKeyCredentialRPEntity();
   options->user = GetTestPublicKeyCredentialUserEntity();
   options->public_key_parameters =
@@ -325,8 +326,8 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
   for (auto test_case : kInvalidRelyingPartyTestCases) {
     NavigateAndCommit(GURL(test_case.origin));
     AuthenticatorPtr authenticator = ConnectToAuthenticator();
-    MakePublicKeyCredentialOptionsPtr options =
-        GetTestMakePublicKeyCredentialOptions();
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
     DLOG(INFO) << "got options";
     options->relying_party->id = test_case.relying_party_id;
     DLOG(INFO) << options->relying_party->id;
@@ -345,8 +346,8 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
   for (auto test_case : kValidRelyingPartyTestCases) {
     NavigateAndCommit(GURL(test_case.origin));
     AuthenticatorPtr authenticator = ConnectToAuthenticator();
-    MakePublicKeyCredentialOptionsPtr options =
-        GetTestMakePublicKeyCredentialOptions();
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
     options->relying_party->id = test_case.relying_party_id;
     options->public_key_parameters = GetTestPublicKeyCredentialParameters(123);
 
@@ -364,8 +365,8 @@ TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
   SimulateNavigation(GURL(kTestOrigin1));
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
 
-  MakePublicKeyCredentialOptionsPtr options =
-      GetTestMakePublicKeyCredentialOptions();
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
   options->public_key_parameters = GetTestPublicKeyCredentialParameters(123);
 
   TestMakeCredentialCallback cb;
@@ -418,8 +419,8 @@ TEST_F(AuthenticatorImplTest, TestSerializedSignClientData) {
 
 TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {
   SimulateNavigation(GURL(kTestOrigin1));
-  MakePublicKeyCredentialOptionsPtr options =
-      GetTestMakePublicKeyCredentialOptions();
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
   TestMakeCredentialCallback cb;
 
   // Set up service_manager::Connector for tests.

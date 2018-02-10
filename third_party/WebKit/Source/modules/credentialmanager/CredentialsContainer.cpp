@@ -28,9 +28,9 @@
 #include "modules/credentialmanager/CredentialRequestOptions.h"
 #include "modules/credentialmanager/FederatedCredential.h"
 #include "modules/credentialmanager/FederatedCredentialRequestOptions.h"
-#include "modules/credentialmanager/MakePublicKeyCredentialOptions.h"
 #include "modules/credentialmanager/PasswordCredential.h"
 #include "modules/credentialmanager/PublicKeyCredential.h"
+#include "modules/credentialmanager/PublicKeyCredentialCreationOptions.h"
 #include "modules/credentialmanager/PublicKeyCredentialRequestOptions.h"
 #include "platform/weborigin/OriginAccessEntry.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -46,8 +46,8 @@ using ::password_manager::mojom::blink::CredentialInfo;
 using ::password_manager::mojom::blink::CredentialInfoPtr;
 using ::password_manager::mojom::blink::CredentialMediationRequirement;
 using ::webauth::mojom::blink::AuthenticatorStatus;
-using MojoMakePublicKeyCredentialOptions =
-    ::webauth::mojom::blink::MakePublicKeyCredentialOptions;
+using MojoPublicKeyCredentialCreationOptions =
+    ::webauth::mojom::blink::PublicKeyCredentialCreationOptions;
 using ::webauth::mojom::blink::MakeCredentialAuthenticatorResponsePtr;
 using MojoPublicKeyCredentialRequestOptions =
     ::webauth::mojom::blink::PublicKeyCredentialRequestOptions;
@@ -519,7 +519,7 @@ ScriptPromise CredentialsContainer::create(
       return promise;
     }
     auto mojo_options =
-        MojoMakePublicKeyCredentialOptions::From(options.publicKey());
+        MojoPublicKeyCredentialCreationOptions::From(options.publicKey());
     if (mojo_options) {
       if (!mojo_options->relying_party->id) {
         mojo_options->relying_party->id = resolver->GetFrame()

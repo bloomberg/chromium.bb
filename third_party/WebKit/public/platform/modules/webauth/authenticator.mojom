@@ -123,7 +123,7 @@ enum AttestationConveyancePreference {
 };
 
 // Parameters passed into calls to MakeCredential.
-struct MakePublicKeyCredentialOptions {
+struct PublicKeyCredentialCreationOptions {
   // Information about the relying party and user entities, respectively.
   // Used by the authenticator to create or retrieve an appropriate public key
   // credential for the requested account.
@@ -180,9 +180,9 @@ enum AuthenticatorTransport {
 // Interface to direct authenticators to create or use a public key credential.
 interface Authenticator {
   // Gets the credential info for a new public key credential created by an
-  // authenticator for the given |MakePublicKeyCredentialOptions|
+  // authenticator for the given |PublicKeyCredentialCreationOptions|
   // [MakeCredentialAuthenticatorResponse] will be set if and only if status == SUCCESS.
-  MakeCredential(MakePublicKeyCredentialOptions options)
+  MakeCredential(PublicKeyCredentialCreationOptions options)
       => (AuthenticatorStatus status, MakeCredentialAuthenticatorResponse? credential);
 
   // Uses an existing credential to produce an assertion for the given
