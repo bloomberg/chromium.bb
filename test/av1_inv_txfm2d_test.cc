@@ -229,18 +229,20 @@ class AV1LbdInvTxfm2d : public ::testing::TestWithParam<AV1LbdInvTxfm2dParam> {
     ref_func_ = libaom_test::inv_txfm_func_ls[tx_size_];
     target_func_ = target_list[tx_size_];
   }
-  int ValidTypeSize(TX_TYPE tx_type) {
-    int rows = tx_size_wide[tx_size_];
-    int cols = tx_size_high[tx_size_];
-    TX_TYPE_1D vtype = vtx_tab[tx_type];
-    TX_TYPE_1D htype = htx_tab[tx_type];
+
+  bool ValidTypeSize(TX_TYPE tx_type) const {
+    const int rows = tx_size_wide[tx_size_];
+    const int cols = tx_size_high[tx_size_];
+    const TX_TYPE_1D vtype = vtx_tab[tx_type];
+    const TX_TYPE_1D htype = htx_tab[tx_type];
     if (rows == 32 && (htype == ADST_1D || htype == FLIPADST_1D)) {
-      return 0;
+      return false;
     } else if (cols == 32 && (vtype == ADST_1D || vtype == FLIPADST_1D)) {
-      return 0;
+      return false;
     }
-    return 1;
+    return true;
   }
+
   void RunAV1InvTxfm2dTest(TX_TYPE tx_type, int run_times);
 
  private:
