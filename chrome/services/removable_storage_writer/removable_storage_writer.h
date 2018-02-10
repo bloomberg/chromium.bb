@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/services/removable_storage_writer/public/interfaces/removable_storage_writer.mojom.h"
+#include "chrome/services/removable_storage_writer/public/mojom/removable_storage_writer.mojom.h"
 #include "chrome/utility/image_writer/image_writer_handler.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 

@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/services/removable_storage_writer/public/interfaces/removable_storage_writer.mojom.h"
+#include "chrome/services/removable_storage_writer/public/mojom/removable_storage_writer.mojom.h"
 
 namespace service_manager {
 class Connector;

@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/services/removable_storage_writer/public/interfaces/removable_storage_writer.mojom.h"
+#include "chrome/services/removable_storage_writer/public/mojom/removable_storage_writer.mojom.h"
 #include "chrome/utility/image_writer/image_writer.h"
 
 namespace base {

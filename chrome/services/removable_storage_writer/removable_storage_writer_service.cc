@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
-#include "chrome/services/removable_storage_writer/public/interfaces/removable_storage_writer.mojom.h"
+#include "chrome/services/removable_storage_writer/public/mojom/removable_storage_writer.mojom.h"
 #include "chrome/services/removable_storage_writer/removable_storage_writer.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/service_context.h"

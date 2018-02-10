@@ -49,7 +49,7 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/services/media_gallery_util/media_gallery_util_service.h"
 #include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
-#include "chrome/services/removable_storage_writer/public/interfaces/constants.mojom.h"
+#include "chrome/services/removable_storage_writer/public/mojom/constants.mojom.h"
 #include "chrome/services/removable_storage_writer/removable_storage_writer_service.h"
 #include "chrome/utility/extensions/extensions_handler.h"
 #include "extensions/utility/utility_handler.h"

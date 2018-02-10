@@ -18,7 +18,7 @@ source_set("lib") {
   ]
 
   public_deps = [
-    "//chrome/services/removable_storage_writer/public/interfaces",
+    "//chrome/services/removable_storage_writer/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 }
