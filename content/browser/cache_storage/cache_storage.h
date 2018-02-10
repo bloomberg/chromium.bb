@@ -21,6 +21,7 @@
 #include "content/browser/cache_storage/cache_storage_cache.h"
 #include "content/browser/cache_storage/cache_storage_cache_observer.h"
 #include "third_party/WebKit/public/platform/modules/cache_storage/cache_storage.mojom.h"
+#include "url/origin.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -73,7 +74,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context,
       CacheStorageManager* cache_storage_manager,
-      const GURL& origin);
+      const url::Origin& origin);
 
   // Any unfinished asynchronous operations may not complete or call their
   // callbacks.
@@ -278,7 +279,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 
   // The origin that this CacheStorage is associated with.
-  GURL origin_;
+  url::Origin origin_;
 
   // The manager that owns this cache storage. Only set to null by
   // RemoveManager() when this cache storage is being deleted.
