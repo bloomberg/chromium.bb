@@ -440,7 +440,7 @@
 #endif
 
 #if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
-#include "chrome/services/file_util/public/interfaces/constants.mojom.h"
+#include "chrome/services/file_util/public/mojom/constants.mojom.h"
 #endif
 
 using base::FileDescriptor;

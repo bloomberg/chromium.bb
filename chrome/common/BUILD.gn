@@ -684,7 +684,7 @@ mojom("mojo_bindings") {
   ]
 
   if (safe_browsing_mode == 1) {
-    public_deps += [ "//chrome/services/file_util/public/interfaces" ]
+    public_deps += [ "//chrome/services/file_util/public/mojom" ]
   }
 
   overridden_deps = [

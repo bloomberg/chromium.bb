@@ -5,7 +5,7 @@
 #ifndef CHROME_SERVICES_FILE_UTIL_SAFE_ARCHIVE_ANALYZER_H_
 #define CHROME_SERVICES_FILE_UTIL_SAFE_ARCHIVE_ANALYZER_H_
 
-#include "chrome/services/file_util/public/interfaces/safe_archive_analyzer.mojom.h"
+#include "chrome/services/file_util/public/mojom/safe_archive_analyzer.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace base {

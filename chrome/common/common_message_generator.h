@@ -64,5 +64,5 @@
 #endif
 
 #if defined(FULL_SAFE_BROWSING)
-#include "chrome/services/file_util/public/interfaces/safe_archive_analyzer_param_traits.h"
+#include "chrome/services/file_util/public/mojom/safe_archive_analyzer_param_traits.h"
 #endif
