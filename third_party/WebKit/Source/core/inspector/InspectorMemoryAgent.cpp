@@ -153,6 +153,22 @@ InspectorMemoryAgent::GetSamplingProfileById(uint32_t id) {
                          .build());
   }
 
+  // Mix in v8 main isolate heap size as a synthetic node.
+  // TODO(alph): Add workers' heap sizes.
+  if (!id) {
+    v8::HeapStatistics heap_stats;
+    v8::Isolate::GetCurrent()->GetHeapStatistics(&heap_stats);
+    size_t total_bytes = heap_stats.total_heap_size();
+    std::unique_ptr<protocol::Array<protocol::String>> stack =
+        protocol::Array<protocol::String>::create();
+    stack->addItem("<V8 Heap>");
+    samples->addItem(protocol::Memory::SamplingProfileNode::create()
+                         .setSize(total_bytes)
+                         .setCount(1)
+                         .setStack(std::move(stack))
+                         .build());
+  }
+
   return protocol::Memory::SamplingProfile::create()
       .setSamples(std::move(samples))
       .build();
