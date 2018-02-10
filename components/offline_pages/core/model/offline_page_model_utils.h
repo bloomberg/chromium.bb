@@ -7,6 +7,14 @@
 
 #include <string>
 
+#include "base/strings/string16.h"
+
+class GURL;
+
+namespace base {
+class FilePath;
+}  // namespace base
+
 namespace offline_pages {
 
 enum class OfflinePagesNamespaceEnumeration;
@@ -19,6 +27,11 @@ OfflinePagesNamespaceEnumeration ToNamespaceEnum(const std::string& name_space);
 // Metric collection related.
 std::string AddHistogramSuffix(const std::string& name_space,
                                const char* histogram_name);
+
+base::FilePath GenerateUniqueFilenameForOfflinePage(
+    const base::string16& title,
+    const GURL& url,
+    const base::FilePath& target_dir);
 
 }  // namespace model_utils
 

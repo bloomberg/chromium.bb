@@ -51,6 +51,7 @@ const base::FilePath::CharType* ExtensionForMimeType(
       {"application/xhtml+xml", FILE_PATH_LITERAL("xhtml")},
       {"text/plain", FILE_PATH_LITERAL("txt")},
       {"text/css", FILE_PATH_LITERAL("css")},
+      {"multipart/related", FILE_PATH_LITERAL("mhtml")},
   };
   for (const auto& extension : kExtensions) {
     if (contents_mime_type == extension.mime_type)
@@ -91,6 +92,16 @@ base::FilePath EnsureMimeExtension(const base::FilePath& name,
     return base::FilePath(name.value() + FILE_PATH_LITERAL(".") +
                           suggested_extension);
   }
+
+  // Special treatment for MHTML: we would always want to add ".mhtml" as the
+  // extension even if there's another recognized mime_type based on |ext|.
+  // For example: the name is "page.html", we would like to have
+  // "page.html.mhtml" instead of "page.html".
+  if (contents_mime_type == "multipart/related" &&
+      mime_type != "multipart/related") {
+    return base::FilePath(name.value() + FILE_PATH_LITERAL(".mhtml"));
+  }
+
   return name;
 }
 
