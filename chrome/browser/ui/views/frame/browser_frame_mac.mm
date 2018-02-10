@@ -10,8 +10,8 @@
 #import "chrome/browser/ui/cocoa/browser_window_command_handler.h"
 #import "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
+#import "chrome/browser/ui/views/frame/browser_native_widget_window_mac.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#import "chrome/browser/ui/views/frame/native_widget_mac_frameless_nswindow.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #import "ui/base/cocoa/window_size_constants.h"
@@ -97,10 +97,12 @@ void BrowserFrameMac::InitNativeWidget(
 NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
     const views::Widget::InitParams& params) {
   NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
-                          NSMiniaturizableWindowMask | NSResizableWindowMask |
-                          NSTexturedBackgroundWindowMask;
-  base::scoped_nsobject<NativeWidgetMacFramelessNSWindow> ns_window(
-      [[NativeWidgetMacFramelessNSWindow alloc]
+                          NSMiniaturizableWindowMask | NSResizableWindowMask;
+  if (@available(macOS 10.10, *)) {
+    style_mask |= NSFullSizeContentViewWindowMask;
+  }
+  base::scoped_nsobject<BrowserNativeWidgetWindow> ns_window(
+      [[BrowserNativeWidgetWindow alloc]
           initWithContentRect:ui::kWindowSizeDeterminedLater
                     styleMask:style_mask
                       backing:NSBackingStoreBuffered
