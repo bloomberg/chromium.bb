@@ -29,6 +29,9 @@ class NavigationContext {
   // The WebState the navigation is taking place in.
   virtual WebState* GetWebState() = 0;
 
+  // Returns a unique ID for this navigation.
+  virtual int64_t GetNavigationId() const = 0;
+
   // The URL the WebState is navigating to. This may change during the
   // navigation when encountering a server redirect.
   virtual const GURL& GetUrl() const = 0;
@@ -42,6 +45,11 @@ class NavigationContext {
   // * pushState/replaceState
   // * same document history navigation
   virtual bool IsSameDocument() const = 0;
+
+  // Returns true if this navigation resulted in a download. Returns false if
+  // this navigation did not result in a download, or if download status is not
+  // yet known for this navigation.
+  virtual bool IsDownload() const = 0;
 
   // Whether the initial navigation is done using HTTP POST method. This will
   // not change during the navigation (even after encountering a server
