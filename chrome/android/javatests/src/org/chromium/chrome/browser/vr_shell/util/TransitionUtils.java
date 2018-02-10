@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.vr_shell.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr_shell.VrClassesWrapperImpl;
 import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
+import org.chromium.chrome.browser.vr_shell.VrTestFramework;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -119,6 +120,18 @@ public class TransitionUtils {
     public static void enterPresentationAndWait(ContentViewCore cvc, WebContents webContents) {
         enterPresentation(cvc);
         TestFramework.waitOnJavaScriptStep(webContents);
+    }
+
+    /**
+     * Allows the use of enterPresentationOrFail for shared WebVR and WebXR tests without having to
+     * check whether we need to use the WebVR or WebXR version every time.
+     */
+    public static void enterPresentationOrFail(TestFramework framework) {
+        if (framework instanceof VrTestFramework) {
+            VrTransitionUtils.enterPresentationOrFail(framework.getFirstTabCvc());
+        } else {
+            XrTransitionUtils.enterPresentationOrFail(framework.getFirstTabCvc());
+        }
     }
 
     /**

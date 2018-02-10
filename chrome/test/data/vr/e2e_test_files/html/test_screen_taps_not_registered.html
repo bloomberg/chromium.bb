@@ -13,8 +13,6 @@ Tests that screen taps aren't registered while in VR
     <script src="../resources/webvr_boilerplate.js"></script>
     <script>
       var t = async_test("Screen taps not registered when in VR");
-      window.addEventListener("vrdisplaypresentchange",
-          () => {finishJavaScriptStep();}, false);
       var numTaps = 0;
       webglCanvas.addEventListener("click", () => {numTaps++;}, false);
 

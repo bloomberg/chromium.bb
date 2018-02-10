@@ -17,7 +17,8 @@ IN_PROC_BROWSER_TEST_F(VrBrowserTestStandard,
                        REQUIRES_GPU(TestPresentationLocksFocus)) {
   LoadUrlAndAwaitInitialization(
       GetHtmlTestFile("test_presentation_locks_focus"));
-  EnterPresentationAndWait(GetFirstTabWebContents());
+  EnterPresentationOrFail(GetFirstTabWebContents());
+  ExecuteStepAndWait("stepSetupFocusLoss()", GetFirstTabWebContents());
   EndTest(GetFirstTabWebContents());
 }
 
