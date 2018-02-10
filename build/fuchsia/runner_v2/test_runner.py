@@ -19,6 +19,7 @@ import tempfile
 import time
 
 from common_args import AddCommonArgs, ConfigureLogging, GetDeploymentTargetForArgs
+from net_test_server import SetupTestServer
 from run_package import RunPackage
 
 DEFAULT_TEST_CONCURRENCY = 4
@@ -56,6 +57,9 @@ def main():
                       help='Sets the number of parallel test jobs.')
   parser.add_argument('--test-launcher-summary-output',
                       help='Where the test launcher will output its json.')
+  parser.add_argument('--enable-test-server', action='store_true',
+                      default=False,
+                      help='Enable Chrome test server spawner.')
   parser.add_argument('child_args', nargs='*',
                       help='Arguments for the test process.')
   args = parser.parse_args()
@@ -86,14 +90,23 @@ def main():
     child_args.append('--test-launcher-summary-output=' + TEST_RESULT_PATH)
 
   with GetDeploymentTargetForArgs(args) as target:
+    target = GetDeploymentTargetForArgs(args)
     target.Start()
 
     if args.test_launcher_filter_file:
       target.PutFile(args.test_launcher_filter_file, TEST_FILTER_PATH)
       child_args.append('--test-launcher-filter-file=' + TEST_FILTER_PATH)
 
+    forwarder = None
+    if args.enable_test_server:
+      test_server, forwarder = SetupTestServer(target, test_concurrency)
+
     RunPackage(args.output_directory, target, args.package,
                child_args, args.package_manifest)
+
+    if forwarder:
+      forwarder.terminate()
+      forwarder.wait()
 
     if args.test_launcher_summary_output:
       target.GetFile(TEST_RESULT_PATH, args.test_launcher_summary_output)
