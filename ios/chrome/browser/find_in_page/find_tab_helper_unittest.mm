@@ -29,7 +29,7 @@ class FindTabHelperTest : public ChromeWebTest {
  protected:
   void SetUp() override {
     ChromeWebTest::SetUp();
-    FindTabHelper::CreateForWebState(web_state(), nil);
+    FindTabHelper::CreateForWebState(web_state());
   }
 
   void TearDown() override {

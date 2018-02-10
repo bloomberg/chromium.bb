@@ -143,7 +143,7 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 }
 }  // namespace
 
-@interface Tab ()<CRWWebStateObserver, FindInPageControllerDelegate> {
+@interface Tab ()<CRWWebStateObserver> {
   __weak TabModel* _parentTabModel;
   ios::ChromeBrowserState* _browserState;
 
@@ -260,10 +260,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 
 - (BOOL)canGoForward {
   return self.navigationManager && self.navigationManager->CanGoForward();
-}
-
-- (id<FindInPageControllerDelegate>)findInPageControllerDelegate {
-  return self;
 }
 
 - (void)setOverscrollActionsControllerDelegate:
@@ -462,11 +458,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   DCHECK(_secondFactorController);
   [_secondFactorController evaluateU2FResultFromU2FURL:URL
                                               webState:self.webState];
-}
-
-#pragma mark - FindInPageControllerDelegate protocol
-
-- (void)willAdjustScrollPosition {
 }
 
 #pragma mark - CRWWebStateObserver protocol

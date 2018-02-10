@@ -13,7 +13,6 @@
 #import "ios/web/public/web_state/web_state_user_data.h"
 
 @class FindInPageController;
-@protocol FindInPageControllerDelegate;
 @class FindInPageModel;
 
 typedef void (^FindInPageCompletionBlock)(FindInPageModel*);
@@ -28,12 +27,6 @@ class FindTabHelper : public web::WebStateObserver,
     FORWARD,
     REVERSE,
   };
-
-  // Creates a FindTabHelper and attaches it to the given |web_state|.
-  // |controller_delegate| can be nil.
-  static void CreateForWebState(
-      web::WebState* web_state,
-      id<FindInPageControllerDelegate> controller_delegate);
 
   // Starts an asynchronous Find operation that will call the given completion
   // handler with results.  Highlights matches on the current page.  Always
@@ -73,9 +66,10 @@ class FindTabHelper : public web::WebStateObserver,
 
  private:
   friend class FindTabHelperTest;
+  friend class web::WebStateUserData<FindTabHelper>;
 
-  FindTabHelper(web::WebState* web_state,
-                id<FindInPageControllerDelegate> controller_delegate);
+  // Private constructor used by CreateForWebState().
+  FindTabHelper(web::WebState* web_state);
 
   // web::WebStateObserver.
   void NavigationItemCommitted(

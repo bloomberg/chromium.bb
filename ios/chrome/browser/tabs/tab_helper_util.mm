@@ -73,7 +73,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   InfoBarManagerImpl::CreateForWebState(web_state);
   IOSSecurityStateTabHelper::CreateForWebState(web_state);
   BlockedPopupTabHelper::CreateForWebState(web_state);
-  FindTabHelper::CreateForWebState(web_state, tab.findInPageControllerDelegate);
+  FindTabHelper::CreateForWebState(web_state);
   StoreKitTabHelper::CreateForWebState(web_state);
   HistoryTabHelper::CreateForWebState(web_state);
   LoadTimingTabHelper::CreateForWebState(web_state);
