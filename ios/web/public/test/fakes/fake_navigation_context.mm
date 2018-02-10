@@ -14,12 +14,29 @@
 
 namespace web {
 
-FakeNavigationContext::FakeNavigationContext() = default;
+namespace {
+
+// Returns a new unique ID for a NavigationContext during construction.
+// The returned ID is guaranteed to be nonzero (zero is the "no ID" indicator).
+int64_t CreateUniqueContextId() {
+  static int64_t unique_id_counter = 0;
+  return ++unique_id_counter;
+}
+
+}  // namespace
+
+FakeNavigationContext::FakeNavigationContext()
+    : navigation_id_(CreateUniqueContextId()){};
 FakeNavigationContext::~FakeNavigationContext() = default;
 
 WebState* FakeNavigationContext::GetWebState() {
   return web_state_.get();
 }
+
+int64_t FakeNavigationContext::GetNavigationId() const {
+  return navigation_id_;
+}
+
 const GURL& FakeNavigationContext::GetUrl() const {
   return url_;
 }
@@ -30,6 +47,10 @@ ui::PageTransition FakeNavigationContext::GetPageTransition() const {
 
 bool FakeNavigationContext::IsSameDocument() const {
   return same_document_;
+}
+
+bool FakeNavigationContext::IsDownload() const {
+  return is_download_;
 }
 
 bool FakeNavigationContext::IsPost() const {
@@ -62,6 +83,10 @@ void FakeNavigationContext::SetPageTransition(ui::PageTransition transition) {
 
 void FakeNavigationContext::SetIsSameDocument(bool same_document) {
   same_document_ = same_document;
+}
+
+void FakeNavigationContext::SetIsDownload(bool is_download) {
+  is_download_ = is_download;
 }
 
 void FakeNavigationContext::SetIsPost(bool is_post) {

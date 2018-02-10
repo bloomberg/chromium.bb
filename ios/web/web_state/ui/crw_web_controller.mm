@@ -4327,8 +4327,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
     int64_t contentLength = navigationResponse.response.expectedContentLength;
     web::BrowserState* browserState = self.webState->GetBrowserState();
-    web::NavigationContext* context =
+    web::NavigationContextImpl* context =
         [self contextForPendingNavigationWithURL:responseURL];
+    context->SetIsDownload(true);
+    _webStateImpl->OnNavigationFinished(context);
     web::DownloadController::FromBrowserState(browserState)
         ->CreateDownloadTask(_webStateImpl, [NSUUID UUID].UUIDString,
                              responseURL, contentDisposition, contentLength,
