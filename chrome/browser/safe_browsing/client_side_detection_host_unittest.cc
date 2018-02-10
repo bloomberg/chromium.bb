@@ -977,7 +977,7 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckPass) {
 }
 
 TEST_F(ClientSideDetectionHostTest,
-       TestPreClassificationCheckInPageNavigation) {
+       TestPreClassificationCheckSameDocumentNavigation) {
   GURL url("http://host.com/");
   ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
                                 &kFalse, &kFalse, &kFalse);
@@ -987,7 +987,7 @@ TEST_F(ClientSideDetectionHostTest,
   ExpectStartPhishingDetection(&url);
   ExpectShouldClassifyForMalwareResult(true);
 
-  // Now try an in-page navigation.  This should not trigger an IPC.
+  // Now try an same-document navigation.  This should not trigger an IPC.
   EXPECT_CALL(*csd_service_, IsPrivateIPAddress(_)).Times(0);
   GURL inpage("http://host.com/#foo");
   ExpectPreClassificationChecks(inpage, NULL, NULL, NULL, NULL, NULL, NULL,
