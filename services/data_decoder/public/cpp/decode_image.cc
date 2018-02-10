@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
-#include "services/data_decoder/public/interfaces/constants.mojom.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

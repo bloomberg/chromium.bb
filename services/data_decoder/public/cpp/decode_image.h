@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "services/data_decoder/public/interfaces/image_decoder.mojom.h"
+#include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 
 namespace gfx {
 class Size;

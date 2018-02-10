@@ -44,7 +44,7 @@
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/switches.h"
 #include "extensions/strings/grit/extensions_strings.h"
-#include "services/data_decoder/public/interfaces/constants.mojom.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"

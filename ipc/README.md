@@ -157,7 +157,7 @@ service. Your first order of business is to translate this into a suitable
 public interface definition within that service:
 
 ``` cpp
-// src/services/data_decoder/public/interfaces/png_decoder.mojom
+// src/services/data_decoder/public/mojom/png_decoder.mojom
 module data_decoder.mojom;
 
 interface PngDecoder {

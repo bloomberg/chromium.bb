@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "services/data_decoder/public/interfaces/image_decoder.mojom.h"
+#include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 #include "services/service_manager/public/cpp/identity.h"
 
 class SkBitmap;

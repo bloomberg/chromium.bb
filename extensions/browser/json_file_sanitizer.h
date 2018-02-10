@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/values.h"
-#include "services/data_decoder/public/interfaces/json_parser.mojom.h"
+#include "services/data_decoder/public/mojom/json_parser.mojom.h"
 #include "services/service_manager/public/cpp/identity.h"
 
 namespace service_manager {

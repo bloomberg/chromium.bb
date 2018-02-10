@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "services/data_decoder/public/interfaces/xml_parser.mojom.h"
+#include "services/data_decoder/public/mojom/xml_parser.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace data_decoder {

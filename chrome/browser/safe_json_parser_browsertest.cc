@@ -15,8 +15,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
-#include "services/data_decoder/public/interfaces/constants.mojom.h"
-#include "services/data_decoder/public/interfaces/json_parser.mojom.h"
+#include "services/data_decoder/public/mojom/constants.mojom.h"
+#include "services/data_decoder/public/mojom/json_parser.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 
