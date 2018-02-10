@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_PUBLIC_CPP_COOKIE_MANAGER_STRUCT_TRAITS_H_
-#define SERVICES_NETWORK_PUBLIC_CPP_COOKIE_MANAGER_STRUCT_TRAITS_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_COOKIE_MANAGER_MOJOM_TRAITS_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_COOKIE_MANAGER_MOJOM_TRAITS_H_
 
 #include "ipc/ipc_message_utils.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
-#include "services/network/public/interfaces/cookie_manager.mojom.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 
 namespace mojo {
 
@@ -105,4 +105,4 @@ struct StructTraits<network::mojom::CanonicalCookieDataView,
 
 }  // namespace mojo
 
-#endif  // SERVICES_NETWORK_PUBLIC_CPP_COOKIE_MANAGER_STRUCT_TRAITS_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_COOKIE_MANAGER_MOJOM_TRAITS_H_

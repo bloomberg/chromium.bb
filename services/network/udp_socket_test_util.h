@@ -16,7 +16,7 @@
 #include "base/run_loop.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "services/network/public/interfaces/udp_socket.mojom.h"
+#include "services/network/public/mojom/udp_socket.mojom.h"
 
 namespace network {
 

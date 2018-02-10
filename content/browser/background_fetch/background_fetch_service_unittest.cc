@@ -21,7 +21,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "services/network/public/interfaces/fetch_api.mojom.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 
 namespace content {
 namespace {

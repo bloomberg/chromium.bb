@@ -8,7 +8,7 @@
 #include <Cocoa/Cocoa.h>
 
 #include "base/memory/ref_counted.h"
-#include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 class AccountAvatarFetcherBridge;
 @class CredentialItemButton;

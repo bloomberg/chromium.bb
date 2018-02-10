@@ -4,8 +4,8 @@
 
 module blink.mojom;
 
-import "services/network/public/interfaces/fetch_api.mojom";
-import "services/network/public/interfaces/request_context_frame_type.mojom";
+import "services/network/public/mojom/fetch_api.mojom";
+import "services/network/public/mojom/request_context_frame_type.mojom";
 import "third_party/WebKit/public/platform/referrer.mojom";
 import "third_party/WebKit/common/blob/blob.mojom";
 import "url/mojom/url.mojom";

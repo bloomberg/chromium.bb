@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/passwords/password_dialog_controller.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 PasswordPromptViewBridge::PasswordPromptViewBridge(
     PasswordDialogController* controller,

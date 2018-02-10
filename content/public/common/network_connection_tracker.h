@@ -17,8 +17,8 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/network/public/interfaces/network_change_manager.mojom.h"
-#include "services/network/public/interfaces/network_service.mojom.h"
+#include "services/network/public/mojom/network_change_manager.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 namespace content {
 

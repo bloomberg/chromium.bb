@@ -21,7 +21,7 @@
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/io_buffer.h"
 #include "net/base/request_priority.h"
-#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/upload_progress_tracker.h"
 
 class GURL;

@@ -5,7 +5,7 @@ include_rules = [
   "+ios/web",
   "+mojo/public",
   "+net",
-  "+services/network/public/interfaces/url_loader_factory.mojom.h",
+  "+services/network/public/mojom/url_loader_factory.mojom.h",
   "+services/network/url_loader.h",
   "+ui",
 

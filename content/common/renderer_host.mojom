@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "services/network/public/interfaces/url_loader_factory.mojom";
+import "services/network/public/mojom/url_loader_factory.mojom";
 
 // The primordial interface implemented by a render process host. This should be
 // used for implementing renderer-to-browser messages.

@@ -22,7 +22,7 @@
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/resource_response.h"
-#include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
 namespace content {

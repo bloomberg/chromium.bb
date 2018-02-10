@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/base/network_change_notifier.h"
-#include "services/network/public/interfaces/network_change_manager.mojom.h"
+#include "services/network/public/mojom/network_change_manager.mojom.h"
 
 namespace network {
 

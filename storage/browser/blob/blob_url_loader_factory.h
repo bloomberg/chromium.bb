@@ -6,7 +6,7 @@
 #define STORAGE_BROWSER_BLOB_BLOB_URL_LOADER_FACTORY_H_
 
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "storage/browser/storage_browser_export.h"
 
 namespace storage {

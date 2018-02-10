@@ -28,7 +28,7 @@
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 
-#include "services/network/public/interfaces/data_pipe_getter.mojom-blink.h"
+#include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
 
 namespace blink {
 

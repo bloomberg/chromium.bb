@@ -9,7 +9,7 @@
 
 #include "chrome/test/base/in_process_browser_test.h"
 #include "net/cert/mock_cert_verifier.h"
-#include "services/network/public/interfaces/network_service_test.mojom.h"
+#include "services/network/public/mojom/network_service_test.mojom.h"
 
 namespace net {
 class MockCertVerifier;

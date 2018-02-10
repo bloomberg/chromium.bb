@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//services/network/public/interfaces/url_loader.mojom"
+mojom = "//services/network/public/mojom/url_loader.mojom"
 public_headers = [ "//services/network/public/cpp/resource_request.h" ]
 traits_headers = [
   "//services/network/public/cpp/network_param_ipc_traits.h",
-  "//services/network/public/cpp/url_request_struct_traits.h",
+  "//services/network/public/cpp/url_request_mojom_traits.h",
 ]
 public_deps = [
   "//services/network/public/cpp:cpp_base",

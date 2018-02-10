@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "services/network/public/interfaces/http_request_headers.mojom";
+import "services/network/public/mojom/http_request_headers.mojom";
 
 // Interface that can be implemented to be informed of certain information while
 // reading the data for a blob.

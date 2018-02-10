@@ -36,7 +36,7 @@ blink_platform_sources("blob") {
   ]
 
   deps = [
-    "//services/network/public/interfaces:interfaces_blink",
+    "//services/network/public/mojom:mojom_blink",
   ]
 }
 

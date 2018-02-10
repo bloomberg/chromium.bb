@@ -42,7 +42,7 @@
 #include "platform/wtf/DynamicAnnotations.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/TextPosition.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom-shared.h"
+#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "v8/include/v8-profiler.h"
 #include "v8/include/v8.h"
 

@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_WEBUI_WEB_UI_URL_LOADER_FACTORY_H_
 #define CONTENT_BROWSER_WEBUI_WEB_UI_URL_LOADER_FACTORY_H_
 
-#include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
 class RenderFrameHost;

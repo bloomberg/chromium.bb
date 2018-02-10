@@ -41,9 +41,9 @@
 #include "platform/wtf/RefCounted.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
-#include "services/network/public/interfaces/cors.mojom-blink.h"
-#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom-shared.h"
+#include "services/network/public/mojom/cors.mojom-blink.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/WebKit/common/net/ip_address_space.mojom-blink.h"
 
 namespace blink {

@@ -16,7 +16,7 @@
 #include "content/public/common/three_d_api_types.h"
 #include "net/cookies/canonical_cookie.h"
 #include "ppapi/features/features.h"
-#include "services/network/public/interfaces/network_service.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)

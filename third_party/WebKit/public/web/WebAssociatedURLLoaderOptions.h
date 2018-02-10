@@ -31,7 +31,7 @@
 #ifndef WebAssociatedURLLoaderOptions_h
 #define WebAssociatedURLLoaderOptions_h
 
-#include "services/network/public/interfaces/cors.mojom-shared.h"
+#include "services/network/public/mojom/cors.mojom-shared.h"
 
 namespace blink {
 

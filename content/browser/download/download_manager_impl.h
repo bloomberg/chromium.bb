@@ -30,7 +30,7 @@
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/ssl_status.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace content {
 class DownloadFileFactory;

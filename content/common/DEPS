@@ -7,7 +7,7 @@ include_rules = [
   "+device/base/synchronization",
   "+services/network/loader_util.h",
   "+services/network/public/cpp",
-  "+services/network/public/interfaces",
+  "+services/network/public/mojom",
   "+services/resource_coordinator/public/interfaces",
   "+services/service_manager/public/cpp",
   "+services/service_manager/sandbox",

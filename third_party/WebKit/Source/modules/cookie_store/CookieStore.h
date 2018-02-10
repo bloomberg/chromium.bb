@@ -12,7 +12,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
-#include "services/network/public/interfaces/restricted_cookie_manager.mojom-blink.h"
+#include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
 
 namespace blink {
 

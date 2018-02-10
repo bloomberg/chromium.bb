@@ -891,7 +891,7 @@ static_library("extensions") {
     "//services/data_decoder/public/cpp",
     "//services/device/public/interfaces",
     "//services/identity/public/mojom",
-    "//services/network/public/interfaces",
+    "//services/network/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//skia",

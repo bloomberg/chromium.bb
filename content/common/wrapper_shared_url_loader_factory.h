@@ -9,7 +9,7 @@
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "content/public/common/shared_url_loader_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
 

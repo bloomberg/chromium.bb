@@ -8,7 +8,7 @@
 #include "content/public/common/shared_url_loader_factory.h"
 
 #include "base/memory/ref_counted.h"
-#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace content {
 

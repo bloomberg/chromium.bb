@@ -23,7 +23,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/test_completion_callback.h"
 #include "services/network/network_context.h"
-#include "services/network/public/interfaces/udp_socket.mojom.h"
+#include "services/network/public/mojom/udp_socket.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {

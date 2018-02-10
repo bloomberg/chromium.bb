@@ -10,7 +10,7 @@
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/resource_response_info.h"
-#include "services/network/public/interfaces/cors.mojom.h"
+#include "services/network/public/mojom/cors.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/net_errors.h"
 #include "net/ssl/ssl_private_key.h"
-#include "services/network/public/interfaces/network_service.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 namespace content {
 

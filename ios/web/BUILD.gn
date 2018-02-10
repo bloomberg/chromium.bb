@@ -49,7 +49,7 @@ source_set("web") {
     "//ios/web/web_state:web_view_internal_creation_util",
     "//services/catalog/public/cpp",
     "//services/network:network_service",
-    "//services/network/public/interfaces",
+    "//services/network/public/mojom",
     "//services/service_manager",
     "//services/service_manager/embedder",
     "//services/service_manager/runner/common",

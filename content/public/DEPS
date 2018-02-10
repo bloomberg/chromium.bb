@@ -1,7 +1,7 @@
 include_rules = [
   "-content",
 
-  "+services/network/public/interfaces",
+  "+services/network/public/mojom",
   "+services/service_manager/public",
   "+services/service_manager/sandbox",
 

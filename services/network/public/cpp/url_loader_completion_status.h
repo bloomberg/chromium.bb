@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
-#include "services/network/public/interfaces/cors.mojom-shared.h"
+#include "services/network/public/mojom/cors.mojom-shared.h"
 
 namespace network {
 

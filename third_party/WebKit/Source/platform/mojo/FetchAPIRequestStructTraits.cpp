@@ -11,7 +11,7 @@
 #include "platform/mojo/ReferrerStructTraits.h"
 #include "platform/weborigin/Referrer.h"
 #include "public/platform/WebReferrerPolicy.h"
-#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 
 namespace mojo {
 

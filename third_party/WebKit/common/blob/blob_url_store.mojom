@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 module blink.mojom;
 
-import "services/network/public/interfaces/url_loader_factory.mojom";
+import "services/network/public/mojom/url_loader_factory.mojom";
 import "third_party/WebKit/common/blob/blob.mojom";
 import "url/mojom/url.mojom";
 

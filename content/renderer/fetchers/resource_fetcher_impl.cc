@@ -18,7 +18,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"

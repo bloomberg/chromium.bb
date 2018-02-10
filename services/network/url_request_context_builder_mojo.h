@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher_factory.h"
 #include "net/url_request/url_request_context_builder.h"
-#include "services/network/public/interfaces/network_service.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/url_request_context_owner.h"
 #include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 

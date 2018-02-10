@@ -13,7 +13,7 @@
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
-#include "services/network/public/interfaces/restricted_cookie_manager.mojom-blink.h"
+#include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {

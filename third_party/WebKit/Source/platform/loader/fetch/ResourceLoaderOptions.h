@@ -38,7 +38,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/WTFString.h"
-#include "services/network/public/interfaces/url_loader_factory.mojom-blink.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 
 namespace blink {
 

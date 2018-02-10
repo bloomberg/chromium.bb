@@ -13,7 +13,7 @@
 #include "platform/wtf/WTF.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebURLRequest.h"
-#include "services/network/public/interfaces/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 
 namespace blink {
 

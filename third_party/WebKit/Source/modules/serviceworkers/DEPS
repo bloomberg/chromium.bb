@@ -5,7 +5,7 @@ include_rules = [
     "+modules/ModulesExport.h",
     "+modules/serviceworkers",
     "+mojo/public/cpp/system/data_pipe.h",
-    "+services/network/public/interfaces",
+    "+services/network/public/mojom",
 ]
 
 specific_include_rules = {

@@ -4,7 +4,7 @@
 
 module network.mojom;
 
-import "services/network/public/interfaces/http_request_headers.mojom";
+import "services/network/public/mojom/http_request_headers.mojom";
 
 interface TraitsTestService {
   [Sync]

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "services/network/public/interfaces/network_service_test.mojom.h"
+#include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
