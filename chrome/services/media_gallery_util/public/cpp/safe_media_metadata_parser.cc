@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "chrome/services/media_gallery_util/public/interfaces/constants.mojom.h"
+#include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/blob_reader.h"

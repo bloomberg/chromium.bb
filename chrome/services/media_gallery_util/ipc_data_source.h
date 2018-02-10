@@ -11,7 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/services/media_gallery_util/public/interfaces/media_parser.mojom.h"
+#include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
 #include "media/base/data_source.h"
 
 namespace base {

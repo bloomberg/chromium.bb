@@ -24,7 +24,7 @@ source_set("lib") {
   ]
 
   public_deps = [
-    "//chrome/services/media_gallery_util/public/interfaces",
+    "//chrome/services/media_gallery_util/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 }

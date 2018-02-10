@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/services/media_gallery_util/public/interfaces/media_parser_struct_traits.h"
+#include "chrome/services/media_gallery_util/public/mojom/media_parser_mojom_traits.h"
 
 #include "mojo/public/cpp/bindings/array_data_view.h"
 
