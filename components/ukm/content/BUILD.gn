@@ -11,7 +11,7 @@ static_library("content") {
     "//base",
     "//content/public/browser",
     "//services/metrics/public/cpp:metrics_cpp",
-    "//services/metrics/public/interfaces",
+    "//services/metrics/public/mojom",
     "//url",
   ]
 }

@@ -27,7 +27,7 @@ static_library("ukm") {
 
   public_deps = [
     "//services/metrics/public/cpp:metrics_cpp",
-    "//services/metrics/public/interfaces",
+    "//services/metrics/public/mojom",
     "//third_party/metrics_proto",
   ]
 

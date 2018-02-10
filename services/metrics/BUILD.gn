@@ -20,7 +20,7 @@ source_set("metrics") {
   deps = [
     "//mojo/public/cpp/bindings",
     "//services/metrics/public/cpp:metrics_cpp",
-    "//services/metrics/public/interfaces",
+    "//services/metrics/public/mojom",
     "//services/service_manager/public/cpp",
     "//url",
   ]

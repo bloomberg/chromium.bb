@@ -25,7 +25,7 @@ source_set("main") {
     "//ipc",
     "//mojo/public/cpp/system",
     "//services/metrics/public/cpp:metrics_cpp",
-    "//services/metrics/public/interfaces",
+    "//services/metrics/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/viz/privileged/interfaces",
     "//ui/gfx:memory_buffer",

@@ -23,7 +23,7 @@ mojom_component("interfaces") {
 
   public_deps = [
     "//mojo/common:common_custom_types",
-    "//services/metrics/public/interfaces",
+    "//services/metrics/public/mojom",
   ]
 
   enabled_features = []

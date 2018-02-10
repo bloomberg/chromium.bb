@@ -54,7 +54,7 @@
 #include "services/device/device_service.h"
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/metrics/metrics_mojo_service.h"
-#include "services/metrics/public/interfaces/constants.mojom.h"
+#include "services/metrics/public/mojom/constants.mojom.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/interfaces/network_service_test.mojom.h"

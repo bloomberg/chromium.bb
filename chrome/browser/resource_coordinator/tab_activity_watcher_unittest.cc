@@ -25,7 +25,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/metrics/public/interfaces/ukm_interface.mojom.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"

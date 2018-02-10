@@ -149,7 +149,7 @@ static_library("renderer") {
     "//ppapi/features",
     "//printing/features",
     "//services/metrics/public/cpp:metrics_cpp",
-    "//services/metrics/public/interfaces",
+    "//services/metrics/public/mojom",
     "//services/service_manager/public/cpp",
     "//skia",
     "//storage/common",

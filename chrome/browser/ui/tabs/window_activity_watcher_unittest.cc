@@ -20,7 +20,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/metrics/public/interfaces/ukm_interface.mojom.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_types.h"
 

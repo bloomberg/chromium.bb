@@ -1714,7 +1714,7 @@ test("content_unittests") {
     "//services/file:lib",
     "//services/file/public/mojom",
     "//services/metrics/public/cpp:ukm_builders",
-    "//services/metrics/public/interfaces",
+    "//services/metrics/public/mojom",
     "//services/network:network_service",
     "//services/network:test_support",
     "//services/network/public/cpp",

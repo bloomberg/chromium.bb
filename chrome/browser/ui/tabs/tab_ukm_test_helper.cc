@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/tabs/tab_ukm_test_helper.h"
 
 #include "components/ukm/ukm_source.h"
-#include "services/metrics/public/interfaces/ukm_interface.mojom.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

@@ -26,7 +26,7 @@
 #include "media/gpu/features.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
-#include "services/metrics/public/interfaces/constants.mojom.h"
+#include "services/metrics/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(USE_VAAPI)
