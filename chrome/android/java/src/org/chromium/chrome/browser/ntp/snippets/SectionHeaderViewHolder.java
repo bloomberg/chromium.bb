@@ -5,9 +5,12 @@
 package org.chromium.chrome.browser.ntp.snippets;
 
 import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -17,25 +20,46 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 /**
  * View holder for the header of a section of cards.
  */
-public class SectionHeaderViewHolder extends NewTabPageViewHolder {
+public class SectionHeaderViewHolder extends NewTabPageViewHolder implements View.OnClickListener {
     private static final double SCROLL_HEADER_HEIGHT_PERCENTAGE = 0.7;
 
     private final int mMaxSnippetHeaderHeight;
     private final MarginResizer mMarginResizer;
 
+    private final TextView mTitleView;
+    private final ImageView mIconView;
+
+    private SectionHeader mHeader;
+
     public SectionHeaderViewHolder(final SuggestionsRecyclerView recyclerView, UiConfig config) {
         super(LayoutInflater.from(recyclerView.getContext())
-                        .inflate(R.layout.new_tab_page_snippets_header, recyclerView, false));
+                        .inflate(
+                                ChromeFeatureList.isEnabled(
+                                        ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)
+                                        ? R.layout.new_tab_page_snippets_expandable_header
+                                        : R.layout.new_tab_page_snippets_header,
+                                recyclerView, false));
         mMaxSnippetHeaderHeight = itemView.getResources().getDimensionPixelSize(
                 R.dimen.snippets_article_header_height);
 
         int wideLateralMargin = recyclerView.getResources().getDimensionPixelSize(
                 R.dimen.ntp_wide_card_lateral_margins);
         mMarginResizer = new MarginResizer(itemView, config, 0, wideLateralMargin);
+
+        mTitleView = itemView.findViewById(R.id.header_title);
+        mIconView = itemView.findViewById(R.id.header_icon);
     }
 
     public void onBindViewHolder(SectionHeader header) {
-        ((TextView) itemView).setText(header.getHeaderText());
+        mHeader = header;
+        itemView.setOnClickListener(header.isExpandable() ? this : null);
+        mTitleView.setText(header.getHeaderText());
+        updateIconDrawable();
+        if (ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER)) {
+            mIconView.setVisibility(header.isExpandable() ? View.VISIBLE : View.GONE);
+        }
+
         updateDisplay(0, false);
         mMarginResizer.attach();
     }
@@ -43,7 +67,14 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder {
     @Override
     public void recycle() {
         mMarginResizer.detach();
+        mHeader = null;
         super.recycle();
+    }
+
+    @Override
+    public void onClick(View view) {
+        assert mHeader.isExpandable() : "onClick() is called on a non-expandable section header.";
+        mHeader.toggleHeader();
     }
 
     /**
@@ -77,5 +108,22 @@ public class SectionHeaderViewHolder extends NewTabPageViewHolder {
         // dimensions of this one. Otherwise scrolling fast can make the peeking card go completely
         // below the fold for example.
         itemView.requestLayout();
+    }
+
+    /**
+     * Update the image resource for the icon view based on whether the header is expanded.
+     */
+    private void updateIconDrawable() {
+        if (!mHeader.isExpandable()) return;
+        mIconView.setImageResource(
+                mHeader.isExpanded() ? R.drawable.ic_collapsed : R.drawable.ic_expanded);
+    }
+
+    /**
+     * Triggers an update to the icon drawable. Intended to be used as
+     * {@link NewTabPageViewHolder.PartialBindCallback}
+     */
+    static void updateIconDrawable(NewTabPageViewHolder holder) {
+        ((SectionHeaderViewHolder) holder).updateIconDrawable();
     }
 }

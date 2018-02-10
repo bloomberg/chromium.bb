@@ -353,6 +353,7 @@
     <!-- The default padding for the peeking card and the amount the card peeks by in the current
          peeking card animation (the calculations assume this is the same). -->
     <dimen name="snippets_padding">16dp</dimen>
+    <dimen name="snippets_header_top_padding">10dp</dimen>
     <!-- The amount of the peeking card showing above the fold with the increased visibility UI
          (https://crbug.com/660837). -->
     <dimen name="snippets_peeking_card_peek_amount">32dp</dimen>
