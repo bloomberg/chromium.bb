@@ -17,6 +17,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
+#include "base/threading/scoped_blocking_call.h"
+#include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_util.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
@@ -244,8 +247,15 @@ void SafeBrowsingApiHandlerBridge::Core::StartURLCheck(
   ScopedJavaLocalRef<jintArray> j_threat_types =
       SBThreatTypeSetToJavaArray(env, threat_types);
 
+  // Increase parallelism by indicating that the lookup may block. Only the long
+  // tail of these calls block for more than 10ms, which is the current
+  // threshold for increasing worker capacity.
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ElapsedTimer check_timer;
   Java_SafeBrowsingApiBridge_startUriLookup(env, j_api_handler_, callback_id,
                                             j_url, j_threat_types);
+  UMA_HISTOGRAM_COUNTS_10M("SB2.RemoteCall.CheckDispatchTime",
+                           check_timer.Elapsed().InMicroseconds());
 }
 
 }  // namespace safe_browsing
