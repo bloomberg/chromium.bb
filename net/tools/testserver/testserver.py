@@ -42,7 +42,6 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(BASE_DIR)))
 # Insert at the beginning of the path, we want to use our copies of the library
 # unconditionally (since they contain modifications from anything that might be
 # obtained from e.g. PyPi).
-sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party', 'pyftpdlib', 'src'))
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party', 'pywebsocket', 'src'))
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party', 'tlslite'))
 

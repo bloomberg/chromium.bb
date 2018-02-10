@@ -113,8 +113,8 @@ group("test_runner_py") {
   # Filter out comments.
   set_sources_assignment_filter([ "#*" ])
   sources = _py_files
-
   data = sources + [
+           "test_runner.pydeps",
            "devil_chromium.json",
            "pylib/gtest/filter/",
            "pylib/instrumentation/render_test.html.jinja",
@@ -136,8 +136,7 @@ group("logdog_wrapper_py") {
   # Filter out comments.
   set_sources_assignment_filter([ "#*" ])
   sources = _py_files
-
-  data = sources
+  data = sources + [ "test_wrapper/logdog_wrapper.pydeps" ]
 }
 
 # Create wrapper scripts in out/bin that takes care of setting the
