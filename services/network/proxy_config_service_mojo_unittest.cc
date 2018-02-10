@@ -8,7 +8,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_service.h"
-#include "services/network/public/interfaces/proxy_config.mojom.h"
+#include "services/network/public/mojom/proxy_config.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {

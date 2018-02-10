@@ -36,7 +36,7 @@
 #include "platform/network/http_names.h"
 #include "public/platform/WebCORS.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
-#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 
 namespace blink {
 

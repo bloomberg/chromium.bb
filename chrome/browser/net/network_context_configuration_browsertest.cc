@@ -45,9 +45,9 @@
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "services/network/public/interfaces/network_service.mojom.h"
-#include "services/network/public/interfaces/url_loader.mojom.h"
-#include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

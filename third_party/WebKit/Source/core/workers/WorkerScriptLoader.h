@@ -42,7 +42,7 @@
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/WebURLRequest.h"
-#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 
 namespace blink {
 

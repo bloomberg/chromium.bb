@@ -13,7 +13,7 @@
 #include "content/public/common/referrer.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/network/public/cpp/resource_response.h"
-#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace content {
 

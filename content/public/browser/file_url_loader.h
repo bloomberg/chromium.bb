@@ -9,7 +9,7 @@
 
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/file_data_pipe_producer.h"
-#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace content {
 

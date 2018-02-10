@@ -192,7 +192,7 @@
 #include "services/device/public/interfaces/constants.mojom.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "services/network/public/interfaces/network_service.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/embedder/switches.h"

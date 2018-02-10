@@ -143,7 +143,7 @@ mojom("mojo_platform_bindings") {
 
   public_deps = [
     "//mojo/common:common_custom_types",
-    "//services/network/public/interfaces",
+    "//services/network/public/mojom",
     "//ui/gfx/geometry/mojo",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",

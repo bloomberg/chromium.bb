@@ -50,7 +50,7 @@
 #include "public/platform/WebMouseEvent.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebWindowFeatures.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom-blink.h"
+#include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 
 namespace blink {
 

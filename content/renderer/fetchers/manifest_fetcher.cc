@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "content/public/renderer/associated_resource_fetcher.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom.h"
+#include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebAssociatedURLLoaderOptions.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"

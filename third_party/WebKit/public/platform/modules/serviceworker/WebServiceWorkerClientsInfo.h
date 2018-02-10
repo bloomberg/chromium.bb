@@ -9,7 +9,7 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebVector.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom-shared.h"
+#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom-shared.h"
 #include "third_party/WebKit/common/service_worker/service_worker_client.mojom-shared.h"
 

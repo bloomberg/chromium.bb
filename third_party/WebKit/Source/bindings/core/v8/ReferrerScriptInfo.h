@@ -12,7 +12,7 @@
 #include "platform/wtf/text/TextPosition.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLRequest.h"
-#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "v8/include/v8.h"
 
 namespace blink {

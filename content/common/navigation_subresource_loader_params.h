@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_NAVIGATION_SUBRESOURCE_LOADER_PARAMS_H_
 
 #include "content/common/service_worker/controller_service_worker.mojom.h"
-#include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
 

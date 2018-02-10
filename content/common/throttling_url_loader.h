@@ -17,8 +17,8 @@
 #include "content/public/common/shared_url_loader_factory.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/network/public/interfaces/url_loader.mojom.h"
-#include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;

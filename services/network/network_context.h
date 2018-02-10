@@ -17,9 +17,9 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/network/cookie_manager.h"
-#include "services/network/public/interfaces/network_service.mojom.h"
-#include "services/network/public/interfaces/udp_socket.mojom.h"
-#include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/udp_socket.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/url_request_context_owner.h"
 
 namespace net {

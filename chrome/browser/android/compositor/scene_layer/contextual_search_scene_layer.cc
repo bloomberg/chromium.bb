@@ -17,7 +17,7 @@
 #include "jni/ContextualSearchSceneLayer_jni.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/view_android.h"
 #include "ui/gfx/android/java_bitmap.h"

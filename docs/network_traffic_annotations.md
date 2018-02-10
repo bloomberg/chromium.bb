@@ -425,4 +425,4 @@ values for the mutable annotations.
 
 For serialization of network traffic annotation and partial network traffic
 annotation tags, you can use the mutable mojo interfaces defined in
-`/services/network/public/interfaces`.
+`/services/network/public/mojom`.

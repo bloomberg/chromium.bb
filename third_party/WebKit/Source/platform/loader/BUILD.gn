@@ -85,7 +85,7 @@ blink_platform_sources("loader") {
     ":make_platform_loader_generated_fetch_initiator_type_names",
     "//components/link_header_util",
     "//services/network/public/cpp",
-    "//services/network/public/interfaces:interfaces_blink",
+    "//services/network/public/mojom:mojom_blink",
   ]
 }
 

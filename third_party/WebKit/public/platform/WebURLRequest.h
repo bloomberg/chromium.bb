@@ -37,9 +37,9 @@
 #include "WebReferrerPolicy.h"
 #include "WebSecurityOrigin.h"
 #include "base/optional.h"
-#include "services/network/public/interfaces/cors.mojom-shared.h"
-#include "services/network/public/interfaces/fetch_api.mojom-shared.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom-shared.h"
+#include "services/network/public/mojom/cors.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 
 namespace blink {
 

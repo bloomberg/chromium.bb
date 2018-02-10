@@ -28,9 +28,9 @@
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
-#include "services/network/public/interfaces/cors.mojom-shared.h"
-#include "services/network/public/interfaces/fetch_api.mojom-shared.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom-shared.h"
+#include "services/network/public/mojom/cors.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "url/ipc/url_param_traits.h"
 #include "url/origin.h"
 

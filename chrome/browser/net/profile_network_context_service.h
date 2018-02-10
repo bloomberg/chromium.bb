@@ -9,7 +9,7 @@
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_member.h"
-#include "services/network/public/interfaces/network_service.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 class Profile;
 

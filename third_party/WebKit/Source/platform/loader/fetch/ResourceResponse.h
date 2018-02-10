@@ -45,7 +45,7 @@
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/CString.h"
 #include "public/platform/WebURLResponse.h"
-#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 
 namespace blink {
 

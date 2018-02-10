@@ -14,7 +14,7 @@
 #include "base/optional.h"
 #include "base/strings/string_piece_forward.h"
 #include "content/common/content_export.h"
-#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace net {
 class X509Certificate;

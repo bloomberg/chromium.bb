@@ -14,7 +14,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/cookies/canonical_cookie.h"
-#include "services/network/public/interfaces/restricted_cookie_manager.mojom.h"
+#include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "url/gurl.h"
 
 namespace net {

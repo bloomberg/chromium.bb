@@ -94,7 +94,7 @@
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom-blink.h"
+#include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/WebKit/public/common/device_memory/approximated_device_memory.h"
 
 namespace blink {

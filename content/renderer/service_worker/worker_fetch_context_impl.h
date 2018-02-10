@@ -11,7 +11,7 @@
 #include "content/public/common/shared_url_loader_factory.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/WebKit/common/blob/blob_registry.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/WebApplicationCacheHost.h"

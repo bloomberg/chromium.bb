@@ -2,17 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//services/network/public/interfaces/proxy_config.mojom"
+mojom = "//services/network/public/mojom/proxy_config.mojom"
 public_headers = [
   "//net/proxy_resolution/proxy_bypass_rules.h",
   "//net/proxy_resolution/proxy_config.h",
   "//net/proxy_resolution/proxy_config_source.h",
   "//net/proxy_resolution/proxy_list.h",
 ]
-traits_headers = [ "//services/network/public/cpp/proxy_config_traits.h" ]
+traits_headers = [ "//services/network/public/cpp/proxy_config_mojom_traits.h" ]
 deps = [
   "//net:net",
-  "//services/network/public/interfaces:interfaces_shared",
+  "//services/network/public/mojom:mojom_shared",
 ]
 type_mappings = [
   "network.mojom.ProxyBypassRules=net::ProxyBypassRules",

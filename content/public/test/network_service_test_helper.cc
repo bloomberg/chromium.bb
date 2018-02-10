@@ -24,7 +24,7 @@
 #include "net/test/test_data_directory.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/interfaces/network_change_manager.mojom.h"
+#include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 #if defined(OS_ANDROID)

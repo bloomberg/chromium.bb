@@ -9,8 +9,8 @@
 
 #include "base/component_export.h"
 #include "base/optional.h"
-#include "services/network/public/interfaces/cors.mojom-shared.h"
-#include "services/network/public/interfaces/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/cors.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 
 class GURL;
 namespace url {

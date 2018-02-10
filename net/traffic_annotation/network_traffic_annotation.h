@@ -208,7 +208,7 @@ NetworkTrafficAnnotationTag BranchedCompleteNetworkTrafficAnnotation(
 
 // Please do not use this unless uninitialized annotations are required.
 // Mojo interfaces for this class and the next one are defined in
-// '/services/network/public/interfaces'.
+// '/services/network/public/mojom'.
 struct MutableNetworkTrafficAnnotationTag {
   MutableNetworkTrafficAnnotationTag()
       : unique_id_hash_code(TRAFFIC_ANNOTATION_UNINITIALIZED) {}

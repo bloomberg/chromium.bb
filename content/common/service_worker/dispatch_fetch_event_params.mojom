@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "services/network/public/interfaces/url_loader.mojom";
+import "services/network/public/mojom/url_loader.mojom";
 
 // Used for service worker navigation preload, to create
 // FetchEvent#preloadResponse.

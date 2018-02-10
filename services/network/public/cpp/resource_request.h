@@ -15,9 +15,9 @@
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "services/network/public/interfaces/cors.mojom-shared.h"
-#include "services/network/public/interfaces/fetch_api.mojom-shared.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom-shared.h"
+#include "services/network/public/mojom/cors.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

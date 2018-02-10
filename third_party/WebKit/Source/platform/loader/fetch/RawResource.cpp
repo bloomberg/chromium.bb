@@ -35,7 +35,7 @@
 #include "platform/scheduler/child/web_scheduler.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom-shared.h"
+#include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 
 namespace blink {
 

@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
-#include "services/network/public/interfaces/network_service.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 class ProxyConfigMonitor;
 

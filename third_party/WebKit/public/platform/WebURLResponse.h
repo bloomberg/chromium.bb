@@ -41,7 +41,7 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
-#include "services/network/public/interfaces/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 
 namespace blink {
 

@@ -9,7 +9,7 @@ import "content/common/service_worker/embedded_worker.mojom";
 import "ipc/constants.mojom";
 import "mojo/common/time.mojom";
 import "mojo/common/unguessable_token.mojom";
-import "services/network/public/interfaces/network_types.mojom";
+import "services/network/public/mojom/network_types.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 import "services/service_manager/public/mojom/service.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";

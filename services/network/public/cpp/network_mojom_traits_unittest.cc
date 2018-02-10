@@ -5,7 +5,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/network/public/cpp/http_request_headers_struct_traits.h"
+#include "services/network/public/cpp/http_request_headers_mojom_traits.h"
 #include "services/network/public/cpp/network_traits_test_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -30,7 +30,7 @@
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
-#include "services/network/public/interfaces/network_service.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 class ChromeChildProcessWatcher;
 class ChromeDeviceClient;

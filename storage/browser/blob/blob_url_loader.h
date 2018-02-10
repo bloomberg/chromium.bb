@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/http/http_status_code.h"
-#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "storage/browser/blob/mojo_blob_reader.h"
 #include "storage/browser/storage_browser_export.h"
 

@@ -9,7 +9,7 @@
 #include "modules/serviceworkers/RespondWithObserver.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURLRequest.h"
-#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 
 namespace blink {
 

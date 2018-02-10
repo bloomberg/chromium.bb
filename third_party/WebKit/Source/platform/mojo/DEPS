@@ -10,6 +10,6 @@ include_rules = [
     "+mojo/common/big_string.mojom-blink.h",
     "+mojo/public/mojom/base/string16.mojom-blink.h",
     "+mojo/common/test_common_custom_types.mojom-blink.h",
-    "+services/network/public/interfaces/fetch_api.mojom-blink.h",
+    "+services/network/public/mojom/fetch_api.mojom-blink.h",
     "+skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 ]

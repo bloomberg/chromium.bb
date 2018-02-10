@@ -10,7 +10,7 @@
 #include "core/CoreExport.h"
 #include "core/loader/BaseFetchContext.h"
 #include "platform/wtf/Forward.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom-blink.h"
+#include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 
 namespace blink {
 

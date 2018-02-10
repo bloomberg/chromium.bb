@@ -41,7 +41,7 @@
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/keepalive_statistics_recorder.h"
-#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "url/gurl.h"
 
 namespace base {

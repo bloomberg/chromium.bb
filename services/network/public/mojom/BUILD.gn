@@ -50,7 +50,7 @@ mojom("udp_socket_interface") {
   ]
 }
 
-mojom("interfaces") {
+mojom("mojom") {
   # URLLoader & URLLoaderFactory are used in-process in the browser when
   # navigation uses URLLoader (NavigationMojoResponse) and in the renderer
   # when Service Worker uses direct communication (S13nServiceWorker).

@@ -57,7 +57,7 @@
 #include "services/metrics/public/mojom/constants.mojom.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
-#include "services/network/public/interfaces/network_service_test.mojom.h"
+#include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
 #include "services/resource_coordinator/resource_coordinator_service.h"

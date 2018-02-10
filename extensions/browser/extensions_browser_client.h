@@ -17,7 +17,7 @@
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/view_type.h"
-#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/base/page_transition_types.h"
 

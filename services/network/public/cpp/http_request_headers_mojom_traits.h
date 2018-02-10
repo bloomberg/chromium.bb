@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_PUBLIC_CPP_HTTP_REQUEST_HEADERS_STRUCT_TRAITS_H_
-#define SERVICES_NETWORK_PUBLIC_CPP_HTTP_REQUEST_HEADERS_STRUCT_TRAITS_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_HTTP_REQUEST_HEADERS_MOJOM_TRAITS_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_HTTP_REQUEST_HEADERS_MOJOM_TRAITS_H_
 
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/http/http_request_headers.h"
-#include "services/network/public/interfaces/http_request_headers.mojom.h"
+#include "services/network/public/mojom/http_request_headers.mojom.h"
 
 namespace mojo {
 
@@ -39,4 +39,4 @@ struct StructTraits<network::mojom::HttpRequestHeadersDataView,
 
 }  // namespace mojo
 
-#endif  // SERVICES_NETWORK_PUBLIC_CPP_HTTP_REQUEST_HEADERS_STRUCT_TRAITS_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_HTTP_REQUEST_HEADERS_MOJOM_TRAITS_H_

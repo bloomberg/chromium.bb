@@ -5,5 +5,5 @@ include_rules = [
     "+modules/ModulesExport.h",
     "+modules/cachestorage",
     "+modules/serviceworkers",
-    "+services/network/public/interfaces",
+    "+services/network/public/mojom",
 ]

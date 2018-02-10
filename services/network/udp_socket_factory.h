@@ -10,7 +10,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "services/network/public/interfaces/udp_socket.mojom.h"
+#include "services/network/public/mojom/udp_socket.mojom.h"
 
 namespace network {
 

@@ -18,8 +18,8 @@ component("cpp") {
     "cors/cors_url_loader_factory.h",
     "features.cc",
     "features.h",
-    "mutable_network_traffic_annotation_tag_struct_traits.h",
-    "mutable_partial_network_traffic_annotation_tag_struct_traits.h",
+    "mutable_network_traffic_annotation_tag_mojom_traits.h",
+    "mutable_partial_network_traffic_annotation_tag_mojom_traits.h",
     "net_adapters.cc",
     "net_adapters.h",
     "network_switches.cc",
@@ -31,7 +31,7 @@ component("cpp") {
 
   public_deps = [
     ":cpp_base",
-    "//services/network/public/interfaces",
+    "//services/network/public/mojom",
     "//url/ipc:url_ipc",
   ]
 
@@ -59,8 +59,8 @@ component("cpp_base") {
     "http_raw_request_response_info.h",
     "network_param_ipc_traits.cc",
     "network_param_ipc_traits.h",
-    "proxy_config_traits.cc",
-    "proxy_config_traits.h",
+    "proxy_config_mojom_traits.cc",
+    "proxy_config_mojom_traits.h",
     "resource_request.cc",
     "resource_request.h",
     "resource_request_body.cc",
@@ -71,11 +71,11 @@ component("cpp_base") {
     "resource_response_info.h",
     "url_loader_completion_status.cc",
     "url_loader_completion_status.h",
-    "url_request_struct_traits.cc",
-    "url_request_struct_traits.h",
+    "url_request_mojom_traits.cc",
+    "url_request_mojom_traits.h",
   ]
   public_deps = [
-    "//services/network/public/interfaces:data_pipe_interface",
+    "//services/network/public/mojom:data_pipe_interface",
     "//url/ipc:url_ipc",
     "//url/mojom:url_mojom_gurl",
   ]
@@ -83,7 +83,7 @@ component("cpp_base") {
     "//base",
     "//ipc",
     "//net",
-    "//services/network/public/interfaces:interfaces_shared",
+    "//services/network/public/mojom:mojom_shared",
   ]
   defines = [ "IS_NETWORK_CPP_BASE_IMPL" ]
 }
@@ -93,7 +93,7 @@ mojom("test_interfaces") {
     "network_traits_test_service.mojom",
   ]
   public_deps = [
-    "//services/network/public/interfaces",
+    "//services/network/public/mojom",
   ]
 }
 
@@ -102,10 +102,10 @@ source_set("tests") {
 
   sources = [
     "cors/cors_unittest.cc",
-    "mutable_network_traffic_annotation_tag_struct_traits_unittest.cc",
-    "mutable_partial_network_traffic_annotation_tag_struct_traits_unittest.cc",
-    "network_struct_traits_unittest.cc",
-    "proxy_config_traits_unittest.cc",
+    "mutable_network_traffic_annotation_tag_mojom_traits_unittest.cc",
+    "mutable_partial_network_traffic_annotation_tag_mojom_traits_unittest.cc",
+    "network_mojom_traits_unittest.cc",
+    "proxy_config_mojom_traits_unittest.cc",
     "simple_url_loader_unittest.cc",
   ]
   deps = [

@@ -21,7 +21,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "services/network/public/interfaces/data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "url/gurl.h"
 
 namespace network {

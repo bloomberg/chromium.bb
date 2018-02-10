@@ -19,7 +19,7 @@
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom-blink.h"
+#include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 
 namespace blink {
 

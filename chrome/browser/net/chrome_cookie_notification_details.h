@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_NET_CHROME_COOKIE_NOTIFICATION_DETAILS_H_
 #define CHROME_BROWSER_NET_CHROME_COOKIE_NOTIFICATION_DETAILS_H_
 
-#include "services/network/public/interfaces/cookie_manager.mojom.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 
 namespace net {
 class CanonicalCookie;

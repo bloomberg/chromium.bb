@@ -23,7 +23,7 @@
 #include "content/public/common/resource_type.h"
 #include "net/base/load_states.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace content {
 class DetachableResourceHandler;

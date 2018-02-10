@@ -20,7 +20,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
-#include "services/network/public/interfaces/data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Most tests of this class are at the URLLoader layer. These tests focus on

@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_HISTOGRAM_INTERNALS_URL_LOADER_H_
 #define CONTENT_BROWSER_HISTOGRAM_INTERNALS_URL_LOADER_H_
 
-#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace content {
 

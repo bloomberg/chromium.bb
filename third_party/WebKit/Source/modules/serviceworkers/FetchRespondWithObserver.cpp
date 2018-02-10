@@ -19,8 +19,8 @@
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
-#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
-#include "services/network/public/interfaces/request_context_frame_type.mojom-blink.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 
 using blink::mojom::ServiceWorkerResponseError;
 

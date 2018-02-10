@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/public/cpp/cookie_manager_struct_traits.h"
+#include "services/network/public/cpp/cookie_manager_mojom_traits.h"
 
 #include "mojo/common/time_struct_traits.h"
 

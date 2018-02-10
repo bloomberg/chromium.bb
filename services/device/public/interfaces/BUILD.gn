@@ -32,7 +32,7 @@ mojom("interfaces") {
 
   public_deps = [
     ":constants",
-    "//services/network/public/interfaces",
+    "//services/network/public/mojom",
   ]
 
   # The blink variant of the Device Service interfaces are depended on by the

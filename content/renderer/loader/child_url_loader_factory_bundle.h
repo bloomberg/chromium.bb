@@ -9,7 +9,7 @@
 #include "content/common/content_export.h"
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "content/common/url_loader_factory_bundle.h"
-#include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
 

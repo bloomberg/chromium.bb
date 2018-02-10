@@ -16,8 +16,8 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
-#include "services/network/public/interfaces/fetch_api.mojom-blink.h"
-#include "services/network/public/interfaces/url_loader_factory.mojom-blink.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 
 namespace blink {
 

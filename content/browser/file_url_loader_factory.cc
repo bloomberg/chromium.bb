@@ -38,7 +38,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "url/gurl.h"
 

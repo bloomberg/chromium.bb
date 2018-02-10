@@ -15,7 +15,7 @@
 #include "content/browser/devtools/protocol/network.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
-#include "services/network/public/interfaces/network_service.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 namespace net {
 class HttpRequestHeaders;

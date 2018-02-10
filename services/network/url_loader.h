@@ -19,8 +19,8 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter_observer.h"
 #include "services/network/keepalive_statistics_recorder.h"
-#include "services/network/public/interfaces/network_service.mojom.h"
-#include "services/network/public/interfaces/url_loader.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/upload_progress_tracker.h"
 
 namespace net {

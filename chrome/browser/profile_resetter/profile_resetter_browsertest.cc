@@ -14,7 +14,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
 #include "net/cookies/canonical_cookie.h"
-#include "services/network/public/interfaces/cookie_manager.mojom.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 
 namespace {
 

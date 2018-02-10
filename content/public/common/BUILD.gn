@@ -264,7 +264,7 @@ jumbo_source_set("common_sources") {
     "//mojo/public/cpp/bindings",
     "//net",
     "//services/network:network_service",
-    "//services/network/public/interfaces",
+    "//services/network/public/mojom",
     "//services/service_manager/embedder",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
@@ -378,7 +378,7 @@ mojom("interfaces") {
   public_deps = [
     ":resource_type_bindings",
     "//mojo/common:common_custom_types",
-    "//services/network/public/interfaces",
+    "//services/network/public/mojom",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]

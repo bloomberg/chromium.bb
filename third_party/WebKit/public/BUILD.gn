@@ -631,7 +631,7 @@ source_set("blink_headers") {
     "//mojo/public/cpp/system:system",
     "//services/device/public/interfaces:interfaces_shared_cpp_sources",
     "//services/network/public/cpp:cpp",
-    "//services/network/public/interfaces:interfaces",
+    "//services/network/public/mojom",
     "//v8:v8_headers",
   ]
 }
@@ -787,7 +787,7 @@ mojom("mojo_bindings") {
     "//device/bluetooth/public/mojom",
     "//mojo/common:common_custom_types",
     "//services/device/public/interfaces",
-    "//services/network/public/interfaces:interfaces",
+    "//services/network/public/mojom",
     "//services/service_manager/public/mojom",
     "//skia/public/interfaces",
     "//third_party/WebKit/common:mojo_platform_bindings",

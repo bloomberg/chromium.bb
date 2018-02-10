@@ -14,8 +14,8 @@
 #include "base/optional.h"
 #include "extensions/browser/api/socket/socket.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/network/public/interfaces/network_service.mojom.h"
-#include "services/network/public/interfaces/udp_socket.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/udp_socket.mojom.h"
 
 namespace extensions {
 

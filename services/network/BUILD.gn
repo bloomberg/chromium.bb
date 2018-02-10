@@ -81,7 +81,7 @@ component("network_service") {
     "//net",
     "//net:extras",
     "//services/network/public/cpp",
-    "//services/network/public/interfaces",
+    "//services/network/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//url",
@@ -147,7 +147,7 @@ source_set("tests") {
     "//net",
     "//net:test_support",
     "//services/network/public/cpp",
-    "//services/network/public/interfaces",
+    "//services/network/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
     "//testing/gtest",
@@ -174,7 +174,7 @@ source_set("test_support") {
     "//net",
     "//net:test_support",
     "//services/network:network_service",
-    "//services/network/public/interfaces",
+    "//services/network/public/mojom",
     "//testing/gtest",
   ]
 }

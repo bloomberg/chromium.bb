@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_PUBLIC_CPP_PROXY_CONFIG_TRAITS_H_
-#define SERVICES_NETWORK_PUBLIC_CPP_PROXY_CONFIG_TRAITS_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_PROXY_CONFIG_MOJOM_TRAITS_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_PROXY_CONFIG_MOJOM_TRAITS_H_
 
 #include "base/component_export.h"
 #include "net/proxy_resolution/proxy_bypass_rules.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_config_source.h"
 #include "net/proxy_resolution/proxy_list.h"
-#include "services/network/public/interfaces/proxy_config.mojom-shared.h"
+#include "services/network/public/mojom/proxy_config.mojom-shared.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
 // This file handles the serialization of net::ProxyConfig.
@@ -122,4 +122,4 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
 
 }  // namespace mojo
 
-#endif  // SERVICES_NETWORK_PUBLIC_CPP_PROXY_CONFIG_TRAITS_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_PROXY_CONFIG_MOJOM_TRAITS_H_

@@ -18,7 +18,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/resource_type.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace storage {
 class FileSystemContext;

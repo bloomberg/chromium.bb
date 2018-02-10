@@ -48,7 +48,7 @@
 #include "platform/wtf/Optional.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebThreadType.h"
-#include "services/network/public/interfaces/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "v8/include/v8.h"
 
 namespace blink {

@@ -22,7 +22,7 @@
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/text/WTFString.h"
-#include "services/network/public/interfaces/restricted_cookie_manager.mojom-blink.h"
+#include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
 
 namespace blink {
 

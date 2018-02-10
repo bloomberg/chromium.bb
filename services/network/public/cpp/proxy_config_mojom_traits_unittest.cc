@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/public/cpp/proxy_config_traits.h"
+#include "services/network/public/cpp/proxy_config_mojom_traits.h"
 
 #include "net/proxy_resolution/proxy_bypass_rules.h"
 #include "net/proxy_resolution/proxy_config.h"
-#include "services/network/public/interfaces/proxy_config.mojom.h"
+#include "services/network/public/mojom/proxy_config.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

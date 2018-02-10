@@ -18,7 +18,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/upload_element_reader.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "services/network/public/interfaces/data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/data_pipe_getter.mojom.h"
 
 namespace net {
 class IOBuffer;

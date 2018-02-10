@@ -36,8 +36,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/cookies/cookie_store.h"
-#include "services/network/public/interfaces/cookie_manager.mojom.h"
-#include "services/network/public/interfaces/network_service.mojom.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
 #if !defined(OS_ANDROID)

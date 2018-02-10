@@ -20,7 +20,7 @@
 #include "net/socket/udp_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/public/interfaces/udp_socket.mojom.h"
+#include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/udp_socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

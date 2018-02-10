@@ -22,8 +22,8 @@
 #include "net/base/network_change_notifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/socket/tcp_client_socket.h"
-#include "services/network/public/interfaces/network_service.mojom.h"
-#include "services/network/public/interfaces/udp_socket.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/udp_socket.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "extensions/browser/api/socket/app_firewall_hole_manager.h"
