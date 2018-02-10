@@ -31,13 +31,6 @@ const char kDefaultTPMPin[] = "111111";
 
 namespace {
 
-std::string GetStringFromDictionary(const base::DictionaryValue& dict,
-                                    const std::string& key) {
-  std::string s;
-  dict.GetStringWithoutPathExpansion(key, &s);
-  return s;
-}
-
 void GetClientCertTypeAndPattern(
     onc::ONCSource onc_source,
     const base::DictionaryValue& dict_with_client_cert,
@@ -320,42 +313,6 @@ void OncToClientCertConfig(::onc::ONCSource onc_source,
     GetClientCertTypeAndPattern(onc_source, *dict_with_client_cert,
                                 cert_config);
   }
-}
-
-bool IsCertificateConfigured(const ConfigType cert_config_type,
-                             const base::DictionaryValue& service_properties) {
-  // VPN certificate properties are read from the Provider dictionary.
-  const base::DictionaryValue* provider_properties = NULL;
-  service_properties.GetDictionaryWithoutPathExpansion(
-      shill::kProviderProperty, &provider_properties);
-  switch (cert_config_type) {
-    case CONFIG_TYPE_NONE:
-      return true;
-    case CONFIG_TYPE_OPENVPN:
-      // OpenVPN generally requires a passphrase and we don't know whether or
-      // not one is required, so always return false here.
-      return false;
-    case CONFIG_TYPE_IPSEC: {
-      if (!provider_properties)
-        return false;
-
-      std::string client_cert_id;
-      provider_properties->GetStringWithoutPathExpansion(
-          shill::kL2tpIpsecClientCertIdProperty, &client_cert_id);
-      return !client_cert_id.empty();
-    }
-    case CONFIG_TYPE_EAP: {
-      std::string cert_id = GetStringFromDictionary(
-          service_properties, shill::kEapCertIdProperty);
-      std::string key_id = GetStringFromDictionary(
-          service_properties, shill::kEapKeyIdProperty);
-      std::string identity = GetStringFromDictionary(
-          service_properties, shill::kEapIdentityProperty);
-      return !cert_id.empty() && !key_id.empty() && !identity.empty();
-    }
-  }
-  NOTREACHED();
-  return false;
 }
 
 }  // namespace client_cert
