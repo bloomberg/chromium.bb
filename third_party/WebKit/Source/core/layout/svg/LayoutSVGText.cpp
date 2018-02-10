@@ -341,7 +341,7 @@ bool LayoutSVGText::NodeAtFloatPoint(HitTestResult& result,
 }
 
 PositionWithAffinity LayoutSVGText::PositionForPoint(
-    const LayoutPoint& point_in_contents) {
+    const LayoutPoint& point_in_contents) const {
   RootInlineBox* root_box = FirstRootBox();
   if (!root_box)
     return CreatePositionWithAffinity(0);

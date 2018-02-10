@@ -961,7 +961,8 @@ bool LayoutInline::HitTestCulledInline(
   return false;
 }
 
-PositionWithAffinity LayoutInline::PositionForPoint(const LayoutPoint& point) {
+PositionWithAffinity LayoutInline::PositionForPoint(
+    const LayoutPoint& point) const {
   // FIXME: Does not deal with relative positioned inlines (should it?)
 
   // If there are continuations, test them first because our containing block

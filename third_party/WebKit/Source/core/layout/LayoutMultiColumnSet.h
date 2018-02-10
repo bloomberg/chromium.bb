@@ -250,7 +250,7 @@ class CORE_EXPORT LayoutMultiColumnSet : public LayoutBlockFlow {
   void ComputeLogicalHeight(LayoutUnit logical_height,
                             LayoutUnit logical_top,
                             LogicalExtentComputedValues&) const override;
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) override;
+  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
 
   void PaintObject(const PaintInfo&,
                    const LayoutPoint& paint_offset) const override;

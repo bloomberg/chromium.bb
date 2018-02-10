@@ -871,7 +871,7 @@ void LayoutReplaced::ComputePreferredLogicalWidths() {
 }
 
 PositionWithAffinity LayoutReplaced::PositionForPoint(
-    const LayoutPoint& point) {
+    const LayoutPoint& point) const {
   // FIXME: This code is buggy if the replaced element is relative positioned.
   InlineBox* box = InlineBoxWrapper();
   RootInlineBox* root_box = box ? &box->Root() : nullptr;

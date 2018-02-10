@@ -672,7 +672,8 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
                                           should_affinity_be_downstream);
 }
 
-PositionWithAffinity LayoutText::PositionForPoint(const LayoutPoint& point) {
+PositionWithAffinity LayoutText::PositionForPoint(
+    const LayoutPoint& point) const {
   if (!FirstTextBox() || TextLength() == 0)
     return CreatePositionWithAffinity(0);
 

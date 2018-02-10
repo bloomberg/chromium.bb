@@ -149,7 +149,7 @@ class CORE_EXPORT SVGLayoutSupport {
       const LayoutObject*);
   static float CalculateScreenFontSizeScalingFactor(const LayoutObject*);
 
-  static LayoutObject* FindClosestLayoutSVGText(LayoutObject*,
+  static LayoutObject* FindClosestLayoutSVGText(const LayoutObject*,
                                                 const FloatPoint&);
 
  private:

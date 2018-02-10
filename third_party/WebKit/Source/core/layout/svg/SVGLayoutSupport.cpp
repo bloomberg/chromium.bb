@@ -588,7 +588,7 @@ static inline float DistanceToChildLayoutObject(LayoutObject* child,
 }
 
 static SearchCandidate SearchTreeForFindClosestLayoutSVGText(
-    LayoutObject* layout_object,
+    const LayoutObject* layout_object,
     const FloatPoint& point) {
   // Try to find the closest LayoutSVGText.
   SearchCandidate closest_text;
@@ -647,7 +647,7 @@ static SearchCandidate SearchTreeForFindClosestLayoutSVGText(
 }
 
 LayoutObject* SVGLayoutSupport::FindClosestLayoutSVGText(
-    LayoutObject* layout_object,
+    const LayoutObject* layout_object,
     const FloatPoint& point) {
   return SearchTreeForFindClosestLayoutSVGText(layout_object, point)
       .candidate_layout_object;

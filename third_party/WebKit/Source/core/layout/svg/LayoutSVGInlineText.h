@@ -70,7 +70,7 @@ class LayoutSVGInlineText final : public LayoutText {
            LayoutText::IsOfType(type);
   }
 
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) override;
+  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
   LayoutRect LocalCaretRect(
       const InlineBox*,
       int caret_offset,

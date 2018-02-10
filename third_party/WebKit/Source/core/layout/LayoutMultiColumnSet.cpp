@@ -478,7 +478,7 @@ void LayoutMultiColumnSet::ComputeLogicalHeight(
 }
 
 PositionWithAffinity LayoutMultiColumnSet::PositionForPoint(
-    const LayoutPoint& point) {
+    const LayoutPoint& point) const {
   // Convert the visual point to a flow thread point.
   const MultiColumnFragmentainerGroup& row =
       FragmentainerGroupAtVisualPoint(point);

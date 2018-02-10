@@ -4654,7 +4654,7 @@ bool LayoutBlockFlow::RecalcInlineChildrenOverflowAfterStyleChange() {
 }
 
 PositionWithAffinity LayoutBlockFlow::PositionForPoint(
-    const LayoutPoint& point) {
+    const LayoutPoint& point) const {
   if (IsAtomicInlineLevel()) {
     PositionWithAffinity position =
         PositionForPointIfOutsideAtomicInlineLevel(point);

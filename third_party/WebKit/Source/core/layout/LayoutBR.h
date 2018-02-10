@@ -68,7 +68,7 @@ class LayoutBR final : public LayoutText {
   int CaretMinOffset() const override;
   int CaretMaxOffset() const override;
 
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) final;
+  PositionWithAffinity PositionForPoint(const LayoutPoint&) const final;
 
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;

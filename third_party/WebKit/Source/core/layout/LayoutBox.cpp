@@ -4839,7 +4839,8 @@ LayoutRect LayoutBox::LocalCaretRect(
   return rect;
 }
 
-PositionWithAffinity LayoutBox::PositionForPoint(const LayoutPoint& point) {
+PositionWithAffinity LayoutBox::PositionForPoint(
+    const LayoutPoint& point) const {
   // no children...return this layout object's element, if there is one, and
   // offset 0
   LayoutObject* first_child = SlowFirstChild();

@@ -1188,7 +1188,7 @@ Position LayoutBlock::PositionForBox(InlineBox* box, bool start) const {
       start ? text_box->Start() : text_box->Start() + text_box->Len());
 }
 
-static inline bool IsEditingBoundary(LayoutObject* ancestor,
+static inline bool IsEditingBoundary(const LayoutObject* ancestor,
                                      LineLayoutBox child) {
   DCHECK(!ancestor || ancestor->NonPseudoNode());
   DCHECK(child);
@@ -1204,7 +1204,7 @@ static inline bool IsEditingBoundary(LayoutObject* ancestor,
 // prevent crossing editable boundaries. This would require many tests.
 PositionWithAffinity LayoutBlock::PositionForPointRespectingEditingBoundaries(
     LineLayoutBox child,
-    const LayoutPoint& point_in_parent_coordinates) {
+    const LayoutPoint& point_in_parent_coordinates) const {
   LayoutPoint child_location = child.Location();
   if (child.IsInFlowPositioned())
     child_location += child.OffsetForInFlowPosition();
@@ -1215,14 +1215,14 @@ PositionWithAffinity LayoutBlock::PositionForPointRespectingEditingBoundaries(
       ToLayoutPoint(point_in_parent_coordinates - child_location));
 
   // If this is an anonymous layoutObject, we just recur normally
-  Node* child_node = child.NonPseudoNode();
+  const Node* child_node = child.NonPseudoNode();
   if (!child_node)
     return child.PositionForPoint(point_in_child_coordinates);
 
   // Otherwise, first make sure that the editability of the parent and child
   // agree. If they don't agree, then we return a visible position just before
   // or after the child
-  LayoutObject* ancestor = this;
+  const LayoutObject* ancestor = this;
   while (ancestor && !ancestor->NonPseudoNode())
     ancestor = ancestor->Parent();
 
@@ -1244,7 +1244,7 @@ PositionWithAffinity LayoutBlock::PositionForPointRespectingEditingBoundaries(
 }
 
 PositionWithAffinity LayoutBlock::PositionForPointIfOutsideAtomicInlineLevel(
-    const LayoutPoint& point) {
+    const LayoutPoint& point) const {
   DCHECK(IsAtomicInlineLevel());
   // FIXME: This seems wrong when the object's writing-mode doesn't match the
   // line's writing-mode.
@@ -1270,7 +1270,8 @@ static inline bool IsChildHitTestCandidate(LayoutBox* box) {
          !box->IsOutOfFlowPositioned() && !box->IsLayoutFlowThread();
 }
 
-PositionWithAffinity LayoutBlock::PositionForPoint(const LayoutPoint& point) {
+PositionWithAffinity LayoutBlock::PositionForPoint(
+    const LayoutPoint& point) const {
   if (IsTable())
     return LayoutBox::PositionForPoint(point);
 

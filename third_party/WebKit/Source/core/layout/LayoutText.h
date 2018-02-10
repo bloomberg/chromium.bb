@@ -118,7 +118,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
              LocalOrAbsoluteOption = kAbsoluteQuads,
              MapCoordinatesFlags mode = 0) const;
 
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) override;
+  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
 
   bool Is8Bit() const { return text_.Is8Bit(); }
   const LChar* Characters8() const { return text_.Impl()->Characters8(); }
