@@ -304,6 +304,17 @@ HacksAndPatchesCommon() {
   cp "${SCRIPT_DIR}/libdbus-1-3-symbols" \
     "${INSTALL_ROOT}/debian/libdbus-1-3/DEBIAN/symbols"
 
+  # Glibc 2.27 introduced some new optimizations to several math functions, but
+  # it will be a while before it makes it into all supported distros.  Luckily,
+  # glibc maintains ABI compatibility with previous versions, so the old symbols
+  # are still there.
+  # TODO(thomasanderson): Remove this once glibc 2.27 is available on all
+  # supported distros.
+  local math_h="${INSTALL_ROOT}/usr/include/math.h"
+  local libm_so="${INSTALL_ROOT}/lib/${arch}-${os}/libm.so.6"
+  nm -D --defined-only --with-symbol-versions "${libm_so}" | \
+    "${SCRIPT_DIR}/find_incompatible_glibc_symbols.py" >> "${math_h}"
+
   # This is for chrome's ./build/linux/pkg-config-wrapper
   # which overwrites PKG_CONFIG_LIBDIR internally
   SubBanner "Move pkgconfig scripts"
