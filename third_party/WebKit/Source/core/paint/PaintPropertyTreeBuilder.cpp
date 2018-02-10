@@ -1008,6 +1008,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
     PropertyTreeState local_border_box = PropertyTreeState(
         context_.current.transform, clip, context_.current_effect);
 
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+        (!fragment_data_.LocalBorderBoxProperties() ||
+         local_border_box != *fragment_data_.LocalBorderBoxProperties()))
+      property_added_or_removed_ = true;
     fragment_data_.SetLocalBorderBoxProperties(local_border_box);
   }
 }
