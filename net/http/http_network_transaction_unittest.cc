@@ -1745,7 +1745,7 @@ TEST_F(HttpNetworkTransactionTest, FiniteRetriesOnIOError) {
   // Construct an HTTP2 request and a "Go away" response.
   SpdySerializedFrame spdy_request(spdy_util_.ConstructSpdyGet(
       request.url.spec().c_str(), 1, DEFAULT_PRIORITY));
-  SpdySerializedFrame spdy_response_go_away(spdy_util_.ConstructSpdyGoAway());
+  SpdySerializedFrame spdy_response_go_away(spdy_util_.ConstructSpdyGoAway(0));
   MockRead data_read1 = CreateMockRead(spdy_response_go_away);
   MockWrite data_write = CreateMockWrite(spdy_request, 0);
 
@@ -1784,7 +1784,7 @@ TEST_F(HttpNetworkTransactionTest, RetryTwiceOnIOError) {
   // Construct an HTTP2 request and a "Go away" response.
   SpdySerializedFrame spdy_request(spdy_util_.ConstructSpdyGet(
       request.url.spec().c_str(), 1, DEFAULT_PRIORITY));
-  SpdySerializedFrame spdy_response_go_away(spdy_util_.ConstructSpdyGoAway());
+  SpdySerializedFrame spdy_response_go_away(spdy_util_.ConstructSpdyGoAway(0));
   MockRead data_read1 = CreateMockRead(spdy_response_go_away);
   MockWrite data_write = CreateMockWrite(spdy_request, 0);
 
