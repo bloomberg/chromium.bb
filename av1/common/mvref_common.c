@@ -1459,7 +1459,7 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       zeromv1,
 #endif  // USE_CUR_GM_REFMV
                       mi_row, mi_col, mode_context, compound_search);
-
+#if !CONFIG_OPT_REF_MV
     zeromv1[0].as_int = zeromv[0].as_int;
     zeromv1[1].as_int = 0;
     setup_ref_mv_list(cm, xd, rf[0], ref_mv_count, ref_mv_stack, mv_ref_list,
@@ -1475,6 +1475,7 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       zeromv1,
 #endif  // USE_CUR_GM_REFMV
                       mi_row, mi_col, mode_context, compound_search);
+#endif
   } else {
     setup_ref_mv_list(cm, xd, ref_frame, ref_mv_count, ref_mv_stack,
                       mv_ref_list,
