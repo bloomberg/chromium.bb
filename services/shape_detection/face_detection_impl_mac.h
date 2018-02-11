@@ -6,7 +6,7 @@
 #define SERVICES_SHAPE_DETECTION_FACE_DETECTION_IMPL_MAC_H_
 
 #include "base/mac/scoped_nsobject.h"
-#include "services/shape_detection/public/interfaces/facedetection.mojom.h"
+#include "services/shape_detection/public/mojom/facedetection.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 @class CIDetector;

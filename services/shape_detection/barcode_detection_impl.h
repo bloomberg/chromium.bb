@@ -5,7 +5,7 @@
 #ifndef SERVICES_SHAPE_DETECTION_BARCODE_DETECTION_IMPL_H_
 #define SERVICES_SHAPE_DETECTION_BARCODE_DETECTION_IMPL_H_
 
-#include "services/shape_detection/public/interfaces/barcodedetection.mojom.h"
+#include "services/shape_detection/public/mojom/barcodedetection.mojom.h"
 
 namespace shape_detection {
 

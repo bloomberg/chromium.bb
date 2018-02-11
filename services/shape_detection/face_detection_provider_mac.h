@@ -6,7 +6,7 @@
 #define SERVICES_SHAPE_DETECTION_FACE_DETECTION_PROVIDER_MAC_H_
 
 #include "base/macros.h"
-#include "services/shape_detection/public/interfaces/facedetection_provider.mojom.h"
+#include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
 
 namespace shape_detection {
 

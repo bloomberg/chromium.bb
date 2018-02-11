@@ -171,7 +171,7 @@ if (is_android) {
       "//base:base_java_test_support",
       "//mojo/public/java:bindings_java",
       "//services/shape_detection:shape_detection_java",
-      "//services/shape_detection/public/interfaces:interfaces_java",
+      "//services/shape_detection/public/mojom:mojom_java",
       "//skia/public/interfaces:interfaces_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/junit",

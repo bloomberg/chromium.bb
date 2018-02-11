@@ -4,7 +4,7 @@ include_rules = [
     "+modules/canvas/canvas2d",
     "+modules/imagecapture/Point2D.h",
     "+modules/shapedetection",
-    "+services/shape_detection/public/interfaces",
+    "+services/shape_detection/public/mojom",
     "+services/service_manager/public/cpp",
     "+skia/public/interfaces/bitmap.mojom-blink.h",
     "+third_party/skia/include/core/SkImage.h",

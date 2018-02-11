@@ -46,7 +46,7 @@ jumbo_source_set("utility") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/shape_detection:lib",
-    "//services/shape_detection/public/interfaces",
+    "//services/shape_detection/public/mojom",
     "//services/video_capture:lib",
     "//services/video_capture/public/interfaces:constants",
     "//services/viz:lib",

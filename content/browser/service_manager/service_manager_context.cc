@@ -70,7 +70,7 @@
 #include "services/service_manager/runner/host/service_process_launcher.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/service_manager.h"
-#include "services/shape_detection/public/interfaces/constants.mojom.h"
+#include "services/shape_detection/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/interfaces/constants.mojom.h"
 #include "services/video_capture/service_impl.h"
 #include "services/viz/public/interfaces/constants.mojom.h"

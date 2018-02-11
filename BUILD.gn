@@ -909,7 +909,7 @@ if (!is_ios) {
       "//mojo/public/interfaces/bindings/tests:test_data_deps",
       "//services/device/public/interfaces:interfaces_js_data_deps",
       "//services/device/public/interfaces:generic_sensor_js_data_deps",
-      "//services/shape_detection/public/interfaces:interfaces_js_data_deps",
+      "//services/shape_detection/public/mojom:mojom_js_data_deps",
       "//third_party/WebKit/public:blink_devtools_frontend_resources_files",
       "//third_party/WebKit/public:mojo_bindings_js_data_deps",
       "//third_party/mesa:osmesa",

@@ -23,7 +23,7 @@ blink_modules_sources("shapedetection") {
   ]
 
   public_deps = [
-    "//services/shape_detection/public/interfaces:interfaces_blink",
+    "//services/shape_detection/public/mojom:mojom_blink",
     "//skia/public/interfaces",
   ]
 }

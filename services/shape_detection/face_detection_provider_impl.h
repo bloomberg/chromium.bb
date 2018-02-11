@@ -6,7 +6,7 @@
 #define SERVICES_SHAPE_DETECTION_FACE_DETECTION_PROVIDER_IMPL_H_
 
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/shape_detection/public/interfaces/facedetection_provider.mojom.h"
+#include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
 
 namespace shape_detection {
 

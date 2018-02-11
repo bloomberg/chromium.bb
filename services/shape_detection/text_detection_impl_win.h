@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shape_detection/detection_utils_win.h"
-#include "services/shape_detection/public/interfaces/textdetection.mojom.h"
+#include "services/shape_detection/public/mojom/textdetection.mojom.h"
 
 class SkBitmap;
 
