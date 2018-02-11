@@ -13,7 +13,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "url/gurl.h"
@@ -34,11 +33,10 @@ class NET_EXPORT_PRIVATE HttpBasicState {
   ~HttpBasicState();
 
   // Initialize() must be called before using any of the other methods.
-  int Initialize(const HttpRequestInfo* request_info,
-                 bool can_send_early,
-                 RequestPriority priority,
-                 const NetLogWithSource& net_log,
-                 const CompletionCallback& callback);
+  void Initialize(const HttpRequestInfo* request_info,
+                  bool can_send_early,
+                  RequestPriority priority,
+                  const NetLogWithSource& net_log);
 
   HttpStreamParser* parser() const { return parser_.get(); }
 

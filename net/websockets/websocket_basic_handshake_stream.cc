@@ -318,7 +318,7 @@ int WebSocketBasicHandshakeStream::InitializeStream(
     const NetLogWithSource& net_log,
     const CompletionCallback& callback) {
   url_ = request_info->url;
-  state_.Initialize(request_info, can_send_early, priority, net_log, callback);
+  state_.Initialize(request_info, can_send_early, priority, net_log);
   return OK;
 }
 
