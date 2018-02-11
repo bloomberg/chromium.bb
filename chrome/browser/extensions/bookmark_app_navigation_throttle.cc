@@ -424,6 +424,7 @@ void BookmarkAppNavigationThrottle::OpenBookmarkApp(
       profile, bookmark_app.get(), extensions::LAUNCH_CONTAINER_WINDOW,
       WindowOpenDisposition::CURRENT_TAB, extensions::SOURCE_URL_HANDLER);
   launch_params.override_url = navigation_handle()->GetURL();
+  launch_params.opener = source->GetOpener();
 
   DVLOG(1) << "Opening app.";
   OpenApplication(launch_params);

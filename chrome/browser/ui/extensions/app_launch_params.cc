@@ -34,7 +34,8 @@ AppLaunchParams::AppLaunchParams(Profile* profile,
       command_line(base::CommandLine::NO_PROGRAM),
       source(source),
       play_store_status(PlayStoreStatus::PLAY_STORE_STATUS_UNKNOWN),
-      display_id(display_id) {
+      display_id(display_id),
+      opener(nullptr) {
 #if defined(OS_CHROMEOS)
   // TODO(b/34478891): Remove this from app launch.
   if (set_playstore_status) {
