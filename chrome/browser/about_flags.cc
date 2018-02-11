@@ -3724,6 +3724,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArrayPrototypeValuesDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kArrayPrototypeValues)},
 
+#if defined(OS_CHROMEOS)
+    {"ash-disable-trilinear-filtering",
+     flag_descriptions::kAshDisableTrilinearFilteringName,
+     flag_descriptions::kAshDisableTrilinearFilteringDescription, kOsCrOS,
+     SINGLE_DISABLE_VALUE_TYPE(ash::switches::kAshDisableTrilinearFiltering)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

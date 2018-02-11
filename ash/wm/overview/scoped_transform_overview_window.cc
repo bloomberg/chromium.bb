@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/window_selector_item.h"
@@ -303,9 +304,11 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
   // Add requests to cache render surface and perform trilinear filtering for
   // the exit animation of overview mode. The requests will be removed when the
   // exit animation finishes.
-  for (auto& settings : animation_settings_list) {
-    settings->CacheRenderSurface();
-    settings->TrilinearFiltering();
+  if (switches::IsTrilinearFilteringEnabled()) {
+    for (auto& settings : animation_settings_list) {
+      settings->CacheRenderSurface();
+      settings->TrilinearFiltering();
+    }
   }
 
   ScopedOverviewAnimationSettings animation_settings(
@@ -578,12 +581,14 @@ void ScopedTransformOverviewWindow::PrepareForOverview() {
   }
 
   // Add requests to cache render surface and perform trilinear filtering. The
-  // requests will be removed in dctor. So the requests will be valid during the
+  // requests will be removed in dtor. So the requests will be valid during the
   // enter animation and the whole time during overview mode. For the exit
   // animation of overview mode, we need to add those requests again.
-  for (auto* window : GetTransientTreeIterator(GetOverviewWindow())) {
-    cached_and_filtered_layer_observers_.push_back(
-        std::make_unique<LayerCachingAndFilteringObserver>(window->layer()));
+  if (switches::IsTrilinearFilteringEnabled()) {
+    for (auto* window : GetTransientTreeIterator(GetOverviewWindow())) {
+      cached_and_filtered_layer_observers_.push_back(
+          std::make_unique<LayerCachingAndFilteringObserver>(window->layer()));
+    }
   }
 }
 

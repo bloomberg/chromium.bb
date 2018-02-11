@@ -2939,6 +2939,10 @@ const char kAshDisableSmoothScreenRotationName[] =
 const char kAshDisableSmoothScreenRotationDescription[] =
     "Disable smooth rotation animations.";
 
+const char kAshDisableTrilinearFilteringName[] = "Disable trilinear filtering.";
+const char kAshDisableTrilinearFilteringDescription[] =
+    "Disable trilinear filtering.";
+
 const char kAshEnableDisplayMoveWindowAccelsName[] =
     "Enable shortcuts for moving window between displays.";
 const char kAshEnableDisplayMoveWindowAccelsDescription[] =
