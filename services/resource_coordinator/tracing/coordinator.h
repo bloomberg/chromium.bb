@@ -16,7 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "services/resource_coordinator/public/interfaces/tracing/tracing.mojom.h"
+#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
 #include "services/resource_coordinator/tracing/agent_registry.h"
 #include "services/resource_coordinator/tracing/recorder.h"
 

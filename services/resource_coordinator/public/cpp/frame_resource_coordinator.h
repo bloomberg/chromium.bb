@@ -8,7 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_interface.h"
-#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
+#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 namespace resource_coordinator {
 

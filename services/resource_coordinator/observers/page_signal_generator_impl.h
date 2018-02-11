@@ -13,7 +13,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
-#include "services/resource_coordinator/public/interfaces/page_signal.mojom.h"
+#include "services/resource_coordinator/public/mojom/page_signal.mojom.h"
 
 namespace service_manager {
 struct BindSourceInfo;

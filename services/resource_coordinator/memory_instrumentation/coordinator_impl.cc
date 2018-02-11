@@ -24,8 +24,8 @@
 #include "services/resource_coordinator/memory_instrumentation/queued_request_dispatcher.h"
 #include "services/resource_coordinator/memory_instrumentation/switches.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
-#include "services/resource_coordinator/public/interfaces/memory_instrumentation/constants.mojom.h"
-#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/mojom/memory_instrumentation/constants.mojom.h"
+#include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/identity.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

@@ -1422,7 +1422,7 @@ be describing additional metrics about the same event.
   <metric name="ProcessType">
     <summary>
       Type of process (e.g. browser, renderer, GPU --- see
-      services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom)
+      services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom)
       of associated metrics.
     </summary>
   </metric>

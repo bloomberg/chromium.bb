@@ -18,7 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/test/test_utils.h"
-#include "services/resource_coordinator/public/interfaces/tracing/tracing_constants.mojom.h"
+#include "services/resource_coordinator/public/mojom/tracing/tracing_constants.mojom.h"
 
 namespace {
 

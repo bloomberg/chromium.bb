@@ -4,7 +4,7 @@
 
 #include "services/resource_coordinator/public/cpp/tracing/base_agent.h"
 
-#include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
+#include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace tracing {

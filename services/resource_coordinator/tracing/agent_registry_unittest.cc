@@ -10,7 +10,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "services/resource_coordinator/public/interfaces/tracing/tracing.mojom.h"
+#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
 #include "services/resource_coordinator/tracing/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

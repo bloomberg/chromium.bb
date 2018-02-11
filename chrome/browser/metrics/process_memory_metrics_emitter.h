@@ -13,7 +13,7 @@
 #include "base/process/process_handle.h"
 #include "base/time/time.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
-#include "services/resource_coordinator/public/interfaces/coordination_unit_introspector.mojom.h"
+#include "services/resource_coordinator/public/mojom/coordination_unit_introspector.mojom.h"
 
 namespace ukm {
 class UkmRecorder;

@@ -12,7 +12,7 @@
 
 #include "base/trace_event/memory_dump_request_args.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
-#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
 using base::trace_event::MemoryDumpLevelOfDetail;
 using base::trace_event::MemoryDumpType;

@@ -9,7 +9,7 @@
 #include "chrome/common/profiling/profiling_service.mojom.h"
 #include "chrome/profiling/memlog_connection_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 

@@ -13,7 +13,7 @@
 #include "base/threading/thread.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/resource_coordinator/public/interfaces/tracing/tracing.mojom.h"
+#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
 #include "tools/battor_agent/battor_agent.h"
 #include "tools/battor_agent/battor_error.h"
 

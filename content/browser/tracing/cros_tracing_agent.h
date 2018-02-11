@@ -9,7 +9,7 @@
 #include <string>
 
 #include "services/resource_coordinator/public/cpp/tracing/base_agent.h"
-#include "services/resource_coordinator/public/interfaces/tracing/tracing.mojom.h"
+#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
 
 namespace base {
 class RefCountedString;

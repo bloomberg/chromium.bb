@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/resource_coordinator/public/cpp/coordination_unit_struct_traits.h"
+#include "services/resource_coordinator/public/cpp/coordination_unit_mojom_traits.h"
 
 namespace mojo {
 

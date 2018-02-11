@@ -12,7 +12,7 @@
 #include "chrome/common/profiling/memlog_stream.h"
 #include "chrome/common/profiling/profiling_service.mojom.h"
 #include "chrome/profiling/allocation_event.h"
-#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace profiling {
 

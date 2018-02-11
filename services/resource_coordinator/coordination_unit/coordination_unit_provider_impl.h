@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
-#include "services/resource_coordinator/public/interfaces/coordination_unit_provider.mojom.h"
+#include "services/resource_coordinator/public/mojom/coordination_unit_provider.mojom.h"
 
 namespace service_manager {
 struct BindSourceInfo;

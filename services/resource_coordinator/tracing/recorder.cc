@@ -6,7 +6,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
-#include "services/resource_coordinator/public/interfaces/tracing/tracing.mojom.h"
+#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
 
 namespace tracing {
 

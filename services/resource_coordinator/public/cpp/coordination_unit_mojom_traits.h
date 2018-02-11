@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_COORDINATION_UNIT_STRUCT_TRAITS_H_
-#define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_COORDINATION_UNIT_STRUCT_TRAITS_H_
+#ifndef SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_COORDINATION_UNIT_MOJOM_TRAITS_H_
+#define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_COORDINATION_UNIT_MOJOM_TRAITS_H_
 
 #include "base/component_export.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
-#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
+#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 namespace mojo {
 
 template <>
-struct COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_INTERFACES)
+struct COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_MOJOM)
     EnumTraits<resource_coordinator::mojom::CoordinationUnitType,
                resource_coordinator::CoordinationUnitType> {
   static resource_coordinator::mojom::CoordinationUnitType ToMojom(
@@ -22,7 +22,7 @@ struct COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_INTERFACES)
 };
 
 template <>
-struct COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_INTERFACES)
+struct COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_MOJOM)
     StructTraits<resource_coordinator::mojom::CoordinationUnitIDDataView,
                  resource_coordinator::CoordinationUnitID> {
   static uint64_t id(const resource_coordinator::CoordinationUnitID& id) {
@@ -39,4 +39,4 @@ struct COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_INTERFACES)
 
 }  // namespace mojo
 
-#endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_COORDINATION_UNIT_STRUCT_TRAITS_H_
+#endif  // SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_COORDINATION_UNIT_MOJOM_TRAITS_H_

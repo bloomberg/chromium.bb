@@ -27,7 +27,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "services/resource_coordinator/public/interfaces/memory_instrumentation/constants.mojom.h"
+#include "services/resource_coordinator/public/mojom/memory_instrumentation/constants.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "ui/base/ui_base_switches_util.h"
 

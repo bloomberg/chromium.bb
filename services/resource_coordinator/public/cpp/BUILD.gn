@@ -69,7 +69,7 @@ component("resource_coordinator_cpp") {
     ":resource_coordinator_cpp_base",
     "//base",
     "//mojo/public/cpp/bindings",
-    "//services/resource_coordinator/public/interfaces",
+    "//services/resource_coordinator/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 }

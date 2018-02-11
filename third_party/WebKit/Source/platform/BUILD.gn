@@ -199,7 +199,7 @@ group("blink_platform_public_deps") {
     "//services/network/public/mojom",
     "//services/network/public/mojom:mojom_blink",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
-    "//services/resource_coordinator/public/interfaces:interfaces_blink",
+    "//services/resource_coordinator/public/mojom:mojom_blink",
     "//services/service_manager/public/mojom:mojom_blink",
     "//skia",
     "//third_party:jpeg",
