@@ -77,7 +77,7 @@ SpdyProxyClientSocket::GetAuthController() const {
   return auth_;
 }
 
-int SpdyProxyClientSocket::RestartWithAuth(const CompletionCallback& callback) {
+int SpdyProxyClientSocket::RestartWithAuth(CompletionOnceCallback callback) {
   // A SPDY Stream can only handle a single request, so the underlying
   // stream may not be reused and a new SpdyProxyClientSocket must be
   // created (possibly on top of the same SPDY Session).

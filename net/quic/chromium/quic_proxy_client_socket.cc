@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <cstdio>
-
 #include "net/quic/chromium/quic_proxy_client_socket.h"
+
+#include <cstdio>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -69,7 +70,7 @@ QuicProxyClientSocket::GetAuthController() const {
   return auth_;
 }
 
-int QuicProxyClientSocket::RestartWithAuth(const CompletionCallback& callback) {
+int QuicProxyClientSocket::RestartWithAuth(CompletionOnceCallback callback) {
   // A QUIC Stream can only handle a single request, so the underlying
   // stream may not be reused and a new QuicProxyClientSocket must be
   // created (possibly on top of the same QUIC Session).
