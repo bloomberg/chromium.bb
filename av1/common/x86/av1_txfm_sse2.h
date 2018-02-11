@@ -59,6 +59,11 @@ static INLINE __m128i load_32bit_to_16bit(const int32_t *a) {
   return _mm_packs_epi32(a_low, *(const __m128i *)(a + 4));
 }
 
+static INLINE __m128i load_32bit_to_16bit_w4(const int32_t *a) {
+  const __m128i a_low = _mm_load_si128((const __m128i *)a);
+  return _mm_packs_epi32(a_low, a_low);
+}
+
 // Store 8 16 bit values. Sign extend the values.
 static INLINE void store_16bit_to_32bit(__m128i a, int32_t *b) {
   const __m128i a_lo = _mm_unpacklo_epi16(a, a);
@@ -104,6 +109,13 @@ static INLINE void load_buffer_32bit_to_16bit(const int32_t *in, int stride,
                                               __m128i *out, int out_size) {
   for (int i = 0; i < out_size; ++i) {
     out[i] = load_32bit_to_16bit(in + i * stride);
+  }
+}
+
+static INLINE void load_buffer_32bit_to_16bit_w4(const int32_t *in, int stride,
+                                                 __m128i *out, int out_size) {
+  for (int i = 0; i < out_size; ++i) {
+    out[i] = load_32bit_to_16bit_w4(in + i * stride);
   }
 }
 
@@ -194,6 +206,9 @@ typedef struct {
   transform_1d_sse2 col, row;  // vertical and horizontal
 } transform_2d_sse2;
 
+void av1_lowbd_inv_txfm2d_add_4x4_sse2(const int32_t *input, uint8_t *output,
+                                       int stride, TX_TYPE tx_type, int bd);
+
 void av1_lowbd_inv_txfm2d_add_8x8_sse2(const int32_t *input, uint8_t *output,
                                        int stride, TX_TYPE tx_type, int bd);
 
@@ -207,6 +222,12 @@ void av1_lowbd_inv_txfm2d_add_32x32_sse2(const int32_t *input, uint8_t *output,
 void av1_lowbd_inv_txfm2d_add_64x64_sse2(const int32_t *input, uint8_t *output,
                                          int stride, TX_TYPE tx_type, int bd);
 #endif
+
+void av1_lowbd_inv_txfm2d_add_4x8_sse2(const int32_t *input, uint8_t *output,
+                                       int stride, TX_TYPE tx_type, int bd);
+
+void av1_lowbd_inv_txfm2d_add_8x4_sse2(const int32_t *input, uint8_t *output,
+                                       int stride, TX_TYPE tx_type, int bd);
 
 void av1_lowbd_inv_txfm2d_add_8x16_sse2(const int32_t *input, uint8_t *output,
                                         int stride, TX_TYPE tx_type, int bd);
@@ -227,6 +248,12 @@ void av1_lowbd_inv_txfm2d_add_32x64_sse2(const int32_t *input, uint8_t *output,
 void av1_lowbd_inv_txfm2d_add_64x32_sse2(const int32_t *input, uint8_t *output,
                                          int stride, TX_TYPE tx_type, int bd);
 #endif
+
+void av1_lowbd_inv_txfm2d_add_4x16_sse2(const int32_t *input, uint8_t *output,
+                                        int stride, TX_TYPE tx_type, int bd);
+
+void av1_lowbd_inv_txfm2d_add_16x4_sse2(const int32_t *input, uint8_t *output,
+                                        int stride, TX_TYPE tx_type, int bd);
 
 void av1_lowbd_inv_txfm2d_add_8x32_sse2(const int32_t *input, uint8_t *output,
                                         int stride, TX_TYPE tx_type, int bd);

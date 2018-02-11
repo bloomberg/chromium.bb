@@ -329,15 +329,15 @@ TEST_P(AV1LbdInvTxfm2d, DISABLED_Speed) {
 #include "av1/common/x86/av1_txfm_sse2.h"
 
 const LbdInvTxfm2dFunc kLbdInvFuncSSE2List[TX_SIZES_ALL] = {
-  NULL,                                 // TX_4X4
+  av1_lowbd_inv_txfm2d_add_4x4_sse2,    // TX_4X4
   av1_lowbd_inv_txfm2d_add_8x8_sse2,    // TX_8X8
   av1_lowbd_inv_txfm2d_add_16x16_sse2,  // TX_16X16
   av1_lowbd_inv_txfm2d_add_32x32_sse2,  // TX_32X32
 #if CONFIG_TX64X64
   av1_lowbd_inv_txfm2d_add_64x64_sse2,  // 64x64
 #endif                                  // CONFIG_TX64X64
-  NULL,                                 // TX_4X8
-  NULL,                                 // TX_8X4
+  av1_lowbd_inv_txfm2d_add_4x8_sse2,    // TX_4X8
+  av1_lowbd_inv_txfm2d_add_8x4_sse2,    // TX_8X4
   av1_lowbd_inv_txfm2d_add_8x16_sse2,   // TX_8X16
   av1_lowbd_inv_txfm2d_add_16x8_sse2,   // TX_16X8
   av1_lowbd_inv_txfm2d_add_16x32_sse2,  // TX_16X32
@@ -346,8 +346,8 @@ const LbdInvTxfm2dFunc kLbdInvFuncSSE2List[TX_SIZES_ALL] = {
   av1_lowbd_inv_txfm2d_add_32x64_sse2,  // TX_32X64
   av1_lowbd_inv_txfm2d_add_64x32_sse2,  // TX_64X32
 #endif                                  // CONFIG_TX64X64
-  NULL,                                 // TX_4X16
-  NULL,                                 // TX_16X4
+  av1_lowbd_inv_txfm2d_add_4x16_sse2,   // TX_4X16
+  av1_lowbd_inv_txfm2d_add_16x4_sse2,   // TX_16X4
   av1_lowbd_inv_txfm2d_add_8x32_sse2,   // 8x32
   av1_lowbd_inv_txfm2d_add_32x8_sse2,   // 32x8
 #if CONFIG_TX64X64
