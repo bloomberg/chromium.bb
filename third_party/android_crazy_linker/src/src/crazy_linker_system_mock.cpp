@@ -94,6 +94,160 @@ class MockEnvEntry {
   crazy::String var_value_;
 };
 
+class MockFileHandle {
+ public:
+  MockFileHandle(MockFileEntry* entry) : entry_(entry), offset_(0) {}
+  ~MockFileHandle() {}
+
+  bool IsEof() const { return offset_ >= entry_->GetDataSize(); }
+
+  bool GetString(char* buffer, size_t buffer_size) {
+    const char* data = entry_->GetData();
+    size_t data_size = entry_->GetDataSize();
+
+    if (offset_ >= data_size || buffer_size == 0)
+      return false;
+
+    while (buffer_size > 1) {
+      char ch = data[offset_++];
+      *buffer++ = ch;
+      buffer_size--;
+      if (ch == '\n')
+        break;
+    }
+    *buffer = '\0';
+    return true;
+  }
+
+  ssize_t Read(void* buffer, size_t buffer_size) {
+    if (buffer_size == 0)
+      return 0;
+
+    const char* data = entry_->GetData();
+    size_t data_size = entry_->GetDataSize();
+
+    size_t avail = data_size - offset_;
+    if (avail == 0)
+      return 0;
+
+    if (buffer_size > avail)
+      buffer_size = avail;
+
+    ::memcpy(buffer, data + offset_, buffer_size);
+    offset_ += buffer_size;
+
+    return static_cast<int>(buffer_size);
+  }
+
+  off_t SeekTo(off_t offset) {
+    if (offset < 0) {
+      errno = EINVAL;
+      return -1;
+    }
+
+    const char* data = entry_->GetData();
+    size_t data_size = entry_->GetDataSize();
+
+    if (offset > static_cast<off_t>(data_size)) {
+      errno = EINVAL;
+      return -1;
+    }
+
+    offset_ = static_cast<size_t>(offset);
+    return 0;
+  }
+
+  void* Map(void* address, size_t length, int prot, int flags, off_t offset) {
+    const char* data = entry_->GetData();
+    size_t data_size = entry_->GetDataSize();
+    if (offset_ >= data_size) {
+      errno = EINVAL;
+      return nullptr;
+    }
+
+    // Allocate an anonymous memory mapping, then copy the file contents
+    // into it.
+    void* map =
+        mmap(address, length, PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (map == MAP_FAILED) {
+      return nullptr;
+    }
+
+    size_t avail = data_size - offset_;
+    if (avail > length)
+      avail = length;
+
+    ::memcpy(map, data + offset_, avail);
+
+    // Restore desired protection after the write.
+    mprotect(map, length, prot);
+
+    // Done.
+    return map;
+  }
+
+  int64_t GetFileSize() const {
+    return static_cast<int64_t>(entry_->GetDataSize());
+  }
+
+ private:
+  MockFileEntry* entry_;
+  size_t offset_;
+};
+
+// Convenience class for the table of all active file descriptors in the
+// mock system.
+class MockFileHandleTable {
+ public:
+  // Constructor.
+  MockFileHandleTable() = default;
+
+  // Destructor.
+  ~MockFileHandleTable() {
+    for (size_t n = 0; n < handles_.GetCount(); ++n) {
+      delete handles_[n];
+    }
+  }
+
+  // Find the MockFileHandle corresponding to |fd|, or nullptr if this
+  // is an unknown value.
+  MockFileHandle* Find(int fd) const {
+    if (fd < 0 || static_cast<size_t>(fd) >= handles_.GetCount()) {
+      return nullptr;
+    }
+    return handles_[fd];
+  }
+
+  // Allocate a new file descriptor value associated with a MockFileHandle
+  // instance. This takes ownership of the instance.
+  int AllocateFd(MockFileHandle* handle) {
+    size_t n = 0;
+    for (; n < handles_.GetCount(); ++n) {
+      if (!handles_[n]) {
+        // Found a free descriptor in the table.
+        handles_[n] = handle;
+        return static_cast<int>(n);
+      }
+    }
+    // Allocate new descriptor value.
+    handles_.PushBack(handle);
+    return static_cast<int>(n);
+  }
+
+  // Deallocate a file descriptor by value.
+  bool DeallocateFd(int fd) {
+    if (!Find(fd)) {
+      return false;
+    }
+    delete handles_[fd];
+    handles_[fd] = nullptr;
+    return true;
+  }
+
+ private:
+  Vector<MockFileHandle*> handles_;
+};
+
 class MockSystem {
  public:
   MockSystem() : files_(), environment_() {}
@@ -126,6 +280,28 @@ class MockSystem {
     return NULL;
   }
 
+  int OpenFd(const char* path, crazy::FileOpenMode open_mode) {
+    // TODO(digit): Add write support.
+    if (open_mode != crazy::FILE_OPEN_READ_ONLY)
+      Panic("Unsupported open mode (%d): %s", open_mode, path);
+
+    MockFileEntry* entry = FindFileEntry(path);
+    if (!entry) {
+      errno = ENOENT;
+      return -1;
+    }
+
+    return handles_.AllocateFd(new MockFileHandle(entry));
+  }
+
+  MockFileHandle* FindFileHandle(int fd) const { return handles_.Find(fd); }
+
+  void CloseFd(int fd) {
+    if (!handles_.DeallocateFd(fd)) {
+      Panic("Closing invalid file descriptor %d", fd);
+    }
+  }
+
   void Reset() {
     files_.Reset();
     environment_.Reset();
@@ -154,123 +330,12 @@ class MockSystem {
  private:
   List<MockFileEntry> files_;
   List<MockEnvEntry> environment_;
+  MockFileHandleTable handles_;
   String current_dir_;
   bool active_;
 };
 
-static MockSystem s_mock_fs;
-
-class MockFileHandle {
- public:
-  MockFileHandle(MockFileEntry* entry) : entry_(entry), offset_(0) {}
-  ~MockFileHandle() {}
-
-  bool IsEof() const { return offset_ >= entry_->GetDataSize(); }
-
-  bool GetString(char* buffer, size_t buffer_size) {
-    const char* data = entry_->GetData();
-    size_t data_size = entry_->GetDataSize();
-
-    if (offset_ >= data_size || buffer_size == 0)
-      return false;
-
-    while (buffer_size > 1) {
-      char ch = data[offset_++];
-      *buffer++ = ch;
-      buffer_size--;
-      if (ch == '\n')
-        break;
-    }
-    *buffer = '\0';
-    return true;
-  }
-
-  int Read(void* buffer, size_t buffer_size) {
-    if (buffer_size == 0)
-      return 0;
-
-    const char* data = entry_->GetData();
-    size_t data_size = entry_->GetDataSize();
-
-    size_t avail = data_size - offset_;
-    if (avail == 0)
-      return 0;
-
-    if (buffer_size > avail)
-      buffer_size = avail;
-
-    ::memcpy(buffer, data + offset_, buffer_size);
-    offset_ += buffer_size;
-
-    return static_cast<int>(buffer_size);
-  }
-
-  int SeekTo(off_t offset) {
-    if (offset < 0) {
-      errno = EINVAL;
-      return -1;
-    }
-
-    const char* data = entry_->GetData();
-    size_t data_size = entry_->GetDataSize();
-
-    if (offset > static_cast<off_t>(data_size)) {
-      errno = EINVAL;
-      return -1;
-    }
-
-    offset_ = static_cast<size_t>(offset);
-    return 0;
-  }
-
-  void* Map(void* address, size_t length, int prot, int flags, off_t offset) {
-    const char* data = entry_->GetData();
-    size_t data_size = entry_->GetDataSize();
-    if (offset_ >= data_size) {
-      errno = EINVAL;
-      return MAP_FAILED;
-    }
-
-    // Allocate an anonymous memory mapping, then copy the file contents
-    // into it.
-    void* map = mmap(address, length, PROT_WRITE, MAP_ANONYMOUS, -1, 0);
-    if (map == MAP_FAILED) {
-      return map;
-    }
-
-    size_t avail = data_size - offset_;
-    if (avail > length)
-      avail = length;
-
-    ::memcpy(map, data + offset_, avail);
-
-    // Restore desired protection after the write.
-    mprotect(map, length, prot);
-
-    // Done.
-    return map;
-  }
-
- private:
-  MockFileEntry* entry_;
-  size_t offset_;
-};
-
-MockFileHandle* NewMockFileHandle(const char* path,
-                                  crazy::FileOpenMode open_mode) {
-  // Check that a mock file system instance is active.
-  s_mock_fs.Check();
-
-  // TODO(digit): Add write support.
-  if (open_mode != crazy::FILE_OPEN_READ_ONLY)
-    Panic("Unsupported open mode (%d): %s", open_mode, path);
-
-  MockFileEntry* entry = s_mock_fs.FindFileEntry(path);
-  if (!entry)
-    Panic("Missing mock file entry: %s", path);
-
-  return new MockFileHandle(entry);
-}
+MockSystem s_mock_fs;
 
 }  // namespace
 
@@ -302,39 +367,23 @@ const char* GetEnv(const char* var_name) {
     return entry->GetValue().c_str();
 }
 
-bool FileDescriptor::OpenReadOnly(const char* path) {
-  fd_ = NewMockFileHandle(path, FILE_OPEN_READ_ONLY);
-  return fd_ != NULL;
-}
-
-bool FileDescriptor::OpenReadWrite(const char* path) {
-  // NOT IMPLEMENTED ON PURPOSE.
-  return false;
-}
-
-void FileDescriptor::Close() {
-  if (fd_) {
-    MockFileHandle* handle = reinterpret_cast<MockFileHandle*>(fd_);
-    delete handle;
-    fd_ = NULL;
-  }
-}
-
-int FileDescriptor::Read(void* buffer, size_t buffer_size) {
-  if (!fd_) {
+ssize_t FileDescriptor::Read(void* buffer, size_t buffer_size) {
+  s_mock_fs.Check();
+  MockFileHandle* handle = s_mock_fs.FindFileHandle(fd_);
+  if (!handle) {
     errno = EBADF;
     return -1;
   }
-  MockFileHandle* handle = reinterpret_cast<MockFileHandle*>(fd_);
   return handle->Read(buffer, buffer_size);
 }
 
-int FileDescriptor::SeekTo(off_t offset) {
-  if (!fd_) {
+off_t FileDescriptor::SeekTo(off_t offset) {
+  s_mock_fs.Check();
+  MockFileHandle* handle = s_mock_fs.FindFileHandle(fd_);
+  if (!handle) {
     errno = EBADF;
     return -1;
   }
-  MockFileHandle* handle = reinterpret_cast<MockFileHandle*>(fd_);
   return handle->SeekTo(offset);
 }
 
@@ -343,12 +392,45 @@ void* FileDescriptor::Map(void* address,
                           int prot,
                           int flags,
                           off_t offset) {
-  if (!fd_ || (offset & 4095) != 0) {
-    errno = EINVAL;
-    return MAP_FAILED;
+  s_mock_fs.Check();
+  MockFileHandle* handle = s_mock_fs.FindFileHandle(fd_);
+  if (!handle) {
+    errno = EBADF;
+    return nullptr;
   }
-  MockFileHandle* handle = reinterpret_cast<MockFileHandle*>(fd_);
+  if ((offset & 4095) != 0) {
+    errno = EINVAL;
+    return nullptr;
+  }
   return handle->Map(address, length, prot, flags, offset);
+}
+
+int64_t FileDescriptor::GetFileSize() const {
+  s_mock_fs.Check();
+  MockFileHandle* handle = s_mock_fs.FindFileHandle(fd_);
+  if (!handle) {
+    errno = EBADF;
+    return -1;
+  }
+  return handle->GetFileSize();
+}
+
+// static
+int FileDescriptor::DoOpenReadOnly(const char* path) {
+  s_mock_fs.Check();
+  return s_mock_fs.OpenFd(path, FILE_OPEN_READ_ONLY);
+}
+
+// static
+int FileDescriptor::DoOpenReadWrite(const char* path) {
+  s_mock_fs.Check();
+  return s_mock_fs.OpenFd(path, FILE_OPEN_READ_WRITE);
+}
+
+// static
+void FileDescriptor::DoClose(int fd) {
+  s_mock_fs.Check();
+  s_mock_fs.CloseFd(fd);
 }
 
 SystemMock::SystemMock() { s_mock_fs.Activate(); }

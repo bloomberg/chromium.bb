@@ -6,7 +6,6 @@
 
 #include <fcntl.h>
 #include <sys/mman.h>
-#include <sys/stat.h>
 #include <unistd.h>
 
 #include "crazy_linker_debug.h"
@@ -104,38 +103,40 @@ const uint32_t kMaxZipFileLength = 1U << 31;  // 2GB
 
 int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
   // Open the file
-  FileDescriptor fd;
-  if (!fd.OpenReadOnly(zip_file)) {
+  FileDescriptor fd(zip_file);
+  if (!fd.IsOk()) {
     LOG_ERRNO("open failed trying to open zip file %s", zip_file);
     return CRAZY_OFFSET_FAILED;
   }
 
   // Find the length of the file.
-  struct stat stat_buf;
-  if (stat(zip_file, &stat_buf) == -1) {
+  int64_t file_size64 = fd.GetFileSize();
+  if (file_size64 < 0) {
     LOG_ERRNO("stat failed trying to stat zip file %s", zip_file);
     return CRAZY_OFFSET_FAILED;
   }
 
-  if (stat_buf.st_size > kMaxZipFileLength) {
-    LOG("The size %ld of %s is too large to map", stat_buf.st_size, zip_file);
+  if (file_size64 > kMaxZipFileLength) {
+    LOG("The size %lld of %s is too large to map", (long long)file_size64,
+        zip_file);
     return CRAZY_OFFSET_FAILED;
   }
+  size_t file_size = static_cast<size_t>(file_size64);
 
   // Map the file into memory.
-  void* mem = fd.Map(NULL, stat_buf.st_size, PROT_READ, MAP_PRIVATE, 0);
-  if (mem == MAP_FAILED) {
+  void* mem = fd.Map(NULL, file_size, PROT_READ, MAP_PRIVATE, 0);
+  if (!mem) {
     LOG_ERRNO("mmap failed trying to mmap zip file %s", zip_file);
     return CRAZY_OFFSET_FAILED;
   }
-  ScopedMMap scoped_mmap(mem, stat_buf.st_size);
+  ScopedMMap scoped_mmap(mem, file_size);
 
   // Scan backwards from the end of the file searching for the end of
   // central directory marker. The earliest occurrence we accept is
   // size of end of central directory bytes back from from the end of the
   // file.
   uint8_t* mem_bytes = static_cast<uint8_t*>(mem);
-  int off = stat_buf.st_size - kEndOfCentralDirectoryRecordSize;
+  int off = file_size - kEndOfCentralDirectoryRecordSize;
   for (; off >= 0; --off) {
     if (ReadUInt32(mem_bytes, off) == kEndOfCentralDirectoryMarker) {
       break;

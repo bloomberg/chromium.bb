@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CRAZY_ZIP_H
-#define CRAZY_ZIP_H
+#ifndef CRAZY_LINKER_ZIP_H
+#define CRAZY_LINKER_ZIP_H
+
+#include "crazy_linker_util.h"  // For CRAZY_OFFSET_FAILED
 
 // Definitions related to supporting loading libraries from zip files.
-
 namespace crazy {
 
 // Find "filename" in the specified "zip_file" and return the offset
@@ -18,4 +19,4 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename);
 
 }
 
-#endif  // CRAZY_ZIP_H
+#endif  // CRAZY_LINKER_ZIP_H

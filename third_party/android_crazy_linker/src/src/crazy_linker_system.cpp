@@ -22,23 +22,11 @@
 
 namespace crazy {
 
-bool FileDescriptor::OpenReadOnly(const char* path) {
-  Close();
-  fd_ = TEMP_FAILURE_RETRY(::open(path, O_RDONLY));
-  return (fd_ != -1);
-}
-
-bool FileDescriptor::OpenReadWrite(const char* path) {
-  Close();
-  fd_ = TEMP_FAILURE_RETRY(::open(path, O_RDWR));
-  return (fd_ != -1);
-}
-
-int FileDescriptor::Read(void* buffer, size_t buffer_size) {
+ssize_t FileDescriptor::Read(void* buffer, size_t buffer_size) {
   return TEMP_FAILURE_RETRY(::read(fd_, buffer, buffer_size));
 }
 
-int FileDescriptor::SeekTo(off_t offset) {
+off_t FileDescriptor::SeekTo(off_t offset) {
   return ::lseek(fd_, offset, SEEK_SET);
 }
 
@@ -47,23 +35,43 @@ void* FileDescriptor::Map(void* address,
                           int prot,
                           int flags,
                           off_t offset) {
-  return ::mmap(address, length, prot, flags, fd_, offset);
+  void* mem = ::mmap(address, length, prot, flags, fd_, offset);
+  return (mem == MAP_FAILED) ? nullptr : mem;
 }
 
-void FileDescriptor::Close() {
-  if (fd_ != -1) {
-    int old_errno = errno;
-    // SUBTLE: Do not loop when close() returns EINTR. On Linux, this simply
-    // means that a corresponding flush operation failed, but the file
-    // descriptor will always be closed anyway.
-    //
-    // Other platforms have different behavior: e.g. on OS X, this could be
-    // the result of an interrupt, and there is no reliable way to know
-    // whether the fd was closed or not on exit :-(
-    (void)close(fd_);
-    errno = old_errno;
-    fd_ = -1;
+int64_t FileDescriptor::GetFileSize() const {
+  struct stat stat_buf;
+  if (fstat(fd_, &stat_buf) == -1) {
+    return -1;
   }
+  // |st_size| is an off_t which is always signed, but can be 32-bit or
+  // 64-bit depending on the platform. Always convert to a signed 64-bit
+  // to ensure the client always deal properly with both cases.
+  return static_cast<int64_t>(stat_buf.st_size);
+}
+
+// static
+int FileDescriptor::DoOpenReadOnly(const char* path) {
+  return TEMP_FAILURE_RETRY(::open(path, O_RDONLY));
+}
+
+// static
+int FileDescriptor::DoOpenReadWrite(const char* path) {
+  return TEMP_FAILURE_RETRY(::open(path, O_RDWR));
+}
+
+// static
+void FileDescriptor::DoClose(int fd) {
+  int old_errno = errno;
+  // SUBTLE: Do not loop when close() returns EINTR. On Linux, this simply
+  // means that a corresponding flush operation failed, but the file
+  // descriptor will always be closed anyway.
+  //
+  // Other platforms have different behavior: e.g. on OS X, this could be
+  // the result of an interrupt, and there is no reliable way to know
+  // whether the fd was closed or not on exit :-(
+  (void)close(fd);
+  errno = old_errno;
 }
 
 const char* GetEnv(const char* var_name) { return ::getenv(var_name); }
