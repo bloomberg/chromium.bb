@@ -159,7 +159,7 @@ source_set("chromeos") {
     "//ppapi/proxy:ipc",  # For PpapiMsg_LoadPlugin
     "//services/data_decoder/public/cpp",
     "//services/device/public/interfaces",
-    "//services/preferences/public/interfaces",
+    "//services/preferences/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/runner/common",
     "//services/ui/public/interfaces/display",

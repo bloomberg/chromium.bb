@@ -5,7 +5,7 @@
 #include "services/preferences/tracked/tracked_atomic_preference.h"
 
 #include "base/values.h"
-#include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
+#include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 #include "services/preferences/tracked/pref_hash_store_transaction.h"
 
 using ValueState =

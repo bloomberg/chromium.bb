@@ -18,7 +18,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/preferences/tracked/hash_store_contents.h"
 #include "services/preferences/tracked/interceptable_pref_filter.h"
 #include "services/preferences/tracked/tracked_preference.h"

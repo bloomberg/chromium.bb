@@ -15,7 +15,7 @@
 
 #include "base/callback.h"
 #include "components/prefs/pref_value_store.h"
-#include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/preferences/public/mojom/preferences.mojom.h"
 
 class PrefRegistry;
 class PrefService;

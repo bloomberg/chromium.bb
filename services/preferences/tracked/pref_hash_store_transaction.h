@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/strings/string_piece.h"
-#include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
+#include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 
 namespace base {
 class DictionaryValue;

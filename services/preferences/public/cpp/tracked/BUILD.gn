@@ -12,7 +12,7 @@ static_library("tracked") {
     "tracked_preference_histogram_names.h",
   ]
   public_deps = [
-    "//services/preferences/public/interfaces",
+    "//services/preferences/public/mojom",
   ]
   deps = [
     "//base",
@@ -28,6 +28,6 @@ static_library("test_support") {
 
   deps = [
     "//base",
-    "//services/preferences/public/interfaces",
+    "//services/preferences/public/mojom",
   ]
 }

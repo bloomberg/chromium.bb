@@ -46,7 +46,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
+#include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/browser_distribution.h"

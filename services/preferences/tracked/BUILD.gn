@@ -48,7 +48,7 @@ source_set("tracked") {
 
   public_deps = [
     "//services/preferences/public/cpp/tracked",
-    "//services/preferences/public/interfaces",
+    "//services/preferences/public/mojom",
   ]
 
   deps = [

@@ -2,15 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//services/preferences/public/interfaces/preferences.mojom"
+mojom = "//services/preferences/public/mojom/preferences.mojom"
 public_headers = [
   "//components/prefs/persistent_pref_store.h",
   "//components/prefs/pref_value_store.h",
 ]
 traits_headers =
-    [ "//services/preferences/public/cpp/preferences_struct_traits.h" ]
+    [ "//services/preferences/public/cpp/preferences_mojom_traits.h" ]
 sources = [
-  "//services/preferences/public/cpp/preferences_struct_traits.cc",
+  "//services/preferences/public/cpp/preferences_mojom_traits.cc",
 ]
 deps = [
   "//components/prefs",

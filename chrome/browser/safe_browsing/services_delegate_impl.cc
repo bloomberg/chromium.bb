@@ -13,7 +13,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/safe_browsing/db/v4_local_database_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
+#include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 
 namespace safe_browsing {
 

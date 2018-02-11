@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "components/prefs/pref_store.h"
 #include "services/preferences/public/cpp/pref_store_client_mixin.h"
-#include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/preferences/public/mojom/preferences.mojom.h"
 
 namespace prefs {
 

@@ -5,7 +5,7 @@
 #ifndef SERVICES_PREFERENCES_PUBLIC_CPP_PREF_REGISTRY_SERIALIZER_H_
 #define SERVICES_PREFERENCES_PUBLIC_CPP_PREF_REGISTRY_SERIALIZER_H_
 
-#include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/preferences/public/mojom/preferences.mojom.h"
 
 class PrefRegistry;
 
