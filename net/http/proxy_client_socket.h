@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
@@ -49,7 +50,7 @@ class NET_EXPORT_PRIVATE ProxyClientSocket : public StreamSocket {
   // HttpAuthController before calling RestartWithAuth.  Not all
   // ProxyClientSocket implementations will be restartable.  Such
   // implementations should disconnect themselves and return OK.
-  virtual int RestartWithAuth(const CompletionCallback& callback) = 0;
+  virtual int RestartWithAuth(CompletionOnceCallback callback) = 0;
 
   // Returns true of the connection to the proxy is using SPDY.
   virtual bool IsUsingSpdy() const = 0;

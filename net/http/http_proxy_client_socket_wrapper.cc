@@ -147,13 +147,13 @@ HttpProxyClientSocketWrapper::CreateConnectResponseStream() {
 }
 
 int HttpProxyClientSocketWrapper::RestartWithAuth(
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(connect_callback_.is_null());
   DCHECK(transport_socket_);
   DCHECK_EQ(STATE_NONE, next_state_);
 
-  connect_callback_ = callback;
+  connect_callback_ = std::move(callback);
   next_state_ = STATE_RESTART_WITH_AUTH;
   return DoLoop(OK);
 }
@@ -678,7 +678,7 @@ int HttpProxyClientSocketWrapper::DoRestartWithAuth() {
   DCHECK(transport_socket_);
 
   next_state_ = STATE_RESTART_WITH_AUTH_COMPLETE;
-  return transport_socket_->RestartWithAuth(base::Bind(
+  return transport_socket_->RestartWithAuth(base::BindOnce(
       &HttpProxyClientSocketWrapper::OnIOComplete, base::Unretained(this)));
 }
 
@@ -750,9 +750,9 @@ void HttpProxyClientSocketWrapper::ConnectTimeout() {
     }
   }
 
-  CompletionCallback callback = connect_callback_;
+  CompletionOnceCallback callback = std::move(connect_callback_);
   Disconnect();
-  callback.Run(ERR_CONNECTION_TIMED_OUT);
+  std::move(callback).Run(ERR_CONNECTION_TIMED_OUT);
 }
 
 const HostResolver::RequestInfo&

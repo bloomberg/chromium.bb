@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/http_auth_controller.h"
@@ -88,7 +89,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   // ProxyClientSocket implementation.
   const HttpResponseInfo* GetConnectResponseInfo() const override;
   std::unique_ptr<HttpStream> CreateConnectResponseStream() override;
-  int RestartWithAuth(const CompletionCallback& callback) override;
+  int RestartWithAuth(CompletionOnceCallback callback) override;
   const scoped_refptr<HttpAuthController>& GetAuthController() const override;
   bool IsUsingSpdy() const override;
   NextProto GetProxyNegotiatedProtocol() const override;
@@ -212,7 +213,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
   // Called when a connection is established. Also used when restarting with
   // AUTH, which will invoke this when ready to restart, after reconnecting
   // if necessary.
-  CompletionCallback connect_callback_;
+  CompletionOnceCallback connect_callback_;
 
   SpdyStreamRequest spdy_stream_request_;
 

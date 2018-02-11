@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CORE_QUIC_PROXY_CLIENT_SOCKET_H_
-#define NET_QUIC_CORE_QUIC_PROXY_CLIENT_SOCKET_H_
+#ifndef NET_QUIC_CHROMIUM_QUIC_PROXY_CLIENT_SOCKET_H_
+#define NET_QUIC_CHROMIUM_QUIC_PROXY_CLIENT_SOCKET_H_
 
 #include <cstdio>
+#include <memory>
 #include <string>
 
+#include "net/base/completion_once_callback.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/proxy_client_socket.h"
 #include "net/quic/chromium/quic_chromium_client_session.h"
@@ -42,7 +44,7 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   const HttpResponseInfo* GetConnectResponseInfo() const override;
   std::unique_ptr<HttpStream> CreateConnectResponseStream() override;
   const scoped_refptr<HttpAuthController>& GetAuthController() const override;
-  int RestartWithAuth(const CompletionCallback& callback) override;
+  int RestartWithAuth(CompletionOnceCallback callback) override;
   bool IsUsingSpdy() const override;
   NextProto GetProxyNegotiatedProtocol() const override;
 
@@ -158,4 +160,4 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
 
 }  // namespace net
 
-#endif  // NET_QUIC_CORE_ QUIC_PROXY_CLIENT_SOCKET_H_
+#endif  // NET_QUIC_CHROMIUM_QUIC_PROXY_CLIENT_SOCKET_H_
