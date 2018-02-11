@@ -343,7 +343,7 @@ const CGFloat kCardIssuerNetworkIconDimension = 25.0;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.title = @"Cell Catalog";
+  self.title = @"Collection Cell Catalog";
 
   // Customize collection view settings.
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;

@@ -70,6 +70,8 @@ source_set("settings") {
     "sync_encryption_passphrase_collection_view_controller.mm",
     "sync_settings_collection_view_controller.h",
     "sync_settings_collection_view_controller.mm",
+    "table_cell_catalog_view_controller.h",
+    "table_cell_catalog_view_controller.mm",
     "time_range_selector_collection_view_controller.h",
     "time_range_selector_collection_view_controller.mm",
     "translate_collection_view_controller.h",
