@@ -40,8 +40,8 @@ ios_eg_test("ios_web_shell_egtests") {
     "//ios/web/shell:shell_interfaces",
     "//net",
     "//services/service_manager/public/cpp",
-    "//services/test/echo/public/interfaces",
-    "//services/test/user_id/public/interfaces",
+    "//services/test/echo/public/mojom",
+    "//services/test/user_id/public/mojom",
     "//url",
 
     # All shared libraries must have the sanitizer deps to properly link in

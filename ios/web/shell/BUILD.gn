@@ -125,9 +125,9 @@ source_set("shell") {
     "//net:extras",
     "//services/service_manager/public/cpp",
     "//services/test/echo:lib",
-    "//services/test/echo/public/interfaces",
+    "//services/test/echo/public/mojom",
     "//services/test/user_id:lib",
-    "//services/test/user_id/public/interfaces",
+    "//services/test/user_id/public/mojom",
     "//ui/base",
   ]
 

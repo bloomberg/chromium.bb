@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/test/user_id/public/interfaces/user_id.mojom.h"
+#include "services/test/user_id/public/mojom/user_id.mojom.h"
 
 namespace user_id {
 
