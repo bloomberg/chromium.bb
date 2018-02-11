@@ -1817,6 +1817,9 @@ extern const char kAshDisableLoginDimAndBlurDescription[];
 extern const char kAshDisableSmoothScreenRotationName[];
 extern const char kAshDisableSmoothScreenRotationDescription[];
 
+extern const char kAshDisableTrilinearFilteringName[];
+extern const char kAshDisableTrilinearFilteringDescription[];
+
 extern const char kAshEnableDisplayMoveWindowAccelsName[];
 extern const char kAshEnableDisplayMoveWindowAccelsDescription[];
 
