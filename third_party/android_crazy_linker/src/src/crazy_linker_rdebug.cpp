@@ -52,9 +52,8 @@ bool FindElfDynamicSection(const char* path,
   // Read the ELF header first.
   ELF::Ehdr header[1];
 
-  crazy::FileDescriptor fd;
-  if (!fd.OpenReadOnly(path) ||
-      fd.Read(header, sizeof(header)) != static_cast<int>(sizeof(header))) {
+  crazy::FileDescriptor fd(path);
+  if (!fd.IsOk() || !fd.ReadFull(header, sizeof(header))) {
     LOG_ERRNO("Could not load ELF binary header");
     return false;
   }
@@ -85,7 +84,7 @@ bool FindElfDynamicSection(const char* path,
 
   for (size_t n = 0; n < header->e_phnum; ++n) {
     ELF::Phdr phdr;
-    if (fd.Read(&phdr, sizeof(phdr)) != sizeof(phdr)) {
+    if (!fd.ReadFull(&phdr, sizeof(phdr))) {
       LOG_ERRNO("Could not read program header entry");
       return false;
     }

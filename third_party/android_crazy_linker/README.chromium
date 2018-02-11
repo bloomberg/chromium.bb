@@ -97,3 +97,5 @@ Local Modifications:
 - Enable integration and unit tests when building with Chromium.
 
 - Support passing system library handles in dlsym() / dlclose() wrappers.
+
+- Improve FileDescriptor class.

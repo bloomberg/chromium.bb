@@ -192,7 +192,7 @@ bool ElfLoader::ReadProgramHeader(Error* error) {
 
   void* mmap_result = fd_.Map(
       NULL, phdr_size_, PROT_READ, MAP_PRIVATE, page_min + file_offset_);
-  if (mmap_result == MAP_FAILED) {
+  if (!mmap_result) {
     error->Format("Phdr mmap failed: %s", strerror(errno));
     return false;
   }
@@ -371,7 +371,7 @@ bool ElfLoader::LoadSegments(Error* error) {
                                prot_flags,
                                MAP_FIXED | MAP_PRIVATE,
                                file_page_start + file_offset_);
-      if (seg_addr == MAP_FAILED) {
+      if (!seg_addr) {
         error->Format("Could not map segment %d: %s", i, strerror(errno));
         return false;
       }

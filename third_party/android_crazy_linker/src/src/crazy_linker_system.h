@@ -29,38 +29,98 @@ enum FileOpenMode {
   FILE_OPEN_WRITE
 };
 
-// Scoping file descriptor class.
+// Scoping wrapper for a platform file descriptor.
+// The descriptor is closed on destruction, unless Release() is called.
+//
+// IMPORTANT NOTE: The purpose of this file is only to provide a way to mock
+// the file system during unit testing. There are simple cases where it is
+// better to use direct syscalls (e.g. Ashmem region file descriptors require
+// specific opening a non-mockable location (/dev/ashmem) as well as ioctl()
+// calls not covered here).
 class FileDescriptor {
  public:
-#ifdef UNIT_TESTS
-#define kEmptyFD NULL
-  typedef void* HandleType;
-#else
-#define kEmptyFD (-1)
-  typedef int HandleType;
-#endif
+  using HandleType = int;
 
-  FileDescriptor() : fd_(kEmptyFD) {}
+  static constexpr HandleType kEmptyFD = -1;
 
-  FileDescriptor(const char* path) : fd_(kEmptyFD) { OpenReadOnly(path); }
+  constexpr FileDescriptor() = default;
+
+  FileDescriptor(const char* path) : fd_(DoOpenReadOnly(path)) {}
 
   ~FileDescriptor() { Close(); }
 
+  // Returns true if the descriptor is valid.
   bool IsOk() const { return fd_ != kEmptyFD; }
+
+  // Return the value of the platform file descriptor.
   HandleType Get() const { return fd_; }
-  bool OpenReadOnly(const char* path);
-  bool OpenReadWrite(const char* path);
-  int Read(void* buffer, size_t buffer_size);
-  int SeekTo(off_t offset);
+
+  // Close the current descriptor, and try to open a file read-only.
+  // Return true on success, false/errno on failure.
+  bool OpenReadOnly(const char* path) {
+    Close();
+    fd_ = DoOpenReadOnly(path);
+    return IsOk();
+  }
+
+  // Close the current descriptor, then try to open a file read-write.
+  // Return true on success, false/errno on failure.
+  bool OpenReadWrite(const char* path) {
+    Close();
+    fd_ = DoOpenReadWrite(path);
+    return IsOk();
+  }
+
+  // Try to read |buffer_size| bytes into |buffer|. On success, return the
+  // number of bytes that were read, or 0 for EOF, or -1/errno for I/O
+  // error.
+  ssize_t Read(void* buffer, size_t buffer_size);
+
+  // Try to read exactly |buffer_size| bytes into |buffer|. Return true
+  // on success, false/errno on failure.
+  bool ReadFull(void* buffer, size_t buffer_size) {
+    ssize_t ret = Read(buffer, buffer_size);
+    return (ret >= 0 && static_cast<size_t>(ret) == buffer_size);
+  }
+
+  // Seek to a specific offset of the file. Return |offset| on success, or
+  // -1/errno on error.
+  off_t SeekTo(off_t offset);
+
+  // Map the file into memory. Parameters must match the ::mmap() system call.
+  // Return a new memory address on success, or nullptr on failure.
   void* Map(void* address,
             size_t length,
             int prot_flags,
             int flags,
             off_t offset);
-  void Close();
+
+  // Return the size in bytes of the corresponding file, or -1/errno if the
+  // descriptor is invalid.
+  int64_t GetFileSize() const;
+
+  // Close the file descriptor if needed.
+  void Close() {
+    if (fd_ != kEmptyFD) {
+      DoClose(fd_);
+      fd_ = kEmptyFD;
+    }
+  }
+
+  // Release ownership of the file descriptor. The caller becomes responsible
+  // for closing the returned handle.
+  HandleType Release() {
+    HandleType ret = fd_;
+    fd_ = kEmptyFD;
+    return ret;
+  }
 
  private:
-  HandleType fd_;
+  static int DoOpenReadOnly(const char* path);
+  static int DoOpenReadWrite(const char* path);
+  static void DoClose(int fd);
+
+  HandleType fd_ = kEmptyFD;
 };
 
 // Returns true iff a given file path exists.

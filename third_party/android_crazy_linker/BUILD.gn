@@ -145,6 +145,7 @@ test("android_crazy_linker_unittests") {
     "src/src/crazy_linker_system_unittest.cpp",
     "src/src/crazy_linker_thread_unittest.cpp",
     "src/src/crazy_linker_util_unittest.cpp",
+    "src/src/crazy_linker_zip_unittest.cpp",
   ]
 
   include_dirs = [ "src/src" ]
