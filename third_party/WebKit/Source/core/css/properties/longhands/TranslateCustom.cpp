@@ -59,25 +59,12 @@ const CSSValue* Translate::CSSValueFromComputedStyleInternal(
     return CSSIdentifierValue::Create(CSSValueNone);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (layout_object && layout_object->IsBox()) {
-    LayoutRect box = ToLayoutBox(layout_object)->BorderBoxRect();
-    list->Append(*ZoomAdjustedPixelValue(
-        FloatValueForLength(style.Translate()->X(), box.Width().ToFloat()),
-        style));
-    if (!style.Translate()->Y().IsZero() || style.Translate()->Z() != 0) {
-      list->Append(*ZoomAdjustedPixelValue(
-          FloatValueForLength(style.Translate()->Y(), box.Height().ToFloat()),
-          style));
-    }
-  } else {
-    // No box to resolve the percentage values
-    list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-        style.Translate()->X(), style));
+  list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+      style.Translate()->X(), style));
 
-    if (!style.Translate()->Y().IsZero() || style.Translate()->Z() != 0) {
-      list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-          style.Translate()->Y(), style));
-    }
+  if (!style.Translate()->Y().IsZero() || style.Translate()->Z() != 0) {
+    list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+        style.Translate()->Y(), style));
   }
 
   if (style.Translate()->Z() != 0)
