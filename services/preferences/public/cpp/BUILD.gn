@@ -23,7 +23,7 @@ source_set("cpp") {
   public_deps = [
     "//base",
     "//components/prefs",
-    "//services/preferences/public/interfaces",
+    "//services/preferences/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 

@@ -59,7 +59,7 @@ mojom("interfaces_internal") {
     "//components/signin/public/interfaces",
     "//components/sync/mojo:interfaces",
     "//mojo/common:common_custom_types",
-    "//services/preferences/public/interfaces",
+    "//services/preferences/public/mojom",
     "//skia/public/interfaces",
     "//ui/events/mojo:interfaces",
     "//ui/gfx/image/mojo:interfaces",

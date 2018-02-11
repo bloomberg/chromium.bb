@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/preferences/public/cpp/preferences_struct_traits.h"
+#include "services/preferences/public/cpp/preferences_mojom_traits.h"
 
 namespace mojo {
 

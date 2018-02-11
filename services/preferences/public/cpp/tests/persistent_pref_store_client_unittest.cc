@@ -19,7 +19,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/preferences/public/cpp/dictionary_value_update.h"
 #include "services/preferences/public/cpp/scoped_pref_update.h"
-#include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/preferences/public/mojom/preferences.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace prefs {

@@ -6,7 +6,7 @@
 #define SERVICES_PREFERENCES_TRACKED_TRACKED_PERSISTENT_PREF_STORE_FACTORY_H_
 
 #include <utility>
-#include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/preferences/public/mojom/preferences.mojom.h"
 
 namespace base {
 class DictionaryValue;

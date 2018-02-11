@@ -29,7 +29,7 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_type.h"
 #include "services/preferences/public/cpp/pref_service_factory.h"
-#include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 using session_manager::SessionState;

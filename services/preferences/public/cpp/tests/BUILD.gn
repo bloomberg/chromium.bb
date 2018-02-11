@@ -14,7 +14,7 @@ source_set("tests") {
     "//components/prefs:test_support",
     "//mojo/public/cpp/bindings:bindings",
     "//services/preferences/public/cpp",
-    "//services/preferences/public/interfaces",
+    "//services/preferences/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
   ]

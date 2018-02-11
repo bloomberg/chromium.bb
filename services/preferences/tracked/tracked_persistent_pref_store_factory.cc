@@ -12,7 +12,7 @@
 
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
-#include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
+#include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 #include "services/preferences/tracked/pref_hash_filter.h"
 #include "services/preferences/tracked/pref_hash_store_impl.h"
 #include "services/preferences/tracked/segregated_pref_store.h"

@@ -147,7 +147,7 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "mash/public/mojom/launchable.mojom.h"
 #include "services/preferences/public/cpp/pref_service_factory.h"
-#include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "ui/app_list/presenter/app_list.h"

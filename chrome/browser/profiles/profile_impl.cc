@@ -128,8 +128,8 @@
 #include "services/identity/identity_service.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
-#include "services/preferences/public/interfaces/preferences.mojom.h"
-#include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
+#include "services/preferences/public/mojom/preferences.mojom.h"
+#include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "ui/base/l10n/l10n_util.h"
 

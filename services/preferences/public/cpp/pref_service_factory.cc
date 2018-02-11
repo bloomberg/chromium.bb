@@ -17,7 +17,7 @@
 #include "services/preferences/public/cpp/persistent_pref_store_client.h"
 #include "services/preferences/public/cpp/pref_registry_serializer.h"
 #include "services/preferences/public/cpp/pref_store_client.h"
-#include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace prefs {

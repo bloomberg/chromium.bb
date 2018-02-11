@@ -7,7 +7,7 @@ module prefs.mojom;
 import "mojo/common/file_path.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/common/values.mojom";
-import "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom";
+import "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom";
 
 const string kServiceName = "preferences";
 const string kLocalStateServiceName = "local_state";

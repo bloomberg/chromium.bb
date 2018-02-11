@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_PREFERENCES_PUBLIC_CPP_PREFERENCES_STRUCT_TRAITS_H_
-#define SERVICES_PREFERENCES_PUBLIC_CPP_PREFERENCES_STRUCT_TRAITS_H_
+#ifndef SERVICES_PREFERENCES_PUBLIC_CPP_PREFERENCES_MOJOM_TRAITS_H_
+#define SERVICES_PREFERENCES_PUBLIC_CPP_PREFERENCES_MOJOM_TRAITS_H_
 
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_value_store.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
-#include "services/preferences/public/interfaces/preferences.mojom-shared.h"
+#include "services/preferences/public/mojom/preferences.mojom-shared.h"
 
 namespace mojo {
 
@@ -35,4 +35,4 @@ struct EnumTraits<::prefs::mojom::PersistentPrefStoreConnection_ReadError,
 
 }  // namespace mojo
 
-#endif  // SERVICES_PREFERENCES_PUBLIC_CPP_PREFERENCES_STRUCT_TRAITS_H_
+#endif  // SERVICES_PREFERENCES_PUBLIC_CPP_PREFERENCES_MOJOM_TRAITS_H_
