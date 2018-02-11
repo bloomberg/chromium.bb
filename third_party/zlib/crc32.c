@@ -210,10 +210,16 @@ unsigned long ZEXPORT crc32_z(crc, buf, len)
     const unsigned char FAR *buf;
     z_size_t len;
 {
+    /*
+     * zlib convention is to call crc32(0, NULL, 0); before making
+     * calls to crc32(). So this is a good, early (and infrequent)
+     * place to cache CPU features if needed for those later, more
+     * interesting crc32() calls.
+     */
 #if defined(CRC32_SIMD_SSE42_PCLMUL)
     /*
      * Use x86 sse4.2+pclmul SIMD to compute the crc32. Since this
-     * routine can be freely used, check the CPU features here.
+     * routine can be freely used, check CPU features here.
      */
     if (buf == Z_NULL) {
         if (!len) /* Assume user is calling crc32(0, NULL, 0); */
