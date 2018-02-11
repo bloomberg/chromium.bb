@@ -97,30 +97,10 @@ IOSChromeBrowsingDataRemover::NotificationDetails::~NotificationDetails() {}
 IOSChromeBrowsingDataRemover* IOSChromeBrowsingDataRemover::CreateForPeriod(
     ios::ChromeBrowserState* browser_state,
     browsing_data::TimePeriod period) {
-  switch (period) {
-    case browsing_data::TimePeriod::LAST_HOUR:
-      base::RecordAction(UserMetricsAction("ClearBrowsingData_LastHour"));
-      break;
-    case browsing_data::TimePeriod::LAST_DAY:
-      base::RecordAction(UserMetricsAction("ClearBrowsingData_LastDay"));
-      break;
-    case browsing_data::TimePeriod::LAST_WEEK:
-      base::RecordAction(UserMetricsAction("ClearBrowsingData_LastWeek"));
-      break;
-    case browsing_data::TimePeriod::FOUR_WEEKS:
-      base::RecordAction(UserMetricsAction("ClearBrowsingData_LastMonth"));
-      break;
-    case browsing_data::TimePeriod::ALL_TIME:
-      base::RecordAction(UserMetricsAction("ClearBrowsingData_Everything"));
-      break;
-    case browsing_data::TimePeriod::OLDER_THAN_30_DAYS:
-      base::RecordAction(
-          UserMetricsAction("ClearBrowsingData_OlderThan30Days"));
-      break;
-  }
+  browsing_data::RecordDeletionForPeriod(period);
   return new IOSChromeBrowsingDataRemover(
       browser_state, browsing_data::CalculateBeginDeleteTime(period),
-      base::Time::Max());
+      browsing_data::CalculateEndDeleteTime(period));
 }
 
 IOSChromeBrowsingDataRemover::IOSChromeBrowsingDataRemover(
@@ -132,12 +112,7 @@ IOSChromeBrowsingDataRemover::IOSChromeBrowsingDataRemover(
       delete_end_(delete_end),
       main_context_getter_(browser_state->GetRequestContext()) {
   DCHECK(browser_state);
-  // crbug.com/140910: Many places were calling this with base::Time() as
-  // delete_end, even though they should've used base::Time::Max(). Work around
-  // it here. New code should use base::Time::Max().
   DCHECK(delete_end_ != base::Time());
-  if (delete_end_ == base::Time())
-    delete_end_ = base::Time::Max();
 }
 
 IOSChromeBrowsingDataRemover::~IOSChromeBrowsingDataRemover() {
