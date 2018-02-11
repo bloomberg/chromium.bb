@@ -12,6 +12,7 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -190,8 +191,10 @@ AccountConsistencyModeManager::GetAccountConsistencyMethod() {
 #endif
 
 #if defined(OS_CHROMEOS)
-  if (profile_->IsChild())
+  if (profile_->GetPrefs()->GetBoolean(
+          prefs::kAccountConsistencyMirrorRequired)) {
     return signin::AccountConsistencyMethod::kMirror;
+  }
 #endif
 
   if (signin::IsDiceEnabledForProfile(profile_->GetPrefs()))
