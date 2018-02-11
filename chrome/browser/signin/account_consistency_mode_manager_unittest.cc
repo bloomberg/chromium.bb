@@ -17,6 +17,7 @@
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/scoped_account_consistency.h"
 #include "components/signin/core/browser/signin_features.h"
+#include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -143,18 +144,27 @@ TEST(AccountConsistencyModeManagerTest, MirrorDisabledForNonUnicorn) {
             AccountConsistencyModeManager::GetMethodForProfile(&profile));
 }
 
-TEST(AccountConsistencyModeManagerTest, MirrorEnabledForUnicorn) {
+TEST(AccountConsistencyModeManagerTest, MirrorEnabledByPreference) {
   // Creation of this object sets the current thread's id as UI thread.
   content::TestBrowserThreadBundle test_thread_bundle;
 
-  TestingProfile profile;
-  profile.SetSupervisedUserId(supervised_users::kChildAccountSUID);
+  TestingProfile::Builder profile_builder;
+  {
+    std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service =
+        std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
+    RegisterUserProfilePrefs(pref_service->registry());
+    profile_builder.SetPrefService(std::move(pref_service));
+  }
+  std::unique_ptr<TestingProfile> profile = profile_builder.Build();
+  profile->GetPrefs()->SetBoolean(prefs::kAccountConsistencyMirrorRequired,
+                                  true);
+
   EXPECT_TRUE(
-      AccountConsistencyModeManager::IsMirrorEnabledForProfile(&profile));
+      AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile.get()));
   EXPECT_EQ(signin::AccountConsistencyMethod::kMirror,
-            AccountConsistencyModeManager::GetMethodForProfile(&profile));
+            AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_MIRROR)
 TEST(AccountConsistencyModeManagerTest, MirrorEnabled) {
@@ -175,4 +185,4 @@ TEST(AccountConsistencyModeManagerTest, MirrorEnabled) {
   EXPECT_EQ(signin::AccountConsistencyMethod::kMirror,
             AccountConsistencyModeManager::GetMethodForProfile(&profile));
 }
-#endif
+#endif  // BUILDFLAG(ENABLE_MIRROR)
