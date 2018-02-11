@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_PROXY_RESOLVER_PUBLIC_CPP_PROXY_RESOLVER_STRUCT_TRAITS_H_
-#define SERVICES_PROXY_RESOLVER_PUBLIC_CPP_PROXY_RESOLVER_STRUCT_TRAITS_H_
+#ifndef SERVICES_PROXY_RESOLVER_PUBLIC_CPP_PROXY_RESOLVER_MOJOM_TRAITS_H_
+#define SERVICES_PROXY_RESOLVER_PUBLIC_CPP_PROXY_RESOLVER_MOJOM_TRAITS_H_
 
 #include "base/strings/string_piece.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
@@ -12,7 +12,7 @@
 #include "net/base/proxy_server.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_list.h"
-#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
+#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 namespace net {
 class ProxyInfo;
@@ -57,4 +57,4 @@ struct StructTraits<proxy_resolver::mojom::ProxyInfoDataView, net::ProxyInfo> {
 
 }  // namespace mojo
 
-#endif  // SERVICES_PROXY_RESOLVER_PUBLIC_CPP_PROXY_RESOLVER_STRUCT_TRAITS_H_
+#endif  // SERVICES_PROXY_RESOLVER_PUBLIC_CPP_PROXY_RESOLVER_MOJOM_TRAITS_H_

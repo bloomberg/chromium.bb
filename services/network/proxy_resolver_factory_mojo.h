@@ -14,7 +14,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/completion_callback.h"
 #include "net/proxy_resolution/proxy_resolver_factory.h"
-#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
+#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 namespace net {
 class HostResolver;

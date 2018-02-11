@@ -14,7 +14,7 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/url_request_context_owner.h"
-#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
+#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 namespace net {
 class HostResolver;

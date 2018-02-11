@@ -25,7 +25,7 @@ source_set("lib") {
   ]
 
   public_deps = [
-    "//services/proxy_resolver/public/interfaces",
+    "//services/proxy_resolver/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 }

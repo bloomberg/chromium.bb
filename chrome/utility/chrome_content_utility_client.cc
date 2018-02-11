@@ -37,7 +37,7 @@
 #include "chrome/utility/importer/profile_import_service.h"
 #include "services/network/url_request_context_builder_mojo.h"
 #include "services/proxy_resolver/proxy_resolver_service.h"  // nogncheck
-#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"  // nogncheck
+#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"  // nogncheck
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_WIN)

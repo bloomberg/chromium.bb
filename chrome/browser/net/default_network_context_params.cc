@@ -22,7 +22,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
-#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
+#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
   network::mojom::NetworkContextParamsPtr network_context_params =

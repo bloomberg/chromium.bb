@@ -14,6 +14,6 @@ specific_include_rules = {
     # rather than to store user preferences.
     "+components/prefs",
     "+services/network",
-    "+services/proxy_resolver/public/interfaces",
+    "+services/proxy_resolver/public/mojom",
   ],
 }
