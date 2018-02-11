@@ -33,7 +33,7 @@
 #include "net/proxy_resolution/proxy_resolver_factory.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
-#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
+#include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

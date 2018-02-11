@@ -42,7 +42,7 @@ include_rules = [
   "+ppapi",
   "+printing",
   "+sandbox",
-  "+services/proxy_resolver/public/interfaces",
+  "+services/proxy_resolver/public/mojom",
   "+services/service_manager/embedder",
   "+skia",
 
