@@ -736,10 +736,6 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyPing(uint32_t ping_id,
   return SpdySerializedFrame(headerless_spdy_framer_.SerializeFrame(ping_ir));
 }
 
-SpdySerializedFrame SpdyTestUtil::ConstructSpdyGoAway() {
-  return ConstructSpdyGoAway(0);
-}
-
 SpdySerializedFrame SpdyTestUtil::ConstructSpdyGoAway(
     SpdyStreamId last_good_stream_id) {
   SpdyGoAwayIR go_ir(last_good_stream_id, ERROR_CODE_NO_ERROR, "go away");

@@ -333,8 +333,6 @@ class StaticSocketDataProvider : public SocketDataProvider {
                            size_t writes_count);
   ~StaticSocketDataProvider() override;
 
-  virtual void CompleteRead() {}
-
   // From SocketDataProvider:
   MockRead OnRead() override;
   MockWriteResult OnWrite(const std::string& data) override;

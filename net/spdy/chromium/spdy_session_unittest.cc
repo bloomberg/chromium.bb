@@ -3338,7 +3338,7 @@ TEST_F(SpdySessionTest, GoAwayWhileInDoReadLoop) {
 
   SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
-  SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway());
+  SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(0));
 
   MockRead reads[] = {
       CreateMockRead(resp1, 1), MockRead(ASYNC, ERR_IO_PENDING, 2),

@@ -231,7 +231,7 @@ bool StaticSocketDataHelper::VerifyWriteData(const std::string& data) {
   std::string actual_data(data.substr(0, next_write.data_len));
   EXPECT_GE(data.length(), expected_data.length());
   EXPECT_TRUE(actual_data == expected_data)
-      << "Actual write data:\n" << HexDump(actual_data)
+      << "Actual write data:\n" << HexDump(data)
       << "Expected write data:\n" << HexDump(expected_data);
   return expected_data == actual_data;
 }
