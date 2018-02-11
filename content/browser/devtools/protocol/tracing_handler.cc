@@ -29,7 +29,7 @@
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
-#include "services/resource_coordinator/public/interfaces/tracing/tracing_constants.mojom.h"
+#include "services/resource_coordinator/public/mojom/tracing/tracing_constants.mojom.h"
 
 namespace content {
 namespace protocol {

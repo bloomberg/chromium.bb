@@ -67,7 +67,7 @@ include_rules = [
                                # service in process and needs impl access.
   "+services/proxy_resolver/public/mojom",
   "+services/resource_coordinator/public/cpp",
-  "+services/resource_coordinator/public/interfaces",
+  "+services/resource_coordinator/public/mojom",
   "+services/service_manager",
   "+services/shape_detection/public/interfaces",
   "+services/ui/common",

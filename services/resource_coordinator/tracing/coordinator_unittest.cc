@@ -16,7 +16,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "mojo/common/data_pipe_drainer.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "services/resource_coordinator/public/interfaces/tracing/tracing.mojom.h"
+#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
 #include "services/resource_coordinator/tracing/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

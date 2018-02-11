@@ -8,7 +8,7 @@ include_rules = [
   "+services/network/loader_util.h",
   "+services/network/public/cpp",
   "+services/network/public/mojom",
-  "+services/resource_coordinator/public/interfaces",
+  "+services/resource_coordinator/public/mojom",
   "+services/service_manager/public/cpp",
   "+services/service_manager/sandbox",
   "+services/video_capture/public/interfaces",

@@ -11,7 +11,7 @@
 #include "base/trace_event/trace_log.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/resource_coordinator/public/interfaces/tracing/tracing.mojom.h"
+#include "services/resource_coordinator/public/mojom/tracing/tracing.mojom.h"
 
 namespace base {
 class TimeTicks;

@@ -21,7 +21,7 @@
 #include "chrome/profiling/allocation_tracker.h"
 #include "chrome/profiling/backtrace_storage.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace base {
 

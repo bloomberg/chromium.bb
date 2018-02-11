@@ -6,7 +6,7 @@
 #define RendererResourceCoordinator_h
 
 #include "platform/instrumentation/resource_coordinator/BlinkResourceCoordinatorBase.h"
-#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom-blink.h"
+#include "services/resource_coordinator/public/mojom/coordination_unit.mojom-blink.h"
 
 namespace service_manager {
 class Connector;

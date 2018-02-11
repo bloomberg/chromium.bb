@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/resource_coordinator/public/interfaces/page_signal.mojom.h"
+#include "services/resource_coordinator/public/mojom/page_signal.mojom.h"
 
 namespace content {
 class WebContents;

@@ -15,7 +15,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "services/resource_coordinator/public/cpp/process_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
-#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
+#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 #if defined(OS_MACOSX)
 #include "content/public/browser/browser_child_process_host.h"
