@@ -7,7 +7,7 @@
 
 #include "base/mac/availability.h"
 #include "base/mac/scoped_nsobject.h"
-#include "services/shape_detection/public/interfaces/textdetection.mojom.h"
+#include "services/shape_detection/public/mojom/textdetection.mojom.h"
 
 @class CIDetector;
 

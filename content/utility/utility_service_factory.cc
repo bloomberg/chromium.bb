@@ -24,7 +24,7 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/shape_detection/public/interfaces/constants.mojom.h"
+#include "services/shape_detection/public/mojom/constants.mojom.h"
 #include "services/shape_detection/shape_detection_service.h"
 #include "services/video_capture/public/interfaces/constants.mojom.h"
 #include "services/video_capture/service_impl.h"

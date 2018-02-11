@@ -7,7 +7,7 @@
 
 #include "base/mac/availability.h"
 #include "base/mac/scoped_nsobject.h"
-#include "services/shape_detection/public/interfaces/barcodedetection.mojom.h"
+#include "services/shape_detection/public/mojom/barcodedetection.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 @class CIDetector;

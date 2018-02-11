@@ -5,7 +5,7 @@
 #ifndef SERVICES_SHAPE_DETECTION_TEXT_DETECTION_IMPL_H_
 #define SERVICES_SHAPE_DETECTION_TEXT_DETECTION_IMPL_H_
 
-#include "services/shape_detection/public/interfaces/textdetection.mojom.h"
+#include "services/shape_detection/public/mojom/textdetection.mojom.h"
 
 namespace shape_detection {
 

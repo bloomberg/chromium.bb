@@ -16,7 +16,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/shape_detection/public/interfaces/textdetection.mojom.h"
+#include "services/shape_detection/public/mojom/textdetection.mojom.h"
 #include "services/shape_detection/text_detection_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/png_codec.h"

@@ -143,7 +143,7 @@ jumbo_source_set("browser") {
     "//services/service_manager/runner/common",
     "//services/service_manager/runner/host:lib",
     "//services/shape_detection:lib",
-    "//services/shape_detection/public/interfaces",
+    "//services/shape_detection/public/mojom",
     "//services/ui/public/cpp/gpu",
     "//services/video_capture:lib",
     "//services/video_capture/public/cpp",

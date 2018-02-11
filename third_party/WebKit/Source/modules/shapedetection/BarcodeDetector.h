@@ -10,7 +10,7 @@
 #include "modules/ModulesExport.h"
 #include "modules/canvas/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/shapedetection/ShapeDetector.h"
-#include "services/shape_detection/public/interfaces/barcodedetection.mojom-blink.h"
+#include "services/shape_detection/public/mojom/barcodedetection.mojom-blink.h"
 
 namespace blink {
 
