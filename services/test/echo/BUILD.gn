@@ -16,7 +16,7 @@ source_set("lib") {
     "//base",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
-    "//services/test/echo/public/interfaces",
+    "//services/test/echo/public/mojom",
   ]
 }
 

@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/test/echo/public/interfaces/echo.mojom.h"
+#include "services/test/echo/public/mojom/echo.mojom.h"
 
 namespace echo {
 

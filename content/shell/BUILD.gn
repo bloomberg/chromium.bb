@@ -271,7 +271,7 @@ static_library("content_shell_lib") {
     "//services/network/public/cpp",
     "//services/service_manager/public/cpp",
     "//services/test/echo:lib",
-    "//services/test/echo/public/interfaces",
+    "//services/test/echo/public/mojom",
     "//skia",
     "//storage/browser",
     "//testing/gmock",

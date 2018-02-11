@@ -14,8 +14,8 @@
 #import "ios/web/shell/test/earl_grey/web_shell_test_case.h"
 #import "ios/web/shell/web_usage_controller.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/test/echo/public/interfaces/echo.mojom.h"
-#include "services/test/user_id/public/interfaces/user_id.mojom.h"
+#include "services/test/echo/public/mojom/echo.mojom.h"
+#include "services/test/user_id/public/mojom/user_id.mojom.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

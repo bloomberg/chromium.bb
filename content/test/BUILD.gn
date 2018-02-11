@@ -897,7 +897,7 @@ test("content_browsertests") {
     "//services/device/public/interfaces:generic_sensor",
     "//services/network:test_support",
     "//services/service_manager/public/cpp",
-    "//services/test/echo/public/interfaces",
+    "//services/test/echo/public/mojom",
     "//services/ui/public/cpp/gpu",
     "//services/video_capture/public/cpp",
     "//services/video_capture/public/interfaces:constants",
