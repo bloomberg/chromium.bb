@@ -28,12 +28,18 @@ class OmniboxTextField : public TextInput {
 
   void SetAutocompletion(const Autocompletion& autocompletion);
 
+  void set_allow_inline_autocomplete(bool allowed) {
+    allow_inline_autocomplete_ = allowed;
+  }
+
  private:
   void OnUpdateInput(const EditedText& info) override;
 
   base::RepeatingCallback<void(const AutocompleteRequest&)>
       autocomplete_start_callback_;
   base::RepeatingCallback<void()> autocomplete_stop_callback_;
+
+  bool allow_inline_autocomplete_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxTextField);
 };
