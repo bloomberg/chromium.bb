@@ -87,8 +87,8 @@ class PdfToPwgRasterBrowserTest : public InProcessBrowserTest {
     bool success = false;
     base::RunLoop run_loop;
     converter_->Start(pdf_data, conversion_settings, bitmap_settings,
-                      base::Bind(&ResultCallbackImpl, &called, &success,
-                                 temp_file, run_loop.QuitClosure()));
+                      base::BindOnce(&ResultCallbackImpl, &called, &success,
+                                     temp_file, run_loop.QuitClosure()));
     run_loop.Run();
     ASSERT_TRUE(called);
     EXPECT_EQ(success, expect_success);
