@@ -134,24 +134,3 @@ source_set("eg_tests") {
   ]
   libs = [ "XCTest.framework" ]
 }
-
-source_set("perf_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "stack_view_controller_perftest.mm",
-  ]
-  deps = [
-    ":stack_view",
-    "//base",
-    "//base/test:test_support",
-    "//ios/chrome/browser/snapshots",
-    "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/test:perf_test_support",
-    "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui:ui_internal",
-    "//ios/web",
-    "//net",
-  ]
-  libs = [ "UIKit.framework" ]
-}

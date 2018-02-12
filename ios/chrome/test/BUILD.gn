@@ -114,7 +114,6 @@ test("ios_chrome_perftests") {
     # Add perf_tests target here.
     "//ios/chrome/browser/ui:perf_tests",
     "//ios/chrome/browser/ui/ntp:perf_tests",
-    "//ios/chrome/browser/ui/stack_view:perf_tests",
     "//ios/chrome/browser/web:perf_tests",
   ]
 

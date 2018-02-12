@@ -2021,9 +2021,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   _dismissingStackView = NO;
 }
 
-- (void)tabSwitcherPresentationTransitionDidEnd:(id<TabSwitcher>)tabSwitcher {
-}
-
 - (id<ToolbarOwner>)tabSwitcherTransitionToolbarOwner {
   // Request the view to ensure that the view has been loaded and initialized,
   // since it may never have been loaded (or have been swapped out).

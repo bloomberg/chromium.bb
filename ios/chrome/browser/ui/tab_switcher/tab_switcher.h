@@ -34,10 +34,6 @@
 // dismissed.
 - (void)tabSwitcherDismissTransitionDidEnd:(id<TabSwitcher>)tabSwitcher;
 
-// Informs the delegate that the stack controller has finished its
-// presentation transition animation.
-- (void)tabSwitcherPresentationTransitionDidEnd:(id<TabSwitcher>)tabSwitcher;
-
 // Returns a reference to the owner of the toolbar that should be used in the
 // transition animations.
 - (id<ToolbarOwner>)tabSwitcherTransitionToolbarOwner;
