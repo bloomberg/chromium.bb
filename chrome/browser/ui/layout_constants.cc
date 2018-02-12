@@ -19,6 +19,11 @@ int GetLayoutConstant(LayoutConstant constant) {
       return hybrid ? 1 : 3;
     case LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING:
       return hybrid ? 3 : 2;
+    case LOCATION_BAR_BUBBLE_CORNER_RADIUS:
+      // TODO(tapted): This should match BubbleBorder::GetBorderRadius() once
+      // MD is default for secondary UI everywhere. That is, the constant should
+      // move to views/layout_provider.h so that all bubbles are consistent.
+      return touch_optimized_material ? 8 : 2;
     case LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET:
       if (ui::MaterialDesignController::IsSecondaryUiMaterial())
         return 1;
