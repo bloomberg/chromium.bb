@@ -43,6 +43,10 @@ static const int8_t inv_start_range[TX_SIZES_ALL] = {
 };
 
 extern const int8_t *inv_txfm_shift_ls[TX_SIZES_ALL];
+
+// Values in both inv_cos_bit_col and inv_cos_bit_row are always 12
+// for each valid row and col combination
+#define INV_COS_BIT 12
 extern const int8_t inv_cos_bit_col[5 /*row*/][5 /*col*/];
 extern const int8_t inv_cos_bit_row[5 /*row*/][5 /*col*/];
 
