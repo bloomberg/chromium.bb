@@ -2643,7 +2643,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kBrowserControlsShowThreshold,
     cc::switches::kRunAllCompositorStagesBeforeDraw,
     switches::kEnableSurfaceSynchronization,
-    switches::kUseVizHitTest,
+    switches::kUseVizHitTestDrawQuad,
+    switches::kUseVizHitTestSurfaceLayer,
 
 #if BUILDFLAG(ENABLE_PLUGINS)
     switches::kEnablePepperTesting,

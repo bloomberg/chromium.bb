@@ -141,7 +141,7 @@ void RendererWindowTreeClient::RequestLayerTreeFrameSinkInternal(
   params.local_surface_id_provider =
       std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   params.enable_surface_synchronization = true;
-  if (features::IsVizHitTestingEnabled()) {
+  if (features::IsVizHitTestingDrawQuadEnabled()) {
     params.hit_test_data_provider =
         std::make_unique<viz::HitTestDataProviderSimpleBounds>();
   }
