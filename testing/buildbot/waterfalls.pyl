@@ -888,6 +888,11 @@
           'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
         },
       },
+      'linux-gcc-rel': {
+        'additional_compile_targets': [
+          'empty_main',
+        ],
+      },
       'Chromium Mac 10.10 MacViews': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_fyi_gtests',

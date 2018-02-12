@@ -8924,5 +8924,10 @@
     "additional_compile_targets": [
       "chromiumos_preflight"
     ]
+  },
+  "linux-gcc-rel": {
+    "additional_compile_targets": [
+      "empty_main"
+    ]
   }
 }

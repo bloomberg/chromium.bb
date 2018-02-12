@@ -12,6 +12,13 @@ source_set("gmock_mutant") {
   ]
 }
 
+# Used by linux-gcc-rel to ensure gcc doesn't choke on clang-only flags.
+executable("empty_main") {
+  sources = [
+    "empty_main.cc",
+  ]
+}
+
 # Targets needed for isolate script to execute.
 group("test_scripts_shared") {
   data = [
