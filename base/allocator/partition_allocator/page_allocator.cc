@@ -101,6 +101,7 @@ size_t s_reservation_size = 0;
 static void* SystemAllocPages(void* hint,
                               size_t length,
                               PageAccessibilityConfiguration page_accessibility,
+                              PageTag page_tag,
                               bool commit) {
   DCHECK(!(length & kPageAllocationGranularityOffsetMask));
   DCHECK(!(reinterpret_cast<uintptr_t>(hint) &
@@ -118,8 +119,10 @@ static void* SystemAllocPages(void* hint,
 
 #if defined(OS_MACOSX)
   // Use a custom tag to make it easier to distinguish partition alloc regions
-  // in vmmap.
-  int fd = VM_MAKE_TAG(254);
+  // in vmmap. Tags between 240-255 are supported.
+  DCHECK_LE(PageTag::kFirst, page_tag);
+  DCHECK_GE(PageTag::kLast, page_tag);
+  int fd = VM_MAKE_TAG(static_cast<int>(page_tag));
 #else
   int fd = -1;
 #endif
@@ -137,15 +140,18 @@ static void* AllocPagesIncludingReserved(
     void* address,
     size_t length,
     PageAccessibilityConfiguration page_accessibility,
+    PageTag page_tag,
     bool commit) {
-  void* ret = SystemAllocPages(address, length, page_accessibility, commit);
+  void* ret =
+      SystemAllocPages(address, length, page_accessibility, page_tag, commit);
   if (ret == nullptr) {
     const bool cant_alloc_length = kHintIsAdvisory || address == nullptr;
     if (cant_alloc_length) {
       // The system cannot allocate |length| bytes. Release any reserved address
       // space and try once more.
       ReleaseReservation();
-      ret = SystemAllocPages(address, length, page_accessibility, commit);
+      ret = SystemAllocPages(address, length, page_accessibility, page_tag,
+                             commit);
     }
   }
   return ret;
@@ -187,7 +193,8 @@ static void* TrimMapping(void* base,
     // aligned address within the freed range.
     ret = reinterpret_cast<char*>(base) + pre_slack;
     FreePages(base, base_length);
-    ret = SystemAllocPages(ret, trim_length, page_accessibility, commit);
+    ret = SystemAllocPages(ret, trim_length, page_accessibility,
+                           PageTag::kChromium, commit);
   }
 #endif
 
@@ -200,6 +207,7 @@ void* AllocPages(void* address,
                  size_t length,
                  size_t align,
                  PageAccessibilityConfiguration page_accessibility,
+                 PageTag page_tag,
                  bool commit) {
   DCHECK(length >= kPageAllocationGranularity);
   DCHECK(!(length & kPageAllocationGranularityOffsetMask));
@@ -230,7 +238,7 @@ void* AllocPages(void* address,
 #endif
   for (int i = 0; i < kExactSizeTries; ++i) {
     void* ret = AllocPagesIncludingReserved(address, length, page_accessibility,
-                                            commit);
+                                            page_tag, commit);
     if (ret != nullptr) {
       // If the alignment is to our liking, we're done.
       if (!(reinterpret_cast<uintptr_t>(ret) & align_offset_mask))
@@ -266,7 +274,7 @@ void* AllocPages(void* address,
     // Continue randomizing only on POSIX.
     address = kHintIsAdvisory ? GetRandomPageBase() : nullptr;
     ret = AllocPagesIncludingReserved(address, try_length, page_accessibility,
-                                      commit);
+                                      page_tag, commit);
     // The retries are for Windows, where a race can steal our mapping on
     // resize.
   } while (ret != nullptr &&
@@ -386,7 +394,8 @@ bool ReserveAddressSpace(size_t size) {
   // To avoid deadlock, call only SystemAllocPages.
   subtle::SpinLock::Guard guard(s_reserveLock.Get());
   if (s_reservation_address == nullptr) {
-    void* mem = SystemAllocPages(nullptr, size, PageInaccessible, false);
+    void* mem = SystemAllocPages(nullptr, size, PageInaccessible,
+                                 PageTag::kChromium, false);
     if (mem != nullptr) {
       // We guarantee this alignment when reserving address space.
       DCHECK(!(reinterpret_cast<uintptr_t>(mem) &

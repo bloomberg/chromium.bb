@@ -47,7 +47,8 @@ void* ArrayBufferAllocator::Reserve(size_t length) {
 #if BUILDFLAG(USE_PARTITION_ALLOC)
   const bool commit = false;
   return base::AllocPages(nullptr, length, base::kPageAllocationGranularity,
-                          base::PageInaccessible, commit);
+                          base::PageInaccessible, base::PageTag::kChromium,
+                          commit);
 #elif defined(OS_POSIX)
   int const access_flag = PROT_NONE;
   void* const ret =

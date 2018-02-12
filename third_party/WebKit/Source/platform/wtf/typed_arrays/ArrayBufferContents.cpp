@@ -148,7 +148,8 @@ void* ArrayBufferContents::ReserveMemory(size_t size) {
 #endif
 
   constexpr bool commit = true;
-  return base::AllocPages(hint, size, align, base::PageInaccessible, !commit);
+  return base::AllocPages(hint, size, align, base::PageInaccessible,
+                          base::PageTag::kChromium, !commit);
 }
 
 void ArrayBufferContents::FreeMemory(void* data) {

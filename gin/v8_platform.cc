@@ -193,7 +193,8 @@ class PageAllocator : public v8::PageAllocator {
                       v8::PageAllocator::Permission permissions) override {
     base::PageAccessibilityConfiguration config = GetPageConfig(permissions);
     bool commit = (permissions != v8::PageAllocator::Permission::kNoAccess);
-    return base::AllocPages(address, length, alignment, config, commit);
+    return base::AllocPages(address, length, alignment, config,
+                            base::PageTag::kV8, commit);
   }
 
   bool FreePages(void* address, size_t length) override {
