@@ -430,7 +430,7 @@ int av1_get_pred_context_comp_ref_p2(const MACROBLOCKD *xd) {
 
 // Obtain contexts to signal a reference frame be either BWDREF/ALTREF2, or
 // ALTREF.
-int av1_get_pred_context_brfarf2_or_arf(const MACROBLOCKD *xd) {
+static int get_pred_context_brfarf2_or_arf(const MACROBLOCKD *xd) {
   const uint8_t *const ref_counts = &xd->neighbors_ref_counts[0];
 
   // Counts of BWDREF, ALTREF2, or ALTREF frames (B, A2, or A)
@@ -446,7 +446,7 @@ int av1_get_pred_context_brfarf2_or_arf(const MACROBLOCKD *xd) {
 }
 
 // Obtain contexts to signal a reference frame be either BWDREF or ALTREF2.
-int av1_get_pred_context_brf_or_arf2(const MACROBLOCKD *xd) {
+static int get_pred_context_brf_or_arf2(const MACROBLOCKD *xd) {
   const uint8_t *const ref_counts = &xd->neighbors_ref_counts[0];
 
   // Count of BWDREF frames (B)
@@ -464,13 +464,13 @@ int av1_get_pred_context_brf_or_arf2(const MACROBLOCKD *xd) {
 // Signal the 2nd reference frame for a compound mode be either
 // ALTREF, or ALTREF2/BWDREF.
 int av1_get_pred_context_comp_bwdref_p(const MACROBLOCKD *xd) {
-  return av1_get_pred_context_brfarf2_or_arf(xd);
+  return get_pred_context_brfarf2_or_arf(xd);
 }
 
 // Signal the 2nd reference frame for a compound mode be either
 // ALTREF2 or BWDREF.
 int av1_get_pred_context_comp_bwdref_p1(const MACROBLOCKD *xd) {
-  return av1_get_pred_context_brf_or_arf2(xd);
+  return get_pred_context_brf_or_arf2(xd);
 }
 
 // For the bit to signal whether the single reference is a forward reference
@@ -539,7 +539,7 @@ int av1_get_pred_context_single_ref_p1(const MACROBLOCKD *xd) {
 // non-ALTREF backward reference frame, knowing that it shall be either of
 // these 2 choices.
 int av1_get_pred_context_single_ref_p2(const MACROBLOCKD *xd) {
-  return av1_get_pred_context_brfarf2_or_arf(xd);
+  return get_pred_context_brfarf2_or_arf(xd);
 }
 
 #define CHECK_LAST_OR_LAST2(ref_frame) \
@@ -823,5 +823,5 @@ int av1_get_pred_context_single_ref_p5(const MACROBLOCKD *xd) {
 // For the bit to signal whether the single reference is ALTREF2_FRAME or
 // BWDREF_FRAME, knowing that it shall be either of these 2 choices.
 int av1_get_pred_context_single_ref_p6(const MACROBLOCKD *xd) {
-  return av1_get_pred_context_brf_or_arf2(xd);
+  return get_pred_context_brf_or_arf2(xd);
 }
