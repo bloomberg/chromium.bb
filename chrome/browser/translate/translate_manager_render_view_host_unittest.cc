@@ -978,16 +978,16 @@ TEST_F(TranslateManagerRenderViewHostTest, ReloadFromLocationBar) {
   EXPECT_TRUE(CloseTranslateUi());
 }
 
-// Tests that a closed translate infobar does not reappear when navigating
-// in-page.
-TEST_F(TranslateManagerRenderViewHostTest, CloseInfoBarInPageNavigation) {
+// Tests that a closed translate infobar does not reappear when performing
+// same-document navigation.
+TEST_F(TranslateManagerRenderViewHostTest, CloseInfoBarSameDocumentNavigation) {
   EnableBubbleTest();
 
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 
   EXPECT_TRUE(CloseTranslateUi());
 
-  // Navigate in page, no infobar should be shown.
+  // For same-document, no infobar should be shown.
   SimulateNavigation(GURL("http://www.google.fr/#ref1"), "fr", true);
   EXPECT_FALSE(TranslateUiVisible());
 
@@ -1033,8 +1033,10 @@ TEST_F(TranslateManagerRenderViewHostTest, CloseInfoBarInSubframeNavigation) {
   }
 }
 
-// Tests that denying translation is sticky when navigating in page.
-TEST_F(TranslateManagerRenderViewHostTest, DenyTranslateInPageNavigation) {
+// Tests that denying translation is sticky when performing same-document
+// navigation.
+TEST_F(TranslateManagerRenderViewHostTest,
+       DenyTranslateSameDocumentNavigation) {
   EnableBubbleTest();
 
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
@@ -1042,19 +1044,19 @@ TEST_F(TranslateManagerRenderViewHostTest, DenyTranslateInPageNavigation) {
   // Simulate clicking 'Nope' (don't translate).
   EXPECT_TRUE(DenyTranslation());
 
-  // Navigate in page, no infobar should be shown.
+  // Same-document navigation, no infobar should be shown.
   SimulateNavigation(GURL("http://www.google.fr/#ref1"), "fr", true);
   EXPECT_FALSE(TranslateUiVisible());
 
-  // Navigate out of page, a new infobar should show. (Infobar only).
+  // Navigate to a new document, a new infobar should show. (Infobar only).
   SimulateNavigation(GURL("http://www.google.fr/foot"), "fr", true);
   EXPECT_NE(TranslateService::IsTranslateBubbleEnabled(), TranslateUiVisible());
 }
 
 // Tests that after translating and closing the infobar, the infobar does not
-// return when navigating in page.
+// return for same-document navigation.
 TEST_F(TranslateManagerRenderViewHostTest,
-       TranslateCloseInfoBarInPageNavigation) {
+       TranslateCloseInfoBarSameDocumentNavigation) {
   EnableBubbleTest();
 
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
@@ -1068,11 +1070,11 @@ TEST_F(TranslateManagerRenderViewHostTest,
 
   EXPECT_TRUE(CloseTranslateUi());
 
-  // Navigate in page, no infobar should be shown.
+  // Same-document navigation, no infobar should be shown.
   SimulateNavigation(GURL("http://www.google.fr/#ref1"), "fr", true);
   EXPECT_FALSE(TranslateUiVisible());
 
-  // Navigate out of page, a new infobar should show.
+  // Navigate to a new document, a new infobar should show.
   // Note that we navigate to a page in a different language so we don't trigger
   // the auto-translate feature (it would translate the page automatically and
   // the before translate infobar would not be shown).
@@ -1080,9 +1082,9 @@ TEST_F(TranslateManagerRenderViewHostTest,
   EXPECT_TRUE(TranslateUiVisible());
 }
 
-// Tests that the after translate the infobar still shows when navigating
-// in-page.
-TEST_F(TranslateManagerRenderViewHostTest, TranslateInPageNavigation) {
+// Tests that the after translate the infobar still shows when performing
+// same-document navigation.
+TEST_F(TranslateManagerRenderViewHostTest, TranslateSameDocumentNavigation) {
   EnableBubbleTest();
 
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
@@ -1099,8 +1101,8 @@ TEST_F(TranslateManagerRenderViewHostTest, TranslateInPageNavigation) {
   if (!TranslateService::IsTranslateBubbleEnabled())
     infobar = GetTranslateInfoBar();
 
-  // Navigate out of page, a new infobar should show.
-  // See note in TranslateCloseInfoBarInPageNavigation test on why it is
+  // Navigate to a new document, a new infobar should show.
+  // See note in TranslateCloseInfoBarSameDocumentNavigation test on why it is
   // important to navigate to a page in a different language for this test.
   SimulateNavigation(GURL("http://www.google.de"), "de", true);
   // The old infobar is gone. Can't verify this for bubbles.
