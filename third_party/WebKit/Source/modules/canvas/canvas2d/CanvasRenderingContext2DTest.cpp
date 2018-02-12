@@ -7,7 +7,6 @@
 #include <memory>
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
-#include "build/build_config.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
@@ -668,13 +667,7 @@ TEST_F(CanvasRenderingContext2DTest, MAYBE_GetImageDataDisablesAcceleration) {
   }
 }
 
-// https://crbug.com/791524
-#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
-#define MAYBE_TextureUploadHeuristics DISABLED_TextureUploadHeuristics
-#else
-#define MAYBE_TextureUploadHeuristics TextureUploadHeuristics
-#endif  // defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
-TEST_F(CanvasRenderingContext2DTest, MAYBE_TextureUploadHeuristics) {
+TEST_F(CanvasRenderingContext2DTest, TextureUploadHeuristics) {
   ScopedCanvas2dFixedRenderingModeForTest canvas_2d_fixed_rendering_mode(false);
 
   enum TestVariants {
