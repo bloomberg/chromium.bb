@@ -24,6 +24,7 @@ class URLLoaderFactoryGetter;
 //      codepath, as that normally routes directly to the network process
 //     -http(s)://mock.failed.request/foo URLs internally, copying the behavior
 //      of net::URLRequestFailedJob
+//   -requests by the browser
 //
 // Prefer not to use this class. In order of easy of use & simplicity:
 //  -if you need to serve static data, use net::test::EmbeddedTestServer and
@@ -39,13 +40,13 @@ class URLLoaderFactoryGetter;
 // Notes:
 //  -intercepting frame requests doesn't work yet for non network-service case
 //   (will work once http://crbug.com/747130 is fixed)
-//  -the callback is always called on the UI or IO threads depending on the
-//   factory that was hooked
+//  -the callback is called on the UI or IO threads depending on the factory
+//   that was hooked
 //    -this is done to avoid changing message order
 //  -intercepting resource requests for subresources when the network service is
 //   enabled changes message order by definition (since they would normally go
 //   directly from renderer->network process, but now they're routed through the
-//   browser). This is why |intercept_subresources| is false by default.
+//   browser).
 class URLLoaderInterceptor {
  public:
   struct RequestParams {
@@ -68,9 +69,7 @@ class URLLoaderInterceptor {
   // forward the request to the original URLLoaderFactory.
   using InterceptCallback = base::Callback<bool(RequestParams* params)>;
 
-  URLLoaderInterceptor(const InterceptCallback& callback,
-                       bool intercept_frame_requests = true,
-                       bool intercept_subresources = false);
+  URLLoaderInterceptor(const InterceptCallback& callback);
   ~URLLoaderInterceptor();
 
   // Helper methods for use when intercepting.
@@ -79,6 +78,7 @@ class URLLoaderInterceptor {
                             network::mojom::URLLoaderClient* client);
 
  private:
+  class BrowserProcessWrapper;
   class Interceptor;
   class SubresourceWrapper;
   class URLLoaderFactoryGetterWrapper;
@@ -88,6 +88,12 @@ class URLLoaderInterceptor {
       network::mojom::URLLoaderFactoryRequest request,
       int process_id,
       network::mojom::URLLoaderFactoryPtrInfo original_factory);
+
+  // Callback on UI thread whenever a
+  // StoragePartition::GetURLLoaderFactoryForBrowserProcess is called on an
+  // object that doesn't have a test factory set up.
+  network::mojom::URLLoaderFactoryPtr GetURLLoaderFactoryForBrowserProcess(
+      network::mojom::URLLoaderFactoryPtr original_factory);
 
   // Callback on IO thread whenever a URLLoaderFactoryGetter::GetNetworkContext
   // is called on an object that doesn't have a test factory set up.
@@ -102,12 +108,14 @@ class URLLoaderInterceptor {
   void ShutdownOnIOThread(base::OnceClosure closure);
 
   InterceptCallback callback_;
-  bool intercept_frame_requests_;
-  bool intercept_subresources_;
   // For intercepting frame requests with network service. There is one per
   // StoragePartition. Only accessed on IO thread.
   std::set<std::unique_ptr<URLLoaderFactoryGetterWrapper>>
       url_loader_factory_getter_wrappers_;
+  // For intecepting non-frame requests from the browser process. There is one
+  // per StoragePartition. Only accessed on UI thread.
+  std::set<std::unique_ptr<BrowserProcessWrapper>>
+      browser_process_interceptors_;
   // For intercepting subresources without network service in
   // ResourceMessageFilter.
   std::unique_ptr<Interceptor> rmf_interceptor_;

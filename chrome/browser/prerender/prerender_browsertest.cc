@@ -3237,16 +3237,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ResourcePriority) {
   net::RequestPriority before_swap_priority = net::THROTTLED;
   net::RequestPriority after_swap_priority = net::THROTTLED;
 
-  content::URLLoaderInterceptor interceptor(
-      base::BindLambdaForTesting(
-          [&](content::URLLoaderInterceptor::RequestParams* params) {
-            if (params->url_request.url == before_swap_url)
-              before_swap_priority = params->url_request.priority;
-            else if (params->url_request.url == after_swap_url)
-              after_swap_priority = params->url_request.priority;
-            return false;
-          }),
-      false, true);
+  content::URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](content::URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url == before_swap_url)
+          before_swap_priority = params->url_request.priority;
+        else if (params->url_request.url == after_swap_url)
+          after_swap_priority = params->url_request.priority;
+        return false;
+      }));
 
   // Start the prerender.
   PrerenderTestURL(main_page_url, FINAL_STATUS_USED, 1);
@@ -3330,8 +3328,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ResourcePriorityOverlappingSwap) {
               return true;
             }
             return false;
-          }),
-      false, true);
+          }));
 
   // The prerender will hang on the image resource, can't run the usual checks.
   DisableLoadEventCheck();

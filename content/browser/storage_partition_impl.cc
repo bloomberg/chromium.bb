@@ -67,6 +67,9 @@ namespace content {
 
 namespace {
 
+base::LazyInstance<StoragePartitionImpl::CreateNetworkFactoryCallback>::Leaky
+    g_url_loader_factory_callback_for_test = LAZY_INSTANCE_INITIALIZER;
+
 bool DoesCookieMatchHost(const std::string& host,
                          const net::CanonicalCookie& cookie) {
   return cookie.IsHostCookie() && cookie.IsDomainMatch(host);
@@ -311,6 +314,19 @@ int StoragePartitionImpl::GenerateQuotaClientMask(uint32_t remove_mask) {
 net::CookieStore::CookiePredicate
 StoragePartitionImpl::CreatePredicateForHostCookies(const GURL& url) {
   return base::Bind(&DoesCookieMatchHost, url.host());
+}
+
+// static
+void StoragePartitionImpl::
+    SetGetURLLoaderFactoryForBrowserProcessCallbackForTesting(
+        const CreateNetworkFactoryCallback& url_loader_factory_callback) {
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(url_loader_factory_callback.is_null() ||
+         g_url_loader_factory_callback_for_test.Get().is_null())
+      << "It is not expected that this is called with non-null callback when "
+      << "another overriding callback is already set.";
+  g_url_loader_factory_callback_for_test.Get() = url_loader_factory_callback;
 }
 
 // Helper for deleting quota managed data from a partition.
@@ -654,11 +670,23 @@ network::mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
 network::mojom::URLLoaderFactory*
 StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcess() {
   // Create the URLLoaderFactory as needed.
-  if (!url_loader_factory_for_browser_process_ ||
-      url_loader_factory_for_browser_process_.encountered_error()) {
+  if (url_loader_factory_for_browser_process_ &&
+      !url_loader_factory_for_browser_process_.encountered_error()) {
+    return url_loader_factory_for_browser_process_.get();
+  }
+
+  if (g_url_loader_factory_callback_for_test.Get().is_null()) {
     GetNetworkContext()->CreateURLLoaderFactory(
         mojo::MakeRequest(&url_loader_factory_for_browser_process_), 0);
+    return url_loader_factory_for_browser_process_.get();
   }
+
+  network::mojom::URLLoaderFactoryPtr original_factory;
+  GetNetworkContext()->CreateURLLoaderFactory(
+      mojo::MakeRequest(&original_factory), 0);
+  url_loader_factory_for_browser_process_ =
+      g_url_loader_factory_callback_for_test.Get().Run(
+          std::move(original_factory));
   return url_loader_factory_for_browser_process_.get();
 }
 

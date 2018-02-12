@@ -69,6 +69,17 @@ class CONTENT_EXPORT StoragePartitionImpl
   static net::CookieStore::CookiePredicate
   CreatePredicateForHostCookies(const GURL& url);
 
+  // Allows overriding the URLLoaderFactory creation for
+  // GetURLLoaderFactoryForBrowserProcess.
+  // Passing a null callback will restore the default behavior.
+  // This method must be called either on the UI thread or before threads start.
+  // This callback is run on the UI thread.
+  using CreateNetworkFactoryCallback =
+      base::Callback<network::mojom::URLLoaderFactoryPtr(
+          network::mojom::URLLoaderFactoryPtr original_factory)>;
+  static void SetGetURLLoaderFactoryForBrowserProcessCallbackForTesting(
+      const CreateNetworkFactoryCallback& url_loader_factory_callback);
+
   void OverrideQuotaManagerForTesting(
       storage::QuotaManager* quota_manager);
   void OverrideSpecialStoragePolicyForTesting(

@@ -321,9 +321,7 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, PrefetchLoadFlag) {
   GURL prefetch_page = src_server()->GetURL(kPrefetchPage);
   GURL prefetch_script = src_server()->GetURL(kPrefetchScript);
 
-  bool use_interceptor_for_frame_requests =
-      base::FeatureList::IsEnabled(network::features::kNetworkService);
-  if (!use_interceptor_for_frame_requests) {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // Until http://crbug.com/747130 is fixed, navigation requests won't go
     // through URLLoader.
     prerender::test_utils::InterceptRequest(
@@ -333,18 +331,16 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, PrefetchLoadFlag) {
         }));
   }
 
-  content::URLLoaderInterceptor interceptor(
-      base::Bind(
-          [](const GURL& prefetch_page, const GURL& prefetch_script,
-             content::URLLoaderInterceptor::RequestParams* params) {
-            if (params->url_request.url == prefetch_page ||
-                params->url_request.url == prefetch_script) {
-              EXPECT_TRUE(params->url_request.load_flags & net::LOAD_PREFETCH);
-            }
-            return false;
-          },
-          prefetch_page, prefetch_script),
-      use_interceptor_for_frame_requests, true);
+  content::URLLoaderInterceptor interceptor(base::Bind(
+      [](const GURL& prefetch_page, const GURL& prefetch_script,
+         content::URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url == prefetch_page ||
+            params->url_request.url == prefetch_script) {
+          EXPECT_TRUE(params->url_request.load_flags & net::LOAD_PREFETCH);
+        }
+        return false;
+      },
+      prefetch_page, prefetch_script));
 
   std::unique_ptr<TestPrerender> test_prerender =
       PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
@@ -493,25 +489,20 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, Prefetch301LoadFlags) {
     EXPECT_TRUE(request->load_flags() & net::LOAD_PREFETCH);
   });
 
-  bool use_interceptor = false;
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    use_interceptor = true;
-  } else {
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // Until http://crbug.com/747130 is fixed, navigation requests won't go
     // through URLLoader.
     prerender::test_utils::InterceptRequest(page_url, verify_prefetch_only);
   }
 
-  content::URLLoaderInterceptor interceptor(
-      base::Bind(
-          [](const GURL& page_url,
-             content::URLLoaderInterceptor::RequestParams* params) {
-            if (params->url_request.url == page_url)
-              EXPECT_TRUE(params->url_request.load_flags & net::LOAD_PREFETCH);
-            return false;
-          },
-          redirect_url),
-      use_interceptor, false);
+  content::URLLoaderInterceptor interceptor(base::Bind(
+      [](const GURL& page_url,
+         content::URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url == page_url)
+          EXPECT_TRUE(params->url_request.load_flags & net::LOAD_PREFETCH);
+        return false;
+      },
+      redirect_url));
 
   PrefetchFromFile(redirect_path, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   WaitForRequestCount(redirect_url, 1);
@@ -711,21 +702,19 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, HistoryUntouchedByPrefetch) {
 // Checks that prefetch requests have net::IDLE priority.
 IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, IssuesIdlePriorityRequests) {
   GURL script_url = src_server()->GetURL(kPrefetchScript);
-  content::URLLoaderInterceptor interceptor(
-      base::BindLambdaForTesting(
-          [=](content::URLLoaderInterceptor::RequestParams* params) {
+  content::URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [=](content::URLLoaderInterceptor::RequestParams* params) {
 #if defined(OS_ANDROID)
-            // On Android requests from prerenders do not get downgraded
-            // priority. See: https://crbug.com/652746.
-            constexpr net::RequestPriority kExpectedPriority = net::HIGHEST;
+        // On Android requests from prerenders do not get downgraded
+        // priority. See: https://crbug.com/652746.
+        constexpr net::RequestPriority kExpectedPriority = net::HIGHEST;
 #else
-            constexpr net::RequestPriority kExpectedPriority = net::IDLE;
+        constexpr net::RequestPriority kExpectedPriority = net::IDLE;
 #endif
-            if (params->url_request.url == script_url)
-              EXPECT_EQ(kExpectedPriority, params->url_request.priority);
-            return false;
-          }),
-      false, true);
+        if (params->url_request.url == script_url)
+          EXPECT_EQ(kExpectedPriority, params->url_request.priority);
+        return false;
+      }));
 
   PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   WaitForRequestCount(script_url, 1);

@@ -459,8 +459,8 @@ class DNSErrorPageTest : public ErrorPageTest {
     if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
       return;
 
-    url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
-        base::BindRepeating(
+    url_loader_interceptor_ =
+        std::make_unique<content::URLLoaderInterceptor>(base::BindRepeating(
             [](DNSErrorPageTest* owner,
                content::URLLoaderInterceptor::RequestParams* params) {
               // Add an interceptor that serves LinkDoctor responses
@@ -486,8 +486,7 @@ class DNSErrorPageTest : public ErrorPageTest {
 
               return false;
             },
-            this),
-        true, true);
+            this));
   }
 
   ~DNSErrorPageTest() override = default;
