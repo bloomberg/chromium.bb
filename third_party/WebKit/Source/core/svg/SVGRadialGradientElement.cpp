@@ -84,14 +84,8 @@ void SVGRadialGradientElement::SvgAttributeChanged(
       attr_name == SVGNames::fxAttr || attr_name == SVGNames::fyAttr ||
       attr_name == SVGNames::rAttr || attr_name == SVGNames::frAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
-
     UpdateRelativeLengthsInformation();
-
-    LayoutSVGResourceContainer* layout_object =
-        ToLayoutSVGResourceContainer(this->GetLayoutObject());
-    if (layout_object)
-      layout_object->InvalidateCacheAndMarkForLayout();
-
+    InvalidateGradient(LayoutInvalidationReason::kAttributeChanged);
     return;
   }
 

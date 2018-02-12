@@ -20,7 +20,8 @@
 
 #include "core/svg/SVGStopElement.h"
 
-#include "core/layout/svg/LayoutSVGResourceContainer.h"
+#include "core/style/ComputedStyle.h"
+#include "core/svg/SVGGradientElement.h"
 
 namespace blink {
 
@@ -48,10 +49,9 @@ namespace {
 void InvalidateInstancesAndAncestorResources(SVGStopElement* stop_element) {
   SVGElement::InvalidationGuard invalidation_guard(stop_element);
 
-  const auto* parent = stop_element->parentElement();
-  auto* layout_object = parent ? parent->GetLayoutObject() : nullptr;
-  if (layout_object && layout_object->IsSVGResourceContainer())
-    ToLayoutSVGResourceContainer(layout_object)->RemoveAllClientsFromCache();
+  Element* parent = stop_element->parentElement();
+  if (auto* gradient = ToSVGGradientElementOrNull(parent))
+    gradient->InvalidateGradient(LayoutInvalidationReason::kChildChanged);
 }
 
 }  // namespace

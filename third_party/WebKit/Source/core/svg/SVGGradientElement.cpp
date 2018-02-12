@@ -97,12 +97,7 @@ void SVGGradientElement::SvgAttributeChanged(const QualifiedName& attr_name) {
       attr_name == SVGNames::spreadMethodAttr ||
       SVGURIReference::IsKnownAttribute(attr_name)) {
     SVGElement::InvalidationGuard invalidation_guard(this);
-
-    LayoutSVGResourceContainer* layout_object =
-        ToLayoutSVGResourceContainer(this->GetLayoutObject());
-    if (layout_object)
-      layout_object->InvalidateCacheAndMarkForLayout();
-
+    InvalidateGradient(LayoutInvalidationReason::kAttributeChanged);
     return;
   }
 
@@ -115,12 +110,13 @@ void SVGGradientElement::ChildrenChanged(const ChildrenChange& change) {
   if (change.by_parser)
     return;
 
-  if (auto* object = ToLayoutSVGResourceContainer(GetLayoutObject())) {
-    object->SetNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::kChildChanged);
-    if (object->EverHadLayout())
-      object->RemoveAllClientsFromCache();
-  }
+  InvalidateGradient(LayoutInvalidationReason::kChildChanged);
+}
+
+void SVGGradientElement::InvalidateGradient(
+    LayoutInvalidationReasonForTracing reason) {
+  if (auto* layout_object = ToLayoutSVGResourceContainer(GetLayoutObject()))
+    layout_object->InvalidateCacheAndMarkForLayout(reason);
 }
 
 void SVGGradientElement::CollectCommonAttributes(

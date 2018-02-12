@@ -21,6 +21,7 @@
 #ifndef SVGGradientElement_h
 #define SVGGradientElement_h
 
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGElement.h"
@@ -59,6 +60,7 @@ class SVGGradientElement : public SVGElement, public SVGURIReference {
     return gradient_units_.Get();
   }
 
+  void InvalidateGradient(LayoutInvalidationReasonForTracing);
   const SVGGradientElement* ReferencedElement() const;
   void CollectCommonAttributes(GradientAttributes&) const;
 
