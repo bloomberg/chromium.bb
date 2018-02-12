@@ -289,18 +289,33 @@ FileTasks.prototype.openSuggestAppsDialog = function(
  * The list of known extensions to record UMA.
  * Note: Because the data is recorded by the index, so new item shouldn't be
  * inserted.
+ * Must match the ViewFileType entry in enums.xml.
  *
  * @const
  * @type {Array<string>}
  */
 FileTasks.UMA_INDEX_KNOWN_EXTENSIONS = Object.freeze([
-  'other', '.3ga', '.3gp', '.aac', '.alac', '.asf', '.avi', '.bmp', '.csv',
-  '.doc', '.docx', '.flac', '.gif', '.jpeg', '.jpg', '.log', '.m3u', '.m3u8',
-  '.m4a', '.m4v', '.mid', '.mkv', '.mov', '.mp3', '.mp4', '.mpg', '.odf',
-  '.odp', '.ods', '.odt', '.oga', '.ogg', '.ogv', '.pdf', '.png', '.ppt',
-  '.pptx', '.ra', '.ram', '.rar', '.rm', '.rtf', '.wav', '.webm', '.webp',
-  '.wma', '.wmv', '.xls', '.xlsx', '.crdownload', '.crx', '.dmg', '.exe',
-  '.html', 'htm', '.jar', '.ps', '.torrent', '.txt', '.zip',
+  'other',     '.3ga',         '.3gp',
+  '.aac',      '.alac',        '.asf',
+  '.avi',      '.bmp',         '.csv',
+  '.doc',      '.docx',        '.flac',
+  '.gif',      '.jpeg',        '.jpg',
+  '.log',      '.m3u',         '.m3u8',
+  '.m4a',      '.m4v',         '.mid',
+  '.mkv',      '.mov',         '.mp3',
+  '.mp4',      '.mpg',         '.odf',
+  '.odp',      '.ods',         '.odt',
+  '.oga',      '.ogg',         '.ogv',
+  '.pdf',      '.png',         '.ppt',
+  '.pptx',     '.ra',          '.ram',
+  '.rar',      '.rm',          '.rtf',
+  '.wav',      '.webm',        '.webp',
+  '.wma',      '.wmv',         '.xls',
+  '.xlsx',     '.crdownload',  '.crx',
+  '.dmg',      '.exe',         '.html',
+  'htm',       '.jar',         '.ps',
+  '.torrent',  '.txt',         '.zip',
+  'directory', 'no extension', 'unknown extension'
 ]);
 
 /**

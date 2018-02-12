@@ -74,8 +74,12 @@ QuickViewUma.VolumeType = [
  */
 QuickViewUma.prototype.exportFileType_ = function(entry, name) {
   var extension = FileType.getExtension(entry).toLowerCase();
-  if (FileTasks.UMA_INDEX_KNOWN_EXTENSIONS.indexOf(extension) < 0) {
-    extension = 'other';
+  if (entry.isDirectory) {
+    extension = 'directory';
+  } else if (extension === '') {
+    extension = 'no extension';
+  } else if (FileTasks.UMA_INDEX_KNOWN_EXTENSIONS.indexOf(extension) < 0) {
+    extension = 'unknown extension';
   }
   metrics.recordEnum(name, extension, FileTasks.UMA_INDEX_KNOWN_EXTENSIONS);
 };
