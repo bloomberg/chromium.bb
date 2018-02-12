@@ -109,6 +109,7 @@ crbug.com/726075 [ Linux ] shapedetection/detection-HTMLVideoElement.html [ Time
 
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
+crbug.com/614910 [ Mac ] virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Pass Failure ]
 
 crbug.com/693568 [ Mac ] virtual/gpu/fast/canvas/canvas-imageSmoothingQuality.html [ Failure ]
 

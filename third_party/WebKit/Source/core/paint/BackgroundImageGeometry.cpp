@@ -514,48 +514,78 @@ BackgroundImageGeometry::BackgroundImageGeometry(
 
 LayoutRectOutsets BackgroundImageGeometry::ComputeDestRectAdjustment(
     const FillLayer& fill_layer,
-    PaintPhase paint_phase) const {
+    PaintPhase paint_phase,
+    LayoutRect& positioning_rect,
+    LayoutRect& dest_rect) const {
   LayoutRectOutsets dest_adjust;
 
-  // Attempt to shrink the destination rect if possible:
+  // Attempt to shrink the destination rect if possible while also ensuring that
+  // it paints to the border:
   //
   //   * for background-clip content-box/padding-box, we can restrict to the
-  //     respective box.
+  //     respective box, but for padding-box we also try to force alignment
+  //     with the inner border.
   //
-  //   * for border-box, we can inset individual edges iff the border fully
+  //   * for border-box, we can modufy individual edges iff the border fully
   //     obscures the background.
   //
+  // It it unsafe to derive dest from border information if the layer is not
+  // painted as part of a regular background phase (e.g. paint_phase == kMask)
+  // or in the presence of non-SrcOver compositing.
+  // Also, if coordinate_offset_by_paint_rect_ is set, we're dealing with a
+  // LayoutView - for which dest_rect is overflowing (expanded to cover the
+  // whole canvas).
+  // Finally, table cells using the table background should not adjust
+  // based on borders.
+  bool allow_border_derived_adjustment =
+      ShouldPaintSelfBlockBackground(paint_phase) &&
+      fill_layer.Composite() == CompositeOperator::kCompositeSourceOver &&
+      !coordinate_offset_by_paint_rect_ && !cell_using_container_background_;
   switch (fill_layer.Clip()) {
     case EFillBox::kContent:
       dest_adjust += positioning_box_.PaddingOutsets();
-      FALLTHROUGH;
-    case EFillBox::kPadding:
       dest_adjust += positioning_box_.BorderBoxOutsets();
       break;
-    case EFillBox::kBorder: {
-      // It it unsafe to shrink dest if the layer is not painted as part of a
-      // regular background phase (e.g. paint_phase == kMask) or in the presence
-      // of non-SrcOver compositing.
-      // Also, if coordinate_offset_by_paint_rect_ is set, we're dealing with a
-      // LayoutView - for which dest_rect is overflowing (expanded to cover the
-      // whole canvas).
-      if (!ShouldPaintSelfBlockBackground(paint_phase) ||
-          fill_layer.Composite() != CompositeOperator::kCompositeSourceOver ||
-          coordinate_offset_by_paint_rect_) {
-        break;
+    case EFillBox::kPadding:
+      if (allow_border_derived_adjustment) {
+        FloatRect inner_border_rect =
+            positioning_box_.StyleRef()
+                .GetRoundedInnerBorderFor(positioning_rect)
+                .Rect();
+        dest_adjust.SetLeft(LayoutUnit(inner_border_rect.X()) - dest_rect.X());
+        dest_adjust.SetTop(LayoutUnit(inner_border_rect.Y()) - dest_rect.Y());
+        dest_adjust.SetRight(dest_rect.MaxX() -
+                             LayoutUnit(inner_border_rect.MaxX()));
+        dest_adjust.SetBottom(dest_rect.MaxY() -
+                              LayoutUnit(inner_border_rect.MaxY()));
+      } else {
+        dest_adjust = positioning_box_.BorderBoxOutsets();
       }
+      break;
+    case EFillBox::kBorder: {
+      if (!allow_border_derived_adjustment)
+        break;
 
       BorderEdge edges[4];
       positioning_box_.StyleRef().GetBorderEdgeInfo(edges);
-      const auto border_outsets = positioning_box_.BorderBoxOutsets();
-      if (edges[static_cast<unsigned>(BoxSide::kTop)].ObscuresBackground())
-        dest_adjust.SetTop(border_outsets.Top());
-      if (edges[static_cast<unsigned>(BoxSide::kRight)].ObscuresBackground())
-        dest_adjust.SetRight(border_outsets.Right());
-      if (edges[static_cast<unsigned>(BoxSide::kBottom)].ObscuresBackground())
-        dest_adjust.SetBottom(border_outsets.Bottom());
-      if (edges[static_cast<unsigned>(BoxSide::kLeft)].ObscuresBackground())
-        dest_adjust.SetLeft(border_outsets.Left());
+      FloatRect inner_border_rect =
+          positioning_box_.StyleRef()
+              .GetRoundedInnerBorderFor(positioning_rect)
+              .Rect();
+      if (edges[static_cast<unsigned>(BoxSide::kTop)].ObscuresBackground()) {
+        dest_adjust.SetTop(LayoutUnit(inner_border_rect.Y()) - dest_rect.Y());
+      }
+      if (edges[static_cast<unsigned>(BoxSide::kRight)].ObscuresBackground()) {
+        dest_adjust.SetRight(dest_rect.MaxX() -
+                             LayoutUnit(inner_border_rect.MaxX()));
+      }
+      if (edges[static_cast<unsigned>(BoxSide::kBottom)].ObscuresBackground()) {
+        dest_adjust.SetBottom(dest_rect.MaxY() -
+                              LayoutUnit(inner_border_rect.MaxY()));
+      }
+      if (edges[static_cast<unsigned>(BoxSide::kLeft)].ObscuresBackground()) {
+        dest_adjust.SetLeft(LayoutUnit(inner_border_rect.X()) - dest_rect.X());
+      }
     } break;
     case EFillBox::kText:
       break;
@@ -564,18 +594,31 @@ LayoutRectOutsets BackgroundImageGeometry::ComputeDestRectAdjustment(
   return dest_adjust;
 }
 
-void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
-                                        PaintPhase paint_phase,
-                                        GlobalPaintFlags flags,
-                                        const FillLayer& fill_layer,
-                                        const LayoutRect& paint_rect) {
-  LayoutRect positioning_area;
-  LayoutPoint box_offset;
-  if (!ShouldUseFixedAttachment(fill_layer)) {
+void BackgroundImageGeometry::ComputePositioningArea(
+    const LayoutBoxModelObject* container,
+    PaintPhase paint_phase,
+    GlobalPaintFlags flags,
+    const FillLayer& fill_layer,
+    const LayoutRect& paint_rect,
+    LayoutRect& positioning_area,
+    LayoutPoint& box_offset) {
+  if (ShouldUseFixedAttachment(fill_layer)) {
+    SetHasNonLocalGeometry();
+    offset_in_background_ = LayoutPoint();
+    positioning_area = FixedAttachmentPositioningArea(box_, container, flags);
+    SetDestRect(positioning_area);
+  } else {
+    auto dest_rect = LayoutRect(PixelSnappedIntRect(paint_rect));
+
     if (coordinate_offset_by_paint_rect_ || cell_using_container_background_)
       positioning_area.SetSize(positioning_size_override_);
     else
-      positioning_area = paint_rect;
+      positioning_area = dest_rect;
+
+    auto dest_adjust = ComputeDestRectAdjustment(fill_layer, paint_phase,
+                                                 positioning_area, dest_rect);
+    dest_rect.Contract(dest_adjust);
+    SetDestRect(dest_rect);
 
     LayoutRectOutsets box_outset;
     if (fill_layer.Origin() != EFillBox::kBorder) {
@@ -585,21 +628,22 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
     }
     positioning_area.Contract(box_outset);
 
-    auto dest_rect = paint_rect;
-    auto dest_adjust = ComputeDestRectAdjustment(fill_layer, paint_phase);
-    dest_rect.Contract(dest_adjust);
-    SetDestRect(dest_rect);
-
     box_offset = LayoutPoint(box_outset.Left() - dest_adjust.Left(),
                              box_outset.Top() - dest_adjust.Top());
     if (coordinate_offset_by_paint_rect_)
       box_offset -= paint_rect.Location();
-  } else {
-    SetHasNonLocalGeometry();
-    offset_in_background_ = LayoutPoint();
-    positioning_area = FixedAttachmentPositioningArea(box_, container, flags);
-    SetDestRect(positioning_area);
   }
+}
+
+void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
+                                        PaintPhase paint_phase,
+                                        GlobalPaintFlags flags,
+                                        const FillLayer& fill_layer,
+                                        const LayoutRect& paint_rect) {
+  LayoutRect positioning_area;
+  LayoutPoint box_offset;
+  ComputePositioningArea(container, paint_phase, flags, fill_layer, paint_rect,
+                         positioning_area, box_offset);
 
   LayoutSize fill_tile_size(CalculateFillTileSize(positioning_box_, fill_layer,
                                                   positioning_area.Size()));
@@ -730,10 +774,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
     UseFixedAttachment(paint_rect.Location());
 
   // Clip the final output rect to the paint rect
-  dest_rect_.Intersect(paint_rect);
-
-  // Snap as-yet unsnapped values.
-  SetDestRect(LayoutRect(PixelSnappedIntRect(dest_rect_)));
+  dest_rect_.Intersect(LayoutRect(PixelSnappedIntRect(paint_rect)));
 }
 
 const ImageResourceObserver& BackgroundImageGeometry::ImageClient() const {
