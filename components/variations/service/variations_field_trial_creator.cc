@@ -77,15 +77,6 @@ Study::FormFactor GetCurrentFormFactor() {
   return Study::DESKTOP;
 }
 
-// Gets the hardware class and returns it as a string. This returns an empty
-// string if the client is not ChromeOS.
-std::string GetHardwareClass() {
-#if defined(OS_CHROMEOS)
-  return base::SysInfo::GetLsbReleaseBoard();
-#endif  // OS_CHROMEOS
-  return std::string();
-}
-
 // Returns the date that should be used by the VariationsSeedProcessor to do
 // expiry and start date checks.
 base::Time GetReferenceDateForExpiryChecks(PrefService* local_state) {
@@ -240,7 +231,7 @@ VariationsFieldTrialCreator::GetClientFilterableStateForVersion(
   state->platform = (has_platform_override_)
                         ? platform_override_
                         : ClientFilterableState::GetCurrentPlatform();
-  state->hardware_class = GetHardwareClass();
+  state->hardware_class = GetShortHardwareClass();
 #if defined(OS_ANDROID)
   // This is set on Android only currently, because the IsLowEndDevice() API
   // on other platforms has no intrinsic meaning outside of a field trial that
@@ -343,6 +334,22 @@ void VariationsFieldTrialCreator::OverrideVariationsPlatform(
     Study::Platform platform_override) {
   has_platform_override_ = true;
   platform_override_ = platform_override;
+}
+
+// static
+std::string VariationsFieldTrialCreator::GetShortHardwareClass() {
+#if defined(OS_CHROMEOS)
+  std::string board = base::SysInfo::GetLsbReleaseBoard();
+  // GetLsbReleaseBoard() may be suffixed with a "-signed-" and other extra
+  // info. Strip it.
+  const size_t index = board.find("-signed-");
+  if (index != std::string::npos)
+    board.resize(index);
+
+  return base::ToLowerASCII(board);
+#else
+  return std::string();
+#endif  // OS_CHROMEOS
 }
 
 bool VariationsFieldTrialCreator::LoadSeed(VariationsSeed* seed,

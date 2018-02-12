@@ -87,6 +87,11 @@ class VariationsFieldTrialCreator {
   // overridden.
   void OverrideVariationsPlatform(Study::Platform platform_override);
 
+  // Returns the short hardware class value used to evaluate variations hardware
+  // class filters. Only implemented on CrOS - returns empty string on other
+  // platforms.
+  static std::string GetShortHardwareClass();
+
  private:
   // Loads the seed from the variations store into |seed|, and records metrics
   // about the loaded seed. Returns true on success, in which case |seed| will
