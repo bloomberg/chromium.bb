@@ -2472,6 +2472,8 @@ split_static_library("ui") {
       # are obsolete before mac_views_browser will ever ship, so they aren't
       # linked in at all.
       sources -= [
+        "cocoa/autofill/autofill_popup_view_bridge_views.h",
+        "cocoa/autofill/autofill_popup_view_bridge_views.mm",
         "cocoa/bookmarks/bookmark_all_tabs_controller.h",
         "cocoa/bookmarks/bookmark_all_tabs_controller.mm",
         "cocoa/bookmarks/bookmark_editor_base_controller.h",
@@ -2497,6 +2499,7 @@ split_static_library("ui") {
         "cocoa/password_reuse_warning_dialog_cocoa.mm",
         "cocoa/password_reuse_warning_view_controller.h",
         "cocoa/password_reuse_warning_view_controller.mm",
+        "cocoa/passwords/password_prompt_views_mac.mm",
         "cocoa/permission_bubble/chooser_bubble_ui_views_mac.mm",
         "cocoa/session_crashed_bubble.mm",
         "cocoa/simple_message_box_bridge_views.mm",
