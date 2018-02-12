@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_BACKGROUND_WITH_1_PX_BORDER_H_
 
 #include "base/macros.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/background.h"
 
@@ -30,6 +31,8 @@ class BackgroundWith1PxBorder : public views::Background {
   // Whether the OmniboxBackgroundBorder is a pill shape.
   static bool IsRounded();
 
+  void set_blend_mode(SkBlendMode blend_mode) { blend_mode_ = blend_mode; }
+
   // Paints a blue focus ring that draws over the top of the existing border.
   void PaintFocusRing(gfx::Canvas* canvas,
                       ui::NativeTheme* theme,
@@ -45,15 +48,18 @@ class BackgroundWith1PxBorder : public views::Background {
 
   // Paints the background. |inner_border_radius| is the border radius of the
   // inside of the stroke.
-  static void Paint(gfx::Canvas* canvas,
-                    SkColor background,
-                    SkColor border,
-                    float inner_border_radius,
-                    const gfx::Rect& bounds);
+  void Paint(gfx::Canvas* canvas,
+             SkColor background,
+             SkColor border,
+             float inner_border_radius,
+             const gfx::Rect& bounds) const;
 
  private:
   // Color for the one pixel border.
   SkColor border_color_;
+
+  // Blend mode used when painting.
+  SkBlendMode blend_mode_ = SkBlendMode::kSrcOver;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundWith1PxBorder);
 };

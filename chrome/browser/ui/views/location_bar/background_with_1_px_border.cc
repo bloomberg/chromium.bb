@@ -56,7 +56,7 @@ void BackgroundWith1PxBorder::Paint(gfx::Canvas* canvas,
                                     SkColor background,
                                     SkColor border,
                                     float inner_border_radius,
-                                    const gfx::Rect& bounds) {
+                                    const gfx::Rect& bounds) const {
   gfx::ScopedCanvas scoped_canvas(canvas);
   const float scale = canvas->UndoDeviceScaleFactor();
   gfx::RectF border_rect_f(bounds);
@@ -78,6 +78,7 @@ void BackgroundWith1PxBorder::Paint(gfx::Canvas* canvas,
   outer_rect.outset(1, 1);
 
   cc::PaintFlags flags;
+  flags.setBlendMode(blend_mode_);
   flags.setAntiAlias(true);
   flags.setStyle(cc::PaintFlags::kFill_Style);
 
