@@ -26,6 +26,7 @@ public class VrInfoBarUtils {
 
     /**
      * Determines whether InfoBars are present in the current activity.
+     * @param framework The TestFramework to get the current activity from
      * @return True if there are any InfoBars present, false otherwise
      */
     @SuppressWarnings("unchecked")
