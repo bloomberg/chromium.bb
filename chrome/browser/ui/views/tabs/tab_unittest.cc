@@ -54,6 +54,7 @@ class FakeTabController : public TabController {
   bool IsActiveTab(const Tab* tab) const override { return active_tab_; }
   bool IsTabSelected(const Tab* tab) const override { return false; }
   bool IsTabPinned(const Tab* tab) const override { return false; }
+  bool IsIncognito() const override { return false; }
   void MaybeStartDrag(
       Tab* tab,
       const ui::LocatedEvent& event,
@@ -109,70 +110,75 @@ class TabTest : public views::ViewsTestBase {
 
   static void LayoutTab(Tab* tab) { tab->Layout(); }
 
+  static int IconCapacity(const Tab& tab) {
+    return tab.showing_icon_ + tab.showing_alert_indicator_ +
+           tab.showing_close_button_;
+  }
+
   static void CheckForExpectedLayoutAndVisibilityOfElements(const Tab& tab) {
     // Check whether elements are visible when they are supposed to be, given
     // Tab size and TabRendererData state.
     if (tab.data_.pinned) {
-      EXPECT_EQ(1, tab.IconCapacity());
+      EXPECT_EQ(1, IconCapacity(tab));
       if (tab.data_.alert_state != TabAlertState::NONE) {
-        EXPECT_FALSE(tab.ShouldShowIcon());
-        EXPECT_TRUE(tab.ShouldShowAlertIndicator());
+        EXPECT_FALSE(tab.showing_icon_);
+        EXPECT_TRUE(tab.showing_alert_indicator_);
       } else {
-        EXPECT_TRUE(tab.ShouldShowIcon());
-        EXPECT_FALSE(tab.ShouldShowAlertIndicator());
+        EXPECT_TRUE(tab.showing_icon_);
+        EXPECT_FALSE(tab.showing_alert_indicator_);
       }
       EXPECT_FALSE(tab.title_->visible());
-      EXPECT_FALSE(tab.ShouldShowCloseBox());
+      EXPECT_FALSE(tab.showing_close_button_);
     } else if (tab.IsActive()) {
-      EXPECT_TRUE(tab.ShouldShowCloseBox());
-      switch (tab.IconCapacity()) {
+      EXPECT_TRUE(tab.showing_close_button_);
+      switch (IconCapacity(tab)) {
         case 0:
         case 1:
-          EXPECT_FALSE(tab.ShouldShowIcon());
-          EXPECT_FALSE(tab.ShouldShowAlertIndicator());
+          EXPECT_FALSE(tab.showing_icon_);
+          EXPECT_FALSE(tab.showing_alert_indicator_);
           break;
         case 2:
           if (tab.data_.alert_state != TabAlertState::NONE) {
-            EXPECT_FALSE(tab.ShouldShowIcon());
-            EXPECT_TRUE(tab.ShouldShowAlertIndicator());
+            EXPECT_FALSE(tab.showing_icon_);
+            EXPECT_TRUE(tab.showing_alert_indicator_);
           } else {
-            EXPECT_TRUE(tab.ShouldShowIcon());
-            EXPECT_FALSE(tab.ShouldShowAlertIndicator());
+            EXPECT_TRUE(tab.showing_icon_);
+            EXPECT_FALSE(tab.showing_alert_indicator_);
           }
           break;
         default:
-          EXPECT_LE(3, tab.IconCapacity());
-          EXPECT_TRUE(tab.ShouldShowIcon());
+          EXPECT_LE(3, IconCapacity(tab));
+          EXPECT_TRUE(tab.showing_icon_);
           if (tab.data_.alert_state != TabAlertState::NONE)
-            EXPECT_TRUE(tab.ShouldShowAlertIndicator());
+            EXPECT_TRUE(tab.showing_alert_indicator_);
           else
-            EXPECT_FALSE(tab.ShouldShowAlertIndicator());
+            EXPECT_FALSE(tab.showing_alert_indicator_);
           break;
       }
     } else {  // Tab not active and not pinned tab.
-      switch (tab.IconCapacity()) {
+      switch (IconCapacity(tab)) {
         case 0:
-          EXPECT_FALSE(tab.ShouldShowCloseBox());
-          EXPECT_FALSE(tab.ShouldShowIcon());
-          EXPECT_FALSE(tab.ShouldShowAlertIndicator());
+          EXPECT_FALSE(tab.showing_close_button_);
+          EXPECT_FALSE(tab.showing_icon_);
+          EXPECT_FALSE(tab.showing_alert_indicator_);
           break;
         case 1:
-          EXPECT_FALSE(tab.ShouldShowCloseBox());
+          EXPECT_FALSE(tab.showing_close_button_);
           if (tab.data_.alert_state != TabAlertState::NONE) {
-            EXPECT_FALSE(tab.ShouldShowIcon());
-            EXPECT_TRUE(tab.ShouldShowAlertIndicator());
+            EXPECT_FALSE(tab.showing_icon_);
+            EXPECT_TRUE(tab.showing_alert_indicator_);
           } else {
-            EXPECT_TRUE(tab.ShouldShowIcon());
-            EXPECT_FALSE(tab.ShouldShowAlertIndicator());
+            EXPECT_TRUE(tab.showing_icon_);
+            EXPECT_FALSE(tab.showing_alert_indicator_);
           }
           break;
         default:
-          EXPECT_LE(2, tab.IconCapacity());
-          EXPECT_TRUE(tab.ShouldShowIcon());
+          EXPECT_LE(2, IconCapacity(tab));
+          EXPECT_TRUE(tab.showing_icon_);
           if (tab.data_.alert_state != TabAlertState::NONE)
-            EXPECT_TRUE(tab.ShouldShowAlertIndicator());
+            EXPECT_TRUE(tab.showing_alert_indicator_);
           else
-            EXPECT_FALSE(tab.ShouldShowAlertIndicator());
+            EXPECT_FALSE(tab.showing_alert_indicator_);
           break;
       }
     }
@@ -180,7 +186,7 @@ class TabTest : public views::ViewsTestBase {
     // Check positioning of elements with respect to each other, and that they
     // are fully within the contents bounds.
     const gfx::Rect contents_bounds = tab.GetContentsBounds();
-    if (tab.ShouldShowIcon()) {
+    if (tab.showing_icon_) {
       EXPECT_LE(contents_bounds.x(), tab.icon_->x());
       if (tab.title_->visible())
         EXPECT_LE(tab.icon_->bounds().right(), tab.title_->x());
@@ -188,7 +194,7 @@ class TabTest : public views::ViewsTestBase {
       EXPECT_LE(tab.icon_->bounds().bottom(), contents_bounds.bottom());
     }
 
-    if (tab.ShouldShowIcon() && tab.ShouldShowAlertIndicator()) {
+    if (tab.showing_icon_ && tab.showing_alert_indicator_) {
       // When checking for overlap, other views should not overlap the main
       // favicon (covered by kFaviconSize) but can overlap the extra space
       // reserved for the attention indicator.
@@ -196,7 +202,7 @@ class TabTest : public views::ViewsTestBase {
       EXPECT_LE(icon_visual_right, GetAlertIndicatorBounds(tab).x());
     }
 
-    if (tab.ShouldShowAlertIndicator()) {
+    if (tab.showing_alert_indicator_) {
       if (tab.title_->visible()) {
         EXPECT_LE(tab.title_->bounds().right(),
                   GetAlertIndicatorBounds(tab).x());
@@ -206,14 +212,14 @@ class TabTest : public views::ViewsTestBase {
       EXPECT_LE(GetAlertIndicatorBounds(tab).bottom(),
                 contents_bounds.bottom());
     }
-    if (tab.ShouldShowAlertIndicator() && tab.ShouldShowCloseBox()) {
+    if (tab.showing_alert_indicator_ && tab.showing_close_button_) {
       // Note: The alert indicator can overlap the left-insets of the close box,
       // but should otherwise be to the left of the close button.
       EXPECT_LE(GetAlertIndicatorBounds(tab).right(),
                 tab.close_button_->bounds().x() +
                     tab.close_button_->GetInsets().left());
     }
-    if (tab.ShouldShowCloseBox()) {
+    if (tab.showing_close_button_) {
       // Note: The title bounds can overlap the left-insets of the close box,
       // but should otherwise be to the left of the close button.
       if (tab.title_->visible()) {

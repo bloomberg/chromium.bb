@@ -39,6 +39,7 @@
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -70,11 +71,7 @@ using base::UserMetricsAction;
 
 namespace {
 
-// Width of touch tabs.
-const int kTouchWidth = 120;
-
 const int kExtraLeftPaddingToBalanceCloseButtonPadding = 2;
-const int kAfterTitleSpacing = 4;
 
 // When a non-pinned tab becomes a pinned tab the width of the tab animates. If
 // the width of a pinned tab is at least kPinnedTabExtraWidthToRenderAsNormal
@@ -266,6 +263,61 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
 Tab::~Tab() {
 }
 
+SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
+  if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+    return button_color_;
+
+  // If theme provider is not yet available, return the default button
+  // color.
+  const ui::ThemeProvider* theme_provider = GetThemeProvider();
+  if (!theme_provider)
+    return button_color_;
+
+  switch (state) {
+    case TabAlertState::AUDIO_PLAYING:
+    case TabAlertState::AUDIO_MUTING:
+      return theme_provider->GetColor(ThemeProperties::COLOR_TAB_ALERT_AUDIO);
+    case TabAlertState::MEDIA_RECORDING:
+      return theme_provider->GetColor(
+          ThemeProperties::COLOR_TAB_ALERT_RECORDING);
+    case TabAlertState::TAB_CAPTURING:
+      return theme_provider->GetColor(
+          ThemeProperties::COLOR_TAB_ALERT_CAPTURING);
+    case TabAlertState::BLUETOOTH_CONNECTED:
+    case TabAlertState::USB_CONNECTED:
+    case TabAlertState::NONE:
+      return button_color_;
+    default:
+      NOTREACHED();
+      return button_color_;
+  }
+}
+
+SkColor Tab::GetCloseTabButtonColor(
+    views::Button::ButtonState button_state) const {
+  // The theme provider may be null if we're not currently in a widget
+  // hierarchy.
+  const ui::ThemeProvider* theme_provider = GetThemeProvider();
+  if (!theme_provider)
+    return SK_ColorTRANSPARENT;
+
+  int color_id;
+  switch (button_state) {
+    case views::Button::STATE_HOVERED:
+      color_id = ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_HOVER;
+      break;
+    case views::Button::STATE_PRESSED:
+      color_id = ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_PRESSED;
+      break;
+    default:
+      color_id =
+          IsActive()
+              ? ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_ACTIVE
+              : ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_INACTIVE;
+  }
+  return theme_provider->GetColor(color_id);
+}
+
 bool Tab::IsActive() const {
   return controller_->IsActiveTab(this);
 }
@@ -397,14 +449,9 @@ gfx::Size Tab::GetMinimumActiveSize() {
 
 // static
 gfx::Size Tab::GetStandardSize() {
-  constexpr int kNetTabWidth = 193;
+  const int kNetTabWidth = GetLayoutConstant(TAB_STANDARD_WIDTH);
   const int overlap = GetOverlap();
   return gfx::Size(kNetTabWidth + overlap, GetMinimumInactiveSize().height());
-}
-
-// static
-int Tab::GetTouchWidth() {
-  return kTouchWidth;
 }
 
 // static
@@ -545,12 +592,11 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
 void Tab::Layout() {
   const gfx::Rect lb = GetContentsBounds();
   const bool was_showing_icon = showing_icon_;
-  showing_icon_ = ShouldShowIcon();
+  UpdateIconVisibility();
 
-  // See comments in IconCapacity().
-  const int extra_padding =
-      (controller_->ShouldHideCloseButtonForInactiveTabs() ||
-       (IconCapacity() < 3)) ? 0 : kExtraLeftPaddingToBalanceCloseButtonPadding;
+  const int extra_padding = extra_padding_before_content_
+                                ? kExtraLeftPaddingToBalanceCloseButtonPadding
+                                : 0;
   const int start = lb.x() + extra_padding;
 
   // The bounds for the favicon will include extra width for the attention
@@ -567,7 +613,8 @@ void Tab::Layout() {
   icon_->SetBoundsRect(favicon_bounds);
   icon_->SetVisible(showing_icon_);
 
-  showing_close_button_ = ShouldShowCloseBox();
+  const int after_title_padding = GetLayoutConstant(TAB_AFTER_TITLE_PADDING);
+
   if (showing_close_button_) {
     // If the ratio of the close button size to tab width exceeds the maximum.
     // The close button should be as large as possible so that there is a larger
@@ -582,7 +629,7 @@ void Tab::Layout() {
     close_button_->SetBorder(views::NullBorder());
     const gfx::Size close_button_size(close_button_->GetPreferredSize());
     const int top = lb.y() + (lb.height() - close_button_size.height() + 1) / 2;
-    const int left = kAfterTitleSpacing;
+    const int left = after_title_padding;
     const int close_button_end = lb.right();
     close_button_->SetPosition(
         gfx::Point(close_button_end - close_button_size.width() - left, 0));
@@ -594,11 +641,17 @@ void Tab::Layout() {
   }
   close_button_->SetVisible(showing_close_button_);
 
-  showing_alert_indicator_ = ShouldShowAlertIndicator();
   if (showing_alert_indicator_) {
+    const bool is_touch_optimized =
+        ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
     const gfx::Size image_size(alert_indicator_button_->GetPreferredSize());
-    const int right = showing_close_button_ ?
-        close_button_->x() + close_button_->GetInsets().left() : lb.right();
+    const int alert_to_close_spacing =
+        is_touch_optimized ? after_title_padding : 0;
+    const int right = showing_close_button_
+                          ? close_button_->x() +
+                                close_button_->GetInsets().left() -
+                                alert_to_close_spacing
+                          : lb.right();
     gfx::Rect bounds(
         std::max(lb.x(), right - image_size.width()),
         lb.y() + (lb.height() - image_size.height() + 1) / 2,
@@ -612,20 +665,20 @@ void Tab::Layout() {
   // Size the title to fill the remaining width and use all available height.
   bool show_title = ShouldRenderAsNormalTab();
   if (show_title) {
-    constexpr int kTitleSpacing = 6;
     // When computing the spacing from the favicon, don't count the actual
     // icon view width (which will include extra room for the alert indicator),
     // but rather the normal favicon width which is what it will look like.
-    const int title_left =
-        showing_icon_ ? (favicon_bounds.x() + gfx::kFaviconSize + kTitleSpacing)
-                      : start;
+    const int title_left = showing_icon_
+                               ? (favicon_bounds.x() + gfx::kFaviconSize +
+                                  GetLayoutConstant(TAB_PRE_TITLE_PADDING))
+                               : start;
     int title_right = lb.right();
     if (showing_alert_indicator_) {
-      title_right = alert_indicator_button_->x() - kAfterTitleSpacing;
+      title_right = alert_indicator_button_->x() - after_title_padding;
     } else if (showing_close_button_) {
       // Allow the title to overlay the close button's empty border padding.
       title_right = close_button_->x() + close_button_->GetInsets().left() -
-                    kAfterTitleSpacing;
+                    after_title_padding;
     }
     const int title_width = std::max(title_right - title_left, 0);
     // The Label will automatically center the font's cap height within the
@@ -1011,50 +1064,82 @@ void Tab::PaintTabBackgroundStroke(gfx::Canvas* canvas,
   canvas->DrawPath(path, flags);
 }
 
-int Tab::IconCapacity() const {
+void Tab::UpdateIconVisibility() {
+  showing_icon_ = showing_alert_indicator_ = showing_close_button_ = false;
+  extra_padding_before_content_ = false;
+
   const gfx::Size min_size(GetMinimumInactiveSize());
   if (height() < min_size.height())
-    return 0;
-  const int available_width = std::max(0, width() - min_size.width());
-  // All icons are the same size as the favicon.
-  const int icon_width = gfx::kFaviconSize;
-  // We need enough space to display the icons flush against each other.
-  const int visible_icons = available_width / icon_width;
-  // When the close button will be visible on inactive tabs, we add additional
-  // padding to the left of the favicon to balance the whitespace inside the
-  // non-hovered close button image; otherwise, the tab contents look too close
-  // to the left edge.  If the tab close button isn't visible on inactive tabs,
-  // we let the tab contents take the full width of the tab, to maximize visible
-  // content on tiny tabs.  We base the determination on the inactive tab close
-  // button state so that when a tab is activated its contents don't suddenly
-  // shift.
-  if (visible_icons < 3)
-    return visible_icons;
-  const int padding = controller_->ShouldHideCloseButtonForInactiveTabs() ?
-      0 : kExtraLeftPaddingToBalanceCloseButtonPadding;
-  return (available_width - padding) / icon_width;
-}
+    return;
 
-bool Tab::ShouldShowIcon() const {
-  return chrome::ShouldTabShowFavicon(
-      IconCapacity(), data().pinned, IsActive(), data().show_icon,
-      alert_indicator_button_ ? alert_indicator_button_->showing_alert_state()
-                              : data_.alert_state);
-}
+  int available_width = std::max(0, width() - min_size.width());
 
-bool Tab::ShouldShowAlertIndicator() const {
-  return chrome::ShouldTabShowAlertIndicator(
-      IconCapacity(), data().pinned, IsActive(), data().show_icon,
-      alert_indicator_button_ ? alert_indicator_button_->showing_alert_state()
-                              : data_.alert_state);
-}
+  const bool is_touch_optimized =
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+  const int favicon_width = gfx::kFaviconSize;
+  const int alert_icon_width =
+      alert_indicator_button_->GetPreferredSize().width();
+  // In case of touch optimized UI, the close button has an extra padding on the
+  // left that needs to be considered.
+  const int close_button_width =
+      close_button_->GetPreferredSize().width() -
+      (is_touch_optimized ? close_button_->GetInsets().right()
+                          : close_button_->GetInsets().width());
 
-bool Tab::ShouldShowCloseBox() const {
-  if (!IsActive() && controller_->ShouldHideCloseButtonForInactiveTabs())
-    return false;
+  int extra_padding = kExtraLeftPaddingToBalanceCloseButtonPadding;
 
-  return chrome::ShouldTabShowCloseButton(
-      IconCapacity(), data().pinned, IsActive());
+  const bool is_pinned = data().pinned;
+  const bool is_active = IsActive();
+  const bool has_favicon = data().show_icon;
+  const bool has_alert_icon =
+      (alert_indicator_button_ ? alert_indicator_button_->showing_alert_state()
+                               : data().alert_state) != TabAlertState::NONE;
+  const bool force_hide_close_button =
+      controller_->ShouldHideCloseButtonForInactiveTabs();
+
+  if (is_pinned) {
+    // When the tab is pinned, we can show one of the two icons. Alert icon
+    // is given priority over the favicon. We never show the close buton if the
+    // tab is pinned.
+    showing_alert_indicator_ = has_alert_icon;
+    showing_icon_ = has_favicon && !has_alert_icon;
+  } else {
+    if (is_active) {
+      // The close button is always visible for an active tab.
+      showing_close_button_ = true;
+      available_width -= close_button_width;
+
+      showing_alert_indicator_ =
+          has_alert_icon && alert_icon_width <= available_width;
+      available_width -= showing_alert_indicator_ ? alert_icon_width : 0;
+
+      // If all 3 icons are visible, we add an extra left padding for favicon.
+      // See comment for |extra_padding_before_content_|.
+      if (!showing_close_button_ || !showing_alert_indicator_)
+        extra_padding = 0;
+
+      showing_icon_ =
+          has_favicon && favicon_width + extra_padding <= available_width;
+    } else {
+      showing_alert_indicator_ =
+          has_alert_icon && alert_icon_width <= available_width;
+      available_width -= showing_alert_indicator_ ? alert_icon_width : 0;
+
+      showing_icon_ = has_favicon && favicon_width <= available_width;
+      available_width -= showing_icon_ ? favicon_width : 0;
+
+      // If all 3 icons are visible, we add an extra padding to the left of
+      // favicon. See comment for |extra_padding_before_content_|.
+      if (!showing_icon_ || !showing_alert_indicator_)
+        extra_padding = 0;
+
+      showing_close_button_ =
+          !force_hide_close_button &&
+          close_button_width + extra_padding <= available_width;
+    }
+    extra_padding_before_content_ =
+        showing_close_button_ && showing_icon_ && showing_alert_indicator_;
+  }
 }
 
 bool Tab::ShouldRenderAsNormalTab() const {
@@ -1090,8 +1175,11 @@ void Tab::OnButtonColorMaybeChanged() {
     button_color_ = new_button_color;
     title_->SetEnabledColor(title_color);
     alert_indicator_button_->OnParentTabButtonColorChanged();
-    close_button_->SetTabColor(button_color_);
+    if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+      close_button_->SetTabColor(button_color_);
   }
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+    close_button_->ActiveStateChanged(this);
 }
 
 Tab::BackgroundCache::BackgroundCache() = default;

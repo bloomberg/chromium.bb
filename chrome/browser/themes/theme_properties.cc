@@ -88,6 +88,11 @@ constexpr color_utils::HSL kDefaultTintFrameIncognito = {-1, 0.2, 0.35};
 constexpr color_utils::HSL kDefaultTintFrameIncognitoInactive = {-1, 0.3, 0.6};
 constexpr color_utils::HSL kDefaultTintBackgroundTab = {-1, -1, 0.75};
 
+constexpr SkColor kDefaultColorTabAlertRecordingIcon =
+    SkColorSetRGB(0xC5, 0x39, 0x29);
+constexpr SkColor kDefaultColorTabAlertCapturingIcon =
+    SkColorSetRGB(0x42, 0x85, 0xF4);
+
 // ----------------------------------------------------------------------------
 // Defaults for properties which are not stored in the browser theme pack.
 
@@ -124,6 +129,23 @@ const SkColor kDefaultColorToolbarStrokeTheme =
 const SkColor kDefaultColorToolbarStrokeThemeInactive =
     SkColorSetARGB(0x66, 0x4C, 0x4C, 0x4C);
 #endif  // OS_MACOSX
+
+// ----------------------------------------------------------------------------
+// Touch optimized UI color palette
+
+constexpr SkColor kDefaultTouchUiColorToolbar = SkColorSetRGB(0xFD, 0xFE, 0xFF);
+constexpr SkColor kDefaultTouchUiColorActiveFrame =
+    SkColorSetRGB(0xD0, 0xD2, 0xD6);
+constexpr SkColor kDefaultTouchUiColorInactiveFrame =
+    SkColorSetRGB(0xE3, 0xE5, 0xE8);
+constexpr SkColor kDefaultTouchUiColorInactiveFrameIncognito =
+    SkColorSetRGB(0x32, 0x36, 0x39);
+
+constexpr SkColor kDefaultTouchUiColorTabBackgroundInactive =
+    SkColorSetRGB(0xED, 0xEF, 0xF2);
+constexpr SkColor kDefaultTouchUiColorTabBackgroundInactiveIncognito =
+    SkColorSetRGB(0x28, 0x2C, 0x2F);
+
 // ----------------------------------------------------------------------------
 
 // Strings used in alignment properties.
@@ -139,21 +161,12 @@ constexpr char kTilingRepeatX[] = "repeat-x";
 constexpr char kTilingRepeatY[] = "repeat-y";
 constexpr char kTilingRepeat[] = "repeat";
 
-// ----------------------------------------------------------------------------
-// Defaults for properties when the touch-optimized UI is enabled.
-
-constexpr SkColor kActiveFrameColorTouchOptimized =
-    SkColorSetRGB(0xD0, 0xD2, 0xD6);
-constexpr SkColor kInactiveFrameColorTouchOptimized =
-    SkColorSetRGB(0xE3, 0xE5, 0xE8);
-constexpr SkColor kIncognitoActiveFrameColorTouchOptimized =
-    SkColorSetRGB(0x20, 0x21, 0x24);
-constexpr SkColor kIncognitoInactiveFrameColorTouchOptimized =
-    SkColorSetRGB(0x32, 0x36, 0x39);
-
 // Returns a |nullopt| if the touch-optimized UI is not enabled, or it's enabled
 // but for the given |id|, there's no touch-optimized specific colors, and we
 // should fall back to the default colors.
+// TODO(malaykeshav): Put this behind a flag separate from Touch Optimized Ui.
+// We want to be able to use it for other modes as well.
+// https://crbug/810165
 base::Optional<SkColor> MaybeGetDefaultColorForTouchOptimizedUi(
     int id,
     bool incognito) {
@@ -161,16 +174,42 @@ base::Optional<SkColor> MaybeGetDefaultColorForTouchOptimizedUi(
     return base::nullopt;
 
   switch (id) {
+    // Properties stored in theme pack.
     case ThemeProperties::COLOR_FRAME:
       // Active frame colors.
-      return incognito ? kIncognitoActiveFrameColorTouchOptimized
-                       : kActiveFrameColorTouchOptimized;
+      return incognito ? gfx::kGoogleGrey900 : kDefaultTouchUiColorActiveFrame;
     case ThemeProperties::COLOR_FRAME_INACTIVE:
       // Inactive frame colors.
-      return incognito ? kIncognitoInactiveFrameColorTouchOptimized
-                       : kInactiveFrameColorTouchOptimized;
+      return incognito ? kDefaultTouchUiColorInactiveFrameIncognito
+                       : kDefaultTouchUiColorInactiveFrame;
 
-    // TODO: Place all touch-optimized UI related colors here.
+    case ThemeProperties::COLOR_TOOLBAR:
+      return incognito ? kDefaultTouchUiColorInactiveFrameIncognito
+                       : kDefaultTouchUiColorToolbar;
+    case ThemeProperties::COLOR_TAB_TEXT:
+    case ThemeProperties::COLOR_BOOKMARK_TEXT:
+      return incognito ? gfx::kGoogleGrey100 : gfx::kGoogleGrey800;
+    case ThemeProperties::COLOR_BACKGROUND_TAB_TEXT:
+      return incognito ? gfx::kGoogleGrey400 : gfx::kGoogleGrey700;
+
+    // Properties not stored in theme pack.
+    case ThemeProperties::COLOR_BACKGROUND_TAB:
+      return incognito ? kDefaultTouchUiColorTabBackgroundInactiveIncognito
+                       : kDefaultTouchUiColorTabBackgroundInactive;
+    case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_ACTIVE:
+      return incognito ? gfx::kGoogleGrey100 : gfx::kGoogleGrey800;
+    case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_INACTIVE:
+      return incognito ? gfx::kGoogleGrey400 : gfx::kGoogleGrey700;
+    case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_HOVER:
+      return incognito ? gfx::kGoogleRedDark600 : gfx::kGoogleRed600;
+    case ThemeProperties::COLOR_TAB_CLOSE_BUTTON_BACKGROUND_PRESSED:
+      return incognito ? gfx::kGoogleRedDark800 : gfx::kGoogleRed800;
+    case ThemeProperties::COLOR_TAB_ALERT_AUDIO:
+      return incognito ? gfx::kGoogleGrey400 : gfx::kGoogleGrey700;
+    case ThemeProperties::COLOR_TAB_ALERT_RECORDING:
+      return incognito ? gfx::kGoogleGrey400 : gfx::kGoogleRed600;
+    case ThemeProperties::COLOR_TAB_ALERT_CAPTURING:
+      return incognito ? gfx::kGoogleGrey400 : gfx::kGoogleBlue600;
 
     default:
       return base::nullopt;
@@ -319,6 +358,10 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
     case COLOR_TOOLBAR_TOP_SEPARATOR:
     case COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE:
       return kDefaultToolbarTopSeparator;
+    case COLOR_TAB_ALERT_RECORDING:
+      return kDefaultColorTabAlertRecordingIcon;
+    case COLOR_TAB_ALERT_CAPTURING:
+      return kDefaultColorTabAlertCapturingIcon;
 #if defined(OS_MACOSX)
     case COLOR_FRAME_VIBRANCY_OVERLAY:
       return incognito ? kDefaultColorFrameVibrancyOverlayIncognito

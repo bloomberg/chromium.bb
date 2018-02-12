@@ -15,6 +15,7 @@
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
@@ -182,18 +183,26 @@ TabAlertState GetTabAlertStateForContents(content::WebContents* contents) {
 gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
                                      SkColor button_color) {
   const gfx::VectorIcon* icon = nullptr;
+  int image_width = GetLayoutConstant(TAB_ALERT_INDICATOR_ICON_WIDTH);
+  const bool is_touch_optimized_ui =
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
   switch (alert_state) {
     case TabAlertState::AUDIO_PLAYING:
-      icon = &kTabAudioIcon;
+      icon = is_touch_optimized_ui ? &kTabAudioRoundedIcon : &kTabAudioIcon;
       break;
     case TabAlertState::AUDIO_MUTING:
-      icon = &kTabAudioMutingIcon;
+      icon = is_touch_optimized_ui ? &kTabAudioMutingRoundedIcon
+                                   : &kTabAudioMutingIcon;
       break;
     case TabAlertState::MEDIA_RECORDING:
       icon = &kTabMediaRecordingIcon;
       break;
     case TabAlertState::TAB_CAPTURING:
-      icon = &kTabMediaCapturingIcon;
+      icon = is_touch_optimized_ui ? &kTabMediaCapturingWithArrowIcon
+                                   : &kTabMediaCapturingIcon;
+      // Tab capturing and presenting icon uses a different width compared to
+      // the other tab alert indicator icons.
+      image_width = GetLayoutConstant(TAB_ALERT_INDICATOR_CAPTURE_ICON_WIDTH);
       break;
     case TabAlertState::BLUETOOTH_CONNECTED:
       icon = &kTabBluetoothConnectedIcon;
@@ -205,7 +214,7 @@ gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
       return gfx::Image();
   }
   DCHECK(icon);
-  return gfx::Image(gfx::CreateVectorIcon(*icon, 16, button_color));
+  return gfx::Image(gfx::CreateVectorIcon(*icon, image_width, button_color));
 }
 
 gfx::Image GetTabAlertIndicatorAffordanceImage(TabAlertState alert_state,
