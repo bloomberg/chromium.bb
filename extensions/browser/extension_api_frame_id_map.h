@@ -140,6 +140,9 @@ class ExtensionApiFrameIdMap {
                             int window_id,
                             content::RenderFrameHost* rfh);
 
+  // Returns whether frame data for |rfh| is cached.
+  bool HasCachedFrameDataForTesting(content::RenderFrameHost* rfh) const;
+
  protected:
   friend struct base::LazyInstanceTraitsBase<ExtensionApiFrameIdMap>;
 
@@ -207,7 +210,8 @@ class ExtensionApiFrameIdMap {
   FrameDataMap frame_data_map_;
 
   // This lock protects |frame_data_map_| from being concurrently written on the
-  // UI thread and read on the IO thread.
+  // UI thread and read on the IO thread. Acquire during a read on the IO thread
+  // and during a write on the UI thread.
   base::Lock frame_data_map_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionApiFrameIdMap);

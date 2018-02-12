@@ -88,6 +88,11 @@ content::WebContents* ExtensionWebContentsObserver::GetAssociatedWebContents()
 
 void ExtensionWebContentsObserver::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
+  // Optimization: Look up the extension API frame ID to force the mapping to be
+  // cached. This minimizes the number of IO->UI->IO thread hops when the ID is
+  // looked up again on the IO thread for the webRequest API.
+  ExtensionApiFrameIdMap::Get()->CacheFrameData(render_frame_host);
+
   const Extension* extension = GetExtensionFromFrame(render_frame_host, false);
   if (!extension)
     return;
@@ -122,11 +127,6 @@ void ExtensionWebContentsObserver::RenderFrameCreated(
       ->ActivateExtensionInProcess(*extension, render_frame_host->GetProcess());
 
   InitializeRenderFrame(render_frame_host);
-
-  // Optimization: Look up the extension API frame ID to force the mapping to be
-  // cached. This minimizes the number of IO->UI->IO thread hops when the ID is
-  // looked up again on the IO thread for the webRequest API.
-  ExtensionApiFrameIdMap::Get()->CacheFrameData(render_frame_host);
 }
 
 void ExtensionWebContentsObserver::RenderFrameDeleted(
