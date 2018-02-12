@@ -17,6 +17,11 @@ import("//third_party/WebKit/Source/platform/platform_generated.gni")
 # Most targets in this file are private actions so use that as the default.
 visibility = [ ":*" ]
 
+blink_platform_avx_files = [
+  "audio/cpu/x86/VectorMathAVX.cpp",
+  "audio/cpu/x86/VectorMathAVX.h",
+]
+
 blink_platform_neon_files = [
   "audio/cpu/arm/VectorMathNEON.h",
   "graphics/cpu/arm/WebGLImageConversionNEON.h",
@@ -522,6 +527,8 @@ jumbo_component("platform") {
     "audio/android/FFTFrameOpenMAXDLAndroid.cpp",
     "audio/cpu/arm/VectorMathNEON.h",
     "audio/cpu/mips/VectorMathMSA.h",
+    "audio/cpu/x86/VectorMathAVX.cpp",
+    "audio/cpu/x86/VectorMathAVX.h",
     "audio/cpu/x86/VectorMathImpl.h",
     "audio/cpu/x86/VectorMathSSE.cpp",
     "audio/cpu/x86/VectorMathSSE.h",
@@ -1483,6 +1490,7 @@ jumbo_component("platform") {
     "weborigin/URLSecurityOriginMap.h",
   ]
 
+  sources -= blink_platform_avx_files
   sources -= blink_platform_neon_files
   sources -= blink_platform_msa_files
   sources -= blink_platform_sse_files
@@ -1642,7 +1650,10 @@ jumbo_component("platform") {
   }
 
   if (current_cpu == "x86" || current_cpu == "x64") {
-    deps += [ ":blink_x86_sse" ]
+    deps += [
+      ":blink_x86_avx",
+      ":blink_x86_sse",
+    ]
   }
 
   if (use_webaudio_ffmpeg) {
@@ -2075,6 +2086,19 @@ if (current_cpu == "mipsel" || current_cpu == "mips64el") {
 }
 
 if (current_cpu == "x86" || current_cpu == "x64") {
+  source_set("blink_x86_avx") {
+    sources = blink_platform_avx_files
+    configs += [
+      ":blink_platform_config",
+      ":blink_platform_implementation",
+      "//third_party/WebKit/Source:non_test_config",
+    ]
+    if (!is_clang && is_win) {
+      cflags = [ "/arch:AVX" ]
+    } else {
+      cflags = [ "-mavx" ]
+    }
+  }
   source_set("blink_x86_sse") {
     sources = blink_platform_sse_files
   }
