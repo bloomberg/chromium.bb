@@ -19,6 +19,7 @@
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
 #include "components/ntp_snippets/remote/request_params.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 class PrefService;
 

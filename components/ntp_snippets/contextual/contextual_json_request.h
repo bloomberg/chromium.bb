@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/ntp_snippets/remote/json_request.h"
 #include "components/ntp_snippets/status.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/http/http_request_headers.h"
 
 namespace base {
