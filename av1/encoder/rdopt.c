@@ -5754,11 +5754,6 @@ static int cost_mv_ref(const MACROBLOCK *const x, PREDICTION_MODE mode,
     } else {
       mode_cost += x->zeromv_mode_cost[mode_ctx][1];
       mode_ctx = (mode_context >> REFMV_OFFSET) & REFMV_CTX_MASK;
-
-      if (mode_context & (1 << SKIP_NEARESTMV_OFFSET)) mode_ctx = 6;
-      if (mode_context & (1 << SKIP_NEARMV_OFFSET)) mode_ctx = 7;
-      if (mode_context & (1 << SKIP_NEARESTMV_SUB8X8_OFFSET)) mode_ctx = 8;
-
       mode_cost += x->refmv_mode_cost[mode_ctx][mode != NEARESTMV];
       return mode_cost;
     }

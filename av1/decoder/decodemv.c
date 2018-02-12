@@ -211,9 +211,6 @@ static PREDICTION_MODE read_inter_mode(FRAME_CONTEXT *ec_ctx, aom_reader *r,
   if (is_zeromv) return GLOBALMV;
 
   mode_ctx = (ctx >> REFMV_OFFSET) & REFMV_CTX_MASK;
-  if (ctx & (1 << SKIP_NEARESTMV_OFFSET)) mode_ctx = 6;
-  if (ctx & (1 << SKIP_NEARMV_OFFSET)) mode_ctx = 7;
-  if (ctx & (1 << SKIP_NEARESTMV_SUB8X8_OFFSET)) mode_ctx = 8;
   is_refmv = aom_read_symbol(r, ec_ctx->refmv_cdf[mode_ctx], 2, ACCT_STR) == 0;
   if (is_refmv)
     return NEARESTMV;
@@ -1656,14 +1653,9 @@ static void dec_dump_logs(AV1_COMMON *cm, MODE_INFO *const mi, int mi_row,
   int16_t zeromv_ctx = -1;
   int16_t refmv_ctx = -1;
   if (mbmi->mode != NEWMV) {
-    if (mode_ctx & (1 << ALL_ZERO_FLAG_OFFSET)) assert(mbmi->mode == GLOBALMV);
     zeromv_ctx = (mode_ctx >> GLOBALMV_OFFSET) & GLOBALMV_CTX_MASK;
-    if (mbmi->mode != GLOBALMV) {
+    if (mbmi->mode != GLOBALMV)
       refmv_ctx = (mode_ctx >> REFMV_OFFSET) & REFMV_CTX_MASK;
-      if (mode_ctx & (1 << SKIP_NEARESTMV_OFFSET)) refmv_ctx = 6;
-      if (mode_ctx & (1 << SKIP_NEARMV_OFFSET)) refmv_ctx = 7;
-      if (mode_ctx & (1 << SKIP_NEARESTMV_SUB8X8_OFFSET)) refmv_ctx = 8;
-    }
   }
 
 #define FRAME_TO_CHECK 11

@@ -114,10 +114,6 @@ static void write_inter_mode(aom_writer *w, PREDICTION_MODE mode,
 
     if (mode != GLOBALMV) {
       int16_t refmv_ctx = (mode_ctx >> REFMV_OFFSET) & REFMV_CTX_MASK;
-
-      if (mode_ctx & (1 << SKIP_NEARESTMV_OFFSET)) refmv_ctx = 6;
-      if (mode_ctx & (1 << SKIP_NEARMV_OFFSET)) refmv_ctx = 7;
-      if (mode_ctx & (1 << SKIP_NEARESTMV_SUB8X8_OFFSET)) refmv_ctx = 8;
       aom_write_symbol(w, mode != NEARESTMV, ec_ctx->refmv_cdf[refmv_ctx], 2);
     }
   }
@@ -1750,15 +1746,8 @@ static void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
 
       if (mbmi->mode != NEWMV) {
         zeromv_ctx = (mode_ctx >> GLOBALMV_OFFSET) & GLOBALMV_CTX_MASK;
-        if (mode_ctx & (1 << ALL_ZERO_FLAG_OFFSET)) {
-          assert(mbmi->mode == GLOBALMV);
-        }
-        if (mbmi->mode != GLOBALMV) {
+        if (mbmi->mode != GLOBALMV)
           refmv_ctx = (mode_ctx >> REFMV_OFFSET) & REFMV_CTX_MASK;
-          if (mode_ctx & (1 << SKIP_NEARESTMV_OFFSET)) refmv_ctx = 6;
-          if (mode_ctx & (1 << SKIP_NEARMV_OFFSET)) refmv_ctx = 7;
-          if (mode_ctx & (1 << SKIP_NEARESTMV_SUB8X8_OFFSET)) refmv_ctx = 8;
-        }
       }
 
 #if CONFIG_EXT_SKIP
