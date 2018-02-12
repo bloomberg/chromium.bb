@@ -10,20 +10,18 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/permissions/permission_request.h"
+#include "chrome/browser/permissions/attestation_permission_request.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "crypto/sha2.h"
 #include "extensions/common/error_utils.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "ui/base/l10n/l10n_util.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -56,52 +54,6 @@ bool ContainsAppIdByHash(const base::ListValue& list,
 
   return false;
 }
-
-// AttestationPermissionRequest is a delegate class that provides information
-// and callbacks to the PermissionRequestManager.
-//
-// PermissionRequestManager has a reference to this object and so this object
-// must outlive it. Since attestation requests are never canceled,
-// PermissionRequestManager guarentees that |RequestFinished| will always,
-// eventually, be called. This object uses that fact to delete itself during
-// |RequestFinished| and thus owns itself.
-class AttestationPermissionRequest : public PermissionRequest {
- public:
-  AttestationPermissionRequest(const GURL& app_id,
-                               base::OnceCallback<void(bool)> callback)
-      : app_id_(app_id), callback_(std::move(callback)) {}
-
-  PermissionRequest::IconId GetIconId() const override {
-    return kUsbSecurityKeyIcon;
-  }
-
-  base::string16 GetMessageTextFragment() const override {
-    return l10n_util::GetStringUTF16(
-        IDS_SECURITY_KEY_ATTESTATION_PERMISSION_FRAGMENT);
-  }
-  GURL GetOrigin() const override { return app_id_; }
-  void PermissionGranted() override { std::move(callback_).Run(true); }
-  void PermissionDenied() override { std::move(callback_).Run(false); }
-  void Cancelled() override { std::move(callback_).Run(false); }
-
-  void RequestFinished() override {
-    if (callback_)
-      std::move(callback_).Run(false);
-    delete this;
-  }
-
-  PermissionRequestType GetPermissionRequestType() const override {
-    return PermissionRequestType::PERMISSION_SECURITY_KEY_ATTESTATION;
-  }
-
- private:
-  ~AttestationPermissionRequest() override = default;
-
-  const GURL app_id_;
-  base::OnceCallback<void(bool)> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(AttestationPermissionRequest);
-};
 
 }  // namespace
 
@@ -241,8 +193,9 @@ CryptotokenPrivateCanAppIdGetAttestationFunction::Run() {
   }
 
   // The created AttestationPermissionRequest deletes itself once complete.
-  permission_request_manager->AddRequest(new AttestationPermissionRequest(
-      app_id_url,
+  const url::Origin origin(url::Origin::Create(app_id_url));
+  permission_request_manager->AddRequest(NewAttestationPermissionRequest(
+      origin,
       base::BindOnce(
           &CryptotokenPrivateCanAppIdGetAttestationFunction::Complete, this)));
   return RespondLater();

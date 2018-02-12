@@ -75,6 +75,12 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
       device::U2fReturnCode status_code,
       base::Optional<device::RegisterResponseData> response_data);
 
+  // Callback to complete the registration process once a decision about
+  // whether or not to return attestation data has been made.
+  void OnRegisterResponseAttestationDecided(
+      device::RegisterResponseData response_data,
+      bool attestation_permitted);
+
   // Callback to handle the async response from a U2fDevice.
   void OnSignResponse(device::U2fReturnCode status_code,
                       base::Optional<device::SignResponseData> response_data);
@@ -98,6 +104,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
   // Holds the client data to be returned to the caller.
   CollectedClientData client_data_;
   webauth::mojom::AttestationConveyancePreference attestation_preference_;
+  std::string relying_party_id_;
   std::unique_ptr<base::OneShotTimer> timer_;
   RenderFrameHost* render_frame_host_;
   service_manager::Connector* connector_ = nullptr;
