@@ -84,7 +84,7 @@ bool ZoneIdentifierPresentForFile(const base::FilePath& path) {
   std::vector<base::StringPiece> lines =
       base::SplitStringPiece(zone_identifier_contents, "\n",
                              base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  return lines.size() == 2 && lines[0] == "[ZoneTransfer]" &&
+  return lines.size() > 1 && lines[0] == "[ZoneTransfer]" &&
          lines[1].find("ZoneId=") == 0;
 }
 
