@@ -7,7 +7,11 @@
 This script is designed to be automatically run after each ninja build in
 order to summarize the build's performance. Making build performance information
 more visible should make it easier to notice anomalies and opportunities. To use
-this script just set NINJA_SUMMARIZE_BUILD=1 and run autoninja.bat.
+this script on Windows just set NINJA_SUMMARIZE_BUILD=1 and run autoninja.bat.
+
+On Linux you can get autoninja to invoke this script using this syntax:
+
+$ NINJA_SUMMARIZE_BUILD=1 autoninja -C out/Default/ chrome
 
 You can also call this script directly using ninja's syntax to specify the
 output directory of interest:
@@ -159,12 +163,14 @@ def GetExtension(target):
     extension = os.path.splitext(output)[1]
     if len(extension) == 0:
       extension = '(no extension found)'
-    # AHEM____.TTF fails this check.
-    assert(extension == extension.lower() or extension == '.TTF')
     if extension in ['.pdb', '.dll', '.exe']:
       extension = 'PEFile (linking)'
       # Make sure that .dll and .exe are grouped together and that the
       # .dll.lib files don't cause these to be listed as libraries
+      break
+    if extension in ['.so', '.TOC']:
+      extension = '.so (linking)'
+      # Attempt to identify linking, avoid identifying as '.TOC'
       break
   return extension
 

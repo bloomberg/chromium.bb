@@ -9,4 +9,8 @@
 # Also print it to reassure that the right settings are being used.
 command=$(python $(dirname -- "$0")/autoninja.py "$@")
 echo $command
-exec $command
+$command
+if [ $? -eq 0 ] && [ "$NINJA_SUMMARIZE_BUILD" == "1" ]; then
+  python $(dirname -- "$0")/post_build_ninja_summary.py $@
+fi
+
