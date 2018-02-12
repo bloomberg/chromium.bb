@@ -67,6 +67,8 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   void MakeClientsPending(SVGResource&);
   bool HasClients() const { return !clients_.IsEmpty(); }
 
+  void InvalidateCacheAndMarkForLayout(LayoutInvalidationReasonForTracing,
+                                       SubtreeLayoutScope* = nullptr);
   void InvalidateCacheAndMarkForLayout(SubtreeLayoutScope* = nullptr);
 
   static void MarkForLayoutAndParentResourceInvalidation(

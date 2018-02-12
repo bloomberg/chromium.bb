@@ -185,16 +185,22 @@ bool LayoutSVGResourceContainer::RemoveClient(LayoutObject& client) {
 }
 
 void LayoutSVGResourceContainer::InvalidateCacheAndMarkForLayout(
+    LayoutInvalidationReasonForTracing reason,
     SubtreeLayoutScope* layout_scope) {
   if (SelfNeedsLayout())
     return;
 
-  SetNeedsLayoutAndFullPaintInvalidation(
-      LayoutInvalidationReason::kSvgResourceInvalidated, kMarkContainerChain,
-      layout_scope);
+  SetNeedsLayoutAndFullPaintInvalidation(reason, kMarkContainerChain,
+                                         layout_scope);
 
   if (EverHadLayout())
     RemoveAllClientsFromCache();
+}
+
+void LayoutSVGResourceContainer::InvalidateCacheAndMarkForLayout(
+    SubtreeLayoutScope* layout_scope) {
+  InvalidateCacheAndMarkForLayout(
+      LayoutInvalidationReason::kSvgResourceInvalidated, layout_scope);
 }
 
 static inline void RemoveFromCacheAndInvalidateDependencies(

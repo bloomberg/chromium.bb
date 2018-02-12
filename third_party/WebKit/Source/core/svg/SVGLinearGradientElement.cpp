@@ -75,14 +75,8 @@ void SVGLinearGradientElement::SvgAttributeChanged(
   if (attr_name == SVGNames::x1Attr || attr_name == SVGNames::x2Attr ||
       attr_name == SVGNames::y1Attr || attr_name == SVGNames::y2Attr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
-
     UpdateRelativeLengthsInformation();
-
-    LayoutSVGResourceContainer* layout_object =
-        ToLayoutSVGResourceContainer(this->GetLayoutObject());
-    if (layout_object)
-      layout_object->InvalidateCacheAndMarkForLayout();
-
+    InvalidateGradient(LayoutInvalidationReason::kAttributeChanged);
     return;
   }
 
