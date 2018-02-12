@@ -175,6 +175,13 @@ class CC_ANIMATION_EXPORT AnimationTicker {
 
   bool HasElementInActiveList() const;
   gfx::ScrollOffset ScrollOffsetForAnimation() const;
+  void GenerateEvent(AnimationEvents* events,
+                     const Animation& animation,
+                     AnimationEvent::Type type,
+                     base::TimeTicks monotonic_time);
+  void GenerateTakeoverEventForScrollAnimation(AnimationEvents* events,
+                                               const Animation& animation,
+                                               base::TimeTicks monotonic_time);
 
   std::vector<std::unique_ptr<Animation>> animations_;
   AnimationPlayer* animation_player_;
