@@ -90,6 +90,9 @@
           'cast_junit_test_lists',
           'cast_shell_apk',
         ],
+        'test_suites': {
+          'junit_tests': 'cast_junit_tests',
+        },
       },
       'Android Cronet Builder (dbg)': {
         'test_suites': {
