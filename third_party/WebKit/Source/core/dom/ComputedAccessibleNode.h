@@ -52,13 +52,14 @@ class ComputedAccessibleNode : public ScriptWrappable {
   ComputedAccessibleNode* lastChild() const;
   ComputedAccessibleNode* previousSibling() const;
   ComputedAccessibleNode* nextSibling() const;
+  ScriptPromise ensureUpToDate(ScriptState*);
 
  private:
   explicit ComputedAccessibleNode(Element*);
 
   // content::ComputedAXTree callback.
   void OnSnapshotResponse(ScriptPromiseResolver*);
-
+  void OnUpdateResponse(ScriptPromiseResolver*);
   int32_t GetIntAttribute(WebAOMIntAttribute, bool& is_null) const;
   const String GetStringAttribute(WebAOMStringAttribute) const;
   ComputedAccessibleNode* GetRelationFromCache(AXID) const;

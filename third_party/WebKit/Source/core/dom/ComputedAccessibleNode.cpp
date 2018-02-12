@@ -50,6 +50,21 @@ ScriptPromise ComputedAccessibleNode::ComputeAccessibleProperties(
   return promise;
 }
 
+ScriptPromise ComputedAccessibleNode::ensureUpToDate(
+    ScriptState* script_state) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  // TODO(meredithl): Post this task asynchronously, with a callback into
+  // this->OnSnapshotResponse.
+  if (!tree_->ComputeAccessibilityTree()) {
+    // TODO(meredithl): Change this exception to something relevant to AOM.
+    resolver->Reject(DOMException::Create(kUnknownError));
+  } else {
+    OnUpdateResponse(resolver);
+  }
+  return promise;
+}
+
 int32_t ComputedAccessibleNode::GetIntAttribute(WebAOMIntAttribute attr,
                                                 bool& is_null) const {
   int32_t out = 0;
@@ -183,6 +198,10 @@ ComputedAccessibleNode* ComputedAccessibleNode::nextSibling() const {
 void ComputedAccessibleNode::OnSnapshotResponse(
     ScriptPromiseResolver* resolver) {
   resolver->Resolve(this);
+}
+
+void ComputedAccessibleNode::OnUpdateResponse(ScriptPromiseResolver* resolve) {
+  resolve->Resolve();
 }
 
 void ComputedAccessibleNode::Trace(Visitor* visitor) {

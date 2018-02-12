@@ -33,7 +33,6 @@ test(async function(test) {
     var computedAXNode2 = await window.getComputedAccessibleNode(element);
     assert_true(computedAXNode1 === computedAXNode2);
 }, "Multiple calls to getComputedAccessibleNode will return the same node.");
-
 </script>
 
 <div id="button2" role="button" aria-label="axButton">Click</div>
@@ -65,3 +64,39 @@ test(async function(test) {
 
 </script>
 
+<div id="radio1" role="radio">Radio 1</div>
+<div id="radio2" role="radio">Radio 2</div>
+
+<script>
+
+async_test(async function(test) {
+    var radio1 = document.getElementById("radio1");
+    var caxNode1 = await window.getComputedAccessibleNode(radio1);
+    var radio2 = document.getElementById("radio2");
+    var caxNode2 = await window.getComputedAccessibleNode(radio2);
+    radio1.innerHTML = "pizza";
+    radio2.innerHTML = "tacos";
+
+    // ComputedAccessibleNode for this element has not been updated so should
+    // only reflect the name at the time of its request.
+    assert_equals(caxNode1.name, "Radio 1");
+    assert_equals(caxNode2.name, "Radio 2");
+
+    // Manually refresh the node and check that all references to
+    // ComputedAccessibleNodes have been updated.
+    await caxNode1.ensureUpToDate();
+    assert_equals(caxNode1.name, "pizza");
+    assert_equals(caxNode2.name, "tacos");
+
+    radio1.setAttribute("aria-label", "pasta");
+    assert_equals(caxNode1.name, "pizza");
+
+    caxNode1.ensureUpToDate();
+    assert_equals(caxNode1.name, "pasta");
+
+    test.done();
+}, "ComputedAccessibleNode.ensureUpToDate");
+
+
+
+</script>
