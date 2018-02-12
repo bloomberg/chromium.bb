@@ -784,24 +784,24 @@ static void write_intra_angle_info(const MACROBLOCKD *xd,
 
   if (av1_is_directional_mode(mbmi->mode, bsize)) {
 #if CONFIG_EXT_INTRA_MOD
-    aom_write_symbol(w, mbmi->angle_delta[0] + MAX_ANGLE_DELTA,
+    aom_write_symbol(w, mbmi->angle_delta[PLANE_TYPE_Y] + MAX_ANGLE_DELTA,
                      ec_ctx->angle_delta_cdf[mbmi->mode - V_PRED],
                      2 * MAX_ANGLE_DELTA + 1);
 #else
     (void)ec_ctx;
     write_uniform(w, 2 * MAX_ANGLE_DELTA + 1,
-                  MAX_ANGLE_DELTA + mbmi->angle_delta[0]);
+                  MAX_ANGLE_DELTA + mbmi->angle_delta[PLANE_TYPE_Y]);
 #endif  // CONFIG_EXT_INTRA_MOD
   }
 
   if (av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize)) {
 #if CONFIG_EXT_INTRA_MOD
-    aom_write_symbol(w, mbmi->angle_delta[1] + MAX_ANGLE_DELTA,
+    aom_write_symbol(w, mbmi->angle_delta[PLANE_TYPE_UV] + MAX_ANGLE_DELTA,
                      ec_ctx->angle_delta_cdf[mbmi->uv_mode - V_PRED],
                      2 * MAX_ANGLE_DELTA + 1);
 #else
     write_uniform(w, 2 * MAX_ANGLE_DELTA + 1,
-                  MAX_ANGLE_DELTA + mbmi->angle_delta[1]);
+                  MAX_ANGLE_DELTA + mbmi->angle_delta[PLANE_TYPE_UV]);
 #endif
   }
 }

@@ -1643,7 +1643,7 @@ static void build_intra_predictors_high(
 
   if (is_dr_mode) {
     p_angle = mode_to_angle_map[mode] +
-              xd->mi[0]->mbmi.angle_delta[plane != 0] * ANGLE_STEP;
+              xd->mi[0]->mbmi.angle_delta[plane != AOM_PLANE_Y] * ANGLE_STEP;
     if (p_angle <= 90)
       need_above = 1, need_left = 0, need_above_left = 1;
     else if (p_angle < 180)
@@ -1655,7 +1655,6 @@ static void build_intra_predictors_high(
   if (use_filter_intra) need_left = need_above = need_above_left = 1;
 #endif  // CONFIG_FILTER_INTRA
 
-  (void)plane;
   assert(n_top_px >= 0);
   assert(n_topright_px >= 0);
   assert(n_left_px >= 0);
@@ -1862,7 +1861,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 
   if (is_dr_mode) {
     p_angle = mode_to_angle_map[mode] +
-              xd->mi[0]->mbmi.angle_delta[plane != 0] * ANGLE_STEP;
+              xd->mi[0]->mbmi.angle_delta[plane != AOM_PLANE_Y] * ANGLE_STEP;
     if (p_angle <= 90)
       need_above = 1, need_left = 0, need_above_left = 1;
     else if (p_angle < 180)
@@ -1874,8 +1873,6 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   if (use_filter_intra) need_left = need_above = need_above_left = 1;
 #endif  // CONFIG_FILTER_INTRA
 
-  (void)xd;
-  (void)plane;
   assert(n_top_px >= 0);
   assert(n_topright_px >= 0);
   assert(n_left_px >= 0);

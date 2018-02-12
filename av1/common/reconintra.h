@@ -58,8 +58,8 @@ static INLINE int av1_is_directional_mode(PREDICTION_MODE mode,
 }
 
 static INLINE int av1_use_angle_delta(BLOCK_SIZE bsize) {
-  (void)bsize;
 #if CONFIG_USE_ANGLE_DELTA_SUB8X8
+  (void)bsize;
   return 1;
 #else
   return bsize >= BLOCK_8X8;

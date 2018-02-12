@@ -843,28 +843,29 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
       av1_use_angle_delta(bsize)) {
 #if CONFIG_ENTROPY_STATS
     ++counts->angle_delta[mbmi->mode - V_PRED]
-                         [mbmi->angle_delta[0] + MAX_ANGLE_DELTA];
+                         [mbmi->angle_delta[PLANE_TYPE_Y] + MAX_ANGLE_DELTA];
 #endif
     if (allow_update_cdf)
       update_cdf(fc->angle_delta_cdf[mbmi->mode - V_PRED],
-                 mbmi->angle_delta[0] + MAX_ANGLE_DELTA,
+                 mbmi->angle_delta[PLANE_TYPE_Y] + MAX_ANGLE_DELTA,
                  2 * MAX_ANGLE_DELTA + 1);
   }
 #endif  // CONFIG_EXT_INTRA_MOD
 
-  if (!is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                           xd->plane[1].subsampling_y))
+  if (!is_chroma_reference(mi_row, mi_col, bsize,
+                           xd->plane[AOM_PLANE_U].subsampling_x,
+                           xd->plane[AOM_PLANE_U].subsampling_y))
     return;
 #if CONFIG_EXT_INTRA_MOD
   if (av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize) &&
       av1_use_angle_delta(bsize)) {
 #if CONFIG_ENTROPY_STATS
     ++counts->angle_delta[mbmi->uv_mode - V_PRED]
-                         [mbmi->angle_delta[1] + MAX_ANGLE_DELTA];
+                         [mbmi->angle_delta[PLANE_TYPE_UV] + MAX_ANGLE_DELTA];
 #endif
     if (allow_update_cdf)
       update_cdf(fc->angle_delta_cdf[mbmi->uv_mode - V_PRED],
-                 mbmi->angle_delta[1] + MAX_ANGLE_DELTA,
+                 mbmi->angle_delta[PLANE_TYPE_UV] + MAX_ANGLE_DELTA,
                  2 * MAX_ANGLE_DELTA + 1);
   }
 #endif  // CONFIG_EXT_INTRA_MOD

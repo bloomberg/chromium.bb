@@ -2757,10 +2757,12 @@ static int intra_mode_info_cost_y(const AV1_COMP *cpi, const MACROBLOCK *x,
     if (av1_use_angle_delta(bsize)) {
 #if CONFIG_EXT_INTRA_MOD
       total_rate += x->angle_delta_cost[mbmi->mode - V_PRED]
-                                       [MAX_ANGLE_DELTA + mbmi->angle_delta[0]];
+                                       [MAX_ANGLE_DELTA +
+                                        mbmi->angle_delta[PLANE_TYPE_Y]];
 #else
-      total_rate += write_uniform_cost(2 * MAX_ANGLE_DELTA + 1,
-                                       MAX_ANGLE_DELTA + mbmi->angle_delta[0]);
+      total_rate +=
+          write_uniform_cost(2 * MAX_ANGLE_DELTA + 1,
+                             MAX_ANGLE_DELTA + mbmi->angle_delta[PLANE_TYPE_Y]);
 #endif  // CONFIG_EXT_INTRA_MOD
     }
   }
@@ -2810,11 +2812,13 @@ static int intra_mode_info_cost_uv(const AV1_COMP *cpi, const MACROBLOCK *x,
   if (av1_is_directional_mode(get_uv_mode(mode), mbmi->sb_type)) {
     if (av1_use_angle_delta(bsize)) {
 #if CONFIG_EXT_INTRA_MOD
-      total_rate += x->angle_delta_cost[mode - V_PRED]
-                                       [mbmi->angle_delta[1] + MAX_ANGLE_DELTA];
+      total_rate +=
+          x->angle_delta_cost[mode - V_PRED][mbmi->angle_delta[PLANE_TYPE_UV] +
+                                             MAX_ANGLE_DELTA];
 #else
-      total_rate += write_uniform_cost(2 * MAX_ANGLE_DELTA + 1,
-                                       MAX_ANGLE_DELTA + mbmi->angle_delta[1]);
+      total_rate += write_uniform_cost(
+          2 * MAX_ANGLE_DELTA + 1,
+          MAX_ANGLE_DELTA + mbmi->angle_delta[PLANE_TYPE_UV]);
 #endif  // CONFIG_EXT_INTRA_MOD
     }
   }
@@ -2872,11 +2876,13 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   if (av1_is_directional_mode(mbmi->mode, bsize) &&
       av1_use_angle_delta(bsize)) {
 #if CONFIG_EXT_INTRA_MOD
-    mode_cost += x->angle_delta_cost[mbmi->mode - V_PRED]
-                                    [MAX_ANGLE_DELTA + mbmi->angle_delta[0]];
+    mode_cost +=
+        x->angle_delta_cost[mbmi->mode - V_PRED]
+                           [MAX_ANGLE_DELTA + mbmi->angle_delta[PLANE_TYPE_Y]];
 #else
-    mode_cost += write_uniform_cost(2 * MAX_ANGLE_DELTA + 1,
-                                    MAX_ANGLE_DELTA + mbmi->angle_delta[0]);
+    mode_cost +=
+        write_uniform_cost(2 * MAX_ANGLE_DELTA + 1,
+                           MAX_ANGLE_DELTA + mbmi->angle_delta[PLANE_TYPE_Y]);
 #endif  // CONFIG_EXT_INTRA_MOD
   }
 #if CONFIG_FILTER_INTRA
@@ -3225,7 +3231,7 @@ static int64_t calc_rd_given_intra_angle(
   (void)best_txk_type;
 #endif
 
-  mbmi->angle_delta[0] = angle_delta;
+  mbmi->angle_delta[PLANE_TYPE_Y] = angle_delta;
   this_model_rd = intra_model_yrd(cpi, x, bsize, mode_cost);
   if (*best_model_rd != INT64_MAX &&
       this_model_rd > *best_model_rd + (*best_model_rd >> 1))
@@ -3234,13 +3240,14 @@ static int64_t calc_rd_given_intra_angle(
   super_block_yrd(cpi, x, &tokenonly_rd_stats, bsize, best_rd_in);
   if (tokenonly_rd_stats.rate == INT_MAX) return INT64_MAX;
 
-  this_rate = tokenonly_rd_stats.rate + mode_cost +
+  this_rate =
+      tokenonly_rd_stats.rate + mode_cost +
 #if CONFIG_EXT_INTRA_MOD
-              x->angle_delta_cost[mbmi->mode - V_PRED]
-                                 [max_angle_delta + mbmi->angle_delta[0]];
+      x->angle_delta_cost[mbmi->mode - V_PRED]
+                         [max_angle_delta + mbmi->angle_delta[PLANE_TYPE_Y]];
 #else
-              write_uniform_cost(2 * max_angle_delta + 1,
-                                 mbmi->angle_delta[0] + max_angle_delta);
+      write_uniform_cost(2 * max_angle_delta + 1,
+                         mbmi->angle_delta[PLANE_TYPE_Y] + max_angle_delta);
 #endif  // CONFIG_EXT_INTRA_MOD
   this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
 
@@ -3252,7 +3259,7 @@ static int64_t calc_rd_given_intra_angle(
 #endif
     memcpy(best_blk_skip, x->blk_skip[0], sizeof(best_blk_skip[0]) * n4);
     *best_rd = this_rd;
-    *best_angle_delta = mbmi->angle_delta[0];
+    *best_angle_delta = mbmi->angle_delta[PLANE_TYPE_Y];
     *best_tx_size = mbmi->tx_size;
     *best_tx_type = mbmi->tx_type;
     *rate = this_rate;
@@ -3328,7 +3335,7 @@ static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
 
   mbmi->tx_size = best_tx_size;
-  mbmi->angle_delta[0] = best_angle_delta;
+  mbmi->angle_delta[PLANE_TYPE_Y] = best_angle_delta;
   mbmi->tx_type = best_tx_type;
 #if CONFIG_TXK_SEL
   memcpy(mbmi->txk_type, best_txk_type,
@@ -3546,7 +3553,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int left_ctx = intra_mode_context[L];
   bmode_costs = x->y_mode_costs[above_ctx][left_ctx];
 
-  mbmi->angle_delta[0] = 0;
+  mbmi->angle_delta[PLANE_TYPE_Y] = 0;
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     highbd_angle_estimation(src, src_stride, rows, cols, bsize,
                             directional_mode_skip_mask);
@@ -3570,7 +3577,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     int this_rate, this_rate_tokenonly, s;
     int64_t this_distortion, this_rd, this_model_rd;
     mbmi->mode = intra_rd_search_mode_order[mode_idx];
-    mbmi->angle_delta[0] = 0;
+    mbmi->angle_delta[PLANE_TYPE_Y] = 0;
     this_model_rd = intra_model_yrd(cpi, x, bsize, bmode_costs[mbmi->mode]);
     if (best_model_rd != INT64_MAX &&
         this_model_rd > best_model_rd + (best_model_rd >> 1))
@@ -5391,7 +5398,7 @@ static int64_t pick_intra_angle_routine_sbuv(
   this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
   if (this_rd < *best_rd) {
     *best_rd = this_rd;
-    *best_angle_delta = mbmi->angle_delta[1];
+    *best_angle_delta = mbmi->angle_delta[PLANE_TYPE_UV];
     *rate = this_rate;
     rd_stats->rate = tokenonly_rd_stats.rate;
     rd_stats->dist = tokenonly_rd_stats.dist;
@@ -5422,7 +5429,7 @@ static int rd_pick_intra_angle_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
       best_rd_in = (best_rd == INT64_MAX)
                        ? INT64_MAX
                        : (best_rd + (best_rd >> ((angle_delta == 0) ? 3 : 5)));
-      mbmi->angle_delta[1] = (1 - 2 * i) * angle_delta;
+      mbmi->angle_delta[PLANE_TYPE_UV] = (1 - 2 * i) * angle_delta;
       this_rd = pick_intra_angle_routine_sbuv(cpi, x, bsize, rate_overhead,
                                               best_rd_in, rate, rd_stats,
                                               &best_angle_delta, &best_rd);
@@ -5445,7 +5452,7 @@ static int rd_pick_intra_angle_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
           rd_cost[2 * (angle_delta - 1) + i] > rd_thresh)
         skip_search = 1;
       if (!skip_search) {
-        mbmi->angle_delta[1] = (1 - 2 * i) * angle_delta;
+        mbmi->angle_delta[PLANE_TYPE_UV] = (1 - 2 * i) * angle_delta;
         pick_intra_angle_routine_sbuv(cpi, x, bsize, rate_overhead, best_rd,
                                       rate, rd_stats, &best_angle_delta,
                                       &best_rd);
@@ -5453,7 +5460,7 @@ static int rd_pick_intra_angle_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
   }
 
-  mbmi->angle_delta[1] = best_angle_delta;
+  mbmi->angle_delta[PLANE_TYPE_UV] = best_angle_delta;
   return rd_stats->rate != INT_MAX;
 }
 
@@ -5618,7 +5625,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       if (cfl_alpha_rate == INT_MAX) continue;
     }
 #endif
-    mbmi->angle_delta[1] = 0;
+    mbmi->angle_delta[PLANE_TYPE_UV] = 0;
     if (is_directional_mode && av1_use_angle_delta(mbmi->sb_type)) {
 #if CONFIG_CFL
       const int rate_overhead =
@@ -9872,7 +9879,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                                 intra_mode_cost[mbmi->mode], best_rd,
                                 &model_rd);
       } else {
-        mbmi->angle_delta[0] = 0;
+        mbmi->angle_delta[PLANE_TYPE_Y] = 0;
         super_block_yrd(cpi, x, &rd_stats_y, bsize, best_rd);
       }
       rate_y = rd_stats_y.rate;
@@ -9967,7 +9974,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                                &rate_uv_tokenonly[uv_tx], &dist_uvs[uv_tx],
                                &skip_uvs[uv_tx], &mode_uv[uv_tx]);
           if (try_palette) pmi_uv[uv_tx] = *pmi;
-          uv_angle_delta[uv_tx] = mbmi->angle_delta[1];
+          uv_angle_delta[uv_tx] = mbmi->angle_delta[PLANE_TYPE_UV];
         }
 
         rate_uv = rate_uv_tokenonly[uv_tx];
@@ -9980,7 +9987,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                  pmi_uv[uv_tx].palette_colors + PALETTE_MAX_SIZE,
                  2 * PALETTE_MAX_SIZE * sizeof(pmi->palette_colors[0]));
         }
-        mbmi->angle_delta[1] = uv_angle_delta[uv_tx];
+        mbmi->angle_delta[PLANE_TYPE_UV] = uv_angle_delta[uv_tx];
       }
 
       rate2 = rate_y + intra_mode_info_cost_y(cpi, x, mbmi, bsize,
@@ -10014,8 +10021,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
       backup_ref_mv[0] = mbmi_ext->ref_mvs[ref_frame][0];
       if (comp_pred) backup_ref_mv[1] = mbmi_ext->ref_mvs[second_ref_frame][0];
-      mbmi->angle_delta[0] = 0;
-      mbmi->angle_delta[1] = 0;
+      mbmi->angle_delta[PLANE_TYPE_Y] = 0;
+      mbmi->angle_delta[PLANE_TYPE_UV] = 0;
 #if CONFIG_FILTER_INTRA
       mbmi->filter_intra_mode_info.use_filter_intra = 0;
 #endif  // CONFIG_FILTER_INTRA
@@ -10566,7 +10573,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                            &rate_uv_tokenonly[uv_tx], &dist_uvs[uv_tx],
                            &skip_uvs[uv_tx], &mode_uv[uv_tx]);
       pmi_uv[uv_tx] = *pmi;
-      uv_angle_delta[uv_tx] = mbmi->angle_delta[1];
+      uv_angle_delta[uv_tx] = mbmi->angle_delta[PLANE_TYPE_UV];
     }
     mbmi->uv_mode = mode_uv[uv_tx];
     pmi->palette_size[1] = pmi_uv[uv_tx].palette_size[1];
@@ -10575,7 +10582,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
              pmi_uv[uv_tx].palette_colors + PALETTE_MAX_SIZE,
              2 * PALETTE_MAX_SIZE * sizeof(pmi->palette_colors[0]));
     }
-    mbmi->angle_delta[1] = uv_angle_delta[uv_tx];
+    mbmi->angle_delta[PLANE_TYPE_UV] = uv_angle_delta[uv_tx];
     skippable = rd_stats_y.skip && skip_uvs[uv_tx];
     distortion2 = rd_stats_y.dist + dist_uvs[uv_tx];
     rate2 = rd_stats_y.rate + rate_overhead_palette + rate_uv_intra[uv_tx];

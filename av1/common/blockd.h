@@ -271,7 +271,7 @@ typedef struct MB_MODE_INFO {
   FILTER_INTRA_MODE_INFO filter_intra_mode_info;
 #endif  // CONFIG_FILTER_INTRA
   // The actual prediction angle is the base angle + (angle_delta * step).
-  int8_t angle_delta[2];
+  int8_t angle_delta[PLANE_TYPES];
 
   // interintra members
   INTERINTRA_MODE interintra_mode;
