@@ -46,7 +46,8 @@ def _TestharnessGenericBaselinesToCheck(input_api):
         if not path.endswith('-expected.txt'):
             continue
         if (input_api.os_path.join('LayoutTests', 'platform') in path or
-            input_api.os_path.join('LayoutTests', 'virtual') in path):
+            input_api.os_path.join('LayoutTests', 'virtual') in path or
+            input_api.os_path.join('LayoutTests', 'flag-specific') in path):
             continue
         baseline_files.append(path)
     return baseline_files

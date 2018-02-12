@@ -133,7 +133,6 @@ Bug(none) external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction
 
 # TODO(lukasza, alexmos): Triage these failures.
 Bug(none) external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Failure ]
-Bug(none) virtual/mojo-blob-urls/external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Failure ]
 Bug(none) external/wpt/IndexedDB/interleaved-cursors.html [ Timeout ]
 Bug(none) external/wpt/xhr/xmlhttprequest-sync-default-feature-policy.sub.html [ Timeout ]
 Bug(none) external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-cross-none-block.html [ Timeout ]
@@ -251,10 +250,6 @@ Bug(none) jquery/manipulation.html [ Timeout ]
 Bug(none) storage/indexeddb/blob-valid-after-deletion.html [ Failure ]
 Bug(none) storage/indexeddb/blob-valid-before-commit.html [ Failure ]
 Bug(none) storage/indexeddb/empty-crash.html [ Timeout ]
-Bug(none) virtual/mojo-blobs/external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Failure ]
-Bug(none) virtual/mojo-blobs/external/wpt/fetch/api/basic/keepalive.html [ Timeout ]
-Bug(none) virtual/mojo-blobs/external/wpt/webmessaging/event.origin.sub.htm [ Failure ]
-Bug(none) virtual/mojo-blobs/external/wpt/webmessaging/postMessage_asterisk_xorigin.sub.htm [ Failure ]
 Bug(none) virtual/outofblink-cors/external/wpt/fetch/api/basic/keepalive.html [ Timeout ]
 
 crbug.com/801992 external/wpt/content-security-policy/frame-ancestors/frame-ancestors-nested-cross-in-cross-url-allow.html [ Pass Timeout ]
