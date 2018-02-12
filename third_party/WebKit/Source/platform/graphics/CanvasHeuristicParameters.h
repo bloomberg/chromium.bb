@@ -5,6 +5,8 @@
 #ifndef CanvasHeuristicParameters_h
 #define CanvasHeuristicParameters_h
 
+#include "build/build_config.h"
+
 namespace blink {
 
 namespace CanvasHeuristicParameters {
@@ -17,18 +19,24 @@ enum {
   // single frame will be disabled deferral.
   kExpensiveOverdrawThreshold = 10,
 
-  // Disable Acceleration heuristic parameters
-  //===========================================
+// Disable Acceleration heuristic parameters
+//===========================================
 
-  // When drawing very large images to canvases, there is a point where
-  // GPU acceleration becomes inefficient due to texture upload overhead,
-  // especially when the image is large enough that it is likely to
-  // monopolize the texture cache, and when it is being downsized to the
-  // point that few of the upload texels are actually sampled. When both
-  // of these conditions are met, we disable acceleration.
+// When drawing very large images to canvases, there is a point where
+// GPU acceleration becomes inefficient due to texture upload overhead,
+// especially when the image is large enough that it is likely to
+// monopolize the texture cache, and when it is being downsized to the
+// point that few of the upload texels are actually sampled. When both
+// of these conditions are met, we disable acceleration.
+#if defined(OS_ANDROID)
+  // The limits in mobile platforms are halved.
+  kDrawImageTextureUploadSoftSizeLimit = 4096 * 4096 / 2,
+  kDrawImageTextureUploadHardSizeLimit = 8192 * 8192 / 2,
+#else
   kDrawImageTextureUploadSoftSizeLimit = 4096 * 4096,
-  kDrawImageTextureUploadSoftSizeLimitScaleThreshold = 4,
   kDrawImageTextureUploadHardSizeLimit = 8192 * 8192,
+#endif  // defined(OS_ANDROID)
+  kDrawImageTextureUploadSoftSizeLimitScaleThreshold = 4,
 
   // GPU readback prevention heuristics
   //====================================
