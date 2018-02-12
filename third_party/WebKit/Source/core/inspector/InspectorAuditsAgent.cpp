@@ -49,12 +49,14 @@ bool EncodeAsImage(char* body,
   if (!image || !image->readPixels(pixmap, 0, 0))
     return false;
 
-  ImageDataBuffer image_to_encode = ImageDataBuffer(
+  std::unique_ptr<ImageDataBuffer> image_to_encode = ImageDataBuffer::Create(
       IntSize(bitmap.width(), bitmap.height()), pixel_storage.data());
+  if (!image_to_encode)
+    return false;
 
   String mime_type = "image/";
   mime_type.append(encoding);
-  return image_to_encode.EncodeImage(mime_type, quality, output);
+  return image_to_encode->EncodeImage(mime_type, quality, output);
 }
 
 }  // namespace

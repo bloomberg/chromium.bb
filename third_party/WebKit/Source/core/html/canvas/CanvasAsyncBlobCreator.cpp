@@ -220,8 +220,10 @@ void CanvasAsyncBlobCreator::Dispose() {
 }
 
 bool CanvasAsyncBlobCreator::EncodeImage(const double& quality) {
-    return ImageDataBuffer(src_data_).EncodeImage("image/webp", quality,
-                                                  &encoded_image_);
+  std::unique_ptr<ImageDataBuffer> buffer = ImageDataBuffer::Create(src_data_);
+  if (!buffer)
+    return false;
+  return buffer->EncodeImage("image/webp", quality, &encoded_image_);
 }
 
 void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {

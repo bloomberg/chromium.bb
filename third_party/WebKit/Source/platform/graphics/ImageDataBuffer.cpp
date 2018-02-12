@@ -45,34 +45,87 @@
 
 namespace blink {
 
-std::unique_ptr<ImageDataBuffer> ImageDataBuffer::Create(
-    scoped_refptr<StaticBitmapImage> image) {
-  if (!image || !image->PaintImageForCurrentFrame().GetSkImage())
-    return nullptr;
-  return WTF::WrapUnique(new ImageDataBuffer(image));
-}
-
 ImageDataBuffer::ImageDataBuffer(scoped_refptr<StaticBitmapImage> image) {
-  image_bitmap_ = image;
-  sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
-  if (skia_image->isTextureBacked()) {
-    skia_image = skia_image->makeNonTextureImage();
-    image_bitmap_ = StaticBitmapImage::Create(skia_image);
-  } else if (skia_image->isLazyGenerated()) {
+  if (!image)
+    return;
+  retained_image_ = image->PaintImageForCurrentFrame().GetSkImage();
+  if (!retained_image_)
+    return;
+  if (retained_image_->isTextureBacked()) {
+    retained_image_ = retained_image_->makeNonTextureImage();
+    if (!retained_image_)
+      return;
+  } else if (retained_image_->isLazyGenerated()) {
     // Call readPixels() to trigger decoding.
-    SkImageInfo info = SkImageInfo::MakeN32(1, 1, skia_image->alphaType());
+    SkImageInfo info = SkImageInfo::MakeN32(1, 1, retained_image_->alphaType());
     std::unique_ptr<uint8_t[]> pixel(new uint8_t[info.bytesPerPixel()]());
-    skia_image->readPixels(info, pixel.get(), info.minRowBytes(), 1, 1);
+    retained_image_->readPixels(info, pixel.get(), info.minRowBytes(), 1, 1);
   }
-  bool peek_pixels = skia_image->peekPixels(&pixmap_);
-  DCHECK(peek_pixels);
+  if (!retained_image_->peekPixels(&pixmap_))
+    return;
+  is_valid_ = true;
   uses_pixmap_ = true;
   size_ = IntSize(image->width(), image->height());
+}
+
+ImageDataBuffer::ImageDataBuffer(const IntSize& size,
+                                 const unsigned char* data,
+                                 const CanvasColorParams& color_params)
+    : data_(data),
+      color_params_(color_params),
+      uses_pixmap_(false),
+      is_valid_(true),
+      size_(size) {
+  is_valid_ = data && !size_.IsEmpty();
+}
+
+ImageDataBuffer::ImageDataBuffer(const SkPixmap& pixmap)
+    : pixmap_(pixmap),
+      uses_pixmap_(true),
+      size_(IntSize(pixmap.width(), pixmap.height())) {
+  is_valid_ = pixmap_.addr() && !size_.IsEmpty();
+}
+
+std::unique_ptr<ImageDataBuffer> ImageDataBuffer::Create(
+    scoped_refptr<StaticBitmapImage> image) {
+  std::unique_ptr<ImageDataBuffer> buffer =
+      WTF::WrapUnique(new ImageDataBuffer(image));
+  if (!buffer->IsValid())
+    return nullptr;
+  return buffer;
+}
+
+std::unique_ptr<ImageDataBuffer> ImageDataBuffer::Create(
+    const IntSize& size,
+    const unsigned char* data,
+    const CanvasColorParams& color_params) {
+  std::unique_ptr<ImageDataBuffer> buffer =
+      WTF::WrapUnique(new ImageDataBuffer(size, data, color_params));
+  if (!buffer->IsValid())
+    return nullptr;
+  return buffer;
+}
+
+std::unique_ptr<ImageDataBuffer> ImageDataBuffer::Create(
+    const SkPixmap& pixmap) {
+  std::unique_ptr<ImageDataBuffer> buffer =
+      WTF::WrapUnique(new ImageDataBuffer(pixmap));
+  if (!buffer->IsValid())
+    return nullptr;
+  return buffer;
+}
+
+const unsigned char* ImageDataBuffer::Pixels() const {
+  DCHECK(is_valid_);
+  if (uses_pixmap_)
+    return static_cast<const unsigned char*>(pixmap_.addr());
+  return data_;
 }
 
 bool ImageDataBuffer::EncodeImage(const String& mime_type,
                                   const double& quality,
                                   Vector<unsigned char>* encoded_image) const {
+  DCHECK(is_valid_);
   SkPixmap src;
   if (uses_pixmap_) {
     src = pixmap_;
@@ -113,6 +166,7 @@ bool ImageDataBuffer::EncodeImage(const String& mime_type,
 
 String ImageDataBuffer::ToDataURL(const String& mime_type,
                                   const double& quality) const {
+  DCHECK(is_valid_);
   DCHECK(MIMETypeRegistry::IsSupportedImageMIMETypeForEncoding(mime_type));
 
   Vector<unsigned char> result;
