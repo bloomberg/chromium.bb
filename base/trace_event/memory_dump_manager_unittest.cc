@@ -182,14 +182,21 @@ class MemoryDumpManagerTest : public testing::Test {
   MemoryDumpManagerTest() : testing::Test(), kDefaultOptions() {}
 
   void SetUp() override {
-    scoped_task_environment_ = std::make_unique<test::ScopedTaskEnvironment>();
+    // Bring up |MemoryDumpManager| while single-threaded (before instantiating
+    // ScopedTaskEnvironment) to avoid data races if worker threads use tracing
+    // globals early.
     mdm_ = MemoryDumpManager::CreateInstanceForTesting();
     ASSERT_EQ(mdm_.get(), MemoryDumpManager::GetInstance());
+
+    scoped_task_environment_ = std::make_unique<test::ScopedTaskEnvironment>();
   }
 
   void TearDown() override {
-    mdm_.reset();
     scoped_task_environment_.reset();
+
+    // Tear down |MemoryDumpManager| while single-threaded to mirror logic in
+    // SetUp().
+    mdm_.reset();
     TraceLog::DeleteForTesting();
   }
 
