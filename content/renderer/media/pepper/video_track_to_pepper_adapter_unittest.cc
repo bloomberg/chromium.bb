@@ -6,8 +6,8 @@
 
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/mock_media_stream_registry.h"
 #include "content/renderer/media/pepper/video_track_to_pepper_adapter.h"
+#include "content/renderer/media/stream/mock_media_stream_registry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebHeap.h"

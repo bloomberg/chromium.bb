@@ -15,7 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "content/renderer/media/audio_device_factory.h"
-#include "content/renderer/media/media_stream_audio_track.h"
+#include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "media/base/audio_capturer_source.h"

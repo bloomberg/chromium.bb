@@ -9,7 +9,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
-#include "content/renderer/media/processed_local_audio_source.h"
+#include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/webrtc/webrtc_audio_renderer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"

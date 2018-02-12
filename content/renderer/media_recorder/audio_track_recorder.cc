@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "content/renderer/media/media_stream_audio_track.h"
+#include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "content/renderer/media_recorder/audio_track_opus_encoder.h"
 #include "content/renderer/media_recorder/audio_track_pcm_encoder.h"
 #include "media/base/audio_bus.h"
