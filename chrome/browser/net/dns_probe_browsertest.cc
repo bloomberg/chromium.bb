@@ -523,8 +523,7 @@ void DnsProbeBrowserTest::SetUpOnMainThread() {
     // Doctor requests.
     url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
         base::BindRepeating(&DnsProbeBrowserTest::InterceptURLLoaderRequest,
-                            base::Unretained(this)),
-        true, true);
+                            base::Unretained(this)));
   }
 
   SetActiveBrowser(browser());

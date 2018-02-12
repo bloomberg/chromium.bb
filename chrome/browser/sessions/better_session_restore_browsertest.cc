@@ -225,8 +225,7 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
                   return true;
                 }
                 return false;
-              }),
-          true, true);
+              }));
       return;
     }
 
