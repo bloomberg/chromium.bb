@@ -103,13 +103,15 @@ class FakePingManagerImpl : public PingManager {
   };
 
   explicit FakePingManagerImpl(const scoped_refptr<Configurator>& config);
-  ~FakePingManagerImpl() override;
 
-  bool SendPing(const Component& component) override;
+  void SendPing(const Component& component, Callback callback) override;
 
   const std::vector<PingData>& ping_data() const;
 
   const std::vector<std::string>& events() const;
+
+ protected:
+  ~FakePingManagerImpl() override;
 
  private:
   std::vector<PingData> ping_data_;
@@ -124,7 +126,8 @@ FakePingManagerImpl::FakePingManagerImpl(
 FakePingManagerImpl::~FakePingManagerImpl() {
 }
 
-bool FakePingManagerImpl::SendPing(const Component& component) {
+void FakePingManagerImpl::SendPing(const Component& component,
+                                   Callback callback) {
   PingData ping_data;
   ping_data.id = component.id_;
   ping_data.previous_version = component.previous_version_;
@@ -140,7 +143,7 @@ bool FakePingManagerImpl::SendPing(const Component& component) {
   const auto& events = component.events();
   events_.insert(events_.end(), events.begin(), events.end());
 
-  return true;
+  std::move(callback).Run(0, "");
 }
 
 const std::vector<FakePingManagerImpl::PingData>&
@@ -285,12 +288,14 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
    public:
     explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
+
+   protected:
     ~FakePingManager() override { EXPECT_TRUE(ping_data().empty()); }
   };
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), std::make_unique<FakePingManager>(config()),
+          config(), base::MakeRefCounted<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -472,6 +477,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
    public:
     explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
+
+   protected:
     ~FakePingManager() override {
       const auto ping_data = FakePingManagerImpl::ping_data();
       EXPECT_EQ(1u, ping_data.size());
@@ -485,7 +492,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), std::make_unique<FakePingManager>(config()),
+          config(), base::MakeRefCounted<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -726,6 +733,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
    public:
     explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
+
+   protected:
     ~FakePingManager() override {
       const auto ping_data = FakePingManagerImpl::ping_data();
       EXPECT_EQ(2u, ping_data.size());
@@ -744,7 +753,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), std::make_unique<FakePingManager>(config()),
+          config(), base::MakeRefCounted<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -990,6 +999,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
    public:
     explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
+
+   protected:
     ~FakePingManager() override {
       const auto ping_data = FakePingManagerImpl::ping_data();
       EXPECT_EQ(2u, ping_data.size());
@@ -1008,7 +1019,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), std::make_unique<FakePingManager>(config()),
+          config(), base::MakeRefCounted<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -1279,6 +1290,8 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
    public:
     explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
+
+   protected:
     ~FakePingManager() override {
       const auto ping_data = FakePingManagerImpl::ping_data();
       EXPECT_EQ(2u, ping_data.size());
@@ -1300,7 +1313,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), std::make_unique<FakePingManager>(config()),
+          config(), base::MakeRefCounted<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -1530,6 +1543,8 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
    public:
     explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
+
+   protected:
     ~FakePingManager() override {
       const auto ping_data = FakePingManagerImpl::ping_data();
       EXPECT_EQ(1u, ping_data.size());
@@ -1543,7 +1558,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), std::make_unique<FakePingManager>(config()),
+          config(), base::MakeRefCounted<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -1812,6 +1827,8 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
    public:
     explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
+
+   protected:
     ~FakePingManager() override {
       const auto ping_data = FakePingManagerImpl::ping_data();
       EXPECT_EQ(2u, ping_data.size());
@@ -1833,7 +1850,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), std::make_unique<FakePingManager>(config()),
+          config(), base::MakeRefCounted<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -1970,14 +1987,14 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
    public:
     explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
+
+   protected:
     ~FakePingManager() override { EXPECT_TRUE(ping_data().empty()); }
   };
 
-  std::unique_ptr<PingManager> ping_manager =
-      std::make_unique<FakePingManager>(config());
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), std::make_unique<FakePingManager>(config()),
+          config(), base::MakeRefCounted<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -2146,6 +2163,8 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
    public:
     explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
+
+   protected:
     ~FakePingManager() override {
       const auto ping_data = FakePingManagerImpl::ping_data();
       EXPECT_EQ(1u, ping_data.size());
@@ -2159,7 +2178,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), std::make_unique<FakePingManager>(config()),
+          config(), base::MakeRefCounted<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -2277,14 +2296,14 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
    public:
     explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
+
+   protected:
     ~FakePingManager() override { EXPECT_TRUE(ping_data().empty()); }
   };
 
-  std::unique_ptr<FakePingManager> ping_manager =
-      std::make_unique<FakePingManager>(config());
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), std::make_unique<FakePingManager>(config()),
+          config(), base::MakeRefCounted<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -2361,9 +2380,18 @@ TEST_F(UpdateClientTest, EmptyIdList) {
     void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
   };
 
+  class FakePingManager : public FakePingManagerImpl {
+   public:
+    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+        : FakePingManagerImpl(config) {}
+
+   protected:
+    ~FakePingManager() override { EXPECT_TRUE(ping_data().empty()); }
+  };
+
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), std::make_unique<FakePingManagerImpl>(config()),
+          config(), base::MakeRefCounted<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   const std::vector<std::string> empty_id_list;
@@ -2418,6 +2446,8 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
    public:
     explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
+
+   protected:
     ~FakePingManager() override {
       const auto ping_data = FakePingManagerImpl::ping_data();
       EXPECT_EQ(1u, ping_data.size());
@@ -2430,7 +2460,7 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), std::make_unique<FakePingManager>(config()),
+          config(), base::MakeRefCounted<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   update_client->SendUninstallPing(
@@ -2545,12 +2575,14 @@ TEST_F(UpdateClientTest, RetryAfter) {
    public:
     explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
+
+   protected:
     ~FakePingManager() override { EXPECT_TRUE(ping_data().empty()); }
   };
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), std::make_unique<FakePingManager>(config()),
+          config(), base::MakeRefCounted<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -2814,6 +2846,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
    public:
     explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
+
+   protected:
     ~FakePingManager() override {
       const auto ping_data = FakePingManagerImpl::ping_data();
       EXPECT_EQ(2u, ping_data.size());
@@ -2834,7 +2868,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
   config()->SetEnabledComponentUpdates(false);
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), std::make_unique<FakePingManager>(config()),
+          config(), base::MakeRefCounted<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -2949,12 +2983,14 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
    public:
     explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
+
+   protected:
     ~FakePingManager() override { EXPECT_TRUE(ping_data().empty()); }
   };
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), std::make_unique<FakePingManager>(config()),
+          config(), base::MakeRefCounted<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -3099,6 +3135,8 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
    public:
     explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
+
+   protected:
     ~FakePingManager() override {
       const auto& events = FakePingManagerImpl::events();
       EXPECT_EQ(3u, events.size());
@@ -3122,7 +3160,7 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), std::make_unique<FakePingManager>(config()),
+          config(), base::MakeRefCounted<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   // The action is a program which returns 1877345072 as a hardcoded value.
@@ -3216,6 +3254,8 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
    public:
     explicit FakePingManager(const scoped_refptr<Configurator>& config)
         : FakePingManagerImpl(config) {}
+
+   protected:
     ~FakePingManager() override {
       const auto& events = FakePingManagerImpl::events();
       EXPECT_EQ(1u, events.size());
@@ -3262,7 +3302,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), std::make_unique<FakePingManager>(config()),
+          config(), base::MakeRefCounted<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   // The action is a program which returns 1877345072 as a hardcoded value.

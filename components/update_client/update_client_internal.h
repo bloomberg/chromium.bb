@@ -30,7 +30,7 @@ enum class Error;
 class UpdateClientImpl : public UpdateClient {
  public:
   UpdateClientImpl(const scoped_refptr<Configurator>& config,
-                   std::unique_ptr<PingManager> ping_manager,
+                   scoped_refptr<PingManager> ping_manager,
                    UpdateChecker::Factory update_checker_factory,
                    CrxDownloader::Factory crx_downloader_factory);
 
@@ -81,7 +81,7 @@ class UpdateClientImpl : public UpdateClient {
   std::set<Task*> tasks_;
 
   // TODO(sorin): try to make the ping manager an observer of the service.
-  std::unique_ptr<PingManager> ping_manager_;
+  scoped_refptr<PingManager> ping_manager_;
   std::unique_ptr<UpdateEngine> update_engine_;
 
   base::ObserverList<Observer> observer_list_;

@@ -53,7 +53,7 @@ UpdateEngine::UpdateEngine(
     const scoped_refptr<Configurator>& config,
     UpdateChecker::Factory update_checker_factory,
     CrxDownloader::Factory crx_downloader_factory,
-    PingManager* ping_manager,
+    scoped_refptr<PingManager> ping_manager,
     const NotifyObserversCallback& notify_observers_callback)
     : config_(config),
       update_checker_factory_(update_checker_factory),
@@ -291,7 +291,8 @@ void UpdateEngine::HandleComponentComplete(const UpdateContextIterator it) {
     update_context->next_update_delay = component->GetUpdateDuration();
 
     if (!component->events().empty()) {
-      ping_manager_->SendPing(*component);
+      ping_manager_->SendPing(*component,
+                              base::BindOnce([](int, const std::string&) {}));
     }
 
     queue.pop();
