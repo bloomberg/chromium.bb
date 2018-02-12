@@ -1426,4 +1426,92 @@ class CookiesDisabled : public HeadlessAsyncDevTooledBrowserTest,
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(CookiesDisabled);
 
+namespace {
+const char* kPageWhichOpensAWindow = R"(
+<html>
+<body>
+<script>
+window.open('/page2.html');
+</script>
+</body>
+</html>
+)";
+
+const char* kPage2 = R"(
+<html>
+<body>
+Page 2.
+</body>
+</html>
+)";
+}  // namespace
+
+class WebContentsOpenTest : public page::Observer,
+                            public HeadlessAsyncDevTooledBrowserTest {
+ public:
+  void RunDevTooledTest() override {
+    http_handler_->SetHeadlessBrowserContext(browser_context_);
+    devtools_client_->GetPage()->AddObserver(this);
+
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+    devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
+    run_loop.Run();
+
+    devtools_client_->GetPage()->Navigate("http://foo.com/index.html");
+  }
+
+  ProtocolHandlerMap GetProtocolHandlers() override {
+    ProtocolHandlerMap protocol_handlers;
+    std::unique_ptr<TestInMemoryProtocolHandler> http_handler(
+        new TestInMemoryProtocolHandler(browser()->BrowserIOThread(), nullptr));
+    http_handler_ = http_handler.get();
+    http_handler_->InsertResponse("http://foo.com/index.html",
+                                  {kPageWhichOpensAWindow, "text/html"});
+    http_handler_->InsertResponse("http://foo.com/page2.html",
+                                  {kPage2, "text/html"});
+    protocol_handlers[url::kHttpScheme] = std::move(http_handler);
+    return protocol_handlers;
+  }
+
+  const TestInMemoryProtocolHandler* http_handler() const {
+    return http_handler_;
+  }
+
+ private:
+  TestInMemoryProtocolHandler* http_handler_;  // NOT OWNED
+};
+
+class DontBlockWebContentsOpenTest : public WebContentsOpenTest {
+ public:
+  void CustomizeHeadlessBrowserContext(
+      HeadlessBrowserContext::Builder& builder) override {
+    builder.SetBlockNewWebContents(false);
+  }
+
+  void OnLoadEventFired(const page::LoadEventFiredParams&) override {
+    EXPECT_THAT(
+        http_handler()->urls_requested(),
+        ElementsAre("http://foo.com/index.html", "http://foo.com/page2.html"));
+    FinishAsynchronousTest();
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(DontBlockWebContentsOpenTest);
+
+class BlockWebContentsOpenTest : public WebContentsOpenTest {
+ public:
+  void CustomizeHeadlessBrowserContext(
+      HeadlessBrowserContext::Builder& builder) override {
+    builder.SetBlockNewWebContents(true);
+  }
+
+  void OnLoadEventFired(const page::LoadEventFiredParams&) override {
+    EXPECT_THAT(http_handler()->urls_requested(),
+                ElementsAre("http://foo.com/index.html"));
+    FinishAsynchronousTest();
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(BlockWebContentsOpenTest);
+
 }  // namespace headless
