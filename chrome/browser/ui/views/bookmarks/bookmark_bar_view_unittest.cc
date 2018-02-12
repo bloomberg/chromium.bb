@@ -35,6 +35,8 @@
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
+namespace {
+
 class BookmarkBarViewTest : public BrowserWithTestWindowTest {
  public:
   BookmarkBarViewTest() {}
@@ -384,3 +386,5 @@ TEST_F(BookmarkBarViewTest, UpdateTooltipText) {
 
   widget.CloseNow();
 }
+
+}  // namespace

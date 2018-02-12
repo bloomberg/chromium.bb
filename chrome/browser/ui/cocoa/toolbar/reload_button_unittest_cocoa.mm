@@ -37,9 +37,9 @@
 
 namespace {
 
-class ReloadButtonTest : public CocoaTest {
+class ReloadButtonCocoaTest : public CocoaTest {
  public:
-  ReloadButtonTest() {
+  ReloadButtonCocoaTest() {
     NSRect frame = NSMakeRect(0, 0, 20, 20);
     base::scoped_nsobject<ReloadButton> button(
         [[ReloadButton alloc] initWithFrame:frame]);
@@ -67,10 +67,10 @@ class ReloadButtonTest : public CocoaTest {
   ReloadButton* button_;  // Weak, owned by test_window().
 };
 
-TEST_VIEW(ReloadButtonTest, button_)
+TEST_VIEW(ReloadButtonCocoaTest, button_)
 
 // Test that mouse-tracking is setup and does the right thing.
-TEST_F(ReloadButtonTest, IsMouseInside) {
+TEST_F(ReloadButtonCocoaTest, IsMouseInside) {
   EXPECT_FALSE(IsMouseInside());
   MouseEnter();
   EXPECT_TRUE(IsMouseInside());
@@ -79,7 +79,7 @@ TEST_F(ReloadButtonTest, IsMouseInside) {
 
 // Verify that multiple clicks do not result in multiple messages to
 // the target.
-TEST_F(ReloadButtonTest, IgnoredMultiClick) {
+TEST_F(ReloadButtonCocoaTest, IgnoredMultiClick) {
   base::scoped_nsobject<ReloadButtonTarget> target(
       [[ReloadButtonTarget alloc] init]);
   id mock_target = [OCMockObject partialMockForObject:target];
@@ -101,7 +101,7 @@ TEST_F(ReloadButtonTest, IgnoredMultiClick) {
   [button_ setTarget:nil];
 }
 
-TEST_F(ReloadButtonTest, UpdateTag) {
+TEST_F(ReloadButtonCocoaTest, UpdateTag) {
   [button_ setTag:IDC_STOP];
 
   [button_ updateTag:IDC_RELOAD];
@@ -120,7 +120,7 @@ TEST_F(ReloadButtonTest, UpdateTag) {
 
 // Test that when forcing the mode, it takes effect immediately,
 // regardless of whether the mouse is hovering.
-TEST_F(ReloadButtonTest, SetIsLoadingForce) {
+TEST_F(ReloadButtonCocoaTest, SetIsLoadingForce) {
   EXPECT_FALSE(IsMouseInside());
   EXPECT_EQ(IDC_RELOAD, [button_ tag]);
 
@@ -155,7 +155,7 @@ TEST_F(ReloadButtonTest, SetIsLoadingForce) {
 
 // Test that without force, stop mode is set immediately, but reload
 // is affected by the hover status.
-TEST_F(ReloadButtonTest, SetIsLoadingNoForceUnHover) {
+TEST_F(ReloadButtonCocoaTest, SetIsLoadingNoForceUnHover) {
   EXPECT_FALSE(IsMouseInside());
   EXPECT_EQ(IDC_RELOAD, [button_ tag]);
 
@@ -191,7 +191,7 @@ TEST_F(ReloadButtonTest, SetIsLoadingNoForceUnHover) {
 // Test that without force, stop mode is set immediately, and reload
 // will be set after a timeout.
 // TODO(shess): Reenable, http://crbug.com/61485
-TEST_F(ReloadButtonTest, DISABLED_SetIsLoadingNoForceTimeout) {
+TEST_F(ReloadButtonCocoaTest, DISABLED_SetIsLoadingNoForceTimeout) {
   // When the event loop first spins, some delayed tracking-area setup
   // is done, which causes -mouseExited: to be called.  Spin it at
   // least once, and dequeue any pending events.
@@ -238,7 +238,7 @@ TEST_F(ReloadButtonTest, DISABLED_SetIsLoadingNoForceTimeout) {
 
 // Test that pressing stop after reload mode has been requested
 // doesn't forward the stop message.
-TEST_F(ReloadButtonTest, StopAfterReloadSet) {
+TEST_F(ReloadButtonCocoaTest, StopAfterReloadSet) {
   base::scoped_nsobject<ReloadButtonTarget> target(
       [[ReloadButtonTarget alloc] init]);
   id mock_target = [OCMockObject partialMockForObject:target];
@@ -283,7 +283,7 @@ TEST_F(ReloadButtonTest, StopAfterReloadSet) {
   [button_ setTarget:nil];
 }
 
-TEST_F(ReloadButtonTest, RightClickMenu) {
+TEST_F(ReloadButtonCocoaTest, RightClickMenu) {
   base::scoped_nsobject<MenuTestObserver> observer(
       [[MenuTestObserver alloc] initWithMenu:[button_ menuForTesting]]);
   [observer setCloseAfterOpening:YES];

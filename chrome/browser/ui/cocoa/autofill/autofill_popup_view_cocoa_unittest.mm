@@ -24,8 +24,6 @@ namespace {
 
 NSString* const kCreditCardAutofillTouchBarId = @"credit-card-autofill";
 
-}  // namespace
-
 class MockAutofillPopupController : public autofill::AutofillPopupController {
  public:
   MockAutofillPopupController() {
@@ -146,3 +144,5 @@ TEST_F(AutofillPopupViewCocoaUnitTest, CreditCardAutofillTouchBarMetric) {
                                        1);
   }
 }
+
+}  // namespace

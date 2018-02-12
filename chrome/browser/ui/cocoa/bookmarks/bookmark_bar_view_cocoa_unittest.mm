@@ -213,7 +213,7 @@ const NSPoint kPoint = {10, 10};
 
 namespace {
 
-class BookmarkBarViewTest : public CocoaProfileTest {
+class BookmarkBarViewTestCocoa : public CocoaProfileTest {
  public:
   void SetUp() override {
     CocoaProfileTest::SetUp();
@@ -223,11 +223,11 @@ class BookmarkBarViewTest : public CocoaProfileTest {
   base::scoped_nsobject<BookmarkBarView> view_;
 };
 
-TEST_F(BookmarkBarViewTest, CanDragWindow) {
+TEST_F(BookmarkBarViewTestCocoa, CanDragWindow) {
   EXPECT_FALSE([view_ mouseDownCanMoveWindow]);
 }
 
-TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDrop) {
+TEST_F(BookmarkBarViewTestCocoa, BookmarkButtonDragAndDrop) {
   base::scoped_nsobject<FakeBookmarkDraggingInfo> info(
       [[FakeBookmarkDraggingInfo alloc] init]);
   [view_ setController:info.get()];
@@ -263,7 +263,7 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDrop) {
 }
 
 // When dragging bookmarks across profiles, we should always copy, never move.
-TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDropAcrossProfiles) {
+TEST_F(BookmarkBarViewTestCocoa, BookmarkButtonDragAndDropAcrossProfiles) {
   base::scoped_nsobject<FakeBookmarkDraggingInfo> info(
       [[FakeBookmarkDraggingInfo alloc] init]);
   [view_ setController:info.get()];
@@ -306,7 +306,7 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDropAcrossProfiles) {
   EXPECT_TRUE([info dragBookmarkDataPong]);
 }
 
-TEST_F(BookmarkBarViewTest, URLDragAndDrop) {
+TEST_F(BookmarkBarViewTestCocoa, URLDragAndDrop) {
   base::scoped_nsobject<FakeBookmarkDraggingInfo> info(
       [[FakeBookmarkDraggingInfo alloc] init]);
   [view_ setController:info.get()];
@@ -324,7 +324,7 @@ TEST_F(BookmarkBarViewTest, URLDragAndDrop) {
   }
 }
 
-TEST_F(BookmarkBarViewTest, BookmarkButtonDropIndicator) {
+TEST_F(BookmarkBarViewTestCocoa, BookmarkButtonDropIndicator) {
   base::scoped_nsobject<FakeBookmarkDraggingInfo> info(
       [[FakeBookmarkDraggingInfo alloc] init]);
   [view_ setController:info.get()];
