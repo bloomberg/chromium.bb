@@ -15,6 +15,7 @@ namespace blink {
 
 class ComputedStyle;
 class NGLayoutResult;
+struct MinMaxSizeInput;
 
 // Base class for all LayoutNG algorithms.
 template <typename NGInputNodeType,
@@ -55,7 +56,7 @@ class CORE_EXPORT NGLayoutAlgorithm {
   // account. If the return value is empty, the caller is expected to synthesize
   // this value from the overflow rect returned from Layout called with an
   // available width of 0 and LayoutUnit::max(), respectively.
-  virtual Optional<MinMaxSize> ComputeMinMaxSize() const {
+  virtual Optional<MinMaxSize> ComputeMinMaxSize(const MinMaxSizeInput&) const {
     return WTF::nullopt;
   }
 

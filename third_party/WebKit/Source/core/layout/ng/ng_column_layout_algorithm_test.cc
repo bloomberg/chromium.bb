@@ -1969,18 +1969,19 @@ TEST_F(NGColumnLayoutAlgorithmTest, MinMax) {
           NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
   NGColumnLayoutAlgorithm algorithm(node, *space.get());
   Optional<MinMaxSize> size;
+  MinMaxSizeInput zero_input;
 
   // Both column-count and column-width set.
   style->SetColumnCount(3);
   style->SetColumnWidth(80);
-  size = algorithm.ComputeMinMaxSize();
+  size = algorithm.ComputeMinMaxSize(zero_input);
   ASSERT_TRUE(size.has_value());
   EXPECT_EQ(LayoutUnit(260), size->min_size);
   EXPECT_EQ(LayoutUnit(320), size->max_size);
 
   // Only column-count set.
   style->SetHasAutoColumnWidth();
-  size = algorithm.ComputeMinMaxSize();
+  size = algorithm.ComputeMinMaxSize(zero_input);
   ASSERT_TRUE(size.has_value());
   EXPECT_EQ(LayoutUnit(170), size->min_size);
   EXPECT_EQ(LayoutUnit(320), size->max_size);
@@ -1988,7 +1989,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, MinMax) {
   // Only column-width set.
   style->SetColumnWidth(80);
   style->SetHasAutoColumnCount();
-  size = algorithm.ComputeMinMaxSize();
+  size = algorithm.ComputeMinMaxSize(zero_input);
   ASSERT_TRUE(size.has_value());
   EXPECT_EQ(LayoutUnit(80), size->min_size);
   EXPECT_EQ(LayoutUnit(100), size->max_size);

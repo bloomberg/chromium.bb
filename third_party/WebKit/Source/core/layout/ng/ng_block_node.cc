@@ -199,7 +199,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
   return layout_result;
 }
 
-MinMaxSize NGBlockNode::ComputeMinMaxSize() {
+MinMaxSize NGBlockNode::ComputeMinMaxSize(const MinMaxSizeInput& input) {
   MinMaxSize sizes;
   if (!CanUseNewLayout()) {
     // TODO(layout-ng): This could be somewhat optimized by directly calling
@@ -225,7 +225,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize() {
 
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
   NGBlockLayoutAlgorithm minmax_algorithm(*this, *constraint_space);
-  Optional<MinMaxSize> maybe_sizes = minmax_algorithm.ComputeMinMaxSize();
+  Optional<MinMaxSize> maybe_sizes = minmax_algorithm.ComputeMinMaxSize(input);
   if (maybe_sizes.has_value())
     return *maybe_sizes;
 

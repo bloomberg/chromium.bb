@@ -27,7 +27,7 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
 
   scoped_refptr<NGLayoutResult> Layout() override;
 
-  Optional<MinMaxSize> ComputeMinMaxSize() const override;
+  Optional<MinMaxSize> ComputeMinMaxSize(const MinMaxSizeInput&) const override;
 
  private:
   NGLogicalSize CalculateColumnSize(const NGLogicalSize& content_box_size);
