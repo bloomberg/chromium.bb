@@ -28,6 +28,7 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -64,6 +65,8 @@ constexpr size_t kMaximumNotificationNumber = 99;
 
 constexpr size_t kPaddingFromScreenTop = 8;  // in px. See crbug.com/754307.
 
+constexpr float kBackgroundBlurRadius = 30.f;
+
 // Flag to disable animation. Only for testing.
 bool disable_animations_for_test = false;
 
@@ -90,14 +93,20 @@ class WebNotificationBubbleWrapper {
     init_params.min_width = width;
     init_params.max_width = width;
     init_params.max_height = bubble->max_height();
-    init_params.bg_color = SkColorSetRGB(0xe7, 0xe7, 0xe7);
     init_params.show_by_click = show_by_click;
 
     views::TrayBubbleView* bubble_view = new views::TrayBubbleView(init_params);
+    bubble_view->set_color(SK_ColorTRANSPARENT);
+    bubble_view->layer()->SetFillsBoundsOpaquely(false);
     bubble_view->set_anchor_view_insets(anchor_tray->GetBubbleAnchorInsets());
     bubble_wrapper_ = std::make_unique<TrayBubbleWrapper>(
         tray, bubble_view, false /* is_persistent */);
     bubble->InitializeContents(bubble_view);
+
+    if (app_list::features::IsBackgroundBlurEnabled()) {
+      // ClientView's layer (See TrayBubbleView::InitializeAndShowBubble())
+      bubble_view->layer()->parent()->SetBackgroundBlur(kBackgroundBlurRadius);
+    }
   }
 
   MessageCenterBubble* bubble() const { return bubble_.get(); }

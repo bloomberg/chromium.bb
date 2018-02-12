@@ -52,8 +52,6 @@ MessageListView::MessageListView()
   SetLayoutManager(std::move(layout));
 
   if (!switches::IsSidebarEnabled()) {
-    SetBackground(
-        views::CreateSolidBackground(MessageCenterView::kBackgroundColor));
     SetBorder(views::CreateEmptyBorder(
         gfx::Insets(message_center::kMarginBetweenItemsInList)));
   }

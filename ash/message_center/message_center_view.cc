@@ -52,10 +52,6 @@ using message_center::NotificationList;
 namespace ash {
 
 // static
-const SkColor MessageCenterView::kBackgroundColor =
-    SkColorSetARGB(0xF2, 0xf0, 0xf0, 0xf2);
-
-// static
 const size_t MessageCenterView::kMaxVisibleNotifications = 100;
 
 // static
@@ -73,41 +69,39 @@ void SetViewHierarchyEnabled(views::View* view, bool enabled) {
   view->SetEnabled(enabled);
 }
 
-// View that is shown when there are no notifications.
-class EmptyNotificationView : public views::View {
- public:
-  EmptyNotificationView() {
-    auto layout = std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical, kEmptyViewPadding, 0);
-    layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
-    layout->set_cross_axis_alignment(
-        views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-    SetLayoutManager(std::move(layout));
+// Create a view that is shown when there are no notifications.
+views::View* CreateEmptyNotificationView() {
+  auto* view = new views::View;
+  auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical,
+                                                   kEmptyViewPadding, 0);
+  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  view->SetLayoutManager(std::move(layout));
 
-    views::ImageView* icon = new views::ImageView();
-    icon->SetImage(gfx::CreateVectorIcon(
-        kNotificationCenterAllDoneIcon, message_center_style::kEmptyIconSize,
-        message_center_style::kEmptyViewColor));
-    icon->SetBorder(
-        views::CreateEmptyBorder(message_center_style::kEmptyIconPadding));
-    AddChildView(icon);
+  views::ImageView* icon = new views::ImageView();
+  icon->SetImage(gfx::CreateVectorIcon(kNotificationCenterAllDoneIcon,
+                                       message_center_style::kEmptyIconSize,
+                                       message_center_style::kEmptyViewColor));
+  icon->SetBorder(
+      views::CreateEmptyBorder(message_center_style::kEmptyIconPadding));
+  view->AddChildView(icon);
 
-    views::Label* label = new views::Label(
-        l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_NO_MESSAGES));
-    label->SetEnabledColor(message_center_style::kEmptyViewColor);
-    // "Roboto-Medium, 12sp" is specified in the mock.
-    label->SetFontList(
-        gfx::FontList().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
-    label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    AddChildView(label);
-  }
+  views::Label* label = new views::Label(
+      l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_NO_MESSAGES));
+  label->SetEnabledColor(message_center_style::kEmptyViewColor);
+  // "Roboto-Medium, 12sp" is specified in the mock.
+  label->SetFontList(
+      gfx::FontList().DeriveWithWeight(gfx::Font::Weight::MEDIUM));
+  label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  label->SetSubpixelRenderingEnabled(false);
+  view->AddChildView(label);
 
-  // views::View:
-  int GetHeightForWidth(int w) const override { return kEmptyViewHeight; }
+  view->SetPaintToLayer();
+  view->layer()->SetFillsBoundsOpaquely(false);
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(EmptyNotificationView);
-};
+  return view;
+}
 
 class MessageCenterScrollView : public views::ScrollView {
  public:
@@ -144,8 +138,6 @@ MessageCenterView::MessageCenterView(
 
   message_center_->AddObserver(this);
   set_notify_enter_exit_on_child(true);
-  if (!switches::IsSidebarEnabled())
-    SetBackground(views::CreateSolidBackground(kBackgroundColor));
   SetFocusBehavior(views::View::FocusBehavior::NEVER);
 
   button_bar_ = new MessageCenterButtonBar(
@@ -155,13 +147,9 @@ MessageCenterView::MessageCenterView(
   const int button_height = button_bar_->GetPreferredSize().height();
 
   scroller_ = new MessageCenterScrollView();
-  if (!switches::IsSidebarEnabled()) {
-    scroller_->SetBackgroundColor(kBackgroundColor);
-  } else {
-    // Need to set the transparent background explicitly, since ScrollView has
-    // set the default opaque background color.
-    scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  }
+  // Need to set the transparent background explicitly, since ScrollView has
+  // set the default opaque background color.
+  scroller_->SetBackgroundColor(SK_ColorTRANSPARENT);
   scroller_->ClipHeightTo(kMinScrollViewHeight, max_height - button_height);
   scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
   scroller_->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
@@ -184,15 +172,15 @@ MessageCenterView::MessageCenterView(
 
   settings_view_ = new NotifierSettingsView();
 
-  no_notifications_view_ = new EmptyNotificationView();
+  no_notifications_view_ = CreateEmptyNotificationView();
 
   scroller_->SetVisible(false);  // Because it has no notifications at first.
   settings_view_->SetVisible(mode_ == Mode::SETTINGS);
   no_notifications_view_->SetVisible(mode_ == Mode::NO_NOTIFICATIONS);
 
+  AddChildView(no_notifications_view_);
   AddChildView(scroller_);
   AddChildView(settings_view_);
-  AddChildView(no_notifications_view_);
   AddChildView(button_bar_);
 
   if (switches::IsSidebarEnabled())
@@ -339,7 +327,7 @@ void MessageCenterView::Layout() {
 gfx::Size MessageCenterView::CalculatePreferredSize() const {
   int width = 0;
   for (int i = 0; i < child_count(); ++i) {
-    const views::View* child = child_at(0);
+    const views::View* child = child_at(i);
     if (child->visible())
       width = std::max(width, child->GetPreferredSize().width());
   }
@@ -359,7 +347,7 @@ int MessageCenterView::GetHeightForWidth(int width) const {
   else if (mode_ == Mode::SETTINGS)
     content_height += settings_view_->GetHeightForWidth(width);
   else if (no_notifications_view_->visible())
-    content_height += no_notifications_view_->GetHeightForWidth(width);
+    content_height += kEmptyViewHeight;
   return button_bar_->GetHeightForWidth(width) + content_height;
 }
 
