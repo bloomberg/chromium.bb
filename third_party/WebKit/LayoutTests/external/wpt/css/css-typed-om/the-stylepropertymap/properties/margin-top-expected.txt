@@ -1,10 +1,11 @@
 This is a testharness.js-based test.
 FAIL Can set 'margin-top' to unitless zero Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
 PASS Can get a CSSKeywordValue from 'margin-top'
-FAIL Can set 'margin-top' to a CSSKeywordValue Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
-PASS Can get a percent CSSUnitValue from 'margin-top'
-PASS Can set 'margin-top' to a percent CSSUnitValue
-PASS Can get a length CSSUnitValue from 'margin-top'
-PASS Can set 'margin-top' to a length CSSUnitValue
+PASS Can set 'margin-top' to a CSSKeywordValue
+PASS Can get a percent from 'margin-top'
+PASS Can set 'margin-top' to a percent
+PASS Can get a length from 'margin-top'
+PASS Can set 'margin-top' to a length
+PASS Setting 'margin-top' to a time throws TypeError
 Harness: the test ran to completion.
 

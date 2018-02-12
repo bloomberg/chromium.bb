@@ -1704,6 +1704,7 @@
       field_template: "<length>",
       default_value: "Length(kFixed)",
       converter: "ConvertQuirkyLength",
+      keywords: ["auto"],
       typedom_types: ["Length", "Percent"]
     },
     {
