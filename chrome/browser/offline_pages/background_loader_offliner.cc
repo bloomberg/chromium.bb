@@ -283,6 +283,33 @@ bool BackgroundLoaderOffliner::HandleTimeout(int64_t request_id) {
   return false;
 }
 
+void BackgroundLoaderOffliner::CanDownload(
+    const base::Callback<void(bool)>& callback) {
+  if (!pending_request_.get()) {
+    callback.Run(false);  // Shouldn't happen though...
+  }
+
+  bool should_allow_downloads = false;
+  Offliner::RequestStatus final_status =
+      Offliner::RequestStatus::LOADING_FAILED_DOWNLOAD;
+  // Check whether we should allow file downloads for this save page request.
+  // If we want to proceed with the file download, fail with
+  // DOWNLOAD_THROTTLED. If we don't want to proceed with the file download,
+  // fail with LOADING_FAILED_DOWNLOAD.
+  if (offline_page_model_->GetPolicyController()->ShouldAllowDownloads(
+          pending_request_.get()->client_id().name_space)) {
+    should_allow_downloads = true;
+    final_status = Offliner::RequestStatus::DOWNLOAD_THROTTLED;
+  }
+
+  callback.Run(should_allow_downloads);
+  SavePageRequest request(*pending_request_.get());
+  completion_callback_.Run(request, final_status);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&BackgroundLoaderOffliner::ResetState,
+                            weak_ptr_factory_.GetWeakPtr()));
+}
+
 void BackgroundLoaderOffliner::MarkLoadStartTime() {
   load_start_time_ = base::TimeTicks::Now();
 }
@@ -567,6 +594,7 @@ void BackgroundLoaderOffliner::ResetState() {
 void BackgroundLoaderOffliner::ResetLoader() {
   loader_.reset(
       new background_loader::BackgroundLoaderContents(browser_context_));
+  loader_->SetDelegate(this);
 }
 
 void BackgroundLoaderOffliner::AttachObservers() {

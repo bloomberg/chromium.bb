@@ -31,6 +31,10 @@ void BackgroundLoaderContents::Cancel() {
   web_contents_->Close();
 }
 
+void BackgroundLoaderContents::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
+}
+
 bool BackgroundLoaderContents::IsNeverVisible(
     content::WebContents* web_contents) {
   // Background, so not visible.
@@ -57,8 +61,12 @@ void BackgroundLoaderContents::CanDownload(
     const GURL& url,
     const std::string& request_method,
     const base::Callback<void(bool)>& callback) {
-  // Do not download anything.
-  callback.Run(false);
+  if (delegate_) {
+    delegate_->CanDownload(callback);
+  } else {
+    // Do not download anything if there's no delegate.
+    callback.Run(false);
+  }
 }
 
 bool BackgroundLoaderContents::ShouldCreateWebContents(

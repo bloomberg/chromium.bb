@@ -39,10 +39,12 @@ struct RequestStats {
 // An Offliner implementation that attempts client-side rendering and saving
 // of an offline page. It uses the BackgroundLoader to load the page and the
 // OfflinePageModel to save it. Only one request may be active at a time.
-class BackgroundLoaderOffliner : public Offliner,
-                                 public content::WebContentsObserver,
-                                 public SnapshotController::Client,
-                                 public ResourceLoadingObserver {
+class BackgroundLoaderOffliner
+    : public Offliner,
+      public background_loader::BackgroundLoaderContents::Delegate,
+      public content::WebContentsObserver,
+      public SnapshotController::Client,
+      public ResourceLoadingObserver {
  public:
   BackgroundLoaderOffliner(
       content::BrowserContext* browser_context,
@@ -61,6 +63,12 @@ class BackgroundLoaderOffliner : public Offliner,
   bool Cancel(const CancelCallback& callback) override;
   void TerminateLoadIfInProgress() override;
   bool HandleTimeout(int64_t request_id) override;
+
+  // BackgroundLoaderContents::Delegate implementation.
+  // Called when a navigation resulted in a single-file download. e.g.
+  // When user navigated to a pdf page while offline and clicks on the
+  // "Download page later" button.
+  void CanDownload(const base::Callback<void(bool)>& callback) override;
 
   // WebContentsObserver implementation.
   void DocumentAvailableInMainFrame() override;

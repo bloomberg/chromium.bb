@@ -21,6 +21,16 @@ namespace background_loader {
 // a renderer but does not have any visible display.
 class BackgroundLoaderContents : public content::WebContentsDelegate {
  public:
+  // Delegate to help with decision making.
+  class Delegate {
+   public:
+    // Decide whether single-file (e.g. pdf) downloads should be allowed to
+    // start if a page initiates it. Callback can be called
+    // synchronously. Returning true to the callback will initiate
+    // the single file download. Assumes delegate will appropriately clean up.
+    virtual void CanDownload(const base::Callback<void(bool)>& callback) = 0;
+  };
+
   // Creates BackgroundLoaderContents with specified |browser_context|. Uses
   // default session storage space.
   explicit BackgroundLoaderContents(content::BrowserContext* browser_context);
@@ -31,6 +41,9 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
   virtual void LoadPage(const GURL& url);
   // Cancels loading of the current page. Calls Close() on internal WebContents.
   virtual void Cancel();
+  // Sets the delegate for this BackgroundLoaderContents; The delegate should
+  // outlive the contents, therefore, raw pointers are allowed.
+  void SetDelegate(Delegate* delegate);
   // Returns the inner web contents.
   content::WebContents* web_contents() { return web_contents_.get(); }
 
@@ -87,6 +100,7 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
 
   std::unique_ptr<content::WebContents> web_contents_;
   content::BrowserContext* browser_context_;
+  Delegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundLoaderContents);
 };
