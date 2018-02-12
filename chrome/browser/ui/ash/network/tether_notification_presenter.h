@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chromeos/components/tether/notification_presenter.h"
-#include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_state.h"
 #include "components/cryptauth/remote_device.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -26,6 +25,8 @@ class Notification;
 }  // namespace message_center
 
 namespace chromeos {
+
+class NetworkConnect;
 
 namespace tether {
 
@@ -74,8 +75,21 @@ class TetherNotificationPresenter : public NotificationPresenter {
   // IDs of all notifications which, when clicked, open mobile data settings.
   static const char* const kIdsWhichOpenTetherSettingsOnClick[];
 
+  // Reflects InstantTethering_NotificationInteractionType enum in enums.xml. Do
+  // not rearrange.
+  enum NotificationInteractionType {
+    NOTIFICATION_BODY_TAPPED_SINGLE_HOST_NEARBY = 0,
+    NOTIFICATION_BODY_TAPPED_MULTIPLE_HOSTS_NEARBY = 1,
+    NOTIFICATION_BODY_TAPPED_SETUP_REQUIRED = 2,
+    NOTIFICATION_BODY_TAPPED_CONNECTION_FAILED = 3,
+    NOTIFICATION_BUTTON_TAPPED_HOST_NEARBY = 4,
+    NOTIFICATION_INTERACTION_TYPE_MAX
+  };
+
   void OnNotificationClicked(const std::string& notification_id,
                              base::Optional<int> button_index);
+  NotificationInteractionType GetMetricValueForClickOnNotificationBody(
+      const std::string& clicked_notification_id) const;
   void OnNotificationClosed(const std::string& notification_id);
 
   std::unique_ptr<message_center::Notification> CreateNotification(
