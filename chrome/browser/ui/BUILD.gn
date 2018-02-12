@@ -2258,8 +2258,6 @@ split_static_library("ui") {
         "webui/signin/dice_turn_sync_on_helper.h",
         "webui/signin/dice_turn_sync_on_helper_delegate_impl.cc",
         "webui/signin/dice_turn_sync_on_helper_delegate_impl.h",
-        "webui/signin/signin_dice_internals_handler.cc",
-        "webui/signin/signin_dice_internals_handler.h",
       ]
     }
   }
