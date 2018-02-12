@@ -28,6 +28,7 @@ import android.text.style.ForegroundColorSpan;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -148,6 +149,7 @@ public class SavePasswordsPreferences
     @Nullable
     private Uri mExportFileUri;
 
+    private MenuItem mHelpItem;
     private String mSearchQuery;
     private Preference mLinkPref;
     private ChromeSwitchPreference mSavePasswordsSwitch;
@@ -212,6 +214,7 @@ public class SavePasswordsPreferences
         MenuItem searchItem = menu.findItem(R.id.menu_id_search);
         searchItem.setVisible(providesPasswordSearch());
         if (providesPasswordSearch()) {
+            mHelpItem = menu.findItem(R.id.menu_id_general_help);
             setUpSearchAction(searchItem);
         }
     }
@@ -229,20 +232,14 @@ public class SavePasswordsPreferences
             searchItem.expandActionView();
             searchView.setQuery(mSearchQuery, false);
         }
-        searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
-            @Override
-            public boolean onMenuItemActionExpand(MenuItem menuItem) {
-                maybeRecordTriggeredPasswordSearch(true);
-                filterPasswords(""); // Hide other menu elements.
-                return true; // Continue expanding.
-            }
-
-            @Override
-            public boolean onMenuItemActionCollapse(MenuItem menuItem) {
-                searchView.setQuery(null, false);
-                filterPasswords(null); // Reset filter to bring back all preferences.
-                return true; // Continue collapsing.
-            }
+        searchItem.setOnMenuItemClickListener((MenuItem m) -> {
+            filterPasswords("");
+            return false; // Continue with the default action.
+        });
+        searchView.findViewById(R.id.search_close_btn).setOnClickListener((View v) -> {
+            searchView.setQuery(null, false);
+            searchView.setIconified(true);
+            filterPasswords(null); // Reset filter to bring back all preferences.
         });
         searchView.setOnSearchClickListener(view -> filterPasswords(""));
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -253,6 +250,7 @@ public class SavePasswordsPreferences
 
             @Override
             public boolean onQueryTextChange(String query) {
+                maybeRecordTriggeredPasswordSearch(true);
                 return filterPasswords(query);
             }
         });
@@ -573,6 +571,9 @@ public class SavePasswordsPreferences
 
     private boolean filterPasswords(String query) {
         mSearchQuery = query;
+        // Hide the help option. It's not useful during search but might be clicked by accident.
+        mHelpItem.setShowAsAction(mSearchQuery == null ? MenuItem.SHOW_AS_ACTION_NEVER
+                                                       : MenuItem.SHOW_AS_ACTION_IF_ROOM);
         rebuildPasswordLists();
         return false; // Query has been handled. Don't trigger default action of SearchView.
     }

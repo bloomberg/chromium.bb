@@ -1232,8 +1232,7 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withText(R.string.section_saved_passwords_exceptions))
                 .check(doesNotExist());
 
-        Espresso.pressBack(); // Close keyboard.
-        Espresso.pressBack(); // Close search view.
+        Espresso.onView(withId(R.id.search_close_btn)).perform(click()); // Close search view.
 
         Espresso.onView(withText(R.string.section_saved_passwords_exceptions)).perform(scrollTo());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -1284,34 +1283,7 @@ public class SavePasswordsPreferencesTest {
 
         Espresso.pressBack(); // Close keyboard.
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        Espresso.onView(withContentDescription("Collapse")).perform(click());
-
-        Espresso.onView(withText(R.string.passwords_auto_signin_title))
-                .check(matches(isDisplayed()));
-        Espresso.onView(withText(startsWith("View and manage"))).check(matches(isDisplayed()));
-    }
-
-    /**
-     * Check that closing the search via back button brings back all non-password prefs.
-     */
-    @Test
-    @SmallTest
-    @Feature({"Preferences"})
-    @EnableFeatures(ChromeFeatureList.PASSWORD_SEARCH)
-    public void testSearchBarBackKeyRestoresGeneralPrefs() throws Exception {
-        setPasswordSourceWithMultipleEntries(GREEK_GODS);
-        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
-                SavePasswordsPreferences.class.getName());
-
-        Espresso.onView(withSearchMenuIdOrText()).perform(click());
-        Espresso.onView(withId(R.id.search_src_text))
-                .perform(click(), typeText("Zeu"), closeSoftKeyboard());
-
-        Espresso.onView(withText(R.string.passwords_auto_signin_title)).check(doesNotExist());
-        Espresso.onView(withText(startsWith("View and manage"))).check(doesNotExist());
-
-        Espresso.pressBack(); // Close keyboard.
-        Espresso.pressBack(); // Close search view.
+        Espresso.onView(withId(R.id.search_close_btn)).perform(click());
 
         Espresso.onView(withText(R.string.passwords_auto_signin_title))
                 .check(matches(isDisplayed()));
@@ -1373,9 +1345,7 @@ public class SavePasswordsPreferencesTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // The search bar should still be open and still display the search query.
-        waitForView(withId(R.id.search_src_text));
-        Espresso.onView(withId(R.id.search_src_text)).check(matches(isDisplayed()));
-        Espresso.onView(withId(R.id.search_src_text)).check(matches(withText("Zeu")));
+        waitForView(allOf(withId(R.id.search_src_text), withText("Zeu")));
     }
 
     /**
