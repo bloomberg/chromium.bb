@@ -1095,6 +1095,7 @@ interface ComputedAccessibleNode
     getter setSize
     getter valueText
     method constructor
+    method ensureUpToDate
 interface ConstantSourceNode : AudioScheduledSourceNode
     attribute @@toStringTag
     getter offset
