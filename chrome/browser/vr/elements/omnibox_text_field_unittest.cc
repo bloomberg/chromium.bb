@@ -32,6 +32,7 @@ class OmniboxTest : public testing::Test {
                             base::Unretained(&browser_)));
     omnibox_->OnFocusChanged(true);
     omnibox_->SetTextInputDelegate(&text_input_delegate_);
+    omnibox_->set_allow_inline_autocomplete(true);
   }
 
  protected:

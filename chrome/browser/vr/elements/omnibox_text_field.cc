@@ -51,6 +51,9 @@ void OmniboxTextField::OnUpdateInput(const EditedText& info) {
   request.cursor_position = info.current.selection_end;
   request.prevent_inline_autocomplete = false;
 
+  if (!allow_inline_autocomplete_)
+    request.prevent_inline_autocomplete = true;
+
   // If we have a non-leading cursor position, disable autocomplete. Note that
   // the autocomplete request does take in cursor position as a input.
   if (info.current.selection_end != static_cast<int>(info.current.text.size()))
