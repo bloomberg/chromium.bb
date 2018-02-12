@@ -73,6 +73,14 @@ interface AccessibilityControllerClient {
   // mojom file.
   HandleAccessibilityGesture(string gesture);
 
-  // Start or stop dictation (type what you speak).
+  // Starts or stops dictation (type what you speak).
   ToggleDictation();
+
+  // Whether or not to enable toggling spoken feedback via holding down two
+  // fingers on the screen.
+  ShouldToggleSpokenFeedbackViaTouch() => (bool should_toggle);
+
+  // Plays tick sound indicating spoken feedback will be toggled after
+  // countdown.
+  PlaySpokenFeedbackToggleCountdown(int32 tick_count);
 };

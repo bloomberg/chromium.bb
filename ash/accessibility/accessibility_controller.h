@@ -82,6 +82,15 @@ class ASH_EXPORT AccessibilityController
   // Toggle dictation.
   void ToggleDictation();
 
+  // Whether or not to enable toggling spoken feedback via holding down two
+  // fingers on the screen.
+  void ShouldToggleSpokenFeedbackViaTouch(
+      base::OnceCallback<void(bool)> callback);
+
+  // Plays tick sound indicating spoken feedback will be toggled after
+  // countdown.
+  void PlaySpokenFeedbackToggleCountdown(int tick_count);
+
   // mojom::AccessibilityController:
   void SetClient(mojom::AccessibilityControllerClientPtr client) override;
   void SetDarkenScreen(bool darken) override;

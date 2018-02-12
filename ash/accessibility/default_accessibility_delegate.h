@@ -35,8 +35,6 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   void SilenceSpokenFeedback() const override;
   void SaveScreenMagnifierScale(double scale) override;
   double GetSavedScreenMagnifierScale() override;
-  bool ShouldToggleSpokenFeedbackViaTouch() override;
-  void PlaySpokenFeedbackToggleCountdown(int tick_count) override;
 
  private:
   bool screen_magnifier_enabled_ = false;

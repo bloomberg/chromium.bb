@@ -28,6 +28,14 @@
 
 namespace ash {
 
+namespace {
+
+AccessibilityController* GetA11yController() {
+  return Shell::Get()->accessibility_controller();
+}
+
+}  // namespace
+
 AshTouchExplorationManager::AshTouchExplorationManager(
     RootWindowController* root_window_controller)
     : root_window_controller_(root_window_controller),
@@ -68,7 +76,7 @@ void AshTouchExplorationManager::SetOutputLevel(int volume) {
 }
 
 void AshTouchExplorationManager::SilenceSpokenFeedback() {
-  if (Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled())
+  if (GetA11yController()->IsSpokenFeedbackEnabled())
     Shell::Get()->accessibility_delegate()->SilenceSpokenFeedback();
 }
 
@@ -77,29 +85,25 @@ void AshTouchExplorationManager::PlayVolumeAdjustEarcon() {
     return;
   if (!audio_handler_->IsOutputMuted() &&
       audio_handler_->GetOutputVolumePercent() != 100) {
-    Shell::Get()->accessibility_controller()->PlayEarcon(
-        chromeos::SOUND_VOLUME_ADJUST);
+    GetA11yController()->PlayEarcon(chromeos::SOUND_VOLUME_ADJUST);
   }
 }
 
 void AshTouchExplorationManager::PlayPassthroughEarcon() {
-  Shell::Get()->accessibility_controller()->PlayEarcon(
-      chromeos::SOUND_PASSTHROUGH);
+  GetA11yController()->PlayEarcon(chromeos::SOUND_PASSTHROUGH);
 }
 
 void AshTouchExplorationManager::PlayExitScreenEarcon() {
-  Shell::Get()->accessibility_controller()->PlayEarcon(
-      chromeos::SOUND_EXIT_SCREEN);
+  GetA11yController()->PlayEarcon(chromeos::SOUND_EXIT_SCREEN);
 }
 
 void AshTouchExplorationManager::PlayEnterScreenEarcon() {
-  Shell::Get()->accessibility_controller()->PlayEarcon(
-      chromeos::SOUND_ENTER_SCREEN);
+  GetA11yController()->PlayEarcon(chromeos::SOUND_ENTER_SCREEN);
 }
 
 void AshTouchExplorationManager::HandleAccessibilityGesture(
     ax::mojom::Gesture gesture) {
-  Shell::Get()->accessibility_controller()->HandleAccessibilityGesture(gesture);
+  GetA11yController()->HandleAccessibilityGesture(gesture);
 }
 
 void AshTouchExplorationManager::OnDisplayMetricsChanged(
@@ -124,24 +128,28 @@ void AshTouchExplorationManager::OnTwoFingerTouchStop() {
 
 void AshTouchExplorationManager::PlaySpokenFeedbackToggleCountdown(
     int tick_count) {
-  AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
-  if (delegate->ShouldToggleSpokenFeedbackViaTouch())
-    delegate->PlaySpokenFeedbackToggleCountdown(tick_count);
+  GetA11yController()->ShouldToggleSpokenFeedbackViaTouch(base::BindOnce(
+      [](int tick_count, bool should_toggle) {
+        if (!should_toggle)
+          return;
+        GetA11yController()->PlaySpokenFeedbackToggleCountdown(tick_count);
+      },
+      tick_count));
 }
 
 void AshTouchExplorationManager::PlayTouchTypeEarcon() {
-  Shell::Get()->accessibility_controller()->PlayEarcon(
-      chromeos::SOUND_TOUCH_TYPE);
+  GetA11yController()->PlayEarcon(chromeos::SOUND_TOUCH_TYPE);
 }
 
 void AshTouchExplorationManager::ToggleSpokenFeedback() {
-  AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
-  if (delegate->ShouldToggleSpokenFeedbackViaTouch()) {
-    AccessibilityController* controller =
-        Shell::Get()->accessibility_controller();
-    controller->SetSpokenFeedbackEnabled(!controller->IsSpokenFeedbackEnabled(),
-                                         ash::A11Y_NOTIFICATION_SHOW);
-  }
+  GetA11yController()->ShouldToggleSpokenFeedbackViaTouch(
+      base::BindOnce([](bool should_toggle) {
+        if (!should_toggle)
+          return;
+        GetA11yController()->SetSpokenFeedbackEnabled(
+            !GetA11yController()->IsSpokenFeedbackEnabled(),
+            ash::A11Y_NOTIFICATION_SHOW);
+      }));
 }
 
 void AshTouchExplorationManager::OnWindowActivated(
@@ -185,7 +193,7 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
           aura::client::kAccessibilityTouchExplorationPassThrough);
 
   const bool spoken_feedback_enabled =
-      Shell::Get()->accessibility_controller()->IsSpokenFeedbackEnabled();
+      GetA11yController()->IsSpokenFeedbackEnabled();
 
   if (!touch_accessibility_enabler_) {
     // Always enable gesture to toggle spoken feedback.

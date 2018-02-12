@@ -89,11 +89,4 @@ double DefaultAccessibilityDelegate::GetSavedScreenMagnifierScale() {
   return std::numeric_limits<double>::min();
 }
 
-bool DefaultAccessibilityDelegate::ShouldToggleSpokenFeedbackViaTouch() {
-  return false;
-}
-
-void DefaultAccessibilityDelegate::PlaySpokenFeedbackToggleCountdown(
-    int tick_count) {}
-
 }  // namespace ash

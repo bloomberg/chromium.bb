@@ -18,10 +18,6 @@ namespace {
 constexpr base::TimeDelta kShutdownSoundDuration =
     base::TimeDelta::FromMilliseconds(1000);
 
-void CopyResult(base::TimeDelta* dest, base::TimeDelta src) {
-  *dest = src;
-}
-
 class TestAccessibilityController : ash::mojom::AccessibilityController {
  public:
   TestAccessibilityController() : binding_(this) {}
@@ -70,17 +66,30 @@ class FakeAccessibilityControllerClient : public AccessibilityControllerClient {
     last_a11y_gesture_ = gesture;
   }
 
+  void ShouldToggleSpokenFeedbackViaTouch(
+      ShouldToggleSpokenFeedbackViaTouchCallback callback) override {
+    std::move(callback).Run(true);
+  }
+
+  void PlaySpokenFeedbackToggleCountdown(int tick_count) override {
+    spoken_feedback_toggle_count_down_ = tick_count;
+  }
+
   ash::mojom::AccessibilityAlert last_a11y_alert() const {
     return last_a11y_alert_;
   }
   int32_t last_sound_key() const { return last_sound_key_; }
   std::string last_a11y_gesture() const { return last_a11y_gesture_; }
+  int spoken_feedback_toggle_count_down() const {
+    return spoken_feedback_toggle_count_down_;
+  }
 
  private:
   ash::mojom::AccessibilityAlert last_a11y_alert_ =
       ash::mojom::AccessibilityAlert::NONE;
   int32_t last_sound_key_ = -1;
   std::string last_a11y_gesture_;
+  int spoken_feedback_toggle_count_down_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAccessibilityControllerClient);
 };
@@ -120,8 +129,9 @@ TEST_F(AccessibilityControllerClientTest, MethodCalls) {
 
   // Tests PlayShutdownSound method call.
   base::TimeDelta sound_duration;
-  client.PlayShutdownSound(
-      base::BindOnce(&CopyResult, base::Unretained(&sound_duration)));
+  client.PlayShutdownSound(base::BindOnce(
+      [](base::TimeDelta* dst, base::TimeDelta duration) { *dst = duration; },
+      base::Unretained(&sound_duration)));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kShutdownSoundDuration, sound_duration);
 
@@ -129,4 +139,17 @@ TEST_F(AccessibilityControllerClientTest, MethodCalls) {
   const std::string gesture("click");
   client.HandleAccessibilityGesture(gesture);
   EXPECT_EQ(gesture, client.last_a11y_gesture());
+
+  // Tests ShouldToggleSpokenFeedbackViaTouch method call.
+  bool should_toggle = false;
+  client.ShouldToggleSpokenFeedbackViaTouch(base::BindOnce(
+      [](bool* dst, bool should_toggle) { *dst = should_toggle; },
+      base::Unretained(&should_toggle)));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(should_toggle);
+
+  // Tests PlaySpokenFeedbackToggleCountdown method call.
+  const int tick_count = 2;
+  client.PlaySpokenFeedbackToggleCountdown(tick_count);
+  EXPECT_EQ(tick_count, client.spoken_feedback_toggle_count_down());
 }

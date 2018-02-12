@@ -199,16 +199,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     AccessibilityManager::Get()->OnTwoFingerTouchStop();
   }
 
-  bool ShouldToggleSpokenFeedbackViaTouch() override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->ShouldToggleSpokenFeedbackViaTouch();
-  }
-
-  void PlaySpokenFeedbackToggleCountdown(int tick_count) override {
-    DCHECK(AccessibilityManager::Get());
-    AccessibilityManager::Get()->PlaySpokenFeedbackToggleCountdown(tick_count);
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(AccessibilityDelegateImpl);
 };
