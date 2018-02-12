@@ -38,6 +38,7 @@ bool UsageReportsBufferBackend::Init() {
   leveldb_env::Options options;
   options.create_if_missing = true;
   options.max_open_files = 0;  // Use minimum number of files.
+  options.write_buffer_size = 500 * 1024;
   std::string path = db_file_name_.value();
   leveldb::Status status = leveldb_env::OpenDB(options, path, &db_);
   UMA_HISTOGRAM_ENUMERATION("LevelDB.Open.UsageReportsBufferBackend",
