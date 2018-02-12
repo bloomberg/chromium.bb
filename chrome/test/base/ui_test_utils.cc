@@ -573,7 +573,10 @@ void WaitForHistoryToLoad(history::HistoryService* history_service) {
 
 BrowserActivationWaiter::BrowserActivationWaiter(const Browser* browser)
     : browser_(browser), observed_(false) {
-  if (chrome::FindLastActive() == browser_) {
+  // When the active browser closes, the next "last active browser" in the
+  // BrowserList might not be immediately activated. So we need to wait for the
+  // "last active browser" to actually be active.
+  if (chrome::FindLastActive() == browser_ && browser_->window()->IsActive()) {
     observed_ = true;
     return;
   }
@@ -593,6 +596,7 @@ void BrowserActivationWaiter::OnBrowserSetLastActive(Browser* browser) {
   if (browser != browser_)
     return;
 
+  ASSERT_TRUE(browser->window()->IsActive());
   observed_ = true;
   BrowserList::RemoveObserver(this);
   if (message_loop_runner_.get() && message_loop_runner_->loop_running())

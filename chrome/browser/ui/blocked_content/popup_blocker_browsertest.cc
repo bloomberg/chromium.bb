@@ -661,9 +661,13 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
 #endif
 
   // Verify that after the dialog is closed, the popup is in front again.
+#if !defined(OS_MACOSX)
   ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
+#endif
   js_helper->HandleJavaScriptDialog(tab, true, nullptr);
+#if !defined(OS_MACOSX)
   waiter.WaitForActivation();
+#endif
   ASSERT_EQ(popup_browser, chrome::FindLastActive());
 }
 
@@ -706,9 +710,13 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnderWindowOpener) {
 #endif
 
   // Verify that after the dialog is closed, the popup is in front again.
+#if !defined(OS_MACOSX)
   ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
+#endif
   js_helper->HandleJavaScriptDialog(tab, true, nullptr);
+#if !defined(OS_MACOSX)
   waiter.WaitForActivation();
+#endif
   ASSERT_EQ(popup_browser, chrome::FindLastActive());
 }
 
@@ -745,9 +753,13 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnderSubframe) {
 #endif
 
   // Verify that after the dialog is closed, the popup is in front again.
+#if !defined(OS_MACOSX)
   ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
+#endif
   js_helper->HandleJavaScriptDialog(tab, true, nullptr);
+#if !defined(OS_MACOSX)
   waiter.WaitForActivation();
+#endif
   ASSERT_EQ(popup_browser, chrome::FindLastActive());
 }
 
@@ -784,9 +796,13 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnderNoOpener) {
 #endif
 
   // Verify that after the dialog is closed, the popup is in front again.
+#if !defined(OS_MACOSX)
   ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
+#endif
   js_helper->HandleJavaScriptDialog(tab, true, nullptr);
+#if !defined(OS_MACOSX)
   waiter.WaitForActivation();
+#endif
   ASSERT_EQ(popup_browser, chrome::FindLastActive());
 }
 
@@ -826,9 +842,13 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 #endif
 
   // Verify that after the dialog was closed, the popup is in front again.
+#if !defined(OS_MACOSX)
   ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
+#endif
   dialog->native_dialog()->AcceptAppModalDialog();
+#if !defined(OS_MACOSX)
   waiter.WaitForActivation();
+#endif
   ASSERT_EQ(popup_browser, chrome::FindLastActive());
 }
 
@@ -874,9 +894,13 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnderSpawnerOpen) {
 #endif
 
   // Verify that after the dialog is closed, the popup is in front again.
+#if !defined(OS_MACOSX)
   ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
+#endif
   js_helper->HandleJavaScriptDialog(tab, true, nullptr);
+#if !defined(OS_MACOSX)
   waiter.WaitForActivation();
+#endif
   ASSERT_EQ(popup_browser, chrome::FindLastActive());
 }
 
