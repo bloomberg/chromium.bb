@@ -1,5 +1,4 @@
 include_rules = [
-    "+public/common/feature_policy",
     "-modules",
     "+modules/EventModules.h",
     "+modules/EventTargetModules.h",

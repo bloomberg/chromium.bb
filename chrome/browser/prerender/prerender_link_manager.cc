@@ -24,7 +24,7 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/common/referrer.h"
 #include "extensions/features/features.h"
-#include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/WebKit/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 

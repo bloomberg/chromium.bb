@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <utility>
-#include "common/associated_interfaces/associated_interface_provider.h"
 #include "core/dom/Document.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/LocalFrame.h"
@@ -17,6 +16,7 @@
 #include "modules/screen_orientation/ScreenOrientationDispatcher.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/ScopedOrientationChangeIndicator.h"
+#include "public/common/associated_interfaces/associated_interface_provider.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebScreenInfo.h"
 

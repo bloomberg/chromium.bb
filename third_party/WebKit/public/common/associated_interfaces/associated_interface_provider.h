@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_COMMON_ASSOCIATED_INTERFACES_ASSOCIATED_INTERFACE_PROVIDER_H_
-#define THIRD_PARTY_WEBKIT_COMMON_ASSOCIATED_INTERFACES_ASSOCIATED_INTERFACE_PROVIDER_H_
+#ifndef THIRD_PARTY_WEBKIT_PUBLIC_COMMON_ASSOCIATED_INTERFACES_ASSOCIATED_INTERFACE_PROVIDER_H_
+#define THIRD_PARTY_WEBKIT_PUBLIC_COMMON_ASSOCIATED_INTERFACES_ASSOCIATED_INTERFACE_PROVIDER_H_
 
 #include <string>
 
@@ -44,10 +44,10 @@ class AssociatedInterfaceProvider {
 
   virtual void OverrideBinderForTesting(
       const std::string& name,
-      const base::Callback<void(mojo::ScopedInterfaceEndpointHandle)>&
+      const base::RepeatingCallback<void(mojo::ScopedInterfaceEndpointHandle)>&
           binder) = 0;
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_COMMON_ASSOCIATED_INTERFACES_ASSOCIATED_INTERFACE_PROVIDER_H_
+#endif  // THIRD_PARTY_WEBKIT_PUBLIC_COMMON_ASSOCIATED_INTERFACES_ASSOCIATED_INTERFACE_PROVIDER_H_

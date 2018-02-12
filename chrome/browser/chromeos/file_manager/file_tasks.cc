@@ -43,7 +43,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
 #include "storage/browser/fileapi/file_system_url.h"
-#include "third_party/WebKit/common/mime_util/mime_util.h"
+#include "third_party/WebKit/public/common/mime_util/mime_util.h"
 
 using extensions::Extension;
 using extensions::api::file_manager_private::Verb;

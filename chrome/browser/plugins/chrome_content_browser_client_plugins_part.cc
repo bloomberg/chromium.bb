@@ -17,7 +17,7 @@
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "third_party/WebKit/common/associated_interfaces/associated_interface_registry.h"
+#include "third_party/WebKit/public/common/associated_interfaces/associated_interface_registry.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"

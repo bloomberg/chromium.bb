@@ -9,7 +9,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_trial_policy.h"
 #include "content/public/common/origin_util.h"
-#include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
+#include "third_party/WebKit/public/common/origin_trials/trial_token_validator.h"
 
 namespace content {
 

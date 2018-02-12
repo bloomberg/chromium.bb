@@ -9,7 +9,7 @@
 
 #include "base/values.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/common/origin_manifest/origin_manifest.h"
+#include "third_party/WebKit/public/common/origin_manifest/origin_manifest.h"
 
 namespace base {
 class Value;

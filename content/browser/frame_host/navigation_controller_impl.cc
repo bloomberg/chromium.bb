@@ -80,7 +80,7 @@
 #include "media/base/mime_util.h"
 #include "net/base/escape.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/common/mime_util/mime_util.h"
+#include "third_party/WebKit/public/common/mime_util/mime_util.h"
 #include "url/url_constants.h"
 
 namespace content {

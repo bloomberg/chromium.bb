@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_COMMON_ASSOCIATED_INTERFACES_ASSOCIATED_INTERFACE_REGISTRY_H_
-#define THIRD_PARTY_WEBKIT_COMMON_ASSOCIATED_INTERFACES_ASSOCIATED_INTERFACE_REGISTRY_H_
+#ifndef THIRD_PARTY_WEBKIT_PUBLIC_COMMON_ASSOCIATED_INTERFACES_ASSOCIATED_INTERFACE_REGISTRY_H_
+#define THIRD_PARTY_WEBKIT_PUBLIC_COMMON_ASSOCIATED_INTERFACES_ASSOCIATED_INTERFACE_REGISTRY_H_
 
 #include <string>
 
@@ -28,7 +28,8 @@ namespace blink {
 // interfaces are associated with the IPC::SyncChannel to the browser.
 class AssociatedInterfaceRegistry {
  public:
-  using Binder = base::Callback<void(mojo::ScopedInterfaceEndpointHandle)>;
+  using Binder =
+      base::RepeatingCallback<void(mojo::ScopedInterfaceEndpointHandle)>;
 
   virtual ~AssociatedInterfaceRegistry() {}
 
@@ -39,14 +40,14 @@ class AssociatedInterfaceRegistry {
   virtual void RemoveInterface(const std::string& name) = 0;
 
   template <typename Interface>
-  using InterfaceBinder =
-      base::Callback<void(mojo::AssociatedInterfaceRequest<Interface>)>;
+  using InterfaceBinder = base::RepeatingCallback<void(
+      mojo::AssociatedInterfaceRequest<Interface>)>;
 
   // Templated helper for AddInterface() above.
   template <typename Interface>
   void AddInterface(const InterfaceBinder<Interface>& binder) {
     AddInterface(Interface::Name_,
-                 base::Bind(&BindInterface<Interface>, binder));
+                 base::BindRepeating(&BindInterface<Interface>, binder));
   }
 
  private:
@@ -59,4 +60,4 @@ class AssociatedInterfaceRegistry {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_COMMON_ASSOCIATED_INTERFACES_ASSOCIATED_INTERFACE_REGISTRY_H_
+#endif  // THIRD_PARTY_WEBKIT_PUBLIC_COMMON_ASSOCIATED_INTERFACES_ASSOCIATED_INTERFACE_REGISTRY_H_

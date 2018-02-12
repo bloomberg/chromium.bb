@@ -24,10 +24,7 @@ jumbo_component("blink_common") {
   defines = [ "BLINK_COMMON_IMPLEMENTATION=1" ]
 
   sources = [
-    "associated_interfaces/associated_interface_provider.h",
-    "associated_interfaces/associated_interface_registry.h",
     "client_hints/client_hints.cc",
-    "common/message_port/message_port_channel.h",
     "common_export.h",
     "device_memory/approximated_device_memory.cc",
     "feature_policy/feature_policy.cc",
@@ -40,18 +37,16 @@ jumbo_component("blink_common") {
     "message_port/transferable_message_struct_traits.cc",
     "message_port/transferable_message_struct_traits.h",
     "mime_util/mime_util.cc",
-    "mime_util/mime_util.h",
     "origin_manifest/origin_manifest.cc",
-    "origin_manifest/origin_manifest.h",
     "origin_trials/trial_token.cc",
-    "origin_trials/trial_token.h",
     "origin_trials/trial_token_validator.cc",
-    "origin_trials/trial_token_validator.h",
     "page/launching_process_state.h",
     "sampling_heap_profiler/sampling_heap_profiler.cc",
     "sampling_heap_profiler/sampling_heap_profiler.h",
 
     # TODO(kinuko): Split out the target for public headers.
+    "../public/common/associated_interfaces/associated_interface_provider.h",
+    "../public/common/associated_interfaces/associated_interface_registry.h",
     "../public/common/client_hints/client_hints.h",
     "../public/common/device_memory/approximated_device_memory.h",
     "../public/common/feature_policy/feature_policy.h",
@@ -61,6 +56,10 @@ jumbo_component("blink_common") {
     "../public/common/message_port/cloneable_message.h",
     "../public/common/message_port/message_port_channel.h",
     "../public/common/message_port/transferable_message.h",
+    "../public/common/mime_util/mime_util.h",
+    "../public/common/origin_manifest/origin_manifest.h",
+    "../public/common/origin_trials/trial_token.h",
+    "../public/common/origin_trials/trial_token_validator.h",
   ]
 
   public_deps = [
