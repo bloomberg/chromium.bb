@@ -400,8 +400,6 @@ enum class SnapshotViewOption {
                       withCompletion:^{
                         [self.animationDelegate
                             tabSwitcherPresentationAnimationDidEnd:self];
-                        [self.delegate
-                            tabSwitcherPresentationTransitionDidEnd:self];
                         [_tabSwitcherView wasShown];
                       }];
 }

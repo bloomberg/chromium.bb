@@ -1660,7 +1660,6 @@ NSString* const kTransitionToolbarAnimationKey =
   if (self.transitionStyle == STACK_TRANSITION_STYLE_PRESENTING) {
     [_testDelegate stackViewControllerShowWithSelectedTabAnimationDidEnd];
     [_animationDelegate tabSwitcherPresentationAnimationDidEnd:self];
-    [_delegate tabSwitcherPresentationTransitionDidEnd:self];
   } else {
     [_animationDelegate tabSwitcherDismissalAnimationDidEnd:self];
     [_delegate tabSwitcherDismissTransitionDidEnd:self];
