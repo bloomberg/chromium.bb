@@ -524,7 +524,7 @@ class EventDispatcherVizTargeterTest
 
 void EventDispatcherVizTargeterTest::SetUp() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::switches::kUseVizHitTest);
+      ::switches::kUseVizHitTestDrawQuad);
   if (is_event_processing_async()) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseAsyncEventTargeting);

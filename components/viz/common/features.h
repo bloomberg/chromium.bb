@@ -15,7 +15,9 @@ VIZ_COMMON_EXPORT extern const base::Feature kEnableSurfaceSynchronization;
 VIZ_COMMON_EXPORT extern const base::Feature kVizDisplayCompositor;
 
 VIZ_COMMON_EXPORT bool IsSurfaceSynchronizationEnabled();
+VIZ_COMMON_EXPORT bool IsVizHitTestingDrawQuadEnabled();
 VIZ_COMMON_EXPORT bool IsVizHitTestingEnabled();
+VIZ_COMMON_EXPORT bool IsVizHitTestingSurfaceLayerEnabled();
 
 }  // namespace features
 

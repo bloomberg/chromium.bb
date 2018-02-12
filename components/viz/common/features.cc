@@ -31,11 +31,24 @@ bool IsSurfaceSynchronizationEnabled() {
          base::FeatureList::IsEnabled(kVizDisplayCompositor);
 }
 
-bool IsVizHitTestingEnabled() {
+bool IsVizHitTestingDrawQuadEnabled() {
   // TODO(riajiang): Check feature flag as well. https://crbug.com/804888
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kUseVizHitTest) ||
+             switches::kUseVizHitTestDrawQuad) ||
          base::FeatureList::IsEnabled(kVizDisplayCompositor);
+}
+
+bool IsVizHitTestingEnabled() {
+  return IsVizHitTestingDrawQuadEnabled() ||
+         IsVizHitTestingSurfaceLayerEnabled();
+}
+
+bool IsVizHitTestingSurfaceLayerEnabled() {
+  // TODO(riajiang): Check feature flag as well. https://crbug.com/804888
+  // TODO(riajiang): Check kVizDisplayCompositor feature when it works with
+  // that config.
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseVizHitTestSurfaceLayer);
 }
 
 }  // namespace features
