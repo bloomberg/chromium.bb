@@ -38,13 +38,13 @@ void NinjaActionTargetWriter::Run() {
   for (const auto& pair : target_->GetDeps(Target::DEPS_LINKED))
     extra_hard_deps.push_back(pair.ptr);
 
-  // For ACTIONs this is a bit inefficient since it creates an input dep
-  // stamp file even though we're only going to use it once. It would save a
-  // build step to skip this and write the order-only deps directly on the
-  // build rule. This should probably be handled by WriteInputDepsStampAndGetDep
-  // automatically if we supply a count of sources (so it can optimize based on
-  // how many times things would be duplicated).
-  OutputFile input_dep = WriteInputDepsStampAndGetDep(extra_hard_deps);
+  // For ACTIONs, the input deps appear only once in the generated ninja
+  // file, so WriteInputDepsStampAndGetDep() won't create a stamp file
+  // and the action will just depend on all the input deps directly.
+  size_t num_stamp_uses =
+      target_->output_type() == Target::ACTION ? 1u : target_->sources().size();
+  std::vector<OutputFile> input_deps =
+      WriteInputDepsStampAndGetDep(extra_hard_deps, num_stamp_uses);
   out_ << std::endl;
 
   // Collects all output files for writing below.
@@ -52,7 +52,7 @@ void NinjaActionTargetWriter::Run() {
 
   if (target_->output_type() == Target::ACTION_FOREACH) {
     // Write separate build lines for each input source file.
-    WriteSourceRules(custom_rule_name, input_dep, &output_files);
+    WriteSourceRules(custom_rule_name, input_deps, &output_files);
   } else {
     DCHECK(target_->output_type() == Target::ACTION);
 
@@ -64,11 +64,11 @@ void NinjaActionTargetWriter::Run() {
     path_output_.WriteFiles(out_, output_files);
 
     out_ << ": " << custom_rule_name;
-    if (!input_dep.value().empty()) {
+    if (!input_deps.empty()) {
       // As in WriteSourceRules, we want to force this target to rebuild any
       // time any of its dependencies change.
-      out_ << " | ";
-      path_output_.WriteFile(out_, input_dep);
+      out_ << " |";
+      path_output_.WriteFiles(out_, input_deps);
     }
     out_ << std::endl;
     if (target_->action_values().has_depfile()) {
@@ -88,6 +88,8 @@ void NinjaActionTargetWriter::Run() {
   // Write the stamp, which also depends on all data deps. These are needed at
   // runtime and should be compiled when the action is, but don't need to be
   // done before we run the action.
+  // TODO(thakis): If the action has just a single output, make things depend
+  // on that output directly without writing a stamp file.
   std::vector<OutputFile> data_outs;
   for (const auto& dep : target_->data_deps())
     data_outs.push_back(dep.ptr->dependency_output_file());
@@ -158,7 +160,7 @@ std::string NinjaActionTargetWriter::WriteRuleDefinition() {
 
 void NinjaActionTargetWriter::WriteSourceRules(
     const std::string& custom_rule_name,
-    const OutputFile& input_dep,
+    const std::vector<OutputFile>& input_deps,
     std::vector<OutputFile>* output_files) {
   EscapeOptions args_escape_options;
   args_escape_options.mode = ESCAPE_NINJA_COMMAND;
@@ -173,13 +175,13 @@ void NinjaActionTargetWriter::WriteSourceRules(
 
     out_ << ": " << custom_rule_name << " ";
     path_output_.WriteFile(out_, sources[i]);
-    if (!input_dep.value().empty()) {
+    if (!input_deps.empty()) {
       // Using "|" for the dependencies forces all implicit dependencies to be
       // fully up to date before running the action, and will re-run this
       // action if any input dependencies change. This is important because
       // this action may consume the outputs of previous steps.
-      out_ << " | ";
-      path_output_.WriteFile(out_, input_dep);
+      out_ << " |";
+      path_output_.WriteFiles(out_, input_deps);
     }
     out_ << std::endl;
 

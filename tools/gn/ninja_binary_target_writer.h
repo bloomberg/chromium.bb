@@ -61,7 +61,7 @@ class NinjaBinaryTargetWriter : public NinjaTargetWriter {
   // compiling this target. It will be empty if there are no input deps.
   void WritePCHCommands(const SourceFileTypeSet& used_types,
                         const OutputFile& input_dep,
-                        const OutputFile& order_only_dep,
+                        const std::vector<OutputFile>& order_only_deps,
                         std::vector<OutputFile>* object_files,
                         std::vector<OutputFile>* other_files);
 
@@ -70,39 +70,39 @@ class NinjaBinaryTargetWriter : public NinjaTargetWriter {
                        Toolchain::ToolType tool_type,
                        Tool::PrecompiledHeaderType header_type,
                        const OutputFile& input_dep,
-                       const OutputFile& order_only_dep,
+                       const std::vector<OutputFile>& order_only_deps,
                        std::vector<OutputFile>* object_files,
                        std::vector<OutputFile>* other_files);
 
   void WriteGCCPCHCommand(SubstitutionType flag_type,
                           Toolchain::ToolType tool_type,
                           const OutputFile& input_dep,
-                          const OutputFile& order_only_dep,
+                          const std::vector<OutputFile>& order_only_deps,
                           std::vector<OutputFile>* gch_files);
 
   void WriteWindowsPCHCommand(SubstitutionType flag_type,
                               Toolchain::ToolType tool_type,
                               const OutputFile& input_dep,
-                              const OutputFile& order_only_dep,
+                              const std::vector<OutputFile>& order_only_deps,
                               std::vector<OutputFile>* object_files);
 
   // pch_deps are additional dependencies to run before the rule. They are
   // expected to abide by the naming conventions specified by GetPCHOutputFiles.
   //
-  // order_only_dep is the name of the stamp file that covers the dependencies
-  // that must be run before doing any compiles.
+  // order_only_dep are the dependencies that must be run before doing any
+  // compiles.
   //
   // The files produced by the compiler will be added to two output vectors.
   void WriteSources(const std::vector<OutputFile>& pch_deps,
                     const OutputFile& input_dep,
-                    const OutputFile& order_only_dep,
+                    const std::vector<OutputFile>& order_only_deps,
                     std::vector<OutputFile>* object_files,
                     std::vector<SourceFile>* other_files);
 
   // Writes a build line.
   void WriteCompilerBuildLine(const SourceFile& source,
                               const std::vector<OutputFile>& extra_deps,
-                              const OutputFile& order_only_dep,
+                              const std::vector<OutputFile>& order_only_deps,
                               Toolchain::ToolType tool_type,
                               const std::vector<OutputFile>& outputs);
 

@@ -21,10 +21,9 @@ void NinjaBundleDataTargetWriter::Run() {
         OutputFile(settings_->build_settings(), source_file));
   }
 
-  std::vector<const Target*> extra_hard_deps;
-  OutputFile input_dep = WriteInputDepsStampAndGetDep(extra_hard_deps);
-  if (!input_dep.value().empty())
-    output_files.push_back(input_dep);
+  std::vector<OutputFile> input_deps = WriteInputDepsStampAndGetDep(
+      std::vector<const Target*>(), /*num_stamp_uses=*/1);
+  output_files.insert(output_files.end(), input_deps.begin(), input_deps.end());
 
   std::vector<OutputFile> order_only_deps;
   for (const auto& pair : target_->data_deps())
