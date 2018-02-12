@@ -218,7 +218,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia', 'opengl'], bug=794613)
     self.Flaky('deqp/functional/gles3/shadercommonfunction.html',
         ['win', 'nvidia', 'opengl'], bug=795030)
-    self.Flaky('deqp/functional/gles3/shaderpackingfunction.html',
+    self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
         ['win', 'nvidia', 'opengl'], bug=795030)
     self.Fail('conformance2/rendering/' +
         'blitframebuffer-srgb-and-linear-drawbuffers.html',
