@@ -12,13 +12,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
-#include "chrome/browser/ui/webui/signin/signin_dice_internals_handler.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "components/signin/core/browser/profile_management_switches.h"
-#include "components/signin/core/browser/signin_features.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 
@@ -46,12 +43,6 @@ SignInInternalsUI::SignInInternalsUI(content::WebUI* web_ui)
         AboutSigninInternalsFactory::GetForProfile(profile);
     if (about_signin_internals)
       about_signin_internals->AddSigninObserver(this);
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    if (signin::IsDiceEnabledForProfile(profile->GetPrefs())) {
-      web_ui->AddMessageHandler(
-          std::make_unique<SigninDiceInternalsHandler>(profile));
-    }
-#endif
   }
 }
 

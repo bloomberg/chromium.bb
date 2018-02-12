@@ -654,14 +654,5 @@ AboutSigninInternals::SigninStatus::ToValue(
   }
 
   signin_status->Set("accountInfo", std::move(account_info));
-
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  if (account_consistency == signin::AccountConsistencyMethod::kDice) {
-    auto dice_info = std::make_unique<base::DictionaryValue>();
-    dice_info->SetBoolean("isSignedIn", signin_manager->IsAuthenticated());
-    signin_status->Set("dice", std::move(dice_info));
-  }
-#endif
-
   return signin_status;
 }

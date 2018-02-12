@@ -2,12 +2,6 @@
 <html dir="$i18n{textdirection}" lang="$i18n{language}">
 <head>
   <meta charset="utf-8">
-  <if expr="not is_android and not is_ios">
-    <link rel="import" href="chrome://resources/html/polymer.html">
-    <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-    <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
-  </if>
-  <title>Signin Internals</title>
   <script src="chrome://resources/js/cr.js"></script>
   <script src="chrome://resources/js/util.js"></script>
   <script src="chrome://resources/js/load_time_data.js"></script>
@@ -94,17 +88,6 @@
         </tr>
       </table>
     </div>
-  </div>
-  <div id="diceSection" hidden="true">
-    <h2>Desktop Identity Consistency</h2>
-    <div class="action-container">
-        <paper-button class="dice-primary-action" id="enableSyncButton">
-          Enable Sync
-        </paper-button>
-        <paper-button class="dice-primary-action" id="disableSyncButton">
-          Disable Sync
-        </paper-button>
-      </div>
   </div>
   <script src="chrome://resources/js/i18n_template.js"></script>
   <script src="chrome://resources/js/jstemplate_compiled.js"></script>
