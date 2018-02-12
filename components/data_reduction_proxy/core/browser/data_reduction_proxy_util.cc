@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 
 #include <stdint.h>
 
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "components/data_reduction_proxy/core/common/version.h"
@@ -67,8 +68,14 @@ int64_t ScaleByteCountByRatio(int64_t byte_count,
 // protocol as |request| did. This is to account for stuff like HTTP/2 header
 // compression.
 int64_t EstimateOriginalHeaderBytes(const net::URLRequest& request,
-                                    bool used_drp) {
-  if (used_drp) {
+                                    const LoFiDecider* lofi_decider) {
+  // If this is an auto-reload of an image, then this request would ordinarily
+  // not be issued, so return 0.
+  if (lofi_decider && lofi_decider->IsClientLoFiAutoReloadRequest(request))
+    return 0;
+  data_reduction_proxy::DataReductionProxyData* data =
+      data_reduction_proxy::DataReductionProxyData::GetData(request);
+  if (data && data->used_data_reduction_proxy()) {
     // TODO(sclittle): Remove headers added by Data Reduction Proxy when
     // computing original size. https://crbug.com/535701.
     return request.response_headers()->raw_headers().size();
@@ -211,9 +218,33 @@ int64_t CalculateOCLFromOFCL(const net::URLRequest& request) {
   return original_content_length;
 }
 
-int64_t CalculateEffectiveOCL(const net::URLRequest& request) {
-  if (request.was_cached() || !request.response_headers())
-    return request.received_response_content_length();
+int64_t EstimateOriginalBodySize(const net::URLRequest& request,
+                                 const LoFiDecider* lofi_decider) {
+  if (lofi_decider) {
+    // If this is an auto-reload of an image, then this request would ordinarily
+    // not be issued, so return 0.
+    if (lofi_decider->IsClientLoFiAutoReloadRequest(request))
+      return 0;
+
+    int64_t first, last, length;
+    if (!request.was_cached() &&
+        lofi_decider->IsClientLoFiImageRequest(request) &&
+        request.response_headers() &&
+        request.response_headers()->GetContentRangeFor206(&first, &last,
+                                                          &length) &&
+        length > request.received_response_content_length()) {
+      return length;
+    }
+  }
+
+  data_reduction_proxy::DataReductionProxyData* data =
+      data_reduction_proxy::DataReductionProxyData::GetData(request);
+  if (!data || !data->used_data_reduction_proxy() || request.was_cached() ||
+      !request.response_headers()) {
+    return std::min<int64_t>(request.GetTotalReceivedBytes(),
+                             request.received_response_content_length());
+  }
+
   int64_t original_content_length_from_header = CalculateOCLFromOFCL(request);
 
   if (original_content_length_from_header < 0)
@@ -235,27 +266,12 @@ int64_t CalculateEffectiveOCL(const net::URLRequest& request) {
 }
 
 int64_t EstimateOriginalReceivedBytes(const net::URLRequest& request,
-                                      bool used_drp,
                                       const LoFiDecider* lofi_decider) {
   if (request.was_cached() || !request.response_headers())
     return request.GetTotalReceivedBytes();
 
-  if (lofi_decider) {
-    if (lofi_decider->IsClientLoFiAutoReloadRequest(request))
-      return 0;
-
-    int64_t first, last, length;
-    if (lofi_decider->IsClientLoFiImageRequest(request) &&
-        request.response_headers()->GetContentRangeFor206(&first, &last,
-                                                          &length) &&
-        length > request.received_response_content_length()) {
-      return EstimateOriginalHeaderBytes(request, used_drp) + length;
-    }
-  }
-
-  return used_drp ? EstimateOriginalHeaderBytes(request, used_drp) +
-                        util::CalculateEffectiveOCL(request)
-                  : request.GetTotalReceivedBytes();
+  return EstimateOriginalHeaderBytes(request, lofi_decider) +
+         EstimateOriginalBodySize(request, lofi_decider);
 }
 
 ProxyScheme ConvertNetProxySchemeToProxyScheme(

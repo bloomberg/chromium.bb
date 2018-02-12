@@ -2059,10 +2059,20 @@ class DataReductionProxyNetworkDelegateClientLoFiTest : public testing::Test {
     mock_socket_factory_.reset(new net::MockClientSocketFactory());
     context_->set_client_socket_factory(mock_socket_factory_.get());
 
+    net::ProxyServer proxy_server = net::ProxyServer::FromURI(
+        "http://origin.net:80", net::ProxyServer::SCHEME_HTTP);
+
+    proxy_resolution_service_ =
+        net::ProxyResolutionService::CreateFixedFromPacResult(
+            proxy_server.ToPacString());
+    context_->set_proxy_resolution_service(proxy_resolution_service_.get());
+
     drp_test_context_ =
         DataReductionProxyTestContext::Builder()
             .WithURLRequestContext(context_.get())
             .WithMockClientSocketFactory(mock_socket_factory_.get())
+            .WithProxiesForHttp({DataReductionProxyServer(
+                proxy_server, ProxyServer::UNSPECIFIED_TYPE)})
             .Build();
 
     drp_test_context_->AttachToURLRequestContext(context_storage_.get());
@@ -2100,6 +2110,7 @@ class DataReductionProxyNetworkDelegateClientLoFiTest : public testing::Test {
   std::unique_ptr<net::TestURLRequestContext> context_;
   std::unique_ptr<net::URLRequestContextStorage> context_storage_;
   std::unique_ptr<net::MockClientSocketFactory> mock_socket_factory_;
+  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context_;
   int64_t baseline_savings_;
 };
@@ -2182,6 +2193,8 @@ TEST_F(DataReductionProxyNetworkDelegateClientLoFiTest, DataSavingsNonDRP) {
     std::unique_ptr<net::URLRequest> request = context()->CreateRequest(
         GURL("http://example.com"), net::RequestPriority::IDLE, &test_delegate,
         TRAFFIC_ANNOTATION_FOR_TESTS);
+
+    request->SetLoadFlags(request->load_flags() | net::LOAD_BYPASS_PROXY);
 
     request->Start();
     base::RunLoop().RunUntilIdle();

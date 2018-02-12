@@ -50,8 +50,8 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/nacl/common/features.h"
 #include "components/offline_pages/core/request_header/offline_page_navigation_ui_data.h"
@@ -911,6 +911,14 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
   const ResourceRequestInfo* info =
       ResourceRequestInfo::ForRequest(url_request);
 
+  ProfileIOData* io_data =
+      ProfileIOData::FromResourceContext(info->GetContext());
+  data_reduction_proxy::DataReductionProxyIOData* data_reduction_proxy_io_data =
+      io_data->data_reduction_proxy_io_data();
+  data_reduction_proxy::LoFiDecider* lofi_decider = nullptr;
+  if (data_reduction_proxy_io_data)
+    lofi_decider = data_reduction_proxy_io_data->lofi_decider();
+
   data_reduction_proxy::DataReductionProxyData* data =
       data_reduction_proxy::DataReductionProxyData::GetData(*url_request);
   std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
@@ -919,7 +927,8 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
     data_reduction_proxy_data = data->DeepCopy();
   int64_t original_content_length =
       data && data->used_data_reduction_proxy()
-          ? data_reduction_proxy::util::CalculateEffectiveOCL(*url_request)
+          ? data_reduction_proxy::util::EstimateOriginalBodySize(*url_request,
+                                                                 lofi_decider)
           : url_request->GetRawBodyBytes();
 
   net::HostPortPair request_host_port;

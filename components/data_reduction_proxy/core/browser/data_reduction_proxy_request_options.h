@@ -18,7 +18,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 
 namespace net {
 class HttpRequestHeaders;
