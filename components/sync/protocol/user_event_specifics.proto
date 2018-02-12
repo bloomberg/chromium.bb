@@ -87,20 +87,27 @@ message UserEventSpecifics {
     optional Interaction interaction = 3;
   }
 
-  // User consented to the usage of a feature or revoked a consent.
+  // User consented to the usage of a feature or denied/revoked a consent.
   message UserConsent {
-    // Name of the feature this consent belongs to.
-    optional string feature = 1;
-    // Ids of descriptions and button text presented to the user.
-    repeated int32 consent_grd_ids = 2;
-    // Strings put into placeholders.
-    repeated string placeholder_replacements = 3;
-    // The UI language Chrome is using.
+    // Which feature does the consent apply to?
+    enum Feature {
+      FEATURE_UNSPECIFIED = 0;
+      CHROME_SYNC = 1;
+    }
+    optional Feature feature = 1;
+    // Ids of the strings of the consent text presented to the user.
+    repeated int32 description_grd_ids = 2;
+    // Id of the string of the UI element the user clicked when consenting.
+    optional int32 confirmation_grd_id = 3;
+    // The UI language Chrome is using, represented as the IETF language tag
+    // defined in BCP 47. The region subtag is not included when it adds no
+    // distinguishing information to the language tag (e.g. both "en-US"
+    // and "fr" are correct here).
     optional string locale = 4;
-    // Was the consent for |feature| given or revoked?
+    // Was the consent for |feature| given or not given (denied/revoked)?
     enum ConsentStatus {
-      UNSPECIFIED = 0;
-      REVOKED = 1;
+      CONSENT_STATUS_UNSPECIFIED = 0;
+      NOT_GIVEN = 1;
       GIVEN = 2;
     }
     optional ConsentStatus status = 5;

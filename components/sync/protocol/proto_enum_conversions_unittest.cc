@@ -72,5 +72,14 @@ TEST_F(ProtoEnumConversionsTest, GetActionString) {
                          sync_pb::SyncEnums::Action_MAX);
 }
 
+TEST_F(ProtoEnumConversionsTest, GetUserEventSpecificsString) {
+  TestEnumStringFunction(
+      sync_pb::UserEventSpecifics::UserConsent::CONSENT_STATUS_UNSPECIFIED,
+      sync_pb::UserEventSpecifics::UserConsent::GIVEN);
+  TestEnumStringFunction(
+      sync_pb::UserEventSpecifics::UserConsent::FEATURE_UNSPECIFIED,
+      sync_pb::UserEventSpecifics::UserConsent::CHROME_SYNC);
+}
+
 }  // namespace
 }  // namespace syncer

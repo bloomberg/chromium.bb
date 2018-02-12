@@ -317,12 +317,25 @@ const char* ProtoEnumToString(
 }
 
 const char* ProtoEnumToString(
+    sync_pb::UserEventSpecifics::UserConsent::Feature feature) {
+  ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::UserConsent, Feature,
+                     FEATURE_UNSPECIFIED, CHROME_SYNC);
+  switch (feature) {
+    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, FEATURE_UNSPECIFIED);
+    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, CHROME_SYNC);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
     sync_pb::UserEventSpecifics::UserConsent::ConsentStatus status) {
   ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::UserConsent, ConsentStatus,
-                     UNSPECIFIED, GIVEN);
+                     CONSENT_STATUS_UNSPECIFIED, GIVEN);
   switch (status) {
-    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, UNSPECIFIED);
-    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, REVOKED);
+    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent,
+              CONSENT_STATUS_UNSPECIFIED);
+    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, NOT_GIVEN);
     ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, GIVEN);
   }
   NOTREACHED();

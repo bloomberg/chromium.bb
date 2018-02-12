@@ -161,7 +161,7 @@ TEST_F(ConsentAuditorTest, LocalConsentPrefRepresentation) {
 }
 
 TEST_F(ConsentAuditorTest, RecordingEnabled) {
-  consent_auditor()->RecordGaiaConsent("feature1", {}, {},
+  consent_auditor()->RecordGaiaConsent(Feature::CHROME_SYNC, {}, 0,
                                        ConsentStatus::GIVEN);
   auto& events = user_event_service()->GetRecordedUserEvents();
   EXPECT_EQ(1U, events.size());
@@ -170,18 +170,19 @@ TEST_F(ConsentAuditorTest, RecordingEnabled) {
 TEST_F(ConsentAuditorTest, RecordingDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(switches::kSyncUserConsentEvents);
-  consent_auditor()->RecordGaiaConsent("feature1", {}, {},
+  consent_auditor()->RecordGaiaConsent(Feature::CHROME_SYNC, {}, 0,
                                        ConsentStatus::GIVEN);
   auto& events = user_event_service()->GetRecordedUserEvents();
   EXPECT_EQ(0U, events.size());
 }
 
 TEST_F(ConsentAuditorTest, RecordGaiaConsent) {
-  std::vector<int> kMessageIds = {12, 37, 42};
-  std::vector<std::string> kPlaceholders = {"OK.", "user@example.com"};
+  std::vector<int> kDescriptionMessageIds = {12, 37, 42};
+  int kConfirmationMessageId = 47;
   base::Time t1 = base::Time::Now();
-  consent_auditor()->RecordGaiaConsent("feature1", kMessageIds, kPlaceholders,
-                                       ConsentStatus::GIVEN);
+  consent_auditor()->RecordGaiaConsent(
+      Feature::CHROME_SYNC, kDescriptionMessageIds, kConfirmationMessageId,
+      ConsentStatus::GIVEN);
   base::Time t2 = base::Time::Now();
   auto& events = user_event_service()->GetRecordedUserEvents();
   EXPECT_EQ(1U, events.size());
@@ -190,14 +191,12 @@ TEST_F(ConsentAuditorTest, RecordGaiaConsent) {
   EXPECT_FALSE(events[0].has_navigation_id());
   EXPECT_TRUE(events[0].has_user_consent());
   auto& consent = events[0].user_consent();
-  EXPECT_EQ("feature1", consent.feature());
-  EXPECT_EQ(3, consent.consent_grd_ids_size());
-  EXPECT_EQ(12, consent.consent_grd_ids(0));
-  EXPECT_EQ(37, consent.consent_grd_ids(1));
-  EXPECT_EQ(42, consent.consent_grd_ids(2));
-  EXPECT_EQ(2, consent.placeholder_replacements_size());
-  EXPECT_EQ("OK.", consent.placeholder_replacements(0));
-  EXPECT_EQ("user@example.com", consent.placeholder_replacements(1));
+  EXPECT_EQ(UserEventSpecifics::UserConsent::CHROME_SYNC, consent.feature());
+  EXPECT_EQ(3, consent.description_grd_ids_size());
+  EXPECT_EQ(kDescriptionMessageIds[0], consent.description_grd_ids(0));
+  EXPECT_EQ(kDescriptionMessageIds[1], consent.description_grd_ids(1));
+  EXPECT_EQ(kDescriptionMessageIds[2], consent.description_grd_ids(2));
+  EXPECT_EQ(kConfirmationMessageId, consent.confirmation_grd_id());
   EXPECT_EQ(kCurrentAppLocale, consent.locale());
 }
 

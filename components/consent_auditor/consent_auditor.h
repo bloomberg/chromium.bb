@@ -25,7 +25,8 @@ class PrefRegistrySimple;
 
 namespace consent_auditor {
 
-enum class ConsentStatus { REVOKED, GIVEN };
+enum class Feature { CHROME_SYNC };
+enum class ConsentStatus { NOT_GIVEN, GIVEN };
 
 class ConsentAuditor : public KeyedService {
  public:
@@ -43,15 +44,13 @@ class ConsentAuditor : public KeyedService {
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Records a consent for |feature| for the signed-in GAIA account.
-  // Descriptions and button texts presented to the user were
-  // |consent_grd_ids|. Strings put into placeholders are passed as
-  // |placeholder_replacements|.
-  // Whether the consent was GIVEN or REVOKED is passed as |status|.
-  void RecordGaiaConsent(
-      const std::string& feature,
-      const std::vector<int>& consent_grd_ids,
-      const std::vector<std::string>& placeholder_replacements,
-      ConsentStatus status);
+  // Consent text consisted of strings with |consent_grd_ids|, and the UI
+  // element the user clicked had the ID |confirmation_grd_id|.
+  // Whether the consent was GIVEN or NOT_GIVEN is passed as |status|.
+  void RecordGaiaConsent(Feature feature,
+                         const std::vector<int>& description_grd_ids,
+                         int confirmation_grd_id,
+                         ConsentStatus status);
 
   // Records that the user consented to a |feature|. The user was presented with
   // |description_text| and accepted it by interacting |confirmation_text|
@@ -63,9 +62,9 @@ class ConsentAuditor : public KeyedService {
 
  private:
   std::unique_ptr<sync_pb::UserEventSpecifics> ConstructUserConsent(
-      const std::string& feature,
-      const std::vector<int>& consent_grd_ids,
-      const std::vector<std::string>& placeholder_replacements,
+      Feature feature,
+      const std::vector<int>& description_grd_ids,
+      int confirmation_grd_id,
       ConsentStatus status);
 
   PrefService* pref_service_;
