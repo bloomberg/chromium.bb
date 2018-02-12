@@ -39,7 +39,7 @@ CSSValue* ConsumeReflect(CSSParserTokenRange& range,
     if (!mask)
       return nullptr;
   }
-  return CSSReflectValue::Create(direction, offset, mask);
+  return cssvalue::CSSReflectValue::Create(direction, offset, mask);
 }
 
 }  // namespace

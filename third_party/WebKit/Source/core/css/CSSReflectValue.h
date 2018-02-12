@@ -34,6 +34,8 @@ namespace blink {
 class CSSIdentifierValue;
 class CSSPrimitiveValue;
 
+namespace cssvalue {
+
 class CSSReflectValue : public CSSValue {
  public:
   static CSSReflectValue* Create(CSSIdentifierValue* direction,
@@ -68,6 +70,7 @@ class CSSReflectValue : public CSSValue {
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSReflectValue, IsReflectValue());
 
+}  // namespace cssvalue
 }  // namespace blink
 
 #endif  // CSSReflectValue_h

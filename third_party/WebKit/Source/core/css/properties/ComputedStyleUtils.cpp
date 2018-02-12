@@ -33,6 +33,8 @@
 
 namespace blink {
 
+using namespace cssvalue;
+
 // TODO(rjwright): make this const
 CSSValue* ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
     const Length& length,
@@ -96,7 +98,7 @@ CSSValue* ComputedStyleUtils::CurrentColorOrValidColor(
     const StyleColor& color) {
   // This function does NOT look at visited information, so that computed style
   // doesn't expose that.
-  return cssvalue::CSSColorValue::Create(color.Resolve(style.GetColor()).Rgb());
+  return CSSColorValue::Create(color.Resolve(style.GetColor()).Rgb());
 }
 
 const blink::Color ComputedStyleUtils::BorderSideColor(
@@ -283,8 +285,8 @@ const CSSValue* ComputedStyleUtils::BackgroundPositionYOrWebkitMaskPositionY(
   return list;
 }
 
-cssvalue::CSSBorderImageSliceValue*
-ComputedStyleUtils::ValueForNinePieceImageSlice(const NinePieceImage& image) {
+CSSBorderImageSliceValue* ComputedStyleUtils::ValueForNinePieceImageSlice(
+    const NinePieceImage& image) {
   // Create the slices.
   CSSPrimitiveValue* top = nullptr;
   CSSPrimitiveValue* right = nullptr;
@@ -440,8 +442,7 @@ CSSValue* ComputedStyleUtils::ValueForNinePieceImage(
     image_value = image.GetImage()->ComputedCSSValue();
 
   // Create the image slice.
-  cssvalue::CSSBorderImageSliceValue* image_slices =
-      ValueForNinePieceImageSlice(image);
+  CSSBorderImageSliceValue* image_slices = ValueForNinePieceImageSlice(image);
 
   // Create the border area slices.
   CSSValue* border_slices =
@@ -1469,7 +1470,7 @@ CSSValue* ComputedStyleUtils::CreateTimingFunctionValue(
         }
         return CSSIdentifierValue::Create(value_id);
       }
-      return cssvalue::CSSCubicBezierTimingFunctionValue::Create(
+      return CSSCubicBezierTimingFunctionValue::Create(
           bezier_timing_function->X1(), bezier_timing_function->Y1(),
           bezier_timing_function->X2(), bezier_timing_function->Y2());
     }
@@ -1484,7 +1485,7 @@ CSSValue* ComputedStyleUtils::CreateTimingFunctionValue(
              position == StepsTimingFunction::StepPosition::END);
 
       if (steps > 1)
-        return cssvalue::CSSStepsTimingFunctionValue::Create(steps, position);
+        return CSSStepsTimingFunctionValue::Create(steps, position);
       CSSValueID value_id = position == StepsTimingFunction::StepPosition::START
                                 ? CSSValueStepStart
                                 : CSSValueStepEnd;
@@ -1495,7 +1496,7 @@ CSSValue* ComputedStyleUtils::CreateTimingFunctionValue(
       const FramesTimingFunction* frames_timing_function =
           ToFramesTimingFunction(timing_function);
       int frames = frames_timing_function->NumberOfFrames();
-      return cssvalue::CSSFramesTimingFunctionValue::Create(frames);
+      return CSSFramesTimingFunctionValue::Create(frames);
     }
 
     default:
