@@ -776,34 +776,15 @@ static void write_filter_intra_mode_info(const MACROBLOCKD *xd,
 }
 #endif  // CONFIG_FILTER_INTRA
 
-static void write_intra_angle_info(const MACROBLOCKD *xd,
-                                   FRAME_CONTEXT *const ec_ctx, aom_writer *w) {
-  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const BLOCK_SIZE bsize = mbmi->sb_type;
-  if (!av1_use_angle_delta(bsize)) return;
-
-  if (av1_is_directional_mode(mbmi->mode, bsize)) {
+static void write_angle_delta(aom_writer *w, int angle_delta,
+                              aom_cdf_prob *cdf) {
 #if CONFIG_EXT_INTRA_MOD
-    aom_write_symbol(w, mbmi->angle_delta[PLANE_TYPE_Y] + MAX_ANGLE_DELTA,
-                     ec_ctx->angle_delta_cdf[mbmi->mode - V_PRED],
-                     2 * MAX_ANGLE_DELTA + 1);
+  aom_write_symbol(w, angle_delta + MAX_ANGLE_DELTA, cdf,
+                   2 * MAX_ANGLE_DELTA + 1);
 #else
-    (void)ec_ctx;
-    write_uniform(w, 2 * MAX_ANGLE_DELTA + 1,
-                  MAX_ANGLE_DELTA + mbmi->angle_delta[PLANE_TYPE_Y]);
+  (void)cdf;
+  write_uniform(w, 2 * MAX_ANGLE_DELTA + 1, MAX_ANGLE_DELTA + angle_delta);
 #endif  // CONFIG_EXT_INTRA_MOD
-  }
-
-  if (av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize)) {
-#if CONFIG_EXT_INTRA_MOD
-    aom_write_symbol(w, mbmi->angle_delta[PLANE_TYPE_UV] + MAX_ANGLE_DELTA,
-                     ec_ctx->angle_delta_cdf[mbmi->uv_mode - V_PRED],
-                     2 * MAX_ANGLE_DELTA + 1);
-#else
-    write_uniform(w, 2 * MAX_ANGLE_DELTA + 1,
-                  MAX_ANGLE_DELTA + mbmi->angle_delta[PLANE_TYPE_UV]);
-#endif
-  }
 }
 
 static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
@@ -1323,6 +1304,13 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
   if (!is_inter) {
     write_intra_mode(ec_ctx, bsize, mode, w);
+    const int use_angle_delta = av1_use_angle_delta(bsize);
+
+    if (use_angle_delta && av1_is_directional_mode(mode, bsize)) {
+      write_angle_delta(w, mbmi->angle_delta[PLANE_TYPE_Y],
+                        ec_ctx->angle_delta_cdf[mode - V_PRED]);
+    }
+
 #if CONFIG_MONO_VIDEO
     if (!cm->seq_params.monochrome &&
         is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
@@ -1332,16 +1320,21 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
                             xd->plane[1].subsampling_y))
 #endif  // CONFIG_MONO_VIDEO
     {
+      const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
 #if !CONFIG_CFL
-      write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mode, w);
+      write_intra_uv_mode(ec_ctx, uv_mode, mode, w);
 #else
-      write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mode, is_cfl_allowed(mbmi), w);
-      if (mbmi->uv_mode == UV_CFL_PRED)
+      write_intra_uv_mode(ec_ctx, uv_mode, mode, is_cfl_allowed(mbmi), w);
+      if (uv_mode == UV_CFL_PRED)
         write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, w);
 #endif
+      if (use_angle_delta &&
+          av1_is_directional_mode(get_uv_mode(uv_mode), bsize)) {
+        write_angle_delta(w, mbmi->angle_delta[PLANE_TYPE_UV],
+                          ec_ctx->angle_delta_cdf[uv_mode - V_PRED]);
+      }
     }
 
-    write_intra_angle_info(xd, ec_ctx, w);
     if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
       write_palette_mode_info(cm, xd, mi, mi_row, mi_col, w);
 #if CONFIG_FILTER_INTRA
@@ -1562,8 +1555,7 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
   const MODE_INFO *const left_mi = xd->left_mi;
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  (void)mi_row;
-  (void)mi_col;
+  const PREDICTION_MODE mode = mbmi->mode;
 
 #if CONFIG_SPATIAL_SEGMENTATION
   if (cm->preskip_segid && seg->update_map)
@@ -1641,7 +1633,13 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
     set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
 #endif  // CONFIG_INTRABC
 
-  write_intra_mode_kf(ec_ctx, mi, above_mi, left_mi, mbmi->mode, w);
+  write_intra_mode_kf(ec_ctx, mi, above_mi, left_mi, mode, w);
+
+  const int use_angle_delta = av1_use_angle_delta(bsize);
+  if (use_angle_delta && av1_is_directional_mode(mode, bsize)) {
+    write_angle_delta(w, mbmi->angle_delta[PLANE_TYPE_Y],
+                      ec_ctx->angle_delta_cdf[mode - V_PRED]);
+  }
 
 #if CONFIG_MONO_VIDEO
   if (!cm->seq_params.monochrome &&
@@ -1652,17 +1650,21 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
                           xd->plane[1].subsampling_y))
 #endif  // CONFIG_MONO_VIDEO
   {
+    const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
 #if !CONFIG_CFL
-    write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mbmi->mode, w);
+    write_intra_uv_mode(ec_ctx, uv_mode, mode, w);
 #else
-    write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mbmi->mode, is_cfl_allowed(mbmi),
-                        w);
-    if (mbmi->uv_mode == UV_CFL_PRED)
+    write_intra_uv_mode(ec_ctx, uv_mode, mode, is_cfl_allowed(mbmi), w);
+    if (uv_mode == UV_CFL_PRED)
       write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, w);
 #endif
+    if (use_angle_delta &&
+        av1_is_directional_mode(get_uv_mode(uv_mode), bsize)) {
+      write_angle_delta(w, mbmi->angle_delta[PLANE_TYPE_UV],
+                        ec_ctx->angle_delta_cdf[uv_mode - V_PRED]);
+    }
   }
 
-  write_intra_angle_info(xd, ec_ctx, w);
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
     write_palette_mode_info(cm, xd, mi, mi_row, mi_col, w);
 #if CONFIG_FILTER_INTRA

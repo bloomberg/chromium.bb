@@ -784,43 +784,14 @@ static void read_filter_intra_mode_info(MACROBLOCKD *const xd, aom_reader *r) {
 }
 #endif  // CONFIG_FILTER_INTRA
 
-#if CONFIG_EXT_INTRA_MOD
 static int read_angle_delta(aom_reader *r, aom_cdf_prob *cdf) {
+#if CONFIG_EXT_INTRA_MOD
   const int sym = aom_read_symbol(r, cdf, 2 * MAX_ANGLE_DELTA + 1, ACCT_STR);
+#else
+  (void)cdf;
+  const int sym = av1_read_uniform(r, 2 * MAX_ANGLE_DELTA + 1);
+#endif  // CONFIG_EXT_INTRA_MOD
   return sym - MAX_ANGLE_DELTA;
-}
-#endif  // CONFIG_EXT_INTRA_MOD
-
-static void read_intra_angle_info(MACROBLOCKD *const xd, aom_reader *r) {
-  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const BLOCK_SIZE bsize = mbmi->sb_type;
-#if CONFIG_EXT_INTRA_MOD
-  FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
-#endif  // CONFIG_EXT_INTRA_MOD
-
-  mbmi->angle_delta[PLANE_TYPE_Y] = 0;
-  mbmi->angle_delta[PLANE_TYPE_UV] = 0;
-  if (!av1_use_angle_delta(bsize)) return;
-
-  if (av1_is_directional_mode(mbmi->mode, bsize)) {
-#if CONFIG_EXT_INTRA_MOD
-    mbmi->angle_delta[PLANE_TYPE_Y] =
-        read_angle_delta(r, ec_ctx->angle_delta_cdf[mbmi->mode - V_PRED]);
-#else
-    mbmi->angle_delta[PLANE_TYPE_Y] =
-        av1_read_uniform(r, 2 * MAX_ANGLE_DELTA + 1) - MAX_ANGLE_DELTA;
-#endif  // CONFIG_EXT_INTRA_MOD
-  }
-
-  if (av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize)) {
-#if CONFIG_EXT_INTRA_MOD
-    mbmi->angle_delta[PLANE_TYPE_UV] =
-        read_angle_delta(r, ec_ctx->angle_delta_cdf[mbmi->uv_mode - V_PRED]);
-#else
-    mbmi->angle_delta[PLANE_TYPE_UV] =
-        av1_read_uniform(r, 2 * MAX_ANGLE_DELTA + 1) - MAX_ANGLE_DELTA;
-#endif  // CONFIG_EXT_INTRA_MOD
-  }
 }
 
 void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
@@ -1075,6 +1046,12 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
   mbmi->mode = read_intra_mode(r, get_y_mode_cdf(ec_ctx, above_mi, left_mi));
 
+  const int use_angle_delta = av1_use_angle_delta(bsize);
+  mbmi->angle_delta[PLANE_TYPE_Y] =
+      (use_angle_delta && av1_is_directional_mode(mbmi->mode, bsize))
+          ? read_angle_delta(r, ec_ctx->angle_delta_cdf[mbmi->mode - V_PRED])
+          : 0;
+
 #if CONFIG_MONO_VIDEO
   if (!cm->seq_params.monochrome &&
       is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
@@ -1097,6 +1074,12 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
       xd->cfl.store_y = 0;
     }
 #endif  // !CONFIG_CFL
+    mbmi->angle_delta[PLANE_TYPE_UV] =
+        (use_angle_delta &&
+         av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize))
+            ? read_angle_delta(r,
+                               ec_ctx->angle_delta_cdf[mbmi->uv_mode - V_PRED])
+            : 0;
   } else {
     // Avoid decoding angle_info if there is is no chroma prediction
     mbmi->uv_mode = UV_DC_PRED;
@@ -1106,7 +1089,6 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #endif
   }
 
-  read_intra_angle_info(xd, r);
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
@@ -1379,6 +1361,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
                                        MODE_INFO *mi, aom_reader *r) {
   MB_MODE_INFO *const mbmi = &mi->mbmi;
   const BLOCK_SIZE bsize = mi->mbmi.sb_type;
+  const int use_angle_delta = av1_use_angle_delta(bsize);
 
   mbmi->ref_frame[0] = INTRA_FRAME;
   mbmi->ref_frame[1] = NONE_FRAME;
@@ -1387,6 +1370,10 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
 
   mbmi->mode = read_intra_mode(r, ec_ctx->y_mode_cdf[size_group_lookup[bsize]]);
 
+  mbmi->angle_delta[PLANE_TYPE_Y] =
+      use_angle_delta && av1_is_directional_mode(mbmi->mode, bsize)
+          ? read_angle_delta(r, ec_ctx->angle_delta_cdf[mbmi->mode - V_PRED])
+          : 0;
 #if CONFIG_MONO_VIDEO
   if (!cm->seq_params.monochrome &&
       is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
@@ -1409,6 +1396,12 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
       xd->cfl.store_y = 0;
     }
 #endif  // !CONFIG_CFL
+    mbmi->angle_delta[PLANE_TYPE_UV] =
+        use_angle_delta &&
+                av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize)
+            ? read_angle_delta(r,
+                               ec_ctx->angle_delta_cdf[mbmi->uv_mode - V_PRED])
+            : 0;
   } else {
     // Avoid decoding angle_info if there is is no chroma prediction
     mbmi->uv_mode = UV_DC_PRED;
@@ -1418,11 +1411,6 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
 #endif
   }
 
-  // Explicitly ignore cm here to avoid a compile warning if none of
-  // ext-intra, palette and filter-intra are enabled.
-  (void)cm;
-
-  read_intra_angle_info(xd, r);
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
