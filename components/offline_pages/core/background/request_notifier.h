@@ -27,6 +27,7 @@ class RequestNotifier {
     RETRY_COUNT_EXCEEDED = 6,
     START_COUNT_EXCEEDED = 7,
     USER_CANCELED = 8,
+    DOWNLOAD_THROTTLED = 9,
     // NOTE: insert new values above this line and update histogram enum too.
     STATUS_COUNT
   };

@@ -66,6 +66,10 @@ class Offliner {
     // We detect the situation in ReconcileTask after starting
     // RequestCoordinator.
     BROWSER_KILLED = 16,
+    // The page initiated a download, we denied the downloads.
+    LOADING_FAILED_DOWNLOAD = 17,
+    // The page initiated a download, and we passed it on to downloads.
+    DOWNLOAD_THROTTLED = 18,
     // NOTE: insert new values above this line and update histogram enum too.
     STATUS_COUNT
   };

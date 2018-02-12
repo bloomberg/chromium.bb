@@ -84,7 +84,9 @@ void DownloadNotifyingObserver::OnCompleted(
     notifier_->NotifyDownloadSuccessful(
         OfflineItemConversions::CreateOfflineItem(request));
   else if (status ==
-           RequestCoordinator::BackgroundSavePageResult::USER_CANCELED)
+               RequestCoordinator::BackgroundSavePageResult::USER_CANCELED ||
+           status ==
+               RequestCoordinator::BackgroundSavePageResult::DOWNLOAD_THROTTLED)
     notifier_->NotifyDownloadCanceled(
         OfflineItemConversions::CreateOfflineItem(request));
   else

@@ -10,7 +10,8 @@
 
 namespace background_loader {
 
-class BackgroundLoaderContentsTest : public testing::Test {
+class BackgroundLoaderContentsTest : public testing::Test,
+                                     public BackgroundLoaderContents::Delegate {
  public:
   BackgroundLoaderContentsTest();
   ~BackgroundLoaderContentsTest() override;
@@ -18,11 +19,16 @@ class BackgroundLoaderContentsTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
+  void CanDownload(const base::Callback<void(bool)>& callback) override;
+
   BackgroundLoaderContents* contents() { return contents_.get(); }
 
   void DownloadCallback(bool download);
+  // Sets "this" as delegate to the background loader contents.
+  void SetDelegate();
 
   bool download() { return download_; }
+  bool can_download_delegate_called() { return delegate_called_; }
 
   void MediaAccessCallback(const content::MediaStreamDevices& devices,
                            content::MediaStreamRequestResult result,
@@ -36,6 +42,7 @@ class BackgroundLoaderContentsTest : public testing::Test {
  private:
   std::unique_ptr<BackgroundLoaderContents> contents_;
   bool download_;
+  bool delegate_called_;
   content::MediaStreamDevices devices_;
   content::MediaStreamRequestResult request_result_;
   std::unique_ptr<content::MediaStreamUI> media_stream_ui_;
@@ -44,6 +51,7 @@ class BackgroundLoaderContentsTest : public testing::Test {
 
 BackgroundLoaderContentsTest::BackgroundLoaderContentsTest()
     : download_(false),
+      delegate_called_(false),
       waiter_(base::WaitableEvent::ResetPolicy::MANUAL,
               base::WaitableEvent::InitialState::NOT_SIGNALED){};
 
@@ -52,15 +60,26 @@ BackgroundLoaderContentsTest::~BackgroundLoaderContentsTest(){};
 void BackgroundLoaderContentsTest::SetUp() {
   contents_.reset(new BackgroundLoaderContents());
   download_ = false;
+  waiter_.Reset();
 }
 
 void BackgroundLoaderContentsTest::TearDown() {
   contents_.reset();
 }
 
+void BackgroundLoaderContentsTest::CanDownload(
+    const base::Callback<void(bool)>& callback) {
+  delegate_called_ = true;
+  callback.Run(true);
+}
+
 void BackgroundLoaderContentsTest::DownloadCallback(bool download) {
   download_ = download;
   waiter_.Signal();
+}
+
+void BackgroundLoaderContentsTest::SetDelegate() {
+  contents_->SetDelegate(this);
 }
 
 void BackgroundLoaderContentsTest::MediaAccessCallback(
@@ -85,13 +104,25 @@ TEST_F(BackgroundLoaderContentsTest, DoesNotFocusAfterCrash) {
   ASSERT_FALSE(contents()->ShouldFocusPageAfterCrash());
 }
 
-TEST_F(BackgroundLoaderContentsTest, CannotDownload) {
+TEST_F(BackgroundLoaderContentsTest, CannotDownloadNoDelegate) {
   contents()->CanDownload(
       GURL::EmptyGURL(), std::string(),
       base::Bind(&BackgroundLoaderContentsTest::DownloadCallback,
                  base::Unretained(this)));
   WaitForSignal();
   ASSERT_FALSE(download());
+  ASSERT_FALSE(can_download_delegate_called());
+}
+
+TEST_F(BackgroundLoaderContentsTest, CanDownload_DelegateCalledWhenSet) {
+  SetDelegate();
+  contents()->CanDownload(
+      GURL::EmptyGURL(), std::string(),
+      base::Bind(&BackgroundLoaderContentsTest::DownloadCallback,
+                 base::Unretained(this)));
+  WaitForSignal();
+  ASSERT_TRUE(download());
+  ASSERT_TRUE(can_download_delegate_called());
 }
 
 TEST_F(BackgroundLoaderContentsTest, ShouldNotCreateWebContents) {
