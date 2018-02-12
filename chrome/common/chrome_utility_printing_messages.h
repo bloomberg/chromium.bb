@@ -6,20 +6,17 @@
 #define CHROME_COMMON_CHROME_UTILITY_PRINTING_MESSAGES_H_
 
 #include <string>
-#include <vector>
 
-#include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "components/printing/common/printing_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
-#include "ipc/ipc_platform_file.h"
 #include "printing/backend/print_backend.h"
 #include "printing/features/features.h"
-#include "printing/page_range.h"
 
 #define IPC_MESSAGE_START ChromeUtilityPrintingMsgStart
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 // Preview and Cloud Print messages.
 IPC_STRUCT_TRAITS_BEGIN(printing::PrinterCapsAndDefaults)
   IPC_STRUCT_TRAITS_MEMBER(printer_capabilities)
@@ -97,6 +94,6 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Failed,
 IPC_MESSAGE_CONTROL1(
   ChromeUtilityHostMsg_GetPrinterSemanticCapsAndDefaults_Failed,
   std::string /* printer name */)
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#endif  // defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 #endif  // CHROME_COMMON_CHROME_UTILITY_PRINTING_MESSAGES_H_

@@ -397,8 +397,6 @@ static_library("common") {
 
   # Printing.
   if (enable_basic_printing || enable_print_preview) {
-    sources += [ "chrome_utility_printing_messages.h" ]
-
     public_deps += [
       "//chrome/common/cloud_print",
       "//components/printing/common",
@@ -414,6 +412,9 @@ static_library("common") {
         "service_process_util_posix.h",
         "service_process_util_win.cc",
       ]
+    }
+    if (enable_print_preview && is_win) {
+      sources += [ "chrome_utility_printing_messages.h" ]
     }
   }
 

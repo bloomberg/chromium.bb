@@ -14,11 +14,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "chrome/common/features.h"
 #include "chrome/common/profiling/constants.mojom.h"
 #include "chrome/profiling/profiling_service.h"
-#include "chrome/utility/utility_message_handler.h"
 #include "components/patch_service/patch_service.h"
 #include "components/patch_service/public/interfaces/constants.mojom.h"
 #include "content/public/common/content_switches.h"
@@ -26,7 +24,6 @@
 #include "content/public/common/simple_connection_filter.h"
 #include "content/public/utility/utility_thread.h"
 #include "extensions/features/features.h"
-#include "printing/features/features.h"
 #include "services/service_manager/embedder/embedded_service_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -68,20 +65,19 @@
 #include "chrome/services/printing/public/mojom/constants.mojom.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
-    (BUILDFLAG(ENABLE_BASIC_PRINTING) && defined(OS_WIN))
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/utility/printing_handler.h"
-#endif
-
-#if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
-#include "chrome/services/file_util/file_util_service.h"  // nogncheck
-#include "chrome/services/file_util/public/mojom/constants.mojom.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/common/chrome_content_client.h"
 #include "components/printing/service/public/cpp/pdf_compositor_service_factory.h"  // nogncheck
 #include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"  // nogncheck
+#endif
+
+#if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
+#include "chrome/services/file_util/file_util_service.h"  // nogncheck
+#include "chrome/services/file_util/public/mojom/constants.mojom.h"  // nogncheck
 #endif
 
 namespace {
@@ -108,9 +104,8 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
   extensions::InitExtensionsClient();
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
-    (BUILDFLAG(ENABLE_BASIC_PRINTING) && defined(OS_WIN))
-  handlers_.push_back(base::MakeUnique<printing::PrintingHandler>());
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  printing_handler_ = std::make_unique<printing::PrintingHandler>();
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -165,11 +160,10 @@ bool ChromeContentUtilityClient::OnMessageReceived(
   if (utility_process_running_elevated_)
     return false;
 
-  for (const auto& handler : handlers_) {
-    if (handler->OnMessageReceived(message))
-      return true;
-  }
-
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  if (printing_handler_->OnMessageReceived(message))
+    return true;
+#endif
   return false;
 }
 

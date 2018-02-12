@@ -7,34 +7,32 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/utility/utility_message_handler.h"
 #include "printing/features/features.h"
 
-#if !BUILDFLAG(ENABLE_PRINT_PREVIEW) && \
-    !(BUILDFLAG(ENABLE_BASIC_PRINTING) && defined(OS_WIN))
-#error "Windows basic printing or print preview must be enabled"
+#if !defined(OS_WIN) || !BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#error "Windows printing and print preview must be enabled"
 #endif
+
+namespace IPC {
+class Message;
+}
 
 namespace printing {
 
 // Dispatches IPCs for printing.
-class PrintingHandler : public UtilityMessageHandler {
+class PrintingHandler {
  public:
   PrintingHandler();
-  ~PrintingHandler() override;
+  ~PrintingHandler();
 
-  // IPC::Listener:
-  bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message);
 
  private:
   // IPC message handlers.
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void OnGetPrinterCapsAndDefaults(const std::string& printer_name);
   void OnGetPrinterSemanticCapsAndDefaults(const std::string& printer_name);
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(PrintingHandler);
 };
