@@ -60,6 +60,8 @@ source_set("settings") {
     "settings_navigation_controller.mm",
     "settings_root_collection_view_controller.h",
     "settings_root_collection_view_controller.mm",
+    "settings_root_table_view_controller.h",
+    "settings_root_table_view_controller.mm",
     "settings_utils.h",
     "settings_utils.mm",
     "sync_create_passphrase_collection_view_controller.h",

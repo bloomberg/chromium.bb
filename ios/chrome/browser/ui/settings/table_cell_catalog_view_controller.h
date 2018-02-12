@@ -8,18 +8,15 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/material_components/app_bar_presenting.h"
+#import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
 // TableCellCatalogViewController is a Debug-only settings screen which serves
 // as a catalog of the various UITableViewCells that are used by the app.
-@interface TableCellCatalogViewController
-    : UITableViewController<AppBarPresenting>
+@interface TableCellCatalogViewController : SettingsRootTableViewController
 
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
-- (instancetype)initWithNibName:(NSString*)name
-                         bundle:(NSBundle*)bundle NS_UNAVAILABLE;
-- (instancetype)initWithCoder:(NSCoder*)decoder NS_UNAVAILABLE;
 
 @end
 
