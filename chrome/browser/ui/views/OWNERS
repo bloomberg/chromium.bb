@@ -1,4 +1,7 @@
+# Prefer ellyjones for Mac-specific changes.
+
 bsep@chromium.org
+ellyjones@chromium.org
 msw@chromium.org
 pkasting@chromium.org
 sky@chromium.org
