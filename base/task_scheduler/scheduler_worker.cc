@@ -114,8 +114,6 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
  private:
   Thread(scoped_refptr<SchedulerWorker> outer)
       : outer_(std::move(outer)),
-        wake_up_event_(WaitableEvent::ResetPolicy::MANUAL,
-                       WaitableEvent::InitialState::NOT_SIGNALED),
         current_thread_priority_(GetDesiredThreadPriority()) {
     DCHECK(outer_);
   }
@@ -162,7 +160,8 @@ class SchedulerWorker::Thread : public PlatformThread::Delegate {
   scoped_refptr<SchedulerWorker> outer_;
 
   // Event signaled to wake up this thread.
-  WaitableEvent wake_up_event_;
+  WaitableEvent wake_up_event_{WaitableEvent::ResetPolicy::AUTOMATIC,
+                               WaitableEvent::InitialState::NOT_SIGNALED};
 
   // Current priority of this thread. May be different from
   // |outer_->priority_hint_|.
@@ -181,7 +180,6 @@ void SchedulerWorker::Delegate::WaitForWork(WaitableEvent* wake_up_event) {
   } else {
     wake_up_event->TimedWait(sleep_time);
   }
-  wake_up_event->Reset();
 }
 
 SchedulerWorker::SchedulerWorker(
