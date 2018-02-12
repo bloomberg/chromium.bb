@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <ostream>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/pattern.h"
@@ -27,11 +29,44 @@ namespace content {
 
 namespace {
 
+enum HistogramExpectations {
+  kShouldBeBlocked = 1 << 0,
+  kShouldBeSniffed = 1 << 1,
+  kShouldHaveContentLength = 1 << 2,
+
+  kShouldBeAllowedWithoutSniffing = 0,
+  kShouldBeBlockedWithoutSniffing = kShouldBeBlocked,
+  kShouldBeSniffedAndAllowed = kShouldBeSniffed,
+  kShouldBeSniffedAndBlocked = kShouldBeSniffed | kShouldBeBlocked,
+};
+
+HistogramExpectations operator|(HistogramExpectations a,
+                                HistogramExpectations b) {
+  return static_cast<HistogramExpectations>(static_cast<int>(a) |
+                                            static_cast<int>(b));
+}
+
+std::ostream& operator<<(std::ostream& os, const HistogramExpectations& value) {
+  if (value == 0) {
+    os << "(none)";
+    return os;
+  }
+
+  os << "( ";
+  if (0 != (value & kShouldBeBlocked))
+    os << "kShouldBeBlocked ";
+  if (0 != (value & kShouldBeSniffed))
+    os << "kShouldBeSniffed ";
+  if (0 != (value & kShouldHaveContentLength))
+    os << "kShouldHaveContentLength ";
+  os << ")";
+  return os;
+}
+
 // Ensure the correct histograms are incremented for blocking events.
 // Assumes the resource type is XHR.
 void InspectHistograms(const base::HistogramTester& histograms,
-                       bool should_be_blocked,
-                       bool should_be_sniffed,
+                       const HistogramExpectations& expectations,
                        const std::string& resource_name,
                        ResourceType resource_type) {
   std::string bucket;
@@ -54,14 +89,17 @@ void InspectHistograms(const base::HistogramTester& histograms,
   std::string base = "SiteIsolation.XSD.Browser";
   expected_counts[base + ".Action"] = 2;
   if ((base::MatchPattern(resource_name, "*prefixed*") || bucket == "Others") &&
-      should_be_blocked) {
+      (0 != (expectations & kShouldBeBlocked))) {
     expected_counts[base + ".BlockedForParserBreaker"] = 1;
   }
-  if (should_be_sniffed)
+  if (0 != (expectations & kShouldBeSniffed))
     expected_counts[base + ".BytesReadForSniffing"] = 1;
-  if (should_be_blocked) {
+  if (0 != (expectations & kShouldBeBlocked)) {
     expected_counts[base + ".Blocked"] = 1;
     expected_counts[base + ".Blocked." + bucket] = 1;
+    expected_counts[base + ".Blocked.ContentLength.WasAvailable"] = 1;
+    if (0 != (expectations & kShouldHaveContentLength))
+      expected_counts[base + ".Blocked.ContentLength.ValueIfAvailable"] = 1;
   }
 
   // Make sure that the expected metrics, and only those metrics, were
@@ -69,10 +107,10 @@ void InspectHistograms(const base::HistogramTester& histograms,
   EXPECT_THAT(histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser"),
               testing::ContainerEq(expected_counts))
       << "For resource_name=" << resource_name
-      << ", should_be_blocked=" << should_be_blocked;
+      << ", expectations=" << expectations;
 
   // Determine if the bucket for the resource type (XHR) was incremented.
-  if (should_be_blocked) {
+  if (0 != (expectations & kShouldBeBlocked)) {
     EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked"),
                 testing::ElementsAre(base::Bucket(resource_type, 1)))
         << "The wrong Blocked bucket was incremented.";
@@ -194,9 +232,9 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockDocuments) {
         shell(), base::StringPrintf("sendRequest('%s');", resource),
         &was_blocked));
     EXPECT_TRUE(was_blocked);
-    InspectHistograms(histograms, true /* should_be_blocked */,
-                      true /* should_be_sniffed */, resource,
-                      RESOURCE_TYPE_XHR);
+    InspectHistograms(histograms,
+                      kShouldBeSniffedAndBlocked | kShouldHaveContentLength,
+                      resource, RESOURCE_TYPE_XHR);
   }
 
   // These files should be disallowed without sniffing.
@@ -211,8 +249,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockDocuments) {
         shell(), base::StringPrintf("sendRequest('%s');", resource),
         &was_blocked));
     EXPECT_TRUE(was_blocked);
-    InspectHistograms(histograms, true /* should_be_blocked */,
-                      false /* should_be_sniffed */, resource,
+    InspectHistograms(histograms, kShouldBeBlockedWithoutSniffing, resource,
                       RESOURCE_TYPE_XHR);
   }
 
@@ -235,8 +272,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockDocuments) {
         shell(), base::StringPrintf("sendRequest('%s');", resource),
         &was_blocked));
     EXPECT_FALSE(was_blocked);
-    InspectHistograms(histograms, false /* should_be_blocked */,
-                      true /* should_be_sniffed */, resource,
+    InspectHistograms(histograms, kShouldBeSniffedAndAllowed, resource,
                       RESOURCE_TYPE_XHR);
   }
 
@@ -252,8 +288,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockDocuments) {
         shell(), base::StringPrintf("sendRequest('%s');", resource),
         &was_blocked));
     EXPECT_FALSE(was_blocked);
-    InspectHistograms(histograms, false /* should_be_blocked */,
-                      false /* should_be_sniffed */, resource,
+    InspectHistograms(histograms, kShouldBeAllowedWithoutSniffing, resource,
                       RESOURCE_TYPE_XHR);
   }
 }
@@ -275,9 +310,9 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, RangeRequest) {
     ASSERT_TRUE(ExecuteScriptAndExtractBool(
         shell(), "sendRequest('valid.html', 'bytes=1-24');", &was_blocked));
     EXPECT_TRUE(was_blocked);
-    InspectHistograms(histograms, true /* should_be_blocked */,
-                      false /* should_be_sniffed */, "valid.html",
-                      RESOURCE_TYPE_XHR);
+    InspectHistograms(
+        histograms, kShouldBeBlockedWithoutSniffing | kShouldHaveContentLength,
+        "valid.html", RESOURCE_TYPE_XHR);
   }
   {
     // Verify that a response which would have been allowed by MIME type anyway
@@ -287,8 +322,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, RangeRequest) {
     ASSERT_TRUE(ExecuteScriptAndExtractBool(
         shell(), "sendRequest('valid.js', 'bytes=1-5');", &was_blocked));
     EXPECT_FALSE(was_blocked);
-    InspectHistograms(histograms, false /* should_be_blocked */,
-                      false /* should_be_sniffed */, "valid.js",
+    InspectHistograms(histograms, kShouldBeAllowedWithoutSniffing, "valid.js",
                       RESOURCE_TYPE_XHR);
   }
   {
@@ -299,8 +333,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, RangeRequest) {
     ASSERT_TRUE(ExecuteScriptAndExtractBool(
         shell(), "sendRequest('cors.json', 'bytes=2-7');", &was_blocked));
     EXPECT_FALSE(was_blocked);
-    InspectHistograms(histograms, false /* should_be_blocked */,
-                      false /* should_be_sniffed */, "cors.json",
+    InspectHistograms(histograms, kShouldBeAllowedWithoutSniffing, "cors.json",
                       RESOURCE_TYPE_XHR);
   }
 }
@@ -448,8 +481,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest,
   // Verify that XSDB didn't block the response (since it was "faked" within the
   // service worker and didn't cross any security boundaries).
   EXPECT_EQ("Response created by service worker", response);
-  InspectHistograms(histograms, false /* should_be_blocked */,
-                    false /* should_be_sniffed */, "blah.html",
+  InspectHistograms(histograms, kShouldBeAllowedWithoutSniffing, "blah.html",
                     RESOURCE_TYPE_XHR);
 }
 
@@ -489,9 +521,8 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest,
 
     // Verify that XSDB blocked the response from the network (from
     // |cross_origin_https_server_|) to the service worker.
-    InspectHistograms(histograms, true /* should_be_blocked */,
-                      false /* should_be_sniffed */, "nosniff.html",
-                      RESOURCE_TYPE_XHR);
+    InspectHistograms(histograms, kShouldBeBlockedWithoutSniffing,
+                      "nosniff.html", RESOURCE_TYPE_XHR);
 
     // Verify that the service worker replied with an expected error.
     // Replying with an error means that XSDB is only active once (for the
@@ -519,9 +550,8 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingServiceWorkerTest,
     // Verify that XSDB blocked the cached/opaque service worker response from
     // reaching a cross-origin page.
     EXPECT_EQ("", response);
-    InspectHistograms(histograms, true /* should_be_blocked */,
-                      false /* should_be_sniffed */, "nosniff.html",
-                      RESOURCE_TYPE_XHR);
+    InspectHistograms(histograms, kShouldBeBlockedWithoutSniffing,
+                      "nosniff.html", RESOURCE_TYPE_XHR);
   }
 }
 
