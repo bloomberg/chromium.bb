@@ -42,8 +42,11 @@ class HeadlessBrowserContextOptions {
   // See HeadlessBrowser::Options::user_data_dir.
   const base::FilePath& user_data_dir() const;
 
-  // Set HeadlessBrowser::Options::incognito_mode.
+  // See HeadlessBrowser::Options::incognito_mode.
   bool incognito_mode() const;
+
+  // See HeadlessBrowser::Options::block_new_web_contents.
+  bool block_new_web_contents() const;
 
   // If set the renderer will be constructed with virtual time enabled and in it
   // base::Time::Now will be overridden to initially return this value.
@@ -77,6 +80,7 @@ class HeadlessBrowserContextOptions {
   base::Optional<gfx::Size> window_size_;
   base::Optional<base::FilePath> user_data_dir_;
   base::Optional<bool> incognito_mode_;
+  base::Optional<bool> block_new_web_contents_;
   base::Optional<base::Time> initial_virtual_time_;
   base::Optional<bool> allow_cookies_;
   base::Optional<base::Callback<void(WebPreferences*)>>

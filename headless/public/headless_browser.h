@@ -176,6 +176,9 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   // Run a browser context in an incognito mode. Enabled by default.
   bool incognito_mode = true;
 
+  // If true, then all pop-ups and calls to window.open will fail.
+  bool block_new_web_contents = false;
+
   // If set the renderer will be constructed with virtual time enabled and
   // base::Time::Now will be overridden to initially return this value.
   base::Optional<base::Time> initial_virtual_time;
@@ -254,6 +257,7 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
   Builder& SetWindowSize(const gfx::Size& window_size);
   Builder& SetUserDataDir(const base::FilePath& user_data_dir);
   Builder& SetIncognitoMode(bool incognito_mode);
+  Builder& SetBlockNewWebContents(bool block_new_web_contents);
   Builder& SetInitialVirtualTime(base::Time initial_virtual_time);
   Builder& SetAllowCookies(bool allow_cookies);
   Builder& SetOverrideWebPreferencesCallback(
