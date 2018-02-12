@@ -2255,6 +2255,9 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, DoesNotReload) {
   DoErrorLoad(net::ERR_SSL_PROTOCOL_ERROR);
   EXPECT_FALSE(timer()->IsRunning());
 
+  DoErrorLoad(net::ERR_BLOCKED_BY_ADMINISTRATOR);
+  EXPECT_FALSE(timer()->IsRunning());
+
   DoErrorLoad(net::ERR_BAD_SSL_CLIENT_AUTH_CERT);
   EXPECT_FALSE(timer()->IsRunning());
 

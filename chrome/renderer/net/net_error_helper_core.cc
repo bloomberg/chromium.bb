@@ -489,6 +489,9 @@ bool NetErrorHelperCore::IsReloadableError(
          info.error.reason() != net::ERR_SSL_PROTOCOL_ERROR &&
          // Do not trigger for XSS Auditor violations.
          info.error.reason() != net::ERR_BLOCKED_BY_XSS_AUDITOR &&
+         // Do not trigger for blacklisted URLs.
+         // https://crbug.com/803839
+         info.error.reason() != net::ERR_BLOCKED_BY_ADMINISTRATOR &&
          !info.was_failed_post &&
          // Don't auto-reload non-http/https schemas.
          // https://crbug.com/471713
