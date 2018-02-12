@@ -192,7 +192,7 @@ int RendererMain(const MainFunctionParams& parameters) {
     if (base::StringToDouble(
             command_line.GetSwitchValueASCII(switches::kInitialVirtualTime),
             &initial_time)) {
-      initial_virtual_time = base::Time::FromJsTime(initial_time);
+      initial_virtual_time = base::Time::FromDoubleT(initial_time);
     }
   }
   std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler(
