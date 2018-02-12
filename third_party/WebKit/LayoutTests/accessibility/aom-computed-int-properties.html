@@ -23,7 +23,7 @@ test(function(t) {
     assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
 }, "Make sure that Accessibility Object Model is enabled");
 
-async_test(async function(test) {
+test(async function(test) {
     var element = document.getElementById("no-int-props");
     computedAXNode = await window.getComputedAccessibleNode(element);
     assert_equals(computedAXNode.role, "button");
@@ -36,15 +36,13 @@ async_test(async function(test) {
     assert_equals(computedAXNode.rowIndex, null);
     assert_equals(computedAXNode.rowSpan, null);
     assert_equals(computedAXNode.setSize, null);
-    test.done();
 }, "computedAccessibleNode has nullable int properties.");
 
-async_test(async function(test) {
+test(async function(test) {
     var listitem = document.getElementById("listitem");
     computedAXNode = await window.getComputedAccessibleNode(listitem);
     assert_equals(computedAXNode.posInSet, 3);
     assert_equals(computedAXNode.setSize, 10);
-    test.done();
 }, "computedAccessibleNode.setSize and computedAccessibleNode.posInSet");
 
 </script>
@@ -55,7 +53,7 @@ async_test(async function(test) {
 
 <script>
 
-async_test(async function(test) {
+test(async function(test) {
     var heading1 = document.getElementById("first-heading");
     var heading2 = document.getElementById("second-heading");
     var heading3 = document.getElementById("third-heading");
@@ -66,7 +64,6 @@ async_test(async function(test) {
     assert_equals(computedAXNode1.level, 1);
     assert_equals(computedAXNode2.level, 2);
     assert_equals(computedAXNode3.level, 2);
-    test.done();
 }, "computedAccessibleNode.level");
 
 // TODO(meredithl): add in tests for (col | row) * (index | index | span)

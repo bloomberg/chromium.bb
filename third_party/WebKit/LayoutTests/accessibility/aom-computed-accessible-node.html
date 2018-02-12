@@ -19,21 +19,19 @@ test(function(t) {
     assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
 }, "Make sure that Accessibility Object Model is enabled");
 
-async_test(async function(test) {
+test(async function(test) {
     var element = document.getElementById("button1");
     var computedAXNode = await window.getComputedAccessibleNode(element)
     assert_true(computedAXNode != null);
-    test.done();
 }, 'Ensure that a non null value is returned from getComputedAccessibleNode');
 
 
-async_test(async function(test) {
+test(async function(test) {
     var element = document.getElementById("button1");
 
     var computedAXNode1 = await window.getComputedAccessibleNode(element);
     var computedAXNode2 = await window.getComputedAccessibleNode(element);
     assert_true(computedAXNode1 === computedAXNode2);
-    test.done();
 }, "Multiple calls to getComputedAccessibleNode will return the same node.");
 
 </script>
@@ -42,7 +40,7 @@ async_test(async function(test) {
 
 <script>
 
-async_test(async function(test) {
+test(async function(test) {
     var button1 = document.getElementById("button1");
     var button1CAXNode = await window.getComputedAccessibleNode(button1);
 
@@ -62,7 +60,6 @@ async_test(async function(test) {
     // nullified.
     assert_equals(button1CAXNode.name, null);
     assert_equals(button1CAXNode.role, null);
-    test.done();
 
 }, "Deleting nodes from the accessibility tree will not cause a crash, and properties on any references to a deleted computed accessible node have been nullified.");
 
