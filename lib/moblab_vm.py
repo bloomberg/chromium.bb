@@ -466,8 +466,13 @@ def _CreateVMImage(src_dir, dest_dir):
     except cros_build_lib.RunCommandError as e:
       raise SetupError('Failed to create VM image for %s: %s' % (src_dir, e))
 
-    # Preserve all content, although we should need only the generated VM
-    # image. Other files like boot.desc might be needed elsewhere.
+    # Preserve most content, although we should need only the generated VM
+    # image. Other files like boot.desc might be needed elsewhere, but the
+    # source images should no longer be needed.
+    osutils.SafeUnlink(os.path.join(tempdir, constants.BASE_IMAGE_BIN),
+                       sudo=True)
+    osutils.SafeUnlink(os.path.join(tempdir, constants.TEST_IMAGE_BIN),
+                       sudo=True)
     osutils.CopyDirContents(tempdir, dest_dir)
   # The exact name of the output image is hard-coded in image_to_vm.sh
   return os.path.join(dest_dir, constants.VM_IMAGE_BIN)
