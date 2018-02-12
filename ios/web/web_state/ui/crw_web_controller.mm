@@ -1706,14 +1706,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
   const GURL currentURL([self currentURL]);
   [self didStartLoading];
   self.navigationManagerImpl->CommitPendingItem();
-  _loadPhase = web::PAGE_LOADED;
   if (loadSuccess) {
     // No DidFinishNavigation callback for displaying error page.
     _webStateImpl->OnNavigationFinished(context);
   }
-
-  // Perform post-load-finished updates.
-  [self didFinishWithURL:currentURL loadSuccess:loadSuccess context:context];
 
   NSString* title = [self.nativeController title];
   if (title) {
@@ -1799,6 +1795,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
                sameDocumentNavigation:NO];
   [self loadNativeViewWithSuccess:YES
                 navigationContext:navigationContext.get()];
+  _loadPhase = web::PAGE_LOADED;
+  [self didFinishWithURL:targetURL
+             loadSuccess:YES
+                 context:navigationContext.get()];
 }
 
 - (web::NavigationContextImpl*)loadPlaceholderInWebViewForURL:
@@ -3009,6 +3009,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
           [self setNativeController:controller];
           [self loadNativeViewWithSuccess:YES
                         navigationContext:navigationContext];
+          _loadPhase = web::PAGE_LOADED;
           return;
         }
       }
@@ -3036,8 +3037,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
                               NSUnderlyingErrorKey : error,
                             }];
   }
-
-  [self loadCompleteWithSuccess:NO forNavigation:navigation];
 
   if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     [self loadErrorInNativeViewForNavigationItem:self.currentNavItem
@@ -3067,11 +3066,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
           [self isCurrentNavigationItemPOST]);
     }
   }
-
   if ([_navigationStates stateForNavigation:navigation] ==
       web::WKNavigationState::PROVISIONALY_FAILED) {
     _webStateImpl->OnNavigationFinished(navigationContext);
   }
+  [self loadCompleteWithSuccess:NO forNavigation:navigation];
 }
 
 - (void)handleCancelledError:(NSError*)error {
