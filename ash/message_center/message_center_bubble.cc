@@ -6,6 +6,7 @@
 
 #include "ash/message_center/message_center_view.h"
 #include "base/macros.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/views/bubble/tray_bubble_view.h"
@@ -17,8 +18,12 @@ using message_center::MessageCenter;
 namespace ash {
 
 namespace {
-const int kDefaultMaxHeight = 400;
-}
+constexpr int kDefaultMaxHeight = 400;
+
+constexpr SkColor kBackgroundColorWithBlur =
+    SkColorSetARGB(0xCC, 0xF0, 0xF0, 0xF2);
+constexpr SkColor kBackgroundColor = SkColorSetARGB(0xF2, 0xF0, 0xF0, 0xF2);
+}  // namespace
 
 // ContentsView ////////////////////////////////////////////////////////////////
 
@@ -44,6 +49,12 @@ class ContentsView : public views::View {
 ContentsView::ContentsView(MessageCenterBubble* bubble, views::View* contents)
     : bubble_(bubble->AsWeakPtr()) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
+
+  SetBackground(views::CreateSolidBackground(
+      app_list::features::IsBackgroundBlurEnabled() ? kBackgroundColorWithBlur
+                                                    : kBackgroundColor));
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
   AddChildView(contents);
 }
 
