@@ -3,11 +3,25 @@
 <script src="../../../resources/testharnessreport.js"></script>
 
 <body>
-    <div id='e'></div>
+    <div id="e" style="color: red;"></div>
 </body>
 
 <script>
 var element = document.getElementById('e');
+
+test(function() {
+  const keyframes = [
+    {color: 'red'},
+    {color: 'blue'},
+  ];
+  var anim;
+
+  for (const composite of [ 'replace', 'add', 'accumulate' ]) {
+    anim = element.animate(keyframes, {composite, fill: 'forwards'});
+    assert_equals(getComputedStyle(element).color, 'rgb(0, 0, 255)');
+    anim.cancel();
+  }
+}, 'Calling element.animate() with valid composite values should not throw, but should fallback to replace.');
 
 test(function() {
     var replaceReplaceKeyframes = [
