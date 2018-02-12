@@ -195,7 +195,10 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Removes a regular or supervised user from the user list.
   // Returns the user if found or NULL otherwise.
   // Also removes the user from the persistent user list.
-  User* RemoveRegularOrSupervisedUserFromList(const AccountId& account_id);
+  // |notify| is true when OnUserRemoved() should be triggered,
+  // meaning that the user won't be added after the removal.
+  User* RemoveRegularOrSupervisedUserFromList(const AccountId& account_id,
+                                              bool notify);
 
   // Implementation for RemoveUser method. This is an asynchronous part of the
   // method, that verifies that owner will not get deleted, and calls
