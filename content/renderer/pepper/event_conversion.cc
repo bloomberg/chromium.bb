@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <algorithm>
 #include <memory>
 
 #include "base/i18n/char_iterator.h"
@@ -438,8 +439,8 @@ WebKeyboardEvent* BuildCharEvent(const InputEventData& event) {
   size_t text_length_cap = WebKeyboardEvent::kTextLengthCap;
   base::string16 text16 = base::UTF8ToUTF16(event.character_text);
 
-  memset(key_event->text, 0, text_length_cap);
-  memset(key_event->unmodified_text, 0, text_length_cap);
+  std::fill_n(key_event->text, text_length_cap, 0);
+  std::fill_n(key_event->unmodified_text, text_length_cap, 0);
   for (size_t i = 0; i < std::min(text_length_cap, text16.size()); ++i)
     key_event->text[i] = text16[i];
   return key_event;
