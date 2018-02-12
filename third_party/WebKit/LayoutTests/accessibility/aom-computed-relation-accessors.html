@@ -23,7 +23,7 @@ test(function(t) {
     assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
 }, "Make sure that Accessibility Object Model is enabled");
 
-async_test(async function(test) {
+test(async function(test) {
     var element = document.getElementById("option1");
     var computedAXNode = await window.getComputedAccessibleNode(element);
     var computedParent = computedAXNode.parent;
@@ -33,30 +33,27 @@ async_test(async function(test) {
 
     // Parent of listbox should be null.
     assert_equals(computedParent.parent, null);
-    test.done();
 }, "ComputedAccessibleNode.parent.");
 
-async_test(async function(test) {
+test(async function(test) {
     var element = document.getElementById("listbox");
     var computedAXNode = await window.getComputedAccessibleNode(element);
     var computedChild = computedAXNode.firstChild
     assert_false(computedChild === null);
     assert_equals(computedChild.name, "Option 1");
     assert_true(computedChild.parent === computedAXNode);
-    test.done();
 }, "ComputedAccessibleNode.firstChild.");
 
-async_test(async function(test) {
+test(async function(test) {
     var element = document.getElementById("listbox");
     var computedAXNode = await window.getComputedAccessibleNode(element);
     var computedChild = computedAXNode.lastChild;
     assert_false(computedChild === null);
     assert_equals(computedChild.name, "Option 3");
     assert_true(computedChild.parent === computedAXNode);
-    test.done();
 }, "ComputedAccessibleNode.lastChild.");
 
-async_test(async function(test) {
+test(async function(test) {
     var element = document.getElementById("option2");
     var computedAXNode = await window.getComputedAccessibleNode(element);
     var computedSibling = computedAXNode.previousSibling;
@@ -66,10 +63,9 @@ async_test(async function(test) {
     // Check that a call to non-existant sibling is null.
     assert_equals(computedSibling.previousSibling, null);
     assert_true(computedSibling.nextSibling === computedAXNode);
-    test.done();
 }, "ComputedAccessibleNode.previousSibling");
 
-async_test(async function(test) {
+test(async function(test) {
     var element = document.getElementById("option2");
     var computedAXNode = await window.getComputedAccessibleNode(element);
     var computedSibling = computedAXNode.nextSibling;
@@ -79,7 +75,6 @@ async_test(async function(test) {
     // Check that a call to non-existant sibling is null.
     assert_equals(computedSibling.nextSibling, null);
     assert_true(computedSibling.previousSibling === computedAXNode);
-    test.done();
 }, "ComputedAccessibleNode.nextSibling");
 
 </script>
