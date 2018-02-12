@@ -224,10 +224,7 @@ CHAR-LIMIT guidelines:
       <message name="IDS_COPIED" desc="Notification telling the user that something has been copied to the clipboard.">
         Copied
       </message>
-      <message name="IDS_RETRY" desc="The label for retry button. [CHAR-LIMIT=20]">
-        Retry
-      </message>
-      <message name="IDS_TRY_AGAIN" desc="The label for a button allowing the user to try an action again.">
+      <message name="IDS_TRY_AGAIN" desc="The label for a button allowing the user to try an action again. [CHAR-LIMIT=20]">
         Try again
       </message>
 
