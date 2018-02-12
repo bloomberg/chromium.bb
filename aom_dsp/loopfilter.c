@@ -362,17 +362,13 @@ static void mb_lpf_horizontal_edge_w(uint8_t *s, int p, const uint8_t *blimit,
   // loop filter designed to work using chars so that we can make maximum use
   // of 8 bit simd instructions.
   for (i = 0; i < step * count; ++i) {
-    const uint8_t p7 = s[-8 * p], p6 = s[-7 * p], p5 = s[-6 * p],
-                  p4 = s[-5 * p], p3 = s[-4 * p], p2 = s[-3 * p],
-                  p1 = s[-2 * p], p0 = s[-p];
+    const uint8_t p6 = s[-7 * p], p5 = s[-6 * p], p4 = s[-5 * p],
+                  p3 = s[-4 * p], p2 = s[-3 * p], p1 = s[-2 * p], p0 = s[-p];
     const uint8_t q0 = s[0 * p], q1 = s[1 * p], q2 = s[2 * p], q3 = s[3 * p],
-                  q4 = s[4 * p], q5 = s[5 * p], q6 = s[6 * p], q7 = s[7 * p];
+                  q4 = s[4 * p], q5 = s[5 * p], q6 = s[6 * p];
     const int8_t mask =
         filter_mask(*limit, *blimit, p3, p2, p1, p0, q0, q1, q2, q3);
     const int8_t flat = flat_mask4(1, p3, p2, p1, p0, q0, q1, q2, q3);
-
-    (void)p7;
-    (void)q7;
     const int8_t flat2 = flat_mask4(1, p6, p5, p4, p0, q0, q4, q5, q6);
 
     filter14(mask, *thresh, flat, flat2, s - 7 * p, s - 6 * p, s - 5 * p,
@@ -398,16 +394,13 @@ static void mb_lpf_vertical_edge_w(uint8_t *s, int p, const uint8_t *blimit,
   int i;
 
   for (i = 0; i < count; ++i) {
-    const uint8_t p7 = s[-8], p6 = s[-7], p5 = s[-6], p4 = s[-5], p3 = s[-4],
-                  p2 = s[-3], p1 = s[-2], p0 = s[-1];
+    const uint8_t p6 = s[-7], p5 = s[-6], p4 = s[-5], p3 = s[-4], p2 = s[-3],
+                  p1 = s[-2], p0 = s[-1];
     const uint8_t q0 = s[0], q1 = s[1], q2 = s[2], q3 = s[3], q4 = s[4],
-                  q5 = s[5], q6 = s[6], q7 = s[7];
+                  q5 = s[5], q6 = s[6];
     const int8_t mask =
         filter_mask(*limit, *blimit, p3, p2, p1, p0, q0, q1, q2, q3);
     const int8_t flat = flat_mask4(1, p3, p2, p1, p0, q0, q1, q2, q3);
-
-    (void)p7;
-    (void)q7;
     const int8_t flat2 = flat_mask4(1, p6, p5, p4, p0, q0, q4, q5, q6);
 
     filter14(mask, *thresh, flat, flat2, s - 7, s - 6, s - 5, s - 4, s - 3,
