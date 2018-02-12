@@ -360,6 +360,16 @@ void ExtensionApiFrameIdMap::UpdateTabAndWindowId(
   }
 }
 
+bool ExtensionApiFrameIdMap::HasCachedFrameDataForTesting(
+    content::RenderFrameHost* rfh) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!rfh)
+    return false;
+
+  const RenderFrameIdKey key(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
+  return frame_data_map_.find(key) != frame_data_map_.end();
+}
+
 void ExtensionApiFrameIdMap::RemoveFrameData(const RenderFrameIdKey& key) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
