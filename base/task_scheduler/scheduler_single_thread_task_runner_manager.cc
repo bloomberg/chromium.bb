@@ -224,13 +224,9 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
     const TimeDelta sleep_time = GetSleepTimeout();
     const DWORD milliseconds_wait =
         sleep_time.is_max() ? INFINITE : sleep_time.InMilliseconds();
-    HANDLE wake_up_event_handle = wake_up_event->handle();
-    DWORD result = MsgWaitForMultipleObjectsEx(
-        1, &wake_up_event_handle, milliseconds_wait, QS_ALLINPUT, 0);
-    if (result == WAIT_OBJECT_0) {
-      // Reset the event since we woke up due to it.
-      wake_up_event->Reset();
-    }
+    const HANDLE wake_up_event_handle = wake_up_event->handle();
+    MsgWaitForMultipleObjectsEx(1, &wake_up_event_handle, milliseconds_wait,
+                                QS_ALLINPUT, 0);
   }
 
  private:
