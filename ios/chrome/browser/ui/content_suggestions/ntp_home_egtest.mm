@@ -500,7 +500,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 
   // Clear history to ensure the tile will be shown.
-  chrome_test_util::ClearBrowsingHistory();
+  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
+                 @"Clearing Browsing History timed out");
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [ChromeEarlGrey loadURL:pageURL];
   [ChromeEarlGrey waitForWebViewContainingText:kPageLoadedString];

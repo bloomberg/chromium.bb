@@ -402,10 +402,12 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 - (void)testSyncTypedURLUpload {
   const GURL mockURL("http://not-a-real-site/");
 
-  chrome_test_util::ClearBrowsingHistory();
+  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
+                 @"Clearing Browsing History timed out");
 
   [self setTearDownHandler:^{
-    chrome_test_util::ClearBrowsingHistory();
+    GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
+                   @"Clearing Browsing History timed out");
   }];
   chrome_test_util::AddTypedURLOnClient(mockURL);
 
@@ -439,9 +441,11 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 - (void)testSyncTypedUrlDownload {
   const GURL mockURL("http://not-a-real-site/");
 
-  chrome_test_util::ClearBrowsingHistory();
+  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
+                 @"Clearing Browsing History timed out");
   [self setTearDownHandler:^{
-    chrome_test_util::ClearBrowsingHistory();
+    GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
+                   @"Clearing Browsing History timed out");
   }];
 
   // Inject typed url on server.
@@ -474,10 +478,12 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 - (void)testSyncTypedURLDeleteFromClient {
   const GURL mockURL("http://not-a-real-site/");
 
-  chrome_test_util::ClearBrowsingHistory();
+  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
+                 @"Clearing Browsing History timed out");
 
   [self setTearDownHandler:^{
-    chrome_test_util::ClearBrowsingHistory();
+    GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
+                   @"Clearing Browsing History timed out");
   }];
 
   // Inject typed url on server.
@@ -520,10 +526,12 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 - (void)testSyncTypedURLDeleteFromServer {
   const GURL mockURL("http://not-a-real-site/");
 
-  chrome_test_util::ClearBrowsingHistory();
+  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
+                 @"Clearing Browsing History timed out");
 
   [self setTearDownHandler:^{
-    chrome_test_util::ClearBrowsingHistory();
+    GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
+                   @"Clearing Browsing History timed out");
   }];
   chrome_test_util::AddTypedURLOnClient(mockURL);
 

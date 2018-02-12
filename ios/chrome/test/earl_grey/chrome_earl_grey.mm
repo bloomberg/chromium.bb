@@ -71,7 +71,8 @@ id ExecuteJavaScript(NSString* javascript,
 #pragma mark - History Utilities
 
 + (void)clearBrowsingHistory {
-  chrome_test_util::ClearBrowsingHistory();
+  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
+                 @"Clearing Browsing History timed out");
   // After clearing browsing history via code, wait for the UI to be done
   // with any updates. This includes icons from the new tab page being removed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];

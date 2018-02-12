@@ -62,7 +62,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
     }
   }
 
-  chrome_test_util::ClearBrowsingHistory();
+  GREYAssertTrue(chrome_test_util::ClearBrowsingHistory(),
+                 @"Clearing Browsing History timed out");
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   // Set server up.
   self.testServer->RegisterRequestHandler(
