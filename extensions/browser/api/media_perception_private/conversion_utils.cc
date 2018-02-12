@@ -133,6 +133,35 @@ VideoHumanPresenceDetectionProtoToIdl(
   return detection_result;
 }
 
+std::unique_ptr<AudioVisualHumanPresenceDetection>
+AudioVisualHumanPresenceDetectionProtoToIdl(
+    const mri::AudioVisualHumanPresenceDetection& detection) {
+  std::unique_ptr<AudioVisualHumanPresenceDetection> detection_result =
+      std::make_unique<AudioVisualHumanPresenceDetection>();
+
+  if (detection.has_human_presence_likelihood()) {
+    detection_result->human_presence_likelihood =
+        std::make_unique<double>(detection.human_presence_likelihood());
+  }
+
+  return detection_result;
+}
+
+AudioVisualPerception AudioVisualPerceptionProtoToIdl(
+    const mri::AudioVisualPerception& perception) {
+  AudioVisualPerception perception_result;
+  if (perception.has_timestamp_us()) {
+    perception_result.timestamp_us =
+        std::make_unique<double>(perception.timestamp_us());
+  }
+  if (perception.has_audio_visual_human_presence_detection()) {
+    perception_result.audio_visual_human_presence_detection =
+        AudioVisualHumanPresenceDetectionProtoToIdl(
+            perception.audio_visual_human_presence_detection());
+  }
+  return perception_result;
+}
+
 std::unique_ptr<Point> PointProtoToIdl(const mri::Point& point) {
   std::unique_ptr<Point> point_result = std::make_unique<Point>();
   if (point.has_x())
@@ -342,6 +371,11 @@ PerceptionSample PerceptionSampleProtoToIdl(
         std::make_unique<AudioPerception>(
             AudioPerceptionProtoToIdl(perception_sample.audio_perception()));
   }
+  if (perception_sample.has_audio_visual_perception()) {
+    perception_sample_result.audio_visual_perception =
+        std::make_unique<AudioVisualPerception>(AudioVisualPerceptionProtoToIdl(
+            perception_sample.audio_visual_perception()));
+  }
   return perception_sample_result;
 }
 
@@ -468,6 +502,15 @@ MediaPerception MediaPerceptionProtoToIdl(
     for (const auto& audio_perception : media_perception.audio_perception()) {
       media_perception_result.audio_perceptions->emplace_back(
           AudioPerceptionProtoToIdl(audio_perception));
+    }
+  }
+
+  if (media_perception.audio_visual_perception_size() > 0) {
+    media_perception_result.audio_visual_perceptions =
+        std::make_unique<std::vector<AudioVisualPerception>>();
+    for (const auto& perception : media_perception.audio_visual_perception()) {
+      media_perception_result.audio_visual_perceptions->emplace_back(
+          AudioVisualPerceptionProtoToIdl(perception));
     }
   }
 

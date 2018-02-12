@@ -24,6 +24,10 @@ message MediaPerception {
   // A single AudioPerception message or array of audio perceptions (if
   // reporting the results from multiple audio frames).
   repeated AudioPerception audio_perception = 3;
+
+  // A single AudioVisualPerception message or array of audio-visual
+  // perceptions.
+  repeated AudioVisualPerception audio_visual_perception = 4;
 }
 
 // Used to transmit a history of image frames and their associated annotations.
@@ -81,6 +85,24 @@ message PerceptionSample {
   optional ImageFrame image_frame = 2;
 
   optional AudioPerception audio_perception = 3;
+
+  optional AudioVisualPerception audio_visual_perception = 4;
+}
+
+// Perception results based on both audio and video inputs.
+message AudioVisualPerception {
+  // A timestamp in microseconds attached when this message was generated.
+  optional uint64 timestamp_us = 1;
+
+  // Human presence detection results.
+  optional AudioVisualHumanPresenceDetection
+      audio_visual_human_presence_detection = 2;
+}
+
+// Detection of human presence based on both audio and video inputs.
+message AudioVisualHumanPresenceDetection {
+  // Indicates a probability in [0, 1] interval that a human is present.
+  optional double human_presence_likelihood = 1;
 }
 
 // Audio perception results for an audio frame.
