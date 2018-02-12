@@ -26,13 +26,29 @@
 #ifndef DelayNode_h
 #define DelayNode_h
 
+#include "modules/webaudio/AudioBasicProcessorHandler.h"
 #include "modules/webaudio/AudioNode.h"
 
 namespace blink {
 
+class AudioParamHandler;
 class BaseAudioContext;
 class DelayOptions;
 class ExceptionState;
+
+class DelayHandler : public AudioBasicProcessorHandler {
+ public:
+  static scoped_refptr<DelayHandler> Create(AudioNode&,
+                                            float sample_rate,
+                                            AudioParamHandler& delay_time,
+                                            double max_delay_time);
+
+ private:
+  DelayHandler(AudioNode&,
+               float sample_rate,
+               AudioParamHandler& delay_time,
+               double max_delay_time);
+};
 
 class DelayNode final : public AudioNode {
   DEFINE_WRAPPERTYPEINFO();

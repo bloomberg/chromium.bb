@@ -43,15 +43,6 @@ AudioBasicProcessorHandler::AudioBasicProcessorHandler(
   AddOutput(1);
 }
 
-scoped_refptr<AudioBasicProcessorHandler> AudioBasicProcessorHandler::Create(
-    NodeType node_type,
-    AudioNode& node,
-    float sample_rate,
-    std::unique_ptr<AudioProcessor> processor) {
-  return base::AdoptRef(new AudioBasicProcessorHandler(
-      node_type, node, sample_rate, std::move(processor)));
-}
-
 AudioBasicProcessorHandler::~AudioBasicProcessorHandler() {
   // Safe to call the uninitialize() because it's final.
   Uninitialize();

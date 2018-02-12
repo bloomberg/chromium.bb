@@ -7,6 +7,7 @@
 
 #include "core/typed_arrays/ArrayBufferViewHelpers.h"
 #include "core/typed_arrays/DOMTypedArray.h"
+#include "modules/webaudio/AudioBasicProcessorHandler.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/IIRProcessor.h"
 
@@ -15,6 +16,21 @@ namespace blink {
 class BaseAudioContext;
 class ExceptionState;
 class IIRFilterOptions;
+
+class IIRFilterHandler : public AudioBasicProcessorHandler {
+ public:
+  static scoped_refptr<IIRFilterHandler> Create(
+      AudioNode&,
+      float sample_rate,
+      const Vector<double>& feedforward_coef,
+      const Vector<double>& feedback_coef);
+
+ private:
+  IIRFilterHandler(AudioNode&,
+                   float sample_rate,
+                   const Vector<double>& feedforward_coef,
+                   const Vector<double>& feedback_coef);
+};
 
 class IIRFilterNode : public AudioNode {
   DEFINE_WRAPPERTYPEINFO();
@@ -43,7 +59,7 @@ class IIRFilterNode : public AudioNode {
                 const Vector<double>& denominator,
                 const Vector<double>& numerator);
 
-  IIRProcessor* IirProcessor() const;
+  IIRProcessor* GetIIRFilterProcessor() const;
 };
 
 }  // namespace blink

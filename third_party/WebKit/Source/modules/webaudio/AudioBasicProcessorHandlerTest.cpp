@@ -24,13 +24,27 @@ class MockAudioProcessor final : public AudioProcessor {
   double LatencyTime() const override { return 0; }
 };
 
+class MockProcessorHandler final : public AudioBasicProcessorHandler {
+ public:
+  static scoped_refptr<MockProcessorHandler> Create(AudioNode& node,
+                                                    float sample_rate) {
+    return base::AdoptRef(new MockProcessorHandler(node, sample_rate));
+  }
+
+ private:
+  MockProcessorHandler(AudioNode& node, float sample_rate)
+      : AudioBasicProcessorHandler(AudioHandler::kNodeTypeWaveShaper,
+                                   node,
+                                   sample_rate,
+                                   std::make_unique<MockAudioProcessor>()) {
+    Initialize();
+  }
+};
+
 class MockProcessorNode final : public AudioNode {
  public:
   MockProcessorNode(BaseAudioContext& context) : AudioNode(context) {
-    SetHandler(AudioBasicProcessorHandler::Create(
-        AudioHandler::kNodeTypeWaveShaper, *this, 48000,
-        std::make_unique<MockAudioProcessor>()));
-    Handler().Initialize();
+    SetHandler(MockProcessorHandler::Create(*this, 48000));
   }
 };
 
