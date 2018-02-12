@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -36,7 +35,6 @@
 #include "components/offline_pages/core/model/offline_page_model_taskified.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
 #include "components/offline_pages/core/request_header/offline_page_navigation_ui_data.h"
-#include "components/offline_pages/core/system_download_manager_stub.h"
 #include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
 #include "content/public/browser/browser_thread.h"
@@ -96,8 +94,6 @@ const char kPageSizeAccessOfflineHistogramBase[] =
     "OfflinePages.PageSizeOnAccess.Offline.";
 const char kPageSizeAccessOnlineHistogramBase[] =
     "OfflinePages.PageSizeOnAccess.Online.";
-
-const int64_t kDownloadId = 42LL;
 
 class OfflinePageRequestJobTestDelegate
     : public OfflinePageRequestJob::Delegate {
@@ -286,18 +282,6 @@ class TestOfflinePageArchiver : public OfflinePageArchiver {
         base::Bind(callback, this, ArchiverResult::SUCCESSFULLY_CREATED, url_,
                    archive_file_path_, base::string16(), archive_file_size_,
                    digest_));
-  }
-
-  void PublishArchive(
-      const OfflinePageItem& offline_page,
-      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-      const base::FilePath& new_file_path,
-      SystemDownloadManager* download_manager,
-      PublishArchiveDoneCallback publish_done_callback) override {
-    PublishArchiveResult* archive_result = new PublishArchiveResult();
-    archive_result->move_result = SavePageResult::SUCCESS;
-    archive_result->new_file_path = offline_page.file_path;
-    std::move(publish_done_callback).Run(offline_page, archive_result);
   }
 
  private:
@@ -899,8 +883,6 @@ OfflinePageRequestJobTest::BuildTestOfflinePageModel(
       context->GetPath().Append(chrome::kOfflinePageMetadataDirname);
   std::unique_ptr<OfflinePageMetadataStoreSQL> metadata_store(
       new OfflinePageMetadataStoreSQL(task_runner, store_path));
-  std::unique_ptr<SystemDownloadManager> download_manager(
-      new SystemDownloadManagerStub(kDownloadId, true));
 
   // Since we're not saving page into temporary dir, it's set the same as the
   // private dir.
@@ -910,8 +892,8 @@ OfflinePageRequestJobTest::BuildTestOfflinePageModel(
   std::unique_ptr<base::Clock> clock(new base::DefaultClock);
 
   return std::unique_ptr<KeyedService>(new OfflinePageModelTaskified(
-      std::move(metadata_store), std::move(archive_manager),
-      std::move(download_manager), task_runner, std::move(clock)));
+      std::move(metadata_store), std::move(archive_manager), task_runner,
+      std::move(clock)));
 }
 
 // static
