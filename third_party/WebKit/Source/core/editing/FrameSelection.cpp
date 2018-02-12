@@ -976,7 +976,7 @@ String FrameSelection::SelectedTextForClipboard() const {
                  .Build());
 }
 
-LayoutRect FrameSelection::UnclippedBounds() const {
+LayoutRect FrameSelection::UnclippedBoundsInDocument() const {
   LocalFrameView* view = frame_->View();
   LayoutView* layout_view = frame_->ContentLayoutObject();
 
@@ -984,7 +984,8 @@ LayoutRect FrameSelection::UnclippedBounds() const {
     return LayoutRect();
 
   view->UpdateLifecycleToLayoutClean();
-  return LayoutRect(layout_selection_->SelectionBounds());
+  return view->AbsoluteToDocument(
+      LayoutRect(layout_selection_->AbsoluteSelectionBounds()));
 }
 
 IntRect FrameSelection::ComputeRectToScroll(
@@ -996,7 +997,7 @@ IntRect FrameSelection::ComputeRectToScroll(
   if (reveal_extent_option == kRevealExtent)
     return AbsoluteCaretBoundsOf(CreateVisiblePosition(selection.Extent()));
   layout_selection_->SetHasPendingSelection();
-  return layout_selection_->SelectionBounds();
+  return layout_selection_->AbsoluteSelectionBounds();
 }
 
 // TODO(editing-dev): This should be done in FlatTree world.

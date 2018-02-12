@@ -1594,7 +1594,8 @@ void WebLocalFrameImpl::PrintPagesForTesting(
 
 WebRect WebLocalFrameImpl::GetSelectionBoundsRectForTesting() const {
   return HasSelection()
-             ? WebRect(IntRect(GetFrame()->Selection().UnclippedBounds()))
+             ? WebRect(
+                   IntRect(GetFrame()->Selection().UnclippedBoundsInDocument()))
              : WebRect();
 }
 

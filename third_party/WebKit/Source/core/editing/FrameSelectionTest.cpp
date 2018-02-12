@@ -1044,7 +1044,7 @@ TEST_F(FrameSelectionTest, SelectionBounds) {
   // The top of the node should be visible but the bottom should be outside
   // by the viewport. The unclipped selection bounds should not be clipped.
   EXPECT_EQ(LayoutRect(0, node_margin_top, node_width, node_height),
-            Selection().UnclippedBounds());
+            Selection().UnclippedBoundsInDocument());
 
   // Scroll 500px down so the top of the node is outside the viewport and the
   // bottom is visible. The unclipped selection bounds should not be clipped.
@@ -1053,14 +1053,14 @@ TEST_F(FrameSelectionTest, SelectionBounds) {
   frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, scroll_offset), kProgrammaticScroll);
   EXPECT_EQ(LayoutRect(0, node_margin_top, node_width, node_height),
-            Selection().UnclippedBounds());
+            Selection().UnclippedBoundsInDocument());
 
   // Adjust the page scale factor which changes the selection bounds as seen
   // through the viewport. The unclipped selection bounds should not be clipped.
   const int page_scale_factor = 2;
   GetPage().SetPageScaleFactor(page_scale_factor);
   EXPECT_EQ(LayoutRect(0, node_margin_top, node_width, node_height),
-            Selection().UnclippedBounds());
+            Selection().UnclippedBoundsInDocument());
 }
 
 }  // namespace blink

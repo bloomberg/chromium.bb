@@ -2949,7 +2949,7 @@ DOMRect* Internals::selectionBounds(ExceptionState& exception_state) {
   }
 
   return DOMRect::FromFloatRect(
-      FloatRect(GetFrame()->Selection().UnclippedBounds()));
+      FloatRect(GetFrame()->Selection().UnclippedBoundsInDocument()));
 }
 
 String Internals::markerTextForListItem(Element* element) {
