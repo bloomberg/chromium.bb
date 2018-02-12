@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -15,6 +16,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/protocol_builder.h"
 #include "components/update_client/request_sender.h"
@@ -26,24 +28,30 @@ namespace update_client {
 
 namespace {
 
-// Sends a fire and forget ping. The instances of this class have no
-// ownership and they self-delete upon completion. One instance of this class
-// can send only one ping.
-class PingSender {
- public:
-  explicit PingSender(const scoped_refptr<Configurator>& config);
-  ~PingSender();
+const int kErrorNoEvents = -1;
+const int kErrorNoUrl = -2;
 
-  bool SendPing(const Component& component);
+// An instance of this class can send only one ping.
+class PingSender : public base::RefCountedThreadSafe<PingSender> {
+ public:
+  using Callback = PingManager::Callback;
+  explicit PingSender(const scoped_refptr<Configurator>& config);
+  void SendPing(const Component& component, Callback callback);
+
+ protected:
+  virtual ~PingSender();
 
  private:
-  void OnRequestSenderComplete(int error,
-                               const std::string& response,
-                               int retry_after_sec);
+  friend class base::RefCountedThreadSafe<PingSender>;
+  void SendPingComplete(int error,
+                        const std::string& response,
+                        int retry_after_sec);
+
+  THREAD_CHECKER(thread_checker_);
 
   const scoped_refptr<Configurator> config_;
+  Callback callback_;
   std::unique_ptr<RequestSender> request_sender_;
-  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(PingSender);
 };
@@ -52,34 +60,40 @@ PingSender::PingSender(const scoped_refptr<Configurator>& config)
     : config_(config) {}
 
 PingSender::~PingSender() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-void PingSender::OnRequestSenderComplete(int error,
-                                         const std::string& response,
-                                         int retry_after_sec) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  delete this;
-}
+void PingSender::SendPing(const Component& component, Callback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-bool PingSender::SendPing(const Component& component) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (component.events().empty())
-    return false;
+  if (component.events().empty()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), kErrorNoEvents, ""));
+    return;
+  }
 
   auto urls(config_->PingUrl());
   if (component.crx_component().requires_network_encryption)
     RemoveUnsecureUrls(&urls);
 
-  if (urls.empty())
-    return false;
+  if (urls.empty()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), kErrorNoUrl, ""));
+    return;
+  }
+
+  callback_ = std::move(callback);
 
   request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(false, BuildEventPingRequest(*config_, component), urls,
-                        base::BindOnce(&PingSender::OnRequestSenderComplete,
-                                       base::Unretained(this)));
-  return true;
+                        base::BindOnce(&PingSender::SendPingComplete, this));
+}
+
+void PingSender::SendPingComplete(int error,
+                                  const std::string& response,
+                                  int retry_after_sec) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  std::move(callback_).Run(error, response);
 }
 
 }  // namespace
@@ -88,19 +102,14 @@ PingManager::PingManager(const scoped_refptr<Configurator>& config)
     : config_(config) {}
 
 PingManager::~PingManager() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-bool PingManager::SendPing(const Component& component) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void PingManager::SendPing(const Component& component, Callback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  auto ping_sender = std::make_unique<PingSender>(config_);
-  if (!ping_sender->SendPing(component))
-    return false;
-
-  // The ping sender object self-deletes after sending the ping asynchrously.
-  ping_sender.release();
-  return true;
+  auto ping_sender = base::MakeRefCounted<PingSender>(config_);
+  ping_sender->SendPing(component, std::move(callback));
 }
 
 }  // namespace update_client

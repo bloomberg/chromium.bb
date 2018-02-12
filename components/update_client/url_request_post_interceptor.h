@@ -156,6 +156,15 @@ class PartialMatch : public URLRequestPostInterceptor::RequestMatcher {
   DISALLOW_COPY_AND_ASSIGN(PartialMatch);
 };
 
+class AnyMatch : public URLRequestPostInterceptor::RequestMatcher {
+ public:
+  AnyMatch() = default;
+  bool Match(const std::string& actual) const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AnyMatch);
+};
+
 }  // namespace update_client
 
 #endif  // COMPONENTS_UPDATE_CLIENT_URL_REQUEST_POST_INTERCEPTOR_H_

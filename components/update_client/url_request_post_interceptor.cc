@@ -289,6 +289,10 @@ bool PartialMatch::Match(const std::string& actual) const {
   return actual.find(expected_) != std::string::npos;
 }
 
+bool AnyMatch::Match(const std::string&) const {
+  return true;
+}
+
 InterceptorFactory::InterceptorFactory(
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
     : URLRequestPostInterceptorFactory(POST_INTERCEPT_SCHEME,
