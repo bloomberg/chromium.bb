@@ -14,10 +14,11 @@
 #endif
 
 namespace device {
-OculusRenderLoop::OculusRenderLoop(ovrSession session)
+OculusRenderLoop::OculusRenderLoop(ovrSession session, ovrGraphicsLuid luid)
     : base::Thread("OculusRenderLoop"),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       session_(session),
+      luid_(luid),
       binding_(this),
       weak_ptr_factory_(this) {
   DCHECK(main_thread_task_runner_);
@@ -143,11 +144,13 @@ void OculusRenderLoop::UpdateLayerBounds(int16_t frame_id,
 void OculusRenderLoop::RequestPresent(
     mojom::VRSubmitFrameClientPtrInfo submit_client_info,
     mojom::VRPresentationProviderRequest request,
-    base::OnceCallback<void(bool)> callback) {
+    device::mojom::VRRequestPresentOptionsPtr present_options,
+    device::mojom::VRDisplayHost::RequestPresentCallback callback) {
 #if defined(OS_WIN)
-  if (!texture_helper_.EnsureInitialized()) {
+  if (!texture_helper_.SetAdapterLUID(*reinterpret_cast<LUID*>(&luid_)) ||
+      !texture_helper_.EnsureInitialized()) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), false));
+        FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
     return;
   }
 #endif
@@ -156,8 +159,17 @@ void OculusRenderLoop::RequestPresent(
   binding_.Close();
   binding_.Bind(std::move(request));
 
-  main_thread_task_runner_->PostTask(FROM_HERE,
-                                     base::BindOnce(std::move(callback), true));
+  device::mojom::VRDisplayFrameTransportOptionsPtr transport_options =
+      device::mojom::VRDisplayFrameTransportOptions::New();
+  transport_options->transport_method =
+      device::mojom::VRDisplayFrameTransportMethod::SUBMIT_AS_TEXTURE_HANDLE;
+  // Only set boolean options that we need. Default is false, and we should be
+  // able to safely ignore ones that our implementation doesn't care about.
+  transport_options->wait_for_transfer_notification = true;
+
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), true, std::move(transport_options)));
   is_presenting_ = true;
 }
 
