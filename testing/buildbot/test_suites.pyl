@@ -475,6 +475,11 @@
     'webapk_shell_apk_junit_tests': {},
   },
 
+  'cast_junit_tests': {
+    'cast_base_junit_tests': {},
+    'cast_shell_junit_tests': {},
+  },
+
   'chromium_linux_scripts': {
     'checkdeps': {
       'script': 'checkdeps.py',

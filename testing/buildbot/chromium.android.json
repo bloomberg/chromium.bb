@@ -539,6 +539,14 @@
     "additional_compile_targets": [
       "cast_junit_test_lists",
       "cast_shell_apk"
+    ],
+    "junit_tests": [
+      {
+        "test": "cast_base_junit_tests"
+      },
+      {
+        "test": "cast_shell_junit_tests"
+      }
     ]
   },
   "KitKat Phone Tester (dbg)": {
