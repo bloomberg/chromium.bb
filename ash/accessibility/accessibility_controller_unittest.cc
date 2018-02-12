@@ -19,10 +19,6 @@
 
 namespace ash {
 
-void CopyResult(base::TimeDelta* dest, base::TimeDelta src) {
-  *dest = src;
-}
-
 class TestAccessibilityObserver : public AccessibilityObserver {
  public:
   TestAccessibilityObserver() = default;
@@ -216,11 +212,29 @@ TEST_F(AccessibilityControllerTest, GetShutdownSoundDuration) {
   controller->SetClient(client.CreateInterfacePtrAndBind());
 
   base::TimeDelta sound_duration;
-  controller->PlayShutdownSound(
-      base::BindOnce(&CopyResult, base::Unretained(&sound_duration)));
+  controller->PlayShutdownSound(base::BindOnce(
+      [](base::TimeDelta* dst, base::TimeDelta duration) { *dst = duration; },
+      base::Unretained(&sound_duration)));
   controller->FlushMojoForTest();
   EXPECT_EQ(TestAccessibilityControllerClient::kShutdownSoundDuration,
             sound_duration);
+}
+
+// Tests that ash's controller gets should toggle spoken feedback via touch
+// properly from remote client.
+TEST_F(AccessibilityControllerTest, GetShouldToggleSpokenFeedbackViaTouch) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  TestAccessibilityControllerClient client;
+  controller->SetClient(client.CreateInterfacePtrAndBind());
+
+  bool should_toggle = false;
+  controller->ShouldToggleSpokenFeedbackViaTouch(base::BindOnce(
+      [](bool* dst, bool should_toggle) { *dst = should_toggle; },
+      base::Unretained(&should_toggle)));
+  controller->FlushMojoForTest();
+  // Expects true which is passed by |client|.
+  EXPECT_TRUE(should_toggle);
 }
 
 TEST_F(AccessibilityControllerTest, SetDarkenScreen) {

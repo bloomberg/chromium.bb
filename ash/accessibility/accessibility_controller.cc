@@ -195,6 +195,18 @@ void AccessibilityController::ToggleDictation() {
     client_->ToggleDictation();
 }
 
+void AccessibilityController::ShouldToggleSpokenFeedbackViaTouch(
+    base::OnceCallback<void(bool)> callback) {
+  if (client_)
+    client_->ShouldToggleSpokenFeedbackViaTouch(std::move(callback));
+}
+
+void AccessibilityController::PlaySpokenFeedbackToggleCountdown(
+    int tick_count) {
+  if (client_)
+    client_->PlaySpokenFeedbackToggleCountdown(tick_count);
+}
+
 void AccessibilityController::SetClient(
     mojom::AccessibilityControllerClientPtr client) {
   client_ = std::move(client);

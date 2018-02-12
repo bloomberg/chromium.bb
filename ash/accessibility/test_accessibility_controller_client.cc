@@ -43,6 +43,14 @@ void TestAccessibilityControllerClient::HandleAccessibilityGesture(
 
 void TestAccessibilityControllerClient::ToggleDictation() {}
 
+void TestAccessibilityControllerClient::ShouldToggleSpokenFeedbackViaTouch(
+    ShouldToggleSpokenFeedbackViaTouchCallback callback) {
+  std::move(callback).Run(true);  // Passing true for testing.
+}
+
+void TestAccessibilityControllerClient::PlaySpokenFeedbackToggleCountdown(
+    int tick_count) {}
+
 int32_t TestAccessibilityControllerClient::GetPlayedEarconAndReset() {
   int32_t tmp = sound_key_;
   sound_key_ = -1;
