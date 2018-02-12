@@ -8,6 +8,7 @@
 
 #include "chrome/common/pref_names.h"
 #include "components/ntp_snippets/features.h"
+#include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 
@@ -33,6 +34,13 @@ bool IsAutoOptOutEnabled() {
 }  // namespace
 
 bool ContentSuggestionsNotifier::ShouldSendNotifications(PrefService* prefs) {
+  // Notifications are blocked when the suggested articles list is hidden.
+  // The user can hide the list when kArticleSuggestionsExpandableHeader feature
+  // is enabled.
+  if (!prefs->GetBoolean(ntp_snippets::prefs::kArticlesListVisible)) {
+    return false;
+  }
+
   if (!prefs->GetBoolean(prefs::kContentSuggestionsNotificationsEnabled)) {
     return false;
   }

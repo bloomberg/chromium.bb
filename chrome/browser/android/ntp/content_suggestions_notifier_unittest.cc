@@ -7,6 +7,7 @@
 #include "chrome/browser/android/ntp/content_suggestions_notifier_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/ntp_snippets/features.h"
+#include "components/ntp_snippets/pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/variations/variations_params_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,12 +20,21 @@ using ContentSuggestionsNotifierTest = ::testing::Test;
 TEST_F(ContentSuggestionsNotifierTest, AreNotificationsEnabled) {
   sync_preferences::TestingPrefServiceSyncable prefs;
   ContentSuggestionsNotifierService::RegisterProfilePrefs(prefs.registry());
+  prefs.registry()->RegisterBooleanPref(
+      ntp_snippets::prefs::kArticlesListVisible, true);
+
   EXPECT_TRUE(ContentSuggestionsNotifier::ShouldSendNotifications(&prefs));
 
   prefs.SetBoolean(prefs::kContentSuggestionsNotificationsEnabled, false);
   EXPECT_FALSE(ContentSuggestionsNotifier::ShouldSendNotifications(&prefs));
 
   prefs.SetBoolean(prefs::kContentSuggestionsNotificationsEnabled, true);
+  EXPECT_TRUE(ContentSuggestionsNotifier::ShouldSendNotifications(&prefs));
+
+  prefs.SetBoolean(ntp_snippets::prefs::kArticlesListVisible, false);
+  EXPECT_FALSE(ContentSuggestionsNotifier::ShouldSendNotifications(&prefs));
+
+  prefs.SetBoolean(ntp_snippets::prefs::kArticlesListVisible, true);
   EXPECT_TRUE(ContentSuggestionsNotifier::ShouldSendNotifications(&prefs));
 }
 
@@ -39,6 +49,9 @@ TEST_F(ContentSuggestionsNotifierTest, AreNotificationsEnabledAutoOptOut) {
 
   sync_preferences::TestingPrefServiceSyncable prefs;
   ContentSuggestionsNotifierService::RegisterProfilePrefs(prefs.registry());
+  prefs.registry()->RegisterBooleanPref(
+      ntp_snippets::prefs::kArticlesListVisible, true);
+
   EXPECT_TRUE(ContentSuggestionsNotifier::ShouldSendNotifications(
       &prefs));  // Enabled by default.
 
