@@ -93,10 +93,9 @@ void PrinterQuery::SetSettings(
     base::OnceClosure callback) {
   StartWorker(std::move(callback));
 
-  worker_->PostTask(FROM_HERE,
-                    base::Bind(&PrintJobWorker::SetSettings,
-                               base::Unretained(worker_.get()),
-                               base::Passed(&new_settings)));
+  worker_->PostTask(FROM_HERE, base::BindOnce(&PrintJobWorker::SetSettings,
+                                              base::Unretained(worker_.get()),
+                                              std::move(new_settings)));
 }
 
 void PrinterQuery::StartWorker(base::OnceClosure callback) {
