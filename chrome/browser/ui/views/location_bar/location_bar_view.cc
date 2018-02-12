@@ -59,6 +59,7 @@
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -114,6 +115,15 @@
 
 using content::WebContents;
 using views::View;
+
+namespace {
+
+bool InTouchableMode() {
+  return ui::MaterialDesignController::GetMode() ==
+         ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED;
+}
+
+}  // namespace
 
 // LocationBarView -----------------------------------------------------------
 
@@ -840,7 +850,9 @@ void LocationBarView::RefreshClearAllButtonIcon() {
   if (!clear_all_button_)
     return;
 
-  SetImageFromVectorIcon(clear_all_button_, kTabCloseNormalIcon,
+  const gfx::VectorIcon& icon =
+      InTouchableMode() ? omnibox::kTouchableClearIcon : kTabCloseNormalIcon;
+  SetImageFromVectorIcon(clear_all_button_, icon,
                          GetNativeTheme()->GetSystemColor(
                              ui::NativeTheme::kColorId_TextfieldDefaultColor));
 }
@@ -1094,8 +1106,9 @@ void LocationBarView::AnimationEnded(const gfx::Animation* animation) {
 void LocationBarView::OnChanged() {
   RefreshLocationIcon();
   location_icon_view_->set_show_tooltip(!GetOmniboxView()->IsEditingOrEmpty());
-  clear_all_button_->SetVisible(GetToolbarModel()->input_in_progress() &&
-                                LocationBarView::IsVirtualKeyboardVisible());
+  clear_all_button_->SetVisible(
+      GetToolbarModel()->input_in_progress() &&
+      (InTouchableMode() || LocationBarView::IsVirtualKeyboardVisible()));
   Layout();
   SchedulePaint();
 }
