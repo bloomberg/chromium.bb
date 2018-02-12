@@ -29,8 +29,6 @@ namespace content {
 // class is designed to be used on a single thread.
 class CONTENT_EXPORT DOMStorageDatabase {
  public:
-  static base::FilePath GetJournalFilePath(const base::FilePath& database_path);
-
   explicit DOMStorageDatabase(const base::FilePath& file_path);
   virtual ~DOMStorageDatabase();  // virtual for unit testing
 

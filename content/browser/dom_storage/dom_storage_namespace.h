@@ -39,11 +39,6 @@ class CONTENT_EXPORT DOMStorageNamespace
     unsigned inactive_area_count;  // areas with open count 0.
   };
 
-  // Constructor for a LocalStorage namespace with an empty namespace id and an
-  // optional backing directory on disk.
-  DOMStorageNamespace(const base::FilePath& directory,  // may be empty
-                      DOMStorageTaskRunner* task_runner);
-
   // Constructor for a SessionStorage namespace with the given namespace id and
   // an optional backing on disk via |session_storage_database| (may be NULL).
   DOMStorageNamespace(const std::string& namespace_id,
@@ -66,7 +61,6 @@ class CONTENT_EXPORT DOMStorageNamespace
   // Should only be called for session storage namespaces.
   DOMStorageNamespace* Clone(const std::string& clone_namespace_id);
 
-  void DeleteLocalStorageOrigin(const GURL& origin);
   void DeleteSessionStorageOrigin(const GURL& origin);
   void PurgeMemory(bool aggressively);
   void Shutdown();
@@ -107,7 +101,6 @@ class CONTENT_EXPORT DOMStorageNamespace
   void OnCloneStorageDone();
 
   const std::string namespace_id_;
-  base::FilePath directory_;
   AreaMap areas_;
   const scoped_refptr<DOMStorageTaskRunner> task_runner_;
   const scoped_refptr<SessionStorageDatabase> session_storage_database_;

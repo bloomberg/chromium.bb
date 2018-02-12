@@ -11,21 +11,7 @@
 #include "sql/transaction.h"
 #include "third_party/sqlite/sqlite3.h"
 
-namespace {
-
-const base::FilePath::CharType kJournal[] = FILE_PATH_LITERAL("-journal");
-
-}  // anon namespace
-
 namespace content {
-
-// static
-base::FilePath DOMStorageDatabase::GetJournalFilePath(
-    const base::FilePath& database_path) {
-  base::FilePath::StringType journal_file_name =
-      database_path.BaseName().value() + kJournal;
-  return database_path.DirName().Append(journal_file_name);
-}
 
 DOMStorageDatabase::DOMStorageDatabase(const base::FilePath& file_path)
     : file_path_(file_path) {

@@ -328,23 +328,14 @@ void DomStorageDispatcher::OnStorageEvent(
       cached_area->ApplyMutation(params.key, params.new_value);
   }
 
-  // Empty namespace is LocalStorage
-  if (params.namespace_id.empty()) {
-    blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
-        blink::WebString::FromUTF16(params.key),
-        blink::WebString::FromUTF16(params.old_value),
-        blink::WebString::FromUTF16(params.new_value), params.origin,
-        params.page_url, originating_area);
-  } else {
-    WebStorageNamespaceImpl
-        session_namespace_for_event_dispatch(params.namespace_id);
-    blink::WebStorageEventDispatcher::DispatchSessionStorageEvent(
-        blink::WebString::FromUTF16(params.key),
-        blink::WebString::FromUTF16(params.old_value),
-        blink::WebString::FromUTF16(params.new_value), params.origin,
-        params.page_url, session_namespace_for_event_dispatch,
-        originating_area);
-  }
+  DCHECK(!params.namespace_id.empty());
+  WebStorageNamespaceImpl session_namespace_for_event_dispatch(
+      params.namespace_id);
+  blink::WebStorageEventDispatcher::DispatchSessionStorageEvent(
+      blink::WebString::FromUTF16(params.key),
+      blink::WebString::FromUTF16(params.old_value),
+      blink::WebString::FromUTF16(params.new_value), params.origin,
+      params.page_url, session_namespace_for_event_dispatch, originating_area);
 }
 
 void DomStorageDispatcher::OnAsyncOperationComplete(bool success) {

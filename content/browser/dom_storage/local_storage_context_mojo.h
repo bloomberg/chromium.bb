@@ -94,7 +94,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
   static std::vector<uint8_t> MigrateString(const base::string16& input);
 
  private:
-  friend class MojoDOMStorageBrowserTest;
+  friend class DOMStorageBrowserTest;
 
   class LevelDBWrapperHolder;
 

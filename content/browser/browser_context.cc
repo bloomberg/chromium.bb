@@ -514,12 +514,9 @@ void BrowserContext::Initialize(
 
     // New embedded service factories should be added to |connection| here.
 
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableMojoLocalStorage)) {
-      service_manager::EmbeddedServiceInfo info;
-      info.factory = base::Bind(&file::CreateFileService);
-      connection->AddEmbeddedService(file::mojom::kServiceName, info);
-    }
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::BindRepeating(&file::CreateFileService);
+    connection->AddEmbeddedService(file::mojom::kServiceName, info);
 
     ContentBrowserClient::StaticServiceMap services;
     browser_context->RegisterInProcessServices(&services);

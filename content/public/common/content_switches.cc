@@ -205,9 +205,6 @@ const char kDisableLogging[]                = "disable-logging";
 // Disables using CODECAPI_AVLowLatencyMode when creating DXVA decoders.
 const char kDisableLowLatencyDxva[]         = "disable-low-latency-dxva";
 
-// Dont use a Mojo-based LocalStorage implementation.
-const char kDisableMojoLocalStorage[] = "disable-mojo-local-storage";
-
 // Disables usage of the namespace sandbox.
 const char kDisableNamespaceSandbox[]       = "disable-namespace-sandbox";
 

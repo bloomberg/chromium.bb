@@ -548,18 +548,13 @@ blink::WebThread* RendererBlinkPlatformImpl::CompositorThread() const {
 
 std::unique_ptr<WebStorageNamespace>
 RendererBlinkPlatformImpl::CreateLocalStorageNamespace() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableMojoLocalStorage)) {
-    if (!local_storage_cached_areas_) {
-      local_storage_cached_areas_.reset(new LocalStorageCachedAreas(
-          RenderThreadImpl::current()->GetStoragePartitionService(),
-          renderer_scheduler_));
-    }
-    return std::make_unique<LocalStorageNamespace>(
-        local_storage_cached_areas_.get());
+  if (!local_storage_cached_areas_) {
+    local_storage_cached_areas_.reset(new LocalStorageCachedAreas(
+        RenderThreadImpl::current()->GetStoragePartitionService(),
+        renderer_scheduler_));
   }
-
-  return std::make_unique<WebStorageNamespaceImpl>();
+  return std::make_unique<LocalStorageNamespace>(
+      local_storage_cached_areas_.get());
 }
 
 std::unique_ptr<blink::WebStorageNamespace>
