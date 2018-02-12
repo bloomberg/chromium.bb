@@ -60,35 +60,8 @@ std::string NotificationIdGenerator::GenerateForPersistentNotification(
 }
 
 // Notification Id is of the following format:
-// n#<origin>#[1<developer_tag>|0<render_process_id>#<request_id>]
+// p#<origin>#<token>
 std::string NotificationIdGenerator::GenerateForNonPersistentNotification(
-    const GURL& origin,
-    const std::string& tag,
-    int request_id,
-    int render_process_id) const {
-  DCHECK(origin.is_valid());
-  DCHECK_EQ(origin, origin.GetOrigin());
-
-  std::stringstream stream;
-
-  stream << kNonPersistentNotificationPrefix << kNotificationTagSeparator;
-  stream << origin;
-  stream << kNotificationTagSeparator;
-
-  stream << base::IntToString(!tag.empty());
-  if (tag.empty()) {
-    stream << base::IntToString(render_process_id);
-    stream << kNotificationTagSeparator;
-
-    stream << base::IntToString(request_id);
-  } else {
-    stream << tag;
-  }
-
-  return stream.str();
-}
-
-std::string NotificationIdGenerator::GenerateForNonPersistentMojoNotification(
     const url::Origin& origin,
     const std::string& token) const {
   DCHECK(!origin.unique());

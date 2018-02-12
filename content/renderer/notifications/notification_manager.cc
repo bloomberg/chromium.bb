@@ -18,7 +18,6 @@
 #include "content/renderer/service_worker/web_service_worker_registration_impl.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
-#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationDelegate.h"
 #include "url/origin.h"
 
 using blink::WebString;
@@ -45,14 +44,6 @@ NotificationResources ToNotificationResources(
 
 static base::LazyInstance<base::ThreadLocalPointer<NotificationManager>>::Leaky
     g_notification_manager_tls = LAZY_INSTANCE_INITIALIZER;
-
-NotificationManager::ActiveNotificationData::ActiveNotificationData(
-    blink::WebNotificationDelegate* delegate,
-    const GURL& origin,
-    const std::string& tag)
-    : delegate(delegate), origin(origin), tag(tag) {}
-
-NotificationManager::ActiveNotificationData::~ActiveNotificationData() {}
 
 NotificationManager::NotificationManager(
     ThreadSafeSender* thread_safe_sender,
@@ -81,32 +72,6 @@ NotificationManager* NotificationManager::ThreadSpecificInstance(
 
 void NotificationManager::WillStopCurrentWorkerThread() {
   delete this;
-}
-
-void NotificationManager::Show(
-    const blink::WebSecurityOrigin& origin,
-    const blink::WebNotificationData& notification_data,
-    std::unique_ptr<blink::WebNotificationResources> notification_resources,
-    blink::WebNotificationDelegate* delegate) {
-  DCHECK_EQ(0u, notification_data.actions.size());
-  DCHECK_EQ(0u, notification_resources->action_icons.size());
-
-  GURL origin_gurl = url::Origin(origin).GetURL();
-
-  int request_id = notification_dispatcher_->GenerateNotificationRequestId(
-      NotificationWorkerId());
-
-  active_page_notifications_[request_id] = ActiveNotificationData(
-      delegate, origin_gurl,
-      notification_data.tag.Utf8(
-          WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD));
-
-  // TODO(mkwst): This is potentially doing the wrong thing with unique
-  // origins. Perhaps also 'file:', 'blob:' and 'filesystem:'. See
-  // https://crbug.com/490074 for detail.
-  thread_safe_sender_->Send(new PlatformNotificationHostMsg_Show(
-      request_id, origin_gurl, ToPlatformNotificationData(notification_data),
-      ToNotificationResources(std::move(notification_resources))));
 }
 
 void NotificationManager::ShowPersistent(
@@ -183,22 +148,6 @@ void NotificationManager::GetNotifications(
           WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD)));
 }
 
-void NotificationManager::Close(blink::WebNotificationDelegate* delegate) {
-  for (auto& iter : active_page_notifications_) {
-    if (iter.second.delegate != delegate)
-      continue;
-
-    thread_safe_sender_->Send(new PlatformNotificationHostMsg_Close(
-        iter.second.origin, iter.second.tag, iter.first));
-    active_page_notifications_.erase(iter.first);
-    return;
-  }
-
-  // It should not be possible for Blink to call close() on a Notification which
-  // does not exist in either the pending or active notification lists.
-  NOTREACHED();
-}
-
 void NotificationManager::ClosePersistent(
     const blink::WebSecurityOrigin& origin,
     const blink::WebString& tag,
@@ -213,39 +162,17 @@ void NotificationManager::ClosePersistent(
           WebString::UTF8ConversionMode::kStrictReplacingErrorsWithFFFD)));
 }
 
-void NotificationManager::NotifyDelegateDestroyed(
-    blink::WebNotificationDelegate* delegate) {
-  for (auto& iter : active_page_notifications_) {
-    if (iter.second.delegate != delegate)
-      continue;
-
-    active_page_notifications_.erase(iter.first);
-    return;
-  }
-}
-
 bool NotificationManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NotificationManager, message)
-    IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidShow, OnDidShow);
     IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidShowPersistent,
                         OnDidShowPersistent)
-    IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidClose, OnDidClose);
-    IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidClick, OnDidClick);
     IPC_MESSAGE_HANDLER(PlatformNotificationMsg_DidGetNotifications,
                         OnDidGetNotifications)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
-}
-
-void NotificationManager::OnDidShow(int request_id) {
-  const auto& iter = active_page_notifications_.find(request_id);
-  if (iter == active_page_notifications_.end())
-    return;
-
-  iter->second.delegate->DispatchShowEvent();
 }
 
 void NotificationManager::OnDidShowPersistent(int request_id, bool success) {
@@ -262,24 +189,6 @@ void NotificationManager::OnDidShowPersistent(int request_id, bool success) {
     callbacks->OnError();
 
   pending_show_notification_requests_.Remove(request_id);
-}
-
-void NotificationManager::OnDidClose(int request_id) {
-  const auto& iter = active_page_notifications_.find(request_id);
-  if (iter == active_page_notifications_.end())
-    return;
-
-  iter->second.delegate->DispatchCloseEvent();
-
-  active_page_notifications_.erase(iter);
-}
-
-void NotificationManager::OnDidClick(int request_id) {
-  const auto& iter = active_page_notifications_.find(request_id);
-  if (iter == active_page_notifications_.end())
-    return;
-
-  iter->second.delegate->DispatchClickEvent();
 }
 
 void NotificationManager::OnDidGetNotifications(

@@ -72,15 +72,6 @@ IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the renderer.
 
-// Informs the renderer that the browser has displayed the notification.
-IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidShow, int /* request_id */)
-
-// Informs the renderer that the notification has been closed.
-IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidClose, int /* request_id */)
-
-// Informs the renderer that the notification has been clicked on.
-IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidClick, int /* request_id */)
-
 // Reply to PlatformNotificationHostMsg_ShowPersistent indicating that a
 // persistent notification has been shown on the platform (if |success| is
 // true), or that an unspecified error occurred.
@@ -97,13 +88,6 @@ IPC_MESSAGE_CONTROL2(PlatformNotificationMsg_DidGetNotifications,
 
 // Messages sent from the renderer to the browser.
 
-IPC_MESSAGE_CONTROL4(
-    PlatformNotificationHostMsg_Show,
-    int /* request_id */,
-    GURL /* origin */,
-    content::PlatformNotificationData /* notification_data */,
-    content::NotificationResources /* notification_resources */)
-
 IPC_MESSAGE_CONTROL5(
     PlatformNotificationHostMsg_ShowPersistent,
     int /* request_id */,
@@ -117,11 +101,6 @@ IPC_MESSAGE_CONTROL4(PlatformNotificationHostMsg_GetNotifications,
                      int64_t /* service_worker_registration_id */,
                      GURL /* origin */,
                      std::string /* filter_tag */)
-
-IPC_MESSAGE_CONTROL3(PlatformNotificationHostMsg_Close,
-                     GURL /* origin */,
-                     std::string /* tag */,
-                     int /* request_id */)
 
 IPC_MESSAGE_CONTROL3(PlatformNotificationHostMsg_ClosePersistent,
                      GURL /* origin */,

@@ -391,7 +391,6 @@ source_set("blink_headers") {
     "platform/modules/notifications/WebNotificationAction.h",
     "platform/modules/notifications/WebNotificationConstants.h",
     "platform/modules/notifications/WebNotificationData.h",
-    "platform/modules/notifications/WebNotificationDelegate.h",
     "platform/modules/notifications/WebNotificationManager.h",
     "platform/modules/notifications/WebNotificationResources.h",
     "platform/modules/payments/WebPaymentCurrencyAmount.h",

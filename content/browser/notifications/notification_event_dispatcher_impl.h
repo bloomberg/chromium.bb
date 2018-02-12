@@ -44,15 +44,6 @@ class CONTENT_EXPORT NotificationEventDispatcherImpl
   void DispatchNonPersistentCloseEvent(
       const std::string& notification_id) override;
 
-  // Called when a renderer that had shown a non persistent notification
-  // dissappears.
-  void RendererGone(int renderer_id);
-
-  // Register the fact that a non persistent notification has been displayed.
-  void RegisterNonPersistentNotification(const std::string& notification_id,
-                                         int renderer_id,
-                                         int request_id);
-
   // Registers |listener| to receive the show, click and close events of the
   // non-persistent notification identified by |notification_id|.
   void RegisterNonPersistentNotificationListener(
@@ -71,12 +62,6 @@ class CONTENT_EXPORT NotificationEventDispatcherImpl
   // Should be called when the connection to this listener goes away.
   void HandleConnectionErrorForNonPersistentNotificationListener(
       const std::string& notification_id);
-
-  // Notification Id -> renderer Id.
-  std::map<std::string, int> renderer_ids_;
-
-  // Notification Id -> request Id.
-  std::map<std::string, int> request_ids_;
 
   // Notification Id -> listener.
   std::map<std::string, blink::mojom::NonPersistentNotificationListenerPtr>

@@ -87,7 +87,7 @@ void BlinkNotificationServiceImpl::DisplayNonPersistentNotification(
 
   std::string notification_id =
       notification_context_->notification_id_generator()
-          ->GenerateForNonPersistentMojoNotification(origin_, token);
+          ->GenerateForNonPersistentNotification(origin_, token);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -122,7 +122,7 @@ void BlinkNotificationServiceImpl::CloseNonPersistentNotification(
 
   std::string notification_id =
       notification_context_->notification_id_generator()
-          ->GenerateForNonPersistentMojoNotification(origin_, token);
+          ->GenerateForNonPersistentNotification(origin_, token);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

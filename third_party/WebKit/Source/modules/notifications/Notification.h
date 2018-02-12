@@ -45,7 +45,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
-#include "public/platform/modules/notifications/WebNotificationDelegate.h"
 #include "public/platform/modules/notifications/notification_service.mojom-blink.h"
 #include "public/platform/modules/permissions/permission.mojom-blink.h"
 #include "public/platform/modules/permissions/permission_status.mojom-blink.h"
@@ -62,7 +61,6 @@ class MODULES_EXPORT Notification final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<Notification>,
       public ContextLifecycleObserver,
-      public WebNotificationDelegate,
       public mojom::blink::NonPersistentNotificationListener {
   USING_GARBAGE_COLLECTED_MIXIN(Notification);
   DEFINE_WRAPPERTYPEINFO();
@@ -96,12 +94,6 @@ class MODULES_EXPORT Notification final
   void OnShow() override;
   void OnClick() override;
   void OnClose() override;
-
-  // WebNotificationDelegate interface.
-  void DispatchShowEvent() override;
-  void DispatchClickEvent() override;
-  void DispatchErrorEvent() override;
-  void DispatchCloseEvent() override;
 
   String title() const;
   String dir() const;
@@ -180,6 +172,8 @@ class MODULES_EXPORT Notification final
 
   // Shows the notification through the embedder using the loaded resources.
   void DidLoadResources(NotificationResourcesLoader*);
+
+  void DispatchErrorEvent();
 
   Type type_;
   State state_;

@@ -253,8 +253,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   // First, test the default values.
 
   std::string script_result;
-  ASSERT_TRUE(RunScript("DisplayNonPersistentNotification('Title', {})",
-                        &script_result));
+  ASSERT_TRUE(
+      RunScript("DisplayNonPersistentNotification('Title')", &script_result));
   EXPECT_EQ("ok", script_result);
 
   std::vector<message_center::Notification> notifications =
@@ -274,15 +274,16 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_FALSE(default_notification.never_timeout());
   EXPECT_EQ(0u, default_notification.buttons().size());
 
-  // Verifies that the notification's default timestamp is set in the last 30
-  // seconds. This number has no significance, but it needs to be significantly
-  // high to avoid flakiness in the test.
+  // Verify that the notification's default timestamp is set in the last 30
+  // seconds. (30 has no significance, just needs to be significantly high to
+  // avoid test flakiness.)
   EXPECT_NEAR(default_notification.timestamp().ToJsTime(),
               base::Time::Now().ToJsTime(), 30 * 1000);
 
   // Now, test the non-default values.
 
-  ASSERT_TRUE(RunScript(R"(DisplayNonPersistentNotification('Title', {
+  ASSERT_TRUE(RunScript(
+      R"(DisplayNonPersistentNotification('Title2', {
           body: 'Contents',
           tag: 'replace-id',
           dir: 'rtl',
@@ -298,40 +299,55 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
             { property: 'value' }
           ]
         }))",
-                        &script_result));
+      &script_result));
   EXPECT_EQ("ok", script_result);
 
   notifications = GetDisplayedNotifications(false /* is_persistent */);
   ASSERT_EQ(2u, notifications.size());
 
-  // We don't use the notification's direction or language, hence we don't check
-  // those properties here.
-  const message_center::Notification& all_options_notification =
-      notifications[1];
-  EXPECT_EQ("Title", base::UTF16ToUTF8(all_options_notification.title()));
-  EXPECT_EQ("Contents", base::UTF16ToUTF8(all_options_notification.message()));
+  message_center::Notification notification = notifications[1];
+  EXPECT_EQ("Title2", base::UTF16ToUTF8(notification.title()));
+  EXPECT_EQ("Contents", base::UTF16ToUTF8(notification.message()));
+
   // The js-provided tag should be part of the id.
-  EXPECT_FALSE(all_options_notification.id().find("replace-id") ==
-               std::string::npos);
-#if !defined(OS_MACOSX)
-  EXPECT_FALSE(all_options_notification.image().IsEmpty());
-  EXPECT_EQ(kIconWidth, all_options_notification.image().Width());
-  EXPECT_EQ(kIconHeight, all_options_notification.image().Height());
-#endif
-  EXPECT_FALSE(all_options_notification.icon().IsEmpty());
-  EXPECT_EQ(kIconWidth, all_options_notification.icon().Width());
-  EXPECT_EQ(kIconHeight, all_options_notification.icon().Height());
+  EXPECT_FALSE(notification.id().find("replace-id") == std::string::npos);
 
-  // Small images (badges) are only supported on Android.
-  EXPECT_TRUE(all_options_notification.small_image().IsEmpty());
-
-  EXPECT_THAT(all_options_notification.vibration_pattern(),
+  EXPECT_THAT(notification.vibration_pattern(),
               testing::ElementsAreArray({500, 200, 100}));
 
-  EXPECT_TRUE(all_options_notification.renotify());
-  EXPECT_TRUE(all_options_notification.never_timeout());
-  EXPECT_DOUBLE_EQ(kNotificationTimestamp,
-                   all_options_notification.timestamp().ToJsTime());
+  EXPECT_TRUE(notification.renotify());
+  EXPECT_TRUE(notification.never_timeout());
+  EXPECT_DOUBLE_EQ(621046800000., notification.timestamp().ToJsTime());
+
+#if !defined(OS_MACOSX)
+  EXPECT_FALSE(notification.image().IsEmpty());
+  EXPECT_EQ(kIconWidth, notification.image().Width());
+  EXPECT_EQ(kIconHeight, notification.image().Height());
+#endif
+
+  EXPECT_FALSE(notification.icon().IsEmpty());
+  EXPECT_EQ(kIconWidth, notification.icon().Width());
+  EXPECT_EQ(kIconHeight, notification.icon().Height());
+
+  // Small images (badges) are only supported on Android.
+  EXPECT_TRUE(notification.small_image().IsEmpty());
+
+  // Test that notifications with the same tag replace each other and have
+  // identical ids.
+
+  ASSERT_TRUE(RunScript(
+      R"(DisplayNonPersistentNotification('Title3', {
+          tag: 'replace-id'
+        }))",
+      &script_result));
+  EXPECT_EQ("ok", script_result);
+
+  notifications = GetDisplayedNotifications(false /* is_persistent */);
+  ASSERT_EQ(2u, notifications.size());
+
+  message_center::Notification replacement = notifications[1];
+  EXPECT_EQ("Title3", base::UTF16ToUTF8(replacement.title()));
+  EXPECT_EQ(notification.id(), replacement.id());
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
@@ -339,13 +355,19 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
 
   std::string script_result;
-  ASSERT_TRUE(RunScript("DisplayAndCloseNonPersistentNotification('')",
+  ASSERT_TRUE(
+      RunScript("DisplayNonPersistentNotification('Title1')", &script_result));
+  EXPECT_EQ("ok", script_result);
+
+  ASSERT_TRUE(RunScript("DisplayAndCloseNonPersistentNotification('Title2')",
                         &script_result));
   EXPECT_EQ("ok", script_result);
 
+  // Check that the first notification is still displayed and no others.
   std::vector<message_center::Notification> notifications =
       GetDisplayedNotifications(false /* is_persistent */);
-  EXPECT_EQ(0u, notifications.size());
+  ASSERT_EQ(1u, notifications.size());
+  EXPECT_EQ(base::ASCIIToUTF16("Title1"), notifications[0].title());
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
@@ -967,139 +989,4 @@ IN_PROC_BROWSER_TEST_F(
   // Since the kNotificationContentImage kill switch has disabled images, the
   // notification should be shown without an image.
   EXPECT_TRUE(notifications[0].image().IsEmpty());
-}
-
-class PlatformNotificationServiceMojoEnabledBrowserTest
-    : public PlatformNotificationServiceBrowserTest {
- public:
-  // InProcessBrowserTest overrides.
-  void SetUpInProcessBrowserTestFixture() override {
-    scoped_feature_list_.InitWithFeatures({features::kNotificationsWithMojo},
-                                          {});
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
-                       DisplayAndCloseNonPersistentNotification) {
-  ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
-
-  std::string script_result;
-  RunScript("DisplayNonPersistentNotification('Title1')", &script_result);
-  EXPECT_EQ("ok", script_result);
-
-  ASSERT_TRUE(RunScript("DisplayAndCloseNonPersistentNotification('Title2')",
-                        &script_result));
-  EXPECT_EQ("ok", script_result);
-
-  // Check that the first notification is still displayed and no others.
-  std::vector<message_center::Notification> notifications =
-      GetDisplayedNotifications(false /* is_persistent */);
-  ASSERT_EQ(1u, notifications.size());
-  EXPECT_EQ(base::ASCIIToUTF16("Title1"), notifications[0].title());
-}
-
-IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceMojoEnabledBrowserTest,
-                       NonPersistentWebNotificationOptionsReflection) {
-  ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
-
-  // First, test the default values.
-
-  std::string script_result;
-  RunScript("DisplayNonPersistentNotification('Title')", &script_result);
-  EXPECT_EQ("ok", script_result);
-
-  std::vector<message_center::Notification> notifications =
-      GetDisplayedNotifications(false /* is_persistent */);
-  ASSERT_EQ(1u, notifications.size());
-
-  // We don't use the notification's direction or language, hence we don't check
-  // those properties here.
-  const message_center::Notification& default_notification = notifications[0];
-  EXPECT_EQ("Title", base::UTF16ToUTF8(default_notification.title()));
-  EXPECT_EQ("", base::UTF16ToUTF8(default_notification.message()));
-  EXPECT_TRUE(default_notification.image().IsEmpty());
-  EXPECT_TRUE(default_notification.icon().IsEmpty());
-  EXPECT_TRUE(default_notification.small_image().IsEmpty());
-  EXPECT_FALSE(default_notification.renotify());
-  EXPECT_FALSE(default_notification.silent());
-  EXPECT_FALSE(default_notification.never_timeout());
-  EXPECT_EQ(0u, default_notification.buttons().size());
-
-  // Verify that the notification's default timestamp is set in the last 30
-  // seconds. (30 has no significance, just needs to be significantly high to
-  // avoid test flakiness.)
-  EXPECT_NEAR(default_notification.timestamp().ToJsTime(),
-              base::Time::Now().ToJsTime(), 30 * 1000);
-
-  // Now, test the non-default values.
-
-  RunScript(
-      R"(DisplayNonPersistentNotification('Title2', {
-          body: 'Contents',
-          tag: 'replace-id',
-          dir: 'rtl',
-          lang: 'nl-NL',
-          image: 'icon.png',
-          icon: 'icon.png',
-          badge: 'icon.png',
-          timestamp: 621046800000,
-          vibrate: [500, 200, 100],
-          renotify: true,
-          requireInteraction: true,
-          data: [
-            { property: 'value' }
-          ]
-        }))",
-      &script_result);
-  EXPECT_EQ("ok", script_result);
-
-  notifications = GetDisplayedNotifications(false /* is_persistent */);
-  ASSERT_EQ(2u, notifications.size());
-
-  message_center::Notification notification = notifications[1];
-  EXPECT_EQ("Title2", base::UTF16ToUTF8(notification.title()));
-  EXPECT_EQ("Contents", base::UTF16ToUTF8(notification.message()));
-
-  // The js-provided tag should be part of the id.
-  EXPECT_FALSE(notification.id().find("replace-id") == std::string::npos);
-
-  EXPECT_THAT(notification.vibration_pattern(),
-              testing::ElementsAreArray({500, 200, 100}));
-
-  EXPECT_TRUE(notification.renotify());
-  EXPECT_TRUE(notification.never_timeout());
-  EXPECT_DOUBLE_EQ(621046800000., notification.timestamp().ToJsTime());
-
-#if !defined(OS_MACOSX)
-  EXPECT_FALSE(notification.image().IsEmpty());
-  EXPECT_EQ(kIconWidth, notification.image().Width());
-  EXPECT_EQ(kIconHeight, notification.image().Height());
-#endif
-
-  EXPECT_FALSE(notification.icon().IsEmpty());
-  EXPECT_EQ(kIconWidth, notification.icon().Width());
-  EXPECT_EQ(kIconHeight, notification.icon().Height());
-
-  // Small images (badges) are only supported on Android.
-  EXPECT_TRUE(notification.small_image().IsEmpty());
-
-  // Test that notifications with the same tag replace each other and have
-  // identical ids.
-
-  RunScript(
-      R"(DisplayNonPersistentNotification('Title3', {
-          tag: 'replace-id'
-        }))",
-      &script_result);
-  EXPECT_EQ("ok", script_result);
-
-  notifications = GetDisplayedNotifications(false /* is_persistent */);
-  ASSERT_EQ(2u, notifications.size());
-
-  message_center::Notification replacement = notifications[1];
-  EXPECT_EQ("Title3", base::UTF16ToUTF8(replacement.title()));
-  EXPECT_EQ(notification.id(), replacement.id());
 }
