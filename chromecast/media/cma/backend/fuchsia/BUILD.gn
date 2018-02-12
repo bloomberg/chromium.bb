@@ -33,6 +33,9 @@ cast_source_set("unit_tests") {
   sources = [
     "mixer_output_stream_fuchsia_unittest.cc",
   ]
+
+  configs += [ "//chromecast/public:public_config" ]
+
   deps = [
     ":fuchsia",
     "//testing/gtest",
