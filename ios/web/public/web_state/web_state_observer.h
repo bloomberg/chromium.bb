@@ -109,10 +109,13 @@ class WebStateObserver {
   virtual void DidStopLoading(WebState* web_state) {}
 
   // Called when the current page has finished the loading of the main frame
-  // document. DidStopLoading relates to the general loading state of the
-  // WebState, but PageLoaded is correlated with the main frame document load
-  // phase. Unlike DidStopLoading, this callback is not called when the load
-  // is aborted.
+  // document (including same-document navigations). DidStopLoading relates to
+  // the general loading state of the WebState, but PageLoaded is correlated
+  // with the main frame document load phase. Unlike DidStopLoading, this
+  // callback is not called when the load is aborted (WebState::Stop is called
+  // or the load is rejected via WebStatePolicyDecider (both ShouldAllowRequest
+  // or ShouldAllowResponse). If PageLoaded is called it is always called after
+  // DidFinishNavigation.
   virtual void PageLoaded(WebState* web_state,
                           PageLoadCompletionStatus load_completion_status) {}
 

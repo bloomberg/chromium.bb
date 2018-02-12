@@ -566,13 +566,11 @@ TEST_F(NavigationAndLoadCallbacksTest, FailedNavigation) {
       .WillOnce(
           VerifyNewPageStartedContext(web_state(), url, &context, &nav_id));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
-  // TODO(crbug.com/803232): PageLoaded() should be called after
-  // DidFinishNavigation().
-  EXPECT_CALL(observer_,
-              PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(
           VerifyErrorFinishedContext(web_state(), url, &context, &nav_id));
+  EXPECT_CALL(observer_,
+              PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
   // LoadUrl() expects sucessfull load and can not be used here.
   web::test::LoadUrl(web_state(), url);
   EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
@@ -1120,9 +1118,6 @@ TEST_F(NavigationAndLoadCallbacksTest, FailedLoad) {
       .WillOnce(VerifyNewPageFinishedContext(web_state(), url, /*mime_type=*/"",
                                              &context, &nav_id));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
-  EXPECT_CALL(observer_,
-              PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
-  // TODO(crbug.com/806457): PageLoaded should be called only once.
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
   web::test::LoadUrl(web_state(), url);
