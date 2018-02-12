@@ -41,7 +41,7 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   bool virtual_keyboard_enabled_ = false;
   bool caret_highlight_enabled_ = false;
   bool cursor_highlight_enabled_ = false;
-  bool focus_highligh_enabled_ = false;
+  bool focus_highlight_enabled_ = false;
   bool sticky_keys_enabled_ = false;
   bool tap_dragging_enabled_ = false;
 

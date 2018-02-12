@@ -48,11 +48,11 @@ bool DefaultAccessibilityDelegate::IsCursorHighlightEnabled() const {
 }
 
 void DefaultAccessibilityDelegate::SetFocusHighlightEnabled(bool enabled) {
-  focus_highligh_enabled_ = enabled;
+  focus_highlight_enabled_ = enabled;
 }
 
 bool DefaultAccessibilityDelegate::IsFocusHighlightEnabled() const {
-  return focus_highligh_enabled_;
+  return focus_highlight_enabled_;
 }
 
 void DefaultAccessibilityDelegate::SetStickyKeysEnabled(bool enabled) {
