@@ -267,7 +267,7 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
             ::switches::kInitialVirtualTime,
             base::NumberToString(headless_browser_context_impl->options()
                                      ->initial_virtual_time()
-                                     ->ToJsTime()));
+                                     ->ToDoubleT()));
       }
 
       std::vector<base::StringPiece> languages = base::SplitStringPiece(
