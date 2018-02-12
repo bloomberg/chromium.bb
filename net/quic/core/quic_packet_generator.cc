@@ -371,4 +371,13 @@ bool QuicPacketGenerator::HasPendingStreamFramesOfStream(
   return packet_creator_.HasPendingStreamFramesOfStream(id);
 }
 
+void QuicPacketGenerator::SetTransmissionType(TransmissionType type) {
+  packet_creator_.SetTransmissionType(type);
+}
+
+void QuicPacketGenerator::SetCanSetTransmissionType(
+    bool can_set_transmission_type) {
+  packet_creator_.set_can_set_transmission_type(can_set_transmission_type);
+}
+
 }  // namespace net

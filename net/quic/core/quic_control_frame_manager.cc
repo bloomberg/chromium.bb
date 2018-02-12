@@ -180,7 +180,8 @@ bool QuicControlFrameManager::IsControlFrameOutstanding(
     // Frame without a control frame ID should not be retransmitted.
     return false;
   }
-  return id < least_unsent_ && id >= least_unacked_ &&
+  // Consider this frame is outstanding if it does not get acked.
+  return id < least_unacked_ + control_frames_.size() && id >= least_unacked_ &&
          GetControlFrameId(control_frames_.at(id - least_unacked_)) !=
              kInvalidControlFrameId;
 }
@@ -210,8 +211,41 @@ void QuicControlFrameManager::OnCanWrite() {
   WriteBufferedFrames();
 }
 
+bool QuicControlFrameManager::RetransmitControlFrame(const QuicFrame& frame) {
+  QuicControlFrameId id = GetControlFrameId(frame);
+  if (id == kInvalidControlFrameId) {
+    // Frame does not have a valid control frame ID, ignore it. Returns true
+    // to allow writing following frames.
+    return true;
+  }
+  if (id >= least_unsent_) {
+    QUIC_BUG << "Try to retransmit unsent control frame";
+    session_->connection()->CloseConnection(
+        QUIC_INTERNAL_ERROR, "Try to retransmit unsent control frame",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return false;
+  }
+  if (id < least_unacked_ ||
+      GetControlFrameId(control_frames_.at(id - least_unacked_)) ==
+          kInvalidControlFrameId) {
+    // This frame has already been acked.
+    return true;
+  }
+  QuicFrame copy = CopyRetransmittableControlFrame(frame);
+  QUIC_DVLOG(1) << "control frame manager is forced to retransmit frame: "
+                << frame;
+  if (session_->WriteControlFrame(copy)) {
+    return true;
+  }
+  DeleteFrame(&copy);
+  return false;
+}
+
 void QuicControlFrameManager::WriteBufferedFrames() {
   while (HasBufferedFrames()) {
+    if (session_->session_decides_what_to_write()) {
+      session_->SetTransmissionType(NOT_RETRANSMISSION);
+    }
     QuicFrame frame_to_send =
         control_frames_.at(least_unsent_ - least_unacked_);
     QuicFrame copy = CopyRetransmittableControlFrame(frame_to_send);

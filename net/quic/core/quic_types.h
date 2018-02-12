@@ -315,9 +315,20 @@ enum SentPacketState : uint8_t {
   // This packet is not expected to be acked.
   UNACKABLE,
 
-  // TODO(fayang): Add more packet state corresponding to retransmission types
-  // in TransmissionType.
-  LAST_PACKET_STATE = UNACKABLE,
+  // States below are corresponding to retransmission types in TransmissionType.
+
+  // This packet has been retransmitted when retransmission timer fires in
+  // HANDSHAKE mode.
+  HANDSHAKE_RETRANSMITTED,
+  // This packet is considered as lost, this is used for LOST_RETRANSMISSION.
+  LOST,
+  // This packet has been retransmitted when TLP fires.
+  TLP_RETRANSMITTED,
+  // This packet has been retransmitted when RTO fires.
+  RTO_RETRANSMITTED,
+  // This packet has been retransmitted for probing purpose.
+  PROBE_RETRANSMITTED,
+  LAST_PACKET_STATE = PROBE_RETRANSMITTED,
 };
 
 // Information about a newly acknowledged packet.

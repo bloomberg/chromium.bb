@@ -129,6 +129,10 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
                     QuicTime::Delta ack_delay_time) override;
   void OnStreamFrameRetransmitted(const QuicStreamFrame& frame) override;
   void OnFrameLost(const QuicFrame& frame) override;
+  void RetransmitFrames(const QuicFrames& frames,
+                        TransmissionType type) override;
+  bool IsFrameOutstanding(const QuicFrame& frame) const override;
+  bool HasPendingCryptoData() const override;
 
   // Called on every incoming packet. Passes |packet| through to |connection_|.
   virtual void ProcessUdpPacket(const QuicSocketAddress& self_address,
@@ -156,7 +160,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
                              QuicStreamOffset bytes_written);
 
   // Called when the session wants to go away and not accept any new streams.
-  void SendGoAway(QuicErrorCode error_code, const std::string& reason);
+  virtual void SendGoAway(QuicErrorCode error_code, const std::string& reason);
 
   // Sends a BLOCKED frame.
   virtual void SendBlocked(QuicStreamId id);
@@ -293,11 +297,16 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Called to cancel retransmission of unencrypted stream data.
   void NeuterUnencryptedStreamData();
 
+  // Set transmission type of next sending packets.
+  void SetTransmissionType(TransmissionType type);
+
   bool can_use_slices() const { return can_use_slices_; }
 
   bool session_unblocks_stream() const { return session_unblocks_stream_; }
 
   bool use_control_frame_manager() const;
+
+  bool session_decides_what_to_write() const;
 
  protected:
   using StaticStreamMap = QuicSmallMap<QuicStreamId, QuicStream*, 2>;

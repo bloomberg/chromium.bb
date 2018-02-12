@@ -64,6 +64,11 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   // Called by the session when the connection becomes writable.
   void OnCanWrite();
 
+  // Retransmit |frame| if it is still outstanding. Returns false if the frame
+  // does not get retransmitted because the connection is blocked. Otherwise,
+  // returns true.
+  bool RetransmitControlFrame(const QuicFrame& frame);
+
   // Returns true if |frame| is outstanding and waiting to be acked. Returns
   // false otherwise.
   bool IsControlFrameOutstanding(const QuicFrame& frame) const;

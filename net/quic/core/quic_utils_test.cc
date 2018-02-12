@@ -110,6 +110,34 @@ TEST_F(QuicUtilsTest, IsUnackable) {
   }
 }
 
+TEST_F(QuicUtilsTest, RetransmissionTypeToPacketState) {
+  for (size_t i = FIRST_TRANSMISSION_TYPE; i <= LAST_TRANSMISSION_TYPE; ++i) {
+    if (i == NOT_RETRANSMISSION) {
+      continue;
+    }
+    SentPacketState state = QuicUtils::RetransmissionTypeToPacketState(
+        static_cast<TransmissionType>(i));
+    if (i == HANDSHAKE_RETRANSMISSION) {
+      EXPECT_EQ(HANDSHAKE_RETRANSMITTED, state);
+    } else if (i == LOSS_RETRANSMISSION) {
+      EXPECT_EQ(LOST, state);
+    } else if (i == ALL_UNACKED_RETRANSMISSION ||
+               i == ALL_INITIAL_RETRANSMISSION) {
+      EXPECT_EQ(UNACKABLE, state);
+    } else if (i == TLP_RETRANSMISSION) {
+      EXPECT_EQ(TLP_RETRANSMITTED, state);
+    } else if (i == RTO_RETRANSMISSION) {
+      EXPECT_EQ(RTO_RETRANSMITTED, state);
+    } else if (i == PROBING_RETRANSMISSION) {
+      EXPECT_EQ(PROBE_RETRANSMITTED, state);
+    } else {
+      DCHECK(false)
+          << "No corresponding packet state according to transmission type: "
+          << i;
+    }
+  }
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

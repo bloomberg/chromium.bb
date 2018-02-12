@@ -320,7 +320,7 @@ TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes) {
   // The margin here is high, because the aggregation greatly increases
   // smoothed rtt.
   EXPECT_GE(kTestRtt * 4, rtt_stats_->smoothed_rtt());
-  ExpectApproxEq(kTestRtt, rtt_stats_->min_rtt(), 0.12f);
+  ExpectApproxEq(kTestRtt, rtt_stats_->min_rtt(), 0.2f);
 }
 
 // Test a simple long data transfer with 2 rtts of aggregation.

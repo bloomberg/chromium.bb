@@ -77,7 +77,8 @@ QuicEndpoint::QuicEndpoint(Simulator* simulator,
       bytes_to_transfer_(0),
       bytes_transferred_(0),
       write_blocked_count_(0),
-      wrong_data_received_(false) {
+      wrong_data_received_(false),
+      notifier_(nullptr) {
   nic_tx_queue_.set_listener_interface(this);
 
   connection_.SetSelfAddress(GetAddressFromName(name));
@@ -88,6 +89,10 @@ QuicEndpoint::QuicEndpoint(Simulator* simulator,
                            new NullDecrypter(perspective));
   connection_.SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   connection_.SetDataProducer(&producer_);
+  connection_.SetSessionNotifier(this);
+  if (connection_.session_decides_what_to_write()) {
+    notifier_ = QuicMakeUnique<test::SimpleSessionNotifier>(&connection_);
+  }
 
   // Configure the connection as if it received a handshake.  This is important
   // primarily because
@@ -115,7 +120,29 @@ QuicByteCount QuicEndpoint::bytes_received() const {
   return total;
 }
 
+QuicByteCount QuicEndpoint::bytes_to_transfer() const {
+  if (notifier_ != nullptr) {
+    return notifier_->StreamBytesToSend();
+  }
+  return bytes_to_transfer_;
+}
+
+QuicByteCount QuicEndpoint::bytes_transferred() const {
+  if (notifier_ != nullptr) {
+    return notifier_->StreamBytesSent();
+  }
+  return bytes_transferred_;
+}
+
 void QuicEndpoint::AddBytesToTransfer(QuicByteCount bytes) {
+  if (notifier_ != nullptr) {
+    if (notifier_->HasBufferedStreamData()) {
+      Schedule(clock_->Now());
+    }
+    notifier_->WriteOrBufferData(kDataStream, bytes, NO_FIN);
+    return;
+  }
+
   if (bytes_to_transfer_ > 0) {
     Schedule(clock_->Now());
   }
@@ -166,9 +193,16 @@ void QuicEndpoint::OnStreamFrame(const QuicStreamFrame& frame) {
   DCHECK_LE(offsets_received_.Size(), 1000u);
 }
 void QuicEndpoint::OnCanWrite() {
+  if (notifier_ != nullptr) {
+    notifier_->OnCanWrite();
+    return;
+  }
   WriteStreamData();
 }
 bool QuicEndpoint::WillingAndAbleToWrite() const {
+  if (notifier_ != nullptr) {
+    return notifier_->WillingToWrite();
+  }
   return bytes_to_transfer_ != 0;
 }
 bool QuicEndpoint::HasPendingHandshake() const {
@@ -179,6 +213,34 @@ bool QuicEndpoint::HasOpenDynamicStreams() const {
 }
 
 bool QuicEndpoint::AllowSelfAddressChange() const {
+  return false;
+}
+
+bool QuicEndpoint::OnFrameAcked(const QuicFrame& frame,
+                                QuicTime::Delta ack_delay_time) {
+  if (notifier_ != nullptr) {
+    return notifier_->OnFrameAcked(frame, ack_delay_time);
+  }
+  return false;
+}
+
+void QuicEndpoint::OnFrameLost(const QuicFrame& frame) {
+  DCHECK(notifier_);
+  notifier_->OnFrameLost(frame);
+}
+
+void QuicEndpoint::RetransmitFrames(const QuicFrames& frames,
+                                    TransmissionType type) {
+  DCHECK(notifier_);
+  notifier_->RetransmitFrames(frames, type);
+}
+
+bool QuicEndpoint::IsFrameOutstanding(const QuicFrame& frame) const {
+  DCHECK(notifier_);
+  return notifier_->IsFrameOutstanding(frame);
+}
+
+bool QuicEndpoint::HasPendingCryptoData() const {
   return false;
 }
 

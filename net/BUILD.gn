@@ -3225,6 +3225,8 @@ source_set("quic_test_tools") {
     "quic/test_tools/simple_data_producer.h",
     "quic/test_tools/simple_quic_framer.cc",
     "quic/test_tools/simple_quic_framer.h",
+    "quic/test_tools/simple_session_notifier.cc",
+    "quic/test_tools/simple_session_notifier.h",
     "quic/test_tools/simulator/actor.cc",
     "quic/test_tools/simulator/actor.h",
     "quic/test_tools/simulator/alarm_factory.cc",
@@ -5156,6 +5158,7 @@ test("net_unittests") {
     "quic/http/tools/quic_http_random_util.cc",
     "quic/http/tools/quic_http_random_util.h",
     "quic/test_tools/quic_test_utils_test.cc",
+    "quic/test_tools/simple_session_notifier_test.cc",
     "quic/test_tools/simulator/quic_endpoint_test.cc",
     "quic/test_tools/simulator/simulator_test.cc",
 

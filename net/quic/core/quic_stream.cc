@@ -264,9 +264,20 @@ void QuicStream::WriteOrBufferData(
 
 void QuicStream::OnCanWrite() {
   if (HasPendingRetransmission()) {
+    WritePendingRetransmission();
+    if (HasPendingRetransmission()) {
+      // Stream did not finish retransmission, session will unblock this stream
+      // later.
+      return;
+    }
+    const bool fin_only = !HasBufferedData() && fin_buffered_ && !fin_sent_;
+    if ((!flow_controller_.IsBlocked() && HasBufferedData()) || fin_only) {
+      // Stream finished retransmission. If there is new data which can be sent,
+      // tell the session to unblock this stream later.
+      session_->MarkConnectionLevelWriteBlocked(id_);
+    }
     // Exit early to allow other streams to write pending retransmissions if
     // any.
-    WritePendingRetransmission();
     return;
   }
 
@@ -576,6 +587,9 @@ bool QuicStream::OnStreamFrameAcked(QuicStreamOffset offset,
                                     QuicByteCount data_length,
                                     bool fin_acked,
                                     QuicTime::Delta ack_delay_time) {
+  QUIC_DVLOG(1) << ENDPOINT << "stream " << id_ << " Acking "
+                << "[" << offset << ", " << offset + data_length << "]"
+                << " fin = " << fin_acked;
   QuicByteCount newly_acked_length = 0;
   if (!send_buffer_.OnStreamDataAcked(offset, data_length,
                                       &newly_acked_length)) {
@@ -619,12 +633,63 @@ void QuicStream::OnStreamFrameRetransmitted(QuicStreamOffset offset,
 void QuicStream::OnStreamFrameLost(QuicStreamOffset offset,
                                    QuicByteCount data_length,
                                    bool fin_lost) {
+  QUIC_DVLOG(1) << ENDPOINT << "stream " << id_ << " Losting "
+                << "[" << offset << ", " << offset + data_length << "]"
+                << " fin = " << fin_lost;
   if (data_length > 0) {
     send_buffer_.OnStreamDataLost(offset, data_length);
   }
   if (fin_lost && fin_outstanding_) {
     fin_lost_ = true;
   }
+}
+
+bool QuicStream::RetransmitStreamData(QuicStreamOffset offset,
+                                      QuicByteCount data_length,
+                                      bool fin) {
+  QuicIntervalSet<QuicStreamOffset> retransmission(offset,
+                                                   offset + data_length);
+  retransmission.Difference(bytes_acked());
+  bool retransmit_fin = fin && fin_outstanding_;
+  if (retransmission.Empty() && !retransmit_fin) {
+    return true;
+  }
+  QuicConsumedData consumed(0, false);
+  for (const auto& interval : retransmission) {
+    QuicStreamOffset retransmission_offset = interval.min();
+    QuicByteCount retransmission_length = interval.max() - interval.min();
+    const bool can_bundle_fin =
+        retransmit_fin && (retransmission_offset + retransmission_length ==
+                           stream_bytes_written());
+    consumed = session()->WritevData(this, id_, retransmission_length,
+                                     retransmission_offset,
+                                     can_bundle_fin ? FIN : NO_FIN);
+    QUIC_DVLOG(1) << ENDPOINT << "stream " << id_
+                  << " is forced to retransmit stream data ["
+                  << retransmission_offset << ", "
+                  << retransmission_offset + retransmission_length
+                  << ") and fin: " << can_bundle_fin
+                  << ", consumed: " << consumed;
+    OnStreamFrameRetransmitted(retransmission_offset, consumed.bytes_consumed,
+                               consumed.fin_consumed);
+    if (can_bundle_fin) {
+      retransmit_fin = !consumed.fin_consumed;
+    }
+    if (consumed.bytes_consumed < retransmission_length ||
+        (can_bundle_fin && !consumed.fin_consumed)) {
+      // Connection is write blocked.
+      return false;
+    }
+  }
+  if (retransmit_fin) {
+    QUIC_DVLOG(1) << ENDPOINT << "stream " << id_
+                  << " retransmits fin only frame.";
+    consumed = session()->WritevData(this, id_, 0, stream_bytes_written(), FIN);
+    if (!consumed.fin_consumed) {
+      return false;
+    }
+  }
+  return true;
 }
 
 bool QuicStream::IsWaitingForAcks() const {
@@ -679,7 +744,9 @@ void QuicStream::WriteBufferedData() {
     QUIC_DVLOG(1) << "stream " << id() << " shortens write length to "
                   << write_length << " due to flow control";
   }
-
+  if (session_->session_decides_what_to_write()) {
+    session_->SetTransmissionType(NOT_RETRANSMISSION);
+  }
   QuicConsumedData consumed_data =
       WritevDataInner(write_length, stream_bytes_written(), fin);
 

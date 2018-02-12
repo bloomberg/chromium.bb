@@ -47,6 +47,15 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   bool NotifyFramesAcked(const QuicTransmissionInfo& info,
                          QuicTime::Delta ack_delay);
 
+  // Notifies session_notifier that frames in |info| are considered as lost.
+  void NotifyFramesLost(const QuicTransmissionInfo& info,
+                        TransmissionType type);
+
+  // Notifies session_notifier to retransmit frames in |info| with
+  // |transmission_type|.
+  void RetransmitFrames(const QuicTransmissionInfo& info,
+                        TransmissionType type);
+
   // Marks |info| as no longer in flight.
   void RemoveFromInFlight(QuicTransmissionInfo* info);
 
@@ -126,6 +135,8 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   bool HasMultipleInFlightPackets() const;
 
   // Returns true if there are any pending crypto packets.
+  // TODO(fayang): Remove this method and call session_notifier_'s
+  // HasPendingCryptoData() when session_decides_what_to_write_ is default true.
   bool HasPendingCryptoPackets() const;
 
   // Removes any retransmittable frames from this transmission or an associated
@@ -145,7 +156,14 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   // RTT measurement purposes.
   void RemoveObsoletePackets();
 
+  // Called to start/stop letting session decide what to write.
+  void SetSessionDecideWhatToWrite(bool session_decides_what_to_write);
+
   void SetSessionNotifier(SessionNotifierInterface* session_notifier);
+
+  bool session_decides_what_to_write() const {
+    return session_decides_what_to_write_;
+  }
 
  private:
   // Called when a packet is retransmitted with a new packet number.
@@ -197,6 +215,9 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
 
   // Receives notifications of frames being retransmitted or acknowledged.
   SessionNotifierInterface* session_notifier_;
+
+  // If true, let session decides what to write.
+  bool session_decides_what_to_write_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicUnackedPacketMap);
 };

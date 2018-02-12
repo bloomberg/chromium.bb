@@ -13,6 +13,7 @@
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/core/crypto/null_encrypter.h"
 #include "net/quic/core/quic_crypto_stream.h"
+#include "net/quic/core/quic_data_writer.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_stream.h"
 #include "net/quic/core/quic_utils.h"
@@ -120,6 +121,8 @@ class TestStream : public QuicSpdyStream {
   void OnDataAvailable() override {}
 
   MOCK_METHOD0(OnCanWrite, void());
+  MOCK_METHOD3(RetransmitStreamData,
+               bool(QuicStreamOffset, QuicByteCount, bool));
 
   MOCK_CONST_METHOD0(HasPendingRetransmission, bool());
 };
@@ -291,6 +294,9 @@ class QuicSessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
         "EFFlEYHsBQ98rXImL8ySDycdLEFvBPdtctPmWCfTxwmoSMLHU2SCVDhbqMWU5b0yr"
         "JBCScs_ejbKaqBDoB7ZGxTvqlrB__2ZmnHHjCr8RgMRtKNtIeuZAo ";
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
+    TestCryptoStream* crypto_stream = session_.GetMutableCryptoStream();
+    EXPECT_CALL(*crypto_stream, HasPendingRetransmission())
+        .Times(testing::AnyNumber());
   }
 
   void CheckClosedStreams() {
@@ -1035,10 +1041,14 @@ TEST_P(QuicSessionTestServer, HandshakeUnblocksFlowControlBlockedCryptoStream) {
        !crypto_stream->flow_controller()->IsBlocked() && i < 1000u; i++) {
     EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
     EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
+    QuicStreamOffset offset = crypto_stream->stream_bytes_written();
     QuicConfig config;
     CryptoHandshakeMessage crypto_message;
     config.ToHandshakeMessage(&crypto_message);
     crypto_stream->SendHandshakeMessage(crypto_message);
+    char buf[1000];
+    QuicDataWriter writer(1000, buf, NETWORK_BYTE_ORDER);
+    crypto_stream->WriteStreamData(offset, crypto_message.size(), &writer);
   }
   EXPECT_TRUE(crypto_stream->flow_controller()->IsBlocked());
   EXPECT_FALSE(headers_stream->flow_controller()->IsBlocked());
@@ -1542,6 +1552,7 @@ TEST_P(QuicSessionTestServer, ZombieStreams) {
 }
 
 TEST_P(QuicSessionTestServer, OnStreamFrameLost) {
+  QuicConnectionPeer::SetSessionDecidesWhatToWrite(connection_);
   InSequence s;
 
   // Drive congestion control manually.
@@ -1604,6 +1615,7 @@ TEST_P(QuicSessionTestServer, OnStreamFrameLost) {
 }
 
 TEST_P(QuicSessionTestServer, DonotRetransmitDataOfClosedStreams) {
+  QuicConnectionPeer::SetSessionDecidesWhatToWrite(connection_);
   InSequence s;
 
   TestStream* stream2 = session_.CreateOutgoingDynamicStream();
@@ -1646,6 +1658,43 @@ TEST_P(QuicSessionTestServer, DonotRetransmitDataOfClosedStreams) {
   EXPECT_CALL(*stream2, OnCanWrite());
   EXPECT_CALL(*stream6, OnCanWrite());
   session_.OnCanWrite();
+}
+
+TEST_P(QuicSessionTestServer, RetransmitFrames) {
+  QuicConnectionPeer::SetSessionDecidesWhatToWrite(connection_);
+  MockSendAlgorithm* send_algorithm = new StrictMock<MockSendAlgorithm>;
+  QuicConnectionPeer::SetSendAlgorithm(session_.connection(), send_algorithm);
+  InSequence s;
+
+  TestStream* stream2 = session_.CreateOutgoingDynamicStream();
+  TestStream* stream4 = session_.CreateOutgoingDynamicStream();
+  TestStream* stream6 = session_.CreateOutgoingDynamicStream();
+  if (session_.use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
+    session_.SendWindowUpdate(stream2->id(), 9);
+  }
+
+  QuicStreamFrame frame1(stream2->id(), false, 0, 9);
+  QuicStreamFrame frame2(stream4->id(), false, 0, 9);
+  QuicStreamFrame frame3(stream6->id(), false, 0, 9);
+  QuicWindowUpdateFrame window_update(1, stream2->id(), 9);
+  QuicFrames frames;
+  frames.push_back(QuicFrame(&frame1));
+  frames.push_back(QuicFrame(&window_update));
+  frames.push_back(QuicFrame(&frame2));
+  frames.push_back(QuicFrame(&frame3));
+  EXPECT_FALSE(session_.WillingAndAbleToWrite());
+
+  EXPECT_CALL(*stream2, RetransmitStreamData(_, _, _)).WillOnce(Return(true));
+  if (session_.use_control_frame_manager()) {
+    EXPECT_CALL(*connection_, SendControlFrame(_))
+        .WillOnce(Invoke(&session_, &TestSession::ClearControlFrame));
+  }
+  EXPECT_CALL(*stream4, RetransmitStreamData(_, _, _)).WillOnce(Return(true));
+  EXPECT_CALL(*stream6, RetransmitStreamData(_, _, _)).WillOnce(Return(true));
+  EXPECT_CALL(*send_algorithm, OnApplicationLimited(_));
+  session_.RetransmitFrames(frames, TLP_RETRANSMISSION);
 }
 
 }  // namespace

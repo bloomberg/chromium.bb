@@ -44,7 +44,8 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       connection_id_(connection_id),
       packet_(0, PACKET_1BYTE_PACKET_NUMBER, nullptr, 0, false, false),
       pending_padding_bytes_(0),
-      needs_full_padding_(false) {
+      needs_full_padding_(false),
+      can_set_transmission_type_(false) {
   SetMaxPacketLength(kDefaultMaxPacketSize);
 }
 
@@ -283,7 +284,9 @@ void QuicPacketCreator::ClearPacket() {
   packet_.has_crypto_handshake = NOT_HANDSHAKE;
   packet_.num_padding_bytes = 0;
   packet_.original_packet_number = 0;
-  packet_.transmission_type = NOT_RETRANSMISSION;
+  if (!can_set_transmission_type_) {
+    packet_.transmission_type = NOT_RETRANSMISSION;
+  }
   packet_.encrypted_buffer = nullptr;
   packet_.encrypted_length = 0;
   DCHECK(packet_.retransmittable_frames.empty());
@@ -635,6 +638,13 @@ void QuicPacketCreator::SetConnectionIdLength(QuicConnectionIdLength length) {
   DCHECK(framer_->perspective() == Perspective::IS_SERVER ||
          length != PACKET_0BYTE_CONNECTION_ID);
   connection_id_length_ = length;
+}
+
+void QuicPacketCreator::SetTransmissionType(TransmissionType type) {
+  DCHECK(can_set_transmission_type_);
+  QUIC_DVLOG(1) << "Setting Transmission type to "
+                << QuicUtils::TransmissionTypeToString(type);
+  packet_.transmission_type = type;
 }
 
 }  // namespace net

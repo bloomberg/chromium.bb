@@ -291,6 +291,7 @@ QuicConnection::QuicConnection(
                          ? kDefaultServerMaxPacketSize
                          : kDefaultMaxPacketSize);
   received_packet_manager_.set_max_ack_ranges(255);
+  MaybeEnableSessionDecidesWhatToWrite();
 }
 
 QuicConnection::~QuicConnection() {
@@ -511,6 +512,8 @@ bool QuicConnection::OnProtocolVersionMismatch(
 
   // Store the new version.
   framer_.set_version(received_version);
+
+  MaybeEnableSessionDecidesWhatToWrite();
 
   // TODO(satyamshekhar): Store the packet number of this packet and close the
   // connection if we ever received a packet with incorrect version and whose
@@ -1397,7 +1400,9 @@ void QuicConnection::OnCanWrite() {
   DCHECK(!writer_->IsWriteBlocked());
 
   WriteQueuedPackets();
-  WritePendingRetransmissions();
+  if (!session_decides_what_to_write()) {
+    WritePendingRetransmissions();
+  }
 
   // Sending queued packets may have caused the socket to become write blocked,
   // or the congestion manager to prohibit sending.  If we've sent everything
@@ -1569,6 +1574,7 @@ void QuicConnection::WriteQueuedPackets() {
 }
 
 void QuicConnection::WritePendingRetransmissions() {
+  DCHECK(!session_decides_what_to_write());
   // Keep writing as long as there's a pending retransmission which can be
   // written.
   while (sent_packet_manager_.HasPendingRetransmissions()) {
@@ -1607,8 +1613,10 @@ void QuicConnection::SendProbingRetransmissions() {
       break;
     }
 
-    DCHECK(sent_packet_manager_.HasPendingRetransmissions());
-    WritePendingRetransmissions();
+    if (!session_decides_what_to_write()) {
+      DCHECK(sent_packet_manager_.HasPendingRetransmissions());
+      WritePendingRetransmissions();
+    }
   }
 }
 
@@ -1640,6 +1648,12 @@ bool QuicConnection::ShouldGeneratePacket(
 bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
   if (!connected_) {
     return false;
+  }
+
+  if (session_decides_what_to_write() &&
+      sent_packet_manager_.pending_timer_transmission_count() > 0) {
+    // Force sending the retransmissions for HANDSHAKE, TLP, RTO, PROBING cases.
+    return true;
   }
 
   if (writer_->IsWriteBlocked()) {
@@ -2427,6 +2441,10 @@ QuicConnection::ScopedPacketFlusher::~ScopedPacketFlusher() {
 
   if (flush_on_delete_) {
     connection_->packet_generator_.Flush();
+    if (connection_->session_decides_what_to_write()) {
+      // Reset transmission type.
+      connection_->SetTransmissionType(NOT_RETRANSMISSION);
+    }
 
     // Once all transmissions are done, check if there is any outstanding data
     // to send and notify the congestion controller if not.
@@ -2726,6 +2744,10 @@ void QuicConnection::MaybeSendProbingRetransmissions() {
 }
 
 void QuicConnection::CheckIfApplicationLimited() {
+  if (session_decides_what_to_write() && probing_retransmission_pending_) {
+    return;
+  }
+
   bool application_limited =
       queued_packets_.empty() &&
       !sent_packet_manager_.HasPendingRetransmissions() &&
@@ -2782,6 +2804,20 @@ void QuicConnection::UpdatePacketContent(PacketContent type) {
   current_peer_migration_type_ = NO_CHANGE;
 }
 
+void QuicConnection::MaybeEnableSessionDecidesWhatToWrite() {
+  // Only enable session decides what to write code path for version 42+,
+  // because it needs the receiver to allow receiving overlapping stream data.
+  const bool enable_session_decides_what_to_write =
+      transport_version() > QUIC_VERSION_41 &&
+      GetQuicReloadableFlag(quic_allow_receiving_overlapping_data) &&
+      GetQuicReloadableFlag(quic_streams_unblocked_by_session) &&
+      use_control_frame_manager_;
+  sent_packet_manager_.SetSessionDecideWhatToWrite(
+      enable_session_decides_what_to_write);
+  packet_generator_.SetCanSetTransmissionType(
+      enable_session_decides_what_to_write);
+}
+
 void QuicConnection::SetSessionNotifier(
     SessionNotifierInterface* session_notifier) {
   sent_packet_manager_.SetSessionNotifier(session_notifier);
@@ -2790,6 +2826,14 @@ void QuicConnection::SetSessionNotifier(
 void QuicConnection::SetDataProducer(
     QuicStreamFrameDataProducer* data_producer) {
   framer_.set_data_producer(data_producer);
+}
+
+void QuicConnection::SetTransmissionType(TransmissionType type) {
+  packet_generator_.SetTransmissionType(type);
+}
+
+bool QuicConnection::session_decides_what_to_write() const {
+  return sent_packet_manager_.session_decides_what_to_write();
 }
 
 }  // namespace net
