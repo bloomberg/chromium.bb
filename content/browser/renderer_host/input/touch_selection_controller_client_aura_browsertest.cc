@@ -715,8 +715,9 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
 }
 
 // Tests that the quick menu is hidden whenever a touch point is active.
+// Flaky: https://crbug.com/803576
 IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAuraTest,
-                       QuickMenuHiddenOnTouch) {
+                       DISABLED_QuickMenuHiddenOnTouch) {
   // Set the test page up.
   ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/touch_selection.html"));
   InitSelectionController();
