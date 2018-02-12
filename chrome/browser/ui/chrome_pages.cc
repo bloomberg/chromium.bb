@@ -319,7 +319,12 @@ void ShowContentSettingsExceptionsForProfile(
       profile, GenerateContentSettingsExceptionsSubPage(content_settings_type));
 }
 
-void ShowSiteSettings(Browser* browser, const GURL& url) {
+static void ShowSiteSettings(Profile* profile,
+                             Browser* browser,
+                             const GURL& url) {
+  DCHECK(!browser ^ !profile);
+  if (browser)
+    profile = browser->profile();
   // If a valid non-file origin, open a settings page specific to the current
   // origin of the page. Otherwise, open Content Settings.
   url::Origin site_origin = url::Origin::Create(url);
@@ -336,10 +341,21 @@ void ShowSiteSettings(Browser* browser, const GURL& url) {
                        std::string(percent_encoded_origin.data(),
                                    percent_encoded_origin.length());
   }
-  browser->OpenURL(
-      content::OpenURLParams(GURL(link_destination), content::Referrer(),
-                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                             ui::PAGE_TRANSITION_TYPED, false));
+  NavigateParams params(profile, GURL(link_destination),
+                        ui::PAGE_TRANSITION_TYPED);
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  params.browser = browser;
+  Navigate(&params);
+}
+
+void ShowSiteSettings(Browser* browser, const GURL& url) {
+  DCHECK(browser);
+  ShowSiteSettings(nullptr, browser, url);
+}
+
+void ShowSiteSettings(Profile* profile, const GURL& url) {
+  DCHECK(profile);
+  ShowSiteSettings(profile, nullptr, url);
 }
 
 void ShowContentSettings(Browser* browser,
