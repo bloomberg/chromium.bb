@@ -5,6 +5,8 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -16,6 +18,7 @@
 #include "components/safe_browsing/features.h"
 #include "components/security_state/content/content_utils.h"
 #include "components/ssl_config/ssl_config_prefs.h"
+#include "components/toolbar/toolbar_field_trial.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -145,6 +148,34 @@ void SecurityStateTabHelper::DidFinishNavigation(
     // many times the re-enable warnings button is clicked, as a fraction of
     // the number of times it was available.
     UMA_HISTOGRAM_BOOLEAN("interstitial.ssl.visited_site_after_warning", true);
+  }
+
+  // Security indicator UI study (https://crbug.com/803501): Show a message in
+  // the console to reduce developer confusion about the experimental UI
+  // treatments for HTTPS pages with EV certificates.
+  const std::string parameter =
+      base::FeatureList::IsEnabled(toolbar::features::kSimplifyHttpsIndicator)
+          ? base::GetFieldTrialParamValueByFeature(
+                toolbar::features::kSimplifyHttpsIndicator,
+                toolbar::features::kSimplifyHttpsIndicatorParameterName)
+          : std::string();
+  if (security_info.security_level == security_state::EV_SECURE) {
+    if (parameter ==
+        toolbar::features::kSimplifyHttpsIndicatorParameterEvToSecure) {
+      web_contents()->GetMainFrame()->AddMessageToConsole(
+          content::CONSOLE_MESSAGE_LEVEL_INFO,
+          "As part of an experiment, Chrome temporarily shows only the "
+          "\"Secure\" text in the address bar. Your SSL certificate with "
+          "Extended Validation is still valid.");
+    }
+    if (parameter ==
+        toolbar::features::kSimplifyHttpsIndicatorParameterBothToLock) {
+      web_contents()->GetMainFrame()->AddMessageToConsole(
+          content::CONSOLE_MESSAGE_LEVEL_INFO,
+          "As part of an experiment, Chrome temporarily shows only the lock "
+          "icon in the address bar. Your SSL certificate with Extended "
+          "Validation is still valid.");
+    }
   }
 }
 
