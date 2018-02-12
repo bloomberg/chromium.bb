@@ -4512,7 +4512,9 @@
 
       If this policy is unset or set to true, the default behavior will be used: signing in to a different account from the browser content area will be allowed, except for child accounts where it will be blocked for non-Incognito content area.
 
-      In case signing in to a different account shouldn't be allowed via the Incognito mode, consider blocking that mode using the IncognitoModeAvailability policy.''',
+      In case signing in to a different account shouldn't be allowed via the Incognito mode, consider blocking that mode using the IncognitoModeAvailability policy.
+
+      Note that users will be able to access Google services in an unauthenticated state by blocking their cookies.''',
     },
     {
       'name': 'InstantEnabled',
