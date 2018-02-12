@@ -142,7 +142,10 @@ void OfflinePageMHTMLArchiver::OnGenerateMHTMLDone(
                                ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED);
     return;
   }
-
+  // TODO(jianli): if the file is not in internal directory, there may be a
+  // chance that the file gets modified before it has digest computed. So when
+  // we support archiving to public directory, we should first put it in
+  // internal directory, compute digest, and then move to public directory.
   ComputeDigestOnFileThread(
       file_path, base::Bind(&OfflinePageMHTMLArchiver::OnComputeDigestDone,
                             weak_ptr_factory_.GetWeakPtr(), url, file_path,

@@ -46,11 +46,6 @@ class ClientPolicyController {
   bool IsSupportedByDownload(const std::string& name_space) const;
   const std::vector<std::string>& GetNamespacesSupportedByDownload() const;
 
-  // Returns whether pages for |name_space| are explicitly offlined due to user
-  // action.
-  bool IsUserRequestedDownload(const std::string& name_space) const;
-  const std::vector<std::string>& GetNamespacesForUserRequestedDownload() const;
-
   // Returns whether pages for |name_space| are shown in recent tabs UI,
   // currently only available on NTP.
   bool IsShownAsRecentlyVisitedSite(const std::string& name_space) const;
@@ -86,8 +81,6 @@ class ClientPolicyController {
   mutable std::unique_ptr<std::vector<std::string>>
       cache_reset_namespace_cache_;
   mutable std::unique_ptr<std::vector<std::string>> download_namespace_cache_;
-  mutable std::unique_ptr<std::vector<std::string>>
-      user_requested_download_namespace_cache_;
   mutable std::unique_ptr<std::vector<std::string>> recent_tab_namespace_cache_;
   mutable std::unique_ptr<std::vector<std::string>> show_in_original_tab_cache_;
   mutable std::unique_ptr<std::vector<std::string>>
