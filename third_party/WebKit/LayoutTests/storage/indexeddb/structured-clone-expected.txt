@@ -842,7 +842,8 @@ Exception message: Failed to execute 'put' on 'IDBObjectStore': Error could not 
 Expecting exception from store.put(new Function, 'key')
 PASS Exception was thrown.
 PASS code is DOMException.DATA_CLONE_ERR
-Exception message: Failed to execute 'put' on 'IDBObjectStore': function anonymous() {
+Exception message: Failed to execute 'put' on 'IDBObjectStore': function anonymous(
+) {
 
 } could not be cloned.
 
