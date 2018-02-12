@@ -463,10 +463,10 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               M64, "5725727580225536")};
 
     case WebFeature::kDeprecatedTimingFunctionStepMiddle:
-      return {"DeprecatedTimingFunctionStepMiddle", M62,
-              replacedWillBeRemoved(
-                  "The step timing function with step position 'middle'",
-                  "the frames timing function", M62, "5189363944128512")};
+      return {
+          "DeprecatedTimingFunctionStepMiddle", M62,
+          willBeRemoved("The step timing function with step position 'middle'",
+                        M62, "5189363944128512")};
 
     case WebFeature::kHTMLImportsHasStyleSheets:
       return {
