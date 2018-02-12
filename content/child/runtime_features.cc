@@ -302,6 +302,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableNetworkService(
       base::FeatureList::IsEnabled(network::features::kNetworkService));
 
+  WebRuntimeFeatures::EnableMojoBlobURLs(
+      base::FeatureList::IsEnabled(network::features::kNetworkService));
+
   if (base::FeatureList::IsEnabled(features::kGamepadExtensions))
     WebRuntimeFeatures::EnableGamepadExtensions(true);
 

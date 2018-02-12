@@ -188,6 +188,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableDoubleTapToJumpOnVideo(bool);
   BLINK_PLATFORM_EXPORT static void EnableCodeCacheAfterExecute(bool);
   BLINK_PLATFORM_EXPORT static void EnableUnifiedTouchAdjustment(bool);
+  BLINK_PLATFORM_EXPORT static void EnableMojoBlobURLs(bool);
 
  private:
   WebRuntimeFeatures();

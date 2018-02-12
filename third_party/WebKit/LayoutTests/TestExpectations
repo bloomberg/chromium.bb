@@ -1677,10 +1677,6 @@ crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_t
 crbug.com/800898 external/wpt/FileAPI/url/url-with-fetch.any.worker.html [ Pass Failure ]
 crbug.com/800898 external/wpt/FileAPI/url/url-with-xhr.any.worker.html [ Pass Failure ]
 crbug.com/800898 external/wpt/FileAPI/url/url-in-tags-revoke.window.html [ Pass Failure ]
-crbug.com/800898 virtual/mojo-blobs/external/wpt/FileAPI/url/url-with-fetch.any.worker.html [ Pass Failure ]
-crbug.com/800898 virtual/mojo-blobs/external/wpt/FileAPI/url/url-with-xhr.any.worker.html [ Pass Failure ]
-crbug.com/800898 virtual/mojo-blobs/external/wpt/FileAPI/url/url-in-tags-revoke.window.html [ Pass Failure ]
-crbug.com/800898 virtual/mojo-blob-urls/external/wpt/FileAPI/url/url-in-tags-revoke.window.html [ Pass Failure ]
 
 # Websockets
 crbug.com/803558 external/wpt/websockets/Create-Secure-extensions-empty.htm [ Timeout ]
@@ -2125,8 +2121,6 @@ crbug.com/626703 [ Linux Win ] external/wpt/css/selectors/selector-required-type
 crbug.com/626703 [ Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001b.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/2dcontext/the-canvas-state/canvas_state_restore_001.htm [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-flexbox/auto-margins-001.html [ Failure ]
-crbug.com/626703 virtual/mojo-blobs/external/wpt/fetch/api/abort/general.html [ Timeout ]
-crbug.com/626703 virtual/mojo-blobs/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/api/abort/general.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/http/basic-auth-cache-test.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
@@ -2335,15 +2329,12 @@ crbug.com/651778 external/wpt/workers/Worker_cross_origin_security_err.htm [ Tim
 
 # This test requires a special browser flag and seems not suitable for a wpt test, see bug.
 crbug.com/691944 external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
-crbug.com/691944 virtual/mojo-blobs/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 
 # These tests (erroneously) see a platform-specific User-Agent header
 crbug.com/595993 external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
-crbug.com/595993 virtual/mojo-blobs/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
-crbug.com/595993 virtual/mojo-blobs/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/595993 virtual/outofblink-cors/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/595993 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/595993 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
@@ -2369,11 +2360,6 @@ crbug.com/669473 external/wpt/css/css-ui/outline-016.html [ Failure ]
 crbug.com/670024 external/wpt/webmessaging/broadcastchannel/sandbox.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/with-ports/001.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/without-ports/001.html [ Failure ]
-crbug.com/670024 virtual/mojo-blobs/external/wpt/webmessaging/broadcastchannel/sandbox.html [ Failure ]
-crbug.com/351753 virtual/mojo-blobs/external/wpt/webmessaging/broadcastchannel/blobs.html [ Failure ]
-crbug.com/351753 virtual/mojo-blobs/external/wpt/webmessaging/Channel_postMessage_Blob.htm [ Failure ]
-crbug.com/660384 virtual/mojo-blobs/external/wpt/webmessaging/with-ports/001.html [ Failure ]
-crbug.com/660384 virtual/mojo-blobs/external/wpt/webmessaging/without-ports/001.html [ Failure ]
 
 # Added 2016-12-12
 crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
@@ -2525,7 +2511,6 @@ crbug.com/680407 [ Mac ] fast/forms/select/menulist-appearance-basic.html [ Need
 
 # Importing 'fetch' tests from WPT.
 crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
-crbug.com/705490 virtual/mojo-blobs/external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
 crbug.com/705490 virtual/outofblink-cors/external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]
 
 # This test has device ID strings in failure messages which change on every test run.
@@ -2564,7 +2549,6 @@ crbug.com/716320 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe
 
 # Flaky on trybots
 crbug.com/688486 external/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Failure Pass ]
-crbug.com/688486 virtual/mojo-blobs/external/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Failure Pass ]
 crbug.com/688486 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Failure Pass ]
 
 # Sheriff failures 2017-02-21

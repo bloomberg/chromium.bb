@@ -506,4 +506,8 @@ void WebRuntimeFeatures::EnableUnifiedTouchAdjustment(bool enable) {
   RuntimeEnabledFeatures::SetUnifiedTouchAdjustmentEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableMojoBlobURLs(bool enable) {
+  RuntimeEnabledFeatures::SetMojoBlobURLsEnabled(enable);
+}
+
 }  // namespace blink
