@@ -368,6 +368,15 @@ class FakeCIDBConnection(object):
 
     return values
 
+  def GetActionsForBuild(self, build_id):
+    """Gets all the actions associated with build |build_id|.
+
+    Returns:
+      A list of CLAction instance, in action id order.
+    """
+    return [row for row in self.GetActionHistory()
+            if build_id == row.build_id]
+
   def GetActionHistory(self, *args, **kwargs):
     """Get all the actions for all changes."""
     # pylint: disable=W0613
@@ -629,6 +638,52 @@ class FakeCIDBConnection(object):
       return requests[:num_results]
     else:
       return requests
+
+  def GetLatestBuildRequestsForReason(self, request_reason,
+                                      status=None,
+                                      num_results=NUM_RESULTS_NO_LIMIT,
+                                      n_days_back=7):
+    """Gets the latest build_requests associated with the request_reason.
+
+    Args:
+      request_reason: The reason to filter by
+      status: Whether to filter on status
+      num_results: Number of results to return, default to
+        self.NUM_RESULTS_NO_LIMIT.
+      n_days_back: How many days back to look for build requests.
+
+    Returns:
+      A list of build_request.BuildRequest instances.
+    """
+    def _MatchesStatus(value):
+      return status is None or value['status'] == status
+
+    def _MatchesTimeConstraint(value):
+      if n_days_back is None:
+        return True
+
+      # MySQL doesn't support timestamps with microsecond resolution
+      now = datetime.datetime.now().replace(microsecond=0)
+      then = now - datetime.timedelta(days=n_days_back)
+      return then < value['timestamp']
+
+    by_build_config = {}
+    for value in self.buildRequestTable.values():
+      if (value['request_reason'] == request_reason
+          and _MatchesStatus(value)
+          and _MatchesTimeConstraint(value)):
+        by_build_config.setdefault(
+            value['request_build_config'], []).append(value)
+
+    max_in_group = [
+        build_requests.BuildRequest(
+            **max(group, key=lambda value: value['timestamp']))
+        for group in by_build_config.values()]
+
+    limit = None
+    if num_results != self.NUM_RESULTS_NO_LIMIT:
+      limit = num_results
+    return max_in_group[:limit]
 
   def GetBuildRequestsForRequesterBuild(self, requester_build_id,
                                         request_reason=None):

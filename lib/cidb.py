@@ -644,6 +644,18 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       'SELECT build_id, build_config, waterfall, builder_name, build_number, '
       'message_type, message_subtype, message_value, timestamp, board FROM '
       'buildMessageTable c JOIN buildTable b ON build_id = b.id ')
+
+  # See https://stackoverflow.com/a/7745635/219138 for a discussion of how to
+  # perform "greatest-n-per-group" in SQL. I chose the LEFT OUTER JOIN solution.
+  _SQL_FETCH_LATEST_BUILD_REQUEST = '''
+  SELECT t1.* from buildRequestTable as t1
+  LEFT OUTER JOIN buildRequestTable as t2
+    ON t1.request_reason = t2.request_reason
+       AND t1.request_build_config = t2.request_build_config
+       AND t1.timestamp < t2.timestamp
+  WHERE t2.request_build_config is NULL
+  '''
+
   _DATE_FORMAT = '%Y-%m-%d'
   _DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
@@ -2002,6 +2014,40 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     results = self._Execute(query).fetchall()
 
+    return [build_requests.BuildRequest(*values) for values in results]
+
+  @minimum_schema(59)
+  def GetLatestBuildRequestsForReason(self, request_reason,
+                                      status=None,
+                                      num_results=NUM_RESULTS_NO_LIMIT,
+                                      n_days_back=7):
+    """Gets the latest build_requests associated with the request_reason.
+
+    Args:
+      request_reason: The reason to filter by
+      status: Whether to filter on status
+      num_results: Number of results to return, default to
+        self.NUM_RESULTS_NO_LIMIT.
+      n_days_back: How many days back to look for build requests.
+
+    Returns:
+      A list of build_request.BuildRequest instances.
+    """
+    query = [self._SQL_FETCH_LATEST_BUILD_REQUEST]
+    query.append("AND t1.request_reason = '%s'" % request_reason)
+
+    if n_days_back is not None:
+      query.append(
+          'AND t1.timestamp > TIMESTAMP(DATE_SUB(NOW(), INTERVAL %s DAY))'
+          % n_days_back)
+
+    if status is not None:
+      query.append("AND status = '%s'" % status)
+
+    if num_results != self.NUM_RESULTS_NO_LIMIT:
+      query.append('LIMIT %d' % num_results)
+
+    results = self._Execute(' '.join(query)).fetchall()
     return [build_requests.BuildRequest(*values) for values in results]
 
   def GetBuildRequestsForRequesterBuild(self, requester_build_id,

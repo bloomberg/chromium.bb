@@ -127,7 +127,8 @@ class CLAction(_CLActionTuple):
 
   @classmethod
   def FromGerritPatchAndAction(cls, change, action, reason=None,
-                               timestamp=None, buildbucket_id=None):
+                               timestamp=None, buildbucket_id=None,
+                               status=None):
     """Creates a CLAction instance from a change and action.
 
     Args:
@@ -136,11 +137,12 @@ class CLAction(_CLActionTuple):
       reason: Optional reason string.
       timestamp: Optional datetime.datetime timestamp.
       buildbucket_id: Optional buildbucket_id
+      status: Optional string status
     """
     return CLAction(None, None, action, reason, None,
                     int(change.gerrit_number), int(change.patch_number),
                     BoolToChangeSource(change.internal), timestamp,
-                    buildbucket_id, None)
+                    buildbucket_id, status)
 
   @classmethod
   def FromMetadataEntry(cls, entry):

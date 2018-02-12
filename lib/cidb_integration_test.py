@@ -1187,6 +1187,44 @@ class BuildRequestTableTest(CIDBIntegrationTest):
 
     return b_id
 
+  def testLatestBuildRequestsForReason(self):
+    self._PrepareDatabase()
+    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
+
+    now = datetime.datetime.now()
+
+    old_ts = now - datetime.timedelta(days=9)
+    self._InsertPreCQBuildRequests(bot_db, old_ts)
+
+    requests = bot_db.GetLatestBuildRequestsForReason(
+        build_requests.REASON_SANITY_PRE_CQ)
+
+    self.assertEqual(requests, [])
+
+    three_days_ago = now - datetime.timedelta(days=3)
+    self._InsertPreCQBuildRequests(bot_db, three_days_ago)
+
+    requests = bot_db.GetLatestBuildRequestsForReason(
+        build_requests.REASON_SANITY_PRE_CQ)
+
+    self.assertEqual(requests[0].request_build_config, 'test_pre_cq_1')
+    self.assertEqual(requests[1].request_build_config, 'test_pre_cq_2')
+    self.assertEqual(len(requests), 2)
+
+    self._InsertPreCQBuildRequests(bot_db, now)
+
+    requests = bot_db.GetLatestBuildRequestsForReason(
+        build_requests.REASON_SANITY_PRE_CQ)
+
+    self.assertEqual(requests[0].request_build_config, 'test_pre_cq_1')
+    self.assertEqual(requests[1].request_build_config, 'test_pre_cq_2')
+    self.assertEqual(len(requests), 2)
+
+    # It should return the latest request for each build config.
+    now = now.replace(microsecond=0)
+    self.assertEqual(requests[0].timestamp, now)
+    self.assertEqual(requests[1].timestamp, now)
+
   def testBuildRequests(self):
     """Test insert and get operations on BuildRequestTable."""
     self._PrepareDatabase()
