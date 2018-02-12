@@ -637,6 +637,15 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Pravilnik je izbiren. Če ga ne nastavite, iskalni izrazi ne bodo nadomeščeni.
 
           Pravilnik se upošteva samo, če je pravilnik »DefaultSearchProviderEnabled« omogočen.</translation>
+<translation id="306887062252197004">Ta pravilnik uporabnikom funkcije WebDriver omogoča preglasitev
+      pravilnikov, ki lahko ovirajo njeno delovanje.
+
+      Ta pravilnik trenutno onemogoča pravilnika SitePerProcess in IsolateOrigins.
+
+      Če je pravilnik omogočen, bo funkcija WebDriver lahko preglasila nezdružljive
+      pravilnike.
+      Če je pravilnik onemogočen ali ni konfiguriran, funkciji WebDriver ne bo dovoljeno
+      preglasiti nezdružljivih pravilnikov.</translation>
 <translation id="3069958900488014740">Omogoča izklop optimizacije WPAD (samodejno odkrivanje strežnikov proxy v spletu) v brskalniku <ph name="PRODUCT_NAME" />.
 
       Če je ta pravilnik onemogočen, je optimizacija WPAD onemogočena, zaradi česa mora <ph name="PRODUCT_NAME" /> čakati dlje na strežnike WPAD, ki temeljijo na DNS-ju. Če pravilnik ni nastavljen ali je omogočen, je optimizacija WPAD omogočena.
@@ -783,13 +792,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Več informacij o Varnem brskanju je na voljo na https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Nastavi seznam razširitev, katerih namestitev je prepovedana</translation>
 <translation id="3711895659073496551">Prekinitev</translation>
-<translation id="3732106275571017176">Ta nastavitev omogoča uporabnikom preklop med Google Računi na območju z vsebino v oknu brskalnika, ko se prijavijo v napravo s sistemom <ph name="PRODUCT_OS_NAME" />.
-
-      Če je ta pravilnik onemogočen, prijava v drug račun na območju z vsebino v brskalniku z beleženjem zgodovine ni dovoljena.
-
-      Če ta pravilnik ni nastavljen ali je omogočen, je uporabljen privzeti način delovanja: prijava v drug račun na območju z vsebino v brskalniku je dovoljena, razen za račune otrok, za katere je blokirana za območje z vsebino z beleženjem zgodovine.
-
-      Če prijava v drug račun ne sme biti dovoljena v načinu brez beleženja zgodovine, lahko ta način blokirate s pravilnikom IncognitoModeAvailability.</translation>
 <translation id="3736879847913515635">Omogočanje dodajanja oseb v upravitelju uporabnikov</translation>
 <translation id="3737544779868348650">Ime gostitelja omrežja naprave</translation>
 <translation id="3750220015372671395">Blokiraj ustvarjanje ključev na teh spletnih mestih</translation>
@@ -1223,6 +1225,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4899708173828500852">Omogoči varno brskanje</translation>
 <translation id="4906194810004762807">Osveži oceno za pravilnik za naprave</translation>
 <translation id="4917385247580444890">Močan</translation>
+<translation id="4923806312383904642">Omogočanje, da funkcija WebDriver preglasi nezdružljive pravilnike</translation>
 <translation id="494613465159630803">Sprejemnik za Google Cast</translation>
 <translation id="4962262530309732070">Če je ta pravilnik omogočen ali ni nastavljen, <ph name="PRODUCT_NAME" /> dovoli dodajanje osebe v upravitelju uporabnikov.
 

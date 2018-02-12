@@ -612,6 +612,15 @@
           Această politică este opțională. Dacă nu este setată, nu se va efectua înlocuirea termenilor de căutare.
 
           Această politică este respectată doar dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
+<translation id="306887062252197004">Această politică permite utilizatorilor funcției WebDriver să ignore
+      politicile care pot afecta funcționarea acesteia.
+
+      În prezent, această politică dezactivează politicile SitePerProcess și IsolateOrigins.
+
+      Dacă politica este activată, WebDriver va putea să ignore politicile
+      incompatibile.
+      Dacă politica este dezactivată sau nu este configurată, funcției WebDriver nu i se va permite
+      să ignore politicile incompatibile.</translation>
 <translation id="3069958900488014740">Îți permite să dezactivezi optimizarea pentru WPAD (Web Proxy Auto-Discovery) în <ph name="PRODUCT_NAME" />.
 
       Dacă această politică este dezactivată, optimizarea pentru WPAD este, de asemenea, dezactivată, iar <ph name="PRODUCT_NAME" /> va aștepta mai mult timp un răspuns de la serverele WPAD bazate pe DNS. Dacă politica nu este configurată sau este activată, optimizarea pentru WPAD este activată.
@@ -754,13 +763,6 @@
       Consultă https://developers.google.com/safe-browsing pentru mai multe informații despre Navigarea sigură.</translation>
 <translation id="3709266154059827597">Configurează lista neagră pentru instalarea extensiilor</translation>
 <translation id="3711895659073496551">Suspendați</translation>
-<translation id="3732106275571017176">Această setare le permite utilizatorilor să comute între conturile Google, în zona de conținut a ferestrei de browser, după ce se conectează la dispozitivul <ph name="PRODUCT_OS_NAME" />.
-
-      Dacă politica este setată la false, nu va fi permisă conectarea la alt cont din zona de conținut a unui browser non-incognito.
-
-      Dacă politica nu este configurată sau este setată la true, se va folosi comportamentul prestabilit: va fi permisă conectarea la alt cont din zona de conținut a browser-ului, cu excepția conturilor copiilor, unde zona de conținut non-incognito va fi blocată.
-
-     În cazul în care conectarea la alt cont nu este permisă în modul incognito, îți recomandăm să blochezi acest mod prin folosirea politicii IncognitoModeAvailability.</translation>
 <translation id="3736879847913515635">Activează adăugarea de persoane în managerul de utilizatori</translation>
 <translation id="3737544779868348650">Numele de gazdă al rețelei dispozitivului</translation>
 <translation id="3750220015372671395">Blochează generarea cheilor pe aceste site-uri</translation>
@@ -1181,6 +1183,7 @@
 <translation id="4899708173828500852">Activează funcția Navigare sigură</translation>
 <translation id="4906194810004762807">Rata de actualizare pentru Politica privind dispozitivele</translation>
 <translation id="4917385247580444890">Puternic</translation>
+<translation id="4923806312383904642">Permite WebDriver să ignore politicile incompatibile</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_NAME" /> va permite opțiunea Adaugă o persoană din managerul de utilizatori.
 

@@ -604,6 +604,15 @@
           このポリシーは省略可能です。未設定の場合、検索キーワードに置き換えられることはありません。
 
           このポリシーは「DefaultSearchProviderEnabled」ポリシーが有効な場合にのみ適用されます。</translation>
+<translation id="306887062252197004">このポリシーを使用すると、WebDriver 機能を使用するときに
+      動作を妨げる可能性のあるポリシーをオーバーライドできます。
+
+      現在、このポリシーによって無効にされるのは SitePerProcess ポリシーと IsolateOrigins ポリシーです。
+
+      このポリシーが有効な場合は、WebDriver で互換性のないポリシーを
+      オーバーライドできます。
+      このポリシーが無効または未設定の場合は、WebDriver で互換性のないポリシーを
+      オーバーライドすることはできません。</translation>
 <translation id="3069958900488014740"><ph name="PRODUCT_NAME" /> で WPAD（ウェブプロキシ自動検出）の最適化を無効にできます。
 
       このポリシーを false に設定すると、WPAD の最適化は無効になり、DNS ベースの WPAD サーバーに対する <ph name="PRODUCT_NAME" /> の待機間隔が長くなります。このポリシーを未設定または有効にすると、WPAD の最適化は有効になります。
@@ -746,13 +755,6 @@
       セーフ ブラウジングの詳細については、https://developers.google.com/safe-browsing をご覧ください。</translation>
 <translation id="3709266154059827597">拡張機能インストールのブラックリストを設定する</translation>
 <translation id="3711895659073496551">停止する</translation>
-<translation id="3732106275571017176">ユーザーが <ph name="PRODUCT_OS_NAME" /> デバイスにログイン後、ブラウザ ウィンドウのコンテンツ領域内で Google アカウントを切り替えられるかどうかを設定します。
-
-      このポリシーが false に設定されている場合、ユーザーは通常モードの（シークレット モードではない）ブラウザのコンテンツ領域内で別のアカウントにログインすることはできません。
-
-      このポリシーが true に設定されている場合は、デフォルトの動作が使用され、ユーザーはブラウザのコンテンツ領域内で別のアカウントにログインできます（ただし通常モードのコンテンツ領域でブロックされる子アカウントは除きます）。
-
-      シークレット モードで別のアカウントにログインできないようにするには、IncognitoModeAvailability ポリシーでシークレット モードをブロックすることをご検討ください。</translation>
 <translation id="3736879847913515635">ユーザー管理画面でのユーザー追加を許可する</translation>
 <translation id="3737544779868348650">端末のネットワーク ホスト名</translation>
 <translation id="3750220015372671395">指定サイトでのキー生成をブロックする</translation>
@@ -1167,6 +1169,7 @@
 <translation id="4899708173828500852">セーフ ブラウジングを有効にする</translation>
 <translation id="4906194810004762807">端末ポリシーの更新間隔</translation>
 <translation id="4917385247580444890">強い</translation>
+<translation id="4923806312383904642">WebDriver による互換性のないポリシーのオーバーライドを許可する</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">このポリシーが true に設定されているか未設定の場合は、<ph name="PRODUCT_NAME" /> のユーザー管理画面で [ユーザーを追加] を使用することができます。
 

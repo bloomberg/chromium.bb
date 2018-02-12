@@ -635,6 +635,15 @@
           이 정책은 선택사항입니다. 설정하지 않으면 검색어가 대체됩니다.
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
+<translation id="306887062252197004">이 정책은 WebDriver 기능 사용자가 작업을 방해할 수 있는 정책을
+      재정의할 수 있도록 해 줍니다.
+
+      현재 이 정책을 적용하면 SitePerProcess 및 IsolateOrigins 정책이 사용 중지됩니다.
+
+      정책을 사용 설정하면 WebDriver가 호환되지 않는 정책을 재정의할 수
+      있습니다.
+      정책을 사용 중지하거나 설정하지 않으면 WebDriver가 호환되지 않는
+      정책을 재정의할 수 없습니다.</translation>
 <translation id="3069958900488014740"><ph name="PRODUCT_NAME" />에서 WPAD(Web Proxy Auto-Discovery) 최적화를 사용 중지하도록 허용합니다.
 
       이 정책이 false로 설정된 경우 WPAD 최적화가 사용 중지되어 <ph name="PRODUCT_NAME" />이(가) DNS 기반 WPAD 서버를 더 오래 기다리게 됩니다. 이 정책이 설정되지 않았거나 사용 설정된 경우 WPAD 최적화가 사용 설정됩니다.
@@ -781,13 +790,6 @@
       세이프 브라우징에 관해 자세히 알아보려면 https://developers.google.com/safe-browsing을 참조하세요.</translation>
 <translation id="3709266154059827597">확장 프로그램 설치 차단목록 설정</translation>
 <translation id="3711895659073496551">일시중지</translation>
-<translation id="3732106275571017176">이 설정은 사용자가 <ph name="PRODUCT_OS_NAME" /> 기기에 로그인한 후 브라우저 창의 콘텐츠 영역 내에서 Google 계정 간에 전환할 수 있게 허용합니다.
-
-      이 정책이 false로 설정되면 시크릿 모드가 아닌 브라우저 콘텐츠 영역 내에서 다른 계정에 로그인할 수 없습니다.
-
-      이 정책이 설정되어 있지 않거나 true로 설정되면 기본 동작이 사용됩니다. 즉, 브라우저 콘텐츠 영역 내에서 다른 계정에 로그인할 수는 있지만, 자녀 계정은 시크릿 모드가 아닌 콘텐츠 영역에서 차단됩니다.
-
-      시크릿 모드를 통한 다른 계정 로그인을 허용해서는 안 되는 경우 IncognitoModeAvailability 정책을 사용한 시크릿 모드 차단을 고려해 보세요.</translation>
 <translation id="3736879847913515635">사용자 관리자에서 사용자 추가 허용</translation>
 <translation id="3737544779868348650">기기 네트워크 호스트 이름</translation>
 <translation id="3750220015372671395">이 사이트에서 키 생성 차단</translation>
@@ -1217,6 +1219,7 @@
 <translation id="4899708173828500852">세이프 브라우징 사용</translation>
 <translation id="4906194810004762807">기기 정책 새로고침 빈도</translation>
 <translation id="4917385247580444890">강력</translation>
+<translation id="4923806312383904642">WebDriver가 호환되지 않는 정책을 재정의하도록 허용</translation>
 <translation id="494613465159630803">Cast 수신기</translation>
 <translation id="4962262530309732070">이 정책을 true로 설정하거나 설정하지 않으면 <ph name="PRODUCT_NAME" />의 사용자 관리자에서 사용자를 추가할 수 있습니다.
 

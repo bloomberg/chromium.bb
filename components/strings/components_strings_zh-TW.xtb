@@ -310,6 +310,7 @@
       確認您的 Proxy 伺服器運作正常。如果您認為自己不需要使用
       Proxy 伺服器：
       <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="SERVER_NAME" /> 上的 <ph name="PRINTER_NAME" /></translation>
 <translation id="320323717674993345">取消付款</translation>
 <translation id="3207960819495026254">已加入書籤</translation>
 <translation id="3209375525920864198">請輸入有效的工作階段名稱。</translation>

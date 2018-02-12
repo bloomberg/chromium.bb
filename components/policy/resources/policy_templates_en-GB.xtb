@@ -27,6 +27,7 @@
       If this policy is set, the sign-in screen will always be displayed in the locale which is given by the first value of this policy (the policy is defined as a list for forward compatibility).  If this policy is not set or is set to an empty list, the sign-in screen will be displayed in the locale of the last user session.  If this policy is set to a value which is not a valid locale, the sign-in screen will be displayed in a fallback locale (currently, en-US).</translation>
 <translation id="1062011392452772310">Enable remote attestation for the device</translation>
 <translation id="1062407476771304334">Replace</translation>
+<translation id="109166998561583554">Password protection at-risk account flagging trigger</translation>
 <translation id="1093082332347834239">If this setting is enabled, the remote assistance host will be run in a process with <ph name="UIACCESS_PERMISSION_NAME" /> permissions. This will allow remote users to interact with elevated windows on the local user's desktop.
 
           If this setting is disabled or not configured, the remote assistance host will run in the user's context and remote users cannot interact with elevated windows on the desktop.</translation>
@@ -88,6 +89,7 @@
 
       If this policy is set to false, <ph name="PRODUCT_NAME" /> will not allow guest profiles to be started.</translation>
 <translation id="1363275621236827384">Enable queries to Quirks Server for hardware profiles</translation>
+<translation id="1387596372902085462">Whether to enable trust in Symantec Corporation's Legacy PKI Infrastructure</translation>
 <translation id="1393485621820363363">Enabled enterprise device printers</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
 <translation id="1426410128494586442">Yes</translation>
@@ -98,6 +100,7 @@
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="1456822151187621582">Windows (<ph name="PRODUCT_OS_NAME" /> clients):</translation>
+<translation id="1457305643416399820">Password protection at-risk account flagging is off</translation>
 <translation id="1464848559468748897">Control the user behaviour in a multi-profile session on <ph name="PRODUCT_OS_NAME" /> devices.
 
       If this policy is set to 'Multi-ProfileUserBehaviourUnrestricted', the user can be either the primary or secondary user in a multi-profile session.
@@ -405,6 +408,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           If this policy is left unset, the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="2386362615870139244">Allow screen wake locks</translation>
+<translation id="2411817661175306360">Password protection warning is off</translation>
 <translation id="2411919772666155530">Block notifications from these sites</translation>
 <translation id="2418507228189425036">Disables saving browser history in <ph name="PRODUCT_NAME" /> and prevents users from changing this setting.
 
@@ -792,13 +796,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       See https://developers.google.com/safe-browsing for more info on SafeBrowsing.</translation>
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
 <translation id="3711895659073496551">Suspend</translation>
-<translation id="3732106275571017176">This setting allows users to switch between Google Accounts within the content area of their browser window after they sign into their <ph name="PRODUCT_OS_NAME" /> device.
-
-      If this policy is set to false, signing in to a different account from non-Incognito browser content area will not be allowed.
-
-      If this policy is unset or set to true, the default behaviour will be used: Signing in to a different account from the browser content area will be allowed, except for child accounts where it will be blocked for non-Incognito content area.
-
-      In case signing in to a different account shouldn't be allowed via the Incognito mode, consider blocking that mode using the IncognitoModeAvailability policy</translation>
 <translation id="3736879847913515635">Enable add person in user manager</translation>
 <translation id="3737544779868348650">Device network hostname</translation>
 <translation id="3750220015372671395">Block key generation on these sites</translation>
@@ -1112,6 +1109,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           For a full description of possible settings and structure of this policy please visit https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
+<translation id="4554651132977135445">User policy loopback processing mode</translation>
 <translation id="4555850956567117258">Enable remote attestation for the user</translation>
 <translation id="4557134566541205630">Default search provider new tab page URL</translation>
 <translation id="4600786265870346112">Enable large cursor</translation>
@@ -1404,6 +1402,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       Note that if the platform supports policy notifications, the refresh delay will be set to 24 hours (ignoring all defaults and the value of this policy) because it is expected that policy notifications will force a refresh automatically whenever policy changes, making more frequent refreshes unnecessary.</translation>
 <translation id="5530347722229944744">Block potentially dangerous downloads</translation>
+<translation id="5530586312297447592">Password protection at-risk account flagging is triggered by password reuse on phishing page</translation>
 <translation id="5535973522252703021">Kerberos delegation server whitelist</translation>
 <translation id="555077880566103058">Allow all sites to automatically run the <ph name="FLASH_PLUGIN_NAME" /> plug-in</translation>
 <translation id="5559079916187891399">This policy has no effect on Android apps.</translation>
@@ -1772,6 +1771,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is left not set, network prediction will be enabled but the user will be able to change it.</translation>
 <translation id="6658245400435704251">Specifies the number of seconds up to which a device may randomly delay its download of an update from the time the update was first pushed out to the server. The device may wait a portion of this time in terms of wall-clock-time and the remaining portion in terms of the number of update checks. In any case, the scatter is upper bounded to a constant amount of time so that a device does not ever get stuck waiting to download an update forever.</translation>
 <translation id="6689792153960219308">Report hardware status</translation>
+<translation id="6698071416141001300">Password protection at-risk account flagging is triggered by password reuse</translation>
 <translation id="6699880231565102694">Enable two-factor authentication for remote access hosts</translation>
 <translation id="6724842112053619797">If you enable this setting, the settings stored in <ph name="PRODUCT_NAME" /> profiles like bookmarks, auto-fill data, passwords, etc. will also be written to a file stored in the roaming user profile folder or a location specified by the Administrator through the <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> policy. Enabling this policy disables cloud sync.
 
@@ -2024,6 +2024,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultPop-upsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="7529144158022474049">Auto update scatter factor</translation>
 <translation id="7534199150025803530">This policy has no effect on the Android Google Drive app. If you want to prevent use of Google Drive over mobile connections, you should disallow installation of the Android Google Drive app.</translation>
+<translation id="7547549430720182663">Merge</translation>
 <translation id="7553535237300701827">When this policy is set, the login authentication flow will happen in one of the following ways depending on the value of the setting:
 
       If set to GAIA, login will be done via the normal GAIA authentication flow.
@@ -2308,6 +2309,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If this policy is left not set or disabled the PDF plug-in will be used to open PDF files, unless the user disables it.</translation>
 <translation id="8402079500086185021">Always Open PDF files externally</translation>
 <translation id="8412312801707973447">Whether online OCSP/CRL checks are performed</translation>
+<translation id="841977920223099909">Password protection warning trigger</translation>
 <translation id="8424255554404582727">Set default display rotation, reapplied on every reboot</translation>
 <translation id="8426231401662877819">Rotate screen clockwise by 90 degrees</translation>
 <translation id="8451988835943702790">Use New Tab Page as homepage</translation>
@@ -2359,6 +2361,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
           If you leave this policy unset <ph name="PRODUCT_NAME" /> will try to detect if a server is on the Intranet and only then will it respond to IWA requests. If a server is detected as Internet then IWA requests from it will be ignored by <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8672321184841719703">Target Auto-Update Version</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8685024486845674965">Password protection warning is triggered by password reuse</translation>
 <translation id="8693243869659262736">Use built-in DNS client</translation>
 <translation id="8704831857353097849">List of disabled plug-ins</translation>
 <translation id="8711086062295757690">Specifies the keyword, which is the shortcut used in the omnibox to trigger the search for this provider.
@@ -2375,6 +2378,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If this setting is enabled or not set, browsing and download history can be deleted.
 
       If this setting is disabled, browsing and download history cannot be deleted.</translation>
+<translation id="8759829385824155666">Allowed Kerberos encryption types</translation>
 <translation id="8764119899999036911">Specifies whether the generated Kerberos SPN is based on the canonical DNS name or the original name entered.
 
           If you enable this setting, CNAME lookup will be skipped and the server name will be used as entered.
@@ -2394,6 +2398,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If the policy is not set or set to false, the location will not be reported.</translation>
 <translation id="8818768076343557335">Predict network actions on any network that is not cellular.
           (Deprecated in 50, removed in 52. After 52, if value 1 is set, it will be treated as 0 – predict network actions on any network connection.)</translation>
+<translation id="8825782996899863372">Password protection warning is triggered by password reuse on phishing page</translation>
 <translation id="8828766846428537606">Configure the default home page in <ph name="PRODUCT_NAME" /> and prevent users from changing it.
 
       The user's home page settings are only completely locked down, if you either select the home page to be the new tab page, or set it to be a URL and specify a home page URL. If you don't specify the home page URL, then the user is still able to set the home page to the new tab page by specifying 'chrome://newtab'.</translation>
@@ -2516,6 +2521,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If this policy is set to true, <ph name="PRODUCT_OS_NAME" /> will trigger a reboot when the user shuts down the device. <ph name="PRODUCT_OS_NAME" /> replaces all occurrences of shutdown buttons in the UI by reboot buttons. If the user shuts down the device using the power button, it will not automatically reboot, even if the policy is enabled.</translation>
 <translation id="9158929520101169054">Allow Multiple Sign-in Within the Browser</translation>
 <translation id="9187743794267626640">Disable mounting of external storage</translation>
+<translation id="918910591537763102">Legacy</translation>
 <translation id="9197740283131855199">Percentage by which to scale the screen dim delay if the user becomes active after dimming</translation>
 <translation id="9200828125069750521">Parameters for image URL which uses POST</translation>
 <translation id="9213347477683611358">Configure device-level wallpaper image that is shown on the login screen if no user has yet signed in to the device. The policy is set by specifying the URL from which the Chrome OS device can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16 MB. The URL must be accessible without any authentication. The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.

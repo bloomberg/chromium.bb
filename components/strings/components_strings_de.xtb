@@ -310,6 +310,7 @@
       Proxyeinstellungen oder wenden Sie sich an Ihren Netzwerkadministrator.
       Falls Sie keinen Proxyserver verwenden möchten, deaktivieren Sie ihn wie
       folgt: <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> auf <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Zahlung abbrechen</translation>
 <translation id="3207960819495026254">Mit einem Lesezeichen versehen</translation>
 <translation id="3209375525920864198">Bitte geben Sie einen gültigen Sitzungsnamen ein.</translation>

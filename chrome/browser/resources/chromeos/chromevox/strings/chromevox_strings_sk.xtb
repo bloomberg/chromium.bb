@@ -36,6 +36,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Ďalší nadpis 6. úrovne</translation>
 <translation id="1275718070701477396">Vybraté</translation>
+<translation id="1286609444451033486">Prepnete pomocou klávesa Hľadať a medzerníka.</translation>
 <translation id="1319608975892113573">Žiadny predchádzajúci prvok blockquote</translation>
 <translation id="1321576897702511272">Skryť pomocníka rozšírenia ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> z <ph name="TOTAL" /></translation>
@@ -370,6 +371,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4191918948604314587">Tlačidlo</translation>
 <translation id="4202186506458631436">Posunúť doprava</translation>
 <translation id="4206289001967551965">V tabuľke</translation>
+<translation id="4209770650650780359">Automatické dopĺňanie aktivujete pomocou šípky nahor alebo nadol.</translation>
 <translation id="4215733775853809057">Ďalší posúvač</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{pomlčka}few{# pomlčky}many{# dashes}other{# pomlčiek}}</translation>
 <translation id="421884353938374759">výber farieb</translation>
@@ -403,6 +405,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4532633738839459153">{COUNT,plural, =1{lomka}few{# lomky}many{# slashes}other{# lomiek}}</translation>
 <translation id="4547556996012970016">Ďalší nadpis 5. úrovne</translation>
 <translation id="4562381607973973258">Hlavička</translation>
+<translation id="4569941707103739422">Prechádzajte pomocou šípky nahor alebo nadol. Aktivujete zadaním textu.</translation>
 <translation id="4570424871453628777">Koniec pravopisnej chyby</translation>
 <translation id="4591507479202817876">, vybrané</translation>
 <translation id="4597532268155981612">formulár</translation>
@@ -496,6 +499,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="536031132345979795">Prejsť späť počas nepretržitého čítania</translation>
 <translation id="5368000168321181111">Zvukové signály sú vypnuté</translation>
 <translation id="5374320867641260420">Žiadne ďalšie tlačidlo</translation>
+<translation id="5376407118396657359">Prechádzajte po bunkách pomocou klávesov Hľadať + Ctrl + Alt</translation>
 <translation id="5382299583965267720">Žiadny ďalší nadpis 1. úrovne</translation>
 <translation id="5402367795255837559">Braillovo písmo</translation>
 <translation id="5402791055281059602">Upozornenie týkajúce sa režimu</translation>
@@ -504,6 +508,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="5417034931411865818">Kliknite na položku pod navigačným klávesom $1</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{znak je menšie ako}few{# znaky je menšie ako}many{# less than signs}other{# znakov je menšie ako}}</translation>
 <translation id="5444587279251314700">(aktívne)</translation>
+<translation id="5446809554778706307">Nie je označená žiadna položka. Nové okno otvoríte pomocou kombinácie klávesov Ctrl + T.</translation>
 <translation id="5451268436205074266">bodky <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Doplnkové</translation>
 <translation id="5485036206801896268">Žiadna predchádzajúca grafika</translation>
@@ -583,6 +588,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="6006050241733874051">Formulár</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{opačná lomka}few{# opačné lomky}many{# backslashes}other{# opačných lomiek}}</translation>
 <translation id="6037602951055904232">Posunúť zobrazenie dopredu</translation>
+<translation id="6042826534790431634">Aktivujete stlačením klávesa Hľadať a medzerníka.</translation>
 <translation id="6044160928851315051">Stmaviť obrazovku</translation>
 <translation id="605761629541007221">Koniec tučného písma</translation>
 <translation id="6065293622157674001">Začiatok gramatickej chyby</translation>
@@ -859,6 +865,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="9065283790526219006">+kontextové okno</translation>
 <translation id="9077213568694924680">odstránené z výberu</translation>
 <translation id="9082874451376019682">Žiadny predchádzajúci posúvač</translation>
+<translation id="9087707351856729768">Automatické dopĺňanie spustíte zadaním textu.</translation>
 <translation id="9089864840575085222">Cyklicky striedať zvukovú odozvu na zadávanie textu</translation>
 <translation id="9105227991373418255">vystrihnúť $1.</translation>
 <translation id="9107530006868467849">Žiadna predchádzajúca miniaplikácia pre médiá</translation>

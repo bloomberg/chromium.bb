@@ -606,6 +606,15 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           Aquesta política és opcional. Si no es defineix, no es produirà cap substitució dels termes de cerca.
 
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
+<translation id="306887062252197004">Aquesta política permet que els usuaris de la funció WebDriver substitueixin
+      polítiques que podrien interferir amb el seu funcionament.
+
+      Actualment, aquesta política desactiva les polítiques SitePerProcess i IsolateOrigins.
+
+      Si la política està activada, WebDriver pot substituir les polítiques
+      no compatibles.
+      Si la política està desactivada o no està configurada, WebDriver no pot
+      substituir les polítiques no compatibles.</translation>
 <translation id="3069958900488014740">Permet desactivar l'optimització WPAD (detecció automàtica de servidors intermediaris web) a <ph name="PRODUCT_NAME" />.
 
       Si aquesta política s'estableix en "false", l'optimització WPAD es desactiva i <ph name="PRODUCT_NAME" /> ha d'esperar més temps els servidors WPAD basats en DNS. Si la política no s'estableix o està activada, l'optimització WPAD s'activa.
@@ -747,13 +756,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
       Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Configura la llista negra d'instal·lació d'extensions</translation>
 <translation id="3711895659073496551">Suspèn</translation>
-<translation id="3732106275571017176">Aquesta opció de configuració permet que els usuaris canviïn d'un compte de Google a un altre des de l'àrea de contingut de la finestra del navegador després que hagin iniciat la sessió al dispositiu <ph name="PRODUCT_OS_NAME" />.
-
-      Si aquesta política es defineix com "false", els usuaris no podran iniciar la sessió a un altre compte des de l'àrea de contingut d'un navegador que no estigui en mode d'incògnit.
-
-      Si aquesta política no es defineix o es defineix com "true", s'aplicarà el comportament predeterminat: els usuaris podran iniciar la sessió a un altre compte des de l'àrea de contingut del navegador, excepte en el cas dels comptes secundaris, en què es bloquejarà aquesta política a l'àrea de contingut dels navegadors que no estiguin en mode d'incògnit.
-
-      En cas que no es vulgui permetre l'inici de sessió a un altre compte mitjançant el mode d'incògnit, pots bloquejar aquest mode amb la política IncognitoModeAvailability.</translation>
 <translation id="3736879847913515635">Activa l'opció Afegeix una persona al gestor d'usuaris</translation>
 <translation id="3737544779868348650">Nom d'amfitrió de la xarxa del dispositiu</translation>
 <translation id="3750220015372671395">Bloqueja la generació de claus en aquests llocs web</translation>
@@ -1158,6 +1160,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4899708173828500852">Activa Navegació segura</translation>
 <translation id="4906194810004762807">Freqüència d'actualització de la política de dispositiu</translation>
 <translation id="4917385247580444890">Forta</translation>
+<translation id="4923806312383904642">Permet que WebDriver substitueixi les polítiques no compatibles</translation>
 <translation id="494613465159630803">Receptor de Cast</translation>
 <translation id="4962262530309732070">Si aquesta política s'estableix en "true" o no es configura, <ph name="PRODUCT_NAME" /> permetrà l'opció Afegeix una persona des del gestor d'usuaris.
 

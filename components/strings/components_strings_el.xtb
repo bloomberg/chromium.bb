@@ -310,6 +310,7 @@
       να βεβαιωθείτε ότι ο διακομιστής μεσολάβησης λειτουργεί. Εάν δεν πιστεύετε ότι
       απαιτείται η χρήση διακομιστή μεσολάβησης:
       <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> στο <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Ακύρωση πληρωμής</translation>
 <translation id="3207960819495026254">Προστέθηκε στους σελιδοδείκτες</translation>
 <translation id="3209375525920864198">Εισαγάγετε ένα έγκυρο όνομα περιόδου λειτουργίας.</translation>

@@ -27,6 +27,7 @@
       Jika dasar ini ditetapkan, skrin log masuk akan sentiasa dipaparkan dalam tempat peristiwa yang diberikan oleh nilai pertama dasar ini (dasar ditentukan sebagai senarai untuk keserasian pemajuan).  Jika dasar ini tidak ditetapkan atau ditetapkan pada senarai kosong, skrin log masuk akan dipaparkan dalam tempat peristiwa sesi pengguna yang terakhir.  Jika dasar ini ditetapkan pada nilai yang merupakan tempat peristiwa yang tidak sah, skrin log masuk akan dipaparkan dalam tempat peristiwa sandaran (pada masa ini, en-US).</translation>
 <translation id="1062011392452772310">Dayakan pembuktian jauh untuk peranti</translation>
 <translation id="1062407476771304334">Gantikan</translation>
+<translation id="109166998561583554">Penanda akaun perlindungan kata laluan berisiko dicetuskan</translation>
 <translation id="1093082332347834239">Jika tetapan ini didayakan, hos bantuan jauh akan dijalankan dalam proses dengan kebenaran <ph name="UIACCESS_PERMISSION_NAME" />. Langkah ini akan membolehkan pengguna jauh berinteraksi dengan tetingkap ternaik pada desktop pengguna setempat.
 
           Jika tetapan ini dilumpuhkan atau tidak dikonfigurasi, hos bantuan jauh akan dijalankan dalam konteks pengguna dan pengguna jauh tidak boleh berinteraksi dengan tetingkap ternaik pada desktop.</translation>
@@ -88,6 +89,7 @@
 
       Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_NAME" /> tidak akan membenarkan profil tetamu dimulakan.</translation>
 <translation id="1363275621236827384">Dayakan pertanyaan ke Pelayan Quirks untuk mendapatkan profil perkakasan</translation>
+<translation id="1387596372902085462">Sama ada hendak mendayakan kepercayaan dalam Infrastruktur PKI Lama Symantec Corporation</translation>
 <translation id="1393485621820363363">Pencetak peranti perusahaan didayakan</translation>
 <translation id="1397855852561539316">Pembekal carian lalai mencadangkan URL</translation>
 <translation id="1426410128494586442">Ya</translation>
@@ -98,6 +100,7 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultJavaScriptSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
 <translation id="1456822151187621582">Windows (pelanggan <ph name="PRODUCT_OS_NAME" />):</translation>
+<translation id="1457305643416399820">Penanda akaun perlindungan kata laluan berisiko dimatikan</translation>
 <translation id="1464848559468748897">Mengawal tingkah laku pengguna dalam sesi berbilang profil pada peranti <ph name="PRODUCT_OS_NAME" />.
 
       Jika dasar ini ditetapkan kepada 'MultiProfileUserBehaviorUnrestricted', pengguna boleh menjadi sama ada pengguna utama atau sekunder dalam sesi berbilang profil.
@@ -405,6 +408,7 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultNotificationsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
 <translation id="2386362615870139244">Benarkan kunci bangkit skrin</translation>
+<translation id="2411817661175306360">Amaran perlindungan kata laluan dimatikan</translation>
 <translation id="2411919772666155530">Sekat pemberitahuan pada tapak ini</translation>
 <translation id="2418507228189425036">Melumpuhkan penyimpanan sejarah penyemakan imbas dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan ini.
 
@@ -790,13 +794,6 @@
       Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat lanjut tentang Penyemakan Imbas Selamat.</translation>
 <translation id="3709266154059827597">Konfigurasi senarai hitam pemasangan sambungan</translation>
 <translation id="3711895659073496551">Gantung</translation>
-<translation id="3732106275571017176">Tetapan ini membolehkan pengguna beralih antara akaun Google dalam bahagian kandungan tetingkap penyemak imbas mereka selepas mengelog masuk ke peranti <ph name="PRODUCT_OS_NAME" /> mereka.
-
-      Jika dasar ini ditetapkan kepada palsu, pengguna tidak akan dibenarkan mengelog masuk ke akaun lain daripada bahagian kandungan penyemak imbas bukan Inkognito.
-
-      Jika dasar ini tidak ditetapkan atau ditetapkan kepada benar, tingkah laku lalai akan digunakan: log masuk ke akaun lain daripada bahagian kandungan penyemak imbas akan dibenarkan, kecuali akaun anak yang akan menyekat bahagian kandungan bukan Inkognito.
-
-      Dalam hal jika log masuk ke akaun lain seharusnya tidak dibenarkan melalui mod Inkognito, pertimbangkan untuk menyekat mod itu menggunakan dasar IncognitoModeAvailability.</translation>
 <translation id="3736879847913515635">Dayakan tambah orang dalam pengurus pengguna</translation>
 <translation id="3737544779868348650">Nama hos rangkaian peranti</translation>
 <translation id="3750220015372671395">Sekat penghasilan kunci pada tapak ini</translation>
@@ -1109,6 +1106,7 @@
 
           Untuk mendapatkan perihalan penuh tentang tetapan dan struktur berkemungkinan dasar ini, sila lawati https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
+<translation id="4554651132977135445">Mod pemprosesan gelung balik dasar pengguna</translation>
 <translation id="4555850956567117258">Dayakan pembuktian jauh untuk pengguna</translation>
 <translation id="4557134566541205630">URL halaman tab baharu penyedia carian lalai</translation>
 <translation id="4600786265870346112">Dayakan kursor besar</translation>
@@ -1396,6 +1394,7 @@
 
       Ambil perhatian bahawa jika platform menyokong pemberitahuan dasar, lengahan muat semula akan ditetapkan kepada 24 jam (mengabaikan semua nilai lalai dan nilai dasar ini) kerana pemberitahuan dasar dijangka akan memaksa muat semula secara automatik apabila dasar berubah, melakukan muat semula yang tidak diperlukan dengan lebih kerap.</translation>
 <translation id="5530347722229944744">Sekat muat turun yang mungkin berbahaya</translation>
+<translation id="5530586312297447592">Penanda akaun perlindungan kata laluan berisiko dicetuskan oleh penggunaan semula kata laluan pada halaman pancingan data</translation>
 <translation id="5535973522252703021">Senarai putih pelayan penugasan Kerberos</translation>
 <translation id="555077880566103058">Benarkan semua tapak menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" /> secara automatik</translation>
 <translation id="5559079916187891399">Dasar ini tidak berkesan terhadap apl Android.</translation>
@@ -1769,6 +1768,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini dibiarkan tanpa ditetapkan, ramalan rangkaian akan didayakan tetapi pengguna akan boleh mengubahnya.</translation>
 <translation id="6658245400435704251">Menyatakan bilangan saat sehingga peranti boleh melambatkan muat turun kemas kini secara rawak dari masa kemas kini mula ditolak keluar ke pelayan. Peranti mungkin menunggu sebahagian masa ini dari segi masa jam dinding dan bahagian yang selebihnya dari segi bilangan semakan kemas kini. Dalam apa jua keadaan, serakan atas disempadani oleh jumlah masa yang tetap supaya peranti tidak sekali-kali akan tersekat menunggu selama-lamanya untuk memuat turun kemas kini.</translation>
 <translation id="6689792153960219308">Laporkan status perkakasan</translation>
+<translation id="6698071416141001300">Penanda akaun perlindungan kata laluan berisiko dicetuskan oleh penggunaan semula kata laluan</translation>
 <translation id="6699880231565102694">Dayakan pengesahan dua faktor untuk hos akses jauh</translation>
 <translation id="6724842112053619797">Jika anda mendayakan tetapan ini, tetapan yang disimpan dalam profil <ph name="PRODUCT_NAME" /> seperti penanda halaman, data autolengkap, kata laluan dan sebagainya akan turut ditulis pada fail yang disimpan dalam folder profil "Roaming" pengguna atau lokasi yang ditentukan oleh Pentadbir melaui dasar <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Sekiranya dasar ini didayakan, penyegerakan awan akan dilumpuhkan.
 
@@ -2021,6 +2021,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultPopupsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.</translation>
 <translation id="7529144158022474049">Faktor berserak kemas kini automatik</translation>
 <translation id="7534199150025803530">Dasar ini tidak berkesan terhadap apl Google Drive Android. Jika anda ingin menghalang penggunaan Google Drive melalui sambungan selular, anda tidak harus membenarkan pemasangan apl Google Drive Android.</translation>
+<translation id="7547549430720182663">Gabung</translation>
 <translation id="7553535237300701827">Apabila dasar ini ditetapkan, aliran pengesahan log masuk akan dilakukan dengan satu daripada cara berikut bergantung pada nilai tetapan:
 
       Jika ditetapkan kepada GAIA, log masuk akan dilakukan melalui aliran pengesahan GAIA yang biasa.
@@ -2305,6 +2306,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Jika dasar ini dibiarkan tanpa ditetapkan atau dilumpuhkan, pemalam PDF akan digunakan untuk membuka fail PDF melainkan pengguna melumpuhkannya.</translation>
 <translation id="8402079500086185021">Sentiasa buka fail PDF dari luar</translation>
 <translation id="8412312801707973447">Sama ada semakan OCSP/CRL dalam talian dilaksanakan</translation>
+<translation id="841977920223099909">Amaran perlindungan kata laluan dicetuskan</translation>
 <translation id="8424255554404582727">Tetapkan putaran paparan lalai yang digunakan semula pada setiap but semula</translation>
 <translation id="8426231401662877819">Putar skrin 90 darjah mengikut arah jam</translation>
 <translation id="8451988835943702790">Gunakan Halaman Tab Baharu sebagai halaman utama</translation>
@@ -2357,6 +2359,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
           Jika anda membiarkan dasar ini tanpa ditetapkan <ph name="PRODUCT_NAME" /> akan cuba mengesan jika pelayan berada di Intranet dan hanya selepas itu permintaan IWA akan dibalas.   Jika pelayan dikesan sebagai Internet, maka permintaan IWA daripadanya akan diabaikan oleh <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8672321184841719703">Versi Kemas Kini Auto Sasaran</translation>
 <translation id="867410340948518937">U2F (Faktor Kedua Universal)</translation>
+<translation id="8685024486845674965">Amaran perlindungan kata laluan dicetuskan oleh penggunaan semula kata laluan</translation>
 <translation id="8693243869659262736">Gunakan pelanggan DNS terbina dalam</translation>
 <translation id="8704831857353097849">Senarai pemalam yang dilumpuhkan</translation>
 <translation id="8711086062295757690">Menentukan kata kunci iaitu pintasan yang digunakan dalam kotak omni untuk mencetuskan carian bagi penyedia ini.
@@ -2373,6 +2376,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Jika tetapan ini didayakan atau tidak ditetapkan, sejarah penyemakan imbas dan muat turun boleh dipadamkan.
 
       Jika tetapan ini dilumpuhkan, sejarah penyemakan imbas dan muat turun tidak boleh dipadamkan.</translation>
+<translation id="8759829385824155666">Jenis penyulitan Kerberos yang dibenarkan</translation>
 <translation id="8764119899999036911">Menetapkan sama ada Kerberos SPN yang dihasilkan adalah berdasarkan nama DNS berkanun atau nama asal yang dimasukkan.
 
           Jika anda mendayakan tetapan ini, carian CNAME akan dilangkau dan nama pelayan akan digunakan seperti mana ia dimasukkan.
@@ -2392,6 +2396,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, lokasi tersebut tidak akan dilaporkan.</translation>
 <translation id="8818768076343557335">Ramal tindakan rangkaian pada mana-mana rangkaian yang bukan selular.
           (Ditamatkan dalam 50, dialih keluar dalam 52. Selepas 52, jika nilai 1 ditetapkan, nilai ini akan dianggap sebagai 0 - ramal tindakan rangkaian pada mana-mana sambungan rangkaian.)</translation>
+<translation id="8825782996899863372">Amaran perlindungan kata laluan dicetuskan oleh penggunaan semula kata laluan pada halaman pancingan data</translation>
 <translation id="8828766846428537606">Menkonfigurasi halaman utama lalai dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubahnya.
 
       Tetapan halaman utama pengguna hanya dikunci sepenuhnya, jika anda memilih halaman utama sebagai halaman tab baharu atau pun menetapkannya sebagai URL dan menetapkan URL halaman utama. Jika anda tidak menetapkan URL halaman utama, maka pengguna masih boleh menetapkan halaman utama kepada halaman tab baharu dengan menetapkan 'chrome://newtab'.</translation>
@@ -2514,6 +2519,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME" /> akan mencetus but semula apabila pengguna mematikan peranti. <ph name="PRODUCT_OS_NAME" /> menggantikan semua kejadian bagi butang matikan dalam UI oleh butang but semula. Jika pengguna mematikan peranti menggunakan butang kuasa, peranti tidak akan but semula secara automatik, walaupun dasar didayakan.</translation>
 <translation id="9158929520101169054">Benarkan Berbilang Log Masuk Dalam Penyemak Imbas</translation>
 <translation id="9187743794267626640">Lumpuhkan pelekapan storan luaran</translation>
+<translation id="918910591537763102">Lama</translation>
 <translation id="9197740283131855199">Peratusan yang digunakan untuk menskala kelewatan pemalapan skrin jika pengguna menjadi aktif selepas pemalapan</translation>
 <translation id="9200828125069750521">Parameter untuk URL imej yang menggunakan POST</translation>
 <translation id="9213347477683611358">Mengkonfigurasikan imej kertas dinding tahap peranti yang dipaparkan pada skrin log masuk jika belum ada pengguna yang pernah log masuk ke peranti. Dasar ini ditetapkan dengan menentukan URL tempat peranti OS Chrome boleh memuat turun imej kertas dinding itu dan cincangan kriptografi digunakan untuk mengesahkan integriti muat turun itu. Imej mestilah dalam format JPEG dan saiznya tidak boleh melebihi 16MB. URL mestilah boleh diakses tanpa sebarang pengesahan. Imej kertas dinding dimuat turun dan dicache. Imej kertas dinding akan dimuat turun semula setiap kali URL atau cincangan berubah.

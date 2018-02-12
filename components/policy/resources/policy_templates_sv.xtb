@@ -638,6 +638,15 @@
           Policyn är valfri. Om den inte ställs in byts inga sökord ut.
 
           Policyn beaktas bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
+<translation id="306887062252197004">Med den här principen kan användare av funktionen WebDriver åsidosätta
+      principer som påverkar dess funktion.
+
+      Principen inaktiverar för närvarande principerna SitePerProcess och IsolateOrigins.
+
+      Om principen WebDriver är aktiverad åsidosätter den inkompatibla
+      principer.
+      Om principen WebDriver är inaktiverad eller inte konfigurerad åsidosätts inte
+      inkompatibla principer.</translation>
 <translation id="3069958900488014740">Tillåter att WPAD-optimering (Web Proxy Auto-Discovery) inaktiveras för <ph name="PRODUCT_NAME" />.
 
       Om principen är inställd på falskt är WPAD-optimeringen inaktiverad, vilket innebär att <ph name="PRODUCT_NAME" /> får vänta längre på DNS-baserade WPAD-servrar. Om principen inte har konfigurerats eller har aktiverats är WPAD-optimeringen aktiverad.
@@ -784,13 +793,6 @@
       Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Konfigurera svartlista för tilläggsinstallation</translation>
 <translation id="3711895659073496551">Stäng av</translation>
-<translation id="3732106275571017176">Den här inställningen gör så att användarna kan byta Google-konto i webbläsarens innehållsområde när de har loggat in på <ph name="PRODUCT_OS_NAME" />-enheten.
-
-      Om principen har ställts in på falskt är det inte tillåtet att logga in med ett annat konto via ett innehållsområde i webbläsaren utom i inkognitofönster.
-
-      Om principen har lämnats utan inställning eller ställts in på sant används standardförfarandet, d.v.s. det är tillåtet att logga in med ett annat konto via innehållsområdet i webbläsaren utom vad gäller barnkonton, där inloggning blockeras i alla innehållsområden utom inkognitofönster.
-
-      Om det inte ska vara tillåtet att logga in på ett annat konto via inkognitoläget kan du blockera det läget med principen IncognitoModeAvailability.</translation>
 <translation id="3736879847913515635">Gör att en person kan läggas till i användarhanteraren</translation>
 <translation id="3737544779868348650">Värdnamn för enhetsnätverk</translation>
 <translation id="3750220015372671395">Blockera nyckelgenerering på dessa webbplatser</translation>
@@ -1225,6 +1227,7 @@
 <translation id="4899708173828500852">Aktivera Säker webbsökning</translation>
 <translation id="4906194810004762807">Uppdateringsfrekvens för enhetspolicy</translation>
 <translation id="4917385247580444890">Stark</translation>
+<translation id="4923806312383904642">Tillåt att inkompatibla principer åsidosätts med WebDriver</translation>
 <translation id="494613465159630803">Cast-mottagare</translation>
 <translation id="4962262530309732070">Om den här principen är inställd på sant eller inte har konfigurerats tillåts Lägg till person i användarhanteraren av <ph name="PRODUCT_NAME" />.
 

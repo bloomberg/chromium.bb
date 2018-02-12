@@ -609,6 +609,15 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
           Tämä on valinnainen käytäntö. Jos sitä ei määritetä, hakutermejä ei korvata.
 
           Tätä käytäntöä noudatetaan vain, jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
+<translation id="306887062252197004">Tämä käytäntö sallii WebDriver-ominaisuuden käyttäjien ohittaa
+      käytäntöjä, jotka voivat häiritä sen toimintaa.
+
+      Tällä hetkellä tämä käytäntö poistaa käytöstä SitePerProcess- ja IsolateOrigins ‑käytännöt.
+
+      Jos käytäntö on käytössä, WebDriver voi ohittaa yhteensopimattomia
+      käytäntöjä.
+      Jos käytäntö on poistettu käytöstä tai sitä ei ole määritetty, WebDriver ei saa
+      ohittaa yhteensopimattomia käytäntöjä.</translation>
 <translation id="3069958900488014740">Määrittää, käyttääkö <ph name="PRODUCT_NAME" /> WPAD-optimointia (Web Proxy Auto-Discovery).
 
       Jos tämän käytännön arvo on Epätosi, WPAD-optimointi poistetaan käytöstä, jolloin <ph name="PRODUCT_NAME" /> odottaa nimipalveluun perustuvia WPAD-palvelimia kauemmin. Jos käytäntöä ei aseteta tai sen arvo on Tosi, WPAD-optimointia käytetään.
@@ -751,13 +760,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
       Voit lukea lisää Selaussuojasta osoitteessa https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Määritä, mitä laajennuksia ei saa asentaa</translation>
 <translation id="3711895659073496551">Keskeytä</translation>
-<translation id="3732106275571017176">Tämä käytäntö antaa käyttäjien vaihtaa Google-tililtä toiselle selainikkunan sisältöosassa <ph name="PRODUCT_OS_NAME" /> ‑laitteelle kirjautumisen jälkeen.
-
-      Jos käytännön arvo on epätosi, toiselle tilille kirjautuminen ei ole sallittua muun kuin incognito-selaimen sisältöalueella.
-
-      Jos käytännön arvo on tosi tai sille ei ole määritetty arvoa, oletuskäyttäytymistä sovelletaan: toiselle tilille kirjautuminen selaimen sisältöalueella on sallittua, paitsi jos kyseessä on lapsen tili, jolloin se on kiellettyä, paitsi jos kyseessä ole incognito-ikkunan sisältöalue.
-
-      Jos et halua, että toiselle tilille kirjautuminen incognito-tilan avulla on sallittua, voit estää tämän tilan IncognitoModeAvailability-käytännöllä.</translation>
 <translation id="3736879847913515635">Salli profiilien luominen käyttäjien hallinnassa</translation>
 <translation id="3737544779868348650">Laitteen verkon isäntänimi</translation>
 <translation id="3750220015372671395">Estä avainten luominen näillä sivustoilla</translation>
@@ -1173,6 +1175,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="4899708173828500852">Ota selaussuoja käyttöön</translation>
 <translation id="4906194810004762807">Laitekäytännön päivitystiheys</translation>
 <translation id="4917385247580444890">Vahva</translation>
+<translation id="4923806312383904642">Salli WebDriverin ohittaa yhteensopimattomia käytäntöjä</translation>
 <translation id="494613465159630803">Cast-vastaanotin</translation>
 <translation id="4962262530309732070">Jos tämän käytännön arvoksi on määritetty tosi tai sitä ei ole määritetty, <ph name="PRODUCT_NAME" /> sallii käyttäjien hallinnan lisätä henkilöitä.
 

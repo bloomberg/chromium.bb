@@ -47,6 +47,7 @@
 <translation id="1264126396475825575">Crash report captured on <ph name="CRASH_TIME" /> (not yet uploaded or ignored)</translation>
 <translation id="1270502636509132238">Pickup Method</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
+<translation id="1294154142200295408">Command-line variations</translation>
 <translation id="129553762522093515">Recently closed</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Try clearing your cookies<ph name="END_LINK" /></translation>
 <translation id="1333989956347591814">Your activity <ph name="BEGIN_EMPHASIS" />might still be visible<ph name="END_EMPHASIS" /> to:
@@ -310,6 +311,7 @@
       make sure that the proxy server is working. If you don't believe you should
       be using a proxy server:
       <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> on <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Cancel payment</translation>
 <translation id="3207960819495026254">Bookmarked</translation>
 <translation id="3209375525920864198">Please enter a valid session name.</translation>
@@ -358,6 +360,7 @@
 <translation id="3467763166455606212">Cardholder name required</translation>
 <translation id="3479539252931486093">Was this unexpected? <ph name="BEGIN_LINK" />Let us know<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Not now</translation>
+<translation id="3484417807243795847">Enter the Expiry Date and CVC for <ph name="CREDIT_CARD" /></translation>
 <translation id="3498215018399854026">We could not reach your parent at the moment. Please try again.</translation>
 <translation id="3528171143076753409">Server's certificate is not trusted</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{At least 1 item on synced devices}=1{1 item (and more on synced devices)}other{# items (and more on synced devices)}}</translation>
@@ -434,6 +437,7 @@
 <translation id="4103249731201008433">Device serial number is invalid</translation>
 <translation id="410351446219883937">Autoplay</translation>
 <translation id="4103763322291513355">Visit &lt;strong&gt;chrome://policy&lt;/strong&gt; to see the list of blacklisted URLs and other policies enforced by your system administrator.</translation>
+<translation id="4113234475957642810">Do You Want to Save This Card to Your Google Account?</translation>
 <translation id="4116663294526079822">Always allow on this site</translation>
 <translation id="4117700440116928470">Policy scope is not supported.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 other}other{# others}}</translation>
@@ -484,6 +488,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554702541363482291">From an embedded page at <ph name="SITE" /></translation>
 <translation id="4558551763791394412">Try disabling your extensions.</translation>
+<translation id="4572961006780844603">Save Card?</translation>
 <translation id="457875822857220463">Delivery</translation>
 <translation id="4582800630050655161">You could lose access to your Google Account or experience identity theft. Chromium recommends that you change your password now.</translation>
 <translation id="4587425331216688090">Remove address from Chrome?</translation>
@@ -732,6 +737,7 @@
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6451458296329894277">Confirm Form Resubmission</translation>
 <translation id="6456339708790392414">Your Payment</translation>
+<translation id="6458535986965869750">Do You Want to Save This Card to Your Google Account and on This Device?</translation>
 <translation id="647261751007945333">Device policies</translation>
 <translation id="6477321094435799029">Chrome detected unusual code on this page and blocked it to protect your personal information (for example, passwords, phone numbers and credit cards).</translation>
 <translation id="6489534406876378309">Start uploading crashes</translation>
@@ -794,6 +800,7 @@
 <translation id="7090678807593890770">Search Google for <ph name="LINK" /></translation>
 <translation id="7108819624672055576">Allowed by an extension</translation>
 <translation id="7111012039238467737">(Valid)</translation>
+<translation id="7112670404630173368">Save Card to Google?</translation>
 <translation id="7119414471315195487">Close other tabs or programmes</translation>
 <translation id="7129409597930077180">Can’t deliver to this address. Select a different address.</translation>
 <translation id="7138472120740807366">Delivery method</translation>
@@ -828,6 +835,7 @@
 <translation id="7390545607259442187">Confirm Card</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Profile Path</translation>
+<translation id="7434205026593783035">Do You Want Chromium to Save This Card?</translation>
 <translation id="7437289804838430631">Add contact info</translation>
 <translation id="7441627299479586546">Wrong policy subject</translation>
 <translation id="7444046173054089907">This site is blocked</translation>
@@ -915,6 +923,7 @@
 <translation id="7961015016161918242">Never</translation>
 <translation id="7983301409776629893">Always translate <ph name="ORIGINAL_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Not Specified</translation>
+<translation id="8000691422113785187">Confirm Security Code</translation>
 <translation id="800218591365569300">Try closing other tabs or programmes to free up memory.</translation>
 <translation id="8012647001091218357">We could not reach your parents at the moment. Please try again.</translation>
 <translation id="8025119109950072390">Attackers on this site may trick you into doing something dangerous like installing software or revealing your personal information (for example passwords, phone numbers or credit cards).</translation>
@@ -1020,6 +1029,7 @@
 <translation id="8938939909778640821">Accepted credit and prepaid cards</translation>
 <translation id="8952525071319348207">Enter the expiry date and CVC for <ph name="CREDIT_CARD" /> to update your card details. After you confirm, card details from your Google payments account will be shared with this site.</translation>
 <translation id="8957210676456822347">Captive Portal Authorisation</translation>
+<translation id="8963515584701921654">Do You Want Chrome to Save This Card?</translation>
 <translation id="8971063699422889582">Server's certificate has expired.</translation>
 <translation id="8978053250194585037">Google Safe Browsing recently <ph name="BEGIN_LINK" />detected phishing<ph name="END_LINK" /> on <ph name="SITE" />. Phishing sites pretend to be other websites to trick you.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>

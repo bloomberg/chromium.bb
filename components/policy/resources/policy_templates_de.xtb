@@ -604,6 +604,13 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
           Diese Richtlinie ist optional. Wenn sie nicht konfiguriert wird, erfolgt keine Ersetzung der Suchbegriffe.
 
           Diese Richtlinie wird nur angewendet, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
+<translation id="306887062252197004">Diese Richtlinie erlaubt es Nutzern der WebDriver-Funktion, Richtlinien zu überschreiben, die die Verwendung von WebDriver beeinträchtigen können.
+
+Diese Richtlinie deaktiviert aktuell die Richtlinien SitePerProcess und IsolateOrigins.
+
+Ist die Richtlinie aktiviert, kann WebDriver nicht kompatible
+Richtlinien überschreiben.
+Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kompatible Richtlinien nicht überschreiben.</translation>
 <translation id="3069958900488014740">Erlaubt die Deaktivierung der WPAD-Optimierung (Web Proxy Auto-Discovery) in <ph name="PRODUCT_NAME" />.
 
       Ist diese Richtlinie auf "false" gesetzt, ist die WPAD-Optimierung deaktiviert, sodass <ph name="PRODUCT_NAME" /> länger auf DNS-basierte WPAD-Server warten muss. Wenn die Richtlinie aktiviert oder nicht festgelegt ist, ist die WPAD-Optimierung aktiviert.
@@ -743,13 +750,6 @@ Ist die Einstellung deaktiviert oder nicht konfiguriert, können Nutzer zu der g
       Weitere Informationen zu Safe Browsing finden Sie auf https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Schwarze Liste für Installation von Erweiterungen konfigurieren</translation>
 <translation id="3711895659073496551">Suspend-Modus</translation>
-<translation id="3732106275571017176">Diese Einstellung ermöglicht Nutzern, im Inhaltsbereich ihres Browserfensters zwischen Google-Konten zu wechseln, nachdem Sie sich in Ihrem <ph name="PRODUCT_OS_NAME" />-Gerät angemeldet haben.
-
-     Wenn diese Richtlinie auf "false" festgelegt wird, ist die Anmeldung in einem anderen Konto im Inhaltsbereich eines Browsers, der nicht im Inkognitomodus ist, nicht möglich.
-
-      Wenn diese Richtlinie auf "true" festgelegt wird, kommt das Standardverhalten zum Einsatz: Die Anmeldung in einem anderen Konto über den Inhaltsbereich des Browsers ist mit Ausnahme von Konten für Kinder erlaubt. Bei Konten für Kinder wird die Anmeldung im Inhaltsbereich eines Browsers, der nicht im Inkognitomodus ist, blockiert.
-
-      Falls die Anmeldung in einem anderen Konto im Inkognitomodus nicht erlaubt sein soll, kann der Modus über die Richtlinie "IncognitoModeAvailability" blockiert werden.</translation>
 <translation id="3736879847913515635">"Person hinzufügen" im Nutzermanager aktivieren</translation>
 <translation id="3737544779868348650">Hostname im Gerätenetzwerk</translation>
 <translation id="3750220015372671395">Schlüsselgenerierung auf diesen Websites blockieren</translation>
@@ -1165,6 +1165,7 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 <translation id="4899708173828500852">Safe Browsing aktivieren</translation>
 <translation id="4906194810004762807">Aktualisierungsrate für Geräterichtlinien</translation>
 <translation id="4917385247580444890">Stark</translation>
+<translation id="4923806312383904642">WebDriver erlauben, nicht kompatible Richtlinien zu überschreiben</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">Wurde für diese Richtlinie "true" festgelegt oder nichts konfiguriert, ist in <ph name="PRODUCT_NAME" /> die Verwendung der Funktion "Person hinzufügen" über den Nutzermanager zulässig.
 

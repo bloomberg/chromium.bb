@@ -607,6 +607,15 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Denne politik er valgfri. Hvis den ikke indstilles, udføres der ingen erstatning af søgetermer.
 
           Denne politik respekteres kun, hvis politikken 'DefaultSearchProviderEnabled' aktiveres.</translation>
+<translation id="306887062252197004">Med denne politik kan brugere af funktionen WebDriver tilsidesætte
+      politikker, der kan forstyrre processen.
+
+      Politikken deaktiverer i øjeblikket politikkerne SitePerProcess og IsolateOrigins.
+
+      Hvis politikken er aktiveret, kan WebDriver tilsidesætte inkompatible
+      politikker.
+      Hvis politikken er deaktiveret eller ikke er konfigureret, kan WebDriver ikke
+      tilsidesætte inkompatible politikker.</translation>
 <translation id="3069958900488014740">Tillader deaktivering af WPAD-optimering (Web Proxy Auto-Discovery) i <ph name="PRODUCT_NAME" />.
 
       Hvis denne politik angives som Falsk, deaktiveres WPAD-optimering, så <ph name="PRODUCT_NAME" /> skal vente længere på DNS-baserede WPAD-servere. Hvis politikken ikke er indstillet, eller hvis den er aktiveret, er WPAD-optimering aktiveret.
@@ -745,13 +754,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3687282113223807271">Tjenesten Beskyttet browsing viser en advarselsside, når brugerne navigerer til websites, der er markeret som potentielt skadelige. Denne indstilling forhindrer, at brugerne kan fortsætte fra advarselssiden til det skadelige website. Hvis denne indstilling er deaktiveret eller ikke er angivet, kan brugerne vælge at gå til det markerede website, efter advarslen er blevet vist. Se https://developers.google.com/safe-browsing for flere oplysninger om Beskyttet browsing.</translation>
 <translation id="3709266154059827597">Konfigurer sortliste for installation af udvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
-<translation id="3732106275571017176">Med denne indstilling har brugerne tilladelse til at skifte mellem Google-konti i browservinduets indholdsområde, når de er logget ind på deres <ph name="PRODUCT_OS_NAME" />-enhed.
-
-      Hvis denne politik er indstillet til falsk, er der ikke tilladelse til at logge ind på en anden konto fra indholdsområdet i en browser, der ikke er i inkognitotilstand.
-
-      Hvis denne politik ikke er indstillet eller er indstillet til sand, anvendes standardadfærden: Det er tilladt at logge ind på en anden konto fra indholdsområdet i browseren, medmindre der er tale om en underordnet konto, hvor den er blokeret for et indholdsområde, der ikke er i inkognitotilstand.
-
-      Hvis det ikke er tilladt at logge ind på en anden konto via inkognitotilstanden, kan du overveje at blokere denne tilstand ved hjælp af politikken IncognitoModeAvailability.</translation>
 <translation id="3736879847913515635">Aktivér tilføjelse af personer i brugeradministration</translation>
 <translation id="3737544779868348650">Enhedens hostname på netværket</translation>
 <translation id="3750220015372671395">Bloker nøglegenerering på disse websites</translation>
@@ -1173,6 +1175,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4899708173828500852">Aktiver Beskyttet browsing</translation>
 <translation id="4906194810004762807">Opdateringsfrekvens for enhedspolitik</translation>
 <translation id="4917385247580444890">Stærk</translation>
+<translation id="4923806312383904642">Tillad, at WebDriver tilsidesætter inkompatible politikker</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">Hvis denne politik er indstillet til sand eller ikke konfigureret, tillader <ph name="PRODUCT_NAME" /> tilføjelse af personer fra brugeradministration.
 

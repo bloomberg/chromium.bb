@@ -310,6 +310,7 @@
       अपनी प्रॉक्सी सेटिंग जाँचें या अपने नेटवर्क व्यवस्थापक से संपर्क करें. यदि आपको विश्वास नहीं हो
       कि आप किसी प्रॉक्सी सर्वर का उपयोग कर रहे हैं, तो:
       <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="SERVER_NAME" /> पर <ph name="PRINTER_NAME" /></translation>
 <translation id="320323717674993345">भुगतान रद्द करें</translation>
 <translation id="3207960819495026254">बुकमार्क किया गया</translation>
 <translation id="3209375525920864198">कृपया सत्र का मान्य नाम डालें.</translation>

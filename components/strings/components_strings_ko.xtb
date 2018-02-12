@@ -310,6 +310,7 @@
       프록시 서버가 작동하는지 확인하세요. 프록시 서버를 사용하지 않으려면
       다음 단계를 따르세요.
       <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="SERVER_NAME" />의 <ph name="PRINTER_NAME" /></translation>
 <translation id="320323717674993345">결제 취소</translation>
 <translation id="3207960819495026254">북마크됨</translation>
 <translation id="3209375525920864198">올바른 세션 이름을 입력하세요.</translation>

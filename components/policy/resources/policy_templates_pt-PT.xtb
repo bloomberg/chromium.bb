@@ -768,13 +768,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Veja https://developers.google.com/safe-browsing para mais informações sobre a Navegação segura.</translation>
 <translation id="3709266154059827597">Configurar lista negra de instalação de extensões</translation>
 <translation id="3711895659073496551">Suspenso</translation>
-<translation id="3732106275571017176">Esta definição permite que os utilizadores alternem entre Contas Google na área de conteúdo da respetiva janela do navegador após iniciarem sessão no dispositivo <ph name="PRODUCT_OS_NAME" />.
-
-      Se esta política estiver definida como falsa, não é permitido iniciar sessão numa conta diferente a partir de uma área de conteúdo do navegador que não esteja em navegação anónima.
-
-      Se esta política não estiver definida ou estiver definida como verdadeira, é utilizado o comportamento predefinido: é permitido iniciar sessão numa conta diferente a partir da área de conteúdo do navegador, exceto para contas de criança, em que está bloqueado para uma área de conteúdo do navegador que não esteja em navegação anónima.
-
-      Caso o início de sessão numa conta diferente não deva ser permitido através do modo de navegação anónima, considere bloquear esse modo através da política IncognitoModeAvailability.</translation>
 <translation id="3736879847913515635">Ativar a opção para adicionar uma pessoa no gestor de utilizadores</translation>
 <translation id="3737544779868348650">Nome do anfitrião da rede do dispositivo</translation>
 <translation id="3750220015372671395">Bloquear a geração de chaves nestes sites</translation>

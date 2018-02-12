@@ -1242,7 +1242,6 @@
 <translation id="2890678560483811744">參照的網頁超出範圍</translation>
 <translation id="2893168226686371498">預設瀏覽器</translation>
 <translation id="2893453364759632532">視窗靠下</translation>
-<translation id="289426338439836048">其他行動網路...</translation>
 <translation id="289644616180464099">SIM 卡已鎖定</translation>
 <translation id="289695669188700754">金鑰識別碼：<ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">你確定要開啟 <ph name="TAB_COUNT" /> 分頁嗎？</translation>
@@ -1442,7 +1441,6 @@
 <translation id="3190558889382726167">密碼已儲存</translation>
 <translation id="3192947282887913208">音訊檔</translation>
 <translation id="3194737229810486521"><ph name="URL" /> 要求在你的裝置上永久儲存資料</translation>
-<translation id="3195213714973468956"><ph name="SERVER_NAME" /> 上的 <ph name="PRINTER_NAME" /></translation>
 <translation id="3199127022143353223">伺服器</translation>
 <translation id="3202131003361292969">路徑</translation>
 <translation id="3202173864863109533">分頁音訊已關閉。</translation>
@@ -1482,7 +1480,6 @@
 <translation id="3268451620468152448">開啟的分頁</translation>
 <translation id="3269069891205016797">系統會在你登出後將你的資訊從裝置上移除。</translation>
 <translation id="3269093882174072735">載入圖片</translation>
-<translation id="3269889795238950578">這個網頁可以讀取已複製到剪貼簿的文字和圖片。</translation>
 <translation id="326999365752735949">正在下載差異部分</translation>
 <translation id="3270965368676314374">讀取、變更及刪除你電腦中的相片、音樂及其他媒體</translation>
 <translation id="327147043223061465">顯示所有 Cookie 和網站資料</translation>
@@ -1951,7 +1948,6 @@
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">從 IE 匯入</translation>
 <translation id="3950820424414687140">登入</translation>
-<translation id="3950870029767307261">這個網頁無法讀取已複製到剪貼簿的文字和圖片</translation>
 <translation id="3954354850384043518">下載中</translation>
 <translation id="3955193568934677022">允許網站播放受保護的內容 (建議)</translation>
 <translation id="3956702100721821638">無法連上 Google Play</translation>
@@ -5140,7 +5136,6 @@
 <translation id="9157697743260533322">無法為所有使用者設定自動更新作業 (預先啟動錯誤：<ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">糟糕！驗證過程中發生網路通訊問題，請檢查你的網路連線，然後再試一次。</translation>
 <translation id="9161070040817969420">子頁框：<ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">子母畫面</translation>
 <translation id="9169496697824289689">查看鍵盤快速鍵</translation>
 <translation id="9170397650136757332">現在請稍微移動你的手指，讓系統擷取完整的指紋</translation>
 <translation id="9170848237812810038">取消(&amp;U)</translation>

@@ -1239,7 +1239,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2890678560483811744">Посочената страница е извън обхват</translation>
 <translation id="2893168226686371498">Браузър по подразбиране</translation>
 <translation id="2893453364759632532">Преместване на прозореца надолу</translation>
-<translation id="289426338439836048">Друга мобилна мрежа...</translation>
 <translation id="289644616180464099">SIM картата е заключена</translation>
 <translation id="289695669188700754">Идентификатор (ИД) на ключ: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Наистина ли искате да отворите <ph name="TAB_COUNT" /> раздела?</translation>
@@ -1439,7 +1438,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3190558889382726167">Паролата бе запазена</translation>
 <translation id="3192947282887913208">Аудиофайлове</translation>
 <translation id="3194737229810486521"><ph name="URL" /> иска да съхранява за постоянно данни на устройството ви</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> на <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Сървъри</translation>
 <translation id="3202131003361292969">Път</translation>
 <translation id="3202173864863109533">Звукът на този раздел е спрян.</translation>
@@ -1479,7 +1477,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3268451620468152448">Отворени раздели</translation>
 <translation id="3269069891205016797">Информацията ви ще бъде премахната от устройството, когато излезете от профила си.</translation>
 <translation id="3269093882174072735">Зареждане на изображението</translation>
-<translation id="3269889795238950578">Тази страница може да преглежда текста и изображенията, копирани в буферната памет.</translation>
 <translation id="326999365752735949">Файлът с разликите се изтегля</translation>
 <translation id="3270965368676314374">Четене, промяна и изтриване на снимки, музика и друга мултимедия от компютъра ви</translation>
 <translation id="327147043223061465">Преглед на всички „бисквитки“ и данни за сайтове</translation>
@@ -1949,7 +1946,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Импортирани от Internet Explorer</translation>
 <translation id="3950820424414687140">Вход</translation>
-<translation id="3950870029767307261">Тази страница няма право да преглежда текста и изображенията, копирани в буферната памет</translation>
 <translation id="3954354850384043518">В ход</translation>
 <translation id="3955193568934677022">Разрешаване на сайтовете да възпроизвеждат защитено съдържание (препоръчително)</translation>
 <translation id="3956702100721821638">Не можа да се установи връзка с Google Play</translation>
@@ -5144,7 +5140,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="9157697743260533322">Настройването на автоматични актуализации за всички потребители не бе успешно (грешка при стартирането на предстартовия процес: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ами сега!  При удостоверяването възникна проблем във връзката с мрежата.  Моля, проверете я и опитайте отново.</translation>
 <translation id="9161070040817969420">Подрамки за: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">Картина в картината</translation>
 <translation id="9169496697824289689">Преглед на клавишните комбинации</translation>
 <translation id="9170397650136757332">Сега преместете малко пръста си, за да бъдат заснети всички части от отпечатъка ви</translation>
 <translation id="9170848237812810038">&amp;Отмяна</translation>
