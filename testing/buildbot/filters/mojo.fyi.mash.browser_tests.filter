@@ -262,6 +262,3 @@
 -EnterpriseEnrollmentTest.TestAuthCodeGetsProperlyReceivedFromGaia
 -PowerPolicyLoginScreenBrowserTest.SetDevicePolicy
 -EnterpriseEnrollmentTest.TestActiveDirectoryEnrollment_Success
-
-# Flaky timeouts. http://crbug.com/810935
--AppViewTest/TestAppViewConnectFollowingPreviousConnect/0
