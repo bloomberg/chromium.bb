@@ -7,14 +7,13 @@
 
 #include "core/CoreExport.h"
 #include "platform/LayoutUnit.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/geometry/LayoutSize.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
 
 namespace blink {
 
 class LayoutPoint;
+class LayoutSize;
 struct NGLogicalOffset;
 struct NGPhysicalSize;
 
@@ -46,14 +45,13 @@ struct CORE_EXPORT NGPhysicalOffset {
 
   // Conversions from/to existing code. New code prefers type safety for
   // logical/physical distinctions.
-  explicit NGPhysicalOffset(const LayoutPoint& point)
-      : left(point.X()), top(point.Y()) {}
-  explicit NGPhysicalOffset(const LayoutSize& size)
-      : left(size.Width()), top(size.Height()) {}
+  explicit NGPhysicalOffset(const LayoutPoint& point);
+  explicit NGPhysicalOffset(const LayoutSize& size);
 
   // Conversions from/to existing code. New code prefers type safety for
   // logical/physical distinctions.
-  LayoutPoint ToLayoutPoint() const { return {left, top}; }
+  LayoutPoint ToLayoutPoint() const;
+  LayoutSize ToLayoutSize() const;
 
   String ToString() const;
 };
