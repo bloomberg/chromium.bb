@@ -2973,6 +2973,8 @@ void SpdySession::OnAltSvc(
     if (origin.empty())
       return;
     const GURL gurl(origin);
+    if (!gurl.is_valid() || gurl.host().empty())
+      return;
     if (!gurl.SchemeIs(url::kHttpsScheme))
       return;
     SSLInfo ssl_info;
