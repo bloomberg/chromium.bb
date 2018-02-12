@@ -60,17 +60,16 @@ TEST(NinjaActionTargetWriter, ActionNoSources) {
   NinjaActionTargetWriter writer(&target, out);
   writer.Run();
 
-  const char expected[] =
-      "rule __foo_bar___rule\n"
-      "  command = /usr/bin/python ../../foo/script.py\n"
-      "  description = ACTION //foo:bar()\n"
-      "  restat = 1\n"
-      "build obj/foo/bar.inputdeps.stamp: stamp ../../foo/script.py "
-          "../../foo/included.txt\n"
-      "\n"
-      "build foo.out: __foo_bar___rule | obj/foo/bar.inputdeps.stamp\n"
-      "\n"
-      "build obj/foo/bar.stamp: stamp foo.out\n";
+  const char* expected = 1 /* skip initial newline */ + R"(
+rule __foo_bar___rule
+  command = /usr/bin/python ../../foo/script.py
+  description = ACTION //foo:bar()
+  restat = 1
+
+build foo.out: __foo_bar___rule | ../../foo/script.py ../../foo/included.txt
+
+build obj/foo/bar.stamp: stamp foo.out
+)";
   EXPECT_EQ(expected, out.str());
 }
 
@@ -105,18 +104,17 @@ TEST(NinjaActionTargetWriter, ActionNoSourcesPool) {
   NinjaActionTargetWriter writer(&target, out);
   writer.Run();
 
-  const char expected[] =
-      "rule __foo_bar___rule\n"
-      "  command = /usr/bin/python ../../foo/script.py\n"
-      "  description = ACTION //foo:bar()\n"
-      "  restat = 1\n"
-      "build obj/foo/bar.inputdeps.stamp: stamp ../../foo/script.py "
-          "../../foo/included.txt\n"
-      "\n"
-      "build foo.out: __foo_bar___rule | obj/foo/bar.inputdeps.stamp\n"
-      "  pool = foo_pool\n"
-      "\n"
-      "build obj/foo/bar.stamp: stamp foo.out\n";
+  const char* expected = 1 /* skip initial newline */ + R"(
+rule __foo_bar___rule
+  command = /usr/bin/python ../../foo/script.py
+  description = ACTION //foo:bar()
+  restat = 1
+
+build foo.out: __foo_bar___rule | ../../foo/script.py ../../foo/included.txt
+  pool = foo_pool
+
+build obj/foo/bar.stamp: stamp foo.out
+)";
   EXPECT_EQ(expected, out.str());
 }
 
@@ -152,10 +150,9 @@ TEST(NinjaActionTargetWriter, ActionWithSources) {
       "  command = /usr/bin/python ../../foo/script.py\n"
       "  description = ACTION //foo:bar()\n"
       "  restat = 1\n"
-      "build obj/foo/bar.inputdeps.stamp: stamp ../../foo/script.py "
-          "../../foo/included.txt ../../foo/source.txt\n"
       "\n"
-      "build foo.out: __foo_bar___rule | obj/foo/bar.inputdeps.stamp\n"
+      "build foo.out: __foo_bar___rule | ../../foo/script.py "
+      "../../foo/included.txt ../../foo/source.txt\n"
       "\n"
       "build obj/foo/bar.stamp: stamp foo.out\n";
   EXPECT_EQ(expected_linux, out.str());

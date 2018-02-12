@@ -70,8 +70,9 @@ void NinjaCopyTargetWriter::WriteCopyRules(
       GetNinjaRulePrefixForToolchain(settings_) +
       Toolchain::ToolTypeToName(Toolchain::TYPE_COPY);
 
-  OutputFile input_dep =
-      WriteInputDepsStampAndGetDep(std::vector<const Target*>());
+  size_t num_stamp_uses = target_->sources().size();
+  std::vector<OutputFile> input_deps = WriteInputDepsStampAndGetDep(
+      std::vector<const Target*>(), num_stamp_uses);
 
   // Note that we don't write implicit deps for copy steps. "copy" only
   // depends on the output files themselves, rather than having includes
@@ -109,9 +110,9 @@ void NinjaCopyTargetWriter::WriteCopyRules(
     path_output_.WriteFile(out_, output_file);
     out_ << ": " << tool_name << " ";
     path_output_.WriteFile(out_, input_file);
-    if (!input_dep.value().empty()) {
-      out_ << " || ";
-      path_output_.WriteFile(out_, input_dep);
+    if (!input_deps.empty()) {
+      out_ << " ||";
+      path_output_.WriteFiles(out_, input_deps);
     }
     out_ << std::endl;
   }

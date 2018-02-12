@@ -293,16 +293,24 @@ void NinjaBinaryTargetWriter::Run() {
   // this case it's sufficient to ensure that the upstream dependencies are
   // built first. This is exactly what Ninja's order-only dependencies
   // expresses.
-  OutputFile order_only_dep =
-      WriteInputDepsStampAndGetDep(std::vector<const Target*>());
+  //
+  // The order only deps are referenced by each source file compile,
+  // but also by PCH compiles.  The latter are annoying to count, so omit
+  // them here.  This means that binary targets with a single source file
+  // that also use PCH files won't have a stamp file even though having
+  // one would make output ninja file size a bit lower. That's ok, binary
+  // targets with a single source are rare.
+  size_t num_stamp_uses = target_->sources().size();
+  std::vector<OutputFile> order_only_deps = WriteInputDepsStampAndGetDep(
+      std::vector<const Target*>(), num_stamp_uses);
 
   // For GCC builds, the .gch files are not object files, but still need to be
   // added as explicit dependencies below. The .gch output files are placed in
   // |pch_other_files|. This is to prevent linking against them.
   std::vector<OutputFile> pch_obj_files;
   std::vector<OutputFile> pch_other_files;
-  WritePCHCommands(used_types, input_dep, order_only_dep,
-                   &pch_obj_files, &pch_other_files);
+  WritePCHCommands(used_types, input_dep, order_only_deps, &pch_obj_files,
+                   &pch_other_files);
   std::vector<OutputFile>* pch_files = !pch_obj_files.empty() ?
       &pch_obj_files : &pch_other_files;
 
@@ -320,7 +328,8 @@ void NinjaBinaryTargetWriter::Run() {
   //    object file list.
   std::vector<OutputFile> obj_files;
   std::vector<SourceFile> other_files;
-  WriteSources(*pch_files, input_dep, order_only_dep, &obj_files, &other_files);
+  WriteSources(*pch_files, input_dep, order_only_deps, &obj_files,
+               &other_files);
 
   // Link all MSVC pch object files. The vector will be empty on GCC toolchains.
   obj_files.insert(obj_files.end(), pch_obj_files.begin(), pch_obj_files.end());
@@ -499,7 +508,7 @@ void NinjaBinaryTargetWriter::WriteOneFlag(
 void NinjaBinaryTargetWriter::WritePCHCommands(
     const SourceFileTypeSet& used_types,
     const OutputFile& input_dep,
-    const OutputFile& order_only_dep,
+    const std::vector<OutputFile>& order_only_deps,
     std::vector<OutputFile>* object_files,
     std::vector<OutputFile>* other_files) {
   if (!target_->config_values().has_precompiled_headers())
@@ -509,29 +518,26 @@ void NinjaBinaryTargetWriter::WritePCHCommands(
   if (tool_c &&
       tool_c->precompiled_header_type() != Tool::PCH_NONE &&
       used_types.Get(SOURCE_C)) {
-    WritePCHCommand(SUBSTITUTION_CFLAGS_C,
-                    Toolchain::TYPE_CC,
-                    tool_c->precompiled_header_type(),
-                    input_dep, order_only_dep, object_files, other_files);
+    WritePCHCommand(SUBSTITUTION_CFLAGS_C, Toolchain::TYPE_CC,
+                    tool_c->precompiled_header_type(), input_dep,
+                    order_only_deps, object_files, other_files);
   }
   const Tool* tool_cxx = target_->toolchain()->GetTool(Toolchain::TYPE_CXX);
   if (tool_cxx &&
       tool_cxx->precompiled_header_type() != Tool::PCH_NONE &&
       used_types.Get(SOURCE_CPP)) {
-    WritePCHCommand(SUBSTITUTION_CFLAGS_CC,
-                    Toolchain::TYPE_CXX,
-                    tool_cxx->precompiled_header_type(),
-                    input_dep, order_only_dep, object_files, other_files);
+    WritePCHCommand(SUBSTITUTION_CFLAGS_CC, Toolchain::TYPE_CXX,
+                    tool_cxx->precompiled_header_type(), input_dep,
+                    order_only_deps, object_files, other_files);
   }
 
   const Tool* tool_objc = target_->toolchain()->GetTool(Toolchain::TYPE_OBJC);
   if (tool_objc &&
       tool_objc->precompiled_header_type() == Tool::PCH_GCC &&
       used_types.Get(SOURCE_M)) {
-    WritePCHCommand(SUBSTITUTION_CFLAGS_OBJC,
-                    Toolchain::TYPE_OBJC,
-                    tool_objc->precompiled_header_type(),
-                    input_dep, order_only_dep, object_files, other_files);
+    WritePCHCommand(SUBSTITUTION_CFLAGS_OBJC, Toolchain::TYPE_OBJC,
+                    tool_objc->precompiled_header_type(), input_dep,
+                    order_only_deps, object_files, other_files);
   }
 
   const Tool* tool_objcxx =
@@ -539,10 +545,9 @@ void NinjaBinaryTargetWriter::WritePCHCommands(
   if (tool_objcxx &&
       tool_objcxx->precompiled_header_type() == Tool::PCH_GCC &&
       used_types.Get(SOURCE_MM)) {
-    WritePCHCommand(SUBSTITUTION_CFLAGS_OBJCC,
-                    Toolchain::TYPE_OBJCXX,
-                    tool_objcxx->precompiled_header_type(),
-                    input_dep, order_only_dep, object_files, other_files);
+    WritePCHCommand(SUBSTITUTION_CFLAGS_OBJCC, Toolchain::TYPE_OBJCXX,
+                    tool_objcxx->precompiled_header_type(), input_dep,
+                    order_only_deps, object_files, other_files);
   }
 }
 
@@ -551,16 +556,16 @@ void NinjaBinaryTargetWriter::WritePCHCommand(
     Toolchain::ToolType tool_type,
     Tool::PrecompiledHeaderType header_type,
     const OutputFile& input_dep,
-    const OutputFile& order_only_dep,
+    const std::vector<OutputFile>& order_only_deps,
     std::vector<OutputFile>* object_files,
     std::vector<OutputFile>* other_files) {
   switch (header_type) {
     case Tool::PCH_MSVC:
-      WriteWindowsPCHCommand(flag_type, tool_type, input_dep, order_only_dep,
+      WriteWindowsPCHCommand(flag_type, tool_type, input_dep, order_only_deps,
                              object_files);
       break;
     case Tool::PCH_GCC:
-      WriteGCCPCHCommand(flag_type, tool_type, input_dep, order_only_dep,
+      WriteGCCPCHCommand(flag_type, tool_type, input_dep, order_only_deps,
                          other_files);
       break;
     case Tool::PCH_NONE:
@@ -573,7 +578,7 @@ void NinjaBinaryTargetWriter::WriteGCCPCHCommand(
     SubstitutionType flag_type,
     Toolchain::ToolType tool_type,
     const OutputFile& input_dep,
-    const OutputFile& order_only_dep,
+    const std::vector<OutputFile>& order_only_deps,
     std::vector<OutputFile>* gch_files) {
   // Compute the pch output file (it will be language-specific).
   std::vector<OutputFile> outputs;
@@ -589,7 +594,7 @@ void NinjaBinaryTargetWriter::WriteGCCPCHCommand(
 
   // Build line to compile the file.
   WriteCompilerBuildLine(target_->config_values().precompiled_source(),
-                         extra_deps, order_only_dep, tool_type, outputs);
+                         extra_deps, order_only_deps, tool_type, outputs);
 
   // This build line needs a custom language-specific flags value. Rule-specific
   // variables are just indented underneath the rule line.
@@ -625,7 +630,7 @@ void NinjaBinaryTargetWriter::WriteWindowsPCHCommand(
     SubstitutionType flag_type,
     Toolchain::ToolType tool_type,
     const OutputFile& input_dep,
-    const OutputFile& order_only_dep,
+    const std::vector<OutputFile>& order_only_deps,
     std::vector<OutputFile>* object_files) {
   // Compute the pch output file (it will be language-specific).
   std::vector<OutputFile> outputs;
@@ -641,7 +646,7 @@ void NinjaBinaryTargetWriter::WriteWindowsPCHCommand(
 
   // Build line to compile the file.
   WriteCompilerBuildLine(target_->config_values().precompiled_source(),
-                         extra_deps, order_only_dep, tool_type, outputs);
+                         extra_deps, order_only_deps, tool_type, outputs);
 
   // This build line needs a custom language-specific flags value. Rule-specific
   // variables are just indented underneath the rule line.
@@ -660,7 +665,7 @@ void NinjaBinaryTargetWriter::WriteWindowsPCHCommand(
 void NinjaBinaryTargetWriter::WriteSources(
     const std::vector<OutputFile>& pch_deps,
     const OutputFile& input_dep,
-    const OutputFile& order_only_dep,
+    const std::vector<OutputFile>& order_only_deps,
     std::vector<OutputFile>* object_files,
     std::vector<SourceFile>* other_files) {
   object_files->reserve(object_files->size() + target_->sources().size());
@@ -709,7 +714,7 @@ void NinjaBinaryTargetWriter::WriteSources(
           }
         }
       }
-      WriteCompilerBuildLine(source, deps, order_only_dep, tool_type,
+      WriteCompilerBuildLine(source, deps, order_only_deps, tool_type,
                              tool_outputs);
     }
 
@@ -723,7 +728,7 @@ void NinjaBinaryTargetWriter::WriteSources(
 void NinjaBinaryTargetWriter::WriteCompilerBuildLine(
     const SourceFile& source,
     const std::vector<OutputFile>& extra_deps,
-    const OutputFile& order_only_dep,
+    const std::vector<OutputFile>& order_only_deps,
     Toolchain::ToolType tool_type,
     const std::vector<OutputFile>& outputs) {
   out_ << "build";
@@ -735,15 +740,12 @@ void NinjaBinaryTargetWriter::WriteCompilerBuildLine(
 
   if (!extra_deps.empty()) {
     out_ << " |";
-    for (const OutputFile& dep : extra_deps) {
-      out_ << " ";
-      path_output_.WriteFile(out_, dep);
-    }
+    path_output_.WriteFiles(out_, extra_deps);
   }
 
-  if (!order_only_dep.value().empty()) {
-    out_ << " || ";
-    path_output_.WriteFile(out_, order_only_dep);
+  if (!order_only_deps.empty()) {
+    out_ << " ||";
+    path_output_.WriteFiles(out_, order_only_deps);
   }
   out_ << std::endl;
 }

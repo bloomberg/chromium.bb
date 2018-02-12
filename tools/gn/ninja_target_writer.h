@@ -42,11 +42,14 @@ class NinjaTargetWriter {
 
   // Writes to the output stream a stamp rule for input dependencies, and
   // returns the file to be appended to source rules that encodes the
-  // order-only dependencies for the current target. The returned OutputFile
-  // will be empty if there are no implicit dependencies and no extra target
-  // dependencies passed in.
-  OutputFile WriteInputDepsStampAndGetDep(
-      const std::vector<const Target*>& extra_hard_deps) const;
+  // order-only dependencies for the current target.
+  // If num_stamp_uses is small, this might return all input dependencies
+  // directly, without writing a stamp file.
+  // If there are no implicit dependencies and no extra target dependencies
+  // are passed in, this returns an empty vector.
+  std::vector<OutputFile> WriteInputDepsStampAndGetDep(
+      const std::vector<const Target*>& extra_hard_deps,
+      size_t num_stamp_uses) const;
 
   // Writes to the output file a final stamp rule for the target that stamps
   // the given list of files. This function assumes the stamp is for the target
