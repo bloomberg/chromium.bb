@@ -173,6 +173,7 @@
       'Linux Builder Goma Canary': 'release_bot',
       'Linux x64 Goma Canary (clobber)': 'release_bot',
       'Linux x64 Goma Canary LocalOutputCache': 'release_bot',
+      'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang',
 
       'Chromium Mac 10.10 MacViews': 'mac_views_browser_release_bot',
       'Chromium Mac 10.11': 'release_bot',
