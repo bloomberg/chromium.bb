@@ -156,7 +156,7 @@ class SimpleChromeArtifactsStage(generic_stages.BoardSpecificBuilderStage,
       extra_env['USE'] = ' '.join(self._run.config.useflags)
     in_chroot_path = path_util.ToChrootPath(self.archive_path)
     cmd = ['cros_generate_sysroot', '--out-dir', in_chroot_path, '--board',
-           self._current_board, '--package', constants.CHROME_CP]
+           self._current_board, '--deps-only', '--package', constants.CHROME_CP]
     cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True,
                               extra_env=extra_env)
     self._upload_queue.put([constants.CHROME_SYSROOT_TAR])

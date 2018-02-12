@@ -761,3 +761,40 @@ class ArchivingStage(generic_stages.BoardSpecificBuilderStage,
   def __init__(self, builder_run, board, archive_stage, **kwargs):
     super(ArchivingStage, self).__init__(builder_run, board, **kwargs)
     self.archive_stage = archive_stage
+
+# This stage generates and uploads the sysroot for the build
+# containing all the packages built previously in build packages stage.
+class GenerateSysrootStage(generic_stages.BoardSpecificBuilderStage,
+                           generic_stages.ArchivingStageMixin):
+  """Generate and upload the sysroot for the board."""
+
+  def __init__(self, *args, **kwargs):
+    super(GenerateSysrootStage, self).__init__(*args, **kwargs)
+    self._upload_queue = multiprocessing.Queue()
+
+  def _GenerateSysroot(self):
+    """Generate and upload a sysroot for the board."""
+    assert self.archive_path.startswith(self._build_root)
+    extra_env = {}
+    # TODO: Query the list of packages instead of harcoding it.
+    pkgs = ('virtual/target-os '
+            'virtual/target-os-dev '
+            'virtual/target-os-test '
+            'virtual/target-os-factory '
+            'virtual/target-os-factory-shim '
+            'chromeos-base/autotest-all'
+           )
+    sysroot_tarball = 'sysroot_%s.tar.xz' % ("virtual_target-os")
+    if self._run.config.useflags:
+      extra_env['USE'] = ' '.join(self._run.config.useflags)
+    in_chroot_path = path_util.ToChrootPath(self.archive_path)
+    cmd = ['cros_generate_sysroot', '--out-dir', in_chroot_path, '--board',
+           self._current_board, '--package', pkgs]
+    cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True,
+                              extra_env=extra_env)
+    self._upload_queue.put([sysroot_tarball])
+
+  def PerformStage(self):
+    steps = [self._GenerateSysroot]
+    with self.ArtifactUploader(self._upload_queue, archive=False):
+      self._GenerateSysroot()

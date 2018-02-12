@@ -83,6 +83,16 @@ class InterfaceTest(cros_test_lib.TempDirTestCase):
     self.assertEquals(
         options.out_file, 'sysroot_chromeos-base_chromeos-chrome.tar.xz')
 
+  def testMultiplePkgsTargetName(self):
+    """Test getting the right target name with multiple pkgs."""
+    pkgs = "%s virtual/target-os" %constants.CHROME_CP
+    options = cros_gen.ParseCommandLine(
+        ['--board', BOARD, '--out-dir', self.tempdir,
+         '--package', pkgs])
+
+    self.assertEquals(
+        options.out_file, 'sysroot_chromeos-base_chromeos-chrome.tar.xz')
+
   def testExistingTarget(self):
     """Erroring out on pre-existing target."""
     options = self._Parse(['--out-file', TAR_NAME])

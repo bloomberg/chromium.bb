@@ -509,3 +509,30 @@ class ArchivingStageTest(generic_stages_unittest.AbstractStageTestCase,
         self._run, self._current_board)
     return artifact_stages.ArchivingStage(
         self._run, self._current_board, archive_stage)
+
+class GenerateSysrootStageTest(generic_stages_unittest.AbstractStageTestCase,
+                               cbuildbot_unittest.SimpleBuilderTestCase):
+  """Exercise GenerateSysrootStage functionality."""
+
+  RELEASE_TAG = ''
+
+  # pylint: disable=protected-access
+
+  def setUp(self):
+    self._Prepare()
+    self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    self.rc_mock.SetDefaultCmdResult()
+
+  def ConstructStage(self):
+    self._run.GetArchive().SetupArchivePath()
+    return artifact_stages.GenerateSysrootStage(self._run, self._current_board)
+
+  def testGenerateSysroot(self):
+    """Test that the sysroot generation was called correctly."""
+    stage = self.ConstructStage()
+    self.PatchObject(path_util, 'ToChrootPath', return_value='',
+                     autospec=True)
+    self.PatchObject(stage._upload_queue, 'put', autospec=True)
+    stage._GenerateSysroot()
+    sysroot_tarball = 'sysroot_%s.tar.xz' % ("virtual_target-os")
+    stage._upload_queue.put.assert_called_with([sysroot_tarball])
