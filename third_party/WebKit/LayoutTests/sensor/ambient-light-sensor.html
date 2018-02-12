@@ -27,5 +27,6 @@ function verify_sensor_reading({illuminance, timestamp}, is_null) {
 runGenericSensorTests(AmbientLightSensor,
                       update_sensor_reading,
                       verify_sensor_reading,
+                      null,
                       ['ambient-light-sensor']);
 </script>

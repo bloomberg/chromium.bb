@@ -13,17 +13,16 @@ if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
 
 const kDefaultReading = [1.12345, 2.12345, 3.12345];
+const kMappedReading = [-2.12345, 1.12345, 3.12345];
 
 function update_sensor_reading(buffer) {
   buffer.set(kDefaultReading, 2);
 }
 
-function verify_sensor_reading({x, y, z, timestamp}, is_null) {
-  if (is_null)
-    return [x, y, z, timestamp].every(r => r === null);
-  return [x, y, z].every((r, i) => r === kDefaultReading[i]) && timestamp !== null;
-}
-
-runGenericSensorTests(Gyroscope, update_sensor_reading, verify_sensor_reading, ['gyroscope']);
-
+runGenericSensorTests(
+    Gyroscope,
+    update_sensor_reading,
+    verify_xyz_sensor_reading.bind(null, kDefaultReading),
+    verify_xyz_sensor_reading.bind(null, kMappedReading),
+    ['gyroscope']);
 </script>
