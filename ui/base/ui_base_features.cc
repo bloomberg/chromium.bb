@@ -14,8 +14,8 @@ namespace features {
 const base::Feature kDirectManipulationStylus = {
     "DirectManipulationStylus", base::FEATURE_ENABLED_BY_DEFAULT};
 // Enables using WM_POINTER instead of WM_TOUCH for touch events.
-const base::Feature kPointerEventsForTouch = {
-    "PointerEventsForTouch", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kPointerEventsForTouch = {"PointerEventsForTouch",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsUsingWMPointerForTouch() {
   return base::win::GetVersion() >= base::win::VERSION_WIN8 &&
