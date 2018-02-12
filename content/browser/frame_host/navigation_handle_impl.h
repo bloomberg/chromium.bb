@@ -156,6 +156,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const GURL& GetBaseURLForDataURL() override;
   const GlobalRequestID& GetGlobalRequestID() override;
   bool IsDownload() override;
+  bool IsFormSubmission() override;
   const base::Optional<std::string>& GetSuggestedFilename() override;
 
   // Resume and CancelDeferredNavigation must only be called by the
@@ -171,9 +172,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Used in tests.
   State state_for_testing() const { return state_; }
   void SetOnDeferCallbackForTesting(const base::Closure& on_defer_callback);
-
-  // Whether or not the navigation has been initiated by a form submission.
-  bool is_form_submission() const { return is_form_submission_; }
 
   // The NavigatorDelegate to notify/query for various navigation events.
   // Normally this is the WebContents, except if this NavigationHandle was

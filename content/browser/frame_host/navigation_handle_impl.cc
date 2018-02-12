@@ -535,6 +535,10 @@ bool NavigationHandleImpl::IsDownload() {
   return is_download_;
 }
 
+bool NavigationHandleImpl::IsFormSubmission() {
+  return is_form_submission_;
+}
+
 const base::Optional<std::string>&
 NavigationHandleImpl::GetSuggestedFilename() {
   return suggested_filename_;
