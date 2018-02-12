@@ -25,6 +25,7 @@
 #include "services/service_manager/sandbox/mac/common_v2.sb.h"
 #include "services/service_manager/sandbox/mac/gpu_v2.sb.h"
 #include "services/service_manager/sandbox/mac/nacl_loader.sb.h"
+#include "services/service_manager/sandbox/mac/pdf_compositor.sb.h"
 #include "services/service_manager/sandbox/mac/ppapi_v2.sb.h"
 #include "services/service_manager/sandbox/mac/renderer_v2.sb.h"
 #include "services/service_manager/sandbox/mac/utility.sb.h"
@@ -114,8 +115,10 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       case service_manager::SANDBOX_TYPE_RENDERER:
         profile += service_manager::kSeatbeltPolicyString_renderer_v2;
         break;
-      case service_manager::SANDBOX_TYPE_UTILITY:
       case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
+        profile += service_manager::kSeatbeltPolicyString_pdf_compositor;
+        break;
+      case service_manager::SANDBOX_TYPE_UTILITY:
       case service_manager::SANDBOX_TYPE_PROFILING:
         profile += service_manager::kSeatbeltPolicyString_utility;
         break;
@@ -137,13 +140,13 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       case service_manager::SANDBOX_TYPE_GPU:
       case service_manager::SANDBOX_TYPE_NACL_LOADER:
       case service_manager::SANDBOX_TYPE_RENDERER:
+      case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
         SetupCommonSandboxParameters(seatbelt_exec_client_.get());
         break;
       case service_manager::SANDBOX_TYPE_PPAPI:
         SetupPPAPISandboxParameters(seatbelt_exec_client_.get());
         break;
       case service_manager::SANDBOX_TYPE_UTILITY:
-      case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
       case service_manager::SANDBOX_TYPE_PROFILING:
         SetupUtilitySandboxParameters(seatbelt_exec_client_.get(),
                                       *command_line_.get());
