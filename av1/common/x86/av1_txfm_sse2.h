@@ -17,15 +17,12 @@
 #include "./av1_rtcd.h"
 #include "aom/aom_integer.h"
 #include "aom_dsp/x86/transpose_sse2.h"
+#include "aom_dsp/x86/txfm_common_sse2.h"
 #include "av1/common/av1_txfm.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define pair_set_epi16(a, b)                                            \
-  _mm_set_epi16((int16_t)(b), (int16_t)(a), (int16_t)(b), (int16_t)(a), \
-                (int16_t)(b), (int16_t)(a), (int16_t)(b), (int16_t)(a))
 
 #define btf_16_sse2(w0, w1, in0, in1, out0, out1) \
   {                                               \

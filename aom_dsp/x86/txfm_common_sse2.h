@@ -16,9 +16,8 @@
 #include "aom/aom_integer.h"
 #include "aom_dsp/x86/synonyms.h"
 
-#define pair_set_epi16(a, b)                                            \
-  _mm_set_epi16((int16_t)(b), (int16_t)(a), (int16_t)(b), (int16_t)(a), \
-                (int16_t)(b), (int16_t)(a), (int16_t)(b), (int16_t)(a))
+#define pair_set_epi16(a, b) \
+  _mm_set1_epi32((int32_t)(((uint16_t)(a)) | (((uint32_t)(b)) << 16)))
 
 #define dual_set_epi16(a, b)                                            \
   _mm_set_epi16((int16_t)(b), (int16_t)(b), (int16_t)(b), (int16_t)(b), \
