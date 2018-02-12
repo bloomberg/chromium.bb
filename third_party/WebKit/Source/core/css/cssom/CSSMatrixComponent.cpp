@@ -33,11 +33,10 @@ CSSMatrixComponent* CSSMatrixComponent::Create(
       matrix, options.hasIs2D() ? options.is2D() : matrix->is2D());
 }
 
-const DOMMatrix* CSSMatrixComponent::AsMatrix(ExceptionState&) const {
+DOMMatrix* CSSMatrixComponent::toMatrix(ExceptionState&) const {
   if (is2D() && !matrix_->is2D())
     return To2DMatrix(matrix_);
-
-  return matrix_.Get();
+  return DOMMatrix::Create(matrix_.Get());
 }
 
 CSSMatrixComponent* CSSMatrixComponent::FromCSSValue(

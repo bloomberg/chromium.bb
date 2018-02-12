@@ -142,7 +142,7 @@ void CSSScale::setZ(const CSSNumberish& z, ExceptionState& exception_state) {
   z_ = value;
 }
 
-const DOMMatrix* CSSScale::AsMatrix(ExceptionState& exception_state) const {
+DOMMatrix* CSSScale::toMatrix(ExceptionState& exception_state) const {
   CSSUnitValue* x = x_->to(CSSPrimitiveValue::UnitType::kNumber);
   CSSUnitValue* y = y_->to(CSSPrimitiveValue::UnitType::kNumber);
   CSSUnitValue* z = z_->to(CSSPrimitiveValue::UnitType::kNumber);

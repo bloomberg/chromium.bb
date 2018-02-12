@@ -48,9 +48,10 @@ class CORE_EXPORT CSSRotate final : public CSSTransformComponent {
   void setY(const CSSNumberish&, ExceptionState&);
   void setZ(const CSSNumberish&, ExceptionState&);
 
+  DOMMatrix* toMatrix(ExceptionState&) const final;
+
   // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const final { return kRotationType; }
-  const DOMMatrix* AsMatrix(ExceptionState&) const final;
   const CSSFunctionValue* ToCSSValue() const final;
 
   virtual void Trace(blink::Visitor* visitor) {

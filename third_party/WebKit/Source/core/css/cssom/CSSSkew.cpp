@@ -66,7 +66,7 @@ CSSSkew* CSSSkew::FromCSSValue(const CSSFunctionValue& value) {
   return nullptr;
 }
 
-const DOMMatrix* CSSSkew::AsMatrix(ExceptionState&) const {
+DOMMatrix* CSSSkew::toMatrix(ExceptionState&) const {
   CSSUnitValue* ax = ax_->to(CSSPrimitiveValue::UnitType::kRadians);
   CSSUnitValue* ay = ay_->to(CSSPrimitiveValue::UnitType::kRadians);
   DCHECK(ax);

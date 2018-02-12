@@ -54,7 +54,7 @@ DOMMatrix* CSSTransformValue::toMatrix(ExceptionState& exception_state) const {
   DOMMatrix* matrix = DOMMatrix::Create();
   for (size_t i = 0; i < transform_components_.size(); i++) {
     const DOMMatrix* matrixComponent =
-        transform_components_[i]->AsMatrix(exception_state);
+        transform_components_[i]->toMatrix(exception_state);
     if (matrixComponent) {
       matrix->multiplySelf(*matrixComponent);
     }

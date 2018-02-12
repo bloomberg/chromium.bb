@@ -32,13 +32,14 @@ class CORE_EXPORT CSSSkewX final : public CSSTransformComponent {
   CSSNumericValue* ax() { return ax_.Get(); }
   void setAx(CSSNumericValue*, ExceptionState&);
 
+  DOMMatrix* toMatrix(ExceptionState&) const final;
+
   // From CSSTransformComponent
   // Setting is2D for CSSSkewX does nothing.
   // https://drafts.css-houdini.org/css-typed-om/#dom-cssskew-is2d
   void setIs2D(bool is2D) final {}
 
   // Internal methods - from CSSTransformComponent.
-  const DOMMatrix* AsMatrix(ExceptionState&) const override;
   TransformComponentType GetType() const override { return kSkewXType; }
   const CSSFunctionValue* ToCSSValue() const override;
 
