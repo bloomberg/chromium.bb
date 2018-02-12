@@ -2974,6 +2974,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUseNewSettingsNameInDropdown)},
 
+    {"enable-autofill-native-dropdown-views",
+     flag_descriptions::kEnableAutofillNativeDropdownViewsName,
+     flag_descriptions::kEnableAutofillNativeDropdownViewsDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(autofill::kAutofillExpandedPopupViews)},
+
 #if defined(OS_WIN)
     {"windows10-custom-titlebar",
      flag_descriptions::kWindows10CustomTitlebarName,
