@@ -507,7 +507,6 @@ source_set("common") {
     "browser/aw_renderer_priority.h",
     "browser/aw_resource_context.cc",
     "browser/aw_resource_context.h",
-    "browser/aw_result_codes.h",
     "browser/aw_safe_browsing_blocking_page.cc",
     "browser/aw_safe_browsing_blocking_page.h",
     "browser/aw_safe_browsing_config_helper.cc",
