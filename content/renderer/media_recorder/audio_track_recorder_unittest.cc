@@ -15,7 +15,7 @@
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
-#include "content/renderer/media/media_stream_audio_source.h"
+#include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "media/audio/simple_sources.h"
 #include "media/base/audio_sample_types.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -12,7 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
-#include "content/renderer/media/media_stream_audio_source.h"
+#include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"

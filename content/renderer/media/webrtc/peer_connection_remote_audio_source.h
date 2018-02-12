@@ -9,8 +9,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "content/renderer/media/media_stream_audio_source.h"
-#include "content/renderer/media/media_stream_audio_track.h"
+#include "content/renderer/media/stream/media_stream_audio_source.h"
+#include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 
 namespace media {

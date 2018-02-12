@@ -4,7 +4,7 @@
 
 #include "content/renderer/pepper/pepper_video_capture_host.h"
 
-#include "content/renderer/media/media_stream_video_source.h"
+#include "content/renderer/media/stream/media_stream_video_source.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_media_device_manager.h"
 #include "content/renderer/pepper/pepper_platform_video_capture.h"

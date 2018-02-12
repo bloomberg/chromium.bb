@@ -69,7 +69,7 @@ struct NameValueStringConstraint {
 // be deleted from the files mentioned.
 // TODO(hta): remove comments before https://crbug.com/543997 is closed.
 
-// From content/renderer/media/media_stream_video_source.cc
+// From content/renderer/media/stream/media_stream_video_source.cc
 const char kMinAspectRatio[] = "minAspectRatio";
 const char kMaxAspectRatio[] = "maxAspectRatio";
 const char kMaxWidth[] = "maxWidth";
@@ -88,7 +88,7 @@ const char kMediaStreamRenderToAssociatedSink[] =
 // RenderToAssociatedSink will be going away in M50-M60 some time.
 const char kMediaStreamAudioHotword[] = "googHotword";
 // TODO(hta): googHotword should go away. https://crbug.com/577627
-// From content/renderer/media/media_stream_audio_processor_options.cc
+// From content/renderer/media/stream/media_stream_audio_processor_options.cc
 const char kEchoCancellation[] = "echoCancellation";
 const char kDisableLocalEcho[] = "disableLocalEcho";
 const char kGoogEchoCancellation[] = "googEchoCancellation";

@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "content/renderer/media/media_stream_audio_track.h"
+#include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "content/renderer/media/webrtc_local_audio_source_provider.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
