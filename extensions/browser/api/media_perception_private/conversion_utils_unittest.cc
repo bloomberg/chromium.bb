@@ -63,6 +63,15 @@ void InitializeFakeAudioPerception(mri::AudioPerception* audio_perception) {
   frame_spectrogram->add_values(0.3);
 }
 
+void InitializeFakeAudioVisualPerception(
+    mri::AudioVisualPerception* audio_visual_perception) {
+  audio_visual_perception->set_timestamp_us(91008);
+
+  mri::AudioVisualHumanPresenceDetection* detection =
+      audio_visual_perception->mutable_audio_visual_human_presence_detection();
+  detection->set_human_presence_likelihood(0.5);
+}
+
 void InitializeFakeFramePerception(const int index,
                                    mri::FramePerception* frame_perception) {
   frame_perception->set_frame_id(index);
@@ -259,6 +268,20 @@ void ValidateAudioPerceptionResult(
   EXPECT_EQ(frame_spectrogram->values->at(0), 0.3);
 }
 
+void ValidateAudioVisualPerceptionResult(
+    const media_perception::AudioVisualPerception& perception_result) {
+  ASSERT_TRUE(perception_result.timestamp_us);
+  EXPECT_EQ(*perception_result.timestamp_us, 91008);
+
+  // Validate audio-visual human presence detection.
+  const media_perception::AudioVisualHumanPresenceDetection*
+      presence_detection =
+          perception_result.audio_visual_human_presence_detection.get();
+  ASSERT_TRUE(presence_detection);
+  ASSERT_TRUE(presence_detection->human_presence_likelihood);
+  EXPECT_EQ(*presence_detection->human_presence_likelihood, 0.5);
+}
+
 void InitializeFakeImageFrameData(mri::ImageFrame* image_frame) {
   image_frame->set_width(1);
   image_frame->set_height(2);
@@ -296,6 +319,9 @@ TEST(MediaPerceptionConversionUtilsTest, MediaPerceptionProtoToIdl) {
   mri::AudioPerception* audio_perception =
       media_perception.add_audio_perception();
   InitializeFakeAudioPerception(audio_perception);
+  mri::AudioVisualPerception* audio_visual_perception =
+      media_perception.add_audio_visual_perception();
+  InitializeFakeAudioVisualPerception(audio_visual_perception);
   media_perception::MediaPerception media_perception_result =
       media_perception::MediaPerceptionProtoToIdl(media_perception);
   EXPECT_EQ(*media_perception_result.timestamp, 1);
@@ -307,6 +333,8 @@ TEST(MediaPerceptionConversionUtilsTest, MediaPerceptionProtoToIdl) {
       kFrameId, media_perception_result.frame_perceptions->at(0));
   ValidateAudioPerceptionResult(
       media_perception_result.audio_perceptions->at(0));
+  ValidateAudioVisualPerceptionResult(
+      media_perception_result.audio_visual_perceptions->at(0));
 }
 
 TEST(MediaPerceptionConversionUtilsTest, DiagnosticsProtoToIdl) {

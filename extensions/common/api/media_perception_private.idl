@@ -298,6 +298,21 @@ namespace mediaPerceptionPrivate {
     AudioHumanPresenceDetection? audioHumanPresenceDetection;
   };
 
+  // Detection of human presence based on both audio and video inputs.
+  dictionary AudioVisualHumanPresenceDetection {
+    // Indicates a probability in [0, 1] interval that a human is present.
+    double? humanPresenceLikelihood;
+  };
+
+  // Perception results based on both audio and video inputs.
+  dictionary AudioVisualPerception {
+    // A timestamp in microseconds attached when this message was generated.
+    double? timestampUs;
+
+    // Human presence detection results.
+    AudioVisualHumanPresenceDetection? audioVisualHumanPresenceDetection;
+  };
+
   dictionary MediaPerception {
     // The time the media perception data was emitted by the media processing
     // pipeline. This value will be greater than the timestamp stored within
@@ -310,6 +325,9 @@ namespace mediaPerceptionPrivate {
 
     // An array of audio perceptions.
     AudioPerception[]? audioPerceptions;
+
+    // An array of audio-visual perceptions.
+    AudioVisualPerception[]? audioVisualPerceptions;
   };
 
   enum ImageFormat {
@@ -341,6 +359,9 @@ namespace mediaPerceptionPrivate {
 
     // The audio perception results for an audio frame.
     AudioPerception? audioPerception;
+
+    // Perception results based on both audio and video inputs.
+    AudioVisualPerception? audioVisualPerception;
   };
 
   dictionary Diagnostics {
