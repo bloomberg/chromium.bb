@@ -36,6 +36,7 @@ declare_args() {
 
 use_custom_libcxx =
     use_custom_libcxx || (use_custom_libcxx_for_host && current_cpu == host_cpu)
+use_custom_libcxx = use_custom_libcxx && !is_nacl
 
 libcxx_prefix = "//buildtools/third_party/libc++/trunk"
 libcxxabi_prefix = "//buildtools/third_party/libc++abi/trunk"
