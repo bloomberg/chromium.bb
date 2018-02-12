@@ -50,7 +50,6 @@ namespace content {
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::NiceMock;
-using ::testing::StrictMock;
 
 using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
 
@@ -1368,13 +1367,11 @@ TEST_F(WebRtcEventLogManagerTest,
 
 TEST_F(WebRtcEventLogManagerTest,
        RemoteBoundLogWithZeroLengthMetadataWrittenCorrectly) {
-  NiceMock<MockWebRtcRemoteEventLogsObserver> observer;
   base::Optional<base::FilePath> file_path;
   const PeerConnectionKey key(rph_->GetID(), kPeerConnectionId);
-  EXPECT_CALL(observer, OnRemoteLogStarted(key, _))
+  EXPECT_CALL(remote_observer_, OnRemoteLogStarted(key, _))
       .Times(1)
       .WillOnce(Invoke(SaveFilePathTo(&file_path)));
-  SetRemoteLogsObserver(&observer);
 
   ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
 
@@ -1390,13 +1387,11 @@ TEST_F(WebRtcEventLogManagerTest,
 
 TEST_F(WebRtcEventLogManagerTest,
        RemoteBoundLogWithNonZeroLengthMetadataWrittenCorrectly) {
-  NiceMock<MockWebRtcRemoteEventLogsObserver> observer;
   base::Optional<base::FilePath> file_path;
   const PeerConnectionKey key(rph_->GetID(), kPeerConnectionId);
-  EXPECT_CALL(observer, OnRemoteLogStarted(key, _))
+  EXPECT_CALL(remote_observer_, OnRemoteLogStarted(key, _))
       .Times(1)
       .WillOnce(Invoke(SaveFilePathTo(&file_path)));
-  SetRemoteLogsObserver(&observer);
 
   ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
 
@@ -1414,9 +1409,8 @@ TEST_F(WebRtcEventLogManagerTest,
 // subcase of this one, and therefore not explicitly tested.
 TEST_F(WebRtcEventLogManagerTest,
        RemoteBoundLogMetadataMustLeaveSomeRoomForWebRtcEventLog) {
-  StrictMock<MockWebRtcRemoteEventLogsObserver> observer;
-  EXPECT_CALL(observer, OnRemoteLogStarted(_, _)).Times(0);
-  SetRemoteLogsObserver(&observer);
+  EXPECT_CALL(remote_observer_, OnRemoteLogStarted(_, _)).Times(0);
+  EXPECT_CALL(remote_observer_, OnRemoteLogStopped(_)).Times(0);
 
   const PeerConnectionKey key(rph_->GetID(), kPeerConnectionId);
   ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
