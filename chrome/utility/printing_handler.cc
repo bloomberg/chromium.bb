@@ -4,20 +4,13 @@
 
 #include "chrome/utility/printing_handler.h"
 
-#include <utility>
-
-#include "base/files/file_util.h"
 #include "build/build_config.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
-#include "content/public/utility/utility_thread.h"
-#include "printing/features/features.h"
-#include "printing/page_range.h"
-
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "components/crash/core/common/crash_keys.h"
+#include "content/public/utility/utility_thread.h"
+#include "ipc/ipc_message.h"
 #include "printing/backend/print_backend.h"
-#endif
+#include "printing/features/features.h"
 
 namespace printing {
 
@@ -40,18 +33,15 @@ PrintingHandler::~PrintingHandler() = default;
 bool PrintingHandler::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintingHandler, message)
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetPrinterCapsAndDefaults,
                         OnGetPrinterCapsAndDefaults)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetPrinterSemanticCapsAndDefaults,
                         OnGetPrinterSemanticCapsAndDefaults)
-#endif  // ENABLE_PRINT_PREVIEW
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintingHandler::OnGetPrinterCapsAndDefaults(
     const std::string& printer_name) {
   scoped_refptr<PrintBackend> print_backend =
@@ -90,6 +80,5 @@ void PrintingHandler::OnGetPrinterSemanticCapsAndDefaults(
   }
   ReleaseProcess();
 }
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 }  // namespace printing

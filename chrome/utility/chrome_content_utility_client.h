@@ -9,10 +9,15 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "content/public/utility/content_utility_client.h"
+#include "printing/features/features.h"
 
 class MashServiceFactory;
-class UtilityMessageHandler;
+
+namespace printing {
+class PrintingHandler;
+}
 
 class ChromeContentUtilityClient : public content::ContentUtilityClient {
  public:
@@ -36,9 +41,10 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
       const NetworkBinderCreationCallback& callback);
 
  private:
-  // IPC message handlers.
-  using Handlers = std::vector<std::unique_ptr<UtilityMessageHandler>>;
-  Handlers handlers_;
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  // Last IPC message handler.
+  std::unique_ptr<printing::PrintingHandler> printing_handler_;
+#endif
 
   // True if the utility process runs with elevated privileges.
   bool utility_process_running_elevated_;
