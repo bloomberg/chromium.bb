@@ -61,6 +61,10 @@ class SearchTermsData {
   // from the omnibox (returns the empty string if not supported/applicable).
   virtual std::string GetMailRUReferralID() const;
 
+  // Estimates dynamic memory usage.
+  // See base/trace_event/memory_usage_estimator.h for more info.
+  virtual size_t EstimateMemoryUsage() const;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchTermsData);
 };

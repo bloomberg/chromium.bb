@@ -30,3 +30,7 @@ std::string TestingSearchTermsData::GetSearchClient() const {
 std::string TestingSearchTermsData::GoogleImageSearchSource() const {
   return "google_image_search_source";
 }
+
+size_t TestingSearchTermsData::EstimateMemoryUsage() const {
+  return 0;
+}

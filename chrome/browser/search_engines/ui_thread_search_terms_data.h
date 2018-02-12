@@ -38,6 +38,10 @@ class UIThreadSearchTermsData : public SearchTermsData {
   // empty string cancels this override.
   static void SetGoogleBaseURL(const std::string& base_url);
 
+  // Estimates dynamic memory usage.
+  // See base/trace_event/memory_usage_estimator.h for more info.
+  size_t EstimateMemoryUsage() const override;
+
  private:
   static std::string* google_base_url_;
   Profile* profile_;

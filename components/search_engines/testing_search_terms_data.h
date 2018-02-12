@@ -18,6 +18,10 @@ class TestingSearchTermsData : public SearchTermsData {
   std::string GetSearchClient() const override;
   std::string GoogleImageSearchSource() const override;
 
+  // Estimates dynamic memory usage.
+  // See base/trace_event/memory_usage_estimator.h for more info.
+  size_t EstimateMemoryUsage() const override;
+
   void set_google_base_url(const std::string& google_base_url) {
     google_base_url_ = google_base_url;
   }

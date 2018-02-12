@@ -98,6 +98,10 @@ struct HUPScoringParams {
     std::vector<CountMaxRelevance>& buckets() { return buckets_; }
     const std::vector<CountMaxRelevance>& buckets() const { return buckets_; }
 
+    // Estimates dynamic memory usage.
+    // See base/trace_event/memory_usage_estimator.h for more info.
+    size_t EstimateMemoryUsage() const;
+
    private:
     // History matches with relevance score greater or equal to |relevance_cap_|
     // are not affected by this experiment.
@@ -127,6 +131,10 @@ struct HUPScoringParams {
   };
 
   HUPScoringParams() {}
+
+  // Estimates dynamic memory usage.
+  // See base/trace_event/memory_usage_estimator.h for more info.
+  size_t EstimateMemoryUsage() const;
 
   ScoreBuckets typed_count_buckets;
 

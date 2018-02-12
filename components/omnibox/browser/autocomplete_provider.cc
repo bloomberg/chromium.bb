@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/url_formatter/url_fixer.h"
@@ -98,6 +99,10 @@ void AutocompleteProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
 }
 
 void AutocompleteProvider::ResetSession() {
+}
+
+size_t AutocompleteProvider::EstimateMemoryUsage() const {
+  return base::trace_event::EstimateMemoryUsage(matches_);
 }
 
 AutocompleteProvider::~AutocompleteProvider() {

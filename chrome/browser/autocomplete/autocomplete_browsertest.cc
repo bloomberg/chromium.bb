@@ -355,18 +355,21 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, FocusSearch) {
 
 IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MemoryTracing) {
   auto* in_memory_url_index = InMemoryURLIndexFactory::GetForProfile(profile());
-  const std::string expected_dump_name =
+
+  const std::vector<std::string> expected_names{
       base::StringPrintf("omnibox/in_memory_url_index_0x%" PRIXPTR,
-                         reinterpret_cast<uintptr_t>(in_memory_url_index));
+                         reinterpret_cast<uintptr_t>(in_memory_url_index)),
+      "omnibox/autocomplete_controller"};
 
   auto OnMemoryDumpDone =
-      [](const std::string& expected_dump_name, base::OnceClosure quit,
+      [](const std::vector<std::string>& expected_names, base::OnceClosure quit,
          bool success, uint64_t dump_guid,
          std::unique_ptr<base::trace_event::ProcessMemoryDump> pmd) {
         ASSERT_TRUE(success);
 
         const auto& allocator_dumps = pmd->allocator_dumps();
-        EXPECT_TRUE(allocator_dumps.count(expected_dump_name));
+        for (const auto& expected_dump_name : expected_names)
+          EXPECT_TRUE(allocator_dumps.count(expected_dump_name));
 
         std::move(quit).Run();
       };
@@ -377,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MemoryTracing) {
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
 
   base::trace_event::MemoryDumpManager::GetInstance()->CreateProcessDump(
-      args, base::BindRepeating(OnMemoryDumpDone, expected_dump_name,
+      args, base::BindRepeating(OnMemoryDumpDone, expected_names,
                                 run_loop.QuitClosure()));
   run_loop.Run();
 }

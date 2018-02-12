@@ -30,6 +30,10 @@ class HistoryQuickProvider : public HistoryProvider {
   // completion performed.
   void Start(const AutocompleteInput& input, bool minimal_changes) override;
 
+  // Estimates dynamic memory usage.
+  // See base/trace_event/memory_usage_estimator.h for more info.
+  size_t EstimateMemoryUsage() const override;
+
   // Disable this provider. For unit testing purposes only. This is required
   // because this provider is closely associated with the HistoryURLProvider
   // and in order to properly test the latter the HistoryQuickProvider must

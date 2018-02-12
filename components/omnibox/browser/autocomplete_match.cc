@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/features.h"
@@ -708,6 +709,29 @@ void AutocompleteMatch::InlineTailPrefix(const base::string16& common_prefix) {
         contents_class.begin(),
         ACMatchClassification(0, ACMatchClassification::INVISIBLE));
   }
+}
+
+size_t AutocompleteMatch::EstimateMemoryUsage() const {
+  size_t res = 0;
+
+  res += base::trace_event::EstimateMemoryUsage(fill_into_edit);
+  res += base::trace_event::EstimateMemoryUsage(inline_autocompletion);
+  res += base::trace_event::EstimateMemoryUsage(destination_url);
+  res += base::trace_event::EstimateMemoryUsage(stripped_destination_url);
+  res += base::trace_event::EstimateMemoryUsage(contents);
+  res += base::trace_event::EstimateMemoryUsage(contents_class);
+  res += base::trace_event::EstimateMemoryUsage(description);
+  res += base::trace_event::EstimateMemoryUsage(description_class);
+  res += base::trace_event::EstimateMemoryUsage(answer_contents);
+  res += base::trace_event::EstimateMemoryUsage(answer_type);
+  res += base::trace_event::EstimateMemoryUsage(answer);
+  res += base::trace_event::EstimateMemoryUsage(associated_keyword);
+  res += base::trace_event::EstimateMemoryUsage(keyword);
+  res += base::trace_event::EstimateMemoryUsage(search_terms_args);
+  res += base::trace_event::EstimateMemoryUsage(additional_info);
+  res += base::trace_event::EstimateMemoryUsage(duplicate_matches);
+
+  return res;
 }
 
 #ifndef NDEBUG

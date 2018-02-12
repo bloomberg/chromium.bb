@@ -24,6 +24,10 @@ struct HistoryMatch {
   // (e.g. "http://www.google.com/foo.html").
   bool IsHostOnly() const;
 
+  // Estimates dynamic memory usage.
+  // See base/trace_event/memory_usage_estimator.h for more info.
+  size_t EstimateMemoryUsage() const;
+
   URLRow url_info;
 
   // The offset of the user's input within the URL.

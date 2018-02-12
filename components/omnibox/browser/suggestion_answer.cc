@@ -11,6 +11,7 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "base/values.h"
 #include "net/base/escape.h"
 #include "url/url_constants.h"
@@ -64,6 +65,10 @@ bool SuggestionAnswer::TextField::Equals(const TextField& field) const {
   return type_ == field.type_ && text_ == field.text_ &&
          has_num_lines_ == field.has_num_lines_ &&
          (!has_num_lines_ || num_lines_ == field.num_lines_);
+}
+
+size_t SuggestionAnswer::TextField::EstimateMemoryUsage() const {
+  return base::trace_event::EstimateMemoryUsage(text_);
 }
 
 // SuggestionAnswer::ImageLine -------------------------------------------------
@@ -187,6 +192,17 @@ base::string16 SuggestionAnswer::ImageLine::AccessibleText() const {
   return result;
 }
 
+size_t SuggestionAnswer::ImageLine::EstimateMemoryUsage() const {
+  size_t res = 0;
+
+  res += base::trace_event::EstimateMemoryUsage(text_fields_);
+  res += base::trace_event::EstimateMemoryUsage(additional_text_);
+  res += base::trace_event::EstimateMemoryUsage(status_text_);
+  res += base::trace_event::EstimateMemoryUsage(image_url_);
+
+  return res;
+}
+
 // SuggestionAnswer ------------------------------------------------------------
 
 SuggestionAnswer::SuggestionAnswer() : type_(-1) {}
@@ -227,4 +243,13 @@ void SuggestionAnswer::AddImageURLsTo(std::vector<GURL>* urls) const {
     urls->push_back(first_line_.image_url());
   if (second_line_.image_url().is_valid())
     urls->push_back(second_line_.image_url());
+}
+
+size_t SuggestionAnswer::EstimateMemoryUsage() const {
+  size_t res = 0;
+
+  res += base::trace_event::EstimateMemoryUsage(first_line_);
+  res += base::trace_event::EstimateMemoryUsage(second_line_);
+
+  return res;
 }
