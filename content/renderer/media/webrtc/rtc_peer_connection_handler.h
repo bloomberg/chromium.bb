@@ -141,9 +141,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   virtual void OnaddICECandidateResult(const blink::WebRTCVoidRequest& request,
                                        bool result);
 
-  bool AddStream(const blink::WebMediaStream& stream,
-                 const blink::WebMediaConstraints& options) override;
-  void RemoveStream(const blink::WebMediaStream& stream) override;
   void GetStats(const blink::WebRTCStatsRequest& request) override;
   void GetStats(
       std::unique_ptr<blink::WebRTCStatsReportCallback> callback) override;
@@ -287,22 +284,12 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // connection has an associated blink and webrtc layer representation of it.
   // The map keeps track of the relationship between |blink::WebMediaStream|s
   // and |webrtc::MediaStreamInterface|s. Stream adapters are created on the fly
-  // when a component (such as |local_streams_| or a sender) needs to reference
-  // it, and automatically disposed when there are no longer any components
-  // referencing it.
+  // when a component (such as a sender or receiver) needs to reference it, and
+  // automatically disposed when there are no longer any components referencing
+  // it.
   // TODO(hbos): Update and use the map for the |remote_streams_| case too.
   // crbug.com/705901
   scoped_refptr<WebRtcMediaStreamAdapterMap> stream_adapter_map_;
-  // Local stream adapters. Every stream that is in use by the peer connection
-  // has an associated blink and webrtc layer representation of it. This vector
-  // keeps track of the relationship between |blink::WebMediaStream|s and
-  // |webrtc::MediaStreamInterface|s. Local streams are added and removed from
-  // the peer connection using |AddStream| and |RemoveStream|.
-  // TODO(hbos): |RTCPeerConnection::getLocalStreams| should return all streams
-  // of all senders and this standalone vector should be removed.
-  // https://crbug.com/738918
-  std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
-      local_streams_;
   // Remote stream adapters. Every stream that is in use by the peer connection
   // has an associated blink and webrtc layer representation of it. This vector
   // keeps track of the relationship between |webrtc::MediaStreamInterface|s and

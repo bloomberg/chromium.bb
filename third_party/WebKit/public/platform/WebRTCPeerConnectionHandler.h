@@ -86,8 +86,6 @@ class WebRTCPeerConnectionHandler {
                                scoped_refptr<WebRTCICECandidate>) {
     return false;
   }
-  virtual bool AddStream(const WebMediaStream&, const WebMediaConstraints&) = 0;
-  virtual void RemoveStream(const WebMediaStream&) = 0;
   virtual void GetStats(const WebRTCStatsRequest&) = 0;
   // Gets stats using the new stats collection API, see
   // third_party/webrtc/api/stats/.  These will replace the old stats collection

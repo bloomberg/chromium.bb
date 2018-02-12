@@ -109,7 +109,7 @@ promise_test(function() {
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
       let stream = streams[0];
-      let track = stream.getAudioTracks()[0];
+      let track = stream.getTracks()[0];
       let sender = pc.addTrack(track);
       assert_equals(sender.track, track);
       assert_array_equals(pc.getSenders(), [ sender ]);
@@ -123,6 +123,26 @@ promise_test(function() {
       assert_array_equals(pc.getSenders(), [ sender ]);
     });
 }, 'addTrack() before addStream() works.');
+
+promise_test(function() {
+  let pc = new RTCPeerConnection();
+  return createStreams({audio:true, video:true}, 1)
+    .then(function(streams) {
+      let stream = streams[0];
+      let track = stream.getTracks()[0];
+      let sender = pc.addTrack(track);
+      assert_equals(sender.track, track);
+      assert_array_equals(pc.getSenders(), [ sender ]);
+      assert_array_equals(pc.getLocalStreams(), []);
+      // This should add the remaining track, creating a sender associated with
+      // the stream.
+      pc.addStream(stream);
+      assert_array_equals(pc.getLocalStreams(), [ stream ]);
+      assert_equals(pc.getSenders().length, 2);
+      assert_true(pc.getSenders().find(
+          s => { return s.track == stream.getTracks()[1]; }) != null);
+    });
+}, 'addStream() after addTrack() works if there are more tracks to be added.');
 
 /**
  * Helper functions.

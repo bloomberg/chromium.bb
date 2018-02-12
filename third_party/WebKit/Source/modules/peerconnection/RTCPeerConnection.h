@@ -260,21 +260,9 @@ class MODULES_EXPORT RTCPeerConnection final
   void DispatchScheduledEvent();
   void MaybeFireNegotiationNeeded();
   MediaStreamTrack* GetTrack(const WebMediaStreamTrack&) const;
+  RTCRtpSender* FindSenderForTrackAndStream(MediaStreamTrack*, MediaStream*);
   HeapVector<Member<RTCRtpReceiver>>::iterator FindReceiver(
       const WebRTCRtpReceiver& web_receiver);
-  // addStream() and removeStream() result in senders being added or removed.
-  // When a legacy stream API has been invoked, these methods must be invoked to
-  // make blink layer |rtp_senders_| up-to-date. The assumption of
-  // CreateMissingSendersForStream() is that any lower layer senders found that
-  // don't exist in blink was just created for the specified stream.
-  // RemoveUnusedSenders() removes all blink senders that don't exist in the
-  // lower layers.
-  // TODO(hbos): Stop using legacy stream APIs and remove these methods. When
-  // addStream() and removeStream() are implemented on top of track-based APIs
-  // we don't have to do these tricks to keep |rtp_senders_| up-to-date.
-  // https://crbug.com/738929
-  void CreateMissingSendersForStream(MediaStream*);
-  void RemoveUnusedSenders();
 
   // The "Change" methods set the state asynchronously and fire the
   // corresponding event immediately after changing the state (if it was really

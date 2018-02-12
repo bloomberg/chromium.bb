@@ -58,6 +58,19 @@ class MockStreamCollection : public webrtc::StreamCollectionInterface {
     }
     return nullptr;
   }
+  std::vector<webrtc::MediaStreamInterface*> FindStreamsOfTrack(
+      webrtc::MediaStreamTrackInterface* track) {
+    std::vector<webrtc::MediaStreamInterface*> streams_of_track;
+    if (!track)
+      return streams_of_track;
+    for (size_t i = 0; i < streams_.size(); ++i) {
+      if (streams_.at(i)->FindAudioTrack(track->id()) ||
+          streams_.at(i)->FindVideoTrack(track->id())) {
+        streams_of_track.push_back(streams_.at(i));
+      }
+    }
+    return streams_of_track;
+  }
   void AddStream(MediaStreamInterface* stream) {
     streams_.push_back(stream);
   }
@@ -112,6 +125,59 @@ class MockDtmfSender : public DtmfSenderInterface {
   int duration_;
   int inter_tone_gap_;
 };
+
+FakeRtpSender::FakeRtpSender(
+    rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track)
+    : track_(std::move(track)) {}
+
+FakeRtpSender::~FakeRtpSender() {}
+
+bool FakeRtpSender::SetTrack(webrtc::MediaStreamTrackInterface* track) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> FakeRtpSender::track()
+    const {
+  return track_;
+}
+
+uint32_t FakeRtpSender::ssrc() const {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+cricket::MediaType FakeRtpSender::media_type() const {
+  NOTIMPLEMENTED();
+  return cricket::MEDIA_TYPE_AUDIO;
+}
+
+std::string FakeRtpSender::id() const {
+  NOTIMPLEMENTED();
+  return "";
+}
+
+std::vector<std::string> FakeRtpSender::stream_ids() const {
+  NOTIMPLEMENTED();
+  return {};
+}
+
+webrtc::RtpParameters FakeRtpSender::GetParameters() const {
+  NOTIMPLEMENTED();
+  return webrtc::RtpParameters();
+}
+
+webrtc::RTCError FakeRtpSender::SetParameters(
+    const webrtc::RtpParameters& parameters) {
+  NOTIMPLEMENTED();
+  return webrtc::RTCError::OK();
+}
+
+rtc::scoped_refptr<webrtc::DtmfSenderInterface> FakeRtpSender::GetDtmfSender()
+    const {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
 
 FakeRtpReceiver::FakeRtpReceiver(
     rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track,
@@ -201,18 +267,55 @@ MockPeerConnectionImpl::remote_streams() {
   return remote_streams_;
 }
 
-bool MockPeerConnectionImpl::AddStream(MediaStreamInterface* local_stream) {
-  DCHECK(stream_label_.empty());
-  stream_label_ = local_stream->label();
-  local_streams_->AddStream(local_stream);
-  return true;
+rtc::scoped_refptr<webrtc::RtpSenderInterface> MockPeerConnectionImpl::AddTrack(
+    webrtc::MediaStreamTrackInterface* track,
+    std::vector<webrtc::MediaStreamInterface*> streams) {
+  DCHECK(track);
+  DCHECK_EQ(1u, streams.size());
+  for (const auto& sender : senders_) {
+    if (sender->track() == track)
+      return nullptr;
+  }
+  for (auto* stream : streams) {
+    if (!local_streams_->find(stream->label())) {
+      stream_label_ = stream->label();
+      local_streams_->AddStream(stream);
+    }
+  }
+  auto* sender = new rtc::RefCountedObject<FakeRtpSender>(track);
+  senders_.push_back(sender);
+  return sender;
 }
 
-void MockPeerConnectionImpl::RemoveStream(
-    MediaStreamInterface* local_stream) {
-  DCHECK_EQ(stream_label_, local_stream->label());
-  stream_label_.clear();
-  local_streams_->RemoveStream(local_stream);
+bool MockPeerConnectionImpl::RemoveTrack(webrtc::RtpSenderInterface* sender) {
+  auto it = std::find(senders_.begin(), senders_.end(),
+                      static_cast<FakeRtpSender*>(sender));
+  if (it == senders_.end())
+    return false;
+  senders_.erase(it);
+  auto track = sender->track();
+  for (auto* stream : local_streams_->FindStreamsOfTrack(track)) {
+    bool stream_has_senders = false;
+    for (const auto& track : stream->GetAudioTracks()) {
+      for (const auto& sender : senders_) {
+        if (sender->track() == track) {
+          stream_has_senders = true;
+          break;
+        }
+      }
+    }
+    for (const auto& track : stream->GetVideoTracks()) {
+      for (const auto& sender : senders_) {
+        if (sender->track() == track) {
+          stream_has_senders = true;
+          break;
+        }
+      }
+    }
+    if (!stream_has_senders)
+      local_streams_->RemoveStream(stream);
+  }
+  return true;
 }
 
 rtc::scoped_refptr<DtmfSenderInterface>
@@ -221,6 +324,14 @@ MockPeerConnectionImpl::CreateDtmfSender(AudioTrackInterface* track) {
     return nullptr;
   }
   return new rtc::RefCountedObject<MockDtmfSender>(track);
+}
+
+std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>>
+MockPeerConnectionImpl::GetSenders() const {
+  std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> senders;
+  for (const auto& sender : senders_)
+    senders.push_back(sender);
+  return senders;
 }
 
 std::vector<rtc::scoped_refptr<webrtc::RtpReceiverInterface>>
