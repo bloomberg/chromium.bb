@@ -1495,8 +1495,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // selection. The rect returned is in the object's local coordinate space.
   virtual LayoutRect LocalSelectionRect() const { return LayoutRect(); }
 
-  // View coordinates means the coordinate space of |view()|.
-  LayoutRect SelectionRectInViewCoordinates() const;
+  LayoutRect AbsoluteSelectionRect() const;
 
   bool CanBeSelectionLeaf() const;
   bool HasSelectedChildren() const {

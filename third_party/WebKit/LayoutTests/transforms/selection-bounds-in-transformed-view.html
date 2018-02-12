@@ -1,23 +1,50 @@
-<script src="../../resources/ahem.js"></script>
-<body style="font: 20px Ahem; margin: 0;">
-    <div id="result" style="outline: solid blue; height: 100px; width: 100px; transform: translatez(0)"></div>
-    <div style="height: 900px"></div>
-    <div style="height: 100px;">target</div>
-    <div style="height: 1000px;"></div>
-    <script>
-    onload = function() {
-        if (window.testRunner && window.internals) {
-            testRunner.dumpAsText();
-            window.internals.setPageScaleFactor(2);
-        }
+<!DOCTYPE html>
+<script src="../resources/ahem.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<style>
+  body {
+    font: 20px Ahem;
+    margin: 0;
+    height: 5000px;
+    width: 5000px;
+  }
+  #target {
+    position: absolute;
+    top: 3000px;
+    left: 300px;
+    height: 100px;
+    background-color: green;
+  }
+</style>
 
-        window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
-        document.execCommand("FindString", false, "target");
-        document.getElementById("result").innerText = internals.visualViewportScrollY() === 860 ? "PASS" : "FAIL (scrollTop:" + document.scrollingElement.scrollTop + ")";
+<div id="target">target</div>
+<script>
+    function resetScroll() {
+        window.scrollTo(1000, 1000);
+        window.internals.setVisualViewportOffset(400, 300);
+    }
 
-        window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
-        document.execCommand("FindString", false, "target");
-        document.getElementById("result").innerText += internals.visualViewportScrollY() === 860 ? " PASS" : " FAIL (scrollTop:" + document.scrollingElement.scrollTop + ")";
-    };
-    </script>
-</body>
+    if (window.internals) {
+        window.internals.setPageScaleFactor(2);
+
+        test(() => {
+            resetScroll();
+            window.internals.settings.setPreferCompositingToLCDTextEnabled(
+                true);
+            document.execCommand("FindString", false, "target");
+            assert_equals(internals.visualViewportScrollX(), 167);
+            assert_equals(internals.visualViewportScrollY(), 2867);
+        }, "Test scrolled into view with prefer compositing enabled");
+
+
+        test(() => {
+            resetScroll();
+            window.internals.settings.setPreferCompositingToLCDTextEnabled(
+                false);
+            document.execCommand("FindString", false, "target");
+            assert_equals(internals.visualViewportScrollX(), 167);
+            assert_equals(internals.visualViewportScrollY(), 2867);
+        }, "Test scrolled into view with prefer compositing disabled");
+    }
+</script>

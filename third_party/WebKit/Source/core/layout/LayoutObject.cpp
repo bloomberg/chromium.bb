@@ -1484,10 +1484,14 @@ void LayoutObject::InvalidatePaintRectangle(const LayoutRect& dirty_rect) {
   SetMayNeedPaintInvalidation();
 }
 
-LayoutRect LayoutObject::SelectionRectInViewCoordinates() const {
+LayoutRect LayoutObject::AbsoluteSelectionRect() const {
   LayoutRect selection_rect = LocalSelectionRect();
   if (!selection_rect.IsEmpty())
     MapToVisualRectInAncestorSpace(View(), selection_rect);
+
+  if (LocalFrameView* frame_view = GetFrameView())
+    selection_rect = frame_view->DocumentToAbsolute(selection_rect);
+
   return selection_rect;
 }
 

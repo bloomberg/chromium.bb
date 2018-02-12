@@ -1009,8 +1009,9 @@ static IntPoint DragLocationForDHTMLDrag(const IntPoint& mouse_dragged_point,
 }
 
 FloatRect DragController::ClippedSelection(const LocalFrame& frame) {
+  DCHECK(frame.View());
   return DataTransfer::ClipByVisualViewport(
-      FloatRect(frame.Selection().UnclippedBounds()), frame);
+      FloatRect(frame.Selection().UnclippedBoundsInDocument()), frame);
 }
 
 static IntPoint DragLocationForSelectionDrag(const LocalFrame& frame) {

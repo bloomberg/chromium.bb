@@ -833,10 +833,10 @@ static LayoutRect SelectionRectForLayoutObject(const LayoutObject* object) {
   if (!object->CanUpdateSelectionOnRootLineBoxes())
     return LayoutRect();
 
-  return object->SelectionRectInViewCoordinates();
+  return object->AbsoluteSelectionRect();
 }
 
-IntRect LayoutSelection::SelectionBounds() {
+IntRect LayoutSelection::AbsoluteSelectionBounds() {
   Commit();
   if (paint_range_.IsNull())
     return IntRect();

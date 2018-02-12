@@ -99,7 +99,7 @@ class LayoutSelection final : public GarbageCollected<LayoutSelection> {
   void SetHasPendingSelection();
   void Commit();
 
-  IntRect SelectionBounds();
+  IntRect AbsoluteSelectionBounds();
   void InvalidatePaintForSelection();
 
   void ClearSelection();
