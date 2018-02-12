@@ -34,10 +34,23 @@ cr.exportPath('print_preview_new');
  */
 print_preview_new.PDFPlugin;
 
+(function() {
+'use strict';
+
+/** @enum {string} */
+const PreviewAreaState_ = {
+  LOADING: 'loading',
+  DISPLAY_PREVIEW: 'display-preview',
+  OPEN_IN_PREVIEW: 'open-in-preview',
+  INVALID_SETTINGS: 'invalid-settings',
+  PREVIEW_FAILED: 'preview-failed',
+};
+
 Polymer({
   is: 'print-preview-preview-area',
 
-  behaviors: [WebUIListenerBehavior, SettingsBehavior],
+  behaviors: [WebUIListenerBehavior, SettingsBehavior, I18nBehavior],
+
   properties: {
     /** @type {print_preview.DocumentInfo} */
     documentInfo: Object,
@@ -45,10 +58,17 @@ Polymer({
     /** @type {print_preview.Destination} */
     destination: Object,
 
-    /** @type {print_preview_new.State} */
+    /** @type {!print_preview_new.State} */
     state: {
-      type: Object,
+      type: Number,
+      observer: 'onStateChanged_',
+    },
+
+    /** @private {string} */
+    previewState_: {
+      type: String,
       notify: true,
+      value: PreviewAreaState_.LOADING,
     },
   },
 
@@ -58,9 +78,7 @@ Polymer({
         'settings.layout.value, settings.margins.value, ' +
         'settings.mediaSize.value, settings.ranges.value,' +
         'settings.selectionOnly.value, settings.scaling.value, ' +
-        'destination.id, destination.capabilities, state.initialized)',
-    'onPreviewStateChanged_(state.previewLoading, state.invalidSettings, ' +
-        'state.previewFailed)',
+        'destination.id, destination.capabilities)',
   ],
 
   /** @private {print_preview.NativeLayer} */
@@ -69,13 +87,16 @@ Polymer({
   /** @private {number} */
   inFlightRequestId_: -1,
 
+  /** @private {boolean} */
+  requestPreviewWhenReady_: false,
+
   /** @private {HTMLEmbedElement|print_preview_new.PDFPlugin} */
   plugin_: null,
 
-  /** @private {boolean} */
+  /** @private {boolean} Whether the plugin is loaded */
   pluginLoaded_: false,
 
-  /** @private {boolean} */
+  /** @private {boolean} Whether the document is ready */
   documentReady_: false,
 
   /** @override */
@@ -92,59 +113,119 @@ Polymer({
         this.$$('.preview-area-compatibility-object-out-of-process');
     const isOOPCompatible = oopCompatObj.postMessage;
     oopCompatObj.parentElement.removeChild(oopCompatObj);
-    if (!isOOPCompatible)
-      this.set('state.previewFailed', true);
-    else
-      this.set('state.previewLoading', true);
+    if (!isOOPCompatible) {
+      this.previewState_ = PreviewAreaState_.PREVIEW_FAILED;
+      this.fire('preview-failed');
+    }
+  },
+
+  /** @return {boolean} Whether the preview is loaded. */
+  previewLoaded: function() {
+    return this.previewState_ == PreviewAreaState_.DISPLAY_PREVIEW;
   },
 
   /** @private */
   onSettingsChanged_: function() {
-    if (!this.state.initialized || !this.getSetting('scaling').valid ||
-        !this.getSetting('pages').valid || !this.getSetting('copies').valid ||
-        !this.destination || !this.destination.capabilities) {
+    if (this.state == print_preview_new.State.READY) {
+      this.startPreview_();
       return;
     }
+    this.requestPreviewWhenReady_ = true;
+  },
+
+  /**
+   * @return {string} 'invisible' if overlay is invisible, '' otherwise.
+   * @private
+   */
+  getInvisible_: function() {
+    return this.previewLoaded() ? 'invisible' : '';
+  },
+
+  /**
+   * @return {boolean} Whether the preview is currently loading.
+   * @private
+   */
+  isPreviewLoading_: function() {
+    return this.previewState_ == PreviewAreaState_.LOADING;
+  },
+
+  /**
+   * @return {string} 'jumping-dots' to enable animation, '' otherwise.
+   * @private
+   */
+  getJumpingDots_: function() {
+    return this.isPreviewLoading_() ? 'jumping-dots' : '';
+  },
+
+  /**
+   * @return {boolean} Whether the system dialog button should be shown.
+   * @private
+   */
+  displaySystemDialogButton_: function() {
+    return this.previewState_ == PreviewAreaState_.INVALID_SETTINGS ||
+        this.previewState_ == PreviewAreaState_.OPEN_IN_PREVIEW;
+  },
+
+  /**
+   * @return {string} The current preview area message to display.
+   * @private
+   */
+  currentMessage_: function() {
+    if (this.previewState_ == PreviewAreaState_.LOADING)
+      return this.i18n('loading');
+    if (this.previewState_ == PreviewAreaState_.OPEN_IN_PREVIEW)
+      return this.i18n('openPdfInPreview');
+    if (this.previewState_ == PreviewAreaState_.INVALID_SETTINGS)
+      return this.i18n('invalidSettings');
+    if (this.previewState_ == PreviewAreaState_.PREVIEW_FAILED)
+      return this.i18n('previewFailed');
+    return '';
+  },
+
+  /** @private */
+  startPreview_: function() {
+    this.previewState_ = PreviewAreaState_.LOADING;
     this.documentReady_ = false;
-    this.set('state.previewLoading', true);
     this.getPreview_().then(
         previewUid => {
           if (!this.documentInfo.isModifiable)
             this.onPreviewStart_(previewUid, -1);
           this.documentReady_ = true;
-          if (this.pluginLoaded_)
-            this.set('state.previewLoading', false);
+          if (this.pluginLoaded_) {
+            this.previewState_ = PreviewAreaState_.DISPLAY_PREVIEW;
+            this.fire('preview-loaded');
+          }
         },
         type => {
           if (/** @type{string} */ (type) == 'SETTINGS_INVALID')
-            this.set('state.invalidSettings', true);
-          else if (/** @type{string} */ (type) != 'CANCELLED')
-            this.set('state.previewFailed', true);
-          this.set('state.previewLoading', false);
+            this.previewState_ = PreviewAreaState_.INVALID_SETTINGS;
+          else if (/** @type{string} */ (type) != 'CANCELLED') {
+            this.previewState_ = PreviewAreaState_.PREVIEW_FAILED;
+            this.fire('preview-failed');
+          }
         });
   },
 
-  /**
-   * Set the visibility of the message overlay.
-   * @param {boolean} visible Whether to make the overlay visible or not
-   * @private
-   */
-  setOverlayVisible_: function(visible) {
-    const overlayEl = this.$$('.preview-area-overlay-layer');
-    overlayEl.classList.toggle('invisible', !visible);
-    overlayEl.setAttribute('aria-hidden', !visible);
-  },
-
   /** @private */
-  onPreviewStateChanged_: function() {
-    // update the appearance here.
-    const visible = this.state.previewLoading || this.state.previewFailed ||
-        this.state.invalidSettings;
-    this.setOverlayVisible_(visible);
-
-    // Disable jumping animation to conserve cycles.
-    const jumpingDotsEl = this.$$('.preview-area-loading-message-jumping-dots');
-    jumpingDotsEl.classList.toggle('jumping-dots', this.state.previewLoading);
+  onStateChanged_: function() {
+    switch (this.state) {
+      case (print_preview_new.State.NOT_READY):
+        // Resetting the destination clears the invalid settings error.
+        this.previewState_ = PreviewAreaState_.LOADING;
+        break;
+      case (print_preview_new.State.READY):
+        // Request a new preview.
+        if (this.requestPreviewWhenReady_) {
+          this.startPreview_();
+          this.requestPreviewWhenReady_ = false;
+        }
+        break;
+      case (print_preview_new.State.INVALID_PRINTER):
+        this.previewState_ = PreviewAreaState_.INVALID_SETTINGS;
+        break;
+      default:
+        break;
+    }
   },
 
   /**
@@ -230,8 +311,10 @@ Polymer({
    */
   onPluginLoad_: function() {
     this.pluginLoaded_ = true;
-    if (this.documentReady_)
-      this.set('state.previewLoading', false);
+    if (this.documentReady_) {
+      this.previewState_ = PreviewAreaState_.DISPLAY_PREVIEW;
+      this.fire('preview-loaded');
+    }
   },
 
   /**
@@ -362,3 +445,4 @@ Polymer({
     return this.nativeLayer_.getPreview(JSON.stringify(ticket), pageCount);
   },
 });
+})();

@@ -460,7 +460,7 @@ Polymer({
       landscape: this.getSettingValue('layout'),
       color: destination.getNativeColorModel(
           /** @type {boolean} */ (this.getSettingValue('color'))),
-      headerFooterEnabled: this.getSettingValue('headerFooter'),
+      headerFooterEnabled: false,  // only used in print preview
       marginsType: this.getSettingValue('margins'),
       duplex: this.getSettingValue('duplex') ?
           print_preview_new.DuplexMode.LONG_EDGE :
@@ -468,7 +468,7 @@ Polymer({
       copies: this.getSettingValue('copies'),
       collate: this.getSettingValue('collate'),
       shouldPrintBackgrounds: this.getSettingValue('cssBackground'),
-      shouldPrintSelectionOnly: this.getSettingValue('selectionOnly'),
+      shouldPrintSelectionOnly: false,  // only used in print preview
       previewModifiable: this.documentInfo.isModifiable,
       printToPDF: destination.id ==
           print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,

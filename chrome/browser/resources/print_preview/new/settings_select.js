@@ -23,8 +23,9 @@ Polymer({
     /** @type {{ option: Array<!print_preview_new.SelectOption> }} */
     capability: Object,
 
-    /** @type {string} */
     settingName: String,
+
+    disabled: Boolean,
   },
 
   /** @param {string} value The value to select. */

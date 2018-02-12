@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="checkbox_radio_css.html">
 <link rel="import" href="../data/document_info.html">
 <link rel="import" href="input_css.html">
@@ -30,16 +29,19 @@
       <div slot="controls">
         <div class="radio">
           <label><input type="radio" name="pages" id="all-radio-button"
-              checked="{{allSelected_::change}}">
+              checked="{{allSelected_::change}}"
+              disabled$="[[getDisabled_(disabled, settings.pages.valid)]]">
             <span>$i18n{optionAllPages}</span>
           </label>
           <label class="custom-input-wrapper"
               for="page-settings-custom-input" tabindex=-1>
             <input type="radio" name="pages" id="custom-radio-button"
+                disabled$="[[getDisabled_(disabled, settings.pages.valid)]]"
                 on-click="onCustomRadioClick_">
             <input class="user-value" type="text"
                 value="{{inputString_::input}}" id="page-settings-custom-input"
                 checked="{{customSelected_::change}}"
+                disabled$="[[getDisabled_(dsiabled, settings.pages.valid)]]"
                 pattern="([0-9]*(-)?[0-9]*(,)( )?)*([0-9]*(-)?[0-9]*(,)?( )?)?"
                 on-focus="onCustomInputFocus_" on-blur="onCustomInputBlur_"
                 placeholder="$i18n{examplePageRangeText}"

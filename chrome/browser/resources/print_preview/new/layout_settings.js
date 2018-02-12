@@ -7,6 +7,10 @@ Polymer({
 
   behaviors: [SettingsBehavior],
 
+  properties: {
+    disabled: Boolean,
+  },
+
   observers: ['onLayoutSettingChange_(settings.layout.value)'],
 
   /**

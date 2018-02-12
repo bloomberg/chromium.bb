@@ -42,21 +42,10 @@ Polymer({
       notify: true,
     },
 
-    /** @private {!print_preview_new.State} */
-    state_: {
-      type: Object,
-      notify: true,
-      value: {
-        previewLoading: false,
-        previewFailed: false,
-        cloudPrintError: '',
-        privetExtensionError: '',
-        invalidSettings: false,
-        initialized: false,
-        cancelled: false,
-        printRequested: false,
-        printFailed: false,
-      },
+    /** @type {!print_preview_new.State} */
+    state: {
+      type: Number,
+      observer: 'onStateChanged_',
     },
 
     /** @private {?print_preview.UserInfo} */
@@ -65,12 +54,21 @@ Polymer({
       notify: true,
       value: null,
     },
-  },
 
-  observers: [
-    'onPreviewCancelled_(state_.cancelled)',
-    'onPrintRequested_(state_.printRequested, state_.previewLoading)',
-  ],
+    /** @private {string} */
+    errorMessage_: {
+      type: String,
+      notify: true,
+      value: '',
+    },
+
+    /** @private {boolean} */
+    controlsDisabled_: {
+      type: Boolean,
+      notify: true,
+      computed: 'computeControlsDisabled_(state)',
+    }
+  },
 
   /** @private {?WebUIListenerTracker} */
   listenerTracker_: null,
@@ -84,6 +82,9 @@ Polymer({
 
   /** @private {!EventTracker} */
   tracker_: new EventTracker(),
+
+  /** @private {boolean} */
+  cancelled_: false,
 
   /** @override */
   attached: function() {
@@ -113,6 +114,14 @@ Polymer({
   },
 
   /**
+   * @return {boolean} Whether the controls should be disabled.
+   * @private
+   */
+  computeControlsDisabled_: function() {
+    return this.state != print_preview_new.State.READY;
+  },
+
+  /**
    * @param {!print_preview.NativeInitialSettings} settings
    * @private
    */
@@ -138,6 +147,7 @@ Polymer({
   /** @private */
   onDestinationSelect_: function() {
     this.destination_ = this.destinationStore_.selectedDestination;
+    this.$.state.transitTo(print_preview_new.State.NOT_READY);
   },
 
   /** @private */
@@ -145,16 +155,8 @@ Polymer({
     this.set(
         'destination_.capabilities',
         this.destinationStore_.selectedDestination.capabilities);
-    if (!this.state_.initialized)
-      this.set('state_.initialized', true);
-  },
-
-  /** @private */
-  onPreviewCancelled_: function() {
-    if (!this.state_.cancelled)
-      return;
-    this.detached();
-    this.nativeLayer_.dialogClose(true);
+    if (this.state != print_preview_new.State.READY)
+      this.$.state.transitTo(print_preview_new.State.READY);
   },
 
   /**
@@ -166,35 +168,65 @@ Polymer({
   },
 
   /** @private */
-  onPrintRequested_: function() {
-    if (this.state_.previewLoading || !this.state_.printRequested)
-      return;
-
-    assert(this.settings.scaling.valid);
-    assert(this.settings.pages.valid);
-    assert(this.settings.copies.valid);
-
-    const destination = assert(this.destinationStore_.selectedDestination);
-    const whenPrintDone =
-        this.nativeLayer_.print(this.$.model.createPrintTicket(destination));
-    if (destination.isLocal) {
-      const onError = destination.id ==
-              print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ?
-          this.onFileSelectionCancel_.bind(this) :
-          this.onPrintFailed_.bind(this);
-      whenPrintDone.then(this.close_.bind(this), onError);
-    } else {
-      // Cloud print resolves when print data is returned to submit to cloud
-      // print, or if print ticket cannot be read, no PDF data is found, or
-      // PDF is oversized.
-      whenPrintDone.then(
-          this.onPrintToCloud_.bind(this), this.onPrintFailed_.bind(this));
+  onStateChanged_: function() {
+    if (this.state == print_preview_new.State.CLOSING) {
+      this.remove();
+      this.nativeLayer_.dialogClose(this.cancelled_);
+    } else if (this.state == print_preview_new.State.HIDDEN) {
+      this.nativeLayer_.hidePreview();
+    } else if (this.state == print_preview_new.State.PRINTING) {
+      const destination = assert(this.destinationStore_.selectedDestination);
+      const whenPrintDone =
+          this.nativeLayer_.print(this.$.model.createPrintTicket(destination));
+      if (destination.isLocal) {
+        const onError = destination.id ==
+                print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ?
+            this.onFileSelectionCancel_.bind(this) :
+            this.onPrintFailed_.bind(this);
+        whenPrintDone.then(this.close_.bind(this), onError);
+      } else {
+        // Cloud print resolves when print data is returned to submit to cloud
+        // print, or if print ticket cannot be read, no PDF data is found, or
+        // PDF is oversized.
+        whenPrintDone.then(
+            this.onPrintToCloud_.bind(this), this.onPrintFailed_.bind(this));
+      }
     }
   },
 
   /** @private */
+  onPreviewLoaded_: function() {
+    if (this.state == print_preview_new.State.HIDDEN)
+      this.$.state.transitTo(print_preview_new.State.PRINTING);
+  },
+
+  /** @private */
+  onPrintRequested_: function() {
+    this.$.state.transitTo(
+        this.$.previewArea.previewLoaded() ? print_preview_new.State.PRINTING :
+                                             print_preview_new.State.HIDDEN);
+  },
+
+  /** @private */
+  onCancelRequested_: function() {
+    this.cancelled_ = true;
+    this.$.state.transitTo(print_preview_new.State.CLOSING);
+  },
+
+  /**
+   * @param {!CustomEvent} e The event containing the new validity.
+   * @private
+   */
+  onSettingValidChanged_: function(e) {
+    this.$.state.transitTo(
+        /** @type {boolean} */ (e.detail) ?
+            print_preview_new.State.READY :
+            print_preview_new.State.INVALID_TICKET);
+  },
+
+  /** @private */
   onFileSelectionCancel_: function() {
-    this.set('state_.printRequested', false);
+    this.$.state.transitTo(print_preview_new.State.READY);
   },
 
   /** @private */
@@ -213,12 +245,17 @@ Polymer({
    */
   onPrintFailed_: function(httpError) {
     console.error('Printing failed with error code ' + httpError);
-    this.set('state.printFailed', true);
+    this.errorMessage_ = httpError.toString();
+    this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
+  },
+
+  /** @private */
+  onPreviewFailed_: function() {
+    this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
   },
 
   /** @private */
   close_: function() {
-    this.detached();
-    this.nativeLayer_.dialogClose(false);
+    this.$.state.transitTo(print_preview_new.State.CLOSING);
   },
 });

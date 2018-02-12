@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import"
-    href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/event_tracker.html">
 <link rel="import" href="../data/destination.html">
@@ -81,7 +80,10 @@
                 [[destination.connectionStatusText]]</div>
           </div>
         </div>
-        <button disabled$="[[!destinationStore]]" on-tap="onChangeButtonTap_">
+        <button
+          disabled$="[[shouldDisableButton_(destinationStore, disabled,
+                                            state)]]"
+          on-tap="onChangeButtonTap_">
           $i18n{changeDestination}
         </button>
       </div>

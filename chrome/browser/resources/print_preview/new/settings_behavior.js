@@ -91,6 +91,8 @@ const SettingsBehavior = {
     // is no way for the user to change the value in this case.
     if (!valid)
       assert(setting.available, 'Setting is not available: ' + settingName);
+    if (valid != setting.valid)
+      this.fire('setting-valid-changed', valid);
     this.set(`settings.${settingName}.valid`, valid);
   }
 };

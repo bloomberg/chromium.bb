@@ -30,6 +30,8 @@ Polymer({
     /** @type {{ option: Array<!print_preview_new.SelectOption> }} */
     capability: Object,
 
+    disabled: Boolean,
+
     /** @private {{ option: Array<!print_preview_new.SelectOption> }} */
     capabilityWithLabels_: {
       type: Object,

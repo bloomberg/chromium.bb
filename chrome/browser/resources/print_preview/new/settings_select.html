@@ -9,7 +9,7 @@
   <template>
     <style include="print-preview-shared select">
     </style>
-    <select on-change="onChange_">
+    <select on-change="onChange_" disabled$="[[disabled]]">
       <template is="dom-repeat" items="[[capability.option]]">
         <option selected="[[item.is_default]]" value="[[getValue_(item)]]">
           [[getDisplayName_(item)]]

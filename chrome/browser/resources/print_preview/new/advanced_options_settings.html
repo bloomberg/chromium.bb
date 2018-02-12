@@ -15,7 +15,9 @@
     <print-preview-settings-section>
       <span slot="title">$i18n{advancedOptionsLabel}</span>
       <div slot="controls">
-        <button>$i18n{showAdvancedOptions}</button>
+        <button disabled$="[[disabled]]">
+          $i18n{showAdvancedOptions}
+        </button>
       </div>
     </print-preview-settings-section>
   </template>

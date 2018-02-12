@@ -39,6 +39,7 @@
         'model',
         'settings_behavior',
         'state',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -50,6 +51,7 @@
         '../data/compiled_resources2.gyp:destination_store',
         '../data/compiled_resources2.gyp:user_info',
         'destination_dialog',
+        'state',
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_lazy_render/compiled_resources2.gyp:cr_lazy_render',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -59,7 +61,6 @@
       'dependencies': [
         'settings_behavior',
         '../data/compiled_resources2.gyp:document_info',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -160,6 +161,7 @@
       'target_name': 'preview_area',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         '../../pdf/compiled_resources2.gyp:pdf_scripting_api',
         '../compiled_resources2.gyp:native_layer',

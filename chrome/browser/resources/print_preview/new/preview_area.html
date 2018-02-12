@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../native_layer.html">
 <link rel="import" href="../print_preview_utils.html">
@@ -11,6 +12,7 @@
 <link rel="import" href="../data/printable_area.html">
 <link rel="import" href="../data/size.html">
 <link rel="import" href="model.html">
+<link rel="import" href="state.html">
 <link rel="import" href="settings_behavior.html">
 
 <dom-module id="print-preview-preview-area">
@@ -109,19 +111,20 @@
       }
 
     </style>
-    <div class="preview-area-overlay-layer">
+    <div class$="preview-area-overlay-layer [[getInvisible_(previewState_)]]"
+        aria-hidden$="[[previewLoaded(previewState_)]]">
       <div class="preview-area-messages">
-
-        <div class="preview-area-loading-message preview-area-message"
-          hidden$="[[!state.previewLoading]]">
-          <span>$i18n{loading}</span>
-          <span class="preview-area-loading-message-jumping-dots jumping-dots"
-              ><span>.</span><span>.</span><span>.</span></span>
-        </div>
-
-        <div class="preview-area-custom-message preview-area-message" hidden>
-          <div class="preview-area-custom-message-text"></div>
-          <div class="preview-area-custom-action-area">
+        <div class="preview-area-message">
+          <div>
+            <span>[[currentMessage_(previewState_)]]</span>
+            <span class$="preview-area-loading-message-jumping-dots
+                          [[getJumpingDots_(previewState_)]]"
+                hidden$="[[!isPreviewLoading_(previewState_)]]">
+                <span>.</span><span>.</span><span>.</span>
+            </span>
+          </div>
+          <div class="preview-area-action-area"
+              hidden$="[[!displaySystemDialogButton_(previewState_)]]">
             <button class="preview-area-open-system-dialog-button">
               $i18n{launchNativeDialog}
             </button>
@@ -130,25 +133,6 @@
                 hidden></div>
           </div>
         </div>
-
-        <div class="preview-area-preview-failed-message preview-area-message"
-          hidden$="[[!state.previewFailed]]">
-          $i18n{previewFailed}
-        </div>
-
-        <div class="preview-area-print-failed preview-area-message"
-          hidden$="[[!state.invalidSettings]]">
-          <div>$i18n{invalidPrinterSettings}</div>
-          <div class="preview-area-print-failed-action-area">
-            <button class="preview-area-open-system-dialog-button">
-              $i18n{launchNativeDialog}
-            </button>
-            <div
-                class="preview-area-open-system-dialog-button-throbber throbber"
-                hidden></div>
-          </div>
-        </div>
-
       </div>
     </div>
     <div class="preview-area-plugin-wrapper">
