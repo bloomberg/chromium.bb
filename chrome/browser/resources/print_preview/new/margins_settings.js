@@ -7,6 +7,10 @@ Polymer({
 
   behaviors: [SettingsBehavior],
 
+  properties: {
+    disabled: Boolean,
+  },
+
   observers: ['onMarginsSettingChange_(settings.margins.value)'],
 
   /**

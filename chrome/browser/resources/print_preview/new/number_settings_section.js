@@ -6,33 +6,46 @@ Polymer({
   is: 'print-preview-number-settings-section',
 
   properties: {
-    /** @type {string} */
-    inputString: {
+    /** @private {string} */
+    inputString_: {
       type: String,
       notify: true,
+      observer: 'onInputChanged_',
     },
 
     /** @type {boolean} */
     inputValid: {
       type: Boolean,
       notify: true,
-      computed: 'computeValid_(inputString)',
+      value: true,
     },
 
     /** @type {string} */
+    currentValue: {
+      type: String,
+      notify: true,
+      observer: 'onCurrentValueChanged_',
+    },
+
     defaultValue: String,
 
-    /** @type {number} */
     maxValue: Number,
 
-    /** @type {number} */
     minValue: Number,
 
-    /** @type {string} */
     inputLabel: String,
 
-    /** @type {string} */
     hintMessage: String,
+
+    disabled: Boolean,
+  },
+
+  /**
+   * @return {boolean} Whether the input should be disabled.
+   * @private
+   */
+  getDisabled_: function() {
+    return this.disabled && this.inputValid;
   },
 
   /**
@@ -45,19 +58,31 @@ Polymer({
 
   /** @private */
   onBlur_: function() {
-    if (this.inputString == '')
-      this.set('inputString', this.defaultValue);
+    if (this.inputString_ == '')
+      this.set('inputString_', this.defaultValue);
+  },
+
+  /** @private */
+  onInputChanged_: function() {
+    this.inputValid = this.computeValid_();
+    if (this.inputValid)
+      this.currentValue = this.inputString_;
+  },
+
+  /** @private */
+  onCurrentValueChanged_: function() {
+    this.inputString_ = this.currentValue;
   },
 
   /**
-   * @return {boolean} Whether input value represented by inputString is
+   * @return {boolean} Whether input value represented by inputString_ is
    *     valid.
    * @private
    */
   computeValid_: function() {
-    // Make sure value updates first, in case inputString was updated by JS.
-    this.$$('.user-value').value = this.inputString;
-    return this.$$('.user-value').validity.valid && this.inputString != '';
+    // Make sure value updates first, in case inputString_ was updated by JS.
+    this.$$('.user-value').value = this.inputString_;
+    return this.$$('.user-value').validity.valid && this.inputString_ != '';
   },
 
   /**
@@ -65,6 +90,6 @@ Polymer({
    * @private
    */
   hintHidden_: function() {
-    return this.inputValid || this.inputString == '';
+    return this.inputValid || this.inputString_ == '';
   },
 });

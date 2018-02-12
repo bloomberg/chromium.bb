@@ -9,6 +9,7 @@
 <link rel="import" href="../data/measurement_system.html">
 <link rel="import" href="../data/user_info.html">
 <link rel="import" href="settings_behavior.html">
+<link rel="import" href="state.html">
 <link rel="import" href="model.html">
 <link rel="import" href="header.html">
 <link rel="import" href="preview_area.html">
@@ -48,67 +49,81 @@
         overflow: auto;
       }
 
-      #preview-area {
+      #preview-area-container {
         -webkit-border-start: 1px solid #dcdcdc;
         align-items: center;
         background-color: #e6e6e6;
         flex: 1;
       }
     </style>
+    <print-preview-state id="state" state="{{state}}"></print-preview-state>
     <print-preview-model id="model" settings="{{settings}}"
         destination="{{destination_}}" document-info="{{documentInfo_}}"
         recent-destinations="{{recentDestinations_}}"
         on-save-sticky-settings="onSaveStickySettings_">
     </print-preview-model>
-    <div id="sidebar">
-      <print-preview-header destination="[[destination_]]" state="{{state_}}"
-          settings="[[settings]]"></print-preview-header>
+    <div id="sidebar" on-setting-valid-changed="onSettingValidChanged_">
+      <print-preview-header destination="[[destination_]]" state="[[state]]"
+          error-message="[[errorMessage_]]" settings="[[settings]]"
+          on-print-requested="onPrintRequested_"
+          on-cancel-requested="onCancelRequested_">
+      </print-preview-header>
       <div id="settings-sections">
         <print-preview-destination-settings destination="[[destination_]]"
           destination-store="[[destinationStore_]]"
+          disabled="[[controlsDisabled_]]" state="[[state]]"
           recent-destinations="[[recentDestinations_]]"
           user-info="[[userInfo_]]">
         </print-preview-destination-settings>
         <print-preview-pages-settings settings="{{settings}}"
-            document-info="[[documentInfo_]]"
+            document-info="[[documentInfo_]]" disabled="[[controlsDisabled_]]"
             hidden$="[[!settings.pages.available]]">
         </print-preview-pages-settings>
         <print-preview-copies-settings settings="{{settings}}"
+            disabled="[[controlsDisabled_]]"
             hidden$="[[!settings.copies.available]]">
         </print-preview-copies-settings>
         <print-preview-layout-settings settings="{{settings}}"
+            disabled="[[controlsDisabled_]]"
             hidden$="[[!settings.layout.available]]">
         </print-preview-layout-settings>
         <print-preview-color-settings settings="{{settings}}"
+            disabled="[[controlsDisabled_]]"
             hidden$="[[!settings.color.available]]">
         </print-preview-color-settings>
         <print-preview-media-size-settings settings="{{settings}}"
             capability="[[destination_.capabilities.printer.media_size]]"
+            disabled="[[controlsDisabled_]]"
             hidden$="[[!settings.mediaSize.available]]">
         </print-preview-media-size-settings>
         <print-preview-margins-settings settings="{{settings}}"
+            disabled="[[controlsDisabled_]]"
             hidden$="[[!settings.margins.available]]">
         </print-preview-margins-settings>
         <print-preview-dpi-settings settings="{{settings}}"
             capability="[[destination_.capabilities.printer.dpi]]"
+            disabled="[[controlsDisabled_]]"
             hidden$="[[!settings.dpi.available]]">
         </print-preview-dpi-settings>
         <print-preview-scaling-settings settings="{{settings}}"
-            document-info="[[documentInfo_]]"
+            document-info="[[documentInfo_]]" disabled="[[controlsDisabled_]]"
             hidden$="[[!settings.scaling.available]]">
         </print-preview-scaling-settings>
         <print-preview-other-options-settings settings="{{settings}}"
+            disabled="[[controlsDisabled_]]"
             hidden$="[[!settings.otherOptions.available]]">
         </print-preview-other-options-settings>
         <print-preview-advanced-options-settings settings="{{settings}}"
+            disabled="[[controlsDisabled_]]"
             hidden$="[[!settings.vendorItems.available]]">
         </print-preview-advanced-options-settings>
       </div>
     </div>
-    <div id="preview-area">
-      <print-preview-preview-area settings="{{settings}}"
+    <div id="preview-area-container">
+      <print-preview-preview-area id="previewArea" settings="{{settings}}"
           destination="[[destination_]]" document-info="{{documentInfo_}}"
-          state="{{state_}}">
+          state="[[state]]" on-preview-failed="onPreviewFailed_"
+          on-preview-loaded="onPreviewLoaded_">
       </print-preview-preview-area>
     </div>
   </template>

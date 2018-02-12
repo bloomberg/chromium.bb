@@ -43,6 +43,8 @@ cr.define('settings_sections_tests', function() {
               .capabilities;
       page.set('destination_', fooDestination);
       initDocumentInfo(false, false);
+      // Manually set ready state, since destination is set manually.
+      page.$.state.transitTo(print_preview_new.State.READY);
       Polymer.dom.flush();
     });
 

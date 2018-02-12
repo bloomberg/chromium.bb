@@ -7,6 +7,10 @@ Polymer({
 
   behaviors: [SettingsBehavior],
 
+  properties: {
+    disabled: Boolean,
+  },
+
   observers: [
     'onHeaderFooterSettingChange_(settings.headerFooter.value)',
     'onDuplexSettingChange_(settings.duplex.value)',

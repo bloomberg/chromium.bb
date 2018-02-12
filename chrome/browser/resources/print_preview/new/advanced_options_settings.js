@@ -4,4 +4,8 @@
 
 Polymer({
   is: 'print-preview-advanced-options-settings',
+
+  properties: {
+    disabled: Boolean,
+  },
 });

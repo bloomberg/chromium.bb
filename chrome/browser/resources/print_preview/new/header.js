@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('print_preview_new.Header');
+
+/**
+ * @typedef {{numPages: number,
+ *            numSheets: number,
+ *            pagesLabel: string,
+ *            summaryLabel: string}}
+ */
+print_preview_new.Header.LabelInfo;
+
 Polymer({
   is: 'print-preview-header',
 
@@ -12,44 +22,43 @@ Polymer({
     destination: Object,
 
     /** @type {!print_preview_new.State} */
-    state: {
-      type: Object,
-      notify: true,
+    state: Number,
+
+    /** @private {boolean} */
+    printButtonEnabled_: {
+      type: Boolean,
+      value: false,
     },
 
-    /**
-     * @private {?string} Null value indicates that there is no error or
-     *     state to display in the summary.
-     */
-    currentErrorOrState_: {
+    /** @private {?string} */
+    summary_: {
       type: String,
-      computed: 'computeErrorOrStateString_(state.*, ' +
-          'settings.copies.valid, settings.scaling.valid, ' +
-          'settings.pages.valid)'
+      notify: true,
+      value: null,
     },
 
-    /**
-     * @private {{numPages: number,
-     *            numSheets: number,
-     *            pagesLabel: string,
-     *            summaryLabel: string}}
-     */
-    labelInfo_: {
-      type: Object,
-      computed: 'getLabelInfo_(currentErrorOrState_, destination.id, ' +
-          'settings.copies.value, settings.pages.value, ' +
-          'settings.duplex.value)'
+    /** @private {?string} */
+    summaryLabel_: {
+      type: String,
+      notify: true,
+      value: null,
     },
+
+    errorMessage: String,
+  },
+
+  observers:
+      ['update_(settings.copies.value, settings.duplex.value, ' +
+       'settings.pages.value, state)'],
+
+  /** @private */
+  onPrintTap_: function() {
+    this.fire('print-requested');
   },
 
   /** @private */
-  onPrintButtonTap_: function() {
-    this.set('state.printRequested', true);
-  },
-
-  /** @private */
-  onCancelButtonTap_: function() {
-    this.set('state.cancelled', true);
+  onCancelTap_: function() {
+    this.fire('cancel-requested');
   },
 
   /**
@@ -74,36 +83,10 @@ Polymer({
   },
 
   /**
-   * @return {?string}
+   * @return {!print_preview_new.Header.LabelInfo}
    * @private
    */
-  computeErrorOrStateString_: function() {
-    if (this.state.printFailed)
-      return loadTimeData.getString('couldNotPrint');
-    if (this.state.cloudPrintError != '')
-      return this.state.cloudPrintError;
-    if (this.state.privetExtensionError != '')
-      return this.state.privetExtensionError;
-    if (this.state.invalidSettings || this.state.previewFailed ||
-        this.state.previewLoading || !this.getSetting('copies').valid ||
-        !this.getSetting('scaling').valid || !this.getSetting('pages').valid) {
-      return '';
-    }
-    if (this.state.printRequested && !this.state.previewLoading) {
-      return loadTimeData.getString(
-          this.isPdfOrDrive_() ? 'saving' : 'printing');
-    }
-    return null;
-  },
-
-  /**
-   * @return {{numPages: number,
-   *           numSheets: number,
-   *           pagesLabel: string,
-   *           summaryLabel: string}}
-   * @private
-   */
-  getLabelInfo_: function() {
+  computeLabelInfo_: function() {
     const saveToPdfOrDrive = this.isPdfOrDrive_();
     let numPages = this.getSetting('pages').value.length;
     let numSheets = numPages;
@@ -134,23 +117,41 @@ Polymer({
     };
   },
 
-  /**
-   * @return {boolean}
-   * @private
-   */
-  printButtonDisabled_: function() {
-    return this.currentErrorOrState_ != null;
+  /** @private */
+  update_: function() {
+    switch (this.state) {
+      case (print_preview_new.State.PRINTING):
+        this.printButtonEnabled_ = false;
+        this.summary_ = loadTimeData.getString(
+            this.isPdfOrDrive_() ? 'saving' : 'printing');
+        this.summaryLabel_ = this.summary_;
+        break;
+      case (print_preview_new.State.READY):
+        this.printButtonEnabled_ = true;
+        const labelInfo = this.computeLabelInfo_();
+        this.summary_ = this.getSummary_(labelInfo);
+        this.summaryLabel_ = this.getSummaryLabel_(labelInfo);
+        break;
+      case (print_preview_new.State.FATAL_ERROR):
+        this.printButtonEnabled_ = false;
+        this.summary_ = this.errorMessage;
+        this.summaryLabel_ = this.errorMessage;
+        break;
+      default:
+        this.summary_ = null;
+        this.summaryLabel_ = null;
+        this.printButtonEnabled_ = false;
+        break;
+    }
   },
 
   /**
+   * @param {!print_preview_new.Header.LabelInfo} labelInfo
    * @return {string}
    * @private
    */
-  getSummary_: function() {
-    let html = this.currentErrorOrState_;
-    if (html != null)
-      return html;
-    const labelInfo = this.labelInfo_;
+  getSummary_: function(labelInfo) {
+    let html = null;
     if (labelInfo.numPages != labelInfo.numSheets) {
       html = loadTimeData.getStringF(
           'printPreviewSummaryFormatLong',
@@ -170,13 +171,11 @@ Polymer({
   },
 
   /**
+   * @param {!print_preview_new.Header.LabelInfo} labelInfo
    * @return {string}
    * @private
    */
-  getSummaryLabel_: function() {
-    if (this.currentErrorOrState_ != null)
-      return this.currentErrorOrState_;
-    const labelInfo = this.labelInfo_;
+  getSummaryLabel_: function(labelInfo) {
     if (labelInfo.numPages != labelInfo.numSheets) {
       return loadTimeData.getStringF(
           'printPreviewSummaryFormatLong', labelInfo.numSheets.toLocaleString(),

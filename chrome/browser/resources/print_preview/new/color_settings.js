@@ -7,6 +7,10 @@ Polymer({
 
   behaviors: [SettingsBehavior],
 
+  properties: {
+    disabled: Boolean,
+  },
+
   observers: ['onColorSettingChange_(settings.color.value)'],
 
   /**

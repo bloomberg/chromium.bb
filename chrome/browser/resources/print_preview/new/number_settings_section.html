@@ -32,13 +32,16 @@
       <div slot="controls">
         <slot name="opt-outside-content"></slot>
         <span class="input-wrapper">
-          <input class="user-value" type="number" value="{{inputString::input}}"
-              max="[[maxValue]]" min="[[minValue]]" on-blur="onBlur_"
-              on-keydown="onKeydown_" aria-labelled-by="section-title">
+          <input class="user-value" type="number"
+              value="{{inputString_::input}}"
+              max="[[maxValue]]" min="[[minValue]]"
+              disabled$="[[getDisabled_(inputValid, disabled)]]"
+              on-blur="onBlur_" on-keydown="onKeydown_"
+              aria-labelled-by="section-title">
           <slot name="opt-inside-content"></slot>
         </span>
         <span class="hint" aria-live="polite"
-            hidden$="[[hintHidden_(inputString, inputValid)]]">
+            hidden$="[[hintHidden_(inputString_, inputValid)]]">
           [[hintMessage]]
         </span>
       </div>

@@ -1,9 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="button_css.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="settings_behavior.html">
 <link rel="import" href="print_preview_shared_css.html">
+<link rel="import" href="state.html">
 <link rel="import" href="strings.html">
 
 <dom-module id="print-preview-header">
@@ -67,16 +69,13 @@
       }
     </style>
     <h1 class="title">$i18n{title}</h1>
-    <span class="summary"
-        aria-label="[[getSummaryLabel_(currentErrorOrState_, labelInfo_)]]"
-        inner-h-t-m-l="[[getSummary_(currentErrorOrState_, labelInfo_)]]">
+    <span class="summary" aria-label$="[[summaryLabel_]]"
+        inner-h-t-m-l="[[summary_]]">
     </span>
     <div id="button-strip">
-      <button class="cancel" on-tap="onCancelButtonTap_">
-        $i18n{cancel}
-      </button>
-      <button class="print default" on-tap="onPrintButtonTap_"
-          disabled$="[[printButtonDisabled_(currentErrorOrState_)]]">
+      <button class="cancel" on-tap="onCancelTap_">$i18n{cancel}</button>
+      <button class="print default" on-tap="onPrintTap_"
+          disabled$="[[!printButtonEnabled_]]">
         [[getPrintButton_(destination.id)]]
       </button>
     </div>

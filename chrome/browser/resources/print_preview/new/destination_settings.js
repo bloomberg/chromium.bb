@@ -18,6 +18,11 @@ Polymer({
     /** @type {!print_preview.UserInfo} */
     userInfo: Object,
 
+    disabled: Boolean,
+
+    /** @type {!print_preview_new.State} */
+    state: Number,
+
     /** @private {boolean} */
     loadingDestination_: {
       type: Boolean,
@@ -26,6 +31,16 @@ Polymer({
   },
 
   observers: ['onDestinationSet_(destination, destination.id)'],
+
+  /**
+   * @return {boolean} Whether the destination change button should be disabled.
+   * @private
+   */
+  shouldDisableButton_: function() {
+    return !this.destinationStore ||
+        (this.disabled &&
+         this.state != print_preview_new.State.INVALID_PRINTER);
+  },
 
   /** @private */
   onDestinationSet_: function() {

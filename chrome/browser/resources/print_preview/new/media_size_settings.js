@@ -9,6 +9,8 @@ Polymer({
 
   properties: {
     capability: Object,
+
+    disabled: Boolean,
   },
 
   observers:
