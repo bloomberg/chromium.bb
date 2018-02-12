@@ -254,6 +254,9 @@ class CONTENT_EXPORT NavigationHandle {
   // navigation when processing final (post redirect) HTTP response headers.
   virtual bool IsDownload() = 0;
 
+  // Returns true if this navigation was initiated by a form submission.
+  virtual bool IsFormSubmission() = 0;
+
   // If this navigation was triggered by an anchor with a download attribute,
   // this returns the (possibly empty) value of that attribute.
   virtual const base::Optional<std::string>& GetSuggestedFilename() = 0;
@@ -269,7 +272,8 @@ class CONTENT_EXPORT NavigationHandle {
       net::Error error = net::OK,
       bool is_same_document = false,
       bool is_post = false,
-      ui::PageTransition transition = ui::PAGE_TRANSITION_LINK);
+      ui::PageTransition transition = ui::PAGE_TRANSITION_LINK,
+      bool is_form_submission = false);
 
   // Registers a NavigationThrottle for tests. The throttle can
   // modify the request, pause the request or cancel the request. This will

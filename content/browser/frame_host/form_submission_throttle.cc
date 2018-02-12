@@ -22,10 +22,7 @@ FormSubmissionThrottle::MaybeCreateThrottleFor(NavigationHandle* handle) {
   if (!IsBrowserSideNavigationEnabled())
     return nullptr;
 
-  NavigationHandleImpl* handle_impl =
-      static_cast<NavigationHandleImpl*>(handle);
-
-  if (!handle_impl->is_form_submission())
+  if (!handle->IsFormSubmission())
     return nullptr;
 
   return std::unique_ptr<NavigationThrottle>(

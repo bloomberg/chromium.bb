@@ -46,6 +46,7 @@
 #include "content/public/common/page_type.h"
 #include "content/public/common/referrer.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verify_result.h"
@@ -2637,6 +2638,38 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, CTComplianceHistogram) {
   histograms.ExpectUniqueSample(
       kHistogramName, net::ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS,
       1);
+}
+
+// Tests that the Form submission histogram is logged correctly.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, FormSecurityLevelHistogram) {
+  const char kHistogramName[] = "Security.SecurityLevel.FormSubmission";
+  SetUpMockCertVerifierForHttpsServer(0, net::OK);
+  base::HistogramTester histograms;
+  // Create a server with an expired certificate for the form to target.
+  net::EmbeddedTestServer broken_https_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  broken_https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  broken_https_server.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+  ASSERT_TRUE(broken_https_server.Start());
+
+  // Make the form target the expired certificate server.
+  std::string replacement_path;
+  net::HostPortPair host_port_pair =
+      net::HostPortPair::FromURL(broken_https_server.GetURL("/google.html"));
+  GetFilePathWithHostAndPortReplacement(
+      "/ssl/page_with_form_targeting_insecure_url.html", host_port_pair,
+      &replacement_path);
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL(replacement_path));
+  content::TestNavigationObserver navigation_observer(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  ASSERT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "document.getElementById('submit').click();"));
+  navigation_observer.Wait();
+  // Check that the histogram count logs the security level of the page
+  // containing the form, not of the form target page.
+  histograms.ExpectUniqueSample(kHistogramName, security_state::SECURE, 1);
 }
 
 }  // namespace

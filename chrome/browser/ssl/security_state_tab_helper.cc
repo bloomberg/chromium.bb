@@ -81,6 +81,13 @@ void SecurityStateTabHelper::GetSecurityInfo(
 
 void SecurityStateTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsFormSubmission()) {
+    security_state::SecurityInfo info;
+    GetSecurityInfo(&info);
+    UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.FormSubmission",
+                              info.security_level,
+                              security_state::SECURITY_LEVEL_COUNT);
+  }
   if (time_of_http_warning_on_current_navigation_.is_null() ||
       !navigation_handle->IsInMainFrame() ||
       navigation_handle->IsSameDocument()) {
