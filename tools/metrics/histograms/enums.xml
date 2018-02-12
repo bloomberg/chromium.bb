@@ -23274,6 +23274,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Hosts found but no notification shown"/>
 </enum>
 
+<enum name="InstantTethering_NotificationInteractionType">
+  <int value="0" label="Notification body clicked: Single host nearby"/>
+  <int value="1" label="Notification body clicked: Multiple hosts nearby"/>
+  <int value="2" label="Notification body clicked: Setup required"/>
+  <int value="3" label="Notification body clicked: Connection failed"/>
+  <int value="4" label="Notification button clicked: Single host nearby"/>
+</enum>
+
 <enum name="InstantTethering_SessionCompletionReason">
   <int value="0" label="Other"/>
   <int value="1" label="User disconnected"/>

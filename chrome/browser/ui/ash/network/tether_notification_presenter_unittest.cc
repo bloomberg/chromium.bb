@@ -8,10 +8,12 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/network/network_connect.h"
 #include "components/cryptauth/remote_device_test_util.h"
 
 namespace {
@@ -103,6 +105,20 @@ class TetherNotificationPresenterTest : public BrowserWithTestWindowTest {
     test_settings_ui_delegate_ = new TestSettingsUiDelegate();
     notification_presenter_->SetSettingsUiDelegateForTesting(
         base::WrapUnique(test_settings_ui_delegate_));
+    has_verified_metrics_ = false;
+  }
+
+  void TearDown() override {
+    if (!has_verified_metrics_) {
+      VerifyNotificationInteractionMetrics(
+          0u /* num_expected_body_tapped_single_host_nearby */,
+          0u /* num_expected_body_tapped_multiple_hosts_nearby */,
+          0u /* num_expected_body_tapped_setup_required */,
+          0u /* num_expected_body_tapped_connection_failed */,
+          0u /* num_expected_button_tapped_single_host_nearby */);
+    }
+
+    BrowserWithTestWindowTest::TearDown();
   }
 
   std::string GetActiveHostNotificationId() {
@@ -130,7 +146,53 @@ class TetherNotificationPresenterTest : public BrowserWithTestWindowTest {
     EXPECT_TRUE(test_settings_ui_delegate_->last_settings_subpage().empty());
   }
 
+  void VerifyNotificationInteractionMetrics(
+      size_t num_expected_body_tapped_single_host_nearby,
+      size_t num_expected_body_tapped_multiple_hosts_nearby,
+      size_t num_expected_body_tapped_setup_required,
+      size_t num_expected_body_tapped_connection_failed,
+      size_t num_expected_button_tapped_single_host_nearby) {
+    if (num_expected_body_tapped_single_host_nearby +
+            num_expected_body_tapped_multiple_hosts_nearby +
+            num_expected_body_tapped_setup_required +
+            num_expected_body_tapped_connection_failed +
+            num_expected_button_tapped_single_host_nearby ==
+        0u) {
+      histogram_tester_.ExpectTotalCount(
+          "InstantTethering.NotificationInteractionType", 0u);
+      return;
+    }
+
+    histogram_tester_.ExpectBucketCount(
+        "InstantTethering.NotificationInteractionType",
+        TetherNotificationPresenter::
+            NOTIFICATION_BODY_TAPPED_SINGLE_HOST_NEARBY,
+        num_expected_body_tapped_single_host_nearby);
+    histogram_tester_.ExpectBucketCount(
+        "InstantTethering.NotificationInteractionType",
+        TetherNotificationPresenter::
+            NOTIFICATION_BODY_TAPPED_MULTIPLE_HOSTS_NEARBY,
+        num_expected_body_tapped_multiple_hosts_nearby);
+    histogram_tester_.ExpectBucketCount(
+        "InstantTethering.NotificationInteractionType",
+        TetherNotificationPresenter::NOTIFICATION_BODY_TAPPED_SETUP_REQUIRED,
+        num_expected_body_tapped_setup_required);
+    histogram_tester_.ExpectBucketCount(
+        "InstantTethering.NotificationInteractionType",
+        TetherNotificationPresenter::NOTIFICATION_BODY_TAPPED_CONNECTION_FAILED,
+        num_expected_body_tapped_connection_failed);
+    histogram_tester_.ExpectBucketCount(
+        "InstantTethering.NotificationInteractionType",
+        TetherNotificationPresenter::NOTIFICATION_BUTTON_TAPPED_HOST_NEARBY,
+        num_expected_button_tapped_single_host_nearby);
+
+    has_verified_metrics_ = true;
+  }
+
   const cryptauth::RemoteDevice test_device_;
+
+  base::HistogramTester histogram_tester_;
+  bool has_verified_metrics_;
 
   std::unique_ptr<TestNetworkConnect> test_network_connect_;
   TestSettingsUiDelegate* test_settings_ui_delegate_;
@@ -176,6 +238,13 @@ TEST_F(TetherNotificationPresenterTest,
   VerifySettingsOpened(kTetherSettingsSubpage);
   EXPECT_FALSE(
       display_service_->GetNotification(GetActiveHostNotificationId()));
+
+  VerifyNotificationInteractionMetrics(
+      0u /* num_expected_body_tapped_single_host_nearby */,
+      0u /* num_expected_body_tapped_multiple_hosts_nearby */,
+      0u /* num_expected_body_tapped_setup_required */,
+      1u /* num_expected_body_tapped_connection_failed */,
+      0u /* num_expected_button_tapped_single_host_nearby */);
 }
 
 TEST_F(TetherNotificationPresenterTest,
@@ -215,6 +284,13 @@ TEST_F(TetherNotificationPresenterTest,
   VerifySettingsOpened(kTetherSettingsSubpage);
   EXPECT_FALSE(
       display_service_->GetNotification(GetSetupRequiredNotificationId()));
+
+  VerifyNotificationInteractionMetrics(
+      0u /* num_expected_body_tapped_single_host_nearby */,
+      0u /* num_expected_body_tapped_multiple_hosts_nearby */,
+      1u /* num_expected_body_tapped_setup_required */,
+      0u /* num_expected_body_tapped_connection_failed */,
+      0u /* num_expected_button_tapped_single_host_nearby */);
 }
 
 TEST_F(TetherNotificationPresenterTest,
@@ -254,6 +330,12 @@ TEST_F(TetherNotificationPresenterTest,
   VerifySettingsOpened(kTetherSettingsSubpage);
   EXPECT_FALSE(
       display_service_->GetNotification(GetPotentialHotspotNotificationId()));
+  VerifyNotificationInteractionMetrics(
+      1u /* num_expected_body_tapped_single_host_nearby */,
+      0u /* num_expected_body_tapped_multiple_hosts_nearby */,
+      0u /* num_expected_body_tapped_setup_required */,
+      0u /* num_expected_body_tapped_connection_failed */,
+      0u /* num_expected_button_tapped_single_host_nearby */);
 }
 
 TEST_F(TetherNotificationPresenterTest,
@@ -276,6 +358,13 @@ TEST_F(TetherNotificationPresenterTest,
 
   EXPECT_EQ(test_device_.GetDeviceId(),
             test_network_connect_->network_id_to_connect());
+
+  VerifyNotificationInteractionMetrics(
+      0u /* num_expected_body_tapped_single_host_nearby */,
+      0u /* num_expected_body_tapped_multiple_hosts_nearby */,
+      0u /* num_expected_body_tapped_setup_required */,
+      0u /* num_expected_body_tapped_connection_failed */,
+      1u /* num_expected_button_tapped_single_host_nearby */);
 }
 
 TEST_F(TetherNotificationPresenterTest,
@@ -313,6 +402,13 @@ TEST_F(TetherNotificationPresenterTest,
   VerifySettingsOpened(kTetherSettingsSubpage);
   EXPECT_FALSE(
       display_service_->GetNotification(GetPotentialHotspotNotificationId()));
+
+  VerifyNotificationInteractionMetrics(
+      0u /* num_expected_body_tapped_single_host_nearby */,
+      1u /* num_expected_body_tapped_multiple_hosts_nearby */,
+      0u /* num_expected_body_tapped_setup_required */,
+      0u /* num_expected_body_tapped_connection_failed */,
+      0u /* num_expected_button_tapped_single_host_nearby */);
 }
 
 TEST_F(TetherNotificationPresenterTest,
@@ -420,6 +516,13 @@ TEST_F(TetherNotificationPresenterTest,
   EXPECT_EQ(notification_presenter_->GetPotentialHotspotNotificationState(),
             NotificationPresenter::PotentialHotspotNotificationState::
                 NO_HOTSPOT_NOTIFICATION_SHOWN);
+
+  VerifyNotificationInteractionMetrics(
+      1u /* num_expected_body_tapped_single_host_nearby */,
+      1u /* num_expected_body_tapped_multiple_hosts_nearby */,
+      0u /* num_expected_body_tapped_setup_required */,
+      0u /* num_expected_body_tapped_connection_failed */,
+      1u /* num_expected_button_tapped_single_host_nearby */);
 }
 
 }  // namespace tether
