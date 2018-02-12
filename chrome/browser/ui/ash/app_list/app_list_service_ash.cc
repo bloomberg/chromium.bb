@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/ash/app_list/app_list_presenter_service.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/session_util.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/presenter/app_list_presenter_delegate_factory.h"
@@ -42,8 +41,7 @@ class ViewDelegateFactoryImpl : public app_list::AppListViewDelegateFactory {
 
   // app_list::AppListViewDelegateFactory:
   app_list::AppListViewDelegate* GetDelegate() override {
-    return factory_->GetViewDelegate(
-        Profile::FromBrowserContext(GetActiveBrowserContext()));
+    return factory_->GetViewDelegate();
   }
 
  private:

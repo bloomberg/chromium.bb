@@ -19,11 +19,13 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/app_list/profile_loader.h"
 #include "chrome/browser/ui/app_list/profile_store.h"
+#include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -279,9 +281,10 @@ AppListServiceImpl::AppListServiceImpl(
 
 AppListServiceImpl::~AppListServiceImpl() {}
 
-AppListViewDelegate* AppListServiceImpl::GetViewDelegate(Profile* profile) {
+AppListViewDelegate* AppListServiceImpl::GetViewDelegate() {
   if (!view_delegate_)
     view_delegate_.reset(new AppListViewDelegate(GetControllerDelegate()));
+  Profile* profile = Profile::FromBrowserContext(GetActiveBrowserContext());
   view_delegate_->SetProfile(profile);
   return view_delegate_.get();
 }

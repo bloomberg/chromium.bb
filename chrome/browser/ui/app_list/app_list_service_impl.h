@@ -39,9 +39,9 @@ class AppListServiceImpl : public AppListService,
                      PrefService* local_state,
                      std::unique_ptr<ProfileStore> profile_store);
 
-  // Lazily create the Chrome AppListViewDelegate and ensure it is set to the
-  // given |profile|.
-  AppListViewDelegate* GetViewDelegate(Profile* profile);
+  // Lazily create the Chrome AppListViewDelegate and set it to the current user
+  // profile.
+  AppListViewDelegate* GetViewDelegate();
 
   void RecordAppListLaunch();
   static void RecordAppListAppLaunch();
