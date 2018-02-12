@@ -614,15 +614,19 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& text_fragment,
                                           const LayoutPoint& paint_offset) {
   // Inline blocks should be painted by PaintAtomicInlineChild.
   DCHECK(!text_fragment.PhysicalFragment().IsAtomicInline());
-  if (DrawingRecorder::UseCachedDrawingIfPossible(
-          paint_info.context, text_fragment,
-          DisplayItem::PaintPhaseToDrawingType(paint_info.phase))) {
-    return;
-  }
 
-  DrawingRecorder recorder(
-      paint_info.context, text_fragment,
-      DisplayItem::PaintPhaseToDrawingType(paint_info.phase));
+  // The text clip phase already has a DrawingRecorder. Text clips are initiated
+  // only in BoxPainterBase::PaintFillLayer, which is already within a
+  // DrawingRecorder.
+  Optional<DrawingRecorder> recorder;
+  if (paint_info.phase != PaintPhase::kTextClip) {
+    if (DrawingRecorder::UseCachedDrawingIfPossible(
+            paint_info.context, text_fragment,
+            DisplayItem::PaintPhaseToDrawingType(paint_info.phase)))
+      return;
+    recorder.emplace(paint_info.context, text_fragment,
+                     DisplayItem::PaintPhaseToDrawingType(paint_info.phase));
+  }
 
   NGTextFragmentPainter text_painter(text_fragment);
   text_painter.Paint(paint_info, paint_offset);
@@ -690,8 +694,18 @@ void NGBoxFragmentPainter::PaintTextClipMask(GraphicsContext& context,
                                              const LayoutPoint& paint_offset) {
   PaintInfo paint_info(context, mask_rect, PaintPhase::kTextClip,
                        kGlobalPaintNormalPhase, 0);
-
-  // TODO(eae): Paint text child fragments.
+  const LayoutSize local_offset = box_fragment_.Offset().ToLayoutSize();
+  if (PhysicalFragment().IsBlockFlow()) {
+    // TODO(layout-dev): Add support for box-decoration-break: slice
+    // See BoxModelObjectPainter::LogicalOffsetOnLine
+    // if (box_fragment_.Style().BoxDecorationBreak() ==
+    //    EBoxDecorationBreak::kSlice) {
+    //  local_offset -= LogicalOffsetOnLine(*flow_box_);
+    //}
+    PaintBlockFlowContents(paint_info, paint_offset - local_offset);
+  } else {
+    PaintObject(paint_info, paint_offset - local_offset);
+  }
 }
 
 LayoutRect NGBoxFragmentPainter::AdjustForScrolledContent(
