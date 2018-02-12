@@ -24,7 +24,7 @@
   ],
   "externally_connectable": {
     "matches": [
-      "<all_urls>"
+      "https://*/*"
     ],
     "ids": [
       "fjajfjhkeibgmiggdfehjplbhmfkialk"
