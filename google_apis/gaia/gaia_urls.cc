@@ -22,7 +22,9 @@ const char kClientLoginUrlSuffix[] = "ClientLogin";
 const char kServiceLoginUrlSuffix[] = "ServiceLogin";
 const char kEmbeddedSetupChromeOsUrlSuffixV1[] = "embedded/setup/chromeos";
 const char kEmbeddedSetupChromeOsUrlSuffixV2[] = "embedded/setup/v2/chromeos";
-const char kSigninChromeSyncDice[] = "signin/chrome/sync";
+// Paramter "ssp=1" is used to skip showing the password bubble when a user
+// signs in to Chrome.
+const char kSigninChromeSyncDice[] = "signin/chrome/sync?ssp=1";
 const char kServiceLoginAuthUrlSuffix[] = "ServiceLoginAuth";
 const char kServiceLogoutUrlSuffix[] = "Logout";
 const char kIssueAuthTokenUrlSuffix[] = "IssueAuthToken";
