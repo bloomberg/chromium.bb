@@ -65,3 +65,7 @@ std::string SearchTermsData::GetYandexReferralID() const {
 std::string SearchTermsData::GetMailRUReferralID() const {
   return std::string();
 }
+
+size_t SearchTermsData::EstimateMemoryUsage() const {
+  return 0;
+}

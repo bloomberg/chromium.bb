@@ -251,6 +251,10 @@ HUPScoringParams::ScoreBuckets::ScoreBuckets(const ScoreBuckets& other) =
 HUPScoringParams::ScoreBuckets::~ScoreBuckets() {
 }
 
+size_t HUPScoringParams::ScoreBuckets::EstimateMemoryUsage() const {
+  return base::trace_event::EstimateMemoryUsage(buckets_);
+}
+
 double HUPScoringParams::ScoreBuckets::HalfLifeTimeDecay(
     const base::TimeDelta& elapsed_time) const {
   double time_ms;
@@ -261,6 +265,15 @@ double HUPScoringParams::ScoreBuckets::HalfLifeTimeDecay(
   const double half_life_intervals =
       time_ms / base::TimeDelta::FromDays(half_life_days_).InMillisecondsF();
   return pow(2.0, -half_life_intervals);
+}
+
+size_t HUPScoringParams::EstimateMemoryUsage() const {
+  size_t res = 0;
+
+  res += base::trace_event::EstimateMemoryUsage(typed_count_buckets);
+  res += base::trace_event::EstimateMemoryUsage(visited_count_buckets);
+
+  return res;
 }
 
 #if defined(OS_ANDROID)

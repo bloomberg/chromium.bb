@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
@@ -48,7 +49,8 @@ class ZeroSuggestProvider;
 //
 // The coordinator for autocomplete queries, responsible for combining the
 // matches from a series of providers into one AutocompleteResult.
-class AutocompleteController : public AutocompleteProviderListener {
+class AutocompleteController : public AutocompleteProviderListener,
+                               public base::trace_event::MemoryDumpProvider {
  public:
   typedef std::vector<scoped_refptr<AutocompleteProvider> > Providers;
 
@@ -199,6 +201,11 @@ class AutocompleteController : public AutocompleteProviderListener {
   // triggered by a user's idleness, i.e., not an explicit user action.
   void StopHelper(bool clear_result,
                   bool due_to_user_inactivity);
+
+  // MemoryDumpProvider:
+  bool OnMemoryDump(
+      const base::trace_event::MemoryDumpArgs& args,
+      base::trace_event::ProcessMemoryDump* process_memory_dump) override;
 
   AutocompleteControllerDelegate* delegate_;
 

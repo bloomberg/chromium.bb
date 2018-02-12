@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/trace_event.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_database.h"
@@ -61,6 +62,14 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
   if (in_memory_url_index_) {
     DoAutocomplete();
   }
+}
+
+size_t HistoryQuickProvider::EstimateMemoryUsage() const {
+  size_t res = HistoryProvider::EstimateMemoryUsage();
+
+  res += base::trace_event::EstimateMemoryUsage(autocomplete_input_);
+
+  return res;
 }
 
 HistoryQuickProvider::~HistoryQuickProvider() {

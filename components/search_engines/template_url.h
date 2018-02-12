@@ -5,8 +5,7 @@
 #ifndef COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_H_
 #define COMPONENTS_SEARCH_ENGINES_TEMPLATE_URL_H_
 
-#include <stddef.h>
-
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
@@ -89,6 +88,10 @@ class TemplateURLRef {
       ContextualSearchParams(const ContextualSearchParams& other);
       ~ContextualSearchParams();
 
+      // Estimates dynamic memory usage.
+      // See base/trace_event/memory_usage_estimator.h for more info.
+      size_t EstimateMemoryUsage() const;
+
       // The version of contextual search.
       int version;
 
@@ -101,6 +104,10 @@ class TemplateURLRef {
       // resides, not where they currently are.
       std::string home_country;
     };
+
+    // Estimates dynamic memory usage.
+    // See base/trace_event/memory_usage_estimator.h for more info.
+    size_t EstimateMemoryUsage() const;
 
     // The search terms (query).
     base::string16 search_terms;
@@ -274,6 +281,10 @@ class TemplateURLRef {
   // Whether the URL uses POST (as opposed to GET).
   bool UsesPOSTMethod(const SearchTermsData& search_terms_data) const;
 
+  // Estimates dynamic memory usage.
+  // See base/trace_event/memory_usage_estimator.h for more info.
+  size_t EstimateMemoryUsage() const;
+
  private:
   friend class TemplateURL;
   friend class TemplateURLTest;
@@ -339,6 +350,10 @@ class TemplateURLRef {
     std::string name;
     std::string value;
     std::string content_type;
+
+    // Estimates dynamic memory usage.
+    // See base/trace_event/memory_usage_estimator.h for more info.
+    size_t EstimateMemoryUsage() const;
   };
 
   // The list of elements to replace.
@@ -484,6 +499,10 @@ class TemplateURL {
                             base::Time install_time,
                             bool wants_to_be_default_engine);
     ~AssociatedExtensionInfo();
+
+    // Estimates dynamic memory usage.
+    // See base/trace_event/memory_usage_estimator.h for more info.
+    size_t EstimateMemoryUsage() const;
 
     std::string extension_id;
 
@@ -667,6 +686,10 @@ class TemplateURL {
   // to make its functions quick. This method invalidates any cached values and
   // it should be called after SearchTermsData has been changed.
   void InvalidateCachedValues() const;
+
+  // Estimates dynamic memory usage.
+  // See base/trace_event/memory_usage_estimator.h for more info.
+  size_t EstimateMemoryUsage() const;
 
  private:
   friend class TemplateURLService;

@@ -10,6 +10,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/url_formatter/url_fixer.h"
@@ -588,4 +589,19 @@ void AutocompleteInput::Clear() {
   want_asynchronous_matches_ = true;
   from_omnibox_focus_ = false;
   terms_prefixed_by_http_or_https_.clear();
+}
+
+size_t AutocompleteInput::EstimateMemoryUsage() const {
+  size_t res = 0;
+
+  res += base::trace_event::EstimateMemoryUsage(text_);
+  res += base::trace_event::EstimateMemoryUsage(current_url_);
+  res += base::trace_event::EstimateMemoryUsage(current_title_);
+  res += base::trace_event::EstimateMemoryUsage(scheme_);
+  res += base::trace_event::EstimateMemoryUsage(canonicalized_url_);
+  res += base::trace_event::EstimateMemoryUsage(desired_tld_);
+  res +=
+      base::trace_event::EstimateMemoryUsage(terms_prefixed_by_http_or_https_);
+
+  return res;
 }

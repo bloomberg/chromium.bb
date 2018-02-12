@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/test/scoped_task_environment.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/omnibox/browser/search_provider.h"
@@ -62,6 +63,7 @@ class OmniboxEditModelTest : public testing::Test {
   TestOmniboxEditModel* model() { return model_.get(); }
 
  private:
+  base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<TestOmniboxEditController> controller_;
   std::unique_ptr<TestOmniboxView> view_;
   std::unique_ptr<TestOmniboxEditModel> model_;

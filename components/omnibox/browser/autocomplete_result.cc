@@ -14,6 +14,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
@@ -380,6 +381,15 @@ void AutocompleteResult::InlineTailPrefixes() {
     for (auto& match : matches_)
       match.InlineTailPrefix(common_prefix);
   }
+}
+
+size_t AutocompleteResult::EstimateMemoryUsage() const {
+  size_t res = 0;
+
+  res += base::trace_event::EstimateMemoryUsage(matches_);
+  res += base::trace_event::EstimateMemoryUsage(alternate_nav_url_);
+
+  return res;
 }
 
 // static

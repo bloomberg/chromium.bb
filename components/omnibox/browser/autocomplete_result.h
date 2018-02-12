@@ -115,6 +115,10 @@ class AutocompleteResult {
   // Prepend missing tail suggestion prefixes in results, if present.
   void InlineTailPrefixes();
 
+  // Estimates dynamic memory usage.
+  // See base/trace_event/memory_usage_estimator.h for more info.
+  size_t EstimateMemoryUsage() const;
+
  private:
   friend class AutocompleteProviderTest;
 

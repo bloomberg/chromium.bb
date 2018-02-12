@@ -80,6 +80,10 @@ class SuggestionAnswer {
 
     bool Equals(const TextField& field) const;
 
+    // Estimates dynamic memory usage.
+    // See base/trace_event/memory_usage_estimator.h for more info.
+    size_t EstimateMemoryUsage() const;
+
    private:
     base::string16 text_;
     int type_;
@@ -115,6 +119,10 @@ class SuggestionAnswer {
     // Returns a string appropriate for use as a readable representation of the
     // content of this line.
     base::string16 AccessibleText() const;
+
+    // Estimates dynamic memory usage.
+    // See base/trace_event/memory_usage_estimator.h for more info.
+    size_t EstimateMemoryUsage() const;
 
    private:
     // Forbid assignment.
@@ -159,6 +167,10 @@ class SuggestionAnswer {
 
   // Retrieves any image URLs appearing in this answer and adds them to |urls|.
   void AddImageURLsTo(URLs* urls) const;
+
+  // Estimates dynamic memory usage.
+  // See base/trace_event/memory_usage_estimator.h for more info.
+  size_t EstimateMemoryUsage() const;
 
  private:
   // Forbid assignment.
