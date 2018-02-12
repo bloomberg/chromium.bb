@@ -74,7 +74,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void ClearCanvas(SkColor color);
   void ClearFramebuffer();
   void SetClipRect(const gfx::Rect& rect);
-  bool IsSoftwareResource(ResourceId resource_id) const;
 
   void DrawDebugBorderQuad(const DebugBorderDrawQuad* quad);
   void DrawPictureQuad(const PictureDrawQuad* quad);
