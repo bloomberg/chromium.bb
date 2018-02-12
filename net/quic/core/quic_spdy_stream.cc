@@ -232,6 +232,11 @@ void QuicSpdyStream::OnTrailingHeadersComplete(
       QuicStreamFrame(id(), fin, final_byte_offset, QuicStringPiece()));
 }
 
+void QuicSpdyStream::OnPriorityFrame(SpdyPriority priority) {
+  DCHECK_EQ(Perspective::IS_SERVER, session()->connection()->perspective());
+  SetPriority(priority);
+}
+
 void QuicSpdyStream::OnStreamReset(const QuicRstStreamFrame& frame) {
   if (frame.error_code != QUIC_STREAM_NO_ERROR) {
     QuicStream::OnStreamReset(frame);

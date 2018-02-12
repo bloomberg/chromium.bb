@@ -177,3 +177,6 @@ QUIC_FLAG(bool, FLAGS_quic_enable_version_99, false)
 // quic_reloadable_flag_quic_allow_receiving_overlapping_data are
 // true, enable QUIC version 42.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_42, false)
+
+// If true, enable QUIC v43.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_43, false)

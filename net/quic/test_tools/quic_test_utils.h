@@ -625,6 +625,8 @@ class MockQuicSpdySession : public QuicSpdySession {
                     QuicStreamId promised_stream_id,
                     size_t frame_len,
                     const QuicHeaderList& header_list));
+  MOCK_METHOD2(OnPriorityFrame, void(QuicStreamId id, SpdyPriority priority));
+
   // Methods taking non-copyable types like SpdyHeaderBlock by value cannot be
   // mocked directly.
   size_t WriteHeaders(QuicStreamId id,

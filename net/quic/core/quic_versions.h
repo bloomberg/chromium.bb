@@ -34,7 +34,8 @@ enum QuicTransportVersion {
                          // contain retransmittable frames.
   QUIC_VERSION_41 = 41,  // RST_STREAM, ACK and STREAM frames match IETF format.
   QUIC_VERSION_42 = 42,  // Allows receiving overlapping stream data.
-  QUIC_VERSION_43 = 43,  // Use IETF packet header format.
+  QUIC_VERSION_43 = 43,  // PRIORITY frames are sent by client and accepted by
+                         // server.
   QUIC_VERSION_99 = 99,  // Dumping ground for IETF QUIC changes which are not
                          // yet ready for production.
 

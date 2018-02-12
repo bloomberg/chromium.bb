@@ -230,8 +230,18 @@ class QuicSpdySession::SpdyFramerVisitor
                   SpdyStreamId parent_id,
                   int weight,
                   bool exclusive) override {
-    CloseConnection("SPDY PRIORITY frame received.",
-                    QUIC_INVALID_HEADERS_STREAM_DATA);
+    if (session_->connection()->transport_version() <= QUIC_VERSION_42) {
+      CloseConnection("SPDY PRIORITY frame received.",
+                      QUIC_INVALID_HEADERS_STREAM_DATA);
+      return;
+    }
+    if (!session_->IsConnected()) {
+      return;
+    }
+    // TODO (wangyix): implement real HTTP/2 weights and dependencies instead of
+    // converting to SpdyPriority.
+    SpdyPriority priority = Http2WeightToSpdy3Priority(weight);
+    session_->OnPriority(stream_id, priority);
   }
 
   bool OnUnknownFrame(SpdyStreamId stream_id, uint8_t frame_type) override {
@@ -380,6 +390,17 @@ void QuicSpdySession::OnStreamHeaderList(QuicStreamId stream_id,
   stream->OnStreamHeaderList(fin, frame_len, header_list);
 }
 
+void QuicSpdySession::OnPriorityFrame(QuicStreamId stream_id,
+                                      SpdyPriority priority) {
+  QuicSpdyStream* stream = GetSpdyDataStream(stream_id);
+  if (!stream) {
+    // It's quite possible to receive a PRIORITY frame after a stream has been
+    // reset.
+    return;
+  }
+  stream->OnPriorityFrame(priority);
+}
+
 size_t QuicSpdySession::ProcessHeaderData(const struct iovec& iov,
                                           QuicTime timestamp) {
   DCHECK(timestamp.IsInitialized());
@@ -437,7 +458,11 @@ size_t QuicSpdySession::WritePriority(QuicStreamId id,
                                       QuicStreamId parent_stream_id,
                                       int weight,
                                       bool exclusive) {
+  if (connection()->transport_version() <= QUIC_VERSION_42) {
+    return 0;
+  }
   SpdyPriorityIR priority_frame(id, parent_stream_id, weight, exclusive);
+
   SpdySerializedFrame frame(spdy_framer_.SerializeFrame(priority_frame));
   headers_stream_->WriteOrBufferData(
       QuicStringPiece(frame.data(), frame.size()), false, nullptr);
@@ -557,6 +582,18 @@ void QuicSpdySession::OnPushPromise(SpdyStreamId stream_id,
   DCHECK_EQ(kInvalidStreamId, promised_stream_id_);
   stream_id_ = stream_id;
   promised_stream_id_ = promised_stream_id;
+}
+
+// TODO (wangyix): Why is SpdyStreamId used instead of QuicStreamId?
+// This occurs in many places in this file.
+void QuicSpdySession::OnPriority(SpdyStreamId stream_id,
+                                 SpdyPriority priority) {
+  if (perspective() == Perspective::IS_CLIENT) {
+    CloseConnectionWithDetails(QUIC_INVALID_HEADERS_STREAM_DATA,
+                               "Server must not send PRIORITY frames.");
+    return;
+  }
+  OnPriorityFrame(stream_id, priority);
 }
 
 void QuicSpdySession::OnHeaderList(const QuicHeaderList& header_list) {
