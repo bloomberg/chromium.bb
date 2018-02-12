@@ -14,7 +14,7 @@
 ca-certificates
 
 # Temporary entry for tray icons
-libappindicator3.so.1
+libappindicator3.so.1()(64bit)
 
 # Specify a more recent version for security and stability updates. While we
 # depend on libnss3.so and not libssl3.so, force the dependency on libssl3 to
