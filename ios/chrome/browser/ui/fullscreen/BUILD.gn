@@ -11,9 +11,6 @@ source_set("fullscreen") {
     "fullscreen_controller_observer.h",
     "fullscreen_ui_updater.h",
     "scoped_fullscreen_disabler.h",
-    # Remove after downstream no longer checks for the feature.
-    "fullscreen_features.h",
-    "fullscreen_features.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -29,13 +26,6 @@ source_set("fullscreen") {
     "//ios/chrome/browser/ui/browser_list",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common",
-  ]
-}
-
-source_set("new_fullscreen") {
-  # Dummy source set with old name for 3-way patch.
-  public_deps = [
-    ":fullscreen",
   ]
 }
 
