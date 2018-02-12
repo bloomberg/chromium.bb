@@ -1,5 +1,4 @@
 CONSOLE ERROR: line 39: [audit.js] this test requires the explicit comparison with the expected result when it runs with run-webkit-tests.
-CONSOLE WARNING: line 62: AudioParam value setter will become equivalent to AudioParam.setValueAtTime() in M65, around March 2018  See https://webaudio.github.io/web-audio-api/#dom-audioparam-value for more details.
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = 1 duplicate test name: "  1 is equal to 1."
 PASS # AUDIT TASK RUNNER STARTED.
@@ -20,16 +19,16 @@ PASS < [numerical typed arrays] All assertions passed. (total 3 assertions)
 PASS > [basic] Simple unit tests for basic assertions.
 PASS   OfflineAudioContext does exist.
 PASS   Setting foo1 to 0 did not throw an exception.
-PASS   function () {
+PASS   function() {
               let foo2 = bar;
             } threw ReferenceError: "bar is not defined".
-PASS   function () {
+PASS   function() {
               let foo3 = bar;
             } threw ReferenceError: "bar is not defined".
-PASS   function () {
+PASS   function() {
               let foo4 = bar;
             } threw ReferenceError: "bar is not defined".
-PASS   function () {
+PASS   function() {
               let foo5 = bar;
             } threw ReferenceError: "bar is not defined".
 PASS   Calling should() with no argument threw Error: "Task.should:: requires at least 1 argument.".

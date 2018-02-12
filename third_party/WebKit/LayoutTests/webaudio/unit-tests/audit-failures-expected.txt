@@ -3,7 +3,7 @@ This is a testharness.js-based test.
 PASS # AUDIT TASK RUNNER STARTED.
 PASS > [basic-failure] Testing basic assertion failures.
 FAIL X Setting foo to bar incorrectly threw ReferenceError: "bar is not defined". assert_true: expected true got false
-FAIL X function () {
+FAIL X function() {
               let foo = 0;
             } did not throw an exception. assert_true: expected true got false
 FAIL X 3 < 5 is not true. Got false. assert_true: expected true got false
