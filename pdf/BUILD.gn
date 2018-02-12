@@ -44,6 +44,8 @@ if (enable_pdf) {
       "pdf.h",
       "pdf_engine.cc",
       "pdf_engine.h",
+      "pdf_ppapi.cc",
+      "pdf_ppapi.h",
       "preview_mode_client.cc",
       "preview_mode_client.h",
       "range_set.cc",

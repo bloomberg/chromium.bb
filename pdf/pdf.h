@@ -5,8 +5,7 @@
 #ifndef PDF_PDF_H_
 #define PDF_PDF_H_
 
-#include "ppapi/c/ppb.h"
-#include "ppapi/cpp/module.h"
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -19,21 +18,6 @@ typedef void (*PDFEnsureTypefaceCharactersAccessible)(const LOGFONT* font,
 #endif
 
 namespace chrome_pdf {
-
-class PDFModule : public pp::Module {
- public:
-  PDFModule();
-  ~PDFModule() override;
-
-  // pp::Module implementation.
-  bool Init() override;
-  pp::Instance* CreateInstance(PP_Instance instance) override;
-};
-
-int PPP_InitializeModule(PP_Module module_id,
-                         PPB_GetInterface get_browser_interface);
-void PPP_ShutdownModule();
-const void* PPP_GetInterface(const char* interface_name);
 
 #if defined(OS_WIN)
 // Printing modes - type to convert PDF to for printing
