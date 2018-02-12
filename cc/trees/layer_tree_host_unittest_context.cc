@@ -1347,7 +1347,7 @@ class UIResourceLostBeforeCommit : public UIResourceLostTestSimple {
 };
 
 // http://crbug.com/803532 : Flaky on Win 7 (dbg).
-#if defined(NDEBUG) || defined(OS_WIN)
+#if defined(NDEBUG) || !defined(OS_WIN)
 SINGLE_THREAD_TEST_F(UIResourceLostBeforeCommit);
 #endif
 MULTI_THREAD_TEST_F(UIResourceLostBeforeCommit);
