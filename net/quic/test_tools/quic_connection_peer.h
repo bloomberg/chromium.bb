@@ -114,6 +114,7 @@ class QuicConnectionPeer {
                                      bool no_stop_waiting_frames);
   static void SetMaxTrackedPackets(QuicConnection* connection,
                                    QuicPacketCount max_tracked_packets);
+  static void SetSessionDecidesWhatToWrite(QuicConnection* connection);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionPeer);

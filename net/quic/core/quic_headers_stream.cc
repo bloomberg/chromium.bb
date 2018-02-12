@@ -112,6 +112,7 @@ bool QuicHeadersStream::OnStreamFrameAcked(QuicStreamOffset offset,
 void QuicHeadersStream::OnStreamFrameRetransmitted(QuicStreamOffset offset,
                                                    QuicByteCount data_length,
                                                    bool /*fin_retransmitted*/) {
+  QuicStream::OnStreamFrameRetransmitted(offset, data_length, false);
   for (CompressedHeaderInfo& header : unacked_headers_) {
     if (offset < header.headers_stream_offset) {
       // This header frame offset belongs to headers with smaller offset, stop

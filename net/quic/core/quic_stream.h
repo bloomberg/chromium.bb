@@ -222,6 +222,12 @@ class QUIC_EXPORT_PRIVATE QuicStream {
                          QuicByteCount data_length,
                          bool fin_lost);
 
+  // Called to retransmit outstanding portion in data [offset, offset +
+  // data_length) and |fin|. Returns true if all data gets retransmitted.
+  virtual bool RetransmitStreamData(QuicStreamOffset offset,
+                                    QuicByteCount data_length,
+                                    bool fin);
+
   // Same as WritevData except data is provided in reference counted memory so
   // that data copy is avoided.
   QuicConsumedData WriteMemSlices(QuicMemSliceSpan span, bool fin);

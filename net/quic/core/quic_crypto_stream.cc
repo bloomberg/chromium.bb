@@ -158,4 +158,48 @@ void QuicCryptoStream::WritePendingRetransmission() {
   }
 }
 
+bool QuicCryptoStream::RetransmitStreamData(QuicStreamOffset offset,
+                                            QuicByteCount data_length,
+                                            bool /*fin*/) {
+  QuicIntervalSet<QuicStreamOffset> retransmission(offset,
+                                                   offset + data_length);
+  // Determine the encryption level to send data. This only needs to be once as
+  // [offset, offset + data_length) is guaranteed to be in the same packet.
+  EncryptionLevel send_encryption_level = ENCRYPTION_NONE;
+  for (size_t i = 0; i < NUM_ENCRYPTION_LEVELS; ++i) {
+    if (retransmission.Intersects(bytes_consumed_[i])) {
+      send_encryption_level = static_cast<EncryptionLevel>(i);
+      break;
+    }
+  }
+  retransmission.Difference(bytes_acked());
+  EncryptionLevel current_encryption_level =
+      session()->connection()->encryption_level();
+  for (const auto& interval : retransmission) {
+    QuicStreamOffset retransmission_offset = interval.min();
+    QuicByteCount retransmission_length = interval.max() - interval.min();
+    // Set appropriate encryption level.
+    session()->connection()->SetDefaultEncryptionLevel(send_encryption_level);
+    QuicConsumedData consumed = session()->WritevData(
+        this, id(), retransmission_length, retransmission_offset, NO_FIN);
+    QUIC_DVLOG(1) << ENDPOINT << "stream " << id()
+                  << " is forced to retransmit stream data ["
+                  << retransmission_offset << ", "
+                  << retransmission_offset + retransmission_length
+                  << "), with encryption level: " << send_encryption_level
+                  << ", consumed: " << consumed;
+    OnStreamFrameRetransmitted(retransmission_offset, consumed.bytes_consumed,
+                               consumed.fin_consumed);
+    // Restore encryption level.
+    session()->connection()->SetDefaultEncryptionLevel(
+        current_encryption_level);
+    if (consumed.bytes_consumed < retransmission_length) {
+      // The connection is write blocked.
+      return false;
+    }
+  }
+
+  return true;
+}
+
 }  // namespace net

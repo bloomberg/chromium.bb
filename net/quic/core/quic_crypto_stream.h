@@ -89,6 +89,11 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   // level.
   void WritePendingRetransmission() override;
 
+  // Override to send unacked crypto data with the appropriate encryption level.
+  bool RetransmitStreamData(QuicStreamOffset offset,
+                            QuicByteCount data_length,
+                            bool fin) override;
+
  private:
   // Consumed data according to encryption levels.
   // TODO(fayang): This is not needed once switching from QUIC crypto to

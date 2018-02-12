@@ -1360,8 +1360,13 @@ TEST_P(QuicProxyClientSocketTest, RstWithReadAndWritePending) {
   mock_quic_data_.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   mock_quic_data_.AddAsyncWrite(
       ConstructAckAndDataPacket(3, 1, 1, 1, 0, kMsg2, kLen2));
-  mock_quic_data_.AddWrite(
-      ConstructRstPacket(4, QUIC_RST_ACKNOWLEDGEMENT, kLen2));
+  if (FLAGS_quic_reloadable_flag_quic_use_control_frame_manager) {
+    mock_quic_data_.AddWrite(
+        ConstructAckAndRstPacket(4, QUIC_RST_ACKNOWLEDGEMENT, 2, 2, 1, kLen2));
+  } else {
+    mock_quic_data_.AddWrite(
+        ConstructRstPacket(4, QUIC_RST_ACKNOWLEDGEMENT, kLen2));
+  }
 
   Initialize();
 
@@ -1478,8 +1483,13 @@ TEST_P(QuicProxyClientSocketTest, RstWithReadAndWritePendingDelete) {
   mock_quic_data_.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   mock_quic_data_.AddAsyncWrite(
       ConstructAckAndDataPacket(3, 1, 1, 1, 0, kMsg1, kLen1));
-  mock_quic_data_.AddWrite(
-      ConstructRstPacket(4, QUIC_RST_ACKNOWLEDGEMENT, kLen1));
+  if (FLAGS_quic_reloadable_flag_quic_use_control_frame_manager) {
+    mock_quic_data_.AddWrite(
+        ConstructAckAndRstPacket(4, QUIC_RST_ACKNOWLEDGEMENT, 2, 2, 1, kLen1));
+  } else {
+    mock_quic_data_.AddWrite(
+        ConstructRstPacket(4, QUIC_RST_ACKNOWLEDGEMENT, kLen1));
+  }
 
   Initialize();
 

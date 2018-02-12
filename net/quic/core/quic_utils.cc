@@ -264,4 +264,28 @@ bool QuicUtils::IsAckable(SentPacketState state) {
   return state != NEVER_SENT && state != ACKED && state != UNACKABLE;
 }
 
+// static
+SentPacketState QuicUtils::RetransmissionTypeToPacketState(
+    TransmissionType retransmission_type) {
+  switch (retransmission_type) {
+    case ALL_UNACKED_RETRANSMISSION:
+    case ALL_INITIAL_RETRANSMISSION:
+      return UNACKABLE;
+    case HANDSHAKE_RETRANSMISSION:
+      return HANDSHAKE_RETRANSMITTED;
+    case LOSS_RETRANSMISSION:
+      return LOST;
+    case TLP_RETRANSMISSION:
+      return TLP_RETRANSMITTED;
+    case RTO_RETRANSMISSION:
+      return RTO_RETRANSMITTED;
+    case PROBING_RETRANSMISSION:
+      return PROBE_RETRANSMITTED;
+    default:
+      QUIC_BUG << QuicUtils::TransmissionTypeToString(retransmission_type)
+               << " is not a retransmission_type";
+      return UNACKABLE;
+  }
+}
+
 }  // namespace net

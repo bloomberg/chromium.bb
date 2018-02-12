@@ -215,6 +215,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // Called when peer address changes and the connection migrates.
   void OnConnectionMigration(AddressChangeType type);
 
+  // Called to enable/disable letting session decide what to write.
+  void SetSessionDecideWhatToWrite(bool session_decides_what_to_write);
+
   void SetDebugDelegate(DebugDelegate* debug_delegate);
 
   QuicPacketNumber GetLargestObserved() const;
@@ -240,6 +243,12 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   }
 
   bool handshake_confirmed() const { return handshake_confirmed_; }
+
+  bool session_decides_what_to_write() const;
+
+  size_t pending_timer_transmission_count() const {
+    return pending_timer_transmission_count_;
+  }
 
  private:
   friend class test::QuicConnectionPeer;

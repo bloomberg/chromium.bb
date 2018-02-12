@@ -695,6 +695,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Set data producer in framer.
   void SetDataProducer(QuicStreamFrameDataProducer* data_producer);
 
+  // Set transmission type of next sending packets.
+  void SetTransmissionType(TransmissionType type);
+
   // Return the id of the cipher of the primary decrypter of the framer.
   uint32_t cipher_id() const { return framer_.decrypter()->cipher_id(); }
 
@@ -740,6 +743,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   }
 
   bool use_control_frame_manager() const { return use_control_frame_manager_; }
+
+  bool session_decides_what_to_write() const;
 
  protected:
   // Calls cancel() on all the alarms owned by this connection.
@@ -911,6 +916,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // starts peer miration if current packet is confirmed not a connectivity
   // probe and |current_peer_migration_type_| indicates peer address change.
   void UpdatePacketContent(PacketContent type);
+
+  // Enables session decide what to write based on version and flags.
+  void MaybeEnableSessionDecidesWhatToWrite();
 
   QuicFramer framer_;
 

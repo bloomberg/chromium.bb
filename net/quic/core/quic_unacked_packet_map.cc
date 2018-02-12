@@ -17,7 +17,8 @@ QuicUnackedPacketMap::QuicUnackedPacketMap()
       least_unacked_(1),
       bytes_in_flight_(0),
       pending_crypto_packet_count_(0),
-      session_notifier_(nullptr) {}
+      session_notifier_(nullptr),
+      session_decides_what_to_write_(false) {}
 
 QuicUnackedPacketMap::~QuicUnackedPacketMap() {
   for (QuicTransmissionInfo& transmission_info : unacked_packets_) {
@@ -57,7 +58,7 @@ void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* packet,
     largest_sent_retransmittable_packet_ = packet_number;
   }
   unacked_packets_.push_back(info);
-  // Swap the ack listeners and retransmittable frames to avoid allocations.
+  // Swap the retransmittable frames to avoid allocations.
   // TODO(ianswett): Could use emplace_back when Chromium can.
   if (old_packet_number == 0) {
     if (has_crypto_handshake) {
@@ -74,7 +75,9 @@ void QuicUnackedPacketMap::RemoveObsoletePackets() {
     if (!IsPacketUseless(least_unacked_, unacked_packets_.front())) {
       break;
     }
-
+    if (session_decides_what_to_write_) {
+      DeleteFrames(&unacked_packets_.front().retransmittable_frames);
+    }
     unacked_packets_.pop_front();
     ++least_unacked_;
   }
@@ -142,11 +145,28 @@ bool QuicUnackedPacketMap::HasRetransmittableFrames(
 
 bool QuicUnackedPacketMap::HasRetransmittableFrames(
     const QuicTransmissionInfo& info) const {
-  return !info.retransmittable_frames.empty();
+  if (!session_decides_what_to_write_) {
+    return !info.retransmittable_frames.empty();
+  }
+
+  if (!QuicUtils::IsAckable(info.state)) {
+    return false;
+  }
+
+  for (const auto& frame : info.retransmittable_frames) {
+    if (session_notifier_->IsFrameOutstanding(frame)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void QuicUnackedPacketMap::RemoveRetransmittability(
     QuicTransmissionInfo* info) {
+  if (session_decides_what_to_write_) {
+    DeleteFrames(&info->retransmittable_frames);
+    return;
+  }
   while (info->retransmission != 0) {
     const QuicPacketNumber retransmission = info->retransmission;
     info->retransmission = 0;
@@ -311,7 +331,10 @@ bool QuicUnackedPacketMap::HasMultipleInFlightPackets() const {
 }
 
 bool QuicUnackedPacketMap::HasPendingCryptoPackets() const {
-  return pending_crypto_packet_count_ > 0;
+  if (!session_decides_what_to_write_) {
+    return pending_crypto_packet_count_ > 0;
+  }
+  return session_notifier_->HasPendingCryptoData();
 }
 
 bool QuicUnackedPacketMap::HasUnackedRetransmittableFrames() const {
@@ -345,6 +368,29 @@ bool QuicUnackedPacketMap::NotifyFramesAcked(const QuicTransmissionInfo& info,
     }
   }
   return new_data_acked;
+}
+
+void QuicUnackedPacketMap::NotifyFramesLost(const QuicTransmissionInfo& info,
+                                            TransmissionType type) {
+  DCHECK(session_decides_what_to_write_);
+  for (const QuicFrame& frame : info.retransmittable_frames) {
+    session_notifier_->OnFrameLost(frame);
+  }
+}
+
+void QuicUnackedPacketMap::RetransmitFrames(const QuicTransmissionInfo& info,
+                                            TransmissionType type) {
+  DCHECK(session_decides_what_to_write_);
+  session_notifier_->RetransmitFrames(info.retransmittable_frames, type);
+}
+
+void QuicUnackedPacketMap::SetSessionDecideWhatToWrite(
+    bool session_decides_what_to_write) {
+  if (largest_sent_packet_ > 0) {
+    QUIC_BUG << "Cannot change session_decide_what_to_write with packets sent.";
+    return;
+  }
+  session_decides_what_to_write_ = session_decides_what_to_write;
 }
 
 }  // namespace net

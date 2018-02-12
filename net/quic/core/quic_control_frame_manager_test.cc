@@ -52,11 +52,11 @@ class QuicControlFrameManagerTest : public QuicTest {
     manager_->WriteOrBufferWindowUpdate(kTestStreamId, 100);
     manager_->WriteOrBufferBlocked(kTestStreamId);
     EXPECT_EQ(4u, QuicControlFrameManagerPeer::QueueSize(manager_.get()));
-    EXPECT_FALSE(manager_->IsControlFrameOutstanding(QuicFrame(&rst_stream_)));
-    EXPECT_FALSE(manager_->IsControlFrameOutstanding(QuicFrame(&goaway_)));
-    EXPECT_FALSE(
+    EXPECT_TRUE(manager_->IsControlFrameOutstanding(QuicFrame(&rst_stream_)));
+    EXPECT_TRUE(manager_->IsControlFrameOutstanding(QuicFrame(&goaway_)));
+    EXPECT_TRUE(
         manager_->IsControlFrameOutstanding(QuicFrame(&window_update_)));
-    EXPECT_FALSE(manager_->IsControlFrameOutstanding(QuicFrame(&blocked_)));
+    EXPECT_TRUE(manager_->IsControlFrameOutstanding(QuicFrame(&blocked_)));
     EXPECT_FALSE(
         manager_->IsControlFrameOutstanding(QuicFrame(QuicPingFrame(5))));
 
@@ -89,7 +89,7 @@ TEST_F(QuicControlFrameManagerTest, OnControlFrameAcked) {
   EXPECT_TRUE(manager_->IsControlFrameOutstanding(QuicFrame(&rst_stream_)));
   EXPECT_TRUE(manager_->IsControlFrameOutstanding(QuicFrame(&goaway_)));
   EXPECT_TRUE(manager_->IsControlFrameOutstanding(QuicFrame(&window_update_)));
-  EXPECT_FALSE(manager_->IsControlFrameOutstanding(QuicFrame(&blocked_)));
+  EXPECT_TRUE(manager_->IsControlFrameOutstanding(QuicFrame(&blocked_)));
   EXPECT_FALSE(
       manager_->IsControlFrameOutstanding(QuicFrame(QuicPingFrame(5))));
 
@@ -155,6 +155,32 @@ TEST_F(QuicControlFrameManagerTest, OnControlFrameLost) {
   manager_->OnCanWrite();
   manager_->WritePing();
   EXPECT_FALSE(manager_->WillingToWrite());
+}
+
+TEST_F(QuicControlFrameManagerTest, RetransmitControlFrame) {
+  Initialize();
+  InSequence s;
+  // Send control frames 1, 2, 3, 4.
+  EXPECT_CALL(*connection_, SendControlFrame(_))
+      .Times(4)
+      .WillRepeatedly(
+          Invoke(this, &QuicControlFrameManagerTest::ClearControlFrame));
+  manager_->OnCanWrite();
+
+  // Ack control frame 2.
+  manager_->OnControlFrameAcked(QuicFrame(&goaway_));
+  // Do not retransmit an acked frame.
+  EXPECT_CALL(*connection_, SendControlFrame(_)).Times(0);
+  EXPECT_TRUE(manager_->RetransmitControlFrame(QuicFrame(&goaway_)));
+
+  // Retransmit control frame 3.
+  EXPECT_CALL(*connection_, SendControlFrame(_))
+      .WillOnce(Invoke(this, &QuicControlFrameManagerTest::ClearControlFrame));
+  EXPECT_TRUE(manager_->RetransmitControlFrame(QuicFrame(&window_update_)));
+
+  // Retransmit control frame 4, and connection is write blocked.
+  EXPECT_CALL(*connection_, SendControlFrame(_)).WillOnce(Return(false));
+  EXPECT_FALSE(manager_->RetransmitControlFrame(QuicFrame(&window_update_)));
 }
 
 }  // namespace
