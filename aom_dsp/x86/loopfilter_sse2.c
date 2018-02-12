@@ -251,9 +251,6 @@ void aom_lpf_horizontal_16_sse2(unsigned char *s, int p,
   const __m128i limit = _mm_load_si128((const __m128i *)_limit);
   const __m128i thresh = _mm_load_si128((const __m128i *)_thresh);
   __m128i mask, hev, flat, flat2;
-#if !CONFIG_DEBLOCK_13TAP
-  __m128i q7p7;
-#endif
   __m128i q6p6, q5p5, q4p4, q3p3, q2p2, q1p1, q0p0, p0q0, p1q1;
   __m128i abs_p1p0;
 
@@ -316,9 +313,6 @@ void aom_lpf_horizontal_16_sse2(unsigned char *s, int p,
     __m128i filt;
     __m128i work_a;
     __m128i filter1, filter2;
-#if !CONFIG_DEBLOCK_13TAP
-    __m128i flat2_q6p6;
-#endif
     __m128i flat2_q5p5, flat2_q4p4, flat2_q3p3, flat2_q2p2;
     __m128i flat2_q1p1, flat2_q0p0, flat_q2p2, flat_q1p1, flat_q0p0;
 
@@ -368,14 +362,7 @@ void aom_lpf_horizontal_16_sse2(unsigned char *s, int p,
       q6p6 = _mm_castps_si128(
           _mm_loadh_pi(_mm_castsi128_ps(q6p6), (__m64 *)(s + 6 * p)));
       flat2 = _mm_max_epu8(abs_diff(q4p4, q0p0), abs_diff(q5p5, q0p0));
-#if !CONFIG_DEBLOCK_13TAP
-      q7p7 = _mm_loadl_epi64((__m128i *)(s - 8 * p));
-      q7p7 = _mm_castps_si128(
-          _mm_loadh_pi(_mm_castsi128_ps(q7p7), (__m64 *)(s + 7 * p)));
-      work = _mm_max_epu8(abs_diff(q6p6, q0p0), abs_diff(q7p7, q0p0));
-#else
       work = abs_diff(q6p6, q0p0);
-#endif
       flat2 = _mm_max_epu8(work, flat2);
       flat2 = _mm_max_epu8(flat2, _mm_srli_si128(flat2, 8));
       flat2 = _mm_subs_epu8(flat2, one);
@@ -387,23 +374,13 @@ void aom_lpf_horizontal_16_sse2(unsigned char *s, int p,
     {
       const __m128i eight = _mm_set1_epi16(8);
       const __m128i four = _mm_set1_epi16(4);
-#if !CONFIG_DEBLOCK_13TAP
-      __m128i p7_16, q7_16;
-#endif
       __m128i p6_16, p5_16, p4_16, p3_16, p2_16, p1_16, p0_16;
       __m128i q6_16, q5_16, q4_16, q3_16, q2_16, q1_16, q0_16;
       __m128i pixelFilter_p, pixelFilter_q;
       __m128i pixetFilter_p2p1p0, pixetFilter_q2q1q0;
-#if !CONFIG_DEBLOCK_13TAP
-      __m128i sum_p7, sum_q7;
-#else
       __m128i sum_p6, sum_q6;
-#endif
       __m128i sum_p3, sum_q3, res_p, res_q;
 
-#if !CONFIG_DEBLOCK_13TAP
-      p7_16 = _mm_unpacklo_epi8(q7p7, zero);
-#endif
       p6_16 = _mm_unpacklo_epi8(q6p6, zero);
       p5_16 = _mm_unpacklo_epi8(q5p5, zero);
       p4_16 = _mm_unpacklo_epi8(q4p4, zero);
@@ -418,17 +395,8 @@ void aom_lpf_horizontal_16_sse2(unsigned char *s, int p,
       q4_16 = _mm_unpackhi_epi8(q4p4, zero);
       q5_16 = _mm_unpackhi_epi8(q5p5, zero);
       q6_16 = _mm_unpackhi_epi8(q6p6, zero);
-#if !CONFIG_DEBLOCK_13TAP
-      q7_16 = _mm_unpackhi_epi8(q7p7, zero);
-
-      pixelFilter_p = _mm_add_epi16(_mm_add_epi16(p6_16, p5_16),
-                                    _mm_add_epi16(p4_16, p3_16));
-      pixelFilter_q = _mm_add_epi16(_mm_add_epi16(q6_16, q5_16),
-                                    _mm_add_epi16(q4_16, q3_16));
-#else
       pixelFilter_p = _mm_add_epi16(p5_16, _mm_add_epi16(p4_16, p3_16));
       pixelFilter_q = _mm_add_epi16(q5_16, _mm_add_epi16(q4_16, q3_16));
-#endif
 
       pixetFilter_p2p1p0 = _mm_add_epi16(p0_16, _mm_add_epi16(p2_16, p1_16));
       pixelFilter_p = _mm_add_epi16(pixelFilter_p, pixetFilter_p2p1p0);
@@ -440,23 +408,15 @@ void aom_lpf_horizontal_16_sse2(unsigned char *s, int p,
       pixetFilter_p2p1p0 = _mm_add_epi16(
           four, _mm_add_epi16(pixetFilter_p2p1p0, pixetFilter_q2q1q0));
       res_p = _mm_srli_epi16(
-#if !CONFIG_DEBLOCK_13TAP
-          _mm_add_epi16(pixelFilter_p, _mm_add_epi16(p7_16, p0_16)), 4);
-#else
           _mm_add_epi16(pixelFilter_p,
                         _mm_add_epi16(_mm_add_epi16(p6_16, p0_16),
                                       _mm_add_epi16(p1_16, q0_16))),
           4);
-#endif
       res_q = _mm_srli_epi16(
-#if !CONFIG_DEBLOCK_13TAP
-          _mm_add_epi16(pixelFilter_p, _mm_add_epi16(q7_16, q0_16)), 4);
-#else
           _mm_add_epi16(pixelFilter_p,
                         _mm_add_epi16(_mm_add_epi16(q6_16, q0_16),
                                       _mm_add_epi16(p0_16, q1_16))),
           4);
-#endif
       flat2_q0p0 = _mm_packus_epi16(res_p, res_q);
 
       res_p = _mm_srli_epi16(
@@ -466,44 +426,26 @@ void aom_lpf_horizontal_16_sse2(unsigned char *s, int p,
 
       flat_q0p0 = _mm_packus_epi16(res_p, res_q);
 
-#if !CONFIG_DEBLOCK_13TAP
-      sum_p7 = _mm_add_epi16(p7_16, p7_16);
-      sum_q7 = _mm_add_epi16(q7_16, q7_16);
-#else
       sum_p6 = _mm_add_epi16(p6_16, p6_16);
       sum_q6 = _mm_add_epi16(q6_16, q6_16);
-#endif
       sum_p3 = _mm_add_epi16(p3_16, p3_16);
       sum_q3 = _mm_add_epi16(q3_16, q3_16);
 
-#if !CONFIG_DEBLOCK_13TAP
-      pixelFilter_q = _mm_sub_epi16(pixelFilter_p, p6_16);
-      pixelFilter_p = _mm_sub_epi16(pixelFilter_p, q6_16);
-#else
       pixelFilter_q = _mm_sub_epi16(pixelFilter_p, p5_16);
       pixelFilter_p = _mm_sub_epi16(pixelFilter_p, q5_16);
-#endif
 
       res_p = _mm_srli_epi16(
-#if !CONFIG_DEBLOCK_13TAP
-          _mm_add_epi16(pixelFilter_p, _mm_add_epi16(sum_p7, p1_16)), 4);
-#else
           _mm_add_epi16(
               pixelFilter_p,
               _mm_add_epi16(sum_p6,
                             _mm_add_epi16(p1_16, _mm_add_epi16(p2_16, p0_16)))),
           4);
-#endif
       res_q = _mm_srli_epi16(
-#if !CONFIG_DEBLOCK_13TAP
-          _mm_add_epi16(pixelFilter_q, _mm_add_epi16(sum_q7, q1_16)), 4);
-#else
           _mm_add_epi16(
               pixelFilter_q,
               _mm_add_epi16(sum_q6,
                             _mm_add_epi16(q1_16, _mm_add_epi16(q0_16, q2_16)))),
           4);
-#endif
       flat2_q1p1 = _mm_packus_epi16(res_p, res_q);
 
       pixetFilter_q2q1q0 = _mm_sub_epi16(pixetFilter_p2p1p0, p2_16);
@@ -514,44 +456,26 @@ void aom_lpf_horizontal_16_sse2(unsigned char *s, int p,
           _mm_add_epi16(pixetFilter_q2q1q0, _mm_add_epi16(sum_q3, q1_16)), 3);
       flat_q1p1 = _mm_packus_epi16(res_p, res_q);
 
-#if !CONFIG_DEBLOCK_13TAP
-      sum_p7 = _mm_add_epi16(sum_p7, p7_16);
-      sum_q7 = _mm_add_epi16(sum_q7, q7_16);
-#else
       sum_p6 = _mm_add_epi16(sum_p6, p6_16);
       sum_q6 = _mm_add_epi16(sum_q6, q6_16);
-#endif
       sum_p3 = _mm_add_epi16(sum_p3, p3_16);
       sum_q3 = _mm_add_epi16(sum_q3, q3_16);
 
-#if !CONFIG_DEBLOCK_13TAP
-      pixelFilter_p = _mm_sub_epi16(pixelFilter_p, q5_16);
-      pixelFilter_q = _mm_sub_epi16(pixelFilter_q, p5_16);
-#else
       pixelFilter_p = _mm_sub_epi16(pixelFilter_p, q4_16);
       pixelFilter_q = _mm_sub_epi16(pixelFilter_q, p4_16);
-#endif
 
       res_p = _mm_srli_epi16(
-#if !CONFIG_DEBLOCK_13TAP
-          _mm_add_epi16(pixelFilter_p, _mm_add_epi16(sum_p7, p2_16)), 4);
-#else
           _mm_add_epi16(
               pixelFilter_p,
               _mm_add_epi16(sum_p6,
                             _mm_add_epi16(p2_16, _mm_add_epi16(p3_16, p1_16)))),
           4);
-#endif
       res_q = _mm_srli_epi16(
-#if !CONFIG_DEBLOCK_13TAP
-          _mm_add_epi16(pixelFilter_q, _mm_add_epi16(sum_q7, q2_16)), 4);
-#else
           _mm_add_epi16(
               pixelFilter_q,
               _mm_add_epi16(sum_q6,
                             _mm_add_epi16(q2_16, _mm_add_epi16(q1_16, q3_16)))),
           4);
-#endif
       flat2_q2p2 = _mm_packus_epi16(res_p, res_q);
 
       pixetFilter_p2p1p0 = _mm_sub_epi16(pixetFilter_p2p1p0, q1_16);
@@ -563,131 +487,64 @@ void aom_lpf_horizontal_16_sse2(unsigned char *s, int p,
           _mm_add_epi16(pixetFilter_q2q1q0, _mm_add_epi16(sum_q3, q2_16)), 3);
       flat_q2p2 = _mm_packus_epi16(res_p, res_q);
 
-#if !CONFIG_DEBLOCK_13TAP
-      sum_p7 = _mm_add_epi16(sum_p7, p7_16);
-      sum_q7 = _mm_add_epi16(sum_q7, q7_16);
-#else
       sum_p6 = _mm_add_epi16(sum_p6, p6_16);
       sum_q6 = _mm_add_epi16(sum_q6, q6_16);
-#endif
 
-#if !CONFIG_DEBLOCK_13TAP
-      pixelFilter_p = _mm_sub_epi16(pixelFilter_p, q4_16);
-      pixelFilter_q = _mm_sub_epi16(pixelFilter_q, p4_16);
-#else
       pixelFilter_p = _mm_sub_epi16(pixelFilter_p, q3_16);
       pixelFilter_q = _mm_sub_epi16(pixelFilter_q, p3_16);
-#endif
 
       res_p = _mm_srli_epi16(
-#if !CONFIG_DEBLOCK_13TAP
-          _mm_add_epi16(pixelFilter_p, _mm_add_epi16(sum_p7, p3_16)), 4);
-#else
           _mm_add_epi16(
               pixelFilter_p,
               _mm_add_epi16(sum_p6,
                             _mm_add_epi16(p3_16, _mm_add_epi16(p4_16, p2_16)))),
           4);
-#endif
       res_q = _mm_srli_epi16(
-#if !CONFIG_DEBLOCK_13TAP
-          _mm_add_epi16(pixelFilter_q, _mm_add_epi16(sum_q7, q3_16)), 4);
-#else
           _mm_add_epi16(
               pixelFilter_q,
               _mm_add_epi16(sum_q6,
                             _mm_add_epi16(q3_16, _mm_add_epi16(q2_16, q4_16)))),
           4);
-#endif
       flat2_q3p3 = _mm_packus_epi16(res_p, res_q);
 
-#if !CONFIG_DEBLOCK_13TAP
-      sum_p7 = _mm_add_epi16(sum_p7, p7_16);
-      sum_q7 = _mm_add_epi16(sum_q7, q7_16);
-#else
       sum_p6 = _mm_add_epi16(sum_p6, p6_16);
       sum_q6 = _mm_add_epi16(sum_q6, q6_16);
-#endif
 
-#if !CONFIG_DEBLOCK_13TAP
-      pixelFilter_p = _mm_sub_epi16(pixelFilter_p, q3_16);
-      pixelFilter_q = _mm_sub_epi16(pixelFilter_q, p3_16);
-#else
       pixelFilter_p = _mm_sub_epi16(pixelFilter_p, q2_16);
       pixelFilter_q = _mm_sub_epi16(pixelFilter_q, p2_16);
-#endif
 
       res_p = _mm_srli_epi16(
-#if !CONFIG_DEBLOCK_13TAP
-          _mm_add_epi16(pixelFilter_p, _mm_add_epi16(sum_p7, p4_16)), 4);
-#else
           _mm_add_epi16(
               pixelFilter_p,
               _mm_add_epi16(sum_p6,
                             _mm_add_epi16(p4_16, _mm_add_epi16(p5_16, p3_16)))),
           4);
-#endif
       res_q = _mm_srli_epi16(
-#if !CONFIG_DEBLOCK_13TAP
-          _mm_add_epi16(pixelFilter_q, _mm_add_epi16(sum_q7, q4_16)), 4);
-#else
           _mm_add_epi16(
               pixelFilter_q,
               _mm_add_epi16(sum_q6,
                             _mm_add_epi16(q4_16, _mm_add_epi16(q3_16, q5_16)))),
           4);
-#endif
       flat2_q4p4 = _mm_packus_epi16(res_p, res_q);
 
-#if !CONFIG_DEBLOCK_13TAP
-      sum_p7 = _mm_add_epi16(sum_p7, p7_16);
-      sum_q7 = _mm_add_epi16(sum_q7, q7_16);
-#else
       sum_p6 = _mm_add_epi16(sum_p6, p6_16);
       sum_q6 = _mm_add_epi16(sum_q6, q6_16);
-#endif
-
-#if !CONFIG_DEBLOCK_13TAP
-      pixelFilter_p = _mm_sub_epi16(pixelFilter_p, q2_16);
-      pixelFilter_q = _mm_sub_epi16(pixelFilter_q, p2_16);
-#else
       pixelFilter_p = _mm_sub_epi16(pixelFilter_p, q1_16);
       pixelFilter_q = _mm_sub_epi16(pixelFilter_q, p1_16);
-#endif
 
       res_p = _mm_srli_epi16(
-#if !CONFIG_DEBLOCK_13TAP
-          _mm_add_epi16(pixelFilter_p, _mm_add_epi16(sum_p7, p5_16)), 4);
-#else
           _mm_add_epi16(
               pixelFilter_p,
               _mm_add_epi16(sum_p6,
                             _mm_add_epi16(p5_16, _mm_add_epi16(p6_16, p4_16)))),
           4);
-#endif
       res_q = _mm_srli_epi16(
-#if !CONFIG_DEBLOCK_13TAP
-          _mm_add_epi16(pixelFilter_q, _mm_add_epi16(sum_q7, q5_16)), 4);
-#else
           _mm_add_epi16(
               pixelFilter_q,
               _mm_add_epi16(sum_q6,
                             _mm_add_epi16(q5_16, _mm_add_epi16(q6_16, q4_16)))),
           4);
-#endif
       flat2_q5p5 = _mm_packus_epi16(res_p, res_q);
-
-#if !CONFIG_DEBLOCK_13TAP
-      sum_p7 = _mm_add_epi16(sum_p7, p7_16);
-      sum_q7 = _mm_add_epi16(sum_q7, q7_16);
-      pixelFilter_p = _mm_sub_epi16(pixelFilter_p, q1_16);
-      pixelFilter_q = _mm_sub_epi16(pixelFilter_q, p1_16);
-      res_p = _mm_srli_epi16(
-          _mm_add_epi16(pixelFilter_p, _mm_add_epi16(sum_p7, p6_16)), 4);
-      res_q = _mm_srli_epi16(
-          _mm_add_epi16(pixelFilter_q, _mm_add_epi16(sum_q7, q6_16)), 4);
-      flat2_q6p6 = _mm_packus_epi16(res_p, res_q);
-#endif
     }
     // wide flat
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -706,13 +563,6 @@ void aom_lpf_horizontal_16_sse2(unsigned char *s, int p,
     qs0ps0 = _mm_andnot_si128(flat, qs0ps0);
     flat_q0p0 = _mm_and_si128(flat, flat_q0p0);
     q0p0 = _mm_or_si128(qs0ps0, flat_q0p0);
-
-#if !CONFIG_DEBLOCK_13TAP
-    q6p6 = _mm_andnot_si128(flat2, q6p6);
-    flat2_q6p6 = _mm_and_si128(flat2, flat2_q6p6);
-    q6p6 = _mm_or_si128(q6p6, flat2_q6p6);
-    store_buffer_horz_8(q6p6, p, 6, s);
-#endif
 
     q5p5 = _mm_andnot_si128(flat2, q5p5);
     flat2_q5p5 = _mm_and_si128(flat2, flat2_q5p5);

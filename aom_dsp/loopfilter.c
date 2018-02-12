@@ -20,14 +20,6 @@ static INLINE int8_t signed_char_clamp(int t) {
   return (int8_t)clamp(t, -128, 127);
 }
 
-#if CONFIG_DEBLOCK_13TAP
-#define PARALLEL_DEBLOCKING_13_TAP 1
-#define PARALLEL_DEBLOCKING_5_TAP_CHROMA 1
-#else
-#define PARALLEL_DEBLOCKING_13_TAP 0
-#define PARALLEL_DEBLOCKING_5_TAP_CHROMA 0
-#endif
-
 static INLINE int16_t signed_char_clamp_high(int t, int bd) {
   switch (bd) {
     case 10: return (int16_t)clamp(t, -128 * 4, 128 * 4 - 1);
@@ -61,7 +53,6 @@ static INLINE int8_t filter_mask(uint8_t limit, uint8_t blimit, uint8_t p3,
   return ~mask;
 }
 
-#if PARALLEL_DEBLOCKING_5_TAP_CHROMA
 static INLINE int8_t filter_mask3_chroma(uint8_t limit, uint8_t blimit,
                                          uint8_t p2, uint8_t p1, uint8_t p0,
                                          uint8_t q0, uint8_t q1, uint8_t q2) {
@@ -84,7 +75,6 @@ static INLINE int8_t flat_mask3_chroma(uint8_t thresh, uint8_t p2, uint8_t p1,
   mask |= (abs(q2 - q0) > thresh) * -1;
   return ~mask;
 }
-#endif
 
 static INLINE int8_t flat_mask4(uint8_t thresh, uint8_t p3, uint8_t p2,
                                 uint8_t p1, uint8_t p0, uint8_t q0, uint8_t q1,
@@ -98,18 +88,6 @@ static INLINE int8_t flat_mask4(uint8_t thresh, uint8_t p3, uint8_t p2,
   mask |= (abs(q3 - q0) > thresh) * -1;
   return ~mask;
 }
-
-#if !PARALLEL_DEBLOCKING_13_TAP
-static INLINE int8_t flat_mask5(uint8_t thresh, uint8_t p4, uint8_t p3,
-                                uint8_t p2, uint8_t p1, uint8_t p0, uint8_t q0,
-                                uint8_t q1, uint8_t q2, uint8_t q3,
-                                uint8_t q4) {
-  int8_t mask = ~flat_mask4(thresh, p3, p2, p1, p0, q0, q1, q2, q3);
-  mask |= (abs(p4 - p0) > thresh) * -1;
-  mask |= (abs(q4 - q0) > thresh) * -1;
-  return ~mask;
-}
-#endif
 
 // is there high edge variance internal edge: 11111111 yes, 00000000 no
 static INLINE int8_t hev_mask(uint8_t thresh, uint8_t p1, uint8_t p0,
@@ -201,7 +179,6 @@ void aom_lpf_vertical_4_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0,
   aom_lpf_vertical_4_c(s + 4 * pitch, pitch, blimit1, limit1, thresh1);
 }
 
-#if PARALLEL_DEBLOCKING_5_TAP_CHROMA
 static INLINE void filter6(int8_t mask, uint8_t thresh, int8_t flat,
                            uint8_t *op2, uint8_t *op1, uint8_t *op0,
                            uint8_t *oq0, uint8_t *oq1, uint8_t *oq2) {
@@ -218,7 +195,6 @@ static INLINE void filter6(int8_t mask, uint8_t thresh, int8_t flat,
     filter4(mask, thresh, op1, op0, oq0, oq1);
   }
 }
-#endif
 
 static INLINE void filter8(int8_t mask, uint8_t thresh, int8_t flat,
                            uint8_t *op3, uint8_t *op2, uint8_t *op1,
@@ -240,7 +216,6 @@ static INLINE void filter8(int8_t mask, uint8_t thresh, int8_t flat,
   }
 }
 
-#if PARALLEL_DEBLOCKING_5_TAP_CHROMA
 void aom_lpf_horizontal_6_c(uint8_t *s, int p, const uint8_t *blimit,
                             const uint8_t *limit, const uint8_t *thresh) {
   int i;
@@ -260,7 +235,6 @@ void aom_lpf_horizontal_6_c(uint8_t *s, int p, const uint8_t *blimit,
     ++s;
   }
 }
-#endif
 
 void aom_lpf_horizontal_8_c(uint8_t *s, int p, const uint8_t *blimit,
                             const uint8_t *limit, const uint8_t *thresh) {
@@ -290,7 +264,6 @@ void aom_lpf_horizontal_8_dual_c(uint8_t *s, int p, const uint8_t *blimit0,
   aom_lpf_horizontal_8_c(s + 4, p, blimit1, limit1, thresh1);
 }
 
-#if PARALLEL_DEBLOCKING_5_TAP_CHROMA
 void aom_lpf_vertical_6_c(uint8_t *s, int pitch, const uint8_t *blimit,
                           const uint8_t *limit, const uint8_t *thresh) {
   int i;
@@ -306,7 +279,6 @@ void aom_lpf_vertical_6_c(uint8_t *s, int pitch, const uint8_t *blimit,
     s += pitch;
   }
 }
-#endif
 
 void aom_lpf_vertical_8_c(uint8_t *s, int pitch, const uint8_t *blimit,
                           const uint8_t *limit, const uint8_t *thresh) {
@@ -333,7 +305,6 @@ void aom_lpf_vertical_8_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0,
   aom_lpf_vertical_8_c(s + 4 * pitch, pitch, blimit1, limit1, thresh1);
 }
 
-#if PARALLEL_DEBLOCKING_13_TAP
 static INLINE void filter14(int8_t mask, uint8_t thresh, int8_t flat,
                             int8_t flat2, uint8_t *op6, uint8_t *op5,
                             uint8_t *op4, uint8_t *op3, uint8_t *op2,
@@ -381,63 +352,6 @@ static INLINE void filter14(int8_t mask, uint8_t thresh, int8_t flat,
     filter8(mask, thresh, flat, op3, op2, op1, op0, oq0, oq1, oq2, oq3);
   }
 }
-#endif
-
-#if !PARALLEL_DEBLOCKING_13_TAP
-static INLINE void filter16(int8_t mask, uint8_t thresh, int8_t flat,
-                            int8_t flat2, uint8_t *op7, uint8_t *op6,
-                            uint8_t *op5, uint8_t *op4, uint8_t *op3,
-                            uint8_t *op2, uint8_t *op1, uint8_t *op0,
-                            uint8_t *oq0, uint8_t *oq1, uint8_t *oq2,
-                            uint8_t *oq3, uint8_t *oq4, uint8_t *oq5,
-                            uint8_t *oq6, uint8_t *oq7) {
-  if (flat2 && flat && mask) {
-    const uint8_t p7 = *op7, p6 = *op6, p5 = *op5, p4 = *op4, p3 = *op3,
-                  p2 = *op2, p1 = *op1, p0 = *op0;
-
-    const uint8_t q0 = *oq0, q1 = *oq1, q2 = *oq2, q3 = *oq3, q4 = *oq4,
-                  q5 = *oq5, q6 = *oq6, q7 = *oq7;
-
-    // 15-tap filter [1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1]
-    *op6 = ROUND_POWER_OF_TWO(
-        p7 * 7 + p6 * 2 + p5 + p4 + p3 + p2 + p1 + p0 + q0, 4);
-    *op5 = ROUND_POWER_OF_TWO(
-        p7 * 6 + p6 + p5 * 2 + p4 + p3 + p2 + p1 + p0 + q0 + q1, 4);
-    *op4 = ROUND_POWER_OF_TWO(
-        p7 * 5 + p6 + p5 + p4 * 2 + p3 + p2 + p1 + p0 + q0 + q1 + q2, 4);
-    *op3 = ROUND_POWER_OF_TWO(
-        p7 * 4 + p6 + p5 + p4 + p3 * 2 + p2 + p1 + p0 + q0 + q1 + q2 + q3, 4);
-    *op2 = ROUND_POWER_OF_TWO(
-        p7 * 3 + p6 + p5 + p4 + p3 + p2 * 2 + p1 + p0 + q0 + q1 + q2 + q3 + q4,
-        4);
-    *op1 = ROUND_POWER_OF_TWO(p7 * 2 + p6 + p5 + p4 + p3 + p2 + p1 * 2 + p0 +
-                                  q0 + q1 + q2 + q3 + q4 + q5,
-                              4);
-    *op0 = ROUND_POWER_OF_TWO(p7 + p6 + p5 + p4 + p3 + p2 + p1 + p0 * 2 + q0 +
-                                  q1 + q2 + q3 + q4 + q5 + q6,
-                              4);
-    *oq0 = ROUND_POWER_OF_TWO(p6 + p5 + p4 + p3 + p2 + p1 + p0 + q0 * 2 + q1 +
-                                  q2 + q3 + q4 + q5 + q6 + q7,
-                              4);
-    *oq1 = ROUND_POWER_OF_TWO(p5 + p4 + p3 + p2 + p1 + p0 + q0 + q1 * 2 + q2 +
-                                  q3 + q4 + q5 + q6 + q7 * 2,
-                              4);
-    *oq2 = ROUND_POWER_OF_TWO(
-        p4 + p3 + p2 + p1 + p0 + q0 + q1 + q2 * 2 + q3 + q4 + q5 + q6 + q7 * 3,
-        4);
-    *oq3 = ROUND_POWER_OF_TWO(
-        p3 + p2 + p1 + p0 + q0 + q1 + q2 + q3 * 2 + q4 + q5 + q6 + q7 * 4, 4);
-    *oq4 = ROUND_POWER_OF_TWO(
-        p2 + p1 + p0 + q0 + q1 + q2 + q3 + q4 * 2 + q5 + q6 + q7 * 5, 4);
-    *oq5 = ROUND_POWER_OF_TWO(
-        p1 + p0 + q0 + q1 + q2 + q3 + q4 + q5 * 2 + q6 + q7 * 6, 4);
-    *oq6 = ROUND_POWER_OF_TWO(
-        p0 + q0 + q1 + q2 + q3 + q4 + q5 + q6 * 2 + q7 * 7, 4);
-  } else {
-    filter8(mask, thresh, flat, op3, op2, op1, op0, oq0, oq1, oq2, oq3);
-  }
-}
-#endif
 
 static void mb_lpf_horizontal_edge_w(uint8_t *s, int p, const uint8_t *blimit,
                                      const uint8_t *limit,
@@ -457,7 +371,6 @@ static void mb_lpf_horizontal_edge_w(uint8_t *s, int p, const uint8_t *blimit,
         filter_mask(*limit, *blimit, p3, p2, p1, p0, q0, q1, q2, q3);
     const int8_t flat = flat_mask4(1, p3, p2, p1, p0, q0, q1, q2, q3);
 
-#if PARALLEL_DEBLOCKING_13_TAP
     (void)p7;
     (void)q7;
     const int8_t flat2 = flat_mask4(1, p6, p5, p4, p0, q0, q4, q5, q6);
@@ -465,15 +378,6 @@ static void mb_lpf_horizontal_edge_w(uint8_t *s, int p, const uint8_t *blimit,
     filter14(mask, *thresh, flat, flat2, s - 7 * p, s - 6 * p, s - 5 * p,
              s - 4 * p, s - 3 * p, s - 2 * p, s - 1 * p, s, s + 1 * p,
              s + 2 * p, s + 3 * p, s + 4 * p, s + 5 * p, s + 6 * p);
-#else
-    const int8_t flat2 = flat_mask5(1, p7, p6, p5, p4, p0, q0, q4, q5, q6, q7);
-
-    filter16(mask, *thresh, flat, flat2, s - 8 * p, s - 7 * p, s - 6 * p,
-             s - 5 * p, s - 4 * p, s - 3 * p, s - 2 * p, s - 1 * p, s,
-             s + 1 * p, s + 2 * p, s + 3 * p, s + 4 * p, s + 5 * p, s + 6 * p,
-             s + 7 * p);
-#endif
-
     ++s;
   }
 }
@@ -502,21 +406,12 @@ static void mb_lpf_vertical_edge_w(uint8_t *s, int p, const uint8_t *blimit,
         filter_mask(*limit, *blimit, p3, p2, p1, p0, q0, q1, q2, q3);
     const int8_t flat = flat_mask4(1, p3, p2, p1, p0, q0, q1, q2, q3);
 
-#if PARALLEL_DEBLOCKING_13_TAP
     (void)p7;
     (void)q7;
     const int8_t flat2 = flat_mask4(1, p6, p5, p4, p0, q0, q4, q5, q6);
 
     filter14(mask, *thresh, flat, flat2, s - 7, s - 6, s - 5, s - 4, s - 3,
              s - 2, s - 1, s, s + 1, s + 2, s + 3, s + 4, s + 5, s + 6);
-#else
-    const int8_t flat2 = flat_mask5(1, p7, p6, p5, p4, p0, q0, q4, q5, q6, q7);
-
-    filter16(mask, *thresh, flat, flat2, s - 8, s - 7, s - 6, s - 5, s - 4,
-             s - 3, s - 2, s - 1, s, s + 1, s + 2, s + 3, s + 4, s + 5, s + 6,
-             s + 7);
-#endif
-
     s += p;
   }
 }
@@ -562,7 +457,6 @@ static INLINE int8_t highbd_filter_mask(uint8_t limit, uint8_t blimit,
   return ~mask;
 }
 
-#if PARALLEL_DEBLOCKING_5_TAP_CHROMA
 static INLINE int8_t highbd_filter_mask3_chroma(uint8_t limit, uint8_t blimit,
                                                 uint16_t p2, uint16_t p1,
                                                 uint16_t p0, uint16_t q0,
@@ -591,7 +485,6 @@ static INLINE int8_t highbd_flat_mask3_chroma(uint8_t thresh, uint16_t p2,
   mask |= (abs(q2 - q0) > thresh16) * -1;
   return ~mask;
 }
-#endif
 
 static INLINE int8_t highbd_flat_mask4(uint8_t thresh, uint16_t p3, uint16_t p2,
                                        uint16_t p1, uint16_t p0, uint16_t q0,
@@ -607,19 +500,6 @@ static INLINE int8_t highbd_flat_mask4(uint8_t thresh, uint16_t p3, uint16_t p2,
   mask |= (abs(q3 - q0) > thresh16) * -1;
   return ~mask;
 }
-
-#if !PARALLEL_DEBLOCKING_13_TAP
-static INLINE int8_t highbd_flat_mask5(uint8_t thresh, uint16_t p4, uint16_t p3,
-                                       uint16_t p2, uint16_t p1, uint16_t p0,
-                                       uint16_t q0, uint16_t q1, uint16_t q2,
-                                       uint16_t q3, uint16_t q4, int bd) {
-  int8_t mask = ~highbd_flat_mask4(thresh, p3, p2, p1, p0, q0, q1, q2, q3, bd);
-  int16_t thresh16 = (uint16_t)thresh << (bd - 8);
-  mask |= (abs(p4 - p0) > thresh16) * -1;
-  mask |= (abs(q4 - q0) > thresh16) * -1;
-  return ~mask;
-}
-#endif
 
 // Is there high edge variance internal edge:
 // 11111111_11111111 yes, 00000000_00000000 no ?
@@ -722,7 +602,6 @@ void aom_highbd_lpf_vertical_4_dual_c(
                               bd);
 }
 
-#if PARALLEL_DEBLOCKING_5_TAP_CHROMA
 static INLINE void highbd_filter6(int8_t mask, uint8_t thresh, int8_t flat,
                                   uint16_t *op2, uint16_t *op1, uint16_t *op0,
                                   uint16_t *oq0, uint16_t *oq1, uint16_t *oq2,
@@ -740,7 +619,6 @@ static INLINE void highbd_filter6(int8_t mask, uint8_t thresh, int8_t flat,
     highbd_filter4(mask, thresh, op1, op0, oq0, oq1, bd);
   }
 }
-#endif
 
 static INLINE void highbd_filter8(int8_t mask, uint8_t thresh, int8_t flat,
                                   uint16_t *op3, uint16_t *op2, uint16_t *op1,
@@ -784,7 +662,6 @@ void aom_highbd_lpf_horizontal_8_c(uint16_t *s, int p, const uint8_t *blimit,
   }
 }
 
-#if PARALLEL_DEBLOCKING_5_TAP_CHROMA
 void aom_highbd_lpf_horizontal_6_c(uint16_t *s, int p, const uint8_t *blimit,
                                    const uint8_t *limit, const uint8_t *thresh,
                                    int bd) {
@@ -805,7 +682,6 @@ void aom_highbd_lpf_horizontal_6_c(uint16_t *s, int p, const uint8_t *blimit,
     ++s;
   }
 }
-#endif
 
 void aom_highbd_lpf_horizontal_8_dual_c(
     uint16_t *s, int p, const uint8_t *blimit0, const uint8_t *limit0,
@@ -815,7 +691,6 @@ void aom_highbd_lpf_horizontal_8_dual_c(
   aom_highbd_lpf_horizontal_8_c(s + 4, p, blimit1, limit1, thresh1, bd);
 }
 
-#if PARALLEL_DEBLOCKING_5_TAP_CHROMA
 void aom_highbd_lpf_vertical_6_c(uint16_t *s, int pitch, const uint8_t *blimit,
                                  const uint8_t *limit, const uint8_t *thresh,
                                  int bd) {
@@ -833,7 +708,6 @@ void aom_highbd_lpf_vertical_6_c(uint16_t *s, int pitch, const uint8_t *blimit,
     s += pitch;
   }
 }
-#endif
 
 void aom_highbd_lpf_vertical_8_c(uint16_t *s, int pitch, const uint8_t *blimit,
                                  const uint8_t *limit, const uint8_t *thresh,
@@ -863,7 +737,6 @@ void aom_highbd_lpf_vertical_8_dual_c(
                               bd);
 }
 
-#if PARALLEL_DEBLOCKING_13_TAP
 static INLINE void highbd_filter14(int8_t mask, uint8_t thresh, int8_t flat,
                                    int8_t flat2, uint16_t *op6, uint16_t *op5,
                                    uint16_t *op4, uint16_t *op3, uint16_t *op2,
@@ -923,75 +796,6 @@ static INLINE void highbd_filter14(int8_t mask, uint8_t thresh, int8_t flat,
                    bd);
   }
 }
-#endif
-
-#if !PARALLEL_DEBLOCKING_13_TAP
-static INLINE void highbd_filter16(int8_t mask, uint8_t thresh, int8_t flat,
-                                   int8_t flat2, uint16_t *op7, uint16_t *op6,
-                                   uint16_t *op5, uint16_t *op4, uint16_t *op3,
-                                   uint16_t *op2, uint16_t *op1, uint16_t *op0,
-                                   uint16_t *oq0, uint16_t *oq1, uint16_t *oq2,
-                                   uint16_t *oq3, uint16_t *oq4, uint16_t *oq5,
-                                   uint16_t *oq6, uint16_t *oq7, int bd) {
-  if (flat2 && flat && mask) {
-    const uint16_t p7 = *op7;
-    const uint16_t p6 = *op6;
-    const uint16_t p5 = *op5;
-    const uint16_t p4 = *op4;
-    const uint16_t p3 = *op3;
-    const uint16_t p2 = *op2;
-    const uint16_t p1 = *op1;
-    const uint16_t p0 = *op0;
-    const uint16_t q0 = *oq0;
-    const uint16_t q1 = *oq1;
-    const uint16_t q2 = *oq2;
-    const uint16_t q3 = *oq3;
-    const uint16_t q4 = *oq4;
-    const uint16_t q5 = *oq5;
-    const uint16_t q6 = *oq6;
-    const uint16_t q7 = *oq7;
-
-    // 15-tap filter [1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1]
-    *op6 = ROUND_POWER_OF_TWO(
-        p7 * 7 + p6 * 2 + p5 + p4 + p3 + p2 + p1 + p0 + q0, 4);
-    *op5 = ROUND_POWER_OF_TWO(
-        p7 * 6 + p6 + p5 * 2 + p4 + p3 + p2 + p1 + p0 + q0 + q1, 4);
-    *op4 = ROUND_POWER_OF_TWO(
-        p7 * 5 + p6 + p5 + p4 * 2 + p3 + p2 + p1 + p0 + q0 + q1 + q2, 4);
-    *op3 = ROUND_POWER_OF_TWO(
-        p7 * 4 + p6 + p5 + p4 + p3 * 2 + p2 + p1 + p0 + q0 + q1 + q2 + q3, 4);
-    *op2 = ROUND_POWER_OF_TWO(
-        p7 * 3 + p6 + p5 + p4 + p3 + p2 * 2 + p1 + p0 + q0 + q1 + q2 + q3 + q4,
-        4);
-    *op1 = ROUND_POWER_OF_TWO(p7 * 2 + p6 + p5 + p4 + p3 + p2 + p1 * 2 + p0 +
-                                  q0 + q1 + q2 + q3 + q4 + q5,
-                              4);
-    *op0 = ROUND_POWER_OF_TWO(p7 + p6 + p5 + p4 + p3 + p2 + p1 + p0 * 2 + q0 +
-                                  q1 + q2 + q3 + q4 + q5 + q6,
-                              4);
-    *oq0 = ROUND_POWER_OF_TWO(p6 + p5 + p4 + p3 + p2 + p1 + p0 + q0 * 2 + q1 +
-                                  q2 + q3 + q4 + q5 + q6 + q7,
-                              4);
-    *oq1 = ROUND_POWER_OF_TWO(p5 + p4 + p3 + p2 + p1 + p0 + q0 + q1 * 2 + q2 +
-                                  q3 + q4 + q5 + q6 + q7 * 2,
-                              4);
-    *oq2 = ROUND_POWER_OF_TWO(
-        p4 + p3 + p2 + p1 + p0 + q0 + q1 + q2 * 2 + q3 + q4 + q5 + q6 + q7 * 3,
-        4);
-    *oq3 = ROUND_POWER_OF_TWO(
-        p3 + p2 + p1 + p0 + q0 + q1 + q2 + q3 * 2 + q4 + q5 + q6 + q7 * 4, 4);
-    *oq4 = ROUND_POWER_OF_TWO(
-        p2 + p1 + p0 + q0 + q1 + q2 + q3 + q4 * 2 + q5 + q6 + q7 * 5, 4);
-    *oq5 = ROUND_POWER_OF_TWO(
-        p1 + p0 + q0 + q1 + q2 + q3 + q4 + q5 * 2 + q6 + q7 * 6, 4);
-    *oq6 = ROUND_POWER_OF_TWO(
-        p0 + q0 + q1 + q2 + q3 + q4 + q5 + q6 * 2 + q7 * 7, 4);
-  } else {
-    highbd_filter8(mask, thresh, flat, op3, op2, op1, op0, oq0, oq1, oq2, oq3,
-                   bd);
-  }
-}
-#endif
 
 static void highbd_mb_lpf_horizontal_edge_w(uint16_t *s, int p,
                                             const uint8_t *blimit,
@@ -1017,7 +821,6 @@ static void highbd_mb_lpf_horizontal_edge_w(uint16_t *s, int p,
     const int8_t flat =
         highbd_flat_mask4(1, p3, p2, p1, p0, q0, q1, q2, q3, bd);
 
-#if PARALLEL_DEBLOCKING_13_TAP
     const int8_t flat2 =
         highbd_flat_mask4(1, s[-7 * p], s[-6 * p], s[-5 * p], p0, q0, s[4 * p],
                           s[5 * p], s[6 * p], bd);
@@ -1025,16 +828,6 @@ static void highbd_mb_lpf_horizontal_edge_w(uint16_t *s, int p,
     highbd_filter14(mask, *thresh, flat, flat2, s - 7 * p, s - 6 * p, s - 5 * p,
                     s - 4 * p, s - 3 * p, s - 2 * p, s - 1 * p, s, s + 1 * p,
                     s + 2 * p, s + 3 * p, s + 4 * p, s + 5 * p, s + 6 * p, bd);
-#else
-    const int8_t flat2 =
-        highbd_flat_mask5(1, s[-8 * p], s[-7 * p], s[-6 * p], s[-5 * p], p0, q0,
-                          s[4 * p], s[5 * p], s[6 * p], s[7 * p], bd);
-
-    highbd_filter16(mask, *thresh, flat, flat2, s - 8 * p, s - 7 * p, s - 6 * p,
-                    s - 5 * p, s - 4 * p, s - 3 * p, s - 2 * p, s - 1 * p, s,
-                    s + 1 * p, s + 2 * p, s + 3 * p, s + 4 * p, s + 5 * p,
-                    s + 6 * p, s + 7 * p, bd);
-#endif
     ++s;
   }
 }
@@ -1072,21 +865,12 @@ static void highbd_mb_lpf_vertical_edge_w(uint16_t *s, int p,
         highbd_filter_mask(*limit, *blimit, p3, p2, p1, p0, q0, q1, q2, q3, bd);
     const int8_t flat =
         highbd_flat_mask4(1, p3, p2, p1, p0, q0, q1, q2, q3, bd);
-#if PARALLEL_DEBLOCKING_13_TAP
     const int8_t flat2 =
         highbd_flat_mask4(1, s[-7], s[-6], s[-5], p0, q0, s[4], s[5], s[6], bd);
 
     highbd_filter14(mask, *thresh, flat, flat2, s - 7, s - 6, s - 5, s - 4,
                     s - 3, s - 2, s - 1, s, s + 1, s + 2, s + 3, s + 4, s + 5,
                     s + 6, bd);
-#else
-    const int8_t flat2 = highbd_flat_mask5(1, s[-8], s[-7], s[-6], s[-5], p0,
-                                           q0, s[4], s[5], s[6], s[7], bd);
-
-    highbd_filter16(mask, *thresh, flat, flat2, s - 8, s - 7, s - 6, s - 5,
-                    s - 4, s - 3, s - 2, s - 1, s, s + 1, s + 2, s + 3, s + 4,
-                    s + 5, s + 6, s + 7, bd);
-#endif
     s += p;
   }
 }

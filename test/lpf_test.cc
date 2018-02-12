@@ -446,19 +446,10 @@ const hbdloop_param_t kHbdLoop8Test6[] = {
   make_tuple(&aom_highbd_lpf_horizontal_4_sse2, &aom_highbd_lpf_horizontal_4_c,
              8),
   make_tuple(&aom_highbd_lpf_vertical_4_sse2, &aom_highbd_lpf_vertical_4_c, 8),
-#if PARALLEL_DEBLOCKING_5_TAP_CHROMA
-  make_tuple(&aom_highbd_lpf_horizontal_6_sse2, &aom_highbd_lpf_horizontal_6_c,
-             8),
-  make_tuple(&aom_highbd_lpf_vertical_6_sse2, &aom_highbd_lpf_vertical_6_c, 8),
-#endif
   make_tuple(&aom_highbd_lpf_horizontal_8_sse2, &aom_highbd_lpf_horizontal_8_c,
              8),
   make_tuple(&aom_highbd_lpf_horizontal_16_sse2,
              &aom_highbd_lpf_horizontal_16_c, 8),
-#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-  make_tuple(&aom_highbd_lpf_horizontal_16_dual_sse2,
-             &aom_highbd_lpf_horizontal_16_dual_c, 8),
-#endif
   make_tuple(&aom_highbd_lpf_vertical_8_sse2, &aom_highbd_lpf_vertical_8_c, 8),
   make_tuple(&aom_highbd_lpf_vertical_16_sse2, &aom_highbd_lpf_vertical_16_c,
              8),
@@ -469,10 +460,6 @@ const hbdloop_param_t kHbdLoop8Test6[] = {
              10),
   make_tuple(&aom_highbd_lpf_horizontal_16_sse2,
              &aom_highbd_lpf_horizontal_16_c, 10),
-#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-  make_tuple(&aom_highbd_lpf_horizontal_16_dual_sse2,
-             &aom_highbd_lpf_horizontal_16_dual_c, 10),
-#endif
   make_tuple(&aom_highbd_lpf_vertical_8_sse2, &aom_highbd_lpf_vertical_8_c, 10),
   make_tuple(&aom_highbd_lpf_vertical_16_sse2, &aom_highbd_lpf_vertical_16_c,
              10),
@@ -483,18 +470,6 @@ const hbdloop_param_t kHbdLoop8Test6[] = {
              12),
   make_tuple(&aom_highbd_lpf_horizontal_16_sse2,
              &aom_highbd_lpf_horizontal_16_c, 12),
-#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-  make_tuple(&aom_highbd_lpf_horizontal_16_dual_sse2,
-             &aom_highbd_lpf_horizontal_16_dual_c, 12),
-  make_tuple(&aom_highbd_lpf_vertical_16_sse2, &aom_highbd_lpf_vertical_16_c,
-             12),
-  make_tuple(&aom_highbd_lpf_vertical_16_dual_sse2,
-             &aom_highbd_lpf_vertical_16_dual_c, 8),
-  make_tuple(&aom_highbd_lpf_vertical_16_dual_sse2,
-             &aom_highbd_lpf_vertical_16_dual_c, 10),
-  make_tuple(&aom_highbd_lpf_vertical_16_dual_sse2,
-             &aom_highbd_lpf_vertical_16_dual_c, 12),
-#endif
   make_tuple(&aom_highbd_lpf_vertical_8_sse2, &aom_highbd_lpf_vertical_8_c, 12)
 };
 
@@ -504,49 +479,18 @@ INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test6Param_hbd,
 const loop_param_t kLoop8Test6[] = {
   make_tuple(&aom_lpf_horizontal_4_sse2, &aom_lpf_horizontal_4_c, 8),
   make_tuple(&aom_lpf_horizontal_8_sse2, &aom_lpf_horizontal_8_c, 8),
-#if CONFIG_DEBLOCK_13TAP
   make_tuple(&aom_lpf_horizontal_6_sse2, &aom_lpf_horizontal_6_c, 8),
   make_tuple(&aom_lpf_vertical_6_sse2, &aom_lpf_vertical_6_c, 8),
-#endif
   make_tuple(&aom_lpf_horizontal_16_sse2, &aom_lpf_horizontal_16_c, 8),
-#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-  make_tuple(&aom_lpf_horizontal_16_dual_sse2, &aom_lpf_horizontal_16_dual_c,
-             8),
-#endif
   make_tuple(&aom_lpf_vertical_4_sse2, &aom_lpf_vertical_4_c, 8),
   make_tuple(&aom_lpf_vertical_8_sse2, &aom_lpf_vertical_8_c, 8),
   make_tuple(&aom_lpf_vertical_16_sse2, &aom_lpf_vertical_16_c, 8),
-#if !CONFIG_DEBLOCK_13TAP
-  make_tuple(&aom_lpf_vertical_16_dual_sse2, &aom_lpf_vertical_16_dual_c, 8)
-#endif
 };
 
 INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test6Param_lbd,
                         ::testing::ValuesIn(kLoop8Test6));
 
 #endif  // HAVE_SSE2
-
-#if HAVE_AVX2
-#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-const hbddual_loop_param_t kHbdLoop8Test9Avx2[] = {
-  make_tuple(&aom_highbd_lpf_horizontal_16_dual_avx2,
-             &aom_highbd_lpf_horizontal_16_dual_c, 8),
-  make_tuple(&aom_highbd_lpf_horizontal_16_dual_avx2,
-             &aom_highbd_lpf_horizontal_16_dual_c, 10),
-  make_tuple(&aom_highbd_lpf_horizontal_16_dual_avx2,
-             &aom_highbd_lpf_horizontal_16_dual_c, 12),
-  make_tuple(&aom_highbd_lpf_vertical_16_dual_avx2,
-             &aom_highbd_lpf_vertical_16_dual_c, 8),
-  make_tuple(&aom_highbd_lpf_vertical_16_dual_avx2,
-             &aom_highbd_lpf_vertical_16_dual_c, 10),
-  make_tuple(&aom_highbd_lpf_vertical_16_dual_avx2,
-             &aom_highbd_lpf_vertical_16_dual_c, 12)
-};
-
-INSTANTIATE_TEST_CASE_P(AVX2, Loop8Test9Param_hbd,
-                        ::testing::ValuesIn(kHbdLoop8Test9Avx2));
-#endif
-#endif
 
 #if HAVE_SSE2
 const hbddual_loop_param_t kHbdLoop8Test9[] = {

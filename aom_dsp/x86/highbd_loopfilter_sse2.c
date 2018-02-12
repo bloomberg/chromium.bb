@@ -130,7 +130,6 @@ static INLINE void highbd_flat_mask4(const __m128i *th, const __m128i *p,
   flat_mask_internal(th, p, q, bd, 1, 4, flat);
 }
 
-#if CONFIG_DEBLOCK_13TAP
 // Note:
 //  access p[6-4], p[0], and q[6-4], q[0]
 static INLINE void highbd_flat_mask4_13(const __m128i *th, const __m128i *p,
@@ -138,7 +137,6 @@ static INLINE void highbd_flat_mask4_13(const __m128i *th, const __m128i *p,
                                         int bd) {
   flat_mask_internal(th, p, q, bd, 4, 7, flat);
 }
-#endif
 
 // Note:
 //  access p[7-4], p[0], and q[7-4], q[0]
@@ -224,13 +222,8 @@ static INLINE void highbd_lpf_horz_edge_8_internal(uint16_t *s, int pitch,
   __m128i blimit, limit, thresh;
   get_limit(blt, lt, thr, bd, &blimit, &limit, &thresh);
 
-#if CONFIG_DEBLOCK_13TAP
   __m128i p[7], q[7];
   load_highbd_pixel(s, 7, pitch, p, q);
-#else
-  __m128i p[8], q[8];
-  load_highbd_pixel(s, 8, pitch, p, q);
-#endif
 
   __m128i mask;
   highbd_filter_mask(p, q, &limit, &blimit, &mask);
@@ -238,12 +231,7 @@ static INLINE void highbd_lpf_horz_edge_8_internal(uint16_t *s, int pitch,
   __m128i flat, flat2;
   const __m128i one = _mm_set1_epi16(1);
   highbd_flat_mask4(&one, p, q, &flat, bd);
-
-#if CONFIG_DEBLOCK_13TAP
   highbd_flat_mask4_13(&one, p, q, &flat2, bd);
-#else
-  highbd_flat_mask5(&one, p, q, &flat2, bd);
-#endif
 
   flat = _mm_and_si128(flat, mask);
   flat2 = _mm_and_si128(flat2, flat);
@@ -253,16 +241,11 @@ static INLINE void highbd_lpf_horz_edge_8_internal(uint16_t *s, int pitch,
 
   // flat and wide flat calculations
   __m128i flat_p[3], flat_q[3];
-#if CONFIG_DEBLOCK_13TAP
   __m128i flat2_p[6], flat2_q[6];
-#else
-  __m128i flat2_p[7], flat2_q[7];
-#endif
   {
     const __m128i eight = _mm_set1_epi16(8);
     const __m128i four = _mm_set1_epi16(4);
 
-#if CONFIG_DEBLOCK_13TAP
     __m128i sum_p = _mm_add_epi16(p[5], _mm_add_epi16(p[4], p[3]));
     __m128i sum_q = _mm_add_epi16(q[5], _mm_add_epi16(q[4], q[3]));
 
@@ -379,79 +362,6 @@ static INLINE void highbd_lpf_horz_edge_8_internal(uint16_t *s, int pitch,
             sum_q, _mm_add_epi16(
                        sum_q6, _mm_add_epi16(q[5], _mm_add_epi16(q[4], q[6])))),
         4);
-#else
-    __m128i sum_p =
-        _mm_add_epi16(_mm_add_epi16(p[6], p[5]), _mm_add_epi16(p[4], p[3]));
-    __m128i sum_q =
-        _mm_add_epi16(_mm_add_epi16(q[6], q[5]), _mm_add_epi16(q[4], q[3]));
-
-    __m128i sum_lp = _mm_add_epi16(p[0], _mm_add_epi16(p[2], p[1]));
-    sum_p = _mm_add_epi16(sum_p, sum_lp);
-
-    __m128i sum_lq = _mm_add_epi16(q[0], _mm_add_epi16(q[2], q[1]));
-    sum_q = _mm_add_epi16(sum_q, sum_lq);
-    sum_p = _mm_add_epi16(eight, _mm_add_epi16(sum_p, sum_q));
-    sum_lp = _mm_add_epi16(four, _mm_add_epi16(sum_lp, sum_lq));
-
-    flat2_p[0] =
-        _mm_srli_epi16(_mm_add_epi16(sum_p, _mm_add_epi16(p[7], p[0])), 4);
-    flat2_q[0] =
-        _mm_srli_epi16(_mm_add_epi16(sum_p, _mm_add_epi16(q[7], q[0])), 4);
-    flat_p[0] =
-        _mm_srli_epi16(_mm_add_epi16(sum_lp, _mm_add_epi16(p[3], p[0])), 3);
-    flat_q[0] =
-        _mm_srli_epi16(_mm_add_epi16(sum_lp, _mm_add_epi16(q[3], q[0])), 3);
-
-    __m128i sum_p7 = _mm_add_epi16(p[7], p[7]);
-    __m128i sum_q7 = _mm_add_epi16(q[7], q[7]);
-    __m128i sum_p3 = _mm_add_epi16(p[3], p[3]);
-    __m128i sum_q3 = _mm_add_epi16(q[3], q[3]);
-
-    sum_q = _mm_sub_epi16(sum_p, p[6]);
-    sum_p = _mm_sub_epi16(sum_p, q[6]);
-    flat2_p[1] =
-        _mm_srli_epi16(_mm_add_epi16(sum_p, _mm_add_epi16(sum_p7, p[1])), 4);
-    flat2_q[1] =
-        _mm_srli_epi16(_mm_add_epi16(sum_q, _mm_add_epi16(sum_q7, q[1])), 4);
-
-    sum_lq = _mm_sub_epi16(sum_lp, p[2]);
-    sum_lp = _mm_sub_epi16(sum_lp, q[2]);
-    flat_p[1] =
-        _mm_srli_epi16(_mm_add_epi16(sum_lp, _mm_add_epi16(sum_p3, p[1])), 3);
-    flat_q[1] =
-        _mm_srli_epi16(_mm_add_epi16(sum_lq, _mm_add_epi16(sum_q3, q[1])), 3);
-
-    sum_p7 = _mm_add_epi16(sum_p7, p[7]);
-    sum_q7 = _mm_add_epi16(sum_q7, q[7]);
-    sum_p3 = _mm_add_epi16(sum_p3, p[3]);
-    sum_q3 = _mm_add_epi16(sum_q3, q[3]);
-
-    sum_p = _mm_sub_epi16(sum_p, q[5]);
-    sum_q = _mm_sub_epi16(sum_q, p[5]);
-    flat2_p[2] =
-        _mm_srli_epi16(_mm_add_epi16(sum_p, _mm_add_epi16(sum_p7, p[2])), 4);
-    flat2_q[2] =
-        _mm_srli_epi16(_mm_add_epi16(sum_q, _mm_add_epi16(sum_q7, q[2])), 4);
-
-    sum_lp = _mm_sub_epi16(sum_lp, q[1]);
-    sum_lq = _mm_sub_epi16(sum_lq, p[1]);
-    flat_p[2] =
-        _mm_srli_epi16(_mm_add_epi16(sum_lp, _mm_add_epi16(sum_p3, p[2])), 3);
-    flat_q[2] =
-        _mm_srli_epi16(_mm_add_epi16(sum_lq, _mm_add_epi16(sum_q3, q[2])), 3);
-
-    int i;
-    for (i = 3; i < 7; ++i) {
-      sum_p7 = _mm_add_epi16(sum_p7, p[7]);
-      sum_q7 = _mm_add_epi16(sum_q7, q[7]);
-      sum_p = _mm_sub_epi16(sum_p, q[7 - i]);
-      sum_q = _mm_sub_epi16(sum_q, p[7 - i]);
-      flat2_p[i] =
-          _mm_srli_epi16(_mm_add_epi16(sum_p, _mm_add_epi16(sum_p7, p[i])), 4);
-      flat2_q[i] =
-          _mm_srli_epi16(_mm_add_epi16(sum_q, _mm_add_epi16(sum_q7, q[i])), 4);
-    }
-#endif
   }
 
   // highbd_filter8
@@ -474,12 +384,8 @@ static INLINE void highbd_lpf_horz_edge_8_internal(uint16_t *s, int pitch,
     q[i] = _mm_or_si128(qs[i], flat_q[i]);
   }
 
-// highbd_filter16
-#if CONFIG_DEBLOCK_13TAP
+  // highbd_filter16
   for (i = 5; i >= 0; i--) {
-#else
-  for (i = 6; i >= 0; i--) {
-#endif
     //  p[i] remains unchanged if !(flat2 && flat && mask)
     p[i] = _mm_andnot_si128(flat2, p[i]);
     flat2_p[i] = _mm_and_si128(flat2, flat2_p[i]);
