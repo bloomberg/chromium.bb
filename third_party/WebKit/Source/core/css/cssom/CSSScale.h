@@ -50,9 +50,10 @@ class CORE_EXPORT CSSScale final : public CSSTransformComponent {
   void setY(const CSSNumberish&, ExceptionState&);
   void setZ(const CSSNumberish&, ExceptionState&);
 
+  DOMMatrix* toMatrix(ExceptionState&) const final;
+
   // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const final { return kScaleType; }
-  const DOMMatrix* AsMatrix(ExceptionState&) const final;
   const CSSFunctionValue* ToCSSValue() const final;
 
   virtual void Trace(blink::Visitor* visitor) {

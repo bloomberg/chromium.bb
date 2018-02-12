@@ -137,7 +137,7 @@ void CSSRotate::setAngle(CSSNumericValue* angle,
   angle_ = angle;
 }
 
-const DOMMatrix* CSSRotate::AsMatrix(ExceptionState& exception_state) const {
+DOMMatrix* CSSRotate::toMatrix(ExceptionState& exception_state) const {
   CSSUnitValue* x = x_->to(CSSPrimitiveValue::UnitType::kNumber);
   CSSUnitValue* y = y_->to(CSSPrimitiveValue::UnitType::kNumber);
   CSSUnitValue* z = z_->to(CSSPrimitiveValue::UnitType::kNumber);

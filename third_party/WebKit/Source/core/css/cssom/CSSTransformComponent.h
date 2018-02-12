@@ -45,10 +45,11 @@ class CORE_EXPORT CSSTransformComponent : public ScriptWrappable {
   virtual void setIs2D(bool is2D) { is2D_ = is2D; }
   String toString() const;
 
+  virtual DOMMatrix* toMatrix(ExceptionState&) const = 0;
+
   // Internal methods.
   virtual TransformComponentType GetType() const = 0;
   virtual const CSSFunctionValue* ToCSSValue() const = 0;
-  virtual const DOMMatrix* AsMatrix(ExceptionState&) const = 0;
 
  protected:
   CSSTransformComponent(bool is2D) : is2D_(is2D) {}

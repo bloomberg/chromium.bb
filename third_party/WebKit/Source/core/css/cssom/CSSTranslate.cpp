@@ -164,7 +164,7 @@ void CSSTranslate::setZ(CSSNumericValue* z, ExceptionState& exception_state) {
   z_ = z;
 }
 
-const DOMMatrix* CSSTranslate::AsMatrix(ExceptionState& exception_state) const {
+DOMMatrix* CSSTranslate::toMatrix(ExceptionState& exception_state) const {
   CSSUnitValue* x = x_->to(CSSPrimitiveValue::UnitType::kPixels);
   CSSUnitValue* y = y_->to(CSSPrimitiveValue::UnitType::kPixels);
   CSSUnitValue* z = z_->to(CSSPrimitiveValue::UnitType::kPixels);

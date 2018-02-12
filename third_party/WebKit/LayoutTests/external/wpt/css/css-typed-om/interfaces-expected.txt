@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 237 tests; 225 PASS, 12 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 237 tests; 226 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS CSS Typed OM IDL test
 PASS CSSStyleValue interface: existence and properties of interface object
 PASS CSSStyleValue interface object length
@@ -168,7 +168,7 @@ PASS CSSTransformComponent interface: existence and properties of interface prot
 PASS CSSTransformComponent interface: existence and properties of interface prototype object's "constructor" property
 PASS CSSTransformComponent interface: stringifier
 PASS CSSTransformComponent interface: attribute is2D
-FAIL CSSTransformComponent interface: operation toMatrix() assert_own_property: interface prototype object missing non-static operation expected property "toMatrix" missing
+PASS CSSTransformComponent interface: operation toMatrix()
 PASS CSSTranslate interface: existence and properties of interface object
 PASS CSSTranslate interface object length
 PASS CSSTranslate interface object name

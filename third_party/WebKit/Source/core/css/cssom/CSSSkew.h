@@ -41,8 +41,9 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
   // https://drafts.css-houdini.org/css-typed-om/#dom-cssskew-is2d
   void setIs2D(bool is2D) final {}
 
+  DOMMatrix* toMatrix(ExceptionState&) const final;
+
   // Internal methods - from CSSTransformComponent.
-  const DOMMatrix* AsMatrix(ExceptionState&) const override;
   TransformComponentType GetType() const override { return kSkewType; }
   const CSSFunctionValue* ToCSSValue() const override;
 

@@ -51,11 +51,11 @@ CSSSkewY* CSSSkewY::FromCSSValue(const CSSFunctionValue& value) {
   return nullptr;
 }
 
-const DOMMatrix* CSSSkewY::AsMatrix(ExceptionState&) const {
+DOMMatrix* CSSSkewY::toMatrix(ExceptionState&) const {
   CSSUnitValue* ay = ay_->to(CSSPrimitiveValue::UnitType::kRadians);
   DCHECK(ay);
   DOMMatrix* result = DOMMatrix::Create();
-  result->setM12(std::tan(ay->value()));
+  result->skewYSelf(ay->value());
   return result;
 }
 

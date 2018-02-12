@@ -37,9 +37,10 @@ class CORE_EXPORT CSSPerspective final : public CSSTransformComponent {
   // https://drafts.css-houdini.org/css-typed-om/#dom-cssskew-is2d
   void setIs2D(bool is2D) final {}
 
+  DOMMatrix* toMatrix(ExceptionState&) const final;
+
   // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const final { return kPerspectiveType; }
-  const DOMMatrix* AsMatrix(ExceptionState&) const final;
   const CSSFunctionValue* ToCSSValue() const final;
 
   virtual void Trace(blink::Visitor* visitor) {

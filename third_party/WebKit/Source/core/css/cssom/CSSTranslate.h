@@ -48,9 +48,10 @@ class CORE_EXPORT CSSTranslate final : public CSSTransformComponent {
   void setY(CSSNumericValue* y, ExceptionState&);
   void setZ(CSSNumericValue* z, ExceptionState&);
 
+  DOMMatrix* toMatrix(ExceptionState&) const final;
+
   // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const final { return kTranslationType; }
-  const DOMMatrix* AsMatrix(ExceptionState&) const final;
   const CSSFunctionValue* ToCSSValue() const final;
 
   virtual void Trace(blink::Visitor* visitor) {

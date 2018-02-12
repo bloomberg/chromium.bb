@@ -32,9 +32,10 @@ class CORE_EXPORT CSSMatrixComponent final : public CSSTransformComponent {
   DOMMatrix* matrix() { return matrix_.Get(); }
   void setMatrix(DOMMatrix* matrix) { matrix_ = matrix; }
 
+  DOMMatrix* toMatrix(ExceptionState&) const final;
+
   // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const final { return kMatrixType; }
-  const DOMMatrix* AsMatrix(ExceptionState&) const final;
   const CSSFunctionValue* ToCSSValue() const final;
 
   virtual void Trace(blink::Visitor* visitor) {
