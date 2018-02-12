@@ -65,7 +65,11 @@ public class AsyncInitTaskRunnerTest {
                 mLatch.countDown();
             }
             @Override
-            protected Executor getExecutor() {
+            protected Executor getFetchSeedExecutor() {
+                return new RoboExecutorService();
+            }
+            @Override
+            protected Executor getTaskPerThreadExecutor() {
                 return new RoboExecutorService();
             }
         });
