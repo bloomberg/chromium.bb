@@ -1292,9 +1292,6 @@
   },
   'content_unittests': {
     'remove_from': [
-      # TODO(dpranke) - remove this exception.
-      'Fuchsia x64 SANDBOX',
-
       # chromium.fyi
       'Fuchsia (dbg)',
       'Fuchsia ARM64',
@@ -1392,8 +1389,6 @@
   },
   'crypto_unittests': {
     'remove_from': [
-       # TODO(dpranke) - remove this exception.
-      'Fuchsia x64 SANDBOX',
       # TODO(kbr): these tests aren't run on Android except on one bot
       # on chromium.android.fyi, which might just be an accident.
       # Consider moving it to non_android_chromium_gtests.
@@ -1929,12 +1924,6 @@
           'shards': 1,
         },
       },
-      # chromium.sandbox
-      'Linux Tests SANDBOX': {
-        'swarming': {
-          'shards': 1,
-        },
-      },
       # chromium.linux
       # Unclear why this isn't sharded.
       'Linux Tests': {
@@ -2088,8 +2077,6 @@
   },
   'keyboard_unittests': {
     'remove_from': [
-      # TODO(dpranke) - remove this exception.
-      'Linux Tests SANDBOX',
       'Win7 Tests (dbg)(1)',
       # On chromium.linux, unclear why these aren't run.
       'Linux Tests',
@@ -2099,8 +2086,6 @@
   },
   'latency_unittests': {
     'remove_from': [
-      # TODO(dpranke) - remove this exception.
-      'Linux Tests SANDBOX',
       # On chromium.android, unclear why these aren't run on all bots.
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
@@ -2272,9 +2257,6 @@
       # On chromium.linux, unclear why these aren't run.
       'Linux Tests',
 
-      # TODO(dpranke) - remove this exception for Linux Tests SANDBOX.
-      'Linux Tests SANDBOX',
-
       # On chromium.linux, unclear why these aren't run.
       'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
@@ -2289,9 +2271,6 @@
   },
   'metrics_python_tests': {
     'remove_from': [
-      # TODO(dpranke) - remove this exception.
-      'Linux Tests SANDBOX',
-
       # chromium.clang
       'ToTMac',
       # chromium.fyi
@@ -2726,9 +2705,6 @@
   },
   'renderer_side_navigation_content_browsertests': {
     'remove_from': [
-      # TODO(dpranke) - remove this exception.
-      'Linux Tests SANDBOX',
-
       # On chromium.android, unclear why these aren't run on all bots.
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
@@ -2803,9 +2779,6 @@
   },
   'renderer_side_navigation_content_unittests': {
     'remove_from': [
-      # TODO(dpranke) - remove this exception.
-      'Linux Tests SANDBOX',
-
       # On chromium.android, unclear why these aren't run on all bots.
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
@@ -3047,16 +3020,12 @@
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
-      # chromium.sandbox
-      'Linux Tests SANDBOX',
     ],
   },
   'site_per_process_components_unittests': {
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
-      # chromium.sandbox
-      'Linux Tests SANDBOX',
     ],
   },
   'site_per_process_content_browsertests': {
@@ -3083,32 +3052,24 @@
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
-      # chromium.sandbox
-      'Linux Tests SANDBOX',
     ],
   },
   'site_per_process_extensions_unittests': {
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
-      # chromium.sandbox
-      'Linux Tests SANDBOX',
     ],
   },
   'site_per_process_interactive_ui_tests': {
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
-      # chromium.sandbox
-      'Linux Tests SANDBOX',
     ],
   },
   'site_per_process_sync_integration_tests': {
     'remove_from': [
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
-      # chromium.sandbox
-      'Linux Tests SANDBOX',
     ],
   },
   'site_per_process_unit_tests': {
@@ -3138,8 +3099,6 @@
       # TODO(dpranke): Should we be running this step on Linux Tests (dbg)(1)?
       'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
-      # chromium.sandbox
-      'Linux Tests SANDBOX',
     ],
   },
   'sizes': {
@@ -3176,9 +3135,6 @@
   },
   'skia_unittests': {
     'remove_from': [
-      # TODO(dpranke) - remove this exception.
-      'Fuchsia x64 SANDBOX',
-
       # On chromium.android, unclear why these aren't run.
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
@@ -3234,8 +3190,6 @@
   },
   'sql_unittests': {
     'remove_from': [
-      # TODO(dpranke) - remove this exception.
-      'Fuchsia x64 SANDBOX',
       # chromium.fyi
       'Fuchsia ARM64',
     ],
@@ -3406,13 +3360,6 @@
           '--jobs=1',
         ],
       },
-      # chromium.sandbox
-      'Linux Tests SANDBOX': {
-        'args': [
-          '--xvfb',
-          '--jobs=1',
-        ],
-      },
     },
     'remove_from': [
       'Linux Tests (dbg)(1)(32)',
@@ -3435,12 +3382,6 @@
   'traffic_annotation_auditor_unittests': {
     'modifications': {
       'Linux Tests': {
-        # Unclear why this isn't swarmed.
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
-      },
-      'Linux Tests SANDBOX': {
         # Unclear why this isn't swarmed.
         'swarming': {
           'can_use_on_swarming_builders': False,
@@ -3713,8 +3654,6 @@
       # chromium.fyi
       'Chromium Win 10 GCE Tests',
       'Out of Process Profiling Android',
-      # chromium.sandbox
-      'Linux Tests SANDBOX',
       # chromium.win
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
@@ -3768,8 +3707,6 @@
       'Chromium Win 10 GCE Tests',
       'Out of Process Profiling Android',
       'VR Linux',
-      # chromium.sandbox
-      'Linux Tests SANDBOX',
       # chromium.win
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
@@ -3835,18 +3772,6 @@
       },
       # chromium.linux
       'Linux Tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              # TODO(kbr): this is essentially redundant.
-              'os': 'Ubuntu-14.04',
-            },
-          ],
-          'shards': 6,
-        },
-      },
-      # chromium.sandbox
-      'Linux Tests SANDBOX': {
         'swarming': {
           'dimension_sets': [
             {
