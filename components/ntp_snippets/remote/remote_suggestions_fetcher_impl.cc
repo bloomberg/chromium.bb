@@ -18,7 +18,6 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 using language::UrlLanguageHistogram;
 using net::HttpRequestHeaders;

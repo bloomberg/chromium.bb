@@ -58,8 +58,6 @@
 #include "components/ntp_snippets/time_serialization.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/variations/variations_params_manager.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -379,7 +377,6 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
       bool use_mock_prefetched_pages_tracker,
       bool use_fake_breaking_news_listener,
       bool use_mock_remote_suggestions_status_service) {
-    utils_.ResetSigninManager();
     auto mock_suggestions_fetcher =
         std::make_unique<StrictMock<MockRemoteSuggestionsFetcher>>();
     mock_suggestions_fetcher_ = mock_suggestions_fetcher.get();

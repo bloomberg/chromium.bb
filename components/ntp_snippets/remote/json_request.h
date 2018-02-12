@@ -16,8 +16,10 @@
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/status.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/http/http_request_headers.h"
+#include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_request_context_getter.h"
+#include "url/gurl.h"
 
 namespace base {
 class Value;
