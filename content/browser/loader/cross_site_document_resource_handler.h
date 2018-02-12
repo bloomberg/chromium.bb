@@ -109,12 +109,14 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
       bool needed_sniffing,
       CrossSiteDocumentMimeType canonical_mime_type,
       ResourceType resource_type,
-      int http_response_code);
+      int http_response_code,
+      int64_t content_length);
   static void LogBlockedResponse(ResourceRequestInfoImpl* resource_request_info,
                                  bool needed_sniffing,
                                  bool found_parser_breaker,
                                  CrossSiteDocumentMimeType canonical_mime_type,
-                                 int http_response_code);
+                                 int http_response_code,
+                                 int64_t content_length);
 
   // WeakPtrFactory for |next_handler_|.
   base::WeakPtrFactory<ResourceHandler> weak_next_handler_;
@@ -176,6 +178,9 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // The HTTP response code (e.g. 200 or 404) received in response to this
   // resource request.
   int http_response_code_ = 0;
+
+  // Content length if available. -1 if not available.
+  int64_t content_length_ = -1;
 
   base::WeakPtrFactory<CrossSiteDocumentResourceHandler> weak_this_;
 
