@@ -35,6 +35,11 @@ Study::Experiment* AddExperiment(const std::string& name,
   return experiment;
 }
 
+std::vector<std::string> SplitFilterString(const std::string& input) {
+  return base::SplitString(input, ",", base::TRIM_WHITESPACE,
+                           base::SPLIT_WANT_ALL);
+}
+
 }  // namespace
 
 TEST(VariationsStudyFilteringTest, CheckStudyChannel) {
@@ -191,22 +196,16 @@ TEST(VariationsStudyFilteringTest, CheckStudyLocale) {
       {"", "fr-CA", true, true, true},
   };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (const auto& test : test_cases) {
     Study::Filter filter;
-    for (const std::string& locale : base::SplitString(
-             test_cases[i].filter_locales, ",",
-             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
+    for (const std::string& locale : SplitFilterString(test.filter_locales))
       filter.add_locale(locale);
-    for (const std::string& exclude_locale :
-         base::SplitString(test_cases[i].exclude_locales, ",",
-                           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
-      filter.add_exclude_locale(exclude_locale);
-    EXPECT_EQ(test_cases[i].en_us_result,
-              internal::CheckStudyLocale(filter, "en-US"));
-    EXPECT_EQ(test_cases[i].en_ca_result,
-              internal::CheckStudyLocale(filter, "en-CA"));
-    EXPECT_EQ(test_cases[i].fr_result,
-              internal::CheckStudyLocale(filter, "fr"));
+    for (const std::string& locale : SplitFilterString(test.exclude_locales))
+      filter.add_exclude_locale(locale);
+
+    EXPECT_EQ(test.en_us_result, internal::CheckStudyLocale(filter, "en-US"));
+    EXPECT_EQ(test.en_ca_result, internal::CheckStudyLocale(filter, "en-CA"));
+    EXPECT_EQ(test.fr_result, internal::CheckStudyLocale(filter, "fr"));
   }
 }
 
@@ -412,54 +411,45 @@ TEST(VariationsStudyFilteringTest, CheckStudyHardwareClass) {
     const char* actual_hardware_class;
     bool expected_result;
   } test_cases[] = {
-    // Neither filtered nor excluded set:
-    // True since empty is always a match.
-    {"", "", "fancy INTEL pear device", true},
-    {"", "", "", true},
+      // Neither filtered nor excluded set:
+      // True since empty is always a match.
+      {"", "", "fancy INTEL pear device", true},
+      {"", "", "", true},
 
-    // Filtered set:
-    {"apple,pear,orange", "", "apple", true},
-    {"apple,pear,orange", "", "fancy INTEL pear device", true},
-    {"apple,pear,orange", "", "fancy INTEL GRAPE device", false},
-    // Somehow tagged as both, but still valid.
-    {"apple,pear,orange", "", "fancy INTEL pear GRAPE device", true},
-    // Substring, so still valid.
-    {"apple,pear,orange", "", "fancy INTEL SNapple device", true},
-    // No issues with doubling.
-    {"apple,pear,orange", "", "fancy orange orange device", true},
-    // Empty, which is what would happen for non ChromeOS platforms.
-    {"apple,pear,orange", "", "", false},
+      // Filtered set:
+      {"apple,pear,orange", "", "apple", true},
+      {"apple,pear,orange", "", "fancy INTEL pear device", false},
+      {"apple,pear,orange", "", "fancy INTEL GRAPE device", false},
+      // Somehow tagged as both, but still valid.
+      {"apple,pear,orange", "", "fancy INTEL pear GRAPE device", false},
+      // Substring, which should not match.
+      {"apple,pear,orange", "", "fancy INTEL SNapple device", false},
+      // Empty, which is what would happen for non ChromeOS platforms.
+      {"apple,pear,orange", "", "", false},
 
-    // Excluded set:
-    {"", "apple,pear,orange", "apple", false},
-    {"", "apple,pear,orange", "fancy INTEL pear device", false},
-    {"", "apple,pear,orange", "fancy INTEL GRAPE device", true},
-    // Somehow tagged as both. Very excluded!
-    {"", "apple,pear,orange", "fancy INTEL pear GRAPE device", false},
-    // Substring, so still invalid.
-    {"", "apple,pear,orange", "fancy INTEL SNapple device", false},
-    // Empty.
-    {"", "apple,pear,orange", "", true},
+      // Excluded set:
+      {"", "apple,pear,orange", "apple", false},
+      {"", "apple,pear,orange", "fancy INTEL pear device", true},
+      {"", "apple,pear,orange", "fancy INTEL GRAPE device", true},
+      // Empty.
+      {"", "apple,pear,orange", "", true},
 
-    // Not testing when both are set as it should never occur and should be
-    // considered undefined.
+      // Not testing when both are set as it should never occur and should be
+      // considered undefined.
   };
 
-  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+  for (const auto& test : test_cases) {
     Study::Filter filter;
-    for (const std::string& cur : base::SplitString(
-             test_cases[i].hardware_class, ",",
-             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
-      filter.add_hardware_class(cur);
+    for (const auto& hw_class : SplitFilterString(test.hardware_class))
+      filter.add_hardware_class(hw_class);
+    for (const auto& hw_class : SplitFilterString(test.exclude_hardware_class))
+      filter.add_exclude_hardware_class(hw_class);
 
-    for (const std::string& cur : base::SplitString(
-             test_cases[i].exclude_hardware_class, ",",
-             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
-      filter.add_exclude_hardware_class(cur);
-
-    EXPECT_EQ(test_cases[i].expected_result,
-              internal::CheckStudyHardwareClass(
-                  filter, test_cases[i].actual_hardware_class));
+    EXPECT_EQ(test.expected_result, internal::CheckStudyHardwareClass(
+                                        filter, test.actual_hardware_class))
+        << "hardware_class=" << test.hardware_class << " "
+        << "exclude_hardware_class=" << test.exclude_hardware_class << " "
+        << "actual_hardware_class=" << test.actual_hardware_class;
   }
 }
 
@@ -497,14 +487,10 @@ TEST(VariationsStudyFilteringTest, CheckStudyCountry) {
 
   for (const auto& test : test_cases) {
     Study::Filter filter;
-    for (const std::string& country : base::SplitString(
-             test.country, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
+    for (const std::string& country : SplitFilterString(test.country))
       filter.add_country(country);
-
-    for (const std::string& exclude_country : base::SplitString(
-             test.exclude_country, ",",
-             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL))
-      filter.add_exclude_country(exclude_country);
+    for (const std::string& country : SplitFilterString(test.exclude_country))
+      filter.add_exclude_country(country);
 
     EXPECT_EQ(test.expected_result,
               internal::CheckStudyCountry(filter, test.actual_country));
