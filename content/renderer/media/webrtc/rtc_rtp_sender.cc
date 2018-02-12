@@ -250,6 +250,11 @@ const webrtc::MediaStreamTrackInterface* RTCRtpSender::webrtc_track() const {
   return track_ref ? track_ref->webrtc_track() : nullptr;
 }
 
+std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
+RTCRtpSender::stream_refs() const {
+  return internal_->stream_refs();
+}
+
 void RTCRtpSender::ReplaceTrack(blink::WebMediaStreamTrack with_track,
                                 base::OnceCallback<void(bool)> callback) {
   internal_->ReplaceTrack(std::move(with_track), std::move(callback));
