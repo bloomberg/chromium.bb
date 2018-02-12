@@ -95,6 +95,7 @@ bool DeltaFileBackend::Init() {
   options.create_if_missing = true;
   options.max_open_files = 0;  // Use minimum number of files.
   options.comparator = leveldb_cmp_.get();
+  options.write_buffer_size = 500 * 1024;
   std::string path = path_.value();
   leveldb::Status status = leveldb_env::OpenDB(options, path, &db_);
   if (status.IsCorruption()) {
