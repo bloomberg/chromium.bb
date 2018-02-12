@@ -112,6 +112,8 @@ class AudioParamTimeline {
       kSetValueCurve,
       // For cancelValuesAndHold
       kCancelValues,
+      // Special marker for the end of a |kSetValueCurve| event.
+      kSetValueCurveEnd,
       kLastType
     };
 
@@ -133,6 +135,8 @@ class AudioParamTimeline {
         const Vector<float>& curve,
         double time,
         double duration);
+    static std::unique_ptr<ParamEvent> CreateSetValueCurveEndEvent(float value,
+                                                                   double time);
     static std::unique_ptr<ParamEvent> CreateCancelValuesEvent(
         double time,
         std::unique_ptr<ParamEvent> saved_event);
