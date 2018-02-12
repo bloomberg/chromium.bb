@@ -6,7 +6,6 @@
 #define COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTIONS_STATUS_SERVICE_IMPL_H_
 
 #include "base/callback.h"
-#include "base/gtest_prod_util.h"
 #include "base/scoped_observer.h"
 #include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -32,25 +31,6 @@ class RemoteSuggestionsStatusServiceImpl
   void OnSignInStateChanged(bool has_signed_in) override;
 
  private:
-  // TODO(jkrcal): Rewrite the tests using the public API - observing status
-  // changes instead of calling private GetStatusFromDeps() directly.
-  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceImplTest,
-                           SigninNeededIfSpecifiedByParam);
-  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceImplTest,
-                           NoSigninNeeded);
-  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceImplTest,
-                           DisabledViaPref);
-  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceImplTest,
-                           DisabledViaAdditionalPref);
-  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceImplTest,
-                           EnabledAfterListFolded);
-  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceImplTest,
-                           DisabledWhenListFoldedOnStart);
-  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceImplTest,
-                           EnablingAfterFoldedStart);
-  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsStatusServiceImplTest,
-                           EnablingAfterFoldedStartSignedIn);
-
   // Callbacks for the PrefChangeRegistrar.
   void OnSnippetsEnabledChanged();
   void OnListVisibilityChanged();
