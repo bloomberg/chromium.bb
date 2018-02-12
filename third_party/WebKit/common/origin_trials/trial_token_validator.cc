@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
+#include "third_party/WebKit/public/common/origin_trials/trial_token_validator.h"
 
 #include <memory>
 #include "base/feature_list.h"
 #include "base/time/time.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
-#include "third_party/WebKit/common/origin_trials/trial_policy.h"
-#include "third_party/WebKit/common/origin_trials/trial_token.h"
+#include "third_party/WebKit/public/common/origin_trials/trial_policy.h"
+#include "third_party/WebKit/public/common/origin_trials/trial_token.h"
 
 namespace blink {
 

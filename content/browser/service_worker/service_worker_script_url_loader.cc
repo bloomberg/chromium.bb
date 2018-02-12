@@ -18,7 +18,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/network/public/cpp/resource_response.h"
-#include "third_party/WebKit/common/mime_util/mime_util.h"
+#include "third_party/WebKit/public/common/mime_util/mime_util.h"
 
 namespace content {
 

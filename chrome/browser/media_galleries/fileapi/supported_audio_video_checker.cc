@@ -24,7 +24,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "net/base/mime_util.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/WebKit/common/mime_util/mime_util.h"
+#include "third_party/WebKit/public/common/mime_util/mime_util.h"
 
 namespace {
 

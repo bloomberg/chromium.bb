@@ -18,7 +18,7 @@
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/URLConversion.h"
 #include "public/platform/WebString.h"
-#include "third_party/WebKit/common/mime_util/mime_util.h"
+#include "third_party/WebKit/public/common/mime_util/mime_util.h"
 #include "url/gurl.h"
 
 namespace {

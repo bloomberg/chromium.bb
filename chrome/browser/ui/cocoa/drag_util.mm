@@ -17,7 +17,7 @@
 #include "ipc/ipc_message.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
-#include "third_party/WebKit/common/mime_util/mime_util.h"
+#include "third_party/WebKit/public/common/mime_util/mime_util.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/base/resource/resource_bundle.h"

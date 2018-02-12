@@ -5,7 +5,6 @@
 #include "core/origin_trials/OriginTrialContext.h"
 
 #include <memory>
-#include "common/origin_trials/trial_token.h"
 #include "core/dom/DOMException.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLHeadElement.h"
@@ -19,6 +18,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
+#include "public/common/origin_trials/trial_token.h"
 #include "public/platform/WebTrialTokenValidator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

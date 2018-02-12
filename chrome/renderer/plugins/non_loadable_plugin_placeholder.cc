@@ -12,7 +12,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/app/strings/grit/content_strings.h"
 #include "content/public/renderer/render_frame.h"
-#include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/WebKit/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"

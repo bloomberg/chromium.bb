@@ -34,7 +34,7 @@
 #include "extensions/features/features.h"
 #include "net/base/filename_util.h"
 #include "ppapi/features/features.h"
-#include "third_party/WebKit/common/mime_util/mime_util.h"
+#include "third_party/WebKit/public/common/mime_util/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
 

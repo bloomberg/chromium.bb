@@ -9,7 +9,7 @@
 #include "chrome/common/search.mojom.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "third_party/WebKit/common/associated_interfaces/associated_interface_registry.h"
+#include "third_party/WebKit/public/common/associated_interfaces/associated_interface_registry.h"
 #include "url/gurl.h"
 
 // SearchBouncer tracks a set of URLs which should be transferred back to the
