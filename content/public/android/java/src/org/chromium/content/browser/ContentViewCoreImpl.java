@@ -527,7 +527,7 @@ public class ContentViewCoreImpl
         assert mWebContents != null;
         mWebContents.onShow();
         getWebContentsAccessibility().refreshState();
-        restoreSelectionPopupsIfNecessary();
+        getSelectionPopupController().restoreSelectionPopupsIfNecessary();
     }
 
     @Override
@@ -543,32 +543,22 @@ public class ContentViewCoreImpl
     }
 
     private void hidePopupsAndClearSelection() {
-        if (mWebContents != null) {
-            getSelectionPopupController().destroyActionModeAndUnselect();
-            mWebContents.dismissTextHandles();
-        }
+        getSelectionPopupController().destroyActionModeAndUnselect();
+        mWebContents.dismissTextHandles();
         hidePopups();
     }
 
     @CalledByNative
     private void hidePopupsAndPreserveSelection() {
-        if (mWebContents != null) {
-            getSelectionPopupController().destroyActionModeAndKeepSelection();
-        }
+        getSelectionPopupController().destroyActionModeAndKeepSelection();
         hidePopups();
     }
 
     private void hidePopups() {
-        if (mWebContents != null) {
-            destroyPastePopup();
-            getTapDisambiguator().hidePopup(false);
-            getTextSuggestionHost().hidePopups();
-        }
+        destroyPastePopup();
+        getTapDisambiguator().hidePopup(false);
+        getTextSuggestionHost().hidePopups();
         hideSelectPopupWithCancelMessage();
-    }
-
-    private void restoreSelectionPopupsIfNecessary() {
-        getSelectionPopupController().restoreSelectionPopupsIfNecessary();
     }
 
     private void resetGestureDetection() {
@@ -587,18 +577,18 @@ public class ContentViewCoreImpl
         mAttachedToWindow = true;
         for (WindowEventObserver observer : mWindowEventObservers) observer.onAttachedToWindow();
         addDisplayAndroidObserverIfNeeded();
-        if (mWebContents != null) {
-            updateTextSelectionUI(true);
-        }
+        updateTextSelectionUI(true);
         GamepadList.onAttachedToWindow(mContext);
         mSystemCaptioningBridge.addListener(this);
     }
 
     @Override
     public void updateTextSelectionUI(boolean focused) {
+        // TODO(jinsukkim): Replace all the null checks against mWebContents to assert stmt.
+        if (mWebContents == null) return;
         setTextHandlesTemporarilyHidden(!focused);
         if (focused) {
-            restoreSelectionPopupsIfNecessary();
+            getSelectionPopupController().restoreSelectionPopupsIfNecessary();
         } else {
             hidePopupsAndPreserveSelection();
         }
@@ -613,14 +603,12 @@ public class ContentViewCoreImpl
         removeDisplayAndroidObserver();
         GamepadList.onDetachedFromWindow();
 
-        if (mWebContents != null) {
-            // WebView uses PopupWindows for handle rendering, which may remain
-            // unintentionally visible even after the WebView has been detached.
-            // Override the handle visibility explicitly to address this, but
-            // preserve the underlying selection for detachment cases like screen
-            // locking and app switching.
-            updateTextSelectionUI(false);
-        }
+        // WebView uses PopupWindows for handle rendering, which may remain
+        // unintentionally visible even after the WebView has been detached.
+        // Override the handle visibility explicitly to address this, but
+        // preserve the underlying selection for detachment cases like screen
+        // locking and app switching.
+        updateTextSelectionUI(false);
         mSystemCaptioningBridge.removeListener(this);
     }
 
@@ -688,7 +676,7 @@ public class ContentViewCoreImpl
                 gainFocus && !getSelectionPopupController().isFocusedNodeEditable();
 
         if (gainFocus) {
-            restoreSelectionPopupsIfNecessary();
+            getSelectionPopupController().restoreSelectionPopupsIfNecessary();
         } else {
             cancelRequestToScrollFocusedEditableNodeIntoView();
             if (mPreserveSelectionOnNextLossOfFocus) {
@@ -1113,14 +1101,14 @@ public class ContentViewCoreImpl
         // ActionMode#invalidate() won't be able to re-layout the floating
         // action mode menu items according to the new rotation. So Chrome
         // has to re-create the action mode.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                && getSelectionPopupController().isActionModeValid()) {
-            hidePopupsAndPreserveSelection();
-            if (mWebContents != null) {
+        if (mWebContents != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                    && getSelectionPopupController().isActionModeValid()) {
+                hidePopupsAndPreserveSelection();
                 getSelectionPopupController().showActionModeOrClearOnFailure();
             }
+            getTextSuggestionHost().hidePopups();
         }
-        if (mWebContents != null) getTextSuggestionHost().hidePopups();
 
         int rotationDegrees = 0;
         switch (rotation) {
