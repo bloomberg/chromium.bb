@@ -453,21 +453,20 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
 }
 
 #if defined(OS_WIN)
-// Test that forcibly closing the browser and popup HWND does not cause a crash.
-// http://crbug.com/400646
-IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
-                       DISABLED_DestroyHWNDDoesNotCrash) {
+// Forcibly closing a browser HWND with a popup should not cause a crash.
+IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, DestroyHWNDDoesNotCrash) {
   if (!ShouldRunPopupTest())
     return;
 
   OpenPopupViaAPI(false);
   BrowserActionTestUtil test_util(browser());
-  const gfx::NativeView view = test_util.GetPopupNativeView();
-  EXPECT_NE(static_cast<gfx::NativeView>(NULL), view);
-  const HWND hwnd = views::HWNDForNativeView(view);
-  EXPECT_EQ(hwnd,
-            views::HWNDForNativeView(browser()->window()->GetNativeWindow()));
-  EXPECT_EQ(TRUE, ::IsWindow(hwnd));
+  const gfx::NativeView popup_view = test_util.GetPopupNativeView();
+  EXPECT_NE(static_cast<gfx::NativeView>(nullptr), popup_view);
+  const HWND popup_hwnd = views::HWNDForNativeView(popup_view);
+  EXPECT_EQ(TRUE, ::IsWindow(popup_hwnd));
+  const HWND browser_hwnd =
+      views::HWNDForNativeView(browser()->window()->GetNativeWindow());
+  EXPECT_EQ(TRUE, ::IsWindow(browser_hwnd));
 
   // Create a new browser window to prevent the message loop from terminating.
   browser()->OpenURL(content::OpenURLParams(GURL("about:"), content::Referrer(),
@@ -475,9 +474,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
                                             ui::PAGE_TRANSITION_TYPED, false));
 
   // Forcibly closing the browser HWND should not cause a crash.
-  EXPECT_EQ(TRUE, ::CloseWindow(hwnd));
-  EXPECT_EQ(TRUE, ::DestroyWindow(hwnd));
-  EXPECT_EQ(FALSE, ::IsWindow(hwnd));
+  EXPECT_EQ(TRUE, ::CloseWindow(browser_hwnd));
+  EXPECT_EQ(TRUE, ::DestroyWindow(browser_hwnd));
+  EXPECT_EQ(FALSE, ::IsWindow(browser_hwnd));
+  EXPECT_EQ(FALSE, ::IsWindow(popup_hwnd));
 }
 #endif  // OS_WIN
 
