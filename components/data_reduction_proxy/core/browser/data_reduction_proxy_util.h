@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_UTIL_H_
-#define COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_UTIL_H_
+#ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_UTIL_H_
+#define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_UTIL_H_
 
 #include <memory>
 #include <string>
@@ -18,13 +18,13 @@
 namespace base {
 class Time;
 class TimeDelta;
-}
+}  // namespace base
 
 namespace net {
 class ProxyConfig;
 class ProxyInfo;
 class URLRequest;
-}
+}  // namespace net
 
 namespace data_reduction_proxy {
 
@@ -107,14 +107,13 @@ int64_t CalculateOCLFromOFCL(const net::URLRequest& request);
 // received response length. For partial failed responses an estimate is
 // provided by scaling received response length based on OFCL and Content-Length
 // header.
-int64_t CalculateEffectiveOCL(const net::URLRequest& request);
+int64_t EstimateOriginalBodySize(const net::URLRequest& request,
+                                 const LoFiDecider* lofi_decider);
 
-// Given a |request| that went through the Data Reduction Proxy if |used_drp| is
-// true, this function estimates how many bytes would have been received if the
-// response had been received directly from the origin without any data saver
-// optimizations.
+// Given a |request| that went through the Data Reduction Proxy; this function
+// estimates how many bytes would have been received if the response had been
+// received directly from the origin without any data saver optimizations.
 int64_t EstimateOriginalReceivedBytes(const net::URLRequest& request,
-                                      bool used_drp,
                                       const LoFiDecider* lofi_decider);
 
 // Converts net::ProxyServer::Scheme to type ProxyScheme.
@@ -166,4 +165,4 @@ std::unique_ptr<Timestamp> CreateTimestampFromTime(const base::Time& time);
 
 }  // namespace data_reduction_proxy
 
-#endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_UTIL_H_
+#endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_UTIL_H_

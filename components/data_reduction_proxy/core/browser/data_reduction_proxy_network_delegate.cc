@@ -21,9 +21,9 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
@@ -590,10 +590,9 @@ void DataReductionProxyNetworkDelegate::CalculateAndRecordDataUsage(
   // Estimate how many bytes would have been used if the DataReductionProxy was
   // not used, and record the data usage.
   int64_t original_size = util::EstimateOriginalReceivedBytes(
-      request, request_type == VIA_DATA_REDUCTION_PROXY,
-      data_reduction_proxy_io_data_
-          ? data_reduction_proxy_io_data_->lofi_decider()
-          : nullptr);
+      request, data_reduction_proxy_io_data_
+                   ? data_reduction_proxy_io_data_->lofi_decider()
+                   : nullptr);
 
   std::string mime_type;
   if (request.response_headers())

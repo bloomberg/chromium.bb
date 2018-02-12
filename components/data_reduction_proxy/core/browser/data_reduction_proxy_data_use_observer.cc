@@ -11,7 +11,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "components/data_use_measurement/core/data_use.h"
 #include "components/data_use_measurement/core/data_use_ascriber.h"
@@ -109,15 +109,11 @@ void DataReductionProxyDataUseObserver::OnPageResourceLoad(
     return;
 
   int64_t network_bytes = request.GetTotalReceivedBytes();
-  DataReductionProxyRequestType request_type = GetDataReductionProxyRequestType(
-      request, data_reduction_proxy_io_data_->configurator()->GetProxyConfig(),
-      *data_reduction_proxy_io_data_->config());
 
   // Estimate how many bytes would have been used if the DataReductionProxy was
   // not used, and record the data usage.
   int64_t original_bytes = util::EstimateOriginalReceivedBytes(
-      request, request_type == VIA_DATA_REDUCTION_PROXY,
-      data_reduction_proxy_io_data_->lofi_decider());
+      request, data_reduction_proxy_io_data_->lofi_decider());
 
   if (data_use->traffic_type() ==
           data_use_measurement::DataUse::TrafficType::USER_TRAFFIC &&
