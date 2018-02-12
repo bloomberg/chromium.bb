@@ -224,4 +224,44 @@ TEST_F(ImageManagerTest, GetImageForURLNetworkCacheHit) {
   EXPECT_EQ(1, num_callback_valid_called_);
 }
 
+TEST_F(ImageManagerTest, QueueImageRequest) {
+  SuggestionsProfile suggestions_profile;
+  ChromeSuggestion* suggestion = suggestions_profile.add_suggestions();
+  suggestion->set_url(kTestUrl1);
+  // The URL we set is invalid, to show that it will fail from network.
+  suggestion->set_thumbnail(kInvalidImagePath);
+
+  // Create the ImageManager with an added entry in the database.
+  AddEntry(GetSampleImageData(kTestUrl1), &db_model_);
+  FakeDB<ImageData>* fake_db = new FakeDB<ImageData>(&db_model_);
+  image_manager_.reset(CreateImageManager(fake_db));
+  image_manager_->Initialize(suggestions_profile);
+
+  base::RunLoop run_loop1;
+  base::RunLoop run_loop2;
+  image_manager_->GetImageForURL(
+      GURL(kTestUrl1), base::BindRepeating(&ImageManagerTest::OnImageAvailable,
+                                           base::Unretained(this), &run_loop1));
+  image_manager_->GetImageForURL(
+      GURL(kTestUrl1), base::BindRepeating(&ImageManagerTest::OnImageAvailable,
+                                           base::Unretained(this), &run_loop2));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0, num_callback_null_called_);
+  EXPECT_EQ(0, num_callback_valid_called_);
+  EXPECT_EQ(1u, image_manager_->pending_cache_requests_.size());
+  EXPECT_EQ(
+      2u,
+      image_manager_->pending_cache_requests_.begin()->second.callbacks.size());
+
+  fake_db->InitCallback(true);
+  fake_db->LoadCallback(true);
+  run_loop1.Run();
+  run_loop2.Run();
+
+  EXPECT_EQ(0, num_callback_null_called_);
+  EXPECT_EQ(2, num_callback_valid_called_);
+  EXPECT_EQ(0u, image_manager_->pending_cache_requests_.size());
+}
+
 }  // namespace suggestions

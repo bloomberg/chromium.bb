@@ -72,6 +72,7 @@ class ImageManager : public image_fetcher::ImageFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(ImageManagerTest, GetImageForURLNetworkCacheHit);
   FRIEND_TEST_ALL_PREFIXES(ImageManagerTest,
                            GetImageForURLNetworkCacheNotInitialized);
+  FRIEND_TEST_ALL_PREFIXES(ImageManagerTest, QueueImageRequest);
 
   // Used for testing.
   ImageManager();
@@ -101,8 +102,9 @@ class ImageManager : public image_fetcher::ImageFetcherDelegate {
   // and returns true. Otherwise just returns false.
   bool GetImageURL(const GURL& url, GURL* image_url);
 
-  void QueueCacheRequest(
-      const GURL& url, const GURL& image_url, ImageCallback callback);
+  void QueueCacheRequest(const GURL& url,
+                         const GURL& image_url,
+                         ImageCallback callback);
 
   void ServeFromCacheOrNetwork(
       const GURL& url, const GURL& image_url, ImageCallback callback);
