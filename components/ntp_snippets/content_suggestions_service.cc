@@ -55,7 +55,7 @@ void RecordFaviconFetchResult(FaviconFetchResult result) {
 
 ContentSuggestionsService::ContentSuggestionsService(
     State state,
-    SigninManagerBase* signin_manager,
+    identity::IdentityManager* identity_manager,
     history::HistoryService* history_service,
     favicon::LargeIconService* large_icon_service,
     PrefService* pref_service,
@@ -64,7 +64,7 @@ ContentSuggestionsService::ContentSuggestionsService(
     std::unique_ptr<RemoteSuggestionsScheduler> remote_suggestions_scheduler,
     std::unique_ptr<Logger> debug_logger)
     : state_(state),
-      signin_observer_(this),
+      identity_manager_observer_(this),
       history_service_observer_(this),
       remote_suggestions_provider_(nullptr),
       large_icon_service_(large_icon_service),
@@ -74,8 +74,8 @@ ContentSuggestionsService::ContentSuggestionsService(
       category_ranker_(std::move(category_ranker)),
       debug_logger_(std::move(debug_logger)) {
   // Can be null in tests.
-  if (signin_manager) {
-    signin_observer_.Add(signin_manager);
+  if (identity_manager) {
+    identity_manager_observer_.Add(identity_manager);
   }
 
   if (history_service) {
@@ -505,16 +505,14 @@ void ContentSuggestionsService::OnSuggestionInvalidated(
     observer.OnSuggestionInvalidated(suggestion_id);
   }
 }
-
-// SigninManagerBase::Observer implementation
-void ContentSuggestionsService::GoogleSigninSucceeded(
-    const std::string& account_id,
-    const std::string& username) {
+// identity::IdentityManager::Observer implementation
+void ContentSuggestionsService::OnPrimaryAccountSet(
+    const AccountInfo& account_info) {
   OnSignInStateChanged(/*has_signed_in=*/true);
 }
 
-void ContentSuggestionsService::GoogleSignedOut(const std::string& account_id,
-                                                const std::string& username) {
+void ContentSuggestionsService::OnPrimaryAccountCleared(
+    const AccountInfo& account_info) {
   OnSignInStateChanged(/*has_signed_in=*/false);
 }
 

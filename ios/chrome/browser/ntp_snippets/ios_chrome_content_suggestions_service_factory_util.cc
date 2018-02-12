@@ -121,8 +121,8 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
       base::DefaultClock::GetInstance(), debug_logger.get());
 
   // Create the ContentSuggestionsService.
-  SigninManager* signin_manager =
-      ios::SigninManagerFactory::GetForBrowserState(chrome_browser_state);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForBrowserState(chrome_browser_state);
   HistoryService* history_service =
       ios::HistoryServiceFactory::GetForBrowserState(
           chrome_browser_state, ServiceAccessType::EXPLICIT_ACCESS);
@@ -134,7 +134,7 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
           prefs, base::DefaultClock::GetInstance(),
           /*is_chrome_home_enabled=*/false);
   return std::make_unique<ContentSuggestionsService>(
-      State::ENABLED, signin_manager, history_service, large_icon_service,
+      State::ENABLED, identity_manager, history_service, large_icon_service,
       prefs, std::move(category_ranker), std::move(user_classifier),
       std::move(scheduler), std::move(debug_logger));
 }

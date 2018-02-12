@@ -158,7 +158,7 @@ class ContentSuggestionsServiceTest : public testing::Test {
         pref_service_.get(), base::DefaultClock::GetInstance());
 
     service_ = std::make_unique<ContentSuggestionsService>(
-        enabled, /*signin_manager=*/nullptr, /*history_service=*/nullptr,
+        enabled, /*identity_manager=*/nullptr, /*history_service=*/nullptr,
         /*large_icon_service=*/nullptr, pref_service_.get(),
         std::move(category_ranker_), std::move(user_classifier),
         /*scheduler=*/nullptr, /*debug_logger=*/std::make_unique<Logger>());

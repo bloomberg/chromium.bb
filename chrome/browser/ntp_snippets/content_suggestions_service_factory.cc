@@ -507,6 +507,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   // Create the ContentSuggestionsService.
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   favicon::LargeIconService* large_icon_service =
@@ -517,7 +519,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
           GetIsChromeHomeEnabled());
 
   auto* service = new ContentSuggestionsService(
-      State::ENABLED, signin_manager, history_service, large_icon_service,
+      State::ENABLED, identity_manager, history_service, large_icon_service,
       pref_service, std::move(category_ranker), std::move(user_classifier),
       std::move(scheduler), std::move(debug_logger));
 
