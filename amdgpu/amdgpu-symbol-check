@@ -40,6 +40,7 @@ amdgpu_cs_fence_to_handle
 amdgpu_cs_import_syncobj
 amdgpu_cs_query_fence_status
 amdgpu_cs_query_reset_state
+amdgpu_query_sw_info
 amdgpu_cs_signal_semaphore
 amdgpu_cs_submit
 amdgpu_cs_submit_raw
