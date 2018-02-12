@@ -6302,6 +6302,34 @@ TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameOnNonExistentStream) {
                   .empty());
 }
 
+// Regression test for https://crbug.com/810404.
+TEST_F(AltSvcFrameTest, InvalidOrigin) {
+  // This origin parses to an invalid GURL with https scheme.
+  const std::string origin("https:?");
+  const GURL origin_gurl(origin);
+  EXPECT_FALSE(origin_gurl.is_valid());
+  EXPECT_TRUE(origin_gurl.host().empty());
+  EXPECT_TRUE(origin_gurl.SchemeIs(url::kHttpsScheme));
+
+  SpdyAltSvcIR altsvc_ir(/* stream_id = */ 0);
+  altsvc_ir.add_altsvc(alternative_service_);
+  altsvc_ir.set_origin(origin);
+  AddSocketData(altsvc_ir);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  base::RunLoop().RunUntilIdle();
+
+  const url::SchemeHostPort session_origin("https", test_url_.host(),
+                                           test_url_.EffectiveIntPort());
+  AlternativeServiceInfoVector altsvc_info_vector =
+      spdy_session_pool_->http_server_properties()->GetAlternativeServiceInfos(
+          session_origin);
+  EXPECT_TRUE(altsvc_info_vector.empty());
+}
+
 TEST(MapFramerErrorToProtocolError, MapsValues) {
   CHECK_EQ(SPDY_ERROR_INVALID_CONTROL_FRAME,
            MapFramerErrorToProtocolError(
