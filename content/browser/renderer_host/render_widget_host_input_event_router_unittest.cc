@@ -7,11 +7,13 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_targeter.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
+#include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -56,13 +58,17 @@ class MockRootRenderWidgetHostView : public MockRenderWidgetHostView {
   MockRootRenderWidgetHostView(
       RenderWidgetHost* rwh,
       std::map<MockRenderWidgetHostView*, viz::FrameSinkId>& frame_sink_id_map)
-      : MockRenderWidgetHostView(rwh), frame_sink_id_map_(frame_sink_id_map) {}
+      : MockRenderWidgetHostView(rwh),
+        frame_sink_id_map_(frame_sink_id_map),
+        force_query_renderer_on_hit_test_(false) {}
   ~MockRootRenderWidgetHostView() override {}
 
   viz::FrameSinkId FrameSinkIdAtPoint(viz::SurfaceHittestDelegate*,
                                       const gfx::PointF&,
                                       gfx::PointF*,
-                                      bool*) override {
+                                      bool* query_renderer) override {
+    if (force_query_renderer_on_hit_test_)
+      *query_renderer = true;
     return frame_sink_id_map_[current_hittest_result_];
   }
 
@@ -77,9 +83,14 @@ class MockRootRenderWidgetHostView : public MockRenderWidgetHostView {
     current_hittest_result_ = view;
   }
 
+  void set_force_query_renderer_on_hit_test(bool force) {
+    force_query_renderer_on_hit_test_ = force;
+  }
+
  private:
   std::map<MockRenderWidgetHostView*, viz::FrameSinkId>& frame_sink_id_map_;
   MockRenderWidgetHostView* current_hittest_result_;
+  bool force_query_renderer_on_hit_test_;
 };
 
 }  // namespace
@@ -286,6 +297,134 @@ TEST_F(RenderWidgetHostInputEventRouterTest, EnsureDroppedTouchEventsAreAcked) {
   rwhier_.RouteTouchEvent(view_root_.get(), &touch_cancel_event,
                           ui::LatencyInfo(ui::SourceEventType::TOUCH));
   EXPECT_EQ(view_root_->last_id_for_touch_ack(), 2lu);
+}
+
+TEST_F(RenderWidgetHostInputEventRouterTest, DoNotCoalesceTouchEvents) {
+  RenderWidgetTargeter* targeter = rwhier_.GetRenderWidgetTargeterForTests();
+  view_root_->SetHittestResult(view_root_.get());
+  view_root_->set_force_query_renderer_on_hit_test(true);
+
+  // We need to set up a comm pipe, or else the targeter will crash when it
+  // tries to query the renderer. It doesn't matter that the pipe isn't
+  // connected on the other end, as we really don't want it to respond anyways.
+  std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces =
+      std::make_unique<service_manager::InterfaceProvider>();
+  viz::mojom::InputTargetClientPtr input_target_client;
+  remote_interfaces->GetInterface(&input_target_client);
+  widget_host1_->SetInputTargetClient(std::move(input_target_client));
+
+  // Send TouchStart, TouchMove, TouchMove, TouchMove, TouchEnd and make sure
+  // the targeter doesn't attempt to coalesce.
+  blink::WebTouchEvent touch_event(blink::WebInputEvent::kTouchStart,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   blink::WebInputEvent::kTimeStampForTesting);
+  touch_event.touches_length = 1;
+  touch_event.touches[0].state = blink::WebTouchPoint::kStatePressed;
+  touch_event.unique_touch_event_id = 1;
+
+  EXPECT_EQ(0u, targeter->num_requests_in_queue_for_testing());
+  EXPECT_FALSE(targeter->is_request_in_flight_for_testing());
+  rwhier_.RouteTouchEvent(view_root_.get(), &touch_event,
+                          ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  EXPECT_EQ(0u, targeter->num_requests_in_queue_for_testing());
+  EXPECT_TRUE(targeter->is_request_in_flight_for_testing());
+
+  touch_event.SetType(blink::WebInputEvent::kTouchMove);
+  touch_event.touches[0].state = blink::WebTouchPoint::kStateMoved;
+  touch_event.unique_touch_event_id += 1;
+  rwhier_.RouteTouchEvent(view_root_.get(), &touch_event,
+                          ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  EXPECT_EQ(1u, targeter->num_requests_in_queue_for_testing());
+  EXPECT_TRUE(targeter->is_request_in_flight_for_testing());
+
+  touch_event.unique_touch_event_id += 1;
+  rwhier_.RouteTouchEvent(view_root_.get(), &touch_event,
+                          ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  EXPECT_EQ(2u, targeter->num_requests_in_queue_for_testing());
+  EXPECT_TRUE(targeter->is_request_in_flight_for_testing());
+
+  touch_event.SetType(blink::WebInputEvent::kTouchEnd);
+  touch_event.touches[0].state = blink::WebTouchPoint::kStateReleased;
+  touch_event.unique_touch_event_id += 1;
+  rwhier_.RouteTouchEvent(view_root_.get(), &touch_event,
+                          ui::LatencyInfo(ui::SourceEventType::TOUCH));
+
+  EXPECT_EQ(3u, targeter->num_requests_in_queue_for_testing());
+  EXPECT_TRUE(targeter->is_request_in_flight_for_testing());
+}
+
+TEST_F(RenderWidgetHostInputEventRouterTest, DoNotCoalesceGestureEvents) {
+  RenderWidgetTargeter* targeter = rwhier_.GetRenderWidgetTargeterForTests();
+  view_root_->SetHittestResult(view_root_.get());
+  view_root_->set_force_query_renderer_on_hit_test(true);
+
+  // We need to set up a comm pipe, or else the targeter will crash when it
+  // tries to query the renderer. It doesn't matter that the pipe isn't
+  // connected on the other end, as we really don't want it to respond anyways.
+  std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces =
+      std::make_unique<service_manager::InterfaceProvider>();
+  viz::mojom::InputTargetClientPtr input_target_client;
+  remote_interfaces->GetInterface(&input_target_client);
+  widget_host1_->SetInputTargetClient(std::move(input_target_client));
+
+  // Send TouchStart, GestureTapDown, TouchEnd, GestureScrollBegin,
+  // GestureScrollUpdate (x2), GestureScrollEnd and make sure
+  // the targeter doesn't attempt to coalesce.
+  blink::WebTouchEvent touch_event(blink::WebInputEvent::kTouchStart,
+                                   blink::WebInputEvent::kNoModifiers,
+                                   blink::WebInputEvent::kTimeStampForTesting);
+  touch_event.touches_length = 1;
+  touch_event.touches[0].state = blink::WebTouchPoint::kStatePressed;
+  touch_event.unique_touch_event_id = 1;
+
+  EXPECT_EQ(0u, targeter->num_requests_in_queue_for_testing());
+  EXPECT_FALSE(targeter->is_request_in_flight_for_testing());
+  rwhier_.RouteTouchEvent(view_root_.get(), &touch_event,
+                          ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  EXPECT_EQ(0u, targeter->num_requests_in_queue_for_testing());
+  EXPECT_TRUE(targeter->is_request_in_flight_for_testing());
+
+  blink::WebGestureEvent gesture_event(
+      blink::WebInputEvent::kGestureTapDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  gesture_event.source_device = blink::kWebGestureDeviceTouchscreen;
+  gesture_event.unique_touch_event_id = touch_event.unique_touch_event_id;
+  rwhier_.RouteGestureEvent(view_root_.get(), &gesture_event,
+                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  EXPECT_EQ(1u, targeter->num_requests_in_queue_for_testing());
+  EXPECT_TRUE(targeter->is_request_in_flight_for_testing());
+
+  touch_event.SetType(blink::WebInputEvent::kTouchEnd);
+  touch_event.touches[0].state = blink::WebTouchPoint::kStateReleased;
+  touch_event.unique_touch_event_id += 1;
+  rwhier_.RouteTouchEvent(view_root_.get(), &touch_event,
+                          ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  EXPECT_EQ(2u, targeter->num_requests_in_queue_for_testing());
+  EXPECT_TRUE(targeter->is_request_in_flight_for_testing());
+
+  gesture_event.SetType(blink::WebInputEvent::kGestureScrollBegin);
+  rwhier_.RouteGestureEvent(view_root_.get(), &gesture_event,
+                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  EXPECT_EQ(3u, targeter->num_requests_in_queue_for_testing());
+  EXPECT_TRUE(targeter->is_request_in_flight_for_testing());
+
+  gesture_event.SetType(blink::WebInputEvent::kGestureScrollUpdate);
+  rwhier_.RouteGestureEvent(view_root_.get(), &gesture_event,
+                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  EXPECT_EQ(4u, targeter->num_requests_in_queue_for_testing());
+  EXPECT_TRUE(targeter->is_request_in_flight_for_testing());
+
+  gesture_event.SetType(blink::WebInputEvent::kGestureScrollUpdate);
+  rwhier_.RouteGestureEvent(view_root_.get(), &gesture_event,
+                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  EXPECT_EQ(5u, targeter->num_requests_in_queue_for_testing());
+  EXPECT_TRUE(targeter->is_request_in_flight_for_testing());
+
+  gesture_event.SetType(blink::WebInputEvent::kGestureScrollEnd);
+  rwhier_.RouteGestureEvent(view_root_.get(), &gesture_event,
+                            ui::LatencyInfo(ui::SourceEventType::TOUCH));
+  EXPECT_EQ(6u, targeter->num_requests_in_queue_for_testing());
+  EXPECT_TRUE(targeter->is_request_in_flight_for_testing());
 }
 
 }  // namespace content
