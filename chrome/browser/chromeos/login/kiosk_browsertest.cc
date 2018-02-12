@@ -918,7 +918,16 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDown) {
   RunAppLaunchNetworkDownTest();
 }
 
-IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppWithNetworkConfigAccelerator) {
+// Times out in MSAN: https://crbug.com/811379
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_LaunchAppWithNetworkConfigAccelerator \
+  DISABLED_LaunchAppWithNetworkConfigAccelerator
+#else
+#define MAYBE_LaunchAppWithNetworkConfigAccelerator \
+  LaunchAppWithNetworkConfigAccelerator
+#endif
+
+IN_PROC_BROWSER_TEST_F(KioskTest, MAYBE_LaunchAppWithNetworkConfigAccelerator) {
   ScopedCanConfigureNetwork can_configure_network(true, false);
 
   // Block app loading until the network screen is shown.
