@@ -548,17 +548,6 @@ INSTANTIATE_TEST_CASE_P(AVX2, Loop8Test9Param_hbd,
 #endif
 #endif
 
-#if HAVE_AVX2 && (!CONFIG_PARALLEL_DEBLOCKING)
-INSTANTIATE_TEST_CASE_P(AVX2, Loop8Test6Param,
-                        ::testing::Values(
-#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
-                            make_tuple(&aom_lpf_horizontal_16_dual_avx2,
-                                       &aom_lpf_horizontal_16_dual_c, 8),
-#endif
-                            make_tuple(&aom_lpf_horizontal_16_avx2,
-                                       &aom_lpf_horizontal_16_c, 8)));
-#endif
-
 #if HAVE_SSE2
 const hbddual_loop_param_t kHbdLoop8Test9[] = {
   make_tuple(&aom_highbd_lpf_horizontal_4_dual_sse2,
@@ -590,17 +579,6 @@ const hbddual_loop_param_t kHbdLoop8Test9[] = {
 INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test9Param_hbd,
                         ::testing::ValuesIn(kHbdLoop8Test9));
 
-#if !CONFIG_PARALLEL_DEBLOCKING
-const hbddual_loop_param_t kLoop8Test9[] = {
-  make_tuple(&aom_lpf_horizontal_4_dual_sse2, &aom_lpf_horizontal_4_dual_c, 8),
-  make_tuple(&aom_lpf_horizontal_8_dual_sse2, &aom_lpf_horizontal_8_dual_c, 8),
-  make_tuple(&aom_lpf_vertical_4_dual_sse2, &aom_lpf_vertical_4_dual_c, 8),
-  make_tuple(&aom_lpf_vertical_8_dual_sse2, &aom_lpf_vertical_8_dual_c, 8)
-};
-
-INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test9Param_lbd,
-                        ::testing::ValuesIn(kLoop8Test9));
-#endif
 #endif  // HAVE_SSE2
 
 #if HAVE_AVX2

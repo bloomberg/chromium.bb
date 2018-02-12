@@ -502,14 +502,12 @@ static INLINE void highbd_lpf_horz_edge_8_internal(uint16_t *s, int pitch,
 // Note:
 //  highbd_lpf_horz_edge_8_8p() output 8 pixels per register
 //  highbd_lpf_horz_edge_8_4p() output 4 pixels per register
-#if CONFIG_PARALLEL_DEBLOCKING
 static INLINE void highbd_lpf_horz_edge_8_4p(uint16_t *s, int pitch,
                                              const uint8_t *blt,
                                              const uint8_t *lt,
                                              const uint8_t *thr, int bd) {
   highbd_lpf_horz_edge_8_internal(s, pitch, blt, lt, thr, bd, FOUR_PIXELS);
 }
-#endif  // #if CONFIG_PARALLEL_DEBLOCKING
 
 static INLINE void highbd_lpf_horz_edge_8_8p(uint16_t *s, int pitch,
                                              const uint8_t *blt,
@@ -522,44 +520,26 @@ void aom_highbd_lpf_horizontal_16_sse2(uint16_t *s, int p,
                                        const uint8_t *_blimit,
                                        const uint8_t *_limit,
                                        const uint8_t *_thresh, int bd) {
-#if CONFIG_PARALLEL_DEBLOCKING
   highbd_lpf_horz_edge_8_4p(s, p, _blimit, _limit, _thresh, bd);
-#else
-  highbd_lpf_horz_edge_8_8p(s, p, _blimit, _limit, _thresh, bd);
-#endif
 }
 
 void aom_highbd_lpf_horizontal_16_dual_sse2(uint16_t *s, int p,
                                             const uint8_t *_blimit,
                                             const uint8_t *_limit,
                                             const uint8_t *_thresh, int bd) {
-#if CONFIG_PARALLEL_DEBLOCKING
   highbd_lpf_horz_edge_8_4p(s, p, _blimit, _limit, _thresh, bd);
-#else
-  highbd_lpf_horz_edge_8_8p(s, p, _blimit, _limit, _thresh, bd);
-  highbd_lpf_horz_edge_8_8p(s + 8, p, _blimit, _limit, _thresh, bd);
-#endif
 }
 
 static INLINE void store_horizontal_8(const __m128i *p2, const __m128i *p1,
                                       const __m128i *p0, const __m128i *q0,
                                       const __m128i *q1, const __m128i *q2,
                                       int p, uint16_t *s) {
-#if CONFIG_PARALLEL_DEBLOCKING
   _mm_storel_epi64((__m128i *)(s - 3 * p), *p2);
   _mm_storel_epi64((__m128i *)(s - 2 * p), *p1);
   _mm_storel_epi64((__m128i *)(s - 1 * p), *p0);
   _mm_storel_epi64((__m128i *)(s + 0 * p), *q0);
   _mm_storel_epi64((__m128i *)(s + 1 * p), *q1);
   _mm_storel_epi64((__m128i *)(s + 2 * p), *q2);
-#else
-  _mm_store_si128((__m128i *)(s - 3 * p), *p2);
-  _mm_store_si128((__m128i *)(s - 2 * p), *p1);
-  _mm_store_si128((__m128i *)(s - 1 * p), *p0);
-  _mm_store_si128((__m128i *)(s + 0 * p), *q0);
-  _mm_store_si128((__m128i *)(s + 1 * p), *q1);
-  _mm_store_si128((__m128i *)(s + 2 * p), *q2);
-#endif
 }
 
 void aom_highbd_lpf_horizontal_8_sse2(uint16_t *s, int p,
@@ -797,11 +777,7 @@ void aom_highbd_lpf_horizontal_8_dual_sse2(
     const uint8_t *_thresh0, const uint8_t *_blimit1, const uint8_t *_limit1,
     const uint8_t *_thresh1, int bd) {
   aom_highbd_lpf_horizontal_8_sse2(s, p, _blimit0, _limit0, _thresh0, bd);
-#if CONFIG_PARALLEL_DEBLOCKING
   aom_highbd_lpf_horizontal_8_sse2(s + 4, p, _blimit1, _limit1, _thresh1, bd);
-#else
-  aom_highbd_lpf_horizontal_8_sse2(s + 8, p, _blimit1, _limit1, _thresh1, bd);
-#endif
 }
 
 void aom_highbd_lpf_horizontal_4_sse2(uint16_t *s, int p,
@@ -811,18 +787,10 @@ void aom_highbd_lpf_horizontal_4_sse2(uint16_t *s, int p,
   const __m128i zero = _mm_set1_epi16(0);
   __m128i blimit, limit, thresh;
   __m128i mask, hev, flat;
-#if !(CONFIG_PARALLEL_DEBLOCKING)
-  __m128i p3 = _mm_loadu_si128((__m128i *)(s - 4 * p));
-  __m128i p2 = _mm_loadu_si128((__m128i *)(s - 3 * p));
-#endif
   __m128i p1 = _mm_loadu_si128((__m128i *)(s - 2 * p));
   __m128i p0 = _mm_loadu_si128((__m128i *)(s - 1 * p));
   __m128i q0 = _mm_loadu_si128((__m128i *)(s - 0 * p));
   __m128i q1 = _mm_loadu_si128((__m128i *)(s + 1 * p));
-#if !(CONFIG_PARALLEL_DEBLOCKING)
-  __m128i q2 = _mm_loadu_si128((__m128i *)(s + 2 * p));
-  __m128i q3 = _mm_loadu_si128((__m128i *)(s + 3 * p));
-#endif
   const __m128i abs_p1p0 =
       _mm_or_si128(_mm_subs_epu16(p1, p0), _mm_subs_epu16(p0, p1));
   const __m128i abs_q1q0 =
@@ -905,16 +873,6 @@ void aom_highbd_lpf_horizontal_4_sse2(uint16_t *s, int p,
   mask = _mm_and_si128(mask, _mm_adds_epu16(limit, one));
   mask = _mm_max_epi16(flat, mask);
 
-#if !(CONFIG_PARALLEL_DEBLOCKING)
-  __m128i work = _mm_max_epi16(
-      _mm_or_si128(_mm_subs_epu16(p2, p1), _mm_subs_epu16(p1, p2)),
-      _mm_or_si128(_mm_subs_epu16(p3, p2), _mm_subs_epu16(p2, p3)));
-  mask = _mm_max_epi16(work, mask);
-  work = _mm_max_epi16(
-      _mm_or_si128(_mm_subs_epu16(q2, q1), _mm_subs_epu16(q1, q2)),
-      _mm_or_si128(_mm_subs_epu16(q3, q2), _mm_subs_epu16(q2, q3)));
-  mask = _mm_max_epi16(work, mask);
-#endif
   mask = _mm_subs_epu16(mask, limit);
   mask = _mm_cmpeq_epi16(mask, zero);
 
@@ -980,17 +938,10 @@ void aom_highbd_lpf_horizontal_4_sse2(uint16_t *s, int p,
   p1 = _mm_adds_epi16(ps1, filt);
   pixel_clamp(&pmin, &pmax, &p1);
   p1 = _mm_adds_epi16(p1, t80);
-#if CONFIG_PARALLEL_DEBLOCKING
   _mm_storel_epi64((__m128i *)(s - 2 * p), p1);
   _mm_storel_epi64((__m128i *)(s - 1 * p), p0);
   _mm_storel_epi64((__m128i *)(s + 0 * p), q0);
   _mm_storel_epi64((__m128i *)(s + 1 * p), q1);
-#else
-  _mm_storeu_si128((__m128i *)(s - 2 * p), p1);
-  _mm_storeu_si128((__m128i *)(s - 1 * p), p0);
-  _mm_storeu_si128((__m128i *)(s + 0 * p), q0);
-  _mm_storeu_si128((__m128i *)(s + 1 * p), q1);
-#endif
 }
 
 void aom_highbd_lpf_horizontal_4_dual_sse2(
@@ -998,11 +949,7 @@ void aom_highbd_lpf_horizontal_4_dual_sse2(
     const uint8_t *_thresh0, const uint8_t *_blimit1, const uint8_t *_limit1,
     const uint8_t *_thresh1, int bd) {
   aom_highbd_lpf_horizontal_4_sse2(s, p, _blimit0, _limit0, _thresh0, bd);
-#if CONFIG_PARALLEL_DEBLOCKING
   aom_highbd_lpf_horizontal_4_sse2(s + 4, p, _blimit1, _limit1, _thresh1, bd);
-#else
-  aom_highbd_lpf_horizontal_4_sse2(s + 8, p, _blimit1, _limit1, _thresh1, bd);
-#endif
 }
 
 void aom_highbd_lpf_vertical_4_sse2(uint16_t *s, int p, const uint8_t *blimit,
@@ -1134,13 +1081,7 @@ void aom_highbd_lpf_vertical_16_dual_sse2(uint16_t *s, int p,
   //  Transpose 16x16
   highbd_transpose8x16(s - 8, s - 8 + 8 * p, p, t_dst, 16);
   highbd_transpose8x16(s, s + 8 * p, p, t_dst + 8 * 16, 16);
-
-#if CONFIG_PARALLEL_DEBLOCKING
   highbd_lpf_horz_edge_8_8p(t_dst + 8 * 16, 16, blimit, limit, thresh, bd);
-#else
-  aom_highbd_lpf_horizontal_16_dual_sse2(t_dst + 8 * 16, 16, blimit, limit,
-                                         thresh, bd);
-#endif
   //  Transpose back
   highbd_transpose8x16(t_dst, t_dst + 8 * 16, 16, s - 8, p);
   highbd_transpose8x16(t_dst + 8, t_dst + 8 + 8 * 16, 16, s - 8 + 8 * p, p);

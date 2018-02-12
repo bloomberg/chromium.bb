@@ -20,7 +20,6 @@ static INLINE __m128i abs_diff(__m128i a, __m128i b) {
   return _mm_or_si128(_mm_subs_epu8(a, b), _mm_subs_epu8(b, a));
 }
 
-#if CONFIG_PARALLEL_DEBLOCKING
 // filter_mask and hev_mask
 #define FILTER_HEV_MASK4                                                      \
   do {                                                                        \
@@ -52,7 +51,6 @@ static INLINE __m128i abs_diff(__m128i a, __m128i b) {
     mask = _mm_cmpeq_epi8(mask, zero);                                        \
     mask = _mm_and_si128(mask, _mm_srli_si128(mask, 8));                      \
   } while (0)
-#endif  // CONFIG_PARALLEL_DEBLOCKING
 
 // filter_mask and hev_mask
 #define FILTER_HEV_MASK                                                       \
@@ -151,47 +149,21 @@ void aom_lpf_horizontal_4_sse2(uint8_t *s, int p /* pitch */,
                          _mm_loadl_epi64((const __m128i *)_limit));
   const __m128i thresh =
       _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)_thresh), zero);
-#if !CONFIG_PARALLEL_DEBLOCKING
-  __m128i p3p2, p2p1, q3q2, q2q1;
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
   __m128i q1p1, q0p0, p1p0, q1q0, ps1ps0, qs1qs0;
   __m128i mask, hev;
-#if !CONFIG_PARALLEL_DEBLOCKING
-  p3p2 = _mm_unpacklo_epi64(_mm_loadl_epi64((__m128i *)(s - 3 * p)),
-                            _mm_loadl_epi64((__m128i *)(s - 4 * p)));
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
   q1p1 = _mm_unpacklo_epi64(_mm_loadl_epi64((__m128i *)(s - 2 * p)),
                             _mm_loadl_epi64((__m128i *)(s + 1 * p)));
   q0p0 = _mm_unpacklo_epi64(_mm_loadl_epi64((__m128i *)(s - 1 * p)),
                             _mm_loadl_epi64((__m128i *)(s + 0 * p)));
-#if !CONFIG_PARALLEL_DEBLOCKING
-  q3q2 = _mm_unpacklo_epi64(_mm_loadl_epi64((__m128i *)(s + 2 * p)),
-                            _mm_loadl_epi64((__m128i *)(s + 3 * p)));
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
   p1p0 = _mm_unpacklo_epi64(q0p0, q1p1);
   q1q0 = _mm_unpackhi_epi64(q0p0, q1p1);
-#if !CONFIG_PARALLEL_DEBLOCKING
-  p2p1 = _mm_unpacklo_epi64(q1p1, p3p2);
-  q2q1 = _mm_unpacklo_epi64(_mm_srli_si128(q1p1, 8), q3q2);
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
-#if !CONFIG_PARALLEL_DEBLOCKING
-  FILTER_HEV_MASK;
-#else   // CONFIG_PARALLEL_DEBLOCKING
   FILTER_HEV_MASK4;
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
   filter4_sse2(&p1p0, &q1q0, &hev, &mask, &qs1qs0, &ps1ps0);
 
-#if CONFIG_PARALLEL_DEBLOCKING
   xx_storel_32(s - 1 * p, ps1ps0);
   xx_storel_32(s - 2 * p, _mm_srli_si128(ps1ps0, 8));
   xx_storel_32(s + 0 * p, qs1qs0);
   xx_storel_32(s + 1 * p, _mm_srli_si128(qs1qs0, 8));
-#else
-  _mm_storeh_pi((__m64 *)(s - 2 * p), _mm_castsi128_ps(ps1ps0));  // *op1
-  _mm_storel_epi64((__m128i *)(s - 1 * p), ps1ps0);               // *op0
-  _mm_storel_epi64((__m128i *)(s + 0 * p), qs1qs0);               // *oq0
-  _mm_storeh_pi((__m64 *)(s + 1 * p), _mm_castsi128_ps(qs1qs0));  // *oq1
-#endif
 }
 
 void aom_lpf_vertical_4_sse2(uint8_t *s, int p /* pitch */,
@@ -205,9 +177,6 @@ void aom_lpf_vertical_4_sse2(uint8_t *s, int p /* pitch */,
       _mm_unpacklo_epi8(_mm_loadl_epi64((const __m128i *)_thresh), zero);
 
   __m128i x0, x1, x2, x3;
-#if !CONFIG_PARALLEL_DEBLOCKING
-  __m128i p3p2, p2p1, q3q2, q2q1;
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
   __m128i q1p1, q0p0, p1p0, q1q0, ps1ps0, qs1qs0;
   __m128i mask, hev;
 
@@ -232,40 +201,21 @@ void aom_lpf_vertical_4_sse2(uint8_t *s, int p /* pitch */,
   p1p0 = _mm_unpacklo_epi16(q1q0, x1);
   // 40 50 60 70 41 51 61 71  42 52 62 72 43 53 63 73
   x0 = _mm_unpacklo_epi16(x2, x3);
-#if !CONFIG_PARALLEL_DEBLOCKING
-  // 00 10 20 30 40 50 60 70  01 11 21 31 41 51 61 71
-  p3p2 = _mm_unpacklo_epi32(p1p0, x0);
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
   // 02 12 22 32 42 52 62 72  03 13 23 33 43 53 63 73
   p1p0 = _mm_unpackhi_epi32(p1p0, x0);
-#if !CONFIG_PARALLEL_DEBLOCKING
-  p3p2 = _mm_unpackhi_epi64(p3p2, _mm_slli_si128(p3p2, 8));  // swap lo and high
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
   p1p0 = _mm_unpackhi_epi64(p1p0, _mm_slli_si128(p1p0, 8));  // swap lo and high
 
   // 04 14 24 34 05 15 25 35  06 16 26 36 07 17 27 37
   q1q0 = _mm_unpackhi_epi16(q1q0, x1);
   // 44 54 64 74 45 55 65 75  46 56 66 76 47 57 67 77
   x2 = _mm_unpackhi_epi16(x2, x3);
-#if !CONFIG_PARALLEL_DEBLOCKING
-  // 06 16 26 36 46 56 66 76  07 17 27 37 47 57 67 77
-  q3q2 = _mm_unpackhi_epi32(q1q0, x2);
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
   // 04 14 24 34 44 54 64 74  05 15 25 35 45 55 65 75
   q1q0 = _mm_unpacklo_epi32(q1q0, x2);
 
   q0p0 = _mm_unpacklo_epi64(p1p0, q1q0);
   q1p1 = _mm_unpackhi_epi64(p1p0, q1q0);
   p1p0 = _mm_unpacklo_epi64(q0p0, q1p1);
-#if !CONFIG_PARALLEL_DEBLOCKING
-  p2p1 = _mm_unpacklo_epi64(q1p1, p3p2);
-  q2q1 = _mm_unpacklo_epi64(_mm_srli_si128(q1p1, 8), q3q2);
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
-#if !CONFIG_PARALLEL_DEBLOCKING
-  FILTER_HEV_MASK;
-#else   // CONFIG_PARALLEL_DEBLOCKING
   FILTER_HEV_MASK4;
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
   filter4_sse2(&p1p0, &q1q0, &hev, &mask, &qs1qs0, &ps1ps0);
 
   // Transpose 8x4 to 4x8
@@ -277,10 +227,6 @@ void aom_lpf_vertical_4_sse2(uint8_t *s, int p /* pitch */,
   x0 = _mm_unpackhi_epi8(ps1ps0, qs1qs0);
   // 00 20 01 21 02 22 03 23  04 24 05 25 06 26 07 27
   ps1ps0 = _mm_unpacklo_epi8(ps1ps0, qs1qs0);
-#if !CONFIG_PARALLEL_DEBLOCKING
-  // 04 14 24 34 05 15 25 35  06 16 26 36 07 17 27 37
-  qs1qs0 = _mm_unpackhi_epi8(ps1ps0, x0);
-#endif
   // 00 10 20 30 01 11 21 31  02 12 22 32 03 13 23 33
   ps1ps0 = _mm_unpacklo_epi8(ps1ps0, x0);
 
@@ -288,22 +234,11 @@ void aom_lpf_vertical_4_sse2(uint8_t *s, int p /* pitch */,
   xx_storel_32(s + 1 * p - 2, _mm_srli_si128(ps1ps0, 4));
   xx_storel_32(s + 2 * p - 2, _mm_srli_si128(ps1ps0, 8));
   xx_storel_32(s + 3 * p - 2, _mm_srli_si128(ps1ps0, 12));
-#if !CONFIG_PARALLEL_DEBLOCKING
-  xx_storel_32(s + 4 * p - 2, qs1qs0);
-  xx_storel_32(s + 5 * p - 2, _mm_srli_si128(qs1qs0, 4));
-  xx_storel_32(s + 6 * p - 2, _mm_srli_si128(qs1qs0, 8));
-  xx_storel_32(s + 7 * p - 2, _mm_srli_si128(qs1qs0, 12));
-#endif
 }
 
 static INLINE void store_buffer_horz_8(__m128i x, int p, int num, uint8_t *s) {
-#if CONFIG_PARALLEL_DEBLOCKING
   xx_storel_32(s - (num + 1) * p, x);
   xx_storel_32(s + num * p, _mm_srli_si128(x, 8));
-#else
-  xx_storel_64(s - (num + 1) * p, x);
-  _mm_storeh_pi((__m64 *)(s + num * p), _mm_castsi128_ps(x));
-#endif
 }
 
 void aom_lpf_horizontal_16_sse2(unsigned char *s, int p,
@@ -1336,17 +1271,10 @@ void aom_lpf_horizontal_6_sse2(unsigned char *s, int p,
     p1p0 = _mm_and_si128(flat, flat_p1p0);
     p1p0 = _mm_or_si128(ps1ps0, p1p0);
 
-#if CONFIG_PARALLEL_DEBLOCKING
     xx_storel_32(s - 1 * p, p1p0);
     xx_storel_32(s - 2 * p, _mm_srli_si128(p1p0, 8));
     xx_storel_32(s + 0 * p, q1q0);
     xx_storel_32(s + 1 * p, _mm_srli_si128(q1q0, 8));
-#else
-    xx_storel_64(s - 1 * p, p1p0);
-    xx_storel_64(s - 2 * p, _mm_srli_si128(p1p0, 8));
-    xx_storel_64(s + 0 * p, q1q0);
-    xx_storel_64(s + 1 * p, _mm_srli_si128(q1q0, 8));
-#endif
   }
 }
 
@@ -1526,32 +1454,19 @@ void aom_lpf_horizontal_8_sse2(unsigned char *s, int p,
   p2 = _mm_and_si128(flat, op2);
   p2 = _mm_or_si128(work_a, p2);
 
-#if CONFIG_PARALLEL_DEBLOCKING
   xx_storel_32(s - 1 * p, p1p0);
   xx_storel_32(s - 2 * p, _mm_srli_si128(p1p0, 8));
   xx_storel_32(s + 0 * p, q1q0);
   xx_storel_32(s + 1 * p, _mm_srli_si128(q1q0, 8));
   xx_storel_32(s - 3 * p, p2);
   xx_storel_32(s + 2 * p, q2);
-#else
-  xx_storel_64(s - 1 * p, p1p0);
-  xx_storel_64(s - 2 * p, _mm_srli_si128(p1p0, 8));
-  xx_storel_64(s + 0 * p, q1q0);
-  xx_storel_64(s + 1 * p, _mm_srli_si128(q1q0, 8));
-  xx_storel_64(s - 3 * p, p2);
-  xx_storel_64(s + 2 * p, q2);
-#endif
 }
 
 void aom_lpf_horizontal_16_dual_sse2(unsigned char *s, int p,
                                      const unsigned char *_blimit,
                                      const unsigned char *_limit,
                                      const unsigned char *_thresh) {
-#if CONFIG_PARALLEL_DEBLOCKING
   lpf_horz_edge_16_internal(FOUR_PIXELS, s, p, _blimit, _limit, _thresh);
-#else
-  lpf_horz_edge_16_internal(SIXTEEN_PIXELS, s, p, _blimit, _limit, _thresh);
-#endif
 }
 
 void aom_lpf_horizontal_8_dual_sse2(uint8_t *s, int p, const uint8_t *_blimit0,
@@ -1813,23 +1728,12 @@ void aom_lpf_horizontal_4_dual_sse2(unsigned char *s, int p,
       _mm_unpacklo_epi64(_mm_load_si128((const __m128i *)_thresh0),
                          _mm_load_si128((const __m128i *)_thresh1));
   const __m128i zero = _mm_set1_epi16(0);
-#if !CONFIG_PARALLEL_DEBLOCKING
-  __m128i p3, p2, q2, q3;
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
   __m128i p1, p0, q0, q1;
   __m128i mask, hev, flat;
-#if !CONFIG_PARALLEL_DEBLOCKING
-  p3 = _mm_loadu_si128((__m128i *)(s - 4 * p));
-  p2 = _mm_loadu_si128((__m128i *)(s - 3 * p));
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
   p1 = _mm_loadu_si128((__m128i *)(s - 2 * p));
   p0 = _mm_loadu_si128((__m128i *)(s - 1 * p));
   q0 = _mm_loadu_si128((__m128i *)(s - 0 * p));
   q1 = _mm_loadu_si128((__m128i *)(s + 1 * p));
-#if !CONFIG_PARALLEL_DEBLOCKING
-  q2 = _mm_loadu_si128((__m128i *)(s + 2 * p));
-  q3 = _mm_loadu_si128((__m128i *)(s + 3 * p));
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
   // filter_mask and hev_mask
   {
     const __m128i abs_p1p0 =
@@ -1842,9 +1746,6 @@ void aom_lpf_horizontal_4_dual_sse2(unsigned char *s, int p,
         _mm_or_si128(_mm_subs_epu8(p0, q0), _mm_subs_epu8(q0, p0));
     __m128i abs_p1q1 =
         _mm_or_si128(_mm_subs_epu8(p1, q1), _mm_subs_epu8(q1, p1));
-#if !CONFIG_PARALLEL_DEBLOCKING
-    __m128i work;
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
     flat = _mm_max_epu8(abs_p1p0, abs_q1q0);
     hev = _mm_subs_epu8(flat, thresh);
     hev = _mm_xor_si128(_mm_cmpeq_epi8(hev, zero), ff);
@@ -1855,18 +1756,6 @@ void aom_lpf_horizontal_4_dual_sse2(unsigned char *s, int p,
     mask = _mm_xor_si128(_mm_cmpeq_epi8(mask, zero), ff);
     // mask |= (abs(p0 - q0) * 2 + abs(p1 - q1) / 2  > blimit) * -1;
     mask = _mm_max_epu8(flat, mask);
-#if !CONFIG_PARALLEL_DEBLOCKING
-    // mask |= (abs(p1 - p0) > limit) * -1;
-    // mask |= (abs(q1 - q0) > limit) * -1;
-    work = _mm_max_epu8(
-        _mm_or_si128(_mm_subs_epu8(p2, p1), _mm_subs_epu8(p1, p2)),
-        _mm_or_si128(_mm_subs_epu8(p3, p2), _mm_subs_epu8(p2, p3)));
-    mask = _mm_max_epu8(work, mask);
-    work = _mm_max_epu8(
-        _mm_or_si128(_mm_subs_epu8(q2, q1), _mm_subs_epu8(q1, q2)),
-        _mm_or_si128(_mm_subs_epu8(q3, q2), _mm_subs_epu8(q2, q3)));
-    mask = _mm_max_epu8(work, mask);
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
     mask = _mm_subs_epu8(mask, limit);
     mask = _mm_cmpeq_epi8(mask, zero);
   }
@@ -2010,7 +1899,6 @@ static INLINE void transpose8x16(unsigned char *in0, unsigned char *in1,
   _mm_storeu_si128((__m128i *)(out + 7 * out_p), _mm_unpackhi_epi64(x7, x15));
 }
 
-#if CONFIG_PARALLEL_DEBLOCKING
 #define movq(p) _mm_loadl_epi64((const __m128i *)(p))
 #define punpcklbw(r0, r1) _mm_unpacklo_epi8(r0, r1)
 #define punpcklwd(r0, r1) _mm_unpacklo_epi16(r0, r1)
@@ -2052,8 +1940,6 @@ static INLINE void transpose16x4(uint8_t *pDst, const ptrdiff_t dstStride,
     pSrc += 8;
   }
 }
-
-#endif  // CONFIG_PARALLEL_DEBLOCKING
 
 static INLINE void transpose6x6(unsigned char *src[], int in_p,
                                 unsigned char *dst[], int out_p,
@@ -2195,27 +2081,13 @@ void aom_lpf_vertical_4_dual_sse2(uint8_t *s, int p, const uint8_t *blimit0,
                                   const uint8_t *blimit1, const uint8_t *limit1,
                                   const uint8_t *thresh1) {
   DECLARE_ALIGNED(16, unsigned char, t_dst[16 * 8]);
-#if !CONFIG_PARALLEL_DEBLOCKING
-  unsigned char *src[2];
-  unsigned char *dst[2];
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
   // Transpose 8x16
   transpose8x16(s - 4, s - 4 + p * 8, p, t_dst, 16);
 
   // Loop filtering
   aom_lpf_horizontal_4_dual_sse2(t_dst + 4 * 16, 16, blimit0, limit0, thresh0,
                                  blimit1, limit1, thresh1);
-#if !CONFIG_PARALLEL_DEBLOCKING
-  src[0] = t_dst;
-  src[1] = t_dst + 8;
-  dst[0] = s - 4;
-  dst[1] = s - 4 + p * 8;
-
-  // Transpose back
-  transpose(src, 16, dst, p, 2);
-#else   // CONFIG_PARALLEL_DEBLOCKING
   transpose16x4(s - 2, p, t_dst + 16 * 2, 16);
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
 }
 
 void aom_lpf_vertical_6_sse2(unsigned char *s, int p,

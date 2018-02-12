@@ -142,7 +142,6 @@ static INLINE void loop_filter_block_plane_hor(
 }
 #endif
 // Row-based multi-threaded loopfilter hook
-#if CONFIG_PARALLEL_DEBLOCKING
 static int loop_filter_ver_row_worker(AV1LfSync *const lf_sync,
                                       LFWorkerData *const lf_data) {
   const int num_planes = lf_data->y_only ? 1 : MAX_MB_PLANE;
@@ -226,66 +225,6 @@ static int loop_filter_hor_row_worker(AV1LfSync *const lf_sync,
   }
   return 1;
 }
-#else  //  CONFIG_PARALLEL_DEBLOCKING
-static int loop_filter_row_worker(AV1LfSync *const lf_sync,
-                                  LFWorkerData *const lf_data) {
-  const int num_planes = lf_data->y_only ? 1 : MAX_MB_PLANE;
-  const int sb_cols = mi_cols_aligned_to_sb(lf_data->cm) >>
-                      lf_data->cm->seq_params.mib_size_log2;
-  int mi_row, mi_col;
-#if !CONFIG_EXT_PARTITION_TYPES
-  enum lf_path path = get_loop_filter_path(lf_data->y_only, lf_data->planes);
-#endif  // !CONFIG_EXT_PARTITION_TYPES
-
-#if CONFIG_EXT_PARTITION
-  printf(
-      "STOPPING: This code has not been modified to work with the "
-      "extended coding unit size experiment");
-  exit(EXIT_FAILURE);
-#endif  // CONFIG_EXT_PARTITION
-
-  for (mi_row = lf_data->start; mi_row < lf_data->stop;
-       mi_row += lf_sync->num_workers * lf_data->cm->seq_params.mib_size) {
-    MODE_INFO **const mi =
-        lf_data->cm->mi_grid_visible + mi_row * lf_data->cm->mi_stride;
-
-    for (mi_col = 0; mi_col < lf_data->cm->mi_cols;
-         mi_col += lf_data->cm->seq_params.mib_size) {
-      const int r = mi_row >> lf_data->cm->seq_params.mib_size_log2;
-      const int c = mi_col >> lf_data->cm->seq_params.mib_size_log2;
-#if !CONFIG_EXT_PARTITION_TYPES
-      LOOP_FILTER_MASK lfm;
-#endif
-      int plane;
-
-      sync_read(lf_sync, r, c);
-
-      av1_setup_dst_planes(lf_data->planes, lf_data->cm->seq_params.sb_size,
-                           lf_data->frame_buffer, mi_row, mi_col);
-#if CONFIG_EXT_PARTITION_TYPES
-      for (plane = 0; plane < num_planes; ++plane) {
-        av1_filter_block_plane_non420_ver(lf_data->cm, &lf_data->planes[plane],
-                                          mi + mi_col, mi_row, mi_col, plane);
-        av1_filter_block_plane_non420_hor(lf_data->cm, &lf_data->planes[plane],
-                                          mi + mi_col, mi_row, mi_col, plane);
-      }
-#else
-      av1_setup_mask(lf_data->cm, mi_row, mi_col, mi + mi_col,
-                     lf_data->cm->mi_stride, &lfm);
-
-      for (plane = 0; plane < num_planes; ++plane) {
-        loop_filter_block_plane_ver(lf_data->cm, lf_data->planes, plane,
-                                    mi + mi_col, mi_row, mi_col, path, &lfm);
-        loop_filter_block_plane_hor(lf_data->cm, lf_data->planes, plane,
-                                    mi + mi_col, mi_row, mi_col, path, &lfm);
-      }
-#endif  // CONFIG_EXT_PARTITION_TYPES
-      sync_write(lf_sync, r, c, sb_cols);
-    }
-  }
-  return 1;
-}
-#endif  //  CONFIG_PARALLEL_DEBLOCKING
 
 static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                                 struct macroblockd_plane *planes, int start,
@@ -313,16 +252,15 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     av1_loop_filter_alloc(lf_sync, cm, sb_rows, cm->width, num_workers);
   }
 
-// Set up loopfilter thread data.
-// The decoder is capping num_workers because it has been observed that
-// using more threads on the loopfilter than there are cores will hurt
-// performance on Android. This is because the system will only schedule the
-// tile decode workers on cores equal to the number of tile columns. Then if
-// the decoder tries to use more threads for the loopfilter, it will hurt
-// performance because of contention. If the multithreading code changes in
-// the future then the number of workers used by the loopfilter should be
-// revisited.
-#if CONFIG_PARALLEL_DEBLOCKING
+  // Set up loopfilter thread data.
+  // The decoder is capping num_workers because it has been observed that
+  // using more threads on the loopfilter than there are cores will hurt
+  // performance on Android. This is because the system will only schedule the
+  // tile decode workers on cores equal to the number of tile columns. Then if
+  // the decoder tries to use more threads for the loopfilter, it will hurt
+  // performance because of contention. If the multithreading code changes in
+  // the future then the number of workers used by the loopfilter should be
+  // revisited.
   // Initialize cur_sb_col to -1 for all SB rows.
   memset(lf_sync->cur_sb_col, -1, sizeof(*lf_sync->cur_sb_col) * sb_rows);
 
@@ -382,37 +320,6 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   for (i = 0; i < num_workers; ++i) {
     winterface->sync(&workers[i]);
   }
-#else   // CONFIG_PARALLEL_DEBLOCKING
-  // Initialize cur_sb_col to -1 for all SB rows.
-  memset(lf_sync->cur_sb_col, -1, sizeof(*lf_sync->cur_sb_col) * sb_rows);
-
-  for (i = 0; i < num_workers; ++i) {
-    AVxWorker *const worker = &workers[i];
-    LFWorkerData *const lf_data = &lf_sync->lfdata[i];
-
-    worker->hook = (AVxWorkerHook)loop_filter_row_worker;
-    worker->data1 = lf_sync;
-    worker->data2 = lf_data;
-
-    // Loopfilter data
-    av1_loop_filter_data_reset(lf_data, frame, cm, planes);
-    lf_data->start = start + i * cm->seq_params.mib_size;
-    lf_data->stop = stop;
-    lf_data->y_only = y_only;
-
-    // Start loopfiltering
-    if (i == num_workers - 1) {
-      winterface->execute(worker);
-    } else {
-      winterface->launch(worker);
-    }
-  }
-
-  // Wait till all rows are finished
-  for (i = 0; i < num_workers; ++i) {
-    winterface->sync(&workers[i]);
-  }
-#endif  // CONFIG_PARALLEL_DEBLOCKING
 }
 
 void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,

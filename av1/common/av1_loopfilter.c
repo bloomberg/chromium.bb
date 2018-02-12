@@ -1856,7 +1856,6 @@ void av1_filter_block_plane_ss11_hor(AV1_COMMON *const cm,
   dst->buf = dst0;
 }
 
-#if CONFIG_PARALLEL_DEBLOCKING
 typedef enum EDGE_DIR { VERT_EDGE = 0, HORZ_EDGE = 1, NUM_EDGE_DIRS } EDGE_DIR;
 static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES_ALL] = {
   // mask for vertical edges filtering
@@ -2342,7 +2341,6 @@ static void av1_filter_block_plane_horz(
     }
   }
 }
-#endif  // CONFIG_PARALLEL_DEBLOCKING
 
 void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
                           struct macroblockd_plane *planes, int start, int stop,
@@ -2360,34 +2358,10 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
   const int plane_start = 0;
   const int plane_end = nplanes;
 #endif  // CONFIG_LOOPFILTER_LEVEL
-#if CONFIG_PARALLEL_DEBLOCKING
   const int col_start = 0;
   const int col_end = cm->mi_cols;
-#endif
   int mi_row, mi_col;
   int plane;
-
-#if !CONFIG_PARALLEL_DEBLOCKING
-  for (int i = 0; i < nplanes; ++i)
-    memset(cm->top_txfm_context[i], TX_32X32, cm->mi_cols << TX_UNIT_WIDE_LOG2);
-  for (mi_row = start; mi_row < stop; mi_row += cm->seq_params.mib_size) {
-    MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride;
-    for (int i = 0; i < nplanes; ++i)
-      memset(cm->left_txfm_context[i], TX_32X32,
-             MAX_MIB_SIZE << TX_UNIT_HIGH_LOG2);
-    for (mi_col = 0; mi_col < cm->mi_cols; mi_col += cm->seq_params.mib_size) {
-      av1_setup_dst_planes(planes, cm->seq_params.sb_size, frame_buffer, mi_row,
-                           mi_col);
-
-      for (plane = plane_start; plane < plane_end; ++plane) {
-        av1_filter_block_plane_non420_ver(cm, &planes[plane], mi + mi_col,
-                                          mi_row, mi_col, plane);
-        av1_filter_block_plane_non420_hor(cm, &planes[plane], mi + mi_col,
-                                          mi_row, mi_col, plane);
-      }
-    }
-  }
-#else
 
   // filter all vertical edges in every 64x64 super block
   for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
@@ -2410,7 +2384,6 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
       }
     }
   }
-#endif  // !CONFIG_PARALLEL_DEBLOCKING
 }
 
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
