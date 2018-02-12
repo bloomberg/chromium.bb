@@ -1,21 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
-  <!-- Search box placeholder text -->
-  <message name="IDS_KSV_SEARCH_BOX_PLACEHOLDER" desc="Placeholder text for search box.">
-    Search for shortcuts
-  </message>
-
-  <!-- Search illustration -->
-  <message name="IDS_KSV_SEARCH_START" desc="Start searching.">
-    Start search...
-  </message>
-  <message name="IDS_KSV_SEARCH_NO_RESULT" desc="No search results.">
-    No matching results found
-  </message>
-
   <!-- Categories -->
   <message name="IDS_KSV_CATEGORY_POPULAR" desc="Category of the keyboard shortcut.">
-    Popular Shortcuts
+    Popular Shortcut
   </message>
   <message name="IDS_KSV_CATEGORY_TAB_WINDOW" desc="Category of the keyboard shortcut.">
     Tab And Windows

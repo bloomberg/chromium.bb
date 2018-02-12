@@ -8,7 +8,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/chromeos/ksv/keyboard_shortcut_viewer_metadata.h"
-#include "ui/chromeos/ksv/views/keyboard_shortcut_item_view.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
@@ -22,22 +21,17 @@ class KeyboardShortcutViewTest : public views::ViewsTestBase {
  protected:
   int GetCategoryNumber() const {
     DCHECK(GetView());
-    return GetView()->GetCategoryNumberForTesting();
+    return GetView()->GetCategoryNumberForTests();
   }
 
   int GetTabCount() const {
     DCHECK(GetView());
-    return GetView()->GetTabCountForTesting();
-  }
-
-  const std::vector<KeyboardShortcutItemView*>& GetShortcutViews() {
-    DCHECK(GetView());
-    return GetView()->GetShortcutViewsForTesting();
+    return GetView()->GetTabCountForTests();
   }
 
  private:
   KeyboardShortcutView* GetView() const {
-    return KeyboardShortcutView::GetInstanceForTesting();
+    return KeyboardShortcutView::GetInstanceForTests();
   }
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardShortcutViewTest);
@@ -57,21 +51,19 @@ TEST_F(KeyboardShortcutViewTest, ShowAndClose) {
 TEST_F(KeyboardShortcutViewTest, SideTabsCount) {
   // Showing the widget.
   views::Widget* widget = KeyboardShortcutView::Show(GetContext());
-
-  int category_number = 0;
-  ShortcutCategory current_category = ShortcutCategory::kUnknown;
-  for (auto* item_view : GetShortcutViews()) {
-    const ShortcutCategory category = item_view->category();
-    if (current_category != category) {
-      DCHECK(current_category < category);
-      ++category_number;
-      current_category = category;
-    }
-  }
-  EXPECT_EQ(GetTabCount(), category_number);
+  EXPECT_EQ(GetTabCount(), GetCategoryNumber());
 
   // Cleaning up.
   widget->CloseNow();
+}
+
+// Test that the shortcut category has no duplicate.
+TEST_F(KeyboardShortcutViewTest, ShortcutCategoryNoDuplicate) {
+  std::set<ShortcutCategory> categories;
+  for (const auto& category : GetShortcutCategories()) {
+    EXPECT_TRUE(categories.insert(category).second)
+        << "Has duplicated category.";
+  }
 }
 
 }  // namespace keyboard_shortcut_viewer
