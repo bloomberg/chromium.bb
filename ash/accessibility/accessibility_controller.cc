@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "ash/autoclick/autoclick_controller.h"
-#include "ash/autoclick/mus/public/interfaces/autoclick.mojom.h"
+#include "ash/autoclick/mus/public/mojom/autoclick.mojom.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/config.h"

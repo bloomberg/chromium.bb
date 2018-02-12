@@ -9,7 +9,7 @@
 
 #include "ash/autoclick/common/autoclick_controller_common.h"
 #include "ash/autoclick/common/autoclick_controller_common_delegate.h"
-#include "ash/autoclick/mus/public/interfaces/autoclick.mojom.h"
+#include "ash/autoclick/mus/public/mojom/autoclick.mojom.h"
 #include "base/macros.h"
 #include "mash/public/mojom/launchable.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"

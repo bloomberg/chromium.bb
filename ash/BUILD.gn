@@ -1056,7 +1056,7 @@ component("ash") {
   ]
   deps = [
     "//ash/autoclick/common:autoclick",
-    "//ash/autoclick/mus/public/interfaces",
+    "//ash/autoclick/mus/public/mojom",
     "//ash/touch_hud",
     "//base",
     "//base:i18n",
