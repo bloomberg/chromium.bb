@@ -102,11 +102,11 @@ void NotificationCallback(PrintJobWorkerOwner* print_job,
       content::Details<JobEventDetails>(details));
 }
 
-void PostOnOwnerThread(const scoped_refptr<PrintJobWorkerOwner>& owner,
-                       const PrintingContext::PrintSettingsCallback& callback,
+void PostOnOwnerThread(scoped_refptr<PrintJobWorkerOwner> owner,
+                       PrintingContext::PrintSettingsCallback callback,
                        PrintingContext::Result result) {
-  owner->PostTask(FROM_HERE, base::Bind(&HoldRefCallback, owner,
-                                        base::Bind(callback, result)));
+  owner->PostTask(FROM_HERE, base::BindOnce(&HoldRefCallback, owner,
+                                            base::BindOnce(callback, result)));
 }
 
 #if defined(OS_WIN)
@@ -178,16 +178,17 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
   if (ask_user_for_settings) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&HoldRefCallback, base::WrapRefCounted(owner_),
-                       base::Bind(&PrintJobWorker::GetSettingsWithUI,
-                                  base::Unretained(this), document_page_count,
-                                  has_selection, is_scripted)));
+        base::BindOnce(
+            &HoldRefCallback, base::WrapRefCounted(owner_),
+            base::BindOnce(&PrintJobWorker::GetSettingsWithUI,
+                           base::Unretained(this), document_page_count,
+                           has_selection, is_scripted)));
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&HoldRefCallback, base::WrapRefCounted(owner_),
-                       base::Bind(&PrintJobWorker::UseDefaultSettings,
-                                  base::Unretained(this))));
+                       base::BindOnce(&PrintJobWorker::UseDefaultSettings,
+                                      base::Unretained(this))));
   }
 }
 
@@ -199,8 +200,8 @@ void PrintJobWorker::SetSettings(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(
           &HoldRefCallback, base::WrapRefCounted(owner_),
-          base::Bind(&PrintJobWorker::UpdatePrintSettings,
-                     base::Unretained(this), base::Passed(&new_settings))));
+          base::BindOnce(&PrintJobWorker::UpdatePrintSettings,
+                         base::Unretained(this), std::move(new_settings))));
 }
 
 void PrintJobWorker::UpdatePrintSettings(
@@ -223,9 +224,9 @@ void PrintJobWorker::GetSettingsDone(PrintingContext::Result result) {
 
   // PrintJob will create the new PrintedDocument.
   owner_->PostTask(FROM_HERE,
-                   base::Bind(&PrintJobWorkerOwner::GetSettingsDone,
-                              base::WrapRefCounted(owner_),
-                              printing_context_->settings(), result));
+                   base::BindOnce(&PrintJobWorkerOwner::GetSettingsDone,
+                                  base::WrapRefCounted(owner_),
+                                  printing_context_->settings(), result));
 }
 
 void PrintJobWorker::GetSettingsWithUI(
@@ -391,9 +392,9 @@ bool PrintJobWorker::IsRunning() const {
 }
 
 bool PrintJobWorker::PostTask(const base::Location& from_here,
-                              const base::Closure& task) {
+                              base::OnceClosure task) {
   if (task_runner_.get())
-    return task_runner_->PostTask(from_here, task);
+    return task_runner_->PostTask(from_here, std::move(task));
   return false;
 }
 
@@ -422,10 +423,10 @@ void PrintJobWorker::OnDocumentDone() {
     return;
   }
 
-  owner_->PostTask(FROM_HERE,
-                   base::Bind(&NotificationCallback, base::RetainedRef(owner_),
-                              JobEventDetails::DOC_DONE, job_id,
-                              base::RetainedRef(document_)));
+  owner_->PostTask(FROM_HERE, base::BindOnce(&NotificationCallback,
+                                             base::RetainedRef(owner_),
+                                             JobEventDetails::DOC_DONE, job_id,
+                                             base::RetainedRef(document_)));
 
   // Makes sure the variables are reinitialized.
   document_ = NULL;
@@ -473,8 +474,8 @@ void PrintJobWorker::OnFailure() {
   scoped_refptr<PrintJobWorkerOwner> handle(owner_);
 
   owner_->PostTask(
-      FROM_HERE, base::BindRepeating(
-                     &NotificationCallback, base::RetainedRef(owner_),
+      FROM_HERE,
+      base::BindOnce(&NotificationCallback, base::RetainedRef(owner_),
                      JobEventDetails::FAILED, 0, base::RetainedRef(document_)));
   Cancel();
 

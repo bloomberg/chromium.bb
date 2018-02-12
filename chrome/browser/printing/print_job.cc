@@ -34,9 +34,9 @@ using base::TimeDelta;
 namespace printing {
 
 // Helper function to ensure |owner| is valid until at least |callback| returns.
-void HoldRefCallback(const scoped_refptr<PrintJobWorkerOwner>& owner,
-                     const base::Closure& callback) {
-  callback.Run();
+void HoldRefCallback(scoped_refptr<PrintJobWorkerOwner> owner,
+                     base::OnceClosure callback) {
+  std::move(callback).Run();
 }
 
 PrintJob::PrintJob()
@@ -124,11 +124,11 @@ void PrintJob::StartPrinting() {
   }
 
   // Real work is done in PrintJobWorker::StartPrinting().
-  worker_->PostTask(FROM_HERE,
-                    base::Bind(&HoldRefCallback, base::WrapRefCounted(this),
-                               base::Bind(&PrintJobWorker::StartPrinting,
-                                          base::Unretained(worker_.get()),
-                                          base::RetainedRef(document_))));
+  worker_->PostTask(
+      FROM_HERE, base::BindOnce(&HoldRefCallback, base::WrapRefCounted(this),
+                                base::BindOnce(&PrintJobWorker::StartPrinting,
+                                               base::Unretained(worker_.get()),
+                                               base::RetainedRef(document_))));
   // Set the flag right now.
   is_job_pending_ = true;
 
@@ -352,11 +352,12 @@ void PrintJob::UpdatePrintedDocument(PrintedDocument* new_document) {
   if (worker_) {
     DCHECK(!is_job_pending_);
     // Sync the document with the worker.
-    worker_->PostTask(FROM_HERE,
-                      base::Bind(&HoldRefCallback, base::WrapRefCounted(this),
-                                 base::Bind(&PrintJobWorker::OnDocumentChanged,
-                                            base::Unretained(worker_.get()),
-                                            base::RetainedRef(document_))));
+    worker_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&HoldRefCallback, base::WrapRefCounted(this),
+                       base::BindOnce(&PrintJobWorker::OnDocumentChanged,
+                                      base::Unretained(worker_.get()),
+                                      base::RetainedRef(document_))));
   }
 }
 
