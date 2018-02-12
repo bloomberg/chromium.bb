@@ -773,6 +773,24 @@
             ]
         }
     ],
+    "CertificateTransparencyLogAuditing": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CertificateTransparencyLogAuditing"
+                    ]
+                }
+            ]
+        }
+    ],
     "CheckerImaging": [
         {
             "platforms": [
