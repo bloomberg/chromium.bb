@@ -95,6 +95,8 @@ void ShowContentSettingsExceptions(Browser* browser,
 void ShowContentSettingsExceptionsForProfile(
     Profile* profile,
     ContentSettingsType content_settings_type);
+
+void ShowSiteSettings(Profile* profile, const GURL& url);
 void ShowSiteSettings(Browser* browser, const GURL& url);
 
 void ShowContentSettings(Browser* browser,
