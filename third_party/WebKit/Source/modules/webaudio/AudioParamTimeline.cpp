@@ -114,8 +114,9 @@ String AudioParamTimeline::EventToString(const ParamEvent& event) const {
              String::Number(event.Duration(), 16);
       break;
     case ParamEvent::kCancelValues:
+    case ParamEvent::kSetValueCurveEnd:
     // Fall through; we should never have to print out the internal
-    // CancelValues event.
+    // |kCancelValues| or |kSetValueCurveEnd| event.
     case ParamEvent::kLastType:
       NOTREACHED();
       break;
@@ -221,6 +222,13 @@ AudioParamTimeline::ParamEvent::CreateSetValueCurveEvent(
 }
 
 std::unique_ptr<AudioParamTimeline::ParamEvent>
+AudioParamTimeline::ParamEvent::CreateSetValueCurveEndEvent(float value,
+                                                            double time) {
+  return WTF::WrapUnique(
+      new ParamEvent(ParamEvent::kSetValueCurveEnd, value, time));
+}
+
+std::unique_ptr<AudioParamTimeline::ParamEvent>
 AudioParamTimeline::ParamEvent::CreateCancelValuesEvent(
     double time,
     std::unique_ptr<ParamEvent> saved_event) {
@@ -315,7 +323,8 @@ AudioParamTimeline::ParamEvent::ParamEvent(ParamEvent::Type type,
       curve_end_value_(0),
       saved_event_(nullptr),
       has_default_cancelled_value_(false) {
-  DCHECK_EQ(type, ParamEvent::kSetValue);
+  DCHECK(type == ParamEvent::kSetValue ||
+         type == ParamEvent::kSetValueCurveEnd);
 }
 
 // Create a linear or exponential ramp that requires an initial value and
@@ -506,8 +515,8 @@ void AudioParamTimeline::SetValueCurveAtTime(const Vector<float>& curve,
   // Insert a setValueAtTime event too to establish an event so that all
   // following events will process from the end of the curve instead of the
   // beginning.
-  InsertEvent(ParamEvent::CreateSetValueEvent(curve.data()[curve.size() - 1],
-                                              time + duration),
+  InsertEvent(ParamEvent::CreateSetValueCurveEndEvent(
+                  curve.data()[curve.size() - 1], time + duration),
               exception_state);
 }
 
@@ -545,7 +554,12 @@ void AudioParamTimeline::InsertEvent(std::unique_ptr<ParamEvent> event,
       // existing event. It's ok if the SetValueCurve starts at the same time as
       // the end of some other duration.
       double end_time = event->Time() + event->Duration();
-      if (events_[i]->Time() > event->Time() && events_[i]->Time() < end_time) {
+      ParamEvent::Type test_type = events_[i]->GetType();
+      // Events of type |kSetValueCurveEnd| or |kCancelValues| never
+      // conflict.
+      if (!(test_type == ParamEvent::kSetValueCurveEnd ||
+            test_type == ParamEvent::kCancelValues) &&
+          events_[i]->Time() > event->Time() && events_[i]->Time() < end_time) {
         exception_state.ThrowDOMException(
             kNotSupportedError,
             EventToString(*event) + " overlaps " + EventToString(*events_[i]));
@@ -556,7 +570,8 @@ void AudioParamTimeline::InsertEvent(std::unique_ptr<ParamEvent> event,
       // SetValueCurve event.
       if (events_[i]->GetType() == ParamEvent::kSetValueCurve) {
         double end_time = events_[i]->Time() + events_[i]->Duration();
-        if (event->Time() >= events_[i]->Time() && event->Time() < end_time) {
+        if (event->GetType() != ParamEvent::kSetValueCurveEnd &&
+            event->Time() >= events_[i]->Time() && event->Time() < end_time) {
           exception_state.ThrowDOMException(
               kNotSupportedError, EventToString(*event) + " overlaps " +
                                       EventToString(*events_[i]));
@@ -738,6 +753,7 @@ void AudioParamTimeline::CancelAndHoldAtTime(double cancel_time,
       }
     } break;
     case ParamEvent::kSetValue:
+    case ParamEvent::kSetValueCurveEnd:
     case ParamEvent::kCancelValues:
       // Nothing needs to be done for a SetValue or CancelValues event.
       break;
@@ -959,6 +975,7 @@ float AudioParamTimeline::ValuesForFrameRangeImpl(size_t start_frame,
       // Handle event types not requiring looking ahead to the next event.
       switch (event->GetType()) {
         case ParamEvent::kSetValue:
+        case ParamEvent::kSetValueCurveEnd:
         case ParamEvent::kLinearRampToValue: {
           current_frame = fill_to_end_frame;
 
@@ -1092,7 +1109,8 @@ bool AudioParamTimeline::IsEventCurrent(const ParamEvent* event,
     // Condition is currentFrame - 1 < eventFrame <= currentFrame, but
     // currentFrame is unsigned and could be 0, so use
     // currentFrame < eventFrame + 1 instead.
-    if (!((event->GetType() == ParamEvent::kSetValue &&
+    if (!(((event->GetType() == ParamEvent::kSetValue ||
+            event->GetType() == ParamEvent::kSetValueCurveEnd) &&
            (event_frame <= current_frame) &&
            (current_frame < event_frame + 1)))) {
       // This is not the special SetValue event case, and nextEvent is
@@ -1257,6 +1275,7 @@ AudioParamTimeline::HandleCancelValues(const ParamEvent* current_event,
     switch (current_event->GetType()) {
       case ParamEvent::kLinearRampToValue:
       case ParamEvent::kExponentialRampToValue:
+      case ParamEvent::kSetValueCurveEnd:
       case ParamEvent::kSetValue: {
         // These three events potentially establish a starting value for
         // the following event, so we need to examine the cancelled
@@ -1289,6 +1308,7 @@ AudioParamTimeline::HandleCancelValues(const ParamEvent* current_event,
                                              saved_event->Time());
               break;
             case ParamEvent::kSetValueCurve:
+            case ParamEvent::kSetValueCurveEnd:
             case ParamEvent::kSetValue:
             case ParamEvent::kSetTarget:
             case ParamEvent::kCancelValues:
