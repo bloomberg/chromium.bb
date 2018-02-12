@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include "media/base/media_export.h"
+
 namespace media {
 
 // The Opus specification is part of IETF RFC 6716:
@@ -97,13 +99,14 @@ enum {
 // Channel ordering information is taken from section 4.3.9 of the Vorbis I
 // Specification:
 // http://xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-800004.3.9
-extern const uint8_t
+MEDIA_EXPORT extern const uint8_t
     kDefaultOpusChannelLayout[OPUS_MAX_CHANNELS_WITH_DEFAULT_LAYOUT];
 
 // These are the FFmpeg channel layouts expressed using the position of each
 // channel in the output stream from libopus.
-extern const uint8_t kFFmpegChannelDecodingLayouts[OPUS_MAX_VORBIS_CHANNELS]
-                                                  [OPUS_MAX_VORBIS_CHANNELS];
+MEDIA_EXPORT extern const uint8_t
+    kFFmpegChannelDecodingLayouts[OPUS_MAX_VORBIS_CHANNELS]
+                                 [OPUS_MAX_VORBIS_CHANNELS];
 
 // Opus internal to Vorbis channel order mapping written in the header.
 extern const uint8_t
