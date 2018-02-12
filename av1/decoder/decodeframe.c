@@ -834,13 +834,19 @@ static void decode_restoration_mode(AV1_COMMON *cm,
     }
   }
   if (!all_none) {
-    const int qsize = RESTORATION_TILESIZE_MAX >> 2;
+    assert(cm->seq_params.sb_size == BLOCK_64X64 ||
+           cm->seq_params.sb_size == BLOCK_128X128);
+    const int sb_size = cm->seq_params.sb_size == BLOCK_128X128 ? 128 : 64;
+
     for (int p = 0; p < num_planes; ++p)
-      cm->rst_info[p].restoration_unit_size = qsize;
+      cm->rst_info[p].restoration_unit_size = sb_size;
 
     RestorationInfo *rsi = &cm->rst_info[0];
-    rsi->restoration_unit_size <<= aom_rb_read_bit(rb);
-    if (rsi->restoration_unit_size != qsize) {
+
+    if (sb_size == 64) {
+      rsi->restoration_unit_size <<= aom_rb_read_bit(rb);
+    }
+    if (rsi->restoration_unit_size > 64) {
       rsi->restoration_unit_size <<= aom_rb_read_bit(rb);
     }
   } else {

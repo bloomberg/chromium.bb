@@ -2198,6 +2198,7 @@ static void encode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_write_bit_buffer *wb) {
   const int num_planes = av1_num_planes(cm);
 #if CONFIG_INTRABC
+
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
 #endif  // CONFIG_INTRABC
   int all_none = 1, chroma_none = 1;
@@ -2228,12 +2229,20 @@ static void encode_restoration_mode(AV1_COMMON *cm,
     }
   }
   if (!all_none) {
+    assert(cm->seq_params.sb_size == BLOCK_64X64 ||
+           cm->seq_params.sb_size == BLOCK_128X128);
+    const int sb_size = cm->seq_params.sb_size == BLOCK_128X128 ? 128 : 64;
+
     RestorationInfo *rsi = &cm->rst_info[0];
-    const int qsize = RESTORATION_TILESIZE_MAX >> 2;
-    const int hsize = RESTORATION_TILESIZE_MAX >> 1;
-    aom_wb_write_bit(wb, rsi->restoration_unit_size != qsize);
-    if (rsi->restoration_unit_size != qsize) {
-      aom_wb_write_bit(wb, rsi->restoration_unit_size != hsize);
+
+    assert(rsi->restoration_unit_size >= sb_size);
+    assert(RESTORATION_TILESIZE_MAX == 256);
+
+    if (sb_size == 64) {
+      aom_wb_write_bit(wb, rsi->restoration_unit_size > 64);
+    }
+    if (rsi->restoration_unit_size > 64) {
+      aom_wb_write_bit(wb, rsi->restoration_unit_size > 128);
     }
   }
 
