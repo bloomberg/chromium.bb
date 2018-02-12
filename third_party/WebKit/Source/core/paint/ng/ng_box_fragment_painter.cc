@@ -7,6 +7,8 @@
 #include "core/layout/BackgroundBleedAvoidance.h"
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutTable.h"
+#include "core/layout/LayoutTableCell.h"
 #include "core/layout/ng/geometry/ng_border_edges.h"
 #include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
@@ -35,12 +37,22 @@
 namespace blink {
 
 namespace {
+
 LayoutRectOutsets BoxStrutToLayoutRectOutsets(
     const NGPixelSnappedPhysicalBoxStrut& box_strut) {
   return LayoutRectOutsets(
       LayoutUnit(box_strut.top), LayoutUnit(box_strut.right),
       LayoutUnit(box_strut.bottom), LayoutUnit(box_strut.left));
 }
+
+bool ShouldPaintBoxFragmentBorders(const LayoutObject& object) {
+  if (!object.IsTableCell())
+    return true;
+  // Collapsed borders are painted by the containing table, not by each
+  // individual table cell.
+  return !ToLayoutTableCell(object).Table()->ShouldCollapseBorders();
+}
+
 }  // anonymous namespace
 
 NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
@@ -444,7 +456,8 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
   if (!painting_overflow_contents) {
     PaintInsetBoxShadowWithBorderRect(paint_info, paint_rect, style);
 
-    if (box_decoration_data.has_border_decoration) {
+    if (box_decoration_data.has_border_decoration &&
+        ShouldPaintBoxFragmentBorders(*box_fragment_.GetLayoutObject())) {
       Node* generating_node = box_fragment_.GetLayoutObject()->GeneratingNode();
       const Document& document = box_fragment_.GetLayoutObject()->GetDocument();
       PaintBorder(box_fragment_, document, generating_node, paint_info,
