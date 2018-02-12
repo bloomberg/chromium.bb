@@ -235,51 +235,40 @@ static const aom_cdf_prob
 #endif  // CONFIG_EXT_COMP_REFS
 
 static const aom_cdf_prob
-    default_comp_ref_cdf[COMP_REF_CONTEXTS][FWD_REFS - 1][CDF_SIZE(2)] = {
+    default_comp_ref_cdf[REF_CONTEXTS][FWD_REFS - 1][CDF_SIZE(2)] = {
       { { AOM_CDF2(4412) }, { AOM_CDF2(11499) }, { AOM_CDF2(478) } },
       { { AOM_CDF2(17926) }, { AOM_CDF2(26419) }, { AOM_CDF2(8615) } },
       { { AOM_CDF2(30449) }, { AOM_CDF2(31477) }, { AOM_CDF2(28035) } }
     };
 
 static const aom_cdf_prob
-    default_comp_bwdref_cdf[COMP_REF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)] = {
+    default_comp_bwdref_cdf[REF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)] = {
       { { AOM_CDF2(2762) }, { AOM_CDF2(1614) } },
       { { AOM_CDF2(17976) }, { AOM_CDF2(15912) } },
       { { AOM_CDF2(30894) }, { AOM_CDF2(30639) } },
     };
 
+// TODO(zoelu): To use aom_entropy_optimizer to update the following defaults.
 static const aom_cdf_prob default_single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1]
                                                 [CDF_SIZE(2)] = {
-                                                  { { AOM_CDF2(4623) },
-                                                    { AOM_CDF2(2110) },
-                                                    { AOM_CDF2(4132) },
-                                                    { AOM_CDF2(7309) },
-                                                    { AOM_CDF2(1392) },
-                                                    { AOM_CDF2(1781) } },
-                                                  { { AOM_CDF2(8659) },
-                                                    { AOM_CDF2(16372) },
-                                                    { AOM_CDF2(9371) },
-                                                    { AOM_CDF2(16322) },
-                                                    { AOM_CDF2(6216) },
-                                                    { AOM_CDF2(15834) } },
-                                                  { { AOM_CDF2(17353) },
-                                                    { AOM_CDF2(30182) },
-                                                    { AOM_CDF2(16300) },
-                                                    { AOM_CDF2(21702) },
-                                                    { AOM_CDF2(10365) },
-                                                    { AOM_CDF2(30486) } },
-                                                  { { AOM_CDF2(16384) },
-                                                    { AOM_CDF2(16384) },
-                                                    { AOM_CDF2(24426) },
-                                                    { AOM_CDF2(26972) },
-                                                    { AOM_CDF2(14760) },
-                                                    { AOM_CDF2(16384) } },
-                                                  { { AOM_CDF2(28634) },
-                                                    { AOM_CDF2(16384) },
-                                                    { AOM_CDF2(29425) },
-                                                    { AOM_CDF2(30969) },
-                                                    { AOM_CDF2(26676) },
-                                                    { AOM_CDF2(16384) } }
+                                                  { { AOM_CDF2(6500) },
+                                                    { AOM_CDF2(3089) },
+                                                    { AOM_CDF2(4026) },
+                                                    { AOM_CDF2(8549) },
+                                                    { AOM_CDF2(184) },
+                                                    { AOM_CDF2(2264) } },
+                                                  { { AOM_CDF2(17037) },
+                                                    { AOM_CDF2(19408) },
+                                                    { AOM_CDF2(15521) },
+                                                    { AOM_CDF2(27640) },
+                                                    { AOM_CDF2(5047) },
+                                                    { AOM_CDF2(16251) } },
+                                                  { { AOM_CDF2(28292) },
+                                                    { AOM_CDF2(30427) },
+                                                    { AOM_CDF2(29003) },
+                                                    { AOM_CDF2(31436) },
+                                                    { AOM_CDF2(28466) },
+                                                    { AOM_CDF2(29371) } }
                                                 };
 
 // TODO(huisu): tune these cdfs
