@@ -141,7 +141,7 @@ namespace extensions {
 std::unique_ptr<ExtensionView> ExtensionViewHost::CreateExtensionView(
     ExtensionViewHost* host,
     Browser* browser) {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
   if (views_mode_controller::IsViewsBrowserCocoa())
     return CreateExtensionViewCocoa(host, browser);
 #endif
