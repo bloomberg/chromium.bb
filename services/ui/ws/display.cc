@@ -48,7 +48,7 @@ Display::~Display() {
   window_server_->window_manager_window_tree_factory_set()->RemoveObserver(
       this);
 
-  if (!focus_controller_) {
+  if (focus_controller_) {
     focus_controller_->RemoveObserver(this);
     focus_controller_.reset();
   }
