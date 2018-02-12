@@ -345,7 +345,8 @@ void UserManagerBase::RemoveUserFromList(const AccountId& account_id) {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
   RemoveNonCryptohomeData(account_id);
   if (user_loading_stage_ == STAGE_LOADED) {
-    DeleteUser(RemoveRegularOrSupervisedUserFromList(account_id));
+    DeleteUser(
+        RemoveRegularOrSupervisedUserFromList(account_id, true /* notify */));
   } else if (user_loading_stage_ == STAGE_LOADING) {
     DCHECK(IsSupervisedAccountId(account_id));
     // Special case, removing partially-constructed supervised user during user
@@ -914,7 +915,8 @@ void UserManagerBase::AddUserRecord(User* user) {
 void UserManagerBase::RegularUserLoggedIn(const AccountId& account_id,
                                           const UserType user_type) {
   // Remove the user from the user list.
-  active_user_ = RemoveRegularOrSupervisedUserFromList(account_id);
+  active_user_ =
+      RemoveRegularOrSupervisedUserFromList(account_id, false /* notify */);
 
   // If the user was not found on the user list, create a new user.
   SetIsCurrentUserNew(!active_user_);
@@ -1017,7 +1019,8 @@ void UserManagerBase::RemoveNonCryptohomeData(const AccountId& account_id) {
 }
 
 User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(
-    const AccountId& account_id) {
+    const AccountId& account_id,
+    bool notify) {
   ListPrefUpdate prefs_users_update(GetLocalState(), kRegularUsers);
   prefs_users_update->Clear();
   User* user = nullptr;
@@ -1034,7 +1037,8 @@ User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(
       ++it;
     }
   }
-  OnUserRemoved(account_id);
+  if (notify)
+    OnUserRemoved(account_id);
   return user;
 }
 

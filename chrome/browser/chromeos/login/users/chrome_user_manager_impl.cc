@@ -847,7 +847,8 @@ void ChromeUserManagerImpl::SupervisedUserLoggedIn(
   // TODO(nkostylev): Refactor, share code with RegularUserLoggedIn().
 
   // Remove the user from the user list.
-  active_user_ = RemoveRegularOrSupervisedUserFromList(account_id);
+  active_user_ =
+      RemoveRegularOrSupervisedUserFromList(account_id, false /* notify */);
 
   // If the user was not found on the user list, create a new user.
   if (!GetActiveUser()) {
