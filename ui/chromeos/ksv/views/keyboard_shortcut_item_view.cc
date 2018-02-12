@@ -6,11 +6,8 @@
 
 #include <vector>
 
-#include "base/i18n/rtl.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/chromeos/ksv/keyboard_shortcut_item.h"
 #include "ui/chromeos/ksv/keyboard_shortcut_viewer_metadata.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/styled_label.h"
 
 namespace keyboard_shortcut_viewer {
@@ -24,16 +21,9 @@ constexpr float kShortcutViewWitdhRatio = 0.618f;
 }  // namespace
 
 KeyboardShortcutItemView::KeyboardShortcutItemView(
-    const KeyboardShortcutItem& item,
-    ShortcutCategory category)
-    : shortcut_item_(&item), category_(category) {
+    const KeyboardShortcutItem& item) {
   description_label_view_ = new views::StyledLabel(
       l10n_util::GetStringUTF16(item.description_message_id), nullptr);
-  // StyledLabel will flip the alignment if UI layout is right-to-left.
-  // Flip the alignment here in order to make |description_label_view_| always
-  // align to left.
-  description_label_view_->SetHorizontalAlignment(
-      base::i18n::IsRTL() ? gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT);
   AddChildView(description_label_view_);
 
   std::vector<size_t> offsets;
@@ -49,11 +39,6 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
                                                  replacement_strings, &offsets);
   }
   shortcut_label_view_ = new views::StyledLabel(shortcut_string, nullptr);
-  // StyledLabel will flip the alignment if UI layout is right-to-left.
-  // Flip the alignment here in order to make |shortcut_label_view_| always
-  // align to right.
-  shortcut_label_view_->SetHorizontalAlignment(
-      base::i18n::IsRTL() ? gfx::ALIGN_LEFT : gfx::ALIGN_RIGHT);
   DCHECK_EQ(replacement_strings.size(), offsets.size());
   for (size_t i = 0; i < offsets.size(); ++i) {
     views::StyledLabel::RangeStyleInfo style_info;
@@ -68,10 +53,6 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
         style_info);
   }
   AddChildView(shortcut_label_view_);
-
-  constexpr int kVerticalPadding = 10;
-  SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(kVerticalPadding, 0, kVerticalPadding, 0)));
 }
 
 int KeyboardShortcutItemView::GetHeightForWidth(int w) const {
@@ -80,27 +61,22 @@ int KeyboardShortcutItemView::GetHeightForWidth(int w) const {
   const int description_view_height =
       description_label_view_->GetHeightForWidth(w *
                                                  (1 - kShortcutViewWitdhRatio));
-  return std::max(shortcut_view_height, description_view_height) +
-         GetInsets().height();
+  return std::max(shortcut_view_height, description_view_height);
 }
 
 void KeyboardShortcutItemView::Layout() {
-  gfx::Rect content_bounds(GetContentsBounds());
-  if (content_bounds.IsEmpty())
+  gfx::Rect rect(GetContentsBounds());
+  if (rect.IsEmpty())
     return;
 
   // TODO(wutao): addjust two views' bounds based on UX specs.
-  const int shortcut_view_width =
-      content_bounds.width() * kShortcutViewWitdhRatio;
-  const int description_view_width =
-      content_bounds.width() - shortcut_view_width;
-  const int height = GetHeightForWidth(content_bounds.width());
-  const int left = content_bounds.x();
-  const int top = content_bounds.y();
+  const int shortcut_view_width = rect.width() * kShortcutViewWitdhRatio;
+  const int description_view_width = rect.width() - shortcut_view_width;
+  const int height = GetHeightForWidth(rect.width());
   description_label_view_->SetBoundsRect(
-      gfx::Rect(left, top, description_view_width, height));
-  shortcut_label_view_->SetBoundsRect(gfx::Rect(
-      left + description_view_width, top, shortcut_view_width, height));
+      gfx::Rect(description_view_width, height));
+  shortcut_label_view_->SetBoundsRect(
+      gfx::Rect(description_view_width, 0, shortcut_view_width, height));
 }
 
 }  // namespace keyboard_shortcut_viewer

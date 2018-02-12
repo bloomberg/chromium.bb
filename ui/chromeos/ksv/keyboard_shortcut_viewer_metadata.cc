@@ -24,6 +24,13 @@ namespace keyboard_shortcut_viewer {
 
 namespace {
 
+// This order is significant as it determines the order in which the categories
+// will be displayed in the view.
+constexpr ShortcutCategory kCategoryDisplayOrder[] = {
+    ShortcutCategory::kPopular,        ShortcutCategory::kTabAndWindow,
+    ShortcutCategory::kPageAndBrowser, ShortcutCategory::kSystemAndDisplay,
+    ShortcutCategory::kTextEditing,    ShortcutCategory::kAccessibility};
+
 // Gets the keyboard codes for modifiers.
 ui::KeyboardCode GetKeyCodeForModifier(ui::EventFlags modifier) {
   switch (modifier) {
@@ -69,6 +76,10 @@ base::Optional<base::string16> GetSpecialStringForKeyboardCode(
 }
 
 }  // namespace
+
+base::span<const ShortcutCategory> GetShortcutCategories() {
+  return base::span<const ShortcutCategory>(kCategoryDisplayOrder);
+}
 
 base::string16 GetStringForCategory(ShortcutCategory category) {
   int msg_id = 0;

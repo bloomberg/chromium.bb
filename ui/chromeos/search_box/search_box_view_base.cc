@@ -167,6 +167,8 @@ SearchBoxViewBase::SearchBoxViewBase(SearchBoxViewDelegate* delegate)
       search_box_(new SearchBoxTextfield(this)) {
   DCHECK(delegate_);
   SetLayoutManager(std::make_unique<views::FillLayout>());
+  SetPreferredSize(
+      gfx::Size(kSearchBoxPreferredWidth, kSearchBoxPreferredHeight));
   AddChildView(content_container_);
 
   content_container_->SetBackground(std::make_unique<SearchBoxBackground>(
@@ -280,8 +282,6 @@ void SearchBoxViewBase::SetSearchBoxActive(bool active) {
   UpdateSearchBoxBorder();
   UpdateKeyboardVisibility();
 
-  NotifyActiveChanged();
-
   content_container_->Layout();
   SchedulePaint();
 }
@@ -308,10 +308,6 @@ bool SearchBoxViewBase::OnTextfieldEvent() {
 
   SetSearchBoxActive(true);
   return true;
-}
-
-gfx::Size SearchBoxViewBase::CalculatePreferredSize() const {
-  return gfx::Size(kSearchBoxPreferredWidth, kSearchBoxPreferredHeight);
 }
 
 bool SearchBoxViewBase::OnMouseWheel(const ui::MouseWheelEvent& event) {
@@ -376,21 +372,9 @@ void SearchBoxViewBase::OnOnSearchBoxFocusedChanged() {
   SchedulePaint();
 }
 
-bool SearchBoxViewBase::IsSearchBoxTrimmedQueryEmpty() const {
-  base::string16 trimmed_query;
-  base::TrimWhitespace(search_box_->text(), base::TrimPositions::TRIM_ALL,
-                       &trimmed_query);
-  return trimmed_query.empty();
-}
-
 void SearchBoxViewBase::NotifyQueryChanged() {
   DCHECK(delegate_);
   delegate_->QueryChanged(this);
-}
-
-void SearchBoxViewBase::NotifyActiveChanged() {
-  DCHECK(delegate_);
-  delegate_->ActiveChanged(this);
 }
 
 // TODO(crbug.com/755219): Unify this with UpdateBackgroundColor.
@@ -425,6 +409,13 @@ void SearchBoxViewBase::UpdateCloseButtonVisisbility() {
   content_container_->Layout();
 }
 
+bool SearchBoxViewBase::IsSearchBoxTrimmedQueryEmpty() const {
+  base::string16 trimmed_query;
+  base::TrimWhitespace(search_box_->text(), base::TrimPositions::TRIM_ALL,
+                       &trimmed_query);
+  return trimmed_query.empty();
+}
+
 void SearchBoxViewBase::ContentsChanged(views::Textfield* sender,
                                         const base::string16& new_contents) {
   // Set search box focused when query changes.
@@ -448,10 +439,6 @@ bool SearchBoxViewBase::HandleGestureEvent(
 
 void SearchBoxViewBase::SetSearchBoxBackgroundCornerRadius(int corner_radius) {
   GetSearchBoxBackground()->set_corner_radius(corner_radius);
-}
-
-void SearchBoxViewBase::SetSearchBoxBackgroundColor(SkColor color) {
-  GetSearchBoxBackground()->set_color(color);
 }
 
 void SearchBoxViewBase::SetSearchIconImage(gfx::ImageSkia image) {

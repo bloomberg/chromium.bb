@@ -14,36 +14,17 @@ class StyledLabel;
 
 namespace keyboard_shortcut_viewer {
 
-struct KeyboardShortcutItem;
-enum class ShortcutCategory;
-
 // A view that displays a shortcut metadata.
 class KeyboardShortcutItemView : public views::View {
  public:
-  KeyboardShortcutItemView(const KeyboardShortcutItem& item,
-                           ShortcutCategory category);
+  explicit KeyboardShortcutItemView(const KeyboardShortcutItem& item);
   ~KeyboardShortcutItemView() override = default;
 
   // views::View:
   int GetHeightForWidth(int w) const override;
   void Layout() override;
 
-  views::StyledLabel* description_label_view() {
-    return description_label_view_;
-  }
-
-  views::StyledLabel* shortcut_label_view() { return shortcut_label_view_; }
-
-  ShortcutCategory category() const { return category_; }
-
-  const KeyboardShortcutItem* shortcut_item() const { return shortcut_item_; }
-
  private:
-  // Not owned. Pointer to the keyboard shortcut item.
-  const KeyboardShortcutItem* shortcut_item_;
-
-  const ShortcutCategory category_;
-
   // View of the text describing what action the shortcut performs.
   views::StyledLabel* description_label_view_;
 
