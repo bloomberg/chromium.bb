@@ -21,9 +21,6 @@ enum class ShortcutCategory;
 KSV_EXPORT const std::vector<KeyboardShortcutItem>&
 GetKeyboardShortcutItemList();
 
-// Returns the categories shown on the side tabs.
-base::span<const ShortcutCategory> GetShortcutCategories();
-
 base::string16 GetStringForCategory(ShortcutCategory category);
 
 // Returns the string of a DomeKey for a given VKEY. VKEY needs to be mapped to
