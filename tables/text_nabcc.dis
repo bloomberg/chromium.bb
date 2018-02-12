@@ -79,32 +79,32 @@ display \X007A 1356		#122 z Latin small letter z
 # except that dot7 is added:
 
         #Hex   Dots		Dec	Char Description
-display \X0041 1			#65	A Latin capital letter a
-display \X0042 12			#66	B Latin capital letter b
-display \X0043 14			#67	C Latin capital letter c
-display \X0044 145		#68	D Latin capital letter d
-display \X0045 15			#69	E Latin capital letter e
-display \X0046 124		#70	F Latin capital letter f
-display \X0047 1245		#71	G Latin capital letter g
-display \X0048 125		#72	H Latin capital letter h
-display \X0049 24			#73	I Latin capital letter i
-display \X004A 245		#74	J Latin capital letter j
-display \X004B 13			#75	K Latin capital letter k
-display \X004C 123		#76	L Latin capital letter l
-display \X004D 134		#77	M Latin capital letter m
-display \X004E 1345		#78	N Latin capital letter n
-display \X004F 135		#79	O Latin capital letter o
-display \X0050 1234		#80	P Latin capital letter p
-display \X0051 12345	#81	Q Latin capital letter q
-display \X0052 1235		#82	R Latin capital letter r
-display \X0053 234		#83	S Latin capital letter s
-display \X0054 2345		#84	T Latin capital letter t
-display \X0055 136		#85	U Latin capital letter u
-display \X0056 1236		#86	V Latin capital letter v
-display \X0057 2456		#87	W Latin capital letter w
-display \X0058 1346		#88	X Latin capital letter x
-display \X0059 13456  #89	Y Latin capital letter y
-display \X005A 1356		#90	Z Latin capital letter z
+display \X0041 17			#65	A Latin capital letter a
+display \X0042 127			#66	B Latin capital letter b
+display \X0043 147			#67	C Latin capital letter c
+display \X0044 1457		#68	D Latin capital letter d
+display \X0045 157			#69	E Latin capital letter e
+display \X0046 1247		#70	F Latin capital letter f
+display \X0047 12457		#71	G Latin capital letter g
+display \X0048 1257		#72	H Latin capital letter h
+display \X0049 247			#73	I Latin capital letter i
+display \X004A 2457		#74	J Latin capital letter j
+display \X004B 137			#75	K Latin capital letter k
+display \X004C 1237		#76	L Latin capital letter l
+display \X004D 1347		#77	M Latin capital letter m
+display \X004E 13457		#78	N Latin capital letter n
+display \X004F 1357		#79	O Latin capital letter o
+display \X0050 12347		#80	P Latin capital letter p
+display \X0051 123457	#81	Q Latin capital letter q
+display \X0052 12357		#82	R Latin capital letter r
+display \X0053 2347		#83	S Latin capital letter s
+display \X0054 23457		#84	T Latin capital letter t
+display \X0055 1367		#85	U Latin capital letter u
+display \X0056 12367		#86	V Latin capital letter v
+display \X0057 24567		#87	W Latin capital letter w
+display \X0058 13467		#88	X Latin capital letter x
+display \X0059 134567  #89	Y Latin capital letter y
+display \X005A 13567		#90	Z Latin capital letter z
 
 # The 10 decimal digits 0-9) are the same as in the Nemeth Code:
 
