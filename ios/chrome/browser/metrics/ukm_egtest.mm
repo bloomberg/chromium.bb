@@ -463,6 +463,14 @@ void SignOut() {
 - (void)MAYBE_testSecondaryPassphrase {
   uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
 
+  // This test hangs for a while when typing, and eventually causes the suite to
+  // timeout on iOS 11 iPad. crbug.com/811376
+  if (IsIPadIdiom()) {
+    if (@available(iOS 11, *)) {
+      EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11 iPad");
+    }
+  }
+
   [ChromeEarlGreyUI openSettingsMenu];
   // Open accounts settings, then sync settings.
   [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
