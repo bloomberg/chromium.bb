@@ -258,7 +258,9 @@ void RenderWidgetTargeter::FoundTarget(
     const blink::WebInputEvent& event,
     const ui::LatencyInfo& latency,
     const base::Optional<gfx::PointF>& target_location) {
-  if (!root_view)
+  // RenderWidgetHostViewMac can be deleted asynchronously, in which case the
+  // View will be valid but there will no longer be a RenderWidgetHostImpl.
+  if (!root_view || !root_view->GetRenderWidgetHost())
     return;
   delegate_->DispatchEventToTarget(root_view, target, event, latency,
                                    target_location);
