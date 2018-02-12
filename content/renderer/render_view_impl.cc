@@ -2053,7 +2053,13 @@ void RenderViewImpl::OnResize(const ResizeParams& params) {
   TRACE_EVENT0("renderer", "RenderViewImpl::OnResize");
 
   if (webview()) {
-    webview()->HidePopups();
+    // Only hide popups when the size changes. There are situations (e.g. hiding
+    // the ChromeOS virtual keyboard) where we send a resize message with no
+    // change in size, but we don't want to close popups.
+    // See https://crbug.com/761908.
+    if (params.new_size != GetSize())
+      webview()->HidePopups();
+
     if (send_preferred_size_changes_ &&
         webview()->MainFrame()->IsWebLocalFrame()) {
       webview()->MainFrame()->ToWebLocalFrame()->SetCanHaveScrollbars(
