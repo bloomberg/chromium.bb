@@ -126,15 +126,13 @@ Notification* Notification::Create(ExecutionContext* context,
   Notification* notification =
       new Notification(context, Type::kNonPersistent, data);
 
-  if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
-    // TODO(https://crbug.com/595685): Make |token| a constructor parameter
-    // once persistent notifications have been mojofied too.
-    if (data.tag.IsNull() || data.tag.IsEmpty()) {
-      auto unguessable_token = base::UnguessableToken::Create();
-      notification->SetToken(unguessable_token.ToString().c_str());
-    } else {
-      notification->SetToken(data.tag);
-    }
+  // TODO(https://crbug.com/595685): Make |token| a constructor parameter
+  // once persistent notifications have been mojofied too.
+  if (data.tag.IsNull() || data.tag.IsEmpty()) {
+    auto unguessable_token = base::UnguessableToken::Create();
+    notification->SetToken(unguessable_token.ToString().c_str());
+  } else {
+    notification->SetToken(data.tag);
   }
 
   notification->SchedulePrepareShow();
@@ -205,21 +203,14 @@ void Notification::PrepareShow() {
 void Notification::DidLoadResources(NotificationResourcesLoader* loader) {
   DCHECK_EQ(loader, loader_.Get());
 
-  ExecutionContext* execution_context = GetExecutionContext();
-  const SecurityOrigin* origin = execution_context->GetSecurityOrigin();
-  DCHECK(origin);
+  mojom::blink::NonPersistentNotificationListenerPtr event_listener;
 
-  if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
-    mojom::blink::NonPersistentNotificationListenerPtr event_listener;
-    listener_binding_.Bind(mojo::MakeRequest(&event_listener));
+  listener_binding_.Bind(mojo::MakeRequest(&event_listener));
 
-    NotificationManager::From(execution_context)
-        ->DisplayNonPersistentNotification(
-            token_, data_, loader->GetResources(), std::move(event_listener));
-  } else {
-    GetWebNotificationManager()->Show(WebSecurityOrigin(origin), data_,
-                                      loader->GetResources(), this);
-  }
+  NotificationManager::From(GetExecutionContext())
+      ->DisplayNonPersistentNotification(token_, data_, loader->GetResources(),
+                                         std::move(event_listener));
+
   loader_.Clear();
 
   state_ = State::kShowing;
@@ -232,19 +223,9 @@ void Notification::close() {
   // Schedule the "close" event to be fired for non-persistent notifications.
   // Persistent notifications won't get such events for programmatic closes.
   if (type_ == Type::kNonPersistent) {
-    if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
-      state_ = State::kClosing;
-      NotificationManager::From(GetExecutionContext())
-          ->CloseNonPersistentNotification(token_);
-      return;
-    }
-    GetExecutionContext()
-        ->GetTaskRunner(TaskType::kUserInteraction)
-        ->PostTask(FROM_HERE, WTF::Bind(&Notification::DispatchCloseEvent,
-                                        WrapPersistent(this)));
     state_ = State::kClosing;
-
-    GetWebNotificationManager()->Close(this);
+    NotificationManager::From(GetExecutionContext())
+        ->CloseNonPersistentNotification(token_);
     return;
   }
 
@@ -263,22 +244,10 @@ void Notification::close() {
 }
 
 void Notification::OnShow() {
-  DispatchShowEvent();
-}
-
-void Notification::OnClick() {
-  DispatchClickEvent();
-}
-
-void Notification::OnClose() {
-  DispatchCloseEvent();
-}
-
-void Notification::DispatchShowEvent() {
   DispatchEvent(Event::Create(EventTypeNames::show));
 }
 
-void Notification::DispatchClickEvent() {
+void Notification::OnClick() {
   ExecutionContext* context = GetExecutionContext();
   Document* document = context->IsDocument() ? ToDocument(context) : nullptr;
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
@@ -288,11 +257,7 @@ void Notification::DispatchClickEvent() {
   DispatchEvent(Event::Create(EventTypeNames::click));
 }
 
-void Notification::DispatchErrorEvent() {
-  DispatchEvent(Event::Create(EventTypeNames::error));
-}
-
-void Notification::DispatchCloseEvent() {
+void Notification::OnClose() {
   // The notification should be Showing if the user initiated the close, or it
   // should be Closing if the developer initiated the close.
   if (state_ != State::kShowing && state_ != State::kClosing)
@@ -300,6 +265,10 @@ void Notification::DispatchCloseEvent() {
 
   state_ = State::kClosed;
   DispatchEvent(Event::Create(EventTypeNames::close));
+}
+
+void Notification::DispatchErrorEvent() {
+  DispatchEvent(Event::Create(EventTypeNames::error));
 }
 
 String Notification::title() const {
@@ -496,8 +465,6 @@ const AtomicString& Notification::InterfaceName() const {
 
 void Notification::ContextDestroyed(ExecutionContext*) {
   listener_binding_.Close();
-
-  GetWebNotificationManager()->NotifyDelegateDestroyed(this);
 
   state_ = State::kClosed;
 

@@ -10,7 +10,6 @@
 
 #include <memory>
 #include <set>
-#include <unordered_map>
 #include <vector>
 
 #include "base/containers/id_map.h"
@@ -20,7 +19,6 @@
 #include "content/public/renderer/worker_thread.h"
 #include "content/renderer/notifications/notification_dispatcher.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationManager.h"
-#include "url/gurl.h"
 
 namespace content {
 
@@ -40,11 +38,6 @@ class NotificationManager : public blink::WebNotificationManager,
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
 
-  void Show(
-      const blink::WebSecurityOrigin& origin,
-      const blink::WebNotificationData& notification_data,
-      std::unique_ptr<blink::WebNotificationResources> notification_resources,
-      blink::WebNotificationDelegate* delegate) override;
   void ShowPersistent(
       const blink::WebSecurityOrigin& origin,
       const blink::WebNotificationData& notification_data,
@@ -55,12 +48,9 @@ class NotificationManager : public blink::WebNotificationManager,
       const blink::WebString& filter_tag,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       std::unique_ptr<blink::WebNotificationGetCallbacks> callbacks) override;
-  void Close(blink::WebNotificationDelegate* delegate) override;
   void ClosePersistent(const blink::WebSecurityOrigin& origin,
                        const blink::WebString& tag,
                        const blink::WebString& notification_id) override;
-  void NotifyDelegateDestroyed(
-      blink::WebNotificationDelegate* delegate) override;
 
   // Called by the NotificationDispatcher.
   bool OnMessageReceived(const IPC::Message& message);
@@ -70,10 +60,7 @@ class NotificationManager : public blink::WebNotificationManager,
                       NotificationDispatcher* notification_dispatcher);
 
   // IPC message handlers.
-  void OnDidShow(int request_id);
   void OnDidShowPersistent(int request_id, bool success);
-  void OnDidClose(int request_id);
-  void OnDidClick(int request_id);
   void OnDidGetNotifications(
       int request_id,
       const std::vector<PersistentNotificationInfo>& notification_infos);
@@ -88,22 +75,6 @@ class NotificationManager : public blink::WebNotificationManager,
   // Tracks pending requests for displaying persistent notifications.
   base::IDMap<std::unique_ptr<blink::WebNotificationShowCallbacks>>
       pending_show_notification_requests_;
-
-  // Structure holding the information for active non-persistent notifications.
-  struct ActiveNotificationData {
-    ActiveNotificationData() = default;
-    ActiveNotificationData(blink::WebNotificationDelegate* delegate,
-                           const GURL& origin,
-                           const std::string& tag);
-    ~ActiveNotificationData();
-
-    blink::WebNotificationDelegate* delegate = nullptr;
-    GURL origin;
-    std::string tag;
-  };
-
-  // Map to store the delegate associated with a notification request Id.
-  std::unordered_map<int, ActiveNotificationData> active_page_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationManager);
 };

@@ -15,7 +15,6 @@
 
 namespace blink {
 
-class WebNotificationDelegate;
 class WebSecurityOrigin;
 class WebServiceWorkerRegistration;
 
@@ -33,13 +32,6 @@ using WebNotificationShowCallbacks = WebCallbacks<void, void>;
 class WebNotificationManager {
  public:
   virtual ~WebNotificationManager() = default;
-
-  // Shows a page notification on the user's system. These notifications will
-  // have their events delivered to the delegate specified in this call.
-  virtual void Show(const WebSecurityOrigin&,
-                    const WebNotificationData&,
-                    std::unique_ptr<WebNotificationResources>,
-                    WebNotificationDelegate*) = 0;
 
   // Shows a persistent notification on the user's system. These notifications
   // will have their events delivered to a Service Worker rather than the
@@ -61,17 +53,10 @@ class WebNotificationManager {
       WebServiceWorkerRegistration*,
       std::unique_ptr<WebNotificationGetCallbacks>) = 0;
 
-  // Closes a notification previously shown, and removes it if being shown.
-  virtual void Close(WebNotificationDelegate*) = 0;
-
   // Closes a persistent notification identified by its notification Id.
   virtual void ClosePersistent(const WebSecurityOrigin&,
                                const WebString& tag,
                                const WebString& notification_id) = 0;
-
-  // Indicates that the delegate object is being destroyed, and must no longer
-  // be used by the embedder to dispatch events.
-  virtual void NotifyDelegateDestroyed(WebNotificationDelegate*) = 0;
 };
 
 }  // namespace blink

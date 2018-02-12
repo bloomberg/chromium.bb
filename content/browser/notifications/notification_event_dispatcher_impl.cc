@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "content/browser/notifications/notification_message_filter.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
-#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
@@ -413,24 +412,6 @@ void NotificationEventDispatcherImpl::DispatchNotificationCloseEvent(
       repeating_callback /* notification_error_callback */);
 }
 
-void NotificationEventDispatcherImpl::RegisterNonPersistentNotification(
-    const std::string& notification_id,
-    int renderer_id,
-    int request_id) {
-  if (request_ids_.count(notification_id) &&
-      request_ids_[notification_id] != request_id) {
-    // Dispatch the close event for any previously displayed notification with
-    // the same notification id. This happens whenever a non-persistent
-    // notification is replaced (by creating another with the same tag), since
-    // from the JavaScript point of view there will be two notification objects,
-    // and the old one needs to receive a close event before the new one
-    // receives a show event.
-    DispatchNonPersistentCloseEvent(notification_id);
-  }
-  renderer_ids_[notification_id] = renderer_id;
-  request_ids_[notification_id] = request_id;
-}
-
 void NotificationEventDispatcherImpl::RegisterNonPersistentNotificationListener(
     const std::string& notification_id,
     blink::mojom::NonPersistentNotificationListenerPtrInfo listener_ptr_info) {
@@ -461,88 +442,24 @@ void NotificationEventDispatcherImpl::RegisterNonPersistentNotificationListener(
 
 void NotificationEventDispatcherImpl::DispatchNonPersistentShowEvent(
     const std::string& notification_id) {
-  if (non_persistent_notification_listeners_.count(notification_id)) {
-    non_persistent_notification_listeners_[notification_id]->OnShow();
+  if (!non_persistent_notification_listeners_.count(notification_id))
     return;
-  }
-  // TODO(https://crbug.com/796990): Delete the legacy IPC code below, once
-  // fully migrated to mojo for non-persistent notifications.
-  if (!renderer_ids_.count(notification_id))
-    return;
-  DCHECK(request_ids_.count(notification_id));
-
-  RenderProcessHost* sender =
-      RenderProcessHost::FromID(renderer_ids_[notification_id]);
-  if (!sender)
-    return;
-
-  sender->Send(
-      new PlatformNotificationMsg_DidShow(request_ids_[notification_id]));
+  non_persistent_notification_listeners_[notification_id]->OnShow();
 }
 
 void NotificationEventDispatcherImpl::DispatchNonPersistentClickEvent(
     const std::string& notification_id) {
-  if (non_persistent_notification_listeners_.count(notification_id)) {
-    non_persistent_notification_listeners_[notification_id]->OnClick();
+  if (!non_persistent_notification_listeners_.count(notification_id))
     return;
-  }
-  // TODO(https://crbug.com/796990): Delete the legacy IPC code below, once
-  // fully migrated to mojo for non-persistent notifications.
-  if (!renderer_ids_.count(notification_id))
-    return;
-  DCHECK(request_ids_.count(notification_id));
-
-  RenderProcessHost* sender =
-      RenderProcessHost::FromID(renderer_ids_[notification_id]);
-
-  // This can happen when a notification is clicked by the user but the
-  // renderer does not exist any more, for example because the tab has been
-  // closed.
-  if (!sender)
-    return;
-  sender->Send(
-      new PlatformNotificationMsg_DidClick(request_ids_[notification_id]));
+  non_persistent_notification_listeners_[notification_id]->OnClick();
 }
 
 void NotificationEventDispatcherImpl::DispatchNonPersistentCloseEvent(
     const std::string& notification_id) {
-  if (non_persistent_notification_listeners_.count(notification_id)) {
-    non_persistent_notification_listeners_[notification_id]->OnClose();
-    non_persistent_notification_listeners_.erase(notification_id);
+  if (!non_persistent_notification_listeners_.count(notification_id))
     return;
-  }
-  // TODO(https://crbug.com/796990): Delete the legacy IPC code below, once
-  // fully migrated to mojo for non-persistent notifications.
-  if (!renderer_ids_.count(notification_id))
-    return;
-  DCHECK(request_ids_.count(notification_id));
-
-  RenderProcessHost* sender =
-      RenderProcessHost::FromID(renderer_ids_[notification_id]);
-
-  // This can happen when a notification is closed by the user but the
-  // renderer does not exist any more, for example because the tab has been
-  // closed.
-  if (!sender)
-    return;
-
-  sender->Send(
-      new PlatformNotificationMsg_DidClose(request_ids_[notification_id]));
-
-  // No interaction will follow anymore once the notification has been closed.
-  request_ids_.erase(notification_id);
-  renderer_ids_.erase(notification_id);
-}
-
-void NotificationEventDispatcherImpl::RendererGone(int renderer_id) {
-  for (auto iter = renderer_ids_.begin(); iter != renderer_ids_.end();) {
-    if (iter->second == renderer_id) {
-      request_ids_.erase(iter->first);
-      iter = renderer_ids_.erase(iter);
-    } else {
-      iter++;
-    }
-  }
+  non_persistent_notification_listeners_[notification_id]->OnClose();
+  non_persistent_notification_listeners_.erase(notification_id);
 }
 
 void NotificationEventDispatcherImpl::
