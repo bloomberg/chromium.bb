@@ -52,11 +52,6 @@ class CONTENT_EXPORT DOMStorageArea
   // aggressive flushing will commence.
   static void EnableAggressiveCommitDelay();
 
-  // Local storage. Backed on disk if directory is nonempty.
-  DOMStorageArea(const GURL& origin,
-                 const base::FilePath& directory,
-                 DOMStorageTaskRunner* task_runner);
-
   // Session storage. Backed on disk if |session_storage_backing| is not NULL.
   DOMStorageArea(const std::string& namespace_id,
                  std::vector<std::string> original_namespace_ids,
@@ -96,10 +91,6 @@ class CONTENT_EXPORT DOMStorageArea
   // when only keys are stored.
   void SetCacheOnlyKeys(bool value);
 
-  // Similar to Clear() but more optimized for just deleting
-  // without raising events.
-  void DeleteOrigin();
-
   // Frees up memory when possible. Typically, this method returns
   // the object to its just constructed state, however if uncommitted
   // changes are pending, it does nothing.
@@ -126,7 +117,6 @@ class CONTENT_EXPORT DOMStorageArea
   FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, TestDatabaseFilePath);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaParamTest, CommitTasks);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaParamTest, CommitChangesAtShutdown);
-  FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaParamTest, DeleteOrigin);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaParamTest, PurgeMemory);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageAreaTest, RateLimiter);
   FRIEND_TEST_ALL_PREFIXES(DOMStorageContextImplTest, PersistentIds);
@@ -219,7 +209,6 @@ class CONTENT_EXPORT DOMStorageArea
   std::string namespace_id_;
   std::vector<std::string> original_namespace_ids_;
   GURL origin_;
-  base::FilePath directory_;
   scoped_refptr<DOMStorageTaskRunner> task_runner_;
   LoadState desired_load_state_;
   LoadState load_state_;

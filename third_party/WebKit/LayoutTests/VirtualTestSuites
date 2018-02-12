@@ -449,16 +449,6 @@
     "args": ["--enable-blink-features=FeaturePolicyExperimentalFeatures"]
   },
   {
-    "prefix": "mojo-localstorage",
-    "base": "external/wpt/webstorage",
-    "args": ["--disable-mojo-local-storage"]
-  },
-  {
-    "prefix": "mojo-localstorage",
-    "base": "storage/domstorage/localstorage",
-    "args": ["--disable-mojo-local-storage"]
-  },
-  {
     "prefix": "print_browser",
     "base": "print_testharness",
     "args": ["--enable-print-browser"]

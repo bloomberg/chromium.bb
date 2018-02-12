@@ -1014,8 +1014,6 @@ virtual/layout_ng/external/wpt/css/CSS2/normal-flow/inline-replaced-height-008.x
 virtual/mojo-blobs/external/wpt/FileAPI/FileReader/test_securityerrors-manual.html [ WontFix ]
 virtual/mojo-blobs/external/wpt/FileAPI/FileReader/test_notreadableerrors-manual.html [ WontFix ]
 virtual/mojo-blobs/external/wpt/FileAPI/url/url_createobjecturl_file_img-manual.html [ WontFix ]
-virtual/mojo-localstorage/external/wpt/webstorage/storage_local-manual.html [ WontFix ]
-virtual/mojo-localstorage/external/wpt/webstorage/storage_session-manual.html [ WontFix ]
 
 # CSS tests that were imported with the big directory rename and initially
 # failing. Some are probably for features not supported, while some represent

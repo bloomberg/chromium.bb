@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "content/browser/dom_storage/dom_storage_namespace.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
-#include "content/browser/dom_storage/local_storage_database_adapter.h"
 #include "content/browser/dom_storage/session_storage_database.h"
 #include "content/browser/dom_storage/session_storage_database_adapter.h"
 #include "content/browser/leveldb_wrapper_impl.h"
@@ -110,34 +109,6 @@ GURL DOMStorageArea::OriginFromDatabaseFileName(const base::FilePath& name) {
 void DOMStorageArea::EnableAggressiveCommitDelay() {
   s_aggressive_flushing_enabled_ = true;
   LevelDBWrapperImpl::EnableAggressiveCommitDelay();
-}
-
-DOMStorageArea::DOMStorageArea(const GURL& origin,
-                               const base::FilePath& directory,
-                               DOMStorageTaskRunner* task_runner)
-    : origin_(origin),
-      directory_(directory),
-      task_runner_(task_runner),
-#if defined(OS_ANDROID)
-      desired_load_state_(directory.empty() ? LOAD_STATE_KEYS_AND_VALUES
-                                            : LOAD_STATE_KEYS_ONLY),
-#else
-      desired_load_state_(LOAD_STATE_KEYS_AND_VALUES),
-#endif
-      load_state_(directory.empty() ? LOAD_STATE_KEYS_AND_VALUES
-                                    : LOAD_STATE_UNLOADED),
-      map_(new DOMStorageMap(
-          kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
-          desired_load_state_ == LOAD_STATE_KEYS_ONLY)),
-      is_shutdown_(false),
-      start_time_(base::TimeTicks::Now()),
-      data_rate_limiter_(kMaxBytesPerHour, base::TimeDelta::FromHours(1)),
-      commit_rate_limiter_(kMaxCommitsPerHour, base::TimeDelta::FromHours(1)) {
-  DCHECK(namespace_id_.empty());
-  if (!directory.empty()) {
-    base::FilePath path = directory.Append(DatabaseFileNameFromOrigin(origin_));
-    backing_.reset(new LocalStorageDatabaseAdapter(path));
-  }
 }
 
 DOMStorageArea::DOMStorageArea(const std::string& namespace_id,
@@ -355,29 +326,6 @@ void DOMStorageArea::SetCacheOnlyKeys(bool only_keys) {
     UnloadMapIfDesired();
 }
 
-void DOMStorageArea::DeleteOrigin() {
-  DCHECK(!is_shutdown_);
-  // This function shouldn't be called for sessionStorage.
-  DCHECK(!session_storage_backing_.get());
-  if (HasUncommittedChanges()) {
-    // TODO(michaeln): This logically deletes the data immediately,
-    // and in a matter of a second, deletes the rows from the backing
-    // database file, but the file itself will linger until shutdown
-    // or purge time. Ideally, this should delete the file more
-    // quickly.
-    Clear();
-    return;
-  }
-  map_ = new DOMStorageMap(
-      kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance,
-      desired_load_state_ == LOAD_STATE_KEYS_ONLY);
-  if (backing_) {
-    load_state_ = LOAD_STATE_UNLOADED;
-    backing_->Reset();
-    backing_->DeleteFiles();
-  }
-}
-
 void DOMStorageArea::PurgeMemory() {
   DCHECK(!is_shutdown_);
 
@@ -481,11 +429,6 @@ void DOMStorageArea::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd) {
     if (system_allocator_name)
       pmd->AddSuballocation(commit_batch_mad->guid(), system_allocator_name);
   }
-
-  // Report memory usage for local storage backing. The session storage usage
-  // will be reported by DOMStorageContextImpl.
-  if (namespace_id_.empty() && backing_)
-    backing_->ReportMemoryUsage(pmd, name + "/local_storage");
 
   // Do not add storage map usage if less than 1KB.
   if (map_->memory_used() < 1024)

@@ -77,7 +77,6 @@ Bug(none) virtual/layout_ng/ [ Skip ]
 Bug(none) virtual/linux-subpixel/ [ Skip ]
 Bug(none) virtual/mac-antialiasedtext/ [ Skip ]
 Bug(none) virtual/media-gpu-accelerated/ [ Skip ]
-Bug(none) virtual/mojo-localstorage/ [ Skip ]
 Bug(none) virtual/mouseevent_fractional/ [ Skip ]
 
 Bug(none) virtual/mse-1mb-buffers/ [ Skip ]

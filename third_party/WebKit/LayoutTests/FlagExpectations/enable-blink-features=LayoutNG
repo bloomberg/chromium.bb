@@ -6748,7 +6748,6 @@ crbug.com/591099 virtual/incremental-shadow-dom/shadow-dom/slotted-pseudo-elemen
 crbug.com/591099 virtual/incremental-shadow-dom/shadow-dom/slotted-pseudo-element-shared-style.html [ Pass ]
 crbug.com/591099 virtual/incremental-shadow-dom/shadow-dom/slotted-pseudo-element.html [ Pass ]
 crbug.com/591099 virtual/layout_ng/ [ Skip ]
-crbug.com/591099 virtual/mojo-localstorage/ [ Skip ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/anchor-empty-focus.html [ Failure ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/autoscroll-in-textfield.html [ Failure ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/autoscroll-nonscrollable-iframe-in-scrollable-div.html [ Failure ]

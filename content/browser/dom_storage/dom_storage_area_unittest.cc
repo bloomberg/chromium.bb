@@ -18,10 +18,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
-#include "content/browser/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_database_adapter.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
-#include "content/browser/dom_storage/local_storage_database_adapter.h"
 #include "content/browser/dom_storage/session_storage_database.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -74,20 +72,6 @@ class DOMStorageAreaTest : public testing::Test {
     EXPECT_TRUE(area->HasCommitBatchInFlight());
     EXPECT_TRUE(area->HasUncommittedChanges());
   }
-
-  // Class used in the CommitChangesAtShutdown test case.
-  class VerifyChangesCommittedDatabase : public DOMStorageDatabase {
-   public:
-    VerifyChangesCommittedDatabase() {}
-    ~VerifyChangesCommittedDatabase() override {
-      const base::string16 kKey(ASCIIToUTF16("key"));
-      const base::string16 kValue(ASCIIToUTF16("value"));
-      DOMStorageValuesMap values;
-      ReadAllValues(&values);
-      EXPECT_EQ(1u, values.size());
-      EXPECT_EQ(kValue, values[kKey].string());
-    }
-  };
 
  private:
   base::MessageLoop message_loop_;
@@ -174,15 +158,6 @@ TEST_F(DOMStorageAreaTest, BackingDatabaseOpened) {
   const base::FilePath kExpectedOriginFilePath = temp_dir.GetPath().Append(
       DOMStorageArea::DatabaseFileNameFromOrigin(kOrigin));
 
-  // No directory, backing should be null.
-  {
-    scoped_refptr<DOMStorageArea> area(
-        new DOMStorageArea(kOrigin, base::FilePath(), nullptr));
-    EXPECT_EQ(nullptr, area->backing_.get());
-    EXPECT_EQ(DOMStorageArea::LOAD_STATE_KEYS_AND_VALUES, area->load_state_);
-    EXPECT_FALSE(base::PathExists(kExpectedOriginFilePath));
-  }
-
   // Valid directory and origin but no session storage backing. Backing should
   // be null.
   {
@@ -198,44 +173,6 @@ TEST_F(DOMStorageAreaTest, BackingDatabaseOpened) {
     // Check that saving a value has still left us without a backing database.
     EXPECT_EQ(nullptr, area->backing_.get());
     EXPECT_FALSE(base::PathExists(kExpectedOriginFilePath));
-  }
-
-  // This should set up a DOMStorageArea that is correctly backed to disk.
-  {
-    scoped_refptr<DOMStorageArea> area(
-        new DOMStorageArea(kOrigin, temp_dir.GetPath(),
-                           new MockDOMStorageTaskRunner(
-                               base::ThreadTaskRunnerHandle::Get().get())));
-
-    EXPECT_TRUE(area->backing_.get());
-    DOMStorageDatabase* database = static_cast<LocalStorageDatabaseAdapter*>(
-        area->backing_.get())->db_.get();
-    EXPECT_FALSE(database->IsOpen());
-    EXPECT_EQ(DOMStorageArea::LOAD_STATE_UNLOADED, area->load_state_);
-
-    // Inject an in-memory db to speed up the test.
-    // We will verify that something is written into the database but not
-    // that a file is written to disk - DOMStorageDatabase unit tests cover
-    // that.
-    area->backing_.reset(new LocalStorageDatabaseAdapter());
-
-    // Need to write something to ensure that the database is created.
-    base::NullableString16 old_value;
-    EXPECT_TRUE(area->SetItem(kKey, kValue, old_value, &old_value));
-    ASSERT_TRUE(old_value.is_null());
-    EXPECT_EQ(area->desired_load_state_, area->load_state_);
-    EXPECT_TRUE(area->GetCurrentCommitBatch());
-    EXPECT_FALSE(area->HasCommitBatchInFlight());
-
-    base::RunLoop().RunUntilIdle();
-
-    EXPECT_FALSE(area->GetCurrentCommitBatch());
-    EXPECT_FALSE(area->HasCommitBatchInFlight());
-    database = static_cast<LocalStorageDatabaseAdapter*>(
-        area->backing_.get())->db_.get();
-    EXPECT_TRUE(database->IsOpen());
-    EXPECT_EQ(1u, area->Length());
-    EXPECT_EQ(kKey, area->Key(0).string());
   }
 }
 
@@ -335,17 +272,17 @@ TEST_F(DOMStorageAreaTest, SetCacheOnlyKeysWithoutBacking) {
 }
 
 TEST_F(DOMStorageAreaTest, SetCacheOnlyKeysWithBacking) {
+  const std::string kNamespaceId = "id1";
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const base::FilePath kExpectedOriginFilePath = temp_dir.GetPath().Append(
-      DOMStorageArea::DatabaseFileNameFromOrigin(kOrigin));
+  scoped_refptr<SessionStorageDatabase> db = new SessionStorageDatabase(
+      temp_dir.GetPath(), base::ThreadTaskRunnerHandle::Get());
   scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
-      kOrigin, temp_dir.GetPath(),
+      kNamespaceId, std::vector<std::string>(), kOrigin, db.get(),
       new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get())));
 
   EXPECT_TRUE(area->backing_.get());
   EXPECT_EQ(DOMStorageArea::LOAD_STATE_UNLOADED, area->load_state_);
-  area->backing_.reset(new LocalStorageDatabaseAdapter());
 
 #if !defined(OS_ANDROID)
   EXPECT_EQ(DOMStorageArea::LOAD_STATE_KEYS_AND_VALUES,
@@ -409,14 +346,15 @@ TEST_F(DOMStorageAreaTest, SetCacheOnlyKeysWithBacking) {
 }
 
 TEST_P(DOMStorageAreaParamTest, CommitTasks) {
+  const std::string kNamespaceId = "id1";
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-
+  scoped_refptr<SessionStorageDatabase> db = new SessionStorageDatabase(
+      temp_dir.GetPath(), base::ThreadTaskRunnerHandle::Get());
   scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
-      kOrigin, temp_dir.GetPath(),
+      kNamespaceId, std::vector<std::string>(), kOrigin, db.get(),
       new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get())));
-  // Inject an in-memory db to speed up the test.
-  area->backing_.reset(new LocalStorageDatabaseAdapter());
+
   area->SetCacheOnlyKeys(GetParam());
 
   // Unrelated to commits, but while we're here, see that querying Length()
@@ -487,16 +425,15 @@ TEST_P(DOMStorageAreaParamTest, CommitTasks) {
 }
 
 TEST_P(DOMStorageAreaParamTest, CommitChangesAtShutdown) {
+  const std::string kNamespaceId = "id1";
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  scoped_refptr<SessionStorageDatabase> db = new SessionStorageDatabase(
+      temp_dir.GetPath(), base::ThreadTaskRunnerHandle::Get());
   scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
-      kOrigin, temp_dir.GetPath(),
+      kNamespaceId, std::vector<std::string>(), kOrigin, db.get(),
       new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get())));
 
-  // Inject an in-memory db to speed up the test and also to verify
-  // the final changes are commited in it's dtor.
-  static_cast<LocalStorageDatabaseAdapter*>(area->backing_.get())->db_.reset(
-      new VerifyChangesCommittedDatabase());
   area->SetCacheOnlyKeys(GetParam());
 
   DOMStorageValuesMap values;
@@ -509,101 +446,35 @@ TEST_P(DOMStorageAreaParamTest, CommitChangesAtShutdown) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(area->HasOneRef());
   EXPECT_FALSE(area->backing_.get());
-  // The VerifyChangesCommittedDatabase destructor verifies values
-  // were committed.
 
-  // A second Shutdown call should be safe.
-  area->Shutdown();
-}
-
-TEST_P(DOMStorageAreaParamTest, DeleteOrigin) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
-      kOrigin, temp_dir.GetPath(),
-      new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get())));
-  area->SetCacheOnlyKeys(GetParam());
-
-  // This test puts files on disk.
-  base::FilePath db_file_path = static_cast<LocalStorageDatabaseAdapter*>(
-      area->backing_.get())->db_->file_path();
-  base::FilePath db_journal_file_path =
-      DOMStorageDatabase::GetJournalFilePath(db_file_path);
-
-  // Nothing bad should happen when invoked w/o any files on disk.
-  area->DeleteOrigin();
-  EXPECT_FALSE(base::PathExists(db_file_path));
-
-  // Commit something in the database and then delete.
-  base::NullableString16 old_value;
-  area->SetItem(kKey, kValue, old_value, &old_value);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(base::PathExists(db_file_path));
-  area->DeleteOrigin();
-  EXPECT_EQ(0u, area->Length());
-  EXPECT_FALSE(base::PathExists(db_file_path));
-  EXPECT_FALSE(base::PathExists(db_journal_file_path));
-
-  // Put some uncommitted changes to a non-existing database in
-  // and then delete. No file ever gets created in this case.
-  area->SetItem(kKey, kValue, old_value, &old_value);
-  EXPECT_TRUE(area->HasUncommittedChanges());
-  EXPECT_EQ(1u, area->Length());
-  area->DeleteOrigin();
-  EXPECT_TRUE(area->HasUncommittedChanges());
-  EXPECT_EQ(0u, area->Length());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(area->HasUncommittedChanges());
-  EXPECT_FALSE(base::PathExists(db_file_path));
-
-  // Put some uncommitted changes to a an existing database in
-  // and then delete.
-  area->SetItem(kKey, kValue, old_value, &old_value);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(base::PathExists(db_file_path));
-  area->SetItem(kKey2, kValue2, old_value, &old_value);
-  EXPECT_TRUE(area->HasUncommittedChanges());
-  EXPECT_EQ(2u, area->Length());
-  area->DeleteOrigin();
-  EXPECT_TRUE(area->HasUncommittedChanges());
-  EXPECT_EQ(0u, area->Length());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(area->HasUncommittedChanges());
-  // Since the area had uncommitted changes at the time delete
-  // was called, the file will linger until the shutdown time.
-  EXPECT_TRUE(base::PathExists(db_file_path));
-  area->Shutdown();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(base::PathExists(db_file_path));
+  // Verify changes were committed.
+  db->ReadAreaValues(kNamespaceId, std::vector<std::string>(), kOrigin,
+                     &values);
+  EXPECT_EQ(1u, values.size());
+  EXPECT_EQ(kValue, values[kKey].string());
 
   // A second Shutdown call should be safe.
   area->Shutdown();
 }
 
 TEST_P(DOMStorageAreaParamTest, PurgeMemory) {
+  const std::string kNamespaceId = "id1";
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  scoped_refptr<SessionStorageDatabase> db = new SessionStorageDatabase(
+      temp_dir.GetPath(), base::ThreadTaskRunnerHandle::Get());
   scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
-      kOrigin, temp_dir.GetPath(),
+      kNamespaceId, std::vector<std::string>(), kOrigin, db.get(),
       new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get())));
   area->SetCacheOnlyKeys(GetParam());
 
-  // Inject an in-memory db to speed up the test.
-  area->backing_.reset(new LocalStorageDatabaseAdapter());
-
-  // Unowned ptrs we use to verify that 'purge' has happened.
-  DOMStorageDatabase* original_backing =
-      static_cast<LocalStorageDatabaseAdapter*>(
-          area->backing_.get())->db_.get();
+  // Unowned ptr we use to verify that 'purge' has happened.
   DOMStorageMap* original_map = area->map_.get();
 
   // Should do no harm when called on a newly constructed object.
   EXPECT_EQ(DOMStorageArea::LOAD_STATE_UNLOADED, area->load_state_);
   area->PurgeMemory();
   EXPECT_EQ(DOMStorageArea::LOAD_STATE_UNLOADED, area->load_state_);
-  DOMStorageDatabase* new_backing = static_cast<LocalStorageDatabaseAdapter*>(
-      area->backing_.get())->db_.get();
-  EXPECT_EQ(original_backing, new_backing);
   EXPECT_EQ(original_map, area->map_.get());
 
   // Should not do anything when commits are pending.
@@ -615,26 +486,17 @@ TEST_P(DOMStorageAreaParamTest, PurgeMemory) {
   area->PurgeMemory();
   EXPECT_EQ(area->desired_load_state_, area->load_state_);
   EXPECT_TRUE(area->HasUncommittedChanges());
-  new_backing = static_cast<LocalStorageDatabaseAdapter*>(
-      area->backing_.get())->db_.get();
-  EXPECT_EQ(original_backing, new_backing);
   EXPECT_EQ(original_map, area->map_.get());
 
   // Commit the changes from above,
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(area->HasUncommittedChanges());
-  new_backing = static_cast<LocalStorageDatabaseAdapter*>(
-      area->backing_.get())->db_.get();
-  EXPECT_EQ(original_backing, new_backing);
   EXPECT_EQ(original_map, area->map_.get());
 
   // Should drop caches and reset database connections
   // when invoked on an area that's loaded up primed.
   area->PurgeMemory();
   EXPECT_EQ(DOMStorageArea::LOAD_STATE_UNLOADED, area->load_state_);
-  new_backing = static_cast<LocalStorageDatabaseAdapter*>(
-      area->backing_.get())->db_.get();
-  EXPECT_NE(original_backing, new_backing);
   EXPECT_NE(original_map, area->map_.get());
 }
 
@@ -642,46 +504,22 @@ TEST_F(DOMStorageAreaTest, DatabaseFileNames) {
   struct {
     const char* origin;
     const char* file_name;
-    const char* journal_file_name;
   } kCases[] = {
-    { "https://www.google.com/",
-      "https_www.google.com_0.localstorage",
-      "https_www.google.com_0.localstorage-journal" },
-    { "http://www.google.com:8080/",
-      "http_www.google.com_8080.localstorage",
-      "http_www.google.com_8080.localstorage-journal" },
-    { "file:///",
-      "file__0.localstorage",
-      "file__0.localstorage-journal" },
+      {"https://www.google.com/", "https_www.google.com_0.localstorage"},
+      {"http://www.google.com:8080/", "http_www.google.com_8080.localstorage"},
+      {"file:///", "file__0.localstorage"},
   };
 
   for (size_t i = 0; i < arraysize(kCases); ++i) {
     GURL origin = GURL(kCases[i].origin).GetOrigin();
     base::FilePath file_name =
         base::FilePath().AppendASCII(kCases[i].file_name);
-    base::FilePath journal_file_name =
-        base::FilePath().AppendASCII(kCases[i].journal_file_name);
 
     EXPECT_EQ(file_name,
               DOMStorageArea::DatabaseFileNameFromOrigin(origin));
     EXPECT_EQ(origin,
               DOMStorageArea::OriginFromDatabaseFileName(file_name));
-    EXPECT_EQ(journal_file_name,
-              DOMStorageDatabase::GetJournalFilePath(file_name));
   }
-
-  // Also test some DOMStorageDatabase::GetJournalFilePath cases here.
-  base::FilePath parent = base::FilePath().AppendASCII("a").AppendASCII("b");
-  EXPECT_EQ(
-      parent.AppendASCII("file-journal"),
-      DOMStorageDatabase::GetJournalFilePath(parent.AppendASCII("file")));
-  EXPECT_EQ(
-      base::FilePath().AppendASCII("-journal"),
-      DOMStorageDatabase::GetJournalFilePath(base::FilePath()));
-  EXPECT_EQ(
-      base::FilePath().AppendASCII(".extensiononly-journal"),
-      DOMStorageDatabase::GetJournalFilePath(
-          base::FilePath().AppendASCII(".extensiononly")));
 }
 
 TEST_F(DOMStorageAreaTest, RateLimiter) {

@@ -17,8 +17,6 @@ using blink::WebStorageNamespace;
 
 namespace content {
 
-WebStorageNamespaceImpl::WebStorageNamespaceImpl() {}
-
 WebStorageNamespaceImpl::WebStorageNamespaceImpl(
     const std::string& namespace_id)
     : namespace_id_(namespace_id) {

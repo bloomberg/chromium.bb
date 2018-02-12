@@ -987,7 +987,7 @@ virtual/media-gpu-accelerated/external/wpt/media-source/mediasource-config-chang
 
 virtual/layout_ng/fast/block/margin-collapse/019.html
 virtual/mojo-loading/http/tests/htmlimports/csp-block-import.html
-virtual/mojo-localstorage/external/wpt/webstorage/storage_enumerate.html
+external/wpt/webstorage/storage_enumerate.html
 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scroll-corner-crash.html
 virtual/prefer_compositing_to_lcd_text/scrollbars/viewport-scrollbar-corner-with-percent-padding-crash.html
 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-overflow-auto-display-none-in-parent.html

@@ -14,9 +14,6 @@ namespace content {
 
 class WebStorageNamespaceImpl : public blink::WebStorageNamespace {
  public:
-  // The default constructor creates a local storage namespace, the second
-  // constructor should be used for session storage namepaces.
-  WebStorageNamespaceImpl();
   explicit WebStorageNamespaceImpl(const std::string& namespace_id);
   ~WebStorageNamespaceImpl() override;
 

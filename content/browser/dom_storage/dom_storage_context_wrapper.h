@@ -89,7 +89,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   friend class SessionStorageNamespaceImpl;  // ditto
   friend class DOMStorageSession;            // ditto
   friend class base::RefCountedThreadSafe<DOMStorageContextWrapper>;
-  friend class MojoDOMStorageBrowserTest;
+  friend class DOMStorageBrowserTest;
 
   ~DOMStorageContextWrapper() override;
   DOMStorageContextImpl* context() const { return context_.get(); }
@@ -116,6 +116,8 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   LocalStorageContextMojo* mojo_state_ = nullptr;
   SessionStorageContextMojo* mojo_session_state_ = nullptr;
   scoped_refptr<base::SequencedTaskRunner> mojo_task_runner_;
+
+  base::FilePath legacy_localstorage_path_;
 
   // To receive memory pressure signals.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;

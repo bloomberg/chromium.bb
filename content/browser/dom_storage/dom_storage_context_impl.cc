@@ -51,9 +51,6 @@ const size_t kMaxDomStorageCacheSize = 20 * 1024 * 1024;
 
 const int kSessionStoraceScavengingSeconds = 60;
 
-// An empty namespace is the local storage namespace.
-constexpr const char kLocalStorageNamespaceId[] = "";
-
 // Aggregates statistics from all the namespaces.
 DOMStorageNamespace::UsageStatistics GetTotalNamespaceStatistics(
     const DOMStorageContextImpl::StorageNamespaceMap& namespace_map) {
@@ -71,12 +68,10 @@ DOMStorageNamespace::UsageStatistics GetTotalNamespaceStatistics(
 }  // namespace
 
 DOMStorageContextImpl::DOMStorageContextImpl(
-    const base::FilePath& localstorage_directory,
     const base::FilePath& sessionstorage_directory,
     storage::SpecialStoragePolicy* special_storage_policy,
     scoped_refptr<DOMStorageTaskRunner> task_runner)
-    : localstorage_directory_(localstorage_directory),
-      sessionstorage_directory_(sessionstorage_directory),
+    : sessionstorage_directory_(sessionstorage_directory),
       task_runner_(std::move(task_runner)),
       is_shutdown_(false),
       force_keep_session_state_(false),
@@ -115,55 +110,9 @@ DOMStorageNamespace* DOMStorageContextImpl::GetStorageNamespace(
   if (is_shutdown_)
     return nullptr;
   StorageNamespaceMap::iterator found = namespaces_.find(namespace_id);
-  if (found == namespaces_.end()) {
-    if (namespace_id == kLocalStorageNamespaceId) {
-      if (!localstorage_directory_.empty()) {
-        if (!base::CreateDirectory(localstorage_directory_)) {
-          LOG(ERROR) << "Failed to create 'Local Storage' directory,"
-                        " falling back to in-memory only.";
-          localstorage_directory_ = base::FilePath();
-        }
-      }
-      DOMStorageNamespace* local =
-          new DOMStorageNamespace(localstorage_directory_, task_runner_.get());
-      namespaces_[kLocalStorageNamespaceId] = local;
-      return local;
-    }
+  if (found == namespaces_.end())
     return nullptr;
-  }
   return found->second.get();
-}
-
-void DOMStorageContextImpl::GetLocalStorageUsage(
-    std::vector<LocalStorageUsageInfo>* infos,
-    bool include_file_info) {
-  if (localstorage_directory_.empty()) {
-    DOMStorageNamespace* local = GetStorageNamespace(kLocalStorageNamespaceId);
-    std::vector<GURL> origins;
-    local->GetOriginsWithAreas(&origins);
-    for (const GURL& origin : origins) {
-      LocalStorageUsageInfo info;
-      info.origin = origin;
-      infos->push_back(info);
-    }
-    return;
-  }
-
-  base::FileEnumerator enumerator(localstorage_directory_, false,
-                                  base::FileEnumerator::FILES);
-  for (base::FilePath path = enumerator.Next(); !path.empty();
-       path = enumerator.Next()) {
-    if (path.MatchesExtension(DOMStorageArea::kDatabaseFileExtension)) {
-      LocalStorageUsageInfo info;
-      info.origin = DOMStorageArea::OriginFromDatabaseFileName(path);
-      if (include_file_info) {
-        base::FileEnumerator::FileInfo find_info = enumerator.GetInfo();
-        info.data_size = find_info.GetSize();
-        info.last_modified = find_info.GetLastModifiedTime();
-      }
-      infos->push_back(info);
-    }
-  }
 }
 
 void DOMStorageContextImpl::GetSessionStorageUsage(
@@ -196,16 +145,6 @@ void DOMStorageContextImpl::GetSessionStorageUsage(
       infos->push_back(info);
     }
   }
-}
-
-void DOMStorageContextImpl::DeleteLocalStorage(const GURL& origin_url) {
-  DOMStorageNamespace* local = GetStorageNamespace(kLocalStorageNamespaceId);
-  local->DeleteLocalStorageOrigin(origin_url);
-  // Synthesize a 'cleared' event if the area is open so CachedAreas in
-  // renderers get emptied out too.
-  DOMStorageArea* area = local->GetOpenStorageArea(origin_url);
-  if (area)
-    NotifyAreaCleared(area, origin_url);
 }
 
 void DOMStorageContextImpl::DeleteSessionStorage(
@@ -246,7 +185,7 @@ void DOMStorageContextImpl::Shutdown() {
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 
-  if (localstorage_directory_.empty() && !session_storage_database_.get())
+  if (!session_storage_database_.get())
     return;
 
   // Respect the content policy settings about what to
@@ -325,7 +264,7 @@ void DOMStorageContextImpl::CreateSessionNamespace(
     const std::string& namespace_id) {
   if (is_shutdown_)
     return;
-  DCHECK(namespace_id != kLocalStorageNamespaceId);
+  DCHECK(!namespace_id.empty());
   // There are many browser tests that 'quit and restore' the browser but not
   // the profile (and instead just reuse the old profile). This is unfortunate
   // and doesn't actually test the 'restore' feature of session storage.
@@ -338,7 +277,7 @@ void DOMStorageContextImpl::CreateSessionNamespace(
 void DOMStorageContextImpl::DeleteSessionNamespace(
     const std::string& namespace_id,
     bool should_persist_data) {
-  DCHECK_NE(kLocalStorageNamespaceId, namespace_id);
+  DCHECK(!namespace_id.empty());
   StorageNamespaceMap::const_iterator it = namespaces_.find(namespace_id);
   if (it == namespaces_.end())
     return;
@@ -370,8 +309,8 @@ void DOMStorageContextImpl::CloneSessionNamespace(
     const std::string& new_id) {
   if (is_shutdown_)
     return;
-  DCHECK_NE(kLocalStorageNamespaceId, existing_id);
-  DCHECK_NE(kLocalStorageNamespaceId, new_id);
+  DCHECK(!existing_id.empty());
+  DCHECK(!new_id.empty());
   StorageNamespaceMap::iterator found = namespaces_.find(existing_id);
   if (found != namespaces_.end()) {
     namespaces_[new_id] = found->second->Clone(new_id);
@@ -381,22 +320,6 @@ void DOMStorageContextImpl::CloneSessionNamespace(
 }
 
 void DOMStorageContextImpl::ClearSessionOnlyOrigins() {
-  if (!localstorage_directory_.empty()) {
-    std::vector<LocalStorageUsageInfo> infos;
-    const bool kDontIncludeFileInfo = false;
-    GetLocalStorageUsage(&infos, kDontIncludeFileInfo);
-    for (size_t i = 0; i < infos.size(); ++i) {
-      const GURL& origin = infos[i].origin;
-      if (special_storage_policy_->IsStorageProtected(origin))
-        continue;
-      if (!special_storage_policy_->IsStorageSessionOnly(origin))
-        continue;
-
-      base::FilePath database_file_path = localstorage_directory_.Append(
-          DOMStorageArea::DatabaseFileNameFromOrigin(origin));
-      sql::Connection::Delete(database_file_path);
-    }
-  }
   if (session_storage_database_.get()) {
     std::vector<SessionStorageUsageInfo> infos;
     GetSessionStorageUsage(&infos);

@@ -15,10 +15,6 @@
 
 namespace content {
 
-DOMStorageNamespace::DOMStorageNamespace(const base::FilePath& directory,
-                                         DOMStorageTaskRunner* task_runner)
-    : directory_(directory), task_runner_(task_runner) {}
-
 DOMStorageNamespace::DOMStorageNamespace(
     const std::string& namespace_id,
     SessionStorageDatabase* session_storage_database,
@@ -42,14 +38,9 @@ DOMStorageArea* DOMStorageNamespace::OpenStorageArea(const GURL& origin) {
     return holder->area_.get();
   }
   DOMStorageArea* area;
-  // An empty namespace means LocalStorage.
-  if (namespace_id_.empty()) {
-    area = new DOMStorageArea(origin, directory_, task_runner_.get());
-  } else {
-    area =
-        new DOMStorageArea(namespace_id_, std::vector<std::string>(), origin,
-                           session_storage_database_.get(), task_runner_.get());
-  }
+  area =
+      new DOMStorageArea(namespace_id_, std::vector<std::string>(), origin,
+                         session_storage_database_.get(), task_runner_.get());
   areas_[origin] = AreaHolder(area, 1);
   return area;
 }
@@ -96,20 +87,6 @@ DOMStorageNamespace* DOMStorageNamespace::Clone(
   return clone;
 }
 
-void DOMStorageNamespace::DeleteLocalStorageOrigin(const GURL& origin) {
-  DCHECK(!session_storage_database_.get());
-  AreaHolder* holder = GetAreaHolder(origin);
-  if (holder) {
-    holder->area_->DeleteOrigin();
-    return;
-  }
-  if (!directory_.empty()) {
-    scoped_refptr<DOMStorageArea> area =
-        new DOMStorageArea(origin, directory_, task_runner_.get());
-    area->DeleteOrigin();
-  }
-}
-
 void DOMStorageNamespace::DeleteSessionStorageOrigin(const GURL& origin) {
   DOMStorageArea* area = OpenStorageArea(origin);
   area->FastClear();
@@ -117,9 +94,6 @@ void DOMStorageNamespace::DeleteSessionStorageOrigin(const GURL& origin) {
 }
 
 void DOMStorageNamespace::PurgeMemory(bool aggressively) {
-  if (namespace_id_.empty() && directory_.empty())
-    return;  // We can't purge local storage w/o backing on disk.
-
   AreaMap::iterator it = areas_.begin();
   while (it != areas_.end()) {
     const AreaHolder& holder = it->second;

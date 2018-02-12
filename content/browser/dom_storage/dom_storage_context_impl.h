@@ -41,7 +41,6 @@ class DOMStorageNamespace;
 class DOMStorageSession;
 class DOMStorageTaskRunner;
 class SessionStorageDatabase;
-struct LocalStorageUsageInfo;
 struct SessionStorageUsageInfo;
 
 // The Context is the root of an object containment hierarchy for
@@ -107,18 +106,10 @@ class CONTENT_EXPORT DOMStorageContextImpl
     PURGE_AGGRESSIVE,
   };
 
-  // |localstorage_directory| and |sessionstorage_directory| may be empty
-  // for incognito browser contexts.
-  DOMStorageContextImpl(const base::FilePath& localstorage_directory,
-                        const base::FilePath& sessionstorage_directory,
+  // |sessionstorage_directory| may be empty for incognito browser contexts.
+  DOMStorageContextImpl(const base::FilePath& sessionstorage_directory,
                         storage::SpecialStoragePolicy* special_storage_policy,
                         scoped_refptr<DOMStorageTaskRunner> task_runner);
-
-  // Returns the directory path for localStorage, or an empty directory, if
-  // there is no backing on disk.
-  const base::FilePath& localstorage_directory() {
-    return localstorage_directory_;
-  }
 
   // Returns the directory path for sessionStorage, or an empty directory, if
   // there is no backing on disk.
@@ -129,10 +120,7 @@ class CONTENT_EXPORT DOMStorageContextImpl
   DOMStorageTaskRunner* task_runner() const { return task_runner_.get(); }
   DOMStorageNamespace* GetStorageNamespace(const std::string& namespace_id);
 
-  void GetLocalStorageUsage(std::vector<LocalStorageUsageInfo>* infos,
-                            bool include_file_info);
   void GetSessionStorageUsage(std::vector<SessionStorageUsageInfo>* infos);
-  void DeleteLocalStorage(const GURL& origin_url);
   void DeleteSessionStorage(const SessionStorageUsageInfo& usage_info);
 
   // Used by content settings to alter the behavior around
@@ -222,9 +210,6 @@ class CONTENT_EXPORT DOMStorageContextImpl
 
   // Collection of namespaces keyed by id.
   StorageNamespaceMap namespaces_;
-
-  // Where localstorage data is stored, maybe empty for the incognito use case.
-  base::FilePath localstorage_directory_;
 
   // Where sessionstorage data is stored, maybe empty for the incognito use
   // case. Always empty until the file-backed session storage feature is

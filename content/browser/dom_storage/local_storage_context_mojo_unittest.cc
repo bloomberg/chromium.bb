@@ -15,6 +15,7 @@
 #include "components/leveldb/public/cpp/util.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
+#include "content/browser/dom_storage/dom_storage_database.h"
 #include "content/browser/dom_storage/dom_storage_namespace.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/common/dom_storage/dom_storage_types.h"
@@ -160,8 +161,8 @@ class LocalStorageContextMojoTest : public testing::Test {
             base::ThreadTaskRunnerHandle::Get().get())),
         mock_special_storage_policy_(new MockSpecialStoragePolicy()) {
     EXPECT_TRUE(temp_path_.CreateUniqueTempDir());
-    dom_storage_context_ = new DOMStorageContextImpl(
-        temp_path_.GetPath(), base::FilePath(), nullptr, task_runner_);
+    dom_storage_context_ =
+        new DOMStorageContextImpl(base::FilePath(), nullptr, task_runner_);
   }
 
   ~LocalStorageContextMojoTest() override {
@@ -200,12 +201,6 @@ class LocalStorageContextMojoTest : public testing::Test {
     return mock_special_storage_policy_.get();
   }
 
-  void FlushAndPurgeDOMStorageMemory() {
-    dom_storage_context_->Flush();
-    base::RunLoop().RunUntilIdle();
-    dom_storage_context_->PurgeMemory(DOMStorageContextImpl::PURGE_AGGRESSIVE);
-  }
-
   const std::map<std::vector<uint8_t>, std::vector<uint8_t>>& mock_data() {
     return mock_data_;
   }
@@ -241,6 +236,8 @@ class LocalStorageContextMojoTest : public testing::Test {
     return success ? base::Optional<std::vector<uint8_t>>(result)
                    : base::nullopt;
   }
+
+  base::FilePath TempPath() { return temp_path_.GetPath(); }
 
  private:
   TestBrowserThreadBundle thread_bundle_;
@@ -663,13 +660,16 @@ TEST_F(LocalStorageContextMojoTest, Migration) {
   key2.push_back(0xd83d);
   key2.push_back(0xde00);
 
-  DOMStorageNamespace* local = local_storage_namespace();
-  DOMStorageArea* area = local->OpenStorageArea(origin1.GetURL());
-  base::NullableString16 dummy;
-  area->SetItem(key, value, dummy, &dummy);
-  area->SetItem(key2, value, dummy, &dummy);
-  local->CloseStorageArea(area);
-  FlushAndPurgeDOMStorageMemory();
+  base::FilePath old_db_path = TempPath().Append(
+      DOMStorageArea::DatabaseFileNameFromOrigin(origin1.GetURL()));
+  {
+    DOMStorageDatabase db(old_db_path);
+    DOMStorageValuesMap data;
+    data[key] = base::NullableString16(value, false);
+    data[key2] = base::NullableString16(value, false);
+    db.CommitChanges(false, data);
+  }
+  EXPECT_TRUE(base::PathExists(old_db_path));
 
   // Opening origin2 and accessing its data should not migrate anything.
   mojom::LevelDBWrapperPtr wrapper;
@@ -714,9 +714,7 @@ TEST_F(LocalStorageContextMojoTest, Migration) {
   }
 
   // Origin1 should no longer exist in old storage.
-  area = local->OpenStorageArea(origin1.GetURL());
-  ASSERT_EQ(0u, area->Length());
-  local->CloseStorageArea(area);
+  EXPECT_FALSE(base::PathExists(old_db_path));
 }
 
 static std::string EncodeKeyAsUTF16(const std::string& origin,
