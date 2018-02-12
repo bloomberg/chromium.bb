@@ -8,10 +8,14 @@ import("//build/toolchain/toolchain.gni")
 
 # Used by libc++ and libc++abi.
 config("config") {
-  cflags = [
-    "-fPIC",
-    "-fstrict-aliasing",
-  ]
+  cflags = [ "-fstrict-aliasing" ]
+  if (is_win) {
+    # libc++ wants to redefine the macros WIN32_LEAN_AND_MEAN and _CRT_RAND_S in its
+    # implementation.
+    cflags += [ "-Wno-macro-redefined" ]
+  } else {
+    cflags += [ "-fPIC" ]
+  }
 }
 
 if (libcpp_is_static) {
@@ -52,6 +56,13 @@ target(link_target_type, "libc++") {
     "trunk/src/variant.cpp",
     "trunk/src/vector.cpp",
   ]
+  if (is_win) {
+    sources += [
+      "trunk/src/support/win32/locale_win32.cpp",
+      "trunk/src/support/win32/support.cpp",
+      "trunk/src/support/win32/thread_win32.cpp",
+    ]
+  }
   configs -= [
     "//build/config/compiler:chromium_code",
     "//build/config/compiler:no_exceptions",
@@ -69,10 +80,7 @@ target(link_target_type, "libc++") {
     "//build/config/sanitizers:sanitizer_options_link_helper",
   ]
 
-  defines = [
-    "_LIBCPP_BUILDING_LIBRARY",
-    "LIBCXX_BUILDING_LIBCXXABI",
-  ]
+  defines = [ "_LIBCPP_BUILDING_LIBRARY" ]
   if (!is_clang && !libcpp_is_static) {
     # This is a temporary workaround to get libc++ builds working with
     # gcc.  It can be removed with either
@@ -100,7 +108,10 @@ target(link_target_type, "libc++") {
     ]
   }
 
-  deps = [
-    "//buildtools/third_party/libc++abi",
-  ]
+  if (!is_win) {
+    defines += [ "LIBCXX_BUILDING_LIBCXXABI" ]
+    deps = [
+      "//buildtools/third_party/libc++abi",
+    ]
+  }
 }
