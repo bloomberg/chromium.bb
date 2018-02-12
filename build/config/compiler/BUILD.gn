@@ -2037,7 +2037,7 @@ config("minimal_symbols") {
       # TODO(thakis): Remove this again once dump_syms is fixed.
       cflags += [ "-gdwarf-3" ]
     }
-    if (!using_sanitizer) {
+    if (is_linux && !using_sanitizer) {
       # minimal_symbols needs to only produce valid stack traces, and -g0 does
       # that, even though you might think it'd produce no symbols at all.
       # Not using -g1 allows us to speed up link time and save disk space.
