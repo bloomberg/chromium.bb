@@ -128,12 +128,21 @@ class GstoolsUnitTests(unittest.TestCase):
         self.assertFalse(
             download_from_google_storage._validate_tar_file(tar,
                                                             tar_dir_outside))
-      # Test no ..
+      # Test no ../
       tar_with_dotdot = 'with_dotdot.tar.gz'
       dotdot_file = os.path.join(tar_dir, '..', tar_dir, 'lorem_ipsum.txt')
       with tarfile.open(tar_with_dotdot, 'w:gz') as tar:
         tar.add(dotdot_file)
         self.assertFalse(
+            download_from_google_storage._validate_tar_file(tar,
+                                                            tar_dir))
+      # Test normal file with .. in name okay
+      tar_with_hidden = 'with_normal_dotdot.tar.gz'
+      hidden_file = os.path.join(tar_dir, '..hidden_file.txt')
+      shutil.copyfile(lorem_ipsum, hidden_file)
+      with tarfile.open(tar_with_hidden, 'w:gz') as tar:
+        tar.add(hidden_file)
+        self.assertTrue(
             download_from_google_storage._validate_tar_file(tar,
                                                             tar_dir))
 

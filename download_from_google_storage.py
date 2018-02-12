@@ -209,7 +209,9 @@ def _validate_tar_file(tar, prefix):
     """Returns false if the tarinfo is something we explicitly forbid."""
     if tarinfo.issym() or tarinfo.islnk():
       return False
-    if '..' in tarinfo.name or not tarinfo.name.startswith(prefix):
+    if ('../' in tarinfo.name or
+        '..\\' in tarinfo.name or
+        not tarinfo.name.startswith(prefix)):
       return False
     return True
   return all(map(_validate, tar.getmembers()))
