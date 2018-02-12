@@ -186,6 +186,7 @@ void AuthenticatorImpl::MakeCredential(
   }
 
   url::Origin caller_origin = render_frame_host_->GetLastCommittedOrigin();
+  relying_party_id_ = options->relying_party->id;
 
   if (!HasValidEffectiveDomain(caller_origin)) {
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
@@ -195,7 +196,7 @@ void AuthenticatorImpl::MakeCredential(
     return;
   }
 
-  if (!IsRelyingPartyIdValid(options->relying_party->id, caller_origin)) {
+  if (!IsRelyingPartyIdValid(relying_party_id_, caller_origin)) {
     bad_message::ReceivedBadMessage(render_frame_host_->GetProcess(),
                                     bad_message::AUTH_INVALID_RELYING_PARTY);
     std::move(callback).Run(webauth::mojom::AuthenticatorStatus::INVALID_DOMAIN,
@@ -244,7 +245,7 @@ void AuthenticatorImpl::MakeCredential(
           ->browser()
           ->ShouldPermitIndividualAttestationForWebauthnRPID(
               render_frame_host_->GetProcess()->GetBrowserContext(),
-              options->relying_party->id);
+              relying_party_id_);
 
   attestation_preference_ = options->attestation;
 
@@ -255,9 +256,9 @@ void AuthenticatorImpl::MakeCredential(
   // Among other things, the Client Data contains the challenge from the
   // relying party (hence the name of the parameter).
   u2f_request_ = device::U2fRegister::TryRegistration(
-      options->relying_party->id, connector_, protocols_, registered_keys,
+      relying_party_id_, connector_, protocols_, registered_keys,
       ConstructClientDataHash(client_data_.SerializeToJson()),
-      CreateAppId(options->relying_party->id), individual_attestation,
+      CreateAppId(relying_party_id_), individual_attestation,
       base::BindOnce(&AuthenticatorImpl::OnRegisterResponse,
                      weak_factory_.GetWeakPtr()));
 }
@@ -336,16 +337,45 @@ void AuthenticatorImpl::OnRegisterResponse(
       break;
     case device::U2fReturnCode::SUCCESS:
       DCHECK(response_data.has_value());
-      if (attestation_preference_ ==
+
+      if (attestation_preference_ !=
           webauth::mojom::AttestationConveyancePreference::NONE) {
-        response_data->EraseAttestationStatement();
+        // Potentially show a permission prompt before returning the
+        // attestation data.
+        GetContentClient()->browser()->ShouldReturnAttestationForWebauthnRPID(
+            render_frame_host_, relying_party_id_,
+            render_frame_host_->GetLastCommittedOrigin(),
+            base::BindOnce(
+                &AuthenticatorImpl::OnRegisterResponseAttestationDecided,
+                weak_factory_.GetWeakPtr(), std::move(*response_data)));
+        return;
       }
+
+      response_data->EraseAttestationStatement();
       std::move(make_credential_response_callback_)
           .Run(webauth::mojom::AuthenticatorStatus::SUCCESS,
                CreateMakeCredentialResponse(std::move(client_data_),
                                             std::move(*response_data)));
-      break;
   }
+  Cleanup();
+}
+
+void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
+    device::RegisterResponseData response_data,
+    bool attestation_permitted) {
+  DCHECK(attestation_preference_ !=
+         webauth::mojom::AttestationConveyancePreference::NONE);
+
+  if (!attestation_permitted) {
+    std::move(make_credential_response_callback_)
+        .Run(webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+  } else {
+    std::move(make_credential_response_callback_)
+        .Run(webauth::mojom::AuthenticatorStatus::SUCCESS,
+             CreateMakeCredentialResponse(std::move(client_data_),
+                                          std::move(response_data)));
+  }
+
   Cleanup();
 }
 
