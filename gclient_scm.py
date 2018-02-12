@@ -252,11 +252,10 @@ class GitWrapper(SCMWrapper):
     ).split()
 
   def diff(self, options, _args, _file_list):
-    try:
-      merge_base = [self._Capture(['merge-base', 'HEAD', self.remote])]
-    except subprocess2.CalledProcessError:
-      merge_base = []
-    self._Run(['-c', 'core.quotePath=false', 'diff'] + merge_base, options)
+    _, revision = gclient_utils.SplitUrlRevision(self.url)
+    if not revision:
+      revision = 'refs/remotes/%s/master' % self.remote
+    self._Run(['-c', 'core.quotePath=false', 'diff', revision], options)
 
   def pack(self, _options, _args, _file_list):
     """Generates a patch file which can be applied to the root of the
