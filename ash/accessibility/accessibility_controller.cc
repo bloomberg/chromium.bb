@@ -81,6 +81,8 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
                                   false);
     registry->RegisterBooleanPref(prefs::kAccessibilitySpokenFeedbackEnabled,
                                   false);
+    registry->RegisterBooleanPref(prefs::kAccessibilitySelectToSpeakEnabled,
+                                  false);
     return;
   }
 
@@ -94,6 +96,7 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
   registry->RegisterForeignPref(prefs::kAccessibilityMonoAudioEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityScreenMagnifierEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilitySpokenFeedbackEnabled);
+  registry->RegisterForeignPref(prefs::kAccessibilitySelectToSpeakEnabled);
 }
 
 void AccessibilityController::BindRequest(
@@ -162,6 +165,18 @@ void AccessibilityController::SetSpokenFeedbackEnabled(
 
 bool AccessibilityController::IsSpokenFeedbackEnabled() const {
   return spoken_feedback_enabled_;
+}
+
+void AccessibilityController::SetSelectToSpeakEnabled(bool enabled) {
+  PrefService* prefs = GetActivePrefService();
+  if (!prefs)
+    return;
+  prefs->SetBoolean(prefs::kAccessibilitySelectToSpeakEnabled, enabled);
+  prefs->CommitPendingWrite();
+}
+
+bool AccessibilityController::IsSelectToSpeakEnabled() const {
+  return select_to_speak_enabled_;
 }
 
 void AccessibilityController::TriggerAccessibilityAlert(
@@ -274,6 +289,10 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
       prefs::kAccessibilitySpokenFeedbackEnabled,
       base::Bind(&AccessibilityController::UpdateSpokenFeedbackFromPref,
                  base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilitySelectToSpeakEnabled,
+      base::Bind(&AccessibilityController::UpdateSelectToSpeakFromPref,
+                 base::Unretained(this)));
 
   // Load current state.
   UpdateAutoclickFromPref();
@@ -282,6 +301,7 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
   UpdateLargeCursorFromPref();
   UpdateMonoAudioFromPref();
   UpdateSpokenFeedbackFromPref();
+  UpdateSelectToSpeakFromPref();
 }
 
 void AccessibilityController::UpdateAutoclickFromPref() {
@@ -405,6 +425,19 @@ void AccessibilityController::UpdateSpokenFeedbackFromPref() {
   // TODO(warx): Chrome observes prefs change and turns on/off spoken feedback.
   // Define a mojo call to control toggling spoken feedback (ChromeVox) once
   // prefs ownership and registration is moved to ash.
+}
+
+void AccessibilityController::UpdateSelectToSpeakFromPref() {
+  PrefService* prefs = GetActivePrefService();
+  const bool enabled =
+      prefs->GetBoolean(prefs::kAccessibilitySelectToSpeakEnabled);
+
+  if (select_to_speak_enabled_ == enabled)
+    return;
+
+  select_to_speak_enabled_ = enabled;
+
+  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
 }
 
 }  // namespace ash
