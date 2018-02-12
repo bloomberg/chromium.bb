@@ -29,6 +29,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 
 namespace blink {
+namespace cssvalue {
 
 String CSSReflectValue::CustomCSSText() const {
   if (mask_)
@@ -50,4 +51,5 @@ void CSSReflectValue::TraceAfterDispatch(blink::Visitor* visitor) {
   CSSValue::TraceAfterDispatch(visitor);
 }
 
+}  // namespace cssvalue
 }  // namespace blink
