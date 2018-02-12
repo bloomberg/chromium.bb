@@ -44529,6 +44529,9 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="57" label=".torrent"/>
   <int value="58" label=".txt"/>
   <int value="59" label=".zip"/>
+  <int value="60" label="directory"/>
+  <int value="61" label="no extension"/>
+  <int value="62" label="unknown extension"/>
 </enum>
 
 <enum name="VirtualKeyboardControllerState">
