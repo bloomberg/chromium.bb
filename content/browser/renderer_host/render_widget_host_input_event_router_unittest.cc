@@ -60,6 +60,7 @@ class MockRootRenderWidgetHostView : public MockRenderWidgetHostView {
       std::map<MockRenderWidgetHostView*, viz::FrameSinkId>& frame_sink_id_map)
       : MockRenderWidgetHostView(rwh),
         frame_sink_id_map_(frame_sink_id_map),
+        current_hittest_result_(nullptr),
         force_query_renderer_on_hit_test_(false) {}
   ~MockRootRenderWidgetHostView() override {}
 
@@ -69,6 +70,8 @@ class MockRootRenderWidgetHostView : public MockRenderWidgetHostView {
                                       bool* query_renderer) override {
     if (force_query_renderer_on_hit_test_)
       *query_renderer = true;
+    DCHECK(current_hittest_result_)
+        << "Must set a Hittest result before calling this function";
     return frame_sink_id_map_[current_hittest_result_];
   }
 
