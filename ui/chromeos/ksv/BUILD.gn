@@ -11,8 +11,6 @@ source_set("ksv") {
     "keyboard_shortcut_viewer_metadata.cc",
     "keyboard_shortcut_viewer_metadata.h",
     "ksv_export.h",
-    "views/bubble_view.cc",
-    "views/bubble_view.h",
     "views/keyboard_shortcut_item_list_view.cc",
     "views/keyboard_shortcut_item_list_view.h",
     "views/keyboard_shortcut_item_view.cc",
@@ -27,7 +25,6 @@ source_set("ksv") {
 
   deps = [
     "//base:i18n",
-    "//cc/paint",
     "//ui/chromeos/events",
     "//ui/chromeos/ksv/vector_icons",
     "//ui/chromeos/search_box",
