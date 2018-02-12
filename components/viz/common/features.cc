@@ -5,12 +5,11 @@
 #include "components/viz/common/features.h"
 
 #include "base/command_line.h"
-#include "build/build_config.h"
 #include "components/viz/common/switches.h"
 
 namespace features {
 
-#if defined(USE_AURA) || defined(OS_MACOSX)
+#if defined(USE_AURA)
 const base::Feature kEnableSurfaceSynchronization{
     "SurfaceSynchronization", base::FEATURE_ENABLED_BY_DEFAULT};
 #else
