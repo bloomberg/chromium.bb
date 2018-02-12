@@ -9,6 +9,8 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/masked_targeter_delegate.h"
 
+class Tab;
+
 // This is a Button subclass that shows the tab closed icon.
 //
 // In addition to setup for the icon, it forwards middle clicks to the parent
@@ -32,6 +34,9 @@ class TabCloseButton : public views::ImageButton,
   // changes (this class does not track tab activation state), and when the
   // theme changes.
   void SetTabColor(SkColor color);
+
+  // This is called whenever the |parent_tab| changes its active state.
+  void ActiveStateChanged(const Tab* parent_tab);
 
   // views::View:
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override;

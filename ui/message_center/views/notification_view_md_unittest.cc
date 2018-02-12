@@ -694,8 +694,8 @@ TEST_F(NotificationViewMDTest, ExpandLongMessage) {
 }
 
 TEST_F(NotificationViewMDTest, TestAccentColor) {
-  const SkColor kActionButtonTextColor = SkColorSetRGB(0x33, 0x67, 0xD6);
-  const SkColor kCustomAccentColor = SkColorSetRGB(0xea, 0x61, 0x0);
+  constexpr SkColor kActionButtonTextColor = gfx::kGoogleBlue700;
+  constexpr SkColor kCustomAccentColor = gfx::kGoogleYellow900;
 
   notification()->set_buttons(CreateButtons(2));
   UpdateNotificationViews();

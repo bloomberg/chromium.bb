@@ -290,7 +290,7 @@ Tab* AlertIndicatorButton::GetTab() const {
 }
 
 void AlertIndicatorButton::ResetImages(TabAlertState state) {
-  SkColor color = parent_tab_->button_color();
+  SkColor color = parent_tab_->GetAlertIndicatorColor(state);
   gfx::ImageSkia indicator_image =
       chrome::GetTabAlertIndicatorImage(state, color).AsImageSkia();
   SetImage(views::Button::STATE_NORMAL, &indicator_image);

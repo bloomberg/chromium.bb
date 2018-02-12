@@ -45,6 +45,7 @@
 #include "ui/base/default_theme_provider.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/compositing_recorder.h"
@@ -845,6 +846,10 @@ bool TabStrip::IsTabPinned(const Tab* tab) const {
          controller_->IsTabPinned(model_index);
 }
 
+bool TabStrip::IsIncognito() const {
+  return controller_->IsIncognito();
+}
+
 void TabStrip::MaybeStartDrag(
     Tab* tab,
     const ui::LocatedEvent& event,
@@ -1175,8 +1180,8 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
   if (touch_layout_ || adjust_layout_) {
     // For stacked tabs the minimum size is calculated as the size needed to
     // handle showing any number of tabs.
-    needed_tab_width =
-        Tab::GetTouchWidth() + (2 * kStackedPadding * kMaxStackedCount);
+    needed_tab_width = GetLayoutConstant(TAB_STACK_TAB_WIDTH) +
+                       (2 * kStackedPadding * kMaxStackedCount);
   } else {
     // Otherwise the minimum width is based on the actual number of tabs.
     const int pinned_tab_count = GetPinnedTabCount();
@@ -2288,7 +2293,8 @@ void TabStrip::SwapLayoutIfNecessary() {
     return;
 
   if (needs_touch) {
-    gfx::Size tab_size(Tab::GetTouchWidth(), GetLayoutConstant(TAB_HEIGHT));
+    gfx::Size tab_size(GetLayoutConstant(TAB_STACK_TAB_WIDTH),
+                       GetLayoutConstant(TAB_HEIGHT));
 
     const int overlap = Tab::GetOverlap();
     touch_layout_.reset(new StackedTabStripLayout(
@@ -2320,17 +2326,19 @@ bool TabStrip::NeedsTouchLayout() const {
   int normal_count = tab_count() - pinned_tab_count;
   if (normal_count <= 1 || normal_count == pinned_tab_count)
     return false;
-  return (Tab::GetTouchWidth() * normal_count -
+  return (GetLayoutConstant(TAB_STACK_TAB_WIDTH) * normal_count -
           Tab::GetOverlap() * (normal_count - 1)) >
          GetTabAreaWidth() - GetStartXForNormalTabs();
 }
 
 void TabStrip::SetResetToShrinkOnExit(bool value) {
-  if (!adjust_layout_)
+  if (!adjust_layout_ ||
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
     return;
+  }
 
-  if (value && !stacked_layout_)
-    value = false;  // We're already using shrink (not stacked) layout.
+  // We have to be using stacked layout to reset out of it.
+  value &= stacked_layout_;
 
   if (value == reset_to_shrink_on_exit_)
     return;

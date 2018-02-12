@@ -43,6 +43,31 @@ enum LayoutConstant {
 
   // The horizontal space between most items in the toolbar.
   TOOLBAR_STANDARD_SPACING,
+
+  // The standard width of a tab when is stacked layout. This does not include
+  // the endcap width.
+  TAB_STACK_TAB_WIDTH,
+
+  // The distance between the edge of one tab to the corresponding edge or the
+  // subsequent tab when tabs are stacked.
+  TAB_STACK_DISTANCE,
+
+  // The standard tab width excluding the overlap (which is the endcap width on
+  // one side)
+  TAB_STANDARD_WIDTH,
+
+  // Padding before the tab title.
+  TAB_PRE_TITLE_PADDING,
+
+  // Padding after the tab title.
+  TAB_AFTER_TITLE_PADDING,
+
+  // Width of the alert indicator icon displayed in the tab. The same width is
+  // used for all 3 states of normal, hovered and pressed.
+  TAB_ALERT_INDICATOR_ICON_WIDTH,
+
+  // Width of the alert indicator shown for a tab using media capture.
+  TAB_ALERT_INDICATOR_CAPTURE_ICON_WIDTH,
 };
 
 enum LayoutInset {

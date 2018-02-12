@@ -47,6 +47,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/features/features.h"
 #include "ui/base/layout.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
@@ -457,6 +458,12 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
           0x4D);
     }
     case ThemeProperties::COLOR_BACKGROUND_TAB: {
+      // Touch optimized color design uses different tab background colors.
+      // TODO(malaykeshav) - This will break custom themes on touch optimized
+      // UI. Use tint shift instead.
+      if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+        break;
+
       // The tints here serve a different purpose than TINT_BACKGROUND_TAB.
       // That tint is used to create background tab images for custom themes by
       // lightening the frame images.  The tints here create solid colors for

@@ -50,6 +50,7 @@
 #include "net/base/filename_util.h"
 #include "third_party/WebKit/public/common/mime_util/mime_util.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -71,7 +72,9 @@ bool DetermineTabStripLayoutStacked(PrefService* prefs, bool* adjust_layout) {
   // For ash, always allow entering stacked mode.
 #if defined(OS_CHROMEOS)
   *adjust_layout = true;
-  return prefs->GetBoolean(prefs::kTabStripStackedLayout);
+  // Stacked layout is always enabled in touch optimized UI design.
+  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ||
+         prefs->GetBoolean(prefs::kTabStripStackedLayout);
 #else
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kForceStackedTabStripLayout);

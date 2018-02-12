@@ -75,7 +75,11 @@ class Tab : public gfx::AnimationDelegate,
   void set_detached() { detached_ = true; }
   bool detached() const { return detached_; }
 
-  SkColor button_color() const { return button_color_; }
+  // Returns the color used for the alert indicator icon.
+  SkColor GetAlertIndicatorColor(TabAlertState state) const;
+
+  // Returns the color to be used for the tab close button.
+  SkColor GetCloseTabButtonColor(views::Button::ButtonState button_state) const;
 
   // Returns true if this tab is the active tab.
   bool IsActive() const;
@@ -145,9 +149,6 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the preferred size of a single Tab, assuming space is
   // available.
   static gfx::Size GetStandardSize();
-
-  // Returns the width for touch tabs.
-  static int GetTouchWidth();
 
   // Returns the width for pinned tabs. Pinned tabs always have this width.
   static int GetPinnedWidth();
@@ -245,19 +246,9 @@ class Tab : public gfx::AnimationDelegate,
                                 bool active,
                                 SkColor color);
 
-  // Returns the number of favicon-size elements that can fit in the tab's
-  // current size.
-  int IconCapacity() const;
-
-  // Returns whether the Tab should display the icon view, which includes the
-  // favicon and loading animation.
-  bool ShouldShowIcon() const;
-
-  // Returns whether the Tab should display the alert indicator.
-  bool ShouldShowAlertIndicator() const;
-
-  // Returns whether the Tab should display a close button.
-  bool ShouldShowCloseBox() const;
+  // Computes which icons are visible in the tab. Should be called everytime
+  // before layout is performed.
+  void UpdateIconVisibility();
 
   // Returns whether the tab should be rendered as a normal tab as opposed to a
   // pinned tab.
@@ -321,6 +312,16 @@ class Tab : public gfx::AnimationDelegate,
   // Whether we are showing the close button. It is cached so that we can
   // detect when it changes and layout appropriately.
   bool showing_close_button_ = false;
+
+  // When the close button will be visible on inactive tabs, we add additional
+  // padding to the left of the favicon to balance the whitespace inside the
+  // non-hovered close button image; otherwise, the tab contents look too close
+  // to the left edge.  If the tab close button isn't visible on inactive tabs,
+  // we let the tab contents take the full width of the tab, to maximize visible
+  // content on tiny tabs.  We base the determination on the inactive tab close
+  // button state so that when a tab is activated its contents don't suddenly
+  // shift.
+  bool extra_padding_before_content_ = false;
 
   // The current color of the alert indicator and close button icons.
   SkColor button_color_ = SK_ColorTRANSPARENT;

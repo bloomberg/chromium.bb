@@ -62,7 +62,7 @@ class TabStrip : public views::View,
                  public views::ViewTargeterDelegate,
                  public TabController {
  public:
-  TabStrip(std::unique_ptr<TabStripController> controller);
+  explicit TabStrip(std::unique_ptr<TabStripController> controller);
   ~TabStrip() override;
 
   // Add and remove observers to changes within this TabStrip.
@@ -234,6 +234,7 @@ class TabStrip : public views::View,
   bool IsActiveTab(const Tab* tab) const override;
   bool IsTabSelected(const Tab* tab) const override;
   bool IsTabPinned(const Tab* tab) const override;
+  bool IsIncognito() const override;
   void MaybeStartDrag(
       Tab* tab,
       const ui::LocatedEvent& event,

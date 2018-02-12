@@ -120,6 +120,17 @@ class ThemeProperties {
     COLOR_TAB_THROBBER_SPINNING,
     COLOR_TAB_THROBBER_WAITING,
 
+    // Colors for the tab close button inons.
+    COLOR_TAB_CLOSE_BUTTON_BACKGROUND_ACTIVE,
+    COLOR_TAB_CLOSE_BUTTON_BACKGROUND_INACTIVE,
+    COLOR_TAB_CLOSE_BUTTON_BACKGROUND_HOVER,
+    COLOR_TAB_CLOSE_BUTTON_BACKGROUND_PRESSED,
+
+    // The colors used by the various alert indicator icons in the tab.
+    COLOR_TAB_ALERT_AUDIO,
+    COLOR_TAB_ALERT_RECORDING,
+    COLOR_TAB_ALERT_CAPTURING,
+
     // These colors don't have constant default values. They are derived from
     // the runtime value of other colors.
     COLOR_NTP_TEXT_LIGHT,

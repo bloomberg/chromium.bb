@@ -85,6 +85,7 @@ TEST_F(AlertIndicatorButtonTest, ButtonUpdateOnAudioStateAnimation) {
 
   TabRendererData start_media;
   start_media.alert_state = TabAlertState::AUDIO_PLAYING;
+  start_media.pinned = media_tab->data().pinned;
   media_tab->SetData(std::move(start_media));
 
   // When audio starts, pinned inactive tab shows indicator.
@@ -94,6 +95,7 @@ TEST_F(AlertIndicatorButtonTest, ButtonUpdateOnAudioStateAnimation) {
 
   TabRendererData stop_media;
   stop_media.alert_state = TabAlertState::NONE;
+  stop_media.pinned = media_tab->data().pinned;
   media_tab->SetData(std::move(stop_media));
 
   // When audio ends, pinned inactive tab fades out indicator.
