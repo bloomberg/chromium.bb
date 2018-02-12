@@ -83,7 +83,7 @@ void ServiceWorker::postMessage(ScriptState* script_state,
 }
 
 void ServiceWorker::InternalsTerminate() {
-  handle_->ServiceWorker()->Terminate();
+  handle_->ServiceWorker()->TerminateForTesting();
 }
 
 void ServiceWorker::DispatchStateChangeEvent() {

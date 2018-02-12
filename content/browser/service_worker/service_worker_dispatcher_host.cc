@@ -134,7 +134,6 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToWorker,
                         OnPostMessageToWorker)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_CountFeature, OnCountFeature)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_TerminateWorker, OnTerminateWorker)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -452,16 +451,6 @@ ServiceWorkerContextCore* ServiceWorkerDispatcherHost::GetContext() {
   if (!context_wrapper_.get())
     return nullptr;
   return context_wrapper_->context();
-}
-
-void ServiceWorkerDispatcherHost::OnTerminateWorker(int handle_id) {
-  ServiceWorkerHandle* handle = handles_.Lookup(handle_id);
-  if (!handle) {
-    bad_message::ReceivedBadMessage(this,
-                                    bad_message::SWDH_TERMINATE_BAD_HANDLE);
-    return;
-  }
-  handle->version()->StopWorker(base::BindOnce(&base::DoNothing));
 }
 
 }  // namespace content

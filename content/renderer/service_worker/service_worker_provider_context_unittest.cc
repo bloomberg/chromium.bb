@@ -60,6 +60,9 @@ class MockServiceWorkerObjectHost
   int GetBindingCount() const { return bindings_.size(); }
 
  private:
+  // Implements blink::mojom::ServiceWorkerObjectHost.
+  void TerminateForTesting() override { NOTREACHED(); }
+
   int32_t handle_id_;
   int64_t version_id_;
   mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerObjectHost> bindings_;

@@ -144,8 +144,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
           message,
       const url::Origin& source_origin);
 
-  void OnTerminateWorker(int handle_id);
-
   void DispatchExtendableMessageEvent(
       scoped_refptr<ServiceWorkerVersion> worker,
       blink::TransferableMessage message,

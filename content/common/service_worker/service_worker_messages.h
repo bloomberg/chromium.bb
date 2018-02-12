@@ -99,11 +99,6 @@ IPC_MESSAGE_CONTROL4(
         base::RefCountedData<blink::TransferableMessage>> /* message */,
     url::Origin /* source_origin */)
 
-// Tells the browser to terminate a service worker. Used in layout tests to
-// verify behavior when a service worker isn't running.
-IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_TerminateWorker,
-                     int /* handle_id */)
-
 // Sends MessageEvent to a client (renderer->browser).
 IPC_MESSAGE_ROUTED2(
     ServiceWorkerHostMsg_PostMessageToClient,

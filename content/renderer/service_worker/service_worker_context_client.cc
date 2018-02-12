@@ -894,6 +894,10 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   // same thread before the worker context goes away in
   // willDestroyWorkerContext.
   context_.reset(new WorkerContextData(this));
+  // Create ServiceWorkerDispatcher first for this worker thread to be used
+  // later by TakeRegistrationForServiceWorkerGlobalScope() etc.
+  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(sender_.get())
+      ->SetIOThreadTaskRunner(io_thread_task_runner_);
 
   DCHECK(pending_dispatcher_request_.is_pending());
   DCHECK(pending_controller_request_.is_pending());
@@ -913,9 +917,6 @@ void ServiceWorkerContextClient::WorkerContextStarted(
       blink::mojom::ThreadSafeServiceWorkerHostAssociatedPtr::Create(
           std::move(pending_service_worker_host_), io_thread_task_runner_);
   // Set ServiceWorkerGlobalScope#registration.
-  // TakeRegistrationForServiceWorkerGlobalScope() expects the dispatcher to be
-  // already created, so create it first.
-  ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(sender_.get());
   proxy_->SetRegistration(WebServiceWorkerRegistrationImpl::CreateHandle(
       provider_context_->TakeRegistrationForServiceWorkerGlobalScope(
           io_thread_task_runner_)));
@@ -1589,11 +1590,10 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
              blink::mojom::kInvalidServiceWorkerHandleId &&
          event->source_info_for_service_worker->version_id !=
              blink::mojom::kInvalidServiceWorkerVersionId);
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(sender_.get());
   scoped_refptr<WebServiceWorkerImpl> worker =
-      dispatcher->GetOrCreateServiceWorker(
-          std::move(event->source_info_for_service_worker));
+      ServiceWorkerDispatcher::GetThreadSpecificInstance()
+          ->GetOrCreateServiceWorker(
+              std::move(event->source_info_for_service_worker));
   proxy_->DispatchExtendableMessageEvent(
       request_id, std::move(event->message), event->source_origin,
       WebServiceWorkerImpl::CreateHandle(worker));
