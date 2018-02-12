@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
@@ -80,10 +79,11 @@ class RenderProcessHostObserverForExit
 
 }  // namespace
 
-class AppViewTest : public extensions::PlatformAppBrowserTest,
-                    public testing::WithParamInterface<bool> {
+class AppViewTest : public extensions::PlatformAppBrowserTest {
  public:
   AppViewTest() {
+    CHECK(
+        base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames));
     GuestViewManager::set_factory_for_testing(&factory_);
   }
 
@@ -133,19 +133,6 @@ class AppViewTest : public extensions::PlatformAppBrowserTest,
   }
 
  private:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
-
-    bool use_cross_process_frames_for_guests = GetParam();
-    if (use_cross_process_frames_for_guests) {
-      scoped_feature_list_.InitAndEnableFeature(
-          features::kGuestViewCrossProcessFrames);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kGuestViewCrossProcessFrames);
-    }
-  }
-
   void SetUpOnMainThread() override {
     extensions::PlatformAppBrowserTest::SetUpOnMainThread();
     test_guest_view_manager_ = static_cast<guest_view::TestGuestViewManager*>(
@@ -158,15 +145,12 @@ class AppViewTest : public extensions::PlatformAppBrowserTest,
 
   TestGuestViewManagerFactory factory_;
   guest_view::TestGuestViewManager* test_guest_view_manager_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AppViewTest);
 };
 
-INSTANTIATE_TEST_CASE_P(AppViewTests, AppViewTest, testing::Bool());
-
 // Tests that <appview> is able to navigate to another installed app.
-IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewWithUndefinedDataShouldSucceed) {
+IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewWithUndefinedDataShouldSucceed) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("app_view/shim/skeleton");
   TestHelper("testAppViewWithUndefinedDataShouldSucceed",
@@ -176,7 +160,7 @@ IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewWithUndefinedDataShouldSucceed) {
 }
 
 // Tests that <appview> correctly processes parameters passed on connect.
-IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewRefusedDataShouldFail) {
+IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewRefusedDataShouldFail) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("app_view/shim/skeleton");
   TestHelper("testAppViewRefusedDataShouldFail",
@@ -186,7 +170,7 @@ IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewRefusedDataShouldFail) {
 }
 
 // Tests that <appview> correctly processes parameters passed on connect.
-IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewGoodDataShouldSucceed) {
+IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewGoodDataShouldSucceed) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("app_view/shim/skeleton");
   TestHelper("testAppViewGoodDataShouldSucceed",
@@ -196,13 +180,7 @@ IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewGoodDataShouldSucceed) {
 }
 
 // Tests that <appview> correctly handles multiple successive connects.
-IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewMultipleConnects) {
-  // TODO(crbug.com/794490) Skip this test for the BrowserPlugin ("/0")
-  // case until we either (i) find the cause of the TIMEOUT or (ii)
-  // remove BrowserPlugin.
-  if (!GetParam())
-    return;
-
+IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewMultipleConnects) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("app_view/shim/skeleton");
   TestHelper("testAppViewMultipleConnects",
@@ -213,7 +191,7 @@ IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewMultipleConnects) {
 
 // Tests that <appview> correctly handles connects that occur after the
 // completion of a previous connect.
-IN_PROC_BROWSER_TEST_P(AppViewTest,
+IN_PROC_BROWSER_TEST_F(AppViewTest,
                        TestAppViewConnectFollowingPreviousConnect) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("app_view/shim/skeleton");
@@ -222,7 +200,7 @@ IN_PROC_BROWSER_TEST_P(AppViewTest,
 }
 
 // Tests that <appview> does not embed self (the app which owns appview).
-IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewEmbedSelfShouldFail) {
+IN_PROC_BROWSER_TEST_F(AppViewTest, TestAppViewEmbedSelfShouldFail) {
   const extensions::Extension* skeleton_app =
       InstallPlatformApp("app_view/shim/skeleton");
   TestHelper("testAppViewEmbedSelfShouldFail",
@@ -231,7 +209,7 @@ IN_PROC_BROWSER_TEST_P(AppViewTest, TestAppViewEmbedSelfShouldFail) {
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_P(AppViewTest, KillGuestWithInvalidInstanceID) {
+IN_PROC_BROWSER_TEST_F(AppViewTest, KillGuestWithInvalidInstanceID) {
   const extensions::Extension* bad_app =
       LoadAndLaunchPlatformApp("app_view/bad_app", "AppViewTest.LAUNCHED");
 
@@ -256,15 +234,7 @@ IN_PROC_BROWSER_TEST_P(AppViewTest, KillGuestWithInvalidInstanceID) {
   exit_observer.WaitUntilRenderProcessHostKilled();
 }
 
-#if defined(OS_LINUX)
-#define MAYBE_KillGuestCommunicatingWithWrongAppView \
-    DISABLED_KillGuestCommunicatingWithWrongAppView
-#else
-#define MAYBE_KillGuestCommunicatingWithWrongAppView \
-    KillGuestCommunicatingWithWrongAppView
-#endif
-IN_PROC_BROWSER_TEST_P(AppViewTest,
-                       MAYBE_KillGuestCommunicatingWithWrongAppView) {
+IN_PROC_BROWSER_TEST_F(AppViewTest, KillGuestCommunicatingWithWrongAppView) {
   const extensions::Extension* host_app =
       LoadAndLaunchPlatformApp("app_view/host_app", "AppViewTest.LAUNCHED");
   const extensions::Extension* guest_app =
