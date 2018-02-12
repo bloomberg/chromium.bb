@@ -148,7 +148,8 @@
 // Registers the actions which will be triggered when tapping a button.
 - (void)addStandardActionsForAllButtons {
   for (ToolbarButton* button in self.view.allButtons) {
-    if (button != self.view.toolsMenuButton) {
+    if (button != self.view.toolsMenuButton &&
+        button != self.view.omniboxButton) {
       [button addTarget:self.dispatcher
                     action:@selector(cancelOmniboxEdit)
           forControlEvents:UIControlEventTouchUpInside];
