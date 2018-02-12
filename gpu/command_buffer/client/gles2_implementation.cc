@@ -157,6 +157,7 @@ GLES2Implementation::GLES2Implementation(
       use_count_(0),
       flush_id_(0),
       max_extra_transfer_buffer_size_(0),
+      transfer_cache_(this),
       current_trace_stack_(0),
       gpu_control_(gpu_control),
       capabilities_(gpu_control->GetCapabilities()),
@@ -6143,13 +6144,12 @@ bool GLES2Implementation::ThreadsafeDiscardableTextureIsDeletedForTracing(
 }
 
 void* GLES2Implementation::MapTransferCacheEntry(size_t serialized_size) {
-  return transfer_cache_.MapEntry(helper_, mapped_memory_.get(),
-                                  serialized_size);
+  return transfer_cache_.MapEntry(mapped_memory_.get(), serialized_size);
 }
 
 void GLES2Implementation::UnmapAndCreateTransferCacheEntry(uint32_t type,
                                                            uint32_t id) {
-  transfer_cache_.UnmapAndCreateEntry(helper_, type, id);
+  transfer_cache_.UnmapAndCreateEntry(type, id);
 }
 
 bool GLES2Implementation::ThreadsafeLockTransferCacheEntry(uint32_t type,
@@ -6159,11 +6159,11 @@ bool GLES2Implementation::ThreadsafeLockTransferCacheEntry(uint32_t type,
 
 void GLES2Implementation::UnlockTransferCacheEntries(
     const std::vector<std::pair<uint32_t, uint32_t>>& entries) {
-  transfer_cache_.UnlockEntries(helper_, entries);
+  transfer_cache_.UnlockEntries(entries);
 }
 
 void GLES2Implementation::DeleteTransferCacheEntry(uint32_t type, uint32_t id) {
-  transfer_cache_.DeleteEntry(helper_, type, id);
+  transfer_cache_.DeleteEntry(type, id);
 }
 
 unsigned int GLES2Implementation::GetTransferBufferFreeSize() const {
@@ -7279,6 +7279,33 @@ GLenum GLES2Implementation::GetClientSideGLError() {
 
 CommandBufferHelper* GLES2Implementation::cmd_buffer_helper() {
   return helper_;
+}
+
+void GLES2Implementation::IssueCreateTransferCacheEntry(
+    GLuint entry_type,
+    GLuint entry_id,
+    GLuint handle_shm_id,
+    GLuint handle_shm_offset,
+    GLuint data_shm_id,
+    GLuint data_shm_offset,
+    GLuint data_size) {
+  helper_->CreateTransferCacheEntryINTERNAL(entry_type, entry_id, handle_shm_id,
+                                            handle_shm_offset, data_shm_id,
+                                            data_shm_offset, data_size);
+}
+
+void GLES2Implementation::IssueDeleteTransferCacheEntry(GLuint entry_type,
+                                                        GLuint entry_id) {
+  helper_->DeleteTransferCacheEntryINTERNAL(entry_type, entry_id);
+}
+
+void GLES2Implementation::IssueUnlockTransferCacheEntry(GLuint entry_type,
+                                                        GLuint entry_id) {
+  helper_->UnlockTransferCacheEntryINTERNAL(entry_type, entry_id);
+}
+
+CommandBuffer* GLES2Implementation::command_buffer() const {
+  return helper_->command_buffer();
 }
 
 // Include the auto-generated part of this file. We split this because it means

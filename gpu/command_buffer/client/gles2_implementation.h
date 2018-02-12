@@ -127,7 +127,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
       public ContextSupport,
       public GpuControlClient,
       public base::trace_event::MemoryDumpProvider,
-      public QueryTrackerClient {
+      public QueryTrackerClient,
+      public ClientTransferCache::Client {
  public:
   // Stores GL state that never changes.
   struct GLES2_IMPL_EXPORT GLStaticState {
@@ -309,6 +310,20 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   void SetGLError(GLenum error,
                   const char* function_name,
                   const char* msg) override;
+
+  // ClientTransferCache::Client implementation.
+  void IssueCreateTransferCacheEntry(GLuint entry_type,
+                                     GLuint entry_id,
+                                     GLuint handle_shm_id,
+                                     GLuint handle_shm_offset,
+                                     GLuint data_shm_id,
+                                     GLuint data_shm_offset,
+                                     GLuint data_size) override;
+  void IssueDeleteTransferCacheEntry(GLuint entry_type,
+                                     GLuint entry_id) override;
+  void IssueUnlockTransferCacheEntry(GLuint entry_type,
+                                     GLuint entry_id) override;
+  CommandBuffer* command_buffer() const override;
 
  private:
   friend class GLES2ImplementationTest;
