@@ -12,7 +12,10 @@
 #include "chromecast/media/cma/base/cma_logging.h"
 #include "chromecast/media/cma/base/coded_frame_provider.h"
 #include "chromecast/media/cma/base/decoder_config_adapter.h"
+#include "chromecast/media/cma/pipeline/backend_decryptor.h"
+#include "chromecast/media/cma/pipeline/cdm_decryptor.h"
 #include "chromecast/public/media/decoder_config.h"
+#include "chromecast/public/media/media_capabilities_shlib.h"
 #include "media/base/audio_decoder_config.h"
 
 namespace chromecast {
@@ -20,6 +23,12 @@ namespace media {
 
 namespace {
 const size_t kMaxAudioFrameSize = 32 * 1024;
+
+bool ShouldUseSoftwareDecoder(const AudioConfig& config) {
+  // If the config isn't supported by the backend natively, we'll use software
+  // decoder to support it.
+  return !MediaCapabilitiesShlib::IsSupportedAudioConfig(config);
+}
 }
 
 AudioPipelineImpl::AudioPipelineImpl(
@@ -29,7 +38,7 @@ AudioPipelineImpl::AudioPipelineImpl(
   DCHECK(audio_decoder_);
 }
 
-AudioPipelineImpl::~AudioPipelineImpl() {}
+AudioPipelineImpl::~AudioPipelineImpl() = default;
 
 ::media::PipelineStatus AudioPipelineImpl::Initialize(
     const ::media::AudioDecoderConfig& audio_config,
@@ -42,10 +51,9 @@ AudioPipelineImpl::~AudioPipelineImpl() {}
   }
 
   DCHECK(audio_config.IsValidConfig());
-  AudioConfig cast_audio_config =
+  audio_config_ =
       DecoderConfigAdapter::ToCastAudioConfig(kPrimary, audio_config);
-  encryption_scheme_ = cast_audio_config.encryption_scheme;
-  if (!audio_decoder_->SetConfig(cast_audio_config)) {
+  if (!audio_decoder_->SetConfig(audio_config_)) {
     return ::media::PIPELINE_ERROR_INITIALIZATION_FAILED;
   }
   set_state(kFlushed);
@@ -64,10 +72,8 @@ void AudioPipelineImpl::OnUpdateConfig(
     CMALOG(kLogControl) << __FUNCTION__ << " id:" << id << " "
                         << audio_config.AsHumanReadableString();
 
-    AudioConfig cast_audio_config =
-        DecoderConfigAdapter::ToCastAudioConfig(id, audio_config);
-    encryption_scheme_ = cast_audio_config.encryption_scheme;
-    bool success = audio_decoder_->SetConfig(cast_audio_config);
+    audio_config_ = DecoderConfigAdapter::ToCastAudioConfig(id, audio_config);
+    bool success = audio_decoder_->SetConfig(audio_config_);
     if (!success && !client().playback_error_cb.is_null())
       client().playback_error_cb.Run(::media::PIPELINE_ERROR_DECODE);
   }
@@ -75,7 +81,19 @@ void AudioPipelineImpl::OnUpdateConfig(
 
 const EncryptionScheme& AudioPipelineImpl::GetEncryptionScheme(
     StreamId id) const {
-  return encryption_scheme_;
+  return audio_config_.encryption_scheme;
+}
+
+std::unique_ptr<StreamDecryptor> AudioPipelineImpl::CreateDecryptor() {
+  // TODO(yucliu): Enable it on devices that support multiroom.
+  if (audio_config_.encryption_scheme.is_encrypted() &&
+      MediaPipelineBackend::CreateAudioDecryptor &&
+      ShouldUseSoftwareDecoder(audio_config_)) {
+    CMALOG(kLogControl) << __func__ << " Create backend decryptor for audio.";
+    return std::make_unique<BackendDecryptor>(audio_config_.encryption_scheme);
+  }
+
+  return std::make_unique<CdmDecryptor>();
 }
 
 void AudioPipelineImpl::UpdateStatistics() {

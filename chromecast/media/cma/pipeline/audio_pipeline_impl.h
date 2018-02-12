@@ -45,9 +45,11 @@ class AudioPipelineImpl : public AvPipelineImpl {
                       const ::media::AudioDecoderConfig& audio_config,
                       const ::media::VideoDecoderConfig& video_config) override;
   const EncryptionScheme& GetEncryptionScheme(StreamId id) const override;
+  std::unique_ptr<StreamDecryptor> CreateDecryptor() override;
 
   MediaPipelineBackend::AudioDecoder* const audio_decoder_;
-  EncryptionScheme encryption_scheme_;
+
+  AudioConfig audio_config_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioPipelineImpl);
 };

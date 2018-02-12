@@ -7,15 +7,39 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "chromecast/media/cma/base/decoder_buffer_base.h"
 
 namespace chromecast {
 namespace media {
 
-class DecoderBufferBase;
+class CastDecryptConfig;
 class DecryptContextImpl;
 
+class DecoderBufferClear : public DecoderBufferBase {
+ public:
+  explicit DecoderBufferClear(scoped_refptr<DecoderBufferBase> buffer);
+
+  // DecoderBufferBase implementation.
+  StreamId stream_id() const override;
+  int64_t timestamp() const override;
+  void set_timestamp(base::TimeDelta timestamp) override;
+  const uint8_t* data() const override;
+  uint8_t* writable_data() const override;
+  size_t data_size() const override;
+  const CastDecryptConfig* decrypt_config() const override;
+  bool end_of_stream() const override;
+  scoped_refptr<::media::DecoderBuffer> ToMediaBuffer() const override;
+
+ private:
+  ~DecoderBufferClear() override;
+
+  const scoped_refptr<DecoderBufferBase> buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(DecoderBufferClear);
+};
+
 using BufferDecryptedCB =
-    base::Callback<void(scoped_refptr<DecoderBufferBase>, bool)>;
+    base::OnceCallback<void(scoped_refptr<DecoderBufferBase>, bool)>;
 
 // Create a new buffer which corresponds to the clear version of |buffer|.
 // Note: the memory area corresponding to the ES data of the new buffer
@@ -25,7 +49,7 @@ using BufferDecryptedCB =
 // clear.
 void DecryptDecoderBuffer(scoped_refptr<DecoderBufferBase> buffer,
                           DecryptContextImpl* decrypt_ctxt,
-                          const BufferDecryptedCB& buffer_decrypted_cb);
+                          BufferDecryptedCB buffer_decrypted_cb);
 
 }  // namespace media
 }  // namespace chromecast

@@ -45,6 +45,7 @@ class VideoPipelineImpl : public AvPipelineImpl {
                       const ::media::AudioDecoderConfig& audio_config,
                       const ::media::VideoDecoderConfig& video_config) override;
   const EncryptionScheme& GetEncryptionScheme(StreamId id) const override;
+  std::unique_ptr<StreamDecryptor> CreateDecryptor() override;
 
   MediaPipelineBackend::VideoDecoder* const video_decoder_;
   const VideoPipelineClient::NaturalSizeChangedCB natural_size_changed_cb_;
