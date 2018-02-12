@@ -27,6 +27,10 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace IPC {
 class Message;
 }
@@ -51,6 +55,15 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   // object info.
   scoped_refptr<WebServiceWorkerImpl> GetOrCreateServiceWorker(
       blink::mojom::ServiceWorkerObjectInfoPtr info);
+
+  // Sets the IO thread task runner. This is only called for a
+  // ServiceWorkerDispatcher instance on a service worker thread when the thread
+  // has just started, and the provided IO thread task runner will be used only
+  // for creating WebServiceWorkerImpl later.
+  // TODO(leonhsl): Remove this function once we addressed the TODO in
+  // WebServiceWorkerImpl about the legacy IPC channel-associated interface.
+  void SetIOThreadTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
 
   static ServiceWorkerDispatcher* GetOrCreateThreadSpecificInstance(
       scoped_refptr<ThreadSafeSender> thread_safe_sender);
@@ -86,6 +99,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   WorkerObjectMap service_workers_;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDispatcher);
 };

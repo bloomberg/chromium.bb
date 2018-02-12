@@ -40,6 +40,7 @@ interface ServiceWorkerObjectHost {
   // PostMessage(string message, url.mojom.Origin source_origin,
   //     array<handle<message_pipe>> sent_message_ports);
 
-  // Replace ServiceWorkerHostMsg_TerminateWorker.
-  // Terminate();
+  // Tells the browser process to terminate the service worker. Used in layout
+  // tests to verify behavior when a service worker isn't running.
+  TerminateForTesting();
 };

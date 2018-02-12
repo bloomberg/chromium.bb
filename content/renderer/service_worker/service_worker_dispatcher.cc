@@ -116,8 +116,25 @@ ServiceWorkerDispatcher::GetOrCreateServiceWorker(
   if (found != service_workers_.end())
     return found->second;
 
-  // WebServiceWorkerImpl constructor calls AddServiceWorker.
-  return new WebServiceWorkerImpl(std::move(info), thread_safe_sender_.get());
+  if (WorkerThread::GetCurrentId()) {
+    // Because we do not support navigator.serviceWorker in
+    // WorkerNavigator (see https://crbug.com/371690), both dedicated worker and
+    // shared worker context can never have a ServiceWorker object, but service
+    // worker execution context is different as it can have some ServiceWorker
+    // objects via the ServiceWorkerGlobalScope#registration object.
+    // So, if we're on a worker thread here we know it's definitely a service
+    // worker thread.
+    DCHECK(io_thread_task_runner_);
+    return WebServiceWorkerImpl::CreateForServiceWorkerGlobalScope(
+        std::move(info), thread_safe_sender_.get(), io_thread_task_runner_);
+  }
+  return WebServiceWorkerImpl::CreateForServiceWorkerClient(
+      std::move(info), thread_safe_sender_.get());
+}
+
+void ServiceWorkerDispatcher::SetIOThreadTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner) {
+  io_thread_task_runner_ = std::move(io_thread_task_runner);
 }
 
 void ServiceWorkerDispatcher::OnServiceWorkerStateChanged(

@@ -76,7 +76,7 @@ class WebServiceWorker {
                                    TransferableMessage,
                                    const WebSecurityOrigin&) = 0;
 
-  virtual void Terminate() {}
+  virtual void TerminateForTesting() {}
 };
 }
 
