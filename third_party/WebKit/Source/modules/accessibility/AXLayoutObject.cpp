@@ -1010,12 +1010,14 @@ String AXLayoutObject::ImageDataUrl(const IntSize& max_size) const {
     return String();
 
   // Encode as a PNG and return as a data url.
-  String data_url =
-      ImageDataBuffer(
-          IntSize(width, height),
-          reinterpret_cast<const unsigned char*>(pixel_storage.data()))
-          .ToDataURL("image/png", 1.0);
-  return data_url;
+  std::unique_ptr<ImageDataBuffer> buffer = ImageDataBuffer::Create(
+      IntSize(width, height),
+      reinterpret_cast<const unsigned char*>(pixel_storage.data()));
+
+  if (!buffer)
+    return String();
+
+  return buffer->ToDataURL("image/png", 1.0);
 }
 
 String AXLayoutObject::GetText() const {
