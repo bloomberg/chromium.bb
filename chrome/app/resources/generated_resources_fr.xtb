@@ -1242,7 +1242,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2890678560483811744">Plage de pages hors limite</translation>
 <translation id="2893168226686371498">Navigateur par défaut</translation>
 <translation id="2893453364759632532">Fenêtre vers le bas</translation>
-<translation id="289426338439836048">Autre réseau mobile...</translation>
 <translation id="289644616180464099">La carte SIM est verrouillée</translation>
 <translation id="289695669188700754">ID de clé : <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Voulez-vous vraiment ouvrir <ph name="TAB_COUNT" /> onglets ?</translation>
@@ -1442,7 +1441,6 @@ Pour en savoir plus, consultez notre <ph name="BEGIN_LINK" />Centre d'aide<ph na
 <translation id="3190558889382726167">Mot de passe enregistré</translation>
 <translation id="3192947282887913208">Fichiers audio</translation>
 <translation id="3194737229810486521"><ph name="URL" /> souhaite stocker des données de façon permanente sur votre appareil</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> sur <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Serveurs</translation>
 <translation id="3202131003361292969">Chemin d'accès</translation>
 <translation id="3202173864863109533">Le son de cet onglet est désactivé</translation>
@@ -1482,7 +1480,6 @@ Pour en savoir plus, consultez notre <ph name="BEGIN_LINK" />Centre d'aide<ph na
 <translation id="3268451620468152448">Onglets ouverts</translation>
 <translation id="3269069891205016797">Les informations vous concernant seront supprimées de cet appareil dès votre déconnexion.</translation>
 <translation id="3269093882174072735">Charger l'image</translation>
-<translation id="3269889795238950578">Cette page peut voir le texte et les images copiés dans le presse-papiers.</translation>
 <translation id="326999365752735949">Différence de téléchargement</translation>
 <translation id="3270965368676314374">Accéder aux photos, à la musique et aux autres fichiers multimédias stockés sur votre ordinateur, les modifier et les supprimer</translation>
 <translation id="327147043223061465">Afficher l'ensemble des cookies et données de sites</translation>
@@ -1952,7 +1949,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Importés depuis IE</translation>
 <translation id="3950820424414687140">Ouvrir une session</translation>
-<translation id="3950870029767307261">Cette page ne pourra pas voir le texte et les images copiés dans le presse-papiers.</translation>
 <translation id="3954354850384043518">En cours</translation>
 <translation id="3955193568934677022">Autoriser les sites à lire les contenus protégés (recommandé)</translation>
 <translation id="3956702100721821638">Impossible d'accéder à Google Play</translation>
@@ -5147,7 +5143,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9157697743260533322">Échec de la configuration des mises à jour automatiques pour tous les utilisateurs (erreur de lancement avant la période de diffusion : <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Petit problème… Une erreur de communication réseau s'est produite lors de l'authentification. Veuillez vérifier votre connexion réseau, puis réessayer.</translation>
 <translation id="9161070040817969420">Sous-cadres pour : <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">Picture-in-picture</translation>
 <translation id="9169496697824289689">Afficher les raccourcis clavier</translation>
 <translation id="9170397650136757332">À présent, déplacez légèrement votre doigt pour enregistrer toutes les parties de votre empreinte digitale</translation>
 <translation id="9170848237812810038">Ann&amp;uler</translation>

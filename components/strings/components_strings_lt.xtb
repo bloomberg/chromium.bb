@@ -311,6 +311,7 @@
           serveris veikia. Jei manote, kad tarpinio serverio
           naudoti nereikia:
           <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956">„<ph name="PRINTER_NAME" />“ serveryje „<ph name="SERVER_NAME" />“</translation>
 <translation id="320323717674993345">Atšaukti mokėjimą</translation>
 <translation id="3207960819495026254">Pažymėta</translation>
 <translation id="3209375525920864198">Įveskite tinkamą sesijos pavadinimą.</translation>

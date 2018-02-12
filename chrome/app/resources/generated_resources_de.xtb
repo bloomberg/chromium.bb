@@ -1238,7 +1238,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2890678560483811744">Seitenbereich ist zu groß</translation>
 <translation id="2893168226686371498">Standardbrowser</translation>
 <translation id="2893453364759632532">Fenster nach unten</translation>
-<translation id="289426338439836048">Anderes Mobilfunknetz...</translation>
 <translation id="289644616180464099">SIM-Karte ist gesperrt</translation>
 <translation id="289695669188700754">Schlüssel-ID: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Möchten Sie wirklich <ph name="TAB_COUNT" /> Tabs öffnen?</translation>
@@ -1438,7 +1437,6 @@ Mehr dazu erfahren Sie in <ph name="BEGIN_LINK" />unserer Hilfe<ph name="END_LIN
 <translation id="3190558889382726167">Passwort gespeichert</translation>
 <translation id="3192947282887913208">Audiodateien</translation>
 <translation id="3194737229810486521"><ph name="URL" /> möchte Daten dauerhaft auf Ihrem Gerät speichern</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> auf <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Server</translation>
 <translation id="3202131003361292969">Pfad</translation>
 <translation id="3202173864863109533">Der Ton dieses Tabs wird stummgeschaltet.</translation>
@@ -1478,7 +1476,6 @@ Mehr dazu erfahren Sie in <ph name="BEGIN_LINK" />unserer Hilfe<ph name="END_LIN
 <translation id="3268451620468152448">Geöffnete Tabs</translation>
 <translation id="3269069891205016797">Ihre Daten werden von dem Gerät entfernt, wenn Sie sich abmelden.</translation>
 <translation id="3269093882174072735">Bild laden</translation>
-<translation id="3269889795238950578">Diese Seite kann Texte und Bilder aus der Zwischenablage abrufen.</translation>
 <translation id="326999365752735949">DIFF-Datei wird heruntergeladen.</translation>
 <translation id="3270965368676314374">Fotos, Musik und andere Medien auf Ihrem Computer lesen, ändern und löschen</translation>
 <translation id="327147043223061465">Alle Cookies und Websitedaten anzeigen</translation>
@@ -1948,7 +1945,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Aus Internet Explorer importiert</translation>
 <translation id="3950820424414687140">Anmelden</translation>
-<translation id="3950870029767307261">Diese Seite wurde daran gehindert, Texte und Bilder aus der Zwischenablage abzurufen</translation>
 <translation id="3954354850384043518">Wird heruntergeladen</translation>
 <translation id="3955193568934677022">Wiedergabe geschützter Inhalte auf Websites zulassen (empfohlen)</translation>
 <translation id="3956702100721821638">Keine Verbindung zu Google Play</translation>
@@ -4175,7 +4171,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7576032389798113292">6 x 4</translation>
 <translation id="7576690715254076113">Zuordnen</translation>
 <translation id="7579149537961810247">Websites stummschalten</translation>
-<translation id="7580671184200851182">Dieselben Audioinhalte über alle Boxen wiedergeben (Mono-Audio)</translation>
+<translation id="7580671184200851182">Dieselben Audioinhalte über alle Lautsprecher wiedergeben (Mono-Audio)</translation>
 <translation id="7581462281756524039">Ein Bereinigungstool</translation>
 <translation id="7582582252461552277">Dieses Netzwerk bevorzugen</translation>
 <translation id="7586498138629385861">Chrome wird weiter ausgeführt, solange die Chrome-Apps geöffnet sind.</translation>
@@ -5147,7 +5143,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="9157697743260533322">Automatische Updates für alle Nutzer konnten nicht eingerichtet werden (Preflight-Startfehler: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Hoppla! Während der Authentifizierung ist ein Kommunikationsproblem mit dem Netzwerk aufgetreten. Überprüfen Sie bitte Ihre Netzwerkverbindung und versuchen Sie es erneut.</translation>
 <translation id="9161070040817969420">Subframes für: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">Bild-in-Bild</translation>
 <translation id="9169496697824289689">Tastenkombinationen ansehen</translation>
 <translation id="9170397650136757332">Bewegen Sie Ihren Finger nun etwas, damit Ihr Fingerabdruck vollständig erfasst wird</translation>
 <translation id="9170848237812810038">&amp;Rückgängig</translation>

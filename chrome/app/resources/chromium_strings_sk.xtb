@@ -20,6 +20,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1668054258064581266">Po odstránení účtu z prehliadača Chromium možno budete musieť znova načítať otvorené karty, aby sa zmena uplatnila.</translation>
 <translation id="1688750314291223739">Ak chcete uložiť svoje prispôsobené funkcie prehliadača na webe a pristupovať k nim z prehliadača Chromium v ktoromkoľvek počítači, nastavte synchronizáciu.</translation>
 <translation id="1708666629004767631">K dispozícii je nová bezpečnejšia verzia prehliadača Chromium.</translation>
+<translation id="1755219581955525058">Rozšírenie <ph name="EXTENSION_NAME" /> bolo pridané do prehliadača Chromium</translation>
 <translation id="1774152462503052664">Povoliť prehliadaču Chromium spustenie na pozadí</translation>
 <translation id="1779356040007214683">Z dôvodu vyššej bezpečnosti prehliadača Chromium sme zakázali niektoré rozšírenia, ktoré nedodáva <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohli byť pridané bez vášho vedomia.</translation>
 <translation id="1808667845054772817">Preinštalovať prehliadač Chromium</translation>
@@ -126,6 +127,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="5479196819031988440">Chromium OS nedokáže túto stránku otvoriť.</translation>
 <translation id="5480860683791598150">Chromium potrebuje prístup k vašej polohe, aby ju mohol zdieľať s týmto webom</translation>
 <translation id="549669000822060376">Počkajte, kým Chromium nainštaluje najnovšie aktualizácie systému.</translation>
+<translation id="5631814766731275228">Meno a obrázok profilu Chromium</translation>
 <translation id="5634636535844844681">Chromium vyžaduje Windows 7 alebo vyšší.</translation>
 <translation id="5680901439334282664">prihláste sa do prehliadača Chromium</translation>
 <translation id="5698481217667032250">Zobraziť Chromium v tomto jazyku</translation>
@@ -142,6 +144,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="5987687638152509985">Ak chcete spustiť synchronizáciu, aktualizujte Chromium</translation>
 <translation id="6055895534982063517">K dispozícii je nová verzia prehliadača Chromium, ktorá je rýchlejšia ako kedykoľvek predtým.</translation>
 <translation id="6063093106622310249">&amp;Otvoriť v prehliadači Chromium</translation>
+<translation id="6072279588547424923">Rozšírenie <ph name="EXTENSION_NAME" /> bolo pridané do prehliadača Chromium</translation>
 <translation id="608189560609172163">Prehliadaču Chromium sa nepodarilo synchronizovať vaše údaje pre chybu prihlásenia.</translation>
 <translation id="6096348254544841612">Prispôsobte si prehliadač Chromium a ovládajte ho. K dispozícii je aktualizácia.</translation>
 <translation id="6129621093834146363">Súbor <ph name="FILE_NAME" /> je nebezpečný, a preto ho prehliadač Chromium zablokoval.</translation>
@@ -159,6 +162,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="6485906693002546646">Na synchronizáciu prehliadača Chromium používate účet <ph name="PROFILE_EMAIL" />. Ak chcete upraviť predvoľby synchronizácie alebo používať prehliadač Chromium bez účtu Google, prejdite na <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Odinštalovať Chromium</translation>
 <translation id="6598877126913850652">Prejsť do nastavení upozornení prehliadača Chromium</translation>
+<translation id="6630428628961670451">Chcete prepojiť dáta prehliadača Chromium s týmto účtom?</translation>
 <translation id="6676384891291319759">Prístup do siete Internet</translation>
 <translation id="6717134281241384636">Váš profil sa nedá použiť, pretože pochádza z novšej verzie prehliadača Chromium.
 

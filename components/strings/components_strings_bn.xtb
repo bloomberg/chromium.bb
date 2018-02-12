@@ -311,6 +311,7 @@
     বা আপনার নেটওয়ার্ক প্রশাসকের সাথে যোগাযোগ করুন৷ আপনি কোনো প্রক্সী সার্ভার
     ব্যবহার করবেন না বলে মনে করলে:
     <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="SERVER_NAME" /> এ <ph name="PRINTER_NAME" /></translation>
 <translation id="320323717674993345">পেমেন্ট বাতিল করুন</translation>
 <translation id="3207960819495026254">বুকমার্ক করা হয়েছে</translation>
 <translation id="3209375525920864198">অনুগ্রহ করে একটি সঠিক সেশনের নাম লিখুন।</translation>

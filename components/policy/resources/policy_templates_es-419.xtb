@@ -602,6 +602,15 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Esta política es opcional. Si no se establece, no se realizará ningún reemplazo de los términos de búsqueda.
 
           Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
+<translation id="306887062252197004">Esta política permite que los usuarios de la función WebDriver anulen
+      las políticas que puedan interferir con su funcionamiento.
+
+      Actualmente, esta política inhabilita las políticas de SitePerProcess y IsolateOrigins.
+
+      Si se habilita la política, WebDriver podrá anular las políticas
+      incompatibles.
+      Si se inhabilita o no se configura, WebDriver no podrá
+      anular las políticas incompatibles.</translation>
 <translation id="3069958900488014740">Permite desactivar la optimización de WPAD (Web Proxy Auto-Discovery) en <ph name="PRODUCT_NAME" />.
 
       Si esta política se establece en false, la optimización de WPAD se inhabilita, lo que hace que <ph name="PRODUCT_NAME" /> espere más tiempo a los servidores de WPAD basados en DNS. Si la política se habilita o no se establece, la optimización de WPAD se habilita.
@@ -743,13 +752,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Consulta https://developers.google.com/safe-browsing para obtener más información sobre Navegación segura.</translation>
 <translation id="3709266154059827597">Configurar la lista negra de instalación de extensiones</translation>
 <translation id="3711895659073496551">Suspender</translation>
-<translation id="3732106275571017176">Esta configuración permite que los usuarios cambien entre cuentas de Google dentro del área de contenido de la ventana del navegador cuando acceden a su cuenta en el dispositivo <ph name="PRODUCT_OS_NAME" />.
-
-      Si esta política se establece como falsa, no se permitirá acceder a otra cuenta desde el área de contenido de una ventana de navegador que no sea de incógnito.
-
-      Si no se establece o se establece como verdadera, se usará el comportamiento predeterminado: se permitirá acceder a otra cuenta desde el área de contenido del navegador, excepto para las cuentas secundarias, donde se bloqueará para el área de contenido en ventanas que no sean de incógnito.
-
-      En caso de que no deba permitirse el acceso a otra cuenta a través del modo de navegación incógnito, considera bloquear dicho modo mediante la política IncognitoModeAvailability.</translation>
 <translation id="3736879847913515635">Habilitar la opción para agregar una persona en el Administrador de usuarios</translation>
 <translation id="3737544779868348650">Nombre de host de la red del dispositivo</translation>
 <translation id="3750220015372671395">Bloquear generación de claves en estos sitios</translation>
@@ -1165,6 +1167,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4899708173828500852">Habilitar la navegación segura</translation>
 <translation id="4906194810004762807">Frecuencia de actualización de la Política de dispositivos</translation>
 <translation id="4917385247580444890">Fuerte</translation>
+<translation id="4923806312383904642">Permitir que WebDriver anule las políticas incompatibles</translation>
 <translation id="494613465159630803">Receptor de Cast</translation>
 <translation id="4962262530309732070">Si esta política se establece como verdadera o no se configura, <ph name="PRODUCT_NAME" /> permitirá la opción para agregar una persona desde el Administrador de usuarios.
 

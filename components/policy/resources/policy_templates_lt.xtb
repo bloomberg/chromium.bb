@@ -637,6 +637,15 @@
           Ši politika yra pasirenkama. Jei ji nebus nustatyta, paieškos terminas nebus pakeistas.
 
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „Įgalintas numatytasis paieškos teikėjas“.</translation>
+<translation id="306887062252197004">Pagal šią politiką „WebDriver“ funkcijos naudotojai gali perrašyti
+      politikos nuostatas, kurios gali trikdyti vykdomą operaciją.
+
+      Šiuo metu ši politika išjungia politikos nuostatas „SitePerProcess“ ir „IsolateOrigins“.
+
+      Jei politika bus įgalinta, „WebDriver“ galės perrašyti nesuderinamas
+      politikos nuostatas.
+      Jei politika bus išjungta arba nesukonfigūruota, „WebDriver“ nebus leidžiama
+      perrašyti nesuderinamų politikos nuostatų.</translation>
 <translation id="3069958900488014740">Leidžiama išjungti WPAD (žiniatinklio tarpinio serverio automatinį aptikimą, angl. „Web Proxy Auto-Discovery“) optimizavimą sistemoje „<ph name="PRODUCT_NAME" />“.
 
       Nustačius šią politiką į „false“, WPAD optimizavimas išjungiamas, todėl „<ph name="PRODUCT_NAME" />“ reikia ilgiau laukti DNS pagrindu veikiančių WPAD serverių. Jei politika nenustatoma arba įgalinama, WPAD optimizavimas įgalinamas.
@@ -783,13 +792,6 @@
       Daugiau informacijos apie Saugų naršymą rasite adresu https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Konfigūruoti plėtinių diegimo juodąjį sąrašą</translation>
 <translation id="3711895659073496551">Laikinai sustabdyti</translation>
-<translation id="3732106275571017176">Naudodami šį nustatymą naudotojai gali perjungti „Google“ paskyras naršyklės lango turinio srityje po to, kai prisijungia prie „<ph name="PRODUCT_OS_NAME" />“ įrenginio.
-
-      Jei ši politika nustatyta į „false“, nebus leidžiama prisijungti prie kitos paskyros naršyklės turinio srityje naršant ne inkognito režimu.
-
-      Jei ši politika nenustatyta arba nustatyta į „true“, bus naudojama numatytoji elgsena: naršyklės turinio srityje bus leidžiama prisijungti prie kitos paskyros, išskyrus vaikų paskyras, kurios bus blokuojamos turinio srityje naršant ne inkognito režimu.
-
-      Jei prisijungti prie kitos paskyros neturėtų būti leidžiama naršant inkognito režimu, turėtumėte užblokuoti tą režimą naudodami politiką „IncognitoModeAvailability“.</translation>
 <translation id="3736879847913515635">Asmens pridėjimo naudotojų tvarkytuvėje įgalinimas</translation>
 <translation id="3737544779868348650">Įrenginio tinklo prieglobos serverio pavadinimas</translation>
 <translation id="3750220015372671395">Blokuoti rakto generavimą šiose svetainėse</translation>
@@ -1223,6 +1225,7 @@
 <translation id="4899708173828500852">Įgalinti saugų naršymą</translation>
 <translation id="4906194810004762807">Atnaujinti įrenginio politikos reitingą</translation>
 <translation id="4917385247580444890">Stiprus</translation>
+<translation id="4923806312383904642">Leisti „WebDriver“ perrašyti nesuderinamas politikos nuostatas</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">Jei ši politika nustatyta į „true“ arba yra nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ leis „Pridėti asmenį“ naudojant naudotojų tvarkytuvę.
 

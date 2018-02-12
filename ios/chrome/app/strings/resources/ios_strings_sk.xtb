@@ -249,6 +249,7 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 <translation id="5871497086027727873">1 položka bola presunutá</translation>
 <translation id="5911030830365207728">Prekladač Google</translation>
 <translation id="5916664084637901428">Zapnuté</translation>
+<translation id="5938160824633642847">Vaše zariadenie je takmer plné. Uvoľnite miesto a skúste to znova.</translation>
 <translation id="5948291296578561264">Umožňuje ukladať fotky do knižnice fotiek.</translation>
 <translation id="5955891643922670672">Zobrazuje sa offline verzia</translation>
 <translation id="5964480694698977962">Vytvoriť novú kartu inkognito.</translation>
@@ -289,6 +290,7 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 
 Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej frázy synchronizácie. Keď ju zadáte, synchronizácia sa spustí.</translation>
 <translation id="6418346271604475326">Príprava PDF</translation>
+<translation id="6434591244308415567">Vyskytla sa chyba. Skúste to znova neskôr.</translation>
 <translation id="6445051938772793705">Krajina</translation>
 <translation id="6445981559479772097">Správa sa odoslala.</translation>
 <translation id="6464071786529933911">Otvoriť na novej karte inkognito</translation>
@@ -299,6 +301,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="6657585470893396449">Heslo</translation>
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6713747756340119864">Google Apps</translation>
+<translation id="6730682669179532099">Heslá sa nedajú exportovať</translation>
 <translation id="6762156594045689028">Ak chcete zmeniť toto nastavenie, <ph name="BEGIN_LINK" />resetujte synchronizáciu<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">PSČ</translation>
 <translation id="6785453220513215166">Prebieha odosielanie správy o zlyhaní...</translation>
@@ -326,6 +329,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7203585745079012652">Vysloviť odpovede</translation>
 <translation id="722055596168483966">Prispôsobenie služieb Google</translation>
 <translation id="7272437679830969316">Vašu totožnosť nie je možné overiť. Heslo sa neskopírovalo.</translation>
+<translation id="7291368939935408496">Pripravujú sa heslá...</translation>
 <translation id="7336264872878993241">Stiahnuté: <ph name="PERCENT" /> percent</translation>
 <translation id="7346909386216857016">Ok, rozumiem</translation>
 <translation id="7400418766976504921">Webová adresa</translation>

@@ -27,6 +27,7 @@
       Jika kebijakan ini disetel, layar login akan selalu ditampilkan dalam lokal yang diberikan oleh nilai pertama dari kebijakan ini (kebijakan didefinisikan sebagai daftar untuk kompatibilitas yang diteruskan).  Jika kebijakan ini tidak disetel atau disetel ke daftar kosong, layar login akan ditampilkan dalam lokal sesi pengguna terakhir.  Jika kebijakan ini disetel ke nilai lokal yang tidak valid, layar login akan ditampilkan di lokal alternatif (saat ini, en-US).</translation>
 <translation id="1062011392452772310">Mengaktifkan pengesahan jarak jauh untuk perangkat tersebut</translation>
 <translation id="1062407476771304334">Ganti</translation>
+<translation id="109166998561583554">Pemicu laporan perlindungan sandi pada akun yang berisiko</translation>
 <translation id="1093082332347834239">Jika setelan ini diaktifkan, host bantuan jarak jauh akan dijalankan dalam proses dengan izin <ph name="UIACCESS_PERMISSION_NAME" />.  Hal ini akan memungkinkan pengguna jarak jauh untuk berinteraksi dengan jendela yang berada jauh di desktop pengguna lokal.
 
           Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, host bantuan jarak jauh akan dijalankan dalam konteks pengguna dan pengguna jarak jauh tidak dapat berinteraksi dengan jendela yang berada jauh di desktop.</translation>
@@ -88,6 +89,7 @@
 
       Jika kebijakan ini disetel ke False, <ph name="PRODUCT_NAME" /> tidak akan mengizinkan profil tamu dimulai.</translation>
 <translation id="1363275621236827384">Mengaktifkan kueri ke Quirks Server untuk profil hardware</translation>
+<translation id="1387596372902085462">Apakah untuk mengaktifkan kepercayaan pada Infrastruktur PKI Lama milik Symantec Corporation</translation>
 <translation id="1393485621820363363">Mengaktifkan printer perangkat perusahaan</translation>
 <translation id="1397855852561539316">URL saran penyedia penelusuran default</translation>
 <translation id="1426410128494586442">Ya</translation>
@@ -96,6 +98,7 @@
 <translation id="1438739959477268107">Setelan pembuatan kunci default</translation>
 <translation id="1454846751303307294">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menjalankan JavaScript. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultJavaScriptSetting', jika disetel, ataupun dari konfigurasi pribadi pengguna.</translation>
 <translation id="1456822151187621582">Windows (klien <ph name="PRODUCT_OS_NAME" />):</translation>
+<translation id="1457305643416399820">Laporan perlindungan sandi pada akun yang berisiko nonaktif</translation>
 <translation id="1464848559468748897">Mengontrol perilaku pengguna di sesi multi profil di perangkat <ph name="PRODUCT_OS_NAME" />.
 
       Jika kebijakan ini disetel ke 'MultiProfileUserBehaviorUnrestricted', pengguna dapat menjadi pengguna utama atau sekunder di sesi multi profil.
@@ -389,6 +392,7 @@
       Kebijakan ini ditentukan dalam milidetik.</translation>
 <translation id="237494535617297575">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menampilkan pemberitahuan. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultNotificationsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="2386362615870139244">Izinkan penguncian layar saat bangun</translation>
+<translation id="2411817661175306360">Peringatan perlindungan sandi nonaktif</translation>
 <translation id="2411919772666155530">Mencekal pemberitahuan di situs ini</translation>
 <translation id="2418507228189425036">Menonaktifkan penyimpanan histori browser di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
 
@@ -760,13 +764,6 @@
       Lihat https://developers.google.com/safe-browsing untuk informasi selengkapnya terkait SafeBrowsing.</translation>
 <translation id="3709266154059827597">Konfigurasikan daftar hitam pemasangan ekstensi</translation>
 <translation id="3711895659073496551">Tangguhkan</translation>
-<translation id="3732106275571017176">Setelan ini memungkinkan pengguna beralih akun Google dalam area konten jendela browser setelah mereka login ke perangkat <ph name="PRODUCT_OS_NAME" />.
-
-      Jika kebijakan ini disetel ke false, login ke akun yang berbeda dari area konten browser yang bukan dalam mode Penyamaran tidak akan diizinkan.
-
-      Jika kebijakan ini tidak disetel atau disetel ke true, perilaku default akan digunakan: login ke akun yang berbeda dari area konten browser akan diizinkan, kecuali akun anak karena akan diblokir untuk area konten yang bukan dalam mode Penyamaran.
-
-      Jika login ke akun yang berbeda tidak diizinkan melalui Mode penyamaran, pertimbangkan memblokir mode tersebut menggunakan kebijakan IncognitoModeAvailability.</translation>
 <translation id="3736879847913515635">Mengaktifkan penambahan orang di pengelola pengguna</translation>
 <translation id="3737544779868348650">Hostname jaringan perangkat</translation>
 <translation id="3750220015372671395">Blokir pembuatan kunci di situs ini</translation>
@@ -1061,6 +1058,7 @@
 
           Untuk deskripsi lengkap terkait kemungkinan setelan dan struktur kebijakan ini, buka https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
+<translation id="4554651132977135445">Mode pemrosesan loopback kebijakan pengguna</translation>
 <translation id="4555850956567117258">Mengaktifkan pengesahan jarak jauh bagi pengguna</translation>
 <translation id="4557134566541205630">URL halaman tab baru penyedia penelusuran default</translation>
 <translation id="4600786265870346112">Aktifkan kursor besar</translation>
@@ -1326,6 +1324,7 @@
 
       Perlu diperhatikan jika platform mendukung pemberitahuan kebijakan, jeda penyegaran akan disetel menjadi 24 jam (dengan mengabaikan semua setelan default dan nilai kebijakan ini) karena pemberitahuan kebijakan diperkirakan akan memaksa penyegaran otomatis setiap kali kebijakan berubah, menghasilkan lebih banyak penyegaran yang tidak diperlukan.</translation>
 <translation id="5530347722229944744">Blokir download yang berpotensi berbahaya</translation>
+<translation id="5530586312297447592">Laporan perlindungan sandi pada akun yang berisiko dipicu oleh penggunaan ulang sandi di halaman phishing</translation>
 <translation id="5535973522252703021">Daftar putih server delegasi Kerberos</translation>
 <translation id="555077880566103058">Izinkan semua situs menjalankan plugin <ph name="FLASH_PLUGIN_NAME" /> secara otomatis</translation>
 <translation id="5559079916187891399">Kebijakan ini tidak memengaruhi aplikasi Android.</translation>
@@ -1680,6 +1679,7 @@
       Jika kebijakan ini tidak disetel, prediksi jaringan akan diaktifkan namun pengguna dapat mengubahnya.</translation>
 <translation id="6658245400435704251">Menentukan jumlah waktu (dalam detik) sebuah perangkat dapat menunda download pembaruannya secara acak dari saat pembaruan tersebut pertama kali didorong ke server. Perangkat dapat menunggu dengan sebagian dari waktu ini dari segi prediksi waktu penyelesaian tugas dan sisa waktunya dari segi jumlah pemeriksaan pembaruan. Dalam keadaan apa pun, penyebaran dibatasi dengan jumlah waktu yang konstan sehingga perangkat tidak akan terus menunggu download pembaruan selamanya.</translation>
 <translation id="6689792153960219308">Melaporkan status hardware</translation>
+<translation id="6698071416141001300">Laporan perlindungan sandi pada akun yang berisiko dipicu oleh penggunaan ulang sandi</translation>
 <translation id="6699880231565102694">Mengaktifkan autentikasi dua faktor untuk hosting akses jarak jauh</translation>
 <translation id="6724842112053619797">Jika Anda mengaktifkan setelan ini, setelan yang disimpan di profil <ph name="PRODUCT_NAME" /> seperti bookmark, data IsiOtomatis, sandi, dan informasi lainnya juga akan ditulis ke file yang disimpan di folder profil pengguna Roaming atau lokasi yang ditentukan oleh Administrator melalui kebijakan <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Mengaktifkan kebijakan ini akan menonaktifkan sinkronisasi cloud.
 
@@ -1914,6 +1914,7 @@
 <translation id="7529100000224450960">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang diizinkan membuka pop-up. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPopupsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="7529144158022474049">Faktor penyebaran pembaruan otomatis</translation>
 <translation id="7534199150025803530">Kebijakan ini tidak memengaruhi aplikasi Google Drive Android. Jika ingin mencegah penggunaan Google Drive melalui sambungan seluler, sebaiknya Anda tidak mengizinkan pemasangan aplikasi Google Drive Android.</translation>
+<translation id="7547549430720182663">Gabungkan</translation>
 <translation id="7553535237300701827">Jika kebijakan ini disetel, alur autentikasi proses masuk akan menggunakan salah satu cara berikut tergantung nilai setelan:
 
       Jika disetel ke GAIA, proses masuk akan dilakukan melalui alur autentikasi GAIA normal.
@@ -2187,6 +2188,7 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
       Jika kebijakan ini tidak disetel atau dinonaktifkan, plugin PDF akan digunakan untuk membuka file PDF kecuali pengguna menonaktifkannya.</translation>
 <translation id="8402079500086185021">Selalu Buka file PDF secara eksternal</translation>
 <translation id="8412312801707973447">Apakah pemeriksaan OCSP/CRL online dilakukan atau tidak</translation>
+<translation id="841977920223099909">Pemicu peringatan perlindungan sandi</translation>
 <translation id="8424255554404582727">Setel pemutaran layar default, diterapkan kembali setiap kali melakukan boot ulang</translation>
 <translation id="8426231401662877819">Putar layar searah jarum jam sebesar 90 derajat</translation>
 <translation id="8451988835943702790">Gunakan Halaman Tab Baru sebagai beranda</translation>
@@ -2238,6 +2240,7 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
           Jika Anda membiarkan kebijakan ini tidak disetel, <ph name="PRODUCT_NAME" /> akan mencoba mendeteksi apakah server ada di internet dan akan menanggapi permintaan IWA setelahnya.  Jika server terdeteksi sebagai internet, permintaan IWA darinya akan diabaikan oleh <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8672321184841719703">Versi Pembaruan Otomatis Target</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
+<translation id="8685024486845674965">Peringatan perlindungan sandi dipicu oleh penggunaan ulang sandi</translation>
 <translation id="8693243869659262736">Gunakan klien DNS di dalamnya</translation>
 <translation id="8704831857353097849">Daftar plugin yang dinonaktifkan</translation>
 <translation id="8711086062295757690">Menentukan kata kunci yang merupakan pintasan yang digunakan dalam omnibox guna memicu penelusuran untuk operator ini. Kebijakan ini bersifat opsional. Jika tidak disetel, kata kunci tidak akan mengaktifkan penyedia penelusuran. Kebijakan ini hanya dipertimbangkan jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
@@ -2250,6 +2253,7 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
       Jika setelan ini diaktifkan atau tidak disetel, histori penjelajahan atau download dapat dihapus.
 
       Jika setelan ini dinonaktifkan, histori penjelajahan dan download tidak dapat dihapus.</translation>
+<translation id="8759829385824155666">Jenis enkripsi Kerberos yang diizinkan</translation>
 <translation id="8764119899999036911">Menentukan apakah Kerberos SPN yang dihasilkan didasarkan pada nama DNS kanonik atau nama asli yang dimasukkan. Jika Anda mengaktifkan setelan ini, pencarian CNAME akan dilewati dan nama server akan digunakan seperti saat dimasukkan. Jika Anda menonaktifkan setelan ini atau membiarkannya tidak disetel, nama kanonik server akan ditentukan melalui pencarian CNAME.</translation>
 <translation id="87812015706645271">Mewajibkan nama pengguna lokal cocok dengan  pemilik host akses jarak jauh</translation>
 <translation id="8782750230688364867">Menentukan persentase yang digunakan untuk menskalakan penundaan layar redup saat perangkat dalam mode presentasi.
@@ -2265,6 +2269,7 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
       Jika kebijakan tidak disetel, atau disetel ke false, lokasi tidak akan dilaporkan.</translation>
 <translation id="8818768076343557335">Memprediksi tindakan jaringan pada jaringan apa pun yang bukan seluler.
           (Penggunaan dihentikan di nilai 50, dihapus di nilai 52. Setelah 52, jika nilai 1 disetel, nilai akan diperlakukan sebagai 0 - memprediksi tindakan jaringan di sambungan jaringan apa pun.)</translation>
+<translation id="8825782996899863372">Peringatan perlindungan sandi pada dipicu oleh penggunaan ulang sandi di halaman phishing</translation>
 <translation id="8828766846428537606">Mengonfigurasi beranda default pada <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubahnya. Setelan beranda pengguna hanya dikunci sepenuhnya, jika Anda memilih beranda sebagai halaman tab baru, atau menyetelnya menjadi URL dan menentukan URL beranda. Jika Anda tidak menentukan URL beranda, pengguna masih dapat menyetel beranda ke halaman tab baru dengan menentukan 'chrome://newtab'.</translation>
 <translation id="8833109046074170275">Autentikasi melalui alur GAIA default</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> menyimpan Aplikasi dan Ekstensi dalam cache untuk pemasangan oleh banyak pengguna pada perangkat tunggal guna menghindari download ulang oleh setiap pengguna.
@@ -2378,6 +2383,7 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
       Jika kebijakan ini disetel ke True, <ph name="PRODUCT_OS_NAME" /> akan memicu boot ulang ketika pengguna mematikan perangkat. <ph name="PRODUCT_OS_NAME" /> menggantikan semua kemunculan tombol matikan di antarmuka pengguna dengan tombol boot ulang. Jika pengguna mematikan perangkat menggunakan tombol daya, perangkat tidak otomatis melakukan boot ulang, meskipun kebijakan ini diaktifkan.</translation>
 <translation id="9158929520101169054">Izinkan Login Multipel Dalam Browser</translation>
 <translation id="9187743794267626640">Menonaktifkan pemasangan penyimpanan eksternal</translation>
+<translation id="918910591537763102">Lama</translation>
 <translation id="9197740283131855199">Persentase yang digunakan untuk menskalakan penundaan layar redup jika pengguna aktif setelah peredupan</translation>
 <translation id="9200828125069750521">Parameter untuk URL gambar yang menggunakan POST</translation>
 <translation id="9213347477683611358">Mengonfigurasi gambar wallpaper tingkat perangkat yang ditampilkan di layar login jika belum ada pengguna yang login ke perangkat. Kebijakan ini disetel dengan menetapkan URL tempat perangkat Chrome OS dapat mendownload gambar wallpaper dan potongan kriptografi yang digunakan untuk memverifikasi integritas download. Gambar harus dalam format JPEG dan ukuran filenya tidak boleh melebihi 16MB. URL harus dapat diakses tanpa autentikasi apa pun. Gambar wallpaper akan didownload dan disimpan dalam cache. Gambar ini akan didownload jika URL atau potongan berubah.

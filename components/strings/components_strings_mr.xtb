@@ -310,6 +310,7 @@
           किंवा आपल्या नेटवर्क प्रशासकाशी संपर्क साधा. आपण प्रॉक्सी सर्व्हर वापरत
          आहात यावर आपला विश्वास नसल्यास:
           <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="SERVER_NAME" /> वर <ph name="PRINTER_NAME" /></translation>
 <translation id="320323717674993345">पेमेंट रद्द करा</translation>
 <translation id="3207960819495026254">बुकमार्क केलेली</translation>
 <translation id="3209375525920864198">कृपया एक वैध सेशन नाव टाका.</translation>

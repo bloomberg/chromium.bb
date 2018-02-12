@@ -310,6 +310,7 @@
     ja veenduge, et puhverserver töötaks. Kui arvate, et teil ei ole vaja
     puhverserverit kasutada:
     <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956">Printer <ph name="PRINTER_NAME" /> serveris <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Tühista makse</translation>
 <translation id="3207960819495026254">Järjehoidjatesse lisatud</translation>
 <translation id="3209375525920864198">Sisestage sobiv seansi nimi.</translation>

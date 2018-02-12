@@ -1243,7 +1243,6 @@
 <translation id="2890678560483811744">페이지 범위를 벗어난 경우 참고사항</translation>
 <translation id="2893168226686371498">기본 브라우저</translation>
 <translation id="2893453364759632532">창 내리기</translation>
-<translation id="289426338439836048">기타 모바일 네트워크...</translation>
 <translation id="289644616180464099">SIM 카드가 잠겨 있습니다.</translation>
 <translation id="289695669188700754">키 ID: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870"><ph name="TAB_COUNT" />개 탭을 여시겠습니까?</translation>
@@ -1443,7 +1442,6 @@
 <translation id="3190558889382726167">비밀번호 저장됨</translation>
 <translation id="3192947282887913208">오디오 파일</translation>
 <translation id="3194737229810486521"><ph name="URL" />에서 내 기기에 데이터를 영구 저장하려고 합니다</translation>
-<translation id="3195213714973468956"><ph name="SERVER_NAME" />의 <ph name="PRINTER_NAME" /></translation>
 <translation id="3199127022143353223">서버</translation>
 <translation id="3202131003361292969">경로</translation>
 <translation id="3202173864863109533">이 탭의 오디오가 음소거됩니다.</translation>
@@ -1483,7 +1481,6 @@
 <translation id="3268451620468152448">열린 탭</translation>
 <translation id="3269069891205016797">로그아웃하면 내 정보가 기기에서 삭제됩니다.</translation>
 <translation id="3269093882174072735">이미지 로드</translation>
-<translation id="3269889795238950578">이 페이지에서 클립보드에 복사된 텍스트와 이미지를 볼 수 있습니다.</translation>
 <translation id="326999365752735949">diff 다운로드 중</translation>
 <translation id="3270965368676314374">컴퓨터에서 사진, 음악, 기타 미디어 조회, 변경, 삭제</translation>
 <translation id="327147043223061465">모든 쿠키 및 사이트 데이터 보기</translation>
@@ -1953,7 +1950,6 @@
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" />(<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">IE에서 가져온 북마크</translation>
 <translation id="3950820424414687140">로그인</translation>
-<translation id="3950870029767307261">이 페이지는 클립보드에 복사된 텍스트 및 이미지를 볼 수 없도록 차단되었습니다.</translation>
 <translation id="3954354850384043518">진행 중</translation>
 <translation id="3955193568934677022">사이트에서 보호된 콘텐츠를 재생하도록 허용(권장)</translation>
 <translation id="3956702100721821638">Google Play에 접속할 수 없음</translation>
@@ -5146,7 +5142,6 @@
 <translation id="9157697743260533322">모든 사용자에 대해 자동 업데이트를 설정하지 못했습니다(프리플라이트 실행 오류: <ph name="ERROR_NUMBER" />).</translation>
 <translation id="9158715103698450907">인증하는 중에 네트워크 통신 문제가 발생했습니다.  네트워크 연결을 확인한 뒤 다시 시도해 주세요.</translation>
 <translation id="9161070040817969420">다음 사이트의 서브프레임: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">PIP 모드</translation>
 <translation id="9169496697824289689">단축키 보기</translation>
 <translation id="9170397650136757332">이제 지문의 다른 부분도 모두 인식되도록 손가락을 살짝 움직이세요.</translation>
 <translation id="9170848237812810038">실행 취소(&amp;U)</translation>

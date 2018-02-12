@@ -1238,7 +1238,6 @@
 <translation id="2890678560483811744">页面引用超出范围</translation>
 <translation id="2893168226686371498">默认浏览器</translation>
 <translation id="2893453364759632532">下移窗口</translation>
-<translation id="289426338439836048">其他移动网络...</translation>
 <translation id="289644616180464099">SIM 卡已被锁定</translation>
 <translation id="289695669188700754">密钥 ID：<ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">是否确实要打开 <ph name="TAB_COUNT" /> 个标签页？</translation>
@@ -1438,7 +1437,6 @@
 <translation id="3190558889382726167">密码已保存</translation>
 <translation id="3192947282887913208">音频文件</translation>
 <translation id="3194737229810486521"><ph name="URL" /> 想在您的设备上永久存储数据</translation>
-<translation id="3195213714973468956">“<ph name="SERVER_NAME" />”上的“<ph name="PRINTER_NAME" />”</translation>
 <translation id="3199127022143353223">服务器</translation>
 <translation id="3202131003361292969">路径</translation>
 <translation id="3202173864863109533">此标签页已静音。</translation>
@@ -1478,7 +1476,6 @@
 <translation id="3268451620468152448">打开的标签页</translation>
 <translation id="3269069891205016797">在您退出后，系统会自动从此设备上移除您的信息。</translation>
 <translation id="3269093882174072735">加载图片</translation>
-<translation id="3269889795238950578">此页面可以查看复制到剪贴板的文字和图片。</translation>
 <translation id="326999365752735949">正在下载diff</translation>
 <translation id="3270965368676314374">读取、更改和删除您计算机上的照片、音乐和其他媒体</translation>
 <translation id="327147043223061465">查看所有 Cookie 和网站数据</translation>
@@ -1945,7 +1942,6 @@
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">从 IE 中导入</translation>
 <translation id="3950820424414687140">登录</translation>
-<translation id="3950870029767307261">此页面已被禁止查看复制到剪贴板的文字和图片</translation>
 <translation id="3954354850384043518">正在下载</translation>
 <translation id="3955193568934677022">允许网站播放受保护的内容（推荐）</translation>
 <translation id="3956702100721821638">无法连接到 Google Play</translation>
@@ -5123,7 +5119,6 @@
 <translation id="9157697743260533322">未能按您的要求为所有用户设置自动更新（启动预定流程时出错：<ph name="ERROR_NUMBER" />）</translation>
 <translation id="9158715103698450907">糟糕！系统在进行身份验证时发生了网络通信问题。请检查您的网络连接，然后重试。</translation>
 <translation id="9161070040817969420">以下网址的辅助框架：<ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">画中画</translation>
 <translation id="9169496697824289689">查看键盘快捷键</translation>
 <translation id="9170397650136757332">现在请稍微移动一下您的手指，以便系统记录您指纹的各个部分</translation>
 <translation id="9170848237812810038">撤消(&amp;U)</translation>

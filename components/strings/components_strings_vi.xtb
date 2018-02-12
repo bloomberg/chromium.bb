@@ -310,6 +310,7 @@
       đảm bảo rằng máy chủ proxy đang hoạt động. Nếu bạn cho rằng mình không cần
       sử dụng máy chủ proxy:
       <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> trên <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Hủy thanh toán</translation>
 <translation id="3207960819495026254">Đã được đánh dấu trang</translation>
 <translation id="3209375525920864198">Vui lòng nhập tên phiên hợp lệ.</translation>

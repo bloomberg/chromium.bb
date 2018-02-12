@@ -308,6 +308,7 @@
 <translation id="3174168572213147020">Sziget</translation>
 <translation id="3176929007561373547">Ellenőrizze a proxybeállításokat, vagy kérdezze meg a rendszergazdájától, hogy a proxyszerver működik-e. Ha úgy gondolja, hogy nem használ proxyszervert:
       <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> nyomtató a(z) <ph name="SERVER_NAME" /> nevű szerveren</translation>
 <translation id="320323717674993345">Fizetés visszavonása</translation>
 <translation id="3207960819495026254">Könyvjelzőzött</translation>
 <translation id="3209375525920864198">Érvényes munkamenetnevet adjon meg.</translation>

@@ -1239,7 +1239,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2890678560483811744">Referencia de página fuera de los límites</translation>
 <translation id="2893168226686371498">Navegador predeterminado</translation>
 <translation id="2893453364759632532">Ventana hacia abajo</translation>
-<translation id="289426338439836048">Otra red para celulares...</translation>
 <translation id="289644616180464099">La tarjeta SIM está bloqueada</translation>
 <translation id="289695669188700754">ID de clave: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">¿Estás seguro de que deseas abrir <ph name="TAB_COUNT" /> pestañas?</translation>
@@ -1439,7 +1438,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="3190558889382726167">Se guardó la contraseña</translation>
 <translation id="3192947282887913208">Archivos de audio</translation>
 <translation id="3194737229810486521"><ph name="URL" /> desea almacenar datos de forma permanente en el dispositivo</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> en <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Servidores</translation>
 <translation id="3202131003361292969">Ruta</translation>
 <translation id="3202173864863109533">El audio de esta pestaña está silenciado.</translation>
@@ -1479,7 +1477,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="3268451620468152448">Pestañas abiertas</translation>
 <translation id="3269069891205016797">Se quitará tu información del dispositivo cuando salgas.</translation>
 <translation id="3269093882174072735">Cargar imagen</translation>
-<translation id="3269889795238950578">Esta página puede ver el texto y las imágenes copiados en el portapapeles.</translation>
 <translation id="326999365752735949">Descargando diff</translation>
 <translation id="3270965368676314374">Leer, cambiar y eliminar fotos, música y otro contenido multimedia desde tu computadora</translation>
 <translation id="327147043223061465">Ver todas las cookies y datos de sitios</translation>
@@ -1949,7 +1946,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Importado de Internet Explorer</translation>
 <translation id="3950820424414687140">Acceder</translation>
-<translation id="3950870029767307261">No se permite que esta página vea el texto ni las imágenes copiados en el portapapeles</translation>
 <translation id="3954354850384043518">En curso</translation>
 <translation id="3955193568934677022">Permitir que los sitios reproduzcan contenido protegido (recomendado)</translation>
 <translation id="3956702100721821638">No se pudo establecer la conexión con Google Play</translation>
@@ -5144,7 +5140,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="9157697743260533322">No se pudieron configurar actualizaciones automáticas para todos los usuarios (error de inicio preliminar: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Se produjo un problema de comunicación de red durante la autenticación. Verifica tu conexión de red y vuelve a intentarlo.</translation>
 <translation id="9161070040817969420">Submarcos para: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">Pantalla en pantalla</translation>
 <translation id="9169496697824289689">Ver combinación de teclas para acceso directo</translation>
 <translation id="9170397650136757332">Mueve el dedo ligeramente para capturar todas las partes de tu huella digital</translation>
 <translation id="9170848237812810038">&amp;Deshacer</translation>

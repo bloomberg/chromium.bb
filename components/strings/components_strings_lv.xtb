@@ -310,6 +310,7 @@
       pārliecinātos, vai starpniekserveris darbojas. Ja uzskatāt, ka jums nav jāizmanto
       starpniekserveris,
       <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> serverī <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Atcelt maksājumu</translation>
 <translation id="3207960819495026254">Atzīmēts kā grāmatzīme</translation>
 <translation id="3209375525920864198">Lūdzu, ievadiet derīgu sesijas nosaukumu.</translation>

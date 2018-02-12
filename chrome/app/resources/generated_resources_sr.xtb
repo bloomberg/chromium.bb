@@ -1238,7 +1238,6 @@
 <translation id="2890678560483811744">Превелика референца за странице</translation>
 <translation id="2893168226686371498">Подразумевани прегледач</translation>
 <translation id="2893453364759632532">Померање прозора надоле</translation>
-<translation id="289426338439836048">Друга мобилна мрежа...</translation>
 <translation id="289644616180464099">SIM картица је закључана</translation>
 <translation id="289695669188700754">ИД кључа: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Желите ли стварно да отворите <ph name="TAB_COUNT" /> картицa?</translation>
@@ -1438,7 +1437,6 @@
 <translation id="3190558889382726167">Лозинка је сачувана</translation>
 <translation id="3192947282887913208">Аудио датотеке</translation>
 <translation id="3194737229810486521"><ph name="URL" /> жели да трајно складишти податке на уређају</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> на: <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Сервери</translation>
 <translation id="3202131003361292969">Путања</translation>
 <translation id="3202173864863109533">Звук ове картице је искључен.</translation>
@@ -1478,7 +1476,6 @@
 <translation id="3268451620468152448">Отворене картице</translation>
 <translation id="3269069891205016797">Ваше информације ће се уклонити са уређаја кад се одјавите.</translation>
 <translation id="3269093882174072735">Учитај слику</translation>
-<translation id="3269889795238950578">Ова страница може да види текст и слике који су копирани у привремену меморију.</translation>
 <translation id="326999365752735949">Преузимање diff датотеке</translation>
 <translation id="3270965368676314374">Читање слика, музике и других медија са рачунара, мењање и брисање тих медија</translation>
 <translation id="327147043223061465">Прегледајте све колачиће и податке о сајтовима</translation>
@@ -1948,7 +1945,6 @@
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Увезено из IE прегледача</translation>
 <translation id="3950820424414687140">Пријави ме</translation>
-<translation id="3950870029767307261">Овој страници је блокиран увид у текст и слике који су копирани у привремену меморију</translation>
 <translation id="3954354850384043518">У току</translation>
 <translation id="3955193568934677022">Дозволи сајтовима да пуштају заштићени садржај (препоручено)</translation>
 <translation id="3956702100721821638">Google Play није доступан</translation>
@@ -5137,7 +5133,6 @@
 <translation id="9157697743260533322">Подешавање аутоматских ажурирања за све кориснике није успело (грешка покретања при провери: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Упс! Дошло је до проблема са комуникацијом на мрежи током потврде аутентичности. Проверите мрежну везу и покушајте поново.</translation>
 <translation id="9161070040817969420">Подоквири за: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">Слика у слици</translation>
 <translation id="9169496697824289689">Приказ тастерских пречица</translation>
 <translation id="9170397650136757332">Сада мало померите прст да бисте снимили све различите делове отиска прста</translation>
 <translation id="9170848237812810038">&amp;Опозови</translation>

@@ -1242,7 +1242,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2890678560483811744">Paginaverwijzing valt buiten bereik</translation>
 <translation id="2893168226686371498">Standaardbrowser</translation>
 <translation id="2893453364759632532">Venster omlaag</translation>
-<translation id="289426338439836048">Ander mobiel netwerk...</translation>
 <translation id="289644616180464099">Simkaart is vergrendeld</translation>
 <translation id="289695669188700754">Sleutel-ID: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Weet je zeker dat je <ph name="TAB_COUNT" /> tabbladen wilt openen?</translation>
@@ -1442,7 +1441,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="3190558889382726167">Wachtwoord opgeslagen</translation>
 <translation id="3192947282887913208">Audiobestanden</translation>
 <translation id="3194737229810486521"><ph name="URL" /> vraagt toestemming om gegevens permanent op je apparaat op te slaan</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> op <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Servers</translation>
 <translation id="3202131003361292969">Pad</translation>
 <translation id="3202173864863109533">De audio van dit tabblad wordt gedempt.</translation>
@@ -1482,7 +1480,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="3268451620468152448">Geopende tabbladen</translation>
 <translation id="3269069891205016797">Je informatie wordt verwijderd van het apparaat wanneer je uitlogt.</translation>
 <translation id="3269093882174072735">Afbeelding laden</translation>
-<translation id="3269889795238950578">Deze pagina kan tekst en afbeeldingen bekijken die naar het klembord zijn gekopieerd.</translation>
 <translation id="326999365752735949">Diff downloaden</translation>
 <translation id="3270965368676314374">Foto's, muziek en andere media van je computer lezen, wijzigen en verwijderen</translation>
 <translation id="327147043223061465">Alle cookies en sitegegevens weergeven</translation>
@@ -1952,7 +1949,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Geïmporteerd uit Internet Explorer</translation>
 <translation id="3950820424414687140">Inloggen</translation>
-<translation id="3950870029767307261">Deze pagina kan geen tekst en afbeeldingen bekijken die naar het klembord zijn gekopieerd.</translation>
 <translation id="3954354850384043518">In behandeling</translation>
 <translation id="3955193568934677022">Toestaan dat sites beveiligde content afspelen (aanbevolen)</translation>
 <translation id="3956702100721821638">Kan Google Play niet bereiken</translation>
@@ -5147,7 +5143,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="9157697743260533322">Kan automatische updates niet instellen voor alle gebruikers (lanceringsfout bij pre-flight-procedure: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Er is een netwerkcommunicatieprobleem opgetreden tijdens de verificatie. Controleer je netwerkverbinding en probeer het opnieuw.</translation>
 <translation id="9161070040817969420">Subframes voor: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">Scherm-in-scherm</translation>
 <translation id="9169496697824289689">Sneltoetsen bekijken</translation>
 <translation id="9170397650136757332">Beweeg je vinger nu een beetje zodat alle delen van je vingerafdruk kunnen worden vastgelegd</translation>
 <translation id="9170848237812810038">&amp;Ongedaan maken</translation>

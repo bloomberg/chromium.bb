@@ -1242,7 +1242,6 @@
 <translation id="2890678560483811744">Сторінка поза діапазоном</translation>
 <translation id="2893168226686371498">Веб-переглядач за умовчанням</translation>
 <translation id="2893453364759632532">Перемістити вікно вниз</translation>
-<translation id="289426338439836048">Інша мобільна мережа...</translation>
 <translation id="289644616180464099">SIM-карту заблоковано</translation>
 <translation id="289695669188700754">Ідентифікатор ключа: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Ви дійсно бажаєте відкрити <ph name="TAB_COUNT" /> вкладки?</translation>
@@ -1442,7 +1441,6 @@
 <translation id="3190558889382726167">Пароль збережено</translation>
 <translation id="3192947282887913208">Аудіофайли</translation>
 <translation id="3194737229810486521">Сайт <ph name="URL" /> хоче постійно зберігати дані на вашому пристрої</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> на сервері <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Сервери</translation>
 <translation id="3202131003361292969">Шлях</translation>
 <translation id="3202173864863109533">Звук на цій вкладці вимкнено.</translation>
@@ -1482,7 +1480,6 @@
 <translation id="3268451620468152448">Відкриті вкладки</translation>
 <translation id="3269069891205016797">Коли ви вийдете з облікового запису, вашу інформацію буде вилучено з пристрою.</translation>
 <translation id="3269093882174072735">Завантажити зображення</translation>
-<translation id="3269889795238950578">Ця сторінка може переглядати тексти й зображення в буфері обміну.</translation>
 <translation id="326999365752735949">Завантаження відмінностей</translation>
 <translation id="3270965368676314374">Читати, змінювати й видаляти фотографії, музику та інші медіафайли на комп’ютері</translation>
 <translation id="327147043223061465">Переглянути всі файли cookie й дані із сайтів</translation>
@@ -1952,7 +1949,6 @@
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Імпортовано із IE</translation>
 <translation id="3950820424414687140">Увійти</translation>
-<translation id="3950870029767307261">Цій сторінці заборонено переглядати тексти й зображення в буфері обміну</translation>
 <translation id="3954354850384043518">Завантаження триває</translation>
 <translation id="3955193568934677022">Дозволити сайтам відтворювати захищений вміст (рекомендується)</translation>
 <translation id="3956702100721821638">Не вдалося з’єднатися з Google Play</translation>
@@ -5146,7 +5142,6 @@
 <translation id="9157697743260533322">Не вдалося налаштувати автоматичні оновлення для всіх користувачів (помилка запуску: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">На жаль, під час автентифікації виникла проблема з обміном даних через мережу. Перевірте з’єднання з мережею та повторіть спробу.</translation>
 <translation id="9161070040817969420">Додаткові фрейми для сайту <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">Картинка в картинці</translation>
 <translation id="9169496697824289689">Переглянути комбінації клавіш</translation>
 <translation id="9170397650136757332">Тепер трохи перемістіть палець, щоб зісканувати всі його частини</translation>
 <translation id="9170848237812810038">&amp;Скасувати</translation>

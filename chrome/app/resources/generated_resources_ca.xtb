@@ -1241,7 +1241,6 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="2890678560483811744">La pàgina indicada no respecta el límit</translation>
 <translation id="2893168226686371498">Navegador predeterminat</translation>
 <translation id="2893453364759632532">Finestra cap avall</translation>
-<translation id="289426338439836048">Altres xarxes mòbils...</translation>
 <translation id="289644616180464099">La targeta SIM està bloquejada</translation>
 <translation id="289695669188700754">Identificador de clau: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Confirmes que vols obrir <ph name="TAB_COUNT" /> pestanyes?</translation>
@@ -1441,7 +1440,6 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="3190558889382726167">S'ha desat la contrasenya</translation>
 <translation id="3192947282887913208">Fitxers d'àudio</translation>
 <translation id="3194737229810486521"><ph name="URL" /> vol emmagatzemar dades al dispositiu de manera permanent</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> a <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Servidors</translation>
 <translation id="3202131003361292969">Camí</translation>
 <translation id="3202173864863109533">S'està silenciant l'àudio d'aquesta pestanya.</translation>
@@ -1481,7 +1479,6 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="3268451620468152448">Pestanyes obertes</translation>
 <translation id="3269069891205016797">Quan tanquis la sessió, la teva informació se suprimirà del dispositiu.</translation>
 <translation id="3269093882174072735">Carrega la imatge</translation>
-<translation id="3269889795238950578">Aquesta pàgina pot veure el text i les imatges copiats al porta-retalls.</translation>
 <translation id="326999365752735949">S'està baixant la diferència.</translation>
 <translation id="3270965368676314374">Llegeix, modifica i suprimeix fotos, música i altres elements multimèdia de l'ordinador</translation>
 <translation id="327147043223061465">Mostra totes les galetes i les dades del lloc web</translation>
@@ -1949,7 +1946,6 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Importat d'IE</translation>
 <translation id="3950820424414687140">Inicia la sessió</translation>
-<translation id="3950870029767307261">No es permet que aquesta pàgina vegi el text o les imatges copiats al porta-retalls</translation>
 <translation id="3954354850384043518">En curs</translation>
 <translation id="3955193568934677022">Permet que els llocs web reprodueixin contingut protegit (opció recomanada)</translation>
 <translation id="3956702100721821638">No s'ha pogut contactar amb Google Play</translation>
@@ -5137,7 +5133,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9157697743260533322">No s'han pogut configurar les actualitzacions automàtiques per a tots els usuaris (error de llançament preliminar: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">S'ha produït un problema de comunicació de xarxa durant l'autenticació. Comproveu la connexió de xarxa i torneu-ho a provar.</translation>
 <translation id="9161070040817969420">Submarcs per a: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">Pantalla en pantalla</translation>
 <translation id="9169496697824289689">Mostra les tecles de drecera</translation>
 <translation id="9170397650136757332">Ara mou el dit lleugerament perquè es pugui captar l’empremta digital sencera</translation>
 <translation id="9170848237812810038">&amp;Desfés</translation>

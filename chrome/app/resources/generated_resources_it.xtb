@@ -1241,7 +1241,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2890678560483811744">Riferimento pagina oltre i limiti</translation>
 <translation id="2893168226686371498">Browser predefinito</translation>
 <translation id="2893453364759632532">Sposta la finestra in basso</translation>
-<translation id="289426338439836048">Altra rete mobile...</translation>
 <translation id="289644616180464099">La scheda SIM è bloccata</translation>
 <translation id="289695669188700754">ID chiave: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Aprire <ph name="TAB_COUNT" /> schede?</translation>
@@ -1441,7 +1440,6 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="3190558889382726167">Password salvata</translation>
 <translation id="3192947282887913208">File audio</translation>
 <translation id="3194737229810486521"><ph name="URL" /> vuole memorizzare in modo definitivo i dati sul dispositivo</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> su <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Server</translation>
 <translation id="3202131003361292969">Percorso</translation>
 <translation id="3202173864863109533">L'audio di questa scheda sta per essere disattivato.</translation>
@@ -1481,7 +1479,6 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="3268451620468152448">Schede aperte</translation>
 <translation id="3269069891205016797">I tuoi dati verranno rimossi dal dispositivo al momento della disconnessione.</translation>
 <translation id="3269093882174072735">Carica immagine</translation>
-<translation id="3269889795238950578">Questa pagina può leggere testo e immagini copiati negli appunti.</translation>
 <translation id="326999365752735949">Download delle differenze in corso...</translation>
 <translation id="3270965368676314374">Leggere, modificare ed eliminare foto, musica e altri contenuti multimediali del computer</translation>
 <translation id="327147043223061465">Mostra tutti i cookie e i dati dei siti</translation>
@@ -1949,7 +1946,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Importati da IE</translation>
 <translation id="3950820424414687140">Accedi</translation>
-<translation id="3950870029767307261">A questa pagina è stato impedito di leggere testo e immagini copiati negli appunti</translation>
 <translation id="3954354850384043518">In corso</translation>
 <translation id="3955193568934677022">Consenti ai siti di riprodurre i contenuti protetti (opzione consigliata)</translation>
 <translation id="3956702100721821638">Impossibile raggiungere Google Play</translation>
@@ -5133,7 +5129,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9157697743260533322">Impostazione degli aggiornamenti automatici per tutti gli utenti non riuscita (errore di avvio preliminare: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Spiacenti. Si è verificato un problema di comunicazione sulla rete durante l'autenticazione. Controlla la connessione di rete e riprova.</translation>
 <translation id="9161070040817969420">Frame secondari per: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">Picture in picture</translation>
 <translation id="9169496697824289689">Visualizza scorciatoie da tastiera</translation>
 <translation id="9170397650136757332">Ora muovi leggermente il dito per acquisire tutte le varie parti dell'impronta digitale</translation>
 <translation id="9170848237812810038">&amp;Annulla</translation>

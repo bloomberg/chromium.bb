@@ -638,6 +638,15 @@
           Šī politika nav jāiestata obligāti. Ja tā nebūs iestatīta, meklēšanas vienumu aizstāšana nenotiks.
 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
+<translation id="306887062252197004">Ar šo politiku funkcijas WebDriver lietotāji var ignorēt
+      politikas, kas var ietekmēt šīs funkcijas darbību.
+
+      Pašlaik ar šo politiku tiek atspējota SitePerProcess un IsolateOrigins politika.
+
+      Ja šī politika ir iespējota, funkcija WebDriver varēs ignorēt nesaderīgās
+      politikas.
+      Ja šī politika ir atspējota vai nav konfigurēta, funkcija WebDriver nevarēs
+      ignorēt nesaderīgās politikas.</translation>
 <translation id="3069958900488014740">Pārlūkā <ph name="PRODUCT_NAME" /> tiek atļauta WPAD (Web Proxy Auto-Discovery — tīmekļa starpniekservera automātiskā atklāšana) optimizācijas izslēgšana.
 
       Ja šai politikai ir iestatīta vērtība Nepatiesa, WPAD optimizācija ir atspējota, tādējādi pārlūkā <ph name="PRODUCT_NAME" /> tiek ilgāk gaidīts uz DNS WPAD serveriem. Ja politika nav iestatīta vai ir iespējota, WPAD optimizācija ir iespējota.
@@ -782,13 +791,6 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
       Plašāku informāciju par funkciju Droša pārlūkošana skatiet vietnē https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Konfigurē paplašinājumu instalēšanas melno sarakstu</translation>
 <translation id="3711895659073496551">Darbības apturēšana</translation>
-<translation id="3732106275571017176">Šis iestatījums ļauj lietotājiem pārlūka loga satura apgabalā pārslēgt Google kontu, kad lietotājs ir pierakstījies <ph name="PRODUCT_OS_NAME" /> ierīcē.
-
-      Ja šai politikai ir iestatīta vērtība “False”, lietotājs nevarēs pārlūka satura apgabalā pierakstīties citā kontā (kad pārlūkam nav iespējots inkognito režīms).
-
-      Ja šai politikai nav iestatīta vērtība vai ir iestatīta vērtība “True”, lietotājs pēc noklusējuma varēs pārlūka satura apgabalā pierakstīties citā kontā. To nevarēs izdarīt tikai pakārtotā konta lietotājs — šāda iespēja satura apgabalā (kad inkognito režīms nav iespējots) būs bloķēta.
-
-      Ja vēlaties liegt pierakstīšanos citā kontā inkognito režīmā, ieteicams bloķēt režīma lietošanu, izmantojot politiku IncognitoModeAvailability.</translation>
 <translation id="3736879847913515635">Iespēja pievienot personu lietotāju pārvaldniekā</translation>
 <translation id="3737544779868348650">Ierīces tīkla saimniekdatora nosaukums</translation>
 <translation id="3750220015372671395">Bloķēt atslēgu ģenerēšanu šajās vietnēs</translation>
@@ -1219,6 +1221,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4899708173828500852">Iespējo drošu pārlūkošanu</translation>
 <translation id="4906194810004762807">Ierīces politikas atsvaidzes ātrums</translation>
 <translation id="4917385247580444890">Spēcīgs</translation>
+<translation id="4923806312383904642">Atļaut funkcijai WebDriver ignorēt nesaderīgās politikas</translation>
 <translation id="494613465159630803">Cast uztvērējs</translation>
 <translation id="4962262530309732070">Ja šai politikai ir iestatīta vērtība “True” vai ja politika nav konfigurēta, pārlūkā <ph name="PRODUCT_NAME" /> lietotāju pārvaldniekā ir iespējota funkcija Pievienot personu.
 

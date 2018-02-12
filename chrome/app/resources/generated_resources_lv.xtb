@@ -1242,7 +1242,6 @@ Es uzskatu, ka šai vietnei nav jābūt bloķētai.</translation>
 <translation id="2890678560483811744">Lapas atsauce ārpus diapazona</translation>
 <translation id="2893168226686371498">Noklusējuma pārlūks</translation>
 <translation id="2893453364759632532">Pārvietot logu lejup</translation>
-<translation id="289426338439836048">Cits mobilais tīkls...</translation>
 <translation id="289644616180464099">SIM karte ir bloķēta.</translation>
 <translation id="289695669188700754">Atslēgas ID: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Vai tiešām vēlaties atvērt <ph name="TAB_COUNT" /> cilnes?</translation>
@@ -1442,7 +1441,6 @@ Plašāku informāciju skatiet mūsu <ph name="BEGIN_LINK" />palīdzības centr�
 <translation id="3190558889382726167">Parole ir saglabāta</translation>
 <translation id="3192947282887913208">Audio faili</translation>
 <translation id="3194737229810486521">Vietnē <ph name="URL" /> tiek pieprasīta atļauja pastāvīgi glabāt datus jūsu ierīcē.</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> serverī <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Serveri</translation>
 <translation id="3202131003361292969">Ceļš</translation>
 <translation id="3202173864863109533">Šīs cilnes skaņa ir izslēgta.</translation>
@@ -1482,7 +1480,6 @@ Plašāku informāciju skatiet mūsu <ph name="BEGIN_LINK" />palīdzības centr�
 <translation id="3268451620468152448">Atvērtās cilnes</translation>
 <translation id="3269069891205016797">Jūsu informācija tiks noņemta no ierīces, kad jūs izrakstīsieties.</translation>
 <translation id="3269093882174072735">Ielādēt attēlu</translation>
-<translation id="3269889795238950578">Šī lapa var skatīt starpliktuvē kopēto tekstu un attēlus.</translation>
 <translation id="326999365752735949">Tiek lejupielādētas atšķirības</translation>
 <translation id="3270965368676314374">Lasīt, mainīt un dzēst fotoattēlus, mūziku un citu datorā esošu multivides saturu</translation>
 <translation id="327147043223061465">Skatīt visus sīkfailus un vietņu datus</translation>
@@ -1952,7 +1949,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Importēts no IE</translation>
 <translation id="3950820424414687140">Pierakstīties</translation>
-<translation id="3950870029767307261">Šajā lapā ir bloķēta starpliktuvē kopētā teksta un attēlu skatīšana.</translation>
 <translation id="3954354850384043518">Notiek lejupielāde</translation>
 <translation id="3955193568934677022">Atļaut vietnēm atskaņot aizsargātu saturu (ieteicams)</translation>
 <translation id="3956702100721821638">Nevarēja sasniegt pakalpojumu Google Play</translation>
@@ -5146,7 +5142,6 @@ Citas personas ar lēnu savienojumu, iespējams, neredzēs jūsu saturu.</transl
 <translation id="9157697743260533322">Neizdevās iestatīt automātiskos atjauninājumus visiem lietotājiem (pirmslidojuma palaišanas kļūda: <ph name="ERROR_NUMBER" />).</translation>
 <translation id="9158715103698450907">Hmm... Autentificēšanas laikā radās tīkla komunikācijas problēma. Lūdzu, pārbaudiet tīkla savienojumu un mēģiniet vēlreiz.</translation>
 <translation id="9161070040817969420">Apakšrāmji vietnei: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">Attēls attēlā</translation>
 <translation id="9169496697824289689">Skatīt īsinājumtaustiņus</translation>
 <translation id="9170397650136757332">Tagad nedaudz pakustiniet pirkstu, lai uzņemtu dažādas pirksta nospieduma daļas.</translation>
 <translation id="9170848237812810038">&amp;Atsaukt</translation>

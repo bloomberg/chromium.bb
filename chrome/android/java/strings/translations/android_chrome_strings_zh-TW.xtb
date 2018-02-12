@@ -676,7 +676,6 @@
 <translation id="7121362699166175603">將歷史紀錄和自動即時查詢從網址列中清除。你的 Google 帳戶可能會儲存其他形式的瀏覽紀錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
 <translation id="7128222689758636196">對目前的搜尋引擎開放</translation>
 <translation id="7138678301420049075">其他</translation>
-<translation id="7144878232160441200">重試</translation>
 <translation id="7149893636342594995">過去 24 小時</translation>
 <translation id="7177466738963138057">日後可前往設定頁面進行變更</translation>
 <translation id="7180611975245234373">重新整理</translation>
@@ -830,6 +829,7 @@
 <translation id="869891660844655955">到期日</translation>
 <translation id="8712637175834984815">我瞭解了</translation>
 <translation id="8719023831149562936">無法傳輸目前的分頁</translation>
+<translation id="8725066075913043281">再試一次</translation>
 <translation id="8728487861892616501">使用這個應用程式即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》，以及《<ph name="BEGIN_LINK3" />透過 Family Link 管理的 Google 帳戶所適用的隱私權聲明<ph name="END_LINK3" />》。</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="8748850008226585750">內容已隱藏</translation>

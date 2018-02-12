@@ -1242,7 +1242,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="2890678560483811744">Referința privind pagina este în afara limitelor</translation>
 <translation id="2893168226686371498">Browserul prestabilit</translation>
 <translation id="2893453364759632532">Mută fereastra în jos</translation>
-<translation id="289426338439836048">Alte rețele mobile...</translation>
 <translation id="289644616180464099">Cardul SIM este blocat</translation>
 <translation id="289695669188700754">ID cheie: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Sunteți sigur că doriți să deschideți <ph name="TAB_COUNT" /> (de) file?</translation>
@@ -1442,7 +1441,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="3190558889382726167">Parola a fost salvată</translation>
 <translation id="3192947282887913208">Fișiere audio</translation>
 <translation id="3194737229810486521"><ph name="URL" /> dorește să stocheze permanent date pe dispozitiv</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> pe <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Servere</translation>
 <translation id="3202131003361292969">Cale</translation>
 <translation id="3202173864863109533">Sunetul acestei file este dezactivat.</translation>
@@ -1482,7 +1480,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="3268451620468152448">File deschise</translation>
 <translation id="3269069891205016797">Informațiile tale vor fi eliminate de pe dispozitiv după ce te deconectezi.</translation>
 <translation id="3269093882174072735">Încarcă imaginea</translation>
-<translation id="3269889795238950578">Această pagină poate să vadă textul și imaginile copiate în clipboard.</translation>
 <translation id="326999365752735949">Se descarcă diferențele</translation>
 <translation id="3270965368676314374">Citește, modifică și șterge fotografii, muzică și alte tipuri de conținut media de pe computer</translation>
 <translation id="327147043223061465">Vezi toate cookie-urile și datele privind site-urile</translation>
@@ -1952,7 +1949,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Importate din IE</translation>
 <translation id="3950820424414687140">Conectează-te</translation>
-<translation id="3950870029767307261">Accesarea textului și imaginilor copiate în clipboard de către această pagină a fost blocată</translation>
 <translation id="3954354850384043518">În desfășurare</translation>
 <translation id="3955193568934677022">Permite site-urilor să redea conținutul protejat (recomandat)</translation>
 <translation id="3956702100721821638">Google Play nu a putut fi accesat</translation>
@@ -5146,7 +5142,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9157697743260533322">Actualizările automate nu au putut fi configurate pentru toți utilizatorii (eroare la lansarea testării pe dispozitiv: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Hopa! A apărut o problemă de comunicare în rețea în timpul autentificării. Verificați conexiunea la rețea și încercați din nou.</translation>
 <translation id="9161070040817969420">Subcadre pentru: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">Picture-in-Picture</translation>
 <translation id="9169496697824289689">Vedeți comenzile rapide de la tastatură</translation>
 <translation id="9170397650136757332">Acum mișcă ușor degetul pentru a captura toate porțiunile amprentei</translation>
 <translation id="9170848237812810038">&amp;Anulează</translation>

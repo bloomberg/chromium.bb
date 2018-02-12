@@ -676,7 +676,6 @@
 <translation id="7121362699166175603">검색주소창에 저장된 방문 기록과 자동 완성 내역을 지웁니다. Google 계정의 내 활동(<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />)에는 인터넷 사용 기록이 다른 형식으로 남아 있을 수도 있습니다.</translation>
 <translation id="7128222689758636196">현재 검색 엔진에 허용</translation>
 <translation id="7138678301420049075">기타</translation>
-<translation id="7144878232160441200">다시 시도</translation>
 <translation id="7149893636342594995">지난 24시간</translation>
 <translation id="7177466738963138057">나중에 설정에서 변경 가능</translation>
 <translation id="7180611975245234373">새로고침</translation>
@@ -830,6 +829,7 @@
 <translation id="869891660844655955">유효기간</translation>
 <translation id="8712637175834984815">확인</translation>
 <translation id="8719023831149562936">현재 탭을 공유할 수 없습니다.</translation>
+<translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="8728487861892616501">이 애플리케이션을 사용하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />개인정보처리방침<ph name="END_LINK2" />, <ph name="BEGIN_LINK3" />Family Link로 관리되는 Google 계정용 개인정보처리방침<ph name="END_LINK3" />에 동의하게 됩니다.</translation>
 <translation id="8730621377337864115">완료</translation>
 <translation id="8748850008226585750">숨겨진 콘텐츠</translation>

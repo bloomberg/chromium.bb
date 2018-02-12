@@ -310,6 +310,7 @@
    כדי לוודא ששרת ה-proxy פועל.  אם אינך סבור שעליך
    להשתמש בשרת proxy:
    <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> בשרת <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">בטל תשלום</translation>
 <translation id="3207960819495026254">מסומן בסימניה</translation>
 <translation id="3209375525920864198">יש להזין שם הפעלה חוקי.</translation>

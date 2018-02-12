@@ -47,6 +47,7 @@
 <translation id="1264126396475825575">Správa o zlyhaní bola zaznamenaná v čase <ph name="CRASH_TIME" /> (ešte nebola nahraná ani ignorovaná)</translation>
 <translation id="1270502636509132238">Spôsob vyzdvihnutia</translation>
 <translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
+<translation id="1294154142200295408">Variácie v príkazovom riadku</translation>
 <translation id="129553762522093515">Naposledy zatvorené</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Skúste vymazať súbory cookie<ph name="END_LINK" /></translation>
 <translation id="1333989956347591814">Vašu aktivitu <ph name="BEGIN_EMPHASIS" />stále môžu vidieť<ph name="END_EMPHASIS" />:
@@ -307,6 +308,7 @@
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Ostrov</translation>
 <translation id="3176929007561373547">Skontrolujte nastavenia proxy servera alebo kontaktujte správcu siete a požiadajte ho, aby skontroloval, či proxy server funguje. Ak sa domnievate, že by ste nemali používať proxy server: <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> na serveri <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Zrušiť platbu</translation>
 <translation id="3207960819495026254">Pridané medzi záložky</translation>
 <translation id="3209375525920864198">Zadajte platný názov relácie.</translation>
@@ -355,6 +357,7 @@
 <translation id="3467763166455606212">Meno majiteľa karty je povinný údaj</translation>
 <translation id="3479539252931486093">Neočakávali ste to? <ph name="BEGIN_LINK" />Dajte nám vedieť<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Teraz nie</translation>
+<translation id="3484417807243795847">Zadajte dátum vypršania platnosti a kód CVC karty <ph name="CREDIT_CARD" /></translation>
 <translation id="3498215018399854026">V tejto chvíli sa nám nepodarilo spojiť s vaším rodičom. Skúste to znova neskôr.</translation>
 <translation id="3528171143076753409">Certifikát servera nie je dôveryhodný.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Aspoň 1 položka v synchronizovaných zariadeniach}=1{1 položka (a ďalšie v synchronizovaných zariadeniach)}few{# položky (a ďalšie v synchronizovaných zariadeniach)}many{# položky (a ďalšie v synchronizovaných zariadeniach)}other{# položiek (a ďalšie v synchronizovaných zariadeniach)}}</translation>
@@ -430,6 +433,7 @@
 <translation id="4103249731201008433">Sériové číslo zariadenia je neplatné</translation>
 <translation id="410351446219883937">Automatické prehrávanie</translation>
 <translation id="4103763322291513355">Na stránke &lt;strong&gt;chrome://policy&lt;/strong&gt; nájdete zoznam zakázaných webových adries a ďalšie pravidlá vynútené vaším správcom systému.</translation>
+<translation id="4113234475957642810">Chcete túto kartu uložiť do svojho účtu Google?</translation>
 <translation id="4116663294526079822">Vždy povoliť na tomto webe</translation>
 <translation id="4117700440116928470">Rozsah pravidla nie je podporovaný.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 ďalšia}few{# ďalšie}many{# ďalšej}other{# ďalších}}</translation>
@@ -480,6 +484,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554702541363482291">Z vloženej stránke na webe <ph name="SITE" /></translation>
 <translation id="4558551763791394412">Skúste deaktivovať rozšírenia.</translation>
+<translation id="4572961006780844603">Uložiť kartu?</translation>
 <translation id="457875822857220463">Doručenie</translation>
 <translation id="4582800630050655161">Môžete stratiť prístup do účtu Google alebo vám môže ukradnúť identitu. Chromium odporúča, aby ste si ihneď zmenili heslo.</translation>
 <translation id="4587425331216688090">Chcete adresu odstrániť z prehliadača Chrome?</translation>
@@ -727,6 +732,7 @@
 <translation id="6447842834002726250">Súbory cookie</translation>
 <translation id="6451458296329894277">Potvrdiť opakované odoslanie formulára</translation>
 <translation id="6456339708790392414">Vaša platba</translation>
+<translation id="6458535986965869750">Chcete uložiť túto kartu do svojho účtu Google a tohto zariadenia?</translation>
 <translation id="647261751007945333">Pravidlá zariadenia</translation>
 <translation id="6477321094435799029">Chrome na tejto stránke zaznamenal nezvyčajný kód a v záujme ochrany vašich osobných informácií (napr. hesiel, telefónnych čísel a kreditných kariet) ho zablokoval.</translation>
 <translation id="6489534406876378309">Spustiť nahrávanie správ o zlyhaní</translation>
@@ -789,6 +795,7 @@
 <translation id="7090678807593890770">Vyhľadajte na Googli výraz <ph name="LINK" /></translation>
 <translation id="7108819624672055576">Povolené rozšírením</translation>
 <translation id="7111012039238467737">(Platný)</translation>
+<translation id="7112670404630173368">Uložiť kartu do Googlu?</translation>
 <translation id="7119414471315195487">Zavrite ostatné karty alebo programy</translation>
 <translation id="7129409597930077180">Dodanie na túto adresu nie je možné. Vyberte inú adresu.</translation>
 <translation id="7138472120740807366">Spôsob doručenia</translation>
@@ -823,6 +830,7 @@
 <translation id="7390545607259442187">Overenie karty</translation>
 <translation id="7400418766976504921">Webová adresa</translation>
 <translation id="7419106976560586862">Cesta profilu</translation>
+<translation id="7434205026593783035">Chcete, aby prehliadač Chromium uložil túto kartu?</translation>
 <translation id="7437289804838430631">Pridať kontaktné informácie</translation>
 <translation id="7441627299479586546">Chybný predmet pravidla</translation>
 <translation id="7444046173054089907">Tento web je blokovaný</translation>
@@ -910,6 +918,7 @@
 <translation id="7961015016161918242">Nikdy</translation>
 <translation id="7983301409776629893">Vždy preložiť jazyk <ph name="ORIGINAL_LANGUAGE" /> do jazyka <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Nie je upresnené</translation>
+<translation id="8000691422113785187">Potvrdenie bezpečnostného kódu</translation>
 <translation id="800218591365569300">Skúste zavrieť ostatné karty alebo programy a uvoľniť tak miesto v pamäti.</translation>
 <translation id="8012647001091218357">V tejto chvíli sa nám nepodarilo spojiť s vašimi rodičmi. Skúste to znova neskôr.</translation>
 <translation id="8025119109950072390">Útočníci na tomto webe sa vás môžu pokúsiť naviesť vykonať niečo nebezpečné, ako je inštalovanie softvéru alebo odhalenie osobných informácií (napr. hesiel, telefónnych čísel alebo kreditných kariet).</translation>
@@ -1016,6 +1025,7 @@
 <translation id="8938939909778640821">Akceptované kreditné a predplatené karty</translation>
 <translation id="8952525071319348207">Ak chcete aktualizovať podrobnosti o karte <ph name="CREDIT_CARD" />, zadajte dátum vypršania platnosti a kód CVC. Po potvrdení sa budú podrobnosti z účtu Google Payments zdieľať s týmto webom.</translation>
 <translation id="8957210676456822347">Autorizácia portálu na prihlásenie do siete</translation>
+<translation id="8963515584701921654">Chcete, aby Chrome uložil túto kartu?</translation>
 <translation id="8971063699422889582">Platnosť certifikátu servera vypršala.</translation>
 <translation id="8978053250194585037">Funkcia Bezpečné prehliadanie Google nedávno <ph name="BEGIN_LINK" />zistila phishing<ph name="END_LINK" /> na webe <ph name="SITE" />. Phishingové stránky sa vydávajú za iné weby, aby vás oklamali.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>

@@ -624,6 +624,15 @@
           Denne innstillingen er valgfri. hvis den ikke er angitt, forekommer det ingen søkeordserstatning.
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er angitt.</translation>
+<translation id="306887062252197004">Denne regelen tillater at brukere av WebDriver-funksjoner overstyrer
+      regler som kan forstyrre bruk av WebDriver.
+
+      For øyeblikket deaktiverer denne regelen SitePerProcess og IsolateOrigins.
+
+      Hvis regelen er aktivert, kan WebDriver overstyre inkompatible
+      regler.
+      Hvis regelen deaktiveres eller ikke konfigureres, kan ikke WebDriver
+      overstyre inkompatible regler.</translation>
 <translation id="3069958900488014740">Gjør det mulig å slå av WPAD-optimalisering (automatisk oppdagelse av nettproxyer) i <ph name="PRODUCT_NAME" />.
 
       Hvis denne regelen er satt til false (usann), er WPAD-optimalisering slått av, noe som fører til at <ph name="PRODUCT_NAME" /> må vente lenger på DNS-baserte WPAD-tjenere. Hvis denne regelen er slått på, eller hvis du ikke har spesifisert den, er WPAD-optimalisering slått på.
@@ -762,13 +771,6 @@
       Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
-<translation id="3732106275571017176">Med denne innstillingen kan brukere bytte mellom Google-kontoer i innholdsområdet til nettleservinduet etter at de har logget på <ph name="PRODUCT_OS_NAME" />-enheten sin.
-
-      Hvis denne regelen er satt til «usann», tillates det ikke å logge på en annen konto fra et innholdsområde i en nettleser som ikke er inkognito.
-
-      Hvis denne regelen ikke er spesifisert eller er satt til «sann», brukes standardatferden: Pålogging til en annen konto fra nettleserens innholdsområde tillates, med unntak av for underkontoer, der det blokkeres for innholdsområder som ikke er inkognito.
-
-      Hvis pålogging til en annen konto ikke skal tillates via inkognitomodus, bør du vurdere å blokkere modusen med IncognitoModeAvailability-regelen.</translation>
 <translation id="3736879847913515635">Slå på «Legg til person» i brukeradministreringen</translation>
 <translation id="3737544779868348650">Vertsnavn for enheten på nettverket</translation>
 <translation id="3750220015372671395">Blokkér nøkkelgenerering på disse nettstedene</translation>
@@ -1186,6 +1188,7 @@
 <translation id="4899708173828500852">Aktiver Safe Browsing</translation>
 <translation id="4906194810004762807">Oppdateringsfrekvens for enhetsinnstilling</translation>
 <translation id="4917385247580444890">Sterk</translation>
+<translation id="4923806312383904642">Tillat at WebDriver overstyrer inkompatible regler</translation>
 <translation id="494613465159630803">Cast-mottaker</translation>
 <translation id="4962262530309732070">Hvis denne regelen angis som «true» (sann) eller ikke konfigureres, tillates «Legg til person» i brukeradministreringen for <ph name="PRODUCT_NAME" />.
 

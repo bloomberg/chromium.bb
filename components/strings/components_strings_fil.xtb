@@ -310,6 +310,7 @@
       administrator upang matiyak na gumagana ang proxy server. Kung sa palagay mo
       ay hindi ka dapat gumagamit ng proxy server:
       <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> sa <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Kanselahin ang Pagbabayad</translation>
 <translation id="3207960819495026254">Naka-bookmark</translation>
 <translation id="3209375525920864198">Maglagay ng valid na pangalan ng session.</translation>

@@ -1242,7 +1242,6 @@
 <translation id="2890678560483811744">ከወሰን ውጭ የሆነ የገጽ ማጣቀሻ</translation>
 <translation id="2893168226686371498">ነባሪ አሳሽ</translation>
 <translation id="2893453364759632532">መስኮት ወደ ታች</translation>
-<translation id="289426338439836048">ሌላ የተንቀሳቃሽ ስልክ አውታረ መረብ...</translation>
 <translation id="289644616180464099">ሲም ካርድ ተዘግቷል</translation>
 <translation id="289695669188700754">ቁልፍ መታወቂያ፦ <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">እርግጠኛ ነዎት <ph name="TAB_COUNT" /> ትሮችን መክፈት ይፈልጋሉ?</translation>
@@ -1442,7 +1441,6 @@
 <translation id="3190558889382726167">የይለፍ ቃል ተቀምጧል</translation>
 <translation id="3192947282887913208">የድምጽ ፋይሎች</translation>
 <translation id="3194737229810486521"><ph name="URL" /> ውሂብ እስከ መጨረሻው በእርስዎ መሣሪያ ላይ ማከማቸት ይፈልጋል</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> በ<ph name="SERVER_NAME" /> ላይ</translation>
 <translation id="3199127022143353223">አገልጋዮች</translation>
 <translation id="3202131003361292969">ዱካ</translation>
 <translation id="3202173864863109533">የዚህ ትር ተሰሚ ድምጸ-ከል ተደርጎበታል።</translation>
@@ -1482,7 +1480,6 @@
 <translation id="3268451620468152448">ክፍት ትሮች</translation>
 <translation id="3269069891205016797">ዘግተው ሲወጡ የእርስዎ መረጃ ከመሣሪያው ይወገዳል።</translation>
 <translation id="3269093882174072735">ምስል ጫን</translation>
-<translation id="3269889795238950578">ይህ ገጽ ወደ ቅንጥብ ሰሌዳው የተቀዱ ጽሑፍን እና መስሎችን መመልከት ይችላል።</translation>
 <translation id="326999365752735949">የማውረድ ችግር</translation>
 <translation id="3270965368676314374">በኮምፒውተርዎ ላይ ያሉ ፎቶዎችን፣ ሙዚቃን እና ሌላ ማህደረመረጃ ያነብባል፣ ይቀይራል እና ይሰርዛል</translation>
 <translation id="327147043223061465">ሁሉንም ኩኪዎች እና የጣቢያ ውሂብ ይመልከቱ</translation>
@@ -1952,7 +1949,6 @@
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">ከIE የመጣ</translation>
 <translation id="3950820424414687140">ይግቡ</translation>
-<translation id="3950870029767307261">ይህ ገጽ ወደ ቅንጥብ ሰሌዳው የተቀዱ ጽሑፍን እና ምስሎችን እንዳይመለከት ታግዷል</translation>
 <translation id="3954354850384043518">በሂደት ላይ</translation>
 <translation id="3955193568934677022">ጥበቃ የሚደረግበትን ይዘት እንዲያጫውቱ ለጣቢያዎች ፍቀድ (የሚመከር)</translation>
 <translation id="3956702100721821638">Google Playን መድረስ አልተቻለም</translation>
@@ -5148,7 +5144,6 @@ nil</translation>
 <translation id="9157697743260533322">ለሁሉም ተጠቃሚዎች ራስ-ሰር ዝማኔዎችን ማዋቀር አልተሳካም (የቅድመ በረራ ማስጀመሪያ ስህተት፦ <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">ውይ!  በማረጋገጥ ጊዜ ላይ አንድ የአውታረ መረብ ግንኙነት ችግር ተከስቷል። እባክዎ የአውታረ መረብዎን ግንኙነት ያረጋግጡና እንደገና ይሞክሩ።</translation>
 <translation id="9161070040817969420">ንዑስ ክፈፎች ለ፦ <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">በሥዕል ላይ ሥዕል</translation>
 <translation id="9169496697824289689">የቁልፍ ሰሌዳ አቋራጮችን ይመልከቱ</translation>
 <translation id="9170397650136757332">አሁን ሁሉንም የተለያዩ የጣት አሻራዎን ክፍሎች ለማንሳት ጣትዎን በቀስታ ያንቀሳቅሱት</translation>
 <translation id="9170848237812810038">&amp;ቀልብስ</translation>

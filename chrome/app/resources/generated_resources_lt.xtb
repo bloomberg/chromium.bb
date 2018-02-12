@@ -1242,7 +1242,6 @@ Nemanau, kad ši svetainė turėtų būti užblokuota!</translation>
 <translation id="2890678560483811744">Puslapio už diapazono ribų nuoroda</translation>
 <translation id="2893168226686371498">Numatytoji naršyklė</translation>
 <translation id="2893453364759632532">Nuleisti langą</translation>
-<translation id="289426338439836048">Kitas mobilusis tinklas...</translation>
 <translation id="289644616180464099">SIM kortelė užrakinta</translation>
 <translation id="289695669188700754">Rakto ID: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Ar tikrai norite atidaryti <ph name="TAB_COUNT" /> skirtukus(-ų)?</translation>
@@ -1442,7 +1441,6 @@ Jei reikia daugiau informacijos, apsilankykite <ph name="BEGIN_LINK" />pagalbos 
 <translation id="3190558889382726167">Slaptažodis išsaugotas</translation>
 <translation id="3192947282887913208">Garso įrašų failai</translation>
 <translation id="3194737229810486521"><ph name="URL" /> prašo leidimo nuolat saugoti duomenis jūsų įrenginyje</translation>
-<translation id="3195213714973468956">„<ph name="PRINTER_NAME" />“ serveryje „<ph name="SERVER_NAME" />“</translation>
 <translation id="3199127022143353223">Serveriai</translation>
 <translation id="3202131003361292969">Kelias</translation>
 <translation id="3202173864863109533">Šio skirtuko garsas nutildytas.</translation>
@@ -1482,7 +1480,6 @@ Jei reikia daugiau informacijos, apsilankykite <ph name="BEGIN_LINK" />pagalbos 
 <translation id="3268451620468152448">Atidaryti skirtukai</translation>
 <translation id="3269069891205016797">Jūsų informacija bus ištrinta iš įrenginio, kai atsijungsite.</translation>
 <translation id="3269093882174072735">Įkelti vaizdą</translation>
-<translation id="3269889795238950578">Šis puslapis gali peržiūrėti tekstą ir vaizdus, nukopijuotus į iškarpinę.</translation>
 <translation id="326999365752735949">Atsisiuntimo skirt.</translation>
 <translation id="3270965368676314374">Skaityti, keisti ir ištrinti nuotraukas, muziką ir kitą mediją iš kompiuterio</translation>
 <translation id="327147043223061465">Žr. visus slapukus ir svetainės duomenis</translation>
@@ -1952,7 +1949,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="3949790930165450333">„<ph name="DEVICE_NAME" />“ (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Importuota iš „IE“</translation>
 <translation id="3950820424414687140">Prisijungti</translation>
-<translation id="3950870029767307261">Šiam puslapiui neleidžiama peržiūrėti teksto ir vaizdų, nukopijuotų į iškarpinę</translation>
 <translation id="3954354850384043518">Vykdoma</translation>
 <translation id="3955193568934677022">Leisti svetainėms paleisti apsaugotą turinį (rekomenduojama)</translation>
 <translation id="3956702100721821638">Nepavyko pasiekti „Google Play“</translation>
@@ -5147,7 +5143,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="9157697743260533322">Nepavyko nustatyti automatinių naujinių visiems naudotojams (išankstinio paleidimo klaida: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Deja, nustatant tapatybę iškilo tinklo ryšio problema. Patikrinkite tinklo ryšį ir bandykite dar kartą.</translation>
 <translation id="9161070040817969420">Antriniai kadrai, skirti: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">Vaizdas vaizde</translation>
 <translation id="9169496697824289689">Peržiūrėti sparčiuosius klavišus</translation>
 <translation id="9170397650136757332">Dabar truputį pajudinkite pirštą, kad būtų užfiksuotos visos skirtingos kontrolinio kodo dalys</translation>
 <translation id="9170848237812810038">&amp;Atšaukti</translation>

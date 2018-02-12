@@ -1243,7 +1243,6 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="2890678560483811744">Referência da página fora dos limites</translation>
 <translation id="2893168226686371498">Navegador predefinido</translation>
 <translation id="2893453364759632532">Mover a janela para baixo</translation>
-<translation id="289426338439836048">Outra rede móvel...</translation>
 <translation id="289644616180464099">O cartão SIM está bloqueado</translation>
 <translation id="289695669188700754">ID da chave: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Tem a certeza de que pretende abrir <ph name="TAB_COUNT" /> separadores?</translation>
@@ -1444,7 +1443,6 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="3190558889382726167">Palavra-passe guardada</translation>
 <translation id="3192947282887913208">Ficheiros de áudio</translation>
 <translation id="3194737229810486521"><ph name="URL" /> pretende armazenar permanentemente dados no seu dispositivo.</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> no servidor <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Servidores</translation>
 <translation id="3202131003361292969">Caminho</translation>
 <translation id="3202173864863109533">O som deste separador foi desativado.</translation>
@@ -1484,7 +1482,6 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="3268451620468152448">Abrir Separadores</translation>
 <translation id="3269069891205016797">As suas informações serão removidas do dispositivo quando terminar sessão.</translation>
 <translation id="3269093882174072735">Carregar imagem</translation>
-<translation id="3269889795238950578">Esta página pode ver o texto e as imagens copiados para a área de transferência.</translation>
 <translation id="326999365752735949">A transferir dif.</translation>
 <translation id="3270965368676314374">Ler, alterar e eliminar fotografias, música e outros elementos multimédia do computador</translation>
 <translation id="327147043223061465">Ver todos os cookies e os dados de sites</translation>
@@ -1954,7 +1951,6 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Importado do IE</translation>
 <translation id="3950820424414687140">Iniciar sessão</translation>
-<translation id="3950870029767307261">Esta página foi impedida de ver o texto e as imagens copiados para a área de transferência.</translation>
 <translation id="3954354850384043518">Em curso</translation>
 <translation id="3955193568934677022">Permitir que os sites reproduzam conteúdo protegido (recomendado)</translation>
 <translation id="3956702100721821638">Não foi possível aceder ao Google Play.</translation>
@@ -5149,7 +5145,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9157697743260533322">Falha ao configurar atualizações automáticas para todos os utilizadores (erro de inicialização da verificação prévia: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ups! Ocorreu um problema de comunicação com a rede durante a autenticação. Verifique a ligação de rede e tente novamente.</translation>
 <translation id="9161070040817969420">Subframes para: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">Ecrã no ecrã</translation>
 <translation id="9169496697824289689">Ver atalhos de teclado</translation>
 <translation id="9170397650136757332">Agora, mova ligeiramente o dedo para capturar as diferentes partes da sua impressão digital</translation>
 <translation id="9170848237812810038">An&amp;ular</translation>

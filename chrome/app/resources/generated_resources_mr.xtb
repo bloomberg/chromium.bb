@@ -1241,7 +1241,6 @@
 <translation id="2890678560483811744">निषिद्ध पृष्ठ संदर्भ</translation>
 <translation id="2893168226686371498">डीफॉल्ट ब्राउझर</translation>
 <translation id="2893453364759632532">विंडो खाली</translation>
-<translation id="289426338439836048">इतर मोबाइल नेटवर्क...</translation>
 <translation id="289644616180464099">सिम कार्ड लॉक केले आहे</translation>
 <translation id="289695669188700754">की आयडी: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">आपली खात्री आहे की आपण <ph name="TAB_COUNT" /> टॅब उघडू इच्छिता?</translation>
@@ -1437,7 +1436,6 @@
 <translation id="3190558889382726167">पासवर्ड जतन केला</translation>
 <translation id="3192947282887913208">ऑडिओ फायली</translation>
 <translation id="3194737229810486521"><ph name="URL" /> ला तुमच्या डिव्हाइसवर डेटा कायमचा स्टोअर करायचा आहे</translation>
-<translation id="3195213714973468956"><ph name="SERVER_NAME" /> वर <ph name="PRINTER_NAME" /></translation>
 <translation id="3199127022143353223">सर्व्हर</translation>
 <translation id="3202131003361292969">पथ</translation>
 <translation id="3202173864863109533">या टॅबचा ऑडिओ निःशब्द करण्यात येत आहे.</translation>
@@ -1477,7 +1475,6 @@
 <translation id="3268451620468152448">उघडे Tabs</translation>
 <translation id="3269069891205016797">आपण साइन आउट करता तेव्हा डिव्हाइस मधून आपली माहिती काढली जाईल.</translation>
 <translation id="3269093882174072735">प्रतिमा लोड करा</translation>
-<translation id="3269889795238950578">या पेजवर क्लिपबोर्डवर कॉपी केलेला मजकूर आणि इमेज दिसू शकतात.</translation>
 <translation id="326999365752735949">फरक डाउनलोड करत आहे</translation>
 <translation id="3270965368676314374">आपल्या संगणकावरील फोटो, संगीत आणि अन्य मीडिया वाचा, बदला आणि हटवा</translation>
 <translation id="327147043223061465">सर्व कुकीज आणि साइट डेटा पहा</translation>
@@ -1947,7 +1944,6 @@
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">IE मधून आयातित</translation>
 <translation id="3950820424414687140">साइन इन करा</translation>
-<translation id="3950870029767307261">या पेजला क्लिपबोर्डवर कॉपी केलेला मजकूर आणि इमेज पाहण्यापासून ब्लॉक केले आहे</translation>
 <translation id="3954354850384043518">प्रगतीपथावर</translation>
 <translation id="3955193568934677022">संरक्षित सामग्री प्ले करण्यासाठी साइटना अनुमती द्या (शिफारस केलेले)</translation>
 <translation id="3956702100721821638">Google Play वर पोहोचता आले नाही</translation>
@@ -5141,7 +5137,6 @@
 <translation id="9157697743260533322">सर्व वापरकर्त्यांसाठी स्वयंचलित अपडेट सेट करण्यात अयशस्वी झाले (पूर्वफ्लाइट लाँच एरर: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">अरेरे! प्रमाणीकरणादरम्यान एक नेटवर्क संवाद प्रस्थापित समस्या आली. कृपया आपले नेटवर्क कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="9161070040817969420">यासाठी सबफ्रेम: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">चित्रात-चित्र</translation>
 <translation id="9169496697824289689">कीबोर्ड शॉर्टकट पहा</translation>
 <translation id="9170397650136757332">आपल्या फिंगरप्रिंटचे सर्व भिन्न भाग कॅप्चर करण्यासाठी आता आपले बोट किंचित हलवा</translation>
 <translation id="9170848237812810038">&amp;पूर्ववत करा</translation>

@@ -1243,7 +1243,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="2890678560483811744">Sklic na stran zunaj dovoljenega razpona</translation>
 <translation id="2893168226686371498">Privzeti brskalnik</translation>
 <translation id="2893453364759632532">Okno dol</translation>
-<translation id="289426338439836048">Drugo mobilno omrežje ...</translation>
 <translation id="289644616180464099">Kartica SIM je zaklenjena</translation>
 <translation id="289695669188700754">ID ključa: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Ali ste prepričani, da želite odpreti naslednje število zavihkov: <ph name="TAB_COUNT" /></translation>
@@ -1443,7 +1442,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="3190558889382726167">Geslo je shranjeno</translation>
 <translation id="3192947282887913208">Zvočne datoteke</translation>
 <translation id="3194737229810486521"><ph name="URL" /> želi trajno shraniti podatke v vaši napravi</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> v strežniku <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Strežniki</translation>
 <translation id="3202131003361292969">Pot</translation>
 <translation id="3202173864863109533">Zvok tega zavihka je izklopljen.</translation>
@@ -1483,7 +1481,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="3268451620468152448">Odprti zavihki</translation>
 <translation id="3269069891205016797">Vaši podatki bodo izbrisani iz naprave, ko se odjavite.</translation>
 <translation id="3269093882174072735">Naloži sliko</translation>
-<translation id="3269889795238950578">Ta stran si ne more ogledati besedila in slik, kopiranih v odložišče.</translation>
 <translation id="326999365752735949">Prenos razlik</translation>
 <translation id="3270965368676314374">Branje, spreminjanje in izbris fotografij, glasbe in drugih predstavnosti v računalniku</translation>
 <translation id="327147043223061465">Ogled vseh piškotkov in podatkov spletnih mest</translation>
@@ -1953,7 +1950,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Uvoženo iz IE</translation>
 <translation id="3950820424414687140">Prijava</translation>
-<translation id="3950870029767307261">Tej strani je preprečen ogled besedila in slik, shranjenih v odložišče</translation>
 <translation id="3954354850384043518">Poteka</translation>
 <translation id="3955193568934677022">Dovoli spletnim mestom predvajanje zaščitene vsebine (priporočeno)</translation>
 <translation id="3956702100721821638">Googla Play ni bilo mogoče doseči</translation>
@@ -5147,7 +5143,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="9157697743260533322">Nastavitev samodejnih posodobitev za vse uporabnike ni uspela (napaka preverjanj pred zagonom: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ojej!  Težava z omrežno komunikacijo med preverjanjem pristnosti.  Preverite omrežno povezavo in poskusite znova.</translation>
 <translation id="9161070040817969420">Podokvirji za: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">Slika v sliki</translation>
 <translation id="9169496697824289689">Ogled bližnjičnih tipk</translation>
 <translation id="9170397650136757332">Rahlo premaknite prst, da bodo zajeti vsi različni deli prstnega odtisa</translation>
 <translation id="9170848237812810038">&amp;Razveljavi</translation>

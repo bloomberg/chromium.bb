@@ -310,6 +310,7 @@
       by upewnić się, że serwer proxy działa. Jeśli uważasz, że
       nie powinien być on używany:
       <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> na serwerze <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Anuluj płatność</translation>
 <translation id="3207960819495026254">Dodano do zakładek</translation>
 <translation id="3209375525920864198">Wpisz prawidłową nazwę sesji.</translation>

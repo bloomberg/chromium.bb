@@ -754,13 +754,6 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
       Więcej informacji o Bezpiecznym przeglądaniu znajdziesz na stronie https://developers.google.com/safe-browsing</translation>
 <translation id="3709266154059827597">Konfiguruj czarną listę instalacji rozszerzeń</translation>
 <translation id="3711895659073496551">Wstrzymaj</translation>
-<translation id="3732106275571017176">To ustawienie pozwala użytkownikom na przełączanie się między kontami Google w obszarze treści okna przeglądarki po zalogowaniu się na urządzeniu z systemem <ph name="PRODUCT_OS_NAME" />.
-
-      Jeśli ta zasada ma ustawienie „fałsz”, nie można zalogować się na inne konto w obszarze treści w przeglądarce niedziałającej w trybie incognito.
-
-      Jeśli ta zasada jest nieskonfigurowana lub ma ustawienie „prawda”, obowiązuje działanie domyślne – będzie można zalogować się na inne konto w obszarze treści w przeglądarce. Wyjątkiem są konta dzieci, w przypadku których logowanie będzie blokowane w obszarze treści w przeglądarce niedziałającej w trybie incognito.
-
-      Jeśli logowanie się na inne konto nie powinno być dozwolone w trybie incognito, możesz zablokować ten tryb przy użyciu zasady IncognitoModeAvailability.</translation>
 <translation id="3736879847913515635">Włączanie dodawania osób w menedżerze użytkowników</translation>
 <translation id="3737544779868348650">Sieciowa nazwa hosta urządzenia</translation>
 <translation id="3750220015372671395">Blokuj generowanie kluczy w tych witrynach</translation>

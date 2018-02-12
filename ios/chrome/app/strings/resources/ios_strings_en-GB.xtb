@@ -249,6 +249,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5871497086027727873">1 item moved</translation>
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">On</translation>
+<translation id="5938160824633642847">Your device is almost full. Free up space and try again.</translation>
 <translation id="5948291296578561264">This lets you save photos to your photo library.</translation>
 <translation id="5955891643922670672">Viewing Offline Version</translation>
 <translation id="5964480694698977962">Create new incognito tab.</translation>
@@ -289,6 +290,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 
 Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter it to start sync.</translation>
 <translation id="6418346271604475326">Preparing PDF</translation>
+<translation id="6434591244308415567">An error occurred. Try again later.</translation>
 <translation id="6445051938772793705">Country</translation>
 <translation id="6445981559479772097">Message sent.</translation>
 <translation id="6464071786529933911">Open in New Incognito Tab</translation>
@@ -299,6 +301,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="6657585470893396449">Password</translation>
 <translation id="667999046851023355">Document</translation>
 <translation id="6713747756340119864">Google Apps</translation>
+<translation id="6730682669179532099">Can't Export Passwords</translation>
 <translation id="6762156594045689028">To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Postcode</translation>
 <translation id="6785453220513215166">Sending crash report...</translation>
@@ -326,6 +329,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7203585745079012652">Speak Answers Back</translation>
 <translation id="722055596168483966">Personalise Google services</translation>
 <translation id="7272437679830969316">Can't verify your identity. Password not copied.</translation>
+<translation id="7291368939935408496">Preparing Passwords…</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> percent downloaded</translation>
 <translation id="7346909386216857016">OK, got it</translation>
 <translation id="7400418766976504921">URL</translation>

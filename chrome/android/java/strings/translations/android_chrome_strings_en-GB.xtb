@@ -140,11 +140,13 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="219985413780390209">Protect you and your device from dangerous sites</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web app. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continue as <ph name="USER_FULL_NAME" /></translation>
+<translation id="2259659629660284697">Export passwords…</translation>
 <translation id="2266890032547182881">Data usage breakdown</translation>
 <translation id="2268044343513325586">Refine</translation>
 <translation id="2286841657746966508">Billing address</translation>
 <translation id="230115972905494466">No compatible devices found</translation>
 <translation id="2315043854645842844">Client side certificate selection is not supported by the operating system.</translation>
+<translation id="2321086116217818302">Preparing passwords…</translation>
 <translation id="2321958826496381788">Drag the slider until you can read this comfortably. Text should look at least this big after double-tapping on a paragraph.</translation>
 <translation id="2323763861024343754">Site storage</translation>
 <translation id="2328985652426384049">Can’t sign in</translation>
@@ -240,6 +242,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="3236059992281584593">1 min left</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Bookmark this page</translation>
+<translation id="3255459706755453214">Block clipboard read access for a specific site.</translation>
 <translation id="3259831549858767975">Make everything on the page smaller</translation>
 <translation id="3269093882174072735">Load image</translation>
 <translation id="3269956123044984603">To get your tabs from your other devices, turn on “Auto-sync data” in Android account settings.</translation>
@@ -251,6 +254,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="3328801116991980348">Site information</translation>
 <translation id="3341058695485821946">See how much data that you've saved</translation>
 <translation id="3350687908700087792">Close all incognito tabs</translation>
+<translation id="3358632888246345756">Allow clipboard read access for a specific site.</translation>
 <translation id="3365671512111106261">Unavailable when Data Saver is turned on</translation>
 <translation id="3367813778245106622">Sign in again to start sync</translation>
 <translation id="3384347053049321195">Share image</translation>
@@ -373,6 +377,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4522570452068850558">Details</translation>
 <translation id="4526249700380860531">View and manage saved passwords at <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Choose folder</translation>
+<translation id="4544481164434183075">This page is from <ph name="CREATION_TIME" /> and may differ from the online version.</translation>
 <translation id="4550003330909367850">To view or copy your password here, set screen lock on this device.</translation>
 <translation id="4558311620361989323">Web page shortcuts</translation>
 <translation id="4565377596337484307">Hide password</translation>
@@ -484,6 +489,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="5517095782334947753">You have bookmarks, history, passwords and other settings from <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Redirect blocked.</translation>
 <translation id="5527082711130173040">Chrome needs location access to scan for devices. <ph name="BEGIN_LINK1" />Update permissions<ph name="END_LINK1" />. Location access is also <ph name="BEGIN_LINK2" />turned off for this device<ph name="END_LINK2" />.</translation>
+<translation id="5527111080432883924">Ask before allowing sites to read text and images from the clipboard (recommended)</translation>
 <translation id="5530766185686772672">Close incognito tabs</translation>
 <translation id="5534640966246046842">Site copied</translation>
 <translation id="5537099431952529648">You and your parents can manage Chrome Sync and personalisation in <ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /></translation>
@@ -567,6 +573,7 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="6177390657002841081">Turn on Data Saver</translation>
 <translation id="6181444274883918285">Add site exception</translation>
 <translation id="618555311922999635">Navigation panel opened at full height</translation>
+<translation id="6192333916571137726">Download File</translation>
 <translation id="6192792657125177640">Exceptions</translation>
 <translation id="6210748933810148297">Not <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Options</translation>
@@ -651,6 +658,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d open tab}other{%1$d open tabs}}</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6910211073230771657">Deleted</translation>
+<translation id="6912998170423641340">Block sites from reading text and images from the clipboard</translation>
 <translation id="6914783257214138813">Your passwords will be visible to anyone who can see the exported file.</translation>
 <translation id="6945221475159498467">Select</translation>
 <translation id="6963766334940102469">Delete bookmarks</translation>
@@ -673,10 +681,10 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7062545763355031412">Accept and switch accounts</translation>
 <translation id="7063006564040364415">Could not connect to the sync server.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 selected}other{# selected}}</translation>
+<translation id="7077143737582773186">SD Card</translation>
 <translation id="7121362699166175603">Clears history and autocompletions in the address bar. Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Allow for current search engine</translation>
 <translation id="7138678301420049075">Other</translation>
-<translation id="7144878232160441200">Retry</translation>
 <translation id="7149893636342594995">Last 24 Hours</translation>
 <translation id="7177466738963138057">You can change this later in Settings</translation>
 <translation id="7180611975245234373">Refresh</translation>
@@ -698,6 +706,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Chrome First Run Experience</translation>
 <translation id="7423098979219808738">Ask first</translation>
+<translation id="7423538860840206698">Blocked from reading clipboard</translation>
 <translation id="7437998757836447326">Sign out of Chrome</translation>
 <translation id="7445411102860286510">Allow sites to automatically play muted videos (recommended)</translation>
 <translation id="7453467225369441013">Signs you out of most sites. You won't be signed out of your Google Account.</translation>
@@ -733,6 +742,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="773466115871691567">Always translate pages in <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="7754704193130578113">Ask where to save each file before downloading</translation>
+<translation id="7762668264895820836">SD Card <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Add address</translation>
 <translation id="7765158879357617694">Move</translation>
 <translation id="7769602470925380267">Accept and sign out</translation>
@@ -788,6 +798,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8250920743982581267">Documents</translation>
 <translation id="8260126382462817229">Try signing in again</translation>
 <translation id="8261506727792406068">Delete</translation>
+<translation id="8266862848225348053">Download location</translation>
 <translation id="8283853025636624853">Syncing to <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standard tabs</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> and more sites</translation>
@@ -828,6 +839,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="869891660844655955">Expiry date</translation>
 <translation id="8712637175834984815">Got it</translation>
 <translation id="8719023831149562936">Can’t beam current tab</translation>
+<translation id="8725066075913043281">Try again</translation>
 <translation id="8728487861892616501">By using this application, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />, and the <ph name="BEGIN_LINK3" />Privacy Notice for Google Accounts Managed with Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Done</translation>
 <translation id="8748850008226585750">Contents hidden</translation>
@@ -837,6 +849,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="883635517171802338">Block sites from showing pop-ups (recommended)</translation>
 <translation id="883806473910249246">An error occurred while downloading the content.</translation>
+<translation id="8840953339110955557">This page may differ from the online version.</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="885701979325669005">Storage</translation>

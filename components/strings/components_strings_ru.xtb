@@ -309,6 +309,7 @@
 <translation id="3176929007561373547">Проверьте настройки прокси-сервера или попросите администратора
           задать верные параметры. В противном случае^
           <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> на <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Отменить оплату</translation>
 <translation id="3207960819495026254">Добавлено в закладки</translation>
 <translation id="3209375525920864198">Недопустимое название сеанса.</translation>

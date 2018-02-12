@@ -638,6 +638,14 @@
           Bu politika isteğe bağlıdır. Ayarlanmadan bırakılırsa, hiçbir arama terimi değişikliği yapılmaz.
 
           Bu politika ancak 'DefaultSearchProviderEnabled' politikası etkinleştirilirse dikkate alınır.</translation>
+<translation id="306887062252197004">Bu politika WebDriver özelliğini kullananların, bu özelliğin çalışmasını engelleyebilecek politikaları geçersiz kılmalarını sağlar.
+
+      Şu anda bu politika, SitePerProcess ve IsolateOrigins politikalarını devre dışı
+      bırakmaktadır.
+
+      Politika etkinleştirilirse WebDriver, uyumlu olmayan politikaları geçersiz kılabilir.
+      Politika devre dışı bırakılır veya yapılandırılmazsa, WebDriver'ın uyumlu
+      olmayan politikaları geçersiz kılmasına izin verilmez.</translation>
 <translation id="3069958900488014740"><ph name="PRODUCT_NAME" /> ürününde WPAD (Otomatik Web Proxy Keşfi) optimizasyonunu kapatmanıza olanak verir.
 
       Bu politika yanlış seçeneğine ayarlanırsa WPAD optimizasyonu devre dışı kalır ve <ph name="PRODUCT_NAME" /> ürününün DNS tabanlı WPAD sunucuları için daha uzun süre beklemesine neden olur. Politika ayarlanmazsa veya etkinleştirilirse WPAD optimizasyonu etkinleştirilir.
@@ -782,13 +790,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
       Güvenli Tarama ile ilgili daha fazla bilgi için https://developers.google.com/safe-browsing adresine bakın.</translation>
 <translation id="3709266154059827597">Uzantı kurulum kara listesini yapılandır</translation>
 <translation id="3711895659073496551">Askıya al</translation>
-<translation id="3732106275571017176">Bu ayar, kullanıcıların <ph name="PRODUCT_OS_NAME" /> cihazlarında oturum açtıktan sonra tarayıcı pencerelerinin içerik alanındaki Google hesapları arasında geçiş yapmalarına olanak tanır.
-
-      Bu politika false (yanlış) değerine ayarlanırsa, gizli modda olmayan tarayıcı içerik alanından farklı bir hesapta oturum açılmasına izin verilmez.
-
-      Bu politika ayarlanmazsa veya true (doğru) değerine ayarlanırsa, varsayılan davranış kullanılır: Tarayıcı içerik alanından farklı bir hesapta oturum açılmasına izin verilir, ancak çocukların hesaplarında gizli modda olmayan içerik alanından farklı bir hesapta oturum açılamaz.
-
-      Gizli mod kullanılarak farklı bir hesapta oturum açılmasına izin verilmemesi halinde IncognitoModeAvailability politikasını kullanarak o modu engelleme seçeneğini değerlendirebilirsiniz.</translation>
 <translation id="3736879847913515635">Kullanıcı yöneticisinde kişi eklemeyi etkinleştir</translation>
 <translation id="3737544779868348650">Cihaz ağı ana makine adı</translation>
 <translation id="3750220015372671395">Bu sitelerde anahtar oluşturmayı engelle</translation>
@@ -1235,6 +1236,7 @@ politikayı geçersiz kılamaz.
 <translation id="4899708173828500852">Güvenli Taramayı etkinleştir</translation>
 <translation id="4906194810004762807">Aygıt Politikası için yenileme hızı</translation>
 <translation id="4917385247580444890">Güçlü</translation>
+<translation id="4923806312383904642">WebDriver'ın Uyumlu Olmayan Politikaları Geçersiz Kılmasına İzin Ver</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">Bu politika doğru seçeneğine ayarlanırsa veya yapılandırılmazsa <ph name="PRODUCT_NAME" />, kullanıcı yöneticisinin Kişi Ekle işlevinin kullanılmasına izin verir.
 

@@ -33,9 +33,11 @@
 <translation id="1936717151811561466">Finlandês</translation>
 <translation id="1947424002851288782">Teclado alemão</translation>
 <translation id="1984603991036629094">Teclado fonético armênio</translation>
+<translation id="1989746695744304008">Guia e janelas</translation>
 <translation id="2046702855113914483">Lámen</translation>
 <translation id="2080010875307505892">Teclado sérvio</translation>
 <translation id="2136953289241069843">Transliteração (namaste → नमस्कार)</translation>
+<translation id="2145908266289632567">Edição de texto</translation>
 <translation id="2164862903024139959">Teclado vietnamita (TCVN)</translation>
 <translation id="2168214441502403371">Teclado persa</translation>
 <translation id="2198315389084035571">Chinês simplificado</translation>
@@ -85,6 +87,7 @@
 <translation id="3519867315646775981">Transliteração (shalom ← שלום)</translation>
 <translation id="3522708245912499433">Português</translation>
 <translation id="357479282490346887">Lituano</translation>
+<translation id="3592821358219525223">Configurações de exibição e do sistema</translation>
 <translation id="3603385196401704894">Francês canadense</translation>
 <translation id="3606220979431771195">Turco-F</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
@@ -166,6 +169,7 @@
 <translation id="5819442873484330149">Conjunto de letras coreanas final (Hangul 3)</translation>
 <translation id="5838825566232597749">Workman internacional dos EUA</translation>
 <translation id="5892290200158927959">Teclado BÉPO francês</translation>
+<translation id="5928303187149237472">Alterar resolução da tela</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">Teclado da América Latina</translation>
 <translation id="6012987430370760224">Teclado marata (fonético)</translation>
@@ -185,7 +189,10 @@
 <translation id="6503256918647795660">Teclado suíço (francês)</translation>
 <translation id="6505918941256367791">Teclado tâmil (InScript)</translation>
 <translation id="6509122719576673235">Norueguês</translation>
+<translation id="6534694488908326705">Atalho comum</translation>
+<translation id="6629951648264770593"><ph name="MODIFIER" /> + <ph name="KEY" /></translation>
 <translation id="6650726141019353908">Borboleta rosa</translation>
+<translation id="6684986274046026054">Bloquear a tela</translation>
 <translation id="6760765581316020278">Teclado vietnamita (VNI)</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6808193438228982088">Raposa</translation>
@@ -214,6 +221,7 @@
 <translation id="7434823369735508263">Teclado Dvorak do Reino Unido</translation>
 <translation id="7460898608667578234">Ucraniano</translation>
 <translation id="7474889694310679759">Teclado canadense (inglês)</translation>
+<translation id="7500462265946853476">Página e navegador da Web</translation>
 <translation id="751507702149411736">Bielorrusso</translation>
 <translation id="7547811415869834682">Holandês</translation>
 <translation id="7603724359189955920">Grades</translation>
@@ -257,6 +265,7 @@
 <translation id="874420130893181774">Método de entrada Pinyin tradicional</translation>
 <translation id="8803496343472038847">Teclado fonético russo</translation>
 <translation id="8808686172382650546">Gato</translation>
+<translation id="8839645518696429828"><ph name="CTRL" /> + <ph name="SHIFT" /> e + ou -</translation>
 <translation id="885381502874625531">Teclado bielorrusso</translation>
 <translation id="8900820606136623064">Húngaro</translation>
 <translation id="8901822611024316615">Teclado QWERTY tcheco</translation>

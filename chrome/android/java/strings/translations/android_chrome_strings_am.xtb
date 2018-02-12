@@ -676,7 +676,6 @@
 <translation id="7121362699166175603">በአድራሻ አሞሌው ላይ ታሪክን እና ራስ-ማጠናቀቆችን ያጸዳል። የእርስዎ Google መለያ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ላይ ሌሎች የአሰሳ ታሪክ አይነቶች ሊኖሩት ይችላል።</translation>
 <translation id="7128222689758636196">አሁን ላለው የፍለጋ ፕሮግራም ፍቀድ</translation>
 <translation id="7138678301420049075">ሌላ</translation>
-<translation id="7144878232160441200">እንደገና ሞክር</translation>
 <translation id="7149893636342594995">ባለፉት 24 ሰዓቶች</translation>
 <translation id="7177466738963138057">ይሄንን በኋላ ቅንብሮች ውስጥ ሊለውጡት ይችላሉ</translation>
 <translation id="7180611975245234373">አድስ</translation>
@@ -830,6 +829,7 @@
 <translation id="869891660844655955">የሚያበቀበት ጊዜ</translation>
 <translation id="8712637175834984815">ገባኝ</translation>
 <translation id="8719023831149562936">የአሁኑን ትር በሞገድ መላክ አልተቻለም</translation>
+<translation id="8725066075913043281">እንደገና ይሞክሩ</translation>
 <translation id="8728487861892616501">ይህን መተግበሪያ በመጠቀምዎ በChrome <ph name="BEGIN_LINK1" />አገልግሎት ውል<ph name="END_LINK1" /> እና <ph name="BEGIN_LINK2" />የግላዊነት ማሳወቂያ<ph name="END_LINK2" /> እንዲሁም <ph name="BEGIN_LINK3" />በFamily Link ለሚተዳደሩ የGoogle መለያዎች የግላዊነት ማሳወቂያ<ph name="END_LINK3" /> ይስማማሉ።</translation>
 <translation id="8730621377337864115">ተከናውኗል</translation>
 <translation id="8748850008226585750">ይዘቶች ተደብቀዋል</translation>

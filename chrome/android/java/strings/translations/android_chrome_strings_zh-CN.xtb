@@ -676,7 +676,6 @@
 <translation id="7121362699166175603">清除历史记录和地址栏中的自动填充项。您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="7128222689758636196">适用于当前的搜索引擎</translation>
 <translation id="7138678301420049075">其他</translation>
-<translation id="7144878232160441200">重试</translation>
 <translation id="7149893636342594995">过去 24 小时</translation>
 <translation id="7177466738963138057">以后，您可以在“设置”中更改此设置。</translation>
 <translation id="7180611975245234373">刷新</translation>
@@ -830,6 +829,7 @@
 <translation id="869891660844655955">截止日期</translation>
 <translation id="8712637175834984815">知道了</translation>
 <translation id="8719023831149562936">无法传输当前的标签页</translation>
+<translation id="8725066075913043281">重试</translation>
 <translation id="8728487861892616501">使用此应用即表示您同意 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />，以及<ph name="BEGIN_LINK3" />针对通过 Family Link 管理的 Google 帐号的隐私权声明<ph name="END_LINK3" />。</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="8748850008226585750">内容已隐藏</translation>

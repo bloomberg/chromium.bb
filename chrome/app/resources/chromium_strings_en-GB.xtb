@@ -20,6 +20,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1668054258064581266">After removing your account from Chromium, you may need to reload your open tabs to take effect.</translation>
 <translation id="1688750314291223739">Set up Sync to save your personalised browser features to the web and access them from Chromium on any computer.</translation>
 <translation id="1708666629004767631">There's a new, safer version of Chromium available.</translation>
+<translation id="1755219581955525058"><ph name="EXTENSION_NAME" /> Has Been Added to Chromium</translation>
 <translation id="1774152462503052664">Let Chromium run in the background</translation>
 <translation id="1779356040007214683">To make Chromium safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
 <translation id="1808667845054772817">Reinstall Chromium</translation>
@@ -126,6 +127,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5479196819031988440">Chromium OS can't open this page.</translation>
 <translation id="5480860683791598150">Chromium needs access to your location to share your location with this site</translation>
 <translation id="549669000822060376">Please wait while Chromium installs the latest system updates.</translation>
+<translation id="5631814766731275228">Chromium name and picture</translation>
 <translation id="5634636535844844681">Chromium requires Windows 7 or higher.</translation>
 <translation id="5680901439334282664">sign in to Chromium</translation>
 <translation id="5698481217667032250">Display Chromium in this language</translation>
@@ -142,6 +144,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5987687638152509985">Update Chromium to start sync</translation>
 <translation id="6055895534982063517">There's a new version of Google Chrome available and it's faster than ever.</translation>
 <translation id="6063093106622310249">&amp;Open in Chromium</translation>
+<translation id="6072279588547424923"><ph name="EXTENSION_NAME" /> has been added to Chromium</translation>
 <translation id="608189560609172163">Chromium could not sync your data due to an error signing in.</translation>
 <translation id="6096348254544841612">Customise and control Chromium. Update is available.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> is dangerous, so Chromium has blocked it.</translation>
@@ -159,6 +162,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="6485906693002546646">You're using <ph name="PROFILE_EMAIL" /> to sync your Chromium stuff. To update your sync preference or to use Chromium without a Google account, visit <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Uninstall Chromium</translation>
 <translation id="6598877126913850652">Go to Chromium notification settings</translation>
+<translation id="6630428628961670451">Link Your Chromium Data to This Account?</translation>
 <translation id="6676384891291319759">Access the Internet</translation>
 <translation id="6717134281241384636">Your profile can not be used because it is from a newer version of Chromium.
 

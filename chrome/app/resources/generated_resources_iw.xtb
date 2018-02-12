@@ -1239,7 +1239,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2890678560483811744">התייחסות לדף מחוץ לטווח</translation>
 <translation id="2893168226686371498">דפדפן ברירת מחדל</translation>
 <translation id="2893453364759632532">הזזת חלון מטה</translation>
-<translation id="289426338439836048">רשת אחרת לנייד...</translation>
 <translation id="289644616180464099">‏כרטיס ה-SIM נעול</translation>
 <translation id="289695669188700754">מזהה מפתח: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">האם אתה בטוח שברצונך לפתוח כרטיסיות <ph name="TAB_COUNT" />?</translation>
@@ -1438,7 +1437,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3190558889382726167">הסיסמה נשמרה</translation>
 <translation id="3192947282887913208">קובצי אודיו</translation>
 <translation id="3194737229810486521"><ph name="URL" /> רוצה לאחסן נתונים במכשיר שלך באופן קבוע</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> בשרת <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">שרתים</translation>
 <translation id="3202131003361292969">נתיב</translation>
 <translation id="3202173864863109533">האודיו בכרטיסייה זו מושתק.</translation>
@@ -1478,7 +1476,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3268451620468152448">כרטיסיות פתוחות</translation>
 <translation id="3269069891205016797">כשתצא, המידע שלך יוסר מהמכשיר.</translation>
 <translation id="3269093882174072735">טען תמונה</translation>
-<translation id="3269889795238950578">לדף הזה יש גישה אל טקסט ותמונות שהועתקו אל לוח העריכה.</translation>
 <translation id="326999365752735949">מוריד הבדלים</translation>
 <translation id="3270965368676314374">קריאה, שינוי ומחיקה של קובצי תמונות, מוזיקה ומדיה מסוגים נוספים מהמחשב שלך</translation>
 <translation id="327147043223061465">‏הצגה של כל קובצי ה-Cookie ונתוני האתרים</translation>
@@ -1948,7 +1945,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">‏מיובא מ-IE</translation>
 <translation id="3950820424414687140">כניסה</translation>
-<translation id="3950870029767307261">הדף הזה לא יכול לגשת אל טקסט ותמונות שהועתקו ללוח</translation>
 <translation id="3954354850384043518">מתבצע</translation>
 <translation id="3955193568934677022">התר לאתרים להפעיל תוכן מוגן (מומלץ)</translation>
 <translation id="3956702100721821638">‏לא ניתן היה להתחבר אל Google Play</translation>
@@ -5134,7 +5130,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="9157697743260533322">הגדרת עדכונים אוטומטיים לכל המשתמשים נכשלה (שגיאת קדם-הפעלה: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">אופס!  אירעה בעיה של תקשורת רשת במהלך האימות.  בדוק את חיבור הרשת ונסה שוב.</translation>
 <translation id="9161070040817969420">תת-מסגרות של: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">תמונה בתוך תמונה</translation>
 <translation id="9169496697824289689">הצג מקשי קיצור</translation>
 <translation id="9170397650136757332">עכשיו הזז מעט את האצבע כדי שהחיישן יזהה את כל חלקי טביעת האצבע</translation>
 <translation id="9170848237812810038">&amp;ביטול</translation>

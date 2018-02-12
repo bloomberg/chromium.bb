@@ -609,6 +609,15 @@
           這個政策為選擇性，如果你並未設定這項政策，系統就不會取代任何搜尋字詞。
 
           只有當你啟用「DefaultSearchProviderEnabled」政策時，這項政策才會生效。</translation>
+<translation id="306887062252197004">這項政策可讓使用 WebDriver 功能的使用者覆寫
+      可能干擾此功能運作的政策。
+
+      目前這項政策停用了 SitePerProcess 和 IsolateOrigins 政策。
+
+      如果啟用這項政策，WebDriver 將可以覆寫不相容的
+      政策。
+      如果停用這項政策或未設定，WebDriver 將無法
+      覆寫不相容的政策。</translation>
 <translation id="3069958900488014740">允許關閉 <ph name="PRODUCT_NAME" /> 的 WPAD (Web Proxy Auto Discovery) 最佳化設定。
 
       如果將這項政策設為 False，系統會停用 WPAD 最佳化設定，因而延長 <ph name="PRODUCT_NAME" /> 等待 DNS 型 WPAD 伺服器回應的時間。如果未設定或已啟用這項政策，系統會啟用 WPAD 最佳化設定。
@@ -751,13 +760,6 @@
       如需進一步瞭解「安全瀏覽」功能，請參閱 https://developers.google.com/safe-browsing。</translation>
 <translation id="3709266154059827597">設定擴充功能安裝黑名單</translation>
 <translation id="3711895659073496551">暫停</translation>
-<translation id="3732106275571017176">如果啟用這項設定，使用者在登入 <ph name="PRODUCT_OS_NAME" />裝置後，將可在瀏覽器視窗的內容區域中切換 Google 帳戶。
-
-      如果將這項政策設為 false，就無法透過非無痕式瀏覽器內容區域登入其他帳戶。
-
-      如果將這項政策設為 true 或不予設定，就會採用預設行為：使用者可透過瀏覽器內容區域登入其他帳戶，但無法透過非無痕式內容區域登入子帳戶。
-
-      如要禁止透過無痕模式登入其他帳戶，建議你使用 IncognitoModeAvailability 政策封鎖該模式。</translation>
 <translation id="3736879847913515635">允許在使用者管理工具中新增使用者</translation>
 <translation id="3737544779868348650">裝置網路主機名稱</translation>
 <translation id="3750220015372671395">禁止在這些網站上使用金鑰產生功能</translation>
@@ -1171,6 +1173,7 @@
 <translation id="4899708173828500852">啟用安全瀏覽</translation>
 <translation id="4906194810004762807">裝置政策的重新整理頻率</translation>
 <translation id="4917385247580444890">強</translation>
+<translation id="4923806312383904642">允許 WebDriver 覆寫不相容的政策</translation>
 <translation id="494613465159630803">Cast 接收器</translation>
 <translation id="4962262530309732070">如果將這項政策設為 True 或未設定，<ph name="PRODUCT_NAME" /> 將允許從使用者管理工具新增使用者。
 

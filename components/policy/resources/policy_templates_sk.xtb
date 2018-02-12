@@ -26,6 +26,7 @@
       Ak je toto pravidlo nastavené, prihlasovacia obrazovka sa vždy zobrazí v jazyku, ktorý je určený prvou hodnotou tohto pravidla (z dôvodu kompatibility s nasledujúcimi verziami je pravidlo definované ako zoznam). Ak toto pravidlo nie je nastavené alebo je nastavené na prázdny zoznam, prihlasovacia obrazovka sa zobrazí v jazyku poslednej relácie používateľa. Ak je pravidlo nastavené na hodnotu, ktorá nie je platným jazykom, prihlasovacia obrazovka sa zobrazí v záložnom jazyku (aktuálne americká angličtina).</translation>
 <translation id="1062011392452772310">Povoliť pre zariadenie vzdialené overenie</translation>
 <translation id="1062407476771304334">Nahradiť</translation>
+<translation id="109166998561583554">Spustenie nahlásenia ohrozeného účtu v rámci ochrany heslom</translation>
 <translation id="1093082332347834239">Ak je toto nastavenie povolené, hostiteľ vzdialenej pomoci sa bude spúšťať v procesoch s povoleniami <ph name="UIACCESS_PERMISSION_NAME" />. Umožní tak vzdialeným používateľom interagovať s privilegovanými oknami na pracovnej ploche miestneho používateľa.
 
           Ak je toto nastavenie zakázané alebo nie je nakonfigurované, hostiteľ vzdialenej pomoci bude spustený v kontexte daného používateľa a vzdialení používatelia nemôžu interagovať s privilegovanými oknami na pracovnej ploche.</translation>
@@ -87,6 +88,7 @@
 
       Ak je toto pravidlo nastavené na možnosť False, prehliadač <ph name="PRODUCT_NAME" /> nepovolí spustenie profilov hostí.</translation>
 <translation id="1363275621236827384">Povoľte dopyty na serveri Quirks pre hardvérové profily</translation>
+<translation id="1387596372902085462">Určuje, či sa má dôverovať starej infraštruktúre PKI spoločnosti Symantec Corporation</translation>
 <translation id="1393485621820363363">Povolené podnikové tlačiarne zariadenia</translation>
 <translation id="1397855852561539316">Webová adresa návrhu predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="1426410128494586442">Áno</translation>
@@ -97,6 +99,7 @@
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultJavaScriptSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="1456822151187621582">Windows (klienty <ph name="PRODUCT_OS_NAME" />):</translation>
+<translation id="1457305643416399820">Nahlásenie ohrozeného účtu v rámci ochrany heslom je vypnuté</translation>
 <translation id="1464848559468748897">Určuje správ používateľa v multiprofilovej relácii na zariadeniach so systémom <ph name="PRODUCT_OS_NAME" />.
 
       Ak je pravidlo nastavené na hodnotu MultiProfileUserBehaviorUnrestricted, používateľ môže byť v multiprofilovej relácii buď primárnym, alebo sekundárnym používateľom.
@@ -393,6 +396,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultNotificationsSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="2386362615870139244">Povoliť uzamknutie obrazovky v aktívnom režime</translation>
+<translation id="2411817661175306360">Upozornenie ochrany heslom je vypnuté</translation>
 <translation id="2411919772666155530">Blokovať upozornenia na týchto webových stránkach</translation>
 <translation id="2418507228189425036">Zakáže v prehliadači <ph name="PRODUCT_NAME" /> ukladanie histórie prehliadania a zabráni používateľom toto nastavenie meniť.
 
@@ -783,13 +787,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ďalšie informácie o Bezpečnom prehliadaní získate na adrese https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Konfigurovať zoznam rozšírení, ktorých inštalácia je zakázaná</translation>
 <translation id="3711895659073496551">Režim spánku</translation>
-<translation id="3732106275571017176">Toto nastavenie umožňuje používateľom prepínať medzi účtami Google v rámci oblasti s obsahom v okne prehliadača po prihlásení sa do zariadenia <ph name="PRODUCT_OS_NAME" />.
-
-      Ak toto pravidlo nastavíte na hodnotu False, prihlasovanie do iného účtu v oblasti z obsahom v prehliadači bez aktívneho režimu inkognito nebude povolené.
-
-      Ak toto pravidlo nastavíte na hodnotu True alebo ponecháte nenastavené, použije sa predvolené správanie: prihlasovanie do druhého účtu v oblasti s obsahom v prehliadači bude povolené okrem účtov detí, kde bude v oblasti s obsahom v okne bez aktívneho režimu inkognito zablokované.
-
-      V prípade, ak by prihlasovanie do iného účtu prostredníctvom režimu inkognito nemalo byť povolené, zvážte zablokovanie tohto režimu pomocou pravidla IncognitoModeAvailability.</translation>
 <translation id="3736879847913515635">Povoliť pridanie osoby pomocou správcu používateľov</translation>
 <translation id="3737544779868348650">Názov hostiteľa zariadenia v sieti</translation>
 <translation id="3750220015372671395">Blokovať generovanie kľúčov na týchto weboch</translation>
@@ -1097,6 +1094,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Úplný popis možných nastavení a štruktúry tohto pravidla nájdete na adrese https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
+<translation id="4554651132977135445">Režim spracovania slučky pravidiel pre používateľov</translation>
 <translation id="4555850956567117258">Povoliť pre používateľa vzdialené overenie</translation>
 <translation id="4557134566541205630">Predvolená webová adresa stránky novej karty poskytovateľa vyhľadávania</translation>
 <translation id="4600786265870346112">Povoliť veľký kurzor</translation>
@@ -1385,6 +1383,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Upozorňujeme, že ak platforma podporuje upozornenia na pravidlá, oneskorenie obnovenia bude nastavené na 24 hodín (všetky predvolené nastavenia a hodnota určená v tomto pravidle budú ignorované), pretože sa očakáva, že upozornenia na pravidlá vynútia automatické obnovenie po každej zmene pravidiel. Častejšie obnovenia sú preto zbytočné.</translation>
 <translation id="5530347722229944744">Blokovať potenciálne nebezpečné súbory na stiahnutie</translation>
+<translation id="5530586312297447592">Nahlásenie ohrozeného účtu v rámci ochrany heslom sa spúšťa po opätovnom použití hesla na phishingovej stránke</translation>
 <translation id="5535973522252703021">Zoznam povolených serverov delegovania protokolu Kerberos</translation>
 <translation id="555077880566103058">Povoliť všetkým webom automaticky spúšťať doplnok <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Toto pravidlo nemá žiaden vplyv na aplikácie pre Android.</translation>
@@ -1756,6 +1755,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Ak ponecháte toto pravidlo nenastavené, bude predpovedanie siete aktivované, no používatelia budú môcť nastavenie zmeniť.</translation>
 <translation id="6658245400435704251">Určí počet sekúnd, o koľko môže zariadenie náhodne zdržať sťahovanie aktualizácie odvtedy, čo bola aktualizácia odoslaná na server. Zariadenie môže čakať určitý čas a sa pokúsiť o určitý počet kontrol aktualizácií. Oneskorenie je obmedzené nemenným maximálnym časovým intervalom tak, aby zariadenie nečakalo na stiahnutie aktualizácie donekonečna.</translation>
 <translation id="6689792153960219308">Nahlásiť stav hardvéru</translation>
+<translation id="6698071416141001300">Nahlásenie ohrozeného účtu v rámci ochrany heslom sa spúšťa po opätovnom použití hesla</translation>
 <translation id="6699880231565102694">Povolenie dvojfázového overenia totožnosti pre hostiteľov vzdialeného prístupu</translation>
 <translation id="6724842112053619797">Ak povolíte toto nastavenie, nastavenia uložené v profiloch <ph name="PRODUCT_NAME" /> (napr. záložky, údaje automatického dopĺňania, heslá atď.) sa zapíšu tiež do súboru uloženého v priečinku roamingového používateľského profilu alebo v umiestnení špecifikovanom správcom prostredníctvom pravidla <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Povolenie tohto pravidla vypne synchronizáciu s cloudom.
 
@@ -2009,6 +2009,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultPopupsSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="7529144158022474049">Rozptylový faktor automatických aktualizácií</translation>
 <translation id="7534199150025803530">Toto pravidlo nemá žiaden vplyv na aplikáciu Disk Google pre Android. Ak chcete zabrániť používaniu Disku Google prostredníctvom mobilného pripojenia, mali by ste zakázať inštaláciu aplikácie Disk Google.</translation>
+<translation id="7547549430720182663">Zlúčiť</translation>
 <translation id="7553535237300701827">Ak nastavíte toto pravidlo, overovanie prihlasovacích údajov bude v závislosti od hodnoty nastavenia prebiehať jedným z nasledujúcich spôsobov:
 
       Ak ho nastavíte na možnosť GAIA, prihlasovanie bude prebiehať prostredníctvom normálneho overovania totožnosti GAIA.
@@ -2294,6 +2295,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
       Ak toto pravidlo ponecháte nenastavené alebo deaktivované, súbory PDF sa budú otvárať pomocou doplnku PDF (ak ho používateľ nezakáže).</translation>
 <translation id="8402079500086185021">Vždy otvárať súbory PDF externe</translation>
 <translation id="8412312801707973447">Či sa majú vykonávať kontroly OCSP/CRL online</translation>
+<translation id="841977920223099909">Spustenie upozornenia ochrany heslom</translation>
 <translation id="8424255554404582727">Nastaviť predvolené otočenie obrazovky, ktoré sa opakovane použije pri každom reštarte</translation>
 <translation id="8426231401662877819">Otočiť obrazovku v smere hodinových ručičiek o 90 stupňov</translation>
 <translation id="8451988835943702790">Použiť stránku Nová karta ako domovskú stránku</translation>
@@ -2345,6 +2347,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
           Ak pravidlo zostane nenastavené, prehliadač <ph name="PRODUCT_NAME" /> sa najprv pokúsi zistiť, či sa server nachádza v sieti intranet, a až potom bude reagovať na žiadosti IWA. Ak sa zistí, že je server v sieti internet, prehliadač <ph name="PRODUCT_NAME" /> bude žiadosti IWA ignorovať.</translation>
 <translation id="8672321184841719703">Cieľová verzia automatickej aktualizácie</translation>
 <translation id="867410340948518937">U2F (univerzálny druhý faktor)</translation>
+<translation id="8685024486845674965">Upozornenie ochrany heslom sa spúšťa po opätovnom použití hesla</translation>
 <translation id="8693243869659262736">Použiť vstavaného klienta DNS</translation>
 <translation id="8704831857353097849">Zoznam zakázaných doplnkov</translation>
 <translation id="8711086062295757690">Určuje kľúčové slovo, ktoré vo všeobecnom poli spúšťa vyhľadávanie tohto poskytovateľa. Toto pravidlo je voliteľné.
@@ -2361,6 +2364,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
       Ak je nastavenie povolené alebo nie je nastavené, história prehliadania a sťahovania sa dá odstrániť.
 
       Ak je nastavenie zakázané, história prehliadania a sťahovania sa odstrániť nedá.</translation>
+<translation id="8759829385824155666">Povolené typy šifrovania Kerberos</translation>
 <translation id="8764119899999036911">Určuje, či bude vygenerovaný hlavný názov služby protokolu Kerberos založený na kanonickom názve DNS alebo na pôvodnom zadanom názve.
 
           Ak toto nastavenie povolíte, vyhľadávanie záznamov CNAME sa preskočí a použije sa zadaný názov servera.
@@ -2380,6 +2384,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
       Ak toto pravidlo nie je nastavené alebo je nastavené na hodnotu false, poloha sa nahlasovať nebude.</translation>
 <translation id="8818768076343557335">Predvídať akcie všetkých sietí, ktoré nie sú mobilné.
           (Zastarané vo verzii 50, odstránené vo verzii 52. Ak je vo verziách novších ako 52 nastavená hodnota 1, bude považovaná za hodnotu 0 – predvídať akcie siete pri ľubovoľnom sieťovom pripojení.)</translation>
+<translation id="8825782996899863372">Upozornenie ochrany heslom sa spúšťa po opätovnom použití hesla na phishingovej stránke</translation>
 <translation id="8828766846428537606">Nakonfiguruje v prehliadači <ph name="PRODUCT_NAME" /> predvolenú domovskú stránku a zabráni ju používateľom zmeniť. Nastavenia domovskej stránky používateľa sú úplne uzamknuté len vtedy, ak nastavíte domovskú stránku na stránku Nová karta alebo na vopred určenú webovú adresu domovskej stránky. Ak túto webovú adresu neurčíte, používateľ bude stále môcť nastaviť domovskú stránku na stránku Nová karta pomocou príkazu „chrome://newtab“.</translation>
 <translation id="8833109046074170275">Overenie totožnosti prostredníctvom predvoleného postupu GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> ukladá do vyrovnávacej pamäte aplikácie a rozšírenia, ktoré môže nainštalovať viacero používateľov jedného zariadenia. Aplikácie a rozšírenia tak nemusí každý používateľ opätovne sťahovať.
@@ -2497,6 +2502,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
       Ak toto pravidlo nastavíte na možnosť True, systém <ph name="PRODUCT_OS_NAME" /> spustí reštart, keď používateľ vypne zariadenie. <ph name="PRODUCT_OS_NAME" /> nahradí v používateľskom rozhraní všetky výskyty tlačidiel na vypnutie tlačidlami na reštartovanie. Ak teda používateľ vypne zariadenie pomocou vypínača, automaticky sa nereštartuje, a to ani vtedy, keď je toto pravidlo povolené.</translation>
 <translation id="9158929520101169054">Povoliť viacnásobné prihlásenie v rámci prehliadača</translation>
 <translation id="9187743794267626640">Zákaz pripojenia externého ukladacieho priestoru</translation>
+<translation id="918910591537763102">Staré</translation>
 <translation id="9197740283131855199">Percentuálna hodnota, o ktorú sa predĺži oneskorenie stmavenia obrazovky, keď sa zaznamená aktivita používateľa po stmavení obrazovky</translation>
 <translation id="9200828125069750521">Parametre pre webovú adresu obrázkov, ktorá používa metódu POST</translation>
 <translation id="9213347477683611358">Slúži na konfiguráciu obrázku tapety na úrovni zariadenia, ktorý sa bude zobrazovať na obrazovke prihlásenia, ak sa do zariadenia zatiaľ neprihlásil žiadny používateľ. Pravidlo nastavíte určením webovej adresy, z ktorej môže zariadenie so systémom Chrome OS stiahnuť daný obrázok tapety, a určením kryptografickej hodnoty hash, pomocou ktorej sa overí integrita stiahnutého súboru. Obrázok musí byť vo formáte JPEG a jeho veľkosť nesmie prekročiť 16 MB. Webová adresa musí byť prístupná bez overenia totožnosti. Obrázok tapety sa stiahne a uloží do vyrovnávacej pamäte. Obrázok sa stiahne znova v prípade, že sa zmení webová adresa alebo hodnota hash.

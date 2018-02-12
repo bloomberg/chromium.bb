@@ -308,6 +308,7 @@
 <translation id="3174168572213147020">岛</translation>
 <translation id="3176929007561373547">请检查您的代理服务器设置或与网络管理员联系，以确保代理服务器正常运行。如果您认为自己不需要使用代理服务器，请执行以下操作：
       <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956">“<ph name="SERVER_NAME" />”上的“<ph name="PRINTER_NAME" />”</translation>
 <translation id="320323717674993345">取消付款</translation>
 <translation id="3207960819495026254">已加书签</translation>
 <translation id="3209375525920864198">请输入一个有效的会话名称。</translation>

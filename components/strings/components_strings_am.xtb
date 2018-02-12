@@ -309,6 +309,7 @@
 <translation id="3176929007561373547">ተኪ አገልጋዩ በአግባቡ እየሰራ መሆኑን ለማረጋገጥ የተኪ ቅንብሮችዎን ይፈትሹ ወይም የአውታረ
           መረብዎ አስተዳዳሪን ያግኙ። ተኪ አገልጋይ መጠቀም እንደሌለብዎት የሚያምኑ ከሆኑ፦
           <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> በ<ph name="SERVER_NAME" /> ላይ</translation>
 <translation id="320323717674993345">ክፍያን ሰርዝ</translation>
 <translation id="3207960819495026254">ዕልባት ተደርጎበታል</translation>
 <translation id="3209375525920864198">እባክዎ የሚሠራ የክፍለ-ጊዜ ስም ያስገቡ።</translation>

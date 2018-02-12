@@ -590,7 +590,7 @@
           此为可选政策。如果未设置此政策，系统将不会替换搜索字词。
 
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
-<translation id="306887062252197004">此政策允许 WebDriver 功能用户替换那些可能会干扰该功能运行的政策。
+<translation id="306887062252197004">此政策允许 WebDriver 功能的用户替换那些可能会干扰该功能运行的政策。
 
       目前，此政策可停用 SitePerProcess 和 IsolateOrigins 政策。
 
@@ -735,13 +735,6 @@
       要详细了解安全浏览功能，请访问 https://developers.google.com/safe-browsing。</translation>
 <translation id="3709266154059827597">配置扩展程序安装黑名单</translation>
 <translation id="3711895659073496551">暂停</translation>
-<translation id="3732106275571017176">启用此设置后，用户只需登录其 <ph name="PRODUCT_OS_NAME" />设备便可在浏览器窗口的内容区域中切换 Google 帐号。
-
-      如果此政策设为 false，用户将无法从非无痕模式下的浏览器内容区域中登录另一帐号。
-
-      如果此政策设为 true 或未设置，系统便会使用默认行为：用户将能够从浏览器内容区域中登录另一帐号（未成年人帐号除外，因为系统会阻止从非无痕模式下的浏览器内容区域中登录未成年人帐号）。
-
-      如果不应允许通过无痕模式登录另一帐号，请考虑使用 IncognitoModeAvailability 政策屏蔽该模式。</translation>
 <translation id="3736879847913515635">允许通过用户管理器添加用户</translation>
 <translation id="3737544779868348650">设备网络主机名</translation>
 <translation id="3750220015372671395">禁止在这些网站上使用密钥生成功能</translation>

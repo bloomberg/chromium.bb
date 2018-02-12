@@ -1243,7 +1243,6 @@
 <translation id="2890678560483811744">範囲外のページを参照しています</translation>
 <translation id="2893168226686371498">既定のブラウザ</translation>
 <translation id="2893453364759632532">ウィンドウを下に移動</translation>
-<translation id="289426338439836048">他のモバイル ネットワーク...</translation>
 <translation id="289644616180464099">SIM カードはロックされています</translation>
 <translation id="289695669188700754">キー ID: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870"><ph name="TAB_COUNT" /> 個のタブが開きます。本当によろしいですか？</translation>
@@ -1443,7 +1442,6 @@
 <translation id="3190558889382726167">パスワードを保存しました</translation>
 <translation id="3192947282887913208">音声ファイル</translation>
 <translation id="3194737229810486521"><ph name="URL" /> から、端末にデータを永続的に保存する許可を求められています</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" />（<ph name="SERVER_NAME" /> 上）</translation>
 <translation id="3199127022143353223">サーバー</translation>
 <translation id="3202131003361292969">パス</translation>
 <translation id="3202173864863109533">このタブの音声はミュートされています。</translation>
@@ -1483,7 +1481,6 @@
 <translation id="3268451620468152448">開いているタブ</translation>
 <translation id="3269069891205016797">ログアウトすると端末から利用時の情報が削除されます。</translation>
 <translation id="3269093882174072735">画像を読み込む</translation>
-<translation id="3269889795238950578">このページでは、クリップボードにコピーされているテキストや画像へのアクセスが許可されています。</translation>
 <translation id="326999365752735949">差分のダウンロード中</translation>
 <translation id="3270965368676314374">パソコンからの写真、音楽、その他のメディアの読み取り、変更、削除</translation>
 <translation id="327147043223061465">すべての Cookie とサイトデータを表示</translation>
@@ -1953,7 +1950,6 @@
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" />（<ph name="DEVICE_ID" />）</translation>
 <translation id="394984172568887996">IE ブックマーク</translation>
 <translation id="3950820424414687140">ログイン</translation>
-<translation id="3950870029767307261">このページでは、クリップボードにコピーされているテキストや画像へのアクセスがブロックされています</translation>
 <translation id="3954354850384043518">ダウンロード中</translation>
 <translation id="3955193568934677022">保護されたコンテンツの再生をサイトに許可する（推奨）</translation>
 <translation id="3956702100721821638">Google Play に接続できませんでした</translation>
@@ -5149,7 +5145,6 @@
 <translation id="9157697743260533322">すべてのユーザーで自動更新を行うよう設定できませんでした（プリフライト開始エラー: <ph name="ERROR_NUMBER" />）</translation>
 <translation id="9158715103698450907">認証時にネットワーク通信の問題が発生しました。ネットワーク接続を確認して、もう一度お試しください。</translation>
 <translation id="9161070040817969420">次のサブフレーム: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">ピクチャー イン ピクチャー</translation>
 <translation id="9169496697824289689">キーボード ショートカットの表示</translation>
 <translation id="9170397650136757332">指紋のすべての部分を登録するために、指を少しずつ動かします</translation>
 <translation id="9170848237812810038">取消(&amp;U)</translation>

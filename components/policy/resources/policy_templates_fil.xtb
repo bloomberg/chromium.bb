@@ -633,6 +633,15 @@
           Opsyonal ang patakarang ito. Kung hindi nakatakda, hindi magpapalit ng termino para sa paghahanap.
 
           Sinusunod lang ang patakarang ito kung pinagana ang patakarang 'DefaultSearchProviderEnabled.'</translation>
+<translation id="306887062252197004">Pinapayagan ng patakarang ito ang mga user ng feature na WebDriver na mag-override
+      ng mga patakarang makakaapekto sa mga pagpapatakbo nito.
+
+      Sa kasalukuyan ay dini-disable ng patakarang ito ang mga patakaran ng SitePerProcess at IsolateOrigins.
+
+      Kung naka-enable ang patakaran, mao-override ng WebDriver ang mga hindi tugmang
+      patakaran.
+      Kung naka-disable o hindi naka-configure ang patakaran, hindi papayagan ang WebDriver
+      na mag-override ng mga hindi tugmang patakaran.</translation>
 <translation id="3069958900488014740">Pinapayagang i-off ang pag-optimize ng WPAD (Web Proxy Auto-Discovery) sa <ph name="PRODUCT_NAME" />.
 
       Kung nakatakda sa false ang patakarang ito, madi-disable ang pag-optimize ng WPAD na magsasanhi sa <ph name="PRODUCT_NAME" /> na maghintay nang mas matagal para sa mga DNS-based na WPAD server.  Kung hindi nakatakda o naka-enable ang patakarang ito, ie-enable ang pag-optimize ng WPAD.
@@ -778,13 +787,6 @@
       Tingnan ang https://developers.google.com/safe-browsing para sa higit pang impormasyon tungkol sa Ligtas na Pag-browse.</translation>
 <translation id="3709266154059827597">I-configure ang blacklist ng pag-install ng extension</translation>
 <translation id="3711895659073496551">Suspendihin</translation>
-<translation id="3732106275571017176">Pinapayagan ng setting na ito ang mga user na magpalipat-lipat sa mga Google account na nasa lugar ng content ng kanilang window ng browser pagkatapos nilang mag-sign in sa kanilang <ph name="PRODUCT_OS_NAME" /> device.
-
-      Kung nakatakda sa false ang patakarang ito, hindi papayagan ang pag-sign in sa ibang account mula sa lugar ng content ng non-Incognito browser.
-
-      Kung hindi nakatakda ang patakarang ito o nakatakda ito sa true, gagamitin ang default na gawi: papayagan ang pag-sign in sa ibang account mula sa lugar ng content ng browser, maliban sa mga account ng bata kung saan iba-block ito para sa non-Incognito na lugar ng content.
-
-      Kung sakaling hindi dapat payagan ang pag-sign in sa ibang account sa pamamagitan ng Incognito mode, isaalang-alang ang pag-block sa mode na iyon gamit ang patakarang IncognitoModeAvailability.</translation>
 <translation id="3736879847913515635">I-enable ang magdagdag ng tao sa user manager</translation>
 <translation id="3737544779868348650">Hostname ng network ng device</translation>
 <translation id="3750220015372671395">I-block ang pagbuo ng key sa mga site na ito</translation>
@@ -1213,6 +1215,7 @@
 <translation id="4899708173828500852">Paganahin ang Ligtas na Pagba-browse</translation>
 <translation id="4906194810004762807">I-refresh ang pag-rate para sa Patakaran sa Device</translation>
 <translation id="4917385247580444890">Malakas</translation>
+<translation id="4923806312383904642">Payagan ang WebDriver na Mag-override ng Mga Hindi Tugmang Patakaran</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="4962262530309732070">Kung nakatakda sa true o hindi naka-configure ang patakarang ito, papayagan ng <ph name="PRODUCT_NAME" /> ang Magdagdag ng Tao mula sa user manager.
 

@@ -1242,7 +1242,6 @@ Ma arvan, et see sait ei tohiks olla blokeeritud.</translation>
 <translation id="2890678560483811744">Piiridest väljas olev leht</translation>
 <translation id="2893168226686371498">Vaikebrauser</translation>
 <translation id="2893453364759632532">Aken alla</translation>
-<translation id="289426338439836048">Muu mobiilsidevõrk ...</translation>
 <translation id="289644616180464099">SIM-kaart on lukustatud</translation>
 <translation id="289695669188700754">Võtme ID: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Kas te soovite kindlasti avada <ph name="TAB_COUNT" /> vahekaarti?</translation>
@@ -1442,7 +1441,6 @@ Lisateabe saamiseks külastage meie <ph name="BEGIN_LINK" />abikeskust<ph name="
 <translation id="3190558889382726167">Parool salvestati</translation>
 <translation id="3192947282887913208">Helifailid</translation>
 <translation id="3194737229810486521"><ph name="URL" /> soovib andmed alaliselt teie seadmesse salvestada.</translation>
-<translation id="3195213714973468956">Printer <ph name="PRINTER_NAME" /> serveris <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Serverid</translation>
 <translation id="3202131003361292969">Tee</translation>
 <translation id="3202173864863109533">Selle vahekaardi heli summutatakse.</translation>
@@ -1482,7 +1480,6 @@ Lisateabe saamiseks külastage meie <ph name="BEGIN_LINK" />abikeskust<ph name="
 <translation id="3268451620468152448">Avatud vahelehed</translation>
 <translation id="3269069891205016797">Teie teave eemaldatakse seadmest väljalogimisel.</translation>
 <translation id="3269093882174072735">Laadi kujutis</translation>
-<translation id="3269889795238950578">See leht näeb lõikelauale kopeeritud teksti ja kujutisi.</translation>
 <translation id="326999365752735949">Erinevuste allalaadimine</translation>
 <translation id="3270965368676314374">Arvutis olevate fotode, muusika ja muu meedia lugemine, muutmine ja kustutamine</translation>
 <translation id="327147043223061465">Kuva kõik küpsisefailid ja saidiandmed</translation>
@@ -1952,7 +1949,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Imporditud IE'st</translation>
 <translation id="3950820424414687140">Sisselogimine</translation>
-<translation id="3950870029767307261">Selle lehe jaoks blokeeriti lõikelauale kopeeritud teksti ja kujutiste nägemine</translation>
 <translation id="3954354850384043518">Pooleli</translation>
 <translation id="3955193568934677022">Luba saitidel esitada kaitstud sisu (soovitatav)</translation>
 <translation id="3956702100721821638">Google Playga ei õnnestunud ühendada</translation>
@@ -5147,7 +5143,6 @@ Inimesed, kelle ühendus on aeglane, ei pruugi teie sisu näha.</translation>
 <translation id="9157697743260533322">Automaatvärskenduste seadistamine kõikidele kasutajatele ebaõnnestus (esituseelne käivitamisviga: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Vabandust! Autentimise ajal ilmnes võrguside probleem. Kontrollige võrguühendust ja proovige uuesti.</translation>
 <translation id="9161070040817969420">Alamraamid: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">Pilt pildis</translation>
 <translation id="9169496697824289689">Kuva klaviatuuri otseteed</translation>
 <translation id="9170397650136757332">Nüüd liigutage veidi oma sõrme, et jäädvustada oma sõrmejälje kõik eri osad</translation>
 <translation id="9170848237812810038">&amp;Võta tagasi</translation>

@@ -766,13 +766,6 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
       Další informace o Bezpečném prohlížení najdete na stránce https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Konfigurace seznamu zakázaných položek instalace rozšíření</translation>
 <translation id="3711895659073496551">Pozastavit</translation>
-<translation id="3732106275571017176">Toto nastavení uživatelům umožňuje přepínat mezi účty Google v obsahové oblasti okna prohlížeče po přihlášení k zařízení <ph name="PRODUCT_OS_NAME" />.
-
-      Je-li tato zásada nastavena na hodnotu false, přihlášení k jinému učtu z obsahové oblasti neanonymního okna prohlížeče nebude povoleno.
-
-      Pokud tato zásada není nastavena nebo je nastavena na hodnotu true, použije se výchozí chování: přihlášení k jinému účtu z obsahové oblasti prohlížeče bude povoleno s výjimkou dětských účtů, u nichž bude v obsahové oblasti neanonymních oken blokováno.
-
-      Pokud nechcete povolovat přihlášení k jinému účtu pomocí anonymního režimu, zvažte zablokování tohoto režimu pomocí zásady IncognitoModeAvailability.</translation>
 <translation id="3736879847913515635">Povolit přidání osoby ve správci uživatelů</translation>
 <translation id="3737544779868348650">Název hostitele používaný pro zařízení v síti</translation>
 <translation id="3750220015372671395">Blokovat generování klíčů na těchto stránkách</translation>

@@ -1242,7 +1242,6 @@
 <translation id="2890678560483811744">การอ้างอิงหน้าอยู่นอกขอบเขต</translation>
 <translation id="2893168226686371498">เบราว์เซอร์เริ่มต้น</translation>
 <translation id="2893453364759632532">นำหน้าต่างลง</translation>
-<translation id="289426338439836048">เครือข่ายมือถืออื่น...</translation>
 <translation id="289644616180464099">ซิมการ์ดถูกล็อก</translation>
 <translation id="289695669188700754">รหัสคีย์: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">คุณแน่ใจหรือไม่ว่าต้องการเปิด <ph name="TAB_COUNT" /> แท็บ</translation>
@@ -1442,7 +1441,6 @@
 <translation id="3190558889382726167">บันทึกรหัสผ่านแล้ว</translation>
 <translation id="3192947282887913208">ไฟล์เสียง</translation>
 <translation id="3194737229810486521"><ph name="URL" /> ต้องการจัดเก็บข้อมูลอย่างถาวรในอุปกรณ์ของคุณ</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> ใน <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">เซิร์ฟเวอร์</translation>
 <translation id="3202131003361292969">เส้นทาง</translation>
 <translation id="3202173864863109533">กำลังปิดเสียงของแท็บนี้อยู่</translation>
@@ -1482,7 +1480,6 @@
 <translation id="3268451620468152448">แท็บที่เปิดอยู่</translation>
 <translation id="3269069891205016797">ระบบจะนำข้อมูลของคุณออกจากอุปกรณ์เมื่อคุณออกจากระบบ</translation>
 <translation id="3269093882174072735">โหลดภาพ</translation>
-<translation id="3269889795238950578">หน้านี้จะดูข้อความและรูปภาพที่บันทึกไปยังคลิปบอร์ดได้</translation>
 <translation id="326999365752735949">กำลังดาวน์โหลดความต่าง</translation>
 <translation id="3270965368676314374">อ่าน เปลี่ยนแปลง และลบรูปภาพ เพลง และสื่ออื่นๆ จากคอมพิวเตอร์ของคุณ</translation>
 <translation id="327147043223061465">ดูคุกกี้และข้อมูลเว็บไซต์ทั้งหมด</translation>
@@ -1952,7 +1949,6 @@
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">นำเข้าจาก IE</translation>
 <translation id="3950820424414687140">ลงชื่อเข้าใช้</translation>
-<translation id="3950870029767307261">หน้านี้ถูกบล็อกไม่ให้ดูข้อความและรูปภาพที่คัดลอกไปยังคลิปบอร์ด</translation>
 <translation id="3954354850384043518">กำลังดำเนินการ</translation>
 <translation id="3955193568934677022">อนุญาตให้ไซต์เล่นเนื้อหาที่ได้รับความคุ้มครอง (แนะนำ)</translation>
 <translation id="3956702100721821638">ไม่สามารถเข้าถึง Google Play</translation>
@@ -5146,7 +5142,6 @@
 <translation id="9157697743260533322">ไม่สามารถตั้งค่าการอัปเดตอัตโนมัติสำหรับผู้ใช้ทุกคน (ข้อผิดพลาดในการเปิดใช้การตรวจสอบล่วงหน้า: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">อ๊ะ! เกิดปัญหาในการสื่อสารกับเครือข่ายในระหว่างการตรวจสอบสิทธิ์ โปรดตรวจสอบการเชื่อมต่อเครือข่ายของคุณและลองอีกครั้ง</translation>
 <translation id="9161070040817969420">เฟรมย่อยสำหรับ: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">การแสดงภาพซ้อนภาพ</translation>
 <translation id="9169496697824289689">ดูแป้นพิมพ์ลัด</translation>
 <translation id="9170397650136757332">เลื่อนนิ้วเล็กน้อยเพื่อจับภาพส่วนต่างๆ ทั้งหมดของลายนิ้วมือ</translation>
 <translation id="9170848237812810038">เ&amp;ลิกทำ</translation>

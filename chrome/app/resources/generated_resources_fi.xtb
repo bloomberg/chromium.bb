@@ -1243,7 +1243,6 @@ Tämän sivuston ei pitäisi olla estetty.</translation>
 <translation id="2890678560483811744">Sivuviittaus on rajojen ulkopuolella.</translation>
 <translation id="2893168226686371498">Oletusselain</translation>
 <translation id="2893453364759632532">Ikkuna alas</translation>
-<translation id="289426338439836048">Muu mobiiliverkko...</translation>
 <translation id="289644616180464099">SIM-kortti on lukittu</translation>
 <translation id="289695669188700754">Avaimen tunnus: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Haluatko varmasti avata <ph name="TAB_COUNT" /> välilehteä?</translation>
@@ -1443,7 +1442,6 @@ Lisätietoja saat <ph name="BEGIN_LINK" />ohjekeskuksestamme<ph name="END_LINK" 
 <translation id="3190558889382726167">Salasana on tallennettu</translation>
 <translation id="3192947282887913208">Äänitiedostot</translation>
 <translation id="3194737229810486521"><ph name="URL" /> haluaa tallentaa tietoja pysyvästi laitteellesi.</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" />, palvelin: <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Palvelimet</translation>
 <translation id="3202131003361292969">Reitti</translation>
 <translation id="3202173864863109533">Tämän välilehden äänet on mykistetty.</translation>
@@ -1483,7 +1481,6 @@ Lisätietoja saat <ph name="BEGIN_LINK" />ohjekeskuksestamme<ph name="END_LINK" 
 <translation id="3268451620468152448">Avoimet välilehdet</translation>
 <translation id="3269069891205016797">Tietosi poistetaan laitteelta, kun kirjaudut ulos.</translation>
 <translation id="3269093882174072735">Lataa kuva</translation>
-<translation id="3269889795238950578">Tämä sivu näkee leikepöydälle kopioidun tekstin ja kuvat.</translation>
 <translation id="326999365752735949">Ladataan muutostiedostoa</translation>
 <translation id="3270965368676314374">Lukea, muokata ja poistaa kuvia, musiikkia ja muuta tietokoneellasi olevaa mediaa</translation>
 <translation id="327147043223061465">Näytä kaikki evästeet ja sivuston tiedot</translation>
@@ -1950,7 +1947,6 @@ Lisätietoja saat <ph name="BEGIN_LINK" />ohjekeskuksestamme<ph name="END_LINK" 
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Tuotu IE:stä</translation>
 <translation id="3950820424414687140">Kirjaudu sisään</translation>
-<translation id="3950870029767307261">Tämä sivu ei saa nähdä leikepöydälle kopioitua tekstiä tai kuvia.</translation>
 <translation id="3954354850384043518">Käynnissä</translation>
 <translation id="3955193568934677022">Salli sivustojen toistaa suojattua sisältöä (suositus)</translation>
 <translation id="3956702100721821638">Google Playhin ei saatu yhteyttä.</translation>
@@ -5144,7 +5140,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="9157697743260533322">Automaattisten päivitysten käyttöönotto kaikille käyttäjille epäonnistui (käynnistysvirhe valmistelun aikana: <ph name="ERROR_NUMBER" />).</translation>
 <translation id="9158715103698450907">Hups! Todennuksen aikana tapahtui verkkovirhe. Tarkista internetyhteytesi ja yritä uudelleen.</translation>
 <translation id="9161070040817969420">Alakehykset sivustolle <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">Kuva kuvassa</translation>
 <translation id="9169496697824289689">Näytä pikanäppäimet</translation>
 <translation id="9170397650136757332">Tallenna sormenjälkesi kokonaisuudessaan liikuttamalla sormeasi varovasti.</translation>
 <translation id="9170848237812810038">K&amp;umoa</translation>

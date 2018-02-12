@@ -1244,7 +1244,6 @@
 <translation id="2890678560483811744">পৃষ্ঠা সীমার বাইরের উল্লেখ</translation>
 <translation id="2893168226686371498">ডিফল্ট ব্রাউজার</translation>
 <translation id="2893453364759632532">উইন্ডোটি নিচে নামিয়ে দিন</translation>
-<translation id="289426338439836048">অন্য মোবাইল নেটওয়ার্ক...</translation>
 <translation id="289644616180464099">সিম কার্ড লক করা আছে</translation>
 <translation id="289695669188700754">কী ID: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">আপনি কি <ph name="TAB_COUNT" />টি ট্যাব খোলার ব্যাপারে নিশ্চিত?</translation>
@@ -1443,7 +1442,6 @@
 <translation id="3190558889382726167">পাসওয়ার্ড সংরক্ষিত</translation>
 <translation id="3192947282887913208">অডিও ফাইলসমূহ</translation>
 <translation id="3194737229810486521"><ph name="URL" /> স্থায়ীভাবে আপনার ডিভাইসে ডেটা স্টোর করতে চায়</translation>
-<translation id="3195213714973468956"><ph name="SERVER_NAME" /> এ <ph name="PRINTER_NAME" /></translation>
 <translation id="3199127022143353223">সার্ভারসমূহ</translation>
 <translation id="3202131003361292969">পাথ</translation>
 <translation id="3202173864863109533">এই ট্যাবের অডিও নিঃশব্দ করা হচ্ছে৷</translation>
@@ -1483,7 +1481,6 @@
 <translation id="3268451620468152448">ওপেন ট্যাব</translation>
 <translation id="3269069891205016797">আপনি প্রস্থান করলে ডিভাইসটি থেকে আপনার তথ্য সরানো হবে৷</translation>
 <translation id="3269093882174072735">ছবি লোড করুন</translation>
-<translation id="3269889795238950578">এই পৃষ্ঠাটি ক্লিপবোর্ডে কপি করা টেক্সট এবং ছবি দেখতে পায়।</translation>
 <translation id="326999365752735949">ভিন্ন ডাউনলোড হচ্ছে</translation>
 <translation id="3270965368676314374">আপনার কম্পিউটার থেকে ফটো, সঙ্গীত ও অন্যান্য মিডিয়া পড়ুন, পরিবর্তন করুন এবং মুছুন</translation>
 <translation id="327147043223061465">সমস্ত কুকি এবং সাইট ডেটা দেখুন</translation>
@@ -1949,7 +1946,6 @@
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">IE থেকে আমাদানি করা</translation>
 <translation id="3950820424414687140">প্রবেশ করুন</translation>
-<translation id="3950870029767307261">ক্লিপবোর্ডে কপি করা টেক্সট এবং ছবি দেখা থেকে এই পৃষ্ঠাটিকে ব্লক করা হয়েছে</translation>
 <translation id="3954354850384043518">প্রক্রিয়ায় আছে</translation>
 <translation id="3955193568934677022">সুরক্ষিত সামগ্রী প্লে করতে সাইটগুলিকে মঞ্জুরি দিন (প্রস্তাবিত)</translation>
 <translation id="3956702100721821638">Google Play খোলা যায়নি</translation>
@@ -5141,7 +5137,6 @@
 <translation id="9157697743260533322">সকল ব্যবহারকারীর জন্য স্বয়ংক্রিয় আপডেট সেট আপ করতে ব্যর্থ হয়েছে (ফ্লাইটপূর্ব লঞ্চ ত্রুটি: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">ওহো! প্রমাণীকরণের সময় একটি নেটওয়ার্ক যোগাযোগ সমস্যা ঘটেছে৷ দয়া করে আপনার নেটওয়ার্ক সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="9161070040817969420"><ph name="PARENT_SITE" /> এর জন্য উপফ্রেমগুলি</translation>
-<translation id="916607977885256133">ছবির-মধ্যে-ছবি</translation>
 <translation id="9169496697824289689">কীবোর্ড শর্টকাটগুলি দেখুন</translation>
 <translation id="9170397650136757332">এবার আপনার আঙ্গুলের ছাপের সমস্ত অংশ ক্যাপচার করতে আপনার আঙ্গুল সামান্য সরান</translation>
 <translation id="9170848237812810038">&amp;পূর্বাবস্থায় ফিরুন</translation>

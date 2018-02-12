@@ -1241,7 +1241,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="2890678560483811744">Sidreferensen faller utanför intervallet</translation>
 <translation id="2893168226686371498">Standardwebbläsare</translation>
 <translation id="2893453364759632532">Flytta ned fönstret</translation>
-<translation id="289426338439836048">Andra mobila nätverk...</translation>
 <translation id="289644616180464099">SIM-kortet är låst</translation>
 <translation id="289695669188700754">Nyckel-ID: <ph name="KEY_ID" /></translation>
 <translation id="2897878306272793870">Vill du verkligen öppna <ph name="TAB_COUNT" /> flikar?</translation>
@@ -1441,7 +1440,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3190558889382726167">Lösenordet sparades</translation>
 <translation id="3192947282887913208">Ljudfiler</translation>
 <translation id="3194737229810486521"><ph name="URL" /> vill lagra data permanent på din enhet</translation>
-<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> på <ph name="SERVER_NAME" /></translation>
 <translation id="3199127022143353223">Servrar</translation>
 <translation id="3202131003361292969">Sökväg</translation>
 <translation id="3202173864863109533">Ljudet är avstängt på den här fliken.</translation>
@@ -1481,7 +1479,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3268451620468152448">Öppna flikar</translation>
 <translation id="3269069891205016797">Dina uppgifter tas bort från enheten när du loggar ut.</translation>
 <translation id="3269093882174072735">Läs in bild</translation>
-<translation id="3269889795238950578">Den här sidan får tillgång till text och bilder som kopierats till Urklipp.</translation>
 <translation id="326999365752735949">Laddar ned skillnaden</translation>
 <translation id="3270965368676314374">Läsa, ändra och ta bort foton, musik och andra media från datorn</translation>
 <translation id="327147043223061465">Visa alla cookies och webbplatsuppgifter</translation>
@@ -1951,7 +1948,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Importerat från IE</translation>
 <translation id="3950820424414687140">Logga in</translation>
-<translation id="3950870029767307261">Tillgången till text och bilder som kopierats till Urklipp har blockerats för den här sidan.</translation>
 <translation id="3954354850384043518">Pågår</translation>
 <translation id="3955193568934677022">Tillåt att skyddat innehåll spelas upp på webbplatser (rekommenderas)</translation>
 <translation id="3956702100721821638">Det gick inte att nå Google Play</translation>
@@ -5144,7 +5140,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9157697743260533322">Det gick inte att konfigurera automatiska uppdateringar för alla användare (preliminärt startfel: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Hoppsan! Ett nätverkskommunikationsproblem uppstod under autentiseringen. Kontrollera nätverksanslutningen och försök igen.</translation>
 <translation id="9161070040817969420">Underordnade ramar för: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">Bild-i-bild</translation>
 <translation id="9169496697824289689">Visa kortkommandon</translation>
 <translation id="9170397650136757332">Flytta nu fingret något så att hela fingeravtrycket läggs till</translation>
 <translation id="9170848237812810038">&amp;Ångra</translation>

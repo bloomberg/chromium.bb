@@ -113,14 +113,17 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="4028693306634653894">Acesse o Chrome mais rapidamente</translation>
 <translation id="4050175100176540509">Melhorias de segurança importantes e novos recursos estão disponíveis na versão mais recente.</translation>
 <translation id="4053720452172726777">Personalizar e controlar o Google Chrome</translation>
+<translation id="4143243756087420366">Nome e foto do Chrome</translation>
 <translation id="4147555960264124640">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Google Chrome, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associá-los a outra conta. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">Houve uma falha no instalador ao descompactar o arquivo. Baixe o Google Chrome novamente.</translation>
 <translation id="4251615635259297716">Vincular seus dados do Google Chrome a esta conta?</translation>
 <translation id="4251625577313994583">use o Chrome no seu iPhone</translation>
+<translation id="426607829939105651">A extensão <ph name="EXTENSION_NAME" /> foi adicionada ao Chrome</translation>
 <translation id="4309555186815777032">(requer a <ph name="BEGIN_BUTTON" />reinicialização<ph name="END_BUTTON" /> do Google Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
+<translation id="4343195214584226067">A extensão <ph name="EXTENSION_NAME" /> foi adicionada ao Chrome</translation>
 <translation id="4407807842708586359">Sistema operacional (OS) do Google Chrome</translation>
 <translation id="4458285410772214805">Saia e faça login novamente para que esta alteração entre em vigor.</translation>
 <translation id="4458462641685292929">Outra operação está em andamento no Google Chrome. Tente novamente mais tarde.</translation>
@@ -164,6 +167,7 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">O arquivo <ph name="FILE_NAME" /> pode ser perigoso. Por isso, ele foi bloqueado pelo Chrome.</translation>
 <translation id="573759479754913123">Sobre o Chrome OS</translation>
+<translation id="5765394658966343753">Vincular seus dados do Chrome a esta conta?</translation>
 <translation id="5774845247549698882">O Chrome OS é exibido neste idioma</translation>
 <translation id="5855036575689098185">O software que está sendo executado em seu computador não é compatível com o Google Chrome.</translation>
 <translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>

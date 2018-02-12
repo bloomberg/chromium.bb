@@ -676,7 +676,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7121362699166175603">Törli a címsávban található előzményeket és automatikus kiegészítéseket. Előfordulhat, hogy a böngészési előzmények más formái még megtalálhatók Google-fiókjában a <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> webhelyen.</translation>
 <translation id="7128222689758636196">Engedélyezi a jelenlegi keresőmotor számára</translation>
 <translation id="7138678301420049075">Egyéb</translation>
-<translation id="7144878232160441200">Újra</translation>
 <translation id="7149893636342594995">Az elmúlt 24 órából</translation>
 <translation id="7177466738963138057">Ezt később módosíthatja a beállítások között.</translation>
 <translation id="7180611975245234373">Frissítés</translation>
@@ -830,6 +829,7 @@ Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le
 <translation id="869891660844655955">Lejárati dátum</translation>
 <translation id="8712637175834984815">Sikerült</translation>
 <translation id="8719023831149562936">Nem lehet átsugározni a jelenlegi lapot</translation>
+<translation id="8725066075913043281">Újrapróbálás</translation>
 <translation id="8728487861892616501">Az alkalmazás használatával elfogadja a Chrome <ph name="BEGIN_LINK1" />általános szerződési feltételeit<ph name="END_LINK1" /> és <ph name="BEGIN_LINK2" />adatvédelmi közleményét<ph name="END_LINK2" />, valamint <ph name="BEGIN_LINK3" />a Family Link szolgáltatással kezelt Google-fiókokra vonatkozó adatvédelmi közleményt<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Kész</translation>
 <translation id="8748850008226585750">Tartalom elrejtve</translation>

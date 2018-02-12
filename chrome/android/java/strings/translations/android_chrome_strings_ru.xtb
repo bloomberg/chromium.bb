@@ -676,7 +676,6 @@
 <translation id="7121362699166175603">Удаление истории и вариантов автозаполнения в адресной строке. Информация о других ваших действиях в Интернете может также храниться на странице <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Открыть доступ текущей поисковой системе</translation>
 <translation id="7138678301420049075">Другое</translation>
-<translation id="7144878232160441200">Повторить попытку</translation>
 <translation id="7149893636342594995">Последние 24 часа</translation>
 <translation id="7177466738963138057">Вы всегда можете изменить свой выбор в настройках</translation>
 <translation id="7180611975245234373">Обновить</translation>
@@ -830,6 +829,7 @@
 <translation id="869891660844655955">Срок действия</translation>
 <translation id="8712637175834984815">Готово</translation>
 <translation id="8719023831149562936">Не удалось передать текущую вкладку</translation>
+<translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8728487861892616501">Используя это приложение, вы соглашаетесь с <ph name="BEGIN_LINK1" />Условиями использования<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Примечанием о конфиденциальности<ph name="END_LINK2" /> Chrome, а также с <ph name="BEGIN_LINK3" />Примечанием о конфиденциальности для аккаунтов Google, управляемых с помощью Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8748850008226585750">Содержимое скрыто</translation>

@@ -310,6 +310,7 @@
 проверете настройките му или се свържете със системния си администратор. Ако смятате, че не трябва
 да използвате прокси сървър:
 <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3195213714973468956"><ph name="PRINTER_NAME" /> на <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Анулиране на плащането</translation>
 <translation id="3207960819495026254">С отметка</translation>
 <translation id="3209375525920864198">Моля, въведете валидно име на сесия.</translation>
