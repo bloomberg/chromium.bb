@@ -487,6 +487,12 @@ get_ndk_host_arch () {
   if [ -z "$NDK_HOST_ARCH" ]; then
     HOST_OS=$(get_ndk_host_system)
     HOST_ARCH=$(uname -p)
+    if [ "$HOST_ARCH" = "unknown" ]; then
+      # In case where "-p" returns "unknown" just use "-m" (machine hardware
+      # name). According to this patch from Fedora "-p" is equivalent to "-m"
+      # anyway: https://goo.gl/Pd47x3
+      HOST_ARCH=$(uname -m)
+    fi
     case $HOST_ARCH in
       i?86) NDK_HOST_ARCH=x86;;
       x86_64|amd64) NDK_HOST_ARCH=x86_64;;
