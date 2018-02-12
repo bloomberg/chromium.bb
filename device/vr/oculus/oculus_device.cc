@@ -79,13 +79,13 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(unsigned int id,
 
 }  // namespace
 
-OculusDevice::OculusDevice(ovrSession session)
+OculusDevice::OculusDevice(ovrSession session, ovrGraphicsLuid luid)
     : session_(session),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {
   SetVRDisplayInfo(CreateVRDisplayInfo(GetId(), session_));
 
-  render_loop_ = std::make_unique<OculusRenderLoop>(session_);
+  render_loop_ = std::make_unique<OculusRenderLoop>(session_, luid);
 }
 
 OculusDevice::~OculusDevice() {}
@@ -94,30 +94,33 @@ void OculusDevice::RequestPresent(
     VRDisplayImpl* display,
     mojom::VRSubmitFrameClientPtr submit_client,
     mojom::VRPresentationProviderRequest request,
+    mojom::VRRequestPresentOptionsPtr present_options,
     mojom::VRDisplayHost::RequestPresentCallback callback) {
   if (!render_loop_->IsRunning())
     render_loop_->Start();
 
   if (!render_loop_->IsRunning()) {
-    std::move(callback).Run(false);
+    std::move(callback).Run(false, nullptr);
     return;
   }
 
-  base::OnceCallback<void(bool)> on_request_present_result =
+  auto on_request_present_result =
       base::BindOnce(&OculusDevice::OnRequestPresentResult,
                      weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback));
   render_loop_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&OculusRenderLoop::RequestPresent,
-                                render_loop_->GetWeakPtr(),
-                                base::Passed(submit_client.PassInterface()),
-                                base::Passed(&request),
-                                base::Passed(&on_request_present_result)));
+      FROM_HERE,
+      base::BindOnce(&OculusRenderLoop::RequestPresent,
+                     render_loop_->GetWeakPtr(),
+                     base::Passed(submit_client.PassInterface()),
+                     base::Passed(&request), std::move(present_options),
+                     base::Passed(&on_request_present_result)));
 }
 
 void OculusDevice::OnRequestPresentResult(
     mojom::VRDisplayHost::RequestPresentCallback callback,
-    bool result) {
-  std::move(callback).Run(result);
+    bool result,
+    mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
+  std::move(callback).Run(result, std::move(transport_options));
 }
 
 void OculusDevice::ExitPresent() {

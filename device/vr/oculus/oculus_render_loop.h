@@ -22,12 +22,14 @@ namespace device {
 
 class OculusRenderLoop : public base::Thread, mojom::VRPresentationProvider {
  public:
-  OculusRenderLoop(ovrSession session);
+  OculusRenderLoop(ovrSession session, ovrGraphicsLuid luid);
   ~OculusRenderLoop() override;
 
-  void RequestPresent(mojom::VRSubmitFrameClientPtrInfo submit_client_info,
-                      mojom::VRPresentationProviderRequest request,
-                      base::OnceCallback<void(bool)> callback);
+  void RequestPresent(
+      mojom::VRSubmitFrameClientPtrInfo submit_client_info,
+      mojom::VRPresentationProviderRequest request,
+      device::mojom::VRRequestPresentOptionsPtr present_options,
+      device::mojom::VRDisplayHost::RequestPresentCallback callback);
   void ExitPresent();
   base::WeakPtr<OculusRenderLoop> GetWeakPtr();
 
@@ -62,6 +64,7 @@ class OculusRenderLoop : public base::Thread, mojom::VRPresentationProvider {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   mojom::VRSubmitFrameClientPtr submit_client_;
   ovrSession session_;
+  ovrGraphicsLuid luid_;
   ovrPosef last_render_pose_;
   ovrTextureSwapChain texture_swap_chain_ = 0;
   double sensor_time_;
