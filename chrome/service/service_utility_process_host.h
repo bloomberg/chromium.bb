@@ -123,10 +123,10 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
 
  private:
   // Starts a process.  Returns true iff it succeeded.
-  bool StartProcess(bool no_sandbox);
+  bool StartProcess(bool sandbox);
 
   // Launch the child process synchronously.
-  bool Launch(base::CommandLine* cmd_line, bool no_sandbox);
+  bool Launch(base::CommandLine* cmd_line, bool sandbox);
 
   base::ProcessHandle handle() const { return process_.Handle(); }
 
