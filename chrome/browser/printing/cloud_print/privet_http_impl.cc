@@ -510,8 +510,8 @@ void PrivetLocalPrintOperationImpl::StartConvertToPWG() {
       data_.get(),
       PwgRasterConverter::GetConversionSettings(capabilities_, page_size_),
       PwgRasterConverter::GetBitmapSettings(capabilities_, ticket_),
-      base::Bind(&PrivetLocalPrintOperationImpl::OnPWGRasterConverted,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&PrivetLocalPrintOperationImpl::OnPWGRasterConverted,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void PrivetLocalPrintOperationImpl::OnSubmitdocResponse(
