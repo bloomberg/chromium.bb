@@ -4,15 +4,13 @@
 
 #import "ios/chrome/test/app/history_test_util.h"
 
-#include "base/ios/callback_counter.h"
-#import "base/mac/bind_objc_block.h"
-#import "base/test/ios/wait_util.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/app/main_controller_private.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/testing/wait_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,13 +18,9 @@
 
 namespace chrome_test_util {
 
-void ClearBrowsingHistory() {
+bool ClearBrowsingHistory() {
   MainController* main_controller = GetMainController();
   ios::ChromeBrowserState* active_state = GetOriginalBrowserState();
-  scoped_refptr<CallbackCounter> callback_counter(
-      new CallbackCounter(base::BindBlockArc(^{
-      })));
-  callback_counter->IncrementCount();
   __block bool did_complete = false;
   [main_controller
       removeBrowsingDataFromBrowserState:active_state
@@ -34,20 +28,12 @@ void ClearBrowsingHistory() {
                                              REMOVE_HISTORY
                               timePeriod:browsing_data::TimePeriod::ALL_TIME
                        completionHandler:^{
-                         callback_counter->DecrementCount();
                          did_complete = true;
                        }];
-  // TODO(crbug.com/631795): This is a workaround that will be removed soon.
-  // This code waits for success or timeout, then returns. This needs to be
-  // fixed so that failure is correctly marked here, or the caller handles
-  // waiting for the operation to complete.
-  // Wait for history to be cleared.
-  NSDate* deadline = [NSDate dateWithTimeIntervalSinceNow:4.0];
-  while (!did_complete &&
-         [[NSDate date] compare:deadline] != NSOrderedDescending) {
-    base::test::ios::SpinRunLoopWithMaxDelay(
-        base::TimeDelta::FromSecondsD(0.1));
-  }
+  return testing::WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout,
+                                              ^{
+                                                return did_complete;
+                                              });
 }
 
 }  // namespace chrome_test_util
