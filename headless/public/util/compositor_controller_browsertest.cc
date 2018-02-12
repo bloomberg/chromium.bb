@@ -286,7 +286,9 @@ class CompositorControllerSurfaceSyncBrowserTest
   }
 };
 
-HEADLESS_ASYNC_DEVTOOLED_TEST_P(CompositorControllerSurfaceSyncBrowserTest);
+// Flaky: https://crbug.com/811288
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_P(
+    CompositorControllerSurfaceSyncBrowserTest);
 
 // Instantiate test case for both software and gpu compositing modes.
 INSTANTIATE_TEST_CASE_P(CompositorControllerSurfaceSyncBrowserTests,
