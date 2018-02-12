@@ -39,6 +39,30 @@ namespace blink {
 
 const double kMaximumAllowedDelayTime = 180;
 
+DelayHandler::DelayHandler(AudioNode& node,
+                           float sample_rate,
+                           AudioParamHandler& delay_time,
+                           double max_delay_time)
+    : AudioBasicProcessorHandler(
+          kNodeTypeDelay,
+          node,
+          sample_rate,
+          std::make_unique<DelayProcessor>(sample_rate,
+                                           1,
+                                           delay_time,
+                                           max_delay_time)) {
+  // Initialize the handler so that AudioParams can be processed.
+  Initialize();
+}
+
+scoped_refptr<DelayHandler> DelayHandler::Create(AudioNode& node,
+                                                 float sample_rate,
+                                                 AudioParamHandler& delay_time,
+                                                 double max_delay_time) {
+  return base::AdoptRef(
+      new DelayHandler(node, sample_rate, delay_time, max_delay_time));
+}
+
 DelayNode::DelayNode(BaseAudioContext& context, double max_delay_time)
     : AudioNode(context),
       delay_time_(AudioParam::Create(context,
@@ -47,13 +71,8 @@ DelayNode::DelayNode(BaseAudioContext& context, double max_delay_time)
                                      0.0,
                                      0.0,
                                      max_delay_time)) {
-  SetHandler(AudioBasicProcessorHandler::Create(
-      AudioHandler::kNodeTypeDelay, *this, context.sampleRate(),
-      std::make_unique<DelayProcessor>(
-          context.sampleRate(), 1, delay_time_->Handler(), max_delay_time)));
-
-  // Initialize the handler so that AudioParams can be processed.
-  Handler().Initialize();
+  SetHandler(DelayHandler::Create(*this, context.sampleRate(),
+                                  delay_time_->Handler(), max_delay_time));
 }
 
 DelayNode* DelayNode::Create(BaseAudioContext& context,

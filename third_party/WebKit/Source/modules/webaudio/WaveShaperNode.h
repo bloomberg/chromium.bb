@@ -28,6 +28,7 @@
 
 #include "core/typed_arrays/ArrayBufferViewHelpers.h"
 #include "core/typed_arrays/DOMTypedArray.h"
+#include "modules/webaudio/AudioBasicProcessorHandler.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/WaveShaperProcessor.h"
 
@@ -36,6 +37,14 @@ namespace blink {
 class BaseAudioContext;
 class ExceptionState;
 class WaveShaperOptions;
+
+class WaveShaperHandler : public AudioBasicProcessorHandler {
+ public:
+  static scoped_refptr<WaveShaperHandler> Create(AudioNode&, float sample_rate);
+
+ private:
+  WaveShaperHandler(AudioNode& iirfilter_node, float sample_rate);
+};
 
 class WaveShaperNode final : public AudioNode {
   DEFINE_WRAPPERTYPEINFO();

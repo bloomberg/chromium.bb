@@ -40,11 +40,6 @@ class AudioProcessor;
 // where the input and output have the same number of channels.
 class MODULES_EXPORT AudioBasicProcessorHandler : public AudioHandler {
  public:
-  static scoped_refptr<AudioBasicProcessorHandler> Create(
-      NodeType,
-      AudioNode&,
-      float sample_rate,
-      std::unique_ptr<AudioProcessor>);
   ~AudioBasicProcessorHandler() override;
 
   // AudioHandler
@@ -62,11 +57,13 @@ class MODULES_EXPORT AudioBasicProcessorHandler : public AudioHandler {
   unsigned NumberOfChannels();
   AudioProcessor* Processor() { return processor_.get(); }
 
- private:
+ protected:
   AudioBasicProcessorHandler(NodeType,
                              AudioNode&,
                              float sample_rate,
                              std::unique_ptr<AudioProcessor>);
+
+ private:
   double TailTime() const final;
   double LatencyTime() const final;
 
