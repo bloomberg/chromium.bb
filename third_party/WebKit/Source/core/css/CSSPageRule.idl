@@ -29,6 +29,5 @@
     Exposed=Window
 ] interface CSSPageRule : CSSRule {
     [SetterCallWith=ExecutionContext] attribute DOMString selectorText;
-    // TODO(foolip): style should have [PutForwards=cssText].
-    [SameObject] readonly attribute CSSStyleDeclaration style;
+    [SameObject, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
 };

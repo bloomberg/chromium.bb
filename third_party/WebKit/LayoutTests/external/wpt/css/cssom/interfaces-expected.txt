@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 399 tests; 315 PASS, 84 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 399 tests; 317 PASS, 82 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS HTMLElement interface: attribute style
 PASS HTMLElement interface: style_element must inherit property "style" with the proper type
@@ -52,7 +52,7 @@ PASS StyleSheet interface: attribute href
 PASS StyleSheet interface: attribute ownerNode
 PASS StyleSheet interface: attribute parentStyleSheet
 PASS StyleSheet interface: attribute title
-FAIL StyleSheet interface: attribute media assert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"
+PASS StyleSheet interface: attribute media
 PASS StyleSheet interface: attribute disabled
 PASS CSSStyleSheet interface: existence and properties of interface object
 PASS CSSStyleSheet interface object length
@@ -189,7 +189,7 @@ PASS CSSPageRule interface object name
 FAIL CSSPageRule interface: existence and properties of interface prototype object assert_equals: prototype of CSSPageRule.prototype is not CSSGroupingRule.prototype expected object "[object CSSGroupingRule]" but got object "[object CSSRule]"
 PASS CSSPageRule interface: existence and properties of interface prototype object's "constructor" property
 PASS CSSPageRule interface: attribute selectorText
-FAIL CSSPageRule interface: attribute style assert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"
+PASS CSSPageRule interface: attribute style
 PASS CSSPageRule must be primary interface of style_element.sheet.cssRules[2]
 PASS Stringification of style_element.sheet.cssRules[2]
 PASS CSSPageRule interface: style_element.sheet.cssRules[2] must inherit property "selectorText" with the proper type

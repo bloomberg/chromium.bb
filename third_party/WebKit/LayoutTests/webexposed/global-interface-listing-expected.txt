@@ -725,6 +725,7 @@ interface CSSPageRule : CSSRule
     getter style
     method constructor
     setter selectorText
+    setter style
 interface CSSPerspective : CSSTransformComponent
     attribute @@toStringTag
     getter length
@@ -6883,6 +6884,7 @@ interface StyleSheet
     getter type
     method constructor
     setter disabled
+    setter media
 interface StyleSheetList
     attribute @@toStringTag
     getter length
