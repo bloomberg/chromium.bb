@@ -77,7 +77,7 @@ NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(NGBlockNode node,
 scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   Optional<MinMaxSize> min_max_size;
   if (NeedMinMaxSize(ConstraintSpace(), Style()))
-    min_max_size = ComputeMinMaxSize();
+    min_max_size = ComputeMinMaxSize(MinMaxSizeInput());
   NGBoxStrut border_scrollbar_padding =
       CalculateBorderScrollbarPadding(ConstraintSpace(), Style(), Node());
   NGLogicalSize border_box_size =
@@ -193,10 +193,11 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   return container_builder_.ToBoxFragment();
 }
 
-Optional<MinMaxSize> NGColumnLayoutAlgorithm::ComputeMinMaxSize() const {
+Optional<MinMaxSize> NGColumnLayoutAlgorithm::ComputeMinMaxSize(
+    const MinMaxSizeInput& input) const {
   // First calculate the min/max sizes of columns.
-  Optional<MinMaxSize> min_max_sizes =
-      NGBlockLayoutAlgorithm(Node(), ConstraintSpace()).ComputeMinMaxSize();
+  NGBlockLayoutAlgorithm algorithm(Node(), ConstraintSpace());
+  Optional<MinMaxSize> min_max_sizes = algorithm.ComputeMinMaxSize(input);
   DCHECK(min_max_sizes.has_value());
   MinMaxSize sizes = min_max_sizes.value();
 

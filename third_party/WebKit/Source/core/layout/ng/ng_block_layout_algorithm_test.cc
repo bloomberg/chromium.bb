@@ -52,8 +52,10 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
             NGLogicalSize(LayoutUnit(), LayoutUnit()));
 
     NGBlockLayoutAlgorithm algorithm(node, *space);
-    EXPECT_TRUE(algorithm.ComputeMinMaxSize().has_value());
-    return *algorithm.ComputeMinMaxSize();
+    MinMaxSizeInput input;
+    auto min_max = algorithm.ComputeMinMaxSize(input);
+    EXPECT_TRUE(min_max.has_value());
+    return *min_max;
   }
 
   String DumpFragmentTree(const NGPhysicalBoxFragment* fragment) {

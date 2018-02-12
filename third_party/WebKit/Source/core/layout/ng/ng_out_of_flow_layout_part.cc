@@ -307,7 +307,10 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   NGBlockNode node = descendant.node;
   if (AbsoluteNeedsChildInlineSize(descendant.node.Style()) ||
       NeedMinMaxSize(descendant.node.Style())) {
-    min_max_size = node.ComputeMinMaxSize();
+    // This is a new formatting context, so whatever happened on the outside
+    // doesn't concern us.
+    MinMaxSizeInput zero_input;
+    min_max_size = node.ComputeMinMaxSize(zero_input);
   }
 
   Optional<NGLogicalSize> replaced_size;

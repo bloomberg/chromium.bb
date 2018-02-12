@@ -28,7 +28,7 @@ class CORE_EXPORT NGPageLayoutAlgorithm
 
   scoped_refptr<NGLayoutResult> Layout() override;
 
-  Optional<MinMaxSize> ComputeMinMaxSize() const override;
+  Optional<MinMaxSize> ComputeMinMaxSize(const MinMaxSizeInput&) const override;
 
  private:
   scoped_refptr<NGConstraintSpace> CreateConstraintSpaceForPages(

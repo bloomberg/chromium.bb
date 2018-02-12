@@ -146,8 +146,10 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
   // we fragment.
   if (is_same_writing_mode) {
     WTF::Optional<MinMaxSize> min_max_size;
-    if (NeedMinMaxSize(*space.get(), style))
-      min_max_size = unpositioned_float->node.ComputeMinMaxSize();
+    if (NeedMinMaxSize(*space.get(), style)) {
+      MinMaxSizeInput zero_input;  // Floats do not intrude into floats.
+      min_max_size = unpositioned_float->node.ComputeMinMaxSize(zero_input);
+    }
     return ComputeInlineSizeForFragment(*space.get(), style, min_max_size);
   }
 

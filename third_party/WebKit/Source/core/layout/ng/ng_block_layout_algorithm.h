@@ -52,7 +52,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                          const NGConstraintSpace& space,
                          NGBlockBreakToken* break_token = nullptr);
 
-  Optional<MinMaxSize> ComputeMinMaxSize() const override;
+  Optional<MinMaxSize> ComputeMinMaxSize(const MinMaxSizeInput&) const override;
   scoped_refptr<NGLayoutResult> Layout() override;
 
  private:
