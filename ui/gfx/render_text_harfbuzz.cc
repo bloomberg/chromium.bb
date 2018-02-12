@@ -1130,61 +1130,27 @@ SelectionModel RenderTextHarfBuzz::AdjacentWordSelectionModel(
   if (!success)
     return selection;
 
-  // Match OS specific word break behavior.
-#if defined(OS_WIN)
-  size_t pos;
-  if (direction == CURSOR_RIGHT) {
-    pos = std::min(selection.caret_pos() + 1, text().length());
-    while (iter.Advance()) {
-      pos = iter.pos();
-      if (iter.IsWord() && pos > selection.caret_pos()) {
-        // In Windows, word move advances past any characters separating the
-        // end of the current word from the next word.
-        while (iter.Advance() && !iter.IsWord())
-          pos = iter.pos();
-        break;
-      }
-    }
-  } else {  // direction == CURSOR_LEFT
-    // Notes: We always iterate words from the beginning.
-    // This is probably fast enough for our usage, but we may
-    // want to modify WordIterator so that it can start from the
-    // middle of string and advance backwards.
-    pos = std::max<int>(selection.caret_pos() - 1, 0);
-    while (iter.Advance()) {
-      if (iter.IsWord()) {
-        size_t begin = iter.pos() - iter.GetString().length();
-        if (begin == selection.caret_pos()) {
-          // The cursor is at the beginning of a word.
-          // Move to previous word.
-          break;
-        } else if (iter.pos() >= selection.caret_pos()) {
-          // The cursor is in the middle or at the end of a word.
-          // Move to the top of current word.
-          pos = begin;
-          break;
-        }
-        pos = iter.pos() - iter.GetString().length();
-      }
-    }
-  }
-  return SelectionModel(pos, CURSOR_FORWARD);
-#else
   internal::TextRunList* run_list = GetRunList();
-  SelectionModel cur(selection);
+  SelectionModel current(selection);
   for (;;) {
-    cur = AdjacentCharSelectionModel(cur, direction);
-    size_t run = GetRunContainingCaret(cur);
+    current = AdjacentCharSelectionModel(current, direction);
+    size_t run = GetRunContainingCaret(current);
     if (run == run_list->size())
       break;
+    size_t cursor = current.caret_pos();
+#if defined(OS_WIN)
+    // Windows generally advances to the start of a word in either direction.
+    // TODO: Break on the end of a word when the neighboring text is puctuation.
+    if (iter.IsStartOfWord(cursor))
+      break;
+#else
     const bool is_forward =
         run_list->runs()[run]->is_rtl == (direction == CURSOR_LEFT);
-    size_t cursor = cur.caret_pos();
     if (is_forward ? iter.IsEndOfWord(cursor) : iter.IsStartOfWord(cursor))
       break;
+#endif  // defined(OS_WIN)
   }
-  return cur;
-#endif
+  return current;
 }
 
 std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {

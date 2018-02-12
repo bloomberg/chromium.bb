@@ -1408,6 +1408,102 @@ TEST_P(RenderTextHarfBuzzTest, MoveCursor_Word) {
                                         SELECTION_EXTEND, &expected);
 }
 
+// TODO(asvitkine): RenderTextMac cursor movements. http://crbug.com/131618
+TEST_P(RenderTextHarfBuzzTest, MoveCursor_Word_RTL) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(UTF8ToUTF16("אבג דהו זחט"));
+  std::vector<Range> expected;
+
+  // SELECTION_NONE.
+  render_text->SelectRange(Range(6));
+
+  // Move right twice.
+  expected.push_back(Range(4));
+  expected.push_back(Range(0));
+  RunMoveCursorTestAndClearExpectations(render_text, WORD_BREAK, CURSOR_RIGHT,
+                                        SELECTION_NONE, &expected);
+
+  // Move left twice.
+#if defined(OS_WIN)  // Move word left includes space/punctuation.
+  expected.push_back(Range(4));
+  expected.push_back(Range(8));
+#else  // Non-Windows: move word left does NOT include space/punctuation.
+  expected.push_back(Range(3));
+  expected.push_back(Range(7));
+#endif
+  RunMoveCursorTestAndClearExpectations(render_text, WORD_BREAK, CURSOR_LEFT,
+                                        SELECTION_NONE, &expected);
+
+  // SELECTION_CARET.
+  render_text->SelectRange(Range(6));
+
+  // Move right.
+  expected.push_back(Range(6, 4));
+  RunMoveCursorTestAndClearExpectations(render_text, WORD_BREAK, CURSOR_RIGHT,
+                                        SELECTION_CARET, &expected);
+
+  // Move left twice.
+  expected.push_back(Range(6));
+#if defined(OS_WIN)  // Select word left includes space/punctuation.
+  expected.push_back(Range(6, 8));
+#else  // Non-Windows: select word left does NOT include space/punctuation.
+  expected.push_back(Range(6, 7));
+#endif
+  RunMoveCursorTestAndClearExpectations(render_text, WORD_BREAK, CURSOR_LEFT,
+                                        SELECTION_CARET, &expected);
+
+  // Move right.
+  expected.push_back(Range(6));
+  RunMoveCursorTestAndClearExpectations(render_text, WORD_BREAK, CURSOR_RIGHT,
+                                        SELECTION_CARET, &expected);
+
+  // SELECTION_RETAIN.
+  render_text->SelectRange(Range(6));
+
+  // Move right.
+  expected.push_back(Range(6, 4));
+  RunMoveCursorTestAndClearExpectations(render_text, WORD_BREAK, CURSOR_RIGHT,
+                                        SELECTION_RETAIN, &expected);
+
+  // Move left twice.
+#if defined(OS_WIN)  // Select word left includes space/punctuation.
+  expected.push_back(Range(6, 8));
+#else  // Non-Windows: select word left does NOT include space/punctuation.
+  expected.push_back(Range(6, 7));
+#endif
+  expected.push_back(Range(6, 11));
+  RunMoveCursorTestAndClearExpectations(render_text, WORD_BREAK, CURSOR_LEFT,
+                                        SELECTION_RETAIN, &expected);
+
+  // Move right.
+  expected.push_back(Range(6, 8));
+  RunMoveCursorTestAndClearExpectations(render_text, WORD_BREAK, CURSOR_RIGHT,
+                                        SELECTION_RETAIN, &expected);
+
+  // SELECTION_EXTEND.
+  render_text->SelectRange(Range(6));
+
+  // Move right.
+  expected.push_back(Range(6, 4));
+  RunMoveCursorTestAndClearExpectations(render_text, WORD_BREAK, CURSOR_RIGHT,
+                                        SELECTION_EXTEND, &expected);
+
+  // Move left twice.
+#if defined(OS_WIN)  // Select word left includes space/punctuation.
+  expected.push_back(Range(4, 8));
+#else  // Non-Windows: select word left does NOT include space/punctuation.
+  expected.push_back(Range(4, 7));
+#endif
+  expected.push_back(Range(4, 11));
+  RunMoveCursorTestAndClearExpectations(render_text, WORD_BREAK, CURSOR_LEFT,
+                                        SELECTION_EXTEND, &expected);
+
+  // Move right.
+  expected.push_back(Range(4, 8));
+  RunMoveCursorTestAndClearExpectations(render_text, WORD_BREAK, CURSOR_RIGHT,
+                                        SELECTION_EXTEND, &expected);
+}
+
 TEST_P(RenderTextTest, MoveCursor_Line) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(UTF8ToUTF16("123 456 789"));
