@@ -19,6 +19,8 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/views_test_base.h"
 
+namespace {
+
 struct TypeClicks {
   autofill::PopupItemId id;
   int click;
@@ -184,3 +186,5 @@ INSTANTIATE_TEST_CASE_P(
     /* no prefix */,
     AutofillPopupViewNativeViewsForEveryTypeTest,
     ::testing::ValuesIn(kClickTestCase));
+
+}  // namespace
