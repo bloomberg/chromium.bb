@@ -1031,6 +1031,12 @@ TEST_P(QuicSpdyStreamTest, StreamBecomesZombieWithWriteThatCloses) {
   EXPECT_TRUE(QuicSessionPeer::closed_streams(session_.get()).empty());
 }
 
+TEST_P(QuicSpdyStreamTest, OnPriorityFrame) {
+  Initialize(kShouldProcessData);
+  stream_->OnPriorityFrame(kV3HighestPriority);
+  EXPECT_EQ(kV3HighestPriority, stream_->priority());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

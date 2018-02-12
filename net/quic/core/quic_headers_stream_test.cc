@@ -464,6 +464,38 @@ TEST_P(QuicHeadersStreamTest, ProcessPushPromise) {
   }
 }
 
+TEST_P(QuicHeadersStreamTest, ProcessPriorityFrame) {
+  QuicStreamId parent_stream_id = 0;
+  for (SpdyPriority priority = 0; priority < 7; ++priority) {
+    for (QuicStreamId stream_id = client_id_1_; stream_id < client_id_3_;
+         stream_id += next_stream_id_) {
+      int weight = Spdy3PriorityToHttp2Weight(priority);
+      SpdyPriorityIR priority_frame(stream_id, parent_stream_id, weight, true);
+      SpdySerializedFrame frame(framer_->SerializeFrame(priority_frame));
+      parent_stream_id = stream_id;
+      if (transport_version() <= QUIC_VERSION_42) {
+        EXPECT_CALL(*connection_,
+                    CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
+                                    "SPDY PRIORITY frame received.", _))
+            .WillRepeatedly(InvokeWithoutArgs(
+                this, &QuicHeadersStreamTest::TearDownLocalConnectionState));
+      } else if (perspective() == Perspective::IS_CLIENT) {
+        EXPECT_CALL(*connection_,
+                    CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
+                                    "Server must not send PRIORITY frames.", _))
+            .WillRepeatedly(InvokeWithoutArgs(
+                this, &QuicHeadersStreamTest::TearDownLocalConnectionState));
+      } else {
+        EXPECT_CALL(session_, OnPriorityFrame(stream_id, priority)).Times(1);
+      }
+      stream_frame_.data_buffer = frame.data();
+      stream_frame_.data_length = frame.size();
+      headers_stream_->OnStreamFrame(stream_frame_);
+      stream_frame_.offset += frame.size();
+    }
+  }
+}
+
 TEST_P(QuicHeadersStreamTest, ProcessPushPromiseDisabledSetting) {
   SetQuicReloadableFlag(quic_respect_http2_settings_frame, true);
   session_.OnConfigNegotiated();

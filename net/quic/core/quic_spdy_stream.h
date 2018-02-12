@@ -93,6 +93,10 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
                                    size_t frame_len,
                                    const QuicHeaderList& header_list);
 
+  // Called by the session when a PRIORITY frame has been been received for this
+  // stream. This method will only be called for server streams.
+  void OnPriorityFrame(SpdyPriority priority);
+
   // Override the base class to not discard response when receiving
   // QUIC_STREAM_NO_ERROR.
   void OnStreamReset(const QuicRstStreamFrame& frame) override;
