@@ -25,6 +25,15 @@ extern "C" {
 
 #define MAX_NEIGHBORS 2
 
+typedef enum SCAN_MODE {
+  SCAN_MODE_ZIG_ZAG,
+  SCAN_MODE_COL_DIAG,
+  SCAN_MODE_ROW_DIAG,
+  SCAN_MODE_COL_1D,
+  SCAN_MODE_ROW_1D,
+  SCAN_MODES
+} SCAN_MODE;
+
 extern const SCAN_ORDER av1_default_scan_orders[TX_SIZES];
 extern const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES];
 extern const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES];
