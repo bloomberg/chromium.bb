@@ -3593,9 +3593,12 @@ void AXPlatformNodeWin::HandleSpecialTextOffset(LONG* offset) {
   } else if (*offset == IA2_TEXT_OFFSET_CARET) {
     int selection_start, selection_end;
     GetSelectionOffsets(&selection_start, &selection_end);
+    // TODO(nektar): Deprecate selection_start and selection_end in favor of
+    // sel_anchor_offset/sel_focus_offset. See https://crbug.com/645596.
     if (selection_end < 0)
       *offset = 0;
-    *offset = static_cast<LONG>(selection_end);
+    else
+      *offset = static_cast<LONG>(selection_end);
   }
 }
 
