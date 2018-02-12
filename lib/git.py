@@ -87,23 +87,22 @@ class GitException(Exception):
   """An exception related to git."""
 
 
-# TODO(nxia): crbug.com/809693 make RemoteRef a namedtuple
-class RemoteRef(object):
-  """Object representing a remote ref.
+# remote: git remote name (e.g., 'origin',
+#   'https://chromium.googlesource.com/chromiumos/chromite.git', etc.).
+# ref: git remote/local ref name (e.g., 'refs/heads/master').
+# project_name: git project name (e.g., 'chromiumos/chromite'.)
+_RemoteRef = collections.namedtuple(
+    '_RemoteRef', ('remote', 'ref', 'project_name'))
 
-  A remote ref encapsulates both a remote (e.g., 'origin',
-  'https://chromium.googlesource.com/chromiumos/chromite.git', etc.) and a ref
-  name (e.g., 'refs/heads/master').
-  """
+
+class RemoteRef(_RemoteRef):
+  """Object representing a remote ref."""
+
+  def __new__(cls, remote, ref, project_name=None):
+    return super(RemoteRef, cls).__new__(cls, remote, ref, project_name)
 
   def __init__(self, remote, ref, project_name=None):
-    self.remote = remote
-    self.ref = ref
-    self.project_name = project_name
-
-  def __str__(self):
-    return ('RemoteRef remote: %s; ref: %s; project_name: %s' %
-            (self.remote, self.ref, self.project_name))
+    super(RemoteRef, self).__init__(remote, ref, project_name)
 
 
 def FindRepoDir(path):
