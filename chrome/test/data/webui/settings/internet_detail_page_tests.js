@@ -129,8 +129,9 @@ suite('InternetDetailPage', function() {
       });
     });
 
-    // When proxy settings are managed by a user policy they are always used so
-    // #allowShared should be hidden.
+    // When proxy settings are managed by a user policy they may respect the
+    // allowd_shared_proxies pref so #allowShared should be visible.
+    // TOD(stevenjb): Improve this: crbug.com/662529.
     test('Proxy Shared User Managed', function() {
       api_.enableNetworkType('WiFi');
       setNetworksForTest([{
@@ -149,7 +150,8 @@ suite('InternetDetailPage', function() {
       internetDetailPage.init('wifi_user_guid', 'WiFi', 'wifi_user');
       return flushAsync().then(() => {
         let allowShared = getAllowSharedProxy();
-        assertTrue(allowShared.hasAttribute('hidden'));
+        assertFalse(allowShared.hasAttribute('hidden'));
+        assertFalse(allowShared.disabled);
       });
     });
 

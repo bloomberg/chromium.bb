@@ -104,13 +104,9 @@ Polymer({
   shouldShowAllowShared_: function(property) {
     if (!this.isShared_())
       return false;
-    if (this.isNetworkPolicyControlled(property)) {
-      // Shared networks may respect the 'use_shared_proxies' pref unless
-      // the proxy is configured by a user policy.
-      // See ProxyConfigServiceImpl::IgnoreProxy().
-      if (typeof property.UserEditable != 'undefined')
-        return property.UserEditable;
-    }
+    // We currently do not accurately determine the source if the policy
+    // controlling the proxy setting, so always show the 'allow shared'
+    // toggle for shared networks. http://crbug.com/662529.
     return true;
   },
 
