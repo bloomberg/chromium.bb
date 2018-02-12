@@ -319,19 +319,6 @@ void SkiaRenderer::PrepareSurfaceForPass(
   }
 }
 
-bool SkiaRenderer::IsSoftwareResource(ResourceId resource_id) const {
-  switch (resource_provider_->GetResourceType(resource_id)) {
-    case ResourceType::kGpuMemoryBuffer:
-    case ResourceType::kTexture:
-      return false;
-    case ResourceType::kBitmap:
-      return true;
-  }
-
-  LOG(FATAL) << "Invalid resource type.";
-  return false;
-}
-
 void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
                               const gfx::QuadF* draw_region) {
   if (!current_canvas_)
@@ -506,11 +493,6 @@ void SkiaRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad) {
 }
 
 void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad) {
-  if (IsSoftwareResource(quad->resource_id())) {
-    DrawUnsupportedQuad(quad);
-    return;
-  }
-
   // TODO(skaslev): Add support for non-premultiplied alpha.
   cc::DisplayResourceProvider::ScopedReadLockSkImage lock(resource_provider_,
                                                           quad->resource_id());
@@ -553,7 +535,6 @@ void SkiaRenderer::DrawTileQuad(const TileDrawQuad* quad) {
   // |resource_provider_| can be NULL in resourceless software draws, which
   // should never produce tile quads in the first place.
   DCHECK(resource_provider_);
-  DCHECK(!IsSoftwareResource(quad->resource_id()));
   cc::DisplayResourceProvider::ScopedReadLockSkImage lock(resource_provider_,
                                                           quad->resource_id());
   if (!lock.sk_image())
