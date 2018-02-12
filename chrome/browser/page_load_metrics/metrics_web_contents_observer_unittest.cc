@@ -833,7 +833,10 @@ TEST_F(MetricsWebContentsObserverTest, OutOfOrderCrossFrameTiming2) {
   // paint. This should be buffered, with the dispatch timer running.
   mojom::PageLoadTiming timing;
   PopulatePageLoadTiming(&timing);
-  timing.paint_timing->first_paint = base::TimeDelta::FromMilliseconds(1000);
+  // Ensure this is much bigger than the subframe first paint below. We
+  // currently can't inject the navigation start offset, so we must ensure that
+  // subframe first paint + navigation start offset < main frame first paint.
+  timing.paint_timing->first_paint = base::TimeDelta::FromMilliseconds(100000);
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
