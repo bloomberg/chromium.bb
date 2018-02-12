@@ -19,62 +19,17 @@ function update_sensor_reading(buffer) {
   buffer.set(kDefaultReading, 2);
 }
 
-function verify_sensor_reading(buffer, {x, y, z, timestamp}, is_null) {
-  if (is_null)
-    return [x, y, z, timestamp].every(r => r === null);
-  return [x, y, z].every((r, i) => r === buffer[i]) && timestamp !== null;
-}
+runGenericSensorTests(
+    Accelerometer,
+    update_sensor_reading,
+    verify_xyz_sensor_reading.bind(null, kDefaultReading),
+    verify_xyz_sensor_reading.bind(null, kMappedReading),
+    ['accelerometer']);
 
-const verify_device_reading = verify_sensor_reading.bind(null, kDefaultReading);
-const verify_screen_reading = verify_sensor_reading.bind(null, kMappedReading);
-
-async function checkReadingMappedToScreen(sensor, sensorType) {
-  let sensor1 = new sensorType();
-  sensor1.start();
-
-  let sensor2 = new sensorType({referenceFrame: "screen"});
-  sensor2.start();
-
-  let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
-  await mockSensor.setUpdateSensorReadingFunction(update_sensor_reading);
-  await new Promise((resolve, reject) => {
-    let wrapper = new CallbackWrapper(() => {
-      assert_true(verify_device_reading(sensor1));
-      assert_true(verify_screen_reading(sensor2));
-
-      sensor1.stop();
-      assert_true(verify_device_reading(sensor1, true /*should be null*/));
-      assert_true(verify_screen_reading(sensor2));
-
-      sensor2.stop();
-      assert_true(verify_screen_reading(sensor2, true /*should be null*/));
-
-      resolve(mockSensor);
-    }, reject);
-
-    sensor1.onreading = wrapper.callback;
-    sensor1.onerror = reject;
-    sensor2.onerror = reject;
-  });
-  return mockSensor.removeConfigurationCalled();
-}
-
-runGenericSensorTests(Accelerometer,
-                      update_sensor_reading,
-                      verify_device_reading,
-                      ['accelerometer']);
-
-sensor_test(sensor => {
-  return checkReadingMappedToScreen(sensor, Accelerometer);
-}, `Accelerometer: Test reading mapped to the screen coordinates.`);
-
-runGenericSensorTests(LinearAccelerationSensor,
-                      update_sensor_reading,
-                      verify_device_reading,
-                      ['accelerometer']);
-
-sensor_test(sensor => {
-  return checkReadingMappedToScreen(sensor, LinearAccelerationSensor);
-}, `LinearAccelerationSensor: Test reading mapped to the screen coordinates.`);
-
+runGenericSensorTests(
+    LinearAccelerationSensor,
+    update_sensor_reading,
+    verify_xyz_sensor_reading.bind(null, kDefaultReading),
+    verify_xyz_sensor_reading.bind(null, kMappedReading),
+    ['accelerometer']);
 </script>

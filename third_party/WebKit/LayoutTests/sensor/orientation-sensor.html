@@ -102,6 +102,7 @@ async function checkPopulateMatrix(sensor, sensorType) {
 runGenericSensorTests(AbsoluteOrientationSensor,
                       update_sensor_reading,
                       verify_sensor_reading,
+                      null,
                       ['accelerometer', 'gyroscope', 'magnetometer']);
 
 sensor_test(sensor => {
@@ -111,6 +112,7 @@ sensor_test(sensor => {
 runGenericSensorTests(RelativeOrientationSensor,
                       update_sensor_reading,
                       verify_sensor_reading,
+                      null,
                       ['accelerometer', 'gyroscope']);
 
 sensor_test(sensor => {

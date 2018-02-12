@@ -4,7 +4,11 @@
 // a called by the test to provide the mock values for sensor. |verifyReading|
 // is called so that the value read in JavaScript are the values expected (the ones
 // sent by |updateReading|).
-function runGenericSensorTests(sensorType, updateReading, verifyReading, featurePolicies) {
+function runGenericSensorTests(sensorType,
+                               updateReading,
+                               verifyReading,
+                               verifyRemappedReading,
+                               featurePolicies) {
   sensor_test(sensor => {
     sensor.mockSensorProvider.setGetSensorShouldFail(true);
     let sensorObject = new sensorType;
@@ -464,4 +468,40 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading, feature
     });
     return mockSensor.removeConfigurationCalled();
   }, `${sensorType.name}: Test that fresh reading is fetched on start().`);
+
+  sensor_test(async sensor => {
+    if (!verifyRemappedReading) {
+      // The sensorType does not represent a spatial sensor.
+      return;
+    }
+
+    let sensor1 = new sensorType();
+    let sensor2 = new sensorType({referenceFrame: "screen"});
+
+    sensor1.start();
+    sensor2.start();
+
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    await mockSensor.setUpdateSensorReadingFunction(update_sensor_reading);
+    await new Promise((resolve, reject) => {
+      let wrapper = new CallbackWrapper(() => {
+        assert_true(verifyReading(sensor1));
+        assert_true(verifyRemappedReading(sensor2));
+
+        sensor1.stop();
+        assert_true(verifyReading(sensor1, true /*should be null*/));
+        assert_true(verifyRemappedReading(sensor2));
+
+        sensor2.stop();
+        assert_true(verifyRemappedReading(sensor2, true /*should be null*/));
+
+        resolve(mockSensor);
+      }, reject);
+
+      sensor1.onreading = wrapper.callback;
+      sensor1.onerror = reject;
+      sensor2.onerror = reject;
+    });
+    return mockSensor.removeConfigurationCalled();
+  }, `${sensorType.name}: Test that reading is mapped to the screen coordinates`);
 }

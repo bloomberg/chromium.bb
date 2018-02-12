@@ -73,7 +73,11 @@ void SensorReadingRemapper::RemapToScreenCoords(
       RemapSensorReading(angle, reading->accel);
       break;
     case SensorType::GYROSCOPE:
+      RemapSensorReading(angle, reading->gyro);
+      break;
     case SensorType::MAGNETOMETER:
+      RemapSensorReading(angle, reading->magn);
+      break;
     case SensorType::ABSOLUTE_ORIENTATION_QUATERNION:
     case SensorType::RELATIVE_ORIENTATION_QUATERNION:
     case SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES:
