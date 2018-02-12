@@ -487,14 +487,6 @@ sk_sp<const GrGLInterface> CreateGrGLInterface(
   functions->fWaitSync = gl->glWaitSyncFn;
   functions->fDeleteSync = gl->glDeleteSyncFn;
 
-  functions->fBindImageTexture = gl->glBindImageTextureEXTFn;
-  // TODO(piman): skia type is wrong.
-  functions->fMemoryBarrier =
-      reinterpret_cast<GrGLMemoryBarrierProc>(gl->glMemoryBarrierEXTFn);
-
-  // GL 4.5 or GL_ARB_ES3_1_compatibility or ES 3.1
-  // functions->fMemoryBarrierByRegion = gl->glMemoryBarrierByRegionFn;
-
   functions->fGetInternalformativ = gl->glGetInternalformativFn;
 
   interface->fStandard = standard;
