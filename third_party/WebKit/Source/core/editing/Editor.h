@@ -82,9 +82,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   bool CanEdit() const;
   bool CanEditRichly() const;
 
-  bool CanDHTMLCut(EditorCommandSource);
-  bool CanDHTMLCopy(EditorCommandSource);
-
   bool CanCut() const;
   bool CanCopy() const;
   bool CanPaste() const;
