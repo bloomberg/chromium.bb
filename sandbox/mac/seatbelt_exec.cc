@@ -5,6 +5,7 @@
 #include "sandbox/mac/seatbelt_exec.h"
 
 #include <fcntl.h>
+#include <inttypes.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <sys/socket.h>
@@ -59,14 +60,22 @@ void SeatbeltExecClient::SetProfile(const std::string& policy) {
 
 int SeatbeltExecClient::SendProfileAndGetFD() {
   std::string serialized_protobuf;
-  if (!policy_.SerializeToString(&serialized_protobuf))
+  if (!policy_.SerializeToString(&serialized_protobuf)) {
+    logging::Error("SeatbeltExecClient: Serializing the profile failed.");
     return -1;
+  }
 
-  if (!WriteString(&serialized_protobuf))
+  if (!WriteString(&serialized_protobuf)) {
+    logging::Error(
+        "SeatbeltExecClient: Writing the serialized profile failed.");
     return -1;
+  }
 
   IGNORE_EINTR(close(pipe_[1]));
   pipe_[1] = -1;
+
+  if (pipe_[0] < 0)
+    logging::Error("SeatbeltExecClient: The pipe returned an invalid fd.");
 
   return pipe_[0];
 }
@@ -81,7 +90,15 @@ bool SeatbeltExecClient::WriteString(std::string* str) {
     logging::PError("SeatbeltExecClient: writev failed");
     return false;
   }
-  return static_cast<uint64_t>(written) == str->size();
+
+  bool write_complete = static_cast<uint64_t>(written) == str->size();
+  if (!write_complete) {
+    logging::Error("SeatbeltExecClient: short writev(). written: %" PRIu64
+                   ", str->size(): %" PRIu64 "",
+                   static_cast<uint64_t>(written), str->size());
+  }
+
+  return write_complete;
 }
 
 SeatbeltExecServer::SeatbeltExecServer(int fd) : fd_(fd), extra_params_() {}
