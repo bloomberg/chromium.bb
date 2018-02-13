@@ -156,9 +156,8 @@ void DOMStorageContextImpl::DeleteSessionStorage(
   if (it != namespaces_.end()) {
     dom_storage_namespace = it->second.get();
   } else {
-    std::string namespace_id = AllocateSessionId();
-    CreateSessionNamespace(namespace_id);
-    dom_storage_namespace = GetStorageNamespace(namespace_id);
+    CreateSessionNamespace(usage_info.namespace_id);
+    dom_storage_namespace = GetStorageNamespace(usage_info.namespace_id);
   }
   dom_storage_namespace->DeleteSessionStorageOrigin(usage_info.origin);
   // Synthesize a 'cleared' event if the area is open so CachedAreas in
