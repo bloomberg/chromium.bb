@@ -281,13 +281,8 @@ Element* Element::CloneElementWithoutChildren() {
 }
 
 Element* Element::CloneElementWithoutAttributesAndChildren() {
-  auto* element = GetDocument().CreateElement(
-      TagQName(), CreateElementFlags::ByCloneNode());
-  const AtomicString& is = IsValue();
-  if (!is.IsNull() && !V0CustomElement::IsValidName(element->localName()))
-    V0CustomElementRegistrationContext::SetTypeExtension(element, is);
-  // TODO(tkent): Handle V1 custom built-in elements. crbug.com/807871
-  return element;
+  return GetDocument().CreateElement(
+      TagQName(), CreateElementFlags::ByCloneNode(), IsValue());
 }
 
 Attr* Element::DetachAttribute(size_t index) {

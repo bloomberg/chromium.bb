@@ -222,12 +222,7 @@ Element* HTMLScriptElement::CloneElementWithoutAttributesAndChildren() {
   CreateElementFlags flags =
       CreateElementFlags::ByCloneNode().SetAlreadyStarted(
           loader_->AlreadyStarted());
-  auto* element = new HTMLScriptElement(GetDocument(), flags);
-  const AtomicString& is = IsValue();
-  if (!is.IsNull() && !V0CustomElement::IsValidName(element->localName()))
-    V0CustomElementRegistrationContext::SetTypeExtension(element, is);
-  // TODO(tkent): Handle V1 custom built-in elements. crbug.com/807871
-  return element;
+  return GetDocument().CreateElement(TagQName(), flags, IsValue());
 }
 
 void HTMLScriptElement::Trace(blink::Visitor* visitor) {
