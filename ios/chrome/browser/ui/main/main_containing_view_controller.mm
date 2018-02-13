@@ -17,9 +17,10 @@
   return [self.childViewControllers firstObject];
 }
 
-- (void)showTabSwitcher:(UIViewController<TabSwitcher>*)tabSwitcher
+- (void)showTabSwitcher:(id<TabSwitcher>)tabSwitcher
              completion:(ProceduralBlock)completion {
-  [self setActiveViewController:tabSwitcher completion:completion];
+  [self setActiveViewController:[tabSwitcher viewController]
+                     completion:completion];
   [tabSwitcher showWithSelectedTabAnimation];
 }
 

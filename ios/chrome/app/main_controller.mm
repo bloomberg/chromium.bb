@@ -299,8 +299,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // Navigation View controller for the settings.
   SettingsNavigationController* _settingsNavigationController;
 
-  // View controller for switching tabs.
-  UIViewController<TabSwitcher>* _tabSwitcherController;
+  // TabSwitcher object -- the stack view, tablet switcher, etc.
+  id<TabSwitcher> _tabSwitcherController;
 
   // YES while animating the dismissal of stack view.
   BOOL _dismissingStackView;
@@ -1882,7 +1882,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     [_tabSwitcherController setTransitionContext:transitionContext];
   } else {
     // User interaction is disabled when the stack controller is dismissed.
-    [[_tabSwitcherController view] setUserInteractionEnabled:YES];
+    [[_tabSwitcherController viewController].view
+        setUserInteractionEnabled:YES];
   }
 
   [self.mainViewController showTabSwitcher:_tabSwitcherController
@@ -1903,13 +1904,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
     // If the tabSwitcher is contained, check if the parent container is
     // presenting another view controller.
-    if ([[_tabSwitcherController parentViewController]
-            presentedViewController]) {
+    if ([[_tabSwitcherController viewController]
+                .parentViewController presentedViewController]) {
       return NO;
     }
 
     // Check if the tabSwitcher is directly presenting another view controller.
-    if ([_tabSwitcherController presentedViewController]) {
+    if ([_tabSwitcherController viewController].presentedViewController) {
       return NO;
     }
 
@@ -1964,7 +1965,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   _dismissingStackView = YES;
   // Prevent wayward touches from wreaking havoc while the stack view is being
   // dismissed.
-  [[_tabSwitcherController view] setUserInteractionEnabled:NO];
+  [[_tabSwitcherController viewController].view setUserInteractionEnabled:NO];
   BrowserViewController* targetBVC =
       (tabModel == self.mainTabModel) ? self.mainBVC : self.otrBVC;
   self.currentBVC = targetBVC;
@@ -1992,7 +1993,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     // animation is complete.  At this point in the process, the tab switcher is
     // still the active VC.
     DCHECK_EQ(self.mainViewController.activeViewController,
-              _tabSwitcherController);
+              [_tabSwitcherController viewController]);
   }
 
   if (_modeToDisplayOnStackViewDismissal == StackViewDismissalMode::NORMAL) {
@@ -2508,11 +2509,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   return [_browserViewWrangler deviceSharingManager];
 }
 
-- (UIViewController<TabSwitcher>*)tabSwitcherController {
+- (id<TabSwitcher>)tabSwitcherController {
   return _tabSwitcherController;
 }
 
-- (void)setTabSwitcherController:(UIViewController<TabSwitcher>*)controller {
+- (void)setTabSwitcherController:(id<TabSwitcher>)controller {
   _tabSwitcherController = controller;
 }
 

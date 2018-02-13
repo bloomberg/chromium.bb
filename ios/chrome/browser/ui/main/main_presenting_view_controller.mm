@@ -96,8 +96,7 @@
 @property(nonatomic, strong) BVCContainerViewController* bvcContainer;
 
 // Redeclared as readwrite.
-@property(nonatomic, readwrite, weak)
-    UIViewController<TabSwitcher>* tabSwitcher;
+@property(nonatomic, readwrite, weak) id<TabSwitcher> tabSwitcher;
 
 @end
 
@@ -118,13 +117,13 @@
     return self.bvcContainer.currentBVC;
   } else if (self.tabSwitcher) {
     DCHECK_EQ(self.tabSwitcher, [self.childViewControllers firstObject]);
-    return self.tabSwitcher;
+    return [self.tabSwitcher viewController];
   }
 
   return nil;
 }
 
-- (void)showTabSwitcher:(UIViewController<TabSwitcher>*)tabSwitcher
+- (void)showTabSwitcher:(id<TabSwitcher>)tabSwitcher
              completion:(ProceduralBlock)completion {
   DCHECK(tabSwitcher);
 
@@ -132,9 +131,11 @@
   if (self.tabSwitcher != tabSwitcher) {
     // Remove any existing tab switchers first.
     if (self.tabSwitcher) {
-      [self.tabSwitcher willMoveToParentViewController:nil];
-      [self.tabSwitcher.view removeFromSuperview];
-      [self.tabSwitcher removeFromParentViewController];
+      UIViewController* tabSwitcherViewController =
+          [tabSwitcher viewController];
+      [tabSwitcherViewController willMoveToParentViewController:nil];
+      [tabSwitcherViewController.view removeFromSuperview];
+      [tabSwitcherViewController removeFromParentViewController];
     }
 
     // Reset the background color of the container view.  The tab switcher does
@@ -142,22 +143,25 @@
     // display the container's background.
     self.view.backgroundColor = [UIColor clearColor];
 
+    UIViewController* tabSwitcherViewController = [tabSwitcher viewController];
     // Add the new tab switcher as a child VC.
-    [self addChildViewController:tabSwitcher];
-    tabSwitcher.view.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:tabSwitcher.view];
+    [self addChildViewController:tabSwitcherViewController];
+    tabSwitcherViewController.view.translatesAutoresizingMaskIntoConstraints =
+        NO;
+    [self.view addSubview:tabSwitcherViewController.view];
 
     [NSLayoutConstraint activateConstraints:@[
-      [tabSwitcher.view.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-      [tabSwitcher.view.bottomAnchor
+      [tabSwitcherViewController.view.topAnchor
+          constraintEqualToAnchor:self.view.topAnchor],
+      [tabSwitcherViewController.view.bottomAnchor
           constraintEqualToAnchor:self.view.bottomAnchor],
-      [tabSwitcher.view.leadingAnchor
+      [tabSwitcherViewController.view.leadingAnchor
           constraintEqualToAnchor:self.view.leadingAnchor],
-      [tabSwitcher.view.trailingAnchor
+      [tabSwitcherViewController.view.trailingAnchor
           constraintEqualToAnchor:self.view.trailingAnchor],
     ]];
 
-    [tabSwitcher didMoveToParentViewController:self];
+    [tabSwitcherViewController didMoveToParentViewController:self];
     self.tabSwitcher = tabSwitcher;
   }
 

@@ -55,12 +55,12 @@
 // This protocol describes the common interface between the two implementations
 // of the tab switcher. StackViewController for iPhone and TabSwitcherController
 // for iPad are examples of implementers of this protocol.
-@protocol TabSwitcher
+@protocol TabSwitcher<NSObject>
 
 // This delegate must be set on the tab switcher in order to drive the tab
 // switcher.
-@property(nonatomic, assign) id<TabSwitcherDelegate> delegate;
-@property(nonatomic, assign) id<TabSwitcherAnimationDelegate> animationDelegate;
+@property(nonatomic, weak) id<TabSwitcherDelegate> delegate;
+@property(nonatomic, weak) id<TabSwitcherAnimationDelegate> animationDelegate;
 
 // Dispatcher for anything that acts in a "browser" role.
 @property(nonatomic, readonly)
@@ -75,8 +75,8 @@
                                  otrTabModel:(TabModel*)otrModel
                               activeTabModel:(TabModel*)activeModel;
 
-// Returns the root view of the tab switcher.
-- (UIView*)view;
+// Returns the view controller that displays the tab switcher.
+- (UIViewController*)viewController;
 
 // Tells the tab switcher to prepare to be displayed at |size|.
 - (void)prepareForDisplayAtSize:(CGSize)size;

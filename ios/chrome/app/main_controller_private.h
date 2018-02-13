@@ -52,8 +52,7 @@ class ChromeBrowserState;
 @interface MainController (TestingOnly)
 
 @property(nonatomic, readonly) DeviceSharingManager* deviceSharingManager;
-@property(nonatomic, retain)
-    UIViewController<TabSwitcher>* tabSwitcherController;
+@property(nonatomic, retain) id<TabSwitcher> tabSwitcherController;
 
 // The top presented view controller that is not currently being dismissed.
 @property(nonatomic, readonly) UIViewController* topPresentedViewController;

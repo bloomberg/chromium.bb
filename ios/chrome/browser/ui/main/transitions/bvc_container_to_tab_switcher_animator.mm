@@ -56,7 +56,8 @@
   // containerView for the presentation/dismissal.
   [containerView addSubview:toView];
 
-  DCHECK_EQ(toViewController, self.tabSwitcher.parentViewController);
+  DCHECK_EQ(toViewController,
+            [self.tabSwitcher viewController].parentViewController);
   self.tabSwitcher.animationDelegate = self;
   [self.tabSwitcher showWithSelectedTabAnimation];
 

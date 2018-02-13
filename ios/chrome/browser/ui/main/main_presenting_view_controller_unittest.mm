@@ -9,6 +9,7 @@
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #import "ios/chrome/browser/ui/main/main_view_controller_test.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
 #import "ios/chrome/test/block_cleanup_test.h"
 #include "testing/gtest_mac.h"
 
@@ -29,7 +30,7 @@ class MainPresentingViewControllerTest : public MainViewControllerTest {
     main_view_controller_.view.frame = windowRect;
 
     tab_switcher_ = CreateTestTabSwitcher();
-    tab_switcher_.view.frame = CGRectMake(0, 0, 10, 10);
+    [tab_switcher_ viewController].view.frame = CGRectMake(0, 0, 10, 10);
 
     normal_tab_view_controller_ = [[UIViewController alloc] init];
     normal_tab_view_controller_.view.frame = CGRectMake(20, 20, 10, 10);
@@ -45,9 +46,12 @@ class MainPresentingViewControllerTest : public MainViewControllerTest {
   // this VC as the root VC for the window.
   MainPresentingViewController* main_view_controller_;
 
+  // A tab switcher is created by the text fixture and is available for use in
+  // tests.
+  id<TabSwitcher> tab_switcher_;
+
   // The following view controllers are created by the test fixture and are
   // available for use in tests.
-  UIViewController<TabSwitcher>* tab_switcher_;
   UIViewController* normal_tab_view_controller_;
   UIViewController* incognito_tab_view_controller_;
 };
@@ -67,14 +71,16 @@ TEST_F(MainPresentingViewControllerTest, TabViewControllerBeforeTabSwitcher) {
 
   // Now setting a TabSwitcher will make the switcher active.
   [main_view_controller_ showTabSwitcher:tab_switcher_ completion:nil];
-  EXPECT_EQ(tab_switcher_, main_view_controller_.activeViewController);
+  EXPECT_EQ([tab_switcher_ viewController],
+            main_view_controller_.activeViewController);
 }
 
 // Tests that it is possible to set a TabViewController after setting a
 // TabSwitcher.
 TEST_F(MainPresentingViewControllerTest, TabViewControllerAfterTabSwitcher) {
   [main_view_controller_ showTabSwitcher:tab_switcher_ completion:nil];
-  EXPECT_EQ(tab_switcher_, main_view_controller_.activeViewController);
+  EXPECT_EQ([tab_switcher_ viewController],
+            main_view_controller_.activeViewController);
 
   [main_view_controller_ showTabViewController:normal_tab_view_controller_
                                     completion:nil];
@@ -83,7 +89,8 @@ TEST_F(MainPresentingViewControllerTest, TabViewControllerAfterTabSwitcher) {
 
   // Showing the TabSwitcher again will make it active.
   [main_view_controller_ showTabSwitcher:tab_switcher_ completion:nil];
-  EXPECT_EQ(tab_switcher_, main_view_controller_.activeViewController);
+  EXPECT_EQ([tab_switcher_ viewController],
+            main_view_controller_.activeViewController);
 }
 
 // Tests swapping between two TabViewControllers.
@@ -102,10 +109,12 @@ TEST_F(MainPresentingViewControllerTest, SwapTabViewControllers) {
 // Tests calling showTabSwitcher twice in a row with the same VC.
 TEST_F(MainPresentingViewControllerTest, ShowTabSwitcherTwice) {
   [main_view_controller_ showTabSwitcher:tab_switcher_ completion:nil];
-  EXPECT_EQ(tab_switcher_, main_view_controller_.activeViewController);
+  EXPECT_EQ([tab_switcher_ viewController],
+            main_view_controller_.activeViewController);
 
   [main_view_controller_ showTabSwitcher:tab_switcher_ completion:nil];
-  EXPECT_EQ(tab_switcher_, main_view_controller_.activeViewController);
+  EXPECT_EQ([tab_switcher_ viewController],
+            main_view_controller_.activeViewController);
 }
 
 // Tests calling showTabViewController twice in a row with the same VC.

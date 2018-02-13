@@ -62,7 +62,8 @@
   [containerView addSubview:toView];
   [containerView sendSubviewToBack:toView];
 
-  DCHECK_EQ(fromViewController, self.tabSwitcher.parentViewController);
+  DCHECK_EQ(fromViewController,
+            [self.tabSwitcher viewController].parentViewController);
   self.tabSwitcher.animationDelegate = self;
   self.transitionContext = transitionContext;
 }
