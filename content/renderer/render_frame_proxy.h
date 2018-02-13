@@ -106,7 +106,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       int render_view_routing_id,
       blink::WebFrame* opener,
       int parent_routing_id,
-      const FrameReplicationState& replicated_state);
+      const FrameReplicationState& replicated_state,
+      const base::UnguessableToken& devtools_frame_token);
 
   // Returns the RenderFrameProxy for the given routing ID.
   static RenderFrameProxy* FromRoutingID(int routing_id);

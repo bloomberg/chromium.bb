@@ -591,7 +591,8 @@ void RenderViewImpl::Initialize(
     CHECK(params->swapped_out);
     RenderFrameProxy::CreateFrameProxy(params->proxy_routing_id, GetRoutingID(),
                                        opener_frame, MSG_ROUTING_NONE,
-                                       params->replicated_frame_state);
+                                       params->replicated_frame_state,
+                                       params->devtools_main_frame_token);
   }
 
   if (main_render_frame_)

@@ -811,13 +811,11 @@ void InspectorPageAgent::WillCommitLoad(LocalFrame*, DocumentLoader* loader) {
 
 void InspectorPageAgent::FrameAttachedToParent(LocalFrame* frame) {
   Frame* parent_frame = frame->Tree().Parent();
-  if (!parent_frame->IsLocalFrame())
-    parent_frame = nullptr;
   std::unique_ptr<SourceLocation> location =
       SourceLocation::CaptureWithFullStackTrace();
   GetFrontend()->frameAttached(
       IdentifiersFactory::FrameId(frame),
-      IdentifiersFactory::FrameId(ToLocalFrame(parent_frame)),
+      IdentifiersFactory::FrameId(parent_frame),
       location ? location->BuildInspectorObject() : nullptr);
 }
 
@@ -933,12 +931,9 @@ std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
           .setMimeType(frame->Loader().GetDocumentLoader()->MimeType())
           .setSecurityOrigin(SecurityOrigin::Create(url)->ToRawString())
           .build();
-  // FIXME: This doesn't work for OOPI.
   Frame* parent_frame = frame->Tree().Parent();
-  if (parent_frame && parent_frame->IsLocalFrame()) {
-    frame_object->setParentId(
-        IdentifiersFactory::FrameId(ToLocalFrame(parent_frame)));
-  }
+  if (parent_frame)
+    frame_object->setParentId(IdentifiersFactory::FrameId(parent_frame));
   if (frame->DeprecatedLocalOwner()) {
     AtomicString name = frame->DeprecatedLocalOwner()->GetNameAttribute();
     if (name.IsEmpty())

@@ -582,11 +582,13 @@ class CONTENT_EXPORT RenderThreadImpl
   void SetUpEmbeddedWorkerChannelForServiceWorker(
       mojom::EmbeddedWorkerInstanceClientAssociatedRequest client_request)
       override;
-  void CreateFrameProxy(int32_t routing_id,
-                        int32_t render_view_routing_id,
-                        int32_t opener_routing_id,
-                        int32_t parent_routing_id,
-                        const FrameReplicationState& replicated_state) override;
+  void CreateFrameProxy(
+      int32_t routing_id,
+      int32_t render_view_routing_id,
+      int32_t opener_routing_id,
+      int32_t parent_routing_id,
+      const FrameReplicationState& replicated_state,
+      const base::UnguessableToken& devtools_frame_token) override;
   void OnNetworkConnectionChanged(
       net::NetworkChangeNotifier::ConnectionType type,
       double max_bandwidth_mbps) override;

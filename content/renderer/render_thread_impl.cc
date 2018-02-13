@@ -2332,11 +2332,12 @@ void RenderThreadImpl::CreateFrameProxy(
     int32_t render_view_routing_id,
     int32_t opener_routing_id,
     int32_t parent_routing_id,
-    const FrameReplicationState& replicated_state) {
+    const FrameReplicationState& replicated_state,
+    const base::UnguessableToken& devtools_frame_token) {
   RenderFrameProxy::CreateFrameProxy(
       routing_id, render_view_routing_id,
       RenderFrameImpl::ResolveOpener(opener_routing_id), parent_routing_id,
-      replicated_state);
+      replicated_state, devtools_frame_token);
 }
 
 void RenderThreadImpl::OnNetworkConnectionChanged(

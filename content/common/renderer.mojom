@@ -204,9 +204,13 @@ interface Renderer {
   // is MSG_ROUTING_NONE.  The new proxy should be created as a child of the
   // object identified by |parent_routing_id| or as top level if that is
   // MSG_ROUTING_NONE.
+  // |devtools_frame_token| is used for devtools instrumentation
+  // and trace-ability. It is defined by the browser and is never
+  // sent back from the renderer in the control calls.
   CreateFrameProxy(int32 routing_id, int32 render_view_routing_id,
                    int32 opener_routing_id, int32 parent_routing_id,
-                   FrameReplicationState replication_state);
+                   FrameReplicationState replication_state,
+                   mojo.common.mojom.UnguessableToken devtools_frame_token);
 
   // Tells the renderer that the network type has changed so that
   // navigator.onLine and navigator.connection can be updated.

@@ -5465,7 +5465,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // anymore.
   process_a->GetRendererInterface()->CreateFrameProxy(
       new_routing_id, view_routing_id, MSG_ROUTING_NONE, parent_routing_id,
-      FrameReplicationState());
+      FrameReplicationState(), base::UnguessableToken::Create());
 
   // Ensure the subframe is detached in the browser process.
   observer.Wait();
