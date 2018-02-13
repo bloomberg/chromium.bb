@@ -26,12 +26,6 @@ namespace base {
 class UnguessableToken;
 }
 
-#if defined(USE_OZONE)
-namespace gfx {
-class ClientNativePixmapFactory;
-}
-#endif
-
 namespace mojo {
 template <typename MojoInterface>
 class InterfacePtr;
@@ -213,12 +207,6 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
   std::unique_ptr<InputStateLookup> input_state_lookup_;
   std::unique_ptr<ui::PlatformEventSource> event_source_;
-
-#if defined(USE_OZONE)
-  // Factory for pixmaps that can use be transported from the client to the GPU
-  // process using a low-level ozone-provided platform specific mechanism.
-  std::unique_ptr<gfx::ClientNativePixmapFactory> native_pixmap_factory_;
-#endif
 
   ui::ContextFactory* context_factory_;
   ui::ContextFactoryPrivate* context_factory_private_;

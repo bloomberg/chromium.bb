@@ -5,13 +5,14 @@
 #ifndef UI_OZONE_PUBLIC_CLIENT_NATIVE_PIXMAP_FACTORY_OZONE_H_
 #define UI_OZONE_PUBLIC_CLIENT_NATIVE_PIXMAP_FACTORY_OZONE_H_
 
-#include "ui/gfx/client_native_pixmap_factory.h"
 #include "ui/ozone/ozone_export.h"
 
 namespace ui {
 
-OZONE_EXPORT std::unique_ptr<gfx::ClientNativePixmapFactory>
-CreateClientNativePixmapFactoryOzone();
+// Creates a factory for pixmaps that can use be transported from the client to
+// the GPU process using a low-level ozone-provided platform specific mechanism.
+// The factory is installed as the gfx::ClientNativePixmapFactory instance.
+OZONE_EXPORT void CreateClientNativePixmapFactoryOzone();
 
 }  // namespace ui
 

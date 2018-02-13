@@ -84,11 +84,6 @@ static void HandleRendererErrorTestParameters(
     WaitForDebugger("Renderer");
 }
 
-#if defined(USE_OZONE)
-base::LazyInstance<std::unique_ptr<gfx::ClientNativePixmapFactory>>::
-    DestructorAtExit g_pixmap_factory = LAZY_INSTANCE_INITIALIZER;
-#endif
-
 }  // namespace
 
 // mainline routine for running as the Renderer process
@@ -154,8 +149,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 #endif
 
 #if defined(USE_OZONE)
-  g_pixmap_factory.Get() = ui::CreateClientNativePixmapFactoryOzone();
-  gfx::ClientNativePixmapFactory::SetInstance(g_pixmap_factory.Get().get());
+  ui::CreateClientNativePixmapFactoryOzone();
 #endif
 
   // This function allows pausing execution using the --renderer-startup-dialog

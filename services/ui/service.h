@@ -39,10 +39,6 @@
 #include "services/ui/ws/user_id.h"
 #include "services/ui/ws/window_server_delegate.h"
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "services/ui/public/interfaces/arc.mojom.h"
 #endif  // defined(OS_CHROMEOS)
@@ -206,10 +202,6 @@ class Service : public service_manager::Service,
       threaded_image_cursors_factory_;
 
   bool test_config_;
-
-#if defined(USE_OZONE)
-  std::unique_ptr<gfx::ClientNativePixmapFactory> client_native_pixmap_factory_;
-#endif
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<InputDeviceController> input_device_controller_;
