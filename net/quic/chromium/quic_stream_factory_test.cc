@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/do_nothing_ct_verifier.h"
@@ -521,7 +522,7 @@ class QuicStreamFactoryTestBase {
     request_info.url = GURL("https://www.example.org/");
     EXPECT_EQ(OK,
               stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                       net_log_, CompletionCallback()));
+                                       net_log_, CompletionOnceCallback()));
     // Ensure that session is alive and active.
     QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
     EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
@@ -1596,7 +1597,7 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
     EXPECT_TRUE(stream);
     EXPECT_EQ(OK,
               stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                       net_log_, CompletionCallback()));
+                                       net_log_, CompletionOnceCallback()));
     streams.push_back(std::move(stream));
   }
 
@@ -1727,7 +1728,7 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   HttpRequestInfo request_info;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Close the session and verify that stream saw the error.
   factory_->CloseAllSessions(ERR_INTERNET_DISCONNECTED, QUIC_INTERNAL_ERROR);
@@ -1911,7 +1912,7 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   HttpRequestInfo request_info;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   IPAddress last_address;
   EXPECT_TRUE(http_server_properties_.GetSupportsQuic(&last_address));
@@ -1966,7 +1967,7 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChangedWithConnectionMigration) {
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   HttpRequestInfo request_info;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   IPAddress last_address;
   EXPECT_TRUE(http_server_properties_.GetSupportsQuic(&last_address));
@@ -2035,7 +2036,7 @@ void QuicStreamFactoryTestBase::OnNetworkMadeDefault(bool async_write_before) {
   request_info.method = "GET";
   request_info.url = url_;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -2172,7 +2173,7 @@ void QuicStreamFactoryTestBase::OnNetworkDisconnected(bool async_write_before) {
   request_info.method = "GET";
   request_info.url = url_;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -2287,7 +2288,7 @@ void QuicStreamFactoryTestBase::OnNetworkDisconnectedWithNetworkList(
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -2347,7 +2348,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStream) {
   HttpRequestInfo request_info;
   request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -2397,7 +2398,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStreamV2) {
   HttpRequestInfo request_info;
   request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -2446,7 +2447,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultConnectionMigrationDisabled) {
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -2500,7 +2501,7 @@ TEST_P(QuicStreamFactoryTest,
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -2554,7 +2555,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNonMigratableStream) {
   HttpRequestInfo request_info;
   request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -2602,7 +2603,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNonMigratableStreamV2) {
   HttpRequestInfo request_info;
   request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -2650,7 +2651,7 @@ TEST_P(QuicStreamFactoryTest,
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -2702,7 +2703,7 @@ TEST_P(QuicStreamFactoryTest,
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -2919,7 +2920,7 @@ TEST_P(QuicStreamFactoryTest, NewNetworkConnectedAfterNoNetwork) {
   request_info.method = "GET";
   request_info.url = url_;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -3026,7 +3027,7 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedPauseBeforeConnected) {
   request_info.method = "GET";
   request_info.url = url_;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -3166,7 +3167,7 @@ TEST_P(QuicStreamFactoryTest,
   request_info1.url = url_;
   EXPECT_EQ(OK,
             stream1->InitializeStream(&request_info1, true, DEFAULT_PRIORITY,
-                                      net_log_, CompletionCallback()));
+                                      net_log_, CompletionOnceCallback()));
   HttpResponseInfo response1;
   HttpRequestHeaders request_headers1;
   EXPECT_EQ(OK, stream1->SendRequest(request_headers1, &response1,
@@ -3179,7 +3180,7 @@ TEST_P(QuicStreamFactoryTest,
   request_info2.url = url_;
   EXPECT_EQ(OK,
             stream2->InitializeStream(&request_info2, true, DEFAULT_PRIORITY,
-                                      net_log_, CompletionCallback()));
+                                      net_log_, CompletionOnceCallback()));
   HttpResponseInfo response2;
   HttpRequestHeaders request_headers2;
   EXPECT_EQ(OK, stream2->SendRequest(request_headers2, &response2,
@@ -3249,7 +3250,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarly) {
   request_info.method = "GET";
   request_info.url = url_;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -3376,7 +3377,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyWithAsyncWrites) {
   request_info.method = "GET";
   request_info.url = url_;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -3495,7 +3496,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNoNewNetwork) {
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -3549,7 +3550,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
   HttpRequestInfo request_info;
   request_info.load_flags |= LOAD_DISABLE_CONNECTION_MIGRATION;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -3601,7 +3602,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyConnectionMigrationDisabled) {
   // Cause QUIC stream to be created.
   HttpRequestInfo request_info;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -3662,7 +3663,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteError(
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -3752,7 +3753,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNoNewNetwork(
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -3843,7 +3844,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNonMigratableStream(
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -3907,7 +3908,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMigrationDisabled(
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -3987,7 +3988,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnMultipleWriteErrors(
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -4068,7 +4069,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorWithNotificationQueued(
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -4167,7 +4168,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnNotificationWithWriteErrorQueued(
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -4267,7 +4268,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorPauseBeforeConnected(
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -4402,7 +4403,7 @@ void QuicStreamFactoryTestBase::
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -4558,7 +4559,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyToBadSocket) {
   request_info.method = "GET";
   request_info.url = url_;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -4622,7 +4623,7 @@ TEST_P(QuicStreamFactoryTest, ServerMigration) {
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -4766,7 +4767,7 @@ TEST_P(QuicStreamFactoryTest, ServerMigrationIPv4ToIPv6Fails) {
   request_info.method = "GET";
   request_info.url = GURL("https://www.example.org/");
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Ensure that session is alive and active.
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
@@ -4876,7 +4877,7 @@ TEST_P(QuicStreamFactoryTest, OnCertDBChanged) {
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   HttpRequestInfo request_info;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   // Change the CA cert and verify that stream saw the event.
   factory_->OnCertDBChanged();
@@ -5056,7 +5057,7 @@ TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
   EXPECT_TRUE(stream.get());
   HttpRequestInfo request_info;
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   DVLOG(1)
       << "Created 1st session and initialized a stream. Now trigger timeout";
@@ -5088,7 +5089,7 @@ TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
   EXPECT_TRUE(stream2.get());
   EXPECT_EQ(OK,
             stream2->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                      net_log_, CompletionCallback()));
+                                      net_log_, CompletionOnceCallback()));
   session2->connection()->CloseConnection(
       QUIC_NETWORK_IDLE_TIMEOUT, "test", ConnectionCloseBehavior::SILENT_CLOSE);
   // Need to spin the loop now to ensure that

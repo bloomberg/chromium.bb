@@ -6,6 +6,7 @@
 
 #include "base/test/fuzzed_data_provider.h"
 
+#include "net/base/completion_once_callback.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/do_nothing_ct_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -162,7 +163,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   request_info.method = kMethod;
   request_info.url = GURL(kUrl);
   stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY, env->net_log,
-                           CompletionCallback());
+                           CompletionOnceCallback());
 
   HttpResponseInfo response;
   HttpRequestHeaders request_headers;

@@ -119,7 +119,7 @@ int SpdyProxyClientSocket::Connect(const CompletionCallback& callback) {
 
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
-    read_callback_ = callback;
+    read_callback_ = std::move(callback);
   return rv;
 }
 
@@ -195,7 +195,8 @@ void SpdyProxyClientSocket::ApplySocketTag(const SocketTag& tag) {
   CHECK(false);
 }
 
-int SpdyProxyClientSocket::Read(IOBuffer* buf, int buf_len,
+int SpdyProxyClientSocket::Read(IOBuffer* buf,
+                                int buf_len,
                                 const CompletionCallback& callback) {
   DCHECK(read_callback_.is_null());
   DCHECK(!user_buffer_.get());
@@ -273,9 +274,9 @@ void SpdyProxyClientSocket::LogBlockedTunnelResponse() const {
       /* is_https_proxy = */ true);
 }
 
-void SpdyProxyClientSocket::RunCallback(const CompletionCallback& callback,
+void SpdyProxyClientSocket::RunCallback(CompletionOnceCallback callback,
                                         int result) const {
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 void SpdyProxyClientSocket::OnIOComplete(int result) {
@@ -487,9 +488,9 @@ void SpdyProxyClientSocket::OnDataSent()  {
   // Proxy write callbacks result in deep callback chains. Post to allow the
   // stream's write callback chain to unwind (see crbug.com/355511).
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&SpdyProxyClientSocket::RunCallback,
-                            write_callback_weak_factory_.GetWeakPtr(),
-                            base::ResetAndReturn(&write_callback_), rv));
+      FROM_HERE, base::BindOnce(&SpdyProxyClientSocket::RunCallback,
+                                write_callback_weak_factory_.GetWeakPtr(),
+                                base::ResetAndReturn(&write_callback_), rv));
 }
 
 void SpdyProxyClientSocket::OnTrailers(const SpdyHeaderBlock& trailers) {
@@ -510,7 +511,7 @@ void SpdyProxyClientSocket::OnClose(int status)  {
     next_state_ = STATE_DISCONNECTED;
 
   base::WeakPtr<SpdyProxyClientSocket> weak_ptr = weak_factory_.GetWeakPtr();
-  CompletionCallback write_callback = write_callback_;
+  CompletionOnceCallback write_callback = std::move(write_callback_);
   write_callback_.Reset();
   write_buffer_len_ = 0;
 
@@ -525,7 +526,7 @@ void SpdyProxyClientSocket::OnClose(int status)  {
   }
   // This may have been deleted by read_callback_, so check first.
   if (weak_ptr.get() && !write_callback.is_null())
-    write_callback.Run(ERR_CONNECTION_CLOSED);
+    std::move(write_callback).Run(ERR_CONNECTION_CLOSED);
 }
 
 NetLogSource SpdyProxyClientSocket::source_dependency() const {

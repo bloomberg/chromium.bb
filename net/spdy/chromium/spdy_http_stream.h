@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "net/base/completion_callback.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log_source.h"
@@ -52,15 +51,15 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
                        bool can_send_early,
                        RequestPriority priority,
                        const NetLogWithSource& net_log,
-                       const CompletionCallback& callback) override;
+                       CompletionOnceCallback callback) override;
 
   int SendRequest(const HttpRequestHeaders& headers,
                   HttpResponseInfo* response,
-                  const CompletionCallback& callback) override;
-  int ReadResponseHeaders(const CompletionCallback& callback) override;
+                  CompletionOnceCallback callback) override;
+  int ReadResponseHeaders(CompletionOnceCallback callback) override;
   int ReadResponseBody(IOBuffer* buf,
                        int buf_len,
-                       const CompletionCallback& callback) override;
+                       CompletionOnceCallback callback) override;
   void Close(bool not_reusable) override;
   bool IsResponseBodyComplete() const override;
 
@@ -188,8 +187,8 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   // We buffer the response body as it arrives asynchronously from the stream.
   SpdyReadQueue response_body_queue_;
 
-  CompletionCallback request_callback_;
-  CompletionCallback response_callback_;
+  CompletionOnceCallback request_callback_;
+  CompletionOnceCallback response_callback_;
 
   // User provided buffer for the ReadResponseBody() response.
   scoped_refptr<IOBuffer> user_buffer_;

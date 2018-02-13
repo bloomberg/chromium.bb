@@ -316,7 +316,7 @@ int WebSocketBasicHandshakeStream::InitializeStream(
     bool can_send_early,
     RequestPriority priority,
     const NetLogWithSource& net_log,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   url_ = request_info->url;
   state_.Initialize(request_info, can_send_early, priority, net_log);
   return OK;
@@ -325,7 +325,7 @@ int WebSocketBasicHandshakeStream::InitializeStream(
 int WebSocketBasicHandshakeStream::SendRequest(
     const HttpRequestHeaders& headers,
     HttpResponseInfo* response,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   DCHECK(!headers.HasHeader(websockets::kSecWebSocketKey));
   DCHECK(!headers.HasHeader(websockets::kSecWebSocketProtocol));
   DCHECK(!headers.HasHeader(websockets::kSecWebSocketExtensions));
@@ -369,19 +369,18 @@ int WebSocketBasicHandshakeStream::SendRequest(
   // TODO(crbug.com/656607): Add propoer annotation.
   return parser()->SendRequest(state_.GenerateRequestLine(), enriched_headers,
                                NO_TRAFFIC_ANNOTATION_BUG_656607, response,
-                               callback);
+                               std::move(callback));
 }
 
 int WebSocketBasicHandshakeStream::ReadResponseHeaders(
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   // HttpStreamParser uses a weak pointer when reading from the
   // socket, so it won't be called back after being destroyed. The
   // HttpStreamParser is owned by HttpBasicState which is owned by this object,
   // so this use of base::Unretained() is safe.
-  int rv = parser()->ReadResponseHeaders(
-      base::Bind(&WebSocketBasicHandshakeStream::ReadResponseHeadersCallback,
-                 base::Unretained(this),
-                 callback));
+  int rv = parser()->ReadResponseHeaders(base::BindOnce(
+      &WebSocketBasicHandshakeStream::ReadResponseHeadersCallback,
+      base::Unretained(this), std::move(callback)));
   if (rv == ERR_IO_PENDING)
     return rv;
   return ValidateResponse(rv);
@@ -390,8 +389,8 @@ int WebSocketBasicHandshakeStream::ReadResponseHeaders(
 int WebSocketBasicHandshakeStream::ReadResponseBody(
     IOBuffer* buf,
     int buf_len,
-    const CompletionCallback& callback) {
-  return parser()->ReadResponseBody(buf, buf_len, callback);
+    CompletionOnceCallback callback) {
+  return parser()->ReadResponseBody(buf, buf_len, std::move(callback));
 }
 
 void WebSocketBasicHandshakeStream::Close(bool not_reusable) {
@@ -513,9 +512,9 @@ void WebSocketBasicHandshakeStream::SetWebSocketKeyForTesting(
 }
 
 void WebSocketBasicHandshakeStream::ReadResponseHeadersCallback(
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     int result) {
-  callback.Run(ValidateResponse(result));
+  std::move(callback).Run(ValidateResponse(result));
 }
 
 void WebSocketBasicHandshakeStream::OnFinishOpeningHandshake() {

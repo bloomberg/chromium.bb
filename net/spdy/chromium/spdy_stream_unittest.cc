@@ -15,7 +15,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "net/base/completion_callback.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_info.h"
 #include "net/log/net_log_event_type.h"

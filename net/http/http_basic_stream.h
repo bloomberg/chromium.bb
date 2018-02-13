@@ -15,6 +15,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/http/http_basic_state.h"
 #include "net/http/http_stream.h"
@@ -43,17 +44,17 @@ class NET_EXPORT_PRIVATE HttpBasicStream : public HttpStream {
                        bool can_send_early,
                        RequestPriority priority,
                        const NetLogWithSource& net_log,
-                       const CompletionCallback& callback) override;
+                       CompletionOnceCallback callback) override;
 
   int SendRequest(const HttpRequestHeaders& headers,
                   HttpResponseInfo* response,
-                  const CompletionCallback& callback) override;
+                  CompletionOnceCallback callback) override;
 
-  int ReadResponseHeaders(const CompletionCallback& callback) override;
+  int ReadResponseHeaders(CompletionOnceCallback callback) override;
 
   int ReadResponseBody(IOBuffer* buf,
                        int buf_len,
-                       const CompletionCallback& callback) override;
+                       CompletionOnceCallback callback) override;
 
   void Close(bool not_reusable) override;
 

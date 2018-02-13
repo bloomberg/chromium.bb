@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
@@ -122,9 +123,9 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
     request_info.url = GURL("ws://localhost/");
     request_info.method = "GET";
     request_info.load_flags = LOAD_DISABLE_CACHE;
-    int rv =
-        handshake->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
-                                    NetLogWithSource(), CompletionCallback());
+    int rv = handshake->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
+                                         NetLogWithSource(),
+                                         CompletionOnceCallback());
     EXPECT_THAT(rv, IsOk());
 
     HttpRequestHeaders headers;

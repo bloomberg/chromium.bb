@@ -31,6 +31,7 @@
 #include "net/base/auth.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -16173,25 +16174,25 @@ class FakeStream : public HttpStream,
                        bool can_send_early,
                        RequestPriority priority,
                        const NetLogWithSource& net_log,
-                       const CompletionCallback& callback) override {
+                       CompletionOnceCallback callback) override {
     return ERR_IO_PENDING;
   }
 
   int SendRequest(const HttpRequestHeaders& request_headers,
                   HttpResponseInfo* response,
-                  const CompletionCallback& callback) override {
+                  CompletionOnceCallback callback) override {
     ADD_FAILURE();
     return ERR_UNEXPECTED;
   }
 
-  int ReadResponseHeaders(const CompletionCallback& callback) override {
+  int ReadResponseHeaders(CompletionOnceCallback callback) override {
     ADD_FAILURE();
     return ERR_UNEXPECTED;
   }
 
   int ReadResponseBody(IOBuffer* buf,
                        int buf_len,
-                       const CompletionCallback& callback) override {
+                       CompletionOnceCallback callback) override {
     ADD_FAILURE();
     return ERR_UNEXPECTED;
   }

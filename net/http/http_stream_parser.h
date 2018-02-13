@@ -17,6 +17,7 @@
 #include "base/strings/string_piece.h"
 #include "crypto/ec_private_key.h"
 #include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log_with_source.h"
@@ -64,12 +65,13 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
                   const HttpRequestHeaders& headers,
                   const NetworkTrafficAnnotationTag& traffic_annotation,
                   HttpResponseInfo* response,
-                  const CompletionCallback& callback);
+                  CompletionOnceCallback callback);
 
-  int ReadResponseHeaders(const CompletionCallback& callback);
+  int ReadResponseHeaders(CompletionOnceCallback callback);
 
-  int ReadResponseBody(IOBuffer* buf, int buf_len,
-                       const CompletionCallback& callback);
+  int ReadResponseBody(IOBuffer* buf,
+                       int buf_len,
+                       CompletionOnceCallback callback);
 
   void Close(bool not_reusable);
 
@@ -260,13 +262,7 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
 
   // The callback to notify a user that their request or response is
   // complete or there was an error
-  CompletionCallback callback_;
-
-  // In the client callback, the client can do anything, including
-  // destroying this class, so any pending callback must be issued
-  // after everything else is done.  When it is time to issue the client
-  // callback, move it from |callback_| to |scheduled_callback_|.
-  CompletionCallback scheduled_callback_;
+  CompletionOnceCallback callback_;
 
   // The underlying socket.
   ClientSocketHandle* const connection_;

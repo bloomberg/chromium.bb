@@ -25,7 +25,7 @@ int ProxyConnectRedirectHttpStream::InitializeStream(
     bool can_send_early,
     RequestPriority priority,
     const NetLogWithSource& net_log,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   NOTREACHED();
   return OK;
 }
@@ -33,13 +33,13 @@ int ProxyConnectRedirectHttpStream::InitializeStream(
 int ProxyConnectRedirectHttpStream::SendRequest(
     const HttpRequestHeaders& request_headers,
     HttpResponseInfo* response,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   NOTREACHED();
   return OK;
 }
 
 int ProxyConnectRedirectHttpStream::ReadResponseHeaders(
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   NOTREACHED();
   return OK;
 }
@@ -47,7 +47,7 @@ int ProxyConnectRedirectHttpStream::ReadResponseHeaders(
 int ProxyConnectRedirectHttpStream::ReadResponseBody(
     IOBuffer* buf,
     int buf_len,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   NOTREACHED();
   return OK;
 }
