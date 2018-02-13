@@ -50,7 +50,12 @@ NSString* const kTestTitle = @"title";
   return NO;
 }
 
-- (void)formatValueForEditorField:(EditorField*)field {
+- (BOOL)shouldFormatValueForAutofillUIType:(AutofillUIType)type {
+  return NO;
+}
+
+- (NSString*)formatValue:(NSString*)value autofillUIType:(AutofillUIType)type {
+  return value;
 }
 
 - (UIImage*)iconIdentifyingEditorField:(EditorField*)field {
