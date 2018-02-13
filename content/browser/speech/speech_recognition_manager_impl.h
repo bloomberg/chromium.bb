@@ -5,12 +5,12 @@
 #ifndef CONTENT_BROWSER_SPEECH_SPEECH_RECOGNITION_MANAGER_IMPL_H_
 #define CONTENT_BROWSER_SPEECH_SPEECH_RECOGNITION_MANAGER_IMPL_H_
 
-#include <map>
 #include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager.h"
@@ -178,8 +178,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl
   media::AudioSystem* audio_system_;
   media::AudioManager* audio_manager_;
   MediaStreamManager* media_stream_manager_;
-  typedef std::map<int, Session*> SessionsTable;
-  SessionsTable sessions_;
+  base::flat_map<int, std::unique_ptr<Session>> sessions_;
   int primary_session_id_;
   int last_session_id_;
   bool is_dispatching_event_;
