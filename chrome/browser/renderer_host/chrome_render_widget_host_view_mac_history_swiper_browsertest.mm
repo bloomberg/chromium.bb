@@ -736,6 +736,9 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
   if (!IsHistorySwipingSupported())
     return;
 
+  ui_test_utils::NavigateToURL(browser(), url_iframe_);
+  ASSERT_EQ(url_iframe_, GetWebContents()->GetURL());
+
   content::InputEventAckWaiter wheel_end_ack_waiter(
       GetWebContents()->GetRenderViewHost()->GetWidget(),
       base::BindRepeating([](content::InputEventAckSource,
@@ -746,8 +749,6 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
                    blink::WebMouseWheelEvent::kPhaseEnded;
       }));
 
-  ui_test_utils::NavigateToURL(browser(), url_iframe_);
-  ASSERT_EQ(url_iframe_, GetWebContents()->GetURL());
   QueueBeginningEvents(0, -1);
   for (int i = 0; i < 10; ++i)
     QueueScrollAndTouchMoved(0, -1);
