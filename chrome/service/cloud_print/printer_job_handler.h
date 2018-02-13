@@ -7,9 +7,7 @@
 
 #include <list>
 #include <string>
-#include <vector>
 
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -87,8 +85,8 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
     std::string printer_id;
     std::string caps_hash;
     std::string tags_hash;
-    int current_xmpp_timeout;
-    int pending_xmpp_timeout;
+    int current_xmpp_timeout = 0;
+    int pending_xmpp_timeout = 0;
 
     PrinterInfoFromCloud();
     PrinterInfoFromCloud(const PrinterInfoFromCloud& other);
@@ -104,7 +102,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
 
   bool Initialize();
 
-  std::string GetPrinterName() const;
+  const std::string& GetPrinterName() const;
 
   // Requests a job check. |reason| is the reason for fetching the job. Used
   // for logging and diagnostc purposes.
@@ -256,19 +254,19 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   scoped_refptr<PrintSystem> print_system_;
   printing::PrinterBasicInfo printer_info_;
   PrinterInfoFromCloud printer_info_cloud_;
-  GURL cloud_print_server_url_;
-  std::string print_data_url_;
+  const GURL cloud_print_server_url_;
+  const std::string print_data_url_;
   JobDetails job_details_;
   Delegate* const delegate_;
 
   // Once the job has been spooled to the local spooler, this specifies the
   // job id of the job on the local spooler.
-  PlatformJobId local_job_id_;
+  PlatformJobId local_job_id_ = -1;
 
   // The next response handler can either be a JSONDataHandler or a
   // DataHandler (depending on the current request being made).
-  JSONDataHandler next_json_data_handler_;
-  DataHandler next_data_handler_;
+  JSONDataHandler next_json_data_handler_ = nullptr;
+  DataHandler next_data_handler_ = nullptr;
   // The thread on which the actual print operation happens
   base::Thread print_thread_;
   // The Job spooler object. This is only non-NULL during a print operation.
@@ -280,17 +278,17 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
 
   // There may be pending tasks in the message queue when Shutdown is called.
   // We set this flag so as to do nothing in those tasks.
-  bool shutting_down_;
+  bool shutting_down_ = false;
 
   // A string indicating the reason we are fetching jobs from the server
   // (used to specify the reason in the fetch URL).
   std::string job_fetch_reason_;
   // Flags that specify various pending server updates
-  bool job_check_pending_;
-  bool printer_update_pending_;
+  bool job_check_pending_ = false;
+  bool printer_update_pending_ = true;
 
   // Some task in the state machine is in progress.
-  bool task_in_progress_;
+  bool task_in_progress_ = false;
   scoped_refptr<PrintSystem::PrinterWatcher> printer_watcher_;
 
   using JobStatusUpdaterList = std::list<scoped_refptr<JobStatusUpdater>>;
