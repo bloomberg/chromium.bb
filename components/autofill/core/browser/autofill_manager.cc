@@ -1411,7 +1411,9 @@ std::unique_ptr<FormStructure> AutofillManager::ValidateSubmittedForm(
   if (!FindCachedForm(form, &cached_submitted_form))
     return std::unique_ptr<FormStructure>();
 
-  submitted_form->UpdateFromCache(*cached_submitted_form, false);
+  submitted_form->RetrieveFromCache(*cached_submitted_form,
+                                    /* apply_is_autofilled */ false,
+                                    /* only_server_and_autofill_state */ false);
   return submitted_form;
 }
 
@@ -1513,9 +1515,11 @@ bool AutofillManager::UpdateCachedForm(const FormData& live_form,
   if (!ParseForm(live_form, updated_form))
     return false;
 
+  // We need to keep the server data.
   if (cached_form)
-    (*updated_form)->UpdateFromCache(*cached_form, true);
-
+    (*updated_form)
+        ->RetrieveFromCache(*cached_form, /* apply_is_autofilled */ true,
+                            /* only_server_and_autofill_state */ true);
   // Annotate the updated form with its predicted types.
   driver()->SendAutofillTypePredictionsToRenderer({*updated_form});
 

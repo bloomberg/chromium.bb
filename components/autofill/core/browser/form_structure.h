@@ -121,8 +121,9 @@ class FormStructure {
   bool ShouldBeUploaded() const;
 
   // Sets the field types to be those set for |cached_form|.
-  void UpdateFromCache(const FormStructure& cached_form,
-                       const bool apply_is_autofilled);
+  void RetrieveFromCache(const FormStructure& cached_form,
+                         const bool apply_is_autofilled,
+                         const bool only_server_and_autofill_state);
 
   // Logs quality metrics for |this|, which should be a user-submitted form.
   // This method should only be called after the possible field types have been
