@@ -38,9 +38,10 @@ class GvrKeyboardDelegate : public vr::KeyboardDelegate {
                const gfx::Point3F& ray_target,
                gfx::Point3F* hit_position) override;
   void Draw(const vr::CameraModel& model) override;
-
+  bool SupportsSelection() override;
   void OnButtonDown(const gfx::PointF& position) override;
   void OnButtonUp(const gfx::PointF& position) override;
+
   // Called to update GVR keyboard with the given text input info.
   void UpdateInput(const vr::TextInputInfo& info);
 

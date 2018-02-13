@@ -1984,10 +1984,9 @@ void UiSceneCreator::CreateOmnibox() {
           },
           base::Unretained(omnibox_text_field.get()),
           base::Unretained(model_))));
-  omnibox_text_field->AddBinding(
-      VR_BIND_FUNC(bool, Model, model_, model->experimental_features_enabled,
-                   OmniboxTextField, omnibox_text_field.get(),
-                   set_allow_inline_autocomplete));
+  omnibox_text_field->AddBinding(VR_BIND_FUNC(
+      bool, Model, model_, model->supports_selection, OmniboxTextField,
+      omnibox_text_field.get(), set_allow_inline_autocomplete));
 
   VR_BIND_COLOR(model_, omnibox_text_field.get(), &ColorScheme::omnibox_text,
                 &TextInput::SetTextColor);

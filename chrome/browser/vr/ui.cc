@@ -50,7 +50,11 @@ Ui::Ui(UiBrowserInterface* browser,
       content_input_delegate_(std::move(content_input_delegate)),
       input_manager_(std::make_unique<UiInputManager>(scene_.get())),
       weak_ptr_factory_(this) {
-  InitializeModel(ui_initial_state);
+  UiInitialState state = ui_initial_state;
+  if (keyboard_delegate != nullptr)
+    state.supports_selection = keyboard_delegate->SupportsSelection();
+  InitializeModel(state);
+
   UiSceneCreator(browser, scene_.get(), this, content_input_delegate_.get(),
                  keyboard_delegate, text_input_delegate, model_.get())
       .CreateScene();
@@ -435,6 +439,7 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
   model_->skips_redraw_when_not_dirty =
       ui_initial_state.skips_redraw_when_not_dirty;
   model_->background_available = ui_initial_state.assets_available;
+  model_->supports_selection = ui_initial_state.supports_selection;
 }
 
 }  // namespace vr

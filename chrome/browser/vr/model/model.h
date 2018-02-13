@@ -51,6 +51,7 @@ struct Model {
   // TODO(crbug.com/799606): Use procedural controller model once we have the
   // proper button icons.
   bool procedural_controller_enabled = false;
+  bool supports_selection = true;
 
   // WebVR state.
   WebVrModel web_vr;
