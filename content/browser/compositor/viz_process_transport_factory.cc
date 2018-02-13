@@ -458,7 +458,8 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
   compositor_data.display_client =
       std::make_unique<InProcessDisplayClient>(compositor->widget());
   root_params->display_client =
-      compositor_data.display_client->GetBoundPtr().PassInterface();
+      compositor_data.display_client->GetBoundPtr(resize_task_runner_)
+          .PassInterface();
 
 #if defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
   gpu::SurfaceHandle surface_handle = compositor->widget();

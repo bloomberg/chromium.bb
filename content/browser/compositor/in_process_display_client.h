@@ -19,7 +19,8 @@ class InProcessDisplayClient : public viz::mojom::DisplayClient {
   InProcessDisplayClient(gfx::AcceleratedWidget widget);
   ~InProcessDisplayClient() override;
 
-  viz::mojom::DisplayClientPtr GetBoundPtr();
+  viz::mojom::DisplayClientPtr GetBoundPtr(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
  private:
   // viz::mojom::DisplayClient implementation:
