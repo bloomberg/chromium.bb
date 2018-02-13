@@ -124,7 +124,7 @@ std::vector<Configuration> FillEnabledPresetConfigurations(
        &Configuration::MakePresetForLiveRunOnPhishingSites},
       {kPresetPerformanceTestingDryRunOnAllSites, false,
        &Configuration::MakePresetForPerformanceTestingDryRunOnAllSites},
-      {kPresetLiveRunForBetterAds, false,
+      {kPresetLiveRunForBetterAds, true,
        &Configuration::MakePresetForLiveRunForBetterAds}};
 
   CommaSeparatedStrings enabled_presets(
@@ -239,7 +239,7 @@ const base::Feature kSafeBrowsingSubresourceFilter{
     "SubresourceFilter", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSafeBrowsingSubresourceFilterExperimentalUI{
-    "SubresourceFilterExperimentalUI", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SubresourceFilterExperimentalUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Legacy name `activation_state` is used in variation parameters.
 const char kActivationLevelParameterName[] = "activation_state";
