@@ -230,9 +230,6 @@ struct wl_global *
 weston_desktop_xdg_shell_v6_create(struct weston_desktop *desktop,
 				   struct wl_display *display);
 struct wl_global *
-weston_desktop_xdg_shell_v5_create(struct weston_desktop *desktop,
-				   struct wl_display *display);
-struct wl_global *
 weston_desktop_wl_shell_create(struct weston_desktop *desktop,
 			       struct wl_display *display);
 void

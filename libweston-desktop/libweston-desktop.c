@@ -41,7 +41,6 @@ struct weston_desktop {
 	struct weston_desktop_api api;
 	void *user_data;
 	struct wl_global *xdg_shell_v6;
-	struct wl_global *xdg_shell_v5;
 	struct wl_global *wl_shell;
 };
 
@@ -77,13 +76,6 @@ weston_desktop_create(struct weston_compositor *compositor,
 		return NULL;
 	}
 
-	desktop->xdg_shell_v5 =
-		weston_desktop_xdg_shell_v5_create(desktop, display);
-	if (desktop->xdg_shell_v5 == NULL) {
-		weston_desktop_destroy(desktop);
-		return NULL;
-	}
-
 	desktop->wl_shell =
 		weston_desktop_wl_shell_create(desktop, display);
 	if (desktop->wl_shell == NULL) {
@@ -104,8 +96,6 @@ weston_desktop_destroy(struct weston_desktop *desktop)
 
 	if (desktop->wl_shell != NULL)
 		wl_global_destroy(desktop->wl_shell);
-	if (desktop->xdg_shell_v5 != NULL)
-		wl_global_destroy(desktop->xdg_shell_v5);
 	if (desktop->xdg_shell_v6 != NULL)
 		wl_global_destroy(desktop->xdg_shell_v6);
 
