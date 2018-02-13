@@ -247,6 +247,7 @@
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller_delegate.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
+#include "ios/web/public/features.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer_util.h"
@@ -2326,6 +2327,20 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Hide the toolbar if displaying phone NTP.
   if (!IsIPadIdiom()) {
     web::NavigationItem* item = [tab navigationManager]->GetVisibleItem();
+    if ([tab navigationManager]->GetPendingItem() &&
+        !base::FeatureList::IsEnabled(
+            web::features::
+                kPreloadWebViewWhenNavigatingFromNativeContentOnIOS11_3)) {
+      if (@available(iOS 11.3, *)) {
+        // On iOS 11.3 NTP is removed from the view hierarchy for all pending
+        // navigations in order to insert web view into view hierarchy. This is
+        // necessary because web view may load much slower if it is not a part
+        // of the view hierarchy. So if NTP is not currently displayed, then
+        // toolbar must be shown.
+        // TODO(crbug.com/739390): Remove this workaround.
+        item = [tab navigationManager]->GetPendingItem();
+      }
+    }
     BOOL hideToolbar = NO;
     if (item) {
       GURL url = item->GetURL();
