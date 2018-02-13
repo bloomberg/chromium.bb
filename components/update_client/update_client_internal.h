@@ -29,7 +29,7 @@ enum class Error;
 
 class UpdateClientImpl : public UpdateClient {
  public:
-  UpdateClientImpl(const scoped_refptr<Configurator>& config,
+  UpdateClientImpl(scoped_refptr<Configurator> config,
                    scoped_refptr<PingManager> ping_manager,
                    UpdateChecker::Factory update_checker_factory,
                    CrxDownloader::Factory crx_downloader_factory);

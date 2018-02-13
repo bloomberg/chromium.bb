@@ -175,7 +175,7 @@ class OnDemandUpdater {
 
 // Creates the component updater.
 std::unique_ptr<ComponentUpdateService> ComponentUpdateServiceFactory(
-    const scoped_refptr<Configurator>& config);
+    scoped_refptr<Configurator> config);
 
 }  // namespace component_updater
 

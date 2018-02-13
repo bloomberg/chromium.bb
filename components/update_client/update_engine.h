@@ -46,7 +46,7 @@ class UpdateEngine {
                           const std::string& id)>;
   using CrxDataCallback = UpdateClient::CrxDataCallback;
 
-  UpdateEngine(const scoped_refptr<Configurator>& config,
+  UpdateEngine(scoped_refptr<Configurator> config,
                UpdateChecker::Factory update_checker_factory,
                CrxDownloader::Factory crx_downloader_factory,
                scoped_refptr<PingManager> ping_manager,
@@ -114,7 +114,7 @@ class UpdateEngine {
 // Describes a group of components which are installed or updated together.
 struct UpdateContext {
   UpdateContext(
-      const scoped_refptr<Configurator>& config,
+      scoped_refptr<Configurator> config,
       bool is_foreground,
       const std::vector<std::string>& ids,
       UpdateClient::CrxDataCallback crx_data_callback,

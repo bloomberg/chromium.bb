@@ -35,7 +35,7 @@ const int kErrorNoUrl = -2;
 class PingSender : public base::RefCountedThreadSafe<PingSender> {
  public:
   using Callback = PingManager::Callback;
-  explicit PingSender(const scoped_refptr<Configurator>& config);
+  explicit PingSender(scoped_refptr<Configurator> config);
   void SendPing(const Component& component, Callback callback);
 
  protected:
@@ -56,8 +56,7 @@ class PingSender : public base::RefCountedThreadSafe<PingSender> {
   DISALLOW_COPY_AND_ASSIGN(PingSender);
 };
 
-PingSender::PingSender(const scoped_refptr<Configurator>& config)
-    : config_(config) {}
+PingSender::PingSender(scoped_refptr<Configurator> config) : config_(config) {}
 
 PingSender::~PingSender() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -98,7 +97,7 @@ void PingSender::SendPingComplete(int error,
 
 }  // namespace
 
-PingManager::PingManager(const scoped_refptr<Configurator>& config)
+PingManager::PingManager(scoped_refptr<Configurator> config)
     : config_(config) {}
 
 PingManager::~PingManager() {

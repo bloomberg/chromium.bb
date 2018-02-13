@@ -36,8 +36,8 @@ class CrxUpdateService : public ComponentUpdateService,
   using Observer = ComponentUpdateService::Observer;
 
  public:
-  CrxUpdateService(const scoped_refptr<Configurator>& config,
-                   const scoped_refptr<UpdateClient>& update_client);
+  CrxUpdateService(scoped_refptr<Configurator> config,
+                   scoped_refptr<UpdateClient> update_client);
   ~CrxUpdateService() override;
 
   // Overrides for ComponentUpdateService.

@@ -102,7 +102,7 @@ class FakePingManagerImpl : public PingManager {
     bool diff_update_failed = false;
   };
 
-  explicit FakePingManagerImpl(const scoped_refptr<Configurator>& config);
+  explicit FakePingManagerImpl(scoped_refptr<Configurator> config);
 
   void SendPing(const Component& component, Callback callback) override;
 
@@ -119,8 +119,7 @@ class FakePingManagerImpl : public PingManager {
   DISALLOW_COPY_AND_ASSIGN(FakePingManagerImpl);
 };
 
-FakePingManagerImpl::FakePingManagerImpl(
-    const scoped_refptr<Configurator>& config)
+FakePingManagerImpl::FakePingManagerImpl(scoped_refptr<Configurator> config)
     : PingManager(config) {}
 
 FakePingManagerImpl::~FakePingManagerImpl() {
@@ -238,7 +237,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
-        const scoped_refptr<Configurator>& config,
+        scoped_refptr<Configurator> config,
         PersistedData* metadata) {
       return std::make_unique<FakeUpdateChecker>();
     }
@@ -286,7 +285,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+    explicit FakePingManager(scoped_refptr<Configurator> config)
         : FakePingManagerImpl(config) {}
 
    protected:
@@ -352,7 +351,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
-        const scoped_refptr<Configurator>& config,
+        scoped_refptr<Configurator> config,
         PersistedData* metadata) {
       return std::make_unique<FakeUpdateChecker>();
     }
@@ -475,7 +474,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+    explicit FakePingManager(scoped_refptr<Configurator> config)
         : FakePingManagerImpl(config) {}
 
    protected:
@@ -565,7 +564,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
-        const scoped_refptr<Configurator>& config,
+        scoped_refptr<Configurator> config,
         PersistedData* metadata) {
       return std::make_unique<FakeUpdateChecker>();
     }
@@ -731,7 +730,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+    explicit FakePingManager(scoped_refptr<Configurator> config)
         : FakePingManagerImpl(config) {}
 
    protected:
@@ -837,7 +836,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
-        const scoped_refptr<Configurator>& config,
+        scoped_refptr<Configurator> config,
         PersistedData* metadata) {
       return std::make_unique<FakeUpdateChecker>();
     }
@@ -997,7 +996,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+    explicit FakePingManager(scoped_refptr<Configurator> config)
         : FakePingManagerImpl(config) {}
 
    protected:
@@ -1108,7 +1107,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
-        const scoped_refptr<Configurator>& config,
+        scoped_refptr<Configurator> config,
         PersistedData* metadata) {
       return std::make_unique<FakeUpdateChecker>();
     }
@@ -1288,7 +1287,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+    explicit FakePingManager(scoped_refptr<Configurator> config)
         : FakePingManagerImpl(config) {}
 
    protected:
@@ -1439,7 +1438,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
-        const scoped_refptr<Configurator>& config,
+        scoped_refptr<Configurator> config,
         PersistedData* metadata) {
       return std::make_unique<FakeUpdateChecker>();
     }
@@ -1541,7 +1540,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+    explicit FakePingManager(scoped_refptr<Configurator> config)
         : FakePingManagerImpl(config) {}
 
    protected:
@@ -1631,7 +1630,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
-        const scoped_refptr<Configurator>& config,
+        scoped_refptr<Configurator> config,
         PersistedData* metadata) {
       return std::make_unique<FakeUpdateChecker>();
     }
@@ -1825,7 +1824,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+    explicit FakePingManager(scoped_refptr<Configurator> config)
         : FakePingManagerImpl(config) {}
 
    protected:
@@ -1937,7 +1936,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
-        const scoped_refptr<Configurator>& config,
+        scoped_refptr<Configurator> config,
         PersistedData* metadata) {
       return std::make_unique<FakeUpdateChecker>();
     }
@@ -1985,7 +1984,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+    explicit FakePingManager(scoped_refptr<Configurator> config)
         : FakePingManagerImpl(config) {}
 
    protected:
@@ -2050,7 +2049,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
-        const scoped_refptr<Configurator>& config,
+        scoped_refptr<Configurator> config,
         PersistedData* metadata) {
       return std::make_unique<FakeUpdateChecker>();
     }
@@ -2161,7 +2160,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+    explicit FakePingManager(scoped_refptr<Configurator> config)
         : FakePingManagerImpl(config) {}
 
    protected:
@@ -2245,7 +2244,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
-        const scoped_refptr<Configurator>& config,
+        scoped_refptr<Configurator> config,
         PersistedData* metadata) {
       return std::make_unique<FakeUpdateChecker>();
     }
@@ -2294,7 +2293,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+    explicit FakePingManager(scoped_refptr<Configurator> config)
         : FakePingManagerImpl(config) {}
 
    protected:
@@ -2351,7 +2350,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
-        const scoped_refptr<Configurator>& config,
+        scoped_refptr<Configurator> config,
         PersistedData* metadata) {
       return std::make_unique<FakeUpdateChecker>();
     }
@@ -2382,7 +2381,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+    explicit FakePingManager(scoped_refptr<Configurator> config)
         : FakePingManagerImpl(config) {}
 
    protected:
@@ -2412,7 +2411,7 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
-        const scoped_refptr<Configurator>& config,
+        scoped_refptr<Configurator> config,
         PersistedData* metadata) {
       return nullptr;
     }
@@ -2444,7 +2443,7 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+    explicit FakePingManager(scoped_refptr<Configurator> config)
         : FakePingManagerImpl(config) {}
 
    protected:
@@ -2515,7 +2514,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
-        const scoped_refptr<Configurator>& config,
+        scoped_refptr<Configurator> config,
         PersistedData* metadata) {
       return std::make_unique<FakeUpdateChecker>();
     }
@@ -2573,7 +2572,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+    explicit FakePingManager(scoped_refptr<Configurator> config)
         : FakePingManagerImpl(config) {}
 
    protected:
@@ -2693,7 +2692,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
-        const scoped_refptr<Configurator>& config,
+        scoped_refptr<Configurator> config,
         PersistedData* metadata) {
       return std::make_unique<FakeUpdateChecker>();
     }
@@ -2844,7 +2843,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+    explicit FakePingManager(scoped_refptr<Configurator> config)
         : FakePingManagerImpl(config) {}
 
    protected:
@@ -2942,7 +2941,7 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
-        const scoped_refptr<Configurator>& config,
+        scoped_refptr<Configurator> config,
         PersistedData* metadata) {
       return std::make_unique<FakeUpdateChecker>();
     }
@@ -2981,7 +2980,7 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+    explicit FakePingManager(scoped_refptr<Configurator> config)
         : FakePingManagerImpl(config) {}
 
    protected:
@@ -3026,7 +3025,7 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
-        const scoped_refptr<Configurator>& config,
+        scoped_refptr<Configurator> config,
         PersistedData* metadata) {
       return std::make_unique<FakeUpdateChecker>();
     }
@@ -3133,7 +3132,7 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+    explicit FakePingManager(scoped_refptr<Configurator> config)
         : FakePingManagerImpl(config) {}
 
    protected:
@@ -3191,7 +3190,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
   class FakeUpdateChecker : public UpdateChecker {
    public:
     static std::unique_ptr<UpdateChecker> Create(
-        const scoped_refptr<Configurator>& config,
+        scoped_refptr<Configurator> config,
         PersistedData* metadata) {
       return std::make_unique<FakeUpdateChecker>();
     }
@@ -3252,7 +3251,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
 
   class FakePingManager : public FakePingManagerImpl {
    public:
-    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+    explicit FakePingManager(scoped_refptr<Configurator> config)
         : FakePingManagerImpl(config) {}
 
    protected:

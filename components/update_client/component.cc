@@ -66,15 +66,14 @@ using InstallOnBlockingTaskRunnerCompleteCallback = base::OnceCallback<
     void(int error_category, int error_code, int extra_code1)>;
 
 void InstallComplete(
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     InstallOnBlockingTaskRunnerCompleteCallback callback,
     const base::FilePath& unpack_path,
     const CrxInstaller::Result& result) {
   base::PostTaskWithTraits(
       FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
       base::BindOnce(
-          [](const scoped_refptr<base::SingleThreadTaskRunner>&
-                 main_task_runner,
+          [](scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
              InstallOnBlockingTaskRunnerCompleteCallback callback,
              const base::FilePath& unpack_path,
              const CrxInstaller::Result& result) {
@@ -92,11 +91,11 @@ void InstallComplete(
 }
 
 void InstallOnBlockingTaskRunner(
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     const base::FilePath& unpack_path,
     const std::string& public_key,
     const std::string& fingerprint,
-    const scoped_refptr<CrxInstaller>& installer,
+    scoped_refptr<CrxInstaller> installer,
     InstallOnBlockingTaskRunnerCompleteCallback callback) {
   DCHECK(base::DirectoryExists(unpack_path));
 
@@ -124,10 +123,10 @@ void InstallOnBlockingTaskRunner(
 }
 
 void UnpackCompleteOnBlockingTaskRunner(
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     const base::FilePath& crx_path,
     const std::string& fingerprint,
-    const scoped_refptr<CrxInstaller>& installer,
+    scoped_refptr<CrxInstaller> installer,
     InstallOnBlockingTaskRunnerCompleteCallback callback,
     const ComponentUnpacker::Result& result) {
   update_client::DeleteFileAndEmptyParentDirectory(crx_path);
@@ -149,11 +148,11 @@ void UnpackCompleteOnBlockingTaskRunner(
 }
 
 void StartInstallOnBlockingTaskRunner(
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     const std::vector<uint8_t>& pk_hash,
     const base::FilePath& crx_path,
     const std::string& fingerprint,
-    const scoped_refptr<CrxInstaller>& installer,
+    scoped_refptr<CrxInstaller> installer,
     std::unique_ptr<service_manager::Connector> connector,
     InstallOnBlockingTaskRunnerCompleteCallback callback) {
   auto unpacker = base::MakeRefCounted<ComponentUnpacker>(

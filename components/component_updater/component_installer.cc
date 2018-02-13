@@ -206,7 +206,7 @@ bool ComponentInstaller::Uninstall() {
 
 bool ComponentInstaller::FindPreinstallation(
     const base::FilePath& root,
-    const scoped_refptr<RegistrationInfo>& registration_info) {
+    scoped_refptr<RegistrationInfo> registration_info) {
   base::FilePath path = root.Append(installer_policy_->GetRelativeInstallDir());
   if (!base::PathExists(path)) {
     DVLOG(1) << "Relative install dir does not exist: " << path.MaybeAsASCII();
@@ -249,7 +249,7 @@ bool ComponentInstaller::FindPreinstallation(
 }
 
 void ComponentInstaller::StartRegistration(
-    const scoped_refptr<RegistrationInfo>& registration_info) {
+    scoped_refptr<RegistrationInfo> registration_info) {
   VLOG(1) << __func__ << " for " << installer_policy_->GetName();
   DCHECK(task_runner_.get());
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -391,7 +391,7 @@ void ComponentInstaller::UninstallOnTaskRunner() {
 }
 
 void ComponentInstaller::FinishRegistration(
-    const scoped_refptr<RegistrationInfo>& registration_info,
+    scoped_refptr<RegistrationInfo> registration_info,
     ComponentUpdateService* cus,
     base::OnceClosure callback) {
   VLOG(1) << __func__ << " for " << installer_policy_->GetName();

@@ -25,9 +25,9 @@ class UpdateChecker {
   using UpdateCheckCallback =
       base::OnceCallback<void(int error, int retry_after_sec)>;
 
-  using Factory = std::unique_ptr<UpdateChecker> (*)(
-      const scoped_refptr<Configurator>& config,
-      PersistedData* persistent);
+  using Factory =
+      std::unique_ptr<UpdateChecker> (*)(scoped_refptr<Configurator> config,
+                                         PersistedData* persistent);
 
   virtual ~UpdateChecker() = default;
 
@@ -45,7 +45,7 @@ class UpdateChecker {
                                UpdateCheckCallback update_check_callback) = 0;
 
   static std::unique_ptr<UpdateChecker> Create(
-      const scoped_refptr<Configurator>& config,
+      scoped_refptr<Configurator> config,
       PersistedData* persistent);
 
  protected:

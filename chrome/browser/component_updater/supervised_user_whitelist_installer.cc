@@ -140,7 +140,7 @@ void DeleteFileOnTaskRunner(const base::FilePath& path) {
 
 void OnWhitelistSanitizationResult(
     const std::string& crx_id,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     base::OnceClosure callback,
     const std::string& result) {
   const base::FilePath sanitized_whitelist_path =
@@ -164,7 +164,7 @@ void OnWhitelistSanitizationResult(
 void CheckForSanitizedWhitelistOnTaskRunner(
     const std::string& crx_id,
     const base::FilePath& whitelist_path,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     const base::Closure& callback) {
   if (base::PathExists(GetSanitizedWhitelistPath(crx_id))) {
     task_runner->PostTask(FROM_HERE, callback);

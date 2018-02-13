@@ -62,9 +62,8 @@ class URLRequestMockJob : public net::URLRequestSimpleJob {
 
 URLRequestPostInterceptor::URLRequestPostInterceptor(
     const GURL& url,
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
-    : url_(url), io_task_runner_(io_task_runner), hit_count_(0) {
-}
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
+    : url_(url), io_task_runner_(io_task_runner), hit_count_(0) {}
 
 URLRequestPostInterceptor::~URLRequestPostInterceptor() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
@@ -150,7 +149,7 @@ class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
  public:
   Delegate(const std::string& scheme,
            const std::string& hostname,
-           const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
+           scoped_refptr<base::SequencedTaskRunner> io_task_runner)
       : scheme_(scheme), hostname_(hostname), io_task_runner_(io_task_runner) {}
 
   void Register() {
@@ -246,7 +245,7 @@ class URLRequestPostInterceptor::Delegate : public net::URLRequestInterceptor {
 URLRequestPostInterceptorFactory::URLRequestPostInterceptorFactory(
     const std::string& scheme,
     const std::string& hostname,
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : scheme_(scheme),
       hostname_(hostname),
       io_task_runner_(io_task_runner),
@@ -294,11 +293,10 @@ bool AnyMatch::Match(const std::string&) const {
 }
 
 InterceptorFactory::InterceptorFactory(
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : URLRequestPostInterceptorFactory(POST_INTERCEPT_SCHEME,
                                        POST_INTERCEPT_HOSTNAME,
-                                       io_task_runner) {
-}
+                                       io_task_runner) {}
 
 InterceptorFactory::~InterceptorFactory() {
 }

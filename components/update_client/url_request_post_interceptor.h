@@ -86,7 +86,7 @@ class URLRequestPostInterceptor {
 
   URLRequestPostInterceptor(
       const GURL& url,
-      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
   ~URLRequestPostInterceptor();
 
   void ClearExpectations();
@@ -107,7 +107,7 @@ class URLRequestPostInterceptorFactory {
   URLRequestPostInterceptorFactory(
       const std::string& scheme,
       const std::string& hostname,
-      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
   ~URLRequestPostInterceptorFactory();
 
   // Creates an interceptor object for the specified url path. Returns NULL
@@ -132,7 +132,7 @@ class URLRequestPostInterceptorFactory {
 class InterceptorFactory : public URLRequestPostInterceptorFactory {
  public:
   explicit InterceptorFactory(
-      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
   ~InterceptorFactory();
 
   // Creates an interceptor for the url path defined by POST_INTERCEPT_PATH.

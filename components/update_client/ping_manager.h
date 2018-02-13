@@ -24,7 +24,7 @@ class PingManager : public base::RefCountedThreadSafe<PingManager> {
   using Callback =
       base::OnceCallback<void(int error, const std::string& response)>;
 
-  explicit PingManager(const scoped_refptr<Configurator>& config);
+  explicit PingManager(scoped_refptr<Configurator> config);
 
   // Sends a ping for the |item|. |callback| is invoked after the ping is sent
   // or an error has occured. The ping itself is not persisted and it will

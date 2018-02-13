@@ -200,7 +200,7 @@ void OnDemandTester::OnDemandComplete(update_client::Error error) {
 }
 
 std::unique_ptr<ComponentUpdateService> TestComponentUpdateServiceFactory(
-    const scoped_refptr<Configurator>& config) {
+    scoped_refptr<Configurator> config) {
   DCHECK(config);
   return std::make_unique<CrxUpdateService>(
       config, base::MakeRefCounted<MockUpdateClient>());

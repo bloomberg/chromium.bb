@@ -60,7 +60,7 @@ CrxComponent::~CrxComponent() {
 // the UpdateClient instance exceeds the life time of its inner members,
 // including any thread objects that might execute callbacks bound to it.
 UpdateClientImpl::UpdateClientImpl(
-    const scoped_refptr<Configurator>& config,
+    scoped_refptr<Configurator> config,
     scoped_refptr<PingManager> ping_manager,
     UpdateChecker::Factory update_checker_factory,
     CrxDownloader::Factory crx_downloader_factory)
@@ -239,7 +239,7 @@ void UpdateClientImpl::SendUninstallPing(const std::string& id,
 }
 
 scoped_refptr<UpdateClient> UpdateClientFactory(
-    const scoped_refptr<Configurator>& config) {
+    scoped_refptr<Configurator> config) {
   return base::MakeRefCounted<UpdateClientImpl>(
       config, base::MakeRefCounted<PingManager>(config), &UpdateChecker::Create,
       &CrxDownloader::Create);

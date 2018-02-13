@@ -51,7 +51,7 @@ class RequestSender : public net::URLFetcherDelegate {
   // avoiding collisions with known network errors is desirable.
   enum : int { kErrorResponseNotTrusted = -10000 };
 
-  explicit RequestSender(const scoped_refptr<Configurator>& config);
+  explicit RequestSender(scoped_refptr<Configurator> config);
   ~RequestSender() override;
 
   // |use_signing| enables CUP signing of protocol messages exchanged using
