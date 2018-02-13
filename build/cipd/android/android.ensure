@@ -35,7 +35,7 @@ chromium/third_party/apk-patch-size-estimator version:0.2-cr0
 # endless merge conflicts
 
 @Subdir third_party/bazel
-chromium/third_party/bazel version:0-cr0
+chromium/third_party/bazel version:0.10.0
 
 # Three unchanging lines
 # avoid the horror that is

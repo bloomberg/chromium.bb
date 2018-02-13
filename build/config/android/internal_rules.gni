@@ -1265,6 +1265,7 @@ if (enable_java_templates) {
 
       action(_desugar_target) {
         script = "//build/android/gyp/desugar.py"
+        depfile = "$target_gen_dir/$target_name.d"
         deps = _deps
         if (defined(invoker.deps)) {
           deps += invoker.deps
