@@ -985,9 +985,13 @@ RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
       BrowserAccessibilityManager::GetEmptyDocument(), delegate);
 }
 
-void RenderWidgetHostViewChildFrame::GetScreenInfo(ScreenInfo* screen_info) {
-  if (frame_connector_)
+bool RenderWidgetHostViewChildFrame::GetScreenInfo(ScreenInfo* screen_info) {
+  if (frame_connector_) {
     *screen_info = frame_connector_->screen_info();
+    return true;
+  }
+
+  return false;
 }
 
 void RenderWidgetHostViewChildFrame::ResizeDueToAutoResize(

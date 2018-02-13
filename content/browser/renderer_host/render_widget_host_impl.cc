@@ -1473,9 +1473,7 @@ void RenderWidgetHostImpl::RemoveInputEventObserver(
 
 void RenderWidgetHostImpl::GetScreenInfo(ScreenInfo* result) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::GetScreenInfo");
-  if (view_) {
-    view_->GetScreenInfo(result);
-  } else {
+  if (!view_ || !view_->GetScreenInfo(result)) {
     DCHECK(delegate_);
     delegate_->GetScreenInfo(result);
   }

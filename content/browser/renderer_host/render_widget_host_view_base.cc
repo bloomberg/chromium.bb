@@ -297,13 +297,14 @@ void RenderWidgetHostViewBase::FocusedNodeTouched(
   DVLOG(1) << "FocusedNodeTouched: " << editable;
 }
 
-void RenderWidgetHostViewBase::GetScreenInfo(ScreenInfo* screen_info) {
+bool RenderWidgetHostViewBase::GetScreenInfo(ScreenInfo* screen_info) {
   RenderWidgetHostImpl* host = GetRenderWidgetHostImpl();
   if (!host || !host->delegate()) {
     *screen_info = ScreenInfo();
-    return;
+    return false;
   }
   host->delegate()->GetScreenInfo(screen_info);
+  return true;
 }
 
 uint32_t RenderWidgetHostViewBase::RendererFrameNumber() {
