@@ -4,10 +4,12 @@
 
 #include "modules/picture_in_picture/HTMLVideoElementPictureInPicture.h"
 
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/events/Event.h"
 #include "core/html/media/HTMLVideoElement.h"
 #include "modules/picture_in_picture/PictureInPictureController.h"
+#include "modules/picture_in_picture/PictureInPictureWindow.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 
 namespace blink {
@@ -67,13 +69,23 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
 
   // TODO(crbug.com/806249): Call element.enterPictureInPicture().
 
+  // TODO(crbug.com/806249): Don't use fake width and height.
+  PictureInPictureWindow* window =
+      PictureInPictureController::Ensure(document).CreatePictureInPictureWindow(
+          500 /* width */, 300 /* height */);
+
   PictureInPictureController::Ensure(document).SetPictureInPictureElement(
       element);
 
   element.DispatchEvent(
       Event::CreateBubble(EventTypeNames::enterpictureinpicture));
 
-  return ScriptPromise::CastUndefined(script_state);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  resolver->Resolve(window);
+
+  return promise;
 }
 
 // static
@@ -102,6 +114,9 @@ void HTMLVideoElementPictureInPicture::SetBooleanAttribute(
   if (PictureInPictureController::Ensure(document).PictureInPictureElement(
           scope) == &element) {
     // TODO(crbug.com/806249): Call element.exitPictureInPicture().
+
+    PictureInPictureController::Ensure(document)
+        .OnClosePictureInPictureWindow();
 
     PictureInPictureController::Ensure(document).UnsetPictureInPictureElement();
 

@@ -219,6 +219,7 @@ modules_idl_files =
           "peerconnection/RTCTrackEvent.idl",
           "permissions/Permissions.idl",
           "permissions/PermissionStatus.idl",
+          "picture_in_picture/PictureInPictureWindow.idl",
           "plugins/MimeType.idl",
           "plugins/MimeTypeArray.idl",
           "plugins/Plugin.idl",

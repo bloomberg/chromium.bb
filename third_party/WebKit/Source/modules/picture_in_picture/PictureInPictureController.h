@@ -11,6 +11,7 @@
 namespace blink {
 
 class HTMLVideoElement;
+class PictureInPictureWindow;
 
 // The PictureInPictureController is keeping the state and implementing the
 // logic around the Picture-in-Picture feature. It is meant to be used as well
@@ -68,6 +69,14 @@ class MODULES_EXPORT PictureInPictureController
   // Returns element currently in Picture-in-Picture if any. Null otherwise.
   Element* PictureInPictureElement(TreeScope&) const;
 
+  // Meant to be called by HTMLVideoElementPictureInPicture, and DOM objects but
+  // not internally. It closes the current Picture-in-Picture window if any.
+  PictureInPictureWindow* CreatePictureInPictureWindow(int width, int height);
+
+  // Meant to be called by DocumentPictureInPicture,
+  // HTMLVideoElementPictureInPicture, and DOM objects but not internally.
+  void OnClosePictureInPictureWindow();
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -79,6 +88,9 @@ class MODULES_EXPORT PictureInPictureController
 
   // The Picture-in-Picture element for the associated document.
   Member<HTMLVideoElement> picture_in_picture_element_;
+
+  // The Picture-in-Picture window for the associated document.
+  Member<PictureInPictureWindow> picture_in_picture_window_;
 };
 
 }  // namespace blink

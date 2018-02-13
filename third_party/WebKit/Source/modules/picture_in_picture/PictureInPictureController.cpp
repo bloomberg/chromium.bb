@@ -6,6 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/html/media/HTMLVideoElement.h"
+#include "modules/picture_in_picture/PictureInPictureWindow.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 
 namespace blink {
@@ -95,8 +96,26 @@ Element* PictureInPictureController::PictureInPictureElement(
   return scope.AdjustedElement(*picture_in_picture_element_);
 }
 
+PictureInPictureWindow*
+PictureInPictureController::CreatePictureInPictureWindow(int width,
+                                                         int height) {
+  if (picture_in_picture_window_)
+    picture_in_picture_window_->OnClose();
+
+  picture_in_picture_window_ = new PictureInPictureWindow(width, height);
+  return picture_in_picture_window_;
+}
+
+void PictureInPictureController::OnClosePictureInPictureWindow() {
+  if (!picture_in_picture_window_)
+    return;
+
+  picture_in_picture_window_->OnClose();
+}
+
 void PictureInPictureController::Trace(blink::Visitor* visitor) {
   visitor->Trace(picture_in_picture_element_);
+  visitor->Trace(picture_in_picture_window_);
   Supplement<Document>::Trace(visitor);
 }
 
