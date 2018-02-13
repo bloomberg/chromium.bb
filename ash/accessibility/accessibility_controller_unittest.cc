@@ -79,6 +79,7 @@ TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityMonoAudioEnabled));
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kAccessibilityScreenMagnifierEnabled));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityScreenMagnifierScale));
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kAccessibilitySpokenFeedbackEnabled));
 }
