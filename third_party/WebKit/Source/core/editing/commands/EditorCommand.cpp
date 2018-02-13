@@ -350,8 +350,8 @@ static bool ExecuteApplyStyle(LocalFrame& frame,
 
 // FIXME: executeToggleStyleInList does not handle complicated cases such as
 // <b><u>hello</u>world</b> properly. This function must use
-// Editor::selectionHasStyle to determine the current style but we cannot fix
-// this until https://bugs.webkit.org/show_bug.cgi?id=27818 is resolved.
+// EditingStyle::SelectionHasStyle to determine the current style but we cannot
+// fix this until https://bugs.webkit.org/show_bug.cgi?id=27818 is resolved.
 static bool ExecuteToggleStyleInList(LocalFrame& frame,
                                      EditorCommandSource source,
                                      InputEvent::InputType input_type,
@@ -414,11 +414,13 @@ static bool ExecuteToggleStyle(LocalFrame& frame,
   // other: present throughout the selection
 
   bool style_is_present;
-  if (frame.GetEditor().Behavior().ShouldToggleStyleBasedOnStartOfSelection())
+  if (frame.GetEditor().Behavior().ShouldToggleStyleBasedOnStartOfSelection()) {
     style_is_present = SelectionStartHasStyle(frame, property_id, on_value);
-  else
-    style_is_present = frame.GetEditor().SelectionHasStyle(
-                           property_id, on_value) == EditingTriState::kTrue;
+  } else {
+    style_is_present =
+        EditingStyle::SelectionHasStyle(frame, property_id, on_value) ==
+        EditingTriState::kTrue;
+  }
 
   EditingStyle* style =
       EditingStyle::Create(property_id, style_is_present ? off_value : on_value,
@@ -529,7 +531,7 @@ static EditingTriState StateStyle(LocalFrame& frame,
                ? EditingTriState::kTrue
                : EditingTriState::kFalse;
   }
-  return frame.GetEditor().SelectionHasStyle(property_id, desired_value);
+  return EditingStyle::SelectionHasStyle(frame, property_id, desired_value);
 }
 
 static String SelectionStartCSSPropertyValue(LocalFrame& frame,

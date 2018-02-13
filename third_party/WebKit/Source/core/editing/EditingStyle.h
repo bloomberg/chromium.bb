@@ -50,6 +50,7 @@ class ContainerNode;
 class Document;
 class Element;
 class HTMLElement;
+class LocalFrame;
 class MutableCSSPropertyValueSet;
 class Node;
 class QualifiedName;
@@ -170,6 +171,9 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
                    SecureContextMode);
 
   void Trace(blink::Visitor*);
+  static EditingTriState SelectionHasStyle(const LocalFrame&,
+                                           CSSPropertyID,
+                                           const String& value);
 
  private:
   EditingStyle() = default;

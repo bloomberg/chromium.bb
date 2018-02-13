@@ -469,13 +469,13 @@ bool ContextMenuController::ShowContextMenu(const ContextMenu* default_menu,
     }
   }
 
-  if (selected_frame->GetEditor().SelectionHasStyle(
-          CSSPropertyDirection, "ltr") != EditingTriState::kFalse) {
+  if (EditingStyle::SelectionHasStyle(*selected_frame, CSSPropertyDirection,
+                                      "ltr") != EditingTriState::kFalse) {
     data.writing_direction_left_to_right |=
         WebContextMenuData::kCheckableMenuItemChecked;
   }
-  if (selected_frame->GetEditor().SelectionHasStyle(
-          CSSPropertyDirection, "rtl") != EditingTriState::kFalse) {
+  if (EditingStyle::SelectionHasStyle(*selected_frame, CSSPropertyDirection,
+                                      "rtl") != EditingTriState::kFalse) {
     data.writing_direction_right_to_left |=
         WebContextMenuData::kCheckableMenuItemChecked;
   }

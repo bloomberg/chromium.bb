@@ -778,17 +778,6 @@ void Editor::ApplyParagraphStyleToSelection(CSSPropertyValueSet* style,
   ApplyParagraphStyle(style, input_type);
 }
 
-EditingTriState Editor::SelectionHasStyle(CSSPropertyID property_id,
-                                          const String& value) const {
-  const SecureContextMode secure_context_mode =
-      frame_->GetDocument()->GetSecureContextMode();
-
-  return EditingStyle::Create(property_id, value, secure_context_mode)
-      ->TriStateOfStyle(
-          GetFrameSelection().ComputeVisibleSelectionInDOMTreeDeprecated(),
-          secure_context_mode);
-}
-
 static void DispatchEditableContentChangedEvents(Element* start_root,
                                                  Element* end_root) {
   if (start_root)

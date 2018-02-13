@@ -1860,4 +1860,16 @@ int LegacyFontSizeFromCSSValue(Document* document,
   return 0;
 }
 
+EditingTriState EditingStyle::SelectionHasStyle(const LocalFrame& frame,
+                                                CSSPropertyID property_id,
+                                                const String& value) {
+  const SecureContextMode secure_context_mode =
+      frame.GetDocument()->GetSecureContextMode();
+
+  return Create(property_id, value, secure_context_mode)
+      ->TriStateOfStyle(
+          frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated(),
+          secure_context_mode);
+}
+
 }  // namespace blink

@@ -99,8 +99,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
   void RespondToChangedContents(const Position&);
 
-  EditingTriState SelectionHasStyle(CSSPropertyID, const String& value) const;
-
   void RegisterCommandGroup(CompositeEditCommand* command_group_wrapper);
 
   bool DeleteWithDirection(DeleteDirection,
