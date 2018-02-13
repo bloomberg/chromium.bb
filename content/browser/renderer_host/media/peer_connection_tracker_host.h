@@ -9,6 +9,8 @@
 
 #include "base/macros.h"
 #include "base/power_monitor/power_observer.h"
+#include "content/common/media/peer_connection_tracker.mojom.h"
+#include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
 
 struct PeerConnectionInfo;
@@ -23,8 +25,11 @@ namespace content {
 // managed by RenderProcessHostImpl. It receives PeerConnection events from
 // PeerConnectionTracker as IPC messages that it forwards to WebRTCInternals.
 // It also forwards browser process events to PeerConnectionTracker via IPC.
-class PeerConnectionTrackerHost : public BrowserMessageFilter,
-                                  public base::PowerObserver {
+class PeerConnectionTrackerHost
+    : public BrowserMessageFilter,
+      public base::PowerObserver,
+      public BrowserAssociatedInterface<mojom::PeerConnectionTrackerHost>,
+      public mojom::PeerConnectionTrackerHost {
  public:
   explicit PeerConnectionTrackerHost(int render_process_id);
 
@@ -42,19 +47,22 @@ class PeerConnectionTrackerHost : public BrowserMessageFilter,
   ~PeerConnectionTrackerHost() override;
 
  private:
-  // Handlers for peer connection messages coming from the renderer.
+  // Handlers for IPC messages coming from the renderer.
   void OnAddPeerConnection(const PeerConnectionInfo& info);
-  void OnRemovePeerConnection(int lid);
-  void OnUpdatePeerConnection(
-      int lid, const std::string& type, const std::string& value);
   void OnAddStats(int lid, const base::ListValue& value);
-  void OnGetUserMedia(const std::string& origin,
-                      bool audio,
-                      bool video,
-                      const std::string& audio_constraints,
-                      const std::string& video_constraints);
-  void OnWebRtcEventLogWrite(int lid, const std::string& output);
   void SendOnSuspendOnUIThread();
+
+  // mojom::PeerConnectionTrackerHost implementation.
+  void RemovePeerConnection(int lid) override;
+  void UpdatePeerConnection(int lid,
+                            const std::string& type,
+                            const std::string& value) override;
+  void GetUserMedia(const std::string& origin,
+                    bool audio,
+                    bool video,
+                    const std::string& audio_constraints,
+                    const std::string& video_constraints) override;
+  void WebRtcEventLogWrite(int lid, const std::string& output) override;
 
   int render_process_id_;
 

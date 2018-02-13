@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "content/child/child_thread_impl.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/render_thread_impl.h"
@@ -357,6 +358,12 @@ class InternalStatsObserver : public webrtc::StatsObserver {
 PeerConnectionTracker::PeerConnectionTracker()
     : next_local_id_(1), send_target_for_test_(nullptr) {}
 
+PeerConnectionTracker::PeerConnectionTracker(
+    mojom::PeerConnectionTrackerHostAssociatedPtr host)
+    : next_local_id_(1),
+      send_target_for_test_(nullptr),
+      peer_connection_tracker_host_ptr_(std::move(host)) {}
+
 PeerConnectionTracker::~PeerConnectionTracker() {
 }
 
@@ -484,8 +491,7 @@ void PeerConnectionTracker::UnregisterPeerConnection(
     return;
   }
 
-  SendTarget()->Send(
-      new PeerConnectionTrackerHost_RemovePeerConnection(it->second));
+  GetPeerConnectionTrackerHost()->RemovePeerConnection(it->second);
 
   peer_connection_id_map_.erase(it);
 }
@@ -727,11 +733,11 @@ void PeerConnectionTracker::TrackGetUserMedia(
     const blink::WebUserMediaRequest& user_media_request) {
   DCHECK(main_thread_.CalledOnValidThread());
 
-  SendTarget()->Send(new PeerConnectionTrackerHost_GetUserMedia(
+  GetPeerConnectionTrackerHost()->GetUserMedia(
       user_media_request.GetSecurityOrigin().ToString().Utf8(),
       user_media_request.Audio(), user_media_request.Video(),
       SerializeMediaConstraints(user_media_request.AudioConstraints()),
-      SerializeMediaConstraints(user_media_request.VideoConstraints())));
+      SerializeMediaConstraints(user_media_request.VideoConstraints()));
 }
 
 void PeerConnectionTracker::TrackRtcEventLogWrite(
@@ -741,8 +747,7 @@ void PeerConnectionTracker::TrackRtcEventLogWrite(
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
     return;
-  SendTarget()->Send(
-      new PeerConnectionTrackerHost_WebRtcEventLogWrite(id, output));
+  GetPeerConnectionTrackerHost()->WebRtcEventLogWrite(id, output);
 }
 
 int PeerConnectionTracker::GetNextLocalID() {
@@ -767,12 +772,21 @@ void PeerConnectionTracker::SendPeerConnectionUpdate(
     const char* callback_type,
     const std::string& value) {
   DCHECK(main_thread_.CalledOnValidThread());
-  SendTarget()->Send(new PeerConnectionTrackerHost_UpdatePeerConnection(
-      local_id, std::string(callback_type), value));
+  GetPeerConnectionTrackerHost().get()->UpdatePeerConnection(
+      local_id, std::string(callback_type), value);
 }
 
 void PeerConnectionTracker::OverrideSendTargetForTesting(RenderThread* target) {
   send_target_for_test_ = target;
 }
+
+const mojom::PeerConnectionTrackerHostAssociatedPtr&
+PeerConnectionTracker::GetPeerConnectionTrackerHost() {
+  if (!peer_connection_tracker_host_ptr_) {
+    RenderThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
+        &peer_connection_tracker_host_ptr_);
+  }
+  return peer_connection_tracker_host_ptr_;
+};
 
 }  // namespace content
