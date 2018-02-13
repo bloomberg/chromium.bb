@@ -1677,6 +1677,7 @@ jumbo_source_set("unit_tests") {
     "css/CSSSelectorTest.cpp",
     "css/CSSSelectorWatchTest.cpp",
     "css/CSSStyleDeclarationTest.cpp",
+    "css/CSSStyleSheetTest.cpp",
     "css/CSSTestHelper.cpp",
     "css/CSSTestHelper.h",
     "css/CSSValueTestHelper.h",

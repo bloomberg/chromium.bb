@@ -38,6 +38,7 @@ class CSSImportRule;
 class CSSRule;
 class CSSRuleList;
 class CSSStyleSheet;
+class CSSStyleSheetInit;
 class Document;
 class ExceptionState;
 class MediaQuerySet;
@@ -49,6 +50,12 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
  public:
   static const Document* SingleOwnerDocument(const CSSStyleSheet*);
+
+  static CSSStyleSheet* Create(Document&, const String&, ExceptionState&);
+  static CSSStyleSheet* Create(Document&,
+                               const String&,
+                               const CSSStyleSheetInit&,
+                               ExceptionState&);
 
   static CSSStyleSheet* Create(StyleSheetContents*,
                                CSSImportRule* owner_rule = nullptr);
@@ -145,6 +152,9 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   bool LoadCompleted() const { return load_completed_; }
   void StartLoadingDynamicSheet();
   void SetText(const String&);
+  void SetMedia(MediaList*);
+  void SetAlternate(bool);
+  bool Alternate() const { return alternate_; }
 
   virtual void Trace(blink::Visitor*);
 
@@ -168,6 +178,9 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   bool is_inline_stylesheet_ = false;
   bool is_disabled_ = false;
   bool load_completed_ = false;
+  // This alternate variable is only used for constructed CSSStyleSheet.
+  // For other CSSStyleSheet, consult the alternate attribute.
+  bool alternate_ = false;
   String title_;
   scoped_refptr<MediaQuerySet> media_queries_;
   MediaQueryResultList viewport_dependent_media_query_results_;

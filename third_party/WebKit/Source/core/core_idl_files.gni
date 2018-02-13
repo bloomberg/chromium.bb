@@ -560,6 +560,7 @@ core_dictionary_idl_files =
                     "animation/KeyframeAnimationOptions.idl",
                     "animation/KeyframeEffectOptions.idl",
                     "animation/ScrollTimelineOptions.idl",
+                    "css/CSSStyleSheetInit.idl",
                     "css/FontFaceDescriptors.idl",
                     "css/FontFaceSetLoadEventInit.idl",
                     "css/MediaQueryListEventInit.idl",
