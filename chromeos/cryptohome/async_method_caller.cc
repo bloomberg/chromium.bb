@@ -35,16 +35,6 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
     DBusThreadManager::Get()->GetCryptohomeClient()->RemoveObserver(this);
   }
 
-  void AsyncCheckKey(const Identification& cryptohome_id,
-                     const std::string& passhash,
-                     Callback callback) override {
-    DBusThreadManager::Get()->GetCryptohomeClient()->AsyncCheckKey(
-        cryptohome_id, passhash,
-        base::Bind(&AsyncMethodCallerImpl::RegisterAsyncCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback,
-                   "Couldn't initiate async check of user's key."));
-  }
-
   void AsyncMigrateKey(const Identification& cryptohome_id,
                        const std::string& old_hash,
                        const std::string& new_hash,

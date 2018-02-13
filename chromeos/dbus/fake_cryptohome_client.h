@@ -37,9 +37,6 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       WaitForServiceToBeAvailableCallback callback) override;
   void IsMounted(DBusMethodCallback<bool> callback) override;
   void Unmount(DBusMethodCallback<bool> callback) override;
-  void AsyncCheckKey(const cryptohome::Identification& cryptohome_id,
-                     const std::string& key,
-                     AsyncMethodCallback callback) override;
   void AsyncMigrateKey(const cryptohome::Identification& cryptohome_id,
                        const std::string& from_key,
                        const std::string& to_key,
