@@ -80,6 +80,8 @@ class V8TestInterface {
   CORE_EXPORT static void unrestrictedFloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void testEnumAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void testEnumAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void testEnumOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void testEnumOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void stringOrDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void stringOrDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void withExtendedAttributeStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);

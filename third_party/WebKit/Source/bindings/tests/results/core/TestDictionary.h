@@ -167,6 +167,13 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   inline void setEnumMember(const String&);
 
+  bool hasEnumOrNullMember() const { return !enum_or_null_member_.IsNull(); }
+  const String& enumOrNullMember() const {
+    return enum_or_null_member_;
+  }
+  inline void setEnumOrNullMember(const String&);
+  inline void setEnumOrNullMemberToNull();
+
   bool hasEnumSequenceMember() const { return has_enum_sequence_member_; }
   const Vector<String>& enumSequenceMember() const {
     DCHECK(has_enum_sequence_member_);
@@ -489,6 +496,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   HeapVector<std::pair<String, Member<Element>>> element_or_null_record_member_;
   HeapVector<Member<Element>> element_or_null_sequence_member_;
   String enum_member_;
+  String enum_or_null_member_;
   Vector<String> enum_sequence_member_;
   Member<EventTarget> event_target_member_;
   HeapVector<std::pair<String, Member<TestObject>>> garbage_collected_record_member_;
@@ -573,6 +581,13 @@ void TestDictionary::setElementOrNullMemberToNull() {
 
 void TestDictionary::setEnumMember(const String& value) {
   enum_member_ = value;
+}
+
+void TestDictionary::setEnumOrNullMember(const String& value) {
+  enum_or_null_member_ = value;
+}
+void TestDictionary::setEnumOrNullMemberToNull() {
+  enum_or_null_member_ = String();
 }
 
 void TestDictionary::setEventTargetMember(EventTarget* value) {

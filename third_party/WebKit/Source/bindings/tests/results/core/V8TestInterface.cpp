@@ -270,6 +270,50 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
   impl->setTestEnumAttribute(cppValue);
 }
 
+static void testEnumOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Local<v8::Object> holder = info.Holder();
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  V8SetReturnValueStringOrNull(info, impl->testEnumOrNullAttribute(), info.GetIsolate());
+}
+
+static void testEnumOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  v8::Local<v8::Object> holder = info.Holder();
+  ALLOW_UNUSED_LOCAL(holder);
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
+
+  ExceptionState exceptionState(isolate, ExceptionState::kSetterContext, "TestInterface", "testEnumOrNullAttribute");
+
+  // Prepare the value to be set.
+  V8StringResource<kTreatNullAndUndefinedAsNullString> cppValue = v8Value;
+  if (!cppValue.Prepare())
+    return;
+
+  // Type check per: http://heycam.github.io/webidl/#dfn-attribute-setter
+  // Returns undefined without setting the value if the value is invalid.
+  DummyExceptionStateForTesting dummyExceptionState;
+  const char* validValues[] = {
+      nullptr,
+      "",
+      "EnumValue1",
+      "EnumValue2",
+      "EnumValue3",
+  };
+  if (!IsValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", dummyExceptionState)) {
+    ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                               dummyExceptionState.Message()));
+    return;
+  }
+
+  impl->setTestEnumOrNullAttribute(cppValue);
+}
+
 static void stringOrDoubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
 
@@ -2465,6 +2509,20 @@ void V8TestInterface::testEnumAttributeAttributeSetterCallback(const v8::Functio
   TestInterfaceImplementationV8Internal::testEnumAttributeAttributeSetter(v8Value, info);
 }
 
+void V8TestInterface::testEnumOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_testEnumOrNullAttribute_Getter");
+
+  TestInterfaceImplementationV8Internal::testEnumOrNullAttributeAttributeGetter(info);
+}
+
+void V8TestInterface::testEnumOrNullAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_testEnumOrNullAttribute_Setter");
+
+  v8::Local<v8::Value> v8Value = info[0];
+
+  TestInterfaceImplementationV8Internal::testEnumOrNullAttributeAttributeSetter(v8Value, info);
+}
+
 void V8TestInterface::stringOrDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_stringOrDoubleAttribute_Getter");
 
@@ -3542,6 +3600,8 @@ static const V8DOMConfiguration::AccessorConfiguration V8TestInterfaceAccessors[
     { "unrestrictedFloatAttribute", V8TestInterface::unrestrictedFloatAttributeAttributeGetterCallback, V8TestInterface::unrestrictedFloatAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 
     { "testEnumAttribute", V8TestInterface::testEnumAttributeAttributeGetterCallback, V8TestInterface::testEnumAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
+
+    { "testEnumOrNullAttribute", V8TestInterface::testEnumOrNullAttributeAttributeGetterCallback, V8TestInterface::testEnumOrNullAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 
     { "stringOrDoubleAttribute", V8TestInterface::stringOrDoubleAttributeAttributeGetterCallback, V8TestInterface::stringOrDoubleAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 

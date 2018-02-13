@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 266: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 270: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 IDL dictionary unittest
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -90,10 +90,12 @@ PASS dict.doubleOrStringMember is undefined.
 PASS dict.internalEnumOrInternalEnumSequenceMember is ["foo", "bar"]
 
 Test for explicit undefined or null, and missing members
+PASS dict.enumOrNullMember is null
 PASS dict.longMember is undefined.
 PASS dict.longMemberWithDefault is 0
 PASS dict.longOrNullMember is null
 PASS dict.longOrNullMemberWithDefault is null
+PASS dictionaryTest.set({enumMember: null}) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': The provided value 'null' is not a valid enum value of type InternalEnum..
 
 Test for different values for the any type
 PASS dict.anyMember is ""
