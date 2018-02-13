@@ -240,14 +240,6 @@ void ExtensionApiFrameIdMap::GetFrameDataOnIO(
     return;
   }
 
-  if (frame_routing_id <= -1) {
-    // frame_routing_id == -2 = MSG_ROUTING_NONE -> not a RenderFrameHost.
-    // frame_routing_id == -1 -> should be MSG_ROUTING_NONE, but there are
-    // callers that use "-1" for unknown frames.
-    callback.Run(FrameData());
-    return;
-  }
-
   FrameData cached_frame_data;
   bool did_find_cached_frame_data = GetCachedFrameDataOnIO(
       render_process_id, frame_routing_id, &cached_frame_data);
