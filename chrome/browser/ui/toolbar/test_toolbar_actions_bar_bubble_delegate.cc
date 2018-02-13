@@ -26,9 +26,6 @@ class TestToolbarActionsBarBubbleDelegate::DelegateImpl
   base::string16 GetItemListText() override { return parent_->item_list_; }
   base::string16 GetActionButtonText() override { return parent_->action_; }
   base::string16 GetDismissButtonText() override { return parent_->dismiss_; }
-  base::string16 GetLearnMoreButtonText() override {
-    return parent_->learn_more_;
-  }
   std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
   GetExtraViewInfo() override {
     if (parent_->info_)

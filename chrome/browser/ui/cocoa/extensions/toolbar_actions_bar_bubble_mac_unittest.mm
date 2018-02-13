@@ -115,7 +115,7 @@ void ToolbarActionsBarBubbleMacTest::TestBubbleButton(
       extra_view_info_linked_text =
           std::make_unique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>();
   extra_view_info_linked_text->text = LearnMoreString();
-  extra_view_info_linked_text->is_text_linked = true;
+  extra_view_info_linked_text->is_learn_more = true;
   delegate.set_extra_view_info(std::move(extra_view_info_linked_text));
 
   ToolbarActionsBarBubbleMac* bubble = CreateAndShowBubble(&delegate);
@@ -206,7 +206,7 @@ TEST_F(ToolbarActionsBarBubbleMacTest, ToolbarActionsBarBubbleLayout) {
         extra_view_info_linked_text =
             std::make_unique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>();
     extra_view_info_linked_text->text = LearnMoreString();
-    extra_view_info_linked_text->is_text_linked = true;
+    extra_view_info_linked_text->is_learn_more = true;
     delegate.set_extra_view_info(std::move(extra_view_info_linked_text));
 
     delegate.set_dismiss_button_text(DismissString());
@@ -283,7 +283,7 @@ TEST_F(ToolbarActionsBarBubbleMacTest, ToolbarActionsBarBubbleLayout) {
     extra_view_info->resource = &vector_icons::kBusinessIcon;
     extra_view_info->text =
         l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALLED_BY_ADMIN);
-    extra_view_info->is_text_linked = false;
+    extra_view_info->is_learn_more = false;
     delegate.set_extra_view_info(std::move(extra_view_info));
 
     ToolbarActionsBarBubbleMac* bubble = CreateAndShowBubble(&delegate);
@@ -307,7 +307,7 @@ TEST_F(ToolbarActionsBarBubbleMacTest, ToolbarActionsBarBubbleLayout) {
         extra_view_info_linked_text =
             std::make_unique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>();
     extra_view_info_linked_text->text = LearnMoreString();
-    extra_view_info_linked_text->is_text_linked = true;
+    extra_view_info_linked_text->is_learn_more = true;
     delegate.set_extra_view_info(std::move(extra_view_info_linked_text));
 
     delegate.set_dismiss_button_text(DismissString());

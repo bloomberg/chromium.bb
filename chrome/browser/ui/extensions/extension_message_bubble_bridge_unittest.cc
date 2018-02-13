@@ -109,7 +109,7 @@ TEST_F(ExtensionMessageBubbleBridgeUnitTest,
 
   EXPECT_FALSE(extra_view_info->resource);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_LEARN_MORE), extra_view_info->text);
-  EXPECT_TRUE(extra_view_info->is_text_linked);
+  EXPECT_TRUE(extra_view_info->is_learn_more);
 
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_EXTENSION_CONTROLLED_RESTORE_SETTINGS),
@@ -141,7 +141,7 @@ TEST_F(ExtensionMessageBubbleBridgeUnitTest,
   EXPECT_EQ(&vector_icons::kBusinessIcon, extra_view_info->resource);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALLED_BY_ADMIN),
             extra_view_info->text);
-  EXPECT_FALSE(extra_view_info->is_text_linked);
+  EXPECT_FALSE(extra_view_info->is_learn_more);
 
   EXPECT_EQ(base::string16(), bridge->GetActionButtonText());
 }
@@ -193,6 +193,6 @@ TEST_F(ExtensionMessageBubbleBridgeUnitTest, SuspiciousExtensionBubble) {
 
   ASSERT_TRUE(extra_view_info);
   EXPECT_FALSE(extra_view_info->text.empty());
-  EXPECT_TRUE(extra_view_info->is_text_linked);
+  EXPECT_TRUE(extra_view_info->is_learn_more);
   EXPECT_FALSE(extra_view_info->resource);
 }

@@ -220,7 +220,7 @@ CGFloat kMinWidth = 320.0;
 
     const base::string16& text = extra_view_info->text;
     if (!text.empty()) {  // The extra view text is optional.
-      if (extra_view_info->is_text_linked) {
+      if (extra_view_info->is_learn_more) {
         NSAttributedString* linkString =
             [self attributedStringWithString:text
                                     fontSize:13.0

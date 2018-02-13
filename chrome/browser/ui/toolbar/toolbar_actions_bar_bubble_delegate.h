@@ -27,7 +27,7 @@ class ToolbarActionsBarBubbleDelegate {
   // Content populating an optional view, containing an image icon and/or
   // (linked) text, in the bubble.
   struct ExtraViewInfo {
-    ExtraViewInfo() : resource(nullptr), is_text_linked(false) {}
+    ExtraViewInfo() : resource(nullptr), is_learn_more(false) {}
 
     // The resource defining the image icon. If has a value of null, then no
     // image icon will be added.
@@ -36,10 +36,10 @@ class ToolbarActionsBarBubbleDelegate {
     // Text in the view. If this is an empty string, no text will be added.
     base::string16 text;
 
-    // If the struct's text is nonempty and this value is true, then a link of
-    // the text is added. If this value is false, the text is not treated as a
-    // link.
-    bool is_text_linked;
+    // If the struct's text is nonempty and this value is true, then a button
+    // with the (?) image is displayed and the text is set as the tooltip. If
+    // this value is false, the text is treated as a label.
+    bool is_learn_more;
   };
 
   virtual ~ToolbarActionsBarBubbleDelegate() {}
@@ -72,11 +72,6 @@ class ToolbarActionsBarBubbleDelegate {
   // correspond with ACTION_DISMISS. If this returns an empty string, no
   // button will be added.
   virtual base::string16 GetDismissButtonText() = 0;
-
-  // Gets the text for a "learn more" link-style button on the bubble; this
-  // button will correspond with ACTION_LEARN_MORE. If this returns an empty
-  // string, no button will be added.
-  virtual base::string16 GetLearnMoreButtonText() = 0;
 
   // Returns the id of the action to point to, or the empty string if the
   // bubble should point to the center of the actions container.

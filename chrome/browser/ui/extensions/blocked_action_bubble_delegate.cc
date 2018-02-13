@@ -49,10 +49,6 @@ base::string16 BlockedActionBubbleDelegate::GetDismissButtonText() {
       IDS_EXTENSION_BLOCKED_ACTION_BUBBLE_CANCEL_BUTTON);
 }
 
-base::string16 BlockedActionBubbleDelegate::GetLearnMoreButtonText() {
-  return base::string16();  // No learn more link.
-}
-
 std::string BlockedActionBubbleDelegate::GetAnchorActionId() {
   return extension_id_;
 }
