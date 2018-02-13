@@ -87,15 +87,6 @@ std::unique_ptr<Key> TransformKeyIfNeeded(const Key& key,
   return result;
 }
 
-// Records status and calls resolver->Resolve().
-void TriggerResolve(const base::WeakPtr<AuthAttemptState>& attempt,
-                    scoped_refptr<CryptohomeAuthenticator> resolver,
-                    bool success,
-                    cryptohome::MountError return_code) {
-  attempt->RecordCryptohomeStatus(return_code);
-  resolver->Resolve();
-}
-
 // Records get hash status and calls resolver->Resolve().
 void TriggerResolveHash(const base::WeakPtr<AuthAttemptState>& attempt,
                         scoped_refptr<CryptohomeAuthenticator> resolver,
@@ -108,7 +99,7 @@ void TriggerResolveHash(const base::WeakPtr<AuthAttemptState>& attempt,
   resolver->Resolve();
 }
 
-// Calls TriggerResolve while adding login time marker.
+// Records status and calls resolver->Resolve() while adding login time marker.
 void TriggerResolveWithLoginTimeMarker(
     const std::string& marker_name,
     const base::WeakPtr<AuthAttemptState>& attempt,
@@ -116,7 +107,8 @@ void TriggerResolveWithLoginTimeMarker(
     bool success,
     cryptohome::MountError return_code) {
   chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(marker_name, false);
-  TriggerResolve(attempt, resolver, success, return_code);
+  attempt->RecordCryptohomeStatus(return_code);
+  resolver->Resolve();
 }
 
 // Records an error in accessing the user's cryptohome with the given key and
