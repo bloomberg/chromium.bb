@@ -965,5 +965,6 @@ executable("headless_example") {
   deps = [
     ":headless_shell_lib",
     "//build/config:exe_and_shlib_deps",
+    "//skia",  # we need this to override font render hinting in headless build
   ]
 }

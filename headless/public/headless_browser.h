@@ -22,6 +22,7 @@
 #include "headless/public/headless_export.h"
 #include "headless/public/headless_web_contents.h"
 #include "net/base/host_port_pair.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/size.h"
 
 #if defined(OS_WIN)
@@ -215,6 +216,9 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   bool enable_crash_reporter = false;
   base::FilePath crash_dumps_dir;
 
+  // Font render hinting value to override any default settings
+  gfx::FontRenderParams::Hinting font_render_hinting;
+
   // Reminder: when adding a new field here, do not forget to add it to
   // HeadlessBrowserContextOptions (where appropriate).
  private:
@@ -264,6 +268,8 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
       const base::Callback<void(WebPreferences*)>& callback);
   Builder& SetCrashReporterEnabled(bool enabled);
   Builder& SetCrashDumpsDir(const base::FilePath& dir);
+  Builder& SetFontRenderHinting(
+      gfx::FontRenderParams::Hinting font_render_hinting);
 
   Options Build();
 

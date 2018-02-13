@@ -73,6 +73,25 @@ bool ParseWindowSize(const std::string& window_size,
   return false;
 }
 
+bool ParseFontRenderHinting(
+    const std::string& font_render_hinting_string,
+    gfx::FontRenderParams::Hinting* font_render_hinting) {
+  if (font_render_hinting_string == "max") {
+    *font_render_hinting = gfx::FontRenderParams::Hinting::HINTING_MAX;
+  } else if (font_render_hinting_string == "full") {
+    *font_render_hinting = gfx::FontRenderParams::Hinting::HINTING_FULL;
+  } else if (font_render_hinting_string == "medium") {
+    *font_render_hinting = gfx::FontRenderParams::Hinting::HINTING_MEDIUM;
+  } else if (font_render_hinting_string == "slight") {
+    *font_render_hinting = gfx::FontRenderParams::Hinting::HINTING_SLIGHT;
+  } else if (font_render_hinting_string == "none") {
+    *font_render_hinting = gfx::FontRenderParams::Hinting::HINTING_NONE;
+  } else {
+    return false;
+  }
+  return true;
+}
+
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
 GURL ConvertArgumentToURL(const base::CommandLine::StringType& arg) {
   GURL url(arg);
@@ -790,6 +809,19 @@ int HeadlessShellMain(int argc, const char** argv) {
     std::string ua = command_line.GetSwitchValueASCII(switches::kUserAgent);
     if (net::HttpUtil::IsValidHeaderValue(ua))
       builder.SetUserAgent(ua);
+  }
+
+  if (command_line.HasSwitch(switches::kFontRenderHinting)) {
+    std::string font_render_hinting_string =
+        command_line.GetSwitchValueASCII(switches::kFontRenderHinting);
+    gfx::FontRenderParams::Hinting font_render_hinting;
+    if (ParseFontRenderHinting(font_render_hinting_string,
+                               &font_render_hinting)) {
+      builder.SetFontRenderHinting(font_render_hinting);
+    } else {
+      LOG(ERROR) << "Unknown font-render-hinting parameter value";
+      return EXIT_FAILURE;
+    }
   }
 
   return HeadlessBrowserMain(

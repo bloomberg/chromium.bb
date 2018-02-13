@@ -112,5 +112,10 @@ const char kWindowSize[] = "window-size";
 // Whitelist for Negotitate Auth servers.
 const char kAuthServerWhitelist[] = "auth-server-whitelist";
 
+// Sets font render hinting when running headless, affects Skia rendering and
+// whether glyph subpixel positioning is enabled.
+// Possible values: none|slight|medium|full|max. Default: full.
+const char kFontRenderHinting[] = "font-render-hinting";
+
 }  // namespace switches
 }  // namespace headless

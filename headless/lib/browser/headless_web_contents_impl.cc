@@ -39,6 +39,7 @@
 #include "printing/features/features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/compositor/compositor.h"
+#include "ui/gfx/switches.h"
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "headless/lib/browser/headless_print_manager.h"
@@ -344,6 +345,8 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
 #endif
   web_contents->GetMutableRendererPrefs()->accept_languages =
       browser_context->options()->accept_language();
+  web_contents->GetMutableRendererPrefs()->hinting =
+      browser_context->options()->font_render_hinting();
   web_contents_->SetDelegate(web_contents_delegate_.get());
   render_process_host_->AddObserver(this);
   agent_host_->AddObserver(this);
