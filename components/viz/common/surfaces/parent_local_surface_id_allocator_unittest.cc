@@ -135,7 +135,6 @@ namespace {
 
 ::testing::AssertionResult ParentSequenceNumberIsNotSet(
     const LocalSurfaceId& local_surface_id) {
-  constexpr uint32_t kInvalidParentSequenceNumber = 0;
   if (local_surface_id.parent_sequence_number() == kInvalidParentSequenceNumber)
     return ::testing::AssertionSuccess();
 
@@ -144,7 +143,6 @@ namespace {
 
 ::testing::AssertionResult ChildSequenceNumberIsSet(
     const LocalSurfaceId& local_surface_id) {
-  constexpr uint32_t kInvalidChildSequenceNumber = 0;
   if (local_surface_id.child_sequence_number() != kInvalidChildSequenceNumber)
     return ::testing::AssertionSuccess();
 
