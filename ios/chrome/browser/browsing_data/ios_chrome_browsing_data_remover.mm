@@ -29,6 +29,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
@@ -51,9 +52,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-using base::UserMetricsAction;
-using web::WebThread;
 
 namespace {
 
@@ -99,7 +97,7 @@ void ClearCookiesOnIOThread(
     base::Time delete_begin,
     base::Time delete_end,
     base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   net::CookieStore* cookie_store =
       request_context_getter->GetURLRequestContext()->cookie_store();
   cookie_store->DeleteAllCreatedBetweenAsync(
@@ -112,7 +110,7 @@ void ClearCookiesOnIOThread(
 void OnClearedChannelIDsOnIOThread(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   // Need to close open SSL connections which may be using the channel ids we
   // are deleting.
   // TODO(crbug.com/166069): Make the server bound cert service/store have
@@ -129,7 +127,7 @@ void ClearChannelIDsOnIOThread(
     base::Time delete_begin,
     base::Time delete_end,
     base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(WebThread::IO);
+  DCHECK_CURRENTLY_ON(web::WebThread::IO);
   net::ChannelIDService* channel_id_service =
       request_context_getter->GetURLRequestContext()->channel_id_service();
   channel_id_service->GetChannelIDStore()->DeleteForDomainsCreatedBetween(
@@ -144,7 +142,8 @@ void ClearChannelIDsOnIOThread(
 bool IOSChromeBrowsingDataRemover::is_removing_ = false;
 
 IOSChromeBrowsingDataRemover::NotificationDetails::NotificationDetails()
-    : removal_begin(base::Time()), removal_mask(-1) {}
+    : removal_begin(base::Time()),
+      removal_mask(BrowsingDataRemoveMask::REMOVE_NOTHING) {}
 
 IOSChromeBrowsingDataRemover::NotificationDetails::NotificationDetails(
     const IOSChromeBrowsingDataRemover::NotificationDetails& details)
@@ -153,7 +152,7 @@ IOSChromeBrowsingDataRemover::NotificationDetails::NotificationDetails(
 
 IOSChromeBrowsingDataRemover::NotificationDetails::NotificationDetails(
     base::Time removal_begin,
-    int removal_mask)
+    BrowsingDataRemoveMask removal_mask)
     : removal_begin(removal_begin), removal_mask(removal_mask) {}
 
 IOSChromeBrowsingDataRemover::NotificationDetails::~NotificationDetails() {}
@@ -191,14 +190,14 @@ void IOSChromeBrowsingDataRemover::set_removing(bool is_removing) {
   is_removing_ = is_removing;
 }
 
-void IOSChromeBrowsingDataRemover::Remove(int remove_mask) {
-  RemoveImpl(remove_mask);
+void IOSChromeBrowsingDataRemover::Remove(BrowsingDataRemoveMask mask) {
+  RemoveImpl(mask);
 }
 
-void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
-  DCHECK_CURRENTLY_ON(WebThread::UI);
+void IOSChromeBrowsingDataRemover::RemoveImpl(BrowsingDataRemoveMask mask) {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
   set_removing(true);
-  remove_mask_ = remove_mask;
+  remove_mask_ = mask;
 
   base::ScopedClosureRunner synchronous_clear_operations(
       CreatePendingTaskCompletionClosure());
@@ -208,15 +207,15 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
   // mask is always implicitly the unprotected web, which is the only type that
   // is relevant. This metric is left here for historical consistency.
   base::RecordAction(
-      UserMetricsAction("ClearBrowsingData_MaskContainsUnprotectedWeb"));
+      base::UserMetricsAction("ClearBrowsingData_MaskContainsUnprotectedWeb"));
 
-  if (remove_mask & REMOVE_HISTORY) {
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_HISTORY)) {
     history::HistoryService* history_service =
         ios::HistoryServiceFactory::GetForBrowserState(
             browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
 
     if (history_service) {
-      base::RecordAction(UserMetricsAction("ClearBrowsingData_History"));
+      base::RecordAction(base::UserMetricsAction("ClearBrowsingData_History"));
       history_service->ExpireLocalAndRemoteHistoryBetween(
           ios::WebHistoryServiceFactory::GetForBrowserState(browser_state_),
           std::set<GURL>(), delete_begin_, delete_end_,
@@ -295,10 +294,10 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
     }
   }
 
-  if (remove_mask & REMOVE_COOKIES) {
-    base::RecordAction(UserMetricsAction("ClearBrowsingData_Cookies"));
-    WebThread::PostTask(
-        WebThread::IO, FROM_HERE,
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
+    base::RecordAction(base::UserMetricsAction("ClearBrowsingData_Cookies"));
+    web::WebThread::PostTask(
+        web::WebThread::IO, FROM_HERE,
         base::BindOnce(
             &ClearCookiesOnIOThread, main_context_getter_, delete_begin_,
             delete_end_,
@@ -310,11 +309,11 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
     // flag for all credentials in the password store.
   }
 
-  if (remove_mask & REMOVE_CHANNEL_IDS) {
-    base::RecordAction(UserMetricsAction("ClearBrowsingData_ChannelIDs"));
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CHANNEL_IDS)) {
+    base::RecordAction(base::UserMetricsAction("ClearBrowsingData_ChannelIDs"));
     if (main_context_getter_) {
-      WebThread::PostTask(
-          WebThread::IO, FROM_HERE,
+      web::WebThread::PostTask(
+          web::WebThread::IO, FROM_HERE,
           base::BindOnce(
               &ClearChannelIDsOnIOThread, main_context_getter_, delete_begin_,
               delete_end_,
@@ -324,8 +323,8 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
     }
   }
 
-  if (remove_mask & REMOVE_PASSWORDS) {
-    base::RecordAction(UserMetricsAction("ClearBrowsingData_Passwords"));
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_PASSWORDS)) {
+    base::RecordAction(base::UserMetricsAction("ClearBrowsingData_Passwords"));
     password_manager::PasswordStore* password_store =
         IOSChromePasswordStoreFactory::GetForBrowserState(
             browser_state_, ServiceAccessType::EXPLICIT_ACCESS)
@@ -338,8 +337,8 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
     }
   }
 
-  if (remove_mask & REMOVE_FORM_DATA) {
-    base::RecordAction(UserMetricsAction("ClearBrowsingData_Autofill"));
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_FORM_DATA)) {
+    base::RecordAction(base::UserMetricsAction("ClearBrowsingData_Autofill"));
     scoped_refptr<autofill::AutofillWebDataService> web_data_service =
         ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
             browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
@@ -364,10 +363,10 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
     }
   }
 
-  if (remove_mask & REMOVE_CACHE) {
-    base::RecordAction(UserMetricsAction("ClearBrowsingData_Cache"));
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CACHE)) {
+    base::RecordAction(base::UserMetricsAction("ClearBrowsingData_Cache"));
     ClearHttpCache(browser_state_->GetRequestContext(),
-                   WebThread::GetTaskRunnerForThread(WebThread::IO),
+                   web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
                    delete_begin_, delete_end_,
                    AdaptCallbackForRepeating(
                        base::BindOnce(&NetCompletionCallbackAdapter,
@@ -375,7 +374,8 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
   }
 
   // Remove omnibox zero-suggest cache results.
-  if ((remove_mask & (REMOVE_CACHE | REMOVE_COOKIES))) {
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CACHE) ||
+      IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
     browser_state_->GetPrefs()->SetString(omnibox::kZeroSuggestCachedResults,
                                           std::string());
   }
@@ -388,19 +388,14 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
 
   // Record the combined deletion of cookies and cache.
   CookieOrCacheDeletionChoice choice;
-  switch (remove_mask & (REMOVE_COOKIES | REMOVE_CACHE)) {
-    case REMOVE_COOKIES | REMOVE_CACHE:
-      choice = BOTH_COOKIES_AND_CACHE;
-      break;
-    case REMOVE_COOKIES:
-      choice = ONLY_COOKIES;
-      break;
-    case REMOVE_CACHE:
-      choice = ONLY_CACHE;
-      break;
-    default:
-      choice = NEITHER_COOKIES_NOR_CACHE;
-      break;
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CACHE)) {
+    choice = IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)
+                 ? BOTH_COOKIES_AND_CACHE
+                 : ONLY_CACHE;
+  } else {
+    choice = IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)
+                 ? ONLY_COOKIES
+                 : NEITHER_COOKIES_NOR_CACHE;
   }
 
   UMA_HISTOGRAM_ENUMERATION(

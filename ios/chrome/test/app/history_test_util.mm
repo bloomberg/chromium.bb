@@ -24,8 +24,7 @@ bool ClearBrowsingHistory() {
   __block bool did_complete = false;
   [main_controller
       removeBrowsingDataFromBrowserState:active_state
-                                    mask:IOSChromeBrowsingDataRemover::
-                                             REMOVE_HISTORY
+                                    mask:BrowsingDataRemoveMask::REMOVE_HISTORY
                               timePeriod:browsing_data::TimePeriod::ALL_TIME
                        completionHandler:^{
                          did_complete = true;

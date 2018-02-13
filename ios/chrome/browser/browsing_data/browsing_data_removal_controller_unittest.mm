@@ -30,10 +30,10 @@ TEST_F(BrowsingDataRemovalControllerTest, PerformAfterBrowserStateDestruction) {
   std::unique_ptr<TestChromeBrowserState> browser_state = builder.Build();
   ios::ChromeBrowserState* otr_browser_state =
       browser_state->GetOffTheRecordChromeBrowserState();
-  int remove_all_mask = ~0;
+  const BrowsingDataRemoveMask mask = BrowsingDataRemoveMask::REMOVE_ALL;
   [removal_controller
       removeIOSSpecificIncognitoBrowsingDataFromBrowserState:otr_browser_state
-                                                        mask:remove_all_mask
+                                                        mask:mask
                                            completionHandler:^{
                                              block_was_called = YES;
                                            }];

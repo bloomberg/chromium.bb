@@ -2,6 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("browsing_data_remove_mask") {
+  sources = [
+    "browsing_data_remove_mask.h",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("browsing_data") {
   sources = [
     "browsing_data_remover_helper.cc",
@@ -41,6 +48,7 @@ source_set("browsing_data") {
     "//url",
   ]
   public_deps = [
+    ":browsing_data_remove_mask",
     "//components/search_engines",
   ]
   allow_circular_includes_from = [ "//ios/chrome/browser/signin" ]
