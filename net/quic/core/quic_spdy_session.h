@@ -95,16 +95,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
       SpdyPriority priority,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
-  // |parent_stream_id| and |exclusive| are HTTP2 stream dependency info.
-  virtual size_t WriteHeaders(
-      QuicStreamId id,
-      SpdyHeaderBlock headers,
-      bool fin,
-      SpdyPriority priority,
-      QuicStreamId parent_stream_id,
-      bool exclusive,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
-
   // Writes a PRIORITY frame the to peer. Returns the size in bytes of the
   // resulting PRIORITY frame for QUIC_VERSION_43 and above. Otherwise, does
   // nothing and returns 0.
@@ -175,6 +165,18 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   // If an outgoing stream can be created, return true.
   virtual bool ShouldCreateOutgoingDynamicStream() = 0;
 
+  // This was formerly QuicHeadersStream::WriteHeaders.  Needs to be
+  // separate from QuicSpdySession::WriteHeaders because tests call
+  // this but mock the latter.
+  size_t WriteHeadersImpl(
+      QuicStreamId id,
+      SpdyHeaderBlock headers,
+      bool fin,
+      SpdyPriority priority,
+      QuicStreamId parent_stream_id,
+      bool exclusive,
+      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
+
   void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
 
   bool supports_push_promise() { return supports_push_promise_; }
@@ -236,18 +238,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
 
   // Called when the size of the compressed frame payload is available.
   void OnCompressedFrameSize(size_t frame_len);
-
-  // This was formerly QuicHeadersStream::WriteHeaders.  Needs to be
-  // separate from QuicSpdySession::WriteHeaders because tests call
-  // this but mock the latter.
-  size_t WriteHeadersImpl(
-      QuicStreamId id,
-      SpdyHeaderBlock headers,
-      bool fin,
-      SpdyPriority priority,
-      QuicStreamId parent_stream_id,
-      bool exclusive,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
   std::unique_ptr<QuicHeadersStream> headers_stream_;
 
