@@ -34,13 +34,6 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
   virtual ~AsyncMethodCaller() {}
 
   // Asks cryptohomed to asynchronously try to find the cryptohome for
-  // |user_id| and then use |passhash| to unlock the key.
-  // |callback| will be called with status info on completion.
-  virtual void AsyncCheckKey(const Identification& user_id,
-                             const std::string& passhash,
-                             Callback callback) = 0;
-
-  // Asks cryptohomed to asynchronously try to find the cryptohome for
   // |user_id| and then change from using |old_hash| to lock the
   // key to using |new_hash|.
   // |callback| will be called with status info on completion.

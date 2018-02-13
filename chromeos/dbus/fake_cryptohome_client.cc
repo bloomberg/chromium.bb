@@ -90,13 +90,6 @@ void FakeCryptohomeClient::Unmount(DBusMethodCallback<bool> callback) {
       FROM_HERE, base::BindOnce(std::move(callback), unmount_result_));
 }
 
-void FakeCryptohomeClient::AsyncCheckKey(
-    const cryptohome::Identification& cryptohome_id,
-    const std::string& key,
-    AsyncMethodCallback callback) {
-  ReturnAsyncMethodResult(std::move(callback));
-}
-
 void FakeCryptohomeClient::AsyncMigrateKey(
     const cryptohome::Identification& cryptohome_id,
     const std::string& from_key,

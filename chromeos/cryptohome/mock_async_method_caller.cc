@@ -26,9 +26,6 @@ MockAsyncMethodCaller::~MockAsyncMethodCaller() = default;
 void MockAsyncMethodCaller::SetUp(bool success, MountError return_code) {
   success_ = success;
   return_code_ = return_code;
-  ON_CALL(*this, AsyncCheckKey(_, _, _))
-      .WillByDefault(
-          WithArgs<2>(Invoke(this, &MockAsyncMethodCaller::DoCallback)));
   ON_CALL(*this, AsyncMigrateKey(_, _, _, _))
       .WillByDefault(
           WithArgs<3>(Invoke(this, &MockAsyncMethodCaller::DoCallback)));
