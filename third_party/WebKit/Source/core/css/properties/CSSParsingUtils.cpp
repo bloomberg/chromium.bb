@@ -1280,12 +1280,15 @@ CSSShadowValue* ParseSingleShadow(CSSParserTokenRange& range,
 
   if (range.AtEnd())
     return nullptr;
+
+  color = CSSPropertyParserHelpers::ConsumeColor(range, css_parser_mode);
   if (range.Peek().Id() == CSSValueInset) {
     if (inset_and_spread != AllowInsetAndSpread::kAllow)
       return nullptr;
     style = CSSPropertyParserHelpers::ConsumeIdent(range);
+    if (!color)
+      color = CSSPropertyParserHelpers::ConsumeColor(range, css_parser_mode);
   }
-  color = CSSPropertyParserHelpers::ConsumeColor(range, css_parser_mode);
 
   CSSPrimitiveValue* horizontal_offset =
       CSSPropertyParserHelpers::ConsumeLength(range, css_parser_mode,
@@ -1318,6 +1321,8 @@ CSSShadowValue* ParseSingleShadow(CSSParserTokenRange& range,
       if (inset_and_spread != AllowInsetAndSpread::kAllow || style)
         return nullptr;
       style = CSSPropertyParserHelpers::ConsumeIdent(range);
+      if (!color)
+        color = CSSPropertyParserHelpers::ConsumeColor(range, css_parser_mode);
     }
   }
   return CSSShadowValue::Create(horizontal_offset, vertical_offset, blur_radius,
