@@ -1313,6 +1313,7 @@ test("content_unittests") {
     "../browser/indexed_db/mock_mojo_indexed_db_database_callbacks.h",
     "../browser/leveldb_wrapper_impl_unittest.cc",
     "../browser/loader/cross_site_document_resource_handler_unittest.cc",
+    "../browser/loader/data_pipe_to_source_stream_unittest.cc",
     "../browser/loader/detachable_resource_handler_unittest.cc",
     "../browser/loader/intercepting_resource_handler_unittest.cc",
     "../browser/loader/merkle_integrity_source_stream_unittest.cc",
