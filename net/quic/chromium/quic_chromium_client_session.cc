@@ -873,17 +873,15 @@ size_t QuicChromiumClientSession::WriteHeaders(
     SpdyPriority priority,
     QuicReferenceCountedPointer<QuicAckListenerInterface>
         ack_notifier_delegate) {
+  SpdyStreamId parent_stream_id = 0;
+  bool exclusive = false;
   if (headers_include_h2_stream_dependency_) {
-    SpdyStreamId parent_stream_id = 0;
-    bool exclusive = false;
     priority_dependency_state_.OnStreamCreation(id, priority, &parent_stream_id,
                                                 &exclusive);
-    return QuicSpdySession::WriteHeaders(id, std::move(headers), fin, priority,
-                                         parent_stream_id, exclusive,
-                                         std::move(ack_notifier_delegate));
   }
-  return QuicSpdySession::WriteHeaders(id, std::move(headers), fin, priority,
-                                       std::move(ack_notifier_delegate));
+  return WriteHeadersImpl(id, std::move(headers), fin, priority,
+                          parent_stream_id, exclusive,
+                          std::move(ack_notifier_delegate));
 }
 
 void QuicChromiumClientSession::OnHeadersHeadOfLineBlocking(
