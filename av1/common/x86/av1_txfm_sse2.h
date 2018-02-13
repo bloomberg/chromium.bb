@@ -87,6 +87,14 @@ static INLINE __m128i scale_round_sse2(const __m128i a, const int scale) {
   return _mm_srai_epi32(b, NewSqrt2Bits);
 }
 
+static INLINE void store_rect_16bit_to_32bit_w4(const __m128i a,
+                                                int32_t *const b) {
+  const __m128i one = _mm_set1_epi16(1);
+  const __m128i a_lo = _mm_unpacklo_epi16(a, one);
+  const __m128i b_lo = scale_round_sse2(a_lo, NewSqrt2);
+  _mm_store_si128((__m128i *)b, b_lo);
+}
+
 static INLINE void store_rect_16bit_to_32bit(const __m128i a,
                                              int32_t *const b) {
   const __m128i one = _mm_set1_epi16(1);
@@ -170,10 +178,20 @@ static INLINE void store_buffer_16bit_to_32bit_8x8(const __m128i *const in,
   }
 }
 
-static INLINE void store_rect_buffer_16bit_to_32bit_8x8(const __m128i *const in,
-                                                        int32_t *const out,
-                                                        const int stride) {
-  for (int i = 0; i < 8; ++i) {
+static INLINE void store_rect_buffer_16bit_to_32bit_w4(const __m128i *const in,
+                                                       int32_t *const out,
+                                                       const int stride,
+                                                       const int out_size) {
+  for (int i = 0; i < out_size; ++i) {
+    store_rect_16bit_to_32bit_w4(in[i], out + i * stride);
+  }
+}
+
+static INLINE void store_rect_buffer_16bit_to_32bit_w8(const __m128i *const in,
+                                                       int32_t *const out,
+                                                       const int stride,
+                                                       const int out_size) {
+  for (int i = 0; i < out_size; ++i) {
     store_rect_16bit_to_32bit(in[i], out + i * stride);
   }
 }
@@ -208,6 +226,9 @@ static INLINE void flip_buf_sse2(__m128i *in, __m128i *out, int size) {
 }
 
 void av1_lowbd_fwd_txfm2d_4x4_sse2(const int16_t *input, int32_t *output,
+                                   int stride, TX_TYPE tx_type, int bd);
+
+void av1_lowbd_fwd_txfm2d_4x8_sse2(const int16_t *input, int32_t *output,
                                    int stride, TX_TYPE tx_type, int bd);
 
 void av1_lowbd_fwd_txfm2d_8x8_sse2(const int16_t *input, int32_t *output,
