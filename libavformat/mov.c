@@ -4919,6 +4919,10 @@ static int mov_read_sidx(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     avio_rb16(pb); // reserved
 
     item_count = avio_rb16(pb);
+    if (item_count == 0) {
+        av_log(c->fc, AV_LOG_WARNING, "sidx contains no segments\n");
+        return 0;
+    }
 
     for (i = 0; i < item_count; i++) {
         int index;
