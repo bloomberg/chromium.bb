@@ -443,9 +443,6 @@ void TestVRSystem::GetDXGIOutputInfo(int32_t* pnAdapterIndex) {
     D3D_FEATURE_LEVEL feature_levels[] = {D3D_FEATURE_LEVEL_11_1};
     UINT flags = 0;
     D3D_FEATURE_LEVEL feature_level_out = D3D_FEATURE_LEVEL_11_1;
-#if defined _DEBUG
-    flags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
 
     Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device;
     Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3d11_device_context;
