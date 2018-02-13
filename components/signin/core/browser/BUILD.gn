@@ -184,6 +184,7 @@ static_library("test_support") {
 
   deps = [
     "//base/test:test_support",
+    "//ui/gfx:test_support",
   ]
 
   public_deps = [

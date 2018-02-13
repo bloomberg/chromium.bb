@@ -29,6 +29,11 @@ namespace image_fetcher {
 
 class ImageDataFetcher : public net::URLFetcherDelegate {
  public:
+  // Fetchers created by this class will be assigned an incremental id starting
+  // from |kFirstUrlFetcherId|, so unit tests can differentiate the URLFetchers
+  // used by this class from other fetchers.
+  const static int kFirstUrlFetcherId;
+
   // Callback with the |image_data|. If an error prevented a http response,
   // |request_metadata.response_code| will be RESPONSE_CODE_INVALID.
   // TODO(treib): Pass |image_data| out by value, or use RefCountedBytes, to

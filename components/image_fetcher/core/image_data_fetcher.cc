@@ -24,6 +24,8 @@ const char kContentLocationHeader[] = "Content-Location";
 
 namespace image_fetcher {
 
+const int ImageDataFetcher::kFirstUrlFetcherId = 163163;
+
 // An active image URL fetcher request. The struct contains the related requests
 // state.
 struct ImageDataFetcher::ImageDataFetcherRequest {
@@ -44,7 +46,7 @@ ImageDataFetcher::ImageDataFetcher(
     net::URLRequestContextGetter* url_request_context_getter)
     : url_request_context_getter_(url_request_context_getter),
       data_use_service_name_(DataUseUserData::IMAGE_FETCHER_UNTAGGED),
-      next_url_fetcher_id_(0) {}
+      next_url_fetcher_id_(kFirstUrlFetcherId) {}
 
 ImageDataFetcher::~ImageDataFetcher() {}
 
