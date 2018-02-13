@@ -5,6 +5,7 @@
 #include "content/public/test/fake_download_item.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "net/http/http_response_headers.h"
 
 namespace content {

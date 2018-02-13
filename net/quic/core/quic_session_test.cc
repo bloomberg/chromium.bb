@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
 #include "net/quic/core/crypto/crypto_protocol.h"

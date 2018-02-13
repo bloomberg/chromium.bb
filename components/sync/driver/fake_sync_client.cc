@@ -5,6 +5,7 @@
 #include "components/sync/driver/fake_sync_client.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/fake_sync_service.h"

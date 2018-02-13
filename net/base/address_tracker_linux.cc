@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <sys/ioctl.h>
 
+#include "base/bind_helpers.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"

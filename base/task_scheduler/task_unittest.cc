@@ -5,6 +5,7 @@
 #include "base/task_scheduler/task.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/time/time.h"

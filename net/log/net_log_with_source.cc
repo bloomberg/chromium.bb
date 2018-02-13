@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"

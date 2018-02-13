@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/test/histogram_tester.h"
 #include "base/version.h"
 #include "testing/gmock/include/gmock/gmock.h"

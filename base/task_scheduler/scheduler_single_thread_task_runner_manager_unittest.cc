@@ -5,6 +5,7 @@
 #include "base/task_scheduler/scheduler_single_thread_task_runner_manager.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/lock.h"

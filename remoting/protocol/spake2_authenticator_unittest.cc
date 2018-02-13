@@ -5,6 +5,7 @@
 #include "remoting/protocol/spake2_authenticator.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "remoting/base/rsa_key_pair.h"

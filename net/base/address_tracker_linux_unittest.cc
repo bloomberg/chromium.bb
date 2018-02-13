@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/synchronization/spin_wait.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"

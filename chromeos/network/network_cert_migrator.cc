@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/dbus/dbus_thread_manager.h"

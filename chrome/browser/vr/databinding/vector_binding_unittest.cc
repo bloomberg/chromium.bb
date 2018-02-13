@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/databinding/vector_binding.h"
 
+#include "base/callback.h"
 #include "base/stl_util.h"
 #include "chrome/browser/vr/databinding/binding.h"
 #include "chrome/browser/vr/databinding/vector_element_binding.h"

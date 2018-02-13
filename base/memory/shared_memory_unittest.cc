@@ -30,6 +30,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
+#if defined(OS_ANDROID)
+#include "base/callback.h"
+#endif
+
 #if defined(OS_POSIX)
 #include <errno.h>
 #include <fcntl.h>

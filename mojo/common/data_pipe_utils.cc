@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "mojo/public/cpp/system/wait.h"
 
 namespace mojo {

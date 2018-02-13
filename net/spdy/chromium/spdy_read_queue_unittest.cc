@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/stl_util.h"
 #include "net/spdy/chromium/spdy_buffer.h"
 #include "net/spdy/platform/api/spdy_string.h"

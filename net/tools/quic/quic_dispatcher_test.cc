@@ -8,6 +8,7 @@
 #include <ostream>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "net/quic/core/crypto/crypto_handshake.h"
 #include "net/quic/core/crypto/crypto_protocol.h"

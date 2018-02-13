@@ -6,6 +6,7 @@
 #define ContentSettingCallbacks_h
 
 #include <memory>
+#include "base/callback.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Functional.h"

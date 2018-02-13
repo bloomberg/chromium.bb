@@ -10,6 +10,7 @@
 #include <sstream>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
