@@ -803,52 +803,33 @@ class ResourceDispatcherHostTest : public testing::Test {
   // that the expected_error_code has been emitted for the request.
   void CompleteFailingMainResourceRequest(const GURL& url,
                                           int expected_error_code) {
-    if (IsBrowserSideNavigationEnabled()) {
-      auto_advance_ = true;
+    auto_advance_ = true;
 
-      // Make a navigation request.
-      TestNavigationURLLoaderDelegate delegate;
-      mojom::BeginNavigationParamsPtr begin_params =
-          mojom::BeginNavigationParams::New(
-              std::string() /* headers */, net::LOAD_NORMAL,
-              false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_LOCATION,
-              blink::WebMixedContentContextType::kBlockable,
-              false /* is_form_submission */, GURL() /* searchable_form_url */,
-              std::string() /* searchable_form_encoding */,
-              url::Origin::Create(url), GURL() /* client_side_redirect_url */,
-              nullptr /* devtools_initiator_info */);
-      CommonNavigationParams common_params;
-      common_params.url = url;
-      std::unique_ptr<NavigationRequestInfo> request_info(
-          new NavigationRequestInfo(common_params, std::move(begin_params), url,
-                                    true, false, false, -1, false, false,
-                                    false));
-      std::unique_ptr<NavigationURLLoader> test_loader =
-          NavigationURLLoader::Create(
-              browser_context_->GetResourceContext(),
-              BrowserContext::GetDefaultStoragePartition(
-                  browser_context_.get()),
-              std::move(request_info), nullptr, nullptr, nullptr, &delegate);
+    // Make a navigation request.
+    TestNavigationURLLoaderDelegate delegate;
+    mojom::BeginNavigationParamsPtr begin_params =
+        mojom::BeginNavigationParams::New(
+            std::string() /* headers */, net::LOAD_NORMAL,
+            false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_LOCATION,
+            blink::WebMixedContentContextType::kBlockable,
+            false /* is_form_submission */, GURL() /* searchable_form_url */,
+            std::string() /* searchable_form_encoding */,
+            url::Origin::Create(url), GURL() /* client_side_redirect_url */,
+            nullptr /* devtools_initiator_info */);
+    CommonNavigationParams common_params;
+    common_params.url = url;
+    std::unique_ptr<NavigationRequestInfo> request_info(
+        new NavigationRequestInfo(common_params, std::move(begin_params), url,
+                                  true, false, false, -1, false, false, false));
+    std::unique_ptr<NavigationURLLoader> test_loader =
+        NavigationURLLoader::Create(
+            browser_context_->GetResourceContext(),
+            BrowserContext::GetDefaultStoragePartition(browser_context_.get()),
+            std::move(request_info), nullptr, nullptr, nullptr, &delegate);
 
-      // The navigation should fail with the expected error code.
-      delegate.WaitForRequestFailed();
-      ASSERT_EQ(expected_error_code, delegate.net_error());
-      return;
-    }
-    network::mojom::URLLoaderPtr loader;
-    network::TestURLLoaderClient client;
-
-    MakeTestRequestWithResourceType(
-        filter_.get(), 0, 1, url, RESOURCE_TYPE_MAIN_FRAME,
-        mojo::MakeRequest(&loader), client.CreateInterfacePtr());
-
-    // Flush all pending requests.
-    content::RunAllTasksUntilIdle();
-    while (net::URLRequestTestJob::ProcessOnePendingMessage()) {
-    }
-
-    client.RunUntilComplete();
-    EXPECT_EQ(expected_error_code, client.completion_status().error_code);
+    // The navigation should fail with the expected error code.
+    delegate.WaitForRequestFailed();
+    ASSERT_EQ(expected_error_code, delegate.net_error());
   }
 
   bool IsDetached(net::URLRequest* request) {

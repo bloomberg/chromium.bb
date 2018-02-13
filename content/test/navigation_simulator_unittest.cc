@@ -137,14 +137,9 @@ using NavigationSimulatorTestCancelFail = NavigationSimulatorTest;
 TEST_P(NavigationSimulatorTestCancelFail, Fail) {
   simulator_->Start();
   simulator_->Fail(net::ERR_CERT_DATE_INVALID);
-  if (IsBrowserSideNavigationEnabled()) {
-    EXPECT_TRUE(will_fail_request_called_);
-    EXPECT_EQ(NavigationThrottle::CANCEL,
-              simulator_->GetLastThrottleCheckResult());
-  } else {
-    EXPECT_FALSE(will_fail_request_called_);
-    expect_navigation_to_finish_ = false;
-  }
+  EXPECT_TRUE(will_fail_request_called_);
+  EXPECT_EQ(NavigationThrottle::CANCEL,
+            simulator_->GetLastThrottleCheckResult());
 }
 
 INSTANTIATE_TEST_CASE_P(

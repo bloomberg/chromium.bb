@@ -1025,19 +1025,11 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
   EXPECT_TRUE(host->GetSiteInstance()->HasSite());
   EXPECT_EQ(kUrl, host->GetSiteInstance()->GetSiteURL());
 
-  // The Web UI is committed immediately because the RenderViewHost has not been
-  // used yet. UpdateStateForNavigate() took the short cut path.
-  if (IsBrowserSideNavigationEnabled()) {
-    // In PlzNavigate, there will be a navigating WebUI because
-    // GetFrameHostForNavigation was already called twice and the committed
-    // WebUI should be set to be reused.
-    EXPECT_TRUE(manager->GetNavigatingWebUI());
-    EXPECT_EQ(host->web_ui(), manager->GetNavigatingWebUI());
-    EXPECT_EQ(host->web_ui(), host->pending_web_ui());
-  } else {
-    // The WebUI was immediately committed and there should be none navigating.
-    EXPECT_FALSE(manager->GetNavigatingWebUI());
-  }
+  // There will be a navigating WebUI because GetFrameHostForNavigation was
+  // already called twice and the committed  WebUI should be set to be reused.
+  EXPECT_TRUE(manager->GetNavigatingWebUI());
+  EXPECT_EQ(host->web_ui(), manager->GetNavigatingWebUI());
+  EXPECT_EQ(host->web_ui(), host->pending_web_ui());
   EXPECT_TRUE(manager->current_frame_host()->web_ui());
 
   // Commit.
@@ -1635,8 +1627,7 @@ TEST_F(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
   // Start a navigation to a new site.
   controller().LoadURL(
       kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  if (IsBrowserSideNavigationEnabled())
-    rfh1->PrepareForCommit();
+  rfh1->PrepareForCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
   // Simulate the unresponsiveness timer.  The tab should close.

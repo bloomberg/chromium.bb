@@ -179,10 +179,7 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
       histogram_tester()->ExpectTotalCount(kUmaStarted, 0);
     }
     GetOverlay()->owa_->SetOverscrollSourceForTesting(OverscrollSource::NONE);
-    if (IsBrowserSideNavigationEnabled())
-      main_test_rfh()->PrepareForCommit();
-    else
-      contents()->GetPendingMainFrame()->PrepareForCommit();
+    main_test_rfh()->PrepareForCommit();
     if (window_created)
       EXPECT_TRUE(contents()->CrossProcessNavigationPending());
     else

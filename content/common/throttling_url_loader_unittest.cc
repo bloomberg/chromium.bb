@@ -583,11 +583,6 @@ TEST_F(ThrottlingURLLoaderTest, PipeClosureBeforeSyncResponse) {
 // Once browser-side navigation is the only option these two tests should be
 // merged as the sync and async cases will be identical.
 TEST_F(ThrottlingURLLoaderTest, PipeClosureBeforeAsyncResponse) {
-  // Without browser-side navigation enabled the on complete callback will never
-  // be called if the client pipe is closed.
-  if (!content::IsBrowserSideNavigationEnabled())
-    return;
-
   base::RunLoop run_loop;
   client_.set_on_complete_callback(base::Bind(
       [](const base::Closure& quit_closure, int error) {

@@ -11,9 +11,6 @@
 namespace content {
 
 TEST(UrlUtilsTest, IsURLHandledByNetworkStack) {
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   EXPECT_TRUE(IsURLHandledByNetworkStack(GURL("http://foo/bar.html")));
   EXPECT_TRUE(IsURLHandledByNetworkStack(GURL("https://foo/bar.html")));
   EXPECT_TRUE(IsURLHandledByNetworkStack(GURL("data://foo")));
