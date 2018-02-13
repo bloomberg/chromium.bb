@@ -18,6 +18,16 @@
 extern "C" {
 #endif
 
+static INLINE int32_t clamp_value(int32_t value, int8_t bit) {
+  const int64_t max_value = (1LL << (bit - 1)) - 1;
+  const int64_t min_value = -(1LL << (bit - 1));
+  return (int32_t)clamp64(value, min_value, max_value);
+}
+
+static INLINE void clamp_buf(int32_t *buf, int32_t size, int8_t bit) {
+  for (int i = 0; i < size; ++i) buf[i] = clamp_value(buf[i], bit);
+}
+
 void av1_idct4_new(const int32_t *input, int32_t *output, int8_t cos_bit,
                    const int8_t *stage_range);
 void av1_idct8_new(const int32_t *input, int32_t *output, int8_t cos_bit,

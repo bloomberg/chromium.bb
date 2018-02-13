@@ -59,27 +59,11 @@ void range_check_func(int32_t stage, const int32_t *input, const int32_t *buf,
 #define apply_range(stage, input, buf, size, bit) \
   range_check_func(stage, input, buf, size, bit)
 #else
-#define apply_range(stage, input, buf, size, bit) \
-  clamp_buf((int32_t *)buf, size, bit)
-
-static INLINE void clamp_buf(int32_t *buf, int32_t size, int8_t bit) {
-  if (bit <= 16) {
-    const int32_t max_value = (1 << 15) - 1;
-    const int32_t min_value = -(1 << 15);
-
-    for (int i = 0; i < size; ++i) buf[i] = clamp(buf[i], min_value, max_value);
-  }
-}
+#define apply_range(stage, input, buf, size, bit)       \
+  do {                                                  \
+    if (bit <= 16) clamp_buf((int32_t *)buf, size, 16); \
+  } while (0)
 #endif
-
-static INLINE int32_t clamp_value(int32_t value, int8_t bit) {
-  if (bit <= 16) {
-    const int32_t max_value = (1 << 15) - 1;
-    const int32_t min_value = -(1 << 15);
-    return clamp(value, min_value, max_value);
-  }
-  return value;
-}
 
 // TODO(angiebird): Make 1-d txfm functions static
 void av1_idct4_new(const int32_t *input, int32_t *output, int8_t cos_bit,
@@ -776,10 +760,12 @@ void av1_iadst4_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   s4 = range_check_value(sinpi[1] * x2, stage_range[1] + bit);
   s5 = range_check_value(sinpi[2] * x3, stage_range[1] + bit);
   s6 = range_check_value(sinpi[4] * x3, stage_range[1] + bit);
-  s7 = clamp_value(x0 - x2, stage_range[1]);
+  s7 = x0 - x2;
+  if (stage_range[1] <= 16) s7 = clamp_value(s7, 16);
 
   // stage 2
-  s7 = clamp_value(s7 + x3, stage_range[2]);
+  s7 = s7 + x3;
+  if (stage_range[2] <= 16) s7 = clamp_value(s7, 16);
 
   // stage 3
   s0 = range_check_value(s0 + s3, stage_range[3] + bit);
