@@ -1159,9 +1159,6 @@ void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
                                    const int subpel_y_q4, int y_step_q4,
                                    int scaled, ConvolveParams *conv_params,
                                    int bd) {
-  (void)dst;
-  (void)dst_stride;
-
   InterpFilterParams filter_params_x, filter_params_y;
 #if CONFIG_SHORT_FILTER
   av1_get_convolve_filter_params(interp_filters, &filter_params_x,
@@ -1172,71 +1169,101 @@ void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
 #endif
 
   const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
-  if (filter_params_y.taps < filter_params_x.taps) {
-    uint16_t tr_src[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) *
-                    (MAX_SB_SIZE + MAX_FILTER_TAP - 1)];
-    int tr_src_stride = MAX_SB_SIZE + MAX_FILTER_TAP - 1;
-    CONV_BUF_TYPE tr_dst[MAX_SB_SIZE * MAX_SB_SIZE];
-    int tr_dst_stride = MAX_SB_SIZE;
-    int fo_vert = filter_params_y.taps / 2 - 1;
-    int fo_horiz = filter_params_x.taps / 2 - 1;
+  if (conv_params->dst) {
+    if (filter_params_y.taps < filter_params_x.taps) {
+      uint16_t tr_src[(MAX_SB_SIZE + MAX_FILTER_TAP - 1) *
+                      (MAX_SB_SIZE + MAX_FILTER_TAP - 1)];
+      int tr_src_stride = MAX_SB_SIZE + MAX_FILTER_TAP - 1;
+      CONV_BUF_TYPE tr_dst[MAX_SB_SIZE * MAX_SB_SIZE];
+      int tr_dst_stride = MAX_SB_SIZE;
+      int fo_vert = filter_params_y.taps / 2 - 1;
+      int fo_horiz = filter_params_x.taps / 2 - 1;
 
-    transpose_uint16(
-        tr_src, tr_src_stride, src - fo_vert * src_stride - fo_horiz,
-        src_stride, w + filter_params_x.taps - 1, h + filter_params_y.taps - 1);
-    transpose_int32(tr_dst, tr_dst_stride, conv_params->dst,
-                    conv_params->dst_stride, w, h);
+      transpose_uint16(tr_src, tr_src_stride,
+                       src - fo_vert * src_stride - fo_horiz, src_stride,
+                       w + filter_params_x.taps - 1,
+                       h + filter_params_y.taps - 1);
+      transpose_int32(tr_dst, tr_dst_stride, conv_params->dst,
+                      conv_params->dst_stride, w, h);
 
-// horizontal and vertical parameters are swapped because of the transpose
+      // horizontal and vertical parameters are swapped because of the transpose
 #if CONFIG_JNT_COMP
-    if (scaled)
-      av1_highbd_convolve_2d_scale(
-          tr_src + fo_horiz * tr_src_stride + fo_vert, tr_src_stride, tr_dst,
-          tr_dst_stride, h, w, &filter_params_y, &filter_params_x, subpel_y_q4,
-          y_step_q4, subpel_x_q4, x_step_q4, conv_params, bd);
-    else
-      av1_highbd_jnt_convolve_2d(tr_src + fo_horiz * tr_src_stride + fo_vert,
-                                 tr_src_stride, tr_dst, tr_dst_stride, h, w,
-                                 &filter_params_y, &filter_params_x,
-                                 subpel_y_q4, subpel_x_q4, conv_params, bd);
+      if (scaled)
+        av1_highbd_convolve_2d_scale(
+            tr_src + fo_horiz * tr_src_stride + fo_vert, tr_src_stride, tr_dst,
+            tr_dst_stride, h, w, &filter_params_y, &filter_params_x,
+            subpel_y_q4, y_step_q4, subpel_x_q4, x_step_q4, conv_params, bd);
+      else
+        av1_highbd_jnt_convolve_2d(tr_src + fo_horiz * tr_src_stride + fo_vert,
+                                   tr_src_stride, tr_dst, tr_dst_stride, h, w,
+                                   &filter_params_y, &filter_params_x,
+                                   subpel_y_q4, subpel_x_q4, conv_params, bd);
 #else
-    if (scaled)
-      av1_highbd_convolve_2d_scale(
-          tr_src + fo_horiz * tr_src_stride + fo_vert, tr_src_stride, tr_dst,
-          tr_dst_stride, h, w, &filter_params_y, &filter_params_x, subpel_y_q4,
-          y_step_q4, subpel_x_q4, x_step_q4, conv_params, bd);
-    else
-      av1_highbd_convolve_2d(tr_src + fo_horiz * tr_src_stride + fo_vert,
-                             tr_src_stride, tr_dst, tr_dst_stride, h, w,
-                             &filter_params_y, &filter_params_x, subpel_y_q4,
-                             subpel_x_q4, conv_params, bd);
+      if (scaled)
+        av1_highbd_convolve_2d_scale(
+            tr_src + fo_horiz * tr_src_stride + fo_vert, tr_src_stride, tr_dst,
+            tr_dst_stride, h, w, &filter_params_y, &filter_params_x,
+            subpel_y_q4, y_step_q4, subpel_x_q4, x_step_q4, conv_params, bd);
+      else
+        av1_highbd_convolve_2d(tr_src + fo_horiz * tr_src_stride + fo_vert,
+                               tr_src_stride, tr_dst, tr_dst_stride, h, w,
+                               &filter_params_y, &filter_params_x, subpel_y_q4,
+                               subpel_x_q4, conv_params, bd);
 #endif  // CONFIG_JNT_COMP
-    transpose_int32(conv_params->dst, conv_params->dst_stride, tr_dst,
-                    tr_dst_stride, h, w);
+      transpose_int32(conv_params->dst, conv_params->dst_stride, tr_dst,
+                      tr_dst_stride, h, w);
+    } else {
+#if CONFIG_JNT_COMP
+      if (scaled)
+        av1_highbd_convolve_2d_scale(
+            src, src_stride, conv_params->dst, conv_params->dst_stride, w, h,
+            &filter_params_x, &filter_params_y, subpel_x_q4, x_step_q4,
+            subpel_y_q4, y_step_q4, conv_params, bd);
+      else
+        av1_highbd_jnt_convolve_2d(src, src_stride, conv_params->dst,
+                                   conv_params->dst_stride, w, h,
+                                   &filter_params_x, &filter_params_y,
+                                   subpel_x_q4, subpel_y_q4, conv_params, bd);
+#else
+      if (scaled)
+        av1_highbd_convolve_2d_scale(
+            src, src_stride, conv_params->dst, conv_params->dst_stride, w, h,
+            &filter_params_x, &filter_params_y, subpel_x_q4, x_step_q4,
+            subpel_y_q4, y_step_q4, conv_params, bd);
+      else
+        av1_highbd_convolve_2d(src, src_stride, conv_params->dst,
+                               conv_params->dst_stride, w, h, &filter_params_x,
+                               &filter_params_y, subpel_x_q4, subpel_y_q4,
+                               conv_params, bd);
+#endif  // CONFIG_JNT_COMP
+    }
   } else {
+    CONV_BUF_TYPE tmp_dst[MAX_SB_SIZE * MAX_SB_SIZE];
+    int tmp_dst_stride = MAX_SB_SIZE;
 #if CONFIG_JNT_COMP
     if (scaled)
-      av1_highbd_convolve_2d_scale(
-          src, src_stride, conv_params->dst, conv_params->dst_stride, w, h,
-          &filter_params_x, &filter_params_y, subpel_x_q4, x_step_q4,
-          subpel_y_q4, y_step_q4, conv_params, bd);
+      av1_highbd_convolve_2d_scale(src, src_stride, tmp_dst, tmp_dst_stride, w,
+                                   h, &filter_params_x, &filter_params_y,
+                                   subpel_x_q4, x_step_q4, subpel_y_q4,
+                                   y_step_q4, conv_params, bd);
     else
-      av1_highbd_jnt_convolve_2d(src, src_stride, conv_params->dst,
-                                 conv_params->dst_stride, w, h,
+      av1_highbd_jnt_convolve_2d(src, src_stride, tmp_dst, tmp_dst_stride, w, h,
                                  &filter_params_x, &filter_params_y,
                                  subpel_x_q4, subpel_y_q4, conv_params, bd);
 #else
     if (scaled)
-      av1_highbd_convolve_2d_scale(
-          src, src_stride, conv_params->dst, conv_params->dst_stride, w, h,
-          &filter_params_x, &filter_params_y, subpel_x_q4, x_step_q4,
-          subpel_y_q4, y_step_q4, conv_params, bd);
+      av1_highbd_convolve_2d_scale(src, src_stride, tmp_dst, tmp_dst_stride, w,
+                                   h, &filter_params_x, &filter_params_y,
+                                   subpel_x_q4, x_step_q4, subpel_y_q4,
+                                   y_step_q4, conv_params, bd);
     else
-      av1_highbd_convolve_2d(src, src_stride, conv_params->dst,
-                             conv_params->dst_stride, w, h, &filter_params_x,
-                             &filter_params_y, subpel_x_q4, subpel_y_q4,
-                             conv_params, bd);
+      av1_highbd_convolve_2d(src, src_stride, tmp_dst, tmp_dst_stride, w, h,
+                             &filter_params_x, &filter_params_y, subpel_x_q4,
+                             subpel_y_q4, conv_params, bd);
 #endif  // CONFIG_JNT_COMP
+    // 0-bit rounding just to convert from int32 to uint16
+    av1_highbd_convolve_rounding(tmp_dst, tmp_dst_stride, dst, dst_stride, w, h,
+                                 0, bd);
   }
 }
 

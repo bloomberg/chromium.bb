@@ -185,7 +185,7 @@ void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
   // subpel_y_q4 == 0
   sf->convolve[1][0][0] = av1_convolve_x_sr;
   // subpel_x_q4 != 0 && subpel_y_q4 != 0
-  sf->convolve[1][1][0] = av1_convolve_2d_sr;
+  sf->convolve[1][1][0] = av1_convolve_2d_sr_c;
 #if CONFIG_JNT_COMP
   // subpel_x_q4 == 0 && subpel_y_q4 == 0
   sf->convolve[0][0][1] = av1_jnt_convolve_2d_copy;

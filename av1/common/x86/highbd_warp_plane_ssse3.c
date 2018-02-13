@@ -22,21 +22,25 @@ void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
                                   ConvolveParams *conv_params, int16_t alpha,
                                   int16_t beta, int16_t gamma, int16_t delta) {
   int comp_avg = conv_params->do_average;
-#if HORSHEAR_REDUCE_PREC_BITS >= 5
   __m128i tmp[15];
-#else
-#error "HORSHEAR_REDUCE_PREC_BITS < 5 not currently supported by SSSE3 filter"
-#endif
   int i, j, k;
-  const int use_conv_params = conv_params->round == CONVOLVE_OPT_NO_ROUND;
-  const int reduce_bits_horiz =
+  const int use_conv_params =
+      (conv_params->round == CONVOLVE_OPT_NO_ROUND && conv_params->dst);
+  int reduce_bits_horiz =
       use_conv_params ? conv_params->round_0 : HORSHEAR_REDUCE_PREC_BITS;
+  if (!use_conv_params &&
+      bd + WARPEDPIXEL_FILTER_BITS + 2 - reduce_bits_horiz > 16)
+    reduce_bits_horiz += bd + WARPEDPIXEL_FILTER_BITS - reduce_bits_horiz - 14;
+  const int reduce_bits_vert =
+      use_conv_params ? conv_params->round_1
+                      : 2 * WARPEDPIXEL_FILTER_BITS - reduce_bits_horiz;
   const int offset_bits_horiz =
       use_conv_params ? bd + FILTER_BITS - 1 : bd + WARPEDPIXEL_FILTER_BITS - 1;
   if (use_conv_params) {
     conv_params->do_post_rounding = 1;
   }
   assert(FILTER_BITS == WARPEDPIXEL_FILTER_BITS);
+  if (bd == 12 && reduce_bits_horiz < 5) printf("Error\n");
 
   /* Note: For this code to work, the left/right frame borders need to be
      extended by at least 13 pixels each. By the time we get here, other
@@ -85,10 +89,9 @@ void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
           else if (iy > height - 1)
             iy = height - 1;
           tmp[k + 7] = _mm_set1_epi16(
-              (1 << (bd + WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS -
-                     1)) +
+              (1 << (bd + WARPEDPIXEL_FILTER_BITS - reduce_bits_horiz - 1)) +
               ref[iy * stride] *
-                  (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
+                  (1 << (WARPEDPIXEL_FILTER_BITS - reduce_bits_horiz)));
         }
       } else if (ix4 >= width + 6) {
         for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
@@ -98,10 +101,9 @@ void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
           else if (iy > height - 1)
             iy = height - 1;
           tmp[k + 7] = _mm_set1_epi16(
-              (1 << (bd + WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS -
-                     1)) +
+              (1 << (bd + WARPEDPIXEL_FILTER_BITS - reduce_bits_horiz - 1)) +
               ref[iy * stride + (width - 1)] *
-                  (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
+                  (1 << (WARPEDPIXEL_FILTER_BITS - reduce_bits_horiz)));
         }
       } else {
         for (k = -7; k < AOMMIN(8, p_height - i); ++k) {
@@ -320,13 +322,13 @@ void av1_highbd_warp_affine_ssse3(const int32_t *mat, const uint16_t *ref,
         } else {
           // Round and pack into 8 bits
           const __m128i round_const =
-              _mm_set1_epi32(-(1 << (bd + VERSHEAR_REDUCE_PREC_BITS - 1)) +
-                             ((1 << VERSHEAR_REDUCE_PREC_BITS) >> 1));
+              _mm_set1_epi32(-(1 << (bd + reduce_bits_vert - 1)) +
+                             ((1 << reduce_bits_vert) >> 1));
 
           const __m128i res_lo_round = _mm_srai_epi32(
-              _mm_add_epi32(res_lo, round_const), VERSHEAR_REDUCE_PREC_BITS);
+              _mm_add_epi32(res_lo, round_const), reduce_bits_vert);
           const __m128i res_hi_round = _mm_srai_epi32(
-              _mm_add_epi32(res_hi, round_const), VERSHEAR_REDUCE_PREC_BITS);
+              _mm_add_epi32(res_hi, round_const), reduce_bits_vert);
 
           __m128i res_16bit = _mm_packs_epi32(res_lo_round, res_hi_round);
           // Clamp res_16bit to the range [0, 2^bd - 1]

@@ -140,7 +140,7 @@ static INLINE void cal_rounding_4_sse2(const int32_t *src, uint8_t *dst,
 void av1_convolve_rounding_avx2(const int32_t *src, int src_stride,
                                 uint8_t *dst, int dst_stride, int w, int h,
                                 int bits) {
-  const __m256i rnd_num = _mm256_set1_epi32((int32_t)(1 << (bits - 1)));
+  const __m256i rnd_num = _mm256_set1_epi32((int32_t)((1 << bits) >> 1));
   const __m128i rnd_num_sse2 = _mm256_castsi256_si128(rnd_num);
 
   if (w > 64) {  // width = 128
@@ -283,7 +283,7 @@ void av1_highbd_convolve_rounding_avx2(const int32_t *src, int src_stride,
                                        uint8_t *dst8, int dst_stride, int w,
                                        int h, int bits, int bd) {
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
-  const __m256i rnd_num = _mm256_set1_epi32((int32_t)(1 << (bits - 1)));
+  const __m256i rnd_num = _mm256_set1_epi32((int32_t)((1 << bits) >> 1));
   const __m128i rnd_num_sse2 = _mm256_castsi256_si128(rnd_num);
 
   if (w > 64) {  // width = 128
