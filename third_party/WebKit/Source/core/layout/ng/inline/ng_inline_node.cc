@@ -559,43 +559,6 @@ MinMaxSize NGInlineNode::ComputeMinMaxSize(const MinMaxSizeInput& input) {
   return sizes;
 }
 
-// Compute the delta of text offsets between NGInlineNode and LayoutText.
-// This map is needed to produce InlineTextBox since its offsets are to
-// LayoutText.
-// TODO(kojii): Since NGInlineNode has text after whitespace collapsed, the
-// length may not match with LayoutText. This function updates LayoutText to
-// match, but this needs more careful coding, if we keep copying to layoutobject
-// tree.
-void NGInlineNode::GetLayoutTextOffsets(
-    Vector<unsigned, 32>* text_offsets_out) const {
-  LayoutText* current_text = nullptr;
-  unsigned current_offset = 0;
-  const Vector<NGInlineItem>& items = Data().items_;
-
-  for (unsigned i = 0; i < items.size(); i++) {
-    const NGInlineItem& item = items[i];
-    LayoutObject* next_object = item.GetLayoutObject();
-    LayoutText* next_text = next_object && next_object->IsText()
-                                ? ToLayoutText(next_object)
-                                : nullptr;
-    if (next_text != current_text) {
-      if (current_text &&
-          current_text->TextLength() != item.StartOffset() - current_offset) {
-        current_text->SetTextInternal(
-            Text(current_offset, item.StartOffset()).ToString().Impl());
-      }
-      current_text = next_text;
-      current_offset = item.StartOffset();
-    }
-    (*text_offsets_out)[i] = current_offset;
-  }
-  if (current_text && current_text->TextLength() !=
-                          Data().text_content_.length() - current_offset) {
-    current_text->SetTextInternal(
-        Text(current_offset, Data().text_content_.length()).ToString().Impl());
-  }
-}
-
 void NGInlineNode::CheckConsistency() const {
 #if DCHECK_IS_ON()
   const Vector<NGInlineItem>& items = Data().items_;

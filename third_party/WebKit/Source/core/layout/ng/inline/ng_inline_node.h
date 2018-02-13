@@ -66,8 +66,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   const Vector<NGInlineItem>& Items(bool is_first_line = false) const;
   NGInlineItemRange Items(unsigned start_index, unsigned end_index);
 
-  void GetLayoutTextOffsets(Vector<unsigned, 32>*) const;
-
   // Returns the DOM to text content offset mapping of this block. If it is not
   // computed before, compute and store it in NGInlineNodeData.
   // This funciton must be called with clean layout.
