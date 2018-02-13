@@ -565,10 +565,6 @@ camera.views.Camera = function(context, router) {
       'keypress', this.onToggleMultiKeyPress_.bind(this));
   document.querySelector('#toggle-multi').addEventListener(
       'click', this.onToggleMultiClicked_.bind(this));
-  document.querySelector('#toggle-mic').addEventListener(
-      'keypress', this.onToggleMicKeyPress_.bind(this));
-  document.querySelector('#toggle-mic').addEventListener(
-      'click', this.onToggleMicClicked_.bind(this));
   document.querySelector('#toggle-camera').addEventListener(
       'click', this.onToggleCameraClicked_.bind(this));
   document.querySelector('#toggle-mirror').addEventListener(
@@ -950,18 +946,6 @@ camera.views.Camera.prototype.onToggleMultiKeyPress_ = function(event) {
 };
 
 /**
- * Handles pressing a key on the microphone switch for video-recording.
- * @param {Event} event Key press event.
- * @private
- */
-camera.views.Camera.prototype.onToggleMicKeyPress_ = function(event) {
-  if (this.performanceTestTimer_)
-    return;
-  if (camera.util.getShortcutIdentifier(event) == 'Enter')
-    document.querySelector('#toggle-mic').click();
-};
-
-/**
  * Handles pressing a key on the mirror switch.
  * @param {Event} event Key press event.
  * @private
@@ -1001,22 +985,6 @@ camera.views.Camera.prototype.onToggleMultiClicked_ = function(event) {
       chrome.i18n.getMessage(enabled ? 'toggleMultiActiveMessage' :
                                        'toggleMultiInactiveMessage'));
   chrome.storage.local.set({toggleMulti: enabled});
-};
-
-/**
- * Handles clicking on the microphone switch for video-recording.
- * @param {Event} event Click event.
- * @private
- */
-camera.views.Camera.prototype.onToggleMicClicked_ = function(event) {
-  if (this.performanceTestTimer_)
-    return;
-
-  var enabled = document.querySelector('#toggle-mic').checked;
-  this.stream_.getAudioTracks()[0].enabled = enabled;
-  this.showToastMessage_(
-      chrome.i18n.getMessage(enabled ? 'toggleMicActiveMessage' :
-                                       'toggleMicInactiveMessage'));
 };
 
 /**
@@ -1096,8 +1064,7 @@ camera.views.Camera.prototype.onToggleRecordClicked_ = function(event) {
   }
 
   document.querySelector('#toggle-multi').hidden = recordEnabled;
-  document.querySelector('#toggle-mic').hidden = !recordEnabled;
-  this.updateMic_(recordEnabled);
+  document.querySelector('#toggle-timer').hidden = recordEnabled;
   this.showToastMessage_(chrome.i18n.getMessage(recordEnabled ?
       'recordVideoActiveMessage' : 'takePictureActiveMessage'));
 };
@@ -1194,22 +1161,15 @@ camera.views.Camera.prototype.updateMirroring_ = function() {
 };
 
 /**
- * Updates the microphone either set automatically or by user.
+ * Enables the audio track for audio capturing.
  *
- * @param {boolean} active True to set microphone active, false to inactive.
+ * @param {boolean} enabled True to enable audio track, false to disable.
  * @private
  */
-camera.views.Camera.prototype.updateMic_ = function(active) {
-  var toggleMic = document.querySelector('#toggle-mic');
-
-  // Enable the microphone switch only if there is an audio track.
+camera.views.Camera.prototype.enableAudio_ = function(enabled) {
   var track = this.stream_ && this.stream_.getAudioTracks()[0];
-  toggleMic.disabled = (track == null);
-  if (toggleMic.disabled) {
-    toggleMic.checked = false;
-  } else {
-    toggleMic.checked = active;
-    track.enabled = active;
+  if (track) {
+    track.enabled = enabled;
   }
 };
 
@@ -1846,6 +1806,7 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(motionPicture) 
         var takePictureButton = document.querySelector('#take-picture');
         this.mediaRecorder_.onstop = function(event) {
           takePictureButton.classList.remove('flash');
+          this.enableAudio_(false);
           // Add the motion picture after the recording is ended.
           // TODO(yuli): Handle insufficient storage.
           var recordedBlob = new Blob(recordedChunks, {type: 'video/webm'});
@@ -1866,6 +1827,7 @@ camera.views.Camera.prototype.takePictureImmediately_ = function(motionPicture) 
         }.bind(this);
 
         // Start recording.
+        this.enableAudio_(true);
         this.mediaRecorder_.start();
 
         // Re-enable the take-picture button to stop recording later and flash
@@ -2026,8 +1988,8 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
       this.mediaRecorder_ = this.createMediaRecorder_(stream);
       document.querySelector('#toggle-record').disabled =
           (this.mediaRecorder_ == null);
-      // Disable audio stream unless it's for video recording.
-      this.updateMic_(false);
+      // Disable audio stream unless it's video recording.
+      this.enableAudio_(false);
       this.capturing_ = true;
       var onAnimationFrame = function() {
         if (!this.running_)
