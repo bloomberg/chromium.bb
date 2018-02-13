@@ -161,7 +161,7 @@ QuickViewController.prototype.init_ = function(quickView) {
   quickView.onOpenInNewButtonTap = this.onOpenInNewButtonTap_.bind(this);
 
   var toolTip = this.quickView_.$$('files-tooltip');
-  var elems = this.quickView_.$.toolbar.querySelectorAll('[has-tooltip]');
+  var elems = this.quickView_.$$('#toolbar').querySelectorAll('[has-tooltip]');
   toolTip.addTargets(elems);
 };
 
@@ -225,12 +225,14 @@ QuickViewController.prototype.onQuickViewKeyDown_ = function(event) {
         this.quickView_.close();
         break;
       case 'ArrowRight':
+      case 'ArrowDown':
         var index = this.fileListSelectionModel_.selectedIndex + 1;
         if (index >= this.fileListSelectionModel_.length)
           index = 0;
         this.fileListSelectionModel_.selectedIndex = index;
         break;
       case 'ArrowLeft':
+      case 'ArrowUp':
         var index = this.fileListSelectionModel_.selectedIndex - 1;
         if (index < 0)
           index = this.fileListSelectionModel_.length - 1;
@@ -476,6 +478,6 @@ QuickViewController.prototype.getQuickViewParameters_ = function(
  */
 QuickViewController.prototype.loadThumbnailFromDrive_ = function(url) {
   return new Promise(function(resolve) {
-    ImageLoaderClient.getInstance().load(url, resolve)
+    ImageLoaderClient.getInstance().load(url, resolve);
   });
 };
