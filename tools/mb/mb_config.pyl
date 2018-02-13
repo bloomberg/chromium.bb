@@ -424,8 +424,6 @@
       'Linux Compile FYI': 'official_goma_perf',
       'Android Builder FYI': 'official_goma_minimal_symbols_android',
       'Android arm64 Builder FYI': 'official_goma_minimal_symbols_android_arm64',
-      'Win Builder FYI': 'official_goma',
-      'Win Clang Builder': 'official_goma_minimal_symbols_clang',
       'Battor Agent Linux': 'release_bot',
       'Battor Agent Mac': 'release_bot',
       'Battor Agent Win': 'release_bot',
@@ -1463,10 +1461,6 @@
 
     'msan_release_bot': [
       'msan', 'release_bot',
-    ],
-
-    'official_goma_minimal_symbols_clang': [
-      'official', 'goma', 'minimal_symbols', 'clang',
     ],
 
     'official_goma': [
