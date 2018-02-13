@@ -5,6 +5,8 @@
 #include "content/common/font_cache_dispatcher_win.h"
 
 #include <map>
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -130,7 +132,7 @@ class FontCache {
   DISALLOW_COPY_AND_ASSIGN(FontCache);
 };
 
-}
+}  // namespace
 
 FontCacheDispatcher::FontCacheDispatcher() {}
 
@@ -145,7 +147,8 @@ void FontCacheDispatcher::Create(
                           std::move(request));
 }
 
-void FontCacheDispatcher::PreCacheFont(const LOGFONT& font) {
+void FontCacheDispatcher::PreCacheFont(const LOGFONT& log_font,
+                                       PreCacheFontCallback callback) {
   // If a child process is running in a sandbox, GetTextMetrics()
   // can sometimes fail. If a font has not been loaded
   // previously, GetTextMetrics() will try to load the font
@@ -159,7 +162,10 @@ void FontCacheDispatcher::PreCacheFont(const LOGFONT& font) {
   // need to load that file, hence no permission issues there.  Therefore,
   // when a font is asked to be cached, we always recreates the font object
   // to avoid the case that an in-cache font is swapped out by GDI.
-  FontCache::GetInstance()->PreCacheFont(font, this);
+  FontCache::GetInstance()->PreCacheFont(log_font, this);
+
+  // Run |callback| to indicate this synchronous handler finished.
+  std::move(callback).Run();
 }
 
 void FontCacheDispatcher::ReleaseCachedFonts() {
