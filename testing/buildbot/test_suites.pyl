@@ -1110,7 +1110,7 @@
   'network_service_android_gtests': {
     'network_service_content_browsertests': {
       'args': [
-        '--enable-features=NetworkService',
+        '--enable-features=NetworkService,NetworkServiceInProcess',
         '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_content_browsertests.filter',
       ],
       'test': 'content_browsertests',
