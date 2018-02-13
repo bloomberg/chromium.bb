@@ -6,7 +6,7 @@
 #define FragmentData_h
 
 #include "core/paint/ObjectPaintProperties.h"
-#include "platform/graphics/paint/PropertyTreeState.h"
+#include "platform/graphics/paint/RefCountedPropertyTreeState.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {
@@ -147,8 +147,12 @@ class CORE_EXPORT FragmentData {
   //   node. Even though the div has no transform, its local border box
   //   properties would have a transform node that points to the div's
   //   ancestor transform space.
-  const PropertyTreeState* LocalBorderBoxProperties() const {
-    return rare_data_ ? rare_data_->local_border_box_properties.get() : nullptr;
+  PropertyTreeState LocalBorderBoxProperties() const {
+    DCHECK(HasLocalBorderBoxProperties());
+    return rare_data_->local_border_box_properties->GetPropertyTreeState();
+  }
+  bool HasLocalBorderBoxProperties() const {
+    return rare_data_ && rare_data_->local_border_box_properties;
   }
   void ClearLocalBorderBoxProperties() {
     if (rare_data_)
@@ -158,7 +162,7 @@ class CORE_EXPORT FragmentData {
     EnsureRareData();
     if (!rare_data_->local_border_box_properties) {
       rare_data_->local_border_box_properties =
-          std::make_unique<PropertyTreeState>(state);
+          std::make_unique<RefCountedPropertyTreeState>(state);
     } else {
       *rare_data_->local_border_box_properties = state;
     }
@@ -176,9 +180,8 @@ class CORE_EXPORT FragmentData {
   // |local_border_box_properties_| but includes properties (e.g.,
   // overflow clip, scroll translation) that apply to contents.
   PropertyTreeState ContentsProperties() const {
-    DCHECK(LocalBorderBoxProperties());
     return PropertyTreeState(PostScrollTranslation(), PostOverflowClip(),
-                             LocalBorderBoxProperties()->Effect());
+                             LocalBorderBoxProperties().Effect());
   }
 
   // This is the complete set of property nodes that can be used to
@@ -224,7 +227,7 @@ class CORE_EXPORT FragmentData {
     LayoutPoint pagination_offset;
     LayoutUnit logical_top_in_flow_thread;
     std::unique_ptr<ObjectPaintProperties> paint_properties;
-    std::unique_ptr<PropertyTreeState> local_border_box_properties;
+    std::unique_ptr<RefCountedPropertyTreeState> local_border_box_properties;
     bool is_clip_path_cache_valid = false;
     Optional<IntRect> clip_path_bounding_box;
     scoped_refptr<const RefCountedPath> clip_path_path;

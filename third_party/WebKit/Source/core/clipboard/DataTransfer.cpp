@@ -135,7 +135,7 @@ class DraggedNodeImageBuilder {
     PropertyTreeState border_box_properties = PropertyTreeState::Root();
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       border_box_properties =
-          *layer->GetLayoutObject().FirstFragment().LocalBorderBoxProperties();
+          layer->GetLayoutObject().FirstFragment().LocalBorderBoxProperties();
     }
     FloatPoint paint_offset = dragged_layout_object->LocalToAncestorPoint(
         FloatPoint(), &layer->GetLayoutObject(), kUseTransforms);

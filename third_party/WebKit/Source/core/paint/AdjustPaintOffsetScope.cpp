@@ -25,10 +25,9 @@ bool AdjustPaintOffsetScope::AdjustPaintOffset(const LayoutBox& box) {
 
   const auto* paint_properties = fragment->PaintProperties();
   if (paint_properties && paint_properties->PaintOffsetTranslation()) {
-    DCHECK(fragment->LocalBorderBoxProperties());
     contents_properties_.emplace(
         old_paint_info_.context.GetPaintController(),
-        *fragment->LocalBorderBoxProperties(), box,
+        fragment->LocalBorderBoxProperties(), box,
         DisplayItem::PaintPhaseToDrawingType(old_paint_info_.phase));
 
     new_paint_info_.emplace(old_paint_info_);

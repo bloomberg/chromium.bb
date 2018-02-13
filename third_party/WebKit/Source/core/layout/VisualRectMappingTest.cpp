@@ -44,10 +44,10 @@ class VisualRectMappingTest : public RenderingTest {
 
     FloatClipRect geometry_mapper_rect((FloatRect(local_rect)));
     const FragmentData& fragment_data = object.FirstFragment();
-    if (fragment_data.LocalBorderBoxProperties()) {
+    if (fragment_data.HasLocalBorderBoxProperties()) {
       geometry_mapper_rect.MoveBy(FloatPoint(fragment_data.PaintOffset()));
       GeometryMapper::LocalToAncestorVisualRect(
-          *fragment_data.LocalBorderBoxProperties(),
+          fragment_data.LocalBorderBoxProperties(),
           ancestor.FirstFragment().ContentsProperties(), geometry_mapper_rect);
       geometry_mapper_rect.MoveBy(
           -FloatPoint(ancestor.FirstFragment().PaintOffset()));

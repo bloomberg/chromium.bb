@@ -97,7 +97,7 @@ void PaintPropertyTreeBuilderTest::SetUp() {
           (ancestor)->FirstFragment().ContentsProperties();                    \
       FloatClipRect actual_float_rect((FloatRect(source)));                    \
       GeometryMapper::LocalToAncestorVisualRect(                               \
-          *(source_object)->FirstFragment().LocalBorderBoxProperties(),        \
+          (source_object)->FirstFragment().LocalBorderBoxProperties(),         \
           contents_properties, actual_float_rect);                             \
       LayoutRect actual(actual_float_rect.Rect());                             \
       actual.MoveBy(-(ancestor)->FirstFragment().PaintOffset());               \
@@ -1437,7 +1437,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_EQ(container_properties->Transform(), fixed->GetLayoutObject()
                                                    ->FirstFragment()
                                                    .LocalBorderBoxProperties()
-                                                   ->Transform());
+                                                   .Transform());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ControlClip) {
@@ -1727,11 +1727,11 @@ TEST_P(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext) {
   LayoutObject* child = GetLayoutObjectByElementId("child");
 
   EXPECT_EQ(scroller_properties->OverflowClip(),
-            child->FirstFragment().LocalBorderBoxProperties()->Clip());
+            child->FirstFragment().LocalBorderBoxProperties().Clip());
   EXPECT_EQ(scroller_properties->ScrollTranslation(),
-            child->FirstFragment().LocalBorderBoxProperties()->Transform());
+            child->FirstFragment().LocalBorderBoxProperties().Transform());
   EXPECT_NE(nullptr,
-            child->FirstFragment().LocalBorderBoxProperties()->Effect());
+            child->FirstFragment().LocalBorderBoxProperties().Effect());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 400, 300), scroller,
                           frame_view->GetLayoutView());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 100, 200), child,
@@ -1772,19 +1772,19 @@ TEST_P(PaintPropertyTreeBuilderTest,
   LayoutObject& child = *GetLayoutObjectByElementId("child");
 
   EXPECT_EQ(FrameContentClip(),
-            child.FirstFragment().LocalBorderBoxProperties()->Clip());
+            child.FirstFragment().LocalBorderBoxProperties().Clip());
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(FrameScrollTranslation(),
-              child.FirstFragment().LocalBorderBoxProperties()->Transform());
+              child.FirstFragment().LocalBorderBoxProperties().Transform());
   } else {
     // For SPv1*, |child| is composited so we created PaintOffsetTranslation.
     EXPECT_EQ(child.FirstFragment().PaintProperties()->PaintOffsetTranslation(),
-              child.FirstFragment().LocalBorderBoxProperties()->Transform());
+              child.FirstFragment().LocalBorderBoxProperties().Transform());
   }
   // SPv1 has no effect tree.
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     EXPECT_EQ(scroller_properties->Effect(),
-              child.FirstFragment().LocalBorderBoxProperties()->Effect());
+              child.FirstFragment().LocalBorderBoxProperties().Effect());
   }
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 800, 10000), &scroller,
                           GetDocument().View()->GetLayoutView());
@@ -1827,7 +1827,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TableCellLayoutLocation) {
   LayoutObject& target = *GetLayoutObjectByElementId("target");
   EXPECT_EQ(LayoutPoint(170, 170), target.FirstFragment().PaintOffset());
   EXPECT_EQ(FramePreTranslation(),
-            target.FirstFragment().LocalBorderBoxProperties()->Transform());
+            target.FirstFragment().LocalBorderBoxProperties().Transform());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(170, 170, 100, 100), &target,
                           GetDocument().View()->GetLayoutView());
 }
@@ -1876,9 +1876,9 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant) {
 
   LayoutObject* fixed = GetLayoutObjectByElementId("fixed");
   EXPECT_EQ(clip_properties->CssClip(),
-            fixed->FirstFragment().LocalBorderBoxProperties()->Clip());
+            fixed->FirstFragment().LocalBorderBoxProperties().Clip());
   EXPECT_EQ(FramePreTranslation(),
-            fixed->FirstFragment().LocalBorderBoxProperties()->Transform());
+            fixed->FirstFragment().LocalBorderBoxProperties().Transform());
   EXPECT_EQ(LayoutPoint(654, 321), fixed->FirstFragment().PaintOffset());
   CHECK_VISUAL_RECT(LayoutRect(), fixed, GetDocument().View()->GetLayoutView(),
                     // TODO(crbug.com/599939): CSS clip of fixed-position
@@ -1935,9 +1935,9 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipAbsPositionDescendant) {
 
   auto* absolute = GetLayoutObjectByElementId("absolute");
   EXPECT_EQ(clip_properties->CssClip(),
-            absolute->FirstFragment().LocalBorderBoxProperties()->Clip());
+            absolute->FirstFragment().LocalBorderBoxProperties().Clip());
   EXPECT_EQ(FramePreTranslation(),
-            absolute->FirstFragment().LocalBorderBoxProperties()->Transform());
+            absolute->FirstFragment().LocalBorderBoxProperties().Transform());
   EXPECT_EQ(LayoutPoint(777, 777), absolute->FirstFragment().PaintOffset());
   CHECK_VISUAL_RECT(LayoutRect(), absolute,
                     GetDocument().View()->GetLayoutView(),
@@ -2054,9 +2054,9 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared) {
 
   LayoutObject* fixed = GetLayoutObjectByElementId("fixed");
   EXPECT_EQ(clip_properties->CssClipFixedPosition(),
-            fixed->FirstFragment().LocalBorderBoxProperties()->Clip());
+            fixed->FirstFragment().LocalBorderBoxProperties().Clip());
   EXPECT_EQ(FramePreTranslation(),
-            fixed->FirstFragment().LocalBorderBoxProperties()->Transform());
+            fixed->FirstFragment().LocalBorderBoxProperties().Transform());
   EXPECT_EQ(LayoutPoint(654, 321), fixed->FirstFragment().PaintOffset());
   CHECK_VISUAL_RECT(LayoutRect(), fixed, GetDocument().View()->GetLayoutView(),
                     // TODO(crbug.com/599939): CSS clip of fixed-position
@@ -2973,9 +2973,9 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsTreeState) {
   // content).
   EXPECT_TRUE(!FrameScrollTranslation());
   EXPECT_EQ(FramePreTranslation(),
-            clipper->FirstFragment().LocalBorderBoxProperties()->Transform());
+            clipper->FirstFragment().LocalBorderBoxProperties().Transform());
   EXPECT_EQ(FrameContentClip(),
-            clipper->FirstFragment().LocalBorderBoxProperties()->Clip());
+            clipper->FirstFragment().LocalBorderBoxProperties().Clip());
 
   auto contents_properties = clipper->FirstFragment().ContentsProperties();
   EXPECT_EQ(LayoutPoint(30, 20), clipper->FirstFragment().PaintOffset());
@@ -2983,12 +2983,12 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsTreeState) {
   EXPECT_EQ(clip_properties->OverflowClip(), contents_properties.Clip());
 
   EXPECT_EQ(FramePreTranslation(),
-            child->FirstFragment().LocalBorderBoxProperties()->Transform());
+            child->FirstFragment().LocalBorderBoxProperties().Transform());
   EXPECT_EQ(clip_properties->OverflowClip(),
-            child->FirstFragment().LocalBorderBoxProperties()->Clip());
+            child->FirstFragment().LocalBorderBoxProperties().Clip());
 
   EXPECT_NE(nullptr,
-            child->FirstFragment().LocalBorderBoxProperties()->Effect());
+            child->FirstFragment().LocalBorderBoxProperties().Effect());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
 }
 
@@ -3012,9 +3012,9 @@ TEST_P(PaintPropertyTreeBuilderTest, ContainsPaintContentsTreeState) {
   // content).
   EXPECT_TRUE(!FrameScrollTranslation());
   EXPECT_EQ(FramePreTranslation(),
-            clipper->FirstFragment().LocalBorderBoxProperties()->Transform());
+            clipper->FirstFragment().LocalBorderBoxProperties().Transform());
   EXPECT_EQ(FrameContentClip(),
-            clipper->FirstFragment().LocalBorderBoxProperties()->Clip());
+            clipper->FirstFragment().LocalBorderBoxProperties().Clip());
 
   auto contents_properties = clipper->FirstFragment().ContentsProperties();
   EXPECT_EQ(LayoutPoint(30, 20), clipper->FirstFragment().PaintOffset());
@@ -3022,12 +3022,12 @@ TEST_P(PaintPropertyTreeBuilderTest, ContainsPaintContentsTreeState) {
   EXPECT_EQ(clip_properties->OverflowClip(), contents_properties.Clip());
 
   EXPECT_EQ(FramePreTranslation(),
-            child->FirstFragment().LocalBorderBoxProperties()->Transform());
+            child->FirstFragment().LocalBorderBoxProperties().Transform());
   EXPECT_EQ(clip_properties->OverflowClip(),
-            child->FirstFragment().LocalBorderBoxProperties()->Clip());
+            child->FirstFragment().LocalBorderBoxProperties().Clip());
 
   EXPECT_NE(nullptr,
-            child->FirstFragment().LocalBorderBoxProperties()->Effect());
+            child->FirstFragment().LocalBorderBoxProperties().Effect());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 400, 500), child, clipper);
 }
 
@@ -3056,12 +3056,12 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsTreeState) {
 
   EXPECT_EQ(FrameScrollTranslation(), clipper->FirstFragment()
                                           .LocalBorderBoxProperties()
-                                          ->Transform()
+                                          .Transform()
                                           ->Parent());
   EXPECT_EQ(clip_properties->PaintOffsetTranslation(),
-            clipper->FirstFragment().LocalBorderBoxProperties()->Transform());
+            clipper->FirstFragment().LocalBorderBoxProperties().Transform());
   EXPECT_EQ(FrameContentClip(),
-            clipper->FirstFragment().LocalBorderBoxProperties()->Clip());
+            clipper->FirstFragment().LocalBorderBoxProperties().Clip());
 
   auto contents_properties = clipper->FirstFragment().ContentsProperties();
   EXPECT_EQ(
@@ -3073,9 +3073,9 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsTreeState) {
   EXPECT_EQ(clip_properties->OverflowClip(), contents_properties.Clip());
 
   EXPECT_EQ(clip_properties->ScrollTranslation(),
-            child->FirstFragment().LocalBorderBoxProperties()->Transform());
+            child->FirstFragment().LocalBorderBoxProperties().Transform());
   EXPECT_EQ(clip_properties->OverflowClip(),
-            child->FirstFragment().LocalBorderBoxProperties()->Clip());
+            child->FirstFragment().LocalBorderBoxProperties().Clip());
 
   CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
 }
@@ -3148,10 +3148,10 @@ TEST_P(PaintPropertyTreeBuilderTest, CssClipContentsTreeState) {
   // content).
   EXPECT_TRUE(!FrameScrollTranslation());
   EXPECT_EQ(FramePreTranslation(),
-            clipper->FirstFragment().LocalBorderBoxProperties()->Transform());
+            clipper->FirstFragment().LocalBorderBoxProperties().Transform());
   // CSS clip on an element causes it to clip itself, not just descendants.
   EXPECT_EQ(clip_properties->CssClip(),
-            clipper->FirstFragment().LocalBorderBoxProperties()->Clip());
+            clipper->FirstFragment().LocalBorderBoxProperties().Clip());
 
   auto contents_properties = clipper->FirstFragment().ContentsProperties();
   EXPECT_EQ(LayoutPoint(30, 20), clipper->FirstFragment().PaintOffset());
@@ -3185,11 +3185,11 @@ TEST_P(PaintPropertyTreeBuilderTest,
       *GetLayoutObjectByElementId("svgWithViewBox");
   EXPECT_EQ(FramePreTranslation(), svg_with_view_box.FirstFragment()
                                        .LocalBorderBoxProperties()
-                                       ->Transform()
+                                       .Transform()
                                        ->Parent());
   EXPECT_EQ(FloatSize(30, 20), svg_with_view_box.FirstFragment()
                                    .LocalBorderBoxProperties()
-                                   ->Transform()
+                                   .Transform()
                                    ->Matrix()
                                    .To2DTranslation());
 
@@ -4212,9 +4212,9 @@ TEST_P(PaintPropertyTreeBuilderTest, FilterReparentClips) {
   }
 
   const PropertyTreeState& child_paint_state =
-      *GetLayoutObjectByElementId("child")
-           ->FirstFragment()
-           .LocalBorderBoxProperties();
+      GetLayoutObjectByElementId("child")
+          ->FirstFragment()
+          .LocalBorderBoxProperties();
 
   // This will change once we added clip expansion node.
   EXPECT_EQ(filter_properties->Filter()->OutputClip(),
@@ -4316,13 +4316,13 @@ TEST_P(PaintPropertyTreeBuilderTest, ChangePositionUpdateDescendantProperties) {
   LayoutObject* ancestor = GetLayoutObjectByElementId("ancestor");
   LayoutObject* descendant = GetLayoutObjectByElementId("descendant");
   EXPECT_EQ(ancestor->FirstFragment().PaintProperties()->OverflowClip(),
-            descendant->FirstFragment().LocalBorderBoxProperties()->Clip());
+            descendant->FirstFragment().LocalBorderBoxProperties().Clip());
 
   ToElement(ancestor->GetNode())
       ->setAttribute(HTMLNames::styleAttr, "position: static");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_NE(ancestor->FirstFragment().PaintProperties()->OverflowClip(),
-            descendant->FirstFragment().LocalBorderBoxProperties()->Clip());
+            descendant->FirstFragment().LocalBorderBoxProperties().Clip());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
@@ -4392,10 +4392,9 @@ TEST_P(PaintPropertyTreeBuilderTest, FloatUnderInline) {
   EXPECT_EQ(0.5f, effect->Opacity());
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
-  ASSERT_TRUE(target->FirstFragment().LocalBorderBoxProperties());
   EXPECT_EQ(LayoutPoint(66, 55), target->FirstFragment().PaintOffset());
   EXPECT_EQ(effect,
-            target->FirstFragment().LocalBorderBoxProperties()->Effect());
+            target->FirstFragment().LocalBorderBoxProperties().Effect());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ScrollNodeHasCompositorElementId) {
@@ -4457,12 +4456,12 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskSimple) {
 
   const auto* target = GetLayoutObjectByElementId("target");
   EXPECT_EQ(output_clip,
-            target->FirstFragment().LocalBorderBoxProperties()->Clip());
+            target->FirstFragment().LocalBorderBoxProperties().Clip());
   EXPECT_EQ(FrameContentClip(), output_clip->Parent());
   EXPECT_EQ(FloatRoundedRect(8, 8, 300, 200), output_clip->ClipRect());
 
   EXPECT_EQ(properties->Effect(),
-            target->FirstFragment().LocalBorderBoxProperties()->Effect());
+            target->FirstFragment().LocalBorderBoxProperties().Effect());
   EXPECT_TRUE(properties->Effect()->Parent()->IsRoot());
   EXPECT_EQ(SkBlendMode::kSrcOver, properties->Effect()->BlendMode());
   EXPECT_EQ(output_clip, properties->Effect()->OutputClip());
@@ -4490,12 +4489,12 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskWithOutset) {
 
   const auto* target = GetLayoutObjectByElementId("target");
   EXPECT_EQ(output_clip,
-            target->FirstFragment().LocalBorderBoxProperties()->Clip());
+            target->FirstFragment().LocalBorderBoxProperties().Clip());
   EXPECT_EQ(FrameContentClip(), output_clip->Parent());
   EXPECT_EQ(FloatRoundedRect(-12, -2, 340, 220), output_clip->ClipRect());
 
   EXPECT_EQ(properties->Effect(),
-            target->FirstFragment().LocalBorderBoxProperties()->Effect());
+            target->FirstFragment().LocalBorderBoxProperties().Effect());
   EXPECT_TRUE(properties->Effect()->Parent()->IsRoot());
   EXPECT_EQ(SkBlendMode::kSrcOver, properties->Effect()->BlendMode());
   EXPECT_EQ(output_clip, properties->Effect()->OutputClip());
@@ -4533,7 +4532,7 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskEscapeClip) {
       target_properties->OverflowClip();
   const auto* target = GetLayoutObjectByElementId("target");
   const TransformPaintPropertyNode* scroll_translation =
-      target->FirstFragment().LocalBorderBoxProperties()->Transform();
+      target->FirstFragment().LocalBorderBoxProperties().Transform();
 
   const ObjectPaintProperties* scroll_properties =
       PaintPropertiesForElement("scroll");
@@ -4544,7 +4543,7 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskEscapeClip) {
             overflow_clip1->LocalTransformSpace());
 
   EXPECT_EQ(mask_clip,
-            target->FirstFragment().LocalBorderBoxProperties()->Clip());
+            target->FirstFragment().LocalBorderBoxProperties().Clip());
   EXPECT_EQ(overflow_clip1, mask_clip->Parent());
   EXPECT_EQ(FloatRoundedRect(0, 0, 220, 320), mask_clip->ClipRect());
   EXPECT_EQ(scroll_translation, mask_clip->LocalTransformSpace());
@@ -4554,7 +4553,7 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskEscapeClip) {
   EXPECT_EQ(scroll_translation, overflow_clip2->LocalTransformSpace());
 
   EXPECT_EQ(target_properties->Effect(),
-            target->FirstFragment().LocalBorderBoxProperties()->Effect());
+            target->FirstFragment().LocalBorderBoxProperties().Effect());
   EXPECT_TRUE(target_properties->Effect()->Parent()->IsRoot());
   EXPECT_EQ(SkBlendMode::kSrcOver, target_properties->Effect()->BlendMode());
   EXPECT_EQ(mask_clip, target_properties->Effect()->OutputClip());
@@ -4565,17 +4564,16 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskEscapeClip) {
 
   const auto* absolute = GetLayoutObjectByElementId("absolute");
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_EQ(
-        FramePreTranslation(),
-        absolute->FirstFragment().LocalBorderBoxProperties()->Transform());
+    EXPECT_EQ(FramePreTranslation(),
+              absolute->FirstFragment().LocalBorderBoxProperties().Transform());
   } else {
     // For SPv1*, |absolute| is composited so we created PaintOffsetTranslation.
     EXPECT_EQ(
         absolute->FirstFragment().PaintProperties()->PaintOffsetTranslation(),
-        absolute->FirstFragment().LocalBorderBoxProperties()->Transform());
+        absolute->FirstFragment().LocalBorderBoxProperties().Transform());
   }
   EXPECT_EQ(mask_clip,
-            absolute->FirstFragment().LocalBorderBoxProperties()->Clip());
+            absolute->FirstFragment().LocalBorderBoxProperties().Clip());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, MaskInline) {
@@ -4604,12 +4602,12 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskInline) {
   const auto* target = GetLayoutObjectByElementId("target");
 
   EXPECT_EQ(output_clip,
-            target->FirstFragment().LocalBorderBoxProperties()->Clip());
+            target->FirstFragment().LocalBorderBoxProperties().Clip());
   EXPECT_EQ(FrameContentClip(), output_clip->Parent());
   EXPECT_EQ(FloatRoundedRect(104, 21, 432, 16), output_clip->ClipRect());
 
   EXPECT_EQ(properties->Effect(),
-            target->FirstFragment().LocalBorderBoxProperties()->Effect());
+            target->FirstFragment().LocalBorderBoxProperties().Effect());
   EXPECT_TRUE(properties->Effect()->Parent()->IsRoot());
   EXPECT_EQ(SkBlendMode::kSrcOver, properties->Effect()->BlendMode());
   EXPECT_EQ(output_clip, properties->Effect()->OutputClip());
@@ -4620,9 +4618,9 @@ TEST_P(PaintPropertyTreeBuilderTest, MaskInline) {
 
   const auto* overflowing = GetLayoutObjectByElementId("overflowing");
   EXPECT_EQ(output_clip,
-            overflowing->FirstFragment().LocalBorderBoxProperties()->Clip());
+            overflowing->FirstFragment().LocalBorderBoxProperties().Clip());
   EXPECT_EQ(properties->Effect(),
-            overflowing->FirstFragment().LocalBorderBoxProperties()->Effect());
+            overflowing->FirstFragment().LocalBorderBoxProperties().Effect());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, SVGResource) {
