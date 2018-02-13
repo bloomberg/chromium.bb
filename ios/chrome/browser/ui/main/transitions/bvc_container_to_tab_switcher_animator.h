@@ -13,8 +13,7 @@
     : NSObject<UIViewControllerAnimatedTransitioning>
 
 // The TabSwitcher to animate.
-@property(nonatomic, readwrite, weak)
-    UIViewController<TabSwitcher>* tabSwitcher;
+@property(nonatomic, readwrite, weak) id<TabSwitcher> tabSwitcher;
 
 @end
 

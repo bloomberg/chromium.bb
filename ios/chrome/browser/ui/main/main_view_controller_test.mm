@@ -30,6 +30,10 @@
                               activeTabModel:(TabModel*)activeModel {
 }
 
+- (UIViewController*)viewController {
+  return self;
+}
+
 - (void)showWithSelectedTabAnimation {
 }
 
@@ -48,7 +52,7 @@
 
 @end
 
-UIViewController<TabSwitcher>* MainViewControllerTest::CreateTestTabSwitcher() {
+id<TabSwitcher> MainViewControllerTest::CreateTestTabSwitcher() {
   return [[TestTabSwitcherViewController alloc] init];
 }
 

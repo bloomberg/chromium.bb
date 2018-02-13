@@ -70,6 +70,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui:ui_internal",
+    "//ios/chrome/browser/ui/tab_switcher",
     "//ios/chrome/test:block_cleanup_test",
     "//ios/web/public/test",
     "//testing/gtest",

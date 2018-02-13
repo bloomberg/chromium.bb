@@ -624,6 +624,10 @@ NSString* const kTransitionToolbarAnimationKey =
   [_modeSwitchRecognizer setDelegate:self];
 }
 
+- (UIViewController*)viewController {
+  return self;
+}
+
 - (void)restoreInternalStateWithMainTabModel:(TabModel*)mainModel
                                  otrTabModel:(TabModel*)otrModel
                               activeTabModel:(TabModel*)activeModel {

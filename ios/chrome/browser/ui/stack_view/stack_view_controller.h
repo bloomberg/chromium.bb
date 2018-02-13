@@ -11,7 +11,6 @@
 #include "ui/base/page_transition_types.h"
 
 @protocol ApplicationCommands;
-class GURL;
 @class Tab;
 @class TabModel;
 
@@ -28,7 +27,6 @@ class GURL;
 // Controller for the tab-switching UI displayed as a stack of tabs.
 @interface StackViewController : UIViewController<TabSwitcher>
 
-@property(nonatomic, weak) id<TabSwitcherDelegate> delegate;
 @property(nonatomic, weak) id<StackViewControllerTestDelegate> testDelegate;
 
 // Initializes with the given tab models, which must not be nil.
@@ -45,39 +43,11 @@ class GURL;
           applicationCommandEndpoint:
               (id<ApplicationCommands>)applicationCommandEndpoint;
 
-// Restores internal state with the given tab models, which must not be nil.
-// |activeTabModel| is the model which starts active, and must be one of the
-// other two models. Should only be called when the object is not being shown.
-- (void)restoreInternalStateWithMainTabModel:(TabModel*)mainModel
-                                 otrTabModel:(TabModel*)otrModel
-                              activeTabModel:(TabModel*)activeModel;
-
-// Updates the otr tab model. Should only be called when both the current otr
-// tab model and the new otr tab model are either nil or contain no tabs. Must
-// be called when the otr tab model will be deleted because the incognito
-// browser state is deleted.
-- (void)setOtrTabModel:(TabModel*)otrModel;
-
-// Performs an animation to zoom the selected tab from the full size of the
-// content area to its proper place in the stack. Should be called after the
-// view has been made visible.
-- (void)showWithSelectedTabAnimation;
-
 // Performs an animation to zoom the selected tab to the full size of the
 // content area. When the animation completes, calls
 // |-stackViewControllerDismissAnimationWillStartWithActiveModel:| and
 // |-stackViewControllerDismissAnimationDidEnd| on the delegate.
 - (void)dismissWithSelectedTabAnimation;
-
-// If the stack view is not already being dismissed, switches to |targetModel|'s
-// mode and performs the animation for switching out of the stack view while
-// simultaneously opening a tab with |url| in |targetModel| at the given
-// |position| with |transition|. Otherwise, simply returns nil.
-// If |position| == NSNotFound the tab will be added at the end of the stack.
-- (Tab*)dismissWithNewTabAnimationToModel:(TabModel*)targetModel
-                                  withURL:(const GURL&)url
-                                  atIndex:(NSUInteger)position
-                               transition:(ui::PageTransition)transition;
 
 @end
 

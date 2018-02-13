@@ -21,7 +21,7 @@
 // Displays the given TabSwitcher, replacing any TabSwitchers or view
 // controllers that may currently be visible.  Runs the given |completion| block
 // after the view controller is visible.
-- (void)showTabSwitcher:(UIViewController<TabSwitcher>*)tabSwitcher
+- (void)showTabSwitcher:(id<TabSwitcher>)tabSwitcher
              completion:(ProceduralBlock)completion;
 
 // Displays the given view controller, replacing any TabSwitchers or other view

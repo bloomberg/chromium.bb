@@ -125,8 +125,7 @@ id<ApplicationCommands, BrowserCommands> DispatcherForActiveViewController() {
   if (bvc)
     return bvc.dispatcher;
   if ([vc conformsToProtocol:@protocol(TabSwitcher)]) {
-    UIViewController<TabSwitcher>* tabSwitcher =
-        static_cast<UIViewController<TabSwitcher>*>(vc);
+    id<TabSwitcher> tabSwitcher = static_cast<id<TabSwitcher>>(vc);
     return tabSwitcher.dispatcher;
   }
   return nil;

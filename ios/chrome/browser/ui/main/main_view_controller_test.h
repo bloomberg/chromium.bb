@@ -18,9 +18,8 @@ class MainViewControllerTest : public BlockCleanupTest {
   ~MainViewControllerTest() override = default;
 
  protected:
-  // Creates and returns a UIViewController that conforms to the TabSwitcher
-  // protocol.
-  UIViewController<TabSwitcher>* CreateTestTabSwitcher();
+  // Creates and returns an object that conforms to the TabSwitcher protocol.
+  id<TabSwitcher> CreateTestTabSwitcher();
 
   // Sets the current key window's rootViewController and saves a pointer to
   // the original VC to allow restoring it at the end of the test.

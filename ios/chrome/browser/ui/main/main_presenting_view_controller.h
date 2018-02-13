@@ -16,7 +16,7 @@
 @interface MainPresentingViewController
     : UIViewController<ViewControllerSwapping>
 
-@property(nonatomic, readonly, weak) UIViewController<TabSwitcher>* tabSwitcher;
+@property(nonatomic, readonly, weak) id<TabSwitcher> tabSwitcher;
 
 // If this property is YES, calls to |showTabSwitcher:completion:| and
 // |showTabViewController:completion:| will present the given view controllers

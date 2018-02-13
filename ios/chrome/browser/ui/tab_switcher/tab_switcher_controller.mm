@@ -386,6 +386,10 @@ enum class SnapshotViewOption {
   [self selectPanelForTabModel:activeModel];
 }
 
+- (UIViewController*)viewController {
+  return self;
+}
+
 - (void)setOtrTabModel:(TabModel*)otrModel {
   [_cache setMainTabModel:[_cache mainTabModel] otrTabModel:otrModel];
   [_tabSwitcherModel setMainTabModel:[_tabSwitcherModel mainTabModel]
