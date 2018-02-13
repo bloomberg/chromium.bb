@@ -37,6 +37,9 @@ class CORE_EXPORT ScrollAnchor final {
   // notifyBeforeLayout() and cached until the next call to clear().
   LayoutObject* AnchorObject() const { return anchor_object_; }
 
+  // Called when the scroller attached to this anchor is being destroyed.
+  void Dispose();
+
   // Indicates that this ScrollAnchor, and all ancestor ScrollAnchors, should
   // compute new anchor nodes on their next notifyBeforeLayout().
   void Clear();

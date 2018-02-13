@@ -382,6 +382,8 @@ void LocalFrameView::Dispose() {
           this->GetScrollingCoordinator())
     scrolling_coordinator->WillDestroyScrollableArea(this);
 
+  scroll_anchor_.Dispose();
+
   Page* page = frame_->GetPage();
   // TODO(dcheng): It's wrong that the frame can be detached before the
   // LocalFrameView. Figure out what's going on and fix LocalFrameView to be
@@ -3256,6 +3258,11 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
 void LocalFrameView::EnqueueScrollAnchoringAdjustment(
     ScrollableArea* scrollable_area) {
   anchoring_adjustment_queue_.insert(scrollable_area);
+}
+
+void LocalFrameView::DequeueScrollAnchoringAdjustment(
+    ScrollableArea* scrollable_area) {
+  anchoring_adjustment_queue_.erase(scrollable_area);
 }
 
 void LocalFrameView::PerformScrollAnchoringAdjustments() {
