@@ -26,10 +26,10 @@ class CONTENT_EXPORT SignedExchangeHeaderParser {
     std::string label;
     std::string sig;
     std::string integrity;
-    std::string certUrl;
-    std::string certSha256;
-    std::string ed25519Key;
-    std::string validityUrl;
+    std::string cert_url;
+    std::string cert_sha256;
+    std::string ed25519_key;
+    std::string validity_url;
     uint64_t date;
     uint64_t expires;
   };

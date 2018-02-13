@@ -214,10 +214,10 @@ SignedExchangeHeaderParser::ParseSignature(const std::string& signature_str) {
     sig.label = value.label;
     sig.sig = value.params["sig"];
     sig.integrity = value.params["integrity"];
-    sig.certUrl = value.params["certUrl"];
-    sig.certSha256 = value.params["certSha256"];
-    sig.ed25519Key = value.params["ed25519Key"];
-    sig.validityUrl = value.params["validityUrl"];
+    sig.cert_url = value.params["certUrl"];
+    sig.cert_sha256 = value.params["certSha256"];
+    sig.ed25519_key = value.params["ed25519Key"];
+    sig.validity_url = value.params["validityUrl"];
 
     if (!base::StringToUint64(value.params["date"], &sig.date)) {
       DVLOG(1) << "ParseSignature: 'date' parameter is not a number: "
@@ -230,14 +230,14 @@ SignedExchangeHeaderParser::ParseSignature(const std::string& signature_str) {
       return base::nullopt;
     }
 
-    bool hasCert = !sig.certUrl.empty() && !sig.certSha256.empty();
-    bool hasEd25519Key = !sig.ed25519Key.empty();
-    if (sig.sig.empty() || sig.integrity.empty() || sig.validityUrl.empty() ||
-        (!hasCert && !hasEd25519Key)) {
+    bool has_cert = !sig.cert_url.empty() && !sig.cert_sha256.empty();
+    bool has_ed25519_key = !sig.ed25519_key.empty();
+    if (sig.sig.empty() || sig.integrity.empty() || sig.validity_url.empty() ||
+        (!has_cert && !has_ed25519_key)) {
       DVLOG(1) << "ParseSignature: incomplete signature";
       return base::nullopt;
     }
-    if (hasCert && hasEd25519Key) {
+    if (has_cert && has_ed25519_key) {
       DVLOG(1) << "ParseSignature: signature has both certUrl and ed25519Key";
       return base::nullopt;
     }
