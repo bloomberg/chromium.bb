@@ -55,15 +55,15 @@ TEST_F(JsAutofillManagerTest, InitAndInject) {
 // Tests forms extraction method
 // (fetchFormsWithRequirements:minimumRequiredFieldsCount:completionHandler:).
 TEST_F(JsAutofillManagerTest, ExtractForms) {
-  LoadHtml(@"<html><body><form name='testform' method='post'>"
-            "<input type='text' name='firstname'/>"
-            "<input type='text' name='lastname'/>"
-            "<input type='email' name='email'/>"
-            "</form></body></html>");
+  LoadHtml(
+      @"<html><body><form name='testform'>"
+       "<input type='text' name='firstname'/>"
+       "<input type='text' name='lastname'/>"
+       "<input type='email' name='email'/>"
+       "</form></body></html>");
 
   NSDictionary* expected = @{
     @"name" : @"testform",
-    @"method" : @"post",
     @"fields" : @[
       @{
         @"name" : @"firstname",
@@ -110,23 +110,24 @@ TEST_F(JsAutofillManagerTest, ExtractForms) {
     return block_was_called;
   });
 
-  NSDictionary* resultDict = [NSJSONSerialization
+  NSArray* resultArray = [NSJSONSerialization
       JSONObjectWithData:[result dataUsingEncoding:NSUTF8StringEncoding]
                  options:0
                    error:nil];
-  EXPECT_NSNE(nil, resultDict);
+  EXPECT_NSNE(nil, resultArray);
 
-  NSDictionary* forms = [resultDict[@"forms"] firstObject];
+  NSDictionary* form = [resultArray firstObject];
   [expected enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL* stop) {
-    EXPECT_NSEQ(forms[key], obj);
+    EXPECT_NSEQ(form[key], obj);
   }];
 }
 
 // Tests form filling (fillActiveFormField:completionHandler:) method.
 TEST_F(JsAutofillManagerTest, FillActiveFormField) {
-  LoadHtml(@"<html><body><form name='testform' method='post'>"
-            "<input type='email' name='email'/>"
-            "</form></body></html>");
+  LoadHtml(
+      @"<html><body><form name='testform'>"
+       "<input type='email' name='email'/>"
+       "</form></body></html>");
 
   NSString* get_element_javascript = @"document.getElementsByName('email')[0]";
   NSString* focus_element_javascript =

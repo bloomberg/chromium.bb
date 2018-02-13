@@ -1360,7 +1360,6 @@ void AutofillControllerJsTest::TestWebFormElementToFormData(
     // and here data url is used.
     NSMutableArray* verifying_javascripts = [NSMutableArray
         arrayWithObjects:@"form['name'] === 'TestForm'",
-                         @"form['method'] === 'post'",
                          @"form['origin'] === window.location.href", nil];
     ExtractMask extract_mask = kFormExtractMasks[extract_index];
     [verifying_javascripts
@@ -1403,8 +1402,7 @@ TEST_F(AutofillControllerJsTest, WebFormElementToFormData) {
 }
 
 TEST_F(AutofillControllerJsTest, WebFormElementToFormDataTooManyFields) {
-  NSString* html_fragment =
-      @"<FORM name='Test' action='http://c.com' method='post'>";
+  NSString* html_fragment = @"<FORM name='Test' action='http://c.com'>";
   // In autofill_controller.js, the maximum number of parsable element is 200
   // (__gCrWeb.autofill.MAX_PARSEABLE_FIELDS = 200). Here an HTML page with 201
   // elements is generated for testing.
@@ -1420,8 +1418,7 @@ TEST_F(AutofillControllerJsTest, WebFormElementToFormDataTooManyFields) {
 }
 
 TEST_F(AutofillControllerJsTest, WebFormElementToFormEmpty) {
-  NSString* html_fragment =
-      @"<FORM name='Test' action='http://c.com' method='post'>";
+  NSString* html_fragment = @"<FORM name='Test' action='http://c.com'>";
   html_fragment = [html_fragment stringByAppendingFormat:@"</FORM>"];
 
   LoadHtml(html_fragment);
@@ -1447,10 +1444,6 @@ void AutofillControllerJsTest::TestExtractNewForms(
         addObject:[NSString stringWithFormat:@"forms[%" PRIuNS
                                               "]['name'] === '%@'",
                                              i, formName]];
-    [verifying_javascripts
-        addObject:[NSString stringWithFormat:@"forms[%" PRIuNS
-                                              "]['method'] === 'post'",
-                                             i]];
     if (is_origin_window_location) {
       [verifying_javascripts
           addObject:[NSString stringWithFormat:
@@ -1511,9 +1504,8 @@ TEST_F(AutofillControllerJsTest, ExtractFormsAndFormElements) {
 
   NSString* html = @"<html><body>";
   for (NSArray* testFormItems in test_forms) {
-    html = [html
-        stringByAppendingString:
-            @"<form name='TestForm' action='http://c.com' method='post'>"];
+    html = [html stringByAppendingString:
+                     @"<form name='TestForm' action='http://c.com'>"];
     for (NSArray* testItem in testFormItems) {
       html = [html stringByAppendingString:[testItem objectAtIndex:0U]];
     }
@@ -1550,9 +1542,8 @@ TEST_F(AutofillControllerJsTest,
 
 TEST_F(AutofillControllerJsTest, ExtractForms) {
   NSString* html = @"<html><body>";
-  html =
-      [html stringByAppendingString:
-                @"<form name='TestForm' action='http://c.com' method='post'>"];
+  html = [html
+      stringByAppendingString:@"<form name='TestForm' action='http://c.com'>"];
   html = [html
       stringByAppendingString:[GetTestFormInputElementWithLabelFromPrevious()
                                   objectAtIndex:0U]];
@@ -1573,7 +1564,6 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
 
   NSDictionary* expected = @{
     @"name" : @"TestForm",
-    @"method" : @"post",
     @"fields" : @[
       @{
         @"name" : @"firstname",
@@ -1659,15 +1649,16 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
   NSString* result =
       ExecuteJavaScriptWithFormat(@"__gCrWeb.autofill.extractForms(%zu)",
                                   autofill::MinRequiredFieldsForHeuristics());
-  NSDictionary* resultDict = [NSJSONSerialization
+  NSArray* resultArray = [NSJSONSerialization
       JSONObjectWithData:[result dataUsingEncoding:NSUTF8StringEncoding]
                  options:0
                    error:nil];
-  ASSERT_NSNE(nil, resultDict);
+  ASSERT_NSNE(nil, resultArray);
+  EXPECT_EQ(1u, [resultArray count]);
 
-  NSDictionary* forms = [resultDict[@"forms"] objectAtIndex:0];
+  NSDictionary* form = [resultArray objectAtIndex:0];
   [expected enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL* stop) {
-    EXPECT_NSEQ(forms[key], obj);
+    EXPECT_NSEQ(form[key], obj);
   }];
 
   // Test with Object.prototype.toJSON override.
@@ -1675,15 +1666,15 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
       @"Object.prototype.toJSON=function(){return 'abcde';};"
        "__gCrWeb.autofill.extractForms(%zu)",
       autofill::MinRequiredFieldsForHeuristics());
-  resultDict = [NSJSONSerialization
+  resultArray = [NSJSONSerialization
       JSONObjectWithData:[result dataUsingEncoding:NSUTF8StringEncoding]
                  options:0
                    error:nil];
-  ASSERT_NSNE(nil, resultDict);
+  ASSERT_NSNE(nil, resultArray);
 
-  forms = [resultDict[@"forms"] objectAtIndex:0];
+  form = [resultArray objectAtIndex:0];
   [expected enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL* stop) {
-    EXPECT_NSEQ(forms[key], obj);
+    EXPECT_NSEQ(form[key], obj);
   }];
 
   // Test with Array.prototype.toJSON override.
@@ -1691,15 +1682,15 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
       @"Array.prototype.toJSON=function(){return 'abcde';};"
        "__gCrWeb.autofill.extractForms(%zu)",
       autofill::MinRequiredFieldsForHeuristics());
-  resultDict = [NSJSONSerialization
+  resultArray = [NSJSONSerialization
       JSONObjectWithData:[result dataUsingEncoding:NSUTF8StringEncoding]
                  options:0
                    error:nil];
-  ASSERT_NSNE(nil, resultDict);
+  ASSERT_NSNE(nil, resultArray);
 
-  forms = [resultDict[@"forms"] objectAtIndex:0];
+  form = [resultArray objectAtIndex:0];
   [expected enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL* stop) {
-    EXPECT_NSEQ(forms[key], obj);
+    EXPECT_NSEQ(form[key], obj);
   }];
 }
 
@@ -1733,14 +1724,14 @@ TEST_F(AutofillControllerJsTest, ExtractNewForms) {
   NSArray* testCases = @[
     // An empty form should not be extracted
     @{
-      @"html" : @"<FORM name='TestForm' action='http://buh.com' method='post'>"
+      @"html" : @"<FORM name='TestForm' action='http://buh.com'>"
                  "</FORM>",
       @"expected_forms" : @0
     },
     // A form with less than three fields with no autocomplete type(s) should
     // not be extracted.
     @{
-      @"html" : @"<FORM name='TestForm' action='http://buh.com' method='post'>"
+      @"html" : @"<FORM name='TestForm' action='http://buh.com'>"
                  "  <INPUT type='name' id='firstname'/>"
                  "</FORM>",
       @"expected_forms" : @0
@@ -1748,7 +1739,7 @@ TEST_F(AutofillControllerJsTest, ExtractNewForms) {
     // A form with less than three fields with at least one autocomplete type
     // should be extracted.
     @{
-      @"html" : @"<FORM name='TestForm' action='http://buh.com' method='post'>"
+      @"html" : @"<FORM name='TestForm' action='http://buh.com'>"
                  "  <INPUT type='name' id='firstname'"
                  "         autocomplete='given-name'/>"
                  "</FORM>",
@@ -1756,7 +1747,7 @@ TEST_F(AutofillControllerJsTest, ExtractNewForms) {
     },
     // A form with three or more fields should be extracted.
     @{
-      @"html" : @"<FORM name='TestForm' action='http://buh.com' method='post'>"
+      @"html" : @"<FORM name='TestForm' action='http://buh.com'>"
                  "  <INPUT type='text' id='firstname'/>"
                  "  <INPUT type='text' id='lastname'/>"
                  "  <INPUT type='text' id='email'/>"
@@ -1772,14 +1763,14 @@ TEST_F(AutofillControllerJsTest, ExtractNewForms) {
     NSString* result =
         ExecuteJavaScriptWithFormat(@"__gCrWeb.autofill.extractForms(%zu)",
                                     autofill::MinRequiredFieldsForHeuristics());
-    NSDictionary* resultDict = [NSJSONSerialization
+    NSArray* resultArray = [NSJSONSerialization
         JSONObjectWithData:[result dataUsingEncoding:NSUTF8StringEncoding]
                    options:0
                      error:nil];
-    ASSERT_NSNE(nil, resultDict);
+    ASSERT_NSNE(nil, resultArray);
     NSUInteger expectedCount =
         [testCase[@"expected_forms"] unsignedIntegerValue];
-    EXPECT_EQ(expectedCount, [resultDict[@"forms"] count])
+    EXPECT_EQ(expectedCount, [resultArray count])
         << base::SysNSStringToUTF8(testCase[@"html"]);
   }
 }
