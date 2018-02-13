@@ -1058,14 +1058,14 @@ TEST_F(TaskSchedulerTaskTrackerTest, RunNextTaskReturnsSequenceToReschedule) {
 // scheduled background sequences has run).
 TEST_F(TaskSchedulerTaskTrackerTest,
        WillScheduleBackgroundSequenceWithMaxBackgroundSequences) {
-  constexpr int kMaxNumDispatchedBackgroundSequences = 2;
-  TaskTracker tracker("Test", kMaxNumDispatchedBackgroundSequences);
+  constexpr int kMaxNumScheduledBackgroundSequences = 2;
+  TaskTracker tracker("Test", kMaxNumScheduledBackgroundSequences);
 
-  // Simulate posting |kMaxNumDispatchedBackgroundSequences| background tasks
+  // Simulate posting |kMaxNumScheduledBackgroundSequences| background tasks
   // and scheduling the associated sequences. This should succeed.
   std::vector<scoped_refptr<Sequence>> scheduled_sequences;
   testing::StrictMock<MockCanScheduleSequenceObserver> never_notified_observer;
-  for (int i = 0; i < kMaxNumDispatchedBackgroundSequences; ++i) {
+  for (int i = 0; i < kMaxNumScheduledBackgroundSequences; ++i) {
     Task task(FROM_HERE, BindOnce(&DoNothing),
               TaskTraits(TaskPriority::BACKGROUND), TimeDelta());
     EXPECT_TRUE(tracker.WillPostTask(task));
@@ -1084,7 +1084,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
       std::unique_ptr<testing::StrictMock<MockCanScheduleSequenceObserver>>>
       extra_observers;
   std::vector<scoped_refptr<Sequence>> extra_sequences;
-  for (int i = 0; i < kMaxNumDispatchedBackgroundSequences; ++i) {
+  for (int i = 0; i < kMaxNumScheduledBackgroundSequences; ++i) {
     extra_tasks_did_run.push_back(std::make_unique<bool>());
     Task extra_task(
         FROM_HERE,
@@ -1105,7 +1105,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   // Run the sequences scheduled at the beginning of the test. Expect an
   // observer from |extra_observer| to be notified every time a task finishes to
   // run.
-  for (int i = 0; i < kMaxNumDispatchedBackgroundSequences; ++i) {
+  for (int i = 0; i < kMaxNumScheduledBackgroundSequences; ++i) {
     EXPECT_CALL(*extra_observers[i].get(),
                 MockOnCanScheduleSequence(extra_sequences[i].get()));
     EXPECT_FALSE(
@@ -1114,7 +1114,7 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   }
 
   // Run the extra sequences.
-  for (int i = 0; i < kMaxNumDispatchedBackgroundSequences; ++i) {
+  for (int i = 0; i < kMaxNumScheduledBackgroundSequences; ++i) {
     EXPECT_FALSE(*extra_tasks_did_run[i]);
     EXPECT_FALSE(
         tracker.RunNextTask(extra_sequences[i], &never_notified_observer));
@@ -1137,8 +1137,8 @@ void SetBool(bool* arg) {
 // time (compared to the next task in the sequence assigned to RunNextTask()).
 TEST_F(TaskSchedulerTaskTrackerTest,
        RunNextBackgroundTaskWithEarlierPendingBackgroundTask) {
-  constexpr int kMaxNumDispatchedBackgroundSequences = 1;
-  TaskTracker tracker("Test", kMaxNumDispatchedBackgroundSequences);
+  constexpr int kMaxNumScheduledBackgroundSequences = 1;
+  TaskTracker tracker("Test", kMaxNumScheduledBackgroundSequences);
   testing::StrictMock<MockCanScheduleSequenceObserver> never_notified_observer;
 
   // Simulate posting a background task and scheduling the associated sequence.
@@ -1198,6 +1198,46 @@ TEST_F(TaskSchedulerTaskTrackerTest,
   // should be notified.
   EXPECT_FALSE(tracker.RunNextTask(sequence_a, &never_notified_observer));
   EXPECT_TRUE(task_a_2_did_run);
+}
+
+// Verify that preempted background sequences are scheduled when shutdown
+// starts.
+TEST_F(TaskSchedulerTaskTrackerTest,
+       SchedulePreemptedBackgroundSequencesOnShutdown) {
+  constexpr int kMaxNumScheduledBackgroundSequences = 0;
+  TaskTracker tracker("Test", kMaxNumScheduledBackgroundSequences);
+  testing::StrictMock<MockCanScheduleSequenceObserver> observer;
+
+  // Simulate scheduling sequences. TaskTracker should prevent this.
+  std::vector<scoped_refptr<Sequence>> preempted_sequences;
+  for (int i = 0; i < 3; ++i) {
+    Task task(FROM_HERE, BindOnce(&DoNothing),
+              TaskTraits(TaskPriority::BACKGROUND,
+                         TaskShutdownBehavior::BLOCK_SHUTDOWN),
+              TimeDelta());
+    EXPECT_TRUE(tracker.WillPostTask(task));
+    scoped_refptr<Sequence> sequence =
+        test::CreateSequenceWithTask(std::move(task));
+    EXPECT_FALSE(tracker.WillScheduleSequence(sequence, &observer));
+    preempted_sequences.push_back(std::move(sequence));
+
+    // Wait to be sure that tasks have different |sequenced_time|.
+    PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  }
+
+  // Perform shutdown. Expect |preempted_sequences| to be scheduled in posting
+  // order.
+  {
+    testing::InSequence in_sequence;
+    for (auto& preempted_sequence : preempted_sequences) {
+      EXPECT_CALL(observer, MockOnCanScheduleSequence(preempted_sequence.get()))
+          .WillOnce(testing::Invoke([&tracker](Sequence* sequence) {
+            // Run the task to unblock shutdown.
+            tracker.RunNextTask(sequence, nullptr);
+          }));
+    }
+    tracker.Shutdown();
+  }
 }
 
 namespace {

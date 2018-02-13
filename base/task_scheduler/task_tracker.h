@@ -88,7 +88,8 @@ class BASE_EXPORT TaskTracker {
  public:
   // |histogram_label| is used as a suffix for histograms, it must not be empty.
   // |max_num_scheduled_background_sequences| is the maximum number of
-  // background sequences that can be scheduled concurrently (default to max())
+  // background sequences that can be scheduled concurrently during normal
+  // execution (ignored during shutdown).
   TaskTracker(StringPiece histogram_label,
               int max_num_scheduled_background_sequences =
                   std::numeric_limits<int>::max());
@@ -186,6 +187,26 @@ class BASE_EXPORT TaskTracker {
 
   void PerformShutdown();
 
+  // Updates the maximum number of background sequences that can be scheduled
+  // concurrently to |max_num_scheduled_background_sequences|. Then, schedules
+  // as many preempted background sequences as allowed by the new value.
+  void SetMaxNumScheduledBackgroundSequences(
+      int max_num_scheduled_background_sequences);
+
+  // Pops the next sequence in |preempted_background_sequences_| and increments
+  // |num_scheduled_background_sequences_|. Must only be called in the scope of
+  // |background_lock_|, with |preempted_background_sequences_| non-empty. The
+  // caller must forward the returned sequence to the associated
+  // CanScheduleSequenceObserver as soon as |background_lock_| is released.
+  PreemptedBackgroundSequence
+  GetPreemptedBackgroundSequenceToScheduleLockRequired();
+
+  // Schedules |sequence_to_schedule.sequence| using
+  // |sequence_to_schedule.observer|. Does not verify that the sequence is
+  // allowed to be scheduled.
+  void SchedulePreemptedBackgroundSequence(
+      PreemptedBackgroundSequence sequence_to_schedule);
+
   // Called before WillPostTask() informs the tracing system that a task has
   // been posted. Updates |num_tasks_blocking_shutdown_| if necessary and
   // returns true if the current shutdown state allows the task to be posted.
@@ -270,11 +291,8 @@ class BASE_EXPORT TaskTracker {
   // completes.
   std::unique_ptr<WaitableEvent> shutdown_event_;
 
-  // Maximum number of background sequences that can that be scheduled
-  // concurrently.
-  const int max_num_scheduled_background_sequences_;
-
-  // Synchronizes accesses to |preempted_background_sequences_| and
+  // Synchronizes accesses to |preempted_background_sequences_|,
+  // |max_num_scheduled_background_sequences_| and
   // |num_scheduled_background_sequences_|.
   SchedulerLock background_lock_;
 
@@ -285,6 +303,10 @@ class BASE_EXPORT TaskTracker {
                       std::vector<PreemptedBackgroundSequence>,
                       std::greater<PreemptedBackgroundSequence>>
       preempted_background_sequences_;
+
+  // Maximum number of background sequences that can that be scheduled
+  // concurrently.
+  int max_num_scheduled_background_sequences_;
 
   // Number of currently scheduled background sequences.
   int num_scheduled_background_sequences_ = 0;
