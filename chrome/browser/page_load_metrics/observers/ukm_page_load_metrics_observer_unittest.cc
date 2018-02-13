@@ -264,12 +264,14 @@ TEST_F(UkmPageLoadMetricsObserverTest, PageInteractiveInputInvalidated) {
   }
 }
 
-TEST_F(UkmPageLoadMetricsObserverTest, FirstInputDelay) {
+TEST_F(UkmPageLoadMetricsObserverTest, FirstInputDelayAndTimestamp) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.interactive_timing->first_input_delay =
       base::TimeDelta::FromMilliseconds(50);
+  timing.interactive_timing->first_input_timestamp =
+      base::TimeDelta::FromMilliseconds(712);
   PopulateRequiredTimingFields(&timing);
 
   NavigateAndCommit(GURL(kTestUrl1));
@@ -288,6 +290,8 @@ TEST_F(UkmPageLoadMetricsObserverTest, FirstInputDelay) {
                                                 GURL(kTestUrl1));
     test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(), internal::kUkmFirstInputDelayName, 50);
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), internal::kUkmFirstInputTimestampName, 712);
   }
 }
 

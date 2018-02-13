@@ -94,6 +94,7 @@ class WebPerformance {
   BLINK_EXPORT double PageInteractiveDetection() const;
   BLINK_EXPORT double FirstInputInvalidatingInteractive() const;
   BLINK_EXPORT double FirstInputDelay() const;
+  BLINK_EXPORT double FirstInputTimestamp() const;
   BLINK_EXPORT double ParseStart() const;
   BLINK_EXPORT double ParseStop() const;
   BLINK_EXPORT double ParseBlockedOnScriptLoadDuration() const;

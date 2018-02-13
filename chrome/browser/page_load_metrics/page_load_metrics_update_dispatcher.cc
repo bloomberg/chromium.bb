@@ -202,6 +202,16 @@ internal::PageLoadTimingStatus IsValidPageLoadTiming(
     return internal::INVALID_ORDER_FIRST_MEANINGFUL_PAINT_PAGE_INTERACTIVE;
   }
 
+  if (timing.interactive_timing->first_input_delay.has_value() &&
+      !timing.interactive_timing->first_input_timestamp.has_value()) {
+    return internal::INVALID_NULL_FIRST_INPUT_TIMESTAMP;
+  }
+
+  if (!timing.interactive_timing->first_input_delay.has_value() &&
+      timing.interactive_timing->first_input_timestamp.has_value()) {
+    return internal::INVALID_NULL_FIRST_INPUT_DELAY;
+  }
+
   return internal::VALID;
 }
 
@@ -218,94 +228,138 @@ void LogIfOutOfOrderTiming(const base::Optional<base::TimeDelta>& current,
   }
 }
 
-// PaintTimingMerger merges paint timing values received from different frames
+// PageLoadTimingMerger merges timing values received from different frames
 // together.
-class PaintTimingMerger {
+class PageLoadTimingMerger {
  public:
-  explicit PaintTimingMerger(mojom::PaintTiming* target) : target_(target) {}
+  explicit PageLoadTimingMerger(mojom::PageLoadTiming* target)
+      : target_(target) {}
 
-  // Merge paint timing values from |new_paint_timing| into the target
-  // PaintTiming.
+  // Merge timing values from |new_page_load_timing| into the target
+  // PageLoadTiming;
   void Merge(base::TimeDelta navigation_start_offset,
-             const mojom::PaintTiming& new_paint_timing,
-             bool is_main_frame);
+             const mojom::PageLoadTiming& new_page_load_timing,
+             bool is_main_frame) {
+    MergePaintTiming(navigation_start_offset,
+                     *new_page_load_timing.paint_timing, is_main_frame);
+    MergeInteractiveTiming(navigation_start_offset,
+                           *new_page_load_timing.interactive_timing,
+                           is_main_frame);
+  }
 
-  // Whether we merged a new value, for a paint timing field we didn't
-  // previously have a value for in the target PaintTiming.
-  bool did_merge_new_timing_value() const {
-    return did_merge_new_timing_value_;
+  // Whether we merged a new value.
+  bool should_buffer_timing_update_callback() const {
+    return should_buffer_timing_update_callback_;
   }
 
  private:
-  void MaybeUpdateTimeDelta(
+  // Updates *|inout_existing_value| with |optional_candidate_new_value|, if
+  // either *|inout_existing_value| isn't set, or |optional_candidate_new_value|
+  // < |inout_existing_value|. Set should_buffer_timing_update_callback_ to true
+  // if a new value was merged. Returns true if an update occurred. Note that
+  // |inout_existing_value| is relative to the main frame's navigation start.
+  // |navigation_start_offset| contains the delta in navigation start time
+  // between the main frame and the frame for |optional_candidate_new_value|.
+  bool MaybeUpdateTimeDelta(
       base::Optional<base::TimeDelta>* inout_existing_value,
       base::TimeDelta navigation_start_offset,
-      const base::Optional<base::TimeDelta>& optional_candidate_new_value);
+      const base::Optional<base::TimeDelta>& optional_candidate_new_value) {
+    // If we don't get a new value, there's nothing to do
+    if (!optional_candidate_new_value)
+      return false;
 
-  // The target PaintTiming we are merging values into.
-  mojom::PaintTiming* const target_;
+    // optional_candidate_new_value is relative to navigation start in its
+    // frame. We need to adjust it to be relative to navigation start in the
+    // main frame, so offset it by navigation_start_offset.
+    base::TimeDelta candidate_new_value =
+        navigation_start_offset + optional_candidate_new_value.value();
 
-  // Whether we merged a new value, for a paint timing field we didn't
-  // previously have a value for in |target_|.
-  bool did_merge_new_timing_value_ = false;
+    DCHECK_NE(nullptr, inout_existing_value);
+    if (inout_existing_value->has_value()) {
+      // If we have a new value, but it is after the existing value, then keep
+      // the existing value.
+      if (*inout_existing_value <= candidate_new_value)
+        return false;
 
-  DISALLOW_COPY_AND_ASSIGN(PaintTimingMerger);
+      // We received a new timing event, but with a timestamp before the
+      // timestamp of a timing update we had received previously. We expect this
+      // to happen occasionally, as inter-frame updates can arrive out of order.
+      // Record a histogram to track how frequently it happens, along with the
+      // magnitude of the delta.
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramOutOfOrderTiming,
+                          inout_existing_value->value() - candidate_new_value);
+    } else {
+      // We only want to set this for new updates. If there's already a value,
+      // then the window during which we buffer updates is over. We'll still
+      // update the value.
+      // TODO(811752): should we just throw the data out if we're past the
+      // buffering window?
+      should_buffer_timing_update_callback_ = true;
+    }
+
+    *inout_existing_value = candidate_new_value;
+    return true;
+  }
+
+  // Merge paint timing values from |new_paint_timing| into the target
+  // PaintTiming.
+  void MergePaintTiming(base::TimeDelta navigation_start_offset,
+                        const mojom::PaintTiming& new_paint_timing,
+                        bool is_main_frame) {
+    mojom::PaintTiming* target_paint_timing = target_->paint_timing.get();
+    MaybeUpdateTimeDelta(&target_paint_timing->first_paint,
+                         navigation_start_offset, new_paint_timing.first_paint);
+    MaybeUpdateTimeDelta(&target_paint_timing->first_text_paint,
+                         navigation_start_offset,
+                         new_paint_timing.first_text_paint);
+    MaybeUpdateTimeDelta(&target_paint_timing->first_image_paint,
+                         navigation_start_offset,
+                         new_paint_timing.first_image_paint);
+    MaybeUpdateTimeDelta(&target_paint_timing->first_contentful_paint,
+                         navigation_start_offset,
+                         new_paint_timing.first_contentful_paint);
+    if (is_main_frame) {
+      // First meaningful paint is only tracked in the main frame.
+      target_paint_timing->first_meaningful_paint =
+          new_paint_timing.first_meaningful_paint;
+    }
+  }
+
+  void MergeInteractiveTiming(
+      base::TimeDelta navigation_start_offset,
+      const mojom::InteractiveTiming& new_interactive_timing,
+      bool is_main_frame) {
+    mojom::InteractiveTiming* target_interactive_timing =
+        target_->interactive_timing.get();
+
+    if (is_main_frame) {
+      // TTI is only tracked in the main frame.
+      target_interactive_timing->interactive =
+          new_interactive_timing.interactive;
+      target_interactive_timing->first_invalidating_input =
+          new_interactive_timing.first_invalidating_input;
+      target_interactive_timing->interactive_detection =
+          new_interactive_timing.interactive_detection;
+    }
+
+    if (MaybeUpdateTimeDelta(&target_interactive_timing->first_input_timestamp,
+                             navigation_start_offset,
+                             new_interactive_timing.first_input_timestamp)) {
+      // If we updated the first input timestamp, also update the
+      // associated first input delay.
+      target_interactive_timing->first_input_delay =
+          new_interactive_timing.first_input_delay.value();
+    }
+  }
+
+  // The target PageLoadTiming we are merging values into.
+  mojom::PageLoadTiming* const target_;
+
+  // Whether we merged a new value into |target_|.
+  bool should_buffer_timing_update_callback_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(PageLoadTimingMerger);
 };
-
-// Updates *|inout_existing_value| with |optional_candidate_new_value|, if
-// either *|inout_existing_value| isn't set, or |optional_candidate_new_value| <
-// |inout_existing_value|.
-void PaintTimingMerger::MaybeUpdateTimeDelta(
-    base::Optional<base::TimeDelta>* inout_existing_value,
-    base::TimeDelta navigation_start_offset,
-    const base::Optional<base::TimeDelta>& optional_candidate_new_value) {
-  // If we don't get a new value, there's nothing to do
-  if (!optional_candidate_new_value)
-    return;
-
-  // optional_candidate_new_value is relative to navigation start in its
-  // frame. We need to adjust it to be relative to navigation start in the main
-  // frame, so offset it by navigation_start_offset.
-  base::TimeDelta candidate_new_value =
-      navigation_start_offset + optional_candidate_new_value.value();
-
-  if (*inout_existing_value) {
-    // If we have a new value, but it is after the existing value, then keep the
-    // existing value.
-    if (*inout_existing_value <= candidate_new_value)
-      return;
-
-    // We received a new timing event, but with a timestamp before the timestamp
-    // of a timing update we had received previously. We expect this to happen
-    // occasionally, as inter-frame updates can arrive out of order. Record a
-    // histogram to track how frequently it happens, along with the magnitude
-    // of the delta.
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramOutOfOrderTiming,
-                        inout_existing_value->value() - candidate_new_value);
-  } else {
-    did_merge_new_timing_value_ = true;
-  }
-
-  *inout_existing_value = candidate_new_value;
-}
-
-void PaintTimingMerger::Merge(base::TimeDelta navigation_start_offset,
-                              const mojom::PaintTiming& new_paint_timing,
-                              bool is_main_frame) {
-  MaybeUpdateTimeDelta(&target_->first_paint, navigation_start_offset,
-                       new_paint_timing.first_paint);
-  MaybeUpdateTimeDelta(&target_->first_text_paint, navigation_start_offset,
-                       new_paint_timing.first_text_paint);
-  MaybeUpdateTimeDelta(&target_->first_image_paint, navigation_start_offset,
-                       new_paint_timing.first_image_paint);
-  MaybeUpdateTimeDelta(&target_->first_contentful_paint,
-                       navigation_start_offset,
-                       new_paint_timing.first_contentful_paint);
-  if (is_main_frame) {
-    // First meaningful paint is only tracked in the main frame.
-    target_->first_meaningful_paint = new_paint_timing.first_meaningful_paint;
-  }
-}
 
 }  // namespace
 
@@ -387,11 +441,10 @@ void PageLoadMetricsUpdateDispatcher::UpdateSubFrameTiming(
   client_->OnSubFrameTimingChanged(new_timing);
 
   base::TimeDelta navigation_start_offset = it->second;
-  PaintTimingMerger merger(pending_merged_page_timing_->paint_timing.get());
-  merger.Merge(navigation_start_offset, *new_timing.paint_timing,
-               false /* is_main_frame */);
+  PageLoadTimingMerger merger(pending_merged_page_timing_.get());
+  merger.Merge(navigation_start_offset, new_timing, false /* is_main_frame */);
 
-  MaybeDispatchTimingUpdates(merger.did_merge_new_timing_value());
+  MaybeDispatchTimingUpdates(merger.should_buffer_timing_update_callback());
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateSubFrameMetadata(
@@ -433,16 +486,21 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(
 
   mojom::PaintTimingPtr last_paint_timing =
       std::move(pending_merged_page_timing_->paint_timing);
+
+  mojom::InteractiveTimingPtr last_interactive_timing =
+      std::move(pending_merged_page_timing_->interactive_timing);
+
   // Update the pending_merged_page_timing_, making sure to merge the previously
-  // observed |paint_timing|, which is tracked across all frames in the page.
+  // observed |paint_timing| and |interactive_timing|, which are tracked across
+  // all frames in the page.
   pending_merged_page_timing_ = new_timing.Clone();
   pending_merged_page_timing_->paint_timing = std::move(last_paint_timing);
+  pending_merged_page_timing_->interactive_timing =
+      std::move(last_interactive_timing);
 
-  PaintTimingMerger merger(pending_merged_page_timing_->paint_timing.get());
-  merger.Merge(base::TimeDelta(), *new_timing.paint_timing,
-               true /* is_main_frame */);
-
-  MaybeDispatchTimingUpdates(merger.did_merge_new_timing_value());
+  PageLoadTimingMerger merger(pending_merged_page_timing_.get());
+  merger.Merge(base::TimeDelta(), new_timing, true /* is_main_frame */);
+  MaybeDispatchTimingUpdates(merger.should_buffer_timing_update_callback());
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
@@ -464,11 +522,11 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
 }
 
 void PageLoadMetricsUpdateDispatcher::MaybeDispatchTimingUpdates(
-    bool did_merge_new_timing_value) {
+    bool should_buffer_timing_update_callback) {
   // If we merged a new timing value, then we should buffer updates for
   // |kBufferTimerDelayMillis|, to allow for any other out of order timings to
   // arrive before we dispatch the minimum observed timings to observers.
-  if (did_merge_new_timing_value) {
+  if (should_buffer_timing_update_callback) {
     timer_->Start(
         FROM_HERE, base::TimeDelta::FromMilliseconds(kBufferTimerDelayMillis),
         base::Bind(&PageLoadMetricsUpdateDispatcher::DispatchTimingUpdates,
