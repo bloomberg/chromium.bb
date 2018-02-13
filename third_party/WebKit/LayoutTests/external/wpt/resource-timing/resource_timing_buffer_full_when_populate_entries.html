@@ -5,10 +5,10 @@
 <link rel="author" title="Intel" href="http://www.intel.com/" />
 <link rel="help" href="http://www.w3.org/TR/resource-timing/#performanceresourcetiming"/>
 <title>This test validates the functionality of onresourcetimingbufferfull in resource timing.</title>
-<script src="/w3c/resources/testharness.js"></script>
-<script src="/w3c/resources/testharnessreport.js"></script>
-<script src="/w3c/webperf/resources/webperftestharness.js"></script>
-<script src="/w3c/webperf/resources/webperftestharnessextension.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/webperftestharness.js"></script>
+<script src="resources/webperftestharnessextension.js"></script>
 </head>
 <body onload=onload_test()>
 <script>
@@ -27,9 +27,9 @@
         script.src = src;
         document.body.appendChild(script);
     }
-    appendScript('/w3c/webperf/resources/empty.js');
-    appendScript('/w3c/webperf/resources/empty_script.js');
-    appendScript('/w3c/webperf/resources/resource_timing_test0.js');
+    appendScript('resources/empty.js');
+    appendScript('resources/empty_script.js');
+    appendScript('resources/resource_timing_test0.js');
     setup({ explicit_done: true });
     function onload_test() {
         test_equals(context.getEntriesByType('resource').length, bufferSize, 'There should only be |bufferSize| resource entries.');
