@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/containers/unique_ptr_comparator.h"
+#include "base/containers/unique_ptr_adapters.h"
+
 #include <memory>
+#include <vector>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -60,6 +63,34 @@ TEST(UniquePtrComparatorTest, Basic) {
 
   delete foo3;
   EXPECT_EQ(0, Foo::instance_count);
+}
+
+TEST(UniquePtrMatcherTest, Basic) {
+  std::vector<std::unique_ptr<Foo>> v;
+  auto foo_ptr1 = std::make_unique<Foo>();
+  Foo* foo1 = foo_ptr1.get();
+  v.push_back(std::move(foo_ptr1));
+  auto foo_ptr2 = std::make_unique<Foo>();
+  Foo* foo2 = foo_ptr2.get();
+  v.push_back(std::move(foo_ptr2));
+
+  {
+    auto iter = std::find_if(v.begin(), v.end(), UniquePtrMatcher<Foo>(foo1));
+    ASSERT_TRUE(iter != v.end());
+    EXPECT_EQ(foo1, iter->get());
+  }
+
+  {
+    auto iter = std::find_if(v.begin(), v.end(), UniquePtrMatcher<Foo>(foo2));
+    ASSERT_TRUE(iter != v.end());
+    EXPECT_EQ(foo2, iter->get());
+  }
+
+  {
+    auto iter = std::find_if(v.begin(), v.end(), MatchesUniquePtr(foo2));
+    ASSERT_TRUE(iter != v.end());
+    EXPECT_EQ(foo2, iter->get());
+  }
 }
 
 }  // namespace

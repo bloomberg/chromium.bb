@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/containers/flat_set.h"
-#include "base/containers/unique_ptr_comparator.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
