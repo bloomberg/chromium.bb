@@ -16,6 +16,9 @@
 #include "chrome/browser/chromeos/arc/voice_interaction/fake_voice_interaction_controller.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/highlighter_controller_client.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/test/base/test_browser_window.h"
+#include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cras_audio_client.h"
@@ -29,6 +32,8 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/layer_tree_owner.h"
 
 namespace arc {
 
@@ -93,6 +98,27 @@ class TestHighlighterController : public ash::mojom::HighlighterController,
   DISALLOW_COPY_AND_ASSIGN(TestHighlighterController);
 };
 
+std::unique_ptr<TestBrowserWindow> CreateTestBrowserWindow(
+    aura::Window* parent) {
+  auto window =
+      std::make_unique<aura::Window>(nullptr, aura::client::WINDOW_TYPE_NORMAL);
+  window->Init(ui::LAYER_TEXTURED);
+  window->SetBounds(gfx::Rect(0, 0, 200, 200));
+  parent->AddChild(window.get());
+  return std::make_unique<TestBrowserWindowAura>(std::move(window));
+}
+
+ui::Layer* FindLayer(ui::Layer* root, ui::Layer* target) {
+  if (root == target)
+    return target;
+  for (auto* child : root->children()) {
+    auto* result = FindLayer(child, target);
+    if (result)
+      return result;
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 class ArcVoiceInteractionFrameworkServiceTest : public ash::AshTestBase {
@@ -101,7 +127,6 @@ class ArcVoiceInteractionFrameworkServiceTest : public ash::AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-
     // Setup test profile.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingProfile::Builder profile_builder;
@@ -194,9 +219,11 @@ class ArcVoiceInteractionFrameworkServiceTest : public ash::AshTestBase {
     voice_interaction_controller_client()->FlushMojoForTesting();
   }
 
+  TestingProfile* profile() const { return profile_.get(); }
+
  private:
-  base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingProfile> profile_;
+  base::ScopedTempDir temp_dir_;
   std::unique_ptr<session_manager::SessionManager> session_manager_;
   std::unique_ptr<ArcBridgeService> arc_bridge_service_;
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
@@ -378,6 +405,34 @@ TEST_F(ArcVoiceInteractionFrameworkServiceTest,
   FlushVoiceInteractionControllerMojo();
   EXPECT_EQ(controller->voice_interaction_state(),
             ash::mojom::VoiceInteractionState::RUNNING);
+}
+
+TEST_F(ArcVoiceInteractionFrameworkServiceTest,
+       CapturingScreenshotBlocksIncognitoWindows) {
+  auto browser_window =
+      CreateTestBrowserWindow(ash::Shell::GetPrimaryRootWindow());
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = browser_window.get();
+  Browser browser(params);
+  browser_window->GetNativeWindow()->Show();
+
+  profile()->ForceIncognito(true);
+  // Layer::RecreateLayer() will replace the window's layer with the newly
+  // created layer. Thus, we need to save the |old_layer| for comparison.
+  auto* old_layer = browser_window->GetNativeWindow()->layer();
+  auto layer_owner = framework_service()->CreateLayerTreeForSnapshotForTesting(
+      ash::Shell::GetPrimaryRootWindow());
+  EXPECT_FALSE(FindLayer(layer_owner->root(), old_layer));
+
+  profile()->ForceIncognito(false);
+  old_layer = browser_window->GetNativeWindow()->layer();
+  layer_owner = framework_service()->CreateLayerTreeForSnapshotForTesting(
+      ash::Shell::GetPrimaryRootWindow());
+  EXPECT_TRUE(FindLayer(layer_owner->root(), old_layer));
+
+  ash::Shell::GetPrimaryRootWindow()->RemoveChild(
+      browser_window->GetNativeWindow());
 }
 
 }  // namespace arc

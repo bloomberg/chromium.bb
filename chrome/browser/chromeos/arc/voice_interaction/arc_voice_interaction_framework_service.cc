@@ -607,4 +607,10 @@ void ArcVoiceInteractionFrameworkService::
   framework_instance->StartVoiceInteractionSetupWizard();
 }
 
+std::unique_ptr<ui::LayerTreeOwner>
+ArcVoiceInteractionFrameworkService::CreateLayerTreeForSnapshotForTesting(
+    aura::Window* root_window) const {
+  return CreateLayerTreeForSnapshot(root_window);
+}
+
 }  // namespace arc

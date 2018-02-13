@@ -28,6 +28,10 @@ namespace gfx {
 class Rect;
 }  // namespace gfx
 
+namespace ui {
+class LayerTreeOwner;
+}  // namespace ui
+
 namespace arc {
 
 class ArcBridgeService;
@@ -122,6 +126,9 @@ class ArcVoiceInteractionFrameworkService
   ash::mojom::VoiceInteractionState GetStateForTesting() const {
     return state_;
   }
+
+  std::unique_ptr<ui::LayerTreeOwner> CreateLayerTreeForSnapshotForTesting(
+      aura::Window* root_window) const;
 
   // For supporting ArcServiceManager::GetService<T>().
   static const char kArcServiceName[];
