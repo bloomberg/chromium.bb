@@ -1,0 +1,14 @@
+include_rules = [
+  # Components may not directly access ash, except through public mojo
+  # IPC interfaces.
+  "-ash",
+  "+ash/public",
+
+  # Individual components must explicitly declare their dependencies
+  # on other components. Cycles in the dependency graph within
+  # components/ are not allowed.
+  "-ash/components",
+
+  # Components sit below chrome.
+  "-chrome",
+]
