@@ -123,15 +123,6 @@ std::unique_ptr<base::Value> RunFunctionWithDelegateAndReturnSingleResult(
     scoped_refptr<UIThreadExtensionFunction> function,
     const std::string& args,
     content::BrowserContext* context,
-    std::unique_ptr<extensions::ExtensionFunctionDispatcher> dispatcher) {
-  return RunFunctionWithDelegateAndReturnSingleResult(
-      function, args, context, std::move(dispatcher), NONE);
-}
-
-std::unique_ptr<base::Value> RunFunctionWithDelegateAndReturnSingleResult(
-    scoped_refptr<UIThreadExtensionFunction> function,
-    const std::string& args,
-    content::BrowserContext* context,
     std::unique_ptr<extensions::ExtensionFunctionDispatcher> dispatcher,
     RunFunctionFlags flags) {
   std::unique_ptr<base::ListValue> parsed_args = ParseList(args);
