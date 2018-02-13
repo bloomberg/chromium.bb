@@ -440,8 +440,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
      * Records metrics gleaned from the Intent.
      */
     private void recordIntentMetrics() {
-        IntentHandler.ExternalAppId source =
-                IntentHandler.determineExternalIntentSource(mActivity.getPackageName(), mIntent);
+        IntentHandler.ExternalAppId source = IntentHandler.determineExternalIntentSource(mIntent);
         if (mIntent.getPackage() == null && source != IntentHandler.ExternalAppId.CHROME) {
             int flagsOfInterest = Intent.FLAG_ACTIVITY_NEW_TASK;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

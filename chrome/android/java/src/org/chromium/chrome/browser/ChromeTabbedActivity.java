@@ -453,7 +453,7 @@ public class ChromeTabbedActivity
             if (action == LaunchIntentDispatcher.Action.CONTINUE) {
                 // Intent was not dispatched, record its source.
                 IntentHandler.ExternalAppId externalId =
-                        IntentHandler.determineExternalIntentSource(getPackageName(), intent);
+                        IntentHandler.determineExternalIntentSource(intent);
                 sUndispatchedExplicitMainViewIntentSource.record(externalId.ordinal());
 
                 // Crash if intent came from us, but only in debug builds and only if we weren't

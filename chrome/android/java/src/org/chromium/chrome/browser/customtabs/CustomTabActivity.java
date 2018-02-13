@@ -709,8 +709,7 @@ public class CustomTabActivity extends ChromeActivity {
             if (mIntentDataProvider.isOpenedByChrome()) {
                 RecordUserAction.record("ChromeGeneratedCustomTab.StartedInitially");
             } else {
-                ExternalAppId externalId =
-                        IntentHandler.determineExternalIntentSource(getPackageName(), getIntent());
+                ExternalAppId externalId = IntentHandler.determineExternalIntentSource(getIntent());
                 RecordHistogram.recordEnumeratedHistogram("CustomTabs.ClientAppId",
                         externalId.ordinal(), ExternalAppId.INDEX_BOUNDARY.ordinal());
 
