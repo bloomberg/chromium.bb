@@ -115,6 +115,8 @@ int ParseInt(const base::StringPiece value) {
 
 std::vector<Configuration> FillEnabledPresetConfigurations(
     std::map<std::string, std::string>* params) {
+  // If ad tagging is enabled, turn on the dryrun automatically.
+  bool ad_tagging_enabled = base::FeatureList::IsEnabled(kAdTagging);
   const struct {
     const char* name;
     bool enabled_by_default;
@@ -122,7 +124,7 @@ std::vector<Configuration> FillEnabledPresetConfigurations(
   } kAvailablePresetConfigurations[] = {
       {kPresetLiveRunOnPhishingSites, true,
        &Configuration::MakePresetForLiveRunOnPhishingSites},
-      {kPresetPerformanceTestingDryRunOnAllSites, false,
+      {kPresetPerformanceTestingDryRunOnAllSites, ad_tagging_enabled,
        &Configuration::MakePresetForPerformanceTestingDryRunOnAllSites},
       {kPresetLiveRunForBetterAds, true,
        &Configuration::MakePresetForLiveRunForBetterAds}};
@@ -240,6 +242,7 @@ const base::Feature kSafeBrowsingSubresourceFilter{
 
 const base::Feature kSafeBrowsingSubresourceFilterExperimentalUI{
     "SubresourceFilterExperimentalUI", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kAdTagging{"AdTagging", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Legacy name `activation_state` is used in variation parameters.
 const char kActivationLevelParameterName[] = "activation_state";
