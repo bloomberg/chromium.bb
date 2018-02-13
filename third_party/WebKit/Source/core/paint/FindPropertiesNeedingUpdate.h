@@ -131,10 +131,9 @@ class FindObjectPropertiesNeedingUpdateScope {
     if (const auto* properties = fragment_data_.PaintProperties())
       original_properties_ = properties->Clone();
 
-    if (const auto* local_border_box =
-            fragment_data_.LocalBorderBoxProperties()) {
-      original_local_border_box_properties_ =
-          WTF::WrapUnique(new PropertyTreeState(*local_border_box));
+    if (fragment_data_.HasLocalBorderBoxProperties()) {
+      original_local_border_box_properties_ = WTF::WrapUnique(
+          new PropertyTreeState(fragment_data_.LocalBorderBoxProperties()));
     }
   }
 
@@ -204,19 +203,21 @@ class FindObjectPropertiesNeedingUpdateScope {
           << " Object: " << object_.DebugName();
     }
 
-    const auto* object_border_box = fragment_data_.LocalBorderBoxProperties();
-    if (original_local_border_box_properties_ && object_border_box) {
+    if (original_local_border_box_properties_ &&
+        fragment_data_.HasLocalBorderBoxProperties()) {
+      const auto object_border_box = fragment_data_.LocalBorderBoxProperties();
       DCHECK_OBJECT_PROPERTY_EQ(
           object_, original_local_border_box_properties_->Transform(),
-          object_border_box->Transform());
+          object_border_box.Transform());
       DCHECK_OBJECT_PROPERTY_EQ(object_,
                                 original_local_border_box_properties_->Clip(),
-                                object_border_box->Clip());
+                                object_border_box.Clip());
       DCHECK_OBJECT_PROPERTY_EQ(object_,
                                 original_local_border_box_properties_->Effect(),
-                                object_border_box->Effect());
+                                object_border_box.Effect());
     } else {
-      DCHECK_EQ(!!original_local_border_box_properties_, !!object_border_box)
+      DCHECK_EQ(!!original_local_border_box_properties_,
+                fragment_data_.HasLocalBorderBoxProperties())
           << " Object: " << object_.DebugName();
     }
 

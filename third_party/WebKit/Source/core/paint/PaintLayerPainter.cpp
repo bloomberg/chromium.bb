@@ -277,11 +277,11 @@ void PaintLayerPainter::AdjustForPaintProperties(
 
   const auto& current_fragment = paint_layer_.GetLayoutObject().FirstFragment();
   const auto* current_transform =
-      current_fragment.LocalBorderBoxProperties()->Transform();
+      current_fragment.LocalBorderBoxProperties().Transform();
   const auto& root_fragment =
       painting_info.root_layer->GetLayoutObject().FirstFragment();
   const auto* root_transform =
-      root_fragment.LocalBorderBoxProperties()->Transform();
+      root_fragment.LocalBorderBoxProperties().Transform();
   if (current_transform == root_transform)
     return;
 
@@ -670,7 +670,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       const auto& fragment_data =
           paint_layer_.GetLayoutObject().FirstFragment();
-      auto state = *fragment_data.LocalBorderBoxProperties();
+      auto state = fragment_data.LocalBorderBoxProperties();
       const auto* properties = fragment_data.PaintProperties();
       DCHECK(properties && properties->Mask());
       state.SetEffect(properties->Mask());
@@ -1018,7 +1018,7 @@ void PaintLayerPainter::PaintOverflowControlsForFragments(
         Optional<ScopedPaintChunkProperties> fragment_paint_chunk_properties;
         if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
           PaintChunkProperties properties(
-              *fragment.fragment_data->LocalBorderBoxProperties());
+              fragment.fragment_data->LocalBorderBoxProperties());
           properties.backface_hidden =
               paint_layer_.GetLayoutObject().HasHiddenBackface();
           fragment_paint_chunk_properties.emplace(
@@ -1080,7 +1080,7 @@ void PaintLayerPainter::PaintFragmentWithPhase(
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     DCHECK(phase != PaintPhase::kClippingMask);
     PaintChunkProperties chunk_properties(
-        *fragment.fragment_data->LocalBorderBoxProperties());
+        fragment.fragment_data->LocalBorderBoxProperties());
     chunk_properties.backface_hidden =
         paint_layer_.GetLayoutObject().HasHiddenBackface();
     if (phase == PaintPhase::kMask) {
@@ -1433,9 +1433,7 @@ void PaintLayerPainter::PaintEmptyContentForFilters(GraphicsContext& context) {
 
   ScopedPaintChunkProperties paint_chunk_properties(
       context.GetPaintController(),
-      *paint_layer_.GetLayoutObject()
-           .FirstFragment()
-           .LocalBorderBoxProperties(),
+      paint_layer_.GetLayoutObject().FirstFragment().LocalBorderBoxProperties(),
       paint_layer_, DisplayItem::kEmptyContentForFilters);
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           context, paint_layer_, DisplayItem::kEmptyContentForFilters))

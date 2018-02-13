@@ -39,8 +39,7 @@ const TransformPaintPropertyNode* FragmentData::PreTransform() const {
     if (properties->Transform())
       return properties->Transform()->Parent();
   }
-  DCHECK(LocalBorderBoxProperties());
-  return LocalBorderBoxProperties()->Transform();
+  return LocalBorderBoxProperties().Transform();
 }
 
 const TransformPaintPropertyNode* FragmentData::PostScrollTranslation() const {
@@ -50,8 +49,7 @@ const TransformPaintPropertyNode* FragmentData::PostScrollTranslation() const {
     if (properties->Perspective())
       return properties->Perspective();
   }
-  DCHECK(LocalBorderBoxProperties());
-  return LocalBorderBoxProperties()->Transform();
+  return LocalBorderBoxProperties().Transform();
 }
 
 const ClipPaintPropertyNode* FragmentData::PreCssClip() const {
@@ -68,8 +66,7 @@ const ClipPaintPropertyNode* FragmentData::PreCssClip() const {
     if (properties->MaskClip())
       return properties->MaskClip()->Parent();
   }
-  DCHECK(LocalBorderBoxProperties());
-  return LocalBorderBoxProperties()->Clip();
+  return LocalBorderBoxProperties().Clip();
 }
 
 const ClipPaintPropertyNode* FragmentData::PostOverflowClip() const {
@@ -79,8 +76,7 @@ const ClipPaintPropertyNode* FragmentData::PostOverflowClip() const {
     if (properties->InnerBorderRadiusClip())
       return properties->InnerBorderRadiusClip();
   }
-  DCHECK(LocalBorderBoxProperties());
-  return LocalBorderBoxProperties()->Clip();
+  return LocalBorderBoxProperties().Clip();
 }
 
 const EffectPaintPropertyNode* FragmentData::PreEffect() const {
@@ -90,8 +86,7 @@ const EffectPaintPropertyNode* FragmentData::PreEffect() const {
     if (properties->Filter())
       return properties->Filter()->Parent();
   }
-  DCHECK(LocalBorderBoxProperties());
-  return LocalBorderBoxProperties()->Effect();
+  return LocalBorderBoxProperties().Effect();
 }
 
 const EffectPaintPropertyNode* FragmentData::PreFilter() const {
@@ -99,8 +94,7 @@ const EffectPaintPropertyNode* FragmentData::PreFilter() const {
     if (properties->Filter())
       return properties->Filter()->Parent();
   }
-  DCHECK(LocalBorderBoxProperties());
-  return LocalBorderBoxProperties()->Effect();
+  return LocalBorderBoxProperties().Effect();
 }
 
 void FragmentData::InvalidateClipPathCache() {

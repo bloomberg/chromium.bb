@@ -364,16 +364,16 @@ bool PaintLayer::FixedToViewport() const {
   // An option for improving this is to cache the nearest scroll node in
   // the local border box properties.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    const auto* view_border_box_properties =
+    const auto view_border_box_properties =
         GetLayoutObject().View()->FirstFragment().LocalBorderBoxProperties();
-    const auto* view_scroll = view_border_box_properties->Transform()
+    const auto* view_scroll = view_border_box_properties.Transform()
                                   ->NearestScrollTranslationNode()
                                   .ScrollNode();
 
     const auto* scroll = GetLayoutObject()
                              .FirstFragment()
                              .LocalBorderBoxProperties()
-                             ->Transform()
+                             .Transform()
                              ->NearestScrollTranslationNode()
                              .ScrollNode();
     return scroll == view_scroll;

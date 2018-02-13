@@ -392,9 +392,9 @@ class ChromePrintContext : public PrintContext {
     PropertyTreeState property_tree_state = PropertyTreeState::Root();
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-        property_tree_state = *frame_view->GetLayoutView()
-                                   ->FirstFragment()
-                                   .LocalBorderBoxProperties();
+        property_tree_state = frame_view->GetLayoutView()
+                                  ->FirstFragment()
+                                  .LocalBorderBoxProperties();
       } else {
         property_tree_state = frame_view->PreContentClipProperties();
       }

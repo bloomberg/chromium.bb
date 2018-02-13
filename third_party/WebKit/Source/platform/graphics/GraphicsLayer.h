@@ -286,7 +286,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetIsResizedByBrowserControls(bool);
   void SetIsContainerForFixedPositionLayers(bool);
 
-  void SetLayerState(PropertyTreeState&&, const IntPoint& layer_offset);
+  void SetLayerState(const PropertyTreeState&, const IntPoint& layer_offset);
 
   // Capture the last painted result into a PaintRecord. This GraphicsLayer
   // must DrawsContent. The result is never nullptr.
