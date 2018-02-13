@@ -104,7 +104,7 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
                                      bool can_send_early,
                                      RequestPriority priority,
                                      const NetLogWithSource& stream_net_log,
-                                     const CompletionCallback& callback) {
+                                     CompletionOnceCallback callback) {
   CHECK(callback_.is_null());
   DCHECK(!stream_);
 
@@ -151,7 +151,7 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   next_state_ = STATE_REQUEST_STREAM;
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
-    callback_ = callback;
+    callback_ = std::move(callback);
 
   return MapStreamError(rv);
 }
@@ -188,7 +188,7 @@ int QuicHttpStream::DoHandlePromiseComplete(int rv) {
 
 int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
                                 HttpResponseInfo* response,
-                                const CompletionCallback& callback) {
+                                CompletionOnceCallback callback) {
   CHECK(!request_body_stream_);
   CHECK(!response_info_);
   CHECK(callback_.is_null());
@@ -260,12 +260,12 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   rv = DoLoop(OK);
 
   if (rv == ERR_IO_PENDING)
-    callback_ = callback;
+    callback_ = std::move(callback);
 
   return rv > 0 ? OK : MapStreamError(rv);
 }
 
-int QuicHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
+int QuicHttpStream::ReadResponseHeaders(CompletionOnceCallback callback) {
   CHECK(callback_.is_null());
   CHECK(!callback.is_null());
 
@@ -277,7 +277,7 @@ int QuicHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
   if (rv == ERR_IO_PENDING) {
     // Still waiting for the response, return IO_PENDING.
     CHECK(callback_.is_null());
-    callback_ = callback;
+    callback_ = std::move(callback);
     return ERR_IO_PENDING;
   }
 
@@ -294,7 +294,7 @@ int QuicHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
 
 int QuicHttpStream::ReadResponseBody(IOBuffer* buf,
                                      int buf_len,
-                                     const CompletionCallback& callback) {
+                                     CompletionOnceCallback callback) {
   CHECK(callback_.is_null());
   CHECK(!callback.is_null());
   CHECK(!user_buffer_.get());
@@ -316,7 +316,7 @@ int QuicHttpStream::ReadResponseBody(IOBuffer* buf,
                              base::Bind(&QuicHttpStream::OnReadBodyComplete,
                                         weak_factory_.GetWeakPtr()));
   if (rv == ERR_IO_PENDING) {
-    callback_ = callback;
+    callback_ = std::move(callback);
     user_buffer_ = buf;
     user_buffer_len_ = buf_len;
     return ERR_IO_PENDING;
@@ -681,8 +681,8 @@ int QuicHttpStream::ProcessResponseHeaders(const SpdyHeaderBlock& headers) {
   connect_timing_ = quic_session()->GetConnectTiming();
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&QuicHttpStream::ReadTrailingHeaders,
-                            weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&QuicHttpStream::ReadTrailingHeaders,
+                                weak_factory_.GetWeakPtr()));
 
   if (stream_->IsDoneReading()) {
     session_error_ = OK;

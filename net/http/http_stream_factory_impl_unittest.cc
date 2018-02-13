@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "build/build_config.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/port_util.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
@@ -110,20 +111,20 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
                        bool can_send_early,
                        RequestPriority priority,
                        const NetLogWithSource& net_log,
-                       const CompletionCallback& callback) override {
+                       CompletionOnceCallback callback) override {
     return ERR_IO_PENDING;
   }
   int SendRequest(const HttpRequestHeaders& request_headers,
                   HttpResponseInfo* response,
-                  const CompletionCallback& callback) override {
+                  CompletionOnceCallback callback) override {
     return ERR_IO_PENDING;
   }
-  int ReadResponseHeaders(const CompletionCallback& callback) override {
+  int ReadResponseHeaders(CompletionOnceCallback callback) override {
     return ERR_IO_PENDING;
   }
   int ReadResponseBody(IOBuffer* buf,
                        int buf_len,
-                       const CompletionCallback& callback) override {
+                       CompletionOnceCallback callback) override {
     return ERR_IO_PENDING;
   }
   void Close(bool not_reusable) override {}

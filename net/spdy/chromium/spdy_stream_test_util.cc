@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/stl_util.h"
-#include "net/base/completion_callback.h"
 #include "net/spdy/chromium/spdy_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

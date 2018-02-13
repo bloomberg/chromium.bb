@@ -71,7 +71,7 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
                                      bool can_send_early,
                                      RequestPriority priority,
                                      const NetLogWithSource& stream_net_log,
-                                     const CompletionCallback& callback) {
+                                     CompletionOnceCallback callback) {
   DCHECK(!stream_);
   if (!spdy_session_)
     return ERR_CONNECTION_CLOSED;
@@ -93,10 +93,10 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   }
 
   int rv = stream_request_.StartRequest(
-      SPDY_REQUEST_RESPONSE_STREAM, spdy_session_, request_info_->url,
-      priority, stream_net_log,
-      base::Bind(&SpdyHttpStream::OnStreamCreated,
-                 weak_factory_.GetWeakPtr(), callback));
+      SPDY_REQUEST_RESPONSE_STREAM, spdy_session_, request_info_->url, priority,
+      stream_net_log,
+      base::BindOnce(&SpdyHttpStream::OnStreamCreated,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 
   if (rv == OK) {
     stream_ = stream_request_.ReleaseStream().get();
@@ -106,7 +106,7 @@ int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   return rv;
 }
 
-int SpdyHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
+int SpdyHttpStream::ReadResponseHeaders(CompletionOnceCallback callback) {
   CHECK(!callback.is_null());
   if (stream_closed_)
     return closed_stream_status_;
@@ -121,18 +121,18 @@ int SpdyHttpStream::ReadResponseHeaders(const CompletionCallback& callback) {
 
   // Still waiting for the response, return IO_PENDING.
   CHECK(response_callback_.is_null());
-  response_callback_ = callback;
+  response_callback_ = std::move(callback);
   return ERR_IO_PENDING;
 }
 
-int SpdyHttpStream::ReadResponseBody(
-    IOBuffer* buf, int buf_len, const CompletionCallback& callback) {
+int SpdyHttpStream::ReadResponseBody(IOBuffer* buf,
+                                     int buf_len,
+                                     CompletionOnceCallback callback) {
   if (stream_)
     CHECK(!stream_->IsIdle());
 
   CHECK(buf);
   CHECK(buf_len);
-  CHECK(!callback.is_null());
 
   // If we have data buffered, complete the IO immediately.
   if (!response_body_queue_.IsEmpty()) {
@@ -141,11 +141,12 @@ int SpdyHttpStream::ReadResponseBody(
     return closed_stream_status_;
   }
 
+  CHECK(!callback.is_null());
   CHECK(response_callback_.is_null());
   CHECK(!user_buffer_.get());
   CHECK_EQ(0, user_buffer_len_);
 
-  response_callback_ = callback;
+  response_callback_ = std::move(callback);
   user_buffer_ = buf;
   user_buffer_len_ = buf_len;
   return ERR_IO_PENDING;
@@ -211,7 +212,7 @@ bool SpdyHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
 
 int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
                                 HttpResponseInfo* response,
-                                const CompletionCallback& callback) {
+                                CompletionOnceCallback callback) {
   if (stream_closed_) {
     return closed_stream_status_;
   }
@@ -264,7 +265,7 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
     // non-push behavior. The callback will be called when the
     // response is received.
     CHECK(response_callback_.is_null());
-    response_callback_ = callback;
+    response_callback_ = std::move(callback);
     return ERR_IO_PENDING;
   }
 
@@ -280,7 +281,7 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
 
   if (result == ERR_IO_PENDING) {
     CHECK(request_callback_.is_null());
-    request_callback_ = callback;
+    request_callback_ = std::move(callback);
   }
   return result;
 }
@@ -470,8 +471,8 @@ void SpdyHttpStream::OnRequestBodyReadCompleted(int status) {
     MaybePostRequestCallback(status);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SpdyHttpStream::ResetStreamInternal,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&SpdyHttpStream::ResetStreamInternal,
+                                  weak_factory_.GetWeakPtr()));
 
     return;
   }
@@ -502,8 +503,9 @@ void SpdyHttpStream::ScheduleBufferedReadCallback() {
   buffered_read_callback_pending_ = true;
   const base::TimeDelta kBufferTime = base::TimeDelta::FromMilliseconds(1);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&SpdyHttpStream::DoBufferedReadCallback,
-                            weak_factory_.GetWeakPtr()),
+      FROM_HERE,
+      base::BindOnce(&SpdyHttpStream::DoBufferedReadCallback,
+                     weak_factory_.GetWeakPtr()),
       kBufferTime);
 }
 
@@ -542,8 +544,11 @@ void SpdyHttpStream::DoBufferedReadCallback() {
 
   int rv = 0;
   if (user_buffer_.get()) {
+    // At this point SpdyHttpStream::ReadResponseBody() is guaranteed to return
+    // synchronously for non-trivial reasons, therefore it is safe to call it
+    // with a null callback.
     rv = ReadResponseBody(user_buffer_.get(), user_buffer_len_,
-                          response_callback_);
+                          CompletionOnceCallback());
     CHECK_NE(rv, ERR_IO_PENDING);
     user_buffer_ = NULL;
     user_buffer_len_ = 0;
@@ -569,8 +574,8 @@ void SpdyHttpStream::MaybePostRequestCallback(int rv) {
   CHECK_NE(ERR_IO_PENDING, rv);
   if (request_callback_)
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SpdyHttpStream::MaybeDoRequestCallback,
-                              weak_factory_.GetWeakPtr(), rv));
+        FROM_HERE, base::BindOnce(&SpdyHttpStream::MaybeDoRequestCallback,
+                                  weak_factory_.GetWeakPtr(), rv));
 }
 
 void SpdyHttpStream::DoResponseCallback(int rv) {

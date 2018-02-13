@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -92,15 +93,15 @@ class MockHttpStream : public HttpStream {
                        bool can_send_early,
                        RequestPriority priority,
                        const NetLogWithSource& net_log,
-                       const CompletionCallback& callback) override {
+                       CompletionOnceCallback callback) override {
     return ERR_UNEXPECTED;
   }
   int SendRequest(const HttpRequestHeaders& request_headers,
                   HttpResponseInfo* response,
-                  const CompletionCallback& callback) override {
+                  CompletionOnceCallback callback) override {
     return ERR_UNEXPECTED;
   }
-  int ReadResponseHeaders(const CompletionCallback& callback) override {
+  int ReadResponseHeaders(CompletionOnceCallback callback) override {
     return ERR_UNEXPECTED;
   }
 
@@ -126,7 +127,7 @@ class MockHttpStream : public HttpStream {
   // Mocked API
   int ReadResponseBody(IOBuffer* buf,
                        int buf_len,
-                       const CompletionCallback& callback) override;
+                       CompletionOnceCallback callback) override;
   void Close(bool not_reusable) override {
     CHECK(!closed_);
     closed_ = true;
@@ -171,7 +172,7 @@ class MockHttpStream : public HttpStream {
 
   CloseResultWaiter* const result_waiter_;
   scoped_refptr<IOBuffer> user_buf_;
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   int buf_len_;
   bool closed_;
   bool stall_reads_forever_;
@@ -188,7 +189,7 @@ class MockHttpStream : public HttpStream {
 
 int MockHttpStream::ReadResponseBody(IOBuffer* buf,
                                      int buf_len,
-                                     const CompletionCallback& callback) {
+                                     CompletionOnceCallback callback) {
   CHECK(!callback.is_null());
   CHECK(callback_.is_null());
   CHECK(buf);
@@ -202,10 +203,10 @@ int MockHttpStream::ReadResponseBody(IOBuffer* buf,
   if (!is_sync_) {
     user_buf_ = buf;
     buf_len_ = buf_len;
-    callback_ = callback;
+    callback_ = std::move(callback);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&MockHttpStream::CompleteRead, weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&MockHttpStream::CompleteRead,
+                                  weak_factory_.GetWeakPtr()));
     return ERR_IO_PENDING;
   } else {
     return ReadResponseBodyImpl(buf, buf_len);

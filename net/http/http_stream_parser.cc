@@ -221,7 +221,7 @@ int HttpStreamParser::SendRequest(
     const HttpRequestHeaders& headers,
     const NetworkTrafficAnnotationTag& traffic_annotation,
     HttpResponseInfo* response,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   DCHECK_EQ(STATE_NONE, io_state_);
   DCHECK(callback_.is_null());
   DCHECK(!callback.is_null());
@@ -309,12 +309,12 @@ int HttpStreamParser::SendRequest(
 
   result = DoLoop(OK);
   if (result == ERR_IO_PENDING)
-    callback_ = callback;
+    callback_ = std::move(callback);
 
   return result > 0 ? OK : result;
 }
 
-int HttpStreamParser::ReadResponseHeaders(const CompletionCallback& callback) {
+int HttpStreamParser::ReadResponseHeaders(CompletionOnceCallback callback) {
   DCHECK(io_state_ == STATE_NONE || io_state_ == STATE_DONE);
   DCHECK(callback_.is_null());
   DCHECK(!callback.is_null());
@@ -339,7 +339,7 @@ int HttpStreamParser::ReadResponseHeaders(const CompletionCallback& callback) {
 
   result = DoLoop(result);
   if (result == ERR_IO_PENDING)
-    callback_ = callback;
+    callback_ = std::move(callback);
 
   return result > 0 ? OK : result;
 }
@@ -350,8 +350,9 @@ void HttpStreamParser::Close(bool not_reusable) {
   connection_->Reset();
 }
 
-int HttpStreamParser::ReadResponseBody(IOBuffer* buf, int buf_len,
-                                       const CompletionCallback& callback) {
+int HttpStreamParser::ReadResponseBody(IOBuffer* buf,
+                                       int buf_len,
+                                       CompletionOnceCallback callback) {
   DCHECK(io_state_ == STATE_NONE || io_state_ == STATE_DONE);
   DCHECK(callback_.is_null());
   DCHECK(!callback.is_null());
@@ -375,7 +376,7 @@ int HttpStreamParser::ReadResponseBody(IOBuffer* buf, int buf_len,
 
   int result = DoLoop(OK);
   if (result == ERR_IO_PENDING)
-    callback_ = callback;
+    callback_ = std::move(callback);
 
   return result;
 }
