@@ -346,6 +346,26 @@
             ]
           }
         ]
+      },
+      {
+        "name": "getLocalImagePaths",
+        "type": "function",
+        "description": "Gets the paths of the local image files that can be set as wallpaper.",
+        "nodoc": true,
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Function called upon completion.",
+            "parameters": [
+              {
+                "type": "array",
+                "name": "localImagePaths",
+                "items": {"type": "string"}
+              }
+            ]
+          }
+        ]
       }
     ],
     "events": [

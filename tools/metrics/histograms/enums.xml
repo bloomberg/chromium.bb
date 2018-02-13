@@ -14674,6 +14674,7 @@ Called by update_net_error_codes.py.-->
   <int value="1214" label="WALLPAPERPRIVATE_GETCOLLECTIONSINFO"/>
   <int value="1215" label="WALLPAPERPRIVATE_GETIMAGESINFO"/>
   <int value="1216" label="ACCESSIBILITY_PRIVATE_SENDSYNTHETICKEYEVENT"/>
+  <int value="1217" label="WALLPAPERPRIVATE_GETLOCALIMAGEPATHS"/>
 </enum>
 
 <enum name="ExtensionIconState">

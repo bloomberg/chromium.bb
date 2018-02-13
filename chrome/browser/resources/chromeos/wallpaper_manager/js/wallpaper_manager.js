@@ -1175,6 +1175,13 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
   var wallpapersDataModel = new cr.ui.ArrayDataModel([]);
   var selectedItem = null;
   if (selectedListItem.custom) {
+    if (this.useNewWallpaperPicker_) {
+      chrome.wallpaperPrivate.getLocalImagePaths(
+          localImagePaths => {
+              // TODO(crbug.com/809793): Show the thumbnails.
+          });
+      return;
+    }
     this.document_.body.setAttribute('custom', '');
     var errorHandler = this.onFileSystemError_.bind(this);
     var toArray = function(list) {
