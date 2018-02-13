@@ -28861,6 +28861,7 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="Migrating"/>
   <int value="3" label="Migration failed"/>
   <int value="4" label="Not enough storage"/>
+  <int value="5" label="Migrating minimal"/>
 </enum>
 
 <enum name="MigrationUIUserChoice">
