@@ -1402,6 +1402,7 @@ public class SavePasswordsPreferencesTest {
 
         // The search bar should still be open and still display the search query.
         waitForView(allOf(withId(R.id.search_src_text), withText("Zeu")));
+        Espresso.onView(withId(R.id.search_src_text)).check(matches(withText("Zeu")));
     }
 
     /**

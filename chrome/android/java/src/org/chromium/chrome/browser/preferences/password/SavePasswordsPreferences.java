@@ -230,6 +230,7 @@ public class SavePasswordsPreferences
         searchItem.setIcon(convertToPlainWhite(searchItem.getIcon()));
         if (mSearchQuery != null) { // If a query was recovered, restore the search view.
             searchItem.expandActionView();
+            searchView.setIconified(false);
             searchView.setQuery(mSearchQuery, false);
         }
         searchItem.setOnMenuItemClickListener((MenuItem m) -> {
