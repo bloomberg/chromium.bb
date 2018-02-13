@@ -365,7 +365,8 @@ class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
       int32_t render_view_routing_id,
       int32_t opener_routing_id,
       int32_t parent_routing_id,
-      const FrameReplicationState& replicated_state) override {
+      const FrameReplicationState& replicated_state,
+      const base::UnguessableToken& devtools_frame_token) override {
     NOTREACHED();
   }
   void OnNetworkConnectionChanged(

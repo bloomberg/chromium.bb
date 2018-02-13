@@ -102,7 +102,8 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     int render_view_routing_id,
     blink::WebFrame* opener,
     int parent_routing_id,
-    const FrameReplicationState& replicated_state) {
+    const FrameReplicationState& replicated_state,
+    const base::UnguessableToken& devtools_frame_token) {
   RenderFrameProxy* parent = nullptr;
   if (parent_routing_id != MSG_ROUTING_NONE) {
     parent = RenderFrameProxy::FromRoutingID(parent_routing_id);
@@ -114,6 +115,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
   }
 
   std::unique_ptr<RenderFrameProxy> proxy(new RenderFrameProxy(routing_id));
+  proxy->devtools_frame_token_ = devtools_frame_token;
   RenderViewImpl* render_view = nullptr;
   RenderWidget* render_widget = nullptr;
   blink::WebRemoteFrame* web_frame = nullptr;
