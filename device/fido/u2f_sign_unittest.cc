@@ -154,7 +154,7 @@ TEST_F(U2fSignTest, TestSignSuccess) {
   request->Start();
 
   auto device = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device, GetId()).WillOnce(testing::Return("device"));
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device"));
   EXPECT_CALL(*device, DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign));
   EXPECT_CALL(*device, TryWinkRef(_))
@@ -190,7 +190,7 @@ TEST_F(U2fSignTest, TestDelayedSuccess) {
 
   // Go through the state machine twice before success.
   auto device = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device, GetId()).WillOnce(testing::Return("device"));
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device"));
   EXPECT_CALL(*device, DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::NotSatisfied))
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign));
@@ -233,7 +233,7 @@ TEST_F(U2fSignTest, TestMultipleHandles) {
 
   auto device = std::make_unique<MockU2fDevice>();
   // Wrong key would respond with SW_WRONG_DATA.
-  EXPECT_CALL(*device, GetId()).WillOnce(testing::Return("device"));
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device"));
   EXPECT_CALL(*device, DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
@@ -273,7 +273,7 @@ TEST_F(U2fSignTest, TestMultipleDevices) {
   request->Start();
 
   auto device0 = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device0, GetId()).WillOnce(testing::Return("device0"));
+  EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
   EXPECT_CALL(*device0, DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
       .WillOnce(testing::Invoke(MockU2fDevice::NotSatisfied));
@@ -284,7 +284,7 @@ TEST_F(U2fSignTest, TestMultipleDevices) {
 
   // Second device will have a successful touch.
   auto device1 = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device1, GetId()).WillOnce(testing::Return("device1"));
+  EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device1"));
   EXPECT_CALL(*device1, DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::NoErrorSign));
   // One wink per device.
@@ -321,7 +321,7 @@ TEST_F(U2fSignTest, TestFakeEnroll) {
   request->Start();
 
   auto device0 = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device0, GetId()).WillOnce(testing::Return("device0"));
+  EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
   EXPECT_CALL(*device0, DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
       .WillOnce(testing::Invoke(MockU2fDevice::NotSatisfied));
@@ -332,7 +332,7 @@ TEST_F(U2fSignTest, TestFakeEnroll) {
 
   // Second device will be have a successful touch.
   auto device1 = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device1, GetId()).WillOnce(testing::Return("device1"));
+  EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device1"));
   // Both keys will be tried, when both fail, register is tried on that device.
   EXPECT_CALL(*device1, DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::WrongData))
@@ -422,7 +422,7 @@ TEST_F(U2fSignTest, TestSignWithCorruptedResponse) {
   request->Start();
 
   auto device = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device, GetId()).WillOnce(testing::Return("device"));
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device"));
   EXPECT_CALL(*device, DeviceTransactPtr(_, _))
       .WillOnce(testing::Invoke(MockU2fDevice::SignWithCorruptedResponse));
   EXPECT_CALL(*device, TryWinkRef(_))

@@ -24,7 +24,13 @@ namespace device {
 U2fBleDiscovery::U2fBleDiscovery() : weak_factory_(this) {}
 
 U2fBleDiscovery::~U2fBleDiscovery() {
-  adapter_->RemoveObserver(this);
+  if (adapter_)
+    adapter_->RemoveObserver(this);
+
+  // Pretend we are able to successfully stop a discovery session in case it is
+  // still present.
+  if (discovery_session_)
+    OnStopped(true);
 }
 
 void U2fBleDiscovery::Start() {
@@ -34,8 +40,10 @@ void U2fBleDiscovery::Start() {
 }
 
 void U2fBleDiscovery::Stop() {
+  DCHECK(adapter_);
   adapter_->RemoveObserver(this);
 
+  DCHECK(discovery_session_);
   discovery_session_->Stop(
       base::Bind(&U2fBleDiscovery::OnStopped, weak_factory_.GetWeakPtr(), true),
       base::Bind(&U2fBleDiscovery::OnStopped, weak_factory_.GetWeakPtr(),
@@ -49,6 +57,7 @@ const BluetoothUUID& U2fBleDiscovery::U2fServiceUUID() {
 }
 
 void U2fBleDiscovery::OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter) {
+  DCHECK(!adapter_);
   adapter_ = std::move(adapter);
   DCHECK(adapter_);
   VLOG(2) << "Got adapter " << adapter_->GetAddress();
@@ -66,6 +75,7 @@ void U2fBleDiscovery::OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter) {
 }
 
 void U2fBleDiscovery::OnSetPowered() {
+  DCHECK(adapter_);
   VLOG(2) << "Adapter " << adapter_->GetAddress() << " is powered on.";
 
   for (BluetoothDevice* device : adapter_->GetDevices()) {

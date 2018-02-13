@@ -4,9 +4,12 @@
 
 #include "device/fido/u2f_request.h"
 
+#include <algorithm>
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "device/fido/u2f_ble_discovery.h"
@@ -57,26 +60,6 @@ void U2fRequest::Start() {
   }
 }
 
-U2fDiscovery* U2fRequest::SetDiscoveryForTesting(
-    std::unique_ptr<U2fDiscovery> discovery) {
-  discoveries_.clear();
-  discovery->AddObserver(this);
-  discoveries_.push_back(std::move(discovery));
-  return discoveries_.back().get();
-}
-
-std::vector<std::unique_ptr<U2fDiscovery>>&
-U2fRequest::SetDiscoveriesForTesting(
-    std::unique_ptr<U2fDiscovery> discovery_1,
-    std::unique_ptr<U2fDiscovery> discovery_2) {
-  discoveries_.clear();
-  discovery_1->AddObserver(this);
-  discovery_2->AddObserver(this);
-  discoveries_.push_back(std::move(discovery_1));
-  discoveries_.push_back(std::move(discovery_2));
-  return discoveries_;
-}
-
 void U2fRequest::SetDiscoveriesForTesting(
     std::vector<std::unique_ptr<U2fDiscovery>> discoveries) {
   discoveries_ = std::move(discoveries);
@@ -107,10 +90,27 @@ void U2fRequest::Transition() {
 }
 
 void U2fRequest::DiscoveryStarted(U2fDiscovery* discovery, bool success) {
-  // The discovery might know about devices that have already been added to the
-  // system. Add them to the |devices_| list.
-  auto devices = discovery->GetDevices();
-  std::move(devices.begin(), devices.end(), std::back_inserter(devices_));
+  if (success) {
+    // The discovery might know about devices that have already been added to
+    // the system. Add them to the |devices_| list if we don't already know
+    // about them. This case could happen if a DeviceAdded() event is emitted
+    // before DiscoveryStarted() is invoked. In that case both the U2fRequest
+    // and the U2fDiscovery already know about the just added device.
+    std::set<std::string> current_device_ids;
+    for (const auto* device : attempted_devices_)
+      current_device_ids.insert(device->GetId());
+    if (current_device_)
+      current_device_ids.insert(current_device_->GetId());
+    for (const auto* device : devices_)
+      current_device_ids.insert(device->GetId());
+
+    auto new_devices = discovery->GetDevices();
+    std::copy_if(
+        new_devices.begin(), new_devices.end(), std::back_inserter(devices_),
+        [&current_device_ids](U2fDevice* device) {
+          return !base::ContainsKey(current_device_ids, device->GetId());
+        });
+  }
 
   if (++started_count_ < discoveries_.size())
     return;
