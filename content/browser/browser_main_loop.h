@@ -76,12 +76,6 @@ namespace net {
 class NetworkChangeNotifier;
 }  // namespace net
 
-#if defined(USE_OZONE)
-namespace gfx {
-class ClientNativePixmapFactory;
-}  // namespace gfx
-#endif
-
 #if BUILDFLAG(ENABLE_MUS)
 namespace ui {
 class ImageCursorsSet;
@@ -379,9 +373,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<media::DeviceMonitorLinux> device_monitor_linux_;
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   std::unique_ptr<media::DeviceMonitorMac> device_monitor_mac_;
-#endif
-#if defined(USE_OZONE)
-  std::unique_ptr<gfx::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)
