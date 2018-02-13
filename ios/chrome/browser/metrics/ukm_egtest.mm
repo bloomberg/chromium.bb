@@ -424,13 +424,7 @@ void SignOut() {
 // testMultiDisableSync not needed, since there can't be multiple profiles.
 
 // Make sure that UKM is disabled when a secondary passphrase is used.
-// TODO(crbug.com/806784): Re-enable this test on devices.
-#if TARGET_OS_SIMULATOR
-#define MAYBE_testSecondaryPassphrase testSecondaryPassphrase
-#else
-#define MAYBE_testSecondaryPassphrase FLAKY_testSecondaryPassphrase
-#endif
-- (void)MAYBE_testSecondaryPassphrase {
+- (void)testSecondaryPassphrase {
   uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
 
   // This test hangs for a while when typing, and eventually causes the suite to
