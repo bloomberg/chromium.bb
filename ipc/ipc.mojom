@@ -5,38 +5,11 @@
 module IPC.mojom;
 
 import "mojo/common/read_only_buffer.mojom";
+import "mojo/public/interfaces/bindings/native_struct.mojom";
 
 // A placeholder interface type since we don't yet support generic associated
 // message pipe handles.
 interface GenericInterface {};
-
-// SerializedHandle is a duplicate of the SerializedHandle struct defined in
-// mojo/public/interfaces/bindings/native_struct.mojom.
-//
-// This mojom cannot currently be imported because it's mojom target -
-// //mojo/public/interfaces/bindings:bindings - cannot be depended on without
-// duplicating the symbols it defines which are already exported
-// by //mojo/public/cpp/bindings:bindings.
-//
-// A longer term solution is make interfaces/bindings into a mojom_component.
-// This would need to be facilitated by decomposing public/cpp into two
-// targets: cpp_base, which does not depend on interfaces/bindings and cpp
-// which depends on both cpp_base and interfaces/bindings. Then
-// native_struct.mojom can be imported/depended on here and the duplicate
-// code can be removed.
-struct SerializedHandle {
-  handle the_handle;
-
-  enum Type {
-    MOJO_HANDLE,
-    PLATFORM_FILE,
-    WIN_HANDLE,
-    MACH_PORT,
-    FUCHSIA_HANDLE,
-  };
-
-  Type type;
-};
 
 interface Channel {
   // Informs the remote end of this client's PID. Must be called exactly once,
@@ -45,7 +18,7 @@ interface Channel {
 
   // Transmits a classical Chrome IPC message.
   Receive(mojo.common.mojom.ReadOnlyBuffer data,
-          array<SerializedHandle>? handles);
+          array<mojo.native.SerializedHandle>? handles);
 
   // Requests a Channel-associated interface.
   GetAssociatedInterface(string name, associated GenericInterface& request);
