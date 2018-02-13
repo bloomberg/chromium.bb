@@ -4,12 +4,14 @@
 
 #include "ui/chromeos/ksv/views/keyboard_shortcut_item_view.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/i18n/rtl.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/ksv/keyboard_shortcut_item.h"
 #include "ui/chromeos/ksv/keyboard_shortcut_viewer_metadata.h"
+#include "ui/chromeos/ksv/views/bubble_view.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/styled_label.h"
 
@@ -57,12 +59,15 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
   DCHECK_EQ(replacement_strings.size(), offsets.size());
   for (size_t i = 0; i < offsets.size(); ++i) {
     views::StyledLabel::RangeStyleInfo style_info;
-    // TODO(wutao): add rounded bubble views to highlight shortcut keys when
-    // views::StyledLabel supports custom views.
     // TODO(wutao): add icons for keys.
     // TODO(wutao): finalize the sytles with UX specs.
     style_info.override_color = SK_ColorBLUE;
     style_info.disable_line_wrapping = true;
+    auto bubble_view = std::make_unique<BubbleView>();
+    bubble_view->set_owned_by_client();
+    bubble_view->SetText(replacement_strings[i]);
+    style_info.custom_view = bubble_view.get();
+    shortcut_label_view_->AddCustomView(std::move(bubble_view));
     shortcut_label_view_->AddStyleRange(
         gfx::Range(offsets[i], offsets[i] + replacement_strings[i].length()),
         style_info);
