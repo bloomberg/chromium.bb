@@ -102,6 +102,18 @@ class CORE_EXPORT CustomElement {
   // disallows these as custom element names.
   // https://html.spec.whatwg.org/#valid-custom-element-name
   static bool IsHyphenatedSpecElementName(const AtomicString&);
+
+  enum CreateUUCheckLevel {
+    kCheckAll,
+    // QualifiedName is a valid custom element name, and is_value is null.
+    kQNameIsValid,
+  };
+  template <CreateUUCheckLevel>
+  static Element* CreateUncustomizedOrUndefinedElementTemplate(
+      Document&,
+      const QualifiedName&,
+      const CreateElementFlags,
+      const AtomicString& is_value);
 };
 
 }  // namespace blink
