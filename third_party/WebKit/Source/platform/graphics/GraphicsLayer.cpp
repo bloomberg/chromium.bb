@@ -1191,12 +1191,19 @@ void GraphicsLayer::SetContentsToImage(
   if (image)
     paint_image = image->PaintImageForCurrentFrame();
 
+  ImageOrientation image_orientation = kOriginTopLeft;
+  SkMatrix matrix;
   if (paint_image && image->IsBitmapImage() &&
       respect_image_orientation == kRespectImageOrientation) {
-    ImageOrientation image_orientation =
-        ToBitmapImage(image)->CurrentFrameOrientation();
-    paint_image =
-        DragImage::ResizeAndOrientImage(paint_image, image_orientation);
+    image_orientation = ToBitmapImage(image)->CurrentFrameOrientation();
+    FloatSize size(paint_image.width(), paint_image.height());
+    if (image_orientation.UsesWidthAsHeight())
+      size = size.TransposedSize();
+    auto affine = image_orientation.TransformFromDefault(size);
+    auto transform = affine.ToTransformationMatrix();
+    matrix = TransformationMatrix::ToSkMatrix44(transform);
+  } else {
+    matrix = SkMatrix::I();
   }
 
   if (paint_image) {
@@ -1209,7 +1216,8 @@ void GraphicsLayer::SetContentsToImage(
           Platform::Current()->CompositorSupport()->CreateImageLayer();
       RegisterContentsLayer(image_layer_->Layer());
     }
-    image_layer_->SetImage(std::move(paint_image));
+    image_layer_->SetImage(std::move(paint_image), matrix,
+                           image_orientation.UsesWidthAsHeight());
     image_layer_->Layer()->SetOpaque(image->CurrentFrameKnownToBeOpaque());
     UpdateContentsRect();
   } else if (image_layer_) {

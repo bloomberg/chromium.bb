@@ -43,7 +43,8 @@ TEST(PictureImageLayerTest, PaintContentsToDisplayList) {
   layer->SetImage(PaintImageBuilder::WithDefault()
                       .set_id(PaintImage::GetNextId())
                       .set_image(image_surface->makeImageSnapshot())
-                      .TakePaintImage());
+                      .TakePaintImage(),
+                  SkMatrix::I(), false);
   layer->SetBounds(gfx::Size(layer_rect.width(), layer_rect.height()));
 
   scoped_refptr<DisplayItemList> display_list =
