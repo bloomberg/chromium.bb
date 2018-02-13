@@ -382,24 +382,22 @@ def parse_args(args):
                 type='int',
                 default=1,
                 help='Number of times to run each test (e.g. AAABBBCCC)'),
-            # TODO(joelo): Delete --retry-failures and --no-retry-failures as they
-            # are redundant with --num-retries.
-            optparse.make_option(
-                '--retry-failures',
-                action='store_true',
-                help=('Re-try any tests that produce unexpected results. Default is to not retry '
-                      'if an explicit list of tests is passed to run-webkit-tests.')),
-            optparse.make_option(
-                '--no-retry-failures',
-                dest='retry_failures',
-                action='store_false',
-                help="Don't re-try any tests that produce unexpected results."),
             optparse.make_option(
                 '--num-retries',
+                '--test-launcher-retry-limit',
                 type='int',
-                default=3,
-                help=('Number of times to retry failures, default is 3. Only relevant when '
-                      'failure retries are enabled.')),
+                default=None,
+                help=('Number of times to retry failures. Default (when this '
+                      'flag is not specified) is to retry 3 times, unless an '
+                      'explicit list of tests is passed to run-webkit-tests. '
+                      'If a non-zero value is given explicitly, failures are '
+                      'retried regardless.')),
+            optparse.make_option(
+                '--no-retry-failures',
+                dest='num_retries',
+                action='store_const',
+                const=0,
+                help="Don't retry any failures (equivalent to --num-retries=0)."),
             optparse.make_option(
                 '--total-shards',
                 type=int,
@@ -581,9 +579,11 @@ def _set_up_derived_options(port, options, args):
     if not args and not options.test_list and options.smoke is None:
         options.smoke = port.default_smoke_test_only()
     if options.smoke:
-        if not args and not options.test_list and options.retry_failures is None:
-            # Retry failures by default if we're doing just a smoke test (no additional tests).
-            options.retry_failures = True
+        if not args and not options.test_list and options.num_retries is None:
+            # Retry failures 3 times if we're running a smoke test without
+            # additional tests. SmokeTests is an explicit list of tests, so we
+            # wouldn't retry by default without this special case.
+            options.num_retries = 3
 
         if not options.test_list:
             options.test_list = []
