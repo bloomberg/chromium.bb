@@ -288,9 +288,8 @@ void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
   if (!stylus_utils::HasStylusInput())
     return;
 
-  // Don't do anything if the palette should not be shown or if the user has
-  // disabled it all-together.
-  if (!palette_utils::IsInUserSession() || !is_palette_enabled_)
+  // Don't do anything if the palette tray is not shown.
+  if (!visible())
     return;
 
   // Auto show/hide the palette if allowed by the user.
