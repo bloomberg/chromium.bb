@@ -28,7 +28,7 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/browser_sync/test_profile_sync_service.h"
+#include "components/browser_sync/profile_sync_service_mock.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -155,14 +155,6 @@ class FakeUserPolicySigninService : public policy::UserPolicySigninService {
   std::string account_id_;
 };
 
-// Builds a fake sync service.
-std::unique_ptr<KeyedService> BuildFakeSyncService(
-    content::BrowserContext* context) {
-  return std::make_unique<browser_sync::TestProfileSyncService>(
-      CreateProfileSyncServiceParamsForTest(
-          Profile::FromBrowserContext(context)));
-}
-
 }  // namespace
 
 class DiceTurnSyncOnHelperTest : public testing::Test {
@@ -182,7 +174,7 @@ class DiceTurnSyncOnHelperTest : public testing::Test {
     profile_builder.AddTestingFactory(ChromeSigninClientFactory::GetInstance(),
                                       signin::BuildTestSigninClient);
     profile_builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(),
-                                      &BuildFakeSyncService);
+                                      &BuildMockProfileSyncService);
     profile_builder.AddTestingFactory(
         policy::UserPolicySigninServiceFactory::GetInstance(),
         &FakeUserPolicySigninService::Build);
@@ -214,6 +206,12 @@ class DiceTurnSyncOnHelperTest : public testing::Test {
   const std::string& account_id() { return account_id_; }
   FakeUserPolicySigninService* user_policy_signin_service() {
     return user_policy_signin_service_;
+  }
+
+  // Gets the ProfileSyncServiceMock.
+  browser_sync::ProfileSyncServiceMock* GetProfileSyncServiceMock() {
+    return static_cast<browser_sync::ProfileSyncServiceMock*>(
+        ProfileSyncServiceFactory::GetForProfile(profile()));
   }
 
   DiceTurnSyncOnHelper* CreateDiceTurnOnSyncHelper(
@@ -534,17 +532,17 @@ TEST_F(DiceTurnSyncOnHelperTest, EnterpriseConfirmationNewProfile) {
 TEST_F(DiceTurnSyncOnHelperTest, UndoSync) {
   // Set expectations.
   expected_sync_confirmation_shown_ = true;
+  browser_sync::ProfileSyncServiceMock* sync_service_mock =
+      GetProfileSyncServiceMock();
+  EXPECT_CALL(*sync_service_mock, SetFirstSetupComplete()).Times(0);
+  EXPECT_CALL(*sync_service_mock, GetSetupInProgressHandle()).Times(1);
   // Signin flow.
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile());
   EXPECT_FALSE(signin_manager()->IsAuthenticated());
-  EXPECT_FALSE(sync_service->IsFirstSetupComplete());
   CreateDiceTurnOnSyncHelper(
       DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
   // Check expectations.
   EXPECT_FALSE(signin_manager()->IsAuthenticated());
   EXPECT_FALSE(token_service()->RefreshTokenIsAvailable(account_id()));
-  EXPECT_FALSE(sync_service->IsFirstSetupComplete());
   CheckDelegateCalls();
 }
 
@@ -553,19 +551,19 @@ TEST_F(DiceTurnSyncOnHelperTest, ConfigureSync) {
   // Set expectations.
   expected_sync_confirmation_shown_ = true;
   expected_sync_settings_shown_ = true;
+  browser_sync::ProfileSyncServiceMock* sync_service_mock =
+      GetProfileSyncServiceMock();
+  EXPECT_CALL(*sync_service_mock, SetFirstSetupComplete()).Times(0);
+  EXPECT_CALL(*sync_service_mock, GetSetupInProgressHandle()).Times(1);
   // Configure the test.
   sync_confirmation_result_ =
       LoginUIService::SyncConfirmationUIClosedResult::CONFIGURE_SYNC_FIRST;
   // Signin flow.
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile());
   EXPECT_FALSE(signin_manager()->IsAuthenticated());
-  EXPECT_FALSE(sync_service->IsFirstSetupComplete());
   CreateDiceTurnOnSyncHelper(
       DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
   // Check expectations.
   EXPECT_TRUE(signin_manager()->IsAuthenticated());
-  EXPECT_FALSE(sync_service->IsFirstSetupComplete());
   EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id()));
   CheckDelegateCalls();
 }
@@ -574,19 +572,19 @@ TEST_F(DiceTurnSyncOnHelperTest, ConfigureSync) {
 TEST_F(DiceTurnSyncOnHelperTest, StartSync) {
   // Set expectations.
   expected_sync_confirmation_shown_ = true;
+  browser_sync::ProfileSyncServiceMock* sync_service_mock =
+      GetProfileSyncServiceMock();
+  EXPECT_CALL(*sync_service_mock, SetFirstSetupComplete()).Times(1);
+  EXPECT_CALL(*sync_service_mock, GetSetupInProgressHandle()).Times(1);
   // Configure the test.
   sync_confirmation_result_ = LoginUIService::SyncConfirmationUIClosedResult::
       SYNC_WITH_DEFAULT_SETTINGS;
   // Signin flow.
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile());
   EXPECT_FALSE(signin_manager()->IsAuthenticated());
-  EXPECT_FALSE(sync_service->IsFirstSetupComplete());
   CreateDiceTurnOnSyncHelper(
       DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
   // Check expectations.
   EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id()));
   EXPECT_EQ(account_id(), signin_manager()->GetAuthenticatedAccountId());
-  EXPECT_TRUE(sync_service->IsFirstSetupComplete());
   CheckDelegateCalls();
 }
