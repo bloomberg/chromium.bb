@@ -36,6 +36,14 @@ in your `~/.bashrc` or `~/.zshrc`). Assuming you cloned `depot_tools` to
 $ export PATH="$PATH:/path/to/depot_tools"
 ```
 
+When cloning `depot_tools` to your home directory **do not** use `~` on PATH,
+otherwise `gclient runhooks` will fail to run. Rather, you should use either
+`$HOME` or the absolute path:
+
+```shell
+$ export PATH="$PATH:${HOME}/depot_tools"
+```
+
 ## Get the code
 
 Create a `chromium` directory for the checkout and change to it (you can call
