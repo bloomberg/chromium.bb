@@ -30,7 +30,6 @@ class ScriptState;
 class CORE_EXPORT Body : public ScriptWrappable,
                          public ActiveScriptWrappable<Body>,
                          public ContextClient {
-  WTF_MAKE_NONCOPYABLE(Body);
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Body);
 
@@ -68,6 +67,7 @@ class CORE_EXPORT Body : public ScriptWrappable,
   // an empty ScriptPromise if the consumption may proceed, and a
   // ScriptPromise rejected with a TypeError if it ought to be blocked.
   ScriptPromise RejectInvalidConsumption(ScriptState*);
+  DISALLOW_COPY_AND_ASSIGN(Body);
 };
 
 }  // namespace blink

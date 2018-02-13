@@ -27,7 +27,6 @@ class ScriptState;
 // is weak. A user must guarantee that the ReadableStreamReader object is kept
 // alive appropriately.
 class CORE_EXPORT ReadableStreamBytesConsumer final : public BytesConsumer {
-  WTF_MAKE_NONCOPYABLE(ReadableStreamBytesConsumer);
   USING_PRE_FINALIZER(ReadableStreamBytesConsumer, Dispose);
 
  public:
@@ -67,6 +66,7 @@ class CORE_EXPORT ReadableStreamBytesConsumer final : public BytesConsumer {
   size_t pending_offset_ = 0;
   PublicState state_ = PublicState::kReadableOrWaiting;
   bool is_reading_ = false;
+  DISALLOW_COPY_AND_ASSIGN(ReadableStreamBytesConsumer);
 };
 
 }  // namespace blink

@@ -27,7 +27,6 @@ namespace {
 
 class BodyConsumerBase : public GarbageCollectedFinalized<BodyConsumerBase>,
                          public FetchDataLoader::Client {
-  WTF_MAKE_NONCOPYABLE(BodyConsumerBase);
   USING_GARBAGE_COLLECTED_MIXIN(BodyConsumerBase);
 
  public:
@@ -47,11 +46,10 @@ class BodyConsumerBase : public GarbageCollectedFinalized<BodyConsumerBase>,
 
  private:
   Member<ScriptPromiseResolver> resolver_;
+  DISALLOW_COPY_AND_ASSIGN(BodyConsumerBase);
 };
 
 class BodyBlobConsumer final : public BodyConsumerBase {
-  WTF_MAKE_NONCOPYABLE(BodyBlobConsumer);
-
  public:
   explicit BodyBlobConsumer(ScriptPromiseResolver* resolver)
       : BodyConsumerBase(resolver) {}
@@ -60,11 +58,10 @@ class BodyBlobConsumer final : public BodyConsumerBase {
       scoped_refptr<BlobDataHandle> blob_data_handle) override {
     Resolver()->Resolve(Blob::Create(std::move(blob_data_handle)));
   }
+  DISALLOW_COPY_AND_ASSIGN(BodyBlobConsumer);
 };
 
 class BodyArrayBufferConsumer final : public BodyConsumerBase {
-  WTF_MAKE_NONCOPYABLE(BodyArrayBufferConsumer);
-
  public:
   explicit BodyArrayBufferConsumer(ScriptPromiseResolver* resolver)
       : BodyConsumerBase(resolver) {}
@@ -72,11 +69,10 @@ class BodyArrayBufferConsumer final : public BodyConsumerBase {
   void DidFetchDataLoadedArrayBuffer(DOMArrayBuffer* array_buffer) override {
     Resolver()->Resolve(array_buffer);
   }
+  DISALLOW_COPY_AND_ASSIGN(BodyArrayBufferConsumer);
 };
 
 class BodyFormDataConsumer final : public BodyConsumerBase {
-  WTF_MAKE_NONCOPYABLE(BodyFormDataConsumer);
-
  public:
   explicit BodyFormDataConsumer(ScriptPromiseResolver* resolver)
       : BodyConsumerBase(resolver) {}
@@ -91,11 +87,10 @@ class BodyFormDataConsumer final : public BodyConsumerBase {
       formData->append(pair.first, pair.second);
     DidFetchDataLoadedFormData(formData);
   }
+  DISALLOW_COPY_AND_ASSIGN(BodyFormDataConsumer);
 };
 
 class BodyTextConsumer final : public BodyConsumerBase {
-  WTF_MAKE_NONCOPYABLE(BodyTextConsumer);
-
  public:
   explicit BodyTextConsumer(ScriptPromiseResolver* resolver)
       : BodyConsumerBase(resolver) {}
@@ -103,11 +98,10 @@ class BodyTextConsumer final : public BodyConsumerBase {
   void DidFetchDataLoadedString(const String& string) override {
     Resolver()->Resolve(string);
   }
+  DISALLOW_COPY_AND_ASSIGN(BodyTextConsumer);
 };
 
 class BodyJsonConsumer final : public BodyConsumerBase {
-  WTF_MAKE_NONCOPYABLE(BodyJsonConsumer);
-
  public:
   explicit BodyJsonConsumer(ScriptPromiseResolver* resolver)
       : BodyConsumerBase(resolver) {}
@@ -128,6 +122,7 @@ class BodyJsonConsumer final : public BodyConsumerBase {
     else
       Resolver()->Reject(trycatch.Exception());
   }
+  DISALLOW_COPY_AND_ASSIGN(BodyJsonConsumer);
 };
 
 }  // namespace
