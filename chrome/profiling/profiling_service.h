@@ -59,7 +59,8 @@ class ProfilingService : public service_manager::Service,
       bool keep_small_allocations,
       bool strip_path_from_mapped_files,
       mojom::ProfilingService::DumpProcessesForTracingCallback callback,
-      VmRegions vm_regions);
+      bool success,
+      memory_instrumentation::mojom::GlobalMemoryDumpPtr dump);
 
   service_manager::BinderRegistry registry_;
   mojo::Binding<mojom::ProfilingService> binding_;
