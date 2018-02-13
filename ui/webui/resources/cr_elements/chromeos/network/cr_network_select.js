@@ -54,6 +54,12 @@ Polymer({
         return [];
       },
     },
+
+    /**
+     * Cached Cellular Device state or undefined if there is no Cellular device.
+     * @private {!CrOnc.DeviceStateProperties|undefined} deviceState
+     */
+    cellularDeviceState_: Object,
   },
 
   /** @type {string} */
@@ -124,43 +130,26 @@ Polymer({
    * @private
    */
   getDeviceStatesCallback_: function(deviceStates) {
-    var uninitializedCellular = deviceStates.find(function(device) {
-      return device.Type == CrOnc.Type.CELLULAR &&
-          device.State == CrOnc.DeviceState.UNINITIALIZED;
-    });
-    this.getNetworkStates_(uninitializedCellular);
-  },
-
-  /**
-   * @param {!CrOnc.DeviceStateProperties|undefined} uninitializedCellular
-   *     A cellular device state to pass to |getNetworksCallback_| or undefined.
-   */
-  getNetworkStates_: function(uninitializedCellular) {
     var filter = {
       networkType: chrome.networkingPrivate.NetworkType.ALL,
       visible: true,
       configured: false
     };
-    chrome.networkingPrivate.getNetworks(filter, function(states) {
-      this.getNetworksCallback_(uninitializedCellular, states);
+    chrome.networkingPrivate.getNetworks(filter, function(networkStates) {
+      this.getNetworksCallback_(deviceStates, networkStates);
     }.bind(this));
   },
 
   /**
-   * @param {!CrOnc.DeviceStateProperties|undefined} uninitializedCellular
-   *     If defined, prepends a Cellular state with no ConnectionState to
-   *     represent an uninitialized Cellular device.
-   * @param {!Array<!CrOnc.NetworkStateProperties>} states
+   * @param {!Array<!CrOnc.DeviceStateProperties>} deviceStates
+   * @param {!Array<!CrOnc.NetworkStateProperties>} networkStates
    * @private
    */
-  getNetworksCallback_: function(uninitializedCellular, states) {
-    if (uninitializedCellular) {
-      states.unshift({
-        GUID: '',
-        Type: uninitializedCellular.Type,
-      });
-    }
-    this.networkStateList_ = states;
+  getNetworksCallback_: function(deviceStates, networkStates) {
+    this.cellularDeviceState_ = deviceStates.find(function(device) {
+      return device.Type == CrOnc.Type.CELLULAR;
+    });
+    this.networkStateList_ = networkStates;
     var defaultState = (this.networkStateList_.length > 0 &&
                         this.networkStateList_[0].ConnectionState ==
                             CrOnc.ConnectionState.CONNECTED) ?
@@ -192,6 +181,18 @@ Polymer({
     if (!this.handleNetworkItemSelected) {
       this.fire('network-item-selected', state);
       return;
+    }
+
+    // NOTE: This isn't used by OOBE (no handle-network-item-selected).
+    // TODO(stevenjb): Remove custom OOBE handling.
+    if (state.Type == CrOnc.Type.CELLULAR && this.cellularDeviceState_) {
+      var cellularDevice = this.cellularDeviceState_;
+      // If Cellular is not enabled and not SIM locked, enable Cellular.
+      if (cellularDevice.State != CrOnc.DeviceState.ENABLED &&
+          (!cellularDevice.SIMLockStatus ||
+           !cellularDevice.SIMLockStatus.LockType)) {
+        chrome.networkingPrivate.enableNetworkType(CrOnc.Type.CELLULAR);
+      }
     }
 
     if (state.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED)
