@@ -73,6 +73,7 @@
 #include "modules/media_controls/elements/MediaControlPictureInPictureButtonElement.h"
 #include "modules/media_controls/elements/MediaControlPlayButtonElement.h"
 #include "modules/media_controls/elements/MediaControlRemainingTimeDisplayElement.h"
+#include "modules/media_controls/elements/MediaControlScrubbingMessageElement.h"
 #include "modules/media_controls/elements/MediaControlTextTrackListElement.h"
 #include "modules/media_controls/elements/MediaControlTimelineElement.h"
 #include "modules/media_controls/elements/MediaControlToggleClosedCaptionsButtonElement.h"
@@ -103,6 +104,8 @@ constexpr int kMinHeightForOverlayPlayButton = kOverlayPlayButtonHeight +
                                                kAndroidMediaPanelHeight +
                                                (2 * kOverlayBottomMargin);
 
+constexpr int kMinScrubbingMessageWidth = 300;
+
 // If you change this value, then also update the corresponding value in
 // LayoutTests/media/media-controls.js.
 const double kTimeWithoutMouseMovementBeforeHidingMediaControls = 3;
@@ -122,6 +125,8 @@ constexpr int kModernControlsAudioButtonPadding = 20;
 constexpr int kModernControlsVideoButtonPadding = 26;
 
 const char kShowDefaultPosterCSSClass[] = "use-default-poster";
+
+const char kScrubbingMessageCSSClass[] = "scrubbing-message";
 
 bool ShouldShowFullscreenButton(const HTMLMediaElement& media_element) {
   // Unconditionally allow the user to exit fullscreen if we are in it
@@ -319,6 +324,7 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       panel_(nullptr),
       play_button_(nullptr),
       timeline_(nullptr),
+      scrubbing_message_(nullptr),
       current_time_display_(nullptr),
       duration_display_(nullptr),
       mute_button_(nullptr),
@@ -413,6 +419,9 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 //   |    (-webkit-media-controls-enclosure)
 //   \-MediaControlPanelElement
 //     |    (-webkit-media-controls-panel)
+//     |  {if ModernMediaControlsEnabled and is video element and is Android}
+//     +-MediaControlScrubbingMessageElement
+//     |  (-internal-media-controls-scrubbing-message)
 //     |  {if ModernMediaControlsEnabled, otherwise
 //     |   contents are directly attached to parent.
 //     +-MediaControlOverlayPlayButtonElement
@@ -488,6 +497,11 @@ void MediaControlsImpl::InitializeControls() {
   // seperate button panel. This is because they are displayed in two lines.
   Element* button_panel = panel_;
   if (IsModern() && MediaElement().IsHTMLVideoElement()) {
+    if (RuntimeEnabledFeatures::DoubleTapToJumpOnVideoEnabled()) {
+      scrubbing_message_ = new MediaControlScrubbingMessageElement(*this);
+      panel_->AppendChild(scrubbing_message_);
+    }
+
     panel_->AppendChild(overlay_play_button_);
 
     media_button_panel_ = new MediaControlButtonPanelElement(*this);
@@ -860,6 +874,12 @@ void MediaControlsImpl::BeginScrubbing() {
     MediaElement().pause();
   }
 
+  if (scrubbing_message_) {
+    scrubbing_message_->SetIsWanted(true);
+    if (scrubbing_message_->DoesFit())
+      panel_->setAttribute("class", kScrubbingMessageCSSClass);
+  }
+
   is_scrubbing_ = true;
   UpdateCSSClassFromState();
 }
@@ -869,6 +889,11 @@ void MediaControlsImpl::EndScrubbing() {
     is_paused_for_scrubbing_ = false;
     if (MediaElement().paused())
       MediaElement().Play();
+  }
+
+  if (scrubbing_message_) {
+    scrubbing_message_->SetIsWanted(false);
+    panel_->removeAttribute("class");
   }
 
   is_scrubbing_ = false;
@@ -1095,6 +1120,11 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
 
   if (download_iph_manager_)
     download_iph_manager_->UpdateInProductHelp();
+}
+
+void MediaControlsImpl::UpdateScrubbingMessageFits() const {
+  if (scrubbing_message_)
+    scrubbing_message_->SetDoesFit(size_.Width() >= kMinScrubbingMessageWidth);
 }
 
 void MediaControlsImpl::MaybeToggleControlsFromTap() {
@@ -1441,6 +1471,7 @@ void MediaControlsImpl::ComputeWhichControlsFit() {
   // won't benefit from that anwyay, we just do it here like JS will.
   if (IsModern()) {
     UpdateOverflowMenuWanted();
+    UpdateScrubbingMessageFits();
     return;
   }
 
@@ -1723,6 +1754,7 @@ void MediaControlsImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(play_button_);
   visitor->Trace(current_time_display_);
   visitor->Trace(timeline_);
+  visitor->Trace(scrubbing_message_);
   visitor->Trace(mute_button_);
   visitor->Trace(volume_slider_);
   visitor->Trace(picture_in_picture_button_);

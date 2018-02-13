@@ -73,6 +73,24 @@ String MediaControlsResourceLoader::GetJumpSVGImage() {
 };
 
 // static
+String MediaControlsResourceLoader::GetArrowRightSVGImage() {
+  return ResourceBundleHelper::UncompressResourceAsString(
+      IDR_MODERN_MEDIA_CONTROLS_ARROW_RIGHT_SVG);
+};
+
+// static
+String MediaControlsResourceLoader::GetArrowLeftSVGImage() {
+  return ResourceBundleHelper::UncompressResourceAsString(
+      IDR_MODERN_MEDIA_CONTROLS_ARROW_LEFT_SVG);
+};
+
+// static
+String MediaControlsResourceLoader::GetScrubbingMessageStyleSheet() {
+  return ResourceBundleHelper::UncompressResourceAsString(
+      IDR_SHADOWSTYLE_MODERN_MEDIA_CONTROLS_SCRUBBING_MESSAGE_CSS);
+};
+
+// static
 String MediaControlsResourceLoader::GetOverlayPlayStyleSheet() {
   return ResourceBundleHelper::UncompressResourceAsString(
       IDR_SHADOWSTYLE_MODERN_MEDIA_CONTROLS_OVERLAY_PLAY_CSS);

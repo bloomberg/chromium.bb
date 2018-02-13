@@ -36,6 +36,7 @@ enum MediaControlElementType {
   kMediaOverflowButton,
   kMediaOverflowList,
   kMediaDownloadButton,
+  kMediaScrubbingMessage,
 };
 
 #endif  // MediaControlElementType_h

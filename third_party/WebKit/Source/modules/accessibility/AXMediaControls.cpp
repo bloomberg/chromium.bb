@@ -90,6 +90,7 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaOverflowButton:
     case kMediaOverflowList:
     case kMediaDownloadButton:
+    case kMediaScrubbingMessage:
       return new AccessibilityMediaControl(layout_object, ax_object_cache);
   }
 
@@ -153,6 +154,7 @@ String AccessibilityMediaControl::TextAlternative(
     case kMediaVolumeSlider:
     case kMediaVolumeSliderThumb:
     case kMediaOverflowList:
+    case kMediaScrubbingMessage:
       return QueryString(WebLocalizedString::kAXMediaDefault);
     case kMediaSlider:
       NOTREACHED();
@@ -209,6 +211,7 @@ String AccessibilityMediaControl::Description(
     case kMediaVolumeSliderThumb:
     case kMediaOverflowList:
     case kMediaDownloadButton:
+    case kMediaScrubbingMessage:
       return QueryString(WebLocalizedString::kAXMediaDefault);
     case kMediaSlider:
       NOTREACHED();
@@ -261,6 +264,7 @@ AccessibilityRole AccessibilityMediaControl::RoleValue() const {
     case kMediaTrackSelectionCheckmark:
     case kMediaVolumeSlider:
     case kMediaVolumeSliderThumb:
+    case kMediaScrubbingMessage:
       return kUnknownRole;
 
     case kMediaSlider:

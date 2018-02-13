@@ -4,13 +4,24 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../media-controls.js"></script>
-<video controls width=400 src="../../content/60_sec_video.webm"></video>
+<body></body>
 <script>
 async_test(t => {
-  const video = document.querySelector('video');
+  // Need to enable double-tap to check the scrubbing message.
+  enableDoubleTapToJumpForTest(t);
+
+  // We create the video on the fly, since we need double-tap to jump enabled
+  // before the video is created.
+  let video = document.createElement('video');
+  video.controls = true;
+  video.width = 400;
+  video.src = "../../content/60_sec_video.webm";
+  document.body.appendChild(video);
+
   const timeline = timelineElement(video);
   const timeElement = timelineThumbCurrentTime(video);
   const thumb = timelineThumb(video);
+  const scrubbingMessage = scrubbingMessageElement(video);
 
   let seeked = false;
 
@@ -26,6 +37,9 @@ async_test(t => {
 
       // Check the scrubbing UI is no longer shown.
       assert_equals('none', timeElement.style.display);
+
+      // Check the scrubbing message is no longer shown.
+      assert_false(isControlVisible(scrubbingMessage));
     }), { once: true });
 
     // Simulate a mouse down on those coordinates.
@@ -50,6 +64,9 @@ async_test(t => {
     assert_equals('', timeElement.style.display);
     assert_equals('0:' + Math.round(video.currentTime),
         timeElement.textContent);
+
+    // Check the scrubbing message is shown.
+    assert_true(isControlVisible(scrubbingMessage));
   }), { once: true });
 
   video.addEventListener('seeked', t.step_func(() => {

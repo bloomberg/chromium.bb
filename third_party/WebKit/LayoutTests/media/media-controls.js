@@ -222,6 +222,14 @@ function timelineThumbCurrentTime(videoElement) {
     return thumb;
 }
 
+function scrubbingMessageElement(videoElement) {
+    var controlID = '-internal-media-controls-scrubbing-message';
+    var button = mediaControlsElement(window.internals.shadowRoot(videoElement).firstChild, controlID);
+    if (!button)
+        throw 'Failed to find scrubbing message element';
+    return button;
+}
+
 function clickAtCoordinates(x, y)
 {
     eventSender.mouseMoveTo(x, y);
