@@ -136,6 +136,7 @@
    "operated_by": [
     5
    ],
+   "disqualified_at": 1518479999,
    "dns_api_endpoint": "wosign1.ct.googleapis.com"
   },
   {
@@ -177,6 +178,7 @@
    "operated_by": [
     8
    ],
+   "disqualified_at": 1518479999,
    "dns_api_endpoint": "startcom1.ct.googleapis.com"
   },
   {
