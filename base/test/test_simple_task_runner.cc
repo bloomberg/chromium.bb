@@ -96,9 +96,8 @@ void TestSimpleTaskRunner::RunPendingTasks() {
 }
 
 void TestSimpleTaskRunner::RunUntilIdle() {
-  while (!pending_tasks_.empty()) {
+  while (HasPendingTask())
     RunPendingTasks();
-  }
 }
 
 }  // namespace base
