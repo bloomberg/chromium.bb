@@ -1030,6 +1030,9 @@ extern const char kWebrtcHwH264EncodingDescription[];
 extern const char kWebrtcHwVP8EncodingName[];
 extern const char kWebrtcHwVP8EncodingDescription[];
 
+extern const char kWebrtcNewEncodeCpuLoadEstimatorName[];
+extern const char kWebrtcNewEncodeCpuLoadEstimatorDescription[];
+
 extern const char kWebrtcSrtpAesGcmName[];
 extern const char kWebrtcSrtpAesGcmDescription[];
 
