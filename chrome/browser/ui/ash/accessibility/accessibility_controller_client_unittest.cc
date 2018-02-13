@@ -12,6 +12,7 @@
 #include "chromeos/audio/chromeos_sounds.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace {
 
@@ -62,7 +63,7 @@ class FakeAccessibilityControllerClient : public AccessibilityControllerClient {
     std::move(callback).Run(kShutdownSoundDuration);
   }
 
-  void HandleAccessibilityGesture(const std::string& gesture) override {
+  void HandleAccessibilityGesture(ax::mojom::Gesture gesture) override {
     last_a11y_gesture_ = gesture;
   }
 
@@ -79,7 +80,7 @@ class FakeAccessibilityControllerClient : public AccessibilityControllerClient {
     return last_a11y_alert_;
   }
   int32_t last_sound_key() const { return last_sound_key_; }
-  std::string last_a11y_gesture() const { return last_a11y_gesture_; }
+  ax::mojom::Gesture last_a11y_gesture() const { return last_a11y_gesture_; }
   int spoken_feedback_toggle_count_down() const {
     return spoken_feedback_toggle_count_down_;
   }
@@ -88,7 +89,7 @@ class FakeAccessibilityControllerClient : public AccessibilityControllerClient {
   ash::mojom::AccessibilityAlert last_a11y_alert_ =
       ash::mojom::AccessibilityAlert::NONE;
   int32_t last_sound_key_ = -1;
-  std::string last_a11y_gesture_;
+  ax::mojom::Gesture last_a11y_gesture_ = ax::mojom::Gesture::kNone;
   int spoken_feedback_toggle_count_down_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAccessibilityControllerClient);
@@ -136,7 +137,7 @@ TEST_F(AccessibilityControllerClientTest, MethodCalls) {
   EXPECT_EQ(kShutdownSoundDuration, sound_duration);
 
   // Tests HandleAccessibilityGesture method call.
-  const std::string gesture("click");
+  ax::mojom::Gesture gesture = ax::mojom::Gesture::kClick;
   client.HandleAccessibilityGesture(gesture);
   EXPECT_EQ(gesture, client.last_a11y_gesture());
 

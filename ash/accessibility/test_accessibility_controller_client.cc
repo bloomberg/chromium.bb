@@ -37,7 +37,7 @@ void TestAccessibilityControllerClient::PlayShutdownSound(
 }
 
 void TestAccessibilityControllerClient::HandleAccessibilityGesture(
-    const std::string& gesture) {
+    ax::mojom::Gesture gesture) {
   last_a11y_gesture_ = gesture;
 }
 

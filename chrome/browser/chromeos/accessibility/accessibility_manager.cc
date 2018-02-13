@@ -78,6 +78,7 @@
 #include "media/audio/sounds/sounds_manager.h"
 #include "media/base/media_switches.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/accessibility/ax_enum_util.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -617,13 +618,13 @@ bool AccessibilityManager::PlaySpokenFeedbackToggleCountdown(int tick_count) {
 }
 
 void AccessibilityManager::HandleAccessibilityGesture(
-    const std::string& gesture) {
+    ax::mojom::Gesture gesture) {
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(profile());
   CHECK(event_router);
 
   std::unique_ptr<base::ListValue> event_args(new base::ListValue());
-  event_args->AppendString(gesture);
+  event_args->AppendString(ui::ToString(gesture));
   std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::ACCESSIBILITY_PRIVATE_ON_ACCESSIBILITY_GESTURE,
       extensions::api::accessibility_private::OnAccessibilityGesture::

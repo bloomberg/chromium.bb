@@ -5,6 +5,7 @@
 module ash.mojom;
 
 import "mojo/common/time.mojom";
+import "ui/accessibility/ax_enums.mojom";
 
 // Alert sent to the accessibility api.
 enum AccessibilityAlert {
@@ -69,9 +70,7 @@ interface AccessibilityControllerClient {
 
   // Forwards an accessibility gesture from the touch exploration controller to
   // ChromeVox.
-  // TODO(warx): replace string with enum once ax_enums.idl is converted to
-  // mojom file.
-  HandleAccessibilityGesture(string gesture);
+  HandleAccessibilityGesture(ax.mojom.Gesture gesture);
 
   // Starts or stops dictation (type what you speak).
   ToggleDictation();
