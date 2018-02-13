@@ -106,10 +106,6 @@ bool MatchesPluginSiteForRegisterableDomainsAndIPs(
       (domains_and_ips.find(domain_or_ip) != domains_and_ips.end()));
 }
 
-bool NoopFilter(const GURL& url) {
-  return true;
-}
-
 }  // namespace
 
 // static
@@ -120,7 +116,7 @@ BrowsingDataFilterBuilder::Create(Mode mode) {
 
 // static
 base::Callback<bool(const GURL&)> BrowsingDataFilterBuilder::BuildNoopFilter() {
-  return base::Bind(&NoopFilter);
+  return base::Bind([](const GURL&) { return true; });
 }
 
 BrowsingDataFilterBuilderImpl::BrowsingDataFilterBuilderImpl(Mode mode)
