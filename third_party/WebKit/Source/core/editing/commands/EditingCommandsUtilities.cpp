@@ -33,6 +33,11 @@
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
+#include "core/frame/UseCounter.h"
+#include "core/frame/WebFeatureForward.h"
+#include "core/html/HTMLBodyElement.h"
+#include "core/html/HTMLHtmlElement.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutObject.h"
 
 namespace blink {
@@ -480,6 +485,53 @@ const String& NonBreakingSpaceString() {
   DEFINE_STATIC_LOCAL(String, non_breaking_space_string,
                       (&kNoBreakSpaceCharacter, 1));
   return non_breaking_space_string;
+}
+
+// TODO(tkent): This is a workaround of some crash bugs in the editing code,
+// which assumes a document has a valid HTML structure. We should make the
+// editing code more robust, and should remove this hack. crbug.com/580941.
+void TidyUpHTMLStructure(Document& document) {
+  // hasEditableStyle() needs up-to-date ComputedStyle.
+  document.UpdateStyleAndLayoutTree();
+  const bool needs_valid_structure =
+      HasEditableStyle(document) ||
+      (document.documentElement() &&
+       HasEditableStyle(*document.documentElement()));
+  if (!needs_valid_structure)
+    return;
+
+  Element* const current_root = document.documentElement();
+  if (current_root && IsHTMLHtmlElement(current_root))
+    return;
+  Element* const existing_head =
+      current_root && IsHTMLHeadElement(current_root) ? current_root : nullptr;
+  Element* const existing_body =
+      current_root && (IsHTMLBodyElement(current_root) ||
+                       IsHTMLFrameSetElement(current_root))
+          ? current_root
+          : nullptr;
+  // We ensure only "the root is <html>."
+  // documentElement as rootEditableElement is problematic.  So we move
+  // non-<html> root elements under <body>, and the <body> works as
+  // rootEditableElement.
+  document.AddConsoleMessage(ConsoleMessage::Create(
+      kJSMessageSource, kWarningMessageLevel,
+      "document.execCommand() doesn't work with an invalid HTML structure. It "
+      "is corrected automatically."));
+  UseCounter::Count(document, WebFeature::kExecCommandAltersHTMLStructure);
+
+  Element* const root = HTMLHtmlElement::Create(document);
+  if (existing_head)
+    root->AppendChild(existing_head);
+  Element* const body =
+      existing_body ? existing_body : HTMLBodyElement::Create(document);
+  if (document.documentElement() && body != document.documentElement())
+    body->AppendChild(document.documentElement());
+  root->AppendChild(body);
+  DCHECK(!document.documentElement());
+  document.AppendChild(root);
+
+  // TODO(tkent): Should we check and move Text node children of <html>?
 }
 
 }  // namespace blink

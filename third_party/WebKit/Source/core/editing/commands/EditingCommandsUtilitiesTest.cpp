@@ -7,10 +7,21 @@
 #include "core/dom/StaticNodeList.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/testing/EditingTestBase.h"
+#include "core/html/HTMLBodyElement.h"
+#include "core/html/HTMLDivElement.h"
+#include "core/html/HTMLHeadElement.h"
 
 namespace blink {
 
-class EditingCommandsUtilitiesTest : public EditingTestBase {};
+class EditingCommandsUtilitiesTest : public EditingTestBase {
+ protected:
+  void MakeDocumentEmpty();
+};
+
+void EditingCommandsUtilitiesTest::MakeDocumentEmpty() {
+  while (GetDocument().firstChild())
+    GetDocument().RemoveChild(GetDocument().firstChild());
+}
 
 TEST_F(EditingCommandsUtilitiesTest, AreaIdenticalElements) {
   SetBodyContent(
@@ -40,6 +51,42 @@ TEST_F(EditingCommandsUtilitiesTest, AreaIdenticalElements) {
       << "Can't merge non-editable nodes.";
 
   EXPECT_TRUE(AreIdenticalElements(*items->item(1), *items->item(3)));
+}
+
+TEST_F(EditingCommandsUtilitiesTest, TidyUpHTMLStructureFromBody) {
+  Element* body = HTMLBodyElement::Create(GetDocument());
+  MakeDocumentEmpty();
+  GetDocument().setDesignMode("on");
+  GetDocument().AppendChild(body);
+  TidyUpHTMLStructure(GetDocument());
+
+  EXPECT_TRUE(IsHTMLHtmlElement(GetDocument().documentElement()));
+  EXPECT_EQ(body, GetDocument().body());
+  EXPECT_EQ(GetDocument().documentElement(), body->parentNode());
+}
+
+TEST_F(EditingCommandsUtilitiesTest, TidyUpHTMLStructureFromDiv) {
+  Element* div = HTMLDivElement::Create(GetDocument());
+  MakeDocumentEmpty();
+  GetDocument().setDesignMode("on");
+  GetDocument().AppendChild(div);
+  TidyUpHTMLStructure(GetDocument());
+
+  EXPECT_TRUE(IsHTMLHtmlElement(GetDocument().documentElement()));
+  EXPECT_TRUE(IsHTMLBodyElement(GetDocument().body()));
+  EXPECT_EQ(GetDocument().body(), div->parentNode());
+}
+
+TEST_F(EditingCommandsUtilitiesTest, TidyUpHTMLStructureFromHead) {
+  Element* head = HTMLHeadElement::Create(GetDocument());
+  MakeDocumentEmpty();
+  GetDocument().setDesignMode("on");
+  GetDocument().AppendChild(head);
+  TidyUpHTMLStructure(GetDocument());
+
+  EXPECT_TRUE(IsHTMLHtmlElement(GetDocument().documentElement()));
+  EXPECT_TRUE(IsHTMLBodyElement(GetDocument().body()));
+  EXPECT_EQ(GetDocument().documentElement(), head->parentNode());
 }
 
 }  // namespace blink
