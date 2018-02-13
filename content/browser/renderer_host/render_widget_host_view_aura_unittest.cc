@@ -2244,10 +2244,6 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
   EXPECT_EQ(1u, sink_->message_count());
   EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID),
             sink_->GetMessageAt(0)->type());
-  auto* view_delegate = static_cast<MockRenderWidgetHostDelegate*>(
-      static_cast<RenderWidgetHostImpl*>(view_->GetRenderWidgetHost())
-          ->delegate());
-  EXPECT_EQ(2.0f, view_delegate->get_last_device_scale_factor());
 
   widget_host_->ResetSizeAndRepaintPendingFlags();
   sink_->ClearMessages();
@@ -2257,7 +2253,6 @@ TEST_F(RenderWidgetHostViewAuraTest, PhysicalBackingSizeWithScale) {
   EXPECT_EQ(1u, sink_->message_count());
   EXPECT_EQ(static_cast<uint32_t>(ViewMsg_Resize::ID),
             sink_->GetMessageAt(0)->type());
-  EXPECT_EQ(1.0f, view_delegate->get_last_device_scale_factor());
   EXPECT_EQ("100x100", view_->GetPhysicalBackingSize().ToString());
 }
 

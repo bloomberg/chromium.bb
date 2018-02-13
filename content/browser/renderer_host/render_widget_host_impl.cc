@@ -839,6 +839,7 @@ void RenderWidgetHostImpl::WasResized(bool scroll_focused_node_into_view) {
     return;
   params->scroll_focused_node_into_view = scroll_focused_node_into_view;
 
+  ScreenInfo screen_info = params->screen_info;
   bool width_changed =
       !old_resize_params_ ||
       old_resize_params_->new_size.width() != params->new_size.width();
@@ -849,7 +850,7 @@ void RenderWidgetHostImpl::WasResized(bool scroll_focused_node_into_view) {
   }
 
   if (delegate_)
-    delegate_->RenderWidgetWasResized(this, width_changed);
+    delegate_->RenderWidgetWasResized(this, screen_info, width_changed);
 }
 
 void RenderWidgetHostImpl::GotFocus() {
@@ -1568,9 +1569,6 @@ mojom::WidgetInputHandler* RenderWidgetHostImpl::GetWidgetInputHandler() {
 }
 
 void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
-  if (delegate_)
-    delegate_->ScreenInfoChanged();
-
   // The resize message (which may not happen immediately) will carry with it
   // the screen info as well as the new size (if the screen has changed scale
   // factor).

@@ -24,12 +24,6 @@ void MockRenderWidgetHostDelegate::ResizeDueToAutoResize(
     rwhv->ResizeDueToAutoResize(new_size, sequence_number);
 }
 
-void MockRenderWidgetHostDelegate::ScreenInfoChanged() {
-  display::Screen* screen = display::Screen::GetScreen();
-  const display::Display display = screen->GetPrimaryDisplay();
-  last_device_scale_factor_ = display.device_scale_factor();
-}
-
 void MockRenderWidgetHostDelegate::GetScreenInfo(ScreenInfo* result) {
   DisplayUtil::GetDefaultScreenInfo(result);
 }
