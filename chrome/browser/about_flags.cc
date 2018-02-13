@@ -2889,12 +2889,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(prerender::kNoStatePrefetchFeature,
                                     kNoStatePrefetchFeatureVariations,
                                     "NoStatePrefetchValidation")},
-#if defined(OS_CHROMEOS)
-    {"enable-android-wallpapers-app",
-     flag_descriptions::kEnableAndroidWallpapersAppName,
-     flag_descriptions::kEnableAndroidWallpapersAppDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableAndroidWallpapersApp)},
-#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
     {"enable-expanded-autofill-credit-card-popup",
