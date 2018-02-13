@@ -2828,6 +2828,19 @@
       "disabled_webgl_extensions": [
         "WEBGL_lose_context"
       ]
+    },
+    {
+      "id": 258,
+      "description": "Shader variable initialization in a loop caused perf regression on Mac Intel.",
+      "cr_bugs": [809422],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x8086",
+      "multi_gpu_category": "any",
+      "features": [
+        "dont_use_loops_to_initialize_variables"
+      ]
     }
   ]
 }
