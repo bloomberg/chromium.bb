@@ -3987,11 +3987,9 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
                                    mbmi->sb_type, tx_size);
   int64_t sum_rd = INT64_MAX;
   int tmp_eob = 0;
-  int zero_blk_rate;
   RD_STATS sum_rd_stats;
 #if CONFIG_TXK_SEL
   TX_TYPE best_tx_type = TX_TYPES;
-  int txk_idx = (blk_row << MAX_MIB_SIZE_LOG2) + blk_col;
 #endif
 
   av1_init_rd_stats(&sum_rd_stats);
@@ -4007,23 +4005,24 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 
+  // TX no split
+  {
 #if CONFIG_LV_MAP
-  TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
-  TXB_CTX txb_ctx;
-  get_txb_ctx(plane_bsize, tx_size, plane, pta, ptl, &txb_ctx);
+    const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
+    TXB_CTX txb_ctx;
+    get_txb_ctx(plane_bsize, tx_size, plane, pta, ptl, &txb_ctx);
 
-  zero_blk_rate = x->coeff_costs[txs_ctx][get_plane_type(plane)]
-                      .txb_skip_cost[txb_ctx.txb_skip_ctx][1];
+    const int zero_blk_rate = x->coeff_costs[txs_ctx][get_plane_type(plane)]
+                                  .txb_skip_cost[txb_ctx.txb_skip_ctx][1];
 #else
-  TX_SIZE tx_size_ctx = get_txsize_entropy_ctx(tx_size);
-  int coeff_ctx = get_entropy_context(tx_size, pta, ptl);
-  zero_blk_rate =
-      x->token_head_costs[tx_size_ctx][pd->plane_type][1][0][coeff_ctx][0];
+    const TX_SIZE tx_size_ctx = get_txsize_entropy_ctx(tx_size);
+    const int coeff_ctx = get_entropy_context(tx_size, pta, ptl);
+    const int zero_blk_rate =
+        x->token_head_costs[tx_size_ctx][pd->plane_type][1][0][coeff_ctx][0];
 #endif
 
-  rd_stats->ref_rdcost = ref_best_rd;
-  rd_stats->zero_rate = zero_blk_rate;
-  if (cpi->common.tx_mode == TX_MODE_SELECT || tx_size == TX_4X4) {
+    rd_stats->ref_rdcost = ref_best_rd;
+    rd_stats->zero_rate = zero_blk_rate;
     const int index = av1_get_txb_size_index(plane_bsize, blk_row, blk_col);
     mbmi->inter_tx_size[index] = tx_size;
     av1_tx_block_rd_b(
@@ -4063,6 +4062,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 #endif
 
 #if CONFIG_TXK_SEL
+    const int txk_idx = (blk_row << MAX_MIB_SIZE_LOG2) + blk_col;
     best_tx_type = mbmi->txk_type[txk_idx];
 #endif
   }
@@ -4074,11 +4074,12 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   if (cpi->sf.txb_split_cap)
     if (p->eobs[block] == 0) tx_split_prune_flag = 1;
 
+  // TX split
   if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH && tx_split_prune_flag == 0) {
     const TX_SIZE sub_txs = sub_tx_size_map[1][tx_size];
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
-    int sub_step = bsw * bsh;
+    const int sub_step = bsw * bsh;
     RD_STATS this_rd_stats;
     int this_cost_valid = 1;
     int64_t tmp_rd = 0;
@@ -4136,11 +4137,11 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
                .buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
 
       int64_t dist_8x8;
-      int qindex = x->qindex;
+      const int qindex = x->qindex;
       const int pred_stride = block_size_wide[plane_bsize];
       const int pred_idx = (blk_row * pred_stride + blk_col)
                            << tx_size_wide_log2[0];
-      int16_t *pred = &pd->pred[pred_idx];
+      const int16_t *pred = &pd->pred[pred_idx];
       int i, j;
       int row, col;
 
