@@ -175,6 +175,10 @@ void EmitRendererMemoryMetrics(
       pmd.GetMetric("blink_objects/Frame", "object_count");
   if (number_of_frames.has_value())
     builder.SetNumberOfFrames(number_of_frames.value());
+  base::Optional<uint64_t> array_buffer_size =
+      pmd.GetMetric("partition_alloc/partitions/array_buffer", "size");
+  if (array_buffer_size.has_value())
+    builder.SetArrayBuffer(array_buffer_size.value() / 1024 / 1024);
 
   if (!page_info.is_null()) {
     builder.SetIsVisible(page_info->is_visible);
@@ -242,7 +246,8 @@ void ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics() {
       base::Bind(&ProcessMemoryMetricsEmitter::ReceivedMemoryDump, this);
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->RequestGlobalDump({"blink_objects/Document", "blink_objects/Frame",
-                           "blink_objects/LayoutObject", "blink_objects/Node"},
+                           "blink_objects/LayoutObject", "blink_objects/Node",
+                           "partition_alloc/partitions/array_buffer"},
                           callback);
 
   // The callback keeps this object alive until the callback is invoked.
