@@ -60,6 +60,7 @@ class Element;
 class HTMLElement;
 class HTMLSpanElement;
 class Node;
+class Pasteboard;
 
 // This file contains a set of helper functions used by the editing commands
 
@@ -140,6 +141,8 @@ inline ContainerNode* ParentCrossingShadowBoundaries<EditingInFlatTreeStrategy>(
     const Node& node) {
   return FlatTreeTraversal::Parent(node);
 }
+
+void WriteImageNodeToPasteboard(Pasteboard*, const Node&, const String&);
 
 // boolean functions on Node
 
