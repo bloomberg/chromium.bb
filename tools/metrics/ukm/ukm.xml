@@ -1996,6 +1996,15 @@ be describing additional metrics about the same event.
       load.
     </summary>
   </metric>
+  <metric name="origin_opt_out">
+    <summary>
+      Set to 1 when previews were enabled but no preview was attempted because
+      the origin provided a Cache-Control:no-transform header in the main frame
+      response. This is a directive from the origin to not perform any
+      transformation so in the context of the Previews feature, it is an opt-out
+      by the origin site (rather than the user).
+    </summary>
+  </metric>
   <metric name="server_lofi">
     <summary>
       Set to 1 when a user is shown a server lo-fi image in a page load.
