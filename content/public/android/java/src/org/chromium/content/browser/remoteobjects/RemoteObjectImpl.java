@@ -16,6 +16,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -126,9 +127,10 @@ class RemoteObjectImpl implements RemoteObject {
             return;
         }
 
+        Class<?>[] parameterTypes = method.getParameterTypes();
         Object[] args = new Object[numArguments];
         for (int i = 0; i < numArguments; i++) {
-            args[i] = convertArgument(arguments[i]);
+            args[i] = convertArgument(arguments[i], parameterTypes[i]);
         }
 
         Object result = null;
@@ -155,7 +157,7 @@ class RemoteObjectImpl implements RemoteObject {
             return;
         }
 
-        RemoteInvocationResult mojoResult = convertResult(result);
+        RemoteInvocationResult mojoResult = convertResult(result, method.getReturnType());
         callback.call(mojoResult);
     }
 
@@ -185,12 +187,54 @@ class RemoteObjectImpl implements RemoteObject {
         return null;
     }
 
-    private Object convertArgument(RemoteInvocationArgument argument) {
-        // TODO(jbroman): Convert arguments.
-        return null;
+    private Object convertArgument(RemoteInvocationArgument argument, Class<?> parameterType) {
+        switch (argument.which()) {
+            case RemoteInvocationArgument.Tag.NumberValue:
+                // See http://jdk6.java.net/plugin2/liveconnect/#JS_NUMBER_VALUES.
+                // For conversion to numeric types, we need to replicate Java's type
+                // conversion rules.
+                double numberValue = argument.getNumberValue();
+                if (parameterType == byte.class) {
+                    return (byte) numberValue;
+                } else if (parameterType == char.class) {
+                    // LIVECONNECT_COMPLIANCE: Existing behavior is to convert double to 0.
+                    // Spec requires converting doubles similarly to how we convert doubles to
+                    // other numeric types.
+                    return (char) 0;
+                } else if (parameterType == short.class) {
+                    return (short) numberValue;
+                } else if (parameterType == int.class) {
+                    return (int) numberValue;
+                } else if (parameterType == long.class) {
+                    return (long) numberValue;
+                } else if (parameterType == float.class) {
+                    return (float) numberValue;
+                } else if (parameterType == double.class) {
+                    return numberValue;
+                } else if (parameterType == boolean.class) {
+                    // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to false. Spec
+                    // requires converting to false for 0 or NaN, true otherwise.
+                    return false;
+                } else if (parameterType == String.class) {
+                    // TODO(jbroman): Don't coerce to string if this is inside the conversion of an
+                    // array.
+                    return doubleToString(numberValue);
+                } else if (parameterType.isArray()) {
+                    // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to null. Spec
+                    // requires raising a JavaScript exception.
+                    return null;
+                } else {
+                    // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to null. Spec
+                    // requires handling object equivalents of primitive types.
+                    assert !parameterType.isPrimitive();
+                    return null;
+                }
+            default:
+                throw new RuntimeException("invalid wire argument type");
+        }
     }
 
-    private RemoteInvocationResult convertResult(Object result) {
+    private RemoteInvocationResult convertResult(Object result, Class<?> returnType) {
         // TODO(jbroman): Convert result.
         return new RemoteInvocationResult();
     }
@@ -200,5 +244,34 @@ class RemoteObjectImpl implements RemoteObject {
         RemoteInvocationResult result = new RemoteInvocationResult();
         result.error = error;
         return result;
+    }
+
+    private static String doubleToString(double doubleValue) {
+        // For compatibility, imitate the existing behavior.
+        // The previous implementation applied Int64ToString to any integer that fit in 32 bits,
+        // except for negative zero, and base::StringPrintf("%.6lg", doubleValue) for all other
+        // values.
+        if (Double.isNaN(doubleValue)) {
+            return "nan";
+        }
+        if (Double.isInfinite(doubleValue)) {
+            return doubleValue > 0 ? "inf" : "-inf";
+        }
+        // Negative zero is mathematically an integer, but keeps its negative sign.
+        if (doubleValue == 0.0 && (1.0 / doubleValue) < 0.0) {
+            return "-0";
+        }
+        // All other 32-bit signed integers are formatted without abbreviation.
+        if (doubleValue % 1.0 == 0.0 && doubleValue >= Integer.MIN_VALUE
+                && doubleValue <= Integer.MAX_VALUE) {
+            return Integer.toString((int) doubleValue);
+        }
+        // Remove trailing zeroes and, if appropriate, the decimal point.
+        // Expression is somewhat complicated, in order to deal with scientific notation. Either
+        // group 2 will match (and so the decimal will be stripped along with zeroes), or group 3
+        // will match (and the decimal will be left), but not both (since there cannot be more than
+        // one decimal point).
+        return String.format((Locale) null, "%.6g", doubleValue)
+                .replaceFirst("^(-?[0-9]+)(\\.0+)?((\\.[0-9]*[1-9])0*)?(e.*)?$", "$1$4$5");
     }
 }

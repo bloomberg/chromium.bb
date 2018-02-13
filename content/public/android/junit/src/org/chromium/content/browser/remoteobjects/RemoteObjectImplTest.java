@@ -172,7 +172,8 @@ public final class RemoteObjectImplTest {
         RemoteObject remoteObject = new RemoteObjectImpl(target, TestJavascriptInterface.class);
         RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
         remoteObject.invokeMethod("frobnicate", new RemoteInvocationArgument[] {}, response);
-        remoteObject.invokeMethod("frobnicate", new RemoteInvocationArgument[] {null}, response);
+        remoteObject.invokeMethod(
+                "frobnicate", new RemoteInvocationArgument[] {numberArgument(0)}, response);
 
         InOrder inOrder = inOrder(consumer);
         inOrder.verify(consumer).accept(0);
@@ -267,7 +268,8 @@ public final class RemoteObjectImplTest {
         RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
         RemoteObject remoteObject =
                 new RemoteObjectImpl(target, TestJavascriptInterface.class, auditor);
-        remoteObject.invokeMethod("getClass", new RemoteInvocationArgument[] {null}, response);
+        remoteObject.invokeMethod(
+                "getClass", new RemoteInvocationArgument[] {numberArgument(0)}, response);
 
         verify(runnable).run();
         verify(response).call(resultIsOk());
@@ -291,11 +293,122 @@ public final class RemoteObjectImplTest {
         verify(response).call(resultHasError(RemoteInvocationError.EXCEPTION_THROWN));
     }
 
+    @Test
+    public void testArgumentConversionNumber() {
+        final Consumer<Object> consumer = (Consumer<Object>) mock(Consumer.class);
+        Object target = new Object() {
+            @TestJavascriptInterface
+            public void consumeByte(byte b) {
+                consumer.accept(b);
+            }
+            @TestJavascriptInterface
+            public void consumeChar(char c) {
+                consumer.accept(c);
+            }
+            @TestJavascriptInterface
+            public void consumeShort(short s) {
+                consumer.accept(s);
+            }
+            @TestJavascriptInterface
+            public void consumeInt(int i) {
+                consumer.accept(i);
+            }
+            @TestJavascriptInterface
+            public void consumeLong(long l) {
+                consumer.accept(l);
+            }
+            @TestJavascriptInterface
+            public void consumeFloat(float f) {
+                consumer.accept(f);
+            }
+            @TestJavascriptInterface
+            public void consumeDouble(double d) {
+                consumer.accept(d);
+            }
+            @TestJavascriptInterface
+            public void consumeBoolean(boolean b) {
+                consumer.accept(b);
+            }
+            @TestJavascriptInterface
+            public void consumeString(String s) {
+                consumer.accept(s);
+            }
+            @TestJavascriptInterface
+            public void consumeObjectArray(Object[] oa) {
+                consumer.accept(oa);
+            }
+            @TestJavascriptInterface
+            public void consumeObject(Object o) {
+                consumer.accept(o);
+            }
+        };
+
+        RemoteObject remoteObject = new RemoteObjectImpl(target, TestJavascriptInterface.class);
+        RemoteObject.InvokeMethodResponse response = mock(RemoteObject.InvokeMethodResponse.class);
+        remoteObject.invokeMethod(
+                "consumeByte", new RemoteInvocationArgument[] {numberArgument(356)}, response);
+        remoteObject.invokeMethod(
+                "consumeChar", new RemoteInvocationArgument[] {numberArgument(356)}, response);
+        remoteObject.invokeMethod(
+                "consumeShort", new RemoteInvocationArgument[] {numberArgument(32768)}, response);
+        remoteObject.invokeMethod(
+                "consumeInt", new RemoteInvocationArgument[] {numberArgument(-1.5)}, response);
+        remoteObject.invokeMethod("consumeLong",
+                new RemoteInvocationArgument[] {numberArgument(Double.POSITIVE_INFINITY)},
+                response);
+        remoteObject.invokeMethod("consumeFloat",
+                new RemoteInvocationArgument[] {numberArgument(3.141592654)}, response);
+        remoteObject.invokeMethod("consumeDouble",
+                new RemoteInvocationArgument[] {numberArgument(Double.NaN)}, response);
+        remoteObject.invokeMethod(
+                "consumeBoolean", new RemoteInvocationArgument[] {numberArgument(1)}, response);
+        remoteObject.invokeMethod("consumeString",
+                new RemoteInvocationArgument[] {numberArgument(-1.66666666666)}, response);
+        remoteObject.invokeMethod("consumeString",
+                new RemoteInvocationArgument[] {numberArgument(Double.NaN)}, response);
+        remoteObject.invokeMethod("consumeString",
+                new RemoteInvocationArgument[] {numberArgument(Double.NEGATIVE_INFINITY)},
+                response);
+        remoteObject.invokeMethod(
+                "consumeString", new RemoteInvocationArgument[] {numberArgument(-0.0)}, response);
+        remoteObject.invokeMethod("consumeString",
+                new RemoteInvocationArgument[] {numberArgument(123456789)}, response);
+        remoteObject.invokeMethod("consumeString",
+                new RemoteInvocationArgument[] {numberArgument(123000000.1)}, response);
+        remoteObject.invokeMethod(
+                "consumeObjectArray", new RemoteInvocationArgument[] {numberArgument(6)}, response);
+        remoteObject.invokeMethod(
+                "consumeObject", new RemoteInvocationArgument[] {numberArgument(6)}, response);
+
+        verify(consumer).accept((byte) 100);
+        verify(consumer).accept((char) 0);
+        verify(consumer).accept((short) -32768);
+        verify(consumer).accept((int) -1);
+        verify(consumer).accept(Long.MAX_VALUE);
+        verify(consumer).accept((float) 3.141592654);
+        verify(consumer).accept(Double.NaN);
+        verify(consumer).accept(false);
+        verify(consumer).accept("-1.66667");
+        verify(consumer).accept("nan");
+        verify(consumer).accept("-inf");
+        verify(consumer).accept("-0");
+        verify(consumer).accept("123456789");
+        verify(consumer).accept("1.23e+08");
+        verify(consumer, times(2)).accept(null);
+        verify(response, times(16)).call(resultIsOk());
+    }
+
     private RemoteInvocationResult resultHasError(final int error) {
         return ArgumentMatchers.argThat(result -> result.error == error);
     }
 
     private RemoteInvocationResult resultIsOk() {
         return resultHasError(RemoteInvocationError.OK);
+    }
+
+    private RemoteInvocationArgument numberArgument(double numberValue) {
+        RemoteInvocationArgument argument = new RemoteInvocationArgument();
+        argument.setNumberValue(numberValue);
+        return argument;
     }
 }
