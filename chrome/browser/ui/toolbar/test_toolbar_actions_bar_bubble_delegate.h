@@ -38,7 +38,7 @@ class TestToolbarActionsBarBubbleDelegate {
           std::make_unique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>();
     }
     info_->text = learn_more;
-    info_->is_text_linked = true;
+    info_->is_learn_more = true;
   }
   void set_item_list_text(const base::string16& item_list) {
     item_list_ = item_list;

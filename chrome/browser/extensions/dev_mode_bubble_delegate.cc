@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -16,6 +17,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_features.h"
 
 namespace extensions {
 
@@ -73,7 +75,13 @@ base::string16 DevModeBubbleDelegate::GetActionButtonLabel() const {
 }
 
 base::string16 DevModeBubbleDelegate::GetDismissButtonLabel() const {
+// TODO(https://crbug.com/671656): Keep the cancel button on MACOSX unless
+// using views or the Cocoa version is updated.
+#if defined(OS_MACOSX) && !BUILDFLAG(MAC_VIEWS_BROWSER)
   return l10n_util::GetStringUTF16(IDS_CANCEL);
+#else
+  return base::string16();
+#endif
 }
 
 bool DevModeBubbleDelegate::ShouldCloseOnDeactivate() const {

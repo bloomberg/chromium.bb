@@ -11,17 +11,16 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/link_listener.h"
 
 class ToolbarActionsBarBubbleViewsTest;
 
 namespace views {
+class ImageButton;
 class Label;
-class Link;
 }
 
 class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
-                                     public views::LinkListener {
+                                     public views::ButtonListener {
  public:
   // Creates the bubble anchored to |anchor_view| or, if that is null, to
   // |anchor_point| in screen coordinates.
@@ -35,7 +34,7 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
   void Show();
 
   const views::Label* item_list() const { return item_list_; }
-  const views::Link* learn_more_button() const { return link_; }
+  const views::ImageButton* learn_more_button() const { return image_button_; }
 
  private:
   friend class ToolbarActionsBarBubbleViewsTest;
@@ -52,13 +51,13 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   void Init() override;
 
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate_;
   bool delegate_notified_of_close_ = false;
   views::Label* item_list_ = nullptr;
-  views::Link* link_ = nullptr;
+  views::ImageButton* image_button_ = nullptr;
   const bool anchored_to_action_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarBubbleViews);
