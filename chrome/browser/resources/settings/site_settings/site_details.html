@@ -90,6 +90,12 @@
           icon="settings:mic" id="mic"
           label="$i18n{siteSettingsMic}">
       </site-details-permission>
+      <site-details-permission
+          category="{{ContentSettingsTypes.SENSORS}}"
+          icon="settings:sensors" id="sensors"
+          label="$i18n{siteSettingsSensors}"
+          hidden$="[[!enableSensorsContentSetting_]]">
+      </site-details-permission>
       <site-details-permission category="{{ContentSettingsTypes.NOTIFICATIONS}}"
           icon="settings:notifications" id="notifications"
           label="$i18n{siteSettingsNotifications}">
@@ -144,12 +150,6 @@
           label="$i18n{siteSettingsProtectedContentIdentifiers}">
       </site-details-permission>
 </if>
-    <site-details-permission
-        category="{{ContentSettingsTypes.SENSORS}}"
-        icon="settings:sensors" id="sensors"
-        label="$i18n{siteSettingsSensors}"
-        hidden$="[[!enableSensorsContentSetting_]]">
-    </site-details-permission>
       <site-details-permission
           category="{{ContentSettingsTypes.CLIPBOARD}}"
           icon="settings:clipboard" id="clipboard"
