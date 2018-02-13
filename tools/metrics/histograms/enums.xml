@@ -4649,6 +4649,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="9" label="SessionAlreadyExists"/>
 </enum>
 
+<enum name="CdmSystemCode">
+<!-- System Code is CDM specific. Use this as a placeholder to treat sparse
+histogram as enum -->
+
+  <int value="0" label="Unknown Error"/>
+</enum>
+
 <enum name="CertificateChainPosition">
   <obsolete>
     Deprecated as of 01/2016. CertCacheTrial has been removed.
