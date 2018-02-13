@@ -31,17 +31,15 @@ MediaPipelineBackendWrapper::MediaPipelineBackendWrapper(
 }
 
 MediaPipelineBackendWrapper::~MediaPipelineBackendWrapper() {
-  if (audio_decoder_)
+  if (audio_decoder_) {
     backend_manager_->DecrementDecoderCount(
         IsSfx() ? DecoderType::SFX_DECODER : DecoderType::AUDIO_DECODER);
-  if (have_video_decoder_)
-    backend_manager_->DecrementDecoderCount(DecoderType::VIDEO_DECODER);
-
-  if (playing_) {
-    LOG(WARNING) << "Destroying media backend while still in 'playing' state";
-    if (audio_decoder_) {
+    if (playing_) {
       backend_manager_->UpdatePlayingAudioCount(IsSfx(), -1);
     }
+  }
+  if (have_video_decoder_) {
+    backend_manager_->DecrementDecoderCount(DecoderType::VIDEO_DECODER);
   }
 }
 
