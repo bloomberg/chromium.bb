@@ -19,6 +19,7 @@
 class AppDistributionProvider;
 class BrandedImageProvider;
 class ExternalSearchProvider;
+class MailtoHandlerProvider;
 class OmahaServiceProvider;
 class SpotlightProvider;
 class UserFeedbackProvider;
@@ -154,6 +155,9 @@ class ChromeBrowserProvider {
   // Returns an instance of the spotlight provider.
   virtual SpotlightProvider* GetSpotlightProvider() const;
 
+  // Returns a valid non-null instance of the mailto handler provider.
+  virtual MailtoHandlerProvider* GetMailtoHandlerProvider() const;
+
   // Returns an instance of the External Search provider.
   virtual ExternalSearchProvider* GetExternalSearchProvider() const;
 
@@ -170,6 +174,7 @@ class ChromeBrowserProvider {
 
  private:
   base::ObserverList<Observer, true> observer_list_;
+  std::unique_ptr<MailtoHandlerProvider> mailto_handler_provider_;
 };
 
 }  // namespace ios

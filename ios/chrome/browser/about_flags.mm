@@ -39,6 +39,7 @@
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
+#include "ios/chrome/browser/mailto/features.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
 #include "ios/chrome/browser/ui/activity_services/canonical_url_feature.h"
 #include "ios/chrome/browser/ui/external_search/features.h"
@@ -228,6 +229,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextMenuElementPostMessageDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kContextMenuElementPostMessage)},
+    {"mailto-handling-google-ui",
+     flag_descriptions::kMailtoHandlingWithGoogleUIName,
+     flag_descriptions::kMailtoHandlingWithGoogleUIDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kMailtoHandledWithGoogleUI)},
 };
 
 // Add all switches from experimental flags to |command_line|.

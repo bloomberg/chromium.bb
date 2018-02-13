@@ -16,6 +16,7 @@ source_set("browser") {
   deps = [
     "//base",
     "//components/metrics",
+    "//ios/public/provider/chrome/browser/mailto",
   ]
   libs = [ "CoreLocation.framework" ]
 }

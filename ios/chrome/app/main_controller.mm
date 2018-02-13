@@ -80,6 +80,7 @@
 #import "ios/chrome/browser/first_run/first_run.h"
 #include "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
+#include "ios/chrome/browser/mailto/features.h"
 #import "ios/chrome/browser/memory/memory_debugger_manager.h"
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
@@ -145,6 +146,7 @@
 #import "ios/net/crn_http_protocol_handler.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
+#include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -185,6 +187,9 @@ NSString* const kStartupAttemptReset = @"StartupAttempReset";
 
 // Constants for deferring memory debugging tools startup.
 NSString* const kMemoryDebuggingToolsStartup = @"MemoryDebuggingToolsStartup";
+
+// Constants for deferring mailto handling initialization.
+NSString* const kMailtoHandlingInitialization = @"MailtoHandlingInitialization";
 
 // Constants for deferred check if it is necessary to send pings to
 // Chrome distribution related services.
@@ -1102,6 +1107,32 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
 }
 
+- (void)initializeMailtoHandling {
+  if (base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
+    [[DeferredInitializationRunner sharedInstance]
+        enqueueBlockNamed:kMailtoHandlingInitialization
+                    block:^{
+                      MailtoHandlerProvider* provider =
+                          ios::GetChromeBrowserProvider()
+                              ->GetMailtoHandlerProvider();
+                      ios::ChromeIdentityService* identityService =
+                          ios::GetChromeBrowserProvider()
+                              ->GetChromeIdentityService();
+                      provider->PrepareMailtoHandling(
+                          identityService,
+                          ^ChromeIdentity* {
+                            // TODO:(crbug.com/810904) Replace with currently
+                            // signed-in user.
+                            return identityService->GetAllIdentities()
+                                .firstObject;
+                          },
+                          ^NSArray<ChromeIdentity*>* {
+                            return identityService->GetAllIdentities();
+                          });
+                    }];
+  }
+}
+
 - (void)startFreeMemoryMonitoring {
   // No need for a post-task or a deferred initialisation as the memory
   // monitoring already happens on a background sequence.
@@ -1125,6 +1156,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self startFreeMemoryMonitoring];
   [self scheduleAppDistributionPings];
   [self scheduleCheckForFirstPartyApps];
+  [self initializeMailtoHandling];
 }
 
 - (void)scheduleTasksRequiringBVCWithBrowserState {
