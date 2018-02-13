@@ -49,6 +49,8 @@ include_rules = [
     "+public/platform",
     #TODO(nverne): remove this
     "+public/web/WebKit.h",
+    "+services/metrics/public/cpp/ukm_entry_builder.h",
+    "+services/metrics/public/cpp/ukm_recorder.h",
     "+services/network/public/mojom/data_pipe_getter.mojom-blink.h",
     "+services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h",
     "+skia/ext",
@@ -68,5 +70,8 @@ include_rules = [
 specific_include_rules = {
     "WebURLError\.cpp": [
         "+net/base/net_errors.h"
-     ]
+    ],
+    "UkmTimeAggregatorTest.cpp" : [
+        "+components/ukm/test_ukm_recorder.h"
+    ],
 }

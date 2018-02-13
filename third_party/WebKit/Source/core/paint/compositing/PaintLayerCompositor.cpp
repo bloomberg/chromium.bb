@@ -179,7 +179,6 @@ static LayoutVideo* FindFullscreenVideoLayoutObject(Document& document) {
 
 void PaintLayerCompositor::UpdateIfNeededRecursive(
     DocumentLifecycle::LifecycleState target_state) {
-  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Compositing.UpdateTime");
   CompositingReasonsStats compositing_reasons_stats;
   UpdateIfNeededRecursiveInternal(target_state, compositing_reasons_stats);
   UMA_HISTOGRAM_CUSTOM_COUNTS("Blink.Compositing.LayerPromotionCount.Overlap",
