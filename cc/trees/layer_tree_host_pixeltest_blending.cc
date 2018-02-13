@@ -159,7 +159,8 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
     layer->SetImage(PaintImageBuilder::WithDefault()
                         .set_id(PaintImage::GetNextId())
                         .set_image(backing_store->makeImageSnapshot())
-                        .TakePaintImage());
+                        .TakePaintImage(),
+                    SkMatrix::I(), false);
     return layer;
   }
 
@@ -184,7 +185,8 @@ class LayerTreeHostBlendingPixelTest : public LayerTreeHostPixelResourceTest {
     mask->SetImage(PaintImageBuilder::WithDefault()
                        .set_id(PaintImage::GetNextId())
                        .set_image(surface->makeImageSnapshot())
-                       .TakePaintImage());
+                       .TakePaintImage(),
+                   SkMatrix::I(), false);
     layer->SetMaskLayer(mask.get());
   }
 

@@ -21,7 +21,9 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
  public:
   static scoped_refptr<PictureImageLayer> Create();
 
-  void SetImage(PaintImage image);
+  void SetImage(PaintImage image,
+                const SkMatrix& matrix,
+                bool uses_width_as_height);
 
   // Layer implementation.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -42,6 +44,8 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
   ~PictureImageLayer() override;
 
   PaintImage image_;
+  SkMatrix matrix_;
+  bool uses_width_as_height_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureImageLayer);
 };

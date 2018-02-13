@@ -51,7 +51,8 @@ void ChildFrameCompositingHelper::ChildFrameGone(
       sad_layer->SetImage(cc::PaintImageBuilder::WithDefault()
                               .set_id(cc::PaintImage::kNonLazyStableId)
                               .set_image(SkImage::MakeFromBitmap(*sad_bitmap))
-                              .TakePaintImage());
+                              .TakePaintImage(),
+                          SkMatrix::I(), false);
       sad_layer->SetBounds(
           gfx::Size(sad_bitmap->width() * device_scale_factor,
                     sad_bitmap->height() * device_scale_factor));

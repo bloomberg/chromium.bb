@@ -23,7 +23,9 @@ class WebImageLayerImpl : public blink::WebImageLayer {
 
   // blink::WebImageLayer implementation.
   blink::WebLayer* Layer() override;
-  void SetImage(cc::PaintImage image) override;
+  void SetImage(PaintImage image,
+                const SkMatrix& matrix,
+                bool uses_width_as_height) override;
   void SetNearestNeighbor(bool nearest_neighbor) override;
 
  private:
