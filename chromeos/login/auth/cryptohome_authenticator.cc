@@ -482,15 +482,25 @@ void Remove(const base::WeakPtr<AuthAttemptState>& attempt,
                  attempt, resolver));
 }
 
+void OnKeyChecked(const base::WeakPtr<AuthAttemptState>& attempt,
+                  scoped_refptr<CryptohomeAuthenticator> resolver,
+                  base::Optional<cryptohome::BaseReply> reply) {
+  attempt->RecordCryptohomeStatus(BaseReplyToMountError(reply));
+  resolver->Resolve();
+}
+
 // Calls cryptohome's key check method.
 void CheckKey(const base::WeakPtr<AuthAttemptState>& attempt,
               scoped_refptr<CryptohomeAuthenticator> resolver,
               const std::string& system_salt) {
   std::unique_ptr<Key> key =
       TransformKeyIfNeeded(*attempt->user_context.GetKey(), system_salt);
-  cryptohome::AsyncMethodCaller::GetInstance()->AsyncCheckKey(
-      cryptohome::Identification(attempt->user_context.GetAccountId()),
-      key->GetSecret(), base::Bind(&TriggerResolve, attempt, resolver));
+  cryptohome::AuthorizationRequest auth;
+  auth.mutable_key()->set_secret(key->GetSecret());
+  DBusThreadManager::Get()->GetCryptohomeClient()->CheckKeyEx(
+      cryptohome::Identification(attempt->user_context.GetAccountId()), auth,
+      cryptohome::CheckKeyRequest(),
+      base::BindOnce(&OnKeyChecked, attempt, resolver));
 }
 
 }  // namespace
