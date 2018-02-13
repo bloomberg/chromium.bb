@@ -49,6 +49,10 @@ bool FakeNavigationContext::IsSameDocument() const {
   return same_document_;
 }
 
+bool FakeNavigationContext::HasCommitted() const {
+  return has_committed_;
+}
+
 bool FakeNavigationContext::IsDownload() const {
   return is_download_;
 }
@@ -83,6 +87,10 @@ void FakeNavigationContext::SetPageTransition(ui::PageTransition transition) {
 
 void FakeNavigationContext::SetIsSameDocument(bool same_document) {
   same_document_ = same_document;
+}
+
+void FakeNavigationContext::SetHasCommitted(bool has_committed) {
+  has_committed_ = has_committed;
 }
 
 void FakeNavigationContext::SetIsDownload(bool is_download) {

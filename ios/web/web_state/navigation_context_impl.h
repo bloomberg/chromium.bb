@@ -20,7 +20,8 @@ namespace web {
 class NavigationContextImpl : public NavigationContext {
  public:
   // Creates navigation context for successful navigation to a different page.
-  // Response headers will be null, and it will not be marked as a download.
+  // Response headers will be null, and it will not be marked as committed or
+  // as a download.
   static std::unique_ptr<NavigationContextImpl> CreateNavigationContext(
       WebState* web_state,
       const GURL& url,
@@ -38,6 +39,7 @@ class NavigationContextImpl : public NavigationContext {
   const GURL& GetUrl() const override;
   ui::PageTransition GetPageTransition() const override;
   bool IsSameDocument() const override;
+  bool HasCommitted() const override;
   bool IsDownload() const override;
   bool IsPost() const override;
   NSError* GetError() const override;
@@ -48,6 +50,7 @@ class NavigationContextImpl : public NavigationContext {
   // Setters for navigation context data members.
   void SetUrl(const GURL& url);
   void SetIsSameDocument(bool is_same_document);
+  void SetHasCommitted(bool has_committed);
   void SetIsDownload(bool is_download);
   void SetIsPost(bool is_post);
   void SetError(NSError* error);
@@ -74,6 +77,7 @@ class NavigationContextImpl : public NavigationContext {
   GURL url_;
   const ui::PageTransition page_transition_;
   bool is_same_document_ = false;
+  bool has_committed_ = false;
   bool is_download_ = false;
   bool is_post_ = false;
   NSError* error_;
