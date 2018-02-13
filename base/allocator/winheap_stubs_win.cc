@@ -78,9 +78,9 @@ size_t WinHeapGetSizeEstimate(void* ptr) {
 // Call the new handler, if one has been set.
 // Returns true on successfully calling the handler, false otherwise.
 bool WinCallNewHandler(size_t size) {
-#if !defined(_HAS_EXCEPTIONS) || _HAS_EXCEPTIONS
+#ifdef _CPPUNWIND
 #error "Exceptions in allocator shim are not supported!"
-#endif  // defined(_HAS_EXCEPTIONS) && !_HAS_EXCEPTIONS
+#endif  // _CPPUNWIND
   // Get the current new handler.
   _PNH nh = _query_new_handler();
   if (!nh)
