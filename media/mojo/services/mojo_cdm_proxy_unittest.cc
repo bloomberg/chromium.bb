@@ -119,7 +119,7 @@ class MockCdmProxyClient : public cdm::CdmProxyClient {
 
 }  // namespace
 
-class MojoCdmProxyTest : public MojoCdmProxy::Delegate, public ::testing::Test {
+class MojoCdmProxyTest : public ::testing::Test {
  public:
   using Status = CdmProxy::Status;
 
@@ -127,8 +127,7 @@ class MojoCdmProxyTest : public MojoCdmProxy::Delegate, public ::testing::Test {
     // Client side setup.
     mojom::CdmProxyPtr cdm_proxy_ptr;
     auto request = mojo::MakeRequest(&cdm_proxy_ptr);
-    mojo_cdm_proxy_.reset(
-        new MojoCdmProxy(this, std::move(cdm_proxy_ptr), &client_));
+    mojo_cdm_proxy_.reset(new MojoCdmProxy(std::move(cdm_proxy_ptr), &client_));
     cdm_proxy_ = mojo_cdm_proxy_.get();
 
     // Service side setup.
@@ -146,26 +145,15 @@ class MojoCdmProxyTest : public MojoCdmProxy::Delegate, public ::testing::Test {
 
   ~MojoCdmProxyTest() override = default;
 
-  // MojoCdmProxy::Delegate implementation.
-  virtual void DestroyCdmProxy(MojoCdmProxy* cdm_proxy) final {
-    DCHECK(mojo_cdm_proxy_);
-    mojo_cdm_proxy_.reset();
-  }
-
   void Initialize(Status expected_status = Status::kOk,
                   bool has_connection = true) {
     if (has_connection) {
       EXPECT_CALL(*mock_cdm_proxy_, OnInitialize(NotNull(), _))
           .WillOnce(RunOnceCallback<1>(
-              expected_status,
-              CdmProxy::Protocol::kIntelConvergedSecurityAndManageabilityEngine,
-              kCryptoSessionId));
-      EXPECT_CALL(
-          client_,
-          OnInitialized(StatusEq(expected_status),
-                        cdm::CdmProxyClient::
-                            kIntelConvergedSecurityAndManageabilityEngine,
-                        kCryptoSessionId))
+              expected_status, CdmProxy::Protocol::kNone, kCryptoSessionId));
+      EXPECT_CALL(client_,
+                  OnInitialized(StatusEq(expected_status),
+                                cdm::CdmProxyClient::kNone, kCryptoSessionId))
           .WillOnce(SaveArg<2>(&crypto_session_id_));
     } else {
       // Client should always be called even without connection. But we only
@@ -255,7 +243,7 @@ class MojoCdmProxyTest : public MojoCdmProxy::Delegate, public ::testing::Test {
   bool GetDecryptContext() { return cdm_context_->GetDecryptContext(); }
 
   void Destroy() {
-    cdm_proxy_->Destroy();
+    mojo_cdm_proxy_.reset();
     base::RunLoop().RunUntilIdle();
   }
 

@@ -42,6 +42,8 @@ class MEDIA_EXPORT CdmProxy {
   };
 
   enum class Protocol {
+    // No supported protocol. Used in failure cases.
+    kNone,
     // Method using Intel CSME.
     kIntelConvergedSecurityAndManageabilityEngine,
     // There will be more values in the future e.g. kD3D11RsaHardware,

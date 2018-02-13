@@ -150,7 +150,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
 
   // cdm::Host_10 specific implementation.
   void OnInitialized(bool success) override;
-  cdm::CdmProxy* CreateCdmProxy(cdm::CdmProxyClient* client) override;
+  cdm::CdmProxy* RequestCdmProxy(cdm::CdmProxyClient* client) override;
 
   // cdm::Host_8 specific implementation.
   void OnRejectPromise(uint32_t promise_id,

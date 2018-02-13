@@ -41,15 +41,15 @@ cdm::CdmProxyClient::Status ToCdmStatus(CdmProxy::Status status) {
 
 cdm::CdmProxyClient::Protocol ToCdmProtocol(CdmProxy::Protocol protocol) {
   switch (protocol) {
+    case CdmProxy::Protocol::kNone:
+      return cdm::CdmProxyClient::Protocol::kNone;
     case CdmProxy::Protocol::kIntelConvergedSecurityAndManageabilityEngine:
       return cdm::CdmProxyClient::Protocol::
           kIntelConvergedSecurityAndManageabilityEngine;
   }
 
-  // TODO(xhwang): Return an invalid protocol?
   NOTREACHED() << "Unexpected protocol: " << static_cast<int32_t>(protocol);
-  return cdm::CdmProxyClient::Protocol::
-      kIntelConvergedSecurityAndManageabilityEngine;
+  return cdm::CdmProxyClient::Protocol::kNone;
 }
 
 CdmProxy::Function ToMediaFunction(cdm::CdmProxy::Function function) {
@@ -65,16 +65,13 @@ CdmProxy::Function ToMediaFunction(cdm::CdmProxy::Function function) {
 
 }  // namespace
 
-MojoCdmProxy::MojoCdmProxy(Delegate* delegate,
-                           mojom::CdmProxyPtr cdm_proxy_ptr,
+MojoCdmProxy::MojoCdmProxy(mojom::CdmProxyPtr cdm_proxy_ptr,
                            cdm::CdmProxyClient* client)
-    : delegate_(delegate),
-      cdm_proxy_ptr_(std::move(cdm_proxy_ptr)),
+    : cdm_proxy_ptr_(std::move(cdm_proxy_ptr)),
       client_(client),
       client_binding_(this),
       weak_factory_(this) {
   DVLOG(1) << __func__;
-  DCHECK(delegate_);
   DCHECK(client);
 }
 
@@ -90,9 +87,8 @@ void MojoCdmProxy::Initialize() {
 
   auto callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       base::BindOnce(&MojoCdmProxy::OnInitialized, weak_factory_.GetWeakPtr()),
-      media::CdmProxy::Status::kFail,
-      media::CdmProxy::Protocol::kIntelConvergedSecurityAndManageabilityEngine,
-      0, CdmContext::kInvalidCdmId);
+      media::CdmProxy::Status::kFail, media::CdmProxy::Protocol::kNone, 0,
+      CdmContext::kInvalidCdmId);
   cdm_proxy_ptr_->Initialize(std::move(client_ptr_info), std::move(callback));
 }
 
@@ -150,13 +146,6 @@ void MojoCdmProxy::RemoveKey(uint32_t crypto_session_id,
 
   cdm_proxy_ptr_->RemoveKey(crypto_session_id,
                             std::vector<uint8_t>(key_id, key_id + key_id_size));
-}
-
-void MojoCdmProxy::Destroy() {
-  DVLOG(3) << __func__;
-
-  // Note: |this| could be deleted as part of this call.
-  delegate_->DestroyCdmProxy(this);
 }
 
 void MojoCdmProxy::NotifyHardwareReset() {
