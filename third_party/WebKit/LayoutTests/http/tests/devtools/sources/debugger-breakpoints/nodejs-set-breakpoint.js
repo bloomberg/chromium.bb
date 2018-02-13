@@ -23,7 +23,7 @@
   }
 
   var functionText = 'function foobar() { \nconsole.log(\'foobar execute!\');\n}';
-  var sourceURL = '\n//# sourceURL=/usr/local/home/prog/foobar.js';
+  var sourceURL = Host.isWin() ? '\n//# sourceURL=c:\\prog\\foobar.js' : '\n//# sourceURL=/usr/local/home/prog/foobar.js';
   await TestRunner.evaluateInPageAnonymously(functionText + sourceURL);
   SourcesTestRunner.showScriptSource('foobar.js', didShowScriptSource);
 
