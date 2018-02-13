@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/debug/task_annotator.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -67,11 +66,10 @@ void TaskTracingInfo::AppendAsTraceFormat(std::string* out) const {
   out->append(tmp);
 }
 
-const char kQueueFunctionName[] = "base::PostTask";
-
-// This name conveys that a Task is run by the task scheduler without revealing
-// its implementation details.
-const char kRunFunctionName[] = "TaskSchedulerRunTask";
+// These name conveys that a Task is posted to/run by the task scheduler without
+// revealing its implementation details.
+constexpr char kQueueFunctionName[] = "TaskScheduler PostTask";
+constexpr char kRunFunctionName[] = "TaskScheduler RunTask";
 
 HistogramBase* GetTaskLatencyHistogram(StringPiece histogram_label,
                                        StringPiece task_type_suffix) {
@@ -93,7 +91,8 @@ HistogramBase* GetTaskLatencyHistogram(StringPiece histogram_label,
 
 // Upper bound for the
 // TaskScheduler.BlockShutdownTasksPostedDuringShutdown histogram.
-const HistogramBase::Sample kMaxBlockShutdownTasksPostedDuringShutdown = 1000;
+constexpr HistogramBase::Sample kMaxBlockShutdownTasksPostedDuringShutdown =
+    1000;
 
 void RecordNumBlockShutdownTasksPostedDuringShutdown(
     HistogramBase::Sample value) {
@@ -290,8 +289,7 @@ bool TaskTracker::WillPostTask(const Task& task) {
   if (task.delayed_run_time.is_null())
     subtle::NoBarrier_AtomicIncrement(&num_incomplete_undelayed_tasks_, 1);
 
-  debug::TaskAnnotator task_annotator;
-  task_annotator.DidQueueTask(kQueueFunctionName, task);
+  task_annotator_.DidQueueTask(kQueueFunctionName, task);
 
   return true;
 }
@@ -436,7 +434,7 @@ void TaskTracker::RunOrSkipTask(Task task,
                    std::make_unique<TaskTracingInfo>(
                        task.traits, execution_mode, sequence_token));
 
-      debug::TaskAnnotator().RunTask(kQueueFunctionName, &task);
+      task_annotator_.RunTask(kQueueFunctionName, &task);
     }
 
     // Make sure the arguments bound to the callback are deleted within the

@@ -12,6 +12,7 @@
 #include "base/atomicops.h"
 #include "base/base_export.h"
 #include "base/callback_forward.h"
+#include "base/debug/task_annotator.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_base.h"
@@ -233,6 +234,8 @@ class BASE_EXPORT TaskTracker {
   // Calls |flush_callback_for_testing_| if one is available in a lock-safe
   // manner.
   void CallFlushCallbackForTesting();
+
+  debug::TaskAnnotator task_annotator_;
 
   // Number of tasks blocking shutdown and boolean indicating whether shutdown
   // has started.

@@ -6,10 +6,17 @@
 
 #include <utility>
 
+#include "base/atomic_sequence_num.h"
 #include "base/critical_closure.h"
 
 namespace base {
 namespace internal {
+
+namespace {
+
+AtomicSequenceNumber g_sequence_nums_for_tracing;
+
+}  // namespace
 
 Task::Task(const Location& posted_from,
            OnceClosure task,
@@ -30,7 +37,15 @@ Task::Task(const Location& posted_from,
               ? TaskTraits::Override(traits,
                                      {TaskShutdownBehavior::SKIP_ON_SHUTDOWN})
               : traits),
-      delay(delay) {}
+      delay(delay) {
+  // TaskScheduler doesn't use |sequence_num| but tracing (toplevel.flow) relies
+  // on it being unique. While this subtle dependency is a bit overreaching,
+  // TaskScheduler is the only task system that doesn't use |sequence_num| and
+  // the dependent code rarely changes so this isn't worth a big change and
+  // faking it here isn't too bad for now (posting tasks is full of atomic ops
+  // already).
+  this->sequence_num = g_sequence_nums_for_tracing.GetNext();
+}
 
 // This should be "= default but MSVC has trouble with "noexcept = default" in
 // this case.
