@@ -408,7 +408,6 @@ String GetReferrerPolicy(ReferrerPolicy policy) {
   return protocol::Network::Request::ReferrerPolicyEnum::
       NoReferrerWhenDowngrade;
 }
-
 }  // namespace
 
 void InspectorNetworkAgent::Restore() {
@@ -735,7 +734,9 @@ void InspectorNetworkAgent::WillSendRequestInternal(
   // won't properly detect main resource. Workaround this by checking the
   // frame type and manually setting request id to loader id.
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
-  if (request.GetFrameType() != network::mojom::RequestContextFrameType::kNone)
+  bool is_navigation =
+      request.GetFrameType() != network::mojom::RequestContextFrameType::kNone;
+  if (is_navigation)
     request_id = loader_id;
   NetworkResourcesData::ResourceData const* data =
       resources_data_->Data(request_id);
@@ -753,6 +754,9 @@ void InspectorNetworkAgent::WillSendRequestInternal(
 
   resources_data_->SetResourceType(request_id, type);
 
+  if (is_navigation)
+    return;
+
   String frame_id = loader && loader->GetFrame()
                         ? IdentifiersFactory::FrameId(loader->GetFrame())
                         : "";
@@ -761,12 +765,6 @@ void InspectorNetworkAgent::WillSendRequestInternal(
                                ? loader->GetFrame()->GetDocument()
                                : nullptr,
                            initiator_info);
-  if (initiator_info.name == FetchInitiatorTypeNames::document) {
-    FrameNavigationInitiatorMap::iterator it =
-        frame_navigation_initiator_map_.find(frame_id);
-    if (it != frame_navigation_initiator_map_.end())
-      initiator_object = it->value->clone();
-  }
 
   std::unique_ptr<protocol::Network::Request> request_info(
       BuildObjectForResourceRequest(request, max_post_data_size_));
@@ -921,6 +919,8 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
                                     response_security_details->certificate);
   }
 
+  if (IsNavigation(loader, identifier))
+    return;
   if (resource_response && !resource_is_empty) {
     Maybe<String> maybe_frame_id;
     if (!frame_id.IsEmpty())
@@ -1044,6 +1044,12 @@ void InspectorNetworkAgent::ClearPendingRequestData() {
   if (pending_request_type_ == InspectorPageAgent::kXHRResource)
     pending_xhr_replay_data_.Clear();
   pending_request_ = nullptr;
+}
+
+// static
+bool InspectorNetworkAgent::IsNavigation(DocumentLoader* loader,
+                                         unsigned long identifier) {
+  return loader && loader->MainResourceIdentifier() == identifier;
 }
 
 void InspectorNetworkAgent::DocumentThreadableLoaderStartedLoadingForClient(
@@ -1732,6 +1738,17 @@ bool InspectorNetworkAgent::FetchResourceContent(Document* document,
     }
   }
   return false;
+}
+
+String InspectorNetworkAgent::NavigationInitiatorInfo(LocalFrame* frame) {
+  if (!state_->booleanProperty(NetworkAgentState::kNetworkAgentEnabled, false))
+    return String();
+  FrameNavigationInitiatorMap::iterator it =
+      frame_navigation_initiator_map_.find(IdentifiersFactory::FrameId(frame));
+  if (it != frame_navigation_initiator_map_.end())
+    return it->value->serialize();
+  return BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo())
+      ->serialize();
 }
 
 void InspectorNetworkAgent::RemoveFinishedReplayXHRFired(TimerBase*) {

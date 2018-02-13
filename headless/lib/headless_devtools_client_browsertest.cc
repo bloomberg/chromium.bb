@@ -1084,9 +1084,10 @@ class HeadlessDevToolsNetworkBlockedUrlTest
   }
 
   void OnLoadEventFired(const page::LoadEventFiredParams&) override {
-    EXPECT_THAT(requests_to_be_sent_,
-                ElementsAre("/dom_tree_test.html", "/dom_tree_test.css",
-                            "/iframe.html"));
+    EXPECT_THAT(
+        requests_to_be_sent_,
+        testing::UnorderedElementsAre("/dom_tree_test.html",
+                                      "/dom_tree_test.css", "/iframe.html"));
     EXPECT_THAT(responses_received_,
                 ElementsAre("/dom_tree_test.html", "/iframe.html"));
     EXPECT_THAT(failures_, ElementsAre("/dom_tree_test.css"));

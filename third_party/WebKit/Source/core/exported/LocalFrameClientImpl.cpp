@@ -587,6 +587,9 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
   // |origin_document| when it is defined. |source_location| represents the
   // line of code that has initiated the navigation. It is used to let web
   // developpers locate the root cause of blocked navigations.
+  // TODO(crbug.com/804504): This is likely wrong -- this is often invoked
+  // asynchronously as a result of ScheduledURLNavigation::Fire(), so JS
+  // stack is not available here.
   std::unique_ptr<SourceLocation> source_location =
       origin_document
           ? SourceLocation::Capture(origin_document)
@@ -596,6 +599,11 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
     navigation_info.source_location.line_number = source_location->LineNumber();
     navigation_info.source_location.column_number =
         source_location->ColumnNumber();
+  }
+
+  if (WebDevToolsAgentImpl* devtools = DevToolsAgent()) {
+    navigation_info.devtools_initiator_info =
+        devtools->NavigationInitiatorInfo(web_frame_->GetFrame());
   }
 
   WebNavigationPolicy web_policy =

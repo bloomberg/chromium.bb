@@ -487,7 +487,8 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserDisableWebSecurityTest,
           blink::WebMixedContentContextType::kBlockable,
           false /* is_form_submission */, GURL() /* searchable_form_url */,
           std::string() /* searchable_form_encoding */,
-          url::Origin::Create(data_url), GURL() /* client_side_redirect_url */);
+          url::Origin::Create(data_url), GURL() /* client_side_redirect_url */,
+          nullptr /* devtools_initiator_info */);
 
   // Receiving the invalid IPC message should lead to renderer process
   // termination.
