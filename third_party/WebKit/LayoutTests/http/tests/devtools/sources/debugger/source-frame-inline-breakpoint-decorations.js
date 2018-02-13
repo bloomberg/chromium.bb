@@ -33,7 +33,7 @@
         .then(() => SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame));
   }
 
-  Bindings.breakpointManager._storage._breakpoints = {};
+  Bindings.breakpointManager._storage._breakpoints = new Map();
   SourcesTestRunner.runDebuggerTestSuite([
     function testAddRemoveBreakpoint(next) {
       var javaScriptSourceFrame;

@@ -10,7 +10,7 @@
   await TestRunner.navigatePromise(
       'resources/dynamic-scripts-breakpoints.html');
 
-  Bindings.breakpointManager._storage._breakpoints = {};
+  Bindings.breakpointManager._storage._breakpoints = new Map();
   var panel = UI.panels.sources;
 
   SourcesTestRunner.startDebuggerTest();
