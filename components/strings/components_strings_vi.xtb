@@ -47,6 +47,7 @@
 <translation id="1264126396475825575">Báo cáo sự cố được ghi lại vào <ph name="CRASH_TIME" /> (nhưng chưa tải lên hoặc đã bị bỏ qua)</translation>
 <translation id="1270502636509132238">Phương thức nhận hàng</translation>
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
+<translation id="1294154142200295408">Các biến thể của dòng lệnh</translation>
 <translation id="129553762522093515">Các tab đã đóng gần đây</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Thử xóa các cookie của bạn<ph name="END_LINK" /></translation>
 <translation id="1333989956347591814">Hoạt động của bạn <ph name="BEGIN_EMPHASIS" />có thể vẫn hiển thị<ph name="END_EMPHASIS" /> với:
@@ -359,6 +360,7 @@
 <translation id="3467763166455606212">Yêu cầu tên chủ thẻ</translation>
 <translation id="3479539252931486093">Trang web này có như bạn mong đợi không? Hãy <ph name="BEGIN_LINK" />cho chúng tôi biết<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Không phải bây giờ</translation>
+<translation id="3484417807243795847">Nhập ngày hết hạn và CVC cho <ph name="CREDIT_CARD" /></translation>
 <translation id="3498215018399854026">Chúng tôi không thể liên lạc với cha mẹ của bạn vào thời điểm này. Vui lòng thử lại.</translation>
 <translation id="3528171143076753409">Chứng chỉ của máy chủ không đáng tin cậy.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Ít nhất 1 mục trên các thiết bị đã đồng bộ hóa}=1{1 mục (và nhiều mục khác trên các thiết bị đã đồng bộ hóa)}other{# mục (và nhiều mục khác trên các thiết bị đã đồng bộ hóa)}}</translation>
@@ -435,6 +437,7 @@
 <translation id="4103249731201008433">Số sê-ri thiết bị không hợp lệ</translation>
 <translation id="410351446219883937">Tự động phát</translation>
 <translation id="4103763322291513355">Truy cập &lt;strong&gt;chrome://policy&lt;/strong&gt; để xem danh sách các URL bị chặn quyền truy cập và các chính sách khác bị quản trị viên hệ thống buộc phải thực thi.</translation>
+<translation id="4113234475957642810">Bạn có muốn lưu thẻ này vào Tài khoản Google của mình không?</translation>
 <translation id="4116663294526079822">Luôn cho phép trên trang web này</translation>
 <translation id="4117700440116928470">Phạm vi chính sách không được hỗ trợ.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 mục khác}other{# mục khác}}</translation>
@@ -485,6 +488,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554702541363482291">Từ một trang được nhúng tại <ph name="SITE" /></translation>
 <translation id="4558551763791394412">Thử tắt tiện ích.</translation>
+<translation id="4572961006780844603">Bạn có muốn lưu thẻ không?</translation>
 <translation id="457875822857220463">Giao hàng</translation>
 <translation id="4582800630050655161">Bạn có thể mất quyền truy cập vào Tài khoản Google của mình hoặc bị đánh cắp danh tính. Chromium khuyên bạn nên thay đổi mật khẩu của mình ngay bây giờ.</translation>
 <translation id="4587425331216688090">Xóa địa chỉ khỏi Chrome?</translation>
@@ -733,6 +737,7 @@
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6451458296329894277">Xác nhận việc Gửi lại Biểu mẫu</translation>
 <translation id="6456339708790392414">Thanh toán của bạn</translation>
+<translation id="6458535986965869750">Bạn có muốn lưu thẻ này vào Tài khoản Google của mình và trên thiết bị này không?</translation>
 <translation id="647261751007945333">Chính sách thiết bị</translation>
 <translation id="6477321094435799029">Chrome đã phát hiện mã bất thường trên trang này và đã chặn mã này để bảo vệ thông tin cá nhân của bạn (ví dụ như mật khẩu, số điện thoại và thẻ tín dụng).</translation>
 <translation id="6489534406876378309">Bắt đầu tải lên sự cố</translation>
@@ -795,6 +800,7 @@
 <translation id="7090678807593890770">Tìm kiếm <ph name="LINK" /> trên Google</translation>
 <translation id="7108819624672055576">Được một tiện ích cho phép</translation>
 <translation id="7111012039238467737">(Hợp lệ)</translation>
+<translation id="7112670404630173368">Bạn có muốn lưu thẻ vào Google không?</translation>
 <translation id="7119414471315195487">Đóng các tab hoặc chương trình khác</translation>
 <translation id="7129409597930077180">Không thể giao hàng đến địa chỉ này. Chọn một địa chỉ khác.</translation>
 <translation id="7138472120740807366">Phương thức phân phối</translation>
@@ -829,6 +835,7 @@
 <translation id="7390545607259442187">Xác nhận thẻ</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Đường dẫn cấu hình</translation>
+<translation id="7434205026593783035">Bạn có muốn Chromium lưu thẻ này không?</translation>
 <translation id="7437289804838430631">Thêm thông tin liên hệ</translation>
 <translation id="7441627299479586546">Chủ đề chính sách sai</translation>
 <translation id="7444046173054089907">Trang web này bị chặn</translation>
@@ -916,6 +923,7 @@
 <translation id="7961015016161918242">Không bao giờ</translation>
 <translation id="7983301409776629893">Luôn dịch <ph name="ORIGINAL_LANGUAGE" /> sang <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Không chỉ định</translation>
+<translation id="8000691422113785187">Xác nhận mã bảo mật</translation>
 <translation id="800218591365569300">Thử đóng các tab hoặc chương trình khác để giải phóng bộ nhớ.</translation>
 <translation id="8012647001091218357">Chúng tôi không thể liên lạc với cha mẹ của bạn vào thời điểm này. Vui lòng thử lại.</translation>
 <translation id="8025119109950072390">Những kẻ tấn công trên trang web này có thể đánh lừa bạn làm một việc gì đó nguy hiểm như cài đặt phần mềm hoặc tiết lộ thông tin cá nhân của bạn (ví dụ: mật khẩu, số điện thoại hoặc thẻ tín dụng).</translation>
@@ -1022,6 +1030,7 @@
 <translation id="8938939909778640821">Thẻ tín dụng và thẻ trả trước được chấp nhận</translation>
 <translation id="8952525071319348207">Hãy nhập ngày hết hạn và CVC cho <ph name="CREDIT_CARD" /> để cập nhật thông tin chi tiết thẻ của bạn. Sau khi bạn xác nhận, thông tin chi tiết thẻ từ tài khoản thanh toán Google sẽ được chia sẻ với trang web này.</translation>
 <translation id="8957210676456822347">Ủy quyền cổng bị khóa</translation>
+<translation id="8963515584701921654">Bạn có muốn Chrome lưu thẻ này không?</translation>
 <translation id="8971063699422889582">Chứng chỉ của máy chủ đã hết hạn.</translation>
 <translation id="8978053250194585037">Tính năng Duyệt web an toàn của Google gần đây đã <ph name="BEGIN_LINK" />phát hiện dấu hiệu lừa đảo<ph name="END_LINK" /> trên <ph name="SITE" />. Các trang web lừa đảo sẽ giả mạo các trang web khác để đánh lừa bạn.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>

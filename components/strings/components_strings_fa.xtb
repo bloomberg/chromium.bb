@@ -47,6 +47,7 @@
 <translation id="1264126396475825575">گزارش خرابی ثبت‌شده در <ph name="CRASH_TIME" /> (هنوز بارگذاری نشده است یا نادیده‌ گرفته شده است)</translation>
 <translation id="1270502636509132238">روش تحویل گرفتن</translation>
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
+<translation id="1294154142200295408">انواع مختلف خط فرمان</translation>
 <translation id="129553762522093515">اخیراً بسته‌شده</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />کوکی‌ها را پاک کنید<ph name="END_LINK" /></translation>
 <translation id="1333989956347591814">فعالیت شما <ph name="BEGIN_EMPHASIS" />ممکن است در موارد زیر قابل‌رؤیت باشد<ph name="END_EMPHASIS" />:
@@ -359,6 +360,7 @@
 <translation id="3467763166455606212">نام صاحب حساب الزامی است</translation>
 <translation id="3479539252931486093">غیرمنتظره بود؟ <ph name="BEGIN_LINK" />به ما اطلاع دهید<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">اکنون نه</translation>
+<translation id="3484417807243795847">‏CVC‏ و تاریخ انقضای <ph name="CREDIT_CARD" /> را وارد کنید</translation>
 <translation id="3498215018399854026">در حال حاضر نمی‌توانیم با والدینتان تماس برقرار کنیم. لطفاً دوباره امتحان کنید.</translation>
 <translation id="3528171143076753409">گواهی سرور مطمئن نیست.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{حداقل ۱ مورد در دستگاه‌های همگام‌سازی‌شده}=1{۱ مورد (و بیشتر در دستگاه‌های همگام‌سازی‌شده)}one{# مورد (و بیشتر در دستگاه‌های همگام‌سازی‌شده)}other{# مورد (و بیشتر در دستگاه‌های همگام‌سازی‌شده)}}</translation>
@@ -435,6 +437,7 @@
 <translation id="4103249731201008433">شماره سریال دستگاه نامعتبر است</translation>
 <translation id="410351446219883937">پخش خودکار</translation>
 <translation id="4103763322291513355">‏برای مشاهده فهرست نشانی‌های وب ممنوع و سایر خط‌مشی‌های اجباری براساس تصمیم سرپرست سیستم خود از &lt;strong&gt;chrome://policy&lt;/strong&gt; بازدید نمایید.</translation>
+<translation id="4113234475957642810">‏می‌خواهید این کارت در حساب Google شما ذخیره شود؟</translation>
 <translation id="4116663294526079822">همیشه مجاز در این سایت</translation>
 <translation id="4117700440116928470">محدوده خط‌مشی پشتیبانی نمی‌شود.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{۱ مورد دیگر}one{# مورد دیگر}other{# مورد دیگر}}</translation>
@@ -485,6 +488,7 @@
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554702541363482291">از صفحه جاسازی‌شده‌ای در <ph name="SITE" /></translation>
 <translation id="4558551763791394412">افزونه‌ها را غیرفعال کنید.</translation>
+<translation id="4572961006780844603">کارت ذخیره شود؟</translation>
 <translation id="457875822857220463">ارسال</translation>
 <translation id="4582800630050655161">‏ممکن است دسترسی به حساب Google را از دست بدهید یا به سرقت هویت دچار شوید. Chromium توصیه می‌کند هم‌اکنون گذرواژه‌تان را تغییر دهید.</translation>
 <translation id="4587425331216688090">‏آدرس از Chrome پاک شود؟</translation>
@@ -733,6 +737,7 @@
 <translation id="6447842834002726250">کوکی‌ها</translation>
 <translation id="6451458296329894277">تأیید ارسال مجدد فرم</translation>
 <translation id="6456339708790392414">پرداخت شما</translation>
+<translation id="6458535986965869750">‏می‌خواهید این کارت در حساب Google شما و این دستگاه ذخیره شود؟</translation>
 <translation id="647261751007945333">خط‌‌مشی‌های دستگاه</translation>
 <translation id="6477321094435799029">‏Chrome کد نامعمول در این این صفحه شناسایی کرده و برای محافظت از اطلاعات شخصی‌تان (مثلاً گذرواژه‌ها، شماره تلفن‌‌ها و کارت‌های اعتباری) آن را مسدود کرده است.</translation>
 <translation id="6489534406876378309">شروع بارگذاری کردن خرابی‌ها</translation>
@@ -795,6 +800,7 @@
 <translation id="7090678807593890770">‏جستجوی <ph name="LINK" /> در Google</translation>
 <translation id="7108819624672055576">توسط افزونه مجاز شده است</translation>
 <translation id="7111012039238467737">(معتبر)</translation>
+<translation id="7112670404630173368">‏کارت در Google ذخیره شود؟</translation>
 <translation id="7119414471315195487">برگه‌ها یا برنامه‌های دیگر را ببندید</translation>
 <translation id="7129409597930077180">ارسال به این نشانی ممکن نیست. نشانی دیگری را انتخاب کنید.</translation>
 <translation id="7138472120740807366">روش تحویل</translation>
@@ -829,6 +835,7 @@
 <translation id="7390545607259442187">تأیید کارت</translation>
 <translation id="7400418766976504921">نشانی وب</translation>
 <translation id="7419106976560586862">مسیر نمایه</translation>
+<translation id="7434205026593783035">‏می‌خواهید Chromium این کارت را ذخیره کند؟</translation>
 <translation id="7437289804838430631">افرودن اطلاعات تماس</translation>
 <translation id="7441627299479586546">موضوع خط‌مشی اشتباه است</translation>
 <translation id="7444046173054089907">این سایت مسدود شده است</translation>
@@ -916,6 +923,7 @@
 <translation id="7961015016161918242">هرگز</translation>
 <translation id="7983301409776629893">همیشه <ph name="ORIGINAL_LANGUAGE" /> به <ph name="TARGET_LANGUAGE" /> ترجمه شود</translation>
 <translation id="7995512525968007366">تعیین نشده</translation>
+<translation id="8000691422113785187">تأیید کد امنیتی</translation>
 <translation id="800218591365569300">سعی کنید برگه‌ها یا برنامه‌های دیگر را ببندید تا حافظه آزاد شود.</translation>
 <translation id="8012647001091218357">در حال حاضر نمی‌توانیم با والدینتان ارتباط برقرار کنیم. لطفاً دوباره امتحان کنید.</translation>
 <translation id="8025119109950072390">مهاجمان در این سایت ممکن است شما را فریب دهند که کارهای خطرناکی مثل نصب نرم‌افزار یا ارائه اطلاعات شخصی‌تان (مثلاً گذرواژه‌ها، شماره تلفن‌ها یا کارت‌های اعتباری) انجام دهید.</translation>
@@ -1021,6 +1029,7 @@
 <translation id="8938939909778640821">کارت‌های اعتباری و پیش‌پرداخت قابل‌قبول</translation>
 <translation id="8952525071319348207">‏برای به‌روزرسانی جزئیات کارتتان، تاریخ انقضا و CVC کارت <ph name="CREDIT_CARD" /> را وارد کنید. بعد از تأیید، جزئیات کارت از حساب «پرداخت‌های Google» با این سایت هم‌رسانی می‌شود.</translation>
 <translation id="8957210676456822347">مجوز پورتال محدود</translation>
+<translation id="8963515584701921654">‏می‌خواهید Chrome این کارت را ذخیره کند؟</translation>
 <translation id="8971063699422889582">گواهی سرور منقضی شده است.</translation>
 <translation id="8978053250194585037">‏Google Safe Browsing اخیراً در <ph name="SITE" />، <ph name="BEGIN_LINK" />فیشینگ شناسایی کرده است<ph name="END_LINK" />. سایت‌های فیشینگ وانمود می‌کنند وب‌سایت‌های دیگری هستند تا شما را فریب دهند.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>

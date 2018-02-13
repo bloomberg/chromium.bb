@@ -35,6 +35,7 @@
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Kichwa cha ngazi ya 6 kinachofuata</translation>
 <translation id="1275718070701477396">Imechaguliwa</translation>
+<translation id="1286609444451033486">Bonyeza Search+Space ili ugeuze.</translation>
 <translation id="1319608975892113573">Hakuna nukuu la msingi lililotangulia.</translation>
 <translation id="1321576897702511272">Ficha usaidizi wa ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> kati ya <ph name="TOTAL" /></translation>
@@ -370,6 +371,7 @@
 <translation id="4191918948604314587">Kitufe</translation>
 <translation id="4202186506458631436">Sogeza kulia</translation>
 <translation id="4206289001967551965">Ndani ya jedwali</translation>
+<translation id="4209770650650780359">Bonyeza kishale cha juu au cha chini ili ukamilishe kiotomatiki.</translation>
 <translation id="4215733775853809057">Kitelezi kinachofuata</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{dashi}other{dashi #}}</translation>
 <translation id="421884353938374759">kiteua rangi</translation>
@@ -403,6 +405,7 @@
 <translation id="4532633738839459153">{COUNT,plural, =1{mkwaju}other{mikwaju #}}</translation>
 <translation id="4547556996012970016">Kichwa cha ngazi ya 5 kinachofuata</translation>
 <translation id="4562381607973973258">Kichwa</translation>
+<translation id="4569941707103739422">Bonyeza kishale cha juu au cha chini ili usogeze; bonyeza 'enter' ili uwashe.</translation>
 <translation id="4570424871453628777">Mwisho wa neno lenye tahajia isiyofaa</translation>
 <translation id="4591507479202817876">, kimechaguliwa</translation>
 <translation id="4597532268155981612">fomu</translation>
@@ -496,6 +499,7 @@
 <translation id="536031132345979795">Ruka kwenda nyuma wakati wa kusoma mfululizo</translation>
 <translation id="5368000168321181111">Earcons zimezimwa</translation>
 <translation id="5374320867641260420">Hakuna kitufe kinachofuata.</translation>
+<translation id="5376407118396657359">Bonyeza Search+Ctrl+Alt pamoja na vishale ili usogeze kwenye visanduku.</translation>
 <translation id="5382299583965267720">Hakuna kichwa cha ngazi ya 1 kinachofuata.</translation>
 <translation id="5402367795255837559">Breli</translation>
 <translation id="5402791055281059602">Arifa ya hali inayogeuzika</translation>
@@ -504,6 +508,7 @@
 <translation id="5417034931411865818">Bofya kipengee kilicho chini ya ufunguo wa ruta cha $1</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ndogo kuliko}other{alama # za ndogo kuliko}}</translation>
 <translation id="5444587279251314700">(inatumika)</translation>
+<translation id="5446809554778706307">Haijaangazia. Bonyeza Ctrl+T ili ufungue kichupo kipya.</translation>
 <translation id="5451268436205074266">nukta ya <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Nyongeza</translation>
 <translation id="5485036206801896268">Hakuna mchoro uliotangulia.</translation>
@@ -583,6 +588,7 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="6006050241733874051">Fomu</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{mkwaju wa nyuma}other{mikwaju # ya nyuma}}</translation>
 <translation id="6037602951055904232">Elekeza mbele</translation>
+<translation id="6042826534790431634">Bonyeza Search+Space ili uwashe.</translation>
 <translation id="6044160928851315051">Punguza mwanga kwenye skrini</translation>
 <translation id="605761629541007221">Mwisho wa maandishi yenye herufi nzito</translation>
 <translation id="6065293622157674001">Mwanzo wa maandishi ya hitilafu ya sarufi</translation>
@@ -859,6 +865,7 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="9065283790526219006">+dirisha ibukizi</translation>
 <translation id="9077213568694924680">imeondolewa kwenye uchaguzi</translation>
 <translation id="9082874451376019682">Hakuna kitelezi kilichotangulia.</translation>
+<translation id="9087707351856729768">Andika ili ukamilishe kiotomatiki.</translation>
 <translation id="9089864840575085222">Mwangwi wa mduara wa kuchapa</translation>
 <translation id="9105227991373418255">kata $1.</translation>
 <translation id="9107530006868467849">Hakuna wijeti ya maudhui.</translation>

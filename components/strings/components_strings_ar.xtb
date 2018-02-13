@@ -47,6 +47,7 @@
 <translation id="1264126396475825575">تقرير الأعطال الذي تم الحصول عليه في <ph name="CRASH_TIME" /> (لم يتم تحميله بعد أو تجاهله)</translation>
 <translation id="1270502636509132238">طريقة الاستلام</translation>
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
+<translation id="1294154142200295408">صيغ سطر الأوامر</translation>
 <translation id="129553762522093515">المغلقة حديثًا</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />جرّب محو ملفات تعريف الارتباط<ph name="END_LINK" /></translation>
 <translation id="1333989956347591814">قد يظل <ph name="BEGIN_EMPHASIS" />نشاطك مرئيًا<ph name="END_EMPHASIS" /> للجهات التالية:
@@ -359,6 +360,7 @@
 <translation id="3467763166455606212">اسم حامل البطاقة مطلوب</translation>
 <translation id="3479539252931486093">ألم تتوقَّع هذا؟ <ph name="BEGIN_LINK" />أطلِعنا على الأمر<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">ليس الآن</translation>
+<translation id="3484417807243795847">‏إدخال تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) لـ <ph name="CREDIT_CARD" /></translation>
 <translation id="3498215018399854026">لم نتمكن من الوصول إلى أحد والديك في الوقت الحالي. يُرجى إعادة المحاولة مرة أخرى.</translation>
 <translation id="3528171143076753409">شهادة الخادم غير موثوق فيها.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{عنصر واحد على الأقل على الأجهزة المتزامنة}=1{عنصر واحد (1) (وأكثر على الأجهزة المتزامنة)}two{عنصران (#) (وأكثر على الأجهزة المتزامنة)}few{# عناصر (وأكثر على الأجهزة المتزامنة)}many{# عنصرًا (وأكثر على الأجهزة المتزامنة)}other{# عنصر (وأكثر على الأجهزة المتزامنة)}}</translation>
@@ -435,6 +437,7 @@
 <translation id="4103249731201008433">الرقم التسلسلي للجهاز غير صالح</translation>
 <translation id="410351446219883937">تشغيل تلقائي</translation>
 <translation id="4103763322291513355">‏انتقل إلى &lt;strong&gt;chrome://policy&lt;/strong&gt; لمشاهدة قائمة بعناوين URL المضافة إلى القائمة السوداء والسياسات الأخرى التي فرضها مشرف النظام.</translation>
+<translation id="4113234475957642810">‏هل تريد حفظ هذه البطاقة إلى حسابك على Google؟</translation>
 <translation id="4116663294526079822">إلغاء الحظر دومًا على هذا الموقع</translation>
 <translation id="4117700440116928470">نطاق السياسة غير متوافق.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{عنصر واحد آخر}zero{# عنصر آخر}two{عنصران آخران (#)}few{# عناصر أخرى}many{# عنصرًا آخر}other{# عنصر آخر}}</translation>
@@ -485,6 +488,7 @@
 <translation id="4552089082226364758">الفلاش</translation>
 <translation id="4554702541363482291">من صفحة مُضمنة في <ph name="SITE" /></translation>
 <translation id="4558551763791394412">جرّب تعطيل الإضافات.</translation>
+<translation id="4572961006780844603">هل تريد حفظ البطاقة؟</translation>
 <translation id="457875822857220463">التسليم</translation>
 <translation id="4582800630050655161">‏من الممكن أن تفقد إمكانية الوصول إلى حسابك في Google أو تتعرض لسرقة هويتك. لذا يوصي Chromium بتغيير كلمة مرورك الآن.</translation>
 <translation id="4587425331216688090">‏هل تريد إزالة العنوان من Chrome؟</translation>
@@ -733,6 +737,7 @@
 <translation id="6447842834002726250">ملفّات تعريف الارتباط</translation>
 <translation id="6451458296329894277">تأكيد إعادة إرسال النموذج</translation>
 <translation id="6456339708790392414">دفعتك</translation>
+<translation id="6458535986965869750">‏هل تريد حفظ هذه البطاقة إلى حسابك على Google وعلى هذا الجهاز؟</translation>
 <translation id="647261751007945333">سياسات الأجهزة</translation>
 <translation id="6477321094435799029">‏اكتشف Chrome وجود رمز غير عادي على هذه الصفحة وأجرى حظرًا لهذا الرمز لحماية معلوماتك الشخصية (على سبيل المثال، كلمات المرور، وأرقام الهواتف، وبطاقات الائتمان).</translation>
 <translation id="6489534406876378309">بدء تحميل الأعطال</translation>
@@ -795,6 +800,7 @@
 <translation id="7090678807593890770">‏البحث في Google عن <ph name="LINK" /></translation>
 <translation id="7108819624672055576">تم السماح بواسطة إحدى الإضافات</translation>
 <translation id="7111012039238467737">(صالح)</translation>
+<translation id="7112670404630173368">‏هل تريد حفظ البطاقة إلى Google؟</translation>
 <translation id="7119414471315195487">إغلاق علامات التبويب أو البرامج الأخرى</translation>
 <translation id="7129409597930077180">لا يمكن الشحن على هذا العنوان. حدِّد عنوانًا آخر.</translation>
 <translation id="7138472120740807366">طريقة التسليم</translation>
@@ -829,6 +835,7 @@
 <translation id="7390545607259442187">التأكد من البطاقة</translation>
 <translation id="7400418766976504921">‏عنوان URL</translation>
 <translation id="7419106976560586862">مسار الملف الشخصي</translation>
+<translation id="7434205026593783035">‏هل تريد من Chromium حفظ هذه البطاقة؟</translation>
 <translation id="7437289804838430631">إضافة معلومات الاتصال</translation>
 <translation id="7441627299479586546">موضوع السياسة غير صحيح</translation>
 <translation id="7444046173054089907">تم حظر هذا الموقع</translation>
@@ -916,6 +923,7 @@
 <translation id="7961015016161918242">مطلقًا</translation>
 <translation id="7983301409776629893">الترجمة من اللغة <ph name="ORIGINAL_LANGUAGE" /> إلى اللغة <ph name="TARGET_LANGUAGE" /> دومًا</translation>
 <translation id="7995512525968007366">غير محدد</translation>
+<translation id="8000691422113785187">تأكيد رمز الأمان</translation>
 <translation id="800218591365569300">جرّب إغلاق علامات التبويب أو البرامج الأخرى لتفريغ مساحة من الذاكرة.</translation>
 <translation id="8012647001091218357">لم نتمكن من الوصول إلى والديك في الوقت الحالي. يُرجى إعادة المحاولة مرة أخرى.</translation>
 <translation id="8025119109950072390">قد يحاول المهاجمون الموجودون على هذا الموقع فعل شيء خطير كتثبيت البرامج أو الكشف عن معلوماتك الشخصية (على سبيل المثال، كلمات المرور أو أرقام الهواتف أو بطاقات الائتمان).</translation>
@@ -1022,6 +1030,7 @@
 <translation id="8938939909778640821">بطاقات الائتمان وبطاقات الدفع المسبق المقبولة</translation>
 <translation id="8952525071319348207">‏أدخل تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) لـ <ph name="CREDIT_CARD" /> لتحديث تفاصيل بطاقتك. وبعد التأكيد، ستتم مشاركة تفاصيل البطاقة من حساب دفعات Google مع هذا الموقع.</translation>
 <translation id="8957210676456822347">تفويض المدخل المقيد</translation>
+<translation id="8963515584701921654">‏هل تريد من Chrome حفظ هذه البطاقة؟</translation>
 <translation id="8971063699422889582">انتهت صلاحية شهادة الخادم.</translation>
 <translation id="8978053250194585037">‏رصد التصفح الآمن من Google عن وجود‬ <ph name="BEGIN_LINK" />تصيّد احتيالي<ph name="END_LINK" /> مؤخرًا على موقع <ph name="SITE" />، إذ تتظاهر مواقع التصيد الاحتيالي بكونها مواقع ويب أخرى لخداعك.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" />‏ [<ph name="COUNTRY" />]</translation>
