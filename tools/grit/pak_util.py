@@ -31,6 +31,20 @@ def _ExtractMain(args):
       f.write(payload)
 
 
+def _CreateMain(args):
+  pak = {}
+  for name in os.listdir(args.input_dir):
+    try:
+      resource_id = int(name)
+    except:
+      continue
+    filename = os.path.join(args.input_dir, name)
+    if os.path.isfile(filename):
+      with open(filename, 'rb') as f:
+        pak[resource_id] = f.read()
+  data_pack.WriteDataPack(pak, args.output_pak_file, data_pack.UTF8)
+
+
 def _PrintMain(args):
   pak = data_pack.ReadDataPack(args.pak_file)
   output = args.output
@@ -97,6 +111,13 @@ def main():
   sub_parser.add_argument('-o', '--output-dir', default='.',
                           help='Directory to extract to.')
   sub_parser.set_defaults(func=_ExtractMain)
+
+  sub_parser = sub_parsers.add_parser('create',
+      help='Creates pak file from extracted directory.')
+  sub_parser.add_argument('output_pak_file', help='File to create.')
+  sub_parser.add_argument('-i', '--input-dir', default='.',
+                          help='Directory to create from.')
+  sub_parser.set_defaults(func=_CreateMain)
 
   sub_parser = sub_parsers.add_parser('print',
       help='Prints all pak IDs and contents. Useful for diffing.')
