@@ -156,7 +156,10 @@ class ScreenshotGrabberNotificationDelegate
     if (!success_)
       return;
     platform_util::ShowItemInFolder(profile_, screenshot_path_);
+    NotificationDisplayService::GetForProfile(profile_)->Close(
+        NotificationHandler::Type::TRANSIENT, kNotificationId);
   }
+
   void ButtonClick(int button_index) override {
     DCHECK(success_);
 
