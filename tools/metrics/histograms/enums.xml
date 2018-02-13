@@ -43587,6 +43587,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="3989826" label="dom_distiller"/>
   <int value="4300475" label="gaia_cookie_manager_external_cc_result"/>
   <int value="4598626" label="gaia_auth_check_connection_info"/>
+  <int value="4986170" label="ui_devtools_server"/>
   <int value="5021348" label="sync_stop_reporter"/>
   <int value="5151071" label="extension_manifest_fetcher"/>
   <int value="5154306" label="blob_reader"/>
@@ -43658,6 +43659,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="46188932" label="network_time_component"/>
   <int value="47152935" label="sdch_dictionary_fetch"/>
   <int value="47815025" label="omnibox_suggest"/>
+  <int value="49160454" label="devtools_http_handler"/>
   <int value="49544361" label="remote_suggestions_provider"/>
   <int value="49601082" label="plugins_resource_service"/>
   <int value="49825319" label="CRD_ice_config_request"/>

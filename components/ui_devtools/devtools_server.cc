@@ -45,6 +45,27 @@ int GetUiDevToolsPort() {
   return port;
 }
 
+constexpr net::NetworkTrafficAnnotationTag kUIDevtoolsServer =
+    net::DefineNetworkTrafficAnnotation("ui_devtools_server", R"(
+      semantics {
+        sender: "UI Devtools Server"
+        description:
+          "Backend for UI DevTools, to inspect Aura/Views UI."
+        trigger:
+          "Run with '--enable-ui-devtools' switch."
+        data: "Debugging data, including any data on the open pages."
+        destination: OTHER
+        destination_other: "The data can be sent to any destination."
+      }
+      policy {
+        cookies_allowed: NO
+        setting:
+          "This request cannot be disabled in settings. However it will never "
+          "be made if user does not run with '--enable-ui-devtools' switch."
+        policy_exception_justification:
+          "Not implemented, only used in Devtools and is behind a switch."
+      })");
+
 }  // namespace
 
 UiDevToolsServer* UiDevToolsServer::devtools_server_ = nullptr;
@@ -108,11 +129,10 @@ void UiDevToolsServer::AttachClient(std::unique_ptr<UiDevToolsClient> client) {
 
 void UiDevToolsServer::SendOverWebSocket(int connection_id,
                                          const String& message) {
-  // TODO (https://crbug.com/656607): Add proper annotation.
   io_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&net::HttpServer::SendOverWebSocket,
                             base::Unretained(server_.get()), connection_id,
-                            message, NO_TRAFFIC_ANNOTATION_BUG_656607));
+                            message, kUIDevtoolsServer));
 }
 
 void UiDevToolsServer::Start(const std::string& address_string, uint16_t port) {
@@ -158,11 +178,10 @@ void UiDevToolsServer::OnWebSocketRequest(
     return;
   client->set_connection_id(connection_id);
   connections_[connection_id] = client;
-  // TODO (https://crbug.com/656607): Add proper annotation.
   io_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&net::HttpServer::AcceptWebSocket,
                             base::Unretained(server_.get()), connection_id,
-                            info, NO_TRAFFIC_ANNOTATION_BUG_656607));
+                            info, kUIDevtoolsServer));
 }
 
 void UiDevToolsServer::OnWebSocketMessage(int connection_id,

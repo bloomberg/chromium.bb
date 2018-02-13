@@ -78,6 +78,29 @@ const char kTargetDevtoolsFrontendUrlField[] = "devtoolsFrontendUrl";
 const int32_t kSendBufferSizeForDevTools = 256 * 1024 * 1024;  // 256Mb
 const int32_t kReceiveBufferSizeForDevTools = 100 * 1024 * 1024;  // 100Mb
 
+constexpr net::NetworkTrafficAnnotationTag
+    kDevtoolsHttpHandlerTrafficAnnotation =
+        net::DefineNetworkTrafficAnnotation("devtools_http_handler", R"(
+      semantics {
+        sender: "Devtools Http Handler"
+        description:
+          "This is a remote debugging server, only enabled by "
+          "'--remote-debugging-port' switch. It exposes debugging protocol "
+          "over websockets."
+        trigger: "Run with '--remote-debugging-port' switch."
+        data: "Debugging data, including any data on the open pages."
+        destination: OTHER
+        destination_other: "The data can be sent to any destination."
+      }
+      policy {
+        cookies_allowed: NO
+        setting:
+          "This request cannot be disabled in settings. However it will never "
+          "be made if user does not run with '--remote-debugging-port' switch."
+        policy_exception_justification:
+          "Not implemented, only used in Devtools and is behind a switch."
+      })");
+
 }  // namespace
 
 // ServerWrapper -------------------------------------------------------------
@@ -139,42 +162,37 @@ void ServerWrapper::AcceptWebSocket(int connection_id,
                                     const net::HttpServerRequestInfo& request) {
   server_->SetSendBufferSize(connection_id, kSendBufferSizeForDevTools);
   server_->SetReceiveBufferSize(connection_id, kReceiveBufferSizeForDevTools);
-  // TODO (https://crbug.com/656607): Add proper annotation.
   server_->AcceptWebSocket(connection_id, request,
-                           NO_TRAFFIC_ANNOTATION_BUG_656607);
+                           kDevtoolsHttpHandlerTrafficAnnotation);
 }
 
 void ServerWrapper::SendOverWebSocket(int connection_id,
                                       const std::string& message) {
-  // TODO (https://crbug.com/656607): Add proper annotation.
   server_->SendOverWebSocket(connection_id, message,
-                             NO_TRAFFIC_ANNOTATION_BUG_656607);
+                             kDevtoolsHttpHandlerTrafficAnnotation);
 }
 
 void ServerWrapper::SendResponse(int connection_id,
                                  const net::HttpServerResponseInfo& response) {
-  // TODO (https://crbug.com/656607): Add proper annotation.
   server_->SendResponse(connection_id, response,
-                        NO_TRAFFIC_ANNOTATION_BUG_656607);
+                        kDevtoolsHttpHandlerTrafficAnnotation);
 }
 
 void ServerWrapper::Send200(int connection_id,
                             const std::string& data,
                             const std::string& mime_type) {
-  // TODO (https://crbug.com/656607): Add proper annotation.
   server_->Send200(connection_id, data, mime_type,
-                   NO_TRAFFIC_ANNOTATION_BUG_656607);
+                   kDevtoolsHttpHandlerTrafficAnnotation);
 }
 
 void ServerWrapper::Send404(int connection_id) {
-  // TODO (https://crbug.com/656607): Add proper annotation.
-  server_->Send404(connection_id, NO_TRAFFIC_ANNOTATION_BUG_656607);
+  server_->Send404(connection_id, kDevtoolsHttpHandlerTrafficAnnotation);
 }
 
 void ServerWrapper::Send500(int connection_id,
                             const std::string& message) {
-  // TODO (https://crbug.com/656607): Add proper annotation.
-  server_->Send500(connection_id, message, NO_TRAFFIC_ANNOTATION_BUG_656607);
+  server_->Send500(connection_id, message,
+                   kDevtoolsHttpHandlerTrafficAnnotation);
 }
 
 void ServerWrapper::Close(int connection_id) {
@@ -401,8 +419,7 @@ void ServerWrapper::OnHttpRequest(int connection_id,
 
   if (!base::StartsWith(info.path, "/devtools/",
                         base::CompareCase::SENSITIVE)) {
-    // TODO (https://crbug.com/656607): Add proper annotation.
-    server_->Send404(connection_id, NO_TRAFFIC_ANNOTATION_BUG_656607);
+    server_->Send404(connection_id, kDevtoolsHttpHandlerTrafficAnnotation);
     return;
   }
 
@@ -413,9 +430,8 @@ void ServerWrapper::OnHttpRequest(int connection_id,
     base::FilePath path = debug_frontend_dir_.AppendASCII(filename);
     std::string data;
     base::ReadFileToString(path, &data);
-    // TODO (https://crbug.com/656607): Add proper annotation.
     server_->Send200(connection_id, data, mime_type,
-                     NO_TRAFFIC_ANNOTATION_BUG_656607);
+                     kDevtoolsHttpHandlerTrafficAnnotation);
     return;
   }
 
@@ -426,8 +442,7 @@ void ServerWrapper::OnHttpRequest(int connection_id,
                        handler_, connection_id, filename));
     return;
   }
-  // TODO (https://crbug.com/656607): Add proper annotation.
-  server_->Send404(connection_id, NO_TRAFFIC_ANNOTATION_BUG_656607);
+  server_->Send404(connection_id, kDevtoolsHttpHandlerTrafficAnnotation);
 }
 
 void ServerWrapper::OnWebSocketRequest(
