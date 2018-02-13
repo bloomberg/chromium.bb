@@ -140,11 +140,13 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="219985413780390209">Bảo vệ bạn và thiết bị của bạn khỏi các trang web nguy hiểm</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, ứng dụng web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Tiếp tục bằng <ph name="USER_FULL_NAME" /></translation>
+<translation id="2259659629660284697">Xuất mật khẩu...</translation>
 <translation id="2266890032547182881">Phân tích mức sử dụng dữ liệu</translation>
 <translation id="2268044343513325586">Tinh chỉnh</translation>
 <translation id="2286841657746966508">Địa chỉ thanh toán</translation>
 <translation id="230115972905494466">Không tìm thấy thiết bị tương thích</translation>
 <translation id="2315043854645842844">Lựa chọn chứng chỉ phía ứng dụng khách không được hệ điều hành hỗ trợ.</translation>
+<translation id="2321086116217818302">Đang chuẩn bị xuất mật khẩu…</translation>
 <translation id="2321958826496381788">Kéo thanh trượt cho đến khi bạn có thể đọc nội dung này thoải mái. Chữ tối thiểu phải to như này sau khi bấm đúp vào một đoạn.</translation>
 <translation id="2323763861024343754">Bộ nhớ trang web</translation>
 <translation id="2328985652426384049">Không thể đăng nhập</translation>
@@ -240,6 +242,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3236059992281584593">Còn 1 phút</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Đánh dấu trang này</translation>
+<translation id="3255459706755453214">Chặn quyền truy cập đọc khay nhớ tạm đối với một trang web cụ thể.</translation>
 <translation id="3259831549858767975">Thu nhỏ mọi nội dung trên trang</translation>
 <translation id="3269093882174072735">Tải hình ảnh</translation>
 <translation id="3269956123044984603">Để có các tab từ các thiết bị khác của bạn, hãy bật “Tự động đồng bộ hóa dữ liệu” trong cài đặt tài khoản Android.</translation>
@@ -251,6 +254,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3328801116991980348">Thông tin về trang web</translation>
 <translation id="3341058695485821946">Xem lượng dữ liệu bạn đã tiết kiệm được</translation>
 <translation id="3350687908700087792">Đóng tất cả các tab ẩn danh</translation>
+<translation id="3358632888246345756">Cho phép truy cập đọc khay nhớ tạm đối với một trang web cụ thể.</translation>
 <translation id="3365671512111106261">Không khả dụng khi Trình tiết kiệm dữ liệu được bật</translation>
 <translation id="3367813778245106622">Đăng nhập lại để bắt đầu đồng bộ hóa</translation>
 <translation id="3384347053049321195">Chia sẻ hình ảnh</translation>
@@ -373,6 +377,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4522570452068850558">Chi tiết</translation>
 <translation id="4526249700380860531">Xem và quản lý mật khẩu đã lưu tại <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Chọn thư mục</translation>
+<translation id="4544481164434183075">Trang này được tạo từ <ph name="CREATION_TIME" /> và có thể khác với phiên bản trực tuyến.</translation>
 <translation id="4550003330909367850">Để xem hoặc sao chép mật khẩu của bạn tại đây, hãy đặt khóa màn hình trên thiết bị này.</translation>
 <translation id="4558311620361989323">Phím tắt cho trang web</translation>
 <translation id="4565377596337484307">Ẩn mật khẩu</translation>
@@ -484,6 +489,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5517095782334947753">Bạn có dấu trang, lịch sử, mật khẩu và các cài đặt khác từ <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524843473235508879">Đã chặn chuyển hướng.</translation>
 <translation id="5527082711130173040">Chrome cần có quyền truy cập vị trí để quét tìm thiết bị. <ph name="BEGIN_LINK1" />Cập nhật quyền<ph name="END_LINK1" />. Tính năng truy cập vị trí cũng bị <ph name="BEGIN_LINK2" />tắt cho thiết bị này<ph name="END_LINK2" />.</translation>
+<translation id="5527111080432883924">Hỏi trước khi cho phép các trang web đọc văn bản và hình ảnh từ khay nhớ tạm (được đề xuất)</translation>
 <translation id="5530766185686772672">Đóng tab ẩn danh</translation>
 <translation id="5534640966246046842">Đã sao chép trang web</translation>
 <translation id="5537099431952529648">Bạn và bố mẹ bạn có thể quản lý Chrome Sync và cá nhân hóa trong <ph name="BEGIN_LINK1" />Cài đặt<ph name="END_LINK1" /></translation>
@@ -567,6 +573,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="6177390657002841081">Bật Trình tiết kiệm dữ liệu</translation>
 <translation id="6181444274883918285">Thêm ngoại lệ cho trang web</translation>
 <translation id="618555311922999635">Đã mở bảng điều hướng trên toàn bộ màn hình</translation>
+<translation id="6192333916571137726">Tải tệp xuống</translation>
 <translation id="6192792657125177640">Ngoại lệ</translation>
 <translation id="6210748933810148297">Không phải là <ph name="EMAIL" />?</translation>
 <translation id="6216432067784365534">Tùy chọn <ph name="NAME_OF_LIST_ITEM" /></translation>
@@ -651,6 +658,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d tab đang mở}other{%1$d tab đang mở}}</translation>
 <translation id="6896758677409633944">Sao chép</translation>
 <translation id="6910211073230771657">Đã xóa</translation>
+<translation id="6912998170423641340">Chặn trang web đọc văn bản và hình ảnh từ khay nhớ tạm</translation>
 <translation id="6914783257214138813">Bất cứ ai có thể xem tệp đã xuất đều có thể biết mật khẩu của bạn.</translation>
 <translation id="6945221475159498467">Chọn</translation>
 <translation id="6963766334940102469">Xóa dấu trang</translation>
@@ -673,6 +681,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7062545763355031412">Chấp nhận và chuyển đổi tài khoản</translation>
 <translation id="7063006564040364415">Không thể kết nối với máy chủ đồng bộ hóa.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Đã chọn 1 mục}other{Đã chọn # mục}}</translation>
+<translation id="7077143737582773186">Thẻ SD</translation>
 <translation id="7121362699166175603">Xóa lịch sử và tự động hoàn thành trong thanh địa chỉ. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Cho phép đối với công cụ tìm kiếm hiện tại</translation>
 <translation id="7138678301420049075">Khác</translation>
@@ -697,6 +706,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Trải nghiệm lần chạy đầu tiên của Chrome</translation>
 <translation id="7423098979219808738">Hỏi trước</translation>
+<translation id="7423538860840206698">Đã chặn quyền đọc khay nhớ tạm</translation>
 <translation id="7437998757836447326">Đăng xuất khỏi Chrome</translation>
 <translation id="7445411102860286510">Cho phép trang web tự động phát video tắt tiếng (được đề xuất)</translation>
 <translation id="7453467225369441013">Đăng xuất bạn khỏi hầu hết các trang web. Bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình.</translation>
@@ -732,6 +742,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="773466115871691567">Luôn dịch các trang viết bằng <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="7754704193130578113">Hỏi vị trí lưu từng tệp trước khi tải xuống</translation>
+<translation id="7762668264895820836">Thẻ SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Thêm địa chỉ</translation>
 <translation id="7765158879357617694">Di chuyển</translation>
 <translation id="7769602470925380267">Chấp nhận và đăng xuất</translation>
@@ -787,6 +798,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8250920743982581267">Tài liệu</translation>
 <translation id="8260126382462817229">Thử đăng nhập lại</translation>
 <translation id="8261506727792406068">Xóa</translation>
+<translation id="8266862848225348053">Vị trí tải xuống</translation>
 <translation id="8283853025636624853">Đang đồng bộ hóa với <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Tab chuẩn</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> và các trang web khác</translation>
@@ -839,6 +851,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8820817407110198400">Dấu trang</translation>
 <translation id="883635517171802338">Chặn trang web hiển thị cửa sổ bật lên (được đề xuất)</translation>
 <translation id="883806473910249246">Đã xảy ra lỗi khi tải nội dung xuống.</translation>
+<translation id="8840953339110955557">Trang này có thể khác với phiên bản trực tuyến.</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">Tab <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Bộ nhớ</translation>

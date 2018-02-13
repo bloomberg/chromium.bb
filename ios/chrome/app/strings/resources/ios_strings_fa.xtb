@@ -250,6 +250,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="5871497086027727873">۱ مورد منتقل شد</translation>
 <translation id="5911030830365207728">‏‫مترجم Google‬</translation>
 <translation id="5916664084637901428">روشن</translation>
+<translation id="5938160824633642847">دستگاهتان تقریباً پر است. فضا آزاد کنید و دوباره امتحان کنید.</translation>
 <translation id="5948291296578561264">با این کار می‌توانید عکس‌ها را در کتابخانه عکستان ذخیره کنید.</translation>
 <translation id="5955891643922670672">درحال مشاهده نسخه آفلاین</translation>
 <translation id="5964480694698977962">ایجاد برگه ناشناس جدید</translation>
@@ -290,6 +291,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 
 داده‌های شما در تاریخ <ph name="TIME" /> با عبارت عبور همگام‌سازی‌تان رمزگذاری شد. برای شروع همگام‌سازی آن را وارد کنید.</translation>
 <translation id="6418346271604475326">‏آماده‌سازی PDF</translation>
+<translation id="6434591244308415567">خطایی روی داد. بعداً دوباره امتحان کنید.</translation>
 <translation id="6445051938772793705">کشور</translation>
 <translation id="6445981559479772097">پیام ارسال شد.</translation>
 <translation id="6464071786529933911">در برگه ناشناس جدید</translation>
@@ -300,6 +302,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6657585470893396449">گذرواژه</translation>
 <translation id="667999046851023355">سند</translation>
 <translation id="6713747756340119864">Google Apps</translation>
+<translation id="6730682669179532099">گذرواژه‌ها صادر نشدند</translation>
 <translation id="6762156594045689028">برای تغییر این تنظیم، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">کد پستی</translation>
 <translation id="6785453220513215166">در حال ارسال گزارش خرابی...</translation>
@@ -327,6 +330,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7203585745079012652">پاسخ گفتاری</translation>
 <translation id="722055596168483966">‏شخصی‌سازی خدمات Google</translation>
 <translation id="7272437679830969316">نمی‌توانیم هویتتان را به تأیید برسانیم. گذرواژه کپی نشد.</translation>
+<translation id="7291368939935408496">درحال آماده‌سازی گذرواژه‌ها…</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> درصد بارگیری شد</translation>
 <translation id="7346909386216857016">بله متوجه شدم.</translation>
 <translation id="7400418766976504921">نشانی وب</translation>

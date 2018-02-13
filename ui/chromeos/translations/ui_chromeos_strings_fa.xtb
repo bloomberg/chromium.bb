@@ -33,9 +33,11 @@
 <translation id="1936717151811561466">فنلاندی</translation>
 <translation id="1947424002851288782">صفحه‌کلید آلمانی</translation>
 <translation id="1984603991036629094">صفحه‌کلید آوایی ارمنی</translation>
+<translation id="1989746695744304008">برگه و پنجره‌ها</translation>
 <translation id="2046702855113914483">رامن</translation>
 <translation id="2080010875307505892">صفحه‌کلید صربی</translation>
 <translation id="2136953289241069843">‏نویسه‌گردانی (namaste ← ‏नमस्कार)</translation>
+<translation id="2145908266289632567">ویرایش نوشتار</translation>
 <translation id="2164862903024139959">‏صفحه‌کلید ویتنامی (TCVN)</translation>
 <translation id="2168214441502403371">صفحه‌کلید فارسی</translation>
 <translation id="2198315389084035571">چینی ساده</translation>
@@ -85,6 +87,7 @@
 <translation id="3519867315646775981">‏نویسه‌گردانی (shalom ← ‏שלום)</translation>
 <translation id="3522708245912499433">پرتغالی</translation>
 <translation id="357479282490346887">لیتوانیایی</translation>
+<translation id="3592821358219525223">تنظیمات سیستم و نمایشگر</translation>
 <translation id="3603385196401704894">فرانسوی کانادا</translation>
 <translation id="3606220979431771195">‏ترکی F</translation>
 <translation id="3619115746895587757">کاپوچینو</translation>
@@ -166,6 +169,7 @@
 <translation id="5819442873484330149">مجموعه هانگول ۳ (نهایی)</translation>
 <translation id="5838825566232597749">‏بین‌المللی US Workman</translation>
 <translation id="5892290200158927959">‏صفحه‌کلید BÉPO فرانسوی</translation>
+<translation id="5928303187149237472">تغییر وضوح صفحه نمایش</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="6005282720244019462">صفحه‌کلید لاتین آمریکایی</translation>
 <translation id="6012987430370760224">صفحه‌‌کلید مراتی (آوایی)</translation>
@@ -185,7 +189,9 @@
 <translation id="6503256918647795660">صفحه‌کلید سوئیسی فرانسوی</translation>
 <translation id="6505918941256367791">صفحه‌کلید تامیل (حروف هندی)</translation>
 <translation id="6509122719576673235">نروژی</translation>
+<translation id="6629951648264770593"><ph name="MODIFIER" /> + <ph name="KEY" /></translation>
 <translation id="6650726141019353908">پروانه صورتی</translation>
+<translation id="6684986274046026054">صفحه خود را قفل کنید</translation>
 <translation id="6760765581316020278">‏صفحه‌کلید ویتنامی (VNI)</translation>
 <translation id="6795884519221689054">پاندا</translation>
 <translation id="6808193438228982088">روباه</translation>
@@ -214,6 +220,7 @@
 <translation id="7434823369735508263">صفحه‌کلید دووراک انگلیسی</translation>
 <translation id="7460898608667578234">اوکراینی</translation>
 <translation id="7474889694310679759">صفحه‌کلید کانادایی انگلیسی</translation>
+<translation id="7500462265946853476">صفحه و مرورگر وب</translation>
 <translation id="751507702149411736">بلاروسی</translation>
 <translation id="7547811415869834682">هلند</translation>
 <translation id="7603724359189955920">شبکه‌ها</translation>
@@ -257,6 +264,7 @@
 <translation id="874420130893181774">روش ورودی پین‌یین سنتی</translation>
 <translation id="8803496343472038847">صفحه‌کلید آوایی روسی</translation>
 <translation id="8808686172382650546">گربه</translation>
+<translation id="8839645518696429828"><ph name="CTRL" /> + <ph name="SHIFT" /> و + یا -</translation>
 <translation id="885381502874625531">صفحه‌کلید بلاروسی</translation>
 <translation id="8900820606136623064">مجارستانی</translation>
 <translation id="8901822611024316615">‏صفحه‌کلید QWERTY چک</translation>

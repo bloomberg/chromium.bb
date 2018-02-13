@@ -113,14 +113,17 @@
 <translation id="4028693306634653894">‏دسترسی سریع‌تر به Chrome</translation>
 <translation id="4050175100176540509">بهبودهای امنیتی مهم و ویژگی‌های جدید در جدیدترین نسخه در دسترس است.</translation>
 <translation id="4053720452172726777">‏‫سفارشی کردن و کنترل Google Chrome</translation>
+<translation id="4143243756087420366">‏نام و تصویر Chrome</translation>
 <translation id="4147555960264124640">‏شما با حساب مدیریت‌شده وارد سیستم می‌شوید و به سرپرست آن اجازه کنترل بر نمایه Google Chrome خود را می‌دهید. داده‌های Chrome شما شامل برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات برای همیشه به <ph name="USER_NAME" /> مرتبط خواهد شد. می‌توانید این داده‌ها را از طریق داشبورد حساب‌های Google حذف کنید اما نمی‌توانید این داده‌ها را به حساب دیگری مرتبط سازید. <ph name="LEARN_MORE" /></translation>
 <translation id="4149882025268051530">‏نصب‌کننده در خارج کردن آرشیو از حالت فشرده ناموفق بود. لطفاً دوباره Google Chrome را بارگیری کنید.</translation>
 <translation id="4251615635259297716">‏داده‌های Chrome شما به این حساب مرتبط شوند؟</translation>
 <translation id="4251625577313994583">‏نصب Chrome در iPhone</translation>
+<translation id="426607829939105651">‏<ph name="EXTENSION_NAME" /> به Chrome اضافه شده است</translation>
 <translation id="4309555186815777032">‏(Chrome باید <ph name="BEGIN_BUTTON" />راه‌اندازی مجدد<ph name="END_BUTTON" /> شود)</translation>
 <translation id="4328355335528187361">‏Google Chrome نسخه Dev‏، (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS
 </translation>
+<translation id="4343195214584226067">‏<ph name="EXTENSION_NAME" /> به Chrome اضافه شده است</translation>
 <translation id="4407807842708586359">‏سیستم عامل Google Chrome</translation>
 <translation id="4458285410772214805">لطفاً از سیستم خارج شوید و دوباره وارد آن شوید تا این تغییر اعمال شود.</translation>
 <translation id="4458462641685292929">‏عملکرد دیگری در Google Chrome درحال انجام است. لطفاً بعداً دوباره امتحان کنید.</translation>
@@ -164,6 +167,7 @@
 <translation id="5566025111015594046">‏Google Chrome (ورودی mDNS)</translation>
 <translation id="565744775970812598">‏<ph name="FILE_NAME" /> ممکن است خطرناک باشد، بنابراین Chrome آن را مسدود کرده است.</translation>
 <translation id="573759479754913123">‏درباره سیستم عامل Chrome</translation>
+<translation id="5765394658966343753">‏داده‌های Chrome شما به این حساب مرتبط شوند؟</translation>
 <translation id="5774845247549698882">‏سیستم عامل Chrome به این زبان نشان داده می‌شود</translation>
 <translation id="5855036575689098185">‏نرم‌افزار در حال اجرا در رایانه شما با Google Chrome سازگار نیست.</translation>
 <translation id="5877064549588274448">کانال تغییر کرد. برای اعمال تغییرات دستگاه خود را مجدداً راه‌اندازی کنید.</translation>

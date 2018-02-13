@@ -249,6 +249,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5871497086027727873">1 dấu trang đã được di chuyển</translation>
 <translation id="5911030830365207728">Google Dịch</translation>
 <translation id="5916664084637901428">Bật</translation>
+<translation id="5938160824633642847">Thiết bị của bạn gần đầy. Hãy giải phóng dung lượng và thử lại.</translation>
 <translation id="5948291296578561264">Điều này cho phép bạn lưu ảnh vào thư viện ảnh của mình.</translation>
 <translation id="5955891643922670672">Đang xem phiên bản ngoại tuyến</translation>
 <translation id="5964480694698977962">Tạo tab ẩn danh mới.</translation>
@@ -289,6 +290,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 
 Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng bộ hóa của bạn vào <ph name="TIME" />. Nhập cụm mật khẩu đó để bắt đầu đồng bộ hóa.</translation>
 <translation id="6418346271604475326">Đang chuẩn bị PDF</translation>
+<translation id="6434591244308415567">Đã xảy ra lỗi. Hãy thử lại sau.</translation>
 <translation id="6445051938772793705">Quốc gia</translation>
 <translation id="6445981559479772097">Đã gửi tin nhắn.</translation>
 <translation id="6464071786529933911">Mở trong tab ẩn danh mới</translation>
@@ -299,6 +301,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6657585470893396449">Mật khẩu</translation>
 <translation id="667999046851023355">Tài liệu</translation>
 <translation id="6713747756340119864">Google Apps</translation>
+<translation id="6730682669179532099">Không thể xuất mật khẩu</translation>
 <translation id="6762156594045689028">Để thay đổi cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại đồng bộ hóa<ph name="END_LINK" /></translation>
 <translation id="6780034285637185932">Mã zip</translation>
 <translation id="6785453220513215166">Đang gửi báo cáo lỗi...</translation>
@@ -326,6 +329,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7203585745079012652">Trả lời bằng giọng nói</translation>
 <translation id="722055596168483966">Cá nhân hóa dịch vụ của Google</translation>
 <translation id="7272437679830969316">Không thể xác minh danh tính của bạn. Chưa sao chép mật khẩu.</translation>
+<translation id="7291368939935408496">Đang chuẩn bị xuất mật khẩu...</translation>
 <translation id="7336264872878993241">Đã tải xuống <ph name="PERCENT" /> phần trăm</translation>
 <translation id="7346909386216857016">Ok</translation>
 <translation id="7400418766976504921">URL</translation>

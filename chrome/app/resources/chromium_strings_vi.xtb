@@ -18,6 +18,7 @@
 <translation id="1668054258064581266">Sau khi xóa tài khoản khỏi Chromium, bạn có thể cần tải lại các tab đang mở của mình để tác vụ có hiệu lực.</translation>
 <translation id="1688750314291223739">Thiết lập đồng bộ hóa để lưu các tính năng trình duyệt được cá nhân hóa của bạn vào web và truy cập chúng từ Chromium trên bất kỳ máy tính nào.</translation>
 <translation id="1708666629004767631">Hiện đã có phiên bản Chromium mới an toàn hơn.</translation>
+<translation id="1755219581955525058"><ph name="EXTENSION_NAME" /> đã được thêm vào Chromium</translation>
 <translation id="1774152462503052664">Cho phép Chromium chạy dưới nền</translation>
 <translation id="1779356040007214683">Để làm cho Chromium an toàn hơn, chúng tôi đã vô hiệu hóa một số tiện ích không được liệt kê trong <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> và có thể đã được thêm mà bạn không biết.</translation>
 <translation id="1808667845054772817">Cài đặt lại Chromium</translation>
@@ -124,6 +125,7 @@
 <translation id="5479196819031988440">Chromium OS không thể mở trang này.</translation>
 <translation id="5480860683791598150">Chromium cần quyền truy cập vào vị trí của bạn để chia sẻ thông tin vị trí với trang web này</translation>
 <translation id="549669000822060376">Vui lòng đợi khi Chromium cài đặt các bản cập nhật hệ thống mới nhất.</translation>
+<translation id="5631814766731275228">Tên và ảnh trên Chromium</translation>
 <translation id="5634636535844844681">Chromium yêu cầu Windows 7 trở lên.</translation>
 <translation id="5680901439334282664">đăng nhập vào Chromium</translation>
 <translation id="5698481217667032250">Hiển thị Chromium bằng ngôn ngữ này</translation>
@@ -140,6 +142,7 @@
 <translation id="5987687638152509985">Cập nhật Chromium để bắt đầu đồng bộ hóa</translation>
 <translation id="6055895534982063517">Hiện đã có phiên bản Chromium mới và phiên bản này nhanh hơn bao giờ hết.</translation>
 <translation id="6063093106622310249">&amp;Mở trong Chromium</translation>
+<translation id="6072279588547424923"><ph name="EXTENSION_NAME" /> đã được thêm vào Chromium</translation>
 <translation id="608189560609172163">Chromium không thể đồng bộ hóa dữ liệu của bạn do lỗi khi đăng nhập.</translation>
 <translation id="6096348254544841612">Tùy chỉnh và kiểm soát Chromium. Đã có bản cập nhật.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> nguy hiểm, do đó Chromium đã chặn tệp.</translation>
@@ -157,6 +160,7 @@
 <translation id="6485906693002546646">Bạn đang sử dụng <ph name="PROFILE_EMAIL" /> để đồng bộ hóa nội dung Chromium của mình. Để cập nhật tùy chọn đồng bộ hóa hoặc sử dụng Chromium mà không cần tài khoản Google, hãy truy cập <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Gỡ cài đặt Chromium</translation>
 <translation id="6598877126913850652">Đi tới cài đặt thông báo của Chromium</translation>
+<translation id="6630428628961670451">Bạn có muốn liên kết dữ liệu Chromium của mình với tài khoản này không?</translation>
 <translation id="6676384891291319759">Truy cập Internet</translation>
 <translation id="6717134281241384636">Không thể sử dụng cấu hình của bạn do cấu hình này đến từ một phiên bản Chromium mới hơn.
 

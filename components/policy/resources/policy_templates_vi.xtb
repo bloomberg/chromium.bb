@@ -27,6 +27,7 @@
       Nếu chính sách này được đặt, màn hình đăng nhập sẽ luôn được hiển thị bằng ngôn ngữ được cung cấp theo giá trị đầu tiên của chính sách (chính sách được định nghĩa là danh sách về khả năng tương thích chuyển tiếp).  Nếu chính sách này chưa được đặt hoặc được đặt thành danh sách trống, màn hình đăng nhập sẽ được hiển thị bằng ngôn ngữ của phiên người dùng cuối cùng.  Nếu chính sách này được đặt thành giá trị không phải là ngôn ngữ hợp lệ, màn hình đăng nhập sẽ được hiển thị bằng ngôn ngữ dự phòng (hiện tại là en-US).</translation>
 <translation id="1062011392452772310">Cho phép chứng thực từ xa cho thiết bị</translation>
 <translation id="1062407476771304334">Thay thế</translation>
+<translation id="109166998561583554">Trình kích hoạt gắn cờ tài khoản gặp rủi ro về bảo vệ mật khẩu</translation>
 <translation id="1093082332347834239">Nếu cài đặt này được bật, máy chủ hỗ trợ từ xa sẽ chạy theo quy trình với các quyền <ph name="UIACCESS_PERMISSION_NAME" />. Điều này sẽ cho phép người dùng ở xa tương tác với cửa sổ bật lên trên màn hình của người dùng cục bộ.
 
           Nếu cài đặt này bị tắt hoặc không được định cấu hình, máy chủ hỗ trợ từ xa sẽ chạy trên ngữ cảnh của người dùng và người dùng ở xa không thể tương tác với cửa sổ bật lên trên màn hình.</translation>
@@ -88,6 +89,7 @@
 
       Nếu chính sách này được đặt thành false, <ph name="PRODUCT_NAME" /> sẽ không cho phép bắt đầu hồ sơ khách.</translation>
 <translation id="1363275621236827384">Bật truy vấn cấu hình Máy chủ Quirks cho phần cứng</translation>
+<translation id="1387596372902085462">Xem có cho phép tin cậy Cơ sở hạ tầng khóa công khai (KPI) cũ của Symantec Corporation hay không</translation>
 <translation id="1393485621820363363">Đã bật máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
 <translation id="1397855852561539316">URL đề xuất của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="1426410128494586442">Có</translation>
@@ -98,6 +100,7 @@
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultJavaScriptSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
 <translation id="1456822151187621582">Windows (ứng dụng <ph name="PRODUCT_OS_NAME" />):</translation>
+<translation id="1457305643416399820">Tùy chọn gắn cờ tài khoản gặp rủi ro về bảo vệ mật khẩu đang tắt</translation>
 <translation id="1464848559468748897">Kiểm soát hành vi người dùng trong phiên có nhiều cấu hình trên thiết bị <ph name="PRODUCT_OS_NAME" />.
 
       Nếu chính sách này được đặt thành 'MultiProfileUserBehaviorUnrestricted', người dùng có thể là người dùng chính hoặc phụ trong phiên có nhiều cấu hình.
@@ -404,6 +407,7 @@
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultCookiesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
 <translation id="2386362615870139244">Cho phép khóa chế độ thức màn hình</translation>
+<translation id="2411817661175306360">Cảnh báo bảo vệ mật khẩu đang tắt</translation>
 <translation id="2411919772666155530">Chặn thông báo trên các trang web này</translation>
 <translation id="2418507228189425036">Tắt lưu lịch sử trình duyệt trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cài đặt này.
 
@@ -1096,6 +1100,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Để biết mô tả đầy đủ về các cài đặt có thể thực hiện được và cấu trúc của chính sách này, vui lòng truy cập vào https://www.chromium.org/administrators/policy-list-3/extension-settings-full
           </translation>
+<translation id="4554651132977135445">Chế độ xử lý vòng lặp trở lại của chính sách người dùng</translation>
 <translation id="4555850956567117258">Cho phép chứng thực từ xa cho người dùng</translation>
 <translation id="4557134566541205630">URL trang tab mới của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="4600786265870346112">Bật con trỏ lớn</translation>
@@ -1387,6 +1392,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Xin lưu ý rằng nếu nền tảng hỗ trợ thông báo chính sách, độ trễ làm mới sẽ được đặt thành 24 giờ (bỏ qua tất cả các cài đặt mặc định và giá trị của chính sách này) vì thông báo chính sách được kỳ vọng sẽ bắt buộc làm mới tự động bất cứ khi nào chính sách thay đổi, giúp việc làm mới thường xuyên hơn trở nên không cần thiết.</translation>
 <translation id="5530347722229944744">Chặn các mục tải xuống có thể gây nguy hiểm</translation>
+<translation id="5530586312297447592">Tùy chọn gắn cờ tài khoản gặp rủi ro về bảo vệ mật khẩu được kích hoạt bằng cách sử dụng lại mật khẩu trên trang lừa đảo</translation>
 <translation id="5535973522252703021">Danh sách trắng máy chủ ủy quyền Kerberos</translation>
 <translation id="555077880566103058">Cho phép tất cả các trang web tự động chạy plugin <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Chính sách này không ảnh hưởng đến các ứng dụng Android.</translation>
@@ -1754,6 +1760,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này không được đặt, dự đoán mạng sẽ được bật nhưng người dùng sẽ có thể thay đổi cài đặt đó.</translation>
 <translation id="6658245400435704251">Chỉ định số giây tối đa mà thiết bị có thể ngẫu nhiên trì hoãn việc tải xuống bản cập nhật từ thời điểm bản cập nhật được đưa lên máy chủ lần đầu tiên. Thiết bị có thể đợi một phần số thời gian này là thời gian thực và phần thời gian còn lại là thời gian kiểm tra bản cập nhật. Trong bất kỳ trường hợp nào, việc phân tán bị chặn trên ở lượng thời gian cố định để thiết bị không bao giờ phải chờ mãi để tải xuống bản cập nhật.</translation>
 <translation id="6689792153960219308">Báo cáo trạng thái phần cứng</translation>
+<translation id="6698071416141001300">Tùy chọn gắn cờ tài khoản gặp rủi ro về bảo vệ mật khẩu được kích hoạt bằng cách sử dụng lại mật khẩu</translation>
 <translation id="6699880231565102694">Bật xác thực hai bước cho máy chủ truy cập từ xa</translation>
 <translation id="6724842112053619797">Nếu bạn bật cài đặt này, thì các cài đặt được lưu trữ trong cấu hình của <ph name="PRODUCT_NAME" /> như dấu trang, dữ liệu tự động điền, mật khẩu, v.v. cũng sẽ được ghi vào một tệp được lưu trữ trong thư mục cấu hình Người dùng chuyển vùng hoặc một vị trí do Quản trị viên chỉ định thông qua chính sách <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Việc bật chính sách này sẽ tắt đồng bộ hóa trên đám mây.
 
@@ -2004,6 +2011,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultPopupsSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
 <translation id="7529144158022474049">Yếu tố phân tán tự động cập nhật</translation>
 <translation id="7534199150025803530">Chính sách này không ảnh hưởng đến ứng dụng Google Drive trên Android. Nếu muốn ngăn việc sử dụng Google Drive trên kết nối di động thì bạn phải không cho phép cài đặt ứng dụng Google Drive trên Android.</translation>
+<translation id="7547549430720182663">Hợp nhất</translation>
 <translation id="7553535237300701827">Khi bạn đặt chính sách này, luồng xác thực thông tin đăng nhập sẽ thuộc một trong các cách sau tùy thuộc vào giá trị của cài đặt:
 
       Nếu bạn đặt chính sách thành GAIA, quy trình đăng nhập sẽ được thực hiện qua luồng xác thực GAIA thông thường.
@@ -2296,6 +2304,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu chính sách này không được đặt hoặc đã bị tắt, plugin PDF sẽ được sử dụng để mở các tệp PDF trừ khi người dùng tắt plugin này.</translation>
 <translation id="8402079500086185021">Luôn mở các tệp PDF từ bên ngoài</translation>
 <translation id="8412312801707973447">Liệu các kiểm tra OCSP/CRL trực tuyến có được thực hiện hay không</translation>
+<translation id="841977920223099909">Trình kích hoạt cảnh báo bảo vệ mật khẩu</translation>
 <translation id="8424255554404582727">Đặt chế độ xoay màn hình mặc định, được áp dụng lại mỗi lần khởi động lại</translation>
 <translation id="8426231401662877819">Xoay màn hình 90 độ theo chiều kim đồng hồ</translation>
 <translation id="8451988835943702790">Sử dụng trang Tab mới làm trang chủ</translation>
@@ -2347,6 +2356,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
          Nếu bạn không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ cố gắng phát hiện xem máy chủ có ở trên mạng nội bộ hay không, sau đó mới phản hồi yêu cầu IWA.  Nếu máy chủ được phát hiện là ở trên mạng Internet thì yêu cầu IWA từ máy chủ sẽ bị <ph name="PRODUCT_NAME" /> bỏ qua.</translation>
 <translation id="8672321184841719703">Phiên bản cập nhật tự động đích</translation>
 <translation id="867410340948518937">U2F (Hai yếu tố chung)</translation>
+<translation id="8685024486845674965">Cảnh báo bảo vệ mật khẩu được kích hoạt bằng cách sử dụng lại mật khẩu</translation>
 <translation id="8693243869659262736">Sử dụng máy khách DNS tích hợp</translation>
 <translation id="8704831857353097849">Danh sách plugin bị tắt</translation>
 <translation id="8711086062295757690">Chỉ định từ khóa, là phím tắt được sử dụng trong thanh địa chỉ để kích hoạt tìm kiếm nhà cung cấp này.
@@ -2363,6 +2373,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu cài đặt này được bật hoặc không được đặt, lịch sử duyệt web và lịch sử tải xuống có thể bị xóa.
 
       Nếu cài đặt này bị tắt, không thể xóa lịch sử duyệt web và lịch sử tải xuống.</translation>
+<translation id="8759829385824155666">Các loại mã hóa Kerberos được cho phép</translation>
 <translation id="8764119899999036911">Chỉ định Kerberos SPN được tạo sẽ dựa trên tên DNS chuẩn hay tên gốc đã nhập.
 
           Nếu bạn bật cài đặt này, tra cứu CNAME sẽ được bỏ qua và tên máy chủ sẽ giống như tên đã nhập.
@@ -2382,6 +2393,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu chính sách này không được đặt hoặc được đặt thành false, vị trí sẽ không được báo cáo.</translation>
 <translation id="8818768076343557335">Dự đoán các tác vụ mạng trên bất kỳ mạng nào không phải là mạng di động.
           (Không được dùng nữa là 50, đã xóa 52. Sau 52, nếu được đặt thì giá trị 1 sẽ được coi là 0 - dự đoán tác vụ mạng trên kết nối mạng bất kỳ.)</translation>
+<translation id="8825782996899863372">Cảnh báo bảo vệ mật khẩu được kích hoạt bằng cách sử dụng lại mật khẩu trên trang lừa đảo</translation>
 <translation id="8828766846428537606">Định cấu hình trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cấu hình đó. Cài đặt trang chủ của người dùng chỉ được khóa hoàn toàn nếu bạn chọn trang chủ là trang tab mới hoặc đặt trang chủ là một URL và chỉ định URL trang chủ. Nếu bạn không chỉ định URL trang chủ, người dùng sẽ vẫn có thể đặt trang chủ là trang tab mới bằng cách chỉ định 'chrome://newtab'.</translation>
 <translation id="8833109046074170275">Xác thực thông qua luồng GAIA mặc định</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> lưu các ứng dụng và tiện ích vào bộ nhớ cache để cài đặt bởi nhiều người dùng trên một thiết bị nhằm giúp người dùng không phải tải xuống lại chúng.
@@ -2502,6 +2514,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu chính sách này được đặt thành true, <ph name="PRODUCT_OS_NAME" /> sẽ kích hoạt khởi động lại khi người dùng tắt thiết bị. <ph name="PRODUCT_OS_NAME" /> sẽ thay thế tất cả số lần xuất hiện nút tắt trong Giao diện người dùng bằng nút khởi động lại. Nếu người dùng tắt thiết bị bằng nút nguồn thì thiết bị đó sẽ không tự động khởi động lại ngay cả khi đã bật chính sách.</translation>
 <translation id="9158929520101169054">Cho phép đăng nhập nhiều tài khoản trong trình duyệt</translation>
 <translation id="9187743794267626640">Vô hiệu hóa việc lắp bộ nhớ ngoài</translation>
+<translation id="918910591537763102">Kế thừa</translation>
 <translation id="9197740283131855199">Tỷ lệ phần trăm xác định độ trễ mờ màn hình nếu người dùng hoạt động sau khi màn hình bị làm mờ</translation>
 <translation id="9200828125069750521">Tham số cho URL hình ảnh sử dụng POST</translation>
 <translation id="9213347477683611358">Định cấu hình hình nền cấp thiết bị được hiển thị trên màn hình đăng nhập nếu chưa có người dùng nào đăng nhập vào thiết bị. Bạn có thể đặt chính sách bằng cách chỉ định URL mà từ đó thiết bị Chrome OS có thể tải xuống hình nền và sử dụng một hàm băm mật mã hóa để xác minh tính toàn vẹn của nội dung tải xuống. Hình ảnh phải ở định dạng JPEG với kích thước tệp hình ảnh không được vượt quá 16MB. URL phải truy cập được mà không cần bất kỳ hình thức xác thực nào. Hình nền được tải xuống và lưu vào bộ nhớ cache. Hình ảnh sẽ được tải xuống lại mỗi khi URL hoặc hàm băm thay đổi.

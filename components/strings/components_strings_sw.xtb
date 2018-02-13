@@ -47,6 +47,7 @@
 <translation id="1264126396475825575">Ripoti ya kuacha kufanya kazi iliyochukuliwa <ph name="CRASH_TIME" /> (haijapakiwa au imepuuzwa)</translation>
 <translation id="1270502636509132238">Mbinu ya Kuchukua</translation>
 <translation id="1285320974508926690">Kamwe usitafsiri tovuti hii</translation>
+<translation id="1294154142200295408">Tofauti za miundo ya amri</translation>
 <translation id="129553762522093515">Vilivyofungwa hivi karibuni</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Jaribu kufuta vidakuzi kwenye kivinjari chako<ph name="END_LINK" /></translation>
 <translation id="1333989956347591814">Huenda bado shughuli zako <ph name="BEGIN_EMPHASIS" />Zitaonwa<ph name="END_EMPHASIS" /> na:
@@ -359,6 +360,7 @@
 <translation id="3467763166455606212">Jina la mwenye kadi linahitajika</translation>
 <translation id="3479539252931486093">Je, hukutarajia tukio hili? <ph name="BEGIN_LINK" />Tujulishe<ph name="END_LINK" /></translation>
 <translation id="3479552764303398839">Sio sasa</translation>
+<translation id="3484417807243795847">Weka Tarehe ya Mwisho ya Matumizi na CVC ya <ph name="CREDIT_CARD" /></translation>
 <translation id="3498215018399854026">Hatukuweza kufikia mzazi wako wakati huu. Tafadhali jaribu tena.</translation>
 <translation id="3528171143076753409">Cheti cha seva hakiaminiki.</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Angalau kipengee 1 kwenye vifaa vilivyosawazishwa}=1{Kipengee 1 (na zaidi kwenye vifaa vilivyosawazishwa)}other{Vipengee # (na zaidi kwenye vifaa vilivyosawazishwa)}}</translation>
@@ -435,6 +437,7 @@
 <translation id="4103249731201008433">Namabari tambulishi ya kifaa ni batili</translation>
 <translation id="410351446219883937">Kucheza kiotomatiki</translation>
 <translation id="4103763322291513355">Tembelea &lt;strong&gt;chrome://policy&lt;/strong&gt; ili kuona orodha ya URL zilizoondolewa idhini na sera zingine zinazosimamiwa na msimamizi wako wa mfumo.</translation>
+<translation id="4113234475957642810">Ungependa Kuhifadhi Kadi Hii Katika Akaunti yako ya Google?</translation>
 <translation id="4116663294526079822">Ruhusu mara kwa mara kwenye tovuti hii</translation>
 <translation id="4117700440116928470">Upeo wa sera hauwezi kutumika.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{Nyingine 1 }other{Nyingine #}}</translation>
@@ -485,6 +488,7 @@
 <translation id="4552089082226364758">Mmweko</translation>
 <translation id="4554702541363482291">Kutoka Ukurasa Uliopachikwa kwenye <ph name="SITE" /></translation>
 <translation id="4558551763791394412">Jaribu kuzima viendelezi vyako.</translation>
+<translation id="4572961006780844603">Ungependa Kuhifadhi Kadi?</translation>
 <translation id="457875822857220463">Usafirishaji</translation>
 <translation id="4582800630050655161">Unaweza kupoteza uwezo wa kufikia Akaunti yako ya Google au kuibiwa utambulisho. Chromium inapendekeza ubadilishe nenosiri lako la sasa.</translation>
 <translation id="4587425331216688090">Ungependa kuondoa anwani kutoka kwenye Chrome?</translation>
@@ -733,6 +737,7 @@
 <translation id="6447842834002726250">Vidakuzi</translation>
 <translation id="6451458296329894277">Thibitisha kuwa Fomu Iwasilishwe Tena</translation>
 <translation id="6456339708790392414">Malipo Yako</translation>
+<translation id="6458535986965869750">Ungependa Kuhifadhi Kadi Hii kwenye Akaunti yako ya Google na kwenye Kifaa Hiki?</translation>
 <translation id="647261751007945333">Sera za kifaa</translation>
 <translation id="6477321094435799029">Chrome imegundua nambari ya kuthibitisha isiyo ya kawaida kwenye ukurasa huu na ikaizuia ili kulinda maelezo ya binafsi (kwa mfano, manenosiri, nambari za simu na kadi za mikopo).</translation>
 <translation id="6489534406876378309">Anza kupakia matukio ya kuacha kufanya kazi</translation>
@@ -795,6 +800,7 @@
 <translation id="7090678807593890770">Tafuta <ph name="LINK" /> kwenye Google</translation>
 <translation id="7108819624672055576">Imeruhusiwa na kiendelezi</translation>
 <translation id="7111012039238467737">(Sahihi)</translation>
+<translation id="7112670404630173368">Ungependa Kuhifadhi Kadi Hii kwenye Google?</translation>
 <translation id="7119414471315195487">Funga vichupo au programu nyingine</translation>
 <translation id="7129409597930077180">Haiwezi kusafirisha kwenda kwenye anwani hii. Chagua anwani tofauti.</translation>
 <translation id="7138472120740807366">Njia ya kusafirisha</translation>
@@ -829,6 +835,7 @@
 <translation id="7390545607259442187">Thibitisha Kadi</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7419106976560586862">Kijia cha Maelezo mafupi</translation>
+<translation id="7434205026593783035">Ungependa Chromium Ihifadhi Kadi Hii?</translation>
 <translation id="7437289804838430631">Ongeza Maelezo ya Mawasiliano</translation>
 <translation id="7441627299479586546">Kichwa cha sera kisichofaa</translation>
 <translation id="7444046173054089907">Tovuti hii imezuiwa</translation>
@@ -916,6 +923,7 @@
 <translation id="7961015016161918242">Katu</translation>
 <translation id="7983301409776629893">Tafsiri kutoka <ph name="ORIGINAL_LANGUAGE" /> hadi <ph name="TARGET_LANGUAGE" /> kila wakati</translation>
 <translation id="7995512525968007366">Hakijabainishwa</translation>
+<translation id="8000691422113785187">Thibitisha Nambari ya Usalama</translation>
 <translation id="800218591365569300">Jaribu kufunga vichupo au programu nyingine upate nafasi zaidi.</translation>
 <translation id="8012647001091218357">Hatukuweza kuwafikia wazazi wako wakati huu. Tafadhali jaribu tena.</translation>
 <translation id="8025119109950072390">Wavamizi kwenye tovuti hii wanaweza kukulaghai ili ufanye kitu hatari kama vile kusakinisha programu au kuonyesha maelezo yako binafsi (kwa mfano, manenosiri, nambari za simu au kadi za mikopo).</translation>
@@ -1022,6 +1030,7 @@
 <translation id="8938939909778640821">Kadi za mikopo na za kulipia awali zinazokubaliwa</translation>
 <translation id="8952525071319348207">Ili usasishe maelezo ya kadi yako, weka tarehe ya mwisho wa matumizi na CVC ya <ph name="CREDIT_CARD" />. Baada ya kuthibitisha, maelezo ya kadi kutoka akaunti yako ya malipo ya Google yatashirikiwa na tovuti hii.</translation>
 <translation id="8957210676456822347">Uidhinishaji wa Ukurasa wa Wavuti</translation>
+<translation id="8963515584701921654">Ungependa Chrome Ihifadhi Kadi Hii?</translation>
 <translation id="8971063699422889582">Cheti cha seva kimechina.</translation>
 <translation id="8978053250194585037">Mfumo wa Kuvinjari Salama kwenye Google umegundua <ph name="BEGIN_LINK" />jaribio la kuiba data ya binafsi<ph name="END_LINK" /> kwenye <ph name="SITE" /> hivi majuzi. Tovuti zanazoiba data ya binafsi huiga tovuti nyingine ili kukuhadaa.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>

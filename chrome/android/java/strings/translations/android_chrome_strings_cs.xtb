@@ -95,7 +95,7 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="1853692000353488670">Nová anonymní karta</translation>
 <translation id="1880072593381090678">Oblíbené stránky z Chromu</translation>
 <translation id="1887786770086287077">Přístup k poloze je v tomto zařízení vypnut. Zapnete jej v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
-<translation id="1891331835972267886">Aplikace <ph name="APP_NAME" /> se otevře v Chromu. Pokračováním vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozorněním ve věci ochrany osobních údajů<ph name="END_LINK2" />.</translation>
+<translation id="1891331835972267886">Aplikace <ph name="APP_NAME" /> se otevře v Chromu. Pokračováním vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozorněním ve věci ochrany soukromí<ph name="END_LINK2" />.</translation>
 <translation id="189172778771606813">Zavřít vysouvací panel navigace</translation>
 <translation id="1897409700584096124">Web vysílá</translation>
 <translation id="1919345977826869612">Reklamy</translation>
@@ -830,12 +830,12 @@ Chcete-li získat nové licence, připojte se k internetu a přehrajte stažen
 <translation id="8712637175834984815">Hotovo</translation>
 <translation id="8719023831149562936">Aktuální kartu nelze přenést</translation>
 <translation id="8725066075913043281">Zkusit znovu</translation>
-<translation id="8728487861892616501">Používáním této aplikace vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozorněním ve věci ochrany osobních údajů<ph name="END_LINK2" /> prohlížeče Chrome a <ph name="BEGIN_LINK3" />upozorněním ve věci ochrany osobních údajů pro účty Google spravované prostřednictvím služby Family Link<ph name="END_LINK3" />.</translation>
+<translation id="8728487861892616501">Používáním této aplikace vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozorněním ve věci ochrany soukromí<ph name="END_LINK2" /> prohlížeče Chrome a <ph name="BEGIN_LINK3" />upozorněním ve věci ochrany soukromí pro účty Google spravované prostřednictvím služby Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8730621377337864115">Hotovo</translation>
 <translation id="8748850008226585750">Skrytý obsah</translation>
 <translation id="8788968922598763114">Znovu otevřít naposledy zavřenou kartu</translation>
 <translation id="8812260976093120287">Na některých webech můžete platit pomocí výše uvedených podporovaných platebních aplikací v zařízení.</translation>
-<translation id="8816439037877937734">Aplikace <ph name="APP_NAME" /> se otevře v Chromu. Pokračováním vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozorněním ve věci ochrany osobních údajů<ph name="END_LINK2" /> prohlížeče Chrome a <ph name="BEGIN_LINK3" />upozorněním ve věci ochrany osobních údajů pro účty Google spravované prostřednictvím služby Family Link<ph name="END_LINK3" />.</translation>
+<translation id="8816439037877937734">Aplikace <ph name="APP_NAME" /> se otevře v Chromu. Pokračováním vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozorněním ve věci ochrany soukromí<ph name="END_LINK2" /> prohlížeče Chrome a <ph name="BEGIN_LINK3" />upozorněním ve věci ochrany soukromí pro účty Google spravované prostřednictvím služby Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Záložky</translation>
 <translation id="883635517171802338">Bránit webům v zobrazování vyskakovacích oken (doporučeno)</translation>
 <translation id="883806473910249246">Při stahování obsahu došlo k chybě.</translation>

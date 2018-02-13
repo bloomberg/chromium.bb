@@ -386,7 +386,7 @@
 <translation id="1571313460229786892">และการตั้งค่าเว็บไซต์</translation>
 <translation id="1572266655485775982">เปิดใช้ Wi-Fi</translation>
 <translation id="1572876035008611720">ป้อนอีเมล</translation>
-<translation id="1576594961618857597">อวาตาร์เริ่มต้นสีขาว</translation>
+<translation id="1576594961618857597">รูปโปรไฟล์เริ่มต้นสีขาว</translation>
 <translation id="1580652505892042215">บริบท:</translation>
 <translation id="1581962803218266616">แสดงใน Finder</translation>
 <translation id="1584990664401018068">เครือข่าย Wi-Fi ที่คุณใช้ (<ph name="NETWORK_ID" />) อาจต้องการการตรวจสอบสิทธิ์</translation>
@@ -605,7 +605,7 @@
 <translation id="1909880997794698664">คุณต้องการเก็บอุปกรณ์นี้ไว้ในโหมดคีออสก์อย่างถาวรหรือไม่</translation>
 <translation id="1910721550319506122">ยินดีต้อนรับ!</translation>
 <translation id="1915073950770830761">Canary</translation>
-<translation id="1916502483199172559">อวาตาร์เริ่มต้นสีแดง</translation>
+<translation id="1916502483199172559">รูปโปรไฟล์เริ่มต้นสีแดง</translation>
 <translation id="1918141783557917887">เ&amp;ล็กลง</translation>
 <translation id="1919345977826869612">โฆษณา</translation>
 <translation id="1919814239594435008">อนุญาตปลั๊กอินที่ไม่ได้อยู่ในแซนด์บ็อกซ์</translation>
@@ -1404,7 +1404,7 @@
 <translation id="3130528281680948470">ระบบจะรีเซ็ตอุปกรณ์ของคุณ บัญชีผู้ใช้ทั้งหมดและข้อมูลในเครื่องจะถูกนำออก ซึ่งขั้นตอนนี้ไม่สามารถยกเลิกได้</translation>
 <translation id="313205617302240621">ลืมรหัสผ่าน</translation>
 <translation id="3135204511829026971">หมุนหน้าจอ</translation>
-<translation id="3139925690611372679">อวาตาร์เริ่มต้นสีเหลือง</translation>
+<translation id="3139925690611372679">รูปโปรไฟล์เริ่มต้นสีเหลือง</translation>
 <translation id="3140353188828248647">โฟกัสแถบที่อยู่</translation>
 <translation id="3141318088920353606">กำลังฟัง...</translation>
 <translation id="3141917231319778873">คำขอที่ระบุไม่สามารถใช้ได้ใน "<ph name="DEVICE_NAME" />"</translation>
@@ -1451,7 +1451,7 @@
 <translation id="3220586366024592812">การทำงานของตัวเชื่อมต่อ <ph name="CLOUD_PRINT_NAME" /> ขัดข้อง จะรีสตาร์ทหรือไม่</translation>
 <translation id="3221634914176615296">สำรวจเนื้อหาของอุปกรณ์ในแอป Files</translation>
 <translation id="3222066309010235055">Prerender: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
-<translation id="3225084153129302039">อวาตาร์เริ่มต้นสีม่วง</translation>
+<translation id="3225084153129302039">รูปโปรไฟล์เริ่มต้นสีม่วง</translation>
 <translation id="3225319735946384299">การรับรองโค้ด</translation>
 <translation id="3227137524299004712">ไมโครโฟน</translation>
 <translation id="32279126412636473">โหลดซ้ำ (⌘R)</translation>
@@ -2260,7 +2260,7 @@
 <translation id="4542520061254486227">อ่านข้อมูลใน <ph name="WEBSITE_1" /> และ <ph name="WEBSITE_2" /></translation>
 <translation id="4543733025292526486">Esc</translation>
 <translation id="4543778593405494224">ตัวจัดการใบรับรอง</translation>
-<translation id="4544174279960331769">อวาตาร์เริ่มต้นสีฟ้า</translation>
+<translation id="4544174279960331769">รูปโปรไฟล์เริ่มต้นสีฟ้า</translation>
 <translation id="4545028762441890696">หากต้องการเปิดใช้อีกครั้ง ให้ยอมรับสิทธิ์ใหม่:</translation>
 <translation id="454547174531670764">ซิงค์กับอีกบัญชีหนึ่ง</translation>
 <translation id="4545759655004063573">ไม่สามารถบันทึกเนื่องจากสิทธิ์ไม่เพียงพอ โปรดบันทึกลงในตำแหน่งอื่น</translation>
@@ -2527,7 +2527,7 @@
 <translation id="494286511941020793">ความช่วยเหลือในการกำหนดค่าพร็อกซี</translation>
 <translation id="494660967831069720">ข้อมูลบางส่วน</translation>
 <translation id="4953689047182316270">ตอบสนองต่อเหตุการณ์การเข้าถึงพิเศษ</translation>
-<translation id="4953808748584563296">อวาตาร์เริ่มต้นสีส้ม</translation>
+<translation id="4953808748584563296">รูปโปรไฟล์เริ่มต้นสีส้ม</translation>
 <translation id="4955814292505481804">รายปี</translation>
 <translation id="495931528404527476">ใน Chrome</translation>
 <translation id="496226124210045887">โฟลเดอร์ที่คุณเลือกมีไฟล์ที่ละเอียดอ่อน คุณต้องการให้สิทธิ์การเข้าถึงในการอ่านโฟลเดอร์นี้อย่างถาวรแก่ "$1" ไหม</translation>
@@ -2687,7 +2687,7 @@
 <translation id="52232769093306234">การบรรจุล้มเหลว</translation>
 <translation id="5225324770654022472">แสดงทางลัดแอป</translation>
 <translation id="5225360179303283478">รีเซ็ตการตั้งค่าไซต์</translation>
-<translation id="5227679487546032910">อวาตาร์เริ่มต้นสีน้ำเงินอมเขียว</translation>
+<translation id="5227679487546032910">รูปโปรไฟล์เริ่มต้นสีน้ำเงินอมเขียว</translation>
 <translation id="5227808808023563348">ค้นหาข้อความก่อนหน้า</translation>
 <translation id="5228076606934445476">มีบางอย่างผิดปกติกับอุปกรณ์  ในการกู้คืนจากข้อผิดพลาดนี้ คุณจะต้องรีบูตเครื่องและลองอีกครั้ง</translation>
 <translation id="5229189185761556138">จัดการวิธีป้อนข้อมูล</translation>
@@ -3577,7 +3577,6 @@
 <translation id="6597017209724497268">ตัวอย่าง</translation>
 <translation id="6602956230557165253">ใช้แป้นลูกศรซ้ายและขวาเพื่อนำทาง</translation>
 <translation id="660380282187945520">F9</translation>
-<translation id="6604181099783169992">เซ็นเซอร์จับความเคลื่อนไหวหรือเซ็นเซอร์แสง</translation>
 <translation id="6605847144724004692">ยังไม่มีผู้ใช้ให้คะแนน</translation>
 <translation id="6606070663386660533">แท็บ 8</translation>
 <translation id="6607272825297743757">ข้อมูลไฟล์</translation>
@@ -4485,7 +4484,7 @@
 <translation id="8059178146866384858">ไฟล์ชื่อ "$1" มีอยู่แล้ว โปรดเลือกชื่ออื่น</translation>
 <translation id="8059417245945632445">&amp;ตรวจสอบอุปกรณ์</translation>
 <translation id="8061298200659260393">ไม่อนุญาตให้ไซต์ส่งข้อความพุช</translation>
-<translation id="8063235345342641131">อวาตาร์เริ่มต้นสีเขียว</translation>
+<translation id="8063235345342641131">รูปโปรไฟล์เริ่มต้นสีเขียว</translation>
 <translation id="8064671687106936412">คีย์:</translation>
 <translation id="806812017500012252">จัดลำดับใหม่ตามชื่อ</translation>
 <translation id="8068253693380742035">แตะเพื่อลงชื่อเข้าใช้</translation>
