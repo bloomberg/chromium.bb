@@ -161,12 +161,14 @@ if (window.internals && internals.dictionaryTest) {
 
     debug('Test for explicit undefined or null, and missing members');
     dictionaryTest.set({
+        enumOrNullMember: null,
         longMember: undefined,
         longMemberWithDefault: null,
         longOrNullMember: undefined,
         longOrNullMemberWithDefault: null,
     });
     dict = dictionaryTest.get();
+    shouldBeNull('dict.enumOrNullMember');
     shouldBeUndefined('dict.longMember');
     // ToNumber(null) results in 0.
     shouldBe('dict.longMemberWithDefault', '0');
@@ -174,6 +176,8 @@ if (window.internals && internals.dictionaryTest) {
     shouldBeNull('dict.longOrNullMember');
     // Nullable and its default value is null
     shouldBeNull('dict.longOrNullMemberWithDefault');
+    // A non-nullable enum must throw when passed null.
+    shouldThrow('dictionaryTest.set({enumMember: null})');
     debug('');
 
     debug('Test for different values for the any type');

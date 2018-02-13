@@ -54,6 +54,7 @@
     attribute unrestricted double unrestrictedDoubleAttribute;
     attribute unrestricted float unrestrictedFloatAttribute;
     attribute TestEnum testEnumAttribute;
+    attribute TestEnum? testEnumOrNullAttribute;
     attribute DOMStringOrDouble stringOrDoubleAttribute;
     attribute [EnforceRange] long withExtendedAttributeStringAttribute;
     [ImplementedAs=CapitalImplementation] attribute Implementation uncapitalAttribute;

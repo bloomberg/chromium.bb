@@ -22,6 +22,7 @@ dictionary TestDictionary {
     sequence<TestObject> testObjectSequenceMember;
     sequence<TestInterfaceGarbageCollected> testInterfaceGarbageCollectedSequenceMember = [];
     TestEnum enumMember = "foo";
+    TestEnum? enumOrNullMember;
     sequence<TestEnum> enumSequenceMember;
     Element? elementOrNullMember;
     object objectMember;
