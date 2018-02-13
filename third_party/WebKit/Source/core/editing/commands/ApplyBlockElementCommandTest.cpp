@@ -109,4 +109,19 @@ TEST_F(ApplyBlockElementCommandTest, IndentHeadingIntoBlockquote) {
       GetDocument().body()->InnerHTMLAsString());
 }
 
+// This is a regression test for https://crbug.com/806525
+TEST_F(ApplyBlockElementCommandTest, InsertPlaceHolderAtDisconnectedPosition) {
+  GetDocument().setDesignMode("on");
+  InsertStyleElement(".input:nth-of-type(2n+1) { visibility:collapse; }");
+  Selection().SetSelectionAndEndTyping(SetSelectionTextToBody(
+      "^<input><input class=\"input\" style=\"position:absolute\">|"));
+  FormatBlockCommand* command =
+      FormatBlockCommand::Create(GetDocument(), HTMLNames::preTag);
+  // Crash happens here.
+  EXPECT_FALSE(command->Apply());
+  EXPECT_EQ(
+      "<pre>|<input></pre><input class=\"input\" style=\"position:absolute\">",
+      GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+}
+
 }  // namespace blink
