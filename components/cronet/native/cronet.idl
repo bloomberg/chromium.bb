@@ -124,7 +124,7 @@ struct Error {
   /**
    * Error code, one of ERROR_* values.
    */
-  ERROR_CODE errorCode = ERROR_CALLBACK;
+  ERROR_CODE error_code = ERROR_CALLBACK;
 
   /**
    * Message, explaining the error.

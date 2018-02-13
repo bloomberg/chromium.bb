@@ -144,17 +144,17 @@ Cronet_RESULT Cronet_EngineImpl::StartWithParams(
 
   for (const auto& public_key_pins : params->public_key_pins) {
     auto pkp = std::make_unique<URLRequestContextConfig::Pkp>(
-        public_key_pins->host, public_key_pins->include_subdomains,
-        base::Time::FromJavaTime(public_key_pins->expiration_date));
+        public_key_pins.host, public_key_pins.include_subdomains,
+        base::Time::FromJavaTime(public_key_pins.expiration_date));
     if (pkp->host.empty())
       return CheckResult(Cronet_RESULT_NULL_POINTER_HOSTNAME);
     if (!IsValidHostnameForPkp(pkp->host))
       return CheckResult(Cronet_RESULT_ILLEGAL_ARGUMENT_INVALID_HOSTNAME);
     if (pkp->expiration_date.is_null())
       return CheckResult(Cronet_RESULT_NULL_POINTER_EXPIRATION_DATE);
-    if (public_key_pins->pins_sha256.empty())
+    if (public_key_pins.pins_sha256.empty())
       return CheckResult(Cronet_RESULT_NULL_POINTER_SHA256_PINS);
-    for (const auto& pin_sha256 : public_key_pins->pins_sha256) {
+    for (const auto& pin_sha256 : public_key_pins.pins_sha256) {
       net::HashValue pin_hash;
       if (!pin_hash.FromString(pin_sha256))
         return CheckResult(Cronet_RESULT_ILLEGAL_ARGUMENT_INVALID_PIN);
@@ -166,7 +166,7 @@ Cronet_RESULT Cronet_EngineImpl::StartWithParams(
   for (const auto& quic_hint : params->quic_hints) {
     config->quic_hints.push_back(
         std::make_unique<URLRequestContextConfig::QuicHint>(
-            quic_hint->host, quic_hint->port, quic_hint->alternate_port));
+            quic_hint.host, quic_hint.port, quic_hint.alternate_port));
   }
 
   context_ = std::make_unique<CronetURLRequestContext>(
