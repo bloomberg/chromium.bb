@@ -181,7 +181,6 @@
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
-#include "components/task_scheduler_util/browser/initialization.h"
 #include "components/task_scheduler_util/common/variations_util.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/url_formatter/url_fixer.h"
@@ -3715,7 +3714,9 @@ void ChromeContentBrowserClient::CreateMediaRemoter(
 
 std::unique_ptr<base::TaskScheduler::InitParams>
 ChromeContentBrowserClient::GetTaskSchedulerInitParams() {
-  return task_scheduler_util::GetBrowserTaskSchedulerInitParamsFromVariations();
+  // TaskScheduler variation params for the browser process have no prefix.
+  constexpr char kBrowserPrefix[] = "";
+  return task_scheduler_util::GetTaskSchedulerInitParams(kBrowserPrefix);
 }
 
 base::FilePath ChromeContentBrowserClient::GetLoggingFileName(
