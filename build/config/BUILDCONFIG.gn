@@ -166,8 +166,7 @@ declare_args() {
   #
   # For more information see
   # https://chromium.googlesource.com/chromium/src/+/master/docs/component_build.md
-  is_component_build =
-      is_debug && current_os != "ios" && current_os != "fuchsia"
+  is_component_build = is_debug && current_os != "ios"
 }
 
 assert(!(is_debug && is_official_build), "Can't do official debug builds")
