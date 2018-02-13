@@ -5,13 +5,14 @@
 #ifndef CONTENT_BROWSER_LOADER_DATA_PIPE_TO_SOURCE_STREAM_H_
 #define CONTENT_BROWSER_LOADER_DATA_PIPE_TO_SOURCE_STREAM_H_
 
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/filter/source_stream.h"
 
 namespace content {
 
-class DataPipeToSourceStream final : public net::SourceStream {
+class CONTENT_EXPORT DataPipeToSourceStream final : public net::SourceStream {
  public:
   explicit DataPipeToSourceStream(mojo::ScopedDataPipeConsumerHandle body);
   ~DataPipeToSourceStream() override;
