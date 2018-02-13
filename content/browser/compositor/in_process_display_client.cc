@@ -19,9 +19,10 @@ InProcessDisplayClient::InProcessDisplayClient(gfx::AcceleratedWidget widget)
 
 InProcessDisplayClient::~InProcessDisplayClient() {}
 
-viz::mojom::DisplayClientPtr InProcessDisplayClient::GetBoundPtr() {
+viz::mojom::DisplayClientPtr InProcessDisplayClient::GetBoundPtr(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   viz::mojom::DisplayClientPtr ptr;
-  binding_.Bind(mojo::MakeRequest(&ptr));
+  binding_.Bind(mojo::MakeRequest(&ptr), task_runner);
   return ptr;
 }
 

@@ -952,9 +952,6 @@ void RenderWidgetHostImpl::PauseForPendingResizeOrRepaints() {
   if (!repaint_ack_pending_ && !resize_ack_pending_)
     return;
 
-  if (!renderer_compositor_frame_sink_.is_bound())
-    return;
-
   if (!view_)
     return;
 

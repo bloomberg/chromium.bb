@@ -100,7 +100,8 @@ bool ClientLayerTreeFrameSink::BindToClient(
                    weak_factory_.GetWeakPtr()));
     compositor_frame_sink_ptr_ = compositor_frame_sink_associated_.get();
   }
-  client_binding_.Bind(std::move(pipes_.client_request));
+  client_binding_.Bind(std::move(pipes_.client_request),
+                       compositor_task_runner_);
 
   if (synthetic_begin_frame_source_) {
     client->SetBeginFrameSource(synthetic_begin_frame_source_.get());

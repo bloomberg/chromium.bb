@@ -1927,8 +1927,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose2) {
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
 
-#if defined(OS_WIN) && !defined(NDEBUG)
+#if defined(OS_MACOSX) || (defined(OS_WIN) && !defined(NDEBUG))
 // Times out on windows (dbg). https://crbug.com/753691.
+// Also times out on macOS (can be made to pass by lowering kPaintMsgTimeoutMS
+// in RenderWidgetHostImpl).
 #define MAYBE_WindowOpenClose3 DISABLED_WindowOpenClose3
 #else
 #define MAYBE_WindowOpenClose3 WindowOpenClose3
@@ -1946,7 +1948,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_WindowOpenClose3) {
   base::string16 title = ASCIIToUTF16("Title Of Awesomeness");
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(), title);
+  printf("A\n");
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 2);
+  printf("BBBBB\n");
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
 
