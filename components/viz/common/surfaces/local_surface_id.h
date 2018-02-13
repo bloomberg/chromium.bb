@@ -21,10 +21,15 @@ namespace mojom {
 class LocalSurfaceIdDataView;
 }
 
+constexpr uint32_t kInvalidParentSequenceNumber = 0;
+constexpr uint32_t kInvalidChildSequenceNumber = 0;
+constexpr uint32_t kInitialChildSequenceNumber = 1;
+
 class VIZ_COMMON_EXPORT LocalSurfaceId {
  public:
   constexpr LocalSurfaceId()
-      : parent_sequence_number_(0), child_sequence_number_(0) {}
+      : parent_sequence_number_(kInvalidParentSequenceNumber),
+        child_sequence_number_(kInvalidChildSequenceNumber) {}
 
   constexpr LocalSurfaceId(const LocalSurfaceId& other)
       : parent_sequence_number_(other.parent_sequence_number_),
@@ -34,7 +39,7 @@ class VIZ_COMMON_EXPORT LocalSurfaceId {
   constexpr LocalSurfaceId(uint32_t parent_sequence_number,
                            const base::UnguessableToken& nonce)
       : parent_sequence_number_(parent_sequence_number),
-        child_sequence_number_(1),
+        child_sequence_number_(kInitialChildSequenceNumber),
         nonce_(nonce) {}
 
   constexpr LocalSurfaceId(uint32_t parent_sequence_number,
@@ -45,7 +50,8 @@ class VIZ_COMMON_EXPORT LocalSurfaceId {
         nonce_(nonce) {}
 
   constexpr bool is_valid() const {
-    return parent_sequence_number_ != 0 && child_sequence_number_ != 0 &&
+    return parent_sequence_number_ != kInvalidParentSequenceNumber &&
+           child_sequence_number_ != kInvalidChildSequenceNumber &&
            !nonce_.is_empty();
   }
 

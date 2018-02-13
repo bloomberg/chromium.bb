@@ -8,11 +8,6 @@
 
 namespace viz {
 
-namespace {
-constexpr uint32_t kInvalidParentSequenceNumber = 0;
-constexpr uint32_t kInitialChildSequenceNumber = 1;
-}  // namespace
-
 ParentLocalSurfaceIdAllocator::ParentLocalSurfaceIdAllocator()
     : last_known_local_surface_id_(kInvalidParentSequenceNumber,
                                    kInitialChildSequenceNumber,

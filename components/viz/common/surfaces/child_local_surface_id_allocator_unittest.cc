@@ -19,7 +19,7 @@ namespace {
 
 ::testing::AssertionResult ParentSequenceNumberIsNotSet(
     const LocalSurfaceId& local_surface_id);
-::testing::AssertionResult ChildSequenceNumberIsNotSet(
+::testing::AssertionResult ChildSequenceNumberIsSet(
     const LocalSurfaceId& local_surface_id);
 ::testing::AssertionResult NonceIsEmpty(const LocalSurfaceId& local_surface_id);
 
@@ -38,7 +38,7 @@ TEST(ChildLocalSurfaceIdAllocatorTest,
       default_constructed_child_allocator.last_known_local_surface_id();
   EXPECT_FALSE(default_local_surface_id.is_valid());
   EXPECT_TRUE(ParentSequenceNumberIsNotSet(default_local_surface_id));
-  EXPECT_TRUE(ChildSequenceNumberIsNotSet(default_local_surface_id));
+  EXPECT_TRUE(ChildSequenceNumberIsSet(default_local_surface_id));
   EXPECT_TRUE(NonceIsEmpty(default_local_surface_id));
 }
 
@@ -135,20 +135,18 @@ namespace {
 
 ::testing::AssertionResult ParentSequenceNumberIsNotSet(
     const LocalSurfaceId& local_surface_id) {
-  constexpr uint32_t kInvalidParentSequenceNumber = 0;
   if (local_surface_id.parent_sequence_number() == kInvalidParentSequenceNumber)
     return ::testing::AssertionSuccess();
 
   return ::testing::AssertionFailure() << "parent_sequence_number() is set";
 }
 
-::testing::AssertionResult ChildSequenceNumberIsNotSet(
+::testing::AssertionResult ChildSequenceNumberIsSet(
     const LocalSurfaceId& local_surface_id) {
-  constexpr uint32_t kInvalidChildSequenceNumber = 0;
-  if (local_surface_id.child_sequence_number() == kInvalidChildSequenceNumber)
+  if (local_surface_id.child_sequence_number() != kInvalidChildSequenceNumber)
     return ::testing::AssertionSuccess();
 
-  return ::testing::AssertionFailure() << "child_sequence_number() is set";
+  return ::testing::AssertionFailure() << "child_sequence_number() is not set";
 }
 
 ::testing::AssertionResult NonceIsEmpty(
@@ -161,7 +159,7 @@ namespace {
 
 LocalSurfaceId GetFakeParentAllocatedLocalSurfaceId() {
   constexpr uint32_t kParentSequenceNumber = 3;
-  constexpr uint32_t kChildSequenceNumber = 1;
+  constexpr uint32_t kChildSequenceNumber = 2;
   const base::UnguessableToken nonce = base::UnguessableToken::Create();
 
   return LocalSurfaceId(kParentSequenceNumber, kChildSequenceNumber, nonce);

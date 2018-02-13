@@ -10,6 +10,11 @@
 
 namespace viz {
 
+ChildLocalSurfaceIdAllocator::ChildLocalSurfaceIdAllocator()
+    : last_known_local_surface_id_(kInvalidParentSequenceNumber,
+                                   kInitialChildSequenceNumber,
+                                   base::UnguessableToken()) {}
+
 const LocalSurfaceId& ChildLocalSurfaceIdAllocator::UpdateFromParent(
     const LocalSurfaceId& parent_allocated_local_surface_id) {
   DCHECK_GE(parent_allocated_local_surface_id.parent_sequence_number(),
@@ -30,7 +35,8 @@ const LocalSurfaceId& ChildLocalSurfaceIdAllocator::UpdateFromParent(
 
 const LocalSurfaceId& ChildLocalSurfaceIdAllocator::GenerateId() {
   // UpdateFromParent must be called before we can generate a valid ID.
-  DCHECK_NE(last_known_local_surface_id_.parent_sequence_number(), 0u);
+  DCHECK_NE(last_known_local_surface_id_.parent_sequence_number(),
+            kInvalidParentSequenceNumber);
 
   last_known_local_surface_id_ =
       LocalSurfaceId(last_known_local_surface_id_.parent_sequence_number(),

@@ -22,7 +22,7 @@ namespace viz {
 // This is that child allocator.
 class VIZ_COMMON_EXPORT ChildLocalSurfaceIdAllocator {
  public:
-  ChildLocalSurfaceIdAllocator() = default;
+  ChildLocalSurfaceIdAllocator();
   ChildLocalSurfaceIdAllocator(ChildLocalSurfaceIdAllocator&& other) = default;
   ChildLocalSurfaceIdAllocator& operator=(
       ChildLocalSurfaceIdAllocator&& other) = default;
