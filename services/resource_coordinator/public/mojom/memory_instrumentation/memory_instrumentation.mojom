@@ -18,7 +18,6 @@ enum DumpType {
 enum LevelOfDetail {
   BACKGROUND,
   LIGHT,
-  VM_REGIONS_ONLY_FOR_HEAP_PROFILER,
   DETAILED
 };
 
@@ -147,11 +146,6 @@ struct OSMemDump {
   // in kilobytes. For more details, see https://goo.gl/3kPb9S.
   uint32 shared_footprint_kb = 0;
 
-  // This field is present only when the dump is obtained through
-  // Coordinator.GetVmRegionsForHeapProfiler(), empty in the generic case of
-  // RequestGlobalMemoryDump().
-  array<VmRegion> memory_maps_for_heap_profiler;
-
   // This is private swapped memory in kilobytes reported on Linux and Android
   // only.
   [EnableIf=OS_LINUX_OR_OS_ANDROID]
@@ -263,8 +257,7 @@ interface Coordinator {
 // Used by the Chrome heap profiler
 interface HeapProfilerHelper {
   // Broadcasts a RequestOSMemoryDump-only request for all registered client
-  // processes, retrieves only their memory maps and returns them in the field
-  // |global_memory_dump.process_dumps.os_dump.memory_maps_for_heap_profiler|.
-  GetVmRegionsForHeapProfiler() =>
-      (bool success, GlobalMemoryDump? global_memory_dump);
+  // processes and retrieves only their memory maps.
+  GetVmRegionsForHeapProfiler(array<mojo.common.mojom.ProcessId> pids) =>
+      (map<mojo.common.mojom.ProcessId, array<VmRegion>> vm_regions);
 };

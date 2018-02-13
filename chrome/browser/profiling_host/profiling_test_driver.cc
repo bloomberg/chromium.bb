@@ -102,7 +102,9 @@ int NumProcessesWithName(base::Value* dump_json, std::string name, int* pid) {
   return num_processes;
 }
 
-base::Value* FindHeapsV2(base::ProcessId pid, base::Value* dump_json) {
+base::Value* FindArgDump(base::ProcessId pid,
+                         base::Value* dump_json,
+                         const char* arg) {
   base::Value* events = dump_json->FindKey("traceEvents");
   base::Value* dumps = nullptr;
   base::Value* heaps_v2 = nullptr;
@@ -120,7 +122,7 @@ base::Value* FindHeapsV2(base::ProcessId pid, base::Value* dump_json) {
     if (static_cast<base::ProcessId>(found_pid->GetInt()) != pid)
       continue;
     dumps = &event;
-    heaps_v2 = dumps->FindPath({"args", "dumps", "heaps_v2"});
+    heaps_v2 = dumps->FindPath({"args", "dumps", arg});
     if (heaps_v2)
       return heaps_v2;
   }
@@ -388,6 +390,24 @@ bool ValidateDump(base::Value* heaps_v2,
   return true;
 }
 
+bool ValidateProcessMmaps(base::Value* process_mmaps,
+                          bool should_have_contents) {
+  base::Value* vm_regions = process_mmaps->FindKey("vm_regions");
+  size_t count = vm_regions->GetList().size();
+  if (should_have_contents) {
+    if (count == 0) {
+      LOG(ERROR) << "vm_regions should have contents, but doesn't";
+      return false;
+    }
+  } else {
+    if (count != 0) {
+      LOG(ERROR) << "vm_regions should be empty, but has contents";
+      return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 ProfilingTestDriver::ProfilingTestDriver()
@@ -614,7 +634,7 @@ void ProfilingTestDriver::TraceFinished(base::Closure closure,
 
 bool ProfilingTestDriver::ValidateBrowserAllocations(base::Value* dump_json) {
   base::Value* heaps_v2 =
-      FindHeapsV2(base::Process::Current().Pid(), dump_json);
+      FindArgDump(base::Process::Current().Pid(), dump_json, "heaps_v2");
 
   if (options_.mode != ProfilingProcessHost::Mode::kAll &&
       options_.mode != ProfilingProcessHost::Mode::kBrowser &&
@@ -686,6 +706,13 @@ bool ProfilingTestDriver::ValidateBrowserAllocations(base::Value* dump_json) {
     return false;
   }
 
+  base::Value* process_mmaps =
+      FindArgDump(base::Process::Current().Pid(), dump_json, "process_mmaps");
+  if (!ValidateProcessMmaps(process_mmaps, !HasPseudoFrames())) {
+    LOG(ERROR) << "Failed to validate browser process mmaps.";
+    return false;
+  }
+
   return true;
 }
 
@@ -698,10 +725,17 @@ bool ProfilingTestDriver::ValidateRendererAllocations(base::Value* dump_json) {
   }
 
   base::ProcessId renderer_pid = static_cast<base::ProcessId>(pid);
-  base::Value* heaps_v2 = FindHeapsV2(renderer_pid, dump_json);
+  base::Value* heaps_v2 = FindArgDump(renderer_pid, dump_json, "heaps_v2");
   if (ShouldProfileRenderer()) {
     if (!heaps_v2) {
       LOG(ERROR) << "Failed to find heaps v2 for renderer";
+      return false;
+    }
+
+    base::Value* process_mmaps =
+        FindArgDump(renderer_pid, dump_json, "process_mmaps");
+    if (!ValidateProcessMmaps(process_mmaps, !HasPseudoFrames())) {
+      LOG(ERROR) << "Failed to validate renderer process mmaps.";
       return false;
     }
 

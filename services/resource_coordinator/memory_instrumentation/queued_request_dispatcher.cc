@@ -203,6 +203,7 @@ std::unique_ptr<TracedValue> GetChromeDumpAndGlobalAndEdgesTracedValue(
 
 }  // namespace
 
+// static
 void QueuedRequestDispatcher::SetUpAndDispatch(
     QueuedRequest* request,
     const std::vector<ClientInfo>& clients,
@@ -299,6 +300,89 @@ void QueuedRequestDispatcher::SetUpAndDispatch(
     request->failed_memory_dump_count++;
     return;
   }
+}
+
+// static
+void QueuedRequestDispatcher::SetUpAndDispatchVmRegionRequest(
+    QueuedVmRegionRequest* request,
+    const std::vector<ClientInfo>& clients,
+    const std::vector<base::ProcessId>& desired_pids,
+    const OsCallback& os_callback) {
+// On Linux, OS stats can only be dumped from a privileged process to
+// get around to sandboxing/selinux restrictions (see crbug.com/461788).
+#if defined(OS_LINUX)
+  mojom::ClientProcess* browser_client = nullptr;
+  base::ProcessId browser_client_pid = 0;
+  for (const auto& client_info : clients) {
+    if (client_info.process_type == mojom::ProcessType::BROWSER) {
+      browser_client = client_info.client;
+      browser_client_pid = client_info.pid;
+      break;
+    }
+  }
+
+  if (!browser_client) {
+    DLOG(ERROR) << "Missing browser client.";
+    return;
+  }
+
+  request->pending_responses.insert(browser_client);
+  request->responses[browser_client].process_id = browser_client_pid;
+  const auto callback = base::Bind(os_callback, browser_client);
+  browser_client->RequestOSMemoryDump(true /* wants_mmaps */, desired_pids,
+                                      callback);
+#else
+  for (const auto& client_info : clients) {
+    if (std::find(desired_pids.begin(), desired_pids.end(), client_info.pid) !=
+        desired_pids.end()) {
+      mojom::ClientProcess* client = client_info.client;
+      request->pending_responses.insert(client);
+      request->responses[client].process_id = client_info.pid;
+      client->RequestOSMemoryDump(true /* wants_mmaps */,
+                                  {base::kNullProcessId},
+                                  base::Bind(os_callback, client));
+    }
+  }
+#endif  // defined(OS_LINUX)
+}
+
+// static
+QueuedRequestDispatcher::VmRegions
+QueuedRequestDispatcher::FinalizeVmRegionRequest(
+    QueuedVmRegionRequest* request) {
+  VmRegions results;
+  for (auto& response : request->responses) {
+    const base::ProcessId& original_pid = response.second.process_id;
+
+    // |response| accumulates the replies received by each client process.
+    // On Linux, the browser process will provide all OS dumps. On non-Linux,
+    // each client process provides 1 OS dump, % the case where the client is
+    // disconnected mid dump.
+    OSMemDumpMap& extra_os_dumps = response.second.os_dumps;
+#if defined(OS_LINUX)
+    for (auto& kv : extra_os_dumps) {
+      auto pid = kv.first == base::kNullProcessId ? original_pid : kv.first;
+      DCHECK(results.find(pid) == results.end());
+      results.emplace(pid, std::move(kv.second->memory_maps));
+    }
+#else
+    // This can be empty if the client disconnects before providing both
+    // dumps. See UnregisterClientProcess().
+    DCHECK_LE(extra_os_dumps.size(), 1u);
+    for (auto& kv : extra_os_dumps) {
+      // When the OS dump comes from child processes, the pid is supposed to be
+      // not used. We know the child process pid at the time of the request and
+      // also wouldn't trust pids coming from child processes.
+      DCHECK_EQ(base::kNullProcessId, kv.first);
+
+      // Check we don't receive duplicate OS dumps for the same process.
+      DCHECK(results.find(original_pid) == results.end());
+
+      results.emplace(original_pid, std::move(kv.second->memory_maps));
+    }
+#endif
+  }
+  return results;
 }
 
 void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
@@ -426,13 +510,6 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
 
     if (!valid)
       continue;
-
-    if (request->args.level_of_detail ==
-        MemoryDumpLevelOfDetail::VM_REGIONS_ONLY_FOR_HEAP_PROFILER) {
-      DCHECK(request->wants_mmaps());
-      os_dump->memory_maps_for_heap_profiler =
-          std::move(raw_os_dump->memory_maps);
-    }
 
     // TODO(hjd): not sure we need an empty instance for the !SUMMARY_ONLY
     // requests. Check and make the else branch a nullptr otherwise.

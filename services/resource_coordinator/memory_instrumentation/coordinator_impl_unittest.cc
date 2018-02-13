@@ -155,8 +155,9 @@ class CoordinatorImplTest : public testing::Test {
   }
 
   void GetVmRegionsForHeapProfiler(
+      const std::vector<base::ProcessId>& pids,
       GetVmRegionsForHeapProfilerCallback callback) {
-    coordinator_->GetVmRegionsForHeapProfiler(callback);
+    coordinator_->GetVmRegionsForHeapProfiler(pids, callback);
   }
 
   void ReduceCoordinatorClientProcessTimeout() {
@@ -261,15 +262,19 @@ class MockGlobalMemoryDumpAndAppendToTraceCallback {
 class MockGetVmRegionsForHeapProfilerCallback {
  public:
   MockGetVmRegionsForHeapProfilerCallback() = default;
-  MOCK_METHOD2(OnCall, void(bool, GlobalMemoryDump*));
+  MOCK_METHOD1(
+      OnCall,
+      void(const std::unordered_map<base::ProcessId,
+                                    std::vector<mojom::VmRegionPtr>>&));
 
-  void Run(bool success, GlobalMemoryDumpPtr ptr) {
-    OnCall(success, ptr.get());
+  void Run(std::unordered_map<base::ProcessId, std::vector<mojom::VmRegionPtr>>
+               results) {
+    OnCall(results);
   }
 
   GetVmRegionsForHeapProfilerCallback Get() {
-    return base::Bind(&MockGetVmRegionsForHeapProfilerCallback::Run,
-                      base::Unretained(this));
+    return base::BindRepeating(&MockGetVmRegionsForHeapProfilerCallback::Run,
+                               base::Unretained(this));
   }
 };
 
@@ -730,40 +735,40 @@ TEST_F(CoordinatorImplTest, VmRegionsForHeapProfiler) {
 #endif  // defined(OS_LINUX)
 
   MockGetVmRegionsForHeapProfilerCallback callback;
-  EXPECT_CALL(callback, OnCall(true, NotNull()))
-      .WillOnce(Invoke([&run_loop](bool success,
-                                   GlobalMemoryDump* global_dump) {
-        ASSERT_EQ(2U, global_dump->process_dumps.size());
-        mojom::ProcessMemoryDumpPtr browser_dump = nullptr;
-        mojom::ProcessMemoryDumpPtr renderer_dump = nullptr;
-        for (mojom::ProcessMemoryDumpPtr& dump : global_dump->process_dumps) {
-          if (dump->process_type == mojom::ProcessType::BROWSER) {
-            browser_dump = std::move(dump);
-            ASSERT_EQ(kBrowserPid, browser_dump->pid);
-          } else if (dump->process_type == mojom::ProcessType::RENDERER) {
-            renderer_dump = std::move(dump);
-            ASSERT_EQ(kRendererPid, renderer_dump->pid);
-          }
-        }
-        const std::vector<mojom::VmRegionPtr>& browser_mmaps =
-            browser_dump->os_dump->memory_maps_for_heap_profiler;
-        ASSERT_EQ(3u, browser_mmaps.size());
-        for (int i = 0; i < 3; i++) {
-          EXPECT_EQ(GetFakeAddrForVmRegion(browser_dump->pid, i),
-                    browser_mmaps[i]->start_address);
-        }
+  EXPECT_CALL(callback, OnCall(_))
+      .WillOnce(Invoke(
+          [&run_loop](
+              const std::unordered_map<
+                  base::ProcessId, std::vector<mojom::VmRegionPtr>>& results) {
+            ASSERT_EQ(2U, results.size());
 
-        const std::vector<mojom::VmRegionPtr>& renderer_mmaps =
-            renderer_dump->os_dump->memory_maps_for_heap_profiler;
-        ASSERT_EQ(3u, renderer_mmaps.size());
-        for (int i = 0; i < 3; i++) {
-          EXPECT_EQ(GetFakeAddrForVmRegion(renderer_dump->pid, i),
-                    renderer_mmaps[i]->start_address);
-        }
-        run_loop.Quit();
-      }));
+            auto browser_it = results.find(kBrowserPid);
+            ASSERT_TRUE(browser_it != results.end());
+            auto renderer_it = results.find(kRendererPid);
+            ASSERT_TRUE(renderer_it != results.end());
 
-  GetVmRegionsForHeapProfiler(callback.Get());
+            const std::vector<mojom::VmRegionPtr>& browser_mmaps =
+                browser_it->second;
+            ASSERT_EQ(3u, browser_mmaps.size());
+            for (int i = 0; i < 3; i++) {
+              EXPECT_EQ(GetFakeAddrForVmRegion(kBrowserPid, i),
+                        browser_mmaps[i]->start_address);
+            }
+
+            const std::vector<mojom::VmRegionPtr>& renderer_mmaps =
+                renderer_it->second;
+            ASSERT_EQ(3u, renderer_mmaps.size());
+            for (int i = 0; i < 3; i++) {
+              EXPECT_EQ(GetFakeAddrForVmRegion(kRendererPid, i),
+                        renderer_mmaps[i]->start_address);
+            }
+            run_loop.Quit();
+          }));
+
+  std::vector<base::ProcessId> pids;
+  pids.push_back(kBrowserPid);
+  pids.push_back(kRendererPid);
+  GetVmRegionsForHeapProfiler(pids, callback.Get());
   run_loop.Run();
 }
 

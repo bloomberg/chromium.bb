@@ -19,6 +19,16 @@ QueuedRequest::Args::Args(MemoryDumpType dump_type,
 QueuedRequest::Args::Args(const Args& args) = default;
 QueuedRequest::Args::~Args() = default;
 
+QueuedRequest::PendingResponse::PendingResponse(
+    const mojom::ClientProcess* client,
+    Type type)
+    : client(client), type(type) {}
+
+bool QueuedRequest::PendingResponse::operator<(
+    const PendingResponse& other) const {
+  return std::tie(client, type) < std::tie(other.client, other.type);
+}
+
 QueuedRequest::Response::Response() {}
 QueuedRequest::Response::~Response() = default;
 
@@ -37,14 +47,14 @@ base::trace_event::MemoryDumpRequestArgs QueuedRequest::GetRequestArgs() {
   return request_args;
 }
 
-QueuedRequest::PendingResponse::PendingResponse(
-    const mojom::ClientProcess* client,
-    Type type)
-    : client(client), type(type) {}
+QueuedVmRegionRequest::Response::Response() = default;
+QueuedVmRegionRequest::Response::~Response() = default;
 
-bool QueuedRequest::PendingResponse::operator<(
-    const PendingResponse& other) const {
-  return std::tie(client, type) < std::tie(other.client, other.type);
-}
+QueuedVmRegionRequest::QueuedVmRegionRequest(
+    uint64_t dump_guid,
+    const mojom::HeapProfilerHelper::GetVmRegionsForHeapProfilerCallback&
+        callback)
+    : dump_guid(dump_guid), callback(callback) {}
+QueuedVmRegionRequest::~QueuedVmRegionRequest() = default;
 
 }  // namespace memory_instrumentation

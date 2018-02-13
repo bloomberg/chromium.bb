@@ -62,10 +62,6 @@ EnumTraits<memory_instrumentation::mojom::LevelOfDetail,
       return memory_instrumentation::mojom::LevelOfDetail::BACKGROUND;
     case base::trace_event::MemoryDumpLevelOfDetail::LIGHT:
       return memory_instrumentation::mojom::LevelOfDetail::LIGHT;
-    case base::trace_event::MemoryDumpLevelOfDetail::
-        VM_REGIONS_ONLY_FOR_HEAP_PROFILER:
-      return memory_instrumentation::mojom::LevelOfDetail::
-          VM_REGIONS_ONLY_FOR_HEAP_PROFILER;
     case base::trace_event::MemoryDumpLevelOfDetail::DETAILED:
       return memory_instrumentation::mojom::LevelOfDetail::DETAILED;
     default:
@@ -86,11 +82,6 @@ bool EnumTraits<memory_instrumentation::mojom::LevelOfDetail,
       break;
     case memory_instrumentation::mojom::LevelOfDetail::LIGHT:
       *out = base::trace_event::MemoryDumpLevelOfDetail::LIGHT;
-      break;
-    case memory_instrumentation::mojom::LevelOfDetail::
-        VM_REGIONS_ONLY_FOR_HEAP_PROFILER:
-      *out = base::trace_event::MemoryDumpLevelOfDetail::
-          VM_REGIONS_ONLY_FOR_HEAP_PROFILER;
       break;
     case memory_instrumentation::mojom::LevelOfDetail::DETAILED:
       *out = base::trace_event::MemoryDumpLevelOfDetail::DETAILED;

@@ -90,27 +90,14 @@ OSMemDumpPtr GetFakeOSMemDump(uint32_t resident_set_kb,
                               ) {
   using memory_instrumentation::mojom::VmRegion;
 
-  std::vector<memory_instrumentation::mojom::VmRegionPtr> vm_regions;
-  vm_regions.emplace_back(
-      VmRegion::New(0xdeadbeef,                      // start address
-                    0x4000,                          // size_in_bytes
-                    0x1234,                          // module_timestamp
-                    VmRegion::kProtectionFlagsRead,  // protection_flags
-                    "dummy_file",                    // mapped_file
-                    100,    // byte_stats_private_dirty_resident
-                    200,    // byte_stats_private_clean_resident
-                    300,    // byte_stats_shared_dirty_resident
-                    400,    // byte_stats_shared_clean_resident
-                    500,    // byte_stats_swapped,
-                    200));  // byte_stats_proportional_resident
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   return memory_instrumentation::mojom::OSMemDump::New(
       resident_set_kb, private_footprint_kb, shared_footprint_kb,
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-      std::move(vm_regions), private_swap_footprint_kb
+      private_swap_footprint_kb);
 #else
-      std::move(vm_regions)
+  return memory_instrumentation::mojom::OSMemDump::New(
+      resident_set_kb, private_footprint_kb, shared_footprint_kb);
 #endif
-      );
 }
 
 void PopulateBrowserMetrics(GlobalMemoryDumpPtr& global_dump,
