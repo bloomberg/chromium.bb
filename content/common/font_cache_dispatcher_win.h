@@ -29,8 +29,9 @@ class FontCacheDispatcher : public mojom::FontCacheWin {
                      const service_manager::BindSourceInfo& source_info);
 
  private:
-  // mojom::FontCacheWin
-  void PreCacheFont(const LOGFONT&) override;
+  // mojom::FontCacheWin:
+  void PreCacheFont(const LOGFONT& log_font,
+                    PreCacheFontCallback callback) override;
   void ReleaseCachedFonts() override;
 
   DISALLOW_COPY_AND_ASSIGN(FontCacheDispatcher);
