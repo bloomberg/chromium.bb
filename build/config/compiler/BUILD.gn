@@ -596,6 +596,7 @@ config("compiler") {
         ]
       } else {
         ldflags += [ "-Wl,-plugin-opt,jobs=8" ]
+        not_needed([ "cache_policy" ])
       }
     }
 
