@@ -13,6 +13,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
+#import "ios/web/public/web_client.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -120,9 +121,12 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
 
   [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
+  // TODO(crbug.com/776606): WKWebView doesn't fire load event for back/forward
+  // navigation and WKBasedNavigationManager inherits this behavior.
+  bool expectOnLoad = !web::GetWebClient()->IsSlimNavigationManagerEnabled();
   [self assertStatusText:@"replaceStateHashWithObject"
          withOmniboxText:replaceStateHashWithObjectURL.GetContent()
-              pageLoaded:YES];
+              pageLoaded:expectOnLoad];
 
   // Push URL then replace it. Do this twice.
   const GURL pushStateHashStringURL =
@@ -211,9 +215,12 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   // Go back twice (to second #string) and verify page did load.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
+  // TODO(crbug.com/776606): WKWebView doesn't fire load event for back/forward
+  // navigation and WKBasedNavigationManager inherits this behavior.
+  bool expectOnLoad = !web::GetWebClient()->IsSlimNavigationManagerEnabled();
   [self assertStatusText:nil
          withOmniboxText:pushStateHashStringURL.GetContent()
-              pageLoaded:YES];
+              pageLoaded:expectOnLoad];
 
   // Go back once (to first #string) and verify page did not load.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
@@ -226,14 +233,14 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
 
   [self assertStatusText:nil
          withOmniboxText:pushStateHashStringURL.GetContent()
-              pageLoaded:YES];
+              pageLoaded:expectOnLoad];
 
   // Go back 4 entries at once (to first #string) and verify page did load.
   [ChromeEarlGrey tapWebViewElementWithID:@"goBack4"];
 
   [self assertStatusText:nil
          withOmniboxText:pushStateHashStringURL.GetContent()
-              pageLoaded:YES];
+              pageLoaded:expectOnLoad];
 }
 
 // Tests calling pushState with unicode characters.
