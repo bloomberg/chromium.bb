@@ -252,7 +252,7 @@ static const uint8_t *get_has_tr_table(PARTITION_TYPE partition,
 static int has_top_right(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
                          int mi_col, int top_available, int right_available,
                          PARTITION_TYPE partition, TX_SIZE txsz, int row_off,
-                         int col_off, int ss_x) {
+                         int col_off, int ss_x, int ss_y) {
   if (!top_available || !right_available) return 0;
 
   const int bw_unit = block_size_wide[bsize] >> tx_size_wide_log2[0];
@@ -262,6 +262,13 @@ static int has_top_right(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
   if (row_off > 0) {  // Just need to check if enough pixels on the right.
 #if CONFIG_EXT_PARTITION
     if (block_size_wide[bsize] > block_size_wide[BLOCK_64X64]) {
+      // Special case: For 128x128 blocks, the transform unit whose
+      // top-right corner is at the center of the block does in fact have
+      // pixels available at its top-right corner.
+      if (row_off == mi_size_high[BLOCK_64X64] >> ss_y &&
+          col_off + top_right_count_unit == mi_size_wide[BLOCK_64X64] >> ss_x) {
+        return 1;
+      }
       const int plane_bw_unit_64 = mi_size_wide[BLOCK_64X64] >> ss_x;
       const int col_off_64 = col_off % plane_bw_unit_64;
       return col_off_64 + top_right_count_unit < plane_bw_unit_64;
@@ -2095,9 +2102,9 @@ void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   // force 4x4 chroma component block size.
   bsize = scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
 
-  const int have_top_right =
-      has_top_right(cm, bsize, mi_row, mi_col, have_top, right_available,
-                    partition, tx_size, row_off, col_off, pd->subsampling_x);
+  const int have_top_right = has_top_right(
+      cm, bsize, mi_row, mi_col, have_top, right_available, partition, tx_size,
+      row_off, col_off, pd->subsampling_x, pd->subsampling_y);
   const int have_bottom_left = has_bottom_left(
       cm, bsize, mi_row, mi_col, bottom_available, have_left, partition,
       tx_size, row_off, col_off, pd->subsampling_x, pd->subsampling_y);
