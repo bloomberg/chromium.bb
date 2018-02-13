@@ -9,6 +9,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.CallSuper;
+import android.support.annotation.StringRes;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -304,9 +305,12 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
             showNormalView();
         }
 
-        if (mIsSelectionEnabled && !wasSelectionEnabled) {
+        if (mIsSelectionEnabled) {
+            @StringRes
+            int resId = wasSelectionEnabled ? R.string.accessibility_toolbar_multi_select
+                                            : R.string.accessibility_toolbar_screen_position;
             announceForAccessibility(
-                    getResources().getString(R.string.accessibility_toolbar_screen_position));
+                    getContext().getString(resId, Integer.toString(selectedItems.size())));
         }
     }
 
