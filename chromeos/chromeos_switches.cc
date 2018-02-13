@@ -531,9 +531,6 @@ const char kShillStub[] = "shill-stub";
 // This makes it easier to test layout logic.
 const char kShowLoginDevOverlay[] = "show-login-dev-overlay";
 
-// If true, the non-md login and lock screens will be shown.
-const char kShowNonMdLogin[] = "show-non-md-login";
-
 // Sends test messages on first call to RequestUpdate (stub only).
 const char kSmsTestMessages[] = "sms-test-messages";
 

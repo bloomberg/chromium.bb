@@ -48,8 +48,6 @@
         <structure name="IDR_CUSTOM_ELEMENTS_USER_POD_HTML" file="resources\chromeos\login\custom_elements_user_pod.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CUSTOM_ELEMENTS_LOGIN_HTML" file="resources\chromeos\login\custom_elements_login.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_CUSTOM_ELEMENTS_LOGIN_JS" file="resources\chromeos\login\custom_elements_login.js" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_CUSTOM_ELEMENTS_PIN_KEYBOARD_HTML" file="resources\chromeos\quick_unlock\pin_keyboard.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
-        <structure name="IDR_CUSTOM_ELEMENTS_PIN_KEYBOARD_JS" file="resources\chromeos\quick_unlock\pin_keyboard.js" type="chrome_html" />
         <structure name="IDR_MD_CUSTOM_ELEMENTS_PIN_KEYBOARD_HTML" file="resources\chromeos\quick_unlock\md_pin_keyboard.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
         <structure name="IDR_MD_CUSTOM_ELEMENTS_PIN_KEYBOARD_JS" file="resources\chromeos\quick_unlock\md_pin_keyboard.js" type="chrome_html" />
       </if>
