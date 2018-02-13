@@ -4941,11 +4941,11 @@ drm_backend_update_unused_outputs(struct drm_backend *b, drmModeRes *resources)
 	wl_array_init(&b->unused_connectors);
 
 	for (i = 0; i < resources->count_connectors; i++) {
-		struct drm_output *output;
+		struct drm_head *head;
 		uint32_t *connector_id;
 
-		output = drm_output_find_by_connector(b, resources->connectors[i]);
-		if (output && output->base.enabled)
+		head = drm_head_find_by_connector(b, resources->connectors[i]);
+		if (head && weston_head_is_enabled(&head->base))
 			continue;
 
 		connector_id = wl_array_add(&b->unused_connectors,
