@@ -273,7 +273,10 @@ AbortCallback SmbFileSystem::CreateDirectory(
     const base::FilePath& directory_path,
     bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback) {
-  NOTIMPLEMENTED();
+  GetSmbProviderClient()->CreateDirectory(
+      GetMountId(), directory_path, recursive,
+      base::BindOnce(&SmbFileSystem::HandleRequestCreateDirectoryCallback,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
   return CreateAbortCallback();
 }
 
@@ -530,6 +533,12 @@ void SmbFileSystem::HandleRequestTruncateCallback(
 }
 
 void SmbFileSystem::HandleRequestWriteFileCallback(
+    const storage::AsyncFileUtil::StatusCallback& callback,
+    smbprovider::ErrorType error) const {
+  callback.Run(TranslateError(error));
+}
+
+void SmbFileSystem::HandleRequestCreateDirectoryCallback(
     const storage::AsyncFileUtil::StatusCallback& callback,
     smbprovider::ErrorType error) const {
   callback.Run(TranslateError(error));
