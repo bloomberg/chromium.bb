@@ -387,7 +387,7 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
 
 // Creates an instance of the update client.
 scoped_refptr<UpdateClient> UpdateClientFactory(
-    const scoped_refptr<Configurator>& config);
+    scoped_refptr<Configurator> config);
 
 // This must be called prior to the construction of any Configurator that
 // contains a PrefService.

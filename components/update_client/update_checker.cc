@@ -50,7 +50,7 @@ bool IsEncryptionRequired(const IdToComponentPtrMap& components) {
 
 class UpdateCheckerImpl : public UpdateChecker {
  public:
-  UpdateCheckerImpl(const scoped_refptr<Configurator>& config,
+  UpdateCheckerImpl(scoped_refptr<Configurator> config,
                     PersistedData* metadata);
   ~UpdateCheckerImpl() override;
 
@@ -91,7 +91,7 @@ class UpdateCheckerImpl : public UpdateChecker {
   DISALLOW_COPY_AND_ASSIGN(UpdateCheckerImpl);
 };
 
-UpdateCheckerImpl::UpdateCheckerImpl(const scoped_refptr<Configurator>& config,
+UpdateCheckerImpl::UpdateCheckerImpl(scoped_refptr<Configurator> config,
                                      PersistedData* metadata)
     : config_(config), metadata_(metadata) {}
 
@@ -236,7 +236,7 @@ void UpdateCheckerImpl::UpdateCheckFailed(const IdToComponentPtrMap& components,
 }  // namespace
 
 std::unique_ptr<UpdateChecker> UpdateChecker::Create(
-    const scoped_refptr<Configurator>& config,
+    scoped_refptr<Configurator> config,
     PersistedData* persistent) {
   return std::make_unique<UpdateCheckerImpl>(config, persistent);
 }

@@ -26,7 +26,7 @@
 namespace update_client {
 
 UpdateContext::UpdateContext(
-    const scoped_refptr<Configurator>& config,
+    scoped_refptr<Configurator> config,
     bool is_foreground,
     const std::vector<std::string>& ids,
     UpdateClient::CrxDataCallback crx_data_callback,
@@ -50,7 +50,7 @@ UpdateContext::UpdateContext(
 UpdateContext::~UpdateContext() {}
 
 UpdateEngine::UpdateEngine(
-    const scoped_refptr<Configurator>& config,
+    scoped_refptr<Configurator> config,
     UpdateChecker::Factory update_checker_factory,
     CrxDownloader::Factory crx_downloader_factory,
     scoped_refptr<PingManager> ping_manager,

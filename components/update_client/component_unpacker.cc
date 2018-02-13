@@ -33,7 +33,7 @@ ComponentUnpacker::Result::Result() {}
 ComponentUnpacker::ComponentUnpacker(
     const std::vector<uint8_t>& pk_hash,
     const base::FilePath& path,
-    const scoped_refptr<CrxInstaller>& installer,
+    scoped_refptr<CrxInstaller> installer,
     std::unique_ptr<service_manager::Connector> connector)
     : pk_hash_(pk_hash),
       path_(path),

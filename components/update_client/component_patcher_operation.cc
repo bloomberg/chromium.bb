@@ -62,7 +62,7 @@ DeltaUpdateOp::~DeltaUpdateOp() {
 void DeltaUpdateOp::Run(const base::DictionaryValue* command_args,
                         const base::FilePath& input_dir,
                         const base::FilePath& unpack_dir,
-                        const scoped_refptr<CrxInstaller>& installer,
+                        scoped_refptr<CrxInstaller> installer,
                         ComponentPatcher::Callback callback) {
   callback_ = std::move(callback);
   std::string output_rel_path;
@@ -117,7 +117,7 @@ DeltaUpdateOpCopy::~DeltaUpdateOpCopy() {
 UnpackerError DeltaUpdateOpCopy::DoParseArguments(
     const base::DictionaryValue* command_args,
     const base::FilePath& input_dir,
-    const scoped_refptr<CrxInstaller>& installer) {
+    scoped_refptr<CrxInstaller> installer) {
   std::string input_rel_path;
   if (!command_args->GetString(kInput, &input_rel_path))
     return UnpackerError::kDeltaBadCommands;
@@ -144,7 +144,7 @@ DeltaUpdateOpCreate::~DeltaUpdateOpCreate() {
 UnpackerError DeltaUpdateOpCreate::DoParseArguments(
     const base::DictionaryValue* command_args,
     const base::FilePath& input_dir,
-    const scoped_refptr<CrxInstaller>& installer) {
+    scoped_refptr<CrxInstaller> installer) {
   std::string patch_rel_path;
   if (!command_args->GetString(kPatch, &patch_rel_path))
     return UnpackerError::kDeltaBadCommands;
@@ -174,7 +174,7 @@ DeltaUpdateOpPatch::~DeltaUpdateOpPatch() {
 UnpackerError DeltaUpdateOpPatch::DoParseArguments(
     const base::DictionaryValue* command_args,
     const base::FilePath& input_dir,
-    const scoped_refptr<CrxInstaller>& installer) {
+    scoped_refptr<CrxInstaller> installer) {
   std::string patch_rel_path;
   std::string input_rel_path;
   if (!command_args->GetString(kPatch, &patch_rel_path) ||

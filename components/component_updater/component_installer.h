@@ -153,20 +153,17 @@ class ComponentInstaller final : public update_client::CrxInstaller {
   // files (as opposed to in the user data directory), sets current_* to the
   // values associated with that installation and returns true; otherwise,
   // returns false.
-  bool FindPreinstallation(
-      const base::FilePath& root,
-      const scoped_refptr<RegistrationInfo>& registration_info);
+  bool FindPreinstallation(const base::FilePath& root,
+                           scoped_refptr<RegistrationInfo> registration_info);
   update_client::CrxInstaller::Result InstallHelper(
       const base::FilePath& unpack_path,
       std::unique_ptr<base::DictionaryValue>* manifest,
       base::Version* version,
       base::FilePath* install_path);
-  void StartRegistration(
-      const scoped_refptr<RegistrationInfo>& registration_info);
-  void FinishRegistration(
-      const scoped_refptr<RegistrationInfo>& registration_info,
-      ComponentUpdateService* cus,
-      base::OnceClosure callback);
+  void StartRegistration(scoped_refptr<RegistrationInfo> registration_info);
+  void FinishRegistration(scoped_refptr<RegistrationInfo> registration_info,
+                          ComponentUpdateService* cus,
+                          base::OnceClosure callback);
   void ComponentReady(std::unique_ptr<base::DictionaryValue> manifest);
   void UninstallOnTaskRunner();
 

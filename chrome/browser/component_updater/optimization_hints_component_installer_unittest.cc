@@ -32,8 +32,8 @@ static const char kTestHintsVersion[] = "1.2.3";
 class TestOptimizationGuideService
     : public optimization_guide::OptimizationGuideService {
  public:
-  TestOptimizationGuideService(
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_task_runner)
+  explicit TestOptimizationGuideService(
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
       : optimization_guide::OptimizationGuideService(io_thread_task_runner) {}
   ~TestOptimizationGuideService() override {}
 

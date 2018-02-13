@@ -56,9 +56,8 @@ ComponentInfo::ComponentInfo(const ComponentInfo& other) = default;
 ComponentInfo::ComponentInfo(ComponentInfo&& other) = default;
 ComponentInfo::~ComponentInfo() {}
 
-CrxUpdateService::CrxUpdateService(
-    const scoped_refptr<Configurator>& config,
-    const scoped_refptr<UpdateClient>& update_client)
+CrxUpdateService::CrxUpdateService(scoped_refptr<Configurator> config,
+                                   scoped_refptr<UpdateClient> update_client)
     : config_(config), update_client_(update_client) {
   AddObserver(this);
 }
@@ -434,7 +433,7 @@ void CrxUpdateService::OnEvent(Events event, const std::string& id) {
 // is the job of the browser process.
 // TODO(sorin): consider making this a singleton.
 std::unique_ptr<ComponentUpdateService> ComponentUpdateServiceFactory(
-    const scoped_refptr<Configurator>& config) {
+    scoped_refptr<Configurator> config) {
   DCHECK(config);
   auto update_client = update_client::UpdateClientFactory(config);
   return std::make_unique<CrxUpdateService>(config, std::move(update_client));

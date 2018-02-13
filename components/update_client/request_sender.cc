@@ -52,7 +52,7 @@ constexpr int64_t kMaxRetryAfterSec = 24 * 60 * 60;
 
 }  // namespace
 
-RequestSender::RequestSender(const scoped_refptr<Configurator>& config)
+RequestSender::RequestSender(scoped_refptr<Configurator> config)
     : config_(config), use_signing_(false) {}
 
 RequestSender::~RequestSender() {

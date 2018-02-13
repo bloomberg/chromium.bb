@@ -83,7 +83,7 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
   // location of the CRX.
   ComponentUnpacker(const std::vector<uint8_t>& pk_hash,
                     const base::FilePath& path,
-                    const scoped_refptr<CrxInstaller>& installer,
+                    scoped_refptr<CrxInstaller> installer,
                     std::unique_ptr<service_manager::Connector> connector);
 
   // Begins the actual unpacking of the files. May invoke a patcher and the
