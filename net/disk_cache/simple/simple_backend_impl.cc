@@ -20,6 +20,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -57,6 +58,19 @@ namespace disk_cache {
 
 namespace {
 
+const base::FeatureParam<base::TaskPriority>::Option prio_modes[] = {
+    {base::TaskPriority::USER_BLOCKING, "default"},
+    {base::TaskPriority::USER_VISIBLE, "user_visible"}};
+const base::Feature kSimpleCachePriorityExperiment = {
+    "SimpleCachePriorityExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<base::TaskPriority> priority_mode{
+    &kSimpleCachePriorityExperiment, "mode", base::TaskPriority::USER_BLOCKING,
+    &prio_modes};
+
+base::TaskPriority PriorityToUse() {
+  return priority_mode.Get();
+}
+
 // Maximum fraction of the cache that one entry can consume.
 const int kMaxFileRatio = 8;
 
@@ -65,7 +79,7 @@ scoped_refptr<base::SequencedTaskRunner> FallbackToInternalIfNull(
   if (cache_runner)
     return cache_runner;
   return base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      {base::MayBlock(), PriorityToUse(),
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 }
 
@@ -255,8 +269,7 @@ SimpleBackendImpl::~SimpleBackendImpl() {
 
 int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
   worker_pool_ = base::TaskScheduler::GetInstance()->CreateTaskRunnerWithTraits(
-      {base::MayBlock(), base::WithBaseSyncPrimitives(),
-       base::TaskPriority::USER_BLOCKING,
+      {base::MayBlock(), base::WithBaseSyncPrimitives(), PriorityToUse(),
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 
   index_ = std::make_unique<SimpleIndex>(
