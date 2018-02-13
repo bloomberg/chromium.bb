@@ -580,8 +580,9 @@ TEST_F(DownloadManagerTest, StartDownload) {
               MockCreateFile(Ref(*info->save_info.get()), input_stream.get()))
       .WillOnce(Return(mock_file));
 
-  download_manager_->StartDownload(std::move(info), std::move(input_stream),
-                                   DownloadUrlParameters::OnStartedCallback());
+  download_manager_->StartDownload(
+      std::move(info), std::move(input_stream),
+      download::DownloadUrlParameters::OnStartedCallback());
   EXPECT_TRUE(download_manager_->GetDownload(local_id));
 
   SetHasObserverCalls(false);

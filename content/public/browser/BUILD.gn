@@ -113,8 +113,6 @@ jumbo_source_set("browser_sources") {
     "download_manager_delegate.cc",
     "download_manager_delegate.h",
     "download_request_utils.h",
-    "download_url_parameters.cc",
-    "download_url_parameters.h",
     "favicon_status.cc",
     "favicon_status.h",
     "file_url_loader.h",

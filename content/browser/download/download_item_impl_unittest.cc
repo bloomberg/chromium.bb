@@ -23,6 +23,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_destination_observer.h"
@@ -31,7 +32,6 @@
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/mock_download_file.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_context.h"
@@ -87,12 +87,13 @@ class MockDelegate : public DownloadItemImplDelegate {
   MOCK_METHOD1(ShouldOpenFileBasedOnExtension, bool(const base::FilePath&));
   MOCK_METHOD1(CheckForFileRemoval, void(DownloadItemImpl*));
 
-  void ResumeInterruptedDownload(std::unique_ptr<DownloadUrlParameters> params,
-                                 uint32_t id) override {
+  void ResumeInterruptedDownload(
+      std::unique_ptr<download::DownloadUrlParameters> params,
+      uint32_t id) override {
     MockResumeInterruptedDownload(params.get(), id);
   }
   MOCK_METHOD2(MockResumeInterruptedDownload,
-               void(DownloadUrlParameters* params, uint32_t id));
+               void(download::DownloadUrlParameters* params, uint32_t id));
 
   BrowserContext* GetBrowserContext() const override {
     return browser_context_.get();
@@ -652,10 +653,10 @@ TEST_F(DownloadItemTest, AutomaticResumption_Continue) {
   // Resumption attempt should pass the intermediate file along.
   EXPECT_CALL(*mock_delegate(),
               MockResumeInterruptedDownload(
-                  AllOf(Property(&DownloadUrlParameters::file_path,
+                  AllOf(Property(&download::DownloadUrlParameters::file_path,
                                  Property(&base::FilePath::value,
                                           kDummyIntermediatePath)),
-                        Property(&DownloadUrlParameters::offset, 1)),
+                        Property(&download::DownloadUrlParameters::offset, 1)),
                   _));
 
   base::HistogramTester histogram_tester;
@@ -702,7 +703,7 @@ TEST_F(DownloadItemTest, AutomaticResumption_Restart) {
   // Resumption attempt should have discarded intermediate file.
   EXPECT_CALL(*mock_delegate(),
               MockResumeInterruptedDownload(
-                  Property(&DownloadUrlParameters::file_path,
+                  Property(&download::DownloadUrlParameters::file_path,
                            Property(&base::FilePath::empty, true)),
                   _));
 
@@ -774,10 +775,10 @@ TEST_F(DownloadItemTest, AutomaticResumption_ContentLengthMismatch) {
   // Resumption attempt should pass the intermediate file along.
   EXPECT_CALL(*mock_delegate(),
               MockResumeInterruptedDownload(
-                  AllOf(Property(&DownloadUrlParameters::file_path,
+                  AllOf(Property(&download::DownloadUrlParameters::file_path,
                                  Property(&base::FilePath::value,
                                           kDummyIntermediatePath)),
-                        Property(&DownloadUrlParameters::offset, 1)),
+                        Property(&download::DownloadUrlParameters::offset, 1)),
                   _));
 
   base::HistogramTester histogram_tester;
@@ -851,10 +852,10 @@ TEST_F(DownloadItemTest, AutomaticResumption_AttemptLimit) {
   // All attempts at resumption should pass along the intermediate file.
   EXPECT_CALL(*mock_delegate(),
               MockResumeInterruptedDownload(
-                  AllOf(Property(&DownloadUrlParameters::file_path,
+                  AllOf(Property(&download::DownloadUrlParameters::file_path,
                                  Property(&base::FilePath::value,
                                           kDummyIntermediatePath)),
-                        Property(&DownloadUrlParameters::offset, 1)),
+                        Property(&download::DownloadUrlParameters::offset, 1)),
                   _))
       .Times(DownloadItemImpl::kMaxAutoResumeAttempts);
   for (int i = 0; i < (DownloadItemImpl::kMaxAutoResumeAttempts + 1); ++i) {
@@ -943,10 +944,10 @@ TEST_F(DownloadItemTest, FailedResumptionDoesntUpdateOriginState) {
 
   EXPECT_CALL(*mock_delegate(),
               MockResumeInterruptedDownload(
-                  AllOf(Property(&DownloadUrlParameters::file_path,
+                  AllOf(Property(&download::DownloadUrlParameters::file_path,
                                  Property(&base::FilePath::value,
                                           kDummyIntermediatePath)),
-                        Property(&DownloadUrlParameters::offset, 1)),
+                        Property(&download::DownloadUrlParameters::offset, 1)),
                   _));
   EXPECT_CALL(*download_file, Detach());
   item->DestinationObserverAsWeakPtr()->DestinationError(
@@ -1113,10 +1114,11 @@ TEST_F(DownloadItemTest, ResumeUsesFinalURL) {
   EXPECT_CALL(*download_file, FullPath())
       .WillOnce(ReturnRefOfCopy(base::FilePath()));
   EXPECT_CALL(*download_file, Detach());
-  EXPECT_CALL(*mock_delegate(), MockResumeInterruptedDownload(
-                                    Property(&DownloadUrlParameters::url,
-                                             GURL("http://example.com/c")),
-                                    _))
+  EXPECT_CALL(*mock_delegate(),
+              MockResumeInterruptedDownload(
+                  Property(&download::DownloadUrlParameters::url,
+                           GURL("http://example.com/c")),
+                  _))
       .Times(1);
   item->DestinationObserverAsWeakPtr()->DestinationError(
       download::DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR, 1,

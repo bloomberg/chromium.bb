@@ -10,11 +10,11 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -66,10 +66,13 @@ class UrlDownloader::RequestHandle : public DownloadRequestHandleInterface {
 std::unique_ptr<UrlDownloader> UrlDownloader::BeginDownload(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     std::unique_ptr<net::URLRequest> request,
-    DownloadUrlParameters* params,
+    download::DownloadUrlParameters* params,
     bool is_parallel_request) {
+  Referrer referrer(params->referrer(),
+                    Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+                        params->referrer_policy()));
   Referrer sanitized_referrer =
-      Referrer::SanitizeForRequest(request->url(), params->referrer());
+      Referrer::SanitizeForRequest(request->url(), referrer);
   Referrer::SetReferrerForRequest(request.get(), sanitized_referrer);
 
   if (request->url().SchemeIs(url::kBlobScheme))
@@ -212,7 +215,7 @@ void UrlDownloader::ResponseCompleted(int net_error) {
 void UrlDownloader::OnStart(
     std::unique_ptr<DownloadCreateInfo> create_info,
     std::unique_ptr<ByteStreamReader> stream_reader,
-    const DownloadUrlParameters::OnStartedCallback& callback) {
+    const download::DownloadUrlParameters::OnStartedCallback& callback) {
   create_info->request_handle.reset(new RequestHandle(
       weak_ptr_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get()));
 

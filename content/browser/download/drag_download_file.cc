@@ -18,7 +18,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_url_parameters.h"
+#include "content/public/browser/download_request_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace content {
@@ -90,10 +90,12 @@ class DragDownloadFile::DragDownloadFileUI
             }
           }
         })");
-    std::unique_ptr<content::DownloadUrlParameters> params(
-        DownloadUrlParameters::CreateForWebContentsMainFrame(
+    std::unique_ptr<download::DownloadUrlParameters> params(
+        DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
             web_contents_, url_, traffic_annotation));
-    params->set_referrer(referrer_);
+    params->set_referrer(referrer_.url);
+    params->set_referrer_policy(
+        Referrer::ReferrerPolicyForUrlRequest(referrer_.policy));
     params->set_referrer_encoding(referrer_encoding_);
     params->set_callback(base::Bind(&DragDownloadFileUI::OnDownloadStarted,
                                     weak_ptr_factory_.GetWeakPtr()));

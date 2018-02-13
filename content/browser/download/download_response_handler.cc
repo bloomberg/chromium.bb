@@ -6,9 +6,9 @@
 
 #include <memory>
 
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_utils.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "net/http/http_status_code.h"
 #include "net/log/net_log_with_source.h"
 

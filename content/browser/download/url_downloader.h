@@ -10,9 +10,9 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/download/download_request_core.h"
 #include "content/browser/download/url_download_handler.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/common/referrer.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
@@ -34,7 +34,7 @@ class UrlDownloader : public net::URLRequest::Delegate,
   static std::unique_ptr<UrlDownloader> BeginDownload(
       base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
       std::unique_ptr<net::URLRequest> request,
-      DownloadUrlParameters* params,
+      download::DownloadUrlParameters* params,
       bool is_parallel_request);
 
  private:
@@ -53,10 +53,10 @@ class UrlDownloader : public net::URLRequest::Delegate,
   void ResponseCompleted(int net_error);
 
   // DownloadRequestCore::Delegate
-  void OnStart(
-      std::unique_ptr<DownloadCreateInfo> download_create_info,
-      std::unique_ptr<ByteStreamReader> stream_reader,
-      const DownloadUrlParameters::OnStartedCallback& callback) override;
+  void OnStart(std::unique_ptr<DownloadCreateInfo> download_create_info,
+               std::unique_ptr<ByteStreamReader> stream_reader,
+               const download::DownloadUrlParameters::OnStartedCallback&
+                   callback) override;
   void OnReadyToRead() override;
 
   void PauseRequest();

@@ -26,6 +26,7 @@
 #include "components/download/downloader/in_progress/download_entry.h"
 #include "components/download/downloader/in_progress/in_progress_cache_impl.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/download/download_create_info.h"
@@ -46,7 +47,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_manager_delegate.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -102,7 +102,7 @@ bool CanRequestURLFromRenderer(int render_process_id, GURL url) {
 }
 
 void CreateInterruptedDownload(
-    DownloadUrlParameters* params,
+    download::DownloadUrlParameters* params,
     download::DownloadInterruptReason reason,
     base::WeakPtr<DownloadManagerImpl> download_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -134,7 +134,7 @@ download::DownloadEntry CreateDownloadEntryFromItem(
 }
 
 DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginDownload(
-    std::unique_ptr<DownloadUrlParameters> params,
+    std::unique_ptr<download::DownloadUrlParameters> params,
     content::ResourceContext* resource_context,
     uint32_t download_id,
     base::WeakPtr<DownloadManagerImpl> download_manager) {
@@ -175,7 +175,7 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginDownload(
 }
 
 DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginResourceDownload(
-    std::unique_ptr<DownloadUrlParameters> params,
+    std::unique_ptr<download::DownloadUrlParameters> params,
     std::unique_ptr<network::ResourceRequest> request,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
     uint32_t download_id,
@@ -482,7 +482,7 @@ void DownloadManagerImpl::Shutdown() {
 void DownloadManagerImpl::StartDownload(
     std::unique_ptr<DownloadCreateInfo> info,
     std::unique_ptr<DownloadManager::InputStream> stream,
-    const DownloadUrlParameters::OnStartedCallback& on_started) {
+    const download::DownloadUrlParameters::OnStartedCallback& on_started) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(info);
 
@@ -510,7 +510,7 @@ void DownloadManagerImpl::StartDownload(
 void DownloadManagerImpl::StartDownloadWithId(
     std::unique_ptr<DownloadCreateInfo> info,
     std::unique_ptr<DownloadManager::InputStream> stream,
-    const DownloadUrlParameters::OnStartedCallback& on_started,
+    const download::DownloadUrlParameters::OnStartedCallback& on_started,
     bool new_download,
     uint32_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -698,7 +698,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
 // ResourceDispatcherHost, and let it send us responses like a regular
 // download.
 void DownloadManagerImpl::ResumeInterruptedDownload(
-    std::unique_ptr<content::DownloadUrlParameters> params,
+    std::unique_ptr<download::DownloadUrlParameters> params,
     uint32_t id) {
   BeginDownloadInternal(std::move(params), id);
 }
@@ -737,14 +737,17 @@ void DownloadManagerImpl::AddUrlDownloadHandler(
 download::DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
     std::unique_ptr<net::URLRequest> url_request,
     ResourceContext* resource_context,
-    DownloadUrlParameters* params) {
+    download::DownloadUrlParameters* params) {
   if (ResourceDispatcherHostImpl::Get()->is_shutdown())
     return download::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN;
 
   // The URLRequest needs to be initialized with the referrer and other
   // information prior to issuing it.
   ResourceDispatcherHostImpl::Get()->InitializeURLRequest(
-      url_request.get(), params->referrer(),
+      url_request.get(),
+      Referrer(params->referrer(),
+               Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+                   params->referrer_policy())),
       true,  // download.
       params->render_process_host_id(), params->render_view_host_routing_id(),
       params->render_frame_host_routing_id(), PREVIEWS_OFF, resource_context);
@@ -839,7 +842,7 @@ int DownloadManagerImpl::RemoveDownloadsByURLAndTime(
 }
 
 void DownloadManagerImpl::DownloadUrl(
-    std::unique_ptr<DownloadUrlParameters> params) {
+    std::unique_ptr<download::DownloadUrlParameters> params) {
   if (params->post_id() >= 0) {
     // Check this here so that the traceback is more useful.
     DCHECK(params->prefer_cache());
@@ -979,7 +982,7 @@ download::DownloadItem* DownloadManagerImpl::GetDownloadByGuid(
 void DownloadManagerImpl::OnUrlDownloadStarted(
     std::unique_ptr<DownloadCreateInfo> download_create_info,
     std::unique_ptr<DownloadManager::InputStream> stream,
-    const DownloadUrlParameters::OnStartedCallback& callback) {
+    const download::DownloadUrlParameters::OnStartedCallback& callback) {
   StartDownload(std::move(download_create_info), std::move(stream), callback);
 }
 
@@ -1074,7 +1077,7 @@ void DownloadManagerImpl::CreateDownloadHandlerForNavigation(
 }
 
 void DownloadManagerImpl::BeginDownloadInternal(
-    std::unique_ptr<content::DownloadUrlParameters> params,
+    std::unique_ptr<download::DownloadUrlParameters> params,
     uint32_t id) {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     std::unique_ptr<network::ResourceRequest> request =

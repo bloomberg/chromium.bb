@@ -41,6 +41,7 @@
 #include "content/browser/download/download_task_runner.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
@@ -2626,8 +2627,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CookiePolicy) {
 
   // Download the file.
   SetupEnsureNoPendingDownloads();
-  std::unique_ptr<DownloadUrlParameters> download_parameters(
-      DownloadUrlParameters::CreateForWebContentsMainFrame(
+  std::unique_ptr<download::DownloadUrlParameters> download_parameters(
+      DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
           shell()->web_contents(), origin_two.GetURL("/bar"),
           TRAFFIC_ANNOTATION_FOR_TESTS));
   std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
@@ -3152,8 +3153,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBody) {
   ASSERT_TRUE(server.Start());
   GURL url = server.GetURL(kNotFoundURL);
 
-  std::unique_ptr<DownloadUrlParameters> download_parameters(
-      DownloadUrlParameters::CreateForWebContentsMainFrame(
+  std::unique_ptr<download::DownloadUrlParameters> download_parameters(
+      DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
           shell()->web_contents(), url, TRAFFIC_ANNOTATION_FOR_TESTS));
   // Fetch non-successful response body.
   download_parameters->set_fetch_error_body(true);
@@ -3189,8 +3190,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
   TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   // Wait for an interrupted download.
-  std::unique_ptr<DownloadUrlParameters> download_parameters(
-      DownloadUrlParameters::CreateForWebContentsMainFrame(
+  std::unique_ptr<download::DownloadUrlParameters> download_parameters(
+      DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
           shell()->web_contents(), server_url, TRAFFIC_ANNOTATION_FOR_TESTS));
   download_parameters->set_fetch_error_body(true);
   DownloadManager* download_manager = DownloadManagerForShell(shell());

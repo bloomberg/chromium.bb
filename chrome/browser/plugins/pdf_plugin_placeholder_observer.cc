@@ -9,10 +9,10 @@
 
 #include "chrome/common/render_messages.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -94,13 +94,15 @@ void PDFPluginPlaceholderObserver::OnOpenPDF(
             }
           }
         })");
-  std::unique_ptr<content::DownloadUrlParameters> params =
-      base::MakeUnique<content::DownloadUrlParameters>(
+  std::unique_ptr<download::DownloadUrlParameters> params =
+      base::MakeUnique<download::DownloadUrlParameters>(
           url, web_contents()->GetRenderViewHost()->GetProcess()->GetID(),
           web_contents()->GetRenderViewHost()->GetRoutingID(),
           render_frame_host->GetRoutingID(),
           storage_partition->GetURLRequestContext(), traffic_annotation);
-  params->set_referrer(referrer);
+  params->set_referrer(referrer.url);
+  params->set_referrer_policy(
+      content::Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
   params->set_callback(base::Bind(&OnDownloadStarted));
 
   content::BrowserContext::GetDownloadManager(

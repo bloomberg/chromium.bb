@@ -20,7 +20,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_url_parameters.h"
+#include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -303,12 +303,15 @@ void IndexedDBInternalsUI::OnDownloadDataReady(
             "Not implemented. Indexed DB is Chrome's internal local data "
             "storage."
         })");
-  std::unique_ptr<DownloadUrlParameters> dl_params(
-      DownloadUrlParameters::CreateForWebContentsMainFrame(web_contents, url,
-                                                           traffic_annotation));
-  const GURL referrer(web_contents->GetLastCommittedURL());
-  dl_params->set_referrer(content::Referrer::SanitizeForRequest(
-      url, content::Referrer(referrer, blink::kWebReferrerPolicyDefault)));
+  std::unique_ptr<download::DownloadUrlParameters> dl_params(
+      DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
+          web_contents, url, traffic_annotation));
+  content::Referrer referrer = content::Referrer::SanitizeForRequest(
+      url, content::Referrer(web_contents->GetLastCommittedURL(),
+                             blink::kWebReferrerPolicyDefault));
+  dl_params->set_referrer(referrer.url);
+  dl_params->set_referrer_policy(
+      Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
 
   // This is how to watch for the download to finish: first wait for it
   // to start, then attach a download::DownloadItem::Observer to observe the

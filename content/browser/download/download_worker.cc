@@ -40,7 +40,7 @@ WebContents* GetEmptyWebContents() {
 
 std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
 CreateUrlDownloadHandler(
-    std::unique_ptr<DownloadUrlParameters> params,
+    std::unique_ptr<download::DownloadUrlParameters> params,
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -87,7 +87,7 @@ DownloadWorker::DownloadWorker(DownloadWorker::Delegate* delegate,
 DownloadWorker::~DownloadWorker() = default;
 
 void DownloadWorker::SendRequest(
-    std::unique_ptr<DownloadUrlParameters> params,
+    std::unique_ptr<download::DownloadUrlParameters> params,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTaskAndReplyWithResult(
@@ -120,7 +120,7 @@ void DownloadWorker::Cancel(bool user_cancel) {
 void DownloadWorker::OnUrlDownloadStarted(
     std::unique_ptr<DownloadCreateInfo> create_info,
     std::unique_ptr<DownloadManager::InputStream> input_stream,
-    const DownloadUrlParameters::OnStartedCallback& callback) {
+    const download::DownloadUrlParameters::OnStartedCallback& callback) {
   // |callback| is not used in subsequent requests.
   DCHECK(callback.is_null());
 

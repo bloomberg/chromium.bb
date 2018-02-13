@@ -42,6 +42,7 @@
 #include "components/download/downloader/in_progress/in_progress_cache.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
@@ -60,7 +61,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_item_utils.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
@@ -2347,10 +2347,10 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   // are consistently routed through the no-renderer code paths so that the
   // request will not be dropped if the WebContents (and by extension, the
   // associated renderer) goes away before a response is received.
-  std::unique_ptr<DownloadUrlParameters> download_params(
-      new DownloadUrlParameters(GetURL(),
-                                storage_partition->GetURLRequestContext(),
-                                traffic_annotation));
+  std::unique_ptr<download::DownloadUrlParameters> download_params(
+      new download::DownloadUrlParameters(
+          GetURL(), storage_partition->GetURLRequestContext(),
+          traffic_annotation));
   download_params->set_file_path(GetFullPath());
   if (received_slices_.size() > 0) {
     std::vector<download::DownloadItem::ReceivedSlice> slices_to_download =
@@ -2372,8 +2372,8 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   // Note that resumed downloads disallow redirects. Hence the referrer URL
   // (which is the contents of the Referer header for the last download request)
   // will only be sent to the URL returned by GetURL().
-  download_params->set_referrer(
-      Referrer(GetReferrerUrl(), blink::kWebReferrerPolicyAlways));
+  download_params->set_referrer(GetReferrerUrl());
+  download_params->set_referrer_policy(net::URLRequest::NEVER_CLEAR_REFERRER);
 
   TransitionTo(RESUMING_INTERNAL);
   RecordDownloadCountWithSource(source == ResumptionRequestSource::USER

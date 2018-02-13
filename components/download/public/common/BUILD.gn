@@ -20,6 +20,8 @@ component("public") {
     "download_save_info.cc",
     "download_save_info.h",
     "download_source.h",
+    "download_url_parameters.cc",
+    "download_url_parameters.h",
   ]
 
   configs += [ ":components_download_implementation" ]
@@ -28,6 +30,8 @@ component("public") {
     "//base",
     "//components/download/internal/common:internal",
     "//crypto",
+    "//net",
+    "//storage/browser",
     "//ui/base",
   ]
 

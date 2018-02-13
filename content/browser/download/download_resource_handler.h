@@ -12,10 +12,10 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/download/download_request_core.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -99,10 +99,10 @@ class CONTENT_EXPORT DownloadResourceHandler
   ~DownloadResourceHandler() override;
 
   // DownloadRequestCore::Delegate
-  void OnStart(
-      std::unique_ptr<DownloadCreateInfo> download_create_info,
-      std::unique_ptr<ByteStreamReader> stream_reader,
-      const DownloadUrlParameters::OnStartedCallback& callback) override;
+  void OnStart(std::unique_ptr<DownloadCreateInfo> download_create_info,
+               std::unique_ptr<ByteStreamReader> stream_reader,
+               const download::DownloadUrlParameters::OnStartedCallback&
+                   callback) override;
   void OnReadyToRead() override;
 
   // Stores information about the download that must be acquired on the UI

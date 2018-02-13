@@ -24,6 +24,7 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
@@ -33,7 +34,7 @@
 #include "components/offline_pages/core/offline_page_model.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_url_parameters.h"
+#include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -228,8 +229,8 @@ content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter(
 void DownloadAsFile(content::WebContents* web_contents, const GURL& url) {
   content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(
       web_contents->GetBrowserContext());
-  std::unique_ptr<content::DownloadUrlParameters> dl_params(
-      content::DownloadUrlParameters::CreateForWebContentsMainFrame(
+  std::unique_ptr<download::DownloadUrlParameters> dl_params(
+      content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
           web_contents, url, NO_TRAFFIC_ANNOTATION_YET));
 
   content::NavigationEntry* entry =
@@ -239,7 +240,9 @@ void DownloadAsFile(content::WebContents* web_contents, const GURL& url) {
   DCHECK(entry);
   content::Referrer referrer =
       content::Referrer::SanitizeForRequest(url, entry->GetReferrer());
-  dl_params->set_referrer(referrer);
+  dl_params->set_referrer(referrer.url);
+  dl_params->set_referrer_policy(content::Referrer::ReferrerPolicyForUrlRequest(
+      referrer.policy));
 
   dl_params->set_prefer_cache(true);
   dl_params->set_prompt(false);

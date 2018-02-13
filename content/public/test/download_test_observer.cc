@@ -11,9 +11,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -457,8 +457,8 @@ void DownloadTestItemCreationObserver::DownloadItemCreationCallback(
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
-const DownloadUrlParameters::OnStartedCallback
-    DownloadTestItemCreationObserver::callback() {
+const download::DownloadUrlParameters::OnStartedCallback
+DownloadTestItemCreationObserver::callback() {
   return base::Bind(
       &DownloadTestItemCreationObserver::DownloadItemCreationCallback, this);
 }

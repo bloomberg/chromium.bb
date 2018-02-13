@@ -266,10 +266,10 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
           }
         })");
   // The parallel requests only use GET method.
-  std::unique_ptr<DownloadUrlParameters> download_params(
-      new DownloadUrlParameters(download_item_->GetURL(),
-                                storage_partition->GetURLRequestContext(),
-                                traffic_annotation));
+  std::unique_ptr<download::DownloadUrlParameters> download_params(
+      new download::DownloadUrlParameters(
+          download_item_->GetURL(), storage_partition->GetURLRequestContext(),
+          traffic_annotation));
   download_params->set_file_path(download_item_->GetFullPath());
   download_params->set_last_modified(download_item_->GetLastModifiedTime());
   download_params->set_etag(download_item_->GetETag());
@@ -284,8 +284,9 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
 
   // Subsequent range requests have the same referrer URL as the original
   // download request.
-  download_params->set_referrer(Referrer(download_item_->GetReferrerUrl(),
-                                         blink::kWebReferrerPolicyAlways));
+  download_params->set_referrer(download_item_->GetReferrerUrl());
+  download_params->set_referrer_policy(net::URLRequest::NEVER_CLEAR_REFERRER);
+
   // Send the request.
   worker->SendRequest(std::move(download_params),
                       static_cast<StoragePartitionImpl*>(storage_partition)

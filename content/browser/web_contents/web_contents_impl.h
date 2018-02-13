@@ -22,6 +22,7 @@
 #include "base/process/process.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
@@ -37,7 +38,6 @@
 #include "content/browser/wake_lock/wake_lock_context_host.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/color_chooser.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
@@ -1319,8 +1319,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Format of |headers| is a new line separated list of key value pairs:
   // "<key1>: <value1>\r\n<key2>: <value2>".
-  static DownloadUrlParameters::RequestHeadersType ParseDownloadHeaders(
-      const std::string& headers);
+  static download::DownloadUrlParameters::RequestHeadersType
+  ParseDownloadHeaders(const std::string& headers);
 
   // Sets the visibility of immediate child views, i.e. views whose parent view
   // is that of the main frame.
