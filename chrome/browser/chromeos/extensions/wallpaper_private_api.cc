@@ -24,9 +24,11 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -67,6 +69,7 @@ namespace get_offline_wallpaper_list =
 namespace record_wallpaper_uma = wallpaper_private::RecordWallpaperUMA;
 namespace get_collections_info = wallpaper_private::GetCollectionsInfo;
 namespace get_images_info = wallpaper_private::GetImagesInfo;
+namespace get_local_image_paths = wallpaper_private::GetLocalImagePaths;
 
 namespace {
 
@@ -75,6 +78,10 @@ namespace {
 // the correct value of the user sync preference of "syncThemes".
 constexpr int kRetryDelay = 10;
 constexpr int kRetryLimit = 3;
+
+constexpr char kPngFilePattern[] = "*.[pP][nN][gG]";
+constexpr char kJpgFilePattern[] = "*.[jJ][pP][gG]";
+constexpr char kJpegFilePattern[] = "*.[jJ][pP][eE][gG]";
 
 #if defined(GOOGLE_CHROME_BUILD)
 const char kWallpaperManifestBaseURL[] =
@@ -145,6 +152,38 @@ wallpaper::WallpaperType getWallpaperType(
     default:
       return wallpaper::ONLINE;
   }
+}
+
+// Helper function to get the list of image paths under |path| that match
+// |pattern|.
+void EnumerateImages(const base::FilePath& path,
+                     const std::string& pattern,
+                     std::vector<std::string>* result_out) {
+  base::FileEnumerator image_enum(
+      path, true /* recursive */, base::FileEnumerator::FILES,
+      FILE_PATH_LITERAL(pattern),
+      base::FileEnumerator::FolderSearchPolicy::ALL);
+
+  for (base::FilePath image_path = image_enum.Next(); !image_path.empty();
+       image_path = image_enum.Next()) {
+    result_out->emplace_back(image_path.value());
+  }
+}
+
+// Recursively retrieves the paths of the image files under |path|.
+std::vector<std::string> GetImagePaths(const base::FilePath& path) {
+  chromeos::AssertCalledOnWallpaperSequence(
+      WallpaperFunctionBase::GetNonBlockingTaskRunner());
+
+  // TODO(crbug.com/810575): Add metrics on the number of files retrieved, and
+  // support getting paths incrementally in case the user has a large number of
+  // local images.
+  std::vector<std::string> image_paths;
+  EnumerateImages(path, kPngFilePattern, &image_paths);
+  EnumerateImages(path, kJpgFilePattern, &image_paths);
+  EnumerateImages(path, kJpegFilePattern, &image_paths);
+
+  return image_paths;
 }
 
 }  // namespace
@@ -880,4 +919,28 @@ void WallpaperPrivateGetImagesInfoFunction::OnImagesInfoFetched(
     return;
   }
   Respond(ArgumentList(get_images_info::Results::Create(images_info_list)));
+}
+
+WallpaperPrivateGetLocalImagePathsFunction::
+    WallpaperPrivateGetLocalImagePathsFunction() = default;
+
+WallpaperPrivateGetLocalImagePathsFunction::
+    ~WallpaperPrivateGetLocalImagePathsFunction() = default;
+
+ExtensionFunction::ResponseAction
+WallpaperPrivateGetLocalImagePathsFunction::Run() {
+  base::FilePath path = file_manager::util::GetDownloadsFolderForProfile(
+      Profile::FromBrowserContext(browser_context()));
+  base::PostTaskAndReplyWithResult(
+      WallpaperFunctionBase::GetNonBlockingTaskRunner(), FROM_HERE,
+      base::BindOnce(&GetImagePaths, path),
+      base::BindOnce(
+          &WallpaperPrivateGetLocalImagePathsFunction::OnGetImagePathsComplete,
+          this));
+  return RespondLater();
+}
+
+void WallpaperPrivateGetLocalImagePathsFunction::OnGetImagePathsComplete(
+    const std::vector<std::string>& image_paths) {
+  Respond(ArgumentList(get_local_image_paths::Results::Create(image_paths)));
 }

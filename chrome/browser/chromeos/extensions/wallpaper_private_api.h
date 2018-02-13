@@ -361,4 +361,24 @@ class WallpaperPrivateGetImagesInfoFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateGetImagesInfoFunction);
 };
 
+class WallpaperPrivateGetLocalImagePathsFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getLocalImagePaths",
+                             WALLPAPERPRIVATE_GETLOCALIMAGEPATHS)
+  WallpaperPrivateGetLocalImagePathsFunction();
+
+ protected:
+  ~WallpaperPrivateGetLocalImagePathsFunction() override;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  // Responds with the list of collected image paths.
+  void OnGetImagePathsComplete(const std::vector<std::string>& image_Pathss);
+
+  DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateGetLocalImagePathsFunction);
+};
+
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_PRIVATE_API_H_
