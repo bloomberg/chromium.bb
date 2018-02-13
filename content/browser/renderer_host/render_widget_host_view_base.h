@@ -427,14 +427,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // the page has changed.
   virtual void SetTooltipText(const base::string16& tooltip_text) = 0;
 
-  // Compute the orientation type of the display assuming it is a mobile device.
-  static ScreenOrientationValues GetOrientationTypeForMobile(
-      const display::Display& display);
-
-  // Compute the orientation type of the display assuming it is a desktop.
-  static ScreenOrientationValues GetOrientationTypeForDesktop(
-      const display::Display& display);
-
   // Gets the bounds of the window, in screen coordinates.
   virtual gfx::Rect GetBoundsInRootWindow() = 0;
 

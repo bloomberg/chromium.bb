@@ -28,6 +28,7 @@
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -998,7 +999,7 @@ void InterstitialPageImpl::GetScreenInfo(ScreenInfo* screen_info) {
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(web_contents_);
   if (!web_contents_impl) {
-    WebContentsView::GetDefaultScreenInfo(screen_info);
+    DisplayUtil::GetDefaultScreenInfo(screen_info);
     return;
   }
 

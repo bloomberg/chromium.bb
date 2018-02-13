@@ -337,65 +337,6 @@ CursorManager* RenderWidgetHostViewBase::GetCursorManager() {
   return nullptr;
 }
 
-// static
-ScreenOrientationValues RenderWidgetHostViewBase::GetOrientationTypeForMobile(
-    const display::Display& display) {
-  int angle = display.RotationAsDegree();
-  const gfx::Rect& bounds = display.bounds();
-
-  // Whether the device's natural orientation is portrait.
-  bool natural_portrait = false;
-  if (angle == 0 || angle == 180) // The device is in its natural orientation.
-    natural_portrait = bounds.height() >= bounds.width();
-  else
-    natural_portrait = bounds.height() <= bounds.width();
-
-  switch (angle) {
-  case 0:
-    return natural_portrait ? SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY
-                            : SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
-  case 90:
-    return natural_portrait ? SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY
-                            : SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
-  case 180:
-    return natural_portrait ? SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY
-                            : SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
-  case 270:
-    return natural_portrait ? SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY
-                            : SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
-  default:
-    NOTREACHED();
-    return SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
-  }
-}
-
-// static
-ScreenOrientationValues RenderWidgetHostViewBase::GetOrientationTypeForDesktop(
-    const display::Display& display) {
-  static int primary_landscape_angle = -1;
-  static int primary_portrait_angle = -1;
-
-  int angle = display.RotationAsDegree();
-  const gfx::Rect& bounds = display.bounds();
-  bool is_portrait = bounds.height() >= bounds.width();
-
-  if (is_portrait && primary_portrait_angle == -1)
-    primary_portrait_angle = angle;
-
-  if (!is_portrait && primary_landscape_angle == -1)
-    primary_landscape_angle = angle;
-
-  if (is_portrait) {
-    return primary_portrait_angle == angle
-        ? SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY
-        : SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
-  }
-
-  return primary_landscape_angle == angle
-      ? SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY
-      : SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
-}
-
 void RenderWidgetHostViewBase::OnDidNavigateMainFrameToNewPage() {
 }
 
