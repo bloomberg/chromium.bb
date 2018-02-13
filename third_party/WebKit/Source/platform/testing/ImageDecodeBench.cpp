@@ -55,24 +55,48 @@ scoped_refptr<SharedBuffer> ReadFile(const char* name) {
   return SharedBuffer::AdoptVector(buffer);
 }
 
-bool DecodeImageData(SharedBuffer* data, size_t packet_size) {
+struct ImageMeta {
+  char* name;
+  int width;
+  int height;
+  int frames;
+  // Cumulative time in seconds to decode all frames.
+  double time;
+};
+
+void DecodeFailure(ImageMeta* image) {
+  fprintf(stderr, "Failed to decode image %s\n", image->name);
+  exit(3);
+}
+
+void DecodeImageData(SharedBuffer* data, size_t packet_size, ImageMeta* image) {
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
       data, true, ImageDecoder::kAlphaPremultiplied, ColorBehavior::Ignore());
 
   if (!packet_size) {
+    auto start = CurrentTimeTicks();
+
     bool all_data_received = true;
     decoder->SetData(data, all_data_received);
 
     size_t frame_count = decoder->FrameCount();
     for (size_t index = 0; index < frame_count; ++index) {
       if (!decoder->DecodeFrameBufferAtIndex(index))
-        return false;
+        DecodeFailure(image);
     }
 
-    return !decoder->Failed();
+    image->time += (CurrentTimeTicks() - start).InSecondsF();
+    image->width = decoder->Size().Width();
+    image->height = decoder->Size().Height();
+    image->frames = frame_count;
+
+    if (!frame_count || decoder->Failed())
+      DecodeFailure(image);
+    return;
   }
 
   scoped_refptr<SharedBuffer> packet_data = SharedBuffer::Create();
+  size_t frame_count = 0;
   size_t position = 0;
   size_t index = 0;
 
@@ -84,21 +108,30 @@ bool DecodeImageData(SharedBuffer* data, size_t packet_size) {
     packet_data->Append(packet, length);
     position += length;
 
+    auto start = CurrentTimeTicks();
+
     bool all_data_received = (position >= data->size());
     decoder->SetData(packet_data.get(), all_data_received);
 
-    size_t frame_count = decoder->FrameCount();
+    frame_count = decoder->FrameCount();
     for (; index < frame_count; ++index) {
       ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(index);
       if (frame->GetStatus() != ImageFrame::kFrameComplete)
-        break;
+        DecodeFailure(image);
     }
+
+    image->time += (CurrentTimeTicks() - start).InSecondsF();
 
     if (all_data_received || decoder->Failed())
       break;
   }
 
-  return !decoder->Failed();
+  image->width = decoder->Size().Width();
+  image->height = decoder->Size().Height();
+  image->frames = frame_count;
+
+  if (!frame_count || decoder->Failed())
+    DecodeFailure(image);
 }
 
 }  // namespace
@@ -160,23 +193,17 @@ int ImageDecodeBenchMain(int argc, char* argv[]) {
 
   // Warm-up: throw out the first iteration for more consistent results.
 
-  if (!DecodeImageData(data.get(), packet_size)) {
-    fprintf(stderr, "Image decode failed [%s]\n", argv[1]);
-    exit(3);
-  }
+  ImageMeta image;
+  image.name = argv[1];
+  DecodeImageData(data.get(), packet_size, &image);
 
   // Image decode bench for decode_iterations.
 
   double total_time = 0.0;
   for (size_t i = 0; i < decode_iterations; ++i) {
-    auto start_time = CurrentTimeTicks();
-    bool decoded = DecodeImageData(data.get(), packet_size);
-    double elapsed_time = (CurrentTimeTicks() - start_time).InSecondsF();
-    total_time += elapsed_time;
-    if (!decoded) {
-      fprintf(stderr, "Image decode failed [%s]\n", argv[1]);
-      exit(3);
-    }
+    image.time = 0.0;
+    DecodeImageData(data.get(), packet_size, &image);
+    total_time += image.time;
   }
 
   // Results to stdout.
