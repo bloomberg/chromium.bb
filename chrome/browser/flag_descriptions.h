@@ -1586,9 +1586,6 @@ extern const char kDisableSystemTimezoneAutomaticDetectionDescription[];
 extern const char kEnableBackgroundBlurName[];
 extern const char kEnableBackgroundBlurDescription[];
 
-extern const char kEnableAndroidWallpapersAppName[];
-extern const char kEnableAndroidWallpapersAppDescription[];
-
 extern const char kEnableChromevoxArcSupportName[];
 extern const char kEnableChromevoxArcSupportDescription[];
 

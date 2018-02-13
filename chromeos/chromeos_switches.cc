@@ -291,9 +291,6 @@ const char kDisableWakeOnWifi[] = "disable-wake-on-wifi";
 // Disables zip archiver - unpacker.
 const char kDisableZipArchiverUnpacker[] = "disable-zip-archiver-unpacker";
 
-// Enables the Android Wallpapers App as the default app on Chrome OS.
-const char kEnableAndroidWallpapersApp[] = "enable-android-wallpapers-app";
-
 // DEPRECATED. Please use --arc-availability=officially-supported.
 // Enables starting the ARC instance upon session start.
 const char kEnableArc[] = "enable-arc";
