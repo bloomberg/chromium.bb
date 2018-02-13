@@ -10,6 +10,7 @@
 #include "extensions/renderer/bindings/api_request_handler.h"
 #include "extensions/renderer/bindings/api_signature.h"
 #include "extensions/renderer/bindings/api_type_reference_map.h"
+#include "extensions/renderer/bindings/argument_spec.h"
 #include "extensions/renderer/bindings/declarative_event.h"
 #include "extensions/renderer/bindings/exception_handler.h"
 #include "extensions/renderer/bindings/js_runner.h"
@@ -49,7 +50,8 @@ gin::ObjectTemplateBuilder APIBindingJSUtil::GetObjectTemplateBuilder(
       .SetMethod("runCallbackWithLastError",
                  &APIBindingJSUtil::RunCallbackWithLastError)
       .SetMethod("handleException", &APIBindingJSUtil::HandleException)
-      .SetMethod("setExceptionHandler", &APIBindingJSUtil::SetExceptionHandler);
+      .SetMethod("setExceptionHandler", &APIBindingJSUtil::SetExceptionHandler)
+      .SetMethod("validateType", &APIBindingJSUtil::ValidateType);
 }
 
 void APIBindingJSUtil::SendRequest(
@@ -243,6 +245,28 @@ void APIBindingJSUtil::SetExceptionHandler(gin::Arguments* arguments,
                                            v8::Local<v8::Function> handler) {
   exception_handler_->SetHandlerForContext(
       arguments->GetHolderCreationContext(), handler);
+}
+
+void APIBindingJSUtil::ValidateType(gin::Arguments* arguments,
+                                    const std::string& type_name,
+                                    v8::Local<v8::Value> value) {
+  v8::Isolate* isolate = arguments->isolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
+
+  const ArgumentSpec* spec = type_refs_->GetSpec(type_name);
+  if (!spec) {
+    // We shouldn't be asked to validate unknown specs, but since this comes
+    // from JS, assume nothing.
+    NOTREACHED();
+    return;
+  }
+
+  std::string error;
+  if (!spec->ParseArgument(context, value, *type_refs_, nullptr, nullptr,
+                           &error)) {
+    arguments->ThrowTypeError(error);
+  }
 }
 
 }  // namespace extensions

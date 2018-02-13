@@ -100,6 +100,13 @@ class APIBindingJSUtil final : public gin::Wrappable<APIBindingJSUtil> {
   void SetExceptionHandler(gin::Arguments* arguments,
                            v8::Local<v8::Function> handler);
 
+  // Validates a given |value| against the specification for the type with
+  // |type_name|. Throws an error if the validation fails; otherwise returns
+  // undefined.
+  void ValidateType(gin::Arguments* arguments,
+                    const std::string& type_name,
+                    v8::Local<v8::Value> value);
+
   // Type references. Guaranteed to outlive this object.
   APITypeReferenceMap* const type_refs_;
 

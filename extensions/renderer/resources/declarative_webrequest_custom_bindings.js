@@ -7,18 +7,20 @@
 var binding =
     apiBridge || require('binding').Binding.create('declarativeWebRequest');
 
-var utils = require('utils');
-var validate = require('schemaUtils').validate;
+var utils = bindingUtil ? undefined : require('utils');
+var validate = bindingUtil ? undefined : require('schemaUtils').validate;
+
+function validateType(schemaTypes, typeName, value) {
+  if (bindingUtil) {
+    bindingUtil.validateType(typeName, value);
+  } else {
+    var schema = utils.lookup(schemaTypes, 'id', typeName);
+    validate([value], [schema]);
+  }
+}
 
 binding.registerCustomHook(function(api) {
   var declarativeWebRequest = api.compiledApi;
-
-  // Returns the schema definition of type |typeId| defined in |namespace|.
-  function getSchema(typeId) {
-    return utils.lookup(api.schema.types,
-                        'id',
-                        'declarativeWebRequest.' + typeId);
-  }
 
   // Helper function for the constructor of concrete datatypes of the
   // declarative webRequest API.
@@ -31,15 +33,11 @@ binding.registerCustomHook(function(api) {
         instance[key] = parameters[key];
       }
     }
-    instance.instanceType = 'declarativeWebRequest.' + typeId;
-    if (!apiBridge) {
-      var schema = getSchema(typeId);
-      // TODO(devlin): This won't work with native bindings, but it's lower
-      // priority. declarativeWebRequest never shipped, and validation will
-      // fail later when trying to use the created object. Still, it'd be
-      // potentially nice to fix.
-      validate([instance], [schema]);
-    }
+
+    var qualifiedType = 'declarativeWebRequest.' + typeId;
+    instance.instanceType = qualifiedType;
+    validateType(bindingUtil ? undefined : api.schema.types, qualifiedType,
+                 instance);
   }
 
   // Setup all data types for the declarative webRequest API.
