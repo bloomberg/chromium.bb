@@ -151,9 +151,9 @@ typedef void
 {{export_macro}}
 {%-  set kind = packed_field.field.kind %}
 {%-  if kind|is_array_kind %}
-void {{struct_name}}_add_{{packed_field.field.name}}({{struct_name}}Ptr self, {{kind.kind|c_wrapper_type}} {{packed_field.field.name}});
+void {{struct_name}}_{{packed_field.field.name}}_add({{struct_name}}Ptr self, {{kind.kind|c_wrapper_type}} element);
 {%-  else %}
-void {{struct_name}}_set_{{packed_field.field.name}}({{struct_name}}Ptr self, {{packed_field.field.kind|c_wrapper_type}} {{packed_field.field.name}});
+void {{struct_name}}_{{packed_field.field.name}}_set({{struct_name}}Ptr self, {{packed_field.field.kind|c_wrapper_type}} {{packed_field.field.name}});
 {%- endif %}
 {%- endfor %}
 // {{struct_name}} getters.
@@ -161,11 +161,13 @@ void {{struct_name}}_set_{{packed_field.field.name}}({{struct_name}}Ptr self, {{
 {{export_macro}}
 {%-  set kind = packed_field.field.kind %}
 {%-  if kind|is_array_kind %}
-uint32_t {{struct_name}}_get_{{packed_field.field.name}}Size({{struct_name}}Ptr self);
+uint32_t {{struct_name}}_{{packed_field.field.name}}_size({{struct_name}}Ptr self);
 {{export_macro}}
-{{kind.kind|c_wrapper_type}} {{struct_name}}_get_{{packed_field.field.name}}AtIndex({{struct_name}}Ptr self, uint32_t index);
+{{kind.kind|c_wrapper_type}} {{struct_name}}_{{packed_field.field.name}}_at({{struct_name}}Ptr self, uint32_t index);
+{{export_macro}}
+void {{struct_name}}_{{packed_field.field.name}}_clear({{struct_name}}Ptr self);
 {%-  else %}
-{{packed_field.field.kind|c_wrapper_type}} {{struct_name}}_get_{{packed_field.field.name}}({{struct_name}}Ptr self);
+{{packed_field.field.kind|c_wrapper_type}} {{struct_name}}_{{packed_field.field.name}}_get({{struct_name}}Ptr self);
 {%- endif %}
 {%- endfor %}
 {%- endfor %}

@@ -617,31 +617,31 @@ CRONET_EXPORT Cronet_ErrorPtr Cronet_Error_Create();
 CRONET_EXPORT void Cronet_Error_Destroy(Cronet_ErrorPtr self);
 // Cronet_Error setters.
 CRONET_EXPORT
-void Cronet_Error_set_errorCode(Cronet_ErrorPtr self,
-                                Cronet_Error_ERROR_CODE errorCode);
+void Cronet_Error_error_code_set(Cronet_ErrorPtr self,
+                                 Cronet_Error_ERROR_CODE error_code);
 CRONET_EXPORT
-void Cronet_Error_set_message(Cronet_ErrorPtr self, Cronet_String message);
+void Cronet_Error_message_set(Cronet_ErrorPtr self, Cronet_String message);
 CRONET_EXPORT
-void Cronet_Error_set_internal_error_code(Cronet_ErrorPtr self,
+void Cronet_Error_internal_error_code_set(Cronet_ErrorPtr self,
                                           int32_t internal_error_code);
 CRONET_EXPORT
-void Cronet_Error_set_immediately_retryable(Cronet_ErrorPtr self,
+void Cronet_Error_immediately_retryable_set(Cronet_ErrorPtr self,
                                             bool immediately_retryable);
 CRONET_EXPORT
-void Cronet_Error_set_quic_detailed_error_code(
+void Cronet_Error_quic_detailed_error_code_set(
     Cronet_ErrorPtr self,
     int32_t quic_detailed_error_code);
 // Cronet_Error getters.
 CRONET_EXPORT
-Cronet_Error_ERROR_CODE Cronet_Error_get_errorCode(Cronet_ErrorPtr self);
+Cronet_Error_ERROR_CODE Cronet_Error_error_code_get(Cronet_ErrorPtr self);
 CRONET_EXPORT
-Cronet_String Cronet_Error_get_message(Cronet_ErrorPtr self);
+Cronet_String Cronet_Error_message_get(Cronet_ErrorPtr self);
 CRONET_EXPORT
-int32_t Cronet_Error_get_internal_error_code(Cronet_ErrorPtr self);
+int32_t Cronet_Error_internal_error_code_get(Cronet_ErrorPtr self);
 CRONET_EXPORT
-bool Cronet_Error_get_immediately_retryable(Cronet_ErrorPtr self);
+bool Cronet_Error_immediately_retryable_get(Cronet_ErrorPtr self);
 CRONET_EXPORT
-int32_t Cronet_Error_get_quic_detailed_error_code(Cronet_ErrorPtr self);
+int32_t Cronet_Error_quic_detailed_error_code_get(Cronet_ErrorPtr self);
 
 ///////////////////////
 // Struct Cronet_QuicHint.
@@ -649,19 +649,19 @@ CRONET_EXPORT Cronet_QuicHintPtr Cronet_QuicHint_Create();
 CRONET_EXPORT void Cronet_QuicHint_Destroy(Cronet_QuicHintPtr self);
 // Cronet_QuicHint setters.
 CRONET_EXPORT
-void Cronet_QuicHint_set_host(Cronet_QuicHintPtr self, Cronet_String host);
+void Cronet_QuicHint_host_set(Cronet_QuicHintPtr self, Cronet_String host);
 CRONET_EXPORT
-void Cronet_QuicHint_set_port(Cronet_QuicHintPtr self, int32_t port);
+void Cronet_QuicHint_port_set(Cronet_QuicHintPtr self, int32_t port);
 CRONET_EXPORT
-void Cronet_QuicHint_set_alternate_port(Cronet_QuicHintPtr self,
+void Cronet_QuicHint_alternate_port_set(Cronet_QuicHintPtr self,
                                         int32_t alternate_port);
 // Cronet_QuicHint getters.
 CRONET_EXPORT
-Cronet_String Cronet_QuicHint_get_host(Cronet_QuicHintPtr self);
+Cronet_String Cronet_QuicHint_host_get(Cronet_QuicHintPtr self);
 CRONET_EXPORT
-int32_t Cronet_QuicHint_get_port(Cronet_QuicHintPtr self);
+int32_t Cronet_QuicHint_port_get(Cronet_QuicHintPtr self);
 CRONET_EXPORT
-int32_t Cronet_QuicHint_get_alternate_port(Cronet_QuicHintPtr self);
+int32_t Cronet_QuicHint_alternate_port_get(Cronet_QuicHintPtr self);
 
 ///////////////////////
 // Struct Cronet_PublicKeyPins.
@@ -669,30 +669,31 @@ CRONET_EXPORT Cronet_PublicKeyPinsPtr Cronet_PublicKeyPins_Create();
 CRONET_EXPORT void Cronet_PublicKeyPins_Destroy(Cronet_PublicKeyPinsPtr self);
 // Cronet_PublicKeyPins setters.
 CRONET_EXPORT
-void Cronet_PublicKeyPins_set_host(Cronet_PublicKeyPinsPtr self,
+void Cronet_PublicKeyPins_host_set(Cronet_PublicKeyPinsPtr self,
                                    Cronet_String host);
 CRONET_EXPORT
-void Cronet_PublicKeyPins_add_pins_sha256(Cronet_PublicKeyPinsPtr self,
-                                          Cronet_String pins_sha256);
+void Cronet_PublicKeyPins_pins_sha256_add(Cronet_PublicKeyPinsPtr self,
+                                          Cronet_String element);
 CRONET_EXPORT
-void Cronet_PublicKeyPins_set_include_subdomains(Cronet_PublicKeyPinsPtr self,
+void Cronet_PublicKeyPins_include_subdomains_set(Cronet_PublicKeyPinsPtr self,
                                                  bool include_subdomains);
 CRONET_EXPORT
-void Cronet_PublicKeyPins_set_expiration_date(Cronet_PublicKeyPinsPtr self,
+void Cronet_PublicKeyPins_expiration_date_set(Cronet_PublicKeyPinsPtr self,
                                               int64_t expiration_date);
 // Cronet_PublicKeyPins getters.
 CRONET_EXPORT
-Cronet_String Cronet_PublicKeyPins_get_host(Cronet_PublicKeyPinsPtr self);
+Cronet_String Cronet_PublicKeyPins_host_get(Cronet_PublicKeyPinsPtr self);
 CRONET_EXPORT
-uint32_t Cronet_PublicKeyPins_get_pins_sha256Size(Cronet_PublicKeyPinsPtr self);
+uint32_t Cronet_PublicKeyPins_pins_sha256_size(Cronet_PublicKeyPinsPtr self);
 CRONET_EXPORT
-Cronet_String Cronet_PublicKeyPins_get_pins_sha256AtIndex(
-    Cronet_PublicKeyPinsPtr self,
-    uint32_t index);
+Cronet_String Cronet_PublicKeyPins_pins_sha256_at(Cronet_PublicKeyPinsPtr self,
+                                                  uint32_t index);
 CRONET_EXPORT
-bool Cronet_PublicKeyPins_get_include_subdomains(Cronet_PublicKeyPinsPtr self);
+void Cronet_PublicKeyPins_pins_sha256_clear(Cronet_PublicKeyPinsPtr self);
 CRONET_EXPORT
-int64_t Cronet_PublicKeyPins_get_expiration_date(Cronet_PublicKeyPinsPtr self);
+bool Cronet_PublicKeyPins_include_subdomains_get(Cronet_PublicKeyPinsPtr self);
+CRONET_EXPORT
+int64_t Cronet_PublicKeyPins_expiration_date_get(Cronet_PublicKeyPinsPtr self);
 
 ///////////////////////
 // Struct Cronet_EngineParams.
@@ -700,88 +701,90 @@ CRONET_EXPORT Cronet_EngineParamsPtr Cronet_EngineParams_Create();
 CRONET_EXPORT void Cronet_EngineParams_Destroy(Cronet_EngineParamsPtr self);
 // Cronet_EngineParams setters.
 CRONET_EXPORT
-void Cronet_EngineParams_set_enable_check_result(Cronet_EngineParamsPtr self,
+void Cronet_EngineParams_enable_check_result_set(Cronet_EngineParamsPtr self,
                                                  bool enable_check_result);
 CRONET_EXPORT
-void Cronet_EngineParams_set_user_agent(Cronet_EngineParamsPtr self,
+void Cronet_EngineParams_user_agent_set(Cronet_EngineParamsPtr self,
                                         Cronet_String user_agent);
 CRONET_EXPORT
-void Cronet_EngineParams_set_accept_language(Cronet_EngineParamsPtr self,
+void Cronet_EngineParams_accept_language_set(Cronet_EngineParamsPtr self,
                                              Cronet_String accept_language);
 CRONET_EXPORT
-void Cronet_EngineParams_set_storage_path(Cronet_EngineParamsPtr self,
+void Cronet_EngineParams_storage_path_set(Cronet_EngineParamsPtr self,
                                           Cronet_String storage_path);
 CRONET_EXPORT
-void Cronet_EngineParams_set_enable_quic(Cronet_EngineParamsPtr self,
+void Cronet_EngineParams_enable_quic_set(Cronet_EngineParamsPtr self,
                                          bool enable_quic);
 CRONET_EXPORT
-void Cronet_EngineParams_set_enable_http2(Cronet_EngineParamsPtr self,
+void Cronet_EngineParams_enable_http2_set(Cronet_EngineParamsPtr self,
                                           bool enable_http2);
 CRONET_EXPORT
-void Cronet_EngineParams_set_enable_brotli(Cronet_EngineParamsPtr self,
+void Cronet_EngineParams_enable_brotli_set(Cronet_EngineParamsPtr self,
                                            bool enable_brotli);
 CRONET_EXPORT
-void Cronet_EngineParams_set_http_cache_mode(
+void Cronet_EngineParams_http_cache_mode_set(
     Cronet_EngineParamsPtr self,
     Cronet_EngineParams_HTTP_CACHE_MODE http_cache_mode);
 CRONET_EXPORT
-void Cronet_EngineParams_set_http_cache_max_size(Cronet_EngineParamsPtr self,
+void Cronet_EngineParams_http_cache_max_size_set(Cronet_EngineParamsPtr self,
                                                  int64_t http_cache_max_size);
 CRONET_EXPORT
-void Cronet_EngineParams_add_quic_hints(Cronet_EngineParamsPtr self,
-                                        Cronet_QuicHintPtr quic_hints);
+void Cronet_EngineParams_quic_hints_add(Cronet_EngineParamsPtr self,
+                                        Cronet_QuicHintPtr element);
 CRONET_EXPORT
-void Cronet_EngineParams_add_public_key_pins(
-    Cronet_EngineParamsPtr self,
-    Cronet_PublicKeyPinsPtr public_key_pins);
+void Cronet_EngineParams_public_key_pins_add(Cronet_EngineParamsPtr self,
+                                             Cronet_PublicKeyPinsPtr element);
 CRONET_EXPORT
-void Cronet_EngineParams_set_enable_public_key_pinning_bypass_for_local_trust_anchors(
+void Cronet_EngineParams_enable_public_key_pinning_bypass_for_local_trust_anchors_set(
     Cronet_EngineParamsPtr self,
     bool enable_public_key_pinning_bypass_for_local_trust_anchors);
 CRONET_EXPORT
-void Cronet_EngineParams_set_experimental_options(
+void Cronet_EngineParams_experimental_options_set(
     Cronet_EngineParamsPtr self,
     Cronet_String experimental_options);
 // Cronet_EngineParams getters.
 CRONET_EXPORT
-bool Cronet_EngineParams_get_enable_check_result(Cronet_EngineParamsPtr self);
+bool Cronet_EngineParams_enable_check_result_get(Cronet_EngineParamsPtr self);
 CRONET_EXPORT
-Cronet_String Cronet_EngineParams_get_user_agent(Cronet_EngineParamsPtr self);
+Cronet_String Cronet_EngineParams_user_agent_get(Cronet_EngineParamsPtr self);
 CRONET_EXPORT
-Cronet_String Cronet_EngineParams_get_accept_language(
+Cronet_String Cronet_EngineParams_accept_language_get(
     Cronet_EngineParamsPtr self);
 CRONET_EXPORT
-Cronet_String Cronet_EngineParams_get_storage_path(Cronet_EngineParamsPtr self);
+Cronet_String Cronet_EngineParams_storage_path_get(Cronet_EngineParamsPtr self);
 CRONET_EXPORT
-bool Cronet_EngineParams_get_enable_quic(Cronet_EngineParamsPtr self);
+bool Cronet_EngineParams_enable_quic_get(Cronet_EngineParamsPtr self);
 CRONET_EXPORT
-bool Cronet_EngineParams_get_enable_http2(Cronet_EngineParamsPtr self);
+bool Cronet_EngineParams_enable_http2_get(Cronet_EngineParamsPtr self);
 CRONET_EXPORT
-bool Cronet_EngineParams_get_enable_brotli(Cronet_EngineParamsPtr self);
+bool Cronet_EngineParams_enable_brotli_get(Cronet_EngineParamsPtr self);
 CRONET_EXPORT
-Cronet_EngineParams_HTTP_CACHE_MODE Cronet_EngineParams_get_http_cache_mode(
+Cronet_EngineParams_HTTP_CACHE_MODE Cronet_EngineParams_http_cache_mode_get(
     Cronet_EngineParamsPtr self);
 CRONET_EXPORT
-int64_t Cronet_EngineParams_get_http_cache_max_size(
+int64_t Cronet_EngineParams_http_cache_max_size_get(
     Cronet_EngineParamsPtr self);
 CRONET_EXPORT
-uint32_t Cronet_EngineParams_get_quic_hintsSize(Cronet_EngineParamsPtr self);
+uint32_t Cronet_EngineParams_quic_hints_size(Cronet_EngineParamsPtr self);
 CRONET_EXPORT
-Cronet_QuicHintPtr Cronet_EngineParams_get_quic_hintsAtIndex(
+Cronet_QuicHintPtr Cronet_EngineParams_quic_hints_at(
     Cronet_EngineParamsPtr self,
     uint32_t index);
 CRONET_EXPORT
-uint32_t Cronet_EngineParams_get_public_key_pinsSize(
-    Cronet_EngineParamsPtr self);
+void Cronet_EngineParams_quic_hints_clear(Cronet_EngineParamsPtr self);
 CRONET_EXPORT
-Cronet_PublicKeyPinsPtr Cronet_EngineParams_get_public_key_pinsAtIndex(
+uint32_t Cronet_EngineParams_public_key_pins_size(Cronet_EngineParamsPtr self);
+CRONET_EXPORT
+Cronet_PublicKeyPinsPtr Cronet_EngineParams_public_key_pins_at(
     Cronet_EngineParamsPtr self,
     uint32_t index);
 CRONET_EXPORT
-bool Cronet_EngineParams_get_enable_public_key_pinning_bypass_for_local_trust_anchors(
+void Cronet_EngineParams_public_key_pins_clear(Cronet_EngineParamsPtr self);
+CRONET_EXPORT
+bool Cronet_EngineParams_enable_public_key_pinning_bypass_for_local_trust_anchors_get(
     Cronet_EngineParamsPtr self);
 CRONET_EXPORT
-Cronet_String Cronet_EngineParams_get_experimental_options(
+Cronet_String Cronet_EngineParams_experimental_options_get(
     Cronet_EngineParamsPtr self);
 
 ///////////////////////
@@ -790,15 +793,15 @@ CRONET_EXPORT Cronet_HttpHeaderPtr Cronet_HttpHeader_Create();
 CRONET_EXPORT void Cronet_HttpHeader_Destroy(Cronet_HttpHeaderPtr self);
 // Cronet_HttpHeader setters.
 CRONET_EXPORT
-void Cronet_HttpHeader_set_name(Cronet_HttpHeaderPtr self, Cronet_String name);
+void Cronet_HttpHeader_name_set(Cronet_HttpHeaderPtr self, Cronet_String name);
 CRONET_EXPORT
-void Cronet_HttpHeader_set_value(Cronet_HttpHeaderPtr self,
+void Cronet_HttpHeader_value_set(Cronet_HttpHeaderPtr self,
                                  Cronet_String value);
 // Cronet_HttpHeader getters.
 CRONET_EXPORT
-Cronet_String Cronet_HttpHeader_get_name(Cronet_HttpHeaderPtr self);
+Cronet_String Cronet_HttpHeader_name_get(Cronet_HttpHeaderPtr self);
 CRONET_EXPORT
-Cronet_String Cronet_HttpHeader_get_value(Cronet_HttpHeaderPtr self);
+Cronet_String Cronet_HttpHeader_value_get(Cronet_HttpHeaderPtr self);
 
 ///////////////////////
 // Struct Cronet_UrlResponseInfo.
@@ -807,69 +810,72 @@ CRONET_EXPORT void Cronet_UrlResponseInfo_Destroy(
     Cronet_UrlResponseInfoPtr self);
 // Cronet_UrlResponseInfo setters.
 CRONET_EXPORT
-void Cronet_UrlResponseInfo_set_url(Cronet_UrlResponseInfoPtr self,
+void Cronet_UrlResponseInfo_url_set(Cronet_UrlResponseInfoPtr self,
                                     Cronet_String url);
 CRONET_EXPORT
-void Cronet_UrlResponseInfo_add_url_chain(Cronet_UrlResponseInfoPtr self,
-                                          Cronet_String url_chain);
+void Cronet_UrlResponseInfo_url_chain_add(Cronet_UrlResponseInfoPtr self,
+                                          Cronet_String element);
 CRONET_EXPORT
-void Cronet_UrlResponseInfo_set_http_status_code(Cronet_UrlResponseInfoPtr self,
+void Cronet_UrlResponseInfo_http_status_code_set(Cronet_UrlResponseInfoPtr self,
                                                  int32_t http_status_code);
 CRONET_EXPORT
-void Cronet_UrlResponseInfo_set_http_status_text(
+void Cronet_UrlResponseInfo_http_status_text_set(
     Cronet_UrlResponseInfoPtr self,
     Cronet_String http_status_text);
 CRONET_EXPORT
-void Cronet_UrlResponseInfo_add_all_headers_list(
-    Cronet_UrlResponseInfoPtr self,
-    Cronet_HttpHeaderPtr all_headers_list);
+void Cronet_UrlResponseInfo_all_headers_list_add(Cronet_UrlResponseInfoPtr self,
+                                                 Cronet_HttpHeaderPtr element);
 CRONET_EXPORT
-void Cronet_UrlResponseInfo_set_was_cached(Cronet_UrlResponseInfoPtr self,
+void Cronet_UrlResponseInfo_was_cached_set(Cronet_UrlResponseInfoPtr self,
                                            bool was_cached);
 CRONET_EXPORT
-void Cronet_UrlResponseInfo_set_negotiated_protocol(
+void Cronet_UrlResponseInfo_negotiated_protocol_set(
     Cronet_UrlResponseInfoPtr self,
     Cronet_String negotiated_protocol);
 CRONET_EXPORT
-void Cronet_UrlResponseInfo_set_proxy_server(Cronet_UrlResponseInfoPtr self,
+void Cronet_UrlResponseInfo_proxy_server_set(Cronet_UrlResponseInfoPtr self,
                                              Cronet_String proxy_server);
 CRONET_EXPORT
-void Cronet_UrlResponseInfo_set_received_byte_count(
+void Cronet_UrlResponseInfo_received_byte_count_set(
     Cronet_UrlResponseInfoPtr self,
     int64_t received_byte_count);
 // Cronet_UrlResponseInfo getters.
 CRONET_EXPORT
-Cronet_String Cronet_UrlResponseInfo_get_url(Cronet_UrlResponseInfoPtr self);
+Cronet_String Cronet_UrlResponseInfo_url_get(Cronet_UrlResponseInfoPtr self);
 CRONET_EXPORT
-uint32_t Cronet_UrlResponseInfo_get_url_chainSize(
-    Cronet_UrlResponseInfoPtr self);
+uint32_t Cronet_UrlResponseInfo_url_chain_size(Cronet_UrlResponseInfoPtr self);
 CRONET_EXPORT
-Cronet_String Cronet_UrlResponseInfo_get_url_chainAtIndex(
+Cronet_String Cronet_UrlResponseInfo_url_chain_at(
     Cronet_UrlResponseInfoPtr self,
     uint32_t index);
 CRONET_EXPORT
-int32_t Cronet_UrlResponseInfo_get_http_status_code(
+void Cronet_UrlResponseInfo_url_chain_clear(Cronet_UrlResponseInfoPtr self);
+CRONET_EXPORT
+int32_t Cronet_UrlResponseInfo_http_status_code_get(
     Cronet_UrlResponseInfoPtr self);
 CRONET_EXPORT
-Cronet_String Cronet_UrlResponseInfo_get_http_status_text(
+Cronet_String Cronet_UrlResponseInfo_http_status_text_get(
     Cronet_UrlResponseInfoPtr self);
 CRONET_EXPORT
-uint32_t Cronet_UrlResponseInfo_get_all_headers_listSize(
+uint32_t Cronet_UrlResponseInfo_all_headers_list_size(
     Cronet_UrlResponseInfoPtr self);
 CRONET_EXPORT
-Cronet_HttpHeaderPtr Cronet_UrlResponseInfo_get_all_headers_listAtIndex(
+Cronet_HttpHeaderPtr Cronet_UrlResponseInfo_all_headers_list_at(
     Cronet_UrlResponseInfoPtr self,
     uint32_t index);
 CRONET_EXPORT
-bool Cronet_UrlResponseInfo_get_was_cached(Cronet_UrlResponseInfoPtr self);
-CRONET_EXPORT
-Cronet_String Cronet_UrlResponseInfo_get_negotiated_protocol(
+void Cronet_UrlResponseInfo_all_headers_list_clear(
     Cronet_UrlResponseInfoPtr self);
 CRONET_EXPORT
-Cronet_String Cronet_UrlResponseInfo_get_proxy_server(
+bool Cronet_UrlResponseInfo_was_cached_get(Cronet_UrlResponseInfoPtr self);
+CRONET_EXPORT
+Cronet_String Cronet_UrlResponseInfo_negotiated_protocol_get(
     Cronet_UrlResponseInfoPtr self);
 CRONET_EXPORT
-int64_t Cronet_UrlResponseInfo_get_received_byte_count(
+Cronet_String Cronet_UrlResponseInfo_proxy_server_get(
+    Cronet_UrlResponseInfoPtr self);
+CRONET_EXPORT
+int64_t Cronet_UrlResponseInfo_received_byte_count_get(
     Cronet_UrlResponseInfoPtr self);
 
 ///////////////////////
@@ -879,66 +885,71 @@ CRONET_EXPORT void Cronet_UrlRequestParams_Destroy(
     Cronet_UrlRequestParamsPtr self);
 // Cronet_UrlRequestParams setters.
 CRONET_EXPORT
-void Cronet_UrlRequestParams_set_http_method(Cronet_UrlRequestParamsPtr self,
+void Cronet_UrlRequestParams_http_method_set(Cronet_UrlRequestParamsPtr self,
                                              Cronet_String http_method);
 CRONET_EXPORT
-void Cronet_UrlRequestParams_add_request_headers(
+void Cronet_UrlRequestParams_request_headers_add(
     Cronet_UrlRequestParamsPtr self,
-    Cronet_HttpHeaderPtr request_headers);
+    Cronet_HttpHeaderPtr element);
 CRONET_EXPORT
-void Cronet_UrlRequestParams_set_disable_cache(Cronet_UrlRequestParamsPtr self,
+void Cronet_UrlRequestParams_disable_cache_set(Cronet_UrlRequestParamsPtr self,
                                                bool disable_cache);
 CRONET_EXPORT
-void Cronet_UrlRequestParams_set_priority(
+void Cronet_UrlRequestParams_priority_set(
     Cronet_UrlRequestParamsPtr self,
     Cronet_UrlRequestParams_REQUEST_PRIORITY priority);
 CRONET_EXPORT
-void Cronet_UrlRequestParams_set_upload_data_provider(
+void Cronet_UrlRequestParams_upload_data_provider_set(
     Cronet_UrlRequestParamsPtr self,
     Cronet_UploadDataProviderPtr upload_data_provider);
 CRONET_EXPORT
-void Cronet_UrlRequestParams_set_upload_data_provider_executor(
+void Cronet_UrlRequestParams_upload_data_provider_executor_set(
     Cronet_UrlRequestParamsPtr self,
     Cronet_ExecutorPtr upload_data_provider_executor);
 CRONET_EXPORT
-void Cronet_UrlRequestParams_set_allow_direct_executor(
+void Cronet_UrlRequestParams_allow_direct_executor_set(
     Cronet_UrlRequestParamsPtr self,
     bool allow_direct_executor);
 CRONET_EXPORT
-void Cronet_UrlRequestParams_add_annotations(Cronet_UrlRequestParamsPtr self,
-                                             Cronet_RawDataPtr annotations);
+void Cronet_UrlRequestParams_annotations_add(Cronet_UrlRequestParamsPtr self,
+                                             Cronet_RawDataPtr element);
 // Cronet_UrlRequestParams getters.
 CRONET_EXPORT
-Cronet_String Cronet_UrlRequestParams_get_http_method(
+Cronet_String Cronet_UrlRequestParams_http_method_get(
     Cronet_UrlRequestParamsPtr self);
 CRONET_EXPORT
-uint32_t Cronet_UrlRequestParams_get_request_headersSize(
+uint32_t Cronet_UrlRequestParams_request_headers_size(
     Cronet_UrlRequestParamsPtr self);
 CRONET_EXPORT
-Cronet_HttpHeaderPtr Cronet_UrlRequestParams_get_request_headersAtIndex(
+Cronet_HttpHeaderPtr Cronet_UrlRequestParams_request_headers_at(
     Cronet_UrlRequestParamsPtr self,
     uint32_t index);
 CRONET_EXPORT
-bool Cronet_UrlRequestParams_get_disable_cache(Cronet_UrlRequestParamsPtr self);
-CRONET_EXPORT
-Cronet_UrlRequestParams_REQUEST_PRIORITY Cronet_UrlRequestParams_get_priority(
+void Cronet_UrlRequestParams_request_headers_clear(
     Cronet_UrlRequestParamsPtr self);
 CRONET_EXPORT
-Cronet_UploadDataProviderPtr Cronet_UrlRequestParams_get_upload_data_provider(
+bool Cronet_UrlRequestParams_disable_cache_get(Cronet_UrlRequestParamsPtr self);
+CRONET_EXPORT
+Cronet_UrlRequestParams_REQUEST_PRIORITY Cronet_UrlRequestParams_priority_get(
     Cronet_UrlRequestParamsPtr self);
 CRONET_EXPORT
-Cronet_ExecutorPtr Cronet_UrlRequestParams_get_upload_data_provider_executor(
+Cronet_UploadDataProviderPtr Cronet_UrlRequestParams_upload_data_provider_get(
     Cronet_UrlRequestParamsPtr self);
 CRONET_EXPORT
-bool Cronet_UrlRequestParams_get_allow_direct_executor(
+Cronet_ExecutorPtr Cronet_UrlRequestParams_upload_data_provider_executor_get(
     Cronet_UrlRequestParamsPtr self);
 CRONET_EXPORT
-uint32_t Cronet_UrlRequestParams_get_annotationsSize(
+bool Cronet_UrlRequestParams_allow_direct_executor_get(
     Cronet_UrlRequestParamsPtr self);
 CRONET_EXPORT
-Cronet_RawDataPtr Cronet_UrlRequestParams_get_annotationsAtIndex(
+uint32_t Cronet_UrlRequestParams_annotations_size(
+    Cronet_UrlRequestParamsPtr self);
+CRONET_EXPORT
+Cronet_RawDataPtr Cronet_UrlRequestParams_annotations_at(
     Cronet_UrlRequestParamsPtr self,
     uint32_t index);
+CRONET_EXPORT
+void Cronet_UrlRequestParams_annotations_clear(Cronet_UrlRequestParamsPtr self);
 
 ///////////////////////
 // Struct Cronet_RequestFinishedInfo.

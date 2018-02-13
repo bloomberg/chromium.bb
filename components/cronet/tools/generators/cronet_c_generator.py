@@ -558,7 +558,7 @@ class Generator(generator.Generator):
       return self._GetNameForKind(
           kind, add_same_module_namespaces=add_same_module_namespaces)
     if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
-      return "std::unique_ptr<%s>" % self._GetNameForKind(
+      return "%s" % self._GetNameForKind(
           kind, add_same_module_namespaces=add_same_module_namespaces)
     if mojom.IsArrayKind(kind):
       pattern = "WTF::Vector<%s>" if self.for_blink else "std::vector<%s>"
