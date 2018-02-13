@@ -1,22 +1,36 @@
-<body>
-<p>This tests deleting a selection that ends inside an empty table cell.  No merging should happen, only editable selected content should be removed.</p>
-<div contenteditable="true">
-<table border="1"><tr>
-    <td></td>
-    <td id="start">Editable</td>
-</tr></table>
-<table border="1"><tr>
-    <td id="end"></td>
-    <td>There should be one empty cell to the left of this one.</td>
-</tr></table>
-</div>
-
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-var sel = window.getSelection();
-var start = document.getElementById("start").firstChild;
-var end = document.getElementById("end");
+// This tests deleting a selection that ends inside an empty table cell.
+// No merging should happen, only editable selected content should be removed.
 
-sel.setBaseAndExtent(start, 0, end, 0);
-document.execCommand("Delete");
+selection_test(
+    [
+        '<div contenteditable="true">',
+            '<table border="1"><tbody><tr>',
+                '<td></td>',
+                '<td>^Editable</td>',
+            '</tr></tbody></table>',
+            '<table border="1"><tbody><tr>',
+                '<td>|</td>',
+                '<td>There should be one empty cell to the left of this one.</td>',
+            '</tr></tbody></table>',
+        '</div>'
+    ],
+    "Delete",
+    [
+        '<div contenteditable="true">',
+            '<table border="1"><tbody><tr>',
+                '<td></td>',
+                '<td>|<br></td>',
+            '</tr></tbody></table>',
+            '<table border="1"><tbody><tr>',
+                '<td></td>',
+                '<td>There should be one empty cell to the left of this one.</td>',
+            '</tr></tbody></table>',
+        '</div>'
+    ],
+    'Deleting a selection that ends inside an empty table cell');
 </script>
-</body>
