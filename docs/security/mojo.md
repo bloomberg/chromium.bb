@@ -192,16 +192,113 @@ the browser process to:
 > performs the appropriate sanitizations and recommend its usage directly here.
 
 
-### Do not define things that are not used
+### Do not define unused or unimplemented things
+
+Mojo interfaces often cross privilege boundaries. Having well-defined interfaces
+that don't contain stubbed out methods or unused parameters makes it easier to
+understand and evaluate the implications of crossing these boundaries. Some
+common guidelines to follow are below.
+
+
+#### Do use EnableIf to guard platform-specific constructs
 
 Platform-specific functionality should only be defined on the platforms where
-it is used.
+it is implemented. Use the Mojo `EnableIf` annotation to guard definitions that
+should only be visible in certain build configurations.
 
-> The work to make this possible is in progress: <https://crbug.com/676224>
+**_Good_**
+```c++
+// GN file:
+mojom("view_bindings") {
+  // ...
 
-For enums, avoid the pattern of defining a `LAST` or `MAX` value. The `LAST`
-value is typically used in conjunction with legacy IPC macros to validate enums;
-this is not needed with Mojo enums, which automatically validated.
+  enabled_features = []
+  if (is_android) {
+    enabled_features += [ "is_android" ];
+  }
+}
+
+// mojom definition:
+interface View {
+  // ...
+
+  [EnableIf=is_android]
+  UpdateBrowserControlsState(bool enable_hiding, bool enable_showing,
+                             bool animate);
+};
+
+// C++ implementation:
+class View : public mojom::View {
+ public:
+  // ...
+
+#if defined(OS_ANDROID)
+  void UpdateBrowserControlsState(bool enable_hiding, bool enable_showing,
+                                  bool animate);
+#endif
+};
+```
+
+**_Bad_**
+```c++
+// mojom definition:
+interface View {
+  // ...
+
+  UpdateBrowserControlsState(bool enable_hiding, bool enable_showing,
+                             bool animate);
+};
+
+// C++ implementation:
+class View : public mojom::View {
+ public:
+  // ...
+
+#if defined(OS_ANDROID)
+  void UpdateBrowserControlsState(bool enable_hiding, bool enable_showing,
+                                  bool animate) override;
+#else
+  void UpdateBrowserControlsState(bool enable_hiding, bool enable_showing,
+                                  bool animate) override {
+    NOTREACHED();
+  }
+#endif
+};
+```
+
+The `EnableIf` annotation can be applied to almost anything: interfaces,
+methods, arguments, constants, structs, struct members, enums, enumerator
+values, et cetera.
+
+
+#### Do not define unimplemented methods
+
+Reviewing IPC requires reviewing a concrete implementation of the Mojo
+interface, to evaluate how the (possibly untrustworthy) inputs are used, what
+outputs are produced, et cetera. If a method is not yet implemented, do not
+define it in the interface.
+
+**_Bad_**
+```c++
+// mojom definition:
+interface Spaceship {
+  EnterHyperspace();
+  ExitHyperspace();
+};
+
+// C++ implementation:
+class SpaceshipPrototype : public mojom::Spaceship {
+  void EnterHyperspace() { /* TODO(dcheng): Implement. */ }
+  void ExitHyperspace() { /* TODO(dcheng): Implement. */ }
+};
+```
+
+
+#### Do not define unused enumerator values
+
+Avoid the pattern of defining a `LAST` or `MAX` value. The `LAST` value is
+typically used in conjunction with legacy IPC macros to validate enums; this is
+not needed with Mojo enums, which are automatically validated.
 
 The `MAX` value is typically used as an invalid sentinel value for UMA
 histograms: unfortunately, simply defining a `MAX` value in a Mojo enum will
