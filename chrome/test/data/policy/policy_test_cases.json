@@ -3508,7 +3508,7 @@
       "PasswordProtectionWarningTrigger": 2
     },
     "pref_mappings": [
-      { "pref": "safe_browsing.password_protection_warning_trigger"}
+      { "pref": "safebrowsing.password_protection_warning_trigger"}
     ]
   },
 
@@ -3518,7 +3518,7 @@
       "PasswordProtectionRiskTrigger": 2
     },
     "pref_mappings": [
-      { "pref": "safe_browsing.password_protection_risk_trigger"}
+      { "pref": "safebrowsing.password_protection_risk_trigger"}
     ]
   },
 
@@ -3554,6 +3554,38 @@
     },
     "pref_mappings": [
       { "pref": "cros.virtual_machines_allowed"}
+    ]
+  },
+
+  "SafeBrowsingWhitelistDomains": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": {
+      "SafeBrowsingWhitelistDomains": ["mydomain.com", "mydomain.net"]
+    },
+    "pref_mappings": [
+      { "pref": "safebrowsing.safe_browsing_whitelist_domains"}
+    ]
+  },
+
+  "PasswordProtectionLoginURLs": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": {
+      "PasswordProtectionLoginURLs": [
+        "https://mydomain.com/login.html", "https://login.mydomain.com"
+      ]
+    },
+    "pref_mappings": [
+      { "pref": "safebrowsing.password_protection_login_urls"}
+    ]
+  },
+
+  "PasswordProtectionChangePasswordURL": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": {
+      "PasswordProtectionChangePasswordURL": "https://mydomain.com/changepw.mydomain.html"
+    },
+    "pref_mappings": [
+      { "pref": "safebrowsing.password_protection_change_password_url"}
     ]
   },
 

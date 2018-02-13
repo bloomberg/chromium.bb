@@ -231,6 +231,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual PasswordProtectionTrigger GetPasswordProtectionTriggerPref(
       const std::string& pref_name) const = 0;
 
+  // Return the pref value of password protection login URLs.
+  virtual void GetPasswordProtectionLoginURLsPref(
+      std::vector<GURL>* out_login_url_list) const = 0;
+
  protected:
   friend class PasswordProtectionRequest;
 

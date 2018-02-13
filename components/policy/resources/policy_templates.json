@@ -146,7 +146,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 421
+#   For your editing convenience: highest ID currently used: 424
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -588,6 +588,21 @@
         'CastReceiverEnabled',
         'CastReceiverName',
       ]
+    },
+    {
+      'name': 'SafeBrowsing',
+      'type': 'group',
+      'caption': '''Safe Browsing settings''',
+      'desc': '''Configure Safe Browsing related policies.''',
+      'policies': [
+        'SafeBrowsingEnabled',
+        'SafeBrowsingExtendedReportingOptInAllowed',
+        'SafeBrowsingWhitelistDomains',
+        'PasswordProtectionWarningTrigger',
+        'PasswordProtectionRiskTrigger',
+        'PasswordProtectionLoginURLs',
+        'PasswordProtectionChangePasswordURL',
+      ],
     },
     {
       'name': 'HomepageLocation',
@@ -1612,7 +1627,9 @@
 
       If this policy is left not set, this will be enabled but the user will be able to change it.
 
-      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.''',
+      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.
+
+      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
     },
     {
       'name': 'MetricsReportingEnabled',
@@ -11254,6 +11271,74 @@
       When this policy is changed to False, it applies to starting new virtual machines but does not shut down virtual machines which are already running.
       When this policy is not set on a managed device, the device will not be allowed to run virtual machines.
       Unmanaged devices are allowed to run virtual machines.''',
+    },
+    {
+      'name': 'SafeBrowsingWhitelistDomains',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:66-', 'chrome_os:66-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['mydomain.com', 'myuniversity.edu'],
+      'id': 422,
+      'caption': '''Configure the list of domains on which Safe Browsing will not trigger warnings.''',
+      'tags': [],
+      'desc': '''Configure the list of domains which Safe Browsing will trust. This means:
+      Safe Browsing will not check for dangerous resources (e.g. phishing, malware, or unwanted software) if their URL matches these domains.
+      Safe Browsing's download protection service will not check downloads hosted on these domains.
+      Safe Browsing's password protection service will not check for password reuse if the page URL matches these domains.
+
+      If this setting is enabled, then Safe Browsing will trust these domains.
+      If this setting is disabled or not set, then default Safe Browsing protection is applied to all resources.
+      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
+    },
+    {
+      'name': 'PasswordProtectionLoginURLs',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:66-', 'chrome_os:66-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://mydomain.com/login.html', 'https://login.mydomain.com'],
+      'id': 423,
+      'caption': '''Configure the list of enterprise login URLs where password protection service should capture fingerprint of password.''',
+      'tags': [],
+      'desc': '''Configure the list of enterprise login URLs (HTTP and HTTPS schemes only). Fingerprint of password will be captured on these URLs and used for password reuse detection.
+      This setting should only be used by GSuite users using a SSO/SMAL system.
+
+      If this setting is enabled, then password protection service will capture fingerprint of password on these URLs for password reuse detection purpose.
+      If this setting is disabled or not set, then password protection service will only capture password fingerprint on https://accounts.google.com.
+      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
+    },
+    {
+      'name': 'PasswordProtectionChangePasswordURL',
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome.*:66-', 'chrome_os:66-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 'https://mydomain.com/change_password.html',
+      'id': 424,
+      'caption': '''Configure the change password URL.''',
+      'tags': [],
+      'desc': '''Configure the change password URL (HTTP and HTTPS schemes only). Password protection service will send users to this URL to change their password if they've been phished.
+      This setting should only be used by GSuite users using a SSO/SMAL system.
+
+      If this setting is enabled, then password protection service will send users to this URL to change their password if they've been phished.
+      If this setting is disabled or not set, then password protection service will send users to https://myaccounts.google.com to change their password.
+      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
     },
   ],
 

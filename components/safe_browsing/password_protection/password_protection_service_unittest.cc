@@ -163,6 +163,8 @@ class TestPasswordProtectionService : public PasswordProtectionService {
   MOCK_METHOD1(UserClickedThroughSBInterstitial, bool(content::WebContents*));
   MOCK_METHOD2(RemoveUnhandledSyncPasswordReuseOnURLsDeleted,
                void(bool, const history::URLRows&));
+  MOCK_CONST_METHOD1(GetPasswordProtectionLoginURLsPref,
+                     void(std::vector<GURL>*));
 
  private:
   bool is_extended_reporting_;

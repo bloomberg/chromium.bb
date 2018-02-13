@@ -39,6 +39,7 @@ static_library("safe_browsing_prefs") {
     "//base:base",
     "//components/pref_registry:pref_registry",
     "//components/prefs",
+    "//net:net",
   ]
 }
 

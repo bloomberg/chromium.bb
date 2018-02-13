@@ -12537,6 +12537,9 @@ Called by update_net_error_codes.py.-->
   <int value="419" label="RelaunchNotification"/>
   <int value="420" label="RelaunchNotificationPeriod"/>
   <int value="421" label="VirtualMachinesAllowed"/>
+  <int value="422" label="SafeBrowsingWhitelistDomains"/>
+  <int value="423" label="PasswordProtectionLoginURLs"/>
+  <int value="424" label="PasswordProtectionChangePasswordURL"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
