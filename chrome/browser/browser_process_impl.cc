@@ -708,16 +708,13 @@ GpuModeManager* BrowserProcessImpl::gpu_mode_manager() {
   return gpu_mode_manager_.get();
 }
 
-void BrowserProcessImpl::CreateDevToolsHttpProtocolHandler(
-    const std::string& ip,
-    uint16_t port) {
+void BrowserProcessImpl::CreateDevToolsProtocolHandler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #if !defined(OS_ANDROID)
   // StartupBrowserCreator::LaunchBrowser can be run multiple times when browser
   // is started with several profiles or existing browser process is reused.
   if (!remote_debugging_server_) {
-    remote_debugging_server_ =
-        base::MakeUnique<RemoteDebuggingServer>(ip, port);
+    remote_debugging_server_ = base::MakeUnique<RemoteDebuggingServer>();
   }
 #endif
 }
