@@ -1704,7 +1704,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   read_ref_frames(cm, xd, r, mbmi->segment_id, mbmi->ref_frame);
   const int is_compound = has_second_ref(mbmi);
 
-#if CONFIG_OPT_REF_MV
   if (is_compound) {
     MV_REFERENCE_FRAME ref_frame = av1_ref_frame_type(mbmi->ref_frame);
     av1_find_mv_refs(cm, xd, mi, ref_frame, xd->ref_mv_count, xd->ref_mv_stack,
@@ -1716,19 +1715,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
                      compound_inter_mode_ctx, ref_mvs, mi_row, mi_col, fpm_sync,
                      (void *)pbi, inter_mode_ctx, 0);
   }
-#else
-  if (is_compound) {
-    MV_REFERENCE_FRAME ref_frame = av1_ref_frame_type(mbmi->ref_frame);
-    av1_find_mv_refs(cm, xd, mi, ref_frame, xd->ref_mv_count, xd->ref_mv_stack,
-                     compound_inter_mode_ctx, ref_mvs, mi_row, mi_col, fpm_sync,
-                     (void *)pbi, inter_mode_ctx, 1);
-  } else {
-    MV_REFERENCE_FRAME frame = mbmi->ref_frame[0];
-    av1_find_mv_refs(cm, xd, mi, frame, xd->ref_mv_count, xd->ref_mv_stack,
-                     compound_inter_mode_ctx, ref_mvs, mi_row, mi_col, fpm_sync,
-                     (void *)pbi, inter_mode_ctx, 0);
-  }
-#endif
 
   int mode_ctx = 0;
 
