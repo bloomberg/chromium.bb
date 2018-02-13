@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/string_piece.h"

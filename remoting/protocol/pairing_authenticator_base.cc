@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/channel_authenticator.h"
 

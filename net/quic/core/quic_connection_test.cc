@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "net/base/net_errors.h"
 #include "net/quic/core/congestion_control/loss_detection_interface.h"

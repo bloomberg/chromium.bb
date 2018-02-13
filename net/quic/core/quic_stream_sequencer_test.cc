@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "net/quic/core/quic_stream.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_arraysize.h"

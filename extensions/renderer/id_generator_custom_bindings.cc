@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/callback.h"
 
 namespace extensions {
 

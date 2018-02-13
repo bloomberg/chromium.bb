@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/databinding/binding.h"
 
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

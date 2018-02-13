@@ -12,6 +12,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/optional.h"

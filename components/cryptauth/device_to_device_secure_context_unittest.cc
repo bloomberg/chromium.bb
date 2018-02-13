@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/proto/securemessage.pb.h"

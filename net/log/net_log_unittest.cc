@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
