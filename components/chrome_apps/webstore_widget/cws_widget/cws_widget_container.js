@@ -305,7 +305,7 @@ CWSWidgetContainer.prototype.createTokenGetter_ = function() {
         /** @param {?string} accessToken The requested token. Null on error. */
         function(accessToken) {
           if (!accessToken) {
-            reject('Error retriveing Web Store access token.');
+            reject('Error retrieving Web Store access token.');
             return;
           }
           resolve(accessToken)
