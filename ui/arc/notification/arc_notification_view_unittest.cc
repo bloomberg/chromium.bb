@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/arc/notification/arc_notification_content_view_delegate.h"
+#include "ui/arc/notification/arc_notification_item.h"
 #include "ui/arc/notification/arc_notification_view.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method.h"
@@ -32,6 +33,7 @@ namespace arc {
 
 namespace {
 
+constexpr char kNotificationIdPrefix[] = "ARC_NOTIFICATION_";
 const SkColor kBackgroundColor = SK_ColorGREEN;
 
 class TestNotificationContentsView : public views::View {
@@ -76,24 +78,67 @@ class TestNotificationContentsView : public views::View {
 
 class TestContentViewDelegate : public ArcNotificationContentViewDelegate {
  public:
-  bool IsCloseButtonFocused() const override { return false; }
-  void RequestFocusOnCloseButton() override {}
   void UpdateControlButtonsVisibility() override {}
   void OnSlideChanged() override {}
   message_center::NotificationControlButtonsView* GetControlButtonsView()
       const override {
     return nullptr;
   }
-  bool IsExpanded() const override { return false; }
-  void SetExpanded(bool expanded) override {}
   void OnContainerAnimationStarted() override {}
   void OnContainerAnimationEnded() override {}
 };
 
+class MockArcNotificationItem : public ArcNotificationItem {
+ public:
+  MockArcNotificationItem(const std::string& notification_key)
+      : notification_key_(notification_key),
+        notification_id_(kNotificationIdPrefix + notification_key) {}
+
+  // Overriding methods for testing.
+  void Close(bool by_user) override {}
+  const gfx::ImageSkia& GetSnapshot() const override { return snapshot_; }
+  const std::string& GetNotificationKey() const override {
+    return notification_key_;
+  }
+  const std::string& GetNotificationId() const override {
+    return notification_id_;
+  }
+
+  // Overriding methods for returning dummy data or doing nothing.
+  void OnClosedFromAndroid() override {}
+  void Click() override {}
+  void ToggleExpansion() override {}
+  void OpenSettings() override {}
+  void AddObserver(Observer* observer) override {}
+  void RemoveObserver(Observer* observer) override {}
+  void IncrementWindowRefCount() override {}
+  void DecrementWindowRefCount() override {}
+  bool IsOpeningSettingsSupported() const override { return true; }
+  mojom::ArcNotificationExpandState GetExpandState() const override {
+    return mojom::ArcNotificationExpandState::FIXED_SIZE;
+  }
+  mojom::ArcNotificationShownContents GetShownContents() const override {
+    return mojom::ArcNotificationShownContents::CONTENTS_SHOWN;
+  }
+  gfx::Rect GetSwipeInputRect() const override { return gfx::Rect(); }
+  const base::string16& GetAccessibleName() const override {
+    return base::EmptyString16();
+  };
+  void OnUpdatedFromAndroid(mojom::ArcNotificationDataPtr data) override {}
+
+ private:
+  std::string notification_key_;
+  std::string notification_id_;
+  gfx::ImageSkia snapshot_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockArcNotificationItem);
+};
+
 std::unique_ptr<message_center::MessageView> CreateCustomMessageViewForTest(
+    ArcNotificationItem* item,
     const Notification& notification) {
   return std::make_unique<ArcNotificationView>(
-      std::make_unique<TestNotificationContentsView>(),
+      item, std::make_unique<TestNotificationContentsView>(),
       std::make_unique<TestContentViewDelegate>(), notification);
 }
 
@@ -124,13 +169,14 @@ class ArcNotificationViewTest : public views::ViewsTestBase {
 
     MessageCenter::Initialize();
 
+    const std::string notification_id("notification id");
+    item_ = std::make_unique<MockArcNotificationItem>(notification_id);
     message_center::MessageViewFactory::SetCustomNotificationViewFactory(
-        base::Bind(&CreateCustomMessageViewForTest));
+        base::BindRepeating(&CreateCustomMessageViewForTest, item_.get()));
 
     notification_ = std::make_unique<Notification>(
-        message_center::NOTIFICATION_TYPE_CUSTOM,
-        std::string("notification id"), base::UTF8ToUTF16("title"),
-        base::UTF8ToUTF16("message"), gfx::Image(),
+        message_center::NOTIFICATION_TYPE_CUSTOM, notification_id,
+        base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"), gfx::Image(),
         base::UTF8ToUTF16("display source"), GURL(),
         message_center::NotifierId(message_center::NotifierId::ARC_APPLICATION,
                                    "test_app_id"),
@@ -232,6 +278,8 @@ class ArcNotificationViewTest : public views::ViewsTestBase {
  private:
   std::unique_ptr<Notification> notification_;
   std::unique_ptr<ArcNotificationView> notification_view_;
+
+  std::unique_ptr<MockArcNotificationItem> item_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationViewTest);
 };

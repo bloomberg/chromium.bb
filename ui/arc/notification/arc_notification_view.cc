@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/arc/notification/arc_notification_content_view_delegate.h"
 #include "ui/arc/notification/arc_notification_item.h"
 #include "ui/base/ime/input_method.h"
@@ -25,13 +26,17 @@ namespace arc {
 const char ArcNotificationView::kViewClassName[] = "ArcNotificationView";
 
 ArcNotificationView::ArcNotificationView(
+    ArcNotificationItem* item,
     std::unique_ptr<views::View> contents_view,
     std::unique_ptr<ArcNotificationContentViewDelegate> contents_view_delegate,
     const message_center::Notification& notification)
     : message_center::MessageView(notification),
+      item_(item),
       contents_view_(contents_view.get()),
       contents_view_delegate_(std::move(contents_view_delegate)) {
   DCHECK_EQ(message_center::NOTIFICATION_TYPE_CUSTOM, notification.type());
+
+  item_->AddObserver(this);
 
   DCHECK(contents_view);
   AddChildView(contents_view.release());
@@ -49,7 +54,10 @@ ArcNotificationView::ArcNotificationView(
       message_center::kFocusBorderColor, gfx::Insets(0, 1, 3, 2));
 }
 
-ArcNotificationView::~ArcNotificationView() = default;
+ArcNotificationView::~ArcNotificationView() {
+  if (item_)
+    item_->RemoveObserver(this);
+}
 
 void ArcNotificationView::OnContentFocused() {
   SchedulePaint();
@@ -75,14 +83,17 @@ void ArcNotificationView::SetDrawBackgroundAsActive(bool active) {
 }
 
 bool ArcNotificationView::IsCloseButtonFocused() const {
-  if (!contents_view_delegate_)
+  if (!GetControlButtonsView())
     return false;
-  return contents_view_delegate_->IsCloseButtonFocused();
+  return GetControlButtonsView()->IsCloseButtonFocused();
 }
 
 void ArcNotificationView::RequestFocusOnCloseButton() {
-  if (contents_view_delegate_)
-    contents_view_delegate_->RequestFocusOnCloseButton();
+  if (GetControlButtonsView()) {
+    GetControlButtonsView()->RequestFocusOnCloseButton();
+    if (contents_view_delegate_)
+      contents_view_delegate_->UpdateControlButtonsVisibility();
+  }
 }
 
 const char* ArcNotificationView::GetClassName() const {
@@ -105,14 +116,22 @@ ArcNotificationView::GetControlButtonsView() const {
 }
 
 bool ArcNotificationView::IsExpanded() const {
-  if (contents_view_delegate_)
-    return contents_view_delegate_->IsExpanded();
-  return false;
+  return item_ &&
+         item_->GetExpandState() == mojom::ArcNotificationExpandState::EXPANDED;
 }
 
 void ArcNotificationView::SetExpanded(bool expanded) {
-  if (contents_view_delegate_)
-    contents_view_delegate_->SetExpanded(expanded);
+  if (!item_)
+    return;
+
+  auto expand_state = item_->GetExpandState();
+  if (expanded) {
+    if (expand_state == mojom::ArcNotificationExpandState::COLLAPSED)
+      item_->ToggleExpansion();
+  } else {
+    if (expand_state == mojom::ArcNotificationExpandState::EXPANDED)
+      item_->ToggleExpansion();
+  }
 }
 
 void ArcNotificationView::OnContainerAnimationStarted() {
@@ -197,10 +216,20 @@ void ArcNotificationView::ChildPreferredSizeChanged(View* child) {
 
 bool ArcNotificationView::HandleAccessibleAction(
     const ui::AXActionData& action) {
-  if (contents_view_)
-    return contents_view_->HandleAccessibleAction(action);
+  if (item_ && action.action == ax::mojom::Action::kDoDefault) {
+    item_->ToggleExpansion();
+    return true;
+  }
   return false;
 }
+
+void ArcNotificationView::OnItemDestroying() {
+  DCHECK(item_);
+  item_->RemoveObserver(this);
+  item_ = nullptr;
+}
+
+void ArcNotificationView::OnItemUpdated() {}
 
 // TODO(yoshiki): move this to MessageView and share the code among
 // NotificationView and NotificationViewMD.
