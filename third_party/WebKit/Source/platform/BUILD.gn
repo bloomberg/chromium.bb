@@ -2002,7 +2002,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
   include_dirs = [ "$root_gen_dir/blink" ]
 }
 
-test("image_decode_bench") {
+executable("image_decode_bench") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]
 
@@ -2012,9 +2012,9 @@ test("image_decode_bench") {
 
   deps = [
     ":platform",
+    "//build/config:exe_and_shlib_deps",
     "//mojo/edk/system",
     "//third_party/WebKit/Source/platform/wtf",
-    "//ui/gfx:test_support",
   ]
 
   configs += [
