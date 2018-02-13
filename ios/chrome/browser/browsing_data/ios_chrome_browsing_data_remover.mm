@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -59,6 +60,16 @@ namespace {
 using CallbackList = base::CallbackList<void(
     const IOSChromeBrowsingDataRemover::NotificationDetails&)>;
 
+// A helper enum to report the deletion of cookies and/or cache. Do not
+// reorder the entries, as this enum is passed to UMA.
+enum CookieOrCacheDeletionChoice {
+  NEITHER_COOKIES_NOR_CACHE,
+  ONLY_COOKIES,
+  ONLY_CACHE,
+  BOTH_COOKIES_AND_CACHE,
+  MAX_CHOICE_VALUE
+};
+
 // Contains all registered callbacks for browsing data removed notifications.
 CallbackList* g_on_browsing_data_removed_callbacks = nullptr;
 
@@ -72,6 +83,60 @@ CallbackList* GetOnBrowsingDataRemovedCallbacks() {
 
 bool AllDomainsPredicate(const std::string& domain) {
   return true;
+}
+
+void NetCompletionCallbackAdapter(base::OnceClosure callback, int) {
+  std::move(callback).Run();
+}
+
+void DeleteCallbackAdapter(base::OnceClosure callback, uint32_t) {
+  std::move(callback).Run();
+}
+
+// Clears cookies.
+void ClearCookiesOnIOThread(
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    base::Time delete_begin,
+    base::Time delete_end,
+    base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(WebThread::IO);
+  net::CookieStore* cookie_store =
+      request_context_getter->GetURLRequestContext()->cookie_store();
+  cookie_store->DeleteAllCreatedBetweenAsync(
+      delete_begin, delete_end,
+      AdaptCallbackForRepeating(
+          base::BindOnce(&DeleteCallbackAdapter, std::move(callback))));
+}
+
+// Clears SSL connection pool and then invoke callback.
+void OnClearedChannelIDsOnIOThread(
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(WebThread::IO);
+  // Need to close open SSL connections which may be using the channel ids we
+  // are deleting.
+  // TODO(crbug.com/166069): Make the server bound cert service/store have
+  // observers that can notify relevant things directly.
+  request_context_getter->GetURLRequestContext()
+      ->ssl_config_service()
+      ->NotifySSLConfigChange();
+  std::move(callback).Run();
+}
+
+// Clears channel IDs.
+void ClearChannelIDsOnIOThread(
+    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    base::Time delete_begin,
+    base::Time delete_end,
+    base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(WebThread::IO);
+  net::ChannelIDService* channel_id_service =
+      request_context_getter->GetURLRequestContext()->channel_id_service();
+  channel_id_service->GetChannelIDStore()->DeleteForDomainsCreatedBetween(
+      base::BindRepeating(&AllDomainsPredicate), delete_begin, delete_end,
+      AdaptCallbackForRepeating(base::BindOnce(&OnClearedChannelIDsOnIOThread,
+                                               request_context_getter,
+                                               std::move(callback))));
 }
 
 }  // namespace
@@ -110,13 +175,14 @@ IOSChromeBrowsingDataRemover::IOSChromeBrowsingDataRemover(
     : browser_state_(browser_state),
       delete_begin_(delete_begin),
       delete_end_(delete_end),
-      main_context_getter_(browser_state->GetRequestContext()) {
+      main_context_getter_(browser_state->GetRequestContext()),
+      weak_ptr_factory_(this) {
   DCHECK(browser_state);
   DCHECK(delete_end_ != base::Time());
 }
 
 IOSChromeBrowsingDataRemover::~IOSChromeBrowsingDataRemover() {
-  DCHECK(AllDone());
+  DCHECK_EQ(pending_tasks_count_, 0);
 }
 
 // Static.
@@ -134,6 +200,9 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
   set_removing(true);
   remove_mask_ = remove_mask;
 
+  base::ScopedClosureRunner synchronous_clear_operations(
+      CreatePendingTaskCompletionClosure());
+
   // On other platforms, it is possible to specify different types of origins
   // to clear data for (e.g., unprotected web vs. extensions). On iOS, this
   // mask is always implicitly the unprotected web, which is the only type that
@@ -145,16 +214,13 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
     history::HistoryService* history_service =
         ios::HistoryServiceFactory::GetForBrowserState(
             browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
-    if (history_service) {
-      std::set<GURL> restrict_urls;
-      base::RecordAction(UserMetricsAction("ClearBrowsingData_History"));
-      waiting_for_clear_history_ = true;
 
+    if (history_service) {
+      base::RecordAction(UserMetricsAction("ClearBrowsingData_History"));
       history_service->ExpireLocalAndRemoteHistoryBetween(
           ios::WebHistoryServiceFactory::GetForBrowserState(browser_state_),
-          restrict_urls, delete_begin_, delete_end_,
-          base::Bind(&IOSChromeBrowsingDataRemover::OnHistoryDeletionDone,
-                     base::Unretained(this)),
+          std::set<GURL>(), delete_begin_, delete_end_,
+          AdaptCallbackForRepeating(CreatePendingTaskCompletionClosure()),
           &history_task_tracker_);
     }
 
@@ -164,14 +230,11 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
     IOSChromeIOThread* ios_chrome_io_thread =
         GetApplicationContext()->GetIOSChromeIOThread();
     if (ios_chrome_io_thread) {
-      waiting_for_clear_hostname_resolution_cache_ = true;
       web::WebThread::PostTaskAndReply(
           web::WebThread::IO, FROM_HERE,
-          base::Bind(&IOSChromeIOThread::ClearHostCache,
-                     base::Unretained(ios_chrome_io_thread)),
-          base::Bind(
-              &IOSChromeBrowsingDataRemover::OnClearedHostnameResolutionCache,
-              base::Unretained(this)));
+          base::BindOnce(&IOSChromeIOThread::ClearHostCache,
+                         base::Unretained(ios_chrome_io_thread)),
+          CreatePendingTaskCompletionClosure());
     }
 
     // As part of history deletion we also delete the auto-generated keywords.
@@ -181,11 +244,11 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
       TemplateURLService* keywords_model =
           ios::TemplateURLServiceFactory::GetForBrowserState(browser_state_);
       if (keywords_model && !keywords_model->loaded()) {
-        template_url_sub_ = keywords_model->RegisterOnLoadedCallback(
-            base::Bind(&IOSChromeBrowsingDataRemover::OnKeywordsLoaded,
-                       base::Unretained(this)));
+        template_url_subscription_ = keywords_model->RegisterOnLoadedCallback(
+            AdaptCallbackForRepeating(base::BindOnce(
+                &IOSChromeBrowsingDataRemover::OnKeywordsLoaded, GetWeakPtr(),
+                CreatePendingTaskCompletionClosure())));
         keywords_model->Load();
-        waiting_for_clear_keyword_data_ = true;
       } else if (keywords_model) {
         keywords_model->RemoveAutoGeneratedBetween(delete_begin_, delete_end_);
       }
@@ -209,18 +272,17 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
         ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
             browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
     if (web_data_service.get()) {
-      waiting_for_clear_autofill_origin_urls_ = true;
       web_data_service->RemoveOriginURLsModifiedBetween(delete_begin_,
                                                         delete_end_);
       // Ask for a call back when the above call is finished.
       web_data_service->GetDBTaskRunner()->PostTaskAndReply(
-          FROM_HERE, base::Bind(&base::DoNothing),
-          base::Bind(&IOSChromeBrowsingDataRemover::OnClearedAutofillOriginURLs,
-                     base::Unretained(this)));
+          FROM_HERE, base::BindOnce(&base::DoNothing),
+          CreatePendingTaskCompletionClosure());
 
       autofill::PersonalDataManager* data_manager =
           autofill::PersonalDataManagerFactory::GetForBrowserState(
               browser_state_);
+
       if (data_manager)
         data_manager->Refresh();
     }
@@ -235,12 +297,14 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
 
   if (remove_mask & REMOVE_COOKIES) {
     base::RecordAction(UserMetricsAction("ClearBrowsingData_Cookies"));
-
-    ++waiting_for_clear_cookies_count_;
     WebThread::PostTask(
         WebThread::IO, FROM_HERE,
-        base::Bind(&IOSChromeBrowsingDataRemover::ClearCookiesOnIOThread,
-                   base::Unretained(this), main_context_getter_));
+        base::BindOnce(
+            &ClearCookiesOnIOThread, main_context_getter_, delete_begin_,
+            delete_end_,
+            base::BindOnce(base::IgnoreResult(&web::WebThread::PostTask),
+                           web::WebThread::UI, FROM_HERE,
+                           CreatePendingTaskCompletionClosure())));
 
     // TODO(mkwst): If we're not removing passwords, then clear the 'zero-click'
     // flag for all credentials in the password store.
@@ -249,11 +313,14 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
   if (remove_mask & REMOVE_CHANNEL_IDS) {
     base::RecordAction(UserMetricsAction("ClearBrowsingData_ChannelIDs"));
     if (main_context_getter_) {
-      waiting_for_clear_channel_ids_ = true;
       WebThread::PostTask(
           WebThread::IO, FROM_HERE,
-          base::Bind(&IOSChromeBrowsingDataRemover::ClearChannelIDsOnIOThread,
-                     base::Unretained(this), main_context_getter_));
+          base::BindOnce(
+              &ClearChannelIDsOnIOThread, main_context_getter_, delete_begin_,
+              delete_end_,
+              base::BindOnce(base::IgnoreResult(&web::WebThread::PostTask),
+                             web::WebThread::UI, FROM_HERE,
+                             CreatePendingTaskCompletionClosure())));
     }
   }
 
@@ -265,11 +332,9 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
             .get();
 
     if (password_store) {
-      waiting_for_clear_passwords_ = true;
       password_store->RemoveLoginsCreatedBetween(
           delete_begin_, delete_end_,
-          base::Bind(&IOSChromeBrowsingDataRemover::OnClearedPasswords,
-                     base::Unretained(this)));
+          AdaptCallbackForRepeating(CreatePendingTaskCompletionClosure()));
     }
   }
 
@@ -280,20 +345,20 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
             browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
 
     if (web_data_service.get()) {
-      waiting_for_clear_form_ = true;
       web_data_service->RemoveFormElementsAddedBetween(delete_begin_,
                                                        delete_end_);
       web_data_service->RemoveAutofillDataModifiedBetween(delete_begin_,
                                                           delete_end_);
+
       // Ask for a call back when the above calls are finished.
       web_data_service->GetDBTaskRunner()->PostTaskAndReply(
-          FROM_HERE, base::Bind(&base::DoNothing),
-          base::Bind(&IOSChromeBrowsingDataRemover::OnClearedFormData,
-                     base::Unretained(this)));
+          FROM_HERE, base::BindOnce(&base::DoNothing),
+          CreatePendingTaskCompletionClosure());
 
       autofill::PersonalDataManager* data_manager =
           autofill::PersonalDataManagerFactory::GetForBrowserState(
               browser_state_);
+
       if (data_manager)
         data_manager->Refresh();
     }
@@ -301,13 +366,12 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
 
   if (remove_mask & REMOVE_CACHE) {
     base::RecordAction(UserMetricsAction("ClearBrowsingData_Cache"));
-
-    waiting_for_clear_cache_ = true;
     ClearHttpCache(browser_state_->GetRequestContext(),
                    WebThread::GetTaskRunnerForThread(WebThread::IO),
                    delete_begin_, delete_end_,
-                   base::Bind(&IOSChromeBrowsingDataRemover::OnClearedCache,
-                              base::Unretained(this)));
+                   AdaptCallbackForRepeating(
+                       base::BindOnce(&NetCompletionCallbackAdapter,
+                                      CreatePendingTaskCompletionClosure())));
   }
 
   // Remove omnibox zero-suggest cache results.
@@ -318,18 +382,25 @@ void IOSChromeBrowsingDataRemover::RemoveImpl(int remove_mask) {
 
   // Always wipe accumulated network related data (TransportSecurityState and
   // HttpServerPropertiesManager data).
-  waiting_for_clear_networking_history_ = true;
   browser_state_->ClearNetworkingHistorySince(
       delete_begin_,
-      base::Bind(&IOSChromeBrowsingDataRemover::OnClearedNetworkingHistory,
-                 base::Unretained(this)));
+      AdaptCallbackForRepeating(CreatePendingTaskCompletionClosure()));
 
   // Record the combined deletion of cookies and cache.
-  CookieOrCacheDeletionChoice choice = NEITHER_COOKIES_NOR_CACHE;
-  if (remove_mask & REMOVE_COOKIES) {
-    choice = remove_mask & REMOVE_CACHE ? BOTH_COOKIES_AND_CACHE : ONLY_COOKIES;
-  } else if (remove_mask & REMOVE_CACHE) {
-    choice = ONLY_CACHE;
+  CookieOrCacheDeletionChoice choice;
+  switch (remove_mask & (REMOVE_COOKIES | REMOVE_CACHE)) {
+    case REMOVE_COOKIES | REMOVE_CACHE:
+      choice = BOTH_COOKIES_AND_CACHE;
+      break;
+    case REMOVE_COOKIES:
+      choice = ONLY_COOKIES;
+      break;
+    case REMOVE_CACHE:
+      choice = ONLY_CACHE;
+      break;
+    default:
+      choice = NEITHER_COOKIES_NOR_CACHE;
+      break;
   }
 
   UMA_HISTOGRAM_ENUMERATION(
@@ -345,31 +416,15 @@ void IOSChromeBrowsingDataRemover::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void IOSChromeBrowsingDataRemover::OnHistoryDeletionDone() {
-  waiting_for_clear_history_ = false;
-  NotifyAndDeleteIfDone();
-}
-
-bool IOSChromeBrowsingDataRemover::AllDone() {
-  return !waiting_for_clear_autofill_origin_urls_ &&
-         !waiting_for_clear_cache_ && !waiting_for_clear_channel_ids_ &&
-         !waiting_for_clear_cookies_count_ && !waiting_for_clear_form_ &&
-         !waiting_for_clear_history_ &&
-         !waiting_for_clear_hostname_resolution_cache_ &&
-         !waiting_for_clear_keyword_data_ &&
-         !waiting_for_clear_networking_history_ &&
-         !waiting_for_clear_passwords_;
-}
-
-void IOSChromeBrowsingDataRemover::OnKeywordsLoaded() {
+void IOSChromeBrowsingDataRemover::OnKeywordsLoaded(
+    base::OnceClosure callback) {
   // Deletes the entries from the model, and if we're not waiting on anything
   // else notifies observers and deletes this IOSChromeBrowsingDataRemover.
   TemplateURLService* model =
       ios::TemplateURLServiceFactory::GetForBrowserState(browser_state_);
   model->RemoveAutoGeneratedBetween(delete_begin_, delete_end_);
-  waiting_for_clear_keyword_data_ = false;
-  template_url_sub_.reset();
-  NotifyAndDeleteIfDone();
+  template_url_subscription_.reset();
+  std::move(callback).Run();
 }
 
 void IOSChromeBrowsingDataRemover::NotifyAndDelete() {
@@ -389,113 +444,44 @@ void IOSChromeBrowsingDataRemover::NotifyAndDelete() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
-void IOSChromeBrowsingDataRemover::NotifyAndDeleteIfDone() {
-  // TODO(brettw) http://crbug.com/305259: This should also observe session
-  // clearing (what about other things such as passwords, etc.?) and wait for
-  // them to complete before continuing.
-
-  if (!AllDone())
-    return;
-
-  NotifyAndDelete();
-}
-
-void IOSChromeBrowsingDataRemover::OnClearedHostnameResolutionCache() {
-  DCHECK_CURRENTLY_ON(WebThread::UI);
-  waiting_for_clear_hostname_resolution_cache_ = false;
-  NotifyAndDeleteIfDone();
-}
-
-void IOSChromeBrowsingDataRemover::OnClearedNetworkingHistory() {
-  DCHECK_CURRENTLY_ON(WebThread::UI);
-  waiting_for_clear_networking_history_ = false;
-  NotifyAndDeleteIfDone();
-}
-
-void IOSChromeBrowsingDataRemover::OnClearedCache(int error) {
-  waiting_for_clear_cache_ = false;
-
-  NotifyAndDeleteIfDone();
-}
-
-void IOSChromeBrowsingDataRemover::OnClearedPasswords() {
-  DCHECK_CURRENTLY_ON(WebThread::UI);
-  waiting_for_clear_passwords_ = false;
-  NotifyAndDeleteIfDone();
-}
-
-void IOSChromeBrowsingDataRemover::OnClearedCookies(uint32_t num_deleted) {
-  if (!WebThread::CurrentlyOn(WebThread::UI)) {
-    WebThread::PostTask(
-        WebThread::UI, FROM_HERE,
-        base::Bind(&IOSChromeBrowsingDataRemover::OnClearedCookies,
-                   base::Unretained(this), num_deleted));
-    return;
-  }
-
-  DCHECK_GT(waiting_for_clear_cookies_count_, 0);
-  --waiting_for_clear_cookies_count_;
-  NotifyAndDeleteIfDone();
-}
-
-void IOSChromeBrowsingDataRemover::ClearCookiesOnIOThread(
-    const scoped_refptr<net::URLRequestContextGetter>& rq_context) {
-  DCHECK_CURRENTLY_ON(WebThread::IO);
-  net::CookieStore* cookie_store =
-      rq_context->GetURLRequestContext()->cookie_store();
-  cookie_store->DeleteAllCreatedBetweenAsync(
-      delete_begin_, delete_end_,
-      base::Bind(&IOSChromeBrowsingDataRemover::OnClearedCookies,
-                 base::Unretained(this)));
-}
-
-void IOSChromeBrowsingDataRemover::ClearChannelIDsOnIOThread(
-    const scoped_refptr<net::URLRequestContextGetter>& rq_context) {
-  DCHECK_CURRENTLY_ON(WebThread::IO);
-  net::ChannelIDService* channel_id_service =
-      rq_context->GetURLRequestContext()->channel_id_service();
-  channel_id_service->GetChannelIDStore()->DeleteForDomainsCreatedBetween(
-      base::Bind(&AllDomainsPredicate), delete_begin_, delete_end_,
-      base::Bind(&IOSChromeBrowsingDataRemover::OnClearedChannelIDsOnIOThread,
-                 base::Unretained(this), rq_context));
-}
-
-void IOSChromeBrowsingDataRemover::OnClearedChannelIDsOnIOThread(
-    const scoped_refptr<net::URLRequestContextGetter>& rq_context) {
-  // Need to close open SSL connections which may be using the channel ids we
-  // are deleting.
-  // TODO(mattm): http://crbug.com/166069 Make the server bound cert
-  // service/store have observers that can notify relevant things directly.
-  rq_context->GetURLRequestContext()
-      ->ssl_config_service()
-      ->NotifySSLConfigChange();
-  WebThread::PostTask(
-      WebThread::UI, FROM_HERE,
-      base::Bind(&IOSChromeBrowsingDataRemover::OnClearedChannelIDs,
-                 base::Unretained(this)));
-}
-
-void IOSChromeBrowsingDataRemover::OnClearedChannelIDs() {
-  DCHECK_CURRENTLY_ON(WebThread::UI);
-  waiting_for_clear_channel_ids_ = false;
-  NotifyAndDeleteIfDone();
-}
-
-void IOSChromeBrowsingDataRemover::OnClearedFormData() {
-  DCHECK_CURRENTLY_ON(WebThread::UI);
-  waiting_for_clear_form_ = false;
-  NotifyAndDeleteIfDone();
-}
-
-void IOSChromeBrowsingDataRemover::OnClearedAutofillOriginURLs() {
-  DCHECK_CURRENTLY_ON(WebThread::UI);
-  waiting_for_clear_autofill_origin_urls_ = false;
-  NotifyAndDeleteIfDone();
-}
-
 // static
 IOSChromeBrowsingDataRemover::CallbackSubscription
 IOSChromeBrowsingDataRemover::RegisterOnBrowsingDataRemovedCallback(
     const IOSChromeBrowsingDataRemover::Callback& callback) {
   return GetOnBrowsingDataRemovedCallbacks()->Add(callback);
+}
+
+void IOSChromeBrowsingDataRemover::OnTaskComplete() {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+
+  // TODO(crbug.com/305259): This should also observe session clearing (what
+  // about other things such as passwords, etc.?) and wait for them to complete
+  // before continuing.
+
+  DCHECK_GT(pending_tasks_count_, 0);
+  if (--pending_tasks_count_ > 0)
+    return;
+
+  NotifyAndDelete();
+}
+
+base::OnceClosure
+IOSChromeBrowsingDataRemover::CreatePendingTaskCompletionClosure() {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  ++pending_tasks_count_;
+  return base::BindOnce(&IOSChromeBrowsingDataRemover::OnTaskComplete,
+                        GetWeakPtr());
+}
+
+base::WeakPtr<IOSChromeBrowsingDataRemover>
+IOSChromeBrowsingDataRemover::GetWeakPtr() {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  base::WeakPtr<IOSChromeBrowsingDataRemover> weak_ptr =
+      weak_ptr_factory_.GetWeakPtr();
+
+  // Immediately bind the weak pointer to the UI thread. This makes it easier
+  // to discover potential misuse on the IO thread.
+  weak_ptr.get();
+
+  return weak_ptr;
 }

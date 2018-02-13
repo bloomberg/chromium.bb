@@ -10,9 +10,9 @@
 #include <memory>
 #include <set>
 
-#include "base/gtest_prod_util.h"
+#include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -72,16 +72,6 @@ class IOSChromeBrowsingDataRemover {
                  REMOVE_PASSWORDS,
   };
 
-  // A helper enum to report the deletion of cookies and/or cache. Do not
-  // reorder the entries, as this enum is passed to UMA.
-  enum CookieOrCacheDeletionChoice {
-    NEITHER_COOKIES_NOR_CACHE,
-    ONLY_COOKIES,
-    ONLY_CACHE,
-    BOTH_COOKIES_AND_CACHE,
-    MAX_CHOICE_VALUE
-  };
-
   // When IOSChromeBrowsingDataRemover successfully removes data, a
   // notification of type NOTIFICATION_BROWSING_DATA_REMOVED is triggered with
   // a Details object of this type.
@@ -136,9 +126,6 @@ class IOSChromeBrowsingDataRemover {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Called when history deletion is done.
-  void OnHistoryDeletionDone();
-
  private:
   // Setter for |is_removing_|; DCHECKs that we can only start removing if we're
   // not already removing, and vice-versa.
@@ -159,8 +146,8 @@ class IOSChromeBrowsingDataRemover {
   ~IOSChromeBrowsingDataRemover();
 
   // Callback for when TemplateURLService has finished loading. Clears the data,
-  // clears the respective waiting flag, and invokes NotifyAndDeleteIfDone.
-  void OnKeywordsLoaded();
+  // and invoke the callback.
+  void OnKeywordsLoaded(base::OnceClosure callback);
 
   // Removes the specified items related to browsing for a specific host. If the
   // provided |remove_url| is empty, data is removed for all origins.
@@ -172,55 +159,18 @@ class IOSChromeBrowsingDataRemover {
   // Notifies observers and deletes this object.
   void NotifyAndDelete();
 
-  // Checks if we are all done, and if so, calls NotifyAndDelete().
-  void NotifyAndDeleteIfDone();
+  // Called by the closures returned by CreatePendingTaskCompletionClosure().
+  // Checks if all tasks have completed, and if so, calls Notify().
+  void OnTaskComplete();
 
-  // Callback for when the hostname resolution cache has been cleared.
-  // Clears the respective waiting flag and invokes NotifyAndDeleteIfDone.
-  void OnClearedHostnameResolutionCache();
+  // Increments the number of pending tasks by one, and returns a OnceClosure
+  // that calls OnTaskComplete(). The Remover is complete once all the closures
+  // created by this method have been invoked.
+  base::OnceClosure CreatePendingTaskCompletionClosure();
 
-  // Callback for when network related data in ProfileIOData has been cleared.
-  // Clears the respective waiting flag and invokes NotifyAndDeleteIfDone.
-  void OnClearedNetworkingHistory();
-
-  // Callback for when the cache has been deleted. Invokes
-  // NotifyAndDeleteIfDone.
-  void OnClearedCache(int error);
-
-  // Callback for when passwords for the requested time range have been cleared.
-  void OnClearedPasswords();
-
-  // Callback for when Cookies has been deleted. Invokes NotifyAndDeleteIfDone.
-  void OnClearedCookies(uint32_t num_deleted);
-
-  // Invoked on the IO thread to delete cookies.
-  void ClearCookiesOnIOThread(
-      const scoped_refptr<net::URLRequestContextGetter>& rq_context);
-
-  // Invoked on the IO thread to delete channel IDs.
-  void ClearChannelIDsOnIOThread(
-      const scoped_refptr<net::URLRequestContextGetter>& rq_context);
-
-  // Callback on IO Thread when channel IDs have been deleted. Clears SSL
-  // connection pool and posts to UI thread to run OnClearedChannelIDs.
-  void OnClearedChannelIDsOnIOThread(
-      const scoped_refptr<net::URLRequestContextGetter>& rq_context);
-
-  // Callback for when channel IDs have been deleted. Invokes
-  // NotifyAndDeleteIfDone.
-  void OnClearedChannelIDs();
-
-  // Callback from the above method.
-  void OnClearedFormData();
-
-  // Callback for when the Autofill profile and credit card origin URLs have
-  // been deleted.
-  void OnClearedAutofillOriginURLs();
-
-  void OnClearedDomainReliabilityMonitor();
-
-  // Returns true if we're all done.
-  bool AllDone();
+  // Returns a weak pointer to IOSChromeBrowsingDataRemover for internal
+  // purposes.
+  base::WeakPtr<IOSChromeBrowsingDataRemover> GetWeakPtr();
 
   // ChromeBrowserState we're to remove from.
   ios::ChromeBrowserState* browser_state_;
@@ -237,19 +187,8 @@ class IOSChromeBrowsingDataRemover {
   // Used to delete data from HTTP cache.
   scoped_refptr<net::URLRequestContextGetter> main_context_getter_;
 
-  // True if we're waiting for various data to be deleted.
-  // These may only be accessed from UI thread in order to avoid races!
-  bool waiting_for_clear_autofill_origin_urls_ = false;
-  bool waiting_for_clear_cache_ = false;
-  bool waiting_for_clear_channel_ids_ = false;
-  // Non-zero if waiting for cookies to be cleared.
-  int waiting_for_clear_cookies_count_ = 0;
-  bool waiting_for_clear_form_ = false;
-  bool waiting_for_clear_history_ = false;
-  bool waiting_for_clear_hostname_resolution_cache_ = false;
-  bool waiting_for_clear_keyword_data_ = false;
-  bool waiting_for_clear_networking_history_ = false;
-  bool waiting_for_clear_passwords_ = false;
+  // Number of pending tasks.
+  int pending_tasks_count_ = 0;
 
   // The removal mask for the current removal operation.
   int remove_mask_ = 0;
@@ -259,7 +198,9 @@ class IOSChromeBrowsingDataRemover {
   // Used if we need to clear history.
   base::CancelableTaskTracker history_task_tracker_;
 
-  std::unique_ptr<TemplateURLService::Subscription> template_url_sub_;
+  std::unique_ptr<TemplateURLService::Subscription> template_url_subscription_;
+
+  base::WeakPtrFactory<IOSChromeBrowsingDataRemover> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeBrowsingDataRemover);
 };
