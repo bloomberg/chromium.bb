@@ -936,9 +936,7 @@ bool CSSSelector::IsCompound() const {
   return true;
 }
 
-unsigned CSSSelector::ComputeLinkMatchType() const {
-  unsigned link_match_type = kMatchAll;
-
+unsigned CSSSelector::ComputeLinkMatchType(unsigned link_match_type) const {
   // Determine if this selector will match a link in visited, unvisited or any
   // state, or never.
   // :visited never matches other elements than the innermost link element.
@@ -963,6 +961,14 @@ unsigned CSSSelector::ComputeLinkMatchType() const {
         break;
       case kPseudoVisited:
         link_match_type &= ~kMatchLink;
+        break;
+      case kPseudoSlotted:
+        DCHECK(current->SelectorList());
+        DCHECK(current->SelectorList()->First());
+        DCHECK(!CSSSelectorList::Next(*current->SelectorList()->First()));
+        link_match_type =
+            current->SelectorList()->First()->ComputeLinkMatchType(
+                link_match_type);
         break;
       default:
         // We don't support :link and :visited inside :-webkit-any.
