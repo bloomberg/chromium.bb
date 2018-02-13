@@ -45848,6 +45848,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="8" label="Windows 10 TH2"/>
   <int value="9" label="Windows 10 RS1"/>
   <int value="10" label="Windows 10 RS2"/>
+  <int value="11" label="Windows 10 RS3"/>
 </enum>
 
 <enum name="WindowType">

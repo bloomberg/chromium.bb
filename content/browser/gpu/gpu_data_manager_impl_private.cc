@@ -79,6 +79,7 @@ enum WinSubVersion {
   kWin10_TH2,
   kWin10_RS1,
   kWin10_RS2,
+  kWin10_RS3,
   kNumWinSubVersions
 };
 
@@ -113,6 +114,9 @@ int GetGpuBlacklistHistogramValueWin(gpu::GpuFeatureStatus status) {
         break;
       case base::win::VERSION_WIN10_RS2:
         sub_version = kWin10_RS2;
+        break;
+      case base::win::VERSION_WIN10_RS3:
+        sub_version = kWin10_RS3;
         break;
     }
   }

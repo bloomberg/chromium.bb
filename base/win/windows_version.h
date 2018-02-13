@@ -25,7 +25,7 @@ namespace win {
 // This enum is used in metrics histograms, so they shouldn't be reordered or
 // removed. New values can be added before VERSION_WIN_LAST.
 enum Version {
-  VERSION_PRE_XP = 0,  // Not supported.
+  VERSION_PRE_XP = 0,       // Not supported.
   VERSION_XP = 1,
   VERSION_SERVER_2003 = 2,  // Also includes XP Pro x64 and Server 2003 R2.
   VERSION_VISTA = 3,        // Also includes Windows Server 2008.
@@ -36,6 +36,8 @@ enum Version {
   VERSION_WIN10_TH2 = 8,    // Threshold 2: Version 1511, Build 10586.
   VERSION_WIN10_RS1 = 9,    // Redstone 1: Version 1607, Build 14393.
   VERSION_WIN10_RS2 = 10,   // Redstone 2: Version 1703, Build 15063.
+  VERSION_WIN10_RS3 = 11,   // Redstone 3: Version 1709, Build 16299.
+  // On edit, update tools\metrics\histograms\enums.xml "WindowsVersion".
   VERSION_WIN_LAST,         // Indicates error condition.
 };
 
