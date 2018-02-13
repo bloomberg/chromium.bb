@@ -37,6 +37,7 @@ class TestKeyboardDelegate : public KeyboardDelegate {
                const gfx::Point3F& ray_target,
                gfx::Point3F* hit_position) override;
   void Draw(const CameraModel& model) override;
+  bool SupportsSelection() override;
 
   void Initialize(SkiaSurfaceProvider* provider, UiElementRenderer* renderer);
   void SetUiInterface(KeyboardUiInterface* keyboard) {

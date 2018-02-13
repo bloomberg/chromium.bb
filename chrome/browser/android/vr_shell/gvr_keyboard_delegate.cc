@@ -15,6 +15,10 @@
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
+// This method is supplied by the VR keyboard shim, but is not part of the
+// GVR interface.
+bool gvr_keyboard_supports_selection(gvr_keyboard_context* context);
+
 namespace vr_shell {
 
 namespace {
@@ -119,6 +123,10 @@ void GvrKeyboardDelegate::Draw(const vr::CameraModel& model) {
                                viewport_rect.y(), viewport_rect.bottom()};
   gvr_keyboard_set_viewport(gvr_keyboard_, eye, &viewport);
   gvr_keyboard_render(gvr_keyboard_, eye);
+}
+
+bool GvrKeyboardDelegate::SupportsSelection() {
+  return gvr_keyboard_supports_selection(gvr_keyboard_);
 }
 
 void GvrKeyboardDelegate::OnButtonDown(const gfx::PointF& position) {

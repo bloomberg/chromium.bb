@@ -56,6 +56,10 @@ void TestKeyboardDelegate::Draw(const CameraModel& model) {
   renderer_->Draw(model, world_space_transform);
 }
 
+bool TestKeyboardDelegate::SupportsSelection() {
+  return true;
+}
+
 void TestKeyboardDelegate::Initialize(vr::SkiaSurfaceProvider* provider,
                                       UiElementRenderer* renderer) {
   renderer_->Initialize(provider, renderer);

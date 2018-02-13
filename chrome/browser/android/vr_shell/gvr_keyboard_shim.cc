@@ -61,6 +61,11 @@ bool LoadFunction(void* handle, const char* function_name, Fn* fn_out) {
 
 static void* sdk_handle = nullptr;
 
+// Infer text selection support by checking for the presence of an unrelated
+// method, added in the same release as selection.
+constexpr char kSelectionSymbol[] = "gvr_keyboard_update_controller_touch";
+static bool supports_selection = false;
+
 void CloseSdk() {
   if (!sdk_handle)
     return;
@@ -113,6 +118,8 @@ bool LoadSdk(void* closure, gvr_keyboard_callback callback) {
 
   gvr_keyboard_initialize(env, context_wrapper.obj(),
                           remote_class_loader.obj());
+
+  supports_selection = (dlsym(sdk_handle, kSelectionSymbol) != nullptr);
 
   return success;
 }
@@ -241,6 +248,10 @@ void gvr_keyboard_render(gvr_keyboard_context* context, int32_t eye_type) {
 
 void gvr_keyboard_hide(gvr_keyboard_context* context) {
   impl_gvr_keyboard_hide(context);
+}
+
+bool gvr_keyboard_supports_selection(gvr_keyboard_context* context) {
+  return supports_selection;
 }
 
 #undef FOR_EACH_API_FN

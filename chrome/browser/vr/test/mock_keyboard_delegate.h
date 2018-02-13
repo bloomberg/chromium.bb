@@ -26,6 +26,7 @@ class MockKeyboardDelegate : public KeyboardDelegate {
                bool(const gfx::Point3F&, const gfx::Point3F&, gfx::Point3F*));
   MOCK_METHOD0(OnBeginFrame, void());
   MOCK_METHOD1(Draw, void(const CameraModel&));
+  MOCK_METHOD0(SupportsSelection, bool());
   MOCK_METHOD1(OnHoverEnter, void(const gfx::PointF&));
   MOCK_METHOD0(OnHoverLeave, void());
   MOCK_METHOD1(OnMove, void(const gfx::PointF&));

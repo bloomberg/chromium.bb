@@ -29,6 +29,7 @@ class KeyboardDelegate {
                        gfx::Point3F* hit_position) = 0;
   virtual void OnBeginFrame() {}
   virtual void Draw(const CameraModel&) = 0;
+  virtual bool SupportsSelection() = 0;
 
   virtual void OnHoverEnter(const gfx::PointF& position) {}
   virtual void OnHoverLeave() {}
