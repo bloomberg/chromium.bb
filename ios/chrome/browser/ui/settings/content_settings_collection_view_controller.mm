@@ -15,6 +15,7 @@
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "ios/chrome/browser/mailto/features.h"
 #import "ios/chrome/browser/prefs/pref_observer_bridge.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
@@ -25,6 +26,8 @@
 #import "ios/chrome/browser/ui/settings/utils/content_setting_backed_boolean.h"
 #import "ios/chrome/browser/web/mailto_handler_manager.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -106,9 +109,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
                               inverted:YES];
     [_disablePopupsSetting setObserver:self];
 
-    _mailtoHandlerManager =
-        [MailtoHandlerManager mailtoHandlerManagerWithStandardHandlers];
-    [_mailtoHandlerManager setObserver:self];
+    if (!base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
+      _mailtoHandlerManager =
+          [MailtoHandlerManager mailtoHandlerManagerWithStandardHandlers];
+      [_mailtoHandlerManager setObserver:self];
+    }
 
     // TODO(crbug.com/764578): -loadModel should not be called from
     // initializer. A possible fix is to move this call to -viewDidLoad.
@@ -130,8 +135,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierSettings];
   [model addItem:[self translateItem]
       toSectionWithIdentifier:SectionIdentifierSettings];
-  [model addItem:[self composeEmailItem]
-      toSectionWithIdentifier:SectionIdentifierSettings];
+  // If Google mailto handling UI is available, display the relevant settings.
+  if (base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
+    MailtoHandlerProvider* provider =
+        ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
+    UIViewController* settingsController =
+        provider->MailtoHandlerSettingsController();
+    if (settingsController) {
+      [model addItem:[self composeEmailItem]
+          toSectionWithIdentifier:SectionIdentifierSettings];
+    }
+  } else {
+    [model addItem:[self composeEmailItem]
+        toSectionWithIdentifier:SectionIdentifierSettings];
+  }
 }
 
 - (CollectionViewItem*)blockPopupsItem {
@@ -168,8 +185,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
       initWithType:ItemTypeSettingsComposeEmail];
   _composeEmailDetailItem.text =
       l10n_util::GetNSString(IDS_IOS_COMPOSE_EMAIL_SETTING);
-  _composeEmailDetailItem.detailText =
-      [_mailtoHandlerManager defaultHandlerName];
+  if (!base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
+    // Displaying the selected app name is only supported in the Chrome
+    // implementation of mailto content settings.
+    // The Google UI version of mailto handling does not expose the name of the
+    // user's preferred app.
+    _composeEmailDetailItem.detailText =
+        [_mailtoHandlerManager defaultHandlerName];
+  }
   _composeEmailDetailItem.accessoryType =
       MDCCollectionViewCellAccessoryDisclosureIndicator;
   _composeEmailDetailItem.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -206,10 +229,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeSettingsComposeEmail: {
-      UIViewController* controller =
-          [[ComposeEmailHandlerCollectionViewController alloc]
-              initWithManager:_mailtoHandlerManager];
-      [self.navigationController pushViewController:controller animated:YES];
+      if (base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
+        MailtoHandlerProvider* provider =
+            ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
+        UIViewController* controller =
+            provider->MailtoHandlerSettingsController();
+        if (controller) {
+          [self.navigationController pushViewController:controller
+                                               animated:YES];
+        }
+      } else {
+        UIViewController* controller =
+            [[ComposeEmailHandlerCollectionViewController alloc]
+                initWithManager:_mailtoHandlerManager];
+        [self.navigationController pushViewController:controller animated:YES];
+      }
       break;
     }
   }

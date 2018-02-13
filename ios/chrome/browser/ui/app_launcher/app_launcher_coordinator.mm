@@ -9,12 +9,15 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/mailto/features.h"
 #include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/app_launcher/app_launcher_util.h"
 #import "ios/chrome/browser/ui/app_launcher/open_mail_handler_view_controller.h"
 #import "ios/chrome/browser/web/mailto_handler.h"
 #import "ios/chrome/browser/web/mailto_handler_manager.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
 #include "ios/third_party/material_components_ios/src/components/BottomSheet/src/MDCBottomSheetController.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -198,11 +201,19 @@ void RecordUserAcceptedAppLaunchMetric(BOOL user_accepted) {
       return YES;
     }
   }
-  // Replaces |URL| with a rewritten URL if it is of mailto: scheme.
+
+  // Uses a Mailto Handler to open the appropriate app, if available.
   if (URL.SchemeIs(url::kMailToScheme)) {
-    [self showAlertIfNeededAndLaunchMailtoURL:URL];
-    return true;
+    if (base::FeatureList::IsEnabled(kMailtoHandledWithGoogleUI)) {
+      MailtoHandlerProvider* provider =
+          ios::GetChromeBrowserProvider()->GetMailtoHandlerProvider();
+      provider->HandleMailtoURL(net::NSURLWithGURL(URL));
+    } else {
+      [self showAlertIfNeededAndLaunchMailtoURL:URL];
+    }
+    return YES;
   }
+
 // If the following call returns YES, an application is about to be
 // launched and Chrome will go into the background now.
 #pragma clang diagnostic push

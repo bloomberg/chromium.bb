@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "components/metrics/metrics_provider.h"
+#import "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -29,7 +30,8 @@ ChromeBrowserProvider* GetChromeBrowserProvider() {
 
 // A dummy implementation of ChromeBrowserProvider.
 
-ChromeBrowserProvider::ChromeBrowserProvider() {}
+ChromeBrowserProvider::ChromeBrowserProvider()
+    : mailto_handler_provider_(std::make_unique<MailtoHandlerProvider>()) {}
 
 ChromeBrowserProvider::~ChromeBrowserProvider() {
   for (auto& observer : observer_list_)
@@ -111,6 +113,10 @@ SpotlightProvider* ChromeBrowserProvider::GetSpotlightProvider() const {
 ExternalSearchProvider* ChromeBrowserProvider::GetExternalSearchProvider()
     const {
   return nullptr;
+}
+
+MailtoHandlerProvider* ChromeBrowserProvider::GetMailtoHandlerProvider() const {
+  return mailto_handler_provider_.get();
 }
 
 void ChromeBrowserProvider::CheckForFirstPartyApps() const {}
