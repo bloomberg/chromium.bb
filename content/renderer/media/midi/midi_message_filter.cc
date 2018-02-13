@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/midi_message_filter.h"
+#include "content/renderer/media/midi/midi_message_filter.h"
 
 #include <algorithm>
 

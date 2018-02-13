@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/renderer_webmidiaccessor_impl.h"
+#include "content/renderer/media/midi/renderer_webmidiaccessor_impl.h"
 
 #include "base/logging.h"
-#include "content/renderer/media/midi_message_filter.h"
+#include "content/renderer/media/midi/midi_message_filter.h"
 #include "content/renderer/render_thread_impl.h"
 
 namespace content {
