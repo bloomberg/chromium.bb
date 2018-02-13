@@ -120,9 +120,6 @@ type:sandbox::BrokerServices
 type:sandbox::TargetPolicy
 type:sandbox::TargetServices
 
-# Likewise (base/win/scoped_handle.cc).
-type:*ActiveVerifier*
-
 #############################################################################
 # Disabled indirect calls
 

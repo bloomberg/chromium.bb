@@ -9,6 +9,7 @@
 #include "base/win/base_features.h"
 #include "base/win/current_module.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/scoped_handle_verifier.h"
 
 namespace base {
 namespace win {
@@ -89,7 +90,8 @@ bool InternalRunLocationTest() {
     return false;
   ScopedHandle handle_holder(handle);
 
-  HMODULE verifier_module = GetHandleVerifierModuleForTesting();
+  HMODULE verifier_module =
+      base::win::internal::GetHandleVerifierModuleForTesting();
   if (!verifier_module)
     return false;
 
