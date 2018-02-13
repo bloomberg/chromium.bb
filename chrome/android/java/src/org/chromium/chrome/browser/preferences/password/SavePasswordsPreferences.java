@@ -409,6 +409,13 @@ public class SavePasswordsPreferences
                      */
                     @Override
                     public void onDismiss() {
+                        // Unless the positive button action moved the exporting state forward,
+                        // cancel the export. This happens both when the user taps the negative
+                        // button or when they tap outside of the dialog to dismiss it.
+                        if (mExportState != EXPORT_STATE_CONFIRMED) {
+                            mExportState = EXPORT_STATE_INACTIVE;
+                        }
+
                         mExportWarningShowing = false;
                         // If the error dialog has been waiting, display it now.
                         if (mErrorDialogParams != null) showExportErrorDialogFragment();
