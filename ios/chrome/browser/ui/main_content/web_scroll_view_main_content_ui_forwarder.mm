@@ -19,6 +19,17 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Uses the current values of |proxy|'s properties to update the
+// MainContentUIState via |updater|.
+void UpdateStateWithProxy(MainContentUIStateUpdater* updater,
+                          CRWWebViewScrollViewProxy* proxy) {
+  [updater scrollViewSizeDidChange:proxy.frame.size];
+  [updater scrollViewDidResetContentSize:proxy.contentSize];
+  [updater scrollViewDidResetContentInset:proxy.contentInset];
+}
+}
+
 @interface WebScrollViewMainContentUIForwarder ()<
     CRWWebStateObserver,
     CRWWebViewScrollViewProxyObserver,
@@ -36,6 +47,7 @@
 @property(nonatomic, assign) web::WebState* webState;
 // The scroll view proxy whose scroll events are forwarded to |updater|.
 @property(nonatomic, readonly, strong) CRWWebViewScrollViewProxy* proxy;
+
 @end
 
 @implementation WebScrollViewMainContentUIForwarder
@@ -60,6 +72,7 @@
       _webState->AddObserver(_webStateBridge.get());
       _proxy = activeWebState->GetWebViewProxy().scrollViewProxy;
       [_proxy addObserver:self];
+      UpdateStateWithProxy(_updater, _proxy);
     }
   }
   return self;
@@ -93,6 +106,7 @@
   [_proxy removeObserver:self];
   _proxy = proxy;
   [_proxy addObserver:self];
+  UpdateStateWithProxy(_updater, _proxy);
 }
 
 #pragma mark Public
