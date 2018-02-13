@@ -18,7 +18,6 @@
 #include "media/base/limits.h"
 #include "media/base/video_util.h"
 #include "media/capture/mojo/video_capture_types.mojom.h"
-#include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
@@ -423,16 +422,16 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   scoped_refptr<VideoFrame> frame;
   if (dirty_rect_.IsEmpty()) {
     frame =
-        frame_pool_.ResurrectLastVideoFrame(i420_capture_size, pixel_format_);
+        frame_pool_.ResurrectLastVideoFrame(pixel_format_, i420_capture_size);
     // If the resurrection failed, promote to a full frame capture.
     if (!frame) {
       TRACE_EVENT_INSTANT0("gpu.capture", "ResurrectionFailed",
                            TRACE_EVENT_SCOPE_THREAD);
       dirty_rect_ = kMaxRect;
-      frame = frame_pool_.ReserveVideoFrame(i420_capture_size, pixel_format_);
+      frame = frame_pool_.ReserveVideoFrame(pixel_format_, i420_capture_size);
     }
   } else {
-    frame = frame_pool_.ReserveVideoFrame(i420_capture_size, pixel_format_);
+    frame = frame_pool_.ReserveVideoFrame(pixel_format_, i420_capture_size);
   }
 
   // Compute the current in-flight utilization and attenuate it: The utilization
@@ -449,7 +448,15 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
         VideoCaptureOracle::EventAsString(event), "atten_util_percent",
         base::saturated_cast<int>(utilization * 100.0f + 0.5f));
     oracle_.RecordWillNotCapture(utilization);
-    ScheduleRefreshFrame();
+    if (next_capture_frame_number_ == 0) {
+      // The pool was unable to provide a buffer for the very first capture, and
+      // so there is no expectation of recovery. Thus, treat this as a fatal
+      // memory allocation issue instead of a transient one.
+      LOG(ERROR) << "Unable to allocate shmem for first frame capture: OOM?";
+      Stop();
+    } else {
+      ScheduleRefreshFrame();
+    }
     return;
   }
 
@@ -638,13 +645,8 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
   // send to the consumer. The handle is READ_WRITE because the consumer is free
   // to modify the content further (so long as it undoes its changes before the
   // InFlightFrameDelivery::Done() call).
-  DCHECK_EQ(frame->storage_type(),
-            media::VideoFrame::STORAGE_MOJO_SHARED_BUFFER);
-  auto* const mojo_frame =
-      static_cast<media::MojoSharedBufferVideoFrame*>(frame.get());
-  mojo::ScopedSharedBufferHandle buffer = mojo_frame->Handle().Clone(
-      mojo::SharedBufferHandle::AccessMode::READ_WRITE);
-  const uint32_t buffer_size = static_cast<uint32_t>(mojo_frame->MappedSize());
+  auto buffer_and_size = frame_pool_.CloneHandleForDelivery(frame.get());
+  DCHECK(buffer_and_size.first.is_valid());
 
   // Assemble frame layout, format, and metadata into a mojo struct to send to
   // the consumer.
@@ -664,14 +666,19 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
   mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks;
   mojo::MakeStrongBinding(
       std::make_unique<InFlightFrameDelivery>(
-          frame_pool_.HoldFrameForDelivery(frame.get()),
+          base::BindOnce(
+              [](scoped_refptr<VideoFrame> frame) {
+                DCHECK(frame->HasOneRef());
+              },
+              std::move(frame)),
           base::BindOnce(&VideoCaptureOracle::RecordConsumerFeedback,
                          feedback_weak_factory_.GetWeakPtr(),
                          oracle_frame_number)),
       mojo::MakeRequest(&callbacks));
 
   // Send the frame to the consumer.
-  consumer_->OnFrameCaptured(std::move(buffer), buffer_size, std::move(info),
+  consumer_->OnFrameCaptured(std::move(buffer_and_size.first),
+                             buffer_and_size.second, std::move(info),
                              update_rect, content_rect, std::move(callbacks));
 }
 
