@@ -39,6 +39,7 @@ import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
@@ -75,6 +76,8 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
@@ -247,7 +250,7 @@ public class SavePasswordsPreferencesTest {
      * Taps the menu item to trigger exporting and ensures that reauthentication passes.
      */
     private void reauthenticateAndRequestExport() {
-        Espresso.openActionBarOverflowOrOptionsMenu(
+        openActionBarOverflowOrOptionsMenu(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
         // Before exporting, pretend that the last successful reauthentication just
         // happened. This will allow the export flow to continue.
@@ -255,6 +258,30 @@ public class SavePasswordsPreferencesTest {
                 System.currentTimeMillis(), ReauthenticationManager.REAUTH_SCOPE_BULK);
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
+    }
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({MENU_ITEM_STATE_DISABLED, MENU_ITEM_STATE_ENABLED})
+    private @interface MenuItemState {}
+    /** Represents the state of an enabled menu item. */
+    private static final int MENU_ITEM_STATE_DISABLED = 0;
+    /** Represents the state of a disabled menu item. */
+    private static final int MENU_ITEM_STATE_ENABLED = 1;
+
+    /**
+     * Checks that the menu item for exporting passwords is enabled or disabled as expected.
+     * @param expectedState The expected state of the menu item.
+     */
+    private void checkExportMenuItemState(@MenuItemState int expectedState) {
+        openActionBarOverflowOrOptionsMenu(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        final Matcher<View> stateMatcher =
+                expectedState == MENU_ITEM_STATE_ENABLED ? isEnabled() : not(isEnabled());
+        // The text matches a text view, but the disabled entity is some wrapper two levels up in
+        // the view hierarchy, hence the two withParent matchers.
+        Espresso.onView(allOf(withText(R.string.save_password_preferences_export_action_title),
+                                withParent(withParent(stateMatcher))))
+                .check(matches(isDisplayed()));
     }
 
     /**
@@ -475,13 +502,7 @@ public class SavePasswordsPreferencesTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         SavePasswordsPreferences.class.getName());
 
-        openActionBarOverflowOrOptionsMenu(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
-        // The text matches a text view, but the disabled entity is some wrapper two levels up in
-        // the view hierarchy, hence the two withParent matchers.
-        Espresso.onView(allOf(withText(R.string.save_password_preferences_export_action_title),
-                                withParent(withParent(not(isEnabled())))))
-                .check(matches(isDisplayed()));
+        checkExportMenuItemState(MENU_ITEM_STATE_DISABLED);
     }
 
     /**
@@ -500,13 +521,7 @@ public class SavePasswordsPreferencesTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         SavePasswordsPreferences.class.getName());
 
-        openActionBarOverflowOrOptionsMenu(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
-        // The text matches a text view, but the potentially disabled entity is some wrapper two
-        // levels up in the view hierarchy, hence the two withParent matchers.
-        Espresso.onView(allOf(withText(R.string.save_password_preferences_export_action_title),
-                                withParent(withParent(isEnabled()))))
-                .check(matches(isDisplayed()));
+        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
     }
 
     /**
@@ -642,17 +657,14 @@ public class SavePasswordsPreferencesTest {
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         SavePasswordsPreferences.class.getName());
 
+        // Trigger exporting and let it fail on the unavailable lock.
         openActionBarOverflowOrOptionsMenu(
                 InstrumentationRegistry.getInstrumentation().getTargetContext());
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
                 .perform(click());
-        openActionBarOverflowOrOptionsMenu(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
-        // The text matches a text view, but the potentially disabled entity is some wrapper two
-        // levels up in the view hierarchy, hence the two withParent matchers.
-        Espresso.onView(allOf(withText(R.string.save_password_preferences_export_action_title),
-                                withParent(withParent(isEnabled()))))
-                .check(matches(isDisplayed()));
+
+        // Check that for re-triggering, the export menu item is enabled.
+        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
     }
 
     /**
@@ -685,13 +697,7 @@ public class SavePasswordsPreferencesTest {
                 preferences.getFragmentForTest().onResume();
             }
         });
-        openActionBarOverflowOrOptionsMenu(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
-        // The text matches a text view, but the potentially disabled entity is some wrapper two
-        // levels up in the view hierarchy, hence the two withParent matchers.
-        Espresso.onView(allOf(withText(R.string.save_password_preferences_export_action_title),
-                                withParent(withParent(isEnabled()))))
-                .check(matches(isDisplayed()));
+        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
     }
 
     /**
@@ -734,6 +740,68 @@ public class SavePasswordsPreferencesTest {
                         allOf(hasAction(equalTo(Intent.ACTION_SEND)), hasType("text/csv"))))));
 
         Intents.release();
+    }
+
+    /**
+     * Check that the export flow can be canceled in the warning dialogue and that upon cancellation
+     * the export menu item gets re-enabled.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportCancelOnWarning() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        reauthenticateAndRequestExport();
+
+        // Cancel the export warning.
+        Espresso.onView(withText(R.string.cancel)).perform(click());
+
+        // Check that the cancellation succeeded by checking that the export menu is available and
+        // enabled.
+        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
+    }
+
+    /**
+     * Check that the export flow can be canceled by dismissing the warning dialogue (tapping
+     * outside of it, as opposed to tapping "Cancel") and that upon cancellation the export menu
+     * item gets re-enabled.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @EnableFeatures("PasswordExport")
+    public void testExportCancelOnWarningDismissal() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OVERRIDE_STATE_AVAILABLE);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+
+        reauthenticateAndRequestExport();
+
+        // Verify that the warning dialog is shown and then dismiss it through pressing back (as
+        // opposed to the cancel button).
+        Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
+                .check(matches(isDisplayed()));
+        Espresso.pressBack();
+
+        // Check that the cancellation succeeded by checking that the export menu is available and
+        // enabled.
+        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
     }
 
     /**
@@ -821,13 +889,7 @@ public class SavePasswordsPreferencesTest {
 
         // Check that the cancellation succeeded by checking that the export menu is available and
         // enabled.
-        openActionBarOverflowOrOptionsMenu(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
-        // The text matches a text view, but the potentially disabled entity is some wrapper two
-        // levels up in the view hierarchy, hence the two withParent matchers.
-        Espresso.onView(allOf(withText(R.string.save_password_preferences_export_action_title),
-                                withParent(withParent(isEnabled()))))
-                .check(matches(isDisplayed()));
+        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
     }
 
     /**
@@ -868,13 +930,7 @@ public class SavePasswordsPreferencesTest {
 
         // Check that the cancellation succeeded by checking that the export menu is available and
         // enabled.
-        openActionBarOverflowOrOptionsMenu(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
-        // The text matches a text view, but the potentially disabled entity is some wrapper two
-        // levels up in the view hierarchy, hence the two withParent matchers.
-        Espresso.onView(allOf(withText(R.string.save_password_preferences_export_action_title),
-                                withParent(withParent(isEnabled()))))
-                .check(matches(isDisplayed()));
+        checkExportMenuItemState(MENU_ITEM_STATE_ENABLED);
     }
 
     /**
