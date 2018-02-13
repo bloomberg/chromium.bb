@@ -142,6 +142,7 @@
     }                               \
   } while (false)
 
+namespace blink {
 namespace {
 
 // Page dimensions in pixels at 72 DPI.
@@ -150,9 +151,24 @@ constexpr int kA4PortraitPageHeight = 842;
 constexpr int kLetterPortraitPageWidth = 612;
 constexpr int kLetterPortraitPageHeight = 792;
 
+// Changing these values requires changing the names generated in
+// EnsureUkmTimeAggregator().
+enum class UkmMetricNames {
+  kCompositing,
+  kPaint,
+  kPrePaint,
+  kStyleAndLayout,
+  kCount
+};
+
 }  // namespace
 
-namespace blink {
+#define SCOPED_UMA_AND_UKM_TIMER(uma_name, ukm_enum)                    \
+  DEFINE_STATIC_LOCAL_IMPL(CustomCountHistogram, scoped_uma_counter,    \
+                           (uma_name, 0, 10000000, 50), false);         \
+  auto scoped_ukm_uma_timer = EnsureUkmTimeAggregator().GetScopedTimer( \
+      static_cast<size_t>(ukm_enum), &scoped_uma_counter);
+
 using namespace HTMLNames;
 
 // The maximum number of updatePlugins iterations that should be done before
@@ -290,6 +306,7 @@ void LocalFrameView::Reset() {
   viewport_constrained_objects_.reset();
   layout_subtree_root_list_.Clear();
   orthogonal_writing_mode_root_list_.Clear();
+  ukm_time_aggregator_.reset();
 }
 
 template <typename Function>
@@ -418,6 +435,8 @@ void LocalFrameView::Dispose() {
     owner_element->SetEmbeddedContentView(nullptr);
 
   ClearPrintContext();
+
+  ukm_time_aggregator_.reset();
 
 #if DCHECK_IS_ON()
   has_been_disposed_ = true;
@@ -3184,6 +3203,8 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
                    InspectorUpdateLayerTreeEvent::Data(frame_.Get()));
 
       if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+        SCOPED_UMA_AND_UKM_TIMER("Blink.Compositing.UpdateTime",
+                                 UkmMetricNames::kCompositing);
         layout_view->Compositor()->UpdateIfNeededRecursive(target_state);
       } else {
         ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
@@ -3300,7 +3321,8 @@ void LocalFrameView::PrePaint() {
   });
 
   {
-    SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.PrePaint.UpdateTime");
+    SCOPED_UMA_AND_UKM_TIMER("Blink.PrePaint.UpdateTime",
+                             UkmMetricNames::kPrePaint);
     PrePaintTreeWalk().Walk(*this);
   }
 
@@ -3311,7 +3333,7 @@ void LocalFrameView::PrePaint() {
 
 void LocalFrameView::PaintTree() {
   TRACE_EVENT0("blink", "LocalFrameView::paintTree");
-  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Paint.UpdateTime");
+  SCOPED_UMA_AND_UKM_TIMER("Blink.Paint.UpdateTime", UkmMetricNames::kPaint);
 
   DCHECK(GetFrame() == GetPage()->MainFrame() ||
          (!GetFrame().Tree().Parent()->IsLocalFrame()));
@@ -3394,7 +3416,8 @@ void LocalFrameView::PushPaintArtifactToCompositor(
         paint_artifact_compositor_->GetWebLayer(), &GetFrame());
   }
 
-  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Compositing.UpdateTime");
+  SCOPED_UMA_AND_UKM_TIMER("Blink.Compositing.UpdateTime",
+                           UkmMetricNames::kCompositing);
 
   paint_artifact_compositor_->Update(paint_controller_->GetPaintArtifact(),
                                      composited_element_ids);
@@ -3409,7 +3432,8 @@ std::unique_ptr<JSONObject> LocalFrameView::CompositedLayersAsJSON(
 }
 
 void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
-  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.StyleAndLayout.UpdateTime");
+  SCOPED_UMA_AND_UKM_TIMER("Blink.StyleAndLayout.UpdateTime",
+                           UkmMetricNames::kStyleAndLayout);
   UpdateStyleAndLayoutIfNeededRecursiveInternal();
 }
 
@@ -5824,6 +5848,19 @@ ScrollbarTheme& LocalFrameView::GetPageScrollbarTheme() const {
   DCHECK(page);
 
   return page->GetScrollbarTheme();
+}
+
+UkmTimeAggregator& LocalFrameView::EnsureUkmTimeAggregator() {
+  if (!ukm_time_aggregator_) {
+    ukm_time_aggregator_.reset(new UkmTimeAggregator(
+        "Blink.UpdateTime", frame_->GetDocument()->UkmSourceID(),
+        frame_->GetDocument()->UkmRecorder(),
+        // Note that changing the order or values of the following vector
+        // requires changing the UkmMetricNames enum.
+        {"Paint", "PrePaint", "Compositing", "StyleAndLayout"},
+        TimeDelta::FromSeconds(1)));
+  }
+  return *ukm_time_aggregator_;
 }
 
 }  // namespace blink

@@ -40,6 +40,7 @@ class BasePredictor;
 namespace blink {
 class AutoplayUmaHelper;
 class Document;
+class UkmTimeAggregator;
 }
 
 namespace cc {
@@ -131,6 +132,7 @@ class METRICS_EXPORT UkmRecorder {
   friend autofill::FormStructure;
   friend blink::AutoplayUmaHelper;
   friend blink::Document;
+  friend blink::UkmTimeAggregator;
   friend cc::UkmManager;
   friend content::CrossSiteDocumentResourceHandler;
   friend content::DownloadUkmHelper;

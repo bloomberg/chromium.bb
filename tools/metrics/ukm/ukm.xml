@@ -291,6 +291,63 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Blink.UpdateTime">
+  <owner>vmpstr@chromium.org</owner>
+  <summary>
+    Metrics that measure various update times in Blink. This includes paint,
+    compositing, and layout update times. The metrics are recorded once per
+    second and at the destruction of the local frame root.
+  </summary>
+  <metric name="Compositing.Average">
+    <summary>
+      The average time taken by the compositing phase in microseconds in the
+      event period.
+    </summary>
+  </metric>
+  <metric name="Compositing.WorstCase">
+    <summary>
+      The longest single time taken by the compositing phase in microseconds in
+      the event period.
+    </summary>
+  </metric>
+  <metric name="Paint.Average">
+    <summary>
+      The average time taken by the paint phase in microseconds in the event
+      period.
+    </summary>
+  </metric>
+  <metric name="Paint.WorstCase">
+    <summary>
+      The longest single time taken by the paint phase in microseconds in the
+      event period.
+    </summary>
+  </metric>
+  <metric name="PrePaint.Average">
+    <summary>
+      The average time taken by the pre-paint phase in microseconds in the event
+      period.
+    </summary>
+  </metric>
+  <metric name="PrePaint.WorstCase">
+    <summary>
+      The longest single time taken by the pre-paint phase in microseconds in
+      the event period.
+    </summary>
+  </metric>
+  <metric name="StyleAndLayout.Average">
+    <summary>
+      The average time taken by the style and layout phases in microseconds in
+      the event period.
+    </summary>
+  </metric>
+  <metric name="StyleAndLayout.WorstCase">
+    <summary>
+      The longest single time taken by the style and layout phases in
+      microseconds in the event period.
+    </summary>
+  </metric>
+</event>
+
 <event name="Blink.UseCounter">
   <owner>loonybear@chromium.org</owner>
   <summary>

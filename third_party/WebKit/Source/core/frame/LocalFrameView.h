@@ -42,6 +42,7 @@
 #include "core/paint/ScrollbarManager.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
 #include "platform/PlatformFrameView.h"
+#include "platform/UkmTimeAggregator.h"
 #include "platform/animation/CompositorAnimationHost.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/geometry/IntRect.h"
@@ -1205,6 +1206,8 @@ class CORE_EXPORT LocalFrameView final
 
   void LayoutFromRootObject(LayoutObject& root);
 
+  UkmTimeAggregator& EnsureUkmTimeAggregator();
+
   LayoutSize size_;
 
   typedef HashSet<scoped_refptr<LayoutEmbeddedObject>> EmbeddedObjectSet;
@@ -1384,6 +1387,8 @@ class CORE_EXPORT LocalFrameView final
   // TODO(kenrb): Remove these when https://crbug.com/680606 is resolved.
   std::unique_ptr<CompositorAnimationTimeline> animation_timeline_;
   std::unique_ptr<CompositorAnimationHost> animation_host_;
+
+  std::unique_ptr<UkmTimeAggregator> ukm_time_aggregator_;
 
   Member<PrintContext> print_context_;
 
