@@ -812,10 +812,15 @@ static void setup_ref_mv_list(
                                 (xd->n8_w >= mi_size_wide[BLOCK_8X8]) &&
                                 (xd->n8_w < mi_size_wide[BLOCK_64X64]);
 
-    for (int blk_row = 0; blk_row < blk_row_end;
-         blk_row += mi_size_high[BLOCK_8X8]) {
-      for (int blk_col = 0; blk_col < blk_col_end;
-           blk_col += mi_size_wide[BLOCK_8X8]) {
+    int step_h = (xd->n8_h >= mi_size_high[BLOCK_64X64])
+                     ? mi_size_high[BLOCK_16X16]
+                     : mi_size_high[BLOCK_8X8];
+    int step_w = (xd->n8_w >= mi_size_wide[BLOCK_64X64])
+                     ? mi_size_wide[BLOCK_16X16]
+                     : mi_size_wide[BLOCK_8X8];
+
+    for (int blk_row = 0; blk_row < blk_row_end; blk_row += step_h) {
+      for (int blk_col = 0; blk_col < blk_col_end; blk_col += step_w) {
         // (TODO: yunqing) prev_frame_mvs_base is not used here, tpl_mvs is
         // used.
         // Can be modified the same way.
