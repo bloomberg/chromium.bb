@@ -1099,7 +1099,7 @@ camera.views.Camera.prototype.onToggleRecordClicked_ = function(event) {
   document.querySelector('#toggle-mic').hidden = !recordEnabled;
   this.updateMic_(recordEnabled);
   this.showToastMessage_(chrome.i18n.getMessage(recordEnabled ?
-      'toggleRecordingActiveMessage' : 'toggleTakingPictureActiveMessage'));
+      'recordVideoActiveMessage' : 'takePictureActiveMessage'));
 };
 
 /**

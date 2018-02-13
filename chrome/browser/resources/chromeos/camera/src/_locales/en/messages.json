@@ -194,19 +194,19 @@
     "description": "Label for the button to switch between multiple cameras. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected."
   },
   "toggleRecordOnButton": {
-   "message": "Toggle on recording video",
-   "description": "Label for the button to toggle on recording video."
+   "message": "Switch to record video",
+   "description": "Label for the button to switch to record video mode."
   },
   "toggleRecordOffButton": {
-   "message": "Toggle on taking picture",
-   "description": "Label for the button to toggle on taking picture."
+   "message": "Switch to take picture",
+   "description": "Label for the button to switch to take picture mode."
   },
-  "toggleRecordingActiveMessage": {
-    "message": "Recording video active",
+  "recordVideoActiveMessage": {
+    "message": "Record video active",
     "description": "Message shown when activating the video recording feature."
   },
-  "toggleTakingPictureActiveMessage": {
-    "message": "Taking picture active",
+  "takePictureActiveMessage": {
+    "message": "Take picture active",
     "description": "Message shown when activating the photo taking feature."
   },
   "toggleMirrorButton": {
