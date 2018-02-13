@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_SERVICE_MOCK_H_
 #define COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_SERVICE_MOCK_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -43,6 +44,9 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD1(OnSyncCycleCompleted, void(const syncer::SyncCycleSnapshot&));
   MOCK_METHOD2(OnUserChoseDatatypes,
                void(bool sync_everything, syncer::ModelTypeSet chosen_types));
+  MOCK_METHOD0(SetFirstSetupComplete, void());
+  MOCK_METHOD0(GetSetupInProgressHandle,
+               std::unique_ptr<syncer::SyncSetupInProgressHandle>());
 
   MOCK_METHOD2(OnUnrecoverableError,
                void(const base::Location& location,
@@ -103,6 +107,10 @@ class ProfileSyncServiceMock : public ProfileSyncService {
                void(const std::string& passphrase, PassphraseType type));
 
   MOCK_METHOD0(OnSetupInProgressHandleDestroyed, void());
+
+  // Gives access to the real implementation of ProfileSyncService methods:
+  std::unique_ptr<syncer::SyncSetupInProgressHandle>
+  GetSetupInProgressHandleConcrete();
 };
 
 }  // namespace browser_sync

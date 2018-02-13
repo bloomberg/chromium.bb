@@ -26,4 +26,9 @@ ProfileSyncServiceMock::GetOpenTabsUIDelegate() {
                        : ProfileSyncService::GetOpenTabsUIDelegate();
 }
 
+std::unique_ptr<syncer::SyncSetupInProgressHandle>
+ProfileSyncServiceMock::GetSetupInProgressHandleConcrete() {
+  return browser_sync::ProfileSyncService::GetSetupInProgressHandle();
+}
+
 }  // namespace browser_sync

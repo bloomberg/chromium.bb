@@ -47,6 +47,7 @@
 #include "ui/base/layout.h"
 
 using ::testing::_;
+using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -213,6 +214,10 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
         Return(base::Time()));
     ON_CALL(*mock_pss_, GetRegisteredDataTypes())
         .WillByDefault(Return(syncer::ModelTypeSet()));
+    ON_CALL(*mock_pss_, GetSetupInProgressHandle())
+        .WillByDefault(
+            Invoke(mock_pss_,
+                   &ProfileSyncServiceMock::GetSetupInProgressHandleConcrete));
 
     mock_pss_->Initialize();
 

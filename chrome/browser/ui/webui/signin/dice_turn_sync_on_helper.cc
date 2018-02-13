@@ -306,6 +306,14 @@ void DiceTurnSyncOnHelper::SigninAndShowSyncConfirmationUI() {
   signin_metrics::LogSigninReason(signin_reason_);
   base::RecordAction(base::UserMetricsAction("Signin_Signin_Succeed"));
 
+  // Take a SyncSetupInProgressHandle, so that the UI code can use
+  // IsFirstSyncSetupInProgress() as a way to know if there is a signin in
+  // progress.
+  // TODO(https://crbug.com/811211): Remove this handle.
+  browser_sync::ProfileSyncService* sync_service = GetProfileSyncService();
+  if (sync_service)
+    sync_blocker_ = sync_service->GetSetupInProgressHandle();
+
   // Show Sync confirmation.
   delegate_->ShowSyncConfirmation(
       base::BindOnce(&DiceTurnSyncOnHelper::FinishSyncSetupAndDelete,
