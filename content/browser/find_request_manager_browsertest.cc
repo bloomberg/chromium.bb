@@ -199,6 +199,108 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(Basic)) {
   }
 }
 
+bool ExecuteScriptAndExtractRect(FrameTreeNode* frame,
+                                 const std::string& script,
+                                 gfx::Rect* out) {
+  std::string result;
+  std::string script_and_extract =
+      script +
+      "window.domAutomationController.send(rect.x + ',' + rect.y + ','" +
+      "+ rect.width + ',' + rect.height);";
+  if (!ExecuteScriptAndExtractString(frame, script_and_extract, &result))
+    return false;
+
+  std::vector<std::string> tokens = base::SplitString(
+      result, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (tokens.size() != 4U)
+    return false;
+
+  double x, y, width, height;
+  if (!base::StringToDouble(tokens[0], &x) ||
+      !base::StringToDouble(tokens[1], &y) ||
+      !base::StringToDouble(tokens[2], &width) ||
+      !base::StringToDouble(tokens[3], &height))
+    return false;
+
+  *out = gfx::Rect(static_cast<int>(x), static_cast<int>(y),
+                   static_cast<int>(width), static_cast<int>(height));
+  return true;
+}
+
+// Basic test that a search result is actually brought into view.
+IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, ScrollAndZoomIntoView) {
+  LoadAndWait("/find_in_page_desktop.html");
+  if (GetParam()) {
+    // TODO(bokan): The OOPIF version of this test is currently broken due to
+    // bug https://crbug.com/810291.
+    // MakeChildFrameCrossProcess();
+    return;
+  }
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  FrameTreeNode* child = root->child_at(0);
+
+  // Start off at a non-origin scroll offset to ensure coordinate conversisons
+  // work correctly.
+  ASSERT_TRUE(ExecuteScript(root, "window.scrollTo(3500, 1500);"));
+
+  // Search for a result further down in the iframe.
+  blink::WebFindOptions options;
+  Find("result 17", options);
+  delegate()->WaitForFinalReply();
+
+  // gBCR of result box in iframe.
+  gfx::Rect target_in_iframe;
+
+  // gBCR of iframe in main document.
+  gfx::Rect iframe_rect;
+
+  // Window size with location at origin (for comparison with gBCR).
+  gfx::Rect root_rect;
+
+  // Visual viewport rect relative to root_rect.
+  gfx::Rect visual_rect;
+
+  ASSERT_TRUE(ExecuteScriptAndExtractRect(
+      child,
+      "var result = document.querySelector('.margin-overflow');"
+      "var rect = result.getBoundingClientRect();",
+      &target_in_iframe));
+  ASSERT_TRUE(ExecuteScriptAndExtractRect(
+      root,
+      "var rect = document.querySelector('#frame').getBoundingClientRect();",
+      &iframe_rect));
+  ASSERT_TRUE(ExecuteScriptAndExtractRect(
+      root,
+      "var rect = new DOMRect(0, 0, window.innerWidth, window.innerHeight);",
+      &root_rect));
+  ASSERT_TRUE(ExecuteScriptAndExtractRect(
+      root,
+      "var rect = new DOMRect(visualViewport.offsetLeft, "
+      "                       visualViewport.offsetTop,"
+      "                       visualViewport.width,"
+      "                       visualViewport.height);",
+      &visual_rect));
+
+  gfx::Rect result_in_root = target_in_iframe + iframe_rect.OffsetFromOrigin();
+
+  EXPECT_TRUE(gfx::Rect(iframe_rect.size()).Contains(target_in_iframe))
+      << "Result rect[ " << target_in_iframe.ToString()
+      << " ] not visible in iframe [ 0,0 " << iframe_rect.size().ToString()
+      << " ].";
+
+  EXPECT_TRUE(root_rect.Contains(result_in_root))
+      << "Result rect[ " << result_in_root.ToString()
+      << " ] not visible in root frame [ " << root_rect.ToString() << " ].";
+
+  EXPECT_TRUE(visual_rect.Contains(result_in_root))
+      << "Result rect[ " << result_in_root.ToString()
+      << " ] not visible in visual viewport [ " << visual_rect.ToString()
+      << " ].";
+}
+
 // Tests searching for a word character-by-character, as would typically be done
 // by a user typing into the find bar.
 IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(CharacterByCharacter)) {
