@@ -88,15 +88,19 @@ TestRule CreateGenericRule() {
 }
 
 std::unique_ptr<base::DictionaryValue> CreateManifest(
-    const std::string& json_rules_filename) {
+    const std::string& json_rules_filename,
+    const std::vector<std::string>& hosts) {
+  std::vector<std::string> permissions = hosts;
+  permissions.push_back(kAPIPermission);
+
   return DictionaryBuilder()
       .Set(keys::kName, "Test extension")
       .Set(keys::kDeclarativeNetRequestKey,
            DictionaryBuilder()
                .Set(keys::kDeclarativeRuleResourcesKey,
-                    ListBuilder().Append(json_rules_filename).Build())
+                    ToListValue({json_rules_filename}))
                .Build())
-      .Set(keys::kPermissions, ListBuilder().Append(kAPIPermission).Build())
+      .Set(keys::kPermissions, ToListValue(permissions))
       .Set(keys::kVersion, "1.0")
       .Set(keys::kManifestVersion, 2)
       .Build();
@@ -114,26 +118,28 @@ void WriteManifestAndRuleset(
     const base::FilePath& extension_dir,
     const base::FilePath::CharType* json_rules_filepath,
     const std::string& json_rules_filename,
-    const std::vector<TestRule>& rules) {
+    const std::vector<TestRule>& rules,
+    const std::vector<std::string>& hosts) {
   ListBuilder builder;
   for (const auto& rule : rules)
     builder.Append(rule.ToValue());
   WriteManifestAndRuleset(extension_dir, json_rules_filepath,
-                          json_rules_filename, *builder.Build());
+                          json_rules_filename, *builder.Build(), hosts);
 }
 
 void WriteManifestAndRuleset(
     const base::FilePath& extension_dir,
     const base::FilePath::CharType* json_rules_filepath,
     const std::string& json_rules_filename,
-    const base::Value& rules) {
+    const base::Value& rules,
+    const std::vector<std::string>& hosts) {
   // Persist JSON rules file.
   JSONFileValueSerializer(extension_dir.Append(json_rules_filepath))
       .Serialize(rules);
 
   // Persist manifest file.
   JSONFileValueSerializer(extension_dir.Append(kManifestFilename))
-      .Serialize(*CreateManifest(json_rules_filename));
+      .Serialize(*CreateManifest(json_rules_filename, hosts));
 }
 
 }  // namespace declarative_net_request
