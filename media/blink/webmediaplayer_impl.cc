@@ -671,7 +671,10 @@ void WebMediaPlayerImpl::Pause() {
 #endif
 
   pipeline_controller_.SetPlaybackRate(0.0);
-  paused_time_ = pipeline_controller_.GetMediaTime();
+
+  // For states <= have_metadata, we may not have a renderer or current time.
+  if (highest_ready_state_ > WebMediaPlayer::kReadyStateHaveMetadata)
+    paused_time_ = pipeline_controller_.GetMediaTime();
 
   if (observer_)
     observer_->OnPaused();
