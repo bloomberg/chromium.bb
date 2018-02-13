@@ -830,17 +830,16 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
   // Set the dialog text based on whether or not there are multiple downloads.
   // Dialog text: warning and explanation.
-  titleText = l10n_util::GetPluralNSStringF(
-      IDS_DOWNLOAD_REMOVE_CONFIRM_TITLE, downloadCount);
-  explanationText = l10n_util::GetPluralNSStringF(
-      IDS_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION, downloadCount);
-  // Cancel download and exit button text.
-  exitTitle = l10n_util::GetPluralNSStringF(
-      IDS_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL, downloadCount);
+  titleText = l10n_util::GetPluralNSStringF(IDS_ABANDON_DOWNLOAD_DIALOG_TITLE,
+                                            downloadCount);
+  explanationText =
+      l10n_util::GetNSString(IDS_ABANDON_DOWNLOAD_DIALOG_BROWSER_MESSAGE);
+  // "Cancel download and exit" button text.
+  exitTitle = l10n_util::GetNSString(IDS_ABANDON_DOWNLOAD_DIALOG_EXIT_BUTTON);
 
-  // Wait for download button text.
-  waitTitle = l10n_util::GetPluralNSStringF(
-      IDS_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL, downloadCount);
+  // "Wait for download" button text.
+  waitTitle =
+      l10n_util::GetNSString(IDS_ABANDON_DOWNLOAD_DIALOG_CONTINUE_BUTTON);
 
   // 'waitButton' is the default choice.
   int choice = NSRunAlertPanel(titleText, @"%@",
