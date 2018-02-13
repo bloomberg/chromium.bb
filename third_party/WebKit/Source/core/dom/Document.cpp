@@ -1277,12 +1277,8 @@ Node* Document::importNode(Node* imported_node,
         return nullptr;
       }
       Element* new_element = CreateElement(old_element->TagQName(),
-                                           CreateElementFlags::ByImportNode());
-      const AtomicString& is = old_element->IsValue();
-      if (!is.IsNull() &&
-          !V0CustomElement::IsValidName(new_element->localName()))
-        V0CustomElementRegistrationContext::SetTypeExtension(new_element, is);
-      // TODO(tkent): Handle V1 custom built-in elements. crbug.com/807871
+                                           CreateElementFlags::ByImportNode(),
+                                           old_element->IsValue());
 
       new_element->CloneDataFromElement(*old_element);
 
