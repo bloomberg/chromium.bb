@@ -2,10 +2,9 @@ Name: Desugar, transforming Java 8 bytecode to be Java 7 compatible
 Short Name: desugar
 URL: It's part of Bazel build system (https://github.com/bazelbuild/bazel).
      Also, go/desugar for @google.com account owners
-Version: 0
-Date: 2017-07-20
+Version: 0.10.0
+Date: Feb 1, 2018
 License: Apache 2.0
-License File: NOT_SHIPPED
 Security Critical: no
 
 Description:
@@ -20,19 +19,25 @@ Local Modifications:
   instructions).
 
 Update instructions (requires @google.com account for uploading):
-- Check out Bazel from https://github.com/bazelbuild/bazel
-- Compile or install Bazel by following instructions on
+* Check out Bazel from https://github.com/bazelbuild/bazel
+* Compile or install Bazel by following instructions on
     https://docs.bazel.build/versions/master/install.html
-- Build Desugar_deploy.jar by running
-$ bazel build //src/tools/android/java/com/google/devtools/build/android/desugar:Desugar_deploy.jar
-- Rename Desugar_deploy.jar to Desugar.jar
-$ mv bazel-bin/src/tools/android/java/com/google/devtools/build/android/desugar/Desugar_deploy.jar Desugar.jar
-- Remove existing SHA1 file
-- If gcloud auth tokens are not set up, run
-$ download_from_google_storage --config
-- Upload new jar to gcloud. In third_party/bazel/desugar, run
-$ upload_to_google_storage.py -b chromium-android-tools/bazel/desugar Desugar.jar
-- Update Desugar-runtime.jar:
-$ unzip Desugar.jar "com/google/devtools/build/android/desugar/runtime*"
-$ zip -rD0 Desugar-runtime.jar com
-$ rm -r com
+* Build Desugar_deploy.jar by running
+    bazel build //src/tools/android/java/com/google/devtools/build/android/desugar:Desugar_deploy.jar
+* Move Desugar_deploy.jar to location within Chromium:
+    rm $CHROMIUM_SRC/third_party/bazel/desugar/Desugar.jar
+    mv bazel-bin/src/tools/android/java/com/google/devtools/build/android/desugar/Desugar_deploy.jar $CHROMIUM_SRC/third_party/bazel/desugar/Desugar.jar
+* Update Desugar-runtime.jar:
+    unzip Desugar.jar "com/google/devtools/build/android/desugar/runtime*"
+    zip -rD0 Desugar-runtime.jar com
+    rm -r com
+* Perform a sanity check of chrome_public_apk:
+    ninja chrome_public_apk
+    bin/chrome_public_apk run
+* Update this README.chromium (Version & Date)
+* Upload new jar to CIPD:
+    cd third_party/bazel
+    VERSION=$(grep Version -m1 desugar/README.chromium | cut -d' ' -f2)
+    cipd create --pkg-def cipd.yaml -tag version:$VERSION
+* Update revision in //build/cipd/android/android.ensure (soon to be right in
+  //DEPS)
