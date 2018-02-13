@@ -106,6 +106,8 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
 
     protected WebViewChromiumFactoryProvider mFactory;
 
+    private final SharedWebViewChromium mSharedWebViewChromium;
+
     private final boolean mShouldDisableThreadChecking;
 
     private static boolean sRecordWholeDocumentEnabledByApi;
@@ -126,6 +128,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         mFactory = factory;
         mShouldDisableThreadChecking = shouldDisableThreadChecking;
         factory.getWebViewDelegate().addWebViewAssetPath(mWebView.getContext());
+        mSharedWebViewChromium = new SharedWebViewChromium(mFactory.getRunQueue());
     }
 
     static void completeWindowCreation(WebView parent, WebView child) {
@@ -246,6 +249,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
                         return mFactory.createAutofillProvider(context, mWebView);
                     }
                 });
+        mSharedWebViewChromium.setAwContentsOnUiThread(mAwContents);
 
         if (mAppTargetSdkVersion >= Build.VERSION_CODES.KITKAT) {
             // On KK and above, favicons are automatically downloaded as the method
@@ -269,11 +273,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     }
 
     protected boolean checkNeedsPost() {
-        boolean needsPost = !mFactory.hasStarted() || !ThreadUtils.runningOnUiThread();
-        if (!needsPost && mAwContents == null) {
-            throw new IllegalStateException("AwContents must be created if we are not posting!");
-        }
-        return needsPost;
+        return mSharedWebViewChromium.checkNeedsPost();
     }
 
     //  Intentionally not static, as no need to check thread on static methods
@@ -779,21 +779,12 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     @TargetApi(Build.VERSION_CODES.M)
     public void insertVisualStateCallback(
             final long requestId, final VisualStateCallback callback) {
-        if (checkNeedsPost()) {
-            mFactory.addTask(new Runnable() {
-                @Override
-                public void run() {
-                    insertVisualStateCallback(requestId, callback);
-                }
-            });
-            return;
-        }
-        mAwContents.insertVisualStateCallback(
+        mSharedWebViewChromium.insertVisualStateCallback(
                 requestId, new AwContents.VisualStateCallback() {
-                        @Override
-                        public void onComplete(long requestId) {
-                            callback.onComplete(requestId);
-                        }
+                    @Override
+                    public void onComplete(long requestId) {
+                        callback.onComplete(requestId);
+                    }
                 });
     }
 
