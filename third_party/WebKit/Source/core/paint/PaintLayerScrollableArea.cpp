@@ -727,6 +727,8 @@ IntRect PaintLayerScrollableArea::ScrollableAreaBoundingBox() const {
 }
 
 void PaintLayerScrollableArea::RegisterForAnimation() {
+  if (has_been_disposed_)
+    return;
   if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
     if (LocalFrameView* frame_view = frame->View())
       frame_view->AddAnimatingScrollableArea(this);
@@ -734,6 +736,8 @@ void PaintLayerScrollableArea::RegisterForAnimation() {
 }
 
 void PaintLayerScrollableArea::DeregisterForAnimation() {
+  if (has_been_disposed_)
+    return;
   if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
     if (LocalFrameView* frame_view = frame->View())
       frame_view->RemoveAnimatingScrollableArea(this);
