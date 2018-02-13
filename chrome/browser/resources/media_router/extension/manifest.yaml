@@ -24,7 +24,7 @@
     "storage",
     "settingsPrivate",
     "tabCapture",
-    "tabs",
+    "tabs"
   ],
 
   # Background script.
@@ -32,7 +32,7 @@
     "scripts": [
       "common.js",
       "mirroring_common.js",
-      "background_script.js",
+      "background_script.js"
     ],
     "persistent": false
   },
@@ -49,5 +49,5 @@
 
   # Setting the public key fixes the extension id to:
   # enhhojjnijigcajfphajepfemndkmdlo
-  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC+hlN5FB+tjCsBszmBIvIcD/djLLQm2zZfFygP4U4/o++ZM91EWtgII10LisoS47qT2TIOg4Un4+G57elZ9PjEIhcJfANqkYrD3t9dpEzMNr936TLB2u683B5qmbB68Nq1Eel7KVc+F0BqhBondDqhvDvGPEV0vBsbErJFlNH7SQIDAQAB",
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC+hlN5FB+tjCsBszmBIvIcD/djLLQm2zZfFygP4U4/o++ZM91EWtgII10LisoS47qT2TIOg4Un4+G57elZ9PjEIhcJfANqkYrD3t9dpEzMNr936TLB2u683B5qmbB68Nq1Eel7KVc+F0BqhBondDqhvDvGPEV0vBsbErJFlNH7SQIDAQAB"
 }
