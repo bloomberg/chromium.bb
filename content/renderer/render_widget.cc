@@ -509,6 +509,7 @@ RenderWidget* RenderWidget::CreateForFrame(
   if (view) {
     view->AttachWebFrameWidget(
         RenderWidget::CreateWebFrameWidget(view->GetWidget(), frame));
+    view->GetWidget()->UpdateWebViewWithDeviceScaleFactor();
     return view->GetWidget();
   }
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
@@ -526,6 +527,7 @@ RenderWidget* RenderWidget::CreateForFrame(
   // this function returns.
   widget->Init(RenderWidget::ShowCallback(),
                RenderWidget::CreateWebFrameWidget(widget.get(), frame));
+  widget->UpdateWebViewWithDeviceScaleFactor();
 
   if (g_render_widget_initialized)
     g_render_widget_initialized(widget.get());

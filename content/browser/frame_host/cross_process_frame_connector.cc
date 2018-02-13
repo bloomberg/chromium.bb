@@ -34,7 +34,13 @@ CrossProcessFrameConnector::CrossProcessFrameConnector(
     RenderFrameProxyHost* frame_proxy_in_parent_renderer)
     : FrameConnectorDelegate(IsUseZoomForDSFEnabled()),
       frame_proxy_in_parent_renderer_(frame_proxy_in_parent_renderer),
-      is_scroll_bubbling_(false) {}
+      is_scroll_bubbling_(false) {
+  frame_proxy_in_parent_renderer->frame_tree_node()
+      ->render_manager()
+      ->current_frame_host()
+      ->GetRenderWidgetHost()
+      ->GetScreenInfo(&screen_info_);
+}
 
 CrossProcessFrameConnector::~CrossProcessFrameConnector() {
   // Notify the view of this object being destroyed, if the view still exists.
