@@ -21,7 +21,7 @@ class GeolocationWatchers : public TraceWrapperBase {
   void TraceWrappers(const ScriptWrappableVisitor*) const;
 
   bool Add(int id, GeoNotifier*);
-  GeoNotifier* Find(int id);
+  GeoNotifier* Find(int id) const;
   void Remove(int id);
   void Remove(GeoNotifier*);
   bool Contains(GeoNotifier*) const;
@@ -29,7 +29,10 @@ class GeolocationWatchers : public TraceWrapperBase {
   bool IsEmpty() const;
   void Swap(GeolocationWatchers& other);
 
-  void GetNotifiersVector(HeapVector<Member<GeoNotifier>>&) const;
+  auto& Notifiers() { return id_to_notifier_map_.Values(); }
+
+  void CopyNotifiersToVector(
+      HeapVector<TraceWrapperMember<GeoNotifier>>&) const;
 
  private:
   typedef HeapHashMap<int, TraceWrapperMember<GeoNotifier>> IdToNotifierMap;
