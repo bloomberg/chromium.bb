@@ -10,13 +10,12 @@
   await TestRunner.addIframe(
       'resources/post-message-listener.html', {name: 'childframe'});
 
-  Bindings.NetworkProject.forTarget(TestRunner.mainTarget)._resetForTest();
+  Bindings.debuggerWorkspaceBinding._resetForTest(TestRunner.mainTarget);
   Bindings.resourceMapping._resetForTest(TestRunner.mainTarget);
 
   var pageMock = new SDKTestRunner.PageMock('mock-url.com/frame.html');
   pageMock.disableDOMCapability();
   var target2 = SDKTestRunner.connectToPage('mock-target-100', pageMock);
-  var networkProject2 = Bindings.NetworkProject.forTarget(target2);
   var subframe = TestRunner.mainFrame().childFrames[0];
 
   var sourcesNavigatorView = new Sources.NetworkNavigatorView();
@@ -152,7 +151,7 @@
 
   TestRunner.addResult('\n\n================================================');
   TestRunner.addResult('Removing all resources:');
-  Bindings.NetworkProject.forTarget(target2)._resetForTest();
+  Bindings.debuggerWorkspaceBinding._resetForTest(target2);
   SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
   SourcesTestRunner.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
 
