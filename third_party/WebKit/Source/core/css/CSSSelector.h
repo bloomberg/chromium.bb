@@ -353,7 +353,7 @@ class CORE_EXPORT CSSSelector {
     kMatchVisited = 2,
     kMatchAll = kMatchLink | kMatchVisited
   };
-  unsigned ComputeLinkMatchType() const;
+  unsigned ComputeLinkMatchType(unsigned link_match_type) const;
 
   bool IsForPage() const { return is_for_page_; }
   void SetForPage() { is_for_page_ = true; }
