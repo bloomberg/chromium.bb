@@ -15,17 +15,17 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class WebViewChromiumRunQueue {
     private final Queue<Runnable> mQueue;
-    private final ShouldDrainQueueCallable mShouldDrainQueueCallable;
+    private final ChromiumHasStartedCallable mChromiumHasStartedCallable;
 
     /**
      * Callable representing whether WebView has been initialized, and we should start running
      * tasks.
      */
-    public static interface ShouldDrainQueueCallable { public boolean shouldDrainQueue(); }
+    public static interface ChromiumHasStartedCallable { public boolean hasStarted(); }
 
-    public WebViewChromiumRunQueue(ShouldDrainQueueCallable shouldDrainQueueCallable) {
+    public WebViewChromiumRunQueue(ChromiumHasStartedCallable chromiumHasStartedCallable) {
         mQueue = new ConcurrentLinkedQueue<Runnable>();
-        mShouldDrainQueueCallable = shouldDrainQueueCallable;
+        mChromiumHasStartedCallable = chromiumHasStartedCallable;
     }
 
     /**
@@ -34,7 +34,7 @@ public class WebViewChromiumRunQueue {
      */
     public void addTask(Runnable task) {
         mQueue.add(task);
-        if (mShouldDrainQueueCallable.shouldDrainQueue()) {
+        if (mChromiumHasStartedCallable.hasStarted()) {
             ThreadUtils.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -57,5 +57,9 @@ public class WebViewChromiumRunQueue {
             task.run();
             task = mQueue.poll();
         }
+    }
+
+    public boolean chromiumHasStarted() {
+        return mChromiumHasStartedCallable.hasStarted();
     }
 }
