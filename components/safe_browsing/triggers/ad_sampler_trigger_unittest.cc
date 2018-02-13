@@ -65,11 +65,6 @@ class AdSamplerTriggerTest : public content::RenderViewHostTestHarness {
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
 
-    // Replace the task runner for the UI thread (since tests run on UI, and
-    // so does the trigger) with a testing task runner that specific tests
-    // can synchronize on.
-    base::MessageLoop::current()->SetTaskRunner(task_runner_);
-
     // Enable any prefs required for the trigger to run.
     safe_browsing::RegisterProfilePrefs(prefs_.registry());
     prefs_.SetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed, true);
@@ -80,13 +75,13 @@ class AdSamplerTriggerTest : public content::RenderViewHostTestHarness {
   void CreateTriggerWithFrequency(const size_t denominator) {
     safe_browsing::AdSamplerTrigger::CreateForWebContents(
         web_contents(), &trigger_manager_, &prefs_, nullptr, nullptr);
-    safe_browsing::AdSamplerTrigger::FromWebContents(web_contents())
-        ->sampler_frequency_denominator_ = denominator;
-    // Set delay timers artificially to keep tests fast.
-    safe_browsing::AdSamplerTrigger::FromWebContents(web_contents())
-        ->start_report_delay_ms_ = 0;
-    safe_browsing::AdSamplerTrigger::FromWebContents(web_contents())
-        ->finish_report_delay_ms_ = 0;
+
+    safe_browsing::AdSamplerTrigger* ad_sampler =
+        safe_browsing::AdSamplerTrigger::FromWebContents(web_contents());
+    ad_sampler->SetSamplerFrequencyForTest(denominator);
+
+    // Give the trigger a test task runner that we can synchronize on.
+    ad_sampler->SetTaskRunnerForTest(task_runner_);
   }
 
   // Returns the final RenderFrameHost after navigation commits.
@@ -183,13 +178,7 @@ TEST_F(AdSamplerTriggerTest, PageWithNoAds) {
                                       NO_SAMPLE_NO_AD, 3);
 }
 
-#if defined(THREAD_SANITIZER)
-// Flaky on TSAN: https://crbug.com/810840
-#define MAYBE_PageWithMultipleAds DISABLED_PageWithMultipleAds
-#else
-#define MAYBE_PageWithMultipleAds PageWithMultipleAds
-#endif
-TEST_F(AdSamplerTriggerTest, MAYBE_PageWithMultipleAds) {
+TEST_F(AdSamplerTriggerTest, PageWithMultipleAds) {
   // Make sure the trigger fires when there are ads on the page. We expect
   // one call for each ad detected.
   CreateTriggerWithFrequency(/*denominator=*/1);
