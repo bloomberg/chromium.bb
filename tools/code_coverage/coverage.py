@@ -205,7 +205,7 @@ class _CoverageReportHtmlGenerator(object):
     self._table_entries.append(table_entry)
 
   def CreateTotalsEntry(self, summary):
-    """Creates an entry corresponds to the 'TOTALS' row in the html report."""
+    """Creates an entry corresponds to the 'Totals' row in the html report."""
     self._total_entry = self._CreateTableEntryFromCoverageSummary(summary)
 
   def _CreateTableEntryFromCoverageSummary(self,
@@ -217,7 +217,7 @@ class _CoverageReportHtmlGenerator(object):
     assert (href is None and name is None and is_dir is None) or (
         href is not None and name is not None and is_dir is not None), (
             'The only scenario when href or name or is_dir can be None is when '
-            'creating an entry for the TOTALS row, and in that case, all three '
+            'creating an entry for the Totals row, and in that case, all three '
             'attributes must be None.')
 
     entry = {}
@@ -233,13 +233,14 @@ class _CoverageReportHtmlGenerator(object):
       if summary_dict[feature]['total'] == 0:
         percentage = 0.0
       else:
-        percentage = round((float(summary_dict[feature]['covered']
-                                 ) / summary_dict[feature]['total']) * 100, 2)
+        percentage = float(summary_dict[feature]['covered']) / summary_dict[
+            feature]['total'] * 100
+
       color_class = self._GetColorClass(percentage)
       entry[feature] = {
           'total': summary_dict[feature]['total'],
           'covered': summary_dict[feature]['covered'],
-          'percentage': percentage,
+          'percentage': '{:6.2f}'.format(percentage),
           'color_class': color_class
       }
 
