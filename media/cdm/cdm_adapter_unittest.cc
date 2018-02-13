@@ -117,7 +117,8 @@ class CdmAdapterTest : public testing::Test,
     std::unique_ptr<CdmAllocator> allocator(new SimpleCdmAllocator());
     std::unique_ptr<CdmAuxiliaryHelper> cdm_helper(
         new MockCdmAuxiliaryHelper(std::move(allocator)));
-    CdmAdapter::Create(helper_.KeySystemName(), cdm_config,
+    CdmAdapter::Create(helper_.KeySystemName(),
+                       url::Origin::Create(GURL("http://foo.com")), cdm_config,
                        std::move(cdm_helper),
                        base::Bind(&MockCdmClient::OnSessionMessage,
                                   base::Unretained(&cdm_client_)),

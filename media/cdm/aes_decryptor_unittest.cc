@@ -287,7 +287,8 @@ class AesDecryptorTest : public testing::TestWithParam<TestType> {
       std::unique_ptr<CdmAuxiliaryHelper> cdm_helper(
           new MockCdmAuxiliaryHelper(std::move(allocator)));
       CdmAdapter::Create(
-          helper_->KeySystemName(), cdm_config, std::move(cdm_helper),
+          helper_->KeySystemName(), url::Origin::Create(GURL("http://foo.com")),
+          cdm_config, std::move(cdm_helper),
           base::Bind(&MockCdmClient::OnSessionMessage,
                      base::Unretained(&cdm_client_)),
           base::Bind(&MockCdmClient::OnSessionClosed,

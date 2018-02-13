@@ -50,6 +50,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   // |cdm_created_cb| will be called when the CDM is initialized.
   static void Create(
       const std::string& key_system,
+      const url::Origin& security_origin,
       const CdmConfig& cdm_config,
       std::unique_ptr<CdmAuxiliaryHelper> helper,
       const SessionMessageCB& session_message_cb,
@@ -173,6 +174,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
 
  private:
   CdmAdapter(const std::string& key_system,
+             const url::Origin& security_origin,
              const CdmConfig& cdm_config,
              std::unique_ptr<CdmAuxiliaryHelper> helper,
              const SessionMessageCB& session_message_cb,
@@ -223,6 +225,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   void OnFileRead(int file_size_bytes);
 
   const std::string key_system_;
+  const std::string origin_string_;
   const CdmConfig cdm_config_;
 
   // Callbacks for firing session events.
