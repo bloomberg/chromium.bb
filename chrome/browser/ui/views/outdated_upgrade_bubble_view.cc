@@ -156,13 +156,10 @@ void OutdatedUpgradeBubbleView::Init() {
       new views::Label(l10n_util::GetStringUTF16(IDS_UPGRADE_BUBBLE_TEXT));
   text_label->SetMultiLine(true);
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-  constexpr int kExpectedBubbleWidth = 320;
-  int text_width =
-      kExpectedBubbleWidth - ChromeLayoutProvider::Get()
-                                 ->GetInsetsMetric(views::INSETS_DIALOG)
-                                 .width();
-  text_label->SizeToFit(text_width);
+  text_label->SizeToFit(
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          ChromeDistanceMetric::DISTANCE_BUBBLE_PREFERRED_WIDTH) -
+      margins().width());
   AddChildView(text_label);
 }
 
