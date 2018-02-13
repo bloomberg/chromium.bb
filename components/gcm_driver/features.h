@@ -6,17 +6,14 @@
 #define COMPONENTS_GCM_DRIVER_FEATURES_H
 
 #include "base/feature_list.h"
-//#include "components/gcm_driver/common/gcm_driver_export.h"
 
 namespace gcm {
 
 namespace features {
 
 extern const base::Feature kInvalidateTokenFeature;
-const int kDefaultTokenInvalidationPeriod = 0;
-const char kParamNameTokenInvalidationPeriodDays[] =
-    "token_invalidation_period";
-const char kGroupName[] = "token_validity_data";
+extern const char kParamNameTokenInvalidationPeriodDays[];
+extern const char kGroupName[];
 
 // The period after which the GCM token becomes stale.
 base::TimeDelta GetTokenInvalidationInterval();

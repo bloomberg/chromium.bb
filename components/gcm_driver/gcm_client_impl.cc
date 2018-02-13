@@ -25,6 +25,7 @@
 #include "base/timer/timer.h"
 #include "components/crx_file/id_util.h"
 #include "components/gcm_driver/crypto/gcm_decryption_result.h"
+#include "components/gcm_driver/features.h"
 #include "components/gcm_driver/gcm_account_mapper.h"
 #include "components/gcm_driver/gcm_backoff_policy.h"
 #include "google_apis/gcm/base/encryptor.h"
@@ -46,6 +47,21 @@
 #include "url/gurl.h"
 
 namespace gcm {
+
+// It is okay to append to the enum if these states grow. DO NOT reorder,
+// renumber or otherwise reuse existing values.
+// Do not assign an explicit value to REGISTRATION_CACHE_STATUS_COUNT, as
+// this lets the compiler keep it up to date.
+enum class RegistrationCacheStatus {
+  REGISTRATION_NOT_FOUND = 0,
+  REGISTRATION_FOUND_AND_FRESH = 1,
+  REGISTRATION_FOUND_BUT_STALE = 2,
+  REGISTRATION_FOUND_BUT_SENDERS_DONT_MATCH = 3,
+  // NOTE: always keep this entry at the end. Add new value only immediately
+  // above this line. Make sure to update the corresponding histogram enum
+  // accordingly.
+  REGISTRATION_CACHE_STATUS_COUNT
+};
 
 namespace {
 
@@ -239,6 +255,11 @@ void RecordResetStoreErrorToUMA(ResetStoreError error) {
 
 }  // namespace
 
+void RecordRegistrationRequestToUMA(gcm::RegistrationCacheStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "GCM.RegistrationCacheStatus", status,
+      RegistrationCacheStatus::REGISTRATION_CACHE_STATUS_COUNT);
+}
 GCMInternalsBuilder::GCMInternalsBuilder() {}
 GCMInternalsBuilder::~GCMInternalsBuilder() {}
 
@@ -885,14 +906,37 @@ void GCMClientImpl::Register(
       if (gcm_registration_info->sender_ids !=
           cached_gcm_registration_info->sender_ids) {
         matched = false;
+        // Senders IDs don't match existing registration.
+        RecordRegistrationRequestToUMA(
+            RegistrationCacheStatus::REGISTRATION_FOUND_BUT_SENDERS_DONT_MATCH);
       }
     }
 
     if (matched) {
-      delegate_->OnRegisterFinished(registration_info,
-                                    registrations_iter->second, SUCCESS);
-      return;
+      // Skip registration if token is fresh.
+      base::TimeDelta token_invalidation_period =
+          features::GetTokenInvalidationInterval();
+      base::TimeDelta time_since_last_validation =
+          clock_->Now() - registrations_iter->first.get()->last_validated;
+      if (token_invalidation_period.is_zero() ||
+          time_since_last_validation < token_invalidation_period) {
+        // Token is fresh, or token invalidation is disabled.
+        // Use cached registration.
+        delegate_->OnRegisterFinished(registration_info,
+                                      registrations_iter->second, SUCCESS);
+        RecordRegistrationRequestToUMA(
+            RegistrationCacheStatus::REGISTRATION_FOUND_AND_FRESH);
+        return;
+      } else {
+        // Token is stale.
+        RecordRegistrationRequestToUMA(
+            RegistrationCacheStatus::REGISTRATION_FOUND_BUT_STALE);
+      }
     }
+  } else {
+    // New Registration request (no existing registration)
+    RecordRegistrationRequestToUMA(
+        RegistrationCacheStatus::REGISTRATION_NOT_FOUND);
   }
 
   std::unique_ptr<RegistrationRequest::CustomRequestHandler> request_handler;

@@ -20220,6 +20220,13 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="ERROR_SECURITY_EXCEPTION"/>
 </enum>
 
+<enum name="GCMRegistrationCacheStatus">
+  <int value="0" label="Registration not found"/>
+  <int value="1" label="Registration found; Token fresh"/>
+  <int value="2" label="Registration found; Token stale"/>
+  <int value="3" label="Registration found but senders don't match"/>
+</enum>
+
 <enum name="GCMRegistrationRequestStatus">
   <int value="0" label="Success (this is not logged currently)"/>
   <int value="1" label="Invalid parameters"/>

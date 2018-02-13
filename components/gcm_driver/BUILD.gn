@@ -12,6 +12,8 @@ buildflag_header("gcm_build_features") {
 
 static_library("gcm_driver") {
   sources = [
+    "features.cc",
+    "features.h",
     "gcm_account_tracker.cc",
     "gcm_account_tracker.h",
     "gcm_activity.cc",
