@@ -82,6 +82,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
   void BeginFrame(double last_frame_time_monotonic) override;
   void UpdateLifecycle(LifecycleUpdate requested_update) override;
+  void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
   void WillCloseLayerTreeView() override;
   void Paint(WebCanvas*, const WebRect&) override;
   void Resize(const WebSize&) override;
