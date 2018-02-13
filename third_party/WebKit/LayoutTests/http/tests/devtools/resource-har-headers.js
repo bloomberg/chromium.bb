@@ -53,7 +53,7 @@
     '_transferSize': 'formatAsTypeName',
     '_error': 'skip'
   };
-  var har = await NetworkLog.HAREntry.build(testRequest);
+  var har = await SDKBrowser.HAREntry.build(testRequest);
   TestRunner.addObject(har, stillNondeterministic, '', 'HAR:');
   TestRunner.completeTest();
 })();

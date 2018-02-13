@@ -6,9 +6,9 @@
   await TestRunner.setupStartupTest('resources/console-exception-while-no-inspector.html');
   TestRunner.addResult(
       `Tests that console will NOT contain stack trace for exception thrown when inspector front-end was closed. Bug 109427. https://bugs.webkit.org/show_bug.cgi?id=109427\n`);
-  await TestRunner.waitForEvent(ConsoleModel.ConsoleModel.Events.MessageAdded, ConsoleModel.consoleModel);
+  await TestRunner.waitForEvent(SDK.ConsoleModel.Events.MessageAdded, SDK.consoleModel);
 
-  var message = ConsoleModel.consoleModel.messages()[0];
+  var message = SDK.consoleModel.messages()[0];
   var stack = message.stackTrace;
   if (stack && stack.callFrames.length)
     TestRunner.addResult('FAIL: found message with stack trace');

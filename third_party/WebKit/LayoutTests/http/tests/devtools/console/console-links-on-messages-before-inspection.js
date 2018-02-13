@@ -20,12 +20,12 @@
   `);
 
 
-  var message = new ConsoleModel.ConsoleMessage(
-      TestRunner.runtimeModel, ConsoleModel.ConsoleMessage.MessageSource.JS,
-      ConsoleModel.ConsoleMessage.MessageLevel.Info, 'hello?', null,
+  var message = new SDK.ConsoleMessage(
+      TestRunner.runtimeModel, SDK.ConsoleMessage.MessageSource.JS,
+      SDK.ConsoleMessage.MessageLevel.Info, 'hello?', null,
       'http://127.0.0.1:8000/devtools/resources/source2.js');
 
-  ConsoleModel.consoleModel.addMessage(message);
+  SDK.consoleModel.addMessage(message);
   TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, onScriptAdded);
   ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.evaluateInPage('loadScript()');

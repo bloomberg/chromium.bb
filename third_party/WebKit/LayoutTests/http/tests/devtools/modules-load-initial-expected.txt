@@ -5,7 +5,6 @@ Loaded modules:
     common
     components
     console_counters
-    console_model
     dom_extension
     emulation
     extensions
@@ -13,12 +12,12 @@ Loaded modules:
     inspector_main
     main
     mobile_throttling
-    network_log
     persistence
     platform
     product_registry
     protocol
     sdk
+    sdk_browser
     services
     text_utils
     ui

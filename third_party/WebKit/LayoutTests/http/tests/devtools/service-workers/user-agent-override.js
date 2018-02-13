@@ -29,12 +29,12 @@
 
   function waitForConsoleMessage(regex) {
     return new Promise(function(resolve) {
-      ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, sniff);
+      SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, sniff);
 
       function sniff(e) {
         if (e.data && regex.test(e.data.messageText)) {
           resolve(e.data);
-          ConsoleModel.consoleModel.removeEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, sniff);
+          SDK.consoleModel.removeEventListener(SDK.ConsoleModel.Events.MessageAdded, sniff);
         }
       }
     });

@@ -34,6 +34,6 @@
   TestRunner.addResult('Revealing iframe source');
   await Common.Revealer.reveal(Workspace.workspace.uiSourceCodeForURL('http://devtools.oopif.test:8000/devtools/oopif/resources/empty.html'));
   TestRunner.addResult('\nClearing console');
-  ConsoleModel.consoleModel.requestClearMessages();
+  SDK.consoleModel.requestClearMessages();
   TestRunner.completeTest();
 })();

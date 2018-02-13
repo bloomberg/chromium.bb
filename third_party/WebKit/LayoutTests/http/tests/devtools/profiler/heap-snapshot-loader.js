@@ -37,7 +37,7 @@
   }
 
   Common.console.log = function(message) {
-    TestRunner.addResult('ConsoleModel.consoleModel.log: ' + message);
+    TestRunner.addResult('SDK.consoleModel.log: ' + message);
   };
 
   TestRunner.runTestSuite([

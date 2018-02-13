@@ -60,7 +60,7 @@
     ConsoleTestRunner.waitUntilMessageReceived(didReceive);
 
     function didReceive(message) {
-      if (message.type === ConsoleModel.ConsoleMessage.MessageType.Result) {
+      if (message.type === SDK.ConsoleMessage.MessageType.Result) {
         ConsoleTestRunner.waitUntilMessageReceived(didReceive);
         return;
       }

@@ -11,11 +11,11 @@
 
   function dumpMessages(next, message) {
     ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
-    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.ConsoleCleared, afterCleared);
+    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, afterCleared);
     Console.ConsoleView.clearConsole();
 
     function afterCleared() {
-      ConsoleModel.consoleModel.removeEventListener(ConsoleModel.ConsoleModel.Events.ConsoleCleared, afterCleared);
+      SDK.consoleModel.removeEventListener(SDK.ConsoleModel.Events.ConsoleCleared, afterCleared);
       next();
     }
   }

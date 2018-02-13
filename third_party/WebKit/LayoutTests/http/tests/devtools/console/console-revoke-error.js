@@ -23,7 +23,7 @@
   `);
 
   var messageAddedListener = ConsoleTestRunner.wrapListener(messageAdded);
-  ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, messageAddedListener);
+  SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, messageAddedListener);
   Common.settings.moduleSetting('consoleGroupSimilar').set(false);
   TestRunner.addResult('Creating promise');
   TestRunner.evaluateInPageWithTimeout('createPromises()');
@@ -35,12 +35,12 @@
       return;
     messageNumber = 0;
 
-    ConsoleModel.consoleModel.removeEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, messageAddedListener);
+    SDK.consoleModel.removeEventListener(SDK.ConsoleModel.Events.MessageAdded, messageAddedListener);
     TestRunner.addResult('');
 
     // Process array as a batch.
-    ConsoleModel.consoleModel.addEventListener(
-        ConsoleModel.ConsoleModel.Events.MessageUpdated, ConsoleTestRunner.wrapListener(messageUpdated));
+    SDK.consoleModel.addEventListener(
+        SDK.ConsoleModel.Events.MessageUpdated, ConsoleTestRunner.wrapListener(messageUpdated));
     await ConsoleTestRunner.dumpConsoleCounters();
     TestRunner.addResult('');
     TestRunner.addResult('Handling promise');

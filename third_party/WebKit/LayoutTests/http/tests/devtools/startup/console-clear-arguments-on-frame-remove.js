@@ -8,7 +8,7 @@
       `Tests that console message arguments will be cleared and first argument will be converted into a string when iframe where the messages were created is removed.\n`);
   await TestRunner.loadModule('console_test_runner');
 
-  for (var message of ConsoleModel.consoleModel.messages()) {
+  for (var message of SDK.consoleModel.messages()) {
     var args = (message.parameters || []).map((arg) => arg.type);
     TestRunner.addResult('Message: "' + message.messageText + '", arguments: [' + args.join(', ') + ']');
   }
