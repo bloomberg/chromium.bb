@@ -90,7 +90,6 @@ def main():
     child_args.append('--test-launcher-summary-output=' + TEST_RESULT_PATH)
 
   with GetDeploymentTargetForArgs(args) as target:
-    target = GetDeploymentTargetForArgs(args)
     target.Start()
 
     if args.test_launcher_filter_file:
