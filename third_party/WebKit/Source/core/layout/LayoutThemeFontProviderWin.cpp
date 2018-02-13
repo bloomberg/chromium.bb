@@ -32,6 +32,8 @@
 
 namespace blink {
 
+constexpr float kDefaultFontSize = 16.0;
+
 // Converts |points| to pixels. One point is 1/72 of an inch.
 static float PointsToPixels(float points) {
   const float kPixelsPerInch = 96.0f;
@@ -65,11 +67,11 @@ void LayoutThemeFontProvider::SystemFont(CSSValueID system_font_id,
     case CSSValueWebkitSmallControl:
     case CSSValueWebkitControl:
       // Why 2 points smaller? Because that's what Gecko does.
-      font_size = FontCache::DefaultFontSize() - PointsToPixels(2);
+      font_size = kDefaultFontSize - PointsToPixels(2);
       font_family = DefaultGUIFont();
       break;
     default:
-      font_size = FontCache::DefaultFontSize();
+      font_size = kDefaultFontSize;
       font_family = DefaultGUIFont();
       break;
   }

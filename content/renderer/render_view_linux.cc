@@ -15,8 +15,6 @@ namespace content {
 
 namespace {
 
-const int kMaxDefaultFontSize = 999;
-
 SkPaint::Hinting RendererPreferencesToSkiaHinting(
     const RendererPreferences& prefs) {
   if (!prefs.should_antialias_text) {
@@ -65,10 +63,6 @@ void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
       prefs.subpixel_rendering !=
       gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE);
   WebFontRenderStyle::SetSubpixelPositioning(prefs.use_subpixel_positioning);
-  if (prefs.default_font_size > 0 &&
-      prefs.default_font_size <= kMaxDefaultFontSize) {
-    WebFontRenderStyle::SetDefaultFontSize(prefs.default_font_size);
-  }
 #if !defined(OS_ANDROID)
   if (!prefs.system_font_family_name.empty()) {
     WebFontRenderStyle::SetSystemFontFamily(
