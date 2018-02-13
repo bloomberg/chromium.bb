@@ -536,10 +536,6 @@ class GLRenderingVDAClient
   DISALLOW_IMPLICIT_CONSTRUCTORS(GLRenderingVDAClient);
 };
 
-static bool DoNothingReturnTrue() {
-  return true;
-}
-
 static bool DummyBindImage(uint32_t client_texture_id,
                            uint32_t texture_target,
                            const scoped_refptr<gl::GLImage>& image,
@@ -617,14 +613,14 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
 
   if (fake_decoder_) {
     decoder_.reset(new FakeVideoDecodeAccelerator(
-        frame_size_, base::Bind(&DoNothingReturnTrue)));
+        frame_size_, base::Bind([]() { return true; })));
     LOG_ASSERT(decoder_->Initialize(config, this));
   } else {
     if (!vda_factory_) {
       vda_factory_ = GpuVideoDecodeAcceleratorFactory::Create(
           base::Bind(&RenderingHelper::GetGLContext,
                      base::Unretained(rendering_helper_)),
-          base::Bind(&DoNothingReturnTrue), base::Bind(&DummyBindImage));
+          base::Bind([]() { return true; }), base::Bind(&DummyBindImage));
       LOG_ASSERT(vda_factory_);
     }
 
