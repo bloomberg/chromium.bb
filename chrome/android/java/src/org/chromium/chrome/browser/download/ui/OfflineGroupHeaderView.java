@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
 import org.chromium.chrome.browser.widget.TintedImageView;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 
-import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
 
@@ -146,7 +145,7 @@ public class OfflineGroupHeaderView
     @Override
     public void onClick() {
         boolean newState = !mHeader.isExpanded();
-        mAdapter.setSubsectionExpanded(new Date(mHeader.getTimestamp()), newState);
+        mAdapter.setPrefetchSectionExpanded(newState);
     }
 
     @Override
