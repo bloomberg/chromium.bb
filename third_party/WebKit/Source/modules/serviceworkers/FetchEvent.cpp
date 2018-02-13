@@ -73,10 +73,12 @@ const AtomicString& FetchEvent::InterfaceName() const {
 bool FetchEvent::HasPendingActivity() const {
   // Prevent V8 from garbage collecting the wrapper object while waiting for the
   // preload response. This is in order to keep the resolver of preloadResponse
-  // Promise alive.
-  return preload_response_property_->GetState() ==
-             PreloadResponseProperty::kPending &&
-         GetExecutionContext();
+  // Promise alive. Note that |preload_response_property_| can be nullptr as
+  // GC can run while running the FetchEvent constructor, before the member is
+  // set. If it isn't set we treat it as a pending state.
+  return !preload_response_property_ ||
+         preload_response_property_->GetState() ==
+             PreloadResponseProperty::kPending;
 }
 
 FetchEvent::FetchEvent(ScriptState* script_state,
