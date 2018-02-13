@@ -80,3 +80,6 @@
 
 # Flaky, https://crbug.com/735701.
 -TaskSchedulerWorkerPoolHistogramTest.NumTasksBeforeCleanup
+
+# Flaky, https://crbug.com/811881
+-AddressSpaceRandomizationTest.RandomBitCorrelations23

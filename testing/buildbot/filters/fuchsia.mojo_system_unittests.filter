@@ -11,3 +11,6 @@
 # crbug.com/780317 - These timeout under QEMU s/w emulation of ARM64.
 -MultiprocessMessagePipeTestWithPeerSupport.PingPongPipe*
 -MessagePipeTest.SharedBufferHandlePingPong
+
+# Flaky, https://crbug.com/810448.
+-MultiprocessMessagePipeTestWithPeerSupport*/1
