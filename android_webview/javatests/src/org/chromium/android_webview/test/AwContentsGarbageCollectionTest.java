@@ -13,7 +13,6 @@ import android.os.ResultReceiver;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.SmallTest;
-import android.view.accessibility.AccessibilityNodeProvider;
 import android.webkit.JavascriptInterface;
 
 import org.junit.After;
@@ -166,28 +165,28 @@ public class AwContentsGarbageCollectionTest {
 
         TestAwContentsClient client = new TestAwContentsClient();
         AwTestContainerView containerViews[] = new AwTestContainerView[MAX_IDLE_INSTANCES + 1];
-        AccessibilityNodeProvider providers[] =
-                new AccessibilityNodeProvider[MAX_IDLE_INSTANCES + 1];
         for (int i = 0; i < containerViews.length; i++) {
             final AwTestContainerView containerView =
                     mActivityTestRule.createAwTestContainerViewOnMainSync(client);
             containerViews[i] = containerView;
             mActivityTestRule.loadUrlAsync(
                     containerViews[i].getAwContents(), ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
-            providers[i] = ThreadUtils.runOnUiThreadBlocking(() -> {
-                WebContentsAccessibility.fromWebContents(containerView.getWebContents())
-                        .setState(true);
-                return containerView.getAccessibilityNodeProvider();
+            ThreadUtils.runOnUiThreadBlocking(() -> {
+                WebContentsAccessibility webContentsA11y =
+                        WebContentsAccessibility.fromWebContents(containerView.getWebContents());
+                webContentsA11y.setState(true);
+                // Enable a11y for testing.
+                webContentsA11y.setAccessibilityEnabledForTesting();
+                // Initialize native object.
+                containerView.getAccessibilityNodeProvider();
+                Assert.assertTrue(webContentsA11y.isAccessibilityEnabled());
             });
-            Assert.assertNotNull(providers[i]);
         }
 
         for (int i = 0; i < containerViews.length; i++) {
             containerViews[i] = null;
-            providers[i] = null;
         }
         containerViews = null;
-        providers = null;
         removeAllViews();
         gcAndCheckAllAwContentsDestroyed();
     }

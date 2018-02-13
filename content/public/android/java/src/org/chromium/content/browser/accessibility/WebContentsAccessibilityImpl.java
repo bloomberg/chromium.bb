@@ -72,8 +72,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     protected static final int ACTION_SCROLL_LEFT = 0x01020039;
     protected static final int ACTION_SCROLL_RIGHT = 0x0102003b;
 
-    private static boolean sAccessibilityEnabledForTesting = false;
-
     // Constant for no granularity selected.
     private static final int NO_GRANULARITY_SELECTED = 0;
 
@@ -91,6 +89,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     private boolean mUserHasTouchExplored;
     private boolean mPendingScrollToMakeNodeVisible;
     private boolean mNotifyFrameInfoInitializedCalled;
+    private boolean mAccessibilityEnabledForTesting;
     private int mSelectionGranularity;
     private int mSelectionStartIndex;
     private int mSelectionEndIndex;
@@ -195,12 +194,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         return isNativeInitialized() ? nativeIsEnabled(mNativeObj) : false;
     }
 
-    /**
-     * Pretend that accessibility is enabled, for testing.
-     */
     @VisibleForTesting
-    static void setAccessibilityEnabledForTesting() {
-        sAccessibilityEnabledForTesting = true;
+    @Override
+    public void setAccessibilityEnabledForTesting() {
+        mAccessibilityEnabledForTesting = true;
     }
 
     // WindowEventObserver
@@ -234,7 +231,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             mNativeObj = nativeInit(mWebContents);
             onNativeInit();
         }
-        if (!isEnabled()) nativeEnable(mNativeObj);
+        if (!isEnabled()) {
+            nativeEnable(mNativeObj);
+            return null;
+        }
         return this;
     }
 
@@ -861,9 +861,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         return bundle;
     }
 
-    private boolean isAccessibilityEnabled() {
+    @Override
+    public boolean isAccessibilityEnabled() {
         return isNativeInitialized()
-                && (sAccessibilityEnabledForTesting || mAccessibilityManager.isEnabled());
+                && (mAccessibilityEnabledForTesting || mAccessibilityManager.isEnabled());
     }
 
     private AccessibilityNodeInfo createNodeForHost(int rootId) {
