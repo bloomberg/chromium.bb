@@ -199,6 +199,9 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
   }
   if (owned_widget_client) {
     WebFrameWidget::Create(owned_widget_client.get(), frame);
+    // Set an initial size for subframes.
+    if (frame->Parent())
+      frame->FrameWidget()->Resize(WebSize());
     client->BindWidgetClient(std::move(owned_widget_client));
   }
   return frame;
@@ -225,6 +228,9 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
 
   auto owned_widget_client = CreateDefaultClientIfNeeded(widget_client);
   WebFrameWidget::Create(widget_client, frame);
+  // Set an initial size for subframes.
+  if (frame->Parent())
+    frame->FrameWidget()->Resize(WebSize());
   client->BindWidgetClient(std::move(owned_widget_client));
   return frame;
 }
@@ -278,6 +284,9 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
     web_widget_client = owned_web_widget_client.get();
   }
   blink::WebFrameWidget::Create(web_widget_client, frame);
+  // Set an initial size for subframes.
+  if (frame->Parent())
+    frame->FrameWidget()->Resize(WebSize());
   web_frame_client->BindWidgetClient(std::move(owned_web_widget_client));
 
   return web_view_;

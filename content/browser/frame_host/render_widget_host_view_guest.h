@@ -94,6 +94,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
+  bool HasSize() const override;
   void TextInputStateChanged(const TextInputState& params) override;
   void ImeCancelComposition() override;
 #if defined(OS_MACOSX) || defined(USE_AURA)

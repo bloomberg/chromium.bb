@@ -304,4 +304,9 @@ interface FrameHost {
   // Change the encoding name of the page in UI when the page has detected
   // proper encoding name. Sent for top-level frames.
   UpdateEncoding(string encoding_name);
+
+  // The FrameRect represents the frame's size and position. The rect is
+  // replicated in the browser so that the browser can correctly set the initial
+  // size of the frame in case of a cross-process navigation.
+  FrameRectsChanged(gfx.mojom.Rect rect);
 };

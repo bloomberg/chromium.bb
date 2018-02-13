@@ -93,7 +93,13 @@ class RenderFrameProxyHost
 
   FrameTreeNode* frame_tree_node() const { return frame_tree_node_; };
 
-  void SetChildRWHView(RenderWidgetHostView* view);
+  // Associates the RenderWidgetHostViewChildFrame |view| with this
+  // RenderFrameProxyHost. If |initial_frame_rect| isn't specified at this time,
+  // the child frame will wait until the CrossProcessFrameConnector
+  // receives its size from the parent via FrameHostMsg_UpdateResizeParams
+  // before it begins parsing the content.
+  void SetChildRWHView(RenderWidgetHostView* view,
+                       const gfx::Rect* initial_frame_rect);
 
   RenderViewHostImpl* GetRenderViewHost();
   RenderWidgetHostView* GetRenderWidgetHostView();

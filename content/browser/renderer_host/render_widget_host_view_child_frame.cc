@@ -721,6 +721,10 @@ viz::SurfaceId RenderWidgetHostViewChildFrame::GetCurrentSurfaceId() const {
   return viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_);
 }
 
+bool RenderWidgetHostViewChildFrame::HasSize() const {
+  return frame_connector_ && frame_connector_->has_size();
+}
+
 gfx::PointF RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpaceF(
     const gfx::PointF& point) {
   if (!frame_connector_ || !last_received_local_surface_id_.is_valid())

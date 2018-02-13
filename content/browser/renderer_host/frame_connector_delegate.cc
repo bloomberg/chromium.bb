@@ -101,6 +101,7 @@ bool FrameConnectorDelegate::IsSubtreeThrottled() const {
 
 void FrameConnectorDelegate::SetLocalFrameSize(
     const gfx::Size& local_frame_size) {
+  has_size_ = true;
   if (use_zoom_for_device_scale_factor_) {
     local_frame_size_in_pixels_ = local_frame_size;
     local_frame_size_in_dip_ = gfx::ScaleToRoundedSize(

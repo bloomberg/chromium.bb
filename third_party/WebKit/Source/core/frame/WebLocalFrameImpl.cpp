@@ -1873,6 +1873,9 @@ void WebLocalFrameImpl::CreateFrameView() {
   GetFrame()->View()->SetInputEventsScaleForEmulation(
       input_events_scale_factor_for_emulation_);
   GetFrame()->View()->SetDisplayMode(web_view->DisplayMode());
+
+  if (FrameWidget())
+    FrameWidget()->DidCreateLocalRootView();
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::FromFrame(LocalFrame* frame) {

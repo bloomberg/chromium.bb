@@ -123,6 +123,7 @@ DocumentLoader::DocumentLoader(
       application_cache_host_(ApplicationCacheHost::Create(this)),
       was_blocked_after_csp_(false),
       state_(kNotStarted),
+      committed_data_buffer_(nullptr),
       in_data_received_(false),
       data_buffer_(SharedBuffer::Create()),
       devtools_navigation_token_(devtools_navigation_token),
@@ -466,8 +467,12 @@ void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
 
   application_cache_host_->FinishedLoadingMainResource();
   if (parser_) {
-    parser_->Finish();
-    parser_.Clear();
+    if (is_parser_blocked_) {
+      finished_loading_ = true;
+    } else {
+      parser_->Finish();
+      parser_.Clear();
+    }
   }
   ClearResource();
 }
@@ -713,7 +718,14 @@ void DocumentLoader::CommitData(const char* bytes, size_t length) {
 
   if (length)
     data_received_ = true;
-  parser_->AppendBytes(bytes, length);
+
+  if (is_parser_blocked_) {
+    if (!committed_data_buffer_)
+      committed_data_buffer_ = SharedBuffer::Create();
+    committed_data_buffer_->Append(bytes, length);
+  } else {
+    parser_->AppendBytes(bytes, length);
+  }
 }
 
 void DocumentLoader::DataReceived(Resource* resource,
@@ -738,7 +750,10 @@ void DocumentLoader::DataReceived(Resource* resource,
 
   AutoReset<bool> reentrancy_protector(&in_data_received_, true);
   ProcessData(data, length);
+  ProcessDataBuffer();
+}
 
+void DocumentLoader::ProcessDataBuffer() {
   // Process data received in reentrant invocations. Note that the invocations
   // of processData() may queue more data in reentrant invocations, so iterate
   // until it's empty.
@@ -1116,6 +1131,38 @@ void DocumentLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
   // Append() might lead to a detach.
   if (parser_)
     parser_->Finish();
+}
+
+void DocumentLoader::BlockParser() {
+  is_parser_blocked_ = true;
+}
+
+void DocumentLoader::ResumeParser() {
+  is_parser_blocked_ = false;
+
+  if (committed_data_buffer_ && !committed_data_buffer_->IsEmpty()) {
+    // Don't recursively process data.
+    AutoReset<bool> reentrancy_protector(&in_data_received_, true);
+
+    // Append data to the parser that may have been received while the parser
+    // was blocked.
+    const char* segment;
+    size_t pos = 0;
+    while (size_t length = committed_data_buffer_->GetSomeData(segment, pos)) {
+      parser_->AppendBytes(segment, length);
+      pos += length;
+    }
+    committed_data_buffer_->Clear();
+
+    // DataReceived may be called in a nested message loop.
+    ProcessDataBuffer();
+  }
+
+  if (finished_loading_) {
+    finished_loading_ = false;
+    parser_->Finish();
+    parser_.Clear();
+  }
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader);

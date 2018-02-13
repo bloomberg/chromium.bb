@@ -113,9 +113,15 @@ RenderFrameProxyHost::~RenderFrameProxyHost() {
       RenderFrameProxyHostID(GetProcess()->GetID(), routing_id_));
 }
 
-void RenderFrameProxyHost::SetChildRWHView(RenderWidgetHostView* view) {
+void RenderFrameProxyHost::SetChildRWHView(
+    RenderWidgetHostView* view,
+    const gfx::Rect* initial_frame_rect) {
   cross_process_frame_connector_->SetView(
       static_cast<RenderWidgetHostViewChildFrame*>(view));
+  if (initial_frame_rect) {
+    cross_process_frame_connector_->SetLocalFrameSize(
+        initial_frame_rect->size());
+  }
 }
 
 RenderViewHostImpl* RenderFrameProxyHost::GetRenderViewHost() {

@@ -241,6 +241,10 @@ class CORE_EXPORT DocumentLoader
     return devtools_navigation_token_;
   }
 
+  // Can be used to block the parser.
+  void BlockParser();
+  void ResumeParser();
+
  protected:
   DocumentLoader(LocalFrame*,
                  const ResourceRequest&,
@@ -318,6 +322,10 @@ class CORE_EXPORT DocumentLoader
 
   bool ShouldContinueForResponse() const;
 
+  // Processes the data stored in the data_buffer_, used to avoid appending data
+  // to the parser in a nested message loop.
+  void ProcessDataBuffer();
+
   Member<LocalFrame> frame_;
   Member<ResourceFetcher> fetcher_;
 
@@ -374,6 +382,11 @@ class CORE_EXPORT DocumentLoader
 
   enum State { kNotStarted, kProvisional, kCommitted, kSentDidFinishLoad };
   State state_;
+
+  // Used to block the parser.
+  bool is_parser_blocked_ = false;
+  bool finished_loading_ = false;
+  scoped_refptr<SharedBuffer> committed_data_buffer_;
 
   // Used to protect against reentrancy into dataReceived().
   bool in_data_received_;

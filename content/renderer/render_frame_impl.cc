@@ -4695,6 +4695,10 @@ void RenderFrameImpl::SaveImageFromDataURL(const blink::WebString& data_url) {
   }
 }
 
+void RenderFrameImpl::FrameRectsChanged(const blink::WebRect& frame_rect) {
+  GetFrameHost()->FrameRectsChanged(frame_rect);
+}
+
 void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   WebDocumentLoader* provisional_document_loader =
       frame_->GetProvisionalDocumentLoader();
