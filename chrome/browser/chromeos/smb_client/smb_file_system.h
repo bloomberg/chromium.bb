@@ -198,27 +198,7 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface {
                                      smbprovider::ErrorType error,
                                      int32_t file_id) const;
 
-  void HandleRequestCloseFileCallback(
-      const storage::AsyncFileUtil::StatusCallback& callback,
-      smbprovider::ErrorType error) const;
-
-  void HandleRequestDeleteEntryCallback(
-      const storage::AsyncFileUtil::StatusCallback& callback,
-      smbprovider::ErrorType error) const;
-
-  void HandleRequestCreateFileCallback(
-      const storage::AsyncFileUtil::StatusCallback& callback,
-      smbprovider::ErrorType error) const;
-
-  void HandleRequestTruncateCallback(
-      const storage::AsyncFileUtil::StatusCallback& callback,
-      smbprovider::ErrorType error) const;
-
-  void HandleRequestWriteFileCallback(
-      const storage::AsyncFileUtil::StatusCallback& callback,
-      smbprovider::ErrorType error) const;
-
-  void HandleRequestCreateDirectoryCallback(
+  void HandleStatusCallback(
       const storage::AsyncFileUtil::StatusCallback& callback,
       smbprovider::ErrorType error) const;
 
