@@ -506,6 +506,11 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         tests_run = get_tests_run(['--test-list=%s' % filename], host=host)
         self.assertEqual(['passes/text.html'], tests_run)
 
+    def test_gtest_filter(self):
+        host = MockHost()
+        tests_run = get_tests_run(['--gtest_filter=passes/text.html:passes/image.html', 'passes/error.html'], host=host)
+        self.assertEqual(sorted(tests_run), ['passes/error.html', 'passes/image.html', 'passes/text.html'])
+
     def test_sharding_even(self):
         # Test that we actually select the right part
         tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html']
