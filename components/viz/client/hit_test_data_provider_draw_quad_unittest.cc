@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/client/hit_test_data_provider_simple_bounds.h"
+#include "components/viz/client/hit_test_data_provider_draw_quad.h"
 
 #include <memory>
 
@@ -25,19 +25,17 @@ namespace viz {
 
 namespace {
 
-CompositorFrame MakeCompositorFrameWithChildSurface(gfx::Rect rect) {
+CompositorFrame MakeCompositorFrameWithChildSurface(
+    const SurfaceId& child_surface_id,
+    const gfx::Rect& rect,
+    const gfx::Rect& child_rect,
+    const gfx::Transform& transform) {
   auto pass = RenderPass::Create();
   pass->SetNew(1, rect, rect, gfx::Transform());
 
   auto* shared_state = pass->CreateAndAppendSharedQuadState();
-  shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, false, 1,
+  shared_state->SetAll(transform, rect, rect, rect, false, false, 1,
                        SkBlendMode::kSrcOver, 0);
-
-  gfx::Rect child_rect(200, 100);
-
-  LocalSurfaceId child_local_surface_id(2, base::UnguessableToken::Create());
-  FrameSinkId frame_sink_id(2, 0);
-  SurfaceId child_surface_id(frame_sink_id, child_local_surface_id);
 
   auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   surface_quad->SetNew(pass->shared_quad_state_list.back(), child_rect,
@@ -49,13 +47,12 @@ CompositorFrame MakeCompositorFrameWithChildSurface(gfx::Rect rect) {
 
 }  // namespace
 
-// Test to ensure that when hit test data is created from a CompositorFrame
-// that the size matches the bounds and that kHitTestMine is set when there
-// is not embedded surface and kHitTestAsk is set when there is an embedded
-// surface.
-TEST(HitTestDataProviderSimpleBounds, HitTestDataFromCompositorFrame) {
+// Test to ensure that hit test data is created correctly from CompositorFrame
+// and its RenderPassList. kHitTestAsk is only set for OOPIFs.
+TEST(HitTestDataProviderDrawQuad, HitTestDataRenderer) {
   std::unique_ptr<HitTestDataProvider> hit_test_data_provider =
-      std::make_unique<HitTestDataProviderSimpleBounds>();
+      std::make_unique<HitTestDataProviderDrawQuad>(
+          true /* should_ask_for_child_region */);
 
   constexpr gfx::Rect kFrameRect(0, 0, 1024, 768);
 
@@ -68,15 +65,36 @@ TEST(HitTestDataProviderSimpleBounds, HitTestDataFromCompositorFrame) {
   EXPECT_EQ(mojom::kHitTestMouse | mojom::kHitTestTouch | mojom::kHitTestMine,
             hit_test_region_list->flags);
   EXPECT_EQ(kFrameRect, hit_test_region_list->bounds);
+  EXPECT_FALSE(hit_test_region_list->regions.size());
 
-  // Ensure that a CompositorFrame with a child surface sets kHitTestAsk.
-  compositor_frame = MakeCompositorFrameWithChildSurface(kFrameRect);
+  // Ensure that a CompositorFrame with a child surface only set kHitTestAsk
+  // for its child surface.
+  LocalSurfaceId child_local_surface_id(2, base::UnguessableToken::Create());
+  FrameSinkId frame_sink_id(2, 0);
+  SurfaceId child_surface_id(frame_sink_id, child_local_surface_id);
+  gfx::Rect child_rect(200, 100);
+  gfx::Transform transform;
+  transform.Translate(-200, -100);
+  compositor_frame = MakeCompositorFrameWithChildSurface(
+      child_surface_id, kFrameRect, child_rect, transform);
   hit_test_region_list =
       hit_test_data_provider->GetHitTestData(compositor_frame);
 
-  EXPECT_EQ(mojom::kHitTestMouse | mojom::kHitTestTouch | mojom::kHitTestAsk,
+  EXPECT_EQ(mojom::kHitTestMouse | mojom::kHitTestTouch | mojom::kHitTestMine,
             hit_test_region_list->flags);
   EXPECT_EQ(kFrameRect, hit_test_region_list->bounds);
+  EXPECT_EQ(1u, hit_test_region_list->regions.size());
+  EXPECT_EQ(child_surface_id.frame_sink_id(),
+            hit_test_region_list->regions[0]->frame_sink_id);
+  EXPECT_EQ(child_surface_id.local_surface_id(),
+            hit_test_region_list->regions[0]->local_surface_id);
+  EXPECT_EQ(mojom::kHitTestMouse | mojom::kHitTestTouch |
+                mojom::kHitTestChildSurface | mojom::kHitTestAsk,
+            hit_test_region_list->regions[0]->flags);
+  EXPECT_EQ(child_rect, hit_test_region_list->regions[0]->rect);
+  gfx::Transform transform_inverse;
+  EXPECT_TRUE(transform.GetInverse(&transform_inverse));
+  EXPECT_EQ(transform_inverse, hit_test_region_list->regions[0]->transform);
 }
 
 }  // namespace viz
