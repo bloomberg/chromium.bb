@@ -29,7 +29,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     getCurrentLanguage_: function() {
       var languageList = loadTimeData.getValue('languageList');
       if (languageList) {
-        var language = Oobe.getSelectedValue(languageList);
+        var language = getSelectedValue(languageList);
         if (language) {
           return language;
         }

@@ -448,7 +448,7 @@ Polymer({
   },
 
   onLanguagesChanged_: function() {
-    this.currentLanguage = Oobe.getSelectedTitle(this.languages);
+    this.currentLanguage = getSelectedTitle(this.languages);
   },
 
   setSelectedKeyboard: function(keyboard_id) {
@@ -470,7 +470,7 @@ Polymer({
   },
 
   onKeyboardsChanged_: function() {
-    this.currentKeyboard = Oobe.getSelectedTitle(this.keyboards);
+    this.currentKeyboard = getSelectedTitle(this.keyboards);
   },
 
   /**
