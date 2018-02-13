@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/referrer.h"
 #include "services/network/public/cpp/resource_request_body.h"
@@ -80,7 +81,8 @@ struct NavigateParams {
   // The frame name to be used for the main frame.
   std::string frame_name;
 
-  // The browser-global ID of the frame to navigate, or -1 for the main frame.
+  // The browser-global ID of the frame to navigate, or
+  // content::RenderFrameHost::kNoFrameTreeNodeId for the main frame.
   int frame_tree_node_id = -1;
 
   // Any redirect URLs that occurred for this navigation before |url|.
