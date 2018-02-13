@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/containers/unique_ptr_comparator.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "content/browser/shared_worker/shared_worker_host.h"

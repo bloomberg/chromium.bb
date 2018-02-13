@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_CONTAINERS_UNIQUE_PTR_COMPARATOR_H_
-#define BASE_CONTAINERS_UNIQUE_PTR_COMPARATOR_H_
+#ifndef BASE_CONTAINERS_UNIQUE_PTR_ADAPTERS_H_
+#define BASE_CONTAINERS_UNIQUE_PTR_ADAPTERS_H_
 
 #include <memory>
 
@@ -44,6 +44,33 @@ struct UniquePtrComparator {
   }
 };
 
+// UniquePtrMatcher is useful for finding an element in a container of
+// unique_ptrs when you have the raw pointer.
+//
+// Example usage:
+//   std::vector<std::unique_ptr<Foo>> vector;
+//   Foo* element = ...
+//   auto iter = std::find_if(vector.begin(), vector.end(),
+//                            MatchesUniquePtr(element));
+//
+// Example of erasing from container:
+//   EraseIf(v, MatchesUniquePtr(element));
+//
+template <class T>
+struct UniquePtrMatcher {
+  explicit UniquePtrMatcher(T* t) : t_(t) {}
+
+  bool operator()(const std::unique_ptr<T>& o) { return o.get() == t_; }
+
+ private:
+  T* const t_;
+};
+
+template <class T>
+UniquePtrMatcher<T> MatchesUniquePtr(T* t) {
+  return UniquePtrMatcher<T>(t);
+}
+
 }  // namespace base
 
-#endif  // BASE_CONTAINERS_UNIQUE_PTR_COMPARATOR_H_
+#endif  // BASE_CONTAINERS_UNIQUE_PTR_ADAPTERS_H_
