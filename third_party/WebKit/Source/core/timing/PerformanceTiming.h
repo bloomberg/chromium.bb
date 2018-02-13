@@ -110,8 +110,11 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   // observers to discard the value of Time to Interactive.
   unsigned long long FirstInputInvalidatingInteractive() const;
   // The duration between the hardware timestamp and being queued on the main
-  // thread for the first click, tap or key press.
+  // thread for the first click, tap, key press, cancellable touchstart, or
+  // pointer down followed by a pointer up.
   unsigned long long FirstInputDelay() const;
+  // The timestamp of the event whose delay is reported by FirstInputDelay().
+  unsigned long long FirstInputTimestamp() const;
 
   unsigned long long ParseStart() const;
   unsigned long long ParseStop() const;

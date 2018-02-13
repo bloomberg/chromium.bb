@@ -387,6 +387,15 @@ unsigned long long PerformanceTiming::FirstInputDelay() const {
       interactive_detector->GetFirstInputDelay().InSecondsF());
 }
 
+unsigned long long PerformanceTiming::FirstInputTimestamp() const {
+  const InteractiveDetector* interactive_detector = GetInteractiveDetector();
+  if (!interactive_detector)
+    return 0;
+
+  return MonotonicTimeToIntegerMilliseconds(
+      interactive_detector->GetFirstInputTimestamp());
+}
+
 unsigned long long PerformanceTiming::ParseStart() const {
   const DocumentParserTiming* timing = GetDocumentParserTiming();
   if (!timing)
