@@ -680,8 +680,10 @@ bool FormStructure::ShouldBeUploaded() const {
          ShouldBeParsed();
 }
 
-void FormStructure::UpdateFromCache(const FormStructure& cached_form,
-                                    const bool apply_is_autofilled) {
+void FormStructure::RetrieveFromCache(
+    const FormStructure& cached_form,
+    const bool apply_is_autofilled,
+    const bool only_server_and_autofill_state) {
   // Map from field signatures to cached fields.
   std::map<base::string16, const AutofillField*> cached_fields;
   for (size_t i = 0; i < cached_form.field_count(); ++i) {
@@ -691,28 +693,29 @@ void FormStructure::UpdateFromCache(const FormStructure& cached_form,
   for (auto& field : *this) {
     const auto& cached_field = cached_fields.find(field->unique_name());
     if (cached_field != cached_fields.end()) {
+      if (!only_server_and_autofill_state) {
+        // Transfer attributes of the cached AutofillField to the newly created
+        // AutofillField.
+        field->set_heuristic_type(cached_field->second->heuristic_type());
+        field->SetHtmlType(cached_field->second->html_type(),
+                           cached_field->second->html_mode());
+        field->set_section(cached_field->second->section());
+        field->set_only_fill_when_focused(
+            cached_field->second->only_fill_when_focused());
+      }
+      if (apply_is_autofilled) {
+        field->is_autofilled = cached_field->second->is_autofilled;
+      }
       if (field->form_control_type != "select-one" &&
           field->value == cached_field->second->value) {
         // From the perspective of learning user data, text fields containing
         // default values are equivalent to empty fields.
         field->value = base::string16();
       }
-
-      // Transfer attributes of the cached AutofillField to the newly created
-      // AutofillField.
-      field->set_heuristic_type(cached_field->second->heuristic_type());
       field->set_overall_server_type(
           cached_field->second->overall_server_type());
-      field->SetHtmlType(cached_field->second->html_type(),
-                         cached_field->second->html_mode());
-      if (apply_is_autofilled) {
-        field->is_autofilled = cached_field->second->is_autofilled;
-      }
       field->set_previously_autofilled(
           cached_field->second->previously_autofilled());
-      field->set_section(cached_field->second->section());
-      field->set_only_fill_when_focused(
-          cached_field->second->only_fill_when_focused());
     }
   }
 
