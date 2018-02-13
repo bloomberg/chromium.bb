@@ -5,10 +5,10 @@
 <title>This test validates the behavior of read and clear operation in onresourcetimingbufferfull callback of resource timing.</title>
 <link rel="author" title="Intel" href="http://www.intel.com/" />
 <link rel="help" href="http://www.w3.org/TR/resource-timing/#performanceresourcetiming"/>
-<script src="/w3c/resources/testharness.js"></script>
-<script src="/w3c/resources/testharnessreport.js"></script>
-<script src="/w3c/webperf/resources/webperftestharness.js"></script>
-<script src="/w3c/webperf/resources/webperftestharnessextension.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/webperftestharness.js"></script>
+<script src="resources/webperftestharnessextension.js"></script>
 </head>
 <body onload=onload_test()>
 <script>
@@ -31,23 +31,23 @@
         script.src = src;
         document.body.appendChild(script);
     }
-    appendScript('/w3c/webperf/resources/empty.js');
-    appendScript('/w3c/webperf/resources/empty_script.js');
-    appendScript('/w3c/webperf/resources/resource_timing_test0.js');
+    appendScript('resources/empty.js');
+    appendScript('resources/empty_script.js');
+    appendScript('resources/resource_timing_test0.js');
     setup({ explicit_done: true });
     function onload_test() {
         test_equals(context.getEntriesByType('resource').length, 0, 'No entry should be stored in resource timing buffer since its cleared once an item arrived.');
         // The entry for empty.js must not be in the global buffer, but all others should be.
         test_equals(global_buffer.length, 6, '6 resource timing entries should be moved to global buffer.');
-        const index = window.location.pathname.lastIndexOf('/w3c');
+        const index = window.location.pathname.lastIndexOf('resource-timing');
         const pathname = window.location.pathname.substring(0, index);
         let expected_entries = {};
-        expected_entries[pathname + '/w3c/resources/testharness.js'] = 'script';
-        expected_entries[pathname + '/w3c/resources/testharnessreport.js'] = 'script';
-        expected_entries[pathname + '/w3c/webperf/resources/webperftestharness.js'] = 'script';
-        expected_entries[pathname + '/w3c/webperf/resources/webperftestharnessextension.js'] = 'script';
-        expected_entries[pathname + '/w3c/webperf/resources/empty_script.js'] = 'script';
-        expected_entries[pathname + '/w3c/webperf/resources/resource_timing_test0.js'] = 'script';
+        expected_entries[pathname + 'resources/testharness.js'] = 'script';
+        expected_entries[pathname + 'resources/testharnessreport.js'] = 'script';
+        expected_entries[pathname + 'resource-timing/resources/webperftestharness.js'] = 'script';
+        expected_entries[pathname + 'resource-timing/resources/webperftestharnessextension.js'] = 'script';
+        expected_entries[pathname + 'resource-timing/resources/empty_script.js'] = 'script';
+        expected_entries[pathname + 'resource-timing/resources/resource_timing_test0.js'] = 'script';
         test_resource_entries(global_buffer, expected_entries);
         done();
     }

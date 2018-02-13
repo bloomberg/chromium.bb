@@ -5,15 +5,13 @@
 <title>This test validates the values in resource timing for a timing allowed cross-origin redirect.</title>
 <link rel="author" title="Intel" href="http://www.intel.com/" />
 <link rel="help" href="http://www.w3.org/TR/resource-timing/#performanceresourcetiming"/>
-<script src="/w3c/resources/testharness.js"></script>
-<script src="/w3c/resources/testharnessreport.js"></script>
-<script src="/w3c/webperf/resources/webperftestharness.js"></script>
-<script src="/w3c/webperf/resources/webperftestharnessextension.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/webperftestharness.js"></script>
+<script src="resources/webperftestharnessextension.js"></script>
 
 <script>
     setup({explicit_done: true});
-    const pageOrigin = '127.0.0.1:8000';
-    const crossOrigin = 'localhost:8000';
     function onload_test() {
         const context = new PerformanceContext(performance);
         const entry = context.getEntriesByName(document.getElementById('frameContext').src, 'resource')[0];
@@ -30,10 +28,7 @@
 <body>
 <iframe id="frameContext" src="" style="width: 250px; height: 250px;"></iframe>
 <script>
-    test_equals(document.location.host, pageOrigin, 'Starting document.location.hostname is correct (' + pageOrigin + ')');
-    let destUrl = 'http://' + pageOrigin + '/w3c/webperf/resources/redirect.php';
-    destUrl += '?location=http://' + crossOrigin + '/w3c/webperf/resources/blank_page_green_with_allow_timing.php';
-    destUrl += '?origin=http://' + pageOrigin;
+    const destUrl = '/common/redirect.py?location=/resource-timing/resources/iframe_TAO_match_origin.html';
 
     const frameContext = document.getElementById('frameContext');
     frameContext.onload = onload_test;
