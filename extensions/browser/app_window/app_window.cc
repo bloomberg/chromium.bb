@@ -28,7 +28,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/media_stream_request.h"
 #include "extensions/browser/app_window/app_delegate.h"
 #include "extensions/browser/app_window/app_web_contents_helper.h"
@@ -457,14 +456,8 @@ void AppWindow::SetOnFirstCommitOrWindowClosedCallback(
 }
 
 void AppWindow::OnReadyToCommitFirstNavigation() {
-  if (!content::IsBrowserSideNavigationEnabled())
-    return;
-
-  // PlzNavigate: execute renderer-side setup now that there is a renderer
-  // process assigned to the navigation. With renderer-side navigation, this
-  // would happen before the navigation starts, but PlzNavigate must wait until
-  // this point in time in the navigation.
-
+  // Execute renderer-side setup now that there is a renderer process assigned
+  // to the navigation. We must wait until this point in time in the navigation.
   if (on_first_commit_or_window_closed_callback_.is_null())
     return;
   // It is important that the callback executes after the calls to
