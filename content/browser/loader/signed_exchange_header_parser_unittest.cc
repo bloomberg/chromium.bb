@@ -69,7 +69,7 @@ TEST_F(SignedExchangeHeaderParserTest, ParseSignature) {
       0x2c, 0x02, 0x20, 0x6b, 0xd0, 0xec, 0x54, 0xe3, 0x0c, 0xfa, 0x0e, 0x58,
       0xa7, 0x01, 0x01, 0x74, 0x65, 0xb7, 0xb1, 0x2f, 0x9b, 0xbe, 0x79, 0x80,
       0x24, 0x98, 0x92, 0x33, 0x08, 0x6e, 0x05, 0xda, 0xa9, 0xe5, 0x46};
-  const uint8_t decoded_certSha256[] = {
+  const uint8_t decoded_cert_sha256[] = {
       0x5b, 0xbb, 0x81, 0xf7, 0xaf, 0x5d, 0x15, 0x6d, 0xcc, 0x6f, 0x96,
       0x5e, 0x7c, 0xf4, 0xbd, 0x4e, 0xae, 0x59, 0x6c, 0x7e, 0x62, 0x4a,
       0x63, 0x88, 0x2e, 0x98, 0xef, 0xda, 0xa1, 0x00, 0xae, 0x62};
@@ -80,7 +80,7 @@ TEST_F(SignedExchangeHeaderParserTest, ParseSignature) {
       0x24, 0xeb, 0xeb, 0xa1, 0xfe, 0xae, 0x87, 0x93, 0x89, 0x09, 0xcc,
       0x0a, 0xae, 0x4e, 0xc3, 0x2b, 0xe2, 0xc1, 0x72, 0x1d, 0x23, 0xb2,
       0xc0, 0xd8, 0x3e, 0x9e, 0x42, 0x2d, 0xcd, 0x52, 0x0c};
-  const uint8_t decoded_ed25519Key[] = {
+  const uint8_t decoded_ed25519_key[] = {
       0xce, 0xc4, 0x9e, 0xbf, 0x21, 0x6c, 0xc7, 0x26, 0x47, 0x89, 0x49,
       0x6e, 0x54, 0x10, 0xdd, 0xe1, 0xec, 0xa9, 0x75, 0x12, 0xd3, 0xab,
       0x25, 0x91, 0x54, 0xe2, 0x6e, 0xb8, 0xa5, 0x33, 0xf8, 0x0f};
@@ -94,12 +94,12 @@ TEST_F(SignedExchangeHeaderParserTest, ParseSignature) {
             std::string(reinterpret_cast<const char*>(decoded_sig1),
                         sizeof(decoded_sig1)));
   EXPECT_EQ(signatures->at(0).integrity, "mi");
-  EXPECT_EQ(signatures->at(0).validityUrl,
+  EXPECT_EQ(signatures->at(0).validity_url,
             "https://example.com/resource.validity.1511128380");
-  EXPECT_EQ(signatures->at(0).certUrl, "https://example.com/oldcerts");
-  EXPECT_EQ(signatures->at(0).certSha256,
-            std::string(reinterpret_cast<const char*>(decoded_certSha256),
-                        sizeof(decoded_certSha256)));
+  EXPECT_EQ(signatures->at(0).cert_url, "https://example.com/oldcerts");
+  EXPECT_EQ(signatures->at(0).cert_sha256,
+            std::string(reinterpret_cast<const char*>(decoded_cert_sha256),
+                        sizeof(decoded_cert_sha256)));
   EXPECT_EQ(signatures->at(0).date, 1511128380ul);
   EXPECT_EQ(signatures->at(0).expires, 1511733180ul);
 
@@ -108,11 +108,11 @@ TEST_F(SignedExchangeHeaderParserTest, ParseSignature) {
             std::string(reinterpret_cast<const char*>(decoded_sig2),
                         sizeof(decoded_sig2)));
   EXPECT_EQ(signatures->at(1).integrity, "mi");
-  EXPECT_EQ(signatures->at(1).validityUrl,
+  EXPECT_EQ(signatures->at(1).validity_url,
             "https://example.com/resource.validity.1511128380");
-  EXPECT_EQ(signatures->at(1).ed25519Key,
-            std::string(reinterpret_cast<const char*>(decoded_ed25519Key),
-                        sizeof(decoded_ed25519Key)));
+  EXPECT_EQ(signatures->at(1).ed25519_key,
+            std::string(reinterpret_cast<const char*>(decoded_ed25519_key),
+                        sizeof(decoded_ed25519_key)));
   EXPECT_EQ(signatures->at(1).date, 1511128380ul);
   EXPECT_EQ(signatures->at(1).expires, 1511733180ul);
 }
