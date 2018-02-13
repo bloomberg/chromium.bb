@@ -9,32 +9,17 @@ import unittest
 
 import process_profiles
 
-
-SymbolInfo = collections.namedtuple('SymbolInfo', ['name', 'offset', 'size'])
-
-
-class TestSymbolOffsetProcessor(process_profiles.SymbolOffsetProcessor):
-  def __init__(self, symbol_infos):
-    super(TestSymbolOffsetProcessor, self).__init__(None)
-    self._symbol_infos = symbol_infos
-
-
-class TestProfileManager(process_profiles.ProfileManager):
-  def __init__(self, filecontents_mapping):
-    super(TestProfileManager, self).__init__(filecontents_mapping.keys())
-    self._filecontents_mapping = filecontents_mapping
-
-  def _ReadOffsets(self, filename):
-    return self._filecontents_mapping[filename]
-
+from test_utils import (SimpleTestSymbol,
+                        TestSymbolOffsetProcessor,
+                        TestProfileManager)
 
 class ProcessProfilesTestCase(unittest.TestCase):
 
   def setUp(self):
-    self.symbol_0 = SymbolInfo('0', 0, 0)
-    self.symbol_1 = SymbolInfo('1', 8, 16)
-    self.symbol_2 = SymbolInfo('2', 32, 8)
-    self.symbol_3 = SymbolInfo('3', 40, 12)
+    self.symbol_0 = SimpleTestSymbol('0', 0, 0)
+    self.symbol_1 = SimpleTestSymbol('1', 8, 16)
+    self.symbol_2 = SimpleTestSymbol('2', 32, 8)
+    self.symbol_3 = SimpleTestSymbol('3', 40, 12)
     self.offset_to_symbol_info = (
         [None, None] + [self.symbol_1] * 4 + [None] * 2 + [self.symbol_2] * 2
         + [self.symbol_3] * 3)
@@ -64,38 +49,47 @@ class ProcessProfilesTestCase(unittest.TestCase):
     self.assertListEqual([self.symbol_3.offset, self.symbol_1.offset], reached)
 
   def testSymbolNameToPrimary(self):
-    symbol_infos = [SymbolInfo('1', 8, 16),
-                    SymbolInfo('AnAlias', 8, 16),
-                    SymbolInfo('Another', 40, 16)]
+    symbol_infos = [SimpleTestSymbol('1', 8, 16),
+                    SimpleTestSymbol('AnAlias', 8, 16),
+                    SimpleTestSymbol('Another', 40, 16)]
     processor = TestSymbolOffsetProcessor(symbol_infos)
     self.assertDictEqual({8: symbol_infos[0],
                           40: symbol_infos[2]}, processor.OffsetToPrimaryMap())
 
+  def testOffsetToSymbolsMap(self):
+    symbol_infos = [SimpleTestSymbol('1', 8, 16),
+                    SimpleTestSymbol('AnAlias', 8, 16),
+                    SimpleTestSymbol('Another', 40, 16)]
+    processor = TestSymbolOffsetProcessor(symbol_infos)
+    self.assertDictEqual({8: [symbol_infos[0], symbol_infos[1]],
+                          40: [symbol_infos[2]]},
+                         processor.OffsetToSymbolsMap())
+
   def testPrimarySizeMismatch(self):
-    symbol_infos = [SymbolInfo('1', 8, 16),
-                    SymbolInfo('AnAlias', 8, 32)]
+    symbol_infos = [SimpleTestSymbol('1', 8, 16),
+                    SimpleTestSymbol('AnAlias', 8, 32)]
     processor = TestSymbolOffsetProcessor(symbol_infos)
     self.assertRaises(AssertionError, processor.OffsetToPrimaryMap)
-    symbol_infos = [SymbolInfo('1', 8, 0),
-                    SymbolInfo('2', 8, 32),
-                    SymbolInfo('3', 8, 32),
-                    SymbolInfo('4', 8, 0),]
+    symbol_infos = [SimpleTestSymbol('1', 8, 0),
+                    SimpleTestSymbol('2', 8, 32),
+                    SimpleTestSymbol('3', 8, 32),
+                    SimpleTestSymbol('4', 8, 0),]
     processor = TestSymbolOffsetProcessor(symbol_infos)
     self.assertDictEqual({8: symbol_infos[1]}, processor.OffsetToPrimaryMap())
 
   def testMatchSymbols(self):
-    symbols = [SymbolInfo('W', 30, 10),
-                 SymbolInfo('Y', 60, 5),
-                 SymbolInfo('X', 100, 10)]
+    symbols = [SimpleTestSymbol('W', 30, 10),
+               SimpleTestSymbol('Y', 60, 5),
+               SimpleTestSymbol('X', 100, 10)]
     processor = TestSymbolOffsetProcessor(symbols)
     self.assertListEqual(symbols[1:3],
                          processor.MatchSymbolNames(['Y', 'X']))
 
   def testOffsetsPrimarySize(self):
-    symbols = [SymbolInfo('W', 10, 1),
-               SymbolInfo('X', 20, 2),
-               SymbolInfo('Y', 30, 4),
-               SymbolInfo('Z', 40, 8)]
+    symbols = [SimpleTestSymbol('W', 10, 1),
+               SimpleTestSymbol('X', 20, 2),
+               SimpleTestSymbol('Y', 30, 4),
+               SimpleTestSymbol('Z', 40, 8)]
     processor = TestSymbolOffsetProcessor(symbols)
     self.assertEqual(13, processor.OffsetsPrimarySize([10, 30, 40]))
 

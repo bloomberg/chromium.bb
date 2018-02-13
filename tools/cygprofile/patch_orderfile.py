@@ -367,8 +367,8 @@ def GeneratePatchedOrderfile(unpatched_orderfile, native_lib_filename,
   (offset_to_symbol_infos, name_to_symbol_infos) = _GroupSymbolInfosFromBinary(
       native_lib_filename)
   obj_dir = cygprofile_utils.GetObjDir(native_lib_filename)
-  raw_symbol_map = cyglog_to_orderfile.GetSymbolToSectionsMapFromObjectFiles(
-      obj_dir)
+  raw_symbol_map = cyglog_to_orderfile.ObjectFileProcessor(
+      obj_dir).GetSymbolToSectionsMap()
   suffixed = _SectionsWithSuffixes(raw_symbol_map)
   symbol_to_sections_map = _CombineSectionListsByPrimaryName(raw_symbol_map)
   section_to_symbols_map = cygprofile_utils.InvertMapping(

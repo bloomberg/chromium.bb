@@ -18,7 +18,187 @@ import sys
 import tempfile
 
 import cygprofile_utils
+import process_profiles
 import symbol_extractor
+
+
+class _SymbolNotFoundException(Exception):
+  """Exception used during internal processing."""
+  def __init__(self, value):
+    super(_SymbolNotFoundException, self).__init__(value)
+    self.value = value
+
+  def __str__(self):
+    return repr(self.value)
+
+
+class ObjectFileProcessor(object):
+  """Processes symbols found in the object file tree.
+
+  This notably includes the section names of each symbol, as well as component
+  information that can be taken from the directory (not yet implemented).
+  """
+  def __init__(self, obj_dir):
+    """Initialize.
+
+    Args:
+      obj_dir (str) The root of the object directory.
+    """
+    self._obj_dir = obj_dir
+    self._symbol_to_sections_map = None
+
+  def GetSymbolToSectionsMap(self):
+    """Scans object files to find symbol section names.
+
+    Returns:
+      {symbol: linker section(s)}
+    """
+    if self._symbol_to_sections_map is not None:
+      return self._symbol_to_sections_map
+
+    symbol_infos = self._GetAllSymbolInfos()
+    self._symbol_to_sections_map = {}
+    symbol_warnings = cygprofile_utils.WarningCollector(300)
+    for symbol_info in symbol_infos:
+      symbol = symbol_info.name
+      if symbol.startswith('.LTHUNK'):
+        continue
+      section = symbol_info.section
+      if ((symbol in self._symbol_to_sections_map) and
+          (symbol_info.section not in self._symbol_to_sections_map[symbol])):
+        self._symbol_to_sections_map[symbol].append(section)
+
+        if not self._SameCtorOrDtorNames(
+            symbol, self._symbol_to_sections_map[symbol][0].lstrip('.text.')):
+          symbol_warnings.Write('Symbol ' + symbol +
+                                ' unexpectedly in more than one section: ' +
+                                ', '.join(self._symbol_to_sections_map[symbol]))
+      elif not section.startswith('.text.'):
+        # Assembly functions have section ".text". These are all grouped
+        # together near the end of the orderfile via an explicit ".text" entry.
+        if section != '.text':
+          symbol_warnings.Write('Symbol ' + symbol +
+                                ' in incorrect section ' + section)
+      else:
+        # In most cases we expect just one item in this list, and maybe 4 or so
+        # in the worst case.
+        self._symbol_to_sections_map[symbol] = [section]
+    symbol_warnings.WriteEnd('bad sections')
+    return self._symbol_to_sections_map
+
+  @classmethod
+  def _SameCtorOrDtorNames(cls, symbol1, symbol2):
+    """Returns True if two symbols refer to the same constructor or destructor.
+
+    The Itanium C++ ABI specifies dual constructor and destructor emmission
+    (section 5.1.4.3):
+    https://itanium-cxx-abi.github.io/cxx-abi/abi.html#mangling-special-ctor-dtor
+    To avoid fully parsing all mangled symbols, a heuristic is used with
+    c++filt.
+
+    Note: some compilers may name generated copies differently.  If this becomes
+    an issue this heuristic will need to be updated.
+    """
+    # Check if this is the understood case of constructor/destructor
+    # signatures. GCC emits up to three types of constructor/destructors:
+    # complete, base, and allocating.  If they're all the same they'll
+    # get folded together.
+    return (re.search('(C[123]|D[012])E', symbol1) and
+            symbol_extractor.DemangleSymbol(symbol1) ==
+            symbol_extractor.DemangleSymbol(symbol2))
+
+  def _GetAllSymbolInfos(self):
+    obj_files = []
+    # Scan _obj_dir recursively for .o files.
+    for (dirpath, _, filenames) in os.walk(self._obj_dir):
+      for file_name in filenames:
+        if file_name.endswith('.o'):
+          obj_files.append(os.path.join(dirpath, file_name))
+
+    pool = multiprocessing.Pool()
+    # Hopefully the object files are in the page cache at this point as
+    # typically the library has just been built before the object files are
+    # scanned. Hence IO should not be a problem, and there is no need for a
+    # concurrency limit on the pool.
+    symbol_infos_nested = pool.map(
+        symbol_extractor.SymbolInfosFromBinary, obj_files)
+    pool.close()
+    result = []
+    for symbol_infos in symbol_infos_nested:
+      result += symbol_infos
+    return result
+
+
+class OffsetOrderfileGenerator(object):
+  """Generates an orderfile from instrumented build offsets.
+
+  The object directory, SymbolOffsetProcessor and dump offsets must all be from
+  the same build.
+  """
+  def __init__(self, symbol_offset_processor, obj_processor):
+    """Initialize the generator.
+
+    Args:
+      symbol_offset_processor (process_profiles.SymbolOffsetProcessor).
+      obj_processor (ObjectFileProcessor).
+    """
+    self._offset_to_symbols = symbol_offset_processor.OffsetToSymbolsMap()
+    self._obj_processor = obj_processor
+
+  def GetOrderedSections(self, offsets):
+    """Get ordered list of sections corresponding to offsets.
+
+    Args:
+      offsets ([int]) dump offsets, from same build as parameters to __init__.
+
+    Returns:
+      [str] ordered list of sections suitable for use as an orderfile, or
+            None if failure.
+    """
+    symbol_to_sections = self._obj_processor.GetSymbolToSectionsMap()
+    if not symbol_to_sections:
+      logging.error('No symbol section names found')
+      return None
+    unknown_symbol_warnings = cygprofile_utils.WarningCollector(300)
+    symbol_not_found_errors = cygprofile_utils.WarningCollector(
+        300, level=logging.ERROR)
+    seen_sections = set()
+    ordered_sections = []
+    success = True
+    for offset in offsets:
+      try:
+        symbol_infos = self._SymbolsAtOffset(offset)
+        for symbol_info in symbol_infos:
+          if symbol_info.name in symbol_to_sections:
+            sections = symbol_to_sections[symbol_info.name]
+            for section in sections:
+              if not section in seen_sections:
+                ordered_sections.append(section)
+                seen_sections.add(section)
+          else:
+            unknown_symbol_warnings.Write(
+                'No known section for symbol ' + symbol_info.name)
+      except _SymbolNotFoundException:
+        symbol_not_found_errors.Write(
+            'Did not find function in binary. offset: ' + hex(offset))
+        success = False
+    unknown_symbol_warnings.WriteEnd('no known section for symbol.')
+    symbol_not_found_errors.WriteEnd('symbol not found in the binary.')
+    if not success:
+      return None
+    return ordered_sections
+
+  def _SymbolsAtOffset(self, offset):
+    if offset in self._offset_to_symbols:
+      return self._offset_to_symbols[offset]
+    elif offset % 2 and (offset - 1) in self._offset_to_symbols:
+      # On ARM, odd addresses are used to signal thumb instruction. They are
+      # generated by setting the LSB to 1 (see
+      # http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0471e/Babfjhia.html).
+      # TODO(lizeb): Make sure this hack doesn't propagate to other archs.
+      return self._offset_to_symbols[offset - 1]
+    else:
+      raise _SymbolNotFoundException(offset)
 
 
 def _ParseLogLines(log_file_lines):
@@ -62,132 +242,6 @@ def _ParseLogLines(log_file_lines):
   return call_info
 
 
-def _GroupLibrarySymbolInfosByOffset(lib_filename):
-  """Returns a dict {offset: [SymbolInfo]} from a library."""
-  symbol_infos = symbol_extractor.SymbolInfosFromBinary(lib_filename)
-  return symbol_extractor.GroupSymbolInfosByOffset(symbol_infos)
-
-
-class SymbolNotFoundException(Exception):
-  def __init__(self, value):
-    super(SymbolNotFoundException, self).__init__(value)
-    self.value = value
-
-  def __str__(self):
-    return repr(self.value)
-
-
-def _FindSymbolInfosAtOffset(offset_to_symbol_infos, offset):
-  """Finds all SymbolInfo at a given offset.
-
-  Args:
-    offset_to_symbol_infos: {offset: [SymbolInfo]}
-    offset: offset to look the symbols at
-
-  Returns:
-    The list of SymbolInfo at the given offset
-
-  Raises:
-    SymbolNotFoundException if the offset doesn't match any symbol.
-  """
-  if offset in offset_to_symbol_infos:
-    return offset_to_symbol_infos[offset]
-  elif offset % 2 and (offset - 1) in offset_to_symbol_infos:
-    # On ARM, odd addresses are used to signal thumb instruction. They are
-    # generated by setting the LSB to 1 (see
-    # http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0471e/Babfjhia.html).
-    # TODO(lizeb): Make sure this hack doesn't propagate to other archs.
-    return offset_to_symbol_infos[offset - 1]
-  else:
-    raise SymbolNotFoundException(offset)
-
-
-def GetObjectFileNames(obj_dir):
-  """Returns the list of object files in a directory."""
-  obj_files = []
-  for (dirpath, _, filenames) in os.walk(obj_dir):
-    for file_name in filenames:
-      if file_name.endswith('.o'):
-        obj_files.append(os.path.join(dirpath, file_name))
-  return obj_files
-
-
-def _AllSymbolInfos(object_filenames):
-  """Returns a list of SymbolInfo from an iterable of filenames."""
-  pool = multiprocessing.Pool()
-  # Hopefully the object files are in the page cache at this step, so IO should
-  # not be a problem (hence no concurrency limit on the pool).
-  symbol_infos_nested = pool.map(
-      symbol_extractor.SymbolInfosFromBinary, object_filenames)
-  pool.close()
-  result = []
-  for symbol_infos in symbol_infos_nested:
-    result += symbol_infos
-  return result
-
-
-def _SameCtorOrDtorNames(symbol1, symbol2):
-  """Returns True if two symbols refer to the same constructor or destructor.
-
-  The Itanium C++ ABI specifies dual constructor and destructor
-  emmission (section 5.1.4.3):
-  https://refspecs.linuxbase.org/cxxabi-1.83.html#mangling-special
-  To avoid fully parsing all mangled symbols, a heuristic is used with c++filt.
-
-  Note: some compilers may name generated copies differently.  If this becomes
-  an issue this heuristic will need to be updated.
-  """
-  # Check if this is the understood case of constructor/destructor
-  # signatures. GCC emits up to three types of constructor/destructors:
-  # complete, base, and allocating.  If they're all the same they'll
-  # get folded together.
-  return (re.search('(C[123]|D[012])E', symbol1) and
-          symbol_extractor.DemangleSymbol(symbol1) ==
-          symbol_extractor.DemangleSymbol(symbol2))
-
-
-def GetSymbolToSectionsMapFromObjectFiles(obj_dir):
-  """Scans object files to create a {symbol: linker section(s)} map.
-
-  Args:
-    obj_dir: The root of the output object file directory, which will be
-             scanned for .o files to form the mapping.
-
-  Returns:
-    A map {symbol_name: [section_name1, section_name2...]}
-  """
-  object_files = GetObjectFileNames(obj_dir)
-  symbol_to_sections_map = {}
-  symbol_warnings = cygprofile_utils.WarningCollector(300)
-  symbol_infos = _AllSymbolInfos(object_files)
-  for symbol_info in symbol_infos:
-    symbol = symbol_info.name
-    if symbol.startswith('.LTHUNK'):
-      continue
-    section = symbol_info.section
-    if ((symbol in symbol_to_sections_map) and
-        (symbol_info.section not in symbol_to_sections_map[symbol])):
-      symbol_to_sections_map[symbol].append(section)
-
-      if not _SameCtorOrDtorNames(
-          symbol, symbol_to_sections_map[symbol][0].lstrip('.text.')):
-        symbol_warnings.Write('Symbol ' + symbol +
-                              ' unexpectedly in more than one section: ' +
-                              ', '.join(symbol_to_sections_map[symbol]))
-    elif not section.startswith('.text.'):
-      # Assembly functions have section ".text". These are all grouped together
-      # near the end of the orderfile via an explicit ".text" entry.
-      if section != '.text':
-        symbol_warnings.Write('Symbol ' + symbol +
-                              ' in incorrect section ' + section)
-    else:
-      # In most cases we expect just one item in this list, and maybe 4 or so in
-      # the worst case.
-      symbol_to_sections_map[symbol] = [section]
-  symbol_warnings.WriteEnd('bad sections')
-  return symbol_to_sections_map
-
-
 def _WarnAboutDuplicates(offsets):
   """Warns about duplicate offsets.
 
@@ -208,54 +262,14 @@ def _WarnAboutDuplicates(offsets):
   return ok
 
 
-def _OutputOrderfile(offsets, offset_to_symbol_infos, symbol_to_sections_map,
-                     output_file):
-  """Outputs the orderfile to output_file.
-
-  Args:
-    offsets: Iterable of offsets to match to section names
-    offset_to_symbol_infos: {offset: [SymbolInfo]}
-    symbol_to_sections_map: {name: [section1, section2]}
-    output_file: file-like object to write the results to
-
-  Returns:
-    True if all symbols were found in the library.
-  """
-  success = True
-  unknown_symbol_warnings = cygprofile_utils.WarningCollector(300)
-  symbol_not_found_errors = cygprofile_utils.WarningCollector(
-      300, level=logging.ERROR)
-  output_sections = set()
-  for offset in offsets:
-    try:
-      symbol_infos = _FindSymbolInfosAtOffset(offset_to_symbol_infos, offset)
-      for symbol_info in symbol_infos:
-        if symbol_info.name in symbol_to_sections_map:
-          sections = symbol_to_sections_map[symbol_info.name]
-          for section in sections:
-            if not section in output_sections:
-              output_file.write(section + '\n')
-              output_sections.add(section)
-        else:
-          unknown_symbol_warnings.Write(
-              'No known section for symbol ' + symbol_info.name)
-    except SymbolNotFoundException:
-      symbol_not_found_errors.Write(
-          'Did not find function in binary. offset: ' + hex(offset))
-      success = False
-  unknown_symbol_warnings.WriteEnd('no known section for symbol.')
-  symbol_not_found_errors.WriteEnd('symbol not found in the binary.')
-  return success
-
-
-def ReadReachedOffsets(filename):
+def _ReadReachedOffsets(filename):
   """Reads and returns a list of reached offsets."""
   with open(filename, 'r') as f:
     offsets = [int(x.rstrip('\n')) for x in f.xreadlines()]
   return offsets
 
 
-def CreateArgumentParser():
+def _CreateArgumentParser():
   parser = argparse.ArgumentParser(
       description='Creates an orderfile from profiles.')
   parser.add_argument('--target-arch', required=False,
@@ -273,7 +287,7 @@ def CreateArgumentParser():
 
 
 def main():
-  parser = CreateArgumentParser()
+  parser = _CreateArgumentParser()
   args = parser.parse_args()
 
   assert bool(args.merged_cyglog) ^ bool(args.reached_offsets)
@@ -289,12 +303,17 @@ def main():
     log_file_lines = map(string.rstrip, open(args.merged_cyglog).readlines())
     offsets = _ParseLogLines(log_file_lines)
   else:
-    offsets = ReadReachedOffsets(args.reached_offsets)
+    offsets = _ReadReachedOffsets(args.reached_offsets)
   assert offsets
   _WarnAboutDuplicates(offsets)
 
-  offset_to_symbol_infos = _GroupLibrarySymbolInfosByOffset(args.native_library)
-  symbol_to_sections_map = GetSymbolToSectionsMapFromObjectFiles(obj_dir)
+  generator = OffsetOrderfileGenerator(
+      process_profiles.SymbolOffsetProcessor(args.native_library),
+      ObjectFileProcessor(obj_dir))
+
+  ordered_sections = generator.GetOrderedSections(offsets)
+  if ordered_sections is None:
+    return 1
 
   success = False
   temp_filename = None
@@ -302,12 +321,11 @@ def main():
   try:
     (fd, temp_filename) = tempfile.mkstemp(dir=os.path.dirname(args.output))
     output_file = os.fdopen(fd, 'w')
-    ok = _OutputOrderfile(
-        offsets, offset_to_symbol_infos, symbol_to_sections_map, output_file)
+    output_file.write('\n'.join(ordered_sections))
     output_file.close()
     os.rename(temp_filename, args.output)
     temp_filename = None
-    success = ok
+    success = True
   finally:
     if output_file:
       output_file.close()

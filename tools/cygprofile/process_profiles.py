@@ -55,6 +55,7 @@ class SymbolOffsetProcessor(object):
     self._symbol_infos = None
     self._name_to_symbol = None
     self._offset_to_primary = None
+    self._offset_to_symbols = None
 
   def SymbolInfos(self):
     """The symbols associated with this processor's binary.
@@ -110,6 +111,19 @@ class SymbolOffsetProcessor(object):
               self._offset_to_primary[s.offset] = s
 
     return self._offset_to_primary
+
+  def OffsetToSymbolsMap(self):
+    """Map offsets to the set of matching symbols.
+
+    Unlike OffsetToPrimaryMap, this is a 1-to-many mapping.
+
+    Returns;
+      {offset (int): [symbol_extractor.SymbolInfo]}
+    """
+    if self._offset_to_symbols is None:
+      self._offset_to_symbols = symbol_extractor.GroupSymbolInfosByOffset(
+          self.SymbolInfos())
+    return self._offset_to_symbols
 
   def OffsetsPrimarySize(self, offsets):
     """Computes the total primary size of a set of offsets.
