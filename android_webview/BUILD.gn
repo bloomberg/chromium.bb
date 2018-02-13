@@ -957,6 +957,15 @@ android_library("android_webview_platform_services_java") {
   ]
 }
 
+# This target compiles the implementation of PlatformServiceBridge for AOSP targets.
+android_library("platform_service_bridge_upstream_implementation_java") {
+  java_files =
+      [ "java/src/org/chromium/android_webview/PlatformServiceBridgeImpl.java" ]
+  deps = [
+    ":android_webview_platform_services_java",
+  ]
+}
+
 android_library("android_webview_commandline_java") {
   java_files = [
     "java/src/org/chromium/android_webview/command_line/CommandLineUtil.java",
