@@ -467,30 +467,33 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
   return NO;
 }
 
-// This method is called as the text is being typed in, pasted, or deleted. Asks
-// the delegate if the text should be changed. Should always return NO. During
-// typing/pasting text, |newText| contains one or more new characters. When user
-// deletes text, |newText| is empty. |range| is the range of characters to be
-// replaced.
+// This method is called as the text is being typed in, pasted, or deleted.
+// Returns NO if the text should be formatted or that the text should only be
+// changed via the UIPickerView. Returns YES otherwise. During typing/pasting
+// text, |newText| contains one or more new characters. When user deletes text,
+// |newText| is empty. |range| is the range of characters to be replaced.
 - (BOOL)textField:(UITextField*)textField
     shouldChangeCharactersInRange:(NSRange)range
                 replacementString:(NSString*)newText {
   DCHECK(_currentEditingCell == AutofillEditCellForTextField(textField));
 
-  // Find the respective editor field and update its value to the proposed text
-  // only if the editor field does not have an associated UIPickerView. This
-  // prevents users from altering the text unless it is via the UIPickerView.
+  // Return NO if the respective editor field has an associated UIPickerView.
+  // This prevents altering the text unless it is via the UIPickerView.
   EditorField* field = [self currentEditingField];
   DCHECK(field);
   NSNumber* key = [NSNumber numberWithInt:field.autofillUIType];
   if ([self.pickerViews objectForKey:key])
     return NO;
 
+  // Return without formatting the proposed text if no formatting is necessary.
+  if (![_dataSource shouldFormatValueForAutofillUIType:field.autofillUIType])
+    return YES;
+
   field.value = [textField.text stringByReplacingCharactersInRange:range
                                                         withString:newText];
-
-  // Format the proposed text if necessary.
-  [_dataSource formatValueForEditorField:field];
+  // Format the proposed text.
+  field.value =
+      [_dataSource formatValue:field.value autofillUIType:field.autofillUIType];
 
   // Since this method is returning NO, update the text field's value now.
   textField.text = field.value;

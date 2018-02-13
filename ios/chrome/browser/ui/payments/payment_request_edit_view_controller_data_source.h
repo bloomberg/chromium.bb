@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
+
 @class EditorField;
 @class CollectionViewItem;
 
@@ -33,8 +35,12 @@ typedef NS_ENUM(NSInteger, EditViewControllerState) {
 // Returns whether the header item should hide its background.
 - (BOOL)shouldHideBackgroundForHeaderItem;
 
-// Formats the editor field value, if necessary.
-- (void)formatValueForEditorField:(EditorField*)field;
+// Returns if the value corresponding to the give |type| should be formatted.
+- (BOOL)shouldFormatValueForAutofillUIType:(AutofillUIType)type;
+
+// Returns the formatted |value| for the give |type|, if necessary. Returns nil
+// otherwise.
+- (NSString*)formatValue:(NSString*)value autofillUIType:(AutofillUIType)type;
 
 // Returns an icon that identifies |field| or its current value. May be nil.
 - (UIImage*)iconIdentifyingEditorField:(EditorField*)field;

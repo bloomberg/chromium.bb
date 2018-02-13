@@ -112,7 +112,12 @@
   return NO;
 }
 
-- (void)formatValueForEditorField:(EditorField*)field {
+- (BOOL)shouldFormatValueForAutofillUIType:(AutofillUIType)type {
+  return NO;
+}
+
+- (NSString*)formatValue:(NSString*)value autofillUIType:(AutofillUIType)type {
+  return nil;
 }
 
 - (UIImage*)iconIdentifyingEditorField:(EditorField*)field {
