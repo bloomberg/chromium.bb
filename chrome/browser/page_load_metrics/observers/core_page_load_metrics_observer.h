@@ -16,7 +16,6 @@ namespace internal {
 // navigation start to the event in question.
 extern const char kHistogramFirstLayout[];
 extern const char kHistogramFirstInputDelay[];
-extern const char kHistogramFirstInputTimestamp[];
 extern const char kHistogramFirstPaint[];
 extern const char kHistogramFirstTextPaint[];
 extern const char kHistogramDomContentLoaded[];
@@ -178,7 +177,7 @@ class CorePageLoadMetricsObserver
   void OnPageInteractive(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
-  void OnFirstInputInPage(
+  void OnFirstInputDelayInPage(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnParseStart(

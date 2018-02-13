@@ -622,6 +622,10 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     RecordInternalError(ERR_SUBFRAME_IPC_WITH_NO_RELEVANT_LOAD);
   }
 
+  // First Input Delay should only be set for the main frame.
+  DCHECK(is_main_frame || !timing.interactive_timing ||
+         !timing.interactive_timing->first_input_delay);
+
   if (committed_load_) {
     committed_load_->metrics_update_dispatcher()->UpdateMetrics(
         render_frame_host, timing, metadata, new_features);

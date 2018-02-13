@@ -183,10 +183,6 @@ double WebPerformance::FirstInputDelay() const {
   return MillisecondsToSeconds(private_->timing()->FirstInputDelay());
 }
 
-double WebPerformance::FirstInputTimestamp() const {
-  return MillisecondsToSeconds(private_->timing()->FirstInputTimestamp());
-}
-
 double WebPerformance::ParseStart() const {
   return MillisecondsToSeconds(private_->timing()->ParseStart());
 }

@@ -877,15 +877,12 @@ TEST_F(CorePageLoadMetricsObserverTest, TimeToInteractiveStatusDidNotReachFMP) {
       internal::TIME_TO_INTERACTIVE_DID_NOT_REACH_FIRST_MEANINGFUL_PAINT, 1);
 }
 
-TEST_F(CorePageLoadMetricsObserverTest, FirstInputDelayAndTimestamp) {
+TEST_F(CorePageLoadMetricsObserverTest, FirstInputDelay) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.interactive_timing->first_input_delay =
       base::TimeDelta::FromMilliseconds(5);
-  // Pick a value that lines up with a histogram bucket.
-  timing.interactive_timing->first_input_timestamp =
-      base::TimeDelta::FromMilliseconds(4780);
   PopulateRequiredTimingFields(&timing);
 
   NavigateAndCommit(GURL(kDefaultTestUrl));
@@ -896,33 +893,4 @@ TEST_F(CorePageLoadMetricsObserverTest, FirstInputDelayAndTimestamp) {
   EXPECT_THAT(
       histogram_tester().GetAllSamples(internal::kHistogramFirstInputDelay),
       testing::ElementsAre(base::Bucket(5, 1)));
-  EXPECT_THAT(
-      histogram_tester().GetAllSamples(internal::kHistogramFirstInputTimestamp),
-      testing::ElementsAre(base::Bucket(4780, 1)));
-}
-
-TEST_F(CorePageLoadMetricsObserverTest,
-       FirstInputDelayAndTimestampBackgrounded) {
-  page_load_metrics::mojom::PageLoadTiming timing;
-  page_load_metrics::InitPageLoadTimingForTest(&timing);
-  timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.interactive_timing->first_input_delay =
-      base::TimeDelta::FromMilliseconds(5);
-  timing.interactive_timing->first_input_timestamp =
-      base::TimeDelta::FromMilliseconds(5000);
-  PopulateRequiredTimingFields(&timing);
-
-  NavigateAndCommit(GURL(kDefaultTestUrl));
-
-  // Background the tab, then foreground it.
-  web_contents()->WasHidden();
-  web_contents()->WasShown();
-
-  SimulateTimingUpdate(timing);
-  // Navigate again to force histogram recording.
-  NavigateAndCommit(GURL(kDefaultTestUrl2));
-
-  histogram_tester().ExpectTotalCount(internal::kHistogramFirstInputDelay, 0);
-  histogram_tester().ExpectTotalCount(internal::kHistogramFirstInputTimestamp,
-                                      0);
 }
