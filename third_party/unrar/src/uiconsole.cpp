@@ -333,6 +333,8 @@ void uiMsgStore::Msg()
     case UIEVENT_RRTESTINGSTART:
       mprintf(L"%s      ",St(MTestingRR));
       break;
+    default:
+      break;
   }
 }
 

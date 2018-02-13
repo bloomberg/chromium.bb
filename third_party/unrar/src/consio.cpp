@@ -70,7 +70,7 @@ static void cvt_wprintf(FILE *dest,const wchar *fmt,va_list arglist)
   PrintfPrepareFmt(fmt,fmtw,ASIZE(fmtw));
 #ifdef _WIN_ALL
   safebuf wchar Msg[MaxMsgSize];
-  if (dest==stdout && StdoutRedirected || dest==stderr && StderrRedirected)
+  if ((dest==stdout && StdoutRedirected) || (dest==stderr && StderrRedirected))
   {
     HANDLE hOut=GetStdHandle(dest==stdout ? STD_OUTPUT_HANDLE:STD_ERROR_HANDLE);
     vswprintf(Msg,ASIZE(Msg),fmtw,arglist);
@@ -191,10 +191,16 @@ bool GetConsolePassword(UIPASSWORD_TYPE Type,const wchar *FileName,SecPassword *
   while (true)
   {
     if (!StdinRedirected)
+    {
       if (Type==UIPASSWORD_GLOBAL)
+      {
         eprintf(L"\n%s: ",St(MAskPsw));
+      }
       else
+      {
         eprintf(St(MAskPswFor),FileName);
+      }
+    }
 
     wchar PlainPsw[MAXPASSWORD];
     GetPasswordText(PlainPsw,ASIZE(PlainPsw));

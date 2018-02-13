@@ -121,7 +121,7 @@ unsigned char loctolower(unsigned char ch)
 {
 #if defined(_WIN_ALL)
   // Convert to LPARAM first to avoid a warning in 64 bit mode.
-  return (int)(LPARAM)CharLowerA((LPSTR)ch);
+  return (int)(LPARAM)CharLowerA((LPSTR)(uintptr_t)ch);
 #else
   return tolower(ch);
 #endif
@@ -132,7 +132,7 @@ unsigned char loctoupper(unsigned char ch)
 {
 #if defined(_WIN_ALL)
   // Convert to LPARAM first to avoid a warning in 64 bit mode.
-  return (int)(LPARAM)CharUpperA((LPSTR)ch);
+  return (int)(LPARAM)CharUpperA((LPSTR)(uintptr_t)ch);
 #else
   return toupper(ch);
 #endif
@@ -186,7 +186,7 @@ bool IsSpace(int ch)
 // values, resulting in undefined behavior in standard function.
 bool IsAlpha(int ch)
 {
-  return ch>='A' && ch<='Z' || ch>='a' && ch<='z';
+  return (ch>='A' && ch<='Z') || (ch>='a' && ch<='z');
 }
 
 
