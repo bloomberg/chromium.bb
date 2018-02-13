@@ -231,7 +231,7 @@ bool InstallableMetrics::IsReportableInstallSource(WebappInstallSource source) {
          source == WebappInstallSource::AUTOMATIC_PROMPT_CUSTOM_TAB ||
          source == WebappInstallSource::API_BROWSER_TAB ||
          source == WebappInstallSource::API_CUSTOM_TAB ||
-         source == WebappInstallSource::DEBUG ||
+         source == WebappInstallSource::DEVTOOLS ||
          source == WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB ||
          source == WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB;
 }

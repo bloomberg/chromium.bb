@@ -66,7 +66,7 @@ enum class WebappInstallSource {
   API_CUSTOM_TAB = 5,
 
   // Installation from a debug flow (e.g. via devtools).
-  DEBUG = 6,
+  DEVTOOLS = 6,
 
   // Extensions management API (not reported).
   MANAGEMENT_API = 7,
