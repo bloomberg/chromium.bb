@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -155,7 +154,6 @@ class ChromeArcUtilTest : public testing::Test {
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<FakeUserManagerWithLocalState>());
     // Used by FakeChromeUserManager.
-    chromeos::WallpaperManager::Initialize();
     chromeos::DeviceSettingsService::Initialize();
     chromeos::CrosSettings::Initialize();
     wallpaper_controller_client_ =
@@ -169,7 +167,6 @@ class ChromeArcUtilTest : public testing::Test {
 
   void TearDown() override {
     profile_.reset();
-    chromeos::WallpaperManager::Shutdown();
     user_manager_enabler_.reset();
     command_line_.reset();
     wallpaper_controller_client_.reset();

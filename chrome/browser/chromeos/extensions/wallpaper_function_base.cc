@@ -128,6 +128,13 @@ base::SequencedTaskRunner* WallpaperFunctionBase::GetNonBlockingTaskRunner() {
   return wallpaper_api_util::g_non_blocking_task_runner.Get().get();
 }
 
+void WallpaperFunctionBase::AssertCalledOnWallpaperSequence(
+    base::SequencedTaskRunner* task_runner) {
+#if DCHECK_IS_ON()
+  DCHECK(task_runner->RunsTasksInCurrentSequence());
+#endif
+}
+
 void WallpaperFunctionBase::StartDecode(const std::vector<char>& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (unsafe_wallpaper_decoder_)

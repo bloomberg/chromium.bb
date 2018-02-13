@@ -22,7 +22,7 @@ class ImageInfoFetcher;
 
 namespace base {
 class RefCountedBytes;
-}
+}  // namespace base
 
 // Wallpaper manager strings.
 class WallpaperPrivateGetStringsFunction : public UIThreadExtensionFunction {

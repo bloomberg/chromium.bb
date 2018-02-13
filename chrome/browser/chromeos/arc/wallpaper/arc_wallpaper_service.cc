@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/task_scheduler/post_task.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"

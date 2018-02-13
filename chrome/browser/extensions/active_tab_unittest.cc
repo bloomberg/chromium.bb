@@ -38,7 +38,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/extensions/active_tab_permission_granter_delegate_chromeos.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
@@ -476,7 +475,6 @@ TEST_F(ActiveTabTest, DelegateIsSet) {
   std::string user_id_hash = chromeos::ProfileHelper::Get()->
       GetUserIdHashByUserIdForTesting(user_id);
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
-  chromeos::WallpaperManager::Initialize();
   std::unique_ptr<WallpaperControllerClient> wallpaper_controller_client_ =
       std::make_unique<WallpaperControllerClient>();
   TestWallpaperController test_wallpaper_controller_;
@@ -530,7 +528,6 @@ TEST_F(ActiveTabTest, DelegateIsSet) {
   // Cleanup.
   ActiveTabPermissionGranterDelegateChromeOS::
       SetRequestResolvedCallbackForTesting(nullptr);
-  chromeos::WallpaperManager::Shutdown();
   delete ActiveTabPermissionGranter::SetPlatformDelegate(nullptr);
   chromeos::ChromeUserManager::Get()->Shutdown();
 }

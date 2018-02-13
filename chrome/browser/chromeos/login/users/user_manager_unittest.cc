@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -80,7 +79,6 @@ class UserManagerTest : public testing::Test {
     chromeos::DBusThreadManager::Initialize();
 
     ResetUserManager();
-    WallpaperManager::Initialize();
 
     wallpaper_controller_client_ =
         std::make_unique<WallpaperControllerClient>();
@@ -100,7 +98,6 @@ class UserManagerTest : public testing::Test {
 
     base::RunLoop().RunUntilIdle();
     chromeos::DBusThreadManager::Shutdown();
-    WallpaperManager::Shutdown();
   }
 
   ChromeUserManagerImpl* GetChromeUserManager() const {

@@ -12,13 +12,12 @@
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
@@ -107,8 +106,7 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
     user_manager_->LoginUser(user_manager::StubAccountId());
     ASSERT_TRUE(user_manager_->GetPrimaryUser());
 
-    // Wallpaper manager
-    chromeos::WallpaperManager::Initialize();
+    // Wallpaper
     wallpaper_controller_client_ =
         std::make_unique<WallpaperControllerClient>();
     wallpaper_controller_client_->InitForTesting(
@@ -136,7 +134,6 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
     wallpaper_instance_.reset();
 
     wallpaper_controller_client_.reset();
-    chromeos::WallpaperManager::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
     AshTestBase::TearDown();
   }

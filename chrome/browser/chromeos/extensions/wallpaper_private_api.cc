@@ -29,7 +29,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -172,7 +171,7 @@ void EnumerateImages(const base::FilePath& path,
 
 // Recursively retrieves the paths of the image files under |path|.
 std::vector<std::string> GetImagePaths(const base::FilePath& path) {
-  chromeos::AssertCalledOnWallpaperSequence(
+  WallpaperFunctionBase::AssertCalledOnWallpaperSequence(
       WallpaperFunctionBase::GetNonBlockingTaskRunner());
 
   // TODO(crbug.com/810575): Add metrics on the number of files retrieved, and
@@ -328,12 +327,6 @@ bool WallpaperPrivateSetWallpaperIfExistsFunction::RunAsync() {
   const user_manager::User* user = GetUserFromBrowserContext(browser_context());
   account_id_ = user->GetAccountId();
 
-  // Do not change wallpaper if policy is in effect.
-  chromeos::WallpaperManager* wallpaper_manager =
-      chromeos::WallpaperManager::Get();
-  if (wallpaper_manager->IsPolicyControlled(account_id_))
-    return false;
-
   base::FilePath wallpaper_path;
   base::FilePath fallback_path;
   ash::WallpaperController::WallpaperResolution resolution =
@@ -362,7 +355,7 @@ bool WallpaperPrivateSetWallpaperIfExistsFunction::RunAsync() {
 void WallpaperPrivateSetWallpaperIfExistsFunction::
     ReadFileAndInitiateStartDecode(const base::FilePath& file_path,
                                    const base::FilePath& fallback_path) {
-  chromeos::AssertCalledOnWallpaperSequence(GetNonBlockingTaskRunner());
+  AssertCalledOnWallpaperSequence(GetNonBlockingTaskRunner());
   base::FilePath path = file_path;
 
   if (!base::PathExists(file_path))
@@ -431,12 +424,7 @@ bool WallpaperPrivateSetWallpaperFunction::RunAsync() {
   const user_manager::User* user = GetUserFromBrowserContext(browser_context());
   account_id_ = user->GetAccountId();
 
-  // Do not change wallpaper if policy is in effect.
-  if (chromeos::WallpaperManager::Get()->IsPolicyControlled(account_id_))
-    return false;
-
   StartDecode(params->wallpaper);
-
   return true;
 }
 
@@ -452,7 +440,7 @@ void WallpaperPrivateSetWallpaperFunction::OnWallpaperDecoded(
 }
 
 void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
-  chromeos::AssertCalledOnWallpaperSequence(GetBlockingTaskRunner());
+  AssertCalledOnWallpaperSequence(GetBlockingTaskRunner());
   std::string file_name = GURL(params->url).ExtractFileName();
   if (SaveData(chrome::DIR_CHROMEOS_WALLPAPERS, file_name, params->wallpaper)) {
     wallpaper_.EnsureRepsForSupportedScales();
@@ -517,10 +505,6 @@ WallpaperPrivateResetWallpaperFunction::
 bool WallpaperPrivateResetWallpaperFunction::RunAsync() {
   const AccountId& account_id =
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
-
-  // Do not change wallpaper if policy is in effect.
-  if (chromeos::WallpaperManager::Get()->IsPolicyControlled(account_id))
-    return false;
 
   WallpaperControllerClient::Get()->SetDefaultWallpaper(
       account_id, true /* show_wallpaper */);
@@ -598,7 +582,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
 void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
     const base::FilePath& thumbnail_path,
     std::unique_ptr<gfx::ImageSkia> image) {
-  chromeos::AssertCalledOnWallpaperSequence(GetBlockingTaskRunner());
+  AssertCalledOnWallpaperSequence(GetBlockingTaskRunner());
   if (!base::PathExists(thumbnail_path.DirName()))
     base::CreateDirectory(thumbnail_path.DirName());
 
@@ -733,7 +717,7 @@ void WallpaperPrivateGetThumbnailFunction::FileLoaded(
 }
 
 void WallpaperPrivateGetThumbnailFunction::Get(const base::FilePath& path) {
-  chromeos::AssertCalledOnWallpaperSequence(
+  WallpaperFunctionBase::AssertCalledOnWallpaperSequence(
       WallpaperFunctionBase::GetNonBlockingTaskRunner());
   std::string data;
   if (GetData(path, &data)) {
@@ -787,7 +771,7 @@ void WallpaperPrivateSaveThumbnailFunction::Success() {
 
 void WallpaperPrivateSaveThumbnailFunction::Save(const std::vector<char>& data,
                                                  const std::string& file_name) {
-  chromeos::AssertCalledOnWallpaperSequence(
+  WallpaperFunctionBase::AssertCalledOnWallpaperSequence(
       WallpaperFunctionBase::GetNonBlockingTaskRunner());
   if (SaveData(chrome::DIR_CHROMEOS_WALLPAPER_THUMBNAILS, file_name, data)) {
     BrowserThread::PostTask(
@@ -818,7 +802,7 @@ bool WallpaperPrivateGetOfflineWallpaperListFunction::RunAsync() {
 }
 
 void WallpaperPrivateGetOfflineWallpaperListFunction::GetList() {
-  chromeos::AssertCalledOnWallpaperSequence(
+  WallpaperFunctionBase::AssertCalledOnWallpaperSequence(
       WallpaperFunctionBase::GetNonBlockingTaskRunner());
   std::vector<std::string> file_list;
   base::FilePath wallpaper_dir;

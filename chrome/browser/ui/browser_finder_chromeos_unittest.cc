@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
@@ -67,7 +66,6 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
     test_account_id2_ = AccountId::FromUserEmail(kTestAccount2);
     BrowserWithTestWindowTest::SetUp();
     profile_manager()->SetLoggedIn(true);
-    chromeos::WallpaperManager::Initialize();
     wallpaper_controller_client_ =
         std::make_unique<WallpaperControllerClient>();
     wallpaper_controller_client_->InitForTesting(
@@ -78,7 +76,6 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
   void TearDown() override {
     MultiUserWindowManager::DeleteInstance();
     BrowserWithTestWindowTest::TearDown();
-    chromeos::WallpaperManager::Shutdown();
     wallpaper_controller_client_.reset();
   }
 

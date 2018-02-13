@@ -39,6 +39,11 @@ class WallpaperFunctionBase : public AsyncExtensionFunction {
   static base::SequencedTaskRunner* GetBlockingTaskRunner();
   static base::SequencedTaskRunner* GetNonBlockingTaskRunner();
 
+  // Asserts that the current task is sequenced with any other task that calls
+  // this.
+  static void AssertCalledOnWallpaperSequence(
+      base::SequencedTaskRunner* task_runner);
+
  protected:
   ~WallpaperFunctionBase() override;
 
