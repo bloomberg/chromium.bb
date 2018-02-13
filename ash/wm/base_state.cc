@@ -96,10 +96,12 @@ void BaseState::UpdateMinimizedState(
     mojom::WindowStateType previous_state_type) {
   aura::Window* window = window_state->window();
   if (window_state->IsMinimized()) {
-    // Save the previous show state so that we can correctly restore it after
-    // exiting the minimized mode.
-    window->SetProperty(aura::client::kPreMinimizedShowStateKey,
-                        ToWindowShowState(previous_state_type));
+    // Save the previous show state when it is not minimized so that we can
+    // correctly restore it after exiting the minimized mode.
+    if (previous_state_type != mojom::WindowStateType::MINIMIZED) {
+      window->SetProperty(aura::client::kPreMinimizedShowStateKey,
+                          ToWindowShowState(previous_state_type));
+    }
     ::wm::SetWindowVisibilityAnimationType(
         window, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
 

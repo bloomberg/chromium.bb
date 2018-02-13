@@ -882,6 +882,26 @@ TEST_F(TabletModeWindowManagerTest, TestMinimize) {
   EXPECT_TRUE(window->IsVisible());
 }
 
+// Tests that minimized window can restore to pre-minimized show state after
+// entering and leaving tablet mode (https://crbug.com/783310).
+TEST_F(TabletModeWindowManagerTest, MinimizedEnterAndLeaveTabletMode) {
+  gfx::Rect rect(10, 10, 100, 100);
+  std::unique_ptr<aura::Window> window(
+      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window_state->Minimize();
+  EXPECT_TRUE(window_state->IsMinimized());
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_TRUE(window_state->IsMinimized());
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  EXPECT_TRUE(window_state->IsMinimized());
+
+  window_state->Unminimize();
+  EXPECT_FALSE(window_state->IsMinimized());
+  window_state->Minimize();
+  EXPECT_TRUE(window_state->IsMinimized());
+}
+
 // Check that a full screen window remains full screen upon entering maximize
 // mode. Furthermore, checks that this window is not full screen upon exiting
 // tablet mode if it was un-full-screened while in tablet mode.
