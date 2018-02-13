@@ -10,22 +10,9 @@ import unittest
 import phased_orderfile
 import process_profiles
 
-SymbolInfo = collections.namedtuple('SymbolInfo', ['name', 'offset', 'size'])
-
-
-class TestProfileManager(process_profiles.ProfileManager):
-  def __init__(self, filecontents_mapping):
-    super(TestProfileManager, self).__init__(filecontents_mapping.keys())
-    self._filecontents_mapping = filecontents_mapping
-
-  def _ReadOffsets(self, filename):
-    return self._filecontents_mapping[filename]
-
-
-class TestSymbolOffsetProcessor(process_profiles.SymbolOffsetProcessor):
-  def __init__(self, symbol_infos):
-    super(TestSymbolOffsetProcessor, self).__init__(None)
-    self._symbol_infos = symbol_infos
+from test_utils import (SimpleTestSymbol,
+                        TestSymbolOffsetProcessor,
+                        TestProfileManager)
 
 
 class Mod10Processor(object):
@@ -50,7 +37,7 @@ class PhasedOrderfileTestCase(unittest.TestCase):
         self._file_counter, timestamp_sec * 1000 * 1000 * 1000, phase)
 
   def testProfileStability(self):
-    symbols = [SymbolInfo(str(i), i, 10)
+    symbols = [SimpleTestSymbol(str(i), i, 10)
                for i in xrange(20)]
     phaser = phased_orderfile.PhasedAnalyzer(
         None, TestSymbolOffsetProcessor(symbols))
@@ -61,7 +48,7 @@ class PhasedOrderfileTestCase(unittest.TestCase):
     self.assertEquals((1.25, 1, None), phaser.ComputeStability())
 
   def testIsStable(self):
-    symbols = [SymbolInfo(str(i), i, 10)
+    symbols = [SimpleTestSymbol(str(i), i, 10)
                for i in xrange(20)]
     phaser = phased_orderfile.PhasedAnalyzer(
         None, TestSymbolOffsetProcessor(symbols))
