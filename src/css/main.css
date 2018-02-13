@@ -511,15 +511,6 @@ body.mirror #effects li canvas {
   width: 32px;
 }
 
-.buttons #toggle-mic {
-  -webkit-appearance: none;
-  background-image: -webkit-image-set(
-      url(../images/camera_button_mic.png) 1x,
-      url(../images/2x/camera_button_mic.png) 2x);
-  height: 32px;
-  width: 32px;
-}
-
 .buttons #toggle-camera {
   background-image: -webkit-image-set(
       url(../images/camera_button_toggle.png) 1x,
@@ -550,8 +541,7 @@ body.mirror #effects li canvas {
 .buttons #toggle-record.toggle-off,
 .buttons #toggle-timer:not(:checked),
 .buttons #toggle-multi:not(:checked),
-.buttons #toggle-mirror:not(:checked),
-.buttons #toggle-mic:not(:checked) {
+.buttons #toggle-mirror:not(:checked) {
   background-position: 0 -32px;
 }
 
