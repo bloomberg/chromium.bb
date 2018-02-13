@@ -26,6 +26,8 @@
 
   async function onRequestFinished(event) {
     var request = event.data;
+    if (!/post-target\.cgi/.test(request.url()))
+      return;
     TestRunner.addResult(request.url());
     TestRunner.addObject(await NetworkLog.HAREntry.build(request), NetworkTestRunner.HARPropertyFormattersWithSize);
     TestRunner.completeTest();

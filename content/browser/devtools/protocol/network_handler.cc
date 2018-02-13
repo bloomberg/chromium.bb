@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/queue.h"
+#include "base/json/json_reader.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -41,16 +42,21 @@
 #include "content/public/common/content_switches.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_bytes_element_reader.h"
+#include "net/cert/ct_sct_to_string.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/ssl/ssl_cipher_suite_names.h"
+#include "net/ssl/ssl_connection_status_flags.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace content {
 namespace protocol {
@@ -594,7 +600,7 @@ double timeDelta(base::TimeTicks time,
   return time.is_null() ? invalid_value : (time - start).InMillisecondsF();
 }
 
-std::unique_ptr<Network::ResourceTiming> getTiming(
+std::unique_ptr<Network::ResourceTiming> GetTiming(
     const net::LoadTimingInfo& load_timing) {
   const base::TimeTicks kNullTicks;
   return Network::ResourceTiming::Create()
@@ -628,7 +634,7 @@ std::unique_ptr<Network::ResourceTiming> getTiming(
       .Build();
 }
 
-std::unique_ptr<Object> getHeaders(const base::StringPairs& pairs) {
+std::unique_ptr<Object> GetHeaders(const base::StringPairs& pairs) {
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
   for (const auto& pair : pairs) {
     headers_dict->setString(pair.first, pair.second);
@@ -636,18 +642,18 @@ std::unique_ptr<Object> getHeaders(const base::StringPairs& pairs) {
   return Object::fromValue(headers_dict.get(), nullptr);
 }
 
-String getProtocol(const GURL& url, const network::ResourceResponseHead& head) {
-  std::string protocol = head.alpn_negotiated_protocol;
+String GetProtocol(const GURL& url, const network::ResourceResponseInfo& info) {
+  std::string protocol = info.alpn_negotiated_protocol;
   if (protocol.empty() || protocol == "unknown") {
-    if (head.was_fetched_via_spdy) {
+    if (info.was_fetched_via_spdy) {
       protocol = "spdy";
     } else if (url.SchemeIsHTTPOrHTTPS()) {
       protocol = "http";
-      if (head.headers->GetHttpVersion() == net::HttpVersion(0, 9))
+      if (info.headers->GetHttpVersion() == net::HttpVersion(0, 9))
         protocol = "http/0.9";
-      else if (head.headers->GetHttpVersion() == net::HttpVersion(1, 0))
+      else if (info.headers->GetHttpVersion() == net::HttpVersion(1, 0))
         protocol = "http/1.0";
-      else if (head.headers->GetHttpVersion() == net::HttpVersion(1, 1))
+      else if (info.headers->GetHttpVersion() == net::HttpVersion(1, 1))
         protocol = "http/1.1";
     } else {
       protocol = url.scheme();
@@ -688,6 +694,54 @@ void ConfigureServiceWorkerContextOnIO() {
   std::set<std::string> headers;
   headers.insert(kDevToolsEmulateNetworkConditionsClientId);
   content::ServiceWorkerContext::AddExcludedHeadersForFetchEvent(headers);
+}
+
+bool GetPostData(const net::URLRequest* request, std::string* post_data) {
+  if (!request->has_upload())
+    return false;
+
+  const net::UploadDataStream* stream = request->get_upload();
+  if (!stream->GetElementReaders())
+    return false;
+
+  const auto* element_readers = stream->GetElementReaders();
+
+  if (element_readers->empty())
+    return false;
+
+  post_data->clear();
+  for (const auto& element_reader : *element_readers) {
+    const net::UploadBytesElementReader* reader =
+        element_reader->AsBytesReader();
+    // TODO(caseq): Also support blobs.
+    if (!reader) {
+      post_data->clear();
+      return false;
+    }
+    // TODO(caseq): This should really be base64 encoded.
+    post_data->append(reader->bytes(), reader->length());
+  }
+  return true;
+}
+
+// TODO(caseq): all problems in the above function should be fixed here as well.
+bool GetPostData(const network::ResourceRequestBody& request_body,
+                 std::string* result) {
+  const std::vector<network::DataElement>* elements = request_body.elements();
+  if (elements->empty())
+    return false;
+  for (const auto& element : *elements) {
+    if (element.type() != network::DataElement::TYPE_BYTES)
+      return false;
+    result->append(element.bytes(), element.length());
+  }
+  return true;
+}
+
+std::string StripFragment(const GURL& url) {
+  url::Replacements<char> replacements;
+  replacements.ClearRef();
+  return url.ReplaceComponents(replacements).spec();
 }
 
 }  // namespace
@@ -979,18 +1033,237 @@ Response NetworkHandler::SetBypassServiceWorker(bool bypass) {
   return Response::FallThrough();
 }
 
-void NetworkHandler::NavigationPreloadRequestSent(
-    const std::string& request_id,
-    const network::ResourceRequest& request) {
+namespace {
+
+std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
+    const network::ResourceResponseInfo& info) {
+  if (info.certificate.empty())
+    return nullptr;
+  scoped_refptr<net::X509Certificate> cert(
+      net::X509Certificate::CreateFromBytes(info.certificate[0].data(),
+                                            info.certificate[0].size()));
+  if (!cert)
+    return nullptr;
+
+  std::unique_ptr<
+      protocol::Array<protocol::Network::SignedCertificateTimestamp>>
+      signed_certificate_timestamp_list =
+          protocol::Array<Network::SignedCertificateTimestamp>::create();
+  for (auto const& sct : info.signed_certificate_timestamps) {
+    std::unique_ptr<protocol::Network::SignedCertificateTimestamp>
+        signed_certificate_timestamp =
+            Network::SignedCertificateTimestamp::Create()
+                .SetStatus(net::ct::StatusToString(sct.status))
+                .SetOrigin(net::ct::OriginToString(sct.sct->origin))
+                .SetLogDescription(sct.sct->log_description)
+                .SetLogId(base::HexEncode(sct.sct->log_id.c_str(),
+                                          sct.sct->log_id.length()))
+                .SetTimestamp(
+                    (sct.sct->timestamp - base::Time()).InMillisecondsF())
+                .SetHashAlgorithm(net::ct::HashAlgorithmToString(
+                    sct.sct->signature.hash_algorithm))
+                .SetSignatureAlgorithm(net::ct::SignatureAlgorithmToString(
+                    sct.sct->signature.signature_algorithm))
+                .SetSignatureData(
+                    base::HexEncode(sct.sct->signature.signature_data.c_str(),
+                                    sct.sct->signature.signature_data.length()))
+                .Build();
+    signed_certificate_timestamp_list->addItem(
+        std::move(signed_certificate_timestamp));
+  }
+  std::vector<std::string> san_dns;
+  std::vector<std::string> san_ip;
+  cert->GetSubjectAltName(&san_dns, &san_ip);
+  std::unique_ptr<Array<String>> san_list = Array<String>::create();
+  for (const std::string& san : san_dns)
+    san_list->addItem(san);
+  for (const std::string& san : san_ip) {
+    san_list->addItem(
+        net::IPAddress(reinterpret_cast<const uint8_t*>(san.data()), san.size())
+            .ToString());
+  }
+
+  int ssl_version =
+      net::SSLConnectionStatusToVersion(info.ssl_connection_status);
+  const char* protocol;
+  net::SSLVersionToString(&protocol, ssl_version);
+
+  const char* key_exchange;
+  const char* cipher;
+  const char* mac;
+  bool is_aead;
+  bool is_tls13;
+  uint16_t cipher_suite =
+      net::SSLConnectionStatusToCipherSuite(info.ssl_connection_status);
+  net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
+                               &is_tls13, cipher_suite);
+  if (key_exchange == nullptr) {
+    DCHECK(is_tls13);
+    key_exchange = "";
+  }
+
+  std::unique_ptr<protocol::Network::SecurityDetails> security_details =
+      protocol::Network::SecurityDetails::Create()
+          .SetProtocol(protocol)
+          .SetKeyExchange(key_exchange)
+          .SetCipher(cipher)
+          .SetSubjectName(cert->subject().common_name)
+          .SetSanList(std::move(san_list))
+          .SetIssuer(cert->issuer().common_name)
+          .SetValidFrom(cert->valid_start().ToDoubleT())
+          .SetValidTo(cert->valid_expiry().ToDoubleT())
+          .SetCertificateId(0)  // Keep this in protocol for compatability.
+          .SetSignedCertificateTimestampList(
+              std::move(signed_certificate_timestamp_list))
+          .Build();
+
+  if (info.ssl_key_exchange_group != 0) {
+    const char* key_exchange_group =
+        SSL_get_curve_name(info.ssl_key_exchange_group);
+    if (key_exchange_group)
+      security_details->SetKeyExchangeGroup(key_exchange_group);
+  }
+  if (mac)
+    security_details->SetMac(mac);
+
+  return security_details;
+}
+
+std::unique_ptr<Network::Response> BuildResponse(
+    const GURL& url,
+    const network::ResourceResponseInfo& info) {
+  std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
+  if (info.headers) {
+    size_t iterator = 0;
+    std::string name;
+    std::string value;
+    while (info.headers->EnumerateHeaderLines(&iterator, &name, &value))
+      headers_dict->setString(name, value);
+  }
+
+  auto response =
+      Network::Response::Create()
+          .SetUrl(StripFragment(url))
+          .SetStatus(info.headers ? info.headers->response_code() : 0)
+          .SetStatusText(info.headers ? info.headers->GetStatusText() : "")
+          .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
+          .SetMimeType(info.mime_type)
+          .SetConnectionReused(info.load_timing.socket_reused)
+          .SetConnectionId(info.load_timing.socket_log_id)
+          .SetSecurityState(securityState(url, info.cert_status))
+          .SetEncodedDataLength(info.encoded_data_length)
+          .SetTiming(GetTiming(info.load_timing))
+          .SetFromDiskCache(!info.load_timing.request_start_time.is_null() &&
+                            info.response_time <
+                                info.load_timing.request_start_time)
+          .Build();
+  response->SetFromServiceWorker(info.was_fetched_via_service_worker);
+  network::HttpRawRequestResponseInfo* raw_info =
+      info.raw_request_response_info.get();
+  if (raw_info) {
+    if (raw_info->http_status_code) {
+      response->SetStatus(raw_info->http_status_code);
+      response->SetStatusText(raw_info->http_status_text);
+    }
+    if (raw_info->request_headers.size()) {
+      response->SetRequestHeaders(GetHeaders(raw_info->request_headers));
+    }
+    if (!raw_info->request_headers_text.empty()) {
+      response->SetRequestHeadersText(raw_info->request_headers_text);
+    }
+    if (raw_info->response_headers.size())
+      response->SetHeaders(GetHeaders(raw_info->response_headers));
+    if (!raw_info->response_headers_text.empty())
+      response->SetHeadersText(raw_info->response_headers_text);
+  }
+  response->SetProtocol(GetProtocol(url, info));
+  response->SetRemoteIPAddress(info.socket_address.HostForURL());
+  response->SetRemotePort(info.socket_address.port());
+  response->SetSecurityDetails(BuildSecurityDetails(info));
+
+  return response;
+}
+}  // namespace
+
+void NetworkHandler::NavigationRequestWillBeSent(
+    const NavigationRequest& nav_request) {
+  if (!enabled_)
+    return;
+
+  net::HttpRequestHeaders headers;
+  headers.AddHeadersFromString(nav_request.begin_params()->headers);
+  std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
+  for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();)
+    headers_dict->setString(it.name(), it.value());
+
+  const CommonNavigationParams& common_params = nav_request.common_params();
+  GURL referrer = common_params.referrer.url;
+  // This is normally added down the stack, so we have to fake it here.
+  if (!referrer.is_empty())
+    headers_dict->setString(net::HttpRequestHeaders::kReferer, referrer.spec());
+
+  std::unique_ptr<Network::Response> redirect_response;
+  const RequestNavigationParams& request_params = nav_request.request_params();
+  if (!request_params.redirect_response.empty()) {
+    redirect_response = BuildResponse(request_params.redirects.back(),
+                                      request_params.redirect_response.back());
+  }
+  auto request =
+      Network::Request::Create()
+          .SetUrl(StripFragment(common_params.url))
+          .SetMethod(common_params.method)
+          .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
+          .SetInitialPriority(resourcePriority(net::HIGHEST))
+          .SetReferrerPolicy(referrerPolicy(common_params.referrer.policy))
+          .Build();
+
+  std::string post_data;
+  if (common_params.post_data &&
+      GetPostData(*common_params.post_data, &post_data)) {
+    request->SetPostData(post_data);
+  }
+  // TODO(caseq): report potentially blockable types
+  request->SetMixedContentType(Security::MixedContentTypeEnum::None);
+
+  std::unique_ptr<Network::Initiator> initiator;
+  base::DictionaryValue* initiator_value =
+      nav_request.begin_params()->devtools_initiator.get();
+  if (initiator_value) {
+    ErrorSupport ignored_errors;
+    initiator = Network::Initiator::fromValue(
+        toProtocolValue(initiator_value, 1000).get(), &ignored_errors);
+  }
+  if (!initiator) {
+    initiator = Network::Initiator::Create()
+                    .SetType(Network::Initiator::TypeEnum::Other)
+                    .Build();
+  }
+  std::string id = nav_request.devtools_navigation_token().ToString();
+  double current_ticks =
+      (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+  double current_wall_time = base::Time::Now().ToDoubleT();
+  std::string frame_token =
+      nav_request.frame_tree_node()->devtools_frame_token().ToString();
+  frontend_->RequestWillBeSent(
+      id, id, StripFragment(common_params.url), std::move(request),
+      current_ticks, current_wall_time, std::move(initiator),
+      std::move(redirect_response),
+      std::string(Page::ResourceTypeEnum::Document), std::move(frame_token));
+}
+
+void NetworkHandler::RequestSent(const std::string& request_id,
+                                 const std::string& loader_id,
+                                 const network::ResourceRequest& request,
+                                 const char* initiator_type) {
   if (!enabled_)
     return;
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
   for (net::HttpRequestHeaders::Iterator it(request.headers); it.GetNext();)
     headers_dict->setString(it.name(), it.value());
   frontend_->RequestWillBeSent(
-      request_id, "" /* loader_id */, request.url.spec(),
+      request_id, loader_id, StripFragment(request.url),
       Network::Request::Create()
-          .SetUrl(request.url.spec())
+          .SetUrl(StripFragment(request.url))
           .SetMethod(request.method)
           .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
           .SetInitialPriority(resourcePriority(request.priority))
@@ -999,83 +1272,42 @@ void NetworkHandler::NavigationPreloadRequestSent(
       base::TimeTicks::Now().ToInternalValue() /
           static_cast<double>(base::Time::kMicrosecondsPerSecond),
       base::Time::Now().ToDoubleT(),
-      Network::Initiator::Create()
-          .SetType(Network::Initiator::TypeEnum::Preload)
-          .Build(),
+      Network::Initiator::Create().SetType(initiator_type).Build(),
       std::unique_ptr<Network::Response>(),
       std::string(Page::ResourceTypeEnum::Other));
 }
 
-void NetworkHandler::NavigationPreloadResponseReceived(
-    const std::string& request_id,
-    const GURL& url,
-    const network::ResourceResponseHead& head) {
+void NetworkHandler::ResponseReceived(const std::string& request_id,
+                                      const std::string& loader_id,
+                                      const GURL& url,
+                                      const char* resource_type,
+                                      const network::ResourceResponseHead& head,
+                                      Maybe<std::string> frame_id) {
   if (!enabled_)
     return;
-  std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
-  size_t iterator = 0;
-  std::string name;
-  std::string value;
-  while (head.headers->EnumerateHeaderLines(&iterator, &name, &value))
-    headers_dict->setString(name, value);
-  std::unique_ptr<Network::Response> response(
-      Network::Response::Create()
-          .SetUrl(url.spec())
-          .SetStatus(head.headers->response_code())
-          .SetStatusText(head.headers->GetStatusText())
-          .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
-          .SetMimeType(head.mime_type)
-          .SetConnectionReused(head.load_timing.socket_reused)
-          .SetConnectionId(head.load_timing.socket_log_id)
-          .SetSecurityState(securityState(url, head.cert_status))
-          .SetEncodedDataLength(head.encoded_data_length)
-          .SetTiming(getTiming(head.load_timing))
-          .SetFromDiskCache(!head.load_timing.request_start_time.is_null() &&
-                            head.response_time <
-                                head.load_timing.request_start_time)
-          .Build());
-  if (head.raw_request_response_info) {
-    if (head.raw_request_response_info->http_status_code) {
-      response->SetStatus(head.raw_request_response_info->http_status_code);
-      response->SetStatusText(head.raw_request_response_info->http_status_text);
-    }
-    if (head.raw_request_response_info->request_headers.size()) {
-      response->SetRequestHeaders(
-          getHeaders(head.raw_request_response_info->request_headers));
-    }
-    if (!head.raw_request_response_info->request_headers_text.empty()) {
-      response->SetRequestHeadersText(
-          head.raw_request_response_info->request_headers_text);
-    }
-    if (head.raw_request_response_info->response_headers.size())
-      response->SetHeaders(
-          getHeaders(head.raw_request_response_info->response_headers));
-    if (!head.raw_request_response_info->response_headers_text.empty())
-      response->SetHeadersText(
-          head.raw_request_response_info->response_headers_text);
-  }
-  response->SetProtocol(getProtocol(url, head));
-  response->SetRemoteIPAddress(head.socket_address.HostForURL());
-  response->SetRemotePort(head.socket_address.port());
+  std::unique_ptr<Network::Response> response(BuildResponse(url, head));
   frontend_->ResponseReceived(
-      request_id, "" /* loader_id */,
+      request_id, loader_id,
       base::TimeTicks::Now().ToInternalValue() /
           static_cast<double>(base::Time::kMicrosecondsPerSecond),
-      Page::ResourceTypeEnum::Other, std::move(response));
+      resource_type, std::move(response), std::move(frame_id));
 }
 
-void NetworkHandler::NavigationPreloadCompleted(
+void NetworkHandler::LoadingComplete(
     const std::string& request_id,
+    const char* resource_type,
     const network::URLLoaderCompletionStatus& status) {
   if (!enabled_)
     return;
+
   if (status.error_code != net::OK) {
     frontend_->LoadingFailed(
         request_id,
         base::TimeTicks::Now().ToInternalValue() /
             static_cast<double>(base::Time::kMicrosecondsPerSecond),
-        Page::ResourceTypeEnum::Other, net::ErrorToString(status.error_code),
+        resource_type, net::ErrorToString(status.error_code),
         status.error_code == net::Error::ERR_ABORTED);
+    return;
   }
   frontend_->LoadingFinished(
       request_id,
@@ -1102,9 +1334,9 @@ void NetworkHandler::NavigationFailed(NavigationRequest* navigation_request) {
     headers_dict->setString(it.name(), it.value());
   frontend_->RequestWillBeSent(
       request_id, "" /* loader_id */,
-      navigation_request->common_params().url.spec(),
+      StripFragment(navigation_request->common_params().url),
       Network::Request::Create()
-          .SetUrl(navigation_request->common_params().url.spec())
+          .SetUrl(StripFragment(navigation_request->common_params().url))
           .SetMethod(navigation_request->common_params().method)
           .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
           // Note: the priority value is copied from
@@ -1175,36 +1407,6 @@ DispatchResponse NetworkHandler::SetRequestInterception(
 
   return Response::OK();
 }
-
-namespace {
-bool GetPostData(const net::URLRequest* request, std::string* post_data) {
-  if (!request->has_upload())
-    return false;
-
-  const net::UploadDataStream* stream = request->get_upload();
-  if (!stream->GetElementReaders())
-    return false;
-
-  const auto* element_readers = stream->GetElementReaders();
-
-  if (element_readers->empty())
-    return false;
-
-  *post_data = "";
-  for (const auto& element_reader : *element_readers) {
-    const net::UploadBytesElementReader* reader =
-        element_reader->AsBytesReader();
-    // TODO(caseq): Also support blobs.
-    if (!reader) {
-      *post_data = "";
-      return false;
-    }
-    // TODO(alexclarke): This should really be base64 encoded.
-    *post_data += std::string(reader->bytes(), reader->length());
-  }
-  return true;
-}
-}  // namespace
 
 void NetworkHandler::ContinueInterceptedRequest(
     const std::string& interception_id,
@@ -1322,9 +1524,9 @@ bool NetworkHandler::ShouldCancelNavigation(
   return interceptor && interceptor->ShouldCancelNavigation(global_request_id);
 }
 
-void NetworkHandler::WillSendNavigationRequest(net::HttpRequestHeaders* headers,
-                                               bool* skip_service_worker,
-                                               bool* disable_cache) {
+void NetworkHandler::ApplyOverrides(net::HttpRequestHeaders* headers,
+                                    bool* skip_service_worker,
+                                    bool* disable_cache) {
   headers->SetHeader(kDevToolsEmulateNetworkConditionsClientId, host_id_);
   if (!user_agent_.empty())
     headers->SetHeader(net::HttpRequestHeaders::kUserAgent, user_agent_);

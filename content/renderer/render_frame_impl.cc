@@ -21,6 +21,7 @@
 #include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/i18n/char_iterator.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -4051,6 +4052,8 @@ void RenderFrameImpl::DidStartProvisionalLoad(
         pending_navigation_info_->triggering_event_info;
     info.form = pending_navigation_info_->form;
     info.source_location = pending_navigation_info_->source_location;
+    info.devtools_initiator_info =
+        pending_navigation_info_->devtools_initiator_info;
 
     pending_navigation_info_.reset(nullptr);
     BeginNavigation(info);
@@ -6689,6 +6692,28 @@ void RenderFrameImpl::PrepareRenderViewForNavigation(
       request_params.current_history_list_length;
 }
 
+namespace {
+std::unique_ptr<base::DictionaryValue> GetDevToolsInitiator(
+    const WebString& initiator_str) {
+  if (initiator_str.IsNull())
+    return nullptr;
+  std::unique_ptr<base::DictionaryValue> initiator =
+      base::DictionaryValue::From(base::JSONReader::Read(initiator_str.Utf8()));
+  if (!initiator)
+    return nullptr;
+  // TODO(kozy,caseq): the hack below is due to the fact that initiators include
+  // the chain of async callstacks that results in a tree of Values so deep
+  // that it triggers mojo structure nesting limit upon deserialization.
+  // See https://crbug.com/809996 for more details.
+  // We trim async stacks here, but it should be possible to capture locations
+  // without async stacks (or with custom limit on their number) instead.
+  base::Value* parent = initiator->FindPath({"stack", "parent"});
+  if (parent && parent->is_dict())
+    parent->RemoveKey("parent");
+  return initiator;
+}
+}  // namespace
+
 void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
   browser_side_navigation_pending_ = true;
   browser_side_navigation_pending_url_ = info.url_request.Url();
@@ -6764,6 +6789,8 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
     client_side_redirect_url = frame_->GetDocument().Url();
 
   int load_flags = GetLoadFlagsForWebURLRequest(info.url_request);
+  std::unique_ptr<base::DictionaryValue> initiator =
+      GetDevToolsInitiator(info.devtools_initiator_info);
   mojom::BeginNavigationParamsPtr begin_navigation_params =
       mojom::BeginNavigationParams::New(
           GetWebURLRequestHeadersAsString(info.url_request), load_flags,
@@ -6772,7 +6799,7 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
           GetRequestContextTypeForWebURLRequest(info.url_request),
           GetMixedContentContextTypeForWebURLRequest(info.url_request),
           is_form_submission, searchable_form_url, searchable_form_encoding,
-          initiator_origin, client_side_redirect_url);
+          initiator_origin, client_side_redirect_url, std::move(initiator));
 
   GetFrameHost()->BeginNavigation(MakeCommonNavigationParams(info, load_flags),
                                   std::move(begin_navigation_params));
@@ -7344,7 +7371,8 @@ RenderFrameImpl::PendingNavigationInfo::PendingNavigationInfo(
       client_redirect(info.is_client_redirect),
       triggering_event_info(info.triggering_event_info),
       form(info.form),
-      source_location(info.source_location) {}
+      source_location(info.source_location),
+      devtools_initiator_info(info.devtools_initiator_info) {}
 
 void RenderFrameImpl::BindWidget(mojom::WidgetRequest request) {
   GetRenderWidget()->SetWidgetBinding(std::move(request));
