@@ -61,6 +61,11 @@ class CHROMEOS_EXPORT FakeSmbProviderClient : public SmbProviderClient {
                  base::ScopedFD temp_fd,
                  StatusCallback callback) override;
 
+  void CreateDirectory(int32_t mount_id,
+                       const base::FilePath& directory_path,
+                       bool recursive,
+                       StatusCallback callback) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeSmbProviderClient);
 };
