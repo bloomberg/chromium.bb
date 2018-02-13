@@ -79,7 +79,8 @@ WebViewWebDataServiceWrapperFactory::BuildServiceInstanceFor(
       browser_state_path,
       ApplicationContext::GetInstance()->GetApplicationLocale(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
-      base::Callback<void(syncer::ModelType)>(), &DoNothingOnErrorCallback);
+      base::Callback<void(syncer::ModelType)>(),
+      base::BindRepeating(&DoNothingOnErrorCallback));
 }
 
 bool WebViewWebDataServiceWrapperFactory::ServiceIsNULLWhileTesting() const {

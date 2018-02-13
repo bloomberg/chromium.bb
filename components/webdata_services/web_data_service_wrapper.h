@@ -57,9 +57,10 @@ class WebDataServiceWrapper : public KeyedService {
   // database.
   // |diagnostics| contains information about the underlying database
   // which can help in identifying the cause of the error.
-  using ShowErrorCallback = void (*)(ErrorType error_type,
-                                     sql::InitStatus init_status,
-                                     const std::string& diagnostics);
+  using ShowErrorCallback =
+      base::RepeatingCallback<void(ErrorType error_type,
+                                   sql::InitStatus init_status,
+                                   const std::string& diagnostics)>;
 
   // Constructor for WebDataServiceWrapper that initializes the different
   // WebDataServices and starts the synchronization services using |flare|.
