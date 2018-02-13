@@ -856,14 +856,6 @@ def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters):
     file_path = file_coverage_data['filename']
     summary = file_coverage_data['summary']
 
-    # TODO(crbug.com/797345): Currently, [SOURCES] parameter doesn't apply to
-    # llvm-cov export command, so work it around by manually filter the paths.
-    # Remove this logic once the bug is fixed and clang has rolled past it.
-    if filters and not any(
-        os.path.abspath(file_path).startswith(os.path.abspath(filter))
-        for filter in filters):
-      continue
-
     if summary['lines']['count'] == 0:
       continue
 
