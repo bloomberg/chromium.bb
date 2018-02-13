@@ -46,9 +46,6 @@ class VIZ_SERVICE_EXPORT SurfaceClient {
   virtual void ReceiveFromChild(
       const std::vector<TransferableResource>& resources) = 0;
 
-  // Returns the BeginFrameArgs of the last BeginFrame issued.
-  virtual const BeginFrameArgs& LastUsedBeginFrameArgs() const = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SurfaceClient);
 };

@@ -100,10 +100,11 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   //       become available or a deadline hits.
   std::vector<SurfaceId> activation_dependencies;
 
-  // This indicates a non-default deadline until this CompositorFrame should
-  // be forcibly activated. This deadline may be lower-bounded by the default
-  // synchronization deadline specified by the system.
-  base::Optional<FrameDeadline> deadline;
+  // This specifies a deadline for this CompositorFrame to synchronize with its
+  // activation dependencies. Once this deadline passes, this CompositorFrame
+  // should be forcibly activated. This deadline may be lower-bounded by the
+  // default synchronization deadline specified by the system.
+  FrameDeadline deadline;
 
   // This is a value that allows the browser to associate compositor frames
   // with the content that they represent -- typically top-level page loads.

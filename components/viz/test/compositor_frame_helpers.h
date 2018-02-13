@@ -57,7 +57,7 @@ class CompositorFrameBuilder {
       std::vector<SurfaceId> referenced_surfaces);
   CompositorFrameBuilder& SetActivationDependencies(
       std::vector<SurfaceId> activation_dependencies);
-  CompositorFrameBuilder& SetDeadline(base::Optional<FrameDeadline> deadline);
+  CompositorFrameBuilder& SetDeadline(const FrameDeadline& deadline);
   CompositorFrameBuilder& SetFrameToken(uint32_t frame_token);
   CompositorFrameBuilder& SetContentSourceId(uint32_t content_source_id);
   CompositorFrameBuilder& SetPresentationToken(uint32_t presentation_token);

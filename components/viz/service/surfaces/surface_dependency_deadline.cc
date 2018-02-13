@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/tick_clock.h"
+#include "components/viz/common/quads/frame_deadline.h"
 
 namespace viz {
 
@@ -27,13 +28,12 @@ SurfaceDependencyDeadline::~SurfaceDependencyDeadline() {
   DCHECK(!deadline_);
 }
 
-bool SurfaceDependencyDeadline::Set(base::TimeTicks frame_time,
-                                    uint32_t number_of_frames_to_deadline,
-                                    base::TimeDelta frame_interval) {
-  DCHECK_GT(number_of_frames_to_deadline, 0u);
+bool SurfaceDependencyDeadline::Set(const FrameDeadline& frame_deadline) {
+  DCHECK_GT(frame_deadline.deadline_in_frames(), 0u);
   CancelInternal(false);
-  start_time_ = frame_time;
-  deadline_ = start_time_ + number_of_frames_to_deadline * frame_interval;
+  start_time_ = frame_deadline.frame_start_time();
+  deadline_ = start_time_ + frame_deadline.deadline_in_frames() *
+                                frame_deadline.frame_interval();
   bool deadline_in_future = deadline_ > tick_clock_->NowTicks();
   begin_frame_source_->AddObserver(this);
   return deadline_in_future;

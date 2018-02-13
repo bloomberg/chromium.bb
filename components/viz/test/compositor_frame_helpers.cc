@@ -107,7 +107,7 @@ CompositorFrameBuilder& CompositorFrameBuilder::SetActivationDependencies(
 }
 
 CompositorFrameBuilder& CompositorFrameBuilder::SetDeadline(
-    base::Optional<FrameDeadline> deadline) {
+    const FrameDeadline& deadline) {
   frame_->metadata.deadline = deadline;
   return *this;
 }

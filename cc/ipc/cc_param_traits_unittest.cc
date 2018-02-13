@@ -454,7 +454,9 @@ TEST_F(CCParamTraitsTest, AllQuads) {
   frame_in.render_pass_list.push_back(std::move(pass_in));
   frame_in.metadata.begin_frame_ack.sequence_number =
       viz::BeginFrameArgs::kStartingFrameNumber;
-  frame_in.metadata.deadline = FrameDeadline(4u, true);
+  const base::TimeTicks now = base::TimeTicks::Now();
+  frame_in.metadata.deadline =
+      FrameDeadline(now, 4u, base::TimeDelta::FromMilliseconds(16), true);
 
   IPC::ParamTraits<CompositorFrame>::Write(&msg, frame_in);
 
@@ -462,7 +464,8 @@ TEST_F(CCParamTraitsTest, AllQuads) {
   base::PickleIterator iter(msg);
   EXPECT_TRUE(IPC::ParamTraits<CompositorFrame>::Read(&msg, &iter, &frame_out));
 
-  EXPECT_EQ(FrameDeadline(4u, true), frame_out.metadata.deadline);
+  EXPECT_EQ(FrameDeadline(now, 4u, base::TimeDelta::FromMilliseconds(16), true),
+            frame_out.metadata.deadline);
 
   // Make sure the out and cmp RenderPasses match.
   std::unique_ptr<RenderPass> child_pass_out =

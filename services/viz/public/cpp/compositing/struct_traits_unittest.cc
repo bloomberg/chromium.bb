@@ -653,7 +653,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   activation_dependencies.push_back(id2);
   uint32_t frame_token = 0xdeadbeef;
   uint64_t begin_frame_ack_sequence_number = 0xdeadbeef;
-  FrameDeadline frame_deadline(4u, true);
+  FrameDeadline frame_deadline(base::TimeTicks(), 4u, base::TimeDelta(), true);
 
   CompositorFrameMetadata input;
   input.device_scale_factor = device_scale_factor;

@@ -104,10 +104,6 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
 
   bool InheritActivationDeadlineFrom(const SurfaceDependencyDeadline& deadline);
 
-  // Sets a deadline a number of frames ahead to active the currently pending
-  // CompositorFrame held by this surface.
-  void SetActivationDeadline(uint32_t number_of_frames_to_deadline);
-
   void SetPreviousFrameSurface(Surface* surface);
 
   // Increments the reference count on resources specified by |resources|.
@@ -237,7 +233,8 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   // Updates the set of unresolved activation dependenices of the
   // |current_frame|. If the deadline requested by the frame is 0 then no
   // dependencies will be added even if they're not yet available.
-  uint32_t UpdateActivationDependencies(const CompositorFrame& current_frame);
+  FrameDeadline UpdateActivationDependencies(
+      const CompositorFrame& current_frame);
   void ComputeChangeInDependencies(
       const base::flat_map<FrameSinkId, SequenceNumbers>& new_dependencies);
 
@@ -249,10 +246,6 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
   static void TakeLatencyInfoFromFrame(
       CompositorFrame* frame,
       std::vector<ui::LatencyInfo>* latency_info);
-
-  base::TimeTicks GetBeginFrameTime();
-
-  base::TimeDelta GetBeginFrameInterval();
 
   const SurfaceInfo surface_info_;
   SurfaceId previous_frame_surface_id_;
