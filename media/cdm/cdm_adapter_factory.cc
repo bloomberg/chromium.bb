@@ -45,10 +45,10 @@ void CdmAdapterFactory::Create(
     return;
   }
 
-  CdmAdapter::Create(key_system, cdm_config, std::move(cdm_helper),
-                     session_message_cb, session_closed_cb,
-                     session_keys_change_cb, session_expiration_update_cb,
-                     cdm_created_cb);
+  CdmAdapter::Create(key_system, security_origin, cdm_config,
+                     std::move(cdm_helper), session_message_cb,
+                     session_closed_cb, session_keys_change_cb,
+                     session_expiration_update_cb, cdm_created_cb);
 }
 
 }  // namespace media
