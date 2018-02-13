@@ -10,7 +10,13 @@
 command=$(python $(dirname -- "$0")/autoninja.py "$@")
 echo $command
 $command
-if [ $? -eq 0 ] && [ "$NINJA_SUMMARIZE_BUILD" == "1" ]; then
-  python $(dirname -- "$0")/post_build_ninja_summary.py $@
+if [ $? -eq 0 ]; then
+  if [ "$NINJA_SUMMARIZE_BUILD" == "1" ]; then
+    python $(dirname -- "$0")/post_build_ninja_summary.py $@
+  fi
+  exit
 fi
+# Return an error code of 1 so that if a developer types:
+# "autoninja chrome && chrome" then chrome won't run if the build fails.
+exit 1
 
