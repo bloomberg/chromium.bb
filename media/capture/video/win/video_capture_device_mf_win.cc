@@ -243,108 +243,16 @@ static const CapabilityWin& GetBestMatchedPhotoCapability(
   return *best_match;
 }
 
-HRESULT ExecuteHresultCallbackWithRetries(
-    base::RepeatingCallback<HRESULT()> callback) {
-  // Retry callback execution on MF_E_INVALIDREQUEST.
-  // MF_E_INVALIDREQUEST is not documented in MediaFoundation documentation.
-  // It could mean that MediaFoundation or the underlying device can be in a
-  // state that reject these calls. Since MediaFoundation gives no intel about
-  // that state beginning and ending (i.e. via some kind of event), we retry the
-  // call until it succeed.
-  HRESULT hr;
-  int retry_count = 0;
-  do {
-    hr = callback.Run();
-    if (FAILED(hr))
-      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
-
-    // Give up after ~10 seconds
-  } while (hr == MF_E_INVALIDREQUEST && retry_count++ < 200);
-
-  return hr;
-}
-
-HRESULT GetDeviceStreamCount(IMFCaptureSource* source, DWORD* count) {
-  // Sometimes, GetDeviceStreamCount returns an
-  // undocumented MF_E_INVALIDREQUEST. Retrying solves the issue.
-  return ExecuteHresultCallbackWithRetries(base::BindRepeating(
-      [](IMFCaptureSource* source, DWORD* count) {
-        return source->GetDeviceStreamCount(count);
-      },
-      source, count));
-}
-
-HRESULT GetDeviceStreamCategory(
-    IMFCaptureSource* source,
-    DWORD stream_index,
-    MF_CAPTURE_ENGINE_STREAM_CATEGORY* stream_category) {
-  // We believe that GetDeviceStreamCategory could be affected by the same
-  // behaviour of GetDeviceStreamCount and GetAvailableDeviceMediaType
-  return ExecuteHresultCallbackWithRetries(base::BindRepeating(
-      [](IMFCaptureSource* source, DWORD stream_index,
-         MF_CAPTURE_ENGINE_STREAM_CATEGORY* stream_category) {
-        return source->GetDeviceStreamCategory(stream_index, stream_category);
-      },
-      source, stream_index, stream_category));
-}
-
-HRESULT GetAvailableDeviceMediaType(IMFCaptureSource* source,
-                                    DWORD stream_index,
-                                    DWORD media_type_index,
-                                    IMFMediaType** type) {
-  // Rarely, for some unknown reason, GetAvailableDeviceMediaType returns an
-  // undocumented MF_E_INVALIDREQUEST. Retrying solves the issue.
-  return ExecuteHresultCallbackWithRetries(base::BindRepeating(
-      [](IMFCaptureSource* source, DWORD stream_index, DWORD media_type_index,
-         IMFMediaType** type) {
-        return source->GetAvailableDeviceMediaType(stream_index,
-                                                   media_type_index, type);
-      },
-      source, stream_index, media_type_index, type));
-}
-
-HRESULT FillCapabilities(IMFCaptureSource* source,
-                         bool photo,
-                         CapabilityList* capabilities) {
-  DWORD stream_count = 0;
-  HRESULT hr = GetDeviceStreamCount(source, &stream_count);
+HRESULT CreateCaptureEngine(IMFCaptureEngine** engine) {
+  ComPtr<IMFCaptureEngineClassFactory> capture_engine_class_factory;
+  HRESULT hr = CoCreateInstance(
+      CLSID_MFCaptureEngineClassFactory, NULL, CLSCTX_INPROC_SERVER,
+      IID_PPV_ARGS(capture_engine_class_factory.GetAddressOf()));
   if (FAILED(hr))
     return hr;
 
-  for (DWORD stream_index = 0; stream_index < stream_count; stream_index++) {
-    MF_CAPTURE_ENGINE_STREAM_CATEGORY stream_category;
-    hr = GetDeviceStreamCategory(source, stream_index, &stream_category);
-    if (FAILED(hr))
-      return hr;
-
-    if ((photo && stream_category !=
-                      MF_CAPTURE_ENGINE_STREAM_CATEGORY_PHOTO_INDEPENDENT) ||
-        (!photo &&
-         stream_category != MF_CAPTURE_ENGINE_STREAM_CATEGORY_VIDEO_PREVIEW &&
-         stream_category != MF_CAPTURE_ENGINE_STREAM_CATEGORY_VIDEO_CAPTURE)) {
-      continue;
-    }
-
-    DWORD media_type_index = 0;
-    ComPtr<IMFMediaType> type;
-    while (SUCCEEDED(hr = GetAvailableDeviceMediaType(source, stream_index,
-                                                      media_type_index,
-                                                      type.GetAddressOf()))) {
-      VideoCaptureFormat format;
-      if (GetFormatFromMediaType(type.Get(), photo, &format))
-        capabilities->emplace_back(media_type_index, format, stream_index);
-      type.Reset();
-      ++media_type_index;
-    }
-    if (hr == MF_E_NO_MORE_TYPES) {
-      hr = S_OK;
-    }
-    if (FAILED(hr)) {
-      return hr;
-    }
-  }
-
-  return hr;
+  return capture_engine_class_factory->CreateInstance(CLSID_MFCaptureEngine,
+                                                      IID_PPV_ARGS(engine));
 }
 
 class MFVideoCallback final
@@ -456,10 +364,126 @@ bool VideoCaptureDeviceMFWin::FormatFromGuid(const GUID& guid,
   return false;
 }
 
+HRESULT VideoCaptureDeviceMFWin::ExecuteHresultCallbackWithRetries(
+    base::RepeatingCallback<HRESULT()> callback) {
+  // Retry callback execution on MF_E_INVALIDREQUEST.
+  // MF_E_INVALIDREQUEST is not documented in MediaFoundation documentation.
+  // It could mean that MediaFoundation or the underlying device can be in a
+  // state that reject these calls. Since MediaFoundation gives no intel about
+  // that state beginning and ending (i.e. via some kind of event), we retry the
+  // call until it succeed.
+  HRESULT hr;
+  int retry_count = 0;
+  do {
+    hr = callback.Run();
+    if (FAILED(hr))
+      base::PlatformThread::Sleep(
+          base::TimeDelta::FromMilliseconds(retry_delay_in_ms_));
+
+    // Give up after some amount of time
+  } while (hr == MF_E_INVALIDREQUEST && retry_count++ < max_retry_count_);
+
+  return hr;
+}
+
+HRESULT VideoCaptureDeviceMFWin::GetDeviceStreamCount(IMFCaptureSource* source,
+                                                      DWORD* count) {
+  // Sometimes, GetDeviceStreamCount returns an
+  // undocumented MF_E_INVALIDREQUEST. Retrying solves the issue.
+  return ExecuteHresultCallbackWithRetries(base::BindRepeating(
+      [](IMFCaptureSource* source, DWORD* count) {
+        return source->GetDeviceStreamCount(count);
+      },
+      source, count));
+}
+
+HRESULT VideoCaptureDeviceMFWin::GetDeviceStreamCategory(
+    IMFCaptureSource* source,
+    DWORD stream_index,
+    MF_CAPTURE_ENGINE_STREAM_CATEGORY* stream_category) {
+  // We believe that GetDeviceStreamCategory could be affected by the same
+  // behaviour of GetDeviceStreamCount and GetAvailableDeviceMediaType
+  return ExecuteHresultCallbackWithRetries(base::BindRepeating(
+      [](IMFCaptureSource* source, DWORD stream_index,
+         MF_CAPTURE_ENGINE_STREAM_CATEGORY* stream_category) {
+        return source->GetDeviceStreamCategory(stream_index, stream_category);
+      },
+      source, stream_index, stream_category));
+}
+
+HRESULT VideoCaptureDeviceMFWin::GetAvailableDeviceMediaType(
+    IMFCaptureSource* source,
+    DWORD stream_index,
+    DWORD media_type_index,
+    IMFMediaType** type) {
+  // Rarely, for some unknown reason, GetAvailableDeviceMediaType returns an
+  // undocumented MF_E_INVALIDREQUEST. Retrying solves the issue.
+  return ExecuteHresultCallbackWithRetries(base::BindRepeating(
+      [](IMFCaptureSource* source, DWORD stream_index, DWORD media_type_index,
+         IMFMediaType** type) {
+        return source->GetAvailableDeviceMediaType(stream_index,
+                                                   media_type_index, type);
+      },
+      source, stream_index, media_type_index, type));
+}
+
+HRESULT VideoCaptureDeviceMFWin::FillCapabilities(
+    IMFCaptureSource* source,
+    bool photo,
+    CapabilityList* capabilities) {
+  DWORD stream_count = 0;
+  HRESULT hr = GetDeviceStreamCount(source, &stream_count);
+  if (FAILED(hr))
+    return hr;
+
+  for (DWORD stream_index = 0; stream_index < stream_count; stream_index++) {
+    MF_CAPTURE_ENGINE_STREAM_CATEGORY stream_category;
+    hr = GetDeviceStreamCategory(source, stream_index, &stream_category);
+    if (FAILED(hr))
+      return hr;
+
+    if ((photo && stream_category !=
+                      MF_CAPTURE_ENGINE_STREAM_CATEGORY_PHOTO_INDEPENDENT) ||
+        (!photo &&
+         stream_category != MF_CAPTURE_ENGINE_STREAM_CATEGORY_VIDEO_PREVIEW &&
+         stream_category != MF_CAPTURE_ENGINE_STREAM_CATEGORY_VIDEO_CAPTURE)) {
+      continue;
+    }
+
+    DWORD media_type_index = 0;
+    ComPtr<IMFMediaType> type;
+    while (SUCCEEDED(hr = GetAvailableDeviceMediaType(source, stream_index,
+                                                      media_type_index,
+                                                      type.GetAddressOf()))) {
+      VideoCaptureFormat format;
+      if (GetFormatFromMediaType(type.Get(), photo, &format))
+        capabilities->emplace_back(media_type_index, format, stream_index);
+      type.Reset();
+      ++media_type_index;
+    }
+    if (hr == MF_E_NO_MORE_TYPES) {
+      hr = S_OK;
+    }
+    if (FAILED(hr)) {
+      return hr;
+    }
+  }
+
+  return hr;
+}
+
+VideoCaptureDeviceMFWin::VideoCaptureDeviceMFWin(ComPtr<IMFMediaSource> source)
+    : VideoCaptureDeviceMFWin(source, nullptr) {}
+
 VideoCaptureDeviceMFWin::VideoCaptureDeviceMFWin(
-    const VideoCaptureDeviceDescriptor& device_descriptor)
-    : descriptor_(device_descriptor),
-      create_mf_photo_callback_(base::BindRepeating(&CreateMFPhotoCallback)),
+    ComPtr<IMFMediaSource> source,
+    ComPtr<IMFCaptureEngine> engine)
+    : create_mf_photo_callback_(base::BindRepeating(&CreateMFPhotoCallback)),
+      is_initialized_(false),
+      max_retry_count_(200),
+      retry_delay_in_ms_(50),
+      source_(source),
+      engine_(engine),
       is_started_(false) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -468,43 +492,31 @@ VideoCaptureDeviceMFWin::~VideoCaptureDeviceMFWin() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-bool VideoCaptureDeviceMFWin::Init(const ComPtr<IMFMediaSource>& source) {
+bool VideoCaptureDeviceMFWin::Init() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!engine_);
+  DCHECK(!is_initialized_);
 
   HRESULT hr = S_OK;
+  if (!engine_)
+    hr = CreateCaptureEngine(engine_.GetAddressOf());
+
+  if (FAILED(hr)) {
+    LogError(FROM_HERE, hr);
+    return false;
+  }
+
   ComPtr<IMFAttributes> attributes;
-  ComPtr<IMFCaptureEngineClassFactory> capture_engine_class_factory;
   MFCreateAttributes(attributes.GetAddressOf(), 1);
   DCHECK(attributes);
 
-  hr = CoCreateInstance(
-      CLSID_MFCaptureEngineClassFactory, NULL, CLSCTX_INPROC_SERVER,
-      IID_PPV_ARGS(capture_engine_class_factory.GetAddressOf()));
-  if (FAILED(hr)) {
-    LogError(FROM_HERE, hr);
-    return false;
-  }
-  hr = capture_engine_class_factory->CreateInstance(
-      CLSID_MFCaptureEngine, IID_PPV_ARGS(engine_.GetAddressOf()));
-  if (FAILED(hr)) {
-    LogError(FROM_HERE, hr);
-    return false;
-  }
-
   video_callback_ = new MFVideoCallback(this);
-  if (FAILED(hr)) {
-    LogError(FROM_HERE, hr);
-    return false;
-  }
-
   hr = engine_->Initialize(video_callback_.get(), attributes.Get(), nullptr,
-                           source.Get());
+                           source_.Get());
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return false;
   }
-
+  is_initialized_ = true;
   return true;
 }
 
@@ -755,11 +767,6 @@ void VideoCaptureDeviceMFWin::GetPhotoState(GetPhotoStateCallback callback) {
 
   ComPtr<IMFCaptureSource> source;
   HRESULT hr = engine_->GetSource(source.GetAddressOf());
-  if (FAILED(hr)) {
-    LogError(FROM_HERE, hr);
-    return;
-  }
-
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return;
