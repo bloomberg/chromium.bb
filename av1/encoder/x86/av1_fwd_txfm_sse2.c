@@ -12,6 +12,8 @@
 #include "av1/common/x86/av1_txfm_sse2.h"
 #include "av1/encoder/av1_fwd_txfm1d_cfg.h"
 
+// TODO(linfengz): specialize fdct4x4 and fadst4x8 optimization.
+
 void fdct4_new_sse2(const __m128i *input, __m128i *output, int8_t cos_bit) {
   const int32_t *cospi = cospi_arr(cos_bit);
   const __m128i __rounding = _mm_set1_epi32(1 << (cos_bit - 1));
@@ -1806,6 +1808,25 @@ static const transform_2d_sse2 txfm4x8_arr[16] = {
   { fidentity8_new_sse2, fadst8x4_new_sse2 },      // H_FLIPADST
 };
 
+static const transform_2d_sse2 txfm8x4_arr[] = {
+  { fdct4_new_sse2, fdct8_new_sse2 },              // DCT_DCT
+  { fadst8x4_new_sse2, fdct8_new_sse2 },           // ADST_DCT
+  { fdct4_new_sse2, fadst8_new_sse2 },             // DCT_ADST
+  { fadst8x4_new_sse2, fadst8_new_sse2 },          // ADST_ADST
+  { fadst8x4_new_sse2, fdct8_new_sse2 },           // FLIPADST_DCT
+  { fdct4_new_sse2, fadst8_new_sse2 },             // DCT_FLIPADST
+  { fadst8x4_new_sse2, fadst8_new_sse2 },          // FLIPADST_FLIPADST
+  { fadst8x4_new_sse2, fadst8_new_sse2 },          // ADST_FLIPADST
+  { fadst8x4_new_sse2, fadst8_new_sse2 },          // FLIPADST_ADST
+  { fidentity8x4_new_sse2, fidentity8_new_sse2 },  // IDTX
+  { fdct4_new_sse2, fidentity8_new_sse2 },         // V_DCT
+  { fidentity8x4_new_sse2, fdct8_new_sse2 },       // H_DCT
+  { fadst8x4_new_sse2, fidentity8_new_sse2 },      // V_ADST
+  { fidentity8x4_new_sse2, fadst8_new_sse2 },      // H_ADST
+  { fadst8x4_new_sse2, fidentity8_new_sse2 },      // V_FLIPADST
+  { fidentity8x4_new_sse2, fadst8_new_sse2 },      // H_FLIPADST
+};
+
 static const transform_2d_sse2 txfm8_arr[] = {
   { fdct8_new_sse2, fdct8_new_sse2 },            // DCT_DCT
   { fadst8_new_sse2, fdct8_new_sse2 },           // ADST_DCT
@@ -1938,6 +1959,43 @@ void av1_lowbd_fwd_txfm2d_4x8_sse2(const int16_t *input, int32_t *output,
   round_shift_16bit(buf, width, shift[2]);
   transpose_16bit_8x4(buf, buf);
   store_rect_buffer_16bit_to_32bit_w4(buf, output, width, height);
+}
+
+void av1_lowbd_fwd_txfm2d_8x4_sse2(const int16_t *input, int32_t *output,
+                                   int stride, TX_TYPE tx_type, int bd) {
+  (void)bd;
+  __m128i buf0[8], buf1[8], *buf;
+  const int8_t *shift = fwd_txfm_shift_ls[TX_8X4];
+  const int txw_idx = get_txw_idx(TX_8X4);
+  const int txh_idx = get_txh_idx(TX_8X4);
+  const int cos_bit_col = fwd_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
+  const int width = 8;
+  const int height = 4;
+  const transform_1d_sse2 col_txfm = txfm8x4_arr[tx_type].col;
+  const transform_1d_sse2 row_txfm = txfm8x4_arr[tx_type].row;
+  int ud_flip, lr_flip;
+
+  get_flip_cfg(tx_type, &ud_flip, &lr_flip);
+  if (ud_flip)
+    load_buffer_16bit_to_16bit_flip(input, stride, buf0, height);
+  else
+    load_buffer_16bit_to_16bit(input, stride, buf0, height);
+  round_shift_16bit(buf0, height, shift[0]);
+  col_txfm(buf0, buf0, cos_bit_col);
+  round_shift_16bit(buf0, height, shift[1]);
+  transpose_16bit_8x8(buf0, buf1);
+
+  if (lr_flip) {
+    buf = buf0;
+    flip_buf_sse2(buf1, buf, width);
+  } else {
+    buf = buf1;
+  }
+  row_txfm(buf, buf, cos_bit_row);
+  round_shift_16bit(buf, width, shift[2]);
+  transpose_16bit_8x8(buf, buf);
+  store_rect_buffer_16bit_to_32bit_w8(buf, output, width, height);
 }
 
 void av1_lowbd_fwd_txfm2d_8x8_sse2(const int16_t *input, int32_t *output,
@@ -2395,7 +2453,7 @@ FwdTxfm2dFuncSSE2 fwd_txfm2d_func_ls[TX_SIZES_ALL] = {
   NULL,                             // 64x64 transform
 #endif                              // CONFIG_TX64X64
   NULL,                             // 4x8 transform
-  NULL,                             // 8x4 transform
+  av1_lowbd_fwd_txfm2d_8x4_sse2,    // 8x4 transform
   av1_lowbd_fwd_txfm2d_8x16_sse2,   // 8x16 transform
   av1_lowbd_fwd_txfm2d_16x8_sse2,   // 16x8 transform
   av1_lowbd_fwd_txfm2d_16x32_sse2,  // 16x32 transform
