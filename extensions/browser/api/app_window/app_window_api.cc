@@ -19,7 +19,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_client.h"
@@ -431,18 +430,13 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
     return did_respond() ? AlreadyResponded() : RespondLater();
   }
 
-  // PlzNavigate: delay sending the response until the newly created window has
-  // been told to navigate, and blink has been correctly initialized in the
-  // renderer.
-  if (content::IsBrowserSideNavigationEnabled()) {
-    // SetOnFirstCommitOrWindowClosedCallback() will respond asynchronously.
-    app_window->SetOnFirstCommitOrWindowClosedCallback(
-        base::Bind(&AppWindowCreateFunction::
-                       OnAppWindowReadyToCommitFirstNavigationOrClosed,
-                   this, base::Passed(&result_arg)));
-    return RespondLater();
-  }
-  return RespondNow(std::move(result_arg));
+  // Delay sending the response until the newly created window has been told to
+  // navigate, and blink has been correctly initialized in the renderer.
+  // SetOnFirstCommitOrWindowClosedCallback() will respond asynchronously.
+  app_window->SetOnFirstCommitOrWindowClosedCallback(base::Bind(
+      &AppWindowCreateFunction::OnAppWindowReadyToCommitFirstNavigationOrClosed,
+      this, base::Passed(&result_arg)));
+  return RespondLater();
 }
 
 void AppWindowCreateFunction::OnAppWindowReadyToCommitFirstNavigationOrClosed(

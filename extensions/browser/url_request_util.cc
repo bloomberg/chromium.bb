@@ -7,7 +7,6 @@
 #include <string>
 
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
@@ -33,10 +32,9 @@ bool AllowCrossRendererResourceLoad(const GURL& url,
                                     bool* allowed) {
   std::string resource_path = url.path();
 
-  // PlzNavigate: this logic is performed for main frame requests in
+  // This logic is performed for main frame requests in
   // ExtensionNavigationThrottle::WillStartRequest.
-  if (child_id != -1 || resource_type != content::RESOURCE_TYPE_MAIN_FRAME ||
-      !content::IsBrowserSideNavigationEnabled()) {
+  if (child_id != -1 || resource_type != content::RESOURCE_TYPE_MAIN_FRAME) {
     // Extensions with webview: allow loading certain resources by guest
     // renderers with privileged partition IDs as specified in owner's extension
     // the manifest file.

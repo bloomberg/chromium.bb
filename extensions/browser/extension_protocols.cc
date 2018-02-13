@@ -44,7 +44,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/resource_type.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
@@ -414,12 +413,10 @@ bool AllowExtensionResourceLoad(const GURL& url,
   if (process_map.Contains(url.host(), child_id))
     return true;
 
-  // PlzNavigate: frame navigations to extensions have already been checked in
+  // Frame navigations to extensions have already been checked in
   // the ExtensionNavigationThrottle.
-  if (child_id == -1 && content::IsResourceTypeFrame(resource_type) &&
-      content::IsBrowserSideNavigationEnabled()) {
+  if (child_id == -1 && content::IsResourceTypeFrame(resource_type))
     return true;
-  }
 
   // Allow the extension module embedder to grant permission for loads.
   if (ExtensionsBrowserClient::Get()->AllowCrossRendererResourceLoad(
