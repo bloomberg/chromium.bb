@@ -14,7 +14,7 @@
     function testOpenDevToolsAfterLoad(next) {
       var consoleMessagesCount = 2;
 
-      var messages = ConsoleModel.consoleModel.messages();
+      var messages = SDK.consoleModel.messages();
       for (var i = 0; i < messages.length; ++i)
         processMessage(messages[i]);
       checkWhenScriptsLoaded();

@@ -62,8 +62,8 @@
       }
   `);
 
-  ConsoleModel.consoleModel.addEventListener(
-      ConsoleModel.ConsoleModel.Events.MessageAdded, TestRunner.safeWrap(onConsoleMessage));
+  SDK.consoleModel.addEventListener(
+      SDK.ConsoleModel.Events.MessageAdded, TestRunner.safeWrap(onConsoleMessage));
   step1();
 
   function step1() {

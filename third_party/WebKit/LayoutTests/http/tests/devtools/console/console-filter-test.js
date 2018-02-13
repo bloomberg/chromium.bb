@@ -51,12 +51,12 @@
     consoleView._splitWidget._showHideSidebarButton.element.click();
 
   // Add Violation-source message.
-  var violationMessage = new ConsoleModel.ConsoleMessage(
-      null, ConsoleModel.ConsoleMessage.MessageSource.Violation,
-      ConsoleModel.ConsoleMessage.MessageLevel.Verbose,
+  var violationMessage = new SDK.ConsoleMessage(
+      null, SDK.ConsoleMessage.MessageSource.Violation,
+      SDK.ConsoleMessage.MessageLevel.Verbose,
       "Violation message text",
-      ConsoleModel.ConsoleMessage.MessageType.Log);
-  ConsoleModel.consoleModel.addMessage(violationMessage);
+      SDK.ConsoleMessage.MessageType.Log);
+  SDK.consoleModel.addMessage(violationMessage);
 
   var messages = Console.ConsoleView.instance()._visibleViewMessages;
 

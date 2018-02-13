@@ -60,10 +60,10 @@
     ConsoleTestRunner.disableConsoleViewport();
     TestRunner.evaluateInPage("logMessage()");
     var wrappedConsoleMessageAdded = TestRunner.safeWrap(consoleMessageAdded);
-    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, wrappedConsoleMessageAdded);
+    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, wrappedConsoleMessageAdded);
 
     function consoleMessageAdded() {
-      ConsoleModel.consoleModel.removeEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, wrappedConsoleMessageAdded);
+      SDK.consoleModel.removeEventListener(SDK.ConsoleModel.Events.MessageAdded, wrappedConsoleMessageAdded);
       Console.ConsoleView.instance()._invalidateViewport();
       var xpathResult = document.evaluate("//span[@class='devtools-link' and starts-with(., 'extensions-panel.html')]", Console.ConsoleView.instance()._viewport.element, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
 

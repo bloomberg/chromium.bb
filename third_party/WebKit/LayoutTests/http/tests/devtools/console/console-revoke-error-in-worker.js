@@ -20,10 +20,10 @@
       }
   `);
 
-  ConsoleModel.consoleModel.addEventListener(
-      ConsoleModel.ConsoleModel.Events.MessageAdded, ConsoleTestRunner.wrapListener(messageAdded));
-  ConsoleModel.consoleModel.addEventListener(
-      ConsoleModel.ConsoleModel.Events.MessageUpdated, ConsoleTestRunner.wrapListener(messageUpdated));
+  SDK.consoleModel.addEventListener(
+      SDK.ConsoleModel.Events.MessageAdded, ConsoleTestRunner.wrapListener(messageAdded));
+  SDK.consoleModel.addEventListener(
+      SDK.ConsoleModel.Events.MessageUpdated, ConsoleTestRunner.wrapListener(messageUpdated));
 
   TestRunner.addResult('Creating worker with promise');
   TestRunner.evaluateInPageWithTimeout('createPromise()');
@@ -32,7 +32,7 @@
     TestRunner.addResult('');
     TestRunner.addResult('Message added: ' + event.data.level + ' ' + event.data.type);
 
-    if (event.data.level === ConsoleModel.ConsoleMessage.MessageLevel.Error) {
+    if (event.data.level === SDK.ConsoleMessage.MessageLevel.Error) {
       await ConsoleTestRunner.dumpConsoleCounters();
       TestRunner.addResult('');
       TestRunner.addResult('Handling promise');

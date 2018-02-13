@@ -8,7 +8,7 @@
       `Tests that Web Inspector will discard console message arguments and convert first argument into a string when iframe where the message was logged is navigated to a different page.\n`);
   await TestRunner.loadModule('console_test_runner');
 
-  for (var message of ConsoleModel.consoleModel.messages()) {
+  for (var message of SDK.consoleModel.messages()) {
     var args = (message.parameters || []).map((arg) => arg.type);
     TestRunner.addResult('Message: "' + message.messageText + '", arguments: [' + args.join(', ') + ']');
   }

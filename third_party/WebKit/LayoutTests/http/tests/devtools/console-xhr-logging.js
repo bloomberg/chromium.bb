@@ -20,25 +20,25 @@
   TestRunner.evaluateInPage(`requestHelper('GET', 'resources/xhr-exists.html')`);
   await ConsoleTestRunner.waitForConsoleMessagesPromise(3);
   ConsoleTestRunner.dumpConsoleMessages();
-  ConsoleModel.consoleModel.requestClearMessages();
+  SDK.consoleModel.requestClearMessages();
   TestRunner.addResult('');
 
   TestRunner.evaluateInPage(`requestHelper('GET', 'resources/xhr-does-not-exist.html')`);
   await ConsoleTestRunner.waitForConsoleMessagesPromise(3);
   ConsoleTestRunner.dumpConsoleMessages();
-  ConsoleModel.consoleModel.requestClearMessages();
+  SDK.consoleModel.requestClearMessages();
   TestRunner.addResult('');
 
   TestRunner.evaluateInPageAsync(`requestHelper('POST', 'resources/post-target.cgi')`);
   await ConsoleTestRunner.waitForConsoleMessagesPromise(2);
   ConsoleTestRunner.dumpConsoleMessages();
-  ConsoleModel.consoleModel.requestClearMessages();
+  SDK.consoleModel.requestClearMessages();
   TestRunner.addResult('');
 
   TestRunner.evaluateInPageAsync(`requestHelper('GET', 'http://localhost:8000/devtools/resources/xhr-exists.html')`);
   await ConsoleTestRunner.waitForConsoleMessagesPromise(3);
   ConsoleTestRunner.dumpConsoleMessages();
-  ConsoleModel.consoleModel.requestClearMessages();
+  SDK.consoleModel.requestClearMessages();
   TestRunner.addResult('');
 
   Common.settingForTest('monitoringXHREnabled').set(false);
@@ -46,25 +46,25 @@
   TestRunner.evaluateInPageAsync(`requestHelper('GET', 'resources/xhr-exists.html')`);
   await ConsoleTestRunner.waitForConsoleMessagesPromise(1);
   ConsoleTestRunner.dumpConsoleMessages();
-  ConsoleModel.consoleModel.requestClearMessages();
+  SDK.consoleModel.requestClearMessages();
   TestRunner.addResult('');
 
   TestRunner.evaluateInPageAsync(`requestHelper('GET', 'resources/xhr-does-not-exist.html')`);
   await ConsoleTestRunner.waitForConsoleMessagesPromise(2);
   ConsoleTestRunner.dumpConsoleMessages();
-  ConsoleModel.consoleModel.requestClearMessages();
+  SDK.consoleModel.requestClearMessages();
   TestRunner.addResult('');
 
   TestRunner.evaluateInPageAsync(`requestHelper('POST', 'resources/post-target.cgi')`);
   await ConsoleTestRunner.waitForConsoleMessagesPromise(1);
   ConsoleTestRunner.dumpConsoleMessages();
-  ConsoleModel.consoleModel.requestClearMessages();
+  SDK.consoleModel.requestClearMessages();
   TestRunner.addResult('');
 
   TestRunner.evaluateInPageAsync(`requestHelper('GET', 'http://localhost:8000/devtools/resources/xhr-exists.html')`);
   await ConsoleTestRunner.waitForConsoleMessagesPromise(2);
   ConsoleTestRunner.dumpConsoleMessages();
-  ConsoleModel.consoleModel.requestClearMessages();
+  SDK.consoleModel.requestClearMessages();
   TestRunner.addResult('');
 
   TestRunner.deprecatedRunAfterPendingDispatches(() => {

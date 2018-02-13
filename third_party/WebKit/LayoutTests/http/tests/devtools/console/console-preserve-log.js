@@ -7,9 +7,9 @@
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
 
-  ConsoleModel.consoleModel.addMessage(new ConsoleModel.ConsoleMessage(
-      TestRunner.runtimeModel, ConsoleModel.ConsoleMessage.MessageSource.Other,
-      ConsoleModel.ConsoleMessage.MessageLevel.Info, 'PASS'));
+  SDK.consoleModel.addMessage(new SDK.ConsoleMessage(
+      TestRunner.runtimeModel, SDK.ConsoleMessage.MessageSource.Other,
+      SDK.ConsoleMessage.MessageLevel.Info, 'PASS'));
   Common.settingForTest('preserveConsoleLog').set(true);
   TestRunner.reloadPage(function() {
     ConsoleTestRunner.dumpConsoleMessages();
