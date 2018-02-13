@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
@@ -33,10 +34,10 @@ void UpdateRecommendedMessageBox::Show(gfx::NativeWindow parent_window) {
 // UpdateRecommendedMessageBox, private:
 
 UpdateRecommendedMessageBox::UpdateRecommendedMessageBox() {
-  const int kDialogWidth = 400;
   views::MessageBoxView::InitParams params(
       l10n_util::GetStringUTF16(IDS_UPDATE_RECOMMENDED));
-  params.message_width = kDialogWidth;
+  params.message_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      ChromeDistanceMetric::DISTANCE_BUBBLE_PREFERRED_WIDTH);
   // Also deleted when the window closes.
   message_box_view_ = new views::MessageBoxView(params);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::UPDATE_RECOMMENDED);
