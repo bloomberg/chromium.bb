@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityNodeProvider;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
 
 /**
@@ -33,6 +34,18 @@ public interface WebContentsAccessibility {
      * @return Whether or not this action is supported.
      */
     boolean supportsAction(int action);
+
+    /**
+     *  Determines if a11y enabled.
+     *  @return {@code true} if a11y is enabled.
+     */
+    boolean isAccessibilityEnabled();
+
+    /**
+     *  Enables a11y for testing.
+     */
+    @VisibleForTesting
+    void setAccessibilityEnabledForTesting();
 
     /**
      * Attempts to perform an accessibility action on the web content.  If the accessibility action

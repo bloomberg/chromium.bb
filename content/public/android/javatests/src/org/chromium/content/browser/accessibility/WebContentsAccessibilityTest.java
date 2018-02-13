@@ -22,7 +22,6 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,11 +45,6 @@ import java.lang.reflect.Method;
 public class WebContentsAccessibilityTest {
     @Rule
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
-
-    @Before
-    public void setUp() throws Exception {
-        WebContentsAccessibilityImpl.setAccessibilityEnabledForTesting();
-    }
 
     /**
      * Helper class that can be used to wait until an AccessibilityEvent is fired on a view.
@@ -81,6 +75,7 @@ public class WebContentsAccessibilityTest {
         final WebContentsAccessibilityImpl wcax =
                 WebContentsAccessibilityImpl.fromWebContents(mActivityTestRule.getWebContents());
         wcax.setState(true);
+        wcax.setAccessibilityEnabledForTesting();
 
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
@@ -117,6 +112,7 @@ public class WebContentsAccessibilityTest {
         WebContentsAccessibilityImpl wcax =
                 WebContentsAccessibilityImpl.fromWebContents(mActivityTestRule.getWebContents());
         wcax.setState(true);
+        wcax.setAccessibilityEnabledForTesting();
         AccessibilityNodeProvider provider = wcax.getAccessibilityNodeProvider();
 
         // Wait until we find a node in the accessibility tree with the text "Text".
