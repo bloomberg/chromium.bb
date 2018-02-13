@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/referrer.h"
@@ -72,7 +73,8 @@ struct CONTENT_EXPORT OpenURLParams {
   // is terminated by \r\n.  May be empty if no extra headers are needed.
   std::string extra_headers;
 
-  // The browser-global FrameTreeNode ID or -1 to indicate the main frame.
+  // The browser-global FrameTreeNode ID or RenderFrameHost::kNoFrameTreeNodeId
+  // to indicate the main frame.
   int frame_tree_node_id;
 
   // Routing id of the source RenderFrameHost.

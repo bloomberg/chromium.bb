@@ -304,8 +304,9 @@ void LoadURLInContents(WebContents* target_contents,
   load_url_params.suggested_filename = params->suggested_filename;
   load_url_params.has_user_gesture = params->user_gesture;
 
-  // |frame_tree_node_id| is -1 for main frame navigations.
-  if (params->frame_tree_node_id == -1) {
+  // |frame_tree_node_id| is kNoFrameTreeNodeId for main frame navigations.
+  if (params->frame_tree_node_id ==
+      content::RenderFrameHost::kNoFrameTreeNodeId) {
     load_url_params.navigation_ui_data =
         ChromeNavigationUIData::CreateForMainFrameNavigation(
             target_contents, params->disposition);
