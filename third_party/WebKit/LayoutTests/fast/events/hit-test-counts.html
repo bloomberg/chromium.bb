@@ -168,6 +168,7 @@ function sendEvents(targetX, targetY, documents, multiTapNotification)
 
 function runTestForDocuments(targetX, targetY, documents)
 {
+    clearCounts(documents);
     sendEvents(targetX, targetY, documents, false);
     window.internals.settings.setMultiTargetTapNotificationEnabled(true);
     for(var i = 0; i < documents.length; i++) {
