@@ -25,7 +25,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_mojo_bootstrap.h"
 #include "ipc/ipc_mojo_handle_attachment.h"
-#include "ipc/ipc_type_converters.h"
+#include "ipc/native_handle_type_converters.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -266,22 +266,23 @@ void ChannelMojo::OnBrokenDataReceived() {
 // static
 MojoResult ChannelMojo::ReadFromMessageAttachmentSet(
     Message* message,
-    base::Optional<std::vector<mojom::SerializedHandlePtr>>* handles) {
+    base::Optional<std::vector<mojo::native::SerializedHandlePtr>>* handles) {
   DCHECK(!*handles);
 
   MojoResult result = MOJO_RESULT_OK;
   if (!message->HasAttachments())
     return result;
 
-  std::vector<mojom::SerializedHandlePtr> output_handles;
+  std::vector<mojo::native::SerializedHandlePtr> output_handles;
   MessageAttachmentSet* set = message->attachment_set();
 
   for (unsigned i = 0; result == MOJO_RESULT_OK && i < set->size(); ++i) {
     auto attachment = set->GetAttachmentAt(i);
-    auto serialized_handle = mojom::SerializedHandle::New();
+    auto serialized_handle = mojo::native::SerializedHandle::New();
     serialized_handle->the_handle = attachment->TakeMojoHandle();
     serialized_handle->type =
-        mojo::ConvertTo<mojom::SerializedHandle::Type>(attachment->GetType());
+        mojo::ConvertTo<mojo::native::SerializedHandle::Type>(
+            attachment->GetType());
     output_handles.emplace_back(std::move(serialized_handle));
   }
   set->CommitAllDescriptors();
@@ -294,7 +295,7 @@ MojoResult ChannelMojo::ReadFromMessageAttachmentSet(
 
 // static
 MojoResult ChannelMojo::WriteToMessageAttachmentSet(
-    base::Optional<std::vector<mojom::SerializedHandlePtr>> handles,
+    base::Optional<std::vector<mojo::native::SerializedHandlePtr>> handles,
     Message* message) {
   if (!handles)
     return MOJO_RESULT_OK;

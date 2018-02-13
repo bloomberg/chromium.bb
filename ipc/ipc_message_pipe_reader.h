@@ -95,9 +95,9 @@ class COMPONENT_EXPORT(IPC) MessagePipeReader : public mojom::Channel {
  private:
   // mojom::Channel:
   void SetPeerPid(int32_t peer_pid) override;
-  void Receive(
-      base::span<const uint8_t> data,
-      base::Optional<std::vector<mojom::SerializedHandlePtr>> handles) override;
+  void Receive(base::span<const uint8_t> data,
+               base::Optional<std::vector<mojo::native::SerializedHandlePtr>>
+                   handles) override;
   void GetAssociatedInterface(
       const std::string& name,
       mojom::GenericInterfaceAssociatedRequest request) override;
