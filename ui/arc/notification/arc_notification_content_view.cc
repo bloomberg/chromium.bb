@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
-#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/arc/notification/arc_notification_surface.h"
 #include "ui/arc/notification/arc_notification_view.h"
@@ -238,18 +237,6 @@ class ArcNotificationContentView::ContentViewDelegate
   explicit ContentViewDelegate(ArcNotificationContentView* owner)
       : owner_(owner) {}
 
-  bool IsCloseButtonFocused() const override {
-    if (!owner_->control_buttons_view_)
-      return false;
-    return owner_->control_buttons_view_->IsCloseButtonFocused();
-  }
-
-  void RequestFocusOnCloseButton() override {
-    if (owner_->control_buttons_view_)
-      owner_->control_buttons_view_->RequestFocusOnCloseButton();
-    owner_->UpdateControlButtonsVisibility();
-  }
-
   void UpdateControlButtonsVisibility() override {
     owner_->UpdateControlButtonsVisibility();
   }
@@ -263,10 +250,6 @@ class ArcNotificationContentView::ContentViewDelegate
       const override {
     return owner_->control_buttons_view_;
   }
-
-  bool IsExpanded() const override { return owner_->IsExpanded(); }
-
-  void SetExpanded(bool expanded) override { owner_->SetExpanded(expanded); }
 
   void OnContainerAnimationStarted() override {
     owner_->OnContainerAnimationStarted();
@@ -514,21 +497,6 @@ void ArcNotificationContentView::UpdateAccessibleName() {
   accessible_name_ = item_->GetAccessibleName();
 }
 
-bool ArcNotificationContentView::IsExpanded() const {
-  return item_->GetExpandState() == mojom::ArcNotificationExpandState::EXPANDED;
-}
-
-void ArcNotificationContentView::SetExpanded(bool expanded) {
-  auto expand_state = item_->GetExpandState();
-  if (expanded) {
-    if (expand_state == mojom::ArcNotificationExpandState::COLLAPSED)
-      item_->ToggleExpansion();
-  } else {
-    if (expand_state == mojom::ArcNotificationExpandState::EXPANDED)
-      item_->ToggleExpansion();
-  }
-}
-
 void ArcNotificationContentView::OnContainerAnimationStarted() {
   ShowCopiedSurface();
 }
@@ -697,15 +665,6 @@ views::FocusTraversable* ArcNotificationContentView::GetFocusTraversable() {
     return static_cast<views::internal::RootView*>(
         floating_control_buttons_widget_->GetRootView());
   return nullptr;
-}
-
-bool ArcNotificationContentView::HandleAccessibleAction(
-    const ui::AXActionData& action_data) {
-  if (item_ && action_data.action == ax::mojom::Action::kDoDefault) {
-    item_->ToggleExpansion();
-    return true;
-  }
-  return false;
 }
 
 void ArcNotificationContentView::GetAccessibleNodeData(

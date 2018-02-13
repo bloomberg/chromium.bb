@@ -17,14 +17,10 @@ namespace arc {
 class ArcNotificationContentViewDelegate {
  public:
   virtual ~ArcNotificationContentViewDelegate() = default;
-  virtual bool IsCloseButtonFocused() const = 0;
-  virtual void RequestFocusOnCloseButton() = 0;
   virtual void UpdateControlButtonsVisibility() = 0;
   virtual void OnSlideChanged() = 0;
   virtual message_center::NotificationControlButtonsView*
   GetControlButtonsView() const = 0;
-  virtual bool IsExpanded() const = 0;
-  virtual void SetExpanded(bool expanded) = 0;
   virtual void OnContainerAnimationStarted() = 0;
   virtual void OnContainerAnimationEnded() = 0;
 };
