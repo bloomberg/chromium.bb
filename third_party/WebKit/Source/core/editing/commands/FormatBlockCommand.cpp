@@ -134,6 +134,8 @@ void FormatBlockCommand::FormatRange(const Position& start,
                           block_element, outer_block, editing_state);
   if (editing_state->IsAborted())
     return;
+  ABORT_EDITING_COMMAND_IF(
+      !last_paragraph_in_block_node.IsValidFor(GetDocument()));
 
   // Copy the inline style of the original block element to the newly created
   // block-style element.
