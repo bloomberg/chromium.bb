@@ -47,10 +47,9 @@
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "content/public/common/content_switches.h"
-#include "mash/common/config.h"                                   // nogncheck
-#include "mash/quick_launch/public/mojom/constants.mojom.h"       // nogncheck
 #else  // defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller.h"
 #endif  // defined(OS_CHROMEOS)
@@ -171,18 +170,12 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
     return;
 
 #if defined(OS_CHROMEOS)
+  // Start up the window service and the ash system UI service.
   if (chromeos::GetAshConfig() == ash::Config::MASH) {
     connection->GetConnector()->StartService(
         service_manager::Identity(ui::mojom::kServiceName));
     connection->GetConnector()->StartService(
-        service_manager::Identity(mash::common::GetWindowManagerServiceName()));
-    // Don't start QuickLaunch in tests because it changes the startup shelf
-    // state vs. classic ash.
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kTestType)) {
-      connection->GetConnector()->StartService(
-          service_manager::Identity(mash::quick_launch::mojom::kServiceName));
-    }
+        service_manager::Identity(ash::mojom::kServiceName));
   }
 #endif
 
