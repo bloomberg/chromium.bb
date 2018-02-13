@@ -354,14 +354,14 @@ std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::CreateDevice(
   std::unique_ptr<VideoCaptureDevice> device;
   if (device_descriptor.capture_api == VideoCaptureApi::WIN_MEDIA_FOUNDATION) {
     DCHECK(PlatformSupportsMediaFoundation());
-    device.reset(new VideoCaptureDeviceMFWin(device_descriptor));
-    DVLOG(1) << " MediaFoundation Device: " << device_descriptor.display_name();
     ComPtr<IMFMediaSource> source;
     if (!CreateVideoCaptureDeviceMediaFoundation(
             device_descriptor.device_id.c_str(), source.GetAddressOf())) {
       return std::unique_ptr<VideoCaptureDevice>();
     }
-    if (!static_cast<VideoCaptureDeviceMFWin*>(device.get())->Init(source))
+    device.reset(new VideoCaptureDeviceMFWin(source));
+    DVLOG(1) << " MediaFoundation Device: " << device_descriptor.display_name();
+    if (!static_cast<VideoCaptureDeviceMFWin*>(device.get())->Init())
       device.reset();
   } else if (device_descriptor.capture_api ==
              VideoCaptureApi::WIN_DIRECT_SHOW) {

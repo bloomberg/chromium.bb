@@ -304,6 +304,19 @@ test("capture_unittests") {
   }
 
   if (is_win) {
+    sources += [ "video/win/video_capture_device_mf_win_unittest.cc" ]
+    libs = [
+      "mf.lib",
+      "mfplat.lib",
+      "mfreadwrite.lib",
+      "mfuuid.lib",
+    ]
+    ldflags = [
+      "/DELAYLOAD:mf.dll",
+      "/DELAYLOAD:mfplat.dll",
+      "/DELAYLOAD:mfreadwrite.dll",
+    ]
+
     # TODO(jschuh): https://crbug.com/167187 fix size_t to int truncations.
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   }

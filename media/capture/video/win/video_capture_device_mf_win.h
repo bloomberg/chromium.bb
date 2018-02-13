@@ -39,11 +39,15 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public VideoCaptureDevice {
   static bool FormatFromGuid(const GUID& guid, VideoPixelFormat* format);
 
   explicit VideoCaptureDeviceMFWin(
-      const VideoCaptureDeviceDescriptor& device_descriptor);
+      Microsoft::WRL::ComPtr<IMFMediaSource> source);
+  explicit VideoCaptureDeviceMFWin(
+      Microsoft::WRL::ComPtr<IMFMediaSource> source,
+      Microsoft::WRL::ComPtr<IMFCaptureEngine> engine);
+
   ~VideoCaptureDeviceMFWin() override;
 
   // Opens the device driver for this device.
-  bool Init(const Microsoft::WRL::ComPtr<IMFMediaSource>& source);
+  bool Init();
 
   // VideoCaptureDevice implementation.
   void AllocateAndStart(
@@ -76,13 +80,38 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public VideoCaptureDevice {
     create_mf_photo_callback_ = cb;
   }
 
+  void set_max_retry_count_for_testing(int max_retry_count) {
+    max_retry_count_ = max_retry_count;
+  }
+
+  void set_retry_delay_in_ms_for_testing(int retry_delay_in_ms) {
+    retry_delay_in_ms_ = retry_delay_in_ms;
+  }
+
  private:
+  HRESULT ExecuteHresultCallbackWithRetries(
+      base::RepeatingCallback<HRESULT()> callback);
+  HRESULT GetDeviceStreamCount(IMFCaptureSource* source, DWORD* count);
+  HRESULT GetDeviceStreamCategory(
+      IMFCaptureSource* source,
+      DWORD stream_index,
+      MF_CAPTURE_ENGINE_STREAM_CATEGORY* stream_category);
+  HRESULT GetAvailableDeviceMediaType(IMFCaptureSource* source,
+                                      DWORD stream_index,
+                                      DWORD media_type_index,
+                                      IMFMediaType** type);
+
+  HRESULT FillCapabilities(IMFCaptureSource* source,
+                           bool photo,
+                           CapabilityList* capabilities);
   void OnError(const base::Location& from_here, HRESULT hr);
   void OnError(const base::Location& from_here, const char* message);
 
-  VideoCaptureDeviceDescriptor descriptor_;
   CreateMFPhotoCallbackCB create_mf_photo_callback_;
   scoped_refptr<MFVideoCallback> video_callback_;
+  bool is_initialized_;
+  int max_retry_count_;
+  int retry_delay_in_ms_;
 
   // Guards the below variables from concurrent access between methods running
   // on |sequence_checker_| and calls to OnIncomingCapturedData() and OnEvent()
@@ -90,6 +119,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public VideoCaptureDevice {
   base::Lock lock_;
 
   std::unique_ptr<VideoCaptureDevice::Client> client_;
+  const Microsoft::WRL::ComPtr<IMFMediaSource> source_;
   Microsoft::WRL::ComPtr<IMFCaptureEngine> engine_;
   std::unique_ptr<CapabilityWin> selected_video_capability_;
   CapabilityList photo_capabilities_;
