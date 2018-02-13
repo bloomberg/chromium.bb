@@ -207,6 +207,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void DidEndEditingOnTextField(HTMLInputElement&) override;
   void OpenTextDataListChooser(HTMLInputElement&) override;
   void TextFieldDataListChanged(HTMLInputElement&) override;
+  void DidChangeSelectionInSelectControl(HTMLFormControlElement&) override;
   void AjaxSucceeded(LocalFrame*) override;
 
   void ShowVirtualKeyboardOnElementFocus(LocalFrame&) override;

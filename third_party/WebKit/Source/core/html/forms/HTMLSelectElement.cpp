@@ -922,6 +922,13 @@ void HTMLSelectElement::OptionSelectionStateChanged(HTMLOptionElement* option,
     SelectOption(nullptr, IsMultiple() ? 0 : kDeselectOtherOptions);
   else
     SelectOption(NextSelectableOption(nullptr), kDeselectOtherOptions);
+
+  if (GetDocument().IsActive()) {
+    GetDocument()
+        .GetPage()
+        ->GetChromeClient()
+        .DidChangeSelectionInSelectControl(*this);
+  }
 }
 
 void HTMLSelectElement::OptionInserted(HTMLOptionElement& option,
