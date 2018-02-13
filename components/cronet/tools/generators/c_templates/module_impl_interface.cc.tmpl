@@ -26,14 +26,14 @@ void {{interface_name}}_Destroy({{interface_name}}Ptr self) {
   return delete self;
 }
 
-void {{interface_name}}_SetContext({{interface_name}}Ptr self, {{interface_name}}Context context) {
+void {{interface_name}}_SetClientContext({{interface_name}}Ptr self, Cronet_ClientContext client_context) {
   DCHECK(self);
-  return self->SetContext(context);
+  self->set_client_context(client_context);
 }
 
-{{interface_name}}Context {{interface_name}}_GetContext({{interface_name}}Ptr self) {
+Cronet_ClientContext {{interface_name}}_GetClientContext({{interface_name}}Ptr self) {
   DCHECK(self);
-  return self->GetContext();
+  return self->client_context();
 }
 
 {% for method in interface.methods %}
@@ -73,13 +73,6 @@ class {{interface_name}}Stub : public {{interface_name}} {
 
   ~{{interface_name}}Stub() override {}
 
-  void SetContext({{interface_name}}Context context) override {
-    context_ = context;
-  }
-
-  {{interface_name}}Context GetContext() override {
-    return context_;
-  }
  protected:
 {% for method in interface.methods %}
   {{module_macros.declare_c_return(method)}}
@@ -93,7 +86,6 @@ class {{interface_name}}Stub : public {{interface_name}} {
   }
 {%- endfor %}
  private:
-  {{interface_name}}Context context_ = nullptr;
 {%- for method in interface.methods -%}
   const {{interface_name}}_{{method.name}}Func {{method.name}}Func_;
 {%-   endfor %}
@@ -101,7 +93,7 @@ class {{interface_name}}Stub : public {{interface_name}} {
   DISALLOW_COPY_AND_ASSIGN({{interface_name}}Stub);
 };
 
-{{interface_name}}Ptr {{interface_name}}_CreateStub(
+{{interface_name}}Ptr {{interface_name}}_CreateWith(
 {%- for method in interface.methods -%}
   {{interface_name}}_{{method.name}}Func {{method.name}}Func
 {%- if not loop.last %}, {% endif %}

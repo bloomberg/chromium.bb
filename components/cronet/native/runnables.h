@@ -11,26 +11,8 @@
 
 namespace cronet {
 
-// Base implementation of CronetRunnable that keeps Cronet_RunnableContext but
-// doesn't implement Run() method.
-class BaseCronet_Runnable : public Cronet_Runnable {
- public:
-  BaseCronet_Runnable() = default;
-  ~BaseCronet_Runnable() override = default;
-
-  void SetContext(Cronet_RunnableContext context) override;
-
-  Cronet_RunnableContext GetContext() override;
-
- private:
-  // Runnable context.
-  Cronet_RunnableContext context_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(BaseCronet_Runnable);
-};
-
 // Implementation of CronetRunnable that runs arbitrary base::OnceClosure.
-class OnceClosureRunnable : public BaseCronet_Runnable {
+class OnceClosureRunnable : public Cronet_Runnable {
  public:
   explicit OnceClosureRunnable(base::OnceClosure task);
   ~OnceClosureRunnable() override;

@@ -132,7 +132,7 @@ struct Cronet_UrlRequestParams {
   Cronet_UploadDataProviderPtr upload_data_provider;
   Cronet_ExecutorPtr upload_data_provider_executor;
   bool allow_direct_executor = false;
-  std::vector<RawDataPtr> annotations;
+  std::vector<Cronet_RawDataPtr> annotations;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Cronet_UrlRequestParams);

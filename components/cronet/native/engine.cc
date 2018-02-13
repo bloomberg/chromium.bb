@@ -47,7 +47,9 @@ class SharedEngineState {
 
   // Returns default user agent, based on Cronet version, application info and
   // platform-specific additional information.
-  CharString GetDefaultUserAgent() const { return default_user_agent_.c_str(); }
+  Cronet_String GetDefaultUserAgent() const {
+    return default_user_agent_.c_str();
+  }
 
   static SharedEngineState* GetInstance();
 
@@ -89,14 +91,6 @@ Cronet_EngineImpl::Cronet_EngineImpl()
 
 Cronet_EngineImpl::~Cronet_EngineImpl() {
   Shutdown();
-}
-
-void Cronet_EngineImpl::SetContext(Cronet_EngineContext context) {
-  engine_context_ = context;
-}
-
-Cronet_EngineContext Cronet_EngineImpl::GetContext() {
-  return engine_context_;
 }
 
 Cronet_RESULT Cronet_EngineImpl::StartWithParams(
@@ -192,7 +186,8 @@ Cronet_RESULT Cronet_EngineImpl::StartWithParams(
   return CheckResult(Cronet_RESULT_SUCCESS);
 }
 
-bool Cronet_EngineImpl::StartNetLogToFile(CharString file_name, bool log_all) {
+bool Cronet_EngineImpl::StartNetLogToFile(Cronet_String file_name,
+                                          bool log_all) {
   base::AutoLock lock(lock_);
   if (is_logging_ || !context_)
     return false;
@@ -212,11 +207,11 @@ void Cronet_EngineImpl::StopNetLog() {
   stop_netlog_completed_.Reset();
 }
 
-CharString Cronet_EngineImpl::GetVersionString() {
+Cronet_String Cronet_EngineImpl::GetVersionString() {
   return CRONET_VERSION;
 }
 
-CharString Cronet_EngineImpl::GetDefaultUserAgent() {
+Cronet_String Cronet_EngineImpl::GetDefaultUserAgent() {
   return SharedEngineState::GetInstance()->GetDefaultUserAgent();
 }
 

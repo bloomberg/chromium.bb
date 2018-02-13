@@ -8,14 +8,6 @@
 
 namespace cronet {
 
-void BaseCronet_Runnable::SetContext(Cronet_RunnableContext context) {
-  context_ = context;
-}
-
-Cronet_RunnableContext BaseCronet_Runnable::GetContext() {
-  return context_;
-}
-
 OnceClosureRunnable::OnceClosureRunnable(base::OnceClosure task)
     : task_(std::move(task)) {}
 
