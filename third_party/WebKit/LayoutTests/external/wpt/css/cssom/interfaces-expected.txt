@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 399 tests; 317 PASS, 82 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 399 tests; 316 PASS, 83 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS HTMLElement interface: attribute style
 PASS HTMLElement interface: style_element must inherit property "style" with the proper type
@@ -55,7 +55,7 @@ PASS StyleSheet interface: attribute title
 PASS StyleSheet interface: attribute media
 PASS StyleSheet interface: attribute disabled
 PASS CSSStyleSheet interface: existence and properties of interface object
-PASS CSSStyleSheet interface object length
+FAIL CSSStyleSheet interface object length assert_equals: wrong value for CSSStyleSheet.length expected 0 but got 1
 PASS CSSStyleSheet interface object name
 PASS CSSStyleSheet interface: existence and properties of interface prototype object
 PASS CSSStyleSheet interface: existence and properties of interface prototype object's "constructor" property

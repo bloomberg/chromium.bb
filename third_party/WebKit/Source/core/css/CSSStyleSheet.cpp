@@ -22,8 +22,10 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "bindings/core/v8/media_list_or_string.h"
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSRuleList.h"
+#include "core/css/CSSStyleSheetInit.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleEngine.h"
 #include "core/css/StyleRule.h"
@@ -84,6 +86,45 @@ const Document* CSSStyleSheet::SingleOwnerDocument(
   if (style_sheet)
     return StyleSheetContents::SingleOwnerDocument(style_sheet->Contents());
   return nullptr;
+}
+
+CSSStyleSheet* CSSStyleSheet::Create(Document& document,
+                                     const String& text,
+                                     ExceptionState& exception_state) {
+  return CSSStyleSheet::Create(document, text, CSSStyleSheetInit(),
+                               exception_state);
+}
+
+CSSStyleSheet* CSSStyleSheet::Create(Document& document,
+                                     const String& text,
+                                     const CSSStyleSheetInit& options,
+                                     ExceptionState& exception_state) {
+  if (!RuntimeEnabledFeatures::ConstructableStylesheetsEnabled()) {
+    exception_state.ThrowTypeError("Illegal constructor");
+    return nullptr;
+  }
+  // Folowing steps at spec draft
+  // https://wicg.github.io/construct-stylesheets/#dom-cssstylesheet-cssstylesheet
+  CSSParserContext* parser_context = CSSParserContext::Create(document);
+  StyleSheetContents* contents = StyleSheetContents::Create(parser_context);
+  CSSStyleSheet* sheet = new CSSStyleSheet(contents, nullptr);
+  sheet->SetTitle(options.title());
+  sheet->ClearOwnerNode();
+  sheet->ClearOwnerRule();
+  if (options.media().IsString()) {
+    MediaList* media_list = MediaList::Create(
+        MediaQuerySet::Create(), const_cast<CSSStyleSheet*>(sheet));
+    media_list->setMediaText(options.media().GetAsString());
+    sheet->SetMedia(media_list);
+  } else {
+    sheet->SetMedia(options.media().GetAsMediaList());
+  }
+  if (options.alternate())
+    sheet->SetAlternate(true);
+  if (options.disabled())
+    sheet->setDisabled(true);
+  sheet->SetText(text);
+  return sheet;
 }
 
 CSSStyleSheet* CSSStyleSheet::Create(StyleSheetContents* sheet,
@@ -406,6 +447,10 @@ MediaList* CSSStyleSheet::media() {
   return media_cssom_wrapper_.Get();
 }
 
+void CSSStyleSheet::SetMedia(MediaList* media_list) {
+  media_cssom_wrapper_ = media_list;
+}
+
 CSSStyleSheet* CSSStyleSheet::parentStyleSheet() const {
   return owner_rule_ ? owner_rule_->parentStyleSheet() : nullptr;
 }
@@ -451,6 +496,10 @@ void CSSStyleSheet::SetText(const String& text) {
   CSSStyleSheet::RuleMutationScope mutation_scope(this);
   contents_->ClearRules();
   contents_->ParseString(text);
+}
+
+void CSSStyleSheet::SetAlternate(bool alternate) {
+  alternate_ = alternate;
 }
 
 void CSSStyleSheet::Trace(blink::Visitor* visitor) {
