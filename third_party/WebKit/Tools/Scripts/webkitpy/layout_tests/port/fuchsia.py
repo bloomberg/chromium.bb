@@ -71,8 +71,8 @@ def _import_fuchsia_runner():
 CONTENT_SHELL_PACKAGE_PATH = 'gen/content/shell/content_shell/content_shell.far'
 
 # HTTP path prefix for the HTTP server.
-PERF_TEST_PATH_PREFIX = '/all-perf-tests'
-LAYOUT_TEST_PATH_PREFIX = '/all-tests'
+PERF_TEST_PATH_PREFIX = '/PerformanceTests'
+LAYOUT_TEST_PATH_PREFIX = '/LayoutTests'
 
 # Paths to the directory where the fonts are copied to. Must match the path in
 # content/shell/app/blink_test_platform_support_fuchsia.cc .
@@ -291,8 +291,8 @@ class ChromiumFuchsiaDriver(driver.Driver):
         if command.startswith('/'):
             relative_test_filename = \
                 os.path.relpath(command, self._port.layout_tests_dir())
-            command = 'http://127.0.0.1:8000/all-tests/' + \
-                relative_test_filename
+            command = 'http://127.0.0.1:8000' + LAYOUT_TEST_PATH_PREFIX + \
+                '/' + relative_test_filename
         return command
 
 

@@ -113,8 +113,8 @@ KPTR_RESTRICT_PATH = '/proc/sys/kernel/kptr_restrict'
 # but we use a file-to-http feature to bridge the file request to host's http
 # server to get the real test files and corresponding resources.
 # See webkit/support/platform_support_android.cc for the other side of this bridge.
-PERF_TEST_PATH_PREFIX = '/all-perf-tests'
-LAYOUT_TEST_PATH_PREFIX = '/all-tests'
+PERF_TEST_PATH_PREFIX = '/PerformanceTests'
+LAYOUT_TEST_PATH_PREFIX = '/LayoutTests'
 
 # We start netcat processes for each of the three stdio streams. In doing so,
 # we attempt to use ports starting from 10201. This starting value is
@@ -1039,8 +1039,8 @@ class ChromiumAndroidDriver(driver.Driver):
     def _command_from_driver_input(self, driver_input):
         command = super(ChromiumAndroidDriver, self)._command_from_driver_input(driver_input)
         if command.startswith('/'):
-            command = 'http://127.0.0.1:8000/all-tests/' + \
-                self._port.relative_test_filename(command)
+            command = 'http://127.0.0.1:8000' + LAYOUT_TEST_PATH_PREFIX + \
+                '/' + self._port.relative_test_filename(command)
         return command
 
     def _read_prompt(self, deadline):
