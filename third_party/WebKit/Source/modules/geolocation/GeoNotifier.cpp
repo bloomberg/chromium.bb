@@ -21,10 +21,10 @@ GeoNotifier::GeoNotifier(Geolocation* geolocation,
       success_callback_(success_callback),
       error_callback_(error_callback),
       options_(options),
-      timer_(
+      timer_(Timer::Create(
           geolocation->GetDocument()->GetTaskRunner(TaskType::kMiscPlatformAPI),
           this,
-          &GeoNotifier::TimerFired),
+          &GeoNotifier::TimerFired)),
       use_cached_position_(false) {
   DCHECK(geolocation_);
   DCHECK(success_callback_);
@@ -39,6 +39,7 @@ void GeoNotifier::Trace(blink::Visitor* visitor) {
   visitor->Trace(geolocation_);
   visitor->Trace(success_callback_);
   visitor->Trace(error_callback_);
+  visitor->Trace(timer_);
   visitor->Trace(fatal_error_);
 }
 
@@ -56,13 +57,13 @@ void GeoNotifier::SetFatalError(PositionError* error) {
 
   fatal_error_ = error;
   // An existing timer may not have a zero timeout.
-  timer_.Stop();
-  timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  timer_->Stop();
+  timer_->StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 void GeoNotifier::SetUseCachedPosition() {
   use_cached_position_ = true;
-  timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  timer_->StartOneShot(TimeDelta(), FROM_HERE);
 }
 
 void GeoNotifier::RunSuccessCallback(Geoposition* position) {
@@ -75,15 +76,40 @@ void GeoNotifier::RunErrorCallback(PositionError* error) {
 }
 
 void GeoNotifier::StartTimer() {
-  timer_.StartOneShot(options_.timeout() / 1000.0, FROM_HERE);
+  timer_->StartOneShot(options_.timeout() / 1000.0, FROM_HERE);
 }
 
 void GeoNotifier::StopTimer() {
+  timer_->Stop();
+}
+
+bool GeoNotifier::IsTimerActive() const {
+  return timer_->IsActive();
+}
+
+void GeoNotifier::Timer::Trace(blink::Visitor* visitor) {
+  visitor->Trace(notifier_);
+}
+
+void GeoNotifier::Timer::StartOneShot(TimeDelta interval,
+                                      const base::Location& caller) {
+  DCHECK(notifier_->geolocation_->DoesOwnNotifier(notifier_));
+  timer_.StartOneShot(interval, caller);
+}
+
+void GeoNotifier::Timer::StartOneShot(double interval,
+                                      const base::Location& caller) {
+  DCHECK(notifier_->geolocation_->DoesOwnNotifier(notifier_));
+  timer_.StartOneShot(interval, caller);
+}
+
+void GeoNotifier::Timer::Stop() {
+  DCHECK(notifier_->geolocation_->DoesOwnNotifier(notifier_));
   timer_.Stop();
 }
 
 void GeoNotifier::TimerFired(TimerBase*) {
-  timer_.Stop();
+  timer_->Stop();
 
   // As the timer fires asynchronously, it's possible that the execution context
   // has already gone.  Check it first.
@@ -93,12 +119,7 @@ void GeoNotifier::TimerFired(TimerBase*) {
   // TODO(yukishiino): Remove this check once we understand the cause.
   // https://crbug.com/792604
   CHECK(!geolocation_->GetExecutionContext()->IsContextDestroyed());
-  // As the timer fires asynchronously, it's possible that |geolocation_|
-  // no longer owns this notifier, i.e. |geolocation_| is no longer performing
-  // wrapper-tracing. In that case, the underlying V8 function may not be alive.
-  if (!geolocation_->DoesOwnNotifier(this)) {
-    return;  // Do not invoke anything because of no owner geolocation.
-  }
+  CHECK(geolocation_->DoesOwnNotifier(this));
 
   // Test for fatal error first. This is required for the case where the
   // LocalFrame is disconnected and requests are cancelled.

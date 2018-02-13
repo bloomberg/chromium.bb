@@ -110,36 +110,56 @@ class MODULES_EXPORT Geolocation final
   bool HasPendingActivity() const final;
 
  private:
-  explicit Geolocation(ExecutionContext*);
+  // Customized HeapHashSet class that checks notifiers' timers. Notifier's
+  // timer may be active only when the notifier is owned by the Geolocation.
+  class GeoNotifierSet : private HeapHashSet<TraceWrapperMember<GeoNotifier>> {
+    using BaseClass = HeapHashSet<TraceWrapperMember<GeoNotifier>>;
 
-  typedef HeapVector<Member<GeoNotifier>> GeoNotifierVector;
-  typedef HeapHashSet<TraceWrapperMember<GeoNotifier>> GeoNotifierSet;
+   public:
+    using BaseClass::Trace;
+
+    using BaseClass::const_iterator;
+    using BaseClass::iterator;
+
+    using BaseClass::begin;
+    using BaseClass::end;
+    using BaseClass::size;
+
+    auto insert(GeoNotifier* value) {
+      DCHECK(!value->IsTimerActive());
+      return BaseClass::insert(value);
+    }
+
+    void erase(GeoNotifier* value) {
+      DCHECK(!value->IsTimerActive());
+      return BaseClass::erase(value);
+    }
+
+    void clear() {
+#if DCHECK_IS_ON()
+      for (const auto& notifier : *this) {
+        DCHECK(!notifier->IsTimerActive());
+      }
+#endif
+      BaseClass::clear();
+    }
+
+    using BaseClass::Contains;
+    using BaseClass::IsEmpty;
+
+    auto InsertWithoutTimerCheck(GeoNotifier* value) {
+      return BaseClass::insert(value);
+    }
+    void ClearWithoutTimerCheck() { BaseClass::clear(); }
+  };
+
+  explicit Geolocation(ExecutionContext*);
 
   bool HasListeners() const {
     return !one_shots_.IsEmpty() || !watchers_.IsEmpty();
   }
 
-  void SendError(GeoNotifierVector&, PositionError*);
-  void SendPosition(GeoNotifierVector&, Geoposition*);
-
-  // Removes notifiers that use a cached position from |notifiers| and
-  // if |cached| is not null they are added to it.
-  static void ExtractNotifiersWithCachedPosition(GeoNotifierVector& notifiers,
-                                                 GeoNotifierVector* cached);
-
-  // Copies notifiers from |src| vector to |dest| set.
-  static void CopyToSet(const GeoNotifierVector& src, GeoNotifierSet& dest);
-
-  static void StopTimer(GeoNotifierVector&);
-  void StopTimersForOneShots();
-  void StopTimersForWatchers();
   void StopTimers();
-
-  // Sets a fatal error on the given notifiers.
-  void CancelRequests(GeoNotifierVector&);
-
-  // Sets a fatal error on all notifiers.
-  void CancelAllRequests();
 
   // Runs the success callbacks on all notifiers. A position must be available
   // and the user must have given permission.
@@ -177,8 +197,7 @@ class MODULES_EXPORT Geolocation final
 
   GeoNotifierSet one_shots_;
   GeolocationWatchers watchers_;
-  // GeoNotifiers that may be scheduled to be invoked but need to be removed
-  // from |one_shots_| and |watchers_|.
+  // GeoNotifiers that are in the middle of invocation.
   //
   // |HandleError(error)| and |MakeSuccessCallbacks| need to clear |one_shots_|
   // (and optionally |watchers_|) before invoking the callbacks, in order to
@@ -190,7 +209,7 @@ class MODULES_EXPORT Geolocation final
   // TODO(https://crbug.com/796145): Remove this hack once on-stack objects
   // get supported by either of wrapper-tracing or unified GC.
   GeoNotifierSet one_shots_being_invoked_;
-  GeolocationWatchers watchers_being_invoked_;
+  HeapVector<TraceWrapperMember<GeoNotifier>> watchers_being_invoked_;
   Member<Geoposition> last_position_;
 
   device::mojom::blink::RevocableGeolocationPtr geolocation_;

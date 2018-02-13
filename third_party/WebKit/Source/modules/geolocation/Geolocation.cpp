@@ -47,8 +47,6 @@ namespace blink {
 namespace {
 
 const char kPermissionDeniedErrorMessage[] = "User denied Geolocation";
-const char kFramelessDocumentErrorMessage[] =
-    "Geolocation cannot be used in frameless documents";
 const char kFeaturePolicyErrorMessage[] =
     "Geolocation has been disabled in this document by Feature Policy.";
 const char kFeaturePolicyConsoleWarning[] =
@@ -127,7 +125,8 @@ void Geolocation::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(watchers_);
   for (const auto& one_shot : one_shots_being_invoked_)
     visitor->TraceWrappers(one_shot);
-  visitor->TraceWrappers(watchers_being_invoked_);
+  for (const auto& watcher : watchers_being_invoked_)
+    visitor->TraceWrappers(watcher);
   ScriptWrappable::TraceWrappers(visitor);
 }
 
@@ -140,11 +139,13 @@ LocalFrame* Geolocation::GetFrame() const {
 }
 
 void Geolocation::ContextDestroyed(ExecutionContext*) {
-  CancelAllRequests();
-  StopUpdating();
-  last_position_ = nullptr;
+  StopTimers();
   one_shots_.clear();
   watchers_.Clear();
+
+  StopUpdating();
+
+  last_position_ = nullptr;
 }
 
 void Geolocation::RecordOriginTypeAccess() const {
@@ -203,9 +204,10 @@ void Geolocation::getCurrentPosition(V8PositionCallback* success_callback,
 
   GeoNotifier* notifier =
       GeoNotifier::Create(this, success_callback, error_callback, options);
-  StartRequest(notifier);
 
   one_shots_.insert(notifier);
+
+  StartRequest(notifier);
 }
 
 int Geolocation::watchPosition(V8PositionCallback* success_callback,
@@ -219,7 +221,6 @@ int Geolocation::watchPosition(V8PositionCallback* success_callback,
 
   GeoNotifier* notifier =
       GeoNotifier::Create(this, success_callback, error_callback, options);
-  StartRequest(notifier);
 
   int watch_id;
   // Keep asking for the next id until we're given one that we don't already
@@ -227,6 +228,9 @@ int Geolocation::watchPosition(V8PositionCallback* success_callback,
   do {
     watch_id = GetExecutionContext()->CircularSequentialID();
   } while (!watchers_.Add(watch_id, notifier));
+
+  StartRequest(notifier);
+
   return watch_id;
 }
 
@@ -264,6 +268,8 @@ void Geolocation::StartRequest(GeoNotifier* notifier) {
 }
 
 void Geolocation::FatalErrorOccurred(GeoNotifier* notifier) {
+  DCHECK(!notifier->IsTimerActive());
+
   // This request has failed fatally. Remove it from our lists.
   one_shots_.erase(notifier);
   watchers_.Remove(notifier);
@@ -273,6 +279,8 @@ void Geolocation::FatalErrorOccurred(GeoNotifier* notifier) {
 }
 
 void Geolocation::RequestUsesCachedPosition(GeoNotifier* notifier) {
+  DCHECK(!notifier->IsTimerActive());
+
   notifier->RunSuccessCallback(last_position_);
 
   // If this is a one-shot request, stop it. Otherwise, if the watch still
@@ -290,6 +298,8 @@ void Geolocation::RequestUsesCachedPosition(GeoNotifier* notifier) {
 }
 
 void Geolocation::RequestTimedOut(GeoNotifier* notifier) {
+  DCHECK(!notifier->IsTimerActive());
+
   // If this is a one-shot request, stop it.
   one_shots_.erase(notifier);
 
@@ -298,7 +308,10 @@ void Geolocation::RequestTimedOut(GeoNotifier* notifier) {
 }
 
 bool Geolocation::DoesOwnNotifier(GeoNotifier* notifier) const {
-  return one_shots_.Contains(notifier) || watchers_.Contains(notifier);
+  return one_shots_.Contains(notifier) ||
+         one_shots_being_invoked_.Contains(notifier) ||
+         watchers_.Contains(notifier) ||
+         watchers_being_invoked_.Contains(notifier);
 }
 
 bool Geolocation::HaveSuitableCachedPosition(const PositionOptions& options) {
@@ -316,143 +329,120 @@ void Geolocation::clearWatch(int watch_id) {
   if (watch_id <= 0)
     return;
 
+  GeoNotifier* notifier = watchers_.Find(watch_id);
+  if (!notifier)
+    return;
+
+  notifier->StopTimer();
   watchers_.Remove(watch_id);
 
   if (!HasListeners())
     StopUpdating();
 }
 
-void Geolocation::SendError(GeoNotifierVector& notifiers,
-                            PositionError* error) {
-  for (GeoNotifier* notifier : notifiers)
-    notifier->RunErrorCallback(error);
-}
-
-void Geolocation::SendPosition(GeoNotifierVector& notifiers,
-                               Geoposition* position) {
-  for (GeoNotifier* notifier : notifiers)
-    notifier->RunSuccessCallback(position);
-}
-
-void Geolocation::StopTimer(GeoNotifierVector& notifiers) {
-  for (GeoNotifier* notifier : notifiers)
-    notifier->StopTimer();
-}
-
-void Geolocation::StopTimersForOneShots() {
-  GeoNotifierVector copy;
-  CopyToVector(one_shots_, copy);
-
-  StopTimer(copy);
-}
-
-void Geolocation::StopTimersForWatchers() {
-  GeoNotifierVector copy;
-  watchers_.GetNotifiersVector(copy);
-
-  StopTimer(copy);
-}
-
 void Geolocation::StopTimers() {
-  StopTimersForOneShots();
-  StopTimersForWatchers();
-}
-
-void Geolocation::CancelRequests(GeoNotifierVector& notifiers) {
-  for (GeoNotifier* notifier : notifiers)
-    notifier->SetFatalError(PositionError::Create(
-        PositionError::kPositionUnavailable, kFramelessDocumentErrorMessage));
-}
-
-void Geolocation::CancelAllRequests() {
-  GeoNotifierVector copy;
-  CopyToVector(one_shots_, copy);
-  CancelRequests(copy);
-  watchers_.GetNotifiersVector(copy);
-  CancelRequests(copy);
-}
-
-void Geolocation::ExtractNotifiersWithCachedPosition(
-    GeoNotifierVector& notifiers,
-    GeoNotifierVector* cached) {
-  GeoNotifierVector non_cached;
-  for (GeoNotifier* notifier : notifiers) {
-    if (notifier->UseCachedPosition()) {
-      if (cached)
-        cached->push_back(notifier);
-    } else
-      non_cached.push_back(notifier);
+  for (const auto& notifier : one_shots_) {
+    notifier->StopTimer();
   }
-  swap(notifiers, non_cached);
-}
 
-void Geolocation::CopyToSet(const GeoNotifierVector& src,
-                            GeoNotifierSet& dest) {
-  for (GeoNotifier* notifier : src)
-    dest.insert(notifier);
+  for (const auto& notifier : watchers_.Notifiers()) {
+    notifier->StopTimer();
+  }
 }
 
 void Geolocation::HandleError(PositionError* error) {
   DCHECK(error);
 
-  GeoNotifierVector one_shots_copy;
-  CopyToVector(one_shots_, one_shots_copy);
+  DCHECK(one_shots_being_invoked_.IsEmpty());
+  DCHECK(watchers_being_invoked_.IsEmpty());
 
-  GeoNotifierVector watchers_copy;
-  watchers_.GetNotifiersVector(watchers_copy);
-
-  // Clear the lists before we make the callbacks, to avoid clearing notifiers
-  // added by calls to Geolocation methods from the callbacks, and to prevent
-  // further callbacks to these notifiers.
-  GeoNotifierVector one_shots_with_cached_position;
-  swap(one_shots_, one_shots_being_invoked_);
   if (error->IsFatal()) {
-    swap(watchers_, watchers_being_invoked_);
-  } else {
-    // Don't send non-fatal errors to notifiers due to receive a cached
-    // position.
-    ExtractNotifiersWithCachedPosition(one_shots_copy,
-                                       &one_shots_with_cached_position);
-    ExtractNotifiersWithCachedPosition(watchers_copy, nullptr);
+    // Stop the timers of |one_shots_| and |watchers_| before swapping/copying
+    // them.
+    StopTimers();
   }
 
-  SendError(one_shots_copy, error);
-  SendError(watchers_copy, error);
+  // Set |one_shots_being_invoked_| and |watchers_being_invoked_| to the
+  // callbacks to be invoked, which must not change during invocation of
+  // the callbacks. Note that |one_shots_| and |watchers_| might be changed
+  // by a callback through getCurrentPosition, watchPosition, and/or
+  // clearWatch.
+  swap(one_shots_, one_shots_being_invoked_);
+  watchers_.CopyNotifiersToVector(watchers_being_invoked_);
 
-  // hasListeners() doesn't distinguish between notifiers due to receive a
-  // cached position and those requiring a fresh position. Perform the check
-  // before restoring the notifiers below.
+  if (error->IsFatal()) {
+    // Clear the watchers before invoking the callbacks.
+    watchers_.Clear();
+  }
+
+  // Invoke the callbacks. Do not send a non-fatal error to the notifiers
+  // that only need a cached position. Let them receive a cached position
+  // later.
+  //
+  // A notifier may call |clearWatch|, and in that case, that watcher notifier
+  // already scheduled must be immediately cancelled according to the spec. But
+  // the current implementation doesn't support such case.
+  // TODO(mattreynolds): Support watcher cancellation inside notifier callbacks.
+  for (auto& notifier : one_shots_being_invoked_) {
+    if (error->IsFatal() || !notifier->UseCachedPosition())
+      notifier->RunErrorCallback(error);
+  }
+  for (auto& notifier : watchers_being_invoked_) {
+    if (error->IsFatal() || !notifier->UseCachedPosition())
+      notifier->RunErrorCallback(error);
+  }
+
+  // |HasListeners| doesn't distinguish those notifiers which require a fresh
+  // position from those which are okay with a cached position. Perform the
+  // check before adding the latter back to |one_shots_|.
   if (!HasListeners())
     StopUpdating();
 
-  // Maintain a reference to the cached notifiers until their timer fires.
-  CopyToSet(one_shots_with_cached_position, one_shots_);
+  if (!error->IsFatal()) {
+    // Keep the notifiers that are okay with a cached position in |one_shots_|.
+    for (const auto& notifier : one_shots_being_invoked_) {
+      if (notifier->UseCachedPosition())
+        one_shots_.InsertWithoutTimerCheck(notifier.Get());
+      else
+        notifier->StopTimer();
+    }
+    one_shots_being_invoked_.ClearWithoutTimerCheck();
+  }
 
   one_shots_being_invoked_.clear();
-  watchers_being_invoked_.Clear();
+  watchers_being_invoked_.clear();
 }
 
 void Geolocation::MakeSuccessCallbacks() {
   DCHECK(last_position_);
 
-  GeoNotifierVector one_shots_copy;
-  CopyToVector(one_shots_, one_shots_copy);
+  DCHECK(one_shots_being_invoked_.IsEmpty());
+  DCHECK(watchers_being_invoked_.IsEmpty());
 
-  GeoNotifierVector watchers_copy;
-  watchers_.GetNotifiersVector(watchers_copy);
-
-  // Clear the lists before we make the callbacks, to avoid clearing notifiers
-  // added by calls to Geolocation methods from the callbacks, and to prevent
-  // further callbacks to these notifiers.
+  // Set |one_shots_being_invoked_| and |watchers_being_invoked_| to the
+  // callbacks to be invoked, which must not change during invocation of
+  // the callbacks. Note that |one_shots_| and |watchers_| might be changed
+  // by a callback through getCurrentPosition, watchPosition, and/or
+  // clearWatch.
   swap(one_shots_, one_shots_being_invoked_);
+  watchers_.CopyNotifiersToVector(watchers_being_invoked_);
 
-  SendPosition(one_shots_copy, last_position_);
-  SendPosition(watchers_copy, last_position_);
+  // Invoke the callbacks.
+  //
+  // A notifier may call |clearWatch|, and in that case, that watcher notifier
+  // already scheduled must be immediately cancelled according to the spec. But
+  // the current implementation doesn't support such case.
+  // TODO(mattreynolds): Support watcher cancellation inside notifier callbacks.
+  for (auto& notifier : one_shots_being_invoked_)
+    notifier->RunSuccessCallback(last_position_);
+  for (auto& notifier : watchers_being_invoked_)
+    notifier->RunSuccessCallback(last_position_);
 
   if (!HasListeners())
     StopUpdating();
 
   one_shots_being_invoked_.clear();
+  watchers_being_invoked_.clear();
 }
 
 void Geolocation::PositionChanged() {
