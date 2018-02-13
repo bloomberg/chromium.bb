@@ -28,7 +28,7 @@
   }
 
   TestRunner.runTestSuite([function testRevealElement(next) {
-    TestRunner.addSniffer(Common.Revealer, 'revealPromise', step2, true);
+    TestRunner.addSniffer(Common.Revealer, 'reveal', step2, true);
     evalAndDump('inspect($(\'#p1\'))');
 
     function step2(node, revealPromise) {

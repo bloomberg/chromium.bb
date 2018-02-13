@@ -208,7 +208,7 @@
         var anchorURI = uiSourceCode.url();
         var anchor = linkifier.linkifyScriptLocation(SDK.targetManager.mainTarget(), null, anchorURI, 10, 1);
         var info = Components.Linkifier._linkInfo(anchor);
-        Common.Revealer.revealPromise(info.uiLocation).then(function() {
+        Common.Revealer.reveal(info.uiLocation).then(function() {
           TestRunner.addResult('Selection: ' + panel.visibleView.textEditor.selection().toString());
           dumpSelection('Showed anchor in ' + anchorURI.split('/').pop() + ' with line 333 column 3');
           rollback();

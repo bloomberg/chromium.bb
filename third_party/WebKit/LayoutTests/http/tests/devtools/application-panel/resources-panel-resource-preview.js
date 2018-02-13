@@ -63,7 +63,7 @@
       TestRunner.addResult(name + ' was not found');
       return;
     }
-    await Common.Revealer.revealPromise(r);
+    await Common.Revealer.reveal(r);
     dumpCurrentState('Revealed ' + name + ':');
   }
 

@@ -69,23 +69,23 @@
     },
 
     function revealNode(next) {
-      Common.Revealer.revealPromise(node).then(next);
+      Common.Revealer.reveal(node).then(next);
     },
 
     function revealUILocation(next) {
-      Common.Revealer.revealPromise(uiLocation).then(next);
+      Common.Revealer.reveal(uiLocation).then(next);
     },
 
     function revealResource(next) {
-      Common.Revealer.revealPromise(resource).then(next);
+      Common.Revealer.reveal(resource).then(next);
     },
 
     function revealRequestWithResource(next) {
-      Common.Revealer.revealPromise(requestWithResource).then(next);
+      Common.Revealer.reveal(requestWithResource).then(next);
     },
 
     function revealRequestWithoutResource(next) {
-      Common.Revealer.revealPromise(requestWithoutResource).then(next);
+      Common.Revealer.reveal(requestWithoutResource).then(next);
     }
   ]);
 
