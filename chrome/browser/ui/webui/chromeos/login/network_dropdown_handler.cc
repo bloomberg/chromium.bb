@@ -103,8 +103,19 @@ void NetworkDropdownHandler::HandleLaunchAddWiFiNetworkDialog() {
 
 void NetworkDropdownHandler::HandleShowNetworkDetails(
     const base::ListValue* args) {
-  std::string guid;
-  args->GetString(0, &guid);
+  std::string type, guid;
+  args->GetString(0, &type);
+  args->GetString(1, &guid);
+  if (type == ::onc::network_type::kCellular) {
+    // Make sure Cellular is enabled.
+    NetworkStateHandler* handler =
+        NetworkHandler::Get()->network_state_handler();
+    if (handler->GetTechnologyState(NetworkTypePattern::Cellular()) !=
+        NetworkStateHandler::TECHNOLOGY_ENABLED) {
+      handler->SetTechnologyEnabled(NetworkTypePattern::Cellular(), true,
+                                    network_handler::ErrorCallback());
+    }
+  }
   InternetDetailDialog::ShowDialog(guid);
 }
 

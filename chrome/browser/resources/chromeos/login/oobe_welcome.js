@@ -371,13 +371,13 @@ Polymer({
     // Cellular should normally auto connect. If it is selected, show the
     // details UI since there is no configuration UI for Cellular.
     if (state.Type == chrome.networkingPrivate.NetworkType.CELLULAR) {
-      chrome.send('showNetworkDetails', [state.GUID]);
+      chrome.send('showNetworkDetails', [state.Type, state.GUID]);
       return;
     }
 
     // Allow proxy to be set for connected networks.
     if (state.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
-      chrome.send('showNetworkDetails', [state.GUID]);
+      chrome.send('showNetworkDetails', [state.Type, state.GUID]);
       return;
     }
 
