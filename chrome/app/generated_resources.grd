@@ -1874,39 +1874,37 @@ are declared in build/common.gypi.
         </message>
       </if>
 
-      <!-- Remove in-progress downloads confirmation dialog -->
+      <!-- Abandon in-progress downloads confirmation dialog -->
+      <message name="IDS_ABANDON_DOWNLOAD_DIALOG_TITLE" desc="Title of the dialog shown when the user closes the browser or the last incognito window while one or more downloads are in progress. If necessary, add '#' for plural cases. [ICU Syntax]">
+        {NUM_DOWNLOAD, plural,
+        =1 {Download is in progress} other {Downloads are in progress}}
+      </message>
+      <if expr="not use_titlecase">
+        <message name="IDS_ABANDON_DOWNLOAD_DIALOG_CONTINUE_BUTTON" desc="Button text on a dialog shown when the user closes the browser or the last incognito window while one or more downloads are in progress. When clicked, the button will continue the download without exiting.">
+          Continue downloading
+        </message>
+      </if>
+      <if expr="use_titlecase">
+        <message name="IDS_ABANDON_DOWNLOAD_DIALOG_CONTINUE_BUTTON" desc="In Title Case: Button text on a dialog shown when the user closes the browser or the last incognito window while one or more downloads are in progress. When clicked, the button will continue the download without exiting.">
+          Continue Downloading
+        </message>
+      </if>
       <if expr="not is_macosx">
-      <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_TITLE" desc="Title of the dialog asking for user confirmation to close the browser or the last incognito window when one or more downloads are in progress. If necessary, add '#' for plural cases. [ICU Syntax]">
-      {NUM_DOWNLOAD, plural,
-       =1 {Download in progress} other {Downloads in progress}}
-      </message>
-      <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL" desc="Button text for canceling the downloads and closing the browser or the last incognito window when one or more downloads are in progress. If necessary, add '#' for plural cases. [ICU Syntax]">
-      {NUM_DOWNLOAD, plural,
-        =1 {Cancel download} other {Cancel downloads}}
-      </message>
-      <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL" desc="Button text for canceling the closing of the browser or the last incognito window when one or more downloads are in progress. If necessary, add '#' for plural cases. [ICU Syntax]">
-      {NUM_DOWNLOAD, plural, =1 {Continue download} other {Continue downloads}}
-      </message>
+        <message name="IDS_ABANDON_DOWNLOAD_DIALOG_INCOGNITO_MESSAGE" desc="Message on a dialog shown when the user closes the last incognito window while one or more downloads are in progress. This string is shown on Windows, Chrome OS, and Linux, which all use 'Exit' to refer to closing a browser.">
+          Exit incognito mode anyway?
+        </message>
+        <message name="IDS_ABANDON_DOWNLOAD_DIALOG_EXIT_BUTTON" desc="Button text on a dialog shown when the user closes the browser or the last incognito window while one or more downloads are in progress. When clicked, the button will abandon the download and exit. This string is shown on Windows, Chrome OS, and Linux, which all use 'Exit' to refer to closing a browser.">
+          Exit
+        </message>
       </if>
       <if expr="is_macosx">
-      <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_TITLE" desc="In Title Case: Title of the dialog asking for user confirmation to close the browser or the last incognito window when one or more downloads are in progress. If necessary, add '#' for plural cases. [ICU Syntax]">
-      {NUM_DOWNLOAD, plural,
-       =1 {Download in Progress} other {Downloads in Progress}}
-      </message>
-      <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL" desc="In Title Case: Button text for canceling the downloads and closing the browser or the last incognito window when one or more downloads are in progress. If necessary, add '#' for plural cases. [ICU Syntax]">
-      {NUM_DOWNLOAD, plural,
-        =1 {Cancel Download} other {Cancel Downloads}}
-      </message>
-      <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL" desc="Button text for canceling the closing of the browser or the last incognito window when one or more downloads are in progress. If necessary, add '#' for plural cases. [ICU Syntax]">
-      {NUM_DOWNLOAD, plural,
-        =1 {Continue Download} other {Continue Downloads}}
-      </message>
+        <message name="IDS_ABANDON_DOWNLOAD_DIALOG_INCOGNITO_MESSAGE" desc="Message on a dialog shown when the user closes the last incognito window while one or more downloads are in progress. This string is shown on Mac OSX only, which uses 'Quit' to refer to closing a browser.">
+          Quit incognito mode anyway?
+        </message>
+        <message name="IDS_ABANDON_DOWNLOAD_DIALOG_EXIT_BUTTON" desc="Button text on a dialog shown when the user closes the browser or the last incognito window while one or more downloads are in progress. When clicked, the button will abandon the download and quit. This string is shown on Mac OSX only, which uses 'Quit' to refer to closing a browser.">
+          Quit
+        </message>
       </if>
-      <message name="IDS_INCOGNITO_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the last incognito window when one incognito download is in progress. [ICU Syntax]">
-      {NUM_DOWNLOAD, plural,
-        =1 {A download is currently in progress. Do you want to cancel the download and exit incognito mode?}
-        other {# downloads are currently in progress. Do you want to cancel the downloads and exit incognito mode?}}
-      </message>
 
       <!-- Dialog that asks whether user wants to participate in Safe Browsing Extended Reporting -->
       <message name="IDS_FEEDBACK_SERVICE_DIALOG_OK_BUTTON_LABEL" desc="Button that elects to upload suspected malicious files for analysis">

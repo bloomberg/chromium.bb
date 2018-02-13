@@ -492,12 +492,17 @@ Google Chrome is unable to recover your settings.
         This file may be dangerous, so Chrome has blocked it.
       </message>
 
-      <!-- Remove in-progress downloads confirmation dialog -->
-      <message name="IDS_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION" desc="Explanation of the dialog asking for user confirmation to close the browser when one or more downloads are in progress. [ICU Syntax]">
-      {NUM_DOWNLOAD, plural,
-        =1 {A download is currently in progress. Do you want to cancel the download and exit Google Chrome?}
-        other {# downloads are currently in progress. Do you want to cancel the downloads and exit Google Chrome?}}
-      </message>
+      <!-- Abandon in-progress downloads confirmation dialog -->
+      <if expr="not is_macosx">
+        <message name="IDS_ABANDON_DOWNLOAD_DIALOG_BROWSER_MESSAGE" desc="Message on a dialog shown when the user closes the browser while one or more downloads are in progress. This string is shown on Windows, Chrome OS, and Linux, which all use 'Exit' to refer to closing a browser.">
+          Exit Chrome anyway?
+        </message>
+      </if>
+      <if expr="is_macosx">
+        <message name="IDS_ABANDON_DOWNLOAD_DIALOG_BROWSER_MESSAGE" desc="Mac OSX Only: Message on a dialog shown when the user closes the browser while one or more downloads are in progress. This string is shown on Mac OSX only, which uses 'Quit' to refer to closing a browser.">
+          Quit Chrome anyway?
+        </message>
+      </if>
 
       <!-- Quit all apps confirmation dialog -->
       <if expr="is_macosx">

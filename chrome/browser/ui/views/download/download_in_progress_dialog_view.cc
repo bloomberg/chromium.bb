@@ -4,19 +4,16 @@
 
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 
-#include <algorithm>
-
-#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/border.h"
-#include "ui/views/controls/message_box_view.h"
-#include "ui/views/layout/grid_layout.h"
-#include "ui/views/widget/widget.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/layout/fill_layout.h"
 
 // static
 void DownloadInProgressDialogView::Show(
@@ -35,30 +32,37 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(
     Browser::DownloadClosePreventionType dialog_type,
     bool app_modal,
     const base::Callback<void(bool)>& callback)
-    : app_modal_(app_modal),
-      callback_(callback),
-      message_box_view_(NULL) {
+    : download_count_(download_count),
+      app_modal_(app_modal),
+      callback_(callback) {
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+      views::TEXT, views::TEXT));
+
   // This dialog should have been created within the same thread invocation
   // as the original test, so it's never ok to close.
   DCHECK_NE(Browser::DOWNLOAD_CLOSE_OK, dialog_type);
-  base::string16 explanation_text(l10n_util::GetPluralStringFUTF16(
-      (dialog_type == Browser::DOWNLOAD_CLOSE_BROWSER_SHUTDOWN)
-          ? IDS_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION
-          : IDS_INCOGNITO_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION,
-      download_count));
-  title_text_ = l10n_util::GetPluralStringFUTF16(
-      IDS_DOWNLOAD_REMOVE_CONFIRM_TITLE, download_count);
-  ok_button_text_ = l10n_util::GetPluralStringFUTF16(
-      IDS_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL, download_count);
-  cancel_button_text_ = l10n_util::GetPluralStringFUTF16(
-      IDS_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL, download_count);
+  base::string16 message_text = l10n_util::GetStringUTF16(
+      dialog_type == Browser::DOWNLOAD_CLOSE_BROWSER_SHUTDOWN
+          ? IDS_ABANDON_DOWNLOAD_DIALOG_BROWSER_MESSAGE
+          : IDS_ABANDON_DOWNLOAD_DIALOG_INCOGNITO_MESSAGE);
+  auto message_label = std::make_unique<views::Label>(
+      message_text, CONTEXT_BODY_TEXT_LARGE, STYLE_SECONDARY);
+  message_label->SetMultiLine(true);
+  message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(message_label.release());
 
-  message_box_view_ = new views::MessageBoxView(
-      views::MessageBoxView::InitParams(explanation_text));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::DOWNLOAD_IN_PROGRESS);
 }
 
 DownloadInProgressDialogView::~DownloadInProgressDialogView() {}
+
+gfx::Size DownloadInProgressDialogView::CalculatePreferredSize() const {
+  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+                        DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
+                    margins().width();
+  return gfx::Size(width, GetHeightForWidth(width));
+}
 
 int DownloadInProgressDialogView::GetDefaultDialogButton() const {
   return ui::DIALOG_BUTTON_CANCEL;
@@ -66,17 +70,19 @@ int DownloadInProgressDialogView::GetDefaultDialogButton() const {
 
 base::string16 DownloadInProgressDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return (button == ui::DIALOG_BUTTON_OK) ?
-      ok_button_text_ : cancel_button_text_;
+  return l10n_util::GetStringUTF16(
+      button == ui::DIALOG_BUTTON_OK
+          ? IDS_ABANDON_DOWNLOAD_DIALOG_EXIT_BUTTON
+          : IDS_ABANDON_DOWNLOAD_DIALOG_CONTINUE_BUTTON);
 }
 
 bool DownloadInProgressDialogView::Cancel() {
-  callback_.Run(false);
+  callback_.Run(false /* cancel_downloads */);
   return true;
 }
 
 bool DownloadInProgressDialogView::Accept() {
-  callback_.Run(true);
+  callback_.Run(true /* cancel_downloads */);
   return true;
 }
 
@@ -84,22 +90,11 @@ ui::ModalType DownloadInProgressDialogView::GetModalType() const {
   return app_modal_ ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_WINDOW;
 }
 
+bool DownloadInProgressDialogView::ShouldShowCloseButton() const {
+  return false;
+}
+
 base::string16 DownloadInProgressDialogView::GetWindowTitle() const {
-  return title_text_;
-}
-
-void DownloadInProgressDialogView::DeleteDelegate() {
-  delete this;
-}
-
-views::Widget* DownloadInProgressDialogView::GetWidget() {
-  return message_box_view_->GetWidget();
-}
-
-const views::Widget* DownloadInProgressDialogView::GetWidget() const {
-  return message_box_view_->GetWidget();
-}
-
-views::View* DownloadInProgressDialogView::GetContentsView() {
-  return message_box_view_;
+  return l10n_util::GetPluralStringFUTF16(IDS_ABANDON_DOWNLOAD_DIALOG_TITLE,
+                                          download_count_);
 }
