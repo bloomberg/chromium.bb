@@ -10,6 +10,8 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "net/base/url_util.h"
+#include "url/url_canon.h"
 
 namespace {
 
@@ -154,10 +156,16 @@ const char kSafeBrowsingScoutReportingEnabled[] =
     "safebrowsing.scout_reporting_enabled";
 const char kSafeBrowsingUnhandledSyncPasswordReuses[] =
     "safebrowsing.unhandled_sync_password_reuses";
+const char kSafeBrowsingWhitelistDomains[] =
+    "safebrowsing.safe_browsing_whitelist_domains";
+const char kPasswordProtectionChangePasswordURL[] =
+    "safebrowsing.password_protection_change_password_url";
+const char kPasswordProtectionLoginURLs[] =
+    "safebrowsing.password_protection_login_urls";
 const char kPasswordProtectionWarningTrigger[] =
-    "safe_browsing.password_protection_warning_trigger";
+    "safebrowsing.password_protection_warning_trigger";
 const char kPasswordProtectionRiskTrigger[] =
-    "safe_browsing.password_protection_risk_trigger";
+    "safebrowsing.password_protection_risk_trigger";
 }  // namespace prefs
 
 namespace safe_browsing {
@@ -347,6 +355,9 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kSafeBrowsingIncidentsSent);
   registry->RegisterDictionaryPref(
       prefs::kSafeBrowsingUnhandledSyncPasswordReuses);
+  registry->RegisterListPref(prefs::kSafeBrowsingWhitelistDomains);
+  registry->RegisterStringPref(prefs::kPasswordProtectionChangePasswordURL, "");
+  registry->RegisterListPref(prefs::kPasswordProtectionLoginURLs);
   registry->RegisterIntegerPref(prefs::kPasswordProtectionWarningTrigger,
                                 PASSWORD_PROTECTION_OFF);
   registry->RegisterIntegerPref(prefs::kPasswordProtectionRiskTrigger,
@@ -464,6 +475,29 @@ base::ListValue GetSafeBrowsingPreferencesList(PrefService* prefs) {
         base::Value(enabled ? "Enabled" : "Disabled"));
   }
   return preferences_list;
+}
+
+void GetSafeBrowsingWhitelistDomainsPref(
+    const PrefService& prefs,
+    std::vector<std::string>* out_canonicalized_domain_list) {
+  const base::ListValue* pref_value =
+      prefs.GetList(prefs::kSafeBrowsingWhitelistDomains);
+  CanonicalizeDomainList(*pref_value, out_canonicalized_domain_list);
+}
+
+void CanonicalizeDomainList(
+    const base::ListValue& raw_domain_list,
+    std::vector<std::string>* out_canonicalized_domain_list) {
+  out_canonicalized_domain_list->clear();
+  for (auto it = raw_domain_list.GetList().begin();
+       it != raw_domain_list.GetList().end(); it++) {
+    // Verify if it is valid domain string.
+    url::CanonHostInfo host_info;
+    std::string canonical_host =
+        net::CanonicalizeHost(it->GetString(), &host_info);
+    if (!canonical_host.empty())
+      out_canonicalized_domain_list->push_back(canonical_host);
+  }
 }
 
 }  // namespace safe_browsing

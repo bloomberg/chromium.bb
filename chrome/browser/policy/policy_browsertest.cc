@@ -3981,6 +3981,136 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionRiskTrigger) {
                 prefs::kPasswordProtectionRiskTrigger));
 }
 
+// Test that when safe browsing whitelist domains are set by policy, safe
+// browsing service gets the correct value.
+IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingWhitelistDomains) {
+  // Without setting up the enterprise policy,
+  // |GetSafeBrowsingDomainsPref(..) should return empty list.
+  const PrefService* const prefs = browser()->profile()->GetPrefs();
+  EXPECT_FALSE(
+      prefs->FindPreference(prefs::kSafeBrowsingWhitelistDomains)->IsManaged());
+  std::vector<std::string> canonicalized_domains;
+  safe_browsing::GetSafeBrowsingWhitelistDomainsPref(*prefs,
+                                                     &canonicalized_domains);
+  EXPECT_TRUE(canonicalized_domains.empty());
+
+  // Add 2 whitelisted domains to this policy.
+  PolicyMap policies;
+  base::ListValue whitelist_domains;
+  whitelist_domains.AppendString("mydomain.com");
+  whitelist_domains.AppendString("mydomain.net");
+  policies.Set(key::kSafeBrowsingWhitelistDomains, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               whitelist_domains.CreateDeepCopy(), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kSafeBrowsingWhitelistDomains)->IsManaged());
+  safe_browsing::GetSafeBrowsingWhitelistDomainsPref(*prefs,
+                                                     &canonicalized_domains);
+  EXPECT_EQ(2u, canonicalized_domains.size());
+  EXPECT_EQ("mydomain.com", canonicalized_domains[0]);
+  EXPECT_EQ("mydomain.net", canonicalized_domains[1]);
+
+  // Invalid domains will be skipped.
+  whitelist_domains.Clear();
+  whitelist_domains.AppendString(std::string("%EF%BF%BDzyx.com"));
+  policies.Set(key::kSafeBrowsingWhitelistDomains, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               whitelist_domains.CreateDeepCopy(), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kSafeBrowsingWhitelistDomains)->IsManaged());
+  canonicalized_domains.clear();
+  safe_browsing::GetSafeBrowsingWhitelistDomainsPref(*prefs,
+                                                     &canonicalized_domains);
+  EXPECT_TRUE(canonicalized_domains.empty());
+}
+
+// Test that when password protection login URLs are set by policy, password
+// protection service gets the correct value.
+IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionLoginURLs) {
+  // Without setting up the enterprise policy,
+  // |GetPasswordProtectionLoginURLsPref(..) should return empty list.
+  const PrefService* const prefs = browser()->profile()->GetPrefs();
+  const safe_browsing::ChromePasswordProtectionService* const service =
+      safe_browsing::ChromePasswordProtectionService::
+          GetPasswordProtectionService(browser()->profile());
+  EXPECT_FALSE(
+      prefs->FindPreference(prefs::kPasswordProtectionLoginURLs)->IsManaged());
+  std::vector<GURL> login_urls;
+  service->GetPasswordProtectionLoginURLsPref(&login_urls);
+  EXPECT_TRUE(login_urls.empty());
+
+  // Add 2 login URLs to this enterprise policy .
+  PolicyMap policies;
+  base::ListValue login_url_values;
+  login_url_values.AppendString("https://login.mydomain.com");
+  login_url_values.AppendString("https://mydomian.com/login.html");
+  policies.Set(key::kPasswordProtectionLoginURLs, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               login_url_values.CreateDeepCopy(), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kPasswordProtectionLoginURLs)->IsManaged());
+  service->GetPasswordProtectionLoginURLsPref(&login_urls);
+  EXPECT_EQ(2u, login_urls.size());
+  EXPECT_EQ(GURL("https://login.mydomain.com"), login_urls[0]);
+  EXPECT_EQ(GURL("https://mydomian.com/login.html"), login_urls[1]);
+
+  // Verify non-http/https schemes, or invalid URLs will be skipped.
+  login_url_values.Clear();
+  login_url_values.AppendString(std::string("invalid"));
+  login_url_values.AppendString(std::string("ftp://login.mydomain.com"));
+  policies.Set(key::kPasswordProtectionLoginURLs, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               login_url_values.CreateDeepCopy(), nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(
+      prefs->FindPreference(prefs::kPasswordProtectionLoginURLs)->IsManaged());
+  login_urls.clear();
+  service->GetPasswordProtectionLoginURLsPref(&login_urls);
+  EXPECT_TRUE(login_urls.empty());
+}
+
+// Test that when password protection change password URL is set by policy,
+// password protection service gets the correct value.
+IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionChangePasswordURL) {
+  // Without setting up the enterprise policy,
+  // |GetChangePasswordURL(..) should return default GAIA change password URL.
+  const PrefService* const prefs = browser()->profile()->GetPrefs();
+  const safe_browsing::ChromePasswordProtectionService* const service =
+      safe_browsing::ChromePasswordProtectionService::
+          GetPasswordProtectionService(browser()->profile());
+  EXPECT_FALSE(
+      prefs->FindPreference(prefs::kPasswordProtectionChangePasswordURL)
+          ->IsManaged());
+  EXPECT_FALSE(prefs->HasPrefPath(prefs::kPasswordProtectionChangePasswordURL));
+  EXPECT_TRUE(service->GetChangePasswordURL().DomainIs("accounts.google.com"));
+
+  // Add change password URL to this enterprise policy .
+  PolicyMap policies;
+  policies.Set(
+      key::kPasswordProtectionChangePasswordURL, POLICY_LEVEL_MANDATORY,
+      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+      base::WrapUnique(new base::Value("https://changepassword.mydomain.com")),
+      nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionChangePasswordURL)
+                  ->IsManaged());
+  EXPECT_EQ(GURL("https://changepassword.mydomain.com"),
+            service->GetChangePasswordURL());
+
+  // Verify non-http/https change password URL will be skipped.
+  policies.Set(key::kPasswordProtectionChangePasswordURL,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               base::WrapUnique(new base::Value("data:text/html,login page")),
+               nullptr);
+  UpdateProviderPolicy(policies);
+  EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionChangePasswordURL)
+                  ->IsManaged());
+  EXPECT_TRUE(service->GetChangePasswordURL().DomainIs("accounts.google.com"));
+}
+
 // Sets the proper policy before the browser is started.
 template<bool enable>
 class MediaRouterPolicyTest : public PolicyTest {

@@ -680,7 +680,21 @@ AccountInfo ChromePasswordProtectionService::GetAccountInfo() const {
                         : AccountInfo();
 }
 
-GURL ChromePasswordProtectionService::GetChangePasswordURL() {
+GURL ChromePasswordProtectionService::GetChangePasswordURL() const {
+  // If change password URL is specified in preferences, returns the
+  // corresponding pref value.
+  if (profile_->GetPrefs()->HasPrefPath(
+          prefs::kPasswordProtectionChangePasswordURL)) {
+    GURL change_password_url_from_pref(profile_->GetPrefs()->GetString(
+        prefs::kPasswordProtectionChangePasswordURL));
+    // Skip invalid or non-http/https URL.
+    if (change_password_url_from_pref.is_valid() &&
+        change_password_url_from_pref.SchemeIsHTTPOrHTTPS()) {
+      return change_password_url_from_pref;
+    }
+  }
+
+  // Otherwise, computes the default GAIA change password URL.
   const AccountInfo account_info = GetAccountInfo();
   std::string account_email = account_info.email;
   // This page will prompt for re-auth and then will prompt for a new password.
@@ -827,6 +841,20 @@ ChromePasswordProtectionService::GetPasswordProtectionTriggerPref(
   return is_policy_managed ? static_cast<PasswordProtectionTrigger>(
                                  profile_->GetPrefs()->GetInteger(pref_name))
                            : PHISHING_REUSE;
+}
+
+void ChromePasswordProtectionService::GetPasswordProtectionLoginURLsPref(
+    std::vector<GURL>* out_login_url_list) const {
+  const base::ListValue* pref_value =
+      profile_->GetPrefs()->GetList(prefs::kPasswordProtectionLoginURLs);
+  out_login_url_list->clear();
+  for (auto it = pref_value->GetList().begin();
+       it != pref_value->GetList().end(); it++) {
+    GURL login_url(it->GetString());
+    // Skip invalid or none-http/https login URLs.
+    if (login_url.is_valid() && login_url.SchemeIsHTTPOrHTTPS())
+      out_login_url_list->push_back(login_url);
+  }
 }
 
 }  // namespace safe_browsing
