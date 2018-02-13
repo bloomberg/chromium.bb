@@ -15,6 +15,7 @@
 namespace download {
 struct DownloadEntry;
 struct DownloadSaveInfo;
+class DownloadUrlParameters;
 }  // namespace download
 
 namespace net {
@@ -28,7 +29,6 @@ struct ResourceRequest;
 namespace content {
 
 class BrowserContext;
-class DownloadUrlParameters;
 struct DownloadCreateInfo;
 
 // Handle the url request completion status and return the interrupt reasons.
@@ -41,11 +41,11 @@ HandleRequestCompletionStatus(net::Error error_code,
 
 // Create a ResourceRequest from |params|.
 std::unique_ptr<network::ResourceRequest> CONTENT_EXPORT
-CreateResourceRequest(DownloadUrlParameters* params);
+CreateResourceRequest(download::DownloadUrlParameters* params);
 
 // Create a URLRequest from |params|.
-std::unique_ptr<net::URLRequest> CONTENT_EXPORT CreateURLRequestOnIOThread(
-    DownloadUrlParameters* params);
+std::unique_ptr<net::URLRequest> CONTENT_EXPORT
+CreateURLRequestOnIOThread(download::DownloadUrlParameters* params);
 
 // Parse the HTTP server response code.
 // If |fetch_error_body| is true, most of HTTP response codes will be accepted

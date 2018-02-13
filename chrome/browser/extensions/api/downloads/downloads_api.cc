@@ -58,8 +58,8 @@
 #include "chrome/common/extensions/api/downloads.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -1022,8 +1022,8 @@ bool DownloadsDownloadFunction::RunAsync() {
             }
           }
         })");
-  std::unique_ptr<content::DownloadUrlParameters> download_params(
-      new content::DownloadUrlParameters(
+  std::unique_ptr<download::DownloadUrlParameters> download_params(
+      new download::DownloadUrlParameters(
           download_url, render_frame_host()->GetProcess()->GetID(),
           render_frame_host()->GetRenderViewHost()->GetRoutingID(),
           render_frame_host()->GetRoutingID(),

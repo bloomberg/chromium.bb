@@ -3349,12 +3349,14 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
             "triggered by user request."
           policy_exception_justification: "Not implemented."
         })");
-  auto params = std::make_unique<DownloadUrlParameters>(
+  auto params = std::make_unique<download::DownloadUrlParameters>(
       url, frame_host->GetProcess()->GetID(),
       frame_host->GetRenderViewHost()->GetRoutingID(),
       frame_host->GetRoutingID(), storage_partition->GetURLRequestContext(),
       traffic_annotation);
-  params->set_referrer(referrer);
+  params->set_referrer(referrer.url);
+  params->set_referrer_policy(
+      Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
   params->set_post_id(post_id);
   if (post_id >= 0)
     params->set_method("POST");
@@ -3363,8 +3365,8 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
   if (headers.empty()) {
     params->set_prefer_cache(true);
   } else {
-    for (DownloadUrlParameters::RequestHeadersNameValuePair key_value :
-         ParseDownloadHeaders(headers)) {
+    for (download::DownloadUrlParameters::RequestHeadersNameValuePair
+             key_value : ParseDownloadHeaders(headers)) {
       params->add_request_header(key_value.first, key_value.second);
     }
   }
@@ -6114,9 +6116,9 @@ void WebContentsImpl::NotifyPreferencesChanged() {
     render_view_host->OnWebkitPreferencesChanged();
 }
 
-DownloadUrlParameters::RequestHeadersType WebContentsImpl::ParseDownloadHeaders(
-    const std::string& headers) {
-  DownloadUrlParameters::RequestHeadersType request_headers;
+download::DownloadUrlParameters::RequestHeadersType
+WebContentsImpl::ParseDownloadHeaders(const std::string& headers) {
+  download::DownloadUrlParameters::RequestHeadersType request_headers;
   for (const base::StringPiece& key_value : base::SplitStringPiece(
            headers, "\r\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
     std::vector<std::string> pair = base::SplitString(

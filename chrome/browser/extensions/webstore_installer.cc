@@ -42,10 +42,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/crx_file/id_util.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
@@ -75,10 +75,10 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
-using download::DownloadItem;
 using content::DownloadManager;
 using content::NavigationController;
-using content::DownloadUrlParameters;
+using download::DownloadItem;
+using download::DownloadUrlParameters;
 
 namespace {
 
@@ -696,10 +696,14 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
       render_frame_host->GetRoutingID(),
       storage_partition->GetURLRequestContext(), traffic_annotation));
   params->set_file_path(file);
-  if (controller.GetVisibleEntry())
-    params->set_referrer(content::Referrer::SanitizeForRequest(
+  if (controller.GetVisibleEntry()) {
+    content::Referrer referrer = content::Referrer::SanitizeForRequest(
         download_url_, content::Referrer(controller.GetVisibleEntry()->GetURL(),
-                                         blink::kWebReferrerPolicyDefault)));
+                                         blink::kWebReferrerPolicyDefault));
+    params->set_referrer(referrer.url);
+    params->set_referrer_policy(
+        content::Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
+  }
   params->set_callback(base::Bind(&WebstoreInstaller::OnDownloadStarted,
                                   this,
                                   extension_id));

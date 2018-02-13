@@ -12,7 +12,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/download/internal/background_service/driver_entry.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
-#include "content/public/browser/download_url_parameters.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -41,8 +41,7 @@ DriverEntry::State ToDriverEntryState(
   }
 }
 
-FailureType FailureTypeFromInterruptReason(
-    download::DownloadInterruptReason reason) {
+FailureType FailureTypeFromInterruptReason(DownloadInterruptReason reason) {
   switch (reason) {
     case DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
     case DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE:
@@ -150,10 +149,10 @@ void DownloadDriverImpl::Start(
           download_manager_->GetBrowserContext(), request_params.url);
   DCHECK(storage_partition);
 
-  std::unique_ptr<content::DownloadUrlParameters> download_url_params(
-      new content::DownloadUrlParameters(
-          request_params.url, storage_partition->GetURLRequestContext(),
-          traffic_annotation));
+  std::unique_ptr<DownloadUrlParameters> download_url_params(
+      new DownloadUrlParameters(request_params.url,
+                                storage_partition->GetURLRequestContext(),
+                                traffic_annotation));
 
   // TODO(xingliu): Make content::DownloadManager handle potential guid
   // collision and return an error to fail the download cleanly.

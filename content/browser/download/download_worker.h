@@ -9,12 +9,12 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/url_downloader.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_url_parameters.h"
 
 namespace content {
 
@@ -44,7 +44,7 @@ class CONTENT_EXPORT DownloadWorker : public UrlDownloadHandler::Delegate {
 
   // Send network request to ask for a download.
   void SendRequest(
-      std::unique_ptr<DownloadUrlParameters> params,
+      std::unique_ptr<download::DownloadUrlParameters> params,
       scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter);
 
   // Download operations.
@@ -57,7 +57,8 @@ class CONTENT_EXPORT DownloadWorker : public UrlDownloadHandler::Delegate {
   void OnUrlDownloadStarted(
       std::unique_ptr<DownloadCreateInfo> create_info,
       std::unique_ptr<DownloadManager::InputStream> input_stream,
-      const DownloadUrlParameters::OnStartedCallback& callback) override;
+      const download::DownloadUrlParameters::OnStartedCallback& callback)
+      override;
   void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;
 
   void AddUrlDownloadHandler(

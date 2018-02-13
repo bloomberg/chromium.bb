@@ -48,7 +48,7 @@ static void StartOnUIThread(
     int render_process_id,
     int render_frame_id,
     int frame_tree_node_id,
-    const DownloadUrlParameters::OnStartedCallback& started_cb) {
+    const download::DownloadUrlParameters::OnStartedCallback& started_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderFrameHost* frame_host =
@@ -245,7 +245,7 @@ void DownloadResourceHandler::ResumeRequest() {
 void DownloadResourceHandler::OnStart(
     std::unique_ptr<DownloadCreateInfo> create_info,
     std::unique_ptr<ByteStreamReader> stream_reader,
-    const DownloadUrlParameters::OnStartedCallback& callback) {
+    const download::DownloadUrlParameters::OnStartedCallback& callback) {
   // If the user cancels the download, then don't call start. Instead ignore the
   // download entirely.
   if (create_info->result ==

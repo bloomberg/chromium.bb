@@ -6,10 +6,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_request_core.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -26,10 +26,10 @@ const char kTestLastModifiedTime[] = "Tue, 15 Nov 1994 12:45:26 GMT";
 
 class DownloadRequestCoreTest : public testing::Test {
  public:
-  std::unique_ptr<DownloadUrlParameters> BuildDownloadParameters(
+  std::unique_ptr<download::DownloadUrlParameters> BuildDownloadParameters(
       const std::string& url) const {
     GURL gurl(url);
-    return std::make_unique<DownloadUrlParameters>(
+    return std::make_unique<download::DownloadUrlParameters>(
         gurl, request_context_getter_.get(), TRAFFIC_ANNOTATION_FOR_TESTS);
   }
 
@@ -46,7 +46,7 @@ class DownloadRequestCoreTest : public testing::Test {
     return url_request_->extra_request_headers().HasHeader(name);
   }
 
-  void CreateRequestOnIOThread(DownloadUrlParameters* params) {
+  void CreateRequestOnIOThread(download::DownloadUrlParameters* params) {
     url_request_ = DownloadRequestCore::CreateRequestOnIOThread(
         download::DownloadItem::kInvalidId, params);
     DCHECK(url_request_.get());
@@ -73,7 +73,7 @@ class DownloadRequestCoreTest : public testing::Test {
 
 // Ensure "Range" header is built correctly for normal download.
 TEST_F(DownloadRequestCoreTest, BuildRangeRequest) {
-  std::unique_ptr<DownloadUrlParameters> params =
+  std::unique_ptr<download::DownloadUrlParameters> params =
       BuildDownloadParameters("example.com");
 
   // Check initial states.
@@ -153,7 +153,7 @@ TEST_F(DownloadRequestCoreTest, BuildRangeRequest) {
 // Notice download resumption requires strong validator(i.e. etag or
 // last-modified).
 TEST_F(DownloadRequestCoreTest, BuildRangeRequestWithoutLength) {
-  std::unique_ptr<DownloadUrlParameters> params =
+  std::unique_ptr<download::DownloadUrlParameters> params =
       BuildDownloadParameters("example.com");
   params->set_etag("123");
   params->set_offset(50);

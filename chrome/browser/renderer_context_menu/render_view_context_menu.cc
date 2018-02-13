@@ -77,6 +77,7 @@
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
@@ -100,7 +101,6 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/guest_mode.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -182,13 +182,13 @@ using blink::WebURL;
 using content::BrowserContext;
 using content::ChildProcessSecurityPolicy;
 using content::DownloadManager;
-using content::DownloadUrlParameters;
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::RenderFrameHost;
 using content::RenderViewHost;
 using content::SSLStatus;
 using content::WebContents;
+using download::DownloadUrlParameters;
 using extensions::ContextMenuMatcher;
 using extensions::Extension;
 using extensions::MenuItem;
@@ -2379,7 +2379,10 @@ void RenderViewContextMenu::ExecSaveLinkAs() {
       render_frame_host->GetRenderViewHost()->GetRoutingID(),
       render_frame_host->GetRoutingID(),
       storage_partition->GetURLRequestContext(), traffic_annotation);
-  dl_params->set_referrer(CreateReferrer(url, params_));
+  content::Referrer referrer = CreateReferrer(url, params_);
+  dl_params->set_referrer(referrer.url);
+  dl_params->set_referrer_policy(
+      content::Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
   dl_params->set_referrer_encoding(params_.frame_charset);
   dl_params->set_suggested_name(params_.suggested_filename);
   dl_params->set_prompt(true);

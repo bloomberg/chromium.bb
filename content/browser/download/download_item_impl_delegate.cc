@@ -63,7 +63,7 @@ std::string DownloadItemImplDelegate::GetApplicationClientIdForFileScanning()
 }
 
 void DownloadItemImplDelegate::ResumeInterruptedDownload(
-    std::unique_ptr<DownloadUrlParameters> params,
+    std::unique_ptr<download::DownloadUrlParameters> params,
     uint32_t id) {}
 
 BrowserContext* DownloadItemImplDelegate::GetBrowserContext() const {

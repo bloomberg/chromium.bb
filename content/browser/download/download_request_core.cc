@@ -55,7 +55,7 @@ class DownloadRequestData : public base::SupportsUserData::Data {
   ~DownloadRequestData() override {}
 
   static void Attach(net::URLRequest* request,
-                     DownloadUrlParameters* download_parameters,
+                     download::DownloadUrlParameters* download_parameters,
                      uint32_t download_id);
   static DownloadRequestData* Get(const net::URLRequest* request);
   static void Detach(net::URLRequest* request);
@@ -67,7 +67,7 @@ class DownloadRequestData : public base::SupportsUserData::Data {
   std::string guid() const { return guid_; }
   bool is_transient() const { return transient_; }
   bool fetch_error_body() const { return fetch_error_body_; }
-  const DownloadUrlParameters::OnStartedCallback& callback() const {
+  const download::DownloadUrlParameters::OnStartedCallback& callback() const {
     return on_started_callback_;
   }
   std::string request_origin() const { return request_origin_; }
@@ -80,7 +80,7 @@ class DownloadRequestData : public base::SupportsUserData::Data {
   std::string guid_;
   bool fetch_error_body_ = false;
   bool transient_ = false;
-  DownloadUrlParameters::OnStartedCallback on_started_callback_;
+  download::DownloadUrlParameters::OnStartedCallback on_started_callback_;
   std::string request_origin_;
 };
 
@@ -89,7 +89,7 @@ const int DownloadRequestData::kKey = 0;
 
 // static
 void DownloadRequestData::Attach(net::URLRequest* request,
-                                 DownloadUrlParameters* parameters,
+                                 download::DownloadUrlParameters* parameters,
                                  uint32_t download_id) {
   auto request_data = std::make_unique<DownloadRequestData>();
   request_data->save_info_.reset(
@@ -118,9 +118,9 @@ void DownloadRequestData::Detach(net::URLRequest* request) {
 const int DownloadRequestCore::kDownloadByteStreamSize = 100 * 1024;
 
 // static
-std::unique_ptr<net::URLRequest>
-DownloadRequestCore::CreateRequestOnIOThread(uint32_t download_id,
-                                             DownloadUrlParameters* params) {
+std::unique_ptr<net::URLRequest> DownloadRequestCore::CreateRequestOnIOThread(
+    uint32_t download_id,
+    download::DownloadUrlParameters* params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(download_id == download::DownloadItem::kInvalidId ||
          !params->content_initiated())

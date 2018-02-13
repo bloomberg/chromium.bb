@@ -16,8 +16,8 @@
 #include "base/run_loop.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_url_parameters.h"
 
 namespace content {
 
@@ -286,7 +286,7 @@ class DownloadTestItemCreationObserver
            interrupt_reason_ == download::DOWNLOAD_INTERRUPT_REASON_NONE;
   }
 
-  const DownloadUrlParameters::OnStartedCallback callback();
+  const download::DownloadUrlParameters::OnStartedCallback callback();
 
  private:
   friend class base::RefCountedThreadSafe<DownloadTestItemCreationObserver>;

@@ -184,7 +184,7 @@ class ParallelDownloadJobTest : public testing::Test {
         std::move(create_info),
         std::make_unique<DownloadManager::InputStream>(
             std::make_unique<MockByteStreamReader>()),
-        DownloadUrlParameters::OnStartedCallback());
+        download::DownloadUrlParameters::OnStartedCallback());
   }
 
   void VerifyWorker(int64_t offset, int64_t length) const {

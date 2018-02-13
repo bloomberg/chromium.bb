@@ -85,7 +85,7 @@ class RequestHandle : public DownloadRequestHandleInterface {
 // static
 std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
-    std::unique_ptr<DownloadUrlParameters> params,
+    std::unique_ptr<download::DownloadUrlParameters> params,
     std::unique_ptr<network::ResourceRequest> request,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
     const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
@@ -144,7 +144,7 @@ ResourceDownloader::~ResourceDownloader() = default;
 
 void ResourceDownloader::Start(
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
-    std::unique_ptr<DownloadUrlParameters> download_url_parameters,
+    std::unique_ptr<download::DownloadUrlParameters> download_url_parameters,
     bool is_parallel_request) {
   callback_ = download_url_parameters->callback();
   guid_ = download_url_parameters->guid();

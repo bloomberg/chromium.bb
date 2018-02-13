@@ -20,6 +20,7 @@
 #include "base/observer_list.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/lock.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/url_download_handler.h"
 #include "content/browser/loader/navigation_url_loader.h"
@@ -27,7 +28,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_manager_delegate.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/ssl_status.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -70,16 +70,17 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   DownloadManagerDelegate* GetDelegate() const override;
   void Shutdown() override;
   void GetAllDownloads(DownloadVector* result) override;
-  void StartDownload(
-      std::unique_ptr<DownloadCreateInfo> info,
-      std::unique_ptr<DownloadManager::InputStream> stream,
-      const DownloadUrlParameters::OnStartedCallback& on_started) override;
+  void StartDownload(std::unique_ptr<DownloadCreateInfo> info,
+                     std::unique_ptr<DownloadManager::InputStream> stream,
+                     const download::DownloadUrlParameters::OnStartedCallback&
+                         on_started) override;
 
   int RemoveDownloadsByURLAndTime(
       const base::Callback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
       base::Time remove_end) override;
-  void DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override;
+  void DownloadUrl(
+      std::unique_ptr<download::DownloadUrlParameters> params) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   download::DownloadItem* CreateDownloadItem(
@@ -122,7 +123,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   void OnUrlDownloadStarted(
       std::unique_ptr<DownloadCreateInfo> download_create_info,
       std::unique_ptr<DownloadManager::InputStream> stream,
-      const DownloadUrlParameters::OnStartedCallback& callback) override;
+      const download::DownloadUrlParameters::OnStartedCallback& callback)
+      override;
   void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;
 
   // For testing; specifically, accessed from TestFileErrorInjector.
@@ -140,7 +142,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   static download::DownloadInterruptReason BeginDownloadRequest(
       std::unique_ptr<net::URLRequest> url_request,
       ResourceContext* resource_context,
-      DownloadUrlParameters* params);
+      download::DownloadUrlParameters* params);
 
   // Continue a navigation that ends up to be a download after it reaches the
   // OnResponseStarted() step. It has to be called on the UI thread.
@@ -165,7 +167,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   void StartDownloadWithId(
       std::unique_ptr<DownloadCreateInfo> info,
       std::unique_ptr<DownloadManager::InputStream> stream,
-      const DownloadUrlParameters::OnStartedCallback& on_started,
+      const download::DownloadUrlParameters::OnStartedCallback& on_started,
       bool new_download,
       uint32_t id);
 
@@ -204,7 +206,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   void CheckForFileRemoval(DownloadItemImpl* download_item) override;
   std::string GetApplicationClientIdForFileScanning() const override;
   void ResumeInterruptedDownload(
-      std::unique_ptr<content::DownloadUrlParameters> params,
+      std::unique_ptr<download::DownloadUrlParameters> params,
       uint32_t id) override;
   void OpenDownload(DownloadItemImpl* download) override;
   bool IsMostRecentDownloadItemAtFilePath(DownloadItemImpl* download) override;
@@ -215,7 +217,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
 
   // Helper method to start or resume a download.
   void BeginDownloadInternal(
-      std::unique_ptr<content::DownloadUrlParameters> params,
+      std::unique_ptr<download::DownloadUrlParameters> params,
       uint32_t id);
 
   void InterceptNavigationOnChecksComplete(

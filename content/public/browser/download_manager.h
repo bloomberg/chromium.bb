@@ -38,7 +38,7 @@
 #include "base/time/time.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
-#include "content/public/browser/download_url_parameters.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/public/common/download_stream.mojom.h"
 #include "net/base/net_errors.h"
 
@@ -123,7 +123,7 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
   virtual void StartDownload(
       std::unique_ptr<DownloadCreateInfo> info,
       std::unique_ptr<InputStream> stream,
-      const DownloadUrlParameters::OnStartedCallback& on_started) = 0;
+      const download::DownloadUrlParameters::OnStartedCallback& on_started) = 0;
 
   // Remove downloads whose URLs match the |url_filter| and are within
   // the given time constraints - after remove_begin (inclusive) and before
@@ -134,9 +134,10 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
       base::Time remove_begin,
       base::Time remove_end) = 0;
 
-  // See DownloadUrlParameters for details about controlling the download.
+  // See download::DownloadUrlParameters for details about controlling the
+  // download.
   virtual void DownloadUrl(
-      std::unique_ptr<DownloadUrlParameters> parameters) = 0;
+      std::unique_ptr<download::DownloadUrlParameters> parameters) = 0;
 
   // Allow objects to observe the download creation process.
   virtual void AddObserver(Observer* observer) = 0;

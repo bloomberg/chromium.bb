@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -30,7 +31,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -96,7 +96,8 @@ void CreateChildFrameOnUI(
   }
 }
 
-void DownloadUrlOnUIThread(std::unique_ptr<DownloadUrlParameters> parameters) {
+void DownloadUrlOnUIThread(
+    std::unique_ptr<download::DownloadUrlParameters> parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderProcessHost* render_process_host =
@@ -329,13 +330,16 @@ void RenderFrameMessageFilter::DownloadUrl(int render_view_id,
             }
           }
         })");
-  std::unique_ptr<DownloadUrlParameters> parameters(new DownloadUrlParameters(
-      url, render_process_id_, render_view_id, render_frame_id,
-      request_context_.get(), traffic_annotation));
+  std::unique_ptr<download::DownloadUrlParameters> parameters(
+      new download::DownloadUrlParameters(
+          url, render_process_id_, render_view_id, render_frame_id,
+          request_context_.get(), traffic_annotation));
   parameters->set_content_initiated(true);
   parameters->set_suggested_name(suggested_name);
   parameters->set_prompt(use_prompt);
-  parameters->set_referrer(referrer);
+  parameters->set_referrer(referrer.url);
+  parameters->set_referrer_policy(
+      Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
   parameters->set_initiator(initiator);
 
   if (url.SchemeIsBlob()) {

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_URL_PARAMETERS_H_
-#define CONTENT_PUBLIC_BROWSER_DOWNLOAD_URL_PARAMETERS_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_URL_PARAMETERS_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_URL_PARAMETERS_H_
 
 #include <stdint.h>
 
@@ -19,20 +19,16 @@
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/download_source.h"
-#include "content/public/common/referrer.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace download {
+
 class DownloadItem;
-}
-
-namespace content {
-
-class WebContents;
 
 // Pass an instance of DownloadUrlParameters to DownloadManager::DownloadUrl()
 // to download the content at |url|. All parameters with setters are optional.
@@ -48,7 +44,7 @@ class WebContents;
 // content::ResourceContext instead of the usual reference so that a copy of the
 // object isn't made.
 
-class CONTENT_EXPORT DownloadUrlParameters {
+class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
  public:
   // An OnStartedCallback is invoked when a response is available for the
   // download request. For new downloads, this callback is invoked after the
@@ -56,24 +52,15 @@ class CONTENT_EXPORT DownloadUrlParameters {
   // download fails, then the DownloadInterruptReason parameter will indicate
   // the failure.
   //
-  // download::DownloadItem* may be nullptr if no download::DownloadItem was
-  // created. download::DownloadItems are not created when a resource throttle
-  // or a resource handler blocks the download request. I.e. the download
-  // triggered a warning of some sort and the user chose to not to proceed with
-  // the download as a result.
-  typedef base::Callback<void(download::DownloadItem*,
-                              download::DownloadInterruptReason)>
+  // DownloadItem* may be nullptr if no DownloadItem was created. DownloadItems
+  // are not created when a resource throttle or a resource handler blocks the
+  // download request. I.e. the download triggered a warning of some sort and
+  // the user chose to not to proceed with the download as a result.
+  typedef base::Callback<void(DownloadItem*, DownloadInterruptReason)>
       OnStartedCallback;
 
   typedef std::pair<std::string, std::string> RequestHeadersNameValuePair;
   typedef std::vector<RequestHeadersNameValuePair> RequestHeadersType;
-
-  // Construct DownloadUrlParameters for downloading the resource at |url| and
-  // associating the download with the main frame of the given WebContents.
-  static std::unique_ptr<DownloadUrlParameters> CreateForWebContentsMainFrame(
-      WebContents* web_contents,
-      const GURL& url,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Constructs a download not associated with a frame.
   //
@@ -113,8 +100,11 @@ class CONTENT_EXPORT DownloadUrlParameters {
     request_headers_.push_back(make_pair(name, value));
   }
 
-  // HTTP Referrer and referrer encoding.
-  void set_referrer(const Referrer& referrer) { referrer_ = referrer; }
+  // HTTP Referrer, referrer policy and encoding.
+  void set_referrer(const GURL& referrer) { referrer_ = referrer; }
+  void set_referrer_policy(net::URLRequest::ReferrerPolicy referrer_policy) {
+    referrer_policy_ = referrer_policy;
+  }
   void set_referrer_encoding(const std::string& referrer_encoding) {
     referrer_encoding_ = referrer_encoding;
   }
@@ -133,38 +123,28 @@ class CONTENT_EXPORT DownloadUrlParameters {
 
   // If this is a request for resuming an HTTP/S download, |etag| should be the
   // last seen Etag response header.
-  void set_etag(const std::string& etag) {
-    etag_ = etag;
-  }
+  void set_etag(const std::string& etag) { etag_ = etag; }
 
   // If the "If-Range" header is used in a partial request.
   void set_use_if_range(bool use_if_range) { use_if_range_ = use_if_range; }
 
   // HTTP method to use.
-  void set_method(const std::string& method) {
-    method_ = method;
-  }
+  void set_method(const std::string& method) { method_ = method; }
 
   // Body of the HTTP POST request.
-  void set_post_body(const std::string& post_body) {
-    post_body_ = post_body;
-  }
+  void set_post_body(const std::string& post_body) { post_body_ = post_body; }
 
   // If |prefer_cache| is true and the response to |url| is in the HTTP cache,
   // it will be used without validation. If |method| is POST, then |post_id_|
   // shoud be set via |set_post_id()| below to the identifier of the POST
   // transaction used to originally retrieve the resource.
-  void set_prefer_cache(bool prefer_cache) {
-    prefer_cache_ = prefer_cache;
-  }
+  void set_prefer_cache(bool prefer_cache) { prefer_cache_ = prefer_cache; }
 
   // See set_prefer_cache() above.
   void set_post_id(int64_t post_id) { post_id_ = post_id; }
 
   // See OnStartedCallback above.
-  void set_callback(const OnStartedCallback& callback) {
-    callback_ = callback;
-  }
+  void set_callback(const OnStartedCallback& callback) { callback_ = callback; }
 
   // If not empty, specifies the full target path for the download. This value
   // overrides the filename suggested by a Content-Disposition headers. It
@@ -251,7 +231,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   }
 
   // Sets the download source, which will be used in metrics recording.
-  void set_download_source(download::DownloadSource download_source) {
+  void set_download_source(DownloadSource download_source) {
     download_source_ = download_source;
   }
 
@@ -264,7 +244,10 @@ class CONTENT_EXPORT DownloadUrlParameters {
   const std::string& post_body() const { return post_body_; }
   int64_t post_id() const { return post_id_; }
   bool prefer_cache() const { return prefer_cache_; }
-  const Referrer& referrer() const { return referrer_; }
+  const GURL& referrer() const { return referrer_; }
+  net::URLRequest::ReferrerPolicy referrer_policy() const {
+    return referrer_policy_;
+  }
   const std::string& referrer_encoding() const { return referrer_encoding_; }
   const base::Optional<url::Origin>& initiator() const { return initiator_; }
   const std::string& request_origin() const { return request_origin_; }
@@ -306,13 +289,13 @@ class CONTENT_EXPORT DownloadUrlParameters {
 
   // STATE CHANGING: All save_info_ sub-objects will be in an indeterminate
   // state following this call.
-  download::DownloadSaveInfo GetSaveInfo() { return std::move(save_info_); }
+  DownloadSaveInfo GetSaveInfo() { return std::move(save_info_); }
 
   const net::NetworkTrafficAnnotationTag& GetNetworkTrafficAnnotation() {
     return traffic_annotation_;
   }
 
-  download::DownloadSource download_source() const { return download_source_; }
+  DownloadSource download_source() const { return download_source_; }
 
  private:
   OnStartedCallback callback_;
@@ -325,14 +308,15 @@ class CONTENT_EXPORT DownloadUrlParameters {
   std::string post_body_;
   int64_t post_id_;
   bool prefer_cache_;
-  Referrer referrer_;
+  GURL referrer_;
+  net::URLRequest::ReferrerPolicy referrer_policy_;
   base::Optional<url::Origin> initiator_;
   std::string referrer_encoding_;
   int render_process_host_id_;
   int render_view_host_routing_id_;
   int render_frame_host_routing_id_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-  download::DownloadSaveInfo save_info_;
+  DownloadSaveInfo save_info_;
   GURL url_;
   bool do_not_prompt_for_login_;
   bool fetch_error_body_;
@@ -341,11 +325,11 @@ class CONTENT_EXPORT DownloadUrlParameters {
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
   std::string request_origin_;
-  download::DownloadSource download_source_;
+  DownloadSource download_source_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUrlParameters);
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_PUBLIC_BROWSER_DOWNLOAD_URL_PARAMETERS_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_URL_PARAMETERS_H_

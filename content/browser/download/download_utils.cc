@@ -11,13 +11,13 @@
 #include "components/download/downloader/in_progress/download_entry.h"
 #include "components/download/downloader/in_progress/in_progress_cache.h"
 #include "components/download/public/common/download_save_info.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_interrupt_reasons_utils.h"
 #include "content/browser/download/download_stats.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager_delegate.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "net/base/elements_upload_data_stream.h"
@@ -33,12 +33,13 @@ namespace content {
 namespace {
 
 void AppendExtraHeaders(net::HttpRequestHeaders* headers,
-                        DownloadUrlParameters* params) {
+                        download::DownloadUrlParameters* params) {
   for (const auto& header : params->request_headers())
     headers->SetHeaderIfMissing(header.first, header.second);
 }
 
-int GetLoadFlags(DownloadUrlParameters* params, bool has_upload_data) {
+int GetLoadFlags(download::DownloadUrlParameters* params,
+                 bool has_upload_data) {
   int load_flags = 0;
   if (params->prefer_cache()) {
     // If there is upload data attached, only retrieve from cache because there
@@ -56,7 +57,7 @@ int GetLoadFlags(DownloadUrlParameters* params, bool has_upload_data) {
 }
 
 std::unique_ptr<net::HttpRequestHeaders> GetAdditionalRequestHeaders(
-    DownloadUrlParameters* params) {
+    download::DownloadUrlParameters* params) {
   auto headers = std::make_unique<net::HttpRequestHeaders>();
   if (params->offset() == 0 &&
       params->length() == download::DownloadSaveInfo::kLengthFullContent) {
@@ -165,7 +166,7 @@ download::DownloadInterruptReason HandleRequestCompletionStatus(
 }
 
 std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
-    DownloadUrlParameters* params) {
+    download::DownloadUrlParameters* params) {
   DCHECK(params->offset() >= 0);
 
   std::unique_ptr<network::ResourceRequest> request(
@@ -175,9 +176,8 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   request->request_initiator = params->initiator();
   request->do_not_prompt_for_login = params->do_not_prompt_for_login();
   request->site_for_cookies = params->url();
-  request->referrer = params->referrer().url;
-  request->referrer_policy =
-      Referrer::ReferrerPolicyForUrlRequest(params->referrer().policy);
+  request->referrer = params->referrer();
+  request->referrer_policy = params->referrer_policy();
   request->download_to_file = true;
   request->allow_download = true;
   request->is_main_frame = true;
@@ -214,14 +214,15 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   return request;
 }
 
-std::unique_ptr<net::URLRequest>
-CreateURLRequestOnIOThread(DownloadUrlParameters* params) {
+std::unique_ptr<net::URLRequest> CreateURLRequestOnIOThread(
+    download::DownloadUrlParameters* params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(params->offset() >= 0);
 
   // ResourceDispatcherHost{Base} is-not-a URLRequest::Delegate, and
-  // DownloadUrlParameters can-not include resource_dispatcher_host_impl.h, so
-  // we must down cast. RDHI is the only subclass of RDH as of 2012 May 4.
+  // download::DownloadUrlParameters can-not include
+  // resource_dispatcher_host_impl.h, so we must down cast. RDHI is the only
+  // subclass of RDH as of 2012 May 4.
   std::unique_ptr<net::URLRequest> request(
       params->url_request_context_getter()
           ->GetURLRequestContext()

@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -100,10 +100,10 @@ class MockDownloadManager : public DownloadManager {
   MOCK_METHOD1(Init, bool(BrowserContext* browser_context));
 
   // Gasket for handling scoped_ptr arguments.
-  void StartDownload(
-      std::unique_ptr<DownloadCreateInfo> info,
-      std::unique_ptr<DownloadManager::InputStream> stream,
-      const DownloadUrlParameters::OnStartedCallback& callback) override;
+  void StartDownload(std::unique_ptr<DownloadCreateInfo> info,
+                     std::unique_ptr<DownloadManager::InputStream> stream,
+                     const download::DownloadUrlParameters::OnStartedCallback&
+                         callback) override;
 
   MOCK_METHOD2(MockStartDownload,
                void(DownloadCreateInfo*, DownloadManager::InputStream*));
@@ -111,8 +111,9 @@ class MockDownloadManager : public DownloadManager {
                int(const base::Callback<bool(const GURL&)>& url_filter,
                    base::Time remove_begin,
                    base::Time remove_end));
-  MOCK_METHOD1(DownloadUrlMock, void(DownloadUrlParameters*));
-  void DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override {
+  MOCK_METHOD1(DownloadUrlMock, void(download::DownloadUrlParameters*));
+  void DownloadUrl(
+      std::unique_ptr<download::DownloadUrlParameters> params) override {
     DownloadUrlMock(params.get());
   }
   MOCK_METHOD1(AddObserver, void(Observer* observer));

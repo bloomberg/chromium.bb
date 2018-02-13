@@ -23,7 +23,7 @@ class ResourceDownloader : public UrlDownloadHandler,
   // Called to start a download, must be called on IO thread.
   static std::unique_ptr<ResourceDownloader> BeginDownload(
       base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
-      std::unique_ptr<DownloadUrlParameters> download_url_parameters,
+      std::unique_ptr<download::DownloadUrlParameters> download_url_parameters,
       std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
       const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
@@ -64,9 +64,10 @@ class ResourceDownloader : public UrlDownloadHandler,
 
  private:
   // Helper method to start the network request.
-  void Start(scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
-             std::unique_ptr<DownloadUrlParameters> download_url_parameters,
-             bool is_parallel_request);
+  void Start(
+      scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
+      std::unique_ptr<download::DownloadUrlParameters> download_url_parameters,
+      bool is_parallel_request);
 
   // Intercepts the navigation response.
   void InterceptResponse(
@@ -99,7 +100,7 @@ class ResourceDownloader : public UrlDownloadHandler,
   std::string guid_;
 
   // Callback to run after download starts.
-  DownloadUrlParameters::OnStartedCallback callback_;
+  download::DownloadUrlParameters::OnStartedCallback callback_;
 
   // Used to get WebContents in browser process.
   ResourceRequestInfo::WebContentsGetter web_contents_getter_;

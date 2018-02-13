@@ -89,7 +89,7 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/download_url_parameters.h"
+#include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -128,10 +128,10 @@
 
 using content::BrowserContext;
 using content::BrowserThread;
-using download::DownloadItem;
 using content::DownloadManager;
-using content::DownloadUrlParameters;
 using content::WebContents;
+using download::DownloadItem;
+using download::DownloadUrlParameters;
 using extensions::Extension;
 using net::URLRequestMockHTTPJob;
 using net::test_server::EmbeddedTestServer;
@@ -920,7 +920,7 @@ class DownloadTest : public InProcessBrowserTest {
           creation_observer(new content::DownloadTestItemCreationObserver);
 
       std::unique_ptr<DownloadUrlParameters> params(
-          DownloadUrlParameters::CreateForWebContentsMainFrame(
+          content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
               web_contents, starting_url, TRAFFIC_ANNOTATION_FOR_TESTS));
       params->set_callback(creation_observer->callback());
       DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
@@ -1800,7 +1800,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab4) {
 
   // Download a file in that new tab, having it open a file picker
   std::unique_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::CreateForWebContentsMainFrame(
+      content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
           new_tab, slow_download_url, TRAFFIC_ANNOTATION_FOR_TESTS));
   params->set_prompt(true);
   manager->DownloadUrl(std::move(params));
@@ -2351,7 +2351,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
           DownloadManagerForBrowser(browser()), 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   std::unique_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::CreateForWebContentsMainFrame(
+      content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
           web_contents, url, TRAFFIC_ANNOTATION_FOR_TESTS));
   params->set_prompt(true);
   DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
@@ -2384,7 +2384,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
       other_directory.GetPath().Append(file.BaseName());
   content::DownloadTestObserver* observer(CreateWaiter(browser(), 1));
   std::unique_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::CreateForWebContentsMainFrame(
+      content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
           web_contents, url, TRAFFIC_ANNOTATION_FOR_TESTS));
   params->set_file_path(target_file_full_path);
   DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
@@ -2424,7 +2424,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TransientDownload) {
       other_directory.GetPath().Append(file.BaseName());
   content::DownloadTestObserver* observer(CreateWaiter(browser(), 1));
   std::unique_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::CreateForWebContentsMainFrame(
+      content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
           web_contents, url, TRAFFIC_ANNOTATION_FOR_TESTS));
   params->set_file_path(target_file_full_path);
   params->set_transient(true);
@@ -4006,7 +4006,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, HiddenDownload) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   std::unique_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::CreateForWebContentsMainFrame(
+      content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
           web_contents, url, TRAFFIC_ANNOTATION_FOR_TESTS));
   params->set_callback(base::Bind(&SetHiddenDownloadCallback));
   download_manager->DownloadUrl(std::move(params));

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigator.h"
@@ -26,7 +27,6 @@
 #include "content/common/media/media_player_delegate_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -3426,7 +3426,7 @@ TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
 }
 
 TEST_F(WebContentsImplTest, ParseDownloadHeaders) {
-  DownloadUrlParameters::RequestHeadersType request_headers =
+  download::DownloadUrlParameters::RequestHeadersType request_headers =
       WebContentsImpl::ParseDownloadHeaders("A: 1\r\nB: 2\r\nC: 3\r\n\r\n");
   ASSERT_EQ(3u, request_headers.size());
   EXPECT_EQ("A", request_headers[0].first);

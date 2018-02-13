@@ -16,8 +16,8 @@
 #include "base/memory/weak_ptr.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_save_info.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/loader/resource_handler.h"
-#include "content/public/browser/download_url_parameters.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 
 namespace net {
@@ -45,7 +45,7 @@ class CONTENT_EXPORT DownloadRequestCore
     virtual void OnStart(
         std::unique_ptr<DownloadCreateInfo> download_create_info,
         std::unique_ptr<ByteStreamReader> stream_reader,
-        const DownloadUrlParameters::OnStartedCallback& callback) = 0;
+        const download::DownloadUrlParameters::OnStartedCallback& callback) = 0;
   };
 
   // All parameters are required. |request| and |delegate| must outlive
@@ -106,7 +106,7 @@ class CONTENT_EXPORT DownloadRequestCore
 
   static std::unique_ptr<net::URLRequest> CreateRequestOnIOThread(
       uint32_t download_id,
-      DownloadUrlParameters* params);
+      download::DownloadUrlParameters* params);
 
   // Size of the buffer used between the DownloadRequestCore and the
   // downstream receiver of its output.
@@ -129,7 +129,7 @@ class CONTENT_EXPORT DownloadRequestCore
   std::string guid_;
   bool fetch_error_body_;
   bool transient_;
-  DownloadUrlParameters::OnStartedCallback on_started_callback_;
+  download::DownloadUrlParameters::OnStartedCallback on_started_callback_;
 
   // Data flow
   scoped_refptr<net::IOBuffer> read_buffer_;    // From URLRequest.
