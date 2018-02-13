@@ -12,7 +12,43 @@
 #include "av1/common/x86/av1_txfm_sse2.h"
 #include "av1/encoder/av1_fwd_txfm1d_cfg.h"
 
-// TODO(linfengz): specialize fdct4x4 and fadst4x8 optimization.
+// TODO(linfengz): specialize fdct4x8 and fadst4x8 optimization.
+
+static void fdct4x4_new_sse2(const __m128i *input, __m128i *output,
+                             int8_t cos_bit) {
+  const int32_t *cospi = cospi_arr(cos_bit);
+  const __m128i cospi_p32_p32 = pair_set_epi16(cospi[32], cospi[32]);
+  const __m128i cospi_p32_m32 = pair_set_epi16(cospi[32], -cospi[32]);
+  const __m128i cospi_p16_p48 = pair_set_epi16(cospi[16], cospi[48]);
+  const __m128i cospi_p48_m16 = pair_set_epi16(cospi[48], -cospi[16]);
+  const __m128i __rounding = _mm_set1_epi32(1 << (cos_bit - 1));
+  __m128i u[4], v[4];
+
+  u[0] = _mm_unpacklo_epi16(input[0], input[1]);
+  u[1] = _mm_unpacklo_epi16(input[3], input[2]);
+
+  v[0] = _mm_add_epi16(u[0], u[1]);
+  v[1] = _mm_sub_epi16(u[0], u[1]);
+
+  u[0] = _mm_madd_epi16(v[0], cospi_p32_p32);  // 0
+  u[1] = _mm_madd_epi16(v[0], cospi_p32_m32);  // 2
+  u[2] = _mm_madd_epi16(v[1], cospi_p16_p48);  // 1
+  u[3] = _mm_madd_epi16(v[1], cospi_p48_m16);  // 3
+
+  v[0] = _mm_add_epi32(u[0], __rounding);
+  v[1] = _mm_add_epi32(u[1], __rounding);
+  v[2] = _mm_add_epi32(u[2], __rounding);
+  v[3] = _mm_add_epi32(u[3], __rounding);
+  u[0] = _mm_srai_epi32(v[0], cos_bit);
+  u[1] = _mm_srai_epi32(v[1], cos_bit);
+  u[2] = _mm_srai_epi32(v[2], cos_bit);
+  u[3] = _mm_srai_epi32(v[3], cos_bit);
+
+  output[0] = _mm_packs_epi32(u[0], u[1]);
+  output[1] = _mm_packs_epi32(u[2], u[3]);
+  output[2] = _mm_srli_si128(output[0], 8);
+  output[3] = _mm_srli_si128(output[1], 8);
+}
 
 void fdct4_new_sse2(const __m128i *input, __m128i *output, int8_t cos_bit) {
   const int32_t *cospi = cospi_arr(cos_bit);
@@ -1771,18 +1807,18 @@ static INLINE void fidentity32_new_sse2(const __m128i *input, __m128i *output,
 }
 
 static const transform_2d_sse2 txfm4_arr[] = {
-  { fdct4_new_sse2, fdct4_new_sse2 },            // DCT_DCT
-  { fadst4_new_sse2, fdct4_new_sse2 },           // ADST_DCT
-  { fdct4_new_sse2, fadst4_new_sse2 },           // DCT_ADST
+  { fdct4x4_new_sse2, fdct4x4_new_sse2 },        // DCT_DCT
+  { fadst4_new_sse2, fdct4x4_new_sse2 },         // ADST_DCT
+  { fdct4x4_new_sse2, fadst4_new_sse2 },         // DCT_ADST
   { fadst4_new_sse2, fadst4_new_sse2 },          // ADST_ADST
-  { fadst4_new_sse2, fdct4_new_sse2 },           // FLIPADST_DCT
-  { fdct4_new_sse2, fadst4_new_sse2 },           // DCT_FLIPADST
+  { fadst4_new_sse2, fdct4x4_new_sse2 },         // FLIPADST_DCT
+  { fdct4x4_new_sse2, fadst4_new_sse2 },         // DCT_FLIPADST
   { fadst4_new_sse2, fadst4_new_sse2 },          // FLIPADST_FLIPADST
   { fadst4_new_sse2, fadst4_new_sse2 },          // ADST_FLIPADST
   { fadst4_new_sse2, fadst4_new_sse2 },          // FLIPADST_ADST
   { fidentity4_new_sse2, fidentity4_new_sse2 },  // IDTX
-  { fdct4_new_sse2, fidentity4_new_sse2 },       // V_DCT
-  { fidentity4_new_sse2, fdct4_new_sse2 },       // H_DCT
+  { fdct4x4_new_sse2, fidentity4_new_sse2 },     // V_DCT
+  { fidentity4_new_sse2, fdct4x4_new_sse2 },     // H_DCT
   { fadst4_new_sse2, fidentity4_new_sse2 },      // V_ADST
   { fidentity4_new_sse2, fadst4_new_sse2 },      // H_ADST
   { fadst4_new_sse2, fidentity4_new_sse2 },      // V_FLIPADST
