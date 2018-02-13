@@ -67,7 +67,6 @@ struct WebFontRenderStyle {
   BLINK_PLATFORM_EXPORT static void SetAntiAlias(bool);
   BLINK_PLATFORM_EXPORT static void SetSubpixelRendering(bool);
   BLINK_PLATFORM_EXPORT static void SetSubpixelPositioning(bool);
-  BLINK_PLATFORM_EXPORT static void SetDefaultFontSize(int);
   BLINK_PLATFORM_EXPORT static void SetSystemFontFamily(const WebString& name);
 
   static WebFontRenderStyle GetDefault();

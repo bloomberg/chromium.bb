@@ -58,11 +58,6 @@ void WebFontRenderStyle::SetSubpixelPositioning(bool use_subpixel_positioning) {
 }
 
 // static
-void WebFontRenderStyle::SetDefaultFontSize(int size) {
-  FontCache::SetDefaultFontSize(size);
-}
-
-// static
 void WebFontRenderStyle::SetSystemFontFamily(const WebString& name) {
   FontCache::SetSystemFontFamily(name);
 }

@@ -33,6 +33,8 @@
 
 namespace blink {
 
+constexpr float kDefaultFontSize = 16.0;
+
 // static
 void LayoutThemeFontProvider::SystemFont(CSSValueID system_font_id,
                                          FontSelectionValue& font_slope,
@@ -41,7 +43,7 @@ void LayoutThemeFontProvider::SystemFont(CSSValueID system_font_id,
                                          AtomicString& font_family) {
   font_weight = NormalWeightValue();
   font_slope = NormalSlopeValue();
-  font_size = FontCache::DefaultFontSize();
+  font_size = kDefaultFontSize;
   font_family = DefaultGUIFont();
 
   switch (system_font_id) {

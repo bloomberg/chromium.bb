@@ -36,8 +36,9 @@ RendererPreferences::RendererPreferences()
       webrtc_udp_max_port(0),
       tap_multiple_targets_strategy(TAP_MULTIPLE_TARGETS_STRATEGY_POPUP),
       disable_client_blocked_error_page(false),
-      plugin_fullscreen_allowed(true),
+      plugin_fullscreen_allowed(true)
 #if defined(OS_WIN)
+      ,
       caption_font_height(0),
       small_caption_font_height(0),
       menu_font_height(0),
@@ -46,9 +47,9 @@ RendererPreferences::RendererPreferences()
       vertical_scroll_bar_width_in_dips(0),
       horizontal_scroll_bar_height_in_dips(0),
       arrow_bitmap_height_vertical_scroll_bar_in_dips(0),
-      arrow_bitmap_width_horizontal_scroll_bar_in_dips(0),
+      arrow_bitmap_width_horizontal_scroll_bar_in_dips(0)
 #endif
-      default_font_size(0) {
+{
 }
 
 RendererPreferences::RendererPreferences(const RendererPreferences& other) =
