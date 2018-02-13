@@ -2,9 +2,10 @@
 
 *** note
 **Note:** libprotobuf-mutator (LPM) is new to Chromium and does not (yet) have a
-long track record of success. Also, writing fuzzers with libprotobuf-mutator
-will probably require more effort than writing fuzzers with libFuzzer alone.
-If you run into problems, send an email to [fuzzing@chromium.org] for help.
+long track record of success. Also, writing grammar fuzzers with
+libprotobuf-mutator requires greater effort than writing fuzzers with libFuzzer
+alone. If you run into problems, send an email to [fuzzing@chromium.org] for
+help.
 
 **Prerequisites:** Knowledge of [libFuzzer in Chromium] and basic understanding of
 [Protocol Buffers].
@@ -21,28 +22,107 @@ manipulate protobufs. This allows libFuzzer's mutations to be more specific
 to the format it is fuzzing and less arbitrary. Below are some good use cases
 for libprotobuf-mutator:
 
-* Fuzzing targets that accept Protocol Buffers as input. Note that if you are
-fuzzing a target that accepts protobuffers, your protobuf definition *cannot*
-be optimized for `LITE_RUNTIME`, as is the case with almost all protobuf
-definitions in Chromium. To get around this you can copy the file without the
-optimization.
-* Fuzzing targets that accept other highly structured input. To do this you
-must write code that converts data from a protobuf-based format to a format the
-target accepts. url_parse_proto_fuzzer is a working example of this and is
-commented extensively. Readers may wish to consult its code, which is located in
-`testing/libfuzzer/fuzzers/url_parse_proto_fuzzer.cc`, and
-`testing/libfuzzer/fuzzers/url.proto`. Its build configuration can be found
-in `testing/libfuzzer/fuzzers/BUILD.gn`.
+* Fuzzing targets that accept Protocol Buffers as input. See the next section
+for how to do this.
+* Fuzzing targets that accept input defined by a grammar. To do this you
+must write code that converts data from a protobuf-based format that represents
+the grammar to a format the target accepts. url_parse_proto_fuzzer is a working
+example of this and is commented extensively. Readers may wish to consult its
+code, which is located in `testing/libfuzzer/fuzzers/url_parse_proto_fuzzer.cc`,
+and `testing/libfuzzer/fuzzers/url.proto`. Its build configuration can be found
+in `testing/libfuzzer/fuzzers/BUILD.gn`. We also provide a walkthrough on how to
+do this in the section after the next.
 * Fuzzing targets that accept more than one argument (such as data and flags).
 In this case, you can define each argument as its own field in your protobuf
 definition.
 
-In the next two sections, we will discuss how to write and build fuzzers using
-libprotobuf-mutator. Interested readers may also want to look at [this] example
-of a libprotobuf-mutator fuzzer that is even more trivial than
+In the next section, we discuss building a fuzzer that targets code that accepts
+an already existing protobuf definition. In the section after that, we discuss
+how to write and build grammar-based fuzzers using libprotobuf-mutator.
+Interested readers may also want to look at [this] example of a
+libprotobuf-mutator fuzzer that is even more trivial than
 url_parse_proto_fuzzer.
 
-## Write a libprotobuf-mutator fuzzer
+## Write a fuzzer for code that accepts protobufs
+This is almost as easy as writing a standard libFuzzer-based fuzzer. You can
+look at [override_lite_runtime_plugin_test_fuzzer] for an example of a working example of
+this (don't copy the line adding "//testing/libfuzzer:no_clusterfuzz" to
+additional_configs). Or you can follow this walkthrough:
+
+Start by creating a fuzz target. This is what the .cc file will look like:
+
+```c++
+// my_fuzzer.cc
+
+#include "third_party/libprotobuf-mutator/src/src/libfuzzer/libfuzzer_macro.h"
+
+// Assuming the .proto file is path/to/your/proto_file/my_proto.proto.
+#include "path/to/your/proto_file/my_proto.pb.h"
+
+// Silence libprotobuf_mutator's logging.
+protobuf_mutator::protobuf::LogSilencer log_silencer;
+
+DEFINE_BINARY_PROTO_FUZZER(
+  const my_proto::MyProtoMessage& my_proto_message) {
+  targeted_code(my_proto_message);
+}
+```
+
+The BUILD.gn definition for this target will be very similar to regular
+libFuzzer-based fuzzer_test. However it will also have libprotobuf-mutator in
+its deps. This is an example of what it will look like:
+
+```python
+// You must wrap the target in "use_libfuzzer" since trying to compile the
+// target without use_libfuzzer will fail (for reasons alluded to in the next
+// step), which the commit queue will try.
+if (use_libfuzzer) {
+  fuzzer_test("my_fuzzer") {
+    sources = [ "my_fuzzer.cc" ]
+    deps = [
+      // The proto library defining the message accepted by
+      // DEFINE_BINARY_PROTO_FUZZER().
+      ":my_proto",
+
+      "//third_party/libprotobuf-mutator",
+      ...
+    ]
+  }
+}
+```
+
+There's one more step however. Because Chromium doesn't want to ship to users
+the full protobuf library, all `.proto` files in Chromium that are used in
+production contain this line: `option optimize_for = LITE_RUNTIME` But this
+line is incompatible with libprotobuf-mutator. Thus, we need to modify the
+`proto_library` build target so that builds when fuzzing are compatible with
+libprotobuf-mutator. We do this by using a protobuf compiler plugin,
+`override_lite_runtime_plugin`. Here's what a `proto_library` build target that
+is configured properly looks like:
+
+```python
+proto_library("my_proto") {
+  ... // These lines (probably) dont need to be changed.
+
+  if (use_libfuzzer) {
+    generator_plugin_label =
+      "//third_party/libprotobuf-mutator:override_lite_runtime_plugin"
+    generator_plugin_suffix = ".pb"
+    # The plugin will generate cc, so don't ask for it to be done by protoc.
+    generate_cc = false
+    // If deps is already defined, change "=" to "+=".
+    deps = ["//third_party/libprotobuf-mutator:override_lite_runtime_plugin"]
+  }
+}
+```
+
+Note that this will not have any affects on the proto_library in production, since
+the plugin is only used when `use_libfuzzer == true`.
+And with that we have completed writing a libprotobuf-mutator fuzz target for
+Chromium code that accepts protobufs.
+
+
+## Write a grammar-based fuzzer with libprotobuf-mutator
 
 Once you have in mind the code you want to fuzz and the format it accepts, you
 are ready to start writing a libprotobuf-mutator fuzzer. Writing the fuzzer
@@ -50,7 +130,7 @@ will have three steps:
 
 * Define the fuzzed format (not required for protobuf formats, unless the
 original definition is optimized for `LITE_RUNTIME`).
-* Write the fuzzer target and conversion code (for non-protobuf formats).
+* Write the fuzz target and conversion code (for non-protobuf formats).
 * Define the GN target
 
 ### Define the Fuzzed Format
@@ -71,10 +151,10 @@ See `testing/libfuzzer/fuzzers/url.proto` for an example of this in practice.
 That example has extensive comments on URL syntax and how that influenced
 the definition of the Url message.
 
-### Write the Fuzzer Target and Conversion Code
+### Write the Fuzz Target and Conversion Code
 Create a new .cc and write a `DEFINE_BINARY_PROTO_FUZZER` function:
 
-```cpp
+```c++
 // Needed since we use getenv().
 #include <stdlib.h>
 
@@ -113,7 +193,7 @@ This is very similar to the same step in writing a standard libFuzzer fuzzer.
 The only real differences are accepting protobufs rather than raw data and
 converting them to the desired format. Conversion code can't really be explored
 in this guide since it is format-specific. However, a good example of conversion
-code (and a fuzzer target) can be found in
+code (and a fuzz target) can be found in
 `testing/libfuzzer/fuzzers/url_parse_proto_fuzzer.cc`. That example thoroughly
 documents how it converts the Url protobuf message into a real URL string.
 Note that `DEFINE_TEXT_PROTO_FUZZER` can be used during development instead of
@@ -142,7 +222,7 @@ import("//third_party/protobuf/proto_library.gni")
 fuzzer_test("my_fuzzer") {
   sources = [ "my_fuzzer.cc" ]
   deps = [
-    :my_format_proto
+    ":my_format_proto",
     "//third_party/libprotobuf-mutator"
     ...
   ]
@@ -155,13 +235,7 @@ proto_library("my_format_proto") {
 
 See `testing/libfuzzer/fuzzers/BUILD.gn` for an example of this in practice.
 
-### Wrapping Up
-Once you have written a fuzzer with libprotobuf-mutator, building and running
-it is pretty much the same as if the fuzzer were a standard libFuzzer-based
-fuzzer (with minor exceptions, like your seed corpus must be in protobuf
-format).
-
-### Tips
+### Tips For Grammar Based Fuzzers
 * If you have messages that are defined recursively (eg: message `Foo` has a
 field of type `Foo`), make sure to bound recursive calls to code converting
 your message into native input. Otherwise you will (probably) end up with an
@@ -204,14 +278,21 @@ std::string Convert(MyFormat& my_format) {
 }
 ```
 
-* Check out some of the [existing proto fuzzers], as not only will they be helpful
-examples, but it is possible that your format is already defined or partially
-defined by an existing proto definition.
-
 * libprotobuf-mutator supports both proto2 and proto3 syntax. Be aware though
 that it handles strings differently in each because of differences in the way
 the proto library handles strings in each syntax (in short, proto3 strings must
 actually be UTF-8 while in proto2 they do not). See [here] for more details.
+
+## Wrapping Up
+Once you have written a fuzzer with libprotobuf-mutator, building and running
+it is pretty much the same as if the fuzzer were a standard libFuzzer-based
+fuzzer (with minor exceptions, like your seed corpus must be in protobuf
+format).
+
+## General Tips
+* Check out some of the [existing proto fuzzers], as not only will they be helpful
+examples, but it is possible that your format is already defined or partially
+defined by an existing proto definition (if you are writing a grammar fuzzer).
 
 
 [libfuzzer in Chromium]: getting_started.md
@@ -220,3 +301,4 @@ actually be UTF-8 while in proto2 they do not). See [here] for more details.
 [this]: https://github.com/google/libprotobuf-mutator/tree/master/examples/libfuzzer/libfuzzer_example.cc
 [existing proto fuzzers]: https://cs.chromium.org/search/?q=DEFINE_(BINARY_%7CTEXT_)?PROTO_FUZZER+-file:src/third_party/libprotobuf-mutator/src/src/libfuzzer/libfuzzer_macro.h&sq=package:chromium&type=cs
 [here]: https://github.com/google/libprotobuf-mutator/blob/master/README.md#utf-8-strings
+[override_lite_runtime_plugin_test_fuzzer]: https://cs.chromium.org/chromium/src/third_party/libprotobuf-mutator/BUILD.gn?l=78
