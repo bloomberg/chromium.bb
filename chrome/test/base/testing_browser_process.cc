@@ -307,10 +307,7 @@ IntranetRedirectDetector* TestingBrowserProcess::intranet_redirect_detector() {
   return nullptr;
 }
 
-void TestingBrowserProcess::CreateDevToolsHttpProtocolHandler(
-    const std::string& ip,
-    uint16_t port) {
-}
+void TestingBrowserProcess::CreateDevToolsProtocolHandler() {}
 
 void TestingBrowserProcess::CreateDevToolsAutoOpener() {
 }

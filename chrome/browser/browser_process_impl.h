@@ -119,8 +119,7 @@ class BrowserProcessImpl : public BrowserProcess,
   policy::PolicyService* policy_service() override;
   IconManager* icon_manager() override;
   GpuModeManager* gpu_mode_manager() override;
-  void CreateDevToolsHttpProtocolHandler(const std::string& ip,
-                                         uint16_t port) override;
+  void CreateDevToolsProtocolHandler() override;
   void CreateDevToolsAutoOpener() override;
   bool IsShuttingDown() override;
   printing::PrintJobManager* print_job_manager() override;

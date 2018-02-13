@@ -42,6 +42,12 @@ void DevToolsAgentHost::StopRemoteDebuggingServer() {
 }
 
 // static
+void DevToolsAgentHost::StopRemoteDebuggingPipeHandler() {
+  DevToolsManager* manager = DevToolsManager::GetInstance();
+  manager->SetPipeHandler(nullptr);
+}
+
+// static
 DevToolsManager* DevToolsManager::GetInstance() {
   return base::Singleton<DevToolsManager>::get();
 }

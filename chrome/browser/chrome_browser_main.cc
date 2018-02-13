@@ -618,20 +618,6 @@ bool ProcessSingletonNotificationCallback(
 }
 #endif  // !defined(OS_ANDROID)
 
-void LaunchDevToolsHandlerIfNeeded(const base::CommandLine& command_line) {
-  if (command_line.HasSwitch(::switches::kRemoteDebuggingPort)) {
-    std::string port_str =
-        command_line.GetSwitchValueASCII(::switches::kRemoteDebuggingPort);
-    int port;
-    if (base::StringToInt(port_str, &port) && port >= 0 && port < 65535) {
-      g_browser_process->CreateDevToolsHttpProtocolHandler(
-          "", static_cast<uint16_t>(port));
-    } else {
-      DLOG(WARNING) << "Invalid http debugger port number " << port;
-    }
-  }
-}
-
 // Starts to profile the IO thread.
 void StartIOThreadProfiling() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1512,7 +1498,8 @@ void ChromeBrowserMainParts::PreProfileInit() {
 
 void ChromeBrowserMainParts::PostProfileInit() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PostProfileInit");
-  LaunchDevToolsHandlerIfNeeded(parsed_command_line());
+
+  g_browser_process->CreateDevToolsProtocolHandler();
   if (parsed_command_line().HasSwitch(::switches::kAutoOpenDevToolsForTabs))
     g_browser_process->CreateDevToolsAutoOpener();
 

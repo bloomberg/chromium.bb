@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_socket_factory.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/tcp_server_socket.h"
@@ -36,10 +37,8 @@ const int kBackLog = 10;
 class TCPServerSocketFactory
     : public content::DevToolsSocketFactory {
  public:
-  TCPServerSocketFactory(const std::string& address, uint16_t port)
-      : address_(address),
-        port_(port),
-        last_tethering_port_(kMinTetheringPort) {}
+  explicit TCPServerSocketFactory(uint16_t port)
+      : port_(port), last_tethering_port_(kMinTetheringPort) {}
 
  private:
   std::unique_ptr<net::ServerSocket> CreateLocalHostServerSocket(int port) {
@@ -57,11 +56,7 @@ class TCPServerSocketFactory
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     std::unique_ptr<net::ServerSocket> socket(
         new net::TCPServerSocket(nullptr, net::NetLogSource()));
-    if (address_.empty())
-      return CreateLocalHostServerSocket(port_);
-    if (socket->ListenWithAddressAndPort(address_, port_, kBackLog) == net::OK)
-      return socket;
-    return std::unique_ptr<net::ServerSocket>();
+    return CreateLocalHostServerSocket(port_);
   }
 
   std::unique_ptr<net::ServerSocket> CreateForTethering(
@@ -90,8 +85,20 @@ void RemoteDebuggingServer::EnableTetheringForDebug() {
   g_tethering_enabled.Get() = true;
 }
 
-RemoteDebuggingServer::RemoteDebuggingServer(const std::string& ip,
-                                             uint16_t port) {
+RemoteDebuggingServer::RemoteDebuggingServer() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kRemoteDebuggingPipe)) {
+    content::DevToolsAgentHost::StartRemoteDebuggingPipeHandler();
+    return;
+  }
+
+  std::string port_str =
+      command_line.GetSwitchValueASCII(::switches::kRemoteDebuggingPort);
+  int port;
+  if (!base::StringToInt(port_str, &port) || port < 0 || port >= 65535)
+    return;
+
   base::FilePath output_dir;
   if (!port) {
     // The client requested an ephemeral port. Must write the selected
@@ -107,7 +114,7 @@ RemoteDebuggingServer::RemoteDebuggingServer(const std::string& ip,
 #endif
 
   content::DevToolsAgentHost::StartRemoteDebuggingServer(
-      base::MakeUnique<TCPServerSocketFactory>(ip, port), output_dir,
+      base::MakeUnique<TCPServerSocketFactory>(port), output_dir,
       debug_frontend_dir);
 }
 
@@ -116,4 +123,5 @@ RemoteDebuggingServer::~RemoteDebuggingServer() {
   // accesses it during shutdown.
   DCHECK(g_browser_process->profile_manager());
   content::DevToolsAgentHost::StopRemoteDebuggingServer();
+  content::DevToolsAgentHost::StopRemoteDebuggingPipeHandler();
 }
