@@ -1207,12 +1207,16 @@ static void setup_ref_mv_list(
     for (int idx = refmv_count[ref_frame]; idx < MAX_MV_REF_CANDIDATES; ++idx)
       mv_ref_list[rf[0]][idx].as_int = gm_mv_candidates[0].as_int;
 #endif
+
+    for (int idx = 0; idx < refmv_count[ref_frame]; ++idx) {
+      clamp_mv_ref(&ref_mv_stack[ref_frame][idx].this_mv.as_mv,
+                   xd->n8_w << MI_SIZE_LOG2, xd->n8_h << MI_SIZE_LOG2, xd);
+    }
+
     for (int idx = 0;
          idx < AOMMIN(MAX_MV_REF_CANDIDATES, refmv_count[ref_frame]); ++idx) {
       mv_ref_list[rf[0]][idx].as_int =
           ref_mv_stack[ref_frame][idx].this_mv.as_int;
-      clamp_mv_ref(&mv_ref_list[rf[0]][idx].as_mv, xd->n8_w << MI_SIZE_LOG2,
-                   xd->n8_h << MI_SIZE_LOG2, xd);
     }
   }
   (void)nearest_match;

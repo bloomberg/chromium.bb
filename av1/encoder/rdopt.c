@@ -10042,15 +10042,11 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           if (compound_ref0_mode(mbmi->mode) == NEWMV) {
             int_mv this_mv =
                 mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv;
-            clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
-                         xd->n8_h << MI_SIZE_LOG2, xd);
             mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
           }
           if (compound_ref1_mode(mbmi->mode) == NEWMV) {
             int_mv this_mv =
                 mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].comp_mv;
-            clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
-                         xd->n8_h << MI_SIZE_LOG2, xd);
             mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0] = this_mv;
           }
         }
@@ -10061,8 +10057,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             int_mv this_mv =
                 (ref == 0) ? mbmi_ext->ref_mv_stack[ref_frame_type][0].this_mv
                            : mbmi_ext->ref_mv_stack[ref_frame_type][0].comp_mv;
-            clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
-                         xd->n8_h << MI_SIZE_LOG2, xd);
             mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][0] = this_mv;
           }
         }
@@ -10171,28 +10165,20 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             if (compound_ref0_mode(mbmi->mode) == NEWMV) {
               int_mv this_mv =
                   mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv;
-              clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
-                           xd->n8_h << MI_SIZE_LOG2, xd);
               mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
             } else if (compound_ref0_mode(mbmi->mode) == NEARESTMV) {
               int_mv this_mv =
                   mbmi_ext->ref_mv_stack[ref_frame_type][0].this_mv;
-              clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
-                           xd->n8_h << MI_SIZE_LOG2, xd);
               mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
             }
 
             if (compound_ref1_mode(mbmi->mode) == NEWMV) {
               int_mv this_mv =
                   mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].comp_mv;
-              clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
-                           xd->n8_h << MI_SIZE_LOG2, xd);
               mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0] = this_mv;
             } else if (compound_ref1_mode(mbmi->mode) == NEARESTMV) {
               int_mv this_mv =
                   mbmi_ext->ref_mv_stack[ref_frame_type][0].comp_mv;
-              clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
-                           xd->n8_h << MI_SIZE_LOG2, xd);
               mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0] = this_mv;
             }
           } else {
@@ -10200,8 +10186,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                                  ->ref_mv_stack[ref_frame_type]
                                                [mbmi->ref_mv_idx + idx_offset]
                                  .this_mv;
-            clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
-                         xd->n8_h << MI_SIZE_LOG2, xd);
             mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
           }
 

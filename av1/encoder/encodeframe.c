@@ -400,8 +400,6 @@ static void set_ref_and_pred_mvs(MACROBLOCK *const x, int_mv *const mi_pred_mv,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
 
-  const int bw = xd->n8_w << MI_SIZE_LOG2;
-  const int bh = xd->n8_h << MI_SIZE_LOG2;
   int ref_mv_idx = mbmi->ref_mv_idx;
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   CANDIDATE_MV *const curr_ref_mv_stack = mbmi_ext->ref_mv_stack[rf_type];
@@ -413,14 +411,12 @@ static void set_ref_and_pred_mvs(MACROBLOCK *const x, int_mv *const mi_pred_mv,
 
     if (compound_ref0_mode(mbmi->mode) == NEWMV) {
       int_mv this_mv = curr_ref_mv_stack[ref_mv_idx].this_mv;
-      clamp_mv_ref(&this_mv.as_mv, bw, bh, xd);
       mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
       mbmi->pred_mv[0] = this_mv;
       mi_pred_mv[0] = this_mv;
     }
     if (compound_ref1_mode(mbmi->mode) == NEWMV) {
       int_mv this_mv = curr_ref_mv_stack[ref_mv_idx].comp_mv;
-      clamp_mv_ref(&this_mv.as_mv, bw, bh, xd);
       mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0] = this_mv;
       mbmi->pred_mv[1] = this_mv;
       mi_pred_mv[1] = this_mv;
@@ -431,7 +427,6 @@ static void set_ref_and_pred_mvs(MACROBLOCK *const x, int_mv *const mi_pred_mv,
       for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
         int_mv this_mv = (i == 0) ? curr_ref_mv_stack[ref_mv_idx].this_mv
                                   : curr_ref_mv_stack[ref_mv_idx].comp_mv;
-        clamp_mv_ref(&this_mv.as_mv, bw, bh, xd);
         mbmi_ext->ref_mvs[mbmi->ref_frame[i]][0] = this_mv;
         mbmi->pred_mv[i] = this_mv;
         mi_pred_mv[i] = this_mv;
