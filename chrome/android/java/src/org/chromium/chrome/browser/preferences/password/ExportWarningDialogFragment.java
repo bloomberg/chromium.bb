@@ -60,6 +60,7 @@ public class ExportWarningDialogFragment extends DialogFragment {
 
     @Override
     public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
         mHandler.onDismiss();
     }
 }
