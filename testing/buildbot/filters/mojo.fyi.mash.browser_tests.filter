@@ -262,3 +262,6 @@
 -EnterpriseEnrollmentTest.TestAuthCodeGetsProperlyReceivedFromGaia
 -PowerPolicyLoginScreenBrowserTest.SetDevicePolicy
 -EnterpriseEnrollmentTest.TestActiveDirectoryEnrollment_Success
+
+# Access aura window shadow layer. http://crbug.com/811859
+-OmniboxPopupContentsViewTest.PopupAlignment/Rounded
