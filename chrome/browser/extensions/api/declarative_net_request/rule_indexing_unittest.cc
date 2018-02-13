@@ -24,6 +24,7 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/url_pattern.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -129,10 +130,12 @@ class RuleIndexingTest : public DNRTestBase {
 
     if (rules_value_) {
       WriteManifestAndRuleset(extension_dir_, kJSONRulesetFilepath,
-                              kJSONRulesFilename, *rules_value_);
+                              kJSONRulesFilename, *rules_value_,
+                              {URLPattern::kAllUrlsPattern});
     } else {
       WriteManifestAndRuleset(extension_dir_, kJSONRulesetFilepath,
-                              kJSONRulesFilename, rules_list_);
+                              kJSONRulesFilename, rules_list_,
+                              {URLPattern::kAllUrlsPattern});
     }
 
     // Overwrite the JSON rules file with some invalid json.

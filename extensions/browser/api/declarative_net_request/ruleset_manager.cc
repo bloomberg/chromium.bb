@@ -16,8 +16,10 @@
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
+#include "extensions/browser/api/web_request/web_request_permissions.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
+#include "extensions/common/constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace extensions {
@@ -154,6 +156,9 @@ bool RulesetManager::ShouldBlockRequest(const WebRequestInfo& request,
                                         bool is_incognito_context) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // Ensure clients filter out any requests which should be hidden.
+  DCHECK(!WebRequestPermissions::HideRequest(info_map_, request));
+
   // Return early if DNR is not enabled.
   if (!IsAPIAvailable())
     return false;
@@ -171,13 +176,12 @@ bool RulesetManager::ShouldBlockRequest(const WebRequestInfo& request,
       IsThirdPartyRequest(request.url, first_party_origin);
 
   for (const auto& ruleset_data : rulesets_) {
-    const bool evaluate_ruleset =
-        !is_incognito_context ||
-        info_map_->IsIncognitoEnabled(ruleset_data.extension_id);
+    if (!ShouldEvaluateRulesetForRequest(ruleset_data, request,
+                                         is_incognito_context)) {
+      continue;
+    }
 
-    // TODO(crbug.com/777714): Check host permissions etc.
-    if (evaluate_ruleset &&
-        ruleset_data.matcher->ShouldBlockRequest(
+    if (ruleset_data.matcher->ShouldBlockRequest(
             request.url, first_party_origin, element_type, is_third_party)) {
       return true;
     }
@@ -190,6 +194,9 @@ bool RulesetManager::ShouldRedirectRequest(const WebRequestInfo& request,
                                            GURL* redirect_url) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(redirect_url);
+
+  // Ensure clients filter out any requests which should be hidden.
+  DCHECK(!WebRequestPermissions::HideRequest(info_map_, request));
 
   // Return early if DNR is not enabled.
   if (!IsAPIAvailable())
@@ -213,14 +220,14 @@ bool RulesetManager::ShouldRedirectRequest(const WebRequestInfo& request,
   // more recently installed extensions get higher priority in choosing the
   // redirect url.
   for (const auto& ruleset_data : rulesets_) {
-    const bool evaluate_ruleset =
-        (!is_incognito_context ||
-         info_map_->IsIncognitoEnabled(ruleset_data.extension_id));
+    if (!ShouldEvaluateRulesetForRequest(ruleset_data, request,
+                                         is_incognito_context)) {
+      continue;
+    }
 
-    // TODO(crbug.com/777714): Check host permissions etc.
-    if (evaluate_ruleset && ruleset_data.matcher->ShouldRedirectRequest(
-                                url, first_party_origin, element_type,
-                                is_third_party, redirect_url)) {
+    if (ruleset_data.matcher->ShouldRedirectRequest(
+            url, first_party_origin, element_type, is_third_party,
+            redirect_url)) {
       return true;
     }
   }
@@ -253,6 +260,36 @@ bool RulesetManager::ExtensionRulesetData::operator<(
   return (extension_install_time != other.extension_install_time)
              ? (extension_install_time > other.extension_install_time)
              : (extension_id < other.extension_id);
+}
+
+bool RulesetManager::ShouldEvaluateRulesetForRequest(
+    const ExtensionRulesetData& ruleset,
+    const WebRequestInfo& request,
+    bool is_incognito_context) const {
+  // Only extensions enabled in incognito should have access to requests in an
+  // incognito context.
+  if (is_incognito_context &&
+      !info_map_->IsIncognitoEnabled(ruleset.extension_id)) {
+    return false;
+  }
+
+  const int tab_id = request.frame_data ? request.frame_data->tab_id
+                                        : extension_misc::kUnknownTabId;
+
+  // We have already checked that the extension has access to the request as far
+  // as the browser context is concerned. Since there is nothing special that we
+  // have to do for split mode incognito extensions, pass false for
+  // |crosses_incognito|.
+  const bool crosses_incognito = false;
+  PermissionsData::AccessType result =
+      WebRequestPermissions::CanExtensionAccessURL(
+          info_map_, ruleset.extension_id, request.url, tab_id,
+          crosses_incognito,
+          WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
+          request.initiator);
+
+  // TODO(crbug.com/809680): Handle ACCESS_WITHHELD.
+  return result == PermissionsData::ACCESS_ALLOWED;
 }
 
 }  // namespace declarative_net_request

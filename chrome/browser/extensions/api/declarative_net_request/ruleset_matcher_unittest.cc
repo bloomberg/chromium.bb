@@ -18,6 +18,7 @@
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/file_util.h"
+#include "extensions/common/url_pattern.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -44,7 +45,8 @@ class RulesetMatcherTest : public DNRTestBase {
     // Create extension directory.
     ASSERT_TRUE(base::CreateDirectory(extension_dir));
     WriteManifestAndRuleset(extension_dir, kJSONRulesetFilepath,
-                            kJSONRulesFilename, rules);
+                            kJSONRulesFilename, rules,
+                            {URLPattern::kAllUrlsPattern});
 
     extension_ = CreateExtensionLoader()->LoadExtension(extension_dir);
     ASSERT_TRUE(extension_);

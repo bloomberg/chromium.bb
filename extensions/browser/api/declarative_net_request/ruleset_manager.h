@@ -84,6 +84,11 @@ class RulesetManager {
     DISALLOW_COPY_AND_ASSIGN(ExtensionRulesetData);
   };
 
+  // Returns whether |ruleset| should be evaluated for the given |request|.
+  bool ShouldEvaluateRulesetForRequest(const ExtensionRulesetData& ruleset,
+                                       const WebRequestInfo& request,
+                                       bool is_incognito_context) const;
+
   // Sorted in decreasing order of |extension_install_time|.
   // Use a flat_set instead of std::set/map. This makes [Add/Remove]Ruleset
   // O(n), but it's fine since the no. of rulesets are expected to be quite

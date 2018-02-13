@@ -41,7 +41,9 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_id.h"
+#include "extensions/common/url_pattern.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
@@ -154,8 +156,11 @@ class DeclarativeNetRequestBrowserTest
 
   // Loads an extension with the given declarative |rules| in the given
   // |directory|. Generates a fatal failure if the extension failed to load.
+  // |hosts| specifies the host permissions, the extensions should
+  // have.
   void LoadExtensionWithRules(const std::vector<TestRule>& rules,
-                              const std::string& directory) {
+                              const std::string& directory,
+                              const std::vector<std::string>& hosts) {
     base::ScopedAllowBlockingForTesting scoped_allow_blocking;
     base::HistogramTester tester;
 
@@ -163,12 +168,13 @@ class DeclarativeNetRequestBrowserTest
     EXPECT_TRUE(base::CreateDirectory(extension_dir));
 
     WriteManifestAndRuleset(extension_dir, kJSONRulesetFilepath,
-                            kJSONRulesFilename, rules);
+                            kJSONRulesFilename, rules, hosts);
 
     const Extension* extension = nullptr;
     switch (GetParam()) {
       case ExtensionLoadType::PACKED:
-        extension = InstallExtension(extension_dir, 1 /* expected_change */);
+        extension = InstallExtensionWithPermissionsGranted(
+            extension_dir, 1 /* expected_change */);
         break;
       case ExtensionLoadType::UNPACKED:
         extension = LoadExtension(extension_dir);
@@ -196,7 +202,8 @@ class DeclarativeNetRequestBrowserTest
   }
 
   void LoadExtensionWithRules(const std::vector<TestRule>& rules) {
-    LoadExtensionWithRules(rules, "test_extension");
+    LoadExtensionWithRules(rules, "test_extension",
+                           {URLPattern::kAllUrlsPattern});
   }
 
  private:
@@ -635,8 +642,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       rules_2.push_back(rule);
   }
 
-  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(rules_1, "extension_1"));
-  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(rules_2, "extension_2"));
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      rules_1, "extension_1", {URLPattern::kAllUrlsPattern}));
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      rules_2, "extension_2", {URLPattern::kAllUrlsPattern}));
 
   struct {
     std::string host;
@@ -688,7 +697,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // url.
   for (size_t i = 1; i <= kNumExtensions; ++i) {
     rule.action->redirect_url = redirect_url_for_extension_number(i);
-    ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}, std::to_string(i)));
+    ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+        {rule}, std::to_string(i), {URLPattern::kAllUrlsPattern}));
 
     // Verify that the install time of this extension is greater than the last
     // extension.
@@ -906,7 +916,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   }
 }
 
-// Ensure extensions can't intercept chrome:// urls.
+// Ensure extensions can't intercept chrome:// urls, even after explicitly
+// requesting access to <all_urls>.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, ChromeURLS) {
   // Have the extension block all chrome:// urls.
   TestRule rule = CreateGenericRule();
@@ -1047,6 +1058,164 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                                               "/pages_with_script/page.html"));
   EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
   EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
+}
+
+// Ensure that an extension can intercept its own resources, but not those of
+// other extensions.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       InterceptExtensionScheme) {
+  // Load two extensions. One blocks all urls, and the other blocks urls with
+  // "google.com" as a substring.
+  std::vector<TestRule> rules_1;
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("*");
+  rules_1.push_back(rule);
+
+  std::vector<TestRule> rules_2;
+  rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("google.com");
+  rules_2.push_back(rule);
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      rules_1, "extension_1", {URLPattern::kAllUrlsPattern}));
+  const std::string extension_id_1 = last_loaded_extension_id();
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      rules_2, "extension_2", {URLPattern::kAllUrlsPattern}));
+  const std::string extension_id_2 = last_loaded_extension_id();
+
+  auto get_manifest_url = [](const std::string& extension_id) {
+    return GURL(base::StringPrintf("%s://%s/manifest.json",
+                                   extensions::kExtensionScheme,
+                                   extension_id.c_str()));
+  };
+
+  // Extension 1 should be able to block the request to its own
+  // manifest.json.
+  ui_test_utils::NavigateToURL(browser(), get_manifest_url(extension_id_1));
+  GURL final_url = web_contents()->GetLastCommittedURL();
+  EXPECT_EQ(content::PAGE_TYPE_ERROR, GetPageType());
+
+  // But it should not be able to intercept requests to the second extensions's
+  // resources, even with "<all_urls>" host permissions.
+  ui_test_utils::NavigateToURL(browser(), get_manifest_url(extension_id_2));
+  EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
+}
+
+// Test fixture to verify that host permissions for the request url and the
+// request initiator are properly checked. Loads an example.com url with four
+// sub-frames named frame_[1..4] from hosts frame_[1..4].com. The initiator for
+// these frames will be example.com. Loads an extension set to block all sub-
+// frames. Verifies that the correct frames are blocked depending on the host
+// permissions for the extension.
+class DeclarativeNetRequestHostPermissionsBrowserTest
+    : public DeclarativeNetRequestBrowserTest {
+ public:
+  DeclarativeNetRequestHostPermissionsBrowserTest() {}
+
+ protected:
+  struct FrameLoadResult {
+    std::string child_frame_name;
+    bool expect_frame_loaded;
+  };
+
+  void LoadExtensionWithHostPermissions(const std::vector<std::string>& hosts) {
+    std::vector<TestRule> rules;
+
+    // Block all sub-frame requests.
+    TestRule rule = CreateGenericRule();
+    rule.condition->url_filter = std::string("*");
+    rule.condition->resource_types = std::vector<std::string>({"sub_frame"});
+    rules.push_back(rule);
+
+    ASSERT_NO_FATAL_FAILURE(
+        LoadExtensionWithRules(rules, "test_extension", hosts));
+  }
+
+  void RunTests(const std::vector<FrameLoadResult>& expected_results) {
+    ASSERT_EQ(4u, expected_results.size());
+
+    GURL url = embedded_test_server()->GetURL("example.com",
+                                              "/page_with_four_frames.html");
+    ui_test_utils::NavigateToURL(browser(), url);
+    ASSERT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+
+    for (const auto& frame_result : expected_results) {
+      SCOPED_TRACE(base::StringPrintf("Testing child frame named %s",
+                                      frame_result.child_frame_name.c_str()));
+
+      content::RenderFrameHost* child =
+          GetFrameByName(frame_result.child_frame_name);
+      EXPECT_TRUE(child);
+      EXPECT_EQ(frame_result.expect_frame_loaded,
+                WasFrameWithScriptLoaded(child));
+    }
+  }
+
+  std::string GetMatchPatternForDomain(const std::string& domain) const {
+    return "*://*." + domain + ".com/*";
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestHostPermissionsBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestHostPermissionsBrowserTest,
+                       AllURLs1) {
+  // All frames should be blocked since the extension has access to all hosts.
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithHostPermissions({"<all_urls>"}));
+  RunTests({{"frame_1", false},
+            {"frame_2", false},
+            {"frame_3", false},
+            {"frame_4", false}});
+}
+
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestHostPermissionsBrowserTest,
+                       AllURLs2) {
+  // All frames should be blocked since the extension has access to all hosts.
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithHostPermissions({"*://*/*"}));
+  RunTests({{"frame_1", false},
+            {"frame_2", false},
+            {"frame_3", false},
+            {"frame_4", false}});
+}
+
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestHostPermissionsBrowserTest,
+                       NoPermissions) {
+  // The extension has no host permissions. No frames should be blocked.
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithHostPermissions({}));
+  RunTests({{"frame_1", true},
+            {"frame_2", true},
+            {"frame_3", true},
+            {"frame_4", true}});
+}
+
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestHostPermissionsBrowserTest,
+                       SubframesWithNoInitiatorPermissions) {
+  // The extension has access to requests to "frame_1.com" and "frame_2.com",
+  // but not the initiator of those requests (example.com). No frames should be
+  // blocked.
+  ASSERT_NO_FATAL_FAILURE(
+      LoadExtensionWithHostPermissions({GetMatchPatternForDomain("frame_1"),
+                                        GetMatchPatternForDomain("frame_2")}));
+  RunTests({{"frame_1", true},
+            {"frame_2", true},
+            {"frame_3", true},
+            {"frame_4", true}});
+}
+
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestHostPermissionsBrowserTest,
+                       SubframesWithInitiatorPermission) {
+  // The extension has access to requests to "frame_1.com" and "frame_4.com",
+  // and also the initiator of those requests (example.com). Hence |frame_1| and
+  // |frame_4| should be blocked.
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithHostPermissions(
+      {GetMatchPatternForDomain("frame_1"), GetMatchPatternForDomain("frame_4"),
+       GetMatchPatternForDomain("example")}));
+  RunTests({{"frame_1", false},
+            {"frame_2", true},
+            {"frame_3", true},
+            {"frame_4", false}});
 }
 
 // Fixture to test the "resourceTypes" and "excludedResourceTypes" fields of a
@@ -1219,6 +1388,10 @@ INSTANTIATE_TEST_CASE_P(,
                         ::testing::Values(ExtensionLoadType::PACKED,
                                           ExtensionLoadType::UNPACKED));
 
+INSTANTIATE_TEST_CASE_P(,
+                        DeclarativeNetRequestHostPermissionsBrowserTest,
+                        ::testing::Values(ExtensionLoadType::PACKED,
+                                          ExtensionLoadType::UNPACKED));
 INSTANTIATE_TEST_CASE_P(,
                         DeclarativeNetRequestResourceTypeBrowserTest,
                         ::testing::Values(ExtensionLoadType::PACKED,

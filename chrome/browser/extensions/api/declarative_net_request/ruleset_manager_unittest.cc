@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/optional.h"
 #include "chrome/browser/extensions/api/declarative_net_request/dnr_test_base.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -19,10 +20,12 @@
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/file_util.h"
+#include "extensions/common/url_pattern.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -40,14 +43,16 @@ class RulesetManagerTest : public DNRTestBase {
   // Helper to create a ruleset matcher instance for the given |rules|.
   void CreateMatcherForRules(const std::vector<TestRule>& rules,
                              const std::string& extension_dirname,
-                             std::unique_ptr<RulesetMatcher>* matcher) {
+                             std::unique_ptr<RulesetMatcher>* matcher,
+                             const std::vector<std::string>& host_permissions =
+                                 {URLPattern::kAllUrlsPattern}) {
     base::FilePath extension_dir =
         temp_dir().GetPath().AppendASCII(extension_dirname);
 
     // Create extension directory.
     ASSERT_TRUE(base::CreateDirectory(extension_dir));
     WriteManifestAndRuleset(extension_dir, kJSONRulesetFilepath,
-                            kJSONRulesFilename, rules);
+                            kJSONRulesFilename, rules, host_permissions);
 
     last_loaded_extension_ =
         CreateExtensionLoader()->LoadExtension(extension_dir);
@@ -229,23 +234,46 @@ TEST_P(RulesetManagerTest, Redirect) {
   rule.action->redirect_url = std::string("http://google.com");
   std::unique_ptr<RulesetMatcher> matcher;
   ASSERT_NO_FATAL_FAILURE(
-      CreateMatcherForRules({rule}, "test_extension", &matcher));
+      CreateMatcherForRules({rule}, "test_extension", &matcher,
+                            {"*://example.com/*", "*://abc.com/*"}));
   manager->AddRuleset(last_loaded_extension()->id(), std::move(matcher));
 
+  // Create a request to "example.com" with an empty initiator. It should be
+  // redirected to "google.com".
   const bool is_incognito_context = false;
-  GURL redirect_url;
+  GURL redirect_url1;
   std::unique_ptr<net::URLRequest> request =
       GetRequestForURL("http://example.com");
+  request->set_initiator(base::nullopt);
   extensions::WebRequestInfo request_info1(request.get());
   EXPECT_TRUE(manager->ShouldRedirectRequest(
-      request_info1, is_incognito_context, &redirect_url));
-  EXPECT_EQ(GURL("http://google.com"), redirect_url);
+      request_info1, is_incognito_context, &redirect_url1));
+  EXPECT_EQ(GURL("http://google.com"), redirect_url1);
 
-  // Ensure web-socket requests are not redirected.
-  request = GetRequestForURL("ws://example.com");
+  // Change the initiator to "xyz.com". It should not be redirected since we
+  // don't have host permissions to the request initiator.
+  GURL redirect_url2;
+  request->set_initiator(url::Origin::Create(GURL("http://xyz.com")));
   extensions::WebRequestInfo request_info2(request.get());
   EXPECT_FALSE(manager->ShouldRedirectRequest(
-      request_info2, is_incognito_context, &redirect_url));
+      request_info2, is_incognito_context, &redirect_url2));
+
+  // Change the initiator to "abc.com". It should be redirected since we have
+  // the required host permissions.
+  GURL redirect_url3;
+  request->set_initiator(url::Origin::Create(GURL("http://abc.com")));
+  extensions::WebRequestInfo request_info3(request.get());
+  EXPECT_TRUE(manager->ShouldRedirectRequest(
+      request_info3, is_incognito_context, &redirect_url3));
+  EXPECT_EQ(GURL("http://google.com"), redirect_url3);
+
+  // Ensure web-socket requests are not redirected.
+  GURL redirect_url4;
+  request = GetRequestForURL("ws://example.com");
+  request->set_initiator(base::nullopt);
+  extensions::WebRequestInfo request_info4(request.get());
+  EXPECT_FALSE(manager->ShouldRedirectRequest(
+      request_info4, is_incognito_context, &redirect_url4));
 }
 
 INSTANTIATE_TEST_CASE_P(,
