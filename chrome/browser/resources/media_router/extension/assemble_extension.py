@@ -9,6 +9,7 @@ directory, hence the name of the script.
 """
 
 import argparse
+import json
 import re
 
 
@@ -18,13 +19,23 @@ def main():
   parser.add_argument("--output_dir")
   args = parser.parse_args()
 
-  # Copy the manifest file, stripping YAML-style comment lines to
-  # produce valid JSON.
+  # Load the input file, removing YAML-style comment lines to produce
+  # valid JSON.
+  json_data = ''
+  with open(args.manifest_in) as manifest_in:
+    for line in manifest_in:
+      if re.match("^ *#", line):
+        # Insert an empty line so line numbers aren't changed.
+        json_data += '\n'
+      else:
+        json_data += line
+
+  # Verify that the result is valid JSON.
+  json.loads(json_data)
+
+  # Dump the output to the requested location.
   with open(args.output_dir + "/manifest.json", "w") as manifest_out:
-    with open(args.manifest_in) as manifest_in:
-      for line in manifest_in:
-        if not re.match("^ *#", line):
-          manifest_out.write(line)
+    manifest_out.writelines(json_data)
 
 
 main()
