@@ -26,7 +26,7 @@
     return Promise.resolve();
   }
 
-  Bindings.breakpointManager._storage._breakpoints = {};
+  Bindings.breakpointManager._storage._breakpoints = new Map();
   var panel = UI.panels.sources;
   var scriptFormatter;
   var formattedSourceFrame;

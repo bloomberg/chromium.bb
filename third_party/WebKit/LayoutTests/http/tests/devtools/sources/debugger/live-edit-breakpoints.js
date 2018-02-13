@@ -38,7 +38,7 @@
     TestRunner.addResult('    Dumping breakpoints');
     for (var i = 0; i < breakpoints.length; ++i) {
       var breakpoint = breakpoints[i];
-      var uiSourceCode = breakpointManager._workspace.uiSourceCode(breakpoint.projectId(), breakpoint.url());
+      var uiSourceCode = breakpoint._primaryUISourceCode;
       var lineNumber = breakpoint.lineNumber();
       var url = uiSourceCode.url();
       var project = uiSourceCode.project();
@@ -47,7 +47,7 @@
     }
   }
 
-  Bindings.breakpointManager._storage._breakpoints = {};
+  Bindings.breakpointManager._storage._breakpoints = new Map();
 
   SourcesTestRunner.runDebuggerTestSuite([
     function testEditUndo(next) {
