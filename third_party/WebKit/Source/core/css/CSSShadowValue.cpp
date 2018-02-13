@@ -44,31 +44,26 @@ CSSShadowValue::CSSShadowValue(CSSPrimitiveValue* x,
 String CSSShadowValue::CustomCSSText() const {
   StringBuilder text;
 
-  if (color)
+  if (color) {
     text.Append(color->CssText());
-  if (x) {
-    if (!text.IsEmpty())
-      text.Append(' ');
-    text.Append(x->CssText());
+    text.Append(' ');
   }
-  if (y) {
-    if (!text.IsEmpty())
-      text.Append(' ');
-    text.Append(y->CssText());
-  }
+
+  text.Append(x->CssText());
+  text.Append(' ');
+
+  text.Append(y->CssText());
+
   if (blur) {
-    if (!text.IsEmpty())
-      text.Append(' ');
+    text.Append(' ');
     text.Append(blur->CssText());
   }
   if (spread) {
-    if (!text.IsEmpty())
-      text.Append(' ');
+    text.Append(' ');
     text.Append(spread->CssText());
   }
   if (style) {
-    if (!text.IsEmpty())
-      text.Append(' ');
+    text.Append(' ');
     text.Append(style->CssText());
   }
 
