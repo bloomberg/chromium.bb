@@ -272,8 +272,8 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
         display_hit_test_query_map.find(root_view->GetRootFrameSinkId());
     if (iter == display_hit_test_query_map.end())
       return {root_view, false, base::nullopt};
-    // |point| is in the coordinate space of of the screen, but the display
-    // HitTestQuery does a hit test in the coordinate space of the root
+    // |point_in_screen| is in the coordinate space of of the screen, but the
+    // display HitTestQuery does a hit test in the coordinate space of the root
     // window. The following translation should account for that discrepancy.
     gfx::Point point_in_root =
         gfx::ToFlooredPoint(point_in_screen) -
