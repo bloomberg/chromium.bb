@@ -127,7 +127,7 @@ UPDATE_PAYLOAD_DIR = os.path.join(
     constants.UPDATE_ENGINE_SCRIPTS_PATH, 'update_payload')
 
 # Number of seconds to wait for the post check version to settle.
-POST_CHECK_SETTLE_SECONDS = 5
+POST_CHECK_SETTLE_SECONDS = 15
 
 # Number of seconds to delay between post check retries.
 POST_CHECK_RETRY_SECONDS = 5
