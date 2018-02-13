@@ -77,6 +77,7 @@ Polymer({
     this.$.cameraVideo.addEventListener('canplay', function() {
       this.$.userImageStreamCrop.classList.add('preview');
       this.cameraOnline_ = true;
+      this.focusTakePhotoButton();
     }.bind(this));
     this.startCamera();
   },
