@@ -162,11 +162,6 @@ base::TimeTicks WorkerSchedulerImpl::CurrentIdleTaskDeadlineForTesting() const {
 void WorkerSchedulerImpl::WillProcessTask(double start_time) {}
 
 void WorkerSchedulerImpl::DidProcessTask(double start_time, double end_time) {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, task_time_counter,
-                                  ("WorkerThread.Task.Time", 0, 10000000, 50));
-  task_time_counter.Count((end_time - start_time) *
-                          base::Time::kMicrosecondsPerSecond);
-
   base::TimeTicks start_time_ticks =
       MonotonicTimeInSecondsToTimeTicks(start_time);
   base::TimeTicks end_time_ticks = MonotonicTimeInSecondsToTimeTicks(end_time);

@@ -534,13 +534,7 @@ void WorkerThread::PerformDebuggerTaskOnWorkerThread(CrossThreadClosure task) {
     running_debugger_task_ = true;
   }
   ThreadDebugger::IdleFinished(GetIsolate());
-  {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(
-        CustomCountHistogram, scoped_us_counter,
-        ("WorkerThread.DebuggerTask.Time", 0, 10000000, 50));
-    ScopedUsHistogramTimer timer(scoped_us_counter);
-    std::move(task).Run();
-  }
+  std::move(task).Run();
   ThreadDebugger::IdleStarted(GetIsolate());
   {
     MutexLocker lock(thread_state_mutex_);
