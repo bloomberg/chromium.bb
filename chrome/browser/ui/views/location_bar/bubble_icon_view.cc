@@ -17,6 +17,7 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
 void BubbleIconView::Init() {
@@ -166,17 +167,23 @@ std::unique_ptr<views::InkDrop> BubbleIconView::CreateInkDrop() {
   return std::move(ink_drop);
 }
 
+std::unique_ptr<views::InkDropRipple> BubbleIconView::CreateInkDropRipple()
+    const {
+  return std::make_unique<views::FloodFillInkDropRipple>(
+      size(), GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
+      ink_drop_visible_opacity());
+}
+
 SkColor BubbleIconView::GetInkDropBaseColor() const {
   return color_utils::DeriveDefaultIconColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldDefaultColor));
 }
 
-std::unique_ptr<views::InkDropRipple> BubbleIconView::CreateInkDropRipple()
-    const {
-  return std::make_unique<views::FloodFillInkDropRipple>(
-      gfx::Size(kDefaultInkDropSize, kDefaultInkDropSize),
-      GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
-      ink_drop_visible_opacity());
+std::unique_ptr<views::InkDropMask> BubbleIconView::CreateInkDropMask() const {
+  if (!BackgroundWith1PxBorder::IsRounded())
+    return nullptr;
+  return std::make_unique<views::RoundRectInkDropMask>(size(), gfx::Insets(),
+                                                       height() / 2.f);
 }
 
 void BubbleIconView::OnGestureEvent(ui::GestureEvent* event) {
@@ -208,6 +215,7 @@ void BubbleIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   views::BubbleDialogDelegateView* bubble = GetBubble();
   if (bubble)
     bubble->OnAnchorBoundsChanged();
+  InkDropHostView::OnBoundsChanged(previous_bounds);
 }
 
 void BubbleIconView::UpdateIcon() {

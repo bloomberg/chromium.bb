@@ -35,7 +35,7 @@ void InkDropMask::OnDeviceScaleFactorChanged(float old_device_scale_factor,
 
 RoundRectInkDropMask::RoundRectInkDropMask(const gfx::Size& layer_size,
                                            const gfx::InsetsF& mask_insets,
-                                           int corner_radius)
+                                           float corner_radius)
     : InkDropMask(layer_size),
       mask_insets_(mask_insets),
       corner_radius_(corner_radius) {}
@@ -52,10 +52,8 @@ void RoundRectInkDropMask::OnPaintLayer(const ui::PaintContext& context) {
   gfx::RectF masking_bound(layer()->bounds());
   masking_bound.Inset(mask_insets_);
 
-  const gfx::Rect masking_bound_scaled =
-      gfx::ScaleToRoundedRect(gfx::ToNearestRect(masking_bound), dsf);
-  recorder.canvas()->DrawRoundRect(masking_bound_scaled, corner_radius_ * dsf,
-                                   flags);
+  recorder.canvas()->DrawRoundRect(gfx::ScaleRect(masking_bound, dsf),
+                                   corner_radius_ * dsf, flags);
 }
 
 // CircleInkDropMask

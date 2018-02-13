@@ -66,7 +66,7 @@ class BubbleIconView : public views::InkDropHostView,
   // Invoked after the icon is pressed.
   virtual void OnPressed(bool activated) {}
 
-  // views::View:
+  // views::InkDropHostView:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
@@ -84,6 +84,7 @@ class BubbleIconView : public views::InkDropHostView,
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   SkColor GetInkDropBaseColor() const override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;

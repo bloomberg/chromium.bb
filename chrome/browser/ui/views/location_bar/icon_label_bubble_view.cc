@@ -19,6 +19,7 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -248,11 +249,14 @@ void IconLabelBubbleView::OnNativeThemeChanged(
 }
 
 void IconLabelBubbleView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  ink_drop_layer->SetBounds(ink_drop_container_->bounds());
   ink_drop_container_->AddInkDropLayer(ink_drop_layer);
+  InstallInkDropMask(ink_drop_layer);
 }
 
 void IconLabelBubbleView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
+  ResetInkDropMask();
   separator_view_->UpdateOpacity();
 }
 
@@ -262,13 +266,6 @@ std::unique_ptr<views::InkDrop> IconLabelBubbleView::CreateInkDrop() {
   ink_drop->SetShowHighlightOnFocus(true);
   ink_drop->AddObserver(this);
   return std::move(ink_drop);
-}
-
-std::unique_ptr<views::InkDropHighlight>
-IconLabelBubbleView::CreateInkDropHighlight() const {
-  return InkDropHostView::CreateDefaultInkDropHighlight(
-      gfx::RectF(ink_drop_container_->bounds()).CenterPoint(),
-      ink_drop_container_->size());
 }
 
 std::unique_ptr<views::InkDropRipple> IconLabelBubbleView::CreateInkDropRipple()
@@ -283,9 +280,25 @@ std::unique_ptr<views::InkDropRipple> IconLabelBubbleView::CreateInkDropRipple()
       ink_drop_visible_opacity());
 }
 
+std::unique_ptr<views::InkDropHighlight>
+IconLabelBubbleView::CreateInkDropHighlight() const {
+  return InkDropHostView::CreateDefaultInkDropHighlight(
+      gfx::RectF(ink_drop_container_->bounds()).CenterPoint(),
+      ink_drop_container_->size());
+}
+
 SkColor IconLabelBubbleView::GetInkDropBaseColor() const {
   return color_utils::DeriveDefaultIconColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldDefaultColor));
+}
+
+std::unique_ptr<views::InkDropMask> IconLabelBubbleView::CreateInkDropMask()
+    const {
+  if (!BackgroundWith1PxBorder::IsRounded())
+    return nullptr;
+  return std::make_unique<views::RoundRectInkDropMask>(
+      ink_drop_container_->size(), gfx::Insets(),
+      ink_drop_container_->height() / 2.f);
 }
 
 bool IconLabelBubbleView::IsTriggerableEvent(const ui::Event& event) {

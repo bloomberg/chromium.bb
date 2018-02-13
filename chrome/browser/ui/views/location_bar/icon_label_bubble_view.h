@@ -127,10 +127,11 @@ class IconLabelBubbleView : public views::InkDropObserver,
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   SkColor GetInkDropBaseColor() const override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
   // views::Button:
   bool IsTriggerableEvent(const ui::Event& event) override;
