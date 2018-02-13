@@ -39,7 +39,7 @@ bool ArcMemory::Seek(int64 Offset,int Method)
   if (!Loaded)
     return false;
   if (Method==SEEK_SET)
-    SeekPos=Min(Offset,ArcData.Size());
+    SeekPos=Min((uint64)Offset,ArcData.Size());
   else
     if (Method==SEEK_CUR || Method==SEEK_END)
     {

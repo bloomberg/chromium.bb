@@ -1,7 +1,7 @@
 #include "rar.hpp"
 #define MBFUNCTIONS
 
-#if defined(_UNIX) && defined(MBFUNCTIONS)
+#if !defined(_WIN_ALL) && !defined(_APPLE) && defined(_UNIX) && defined(MBFUNCTIONS)
 
 static bool WideToCharMap(const wchar *Src,char *Dest,size_t DestSize,bool &Success);
 static void CharToWideMap(const char *Src,wchar *Dest,size_t DestSize,bool &Success);
@@ -30,7 +30,7 @@ bool WideToChar(const wchar *Src,char *Dest,size_t DestSize)
 #elif defined(_APPLE)
   WideToUtf(Src,Dest,DestSize);
 
-#elif defined(MBFUNCTIONS)
+#elif defined(_UNIX) && defined(MBFUNCTIONS)
   if (!WideToCharMap(Src,Dest,DestSize,RetCode))
   {
     mbstate_t ps; // Use thread safe external state based functions.
@@ -70,7 +70,7 @@ bool WideToChar(const wchar *Src,char *Dest,size_t DestSize)
 #endif
   if (DestSize>0)
     Dest[DestSize-1]=0;
-  
+
   // We tried to return the empty string if conversion is failed,
   // but it does not work well. WideCharToMultiByte returns 'failed' code
   // and partially converted string even if we wanted to convert only a part
@@ -95,7 +95,7 @@ bool CharToWide(const char *Src,wchar *Dest,size_t DestSize)
 #elif defined(_APPLE)
   UtfToWide(Src,Dest,DestSize);
 
-#elif defined(MBFUNCTIONS)
+#elif defined(_UNIX) && defined(MBFUNCTIONS)
   mbstate_t ps;
   memset (&ps, 0, sizeof(ps));
   const char *SrcParam=Src; // mbsrtowcs can change the pointer.
@@ -128,8 +128,8 @@ bool CharToWide(const char *Src,wchar *Dest,size_t DestSize)
 }
 
 
-#if defined(_UNIX) && defined(MBFUNCTIONS)
-// Convert and restore mapped inconvertible Unicode characters. 
+#if !defined(_WIN_ALL) && !defined(_APPLE) && defined(_UNIX) && defined(MBFUNCTIONS)
+// Convert and restore mapped inconvertible Unicode characters.
 // We use it for extended ASCII names in Unix.
 bool WideToCharMap(const wchar *Src,char *Dest,size_t DestSize,bool &Success)
 {
@@ -172,8 +172,8 @@ bool WideToCharMap(const wchar *Src,char *Dest,size_t DestSize,bool &Success)
 #endif
 
 
-#if defined(_UNIX) && defined(MBFUNCTIONS)
-// Convert and map inconvertible Unicode characters. 
+#if !defined(_WIN_ALL) && !defined(_APPLE) && defined(_UNIX) && defined(MBFUNCTIONS)
+// Convert and map inconvertible Unicode characters.
 // We use it for extended ASCII names in Unix.
 void CharToWideMap(const char *Src,wchar *Dest,size_t DestSize,bool &Success)
 {
@@ -299,7 +299,7 @@ size_t WideToUtfSize(const wchar *Src)
       if (*Src<0x800)
         Size+=2;
       else
-        if (*Src<0x10000)
+        if ((uint)*Src<0x10000)
         {
           if (Src[0]>=0xd800 && Src[0]<=0xdbff && Src[1]>=0xdc00 && Src[1]<=0xdfff)
           {
@@ -310,7 +310,7 @@ size_t WideToUtfSize(const wchar *Src)
             Size+=3;
         }
         else
-          if (*Src<0x200000)
+          if ((uint)*Src<0x200000)
             Size+=4;
   return Size+1; // Include terminating zero.
 }

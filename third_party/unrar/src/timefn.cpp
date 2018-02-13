@@ -141,7 +141,7 @@ void RarTime::GetWinFT(FILETIME *ft)
 
 void RarTime::SetWinFT(FILETIME *ft)
 {
-  _ULARGE_INTEGER ul = {ft->dwLowDateTime, ft->dwHighDateTime};
+  _ULARGE_INTEGER ul = {{ft->dwLowDateTime, ft->dwHighDateTime}};
   SetWin(ul.QuadPart);
 }
 #endif
