@@ -291,7 +291,8 @@ TEST(FilePolicyTest, AllowNtCreateWithNativePath) {
   ::wsprintfW(buff, L"File_CreateSys32 %s", nt_path.c_str());
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(buff));
 
-  std::transform(nt_path.begin(), nt_path.end(), nt_path.begin(), std::tolower);
+  for (wchar_t& c : nt_path)
+    c = std::tolower(c);
   ::wsprintfW(buff, L"File_CreateSys32 %s", nt_path.c_str());
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(buff));
 }
