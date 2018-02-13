@@ -169,6 +169,17 @@ class TestCryptohomeClient : public ::chromeos::FakeCryptohomeClient {
         FROM_HERE, base::BindOnce(std::move(callback), reply));
   }
 
+  void CheckKeyEx(const cryptohome::Identification& cryptohome_id,
+                  const cryptohome::AuthorizationRequest& auth,
+                  const cryptohome::CheckKeyRequest& request,
+                  DBusMethodCallback<cryptohome::BaseReply> callback) override {
+    EXPECT_EQ(expected_id_, cryptohome_id);
+    EXPECT_EQ(expected_authorization_secret_, auth.key().secret());
+    cryptohome::BaseReply reply;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), reply));
+  }
+
  private:
   cryptohome::Identification expected_id_;
   std::string expected_authorization_secret_;
@@ -334,6 +345,13 @@ class CryptohomeAuthenticatorTest : public testing::Test {
         transformed_key_.GetSecret());
     fake_cryptohome_client_->set_is_create_attempt_expected(
         expect_create_attempt);
+  }
+
+  void ExpectCheckKeyExCall() {
+    fake_cryptohome_client_->set_expected_id(
+        cryptohome::Identification(user_context_.GetAccountId()));
+    fake_cryptohome_client_->set_expected_authorization_secret(
+        transformed_key_.GetSecret());
   }
 
   void RunResolve(CryptohomeAuthenticator* auth) {
@@ -765,15 +783,9 @@ TEST_F(CryptohomeAuthenticatorTest, DriveUnlock) {
   ExpectLoginSuccess(user_context_);
   FailOnLoginFailure();
 
-  // Set up mock async method caller to respond successfully to a cryptohome
+  // Set up fake cryptohome client to respond successfully to a cryptohome
   // key-check attempt.
-  mock_caller_->SetUp(true, cryptohome::MOUNT_ERROR_NONE);
-  EXPECT_CALL(
-      *mock_caller_,
-      AsyncCheckKey(cryptohome::Identification(user_context_.GetAccountId()), _,
-                    _))
-      .Times(1)
-      .RetiresOnSaturation();
+  ExpectCheckKeyExCall();
 
   auth_->AuthenticateToUnlock(user_context_);
   base::RunLoop().Run();
