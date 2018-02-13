@@ -65,7 +65,6 @@ class LeakDetectionStorySet(story_module.StorySet):
       'http://www.cheapoair.com',
       'http://www.onlinedown.net',
       'http://www.dailypost.ng',
-      'http://www.listindiario.com',
       'http://www.aljazeera.net',
     ]
     resource_loading_urls_list = [
@@ -74,6 +73,7 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.macys.com',
       'https://www.reddit.com',
       'http://infomoney.com.br',
+      'http://www.listindiario.com',
     ]
     for url in urls_list:
       self.AddStory(LeakDetectionPage(url, self, url))
