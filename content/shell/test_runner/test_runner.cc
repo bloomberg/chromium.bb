@@ -68,7 +68,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
 #include "third_party/WebKit/public/platform/WebFontRenderStyle.h"
 #endif
 
@@ -1611,7 +1611,7 @@ void TestRunner::Reset() {
   drag_image_.Reset();
 
   WebSecurityPolicy::ResetOriginAccessWhitelists();
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
   WebFontRenderStyle::SetSubpixelPositioning(false);
 #endif
 
@@ -2149,7 +2149,7 @@ void TestRunner::RemoveOriginAccessWhitelistEntry(
 }
 
 void TestRunner::SetTextSubpixelPositioning(bool value) {
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
   // Since FontConfig doesn't provide a variable to control subpixel
   // positioning, we'll fall back to setting it globally for all fonts.
   WebFontRenderStyle::SetSubpixelPositioning(value);
