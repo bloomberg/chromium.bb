@@ -238,4 +238,12 @@ Polymer({
   clearEmptyNameServers_: function(nameservers) {
     return nameservers.filter((nameserver) => !!nameserver);
   },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  doNothing_: function(event) {
+    event.stopPropagation();
+  },
 });

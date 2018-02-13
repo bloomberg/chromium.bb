@@ -69,7 +69,7 @@
           <template is="dom-if"
               if="[[i18nExists('networkGoogleNameserversLearnMoreUrl')]]">
             <a href="[[i18n('networkGoogleNameserversLearnMoreUrl')]]"
-                target="_blank">
+                target="_blank" on-tap="doNothing_">
               [[i18n('networkNameserversLearnMore')]]
             </a>
           </template>
