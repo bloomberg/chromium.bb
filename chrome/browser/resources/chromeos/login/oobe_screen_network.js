@@ -25,13 +25,13 @@ login.createScreen('NetworkScreen', 'connect', function() {
 
     /** @override */
     decorate: function() {
-      Oobe.setupSelect(
+      setupSelect(
           $('language-select'), loadTimeData.getValue('languageList'),
           this.onLanguageSelected_.bind(this));
-      Oobe.setupSelect(
+      setupSelect(
           $('keyboard-select'), loadTimeData.getValue('inputMethodsList'),
           this.onKeyboardSelected_.bind(this));
-      Oobe.setupSelect(
+      setupSelect(
           $('timezone-select'), loadTimeData.getValue('timezoneList'),
           this.onTimezoneSelected_.bind(this));
 

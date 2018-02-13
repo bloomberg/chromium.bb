@@ -4,6 +4,10 @@
 {
   'targets': [
     {
+      'target_name': 'oobe_select',
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'offline_ad_login',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',

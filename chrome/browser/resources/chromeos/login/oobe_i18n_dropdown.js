@@ -61,7 +61,7 @@ Polymer({
       var item = items[i];
       this.idToItem_.set(item.value, item);
     }
-    Oobe.setupSelect(this.$.select, items, this.onSelected_.bind(this));
+    setupSelect(this.$.select, items, this.onSelected_.bind(this));
   },
 });
 })();
