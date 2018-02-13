@@ -5005,7 +5005,7 @@
         {
           "enumerant" : "SubgroupSize",
           "value" : 36,
-          "capabilities" : [ "Kernel" ]
+          "capabilities" : [ "Kernel", "SubgroupBallotKHR" ]
         },
         {
           "enumerant" : "SubgroupMaxSize",
@@ -5030,7 +5030,7 @@
         {
           "enumerant" : "SubgroupLocalInvocationId",
           "value" : 41,
-          "capabilities" : [ "Kernel" ]
+          "capabilities" : [ "Kernel", "SubgroupBallotKHR" ]
         },
         {
           "enumerant" : "VertexIndex",
