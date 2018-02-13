@@ -3,6 +3,6 @@ rootWebArea
 ++++inlineTextBox name='Test that elements respawn in the accessibility tree after a modal dialog closes.'
 ++region
 ++++popUpButton collapsed haspopup
-++++++menuListPopup invisible activedescendantId=menuListOption
+++++++menuListPopup invisible
 ++++++++menuListOption selectable selected name='This should be in the tree.'
 ++colorWell

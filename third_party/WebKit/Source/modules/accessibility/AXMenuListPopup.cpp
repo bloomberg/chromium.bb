@@ -163,14 +163,20 @@ void AXMenuListPopup::DidShow() {
   cache.PostNotification(this, AXObjectCacheImpl::kAXShow);
   int selected_index = GetSelectedIndex();
   if (selected_index >= 0 &&
-      selected_index < static_cast<int>(children_.size()))
+      selected_index < static_cast<int>(children_.size())) {
     DidUpdateActiveOption(selected_index);
-  else
+  } else {
     cache.PostNotification(parent_,
                            AXObjectCacheImpl::kAXFocusedUIElementChanged);
+  }
 }
 
 AXObject* AXMenuListPopup::ActiveDescendant() {
+  // Some Windows screen readers don't work properly if the active descendant
+  // gets the focus before they focus the list menu popup.
+  if (parent_ && !parent_->IsFocused())
+    return nullptr;
+
   if (active_index_ < 0 || active_index_ >= static_cast<int>(Children().size()))
     return nullptr;
 

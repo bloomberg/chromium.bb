@@ -22,7 +22,7 @@ rootWebArea name='Action verbs'
 ++++++staticText name='Summary'
 ++++++++inlineTextBox name='Summary'
 ++popUpButton collapsed haspopup defaultActionVerb=open
-++++menuListPopup invisible activedescendantId=menuListOption
+++++menuListPopup invisible
 ++++++menuListOption selectable selected name='Pop-up button' defaultActionVerb=select
 ++genericContainer defaultActionVerb=click
 ++++staticText name='Div with click handler' defaultActionVerb=clickAncestor
