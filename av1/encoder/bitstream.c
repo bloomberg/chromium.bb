@@ -2231,9 +2231,14 @@ static void encode_restoration_mode(AV1_COMMON *cm,
     }
   }
   if (!all_none) {
+#if CONFIG_EXT_PARTITION
     assert(cm->seq_params.sb_size == BLOCK_64X64 ||
            cm->seq_params.sb_size == BLOCK_128X128);
     const int sb_size = cm->seq_params.sb_size == BLOCK_128X128 ? 128 : 64;
+#else
+    assert(cm->seq_params.sb_size == BLOCK_64X64);
+    const int sb_size = 64;
+#endif
 
     RestorationInfo *rsi = &cm->rst_info[0];
 
