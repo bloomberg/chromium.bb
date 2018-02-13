@@ -36,7 +36,7 @@ using testing::Eq;
 using testing::ElementsAre;
 using testing::SizeIs;
 
-static constexpr viz::FrameSinkId kArbitraryFrameSinkId(1, 1);
+constexpr viz::FrameSinkId kArbitraryFrameSinkId(1, 1);
 
 class SurfaceLayerTest : public testing::Test {
  public:
@@ -73,6 +73,18 @@ class SurfaceLayerTest : public testing::Test {
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host_;
   FakeLayerTreeHostImpl host_impl_;
 };
+
+// This test verifies that if UseExistingDeadline() is used on a new
+// SurfaceLayer then the deadline will be 0 frames.
+TEST_F(SurfaceLayerTest, UseExistingDeadlineForNewSurfaceLayer) {
+  scoped_refptr<SurfaceLayer> layer = SurfaceLayer::Create();
+  layer_tree_host_->SetRootLayer(layer);
+  viz::SurfaceId primary_id(
+      kArbitraryFrameSinkId,
+      viz::LocalSurfaceId(1, base::UnguessableToken::Create()));
+  layer->SetPrimarySurfaceId(primary_id, DeadlinePolicy::UseExistingDeadline());
+  EXPECT_EQ(0u, layer->deadline_in_frames());
+}
 
 // This test verifies that SurfaceLayer properties are pushed across to
 // SurfaceLayerImpl.
