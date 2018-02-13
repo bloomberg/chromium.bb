@@ -866,7 +866,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // The current size of the RenderWidget.
   gfx::Size current_size_;
 
-  // Resize information that was previously sent to the renderer.
+  // Resize information that was most recently sent to the renderer.
   std::unique_ptr<ResizeParams> old_resize_params_;
 
   // The next auto resize to send.

@@ -71,15 +71,13 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   // The RenderWidget was resized.
   virtual void RenderWidgetWasResized(RenderWidgetHostImpl* render_widget_host,
+                                      const ScreenInfo& screen_info,
                                       bool width_changed) {}
 
   // The contents auto-resized and the container should match it.
   virtual void ResizeDueToAutoResize(RenderWidgetHostImpl* render_widget_host,
                                      const gfx::Size& new_size,
                                      uint64_t sequence_number) {}
-
-  // The screen info has changed.
-  virtual void ScreenInfoChanged() {}
 
   // Retrieve screen information.
   virtual void GetScreenInfo(ScreenInfo* screen_info);

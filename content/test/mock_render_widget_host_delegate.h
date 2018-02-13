@@ -27,7 +27,6 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   void set_focused_widget(RenderWidgetHostImpl* focused_widget) {
     focused_widget_ = focused_widget;
   }
-  double get_last_device_scale_factor() { return last_device_scale_factor_; }
   void set_pre_handle_keyboard_event_result(
       KeyboardEventProcessingResult result) {
     pre_handle_keyboard_event_result_ = result;
@@ -37,7 +36,6 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   void ResizeDueToAutoResize(RenderWidgetHostImpl* render_widget_host,
                              const gfx::Size& new_size,
                              uint64_t sequence_number) override;
-  void ScreenInfoChanged() override;
   void GetScreenInfo(ScreenInfo* result) override;
   KeyboardEventProcessingResult PreHandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) override;
@@ -59,7 +57,6 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   bool is_fullscreen_ = false;
   TextInputManager text_input_manager_;
   RenderWidgetHostImpl* focused_widget_ = nullptr;
-  double last_device_scale_factor_ = 0.0;
   KeyboardEventProcessingResult pre_handle_keyboard_event_result_ =
       KeyboardEventProcessingResult::NOT_HANDLED;
 
