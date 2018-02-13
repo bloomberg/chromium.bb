@@ -23,6 +23,9 @@ namespace {
 const char kProductName[] = "HeadlessChrome";
 constexpr gfx::Size kDefaultWindowSize(800, 600);
 
+constexpr gfx::FontRenderParams::Hinting kDefaultFontRenderHinting =
+    gfx::FontRenderParams::Hinting::HINTING_FULL;
+
 std::string GetProductNameAndVersion() {
   return std::string(kProductName) + "/" + PRODUCT_VERSION;
 }
@@ -44,7 +47,8 @@ Options::Options(int argc, const char** argv)
 #endif
       product_name_and_version(GetProductNameAndVersion()),
       user_agent(content::BuildUserAgentFromProduct(product_name_and_version)),
-      window_size(kDefaultWindowSize) {
+      window_size(kDefaultWindowSize),
+      font_render_hinting(kDefaultFontRenderHinting) {
 }
 
 Options::Options(Options&& options) = default;
@@ -186,6 +190,12 @@ Builder& Builder::SetCrashReporterEnabled(bool enabled) {
 
 Builder& Builder::SetCrashDumpsDir(const base::FilePath& dir) {
   options_.crash_dumps_dir = dir;
+  return *this;
+}
+
+Builder& Builder::SetFontRenderHinting(
+    gfx::FontRenderParams::Hinting font_render_hinting) {
+  options_.font_render_hinting = font_render_hinting;
   return *this;
 }
 
