@@ -427,10 +427,6 @@ TEST_F(RenderProcessHostUnitTest, DoNotReuseHostThatIsNeverSuitableForReuse) {
 
 // Tests that RenderProcessHost reuse considers navigations correctly.
 TEST_F(RenderProcessHostUnitTest, ReuseNavigationProcess) {
-  // This is only applicable to PlzNavigate.
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   const GURL kUrl1("http://foo.com");
   const GURL kUrl2("http://bar.com");
 
@@ -484,10 +480,6 @@ TEST_F(RenderProcessHostUnitTest, ReuseNavigationProcess) {
 // https://crbug.com/773809.
 TEST_F(RenderProcessHostUnitTest,
        ReuseNavigationProcessRedirectsRendererInitiated) {
-  // This is only applicable to PlzNavigate.
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   const GURL kUrl("http://foo.com");
   const GURL kRedirectUrl1("http://foo.com/redirect");
   const GURL kRedirectUrl2("http://bar.com");
@@ -572,10 +564,6 @@ TEST_F(RenderProcessHostUnitTest,
 // redirects in a browser-initiated navigation.
 TEST_F(RenderProcessHostUnitTest,
        ReuseNavigationProcessRedirectsBrowserInitiated) {
-  // This is only applicable to PlzNavigate.
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   const GURL kInitialUrl("http://google.com");
   const GURL kUrl("http://foo.com");
   const GURL kRedirectUrl1("http://foo.com/redirect");
@@ -727,9 +715,7 @@ TEST_F(RenderProcessHostUnitTest, ReuseSiteURLChanges) {
 // Tests that RenderProcessHost reuse works correctly even if the site URL of a
 // URL we're navigating to changes.
 TEST_F(RenderProcessHostUnitTest, ReuseExpectedSiteURLChanges) {
-  // This is only applicable to PlzNavigate.
-  // TODO(clamy): This test should work with --site-per-process.
-  if (!IsBrowserSideNavigationEnabled() || AreAllSitesIsolatedForTesting())
+  if (AreAllSitesIsolatedForTesting())
     return;
 
   const GURL kUrl("http://foo.com");

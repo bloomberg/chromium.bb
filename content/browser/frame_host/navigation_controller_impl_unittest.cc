@@ -434,61 +434,7 @@ TEST_F(NavigationControllerTest, GoToOffset) {
   }
 }
 
-// This test case was added to reproduce crbug.com/513742. The repro steps are
-// as follows:
-// 1. Pending entry for A is created.
-// 2. DidStartProvisionalLoad message for A arrives.
-// 3. Pending entry for B is created.
-// 4. DidFailProvisionalLoad message for A arrives. The logic here discards.
-// 5. DidStartProvisionalLoad message for B arrives.
-//
-// At step (4), the pending entry for B is discarded, when A is the one that
-// is being aborted. This caused the last committed entry to be displayed in
-// the omnibox, which is the entry before A was created.
-TEST_F(NavigationControllerTest, DontDiscardWrongPendingEntry) {
-  if (IsBrowserSideNavigationEnabled()) {
-    // PlzNavigate: this exact order of events cannot happen in PlzNavigate. A
-    // similar issue with the wrong pending entry being discarded is tested in
-    // the PlzNavigate version of the test below.
-    SUCCEED() << "Test is not applicable with PlzNavigate.";
-    return;
-  }
-
-  NavigationControllerImpl& controller = controller_impl();
-  GURL initial_url("http://www.google.com");
-  GURL url_1("http://foo.com");
-  GURL url_2("http://foo2.com");
-
-  // Navigate inititally. This is the url that could erroneously be the visible
-  // entry when url_1 fails.
-  NavigateAndCommit(initial_url);
-
-  // Set the pending entry as url_1 and receive the DidStartProvisionalLoad
-  // message, creating the NavigationHandle.
-  controller.LoadURL(url_1, Referrer(), ui::PAGE_TRANSITION_TYPED,
-                     std::string());
-  EXPECT_EQ(url_1, controller.GetVisibleEntry()->GetURL());
-  main_test_rfh()->SimulateNavigationStart(url_1);
-  EXPECT_EQ(url_1, controller.GetVisibleEntry()->GetURL());
-
-  // Navigate to url_2, aborting url_1 before the DidStartProvisionalLoad
-  // message is received for url_2. Do not discard the pending entry for url_2
-  // here.
-  controller.LoadURL(url_2, Referrer(), ui::PAGE_TRANSITION_TYPED,
-                     std::string());
-  EXPECT_EQ(url_2, controller.GetVisibleEntry()->GetURL());
-  main_test_rfh()->SimulateNavigationError(url_1, net::ERR_ABORTED);
-  EXPECT_EQ(url_2, controller.GetVisibleEntry()->GetURL());
-
-  // Get the DidStartProvisionalLoad message for url_2.
-  main_test_rfh()->SimulateNavigationStart(url_2);
-
-  EXPECT_EQ(url_2, controller.GetVisibleEntry()->GetURL());
-}
-
-// PlzNavigate: tests a case similar to
-// NavigationControllerTest.DontDiscardWrongPendingEntry.
-// Tests hat receiving a DidFailProvisionalLoad from the renderer that is
+// Tests that receiving a DidFailProvisionalLoad from the renderer that is
 // trying to commit an error page won't reset the pending entry of a navigation
 // that just started.
 TEST_F(NavigationControllerTestWithBrowserSideNavigation,
@@ -3634,19 +3580,8 @@ TEST_F(NavigationControllerTest, ShowBrowserURLAfterFailUntilModified) {
 
   // Suppose it aborts before committing, if it's a 204 or download or due to a
   // stop or a new navigation from the user.  The URL should remain visible.
-  if (IsBrowserSideNavigationEnabled()) {
-    static_cast<NavigatorImpl*>(main_test_rfh()->frame_tree_node()->navigator())
-        ->CancelNavigation(main_test_rfh()->frame_tree_node(), true);
-  } else {
-    FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
-    params.error_code = net::ERR_ABORTED;
-    params.error_description = base::string16();
-    params.url = url;
-    params.showing_repost_interstitial = false;
-    main_test_rfh()->OnMessageReceived(
-        FrameHostMsg_DidFailProvisionalLoadWithError(0, params));
-    main_test_rfh()->OnMessageReceived(FrameHostMsg_DidStopLoading(0));
-  }
+  static_cast<NavigatorImpl*>(main_test_rfh()->frame_tree_node()->navigator())
+      ->CancelNavigation(main_test_rfh()->frame_tree_node(), true);
   EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
 
   // If something else later modifies the contents of the about:blank page, then
@@ -4576,10 +4511,7 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   // Simulate the page calling history.back(). It should create a pending entry.
   contents()->OnGoToEntryAtOffset(test_rvh(), -1);
   EXPECT_EQ(0, controller.GetPendingEntryIndex());
-  // The actual cross-navigation is suspended until the current RVH tells us
-  // it unloaded, simulate that.
-  if (!IsBrowserSideNavigationEnabled())
-    contents()->GetMainFrame()->PrepareForCommitIfNecessary();
+
   // Also make sure we told the page to navigate.
   GURL nav_url = GetLastNavigationURL();
   EXPECT_EQ(url1, nav_url);
@@ -4589,10 +4521,7 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   // Now test history.forward()
   contents()->OnGoToEntryAtOffset(test_rvh(), 2);
   EXPECT_EQ(2, controller.GetPendingEntryIndex());
-  // The actual cross-navigation is suspended until the current RVH tells us
-  // it unloaded, simulate that.
-  if (!IsBrowserSideNavigationEnabled())
-    contents()->GetMainFrame()->PrepareForCommitIfNecessary();
+
   nav_url = GetLastNavigationURL();
   EXPECT_EQ(url3, nav_url);
   contents()->CommitPendingNavigation();
@@ -4992,8 +4921,7 @@ TEST_F(NavigationControllerTest, ClearHistoryList) {
 
   // Assume that the RenderFrame correctly cleared its history and commit the
   // navigation.
-  if (IsBrowserSideNavigationEnabled())
-    contents()->GetMainFrame()->SendBeforeUnloadACK(true);
+  contents()->GetMainFrame()->SendBeforeUnloadACK(true);
   contents()->GetPendingMainFrame()->
       set_simulate_history_list_was_cleared(true);
   contents()->CommitPendingNavigation();

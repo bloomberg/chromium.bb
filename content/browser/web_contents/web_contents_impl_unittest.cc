@@ -547,8 +547,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   int entry_id = controller().GetPendingEntry()->GetUniqueID();
-  if (IsBrowserSideNavigationEnabled())
-    orig_rfh->PrepareForCommit();
+  orig_rfh->PrepareForCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(url, contents()->GetLastCommittedURL());
   EXPECT_EQ(url2, contents()->GetVisibleURL());
@@ -585,8 +584,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   // We should use the same RFH as before, swapping it back in.
   controller().GoBack();
   entry_id = controller().GetPendingEntry()->GetUniqueID();
-  if (IsBrowserSideNavigationEnabled())
-    main_test_rfh()->PrepareForCommit();
+  main_test_rfh()->PrepareForCommit();
   TestRenderFrameHost* goback_rfh = contents()->GetPendingMainFrame();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
@@ -787,8 +785,7 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   entry_id = controller().GetPendingEntry()->GetUniqueID();
-  if (IsBrowserSideNavigationEnabled())
-    orig_rfh->PrepareForCommit();
+  orig_rfh->PrepareForCommit();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(url, contents()->GetLastCommittedURL());
   EXPECT_EQ(url2, contents()->GetVisibleURL());
@@ -2987,8 +2984,7 @@ TEST_F(WebContentsImplTest, ActiveContentsCountNavigate) {
                                     ui::PAGE_TRANSITION_TYPED,
                                     std::string());
   int entry_id = contents->GetController().GetPendingEntry()->GetUniqueID();
-  if (IsBrowserSideNavigationEnabled())
-    contents->GetMainFrame()->PrepareForCommit();
+  contents->GetMainFrame()->PrepareForCommit();
   EXPECT_TRUE(contents->CrossProcessNavigationPending());
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
   contents->GetPendingMainFrame()->SendNavigate(entry_id, true, kUrl);
@@ -3094,18 +3090,12 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   // Use a WebContentsObserver to approximate the behavior of the tab's spinner.
   LoadingWebContentsObserver observer(contents());
 
-  // Navigate the main RenderFrame, simulate the DidStartLoading, and commit.
-  // The frame should still be loading.
+  // Navigate the main RenderFrame and commit. The frame should still be
+  // loading.
   controller().LoadURL(
       main_url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   int entry_id = controller().GetPendingEntry()->GetUniqueID();
 
-  // PlzNavigate: the RenderFrameHost does not expect to receive
-  // DidStartLoading IPCs for navigations to different documents.
-  if (!IsBrowserSideNavigationEnabled()) {
-    orig_rfh->OnMessageReceived(
-        FrameHostMsg_DidStartLoading(orig_rfh->GetRoutingID(), false));
-  }
   main_test_rfh()->PrepareForCommit();
   contents()->TestDidNavigate(orig_rfh, entry_id, true, main_url,
                               ui::PAGE_TRANSITION_TYPED);
@@ -3117,13 +3107,9 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   // Create a child frame to navigate multiple times.
   TestRenderFrameHost* subframe = orig_rfh->AppendChild("subframe");
 
-  // Navigate the child frame to about:blank, which will send both
-  // DidStartLoading and DidStopLoading messages.
+  // Navigate the child frame to about:blank, which will send DidStopLoading
+  // message.
   {
-    if (!IsBrowserSideNavigationEnabled()) {
-      subframe->OnMessageReceived(
-          FrameHostMsg_DidStartLoading(subframe->GetRoutingID(), true));
-    }
     subframe->SendNavigateWithTransition(0, false, initial_url,
                                          ui::PAGE_TRANSITION_AUTO_SUBFRAME);
     subframe->OnMessageReceived(
@@ -3158,11 +3144,6 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
     controller().LoadURLWithParams(load_params);
     entry_id = controller().GetPendingEntry()->GetUniqueID();
 
-    if (!IsBrowserSideNavigationEnabled()) {
-      subframe->OnMessageReceived(
-          FrameHostMsg_DidStartLoading(subframe->GetRoutingID(), true));
-    }
-
     // Commit the navigation in the child frame and send the DidStopLoading
     // message.
     subframe->PrepareForCommit();
@@ -3192,18 +3173,12 @@ TEST_F(WebContentsImplTestWithSiteIsolation, IsLoadingToDifferentDocument) {
   const GURL main_url("http://www.chromium.org");
   TestRenderFrameHost* orig_rfh = main_test_rfh();
 
-  // Navigate the main RenderFrame, simulate the DidStartLoading, and commit.
-  // The frame should still be loading.
+  // Navigate the main RenderFrame and commit. The frame should still be
+  // loading.
   controller().LoadURL(main_url, Referrer(), ui::PAGE_TRANSITION_TYPED,
                        std::string());
   int entry_id = controller().GetPendingEntry()->GetUniqueID();
 
-  // PlzNavigate: the RenderFrameHost does not expect to receive
-  // DidStartLoading IPCs for navigations to different documents.
-  if (!IsBrowserSideNavigationEnabled()) {
-    orig_rfh->OnMessageReceived(
-        FrameHostMsg_DidStartLoading(orig_rfh->GetRoutingID(), false));
-  }
   main_test_rfh()->PrepareForCommit();
   contents()->TestDidNavigate(orig_rfh, entry_id, true, main_url,
                               ui::PAGE_TRANSITION_TYPED);
@@ -3224,10 +3199,6 @@ TEST_F(WebContentsImplTestWithSiteIsolation, IsLoadingToDifferentDocument) {
 
   // Navigate the child frame to about:blank, make sure the web contents is
   // marked as "loading" but not "loading to different document".
-  if (!IsBrowserSideNavigationEnabled()) {
-    subframe->OnMessageReceived(
-        FrameHostMsg_DidStartLoading(subframe->GetRoutingID(), true));
-  }
   subframe->SendNavigateWithTransition(0, false, GURL("about:blank"),
                                        ui::PAGE_TRANSITION_AUTO_SUBFRAME);
   EXPECT_TRUE(contents()->IsLoading());
