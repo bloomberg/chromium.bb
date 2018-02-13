@@ -42,7 +42,7 @@ void MockMediaStreamVideoSource::StartMockedSource() {
 void MockMediaStreamVideoSource::FailToStartMockedSource() {
   DCHECK(attempted_to_start_);
   attempted_to_start_ = false;
-  OnStartDone(MEDIA_DEVICE_TRACK_START_FAILURE);
+  OnStartDone(MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO);
 }
 
 void MockMediaStreamVideoSource::RequestRefreshFrame() {

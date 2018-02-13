@@ -351,7 +351,7 @@ void MediaStreamVideoSource::FinalizeAddPendingTracks() {
   for (const auto& track_info : pending_track_descriptors) {
     MediaStreamRequestResult result = MEDIA_DEVICE_OK;
     if (state_ != STARTED)
-      result = MEDIA_DEVICE_TRACK_START_FAILURE;
+      result = MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO;
 
     if (result == MEDIA_DEVICE_OK) {
       track_adapter_->AddTrack(track_info.track, track_info.frame_callback,

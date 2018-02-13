@@ -28489,7 +28489,7 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="MediaStreamRequestResult">
-  <int value="0" label="Ok"/>
+  <int value="0" label="OK"/>
   <int value="1" label="Permission Denied"/>
   <int value="2" label="Permission Dismissed"/>
   <int value="3" label="Invalid State"/>
@@ -28502,6 +28502,25 @@ Called by update_use_counter_css.py.-->
   <int value="10" label="Track Start Failure"/>
   <int value="11" label="Not Supported"/>
   <int value="12" label="Failed due to shutdown"/>
+  <int value="13" label="Kill Switch On"/>
+</enum>
+
+<enum name="MediaStreamRequestResult2">
+  <int value="0" label="OK"/>
+  <int value="1" label="Permission Denied (NotAllowedError)"/>
+  <int value="2" label="Permission Dismissed (NotAllowedError)"/>
+  <int value="3" label="Invalid State (NotAllowedError)"/>
+  <int value="4" label="No Hardware (NotFoundError)"/>
+  <int value="5" label="Invalid Security Origin (SecurityError)"/>
+  <int value="6" label="Tab Capture Failure (AbortError)"/>
+  <int value="7" label="Screen Capture Failure (AbortError)"/>
+  <int value="8" label="Capture Failure (AbortError)"/>
+  <int value="9" label="Constraint Not Satisfied (OverconstrainedError)"/>
+  <int value="10" label="Audio Track Start Failure (NotReadableError)"/>
+  <int value="11" label="Video Track Start Failure (NotReadableError)"/>
+  <int value="12" label="Not Supported (NotSupportedError)"/>
+  <int value="13" label="Failed Due To Shutdown (NotAllowedError)"/>
+  <int value="14" label="Kill Switch On (NotAllowedError)"/>
 </enum>
 
 <enum name="MediaStreamRequestState">
