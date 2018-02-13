@@ -18,6 +18,28 @@ namespace {
 using QuicUrlUtilsImplTest = QuicTest;
 
 TEST_F(QuicUrlUtilsImplTest, GetPushPromiseUrl) {
+  // Test rejection of various inputs.
+  EXPECT_EQ("", QuicUrlUtilsImpl::GetPushPromiseUrl("file", "localhost",
+                                                    "/etc/password"));
+  EXPECT_EQ("", QuicUrlUtilsImpl::GetPushPromiseUrl(
+                    "file", "", "/C:/Windows/System32/Config/"));
+  EXPECT_EQ("", QuicUrlUtilsImpl::GetPushPromiseUrl(
+                    "", "https://www.google.com", "/"));
+
+  EXPECT_EQ("", QuicUrlUtilsImpl::GetPushPromiseUrl("https://www.google.com",
+                                                    "www.google.com", "/"));
+  EXPECT_EQ("", QuicUrlUtilsImpl::GetPushPromiseUrl("https://",
+                                                    "www.google.com", "/"));
+  EXPECT_EQ("", QuicUrlUtilsImpl::GetPushPromiseUrl("https", "", "/"));
+  EXPECT_EQ(
+      "", QuicUrlUtilsImpl::GetPushPromiseUrl("https", "", "www.google.com/"));
+  EXPECT_EQ(
+      "", QuicUrlUtilsImpl::GetPushPromiseUrl("https", "www.google.com/", "/"));
+  EXPECT_EQ("",
+            QuicUrlUtilsImpl::GetPushPromiseUrl("https", "www.google.com", ""));
+  EXPECT_EQ(
+      "", QuicUrlUtilsImpl::GetPushPromiseUrl("https", "www.google", ".com/"));
+
   // Test acception/rejection of various input combinations.
   // |input_headers| is an array of pairs. The first value of each pair is a
   // string that will be used as one of the inputs of GetPushPromiseUrl(). The
@@ -94,6 +116,9 @@ TEST_F(QuicUrlUtilsImplTest, GetPushPromiseUrl) {
   EXPECT_EQ("https://www.goo-gle.com/fOOo/baRR",
             QuicUrlUtilsImpl::GetPushPromiseUrl("hTtPs", "wWw.gOo-gLE.cOm",
                                                 "/fOOo/baRR"));
+  EXPECT_EQ("https://www.goo-gle.com:3278/pAth/To/reSOurce",
+            QuicUrlUtilsImpl::GetPushPromiseUrl(
+                "hTtPs", "Www.gOo-Gle.Com:000003278", "/pAth/To/reSOurce"));
   EXPECT_EQ(
       "https://foo%20bar/foo/bar/baz",
       QuicUrlUtilsImpl::GetPushPromiseUrl("https", "foo bar", "/foo/bar/baz"));
