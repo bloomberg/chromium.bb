@@ -4841,6 +4841,48 @@ TEST_F(DiskCacheEntryTest, SimpleCacheLazyStream2CreateFailure) {
   entry->Close();
 }
 
+TEST_F(DiskCacheEntryTest, SimpleCacheChecksumpScrewUp) {
+  // Test for a bug that occurred during development of  movement of CRC
+  // computation off I/O thread.
+  const int kSize = 10;
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
+  CacheTestFillBuffer(buffer->data(), kSize, false);
+
+  const int kDoubleSize = kSize * 2;
+  scoped_refptr<net::IOBuffer> big_buffer(new net::IOBuffer(kDoubleSize));
+  CacheTestFillBuffer(big_buffer->data(), kDoubleSize, false);
+
+  SetSimpleCacheMode();
+  InitCache();
+
+  const char kKey[] = "a key";
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry(kKey, &entry), IsOk());
+
+  // Write out big_buffer for the double range. Checksum will be set to this.
+  ASSERT_EQ(kDoubleSize,
+            WriteData(entry, 1, 0, big_buffer.get(), kDoubleSize, false));
+
+  // Reset remembered position to 0 by writing at an earlier non-zero offset.
+  ASSERT_EQ(1, WriteData(entry, /* stream = */ 1, /* offset = */ 1,
+                         big_buffer.get(), /* len = */ 1, false));
+
+  // Now write out the half-range twice. An intermediate revision would
+  // incorrectly compute checksum as if payload was buffer followed by buffer
+  // rather than buffer followed by end of big_buffer.
+  ASSERT_EQ(kSize, WriteData(entry, 1, 0, buffer.get(), kSize, false));
+  ASSERT_EQ(kSize, WriteData(entry, 1, 0, buffer.get(), kSize, false));
+  entry->Close();
+
+  ASSERT_THAT(OpenEntry(kKey, &entry), IsOk());
+  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kSize));
+  EXPECT_EQ(kSize, ReadData(entry, 1, 0, buffer2.get(), kSize));
+  EXPECT_EQ(0, memcmp(buffer->data(), buffer2->data(), kSize));
+  EXPECT_EQ(kSize, ReadData(entry, 1, kSize, buffer2.get(), kSize));
+  EXPECT_EQ(0, memcmp(big_buffer->data() + kSize, buffer2->data(), kSize));
+  entry->Close();
+}
+
 // TODO(morlovich): There seems to be an imperfection of leak detection, see
 // https://crbug.com/811276. Please reenable this test when the bug is fixed.
 TEST_F(DiskCacheEntryTest, DISABLED_UseAfterBackendDestruction) {

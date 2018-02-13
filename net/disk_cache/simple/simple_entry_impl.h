@@ -285,11 +285,12 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   // |buf| parameter brings back a reference to net::IOBuffer to the original
   // thread, so that we can reduce cross thread malloc/free pair.
   // See http://crbug.com/708644 for details.
-  void WriteOperationComplete(int stream_index,
-                              const CompletionCallback& completion_callback,
-                              std::unique_ptr<SimpleEntryStat> entry_stat,
-                              std::unique_ptr<int> result,
-                              net::IOBuffer* buf);
+  void WriteOperationComplete(
+      int stream_index,
+      const CompletionCallback& completion_callback,
+      std::unique_ptr<SimpleEntryStat> entry_stat,
+      std::unique_ptr<SimpleSynchronousEntry::WriteResult> result,
+      net::IOBuffer* buf);
 
   void ReadSparseOperationComplete(
       const CompletionCallback& completion_callback,
@@ -342,13 +343,6 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   int SetStream0Data(net::IOBuffer* buf,
                      int offset, int buf_len,
                      bool truncate);
-
-  // Updates |crc32s_| and |crc32s_end_offset_| for a write of the data in
-  // |buffer| on |stream_index|, starting at |offset| and of length |length|.
-  void AdvanceCrc(net::IOBuffer* buffer,
-                  int offset,
-                  int length,
-                  int stream_index);
 
   // We want all async I/O on entries to complete before recycling the dir.
   scoped_refptr<BackendCleanupTracker> cleanup_tracker_;
