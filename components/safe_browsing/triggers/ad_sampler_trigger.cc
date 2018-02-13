@@ -109,6 +109,8 @@ AdSamplerTrigger::AdSamplerTrigger(
       prefs_(prefs),
       request_context_(request_context),
       history_service_(history_service),
+      task_runner_(content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::UI)),
       weak_ptr_factory_(this) {}
 
 AdSamplerTrigger::~AdSamplerTrigger() {}
@@ -149,8 +151,8 @@ void AdSamplerTrigger::DidFinishLoad(
 
   // Create a report after a short delay. The delay gives more time for ads to
   // finish loading in the background. This is best-effort.
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI, FROM_HERE,
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(&AdSamplerTrigger::CreateAdSampleReport,
                      weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(start_report_delay_ms_));
@@ -179,8 +181,8 @@ void AdSamplerTrigger::CreateAdSampleReport() {
   // ads that are detected during this delay will be rejected by TriggerManager
   // because a report is already being collected, so we won't send multiple
   // reports for the same page.
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::UI, FROM_HERE,
+  task_runner_->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(
           IgnoreResult(&TriggerManager::FinishCollectingThreatDetails),
           base::Unretained(trigger_manager_), TriggerType::AD_SAMPLE,
@@ -190,6 +192,15 @@ void AdSamplerTrigger::CreateAdSampleReport() {
 
   UMA_HISTOGRAM_ENUMERATION(kAdSamplerTriggerActionMetricName, AD_SAMPLED,
                             MAX_ACTIONS);
+}
+
+void AdSamplerTrigger::SetSamplerFrequencyForTest(size_t denominator) {
+  sampler_frequency_denominator_ = denominator;
+}
+
+void AdSamplerTrigger::SetTaskRunnerForTest(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  task_runner_ = task_runner;
 }
 
 }  // namespace safe_browsing
