@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.permissions;
 
 import android.content.DialogInterface;
 import android.support.test.InstrumentationRegistry;
-import android.support.v7.app.AlertDialog;
 
 import org.junit.Assert;
 import org.junit.runner.Description;
@@ -103,7 +102,7 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
      * Criteria class to detect whether the permission dialog is shown.
      */
     protected static class DialogShownCriteria extends Criteria {
-        private AlertDialog mDialog;
+        private PermissionDialogView mDialog;
         private boolean mExpectDialog;
 
         public DialogShownCriteria(String error, boolean expectDialog) {
@@ -111,7 +110,7 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
             mExpectDialog = expectDialog;
         }
 
-        public AlertDialog getDialog() {
+        public PermissionDialogView getDialog() {
             return mDialog;
         }
 
@@ -155,9 +154,9 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
     }
 
     /**
-     * Simulates clicking a button on an AlertDialog.
+     * Simulates clicking a button on an PermissionDialogView.
      */
-    private void clickButton(final AlertDialog dialog, final int button) {
+    private void clickButton(final PermissionDialogView dialog, final int button) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -223,7 +222,7 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
      * updates to the page title in response.
      */
     private void replyToDialogAndWaitForUpdates(PermissionUpdateWaiter updateWaiter,
-            AlertDialog dialog, int nUpdates, boolean allow) throws Exception {
+            PermissionDialogView dialog, int nUpdates, boolean allow) throws Exception {
         if (allow) {
             clickButton(dialog, DialogInterface.BUTTON_POSITIVE);
         } else {
