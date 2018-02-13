@@ -70,10 +70,10 @@ std::unique_ptr<CSS::CSSStyle> BuildCSSStyle(UIElement* ui_element) {
 
   std::unique_ptr<Array<CSS::CSSProperty>> css_properties(
       BuildCSSPropertyArray(bounds, visible));
-  const std::vector<std::pair<std::string, std::string>> attributes(
-      ui_element->GetCustomAttributes());
+  const std::vector<std::pair<std::string, std::string>> properties(
+      ui_element->GetCustomProperties());
 
-  for (const auto& it : attributes)
+  for (const auto& it : properties)
     css_properties->addItem(BuildCSSProperty(it.first, it.second));
 
   return CSS::CSSStyle::create()

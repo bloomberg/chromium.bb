@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "components/ui_devtools/Protocol.h"
 #include "components/ui_devtools/views/ui_element_delegate.h"
 #include "components/ui_devtools/views/view_element.h"
 #include "components/ui_devtools/views/widget_element.h"
