@@ -26,8 +26,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
@@ -59,8 +57,6 @@
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/offline_pages/features/features.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -326,7 +322,6 @@ bool IsKeepingPrefetchedSuggestionsEnabled() {
 
 void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
                                       Profile* profile,
-                                      SigninManagerBase* signin_manager,
                                       UserClassifier* user_classifier,
                                       OfflinePageModel* offline_page_model,
                                       ntp_snippets::Logger* debug_logger) {
@@ -397,7 +392,7 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
                                          request_context.get()),
       base::MakeUnique<RemoteSuggestionsDatabase>(database_dir),
       base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(
-          signin_manager->IsAuthenticated(), pref_service,
+          identity_manager->HasPrimaryAccount(), pref_service,
           additional_toggle_pref),
       std::move(prefetched_pages_tracker),
       std::move(breaking_news_raw_data_provider), debug_logger,
@@ -460,9 +455,7 @@ ContentSuggestionsServiceFactory::ContentSuggestionsServiceFactory()
   DependsOn(OfflinePageModelFactory::GetInstance());
   DependsOn(offline_pages::PrefetchServiceFactory::GetInstance());
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(ProfileSyncServiceFactory::GetInstance());
-  DependsOn(SigninManagerFactory::GetInstance());
 #if defined(OS_ANDROID)
   DependsOn(gcm::GCMProfileServiceFactory::GetInstance());
   DependsOn(instance_id::InstanceIDProfileServiceFactory::GetInstance());
@@ -505,8 +498,6 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       raw_debug_logger);
 
   // Create the ContentSuggestionsService.
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
@@ -523,9 +514,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       pref_service, std::move(category_ranker), std::move(user_classifier),
       std::move(scheduler), std::move(debug_logger));
 
-  RegisterArticleProviderIfEnabled(service, profile, signin_manager,
-                                   user_classifier_raw, offline_page_model,
-                                   raw_debug_logger);
+  RegisterArticleProviderIfEnabled(service, profile, user_classifier_raw,
+                                   offline_page_model, raw_debug_logger);
   RegisterBookmarkProviderIfEnabled(service, profile);
   RegisterForeignSessionsProviderIfEnabled(service, profile);
 
