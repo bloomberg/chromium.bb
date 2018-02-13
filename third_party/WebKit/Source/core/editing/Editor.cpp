@@ -74,22 +74,19 @@
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/html/canvas/HTMLCanvasElement.h"
 #include "core/html/forms/HTMLInputElement.h"
 #include "core/html/forms/HTMLTextAreaElement.h"
-#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html_names.h"
 #include "core/input/EventHandler.h"
 #include "core/input_type_names.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutImage.h"
+#include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/page/DragData.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
-#include "core/svg/SVGImageElement.h"
 #include "platform/KillRing.h"
 #include "platform/scroll/ScrollAlignment.h"
 #include "platform/weborigin/KURL.h"
@@ -470,62 +467,6 @@ void Editor::WriteSelectionToPasteboard() {
   String plain_text = GetFrame().SelectedTextForClipboard();
   Pasteboard::GeneralPasteboard()->WriteHTML(html, url, plain_text,
                                              CanSmartCopyOrDelete());
-}
-
-static scoped_refptr<Image> ImageFromNode(const Node& node) {
-  DCHECK(!node.GetDocument().NeedsLayoutTreeUpdate());
-  DocumentLifecycle::DisallowTransitionScope disallow_transition(
-      node.GetDocument().Lifecycle());
-
-  LayoutObject* layout_object = node.GetLayoutObject();
-  if (!layout_object)
-    return nullptr;
-
-  if (layout_object->IsCanvas()) {
-    return ToHTMLCanvasElement(const_cast<Node&>(node))
-        .CopiedImage(kFrontBuffer, kPreferNoAcceleration);
-  }
-
-  if (layout_object->IsImage()) {
-    LayoutImage* layout_image = ToLayoutImage(layout_object);
-    if (!layout_image)
-      return nullptr;
-
-    ImageResourceContent* cached_image = layout_image->CachedImage();
-    if (!cached_image || cached_image->ErrorOccurred())
-      return nullptr;
-    return cached_image->GetImage();
-  }
-
-  return nullptr;
-}
-
-static void WriteImageNodeToPasteboard(Pasteboard* pasteboard,
-                                       Node* node,
-                                       const String& title) {
-  DCHECK(pasteboard);
-  DCHECK(node);
-
-  scoped_refptr<Image> image = ImageFromNode(*node);
-  if (!image.get())
-    return;
-
-  // FIXME: This should probably be reconciled with
-  // HitTestResult::absoluteImageURL.
-  AtomicString url_string;
-  if (IsHTMLImageElement(*node) || IsHTMLInputElement(*node))
-    url_string = ToHTMLElement(node)->getAttribute(srcAttr);
-  else if (IsSVGImageElement(*node))
-    url_string = ToSVGElement(node)->ImageSourceURL();
-  else if (IsHTMLEmbedElement(*node) || IsHTMLObjectElement(*node) ||
-           IsHTMLCanvasElement(*node))
-    url_string = ToHTMLElement(node)->ImageSourceURL();
-  KURL url = url_string.IsEmpty()
-                 ? KURL()
-                 : node->GetDocument().CompleteURL(
-                       StripLeadingAndTrailingHTMLSpaces(url_string));
-
-  pasteboard->WriteImage(image.get(), url, title);
 }
 
 bool Editor::DispatchClipboardEvent(const AtomicString& event_type,
@@ -1041,11 +982,12 @@ void Editor::Copy(EditorCommandSource source) {
   } else {
     Document* document = GetFrame().GetDocument();
     if (HTMLImageElement* image_element =
-            ImageElementFromImageDocument(document))
-      WriteImageNodeToPasteboard(Pasteboard::GeneralPasteboard(), image_element,
-                                 document->title());
-    else
+            ImageElementFromImageDocument(document)) {
+      WriteImageNodeToPasteboard(Pasteboard::GeneralPasteboard(),
+                                 *image_element, document->title());
+    } else {
       WriteSelectionToPasteboard();
+    }
   }
 }
 
@@ -1121,7 +1063,7 @@ void Editor::CountEvent(ExecutionContext* execution_context,
 
 void Editor::CopyImage(const HitTestResult& result) {
   WriteImageNodeToPasteboard(Pasteboard::GeneralPasteboard(),
-                             result.InnerNodeOrImageMapImage(),
+                             *result.InnerNodeOrImageMapImage(),
                              result.AltDisplayString());
 }
 

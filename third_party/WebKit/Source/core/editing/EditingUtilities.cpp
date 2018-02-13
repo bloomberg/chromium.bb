@@ -26,6 +26,7 @@
 #include "core/editing/EditingUtilities.h"
 
 #include "core/clipboard/DataObject.h"
+#include "core/clipboard/Pasteboard.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeComputedStyle.h"
@@ -58,12 +59,16 @@
 #include "core/html/HTMLSpanElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLUListElement.h"
+#include "core/html/canvas/HTMLCanvasElement.h"
 #include "core/html/forms/HTMLInputElement.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html_element_factory.h"
 #include "core/html_names.h"
 #include "core/input_type_names.h"
+#include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTableCell.h"
+#include "core/svg/SVGImageElement.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -1744,6 +1749,54 @@ ContainerNode* RootEditableElementOrTreeScopeRootNodeOf(
 
   Node* const node = position.ComputeContainerNode();
   return node ? &node->GetTreeScope().RootNode() : nullptr;
+}
+
+static scoped_refptr<Image> ImageFromNode(const Node& node) {
+  DCHECK(!node.GetDocument().NeedsLayoutTreeUpdate());
+  DocumentLifecycle::DisallowTransitionScope disallow_transition(
+      node.GetDocument().Lifecycle());
+
+  const LayoutObject* const layout_object = node.GetLayoutObject();
+  if (!layout_object)
+    return nullptr;
+
+  if (layout_object->IsCanvas()) {
+    return ToHTMLCanvasElement(const_cast<Node&>(node))
+        .CopiedImage(kFrontBuffer, kPreferNoAcceleration);
+  }
+
+  if (!layout_object->IsImage())
+    return nullptr;
+
+  const LayoutImage& layout_image = ToLayoutImage(*layout_object);
+  const ImageResourceContent* const cached_image = layout_image.CachedImage();
+  if (!cached_image || cached_image->ErrorOccurred())
+    return nullptr;
+  return cached_image->GetImage();
+}
+
+AtomicString GetUrlStringFromNode(const Node& node) {
+  // TODO(editing-dev): This should probably be reconciled with
+  // HitTestResult::absoluteImageURL.
+  if (IsHTMLImageElement(node) || IsHTMLInputElement(node))
+    return ToHTMLElement(node).getAttribute(srcAttr);
+  if (IsSVGImageElement(node))
+    return ToSVGElement(node).ImageSourceURL();
+  if (IsHTMLEmbedElement(node) || IsHTMLObjectElement(node) ||
+      IsHTMLCanvasElement(node))
+    return ToHTMLElement(node).ImageSourceURL();
+  return AtomicString();
+}
+
+void WriteImageNodeToPasteboard(Pasteboard* pasteboard,
+                                const Node& node,
+                                const String& title) {
+  const scoped_refptr<Image> image = ImageFromNode(node);
+  if (!image.get())
+    return;
+  const KURL url_string = node.GetDocument().CompleteURL(
+      StripLeadingAndTrailingHTMLSpaces(GetUrlStringFromNode(node)));
+  pasteboard->WriteImage(image.get(), url_string, title);
 }
 
 }  // namespace blink
