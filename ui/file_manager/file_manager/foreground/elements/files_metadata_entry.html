@@ -28,7 +28,7 @@
       }
 
       #key {
-        -webkit-margin-end: 32px;
+        -webkit-margin-end: 16px;
         color: white;
         font-weight: 500;
         overflow-wrap: break-word;
@@ -41,20 +41,20 @@
         opacity: 0.8;
         overflow-wrap: break-word;
         vertical-align: bottom;
-        width: 128px;
+        width: 160px;
       }
 
       #value[loading] {
         font-size: 30px;
       }
 
-      #value[loading]:after {
+      #value[loading]::after {
         animation: ellipsis steps(4,end) 900ms infinite;
-        content: "\2026"; /* ascii code for the ellipsis character */
+        content: '\2026'; /* ascii code for the ellipsis character */
         display: inline-block;
         overflow: hidden;
         vertical-align: bottom;
-        width: 0px;
+        width: 0;
       }
 
       @keyframes ellipsis {
