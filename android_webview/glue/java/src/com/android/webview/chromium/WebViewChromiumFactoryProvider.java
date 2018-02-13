@@ -6,8 +6,10 @@ package com.android.webview.chromium;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.os.StrictMode;
 import android.os.UserManager;
@@ -18,6 +20,7 @@ import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.ServiceWorkerController;
 import android.webkit.TokenBindingService;
+import android.webkit.ValueCallback;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebViewDatabase;
@@ -43,6 +46,7 @@ import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.content.browser.selection.LGEmailActionModeWorkaround;
 
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -110,6 +114,14 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private WebViewDelegate mWebViewDelegate;
 
     boolean mShouldDisableThreadChecking;
+
+    // Initialization guarded by mAdapterLock
+    private Statics mStaticsAdapter;
+
+    // Guards accees to adapters.
+    // This member is not private only because the downstream subclass needs to access it,
+    // it shouldn't be accessed from anywhere else.
+    /* package */ final Object mAdapterLock = new Object();
 
     /**
      * Thread-safe way to set the one and only WebViewChromiumFactoryProvider.
@@ -303,7 +315,66 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     @Override
     public Statics getStatics() {
-        return mAwInit.getStatics();
+        synchronized (mAdapterLock) {
+            if (mStaticsAdapter == null) {
+                SharedStatics sharedStatics = mAwInit.getStatics();
+                mStaticsAdapter = new WebViewChromiumFactoryProvider.Statics() {
+                    @Override
+                    public String findAddress(String addr) {
+                        return sharedStatics.findAddress(addr);
+                    }
+
+                    @Override
+                    public String getDefaultUserAgent(Context context) {
+                        return sharedStatics.getDefaultUserAgent(context);
+                    }
+
+                    @Override
+                    public void setWebContentsDebuggingEnabled(boolean enable) {
+                        sharedStatics.setWebContentsDebuggingEnabled(enable);
+                    }
+
+                    @Override
+                    public void clearClientCertPreferences(Runnable onCleared) {
+                        sharedStatics.clearClientCertPreferences(onCleared);
+                    }
+
+                    @Override
+                    public void freeMemoryForTests() {
+                        sharedStatics.freeMemoryForTests();
+                    }
+
+                    @Override
+                    public void enableSlowWholeDocumentDraw() {
+                        sharedStatics.enableSlowWholeDocumentDraw();
+                    }
+
+                    @Override
+                    public Uri[] parseFileChooserResult(int resultCode, Intent intent) {
+                        return sharedStatics.parseFileChooserResult(resultCode, intent);
+                    }
+
+                    @Override
+                    public void initSafeBrowsing(Context context, ValueCallback<Boolean> callback) {
+                        sharedStatics.initSafeBrowsing(
+                                context, CallbackConverter.fromValueCallback(callback));
+                    }
+
+                    @Override
+                    public void setSafeBrowsingWhitelist(
+                            List<String> urls, ValueCallback<Boolean> callback) {
+                        sharedStatics.setSafeBrowsingWhitelist(
+                                urls, CallbackConverter.fromValueCallback(callback));
+                    }
+
+                    @Override
+                    public Uri getSafeBrowsingPrivacyPolicyUrl() {
+                        return sharedStatics.getSafeBrowsingPrivacyPolicyUrl();
+                    }
+                };
+            }
+        }
+        return mStaticsAdapter;
     }
 
     @Override

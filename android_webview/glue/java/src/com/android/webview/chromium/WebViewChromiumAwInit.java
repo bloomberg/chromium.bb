@@ -5,13 +5,9 @@
 package com.android.webview.chromium;
 
 import android.Manifest;
-import android.app.ActivityManager;
-import android.content.ComponentCallbacks2;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
@@ -20,26 +16,20 @@ import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.ServiceWorkerController;
 import android.webkit.TokenBindingService;
-import android.webkit.ValueCallback;
 import android.webkit.WebStorage;
 import android.webkit.WebViewDatabase;
 import android.webkit.WebViewFactory;
-import android.webkit.WebViewFactoryProvider;
-import android.webkit.WebViewFactoryProvider.Statics;
 
 import com.android.webview.chromium.WebViewDelegateFactory.WebViewDelegate;
 
 import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
-import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwCookieManager;
-import org.chromium.android_webview.AwDevToolsServer;
 import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwResource;
-import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.AwTracingController;
 import org.chromium.android_webview.HttpAuthDatabase;
@@ -48,7 +38,6 @@ import org.chromium.android_webview.variations.AwVariationsSeedHandler;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.PathService;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -56,8 +45,6 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.net.NetworkChangeNotifier;
-
-import java.util.List;
 
 class WebViewChromiumAwInit {
 
@@ -68,14 +55,13 @@ class WebViewChromiumAwInit {
     // TODO(gsennton): store aw-objects instead of adapters here
     // Initialization guarded by mLock.
     private AwBrowserContext mBrowserContext;
-    private Statics mStaticMethods;
+    private SharedStatics mSharedStatics;
     private GeolocationPermissionsAdapter mGeolocationPermissions;
     private CookieManagerAdapter mCookieManager;
     private Object mTokenBindingManager;
     private WebIconDatabaseAdapter mWebIconDatabase;
     private WebStorageAdapter mWebStorage;
     private WebViewDatabaseAdapter mWebViewDatabase;
-    private AwDevToolsServer mDevToolsServer;
     private Object mServiceWorkerController;
 
     // Guards accees to the other members, and is notifyAll() signalled on the UI thread
@@ -146,8 +132,9 @@ class WebViewChromiumAwInit {
         AwBrowserProcess.handleMinidumpsAndSetMetricsConsent(
                 webViewPackageName, true /* updateMetricsConsent */);
 
+        mSharedStatics = new SharedStatics();
         if (CommandLineUtil.isBuildDebuggable()) {
-            setWebContentsDebuggingEnabled(true);
+            mSharedStatics.setWebContentsDebuggingEnabledUnconditionally(true);
         }
 
         TraceEvent.setATraceEnabled(mFactory.getWebViewDelegate().isTraceTagEnabled());
@@ -277,109 +264,16 @@ class WebViewChromiumAwInit {
         return mBrowserContext;
     }
 
-    // TODO(gsennton) create an AwStatics class to return from this class
-    public Statics getStatics() {
+    public SharedStatics getStatics() {
         synchronized (mLock) {
-            if (mStaticMethods == null) {
+            if (mSharedStatics == null) {
                 // TODO: Optimization potential: most these methods only need the native library
                 // loaded and initialized, not the entire browser process started.
                 // See also http://b/7009882
                 ensureChromiumStartedLocked(true);
-                mStaticMethods = new WebViewFactoryProvider.Statics() {
-                    @Override
-                    public String findAddress(String addr) {
-                        return AwContentsStatics.findAddress(addr);
-                    }
-
-                    @Override
-                    public String getDefaultUserAgent(Context context) {
-                        return AwSettings.getDefaultUserAgent();
-                    }
-
-                    @Override
-                    public void setWebContentsDebuggingEnabled(boolean enable) {
-                        // Web Contents debugging is always enabled on debug builds.
-                        if (!CommandLineUtil.isBuildDebuggable()) {
-                            WebViewChromiumAwInit.this.setWebContentsDebuggingEnabled(
-                                    enable);
-                        }
-                    }
-
-                    @Override
-                    public void clearClientCertPreferences(Runnable onCleared) {
-                        // clang-format off
-                        ThreadUtils.runOnUiThread(() ->
-                                AwContentsStatics.clearClientCertPreferences(onCleared));
-                        // clang-format on
-                    }
-
-                    @Override
-                    public void freeMemoryForTests() {
-                        if (ActivityManager.isRunningInTestHarness()) {
-                            MemoryPressureListener.maybeNotifyMemoryPresure(
-                                    ComponentCallbacks2.TRIM_MEMORY_COMPLETE);
-                        }
-                    }
-
-                    @Override
-                    public void enableSlowWholeDocumentDraw() {
-                        WebViewChromium.enableSlowWholeDocumentDraw();
-                    }
-
-                    @Override
-                    public Uri[] parseFileChooserResult(int resultCode, Intent intent) {
-                        return AwContentsClient.parseFileChooserResult(resultCode, intent);
-                    }
-
-                    /**
-                     * Starts Safe Browsing initialization. This should only be called once.
-                     * @param context is the application context the WebView will be used in.
-                     * @param callback will be called with the value true if initialization is
-                     * successful. The callback will be run on the UI thread.
-                     */
-                    @Override
-                    public void initSafeBrowsing(Context context, ValueCallback<Boolean> callback) {
-                        // clang-format off
-                        ThreadUtils.runOnUiThread(() -> AwContentsStatics.initSafeBrowsing(context,
-                                    CallbackConverter.fromValueCallback(callback)));
-                        // clang-format on
-                    }
-
-                    @Override
-                    public void setSafeBrowsingWhitelist(
-                            List<String> urls, ValueCallback<Boolean> callback) {
-                        // clang-format off
-                        ThreadUtils.runOnUiThread(() -> AwContentsStatics.setSafeBrowsingWhitelist(
-                                urls, CallbackConverter.fromValueCallback(callback)));
-                        // clang-format on
-                    }
-
-                    /**
-                     * Returns a URL pointing to the privacy policy for Safe Browsing reporting.
-                     *
-                     * @return the url pointing to a privacy policy document which can be displayed
-                     * to users.
-                     */
-                    @Override
-                    public Uri getSafeBrowsingPrivacyPolicyUrl() {
-                        return AwContentsStatics.getSafeBrowsingPrivacyPolicyUrl();
-                    }
-                };
             }
         }
-        return mStaticMethods;
-    }
-
-    private void setWebContentsDebuggingEnabled(boolean enable) {
-        if (Looper.myLooper() != ThreadUtils.getUiThreadLooper()) {
-            throw new RuntimeException(
-                    "Toggling of Web Contents Debugging must be done on the UI thread");
-        }
-        if (mDevToolsServer == null) {
-            if (!enable) return;
-            mDevToolsServer = new AwDevToolsServer();
-        }
-        mDevToolsServer.setRemoteDebuggingEnabled(enable);
+        return mSharedStatics;
     }
 
     public GeolocationPermissions getGeolocationPermissions() {
