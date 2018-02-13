@@ -20,7 +20,6 @@ namespace {
 const CGFloat kExpandAnimationDuration = 0.1;
 const CGFloat kCollapseAnimationDuration = 0.05;
 const CGFloat kShadowHeight = 10;
-const CGFloat kWhiteBackgroundHeight = 74;
 NS_INLINE CGFloat BottomPadding() {
   return IsIPadIdiom() ? kShadowHeight : 0;
 }
@@ -52,13 +51,6 @@ NS_INLINE CGFloat BottomPadding() {
     _viewController = viewController;
 
     UIView* popupContainer = [[UIView alloc] init];
-    if (!base::FeatureList::IsEnabled(kCleanToolbar)) {
-      if (IsIPadIdiom()) {
-        popupContainer = [OmniboxPopupPresenter newBackgroundViewIpad];
-      } else {
-        popupContainer = [OmniboxPopupPresenter newBackgroundViewIPhone];
-      }
-    }
     popupContainer.translatesAutoresizingMaskIntoConstraints = NO;
 
     _heightConstraint =
@@ -70,29 +62,26 @@ NS_INLINE CGFloat BottomPadding() {
     viewController.view.frame = popupControllerFrame;
     [popupContainer addSubview:viewController.view];
 
-    if (base::FeatureList::IsEnabled(kCleanToolbar)) {
-      UIImageView* shadowView = [[UIImageView alloc]
-          initWithImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED)];
-      [shadowView setUserInteractionEnabled:NO];
-      [shadowView setTranslatesAutoresizingMaskIntoConstraints:NO];
+    UIImageView* shadowView = [[UIImageView alloc]
+        initWithImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED)];
+    [shadowView setUserInteractionEnabled:NO];
+    [shadowView setTranslatesAutoresizingMaskIntoConstraints:NO];
 
-      [popupContainer addSubview:shadowView];
-      [NSLayoutConstraint activateConstraints:@[
-        [shadowView.leadingAnchor
-            constraintEqualToAnchor:popupContainer.leadingAnchor],
-        [shadowView.trailingAnchor
-            constraintEqualToAnchor:popupContainer.trailingAnchor],
-      ]];
+    [popupContainer addSubview:shadowView];
+    [NSLayoutConstraint activateConstraints:@[
+      [shadowView.leadingAnchor
+          constraintEqualToAnchor:popupContainer.leadingAnchor],
+      [shadowView.trailingAnchor
+          constraintEqualToAnchor:popupContainer.trailingAnchor],
+    ]];
 
-      if (IsIPadIdiom()) {
-        [shadowView.topAnchor
-            constraintEqualToAnchor:popupContainer.bottomAnchor]
-            .active = YES;
-      } else {
-        [shadowView.topAnchor
-            constraintEqualToAnchor:viewController.view.topAnchor]
-            .active = YES;
-      }
+    if (IsIPadIdiom()) {
+      [shadowView.topAnchor constraintEqualToAnchor:popupContainer.bottomAnchor]
+          .active = YES;
+    } else {
+      [shadowView.topAnchor
+          constraintEqualToAnchor:viewController.view.topAnchor]
+          .active = YES;
     }
     _popupContainerView = popupContainer;
   }
@@ -103,16 +92,7 @@ NS_INLINE CGFloat BottomPadding() {
   UIView* popup = self.popupContainerView;
   BOOL newlyAdded = ([popup superview] == nil);
 
-  if (!base::FeatureList::IsEnabled(kCleanToolbar)) {
-    UIView* siblingView = [self.positioner popupAnchorView];
-    if (IsIPadIdiom()) {
-      [[siblingView superview] insertSubview:popup aboveSubview:siblingView];
-    } else {
-      [[siblingView superview] insertSubview:popup belowSubview:siblingView];
-    }
-  } else {
-    [[self.positioner popupParentView] addSubview:popup];
-  }
+  [[self.positioner popupParentView] addSubview:popup];
 
   if (newlyAdded) {
     [self initialLayout];
@@ -189,15 +169,7 @@ NS_INLINE CGFloat BottomPadding() {
   NSLayoutConstraint* topConstraint =
       [popup.topAnchor constraintEqualToAnchor:topLayout.bottomAnchor];
   if (IsIPadIdiom()) {
-    if (base::FeatureList::IsEnabled(kCleanToolbar)) {
-      topConstraint.constant = kiPadOmniboxPopupVerticalOffset;
-    } else {
-      // On the old toolbar, the layout guide is positioned on the toolbar
-      // instead of on the omnibox. The popup is positioned between the bottom
-      // of the toolbar and the bottom of the omnibox. Adding the opposite of
-      // the constant positions it correctly.
-      topConstraint.constant = -kiPadOmniboxPopupVerticalOffset;
-    }
+    topConstraint.constant = kiPadOmniboxPopupVerticalOffset;
   }
 
   [NSLayoutConstraint activateConstraints:@[
@@ -211,71 +183,4 @@ NS_INLINE CGFloat BottomPadding() {
   [[popup superview] layoutIfNeeded];
 }
 
-#pragma mark - Background creation
-
-// TODO(crbug.com/788705): Remove this method.
-+ (UIView*)newBackgroundViewIpad {
-  UIView* view = [[UIView alloc] init];
-  [view setClipsToBounds:YES];
-
-  UIImageView* shadowView = [[UIImageView alloc]
-      initWithImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED)];
-  [shadowView setUserInteractionEnabled:NO];
-  [shadowView setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [view addSubview:shadowView];
-
-  // Add constraints to position |shadowView| at the bottom of |view|
-  // with the same width as |view|.
-  NSDictionary* views = NSDictionaryOfVariableBindings(shadowView);
-  [view addConstraints:[NSLayoutConstraint
-                           constraintsWithVisualFormat:@"H:|[shadowView]|"
-                                               options:0
-                                               metrics:nil
-                                                 views:views]];
-  [view addConstraint:[NSLayoutConstraint
-                          constraintWithItem:shadowView
-                                   attribute:NSLayoutAttributeBottom
-                                   relatedBy:NSLayoutRelationEqual
-                                      toItem:view
-                                   attribute:NSLayoutAttributeBottom
-                                  multiplier:1
-                                    constant:0]];
-
-  return view;
-}
-
-// TODO(crbug.com/788705): Remove this method.
-+ (UIView*)newBackgroundViewIPhone {
-  UIView* view = [[UIView alloc] init];
-
-  // Add a white background to prevent seeing the logo scroll through the
-  // omnibox.
-  UIView* whiteBackground = [[UIView alloc] initWithFrame:CGRectZero];
-  [view addSubview:whiteBackground];
-  [whiteBackground setBackgroundColor:[UIColor whiteColor]];
-
-  // Set constraints to |whiteBackground|.
-  [whiteBackground setTranslatesAutoresizingMaskIntoConstraints:NO];
-  NSDictionary* metrics = @{ @"height" : @(kWhiteBackgroundHeight) };
-  NSDictionary* views = NSDictionaryOfVariableBindings(whiteBackground);
-  [view addConstraints:[NSLayoutConstraint
-                           constraintsWithVisualFormat:@"H:|[whiteBackground]|"
-                                               options:0
-                                               metrics:nil
-                                                 views:views]];
-  [view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:
-                                               @"V:[whiteBackground(==height)]"
-                                                               options:0
-                                                               metrics:metrics
-                                                                 views:views]];
-  [view addConstraint:[NSLayoutConstraint
-                          constraintWithItem:whiteBackground
-                                   attribute:NSLayoutAttributeBottom
-                                   relatedBy:NSLayoutRelationEqual
-                                      toItem:view
-                                   attribute:NSLayoutAttributeTop
-                                  multiplier:1
-                                    constant:0]];
-  return view;
-}
 @end

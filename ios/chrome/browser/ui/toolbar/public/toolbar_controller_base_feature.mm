@@ -8,8 +8,5 @@
 #error "This file requires ARC support."
 #endif
 
-const base::Feature kCleanToolbar{"CleanToolbar",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kMemexTabSwitcher{"MemexTabSwitcher",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

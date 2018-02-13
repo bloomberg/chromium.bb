@@ -11,7 +11,6 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_updater.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
-#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_coordinator.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -69,7 +68,6 @@
 
 - (void)stop {
   [self.toolbarController setBackgroundAlpha:1.0];
-  [self.toolbarController browserStateDestroyed];
   [self.toolbarController stop];
   [self stopObservingFullscreen];
   self.toolbarController = nil;
@@ -87,10 +85,6 @@
 
 - (id<ActivityServicePositioner>)activityServicePositioner {
   return self.toolbarController;
-}
-
-- (id<TabHistoryPositioner>)tabHistoryPositioner {
-  return self.toolbarController.buttonUpdater;
 }
 
 - (id<TabHistoryUIUpdater>)tabHistoryUIUpdater {
@@ -115,41 +109,14 @@
   [toolbarController start];
 }
 
-- (void)adjustToolbarHeight {
-  [self.toolbarController adjustToolbarHeight];
-}
-
-- (void)selectedTabChanged {
-  [self.toolbarController cancelOmniboxEdit];
-}
-
-- (void)setTabCount:(NSInteger)tabCount {
-  [self.toolbarController setTabCount:tabCount];
-}
-
-- (void)browserStateDestroyed {
-  [self stop];
-}
-
-- (void)updateToolbarState {
-  [self.toolbarController updateToolbarState];
-  [_toolsMenuCoordinator updateConfiguration];
-}
-
-- (void)setShareButtonEnabled:(BOOL)enabled {
-  [self.toolbarController setShareButtonEnabled:enabled];
-}
-
-- (void)currentPageLoadStarted {
-  [self.toolbarController currentPageLoadStarted];
-}
-
-- (CGRect)visibleOmniboxFrame {
-  return [self.toolbarController visibleOmniboxFrame];
-}
-
 - (void)triggerToolsMenuButtonAnimation {
   [self.toolbarController triggerToolsMenuButtonAnimation];
+}
+
+#pragma mark - ToolbarCoordinating
+
+- (void)updateToolsMenu {
+  [_toolsMenuCoordinator updateConfiguration];
 }
 
 #pragma mark - PrimaryToolbarCoordinator
@@ -254,16 +221,6 @@
 
 - (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
   [self.toolbarController setBackgroundAlpha:alpha];
-}
-
-#pragma mark - BubbleViewAnchorPointProvider methods.
-
-- (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
-  return [self.toolbarController anchorPointForTabSwitcherButton:direction];
-}
-
-- (CGPoint)anchorPointForToolsMenuButton:(BubbleArrowDirection)direction {
-  return [self.toolbarController anchorPointForToolsMenuButton:direction];
 }
 
 #pragma mark - ToolsMenuPresentationStateProvider

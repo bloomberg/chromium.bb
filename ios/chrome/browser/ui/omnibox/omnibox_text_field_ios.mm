@@ -47,9 +47,7 @@ namespace {
 const CGFloat kFontSize = 16;
 const CGFloat kEditingRectWidthInset = 12;
 const CGFloat kClearButtonRightMarginIphone = 7;
-const CGFloat kClearButtonRightMarginIpad = 12;
 
-const CGFloat kStarButtonWidth = 36;
 const CGFloat kVoiceSearchButtonWidth = 36.0;
 
 // The default omnibox text color (used while editing).
@@ -476,15 +474,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
   LayoutRect textRectLayout =
       LayoutRectForRectInBoundingRect(newBounds, bounds);
-
-  if (IsIPadIdiom() && !base::FeatureList::IsEnabled(kCleanToolbar)) {
-    if (!IsCompactTablet()) {
-      // Adjust the width so that the text doesn't overlap with the bookmark and
-      // voice search buttons which are displayed inside the omnibox.
-      textRectLayout.size.width += self.rightView.bounds.size.width -
-                                   kVoiceSearchButtonWidth - kStarButtonWidth;
-    }
-  }
 
   return LayoutRectGetRect(textRectLayout);
 }
@@ -920,14 +909,8 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   if ([self rightView]) {
     CGSize rightViewSize = self.rightView.bounds.size;
     CGFloat leadingOffset = 0;
-    if (IsIPadIdiom() && !IsCompactTablet() &&
-        !base::FeatureList::IsEnabled(kCleanToolbar)) {
-      leadingOffset = bounds.size.width - kVoiceSearchButtonWidth -
-                      rightViewSize.width - kClearButtonRightMarginIpad;
-    } else {
-      leadingOffset = bounds.size.width - rightViewSize.width -
-                      kClearButtonRightMarginIphone;
-    }
+    leadingOffset =
+        bounds.size.width - rightViewSize.width - kClearButtonRightMarginIphone;
     LayoutRect rightViewLayout;
     rightViewLayout.position.leading = leadingOffset;
     rightViewLayout.boundingWidth = CGRectGetWidth(bounds);

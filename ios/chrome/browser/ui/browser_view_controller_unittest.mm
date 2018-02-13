@@ -35,12 +35,11 @@
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
-#import "ios/chrome/browser/ui/browser_view_controller_testing.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/page_not_available_controller.h"
+#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #include "ios/chrome/browser/ui/toolbar/test_toolbar_model_ios.h"
-#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web/error_page_content.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
@@ -73,6 +72,8 @@
 
 using web::NavigationManagerImpl;
 using web::WebStateImpl;
+
+@class ToolbarButtonUpdater;
 
 // Private methods in BrowserViewController to test.
 @interface BrowserViewController (
@@ -137,13 +138,8 @@ using web::WebStateImpl;
 
 // Fake WebToolbarController for testing.
 @interface TestWebToolbarController : UIViewController
-- (void)setTabCount:(NSInteger)tabCount;
-- (void)updateToolbarState;
-- (void)adjustToolbarHeight;
-- (void)setShareButtonEnabled:(BOOL)enabled;
 - (BOOL)isOmniboxFirstResponder;
 - (BOOL)showingOmniboxPopup;
-- (void)selectedTabChanged;
 - (void)cancelOmniboxEdit;
 - (void)setBackgroundAlpha:(CGFloat)alpha;
 - (void)browserStateDestroyed;
@@ -156,26 +152,11 @@ using web::WebStateImpl;
 @end
 
 @implementation TestWebToolbarController
-- (void)setTabCount:(NSInteger)tabCount {
-  return;
-}
-- (void)updateToolbarState {
-  return;
-}
-- (void)adjustToolbarHeight {
-  return;
-}
-- (void)setShareButtonEnabled:(BOOL)enabled {
-  return;
-}
 - (BOOL)isOmniboxFirstResponder {
   return NO;
 }
 - (BOOL)showingOmniboxPopup {
   return NO;
-}
-- (void)selectedTabChanged {
-  return;
 }
 - (void)cancelOmniboxEdit {
   return;
@@ -399,7 +380,7 @@ TEST_F(BrowserViewControllerTest, TestErrorController) {
 // TODO(altse): Needs a testing |Profile| that implements AutocompleteClassifier
 //             before enabling again.
 TEST_F(BrowserViewControllerTest, DISABLED_TestShieldWasTapped) {
-  [bvc_ testing_focusOmnibox];
+  [bvc_.dispatcher focusOmnibox];
   EXPECT_TRUE([[bvc_ typingShield] superview] != nil);
   EXPECT_FALSE([[bvc_ typingShield] isHidden]);
   [bvc_ shieldWasTapped:nil];
@@ -422,21 +403,6 @@ TEST_F(BrowserViewControllerTest,
   [bvc_ locationBarBeganEdit];
 
   EXPECT_OCMOCK_VERIFY(static_cast<OCMockObject*>(webController_));
-  EXPECT_OCMOCK_VERIFY(tabMock);
-}
-
-// Verifies that editing the omnibox when the page is not loading will not try
-// to stop the load on a handset or a tablet.
-TEST_F(BrowserViewControllerTest,
-       TestLocationBarBeganEdit_whenPageLoadIsComplete) {
-  OCMockObject* tabMock = static_cast<OCMockObject*>(tab_);
-
-  // Have the TestToolbarModel indicate that the page load is complete.
-  static_cast<TestToolbarModelIOS*>(toolbarModelIOS_)->set_is_loading(false);
-
-  // Don't set any expectation for stopLoading to be called on the mock tab.
-  [bvc_ locationBarBeganEdit];
-
   EXPECT_OCMOCK_VERIFY(tabMock);
 }
 

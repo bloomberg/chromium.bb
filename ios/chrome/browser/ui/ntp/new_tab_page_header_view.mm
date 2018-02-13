@@ -56,18 +56,9 @@
       [[NewTabPageToolbarController alloc] initWithDispatcher:dispatcher];
   _toolbarController.readingListModel = readingListModel;
 
-  UIView* toolbarView = [_toolbarController view];
-
   [self addSubview:[_toolbarController view]];
 
-  if (IsSafeAreaCompatibleToolbarEnabled()) {
-    [self addConstraintsToToolbar];
-  } else {
-    CGRect toolbarFrame = self.bounds;
-    toolbarFrame.size.height = ntp_header::kToolbarHeight;
-    toolbarView.frame = toolbarFrame;
-    [toolbarView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-  }
+  [self addConstraintsToToolbar];
 }
 
 - (void)setCanGoForward:(BOOL)canGoForward {
@@ -168,11 +159,8 @@
 
 - (void)safeAreaInsetsDidChange {
   [super safeAreaInsetsDidChange];
-  if (IsSafeAreaCompatibleToolbarEnabled()) {
-    _toolbarController.heightConstraint.constant =
-        ToolbarHeightWithTopOfScreenOffset(
-            [_toolbarController statusBarOffset]);
-  }
+  _toolbarController.heightConstraint.constant =
+      ToolbarHeightWithTopOfScreenOffset([_toolbarController statusBarOffset]);
 }
 
 - (void)fadeOutShadow {

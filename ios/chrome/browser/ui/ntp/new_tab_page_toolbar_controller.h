@@ -13,7 +13,6 @@
 @protocol OmniboxFocuser;
 @protocol FakeboxFocuser;
 @protocol UrlLoader;
-@protocol WebToolbarDelegate;
 
 // New tab page specific toolbar. The background view is hidden and the
 // navigation buttons are also hidden if there is no forward history. Does not
@@ -28,16 +27,14 @@
                                        OmniboxFocuser,
                                        FakeboxFocuser,
                                        ToolbarCommands,
-                                       UrlLoader,
-                                       WebToolbarDelegate>)dispatcher;
+                                       UrlLoader>)dispatcher;
 
 @property(nonatomic, readonly, weak) id<ApplicationCommands,
                                         BrowserCommands,
                                         OmniboxFocuser,
                                         FakeboxFocuser,
                                         ToolbarCommands,
-                                        UrlLoader,
-                                        WebToolbarDelegate>
+                                        UrlLoader>
     dispatcher;
 
 // |YES| if the toolbar can show the forward arrow.

@@ -11,22 +11,11 @@
 
 @class Tab;
 @class ToolbarButtonUpdater;
-@protocol WebToolbarDelegate;
 
 // WebToolbarController public interface.
 @protocol AbstractWebToolbar<AbstractToolbar>
-// Called when the browser state this object was initialized with is being
-// destroyed.
-- (void)browserStateDestroyed;
-// Update the visibility of the back/forward buttons, omnibox, etc.
-- (void)updateToolbarState;
 // Briefly animate the progress bar when a pre-rendered tab is displayed.
 - (void)showPrerenderingAnimation;
-// Called when the current page starts loading.
-- (void)currentPageLoadStarted;
-// Returns visible omnibox frame in WebToolbarController's view coordinate
-// system.
-- (CGRect)visibleOmniboxFrame;
 // Returns whether omnibox is a first responder.
 - (BOOL)isOmniboxFirstResponder;
 // Returns whether the omnibox popup is currently displayed.
@@ -37,8 +26,6 @@
 - (void)updateToolbarForSideSwipeSnapshot:(Tab*)tab;
 // Remove any formatting added by -updateToolbarForSideSwipeSnapshot.
 - (void)resetToolbarAfterSideSwipeSnapshot;
-// WebToolbarDelegate delegate.
-@property(nonatomic, weak) id<WebToolbarDelegate> delegate;
 // Convenience getter for the UIViewController.
 @property(nonatomic, readonly, weak) UIViewController* viewController;
 // Object handling the updates of the buttons.

@@ -19,8 +19,6 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_adapter.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_impl_ios.h"
-#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
-#import "ios/chrome/browser/ui/toolbar/web_toolbar_delegate.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -62,31 +60,20 @@
   return new ToolbarModelImplIOS(delegate);
 }
 
-- (id<Toolbar>)newToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
-                                      urlLoader:(id<UrlLoader>)urlLoader
-                                     dispatcher:
-                                         (id<ApplicationCommands,
-                                             BrowserCommands,
-                                             OmniboxFocuser,
-                                             ToolbarCommands>)dispatcher {
-  id<Toolbar> toolbarController;
-  if (base::FeatureList::IsEnabled(kCleanToolbar)) {
-    ToolbarAdapter* adapter =
-        [[ToolbarAdapter alloc] initWithDispatcher:dispatcher
-                                      browserState:browserState_
-                                      webStateList:webStateList_];
-    adapter.delegate = delegate;
-    adapter.URLLoader = urlLoader;
-    toolbarController = static_cast<id<Toolbar>>(adapter);
-
-  } else {
-    toolbarController = static_cast<id<Toolbar>>([[WebToolbarController alloc]
-        initWithDelegate:delegate
-               urlLoader:urlLoader
-            browserState:browserState_
-              dispatcher:dispatcher]);
-  }
-  return toolbarController;
+- (id<Toolbar>)
+newToolbarControllerWithDelegate:(id<ToolbarCoordinatorDelegate>)delegate
+                       urlLoader:(id<UrlLoader>)urlLoader
+                      dispatcher:(id<ApplicationCommands,
+                                     BrowserCommands,
+                                     OmniboxFocuser,
+                                     ToolbarCommands>)dispatcher {
+  ToolbarAdapter* adapter =
+      [[ToolbarAdapter alloc] initWithDispatcher:dispatcher
+                                    browserState:browserState_
+                                    webStateList:webStateList_];
+  adapter.delegate = delegate;
+  adapter.URLLoader = urlLoader;
+  return static_cast<id<Toolbar>>(adapter);
 }
 
 - (KeyCommandsProvider*)newKeyCommandsProvider {

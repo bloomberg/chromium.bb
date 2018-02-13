@@ -18,11 +18,11 @@
 @class TabModel;
 @protocol Toolbar;
 @protocol ToolbarCommands;
+@protocol ToolbarCoordinatorDelegate;
 class ToolbarModelDelegateIOS;
 class ToolbarModelIOS;
 class WebStateList;
 @protocol UrlLoader;
-@protocol WebToolbarDelegate;
 
 namespace infobars {
 class InfoBarManager;
@@ -51,7 +51,8 @@ class ChromeBrowserState;
 - (ToolbarModelIOS*)newToolbarModelIOSWithDelegate:
     (ToolbarModelDelegateIOS*)delegate;
 
-- (id<Toolbar>)newToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
+- (id<Toolbar>)newToolbarControllerWithDelegate:
+                   (id<ToolbarCoordinatorDelegate>)delegate
                                       urlLoader:(id<UrlLoader>)urlLoader
                                      dispatcher:(id<ApplicationCommands,
                                                     BrowserCommands,

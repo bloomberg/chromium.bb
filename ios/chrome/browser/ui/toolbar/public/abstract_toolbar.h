@@ -11,13 +11,9 @@
 
 // ToolbarController public interface.
 @protocol AbstractToolbar<NSObject>
-// Sets whether the share button is enabled or not.
-- (void)setShareButtonEnabled:(BOOL)enabled;
 // Triggers an animation on the tools menu button to draw the user's
 // attention.
 - (void)triggerToolsMenuButtonAnimation;
-// Adjusts the height of the Toolbar to match the current UI layout.
-- (void)adjustToolbarHeight;
 // Sets the background to a particular alpha value. Intended for use by
 // subcleasses that need to set the opacity of the entire toolbar.
 - (void)setBackgroundAlpha:(CGFloat)alpha;

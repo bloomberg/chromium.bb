@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_private_base_feature.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ui/base/device_form_factor.h"
@@ -64,25 +63,12 @@ bool IsUIRefreshPhase1Enabled() {
   return base::FeatureList::IsEnabled(kUIRefreshPhase1);
 }
 
-bool IsSafeAreaCompatibleToolbarEnabled() {
-  return (IsIPhoneX() &&
-          base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) ||
-         base::FeatureList::IsEnabled(kCleanToolbar);
-}
-
 CGFloat StatusBarHeight() {
   // This is a temporary solution until usage of StatusBarHeight has been
   // replaced with topLayoutGuide.
 
   if (IsIPhoneX()) {
-    if (IsSafeAreaCompatibleToolbarEnabled()) {
-      return IsPortrait() ? 44 : 0;
-    } else {
-      // Return the height of the portrait status bar even in landscape because
-      // the Toolbar does not properly layout itself if the status bar height
-      // changes.
-      return 44;
-    }
+    return IsPortrait() ? 44 : 0;
   }
 
   // Checking [UIApplication sharedApplication].statusBarFrame will return the

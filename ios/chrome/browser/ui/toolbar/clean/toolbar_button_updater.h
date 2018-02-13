@@ -7,14 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/history_popup/requirements/tab_history_positioner.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_ui_updater.h"
 
 @class ToolbarButtonFactory;
 
 // Updater for the toolbar buttons.
-@interface ToolbarButtonUpdater
-    : NSObject<TabHistoryPositioner, TabHistoryUIUpdater>
+@interface ToolbarButtonUpdater : NSObject<TabHistoryUIUpdater>
 
 // Back button of the toolbar.
 @property(nonatomic, strong) UIButton* backButton;

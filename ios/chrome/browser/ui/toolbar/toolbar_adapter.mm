@@ -6,7 +6,6 @@
 
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_coordinator.h"
-#import "ios/chrome/browser/ui/toolbar/web_toolbar_delegate.h"
 
 @interface ToolbarAdapter ()
 @property(nonatomic, strong) ToolbarCoordinator* toolbarCoordinator;
@@ -35,7 +34,7 @@
 
 #pragma mark - Properties
 
-- (void)setDelegate:(id<WebToolbarDelegate>)delegate {
+- (void)setDelegate:(id<ToolbarCoordinatorDelegate>)delegate {
   _delegate = delegate;
   self.toolbarCoordinator.delegate = delegate;
 }
@@ -55,25 +54,8 @@
 
 #pragma mark - Abstract WebToolbar
 
-- (void)browserStateDestroyed {
-  [self.toolbarCoordinator stop];
-}
-
-- (void)updateToolbarState {
-  // No op, the location bar mediator is taking care of this.
-}
-
 - (void)showPrerenderingAnimation {
   [self.toolbarCoordinator showPrerenderingAnimation];
-}
-
-- (void)currentPageLoadStarted {
-  // No op, the mediator is taking care of this.
-}
-
-- (CGRect)visibleOmniboxFrame {
-  // No-op. The Clean Toolbar uses named layout guides.
-  return CGRectZero;
 }
 
 - (BOOL)isOmniboxFirstResponder {
@@ -94,16 +76,8 @@
 
 #pragma mark - Abstract Toolbar
 
-- (void)setShareButtonEnabled:(BOOL)enabled {
-  // No op.
-}
-
 - (void)triggerToolsMenuButtonAnimation {
   [self.toolbarCoordinator triggerToolsMenuButtonAnimation];
-}
-
-- (void)adjustToolbarHeight {
-  return;
 }
 
 - (void)setBackgroundAlpha:(CGFloat)alpha {
@@ -182,18 +156,6 @@
   [self.toolbarCoordinator.QRScannerResultLoader
       receiveQRScannerResult:qrScannerResult
              loadImmediately:load];
-}
-
-#pragma mark - BubbleViewAnchorPointProvider
-
-- (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
-  // No-op. The Clean Toolbar uses named layout guides.
-  return CGPointZero;
-}
-
-- (CGPoint)anchorPointForToolsMenuButton:(BubbleArrowDirection)direction {
-  // No-op. The Clean Toolbar uses named layout guides.
-  return CGPointZero;
 }
 
 #pragma mark - FullscreenUIElement

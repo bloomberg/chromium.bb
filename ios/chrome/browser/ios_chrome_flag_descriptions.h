@@ -16,10 +16,6 @@ extern const char kBrowserTaskSchedulerDescription[];
 extern const char kCaptivePortalName[];
 extern const char kCaptivePortalDescription[];
 
-// Title and description for the flag to enable Clean Toolbar.
-extern const char kCleanToolbarName[];
-extern const char kCleanToolbarDescription[];
-
 // Title and description for the flag to enable Omnibox Clipping.
 extern const char kClippingTextfieldName[];
 extern const char kClippingTextfieldDescription[];
@@ -82,10 +78,6 @@ extern const char kPasswordExportDescription[];
 // Title and description for the flag to enable Physical Web in the omnibox.
 extern const char kPhysicalWeb[];
 extern const char kPhysicalWebDescription[];
-
-// Title and description for the flag to have the toolbar respect the safe area.
-extern const char kSafeAreaCompatibleToolbarName[];
-extern const char kSafeAreaCompatibleToolbarDescription[];
 
 // Title and description for the flag to share the canonical URL of the
 // current page instead of the visible URL.

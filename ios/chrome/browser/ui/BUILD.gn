@@ -69,7 +69,6 @@ source_set("ui_util") {
     "//base:i18n",
     "//ios/chrome/app:tests_hook",
     "//ios/chrome/browser",
-    "//ios/chrome/browser/ui/toolbar:feature",
     "//ios/chrome/browser/ui/toolbar/public:toolbar_base_feature",
     "//ios/web",
     "//ui/base",
@@ -114,7 +113,6 @@ source_set("unit_tests") {
   deps = [
     ":native_content_controller_test_xib",
     ":resources_unit_tests",
-    ":test_support",
     ":ui",
     ":ui_internal",
     "//base",
@@ -143,6 +141,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/ntp:ntp_controller",
     "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/browser/ui/toolbar:test_support",
+    "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/web:web_internal",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/browser/web_state_list:test_support",
@@ -376,6 +375,7 @@ source_set("ui_internal") {
     "//ios/chrome/browser/ui/toolbar:toolbar_ui_broadcasting_util",
     "//ios/chrome/browser/ui/toolbar/adaptive",
     "//ios/chrome/browser/ui/toolbar/adaptive:adaptive_ui",
+    "//ios/chrome/browser/ui/toolbar/clean:toolbar",
     "//ios/chrome/browser/ui/toolbar/clean:toolbar_ui",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/toolbar/public:toolbar_base_feature",
@@ -444,20 +444,6 @@ source_set("notifications") {
     "location_bar_notification_names.mm",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("test_support") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "browser_view_controller_testing.h",
-    "browser_view_controller_testing.mm",
-  ]
-  deps = [
-    ":ui_internal",
-    "//ios/chrome/browser/ui/toolbar",
-    "//ios/chrome/browser/ui/toolbar:test_support",
-  ]
 }
 
 bundle_data("resources_unit_tests") {
