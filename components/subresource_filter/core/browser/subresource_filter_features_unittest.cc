@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "components/variations/variations_associated_data.h"
@@ -726,6 +727,24 @@ TEST(SubresourceFilterFeaturesTest, ForcedActivation_NotConfigurable) {
             actual_configuration.activation_conditions.activation_scope);
 
   EXPECT_FALSE(actual_configuration.activation_conditions.forced_activation);
+}
+
+TEST(SubresourceFilterFeaturesTest, AdTagging_EnablesDryRun) {
+  const Configuration dryrun =
+      Configuration::MakePresetForPerformanceTestingDryRunOnAllSites();
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndEnableFeature(kAdTagging);
+  EXPECT_TRUE(base::ContainsValue(
+      GetEnabledConfigurations()->configs_by_decreasing_priority(), dryrun));
+}
+
+TEST(SubresourceFilterFeaturesTest, AdTaggingDisabled_DisablesDryRun) {
+  const Configuration dryrun =
+      Configuration::MakePresetForPerformanceTestingDryRunOnAllSites();
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndDisableFeature(kAdTagging);
+  EXPECT_FALSE(base::ContainsValue(
+      GetEnabledConfigurations()->configs_by_decreasing_priority(), dryrun));
 }
 
 }  // namespace subresource_filter
