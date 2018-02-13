@@ -68,6 +68,10 @@ bool NavigationContextImpl::IsSameDocument() const {
   return is_same_document_;
 }
 
+bool NavigationContextImpl::HasCommitted() const {
+  return has_committed_;
+}
+
 bool NavigationContextImpl::IsDownload() const {
   return is_download_;
 }
@@ -94,6 +98,10 @@ void NavigationContextImpl::SetUrl(const GURL& url) {
 
 void NavigationContextImpl::SetIsSameDocument(bool is_same_document) {
   is_same_document_ = is_same_document;
+}
+
+void NavigationContextImpl::SetHasCommitted(bool has_committed) {
+  has_committed_ = has_committed;
 }
 
 void NavigationContextImpl::SetIsDownload(bool is_download) {

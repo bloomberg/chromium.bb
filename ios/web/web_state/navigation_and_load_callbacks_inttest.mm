@@ -63,6 +63,7 @@ ACTION_P4(VerifyNewPageStartedContext, web_state, url, context, nav_id) {
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
@@ -93,6 +94,7 @@ ACTION_P5(VerifyNewPageFinishedContext,
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_TRUE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
@@ -122,6 +124,7 @@ ACTION_P4(VerifyErrorFinishedContext, web_state, url, context, nav_id) {
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->IsPost());
   // The error code will be different on bots and for local runs. Allow both.
@@ -153,6 +156,7 @@ ACTION_P5(VerifyPostStartedContext,
   EXPECT_NE(0, *nav_id);
   EXPECT_EQ(url, (*context)->GetUrl());
   EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_TRUE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
@@ -188,6 +192,7 @@ ACTION_P5(VerifyPostFinishedContext,
   EXPECT_EQ(*nav_id, (*context)->GetNavigationId());
   EXPECT_EQ(url, (*context)->GetUrl());
   EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_TRUE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_TRUE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
@@ -219,6 +224,7 @@ ACTION_P6(VerifySameDocumentStartedContext,
   EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
       page_transition, (*context)->GetPageTransition()));
   EXPECT_TRUE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
@@ -244,6 +250,7 @@ ACTION_P6(VerifySameDocumentFinishedContext,
   EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
       page_transition, (*context)->GetPageTransition()));
   EXPECT_TRUE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
@@ -269,6 +276,7 @@ ACTION_P4(VerifyNewNativePageStartedContext, web_state, url, context, nav_id) {
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
@@ -294,6 +302,7 @@ ACTION_P4(VerifyNewNativePageFinishedContext, web_state, url, context, nav_id) {
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_TRUE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
@@ -320,6 +329,7 @@ ACTION_P4(VerifyReloadStartedContext, web_state, url, context, nav_id) {
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_RELOAD,
                                (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->GetError());
   EXPECT_TRUE((*context)->IsRendererInitiated());
@@ -355,6 +365,7 @@ ACTION_P5(VerifyReloadFinishedContext,
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_RELOAD,
                                (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_TRUE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
   EXPECT_FALSE((*context)->GetError());
   EXPECT_TRUE((*context)->IsRendererInitiated());
@@ -386,6 +397,7 @@ ACTION_P4(VerifyDownloadFinishedContext, web_state, url, context, nav_id) {
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
   EXPECT_FALSE((*context)->IsSameDocument());
+  EXPECT_FALSE((*context)->HasCommitted());
   EXPECT_TRUE((*context)->IsDownload());
   EXPECT_FALSE((*context)->IsPost());
   EXPECT_FALSE((*context)->GetError());
