@@ -119,6 +119,15 @@ class CHROMEOS_EXPORT SmbProviderClient : public DBusClient {
                          base::ScopedFD temp_fd,
                          StatusCallback callback) = 0;
 
+  // Calls CreateDirectory. Using the corresponding |mount_id|, this creates the
+  // directory at |directory_path|. If |recursive| is set to true, this creates
+  // all non-existing directories on the path. The operation will fail if the
+  // directory already exists.
+  virtual void CreateDirectory(int32_t mount_id,
+                               const base::FilePath& directory_path,
+                               bool recursive,
+                               StatusCallback callback) = 0;
+
  protected:
   // Create() should be used instead.
   SmbProviderClient();

@@ -181,6 +181,19 @@ class SmbProviderClientImpl : public SmbProviderClient {
                &callback);
   }
 
+  void CreateDirectory(int32_t mount_id,
+                       const base::FilePath& directory_path,
+                       bool recursive,
+                       StatusCallback callback) override {
+    smbprovider::CreateDirectoryOptionsProto options;
+    options.set_mount_id(mount_id);
+    options.set_directory_path(directory_path.value());
+    options.set_recursive(recursive);
+    CallMethod(smbprovider::kCreateDirectoryMethod, options,
+               &SmbProviderClientImpl::HandleCreateDirectoryCallback,
+               &callback);
+  }
+
  protected:
   // DBusClient override.
   void Init(dbus::Bus* bus) override {
@@ -346,6 +359,17 @@ class SmbProviderClientImpl : public SmbProviderClient {
                                dbus::Response* response) {
     if (!response) {
       DLOG(ERROR) << "WriteFile: failed to call smbprovider";
+      std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED);
+    }
+    dbus::MessageReader reader(response);
+    std::move(callback).Run(GetErrorFromReader(&reader));
+  }
+
+  // Handles D-Bus callback for CreateDirectory.
+  void HandleCreateDirectoryCallback(StatusCallback callback,
+                                     dbus::Response* response) {
+    if (!response) {
+      DLOG(ERROR) << "CreateDirectory: failed to call smbprovider";
       std::move(callback).Run(smbprovider::ERROR_DBUS_PARSE_FAILED);
     }
     dbus::MessageReader reader(response);
