@@ -183,6 +183,8 @@ void PopulateRendererMetrics(
                          metrics_mb_or_count["NumberOfLayoutObjects"]);
   SetAllocatorDumpMetric(pmd, "blink_objects/Node", "object_count",
                          metrics_mb_or_count["NumberOfNodes"]);
+  SetAllocatorDumpMetric(pmd, "partition_alloc/partitions/array_buffer", "size",
+                         metrics_mb_or_count["ArrayBuffer"] * 1024 * 1024);
 
   OSMemDumpPtr os_dump = GetFakeOSMemDump(
       metrics_mb_or_count["Resident"] * 1024,
@@ -218,6 +220,7 @@ base::flat_map<const char*, int64_t> GetExpectedRendererMetrics() {
 #endif
             {"NumberOfDocuments", 1}, {"NumberOfFrames", 2},
             {"NumberOfLayoutObjects", 5}, {"NumberOfNodes", 3},
+            {"ArrayBuffer", 10},
       },
       base::KEEP_FIRST_OF_DUPES);
 }

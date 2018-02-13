@@ -1356,6 +1356,11 @@ be describing additional metrics about the same event.
   <summary>
     Metrics associated with memory consumption, in MB.
   </summary>
+  <metric name="ArrayBuffer">
+    <summary>
+      Measure of memory consumed by Array Buffer.
+    </summary>
+  </metric>
   <metric name="BlinkGC">
     <summary>
       Measure of memory consumed by Oilpan.
