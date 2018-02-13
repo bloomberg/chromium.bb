@@ -116,6 +116,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   bool IsValid();
   bool IsReadOnly();
   std::string Restriction();
+  v8::Local<v8::Object> ActiveDescendant();
   unsigned int BackgroundColor();
   unsigned int Color();
   // For input elements of type color.

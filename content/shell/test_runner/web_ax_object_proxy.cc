@@ -608,6 +608,7 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
       .SetProperty("isValid", &WebAXObjectProxy::IsValid)
       .SetProperty("isReadOnly", &WebAXObjectProxy::IsReadOnly)
       .SetProperty("restriction", &WebAXObjectProxy::Restriction)
+      .SetProperty("activeDescendant", &WebAXObjectProxy::ActiveDescendant)
       .SetProperty("backgroundColor", &WebAXObjectProxy::BackgroundColor)
       .SetProperty("color", &WebAXObjectProxy::Color)
       .SetProperty("colorValue", &WebAXObjectProxy::ColorValue)
@@ -1108,6 +1109,12 @@ bool WebAXObjectProxy::IsReadOnly() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
   return accessibility_object_.Restriction() ==
          blink::kWebAXRestrictionReadOnly;
+}
+
+v8::Local<v8::Object> WebAXObjectProxy::ActiveDescendant() {
+  accessibility_object_.UpdateLayoutAndCheckValidity();
+  blink::WebAXObject element = accessibility_object_.AriaActiveDescendant();
+  return factory_->GetOrCreate(element);
 }
 
 unsigned int WebAXObjectProxy::BackgroundColor() {
