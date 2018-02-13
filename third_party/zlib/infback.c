@@ -480,8 +480,8 @@ void FAR *out_desc;
 
         case LEN:
             /* use inflate_fast() if we have enough input and output */
-            if (have >= INFLATE_FAST_MIN_HAVE &&
-                left >= INFLATE_FAST_MIN_LEFT) {
+            if (have >= INFLATE_FAST_MIN_INPUT &&
+                left >= INFLATE_FAST_MIN_OUTPUT) {
                 RESTORE();
                 if (state->whave < state->wsize)
                     state->whave = state->wsize - left;
