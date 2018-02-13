@@ -146,6 +146,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   viz::LocalSurfaceId GetLocalSurfaceId() const override;
   void PreProcessTouchEvent(const blink::WebTouchEvent& event) override;
   viz::SurfaceId GetCurrentSurfaceId() const override;
+  bool HasSize() const override;
   gfx::PointF TransformPointToRootCoordSpaceF(
       const gfx::PointF& point) override;
   bool TransformPointToLocalCoordSpace(const gfx::PointF& point,

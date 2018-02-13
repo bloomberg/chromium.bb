@@ -113,6 +113,9 @@ class CORE_EXPORT WebFrameWidgetBase
   // Image decode functionality.
   void RequestDecode(const PaintImage&, base::OnceCallback<void(bool)>);
 
+  // Called when the FrameView for this Widget's local root is created.
+  virtual void DidCreateLocalRootView() {}
+
   // This method returns the focused frame belonging to this WebWidget, that
   // is, a focused frame with the same local root as the one corresponding
   // to this widget. It will return nullptr if no frame is focused or, the

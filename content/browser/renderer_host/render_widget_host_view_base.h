@@ -358,6 +358,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // frames.
   virtual viz::SurfaceId GetCurrentSurfaceId() const = 0;
 
+  // Returns true if this view's size have been initialized.
+  virtual bool HasSize() const;
+
   //----------------------------------------------------------------------------
   // The following methods are related to IME.
   // TODO(ekaramad): Most of the IME methods should not stay virtual after IME

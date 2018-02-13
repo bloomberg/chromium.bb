@@ -272,6 +272,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   Frame* FindFrame(const AtomicString& name) const override;
 
+  void FrameRectsChanged(const IntRect&) override;
+
  private:
   explicit LocalFrameClientImpl(WebLocalFrameImpl*);
 

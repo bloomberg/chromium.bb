@@ -393,6 +393,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DidChangeContents() {}
 
   virtual Frame* FindFrame(const AtomicString& name) const = 0;
+
+  virtual void FrameRectsChanged(const IntRect&) {}
 };
 
 }  // namespace blink

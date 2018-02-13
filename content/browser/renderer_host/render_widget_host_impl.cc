@@ -829,7 +829,8 @@ void RenderWidgetHostImpl::WasResized(bool scroll_focused_node_into_view) {
   // Skip if the |delegate_| has already been detached because
   // it's web contents is being deleted.
   if (resize_ack_pending_ || !process_->HasConnection() || !view_ ||
-      !renderer_initialized_ || auto_resize_enabled_ || !delegate_) {
+      !view_->HasSize() || !renderer_initialized_ || auto_resize_enabled_ ||
+      !delegate_) {
     return;
   }
 

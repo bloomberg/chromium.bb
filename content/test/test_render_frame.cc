@@ -107,6 +107,8 @@ class MockFrameHost : public mojom::FrameHost {
 
   void UpdateEncoding(const std::string& encoding_name) override {}
 
+  void FrameRectsChanged(const gfx::Rect& frame_rect) override {}
+
  private:
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
       last_commit_params_;

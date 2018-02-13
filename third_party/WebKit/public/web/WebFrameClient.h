@@ -600,6 +600,9 @@ class BLINK_EXPORT WebFrameClient {
   // A data url from <canvas> or <img> is passed to the method's argument.
   virtual void SaveImageFromDataURL(const WebString&) {}
 
+  // Called when the frame rects changed.
+  virtual void FrameRectsChanged(const WebRect&) {}
+
   // Low-level resource notifications ------------------------------------
 
   // A request is about to be sent out, and the client may modify it.  Request

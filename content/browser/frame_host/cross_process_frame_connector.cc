@@ -437,6 +437,8 @@ void CrossProcessFrameConnector::SetScreenSpaceRect(
 
 void CrossProcessFrameConnector::ResetScreenSpaceRect() {
   local_surface_id_ = viz::LocalSurfaceId();
+  // TODO(lfg): Why do we need to reset the screen_space_rect_ that comes from
+  // the parent when setting the child? https://crbug.com/809275
   screen_space_rect_in_pixels_ = gfx::Rect();
   screen_space_rect_in_dip_ = gfx::Rect();
   last_received_local_frame_size_ = gfx::Size();

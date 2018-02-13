@@ -10440,4 +10440,30 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
 }
 
+// Verifies the the renderer has the size of the frame after commit.
+// https://crbug/804046, https://crbug.com/801091
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SizeAvailableAfterCommit) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  TestFrameNavigationObserver commit_observer(child);
+  NavigationController::LoadURLParams params(b_url);
+  params.transition_type = PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
+  params.frame_tree_node_id = child->frame_tree_node_id();
+  child->navigator()->GetController()->LoadURLWithParams(params);
+  commit_observer.WaitForCommit();
+
+  int height = -1;
+  EXPECT_TRUE(ExecuteScriptAndExtractInt(
+      child, "window.domAutomationController.send(window.innerHeight);",
+      &height));
+
+  EXPECT_GT(height, 0);
+}
+
 }  // namespace content

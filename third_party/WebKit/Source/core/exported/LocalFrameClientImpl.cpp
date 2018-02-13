@@ -1164,4 +1164,9 @@ Frame* LocalFrameClientImpl::FindFrame(const AtomicString& name) const {
   return ToCoreFrame(web_frame_->Client()->FindFrame(name));
 }
 
+void LocalFrameClientImpl::FrameRectsChanged(const IntRect& frame_rect) {
+  DCHECK(web_frame_->Client());
+  web_frame_->Client()->FrameRectsChanged(frame_rect);
+}
+
 }  // namespace blink

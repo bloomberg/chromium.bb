@@ -517,6 +517,10 @@ bool RenderWidgetHostViewBase::IsRenderWidgetHostViewChildFrame() {
   return false;
 }
 
+bool RenderWidgetHostViewBase::HasSize() const {
+  return true;
+}
+
 void RenderWidgetHostViewBase::TextInputStateChanged(
     const TextInputState& text_input_state) {
   if (GetTextInputManager())

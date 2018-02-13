@@ -60,6 +60,7 @@
 #include "core/input/ContextMenuAllowedScope.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutView.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -167,12 +168,17 @@ void WebFrameWidgetImpl::Close() {
 }
 
 WebSize WebFrameWidgetImpl::Size() {
-  return size_;
+  return size_ ? *size_ : WebSize();
 }
 
 void WebFrameWidgetImpl::Resize(const WebSize& new_size) {
-  if (size_ == new_size)
+  if (size_ && *size_ == new_size)
     return;
+
+  if (did_suspend_parsing_) {
+    did_suspend_parsing_ = false;
+    local_root_->GetFrame()->Loader().GetDocumentLoader()->ResumeParser();
+  }
 
   LocalFrameView* view = local_root_->GetFrameView();
   if (!view)
@@ -182,7 +188,7 @@ void WebFrameWidgetImpl::Resize(const WebSize& new_size) {
 
   UpdateMainFrameLayoutSize();
 
-  view->Resize(size_);
+  view->Resize(*size_);
 
   // FIXME: In WebViewImpl this layout was a precursor to setting the minimum
   // scale limit.  It is not clear if this is necessary for frame-level widget
@@ -209,7 +215,7 @@ void WebFrameWidgetImpl::SendResizeEventAndRepaint() {
   if (IsAcceleratedCompositingActive()) {
     UpdateLayerTreeViewport();
   } else {
-    WebRect damaged_rect(0, 0, size_.width, size_.height);
+    WebRect damaged_rect(0, 0, size_->width, size_->height);
     client_->DidInvalidateRect(damaged_rect);
   }
 }
@@ -239,7 +245,7 @@ void WebFrameWidgetImpl::UpdateMainFrameLayoutSize() {
   if (!view)
     return;
 
-  WebSize layout_size = size_;
+  WebSize layout_size = *size_;
 
   view->SetLayoutSize(layout_size);
 }
@@ -373,7 +379,7 @@ void WebFrameWidgetImpl::CompositeAndReadbackAsync(
 void WebFrameWidgetImpl::ThemeChanged() {
   LocalFrameView* view = local_root_->GetFrameView();
 
-  WebRect damaged_rect(0, 0, size_.width, size_.height);
+  WebRect damaged_rect(0, 0, size_->width, size_->height);
   view->InvalidateRect(damaged_rect);
 }
 
@@ -1119,6 +1125,16 @@ LocalFrame* WebFrameWidgetImpl::FocusedLocalFrameAvailableForIme() const {
   if (!ime_accept_events_)
     return nullptr;
   return FocusedLocalFrameInWidget();
+}
+
+void WebFrameWidgetImpl::DidCreateLocalRootView() {
+  // If this WebWidget still hasn't received its size from the embedder, block
+  // the parser. This is necessary, because the parser can cause layout to
+  // happen, which needs to be done with the correct size.
+  if (!size_) {
+    did_suspend_parsing_ = true;
+    local_root_->GetFrame()->Loader().GetDocumentLoader()->BlockParser();
+  }
 }
 
 }  // namespace blink
