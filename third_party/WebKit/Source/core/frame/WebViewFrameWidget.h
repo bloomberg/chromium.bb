@@ -50,6 +50,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
   void BeginFrame(double last_frame_time_monotonic) override;
   void UpdateLifecycle(LifecycleUpdate requested_update) override;
+  void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
   void Paint(WebCanvas*, const WebRect& view_port) override;
   void LayoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) override;
   void CompositeAndReadbackAsync(

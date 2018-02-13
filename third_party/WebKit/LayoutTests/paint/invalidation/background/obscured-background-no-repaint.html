@@ -54,7 +54,7 @@
 
     function finish() {
         var layerTree = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
-        var invalidations = JSON.parse(layerTree)["layers"][0].objectPaintInvalidations;
+        var invalidations = JSON.parse(layerTree)["objectPaintInvalidations"];
         // Passes if there is no invalidations other than imgForAdvanceImageAnimation,
         // or only invalidations because of background obscuration change.
         // This is because before the delayed image decoder finishes decoding the image,
@@ -66,8 +66,6 @@
             for (var i = 0; i < invalidations.length; ++i) {
                 var object = invalidations[i].object;
                 if (object.indexOf('imgForAdvanceImageAnimation') != -1)
-                    continue;
-                if ((object.indexOf('target3') != -1 || object.indexOf('target4') != -1) && invalidations[i].reason == 'background obscuration change')
                     continue;
                 invalidatedObjects[object] = true;
             }
@@ -86,9 +84,9 @@
 
         // Ensure the deferred decoder has decoded ../resources/apple.jpg.
         testRunner.capturePixelsAsyncThen(function() {
-            internals.startTrackingRepaints(document);
             internals.advanceImageAnimation(imgForAdvanceImageAnimation);
             testRunner.layoutAndPaintAsyncThen(function() {
+                internals.startTrackingRepaints(document);
                 internals.advanceImageAnimation(imgForAdvanceImageAnimation);
                 testRunner.layoutAndPaintAsyncThen(function() {
                     internals.advanceImageAnimation(imgForAdvanceImageAnimation);

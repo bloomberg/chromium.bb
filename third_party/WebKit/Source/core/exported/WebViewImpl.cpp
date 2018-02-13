@@ -1899,6 +1899,11 @@ void WebViewImpl::UpdateLifecycle(LifecycleUpdate requested_update) {
   }
 }
 
+void WebViewImpl::UpdateAllLifecyclePhasesAndCompositeForTesting() {
+  if (layer_tree_view_)
+    layer_tree_view_->SynchronouslyCompositeNoRasterForTesting();
+}
+
 void WebViewImpl::Paint(WebCanvas* canvas, const WebRect& rect) {
   // This should only be used when compositing is not being used for this
   // WebView, and it is painting into the recording of its parent.

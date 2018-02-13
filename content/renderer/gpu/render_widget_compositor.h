@@ -154,6 +154,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
       blink::WebLayoutAndPaintAsyncCallback* callback) override;
   void CompositeAndReadbackAsync(
       blink::WebCompositeAndReadbackAsyncCallback* callback) override;
+  void SynchronouslyCompositeNoRasterForTesting() override;
   void SetDeferCommits(bool defer_commits) override;
   void RegisterViewportLayers(
       const blink::WebLayerTreeView::ViewportLayers& viewport_layers) override;
@@ -234,10 +235,10 @@ class CONTENT_EXPORT RenderWidgetCompositor
  private:
   void SetLayerTreeFrameSink(
       std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink);
-  void LayoutAndUpdateLayers();
   void InvokeLayoutAndPaintCallback();
   bool CompositeIsSynchronous() const;
-  void SynchronouslyComposite();
+  void SynchronouslyComposite(bool raster,
+                              std::unique_ptr<cc::SwapPromise> swap_promise);
 
   RenderWidgetCompositorDelegate* const delegate_;
   CompositorDependencies* const compositor_deps_;
@@ -249,6 +250,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
 
   bool layer_tree_frame_sink_request_failed_while_invisible_ = false;
 
+  bool in_synchronous_compositor_update_ = false;
   blink::WebLayoutAndPaintAsyncCallback* layout_and_paint_async_callback_;
 
   viz::FrameSinkId frame_sink_id_;

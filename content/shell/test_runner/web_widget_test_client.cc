@@ -45,17 +45,14 @@ void WebWidgetTestClient::ScheduleAnimation() {
 }
 
 void WebWidgetTestClient::AnimateNow() {
-  if (animation_scheduled_) {
-    blink::WebWidget* web_widget = web_widget_test_proxy_base_->web_widget();
-    animation_scheduled_ = false;
-    base::TimeDelta animate_time = base::TimeTicks::Now() - base::TimeTicks();
-    web_widget->BeginFrame(animate_time.InSecondsF());
-    web_widget->UpdateAllLifecyclePhases();
-    if (blink::WebPagePopup* popup = web_widget->GetPagePopup()) {
-      popup->BeginFrame(animate_time.InSecondsF());
-      popup->UpdateAllLifecyclePhases();
-    }
-  }
+  if (!animation_scheduled_)
+    return;
+
+  animation_scheduled_ = false;
+  blink::WebWidget* web_widget = web_widget_test_proxy_base_->web_widget();
+  web_widget->UpdateAllLifecyclePhasesAndCompositeForTesting();
+  if (blink::WebPagePopup* popup = web_widget->GetPagePopup())
+    popup->UpdateAllLifecyclePhasesAndCompositeForTesting();
 }
 
 blink::WebScreenInfo WebWidgetTestClient::GetScreenInfo() {

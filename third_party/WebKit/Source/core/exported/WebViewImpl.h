@@ -120,6 +120,7 @@ class CORE_EXPORT WebViewImpl final
   void BeginFrame(double last_frame_time_monotonic) override;
 
   void UpdateLifecycle(LifecycleUpdate requested_update) override;
+  void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
   void Paint(WebCanvas*, const WebRect&) override;
 #if defined(OS_ANDROID)
   void PaintIgnoringCompositing(WebCanvas*, const WebRect&) override;

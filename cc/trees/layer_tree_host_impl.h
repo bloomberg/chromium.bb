@@ -792,6 +792,12 @@ class CC_EXPORT LayerTreeHostImpl
   // Request an impl-side invalidation to animate an image.
   void RequestInvalidationForAnimatedImages();
 
+  // Pushes state for image animations and checkerboarded images from the
+  // pending to active tree. This is called during activation when a pending
+  // tree exists, and during the commit if we are committing directly to the
+  // active tree.
+  void ActivateStateForImages();
+
   using UIResourceMap = std::unordered_map<UIResourceId, UIResourceData>;
   UIResourceMap ui_resource_map_;
 

@@ -126,7 +126,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void RequestNewLayerTreeFrameSink();
 
   // Called by the legacy path where RenderWidget does the scheduling.
-  void CompositeImmediately(base::TimeTicks frame_begin_time);
+  // Rasterization of tiles is only performed when |raster| is true.
+  void CompositeImmediately(base::TimeTicks frame_begin_time, bool raster);
 
  protected:
   SingleThreadProxy(LayerTreeHost* layer_tree_host,

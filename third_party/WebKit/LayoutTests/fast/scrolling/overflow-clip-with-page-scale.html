@@ -26,7 +26,7 @@ body {
   background-color: #8f8;
 }
 </style>
-<meta name="viewport" content="width=800, minimum-scale=0.8, initial-scale=1, maximum-scale=1.25">
+<meta name="viewport" content="width=800, minimum-scale=0.8, initial-scale=0.8, maximum-scale=1.25">
 <div class="box"></div>
 <script>
 if (window.testRunner) {
@@ -34,7 +34,6 @@ if (window.testRunner) {
   testRunner.waitUntilDone();
 }
 runAfterLayoutAndPaint(function() {
-  internals.setPageScaleFactor(0.8);
   if (window.testRunner)
     testRunner.notifyDone();
 });
