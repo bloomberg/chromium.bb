@@ -201,7 +201,8 @@ void DirectLayerTreeFrameSink::OnContextLost() {
 mojom::HitTestRegionListPtr DirectLayerTreeFrameSink::CreateHitTestData(
     const CompositorFrame& frame) const {
   auto hit_test_region_list = mojom::HitTestRegionList::New();
-  hit_test_region_list->flags = mojom::kHitTestMine;
+  hit_test_region_list->flags =
+      mojom::kHitTestMouse | mojom::kHitTestTouch | mojom::kHitTestMine;
   hit_test_region_list->bounds.set_size(frame.size_in_pixels());
 
   for (const auto& render_pass : frame.render_pass_list) {
@@ -221,7 +222,8 @@ mojom::HitTestRegionListPtr DirectLayerTreeFrameSink::CreateHitTestData(
         const SurfaceId& surface_id = surface_quad->primary_surface_id;
         hit_test_region->frame_sink_id = surface_id.frame_sink_id();
         hit_test_region->local_surface_id = surface_id.local_surface_id();
-        hit_test_region->flags = mojom::kHitTestChildSurface;
+        hit_test_region->flags = mojom::kHitTestMouse | mojom::kHitTestTouch |
+                                 mojom::kHitTestChildSurface;
         hit_test_region->rect = surface_quad->rect;
         hit_test_region->transform = target_to_quad_transform;
         hit_test_region_list->regions.push_back(std::move(hit_test_region));
