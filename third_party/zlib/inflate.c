@@ -1043,8 +1043,8 @@ int flush;
         case LEN_:
             state->mode = LEN;
         case LEN:
-            if (have >= INFLATE_FAST_MIN_HAVE &&
-                left >= INFLATE_FAST_MIN_LEFT) {
+            if (have >= INFLATE_FAST_MIN_INPUT &&
+                left >= INFLATE_FAST_MIN_OUTPUT) {
                 RESTORE();
                 inflate_fast(strm, out);
                 LOAD();

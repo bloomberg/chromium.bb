@@ -9,6 +9,8 @@
    subject to change. Applications should only use zlib.h.
  */
 
+#include "inffast.h"
+
 /* INFLATE_FAST_MIN_INPUT: the minimum number of input bytes needed so that
    we can safely call inflate_fast() with only one up-front bounds check. One
    length/distance code pair (15 bits for the length code, 5 bits for length
@@ -17,16 +19,8 @@
    requires a little endian machine, and reads 64 input bits (8 bytes).
 */
 #ifdef INFLATE_CHUNK_READ_64LE
+#undef INFLATE_FAST_MIN_INPUT
 #define INFLATE_FAST_MIN_INPUT 8
-#else
-#define INFLATE_FAST_MIN_INPUT 6
 #endif
-
-/* INFLATE_FAST_MIN_OUTPUT: the minimum number of output bytes needed so that
-   we can safely call inflate_fast() with only one up-front bounds check. One
-   length/distance code pair can output up to 258 bytes, which is the maximum
-   length that can be coded.
- */
-#define INFLATE_FAST_MIN_OUTPUT 258
 
 void ZLIB_INTERNAL inflate_fast_chunk_ OF((z_streamp strm, unsigned start));
