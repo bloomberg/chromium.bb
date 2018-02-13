@@ -47,8 +47,7 @@ void V8HTMLConstructor::HtmlConstructor(
   // 2. If NewTarget is equal to the active function object, then
   // throw a TypeError and abort these steps.
   v8::Local<v8::Function> active_function_object =
-      script_state->PerContextData()->ConstructorForType(
-          &V8HTMLElement::wrapperTypeInfo);
+      script_state->PerContextData()->ConstructorForType(&wrapper_type_info);
   if (new_target == active_function_object) {
     V8ThrowException::ThrowTypeError(isolate, "Illegal constructor");
     return;
@@ -110,8 +109,7 @@ void V8HTMLConstructor::HtmlConstructor(
   if (!prototype->IsObject()) {
     if (V8PerContextData* per_context_data = V8PerContextData::From(
             new_target.As<v8::Object>()->CreationContext())) {
-      prototype =
-          per_context_data->PrototypeForType(&V8HTMLElement::wrapperTypeInfo);
+      prototype = per_context_data->PrototypeForType(&wrapper_type_info);
     } else {
       V8ThrowException::ThrowError(isolate, "The context has been destroyed");
       return;
