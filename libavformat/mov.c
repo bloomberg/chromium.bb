@@ -7160,7 +7160,7 @@ static int mov_seek_fragment(AVFormatContext *s, AVStream *st, int64_t timestamp
     MOVContext *mov = s->priv_data;
     int index;
 
-    if (!mov->frag_index.complete)
+    if (!mov->frag_index.complete || mov->frag_index.nb_items == 0)
         return 0;
 
     index = search_frag_timestamp(&mov->frag_index, st, timestamp);
