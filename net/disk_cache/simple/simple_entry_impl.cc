@@ -1018,7 +1018,19 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
   if (stream_index == 1)
     stream_1_prefetch_data_ = nullptr;
 
-  AdvanceCrc(buf, offset, buf_len, stream_index);
+  bool request_update_crc = false;
+  uint32_t initial_crc = 0;
+
+  if (offset < crc32s_end_offset_[stream_index]) {
+    // If a range for which the crc32 was already computed is rewritten, the
+    // computation of the crc32 need to start from 0 again.
+    crc32s_end_offset_[stream_index] = 0;
+  }
+
+  if (crc32s_end_offset_[stream_index] == offset) {
+    request_update_crc = true;
+    initial_crc = (offset != 0) ? crc32s_[stream_index] : crc32(0, Z_NULL, 0);
+  }
 
   // |entry_stat| needs to be initialized before modifying |data_size_|.
   std::unique_ptr<SimpleEntryStat> entry_stat(new SimpleEntryStat(
@@ -1030,6 +1042,9 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
                                         GetDataSize(stream_index));
   }
 
+  std::unique_ptr<SimpleSynchronousEntry::WriteResult> write_result =
+      std::make_unique<SimpleSynchronousEntry::WriteResult>();
+
   // Since we don't know the correct values for |last_used_| and
   // |last_modified_| yet, we make this approximation.
   last_used_ = last_modified_ = base::Time::Now();
@@ -1040,8 +1055,6 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
   if (stream_index == 1)
     have_written_[0] = true;
 
-  std::unique_ptr<int> result(new int());
-
   // Retain a reference to |buf| in |reply| instead of |task|, so that we can
   // reduce cross thread malloc/free pairs. The cross thread malloc/free pair
   // increases the apparent memory usage due to the thread cached free list.
@@ -1050,12 +1063,14 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
   // just work.
   Closure task = base::Bind(
       &SimpleSynchronousEntry::WriteData, base::Unretained(synchronous_entry_),
-      SimpleSynchronousEntry::WriteRequest(stream_index, offset, buf_len,
-                                           truncate, doom_state_ != DOOM_NONE),
-      base::Unretained(buf), entry_stat.get(), result.get());
-  Closure reply = base::Bind(&SimpleEntryImpl::WriteOperationComplete, this,
-                             stream_index, callback, base::Passed(&entry_stat),
-                             base::Passed(&result), base::RetainedRef(buf));
+      SimpleSynchronousEntry::WriteRequest(
+          stream_index, offset, buf_len, initial_crc, truncate,
+          doom_state_ != DOOM_NONE, request_update_crc),
+      base::Unretained(buf), entry_stat.get(), write_result.get());
+  Closure reply =
+      base::Bind(&SimpleEntryImpl::WriteOperationComplete, this, stream_index,
+                 callback, base::Passed(&entry_stat),
+                 base::Passed(&write_result), base::RetainedRef(buf));
   worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 }
 
@@ -1403,22 +1418,27 @@ void SimpleEntryImpl::WriteOperationComplete(
     int stream_index,
     const CompletionCallback& completion_callback,
     std::unique_ptr<SimpleEntryStat> entry_stat,
-    std::unique_ptr<int> result,
+    std::unique_ptr<SimpleSynchronousEntry::WriteResult> write_result,
     net::IOBuffer* buf) {
-  if (*result >= 0)
+  int result = write_result->result;
+  if (result >= 0)
     RecordWriteResult(cache_type_, WRITE_RESULT_SUCCESS);
   else
     RecordWriteResult(cache_type_, WRITE_RESULT_SYNC_WRITE_FAILURE);
   if (net_log_.IsCapturing()) {
     net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_WRITE_END,
-                      CreateNetLogReadWriteCompleteCallback(*result));
+                      CreateNetLogReadWriteCompleteCallback(result));
   }
 
-  if (*result < 0) {
+  if (result < 0)
     crc32s_end_offset_[stream_index] = 0;
+
+  if (result > 0 && write_result->crc_updated) {
+    crc32s_end_offset_[stream_index] += result;
+    crc32s_[stream_index] = write_result->updated_crc32;
   }
 
-  EntryOperationComplete(completion_callback, *entry_stat, *result);
+  EntryOperationComplete(completion_callback, *entry_stat, result);
 }
 
 void SimpleEntryImpl::ReadSparseOperationComplete(
@@ -1652,36 +1672,16 @@ int SimpleEntryImpl::SetStream0Data(net::IOBuffer* buf,
     data_size_[0] = buffer_size;
   }
   base::Time modification_time = base::Time::Now();
-  AdvanceCrc(buf, offset, buf_len, 0);
+
+  // Reset checksum; SimpleSynchronousEntry::Close will compute it for us,
+  // and do it off the I/O thread.
+  crc32s_end_offset_[0] = 0;
+
   UpdateDataFromEntryStat(
       SimpleEntryStat(modification_time, modification_time, data_size_,
                       sparse_data_size_));
   RecordWriteResult(cache_type_, WRITE_RESULT_SUCCESS);
   return buf_len;
-}
-
-void SimpleEntryImpl::AdvanceCrc(net::IOBuffer* buffer,
-                                 int offset,
-                                 int length,
-                                 int stream_index) {
-  // It is easy to incrementally compute the CRC from [0 .. |offset + buf_len|)
-  // if |offset == 0| or we have already computed the CRC for [0 .. offset).
-  // We rely on most write operations being sequential, start to end to compute
-  // the crc of the data. When we write to an entry and close without having
-  // done a sequential write, we don't check the CRC on read.
-  if (offset == 0 || crc32s_end_offset_[stream_index] == offset) {
-    uint32_t initial_crc =
-        (offset != 0) ? crc32s_[stream_index] : crc32(0, Z_NULL, 0);
-    if (length > 0) {
-      crc32s_[stream_index] =
-          simple_util::IncrementalCrc32(initial_crc, buffer->data(), length);
-    }
-    crc32s_end_offset_[stream_index] = offset + length;
-  } else if (offset < crc32s_end_offset_[stream_index]) {
-    // If a range for which the crc32 was already computed is rewritten, the
-    // computation of the crc32 need to start from 0 again.
-    crc32s_end_offset_[stream_index] = 0;
-  }
 }
 
 }  // namespace disk_cache

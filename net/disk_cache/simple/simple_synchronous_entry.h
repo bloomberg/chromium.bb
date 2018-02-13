@@ -148,13 +148,24 @@ class SimpleSynchronousEntry {
     WriteRequest(int index_p,
                  int offset_p,
                  int buf_len_p,
+                 uint32_t previous_crc32_p,
                  bool truncate_p,
-                 bool doomed_p);
+                 bool doomed_p,
+                 bool request_update_crc_p);
     int index;
     int offset;
     int buf_len;
+    uint32_t previous_crc32;
     bool truncate;
     bool doomed;
+    bool request_update_crc;
+  };
+
+  struct WriteResult {
+    WriteResult() : crc_updated(false) {}
+    int result;
+    uint32_t updated_crc32;  // only relevant if crc_updated set
+    bool crc_updated;
   };
 
   struct SparseRequest {
@@ -225,7 +236,7 @@ class SimpleSynchronousEntry {
   void WriteData(const WriteRequest& in_entry_op,
                  net::IOBuffer* in_buf,
                  SimpleEntryStat* out_entry_stat,
-                 int* out_result);
+                 WriteResult* out_write_result);
   int CheckEOFRecord(base::File* file,
                      int stream_index,
                      const SimpleEntryStat& entry_stat,
