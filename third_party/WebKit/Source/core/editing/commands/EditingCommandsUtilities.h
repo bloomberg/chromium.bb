@@ -122,6 +122,7 @@ VisibleSelection SelectionForParagraphIteration(const VisibleSelection&);
 
 const String& NonBreakingSpaceString();
 
+CORE_EXPORT void TidyUpHTMLStructure(Document&);
 }  // namespace blink
 
 #endif

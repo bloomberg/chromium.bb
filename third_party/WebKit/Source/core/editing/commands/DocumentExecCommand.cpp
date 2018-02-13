@@ -32,6 +32,7 @@
 #include "core/dom/events/ScopedEventQueue.h"
 #include "core/editing/EditingTriState.h"
 #include "core/editing/Editor.h"
+#include "core/editing/commands/EditingCommandsUtilities.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/forms/TextControlElement.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -84,7 +85,7 @@ bool Document::execCommand(const String& command_name,
   // Postpone DOM mutation events, which can execute scripts and change
   // DOM tree against implementation assumption.
   EventQueueScope event_queue_scope;
-  Editor::TidyUpHTMLStructure(*this);
+  TidyUpHTMLStructure(*this);
   Editor::Command editor_command = GetCommand(this, command_name);
 
   DEFINE_STATIC_LOCAL(SparseHistogram, editor_command_histogram,

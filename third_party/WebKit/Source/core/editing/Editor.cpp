@@ -71,15 +71,12 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
-#include "core/html/HTMLBodyElement.h"
-#include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/forms/HTMLInputElement.h"
 #include "core/html/forms/HTMLTextAreaElement.h"
 #include "core/html_names.h"
 #include "core/input/EventHandler.h"
 #include "core/input_type_names.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"
@@ -1432,57 +1429,6 @@ void Editor::SetMark() {
 void Editor::ToggleOverwriteModeEnabled() {
   overwrite_mode_enabled_ = !overwrite_mode_enabled_;
   GetFrameSelection().SetShouldShowBlockCursor(overwrite_mode_enabled_);
-}
-
-// TODO(tkent): This is a workaround of some crash bugs in the editing code,
-// which assumes a document has a valid HTML structure. We should make the
-// editing code more robust, and should remove this hack. crbug.com/580941.
-void Editor::TidyUpHTMLStructure(Document& document) {
-  // hasEditableStyle() needs up-to-date ComputedStyle.
-  document.UpdateStyleAndLayoutTree();
-  bool needs_valid_structure = HasEditableStyle(document) ||
-                               (document.documentElement() &&
-                                HasEditableStyle(*document.documentElement()));
-  if (!needs_valid_structure)
-    return;
-  Element* existing_head = nullptr;
-  Element* existing_body = nullptr;
-  Element* current_root = document.documentElement();
-  if (current_root) {
-    if (IsHTMLHtmlElement(current_root))
-      return;
-    if (IsHTMLHeadElement(current_root))
-      existing_head = current_root;
-    else if (IsHTMLBodyElement(current_root))
-      existing_body = current_root;
-    else if (IsHTMLFrameSetElement(current_root))
-      existing_body = current_root;
-  }
-  // We ensure only "the root is <html>."
-  // documentElement as rootEditableElement is problematic.  So we move
-  // non-<html> root elements under <body>, and the <body> works as
-  // rootEditableElement.
-  document.AddConsoleMessage(ConsoleMessage::Create(
-      kJSMessageSource, kWarningMessageLevel,
-      "document.execCommand() doesn't work with an invalid HTML structure. It "
-      "is corrected automatically."));
-  UseCounter::Count(document, WebFeature::kExecCommandAltersHTMLStructure);
-
-  Element* root = HTMLHtmlElement::Create(document);
-  if (existing_head)
-    root->AppendChild(existing_head);
-  Element* body = nullptr;
-  if (existing_body)
-    body = existing_body;
-  else
-    body = HTMLBodyElement::Create(document);
-  if (document.documentElement() && body != document.documentElement())
-    body->AppendChild(document.documentElement());
-  root->AppendChild(body);
-  DCHECK(!document.documentElement());
-  document.AppendChild(root);
-
-  // TODO(tkent): Should we check and move Text node children of <html>?
 }
 
 void Editor::ReplaceSelection(const String& text) {
