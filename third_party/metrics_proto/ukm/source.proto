@@ -9,7 +9,7 @@ option optimize_for = LITE_RUNTIME;
 package ukm;
 
 // Source contains data related to a top-level navigation.
-// Next tag: 9
+// Next tag: 10
 message Source {
   // An identifier for the source. This should be unique within a session.
   optional int64 id = 1;
@@ -39,6 +39,8 @@ message Source {
   // server-side and should never be filled in by clients.
   reserved 5;
   reserved "url_origin";
+  reserved 9;
+  reserved "url_scheme";
 
   // The initial URL of the source. Set in cases where the source URL changed
   // (e.g. it was redirected), otherwise unset. If this URL has not been

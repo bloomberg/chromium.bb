@@ -4,6 +4,7 @@
 
 #include "components/ukm/ukm_recorder_impl.h"
 
+#include <limits>
 #include <memory>
 #include <string>
 #include <utility>
@@ -176,6 +177,39 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
     if (!ShouldRecordInitialUrl())
       proto_source->clear_initial_url();
   }
+  for (const auto& event_and_aggregate : event_aggregations_) {
+    if (event_and_aggregate.second.metrics.empty())
+      continue;
+    const EventAggregate& event_aggregate = event_and_aggregate.second;
+    Aggregate* proto_aggregate = report->add_aggregates();
+    proto_aggregate->set_source_id(0);  // Across all sources.
+    proto_aggregate->set_event_hash(event_and_aggregate.first);
+    proto_aggregate->set_total_count(event_aggregate.total_count);
+    proto_aggregate->set_dropped_due_to_limits(
+        event_aggregate.dropped_due_to_limits);
+    proto_aggregate->set_dropped_due_to_sampling(
+        event_aggregate.dropped_due_to_sampling);
+    for (const auto& metric_and_aggregate : event_aggregate.metrics) {
+      const MetricAggregate& aggregate = metric_and_aggregate.second;
+      Aggregate::Metric* proto_metric = proto_aggregate->add_metrics();
+      proto_metric->set_metric_hash(metric_and_aggregate.first);
+      proto_metric->set_value_sum(aggregate.value_sum);
+      proto_metric->set_value_square_sum(aggregate.value_square_sum);
+      if (aggregate.total_count != event_aggregate.total_count) {
+        proto_metric->set_total_count(aggregate.total_count);
+      }
+      if (aggregate.dropped_due_to_limits !=
+          event_aggregate.dropped_due_to_limits) {
+        proto_metric->set_dropped_due_to_limits(
+            aggregate.dropped_due_to_limits);
+      }
+      if (aggregate.dropped_due_to_sampling !=
+          event_aggregate.dropped_due_to_sampling) {
+        proto_metric->set_dropped_due_to_sampling(
+            aggregate.dropped_due_to_sampling);
+      }
+    }
+  }
 
   UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.SerializedCount",
                             sources_.size() - unsent_sources.size());
@@ -209,6 +243,9 @@ bool UkmRecorderImpl::ShouldRestrictToWhitelistedSourceIds() const {
   return base::GetFieldTrialParamByFeatureAsBool(
       kUkmFeature, "RestrictToWhitelistedSourceIds", false);
 }
+
+UkmRecorderImpl::EventAggregate::EventAggregate() = default;
+UkmRecorderImpl::EventAggregate::~EventAggregate() = default;
 
 void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
                                       const GURL& unsanitized_url) {
@@ -254,10 +291,6 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
     RecordDroppedEntry(DroppedDataReason::RECORDING_DISABLED);
     return;
   }
-  if (entries_.size() >= GetMaxEntries()) {
-    RecordDroppedEntry(DroppedDataReason::MAX_HIT);
-    return;
-  }
 
   if (!whitelisted_entry_hashes_.empty() &&
       !base::ContainsKey(whitelisted_entry_hashes_, entry->event_hash)) {
@@ -268,15 +301,32 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
   if (default_sampling_rate_ == 0)
     LoadExperimentSamplingInfo();
 
+  EventAggregate& event_aggregate = event_aggregations_[entry->event_hash];
+  event_aggregate.total_count++;
+  for (const auto& metric : entry->metrics) {
+    MetricAggregate& aggregate = event_aggregate.metrics[metric->metric_hash];
+    double value = metric->value;
+    aggregate.total_count++;
+    aggregate.value_sum += value;
+    aggregate.value_square_sum += value * value;
+  }
+
   auto found = event_sampling_rates_.find(entry->event_hash);
   int sampling_rate = (found != event_sampling_rates_.end())
                           ? found->second
                           : default_sampling_rate_;
   if (sampling_rate == 0 ||
       (sampling_rate > 1 && base::RandInt(1, sampling_rate) != 1)) {
-    // Aggregate metrics could be accumulated here.
-    // for (auto& metric : entry->metrics)
-    //   aggregates[metric->metric_hash].dropped_due_to_sampling++;
+    for (auto& metric : entry->metrics)
+      event_aggregations_[metric->metric_hash].dropped_due_to_sampling++;
+    return;
+  }
+
+  if (entries_.size() >= GetMaxEntries()) {
+    RecordDroppedEntry(DroppedDataReason::MAX_HIT);
+    event_aggregate.dropped_due_to_limits++;
+    for (auto& metric : entry->metrics)
+      event_aggregate.metrics[metric->metric_hash].dropped_due_to_limits++;
     return;
   }
 
