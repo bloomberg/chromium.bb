@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/strings/string_piece.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 class GURL;
 
@@ -180,13 +181,19 @@ class URLPattern {
   // Returns true if |test| matches our path.
   bool MatchesPath(base::StringPiece test) const;
 
-  // Returns true if the pattern is vague enough that it implies all hosts,
-  // such as *://*/*, or if it's a common (e)TLD wildcard pattern like
-  // *://*.com/*.
-  // This is an expensive method, and should be used sparingly!
+  // Returns true if the pattern matches all patterns in an (e)TLD. This
+  // includes patterns like *://*.com/*, *://*.co.uk/*, etc. A pattern that
+  // matches all domains (e.g., *://*/*) will return true.
+  // |private_filter| specifies whether private registries (like appspot.com)
+  // should be considered; if included, patterns like *://*.appspot.com/* will
+  // return true. By default, we exclude private registries (so *.appspot.com
+  // returns false).
+  // Note: This is an expensive method, and should be used sparingly!
   // You should probably use URLPatternSet::ShouldWarnAllHosts(), which is
   // cached.
-  bool ImpliesAllHosts() const;
+  bool MatchesEffectiveTld(
+      net::registry_controlled_domains::PrivateRegistryFilter private_filter =
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES) const;
 
   // Returns true if the pattern only matches a single origin. The pattern may
   // include a path.

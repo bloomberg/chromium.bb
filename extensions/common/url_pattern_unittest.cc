@@ -929,44 +929,56 @@ TEST(ExtensionURLPatternTest, TrailingDotDomain) {
   EXPECT_TRUE(trailing_pattern.MatchesURL(trailing_dot_domain));
 }
 
-TEST(ExtensionURLPatternTest, ImpliesAllHosts) {
+TEST(ExtensionURLPatternTest, MatchesEffectiveTLD) {
+  namespace rcd = net::registry_controlled_domains;
+
   constexpr struct {
     const char* pattern;
-    bool implies_all_hosts;
+    bool matches_public_tld;
+    bool matches_public_or_private_tld;
   } tests[] = {
       // <all_urls> obviously implies all hosts.
-      {"*://*/*", true},
-      {"<all_urls>", true},
+      {"*://*/*", true, true},
+      {"<all_urls>", true, true},
 
       // Matching a single scheme effectively all hosts.
-      {"http://*/*", true},
-      {"https://*/*", true},
+      {"http://*/*", true, true},
+      {"https://*/*", true, true},
 
       // Specifying a path under any origin is effectively all hosts.
-      {"*://*/maps", true},
+      {"*://*/maps", true, true},
 
       // Matching a given (e)TLD is effectively all hosts.
-      {"https://*.com/*", true},
-      {"*://*.co.uk/*", true},
+      {"https://*.com/*", true, true},
+      {"*://*.co.uk/*", true, true},
 
       // Matching an arbitrary domain with a given path or port is effectively
       // all hosts.
-      {"*://*.com/maps", true},
-      {"http://*.com:80/*", true},
+      {"*://*.com/maps", true, true},
+      {"http://*.com:80/*", true, true},
 
-      // We don't include private registries (like appspot.com) as implying
-      // all hosts - there's legitimate reasons to want to always run on
+      // Typically, we don't include private registries (like appspot.com) as
+      // matching an eTLD - there's legitimate reasons to want to always run on
       // *.appspot.com, and we shouldn't say that it's close enough to every
-      // site.
-      {"*://*.appspot.com/*", false},
+      // site. However, we should correctly report that it's a TLD wildcard
+      // pattern if we include private registries.
+      {"*://*.appspot.com/*", false, true},
 
-      // All example.com sites is clearly not all hosts.
-      {"*://*.example.com/*", false},
+      // Unrecognized TLD-like domains should not be treated as matching an
+      // effective TLD.
+      {"*://*.notatld/*", false, false},
+
+      // All example.com sites is clearly not all hosts, or a TLD wildcard.
+      {"*://*.example.com/*", false, false},
   };
 
   for (const auto& test : tests) {
     const URLPattern pattern(URLPattern::SCHEME_ALL, test.pattern);
-    EXPECT_EQ(test.implies_all_hosts, pattern.ImpliesAllHosts())
+    EXPECT_EQ(test.matches_public_tld,
+              pattern.MatchesEffectiveTld(rcd::EXCLUDE_PRIVATE_REGISTRIES))
+        << test.pattern;
+    EXPECT_EQ(test.matches_public_or_private_tld,
+              pattern.MatchesEffectiveTld(rcd::INCLUDE_PRIVATE_REGISTRIES))
         << test.pattern;
   }
 }

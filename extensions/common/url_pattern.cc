@@ -485,45 +485,43 @@ bool URLPattern::MatchesHost(const GURL& test) const {
   return test_host[test_host.length() - pattern_host.length() - 1] == '.';
 }
 
-bool URLPattern::ImpliesAllHosts() const {
+bool URLPattern::MatchesEffectiveTld(
+    net::registry_controlled_domains::PrivateRegistryFilter private_filter)
+    const {
   // Check if it matches all urls or is a pattern like http://*/*.
   if (match_all_urls_ || (match_subdomains_ && host_.empty()))
     return true;
 
-  // If this doesn't even match subdomains, it can't possibly imply all hosts.
+  // If this doesn't even match subdomains, it can't possibly be a TLD wildcard.
   if (!match_subdomains_)
     return false;
 
-  // We exclude private registries because we shouldn't warn that an extension
-  // wants to access all hosts just for wanting to run on all e.g. appspot.com
-  // sites.
-  const net::registry_controlled_domains::PrivateRegistryFilter private_filter =
-      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES;
+  // We exclude unknown registries so that *.notatld isn't considered matching
+  // an effective TLD.
+  net::registry_controlled_domains::UnknownRegistryFilter unknown_filter =
+      net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES;
 
   // If there was more than just a TLD in the host (e.g., *.foobar.com), it
-  // doesn't imply all hosts. We don't include private TLDs, so that, e.g.,
-  // *.appspot.com does not imply all hosts.
+  // doesn't match all hosts in an effective TLD.
   if (net::registry_controlled_domains::HostHasRegistryControlledDomain(
-          host_, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-          private_filter))
+          host_, unknown_filter, private_filter)) {
     return false;
+  }
 
   // At this point the host could either be just a TLD ("com") or some unknown
   // TLD-like string ("notatld"). To disambiguate between them construct a
   // fake URL, and check the registry.
   //
   // If we recognized this TLD, then this is a pattern like *.com, and it
-  // should imply all hosts.
+  // matches an effective TLD.
   return net::registry_controlled_domains::HostHasRegistryControlledDomain(
-      "notatld." + host_,
-      net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-      private_filter);
+      "notatld." + host_, unknown_filter, private_filter);
 }
 
 bool URLPattern::MatchesSingleOrigin() const {
   // Strictly speaking, the port is part of the origin, but in URLPattern it
   // defaults to *. It's not very interesting anyway, so leave it out.
-  return !ImpliesAllHosts() && scheme_ != "*" && !match_subdomains_;
+  return !MatchesEffectiveTld() && scheme_ != "*" && !match_subdomains_;
 }
 
 bool URLPattern::MatchesPath(base::StringPiece test) const {
