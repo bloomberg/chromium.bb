@@ -61,13 +61,6 @@ bool Surface::InheritActivationDeadlineFrom(
   return deadline_.InheritFrom(deadline);
 }
 
-void Surface::SetActivationDeadline(uint32_t number_of_frames_to_deadline) {
-  TRACE_EVENT1("viz", "Surface::SetActivationDeadline", "FrameSinkId",
-               surface_id().frame_sink_id().ToString());
-  deadline_.Set(GetBeginFrameTime(), number_of_frames_to_deadline,
-                GetBeginFrameInterval());
-}
-
 void Surface::SetPreviousFrameSurface(Surface* surface) {
   DCHECK(surface && (HasActiveFrame() || HasPendingFrame()));
   previous_frame_surface_id_ = surface->surface_id();
@@ -161,13 +154,13 @@ bool Surface::QueueFrame(
       std::move(pending_frame_data_);
   pending_frame_data_.reset();
 
-  uint32_t deadline_in_frames = UpdateActivationDependencies(frame);
+  FrameDeadline deadline = UpdateActivationDependencies(frame);
 
   // Receive and track the resources referenced from the CompositorFrame
   // regardless of whether it's pending or active.
   surface_client_->ReceiveFromChild(frame.resource_list);
 
-  if (activation_dependencies_.empty() || !deadline_in_frames) {
+  if (activation_dependencies_.empty() || !deadline.deadline_in_frames()) {
     // If there are no blockers, then immediately activate the frame.
     ActivateFrame(
         FrameData(std::move(frame), frame_index, std::move(callback),
@@ -180,8 +173,7 @@ bool Surface::QueueFrame(
     RejectCompositorFramesToFallbackSurfaces();
 
     // If the deadline is in the past, then we will activate immediately.
-    if (deadline_.Set(GetBeginFrameTime(), deadline_in_frames,
-                      GetBeginFrameInterval())) {
+    if (deadline_.Set(deadline)) {
       // Ask the SurfaceDependencyTracker to inform |this| when its dependencies
       // are resolved.
       surface_manager_->dependency_tracker()->RequestSurfaceResolution(this);
@@ -334,19 +326,19 @@ void Surface::ActivateFrame(FrameData frame_data,
   surface_manager_->SurfaceActivated(this, duration);
 }
 
-uint32_t Surface::UpdateActivationDependencies(
+FrameDeadline Surface::UpdateActivationDependencies(
     const CompositorFrame& current_frame) {
-  base::Optional<FrameDeadline> deadline = current_frame.metadata.deadline;
-  uint32_t deadline_in_frames =
+  const uint32_t default_deadline =
       surface_manager_->dependency_tracker()->number_of_frames_to_deadline();
-  if (deadline) {
-    deadline_in_frames = deadline->value();
-    if (deadline->use_default_lower_bound_deadline()) {
-      uint32_t default_deadline = surface_manager_->dependency_tracker()
-                                      ->number_of_frames_to_deadline();
-      deadline_in_frames = std::max(deadline_in_frames, default_deadline);
-    }
-  }
+  FrameDeadline deadline = current_frame.metadata.deadline;
+
+  uint32_t deadline_in_frames = deadline.deadline_in_frames();
+  if (deadline.use_default_lower_bound_deadline())
+    deadline_in_frames = std::max(deadline_in_frames, default_deadline);
+
+  deadline = FrameDeadline(deadline.frame_start_time(), deadline_in_frames,
+                           deadline.frame_interval(),
+                           false /* use_default_lower_bound_deadline */);
 
   base::flat_map<FrameSinkId, SequenceNumbers> new_frame_sink_id_dependencies;
   base::flat_set<SurfaceId> new_activation_dependencies;
@@ -357,24 +349,25 @@ uint32_t Surface::UpdateActivationDependencies(
     // If a activation dependency does not have a corresponding active frame in
     // the display compositor, then it blocks this frame.
     if (!dependency || !dependency->HasActiveFrame()) {
-      if (deadline_in_frames > 0) {
-        // Record the latest |parent_sequence_number| this surface is interested
-        // in observing for the provided FrameSinkId.
-        uint32_t& parent_sequence_number =
-            new_frame_sink_id_dependencies[surface_id.frame_sink_id()]
-                .parent_sequence_number;
-        parent_sequence_number =
-            std::max(parent_sequence_number,
-                     surface_id.local_surface_id().parent_sequence_number());
-
-        uint32_t& child_sequence_number =
-            new_frame_sink_id_dependencies[surface_id.frame_sink_id()]
-                .child_sequence_number;
-        child_sequence_number =
-            std::max(child_sequence_number,
-                     surface_id.local_surface_id().child_sequence_number());
-      }
       new_activation_dependencies.insert(surface_id);
+      if (!deadline_in_frames)
+        continue;
+
+      // Record the latest |parent_sequence_number| this surface is interested
+      // in observing for the provided FrameSinkId.
+      uint32_t& parent_sequence_number =
+          new_frame_sink_id_dependencies[surface_id.frame_sink_id()]
+              .parent_sequence_number;
+      parent_sequence_number =
+          std::max(parent_sequence_number,
+                   surface_id.local_surface_id().parent_sequence_number());
+
+      uint32_t& child_sequence_number =
+          new_frame_sink_id_dependencies[surface_id.frame_sink_id()]
+              .child_sequence_number;
+      child_sequence_number =
+          std::max(child_sequence_number,
+                   surface_id.local_surface_id().child_sequence_number());
     }
   }
 
@@ -392,7 +385,7 @@ uint32_t Surface::UpdateActivationDependencies(
   }
 
   frame_sink_id_dependencies_ = std::move(new_frame_sink_id_dependencies);
-  return deadline_in_frames;
+  return deadline;
 }
 
 void Surface::ComputeChangeInDependencies(
@@ -525,32 +518,6 @@ void Surface::TakeLatencyInfoFromFrame(
             frame->metadata.latency_info.end(),
             std::back_inserter(*latency_info));
   frame->metadata.latency_info.clear();
-}
-
-base::TimeTicks Surface::GetBeginFrameTime() {
-  if (!surface_client_)
-    return surface_manager_->tick_clock()->NowTicks();
-
-  const BeginFrameArgs& begin_frame_args =
-      surface_client_->LastUsedBeginFrameArgs();
-
-  if (!begin_frame_args.IsValid())
-    return surface_manager_->tick_clock()->NowTicks();
-
-  return begin_frame_args.frame_time;
-}
-
-base::TimeDelta Surface::GetBeginFrameInterval() {
-  if (!surface_client_)
-    return BeginFrameArgs::DefaultInterval();
-
-  const BeginFrameArgs& begin_frame_args =
-      surface_client_->LastUsedBeginFrameArgs();
-
-  if (!begin_frame_args.IsValid())
-    return BeginFrameArgs::DefaultInterval();
-
-  return begin_frame_args.interval;
 }
 
 }  // namespace viz

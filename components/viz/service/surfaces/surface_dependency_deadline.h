@@ -15,6 +15,8 @@ class TickClock;
 
 namespace viz {
 
+class FrameDeadline;
+
 class SurfaceDependencyDeadline : public BeginFrameObserver {
  public:
   SurfaceDependencyDeadline(SurfaceDeadlineClient* client,
@@ -23,12 +25,10 @@ class SurfaceDependencyDeadline : public BeginFrameObserver {
   ~SurfaceDependencyDeadline() override;
 
   // Sets up a deadline in wall time where
-  // deadline = frame_time + number_of_frames_to_deadline * frame_interval.
+  // deadline = frame_start_time + deadline_in_frames * frame_interval.
   // It's possible for the deadline to already be in the past. In that case,
   // this method will return false. Otherwise, it will return true.
-  bool Set(base::TimeTicks frame_time,
-           uint32_t number_of_frames_to_deadline,
-           base::TimeDelta frame_interval);
+  bool Set(const FrameDeadline& frame_deadline);
 
   // If a deadline had been set, then cancel the deadline and return the
   // the duration of the event tracked by this object. If there was no

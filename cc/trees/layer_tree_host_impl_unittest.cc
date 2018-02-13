@@ -4298,7 +4298,8 @@ TEST_F(LayerTreeHostImplTest, ActivationDependenciesInMetadata) {
         metadata.referenced_surfaces,
         testing::UnorderedElementsAre(
             fallback_surfaces[0], fallback_surfaces[1], fallback_surfaces[2]));
-    EXPECT_EQ(viz::FrameDeadline(2u, false), metadata.deadline);
+    EXPECT_EQ(2u, metadata.deadline.deadline_in_frames());
+    EXPECT_FALSE(metadata.deadline.use_default_lower_bound_deadline());
   }
 
   // Verify that on the next frame generation that the deadline is reset.
@@ -4318,7 +4319,8 @@ TEST_F(LayerTreeHostImplTest, ActivationDependenciesInMetadata) {
         metadata.referenced_surfaces,
         testing::UnorderedElementsAre(
             fallback_surfaces[0], fallback_surfaces[1], fallback_surfaces[2]));
-    EXPECT_EQ(viz::FrameDeadline(0u, false), metadata.deadline);
+    EXPECT_EQ(0u, metadata.deadline.deadline_in_frames());
+    EXPECT_FALSE(metadata.deadline.use_default_lower_bound_deadline());
   }
 }
 

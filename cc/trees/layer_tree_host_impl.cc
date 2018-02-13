@@ -1903,10 +1903,11 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
   viz::CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
   metadata.may_contain_video = frame->may_contain_video;
-  if (frame->deadline_in_frames) {
-    metadata.deadline = viz::FrameDeadline(
-        *frame->deadline_in_frames, frame->use_default_lower_bound_deadline);
-  }
+  metadata.deadline = viz::FrameDeadline(
+      CurrentBeginFrameArgs().frame_time,
+      frame->deadline_in_frames.value_or(0u), CurrentBeginFrameArgs().interval,
+      frame->use_default_lower_bound_deadline);
+
   metadata.activation_dependencies = std::move(frame->activation_dependencies);
 
   RenderFrameMetadata render_frame_metadata = MakeRenderFrameMetadata();

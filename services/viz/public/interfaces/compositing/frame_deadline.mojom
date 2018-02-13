@@ -4,7 +4,11 @@
 
 module viz.mojom;
 
+import "mojo/common/time.mojom";
+
 struct FrameDeadline {
-  uint32 value;
+  mojo.common.mojom.TimeTicks frame_start_time;
+  uint32 deadline_in_frames;
+  mojo.common.mojom.TimeDelta frame_interval;
   bool use_default_lower_bound_deadline;
 };

@@ -9,4 +9,7 @@ deps = [
   "//components/viz/common",
   "//mojo/common:struct_traits",
 ]
+sources = [
+  "//services/viz/public/cpp/compositing/frame_deadline_struct_traits.cc",
+]
 type_mappings = [ "viz.mojom.FrameDeadline=viz::FrameDeadline" ]
