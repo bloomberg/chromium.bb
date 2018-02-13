@@ -27,7 +27,7 @@ function setExceptionHandler(handler) {
 
 function handleException(message, error) {
   if (bindingUtil)
-    bindingUtil.handleException(message, error);
+    bindingUtil.handleException(message || 'Unknown error', error);
   else
     jsExceptionHandler.handle(message, error);
 }
