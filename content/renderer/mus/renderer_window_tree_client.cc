@@ -11,7 +11,7 @@
 #include "cc/base/switches.h"
 #include "components/viz/client/client_layer_tree_frame_sink.h"
 #include "components/viz/client/hit_test_data_provider.h"
-#include "components/viz/client/hit_test_data_provider_simple_bounds.h"
+#include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/features.h"
 #include "content/renderer/mash_util.h"
@@ -143,7 +143,8 @@ void RendererWindowTreeClient::RequestLayerTreeFrameSinkInternal(
   params.enable_surface_synchronization = true;
   if (features::IsVizHitTestingDrawQuadEnabled()) {
     params.hit_test_data_provider =
-        std::make_unique<viz::HitTestDataProviderSimpleBounds>();
+        std::make_unique<viz::HitTestDataProviderDrawQuad>(
+            true /* should_ask_for_child_region */);
   }
   auto frame_sink = std::make_unique<viz::ClientLayerTreeFrameSink>(
       std::move(context_provider), nullptr /* worker_context_provider */,
