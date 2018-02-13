@@ -29,7 +29,6 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -339,7 +338,6 @@ void MultiUserWindowManagerChromeOSTest::SetUpForThisManyWindows(int windows) {
       MultiUserWindowManagerChromeOS::ANIMATION_SPEED_DISABLED);
   MultiUserWindowManager::SetInstanceForTest(multi_user_window_manager_);
   EXPECT_TRUE(multi_user_window_manager_);
-  chromeos::WallpaperManager::Initialize();
   wallpaper_controller_client_ = std::make_unique<WallpaperControllerClient>();
   wallpaper_controller_client_->InitForTesting(
       test_wallpaper_controller_.CreateInterfacePtr());
@@ -355,7 +353,6 @@ void MultiUserWindowManagerChromeOSTest::TearDown() {
 
   MultiUserWindowManager::DeleteInstance();
   AshTestBase::TearDown();
-  chromeos::WallpaperManager::Shutdown();
   wallpaper_controller_client_.reset();
   profile_manager_.reset();
   chromeos::CrosSettings::Shutdown();

@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
@@ -198,7 +197,6 @@ void WallpaperPrivateApiMultiUserUnittest::SetUp() {
   AshTestBase::SetUp();
   DeviceSettingsService::Initialize();
   CrosSettings::Initialize();
-  WallpaperManager::Initialize();
   wallpaper_controller_client_ = std::make_unique<WallpaperControllerClient>();
   wallpaper_controller_client_->InitForTesting(
       test_wallpaper_controller_.CreateInterfacePtr());
@@ -209,7 +207,6 @@ void WallpaperPrivateApiMultiUserUnittest::SetUp() {
 void WallpaperPrivateApiMultiUserUnittest::TearDown() {
   MultiUserWindowManager::DeleteInstance();
   AshTestBase::TearDown();
-  WallpaperManager::Shutdown();
   wallpaper_controller_client_.reset();
   CrosSettings::Shutdown();
   DeviceSettingsService::Shutdown();
