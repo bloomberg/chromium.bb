@@ -104,11 +104,11 @@ class STORAGE_EXPORT BlobMemoryController {
   };
 
   // The bool argument is true if we successfully received memory quota.
-  using MemoryQuotaRequestCallback = base::Callback<void(bool)>;
+  using MemoryQuotaRequestCallback = base::OnceCallback<void(bool)>;
   // The bool argument is true if we successfully received file quota, and the
   // vector argument provides the file info.
   using FileQuotaRequestCallback =
-      base::Callback<void(std::vector<FileCreationInfo>, bool)>;
+      base::OnceCallback<void(std::vector<FileCreationInfo>, bool)>;
 
   // We enable file paging if |file_runner| isn't a nullptr.
   BlobMemoryController(const base::FilePath& storage_directory,
@@ -141,7 +141,7 @@ class STORAGE_EXPORT BlobMemoryController {
   //       CanReserveQuota before calling this.
   base::WeakPtr<QuotaAllocationTask> ReserveMemoryQuota(
       std::vector<scoped_refptr<ShareableBlobDataItem>> unreserved_memory_items,
-      const MemoryQuotaRequestCallback& done_callback);
+      MemoryQuotaRequestCallback done_callback);
 
   // Reserves quota for the given |unreserved_file_items|. The items must be
   // temporary file items (BlobDataBuilder::IsTemporaryFileItem returns true) in
@@ -153,7 +153,7 @@ class STORAGE_EXPORT BlobMemoryController {
   //       CanReserveQuota before calling this.
   base::WeakPtr<QuotaAllocationTask> ReserveFileQuota(
       std::vector<scoped_refptr<ShareableBlobDataItem>> unreserved_file_items,
-      const FileQuotaRequestCallback& done_callback);
+      FileQuotaRequestCallback done_callback);
 
   // Called when initially populated or upon later access.
   void NotifyMemoryItemsUsed(
@@ -203,7 +203,7 @@ class STORAGE_EXPORT BlobMemoryController {
   base::WeakPtr<QuotaAllocationTask> AppendMemoryTask(
       uint64_t total_bytes_needed,
       std::vector<scoped_refptr<ShareableBlobDataItem>> unreserved_memory_items,
-      const MemoryQuotaRequestCallback& done_callback);
+      MemoryQuotaRequestCallback done_callback);
 
   void MaybeGrantPendingMemoryRequests();
 
