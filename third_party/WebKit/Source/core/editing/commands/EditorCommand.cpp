@@ -2443,10 +2443,29 @@ static bool EnableCaretInEditableText(LocalFrame& frame,
   return selection.IsCaret() && selection.IsContentEditable();
 }
 
+// WinIE uses onbeforecut and onbeforepaste to enables the cut and paste menu
+// items. They also send onbeforecopy, apparently for symmetry, but it doesn't
+// affect the menu items. We need to use onbeforecopy as a real menu enabler
+// because we allow elements that are not normally selectable to implement
+// copy/paste (like divs, or a document body).
+
+static bool CanDHTMLCopyOrCut(LocalFrame& frame,
+                              EditorCommandSource source,
+                              const AtomicString& event_type) {
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited. See http://crbug.com/590369 for more details.
+  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  return !IsInPasswordField(
+             frame.Selection().ComputeVisibleSelectionInDOMTree().Start()) &&
+         !frame.GetEditor().DispatchClipboardEvent(event_type,
+                                                   kDataTransferNumb, source);
+}
+
 static bool EnabledCopy(LocalFrame& frame, Event*, EditorCommandSource source) {
   if (!CanWriteClipboard(frame, source))
     return false;
-  return frame.GetEditor().CanDHTMLCopy(source) || frame.GetEditor().CanCopy();
+  return CanDHTMLCopyOrCut(frame, source, EventTypeNames::beforecopy) ||
+         frame.GetEditor().CanCopy();
 }
 
 static bool EnabledCut(LocalFrame& frame, Event*, EditorCommandSource source) {
@@ -2455,7 +2474,8 @@ static bool EnabledCut(LocalFrame& frame, Event*, EditorCommandSource source) {
   if (source == kCommandFromMenuOrKeyBinding &&
       !frame.Selection().SelectionHasFocus())
     return false;
-  return frame.GetEditor().CanDHTMLCut(source) || frame.GetEditor().CanCut();
+  return CanDHTMLCopyOrCut(frame, source, EventTypeNames::beforecut) ||
+         frame.GetEditor().CanCut();
 }
 
 static bool EnabledInEditableText(LocalFrame& frame,

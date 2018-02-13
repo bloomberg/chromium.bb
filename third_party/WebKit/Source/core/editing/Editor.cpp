@@ -284,36 +284,6 @@ bool Editor::CanEditRichly() const {
           .Base());
 }
 
-// WinIE uses onbeforecut and onbeforepaste to enables the cut and paste menu
-// items. They also send onbeforecopy, apparently for symmetry, but it doesn't
-// affect the menu items. We need to use onbeforecopy as a real menu enabler
-// because we allow elements that are not normally selectable to implement
-// copy/paste (like divs, or a document body).
-
-bool Editor::CanDHTMLCut(EditorCommandSource source) {
-  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-  return !IsInPasswordField(GetFrame()
-                                .Selection()
-                                .ComputeVisibleSelectionInDOMTree()
-                                .Start()) &&
-         !DispatchClipboardEvent(EventTypeNames::beforecut, kDataTransferNumb,
-                                 source);
-}
-
-bool Editor::CanDHTMLCopy(EditorCommandSource source) {
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-  return !IsInPasswordField(GetFrame()
-                                .Selection()
-                                .ComputeVisibleSelectionInDOMTree()
-                                .Start()) &&
-         !DispatchClipboardEvent(EventTypeNames::beforecopy, kDataTransferNumb,
-                                 source);
-}
-
 bool Editor::CanCut() const {
   return CanCopy() && CanDelete();
 }
