@@ -23,15 +23,7 @@ namespace media {
 class MEDIA_MOJO_EXPORT MojoCdmProxy : public cdm::CdmProxy,
                                        mojom::CdmProxyClient {
  public:
-  class Delegate {
-   public:
-    // Notifies the delegate to close |cdm_proxy|.
-    virtual void DestroyCdmProxy(MojoCdmProxy* cdm_proxy) = 0;
-  };
-
-  MojoCdmProxy(Delegate* delegate,
-               mojom::CdmProxyPtr cdm_proxy_ptr,
-               cdm::CdmProxyClient* client);
+  MojoCdmProxy(mojom::CdmProxyPtr cdm_proxy_ptr, cdm::CdmProxyClient* client);
   ~MojoCdmProxy() override;
 
   // cdm::CdmProxy implementation.
@@ -51,7 +43,6 @@ class MEDIA_MOJO_EXPORT MojoCdmProxy : public cdm::CdmProxy,
   void RemoveKey(uint32_t crypto_session_id,
                  const uint8_t* key_id,
                  uint32_t key_id_size) final;
-  void Destroy() final;
 
   // mojom::CdmProxyClient implementation.
   void NotifyHardwareReset() final;
@@ -70,7 +61,6 @@ class MEDIA_MOJO_EXPORT MojoCdmProxy : public cdm::CdmProxy,
                                    uint32_t crypto_session_id,
                                    uint64_t output_data);
 
-  Delegate* const delegate_;
   mojom::CdmProxyPtr cdm_proxy_ptr_;
   cdm::CdmProxyClient* client_;
 

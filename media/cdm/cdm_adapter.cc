@@ -1212,7 +1212,7 @@ void CdmAdapter::OnInitialized(bool success) {
   init_promise_id_ = CdmPromiseAdapter::kInvalidPromiseId;
 }
 
-cdm::CdmProxy* CdmAdapter::CreateCdmProxy(cdm::CdmProxyClient* client) {
+cdm::CdmProxy* CdmAdapter::RequestCdmProxy(cdm::CdmProxyClient* client) {
   DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
