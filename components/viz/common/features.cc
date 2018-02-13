@@ -9,6 +9,13 @@
 
 namespace features {
 
+const char kUIEnableDrawOcclusion[] = "enable-draw-occlusion";
+
+// Enables running draw occlusion algorithm to remove Draw Quads that are not
+// shown on screen from CompositorFrame.
+const base::Feature kEnableDrawOcclusion{"DrawOcclusion",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(USE_AURA)
 const base::Feature kEnableSurfaceSynchronization{
     "SurfaceSynchronization", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -48,6 +55,12 @@ bool IsVizHitTestingSurfaceLayerEnabled() {
   // that config.
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseVizHitTestSurfaceLayer);
+}
+
+bool IsDrawOcclusionEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             kUIEnableDrawOcclusion) ||
+         base::FeatureList::IsEnabled(kEnableDrawOcclusion);
 }
 
 }  // namespace features
