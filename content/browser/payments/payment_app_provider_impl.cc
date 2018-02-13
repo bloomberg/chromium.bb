@@ -165,6 +165,11 @@ class RespondWithCallbacks
       if (frame_host == nullptr)
         continue;
 
+      // Don't close windows that embed iframes with the payment app scope. Only
+      // top level contexts with the payment app scope should be closed.
+      if (frame_host->GetParent() != nullptr)
+        continue;
+
       WebContents* web_contents = WebContents::FromRenderFrameHost(frame_host);
       if (web_contents == nullptr)
         continue;
