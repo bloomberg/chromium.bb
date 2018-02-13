@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -294,18 +295,20 @@ TEST_F(SubresourceFilterContentSettingsManagerTest,
 TEST_F(SubresourceFilterContentSettingsManagerTest,
        NoExperimentalUI_NoWebsiteSetting) {
   GURL url("https://example.test/");
-
-  // Do not explicitly allow the experimental UI.
-  scoped_feature_toggle().ResetSubresourceFilterState(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE);
-  settings_manager()->OnDidShowUI(url);
-  EXPECT_FALSE(settings_manager()->GetSiteMetadata(url));
-
-  scoped_feature_toggle().ResetSubresourceFilterState(
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-      "SubresourceFilterExperimentalUI" /* additional_features */);
-  settings_manager()->OnDidShowUI(url);
-  EXPECT_TRUE(settings_manager()->GetSiteMetadata(url));
+  {
+    base::test::ScopedFeatureList scoped_disabled;
+    scoped_disabled.InitAndDisableFeature(
+        subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI);
+    settings_manager()->OnDidShowUI(url);
+    EXPECT_FALSE(settings_manager()->GetSiteMetadata(url));
+  }
+  {
+    base::test::ScopedFeatureList scoped_enable;
+    scoped_enable.InitAndEnableFeature(
+        subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI);
+    settings_manager()->OnDidShowUI(url);
+    EXPECT_TRUE(settings_manager()->GetSiteMetadata(url));
+  }
 }
 
 TEST_F(SubresourceFilterContentSettingsManagerTest,

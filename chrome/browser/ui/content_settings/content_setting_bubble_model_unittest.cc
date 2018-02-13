@@ -75,9 +75,6 @@ class ContentSettingBubbleModelTest : public ChromeRenderViewHostTestHarness {
     PrefService* prefs = profile()->GetPrefs();
     return prefs->GetString(prefs::kDefaultVideoCaptureDevice);
   }
-
- private:
-  base::test::ScopedFeatureList feature_list;
 };
 
 TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
@@ -957,7 +954,7 @@ TEST_F(ContentSettingBubbleModelTest, SubresourceFilter) {
   EXPECT_TRUE(bubble_content.custom_link.empty());
   EXPECT_FALSE(bubble_content.custom_link_enabled);
   EXPECT_EQ(bubble_content.manage_text,
-            l10n_util::GetStringUTF16(IDS_ALLOW_ADS));
+            l10n_util::GetStringUTF16(IDS_ALWAYS_ALLOW_ADS));
   EXPECT_EQ(0U, bubble_content.media_menus.size());
 }
 

@@ -70,7 +70,7 @@ void ExpectAndRetrieveExactlyOneExtraEnabledConfig(
     Configuration* actual_config) {
   DCHECK(actual_config);
   const auto config_list = GetEnabledConfigurations();
-  ASSERT_EQ(2u, config_list->configs_by_decreasing_priority().size());
+  ASSERT_EQ(3u, config_list->configs_by_decreasing_priority().size());
   *actual_config = config_list->configs_by_decreasing_priority().back();
 }
 
@@ -82,7 +82,8 @@ void ExpectPresetCanBeEnabledByName(Configuration preset, const char* name) {
   const auto config_list = GetEnabledConfigurations();
   EXPECT_THAT(config_list->configs_by_decreasing_priority(),
               ::testing::ElementsAre(
-                  Configuration::MakePresetForLiveRunOnPhishingSites(), preset,
+                  Configuration::MakePresetForLiveRunOnPhishingSites(),
+                  Configuration::MakePresetForLiveRunForBetterAds(), preset,
                   Configuration()));
 }
 
@@ -565,10 +566,11 @@ TEST(SubresourceFilterFeaturesTest,
       std::map<std::string, std::string>());
 
   const auto config_list = GetEnabledConfigurations();
-  EXPECT_THAT(config_list->configs_by_decreasing_priority(),
-              ::testing::ElementsAre(
-                  Configuration::MakePresetForLiveRunOnPhishingSites(),
-                  Configuration()));
+  EXPECT_THAT(
+      config_list->configs_by_decreasing_priority(),
+      ::testing::ElementsAre(
+          Configuration::MakePresetForLiveRunOnPhishingSites(),
+          Configuration::MakePresetForLiveRunForBetterAds(), Configuration()));
   EXPECT_EQ(std::string(),
             config_list->lexicographically_greatest_ruleset_flavor());
 }
@@ -587,16 +589,8 @@ TEST(SubresourceFilterFeaturesTest,
 }
 
 TEST(SubresourceFilterFeaturesTest, PresetForLiveRunOnBetterAdsSites) {
-  ExpectPresetCanBeEnabledByName(
-      Configuration::MakePresetForLiveRunForBetterAds(),
-      kPresetLiveRunForBetterAds);
   const Configuration config =
       Configuration::MakePresetForLiveRunForBetterAds();
-  ExpectParamsGeneratePreset(
-      config, {{kActivationLevelParameterName, kActivationLevelEnabled},
-               {kActivationScopeParameterName, kActivationScopeActivationList},
-               {kActivationListsParameterName, kActivationListBetterAds},
-               {kActivationPriorityParameterName, "800"}});
   EXPECT_EQ(ActivationList::BETTER_ADS,
             config.activation_conditions.activation_list);
   EXPECT_EQ(ActivationScope::ACTIVATION_LIST,
@@ -613,12 +607,14 @@ TEST(SubresourceFilterFeaturesTest, PresetForLiveRunOnBetterAdsSites) {
 TEST(SubresourceFilterFeaturesTest, ConfigurationPriorities) {
   const std::vector<Configuration> expected_order_by_decreasing_priority = {
       Configuration::MakePresetForLiveRunOnPhishingSites(),
+      Configuration::MakePresetForLiveRunForBetterAds(),
       Configuration::MakePresetForPerformanceTestingDryRunOnAllSites(),
       Configuration() /* default constructor */
   };
 
   std::vector<Configuration> shuffled_order = {
       expected_order_by_decreasing_priority[2],
+      expected_order_by_decreasing_priority[3],
       expected_order_by_decreasing_priority[0],
       expected_order_by_decreasing_priority[1]};
   subresource_filter::testing::ScopedSubresourceFilterConfigurator
@@ -631,13 +627,16 @@ TEST(SubresourceFilterFeaturesTest, ConfigurationPriorities) {
 TEST(SubresourceFilterFeaturesTest, EnableDisableMultiplePresets) {
   const std::string kPhishing(kPresetLiveRunOnPhishingSites);
   const std::string kPerfTest(kPresetPerformanceTestingDryRunOnAllSites);
+  const std::string kBAS(kPresetLiveRunForBetterAds);
 
   // The default config comes from the empty experimental configuration.
   const std::vector<Configuration> kEmptyConfig = {Configuration()};
   const std::vector<Configuration> kDefaultConfig = {
-      Configuration::MakePresetForLiveRunOnPhishingSites(), Configuration()};
+      Configuration::MakePresetForLiveRunOnPhishingSites(),
+      Configuration::MakePresetForLiveRunForBetterAds(), Configuration()};
   const std::vector<Configuration> kAllConfigs = {
       Configuration::MakePresetForLiveRunOnPhishingSites(),
+      Configuration::MakePresetForLiveRunForBetterAds(),
       Configuration::MakePresetForPerformanceTestingDryRunOnAllSites(),
       Configuration()};
 
@@ -648,13 +647,12 @@ TEST(SubresourceFilterFeaturesTest, EnableDisableMultiplePresets) {
   } kTestCases[] = {
       {"", "", kDefaultConfig},
       {"garbage1", "garbage2", kDefaultConfig},
-      {"", kPhishing + "," + kPerfTest, kEmptyConfig},
+      {"", kPhishing + "," + kPerfTest + "," + kBAS, kEmptyConfig},
       {kPhishing, kPerfTest, kDefaultConfig},
-      {kPhishing + "," + kPerfTest, "garbage", kAllConfigs},
-      {kPerfTest + "," + kPhishing, base::ToUpperASCII(kPerfTest),
-       kDefaultConfig},
-      {kPerfTest + "," + kPhishing,
-       ",,garbage, ," + kPerfTest + "," + kPhishing, kEmptyConfig},
+      {kPerfTest, "garbage", kAllConfigs},
+      {kPerfTest, base::ToUpperASCII(kPerfTest), kDefaultConfig},
+      {kPerfTest + "," + kPhishing + "," + kBAS,
+       ",,garbage, ," + kPerfTest + "," + kPhishing + "," + kBAS, kEmptyConfig},
       {base::ToUpperASCII(kPhishing) + "," + base::ToUpperASCII(kPerfTest), "",
        kAllConfigs},
       {",, ," + kPerfTest + ",," + kPhishing, "", kAllConfigs},
@@ -683,11 +681,12 @@ TEST(SubresourceFilterFeaturesTest,
      EnableMultiplePresetsAndExperimentalConfig) {
   const std::string kPhishing(kPresetLiveRunOnPhishingSites);
   const std::string kPerfTest(kPresetPerformanceTestingDryRunOnAllSites);
+  const std::string kBAS(kPresetLiveRunForBetterAds);
   const std::string kTestRulesetFlavor("foobar");
 
   ScopedExperimentalStateToggle scoped_experimental_state(
       base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-      {{kEnablePresetsParameterName, kPhishing + "," + kPerfTest},
+      {{kEnablePresetsParameterName, kPhishing + "," + kPerfTest + "," + kBAS},
        {kActivationLevelParameterName, kActivationLevelDryRun},
        {kActivationScopeParameterName, kActivationScopeActivationList},
        {kActivationListsParameterName, kActivationListSubresourceFilter},
@@ -705,6 +704,7 @@ TEST(SubresourceFilterFeaturesTest,
       config_list->configs_by_decreasing_priority(),
       ::testing::ElementsAre(
           Configuration::MakePresetForLiveRunOnPhishingSites(),
+          Configuration::MakePresetForLiveRunForBetterAds(),
           experimental_config,
           Configuration::MakePresetForPerformanceTestingDryRunOnAllSites()));
   EXPECT_EQ(kTestRulesetFlavor,
