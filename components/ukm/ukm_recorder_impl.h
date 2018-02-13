@@ -63,6 +63,26 @@ class UkmRecorderImpl : public UkmRecorder {
   friend ::metrics::UkmEGTestHelper;
   friend ::ukm::debug::DebugPage;
 
+  struct MetricAggregate {
+    uint64_t total_count = 0;
+    double value_sum = 0;
+    double value_square_sum = 0.0;
+    uint64_t dropped_due_to_limits = 0;
+    uint64_t dropped_due_to_sampling = 0;
+  };
+
+  struct EventAggregate {
+    EventAggregate();
+    ~EventAggregate();
+
+    base::flat_map<uint64_t, MetricAggregate> metrics;
+    uint64_t total_count = 0;
+    uint64_t dropped_due_to_limits = 0;
+    uint64_t dropped_due_to_sampling = 0;
+  };
+
+  using MetricAggregateMap = std::map<uint64_t, MetricAggregate>;
+
   void AddEntry(mojom::UkmEntryPtr entry) override;
 
   // Load sampling configurations from field-trial information.
@@ -82,6 +102,9 @@ class UkmRecorderImpl : public UkmRecorder {
   // Sampling configurations, loaded from a field-trial.
   int default_sampling_rate_ = 0;
   base::flat_map<uint64_t, int> event_sampling_rates_;
+
+  // Aggregate information for collected event metrics.
+  std::map<uint64_t, EventAggregate> event_aggregations_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

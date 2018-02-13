@@ -22,6 +22,7 @@ proto_library("metrics_proto") {
     "sampled_profile.proto",
     "system_profile.proto",
     "translate_event.proto",
+    "ukm/aggregate.proto",
     "ukm/entry.proto",
     "ukm/report.proto",
     "ukm/source.proto",

@@ -9,5 +9,11 @@ This package contains the protos that are used to upload metrics data to Google.
 Updates to this code should be made by changing the internal copies, and then
 running the export script.
 
+cd .../google3/analysis/uma/proto_export
+blaze build proto_export
+blaze-bin/analysis/uma/proto_export/proto_export \
+  --input=.../google3 \
+  --output=.../chromium/src/third_party/metrics_proto
+
 Local Modifications:
 Unchanged from the output of the export script.
