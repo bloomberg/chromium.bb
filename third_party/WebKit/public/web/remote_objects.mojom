@@ -19,7 +19,9 @@ interface RemoteObject {
       => (RemoteInvocationResult result);
 };
 
-struct RemoteInvocationArgument {};
+union RemoteInvocationArgument {
+  double number_value;
+};
 
 enum RemoteInvocationError {
   OK = 0,
