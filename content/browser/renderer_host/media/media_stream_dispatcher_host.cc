@@ -130,9 +130,8 @@ void MediaStreamDispatcherHost::DoGenerateStream(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!MediaStreamManager::IsOriginAllowed(render_process_id_,
                                            salt_and_origin.second)) {
-    std::move(callback).Run(MEDIA_DEVICE_INVALID_SECURITY_ORIGIN_DEPRECATED,
-                            std::string(), MediaStreamDevices(),
-                            MediaStreamDevices());
+    std::move(callback).Run(MEDIA_DEVICE_INVALID_SECURITY_ORIGIN, std::string(),
+                            MediaStreamDevices(), MediaStreamDevices());
     return;
   }
 

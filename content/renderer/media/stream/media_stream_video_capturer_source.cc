@@ -279,7 +279,7 @@ void MediaStreamVideoCapturerSource::OnRunStateChanged(
         OnStartDone(MEDIA_DEVICE_OK);
       } else {
         state_ = STOPPED;
-        OnStartDone(MEDIA_DEVICE_TRACK_START_FAILURE);
+        OnStartDone(MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO);
       }
       break;
     case STARTED:

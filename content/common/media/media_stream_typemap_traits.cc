@@ -85,9 +85,8 @@ EnumTraits<content::mojom::MediaStreamRequestResult,
     case content::MediaStreamRequestResult::MEDIA_DEVICE_NO_HARDWARE:
       return content::mojom::MediaStreamRequestResult::NO_HARDWARE;
     case content::MediaStreamRequestResult::
-        MEDIA_DEVICE_INVALID_SECURITY_ORIGIN_DEPRECATED:
-      return content::mojom::MediaStreamRequestResult::
-          INVALID_SECURITY_ORIGIN_DEPRECATED;
+        MEDIA_DEVICE_INVALID_SECURITY_ORIGIN:
+      return content::mojom::MediaStreamRequestResult::INVALID_SECURITY_ORIGIN;
     case content::MediaStreamRequestResult::MEDIA_DEVICE_TAB_CAPTURE_FAILURE:
       return content::mojom::MediaStreamRequestResult::TAB_CAPTURE_FAILURE;
     case content::MediaStreamRequestResult::MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE:
@@ -97,8 +96,14 @@ EnumTraits<content::mojom::MediaStreamRequestResult,
     case content::MediaStreamRequestResult::
         MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED:
       return content::mojom::MediaStreamRequestResult::CONSTRAINT_NOT_SATISFIED;
-    case content::MediaStreamRequestResult::MEDIA_DEVICE_TRACK_START_FAILURE:
-      return content::mojom::MediaStreamRequestResult::TRACK_START_FAILURE;
+    case content::MediaStreamRequestResult::
+        MEDIA_DEVICE_TRACK_START_FAILURE_AUDIO:
+      return content::mojom::MediaStreamRequestResult::
+          TRACK_START_FAILURE_AUDIO;
+    case content::MediaStreamRequestResult::
+        MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO:
+      return content::mojom::MediaStreamRequestResult::
+          TRACK_START_FAILURE_VIDEO;
     case content::MediaStreamRequestResult::MEDIA_DEVICE_NOT_SUPPORTED:
       return content::mojom::MediaStreamRequestResult::NOT_SUPPORTED;
     case content::MediaStreamRequestResult::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN:
@@ -134,10 +139,9 @@ bool EnumTraits<content::mojom::MediaStreamRequestResult,
     case content::mojom::MediaStreamRequestResult::NO_HARDWARE:
       *out = content::MediaStreamRequestResult::MEDIA_DEVICE_NO_HARDWARE;
       return true;
-    case content::mojom::MediaStreamRequestResult::
-        INVALID_SECURITY_ORIGIN_DEPRECATED:
+    case content::mojom::MediaStreamRequestResult::INVALID_SECURITY_ORIGIN:
       *out = content::MediaStreamRequestResult::
-          MEDIA_DEVICE_INVALID_SECURITY_ORIGIN_DEPRECATED;
+          MEDIA_DEVICE_INVALID_SECURITY_ORIGIN;
       return true;
     case content::mojom::MediaStreamRequestResult::TAB_CAPTURE_FAILURE:
       *out =
@@ -154,9 +158,13 @@ bool EnumTraits<content::mojom::MediaStreamRequestResult,
       *out = content::MediaStreamRequestResult::
           MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED;
       return true;
-    case content::mojom::MediaStreamRequestResult::TRACK_START_FAILURE:
-      *out =
-          content::MediaStreamRequestResult::MEDIA_DEVICE_TRACK_START_FAILURE;
+    case content::mojom::MediaStreamRequestResult::TRACK_START_FAILURE_AUDIO:
+      *out = content::MediaStreamRequestResult::
+          MEDIA_DEVICE_TRACK_START_FAILURE_AUDIO;
+      return true;
+    case content::mojom::MediaStreamRequestResult::TRACK_START_FAILURE_VIDEO:
+      *out = content::MediaStreamRequestResult::
+          MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO;
       return true;
     case content::mojom::MediaStreamRequestResult::NOT_SUPPORTED:
       *out = content::MediaStreamRequestResult::MEDIA_DEVICE_NOT_SUPPORTED;

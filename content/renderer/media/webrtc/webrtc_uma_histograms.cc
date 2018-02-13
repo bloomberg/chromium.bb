@@ -15,8 +15,8 @@ void LogUserMediaRequestWithNoResult(MediaStreamRequestState state) {
 }
 
 void LogUserMediaRequestResult(MediaStreamRequestResult result) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "WebRTC.UserMediaRequest.Result", result, NUM_MEDIA_REQUEST_RESULTS);
+  UMA_HISTOGRAM_ENUMERATION("WebRTC.UserMediaRequest.Result2", result,
+                            NUM_MEDIA_REQUEST_RESULTS);
 }
 
 void UpdateWebRTCMethodCount(JavaScriptAPIName api_name) {

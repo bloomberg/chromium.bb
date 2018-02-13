@@ -246,7 +246,8 @@ void UserMediaProcessor::RequestInfo::StartAudioTrack(
   if (!is_pending) {
     OnTrackStarted(
         native_source,
-        connected ? MEDIA_DEVICE_OK : MEDIA_DEVICE_TRACK_START_FAILURE, "");
+        connected ? MEDIA_DEVICE_OK : MEDIA_DEVICE_TRACK_START_FAILURE_AUDIO,
+        "");
   }
 }
 
@@ -980,8 +981,10 @@ void UserMediaProcessor::DelayedGetUserMediaRequestFailed(
           blink::WebUserMediaRequest::Error::kDevicesNotFound,
           "Requested device not found");
       return;
-    case MEDIA_DEVICE_INVALID_SECURITY_ORIGIN_DEPRECATED:
-      NOTREACHED();
+    case MEDIA_DEVICE_INVALID_SECURITY_ORIGIN:
+      web_request.RequestFailed(
+          blink::WebUserMediaRequest::Error::kSecurityError,
+          "Invalid security origin");
       return;
     case MEDIA_DEVICE_TAB_CAPTURE_FAILURE:
       web_request.RequestFailed(blink::WebUserMediaRequest::Error::kTabCapture,
@@ -999,9 +1002,13 @@ void UserMediaProcessor::DelayedGetUserMediaRequestFailed(
     case MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED:
       web_request.RequestFailedConstraint(constraint_name);
       return;
-    case MEDIA_DEVICE_TRACK_START_FAILURE:
+    case MEDIA_DEVICE_TRACK_START_FAILURE_AUDIO:
       web_request.RequestFailed(blink::WebUserMediaRequest::Error::kTrackStart,
-                                "Could not start source");
+                                "Could not start audio source");
+      return;
+    case MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO:
+      web_request.RequestFailed(blink::WebUserMediaRequest::Error::kTrackStart,
+                                "Could not start video source");
       return;
     case MEDIA_DEVICE_NOT_SUPPORTED:
       web_request.RequestFailed(
@@ -1078,9 +1085,15 @@ bool UserMediaProcessor::RemoveLocalSource(
     if (IsSameSource(*device_it, source)) {
       MediaStreamSource* const source_extra_data =
           static_cast<MediaStreamSource*>(source.GetExtraData());
+      const bool is_audio_source =
+          source.GetType() == blink::WebMediaStreamSource::kTypeAudio;
       NotifyCurrentRequestInfoOfAudioSourceStarted(
-          source_extra_data, MEDIA_DEVICE_TRACK_START_FAILURE,
-          "Failed to access audio capture device");
+          source_extra_data,
+          is_audio_source ? MEDIA_DEVICE_TRACK_START_FAILURE_AUDIO
+                          : MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO,
+          blink::WebString::FromUTF8(
+              is_audio_source ? "Failed to access audio capture device"
+                              : "Failed to access video capture device"));
       pending_local_sources_.erase(device_it);
       return true;
     }

@@ -773,7 +773,7 @@ TEST_F(UserMediaClientImplTest, MediaVideoSourceFailToStart) {
   FailToStartMockedVideoSource();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(REQUEST_FAILED, request_state());
-  EXPECT_EQ(MEDIA_DEVICE_TRACK_START_FAILURE,
+  EXPECT_EQ(MEDIA_DEVICE_TRACK_START_FAILURE_VIDEO,
             user_media_processor_->error_reason());
   blink::WebHeap::CollectAllGarbageForTesting();
   EXPECT_EQ(1, mock_dispatcher_host_.request_stream_counter());
@@ -788,7 +788,7 @@ TEST_F(UserMediaClientImplTest, MediaAudioSourceFailToInitialize) {
   StartMockedVideoSource();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(REQUEST_FAILED, request_state());
-  EXPECT_EQ(MEDIA_DEVICE_TRACK_START_FAILURE,
+  EXPECT_EQ(MEDIA_DEVICE_TRACK_START_FAILURE_AUDIO,
             user_media_processor_->error_reason());
   blink::WebHeap::CollectAllGarbageForTesting();
   EXPECT_EQ(1, mock_dispatcher_host_.request_stream_counter());
