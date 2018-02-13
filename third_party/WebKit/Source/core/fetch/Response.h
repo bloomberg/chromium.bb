@@ -27,7 +27,6 @@ class WebServiceWorkerResponse;
 
 class CORE_EXPORT Response final : public Body {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(Response);
 
  public:
   // These "create" function which takes a ScriptState* must be called with
@@ -110,6 +109,7 @@ class CORE_EXPORT Response final : public Body {
 
   const Member<FetchResponseData> response_;
   const Member<Headers> headers_;
+  DISALLOW_COPY_AND_ASSIGN(Response);
 };
 
 }  // namespace blink

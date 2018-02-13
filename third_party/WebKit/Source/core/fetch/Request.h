@@ -28,7 +28,6 @@ using RequestInfo = RequestOrUSVString;
 
 class CORE_EXPORT Request final : public Body {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(Request);
 
  public:
   // These "create" function must be called with entering an appropriate
@@ -102,6 +101,7 @@ class CORE_EXPORT Request final : public Body {
 
   const Member<FetchRequestData> request_;
   const Member<Headers> headers_;
+  DISALLOW_COPY_AND_ASSIGN(Request);
 };
 
 }  // namespace blink

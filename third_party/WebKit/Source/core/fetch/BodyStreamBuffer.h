@@ -23,7 +23,6 @@ class ScriptState;
 
 class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
                                            public BytesConsumer::Client {
-  WTF_MAKE_NONCOPYABLE(BodyStreamBuffer);
   USING_GARBAGE_COLLECTED_MIXIN(BodyStreamBuffer);
 
  public:
@@ -85,6 +84,7 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   bool stream_needs_more_ = false;
   bool made_from_readable_stream_;
   bool in_process_data_ = false;
+  DISALLOW_COPY_AND_ASSIGN(BodyStreamBuffer);
 };
 
 }  // namespace blink

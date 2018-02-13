@@ -27,7 +27,6 @@ class BodyStreamBuffer::LoaderClient final
     : public GarbageCollectedFinalized<LoaderClient>,
       public ContextLifecycleObserver,
       public FetchDataLoader::Client {
-  WTF_MAKE_NONCOPYABLE(LoaderClient);
   USING_GARBAGE_COLLECTED_MIXIN(LoaderClient);
 
  public:
@@ -86,6 +85,7 @@ class BodyStreamBuffer::LoaderClient final
 
   Member<BodyStreamBuffer> buffer_;
   Member<FetchDataLoader::Client> client_;
+  DISALLOW_COPY_AND_ASSIGN(LoaderClient);
 };
 
 BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,

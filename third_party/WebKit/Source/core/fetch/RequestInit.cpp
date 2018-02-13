@@ -44,7 +44,6 @@ struct NativeValueTraits<RequestInit::IDLPassThrough>
 
 class RequestInit::GetterHelper {
   STACK_ALLOCATED();
-  WTF_MAKE_NONCOPYABLE(GetterHelper);
 
  public:
   // |this| object must not outlive |src| and |exception_state|.
@@ -64,6 +63,7 @@ class RequestInit::GetterHelper {
   const Dictionary& src_;
   ExceptionState& exception_state_;
   bool are_any_members_set_ = false;
+  DISALLOW_COPY_AND_ASSIGN(GetterHelper);
 };
 
 RequestInit::RequestInit(ExecutionContext* context,
