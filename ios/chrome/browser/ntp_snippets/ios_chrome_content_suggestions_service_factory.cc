@@ -16,8 +16,6 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
 
 using ntp_snippets::ContentSuggestionsService;
 
@@ -50,8 +48,6 @@ IOSChromeContentSuggestionsServiceFactory::
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(ios::HistoryServiceFactory::GetInstance());
   DependsOn(IOSChromeLargeIconServiceFactory::GetInstance());
-  DependsOn(OAuth2TokenServiceFactory::GetInstance());
-  DependsOn(ios::SigninManagerFactory::GetInstance());
   DependsOn(ReadingListModelFactory::GetInstance());
 }
 
