@@ -150,11 +150,7 @@ Element* SVGScriptElement::CloneElementWithoutAttributesAndChildren() {
   CreateElementFlags flags =
       CreateElementFlags::ByCloneNode().SetAlreadyStarted(
           loader_->AlreadyStarted());
-  auto* element = new SVGScriptElement(GetDocument(), flags);
-  const AtomicString& is = IsValue();
-  if (!is.IsNull() && !V0CustomElement::IsValidName(element->localName()))
-    V0CustomElementRegistrationContext::SetTypeExtension(element, is);
-  return element;
+  return GetDocument().CreateElement(TagQName(), flags, IsValue());
 }
 
 void SVGScriptElement::DispatchLoadEvent() {
