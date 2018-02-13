@@ -458,6 +458,12 @@ def parse_args(args):
                 metavar='FILE',
                 help='read list of tests to run from file'),
             optparse.make_option(
+                '--gtest_filter',
+                type='string',
+                help='A colon-separated list of tests to run. Wildcards are '
+                     'NOT supported. It is the same as listing the tests as '
+                     'positional arguments.'),
+            optparse.make_option(
                 '--time-out-ms',
                 help='Set the timeout for each test'),
             optparse.make_option(
@@ -595,6 +601,9 @@ def _set_up_derived_options(port, options, args):
         options.skipped = 'ignore'
     elif not options.skipped:
         options.skipped = 'default'
+
+    if options.gtest_filter:
+        args.extend(options.gtest_filter.split(':'))
 
     if not options.total_shards and 'GTEST_TOTAL_SHARDS' in port.host.environ:
         options.total_shards = int(port.host.environ['GTEST_TOTAL_SHARDS'])
