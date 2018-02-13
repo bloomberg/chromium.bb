@@ -31,10 +31,6 @@ class SequencedTaskRunner;
 
 namespace profiling {
 
-using VmRegions =
-    std::unordered_map<base::ProcessId,
-                       std::vector<memory_instrumentation::mojom::VmRegionPtr>>;
-
 // Manages all connections and logging for each process. Pipes are supplied by
 // the pipe server and this class will connect them to a parser and logger.
 //
@@ -71,7 +67,7 @@ class MemlogConnectionManager {
       bool keep_small_allocations,
       bool strip_path_from_mapped_files,
       mojom::ProfilingService::DumpProcessesForTracingCallback callback,
-      VmRegions vm_regions);
+      memory_instrumentation::mojom::GlobalMemoryDumpPtr dump);
 
   void OnNewConnection(base::ProcessId pid,
                        mojom::ProfilingClientPtr client,
@@ -80,7 +76,6 @@ class MemlogConnectionManager {
                        mojom::ProfilingParamsPtr params);
 
   std::vector<base::ProcessId> GetConnectionPids();
-  std::vector<base::ProcessId> GetConnectionPidsThatNeedVmRegions();
 
  private:
   struct Connection;
