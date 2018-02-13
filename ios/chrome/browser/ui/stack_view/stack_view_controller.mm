@@ -208,7 +208,8 @@ NSString* const kTransitionToolbarAnimationKey =
 
 @end
 
-@interface StackViewController ()<ToolsMenuConfigurationProvider>
+@interface StackViewController ()<StackViewToolbarControllerDelegate,
+                                  ToolsMenuConfigurationProvider>
 
 // Clears the internal state of the object. Should only be called when the
 // object is not being shown. After this method is called, a call to
@@ -765,6 +766,7 @@ NSString* const kTransitionToolbarAnimationKey =
 
   _toolbarController =
       [[StackViewToolbarController alloc] initWithDispatcher:self.dispatcher];
+  _toolbarController.delegate = self;
   [self addChildViewController:_toolbarController];
   self.toolsMenuCoordinator.presentationProvider = _toolbarController;
   CGRect toolbarFrame = [self.view bounds];
@@ -2829,6 +2831,13 @@ NSString* const kTransitionToolbarAnimationKey =
     }
   }
   return nil;
+}
+
+#pragma mark - StackViewToolbarControllerDelegate
+
+- (void)stackViewToolbarControllerShouldDismiss:
+    (StackViewToolbarController*)stackViewToolbarController {
+  [self dismissWithSelectedTabAnimation];
 }
 
 #pragma mark - ToolsMenuCoordinator Configuration

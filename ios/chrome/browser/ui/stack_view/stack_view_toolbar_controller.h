@@ -14,10 +14,22 @@
 @class NewTabButton;
 @protocol ToolbarCommands;
 
+@class StackViewToolbarController;
+
+// The delegate receives callbacks from UI events on the toolbar.
+@protocol StackViewToolbarControllerDelegate
+
+// Asks the delegate to dismiss the tab switcher UI.
+- (void)stackViewToolbarControllerShouldDismiss:
+    (StackViewToolbarController*)stackViewToolbarController;
+
+@end
+
 // Toolbar controller for the card stack view, adding a new tab button.
 @interface StackViewToolbarController : ToolbarController
 
 @property(nonatomic, readonly) NewTabButton* openNewTabButton;
+@property(nonatomic, weak) id<StackViewToolbarControllerDelegate> delegate;
 
 - (instancetype)initWithDispatcher:
     (id<ApplicationCommands, BrowserCommands, OmniboxFocuser, ToolbarCommands>)

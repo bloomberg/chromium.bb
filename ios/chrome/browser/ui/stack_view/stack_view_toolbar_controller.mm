@@ -35,6 +35,8 @@ const CGFloat kBackgroundViewColorAlpha = 0.95;
   __weak id<ApplicationCommands, BrowserCommands> _dispatcher;
 }
 
+@synthesize delegate = _delegate;
+
 - (instancetype)initWithDispatcher:
     (id<ApplicationCommands, BrowserCommands, OmniboxFocuser, ToolbarCommands>)
         dispatcher {
@@ -74,8 +76,8 @@ const CGFloat kBackgroundViewColorAlpha = 0.95;
     [_stackViewToolbar addSubview:_openNewTabButton];
     [self.contentView addSubview:_stackViewToolbar];
 
-    [[self stackButton] addTarget:_dispatcher
-                           action:@selector(dismissTabSwitcher)
+    [[self stackButton] addTarget:self
+                           action:@selector(shouldDismissTabSwitcher:)
                  forControlEvents:UIControlEventTouchUpInside];
   }
   return self;
@@ -98,6 +100,10 @@ const CGFloat kBackgroundViewColorAlpha = 0.95;
       [[OpenNewTabCommand alloc] initWithIncognito:_openNewTabButton.isIncognito
                                        originPoint:center];
   [_dispatcher openNewTab:command];
+}
+
+- (void)shouldDismissTabSwitcher:(id)sender {
+  [self.delegate stackViewToolbarControllerShouldDismiss:self];
 }
 
 #pragma mark - Overridden protected superclass methods.

@@ -70,9 +70,6 @@
 // Shows the TabSwitcher UI.
 - (void)displayTabSwitcher;
 
-// Dismisses the TabSwitcher UI.
-- (void)dismissTabSwitcher;
-
 // Shows the Clear Browsing Data Settings UI (part of Settings).
 - (void)showClearBrowsingDataSettingsFromViewController:
     (UIViewController*)baseViewController;

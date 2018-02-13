@@ -1400,15 +1400,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
 }
 
-- (void)dismissTabSwitcher {
-  if (!IsIPadIdiom()) {
-    StackViewController* stackViewController =
-        base::mac::ObjCCastStrict<StackViewController>(
-            self.tabSwitcherController);
-    [stackViewController dismissWithSelectedTabAnimation];
-  }
-}
-
 - (void)showClearBrowsingDataSettingsFromViewController:
     (UIViewController*)baseViewController {
   if (_settingsNavigationController)
