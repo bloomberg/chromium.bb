@@ -134,6 +134,8 @@
       }
 
       function onResourceAdded(resource) {
+        if (resource.url.startsWith('debugger://'))
+          return;
         if (resource.url.indexOf("test_func") === -1)
           return;
         output("resource added:");
