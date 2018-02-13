@@ -177,11 +177,6 @@ BASE_EXPORT void DisableHandleVerifier();
 // tracked by the handle verifier and ScopedHandle is not the one closing it,
 // a CHECK is generated.
 BASE_EXPORT void OnHandleBeingClosed(HANDLE handle);
-
-// This testing function returns the module that the ActiveVerifier concrete
-// implementation was instantiated in.
-BASE_EXPORT HMODULE GetHandleVerifierModuleForTesting();
-
 }  // namespace win
 }  // namespace base
 
