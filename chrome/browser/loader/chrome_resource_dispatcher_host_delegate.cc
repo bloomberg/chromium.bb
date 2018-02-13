@@ -827,7 +827,8 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
         request, info->GetWebContentsGetterForRequest());
 
   // Update the PreviewsState for main frame response if needed.
-  if (info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME &&
+  if (previews::HasEnabledPreviews(response->head.previews_state) &&
+      info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME &&
       request->url().SchemeIsHTTPOrHTTPS()) {
     // Annotate request if no-transform directive found in response headers.
     if (request->response_headers() &&

@@ -52,6 +52,12 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
                             previews::PreviewsType::NOSCRIPT) {
     noscript_seen_ = true;
   }
+  previews::PreviewsUserData* previews_user_data =
+      chrome_navigation_data->previews_user_data();
+  if (previews_user_data &&
+      previews_user_data->cache_control_no_transform_directive()) {
+    origin_opt_out_occurred_ = true;
+  }
 
   return CONTINUE_OBSERVING;
 }
@@ -84,9 +90,9 @@ void PreviewsUKMObserver::OnComplete(
 
 void PreviewsUKMObserver::RecordPreviewsTypes(
     const page_load_metrics::PageLoadExtraInfo& info) {
-  // Only record previews types when they occur.
+  // Only record previews types when they are active.
   if (!server_lofi_seen_ && !client_lofi_seen_ && !lite_page_seen_ &&
-      !noscript_seen_)
+      !noscript_seen_ && !origin_opt_out_occurred_)
     return;
   ukm::builders::Previews builder(info.source_id);
   if (server_lofi_seen_)
@@ -99,6 +105,8 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
     builder.Setnoscript(1);
   if (opt_out_occurred_)
     builder.Setopt_out(1);
+  if (origin_opt_out_occurred_)
+    builder.Setorigin_opt_out(1);
   builder.Record(ukm::UkmRecorder::Get());
 }
 
