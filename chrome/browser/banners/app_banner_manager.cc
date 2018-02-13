@@ -99,7 +99,7 @@ class ConsoleStatusReporter : public banners::AppBannerManager::StatusReporter {
 
   WebappInstallSource GetInstallSource(content::WebContents* web_contents,
                                        InstallTrigger trigger) override {
-    return WebappInstallSource::DEBUG;
+    return WebappInstallSource::DEVTOOLS;
   }
 
  private:

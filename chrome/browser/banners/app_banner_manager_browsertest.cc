@@ -767,7 +767,7 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, OverlappingDebugRequest) {
   run_loop.Run();
 
   EXPECT_TRUE(manager->banner_shown());
-  EXPECT_EQ(WebappInstallSource::DEBUG, manager->install_source());
+  EXPECT_EQ(WebappInstallSource::DEVTOOLS, manager->install_source());
   EXPECT_EQ(State::COMPLETE, manager->state());
 
   // Ensure that we do not record any histograms.
