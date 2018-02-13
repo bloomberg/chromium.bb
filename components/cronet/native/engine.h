@@ -24,13 +24,11 @@ class Cronet_EngineImpl : public Cronet_Engine {
   ~Cronet_EngineImpl() override;
 
   // Cronet_Engine implementation:
-  void SetContext(Cronet_EngineContext context) override;
-  Cronet_EngineContext GetContext() override;
   Cronet_RESULT StartWithParams(Cronet_EngineParamsPtr params) override;
-  bool StartNetLogToFile(CharString file_name, bool log_all) override;
+  bool StartNetLogToFile(Cronet_String file_name, bool log_all) override;
   void StopNetLog() override;
-  CharString GetVersionString() override;
-  CharString GetDefaultUserAgent() override;
+  Cronet_String GetVersionString() override;
+  Cronet_String GetDefaultUserAgent() override;
   Cronet_RESULT Shutdown() override;
 
   // Check |result| and aborts if result is not SUCCESS and enableCheckResult
@@ -57,9 +55,6 @@ class Cronet_EngineImpl : public Cronet_Engine {
 
   // Storage path used by this engine.
   std::string in_use_storage_path_;
-
-  // Engine context. Not owned, accessed from client thread.
-  Cronet_EngineContext engine_context_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_EngineImpl);
 };

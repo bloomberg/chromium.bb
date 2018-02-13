@@ -41,7 +41,7 @@ void TestExecutor_Execute(Cronet_ExecutorPtr self, Cronet_RunnablePtr command) {
 // static
 void ExecutorsTest::TestRunnable_Run(Cronet_RunnablePtr self) {
   CHECK(self);
-  Cronet_RunnableContext context = Cronet_Runnable_GetContext(self);
+  Cronet_ClientContext context = Cronet_Runnable_GetClientContext(self);
   ExecutorsTest* test = static_cast<ExecutorsTest*>(context);
   CHECK(test);
   test->set_runnable_called(true);
@@ -51,10 +51,10 @@ void ExecutorsTest::TestRunnable_Run(Cronet_RunnablePtr self) {
 TEST_F(ExecutorsTest, TestCustom) {
   ASSERT_FALSE(runnable_called());
   Cronet_RunnablePtr runnable =
-      Cronet_Runnable_CreateStub(ExecutorsTest::TestRunnable_Run);
-  Cronet_Runnable_SetContext(runnable, this);
+      Cronet_Runnable_CreateWith(ExecutorsTest::TestRunnable_Run);
+  Cronet_Runnable_SetClientContext(runnable, this);
   Cronet_ExecutorPtr executor =
-      Cronet_Executor_CreateStub(TestExecutor_Execute);
+      Cronet_Executor_CreateWith(TestExecutor_Execute);
   Cronet_Executor_Execute(executor, runnable);
   Cronet_Executor_Destroy(executor);
   scoped_task_environment_.RunUntilIdle();
@@ -64,8 +64,8 @@ TEST_F(ExecutorsTest, TestCustom) {
 // Test that cronet::test::TestExecutor runs the runnable.
 TEST_F(ExecutorsTest, TestTestExecutor) {
   ASSERT_FALSE(runnable_called());
-  Cronet_RunnablePtr runnable = Cronet_Runnable_CreateStub(TestRunnable_Run);
-  Cronet_Runnable_SetContext(runnable, this);
+  Cronet_RunnablePtr runnable = Cronet_Runnable_CreateWith(TestRunnable_Run);
+  Cronet_Runnable_SetClientContext(runnable, this);
   Cronet_ExecutorPtr executor = cronet::test::CreateTestExecutor();
   Cronet_Executor_Execute(executor, runnable);
   Cronet_Executor_Destroy(executor);

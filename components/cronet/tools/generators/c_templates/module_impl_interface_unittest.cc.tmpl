@@ -53,8 +53,8 @@ namespace {
 {%-   if method.parameters %}, {{module_macros.declare_c_params("", method.parameters)}}
 {%-   endif %}) {
   CHECK(self);
-  {{interface_name}}Context context = {{interface_name}}_GetContext(self);
-  auto* test = static_cast<{{interface_name}}Test*>(context);
+  Cronet_ClientContext client_context = {{interface_name}}_GetClientContext(self);
+  auto* test = static_cast<{{interface_name}}Test*>(client_context);
   CHECK(test);
   test->{{method.name}}_called_ = true;
   {%-  if method.response_parameters and method.sync %}
@@ -67,14 +67,14 @@ namespace {
 
 // Test that {{test_class_name}} stub forwards function calls as expected.
 TEST_F({{test_class_name}}Test, TestCreate) {
-  {{interface_name}}Ptr test = {{interface_name}}_CreateStub(
+  {{interface_name}}Ptr test = {{interface_name}}_CreateWith(
 {%- for method in interface.methods -%}
       Test{{interface_name}}_{{method.name}}
 {%-   if not loop.last %}, {% endif %}
 {%- endfor %}
   );
   CHECK(test);
-  {{interface_name}}_SetContext(test, this);
+  {{interface_name}}_SetClientContext(test, this);
 {%- for method in interface.methods -%}
 {%-  if not method.parameters %}
         {{interface_name}}_{{method.name}}(test);

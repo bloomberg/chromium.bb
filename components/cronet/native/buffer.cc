@@ -16,10 +16,6 @@ class Cronet_BufferCallbackFree : public Cronet_BufferCallback {
   Cronet_BufferCallbackFree() = default;
   ~Cronet_BufferCallbackFree() override = default;
 
-  // Singleton instance doesn't allow means to set app-specific context.
-  void SetContext(Cronet_BufferCallbackContext context) override {}
-  Cronet_BufferCallbackContext GetContext() override { return nullptr; }
-
   void OnDestroy(Cronet_BufferPtr buffer) override { free(buffer->GetData()); }
 
  private:
@@ -36,20 +32,17 @@ class Cronet_BufferImpl : public Cronet_Buffer {
   ~Cronet_BufferImpl() override;
 
   // Cronet_Buffer implementation
-  void SetContext(Cronet_BufferContext context) override;
-  Cronet_BufferContext GetContext() override;
-  void InitWithDataAndCallback(RawDataPtr data,
+  void InitWithDataAndCallback(Cronet_RawDataPtr data,
                                uint64_t size,
                                Cronet_BufferCallbackPtr callback) override;
   void InitWithAlloc(uint64_t size) override;
   uint64_t GetSize() override;
-  RawDataPtr GetData() override;
+  Cronet_RawDataPtr GetData() override;
 
  private:
-  RawDataPtr data_ = nullptr;
+  Cronet_RawDataPtr data_ = nullptr;
   uint64_t size_ = 0;
   Cronet_BufferCallbackPtr callback_ = nullptr;
-  Cronet_BufferContext context_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_BufferImpl);
 };
@@ -59,16 +52,8 @@ Cronet_BufferImpl::~Cronet_BufferImpl() {
     callback_->OnDestroy(this);
 }
 
-void Cronet_BufferImpl::SetContext(Cronet_BufferContext context) {
-  context_ = context;
-}
-
-Cronet_BufferContext Cronet_BufferImpl::GetContext() {
-  return context_;
-}
-
 void Cronet_BufferImpl::InitWithDataAndCallback(
-    RawDataPtr data,
+    Cronet_RawDataPtr data,
     uint64_t size,
     Cronet_BufferCallbackPtr callback) {
   data_ = data;
@@ -88,7 +73,7 @@ uint64_t Cronet_BufferImpl::GetSize() {
   return size_;
 }
 
-RawDataPtr Cronet_BufferImpl::GetData() {
+Cronet_RawDataPtr Cronet_BufferImpl::GetData() {
   return data_;
 }
 

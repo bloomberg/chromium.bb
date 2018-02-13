@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/cronet/native/generated/cronet.idl_impl_interface.h"
 #include "components/cronet/native/include/cronet_c.h"
 #include "components/cronet/native/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +27,7 @@ class RunnablesTest : public ::testing::Test {
       Cronet_UrlRequestCallbackPtr self,
       Cronet_UrlRequestPtr request,
       Cronet_UrlResponseInfoPtr info,
-      CharString newLocationUrl);
+      Cronet_String newLocationUrl);
   static void UrlRequestCallback_OnResponseStarted(
       Cronet_UrlRequestCallbackPtr self,
       Cronet_UrlRequestPtr request,
@@ -47,10 +48,10 @@ class RunnablesTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RunnablesTest);
 };
 
-class OnRedirectReceived_Runnable : public cronet::BaseCronet_Runnable {
+class OnRedirectReceived_Runnable : public Cronet_Runnable {
  public:
   OnRedirectReceived_Runnable(Cronet_UrlRequestCallbackPtr callback,
-                              CharString new_location_url)
+                              Cronet_String new_location_url)
       : callback_(callback), new_location_url_(new_location_url) {}
 
   ~OnRedirectReceived_Runnable() override = default;
@@ -75,10 +76,10 @@ void RunnablesTest::UrlRequestCallback_OnRedirectReceived(
     Cronet_UrlRequestCallbackPtr self,
     Cronet_UrlRequestPtr request,
     Cronet_UrlResponseInfoPtr info,
-    CharString newLocationUrl) {
+    Cronet_String newLocationUrl) {
   CHECK(self);
-  Cronet_UrlRequestCallbackContext context =
-      Cronet_UrlRequestCallback_GetContext(self);
+  Cronet_ClientContext context =
+      Cronet_UrlRequestCallback_GetClientContext(self);
   RunnablesTest* test = static_cast<RunnablesTest*>(context);
   CHECK(test);
   test->callback_called_ = true;
@@ -91,8 +92,8 @@ void RunnablesTest::UrlRequestCallback_OnResponseStarted(
     Cronet_UrlRequestPtr request,
     Cronet_UrlResponseInfoPtr info) {
   CHECK(self);
-  Cronet_UrlRequestCallbackContext context =
-      Cronet_UrlRequestCallback_GetContext(self);
+  Cronet_ClientContext context =
+      Cronet_UrlRequestCallback_GetClientContext(self);
   RunnablesTest* test = static_cast<RunnablesTest*>(context);
   CHECK(test);
   test->callback_called_ = true;
@@ -109,8 +110,8 @@ void RunnablesTest::UrlRequestCallback_OnReadCompleted(
   CHECK(buffer);
   // Destroy the |buffer|.
   Cronet_Buffer_Destroy(buffer);
-  Cronet_UrlRequestCallbackContext context =
-      Cronet_UrlRequestCallback_GetContext(self);
+  Cronet_ClientContext context =
+      Cronet_UrlRequestCallback_GetClientContext(self);
   RunnablesTest* test = static_cast<RunnablesTest*>(context);
   CHECK(test);
   test->callback_called_ = true;
@@ -121,7 +122,7 @@ TEST_F(RunnablesTest, TestRunCallbackOnExecutor) {
   // Executor provided by the application.
   Cronet_ExecutorPtr executor = cronet::test::CreateTestExecutor();
   // Callback provided by the application.
-  Cronet_UrlRequestCallbackPtr callback = Cronet_UrlRequestCallback_CreateStub(
+  Cronet_UrlRequestCallbackPtr callback = Cronet_UrlRequestCallback_CreateWith(
       RunnablesTest::UrlRequestCallback_OnRedirectReceived,
       /* OnResponseStartedFunc = */ nullptr,
       /* OnReadCompletedFunc = */ nullptr,
@@ -129,12 +130,12 @@ TEST_F(RunnablesTest, TestRunCallbackOnExecutor) {
       /* OnFailedFunc = */ nullptr,
       /* OnCanceledFunc = */ nullptr);
   // New location to redirect to.
-  CharString new_location_url = "newUrl";
+  Cronet_String new_location_url = "newUrl";
   // Invoke Cronet_UrlRequestCallback_OnRedirectReceived
   Cronet_RunnablePtr runnable =
       new OnRedirectReceived_Runnable(callback, new_location_url);
   new_location_url = "bad";
-  Cronet_UrlRequestCallback_SetContext(callback, this);
+  Cronet_UrlRequestCallback_SetClientContext(callback, this);
   Cronet_Executor_Execute(executor, runnable);
   scoped_task_environment_.RunUntilIdle();
   ASSERT_TRUE(callback_called());
@@ -146,7 +147,7 @@ TEST_F(RunnablesTest, TestRunOnceClosureOnExecutor) {
   // Executor provided by the application.
   Cronet_ExecutorPtr executor = cronet::test::CreateTestExecutor();
   // Callback provided by the application.
-  Cronet_UrlRequestCallbackPtr callback = Cronet_UrlRequestCallback_CreateStub(
+  Cronet_UrlRequestCallbackPtr callback = Cronet_UrlRequestCallback_CreateWith(
       RunnablesTest::UrlRequestCallback_OnRedirectReceived,
       RunnablesTest::UrlRequestCallback_OnResponseStarted,
       /* OnReadCompletedFunc = */ nullptr,
@@ -157,7 +158,7 @@ TEST_F(RunnablesTest, TestRunOnceClosureOnExecutor) {
   Cronet_RunnablePtr runnable = new cronet::OnceClosureRunnable(
       base::BindOnce(Cronet_UrlRequestCallback_OnResponseStarted, callback,
                      /* request = */ nullptr, /* response_info = */ nullptr));
-  Cronet_UrlRequestCallback_SetContext(callback, this);
+  Cronet_UrlRequestCallback_SetClientContext(callback, this);
   Cronet_Executor_Execute(executor, runnable);
   scoped_task_environment_.RunUntilIdle();
   ASSERT_TRUE(callback_called());
@@ -170,7 +171,7 @@ TEST_F(RunnablesTest, TestCronetBuffer) {
   // Executor provided by the application.
   Cronet_ExecutorPtr executor = cronet::test::CreateTestExecutor();
   // Callback provided by the application.
-  Cronet_UrlRequestCallbackPtr callback = Cronet_UrlRequestCallback_CreateStub(
+  Cronet_UrlRequestCallbackPtr callback = Cronet_UrlRequestCallback_CreateWith(
       RunnablesTest::UrlRequestCallback_OnRedirectReceived,
       RunnablesTest::UrlRequestCallback_OnResponseStarted,
       RunnablesTest::UrlRequestCallback_OnReadCompleted,
@@ -185,7 +186,7 @@ TEST_F(RunnablesTest, TestCronetBuffer) {
       RunnablesTest::UrlRequestCallback_OnReadCompleted, callback,
       /* request = */ nullptr,
       /* response_info = */ nullptr, buffer, /* bytes_read = */ 0));
-  Cronet_UrlRequestCallback_SetContext(callback, this);
+  Cronet_UrlRequestCallback_SetClientContext(callback, this);
   Cronet_Executor_Execute(executor, runnable);
   scoped_task_environment_.RunUntilIdle();
   ASSERT_TRUE(callback_called());

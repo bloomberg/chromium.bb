@@ -32,8 +32,10 @@ struct {{interface_name}} {
   {{interface_name}}() = default;
   virtual ~{{interface_name}}() = default;
 
-  virtual void SetContext({{interface_name}}Context context) = 0;
-  virtual {{interface_name}}Context GetContext() = 0;
+  void set_client_context(Cronet_ClientContext client_context) {
+    client_context_ = client_context;
+  }
+  Cronet_ClientContext client_context() const { return client_context_; }
 
 {% for method in interface.methods %}
 {%-  if method.response_parameters and method.sync %}
@@ -46,6 +48,8 @@ virtual void
    {{method.name}}({{module_macros.declare_c_params("", method.parameters)}}) = 0;
 {%- endfor %}
  private:
+  Cronet_ClientContext client_context_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN({{interface_name}});
 };
 

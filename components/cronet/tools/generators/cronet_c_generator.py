@@ -597,7 +597,7 @@ class Generator(generator.Generator):
       return (_AddOptional(type_name) if mojom.IsNullableKind(kind)
                                       else type_name)
     if mojom.IsGenericHandleKind(kind):
-      return "RawDataPtr"
+      return "Cronet_RawDataPtr"
     if mojom.IsDataPipeConsumerKind(kind):
       return "mojo::ScopedDataPipeConsumerHandle"
     if mojom.IsDataPipeProducerKind(kind):
@@ -638,7 +638,7 @@ class Generator(generator.Generator):
 
   def _GetCWrapperType(self, kind):
     if mojom.IsStringKind(kind):
-      return "CharString"
+      return "Cronet_String"
     if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
       return "%sPtr" % self._GetNameForKind(kind)
     return self._GetCppWrapperType(kind)

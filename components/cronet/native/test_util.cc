@@ -25,7 +25,7 @@ namespace cronet {
 namespace test {
 
 Cronet_ExecutorPtr CreateTestExecutor() {
-  return Cronet_Executor_CreateStub(TestExecutor_Execute);
+  return Cronet_Executor_CreateWith(TestExecutor_Execute);
 }
 
 }  // namespace test

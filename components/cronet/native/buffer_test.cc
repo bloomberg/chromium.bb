@@ -37,7 +37,7 @@ const uint64_t kTestBufferSize = 20;
 void BufferTest::BufferCallback_OnDestroy(Cronet_BufferCallbackPtr self,
                                           Cronet_BufferPtr buffer) {
   CHECK(self);
-  Cronet_BufferCallbackContext context = Cronet_BufferCallback_GetContext(self);
+  Cronet_ClientContext context = Cronet_BufferCallback_GetClientContext(self);
   BufferTest* test = static_cast<BufferTest*>(context);
   CHECK(test);
   test->set_on_destroy_called(true);
@@ -50,7 +50,7 @@ void BufferTest::BufferCallback_OnDestroy(Cronet_BufferCallbackPtr self,
 // Test on_destroy that destroys the buffer set in context.
 void TestRunnable_DestroyBuffer(Cronet_RunnablePtr self) {
   CHECK(self);
-  Cronet_RunnableContext context = Cronet_Runnable_GetContext(self);
+  Cronet_ClientContext context = Cronet_Runnable_GetClientContext(self);
   Cronet_BufferPtr buffer = static_cast<Cronet_BufferPtr>(context);
   CHECK(buffer);
   // Destroy buffer. TestCronet_BufferCallback_OnDestroy should be invoked.
@@ -88,8 +88,8 @@ TEST_F(BufferTest, MAYBE_TestInitWithHugeAllocFails) {
 // Example of intializing buffer with app-allocated data.
 TEST_F(BufferTest, TestInitWithDataAndCallback) {
   Cronet_BufferCallbackPtr buffer_callback =
-      Cronet_BufferCallback_CreateStub(BufferCallback_OnDestroy);
-  Cronet_BufferCallback_SetContext(buffer_callback, this);
+      Cronet_BufferCallback_CreateWith(BufferCallback_OnDestroy);
+  Cronet_BufferCallback_SetClientContext(buffer_callback, this);
   // Create Cronet buffer and allocate buffer data.
   Cronet_BufferPtr buffer = Cronet_Buffer_Create();
   Cronet_Buffer_InitWithDataAndCallback(buffer, malloc(kTestBufferSize),
@@ -106,15 +106,15 @@ TEST_F(BufferTest, TestCronetBufferAsync) {
   // Executor provided by the application.
   Cronet_ExecutorPtr executor = cronet::test::CreateTestExecutor();
   Cronet_BufferCallbackPtr buffer_callback =
-      Cronet_BufferCallback_CreateStub(BufferCallback_OnDestroy);
-  Cronet_BufferCallback_SetContext(buffer_callback, this);
+      Cronet_BufferCallback_CreateWith(BufferCallback_OnDestroy);
+  Cronet_BufferCallback_SetClientContext(buffer_callback, this);
   // Create Cronet buffer and allocate buffer data.
   Cronet_BufferPtr buffer = Cronet_Buffer_Create();
   Cronet_Buffer_InitWithDataAndCallback(buffer, malloc(kTestBufferSize),
                                         kTestBufferSize, buffer_callback);
   Cronet_RunnablePtr runnable =
-      Cronet_Runnable_CreateStub(TestRunnable_DestroyBuffer);
-  Cronet_Runnable_SetContext(runnable, buffer);
+      Cronet_Runnable_CreateWith(TestRunnable_DestroyBuffer);
+  Cronet_Runnable_SetClientContext(runnable, buffer);
   Cronet_Executor_Execute(executor, runnable);
   scoped_task_environment_.RunUntilIdle();
   ASSERT_TRUE(on_destroy_called());

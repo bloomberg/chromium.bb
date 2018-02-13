@@ -14,19 +14,19 @@ void Cronet_Buffer_Destroy(Cronet_BufferPtr self) {
   return delete self;
 }
 
-void Cronet_Buffer_SetContext(Cronet_BufferPtr self,
-                              Cronet_BufferContext context) {
+void Cronet_Buffer_SetClientContext(Cronet_BufferPtr self,
+                                    Cronet_ClientContext client_context) {
   DCHECK(self);
-  return self->SetContext(context);
+  self->set_client_context(client_context);
 }
 
-Cronet_BufferContext Cronet_Buffer_GetContext(Cronet_BufferPtr self) {
+Cronet_ClientContext Cronet_Buffer_GetClientContext(Cronet_BufferPtr self) {
   DCHECK(self);
-  return self->GetContext();
+  return self->client_context();
 }
 
 void Cronet_Buffer_InitWithDataAndCallback(Cronet_BufferPtr self,
-                                           RawDataPtr data,
+                                           Cronet_RawDataPtr data,
                                            uint64_t size,
                                            Cronet_BufferCallbackPtr callback) {
   DCHECK(self);
@@ -43,7 +43,7 @@ uint64_t Cronet_Buffer_GetSize(Cronet_BufferPtr self) {
   return self->GetSize();
 }
 
-RawDataPtr Cronet_Buffer_GetData(Cronet_BufferPtr self) {
+Cronet_RawDataPtr Cronet_Buffer_GetData(Cronet_BufferPtr self) {
   DCHECK(self);
   return self->GetData();
 }
@@ -64,12 +64,8 @@ class Cronet_BufferStub : public Cronet_Buffer {
 
   ~Cronet_BufferStub() override {}
 
-  void SetContext(Cronet_BufferContext context) override { context_ = context; }
-
-  Cronet_BufferContext GetContext() override { return context_; }
-
  protected:
-  void InitWithDataAndCallback(RawDataPtr data,
+  void InitWithDataAndCallback(Cronet_RawDataPtr data,
                                uint64_t size,
                                Cronet_BufferCallbackPtr callback) override {
     InitWithDataAndCallbackFunc_(this, data, size, callback);
@@ -79,10 +75,9 @@ class Cronet_BufferStub : public Cronet_Buffer {
 
   uint64_t GetSize() override { return GetSizeFunc_(this); }
 
-  RawDataPtr GetData() override { return GetDataFunc_(this); }
+  Cronet_RawDataPtr GetData() override { return GetDataFunc_(this); }
 
  private:
-  Cronet_BufferContext context_ = nullptr;
   const Cronet_Buffer_InitWithDataAndCallbackFunc InitWithDataAndCallbackFunc_;
   const Cronet_Buffer_InitWithAllocFunc InitWithAllocFunc_;
   const Cronet_Buffer_GetSizeFunc GetSizeFunc_;
@@ -91,7 +86,7 @@ class Cronet_BufferStub : public Cronet_Buffer {
   DISALLOW_COPY_AND_ASSIGN(Cronet_BufferStub);
 };
 
-Cronet_BufferPtr Cronet_Buffer_CreateStub(
+Cronet_BufferPtr Cronet_Buffer_CreateWith(
     Cronet_Buffer_InitWithDataAndCallbackFunc InitWithDataAndCallbackFunc,
     Cronet_Buffer_InitWithAllocFunc InitWithAllocFunc,
     Cronet_Buffer_GetSizeFunc GetSizeFunc,
@@ -107,16 +102,17 @@ void Cronet_BufferCallback_Destroy(Cronet_BufferCallbackPtr self) {
   return delete self;
 }
 
-void Cronet_BufferCallback_SetContext(Cronet_BufferCallbackPtr self,
-                                      Cronet_BufferCallbackContext context) {
+void Cronet_BufferCallback_SetClientContext(
+    Cronet_BufferCallbackPtr self,
+    Cronet_ClientContext client_context) {
   DCHECK(self);
-  return self->SetContext(context);
+  self->set_client_context(client_context);
 }
 
-Cronet_BufferCallbackContext Cronet_BufferCallback_GetContext(
+Cronet_ClientContext Cronet_BufferCallback_GetClientContext(
     Cronet_BufferCallbackPtr self) {
   DCHECK(self);
-  return self->GetContext();
+  return self->client_context();
 }
 
 void Cronet_BufferCallback_OnDestroy(Cronet_BufferCallbackPtr self,
@@ -135,25 +131,18 @@ class Cronet_BufferCallbackStub : public Cronet_BufferCallback {
 
   ~Cronet_BufferCallbackStub() override {}
 
-  void SetContext(Cronet_BufferCallbackContext context) override {
-    context_ = context;
-  }
-
-  Cronet_BufferCallbackContext GetContext() override { return context_; }
-
  protected:
   void OnDestroy(Cronet_BufferPtr buffer) override {
     OnDestroyFunc_(this, buffer);
   }
 
  private:
-  Cronet_BufferCallbackContext context_ = nullptr;
   const Cronet_BufferCallback_OnDestroyFunc OnDestroyFunc_;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_BufferCallbackStub);
 };
 
-Cronet_BufferCallbackPtr Cronet_BufferCallback_CreateStub(
+Cronet_BufferCallbackPtr Cronet_BufferCallback_CreateWith(
     Cronet_BufferCallback_OnDestroyFunc OnDestroyFunc) {
   return new Cronet_BufferCallbackStub(OnDestroyFunc);
 }
@@ -164,15 +153,15 @@ void Cronet_Runnable_Destroy(Cronet_RunnablePtr self) {
   return delete self;
 }
 
-void Cronet_Runnable_SetContext(Cronet_RunnablePtr self,
-                                Cronet_RunnableContext context) {
+void Cronet_Runnable_SetClientContext(Cronet_RunnablePtr self,
+                                      Cronet_ClientContext client_context) {
   DCHECK(self);
-  return self->SetContext(context);
+  self->set_client_context(client_context);
 }
 
-Cronet_RunnableContext Cronet_Runnable_GetContext(Cronet_RunnablePtr self) {
+Cronet_ClientContext Cronet_Runnable_GetClientContext(Cronet_RunnablePtr self) {
   DCHECK(self);
-  return self->GetContext();
+  return self->client_context();
 }
 
 void Cronet_Runnable_Run(Cronet_RunnablePtr self) {
@@ -189,23 +178,16 @@ class Cronet_RunnableStub : public Cronet_Runnable {
 
   ~Cronet_RunnableStub() override {}
 
-  void SetContext(Cronet_RunnableContext context) override {
-    context_ = context;
-  }
-
-  Cronet_RunnableContext GetContext() override { return context_; }
-
  protected:
   void Run() override { RunFunc_(this); }
 
  private:
-  Cronet_RunnableContext context_ = nullptr;
   const Cronet_Runnable_RunFunc RunFunc_;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_RunnableStub);
 };
 
-Cronet_RunnablePtr Cronet_Runnable_CreateStub(Cronet_Runnable_RunFunc RunFunc) {
+Cronet_RunnablePtr Cronet_Runnable_CreateWith(Cronet_Runnable_RunFunc RunFunc) {
   return new Cronet_RunnableStub(RunFunc);
 }
 
@@ -215,15 +197,15 @@ void Cronet_Executor_Destroy(Cronet_ExecutorPtr self) {
   return delete self;
 }
 
-void Cronet_Executor_SetContext(Cronet_ExecutorPtr self,
-                                Cronet_ExecutorContext context) {
+void Cronet_Executor_SetClientContext(Cronet_ExecutorPtr self,
+                                      Cronet_ClientContext client_context) {
   DCHECK(self);
-  return self->SetContext(context);
+  self->set_client_context(client_context);
 }
 
-Cronet_ExecutorContext Cronet_Executor_GetContext(Cronet_ExecutorPtr self) {
+Cronet_ClientContext Cronet_Executor_GetClientContext(Cronet_ExecutorPtr self) {
   DCHECK(self);
-  return self->GetContext();
+  return self->client_context();
 }
 
 void Cronet_Executor_Execute(Cronet_ExecutorPtr self,
@@ -241,25 +223,18 @@ class Cronet_ExecutorStub : public Cronet_Executor {
 
   ~Cronet_ExecutorStub() override {}
 
-  void SetContext(Cronet_ExecutorContext context) override {
-    context_ = context;
-  }
-
-  Cronet_ExecutorContext GetContext() override { return context_; }
-
  protected:
   void Execute(Cronet_RunnablePtr command) override {
     ExecuteFunc_(this, command);
   }
 
  private:
-  Cronet_ExecutorContext context_ = nullptr;
   const Cronet_Executor_ExecuteFunc ExecuteFunc_;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_ExecutorStub);
 };
 
-Cronet_ExecutorPtr Cronet_Executor_CreateStub(
+Cronet_ExecutorPtr Cronet_Executor_CreateWith(
     Cronet_Executor_ExecuteFunc ExecuteFunc) {
   return new Cronet_ExecutorStub(ExecuteFunc);
 }
@@ -270,15 +245,15 @@ void Cronet_Engine_Destroy(Cronet_EnginePtr self) {
   return delete self;
 }
 
-void Cronet_Engine_SetContext(Cronet_EnginePtr self,
-                              Cronet_EngineContext context) {
+void Cronet_Engine_SetClientContext(Cronet_EnginePtr self,
+                                    Cronet_ClientContext client_context) {
   DCHECK(self);
-  return self->SetContext(context);
+  self->set_client_context(client_context);
 }
 
-Cronet_EngineContext Cronet_Engine_GetContext(Cronet_EnginePtr self) {
+Cronet_ClientContext Cronet_Engine_GetClientContext(Cronet_EnginePtr self) {
   DCHECK(self);
-  return self->GetContext();
+  return self->client_context();
 }
 
 Cronet_RESULT Cronet_Engine_StartWithParams(Cronet_EnginePtr self,
@@ -288,7 +263,7 @@ Cronet_RESULT Cronet_Engine_StartWithParams(Cronet_EnginePtr self,
 }
 
 bool Cronet_Engine_StartNetLogToFile(Cronet_EnginePtr self,
-                                     CharString file_name,
+                                     Cronet_String file_name,
                                      bool log_all) {
   DCHECK(self);
   return self->StartNetLogToFile(file_name, log_all);
@@ -304,12 +279,12 @@ Cronet_RESULT Cronet_Engine_Shutdown(Cronet_EnginePtr self) {
   return self->Shutdown();
 }
 
-CharString Cronet_Engine_GetVersionString(Cronet_EnginePtr self) {
+Cronet_String Cronet_Engine_GetVersionString(Cronet_EnginePtr self) {
   DCHECK(self);
   return self->GetVersionString();
 }
 
-CharString Cronet_Engine_GetDefaultUserAgent(Cronet_EnginePtr self) {
+Cronet_String Cronet_Engine_GetDefaultUserAgent(Cronet_EnginePtr self) {
   DCHECK(self);
   return self->GetDefaultUserAgent();
 }
@@ -334,16 +309,12 @@ class Cronet_EngineStub : public Cronet_Engine {
 
   ~Cronet_EngineStub() override {}
 
-  void SetContext(Cronet_EngineContext context) override { context_ = context; }
-
-  Cronet_EngineContext GetContext() override { return context_; }
-
  protected:
   Cronet_RESULT StartWithParams(Cronet_EngineParamsPtr params) override {
     return StartWithParamsFunc_(this, params);
   }
 
-  bool StartNetLogToFile(CharString file_name, bool log_all) override {
+  bool StartNetLogToFile(Cronet_String file_name, bool log_all) override {
     return StartNetLogToFileFunc_(this, file_name, log_all);
   }
 
@@ -351,14 +322,15 @@ class Cronet_EngineStub : public Cronet_Engine {
 
   Cronet_RESULT Shutdown() override { return ShutdownFunc_(this); }
 
-  CharString GetVersionString() override { return GetVersionStringFunc_(this); }
+  Cronet_String GetVersionString() override {
+    return GetVersionStringFunc_(this);
+  }
 
-  CharString GetDefaultUserAgent() override {
+  Cronet_String GetDefaultUserAgent() override {
     return GetDefaultUserAgentFunc_(this);
   }
 
  private:
-  Cronet_EngineContext context_ = nullptr;
   const Cronet_Engine_StartWithParamsFunc StartWithParamsFunc_;
   const Cronet_Engine_StartNetLogToFileFunc StartNetLogToFileFunc_;
   const Cronet_Engine_StopNetLogFunc StopNetLogFunc_;
@@ -369,7 +341,7 @@ class Cronet_EngineStub : public Cronet_Engine {
   DISALLOW_COPY_AND_ASSIGN(Cronet_EngineStub);
 };
 
-Cronet_EnginePtr Cronet_Engine_CreateStub(
+Cronet_EnginePtr Cronet_Engine_CreateWith(
     Cronet_Engine_StartWithParamsFunc StartWithParamsFunc,
     Cronet_Engine_StartNetLogToFileFunc StartNetLogToFileFunc,
     Cronet_Engine_StopNetLogFunc StopNetLogFunc,
@@ -389,18 +361,17 @@ void Cronet_UrlRequestStatusListener_Destroy(
   return delete self;
 }
 
-void Cronet_UrlRequestStatusListener_SetContext(
+void Cronet_UrlRequestStatusListener_SetClientContext(
     Cronet_UrlRequestStatusListenerPtr self,
-    Cronet_UrlRequestStatusListenerContext context) {
+    Cronet_ClientContext client_context) {
   DCHECK(self);
-  return self->SetContext(context);
+  self->set_client_context(client_context);
 }
 
-Cronet_UrlRequestStatusListenerContext
-Cronet_UrlRequestStatusListener_GetContext(
+Cronet_ClientContext Cronet_UrlRequestStatusListener_GetClientContext(
     Cronet_UrlRequestStatusListenerPtr self) {
   DCHECK(self);
-  return self->GetContext();
+  return self->client_context();
 }
 
 void Cronet_UrlRequestStatusListener_OnStatus(
@@ -421,27 +392,18 @@ class Cronet_UrlRequestStatusListenerStub
 
   ~Cronet_UrlRequestStatusListenerStub() override {}
 
-  void SetContext(Cronet_UrlRequestStatusListenerContext context) override {
-    context_ = context;
-  }
-
-  Cronet_UrlRequestStatusListenerContext GetContext() override {
-    return context_;
-  }
-
  protected:
   void OnStatus(Cronet_UrlRequestStatusListener_Status status) override {
     OnStatusFunc_(this, status);
   }
 
  private:
-  Cronet_UrlRequestStatusListenerContext context_ = nullptr;
   const Cronet_UrlRequestStatusListener_OnStatusFunc OnStatusFunc_;
 
   DISALLOW_COPY_AND_ASSIGN(Cronet_UrlRequestStatusListenerStub);
 };
 
-Cronet_UrlRequestStatusListenerPtr Cronet_UrlRequestStatusListener_CreateStub(
+Cronet_UrlRequestStatusListenerPtr Cronet_UrlRequestStatusListener_CreateWith(
     Cronet_UrlRequestStatusListener_OnStatusFunc OnStatusFunc) {
   return new Cronet_UrlRequestStatusListenerStub(OnStatusFunc);
 }
@@ -453,24 +415,24 @@ void Cronet_UrlRequestCallback_Destroy(Cronet_UrlRequestCallbackPtr self) {
   return delete self;
 }
 
-void Cronet_UrlRequestCallback_SetContext(
+void Cronet_UrlRequestCallback_SetClientContext(
     Cronet_UrlRequestCallbackPtr self,
-    Cronet_UrlRequestCallbackContext context) {
+    Cronet_ClientContext client_context) {
   DCHECK(self);
-  return self->SetContext(context);
+  self->set_client_context(client_context);
 }
 
-Cronet_UrlRequestCallbackContext Cronet_UrlRequestCallback_GetContext(
+Cronet_ClientContext Cronet_UrlRequestCallback_GetClientContext(
     Cronet_UrlRequestCallbackPtr self) {
   DCHECK(self);
-  return self->GetContext();
+  return self->client_context();
 }
 
 void Cronet_UrlRequestCallback_OnRedirectReceived(
     Cronet_UrlRequestCallbackPtr self,
     Cronet_UrlRequestPtr request,
     Cronet_UrlResponseInfoPtr info,
-    CharString new_location_url) {
+    Cronet_String new_location_url) {
   DCHECK(self);
   self->OnRedirectReceived(request, info, new_location_url);
 }
@@ -535,16 +497,10 @@ class Cronet_UrlRequestCallbackStub : public Cronet_UrlRequestCallback {
 
   ~Cronet_UrlRequestCallbackStub() override {}
 
-  void SetContext(Cronet_UrlRequestCallbackContext context) override {
-    context_ = context;
-  }
-
-  Cronet_UrlRequestCallbackContext GetContext() override { return context_; }
-
  protected:
   void OnRedirectReceived(Cronet_UrlRequestPtr request,
                           Cronet_UrlResponseInfoPtr info,
-                          CharString new_location_url) override {
+                          Cronet_String new_location_url) override {
     OnRedirectReceivedFunc_(this, request, info, new_location_url);
   }
 
@@ -577,7 +533,6 @@ class Cronet_UrlRequestCallbackStub : public Cronet_UrlRequestCallback {
   }
 
  private:
-  Cronet_UrlRequestCallbackContext context_ = nullptr;
   const Cronet_UrlRequestCallback_OnRedirectReceivedFunc
       OnRedirectReceivedFunc_;
   const Cronet_UrlRequestCallback_OnResponseStartedFunc OnResponseStartedFunc_;
@@ -589,7 +544,7 @@ class Cronet_UrlRequestCallbackStub : public Cronet_UrlRequestCallback {
   DISALLOW_COPY_AND_ASSIGN(Cronet_UrlRequestCallbackStub);
 };
 
-Cronet_UrlRequestCallbackPtr Cronet_UrlRequestCallback_CreateStub(
+Cronet_UrlRequestCallbackPtr Cronet_UrlRequestCallback_CreateWith(
     Cronet_UrlRequestCallback_OnRedirectReceivedFunc OnRedirectReceivedFunc,
     Cronet_UrlRequestCallback_OnResponseStartedFunc OnResponseStartedFunc,
     Cronet_UrlRequestCallback_OnReadCompletedFunc OnReadCompletedFunc,
@@ -608,16 +563,17 @@ void Cronet_UploadDataSink_Destroy(Cronet_UploadDataSinkPtr self) {
   return delete self;
 }
 
-void Cronet_UploadDataSink_SetContext(Cronet_UploadDataSinkPtr self,
-                                      Cronet_UploadDataSinkContext context) {
+void Cronet_UploadDataSink_SetClientContext(
+    Cronet_UploadDataSinkPtr self,
+    Cronet_ClientContext client_context) {
   DCHECK(self);
-  return self->SetContext(context);
+  self->set_client_context(client_context);
 }
 
-Cronet_UploadDataSinkContext Cronet_UploadDataSink_GetContext(
+Cronet_ClientContext Cronet_UploadDataSink_GetClientContext(
     Cronet_UploadDataSinkPtr self) {
   DCHECK(self);
-  return self->GetContext();
+  return self->client_context();
 }
 
 void Cronet_UploadDataSink_OnReadSucceeded(Cronet_UploadDataSinkPtr self,
@@ -659,12 +615,6 @@ class Cronet_UploadDataSinkStub : public Cronet_UploadDataSink {
 
   ~Cronet_UploadDataSinkStub() override {}
 
-  void SetContext(Cronet_UploadDataSinkContext context) override {
-    context_ = context;
-  }
-
-  Cronet_UploadDataSinkContext GetContext() override { return context_; }
-
  protected:
   void OnReadSucceeded(bool final_chunk) override {
     OnReadSucceededFunc_(this, final_chunk);
@@ -681,7 +631,6 @@ class Cronet_UploadDataSinkStub : public Cronet_UploadDataSink {
   }
 
  private:
-  Cronet_UploadDataSinkContext context_ = nullptr;
   const Cronet_UploadDataSink_OnReadSucceededFunc OnReadSucceededFunc_;
   const Cronet_UploadDataSink_OnReadErrorFunc OnReadErrorFunc_;
   const Cronet_UploadDataSink_OnRewindSuccededFunc OnRewindSuccededFunc_;
@@ -690,7 +639,7 @@ class Cronet_UploadDataSinkStub : public Cronet_UploadDataSink {
   DISALLOW_COPY_AND_ASSIGN(Cronet_UploadDataSinkStub);
 };
 
-Cronet_UploadDataSinkPtr Cronet_UploadDataSink_CreateStub(
+Cronet_UploadDataSinkPtr Cronet_UploadDataSink_CreateWith(
     Cronet_UploadDataSink_OnReadSucceededFunc OnReadSucceededFunc,
     Cronet_UploadDataSink_OnReadErrorFunc OnReadErrorFunc,
     Cronet_UploadDataSink_OnRewindSuccededFunc OnRewindSuccededFunc,
@@ -706,17 +655,17 @@ void Cronet_UploadDataProvider_Destroy(Cronet_UploadDataProviderPtr self) {
   return delete self;
 }
 
-void Cronet_UploadDataProvider_SetContext(
+void Cronet_UploadDataProvider_SetClientContext(
     Cronet_UploadDataProviderPtr self,
-    Cronet_UploadDataProviderContext context) {
+    Cronet_ClientContext client_context) {
   DCHECK(self);
-  return self->SetContext(context);
+  self->set_client_context(client_context);
 }
 
-Cronet_UploadDataProviderContext Cronet_UploadDataProvider_GetContext(
+Cronet_ClientContext Cronet_UploadDataProvider_GetClientContext(
     Cronet_UploadDataProviderPtr self) {
   DCHECK(self);
-  return self->GetContext();
+  return self->client_context();
 }
 
 int64_t Cronet_UploadDataProvider_GetLength(Cronet_UploadDataProviderPtr self) {
@@ -759,12 +708,6 @@ class Cronet_UploadDataProviderStub : public Cronet_UploadDataProvider {
 
   ~Cronet_UploadDataProviderStub() override {}
 
-  void SetContext(Cronet_UploadDataProviderContext context) override {
-    context_ = context;
-  }
-
-  Cronet_UploadDataProviderContext GetContext() override { return context_; }
-
  protected:
   int64_t GetLength() override { return GetLengthFunc_(this); }
 
@@ -780,7 +723,6 @@ class Cronet_UploadDataProviderStub : public Cronet_UploadDataProvider {
   void Close() override { CloseFunc_(this); }
 
  private:
-  Cronet_UploadDataProviderContext context_ = nullptr;
   const Cronet_UploadDataProvider_GetLengthFunc GetLengthFunc_;
   const Cronet_UploadDataProvider_ReadFunc ReadFunc_;
   const Cronet_UploadDataProvider_RewindFunc RewindFunc_;
@@ -789,7 +731,7 @@ class Cronet_UploadDataProviderStub : public Cronet_UploadDataProvider {
   DISALLOW_COPY_AND_ASSIGN(Cronet_UploadDataProviderStub);
 };
 
-Cronet_UploadDataProviderPtr Cronet_UploadDataProvider_CreateStub(
+Cronet_UploadDataProviderPtr Cronet_UploadDataProvider_CreateWith(
     Cronet_UploadDataProvider_GetLengthFunc GetLengthFunc,
     Cronet_UploadDataProvider_ReadFunc ReadFunc,
     Cronet_UploadDataProvider_RewindFunc RewindFunc,
@@ -804,22 +746,22 @@ void Cronet_UrlRequest_Destroy(Cronet_UrlRequestPtr self) {
   return delete self;
 }
 
-void Cronet_UrlRequest_SetContext(Cronet_UrlRequestPtr self,
-                                  Cronet_UrlRequestContext context) {
+void Cronet_UrlRequest_SetClientContext(Cronet_UrlRequestPtr self,
+                                        Cronet_ClientContext client_context) {
   DCHECK(self);
-  return self->SetContext(context);
+  self->set_client_context(client_context);
 }
 
-Cronet_UrlRequestContext Cronet_UrlRequest_GetContext(
+Cronet_ClientContext Cronet_UrlRequest_GetClientContext(
     Cronet_UrlRequestPtr self) {
   DCHECK(self);
-  return self->GetContext();
+  return self->client_context();
 }
 
 Cronet_RESULT Cronet_UrlRequest_InitWithParams(
     Cronet_UrlRequestPtr self,
     Cronet_EnginePtr engine,
-    CharString url,
+    Cronet_String url,
     Cronet_UrlRequestParamsPtr params,
     Cronet_UrlRequestCallbackPtr callback,
     Cronet_ExecutorPtr executor) {
@@ -880,15 +822,9 @@ class Cronet_UrlRequestStub : public Cronet_UrlRequest {
 
   ~Cronet_UrlRequestStub() override {}
 
-  void SetContext(Cronet_UrlRequestContext context) override {
-    context_ = context;
-  }
-
-  Cronet_UrlRequestContext GetContext() override { return context_; }
-
  protected:
   Cronet_RESULT InitWithParams(Cronet_EnginePtr engine,
-                               CharString url,
+                               Cronet_String url,
                                Cronet_UrlRequestParamsPtr params,
                                Cronet_UrlRequestCallbackPtr callback,
                                Cronet_ExecutorPtr executor) override {
@@ -912,7 +848,6 @@ class Cronet_UrlRequestStub : public Cronet_UrlRequest {
   }
 
  private:
-  Cronet_UrlRequestContext context_ = nullptr;
   const Cronet_UrlRequest_InitWithParamsFunc InitWithParamsFunc_;
   const Cronet_UrlRequest_StartFunc StartFunc_;
   const Cronet_UrlRequest_FollowRedirectFunc FollowRedirectFunc_;
@@ -924,7 +859,7 @@ class Cronet_UrlRequestStub : public Cronet_UrlRequest {
   DISALLOW_COPY_AND_ASSIGN(Cronet_UrlRequestStub);
 };
 
-Cronet_UrlRequestPtr Cronet_UrlRequest_CreateStub(
+Cronet_UrlRequestPtr Cronet_UrlRequest_CreateWith(
     Cronet_UrlRequest_InitWithParamsFunc InitWithParamsFunc,
     Cronet_UrlRequest_StartFunc StartFunc,
     Cronet_UrlRequest_FollowRedirectFunc FollowRedirectFunc,
