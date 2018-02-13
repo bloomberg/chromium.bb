@@ -173,7 +173,6 @@ viz_component("service") {
     "//media",
     "//media/capture:capture_lib",
     "//media/gpu/ipc/service",
-    "//media/mojo/common:mojo_shared_buffer_video_frame",
     "//media/mojo/services",
     "//services/viz/privileged/interfaces",
     "//skia",

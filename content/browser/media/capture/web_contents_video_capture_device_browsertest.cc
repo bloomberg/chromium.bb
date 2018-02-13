@@ -10,7 +10,6 @@
 #include <cmath>
 #include <tuple>
 
-#include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/run_loop.h"
@@ -34,10 +33,8 @@
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gl/gl_switches.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -332,22 +329,10 @@ class WebContentsVideoCaptureDeviceBrowserTest : public ContentBrowserTest {
   virtual bool use_fixed_aspect_ratio() const { return false; }
 
   void SetUp() override {
-    // Enable use of the GPU, where available, to greatly speed these tests up.
-    auto* const command_line = base::CommandLine::ForCurrentProcess();
-#if defined(MEMORY_SANITIZER)
-    // Don't append any switches. This will cause the MSAN-instrumented software
-    // GL implementation to be used. http://crbug.com/806715
-    ALLOW_UNUSED_LOCAL(command_line);
-#elif defined(OS_CHROMEOS)
-    // As of this writing, enabling this flag on ChromeOS bots with Mus enabled
-    // causes a CHECK failure in GpuProcessTransportFactory::EstablishedGpuCh()
-    // for a false "use_gpu_compositing".
-    if (!command_line->HasSwitch(switches::kMus)) {
-      command_line->AppendSwitch(switches::kUseGpuInTests);
-    }
-#else
-    command_line->AppendSwitch(switches::kUseGpuInTests);
-#endif
+    // IMPORTANT: Do not add the switches::kUseGpuInTests command line flag: It
+    // causes the tests to take 12+ seconds just to spin up a render process on
+    // debug builds. It can also cause test failures in MSAN builds, or
+    // exacerbate OOM situations on highly-loaded machines.
 
     // Screen capture requires readback from compositor output.
     EnablePixelOutput();
