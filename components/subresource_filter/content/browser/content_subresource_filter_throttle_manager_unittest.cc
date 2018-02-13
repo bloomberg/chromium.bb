@@ -27,7 +27,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
@@ -369,9 +368,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
       GURL("https://www.example.com/before-redirect.html"), main_rfh());
   SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
   content::NavigationThrottle::ThrottleAction expected_action =
-      content::IsBrowserSideNavigationEnabled()
-          ? content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE
-          : content::NavigationThrottle::CANCEL;
+      content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE;
   SimulateRedirectAndExpectResult(
       GURL("https://www.example.com/disallowed.html"), expected_action);
 

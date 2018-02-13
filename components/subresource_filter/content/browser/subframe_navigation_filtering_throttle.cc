@@ -15,7 +15,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/console_message_level.h"
 
 namespace subresource_filter {
@@ -107,11 +106,7 @@ void SubframeNavigationFilteringThrottle::OnCalculatedLoadPolicy(
     // Other load policies will be reported in WillProcessResponse.
     NotifyLoadPolicy();
 
-    const bool block_and_collapse_is_supported =
-        content::IsBrowserSideNavigationEnabled() ||
-        stage == ThrottlingStage::WillStartRequest;
-    CancelDeferredNavigation(
-        block_and_collapse_is_supported ? BLOCK_REQUEST_AND_COLLAPSE : CANCEL);
+    CancelDeferredNavigation(BLOCK_REQUEST_AND_COLLAPSE);
   } else {
     Resume();
   }
