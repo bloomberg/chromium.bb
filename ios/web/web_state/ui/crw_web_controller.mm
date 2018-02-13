@@ -4278,7 +4278,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
   }
 
-  if (!allowLoad) {
+  if (!allowLoad && !_isBeingDestroyed) {
     // Loading was started for user initiated navigations and should be stopped
     // because no other WKWebView callbacks are called. TODO(crbug.com/767092):
     // Loading should not start until webView.loading is changed to YES.
