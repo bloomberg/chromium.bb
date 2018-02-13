@@ -86,7 +86,7 @@ std::unique_ptr<KeyedService> BuildWebDataService(web::BrowserState* context) {
       browser_state_path, GetApplicationContext()->GetApplicationLocale(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
       ios::sync_start_util::GetFlareForSyncableService(browser_state_path),
-      &NotReachedErrorCallback);
+      base::BindRepeating(&NotReachedErrorCallback));
 }
 
 base::FilePath CreateTempBrowserStateDir(base::ScopedTempDir* temp_dir) {

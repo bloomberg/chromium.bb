@@ -227,7 +227,7 @@ std::unique_ptr<KeyedService> BuildWebDataService(
       context_path, g_browser_process->GetApplicationLocale(),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
       sync_start_util::GetFlareForSyncableService(context_path),
-      &TestProfileErrorCallback);
+      base::BindRepeating(&TestProfileErrorCallback));
 }
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)

@@ -180,7 +180,7 @@ KeyedService* WebDataServiceFactory::BuildServiceInstanceFor(
       profile_path, g_browser_process->GetApplicationLocale(),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
       sync_start_util::GetFlareForSyncableService(profile_path),
-      &ProfileErrorCallback);
+      base::BindRepeating(&ProfileErrorCallback));
 }
 
 bool WebDataServiceFactory::ServiceIsNULLWhileTesting() const {

@@ -100,7 +100,7 @@ std::unique_ptr<KeyedService> WebDataServiceFactory::BuildServiceInstanceFor(
       browser_state_path, GetApplicationContext()->GetApplicationLocale(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
       ios::sync_start_util::GetFlareForSyncableService(browser_state_path),
-      &DoNothingOnErrorCallback);
+      base::BindRepeating(&DoNothingOnErrorCallback));
 }
 
 web::BrowserState* WebDataServiceFactory::GetBrowserStateToUse(
