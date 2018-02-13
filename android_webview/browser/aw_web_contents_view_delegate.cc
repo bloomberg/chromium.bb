@@ -31,13 +31,4 @@ content::WebDragDestDelegate* AwWebContentsViewDelegate::GetDragDestDelegate() {
   return NULL;
 }
 
-void AwWebContentsViewDelegate::OverrideDisplayColorSpace(
-    gfx::ColorSpace* color_space) {
-  // TODO(ccameron): WebViews that are embedded in WCG windows will want to
-  // override the display color space to gfx::ColorSpace::CreateExtendedSRGB().
-  // This situation is not yet detected.
-  // https://crbug.com/735658
-  *color_space = gfx::ColorSpace::CreateSRGB();
-}
-
 }  // namespace android_webview

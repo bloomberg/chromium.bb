@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #import "base/message_loop/message_pump_mac.h"
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
+#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
@@ -83,26 +84,6 @@ namespace {
 WebContentsViewMac::RenderWidgetHostViewCreateFunction
     g_create_render_widget_host_view = nullptr;
 
-content::ScreenInfo GetNSViewScreenInfo(NSView* view) {
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestView(view);
-
-  content::ScreenInfo results;
-  results.device_scale_factor = static_cast<int>(display.device_scale_factor());
-  results.color_space = display.color_space();
-  results.icc_profile = gfx::ICCProfile::FromCacheMac(display.color_space());
-  results.depth = display.color_depth();
-  results.depth_per_component = display.depth_per_component();
-  results.is_monochrome = display.is_monochrome();
-  results.rect = display.bounds();
-  results.available_rect = display.work_area();
-  results.orientation_angle = display.RotationAsDegree();
-  results.orientation_type =
-      content::RenderWidgetHostViewBase::GetOrientationTypeForDesktop(display);
-
-  return results;
-}
-
 }  // namespace
 
 namespace content {
@@ -112,11 +93,6 @@ void WebContentsViewMac::InstallCreateHookForTests(
     RenderWidgetHostViewCreateFunction create_render_widget_host_view) {
   CHECK_EQ(nullptr, g_create_render_widget_host_view);
   g_create_render_widget_host_view = create_render_widget_host_view;
-}
-
-// static
-void WebContentsView::GetDefaultScreenInfo(ScreenInfo* results) {
-  *results = GetNSViewScreenInfo(nil);
 }
 
 WebContentsView* CreateWebContentsView(
@@ -161,7 +137,7 @@ gfx::NativeWindow WebContentsViewMac::GetTopLevelNativeWindow() const {
 }
 
 void WebContentsViewMac::GetScreenInfo(ScreenInfo* results) const {
-  *results = GetNSViewScreenInfo(GetNativeView());
+  DisplayUtil::GetNativeViewScreenInfo(results, GetNativeView());
 }
 
 void WebContentsViewMac::GetContainerBounds(gfx::Rect* out) const {

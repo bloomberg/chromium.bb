@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 
+#include "content/browser/renderer_host/display_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 #include "ui/display/display.h"
@@ -27,57 +28,57 @@ TEST(RenderWidgetHostViewBaseTest, OrientationTypeForMobile) {
   {
     display::Display display = CreateDisplay(100, 100, 0);
     EXPECT_EQ(SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY,
-              RenderWidgetHostViewBase::GetOrientationTypeForMobile(display));
+              DisplayUtil::GetOrientationTypeForMobile(display));
 
     display = CreateDisplay(200, 200, 90);
     EXPECT_EQ(SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY,
-              RenderWidgetHostViewBase::GetOrientationTypeForMobile(display));
+              DisplayUtil::GetOrientationTypeForMobile(display));
 
     display = CreateDisplay(0, 0, 180);
     EXPECT_EQ(SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY,
-              RenderWidgetHostViewBase::GetOrientationTypeForMobile(display));
+              DisplayUtil::GetOrientationTypeForMobile(display));
 
     display = CreateDisplay(10000, 10000, 270);
     EXPECT_EQ(SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY,
-              RenderWidgetHostViewBase::GetOrientationTypeForMobile(display));
+              DisplayUtil::GetOrientationTypeForMobile(display));
   }
 
   // natural width > natural height.
   {
     display::Display display = CreateDisplay(1, 0, 0);
     EXPECT_EQ(SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY,
-              RenderWidgetHostViewBase::GetOrientationTypeForMobile(display));
+              DisplayUtil::GetOrientationTypeForMobile(display));
 
     display = CreateDisplay(19999, 20000, 90);
     EXPECT_EQ(SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY,
-              RenderWidgetHostViewBase::GetOrientationTypeForMobile(display));
+              DisplayUtil::GetOrientationTypeForMobile(display));
 
     display = CreateDisplay(200, 100, 180);
     EXPECT_EQ(SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY,
-              RenderWidgetHostViewBase::GetOrientationTypeForMobile(display));
+              DisplayUtil::GetOrientationTypeForMobile(display));
 
     display = CreateDisplay(1, 10000, 270);
     EXPECT_EQ(SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY,
-              RenderWidgetHostViewBase::GetOrientationTypeForMobile(display));
+              DisplayUtil::GetOrientationTypeForMobile(display));
   }
 
   // natural width < natural height.
   {
     display::Display display = CreateDisplay(0, 1, 0);
     EXPECT_EQ(SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY,
-              RenderWidgetHostViewBase::GetOrientationTypeForMobile(display));
+              DisplayUtil::GetOrientationTypeForMobile(display));
 
     display = CreateDisplay(20000, 19999, 90);
     EXPECT_EQ(SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY,
-              RenderWidgetHostViewBase::GetOrientationTypeForMobile(display));
+              DisplayUtil::GetOrientationTypeForMobile(display));
 
     display = CreateDisplay(100, 200, 180);
     EXPECT_EQ(SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY,
-              RenderWidgetHostViewBase::GetOrientationTypeForMobile(display));
+              DisplayUtil::GetOrientationTypeForMobile(display));
 
     display = CreateDisplay(10000, 1, 270);
     EXPECT_EQ(SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY,
-              RenderWidgetHostViewBase::GetOrientationTypeForMobile(display));
+              DisplayUtil::GetOrientationTypeForMobile(display));
   }
 }
 
@@ -92,13 +93,13 @@ TEST(RenderWidgetHostViewBaseTest, OrientationTypeForDesktop) {
   {
     display::Display display = CreateDisplay(1, 0, 0);
     ScreenOrientationValues landscape_1 =
-        RenderWidgetHostViewBase::GetOrientationTypeForDesktop(display);
+        DisplayUtil::GetOrientationTypeForDesktop(display);
     EXPECT_TRUE(landscape_1 == SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY ||
                 landscape_1 == SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY);
 
     display = CreateDisplay(200, 100, 180);
     ScreenOrientationValues landscape_2 =
-        RenderWidgetHostViewBase::GetOrientationTypeForDesktop(display);
+        DisplayUtil::GetOrientationTypeForDesktop(display);
     EXPECT_TRUE(landscape_2 == SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY ||
                 landscape_2 == SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY);
 
@@ -106,13 +107,13 @@ TEST(RenderWidgetHostViewBaseTest, OrientationTypeForDesktop) {
 
     display = CreateDisplay(19999, 20000, 90);
     ScreenOrientationValues portrait_1 =
-        RenderWidgetHostViewBase::GetOrientationTypeForDesktop(display);
+        DisplayUtil::GetOrientationTypeForDesktop(display);
     EXPECT_TRUE(portrait_1 == SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY ||
                 portrait_1 == SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY);
 
     display = CreateDisplay(1, 10000, 270);
     ScreenOrientationValues portrait_2 =
-        RenderWidgetHostViewBase::GetOrientationTypeForDesktop(display);
+        DisplayUtil::GetOrientationTypeForDesktop(display);
     EXPECT_TRUE(portrait_2 == SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY ||
                 portrait_2 == SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY);
 

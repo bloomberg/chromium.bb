@@ -41,9 +41,6 @@ bool WebContentsViewDelegate::TakeFocus(bool reverse) {
   return false;
 }
 
-void WebContentsViewDelegate::OverrideDisplayColorSpace(
-    gfx::ColorSpace* color_space) {}
-
 void* WebContentsViewDelegate::CreateRenderWidgetHostViewDelegate(
     RenderWidgetHost* render_widget_host,
     bool is_popup) {

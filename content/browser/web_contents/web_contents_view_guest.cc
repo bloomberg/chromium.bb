@@ -13,6 +13,7 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/mus_util.h"
+#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -69,7 +70,7 @@ void WebContentsViewGuest::GetScreenInfo(ScreenInfo* screen_info) const {
   if (guest_->embedder_web_contents())
     guest_->embedder_web_contents()->GetView()->GetScreenInfo(screen_info);
   else
-    WebContentsView::GetDefaultScreenInfo(screen_info);
+    DisplayUtil::GetDefaultScreenInfo(screen_info);
 }
 
 void WebContentsViewGuest::OnGuestAttached(WebContentsView* parent_view) {

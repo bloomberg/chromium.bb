@@ -22,6 +22,7 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/mus_util.h"
 #include "content/browser/renderer_host/dip_util.h"
+#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_aura.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -648,45 +649,8 @@ gfx::NativeWindow WebContentsViewAura::GetTopLevelNativeWindow() const {
       ->GetTopLevelNativeWindow();
 }
 
-namespace {
-
-void GetScreenInfoForWindow(ScreenInfo* results,
-                            aura::Window* window) {
-  display::Screen* screen = display::Screen::GetScreen();
-  const display::Display display = window
-                                       ? screen->GetDisplayNearestWindow(window)
-                                       : screen->GetPrimaryDisplay();
-  results->rect = display.bounds();
-  results->available_rect = display.work_area();
-  results->depth = display.color_depth();
-  results->depth_per_component = display.depth_per_component();
-  results->is_monochrome = display.is_monochrome();
-  results->device_scale_factor = display.device_scale_factor();
-  results->color_space = display.color_space();
-
-  // The Display rotation and the ScreenInfo orientation are not the same
-  // angle. The former is the physical display rotation while the later is the
-  // rotation required by the content to be shown properly on the screen, in
-  // other words, relative to the physical display.
-  results->orientation_angle = display.RotationAsDegree();
-  if (results->orientation_angle == 90)
-    results->orientation_angle = 270;
-  else if (results->orientation_angle == 270)
-    results->orientation_angle = 90;
-
-  results->orientation_type =
-      RenderWidgetHostViewBase::GetOrientationTypeForDesktop(display);
-}
-
-}  // namespace
-
-// Static.
-void WebContentsView::GetDefaultScreenInfo(ScreenInfo* results) {
-  GetScreenInfoForWindow(results, nullptr);
-}
-
 void WebContentsViewAura::GetScreenInfo(ScreenInfo* screen_info) const {
-  GetScreenInfoForWindow(screen_info, GetNativeView());
+  DisplayUtil::GetNativeViewScreenInfo(screen_info, GetNativeView());
 }
 
 void WebContentsViewAura::GetContainerBounds(gfx::Rect* out) const {

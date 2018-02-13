@@ -12,6 +12,7 @@
 #include "content/browser/android/content_view_core.h"
 #include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
+#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
@@ -38,19 +39,6 @@ using base::android::ScopedJavaLocalRef;
 namespace content {
 
 namespace {
-void DisplayToScreenInfo(const display::Display& display, ScreenInfo* results) {
-  results->rect = display.bounds();
-  // TODO(husky): Remove any system controls from availableRect.
-  results->available_rect = display.work_area();
-  results->device_scale_factor = display.device_scale_factor();
-  results->orientation_angle = display.RotationAsDegree();
-  results->orientation_type =
-      RenderWidgetHostViewBase::GetOrientationTypeForMobile(display);
-  results->depth = display.color_depth();
-  results->depth_per_component = display.depth_per_component();
-  results->is_monochrome = display.is_monochrome();
-  results->color_space = display.color_space();
-}
 
 RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid(
     WebContents* web_contents) {
@@ -67,12 +55,6 @@ RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid(
   }
   return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
 }
-}
-
-// static
-void WebContentsView::GetDefaultScreenInfo(ScreenInfo* results) {
-  DisplayToScreenInfo(display::Screen::GetScreen()->GetPrimaryDisplay(),
-                      results);
 }
 
 // static
@@ -189,18 +171,8 @@ gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {
 }
 
 void WebContentsViewAndroid::GetScreenInfo(ScreenInfo* result) const {
-  // Since API 17 Android supports multiple displays with different properties.
-
-  gfx::NativeView native_view = GetNativeView();
-  display::Display display =
-      native_view
-          ? display::Screen::GetScreen()->GetDisplayNearestView(native_view)
-          : display::Screen::GetScreen()->GetPrimaryDisplay();
-  DisplayToScreenInfo(display, result);
-  if (delegate_)
-    delegate_->OverrideDisplayColorSpace(&result->color_space);
+  DisplayUtil::GetNativeViewScreenInfo(result, GetNativeView());
 }
-
 void WebContentsViewAndroid::GetContainerBounds(gfx::Rect* out) const {
   *out = GetViewBounds();
 }
