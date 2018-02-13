@@ -1677,6 +1677,12 @@ const char kWebrtcHwVP8EncodingName[] = "WebRTC hardware vp8 video encoding";
 const char kWebrtcHwVP8EncodingDescription[] =
     "Support in WebRTC for encoding vp8 video streams using platform hardware.";
 
+const char kWebrtcNewEncodeCpuLoadEstimatorName[] =
+    "WebRTC new encode cpu load estimator";
+const char kWebrtcNewEncodeCpuLoadEstimatorDescription[] =
+    "Enable new estimator for the encoder cpu load, for evaluation and "
+    "testing. Intended to improve accuracy when screen casting.";
+
 const char kWebrtcSrtpAesGcmName[] =
     "Negotiation with GCM cipher suites for SRTP in WebRTC";
 const char kWebrtcSrtpAesGcmDescription[] =

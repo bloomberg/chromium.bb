@@ -1259,6 +1259,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"WebRtcUseEchoCanceller3", flag_descriptions::kWebrtcEchoCanceller3Name,
      flag_descriptions::kWebrtcEchoCanceller3Description, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebRtcUseEchoCanceller3)},
+    {"enable-webrtc-new-encode-cpu-load-estimator",
+     flag_descriptions::kWebrtcNewEncodeCpuLoadEstimatorName,
+     flag_descriptions::kWebrtcNewEncodeCpuLoadEstimatorDescription, kOsAll,
+     FEATURE_VALUE_TYPE(media::kNewEncodeCpuLoadEstimator)},
 #endif  // ENABLE_WEBRTC
 #if defined(OS_ANDROID)
     {"clear-old-browsing-data", flag_descriptions::kClearOldBrowsingDataName,

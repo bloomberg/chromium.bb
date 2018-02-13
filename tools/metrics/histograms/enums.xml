@@ -25470,6 +25470,7 @@ from previous Chrome versions.
   <int value="-1839637286" label="AutofillCreditCardBankNameDisplay:disabled"/>
   <int value="-1839496458" label="disable-file-manager-touch-mode"/>
   <int value="-1838482444" label="disable-settings-window"/>
+  <int value="-1837329460" label="NewEncodeCpuLoadEstimator:enabled"/>
   <int value="-1835975804" label="disable-offline-auto-reload"/>
   <int value="-1833149810" label="enable-accessibility-tab-switcher"/>
   <int value="-1832575380" label="show-saved-copy"/>
@@ -26966,6 +26967,7 @@ from previous Chrome versions.
   <int value="1964816410" label="AndroidPayIntegrationV2:enabled"/>
   <int value="1966730288" label="disable-threaded-compositing"/>
   <int value="1969604362" label="enable-pinch-virtual-viewport"/>
+  <int value="1971964569" label="NewEncodeCpuLoadEstimator:disabled"/>
   <int value="1980011075" label="debug-packed-apps"/>
   <int value="1980648371" label="PointerEventV1SpecCapturing:enabled"/>
   <int value="1988506961" label="EnableManualSaving:enabled"/>
