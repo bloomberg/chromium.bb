@@ -956,10 +956,10 @@ RenderWidgetHostInputEventRouter::GetRenderWidgetHostAtPoint(
     gfx::PointF* transformed_point) {
   if (!root_view)
     return nullptr;
-  // TODO(kenrb): Pass screen coordinates through this method from all the
-  // callers. This will be broken with VizDisplayCompositor enabled until then.
+  gfx::PointF point_in_screen =
+      point + root_view->GetViewBounds().OffsetFromOrigin();
   return RenderWidgetHostImpl::From(
-      FindViewAtLocation(root_view, point, gfx::PointF(),
+      FindViewAtLocation(root_view, point, point_in_screen,
                          viz::EventSource::MOUSE, transformed_point)
           .view->GetRenderWidgetHost());
 }
