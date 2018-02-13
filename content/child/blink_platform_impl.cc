@@ -193,6 +193,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return -1;  // This string name is used only to indicate an empty string.
     case WebLocalizedString::kMediaRemotingStopText:
       return IDS_MEDIA_REMOTING_STOP_TEXT;
+    case WebLocalizedString::kMediaScrubbingMessageText:
+      return IDS_MEDIA_SCRUBBING_MESSAGE_TEXT;
     case WebLocalizedString::kMultipleFileUploadText:
       return IDS_FORM_FILE_MULTIPLE_UPLOAD;
     case WebLocalizedString::kOtherColorLabel:

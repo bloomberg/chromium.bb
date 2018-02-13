@@ -827,6 +827,9 @@ below:
       <message name = "IDS_MEDIA_REMOTING_STOP_BY_ERROR_TEXT" desc="The transient text shown on top of the video when switching from media remoting to mirroring due to errors.">
         Video playback error
       </message>
+      <message name="IDS_MEDIA_SCRUBBING_MESSAGE_TEXT" desc="Message informing the user that they can double tap to skip ten seconds. This should be no longer than twice the length of the English version.">
+        Double tap left or right to skip 10s
+      </message>
       <message name="IDS_MEDIA_TRACKS_NO_LABEL" desc="Menu item label for a text track that has no name specified. The number represents the track number in the list of tracks.">
         Track <ph name="NUMBER">$1<ex>1</ex></ph>
       </message>

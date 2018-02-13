@@ -57,6 +57,7 @@ class MediaControlPanelEnclosureElement;
 class MediaControlPictureInPictureButtonElement;
 class MediaControlPlayButtonElement;
 class MediaControlRemainingTimeDisplayElement;
+class MediaControlScrubbingMessageElement;
 class MediaControlTextTrackListElement;
 class MediaControlTimelineElement;
 class MediaControlToggleClosedCaptionsButtonElement;
@@ -242,6 +243,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void ComputeWhichControlsFit();
 
   void UpdateOverflowMenuWanted() const;
+  void UpdateScrubbingMessageFits() const;
   void MaybeRecordElementsDisplayed() const;
 
   // Takes a popup menu (caption, overflow) and position on the screen. This is
@@ -288,6 +290,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   Member<MediaControlPanelElement> panel_;
   Member<MediaControlPlayButtonElement> play_button_;
   Member<MediaControlTimelineElement> timeline_;
+  Member<MediaControlScrubbingMessageElement> scrubbing_message_;
   Member<MediaControlCurrentTimeDisplayElement> current_time_display_;
   Member<MediaControlRemainingTimeDisplayElement> duration_display_;
   Member<MediaControlMuteButtonElement> mute_button_;

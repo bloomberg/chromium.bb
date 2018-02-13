@@ -96,6 +96,7 @@ struct WebLocalizedString {
     kMediaRemotingStopByPlaybackQualityText,
     kMediaRemotingStopNoText,
     kMediaRemotingStopText,
+    kMediaScrubbingMessageText,
     kMissingPluginText,
     kMultipleFileUploadText,
     kOtherColorLabel,

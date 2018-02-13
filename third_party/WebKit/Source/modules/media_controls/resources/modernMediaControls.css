@@ -65,6 +65,18 @@ video::-webkit-media-controls-panel {
       rgba(255, 255, 255, .9) 98%);
 }
 
+video::-webkit-media-controls-panel.scrubbing-message {
+  /* Need light gradient at the top of the video when the scrubbing message is
+   * shown */
+  background-image:
+    linear-gradient(-180deg,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(255, 255, 255, 0.27) 32%,
+      rgba(255, 255, 255, 0.27) 68%,
+      rgba(255, 255, 255, 0.9) 98%);
+}
+
+
 audio::-internal-media-controls-button-panel,
 video::-internal-media-controls-button-panel {
   -webkit-appearance: -internal-media-control;
@@ -575,6 +587,13 @@ audio::-internal-media-controls-loading-panel {
 /**
  * Scrubbing
  */
+
+video::-internal-media-controls-scrubbing-message {
+  position: absolute;
+  top: 12px;
+  text-align: center;
+  width: 100%;
+}
 
 .state-scrubbing div[pseudo="-internal-media-controls-button-panel" i],
 .state-scrubbing input[pseudo="-webkit-media-controls-overlay-play-button" i] {
