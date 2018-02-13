@@ -1377,7 +1377,7 @@
     ],
 
     'gpu_fyi_tests_win_clang_debug_bot': [
-      'gpu_tests', 'internal_gles2_conform_tests', 'clang', 'debug_bot', 'minimal_symbols',
+      'gpu_tests', 'internal_gles_conform_tests', 'clang', 'debug_bot', 'minimal_symbols',
     ],
 
     'gpu_tests_android_release_trybot_arm64': [
@@ -1957,7 +1957,7 @@
     },
 
     'gpu_fyi_tests': {
-      'mixins': ['gpu_tests', 'internal_gles2_conform_tests'],
+      'mixins': ['gpu_tests', 'internal_gles_conform_tests'],
     },
 
     'gpu_tests': {
@@ -1981,8 +1981,8 @@
       'gn_args': 'include_vr_data=true',
     },
 
-    'internal_gles2_conform_tests': {
-      'gn_args': 'internal_gles2_conform_tests=true',
+    'internal_gles_conform_tests': {
+      'gn_args': 'internal_gles2_conform_tests=true build_angle_gles1_conform_tests=true',
     },
 
     'java_coverage': {
