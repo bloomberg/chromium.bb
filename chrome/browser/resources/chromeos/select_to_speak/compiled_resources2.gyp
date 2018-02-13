@@ -9,7 +9,9 @@
         '../chromevox/cvox2/background/constants',
         '../chromevox/cvox2/background/automation_util',
 	'externs',
+        'rect_utils',
 	'paragraph_utils',
+        'word_utils',
 	'<(EXTERNS_GYP):accessibility_private',
 	'<(EXTERNS_GYP):automation',
 	'<(EXTERNS_GYP):chrome_extensions',
@@ -34,6 +36,15 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'word_utils',
+      'dependencies': [
+	'externs',
+        'paragraph_utils',
+	'<(EXTERNS_GYP):automation',
+       ],
+       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'paragraph_utils',
       'dependencies': [
 	'externs',
@@ -41,6 +52,10 @@
 	'<(EXTERNS_GYP):automation',
 	'<(EXTERNS_GYP):chrome_extensions',
        ],
+       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'rect_utils',
        'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
