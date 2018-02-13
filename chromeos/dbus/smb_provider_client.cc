@@ -177,7 +177,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(options);
     writer.AppendFileDescriptor(temp_fd.release());
-    CallMethod(&method_call, &SmbProviderClientImpl::HandleTruncateCallback,
+    CallMethod(&method_call, &SmbProviderClientImpl::HandleWriteFileCallback,
                &callback);
   }
 
