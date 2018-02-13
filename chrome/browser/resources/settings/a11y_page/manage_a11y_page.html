@@ -16,11 +16,7 @@
         -webkit-padding-start: var(--settings-box-row-padding);
       }
 
-      .list-item settings-dropdown-menu {
-        -webkit-margin-start: 16px;
-      }
-
-      .sub-item > .start {
+      .sub-item {
         -webkit-margin-start: var(--settings-indent-width);
       }
 
@@ -79,6 +75,14 @@
         pref="{{prefs.settings.a11y.screen_magnifier}}"
         label="$i18n{screenMagnifierLabel}">
     </settings-toggle-button>
+    <div class="settings-box continuation">
+      <div class="start sub-item">$i18n{screenMagnifierZoomLabel}</div>
+      <settings-dropdown-menu label="$i18n{screenMagnifierZoomLabel}"
+          pref="{{prefs.settings.a11y.screen_magnifier_scale}}"
+          menu-options="[[screenMagnifierZoomOptions_]]"
+          disabled="[[!prefs.settings.a11y.screen_magnifier.value]]">
+      </settings-dropdown-menu>
+    </div>
     <div class="settings-box two-line" on-tap="onDisplayTap_" actionable>
       <div class="start">
         $i18n{displaySettingsTitle}
@@ -146,15 +150,13 @@
         pref="{{prefs.settings.a11y.autoclick}}"
         label="$i18n{clickOnStopLabel}">
     </settings-toggle-button>
-    <div class="settings-box block first">
-      <div class="list-item sub-item">
-        <div class="start">$i18n{delayBeforeClickLabel}</div>
-        <settings-dropdown-menu label="$i18n{delayBeforeClickLabel}"
-            pref="{{prefs.settings.a11y.autoclick_delay_ms}}"
-            menu-options="[[autoClickDelayOptions_]]"
-            disabled="[[!prefs.settings.a11y.autoclick.value]]">
-        </settings-dropdown-menu>
-      </div>
+    <div class="settings-box continuation">
+      <div class="start sub-item">$i18n{delayBeforeClickLabel}</div>
+      <settings-dropdown-menu label="$i18n{delayBeforeClickLabel}"
+          pref="{{prefs.settings.a11y.autoclick_delay_ms}}"
+          menu-options="[[autoClickDelayOptions_]]"
+          disabled="[[!prefs.settings.a11y.autoclick.value]]">
+      </settings-dropdown-menu>
     </div>
     <settings-toggle-button class="continuation"
         pref="{{prefs.settings.touchpad.enable_tap_dragging}}"
@@ -164,17 +166,15 @@
         pref="{{prefs.settings.a11y.large_cursor_enabled}}"
         label="$i18n{largeMouseCursorLabel}">
     </settings-toggle-button>
-    <div class="settings-box block continuation"
+    <div class="settings-box continuation"
         hidden$="[[!prefs.settings.a11y.large_cursor_enabled.value]]">
-      <div class="list-item sub-item">
-        <div class="start">$i18n{largeMouseCursorSizeLabel}</div>
-        <settings-slider
-            pref="{{prefs.settings.a11y.large_cursor_dip_size}}"
-            min="25" max="64"
-            label-min="$i18n{largeMouseCursorSizeDefaultLabel}"
-            label-max="$i18n{largeMouseCursorSizeLargeLabel}">
-        </settings-slider>
-      </div>
+      <div class="start sub-item">$i18n{largeMouseCursorSizeLabel}</div>
+      <settings-slider
+          pref="{{prefs.settings.a11y.large_cursor_dip_size}}"
+          min="25" max="64"
+          label-min="$i18n{largeMouseCursorSizeDefaultLabel}"
+          label-max="$i18n{largeMouseCursorSizeLargeLabel}">
+      </settings-slider>
     </div>
     <settings-toggle-button class="continuation"
         pref="{{prefs.settings.a11y.cursor_highlight}}"

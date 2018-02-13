@@ -77,6 +77,8 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
     registry->RegisterBooleanPref(prefs::kAccessibilityMonoAudioEnabled, false);
     registry->RegisterBooleanPref(prefs::kAccessibilityScreenMagnifierEnabled,
                                   false);
+    registry->RegisterDoublePref(prefs::kAccessibilityScreenMagnifierScale,
+                                 1.0);
     registry->RegisterBooleanPref(prefs::kAccessibilitySpokenFeedbackEnabled,
                                   false);
     return;
@@ -91,6 +93,7 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
   registry->RegisterForeignPref(prefs::kAccessibilityLargeCursorDipSize);
   registry->RegisterForeignPref(prefs::kAccessibilityMonoAudioEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityScreenMagnifierEnabled);
+  registry->RegisterForeignPref(prefs::kAccessibilityScreenMagnifierScale);
   registry->RegisterForeignPref(prefs::kAccessibilitySpokenFeedbackEnabled);
 }
 

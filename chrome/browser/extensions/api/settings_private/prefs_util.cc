@@ -635,20 +635,24 @@ settings_private::SetPrefResult PrefsUtil::SetPref(const std::string& pref_name,
 
   switch (pref->GetType()) {
     case base::Value::Type::BOOLEAN:
-    case base::Value::Type::DOUBLE:
     case base::Value::Type::LIST:
     case base::Value::Type::DICTIONARY:
       pref_service->Set(pref_name, *value);
       break;
-    case base::Value::Type::INTEGER: {
-      // In JS all numbers are doubles.
+    case base::Value::Type::DOUBLE:
+    case base::Value::Type::INTEGER:
+      // Explicitly set the double value or the integer value.
+      // Otherwise if the number is a whole number like 2.0, it will
+      // automatically be of type INTEGER causing type mismatches in
+      // PrefService::SetUserPrefValue for doubles, and vice versa.
       double double_value;
       if (!value->GetAsDouble(&double_value))
         return settings_private::SetPrefResult::PREF_TYPE_MISMATCH;
-
-      pref_service->SetInteger(pref_name, static_cast<int>(double_value));
+      if (pref->GetType() == base::Value::Type::DOUBLE)
+        pref_service->SetDouble(pref_name, double_value);
+      else
+        pref_service->SetInteger(pref_name, static_cast<int>(double_value));
       break;
-    }
     case base::Value::Type::STRING: {
       std::string string_value;
       if (!value->GetAsString(&string_value))

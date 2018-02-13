@@ -19,6 +19,28 @@ Polymer({
       notify: true,
     },
 
+    screenMagnifierZoomOptions_: {
+      readOnly: true,
+      type: Array,
+      value: function() {
+        // These values correspond to the i18n values in settings_strings.grdp.
+        // If these values get changed then those strings need to be changed as
+        // well.
+        return [
+          {value: 2, name: loadTimeData.getString('screenMagnifierZoom2x')},
+          {value: 4, name: loadTimeData.getString('screenMagnifierZoom4x')},
+          {value: 6, name: loadTimeData.getString('screenMagnifierZoom6x')},
+          {value: 8, name: loadTimeData.getString('screenMagnifierZoom8x')},
+          {value: 10, name: loadTimeData.getString('screenMagnifierZoom10x')},
+          {value: 12, name: loadTimeData.getString('screenMagnifierZoom12x')},
+          {value: 14, name: loadTimeData.getString('screenMagnifierZoom14x')},
+          {value: 16, name: loadTimeData.getString('screenMagnifierZoom16x')},
+          {value: 18, name: loadTimeData.getString('screenMagnifierZoom18x')},
+          {value: 20, name: loadTimeData.getString('screenMagnifierZoom20x')},
+        ];
+      },
+    },
+
     autoClickDelayOptions_: {
       readOnly: true,
       type: Array,
