@@ -7,6 +7,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -15,6 +17,10 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/arc/test/connection_holder_util.h"
+#include "components/arc/test/fake_file_system_instance.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -67,52 +73,105 @@ TEST(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
       &path));
 }
 
-TEST(FileManagerPathUtilTest, ConvertPathToArcUrl) {
-  content::TestBrowserThreadBundle thread_bundle;
+std::unique_ptr<KeyedService> CreateFileSystemOperationRunnerForTesting(
+    content::BrowserContext* context) {
+  return arc::ArcFileSystemOperationRunner::CreateForTesting(
+      context, arc::ArcServiceManager::Get()->arc_bridge_service());
+}
 
-  // Test SetUp -- add two user-profile pairs and their fake managers.
-  TestingProfileManager testing_profile_manager(
-      TestingBrowserProcess::GetGlobal());
-  ASSERT_TRUE(testing_profile_manager.SetUp());
+class FileManagerPathUtilConvertUrlTest : public testing::Test {
+ public:
+  FileManagerPathUtilConvertUrlTest() = default;
+  ~FileManagerPathUtilConvertUrlTest() override = default;
 
-  chromeos::FakeChromeUserManager* const fake_user_manager =
-      new chromeos::FakeChromeUserManager;
-  user_manager::ScopedUserManager user_manager_enabler(
-      base::WrapUnique(fake_user_manager));
+  void SetUp() override {
+    profile_manager_ = std::make_unique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
+    ASSERT_TRUE(profile_manager_->SetUp());
 
-  const AccountId account_id(
-      AccountId::FromUserEmailGaiaId("user@gmail.com", "1111111111"));
-  const AccountId account_id_2(
-      AccountId::FromUserEmailGaiaId("user2@gmail.com", "2222222222"));
-  fake_user_manager->AddUser(account_id);
-  fake_user_manager->LoginUser(account_id);
-  fake_user_manager->AddUser(account_id_2);
-  fake_user_manager->LoginUser(account_id_2);
-  Profile* primary_profile =
-      testing_profile_manager.CreateTestingProfile("user@gmail.com");
-  ASSERT_TRUE(primary_profile);
-  ASSERT_TRUE(testing_profile_manager.CreateTestingProfile("user2@gmail.com"));
+    // Set up fake user manager.
+    chromeos::FakeChromeUserManager* fake_user_manager =
+        new chromeos::FakeChromeUserManager();
+    const AccountId account_id(
+        AccountId::FromUserEmailGaiaId("user@gmail.com", "1111111111"));
+    const AccountId account_id_2(
+        AccountId::FromUserEmailGaiaId("user2@gmail.com", "2222222222"));
+    fake_user_manager->AddUser(account_id);
+    fake_user_manager->LoginUser(account_id);
+    fake_user_manager->AddUser(account_id_2);
+    fake_user_manager->LoginUser(account_id_2);
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        base::WrapUnique(std::move(fake_user_manager)));
 
-  // Add a Drive mount point for the primary profile.
-  const base::FilePath drive_mount_point =
-      drive::util::GetDriveMountPointPath(primary_profile);
-  const std::string mount_name = drive_mount_point.BaseName().AsUTF8Unsafe();
-  storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-      mount_name, storage::kFileSystemTypeDrive,
-      storage::FileSystemMountOption(), drive_mount_point);
+    Profile* primary_profile =
+        profile_manager_->CreateTestingProfile("user@gmail.com");
+    ASSERT_TRUE(primary_profile);
+    ASSERT_TRUE(profile_manager_->CreateTestingProfile("user2@gmail.com"));
 
+    // Set up an Arc service manager with a fake file system.
+    arc_service_manager_ = std::make_unique<arc::ArcServiceManager>();
+    arc_service_manager_->set_browser_context(primary_profile);
+    arc::ArcFileSystemOperationRunner::GetFactory()->SetTestingFactoryAndUse(
+        primary_profile, &CreateFileSystemOperationRunnerForTesting);
+    arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
+        &fake_file_system_);
+    arc::WaitForInstanceReady(
+        arc_service_manager_->arc_bridge_service()->file_system());
+    ASSERT_TRUE(fake_file_system_.InitCalled());
+
+    // Add a drive mount point for the primary profile.
+    drive_mount_point_ = drive::util::GetDriveMountPointPath(primary_profile);
+    const std::string mount_name = drive_mount_point_.BaseName().AsUTF8Unsafe();
+    storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+        mount_name, storage::kFileSystemTypeDrive,
+        storage::FileSystemMountOption(), drive_mount_point_);
+  }
+
+  void TearDown() override {
+    arc_service_manager_->arc_bridge_service()->file_system()->CloseInstance(
+        &fake_file_system_);
+    user_manager_enabler_.reset();
+    profile_manager_.reset();
+
+    // Run all pending tasks before destroying testing profile.
+    base::RunLoop().RunUntilIdle();
+  }
+
+ protected:
+  content::TestBrowserThreadBundle thread_bundle_;
+  arc::FakeFileSystemInstance fake_file_system_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
+  std::unique_ptr<arc::ArcServiceManager> arc_service_manager_;
+  base::FilePath drive_mount_point_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FileManagerPathUtilConvertUrlTest);
+};
+
+storage::FileSystemURL CreateExternalURL(const base::FilePath& path) {
+  return storage::FileSystemURL::CreateForTest(
+      GURL(), storage::kFileSystemTypeExternal, path);
+}
+
+TEST_F(FileManagerPathUtilConvertUrlTest, ConvertPathToArcUrl_Removable) {
   GURL url;
-
-  // Conversion of paths for removable storages.
   EXPECT_TRUE(ConvertPathToArcUrl(
       base::FilePath::FromUTF8Unsafe("/media/removable/a/b/c"), &url));
   EXPECT_EQ(GURL("content://org.chromium.arc.removablemediaprovider/a/b/c"),
             url);
+}
 
+TEST_F(FileManagerPathUtilConvertUrlTest,
+       ConvertPathToArcUrl_InvalidRemovable) {
+  GURL url;
   EXPECT_FALSE(ConvertPathToArcUrl(
       base::FilePath::FromUTF8Unsafe("/media/removable_foobar"), &url));
+}
 
+TEST_F(FileManagerPathUtilConvertUrlTest, ConvertPathToArcUrl_Downloads) {
   // Conversion of paths under the primary profile's downloads folder.
+  GURL url;
   const base::FilePath downloads = GetDownloadsFolderForProfile(
       chromeos::ProfileHelper::Get()->GetProfileByUserIdHashForTest(
           "user@gmail.com-hash"));
@@ -120,19 +179,173 @@ TEST(FileManagerPathUtilTest, ConvertPathToArcUrl) {
   EXPECT_EQ(GURL("content://org.chromium.arc.intent_helper.fileprovider/"
                  "download/a/b/c"),
             url);
+}
 
+TEST_F(FileManagerPathUtilConvertUrlTest,
+       ConvertPathToArcUrl_InvalidDownloads) {
   // Non-primary profile's downloads folder is not supported for ARC yet.
+  GURL url;
   const base::FilePath downloads2 = GetDownloadsFolderForProfile(
       chromeos::ProfileHelper::Get()->GetProfileByUserIdHashForTest(
           "user2@gmail.com-hash"));
   EXPECT_FALSE(ConvertPathToArcUrl(downloads2.AppendASCII("a/b/c"), &url));
+}
 
-  // Conversion of paths under /special.
+TEST_F(FileManagerPathUtilConvertUrlTest, ConvertPathToArcUrl_Special) {
+  GURL url;
   EXPECT_TRUE(
-      ConvertPathToArcUrl(drive_mount_point.AppendASCII("a/b/c"), &url));
+      ConvertPathToArcUrl(drive_mount_point_.AppendASCII("a/b/c"), &url));
   EXPECT_EQ(GURL("content://org.chromium.arc.chromecontentprovider/"
                  "externalfile%3Adrive-user%2540gmail.com-hash%2Fa%2Fb%2Fc"),
             url);
+}
+
+TEST_F(FileManagerPathUtilConvertUrlTest,
+       ConvertToContentUrl_InvalidMountType) {
+  base::RunLoop run_loop;
+  ConvertToContentUrl(
+      storage::FileSystemURL::CreateForTest(
+          GURL(), storage::kFileSystemTypeTest,
+          base::FilePath::FromUTF8Unsafe("/media/removable/a/b/c")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, const GURL& url) {
+            run_loop->Quit();
+            EXPECT_EQ(GURL(), url);
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrl_Removable) {
+  base::RunLoop run_loop;
+  ConvertToContentUrl(
+      CreateExternalURL(
+          base::FilePath::FromUTF8Unsafe("/media/removable/a/b/c")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, const GURL& url) {
+            run_loop->Quit();
+            EXPECT_EQ(
+                GURL("content://org.chromium.arc.removablemediaprovider/a/b/c"),
+                url);
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(FileManagerPathUtilConvertUrlTest,
+       ConvertToContentUrl_InvalidRemovable) {
+  base::RunLoop run_loop;
+  ConvertToContentUrl(CreateExternalURL(base::FilePath::FromUTF8Unsafe(
+                          "/media/removable_foobar")),
+                      base::BindOnce(
+                          [](base::RunLoop* run_loop, const GURL& url) {
+                            run_loop->Quit();
+                            EXPECT_EQ(GURL(), url);
+                          },
+                          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrl_Downloads) {
+  const base::FilePath downloads = GetDownloadsFolderForProfile(
+      chromeos::ProfileHelper::Get()->GetProfileByUserIdHashForTest(
+          "user@gmail.com-hash"));
+  base::RunLoop run_loop;
+  ConvertToContentUrl(
+      CreateExternalURL(downloads.AppendASCII("a/b/c")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, const GURL& url) {
+            run_loop->Quit();
+            EXPECT_EQ(
+                GURL("content://org.chromium.arc.intent_helper.fileprovider/"
+                     "download/a/b/c"),
+                url);
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(FileManagerPathUtilConvertUrlTest,
+       ConvertToContentUrl_InvalidDownloads) {
+  const base::FilePath downloads = GetDownloadsFolderForProfile(
+      chromeos::ProfileHelper::Get()->GetProfileByUserIdHashForTest(
+          "user2@gmail.com-hash"));
+  base::RunLoop run_loop;
+  ConvertToContentUrl(CreateExternalURL(downloads.AppendASCII("a/b/c")),
+                      base::BindOnce(
+                          [](base::RunLoop* run_loop, const GURL& url) {
+                            run_loop->Quit();
+                            EXPECT_EQ(GURL(), url);
+                          },
+                          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrl_Special) {
+  base::RunLoop run_loop;
+  ConvertToContentUrl(
+      CreateExternalURL(drive_mount_point_.AppendASCII("a/b/c")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, const GURL& url) {
+            run_loop->Quit();
+            EXPECT_EQ(
+                GURL(
+                    "content://org.chromium.arc.chromecontentprovider/"
+                    "externalfile%3Adrive-user%2540gmail.com-hash%2Fa%2Fb%2Fc"),
+                url);
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(FileManagerPathUtilConvertUrlTest,
+       ConvertToContentUrl_ArcDocumentsProvider) {
+  // Add images_root/Download/photo.jpg to the fake file system.
+  const char kAuthority[] = "com.android.providers.media.documents";
+  fake_file_system_.AddDocument(arc::FakeFileSystemInstance::Document(
+      kAuthority, "images_root", "", "", arc::kAndroidDirectoryMimeType, -1,
+      0));
+  fake_file_system_.AddDocument(arc::FakeFileSystemInstance::Document(
+      kAuthority, "dir-id", "images_root", "Download",
+      arc::kAndroidDirectoryMimeType, -1, 22));
+  fake_file_system_.AddDocument(arc::FakeFileSystemInstance::Document(
+      kAuthority, "photo-id", "dir-id", "photo.jpg", "image/jpeg", 3, 33));
+
+  base::RunLoop run_loop;
+  ConvertToContentUrl(
+      storage::FileSystemURL::CreateForTest(
+          GURL(), storage::kFileSystemTypeArcDocumentsProvider,
+          base::FilePath::FromUTF8Unsafe(
+              "/special/arc-documents-provider/"
+              "com.android.providers.media.documents/"
+              "images_root/Download/photo.jpg")),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, const GURL& url) {
+            run_loop->Quit();
+            EXPECT_EQ(GURL("content://com.android.providers.media.documents/"
+                           "document/photo-id"),
+                      url);
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(FileManagerPathUtilConvertUrlTest,
+       ConvertToContentUrl_ArcDocumentsProviderFileNotFound) {
+  base::RunLoop run_loop;
+  ConvertToContentUrl(storage::FileSystemURL::CreateForTest(
+                          GURL(), storage::kFileSystemTypeArcDocumentsProvider,
+                          base::FilePath::FromUTF8Unsafe(
+                              "/special/arc-documents-provider/"
+                              "com.android.providers.media.documents/"
+                              "images_root/Download/photo.jpg")),
+                      base::BindOnce(
+                          [](base::RunLoop* run_loop, const GURL& url) {
+                            run_loop->Quit();
+                            EXPECT_EQ(GURL(""), url);
+                          },
+                          &run_loop));
+  run_loop.Run();
 }
 
 }  // namespace
