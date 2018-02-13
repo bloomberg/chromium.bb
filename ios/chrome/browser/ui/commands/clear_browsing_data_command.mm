@@ -23,7 +23,7 @@
 }
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                                mask:(int)mask
+                                mask:(BrowsingDataRemoveMask)mask
                           timePeriod:(browsing_data::TimePeriod)timePeriod {
   self = [super initWithTag:IDC_CLEAR_BROWSING_DATA_IOS];
   if (self) {

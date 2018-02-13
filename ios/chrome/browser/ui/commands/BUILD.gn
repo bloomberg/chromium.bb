@@ -40,6 +40,7 @@ source_set("commands") {
     "//base",
     "//components/browsing_data/core",
     "//components/signin/core/browser",
+    "//ios/chrome/browser/browsing_data:browsing_data_remove_mask",
     "//ios/chrome/browser/ui/metrics",
     "//ios/web",
     "//net",

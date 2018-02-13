@@ -64,6 +64,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_removal_controller.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_removal_controller.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -820,13 +821,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   DCHECK(_mainBrowserState->HasOffTheRecordChromeBrowserState());
   ios::ChromeBrowserState* otrBrowserState =
       _mainBrowserState->GetOffTheRecordChromeBrowserState();
-  int removeAllMask = ~0;
   void (^completion)() = ^{
     [self activateBVCAndMakeCurrentBVCPrimary];
   };
+  const BrowsingDataRemoveMask mask = BrowsingDataRemoveMask::REMOVE_ALL;
   [self.browsingDataRemovalController
       removeIOSSpecificIncognitoBrowsingDataFromBrowserState:otrBrowserState
-                                                        mask:removeAllMask
+                                                        mask:mask
                                            completionHandler:completion];
 }
 
@@ -1614,14 +1615,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
           base::mac::ObjCCastStrict<ClearBrowsingDataCommand>(sender);
       ios::ChromeBrowserState* browserState =
           [command browserState]->GetOriginalChromeBrowserState();
-      int mask = [command mask];
+      BrowsingDataRemoveMask mask = [command mask];
       browsing_data::TimePeriod timePeriod = [command timePeriod];
       [self removeBrowsingDataFromBrowserState:browserState
                                           mask:mask
                                     timePeriod:timePeriod
                              completionHandler:nil];
 
-      if (mask & IOSChromeBrowsingDataRemover::REMOVE_COOKIES) {
+      if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
         base::Time beginDeleteTime =
             browsing_data::CalculateBeginDeleteTime(timePeriod);
         [ChromeWebViewFactory clearExternalCookies:browserState
@@ -2032,12 +2033,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (void)removeBrowsingDataFromBrowserState:
             (ios::ChromeBrowserState*)browserState
-                                      mask:(int)mask
+                                      mask:(BrowsingDataRemoveMask)mask
                                 timePeriod:(browsing_data::TimePeriod)timePeriod
                          completionHandler:(ProceduralBlock)completionHandler {
   // TODO(crbug.com/632772): Remove web usage disabling once
   // https://bugs.webkit.org/show_bug.cgi?id=149079 has been fixed.
-  if (mask & IOSChromeBrowsingDataRemover::REMOVE_SITE_DATA) {
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_SITE_DATA)) {
     [self prepareForBrowsingDataRemoval];
   }
   ProceduralBlock browsingDataRemoved = ^{
@@ -2559,7 +2560,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     (ProceduralBlock)completionHandler {
   self.currentBVC = self.mainBVC;
 
-  int removeAllMask = ~0;
   scoped_refptr<CallbackCounter> callbackCounter =
       new CallbackCounter(base::BindBlockArc(^{
         [self setUpCurrentBVCForTesting];
@@ -2573,7 +2573,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   callbackCounter->IncrementCount();
   [self removeBrowsingDataFromBrowserState:_mainBrowserState
-                                      mask:removeAllMask
+                                      mask:BrowsingDataRemoveMask::REMOVE_ALL
                                 timePeriod:browsing_data::TimePeriod::ALL_TIME
                          completionHandler:decrementCallbackCounterCount];
 }

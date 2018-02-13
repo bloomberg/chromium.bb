@@ -20,6 +20,7 @@
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/prefs/pref_member.h"
 #include "components/search_engines/template_url_service.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -36,41 +37,9 @@ class URLRequestContextGetter;
 
 class IOSChromeBrowsingDataRemover {
  public:
-  // Mask used for Remove.
-  enum RemoveDataMask {
-    REMOVE_APPCACHE = 1 << 0,
-    REMOVE_CACHE = 1 << 1,
-    REMOVE_COOKIES = 1 << 2,
-    REMOVE_DOWNLOADS = 1 << 3,
-    REMOVE_FORM_DATA = 1 << 4,
-    // In addition to visits, REMOVE_HISTORY removes keywords and last session.
-    REMOVE_HISTORY = 1 << 5,
-    REMOVE_INDEXEDDB = 1 << 6,
-    REMOVE_LOCAL_STORAGE = 1 << 7,
-    REMOVE_PASSWORDS = 1 << 8,
-    REMOVE_WEBSQL = 1 << 9,
-    REMOVE_CHANNEL_IDS = 1 << 10,
-    REMOVE_CACHE_STORAGE = 1 << 11,
-    REMOVE_VISITED_LINKS = 1 << 12,
-
-    // "Site data" includes cookies, appcache, file systems, indexedDBs, local
-    // storage, webSQL, service workers, cache storage, plugin data, and web app
-    // data (on Android).
-    REMOVE_SITE_DATA = REMOVE_APPCACHE | REMOVE_COOKIES | REMOVE_INDEXEDDB |
-                       REMOVE_LOCAL_STORAGE |
-                       REMOVE_CACHE_STORAGE |
-                       REMOVE_WEBSQL |
-                       REMOVE_CHANNEL_IDS |
-                       REMOVE_VISITED_LINKS,
-
-    // Includes all the available remove options. Meant to be used by clients
-    // that wish to wipe as much data as possible from a ChromeBrowserState, to
-    // make it look like a new ChromeBrowserState.
-    REMOVE_ALL = REMOVE_SITE_DATA | REMOVE_CACHE | REMOVE_DOWNLOADS |
-                 REMOVE_FORM_DATA |
-                 REMOVE_HISTORY |
-                 REMOVE_PASSWORDS,
-  };
+  // This value is here to allow compilation of downstream code. It will be
+  // removed once downstream code has been fixed to use BrowsingDataRemoveMask.
+  const BrowsingDataRemoveMask REMOVE_ALL = BrowsingDataRemoveMask::REMOVE_ALL;
 
   // When IOSChromeBrowsingDataRemover successfully removes data, a
   // notification of type NOTIFICATION_BROWSING_DATA_REMOVED is triggered with
@@ -78,14 +47,15 @@ class IOSChromeBrowsingDataRemover {
   struct NotificationDetails {
     NotificationDetails();
     NotificationDetails(const NotificationDetails& details);
-    NotificationDetails(base::Time removal_begin, int removal_mask);
+    NotificationDetails(base::Time removal_begin,
+                        BrowsingDataRemoveMask removal_mask);
     ~NotificationDetails();
 
     // The beginning of the removal time range.
     base::Time removal_begin;
 
-    // The removal mask (see the RemoveDataMask enum for details).
-    int removal_mask;
+    // The removal mask (see the BrowsingDataRemoveMask enum for details).
+    BrowsingDataRemoveMask removal_mask;
   };
 
   // Observer is notified when the removal is done. Done means keywords have
@@ -121,7 +91,7 @@ class IOSChromeBrowsingDataRemover {
       const Callback& callback);
 
   // Removes the specified items related to browsing for all origins.
-  void Remove(int remove_mask);
+  void Remove(BrowsingDataRemoveMask mask);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -154,7 +124,7 @@ class IOSChromeBrowsingDataRemover {
   // TODO(mkwst): The current implementation relies on unique (empty) origins to
   // signal removal of all origins. Reconsider this behavior if/when we build
   // a "forget this site" feature.
-  void RemoveImpl(int remove_mask);
+  void RemoveImpl(BrowsingDataRemoveMask mask);
 
   // Notifies observers and deletes this object.
   void NotifyAndDelete();
@@ -191,7 +161,7 @@ class IOSChromeBrowsingDataRemover {
   int pending_tasks_count_ = 0;
 
   // The removal mask for the current removal operation.
-  int remove_mask_ = 0;
+  BrowsingDataRemoveMask remove_mask_ = BrowsingDataRemoveMask::REMOVE_NOTHING;
 
   base::ObserverList<Observer> observer_list_;
 

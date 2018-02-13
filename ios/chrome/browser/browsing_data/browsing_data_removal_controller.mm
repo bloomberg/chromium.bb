@@ -20,6 +20,7 @@
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/signin/ios/browser/account_consistency_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover_helper.h"
 #include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
 #include "ios/chrome/browser/sessions/session_util.h"
@@ -53,12 +54,13 @@ void DoNothing(uint32_t n) {}
 // |completionHandler| is called when this operation finishes. This method
 // finishes removal of the browsing data even if |browserState| is destroyed
 // after this method call.
-- (void)removeWebViewCreatedBrowsingDataFromBrowserState:
-            (ios::ChromeBrowserState*)browserState
-                                                    mask:(int)mask
-                                             deleteBegin:(base::Time)deleteBegin
-                                       completionHandler:
-                                           (ProceduralBlock)completionHandler;
+- (void)
+removeWebViewCreatedBrowsingDataFromBrowserState:
+    (ios::ChromeBrowserState*)browserState
+                                            mask:(BrowsingDataRemoveMask)mask
+                                     deleteBegin:(base::Time)deleteBegin
+                               completionHandler:
+                                   (ProceduralBlock)completionHandler;
 // Removes browsing data that is created by WKWebViews associated with
 // |browserState|. |browserState| must not be off the record. |mask| is obtained
 // from IOSChromeBrowsingDataRemover::RemoveDataMask. |deleteBegin| defines the
@@ -67,13 +69,13 @@ void DoNothing(uint32_t n) {}
 // finishes removal of the browsing data even if |browserState| is destroyed
 // after this method call.
 // Note: This method works only on iOS9+.
-- (void)removeWKWebViewCreatedBrowsingDataFromBrowserState:
-            (ios::ChromeBrowserState*)browserState
-                                                      mask:(int)mask
-                                               deleteBegin:
-                                                   (base::Time)deleteBegin
-                                         completionHandler:
-                                             (ProceduralBlock)completionHandler;
+- (void)
+removeWKWebViewCreatedBrowsingDataFromBrowserState:
+    (ios::ChromeBrowserState*)browserState
+                                              mask:(BrowsingDataRemoveMask)mask
+                                       deleteBegin:(base::Time)deleteBegin
+                                 completionHandler:
+                                     (ProceduralBlock)completionHandler;
 
 // Removes browsing data associated with |browserState| that is specific to iOS
 // and not removed when the |browserState| is destroyed.
@@ -82,20 +84,24 @@ void DoNothing(uint32_t n) {}
 // |browserState| cannot be  null. |completionHandler| is called when
 // this operation finishes. This method finishes removal of the browsing data
 // even if |browserState| is destroyed after this method call.
-- (void)removeIOSSpecificBrowsingDataFromBrowserState:
-            (ios::ChromeBrowserState*)browserState
-                                                 mask:(int)mask
-                                          deleteBegin:(base::Time)deleteBegin
-                                    completionHandler:
-                                        (ProceduralBlock)completionHandler;
+- (void)
+removeIOSSpecificBrowsingDataFromBrowserState:
+    (ios::ChromeBrowserState*)browserState
+                                         mask:(BrowsingDataRemoveMask)mask
+                                  deleteBegin:(base::Time)deleteBegin
+                            completionHandler:
+                                (ProceduralBlock)completionHandler;
 // Removes browsing data from |browserState| that is persisted on disk.
 // |mask| is obtained from IOSChromeBrowsingDataRemover::RemoveDataMask.
 // |browserState| cannot be null and must be off the record.
 // This method finishes removal of the browsing data even if |browserState| is
 // destroyed after this method call.
-- (void)removeIOSSpecificPersistentIncognitoDataFromBrowserState:
-            (ios::ChromeBrowserState*)browserState
-                                                            mask:(int)mask;
+- (void)
+removeIOSSpecificPersistentIncognitoDataFromBrowserState:
+    (ios::ChromeBrowserState*)browserState
+                                                    mask:
+                                                        (BrowsingDataRemoveMask)
+                                                            mask;
 
 // Increments the count of pending removal operations for |browserState|.
 // Called when any removal operation for |browserState| starts.
@@ -131,14 +137,16 @@ void DoNothing(uint32_t n) {}
 
 - (void)removeBrowsingDataFromBrowserState:
             (ios::ChromeBrowserState*)browserState
-                                      mask:(int)mask
+                                      mask:(BrowsingDataRemoveMask)mask
                                 timePeriod:(browsing_data::TimePeriod)timePeriod
                          completionHandler:(ProceduralBlock)completionHandler {
   DCHECK(browserState);
-  DLOG_IF(WARNING, !mask) << "Nothing to remove!";
+  DLOG_IF(WARNING, mask == BrowsingDataRemoveMask::REMOVE_NOTHING)
+      << "Nothing to remove!";
   // Cookies and server bound certificates should have the same lifetime.
-  DCHECK_EQ((mask & IOSChromeBrowsingDataRemover::REMOVE_COOKIES) != 0,
-            (mask & IOSChromeBrowsingDataRemover::REMOVE_CHANNEL_IDS) != 0);
+  DCHECK_EQ(
+      IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES),
+      IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CHANNEL_IDS));
 
   [self incrementPendingRemovalCountForBrowserState:browserState];
 
@@ -169,7 +177,7 @@ void DoNothing(uint32_t n) {}
                                     completionHandler:
                                         decrementCallbackCounterCount];
 
-  if (mask & IOSChromeBrowsingDataRemover::REMOVE_DOWNLOADS) {
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_DOWNLOADS)) {
     DCHECK_EQ(browsing_data::TimePeriod::ALL_TIME, timePeriod)
         << "Partial clearing not supported";
     if (!browserState->IsOffTheRecord()) {
@@ -188,12 +196,13 @@ void DoNothing(uint32_t n) {}
   }
 }
 
-- (void)removeIOSSpecificIncognitoBrowsingDataFromBrowserState:
-            (ios::ChromeBrowserState*)browserState
-                                                          mask:(int)mask
-                                             completionHandler:
-                                                 (ProceduralBlock)
-                                                     completionHandler {
+- (void)
+removeIOSSpecificIncognitoBrowsingDataFromBrowserState:
+    (ios::ChromeBrowserState*)browserState
+                                                  mask:(BrowsingDataRemoveMask)
+                                                           mask
+                                     completionHandler:
+                                         (ProceduralBlock)completionHandler {
   DCHECK(browserState && browserState->IsOffTheRecord());
   [self removeIOSSpecificBrowsingDataFromBrowserState:browserState
                                                  mask:mask
@@ -201,12 +210,13 @@ void DoNothing(uint32_t n) {}
                                     completionHandler:completionHandler];
 }
 
-- (void)removeIOSSpecificBrowsingDataFromBrowserState:
-            (ios::ChromeBrowserState*)browserState
-                                                 mask:(int)mask
-                                          deleteBegin:(base::Time)deleteBegin
-                                    completionHandler:
-                                        (ProceduralBlock)completionHandler {
+- (void)
+removeIOSSpecificBrowsingDataFromBrowserState:
+    (ios::ChromeBrowserState*)browserState
+                                         mask:(BrowsingDataRemoveMask)mask
+                                  deleteBegin:(base::Time)deleteBegin
+                            completionHandler:
+                                (ProceduralBlock)completionHandler {
   DCHECK(browserState);
   [self incrementPendingRemovalCountForBrowserState:browserState];
 
@@ -221,7 +231,7 @@ void DoNothing(uint32_t n) {}
   // browsing data even when |browserState| is destroyed after this method call.
 
   // If deleting history, clear visited links.
-  if (mask & IOSChromeBrowsingDataRemover::REMOVE_HISTORY) {
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_HISTORY)) {
     if (!browserState->IsOffTheRecord()) {
       ClipboardRecentContent::GetInstance()->SuppressClipboardContent();
       session_util::DeleteLastSession(browserState);
@@ -244,12 +254,13 @@ void DoNothing(uint32_t n) {}
                                        completionHandler:browsingDataCleared];
 }
 
-- (void)removeWebViewCreatedBrowsingDataFromBrowserState:
-            (ios::ChromeBrowserState*)browserState
-                                                    mask:(int)mask
-                                             deleteBegin:(base::Time)deleteBegin
-                                       completionHandler:
-                                           (ProceduralBlock)completionHandler {
+- (void)
+removeWebViewCreatedBrowsingDataFromBrowserState:
+    (ios::ChromeBrowserState*)browserState
+                                            mask:(BrowsingDataRemoveMask)mask
+                                     deleteBegin:(base::Time)deleteBegin
+                               completionHandler:
+                                   (ProceduralBlock)completionHandler {
   // TODO(crbug.com/480654): Remove this check once browsing data partitioning
   // between BrowserStates is achieved.
   if (browserState->IsOffTheRecord()) {
@@ -278,7 +289,7 @@ void DoNothing(uint32_t n) {}
 - (void)
 removeWKWebViewCreatedBrowsingDataFromBrowserState:
     (ios::ChromeBrowserState*)browserState
-                                              mask:(int)mask
+                                              mask:(BrowsingDataRemoveMask)mask
                                        deleteBegin:(base::Time)deleteBegin
                                  completionHandler:
                                      (ProceduralBlock)completionHandler {
@@ -294,15 +305,15 @@ removeWKWebViewCreatedBrowsingDataFromBrowserState:
   // IOSChromeBrowsingDataRemover::RemoveDataMask to
   // WKWebsiteDataStore strings.
   NSMutableSet* dataTypesToRemove = [[NSMutableSet alloc] init];
-  if (mask & IOSChromeBrowsingDataRemover::REMOVE_CACHE_STORAGE) {
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CACHE_STORAGE)) {
     [dataTypesToRemove addObject:WKWebsiteDataTypeDiskCache];
     [dataTypesToRemove addObject:WKWebsiteDataTypeMemoryCache];
   }
-  if (mask & IOSChromeBrowsingDataRemover::REMOVE_APPCACHE) {
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_APPCACHE)) {
     [dataTypesToRemove addObject:WKWebsiteDataTypeOfflineWebApplicationCache];
   }
   WKWebView* markerWKWebView = nil;
-  if (mask & IOSChromeBrowsingDataRemover::REMOVE_COOKIES) {
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
     // TODO(crbug.com/661630): This approach of creating a WKWebView to clear
     // cookies is a workaround for
     // https://bugs.webkit.org/show_bug.cgi?id=149078. Remove this, when that
@@ -311,19 +322,20 @@ removeWKWebViewCreatedBrowsingDataFromBrowserState:
     markerWKWebView = web::BuildWKWebView(CGRectZero, browserState);
     [dataTypesToRemove addObject:WKWebsiteDataTypeCookies];
   }
-  if (mask & IOSChromeBrowsingDataRemover::REMOVE_LOCAL_STORAGE) {
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_LOCAL_STORAGE)) {
     [dataTypesToRemove addObject:WKWebsiteDataTypeSessionStorage];
     [dataTypesToRemove addObject:WKWebsiteDataTypeLocalStorage];
   }
-  if (mask & IOSChromeBrowsingDataRemover::REMOVE_WEBSQL) {
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_WEBSQL)) {
     [dataTypesToRemove addObject:WKWebsiteDataTypeWebSQLDatabases];
   }
-  if (mask & IOSChromeBrowsingDataRemover::REMOVE_INDEXEDDB) {
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_INDEXEDDB)) {
     [dataTypesToRemove addObject:WKWebsiteDataTypeIndexedDBDatabases];
   }
 
   ProceduralBlock afterRemovalFromWKWebsiteDataStore = ^{
-    if (mask & IOSChromeBrowsingDataRemover::REMOVE_VISITED_LINKS) {
+    if (IsRemoveDataMaskSet(mask,
+                            BrowsingDataRemoveMask::REMOVE_VISITED_LINKS)) {
       // TODO(crbug.com/557963): Purging the WKProcessPool is a workaround for
       // the fact that there is no public API to clear visited links in
       // WKWebView. Remove this workaround if/when that API is made public.
@@ -331,7 +343,7 @@ removeWKWebViewCreatedBrowsingDataFromBrowserState:
       // the side-effect of also losing the in-memory cookies of WKWebView but
       // it is not a problem in practice since there is no UI to only have
       // visited links be removed but not cookies.
-      DCHECK(mask & IOSChromeBrowsingDataRemover::REMOVE_COOKIES);
+      DCHECK(IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES));
       web::WKWebViewConfigurationProvider::FromBrowserState(browserState)
           .Purge();
     }
@@ -374,20 +386,24 @@ removeWKWebViewCreatedBrowsingDataFromBrowserState:
   dispatch_async(dispatch_get_main_queue(), decrementCallbackCounterCount);
 }
 
-- (void)removeIOSSpecificPersistentIncognitoDataFromBrowserState:
-            (ios::ChromeBrowserState*)browserState
-                                                            mask:(int)mask {
+- (void)
+removeIOSSpecificPersistentIncognitoDataFromBrowserState:
+    (ios::ChromeBrowserState*)browserState
+                                                    mask:
+                                                        (BrowsingDataRemoveMask)
+                                                            mask {
   DCHECK(browserState && browserState->IsOffTheRecord());
   // Note: Before adding any method below, make sure that it can finish clearing
   // browsing data even when |browserState| is destroyed after this method call.
-  if (mask & IOSChromeBrowsingDataRemover::REMOVE_HISTORY) {
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_HISTORY)) {
     session_util::DeleteLastSession(browserState);
   }
 
   // Cookies and server bound certificates should have the same lifetime.
-  DCHECK_EQ((mask & IOSChromeBrowsingDataRemover::REMOVE_COOKIES) != 0,
-            (mask & IOSChromeBrowsingDataRemover::REMOVE_CHANNEL_IDS) != 0);
-  if (mask & IOSChromeBrowsingDataRemover::REMOVE_COOKIES) {
+  DCHECK_EQ(
+      IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES),
+      IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CHANNEL_IDS));
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
     scoped_refptr<net::URLRequestContextGetter> contextGetter =
         browserState->GetRequestContext();
     base::Closure callback = base::BindBlockArc(^{

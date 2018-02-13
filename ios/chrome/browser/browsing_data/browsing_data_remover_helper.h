@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
 
 namespace ios {
@@ -31,7 +32,7 @@ class BrowsingDataRemoverHelper
   // Note: Removal operations are not necessarily processed in the sequence that
   // they are received in.
   void Remove(ios::ChromeBrowserState* browser_state,
-              int remove_mask,
+              BrowsingDataRemoveMask remove_mask,
               browsing_data::TimePeriod time_period,
               const base::Closure& callback);
 
@@ -40,13 +41,12 @@ class BrowsingDataRemoverHelper
   // a ChromeBrowserState.
   struct BrowsingDataRemovalInfo {
     // Creates a BrowsingDataRemovalInfo with a single callback |callback|.
-    BrowsingDataRemovalInfo(int remove_mask,
+    BrowsingDataRemovalInfo(BrowsingDataRemoveMask remove_mask,
                             browsing_data::TimePeriod time_period,
                             const base::Closure& callback);
     ~BrowsingDataRemovalInfo();
     // The mask of all the types of browsing data that needs to be removed.
-    // Obtained from BrowsingDataRemoved::RemoveDataMask.
-    int remove_mask;
+    BrowsingDataRemoveMask remove_mask;
     // Time period for which the user wants to remove the data.
     browsing_data::TimePeriod time_period;
     // The vector of callbacks that need to be run when browsing data is

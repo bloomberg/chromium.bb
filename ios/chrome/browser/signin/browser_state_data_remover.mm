@@ -20,10 +20,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-const int kRemoveAllDataMask = ~0;
-}
-
 BrowserStateDataRemover::BrowserStateDataRemover(
     ios::ChromeBrowserState* browser_state)
     : browser_state_(browser_state), forget_last_username_(false) {
@@ -57,7 +53,7 @@ void BrowserStateDataRemover::RemoveBrowserStateData(ProceduralBlock callback) {
 
   ClearBrowsingDataCommand* command = [[ClearBrowsingDataCommand alloc]
       initWithBrowserState:browser_state_
-                      mask:kRemoveAllDataMask
+                      mask:BrowsingDataRemoveMask::REMOVE_ALL
                 timePeriod:browsing_data::TimePeriod::ALL_TIME];
 
   UIWindow* mainWindow = [[UIApplication sharedApplication] keyWindow];
@@ -86,9 +82,13 @@ void BrowserStateDataRemover::ReadingListCleaned(
   CHECK(reading_list_cleaned)
       << "Failed to remove all user reading list items.";
 
-  if (details.removal_mask != kRemoveAllDataMask) {
-    NOTREACHED() << "Unexpected partial remove browsing data request "
-                 << "(removal mask = " << details.removal_mask << ")";
+  if (details.removal_mask != BrowsingDataRemoveMask::REMOVE_ALL) {
+    NOTREACHED()
+        << "Unexpected partial remove browsing data request "
+        << "(removal mask = "
+        << static_cast<std::underlying_type<BrowsingDataRemoveMask>::type>(
+               details.removal_mask)
+        << ")";
     return;
   }
 

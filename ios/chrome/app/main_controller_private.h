@@ -9,6 +9,7 @@
 #include "components/browsing_data/core/browsing_data_utils.h"
 #import "ios/chrome/app/application_delegate/browser_launcher.h"
 #import "ios/chrome/app/main_controller.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 
 @class BrowserViewController;
 @class DeviceSharingManager;
@@ -36,7 +37,7 @@ class ChromeBrowserState;
 // |completionHandler| is called when this operation finishes.
 - (void)removeBrowsingDataFromBrowserState:
             (ios::ChromeBrowserState*)browserState
-                                      mask:(int)mask
+                                      mask:(BrowsingDataRemoveMask)mask
                                 timePeriod:(browsing_data::TimePeriod)timePeriod
                          completionHandler:(ProceduralBlock)completionHandler;
 

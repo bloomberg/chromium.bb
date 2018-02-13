@@ -30,6 +30,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_removal_controller.h"
+#include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
@@ -106,7 +107,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
 @interface ClearDataItem : CollectionViewTextItem
 
 // Mask of the data to be cleared.
-@property(nonatomic, assign) int dataTypeMask;
+@property(nonatomic, assign) BrowsingDataRemoveMask dataTypeMask;
 
 // Pref name associated with the item.
 @property(nonatomic, assign) const char* prefName;
@@ -137,8 +138,8 @@ const int kMaxTimesHistoryNoticeShown = 1;
 // Always returns YES to ensure that the collection view cell is deselected.
 - (BOOL)alertAndClearData;
 
-// Clears the data stored for |dataTypeMask|.
-- (void)clearDataForDataTypes:(int)dataTypeMask;
+// Clears the data stored for |mask|.
+- (void)clearDataForDataTypes:(BrowsingDataRemoveMask)mask;
 
 // Returns the accessibility identifier for the cell corresponding to
 // |itemType|.
@@ -219,7 +220,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
   CollectionViewItem* browsingHistoryItem =
       [self clearDataItemWithType:ItemTypeDataTypeBrowsingHistory
                           titleID:IDS_IOS_CLEAR_BROWSING_HISTORY
-                             mask:IOSChromeBrowsingDataRemover::REMOVE_HISTORY
+                             mask:BrowsingDataRemoveMask::REMOVE_HISTORY
                          prefName:browsing_data::prefs::kDeleteBrowsingHistory];
   [model addItem:browsingHistoryItem
       toSectionWithIdentifier:SectionIdentifierDataTypes];
@@ -229,7 +230,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
   ClearDataItem* cookiesSiteDataItem =
       [self clearDataItemWithType:ItemTypeDataTypeCookiesSiteData
                           titleID:IDS_IOS_CLEAR_COOKIES
-                             mask:IOSChromeBrowsingDataRemover::REMOVE_SITE_DATA
+                             mask:BrowsingDataRemoveMask::REMOVE_SITE_DATA
                          prefName:browsing_data::prefs::kDeleteCookies];
   [model addItem:cookiesSiteDataItem
       toSectionWithIdentifier:SectionIdentifierDataTypes];
@@ -237,14 +238,14 @@ const int kMaxTimesHistoryNoticeShown = 1;
   ClearDataItem* cacheItem =
       [self clearDataItemWithType:ItemTypeDataTypeCache
                           titleID:IDS_IOS_CLEAR_CACHE
-                             mask:IOSChromeBrowsingDataRemover::REMOVE_CACHE
+                             mask:BrowsingDataRemoveMask::REMOVE_CACHE
                          prefName:browsing_data::prefs::kDeleteCache];
   [model addItem:cacheItem toSectionWithIdentifier:SectionIdentifierDataTypes];
 
   ClearDataItem* savedPasswordsItem =
       [self clearDataItemWithType:ItemTypeDataTypeSavedPasswords
                           titleID:IDS_IOS_CLEAR_SAVED_PASSWORDS
-                             mask:IOSChromeBrowsingDataRemover::REMOVE_PASSWORDS
+                             mask:BrowsingDataRemoveMask::REMOVE_PASSWORDS
                          prefName:browsing_data::prefs::kDeletePasswords];
   [model addItem:savedPasswordsItem
       toSectionWithIdentifier:SectionIdentifierDataTypes];
@@ -252,7 +253,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
   ClearDataItem* autofillItem =
       [self clearDataItemWithType:ItemTypeDataTypeAutofill
                           titleID:IDS_IOS_CLEAR_AUTOFILL
-                             mask:IOSChromeBrowsingDataRemover::REMOVE_FORM_DATA
+                             mask:BrowsingDataRemoveMask::REMOVE_FORM_DATA
                          prefName:browsing_data::prefs::kDeleteFormData];
   [model addItem:autofillItem
       toSectionWithIdentifier:SectionIdentifierDataTypes];
@@ -299,7 +300,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
 
 - (ClearDataItem*)clearDataItemWithType:(ItemType)itemType
                                 titleID:(int)titleMessageID
-                                   mask:(int)mask
+                                   mask:(BrowsingDataRemoveMask)mask
                                prefName:(const char*)prefName {
   PrefService* prefs = _browserState->GetPrefs();
   ClearDataItem* clearDataItem = [[ClearDataItem alloc] initWithType:itemType];
@@ -484,16 +485,17 @@ const int kMaxTimesHistoryNoticeShown = 1;
 #pragma mark Clear browsing data
 
 - (BOOL)alertAndClearData {
-  int dataTypeMaskToRemove = 0;
+  BrowsingDataRemoveMask dataTypeMaskToRemove =
+      BrowsingDataRemoveMask::REMOVE_NOTHING;
   NSArray* dataTypeItems = [self.collectionViewModel
       itemsInSectionWithIdentifier:SectionIdentifierDataTypes];
   for (ClearDataItem* dataTypeItem in dataTypeItems) {
     DCHECK([dataTypeItem isKindOfClass:[ClearDataItem class]]);
     if (dataTypeItem.accessoryType == MDCCollectionViewCellAccessoryCheckmark) {
-      dataTypeMaskToRemove |= dataTypeItem.dataTypeMask;
+      dataTypeMaskToRemove = dataTypeMaskToRemove | dataTypeItem.dataTypeMask;
     }
   }
-  if (dataTypeMaskToRemove == 0) {
+  if (dataTypeMaskToRemove == BrowsingDataRemoveMask::REMOVE_NOTHING) {
     // Nothing to clear (no data types selected).
     return YES;
   }
@@ -521,25 +523,25 @@ const int kMaxTimesHistoryNoticeShown = 1;
   return YES;
 }
 
-- (void)clearDataForDataTypes:(int)dataTypeMask {
-  DCHECK(dataTypeMask);
+- (void)clearDataForDataTypes:(BrowsingDataRemoveMask)mask {
+  DCHECK(mask != BrowsingDataRemoveMask::REMOVE_NOTHING);
 
   BrowsingDataRemovalController* browsingDataRemovalController =
       [[BrowsingDataRemovalController alloc] init];
 
-  if (dataTypeMask & IOSChromeBrowsingDataRemover::REMOVE_SITE_DATA) {
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_SITE_DATA)) {
     [self.dispatcher prepareForBrowsingDataRemoval];
   }
 
   [browsingDataRemovalController
       removeBrowsingDataFromBrowserState:_browserState
-                                    mask:dataTypeMask
+                                    mask:mask
                               timePeriod:_timePeriod
                        completionHandler:^{
                          [self.dispatcher browsingDataWasRemoved];
                        }];
 
-  if (dataTypeMask & IOSChromeBrowsingDataRemover::REMOVE_COOKIES) {
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
     base::Time beginDeleteTime =
         browsing_data::CalculateBeginDeleteTime(_timePeriod);
     [ChromeWebViewFactory clearExternalCookies:_browserState
@@ -553,7 +555,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
   feature_engagement::TrackerFactory::GetForBrowserState(_browserState)
       ->NotifyEvent(feature_engagement::events::kClearedBrowsingData);
 
-  if (!!(dataTypeMask && IOSChromeBrowsingDataRemover::REMOVE_HISTORY)) {
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_HISTORY)) {
     [self showBrowsingHistoryRemovedDialog];
   }
 }
