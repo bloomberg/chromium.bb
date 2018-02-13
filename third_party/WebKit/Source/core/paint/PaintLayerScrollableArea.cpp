@@ -191,6 +191,13 @@ void PaintLayerScrollableArea::Dispose() {
       frame_view->RemoveResizerArea(*GetLayoutBox());
   }
 
+  // Note: it is not safe to call ScrollAnchor::clear if the document is being
+  // destroyed, because LayoutObjectChildList::removeChildNode skips the call to
+  // willBeRemovedFromTree,
+  // leaving the ScrollAnchor with a stale LayoutObject pointer.
+  if (RuntimeEnabledFeatures::ScrollAnchoringEnabled())
+    scroll_anchor_.Dispose();
+
   GetLayoutBox()
       ->GetDocument()
       .GetPage()
@@ -205,14 +212,6 @@ void PaintLayerScrollableArea::Dispose() {
     resizer_->Destroy();
 
   ClearScrollableArea();
-
-  // Note: it is not safe to call ScrollAnchor::clear if the document is being
-  // destroyed, because LayoutObjectChildList::removeChildNode skips the call to
-  // willBeRemovedFromTree,
-  // leaving the ScrollAnchor with a stale LayoutObject pointer.
-  if (RuntimeEnabledFeatures::ScrollAnchoringEnabled() &&
-      !GetLayoutBox()->DocumentBeingDestroyed())
-    scroll_anchor_.ClearSelf();
 
   if (SmoothScrollSequencer* sequencer = GetSmoothScrollSequencer())
     sequencer->DidDisposeScrollableArea(*this);

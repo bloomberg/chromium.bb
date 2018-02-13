@@ -573,6 +573,23 @@ void ScrollAnchor::ClearSelf() {
     anchor_object->MaybeClearIsScrollAnchorObject();
 }
 
+void ScrollAnchor::Dispose() {
+  if (scroller_) {
+    LocalFrameView* frame_view =
+        scroller_->IsLocalFrameView()
+            ? static_cast<LocalFrameView*>(scroller_.Get())
+            : ScrollerLayoutBox(scroller_)->GetFrameView();
+    ScrollableArea* owning_scroller =
+        scroller_->IsRootFrameViewport()
+            ? &ToRootFrameViewport(scroller_)->LayoutViewport()
+            : scroller_.Get();
+    frame_view->DequeueScrollAnchoringAdjustment(owning_scroller);
+    scroller_.Clear();
+  }
+  anchor_object_ = nullptr;
+  saved_selector_ = String();
+}
+
 void ScrollAnchor::Clear() {
   LayoutObject* layout_object =
       anchor_object_ ? anchor_object_ : ScrollerLayoutBox(scroller_);

@@ -871,6 +871,7 @@ class CORE_EXPORT LocalFrameView final
   void ClearScrollAnchor();
   bool ShouldPerformScrollAnchoring() const override;
   void EnqueueScrollAnchoringAdjustment(ScrollableArea*);
+  void DequeueScrollAnchoringAdjustment(ScrollableArea*);
   void PerformScrollAnchoringAdjustments();
 
   // Only for SPv2.
