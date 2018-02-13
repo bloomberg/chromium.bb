@@ -2497,6 +2497,9 @@ crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-dat
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-messagechannel-success.html [ Failure Timeout ]
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-sharedworker-failure.html [ Failure Timeout ]
 
+# Sheriff failures 2017-02-13
+crbug.com/811708 [ Win Debug ] fast/events/hit-test-counts.html [ Failure Pass ]
+
 # Disabling SharedArrayBuffer
 crbug.com/798864 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/identity-not-preserved.html [ Failure ]
 crbug.com/798864 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/no-transferring.html [ Failure ]
