@@ -239,11 +239,6 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
 }
 
 void SkiaRenderer::BindFramebufferToTexture(const RenderPassId render_pass_id) {
-#if BUILDFLAG(ENABLE_VULKAN)
-  NOTIMPLEMENTED();
-  return;
-#endif
-
   auto iter = render_pass_backings_.find(render_pass_id);
   DCHECK(render_pass_backings_.end() != iter);
   // This function is called after AllocateRenderPassResourceIfNeeded, so there
@@ -554,10 +549,6 @@ void SkiaRenderer::DrawTileQuad(const TileDrawQuad* quad) {
 }
 
 void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
-#if BUILDFLAG(ENABLE_VULKAN)
-  NOTIMPLEMENTED();
-  return;
-#endif
   auto iter = render_pass_backings_.find(quad->render_pass_id);
   DCHECK(render_pass_backings_.end() != iter);
   // This function is called after AllocateRenderPassResourceIfNeeded, so there
@@ -709,10 +700,6 @@ void SkiaRenderer::UpdateRenderPassTextures(
     const RenderPassList& render_passes_in_draw_order,
     const base::flat_map<RenderPassId, RenderPassRequirements>&
         render_passes_in_frame) {
-#if BUILDFLAG(ENABLE_VULKAN)
-  NOTIMPLEMENTED();
-  return;
-#endif
   std::vector<RenderPassId> passes_to_delete;
   for (const auto& pair : render_pass_backings_) {
     auto render_pass_it = render_passes_in_frame.find(pair.first);
@@ -741,21 +728,25 @@ void SkiaRenderer::UpdateRenderPassTextures(
 void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
     const RenderPassId& render_pass_id,
     const RenderPassRequirements& requirements) {
-#if BUILDFLAG(ENABLE_VULKAN)
-  NOTIMPLEMENTED();
-  return;
-#endif
   auto it = render_pass_backings_.find(render_pass_id);
   if (it != render_pass_backings_.end())
     return;
 
+#if BUILDFLAG(ENABLE_VULKAN)
+  GrContext* gr_context =
+      output_surface_->vulkan_context_provider()->GetGrContext();
+  // TODO(penghuang): check supported format correctly.
+  bool capability_bgra8888 = true;
+#else
   ContextProvider* context_provider = output_surface_->context_provider();
   bool capability_bgra8888 =
       context_provider->ContextCapabilities().texture_format_bgra8888;
+  GrContext* gr_context = context_provider->GrContext();
+#endif
   render_pass_backings_.insert(std::pair<RenderPassId, RenderPassBacking>(
       render_pass_id,
-      RenderPassBacking(context_provider->GrContext(), requirements.size,
-                        requirements.mipmap, capability_bgra8888,
+      RenderPassBacking(gr_context, requirements.size, requirements.mipmap,
+                        capability_bgra8888,
                         current_frame()->current_render_pass->color_space)));
 }
 
