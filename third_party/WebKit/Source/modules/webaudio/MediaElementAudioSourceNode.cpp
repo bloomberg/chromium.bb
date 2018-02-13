@@ -179,11 +179,19 @@ void MediaElementAudioSourceHandler::Process(size_t number_of_frames) {
   // case.
   MutexTryLocker try_locker(process_lock_);
   if (try_locker.Locked()) {
-    if (!MediaElement() || !source_number_of_channels_ ||
-        !source_sample_rate_) {
+    if (!MediaElement() || !source_sample_rate_) {
       output_bus->Zero();
       return;
     }
+
+    // TODO(crbug.com/811516): Although OnSetFormat() requested the output bus
+    // channels, the actual channel count might have not been changed yet.
+    // Output silence for such case until the channel count is resolved.
+    if (source_number_of_channels_ != output_bus->NumberOfChannels()) {
+      output_bus->Zero();
+      return;
+    }
+
     AudioSourceProvider& provider = MediaElement()->GetAudioSourceProvider();
     // Grab data from the provider so that the element continues to make
     // progress, even if we're going to output silence anyway.
