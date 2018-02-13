@@ -625,6 +625,14 @@ void ContentSettingBubbleContents::DidFinishNavigation(
   GetWidget()->Close();
 }
 
+void ContentSettingBubbleContents::WasHidden() {
+  GetWidget()->Close();
+}
+
+void ContentSettingBubbleContents::WebContentsDestroyed() {
+  GetWidget()->Close();
+}
+
 void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
   if (sender == manage_checkbox_) {

@@ -111,6 +111,8 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   // content::WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void WasHidden() override;
+  void WebContentsDestroyed() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
