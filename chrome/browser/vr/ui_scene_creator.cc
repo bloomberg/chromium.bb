@@ -275,7 +275,7 @@ std::unique_ptr<TransientElement> CreateTransientParent(UiElementName name,
 
 std::unique_ptr<Rect> CreateOmniboxSpacer(Model* model) {
   auto spacer = Create<Rect>(kNone, kPhaseForeground);
-  spacer->SetType(kTypeOmniboxSuggestionSpacer);
+  spacer->SetType(kTypeSpacer);
   spacer->SetSize(kOmniboxWidthDMM, kSuggestionVerticalPaddingDMM);
   spacer->set_focusable(false);
   spacer->set_hit_testable(true);
@@ -1906,9 +1906,9 @@ void UiSceneCreator::CreateOmnibox() {
   omnibox_text_field->SetHintText(
       l10n_util::GetStringUTF16(IDS_SEARCH_OR_TYPE_WEB_ADDRESS));
   omnibox_text_field->set_x_anchoring(LEFT);
-  omnibox_text_field->SetTranslate(kOmniboxTextMarginDMM, 0, 0);
   omnibox_text_field->SetSize(kOmniboxWidthDMM - 2 * kOmniboxTextMarginDMM -
-                                  kOmniboxTextFieldIconSizeDMM,
+                                  kOmniboxTextFieldIconButtonSizeDMM -
+                                  kOmniboxTextFieldRightMargin,
                               0);
 
   EventHandlers event_handlers;
@@ -2026,10 +2026,23 @@ void UiSceneCreator::CreateOmnibox() {
                         &Button::SetButtonColors);
   mic_icon_box->AddChild(std::move(mic_icon));
 
+  auto left_spacer = Create<Rect>(kNone, kPhaseNone);
+  left_spacer->SetSize(kOmniboxTextMarginDMM, kOmniboxTextHeightDMM);
+  left_spacer->SetType(kTypeSpacer);
+  auto middle_spacer = Create<Rect>(kNone, kPhaseNone);
+  middle_spacer->SetType(kTypeSpacer);
+  middle_spacer->SetSize(kOmniboxTextMarginDMM, kOmniboxTextHeightDMM);
+  auto right_spacer = Create<Rect>(kNone, kPhaseNone);
+  right_spacer->SetSize(kOmniboxTextFieldRightMargin, kOmniboxTextHeightDMM);
+  right_spacer->SetType(kTypeSpacer);
+
   auto text_field_layout = Create<LinearLayout>(
       kOmniboxTextFieldLayout, kPhaseNone, LinearLayout::kRight);
+  text_field_layout->AddChild(std::move(left_spacer));
   text_field_layout->AddChild(std::move(omnibox_text_field));
+  text_field_layout->AddChild(std::move(middle_spacer));
   text_field_layout->AddChild(std::move(mic_icon_box));
+  text_field_layout->AddChild(std::move(right_spacer));
 
   // Set up the vector binding to manage suggestions dynamically.
   SuggestionSetBinding::ModelAddedCallback added_callback =

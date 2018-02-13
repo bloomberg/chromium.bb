@@ -68,11 +68,6 @@ const std::set<UiElementName> kElementsVisibleWithExitPrompt = {
     kExitPrompt,      kExitPromptBackplane, kController,     kReticle,
     kLaser,
 };
-const std::set<UiElementType> kHitTestableElementTypes = {
-    kTypeButtonHitTarget,         kTypeTextInputText,
-    kTypeOmniboxSuggestionSpacer, kTypeSnackbarButton,
-    kTypeSnackbarDescription,
-};
 const std::set<UiElementName> kElementsVisibleWithExitWarning = {
     kScreenDimmer, kExitWarningBackground, kExitWarningText};
 const std::set<UiElementName> kElementsVisibleWithVoiceSearch = {
