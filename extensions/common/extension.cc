@@ -555,10 +555,12 @@ bool Extension::LoadName(base::string16* error) {
     *error = base::ASCIIToUTF16(errors::kInvalidName);
     return false;
   }
+
   non_localized_name_ = base::UTF16ToUTF8(localized_name);
-  base::i18n::AdjustStringForLocaleDirection(&localized_name);
-  display_name_ =
-      base::UTF16ToUTF8(base::CollapseWhitespace(localized_name, true));
+  base::string16 sanitized_name =
+      base::CollapseWhitespace(localized_name, true);
+  base::i18n::SanitizeUserSuppliedString(&sanitized_name);
+  display_name_ = base::UTF16ToUTF8(sanitized_name);
   return true;
 }
 

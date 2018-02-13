@@ -468,6 +468,87 @@ TEST_F(RTLTest, UnadjustStringForLocaleDirection) {
   EXPECT_EQ(was_rtl, IsRTL());
 }
 
+TEST_F(RTLTest, EnsureTerminatedDirectionalFormatting) {
+  struct {
+    const wchar_t* unformated_text;
+    const wchar_t* formatted_text;
+  } cases[] = {
+      // Tests string without any dir-formatting characters.
+      {L"google.com", L"google.com"},
+      // Tests string with properly terminated dir-formatting character.
+      {L"\x202egoogle.com\x202c", L"\x202egoogle.com\x202c"},
+      // Tests string with over-terminated dir-formatting characters.
+      {L"\x202egoogle\x202c.com\x202c", L"\x202egoogle\x202c.com\x202c"},
+      // Tests string beginning with a dir-formatting character.
+      {L"\x202emoc.elgoog", L"\x202emoc.elgoog\x202c"},
+      // Tests string that over-terminates then re-opens.
+      {L"\x202egoogle\x202c\x202c.\x202eom",
+       L"\x202egoogle\x202c\x202c.\x202eom\x202c"},
+      // Tests string containing a dir-formatting character in the middle.
+      {L"google\x202e.com", L"google\x202e.com\x202c"},
+      // Tests string with multiple dir-formatting characters.
+      {L"\x202egoogle\x202e.com/\x202eguest",
+       L"\x202egoogle\x202e.com/\x202eguest\x202c\x202c\x202c"},
+      // Test the other dir-formatting characters (U+202A, U+202B, and U+202D).
+      {L"\x202agoogle.com", L"\x202agoogle.com\x202c"},
+      {L"\x202bgoogle.com", L"\x202bgoogle.com\x202c"},
+      {L"\x202dgoogle.com", L"\x202dgoogle.com\x202c"},
+  };
+
+  const bool was_rtl = IsRTL();
+
+  test::ScopedRestoreICUDefaultLocale restore_locale;
+  for (size_t i = 0; i < 2; ++i) {
+    // Toggle the application default text direction (to try each direction).
+    SetRTL(!IsRTL());
+    for (size_t i = 0; i < arraysize(cases); ++i) {
+      string16 unsanitized_text = WideToUTF16(cases[i].unformated_text);
+      string16 sanitized_text = WideToUTF16(cases[i].formatted_text);
+      EnsureTerminatedDirectionalFormatting(&unsanitized_text);
+      EXPECT_EQ(sanitized_text, unsanitized_text);
+    }
+  }
+  EXPECT_EQ(was_rtl, IsRTL());
+}
+
+TEST_F(RTLTest, SanitizeUserSuppliedString) {
+  struct {
+    const wchar_t* unformatted_text;
+    const wchar_t* formatted_text;
+  } cases[] = {
+      // Tests RTL string with properly terminated dir-formatting character.
+      {L"\x202eكبير Google التطبيق\x202c", L"\x202eكبير Google التطبيق\x202c"},
+      // Tests RTL string with over-terminated dir-formatting characters.
+      {L"\x202eكبير Google\x202cالتطبيق\x202c",
+       L"\x202eكبير Google\x202cالتطبيق\x202c"},
+      // Tests RTL string that over-terminates then re-opens.
+      {L"\x202eكبير Google\x202c\x202cالتطبيق\x202e",
+       L"\x202eكبير Google\x202c\x202cالتطبيق\x202e\x202c"},
+      // Tests RTL string with multiple dir-formatting characters.
+      {L"\x202eك\x202eبير Google الت\x202eطبيق",
+       L"\x202eك\x202eبير Google الت\x202eطبيق\x202c\x202c\x202c"},
+      // Test the other dir-formatting characters (U+202A, U+202B, and U+202D).
+      {L"\x202aكبير Google التطبيق", L"\x202aكبير Google التطبيق\x202c"},
+      {L"\x202bكبير Google التطبيق", L"\x202bكبير Google التطبيق\x202c"},
+      {L"\x202dكبير Google التطبيق", L"\x202dكبير Google التطبيق\x202c"},
+
+  };
+
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    // On Windows for an LTR locale, no changes to the string are made.
+    string16 prefix, suffix = WideToUTF16(L"");
+#if !defined(OS_WIN)
+    prefix = WideToUTF16(L"\x200e\x202b");
+    suffix = WideToUTF16(L"\x202c\x200e");
+#endif  // !OS_WIN
+    string16 unsanitized_text = WideToUTF16(cases[i].unformatted_text);
+    string16 sanitized_text =
+        prefix + WideToUTF16(cases[i].formatted_text) + suffix;
+    SanitizeUserSuppliedString(&unsanitized_text);
+    EXPECT_EQ(sanitized_text, unsanitized_text);
+  }
+}
+
 class SetICULocaleTest : public PlatformTest {};
 
 TEST_F(SetICULocaleTest, OverlongLocaleId) {
