@@ -390,14 +390,9 @@ void GetFormAndField(autofill::FormData* form,
     return NO;
   }
 
-  // Returned data should be a dictionary.
-  const base::DictionaryValue* data;
-  if (!dataJson->GetAsDictionary(&data))
-    return NO;
-
-  // Get the list of forms.
+  // Returned data should be a list of forms.
   const base::ListValue* formsList;
-  if (!data->GetList("forms", &formsList))
+  if (!dataJson->GetAsList(&formsList))
     return NO;
 
   // Iterate through all the extracted forms and copy the data from JSON into

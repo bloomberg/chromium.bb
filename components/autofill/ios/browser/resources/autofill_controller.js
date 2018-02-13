@@ -38,7 +38,6 @@ var AutofillFormFieldData;
 /**
   * @typedef {{
   *   name: string,
-  *   method: string,
   *   origin: string,
   *   action: string,
   *   fields: Array<AutofillFormFieldData>
@@ -551,13 +550,11 @@ function formOrFieldsetsToFormData_(formElement, formControlElement,
  *
  * @param {number} requiredFields The minimum number of fields forms must have
  *     to be extracted.
- * @return {string} A JSON encoded object with object['forms'] containing the
- *     forms data.
+ * @return {string} A JSON encoded an array of the forms data.
  */
 __gCrWeb.autofill['extractForms'] = function(requiredFields) {
-  var results = new __gCrWeb.common.JSONSafeObject;
-  results['forms'] = __gCrWeb.autofill.extractNewForms(requiredFields);
-  return __gCrWeb.stringify(results);
+  var forms = __gCrWeb.autofill.extractNewForms(requiredFields);
+  return __gCrWeb.stringify(forms);
 };
 
 /**
@@ -830,11 +827,6 @@ __gCrWeb.autofill.webFormElementToFormData = function(
   }
 
   form['name'] = __gCrWeb.common.getFormIdentifier(formElement);
-  // TODO(thestig): Check if method is unused and remove.
-  var method = formElement.getAttribute('method');
-  if (method) {
-    form['method'] = method;
-  }
   form['origin'] = __gCrWeb.common.removeQueryAndReferenceFromURL(
       frame.location.href);
   form['action'] = __gCrWeb.common.absoluteURL(
