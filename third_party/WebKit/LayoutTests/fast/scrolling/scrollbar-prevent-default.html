@@ -1,5 +1,6 @@
 <head>
     <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/run-after-layout-and-paint.js"></script>
     <style>
         body {
             height: 200vh;
@@ -31,8 +32,10 @@
     description('This tests that scrollbars always receive events even when there is an element underneath the scrollbar which swallows the event. In this case an event handler is added to the window which swallows the event but this may also happen with elements underneath of overlay scrollbars.');
     if (window.testRunner)
         testRunner.dumpAsText();
-    if (window.internals)
+    if (window.internals) {
         internals.settings.setMockScrollbarsEnabled(true)
+        internals.settings.setScrollAnimatorEnabled(false);
+    }
 
     var receivedMousedownEvent = false;
 
@@ -50,9 +53,8 @@
             eventSender.mouseUp();
         }
         shouldBe('receivedMousedownEvent', 'true');
-        shouldBecomeEqual('window.scrollY', '0', function() {
-            testDivScrollbar();
-        });
+        shouldBe('window.scrollY', '0');
+        testDivScrollbar();
     }
 
     function testDivScrollbar() {
@@ -66,10 +68,9 @@
             eventSender.mouseUp();
         }
         shouldBe('receivedMousedownEvent', 'true');
-        shouldBecomeEqual('subframe.scrollTop', '0', function(){
-            finishJSTest();
-        });
+        shouldBe('subframe.scrollTop', '0');
+        finishJSTest();
     }
 
-    testFrameScrollbar();
+    runAfterLayoutAndPaint(testFrameScrollbar);
 </script>
