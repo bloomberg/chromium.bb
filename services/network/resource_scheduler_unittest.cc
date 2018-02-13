@@ -1962,6 +1962,53 @@ TEST_F(ResourceSchedulerTest, SchedulerDisabled) {
   EXPECT_TRUE(request->started());
 }
 
+TEST_F(ResourceSchedulerTest, MultipleInstances_1) {
+  // In some circumstances there may exist multiple instances.
+  ResourceScheduler another_scheduler(false);
+
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/req", net::LOWEST));
+
+  std::unique_ptr<TestRequest> request(
+      NewRequest("http://host/req", net::LOWEST));
+
+  // Though |another_scheduler| is disabled, this request should be throttled
+  // as it's handled by |scheduler_| which is active.
+  EXPECT_FALSE(request->started());
+}
+
+TEST_F(ResourceSchedulerTest, MultipleInstances_2) {
+  ResourceScheduler another_scheduler(true);
+  another_scheduler.OnClientCreated(kChildId, kRouteId,
+                                    &network_quality_estimator_);
+
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/req", net::LOWEST));
+
+  std::unique_ptr<TestRequest> request(NewRequestWithChildAndRoute(
+      "http://host/req", net::LOWEST, kChildId, kRouteId));
+
+  EXPECT_FALSE(request->started());
+
+  {
+    std::unique_ptr<net::URLRequest> url_request(NewURLRequestWithChildAndRoute(
+        "http://host/another", net::LOWEST, kChildId, kRouteId));
+    auto scheduled_request = another_scheduler.ScheduleRequest(
+        kChildId, kRouteId, true, url_request.get());
+    auto another_request = std::make_unique<TestRequest>(
+        std::move(url_request), std::move(scheduled_request),
+        &another_scheduler);
+    another_request->Start();
+
+    // This should not be throttled as it's handled by |another_scheduler|.
+    EXPECT_TRUE(another_request->started());
+  }
+
+  another_scheduler.OnClientDeleted(kChildId, kRouteId);
+}
+
 }  // unnamed namespace
 
 }  // namespace network

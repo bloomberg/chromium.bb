@@ -194,6 +194,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
 
   bool enabled() const { return enabled_; }
 
+  static bool IsRendererSideResourceSchedulerEnabled();
+
  private:
   class Client;
   class RequestQueue;

@@ -413,11 +413,9 @@ class ResourceScheduler::Client {
                 .max_delayable_requests),
         resource_scheduler_(resource_scheduler),
         weak_ptr_factory_(this) {
-    if (base::FeatureList::IsEnabled(
-            features::kRendererSideResourceScheduler)) {
-      // When kRendererSideResourceScheduler is enabled, "layout blocking"
-      // concept is moved to the renderer side, so the shceduler works always
-      // with the normal mode.
+    if (IsRendererSideResourceSchedulerEnabled()) {
+      // In this case, "layout blocking" concept is moved to the renderer side,
+      // so the shceduler works always with the normal mode.
       deprecated_has_html_body_ = true;
     }
   }
@@ -485,11 +483,9 @@ class ResourceScheduler::Client {
 
   void DeprecatedOnNavigate() {
     deprecated_has_html_body_ = false;
-    if (base::FeatureList::IsEnabled(
-            features::kRendererSideResourceScheduler)) {
-      // When kRendererSideResourceScheduler is enabled, "layout blocking"
-      // concept is moved to the renderer side, so the shceduler works always
-      // with the normal mode.
+    if (IsRendererSideResourceSchedulerEnabled()) {
+      // In this case, "layout blocking" concept is moved to the renderer side,
+      // so the shceduler works always with the normal mode.
       deprecated_has_html_body_ = true;
     }
 
@@ -1301,6 +1297,15 @@ ResourceScheduler::ThrottleDelayable::GetParamsForNetworkQualityContainer() {
                       non_delayable_weight});
     config_param_index++;
   }
+}
+
+bool ResourceScheduler::IsRendererSideResourceSchedulerEnabled() {
+  // We are assuming that kRendererSideResourceScheduler will be shipped when
+  // launching Network Service, so let's act as if
+  // kRendererSideResourceScheduler is enabled when kNetworkService is enabled.
+  return base::FeatureList::IsEnabled(
+             features::kRendererSideResourceScheduler) ||
+         base::FeatureList::IsEnabled(features::kNetworkService);
 }
 
 }  // namespace network

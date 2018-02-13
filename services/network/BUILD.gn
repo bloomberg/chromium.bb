@@ -40,6 +40,8 @@ component("network_service") {
     "proxy_resolving_client_socket_factory.h",
     "resource_scheduler.cc",
     "resource_scheduler.h",
+    "resource_scheduler_client.cc",
+    "resource_scheduler_client.h",
     "restricted_cookie_manager.cc",
     "restricted_cookie_manager.h",
     "throttling/network_conditions.cc",
