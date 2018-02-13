@@ -4,8 +4,7 @@
   "manifest_version": 2,
   "content_capabilities": {
     "matches": [
-      "https://*.example.com/",
-      "https://foo.example.com/"
+      "https://*.example.com/"
     ],
     "permissions": [
       "clipboardRead",

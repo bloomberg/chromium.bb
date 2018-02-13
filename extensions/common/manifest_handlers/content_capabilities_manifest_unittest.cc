@@ -23,15 +23,17 @@ class ContentCapabilitiesManifestTest : public ManifestTest {
   }
 };
 
-TEST_F(ContentCapabilitiesManifestTest, RejectDomainWildcards) {
-  scoped_refptr<Extension> extension(LoadAndExpectWarning(
-      "content_capabilities_domain_wildcard.json",
-      manifest_errors::kInvalidContentCapabilitiesMatchOrigin));
-  const ContentCapabilitiesInfo& info = ContentCapabilitiesInfo::Get(
-      extension.get());
-  // Make sure the wildcard is not included in the pattern set.
-  EXPECT_FALSE(info.url_patterns.MatchesURL(GURL("https://bar.example.com/")));
-  EXPECT_TRUE(info.url_patterns.MatchesURL(GURL("https://foo.example.com/")));
+TEST_F(ContentCapabilitiesManifestTest, AllowSubdomainWildcards) {
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess("content_capabilities_subdomain_wildcard.json"));
+  const ContentCapabilitiesInfo& info =
+      ContentCapabilitiesInfo::Get(extension.get());
+  // Make sure the wildcard subdomain is included in the pattern set.
+  EXPECT_TRUE(info.url_patterns.MatchesURL(GURL("https://example.com/")));
+  EXPECT_TRUE(info.url_patterns.MatchesURL(GURL("https://bar.example.com/")));
+  EXPECT_TRUE(
+      info.url_patterns.MatchesURL(GURL("https://foo.bar.example.com/")));
+  EXPECT_FALSE(info.url_patterns.MatchesURL(GURL("https://chromium.org/")));
 }
 
 TEST_F(ContentCapabilitiesManifestTest, RejectedAllHosts) {
@@ -42,6 +44,33 @@ TEST_F(ContentCapabilitiesManifestTest, RejectedAllHosts) {
       extension.get());
   // Make sure the wildcard is not included in the pattern set.
   EXPECT_FALSE(info.url_patterns.MatchesURL(GURL("https://nonspecific.com/")));
+  EXPECT_TRUE(info.url_patterns.MatchesURL(GURL("https://example.com/")));
+}
+
+TEST_F(ContentCapabilitiesManifestTest, RejectedETLDWildcard) {
+  // Note: We use LoadExtension() here (instead of
+  // LoadExtensionAndExpectWarning()) because we expect multiple warnings, and
+  // LoadExtensionAndExpectWarning() only expects one. We manually verify the
+  // warnings.
+  std::string error;
+  scoped_refptr<Extension> extension(LoadExtension(
+      ManifestData("content_capabilities_etld_wildcard.json"), &error));
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(error.empty());
+  // 3 bad patterns: *.co.uk, *.appspot.com, <all_urls>.
+  size_t kNumExpectedWarnings = 3;
+  ASSERT_EQ(kNumExpectedWarnings, extension->install_warnings().size());
+  for (size_t i = 0; i < kNumExpectedWarnings; ++i) {
+    EXPECT_EQ(manifest_errors::kInvalidContentCapabilitiesMatchOrigin,
+              extension->install_warnings()[i].message);
+  }
+
+  const ContentCapabilitiesInfo& info =
+      ContentCapabilitiesInfo::Get(extension.get());
+  // Make sure the wildcard is not included in the pattern set.
+  EXPECT_FALSE(info.url_patterns.MatchesURL(GURL("https://example.co.uk/")));
+  EXPECT_FALSE(
+      info.url_patterns.MatchesURL(GURL("https://example.appspot.com/")));
   EXPECT_TRUE(info.url_patterns.MatchesURL(GURL("https://example.com/")));
 }
 

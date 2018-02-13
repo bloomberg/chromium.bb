@@ -242,7 +242,7 @@ void PermissionSet::InitShouldWarnAllHosts() const {
   for (URLPatternSet::const_iterator iter = effective_hosts_.begin();
        iter != effective_hosts_.end();
        ++iter) {
-    if (iter->ImpliesAllHosts()) {
+    if (iter->MatchesEffectiveTld()) {
       should_warn_all_hosts_ = WARN_ALL_HOSTS;
       return;
     }

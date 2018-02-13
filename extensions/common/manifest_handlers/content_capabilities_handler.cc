@@ -18,6 +18,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 namespace extensions {
 
@@ -81,10 +82,16 @@ bool ContentCapabilitiesHandler::Parse(Extension* extension,
     return false;
   }
 
-  // Filter wildcard URL patterns and emit warnings for them.
+  // Filter URL patterns that imply all hosts or match every host under an
+  // eTLD and emit warnings for them.
+  // Note: we include private registries because content_capabilities should
+  // only be used for a single entity (though possibly multiple domains), rather
+  // than blanket-granted.
+  const net::registry_controlled_domains::PrivateRegistryFilter private_filter =
+      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES;
   std::set<URLPattern> valid_url_patterns;
   for (const URLPattern& pattern : potential_url_patterns) {
-    if (pattern.match_subdomains() || pattern.ImpliesAllHosts()) {
+    if (pattern.MatchesEffectiveTld(private_filter)) {
       extension->AddInstallWarning(InstallWarning(
           errors::kInvalidContentCapabilitiesMatchOrigin));
     } else {

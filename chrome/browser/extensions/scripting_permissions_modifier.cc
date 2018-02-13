@@ -31,7 +31,7 @@ const char kHasSetScriptOnAllUrlsPrefName[] = "has_set_script_all_urls";
 URLPatternSet FilterImpliedAllHostsPatterns(const URLPatternSet& patterns) {
   URLPatternSet result;
   for (const URLPattern& pattern : patterns) {
-    if (pattern.ImpliesAllHosts())
+    if (pattern.MatchesEffectiveTld())
       result.AddPattern(pattern);
   }
   return result;
@@ -251,7 +251,7 @@ void ScriptingPermissionsModifier::WithholdPermissions(
                                       URLPatternSet* granted,
                                       URLPatternSet* withheld) {
     for (const URLPattern& pattern : patterns) {
-      if (pattern.ImpliesAllHosts())
+      if (pattern.MatchesEffectiveTld())
         withheld->AddPattern(pattern);
       else
         granted->AddPattern(pattern);
