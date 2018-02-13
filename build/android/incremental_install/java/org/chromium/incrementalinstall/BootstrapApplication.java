@@ -13,6 +13,8 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.util.Log;
 
+import dalvik.system.DexFile;
+
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -42,7 +44,7 @@ public final class BootstrapApplication extends Application {
     private Instrumentation mRealInstrumentation;
     private Object mStashedProviderList;
     private Object mActivityThread;
-    public static File[] sIncrementalDexFiles; // Needed by junit test runner.
+    public static DexFile[] sIncrementalDexFiles; // Needed by junit test runner.
 
     @Override
     protected void attachBaseContext(Context context) {

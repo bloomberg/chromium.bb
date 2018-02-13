@@ -10,6 +10,8 @@ import android.os.Build;
 import android.os.Process;
 import android.util.Log;
 
+import dalvik.system.DexFile;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -45,7 +47,7 @@ final class ClassLoaderPatcher {
     @SuppressLint({
             "SetWorldReadable", "SetWorldWritable",
     })
-    File[] loadDexFiles(File dexDir) throws ReflectiveOperationException, IOException {
+    DexFile[] loadDexFiles(File dexDir) throws ReflectiveOperationException, IOException {
         Log.i(TAG, "Installing dex files from: " + dexDir);
 
         // The optimized dex files will be owned by this process' user.
@@ -109,7 +111,12 @@ final class ClassLoaderPatcher {
         Object[] dexElements = (Object[]) Reflect.getField(dexPathList, "dexElements");
         dexElements = addDexElements(dexFilesArr, optimizedDir, dexElements);
         Reflect.setField(dexPathList, "dexElements", dexElements);
-        return dexFilesArr;
+
+        DexFile[] ret = new DexFile[dexElements.length];
+        for (int i = 0; i < ret.length; ++i) {
+            ret[i] = (DexFile) Reflect.getField(dexElements[i], "dexFile");
+        }
+        return ret;
     }
 
     /**
