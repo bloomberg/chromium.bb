@@ -55,7 +55,7 @@ class CC_EXPORT SurfaceLayer : public Layer {
 
   viz::SurfaceId primary_surface_id_;
   viz::SurfaceId fallback_surface_id_;
-  base::Optional<uint32_t> deadline_in_frames_;
+  base::Optional<uint32_t> deadline_in_frames_ = 0u;
 
   bool stretch_content_to_fill_bounds_ = false;
 
