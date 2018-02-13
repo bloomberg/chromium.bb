@@ -299,13 +299,7 @@ void SignOut() {
 // //chrome/browser/metrics/ukm_browsertest.cc
 
 // Make sure that UKM is disabled while an incognito tab is open.
-// TODO(crbug.com/806784): Re-enable this test on devices.
-#if TARGET_OS_SIMULATOR
-#define MAYBE_testRegularPlusIncognito testRegularPlusIncognito
-#else
-#define MAYBE_testRegularPlusIncognito FLAKY_testRegularPlusIncognito
-#endif
-- (void)MAYBE_testRegularPlusIncognito {
+- (void)testRegularPlusIncognito {
   uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
 
   OpenNewIncognitoTab();
@@ -330,13 +324,7 @@ void SignOut() {
 }
 
 // Make sure opening a real tab after Incognito doesn't enable UKM.
-// TODO(crbug.com/806784): Re-enable this test on devices.
-#if TARGET_OS_SIMULATOR
-#define MAYBE_testIncognitoPlusRegular testIncognitoPlusRegular
-#else
-#define MAYBE_testIncognitoPlusRegular FLAKY_testIncognitoPlusRegular
-#endif
-- (void)MAYBE_testIncognitoPlusRegular {
+- (void)testIncognitoPlusRegular {
   uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
   chrome_test_util::CloseAllTabs();
   [ChromeEarlGrey waitForMainTabCount:(0)];
@@ -360,13 +348,7 @@ void SignOut() {
 // testOpenNonSync not needed, since there can't be multiple profiles.
 
 // Make sure that UKM is disabled when metrics consent is revoked.
-// TODO(crbug.com/806784): Re-enable this test on devices.
-#if TARGET_OS_SIMULATOR
-#define MAYBE_testMetricsConsent testMetricsConsent
-#else
-#define MAYBE_testMetricsConsent FLAKY_testMetricsConsent
-#endif
-- (void)MAYBE_testMetricsConsent {
+- (void)testMetricsConsent {
   uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
 
   UpdateMetricsConsent(false);
@@ -382,13 +364,7 @@ void SignOut() {
 }
 
 // Make sure that providing metrics consent doesn't enable UKM w/o sync.
-// TODO(crbug.com/806784): Re-enable this test on devices.
-#if TARGET_OS_SIMULATOR
-#define MAYBE_testConsentAddedButNoSync testConsentAddedButNoSync
-#else
-#define MAYBE_testConsentAddedButNoSync FLAKY_testConsentAddedButNoSync
-#endif
-- (void)MAYBE_testConsentAddedButNoSync {
+- (void)testConsentAddedButNoSync {
   SignOut();
   UpdateMetricsConsent(false);
   AssertUKMEnabled(false);
@@ -401,13 +377,7 @@ void SignOut() {
 }
 
 // Make sure that UKM is disabled when sync is disabled.
-// TODO(crbug.com/806784): Re-enable this test on devices.
-#if TARGET_OS_SIMULATOR
-#define MAYBE_testSingleDisableSync testSingleDisableSync
-#else
-#define MAYBE_testSingleDisableSync FLAKY_testSingleDisableSync
-#endif
-- (void)MAYBE_testSingleDisableSync {
+- (void)testSingleDisableSync {
   uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
 
   [ChromeEarlGreyUI openSettingsMenu];
@@ -514,13 +484,7 @@ void SignOut() {
 }
 
 // Make sure that UKM is disabled when sync is not enabled.
-// TODO(crbug.com/806784): Re-enable this test on devices.
-#if TARGET_OS_SIMULATOR
-#define MAYBE_testSingleSyncSignout testSingleSyncSignout
-#else
-#define MAYBE_testSingleSyncSignout FLAKY_testSingleSyncSignout
-#endif
-- (void)MAYBE_testSingleSyncSignout {
+- (void)testSingleSyncSignout {
   uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
 
   SignOut();
@@ -543,13 +507,7 @@ void SignOut() {
 
 // testMetricsReporting not needed, since iOS doesn't use sampling.
 
-// TODO(crbug.com/806784): Re-enable this test on devices.
-#if TARGET_OS_SIMULATOR
-#define MAYBE_testHistoryDelete testHistoryDelete
-#else
-#define MAYBE_testHistoryDelete FLAKY_testHistoryDelete
-#endif
-- (void)MAYBE_testHistoryDelete {
+- (void)testHistoryDelete {
   uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
 
   const ukm::SourceId kDummySourceId = 0x54321;
