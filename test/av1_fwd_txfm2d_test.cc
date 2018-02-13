@@ -211,7 +211,7 @@ TEST(AV1FwdTxfm2d, CfgTest) {
 #if HAVE_SSE2 && defined(__SSE2__)
 #include "av1/common/x86/av1_txfm_sse2.h"
 FwdTxfm2dFunc fwd_func_sse2_list[TX_SIZES_ALL][2] = {
-  { NULL, NULL },                                               // TX_4X4
+  { av1_fwd_txfm2d_4x4_c, av1_lowbd_fwd_txfm2d_4x4_sse2 },      // TX_4X4
   { av1_fwd_txfm2d_8x8_c, av1_lowbd_fwd_txfm2d_8x8_sse2 },      // TX_8X8
   { av1_fwd_txfm2d_16x16_c, av1_lowbd_fwd_txfm2d_16x16_sse2 },  // TX_16X16
   { av1_fwd_txfm2d_32x32_c, av1_lowbd_fwd_txfm2d_32x32_sse2 },  // TX_32X32
