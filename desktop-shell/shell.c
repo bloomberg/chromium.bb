@@ -4715,7 +4715,6 @@ shell_output_destroy_move_layer(struct desktop_shell *shell,
 				struct weston_layer *layer,
 				void *data)
 {
-	struct weston_output *output = data;
 	struct weston_view *view;
 
 	wl_list_for_each(view, &layer->view_list.link, layer_link.link)
@@ -4727,10 +4726,9 @@ handle_output_destroy(struct wl_listener *listener, void *data)
 {
 	struct shell_output *output_listener =
 		container_of(listener, struct shell_output, destroy_listener);
-	struct weston_output *output = output_listener->output;
 	struct desktop_shell *shell = output_listener->shell;
 
-	shell_for_each_layer(shell, shell_output_destroy_move_layer, output);
+	shell_for_each_layer(shell, shell_output_destroy_move_layer, NULL);
 
 	if (output_listener->panel_surface)
 		wl_list_remove(&output_listener->panel_surface_listener.link);
