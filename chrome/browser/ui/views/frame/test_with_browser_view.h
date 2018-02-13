@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 
 class BrowserView;
@@ -31,6 +33,7 @@ class TestWithBrowserView : public BrowserWithTestWindowTest {
 
  private:
   BrowserView* browser_view_;  // Not owned.
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWithBrowserView);
 };
