@@ -323,7 +323,7 @@ class BlobMemoryController::MemoryQuotaAllocationTask
     weak_factory_.InvalidateWeakPtrs();
     if (success)
       controller_->GrantMemoryAllocations(&pending_items_, allocation_size_);
-    done_callback_.Run(success);
+    std::move(done_callback_).Run(success);
   }
 
   base::WeakPtr<QuotaAllocationTask> GetWeakPtr() {
@@ -366,9 +366,9 @@ class BlobMemoryController::FileQuotaAllocationTask
       BlobMemoryController* memory_controller,
       DiskSpaceFuncPtr disk_space_function,
       std::vector<scoped_refptr<ShareableBlobDataItem>> unreserved_file_items,
-      const FileQuotaRequestCallback& done_callback)
+      FileQuotaRequestCallback done_callback)
       : controller_(memory_controller),
-        done_callback_(done_callback),
+        done_callback_(std::move(done_callback)),
         weak_factory_(this) {
     // Get the file sizes and total size.
     uint64_t total_size =
@@ -433,7 +433,7 @@ class BlobMemoryController::FileQuotaAllocationTask
       controller_->pending_file_quota_tasks_.erase(my_list_position_);
     }
 
-    done_callback_.Run(std::move(file_info), success);
+    std::move(done_callback_).Run(std::move(file_info), success);
   }
 
   base::WeakPtr<QuotaAllocationTask> GetWeakPtr() {
@@ -601,9 +601,9 @@ bool BlobMemoryController::CanReserveQuota(uint64_t size) const {
 
 base::WeakPtr<QuotaAllocationTask> BlobMemoryController::ReserveMemoryQuota(
     std::vector<scoped_refptr<ShareableBlobDataItem>> unreserved_memory_items,
-    const MemoryQuotaRequestCallback& done_callback) {
+    MemoryQuotaRequestCallback done_callback) {
   if (unreserved_memory_items.empty()) {
-    done_callback.Run(true);
+    std::move(done_callback).Run(true);
     return base::WeakPtr<QuotaAllocationTask>();
   }
 
@@ -625,7 +625,8 @@ base::WeakPtr<QuotaAllocationTask> BlobMemoryController::ReserveMemoryQuota(
   // more paging for any more pending blobs.
   if (!pending_memory_quota_tasks_.empty()) {
     return AppendMemoryTask(total_bytes_needed,
-                            std::move(unreserved_memory_items), done_callback);
+                            std::move(unreserved_memory_items),
+                            std::move(done_callback));
   }
 
   // Store right away if we can.
@@ -634,7 +635,7 @@ base::WeakPtr<QuotaAllocationTask> BlobMemoryController::ReserveMemoryQuota(
                            static_cast<size_t>(total_bytes_needed));
     MaybeScheduleEvictionUntilSystemHealthy(
         base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE);
-    done_callback.Run(true);
+    std::move(done_callback).Run(true);
     return base::WeakPtr<QuotaAllocationTask>();
   }
 
@@ -642,8 +643,9 @@ base::WeakPtr<QuotaAllocationTask> BlobMemoryController::ReserveMemoryQuota(
   DCHECK(pending_memory_quota_tasks_.empty());
   DCHECK_EQ(0u, pending_memory_quota_total_size_);
 
-  auto weak_ptr = AppendMemoryTask(
-      total_bytes_needed, std::move(unreserved_memory_items), done_callback);
+  auto weak_ptr =
+      AppendMemoryTask(total_bytes_needed, std::move(unreserved_memory_items),
+                       std::move(done_callback));
   MaybeScheduleEvictionUntilSystemHealthy(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE);
   return weak_ptr;
@@ -651,10 +653,10 @@ base::WeakPtr<QuotaAllocationTask> BlobMemoryController::ReserveMemoryQuota(
 
 base::WeakPtr<QuotaAllocationTask> BlobMemoryController::ReserveFileQuota(
     std::vector<scoped_refptr<ShareableBlobDataItem>> unreserved_file_items,
-    const FileQuotaRequestCallback& done_callback) {
+    FileQuotaRequestCallback done_callback) {
   pending_file_quota_tasks_.push_back(std::make_unique<FileQuotaAllocationTask>(
       this, disk_space_function_, std::move(unreserved_file_items),
-      done_callback));
+      std::move(done_callback)));
   pending_file_quota_tasks_.back()->set_my_list_position(
       --pending_file_quota_tasks_.end());
   return pending_file_quota_tasks_.back()->GetWeakPtr();
@@ -772,7 +774,7 @@ void BlobMemoryController::AdjustDiskUsage(uint64_t avail_disk) {
 base::WeakPtr<QuotaAllocationTask> BlobMemoryController::AppendMemoryTask(
     uint64_t total_bytes_needed,
     std::vector<scoped_refptr<ShareableBlobDataItem>> unreserved_memory_items,
-    const MemoryQuotaRequestCallback& done_callback) {
+    MemoryQuotaRequestCallback done_callback) {
   DCHECK(file_paging_enabled_)
       << "Caller tried to reserve memory when CanReserveQuota("
       << total_bytes_needed << ") would have returned false.";
