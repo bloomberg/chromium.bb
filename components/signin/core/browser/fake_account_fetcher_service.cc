@@ -7,6 +7,7 @@
 #include "base/values.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "ui/gfx/image/image_unittest_util.h"
 
 FakeAccountFetcherService::FakeAccountFetcherService() {}
 
@@ -55,5 +56,6 @@ void TestImageDecoder::DecodeImage(
     const std::string& image_data,
     const gfx::Size& desired_image_frame_size,
     const image_fetcher::ImageDecodedCallback& callback) {
-  callback.Run(gfx::Image());
+  callback.Run(image_data.empty() ? gfx::Image()
+                                  : gfx::test::CreateImage(64, 64));
 }

@@ -73,7 +73,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
                                         expected_metadata));
 
   // Get and configure the TestURLFetcher.
-  net::TestURLFetcher* test_url_fetcher = fetcher_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* test_url_fetcher =
+      fetcher_factory_.GetFetcherByID(ImageDataFetcher::kFirstUrlFetcherId);
   ASSERT_NE(nullptr, test_url_fetcher);
   EXPECT_TRUE(test_url_fetcher->GetLoadFlags() & net::LOAD_DO_NOT_SEND_COOKIES);
   EXPECT_TRUE(test_url_fetcher->GetLoadFlags() & net::LOAD_DO_NOT_SAVE_COOKIES);
@@ -111,7 +112,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData_FromCache) {
                                         expected_metadata));
 
   // Get and configure the TestURLFetcher.
-  net::TestURLFetcher* test_url_fetcher = fetcher_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* test_url_fetcher =
+      fetcher_factory_.GetFetcherByID(ImageDataFetcher::kFirstUrlFetcherId);
   ASSERT_NE(nullptr, test_url_fetcher);
   test_url_fetcher->set_status(
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
@@ -145,7 +147,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData_NotFound) {
   EXPECT_CALL(*this, OnImageDataFetched(std::string(), expected_metadata));
 
   // Get and configure the TestURLFetcher.
-  net::TestURLFetcher* test_url_fetcher = fetcher_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* test_url_fetcher =
+      fetcher_factory_.GetFetcherByID(ImageDataFetcher::kFirstUrlFetcherId);
   ASSERT_NE(nullptr, test_url_fetcher);
   test_url_fetcher->set_status(
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
@@ -178,7 +181,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData_WithContentLocation) {
   EXPECT_CALL(*this, OnImageDataFetched(std::string(), expected_metadata));
 
   // Get and configure the TestURLFetcher.
-  net::TestURLFetcher* test_url_fetcher = fetcher_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* test_url_fetcher =
+      fetcher_factory_.GetFetcherByID(ImageDataFetcher::kFirstUrlFetcherId);
   ASSERT_NE(nullptr, test_url_fetcher);
   test_url_fetcher->set_status(
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
@@ -210,7 +214,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData_FailedRequest) {
       *this, OnImageDataFetchedFailedRequest(std::string(), expected_metadata));
 
   // Get and configure the TestURLFetcher.
-  net::TestURLFetcher* test_url_fetcher = fetcher_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* test_url_fetcher =
+      fetcher_factory_.GetFetcherByID(ImageDataFetcher::kFirstUrlFetcherId);
   ASSERT_NE(nullptr, test_url_fetcher);
   test_url_fetcher->set_status(net::URLRequestStatus(
       net::URLRequestStatus::FAILED, net::ERR_INVALID_URL));
@@ -233,11 +238,13 @@ TEST_F(ImageDataFetcherTest, FetchImageData_MultipleRequests) {
 
   // Multiple calls to FetchImageData for the same URL will result in
   // multiple URLFetchers being created.
-  net::TestURLFetcher* test_url_fetcher = fetcher_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* test_url_fetcher =
+      fetcher_factory_.GetFetcherByID(ImageDataFetcher::kFirstUrlFetcherId);
   ASSERT_NE(nullptr, test_url_fetcher);
   test_url_fetcher->delegate()->OnURLFetchComplete(test_url_fetcher);
 
-  test_url_fetcher = fetcher_factory_.GetFetcherByID(1);
+  test_url_fetcher =
+      fetcher_factory_.GetFetcherByID(ImageDataFetcher::kFirstUrlFetcherId + 1);
   ASSERT_NE(nullptr, test_url_fetcher);
   test_url_fetcher->delegate()->OnURLFetchComplete(test_url_fetcher);
 }
@@ -263,7 +270,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData_CancelFetchIfImageExceedsMaxSize) {
   EXPECT_CALL(*this, OnImageDataFetched(std::string(), expected_metadata));
 
   // Get and configure the TestURLFetcher.
-  net::TestURLFetcher* test_url_fetcher = fetcher_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* test_url_fetcher =
+      fetcher_factory_.GetFetcherByID(ImageDataFetcher::kFirstUrlFetcherId);
   ASSERT_NE(nullptr, test_url_fetcher);
 
   // Create a completely valid response that is never used. This is to make sure
@@ -286,26 +294,30 @@ TEST_F(ImageDataFetcherTest, FetchImageData_CancelFetchIfImageExceedsMaxSize) {
       /*total=*/-1,                  // not determined
       /*current_network_bytes=*/0);  // not relevant
   // The URL fetch should be running ...
-  ASSERT_NE(nullptr, fetcher_factory_.GetFetcherByID(0));
+  ASSERT_NE(nullptr, fetcher_factory_.GetFetcherByID(
+                         ImageDataFetcher::kFirstUrlFetcherId));
 
   test_url_fetcher->delegate()->OnURLFetchDownloadProgress(
       test_url_fetcher,
       768 * 1024,  // Current bytes are not exeeding the limit.
       /*total=*/-1, /*current_network_bytes=*/0);
   // ... and running ...
-  ASSERT_NE(nullptr, fetcher_factory_.GetFetcherByID(0));
+  ASSERT_NE(nullptr, fetcher_factory_.GetFetcherByID(
+                         ImageDataFetcher::kFirstUrlFetcherId));
 
   test_url_fetcher->delegate()->OnURLFetchDownloadProgress(
       test_url_fetcher, kMaxDownloadBytes,  // Still not exeeding the limit.
       /*total=*/-1, /*current_network_bytes=*/0);
   // ... and running ...
-  ASSERT_NE(nullptr, fetcher_factory_.GetFetcherByID(0));
+  ASSERT_NE(nullptr, fetcher_factory_.GetFetcherByID(
+                         ImageDataFetcher::kFirstUrlFetcherId));
 
   test_url_fetcher->delegate()->OnURLFetchDownloadProgress(
       test_url_fetcher, kMaxDownloadBytes + 1,  // Limits are exceeded.
       /*total=*/-1, /*current_network_bytes=*/0);
   // ... and be canceled.
-  EXPECT_EQ(nullptr, fetcher_factory_.GetFetcherByID(0));
+  EXPECT_EQ(nullptr, fetcher_factory_.GetFetcherByID(
+                         ImageDataFetcher::kFirstUrlFetcherId));
 }
 
 }  // namespace image_fetcher

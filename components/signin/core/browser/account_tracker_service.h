@@ -58,6 +58,8 @@ class AccountTrackerService : public KeyedService {
    public:
     virtual ~Observer() {}
     virtual void OnAccountUpdated(const AccountInfo& info) {}
+    virtual void OnAccountImageUpdated(const std::string& account_id,
+                                       const gfx::Image& image) {}
     virtual void OnAccountUpdateFailed(const std::string& account_id) {}
     virtual void OnAccountRemoved(const AccountInfo& info) {}
   };
@@ -147,6 +149,8 @@ class AccountTrackerService : public KeyedService {
   };
 
   void NotifyAccountUpdated(const AccountState& state);
+  void NotifyAccountImageUpdated(const std::string& account_id,
+                                 const gfx::Image& image);
   void NotifyAccountUpdateFailed(const std::string& account_id);
   void NotifyAccountRemoved(const AccountState& state);
 

@@ -121,7 +121,8 @@ class IOSImageDataFetcherWrapperTest : public PlatformTest {
     image_fetcher_->FetchImageDataWebpDecoded(GURL(kTestUrl), callback_);
     EXPECT_EQ(nil, result_);
     EXPECT_EQ(false, called_);
-    net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+    net::TestURLFetcher* fetcher =
+        factory_.GetFetcherByID(ImageDataFetcher::kFirstUrlFetcherId);
     DCHECK(fetcher);
     DCHECK(fetcher->delegate());
     return fetcher;

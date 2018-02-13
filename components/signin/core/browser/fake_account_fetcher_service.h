@@ -54,7 +54,8 @@ class TestImageDecoder : public image_fetcher::ImageDecoder {
 
   // image_fetcher::Decoder implementation:
 
-  // Passes an empty image to callback.
+  // If |image_data| is non-empty, a blank 64x64 image is passed to callback.
+  // Otherwise an empty image is passed.
   void DecodeImage(
       const std::string& image_data,
       const gfx::Size& desired_image_frame_size,

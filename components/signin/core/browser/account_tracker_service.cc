@@ -178,6 +178,13 @@ void AccountTrackerService::NotifyAccountUpdated(const AccountState& state) {
     observer.OnAccountUpdated(state.info);
 }
 
+void AccountTrackerService::NotifyAccountImageUpdated(
+    const std::string& account_id,
+    const gfx::Image& image) {
+  for (auto& observer : observer_list_)
+    observer.OnAccountImageUpdated(account_id, image);
+}
+
 void AccountTrackerService::NotifyAccountUpdateFailed(
     const std::string& account_id) {
   for (auto& observer : observer_list_)
@@ -253,6 +260,7 @@ void AccountTrackerService::SetAccountImage(const std::string& account_id,
                                             const gfx::Image& image) {
   DCHECK(base::ContainsKey(accounts_, account_id));
   accounts_[account_id].image = image;
+  NotifyAccountImageUpdated(account_id, image);
 }
 
 void AccountTrackerService::SetIsChildAccount(const std::string& account_id,
