@@ -413,10 +413,13 @@ LayoutUnit MultiColumnFragmentainerGroup::RebalanceColumnHeightIfNeeded()
   LayoutUnit min_space_shortage = shortage_finder.MinimumSpaceShortage();
 
   DCHECK_GT(min_space_shortage, 0);  // We should never _shrink_ the height!
-  DCHECK_NE(min_space_shortage,
-            LayoutUnit::Max());  // If this happens, we probably have a bug.
-  if (min_space_shortage == LayoutUnit::Max())
-    return logical_height_;  // So bail out rather than looping infinitely.
+
+  if (min_space_shortage == LayoutUnit::Max()) {
+    // We failed to find an amount to stretch the columns by. This is a bug; see
+    // e.g. crbug.com/510340 . If this happens, though, we need bail out rather
+    // than looping infinitely.
+    return logical_height_;
+  }
 
   return logical_height_ + min_space_shortage;
 }
