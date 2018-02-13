@@ -8,8 +8,7 @@
     RuntimeEnabled=PictureInPictureAPI
 ]
 partial interface HTMLVideoElement {
-    // TODO(crbug.com/806249): Promise should return a PiPWindow.
-    [CallWith=ScriptState] Promise<void> requestPictureInPicture();
+    [CallWith=ScriptState] Promise<PictureInPictureWindow> requestPictureInPicture();
 
     attribute EventHandler onenterpictureinpicture;
     attribute EventHandler onleavepictureinpicture;

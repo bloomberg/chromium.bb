@@ -40,6 +40,8 @@ ScriptPromise DocumentPictureInPicture::exitPictureInPicture(
 
   // TODO(crbug.com/806249): Call element.exitPictureInPicture().
 
+  PictureInPictureController::Ensure(document).OnClosePictureInPictureWindow();
+
   PictureInPictureController::Ensure(document).UnsetPictureInPictureElement();
 
   picture_in_picture_element->DispatchEvent(
