@@ -48,50 +48,64 @@ function dragFromTopOfElement(element) {
   eventSender.mouseUp();
 }
 
-function runDragTests(styling) {
-  document.body.style.userSelect = styling;
+let onload = new Promise(resolve => {
+  window.addEventListener('load', resolve);
+});
 
-  test(function () {
+function runDragTests(styling) {
+  promise_test(async () => {
+    await onload;
+    document.body.style.userSelect = styling;
     let draggableResults = [];
     registerEventListenersWithResults(draggableResults);
     dragFromTopOfElement(document.getElementById('link'));
     compareResults('link', ['mousedown', 'dragstart'], draggableResults);
-  });
+  }, `link (style: ${styling})`);
 
-  test(function () {
+  promise_test(async () => {
+    await onload;
+    document.body.style.userSelect = styling;
     let draggableResults = [];
     registerEventListenersWithResults(draggableResults);
     dragFromTopOfElement(document.getElementById('button'));
     compareResults('button', ['mousedown'], draggableResults);
-  });
+  }, `button (style: ${styling})`);
 
-  test(function () {
+  promise_test(async () => {
+    await onload;
+    document.body.style.userSelect = styling;
     let draggableResults = [];
     registerEventListenersWithResults(draggableResults);
     dragFromTopOfElement(document.getElementById('image'));
     compareResults('image', ['mousedown', 'dragstart'], draggableResults);
-  });
+  }, `image (style: ${styling})`);
 
-  test(function () {
+  promise_test(async () => {
+    await onload;
+    document.body.style.userSelect = styling;
     let draggableResults = [];
     registerEventListenersWithResults(draggableResults);
     dragFromTopOfElement(document.getElementById('draggable_span'));
     compareResults('draggable_span', ['mousedown', 'dragstart'], draggableResults);
-  });
+  }, `draggable_span (style: ${styling})`);
 
-  test(function () {
+  promise_test(async () => {
+    await onload;
+    document.body.style.userSelect = styling;
     let draggableResults = [];
     registerEventListenersWithResults(draggableResults);
     dragFromTopOfElement(document.getElementById('editable_link'));
     compareResults('editable_link', ['mousedown'], draggableResults);
-  });
+  }, `editable_link (style: ${styling})`);
 
-  test(function () {
+  promise_test(async () => {
+    await onload;
+    document.body.style.userSelect = styling;
     let draggableResults = [];
     registerEventListenersWithResults(draggableResults);
     dragFromTopOfElement(document.getElementById('editable_link2'));
     compareResults('editable_link2', ['mousedown'], draggableResults);
-  });
+  }, `editable_link2 (style: ${styling})`);
 }
 
 runDragTests("auto");
