@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 class Browser;
@@ -259,8 +260,7 @@ class AccessibilityManager
 
   // Forward an accessibility gesture from the touch exploration controller
   // to ChromeVox.
-  // TODO(warx): |gesture| comes from ui::ToString() on a ax::mojom::Gesture.
-  void HandleAccessibilityGesture(const std::string& gesture);
+  void HandleAccessibilityGesture(ax::mojom::Gesture gesture);
 
   // Update the touch exploration controller so that synthesized
   // touch events are anchored at this point.

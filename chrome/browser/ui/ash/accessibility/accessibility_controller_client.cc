@@ -114,7 +114,7 @@ void AccessibilityControllerClient::PlayShutdownSound(
 }
 
 void AccessibilityControllerClient::HandleAccessibilityGesture(
-    const std::string& gesture) {
+    ax::mojom::Gesture gesture) {
   chromeos::AccessibilityManager::Get()->HandleAccessibilityGesture(gesture);
 }
 

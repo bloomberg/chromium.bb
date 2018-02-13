@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ash {
 
@@ -48,12 +49,12 @@ TEST_F(AshTouchExplorationManagerTest, HandleAccessibilityGesture) {
   touch_exploration_manager.HandleAccessibilityGesture(
       ax::mojom::Gesture::kClick);
   a11y_controller->FlushMojoForTest();
-  EXPECT_EQ("click", client.last_a11y_gesture());
+  EXPECT_EQ(ax::mojom::Gesture::kClick, client.last_a11y_gesture());
 
   touch_exploration_manager.HandleAccessibilityGesture(
       ax::mojom::Gesture::kSwipeLeft1);
   a11y_controller->FlushMojoForTest();
-  EXPECT_EQ("swipeLeft1", client.last_a11y_gesture());
+  EXPECT_EQ(ax::mojom::Gesture::kSwipeLeft1, client.last_a11y_gesture());
 }
 
 }  //  namespace ash
