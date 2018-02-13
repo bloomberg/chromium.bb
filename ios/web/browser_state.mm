@@ -147,7 +147,7 @@ class BrowserState::URLLoaderFactory : public network::mojom::URLLoaderFactory {
         request_getter, nullptr, std::move(request), options, resource_request,
         false, std::move(client),
         static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation), 0,
-        nullptr);
+        nullptr, nullptr);
   }
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 };
