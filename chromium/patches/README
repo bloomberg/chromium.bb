@@ -84,3 +84,10 @@ Current patches:
   libavformat/mov.c
     find_prev_closest_index(): It's possible *ctts_index == ctts_count. Thus add
     a check to prevent access violation. https://crbug.com/804097
+
+libavcodec/h264_cavlc.c
+    When ff_h264_decode_mb_cavlc() failed due to wrong sl->qscale values, e.g.
+    dquant out of range, set the qscale to be a valid value before returning -1
+    and exiting the function. The qscale value can be used later, e.g. in loop
+    filter and keeping an invalid qscale could cause trouble.
+    https://crbug.com/806122
