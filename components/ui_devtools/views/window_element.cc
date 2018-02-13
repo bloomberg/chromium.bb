@@ -4,8 +4,10 @@
 
 #include "components/ui_devtools/views/window_element.h"
 
+#include "components/ui_devtools/Protocol.h"
 #include "components/ui_devtools/views/ui_element_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ui_devtools {
 namespace {
@@ -65,7 +67,7 @@ void WindowElement::OnWindowBoundsChanged(aura::Window* window,
 }
 
 std::vector<std::pair<std::string, std::string>>
-WindowElement::GetCustomAttributes() const {
+WindowElement::GetCustomProperties() const {
   return {};
 }
 
@@ -86,6 +88,16 @@ void WindowElement::SetVisible(bool visible) {
     window_->Show();
   else
     window_->Hide();
+}
+
+std::unique_ptr<protocol::Array<std::string>> WindowElement::GetAttributes()
+    const {
+  auto attributes = protocol::Array<std::string>::create();
+  attributes->addItem("name");
+  attributes->addItem(window_->GetName());
+  attributes->addItem("active");
+  attributes->addItem(::wm::IsActiveWindow(window_) ? "true" : "false");
+  return attributes;
 }
 
 std::pair<gfx::NativeWindow, gfx::Rect> WindowElement::GetNodeWindowAndBounds()

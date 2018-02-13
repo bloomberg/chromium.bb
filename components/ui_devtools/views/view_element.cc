@@ -5,6 +5,7 @@
 #include "components/ui_devtools/views/view_element.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/ui_devtools/Protocol.h"
 #include "components/ui_devtools/views/ui_element_delegate.h"
 #include "ui/views/widget/widget.h"
 
@@ -58,7 +59,7 @@ void ViewElement::OnViewBoundsChanged(views::View* view) {
 }
 
 std::vector<std::pair<std::string, std::string>>
-ViewElement::GetCustomAttributes() const {
+ViewElement::GetCustomProperties() const {
   base::string16 description;
   if (view_->GetTooltipText(gfx::Point(), &description)) {
     return {std::make_pair<std::string, std::string>(
@@ -81,6 +82,15 @@ void ViewElement::GetVisible(bool* visible) const {
 
 void ViewElement::SetVisible(bool visible) {
   view_->SetVisible(visible);
+}
+
+std::unique_ptr<protocol::Array<std::string>> ViewElement::GetAttributes()
+    const {
+  auto attributes = protocol::Array<std::string>::create();
+  // TODO(lgrey): Change name to class after updating tests.
+  attributes->addItem("name");
+  attributes->addItem(view_->GetClassName());
+  return attributes;
 }
 
 std::pair<gfx::NativeWindow, gfx::Rect> ViewElement::GetNodeWindowAndBounds()

@@ -54,40 +54,6 @@ std::unique_ptr<DOM::Node> BuildNode(
   return node;
 }
 
-// TODO(thanhph): Move this function to UIElement::GetAttributes().
-std::unique_ptr<Array<std::string>> GetAttributes(UIElement* ui_element) {
-  std::unique_ptr<Array<std::string>> attributes = Array<std::string>::create();
-  attributes->addItem("name");
-  switch (ui_element->type()) {
-    case UIElementType::WINDOW: {
-      aura::Window* window =
-          UIElement::GetBackingElement<aura::Window, WindowElement>(ui_element);
-      attributes->addItem(window->GetName());
-      attributes->addItem("active");
-      attributes->addItem(::wm::IsActiveWindow(window) ? "true" : "false");
-      break;
-    }
-    case UIElementType::WIDGET: {
-      views::Widget* widget =
-          UIElement::GetBackingElement<views::Widget, WidgetElement>(
-              ui_element);
-      attributes->addItem(widget->GetName());
-      attributes->addItem("active");
-      attributes->addItem(widget->IsActive() ? "true" : "false");
-      break;
-    }
-    case UIElementType::VIEW: {
-      attributes->addItem(
-          UIElement::GetBackingElement<views::View, ViewElement>(ui_element)
-              ->GetClassName());
-      break;
-    }
-    default:
-      DCHECK(false);
-  }
-  return attributes;
-}
-
 views::Widget* GetWidgetFromWindow(gfx::NativeWindow window) {
   return views::Widget::GetWidgetForNativeView(window);
 }
@@ -97,7 +63,7 @@ std::unique_ptr<DOM::Node> BuildDomNodeFromUIElement(UIElement* root) {
   for (auto* it : root->children())
     children->addItem(BuildDomNodeFromUIElement(it));
 
-  return BuildNode(root->GetTypeName(), GetAttributes(root),
+  return BuildNode(root->GetTypeName(), root->GetAttributes(),
                    std::move(children), root->node_id());
 }
 
@@ -854,7 +820,7 @@ std::unique_ptr<DOM::Node> DOMAgent::BuildTreeForWindow(
     window_element_root->AddChild(window_element);
   }
   std::unique_ptr<DOM::Node> node =
-      BuildNode("Window", GetAttributes(window_element_root),
+      BuildNode("Window", window_element_root->GetAttributes(),
                 std::move(children), window_element_root->node_id());
   return node;
 }
@@ -871,7 +837,7 @@ std::unique_ptr<DOM::Node> DOMAgent::BuildTreeForRootWidget(
   widget_element->AddChild(view_element);
 
   std::unique_ptr<DOM::Node> node =
-      BuildNode("Widget", GetAttributes(widget_element), std::move(children),
+      BuildNode("Widget", widget_element->GetAttributes(), std::move(children),
                 widget_element->node_id());
   return node;
 }
@@ -887,7 +853,7 @@ std::unique_ptr<DOM::Node> DOMAgent::BuildTreeForView(UIElement* view_element,
     view_element->AddChild(view_element_child);
   }
   std::unique_ptr<DOM::Node> node =
-      BuildNode("View", GetAttributes(view_element), std::move(children),
+      BuildNode("View", view_element->GetAttributes(), std::move(children),
                 view_element->node_id());
   return node;
 }
