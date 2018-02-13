@@ -2467,7 +2467,7 @@
     Sound
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SENSORS" desc="Label for the sensors permission in Site Settings. Sensors are motion and light sensors, specifically accelerometers, gyroscope, magnetometers, and ambient-light sensors">
-    Motion or Light Sensors
+    Motion or light sensors
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_USB_DEVICES" desc="Label for the USB devices in site settings.">
     USB devices
