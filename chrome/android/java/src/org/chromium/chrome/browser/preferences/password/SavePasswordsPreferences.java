@@ -565,6 +565,8 @@ public class SavePasswordsPreferences
         Intent send = new Intent(Intent.ACTION_SEND);
         send.setType("text/csv");
         send.putExtra(Intent.EXTRA_STREAM, mExportFileUri);
+        send.putExtra(
+                Intent.EXTRA_SUBJECT, getString(R.string.save_password_preferences_export_subject));
 
         try {
             Intent chooser = Intent.createChooser(send, null);
