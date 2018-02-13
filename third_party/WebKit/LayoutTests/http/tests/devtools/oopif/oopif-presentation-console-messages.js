@@ -18,11 +18,11 @@
   TestRunner.addResult('\nNavigating main frame');
   await TestRunner.navigatePromise('resources/error.html');
   TestRunner.addResult('Revealing main frame source');
-  await Common.Revealer.revealPromise(Workspace.workspace.uiSourceCodeForURL('http://127.0.0.1:8000/devtools/oopif/resources/error.html'));
+  await Common.Revealer.reveal(Workspace.workspace.uiSourceCodeForURL('http://127.0.0.1:8000/devtools/oopif/resources/error.html'));
   TestRunner.addResult('\nCreating iframe');
   await TestRunner.addIframe('http://devtools.oopif.test:8000/devtools/oopif/resources/error.html', {id: 'myframe'});
   TestRunner.addResult('Revealing iframe source');
-  await Common.Revealer.revealPromise(Workspace.workspace.uiSourceCodeForURL('http://devtools.oopif.test:8000/devtools/oopif/resources/error.html'));
+  await Common.Revealer.reveal(Workspace.workspace.uiSourceCodeForURL('http://devtools.oopif.test:8000/devtools/oopif/resources/error.html'));
   TestRunner.addResult('\nNavigating iframe');
   await TestRunner.evaluateInPageAsync(`
     (function() {
@@ -32,7 +32,7 @@
     })()
   `);
   TestRunner.addResult('Revealing iframe source');
-  await Common.Revealer.revealPromise(Workspace.workspace.uiSourceCodeForURL('http://devtools.oopif.test:8000/devtools/oopif/resources/empty.html'));
+  await Common.Revealer.reveal(Workspace.workspace.uiSourceCodeForURL('http://devtools.oopif.test:8000/devtools/oopif/resources/empty.html'));
   TestRunner.addResult('\nClearing console');
   ConsoleModel.consoleModel.requestClearMessages();
   TestRunner.completeTest();

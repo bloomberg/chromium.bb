@@ -50,7 +50,7 @@
     ElementsTestRunner.findNode(matchFunction, callback);
     function callback(node) {
       TestRunner.addSniffer(Elements.ElementsBreadcrumbs.prototype, 'update', next);
-      Common.Revealer.revealPromise(node);
+      Common.Revealer.reveal(node);
     }
   }
 

@@ -65,7 +65,7 @@ console.error(null)`)
   }
 
   function selectSourceCode(uiSourceCode) {
-    return Common.Revealer.revealPromise(uiSourceCode).then(() => uiSourceCode);
+    return Common.Revealer.reveal(uiSourceCode).then(() => uiSourceCode);
   }
 
   function dumpLineMessage(level, text, lineNumber, columnNumber) {

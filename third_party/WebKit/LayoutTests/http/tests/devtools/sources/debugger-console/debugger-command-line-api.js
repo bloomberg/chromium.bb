@@ -20,7 +20,7 @@
   `);
 
   TestRunner.addSniffer(SDK.RuntimeModel.prototype, '_inspectRequested', inspect);
-  TestRunner.addSniffer(Common.Revealer, 'revealPromise', oneRevealPromise, true);
+  TestRunner.addSniffer(Common.Revealer, 'reveal', oneRevealPromise, true);
 
   function oneRevealPromise(node, revealPromise) {
     if (!(node instanceof SDK.RemoteObject))

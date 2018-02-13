@@ -17,7 +17,7 @@
   }
 
   function onQuickOpenFulfilled() {
-    TestRunner.addSniffer(Common.Revealer, 'revealPromise', (revealable, omitFocus, promise) => promise.then(revealed));
+    TestRunner.addSniffer(Common.Revealer, 'reveal', (revealable, promise) => promise.then(revealed));
     this.selectItem(1, '');
   }
 
