@@ -331,6 +331,6 @@ void InitializeAllocatorShim() {
 #endif
 
 #if (defined(__GNUC__) && defined(__EXCEPTIONS)) || \
-    (defined(_HAS_EXCEPTIONS) && _HAS_EXCEPTIONS)
+    (defined(_MSC_VER) && defined(_CPPUNWIND))
 #error This code cannot be used when exceptions are turned on.
 #endif
