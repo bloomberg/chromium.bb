@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -60,10 +61,12 @@ public class SearchWidgetProvider extends AppWidgetProvider {
         public SearchWidgetProviderDelegate(Context context) {
             mContext = context == null ? ContextUtils.getApplicationContext() : context;
 
-            if (mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_APP_WIDGETS)) {
-                mManager = AppWidgetManager.getInstance(mContext);
-            } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
+                    && !mContext.getPackageManager().hasSystemFeature(
+                               PackageManager.FEATURE_APP_WIDGETS)) {
                 mManager = null;
+            } else {
+                mManager = AppWidgetManager.getInstance(mContext);
             }
         }
 
