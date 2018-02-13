@@ -304,6 +304,13 @@ namespace {
 
 // Version number of the database.
 //
+// Version 9 - 2015/04/17 - https://codereview.chromium.org/1083623003
+// Version 8 - 2015/02/23 - https://codereview.chromium.org/876973003
+// Version 7 - 2013/12/16 - https://codereview.chromium.org/24734007
+// Version 6 - 2013/04/23 - https://codereview.chromium.org/14208017
+// Version 5 - 2011/12/05 - https://codereview.chromium.org/8533013
+// Version 4 - 2009/09/01 - https://codereview.chromium.org/183021
+//
 // Version 9 adds a partial index to track non-persistent cookies.
 // Non-persistent cookies sometimes need to be deleted on startup. There are
 // frequently few or no non-persistent cookies, so the partial index allows the
