@@ -83,22 +83,6 @@
                                   self.voiceSearchButton);
 }
 
-#pragma mark - TabHistoryPositioner
-
-- (CGPoint)originPointForToolbarButton:(ToolbarButtonType)toolbarButton {
-  UIButton* historyButton =
-      toolbarButton ? self.backButton : self.forwardButton;
-
-  // Set the origin for the tools popup to the leading side of the bottom of the
-  // pressed buttons.
-  CGRect buttonBounds = [historyButton.imageView bounds];
-  CGPoint leadingBottomCorner = CGPointMake(CGRectGetLeadingEdge(buttonBounds),
-                                            CGRectGetMaxY(buttonBounds));
-  CGPoint origin = [historyButton.imageView convertPoint:leadingBottomCorner
-                                                  toView:historyButton.window];
-  return origin;
-}
-
 #pragma mark - TabHistoryUIUpdater
 
 - (void)updateUIForTabHistoryPresentationFrom:(ToolbarButtonType)button {

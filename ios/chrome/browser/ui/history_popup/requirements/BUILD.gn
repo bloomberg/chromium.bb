@@ -7,7 +7,6 @@ source_set("requirements") {
   sources = [
     "tab_history_constants.h",
     "tab_history_constants.mm",
-    "tab_history_positioner.h",
     "tab_history_presentation.h",
     "tab_history_ui_updater.h",
   ]

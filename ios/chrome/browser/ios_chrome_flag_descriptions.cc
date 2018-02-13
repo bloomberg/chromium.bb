@@ -20,11 +20,6 @@ const char kCaptivePortalDescription[] =
     "When enabled, the Captive Portal landing page will be displayed if it is "
     "detected that the user is connected to a Captive Portal network.";
 
-const char kCleanToolbarName[] = "Clean Toolbar";
-const char kCleanToolbarDescription[] =
-    "When enabled, the Clean Toolbar will be used instead of "
-    "WebToolbarController.";
-
 const char kClippingTextfieldName[] = "Clipping Textfield";
 const char kClippingTextfieldDescription[] =
     "When enabled, the new URL clipping implementation compatible with iOS 11 "
@@ -93,10 +88,6 @@ const char kPhysicalWeb[] = "Physical Web";
 const char kPhysicalWebDescription[] =
     "When enabled, the omnibox will include suggestions for web pages "
     "broadcast by devices near you.";
-
-const char kSafeAreaCompatibleToolbarName[] = "Safe Area Compatible Toolbar";
-const char kSafeAreaCompatibleToolbarDescription[] =
-    "When enabled, the toolbar resizes itself when the safe area changes.";
 
 const char kShareCanonicalURLName[] = "Share Canonical URL";
 const char kShareCanonicalURLDescription[] =

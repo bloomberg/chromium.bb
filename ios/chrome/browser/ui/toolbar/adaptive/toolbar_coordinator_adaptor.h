@@ -26,7 +26,7 @@
 // Adds a |toolbarCoordinator| to the set of coordinators this object is
 // interfacing with.
 - (void)addToolbarCoordinator:
-    (id<ToolbarCoordinating, ToolbarCommands>)toolbarCoordinator;
+    (id<IncognitoViewControllerDelegate, ToolbarCommands>)toolbarCoordinator;
 
 @end
 

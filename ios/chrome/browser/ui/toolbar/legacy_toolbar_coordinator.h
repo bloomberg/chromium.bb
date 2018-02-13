@@ -8,7 +8,6 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
-#import "ios/chrome/browser/ui/toolbar/public/legacy_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/public/primary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_coordinating.h"
@@ -20,7 +19,6 @@
 
 @interface LegacyToolbarCoordinator
     : ChromeCoordinator<PrimaryToolbarCoordinator,
-                        LegacyToolbarCoordinator,
                         ToolbarCoordinating,
                         ToolbarSnapshotProviding,
                         ToolsMenuPresentationStateProvider>

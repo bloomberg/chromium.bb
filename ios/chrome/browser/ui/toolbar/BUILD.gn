@@ -24,9 +24,6 @@ source_set("toolbar") {
     "toolbar_view_delegate.h",
     "tools_menu_button_observer_bridge.h",
     "tools_menu_button_observer_bridge.mm",
-    "web_toolbar_controller.h",
-    "web_toolbar_controller.mm",
-    "web_toolbar_delegate.h",
   ]
   deps = [
     ":resource_macros",
@@ -153,17 +150,6 @@ source_set("toolbar_ui_broadcasting_util") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-source_set("feature") {
-  sources = [
-    "toolbar_private_base_feature.h",
-    "toolbar_private_base_feature.mm",
-  ]
-  deps = [
-    "//base",
-  ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
 source_set("resource_macros") {
   sources = [
     "toolbar_resource_macros.h",
@@ -179,7 +165,6 @@ source_set("test_support") {
   sources = [
     "test_toolbar_model_ios.h",
     "test_toolbar_model_ios.mm",
-    "web_toolbar_controller_private.h",
   ]
   deps = [
     ":toolbar",
@@ -199,7 +184,6 @@ source_set("unit_tests") {
     "toolbar_controller_unittest.mm",
     "toolbar_model_impl_ios_unittest.mm",
     "toolbar_ui_broadcasting_util_unittest.mm",
-    "web_toolbar_controller_unittest.mm",
   ]
   deps = [
     ":test_support",

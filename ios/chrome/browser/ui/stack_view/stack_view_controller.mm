@@ -770,21 +770,18 @@ NSString* const kTransitionToolbarAnimationKey =
   [self.view addSubview:[_toolbarController view]];
   [_toolbarController didMoveToParentViewController:self];
 
-  if (IsSafeAreaCompatibleToolbarEnabled()) {
-    [[_toolbarController view].leadingAnchor
-        constraintEqualToAnchor:self.view.leadingAnchor]
-        .active = YES;
-    [[_toolbarController view].trailingAnchor
-        constraintEqualToAnchor:self.view.trailingAnchor]
-        .active = YES;
-    [[_toolbarController view].topAnchor
-        constraintEqualToAnchor:self.view.topAnchor]
-        .active = YES;
-    [_toolbarController heightConstraint].constant =
-        ToolbarHeightWithTopOfScreenOffset(
-            [_toolbarController statusBarOffset]);
-    [_toolbarController heightConstraint].active = YES;
-  }
+  [[_toolbarController view].leadingAnchor
+      constraintEqualToAnchor:self.view.leadingAnchor]
+      .active = YES;
+  [[_toolbarController view].trailingAnchor
+      constraintEqualToAnchor:self.view.trailingAnchor]
+      .active = YES;
+  [[_toolbarController view].topAnchor
+      constraintEqualToAnchor:self.view.topAnchor]
+      .active = YES;
+  [_toolbarController heightConstraint].constant =
+      ToolbarHeightWithTopOfScreenOffset([_toolbarController statusBarOffset]);
+  [_toolbarController heightConstraint].active = YES;
 
   [self updateToolbarAppearanceWithAnimation:NO];
 
@@ -808,21 +805,15 @@ NSString* const kTransitionToolbarAnimationKey =
   }
   [self.view addSubview:_scrollView];
 
-  if (IsSafeAreaCompatibleToolbarEnabled()) {
-    [_scrollView setTranslatesAutoresizingMaskIntoConstraints:NO];
-    [NSLayoutConstraint activateConstraints:@[
-      [_scrollView.topAnchor
-          constraintEqualToAnchor:[_toolbarController view].bottomAnchor],
-      [_scrollView.leadingAnchor
-          constraintEqualToAnchor:self.view.leadingAnchor],
-      [_scrollView.trailingAnchor
-          constraintEqualToAnchor:self.view.trailingAnchor],
-      [_scrollView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
-    ]];
-  } else {
-    [_scrollView setAutoresizingMask:(UIViewAutoresizingFlexibleHeight |
-                                      UIViewAutoresizingFlexibleWidth)];
-  }
+  [_scrollView setTranslatesAutoresizingMaskIntoConstraints:NO];
+  [NSLayoutConstraint activateConstraints:@[
+    [_scrollView.topAnchor
+        constraintEqualToAnchor:[_toolbarController view].bottomAnchor],
+    [_scrollView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+    [_scrollView.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor],
+    [_scrollView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
+  ]];
 
   [_scrollView setBounces:NO];
   [_scrollView setScrollsToTop:NO];
@@ -838,12 +829,9 @@ NSString* const kTransitionToolbarAnimationKey =
 
 - (void)viewSafeAreaInsetsDidChange {
   [super viewSafeAreaInsetsDidChange];
-  if (IsSafeAreaCompatibleToolbarEnabled()) {
-    [_toolbarController heightConstraint].constant =
-        ToolbarHeightWithTopOfScreenOffset(
-            [_toolbarController statusBarOffset]);
-    [[_toolbarController view] setNeedsLayout];
-  }
+  [_toolbarController heightConstraint].constant =
+      ToolbarHeightWithTopOfScreenOffset([_toolbarController statusBarOffset]);
+  [[_toolbarController view] setNeedsLayout];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -864,9 +852,7 @@ NSString* const kTransitionToolbarAnimationKey =
     // Calls like -viewportSizeWasChanged should instead be called in
     // viewDidLayoutSubviews, but since stack_view_controller is going away in
     // the near future, it's easier to put this here instead of refactoring.
-    if (IsSafeAreaCompatibleToolbarEnabled()) {
-      [self.view layoutIfNeeded];
-    }
+    [self.view layoutIfNeeded];
 
     // If cards haven't been sized yet, size them now.
     if (_initialCardSize.height == 0.0) {
@@ -1721,11 +1707,9 @@ NSString* const kTransitionToolbarAnimationKey =
   CGRect currentCardFrame =
       AlignRectOriginAndSizeToPixels(LayoutRectGetRect(currentCardLayout));
 
-  if (IsSafeAreaCompatibleToolbarEnabled()) {
-    // Forces a layout because the views may not yet be positioned correctly
-    // due to a screen rotation.
-    [self.view layoutIfNeeded];
-  }
+  // Forces a layout because the views may not yet be positioned correctly
+  // due to a screen rotation.
+  [self.view layoutIfNeeded];
 
   // Animate the dummy toolbar background view.
   [self animateDummyToolbarForCardFrame:currentCardFrame

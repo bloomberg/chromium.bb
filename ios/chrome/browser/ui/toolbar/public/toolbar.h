@@ -6,7 +6,6 @@
 #define IOS_CHROME_BROWSER_UI_TOOLBAR_PUBLIC_TOOLBAR_H_
 
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
-#import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/qr_scanner/requirements/qr_scanner_result_loading.h"
 #import "ios/chrome/browser/ui/toolbar/public/abstract_web_toolbar.h"
@@ -21,7 +20,6 @@
                   VoiceSearchControllerDelegate,
                   ActivityServicePositioner,
                   QRScannerResultLoading,
-                  BubbleViewAnchorPointProvider,
                   ToolsMenuPresentationProvider,
                   FullscreenUIElement>
 

@@ -8,7 +8,6 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
-#import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/toolbar/legacy_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/public/abstract_toolbar.h"
@@ -29,7 +28,6 @@ class ReadingListModel;
 // more buttons in the empty space.
 @interface ToolbarController : UIViewController<AbstractToolbar,
                                                 ActivityServicePositioner,
-                                                BubbleViewAnchorPointProvider,
                                                 FullscreenUIElement,
                                                 ToolsMenuPresentationProvider>
 

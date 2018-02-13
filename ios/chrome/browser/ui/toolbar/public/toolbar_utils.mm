@@ -14,7 +14,6 @@
 #endif
 
 CGFloat ToolbarHeightWithTopOfScreenOffset(CGFloat status_bar_offset) {
-  DCHECK(IsSafeAreaCompatibleToolbarEnabled());
   InterfaceIdiom idiom = IsIPadIdiom() ? IPAD_IDIOM : IPHONE_IDIOM;
   CGRect frame = kToolbarFrame[idiom];
   if (idiom == IPHONE_IDIOM) {

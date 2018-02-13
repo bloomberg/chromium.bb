@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
-#import "ios/chrome/browser/ui/history_popup/requirements/tab_history_positioner.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_ui_updater.h"
 #include "ios/chrome/browser/ui/qr_scanner/requirements/qr_scanner_result_loading.h"
 #import "ios/chrome/browser/ui/toolbar/legacy_toolbar_coordinator.h"
@@ -38,6 +37,7 @@ initWithDispatcher:
 - (instancetype)init NS_UNAVAILABLE;
 
 @property(nonatomic, weak) id<UrlLoader> URLLoader;
+@property(nonatomic, weak) id<ToolbarCoordinatorDelegate> delegate;
 
 @end
 

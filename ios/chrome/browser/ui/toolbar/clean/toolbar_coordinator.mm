@@ -194,12 +194,6 @@
   return self.locationBarCoordinator;
 }
 
-- (void)updateToolbarState {
-  // TODO(crbug.com/803383): This should be done inside the location bar.
-  // Updates the omnibox.
-  [self.locationBarCoordinator updateOmniboxState];
-}
-
 - (void)updateToolbarForSideSwipeSnapshot:(web::WebState*)webState {
   BOOL isNTP = IsVisibleUrlNewTabPage(webState);
 
@@ -258,10 +252,6 @@
 // owning the Toolbar. This can wait until the omnibox and toolbar refactoring
 // is more advanced.
 #pragma mark OmniboxPopupPositioner methods.
-
-- (UIView*)popupAnchorView {
-  return self.toolbarViewController.view;
-}
 
 - (UIView*)popupParentView {
   return self.toolbarViewController.view.superview;

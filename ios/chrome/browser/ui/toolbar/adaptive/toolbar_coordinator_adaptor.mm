@@ -42,6 +42,7 @@
   }
   return self;
 }
+
 - (void)addToolbarCoordinator:
     (id<ToolbarCoordinating, ToolbarCommands>)toolbarCoordinator {
   [self.coordinators addObject:toolbarCoordinator];
@@ -67,6 +68,12 @@
 
 - (BOOL)isShowingToolsMenu {
   return [self.toolsMenuCoordinator isShowingToolsMenu];
+}
+
+#pragma mark - ToolbarCoordinating
+
+- (void)updateToolsMenu {
+  [self.toolsMenuCoordinator updateConfiguration];
 }
 
 @end

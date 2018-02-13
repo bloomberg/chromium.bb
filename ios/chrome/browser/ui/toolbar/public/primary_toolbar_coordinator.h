@@ -14,7 +14,6 @@
 @protocol QRScannerResultLoading;
 @protocol TabHistoryUIUpdater;
 @protocol VoiceSearchControllerDelegate;
-@protocol WebToolbarDelegate;
 
 // Protocol defining a primary toolbar, in a paradigm where the toolbar can be
 // split between primary and secondary.

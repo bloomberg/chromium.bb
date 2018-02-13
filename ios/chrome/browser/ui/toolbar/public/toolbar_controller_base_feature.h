@@ -7,10 +7,6 @@
 
 #include "base/feature_list.h"
 
-// Feature to choose whether to use the clean Toolbar stack or
-// WebToolbarController.
-extern const base::Feature kCleanToolbar;
-
 // Feature to choose whether to use the memex prototype tab switcher or the
 // regular native tab switcher.
 extern const base::Feature kMemexTabSwitcher;

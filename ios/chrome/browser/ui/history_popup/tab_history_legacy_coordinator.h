@@ -10,7 +10,6 @@
 @class CommandDispatcher;
 @protocol PopupMenuDelegate;
 @protocol TabHistoryPresentation;
-@protocol TabHistoryPositioner;
 @protocol TabHistoryUIUpdater;
 @class TabModel;
 
@@ -21,8 +20,6 @@
 
 // The dispatcher for this Coordinator.
 @property(nonatomic, weak) CommandDispatcher* dispatcher;
-// |positionProvider| provides the presentation origin for the TabHistoryPopup.
-@property(nonatomic, weak) id<TabHistoryPositioner> positionProvider;
 // |presentationProvider| runs tasks for before and after presenting the
 // TabHistoryPopup.
 @property(nonatomic, weak) id<TabHistoryPresentation> presentationProvider;

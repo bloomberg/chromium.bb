@@ -7,12 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+// TODO(crbug.com/809785): Rename this or merge it into another protocol.
 @protocol OmniboxPopupPositioner
-
-// Returns the view the popup is anchored next to. Callers are responsible for
-// adding the popup as a sibling either above or below this view.
-// TODO(crbug.com/788705): Remove this method when removing legacy toolbar.
-- (UIView*)popupAnchorView;
 
 // View to which the popup view should be added as subview.
 - (UIView*)popupParentView;

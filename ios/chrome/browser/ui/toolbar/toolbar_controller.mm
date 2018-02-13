@@ -154,9 +154,7 @@ using ios::material::TimingFunction;
     }
 
     self.view = [[LegacyToolbarView alloc] initWithFrame:viewFrame];
-    if (IsSafeAreaCompatibleToolbarEnabled()) {
-      [self.view setTranslatesAutoresizingMaskIntoConstraints:NO];
-    }
+    [self.view setTranslatesAutoresizingMaskIntoConstraints:NO];
 
     UIViewAutoresizing autoresizingMask =
         UIViewAutoresizingFlexibleLeadingMargin() |
@@ -379,10 +377,6 @@ using ios::material::TimingFunction;
   [stackButton_ setAccessibilityValue:stackButtonValue];
 }
 
-- (void)setShareButtonEnabled:(BOOL)enabled {
-  [shareButton_ setEnabled:enabled];
-}
-
 - (void)setUpButton:(UIButton*)button
        withImageEnum:(int)imageEnum
      forInitialState:(UIControlState)initialState
@@ -437,12 +431,6 @@ using ios::material::TimingFunction;
 - (void)hideViewsForNewTabPage:(BOOL)hide {
   DCHECK(!IsIPadIdiom());
   [shadowView_ setHidden:hide];
-}
-
-- (void)adjustToolbarHeight {
-  self.heightConstraint.constant =
-      ToolbarHeightWithTopOfScreenOffset([self statusBarOffset]);
-  self.heightConstraint.active = YES;
 }
 
 - (NSLayoutConstraint*)heightConstraint {
@@ -745,23 +733,6 @@ using ios::material::TimingFunction;
 
 - (UIView*)shareButtonView {
   return shareButton_;
-}
-
-#pragma mark - BubbleViewAnchorPointProvider methods.
-
-- (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
-  CGPoint anchorPoint =
-      bubble_util::AnchorPoint(stackButton_.imageView.frame, direction);
-  return [stackButton_.imageView.superview
-      convertPoint:anchorPoint
-            toView:stackButton_.imageView.window];
-}
-
-- (CGPoint)anchorPointForToolsMenuButton:(BubbleArrowDirection)direction {
-  CGPoint anchorPoint =
-      bubble_util::AnchorPoint(toolsMenuButton_.frame, direction);
-  return [toolsMenuButton_.superview convertPoint:anchorPoint
-                                           toView:toolsMenuButton_.window];
 }
 
 #pragma mark - FullscreenUIElement

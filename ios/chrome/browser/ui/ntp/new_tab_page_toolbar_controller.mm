@@ -17,7 +17,6 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller+protected.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
-#import "ios/chrome/browser/ui/toolbar/web_toolbar_delegate.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -69,8 +68,7 @@ enum {
                                        OmniboxFocuser,
                                        FakeboxFocuser,
                                        ToolbarCommands,
-                                       UrlLoader,
-                                       WebToolbarDelegate>)dispatcher {
+                                       UrlLoader>)dispatcher {
   self = [super initWithStyle:ToolbarControllerStyleLightMode
                    dispatcher:dispatcher];
   if (self) {
