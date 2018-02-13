@@ -34,19 +34,6 @@ class U2fRequest : public U2fDiscovery::Observer {
   ~U2fRequest() override;
 
   void Start();
-  // Enables the overriding of discoveries for testing. Useful for fakes such as
-  // MockU2fDiscovery.
-  // Returns a raw pointer to the added |discovery| for convenience.
-  U2fDiscovery* SetDiscoveryForTesting(std::unique_ptr<U2fDiscovery> discovery);
-
-  // Supports two different discoveries for testing. For caller's convenience we
-  // deliberately don't take a vector of discoveries. This is because such a
-  // vector could not be constructed inline, since initializer lists don't
-  // support move-only types.
-  // Returns a reference to the underlying discoveries for convenience.
-  std::vector<std::unique_ptr<U2fDiscovery>>& SetDiscoveriesForTesting(
-      std::unique_ptr<U2fDiscovery> discovery_1,
-      std::unique_ptr<U2fDiscovery> discovery_2);
 
   // Enables the overriding of discoveries for testing. Useful for fakes such as
   // MockU2fDiscovery.
@@ -71,6 +58,14 @@ class U2fRequest : public U2fDiscovery::Observer {
   void Transition();
   virtual void TryDevice() = 0;
 
+  // Hold handles to the devices known to the system. Known devices are
+  // partitioned into three parts:
+  // [attempted_devices_), current_device_, [devices_)
+  // During device iteration the |current_device_| gets pushed to
+  // |attempted_devices_|, and, if possible, the first element of |devices_|
+  // gets popped and becomes the new |current_device_|. Once all |devices_| are
+  // exhausted, |attempted_devices_| get moved into |devices_| and
+  // |current_device_| is reset.
   U2fDevice* current_device_ = nullptr;
   std::list<U2fDevice*> devices_;
   std::list<U2fDevice*> attempted_devices_;
@@ -84,6 +79,7 @@ class U2fRequest : public U2fDiscovery::Observer {
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestBasicMachine);
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestAlreadyPresentDevice);
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestMultipleDiscoveries);
+  FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestMultipleDiscoveriesWithFailures);
 
   // U2fDiscovery::Observer
   void DiscoveryStarted(U2fDiscovery* discovery, bool success) override;

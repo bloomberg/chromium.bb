@@ -25,6 +25,8 @@
 #include "device/bluetooth/test/bluetooth_test_bluez.h"
 #endif
 
+using ::testing::_;
+
 namespace device {
 
 ACTION_P(ReturnFromAsyncCall, closure) {
@@ -33,6 +35,21 @@ ACTION_P(ReturnFromAsyncCall, closure) {
 
 MATCHER_P(IdMatches, id, "") {
   return arg->GetId() == std::string("ble:") + id;
+}
+
+TEST_F(BluetoothTest, U2fBleDiscoveryNoAdapter) {
+  // We purposefully construct a temporary and provide no fake adapter,
+  // simulating cases where the discovery is destroyed before obtaining a handle
+  // to an adapter. This should be handled gracefully and not result in a crash.
+  U2fBleDiscovery discovery;
+
+  // We don't expect any calls to the notification methods.
+  MockU2fDiscoveryObserver observer;
+  discovery.AddObserver(&observer);
+  EXPECT_CALL(observer, DiscoveryStarted(&discovery, _)).Times(0);
+  EXPECT_CALL(observer, DiscoveryStopped(&discovery, _)).Times(0);
+  EXPECT_CALL(observer, DeviceAdded(&discovery, _)).Times(0);
+  EXPECT_CALL(observer, DeviceRemoved(&discovery, _)).Times(0);
 }
 
 TEST_F(BluetoothTest, U2fBleDiscoveryFindsKnownDevice) {

@@ -126,7 +126,7 @@ TEST_F(U2fRequestTest, TestBasicMachine) {
 TEST_F(U2fRequestTest, TestAlreadyPresentDevice) {
   auto discovery = std::make_unique<MockU2fDiscovery>();
   auto device = std::make_unique<MockU2fDevice>();
-  EXPECT_CALL(*device, GetId());
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
   discovery->AddDevice(std::move(device));
 
   FakeU2fRequest request(kTestRelyingPartyId);
@@ -193,6 +193,68 @@ TEST_F(U2fRequestTest, TestMultipleDiscoveries) {
   // Finally remove the last remaining device.
   discoveries[0]->RemoveDevice("device_3");
   EXPECT_EQ(nullptr, request.current_device_);
+}
+
+TEST_F(U2fRequestTest, TestMultipleDiscoveriesWithFailures) {
+  {
+    // Create a fake request with two different discoveries that both start up
+    // unsuccessfully.
+    FakeU2fRequest request(kTestRelyingPartyId);
+    MockU2fDiscovery* discoveries[2];
+    std::tie(discoveries[0], discoveries[1]) =
+        SetMockDiscoveries(&request, std::make_unique<MockU2fDiscovery>(),
+                           std::make_unique<MockU2fDiscovery>());
+
+    EXPECT_CALL(*discoveries[0], Start())
+        .WillOnce(
+            testing::Invoke(discoveries[0], &MockU2fDiscovery::StartFailure));
+    EXPECT_CALL(*discoveries[1], Start())
+        .WillOnce(
+            testing::Invoke(discoveries[1], &MockU2fDiscovery::StartFailure));
+    request.Start();
+    EXPECT_EQ(U2fRequest::State::OFF, request.state_);
+  }
+
+  {
+    // Create a fake request with two different discoveries, where only one
+    // starts up successfully.
+    FakeU2fRequest request(kTestRelyingPartyId);
+    MockU2fDiscovery* discoveries[2];
+    std::tie(discoveries[0], discoveries[1]) =
+        SetMockDiscoveries(&request, std::make_unique<MockU2fDiscovery>(),
+                           std::make_unique<MockU2fDiscovery>());
+
+    EXPECT_CALL(*discoveries[0], Start())
+        .WillOnce(
+            testing::Invoke(discoveries[0], &MockU2fDiscovery::StartSuccess));
+    EXPECT_CALL(*discoveries[1], Start())
+        .WillOnce(
+            testing::Invoke(discoveries[1], &MockU2fDiscovery::StartFailure));
+
+    auto device0 = std::make_unique<MockU2fDevice>();
+    EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device_0"));
+    EXPECT_CALL(*device0, TryWinkRef(_))
+        .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
+    discoveries[0]->AddDevice(std::move(device0));
+
+    request.Start();
+    EXPECT_EQ(U2fRequest::State::BUSY, request.state_);
+
+    // Simulate an action that sets the request state to idle.
+    // This and the call to Transition() below is necessary to trigger iterating
+    // and trying the new device.
+    request.state_ = U2fRequest::State::IDLE;
+
+    // Adding another device should trigger examination and a busy state.
+    auto device1 = std::make_unique<MockU2fDevice>();
+    EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device_1"));
+    EXPECT_CALL(*device1, TryWinkRef(_))
+        .WillOnce(testing::Invoke(MockU2fDevice::WinkDoNothing));
+    discoveries[0]->AddDevice(std::move(device1));
+
+    request.Transition();
+    EXPECT_EQ(U2fRequest::State::BUSY, request.state_);
+  }
 }
 
 }  // namespace device
