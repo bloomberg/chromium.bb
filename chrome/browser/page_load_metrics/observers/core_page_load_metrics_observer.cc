@@ -116,8 +116,6 @@ const char kHistogramInteractiveToInteractiveDetection[] =
     "PageLoad.Internal.InteractiveToInteractiveDetection";
 const char kHistogramFirstInputDelay[] =
     "PageLoad.InteractiveTiming.FirstInputDelay";
-const char kHistogramFirstInputTimestamp[] =
-    "PageLoad.InteractiveTiming.FirstInputTimestamp";
 const char kHistogramParseStartToFirstMeaningfulPaint[] =
     "PageLoad.Experimental.PaintTiming.ParseStartToFirstMeaningfulPaint";
 const char kHistogramParseStartToFirstContentfulPaint[] =
@@ -535,23 +533,17 @@ void CorePageLoadMetricsObserver::OnPageInteractive(
   RecordTimeToInteractiveStatus(internal::TIME_TO_INTERACTIVE_RECORDED);
 }
 
-void CorePageLoadMetricsObserver::OnFirstInputInPage(
+void CorePageLoadMetricsObserver::OnFirstInputDelayInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (!WasStartedInForegroundOptionalEventInForeground(
-          timing.interactive_timing->first_input_timestamp, extra_info)) {
-    return;
-  }
-
-  // Input delay will often be ~0, and will only be > 10 seconds very
-  // rarely. Capture the range from 1ms to 60s.
-  UMA_HISTOGRAM_CUSTOM_TIMES(
-      internal::kHistogramFirstInputDelay,
-      timing.interactive_timing->first_input_delay.value(),
-      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
-      50);
-  PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstInputTimestamp,
-                      timing.interactive_timing->first_input_timestamp.value());
+  // TODO(crbug.com/808466): Split based on whether we've ever been
+  // backgrounded.  First Input Delay for a page which was backgrounded is more
+  // meaningful than other page load metrics, as it always reflects actual user
+  // experience, and the page must be foregrounded before receiving input. We
+  // should still add metrics for pages which have and haven't been
+  // backgrounded.
+  UMA_HISTOGRAM_TIMES(internal::kHistogramFirstInputDelay,
+                      timing.interactive_timing->first_input_delay.value());
 }
 
 void CorePageLoadMetricsObserver::OnParseStart(

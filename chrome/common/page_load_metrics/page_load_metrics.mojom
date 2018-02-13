@@ -104,12 +104,8 @@ struct InteractiveTiming {
   // consumption by observers.
   mojo.common.mojom.TimeDelta? first_invalidating_input;
 
-  // Queueing Time of the first click, tap, key press, cancellable touchstart,
-  // or pointer down followed by a pointer up.
+  // Queueing Time of the first click, tap or keypress event.
   mojo.common.mojom.TimeDelta? first_input_delay;
-
-  // The timestamp of the event whose delay is reported by GetFirstInputDelay().
-  mojo.common.mojom.TimeDelta? first_input_timestamp;
 };
 
 
