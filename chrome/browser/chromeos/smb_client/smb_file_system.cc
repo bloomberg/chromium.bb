@@ -243,16 +243,9 @@ AbortCallback SmbFileSystem::CloseFile(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   GetSmbProviderClient()->CloseFile(
       GetMountId(), file_handle,
-      base::BindOnce(&SmbFileSystem::HandleRequestCloseFileCallback,
+      base::BindOnce(&SmbFileSystem::HandleStatusCallback,
                      weak_ptr_factory_.GetWeakPtr(), callback));
   return CreateAbortCallback();
-}
-
-// TODO(baileyberro): refactor basic error callbacks out into one function.
-void SmbFileSystem::HandleRequestCloseFileCallback(
-    const storage::AsyncFileUtil::StatusCallback& callback,
-    smbprovider::ErrorType error) const {
-  callback.Run(TranslateError(error));
 }
 
 AbortCallback SmbFileSystem::ReadFile(
@@ -275,7 +268,7 @@ AbortCallback SmbFileSystem::CreateDirectory(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   GetSmbProviderClient()->CreateDirectory(
       GetMountId(), directory_path, recursive,
-      base::BindOnce(&SmbFileSystem::HandleRequestCreateDirectoryCallback,
+      base::BindOnce(&SmbFileSystem::HandleStatusCallback,
                      weak_ptr_factory_.GetWeakPtr(), callback));
   return CreateAbortCallback();
 }
@@ -285,15 +278,9 @@ AbortCallback SmbFileSystem::CreateFile(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   GetSmbProviderClient()->CreateFile(
       GetMountId(), file_path,
-      base::BindOnce(&SmbFileSystem::HandleRequestCreateFileCallback,
+      base::BindOnce(&SmbFileSystem::HandleStatusCallback,
                      weak_ptr_factory_.GetWeakPtr(), callback));
   return CreateAbortCallback();
-}
-
-void SmbFileSystem::HandleRequestCreateFileCallback(
-    const storage::AsyncFileUtil::StatusCallback& callback,
-    smbprovider::ErrorType error) const {
-  callback.Run(TranslateError(error));
 }
 
 AbortCallback SmbFileSystem::DeleteEntry(
@@ -302,15 +289,9 @@ AbortCallback SmbFileSystem::DeleteEntry(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   GetSmbProviderClient()->DeleteEntry(
       GetMountId(), entry_path, recursive,
-      base::BindOnce(&SmbFileSystem::HandleRequestDeleteEntryCallback,
+      base::BindOnce(&SmbFileSystem::HandleStatusCallback,
                      weak_ptr_factory_.GetWeakPtr(), callback));
   return CreateAbortCallback();
-}
-
-void SmbFileSystem::HandleRequestDeleteEntryCallback(
-    const storage::AsyncFileUtil::StatusCallback& callback,
-    smbprovider::ErrorType error) const {
-  callback.Run(TranslateError(error));
 }
 
 AbortCallback SmbFileSystem::CopyEntry(
@@ -335,7 +316,7 @@ AbortCallback SmbFileSystem::Truncate(
     const storage::AsyncFileUtil::StatusCallback& callback) {
   GetSmbProviderClient()->Truncate(
       GetMountId(), file_path, length,
-      base::BindOnce(&SmbFileSystem::HandleRequestTruncateCallback,
+      base::BindOnce(&SmbFileSystem::HandleStatusCallback,
                      weak_ptr_factory_.GetWeakPtr(), callback));
   return CreateAbortCallback();
 }
@@ -351,7 +332,7 @@ AbortCallback SmbFileSystem::WriteFile(
 
   GetSmbProviderClient()->WriteFile(
       GetMountId(), file_handle, offset, length, std::move(temp_fd),
-      base::BindOnce(&SmbFileSystem::HandleRequestWriteFileCallback,
+      base::BindOnce(&SmbFileSystem::HandleStatusCallback,
                      weak_ptr_factory_.GetWeakPtr(), callback));
   return CreateAbortCallback();
 }
@@ -526,19 +507,7 @@ void SmbFileSystem::HandleRequestReadFileCallback(
   callback.Run(total_read, false /* has_more */, base::File::FILE_OK);
 }
 
-void SmbFileSystem::HandleRequestTruncateCallback(
-    const storage::AsyncFileUtil::StatusCallback& callback,
-    smbprovider::ErrorType error) const {
-  callback.Run(TranslateError(error));
-}
-
-void SmbFileSystem::HandleRequestWriteFileCallback(
-    const storage::AsyncFileUtil::StatusCallback& callback,
-    smbprovider::ErrorType error) const {
-  callback.Run(TranslateError(error));
-}
-
-void SmbFileSystem::HandleRequestCreateDirectoryCallback(
+void SmbFileSystem::HandleStatusCallback(
     const storage::AsyncFileUtil::StatusCallback& callback,
     smbprovider::ErrorType error) const {
   callback.Run(TranslateError(error));
