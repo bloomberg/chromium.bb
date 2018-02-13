@@ -42,6 +42,7 @@
           "content::mojom::FileUtilitiesHost",
           "content::mojom::FrameSinkProvider",
           "content::mojom::MemoryCoordinatorHandle",
+          "content::mojom::PeerConnectionTrackerHost",
           "content::mojom::PushMessaging",
           "content::mojom::RendererHost",
           "content::mojom::ReportingServiceProxy",
