@@ -235,6 +235,7 @@ public class ModalDialogManagerTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "crbug.com/812066")
     public void testShow_UrlBarFocused() throws Exception {
         // Show a dialog. The dialog should be shown on top of the toolbar.
         showDialog(0, ModalDialogManager.TAB_MODAL);
