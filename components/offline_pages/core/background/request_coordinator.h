@@ -21,6 +21,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/core/background/connection_notifier.h"
 #include "components/offline_pages/core/background/device_conditions.h"
+#include "components/offline_pages/core/background/pending_state_updater.h"
 #include "components/offline_pages/core/background/request_coordinator_event_logger.h"
 #include "components/offline_pages/core/background/request_notifier.h"
 #include "components/offline_pages/core/background/request_queue.h"
@@ -332,7 +333,10 @@ class RequestCoordinator : public KeyedService,
   void ScheduleAsNeeded();
 
   // Callback from the request picker when it has chosen our next request.
-  void RequestPicked(const SavePageRequest& request, bool cleanup_needed);
+  void RequestPicked(
+      const SavePageRequest& request,
+      std::unique_ptr<std::vector<SavePageRequest>> available_requests,
+      bool cleanup_needed);
 
   // Callback from the request picker when no more requests are in the queue.
   // The parameter is a signal for what (if any) conditions to schedule future
@@ -491,6 +495,8 @@ class RequestCoordinator : public KeyedService,
   // Currently it's used as LIFO.
   // TODO(romax): see if LIFO is a good idea or change to FIFO. crbug.com/705106
   base::circular_deque<int64_t> prioritized_requests_;
+  // Updates a request's PendingState.
+  PendingStateUpdater pending_state_updater_;
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<RequestCoordinator> weak_ptr_factory_;
 

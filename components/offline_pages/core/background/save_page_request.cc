@@ -30,6 +30,7 @@ SavePageRequest::SavePageRequest(const SavePageRequest& other)
       last_attempt_time_(other.last_attempt_time_),
       user_requested_(other.user_requested_),
       state_(other.state_),
+      pending_state_(other.pending_state_),
       original_url_(other.original_url_),
       request_origin_(other.request_origin_) {}
 
