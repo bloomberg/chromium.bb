@@ -41,6 +41,7 @@
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/public/common/download_stream.mojom.h"
 #include "net/base/net_errors.h"
+#include "storage/browser/blob/blob_data_handle.h"
 
 class GURL;
 
@@ -138,6 +139,16 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
   // download.
   virtual void DownloadUrl(
       std::unique_ptr<download::DownloadUrlParameters> parameters) = 0;
+
+  // For downloads of blob URLs, the caller can pass a BlobDataHandle object so
+  // that the blob will remain valid until the download starts. The
+  // BlobDataHandle will be attached to the associated URLRequest.
+  // If |blob_data_handle| is unspecified, and the blob URL cannot be mapped to
+  // a blob by the time the download request starts, then the download will
+  // fail.
+  virtual void DownloadUrl(
+      std::unique_ptr<download::DownloadUrlParameters> parameters,
+      std::unique_ptr<storage::BlobDataHandle> blob_data_handle) = 0;
 
   // Allow objects to observe the download creation process.
   virtual void AddObserver(Observer* observer) = 0;

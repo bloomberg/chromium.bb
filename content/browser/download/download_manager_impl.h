@@ -80,7 +80,10 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       base::Time remove_begin,
       base::Time remove_end) override;
   void DownloadUrl(
-      std::unique_ptr<download::DownloadUrlParameters> params) override;
+      std::unique_ptr<download::DownloadUrlParameters> parameters) override;
+  void DownloadUrl(
+      std::unique_ptr<download::DownloadUrlParameters> params,
+      std::unique_ptr<storage::BlobDataHandle> blob_data_handle) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   download::DownloadItem* CreateDownloadItem(
@@ -218,6 +221,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // Helper method to start or resume a download.
   void BeginDownloadInternal(
       std::unique_ptr<download::DownloadUrlParameters> params,
+      std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
       uint32_t id);
 
   void InterceptNavigationOnChecksComplete(

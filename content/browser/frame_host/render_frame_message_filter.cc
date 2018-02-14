@@ -97,7 +97,8 @@ void CreateChildFrameOnUI(
 }
 
 void DownloadUrlOnUIThread(
-    std::unique_ptr<download::DownloadUrlParameters> parameters) {
+    std::unique_ptr<download::DownloadUrlParameters> parameters,
+    std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderProcessHost* render_process_host =
@@ -109,7 +110,8 @@ void DownloadUrlOnUIThread(
   DownloadManager* download_manager =
       BrowserContext::GetDownloadManager(browser_context);
   parameters->set_download_source(download::DownloadSource::FROM_RENDERER);
-  download_manager->DownloadUrl(std::move(parameters));
+  download_manager->DownloadUrl(std::move(parameters),
+                                std::move(blob_data_handle));
 }
 
 // Common functionality for converting a sync renderer message to a callback
@@ -342,18 +344,19 @@ void RenderFrameMessageFilter::DownloadUrl(int render_view_id,
       Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
   parameters->set_initiator(initiator);
 
+  std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
   if (url.SchemeIsBlob()) {
     ChromeBlobStorageContext* blob_context =
         GetChromeBlobStorageContextForResourceContext(resource_context_);
-    parameters->set_blob_data_handle(
-        blob_context->context()->GetBlobDataFromPublicURL(url));
+    blob_data_handle = blob_context->context()->GetBlobDataFromPublicURL(url);
     // Don't care if the above fails. We are going to let the download go
     // through and allow it to be interrupted so that the embedder can deal.
   }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&DownloadUrlOnUIThread, base::Passed(&parameters)));
+      base::BindOnce(&DownloadUrlOnUIThread, std::move(parameters),
+                     std::move(blob_data_handle)));
 }
 
 void RenderFrameMessageFilter::OnCreateChildFrame(

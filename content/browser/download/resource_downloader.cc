@@ -87,7 +87,7 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
     std::unique_ptr<download::DownloadUrlParameters> params,
     std::unique_ptr<network::ResourceRequest> request,
-    scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
+    network::mojom::URLLoaderFactory* url_loader_factory,
     const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& site_url,
     const GURL& tab_url,
@@ -98,8 +98,7 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
       delegate, std::move(request), web_contents_getter, site_url, tab_url,
       tab_referrer_url, download_id);
 
-  downloader->Start(url_loader_factory_getter, std::move(params),
-                    is_parallel_request);
+  downloader->Start(url_loader_factory, std::move(params), is_parallel_request);
   return downloader;
 }
 
@@ -143,7 +142,7 @@ ResourceDownloader::ResourceDownloader(
 ResourceDownloader::~ResourceDownloader() = default;
 
 void ResourceDownloader::Start(
-    scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
+    network::mojom::URLLoaderFactory* url_loader_factory,
     std::unique_ptr<download::DownloadUrlParameters> download_url_parameters,
     bool is_parallel_request) {
   callback_ = download_url_parameters->callback();
@@ -166,23 +165,16 @@ void ResourceDownloader::Start(
   // Set up the URLLoader
   network::mojom::URLLoaderRequest url_loader_request =
       mojo::MakeRequest(&url_loader_);
-  if (download_url_parameters->url().SchemeIs(url::kBlobScheme)) {
-    BlobURLLoaderFactory::CreateLoaderAndStart(
-        std::move(url_loader_request), *(resource_request_.get()),
-        std::move(url_loader_client_ptr),
-        download_url_parameters->GetBlobDataHandle());
-  } else {
-    url_loader_factory_getter->GetNetworkFactory()->CreateLoaderAndStart(
-        std::move(url_loader_request),
-        0,  // routing_id
-        0,  // request_id
-        network::mojom::kURLLoadOptionSendSSLInfoWithResponse,
-        *(resource_request_.get()), std::move(url_loader_client_ptr),
-        net::MutableNetworkTrafficAnnotationTag(
-            download_url_parameters->GetNetworkTrafficAnnotation()));
-    url_loader_->SetPriority(net::RequestPriority::IDLE,
-                             0 /* intra_priority_value */);
-  }
+  url_loader_factory->CreateLoaderAndStart(
+      std::move(url_loader_request),
+      0,  // routing_id
+      0,  // request_id
+      network::mojom::kURLLoadOptionSendSSLInfoWithResponse,
+      *(resource_request_.get()), std::move(url_loader_client_ptr),
+      net::MutableNetworkTrafficAnnotationTag(
+          download_url_parameters->GetNetworkTrafficAnnotation()));
+  url_loader_->SetPriority(net::RequestPriority::IDLE,
+                           0 /* intra_priority_value */);
 }
 
 void ResourceDownloader::InterceptResponse(

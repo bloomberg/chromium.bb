@@ -51,7 +51,7 @@ CreateUrlDownloadHandler(
     return std::unique_ptr<ResourceDownloader, BrowserThread::DeleteOnIOThread>(
         ResourceDownloader::BeginDownload(
             delegate, std::move(params), std::move(request),
-            url_loader_factory_getter,
+            url_loader_factory_getter->GetNetworkFactory(),
             base::BindRepeating(&GetEmptyWebContents), GURL(), GURL(), GURL(),
             download::DownloadItem::kInvalidId, true)
             .release());

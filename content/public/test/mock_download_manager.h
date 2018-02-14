@@ -114,6 +114,11 @@ class MockDownloadManager : public DownloadManager {
   MOCK_METHOD1(DownloadUrlMock, void(download::DownloadUrlParameters*));
   void DownloadUrl(
       std::unique_ptr<download::DownloadUrlParameters> params) override {
+    DownloadUrl(std::move(params), nullptr);
+  }
+  void DownloadUrl(
+      std::unique_ptr<download::DownloadUrlParameters> params,
+      std::unique_ptr<storage::BlobDataHandle> blob_data_handle) override {
     DownloadUrlMock(params.get());
   }
   MOCK_METHOD1(AddObserver, void(Observer* observer));

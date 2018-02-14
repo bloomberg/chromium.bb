@@ -31,7 +31,6 @@ component("public") {
     "//components/download/internal/common:internal",
     "//crypto",
     "//net",
-    "//storage/browser",
     "//ui/base",
   ]
 
