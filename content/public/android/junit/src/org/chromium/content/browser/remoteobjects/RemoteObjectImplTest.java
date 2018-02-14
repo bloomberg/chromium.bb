@@ -34,7 +34,11 @@ import java.util.function.Consumer;
 /**
  * Tests the implementation of the Mojo object which wraps invocations
  * of Java methods.
+ *
+ * Unchecked cast warnings are suppressed because {@link org.mockito.Mockito#mock(Class)} does not
+ * provide a way to cleanly deal with generics.
  */
+@SuppressWarnings("unchecked")
 @RunWith(BlockJUnit4ClassRunner.class)
 public final class RemoteObjectImplTest {
     /**
@@ -151,7 +155,6 @@ public final class RemoteObjectImplTest {
         verify(response, times(2)).call(resultIsOk());
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testInvokeMethodOverloadUsingArity() {
         final Consumer<Integer> consumer = (Consumer<Integer>) mock(Consumer.class);
