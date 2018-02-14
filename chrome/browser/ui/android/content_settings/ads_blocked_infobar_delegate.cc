@@ -50,7 +50,7 @@ AdsBlockedInfobarDelegate::GetIdentifier() const {
 }
 
 int AdsBlockedInfobarDelegate::GetIconId() const {
-  return IDR_ANDROID_INFOBAR_SUBRESOURCE_FILTERING;
+  return IDR_ANDROID_INFOBAR_ADS_BLOCKED;
 }
 
 base::string16 AdsBlockedInfobarDelegate::GetMessageText() const {
