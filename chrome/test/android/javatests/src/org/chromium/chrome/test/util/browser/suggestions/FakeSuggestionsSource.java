@@ -178,6 +178,13 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     }
 
     /**
+     * Notifies the observer that the suggestions visibility has changed for the specified category.
+     */
+    public void fireOnSuggestionsVisibilityChanged(@CategoryInt int category) {
+        for (Observer observer : mObserverList) observer.onSuggestionsVisibilityChanged(category);
+    }
+
+    /**
      * Removes a category from the fake source without notifying anyone.
      */
     public void silentlyRemoveCategory(int category) {

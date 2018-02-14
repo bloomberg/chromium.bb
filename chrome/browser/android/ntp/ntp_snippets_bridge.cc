@@ -28,6 +28,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_metrics.h"
+#include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
 #include "jni/SnippetsBridge_jni.h"
@@ -181,6 +182,14 @@ NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,
   history_service_ = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   content_suggestions_service_observer_.Add(content_suggestions_service_);
+
+  pref_change_registrar_.Init(profile->GetPrefs());
+  pref_change_registrar_.Add(
+      ntp_snippets::prefs::kArticlesListVisible,
+      base::BindRepeating(
+          &NTPSnippetsBridge::OnSuggestionsVisibilityChanged,
+          base::Unretained(this),
+          Category::FromKnownCategory(KnownCategories::ARTICLES)));
 }
 
 void NTPSnippetsBridge::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -442,4 +451,11 @@ void NTPSnippetsBridge::OnContextualSuggestionsFetched(
       env, Category::FromKnownCategory(KnownCategories::CONTEXTUAL),
       suggestions);
   RunCallbackAndroid(j_callback, j_suggestions);
+}
+
+void NTPSnippetsBridge::OnSuggestionsVisibilityChanged(
+    const Category category) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_SnippetsBridge_onSuggestionsVisibilityChanged(
+      env, bridge_, static_cast<int>(category.id()));
 }

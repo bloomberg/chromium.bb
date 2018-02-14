@@ -8,9 +8,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -66,6 +69,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
@@ -119,6 +123,8 @@ public class NewTabPageAdapterTest {
     private OfflinePageBridge mOfflinePageBridge;
     @Mock
     private SuggestionsUiDelegate mUiDelegate;
+    @Mock
+    private PrefServiceBridge mPrefServiceBridge;
 
     /**
      * Stores information about a section that should be present in the adapter.
@@ -306,6 +312,11 @@ public class NewTabPageAdapterTest {
         mSource.setInfoForCategory(
                 TEST_CATEGORY, new CategoryInfoBuilder(TEST_CATEGORY).showIfEmpty().build());
 
+        // Initialize a test instance for PrefServiceBridge.
+        when(mPrefServiceBridge.getBoolean(anyInt())).thenReturn(false);
+        doNothing().when(mPrefServiceBridge).setBoolean(anyInt(), anyBoolean());
+        PrefServiceBridge.setInstanceForTesting(mPrefServiceBridge);
+
         resetUiDelegate();
         reloadNtp();
     }
@@ -316,6 +327,7 @@ public class NewTabPageAdapterTest {
         SigninManager.setInstanceForTesting(null);
         ChromePreferenceManager.getInstance().setNewTabPageSigninPromoDismissed(false);
         ChromePreferenceManager.getInstance().clearNewTabPageSigninPromoSuppressionPeriodStart();
+        PrefServiceBridge.setInstanceForTesting(null);
     }
 
     /**

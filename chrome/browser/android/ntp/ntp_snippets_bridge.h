@@ -141,11 +141,14 @@ class NTPSnippetsBridge
       const GURL& url,
       std::vector<ntp_snippets::ContentSuggestion> suggestions);
 
+  void OnSuggestionsVisibilityChanged(ntp_snippets::Category category);
+
   ntp_snippets::ContentSuggestionsService* content_suggestions_service_;
   ntp_snippets::ContextualContentSuggestionsService*
       contextual_content_suggestions_service_;
   history::HistoryService* history_service_;
   base::CancelableTaskTracker tracker_;
+  PrefChangeRegistrar pref_change_registrar_;
 
   ScopedObserver<ntp_snippets::ContentSuggestionsService,
                  ntp_snippets::ContentSuggestionsService::Observer>
