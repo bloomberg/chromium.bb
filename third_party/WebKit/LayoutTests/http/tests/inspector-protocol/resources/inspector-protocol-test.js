@@ -72,6 +72,10 @@ var TestRunner = class {
     this._log.call(null, lines.join('\n'));
   }
 
+  trimURL(url) {
+    return url.replace(/^.*(([^/]*[/]){3}[^/]*)$/, '...$1');
+  }
+
   url(relative) {
     return this._baseURL + relative;
   }

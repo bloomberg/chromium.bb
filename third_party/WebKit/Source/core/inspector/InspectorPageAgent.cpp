@@ -817,6 +817,10 @@ void InspectorPageAgent::FrameAttachedToParent(LocalFrame* frame) {
       IdentifiersFactory::FrameId(frame),
       IdentifiersFactory::FrameId(parent_frame),
       location ? location->BuildInspectorObject() : nullptr);
+  // Some network events referencing this frame will be reported from the
+  // browser, so make sure to deliver FrameAttached without buffering,
+  // so it gets to the front-end first.
+  GetFrontend()->flush();
 }
 
 void InspectorPageAgent::FrameDetachedFromParent(LocalFrame* frame) {
