@@ -10,6 +10,10 @@
 
 #include "v8/include/v8.h"
 
+namespace blink {
+class WebLocalFrame;
+}
+
 namespace extensions {
 class ScriptContext;
 struct Message;
@@ -36,8 +40,10 @@ std::unique_ptr<Message> MessageFromV8(v8::Local<v8::Context> context,
                                        v8::Local<v8::Value> value,
                                        std::string* error);
 // Same as above, but expects a serialized JSON string instead of a value.
-std::unique_ptr<Message> MessageFromJSONString(v8::Local<v8::String> json,
-                                               std::string* error);
+std::unique_ptr<Message> MessageFromJSONString(
+    v8::Local<v8::String> json,
+    std::string* error,
+    blink::WebLocalFrame* web_frame = nullptr);
 
 // Converts a message to a v8 value. This is expected not to fail, since it
 // should only be used for messages that have been validated.
