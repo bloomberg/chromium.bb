@@ -478,7 +478,7 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
 
   if (!is_enabled_ || option == ThrottleOption::kCanNotBeThrottled ||
       !IsThrottablePriority(priority)) {
-    Run(*id, client);
+    Run(*id, client, false);
     return;
   }
 
@@ -521,6 +521,7 @@ bool ResourceLoadScheduler::Release(
 
   if (running_requests_.find(id) != running_requests_.end()) {
     running_requests_.erase(id);
+    running_throttlable_requests_.erase(id);
 
     if (traffic_monitor_)
       traffic_monitor_->Report(hints);
@@ -604,7 +605,7 @@ bool ResourceLoadScheduler::IsThrottablePriority(
 
   if (RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled()) {
     // If this scheduler is throttled by the associated WebFrameScheduler,
-    // consider every prioritiy as throttable.
+    // consider every prioritiy as throttlable.
     const auto state = frame_scheduler_throttling_state_;
     if (state == WebFrameScheduler::ThrottlingState::kThrottled ||
         state == WebFrameScheduler::ThrottlingState::kStopped) {
@@ -655,8 +656,15 @@ void ResourceLoadScheduler::MaybeRun() {
     return;
 
   while (!pending_requests_.empty()) {
+    // TODO(yhirano): Consider using a unified value.
+    const auto num_requests =
+        frame_scheduler_throttling_state_ ==
+                WebFrameScheduler::ThrottlingState::kNotThrottled
+            ? running_throttlable_requests_.size()
+            : running_requests_.size();
+
     const bool has_enough_running_requets =
-        running_requests_.size() >= GetOutstandingLimit();
+        num_requests >= GetOutstandingLimit();
 
     if (IsThrottablePriority(pending_requests_.begin()->priority) &&
         has_enough_running_requets) {
@@ -674,13 +682,16 @@ void ResourceLoadScheduler::MaybeRun() {
       continue;  // Already released.
     ResourceLoadSchedulerClient* client = found->value->client;
     pending_request_map_.erase(found);
-    Run(id, client);
+    Run(id, client, true);
   }
 }
 
 void ResourceLoadScheduler::Run(ResourceLoadScheduler::ClientId id,
-                                ResourceLoadSchedulerClient* client) {
+                                ResourceLoadSchedulerClient* client,
+                                bool throttlable) {
   running_requests_.insert(id);
+  if (throttlable)
+    running_throttlable_requests_.insert(id);
   if (running_requests_.size() > maximum_running_requests_seen_) {
     maximum_running_requests_seen_ = running_requests_.size();
   }
