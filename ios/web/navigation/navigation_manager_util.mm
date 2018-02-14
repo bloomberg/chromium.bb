@@ -4,8 +4,8 @@
 
 #include "ios/web/navigation/navigation_manager_util.h"
 
-#import "ios/web/public/navigation_item.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/navigation/navigation_item_impl.h"
+#import "ios/web/navigation/navigation_manager_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,24 +13,27 @@
 
 namespace web {
 
-NavigationItem* GetItemWithUniqueID(NavigationManager* navigation_manager,
-                                    int unique_id) {
-  NavigationItem* transient_item = navigation_manager->GetTransientItem();
+NavigationItemImpl* GetItemWithUniqueID(
+    NavigationManagerImpl* navigation_manager,
+    int unique_id) {
+  NavigationItemImpl* transient_item =
+      navigation_manager->GetTransientItemImpl();
   if (transient_item && transient_item->GetUniqueID() == unique_id)
     return transient_item;
 
-  NavigationItem* pending_item = navigation_manager->GetPendingItem();
+  NavigationItemImpl* pending_item = navigation_manager->GetPendingItemImpl();
   if (pending_item && pending_item->GetUniqueID() == unique_id)
     return pending_item;
 
   return GetCommittedItemWithUniqueID(navigation_manager, unique_id);
 }
 
-NavigationItem* GetCommittedItemWithUniqueID(
-    NavigationManager* navigation_manager,
+NavigationItemImpl* GetCommittedItemWithUniqueID(
+    NavigationManagerImpl* navigation_manager,
     int unique_id) {
   int index = GetCommittedItemIndexWithUniqueID(navigation_manager, unique_id);
-  return index != -1 ? navigation_manager->GetItemAtIndex(index) : nullptr;
+  return index != -1 ? navigation_manager->GetNavigationItemImplAtIndex(index)
+                     : nullptr;
 }
 
 int GetCommittedItemIndexWithUniqueID(NavigationManager* navigation_manager,
