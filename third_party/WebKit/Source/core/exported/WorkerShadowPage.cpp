@@ -5,6 +5,7 @@
 #include "core/exported/WorkerShadowPage.h"
 
 #include "core/exported/WebViewImpl.h"
+#include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "platform/loader/fetch/SubstituteData.h"
@@ -30,6 +31,10 @@ WorkerShadowPage::WorkerShadowPage(Client* client)
   // TODO(http://crbug.com/363843): This needs to find a better way to
   // not create graphics layers.
   web_view_->GetSettings()->SetAcceleratedCompositingEnabled(false);
+  // TODO(lunalu): Service worker and shared worker count feature usage on the
+  // blink side use counter. Once the blink side use counter is removed
+  // (crbug.com/811948), remove this instant from Settings.
+  main_frame_->GetFrame()->GetSettings()->SetIsShadowPage(true);
 
   main_frame_->SetDevToolsAgentImpl(
       WebDevToolsAgentImpl::CreateForWorker(main_frame_, client_));

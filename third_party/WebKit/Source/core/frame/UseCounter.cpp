@@ -34,6 +34,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/Settings.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/page/Page.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
@@ -1267,6 +1268,11 @@ void UseCounter::DidCommitLoad(const LocalFrame* frame) {
     else if (!frame->Client() || !frame->Client()->ShouldTrackUseCounter(url))
       context_ = kDisabledContext;
     else if (frame->GetDocument()->IsPrefetchOnly())
+      context_ = kDisabledContext;
+    // TODO(lunalu): Service worker and shared worker count feature usage on the
+    // blink side use counter. Once the blink side use counter is removed
+    // (crbug.com/811948), the checker for shadow pages should be removed.
+    else if (frame->GetSettings()->IsShadowPage())
       context_ = kDisabledContext;
     else if (SchemeRegistry::ShouldTrackUsageMetricsForScheme(url.Protocol()))
       context_ = kDefaultContext;
