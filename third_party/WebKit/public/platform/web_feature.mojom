@@ -1854,6 +1854,7 @@ enum WebFeature {
   kV8AbortController_Constructor = 2361,
   kReplaceCharsetInXHRIgnoringCase = 2362,
   kHTMLIFrameElementGestureMedia = 2363,
+  kWorkletAddModule = 2364,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

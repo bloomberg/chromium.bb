@@ -9,10 +9,12 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/fetch/Request.h"
+#include "core/frame/UseCounter.h"
 #include "core/workers/WorkletPendingTasks.h"
 #include "platform/wtf/WTF.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/platform/web_feature.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 
 namespace blink {
@@ -41,6 +43,8 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
         script_state, DOMException::Create(kInvalidStateError,
                                            "This frame is already detached"));
   }
+  UseCounter::Count(GetExecutionContext(),
+                    mojom::WebFeature::kWorkletAddModule);
 
   // Step 1: "Let promise be a new promise."
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
