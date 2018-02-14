@@ -206,10 +206,13 @@ ScopedJavaLocalRef<jobjectArray> JNI_SavePageRequest_CreateJavaSavePageRequests(
         ConvertUTF8ToJavaString(env, request.client_id().id);
     ScopedJavaLocalRef<jstring> url =
         ConvertUTF8ToJavaString(env, request.url().spec());
+    ScopedJavaLocalRef<jstring> origin =
+        ConvertUTF8ToJavaString(env, request.request_origin());
 
     ScopedJavaLocalRef<jobject> j_save_page_request =
         Java_SavePageRequest_create(env, (int)request.request_state(),
-                                    request.request_id(), url, name_space, id);
+                                    request.request_id(), url, name_space, id,
+                                    origin);
     env->SetObjectArrayElement(joa, i, j_save_page_request.obj());
   }
 
