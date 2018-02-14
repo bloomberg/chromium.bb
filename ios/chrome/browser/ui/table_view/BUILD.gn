@@ -1,0 +1,20 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("table_view") {
+  sources = [
+    "table_view_model.h",
+    "table_view_model.mm",
+  ]
+
+  deps = [
+    "//ios/chrome/browser/ui/list_model",
+  ]
+
+  public_deps = [
+    "//ios/chrome/browser/ui/table_view/cells",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
