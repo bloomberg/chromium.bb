@@ -13,6 +13,37 @@ The exceptions to this are:
 In addition to the above, no changes exist from the Certificate Transparency
 requirement outlined at <https://security.googleblog.com/2015/10/sustaining-digital-certificate-security.html>
 
+## Implementation Details
+
+Policies related to these certificates are based on the hash of the
+subjectPublicKeyInfo, rather than of the certificate, and without considering
+the Subject Distinguished Name.
+
+The choice of using subjectPublicKeyInfo is two-fold:
+
+* If there are any concerns with the how the key material has been protected,
+  those concerns apply to all subject names, not just the known subject names.
+  By limiting trust in the SPKI, the underlying issue is addressed. This also
+  helps address any concerns with potential cross-signs in the future, as has
+  been seen in past CA remediation efforts.
+* Simultaneously, if there are no concerns with the SPKI, such as due to being
+  on the exclusions list, then we want to ensure ecosystem flexibility in the
+  event that the certificates themselves need to be reissued. The most likely
+  cause for reissusance of Excluded Sub-CAs may be presumed to be either
+  expiration or due to wanting to add additional extensions (such as to reduce
+  the scope of issuance). To avoid unduly limiting the ecosystem flexibility
+  in the event of those changes, excluding by SPKI allows for some limited
+  agility, while being grounded in the objective evaluation of the key and how
+  the key material has been operated and protected. In the context of Managed
+  CAs, this ensures that additional (effectively cross-signed) versions of the
+  Managed Partner Infrastructure can be introduced as needed, while ensuring no
+  additional code changes or updates are necessary.
+
+Thus, identifying 'roots' (which may appear anywhere in the chain) by SPKI help
+ensure the appropriate restrictions are applied, regardless of cross-signs or
+self-signed variations, while identifying 'exclusions' by SPKI helps ensure the
+necessary flexibility to respond to ecosystem changes.
+
 ## Roots
 
 The full set of roots are in the [roots/](roots/) directory, organized by
