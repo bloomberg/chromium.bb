@@ -222,7 +222,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": true,
+          "experimental": false,
           "leader_board": false,
           "board_group": "glados",
           "arch": "X86_INTERNAL"
@@ -414,7 +414,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": true,
+          "experimental": false,
           "leader_board": false,
           "board_group": "poppy",
           "arch": "X86_INTERNAL"
@@ -714,7 +714,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": true,
+          "experimental": false,
           "leader_board": false,
           "board_group": "gru",
           "arch": "ARM_INTERNAL"
@@ -918,7 +918,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": true,
+          "experimental": false,
           "leader_board": false,
           "board_group": "",
           "arch": "X86_INTERNAL"
@@ -1042,6 +1042,18 @@
           "leader_board": false,
           "board_group": "",
           "arch": "ARM_INTERNAL"
+        }
+      ]
+    },
+    {
+      "name": "octopus",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": true,
+          "board_group": "",
+          "arch": "X86_INTERNAL"
         }
       ]
     },
