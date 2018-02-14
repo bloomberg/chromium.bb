@@ -251,15 +251,18 @@ void GetSystemSlotOnIOThread(
   }
 }
 
-// Verifies if shall signal to the platform that it can attempt owning
-// the tpm. This signal is sent on every boot after it has been initially
-// allowed by accepting EULA to make sure we are not stuck in interrupted
-// tpm initialization state.
+// Decides if on start we shall signal to the platform that it can attempt
+// owning the TPM.
+// For official Chrome builds, send this signal if EULA has been accepted
+// already (i.e. the user has started OOBE) to make sure we are not stuck with
+// uninitialized TPM after an interrupted OOBE process.
+// For Chromium builds, don't send it here. Instead, rely on this signal being
+// sent after each successful login.
 bool ShallAttemptTpmOwnership() {
 #if defined(GOOGLE_CHROME_BUILD)
   return StartupUtils::IsEulaAccepted();
 #else
-  return true;
+  return false;
 #endif
 }
 
