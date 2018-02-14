@@ -60,6 +60,8 @@ blink_core_sources("editing") {
     "RelocatablePosition.h",
     "RenderedPosition.cpp",
     "RenderedPosition.h",
+    "RevealSelectionScope.cpp",
+    "RevealSelectionScope.h",
     "SelectionAdjuster.cpp",
     "SelectionAdjuster.h",
     "SelectionController.cpp",

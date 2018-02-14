@@ -143,20 +143,6 @@ bool IsInPasswordFieldWithUnrevealedPassword(const Position& position) {
 
 }  // anonymous namespace
 
-Editor::RevealSelectionScope::RevealSelectionScope(Editor* editor)
-    : editor_(editor) {
-  ++editor_->prevent_reveal_selection_;
-}
-
-Editor::RevealSelectionScope::~RevealSelectionScope() {
-  DCHECK(editor_->prevent_reveal_selection_);
-  --editor_->prevent_reveal_selection_;
-  if (!editor_->prevent_reveal_selection_) {
-    editor_->GetFrameSelection().RevealSelection(
-        ScrollAlignment::kAlignToEdgeIfNeeded, kRevealExtent);
-  }
-}
-
 // When an event handler has moved the selection outside of a text control
 // we should use the target control's selection for this editing operation.
 SelectionInDOMTree Editor::SelectionForCommand(Event* event) {

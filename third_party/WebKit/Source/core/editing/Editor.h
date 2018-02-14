@@ -193,6 +193,8 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   bool IsSelectTrailingWhitespaceEnabled() const;
 
   bool PreventRevealSelection() const { return prevent_reveal_selection_; }
+  void IncreasePreventRevealSelection() { ++prevent_reveal_selection_; }
+  void DecreasePreventRevealSelection() { --prevent_reveal_selection_; }
 
   void SetStartNewKillRingSequence(bool);
 
@@ -279,21 +281,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   }
 
   static void TidyUpHTMLStructure(Document&);
-
-  class RevealSelectionScope {
-    DISALLOW_COPY_AND_ASSIGN(RevealSelectionScope);
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-
-   public:
-    explicit RevealSelectionScope(Editor*);
-    ~RevealSelectionScope();
-
-    void Trace(blink::Visitor*);
-
-   private:
-    Member<Editor> editor_;
-  };
-  friend class RevealSelectionScope;
 
   EditingStyle* TypingStyle() const;
   void SetTypingStyle(EditingStyle*);
