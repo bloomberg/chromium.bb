@@ -368,9 +368,12 @@ class MoblabVm(object):
     tap_mac_addr = '02:00:00:99:99:01'
     self._WriteToMoblabDiskImage('private-network-macaddr.conf', [tap_mac_addr])
     disk_path = self._config[_CONFIG_MOBLAB_DISK]
-    qemu_args = ['-drive', 'id=hd,if=none,file=%s' % disk_path,
-                 '-device', 'virtio-scsi-pci,id=scsi',
-                 '-device', 'scsi-hd,drive=hd']
+    # Create a dedicated scsi controller for the external disk, and attach the
+    # disk to that bus. This separates us from any scsi controllers that may be
+    # created for the boot disk.
+    qemu_args = ['-drive', 'id=moblabdisk,if=none,file=%s' % disk_path,
+                 '-device', 'virtio-scsi-pci,id=scsiext',
+                 '-device', 'scsi-hd,bus=scsiext.0,drive=moblabdisk']
     # moblab grabs some extra consecutive ports for forwarding AFE and devserver
     # to the host.
     next_num += 10
@@ -565,6 +568,7 @@ def _StartKvm(workdir, image_path, ssh_port, tap_dev, tap_mac_addr, is_moblab,
       '--image_path', image_path,
       '--kvm_pid', kvm_pid,
       '--ssh_port', ssh_port,
+      '--scsi',
   ]
   if is_moblab:
     cmd.append('--moblab')
