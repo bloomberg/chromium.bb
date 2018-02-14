@@ -257,6 +257,11 @@ const base::Feature kVrBrowsingExperimentalFeatures{
 const base::Feature kVrBrowsingExperimentalRendering{
     "VrBrowsingExperimentalRendering", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if BUILDFLAG(ENABLE_OCULUS_VR)
+// Controls Oculus support.
+const base::Feature kOculusVR{"OculusVR", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // ENABLE_OCULUS_VR
+
 #if BUILDFLAG(ENABLE_OPENVR)
 // Controls OpenVR support.
 const base::Feature kOpenVR{"OpenVR", base::FEATURE_DISABLED_BY_DEFAULT};

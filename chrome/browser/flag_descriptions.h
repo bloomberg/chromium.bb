@@ -1781,6 +1781,11 @@ extern const char kWebVrAutopresentFromIntentDescription[];
 
 #endif  // OS_ANDROID
 
+#if BUILDFLAG(ENABLE_OCULUS_VR)
+extern const char kOculusVRName[];
+extern const char kOculusVRDescription[];
+#endif  // ENABLE_OCULUS_VR
+
 #if BUILDFLAG(ENABLE_OPENVR)
 extern const char kOpenVRName[];
 extern const char kOpenVRDescription[];

@@ -132,6 +132,10 @@ extern const base::Feature kVrBrowserKeyboard;
 extern const base::Feature kVrBrowsingExperimentalFeatures;
 extern const base::Feature kVrBrowsingExperimentalRendering;
 
+#if BUILDFLAG(ENABLE_OCULUS_VR)
+extern const base::Feature kOculusVR;
+#endif  // ENABLE_OCULUS_VR
+
 #if BUILDFLAG(ENABLE_OPENVR)
 extern const base::Feature kOpenVR;
 #endif  // ENABLE_OPENVR

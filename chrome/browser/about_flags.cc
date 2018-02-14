@@ -2245,6 +2245,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebVrAutopresentFromIntentDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kWebVrAutopresentFromIntent)},
 #endif  // OS_ANDROID
+#if BUILDFLAG(ENABLE_OCULUS_VR)
+    {"oculus-vr", flag_descriptions::kOculusVRName,
+     flag_descriptions::kOculusVRDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kOculusVR)},
+#endif  // ENABLE_OCULUS_VR
 #if BUILDFLAG(ENABLE_OPENVR)
     {"openvr", flag_descriptions::kOpenVRName,
      flag_descriptions::kOpenVRDescription, kOsWin,

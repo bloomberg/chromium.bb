@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/gclient_args.gni")
 
@@ -15,8 +16,7 @@ declare_args() {
   # To build with Oculus support, the Oculus SDK for Windows will need to be
   # installed in third_party/libovr/src.  See
   # third_party/libovr/README.chromium for details.
-  # TODO(billorr): Use checkout_oculus_sdk && is_win when enabled.
-  enable_oculus_vr = checkout_oculus_sdk && is_win
+  enable_oculus_vr = checkout_oculus_sdk && is_chrome_branded && is_win
 }
 
 declare_args() {
