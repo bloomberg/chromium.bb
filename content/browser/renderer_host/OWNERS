@@ -25,6 +25,7 @@ per-file *delegated_frame*=fsamuel@chromium.org
 # WebSQL
 per-file database_*=jsbell@chromium.org
 per-file database_*=michaeln@chromium.org
+per-file database_*=pwnall@chromium.org
 
 # Offscreen Canvas
 per-file offscreen_canvas*.*=xlai@chromium.org
