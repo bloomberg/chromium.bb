@@ -140,8 +140,23 @@ Polymer({
   /** @private {?PolymerDomApi.ObserveHandle} */
   contentObserver_: null,
 
+  /** @private {?ResizeObserver} */
+  resizeObserver_: null,
+
+  /** @private {?ShowAtPositionConfig} */
+  lastConfig_: null,
+
   hostAttributes: {
     tabindex: 0,
+  },
+
+  properties: {
+    // Setting this flag will make the menu listen for content size changes and
+    // reposition to its anchor accordingly.
+    autoReposition: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   listeners: {
@@ -162,6 +177,11 @@ Polymer({
     if (this.contentObserver_) {
       Polymer.dom(this.$.contentNode).unobserveNodes(this.contentObserver_);
       this.contentObserver_ = null;
+    }
+
+    if (this.resizeObserver_) {
+      this.resizeObserver_.disconnect();
+      this.resizeObserver_ = null;
     }
   },
 
@@ -267,6 +287,9 @@ Polymer({
       cr.ui.focusWithoutInk(assert(this.anchorElement_));
       this.anchorElement_ = null;
     }
+    if (this.lastConfig_) {
+      this.lastConfig_ = null;
+    }
   },
 
   /**
@@ -364,6 +387,7 @@ Polymer({
    * @private
    */
   positionDialog_: function(config) {
+    this.lastConfig_ = config;
     var c = Object.assign(getDefaultShowConfig(), config);
 
     var top = c.top;
@@ -413,6 +437,15 @@ Polymer({
             }
           });
         });
+
+    if (this.autoReposition) {
+      this.resizeObserver_ = new ResizeObserver(() => {
+        if (this.lastConfig_)
+          this.positionDialog_(this.lastConfig_);
+      });
+
+      this.resizeObserver_.observe(this);
+    }
   },
 });
 })();

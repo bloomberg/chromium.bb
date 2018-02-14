@@ -32,11 +32,12 @@ Polymer({
       value: false,
       computed: 'computeShouldShowAvatarRow_(storedAccounts_, syncStatus,' +
           'storedAccounts_.length, syncStatus.signedIn)',
+      observer: 'onShouldShowAvatarRowChange_',
     }
   },
 
   observers: [
-    'onShownAccountShouldChange_(storedAccounts_.*, syncStatus.*)',
+    'onShownAccountShouldChange_(storedAccounts_, syncStatus)',
   ],
 
   /** @private {?settings.SyncBrowserProxy} */
@@ -141,6 +142,15 @@ Polymer({
     actionMenu.showAt(assert(this.$$('#dots')), {
       anchorAlignmentY: AnchorAlignment.AFTER_END,
     });
+  },
+
+  /** @private */
+  onShouldShowAvatarRowChange_: function() {
+    // Close dropdown when avatar-row hides, so if it appears again, the menu
+    // won't be open by default.
+    const actionMenu = this.$$('#menu');
+    if (!this.shouldShowAvatarRow_ && actionMenu && actionMenu.open)
+      actionMenu.close();
   },
 
   /**
