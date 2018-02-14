@@ -241,6 +241,11 @@ public class ContextualSearchTabHelper
                 controller.setSelectionClient(
                         mSelectionClientManager.removeContextualSearchSelectionClient());
             }
+            // Also make sure the UI is hidden.
+            ContextualSearchManager contextualSearchManager = getContextualSearchManager(mTab);
+            if (contextualSearchManager != null) {
+                contextualSearchManager.hideContextualSearch(StateChangeReason.UNKNOWN);
+            }
         }
     }
 
