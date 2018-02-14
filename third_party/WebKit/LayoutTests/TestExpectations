@@ -3230,8 +3230,6 @@ crbug.com/807110 external/wpt/media-source/mediasource-sourcebuffer-mode-timesta
 #
 # These entries were copied from FlagExpectations/root-layer-scrolls
 ################################################################################
-crbug.com/417782 compositing/overflow/tiled-mask.html [ Failure ]
-crbug.com/417782 compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
 crbug.com/417782 css3/filters/effect-reference-subregion-nested.html [ Failure ]
 crbug.com/417782 fast/frames/iframe-scaling-with-scroll.html [ Failure ]
 crbug.com/417782 fast/overflow/scrollRevealButton.html [ Failure ]

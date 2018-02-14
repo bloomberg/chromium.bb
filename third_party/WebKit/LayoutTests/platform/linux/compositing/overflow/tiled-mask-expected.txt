@@ -5,19 +5,19 @@ layer at (-31,-239) size 785x824 backgroundClip at (0,0) size 785x585 clip at (0
     LayoutBlockFlow {BODY} at (8,8) size 769x808
 layer at (-23,-231) size 808x808 backgroundClip at (0,0) size 785x577 clip at (0,0) size 781x573 scrollWidth 2000 scrollHeight 2000
   LayoutBlockFlow {DIV} at (0,0) size 808x808 [bgcolor=#808080] [border: (4px solid #FF0000)]
-layer at (-19,-227) size 2000x2000 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585
+layer at (-19,-227) size 2000x2000 backgroundClip at (0,0) size 781x573 clip at (0,0) size 781x573
   LayoutBlockFlow (positioned) {DIV} at (4,4) size 2000x2000 [bgcolor=#FFEFD5]
     LayoutText {#text} at (0,0) size 125x19
       text run at (0,0) width 125: "There's stuff in here"
-layer at (-19,-227) size 50x50 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585
+layer at (-19,-227) size 50x50 backgroundClip at (0,0) size 781x573 clip at (0,0) size 781x573
   LayoutBlockFlow (positioned) {DIV} at (4,4) size 50x50 [bgcolor=#800000]
-layer at (-19,473) size 100x100 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585
+layer at (-19,473) size 100x100 backgroundClip at (0,0) size 781x573 clip at (0,0) size 781x573
   LayoutBlockFlow (positioned) {DIV} at (4,704) size 100x100 [bgcolor=#FFA500]
-layer at (-79,-157) size 100x100 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585
+layer at (-79,-157) size 100x100 backgroundClip at (0,0) size 781x573 clip at (0,0) size 781x573
   LayoutBlockFlow (positioned) {DIV} at (-56,74) size 100x100 [bgcolor=#008000]
 layer at (101,473) size 100x100
   LayoutBlockFlow (positioned) {DIV} at (124,704) size 100x100 [bgcolor=#0000FF]
-layer at (731,-227) size 100x100 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585
+layer at (731,-227) size 100x100 backgroundClip at (0,0) size 781x573 clip at (0,0) size 781x573
   LayoutBlockFlow (positioned) {DIV} at (754,4) size 100x100 [bgcolor=#FFFF00]
 layer at (61,73) size 100x100
   LayoutBlockFlow (positioned) {DIV} at (84,304) size 100x100
