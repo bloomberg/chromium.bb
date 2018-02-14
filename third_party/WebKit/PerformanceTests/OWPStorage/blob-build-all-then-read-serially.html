@@ -1,12 +1,11 @@
 <!doctype html>
-<title>Blob Build All Then Read Serially (2 bytes)</title>
-<body>
+<title>Blob Build All Then Read Serially</title>
 <script src="../resources/runner.js"></script>
 <script src="resources/shared.js"></script>
 <script>
+let runnerParams = { size: 2, numBlobs: 200 };
 let test = {
-  description:
-    'Benchmark for creating 80 2-byte blobs and reading them serially.',
+  description: 'Benchmark for creating blobs and then reading them serially.',
   unit: 'ms',
   iterationCount: 10,
   tracingCategories: 'Blob',
@@ -15,8 +14,7 @@ let test = {
     'BlobRequest::ReadRawData', 'BlobRequest'
   ],
   path: 'resources/blob-build-all-then-read-serially-runner.html',
-  params: { size: 2, numBlobs: 80 }
-};
+  params: runnerParams
+}
 PerfTestRunner.measurePageLoadTimeAfterDoneMessage(test);
 </script>
-</body>
