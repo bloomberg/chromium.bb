@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MASH_QUICK_LAUNCH_QUICK_LAUNCH_H_
-#define MASH_QUICK_LAUNCH_QUICK_LAUNCH_H_
+#ifndef ASH_COMPONENTS_QUICK_LAUNCH_QUICK_LAUNCH_H_
+#define ASH_COMPONENTS_QUICK_LAUNCH_QUICK_LAUNCH_H_
 
 #include <memory>
 
@@ -16,9 +16,8 @@
 namespace views {
 class AuraInit;
 class Widget;
-}
+}  // namespace views
 
-namespace mash {
 namespace quick_launch {
 
 class QuickLaunch : public service_manager::Service,
@@ -56,6 +55,5 @@ class QuickLaunch : public service_manager::Service,
 };
 
 }  // namespace quick_launch
-}  // namespace mash
 
-#endif  // MASH_QUICK_LAUNCH_QUICK_LAUNCH_H_
+#endif  // ASH_COMPONENTS_QUICK_LAUNCH_QUICK_LAUNCH_H_

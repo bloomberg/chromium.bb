@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "ash/autoclick/mus/autoclick_application.h"
+#include "ash/components/quick_launch/public/mojom/constants.mojom.h"
+#include "ash/components/quick_launch/quick_launch.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/touch_hud/mus/touch_hud_application.h"
 #include "ash/window_manager_service.h"
@@ -14,8 +16,6 @@
 #include "build/build_config.h"
 #include "components/font_service/font_service_app.h"
 #include "components/font_service/public/interfaces/constants.mojom.h"
-#include "mash/quick_launch/public/mojom/constants.mojom.h"
-#include "mash/quick_launch/quick_launch.h"
 #include "services/ui/common/image_cursors_set.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/service.h"
@@ -72,7 +72,7 @@ std::unique_ptr<service_manager::Service> CreateAccessibilityAutoclick() {
 }
 
 std::unique_ptr<service_manager::Service> CreateQuickLaunch() {
-  return std::make_unique<mash::quick_launch::QuickLaunch>();
+  return std::make_unique<quick_launch::QuickLaunch>();
 }
 
 std::unique_ptr<service_manager::Service> CreateTouchHud() {
@@ -93,7 +93,7 @@ MashServiceFactory::~MashServiceFactory() = default;
 void MashServiceFactory::RegisterOutOfProcessServices(
     content::ContentUtilityClient::StaticServiceMap* services) {
   RegisterUiService(services, cursors_.get());
-  RegisterMashService(services, mash::quick_launch::mojom::kServiceName,
+  RegisterMashService(services, quick_launch::mojom::kServiceName,
                       &CreateQuickLaunch);
   RegisterMashService(services, ash::mojom::kServiceName, &CreateAshService);
   RegisterMashService(services, "accessibility_autoclick",

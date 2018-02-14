@@ -17,18 +17,18 @@ source_set("lib") {
   deps = [
     "//base",
     "//mash/common",
-    "//mash/quick_launch/public/mojom:constants",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
   ]
 
-  data_deps = [
-    "//mash/quick_launch",
-  ]
-
   if (is_chromeos) {
-    data_deps += [ "//ash:ash_service" ]
+    deps += [ "//ash/components/quick_launch/public/mojom:constants" ]
+
+    data_deps = [
+      "//ash:ash_service",
+      "//ash/components/quick_launch",
+    ]
   }
 }
 

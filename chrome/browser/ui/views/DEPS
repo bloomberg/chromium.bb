@@ -1,10 +1,10 @@
 include_rules = [
   # TODO(mash): Remove. http://crbug.com/678705
  "+ash",
+ "+ash/components/quick_launch/public",
  "+chrome/browser/ui/views",
  "+components/constrained_window",
  "+mash/common",
- "+mash/quick_launch/public",
  "+services/ui/public/cpp",
  "+components/user_manager",
  "+third_party/libaddressinput",

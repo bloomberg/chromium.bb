@@ -31,7 +31,7 @@ include_rules = [
   "+extensions/common/constants.h",
   "+headless/public",  # For headless mode.
   "+mash/common",
-  "+mash/quick_launch/public",
+  "+ash/components/quick_launch/public",
   "+native_client/src/trusted/service_runtime/osx",
   "+remoting/client/plugin",
   "+sandbox",
