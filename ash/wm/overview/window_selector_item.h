@@ -64,6 +64,11 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
 
   aura::Window* GetWindow();
 
+  // Returns the native window of the |transformed_window_|'s minimized widget
+  // if the original window is in minimized state, or the original window
+  // otherwise.
+  aura::Window* GetWindowForStacking();
+
   // Returns the root window on which this item is shown.
   aura::Window* root_window() { return root_window_; }
 

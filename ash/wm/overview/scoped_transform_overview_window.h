@@ -174,6 +174,8 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // change. Must be called before PositionWindows in WindowGrid.
   void UpdateWindowDimensionsType();
 
+  views::Widget* minimized_widget() { return minimized_widget_.get(); }
+
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
 
