@@ -225,12 +225,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetWindow) {
   // With "include_incognito".
   function = new WindowsGetFunction();
   function->set_extension(extension.get());
-  result.reset(utils::ToDictionary(
-      utils::RunFunctionAndReturnSingleResult(
-          function.get(),
-          base::StringPrintf("[%u]", incognito_window_id),
-          browser(),
-          utils::INCLUDE_INCOGNITO)));
+  result.reset(utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
+      function.get(), base::StringPrintf("[%u]", incognito_window_id),
+      browser(), api_test_utils::INCLUDE_INCOGNITO)));
   EXPECT_TRUE(api_test_utils::GetBoolean(result.get(), "incognito"));
 
   // DevTools window.
@@ -244,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetWindow) {
       base::StringPrintf("[%u, {\"windowTypes\": [\"devtools\"]}]",
                          ExtensionTabUtil::GetWindowId(
                              DevToolsWindowTesting::Get(devtools)->browser())),
-      browser(), utils::INCLUDE_INCOGNITO)));
+      browser(), api_test_utils::INCLUDE_INCOGNITO)));
   EXPECT_EQ("devtools", api_test_utils::GetString(result.get(), "type"));
 
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
@@ -467,7 +464,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
   std::string error = extension_function_test_utils::RunFunctionAndReturnError(
       update_tab_function.get(), kArgsWithNonIncognitoUrl,
       incognito,  // incognito doesn't have any tabs.
-      extension_function_test_utils::NONE);
+      api_test_utils::NONE);
   EXPECT_EQ(ErrorUtils::FormatErrorMessage(
                 tabs_constants::kURLsNotAllowedInIncognitoError,
                 "chrome://extensions/configureCommands"),
@@ -495,7 +492,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DefaultToIncognitoWhenItIsForced) {
   std::unique_ptr<base::DictionaryValue> result(
       utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
           function.get(), kArgsWithoutExplicitIncognitoParam, browser(),
-          utils::INCLUDE_INCOGNITO)));
+          api_test_utils::INCLUDE_INCOGNITO)));
 
   // Make sure it is a new(different) window.
   EXPECT_NE(ExtensionTabUtil::GetWindowId(browser()),
@@ -510,12 +507,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DefaultToIncognitoWhenItIsForced) {
   function->SetRenderFrameHost(
       browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
   function->set_extension(extension.get());
-  result.reset(utils::ToDictionary(
-      utils::RunFunctionAndReturnSingleResult(
-          function.get(),
-          kArgsWithoutExplicitIncognitoParam,
-          incognito_browser,
-          utils::INCLUDE_INCOGNITO)));
+  result.reset(utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
+      function.get(), kArgsWithoutExplicitIncognitoParam, incognito_browser,
+      api_test_utils::INCLUDE_INCOGNITO)));
   // Make sure it is a new(different) window.
   EXPECT_NE(ExtensionTabUtil::GetWindowId(incognito_browser),
             GetWindowId(result.get()));
@@ -535,7 +529,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
   function->set_extension(extension.get());
   std::unique_ptr<base::DictionaryValue> result(
       utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
-          function.get(), kEmptyArgs, browser(), utils::INCLUDE_INCOGNITO)));
+          function.get(), kEmptyArgs, browser(),
+          api_test_utils::INCLUDE_INCOGNITO)));
 
   // Make sure it is a new(different) window.
   EXPECT_NE(ExtensionTabUtil::GetWindowId(browser()),
@@ -548,11 +543,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
   // Run without an explicit "incognito" param.
   function = new WindowsCreateFunction();
   function->set_extension(extension.get());
-  result.reset(utils::ToDictionary(
-      utils::RunFunctionAndReturnSingleResult(function.get(),
-                                              kEmptyArgs,
-                                              incognito_browser,
-                                              utils::INCLUDE_INCOGNITO)));
+  result.reset(utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
+      function.get(), kEmptyArgs, incognito_browser,
+      api_test_utils::INCLUDE_INCOGNITO)));
   // Make sure it is a new(different) window.
   EXPECT_NE(ExtensionTabUtil::GetWindowId(incognito_browser),
             GetWindowId(result.get()));
@@ -1064,7 +1057,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, AcceptState) {
   std::unique_ptr<base::DictionaryValue> result(
       utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
           function.get(), "[{\"state\": \"minimized\"}]", browser(),
-          utils::INCLUDE_INCOGNITO)));
+          api_test_utils::INCLUDE_INCOGNITO)));
   int window_id = GetWindowId(result.get());
   std::string error;
   Browser* new_window = ExtensionTabUtil::GetBrowserFromWindowID(
@@ -1080,7 +1073,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, AcceptState) {
   function->set_extension(extension.get());
   result.reset(utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
       function.get(), "[{\"state\": \"fullscreen\"}]", browser(),
-      utils::INCLUDE_INCOGNITO)));
+      api_test_utils::INCLUDE_INCOGNITO)));
   window_id = GetWindowId(result.get());
   new_window = ExtensionTabUtil::GetBrowserFromWindowID(
       ChromeExtensionFunctionDetails(function.get()), window_id, &error);
@@ -1747,7 +1740,7 @@ bool ExtensionTabsZoomTest::RunSetZoom(int tab_id, double zoom_factor) {
   return utils::RunFunction(
       set_zoom_function.get(),
       base::StringPrintf("[%u, %lf]", tab_id, zoom_factor), browser(),
-      extension_function_test_utils::NONE);
+      api_test_utils::NONE);
 }
 
 testing::AssertionResult ExtensionTabsZoomTest::RunGetZoom(
@@ -1786,10 +1779,8 @@ bool ExtensionTabsZoomTest::RunSetZoomSettings(int tab_id,
     args = base::StringPrintf("[%u, {\"mode\": \"%s\"}]", tab_id, mode);
   }
 
-  return utils::RunFunction(set_zoom_settings_function.get(),
-                            args,
-                            browser(),
-                            extension_function_test_utils::NONE);
+  return utils::RunFunction(set_zoom_settings_function.get(), args, browser(),
+                            api_test_utils::NONE);
 }
 
 testing::AssertionResult ExtensionTabsZoomTest::RunGetZoomSettings(

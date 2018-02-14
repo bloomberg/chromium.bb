@@ -81,7 +81,7 @@ bool ManagementApiUnitTest::RunFunction(
     const base::ListValue& args) {
   return extension_function_test_utils::RunFunction(
       function.get(), base::WrapUnique(args.DeepCopy()), browser(),
-      extension_function_test_utils::NONE);
+      api_test_utils::NONE);
 }
 
 void ManagementApiUnitTest::SetUp() {

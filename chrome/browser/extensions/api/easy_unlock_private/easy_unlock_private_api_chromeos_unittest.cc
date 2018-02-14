@@ -184,10 +184,7 @@ TEST_F(EasyUnlockPrivateApiTest, GenerateEcP256KeyPair) {
   function->set_has_callback(true);
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
-      function.get(),
-      "[]",
-      browser(),
-      extension_function_test_utils::NONE));
+      function.get(), "[]", browser(), extensions::api_test_utils::NONE));
 
   const base::ListValue* result_list = function->GetResultList();
   ASSERT_TRUE(result_list);
@@ -231,7 +228,7 @@ TEST_F(EasyUnlockPrivateApiTest, PerformECDHKeyAgreement) {
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
       function.get(), std::move(args), browser(),
-      extension_function_test_utils::NONE));
+      extensions::api_test_utils::NONE));
 
   EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
 }
@@ -277,7 +274,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage) {
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
       function.get(), std::move(args), browser(),
-      extension_function_test_utils::NONE));
+      extensions::api_test_utils::NONE));
 
   EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
 }
@@ -307,7 +304,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_EmptyOptions) {
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
       function.get(), std::move(args), browser(),
-      extension_function_test_utils::NONE));
+      extensions::api_test_utils::NONE));
 
   EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
 }
@@ -346,7 +343,7 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_AsymmetricSign) {
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
       function.get(), std::move(args), browser(),
-      extension_function_test_utils::NONE));
+      extensions::api_test_utils::NONE));
 
   EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
 }
@@ -384,7 +381,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage) {
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
       function.get(), std::move(args), browser(),
-      extension_function_test_utils::NONE));
+      extensions::api_test_utils::NONE));
 
   EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
 }
@@ -414,7 +411,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_EmptyOptions) {
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
       function.get(), std::move(args), browser(),
-      extension_function_test_utils::NONE));
+      extensions::api_test_utils::NONE));
 
   EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
 }
@@ -450,7 +447,7 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_AsymmetricSign) {
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
       function.get(), std::move(args), browser(),
-      extension_function_test_utils::NONE));
+      extensions::api_test_utils::NONE));
 
   EXPECT_EQ(expected_result, GetSingleBinaryResultAsString(function.get()));
 }
@@ -500,10 +497,8 @@ TEST_F(EasyUnlockPrivateApiTest, AutoPairing) {
   scoped_refptr<EasyUnlockPrivateSetAutoPairingResultFunction> function(
       new EasyUnlockPrivateSetAutoPairingResultFunction());
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
-      function.get(),
-      "[{\"success\":false, \"errorMessage\":\"fake_error\"}]",
-      browser(),
-      extension_function_test_utils::NONE));
+      function.get(), "[{\"success\":false, \"errorMessage\":\"fake_error\"}]",
+      browser(), extensions::api_test_utils::NONE));
   EXPECT_FALSE(result.success);
   EXPECT_EQ("fake_error", result.error);
 
@@ -512,10 +507,8 @@ TEST_F(EasyUnlockPrivateApiTest, AutoPairing) {
                                        base::Unretained(&result)));
   function = new EasyUnlockPrivateSetAutoPairingResultFunction();
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
-      function.get(),
-      "[{\"success\":true}]",
-      browser(),
-      extension_function_test_utils::NONE));
+      function.get(), "[{\"success\":true}]", browser(),
+      extensions::api_test_utils::NONE));
   EXPECT_TRUE(result.success);
   EXPECT_TRUE(result.error.empty());
 }

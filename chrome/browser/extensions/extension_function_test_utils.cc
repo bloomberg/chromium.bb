@@ -81,12 +81,14 @@ bool HasPrivacySensitiveFields(base::DictionaryValue* val) {
 std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
                                       const std::string& args,
                                       Browser* browser) {
-  return RunFunctionAndReturnError(function, args, browser, NONE);
+  return RunFunctionAndReturnError(function, args, browser,
+                                   extensions::api_test_utils::NONE);
 }
-std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
-                                      const std::string& args,
-                                      Browser* browser,
-                                      RunFunctionFlags flags) {
+std::string RunFunctionAndReturnError(
+    UIThreadExtensionFunction* function,
+    const std::string& args,
+    Browser* browser,
+    extensions::api_test_utils::RunFunctionFlags flags) {
   scoped_refptr<ExtensionFunction> function_owner(function);
   RunFunction(function, args, browser, flags);
   // When sending a response, the function will set an empty list value if there
@@ -103,13 +105,14 @@ base::Value* RunFunctionAndReturnSingleResult(
     UIThreadExtensionFunction* function,
     const std::string& args,
     Browser* browser) {
-  return RunFunctionAndReturnSingleResult(function, args, browser, NONE);
+  return RunFunctionAndReturnSingleResult(function, args, browser,
+                                          extensions::api_test_utils::NONE);
 }
 base::Value* RunFunctionAndReturnSingleResult(
     UIThreadExtensionFunction* function,
     const std::string& args,
     Browser* browser,
-    RunFunctionFlags flags) {
+    extensions::api_test_utils::RunFunctionFlags flags) {
   scoped_refptr<ExtensionFunction> function_owner(function);
   RunFunction(function, args, browser, flags);
   EXPECT_TRUE(function->GetError().empty()) << "Unexpected error: "
@@ -125,7 +128,7 @@ base::Value* RunFunctionAndReturnSingleResult(
 bool RunFunction(UIThreadExtensionFunction* function,
                  const std::string& args,
                  Browser* browser,
-                 RunFunctionFlags flags) {
+                 extensions::api_test_utils::RunFunctionFlags flags) {
   std::unique_ptr<base::ListValue> parsed_args(ParseList(args));
   EXPECT_TRUE(parsed_args.get())
       << "Could not parse extension function arguments: " << args;
@@ -135,16 +138,14 @@ bool RunFunction(UIThreadExtensionFunction* function,
 bool RunFunction(UIThreadExtensionFunction* function,
                  std::unique_ptr<base::ListValue> args,
                  Browser* browser,
-                 RunFunctionFlags flags) {
+                 extensions::api_test_utils::RunFunctionFlags flags) {
   TestFunctionDispatcherDelegate dispatcher_delegate(browser);
   std::unique_ptr<extensions::ExtensionFunctionDispatcher> dispatcher(
       new extensions::ExtensionFunctionDispatcher(browser->profile()));
   dispatcher->set_delegate(&dispatcher_delegate);
-  // TODO(yoz): The cast is a hack; these flags should be defined in
-  // only one place.  See crbug.com/394840.
-  return extensions::api_test_utils::RunFunction(
-      function, std::move(args), browser->profile(), std::move(dispatcher),
-      static_cast<extensions::api_test_utils::RunFunctionFlags>(flags));
+  return extensions::api_test_utils::RunFunction(function, std::move(args),
+                                                 browser->profile(),
+                                                 std::move(dispatcher), flags);
 }
 
 } // namespace extension_function_test_utils

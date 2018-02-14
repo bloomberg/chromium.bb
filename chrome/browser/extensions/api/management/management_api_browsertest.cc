@@ -216,10 +216,8 @@ class ExtensionManagementApiEscalationTest :
     function->SetRenderFrameHost(browser()->tab_strip_model()->
         GetActiveWebContents()->GetMainFrame());
     bool response = util::RunFunction(
-        function.get(),
-        base::StringPrintf("[\"%s\", %s]", kId, enabled_string),
-        browser(),
-        util::NONE);
+        function.get(), base::StringPrintf("[\"%s\", %s]", kId, enabled_string),
+        browser(), api_test_utils::NONE);
     if (expected_error.empty()) {
       EXPECT_EQ(true, response);
     } else {

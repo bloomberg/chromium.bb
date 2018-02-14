@@ -549,10 +549,10 @@ class DownloadExtensionTest : public ExtensionApiTest {
     return result;
   }
 
-  extension_function_test_utils::RunFunctionFlags GetFlags() {
-    return current_browser()->profile()->IsOffTheRecord() ?
-           extension_function_test_utils::INCLUDE_INCOGNITO :
-           extension_function_test_utils::NONE;
+  api_test_utils::RunFunctionFlags GetFlags() {
+    return current_browser()->profile()->IsOffTheRecord()
+               ? api_test_utils::INCLUDE_INCOGNITO
+               : api_test_utils::NONE;
   }
 
   // extension_function_test_utils::RunFunction*() only uses browser for its
