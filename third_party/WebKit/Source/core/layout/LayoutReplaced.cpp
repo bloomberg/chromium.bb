@@ -68,6 +68,11 @@ void LayoutReplaced::StyleDidChange(StyleDifference diff,
                                     const ComputedStyle* old_style) {
   LayoutBox::StyleDidChange(diff, old_style);
 
+  // Replaced elements can have border-radius clips without clipping overflow;
+  // the overflow clipping case is already covered in LayoutBox::StyleDidChange
+  if (old_style && !old_style->RadiiEqual(StyleRef()))
+    SetNeedsPaintPropertyUpdate();
+
   bool had_style = !!old_style;
   float old_zoom = had_style ? old_style->EffectiveZoom()
                              : ComputedStyleInitialValues::InitialZoom();
