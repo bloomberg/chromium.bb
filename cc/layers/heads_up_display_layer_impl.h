@@ -15,6 +15,7 @@
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/resources/memory_history.h"
+#include "cc/resources/resource_pool.h"
 #include "cc/resources/scoped_resource.h"
 #include "cc/trees/debug_rect_history.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -23,10 +24,6 @@ class SkCanvas;
 class SkPaint;
 class SkTypeface;
 struct SkRect;
-
-namespace viz {
-class ContextProvider;
-}
 
 namespace cc {
 class FrameRateCounter;
@@ -49,7 +46,7 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
                    AppendQuadsData* append_quads_data) override;
   void UpdateHudTexture(DrawMode draw_mode,
                         LayerTreeResourceProvider* resource_provider,
-                        viz::ContextProvider* context_provider,
+                        bool gpu_raster,
                         const viz::RenderPassList& list);
 
   void ReleaseResources() override;
@@ -137,13 +134,11 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
                      const std::string& label_text) const;
   void DrawDebugRects(SkCanvas* canvas, DebugRectHistory* debug_rect_history);
 
-  void AcquireResource(DrawMode draw_mode,
-                       LayerTreeResourceProvider* resource_provider);
-  void ReleaseUnmatchedSizeResources(
-      LayerTreeResourceProvider* resource_provider);
-
-  std::vector<std::unique_ptr<ScopedResource>> resources_;
-  sk_sp<SkSurface> hud_surface_;
+  ResourcePool::InUsePoolResource in_flight_resource_;
+  std::unique_ptr<ResourcePool> pool_;
+  viz::DrawQuad* current_quad_ = nullptr;
+  // Used for software raster when it will be uploaded to a texture.
+  sk_sp<SkSurface> staging_surface_;
 
   sk_sp<SkTypeface> typeface_;
 
