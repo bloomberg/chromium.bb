@@ -52,7 +52,12 @@ void IncognitoWindowTracker::OnIncognitoWindowOpened() {
 }
 
 void IncognitoWindowTracker::OnBrowsingDataCleared() {
-  const auto severity = GetAppMenuButton()->severity();
+  auto* app_menu_button = GetAppMenuButton();
+  // TODO(bdea): Remove early return once https://crbug.com/811982 is fixed.
+  if (!app_menu_button)
+    return;
+
+  const auto severity = app_menu_button->severity();
   if (severity == AppMenuIconController::Severity::NONE && ShouldShowPromo())
     ShowPromo();
 }
