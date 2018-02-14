@@ -216,7 +216,7 @@ static void JNI_LibraryLoader_PeriodicallyCollectResidency(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
 #if BUILDFLAG(SUPPORTS_CODE_ORDERING)
-  NativeLibraryPrefetcher::PercentageOfResidentNativeLibraryCode();
+  NativeLibraryPrefetcher::PeriodicallyCollectResidency();
 #else
   LOG(WARNING) << "Collecting residency is not supported.";
 #endif
