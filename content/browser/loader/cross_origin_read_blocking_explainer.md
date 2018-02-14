@@ -140,7 +140,7 @@ All other kinds of requests may be CORB-eligible.  This includes:
       CSS' `background-image`, etc.
     - [script-like destinations](https://fetch.spec.whatwg.org/#request-destination-script-like)
       like `<script>`, `importScripts()`, `navigator.serviceWorker.register()`,
-      `audioWorkler.addModule()`, etc.
+      `audioWorklet.addModule()`, etc.
     - "audio", "video" or "track"
     - "font"
     - "style"
@@ -218,6 +218,7 @@ helps meet the goal of protecting as many *documents* as possible.
 > protection in the future).
 
 CORB considers `text/plain` to be a *document*.
+TODO: application/octet-stream.
 
 > [lukasza@chromium.org] This seems like a one-off in the current
 > implementation.  Maybe `text/plain` should just be treated as
@@ -254,15 +255,20 @@ is sometimes wrong.  For example, some HTTP servers return a JPEG image with
 a `Content-Type` header incorrectly saying `text/html`.
 
 To avoid breaking existing websites, CORB may attempt to confirm if the response
-is really a *document* by sniffing the response body:
+body really matches the CORB-protected Content-Type response header:
 
 * CORB will only sniff to confirm the classification based on the `Content-Type`
   header (i.e. if the `Content-Type` header is `text/json` then CORB will sniff
   for JSON and will not sniff for HTML and/or XML).
 
-* CORB will only sniff to confirm if the response body is a HTML, XML or JSON
-  *document* (and won't attempt to sniff content of other types of *documents*
-  like PDFs and/or ZIP archives).
+* If some syntax elements are shared between CORB-protected and
+  non-CORB-protected MIME types, then these elements have to be ignored by CORB
+  sniffing.  For example, when sniffing for (CORB-protected) HTML, CORB ignores
+  and skips HTML comments, because
+  [they can also be present](http://www.ecma-international.org/ecma-262/6.0/#sec-html-like-comments)
+  in (non-CORB-protected) JavaScript.  This is different from the
+  [HTML sniffing rules](https://mimesniff.spec.whatwg.org/#rules-for-identifying-an-unknown-mime-type),
+  used in other contexts.
 
 > [lukasza@chromium.org] It is not practical to try teaching CORB about sniffing
 > all possible types of *documents* like `application/pdf`, `application/zip`,
@@ -357,6 +363,17 @@ HTML's `<canvas>`, etc.
 > testing on major websites indicates that most CORB-blocked images are tracking
 > pixels and therefore blocking them won't have any observable effect.
 
+> [lukasza@chromium.org] Earlier attempts to block nosniff images with
+> incompatible MIME types
+> [failed](https://github.com/whatwg/fetch/issues/395).
+> We think that CORB will succeed, because
+> 1) it will only block a subset of CORB-protected MIME types
+>    (e.g. it won't block `application/octet-stream` quoted
+>    in a
+>    [Firefox bug](https://bugzilla.mozilla.org/show_bug.cgi?id=1302539))
+> 2) CORB is an important response to the recent announcement of new
+>    side-channel attacks like Spectre.
+
 
 ### How CORB interacts with other multimedia?
 
@@ -370,27 +387,69 @@ TODO.
 
 ### How CORB interacts with scripts?
 
-TODO.
+CORB should have no observable impact on `<script>` tags except for cases where
+a CORB-protected, non-JavaScript resource labeled with its correct MIME type is
+loaded as a script - in these cases the resource will usually result in a syntax
+error, but CORB-protected response's empty body will result in no error.
 
-* TODO: **Correctly-labeled HTML document**
-  * Observable via syntax errors
-    [GlobalEventHandlers.onerror](https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onerror)
-  * Add discussion that some JSON parser breakers result in syntax errors and
-    some don't.
-  * Resource used in a `<script>` tag: TODO.
+Examples:
 
-* TODO: **Mislabeled script (with sniffing)**
-  * Non-observable due to sniffing
+* **Correctly-labeled HTML document**
+  * Resource used in a `<script>` tag:
+    * Body: an HTML document
+    * `Content-Type: text/html`
+    * No `X-Content-Type-Options` header
+  * Expected behavior: **observable difference** via
+    [GlobalEventHandlers.onerror](https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onerror).
+    Most CORB-protected resources would result in a syntax error when parsed as
+    JavaScript.  The syntax error goes away after CORB blocks a response,
+    because the empty body of the blocked response parses fine as JavaScript.
+  * WPT test: `fetch/corb/script-html-correctly-labeled.tentative.sub.html`
 
-* TODO: **Mislabeled script (nosniff)**
-  * QUESTION: Will nosniff prevent non-CORB from working?  (if yes - great: CORB
-    has no observable effects in this scenario).
+> [lukasza@chromium.org] In theory, using a non-empty response in CORB-blocked
+> responses might reintroduce the lost syntax error.  We didn't go down that
+> path, because
+> 1) using a non-empty response would be inconsistent with other parts of the
+>    Fetch spec (like
+>    [opaque filtered response](https://fetch.spec.whatwg.org/#concept-filtered-response-opaque)).
+> 2) retaining the presence of the syntax error might require changing the
+>    contents of a CORB-blocked response body depending on whether the original
+>    response body would have caused a syntax error or not.  This would add
+>    extra complexity that seems undesirable both for CORB implementors and for
+>    web developers.
+
+* **Mislabeled script (with sniffing)**
+  * Resource used in a `<script>` tag:
+    * Body: a proper JavaScript script
+    * `Content-Type: text/html`
+    * No `X-Content-Type-Options` header
+  * Expected behavior: **no difference** in behavior with and without CORB.
+    CORB will sniff that the response body is *not* actually a CORB-protected
+    type and therefore will allow the response.  Note that CORB sniffing is
+    resilient to the fact that some syntax elements are shared across HTML
+    and JavaScript (e.g.
+    [comments](http://www.ecma-international.org/ecma-262/6.0/#sec-html-like-comments)).
+  * WPT test: `fetch/corb/script-js-mislabeled-as-html.sub.html`
+
+* **Mislabeled script (nosniff)**
+  * Resource used in a `<script>` tag:
+    * Body: a proper JavaScript script
+    * `Content-Type: text/html`
+    * `X-Content-Type-Options: nosniff`
+  * Expected behavior: **no observable difference** in behavior with and without CORB.
+    Both with and without CORB, the script will not execute, because the
+    `nosniff` response header response will cause the response to be blocked
+    when its MIME type (`text/html` in the example) is not a
+    [JavaScript MIME type](https://html.spec.whatwg.org/multipage/scripting.html#javascript-mime-type)
+    (this behavior is required by the
+    [Fetch spec](https://fetch.spec.whatwg.org/#should-response-to-request-be-blocked-due-to-nosniff?)).
+  * WPT test: `fetch/corb/script-js-mislabeled-as-html-nosniff.sub.html`
 
 In addition to the HTML `<script>` tag, the examples above should apply to other
 web features that consume JavaScript including
 [script-like destinations](https://fetch.spec.whatwg.org/#request-destination-script-like)
 like `importScripts()`, `navigator.serviceWorker.register()`,
-`audioWorkler.addModule()`, etc.
+`audioWorklet.addModule()`, etc.
 
 
 ### How CORB interacts with stylesheets?
@@ -405,14 +464,19 @@ TODO.
   * Non-observable due to sniffing?
 
 * TODO: **Mislabeled stylesheet (nosniff)**
-  * QUESTION: Will nosniff prevent non-CORB from working?  (if yes - great: CORB
-    has no observable effects in this scenario).
+  * Expected behavior: **no observable difference** in behavior with and without CORB.
+    Both with and without CORB, the stylesheet will not load, because the
+    `nosniff` response header response will cause the response to be blocked
+    when its MIME type (`text/html` in the example) is not `text/css`
+    (this behavior is required by the
+    [Fetch spec](https://fetch.spec.whatwg.org/#should-response-to-request-be-blocked-due-to-nosniff?)).
 
 * TODO: **Correctly-labeled stylesheet with JSON parser breaker**
   * Non-observable, because JSON-parser-breaking is not performed for text/css
 
 * TODO: **Polyglot HTML/CSS labeled as text/html**.
-  * QUESTION: text/html will be rejected even without CORB?
+  * QUESTION: cross-origin text/html will be rejected even without CORB and
+    without nosniff?
   * Example:
 ```css
 <!DOCTYPE html>
@@ -559,6 +623,6 @@ CORB demo page: https://anforowicz.github.io/xsdb-demo/index.html
 * https://fetch.spec.whatwg.org/#concept-filtered-response-opaque
 * https://fetch.spec.whatwg.org/#cors-safelisted-response-header-name
 * https://fetch.spec.whatwg.org/#http-cors-protocol
-* https://fetch.spec.whatwg.org/#should-response-to-request-be-blocked-due-to-nosniff
+* https://fetch.spec.whatwg.org/#should-response-to-request-be-blocked-due-to-nosniff?
 * https://fetch.spec.whatwg.org/#x-content-type-options-header
 * https://tools.ietf.org/html/rfc7233#section-4 (Responses to a Range Request)
