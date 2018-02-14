@@ -10,6 +10,7 @@
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "platform/graphics/AcceleratedStaticBitmapImage.h"
+#include "platform/graphics/CanvasHeuristicParameters.h"
 #include "platform/graphics/CanvasResource.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
@@ -375,13 +376,21 @@ PaintCanvas* CanvasResourceProvider::Canvas() {
       image_provider = &*canvas_image_provider_;
     }
 
+    cc::SkiaPaintCanvas::ContextFlushes context_flushes;
+    if (IsAccelerated()) {
+      context_flushes.enable =
+          CanvasHeuristicParameters::kEnableGrContextFlushes;
+      context_flushes.max_draws_before_flush =
+          CanvasHeuristicParameters::kMaxDrawsBeforeContextFlush;
+    }
     if (ColorParams().NeedsSkColorSpaceXformCanvas()) {
       canvas_ = std::make_unique<cc::SkiaPaintCanvas>(
           GetSkSurface()->getCanvas(), ColorParams().GetSkColorSpace(),
-          std::move(image_provider));
+          std::move(image_provider), context_flushes);
     } else {
       canvas_ = std::make_unique<cc::SkiaPaintCanvas>(
-          GetSkSurface()->getCanvas(), std::move(image_provider));
+          GetSkSurface()->getCanvas(), std::move(image_provider),
+          context_flushes);
     }
   }
 
