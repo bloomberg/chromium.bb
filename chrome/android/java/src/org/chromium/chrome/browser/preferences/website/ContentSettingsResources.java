@@ -92,7 +92,7 @@ public class ContentSettingsResources {
         if (sResourceInfo == null) {
             Map<Integer, ResourceItem> localMap = new HashMap<Integer, ResourceItem>();
             localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS,
-                    new ResourceItem(R.drawable.ic_ad_24dp_grey600, R.string.ads_permission_title,
+                    new ResourceItem(R.drawable.web_asset, R.string.ads_permission_title,
                             R.string.ads_permission_title, ContentSetting.ALLOW,
                             ContentSetting.BLOCK, 0,
                             R.string.website_settings_category_ads_blocked));

@@ -106,7 +106,7 @@ public class RecentTabsGroupView extends RelativeLayout {
      */
     public void configureForRecentlyClosedTabs(boolean isExpanded) {
         mDeviceIcon.setVisibility(View.VISIBLE);
-        mDeviceIcon.setImageResource(R.drawable.recent_recently_closed);
+        mDeviceIcon.setImageResource(R.drawable.web_asset);
         mDeviceLabel.setText(R.string.recently_closed);
         setTimeLabelVisibility(View.GONE);
         configureExpandedCollapsed(isExpanded);
