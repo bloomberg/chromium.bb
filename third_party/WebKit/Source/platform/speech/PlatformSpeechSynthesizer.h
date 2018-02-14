@@ -66,9 +66,6 @@ class PLATFORM_EXPORT PlatformSpeechSynthesizer
 
   virtual ~PlatformSpeechSynthesizer();
 
-  const Vector<scoped_refptr<PlatformSpeechSynthesisVoice>>& VoiceList() const {
-    return voice_list_;
-  }
   virtual void Speak(PlatformSpeechSynthesisUtterance*);
   virtual void Pause();
   virtual void Resume();
@@ -77,6 +74,8 @@ class PLATFORM_EXPORT PlatformSpeechSynthesizer
   PlatformSpeechSynthesizerClient* Client() const {
     return speech_synthesizer_client_;
   }
+
+  const Vector<scoped_refptr<PlatformSpeechSynthesisVoice>>& GetVoiceList();
 
   void SetVoiceList(Vector<scoped_refptr<PlatformSpeechSynthesisVoice>>&);
 
@@ -99,8 +98,11 @@ class PLATFORM_EXPORT PlatformSpeechSynthesizer
   virtual void InitializeVoiceList();
 
   Vector<scoped_refptr<PlatformSpeechSynthesisVoice>> voice_list_;
+  bool voices_initialized_ = false;
 
  private:
+  void MaybeInitializeVoiceList();
+
   Member<PlatformSpeechSynthesizerClient> speech_synthesizer_client_;
 
   std::unique_ptr<WebSpeechSynthesizer> web_speech_synthesizer_;
