@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/process/process_iterator.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -162,7 +163,8 @@ void OnTraceUploadComplete(TraceCrashServiceUploader* uploader,
 }
 
 void UploadTraceToCrashServer(std::string file_contents,
-                              std::string trigger_name) {
+                              std::string trigger_name,
+                              uint32_t sampling_rate) {
   // Traces has been observed as small as 4k. Seems likely to be a bug. To
   // account for all potentially too-small traces, we set the lower bounds to
   // 512 bytes. The upper bounds is set to 300MB as an extra-high threshold,
@@ -175,6 +177,8 @@ void UploadTraceToCrashServer(std::string file_contents,
   rule.SetKey("rule", base::Value("MEMLOG"));
   rule.SetKey("trigger_name", base::Value(std::move(trigger_name)));
   rule.SetKey("category", base::Value("BENCHMARK_MEMORY_HEAVY"));
+  rule.SetKey("sampling_rate",
+              base::Value(base::saturated_cast<int>(sampling_rate)));
   rules_list.GetList().push_back(std::move(rule));
 
   base::Value configs(base::Value::Type::DICTIONARY);
@@ -584,16 +588,18 @@ void ProfilingProcessHost::RequestProcessReport(std::string trigger_name) {
   // It's safe to pass a raw pointer for ProfilingProcessHost because it's a
   // singleton that's never destroyed.
   auto finish_report_callback = base::BindOnce(
-      [](ProfilingProcessHost* host, std::string trigger_name, bool success,
-         std::string trace) {
+      [](ProfilingProcessHost* host, std::string trigger_name,
+         uint32_t sampling_rate, bool success, std::string trace) {
         UMA_HISTOGRAM_BOOLEAN("OutOfProcessHeapProfiling.RecordTrace.Success",
                               success);
         host->SetTakingTraceForUpload(false);
         if (success) {
-          UploadTraceToCrashServer(std::move(trace), std::move(trigger_name));
+          UploadTraceToCrashServer(std::move(trace), std::move(trigger_name),
+                                   sampling_rate);
         }
       },
-      base::Unretained(this), std::move(trigger_name));
+      base::Unretained(this), std::move(trigger_name),
+      should_sample_ ? sampling_rate_ : 1);
   RequestTraceWithHeapDump(std::move(finish_report_callback),
                            false /* keep_small_allocations */,
                            true /* anonymize */);
