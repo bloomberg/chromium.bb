@@ -11,6 +11,7 @@
 #include "core/css/CSSValuePair.h"
 
 namespace blink {
+namespace cssvalue {
 
 class CSSContentDistributionValue : public CSSValue {
  public:
@@ -48,6 +49,7 @@ class CSSContentDistributionValue : public CSSValue {
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSContentDistributionValue,
                             IsContentDistributionValue());
 
+}  // namespace cssvalue
 }  // namespace blink
 
 #endif  // CSSContentDistributionValue_h

@@ -5,7 +5,6 @@
 #include "core/animation/CSSRayInterpolationType.h"
 
 #include "core/css/BasicShapeFunctions.h"
-#include "core/css/CSSRayValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/StyleRay.h"

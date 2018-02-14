@@ -120,7 +120,7 @@ CSSValue* ValueForBasicShape(const ComputedStyle& style,
   switch (basic_shape->GetType()) {
     case BasicShape::kStyleRayType: {
       const StyleRay& ray = ToStyleRay(*basic_shape);
-      return CSSRayValue::Create(
+      return cssvalue::CSSRayValue::Create(
           *CSSPrimitiveValue::Create(ray.Angle(),
                                      CSSPrimitiveValue::UnitType::kDegrees),
           *CSSIdentifierValue::Create(RaySizeToKeyword(ray.Size())),
@@ -348,7 +348,8 @@ scoped_refptr<BasicShape> BasicShapeForValue(
 
     basic_shape = std::move(rect);
   } else if (basic_shape_value.IsRayValue()) {
-    const CSSRayValue& ray_value = ToCSSRayValue(basic_shape_value);
+    const cssvalue::CSSRayValue& ray_value =
+        cssvalue::ToCSSRayValue(basic_shape_value);
     float angle = ray_value.Angle().ComputeDegrees();
     StyleRay::RaySize size = KeywordToRaySize(ray_value.Size().GetValueID());
     bool contain = !!ray_value.Contain();

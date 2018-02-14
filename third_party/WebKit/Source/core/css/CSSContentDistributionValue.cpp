@@ -8,6 +8,7 @@
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
+namespace cssvalue {
 
 CSSContentDistributionValue::CSSContentDistributionValue(
     CSSValueID distribution,
@@ -47,4 +48,5 @@ bool CSSContentDistributionValue::Equals(
          overflow_ == other.overflow_;
 }
 
+}  // namespace cssvalue
 }  // namespace blink
