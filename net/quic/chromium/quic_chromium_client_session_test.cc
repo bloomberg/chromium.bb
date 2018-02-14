@@ -48,6 +48,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -317,7 +318,8 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
   // Request a stream and verify that a stream was created.
   TestCompletionCallback callback;
   ASSERT_EQ(OK, handle->RequestStream(/*requires_confirmation=*/false,
-                                      callback.callback()));
+                                      callback.callback(),
+                                      TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_TRUE(handle->ReleaseStream() != nullptr);
 
   quic_data.Resume();
@@ -343,7 +345,8 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
     EXPECT_TRUE(handle2->IsCryptoHandshakeConfirmed());
     ASSERT_EQ(ERR_CONNECTION_CLOSED,
               handle2->RequestStream(/*requires_confirmation=*/false,
-                                     callback.callback()));
+                                     callback.callback(),
+                                     TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 
   session_.reset();
@@ -359,9 +362,10 @@ TEST_P(QuicChromiumClientSessionTest, Handle) {
   EXPECT_EQ(ERR_CONNECTION_CLOSED, handle->GetPeerAddress(&address));
   EXPECT_TRUE(handle->CreatePacketBundler(QuicConnection::NO_ACK).get() ==
               nullptr);
-  ASSERT_EQ(ERR_CONNECTION_CLOSED,
-            handle->RequestStream(/*requires_confirmation=*/false,
-                                  callback.callback()));
+  ASSERT_EQ(
+      ERR_CONNECTION_CLOSED,
+      handle->RequestStream(/*requires_confirmation=*/false,
+                            callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
 }
 
 TEST_P(QuicChromiumClientSessionTest, StreamRequest) {
@@ -379,7 +383,8 @@ TEST_P(QuicChromiumClientSessionTest, StreamRequest) {
       session_->CreateHandle(destination_);
   TestCompletionCallback callback;
   ASSERT_EQ(OK, handle->RequestStream(/*requires_confirmation=*/false,
-                                      callback.callback()));
+                                      callback.callback(),
+                                      TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_TRUE(handle->ReleaseStream() != nullptr);
 
   quic_data.Resume();
@@ -402,7 +407,8 @@ TEST_P(QuicChromiumClientSessionTest, ConfirmationRequiredStreamRequest) {
       session_->CreateHandle(destination_);
   TestCompletionCallback callback;
   ASSERT_EQ(OK, handle->RequestStream(/*requires_confirmation=*/true,
-                                      callback.callback()));
+                                      callback.callback(),
+                                      TRAFFIC_ANNOTATION_FOR_TESTS));
   EXPECT_TRUE(handle->ReleaseStream() != nullptr);
 
   quic_data.Resume();
@@ -423,9 +429,10 @@ TEST_P(QuicChromiumClientSessionTest, StreamRequestBeforeConfirmation) {
   std::unique_ptr<QuicChromiumClientSession::Handle> handle =
       session_->CreateHandle(destination_);
   TestCompletionCallback callback;
-  ASSERT_EQ(ERR_IO_PENDING,
-            handle->RequestStream(/*requires_confirmation=*/true,
-                                  callback.callback()));
+  ASSERT_EQ(
+      ERR_IO_PENDING,
+      handle->RequestStream(/*requires_confirmation=*/true, callback.callback(),
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
 
   CompleteCryptoHandshake();
 
@@ -455,7 +462,8 @@ TEST_P(QuicChromiumClientSessionTest, CancelStreamRequestBeforeRelease) {
       session_->CreateHandle(destination_);
   TestCompletionCallback callback;
   ASSERT_EQ(OK, handle->RequestStream(/*requires_confirmation=*/false,
-                                      callback.callback()));
+                                      callback.callback(),
+                                      TRAFFIC_ANNOTATION_FOR_TESTS));
   handle.reset();
 
   quic_data.Resume();
@@ -487,9 +495,10 @@ TEST_P(QuicChromiumClientSessionTest, AsyncStreamRequest) {
   std::unique_ptr<QuicChromiumClientSession::Handle> handle =
       session_->CreateHandle(destination_);
   TestCompletionCallback callback;
-  ASSERT_EQ(ERR_IO_PENDING,
-            handle->RequestStream(/*requires_confirmation=*/false,
-                                  callback.callback()));
+  ASSERT_EQ(
+      ERR_IO_PENDING,
+      handle->RequestStream(/*requires_confirmation=*/false,
+                            callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Close a stream and ensure the stream request completes.
   QuicRstStreamFrame rst(kInvalidControlFrameId,
@@ -533,12 +542,14 @@ TEST_P(QuicChromiumClientSessionTest, ClosedWithAsyncStreamRequest) {
             handle->RequestStream(
                 /*requires_confirmation=*/false,
                 base::Bind(&QuicChromiumClientSessionTest::ResetHandleOnError,
-                           base::Unretained(this), &handle2)));
+                           base::Unretained(this), &handle2),
+                TRAFFIC_ANNOTATION_FOR_TESTS));
 
   TestCompletionCallback callback2;
   ASSERT_EQ(ERR_IO_PENDING,
             handle2->RequestStream(/*requires_confirmation=*/false,
-                                   callback2.callback()));
+                                   callback2.callback(),
+                                   TRAFFIC_ANNOTATION_FOR_TESTS));
 
   session_->connection()->CloseConnection(
       QUIC_NETWORK_IDLE_TIMEOUT, "Timed out",
@@ -576,9 +587,10 @@ TEST_P(QuicChromiumClientSessionTest, CancelPendingStreamRequest) {
   std::unique_ptr<QuicChromiumClientSession::Handle> handle =
       session_->CreateHandle(destination_);
   TestCompletionCallback callback;
-  ASSERT_EQ(ERR_IO_PENDING,
-            handle->RequestStream(/*requires_confirmation=*/false,
-                                  callback.callback()));
+  ASSERT_EQ(
+      ERR_IO_PENDING,
+      handle->RequestStream(/*requires_confirmation=*/false,
+                            callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Cancel the pending stream request.
   handle.reset();
@@ -612,9 +624,10 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionCloseBeforeStreamRequest) {
   std::unique_ptr<QuicChromiumClientSession::Handle> handle =
       session_->CreateHandle(destination_);
   TestCompletionCallback callback;
-  ASSERT_EQ(ERR_CONNECTION_CLOSED,
-            handle->RequestStream(/*requires_confirmation=*/false,
-                                  callback.callback()));
+  ASSERT_EQ(
+      ERR_CONNECTION_CLOSED,
+      handle->RequestStream(/*requires_confirmation=*/false,
+                            callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
 
   EXPECT_TRUE(quic_data.AllReadDataConsumed());
   EXPECT_TRUE(quic_data.AllWriteDataConsumed());
@@ -633,9 +646,10 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionCloseBeforeHandshakeConfirmed) {
   std::unique_ptr<QuicChromiumClientSession::Handle> handle =
       session_->CreateHandle(destination_);
   TestCompletionCallback callback;
-  ASSERT_EQ(ERR_IO_PENDING,
-            handle->RequestStream(/*requires_confirmation=*/true,
-                                  callback.callback()));
+  ASSERT_EQ(
+      ERR_IO_PENDING,
+      handle->RequestStream(/*requires_confirmation=*/true, callback.callback(),
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Close the connection and verify that the StreamRequest completes with
   // an error.
@@ -671,9 +685,10 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionCloseWithPendingStreamRequest) {
   std::unique_ptr<QuicChromiumClientSession::Handle> handle =
       session_->CreateHandle(destination_);
   TestCompletionCallback callback;
-  ASSERT_EQ(ERR_IO_PENDING,
-            handle->RequestStream(/*requires_confirmation=*/false,
-                                  callback.callback()));
+  ASSERT_EQ(
+      ERR_IO_PENDING,
+      handle->RequestStream(/*requires_confirmation=*/false,
+                            callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Close the connection and verify that the StreamRequest completes with
   // an error.
@@ -1009,9 +1024,10 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
   std::unique_ptr<QuicChromiumClientSession::Handle> handle =
       session_->CreateHandle(destination_);
   TestCompletionCallback callback;
-  ASSERT_EQ(ERR_IO_PENDING,
-            handle->RequestStream(/*requires_confirmation=*/false,
-                                  callback.callback()));
+  ASSERT_EQ(
+      ERR_IO_PENDING,
+      handle->RequestStream(/*requires_confirmation=*/false,
+                            callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Close a stream and ensure I can now open a new one.
   QuicStreamId stream_id = streams[0]->id();

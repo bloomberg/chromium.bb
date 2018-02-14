@@ -79,10 +79,12 @@ void BidirectionalStreamQuicImpl::Start(
   delegate_ = delegate;
   request_info_ = request_info;
 
+  // TODO(https://crbug.com/656607): Add proper annotation here.
   int rv = session_->RequestStream(
       request_info_->method == "POST",
       base::Bind(&BidirectionalStreamQuicImpl::OnStreamReady,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr()),
+      NO_TRAFFIC_ANNOTATION_BUG_656607);
   if (rv == ERR_IO_PENDING)
     return;
 

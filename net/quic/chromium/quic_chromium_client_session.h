@@ -43,6 +43,7 @@
 #include "net/spdy/chromium/http2_priority_dependencies.h"
 #include "net/spdy/chromium/multiplexed_session.h"
 #include "net/spdy/chromium/server_push_delegate.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -130,7 +131,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     // ERR_IO_PENDING is returned, then when the request is eventuallly
     // complete |callback| will be called.
     int RequestStream(bool requires_confirmation,
-                      const CompletionCallback& callback);
+                      const CompletionCallback& callback,
+                      const NetworkTrafficAnnotationTag& traffic_annotation);
 
     // Releases |stream_| to the caller. Returns nullptr if the underlying
     // QuicChromiumClientSession is closed.
@@ -277,6 +279,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     // Releases |stream_| to the caller.
     std::unique_ptr<QuicChromiumClientStream::Handle> ReleaseStream();
 
+    const NetworkTrafficAnnotationTag traffic_annotation() {
+      return traffic_annotation_;
+    }
+
    private:
     friend class QuicChromiumClientSession;
 
@@ -290,7 +296,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
     // |session| must outlive this request.
     StreamRequest(QuicChromiumClientSession::Handle* session,
-                  bool requires_confirmation);
+                  bool requires_confirmation,
+                  const NetworkTrafficAnnotationTag& traffic_annotation);
 
     void OnIOComplete(int rv);
     void DoCallback(int rv);
@@ -318,6 +325,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     // For tracking how much time pending stream requests wait.
     base::TimeTicks pending_start_time_;
     State next_state_;
+
+    const NetworkTrafficAnnotationTag traffic_annotation_;
 
     base::WeakPtrFactory<StreamRequest> weak_factory_;
 
@@ -638,8 +647,11 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   bool WasConnectionEverUsed();
 
-  QuicChromiumClientStream* CreateOutgoingReliableStreamImpl();
-  QuicChromiumClientStream* CreateIncomingReliableStreamImpl(QuicStreamId id);
+  QuicChromiumClientStream* CreateOutgoingReliableStreamImpl(
+      const NetworkTrafficAnnotationTag& traffic_annotation);
+  QuicChromiumClientStream* CreateIncomingReliableStreamImpl(
+      QuicStreamId id,
+      const NetworkTrafficAnnotationTag& traffic_annotation);
   // A completion callback invoked when a read completes.
   void OnReadComplete(int result);
 

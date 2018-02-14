@@ -401,7 +401,8 @@ int QuicChromiumClientStream::Handle::HandleIOComplete(int rv) {
 QuicChromiumClientStream::QuicChromiumClientStream(
     QuicStreamId id,
     QuicSpdyClientSessionBase* session,
-    const NetLogWithSource& net_log)
+    const NetLogWithSource& net_log,
+    const NetworkTrafficAnnotationTag& traffic_annotation)
     : QuicSpdyStream(id, session),
       net_log_(net_log),
       handle_(nullptr),

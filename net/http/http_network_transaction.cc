@@ -914,7 +914,6 @@ int HttpNetworkTransaction::DoInitStream() {
 
   stream_->GetRemoteEndpoint(&remote_endpoint_);
 
-  DCHECK(request_->traffic_annotation.is_valid());
   return stream_->InitializeStream(request_, can_send_early_data_, priority_,
                                    net_log_, io_callback_);
 }
