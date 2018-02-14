@@ -23,6 +23,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -115,6 +116,12 @@ static const char* const kSwitchNames[] = {
     service_manager::switches::kDisableSeccompFilterSandbox,
     service_manager::switches::kGpuSandboxAllowSysVShm,
     service_manager::switches::kGpuSandboxFailuresFatal,
+#if defined(OS_WIN)
+    service_manager::switches::kAddGpuAppContainerCaps,
+    service_manager::switches::kDisableGpuAppContainer,
+    service_manager::switches::kDisableGpuLpac,
+    service_manager::switches::kEnableGpuAppContainer,
+#endif  // defined(OS_WIN)
     switches::kDisableBreakpad,
     switches::kDisableGpuRasterization,
     switches::kDisableGpuSandbox,
@@ -239,7 +246,8 @@ class GpuSandboxedProcessLauncherDelegate
   explicit GpuSandboxedProcessLauncherDelegate(
       const base::CommandLine& cmd_line)
 #if defined(OS_WIN)
-      : cmd_line_(cmd_line)
+      : cmd_line_(cmd_line),
+        enable_appcontainer_(true)
 #endif
   {
   }
@@ -251,13 +259,36 @@ class GpuSandboxedProcessLauncherDelegate
     return true;
   }
 
+  enum GPUAppContainerEnableState{
+      AC_ENABLED = 0, AC_DISABLED_GL = 1, AC_DISABLED_FORCE = 2,
+      MAX_ENABLE_STATE = 3,
+  };
+
+  bool GetAppContainerId(std::string* appcontainer_id) override {
+    if (UseOpenGLRenderer()) {
+      base::UmaHistogramEnumeration("GPU.AppContainer.EnableState",
+                                    AC_DISABLED_GL, MAX_ENABLE_STATE);
+      return false;
+    }
+
+    if (!enable_appcontainer_) {
+      base::UmaHistogramEnumeration("GPU.AppContainer.EnableState",
+                                    AC_DISABLED_FORCE, MAX_ENABLE_STATE);
+      return false;
+    }
+
+    *appcontainer_id = base::WideToUTF8(cmd_line_.GetProgram().value());
+    base::UmaHistogramEnumeration("GPU.AppContainer.EnableState", AC_ENABLED,
+                                  MAX_ENABLE_STATE);
+    return true;
+  }
+
   // For the GPU process we gotten as far as USER_LIMITED. The next level
   // which is USER_RESTRICTED breaks both the DirectX backend and the OpenGL
   // backend. Note that the GPU process is connected to the interactive
   // desktop.
   bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
-    if (cmd_line_.GetSwitchValueASCII(switches::kUseGL) ==
-        gl::kGLImplementationDesktopName) {
+    if (UseOpenGLRenderer()) {
       // Open GL path.
       policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
                             sandbox::USER_LIMITED);
@@ -280,18 +311,8 @@ class GpuSandboxedProcessLauncherDelegate
               JOB_OBJECT_UILIMIT_EXITWINDOWS |
               JOB_OBJECT_UILIMIT_DISPLAYSETTINGS,
           policy);
-
       policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
     }
-
-    // Allow the server side of GPU sockets, which are pipes that have
-    // the "chrome.gpu" namespace and an arbitrary suffix.
-    sandbox::ResultCode result = policy->AddRule(
-        sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,
-        sandbox::TargetPolicy::NAMEDPIPES_ALLOW_ANY,
-        L"\\\\.\\pipe\\chrome.gpu.*");
-    if (result != sandbox::SBOX_ALL_OK)
-      return false;
 
     // Block this DLL even if it is not loaded by the browser process.
     policy->AddDllToUnload(L"cmsetac.dll");
@@ -299,9 +320,9 @@ class GpuSandboxedProcessLauncherDelegate
     if (cmd_line_.HasSwitch(switches::kEnableLogging)) {
       base::string16 log_file_path = logging::GetLogFileFullPath();
       if (!log_file_path.empty()) {
-        result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-                                 sandbox::TargetPolicy::FILES_ALLOW_ANY,
-                                 log_file_path.c_str());
+        sandbox::ResultCode result = policy->AddRule(
+            sandbox::TargetPolicy::SUBSYS_FILES,
+            sandbox::TargetPolicy::FILES_ALLOW_ANY, log_file_path.c_str());
         if (result != sandbox::SBOX_ALL_OK)
           return false;
       }
@@ -309,6 +330,9 @@ class GpuSandboxedProcessLauncherDelegate
 
     return true;
   }
+
+  // TODO: Remove this once AppContainer sandbox is enabled by default.
+  void DisableAppContainer() { enable_appcontainer_ = false; }
 #endif  // OS_WIN
 
   service_manager::SandboxType GetSandboxType() override {
@@ -323,7 +347,13 @@ class GpuSandboxedProcessLauncherDelegate
 
  private:
 #if defined(OS_WIN)
+  bool UseOpenGLRenderer() {
+    return cmd_line_.GetSwitchValueASCII(switches::kUseGL) ==
+           gl::kGLImplementationDesktopName;
+  }
+
   base::CommandLine cmd_line_;
+  bool enable_appcontainer_;
 #endif  // OS_WIN
 };
 
@@ -334,6 +364,17 @@ void BindJavaInterface(mojo::InterfaceRequest<Interface> request) {
   content::GetGlobalJavaInterfaces()->GetInterface(std::move(request));
 }
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+void RecordAppContainerStatus(int error_code, bool crashed_before) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!crashed_before &&
+      service_manager::SandboxWin::IsAppContainerEnabledForSandbox(
+          *command_line, service_manager::SANDBOX_TYPE_GPU)) {
+    base::UmaHistogramSparse("GPU.AppContainer.Status", error_code);
+  }
+}
+#endif  // defined(OS_WIN)
 
 }  // anonymous namespace
 
@@ -894,10 +935,17 @@ void GpuProcessHost::OnDestroyingVideoSurfaceAck() {
 void GpuProcessHost::OnProcessLaunched() {
   UMA_HISTOGRAM_TIMES("GPU.GPUProcessLaunchTime",
                       base::TimeTicks::Now() - init_start_time_);
+#if defined(OS_WIN)
+  if (kind_ == GPU_PROCESS_KIND_SANDBOXED)
+    RecordAppContainerStatus(sandbox::SBOX_ALL_OK, crashed_before_);
+#endif  // defined(OS_WIN)
 }
 
 void GpuProcessHost::OnProcessLaunchFailed(int error_code) {
-  // TODO(wfh): do something more useful with this error code.
+#if defined(OS_WIN)
+  if (kind_ == GPU_PROCESS_KIND_SANDBOXED)
+    RecordAppContainerStatus(error_code, crashed_before_);
+#endif  // defined(OS_WIN)
   RecordProcessCrash();
 }
 
@@ -1162,6 +1210,10 @@ bool GpuProcessHost::LaunchGpuProcess() {
 
   std::unique_ptr<GpuSandboxedProcessLauncherDelegate> delegate =
       std::make_unique<GpuSandboxedProcessLauncherDelegate>(*cmd_line);
+#if defined(OS_WIN)
+  if (crashed_before_)
+    delegate->DisableAppContainer();
+#endif  // defined(OS_WIN)
   process_->Launch(std::move(delegate), std::move(cmd_line), true);
   process_launched_ = true;
 
