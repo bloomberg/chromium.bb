@@ -64,11 +64,10 @@
       <input is="iron-input" type="search" bind-value="{{selectedItem}}"
           on-search="onInputValueChanged_" on-change="onChange_" incremental
           slot="input">
-      <!-- TODO(hcarmona): remove "suffix" when paper-input is v2. -->
-      <button is="paper-icon-button-light" class="icon-search" suffix
+      <button is="paper-icon-button-light" class="icon-search"
           id="searchIcon" hidden slot="suffix">
       </button>
-      <button is="paper-icon-button-light" class="icon-arrow-dropdown" suffix
+      <button is="paper-icon-button-light" class="icon-arrow-dropdown"
           id="dropdownIcon" slot="suffix">
       </button>
     </paper-input-container>

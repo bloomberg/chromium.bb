@@ -15,10 +15,9 @@
       }
 
       #pageselector {
-        --container: { visibility: hidden; };
+        --container: { display: none; };
         --paper-input-container-underline: var(--container);
         --paper-input-container-underline-focus: var(--container);
-        display: inline-block;
         padding: 0;
         width: 1ch;
       }
@@ -26,6 +25,7 @@
       #input {
         -webkit-margin-start: -3px;
         color: #fff;
+        height: 100%;
         line-height: 18px;
         padding: 3px;
         text-align: end;
@@ -43,8 +43,17 @@
       }
 
       #pagelength-spacer {
-        display: inline-block;
+        -webkit-margin-start: -2px;
+        padding-bottom: 1px;
         text-align: start;
+      }
+
+      #pageselector,
+      #slash,
+      #pagelength-spacer {
+        display: inline-block;
+        margin-bottom: 2px;
+        vertical-align: middle;
       }
 
       #input,

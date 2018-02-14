@@ -72,8 +72,7 @@
       <input id="searchInput" type="search" on-search="onSearchTermSearch"
           on-input="onSearchTermInput" aria-label$="[[label]]" incremental
           autofocus$="[[autofocus]]" placeholder="[[label]]" slot="input">
-      <!-- TODO(hcarmona): remove "suffix" when paper-input is v2. -->
-      <button suffix is="paper-icon-button-light" id="clearSearch"
+      <button is="paper-icon-button-light" id="clearSearch"
           class="icon-cancel" on-tap="onTapClear_" title="[[clearLabel]]"
           hidden$="[[!hasSearchText]]" slot="suffix">
       </button>

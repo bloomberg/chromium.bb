@@ -42,12 +42,10 @@
     <paper-input-container id="decorator" on-tap="onTap"
         invalid="[[isInvalid]]" disabled$="[[disabled]]">
       <label slot="label"><span>[[label]]</span></label>
-      <div id="container" class="horizontal layout" slot="input">
-        <input id="input" is="iron-input" on-keydown="onKeyDown"
-            bind-value="{{value}}" invalid="[[isInvalid]]"
-            required$="[[required]]" disabled$="[[disabled]]" class="flex">
-        <span id="domainLabel">[[domain]]</span>
-      </div>
+      <input id="input" is="iron-input" on-keydown="onKeyDown"
+          bind-value="{{value}}" invalid="[[isInvalid]]" slot="input"
+          required$="[[required]]" disabled$="[[disabled]]" class="flex">
+      <span id="domainLabel" slot="suffix">[[domain]]</span>
       <template is="dom-if" if="[[error]]">
         <paper-input-error>[[error]]</paper-input-error>
       </template>
