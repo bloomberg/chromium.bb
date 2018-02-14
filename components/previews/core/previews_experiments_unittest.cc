@@ -12,6 +12,9 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
+#include "components/previews/core/previews_features.h"
 #include "components/variations/variations_associated_data.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,9 +24,7 @@ namespace previews {
 namespace {
 
 const char kClientSidePreviewsFieldTrial[] = "ClientSidePreviews";
-const char kClientLoFiFieldTrial[] = "PreviewsClientLoFi";
 const char kEnabled[] = "Enabled";
-const char kDisabled[] = "Disabled";
 
 // Verifies that we can enable offline previews via comand line.
 TEST(PreviewsExperimentsTest, TestCommandLineOfflinePage) {
@@ -100,29 +101,35 @@ TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
   variations::testing::ClearAllVariationParams();
 }
 
-TEST(PreviewsExperimentsTest, TestClientLoFiDisabledByDefault) {
-  base::FieldTrialList field_trial_list(nullptr);
+#if defined(OS_ANDROID)
+
+TEST(PreviewsExperimentsTest, TestClientLoFiEnabledByDefaultOnAndroid) {
+  EXPECT_TRUE(params::IsClientLoFiEnabled());
+}
+
+#else  // !defined(OS_ANDROID)
+
+TEST(PreviewsExperimentsTest, TestClientLoFiDisabledByDefaultOnNonAndroid) {
   EXPECT_FALSE(params::IsClientLoFiEnabled());
 }
+
+#endif  // defined(OS_ANDROID)
 
 TEST(PreviewsExperimentsTest, TestClientLoFiExplicitlyDisabled) {
-  base::FieldTrialList field_trial_list(nullptr);
-  EXPECT_TRUE(
-      base::FieldTrialList::CreateFieldTrial(kClientLoFiFieldTrial, kDisabled));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kClientLoFi);
   EXPECT_FALSE(params::IsClientLoFiEnabled());
 }
 
-TEST(PreviewsExperimentsTest, TestClientLoFiEnabled) {
-  base::FieldTrialList field_trial_list(nullptr);
-  EXPECT_TRUE(
-      base::FieldTrialList::CreateFieldTrial(kClientLoFiFieldTrial, kEnabled));
+TEST(PreviewsExperimentsTest, TestClientLoFiExplicitlyEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kClientLoFi);
   EXPECT_TRUE(params::IsClientLoFiEnabled());
 }
 
 TEST(PreviewsExperimentsTest, TestEnableClientLoFiWithDefaultParams) {
-  base::FieldTrialList field_trial_list(nullptr);
-  EXPECT_TRUE(
-      base::FieldTrialList::CreateFieldTrial(kClientLoFiFieldTrial, kEnabled));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kClientLoFi);
 
   EXPECT_TRUE(params::IsClientLoFiEnabled());
   EXPECT_EQ(0, params::ClientLoFiVersion());
@@ -133,18 +140,12 @@ TEST(PreviewsExperimentsTest, TestEnableClientLoFiWithDefaultParams) {
 }
 
 TEST(PreviewsExperimentsTest, TestEnableClientLoFiWithCustomParams) {
-  base::FieldTrialList field_trial_list(nullptr);
-
-  // Set some custom params for Client LoFi.
-  std::map<std::string, std::string> custom_params = {
-      {"version", "10"},
-      {"max_allowed_effective_connection_type", "3G"},
-      {"short_host_blacklist", "some,hosts, to-blacklist ,,"},
-  };
-  EXPECT_TRUE(base::AssociateFieldTrialParams(kClientLoFiFieldTrial, kEnabled,
-                                              custom_params));
-  EXPECT_TRUE(
-      base::FieldTrialList::CreateFieldTrial(kClientLoFiFieldTrial, kEnabled));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kClientLoFi,
+      {{"version", "10"},
+       {"max_allowed_effective_connection_type", "3G"},
+       {"short_host_blacklist", "some,hosts, to-blacklist ,,"}});
 
   EXPECT_TRUE(params::IsClientLoFiEnabled());
   EXPECT_EQ(10, params::ClientLoFiVersion());
@@ -152,24 +153,6 @@ TEST(PreviewsExperimentsTest, TestEnableClientLoFiWithCustomParams) {
             params::EffectiveConnectionTypeThresholdForClientLoFi());
   EXPECT_EQ(std::vector<std::string>({"some", "hosts", "to-blacklist"}),
             params::GetBlackListedHostsForClientLoFiFieldTrial());
-
-  variations::testing::ClearAllVariationParams();
-}
-
-// Verifies that we can enable offline previews via comand line.
-TEST(PreviewsExperimentsTest, TestCommandLineClientLoFi) {
-  EXPECT_FALSE(params::IsClientLoFiEnabled());
-
-  std::unique_ptr<base::FeatureList> feature_list =
-      std::make_unique<base::FeatureList>();
-
-  // The feature is explicitly enabled on the command-line.
-  feature_list->InitializeFromCommandLine("ClientLoFi", "");
-  base::FeatureList::ClearInstanceForTesting();
-  base::FeatureList::SetInstance(std::move(feature_list));
-
-  EXPECT_TRUE(params::IsClientLoFiEnabled());
-  base::FeatureList::ClearInstanceForTesting();
 }
 
 }  // namespace

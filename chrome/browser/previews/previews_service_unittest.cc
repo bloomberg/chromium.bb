@@ -112,25 +112,35 @@ TEST_F(PreviewsServiceTest, TestOfflineFeatureDisabled) {
   base::FeatureList::ClearInstanceForTesting();
 }
 
-TEST_F(PreviewsServiceTest, TestClientLoFiFieldTrialEnabled) {
+TEST_F(PreviewsServiceTest, TestClientLoFiFeatureEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {previews::features::kPreviews,
+       previews::features::kClientLoFi} /* enabled features */,
+      {data_reduction_proxy::features::
+           kDataReductionProxyDecidesTransform} /* disabled features */);
+
   base::FieldTrialList::CreateFieldTrial("PreviewsClientLoFi", "Enabled");
   EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::LOFI));
 }
 
-TEST_F(PreviewsServiceTest, TestClientLoFiFieldTrialDisabled) {
-  base::FieldTrialList::CreateFieldTrial("PreviewsClientLoFi", "Disabled");
-  EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::LOFI));
+TEST_F(PreviewsServiceTest, TestClientLoFiAndServerLoFiEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {previews::features::kPreviews, previews::features::kClientLoFi,
+       data_reduction_proxy::features::
+           kDataReductionProxyDecidesTransform} /* enabled features */,
+      {} /* disabled features */);
+
+  EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::LOFI));
 }
 
-TEST_F(PreviewsServiceTest, TestClientLoFiFieldTrialNotSet) {
-  EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::LOFI));
-}
-
-TEST_F(PreviewsServiceTest, TestServerLoFiNotEnabled) {
+TEST_F(PreviewsServiceTest, TestClientLoFiAndServerLoFiNotEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {previews::features::kPreviews} /* enabled features */,
-      {data_reduction_proxy::features::
+      {previews::features::kClientLoFi,
+       data_reduction_proxy::features::
            kDataReductionProxyDecidesTransform} /* disabled features */);
   EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::LOFI));
 }

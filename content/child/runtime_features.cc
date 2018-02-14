@@ -362,7 +362,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   WebRuntimeFeatures::EnableClientPlaceholdersForServerLoFi(
       base::GetFieldTrialParamValue("PreviewsClientLoFi",
-                                    "replace_server_placeholders") == "true");
+                                    "replace_server_placeholders") != "false");
 
   WebRuntimeFeatures::EnableResourceLoadScheduler(
       base::FeatureList::IsEnabled(features::kResourceLoadScheduler));

@@ -115,12 +115,7 @@ TEST_F(PreviewsContentUtilTest, DetermineEnabledClientPreviewsStateClientLoFi) {
 
 TEST_F(PreviewsContentUtilTest,
        DetermineEnabledClientPreviewsStateNoScriptAndClientLoFi) {
-  // First, verify no client previews enabled.
-  EXPECT_EQ(content::PREVIEWS_UNSPECIFIED,
-            previews::DetermineEnabledClientPreviewsState(*CreateHttpsRequest(),
-                                                          previews_decider()));
-
-  // Now, enable both Client LoFi and NoScript.
+  // Enable both Client LoFi and NoScript.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
       "Previews,ClientLoFi,NoScriptPreviews", std::string());
