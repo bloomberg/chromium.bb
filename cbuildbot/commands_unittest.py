@@ -625,6 +625,7 @@ class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   def setUp(self):
     self._board = 'test-board'
     self._buildroot = self.tempdir
+    self._boardroot = os.path.join(self.tempdir, self._board)
     self._overlays = ['%s/src/third_party/chromiumos-overlay' % self._buildroot]
     self._chroot = os.path.join(self._buildroot, 'chroot')
     os.makedirs(os.path.join(self._buildroot, '.repo'))
@@ -893,8 +894,39 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
     build_bin = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
                              'usr', 'bin')
     osutils.Touch(os.path.join(build_bin, 'cros_config_host_py'), makedirs=True)
-    result = commands.GetModels(self._buildroot, self._board)
+    config_fname = os.path.join(
+        self._boardroot,
+        'usr',
+        'share',
+        'chromeos-config',
+        'config.dtb')
+    osutils.Touch(config_fname, makedirs=True)
+    result = commands.GetModels(self._buildroot, self._boardroot)
     self.assertEquals(result, ['pyro', 'reef', 'snappy'])
+
+  def testGetModels_withYaml(self):
+    self.rc.SetDefaultCmdResult(output='pyro\nreef\nsnappy\n')
+    build_bin = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
+                             'usr', 'bin')
+    osutils.Touch(os.path.join(build_bin, 'cros_config_host_py'), makedirs=True)
+    config_fname = os.path.join(
+        self._boardroot,
+        'usr',
+        'share',
+        'chromeos-config',
+        'yaml',
+        'private-files.yaml')
+    osutils.Touch(config_fname, makedirs=True)
+    result = commands.GetModels(self._buildroot, self._boardroot)
+    self.assertEquals(result, ['pyro', 'reef', 'snappy'])
+
+  def testGetModels_emptyWithoutConfigDb(self):
+    self.rc.SetDefaultCmdResult(output='pyro\nreef\nsnappy\n')
+    build_bin = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
+                             'usr', 'bin')
+    osutils.Touch(os.path.join(build_bin, 'cros_config_host_py'), makedirs=True)
+    result = commands.GetModels(self._buildroot, self._board)
+    self.assertEquals(result, None)
 
   def testBuildMaximum(self):
     """Base case where Build is called with all options (except extra_env)."""
