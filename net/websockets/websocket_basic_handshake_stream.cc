@@ -35,7 +35,6 @@
 #include "net/http/http_stream_parser.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/websocket_transport_client_socket_pool.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/websockets/websocket_basic_stream.h"
 #include "net/websockets/websocket_basic_stream_adapters.h"
 #include "net/websockets/websocket_deflate_parameters.h"
@@ -317,6 +316,7 @@ int WebSocketBasicHandshakeStream::InitializeStream(
     RequestPriority priority,
     const NetLogWithSource& net_log,
     CompletionOnceCallback callback) {
+  DCHECK(request_info->traffic_annotation.is_valid());
   url_ = request_info->url;
   state_.Initialize(request_info, can_send_early, priority, net_log);
   return OK;
@@ -366,10 +366,10 @@ int WebSocketBasicHandshakeStream::SendRequest(
   request->headers.CopyFrom(enriched_headers);
   connect_delegate_->OnStartOpeningHandshake(std::move(request));
 
-  // TODO(crbug.com/656607): Add propoer annotation.
-  return parser()->SendRequest(state_.GenerateRequestLine(), enriched_headers,
-                               NO_TRAFFIC_ANNOTATION_BUG_656607, response,
-                               std::move(callback));
+  return parser()->SendRequest(
+      state_.GenerateRequestLine(), enriched_headers,
+      NetworkTrafficAnnotationTag(state_.traffic_annotation()), response,
+      std::move(callback));
 }
 
 int WebSocketBasicHandshakeStream::ReadResponseHeaders(
