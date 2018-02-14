@@ -594,6 +594,7 @@ _x86_internal_release_boards = frozenset([
     'ninja',
     'novato',
     'novato-arc64',
+    'octopus',
     'orco',
     'panther',
     'parrot',
@@ -682,6 +683,7 @@ _cheets_x86_boards = frozenset([
     'newbie',
     'novato',
     'novato-arc64',
+    'octopus',
     'poppy',
     'pyro',
     'reef',
@@ -2495,6 +2497,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'eve-arcnext',
       'grunt',
       'nami',
+      'octopus',
   ])
 
   # Paladin configs that exist and should stay as experimental until further
