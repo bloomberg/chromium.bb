@@ -618,7 +618,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
 
   def EchoHeaderCache(self):
     """This function echoes back the value of a specific request header while
-    allowing caching for 16 hours."""
+    allowing caching for 10 hours."""
 
     return self.EchoHeaderHelper("/echoheadercache")
 
