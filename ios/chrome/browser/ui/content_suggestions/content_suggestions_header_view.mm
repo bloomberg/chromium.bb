@@ -34,14 +34,6 @@
   return self;
 }
 
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [super traitCollectionDidChange:previousTraitCollection];
-  // TODO(crbug.com/808429) This logic is specific to phone.  This will need to
-  // be updated when tablet also shows the |toolBarView|.
-  self.toolBarView.hidden =
-      self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular;
-}
-
 #pragma mark - NTPHeaderViewAdapter
 
 - (void)addToolbarView:(UIView*)toolbarView {
