@@ -27,7 +27,7 @@
     var container = ElementsTestRunner.expandedNodeWithId('container');
     var children = container.children();
     for (var i = 0; i < children.length; ++i)
-      TestRunner.addResult(Components.DOMPresentationUtils.simpleSelector(children[i]));
+      TestRunner.addResult(children[i].simpleSelector());
     TestRunner.completeTest();
   }
 })();

@@ -104,7 +104,7 @@
       TestRunner.completeTest();
       return;
     }
-    var cssPath = Components.DOMPresentationUtils.cssPath(entry.node, true);
+    var cssPath = Elements.DOMPath.cssPath(entry.node, true);
     var result = entry.prefix + cssPath;
     TestRunner.addResult(result.replace(/\n/g, '\\n'));
     var escapedPath = cssPath.replace(/\\/g, '\\\\');

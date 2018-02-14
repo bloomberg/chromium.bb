@@ -37,7 +37,7 @@
         TestRunner.addResult('===== Moved child2 =====');
         ElementsTestRunner.dumpElementsTree(containerNode);
         TestRunner.addResult(
-            'Selection: ' + Components.DOMPresentationUtils.fullQualifiedSelector(treeOutline.selectedDOMNode()));
+            'Selection: ' + Elements.DOMPath.fullQualifiedSelector(treeOutline.selectedDOMNode()));
         next();
       }
 

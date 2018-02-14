@@ -18,7 +18,7 @@
     if (!node)
       return;
     if (node.getAttribute('id') == 'div') {
-      TestRunner.addResult(Components.DOMPresentationUtils.fullQualifiedSelector(node));
+      TestRunner.addResult(Elements.DOMPath.fullQualifiedSelector(node));
       TestRunner.completeTest();
     }
   }
