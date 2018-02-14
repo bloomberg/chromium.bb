@@ -24,6 +24,46 @@ void TypefaceCataloger(SkTypeface* typeface, void* ctx) {
 }
 }  // namespace
 
+// static
+size_t PaintOpWriter::GetFlattenableSize(const SkFlattenable* flattenable) {
+  // The first bit is always written to indicate the serialized size of the
+  // flattenable, or zero if it doesn't exist.
+  size_t total_size = sizeof(size_t);
+  if (!flattenable)
+    return total_size;
+
+  // There is no method to know the serialized size of a flattenable without
+  // serializing it.
+  sk_sp<SkData> data = flattenable->serialize();
+  total_size += data->isEmpty() ? 0u : data->size();
+  return total_size;
+}
+
+// static
+size_t PaintOpWriter::GetImageSize(const PaintImage& image) {
+  // Image Serialization type.
+  size_t image_size = sizeof(PaintOp::SerializedImageType);
+  if (image) {
+    auto info = SkImageInfo::Make(image.width(), image.height(),
+                                  kN32_SkColorType, kPremul_SkAlphaType);
+    image_size += sizeof(info.colorType());
+    image_size += sizeof(info.width());
+    image_size += sizeof(info.height());
+    image_size += sizeof(size_t);
+    image_size += info.computeMinByteSize();
+  }
+  return image_size;
+}
+
+// static
+size_t PaintOpWriter::GetRecordSize(const PaintRecord* record) {
+  // Zero size indicates no record.
+  // TODO(khushalsagar): Querying the size of a PaintRecord is not supported.
+  // This works only for security constrained serialization which ignores
+  // records.
+  return sizeof(size_t);
+}
+
 PaintOpWriter::PaintOpWriter(void* memory,
                              size_t size,
                              TransferCacheSerializeHelper* transfer_cache,
@@ -38,13 +78,13 @@ PaintOpWriter::PaintOpWriter(void* memory,
   // Leave space for header of type/skip.
   DCHECK_GE(size, HeaderBytes());
 }
+
 PaintOpWriter::~PaintOpWriter() = default;
 
 template <typename T>
 void PaintOpWriter::WriteSimple(const T& val) {
   static_assert(base::is_trivially_copyable<T>::value, "");
-  if (remaining_bytes_ < sizeof(T))
-    valid_ = false;
+  EnsureBytes(sizeof(T));
   if (!valid_)
     return;
 
@@ -108,8 +148,7 @@ void PaintOpWriter::Write(const SkRRect& rect) {
 void PaintOpWriter::Write(const SkPath& path) {
   AlignMemory(4);
   size_t bytes = path.writeToMemory(nullptr);
-  if (bytes > remaining_bytes_)
-    valid_ = false;
+  EnsureBytes(bytes);
   if (!valid_)
     return;
 
@@ -271,8 +310,7 @@ void PaintOpWriter::Write(SkColorType color_type) {
 }
 
 void PaintOpWriter::WriteData(size_t bytes, const void* input) {
-  if (bytes > remaining_bytes_)
-    valid_ = false;
+  EnsureBytes(bytes);
   if (!valid_)
     return;
   if (bytes == 0)
@@ -299,8 +337,9 @@ void PaintOpWriter::AlignMemory(size_t alignment) {
   // because alignment is a power of two. This doesn't use modulo operator
   // however, since it can be slow.
   size_t padding = ((memory + alignment - 1) & ~(alignment - 1)) - memory;
-  if (padding > remaining_bytes_)
-    valid_ = false;
+  EnsureBytes(padding);
+  if (!valid_)
+    return;
 
   memory_ += padding;
   remaining_bytes_ -= padding;
@@ -497,7 +536,7 @@ void PaintOpWriter::Write(const MergePaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const MorphologyPaintFilter& filter) {
-  WriteSimple(static_cast<uint32_t>(filter.morph_type()));
+  WriteSimple(filter.morph_type());
   WriteSimple(filter.radius_x());
   WriteSimple(filter.radius_y());
   Write(filter.input().get());
@@ -516,7 +555,7 @@ void PaintOpWriter::Write(const TilePaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const TurbulencePaintFilter& filter) {
-  WriteSimple(static_cast<uint32_t>(filter.turbulence_type()));
+  WriteSimple(filter.turbulence_type());
   WriteSimple(filter.base_frequency_x());
   WriteSimple(filter.base_frequency_y());
   WriteSimple(filter.num_octaves());
@@ -535,7 +574,7 @@ void PaintOpWriter::Write(const MatrixPaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const LightingDistantPaintFilter& filter) {
-  WriteSimple(static_cast<uint32_t>(filter.lighting_type()));
+  WriteSimple(filter.lighting_type());
   WriteSimple(filter.direction());
   WriteSimple(filter.light_color());
   WriteSimple(filter.surface_scale());
@@ -545,7 +584,7 @@ void PaintOpWriter::Write(const LightingDistantPaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const LightingPointPaintFilter& filter) {
-  WriteSimple(static_cast<uint32_t>(filter.lighting_type()));
+  WriteSimple(filter.lighting_type());
   WriteSimple(filter.location());
   WriteSimple(filter.light_color());
   WriteSimple(filter.surface_scale());
@@ -555,7 +594,7 @@ void PaintOpWriter::Write(const LightingPointPaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const LightingSpotPaintFilter& filter) {
-  WriteSimple(static_cast<uint32_t>(filter.lighting_type()));
+  WriteSimple(filter.lighting_type());
   WriteSimple(filter.location());
   WriteSimple(filter.target());
   WriteSimple(filter.specular_exponent());
@@ -575,10 +614,9 @@ void PaintOpWriter::Write(const PaintRecord* record,
   // information until we do the serialization. So, skip the amount needed
   // before writing.
   size_t size_offset = sizeof(size_t);
-  if (size_offset > remaining_bytes_) {
-    valid_ = false;
+  EnsureBytes(size_offset);
+  if (!valid_)
     return;
-  }
 
   char* size_memory = memory_;
 
@@ -624,9 +662,7 @@ void PaintOpWriter::Write(const PaintRecord* record,
 
 void PaintOpWriter::Write(const PaintImage& image) {
   if (!image) {
-    Write(static_cast<uint8_t>(
-        PaintOp::SerializedImageType::kTransferCacheEntry));
-    Write(kInvalidImageTransferCacheEntryId);
+    Write(static_cast<uint8_t>(PaintOp::SerializedImageType::kNoImage));
     return;
   }
   // Note that the filter quality doesn't matter here, since it's not
@@ -646,6 +682,11 @@ void PaintOpWriter::Write(const SkRegion& region) {
 
   WriteSimple(bytes_written);
   WriteData(bytes_written, data.get());
+}
+
+inline void PaintOpWriter::EnsureBytes(size_t required_bytes) {
+  if (remaining_bytes_ < required_bytes)
+    valid_ = false;
 }
 
 }  // namespace cc

@@ -221,6 +221,8 @@ class CC_PAINT_EXPORT PaintFlags {
 
   bool HasDiscardableImages() const;
 
+  size_t GetSerializedSize() const;
+
  private:
   friend class PaintOpReader;
   friend class PaintOpWriter;

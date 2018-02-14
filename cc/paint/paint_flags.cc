@@ -6,6 +6,7 @@
 
 #include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_op_buffer.h"
+#include "cc/paint/paint_op_writer.h"
 
 namespace {
 
@@ -205,6 +206,20 @@ bool PaintFlags::HasDiscardableImages() const {
   else if (shader_->shader_type() == PaintShader::Type::kPaintRecord)
     return shader_->paint_record()->HasDiscardableImages();
   return false;
+}
+
+size_t PaintFlags::GetSerializedSize() const {
+  return sizeof(text_size_) + sizeof(color_) + sizeof(width_) +
+         sizeof(miter_limit_) + sizeof(blend_mode_) + sizeof(bitfields_uint_) +
+         PaintOpWriter::GetFlattenableSize(path_effect_.get()) +
+         PaintOpWriter::Alignment() +
+         PaintOpWriter::GetFlattenableSize(mask_filter_.get()) +
+         PaintOpWriter::Alignment() +
+         PaintOpWriter::GetFlattenableSize(color_filter_.get()) +
+         PaintOpWriter::Alignment() +
+         PaintOpWriter::GetFlattenableSize(draw_looper_.get()) +
+         PaintFilter::GetFilterSize(image_filter_.get()) +
+         PaintShader::GetSerializedSize(shader_.get());
 }
 
 }  // namespace cc

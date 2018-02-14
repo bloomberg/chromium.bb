@@ -5,6 +5,7 @@
 #include "cc/paint/paint_filter.h"
 
 #include "cc/paint/filter_operations.h"
+#include "cc/paint/paint_op_writer.h"
 #include "cc/paint/paint_record.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkMath.h"
@@ -34,6 +35,7 @@ bool AreFiltersEqual(const PaintFilter* one, const PaintFilter* two) {
 bool AreScalarsEqual(SkScalar one, SkScalar two) {
   return PaintOp::AreEqualEvenIfNaN(one, two);
 }
+
 }  // namespace
 
 PaintFilter::PaintFilter(Type type, const CropRect* crop_rect) : type_(type) {
@@ -95,6 +97,27 @@ std::string PaintFilter::TypeToString(Type type) {
   }
   NOTREACHED();
   return "Unknown";
+}
+
+size_t PaintFilter::GetFilterSize(const PaintFilter* filter) {
+  // A null type is used to indicate no filter.
+  if (!filter)
+    return sizeof(uint32_t);
+  return filter->SerializedSize() + PaintOpWriter::Alignment();
+}
+
+size_t PaintFilter::BaseSerializedSize() const {
+  size_t total_size = 0u;
+  // Filter type.
+  total_size += sizeof(uint32_t);
+  // Bool to indicate whether crop exists.
+  total_size += sizeof(uint32_t);
+  if (crop_rect_) {
+    // CropRect.
+    total_size += sizeof(crop_rect_->flags());
+    total_size += sizeof(crop_rect_->rect());
+  }
+  return total_size;
 }
 
 bool PaintFilter::operator==(const PaintFilter& other) const {
@@ -198,6 +221,14 @@ ColorFilterPaintFilter::ColorFilterPaintFilter(
 
 ColorFilterPaintFilter::~ColorFilterPaintFilter() = default;
 
+size_t ColorFilterPaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size = 0u;
+  total_size += BaseSerializedSize();
+  total_size += PaintOpWriter::GetFlattenableSize(color_filter_.get());
+  total_size += GetFilterSize(input_.get());
+  return total_size.ValueOrDefault(0u);
+}
+
 bool ColorFilterPaintFilter::operator==(
     const ColorFilterPaintFilter& other) const {
   return PaintOp::AreSkFlattenablesEqual(color_filter_.get(),
@@ -220,6 +251,14 @@ BlurPaintFilter::BlurPaintFilter(SkScalar sigma_x,
 }
 
 BlurPaintFilter::~BlurPaintFilter() = default;
+
+size_t BlurPaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size =
+      BaseSerializedSize() + sizeof(sigma_x_) + sizeof(sigma_y_) +
+      sizeof(tile_mode_);
+  total_size += GetFilterSize(input_.get());
+  return total_size.ValueOrDefault(0u);
+}
 
 bool BlurPaintFilter::operator==(const BlurPaintFilter& other) const {
   return PaintOp::AreEqualEvenIfNaN(sigma_x_, other.sigma_x_) &&
@@ -251,6 +290,14 @@ DropShadowPaintFilter::DropShadowPaintFilter(SkScalar dx,
 
 DropShadowPaintFilter::~DropShadowPaintFilter() = default;
 
+size_t DropShadowPaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size =
+      BaseSerializedSize() + sizeof(dx_) + sizeof(dy_) + sizeof(sigma_x_) +
+      sizeof(sigma_y_) + sizeof(color_) + sizeof(shadow_mode_);
+  total_size += GetFilterSize(input_.get());
+  return total_size.ValueOrDefault(0u);
+}
+
 bool DropShadowPaintFilter::operator==(
     const DropShadowPaintFilter& other) const {
   return PaintOp::AreEqualEvenIfNaN(dx_, other.dx_) &&
@@ -275,6 +322,13 @@ MagnifierPaintFilter::MagnifierPaintFilter(const SkRect& src_rect,
 
 MagnifierPaintFilter::~MagnifierPaintFilter() = default;
 
+size_t MagnifierPaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size =
+      BaseSerializedSize() + sizeof(src_rect_) + sizeof(inset_);
+  total_size += GetFilterSize(input_.get());
+  return total_size.ValueOrDefault(0u);
+}
+
 bool MagnifierPaintFilter::operator==(const MagnifierPaintFilter& other) const {
   return PaintOp::AreSkRectsEqual(src_rect_, other.src_rect_) &&
          PaintOp::AreEqualEvenIfNaN(inset_, other.inset_) &&
@@ -291,6 +345,13 @@ ComposePaintFilter::ComposePaintFilter(sk_sp<PaintFilter> outer,
 }
 
 ComposePaintFilter::~ComposePaintFilter() = default;
+
+size_t ComposePaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size = BaseSerializedSize();
+  total_size += GetFilterSize(outer_.get());
+  total_size += GetFilterSize(inner_.get());
+  return total_size.ValueOrDefault(0u);
+}
 
 bool ComposePaintFilter::operator==(const ComposePaintFilter& other) const {
   return AreFiltersEqual(outer_.get(), other.outer_.get()) &&
@@ -312,6 +373,15 @@ AlphaThresholdPaintFilter::AlphaThresholdPaintFilter(const SkRegion& region,
 }
 
 AlphaThresholdPaintFilter::~AlphaThresholdPaintFilter() = default;
+
+size_t AlphaThresholdPaintFilter::SerializedSize() const {
+  size_t region_size = region_.writeToMemory(nullptr);
+  base::CheckedNumeric<size_t> total_size;
+  total_size = BaseSerializedSize() + sizeof(region_size) + region_size +
+               sizeof(inner_min_) + sizeof(outer_max_);
+  total_size += GetFilterSize(input_.get());
+  return total_size.ValueOrDefault(0u);
+}
 
 bool AlphaThresholdPaintFilter::operator==(
     const AlphaThresholdPaintFilter& other) const {
@@ -335,6 +405,14 @@ XfermodePaintFilter::XfermodePaintFilter(SkBlendMode blend_mode,
 }
 
 XfermodePaintFilter::~XfermodePaintFilter() = default;
+
+size_t XfermodePaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size =
+      BaseSerializedSize() + sizeof(blend_mode_);
+  total_size += GetFilterSize(background_.get());
+  total_size += GetFilterSize(foreground_.get());
+  return total_size.ValueOrDefault(0u);
+}
 
 bool XfermodePaintFilter::operator==(const XfermodePaintFilter& other) const {
   return blend_mode_ == other.blend_mode_ &&
@@ -364,6 +442,15 @@ ArithmeticPaintFilter::ArithmeticPaintFilter(float k1,
 }
 
 ArithmeticPaintFilter::~ArithmeticPaintFilter() = default;
+
+size_t ArithmeticPaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size =
+      BaseSerializedSize() + sizeof(k1_) + sizeof(k2_) + sizeof(k3_) +
+      sizeof(k4_) + sizeof(enforce_pm_color_);
+  total_size += GetFilterSize(background_.get());
+  total_size += GetFilterSize(foreground_.get());
+  return total_size.ValueOrDefault(0u);
+}
 
 bool ArithmeticPaintFilter::operator==(
     const ArithmeticPaintFilter& other) const {
@@ -407,6 +494,15 @@ MatrixConvolutionPaintFilter::MatrixConvolutionPaintFilter(
 
 MatrixConvolutionPaintFilter::~MatrixConvolutionPaintFilter() = default;
 
+size_t MatrixConvolutionPaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size =
+      BaseSerializedSize() + sizeof(kernel_size_) + sizeof(size_t) +
+      kernel_->size() * sizeof(SkScalar) + sizeof(gain_) + sizeof(bias_) +
+      sizeof(kernel_offset_) + sizeof(tile_mode_) + sizeof(convolve_alpha_);
+  total_size += GetFilterSize(input_.get());
+  return total_size.ValueOrDefault(0u);
+}
+
 bool MatrixConvolutionPaintFilter::operator==(
     const MatrixConvolutionPaintFilter& other) const {
   return kernel_size_ == other.kernel_size_ &&
@@ -440,6 +536,15 @@ DisplacementMapEffectPaintFilter::DisplacementMapEffectPaintFilter(
 
 DisplacementMapEffectPaintFilter::~DisplacementMapEffectPaintFilter() = default;
 
+size_t DisplacementMapEffectPaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size = BaseSerializedSize() +
+                                            sizeof(uint32_t) +
+                                            sizeof(uint32_t) + sizeof(scale_);
+  total_size += GetFilterSize(displacement_.get());
+  total_size += GetFilterSize(color_.get());
+  return total_size.ValueOrDefault(0u);
+}
+
 bool DisplacementMapEffectPaintFilter::operator==(
     const DisplacementMapEffectPaintFilter& other) const {
   return channel_x_ == other.channel_x_ && channel_y_ == other.channel_y_ &&
@@ -463,6 +568,14 @@ ImagePaintFilter::ImagePaintFilter(PaintImage image,
 
 ImagePaintFilter::~ImagePaintFilter() = default;
 
+size_t ImagePaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size =
+      BaseSerializedSize() + sizeof(src_rect_) + sizeof(dst_rect_) +
+      sizeof(filter_quality_);
+  total_size += PaintOpWriter::GetImageSize(image_);
+  return total_size.ValueOrDefault(0u);
+}
+
 bool ImagePaintFilter::operator==(const ImagePaintFilter& other) const {
   return !!image_ == !!other.image_ &&
          PaintOp::AreSkRectsEqual(src_rect_, other.src_rect_) &&
@@ -480,6 +593,13 @@ RecordPaintFilter::RecordPaintFilter(sk_sp<PaintRecord> record,
 }
 
 RecordPaintFilter::~RecordPaintFilter() = default;
+
+size_t RecordPaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size =
+      BaseSerializedSize() + sizeof(record_bounds_);
+  total_size += PaintOpWriter::GetRecordSize(record_.get());
+  return total_size.ValueOrDefault(0u);
+}
 
 bool RecordPaintFilter::operator==(const RecordPaintFilter& other) const {
   return !!record_ == !!other.record_ &&
@@ -503,6 +623,15 @@ MergePaintFilter::MergePaintFilter(sk_sp<PaintFilter>* const filters,
 }
 
 MergePaintFilter::~MergePaintFilter() = default;
+
+size_t MergePaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size = 0u;
+  for (size_t i = 0; i < input_count(); ++i)
+    total_size += GetFilterSize(input_at(i));
+  total_size += BaseSerializedSize();
+  total_size += sizeof(input_count());
+  return total_size.ValueOrDefault(0u);
+}
 
 bool MergePaintFilter::operator==(const MergePaintFilter& other) const {
   if (inputs_->size() != other.inputs_->size())
@@ -538,6 +667,14 @@ MorphologyPaintFilter::MorphologyPaintFilter(MorphType morph_type,
 
 MorphologyPaintFilter::~MorphologyPaintFilter() = default;
 
+size_t MorphologyPaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size =
+      BaseSerializedSize() + sizeof(morph_type_) + sizeof(radius_x_) +
+      sizeof(radius_y_);
+  total_size += GetFilterSize(input_.get());
+  return total_size.ValueOrDefault(0u);
+}
+
 bool MorphologyPaintFilter::operator==(
     const MorphologyPaintFilter& other) const {
   return morph_type_ == other.morph_type_ && radius_x_ == other.radius_x_ &&
@@ -559,6 +696,13 @@ OffsetPaintFilter::OffsetPaintFilter(SkScalar dx,
 
 OffsetPaintFilter::~OffsetPaintFilter() = default;
 
+size_t OffsetPaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size =
+      BaseSerializedSize() + sizeof(dx_) + sizeof(dy_);
+  total_size += GetFilterSize(input_.get());
+  return total_size.ValueOrDefault(0u);
+}
+
 bool OffsetPaintFilter::operator==(const OffsetPaintFilter& other) const {
   return PaintOp::AreEqualEvenIfNaN(dx_, other.dx_) &&
          PaintOp::AreEqualEvenIfNaN(dy_, other.dy_) &&
@@ -577,6 +721,13 @@ TilePaintFilter::TilePaintFilter(const SkRect& src,
 }
 
 TilePaintFilter::~TilePaintFilter() = default;
+
+size_t TilePaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size =
+      BaseSerializedSize() + sizeof(src_) + sizeof(dst_);
+  total_size += GetFilterSize(input_.get());
+  return total_size.ValueOrDefault(0u);
+}
 
 bool TilePaintFilter::operator==(const TilePaintFilter& other) const {
   return PaintOp::AreSkRectsEqual(src_, other.src_) &&
@@ -619,6 +770,12 @@ TurbulencePaintFilter::TurbulencePaintFilter(TurbulenceType turbulence_type,
 
 TurbulencePaintFilter::~TurbulencePaintFilter() = default;
 
+size_t TurbulencePaintFilter::SerializedSize() const {
+  return BaseSerializedSize() + sizeof(turbulence_type_) +
+         sizeof(base_frequency_x_) + sizeof(base_frequency_y_) +
+         sizeof(num_octaves_) + sizeof(seed_) + sizeof(tile_size_);
+}
+
 bool TurbulencePaintFilter::operator==(
     const TurbulencePaintFilter& other) const {
   return turbulence_type_ == other.turbulence_type_ &&
@@ -639,6 +796,12 @@ PaintFlagsPaintFilter::PaintFlagsPaintFilter(PaintFlags flags,
 
 PaintFlagsPaintFilter::~PaintFlagsPaintFilter() = default;
 
+size_t PaintFlagsPaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size = BaseSerializedSize();
+  total_size += flags_.GetSerializedSize();
+  return total_size.ValueOrDefault(0u);
+}
+
 bool PaintFlagsPaintFilter::operator==(
     const PaintFlagsPaintFilter& other) const {
   return flags_ == other.flags_;
@@ -656,6 +819,13 @@ MatrixPaintFilter::MatrixPaintFilter(const SkMatrix& matrix,
 }
 
 MatrixPaintFilter::~MatrixPaintFilter() = default;
+
+size_t MatrixPaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size =
+      BaseSerializedSize() + sizeof(matrix_) + sizeof(filter_quality_);
+  total_size += GetFilterSize(input_.get());
+  return total_size.ValueOrDefault(0u);
+}
 
 bool MatrixPaintFilter::operator==(const MatrixPaintFilter& other) const {
   return PaintOp::AreSkMatricesEqual(matrix_, other.matrix_) &&
@@ -695,6 +865,15 @@ LightingDistantPaintFilter::LightingDistantPaintFilter(
 }
 
 LightingDistantPaintFilter::~LightingDistantPaintFilter() = default;
+
+size_t LightingDistantPaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size =
+      BaseSerializedSize() + sizeof(lighting_type_) + sizeof(direction_) +
+      sizeof(light_color_) + sizeof(surface_scale_) + sizeof(kconstant_) +
+      sizeof(shininess_);
+  total_size += GetFilterSize(input_.get());
+  return total_size.ValueOrDefault(0u);
+}
 
 bool LightingDistantPaintFilter::operator==(
     const LightingDistantPaintFilter& other) const {
@@ -738,6 +917,15 @@ LightingPointPaintFilter::LightingPointPaintFilter(LightingType lighting_type,
 }
 
 LightingPointPaintFilter::~LightingPointPaintFilter() = default;
+
+size_t LightingPointPaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size =
+      BaseSerializedSize() + sizeof(lighting_type_) + sizeof(location_) +
+      sizeof(light_color_) + sizeof(surface_scale_) + sizeof(kconstant_) +
+      sizeof(shininess_);
+  total_size += GetFilterSize(input_.get());
+  return total_size.ValueOrDefault(0u);
+}
 
 bool LightingPointPaintFilter::operator==(
     const LightingPointPaintFilter& other) const {
@@ -788,6 +976,16 @@ LightingSpotPaintFilter::LightingSpotPaintFilter(LightingType lighting_type,
 }
 
 LightingSpotPaintFilter::~LightingSpotPaintFilter() = default;
+
+size_t LightingSpotPaintFilter::SerializedSize() const {
+  base::CheckedNumeric<size_t> total_size =
+      BaseSerializedSize() + sizeof(lighting_type_) + sizeof(location_) +
+      sizeof(target_) + sizeof(specular_exponent_) + sizeof(cutoff_angle_) +
+      sizeof(light_color_) + sizeof(surface_scale_) + sizeof(kconstant_) +
+      sizeof(shininess_);
+  total_size += GetFilterSize(input_.get());
+  return total_size.ValueOrDefault(0u);
+}
 
 bool LightingSpotPaintFilter::operator==(
     const LightingSpotPaintFilter& other) const {

@@ -18,12 +18,13 @@ template <>
 struct StructTraits<viz::mojom::PaintFilterDataView, sk_sp<cc::PaintFilter>> {
   static base::Optional<std::vector<uint8_t>> data(
       const sk_sp<cc::PaintFilter>& filter) {
-    static const size_t kBufferSize = 8 * 1024;
     std::vector<uint8_t> memory;
-    memory.resize(kBufferSize);
-    cc::PaintOpWriter writer(memory.data(), kBufferSize, nullptr, nullptr,
+    memory.resize(cc::PaintOpWriter::HeaderBytes() +
+                  cc::PaintFilter::GetFilterSize(filter.get()));
+    cc::PaintOpWriter writer(memory.data(), memory.size(), nullptr, nullptr,
                              true /* enable_security_constraints */);
     writer.Write(filter.get());
+
     if (writer.size() == 0)
       return base::nullopt;
 

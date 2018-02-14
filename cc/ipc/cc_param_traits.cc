@@ -271,15 +271,16 @@ void ParamTraits<sk_sp<cc::PaintFilter>>::Write(base::Pickle* m,
                                                 const param_type& p) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
                "ParamTraits::PaintFilter::Write");
-  static const size_t kBufferSize = 8 * 1024;
-  std::vector<char> memory(kBufferSize);
-  cc::PaintOpWriter writer(memory.data(), kBufferSize, nullptr, nullptr,
+  std::vector<uint8_t> memory;
+  memory.resize(cc::PaintOpWriter::HeaderBytes() +
+                cc::PaintFilter::GetFilterSize(p.get()));
+  cc::PaintOpWriter writer(memory.data(), memory.size(), nullptr, nullptr,
                            true /* enable_security_constraints */);
   writer.Write(p.get());
   if (writer.size() == 0u)
     m->WriteData(nullptr, 0);
   else
-    m->WriteData(static_cast<const char*>(memory.data()), writer.size());
+    m->WriteData(reinterpret_cast<const char*>(memory.data()), writer.size());
 }
 
 bool ParamTraits<sk_sp<cc::PaintFilter>>::Read(const base::Pickle* m,
