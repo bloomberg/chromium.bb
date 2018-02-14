@@ -195,9 +195,8 @@ void PrefetchDispatcherImpl::QueueActionTasks() {
   task_queue_.AddTask(std::move(download_archives_task));
 
   // The following tasks should not be run unless we are in the background task,
-  // as we need to ensure WiFi access at that time. Schedule them anyway if
-  // limitless prefetching is enabled.
-  if (!background_task_ && !offline_pages::IsLimitlessPrefetchingEnabled())
+  // as we need to ensure WiFi access at that time.
+  if (!background_task_)
     return;
 
   std::unique_ptr<Task> get_operation_task = std::make_unique<GetOperationTask>(
