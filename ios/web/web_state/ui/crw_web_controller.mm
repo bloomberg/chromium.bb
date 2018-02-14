@@ -2248,15 +2248,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 
   SEL handler = [self selectorToHandleJavaScriptCommand:command];
-  if (!handler && isMainFrame) {
-    if (!self.webStateImpl->OnScriptCommandReceived(
-            command, *message, originURL, userIsInteracting)) {
-      // Message was either unexpected or not correctly handled.
-      // Page is reset as a precaution.
-      DLOG(WARNING) << "Unexpected message received: " << command;
-      return NO;
+  if (!handler) {
+    if (isMainFrame && self.webStateImpl->OnScriptCommandReceived(
+                           command, *message, originURL, userIsInteracting)) {
+      return YES;
     }
-    return YES;
+    // Message was either unexpected or not correctly handled.
+    // Page is reset as a precaution.
+    DLOG(WARNING) << "Unexpected message received: " << command;
+    return NO;
   }
 
   typedef BOOL (*HandlerType)(id, SEL, base::DictionaryValue*, NSDictionary*);
