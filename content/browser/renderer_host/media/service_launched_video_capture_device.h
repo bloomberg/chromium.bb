@@ -7,7 +7,7 @@
 
 #include "content/browser/renderer_host/media/video_capture_provider.h"
 #include "content/public/browser/video_capture_device_launcher.h"
-#include "services/video_capture/public/interfaces/device.mojom.h"
+#include "services/video_capture/public/mojom/device.mojom.h"
 
 namespace content {
 

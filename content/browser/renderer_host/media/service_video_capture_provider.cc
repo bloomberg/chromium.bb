@@ -10,7 +10,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/video_capture/public/interfaces/constants.mojom.h"
+#include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"
 
 namespace {

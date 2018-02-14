@@ -16,7 +16,7 @@ service("video_capture") {
     ":lib",
     "//mojo/public/cpp/system",
     "//services/video_capture/public/cpp",
-    "//services/video_capture/public/interfaces",
+    "//services/video_capture/public/mojom",
   ]
 }
 
@@ -56,8 +56,8 @@ source_set("lib") {
     "//mojo/common:common_base",
     "//services/service_manager/public/cpp",
     "//services/video_capture/public/cpp",
-    "//services/video_capture/public/interfaces",
-    "//services/video_capture/public/interfaces:constants",
+    "//services/video_capture/public/mojom",
+    "//services/video_capture/public/mojom:constants",
     "//services/video_capture/public/uma",
   ]
 }

@@ -6,7 +6,7 @@
 #define SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_DEVICE_TO_FEEDBACK_OBSERVER_ADAPTER_H_
 
 #include "media/capture/video/video_capture_device.h"
-#include "services/video_capture/public/interfaces/device.mojom.h"
+#include "services/video_capture/public/mojom/device.mojom.h"
 
 namespace video_capture {
 

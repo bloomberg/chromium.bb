@@ -6,7 +6,7 @@ module video_capture.mojom;
 
 import "media/capture/mojo/video_capture_types.mojom";
 import "media/capture/mojo/image_capture.mojom";
-import "services/video_capture/public/interfaces/receiver.mojom";
+import "services/video_capture/public/mojom/receiver.mojom";
 
 // Represents access to a video capture device available on the machine.
 // Note: Instead of offering an explicit Stop() method, the device

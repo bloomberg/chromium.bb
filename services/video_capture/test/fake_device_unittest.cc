@@ -7,8 +7,8 @@
 #include "media/base/video_frame.h"
 #include "media/mojo/common/media_type_converters.h"
 #include "services/video_capture/device_media_to_mojo_adapter.h"
-#include "services/video_capture/public/interfaces/constants.mojom.h"
-#include "services/video_capture/public/interfaces/device_factory.mojom.h"
+#include "services/video_capture/public/mojom/constants.mojom.h"
+#include "services/video_capture/public/mojom/device_factory.mojom.h"
 #include "services/video_capture/test/fake_device_test.h"
 #include "services/video_capture/test/mock_receiver.h"
 

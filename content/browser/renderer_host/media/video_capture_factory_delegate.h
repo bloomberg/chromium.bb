@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_FACTORY_DELEGATE_H_
 
 #include "content/common/content_export.h"
-#include "services/video_capture/public/interfaces/device_factory.mojom.h"
+#include "services/video_capture/public/mojom/device_factory.mojom.h"
 
 namespace content {
 

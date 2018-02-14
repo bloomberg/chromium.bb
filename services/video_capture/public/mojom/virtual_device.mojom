@@ -6,7 +6,7 @@ module video_capture.mojom;
 
 import "media/capture/mojo/video_capture_types.mojom";
 import "media/mojo/interfaces/media_types.mojom";
-import "services/video_capture/public/interfaces/producer.mojom";
+import "services/video_capture/public/mojom/producer.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // Interface for a producer to feed video frames into a virtual

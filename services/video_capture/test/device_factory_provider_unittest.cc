@@ -5,8 +5,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
-#include "services/video_capture/public/interfaces/constants.mojom.h"
-#include "services/video_capture/public/interfaces/device_factory.mojom.h"
+#include "services/video_capture/public/mojom/constants.mojom.h"
+#include "services/video_capture/public/mojom/device_factory.mojom.h"
 #include "services/video_capture/test/device_factory_provider_test.h"
 #include "services/video_capture/test/mock_producer.h"
 

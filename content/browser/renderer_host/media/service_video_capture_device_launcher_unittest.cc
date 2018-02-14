@@ -11,7 +11,7 @@
 #include "content/browser/renderer_host/media/service_launched_video_capture_device.h"
 #include "content/browser/renderer_host/media/video_capture_factory_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/video_capture/public/interfaces/device_factory.mojom.h"
+#include "services/video_capture/public/mojom/device_factory.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

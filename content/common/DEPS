@@ -11,7 +11,7 @@ include_rules = [
   "+services/resource_coordinator/public/mojom",
   "+services/service_manager/public/cpp",
   "+services/service_manager/sandbox",
-  "+services/video_capture/public/interfaces",
+  "+services/video_capture/public/mojom",
   "+services/viz/public/interfaces",
 
   # No inclusion of WebKit from the browser, other than the ones in
