@@ -646,7 +646,7 @@ class SitePerProcessFeaturePolicyBrowserTest
     // https://crbug.com/623682
     command_line->AppendSwitchASCII(
         switches::kEnableBlinkFeatures,
-        "FeaturePolicy,FeaturePolicyExperimentalFeatures");
+        "FeaturePolicyExperimentalFeatures,FeaturePolicyVibrateFeature");
   }
 
   blink::ParsedFeaturePolicy CreateFPHeader(

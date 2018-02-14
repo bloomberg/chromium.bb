@@ -3,10 +3,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This test ensures that navigator.vibrate when disabled may not be called by
-// any iframe.
+// This test ensures that navigator.vibrate when enabled for all works across
+// origins.
 
-Header("Feature-Policy: vibrate 'none'");
+Header("Feature-Policy: vibrate *");
 ?>
 
 <!DOCTYPE html>
@@ -17,7 +17,7 @@ Header("Feature-Policy: vibrate 'none'");
 <script>
 var srcs = [
   "resources/feature-policy-vibrate.html",
-  "http://localhost:8000/feature-policy-experimental-features/resources/feature-policy-vibrate.html"];
+  "http://localhost:8000/feature-policy-vibrate/resources/feature-policy-vibrate.html"];
 
 window.onload = function () {
   var iframe = document.querySelector('iframe');
@@ -32,9 +32,9 @@ window.onload = function () {
           }
         });
       }).then(function(data) {
-        assert_false(data.enabled, 'navigator.vibrate():');
+        assert_true(data.enabled, 'navigator.vibrate():');
       });
-    }, 'Navigator.vibrate disabled on URL: ' + src);
+    }, 'Navigator.vibrate enabled for all on URL: ' + src);
   }
   for (var src of srcs) {
     loadFrame(src);

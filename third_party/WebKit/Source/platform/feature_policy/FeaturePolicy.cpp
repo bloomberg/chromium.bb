@@ -215,6 +215,7 @@ bool IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature feature) {
     case mojom::FeaturePolicyFeature::kSyncXHR:
       return true;
     case mojom::FeaturePolicyFeature::kVibrate:
+      return RuntimeEnabledFeatures::FeaturePolicyVibrateFeatureEnabled();
     case mojom::FeaturePolicyFeature::kUnsizedMedia:
       return RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled();
     default:
@@ -258,9 +259,11 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
       default_feature_name_map.Set(
           "picture-in-picture", mojom::FeaturePolicyFeature::kPictureInPicture);
     }
-    if (RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled()) {
+    if (RuntimeEnabledFeatures::FeaturePolicyVibrateFeatureEnabled()) {
       default_feature_name_map.Set("vibrate",
                                    mojom::FeaturePolicyFeature::kVibrate);
+    }
+    if (RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled()) {
       default_feature_name_map.Set(
           "cookie", mojom::FeaturePolicyFeature::kDocumentCookie);
       default_feature_name_map.Set(

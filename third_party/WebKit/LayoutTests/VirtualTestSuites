@@ -439,14 +439,9 @@
              "--enable-slimming-paint-v175"]
   },
   {
-    "prefix": "feature-policy-experimental-features",
-    "base": "http/tests/feature-policy-experimental-features",
-    "args": ["--enable-blink-features=FeaturePolicyExperimentalFeatures"]
-  },
-  {
-    "prefix": "feature-policy-experimental-features",
-    "base": "external/wpt/feature-policy/experimental-features",
-    "args": ["--enable-blink-features=FeaturePolicyExperimentalFeatures"]
+    "prefix": "feature-policy-vibrate",
+    "base": "http/tests/feature-policy-vibrate",
+    "args": ["--enable-blink-features=FeaturePolicyVibrateFeature"]
   },
   {
     "prefix": "print_browser",
