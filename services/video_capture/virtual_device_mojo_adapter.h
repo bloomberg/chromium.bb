@@ -9,9 +9,9 @@
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "media/capture/video_capture_types.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
-#include "services/video_capture/public/interfaces/device.mojom.h"
-#include "services/video_capture/public/interfaces/producer.mojom.h"
-#include "services/video_capture/public/interfaces/virtual_device.mojom.h"
+#include "services/video_capture/public/mojom/device.mojom.h"
+#include "services/video_capture/public/mojom/producer.mojom.h"
+#include "services/video_capture/public/mojom/virtual_device.mojom.h"
 
 namespace video_capture {
 

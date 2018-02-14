@@ -4,7 +4,7 @@
 
 module video_capture.mojom;
 
-import "services/video_capture/public/interfaces/device_factory.mojom";
+import "services/video_capture/public/mojom/device_factory.mojom";
 
 // Entry point to the Video Capture Service API.
 // The factory provides access to the capture devices connected to the system.

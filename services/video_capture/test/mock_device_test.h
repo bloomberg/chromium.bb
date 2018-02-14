@@ -9,7 +9,7 @@
 #include "media/capture/video/video_capture_device.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
-#include "services/video_capture/public/interfaces/device_factory_provider.mojom.h"
+#include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 #include "services/video_capture/test/mock_device.h"
 #include "services/video_capture/test/mock_device_factory.h"
 #include "services/video_capture/test/mock_receiver.h"

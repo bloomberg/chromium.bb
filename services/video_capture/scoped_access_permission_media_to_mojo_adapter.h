@@ -6,7 +6,7 @@
 #define SERVICES_VIDEO_CAPTURE_SCOPED_ACCESS_PERMISSION_MEDIA_TO_MOJO_ADAPTER_H_
 
 #include "media/capture/video/video_capture_device_client.h"
-#include "services/video_capture/public/interfaces/receiver.mojom.h"
+#include "services/video_capture/public/mojom/receiver.mojom.h"
 
 namespace video_capture {
 

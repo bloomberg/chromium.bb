@@ -8,7 +8,7 @@
 #include "media/base/media_switches.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
-#include "services/video_capture/public/interfaces/constants.mojom.h"
+#include "services/video_capture/public/mojom/constants.mojom.h"
 
 namespace video_capture {
 

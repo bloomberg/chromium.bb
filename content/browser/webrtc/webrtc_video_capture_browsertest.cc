@@ -17,8 +17,8 @@
 #include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/video_capture/public/interfaces/constants.mojom.h"
-#include "services/video_capture/public/interfaces/testing_controls.mojom.h"
+#include "services/video_capture/public/mojom/constants.mojom.h"
+#include "services/video_capture/public/mojom/testing_controls.mojom.h"
 
 namespace content {
 

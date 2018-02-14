@@ -13,8 +13,8 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/device_factory_provider_impl.h"
-#include "services/video_capture/public/interfaces/device_factory_provider.mojom.h"
-#include "services/video_capture/public/interfaces/testing_controls.mojom.h"
+#include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
+#include "services/video_capture/public/mojom/testing_controls.mojom.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"

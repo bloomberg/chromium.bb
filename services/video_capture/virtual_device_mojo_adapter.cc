@@ -12,7 +12,7 @@
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/video_capture/public/interfaces/constants.mojom.h"
+#include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/scoped_access_permission_media_to_mojo_adapter.h"
 
 namespace {

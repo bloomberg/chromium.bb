@@ -15,7 +15,7 @@ source_set("cpp") {
     "//media",
     "//media/capture:capture",
     "//services/service_manager/public/cpp",
-    "//services/video_capture/public/interfaces",
+    "//services/video_capture/public/mojom",
   ]
 
   deps = [

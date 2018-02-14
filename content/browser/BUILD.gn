@@ -147,7 +147,7 @@ jumbo_source_set("browser") {
     "//services/ui/public/cpp/gpu",
     "//services/video_capture:lib",
     "//services/video_capture/public/cpp",
-    "//services/video_capture/public/interfaces:constants",
+    "//services/video_capture/public/mojom:constants",
     "//services/video_capture/public/uma",
     "//services/viz/privileged/interfaces",
     "//services/viz/public/interfaces",

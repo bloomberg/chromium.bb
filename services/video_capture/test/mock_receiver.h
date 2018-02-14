@@ -7,7 +7,7 @@
 
 #include "media/mojo/interfaces/media_types.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/video_capture/public/interfaces/receiver.mojom.h"
+#include "services/video_capture/public/mojom/receiver.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace video_capture {

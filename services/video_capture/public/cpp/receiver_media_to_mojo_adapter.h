@@ -6,7 +6,7 @@
 #define SERVICES_VIDEO_CAPTURE_PUBLIC_CPP_RECEIVER_MEDIA_TO_MOJO_ADAPTER_H_
 
 #include "media/capture/video/video_frame_receiver.h"
-#include "services/video_capture/public/interfaces/receiver.mojom.h"
+#include "services/video_capture/public/mojom/receiver.mojom.h"
 
 namespace video_capture {
 
