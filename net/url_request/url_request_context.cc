@@ -8,7 +8,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
-#include "base/debug/stack_trace.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -143,12 +142,9 @@ void URLRequestContext::AssertNoURLRequests() const {
     // many we leaked so we have an idea of how bad it is.
     const URLRequest* request = *url_requests_->begin();
     int load_flags = request->load_flags();
-    base::debug::StackTrace creation_stack_trace =
-        request->creation_stack_trace();
     DEBUG_ALIAS_FOR_GURL(url_buf, request->url());
     base::debug::Alias(&num_requests);
     base::debug::Alias(&load_flags);
-    base::debug::Alias(&creation_stack_trace);
     CHECK(false) << "Leaked " << num_requests << " URLRequest(s). First URL: "
                  << request->url().spec().c_str() << ".";
   }
