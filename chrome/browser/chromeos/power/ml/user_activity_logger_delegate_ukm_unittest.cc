@@ -214,8 +214,8 @@ TEST_F(UserActivityLoggerDelegateUkmTest, Basic) {
       {source_id2, std::make_pair(url2_, kUserActivityIdValues2)},
   });
 
-  ukm_entry_checker_.ExpectNewEntries(UserActivityId::kEntryName,
-                                      expected_data);
+  ukm_entry_checker_.ExpectNewEntriesBySource(UserActivityId::kEntryName,
+                                              expected_data);
 
   tab_strip_model->CloseAllTabs();
 }
@@ -300,8 +300,8 @@ TEST_F(UserActivityLoggerDelegateUkmTest, MultiBrowsersAndTabs) {
       {source_id4, std::make_pair(url4_, kUserActivityIdValues4)},
   });
 
-  ukm_entry_checker_.ExpectNewEntries(UserActivityId::kEntryName,
-                                      expected_data);
+  ukm_entry_checker_.ExpectNewEntriesBySource(UserActivityId::kEntryName,
+                                              expected_data);
 
   tab_strip_model1->CloseAllTabs();
   tab_strip_model2->CloseAllTabs();

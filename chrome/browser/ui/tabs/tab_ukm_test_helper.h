@@ -20,36 +20,42 @@ using SourceUkmMetricMap =
     std::map<ukm::SourceId, std::pair<GURL, UkmMetricMap>>;
 
 // Helper class to check entries have been logged as expected into UKM.
+// Tests use this by validating new entries after they are logged. The helper
+// skips already-validated entries when checking new entries, and expects new
+// entries to be validated in the order they were logged. This ensures
+// unexpected entries are not logged in between expected entries.
 class UkmEntryChecker {
  public:
   UkmEntryChecker();
   ~UkmEntryChecker();
 
-  // Expects that exactly one entry has been recorded for |entry_name|, and that
-  // it matches the values and the given URL if |source_url| is none empty.
-  // Use this function when there's exactly one entry logged when some event
-  // happens.
-  // This function increments |num_entries_[entry_name]| by 1 and checks
-  // the new value of |num_entries_[entry_name]| is the same as number of
-  // entries in ukm.
+  // Expects that the next untested entry for |entry_name| matches the value
+  // and the given URL if |source_url| is not empty.
+  // Use this function to verify a single expected event.
+  // This function increments |num_entries_[entry_name]| by 1, so entries after
+  // this one will still be considered new/untested.
   void ExpectNewEntry(const std::string& entry_name,
                       const GURL& source_url,
                       const UkmMetricMap& expected_metrics);
 
-  // Expects that |expected_data.size()| number of entries have been recorded
-  // for |entry_name|. For each recorded entry (as identified by its source id),
-  // checks the values and the given URL if url is none empty.
-  // Use this function when there're multiple entries logged when an event
-  // happens. We use source ids to identify multiple entries.
-  // This function increments |num_entries_[entry_name]| by the size of
-  // |expected_data| and checks the new value of |num_entries_[entry_name]| is
-  // the same as number of entries in ukm.
+  // Expects that |expected_entries.size()| new entries have been recorded for
+  // |entry_name|, in any order. For each expected entry, checks that its
+  // metrics match one of the newly recorded entries.
+  // Use this function when expecting multiple entries to be logged at once.
   void ExpectNewEntries(const std::string& entry_name,
-                        const SourceUkmMetricMap& expected_data);
+                        const std::vector<UkmMetricMap>& expected_entries);
+
+  // Like ExpectNewEntries(), but entries are keyed by source ID. For each
+  // recorded entry (as identified by its source ID), checks the values and the
+  // source's URL if the expected URL is not empty.
+  void ExpectNewEntriesBySource(const std::string& entry_name,
+                                const SourceUkmMetricMap& expected_data);
 
   // Returns number of new entries that have been recorded for |entry_name|.
-  // It is the difference between number of entries in ukm and that recorded by
-  // |num_entries_|.
+  // Entries are considered new until they have been validated with
+  // ExpectNewEntries() or similar.
+  // Thus, this returns the difference between the number of entries in UKM and
+  // the number of entries that have been validated.
   int NumNewEntriesRecorded(const std::string& entry_name) const;
 
   // Returns number of entries for |entry_name|.
@@ -65,8 +71,8 @@ class UkmEntryChecker {
 
   // Keyed by entry name, and tracks the expected number of entries to ensure we
   // don't log duplicate or incorrect entries.
-  // |num_entries_| records number of entries up to last time we call
-  // ExpectNewEntry or ExpectNewEntries.
+  // |num_entries_| records the number of entries that have been expected via
+  // calls to ExpectNewEntries() or similar.
   std::map<std::string, size_t> num_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(UkmEntryChecker);
