@@ -34,8 +34,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
 
 namespace base {
@@ -43,6 +43,21 @@ namespace base {
 namespace {
 
 class FilePathWatcherImpl;
+class InotifyReader;
+
+class InotifyReaderThreadDelegate final : public PlatformThread::Delegate {
+ public:
+  InotifyReaderThreadDelegate(int inotify_fd) : inotify_fd_(inotify_fd){};
+
+  ~InotifyReaderThreadDelegate() override = default;
+
+ private:
+  void ThreadMain() override;
+
+  int inotify_fd_;
+
+  DISALLOW_COPY_AND_ASSIGN(InotifyReaderThreadDelegate);
+};
 
 // Singleton to manage all inotify watches.
 // TODO(tony): It would be nice if this wasn't a singleton.
@@ -72,17 +87,20 @@ class InotifyReader {
   // base::LazyInstace::Leaky object. Having a destructor causes build
   // issues with GCC 6 (http://crbug.com/636346).
 
+  // Returns true on successful thread creation.
+  bool StartThread();
+
   // We keep track of which delegates want to be notified on which watches.
   std::unordered_map<Watch, WatcherSet> watchers_;
 
   // Lock to protect watchers_.
   Lock lock_;
 
-  // Separate thread on which we run blocking read for inotify events.
-  Thread thread_;
-
   // File descriptor returned by inotify_init.
   const int inotify_fd_;
+
+  // Thread delegate for the Inotify thread.
+  InotifyReaderThreadDelegate thread_delegate_;
 
   // Flag set to true when startup was successful.
   bool valid_;
@@ -198,21 +216,23 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate {
   DISALLOW_COPY_AND_ASSIGN(FilePathWatcherImpl);
 };
 
-void InotifyReaderCallback(InotifyReader* reader, int inotify_fd) {
-  // Make sure the file descriptors are good for use with select().
-  CHECK_LE(0, inotify_fd);
-  CHECK_GT(FD_SETSIZE, inotify_fd);
+LazyInstance<InotifyReader>::Leaky g_inotify_reader = LAZY_INSTANCE_INITIALIZER;
 
-  trace_event::TraceLog::GetInstance()->SetCurrentThreadBlocksMessageLoop();
+void InotifyReaderThreadDelegate::ThreadMain() {
+  PlatformThread::SetName("inotify_reader");
+
+  // Make sure the file descriptors are good for use with select().
+  CHECK_LE(0, inotify_fd_);
+  CHECK_GT(FD_SETSIZE, inotify_fd_);
 
   while (true) {
     fd_set rfds;
     FD_ZERO(&rfds);
-    FD_SET(inotify_fd, &rfds);
+    FD_SET(inotify_fd_, &rfds);
 
     // Wait until some inotify events are available.
     int select_result =
-        HANDLE_EINTR(select(inotify_fd + 1, &rfds, nullptr, nullptr, nullptr));
+        HANDLE_EINTR(select(inotify_fd_ + 1, &rfds, nullptr, nullptr, nullptr));
     if (select_result < 0) {
       DPLOG(WARNING) << "select failed";
       return;
@@ -220,8 +240,7 @@ void InotifyReaderCallback(InotifyReader* reader, int inotify_fd) {
 
     // Adjust buffer size to current event queue size.
     int buffer_size;
-    int ioctl_result = HANDLE_EINTR(ioctl(inotify_fd, FIONREAD,
-                                          &buffer_size));
+    int ioctl_result = HANDLE_EINTR(ioctl(inotify_fd_, FIONREAD, &buffer_size));
 
     if (ioctl_result != 0) {
       DPLOG(WARNING) << "ioctl failed";
@@ -230,8 +249,8 @@ void InotifyReaderCallback(InotifyReader* reader, int inotify_fd) {
 
     std::vector<char> buffer(buffer_size);
 
-    ssize_t bytes_read = HANDLE_EINTR(read(inotify_fd, &buffer[0],
-                                           buffer_size));
+    ssize_t bytes_read =
+        HANDLE_EINTR(read(inotify_fd_, &buffer[0], buffer_size));
 
     if (bytes_read < 0) {
       DPLOG(WARNING) << "read from inotify fd failed";
@@ -243,27 +262,31 @@ void InotifyReaderCallback(InotifyReader* reader, int inotify_fd) {
       inotify_event* event = reinterpret_cast<inotify_event*>(&buffer[i]);
       size_t event_size = sizeof(inotify_event) + event->len;
       DCHECK(i + event_size <= static_cast<size_t>(bytes_read));
-      reader->OnInotifyEvent(event);
+      g_inotify_reader.Get().OnInotifyEvent(event);
       i += event_size;
     }
   }
 }
 
-static LazyInstance<InotifyReader>::Leaky g_inotify_reader =
-    LAZY_INSTANCE_INITIALIZER;
-
 InotifyReader::InotifyReader()
-    : thread_("inotify_reader"),
-      inotify_fd_(inotify_init()),
+    : inotify_fd_(inotify_init()),
+      thread_delegate_(inotify_fd_),
       valid_(false) {
-  if (inotify_fd_ < 0)
+  if (inotify_fd_ < 0) {
     PLOG(ERROR) << "inotify_init() failed";
-
-  if (inotify_fd_ >= 0 && thread_.Start()) {
-    thread_.task_runner()->PostTask(
-        FROM_HERE, BindOnce(&InotifyReaderCallback, this, inotify_fd_));
-    valid_ = true;
+    return;
   }
+
+  if (!StartThread())
+    return;
+
+  valid_ = true;
+}
+
+bool InotifyReader::StartThread() {
+  // This object is LazyInstance::Leaky, so thread_delegate_ will outlive the
+  // thread.
+  return PlatformThread::CreateNonJoinable(0, &thread_delegate_);
 }
 
 InotifyReader::Watch InotifyReader::AddWatch(
