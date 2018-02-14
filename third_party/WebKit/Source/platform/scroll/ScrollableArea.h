@@ -389,6 +389,10 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual ScrollbarTheme& GetPageScrollbarTheme() const = 0;
 
+  // If either direction has a non-auto mode, the other must as well.
+  void SetAutosizeScrollbarModes(ScrollbarMode vertical,
+                                 ScrollbarMode horizontal);
+
  protected:
   // Deduces the ScrollBehavior based on the element style and the parameter set
   // by programmatic scroll into either instant or smooth scroll.
@@ -431,6 +435,13 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // then reset to alpha, causing spurrious "visibilityChanged" calls.
   virtual void ScrollbarVisibilityChanged() {}
 
+  ScrollbarMode AutosizeVerticalScrollbarMode() const {
+    return autosize_vertical_scrollbar_mode_;
+  }
+  ScrollbarMode AutosizeHorizontalScrollbarMode() const {
+    return autosize_horizontal_scrollbar_mode_;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ScrollableAreaTest,
                            PopupOverlayScrollbarShouldNotFadeOut);
@@ -454,6 +465,13 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   std::unique_ptr<TaskRunnerTimer<ScrollableArea>>
       fade_overlay_scrollbars_timer_;
+
+  // FrameViewAutoSizeInfo controls scrollbar appearance manually rather than
+  // relying on layout. These members are used to override the
+  // ScrollableArea's ScrollbarModes as calculated from style. kScrollbarAuto
+  // disables the override.
+  ScrollbarMode autosize_vertical_scrollbar_mode_;
+  ScrollbarMode autosize_horizontal_scrollbar_mode_;
 
   unsigned scrollbar_overlay_color_theme_ : 2;
 

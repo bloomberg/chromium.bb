@@ -75,7 +75,9 @@ ScrollBehavior ScrollableArea::DetermineScrollBehavior(
 }
 
 ScrollableArea::ScrollableArea()
-    : scrollbar_overlay_color_theme_(kScrollbarOverlayColorThemeDark),
+    : autosize_vertical_scrollbar_mode_(kScrollbarAuto),
+      autosize_horizontal_scrollbar_mode_(kScrollbarAuto),
+      scrollbar_overlay_color_theme_(kScrollbarOverlayColorThemeDark),
       scroll_origin_changed_(false),
       horizontal_scrollbar_needs_paint_invalidation_(false),
       vertical_scrollbar_needs_paint_invalidation_(false),
@@ -689,6 +691,13 @@ void ScrollableArea::DidScroll(const gfx::ScrollOffset& offset) {
   ScrollOffset new_offset = ScrollOffset(offset.x() - ScrollOrigin().X(),
                                          offset.y() - ScrollOrigin().Y());
   SetScrollOffset(new_offset, kCompositorScroll);
+}
+
+void ScrollableArea::SetAutosizeScrollbarModes(ScrollbarMode vertical,
+                                               ScrollbarMode horizontal) {
+  DCHECK_EQ(vertical == kScrollbarAuto, horizontal == kScrollbarAuto);
+  autosize_vertical_scrollbar_mode_ = vertical;
+  autosize_horizontal_scrollbar_mode_ = horizontal;
 }
 
 void ScrollableArea::Trace(blink::Visitor* visitor) {

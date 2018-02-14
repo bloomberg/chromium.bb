@@ -99,12 +99,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void Init();
   void SetView(LocalFrameView*);
-  void CreateView(const IntSize&,
-                  const Color&,
-                  ScrollbarMode = kScrollbarAuto,
-                  bool horizontal_lock = false,
-                  ScrollbarMode = kScrollbarAuto,
-                  bool vertical_lock = false);
+  void CreateView(const IntSize&, const Color&);
 
   // Frame overrides:
   ~LocalFrame() override;
