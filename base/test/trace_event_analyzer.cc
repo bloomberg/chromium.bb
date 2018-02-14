@@ -7,12 +7,28 @@
 #include <math.h>
 
 #include <algorithm>
-#include <memory>
 #include <set>
 
 #include "base/json/json_reader.h"
+#include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/run_loop.h"
 #include "base/strings/pattern.h"
+#include "base/trace_event/trace_buffer.h"
+#include "base/trace_event/trace_config.h"
+#include "base/trace_event/trace_log.h"
 #include "base/values.h"
+
+namespace {
+void OnTraceDataCollected(base::OnceClosure quit_closure,
+                          base::trace_event::TraceResultBuffer* buffer,
+                          const scoped_refptr<base::RefCountedString>& json,
+                          bool has_more_events) {
+  buffer->AddFragment(json->data());
+  if (!has_more_events)
+    std::move(quit_closure).Run();
+}
+}  // namespace
 
 namespace trace_analyzer {
 
@@ -872,6 +888,34 @@ void TraceAnalyzer::ParseMetadata() {
     if (string_it != this_event.arg_strings.end())
       thread_names_[this_event.thread] = string_it->second;
   }
+}
+
+// Utility functions for collecting process-local traces and creating a
+// |TraceAnalyzer| from the result.
+
+void Start(const std::string& category_filter_string) {
+  DCHECK(!base::trace_event::TraceLog::GetInstance()->IsEnabled());
+  base::trace_event::TraceLog::GetInstance()->SetEnabled(
+      base::trace_event::TraceConfig(category_filter_string, ""),
+      base::trace_event::TraceLog::RECORDING_MODE);
+}
+
+std::unique_ptr<TraceAnalyzer> Stop() {
+  DCHECK(base::trace_event::TraceLog::GetInstance()->IsEnabled());
+  base::trace_event::TraceLog::GetInstance()->SetDisabled();
+
+  base::trace_event::TraceResultBuffer buffer;
+  base::trace_event::TraceResultBuffer::SimpleOutput trace_output;
+  buffer.SetOutputCallback(trace_output.GetCallback());
+  base::RunLoop run_loop;
+  buffer.Start();
+  base::trace_event::TraceLog::GetInstance()->Flush(
+      base::BindRepeating(&OnTraceDataCollected, run_loop.QuitClosure(),
+                          base::Unretained(&buffer)));
+  run_loop.Run();
+  buffer.Finish();
+
+  return base::WrapUnique(TraceAnalyzer::Create(trace_output.json_output));
 }
 
 // TraceEventVector utility functions.

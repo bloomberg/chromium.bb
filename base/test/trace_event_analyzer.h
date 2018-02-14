@@ -71,7 +71,21 @@
 //     EXPECT_TRUE(events[i].GetAbsTimeToOtherEvent(&duration));
 //     EXPECT_LT(duration, 1000000.0/60.0); // expect less than 1/60 second.
 //   }
-
+//
+// There are two helper functions, Start(category_filter_string) and Stop(), for
+// facilitating the collection of process-local traces and building a
+// TraceAnalyzer from them. A typical test, that uses the helper functions,
+// looks like the following:
+//
+// TEST_F(...) {
+//   Start("*");
+//   [Invoke the functions you want to test their traces]
+//   auto analyzer = Stop();
+//
+//   [Use the analyzer to verify produced traces, as explained above]
+// }
+//
+// Note: The Stop() function needs a SingleThreadTaskRunner.
 
 #ifndef BASE_TEST_TRACE_EVENT_ANALYZER_H_
 #define BASE_TEST_TRACE_EVENT_ANALYZER_H_
@@ -80,6 +94,9 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -742,6 +759,13 @@ class TraceAnalyzer {
 
   DISALLOW_COPY_AND_ASSIGN(TraceAnalyzer);
 };
+
+// Utility functions for collecting process-local traces and creating a
+// |TraceAnalyzer| from the result. Please see comments in trace_config.h to
+// understand how the |category_filter_string| works. Use "*" to enable all
+// default categories.
+void Start(const std::string& category_filter_string);
+std::unique_ptr<TraceAnalyzer> Stop();
 
 // Utility functions for TraceEventVector.
 

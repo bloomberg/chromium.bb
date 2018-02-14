@@ -5,12 +5,8 @@
 #include "base/trace_event/blame_context.h"
 
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/test/trace_event_analyzer.h"
-#include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -60,61 +56,21 @@ class DisabledTestBlameContext : public BlameContext {
                      nullptr) {}
 };
 
-void OnTraceDataCollected(Closure quit_closure,
-                          trace_event::TraceResultBuffer* buffer,
-                          const scoped_refptr<RefCountedString>& json,
-                          bool has_more_events) {
-  buffer->AddFragment(json->data());
-  if (!has_more_events)
-    quit_closure.Run();
-}
-
 class BlameContextTest : public testing::Test {
- public:
-  void StartTracing();
-  void StopTracing();
-  std::unique_ptr<trace_analyzer::TraceAnalyzer> CreateTraceAnalyzer();
  protected:
   MessageLoop loop_;
 };
 
-void BlameContextTest::StartTracing() {
-  trace_event::TraceLog::GetInstance()->SetEnabled(
-      trace_event::TraceConfig("*"), trace_event::TraceLog::RECORDING_MODE);
-}
-
-void BlameContextTest::StopTracing() {
-  trace_event::TraceLog::GetInstance()->SetDisabled();
-}
-
-std::unique_ptr<trace_analyzer::TraceAnalyzer>
-BlameContextTest::CreateTraceAnalyzer() {
-  trace_event::TraceResultBuffer buffer;
-  trace_event::TraceResultBuffer::SimpleOutput trace_output;
-  buffer.SetOutputCallback(trace_output.GetCallback());
-  RunLoop run_loop;
-  buffer.Start();
-  trace_event::TraceLog::GetInstance()->Flush(
-      Bind(&OnTraceDataCollected, run_loop.QuitClosure(), Unretained(&buffer)));
-  run_loop.Run();
-  buffer.Finish();
-
-  return WrapUnique(
-      trace_analyzer::TraceAnalyzer::Create(trace_output.json_output));
-}
-
 TEST_F(BlameContextTest, EnterAndLeave) {
   using trace_analyzer::Query;
-  StartTracing();
+  trace_analyzer::Start("*");
   {
     TestBlameContext blame_context(0x1234);
     blame_context.Initialize();
     blame_context.Enter();
     blame_context.Leave();
   }
-  StopTracing();
-  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =
-      CreateTraceAnalyzer();
+  auto analyzer = trace_analyzer::Stop();
 
   trace_analyzer::TraceEventVector events;
   Query q = Query::EventPhaseIs(TRACE_EVENT_PHASE_ENTER_CONTEXT) ||
@@ -136,7 +92,7 @@ TEST_F(BlameContextTest, DifferentCategories) {
   // Ensure there is no cross talk between blame contexts from different
   // categories.
   using trace_analyzer::Query;
-  StartTracing();
+  trace_analyzer::Start("*");
   {
     TestBlameContext blame_context(0x1234);
     DisabledTestBlameContext disabled_blame_context(0x5678);
@@ -147,9 +103,7 @@ TEST_F(BlameContextTest, DifferentCategories) {
     disabled_blame_context.Enter();
     disabled_blame_context.Leave();
   }
-  StopTracing();
-  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =
-      CreateTraceAnalyzer();
+  auto analyzer = trace_analyzer::Stop();
 
   trace_analyzer::TraceEventVector events;
   Query q = Query::EventPhaseIs(TRACE_EVENT_PHASE_ENTER_CONTEXT) ||
@@ -170,7 +124,7 @@ TEST_F(BlameContextTest, DifferentCategories) {
 
 TEST_F(BlameContextTest, TakeSnapshot) {
   using trace_analyzer::Query;
-  StartTracing();
+  trace_analyzer::Start("*");
   {
     TestBlameContext parent_blame_context(0x5678);
     TestBlameContext blame_context(0x1234, parent_blame_context);
@@ -178,9 +132,7 @@ TEST_F(BlameContextTest, TakeSnapshot) {
     blame_context.Initialize();
     blame_context.TakeSnapshot();
   }
-  StopTracing();
-  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =
-      CreateTraceAnalyzer();
+  auto analyzer = trace_analyzer::Stop();
 
   trace_analyzer::TraceEventVector events;
   Query q = Query::EventPhaseIs(TRACE_EVENT_PHASE_SNAPSHOT_OBJECT);

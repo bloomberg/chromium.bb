@@ -9,15 +9,11 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/trace_event_analyzer.h"
-#include "base/trace_event/trace_buffer.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -136,15 +132,6 @@ WebScopedInputEvent CreateGestureScrollFlingPinch(
     gesture.y = y;
   }
   return WebInputEventTraits::Clone(gesture);
-}
-
-void OnTraceDataCollected(base::Closure quit_closure,
-                          base::trace_event::TraceResultBuffer* buffer,
-                          const scoped_refptr<base::RefCountedString>& json,
-                          bool has_more_events) {
-  buffer->AddFragment(json->data());
-  if (!has_more_events)
-    quit_closure.Run();
 }
 
 class MockInputHandler : public cc::InputHandler {
@@ -538,32 +525,6 @@ class InputHandlerProxyEventQueueTest : public testing::TestWithParam<bool> {
     if (input_handler_proxy_->compositor_event_queue_)
       input_handler_proxy_->compositor_event_queue_ =
           std::make_unique<CompositorThreadEventQueue>();
-  }
-
-  void StartTracing() {
-    base::trace_event::TraceLog::GetInstance()->SetEnabled(
-        base::trace_event::TraceConfig("*"),
-        base::trace_event::TraceLog::RECORDING_MODE);
-  }
-
-  void StopTracing() {
-    base::trace_event::TraceLog::GetInstance()->SetDisabled();
-  }
-
-  std::unique_ptr<trace_analyzer::TraceAnalyzer> CreateTraceAnalyzer() {
-    base::trace_event::TraceResultBuffer buffer;
-    base::trace_event::TraceResultBuffer::SimpleOutput trace_output;
-    buffer.SetOutputCallback(trace_output.GetCallback());
-    base::RunLoop run_loop;
-    buffer.Start();
-    base::trace_event::TraceLog::GetInstance()->Flush(
-        base::Bind(&OnTraceDataCollected, run_loop.QuitClosure(),
-                   base::Unretained(&buffer)));
-    run_loop.Run();
-    buffer.Finish();
-
-    return base::WrapUnique(
-        trace_analyzer::TraceAnalyzer::Create(trace_output.json_output));
   }
 
   void HandleGestureEvent(WebInputEvent::Type type,
@@ -3178,7 +3139,7 @@ TEST_P(InputHandlerProxyEventQueueTest, OriginalEventsTracing) {
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_, true))
       .Times(::testing::AtLeast(1));
 
-  StartTracing();
+  trace_analyzer::Start("*");
   // Simulate scroll.
   HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -20);
@@ -3196,11 +3157,9 @@ TEST_P(InputHandlerProxyEventQueueTest, OriginalEventsTracing) {
 
   // Dispatch all events.
   input_handler_proxy_->DeliverInputForBeginFrame();
-  StopTracing();
 
   // Retrieve tracing data.
-  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =
-      CreateTraceAnalyzer();
+  auto analyzer = trace_analyzer::Stop();
   trace_analyzer::TraceEventVector begin_events;
   trace_analyzer::Query begin_query = trace_analyzer::Query::EventPhaseIs(
       TRACE_EVENT_PHASE_NESTABLE_ASYNC_BEGIN);

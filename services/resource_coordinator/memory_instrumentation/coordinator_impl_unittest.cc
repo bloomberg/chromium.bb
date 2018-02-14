@@ -5,12 +5,10 @@
 #include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
 
 #include "base/bind.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/trace_event/memory_dump_request_args.h"
-#include "base/trace_event/trace_buffer.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -53,44 +51,11 @@ using base::trace_event::MemoryDumpManager;
 using base::trace_event::MemoryDumpRequestArgs;
 using base::trace_event::MemoryDumpType;
 using base::trace_event::ProcessMemoryDump;
-using base::trace_event::TraceConfig;
 using base::trace_event::TraceLog;
-using base::trace_event::TraceResultBuffer;
 using memory_instrumentation::mojom::GlobalMemoryDump;
 using memory_instrumentation::mojom::GlobalMemoryDumpPtr;
 
 namespace memory_instrumentation {
-
-namespace {
-
-std::unique_ptr<trace_analyzer::TraceAnalyzer> GetDeserializedTrace() {
-  // Flush the trace into JSON.
-  TraceResultBuffer buffer;
-  TraceResultBuffer::SimpleOutput trace_output;
-  buffer.SetOutputCallback(trace_output.GetCallback());
-  base::RunLoop run_loop;
-  buffer.Start();
-  auto on_trace_data_collected =
-      [](base::Closure quit_closure, TraceResultBuffer* buffer,
-         const scoped_refptr<base::RefCountedString>& json,
-         bool has_more_events) {
-        buffer->AddFragment(json->data());
-        if (!has_more_events)
-          quit_closure.Run();
-      };
-
-  TraceLog::GetInstance()->Flush(Bind(on_trace_data_collected,
-                                      run_loop.QuitClosure(),
-                                      base::Unretained(&buffer)));
-  run_loop.Run();
-  buffer.Finish();
-
-  // Analyze the JSON.
-  return base::WrapUnique(
-      trace_analyzer::TraceAnalyzer::Create(trace_output.json_output));
-}
-
-}  // namespace
 
 class FakeCoordinatorImpl : public CoordinatorImpl {
  public:
@@ -794,17 +759,13 @@ TEST_F(CoordinatorImplTest, DumpsArentAddedToTraceUnlessRequested) {
                                  IsEmpty()))))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
 
-  TraceLog::GetInstance()->SetEnabled(
-      TraceConfig(MemoryDumpManager::kTraceCategory, ""),
-      TraceLog::RECORDING_MODE);
+  trace_analyzer::Start(MemoryDumpManager::kTraceCategory);
   RequestGlobalMemoryDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
                           MemoryDumpLevelOfDetail::DETAILED, {},
                           callback.Get());
   run_loop.Run();
-  TraceLog::GetInstance()->SetDisabled();
+  auto analyzer = trace_analyzer::Stop();
 
-  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =
-      GetDeserializedTrace();
   trace_analyzer::TraceEventVector events;
   analyzer->FindEvents(
       trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_MEMORY_DUMP),
@@ -834,15 +795,11 @@ TEST_F(CoordinatorImplTest, DumpsAreAddedToTraceWhenRequested) {
   EXPECT_CALL(callback, OnCall(true, Ne(0ul)))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
 
-  TraceLog::GetInstance()->SetEnabled(
-      TraceConfig(MemoryDumpManager::kTraceCategory, ""),
-      TraceLog::RECORDING_MODE);
+  trace_analyzer::Start(MemoryDumpManager::kTraceCategory);
   RequestGlobalMemoryDumpAndAppendToTrace(callback.Get());
   run_loop.Run();
-  TraceLog::GetInstance()->SetDisabled();
+  auto analyzer = trace_analyzer::Stop();
 
-  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =
-      GetDeserializedTrace();
   trace_analyzer::TraceEventVector events;
   analyzer->FindEvents(
       trace_analyzer::Query::EventPhaseIs(TRACE_EVENT_PHASE_MEMORY_DUMP),
