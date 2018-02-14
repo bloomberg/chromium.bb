@@ -182,6 +182,7 @@ static_library("test_support") {
 test("compositor_unittests") {
   sources = [
     "callback_layer_animation_observer_unittest.cc",
+    "canvas_painter_unittest.cc",
     "compositor_lock_unittest.cc",
     "compositor_unittest.cc",
     "layer_animation_element_unittest.cc",
