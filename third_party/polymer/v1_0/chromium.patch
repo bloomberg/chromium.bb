@@ -10,17 +10,17 @@ index 7a24999..4eefcba 100644
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700">
 +<link rel="stylesheet" href="chrome://resources/css/roboto.css">
 diff --git a/components-chromium/paper-input/paper-textarea-extracted.js b/components-chromium/paper-input/paper-textarea-extracted.js
-index 78a2a9ec621c..8b776dd790ea 100644
+index 11bc05a37471..8d425e02c30b 100644
 --- a/components-chromium/paper-input/paper-textarea-extracted.js
 +++ b/components-chromium/paper-input/paper-textarea-extracted.js
-@@ -43,8 +43,8 @@ Polymer({
-       }
+@@ -57,8 +57,8 @@ Polymer({
+       this.$.input.textarea.selectionEnd = end;
      },
 
 -    _ariaLabelledByChanged: function(ariaLabelledBy) {
--      this.$.input.textarea.setAttribute('aria-labelledby', ariaLabelledBy);
+-      this._focusableElement.setAttribute('aria-labelledby', ariaLabelledBy);
 +    _ariaLabelledByChanged: function() {
-+      this.$.input.textarea.setAttribute('aria-label', this.label);
++      this._focusableElement.setAttribute('aria-label', this.label);
      },
 
      _ariaDescribedByChanged: function(ariaDescribedBy) {

@@ -69,7 +69,7 @@ Polymer({
 
       _inputSelector: {
         type: String,
-        value: 'input,textarea,.paper-input-input'
+        value: 'input,iron-input,textarea,.paper-input-input'
       },
 
       _boundOnFocus: {
@@ -138,7 +138,7 @@ Polymer({
       }
 
       // Only validate when attached if the input already has a value.
-      if (this._inputElementValue != '') {
+      if (this._inputElementValue && this._inputElementValue != '') {
         this._handleValueAndAutoValidate(this._inputElement);
       } else {
         this._handleValue(this._inputElement);
@@ -172,6 +172,20 @@ Polymer({
     },
 
     _onValueChanged: function(event) {
+      var input = event.target;
+
+      // Problem: if the input is required but has no text entered, we should
+      // only validate it on blur (so that an empty form doesn't come up red
+      // immediately; however, in this handler, we don't know whether this is
+      // the booting up value or a value in the future. I am assuming that the
+      // case  we care about manifests itself when the value is undefined.
+      // If this causes future problems, we need to do something like track whether
+      // the iron-input-ready event has fired, and this handler came before that.
+
+      if (input.value === undefined) {
+        return;
+      }
+
       this._handleValueAndAutoValidate(event.target);
     },
 
@@ -193,8 +207,9 @@ Polymer({
     },
 
     _handleValueAndAutoValidate: function(inputElement) {
-      if (this.autoValidate) {
+      if (this.autoValidate && inputElement) {
         var valid;
+
         if (inputElement.validate) {
           valid = inputElement.validate(this._inputElementValue);
         } else {
@@ -248,11 +263,20 @@ Polymer({
           if (label) {
             this.$.labelAndInputContainer.style.position = 'relative';
           }
+          if (invalid) {
+            cls += ' is-invalid';
+          }
         }
       } else {
         if (_inputHasContent) {
           cls += ' label-is-hidden';
         }
+        if (invalid) {
+          cls += ' is-invalid';
+        }
+      }
+      if (focused) {
+        cls += ' focused';
       }
       return cls;
     },

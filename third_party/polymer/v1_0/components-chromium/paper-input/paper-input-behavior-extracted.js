@@ -3,6 +3,7 @@
   Polymer.PaperInputHelper = {};
   Polymer.PaperInputHelper.NextLabelID = 1;
   Polymer.PaperInputHelper.NextAddonID = 1;
+  Polymer.PaperInputHelper.NextInputID = 1;
 
   /**
    * Use `Polymer.PaperInputBehavior` to implement inputs with `<paper-input-container>`. This
@@ -36,7 +37,7 @@
       /**
        * The value for this input. If you're using PaperInputBehavior to
        * implement your own paper-input-like element, bind this to
-       * the `<input is="iron-input">`'s `bindValue`
+       * the `<iron-input>`'s `bindValue`
        * property, or the value property of your input that is `notify:true`.
        */
       value: {
@@ -69,15 +70,6 @@
       },
 
       /**
-       * Set to true to prevent the user from entering invalid input. If you're
-       * using PaperInputBehavior to  implement your own paper-input-like element,
-       * bind this to `<input is="iron-input">`'s `preventInvalidInput` property.
-       */
-      preventInvalidInput: {
-        type: Boolean
-      },
-
-      /**
        * Set this to specify the pattern allowed by `preventInvalidInput`. If
        * you're using PaperInputBehavior to implement your own paper-input-like
        * element, bind this to the `<input is="iron-input">`'s `allowedPattern`
@@ -88,9 +80,11 @@
       },
 
       /**
-       * The type of the input. The supported types are `text`, `number` and `password`.
+       * The type of the input. The supported types are the
+       * [native input's types](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#Form_<input>_types).
        * If you're using PaperInputBehavior to implement your own paper-input-like element,
-       * bind this to the `<input is="iron-input">`'s `type` property.
+       * bind this to the (Polymer 1) `<input is="iron-input">`'s or (Polymer 2)
+       * `<iron-input>`'s `type` property.
        */
       type: {
         type: String
@@ -352,8 +346,12 @@
       _ariaLabelledBy: {
         type: String,
         value: ''
-      }
+      },
 
+      _inputId: {
+        type: String,
+        value: ''
+      }
     },
 
     listeners: {
@@ -372,6 +370,16 @@
      * Returns a reference to the input element.
      */
     get inputElement() {
+      // Chrome generates audit errors if an <input type="password"> has a
+      // duplicate ID, which is almost always true in Shady DOM. Generate
+      // a unique ID instead.
+      if (!this.$) {
+        this.$ = {}
+      }
+      if (!this.$.input) {
+        this._generateInputId();
+        this.$.input = this.$$('#' + this._inputId);
+      }
       return this.$.input;
     },
 
@@ -382,7 +390,7 @@
       return this.inputElement;
     },
 
-    registered: function() {
+    created: function() {
       // These types have some default placeholder text; overlapping
       // the label on top of it looks terrible. Auto-float the label in this case.
       this._typesThatHaveText = ["date", "datetime", "datetime-local", "month",
@@ -392,7 +400,10 @@
     attached: function() {
       this._updateAriaLabelledBy();
 
-      if (this.inputElement &&
+      // In the 2.0 version of the element, this is handled in `onIronInputReady`,
+      // i.e. after the native input has finished distributing. In the 1.0 version,
+      // the input is in the shadow tree, so it's already available.
+      if (!Polymer.Element && this.inputElement &&
           this._typesThatHaveText.indexOf(this.inputElement.type) !== -1) {
         this.alwaysFloatLabel = true;
       }
@@ -408,7 +419,7 @@
     },
 
     _onAddonAttached: function(event) {
-      var target = event.path ? event.path[0] : event.target;
+      var target = Polymer.dom(event).rootTarget;
       if (target.id) {
         this._ariaDescribedBy = this._appendStringWithSpace(this._ariaDescribedBy, target.id);
       } else {
@@ -434,8 +445,9 @@
       Polymer.IronControlState._focusBlurHandler.call(this, event);
 
       // Forward the focus to the nested input.
-      if (this.focused && !this._shiftTabPressed)
+      if (this.focused && !this._shiftTabPressed && this._focusableElement) {
         this._focusableElement.focus();
+      }
     },
 
     /**
@@ -503,6 +515,12 @@
       this._ariaLabelledBy = labelledBy;
     },
 
+    _generateInputId: function() {
+      if (!this._inputId || this._inputId === '') {
+        this._inputId =  'input-' + Polymer.PaperInputHelper.NextInputID++;
+      }
+    },
+
     _onChange:function(event) {
       // In the Shadow DOM, the `change` event is not leaked into the
       // ancestor tree, so we must do this manually.
@@ -542,7 +560,7 @@
         }
       }
     }
-  }
+  };
 
   /** @polymerBehavior */
   Polymer.PaperInputBehavior = [

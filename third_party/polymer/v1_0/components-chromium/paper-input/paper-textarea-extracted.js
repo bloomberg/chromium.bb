@@ -3,18 +3,18 @@ Polymer({
 
     behaviors: [
       Polymer.PaperInputBehavior,
-      Polymer.IronFormElementBehavior
+      Polymer.IronFormElementBehavior,
     ],
 
     properties: {
       _ariaLabelledBy: {
         observer: '_ariaLabelledByChanged',
-        type: String
+        type: String,
       },
 
       _ariaDescribedBy: {
         observer: '_ariaDescribedByChanged',
-        type: String
+        type: String,
       },
 
       /**
@@ -26,7 +26,7 @@ Polymer({
        */
       rows: {
         type: Number,
-        value: 1
+        value: 1,
       },
 
       /**
@@ -38,20 +38,34 @@ Polymer({
        * @default 0
        */
       maxRows: {
-       type: Number,
-       value: 0
-      }
+        type: Number,
+        value: 0,
+      },
+    },
+
+    get selectionStart() {
+      return this.$.input.textarea.selectionStart;
+    },
+    set selectionStart(start) {
+      this.$.input.textarea.selectionStart = start;
+    },
+
+    get selectionEnd() {
+      return this.$.input.textarea.selectionEnd;
+    },
+    set selectionEnd(end) {
+      this.$.input.textarea.selectionEnd = end;
     },
 
     _ariaLabelledByChanged: function() {
-      this.$.input.textarea.setAttribute('aria-label', this.label);
+      this._focusableElement.setAttribute('aria-label', this.label);
     },
 
     _ariaDescribedByChanged: function(ariaDescribedBy) {
-      this.$.input.textarea.setAttribute('aria-describedby', ariaDescribedBy);
+      this._focusableElement.setAttribute('aria-describedby', ariaDescribedBy);
     },
 
     get _focusableElement() {
-      return this.$.input.textarea;
+      return this.inputElement.textarea;
     },
   });
