@@ -862,6 +862,11 @@
     "label": "//chrome/installer/mini_installer:next_version_mini_installer",
     "type": "additional_compile_target",
   },
+  "ocmock_support_unittests": {
+    "label": "//ios/testing:ocmock_support_unittests",
+    "type": "raw",
+    "args": [],
+  },
   "ozone_unittests": {
     "label": "//ui/ozone:ozone_unittests",
     "type": "console_test_launcher",

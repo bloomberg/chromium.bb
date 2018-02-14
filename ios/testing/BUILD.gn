@@ -8,7 +8,7 @@ import("//testing/test.gni")
 group("all_tests") {
   testonly = true
   deps = [
-    ":ocmock_support_unittest",
+    ":ocmock_support_unittests",
   ]
 }
 
@@ -45,7 +45,7 @@ source_set("ocmock_support") {
   ]
 }
 
-test("ocmock_support_unittest") {
+test("ocmock_support_unittests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     ":ocmock_support",
