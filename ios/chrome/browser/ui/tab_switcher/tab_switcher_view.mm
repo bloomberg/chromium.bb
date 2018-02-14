@@ -110,6 +110,17 @@ const CGFloat kNewTabButtonWidth = 48;
   DCHECK_EQ([[_panels objectAtIndex:index] superview], _scrollView);
   [[_panels objectAtIndex:index] removeFromSuperview];
   [_panels removeObjectAtIndex:index];
+
+  if (_previousPanelIndex > -1) {
+    NSUInteger previousPanelIndexUnsigned =
+        static_cast<NSUInteger>(_previousPanelIndex);
+    if (index < previousPanelIndexUnsigned)
+      _previousPanelIndex--;
+    else if (index == previousPanelIndexUnsigned) {
+      [self panelWasHiddenAtIndex:_previousPanelIndex];
+      _previousPanelIndex = -1;
+    }
+  }
   if (update)
     [self updateScrollViewContent];
 }
@@ -336,7 +347,9 @@ const CGFloat kNewTabButtonWidth = 48;
   _previousPanelIndex = panelIndex;
 }
 
-- (void)panelWasHiddenAtIndex:(NSInteger)index {
+- (void)panelWasHiddenAtIndex:(NSUInteger)index {
+  if (index >= [_panels count])
+    return;
   id panel = [_panels objectAtIndex:index];
   if ([panel respondsToSelector:@selector(wasHidden)])
     [panel wasHidden];
