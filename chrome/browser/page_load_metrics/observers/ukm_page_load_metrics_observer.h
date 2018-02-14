@@ -29,6 +29,7 @@ extern const char kUkmFirstContentfulPaintName[];
 extern const char kUkmFirstMeaningfulPaintName[];
 extern const char kUkmInteractiveName[];
 extern const char kUkmFirstInputDelayName[];
+extern const char kUkmFirstInputTimestampName[];
 extern const char kUkmForegroundDurationName[];
 extern const char kUkmFailedProvisionaLoadName[];
 extern const char kUkmNetErrorCode[];

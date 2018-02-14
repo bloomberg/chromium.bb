@@ -92,8 +92,6 @@ class CORE_EXPORT PageWidgetDelegate {
       const WebCoalescedInputEvent& coalesced_event,
       LocalFrame* root);
 
-  static void ReportFirstInputDelay(const WebInputEvent&, LocalFrame* root);
-
  private:
   PageWidgetDelegate() {}
 };

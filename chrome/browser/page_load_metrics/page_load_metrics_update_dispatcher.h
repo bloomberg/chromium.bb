@@ -63,6 +63,11 @@ enum PageLoadTimingStatus {
   INVALID_ORDER_FIRST_PAINT_FIRST_MEANINGFUL_PAINT,
   INVALID_ORDER_FIRST_MEANINGFUL_PAINT_PAGE_INTERACTIVE,
 
+  // We received a first input delay without a first input timestamp.
+  INVALID_NULL_FIRST_INPUT_TIMESTAMP,
+  // We received a first input timestamp without a first input delay.
+  INVALID_NULL_FIRST_INPUT_DELAY,
+
   // New values should be added before this final entry.
   LAST_PAGE_LOAD_TIMING_STATUS
 };
