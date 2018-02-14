@@ -57,6 +57,8 @@ class OneCopyRasterBufferProvider::OneCopyGpuBacking
 
   base::trace_event::MemoryAllocatorDumpGuid MemoryDumpGuid(
       uint64_t tracing_process_id) override {
+    if (!storage_allocated)
+      return {};
     return gl::GetGLTextureClientGUIDForTracing(
         compositor_context_provider->ContextSupport()->ShareGroupTracingGUID(),
         texture_id);
