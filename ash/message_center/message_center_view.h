@@ -138,7 +138,11 @@ class ASH_EXPORT MessageCenterView
   // - Only NotifierSettingsView moves.
   // Thus, these two methods are needed.
   int GetSettingsHeightForWidth(int width) const;
-  int GetContentHeightDuringAnimation(int width) const;
+  int GetContentHeightDuringAnimation() const;
+
+  // Returns the height for the given |width| of the view correspond to |mode|
+  // e.g. |settings_view_|.
+  int GetContentHeightForMode(Mode mode, int width) const;
 
   message_center::MessageCenter* message_center_;
   message_center::UiController* ui_controller_;

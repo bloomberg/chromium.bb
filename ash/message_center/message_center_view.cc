@@ -338,17 +338,11 @@ int MessageCenterView::GetHeightForWidth(int width) const {
   if (settings_transition_animation_ &&
       settings_transition_animation_->is_animating()) {
     return button_bar_->GetHeightForWidth(width) +
-           GetContentHeightDuringAnimation(width);
+           GetContentHeightDuringAnimation();
   }
 
-  int content_height = 0;
-  if (mode_ == Mode::NOTIFICATIONS)
-    content_height += scroller_->GetHeightForWidth(width);
-  else if (mode_ == Mode::SETTINGS)
-    content_height += settings_view_->GetHeightForWidth(width);
-  else if (no_notifications_view_->visible())
-    content_height += kEmptyViewHeight;
-  return button_bar_->GetHeightForWidth(width) + content_height;
+  return button_bar_->GetHeightForWidth(width) +
+         GetContentHeightForMode(mode_, width);
 }
 
 bool MessageCenterView::OnMouseWheel(const ui::MouseWheelEvent& event) {
@@ -547,28 +541,40 @@ void MessageCenterView::SetVisibilityMode(Mode mode, bool animate) {
   if (mode == mode_)
     return;
 
-  if (mode_ == Mode::NOTIFICATIONS)
-    source_view_ = scroller_;
-  else if (mode_ == Mode::SETTINGS)
-    source_view_ = settings_view_;
-  else if (mode_ == Mode::NO_NOTIFICATIONS)
-    source_view_ = no_notifications_view_;
-  else
-    source_view_ = nullptr;
+  switch (mode_) {
+    case Mode::NOTIFICATIONS:
+      source_view_ = scroller_;
+      break;
+    case Mode::SETTINGS:
+      source_view_ = settings_view_;
+      break;
+    case Mode::LOCKED:
+      source_view_ = nullptr;
+      break;
+    case Mode::NO_NOTIFICATIONS:
+      source_view_ = no_notifications_view_;
+      break;
+  }
 
-  if (mode == Mode::NOTIFICATIONS)
-    target_view_ = scroller_;
-  else if (mode == Mode::SETTINGS)
-    target_view_ = settings_view_;
-  else if (mode == Mode::NO_NOTIFICATIONS)
-    target_view_ = no_notifications_view_;
-  else
-    target_view_ = nullptr;
+  switch (mode) {
+    case Mode::NOTIFICATIONS:
+      target_view_ = scroller_;
+      break;
+    case Mode::SETTINGS:
+      target_view_ = settings_view_;
+      break;
+    case Mode::LOCKED:
+      target_view_ = nullptr;
+      break;
+    case Mode::NO_NOTIFICATIONS:
+      target_view_ = no_notifications_view_;
+      break;
+  }
+
+  source_height_ = GetContentHeightForMode(mode_, width());
+  target_height_ = GetContentHeightForMode(mode, width());
 
   mode_ = mode;
-
-  source_height_ = source_view_ ? source_view_->GetHeightForWidth(width()) : 0;
-  target_height_ = target_view_ ? target_view_->GetHeightForWidth(width()) : 0;
 
   int contents_max_height =
       max_height_ - button_bar_->GetPreferredSize().height();
@@ -681,7 +687,7 @@ int MessageCenterView::GetSettingsHeightForWidth(int width) const {
   }
 }
 
-int MessageCenterView::GetContentHeightDuringAnimation(int width) const {
+int MessageCenterView::GetContentHeightDuringAnimation() const {
   DCHECK(settings_transition_animation_);
   int contents_height = settings_transition_animation_->CurrentValueBetween(
       target_view_ == settings_view_ ? 0 : source_height_,
@@ -691,6 +697,19 @@ int MessageCenterView::GetContentHeightDuringAnimation(int width) const {
   if (source_view_ == settings_view_)
     contents_height = std::max(target_height_, contents_height);
   return contents_height;
+}
+
+int MessageCenterView::GetContentHeightForMode(Mode mode, int width) const {
+  switch (mode) {
+    case Mode::NOTIFICATIONS:
+      return scroller_->GetHeightForWidth(width);
+    case Mode::SETTINGS:
+      return settings_view_->GetHeightForWidth(width);
+    case Mode::LOCKED:
+      return 0;
+    case Mode::NO_NOTIFICATIONS:
+      return kEmptyViewHeight;
+  }
 }
 
 }  // namespace ash
