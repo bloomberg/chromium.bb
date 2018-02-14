@@ -894,12 +894,15 @@ static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
   }
 #endif  // CONFIG_DEPENDENT_HORZTILES
 
+  const int ss_x = xd->plane[1].subsampling_x;
+  const int ss_y = xd->plane[1].subsampling_y;
+
   xd->left_available = (mi_col > tile->mi_col_start);
   xd->chroma_up_available = xd->up_available;
   xd->chroma_left_available = xd->left_available;
-  if (xd->plane[1].subsampling_x && bw < mi_size_wide[BLOCK_8X8])
+  if (ss_x && bw < mi_size_wide[BLOCK_8X8])
     xd->chroma_left_available = (mi_col - 1) > tile->mi_col_start;
-  if (xd->plane[1].subsampling_y && bh < mi_size_high[BLOCK_8X8])
+  if (ss_y && bh < mi_size_high[BLOCK_8X8])
     xd->chroma_up_available = (mi_row - 1) > tile->mi_row_start;
   if (xd->up_available) {
     xd->above_mi = xd->mi[-xd->mi_stride];
@@ -917,6 +920,29 @@ static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
   } else {
     xd->left_mi = NULL;
     xd->left_mbmi = NULL;
+  }
+
+  const int chroma_ref = ((mi_row & 0x01) || !(bh & 0x01) || !ss_y) &&
+                         ((mi_col & 0x01) || !(bw & 0x01) || !ss_x);
+  if (chroma_ref) {
+    // To help calculate the "above" and "left" chroma blocks, note that the
+    // current block may cover multiple luma blocks (eg, if partitioned into
+    // 4x4 luma blocks).
+    // First, find the top-left-most luma block covered by this chroma block
+    MODE_INFO **base_mi =
+        &xd->mi[-(mi_row & ss_y) * xd->mi_stride - (mi_col & ss_x)];
+
+    // Then, we consider the luma region covered by the left or above 4x4 chroma
+    // prediction. We want to point to the chroma reference block in that
+    // region, which is the bottom-right-most mi unit.
+    // This leads to the following offsets:
+    MODE_INFO *chroma_above_mi =
+        xd->chroma_up_available ? base_mi[-xd->mi_stride + ss_x] : NULL;
+    xd->chroma_above_mbmi = chroma_above_mi ? &chroma_above_mi->mbmi : NULL;
+
+    MODE_INFO *chroma_left_mi =
+        xd->chroma_left_available ? base_mi[ss_y * xd->mi_stride - 1] : NULL;
+    xd->chroma_left_mbmi = chroma_left_mi ? &chroma_left_mi->mbmi : NULL;
   }
 
   xd->n8_h = bh;

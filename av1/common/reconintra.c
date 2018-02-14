@@ -1407,11 +1407,19 @@ static int is_smooth(const MB_MODE_INFO *mbmi, int plane) {
 }
 
 static int get_filt_type(const MACROBLOCKD *xd, int plane) {
-  const MB_MODE_INFO *ab = xd->up_available ? &xd->mi[-xd->mi_stride]->mbmi : 0;
-  const MB_MODE_INFO *le = xd->left_available ? &xd->mi[-1]->mbmi : 0;
+  int ab_sm, le_sm;
 
-  const int ab_sm = ab ? is_smooth(ab, plane) : 0;
-  const int le_sm = le ? is_smooth(le, plane) : 0;
+  if (plane == 0) {
+    const MB_MODE_INFO *ab = xd->above_mbmi;
+    const MB_MODE_INFO *le = xd->left_mbmi;
+    ab_sm = ab ? is_smooth(ab, plane) : 0;
+    le_sm = le ? is_smooth(le, plane) : 0;
+  } else {
+    const MB_MODE_INFO *ab = xd->chroma_above_mbmi;
+    const MB_MODE_INFO *le = xd->chroma_left_mbmi;
+    ab_sm = ab ? is_smooth(ab, plane) : 0;
+    le_sm = le ? is_smooth(le, plane) : 0;
+  }
 
   return (ab_sm || le_sm) ? 1 : 0;
 }
