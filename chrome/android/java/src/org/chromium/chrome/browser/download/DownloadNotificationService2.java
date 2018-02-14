@@ -613,13 +613,13 @@ public class DownloadNotificationService2 {
     }
 
     void onForegroundServiceRestarted(int pinnedNotificationId) {
-        updateNotificationsForShutdown();
-        resumeAllPendingDownloads();
-
         // In API < 24, notifications pinned to the foreground will get killed with the service.
         // Fix this by relaunching the notification that was pinned to the service as the service
         // dies, if there is one.
         relaunchPinnedNotification(pinnedNotificationId);
+
+        updateNotificationsForShutdown();
+        resumeAllPendingDownloads();
     }
 
     void onForegroundServiceTaskRemoved() {
