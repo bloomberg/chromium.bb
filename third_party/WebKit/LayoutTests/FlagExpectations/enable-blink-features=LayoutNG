@@ -3915,7 +3915,6 @@ crbug.com/591099 fast/multicol/float-with-margin-moved-by-child-line-and-unbreak
 crbug.com/591099 fast/multicol/float-with-margin-moved-by-child-line.html [ Failure ]
 crbug.com/591099 fast/multicol/float-with-margin-moved-unbreakable.html [ Failure ]
 crbug.com/591099 fast/multicol/flowthread-with-floats-destroyed-crash.html [ Crash Pass ]
-crbug.com/714962 fast/multicol/focus-outline.html [ Crash ]
 crbug.com/591099 fast/multicol/forced-break-after-block-with-spanner.html [ Crash ]
 crbug.com/591099 fast/multicol/forced-break-after-empty-block-after-spanner.html [ Crash ]
 crbug.com/591099 fast/multicol/forced-break-after-last-block-before-spanner.html [ Crash ]
