@@ -648,7 +648,7 @@ void VaapiVideoEncodeAccelerator::EncodeFrameTask() {
   linked_ptr<InputFrameRef> frame_ref = encoder_input_queue_.front();
   encoder_input_queue_.pop();
 
-  TRACE_EVENT0("media.gpu", "VAVEA::EncodeFrameTask");
+  TRACE_EVENT0("media,gpu", "VAVEA::EncodeFrameTask");
 
   if (!UploadFrame(frame_ref->frame)) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed uploading source frame to HW.");
