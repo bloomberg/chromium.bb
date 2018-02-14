@@ -1896,8 +1896,9 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     TRACE_EVENT0("cc", "DrawLayers.UpdateHudTexture");
     active_tree_->hud_layer()->UpdateHudTexture(
         draw_mode, resource_provider_.get(),
-        use_gpu_rasterization_ ? layer_tree_frame_sink_->context_provider()
-                               : nullptr,
+        // The hud uses Gpu rasterization if the device is capable, not related
+        // to the content of the web page.
+        gpu_rasterization_status_ != GpuRasterizationStatus::OFF_DEVICE,
         frame->render_passes);
   }
 
@@ -2726,6 +2727,9 @@ void LayerTreeHostImpl::DidChangeScrollbarVisibility() {
 
 void LayerTreeHostImpl::CleanUpTileManagerResources() {
   tile_manager_.FinishTasksAndCleanUp();
+  // TODO(crbug.com/810925): If the ResourceProvider isn't being destroyed,
+  // instead of destroying the pool, just invalidate reuse of existing
+  // resources.
   resource_pool_ = nullptr;
   single_thread_synchronous_task_graph_runner_ = nullptr;
   image_decode_cache_ = nullptr;
