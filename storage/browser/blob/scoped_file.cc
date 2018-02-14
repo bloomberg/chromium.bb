@@ -37,12 +37,11 @@ ScopedFile::~ScopedFile() {
   Reset();
 }
 
-void ScopedFile::AddScopeOutCallback(
-    const ScopeOutCallback& callback,
-    base::TaskRunner* callback_runner) {
+void ScopedFile::AddScopeOutCallback(ScopeOutCallback callback,
+                                     base::TaskRunner* callback_runner) {
   if (!callback_runner)
     callback_runner = base::ThreadTaskRunnerHandle::Get().get();
-  scope_out_callbacks_.push_back(std::make_pair(callback, callback_runner));
+  scope_out_callbacks_.emplace_back(std::move(callback), callback_runner);
 }
 
 base::FilePath ScopedFile::Release() {
@@ -59,7 +58,8 @@ void ScopedFile::Reset() {
 
   for (ScopeOutCallbackList::iterator iter = scope_out_callbacks_.begin();
        iter != scope_out_callbacks_.end(); ++iter) {
-    iter->second->PostTask(FROM_HERE, base::Bind(iter->first, path_));
+    iter->second->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(iter->first), path_));
   }
 
   DVLOG(1) << "ScopedFile::Reset(): "

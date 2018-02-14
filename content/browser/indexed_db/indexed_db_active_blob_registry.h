@@ -13,8 +13,8 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/indexed_db/indexed_db_blob_info.h"
 #include "content/common/content_export.h"
-#include "storage/browser/blob/shareable_file_reference.h"
 
 namespace content {
 
@@ -33,7 +33,7 @@ class CONTENT_EXPORT IndexedDBActiveBlobRegistry {
   // Use DatabaseMetaDataKey::AllBlobsKey for "the whole database".
   bool MarkDeletedCheckIfUsed(int64_t database_id, int64_t blob_key);
 
-  storage::ShareableFileReference::FinalReleaseCallback GetFinalReleaseCallback(
+  IndexedDBBlobInfo::ReleaseCallback GetFinalReleaseCallback(
       int64_t database_id,
       int64_t blob_key);
   // This closure holds a raw pointer to the IndexedDBActiveBlobRegistry,

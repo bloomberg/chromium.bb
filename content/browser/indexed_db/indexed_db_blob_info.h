@@ -13,13 +13,13 @@
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "storage/browser/blob/shareable_file_reference.h"
 
 namespace content {
 
 class CONTENT_EXPORT IndexedDBBlobInfo {
  public:
-  typedef storage::ShareableFileReference::FinalReleaseCallback ReleaseCallback;
+  // TODO(mek): Use ShareableFileReference::FinalReleaseCallback somehow.
+  typedef base::RepeatingCallback<void(const base::FilePath&)> ReleaseCallback;
   IndexedDBBlobInfo();
   // These two are used for Blobs.
   IndexedDBBlobInfo(const std::string& uuid,

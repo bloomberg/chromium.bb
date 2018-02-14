@@ -95,8 +95,7 @@ class MockIDBBackingStore : public IndexedDBFakeBackingStore {
 // Base class for our test fixtures.
 class IndexedDBActiveBlobRegistryTest : public testing::Test {
  public:
-  typedef storage::ShareableFileReference::FinalReleaseCallback
-      ReleaseCallback;
+  typedef IndexedDBBlobInfo::ReleaseCallback ReleaseCallback;
 
   static const int64_t kDatabaseId0 = 7;
   static const int64_t kDatabaseId1 = 12;

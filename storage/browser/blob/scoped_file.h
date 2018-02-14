@@ -27,7 +27,7 @@ namespace storage {
 // common place.
 class STORAGE_EXPORT ScopedFile {
  public:
-  typedef base::Callback<void(const base::FilePath&)> ScopeOutCallback;
+  typedef base::OnceCallback<void(const base::FilePath&)> ScopeOutCallback;
   typedef std::pair<ScopeOutCallback, scoped_refptr<base::TaskRunner> >
       ScopeOutCallbackPair;
   typedef std::vector<ScopeOutCallbackPair> ScopeOutCallbackList;
@@ -57,7 +57,7 @@ class STORAGE_EXPORT ScopedFile {
   // of this instance is released.
   // If release policy is DELETE_ON_SCOPE_OUT the
   // callback task(s) is/are posted before the deletion is scheduled.
-  void AddScopeOutCallback(const ScopeOutCallback& callback,
+  void AddScopeOutCallback(ScopeOutCallback callback,
                            base::TaskRunner* callback_runner);
 
   // The full file path.
