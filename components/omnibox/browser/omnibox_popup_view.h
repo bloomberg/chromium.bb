@@ -15,10 +15,6 @@
 
 #include "build/build_config.h"
 
-namespace gfx {
-class Rect;
-}
-
 class OmniboxPopupView {
  public:
   virtual ~OmniboxPopupView() {}
@@ -38,11 +34,6 @@ class OmniboxPopupView {
 
   // Notification that the icon used for the given match has been updated.
   virtual void OnMatchIconUpdated(size_t match_index) = 0;
-
-  // Returns the target bounds for the popup. This returns the popup's current
-  // bounds when not animating, or the desired target bounds when animating.
-  // The return value is in screen coordinates.
-  virtual gfx::Rect GetTargetBounds() = 0;
 
   // Paint any pending updates.
   virtual void PaintUpdatesNow() = 0;

@@ -41,7 +41,6 @@ class OmniboxPopupViewMac : public OmniboxPopupView,
   void OnLineSelected(size_t line) override {}
   void UpdatePopupAppearance() override;
   void OnMatchIconUpdated(size_t match_index) override;
-  gfx::Rect GetTargetBounds() override;
   // This is only called by model in SetSelectedLine() after updating
   // everything.  Popup should already be visible.
   void PaintUpdatesNow() override;
@@ -84,7 +83,6 @@ class OmniboxPopupViewMac : public OmniboxPopupView,
 
   // Child window containing a matrix which implements the popup.
   base::scoped_nsobject<NSWindow> popup_;
-  NSRect target_popup_frame_;
 
   base::scoped_nsobject<OmniboxPopupMatrix> matrix_;
   base::scoped_nsobject<NSView> top_separator_view_;

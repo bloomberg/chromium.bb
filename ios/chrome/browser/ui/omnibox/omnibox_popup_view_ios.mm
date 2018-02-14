@@ -68,10 +68,6 @@ void OmniboxPopupViewIOS::UpdatePopupAppearance() {
   delegate_->OnResultsChanged(result);
 }
 
-gfx::Rect OmniboxPopupViewIOS::GetTargetBounds() {
-  return gfx::Rect();
-}
-
 bool OmniboxPopupViewIOS::IsOpen() const {
   return [mediator_ isOpen];
 }
