@@ -360,8 +360,10 @@ base::ScopedCFTypeRef<CFMutableArrayRef> RenderTextMac::ApplyStyles(
                                    kCTForegroundColorAttributeName, foreground);
     CFArrayAppendValue(attributes, foreground);
 
-    if (style.style(UNDERLINE)) {
-      CTUnderlineStyle value = kCTUnderlineStyleSingle;
+    if (style.style(UNDERLINE) || style.style(HEAVY_UNDERLINE)) {
+      CTUnderlineStyle value = style.style(HEAVY_UNDERLINE)
+                                   ? kCTUnderlineStyleThick
+                                   : kCTUnderlineStyleSingle;
       base::ScopedCFTypeRef<CFNumberRef> underline_value(
           CFNumberCreate(NULL, kCFNumberSInt32Type, &value));
       CFAttributedStringSetAttribute(
