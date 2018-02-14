@@ -180,7 +180,7 @@ void HTMLTrackElement::LoadTimerFired(TimerBase*) {
   // Also we will first check if the new URL is not equal with
   // the previous URL (there is an unclarified issue in spec
   // about it, see: https://github.com/whatwg/html/issues/2916)
-  if (url == url_)
+  if (url == url_ && getReadyState() != kNone)
     return;
 
   if (track_)
@@ -316,7 +316,7 @@ void HTMLTrackElement::SetReadyState(ReadyState state) {
 }
 
 HTMLTrackElement::ReadyState HTMLTrackElement::getReadyState() {
-  return static_cast<ReadyState>(EnsureTrack()->GetReadinessState());
+  return track_ ? static_cast<ReadyState>(track_->GetReadinessState()) : kNone;
 }
 
 const AtomicString& HTMLTrackElement::MediaElementCrossOriginAttribute() const {
