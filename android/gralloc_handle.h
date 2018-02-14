@@ -84,28 +84,26 @@ static inline struct gralloc_handle_t *gralloc_handle(buffer_handle_t handle)
 /**
  * Create a buffer handle.
  */
-static struct gralloc_handle_t gralloc_handle_create(int32_t width,
+static inline native_handle_t *gralloc_handle_create(int32_t width,
                                                      int32_t height,
-                                                     int32_t format,
+                                                     int32_t hal_format,
                                                      int32_t usage)
 {
-	struct alloc_handle_t handle = {
-		.magic = GRALLOC_HANDLE_MAGIC,
-		.version = GRALLOC_HANDLE_VERSION };
-
+	struct gralloc_handle_t *handle;
 	native_handle_t *nhandle = native_handle_create(GRALLOC_HANDLE_NUM_FDS,
-		                                            GRALLOC_HANDLE_NUM_INTS);
-	handle.base = *nhandle;
-	native_handle_delete(nhandle);
+							GRALLOC_HANDLE_NUM_INTS);
 
-	handle.width = width;
-	handle.height = height;
-	handle.format = format;
-	handle.usage = usage;
-	handle.prime_fd = -1;
+	if (!nhandle)
+		return NULL;
 
-	handle->data_owner = getpid();
-	handle->data = bo;
+	handle = gralloc_handle(nhandle);
+	handle->magic = GRALLOC_HANDLE_MAGIC;
+	handle->version = GRALLOC_HANDLE_VERSION;
+	handle->width = width;
+	handle->height = height;
+	handle->format = hal_format;
+	handle->usage = usage;
+	handle->prime_fd = -1;
 
 	return handle;
 }
