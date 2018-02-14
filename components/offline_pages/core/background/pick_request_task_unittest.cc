@@ -100,7 +100,10 @@ class PickRequestTaskTest : public testing::Test {
 
   void AddRequestDone(ItemActionStatus status);
 
-  void RequestPicked(const SavePageRequest& request, bool cleanup_needed);
+  void RequestPicked(
+      const SavePageRequest& request,
+      const std::unique_ptr<std::vector<SavePageRequest>> available_requests,
+      bool cleanup_needed);
 
   void RequestNotPicked(const bool non_user_requested_tasks_remaining,
                         bool cleanup_needed);
@@ -175,8 +178,10 @@ void PickRequestTaskTest::TaskCompletionCallback(Task* completed_task) {
 
 void PickRequestTaskTest::AddRequestDone(ItemActionStatus status) {}
 
-void PickRequestTaskTest::RequestPicked(const SavePageRequest& request,
-                                        const bool cleanup_needed) {
+void PickRequestTaskTest::RequestPicked(
+    const SavePageRequest& request,
+    std::unique_ptr<std::vector<SavePageRequest>> available_requests,
+    const bool cleanup_needed) {
   last_picked_.reset(new SavePageRequest(request));
   cleanup_needed_ = cleanup_needed;
 }

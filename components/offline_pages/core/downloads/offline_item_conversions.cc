@@ -5,6 +5,7 @@
 #include "components/offline_pages/core/downloads/offline_item_conversions.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/offline_items_collection/core/pending_state.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/offline_page_item.h"
 
@@ -12,6 +13,7 @@ using OfflineItemFilter = offline_items_collection::OfflineItemFilter;
 using OfflineItemState = offline_items_collection::OfflineItemState;
 using OfflineItemProgressUnit =
     offline_items_collection::OfflineItemProgressUnit;
+using PendingState = offline_items_collection::PendingState;
 
 namespace offline_pages {
 
@@ -52,6 +54,7 @@ OfflineItem OfflineItemConversions::CreateOfflineItem(
   switch (request.request_state()) {
     case SavePageRequest::RequestState::AVAILABLE:
       item.state = OfflineItemState::PENDING;
+      item.pendingState = request.pending_state();
       break;
     case SavePageRequest::RequestState::OFFLINING:
       item.state = OfflineItemState::IN_PROGRESS;

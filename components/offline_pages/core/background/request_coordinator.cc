@@ -239,6 +239,7 @@ RequestCoordinator::RequestCoordinator(
       last_offlining_status_(Offliner::RequestStatus::UNKNOWN),
       scheduler_callback_(base::Bind(&EmptySchedulerCallback)),
       internal_start_processing_callback_(base::Bind(&EmptySchedulerCallback)),
+      pending_state_updater_(this),
       weak_ptr_factory_(this) {
   DCHECK(policy_ != nullptr);
   std::unique_ptr<CleanupTaskFactory> cleanup_factory(
@@ -278,6 +279,7 @@ int64_t RequestCoordinator::SavePageLater(
       base::Time::Now(), save_page_later_params.user_requested);
   request.set_original_url(save_page_later_params.original_url);
   request.set_request_origin(save_page_later_params.request_origin);
+  pending_state_updater_.SetPendingState(request);
 
   // If the download manager is not done with the request, put it on the
   // disabled list.
@@ -526,8 +528,10 @@ void RequestCoordinator::AddRequestResultCallback(
 
 void RequestCoordinator::UpdateMultipleRequestsCallback(
     std::unique_ptr<UpdateRequestsResult> result) {
-  for (const auto& request : result->updated_items)
+  for (auto& request : result->updated_items) {
+    pending_state_updater_.SetPendingState(request);
     NotifyChanged(request);
+  }
 
   bool available_user_request = false;
   for (const auto& request : result->updated_items) {
@@ -543,8 +547,9 @@ void RequestCoordinator::UpdateMultipleRequestsCallback(
 
 void RequestCoordinator::ReconcileCallback(
     std::unique_ptr<UpdateRequestsResult> result) {
-  for (const auto& request : result->updated_items) {
+  for (auto& request : result->updated_items) {
     RecordOfflinerResult(request, Offliner::RequestStatus::BROWSER_KILLED);
+    pending_state_updater_.SetPendingState(request);
     NotifyChanged(request);
   }
 }
@@ -737,6 +742,10 @@ void RequestCoordinator::UpdateCurrentConditionsFromAndroid() {
 void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
   state_ = RequestCoordinatorState::PICKING;
 
+  // Connection type at previous check.
+  net::NetworkChangeNotifier::ConnectionType previous_connection_type =
+      current_conditions_->GetNetConnectionType();
+
   // If this is the first call, the device conditions are current, no need to
   // update them.
   if (!is_start_of_processing) {
@@ -745,6 +754,18 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
     // in the background in android, so prefer to always get the conditions via
     // the android APIs.
     UpdateCurrentConditionsFromAndroid();
+  }
+
+  // Current connection type.
+  net::NetworkChangeNotifier::ConnectionType connection_type =
+      current_conditions_->GetNetConnectionType();
+
+  // If there was loss of network, update all available requests to waiting for
+  // network connection.
+  if (connection_type != previous_connection_type &&
+      connection_type ==
+          net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE) {
+    pending_state_updater_.UpdateRequestsOnLossOfNetwork();
   }
 
   base::TimeDelta processing_time_budget;
@@ -756,9 +777,6 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
     processing_time_budget = base::TimeDelta::FromSeconds(
         policy_->GetProcessingTimeBudgetForImmediateLoadInSeconds());
   }
-
-  net::NetworkChangeNotifier::ConnectionType connection_type =
-      current_conditions_->GetNetConnectionType();
 
   // If there is no network or no time left in the budget, return to the
   // scheduler. We do not remove the pending scheduler task that was set
@@ -795,16 +813,22 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
 }
 
 // Called by the request picker when a request has been picked.
-void RequestCoordinator::RequestPicked(const SavePageRequest& request,
-                                       bool cleanup_needed) {
-  DVLOG(2) << request.url() << " " << __func__;
+void RequestCoordinator::RequestPicked(
+    const SavePageRequest& picked_request,
+    std::unique_ptr<std::vector<SavePageRequest>> available_requests,
+    bool cleanup_needed) {
+  DVLOG(2) << picked_request.url() << " " << __func__;
 
   // Make sure we were not stopped while picking, since any kind of cancel/stop
   // will reset the state back to IDLE.
   if (state_ == RequestCoordinatorState::PICKING) {
     state_ = RequestCoordinatorState::OFFLINING;
     // Send the request on to the offliner.
-    SendRequestToOffliner(request);
+    SendRequestToOffliner(picked_request);
+
+    // Update the pending state for available requests if needed.
+    pending_state_updater_.UpdateRequestsOnRequestPicked(
+        picked_request.request_id(), std::move(available_requests));
   }
 
   // Schedule a queue cleanup if needed.

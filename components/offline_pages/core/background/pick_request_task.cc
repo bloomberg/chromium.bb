@@ -74,6 +74,10 @@ void PickRequestTask::Choose(
     return;
   }
 
+  // All available requests
+  std::unique_ptr<std::vector<SavePageRequest>> available_requests =
+      std::make_unique<std::vector<SavePageRequest>>();
+
   // Pick the most deserving request for our conditions.
   const SavePageRequest* picked_request = nullptr;
 
@@ -88,7 +92,7 @@ void PickRequestTask::Choose(
   bool non_user_requested_tasks_remaining = false;
   bool cleanup_needed = false;
 
-  size_t available_request_count = 0;
+  size_t total_request_count = requests.size();
   // Request ids which are available for picking.
   std::unordered_set<int64_t> available_request_ids;
 
@@ -115,15 +119,14 @@ void PickRequestTask::Choose(
     // non-user-requested items, which have different network and power needs.
     if (!request->user_requested())
       non_user_requested_tasks_remaining = true;
-    if (request->request_state() == SavePageRequest::RequestState::AVAILABLE) {
-      available_request_count++;
-    }
+    if (request->request_state() == SavePageRequest::RequestState::AVAILABLE)
+      available_requests->push_back(*request);
     if (!RequestConditionsSatisfied(request.get()))
       continue;
     available_request_ids.insert(request->request_id());
   }
   // Report the request queue counts.
-  request_count_callback_.Run(requests.size(), available_request_count);
+  request_count_callback_.Run(total_request_count, available_requests->size());
 
   // Search for and pick the prioritized request which is available for picking
   // from |available_request_ids|, the closer to the end means higher priority.
@@ -134,9 +137,9 @@ void PickRequestTask::Choose(
   // request, or there's a request being poped from |prioritized_requests_|.
   while (!picked_request && !prioritized_requests_.empty()) {
     if (available_request_ids.count(prioritized_requests_.back()) > 0) {
-      for (const auto& request : requests) {
-        if (request->request_id() == prioritized_requests_.back()) {
-          picked_request = request.get();
+      for (const auto& request : *available_requests) {
+        if (request.request_id() == prioritized_requests_.back()) {
+          picked_request = &request;
           break;
         }
       }
@@ -149,10 +152,10 @@ void PickRequestTask::Choose(
   // If no request was found from the priority list, find the best request
   // according to current policies.
   if (!picked_request) {
-    for (const auto& request : requests) {
-      if ((available_request_ids.count(request->request_id()) > 0) &&
-          (IsNewRequestBetter(picked_request, request.get(), comparator))) {
-        picked_request = request.get();
+    for (const auto& request : *available_requests) {
+      if ((available_request_ids.count(request.request_id()) > 0) &&
+          (IsNewRequestBetter(picked_request, &request, comparator))) {
+        picked_request = &request;
       }
     }
   }
@@ -160,7 +163,8 @@ void PickRequestTask::Choose(
   // If we have a best request to try next, get the request coodinator to
   // start it.  Otherwise return that we have no candidates.
   if (picked_request != nullptr) {
-    picked_callback_.Run(*picked_request, cleanup_needed);
+    picked_callback_.Run(*picked_request, std::move(available_requests),
+                         cleanup_needed);
   } else {
     not_picked_callback_.Run(non_user_requested_tasks_remaining,
                              cleanup_needed);
