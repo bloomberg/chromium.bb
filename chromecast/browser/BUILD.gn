@@ -235,6 +235,7 @@ cast_source_set("browser") {
       "//components/pref_registry",
       "//components/storage_monitor",
       "//components/user_prefs:user_prefs",
+      "//components/version_info",
       "//extensions/browser",
       "//extensions/common",
       "//extensions/common/api",

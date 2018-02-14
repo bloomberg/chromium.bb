@@ -100,6 +100,7 @@
 #include "chromecast/browser/extensions/cast_extensions_browser_client.h"
 #include "chromecast/browser/extensions/cast_prefs.h"
 #include "chromecast/common/cast_extensions_client.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"  // nogncheck
 #include "extensions/browser/extension_prefs.h"  // nogncheck
 #endif
 
@@ -596,6 +597,14 @@ bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
 }
 
 void CastBrowserMainParts::PostMainMessageLoopRun() {
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+  BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
+      browser_context());
+  extensions::ExtensionsBrowserClient::Set(nullptr);
+  extensions_browser_client_.reset();
+  user_pref_service_.reset();
+#endif
+
 #if defined(OS_ANDROID)
   // Android does not use native main MessageLoop.
   NOTREACHED();
