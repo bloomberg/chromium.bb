@@ -778,6 +778,35 @@ TEST_P(GpuImageDecodeCacheTest, GetTaskForImageCanceledWhileReffedGetsNewTask) {
   cache->UnrefImage(draw_image);
 }
 
+TEST_P(GpuImageDecodeCacheTest, GetTaskForImageUploadCanceledButDecodeRun) {
+  auto cache = CreateCache();
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  PaintImage image = CreateDiscardablePaintImage(gfx::Size(100, 100));
+  DrawImage draw_image(image, SkIRect::MakeWH(image.width(), image.height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
+                       PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+  ImageDecodeCache::TaskResult result =
+      cache->GetTaskForImageAndRef(draw_image, ImageDecodeCache::TracingInfo());
+  EXPECT_TRUE(result.need_unref);
+  EXPECT_TRUE(result.task);
+  EXPECT_EQ(result.task->dependencies().size(), 1u);
+  EXPECT_TRUE(result.task->dependencies()[0]);
+
+  // Cancel the upload.
+  TestTileTaskRunner::CancelTask(result.task.get());
+  TestTileTaskRunner::CompleteTask(result.task.get());
+
+  // Unref the image.
+  cache->UnrefImage(draw_image);
+
+  // Run the decode task. Even though the image only has a decode ref at this
+  // point, this should complete successfully.
+  TestTileTaskRunner::ProcessTask(result.task->dependencies()[0].get());
+}
+
 TEST_P(GpuImageDecodeCacheTest, NoTaskForImageAlreadyFailedDecoding) {
   auto cache = CreateCache();
   bool is_decomposable = true;
