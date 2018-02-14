@@ -3,6 +3,7 @@ include_rules = [
   "+components/signin/core/browser",
   "+google_apis/gaia",
   "+mojo/public/cpp",
+  "+net/url_request",
   "+services/identity",
   "+services/service_manager/public/cpp",
   "+components/cryptauth"

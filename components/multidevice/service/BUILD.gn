@@ -10,6 +10,8 @@ if (!is_ios && !is_android) {
 
   static_library("service") {
     sources = [
+      "cryptauth_client_factory_impl.cc",
+      "cryptauth_client_factory_impl.h",
       "cryptauth_token_fetcher_impl.cc",
       "cryptauth_token_fetcher_impl.h",
       "device_sync_impl.cc",
@@ -22,6 +24,7 @@ if (!is_ios && !is_android) {
 
     deps = [
       "//base",
+      "//net",
       "//services/identity/public/cpp",
     ]
 
