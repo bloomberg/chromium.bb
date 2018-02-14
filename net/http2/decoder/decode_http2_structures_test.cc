@@ -20,9 +20,7 @@
 #include "net/http2/tools/http2_random.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::AssertionFailure;
 using ::testing::AssertionResult;
-using ::testing::AssertionSuccess;
 
 namespace net {
 namespace test {
