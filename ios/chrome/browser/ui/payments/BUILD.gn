@@ -144,6 +144,7 @@ source_set("payments_ui") {
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/icons",
+    "//ios/chrome/browser/ui/list_model",
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/payments/cells",
     "//ios/third_party/material_components_ios",
