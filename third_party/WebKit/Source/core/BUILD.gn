@@ -1911,6 +1911,7 @@ jumbo_source_set("unit_tests") {
     "layout/LayoutMultiColumnFlowThreadTest.cpp",
     "layout/LayoutObjectTest.cpp",
     "layout/LayoutProgressTest.cpp",
+    "layout/LayoutReplacedTest.cpp",
     "layout/LayoutTableCellTest.cpp",
     "layout/LayoutTableColTest.cpp",
     "layout/LayoutTableRowTest.cpp",
