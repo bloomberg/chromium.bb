@@ -34,7 +34,6 @@ class AFDODataGenerateStage(generic_stages.BoardSpecificBuilderStage,
       logging.warning('Board %s cannot generate its own AFDO profile.', board)
       return
 
-    afdo.InitGSUrls(board)
     arch = self._GetCurrentArch()
     buildroot = self._build_root
     gs_context = gs.GSContext()
@@ -91,25 +90,18 @@ class AFDOUpdateChromeEbuildStage(generic_stages.BuilderStage):
     # the same for all the boards, so just use the first one.
     # If we don't have any boards, leave the called function to guess.
     board = self._boards[0] if self._boards else None
-    # This is a temporary hack in the transition from gcc to llvm.
-    # board is None iff master-chromium-pfq. That means we need to update both
-    # afdos for gcc(produced on samus) and llvm(produced on chell).
-    # TODO: Remove this after the transition is done.
-    afdoboards = [board] if board else ['chell']
-    for afdoboard in afdoboards:
-      arch_profiles = {}
-      afdo.InitGSUrls(afdoboard, reset=True)
-      for arch in afdo.AFDO_ARCH_GENERATORS:
-        afdo_file = afdo.GetLatestAFDOFile(cpv, arch, buildroot, gs_context)
-        if not afdo_file:
-          raise afdo.MissingAFDOData('Could not find appropriate AFDO profile')
-        state = 'current' if version_number in afdo_file else 'previous'
-        logging.info('Found %s %s AFDO profile %s', state, arch, afdo_file)
-        arch_profiles[arch] = afdo_file
+    arch_profiles = {}
+    for arch in afdo.AFDO_ARCH_GENERATORS:
+      afdo_file = afdo.GetLatestAFDOFile(cpv, arch, buildroot, gs_context)
+      if not afdo_file:
+        raise afdo.MissingAFDOData('Could not find appropriate AFDO profile')
+      state = 'current' if version_number in afdo_file else 'previous'
+      logging.info('Found %s %s AFDO profile %s', state, arch, afdo_file)
+      arch_profiles[arch] = afdo_file
 
-      # Now update the Chrome ebuild file with the AFDO profiles we found
-      # for each architecture.
-      afdo.UpdateChromeEbuildAFDOFile(board, arch_profiles)
+    # Now update the Chrome ebuild file with the AFDO profiles we found
+    # for each architecture.
+    afdo.UpdateChromeEbuildAFDOFile(board, arch_profiles)
 
 
 class AFDOUpdateKernelEbuildStage(generic_stages.BuilderStage):
@@ -125,7 +117,6 @@ class AFDOUpdateKernelEbuildStage(generic_stages.BuilderStage):
                         message=alert_msg)
 
   def PerformStage(self):
-    afdo.InitGSUrls(None)
     version_info = self._run.GetVersionInfo()
     build_version = map(int, version_info.VersionString().split('.'))
     chrome_version = int(version_info.chrome_branch)

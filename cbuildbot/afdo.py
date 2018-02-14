@@ -41,12 +41,20 @@ LATEST_CHROME_AFDO_FILE = 'latest-%s.afdo' % CHROME_ARCH_RELEASE
 CHROME_DEBUG_BIN = os.path.join('%(root)s',
                                 'build/%(board)s/usr/lib/debug',
                                 'opt/google/chrome/chrome.debug')
-
-AFDO_GENERATE_GCOV_TOOL = '/usr/bin/create_gcov'
-AFDO_GENERATE_LLVM_PROF = '/usr/bin/create_llvm_prof'
-
+# regex to find AFDO file for specific architecture within the ebuild file.
+CHROME_EBUILD_AFDO_REGEX = (
+    r'^(?P<bef>AFDO_FILE_LLVM\["%s"\]=")(?P<name>.*)(?P<aft>")')
 # and corresponding replacement string.
 CHROME_EBUILD_AFDO_REPL = r'\g<bef>%s\g<aft>'
+
+GSURL_BASE = 'gs://chromeos-prebuilt/afdo-job/llvm'
+GSURL_CHROME_PERF = os.path.join(GSURL_BASE, CHROME_PERF_AFDO_FILE + '.bz2')
+GSURL_CHROME_AFDO = os.path.join(GSURL_BASE, CHROME_AFDO_FILE + '.bz2')
+GSURL_LATEST_CHROME_AFDO = os.path.join(GSURL_BASE, LATEST_CHROME_AFDO_FILE)
+GSURL_CHROME_DEBUG_BIN = os.path.join(GSURL_BASE,
+                                      CHROME_ARCH_VERSION + '.debug.bz2')
+
+AFDO_GENERATE_LLVM_PROF = '/usr/bin/create_llvm_prof'
 
 # An AFDO data is considered stale when BOTH of the following two metrics don't
 # meet. For example, if an AFDO data is generated 20 days ago but only 5 builds
@@ -69,7 +77,6 @@ KERNEL_WARN_STALE_DAYS = 14
 # at least 4GB of memory.
 #
 # This must be consistent with the definitions in autotest.
-AFDO_DATA_GENERATORS_GCC = ('lumpy',)
 AFDO_DATA_GENERATORS_LLVM = ('chell', 'samus')
 
 # For a given architecture, which architecture is used to generate
@@ -189,7 +196,7 @@ def GetAFDOPerfDataURL(cpv, arch):
   chrome_spec = {'package': cpv.package,
                  'arch': arch,
                  'version': version_number}
-  return _gsurls['chrome_perf'] % chrome_spec
+  return GSURL_CHROME_PERF % chrome_spec
 
 
 def CheckAFDOPerfData(cpv, arch, gs_context):
@@ -266,7 +273,7 @@ def PatchChromeEbuildAFDOFile(ebuild_file, arch_profiles):
   arch_repls = {}
   arch_markers = {}
   for arch in arch_profiles.keys():
-    arch_patterns[arch] = re.compile(_gsurls['chrome_ebuild_afdo_exp'] % arch)
+    arch_patterns[arch] = re.compile(CHROME_EBUILD_AFDO_REGEX % arch)
     arch_repls[arch] = CHROME_EBUILD_AFDO_REPL % arch_profiles[arch]
     arch_markers[arch] = False
 
@@ -297,14 +304,8 @@ def UpdateManifest(ebuild_file, ebuild_prog='ebuild'):
     ebuild_file: path to the ebuild file
     ebuild_prog: the ebuild command; can be board specific
   """
-  ebuild_gs_dir = None
-  # If using the GS test location, pass this location to the
-  # chrome ebuild.
-  if _gsurls['base'] == _gsurls['test']:
-    ebuild_gs_dir = {'AFDO_GS_DIRECTORY': _gsurls['test']}
   gen_manifest_cmd = [ebuild_prog, ebuild_file, 'manifest', '--force']
-  cros_build_lib.RunCommand(gen_manifest_cmd, enter_chroot=True,
-                            extra_env=ebuild_gs_dir, print_cmd=True)
+  cros_build_lib.RunCommand(gen_manifest_cmd, enter_chroot=True, print_cmd=True)
 
 
 def CommitIfChanged(ebuild_dir, message):
@@ -390,7 +391,7 @@ def VerifyLatestAFDOFile(afdo_release_spec, buildroot, gs_context):
     The second return value indicates whether the profile found is expired or
     not. False when no profile is found.
   """
-  latest_afdo_url = _gsurls['latest_chrome_afdo'] % afdo_release_spec
+  latest_afdo_url = GSURL_LATEST_CHROME_AFDO % afdo_release_spec
 
   # Check if latest-chrome-<arch>-<release>.afdo exists.
   try:
@@ -474,7 +475,7 @@ def GetLatestAFDOFile(cpv, arch, buildroot, gs_context):
 def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
   """Generate AFDO profile data from 'perf' data.
 
-  Given the 'perf' profile, generate an AFDO profile using create_gcov.
+  Given the 'perf' profile, generate an AFDO profile using create_llvm_prof.
   It also creates a latest-chrome-<arch>-<release>.afdo file pointing
   to the generated AFDO profile.
   Uploads the generated data to GS for retrieval by the chrome ebuild
@@ -511,9 +512,9 @@ def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
                                   'board': board}
   comp_debug_bin_path = CompressAFDOFile(debug_bin, buildroot)
   GSUploadIfNotPresent(gs_context, comp_debug_bin_path,
-                       _gsurls['chrome_debug_bin'] % afdo_spec)
+                       GSURL_CHROME_DEBUG_BIN % afdo_spec)
 
-  # create_gcov demands the name of the profiled binary exactly matches
+  # create_llvm_prof demands the name of the profiled binary exactly matches
   # the name of the unstripped binary or it is named 'chrome.unstripped'.
   # So create a symbolic link with the appropriate name.
   local_debug_sym = os.path.join(local_dir, CHROME_UNSTRIPPED_NAME)
@@ -521,7 +522,7 @@ def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
   osutils.SafeUnlink(local_debug_sym)
   os.symlink(in_chroot_debug_bin, local_debug_sym)
 
-  # Call create_gcov tool to generated AFDO profile from 'perf' profile
+  # Call create_llvm_prof tool to generated AFDO profile from 'perf' profile
   # and upload it to GS. Need to call from within chroot since this tool
   # was built inside chroot.
   debug_sym = os.path.join(in_chroot_local_dir, CHROME_UNSTRIPPED_NAME)
@@ -534,23 +535,17 @@ def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
   perf_afdo_path = os.path.join(in_chroot_local_dir, perf_afdo_file)
   afdo_file = CHROME_AFDO_FILE % afdo_spec
   afdo_path = os.path.join(in_chroot_local_dir, afdo_file)
-  if board in AFDO_DATA_GENERATORS_LLVM:
-    afdo_cmd = [AFDO_GENERATE_LLVM_PROF,
-                '--binary=%s' % debug_sym,
-                '--profile=%s' % perf_afdo_path,
-                '--out=%s' % afdo_path]
-  else:
-    afdo_cmd = [AFDO_GENERATE_GCOV_TOOL,
-                '--binary=%s' % debug_sym,
-                '--profile=%s' % perf_afdo_path,
-                '--gcov=%s' % afdo_path]
+  afdo_cmd = [AFDO_GENERATE_LLVM_PROF,
+              '--binary=%s' % debug_sym,
+              '--profile=%s' % perf_afdo_path,
+              '--out=%s' % afdo_path]
   cros_build_lib.RunCommand(afdo_cmd, enter_chroot=True, capture_output=True,
                             print_cmd=True)
 
   afdo_local_path = os.path.join(local_dir, afdo_file)
   comp_afdo_path = CompressAFDOFile(afdo_local_path, buildroot)
   uploaded_afdo_file = GSUploadIfNotPresent(gs_context, comp_afdo_path,
-                                            _gsurls['chrome_afdo'] % afdo_spec)
+                                            GSURL_CHROME_AFDO % afdo_spec)
 
   if uploaded_afdo_file:
     # Create latest-chrome-<arch>-<release>.afdo pointing to the name
@@ -563,7 +558,7 @@ def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
     latest_afdo_path = os.path.join(local_dir, latest_afdo_file)
     osutils.WriteFile(latest_afdo_path, afdo_file)
     gs_context.Copy(latest_afdo_path,
-                    _gsurls['latest_chrome_afdo'] % afdo_release_spec,
+                    GSURL_LATEST_CHROME_AFDO % afdo_release_spec,
                     acl='public-read')
 
   return afdo_file
@@ -571,32 +566,7 @@ def GenerateAFDOData(cpv, arch, board, buildroot, gs_context):
 
 def CanGenerateAFDOData(board):
   """Does this board has the capability of generating its own AFDO data?."""
-  return (board in AFDO_DATA_GENERATORS_GCC or
-          board in AFDO_DATA_GENERATORS_LLVM)
-
-def InitGSUrls(board, reset=False):
-  """Chrome binaries built by gcc and clang go to differrent GS directory."""
-  if len(_gsurls) > 0 and not reset:
-    return
-
-  if board in AFDO_DATA_GENERATORS_LLVM:
-    dest = 'llvm'
-    # regex to find AFDO file for specific architecture within the ebuild file.
-    _gsurls['chrome_ebuild_afdo_exp'] = (
-        r'^(?P<bef>AFDO_FILE_LLVM\["%s"\]=")(?P<name>.*)(?P<aft>")')
-  else:
-    dest = 'canonicals'
-    _gsurls['chrome_ebuild_afdo_exp'] = (
-        r'^(?P<bef>AFDO_FILE\["%s"\]=")(?P<name>.*)(?P<aft>")')
-
-  _gsurls['prod'] = 'gs://chromeos-prebuilt/afdo-job/%s/' % dest
-  _gsurls['test'] = '%s/afdo-job/%s/' % (constants.TRASH_BUCKET, dest)
-  _gsurls['base'] = _gsurls['prod']
-  _gsurls['chrome_perf'] = '%s%s.bz2' % (_gsurls['base'], CHROME_PERF_AFDO_FILE)
-  _gsurls['chrome_afdo'] = '%s%s.bz2' % (_gsurls['base'], CHROME_AFDO_FILE)
-  _gsurls['latest_chrome_afdo'] = _gsurls['base'] + LATEST_CHROME_AFDO_FILE
-  _gsurls['chrome_debug_bin'] = '%s%s.debug.bz2' % (_gsurls['base'],
-                                                    CHROME_ARCH_VERSION)
+  return board in AFDO_DATA_GENERATORS_LLVM
 
 
 def FindLatestProfile(target, versions):
