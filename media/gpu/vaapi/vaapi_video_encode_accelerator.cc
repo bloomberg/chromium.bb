@@ -18,6 +18,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/shared_memory_region.h"
@@ -646,6 +647,8 @@ void VaapiVideoEncodeAccelerator::EncodeFrameTask() {
 
   linked_ptr<InputFrameRef> frame_ref = encoder_input_queue_.front();
   encoder_input_queue_.pop();
+
+  TRACE_EVENT0("media.gpu", "VAVEA::EncodeFrameTask");
 
   if (!UploadFrame(frame_ref->frame)) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed uploading source frame to HW.");
