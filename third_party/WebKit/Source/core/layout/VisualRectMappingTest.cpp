@@ -7,11 +7,13 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintPropertyTreePrinter.h"
 #include "platform/graphics/paint/GeometryMapper.h"
+#include "platform/testing/PaintTestConfigurations.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class VisualRectMappingTest : public RenderingTest {
+class VisualRectMappingTest : public PaintTestConfigurations,
+                              public RenderingTest {
  public:
   VisualRectMappingTest()
       : RenderingTest(SingleChildLocalFrameClient::Create()) {}
@@ -19,28 +21,38 @@ class VisualRectMappingTest : public RenderingTest {
  protected:
   LayoutView& GetLayoutView() const { return *GetDocument().GetLayoutView(); }
 
-  void CheckPaintInvalidationVisualRect(const LayoutObject& object) {
+  enum Flags { ContainsEnclosingIntRect = 1 << 0, AdjustForBacking = 1 << 1 };
+
+  void CheckPaintInvalidationVisualRect(
+      const LayoutObject& object,
+      const LayoutBoxModelObject& ancestor,
+      const LayoutRect& expected_visual_rect_in_ancestor) {
     LayoutRect rect = object.LocalVisualRect();
     if (object.IsBox())
       ToLayoutBox(object).FlipForWritingMode(rect);
-    const LayoutBoxModelObject& paint_invalidation_container =
-        object.ContainerForPaintInvalidation();
 
-    CheckVisualRect(object, paint_invalidation_container, rect,
-                    object.VisualRect(), true);
+    if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+      EXPECT_EQ(&ancestor, &object.ContainerForPaintInvalidation());
+
+    if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+      EXPECT_EQ(expected_visual_rect_in_ancestor, object.VisualRect());
+      if (!object.FirstFragment().NextFragment()) {
+        EXPECT_EQ(expected_visual_rect_in_ancestor,
+                  object.FirstFragment().VisualRect());
+      }
+    }
+
+    CheckVisualRect(object, ancestor, rect, expected_visual_rect_in_ancestor,
+                    AdjustForBacking);
   }
 
   void CheckVisualRect(const LayoutObject& object,
                        const LayoutBoxModelObject& ancestor,
                        const LayoutRect& local_rect,
-                       const LayoutRect& expected_visual_rect,
-                       bool adjust_for_backing = false,
-                       bool allow_empty_cache_slot = true) {
+                       const LayoutRect& expected_visual_rect_in_ancestor,
+                       unsigned flags = 0) {
     LayoutRect slow_map_rect = local_rect;
     object.MapToVisualRectInAncestorSpace(&ancestor, slow_map_rect);
-    if (allow_empty_cache_slot && slow_map_rect.IsEmpty() &&
-        object.VisualRect().IsEmpty())
-      return;
 
     FloatClipRect geometry_mapper_rect((FloatRect(local_rect)));
     const FragmentData& fragment_data = object.FirstFragment();
@@ -53,37 +65,62 @@ class VisualRectMappingTest : public RenderingTest {
           -FloatPoint(ancestor.FirstFragment().PaintOffset()));
     }
 
+    if (expected_visual_rect_in_ancestor.IsEmpty()) {
+      EXPECT_TRUE(slow_map_rect.IsEmpty());
+      if (fragment_data.HasLocalBorderBoxProperties())
+        EXPECT_TRUE(geometry_mapper_rect.Rect().IsEmpty());
+      return;
+    }
+
     // The following condition can be false if paintInvalidationContainer is
     // a LayoutView and compositing is not enabled.
-    if (adjust_for_backing && ancestor.IsPaintInvalidationContainer()) {
+    if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+        (flags && AdjustForBacking) &&
+        ancestor.IsPaintInvalidationContainer()) {
       PaintLayer::MapRectInPaintInvalidationContainerToBacking(ancestor,
                                                                slow_map_rect);
       LayoutRect temp(geometry_mapper_rect.Rect());
       PaintLayer::MapRectInPaintInvalidationContainerToBacking(ancestor, temp);
       geometry_mapper_rect = FloatClipRect(FloatRect(temp));
     }
-    EXPECT_TRUE(EnclosingIntRect(slow_map_rect)
-                    .Contains(EnclosingIntRect(expected_visual_rect)));
 
-    if (object.FirstFragment().PaintProperties()) {
-      EXPECT_TRUE(EnclosingIntRect(geometry_mapper_rect.Rect())
-                      .Contains(EnclosingIntRect(expected_visual_rect)));
+    if (flags & ContainsEnclosingIntRect) {
+      EXPECT_TRUE(
+          EnclosingIntRect(slow_map_rect)
+              .Contains(EnclosingIntRect(expected_visual_rect_in_ancestor)));
+
+      if (object.FirstFragment().HasLocalBorderBoxProperties()) {
+        EXPECT_TRUE(
+            EnclosingIntRect(geometry_mapper_rect.Rect())
+                .Contains(EnclosingIntRect(expected_visual_rect_in_ancestor)));
+      }
+    } else {
+      EXPECT_EQ(expected_visual_rect_in_ancestor, slow_map_rect);
+      if (object.FirstFragment().HasLocalBorderBoxProperties()) {
+        EXPECT_EQ(expected_visual_rect_in_ancestor,
+                  LayoutRect(geometry_mapper_rect.Rect()));
+      }
     }
   }
 };
 
-TEST_F(VisualRectMappingTest, LayoutText) {
+INSTANTIATE_TEST_CASE_P(
+    All,
+    VisualRectMappingTest,
+    ::testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
+
+TEST_P(VisualRectMappingTest, LayoutText) {
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0; }</style>
-    <div id='container' style='overflow: scroll; width: 50px; height: 50px'>
+    <div id='container' style='vertical-align: bottom; overflow: scroll;
+        width: 50px; height: 50px'>
       <span><img style='width: 20px; height: 100px'></span>
-      text text text text text text text
+      <span id='text'>text text text text text text text</span>
     </div>
   )HTML");
 
-  LayoutBlock* container =
-      ToLayoutBlock(GetLayoutObjectByElementId("container"));
-  LayoutText* text = ToLayoutText(container->LastChild());
+  auto* container = ToLayoutBlock(GetLayoutObjectByElementId("container"));
+  auto* text = GetLayoutObjectByElementId("text")->SlowFirstChild();
 
   container->SetScrollTop(LayoutUnit(50));
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -98,8 +135,6 @@ TEST_F(VisualRectMappingTest, LayoutText) {
   EXPECT_TRUE(text->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
   EXPECT_EQ(rect, LayoutRect(0, 10, 20, 40));
 
-  CheckPaintInvalidationVisualRect(*text);
-
   rect = LayoutRect(0, 60, 80, 0);
   EXPECT_TRUE(
       text->MapToVisualRectInAncestorSpace(container, rect, kEdgeInclusive));
@@ -107,7 +142,7 @@ TEST_F(VisualRectMappingTest, LayoutText) {
   EXPECT_EQ(rect, LayoutRect(0, 10, 80, 0));
 }
 
-TEST_F(VisualRectMappingTest, LayoutInline) {
+TEST_P(VisualRectMappingTest, LayoutInline) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0; }</style>
@@ -134,7 +169,8 @@ TEST_F(VisualRectMappingTest, LayoutInline) {
   EXPECT_TRUE(leaf->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
   EXPECT_EQ(rect, LayoutRect(0, 10, 20, 40));
 
-  CheckPaintInvalidationVisualRect(*leaf);
+  // The span is empty.
+  CheckPaintInvalidationVisualRect(*leaf, GetLayoutView(), LayoutRect());
 
   rect = LayoutRect(0, 60, 80, 0);
   EXPECT_TRUE(
@@ -143,7 +179,7 @@ TEST_F(VisualRectMappingTest, LayoutInline) {
   EXPECT_EQ(rect, LayoutRect(0, 10, 80, 0));
 }
 
-TEST_F(VisualRectMappingTest, LayoutView) {
+TEST_P(VisualRectMappingTest, LayoutView) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0; }</style>
@@ -180,7 +216,7 @@ TEST_F(VisualRectMappingTest, LayoutView) {
       frame_text->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
   EXPECT_EQ(rect, LayoutRect(4, 13, 20, 37));
 
-  CheckPaintInvalidationVisualRect(*frame_text);
+  CheckPaintInvalidationVisualRect(*frame_text, GetLayoutView(), LayoutRect());
 
   rect = LayoutRect(4, 60, 0, 80);
   EXPECT_TRUE(frame_text->MapToVisualRectInAncestorSpace(frame_container, rect,
@@ -188,7 +224,7 @@ TEST_F(VisualRectMappingTest, LayoutView) {
   EXPECT_EQ(rect, LayoutRect(4, 13, 0, 37));
 }
 
-TEST_F(VisualRectMappingTest, LayoutViewSubpixelRounding) {
+TEST_P(VisualRectMappingTest, LayoutViewSubpixelRounding) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0; }</style>
@@ -218,7 +254,7 @@ TEST_F(VisualRectMappingTest, LayoutViewSubpixelRounding) {
             rect);
 }
 
-TEST_F(VisualRectMappingTest, LayoutViewDisplayNone) {
+TEST_P(VisualRectMappingTest, LayoutViewDisplayNone) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0; }</style>
@@ -257,7 +293,7 @@ TEST_F(VisualRectMappingTest, LayoutViewDisplayNone) {
   EXPECT_EQ(nullptr, frame_body);
 }
 
-TEST_F(VisualRectMappingTest, SelfFlippedWritingMode) {
+TEST_P(VisualRectMappingTest, SelfFlippedWritingMode) {
   SetBodyInnerHTML(R"HTML(
     <div id='target' style='writing-mode: vertical-rl;
         box-shadow: 40px 20px black; width: 100px; height: 50px;
@@ -284,12 +320,11 @@ TEST_F(VisualRectMappingTest, SelfFlippedWritingMode) {
   // This rect is in physical coordinates of target.
   EXPECT_EQ(LayoutRect(0, 0, 140, 70), rect);
 
-  CheckPaintInvalidationVisualRect(*target);
-  EXPECT_EQ(LayoutRect(222, 111, 140, 70),
-            target->FirstFragment().VisualRect());
+  CheckPaintInvalidationVisualRect(*target, GetLayoutView(),
+                                   LayoutRect(222, 111, 140, 70));
 }
 
-TEST_F(VisualRectMappingTest, ContainerFlippedWritingMode) {
+TEST_P(VisualRectMappingTest, ContainerFlippedWritingMode) {
   SetBodyInnerHTML(R"HTML(
     <div id='container' style='writing-mode: vertical-rl;
         position: absolute; top: 111px; left: 222px'>
@@ -321,11 +356,8 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingMode) {
   // 100 is the physical x location of target in container.
   EXPECT_EQ(LayoutRect(100, 0, 140, 110), rect);
 
-  rect = target_local_visual_rect;
-  target->FlipForWritingMode(rect);
-  CheckPaintInvalidationVisualRect(*target);
-  EXPECT_EQ(LayoutRect(322, 111, 140, 110),
-            target->FirstFragment().VisualRect());
+  CheckPaintInvalidationVisualRect(*target, GetLayoutView(),
+                                   LayoutRect(322, 111, 140, 110));
 
   LayoutRect container_local_visual_rect = container->LocalVisualRect();
   EXPECT_EQ(LayoutRect(0, 0, 200, 100), container_local_visual_rect);
@@ -338,10 +370,9 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingMode) {
   EXPECT_TRUE(
       container->MapToVisualRectInAncestorSpace(&GetLayoutView(), rect));
   EXPECT_EQ(LayoutRect(222, 111, 200, 100), rect);
-  EXPECT_EQ(rect, container->FirstFragment().VisualRect());
 }
 
-TEST_F(VisualRectMappingTest, ContainerOverflowScroll) {
+TEST_P(VisualRectMappingTest, ContainerOverflowScroll) {
   SetBodyInnerHTML(R"HTML(
     <div id='container' style='position: absolute; top: 111px; left: 222px;
         border: 10px solid red; overflow: scroll; width: 50px;
@@ -377,11 +408,11 @@ TEST_F(VisualRectMappingTest, ContainerOverflowScroll) {
   // overflow:scroll.
   EXPECT_EQ(LayoutRect(2, 3, 140, 110), rect);
 
-  CheckPaintInvalidationVisualRect(*target);
   // (2, 3, 140, 100) is first clipped by container's overflow clip, to
   // (10, 10, 50, 80), then is by added container's offset in LayoutView
   // (222, 111).
-  EXPECT_EQ(LayoutRect(232, 121, 50, 80), target->FirstFragment().VisualRect());
+  CheckPaintInvalidationVisualRect(*target, GetLayoutView(),
+                                   LayoutRect(232, 121, 50, 80));
 
   LayoutRect container_local_visual_rect = container->LocalVisualRect();
   // Because container has overflow clip, its visual overflow doesn't include
@@ -394,12 +425,11 @@ TEST_F(VisualRectMappingTest, ContainerOverflowScroll) {
   // Container should not apply overflow clip on its own overflow rect.
   EXPECT_EQ(LayoutRect(0, 0, 70, 100), rect);
 
-  CheckPaintInvalidationVisualRect(*container);
-  EXPECT_EQ(LayoutRect(222, 111, 70, 100),
-            container->FirstFragment().VisualRect());
+  CheckPaintInvalidationVisualRect(*container, GetLayoutView(),
+                                   LayoutRect(222, 111, 70, 100));
 }
 
-TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
+TEST_P(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
   SetBodyInnerHTML(R"HTML(
     <div id='container' style='writing-mode: vertical-rl;
         position: absolute; top: 111px; left: 222px; border: solid red;
@@ -446,13 +476,13 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
   // Rect is clipped by container's overflow clip because of overflow:scroll.
   EXPECT_EQ(LayoutRect(-2, 3, 140, 110), rect);
 
-  CheckPaintInvalidationVisualRect(*target);
   // (-2, 3, 140, 100) is first clipped by container's overflow clip, to
   // (40, 10, 50, 80), then is added by container's offset in LayoutView
   // (222, 111).
   // TODO(crbug.com/600039): rect.X() should be 262 (left + border-left), but is
   // offset by extra horizontal border-widths because of layout error.
-  EXPECT_EQ(LayoutRect(322, 121, 50, 80), target->FirstFragment().VisualRect());
+  CheckPaintInvalidationVisualRect(*target, GetLayoutView(),
+                                   LayoutRect(322, 121, 50, 80));
 
   LayoutRect container_local_visual_rect = container->LocalVisualRect();
   // Because container has overflow clip, its visual overflow doesn't include
@@ -469,12 +499,11 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
   // TODO(crbug.com/600039): rect.x() should be 222 (left), but is offset by
   // extra horizontal
   // border-widths because of layout error.
-  CheckPaintInvalidationVisualRect(*container);
-  EXPECT_EQ(LayoutRect(282, 111, 110, 120),
-            container->FirstFragment().VisualRect());
+  CheckPaintInvalidationVisualRect(*container, GetLayoutView(),
+                                   LayoutRect(282, 111, 110, 120));
 }
 
-TEST_F(VisualRectMappingTest, ContainerOverflowHidden) {
+TEST_P(VisualRectMappingTest, ContainerOverflowHidden) {
   SetBodyInnerHTML(R"HTML(
     <div id='container' style='position: absolute; top: 111px; left: 222px;
         border: 10px solid red; overflow: hidden; width: 50px;
@@ -506,7 +535,7 @@ TEST_F(VisualRectMappingTest, ContainerOverflowHidden) {
   CheckVisualRect(*target, *container, rect, LayoutRect(10, 10, 140, 110));
 }
 
-TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden) {
+TEST_P(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden) {
   SetBodyInnerHTML(R"HTML(
     <div id='container' style='writing-mode: vertical-rl;
         position: absolute; top: 111px; left: 222px; border: solid red;
@@ -550,7 +579,7 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden) {
   EXPECT_TRUE(target->MapToVisualRectInAncestorSpace(container, rect));
 }
 
-TEST_F(VisualRectMappingTest, ContainerAndTargetDifferentFlippedWritingMode) {
+TEST_P(VisualRectMappingTest, ContainerAndTargetDifferentFlippedWritingMode) {
   SetBodyInnerHTML(R"HTML(
     <div id='container' style='writing-mode: vertical-rl;
         position: absolute; top: 111px; left: 222px; border: solid red;
@@ -594,7 +623,7 @@ TEST_F(VisualRectMappingTest, ContainerAndTargetDifferentFlippedWritingMode) {
   EXPECT_EQ(LayoutRect(-2, 3, 140, 110), rect);
 }
 
-TEST_F(VisualRectMappingTest,
+TEST_P(VisualRectMappingTest,
        DifferentPaintInvalidaitionContainerForAbsolutePosition) {
   EnableCompositing();
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
@@ -621,7 +650,8 @@ TEST_F(VisualRectMappingTest,
 
   LayoutBlock* normal_flow =
       ToLayoutBlock(GetLayoutObjectByElementId("normal-flow"));
-  EXPECT_EQ(scroller, &normal_flow->ContainerForPaintInvalidation());
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    EXPECT_EQ(scroller, &normal_flow->ContainerForPaintInvalidation());
 
   LayoutRect normal_flow_visual_rect = normal_flow->LocalVisualRect();
   EXPECT_EQ(LayoutRect(0, 0, 2000, 2000), normal_flow_visual_rect);
@@ -633,16 +663,14 @@ TEST_F(VisualRectMappingTest,
   LayoutBlock* stacking_context =
       ToLayoutBlock(GetLayoutObjectByElementId("stacking-context"));
   LayoutBlock* absolute = ToLayoutBlock(GetLayoutObjectByElementId("absolute"));
-  EXPECT_EQ(stacking_context, &absolute->ContainerForPaintInvalidation());
   EXPECT_EQ(stacking_context, absolute->Container());
 
   EXPECT_EQ(LayoutRect(0, 0, 50, 50), absolute->LocalVisualRect());
-  CheckPaintInvalidationVisualRect(*absolute);
-  EXPECT_EQ(LayoutRect(222, 111, 50, 50),
-            absolute->FirstFragment().VisualRect());
+  CheckPaintInvalidationVisualRect(*absolute, *stacking_context,
+                                   LayoutRect(222, 111, 50, 50));
 }
 
-TEST_F(VisualRectMappingTest,
+TEST_P(VisualRectMappingTest,
        ContainerOfAbsoluteAbovePaintInvalidationContainer) {
   EnableCompositing();
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
@@ -677,10 +705,11 @@ TEST_F(VisualRectMappingTest,
   // -172 = top(50) - y_offset_of_stacking_context(222)
   EXPECT_EQ(LayoutRect(50, -172, 50, 50), rect);
   // Call checkPaintInvalidationVisualRect to deal with layer squashing.
-  CheckPaintInvalidationVisualRect(*absolute);
+  CheckPaintInvalidationVisualRect(*absolute, GetLayoutView(),
+                                   LayoutRect(149, 138, 50, 50));
 }
 
-TEST_F(VisualRectMappingTest, CSSClip) {
+TEST_P(VisualRectMappingTest, CSSClip) {
   SetBodyInnerHTML(R"HTML(
     <div id='container' style='position: absolute; top: 0px; left: 0px;
         clip: rect(0px, 200px, 200px, 0px)'>
@@ -691,11 +720,11 @@ TEST_F(VisualRectMappingTest, CSSClip) {
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
 
   EXPECT_EQ(LayoutRect(0, 0, 400, 400), target->LocalVisualRect());
-  CheckPaintInvalidationVisualRect(*target);
-  EXPECT_EQ(LayoutRect(0, 0, 200, 200), target->FirstFragment().VisualRect());
+  CheckPaintInvalidationVisualRect(*target, GetLayoutView(),
+                                   LayoutRect(0, 0, 200, 200));
 }
 
-TEST_F(VisualRectMappingTest, ContainPaint) {
+TEST_P(VisualRectMappingTest, ContainPaint) {
   SetBodyInnerHTML(R"HTML(
     <div id='container' style='position: absolute; top: 0px; left: 0px;
         width: 200px; height: 200px; contain: paint'>
@@ -706,11 +735,11 @@ TEST_F(VisualRectMappingTest, ContainPaint) {
   LayoutBox* target = ToLayoutBox(GetLayoutObjectByElementId("target"));
 
   EXPECT_EQ(LayoutRect(0, 0, 400, 400), target->LocalVisualRect());
-  CheckPaintInvalidationVisualRect(*target);
-  EXPECT_EQ(LayoutRect(0, 0, 200, 200), target->FirstFragment().VisualRect());
+  CheckPaintInvalidationVisualRect(*target, GetLayoutView(),
+                                   LayoutRect(0, 0, 200, 200));
 }
 
-TEST_F(VisualRectMappingTest, FloatUnderInline) {
+TEST_P(VisualRectMappingTest, FloatUnderInline) {
   SetBodyInnerHTML(R"HTML(
     <div style='position: absolute; top: 55px; left: 66px'>
       <span id='span' style='position: relative; top: 100px; left: 200px'>
@@ -737,7 +766,7 @@ TEST_F(VisualRectMappingTest, FloatUnderInline) {
   CheckVisualRect(*target, *span, rect, LayoutRect(-200, -100, 33, 44));
 }
 
-TEST_F(VisualRectMappingTest, ShouldAccountForPreserve3d) {
+TEST_P(VisualRectMappingTest, ShouldAccountForPreserve3d) {
   EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -764,10 +793,11 @@ TEST_F(VisualRectMappingTest, ShouldAccountForPreserve3d) {
   matrix *= target->Layer()->CurrentTransform();
   LayoutRect output(matrix.MapRect(FloatRect(original_rect)));
 
-  CheckVisualRect(*target, *target->View(), original_rect, output);
+  CheckVisualRect(*target, *target->View(), original_rect, output,
+                  ContainsEnclosingIntRect);
 }
 
-TEST_F(VisualRectMappingTest, ShouldAccountForPreserve3dNested) {
+TEST_P(VisualRectMappingTest, ShouldAccountForPreserve3dNested) {
   EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -797,7 +827,7 @@ TEST_F(VisualRectMappingTest, ShouldAccountForPreserve3dNested) {
   CheckVisualRect(*target, *target->View(), original_rect, output);
 }
 
-TEST_F(VisualRectMappingTest, ShouldAccountForPerspective) {
+TEST_P(VisualRectMappingTest, ShouldAccountForPerspective) {
   EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -827,10 +857,11 @@ TEST_F(VisualRectMappingTest, ShouldAccountForPerspective) {
   matrix *= target_matrix;
   LayoutRect output(matrix.MapRect(FloatRect(original_rect)));
 
-  CheckVisualRect(*target, *target->View(), original_rect, output);
+  CheckVisualRect(*target, *target->View(), original_rect, output,
+                  ContainsEnclosingIntRect);
 }
 
-TEST_F(VisualRectMappingTest, ShouldAccountForPerspectiveNested) {
+TEST_P(VisualRectMappingTest, ShouldAccountForPerspectiveNested) {
   EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -863,7 +894,7 @@ TEST_F(VisualRectMappingTest, ShouldAccountForPerspectiveNested) {
   CheckVisualRect(*target, *target->View(), original_rect, output);
 }
 
-TEST_F(VisualRectMappingTest, PerspectivePlusScroll) {
+TEST_P(VisualRectMappingTest, PerspectivePlusScroll) {
   EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -901,7 +932,7 @@ TEST_F(VisualRectMappingTest, PerspectivePlusScroll) {
 
   LayoutRect output(transform.MapRect(FloatRect(originalRect)));
   output.Intersect(container->ClippingRect(LayoutPoint()));
-  CheckVisualRect(*target, *target->View(), originalRect, output, false, false);
+  CheckVisualRect(*target, *target->View(), originalRect, output);
 }
 
 }  // namespace blink

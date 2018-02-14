@@ -7,25 +7,26 @@
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/compositing/PaintArtifactCompositor.h"
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
-#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
+#include "platform/testing/PaintTestConfigurations.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
 namespace {
 
-class PaintInvalidationTest : public ::testing::WithParamInterface<bool>,
-                              private ScopedRootLayerScrollingForTest,
+class PaintInvalidationTest : public PaintTestConfigurations,
                               public RenderingTest {
  public:
   PaintInvalidationTest()
-      : ScopedRootLayerScrollingForTest(GetParam()),
-        RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
 
  protected:
   const RasterInvalidationTracking* GetRasterInvalidationTracking() const {
-    // TODO(wangxianzhu): Test SPv2.
+    // TODO(wangxianzhu): Test raster invalidation for SPv2 (in this test suite
+    // or elsewhere for the applicable cases in this test suite).
+    DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
     return GetLayoutView()
         .Layer()
         ->GraphicsLayerBacking()
@@ -33,7 +34,10 @@ class PaintInvalidationTest : public ::testing::WithParamInterface<bool>,
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All, PaintInvalidationTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(
+    All,
+    PaintInvalidationTest,
+    ::testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
 
 // Changing style in a way that changes overflow without layout should cause
 // the layout view to possibly need a paint invalidation since we may have
@@ -90,20 +94,33 @@ TEST_P(PaintInvalidationTest, UpdateVisualRectOnFrameBorderWidthChange) {
   LayoutView* child_layout_view = ChildDocument().GetLayoutView();
   EXPECT_EQ(GetDocument().GetLayoutView(),
             &child_layout_view->ContainerForPaintInvalidation());
-  EXPECT_EQ(LayoutRect(10, 10, 100, 100),
-            child_layout_view->FirstFragment().VisualRect());
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    EXPECT_EQ(LayoutRect(0, 0, 100, 100),
+              child_layout_view->FirstFragment().VisualRect());
+  } else {
+    EXPECT_EQ(LayoutRect(10, 10, 100, 100),
+              child_layout_view->FirstFragment().VisualRect());
+  }
 
   iframe->setAttribute(HTMLNames::styleAttr, "border: 20px solid blue");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(GetDocument().GetLayoutView(),
             &child_layout_view->ContainerForPaintInvalidation());
-  EXPECT_EQ(LayoutRect(30, 30, 100, 100),
-            child_layout_view->FirstFragment().VisualRect());
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    EXPECT_EQ(LayoutRect(0, 0, 100, 100),
+              child_layout_view->FirstFragment().VisualRect());
+  } else {
+    EXPECT_EQ(LayoutRect(30, 30, 100, 100),
+              child_layout_view->FirstFragment().VisualRect());
+  }
 };
 
 // This is a simplified test case for crbug.com/704182. It ensures no repaint
 // on transform change causing no visual change.
 TEST_P(PaintInvalidationTest, InvisibleTransformUnderFixedOnScroll) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
   EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -190,7 +207,8 @@ TEST_P(PaintInvalidationTest, DelayedFullPaintInvalidation) {
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_FALSE(GetRasterInvalidationTracking()->HasInvalidations());
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    EXPECT_FALSE(GetRasterInvalidationTracking()->HasInvalidations());
   EXPECT_EQ(PaintInvalidationReason::kDelayedFull,
             target->FullPaintInvalidationReason());
   EXPECT_FALSE(target->NeedsPaintOffsetAndVisualRectUpdate());
@@ -200,13 +218,15 @@ TEST_P(PaintInvalidationTest, DelayedFullPaintInvalidation) {
   // Scroll target into view.
   GetDocument().domWindow()->scrollTo(0, 4000);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  const auto& raster_invalidations =
-      GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(1u, raster_invalidations.size());
-  EXPECT_EQ(PaintInvalidationReason::kNone,
-            target->FullPaintInvalidationReason());
-  EXPECT_EQ(IntRect(0, 4000, 100, 100), raster_invalidations[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kFull, raster_invalidations[0].reason);
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    const auto& raster_invalidations =
+        GetRasterInvalidationTracking()->Invalidations();
+    ASSERT_EQ(1u, raster_invalidations.size());
+    EXPECT_EQ(PaintInvalidationReason::kNone,
+              target->FullPaintInvalidationReason());
+    EXPECT_EQ(IntRect(0, 4000, 100, 100), raster_invalidations[0].rect);
+    EXPECT_EQ(PaintInvalidationReason::kFull, raster_invalidations[0].reason);
+  }
   EXPECT_FALSE(target->NeedsPaintOffsetAndVisualRectUpdate());
   GetDocument().View()->SetTracksPaintInvalidations(false);
 };
@@ -232,29 +252,54 @@ TEST_P(PaintInvalidationTest, SVGHiddenContainer) {
   // real_rect's visual rect is in coordinates of its paint invalidation
   // container (the view).
   auto* real_rect = GetLayoutObjectByElementId("real-rect");
-  EXPECT_EQ(LayoutRect(155, 166, 7, 8),
-            real_rect->FirstFragment().VisualRect());
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    EXPECT_EQ(LayoutRect(55, 66, 7, 8),
+              real_rect->FirstFragment().VisualRect());
+  } else {
+    EXPECT_EQ(LayoutRect(155, 166, 7, 8),
+              real_rect->FirstFragment().VisualRect());
+  }
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   ToElement(mask_rect->GetNode())->setAttribute("x", "20");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_EQ(LayoutRect(), mask_rect->FirstFragment().VisualRect());
-  EXPECT_EQ(LayoutRect(155, 166, 7, 8),
-            real_rect->FirstFragment().VisualRect());
 
-  // Should invalidate raster for real_rect only.
-  const auto& raster_invalidations =
-      GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(1u, raster_invalidations.size());
-  EXPECT_EQ(IntRect(155, 166, 7, 8), raster_invalidations[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kFull, raster_invalidations[0].reason);
   EXPECT_EQ(PaintInvalidationReason::kFull,
             real_rect->GetPaintInvalidationReason());
-
   // mask_rect has PaintInvalidationReason::kFull because it is not cached by
   // any PaintController.
   EXPECT_EQ(PaintInvalidationReason::kFull,
             mask_rect->GetPaintInvalidationReason());
+
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(LayoutRect(), mask_rect->FirstFragment().VisualRect());
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    EXPECT_EQ(LayoutRect(55, 66, 7, 8),
+              real_rect->FirstFragment().VisualRect());
+  } else {
+    EXPECT_EQ(LayoutRect(155, 166, 7, 8),
+              real_rect->FirstFragment().VisualRect());
+  }
+
+  // Should invalidate raster for real_rect only.
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    const auto& raster_invalidations =
+        GetRasterInvalidationTracking()->Invalidations();
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+      // The first is for the rect itself, the second is for its mask.
+      ASSERT_EQ(2u, raster_invalidations.size());
+      EXPECT_EQ(IntRect(155, 166, 7, 8), raster_invalidations[0].rect);
+      EXPECT_EQ(PaintInvalidationReason::kFull, raster_invalidations[0].reason);
+      EXPECT_EQ(IntRect(155, 166, 7, 8), raster_invalidations[1].rect);
+      EXPECT_EQ(PaintInvalidationReason::kFull, raster_invalidations[1].reason);
+    } else {
+      ASSERT_EQ(1u, raster_invalidations.size());
+      EXPECT_EQ(IntRect(155, 166, 7, 8), raster_invalidations[0].rect);
+      EXPECT_EQ(PaintInvalidationReason::kFull, raster_invalidations[0].reason);
+    }
+  }
 
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }

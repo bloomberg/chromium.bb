@@ -55,6 +55,9 @@ void DrawRectInClip(GraphicsContext& context,
 }
 
 TEST_F(LayerClipRecorderTest, Single) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   RootPaintController().InvalidateAll();
   GraphicsContext context(RootPaintController());
   EXPECT_EQ((size_t)0, RootPaintController().GetDisplayItemList().size());
@@ -71,6 +74,9 @@ TEST_F(LayerClipRecorderTest, Single) {
 }
 
 TEST_F(LayerClipRecorderTest, Empty) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   RootPaintController().InvalidateAll();
   GraphicsContext context(RootPaintController());
   EXPECT_EQ((size_t)0, RootPaintController().GetDisplayItemList().size());

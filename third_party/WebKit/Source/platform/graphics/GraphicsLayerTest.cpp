@@ -34,6 +34,7 @@
 #include "platform/animation/CompositorFloatAnimationCurve.h"
 #include "platform/animation/CompositorTargetProperty.h"
 #include "platform/graphics/CompositorElementId.h"
+#include "platform/graphics/paint/PropertyTreeState.h"
 #include "platform/graphics/test/FakeScrollableArea.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/scroll/ScrollableArea.h"
@@ -78,6 +79,11 @@ class GraphicsLayerTest : public ::testing::Test {
     viewport_layers.inner_viewport_scroll = graphics_layer_->PlatformLayer();
     layer_tree_view_->RegisterViewportLayers(viewport_layers);
     layer_tree_view_->SetViewportSize(WebSize(1, 1));
+
+    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+      graphics_layer_->SetLayerState(
+          PropertyTreeState(PropertyTreeState::Root()), IntPoint());
+    }
   }
 
   ~GraphicsLayerTest() override {
