@@ -54,6 +54,13 @@ namespace blink {
 
 namespace {
 
+bool HasNonEmptyLocationHeader(const FetchHeaderList* headers) {
+  String value;
+  if (!headers->Get(HTTPNames::Location, value))
+    return false;
+  return !value.IsEmpty();
+}
+
 class SRIBytesConsumer final : public BytesConsumer {
  public:
   // BytesConsumer implementation
@@ -451,7 +458,7 @@ void FetchManager::Loader::DidReceiveResponse(
   FetchResponseData* tainted_response = nullptr;
 
   DCHECK(!(NetworkUtils::IsRedirectResponseCode(response_http_status_code_) &&
-           response_data->HeaderList()->Has(HTTPNames::Location) &&
+           HasNonEmptyLocationHeader(response_data->HeaderList()) &&
            request_->Redirect() != network::mojom::FetchRedirectMode::kManual));
 
   if (NetworkUtils::IsRedirectResponseCode(response_http_status_code_) &&
