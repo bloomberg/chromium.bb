@@ -52,13 +52,11 @@ static void iidtx32_c(const tran_low_t *input, tran_low_t *output) {
   }
 }
 
-#if CONFIG_TX64X64
 static void iidtx64_c(const tran_low_t *input, tran_low_t *output) {
   for (int i = 0; i < 64; ++i) {
     output[i] = (tran_low_t)dct_const_round_shift(input[i] * 4 * Sqrt2);
   }
 }
-#endif  // CONFIG_TX64X64
 
 // For use in lieu of ADST
 static void ihalfright32_c(const tran_low_t *input, tran_low_t *output) {
@@ -74,7 +72,6 @@ static void ihalfright32_c(const tran_low_t *input, tran_low_t *output) {
   // Note overall scaling factor is 4 times orthogonal
 }
 
-#if CONFIG_TX64X64
 static const int8_t inv_stage_range_col_dct_64[12] = { 0, 0, 0, 0, 0, 0,
                                                        0, 0, 0, 0, 0, 0 };
 static const int8_t inv_stage_range_row_dct_64[12] = { 0, 0, 0, 0, 0, 0,
@@ -112,7 +109,6 @@ static void ihalfright64_c(const tran_low_t *input, tran_low_t *output) {
   aom_idct32_c(inputhalf, output + 32);
   // Note overall scaling factor is 4 * sqrt(2)  times orthogonal
 }
-#endif  // CONFIG_TX64X64
 
 #define FLIPUD_PTR(dest, stride, size)       \
   do {                                       \
@@ -158,7 +154,6 @@ static void maybe_flip_strides(uint8_t **dst, int *dstride, tran_low_t **src,
   }
 }
 
-#if CONFIG_TX64X64
 static void highbd_inv_idtx_add_c(const tran_low_t *input, uint8_t *dest8,
                                   int stride, int bsx, int bsy, TX_TYPE tx_type,
                                   int bd) {
@@ -175,7 +170,6 @@ static void highbd_inv_idtx_add_c(const tran_low_t *input, uint8_t *dest8,
     }
   }
 }
-#endif  // CONFIG_TX64X64
 
 void av1_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride,
                          const TxfmParam *txfm_param) {
@@ -979,7 +973,6 @@ void av1_iht32x32_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   }
 }
 
-#if CONFIG_TX64X64
 void av1_iht64x64_4096_add_c(const tran_low_t *input, uint8_t *dest, int stride,
                              const TxfmParam *txfm_param) {
   const TX_TYPE tx_type = txfm_param->tx_type;
@@ -1293,7 +1286,6 @@ void av1_iht64x16_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     }
   }
 }
-#endif  // CONFIG_TX64X64
 
 // idct
 static void av1_highbd_iwht4x4_add(const tran_low_t *input, uint8_t *dest,
@@ -1427,7 +1419,6 @@ static void highbd_inv_txfm_add_8x32(const tran_low_t *input, uint8_t *dest,
                             txfm_param->tx_type, txfm_param->bd);
 }
 
-#if CONFIG_TX64X64
 static void highbd_inv_txfm_add_32x64(const tran_low_t *input, uint8_t *dest,
                                       int stride, const TxfmParam *txfm_param) {
   const int32_t *src = cast_to_int32(input);
@@ -1455,7 +1446,6 @@ static void highbd_inv_txfm_add_64x16(const tran_low_t *input, uint8_t *dest,
   av1_inv_txfm2d_add_64x16_c(src, CONVERT_TO_SHORTPTR(dest), stride,
                              txfm_param->tx_type, txfm_param->bd);
 }
-#endif  // CONFIG_TX64X64
 
 static void highbd_inv_txfm_add_8x8(const tran_low_t *input, uint8_t *dest,
                                     int stride, const TxfmParam *txfm_param) {
@@ -1565,7 +1555,6 @@ static void highbd_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest,
   }
 }
 
-#if CONFIG_TX64X64
 static void highbd_inv_txfm_add_64x64(const tran_low_t *input, uint8_t *dest,
                                       int stride, const TxfmParam *txfm_param) {
   int bd = txfm_param->bd;
@@ -1605,7 +1594,6 @@ static void highbd_inv_txfm_add_64x64(const tran_low_t *input, uint8_t *dest,
     default: assert(0); break;
   }
 }
-#endif  // CONFIG_TX64X64
 
 static void init_txfm_param(const MACROBLOCKD *xd, int plane, TX_SIZE tx_size,
                             TX_TYPE tx_type, int eob, int reduced_tx_set,
@@ -1656,7 +1644,6 @@ static void av1_highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest,
     case TX_32X16:
       highbd_inv_txfm_add_32x16(input, dest, stride, txfm_param);
       break;
-#if CONFIG_TX64X64
     case TX_64X64:
       highbd_inv_txfm_add_64x64(input, dest, stride, txfm_param);
       break;
@@ -1672,7 +1659,6 @@ static void av1_highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest,
     case TX_64X16:
       highbd_inv_txfm_add_64x16(input, dest, stride, txfm_param);
       break;
-#endif  // CONFIG_TX64X64
     case TX_4X4:
       // this is like av1_short_idct4x4 but has a special case around eob<=1
       // which is significant (not just an optimization) for the lossless

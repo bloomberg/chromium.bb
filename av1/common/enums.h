@@ -178,38 +178,28 @@ enum ATTRIBUTE_PACKED {
 #else
 typedef enum ATTRIBUTE_PACKED {
 #endif
-  TX_4X4,    // 4x4 transform
-  TX_8X8,    // 8x8 transform
-  TX_16X16,  // 16x16 transform
-  TX_32X32,  // 32x32 transform
-#if CONFIG_TX64X64
-  TX_64X64,  // 64x64 transform
-#endif       // CONFIG_TX64X64
-  TX_4X8,    // 4x8 transform
-  TX_8X4,    // 8x4 transform
-  TX_8X16,   // 8x16 transform
-  TX_16X8,   // 16x8 transform
-  TX_16X32,  // 16x32 transform
-  TX_32X16,  // 32x16 transform
-#if CONFIG_TX64X64
-  TX_32X64,  // 32x64 transform
-  TX_64X32,  // 64x32 transform
-#endif       // CONFIG_TX64X64
-  TX_4X16,   // 4x16 transform
-  TX_16X4,   // 16x4 transform
-  TX_8X32,   // 8x32 transform
-  TX_32X8,   // 32x8 transform
-#if CONFIG_TX64X64
+  TX_4X4,             // 4x4 transform
+  TX_8X8,             // 8x8 transform
+  TX_16X16,           // 16x16 transform
+  TX_32X32,           // 32x32 transform
+  TX_64X64,           // 64x64 transform
+  TX_4X8,             // 4x8 transform
+  TX_8X4,             // 8x4 transform
+  TX_8X16,            // 8x16 transform
+  TX_16X8,            // 16x8 transform
+  TX_16X32,           // 16x32 transform
+  TX_32X16,           // 32x16 transform
+  TX_32X64,           // 32x64 transform
+  TX_64X32,           // 64x32 transform
+  TX_4X16,            // 4x16 transform
+  TX_16X4,            // 16x4 transform
+  TX_8X32,            // 8x32 transform
+  TX_32X8,            // 32x8 transform
   TX_16X64,           // 16x64 transform
   TX_64X16,           // 64x16 transform
-#endif                // CONFIG_TX64X64
   TX_SIZES_ALL,       // Includes rectangular transforms
   TX_SIZES = TX_4X8,  // Does NOT include rectangular transforms
-#if CONFIG_TX64X64
   TX_SIZES_LARGEST = TX_64X64,
-#else
-  TX_SIZES_LARGEST = TX_32X32,
-#endif
   TX_INVALID = 255  // Invalid transform size
 #if defined(_MSC_VER)
 };
@@ -226,7 +216,7 @@ typedef enum ATTRIBUTE_PACKED {
 #define MAX_TX_CATS (TX_SIZES - TX_SIZE_CTX_MIN)
 #define MAX_TX_DEPTH 2
 
-#define MAX_TX_SIZE_LOG2 (5 + CONFIG_TX64X64)
+#define MAX_TX_SIZE_LOG2 (6)
 #define MAX_TX_SIZE (1 << MAX_TX_SIZE_LOG2)
 #define MIN_TX_SIZE_LOG2 2
 #define MIN_TX_SIZE (1 << MIN_TX_SIZE_LOG2)

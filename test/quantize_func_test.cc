@@ -319,7 +319,6 @@ const QuantizeParam kQParamArrayAvx2[] = {
   make_tuple(&highbd_quan32x32_wrapper<av1_highbd_quantize_fp_c>,
              &highbd_quan32x32_wrapper<av1_highbd_quantize_fp_avx2>, TX_32X32,
              TYPE_FP, AOM_BITS_12),
-#if CONFIG_TX64X64
   make_tuple(&highbd_quan64x64_wrapper<av1_highbd_quantize_fp_c>,
              &highbd_quan64x64_wrapper<av1_highbd_quantize_fp_avx2>, TX_64X64,
              TYPE_FP, AOM_BITS_8),
@@ -329,7 +328,6 @@ const QuantizeParam kQParamArrayAvx2[] = {
   make_tuple(&highbd_quan64x64_wrapper<av1_highbd_quantize_fp_c>,
              &highbd_quan64x64_wrapper<av1_highbd_quantize_fp_avx2>, TX_64X64,
              TYPE_FP, AOM_BITS_12),
-#endif  // CONFIG_TX64X64
   make_tuple(&aom_highbd_quantize_b_c, &aom_highbd_quantize_b_avx2, TX_16X16,
              TYPE_B, AOM_BITS_8),
   make_tuple(&aom_highbd_quantize_b_c, &aom_highbd_quantize_b_avx2, TX_16X16,

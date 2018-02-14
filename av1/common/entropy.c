@@ -103,8 +103,6 @@ const uint8_t av1_coefband_trans_8x8plus[MAX_TX_SQUARE] = {
   5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
   5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
   5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-  5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-#if CONFIG_TX64X64
   5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
   5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
   5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
@@ -223,8 +221,7 @@ const uint8_t av1_coefband_trans_8x8plus[MAX_TX_SQUARE] = {
   5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
   5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
   5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-  5, 5, 5, 5
-#endif  // CONFIG_TX64X64
+  5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5
 };
 
 const uint8_t av1_coefband_trans_4x8_8x4[32] = {
@@ -608,10 +605,8 @@ void av1_default_coef_probs(AV1_COMMON *cm) {
            (*av1_default_qctx_coef_cdfs[index])[TX_16X16]);
   av1_copy(cm->fc->coef_head_cdfs[TX_32X32],
            (*av1_default_qctx_coef_cdfs[index])[TX_32X32]);
-#if CONFIG_TX64X64
   av1_copy(cm->fc->coef_head_cdfs[TX_64X64],
            (*av1_default_qctx_coef_cdfs[index])[TX_32X32]);
-#endif  // CONFIG_TX64X64
   av1_coef_pareto_cdfs(cm->fc);
 #endif  // CONFIG_LV_MAP
 }

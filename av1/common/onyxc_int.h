@@ -1287,13 +1287,7 @@ static INLINE TX_SIZE get_sqr_tx_size(int tx_dim) {
 #if CONFIG_EXT_PARTITION
     case 128:
 #endif  // CONFIG_EXT_PARTITION
-    case 64:
-#if CONFIG_TX64X64
-      return TX_64X64;
-#else
-      return TX_32X32;
-#endif  // CONFIG_TX64X64
-      break;
+    case 64: return TX_64X64; break;
     case 32: return TX_32X32; break;
     case 16: return TX_16X16; break;
     case 8: return TX_8X8; break;

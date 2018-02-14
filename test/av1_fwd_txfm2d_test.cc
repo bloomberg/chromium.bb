@@ -142,11 +142,9 @@ vector<AV1FwdTxfm2dParam> GetTxfm2dParamList() {
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X8, 5, 0.5));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X16, 11, 1.2));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X32, 70, 6.1));
-#if CONFIG_TX64X64
     if (tx_type == DCT_DCT) {  // Other types not supported by these tx sizes.
       param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X64, 64, 3.4));
     }
-#endif  // CONFIG_TX64X64
 
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X8, 3.9, 0.57));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X4, 4.3, 0.68));
@@ -160,14 +158,12 @@ vector<AV1FwdTxfm2dParam> GetTxfm2dParamList() {
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X32, 21, 1.2));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X8, 13, 1.7));
 
-#if CONFIG_TX64X64
     if (tx_type == DCT_DCT) {  // Other types not supported by these tx sizes.
       param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X64, 136, 3.5));
       param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X32, 136, 5.7));
       param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X64, 30, 2.0));
       param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X16, 36, 4.7));
     }
-#endif  // CONFIG_TX64X64
   }
   return param_list;
 }
@@ -184,13 +180,11 @@ TEST(AV1FwdTxfm2d, CfgTest) {
     int8_t high_range = libaom_test::high_range_arr[bd_idx];
     for (int tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
       for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
-#if CONFIG_TX64X64
         if ((tx_size_wide[tx_size] == 64 || tx_size_high[tx_size] == 64) &&
             (tx_type != DCT_DCT && tx_type != IDTX && tx_type != V_DCT &&
              tx_type != H_DCT)) {
           continue;
         }
-#endif  // CONFIG_TX64X64
         TXFM_2D_FLIP_CFG cfg;
         av1_get_fwd_txfm_cfg(static_cast<TX_TYPE>(tx_type),
                              static_cast<TX_SIZE>(tx_size), &cfg);
@@ -215,27 +209,21 @@ FwdTxfm2dFunc fwd_func_sse2_list[TX_SIZES_ALL][2] = {
   { av1_fwd_txfm2d_8x8_c, av1_lowbd_fwd_txfm2d_8x8_sse2 },      // TX_8X8
   { av1_fwd_txfm2d_16x16_c, av1_lowbd_fwd_txfm2d_16x16_sse2 },  // TX_16X16
   { av1_fwd_txfm2d_32x32_c, av1_lowbd_fwd_txfm2d_32x32_sse2 },  // TX_32X32
-#if CONFIG_TX64X64
-  { NULL, NULL },                                             // TX_64X64
-#endif                                                        // CONFIG_TX64X64
-  { av1_fwd_txfm2d_4x8_c, av1_lowbd_fwd_txfm2d_4x8_sse2 },    // TX_4X8
-  { av1_fwd_txfm2d_8x4_c, av1_lowbd_fwd_txfm2d_8x4_sse2 },    // TX_8X4
-  { av1_fwd_txfm2d_8x16_c, av1_lowbd_fwd_txfm2d_8x16_sse2 },  // TX_8X16
-  { av1_fwd_txfm2d_16x8_c, av1_lowbd_fwd_txfm2d_16x8_sse2 },  // TX_16X8
+  { NULL, NULL },                                               // TX_64X64
+  { av1_fwd_txfm2d_4x8_c, av1_lowbd_fwd_txfm2d_4x8_sse2 },      // TX_4X8
+  { av1_fwd_txfm2d_8x4_c, av1_lowbd_fwd_txfm2d_8x4_sse2 },      // TX_8X4
+  { av1_fwd_txfm2d_8x16_c, av1_lowbd_fwd_txfm2d_8x16_sse2 },    // TX_8X16
+  { av1_fwd_txfm2d_16x8_c, av1_lowbd_fwd_txfm2d_16x8_sse2 },    // TX_16X8
   { av1_fwd_txfm2d_16x32_c, av1_lowbd_fwd_txfm2d_16x32_sse2 },  // TX_16X32
   { av1_fwd_txfm2d_32x16_c, av1_lowbd_fwd_txfm2d_32x16_sse2 },  // TX_32X16
-#if CONFIG_TX64X64
-  { NULL, NULL },                                             // TX_32X64
-  { NULL, NULL },                                             // TX_64X32
-#endif                                                        // CONFIG_TX64X64
-  { NULL, NULL },                                             // TX_4X16
-  { NULL, NULL },                                             // TX_16X4
-  { av1_fwd_txfm2d_8x32_c, av1_lowbd_fwd_txfm2d_8x32_sse2 },  // TX_8X32
-  { av1_fwd_txfm2d_32x8_c, av1_lowbd_fwd_txfm2d_32x8_sse2 },  // TX_32X8
-#if CONFIG_TX64X64
-  { NULL, NULL },  // TX_16X64
-  { NULL, NULL },  // TX_64X16
-#endif             // CONFIG_TX64X64
+  { NULL, NULL },                                               // TX_32X64
+  { NULL, NULL },                                               // TX_64X32
+  { NULL, NULL },                                               // TX_4X16
+  { NULL, NULL },                                               // TX_16X4
+  { av1_fwd_txfm2d_8x32_c, av1_lowbd_fwd_txfm2d_8x32_sse2 },    // TX_8X32
+  { av1_fwd_txfm2d_32x8_c, av1_lowbd_fwd_txfm2d_32x8_sse2 },    // TX_32X8
+  { NULL, NULL },                                               // TX_16X64
+  { NULL, NULL },                                               // TX_64X16
 };
 
 TEST(av1_fwd_txfm2d_sse2, match) {

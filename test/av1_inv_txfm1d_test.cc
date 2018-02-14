@@ -21,21 +21,14 @@ using libaom_test::input_base;
 
 namespace {
 const int txfm_type_num = 2;
-const int txfm_size_ls[] = {
-  4,  8, 16, 32,
-#if CONFIG_TX64X64
-  64,
-#endif  // CONFIG_TX64X64
-};
+const int txfm_size_ls[] = { 4, 8, 16, 32, 64 };
 
 const TxfmFunc fwd_txfm_func_ls[][txfm_type_num] = {
   { av1_fdct4_new, av1_fadst4_new },
   { av1_fdct8_new, av1_fadst8_new },
   { av1_fdct16_new, av1_fadst16_new },
   { av1_fdct32_new, av1_fadst32_new },
-#if CONFIG_TX64X64
   { av1_fdct64_new, NULL },
-#endif
 };
 
 const TxfmFunc inv_txfm_func_ls[][txfm_type_num] = {
@@ -43,9 +36,7 @@ const TxfmFunc inv_txfm_func_ls[][txfm_type_num] = {
   { av1_idct8_new, av1_iadst8_new },
   { av1_idct16_new, av1_iadst16_new },
   { av1_idct32_new, av1_iadst32_new },
-#if CONFIG_TX64X64
   { av1_idct64_new, NULL },
-#endif
 };
 
 // the maximum stage number of fwd/inv 1d dct/adst txfm is 12
@@ -81,15 +72,7 @@ void random_matrix(int32_t *dst, int len, ACMRandom *rnd) {
 TEST(av1_inv_txfm1d, InvAccuracyCheck) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   const int count_test_block = 20000;
-  const int max_error[] = {
-    6,
-    10,
-    19,
-    31,
-#if CONFIG_TX64X64
-    40,
-#endif  // CONFIG_TX64X64
-  };
+  const int max_error[] = { 6, 10, 19, 31, 40 };
   ASSERT_EQ(NELEMENTS(max_error), TX_SIZES);
   ASSERT_EQ(NELEMENTS(inv_txfm_func_ls), TX_SIZES);
   for (int k = 0; k < count_test_block; ++k) {
@@ -101,10 +84,8 @@ TEST(av1_inv_txfm1d, InvAccuracyCheck) {
     int32_t input[64];
     random_matrix(input, tx_size_pix, &rnd);
 
-#if CONFIG_TX64X64
     // 64x64 transform assumes last 32 values are zero.
     memset(input + 32, 0, 32 * sizeof(input[0]));
-#endif  // CONFIG_TX64X64
 
     int32_t ref_output[64];
     reference_idct_1d_int(input, ref_output, tx_size_pix);

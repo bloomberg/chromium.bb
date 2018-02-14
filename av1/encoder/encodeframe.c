@@ -3642,9 +3642,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     av1_zero(x->tx_size_rd_record_8X8);
     av1_zero(x->tx_size_rd_record_16X16);
     av1_zero(x->tx_size_rd_record_32X32);
-#if CONFIG_TX64X64
     av1_zero(x->tx_size_rd_record_64X64);
-#endif
 
     av1_zero(x->pred_mv);
     pc_root->index = 0;
@@ -3767,9 +3765,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
         av1_zero(x->tx_size_rd_record_8X8);
         av1_zero(x->tx_size_rd_record_16X16);
         av1_zero(x->tx_size_rd_record_32X32);
-#if CONFIG_TX64X64
         av1_zero(x->tx_size_rd_record_64X64);
-#endif
         av1_zero(x->pred_mv);
         pc_root->index = 0;
 

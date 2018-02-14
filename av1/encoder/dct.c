@@ -1959,7 +1959,6 @@ void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
   }
 }
 
-#if CONFIG_TX64X64
 static void fidtx64(const tran_low_t *input, tran_low_t *output) {
   int i;
   for (i = 0; i < 64; ++i)
@@ -2284,7 +2283,6 @@ void av1_fht64x16_c(const int16_t *input, tran_low_t *output, int stride,
   }
   // Note: overall scale factor of transform is 4 times unitary
 }
-#endif  // CONFIG_TX64X64
 
 // Forward identity transform.
 void av1_fwd_idtx_c(const int16_t *src_diff, tran_low_t *coeff, int stride,

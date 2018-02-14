@@ -444,21 +444,12 @@ static const TX_SIZE max_txsize_lookup[BLOCK_SIZES_ALL] = {
   TX_16X16,  TX_16X16, TX_32X32,
   // 32X64,  64X32,
   TX_32X32,  TX_32X32,
-#if CONFIG_TX64X64
   // 64X64
   TX_64X64,
 #if CONFIG_EXT_PARTITION
   // 64x128, 128x64,   128x128
   TX_64X64,  TX_64X64, TX_64X64,
 #endif  // CONFIG_EXT_PARTITION
-#else
-  // 64X64
-  TX_32X32,
-#if CONFIG_EXT_PARTITION
-  // 64x128, 128x64,   128x128
-  TX_32X32,  TX_32X32, TX_32X32,
-#endif  // CONFIG_EXT_PARTITION
-#endif  // CONFIG_TX64X64
   // 4x16,   16x4,     8x32
   TX_4X4,    TX_4X4,   TX_8X8,
   // 32x8,   16x64     64x16
@@ -480,7 +471,6 @@ static const TX_SIZE max_txsize_rect_lookup[2][BLOCK_SIZES_ALL] = {
       TX_8X16,   TX_16X8,  TX_16X16,
       // 16X32,  32X16,    32X32
       TX_16X32,  TX_32X16, TX_32X32,
-#if CONFIG_TX64X64
       // 32X64,  64X32,
       TX_32X64,  TX_64X32,
       // 64X64
@@ -489,28 +479,13 @@ static const TX_SIZE max_txsize_rect_lookup[2][BLOCK_SIZES_ALL] = {
       // 64x128, 128x64,   128x128
       TX_64X64,  TX_64X64, TX_64X64,
 #endif  // CONFIG_EXT_PARTITION
-#else
-      // 32X64,  64X32,
-      TX_32X32,  TX_32X32,
-      // 64X64
-      TX_32X32,
-#if CONFIG_EXT_PARTITION
-      // 64x128, 128x64,   128x128
-      TX_32X32,  TX_32X32, TX_32X32,
-#endif  // CONFIG_EXT_PARTITION
-#endif  // CONFIG_TX64X64
 #if CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT_INTRA
       // 4x16,   16x4,
       TX_4X16,   TX_16X4,
       // 8x32,   32x8
       TX_8X32,   TX_32X8,
-#if CONFIG_TX64X64
       // 16x64,  64x16
       TX_16X64,  TX_64X16,
-#else
-      // 16x64,  64x16
-      TX_16X32,  TX_32X16,
-#endif  // CONFIG_TX64X64
 #else
       // 4x16,   16x4,
       TX_4X8,    TX_8X4,
@@ -520,13 +495,8 @@ static const TX_SIZE max_txsize_rect_lookup[2][BLOCK_SIZES_ALL] = {
       TX_16X32,  TX_32X16,
 #endif  // CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT_INTRA
 #if CONFIG_EXT_PARTITION
-#if CONFIG_TX64X64
       // 32x128  128x32
       TX_32X64,  TX_64X32
-#else
-      // 32x128  128x32
-      TX_32X32,  TX_32X32
-#endif  // CONFIG_TX64X64
 #endif  // CONFIG_EXT_PARTITION
   }, {
       // Inter
@@ -538,7 +508,6 @@ static const TX_SIZE max_txsize_rect_lookup[2][BLOCK_SIZES_ALL] = {
       TX_8X16,   TX_16X8,  TX_16X16,
       // 16X32,  32X16,    32X32
       TX_16X32,  TX_32X16, TX_32X32,
-#if CONFIG_TX64X64
       // 32X64,  64X32,
       TX_32X64,  TX_64X32,
       // 64X64
@@ -547,28 +516,13 @@ static const TX_SIZE max_txsize_rect_lookup[2][BLOCK_SIZES_ALL] = {
       // 64x128, 128x64,   128x128
       TX_64X64,  TX_64X64, TX_64X64,
 #endif  // CONFIG_EXT_PARTITION
-#else
-      // 32X64,  64X32,
-      TX_32X32,  TX_32X32,
-      // 64X64
-      TX_32X32,
-#if CONFIG_EXT_PARTITION
-      // 64x128, 128x64,   128x128
-      TX_32X32,  TX_32X32, TX_32X32,
-#endif  // CONFIG_EXT_PARTITION
-#endif  // CONFIG_TX64X64
 #if CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
       // 4x16,   16x4,     8x32
       TX_4X16,   TX_16X4,  TX_8X32,
       // 32x8
       TX_32X8,
-#if CONFIG_TX64X64
       // 16x64,  64x16
       TX_16X64,  TX_64X16,
-#else
-      // 16x64,  64x16
-      TX_16X32,  TX_32X16,
-#endif  // CONFIG_TX64X64
 #else
       // 4x16,   16x4,     8x32
       TX_4X8,    TX_8X4,   TX_8X16,
@@ -578,13 +532,8 @@ static const TX_SIZE max_txsize_rect_lookup[2][BLOCK_SIZES_ALL] = {
       TX_16X32,  TX_32X16,
 #endif  // CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
 #if CONFIG_EXT_PARTITION
-#if CONFIG_TX64X64
       // 32x128  128x32
       TX_32X64,  TX_64X32
-#else
-      // 32x128  128x32
-      TX_32X32,  TX_32X32
-#endif  // CONFIG_TX64X64
 #endif  // CONFIG_EXT_PARTITION
   },
 };
@@ -612,37 +561,29 @@ static const TX_SIZE sub_tx_size_map[2][TX_SIZES_ALL] = {
       TX_4X4,    // TX_8X8
       TX_8X8,    // TX_16X16
       TX_16X16,  // TX_32X32
-#if CONFIG_TX64X64
       TX_32X32,  // TX_64X64
-#endif           // CONFIG_TX64X64
       TX_4X4,    // TX_4X8
       TX_4X4,    // TX_8X4
       TX_8X8,    // TX_8X16
       TX_8X8,    // TX_16X8
       TX_16X16,  // TX_16X32
       TX_16X16,  // TX_32X16
-#if CONFIG_TX64X64
       TX_32X32,  // TX_32X64
       TX_32X32,  // TX_64X32
-#endif           // CONFIG_TX64X64
 #if CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT_INTRA
-      TX_4X8,   // TX_4X16
-      TX_8X4,   // TX_16X4
-      TX_8X16,  // TX_8X32
-      TX_16X8,  // TX_32X8
-#if CONFIG_TX64X64
+      TX_4X8,    // TX_4X16
+      TX_8X4,    // TX_16X4
+      TX_8X16,   // TX_8X32
+      TX_16X8,   // TX_32X8
       TX_16X32,  // TX_16X64
       TX_32X16,  // TX_64X16
-#endif           // CONFIG_TX64X64
 #else
       TX_4X4,    // TX_4X16
       TX_4X4,    // TX_16X4
       TX_8X8,    // TX_8X32
       TX_8X8,    // TX_32X8
-#if CONFIG_TX64X64
       TX_16X16,  // TX_16X64
       TX_16X16,  // TX_64X16
-#endif  // CONFIG_TX64X64
 #endif  // CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT_INTRA
   },
   {
@@ -651,37 +592,29 @@ static const TX_SIZE sub_tx_size_map[2][TX_SIZES_ALL] = {
       TX_4X4,    // TX_8X8
       TX_8X8,    // TX_16X16
       TX_16X16,  // TX_32X32
-#if CONFIG_TX64X64
       TX_32X32,  // TX_64X64
-#endif           // CONFIG_TX64X64
       TX_4X4,    // TX_4X8
       TX_4X4,    // TX_8X4
       TX_8X8,    // TX_8X16
       TX_8X8,    // TX_16X8
       TX_16X16,  // TX_16X32
       TX_16X16,  // TX_32X16
-#if CONFIG_TX64X64
       TX_32X32,  // TX_32X64
       TX_32X32,  // TX_64X32
-#endif           // CONFIG_TX64X64
 #if CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
-      TX_4X8,   // TX_4X16
-      TX_8X4,   // TX_16X4
-      TX_8X16,  // TX_8X32
-      TX_16X8,  // TX_32X8
-#if CONFIG_TX64X64
+      TX_4X8,    // TX_4X16
+      TX_8X4,    // TX_16X4
+      TX_8X16,   // TX_8X32
+      TX_16X8,   // TX_32X8
       TX_16X32,  // TX_16X64
       TX_32X16,  // TX_64X16
-#endif           // CONFIG_TX64X64
 #else
       TX_4X4,    // TX_4X16
       TX_4X4,    // TX_16X4
       TX_8X8,    // TX_8X32
       TX_8X8,    // TX_32X8
-#if CONFIG_TX64X64
       TX_16X16,  // TX_16X64
       TX_16X16,  // TX_64X16
-#endif  // CONFIG_TX64X64
 #endif  // CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
   },
 };
@@ -691,27 +624,21 @@ static const TX_SIZE txsize_horz_map[TX_SIZES_ALL] = {
   TX_8X8,    // TX_8X8
   TX_16X16,  // TX_16X16
   TX_32X32,  // TX_32X32
-#if CONFIG_TX64X64
   TX_64X64,  // TX_64X64
-#endif       // CONFIG_TX64X64
   TX_4X4,    // TX_4X8
   TX_8X8,    // TX_8X4
   TX_8X8,    // TX_8X16
   TX_16X16,  // TX_16X8
   TX_16X16,  // TX_16X32
   TX_32X32,  // TX_32X16
-#if CONFIG_TX64X64
   TX_32X32,  // TX_32X64
   TX_64X64,  // TX_64X32
-#endif       // CONFIG_TX64X64
   TX_4X4,    // TX_4X16
   TX_16X16,  // TX_16X4
   TX_8X8,    // TX_8X32
   TX_32X32,  // TX_32X8
-#if CONFIG_TX64X64
   TX_16X16,  // TX_16X64
   TX_64X64,  // TX_64X16
-#endif       // CONFIG_TX64X64
 };
 
 static const TX_SIZE txsize_vert_map[TX_SIZES_ALL] = {
@@ -719,145 +646,63 @@ static const TX_SIZE txsize_vert_map[TX_SIZES_ALL] = {
   TX_8X8,    // TX_8X8
   TX_16X16,  // TX_16X16
   TX_32X32,  // TX_32X32
-#if CONFIG_TX64X64
   TX_64X64,  // TX_64X64
-#endif       // CONFIG_TX64X64
   TX_8X8,    // TX_4X8
   TX_4X4,    // TX_8X4
   TX_16X16,  // TX_8X16
   TX_8X8,    // TX_16X8
   TX_32X32,  // TX_16X32
   TX_16X16,  // TX_32X16
-#if CONFIG_TX64X64
   TX_64X64,  // TX_32X64
   TX_32X32,  // TX_64X32
-#endif       // CONFIG_TX64X64
   TX_16X16,  // TX_4X16
   TX_4X4,    // TX_16X4
   TX_32X32,  // TX_8X32
   TX_8X8,    // TX_32X8
-#if CONFIG_TX64X64
   TX_64X64,  // TX_16X64
   TX_16X16,  // TX_64X16
-#endif       // CONFIG_TX64X64
 };
 
 #define TX_SIZE_W_MIN 4
 
 // Transform block width in pixels
 static const int tx_size_wide[TX_SIZES_ALL] = {
-  4,  8,  16, 32,
-#if CONFIG_TX64X64
-  64,
-#endif  // CONFIG_TX64X64
-  4,  8,  8,  16, 16, 32,
-#if CONFIG_TX64X64
-  32, 64,
-#endif  // CONFIG_TX64X64
-  4,  16, 8,  32,
-#if CONFIG_TX64X64
-  16, 64,
-#endif  // CONFIG_TX64X64
+  4, 8, 16, 32, 64, 4, 8, 8, 16, 16, 32, 32, 64, 4, 16, 8, 32, 16, 64,
 };
 
 #define TX_SIZE_H_MIN 4
 
 // Transform block height in pixels
 static const int tx_size_high[TX_SIZES_ALL] = {
-  4,  8,  16, 32,
-#if CONFIG_TX64X64
-  64,
-#endif  // CONFIG_TX64X64
-  8,  4,  16, 8,  32, 16,
-#if CONFIG_TX64X64
-  64, 32,
-#endif  // CONFIG_TX64X64
-  16, 4,  32, 8,
-#if CONFIG_TX64X64
-  64, 16,
-#endif  // CONFIG_TX64X64
+  4, 8, 16, 32, 64, 8, 4, 16, 8, 32, 16, 64, 32, 16, 4, 32, 8, 64, 16,
 };
 
 // Transform block width in unit
 static const int tx_size_wide_unit[TX_SIZES_ALL] = {
-  1,  2,  4, 8,
-#if CONFIG_TX64X64
-  16,
-#endif  // CONFIG_TX64X64
-  1,  2,  2, 4, 4, 8,
-#if CONFIG_TX64X64
-  8,  16,
-#endif  // CONFIG_TX64X64
-  1,  4,  2, 8,
-#if CONFIG_TX64X64
-  4,  16,
-#endif  // CONFIG_TX64X64
+  1, 2, 4, 8, 16, 1, 2, 2, 4, 4, 8, 8, 16, 1, 4, 2, 8, 4, 16,
 };
 
 // Transform block height in unit
 static const int tx_size_high_unit[TX_SIZES_ALL] = {
-  1,  2, 4, 8,
-#if CONFIG_TX64X64
-  16,
-#endif  // CONFIG_TX64X64
-  2,  1, 4, 2, 8, 4,
-#if CONFIG_TX64X64
-  16, 8,
-#endif  // CONFIG_TX64X64
-  4,  1, 8, 2,
-#if CONFIG_TX64X64
-  16, 4,
-#endif  // CONFIG_TX64X64
+  1, 2, 4, 8, 16, 2, 1, 4, 2, 8, 4, 16, 8, 4, 1, 8, 2, 16, 4,
 };
 
 // Transform block width in log2
 static const int tx_size_wide_log2[TX_SIZES_ALL] = {
-  2, 3, 4, 5,
-#if CONFIG_TX64X64
-  6,
-#endif  // CONFIG_TX64X64
-  2, 3, 3, 4, 4, 5,
-#if CONFIG_TX64X64
-  5, 6,
-#endif  // CONFIG_TX64X64
-  2, 4, 3, 5,
-#if CONFIG_TX64X64
-  4, 6,
-#endif  // CONFIG_TX64X64
+  2, 3, 4, 5, 6, 2, 3, 3, 4, 4, 5, 5, 6, 2, 4, 3, 5, 4, 6,
 };
 
 // Transform block height in log2
 static const int tx_size_high_log2[TX_SIZES_ALL] = {
-  2, 3, 4, 5,
-#if CONFIG_TX64X64
-  6,
-#endif  // CONFIG_TX64X64
-  3, 2, 4, 3, 5, 4,
-#if CONFIG_TX64X64
-  6, 5,
-#endif  // CONFIG_TX64X64
-  4, 2, 5, 3,
-#if CONFIG_TX64X64
-  6, 4,
-#endif  // CONFIG_TX64X64
+  2, 3, 4, 5, 6, 3, 2, 4, 3, 5, 4, 6, 5, 4, 2, 5, 3, 6, 4,
 };
 
 #define TX_UNIT_WIDE_LOG2 (MI_SIZE_LOG2 - tx_size_wide_log2[0])
 #define TX_UNIT_HIGH_LOG2 (MI_SIZE_LOG2 - tx_size_high_log2[0])
 
 static const int tx_size_2d[TX_SIZES_ALL + 1] = {
-  16,   64,   256, 1024,
-#if CONFIG_TX64X64
-  4096,
-#endif  // CONFIG_TX64X64
-  32,   32,   128, 128,  512, 512,
-#if CONFIG_TX64X64
-  2048, 2048,
-#endif  // CONFIG_TX64X64
-  64,   64,   256, 256,
-#if CONFIG_TX64X64
-  1024, 1024,
-#endif  // CONFIG_TX64X64
+  16,  64,   256,  1024, 4096, 32,  32,  128,  128,  512,
+  512, 2048, 2048, 64,   64,   256, 256, 1024, 1024,
 };
 
 static const BLOCK_SIZE txsize_to_bsize[TX_SIZES_ALL] = {
@@ -865,27 +710,21 @@ static const BLOCK_SIZE txsize_to_bsize[TX_SIZES_ALL] = {
   BLOCK_8X8,    // TX_8X8
   BLOCK_16X16,  // TX_16X16
   BLOCK_32X32,  // TX_32X32
-#if CONFIG_TX64X64
   BLOCK_64X64,  // TX_64X64
-#endif          // CONFIG_TX64X64
   BLOCK_4X8,    // TX_4X8
   BLOCK_8X4,    // TX_8X4
   BLOCK_8X16,   // TX_8X16
   BLOCK_16X8,   // TX_16X8
   BLOCK_16X32,  // TX_16X32
   BLOCK_32X16,  // TX_32X16
-#if CONFIG_TX64X64
   BLOCK_32X64,  // TX_32X64
   BLOCK_64X32,  // TX_64X32
-#endif          // CONFIG_TX64X64
   BLOCK_4X16,   // TX_4X16
   BLOCK_16X4,   // TX_16X4
   BLOCK_8X32,   // TX_8X32
   BLOCK_32X8,   // TX_32X8
-#if CONFIG_TX64X64
   BLOCK_16X64,  // TX_16X64
   BLOCK_64X16,  // TX_64X16
-#endif          // CONFIG_TX64X64
 };
 
 static const TX_SIZE txsize_sqr_map[TX_SIZES_ALL] = {
@@ -893,27 +732,21 @@ static const TX_SIZE txsize_sqr_map[TX_SIZES_ALL] = {
   TX_8X8,    // TX_8X8
   TX_16X16,  // TX_16X16
   TX_32X32,  // TX_32X32
-#if CONFIG_TX64X64
   TX_64X64,  // TX_64X64
-#endif       // CONFIG_TX64X64
   TX_4X4,    // TX_4X8
   TX_4X4,    // TX_8X4
   TX_8X8,    // TX_8X16
   TX_8X8,    // TX_16X8
   TX_16X16,  // TX_16X32
   TX_16X16,  // TX_32X16
-#if CONFIG_TX64X64
   TX_32X32,  // TX_32X64
   TX_32X32,  // TX_64X32
-#endif       // CONFIG_TX64X64
   TX_4X4,    // TX_4X16
   TX_4X4,    // TX_16X4
   TX_8X8,    // TX_8X32
   TX_8X8,    // TX_32X8
-#if CONFIG_TX64X64
   TX_16X16,  // TX_16X64
   TX_16X16,  // TX_64X16
-#endif       // CONFIG_TX64X64
 };
 
 static const TX_SIZE txsize_sqr_up_map[TX_SIZES_ALL] = {
@@ -921,27 +754,21 @@ static const TX_SIZE txsize_sqr_up_map[TX_SIZES_ALL] = {
   TX_8X8,    // TX_8X8
   TX_16X16,  // TX_16X16
   TX_32X32,  // TX_32X32
-#if CONFIG_TX64X64
   TX_64X64,  // TX_64X64
-#endif       // CONFIG_TX64X64
   TX_8X8,    // TX_4X8
   TX_8X8,    // TX_8X4
   TX_16X16,  // TX_8X16
   TX_16X16,  // TX_16X8
   TX_32X32,  // TX_16X32
   TX_32X32,  // TX_32X16
-#if CONFIG_TX64X64
   TX_64X64,  // TX_32X64
   TX_64X64,  // TX_64X32
-#endif       // CONFIG_TX64X64
   TX_16X16,  // TX_4X16
   TX_16X16,  // TX_16X4
   TX_32X32,  // TX_8X32
   TX_32X32,  // TX_32X8
-#if CONFIG_TX64X64
   TX_64X64,  // TX_16X64
   TX_64X64,  // TX_64X16
-#endif       // CONFIG_TX64X64
 };
 
 static const int8_t txsize_log2_minus4[TX_SIZES_ALL] = {
@@ -949,39 +776,28 @@ static const int8_t txsize_log2_minus4[TX_SIZES_ALL] = {
   2,  // TX_8X8
   4,  // TX_16X16
   6,  // TX_32X32
-#if CONFIG_TX64X64
-  6,    // TX_64X64
-#endif  // CONFIG_TX64X64
-  1,    // TX_4X8
-  1,    // TX_8X4
-  3,    // TX_8X16
-  3,    // TX_16X8
-  5,    // TX_16X32
-  5,    // TX_32X16
-#if CONFIG_TX64X64
-  6,    // TX_32X64
-  6,    // TX_64X32
-#endif  // CONFIG_TX64X64
-  2,    // TX_4X16
-  2,    // TX_16X4
-  4,    // TX_8X32
-  4,    // TX_32X8
-#if CONFIG_TX64X64
-  5,    // TX_16X64
-  5,    // TX_64X16
-#endif  // CONFIG_TX64X64
+  6,  // TX_64X64
+  1,  // TX_4X8
+  1,  // TX_8X4
+  3,  // TX_8X16
+  3,  // TX_16X8
+  5,  // TX_16X32
+  5,  // TX_32X16
+  6,  // TX_32X64
+  6,  // TX_64X32
+  2,  // TX_4X16
+  2,  // TX_16X4
+  4,  // TX_8X32
+  4,  // TX_32X8
+  5,  // TX_16X64
+  5,  // TX_64X16
 };
 
 /* clang-format off */
 static const TX_SIZE tx_mode_to_biggest_tx_size[TX_MODES] = {
   TX_4X4,    // ONLY_4X4
-#if CONFIG_TX64X64
   TX_64X64,  // TX_MODE_LARGEST
   TX_64X64,  // TX_MODE_SELECT
-#else
-  TX_32X32,  // TX_MODE_LARGEST
-  TX_32X32,  // TX_MODE_SELECT
-#endif  // CONFIG_TX64X64
 };
 /* clang-format on */
 

@@ -130,10 +130,8 @@ extern const av1_extra_bit av1_extra_bits[ENTROPY_TOKENS];
 static INLINE int av1_get_cat6_extrabits_size(TX_SIZE tx_size,
                                               aom_bit_depth_t bit_depth) {
   tx_size = txsize_sqr_up_map[tx_size];
-#if CONFIG_TX64X64
   // TODO(debargha): Does TX_64X64 require an additional extrabit?
   if (tx_size > TX_32X32) tx_size = TX_32X32;
-#endif
   int tx_offset = (int)(tx_size - TX_4X4);
   int bits = (int)bit_depth + 3 + tx_offset;
   // Round up
@@ -274,7 +272,6 @@ static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
       above_ec = !!*(const uint64_t *)a;
       left_ec = !!*(const uint64_t *)l;
       break;
-#if CONFIG_TX64X64
     case TX_64X64:
       above_ec = !!(*(const uint64_t *)a | *(const uint64_t *)(a + 8));
       left_ec = !!(*(const uint64_t *)l | *(const uint64_t *)(l + 8));
@@ -287,7 +284,6 @@ static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
       above_ec = !!(*(const uint64_t *)a | *(const uint64_t *)(a + 8));
       left_ec = !!*(const uint64_t *)l;
       break;
-#endif  // CONFIG_TX64X64
     case TX_4X16:
       above_ec = a[0] != 0;
       left_ec = !!*(const uint32_t *)l;
@@ -304,7 +300,6 @@ static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
       above_ec = !!*(const uint64_t *)a;
       left_ec = !!*(const uint16_t *)l;
       break;
-#if CONFIG_TX64X64
     case TX_16X64:
       above_ec = !!*(const uint32_t *)a;
       left_ec = !!(*(const uint64_t *)l | *(const uint64_t *)(l + 8));
@@ -313,7 +308,6 @@ static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
       above_ec = !!(*(const uint64_t *)a | *(const uint64_t *)(a + 8));
       left_ec = !!*(const uint32_t *)l;
       break;
-#endif  // CONFIG_TX64X64
     default: assert(0 && "Invalid transform size."); break;
   }
   return combine_entropy_contexts(above_ec, left_ec);

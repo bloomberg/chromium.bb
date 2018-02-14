@@ -99,7 +99,6 @@ static INLINE void d135_predictor(uint8_t *dst, ptrdiff_t stride, int bw,
                                   int bh, const uint8_t *above,
                                   const uint8_t *left) {
   int i;
-#if CONFIG_TX64X64
 #if defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ > 7
   // silence a spurious -Warray-bounds warning, possibly related to:
   // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56273
@@ -107,15 +106,6 @@ static INLINE void d135_predictor(uint8_t *dst, ptrdiff_t stride, int bw,
 #else
   uint8_t border[64 + 64 - 1];  // outer border from bottom-left to top-right
 #endif
-#else
-#if defined(__GNUC__) && __GNUC__ == 4 && __GNUC_MINOR__ > 7
-  // silence a spurious -Warray-bounds warning, possibly related to:
-  // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56273
-  uint8_t border[69];
-#else
-  uint8_t border[32 + 32 - 1];  // outer border from bottom-left to top-right
-#endif
-#endif  // CONFIG_TX64X64
 
   // dst(bh, bh - 2)[0], i.e., border starting at bottom-left
   for (i = 0; i < bh - 2; ++i) {
@@ -446,7 +436,6 @@ void aom_dc_predictor_32x16_c(uint8_t *dst, ptrdiff_t stride,
   dc_predictor_rect(dst, stride, 32, 16, above, left, DC_MULTIPLIER_1X2, 13);
 }
 
-#if CONFIG_TX64X64
 void aom_dc_predictor_16x64_c(uint8_t *dst, ptrdiff_t stride,
                               const uint8_t *above, const uint8_t *left) {
   dc_predictor_rect(dst, stride, 16, 64, above, left, DC_MULTIPLIER_1X4, 14);
@@ -466,7 +455,6 @@ void aom_dc_predictor_64x32_c(uint8_t *dst, ptrdiff_t stride,
                               const uint8_t *above, const uint8_t *left) {
   dc_predictor_rect(dst, stride, 64, 32, above, left, DC_MULTIPLIER_1X2, 14);
 }
-#endif  // CONFIG_TX64X64
 
 void aom_d45e_predictor_2x2_c(uint8_t *dst, ptrdiff_t stride,
                               const uint8_t *above, const uint8_t *left) {
@@ -1108,7 +1096,6 @@ void aom_highbd_dc_predictor_32x16_c(uint16_t *dst, ptrdiff_t stride,
                            DC_MULTIPLIER_1X2, 13);
 }
 
-#if CONFIG_TX64X64
 void aom_highbd_dc_predictor_16x64_c(uint16_t *dst, ptrdiff_t stride,
                                      const uint16_t *above,
                                      const uint16_t *left, int bd) {
@@ -1136,7 +1123,6 @@ void aom_highbd_dc_predictor_64x32_c(uint16_t *dst, ptrdiff_t stride,
   highbd_dc_predictor_rect(dst, stride, 64, 32, above, left, bd,
                            DC_MULTIPLIER_1X2, 14);
 }
-#endif  // CONFIG_TX64X64
 
 // This serves as a wrapper function, so that all the prediction functions
 // can be unified and accessed as a pointer array. Note that the boundary
@@ -1156,7 +1142,6 @@ void aom_highbd_dc_predictor_64x32_c(uint16_t *dst, ptrdiff_t stride,
   }
 
 /* clang-format off */
-#if CONFIG_TX64X64
 #define intra_pred_rectangular(type) \
   intra_pred_sized(type, 4, 8) \
   intra_pred_sized(type, 8, 4) \
@@ -1215,54 +1200,6 @@ void aom_highbd_dc_predictor_64x32_c(uint16_t *dst, ptrdiff_t stride,
   intra_pred_highbd_sized(type, 16, 16) \
   intra_pred_highbd_sized(type, 32, 32) \
   intra_pred_highbd_sized(type, 64, 64)
-#else  // CONFIG_TX64X64
-#define intra_pred_rectangular(type) \
-  intra_pred_sized(type, 4, 8) \
-  intra_pred_sized(type, 8, 4) \
-  intra_pred_sized(type, 8, 16) \
-  intra_pred_sized(type, 16, 8) \
-  intra_pred_sized(type, 16, 32) \
-  intra_pred_sized(type, 32, 16) \
-  intra_pred_sized(type, 4, 16) \
-  intra_pred_sized(type, 16, 4) \
-  intra_pred_sized(type, 8, 32) \
-  intra_pred_sized(type, 32, 8) \
-  intra_pred_highbd_sized(type, 4, 8) \
-  intra_pred_highbd_sized(type, 8, 4) \
-  intra_pred_highbd_sized(type, 8, 16) \
-  intra_pred_highbd_sized(type, 16, 8) \
-  intra_pred_highbd_sized(type, 16, 32) \
-  intra_pred_highbd_sized(type, 32, 16) \
-  intra_pred_highbd_sized(type, 4, 16) \
-  intra_pred_highbd_sized(type, 16, 4) \
-  intra_pred_highbd_sized(type, 8, 32) \
-  intra_pred_highbd_sized(type, 32, 8)
-#define intra_pred_above_4x4(type) \
-  intra_pred_sized(type, 8, 8) \
-  intra_pred_sized(type, 16, 16) \
-  intra_pred_sized(type, 32, 32) \
-  intra_pred_highbd_sized(type, 4, 4) \
-  intra_pred_highbd_sized(type, 8, 8) \
-  intra_pred_highbd_sized(type, 16, 16) \
-  intra_pred_highbd_sized(type, 32, 32) \
-  intra_pred_rectangular(type)
-#define intra_pred_allsizes(type) \
-  intra_pred_sized(type, 2, 2) \
-  intra_pred_sized(type, 4, 4) \
-  intra_pred_highbd_sized(type, 2, 2) \
-  intra_pred_above_4x4(type)
-#define intra_pred_square(type) \
-  intra_pred_sized(type, 2, 2) \
-  intra_pred_sized(type, 4, 4) \
-  intra_pred_sized(type, 8, 8) \
-  intra_pred_sized(type, 16, 16) \
-  intra_pred_sized(type, 32, 32) \
-  intra_pred_highbd_sized(type, 2, 2) \
-  intra_pred_highbd_sized(type, 4, 4) \
-  intra_pred_highbd_sized(type, 8, 8) \
-  intra_pred_highbd_sized(type, 16, 16) \
-  intra_pred_highbd_sized(type, 32, 32)
-#endif  // CONFIG_TX64X64
 
 intra_pred_allsizes(d207e)
 intra_pred_allsizes(d63e)

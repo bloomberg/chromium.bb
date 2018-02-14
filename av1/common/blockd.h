@@ -231,11 +231,7 @@ typedef struct {
   COMPOUND_TYPE interinter_compound_type;
 } INTERINTER_COMPOUND_DATA;
 
-#if CONFIG_TX64X64
 #define INTER_TX_SIZE_BUF_LEN 16
-#else
-#define INTER_TX_SIZE_BUF_LEN 256
-#endif
 // This structure now relates to 4x4 block regions.
 typedef struct MB_MODE_INFO {
   // Common for both INTER and INTRA blocks
@@ -997,7 +993,6 @@ static INLINE TX_SIZE av1_get_max_uv_txsize(BLOCK_SIZE bsize, int is_inter,
   const BLOCK_SIZE plane_bsize = ss_size_lookup[bsize][ss_x][ss_y];
   assert(plane_bsize < BLOCK_SIZES_ALL);
   TX_SIZE uv_tx = max_txsize_rect_lookup[is_inter][plane_bsize];
-#if CONFIG_TX64X64
   switch (uv_tx) {
     case TX_64X64:
     case TX_64X32:
@@ -1006,7 +1001,6 @@ static INLINE TX_SIZE av1_get_max_uv_txsize(BLOCK_SIZE bsize, int is_inter,
     case TX_16X64: return TX_16X32;
     default: break;
   }
-#endif  // CONFIG_TX64X64
   return uv_tx;
 }
 
@@ -1092,7 +1086,7 @@ static INLINE int get_vartx_max_txsize(const MACROBLOCKD *xd, BLOCK_SIZE bsize,
           ? TX_4X4
           : get_max_rect_tx_size(bsize, is_inter_block(&xd->mi[0]->mbmi));
 
-#if CONFIG_EXT_PARTITION && CONFIG_TX64X64
+#if CONFIG_EXT_PARTITION
   // The decoder is designed so that it can process 64x64 luma pixels at a
   // time. If this is a chroma plane with subsampling and bsize corresponds to
   // a subsampled BLOCK_128X128 then the lookup above will give TX_64X64. That
@@ -1302,19 +1296,16 @@ static INLINE void transpose_int32(int32_t *dst, int dst_stride,
 }
 
 static INLINE int av1_get_max_eob(TX_SIZE tx_size) {
-#if CONFIG_TX64X64
   if (tx_size == TX_64X64 || tx_size == TX_64X32 || tx_size == TX_32X64) {
     return 1024;
   }
   if (tx_size == TX_16X64 || tx_size == TX_64X16) {
     return 512;
   }
-#endif  // CONFIG_TX64X64
   return tx_size_2d[tx_size];
 }
 
 static INLINE TX_SIZE av1_get_adjusted_tx_size(TX_SIZE tx_size) {
-#if CONFIG_TX64X64
   if (tx_size == TX_64X64 || tx_size == TX_64X32 || tx_size == TX_32X64) {
     return TX_32X32;
   }
@@ -1324,7 +1315,6 @@ static INLINE TX_SIZE av1_get_adjusted_tx_size(TX_SIZE tx_size) {
   if (tx_size == TX_64X16) {
     return TX_32X16;
   }
-#endif  // CONFIG_TX64X64
   return tx_size;
 }
 

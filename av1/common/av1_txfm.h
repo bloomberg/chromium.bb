@@ -212,11 +212,9 @@ static INLINE TX_SIZE av1_rotate_tx_size(TX_SIZE tx_size) {
     case TX_8X8: return TX_8X8;
     case TX_16X16: return TX_16X16;
     case TX_32X32: return TX_32X32;
-#if CONFIG_TX64X64
     case TX_64X64: return TX_64X64;
     case TX_32X64: return TX_64X32;
     case TX_64X32: return TX_32X64;
-#endif  // CONFIG_TX64X64
     case TX_4X8: return TX_8X4;
     case TX_8X4: return TX_4X8;
     case TX_8X16: return TX_16X8;
@@ -227,10 +225,8 @@ static INLINE TX_SIZE av1_rotate_tx_size(TX_SIZE tx_size) {
     case TX_16X4: return TX_4X16;
     case TX_8X32: return TX_32X8;
     case TX_32X8: return TX_8X32;
-#if CONFIG_TX64X64
     case TX_16X64: return TX_64X16;
     case TX_64X16: return TX_16X64;
-#endif  // CONFIG_TX64X64
     default: assert(0); return TX_INVALID;
   }
 }

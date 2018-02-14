@@ -87,11 +87,7 @@ void highbd_quantize_b_helper_c(
                          ROUND_POWER_OF_TWO(zbin_ptr[1], log_scale) };
   const int nzbins[2] = { zbins[0] * -1, zbins[1] * -1 };
   int dequant;
-#if CONFIG_TX64X64
   int idx_arr[4096];
-#else
-  int idx_arr[1024];
-#endif
   (void)iscan;
   int idx = 0;
 
@@ -195,7 +191,6 @@ void aom_quantize_b_32x32_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                       dequant_ptr, eob_ptr, scan, iscan, NULL, NULL, 1);
 }
 
-#if CONFIG_TX64X64
 void aom_quantize_b_64x64_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                             int skip_block, const int16_t *zbin_ptr,
                             const int16_t *round_ptr, const int16_t *quant_ptr,
@@ -207,7 +202,6 @@ void aom_quantize_b_64x64_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                       quant_ptr, quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr,
                       dequant_ptr, eob_ptr, scan, iscan, NULL, NULL, 2);
 }
-#endif  // CONFIG_TX64X64
 
 void aom_quantize_dc(const tran_low_t *coeff_ptr, int n_coeffs, int skip_block,
                      const int16_t *round_ptr, const int16_t quant,
@@ -226,7 +220,6 @@ void aom_quantize_dc_32x32(const tran_low_t *coeff_ptr, int skip_block,
                      dqcoeff_ptr, dequant_ptr, eob_ptr, NULL, NULL, 1);
 }
 
-#if CONFIG_TX64X64
 void aom_quantize_dc_64x64(const tran_low_t *coeff_ptr, int skip_block,
                            const int16_t *round_ptr, const int16_t quant,
                            tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
@@ -234,7 +227,6 @@ void aom_quantize_dc_64x64(const tran_low_t *coeff_ptr, int skip_block,
   quantize_dc_helper(coeff_ptr, 4096, skip_block, round_ptr, quant, qcoeff_ptr,
                      dqcoeff_ptr, dequant_ptr, eob_ptr, NULL, NULL, 2);
 }
-#endif  // CONFIG_TX64X64
 
 void aom_highbd_quantize_b_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                              int skip_block, const int16_t *zbin_ptr,
@@ -261,7 +253,6 @@ void aom_highbd_quantize_b_32x32_c(
                              NULL, NULL, 1);
 }
 
-#if CONFIG_TX64X64
 void aom_highbd_quantize_b_64x64_c(
     const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block,
     const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr,
@@ -273,4 +264,3 @@ void aom_highbd_quantize_b_64x64_c(
                              dqcoeff_ptr, dequant_ptr, eob_ptr, scan, iscan,
                              NULL, NULL, 2);
 }
-#endif  // CONFIG_TX64X64

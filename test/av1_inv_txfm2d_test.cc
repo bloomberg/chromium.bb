@@ -131,11 +131,9 @@ class AV1InvTxfm2d : public ::testing::TestWithParam<AV1InvTxfm2dParam> {
 
  private:
   bool TxfmUsesApproximation() {
-#if CONFIG_TX64X64
     if (tx_size_wide[tx_size_] == 64 || tx_size_high[tx_size_] == 64) {
       return true;
     }
-#endif  // CONFIG_TX64X64
     return false;
   }
 
@@ -153,11 +151,9 @@ vector<AV1InvTxfm2dParam> GetInvTxfm2dParamList() {
     param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_8X8, 2, 0.05));
     param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X16, 2, 0.07));
     param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_32X32, 4, 0.4));
-#if CONFIG_TX64X64
     if (tx_type == DCT_DCT) {  // Other types not supported by these tx sizes.
       param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X64, 3, 0.3));
     }
-#endif  // CONFIG_TX64X64
 
     param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_4X8, 2, 0.02));
     param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_8X4, 2, 0.02));
@@ -171,14 +167,12 @@ vector<AV1InvTxfm2dParam> GetInvTxfm2dParamList() {
     param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_8X32, 2, 0.2));
     param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_32X8, 2, 0.2));
 
-#if CONFIG_TX64X64
     if (tx_type == DCT_DCT) {  // Other types not supported by these tx sizes.
       param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_32X64, 5, 0.38));
       param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X32, 5, 0.39));
       param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X64, 3, 0.38));
       param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X16, 3, 0.38));
     }
-#endif  // CONFIG_TX64X64
   }
   return param_list;
 }
@@ -195,12 +189,10 @@ TEST(AV1InvTxfm2d, CfgTest) {
     int8_t high_range = libaom_test::high_range_arr[bd_idx];
     for (int tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
       for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
-#if CONFIG_TX64X64
         if ((tx_size_wide[tx_size] == 64 || tx_size_high[tx_size] == 64) &&
             tx_type != DCT_DCT) {
           continue;
         }
-#endif  // CONFIG_TX64X64
         TXFM_2D_FLIP_CFG cfg;
         av1_get_inv_txfm_cfg(static_cast<TX_TYPE>(tx_type),
                              static_cast<TX_SIZE>(tx_size), &cfg);
@@ -333,27 +325,21 @@ const LbdInvTxfm2dFunc kLbdInvFuncSSE2List[TX_SIZES_ALL] = {
   av1_lowbd_inv_txfm2d_add_8x8_sse2,    // TX_8X8
   av1_lowbd_inv_txfm2d_add_16x16_sse2,  // TX_16X16
   av1_lowbd_inv_txfm2d_add_32x32_sse2,  // TX_32X32
-#if CONFIG_TX64X64
   av1_lowbd_inv_txfm2d_add_64x64_sse2,  // 64x64
-#endif                                  // CONFIG_TX64X64
   av1_lowbd_inv_txfm2d_add_4x8_sse2,    // TX_4X8
   av1_lowbd_inv_txfm2d_add_8x4_sse2,    // TX_8X4
   av1_lowbd_inv_txfm2d_add_8x16_sse2,   // TX_8X16
   av1_lowbd_inv_txfm2d_add_16x8_sse2,   // TX_16X8
   av1_lowbd_inv_txfm2d_add_16x32_sse2,  // TX_16X32
   av1_lowbd_inv_txfm2d_add_32x16_sse2,  // TX_32X16
-#if CONFIG_TX64X64
   av1_lowbd_inv_txfm2d_add_32x64_sse2,  // TX_32X64
   av1_lowbd_inv_txfm2d_add_64x32_sse2,  // TX_64X32
-#endif                                  // CONFIG_TX64X64
   av1_lowbd_inv_txfm2d_add_4x16_sse2,   // TX_4X16
   av1_lowbd_inv_txfm2d_add_16x4_sse2,   // TX_16X4
   av1_lowbd_inv_txfm2d_add_8x32_sse2,   // 8x32
   av1_lowbd_inv_txfm2d_add_32x8_sse2,   // 32x8
-#if CONFIG_TX64X64
   av1_lowbd_inv_txfm2d_add_16x64_sse2,  // 16x64
   av1_lowbd_inv_txfm2d_add_64x16_sse2,  // 64x16
-#endif                                  // CONFIG_TX64X64
 };
 INSTANTIATE_TEST_CASE_P(SSE2, AV1LbdInvTxfm2d,
                         Combine(Values(kLbdInvFuncSSE2List),

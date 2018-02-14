@@ -194,10 +194,8 @@ struct macroblock {
   tx_size_rd_record_16X16[(MAX_MIB_SIZE >> 2) * (MAX_MIB_SIZE >> 2)];
   TX_SIZE_RD_RECORD
   tx_size_rd_record_32X32[(MAX_MIB_SIZE >> 3) * (MAX_MIB_SIZE >> 3)];
-#if CONFIG_TX64X64
   TX_SIZE_RD_RECORD
   tx_size_rd_record_64X64[(MAX_MIB_SIZE >> 4) * (MAX_MIB_SIZE >> 4)];
-#endif
 
   MACROBLOCKD e_mbd;
   MB_MODE_INFO_EXT *mbmi_ext;

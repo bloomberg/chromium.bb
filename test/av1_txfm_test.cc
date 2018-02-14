@@ -262,7 +262,6 @@ void reference_hybrid_2d(double *in, double *out, TX_TYPE tx_type,
   delete[] temp_out;
   delete[] out_interm;
 
-#if CONFIG_TX64X64
   // These transforms use an approximate 2D DCT transform, by only keeping the
   // top-left quarter of the coefficients, and repacking them in the first
   // quarter indices.
@@ -305,7 +304,6 @@ void reference_hybrid_2d(double *in, double *out, TX_TYPE tx_type,
       memcpy(out + row * 32, out + row * 64, 32 * sizeof(*out));
     }
   }
-#endif  // CONFIG_TX_64X64
 
   // Apply appropriate scale.
   const double amplify_factor = get_amplification_factor(tx_type, tx_size);
@@ -355,11 +353,7 @@ template void fliplrud<double>(double *dest, int width, int height, int stride);
 
 int bd_arr[BD_NUM] = { 8, 10, 12 };
 
-#if CONFIG_TX64X64
 int8_t low_range_arr[BD_NUM] = { 18, 32, 32 };
-#else
-int8_t low_range_arr[BD_NUM] = { 16, 32, 32 };
-#endif  // CONFIG_TX64X64
 int8_t high_range_arr[BD_NUM] = { 32, 32, 32 };
 
 void txfm_stage_range_check(const int8_t *stage_range, int stage_num,

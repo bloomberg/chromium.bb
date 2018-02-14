@@ -1734,12 +1734,10 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 #endif  // CONFIG_DIST_8X8
 
   if (cpi->sf.use_transform_domain_distortion
-#if CONFIG_TX64X64
       // Any 64-pt transforms only preserves half the coefficients.
       // Therefore transform domain distortion is not valid for these
       // transform sizes.
       && txsize_sqr_up_map[tx_size] != TX_64X64
-#endif  // CONFIG_TX64X64
 #if CONFIG_DIST_8X8
       && !x->using_dist_8x8
 #endif
@@ -4673,16 +4671,10 @@ static int find_tx_size_rd_info(TX_SIZE_RD_RECORD *cur_record,
 static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
                                    int mi_col,
                                    TX_SIZE_RD_INFO_NODE *dst_rd_info) {
-#if CONFIG_TX64X64
   TX_SIZE_RD_RECORD *rd_records_table[4] = { x->tx_size_rd_record_8X8,
                                              x->tx_size_rd_record_16X16,
                                              x->tx_size_rd_record_32X32,
                                              x->tx_size_rd_record_64X64 };
-#else
-  TX_SIZE_RD_RECORD *rd_records_table[3] = { x->tx_size_rd_record_8X8,
-                                             x->tx_size_rd_record_16X16,
-                                             x->tx_size_rd_record_32X32 };
-#endif
   const TX_SIZE max_square_tx_size = max_txsize_lookup[bsize];
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];

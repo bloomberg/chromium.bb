@@ -2650,27 +2650,21 @@ FwdTxfm2dFuncSSE2 fwd_txfm2d_func_ls[TX_SIZES_ALL] = {
   av1_lowbd_fwd_txfm2d_8x8_sse2,    // 8x8 transform
   av1_lowbd_fwd_txfm2d_16x16_sse2,  // 16x16 transform
   av1_lowbd_fwd_txfm2d_32x32_sse2,  // 32x32 transform
-#if CONFIG_TX64X64
   NULL,                             // 64x64 transform
-#endif                              // CONFIG_TX64X64
   av1_lowbd_fwd_txfm2d_4x8_sse2,    // 4x8 transform
   av1_lowbd_fwd_txfm2d_8x4_sse2,    // 8x4 transform
   av1_lowbd_fwd_txfm2d_8x16_sse2,   // 8x16 transform
   av1_lowbd_fwd_txfm2d_16x8_sse2,   // 16x8 transform
   av1_lowbd_fwd_txfm2d_16x32_sse2,  // 16x32 transform
   av1_lowbd_fwd_txfm2d_32x16_sse2,  // 32x16 transform
-#if CONFIG_TX64X64
-  NULL,                            // 32x64 transform
-  NULL,                            // 64x32 transform
-#endif                             // CONFIG_TX64X64
-  NULL,                            // 4x16 transform
-  NULL,                            // 16x4 transform
-  av1_lowbd_fwd_txfm2d_8x32_sse2,  // 8x32 transform
-  av1_lowbd_fwd_txfm2d_32x8_sse2,  // 32x8 transform
-#if CONFIG_TX64X64
-  NULL,  // 16x64 transform
-  NULL,  // 64x16 transform
-#endif   // CONFIG_TX64X64
+  NULL,                             // 32x64 transform
+  NULL,                             // 64x32 transform
+  NULL,                             // 4x16 transform
+  NULL,                             // 16x4 transform
+  av1_lowbd_fwd_txfm2d_8x32_sse2,   // 8x32 transform
+  av1_lowbd_fwd_txfm2d_32x8_sse2,   // 32x8 transform
+  NULL,                             // 16x64 transform
+  NULL,                             // 64x16 transform
 };
 
 void av1_lowbd_fwd_txfm_sse2(const int16_t *src_diff, tran_low_t *coeff,

@@ -1606,7 +1606,6 @@ void av1_iidentity32_c(const int32_t *input, int32_t *output, int8_t cos_bit,
   apply_range(0, input, output, 32, stage_range[0]);
 }
 
-#if CONFIG_TX64X64
 void av1_iidentity64_c(const int32_t *input, int32_t *output, int8_t cos_bit,
                        const int8_t *stage_range) {
   (void)cos_bit;
@@ -1615,9 +1614,7 @@ void av1_iidentity64_c(const int32_t *input, int32_t *output, int8_t cos_bit,
   assert(stage_range[0] + NewSqrt2Bits <= 32);
   apply_range(0, input, output, 64, stage_range[0]);
 }
-#endif  // CONFIG_TX64X64
 
-#if CONFIG_TX64X64
 void av1_idct64_new(const int32_t *input, int32_t *output, int8_t cos_bit,
                     const int8_t *stage_range) {
   const int32_t size = 64;
@@ -2409,4 +2406,3 @@ void av1_idct64_new(const int32_t *input, int32_t *output, int8_t cos_bit,
   bf1[63] = bf0[0] - bf0[63];
   apply_range(stage, input, bf1, size, stage_range[stage]);
 }
-#endif  // CONFIG_TX64X64

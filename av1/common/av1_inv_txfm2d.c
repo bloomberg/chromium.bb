@@ -33,9 +33,7 @@ static INLINE TxfmFunc inv_txfm_type_to_func(TXFM_TYPE txfm_type) {
     case TXFM_TYPE_DCT8: return av1_idct8_new;
     case TXFM_TYPE_DCT16: return av1_idct16_new;
     case TXFM_TYPE_DCT32: return av1_idct32_new;
-#if CONFIG_TX64X64
     case TXFM_TYPE_DCT64: return av1_idct64_new;
-#endif  // CONFIG_TX64X64
     case TXFM_TYPE_ADST4: return av1_iadst4_new;
     case TXFM_TYPE_ADST8: return av1_iadst8_new;
     case TXFM_TYPE_ADST16: return av1_iadst16_new;
@@ -44,9 +42,7 @@ static INLINE TxfmFunc inv_txfm_type_to_func(TXFM_TYPE txfm_type) {
     case TXFM_TYPE_IDENTITY8: return av1_iidentity8_c;
     case TXFM_TYPE_IDENTITY16: return av1_iidentity16_c;
     case TXFM_TYPE_IDENTITY32: return av1_iidentity32_c;
-#if CONFIG_TX64X64
     case TXFM_TYPE_IDENTITY64: return av1_iidentity64_c;
-#endif  // CONFIG_TX64X64
     default: assert(0); return NULL;
   }
 }
@@ -55,42 +51,28 @@ static const int8_t inv_shift_4x4[2] = { 0, -4 };
 static const int8_t inv_shift_8x8[2] = { -1, -4 };
 static const int8_t inv_shift_16x16[2] = { -2, -4 };
 static const int8_t inv_shift_32x32[2] = { -2, -4 };
-#if CONFIG_TX64X64
 static const int8_t inv_shift_64x64[2] = { -2, -4 };
-#endif
 static const int8_t inv_shift_4x8[2] = { 0, -4 };
 static const int8_t inv_shift_8x4[2] = { 0, -4 };
 static const int8_t inv_shift_8x16[2] = { -1, -4 };
 static const int8_t inv_shift_16x8[2] = { -1, -4 };
 static const int8_t inv_shift_16x32[2] = { -1, -4 };
 static const int8_t inv_shift_32x16[2] = { -1, -4 };
-#if CONFIG_TX64X64
 static const int8_t inv_shift_32x64[2] = { -1, -4 };
 static const int8_t inv_shift_64x32[2] = { -1, -4 };
-#endif
 static const int8_t inv_shift_4x16[2] = { -1, -4 };
 static const int8_t inv_shift_16x4[2] = { -1, -4 };
 static const int8_t inv_shift_8x32[2] = { -2, -4 };
 static const int8_t inv_shift_32x8[2] = { -2, -4 };
-#if CONFIG_TX64X64
 static const int8_t inv_shift_16x64[2] = { -2, -4 };
 static const int8_t inv_shift_64x16[2] = { -2, -4 };
-#endif  // CONFIG_TX64X64
 
 const int8_t *inv_txfm_shift_ls[TX_SIZES_ALL] = {
   inv_shift_4x4,   inv_shift_8x8,   inv_shift_16x16, inv_shift_32x32,
-#if CONFIG_TX64X64
-  inv_shift_64x64,
-#endif  // CONFIG_TX64X64
-  inv_shift_4x8,   inv_shift_8x4,   inv_shift_8x16,  inv_shift_16x8,
-  inv_shift_16x32, inv_shift_32x16,
-#if CONFIG_TX64X64
-  inv_shift_32x64, inv_shift_64x32,
-#endif  // CONFIG_TX64X64
-  inv_shift_4x16,  inv_shift_16x4,  inv_shift_8x32,  inv_shift_32x8,
-#if CONFIG_TX64X64
-  inv_shift_16x64, inv_shift_64x16,
-#endif  // CONFIG_TX64X64
+  inv_shift_64x64, inv_shift_4x8,   inv_shift_8x4,   inv_shift_8x16,
+  inv_shift_16x8,  inv_shift_16x32, inv_shift_32x16, inv_shift_32x64,
+  inv_shift_64x32, inv_shift_4x16,  inv_shift_16x4,  inv_shift_8x32,
+  inv_shift_32x8,  inv_shift_16x64, inv_shift_64x16,
 };
 
 /* clang-format off */
@@ -357,7 +339,6 @@ void av1_inv_txfm2d_add_32x32_c(const int32_t *input, uint16_t *output,
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_32X32, bd);
 }
 
-#if CONFIG_TX64X64
 void av1_inv_txfm2d_add_64x64_c(const int32_t *input, uint16_t *output,
                                 int stride, TX_TYPE tx_type, int bd) {
   // TODO(urvang): Can the same array be reused, instead of using a new array?
@@ -462,7 +443,6 @@ void av1_inv_txfm2d_add_64x16_c(const int32_t *input, uint16_t *output,
   transpose_uint16(output, stride, routput, rw, rw, rh);
 #endif  // NO_INV_TRANSPOSE
 }
-#endif  // CONFIG_TX64X64
 
 void av1_inv_txfm2d_add_4x16_c(const int32_t *input, uint16_t *output,
                                int stride, TX_TYPE tx_type, int bd) {

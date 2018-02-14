@@ -187,14 +187,12 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->adaptive_pred_interp_filter = 1;
 
     sf->recode_loop = ALLOW_RECODE_KFARFGF;
-#if CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_64X64] = INTRA_DC_H_V;
 #if CONFIG_CFL
     sf->intra_uv_mode_mask[TX_64X64] = UV_INTRA_DC_H_V_CFL;
 #else
     sf->intra_uv_mode_mask[TX_64X64] = INTRA_DC_H_V;
 #endif  // CONFIG_CFL
-#endif  // CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_32X32] = INTRA_DC_H_V;
 #if CONFIG_CFL
     sf->intra_uv_mode_mask[TX_32X32] = UV_INTRA_DC_H_V_CFL;
@@ -251,14 +249,12 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->recode_loop = ALLOW_RECODE_KFMAXBW;
     sf->adaptive_rd_thresh = 3;
     sf->mode_skip_start = 6;
-#if CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_64X64] = INTRA_DC;
 #if CONFIG_CFL
     sf->intra_uv_mode_mask[TX_64X64] = UV_INTRA_DC_CFL;
 #else
     sf->intra_uv_mode_mask[TX_64X64] = INTRA_DC;
 #endif  // CONFIG_CFL
-#endif  // CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_32X32] = INTRA_DC;
 #if CONFIG_CFL
     sf->intra_uv_mode_mask[TX_32X32] = UV_INTRA_DC_CFL;
@@ -304,9 +300,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     const int frames_since_key = is_keyframe ? 0 : cpi->rc.frames_since_key;
     sf->default_max_partition_size = BLOCK_32X32;
     sf->default_min_partition_size = BLOCK_8X8;
-#if CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_64X64] = INTRA_DC;
-#endif  // CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_32X32] = INTRA_DC;
     sf->frame_parameter_update = 0;
     sf->mv.search_method = FAST_HEX;

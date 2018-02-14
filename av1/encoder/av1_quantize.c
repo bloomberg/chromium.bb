@@ -272,7 +272,6 @@ void quantize_dc_32x32_fp_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
   *eob_ptr = eob + 1;
 }
 
-#if CONFIG_TX64X64
 void quantize_dc_64x64_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                            int skip_block, const int16_t *zbin_ptr,
                            const int16_t quant, const int16_t quant_shift,
@@ -329,7 +328,6 @@ void quantize_dc_64x64_fp_nuq(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
   }
   *eob_ptr = eob + 1;
 }
-#endif  // CONFIG_TX64X64
 
 void quantize_nuq_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                     int skip_block, const int16_t *zbin_ptr,
@@ -464,7 +462,6 @@ void quantize_32x32_fp_nuq_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
   *eob_ptr = eob + 1;
 }
 
-#if CONFIG_TX64X64
 void quantize_64x64_nuq_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                           int skip_block, const int16_t *zbin_ptr,
                           const int16_t *quant_ptr,
@@ -531,7 +528,6 @@ void quantize_64x64_fp_nuq_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
   }
   *eob_ptr = eob + 1;
 }
-#endif  // CONFIG_TX64X64
 #endif  // CONFIG_NEW_QUANT
 
 void av1_quantize_skip(intptr_t n_coeffs, tran_low_t *qcoeff_ptr,
@@ -656,7 +652,6 @@ void av1_quantize_fp_32x32_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                        dequant_ptr, eob_ptr, scan, iscan, NULL, NULL, 1);
 }
 
-#if CONFIG_TX64X64
 void av1_quantize_fp_64x64_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                              int skip_block, const int16_t *zbin_ptr,
                              const int16_t *round_ptr, const int16_t *quant_ptr,
@@ -668,7 +663,6 @@ void av1_quantize_fp_64x64_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                        quant_ptr, quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr,
                        dequant_ptr, eob_ptr, scan, iscan, NULL, NULL, 2);
 }
-#endif  // CONFIG_TX64X64
 
 void av1_quantize_fp_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                             const MACROBLOCK_PLANE *p, tran_low_t *qcoeff_ptr,
@@ -712,27 +706,23 @@ void av1_quantize_fp_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
         }
         break;
       case 1:
-#if CONFIG_TX64X64
         if (qparam->tx_size == TX_16X64 || qparam->tx_size == TX_64X16)
           av1_quantize_fp_32x32_c(coeff_ptr, n_coeffs, skip_block, p->zbin_QTX,
                                   p->round_fp_QTX, p->quant_fp_QTX,
                                   p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr,
                                   p->dequant_QTX, eob_ptr, sc->scan, sc->iscan);
         else
-#endif  // CONFIG_RECT_TX_EXT && CONFIG_TX64X64
           av1_quantize_fp_32x32(coeff_ptr, n_coeffs, skip_block, p->zbin_QTX,
                                 p->round_fp_QTX, p->quant_fp_QTX,
                                 p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr,
                                 p->dequant_QTX, eob_ptr, sc->scan, sc->iscan);
         break;
-#if CONFIG_TX64X64
       case 2:
         av1_quantize_fp_64x64(coeff_ptr, n_coeffs, skip_block, p->zbin_QTX,
                               p->round_fp_QTX, p->quant_fp_QTX,
                               p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr,
                               p->dequant_QTX, eob_ptr, sc->scan, sc->iscan);
         break;
-#endif  // CONFIG_TX64X64
       default: assert(0);
     }
 #if CONFIG_AOM_QM
@@ -771,14 +761,12 @@ void av1_quantize_b_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                              qcoeff_ptr, dqcoeff_ptr, p->dequant_QTX, eob_ptr,
                              sc->scan, sc->iscan);
         break;
-#if CONFIG_TX64X64
       case 2:
         aom_quantize_b_64x64(coeff_ptr, n_coeffs, skip_block, p->zbin_QTX,
                              p->round_QTX, p->quant_QTX, p->quant_shift_QTX,
                              qcoeff_ptr, dqcoeff_ptr, p->dequant_QTX, eob_ptr,
                              sc->scan, sc->iscan);
         break;
-#endif  // CONFIG_TX64X64
       default: assert(0);
     }
 #if CONFIG_AOM_QM
@@ -825,7 +813,7 @@ void av1_quantize_dc_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
   // obsolete skip_block
   const int skip_block = 0;
   (void)sc;
-  assert(qparam->log_scale >= 0 && qparam->log_scale < (2 + CONFIG_TX64X64));
+  assert(qparam->log_scale >= 0 && qparam->log_scale < (3));
 #if CONFIG_AOM_QM
   const qm_val_t *qm_ptr = qparam->qmatrix;
   const qm_val_t *iqm_ptr = qparam->iqmatrix;
@@ -888,7 +876,6 @@ void av1_quantize_b_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                          qcoeff_ptr, dqcoeff_ptr, eob_ptr, sc->scan, qm_ptr,
                          iqm_ptr);
       break;
-#if CONFIG_TX64X64
     case 2:
       quantize_64x64_nuq(coeff_ptr, n_coeffs, skip_block, p->zbin_QTX,
                          p->quant_QTX, p->quant_shift_QTX, p->dequant_QTX, dq,
@@ -902,7 +889,6 @@ void av1_quantize_b_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                          qcoeff_ptr, dqcoeff_ptr, eob_ptr, sc->scan, qm_ptr,
                          iqm_ptr);
       break;
-#endif  // CONFIG_TX64X64
     default: assert(0);
   }
 }
@@ -954,7 +940,6 @@ void av1_quantize_fp_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
 #endif  // CONFIG_AOM_QM
           qcoeff_ptr, dqcoeff_ptr, eob_ptr, sc->scan, qm_ptr, iqm_ptr);
       break;
-#if CONFIG_TX64X64
     case 2:
       quantize_64x64_fp_nuq(
           coeff_ptr, n_coeffs, skip_block, p->quant_fp_QTX, p->dequant_QTX, dq,
@@ -966,7 +951,6 @@ void av1_quantize_fp_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
 #endif  // CONFIG_AOM_QM
           qcoeff_ptr, dqcoeff_ptr, eob_ptr, sc->scan, qm_ptr, iqm_ptr);
       break;
-#endif  // CONFIG_TX64X64
     default: assert(0);
   }
 }
@@ -1018,7 +1002,6 @@ void av1_quantize_dc_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
 #endif  // CONFIG_AOM_QM
           qcoeff_ptr, dqcoeff_ptr, eob_ptr, qm_ptr, iqm_ptr);
       break;
-#if CONFIG_TX64X64
     case 2:
       quantize_dc_64x64_fp_nuq(
           coeff_ptr, n_coeffs, skip_block, p->quant_fp_QTX[0],
@@ -1030,7 +1013,6 @@ void av1_quantize_dc_nuq_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
 #endif  // CONFIG_AOM_QM
           qcoeff_ptr, dqcoeff_ptr, eob_ptr, qm_ptr, iqm_ptr);
       break;
-#endif  // CONFIG_TX64X64
     default: assert(0);
   }
 }
@@ -1117,14 +1099,12 @@ void av1_highbd_quantize_b_facade(const tran_low_t *coeff_ptr,
             p->quant_QTX, p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr,
             p->dequant_QTX, eob_ptr, sc->scan, sc->iscan);
         break;
-#if CONFIG_TX64X64
       case 2:
         aom_highbd_quantize_b_64x64(
             coeff_ptr, n_coeffs, skip_block, p->zbin_QTX, p->round_QTX,
             p->quant_QTX, p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr,
             p->dequant_QTX, eob_ptr, sc->scan, sc->iscan);
         break;
-#endif  // CONFIG_TX64X64
       default: assert(0);
     }
 #if CONFIG_AOM_QM
@@ -1477,7 +1457,6 @@ void highbd_quantize_32x32_fp_nuq_c(
   *eob_ptr = eob + 1;
 }
 
-#if CONFIG_TX64X64
 void highbd_quantize_64x64_nuq_c(
     const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block,
     const int16_t *zbin_ptr, const int16_t *quant_ptr,
@@ -1541,7 +1520,6 @@ void highbd_quantize_64x64_fp_nuq_c(
   }
   *eob_ptr = eob + 1;
 }
-#endif  // CONFIG_TX64X64
 
 void highbd_quantize_fp_nuq_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                               int skip_block, const int16_t *quant_ptr,
@@ -1628,7 +1606,6 @@ void highbd_quantize_dc_32x32_fp_nuq(
   *eob_ptr = eob + 1;
 }
 
-#if CONFIG_TX64X64
 void highbd_quantize_dc_64x64_nuq(
     const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block,
     const int16_t *zbin_ptr, const int16_t quant, const int16_t quant_shift,
@@ -1681,7 +1658,6 @@ void highbd_quantize_dc_64x64_fp_nuq(
   }
   *eob_ptr = eob + 1;
 }
-#endif  // CONFIG_TX64X64
 
 void av1_highbd_quantize_b_nuq_facade(
     const tran_low_t *coeff_ptr, intptr_t n_coeffs, const MACROBLOCK_PLANE *p,
@@ -1732,7 +1708,6 @@ void av1_highbd_quantize_b_nuq_facade(
 #endif  // CONFIG_AOM_QM
           qcoeff_ptr, dqcoeff_ptr, eob_ptr, sc->scan, qm_ptr, iqm_ptr);
       break;
-#if CONFIG_TX64X64
     case 2:
       highbd_quantize_64x64_nuq(
           coeff_ptr, n_coeffs, skip_block, p->zbin_QTX, p->quant_QTX,
@@ -1745,7 +1720,6 @@ void av1_highbd_quantize_b_nuq_facade(
 #endif  // CONFIG_AOM_QM
           qcoeff_ptr, dqcoeff_ptr, eob_ptr, sc->scan, qm_ptr, iqm_ptr);
       break;
-#endif  // CONFIG_TX64X64
     default: assert(0);
   }
 }
@@ -1796,7 +1770,6 @@ void av1_highbd_quantize_fp_nuq_facade(
 #endif  // CONFIG_AOM_QM
           qcoeff_ptr, dqcoeff_ptr, eob_ptr, sc->scan, qm_ptr, iqm_ptr);
       break;
-#if CONFIG_TX64X64
     case 2:
       highbd_quantize_64x64_fp_nuq(
           coeff_ptr, n_coeffs, skip_block, p->quant_fp_QTX, p->dequant_QTX, dq,
@@ -1808,7 +1781,6 @@ void av1_highbd_quantize_fp_nuq_facade(
 #endif  // CONFIG_AOM_QM
           qcoeff_ptr, dqcoeff_ptr, eob_ptr, sc->scan, qm_ptr, iqm_ptr);
       break;
-#endif  // CONFIG_TX64X64
     default: assert(0);
   }
 }
@@ -1860,7 +1832,6 @@ void av1_highbd_quantize_dc_nuq_facade(
 #endif  // CONFIG_AOM_QM
           qcoeff_ptr, dqcoeff_ptr, eob_ptr, qm_ptr, iqm_ptr);
       break;
-#if CONFIG_TX64X64
     case 2:
       highbd_quantize_dc_64x64_fp_nuq(
           coeff_ptr, n_coeffs, skip_block, p->quant_fp_QTX[0],
@@ -1872,7 +1843,6 @@ void av1_highbd_quantize_dc_nuq_facade(
 #endif  // CONFIG_AOM_QM
           qcoeff_ptr, dqcoeff_ptr, eob_ptr, qm_ptr, iqm_ptr);
       break;
-#endif  // CONFIG_TX64X64
     default: assert(0);
   }
 }

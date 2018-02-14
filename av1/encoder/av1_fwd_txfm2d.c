@@ -27,9 +27,7 @@ static INLINE TxfmFunc fwd_txfm_type_to_func(TXFM_TYPE txfm_type) {
     case TXFM_TYPE_DCT8: return av1_fdct8_new;
     case TXFM_TYPE_DCT16: return av1_fdct16_new;
     case TXFM_TYPE_DCT32: return av1_fdct32_new;
-#if CONFIG_TX64X64
     case TXFM_TYPE_DCT64: return av1_fdct64_new;
-#endif  // CONFIG_TX64X64
     case TXFM_TYPE_ADST4: return av1_fadst4_new;
     case TXFM_TYPE_ADST8: return av1_fadst8_new;
     case TXFM_TYPE_ADST16: return av1_fadst16_new;
@@ -38,9 +36,7 @@ static INLINE TxfmFunc fwd_txfm_type_to_func(TXFM_TYPE txfm_type) {
     case TXFM_TYPE_IDENTITY8: return av1_fidentity8_c;
     case TXFM_TYPE_IDENTITY16: return av1_fidentity16_c;
     case TXFM_TYPE_IDENTITY32: return av1_fidentity32_c;
-#if CONFIG_TX64X64
     case TXFM_TYPE_IDENTITY64: return av1_fidentity64_c;
-#endif  // CONFIG_TX64X64
     default: assert(0); return NULL;
   }
 }
@@ -314,7 +310,6 @@ void av1_fwd_txfm2d_32x32_c(const int16_t *input, int32_t *output, int stride,
   fwd_txfm2d_c(input, output, stride, &cfg, txfm_buf, bd);
 }
 
-#if CONFIG_TX64X64
 void av1_fwd_txfm2d_64x64_c(const int16_t *input, int32_t *output, int stride,
                             TX_TYPE tx_type, int bd) {
   int32_t txfm_buf[64 * 64];
@@ -419,48 +414,33 @@ void av1_fwd_txfm2d_64x16_c(const int16_t *input, int32_t *output, int stride,
     memcpy(output + row * 32, output + row * 64, 32 * sizeof(*output));
   }
 }
-#endif  // CONFIG_TX64X64
 
 static const int8_t fwd_shift_4x4[3] = { 2, 0, 0 };
 static const int8_t fwd_shift_8x8[3] = { 2, -1, 0 };
 static const int8_t fwd_shift_16x16[3] = { 2, -2, 0 };
 static const int8_t fwd_shift_32x32[3] = { 2, -4, 0 };
-#if CONFIG_TX64X64
 static const int8_t fwd_shift_64x64[3] = { 0, -2, -2 };
-#endif
 static const int8_t fwd_shift_4x8[3] = { 2, -1, 0 };
 static const int8_t fwd_shift_8x4[3] = { 2, -1, 0 };
 static const int8_t fwd_shift_8x16[3] = { 2, -2, 0 };
 static const int8_t fwd_shift_16x8[3] = { 2, -2, 0 };
 static const int8_t fwd_shift_16x32[3] = { 2, -4, 0 };
 static const int8_t fwd_shift_32x16[3] = { 2, -4, 0 };
-#if CONFIG_TX64X64
 static const int8_t fwd_shift_32x64[3] = { 0, -2, -2 };
 static const int8_t fwd_shift_64x32[3] = { 2, -4, -2 };
-#endif
 static const int8_t fwd_shift_4x16[3] = { 2, -1, 0 };
 static const int8_t fwd_shift_16x4[3] = { 2, -1, 0 };
 static const int8_t fwd_shift_8x32[3] = { 2, -2, 0 };
 static const int8_t fwd_shift_32x8[3] = { 2, -2, 0 };
-#if CONFIG_TX64X64
 static const int8_t fwd_shift_16x64[3] = { 0, -2, 0 };
 static const int8_t fwd_shift_64x16[3] = { 2, -4, 0 };
-#endif  // CONFIG_TX64X64
 
 const int8_t *fwd_txfm_shift_ls[TX_SIZES_ALL] = {
   fwd_shift_4x4,   fwd_shift_8x8,   fwd_shift_16x16, fwd_shift_32x32,
-#if CONFIG_TX64X64
-  fwd_shift_64x64,
-#endif  // CONFIG_TX64X64
-  fwd_shift_4x8,   fwd_shift_8x4,   fwd_shift_8x16,  fwd_shift_16x8,
-  fwd_shift_16x32, fwd_shift_32x16,
-#if CONFIG_TX64X64
-  fwd_shift_32x64, fwd_shift_64x32,
-#endif  // CONFIG_TX64X64
-  fwd_shift_4x16,  fwd_shift_16x4,  fwd_shift_8x32,  fwd_shift_32x8,
-#if CONFIG_TX64X64
-  fwd_shift_16x64, fwd_shift_64x16,
-#endif  // CONFIG_TX64X64
+  fwd_shift_64x64, fwd_shift_4x8,   fwd_shift_8x4,   fwd_shift_8x16,
+  fwd_shift_16x8,  fwd_shift_16x32, fwd_shift_32x16, fwd_shift_32x64,
+  fwd_shift_64x32, fwd_shift_4x16,  fwd_shift_16x4,  fwd_shift_8x32,
+  fwd_shift_32x8,  fwd_shift_16x64, fwd_shift_64x16,
 };
 
 const int8_t fwd_cos_bit_col[MAX_TXWH_IDX /*txw_idx*/]

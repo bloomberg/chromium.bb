@@ -764,7 +764,6 @@ static void get_entropy_contexts_plane(
       for (i = 0; i < num_4x4_h; i += 8)
         t_left[i] = !!*(const uint64_t *)&left[i];
       break;
-#if CONFIG_TX64X64
     case TX_32X64:
       for (i = 0; i < num_4x4_w; i += 8)
         t_above[i] = !!*(const uint64_t *)&above[i];
@@ -801,7 +800,6 @@ static void get_entropy_contexts_plane(
         t_left[i] =
             !!(*(const uint64_t *)&left[i] | *(const uint64_t *)&left[i + 8]);
       break;
-#endif  // CONFIG_TX64X64
     case TX_4X8:
       memcpy(t_above, above, sizeof(ENTROPY_CONTEXT) * num_4x4_w);
       for (i = 0; i < num_4x4_h; i += 2)

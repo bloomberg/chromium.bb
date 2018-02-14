@@ -20,8 +20,6 @@
 #include "test/transform_test_base.h"
 #include "test/util.h"
 
-#if CONFIG_TX64X64
-
 using libaom_test::ACMRandom;
 
 namespace {
@@ -116,5 +114,3 @@ INSTANTIATE_TEST_CASE_P(C, AV1Trans64x64HT,
                         ::testing::ValuesIn(kArrayHt64x64Param_c));
 
 }  // namespace
-
-#endif  // CONFIG_TX64X64

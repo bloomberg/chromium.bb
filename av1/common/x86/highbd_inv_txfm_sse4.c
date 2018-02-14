@@ -1623,7 +1623,6 @@ void av1_inv_txfm2d_add_16x16_sse4_1(const int32_t *coeff, uint16_t *output,
   }
 }
 
-#if CONFIG_TX64X64
 static void load_buffer_64x64_lower_32x32(const int32_t *coeff, __m128i *in) {
   int i, j;
 
@@ -2264,4 +2263,3 @@ void av1_inv_txfm2d_add_64x64_sse4_1(const int32_t *coeff, uint16_t *output,
       break;
   }
 }
-#endif
