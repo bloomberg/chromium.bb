@@ -30,7 +30,8 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
       : cc_picture_layer_(cc::PictureLayer::Create(this)),
         raster_invalidator_([this](const IntRect& rect) {
           cc_picture_layer_->SetNeedsDisplayRect(rect);
-        }) {}
+        }),
+        layer_state_(nullptr, nullptr, nullptr) {}
   ~ContentLayerClientImpl() override = default;
 
   // cc::ContentLayerClient
@@ -76,6 +77,7 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
   scoped_refptr<cc::PictureLayer> cc_picture_layer_;
   scoped_refptr<cc::DisplayItemList> cc_display_item_list_;
   CompositedLayerRasterInvalidator raster_invalidator_;
+  PropertyTreeState layer_state_;
 
   String debug_name_;
 #if DCHECK_IS_ON()

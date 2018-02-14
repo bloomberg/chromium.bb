@@ -32,16 +32,18 @@ void CompositedLayerRasterInvalidator::SetTracksRasterInvalidations(
 
 IntRect CompositedLayerRasterInvalidator::MapRectFromChunkToLayer(
     const FloatRect& r,
-    const PaintChunk& chunk) const {
+    const PaintChunk& chunk,
+    const PropertyTreeState& layer_state) const {
   return ClipByLayerBounds(PaintChunksToCcLayer::MapRectFromChunkToLayer(
-      r, chunk, layer_state_, layer_bounds_.OffsetFromOrigin()));
+      r, chunk, layer_state, layer_bounds_.OffsetFromOrigin()));
 }
 
 TransformationMatrix CompositedLayerRasterInvalidator::ChunkToLayerTransform(
-    const PaintChunk& chunk) const {
+    const PaintChunk& chunk,
+    const PropertyTreeState& layer_state) const {
   auto matrix = GeometryMapper::SourceToDestinationProjection(
       chunk.properties.property_tree_state.Transform(),
-      layer_state_.Transform());
+      layer_state.Transform());
   matrix.Translate(-layer_bounds_.x(), -layer_bounds_.y());
   return matrix;
 }
@@ -49,16 +51,17 @@ TransformationMatrix CompositedLayerRasterInvalidator::ChunkToLayerTransform(
 // Returns the clip rect when we know it is precise (no radius, no complex
 // transform, no pixel moving filter, etc.)
 FloatClipRect CompositedLayerRasterInvalidator::ChunkToLayerClip(
-    const PaintChunk& chunk) const {
+    const PaintChunk& chunk,
+    const PropertyTreeState& layer_state) const {
   FloatClipRect clip_rect;
-  if (chunk.properties.property_tree_state.Effect() != layer_state_.Effect()) {
+  if (chunk.properties.property_tree_state.Effect() != layer_state.Effect()) {
     // Don't bother GeometryMapper because we don't need the rect when it's not
     // tight because of the effect nodes.
     clip_rect.ClearIsTight();
   } else {
     clip_rect = GeometryMapper::LocalToAncestorClipRect(
         chunk.properties.property_tree_state.GetPropertyTreeState(),
-        layer_state_);
+        layer_state);
     if (clip_rect.IsTight())
       clip_rect.MoveBy(FloatPoint(-layer_bounds_.x(), -layer_bounds_.y()));
   }
@@ -82,7 +85,8 @@ size_t CompositedLayerRasterInvalidator::MatchNewChunkToOldChunk(
 PaintInvalidationReason
 CompositedLayerRasterInvalidator::ChunkPropertiesChanged(
     const PaintChunkInfo& new_chunk,
-    const PaintChunkInfo& old_chunk) const {
+    const PaintChunkInfo& old_chunk,
+    const PropertyTreeState& layer_state) const {
   if (new_chunk.properties.backface_hidden !=
       old_chunk.properties.backface_hidden)
     return PaintInvalidationReason::kPaintProperty;
@@ -100,7 +104,7 @@ CompositedLayerRasterInvalidator::ChunkPropertiesChanged(
   const auto& new_chunk_state = new_chunk.properties.property_tree_state;
   const auto& old_chunk_state = old_chunk.properties.property_tree_state;
   if (new_chunk_state.Effect() != old_chunk_state.Effect() ||
-      new_chunk_state.Effect()->Changed(*layer_state_.Effect()))
+      new_chunk_state.Effect()->Changed(*layer_state.Effect()))
     return PaintInvalidationReason::kPaintProperty;
 
   // Check for accumulated clip rect change, if the clip rects are tight.
@@ -119,7 +123,7 @@ CompositedLayerRasterInvalidator::ChunkPropertiesChanged(
   // different, or the clip node's value changed between the layer state and the
   // chunk state.
   if (new_chunk_state.Clip() != old_chunk_state.Clip() ||
-      new_chunk_state.Clip()->Changed(*layer_state_.Clip()))
+      new_chunk_state.Clip()->Changed(*layer_state.Clip()))
     return PaintInvalidationReason::kPaintProperty;
 
   return PaintInvalidationReason::kNone;
@@ -137,7 +141,8 @@ CompositedLayerRasterInvalidator::ChunkPropertiesChanged(
 // is slightly larger than O(n).
 void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
     const Vector<const PaintChunk*>& new_chunks,
-    const Vector<PaintChunkInfo>& new_chunks_info) {
+    const Vector<PaintChunkInfo>& new_chunks_info,
+    const PropertyTreeState& layer_state) {
   Vector<bool> old_chunks_matched;
   old_chunks_matched.resize(paint_chunks_info_.size());
   size_t old_index = 0;
@@ -171,7 +176,8 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
     PaintInvalidationReason reason =
         matched_old_index < max_matched_old_index
             ? PaintInvalidationReason::kChunkReordered
-            : ChunkPropertiesChanged(new_chunk_info, old_chunk_info);
+            : ChunkPropertiesChanged(new_chunk_info, old_chunk_info,
+                                     layer_state);
 
     if (IsFullPaintInvalidationReason(reason)) {
       // Invalidate both old and new bounds of the chunk if the chunk's paint
@@ -185,7 +191,7 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
         IncrementallyInvalidateChunk(old_chunk_info, new_chunk_info);
 
       // Add the raster invalidations found by PaintController within the chunk.
-      AddDisplayItemRasterInvalidations(new_chunk);
+      AddDisplayItemRasterInvalidations(new_chunk, layer_state);
     }
 
     old_index = matched_old_index + 1;
@@ -206,14 +212,15 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
 }
 
 void CompositedLayerRasterInvalidator::AddDisplayItemRasterInvalidations(
-    const PaintChunk& chunk) {
+    const PaintChunk& chunk,
+    const PropertyTreeState& layer_state) {
   DCHECK(chunk.raster_invalidation_tracking.IsEmpty() ||
          chunk.raster_invalidation_rects.size() ==
              chunk.raster_invalidation_tracking.size());
 
   for (size_t i = 0; i < chunk.raster_invalidation_rects.size(); ++i) {
-    auto rect =
-        MapRectFromChunkToLayer(chunk.raster_invalidation_rects[i], chunk);
+    auto rect = MapRectFromChunkToLayer(chunk.raster_invalidation_rects[i],
+                                        chunk, layer_state);
     if (rect.IsEmpty())
       continue;
     raster_invalidation_function_(rect);
@@ -291,15 +298,15 @@ void CompositedLayerRasterInvalidator::Generate(
     EnsureTracking();
 
   bool layer_bounds_was_empty = layer_bounds_.IsEmpty();
-  layer_state_ = layer_state;
   layer_bounds_ = layer_bounds;
 
   Vector<PaintChunkInfo> new_chunks_info;
   new_chunks_info.ReserveCapacity(paint_chunks.size());
   for (const auto* chunk : paint_chunks) {
     new_chunks_info.push_back(PaintChunkInfo(
-        MapRectFromChunkToLayer(chunk->bounds, *chunk),
-        ChunkToLayerTransform(*chunk), ChunkToLayerClip(*chunk), *chunk));
+        MapRectFromChunkToLayer(chunk->bounds, *chunk, layer_state),
+        ChunkToLayerTransform(*chunk, layer_state),
+        ChunkToLayerClip(*chunk, layer_state), *chunk));
     if (tracking_info_) {
       tracking_info_->new_client_debug_names.insert(
           &chunk->id.client, chunk->id.client.DebugName());
@@ -307,7 +314,7 @@ void CompositedLayerRasterInvalidator::Generate(
   }
 
   if (!layer_bounds_was_empty && !layer_bounds_.IsEmpty())
-    GenerateRasterInvalidations(paint_chunks, new_chunks_info);
+    GenerateRasterInvalidations(paint_chunks, new_chunks_info, layer_state);
 
   paint_chunks_info_.clear();
   std::swap(paint_chunks_info_, new_chunks_info);
@@ -319,7 +326,8 @@ void CompositedLayerRasterInvalidator::Generate(
 }
 
 void CompositedLayerRasterInvalidator::GenerateForPropertyChanges(
-    const Vector<const PaintChunk*>& paint_chunks) {
+    const Vector<const PaintChunk*>& paint_chunks,
+    const PropertyTreeState& layer_state) {
   DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
   DCHECK(paint_chunks.size() == paint_chunks_info_.size() ||
          // The previous painting has raster under-invalidation overlay.
@@ -330,14 +338,16 @@ void CompositedLayerRasterInvalidator::GenerateForPropertyChanges(
   for (size_t i = 0; i < paint_chunks_info_.size(); ++i) {
     const auto* chunk = paint_chunks[i];
     new_chunks_info.push_back(PaintChunkInfo(
-        MapRectFromChunkToLayer(chunk->bounds, *chunk),
-        ChunkToLayerTransform(*chunk), ChunkToLayerClip(*chunk), *chunk));
+        MapRectFromChunkToLayer(chunk->bounds, *chunk, layer_state),
+        ChunkToLayerTransform(*chunk, layer_state),
+        ChunkToLayerClip(*chunk, layer_state), *chunk));
     const auto& new_chunk_info = new_chunks_info.back();
 
     const auto& old_chunk_info = paint_chunks_info_[i];
     DCHECK(chunk->id == old_chunk_info.id);
 
-    auto reason = ChunkPropertiesChanged(new_chunk_info, old_chunk_info);
+    auto reason =
+        ChunkPropertiesChanged(new_chunk_info, old_chunk_info, layer_state);
     if (reason == PaintInvalidationReason::kNone)
       continue;
 
