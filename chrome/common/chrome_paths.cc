@@ -70,6 +70,8 @@ const base::FilePath::CharType kComponentUpdatedFlashHint[] =
 #if defined(OS_CHROMEOS)
 const base::FilePath::CharType kChromeOSComponentFlash[] = FILE_PATH_LITERAL(
     "/run/imageloader/PepperFlashPlayer/libpepflashplayer.so");
+const base::FilePath::CharType kChromeOSTPMFirmwareUpdateLocation[] =
+    FILE_PATH_LITERAL("/run/tpm_firmware_update_location");
 #endif  // defined(OS_CHROMEOS)
 
 static base::LazyInstance<base::FilePath>::DestructorAtExit
@@ -573,6 +575,10 @@ bool PathProvider(int key, base::FilePath* result) {
       if (!PathService::Get(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("child_users"));
+      break;
+    case chrome::FILE_CHROME_OS_TPM_FIRMWARE_UPDATE_LOCATION:
+      cur = base::FilePath(kChromeOSTPMFirmwareUpdateLocation);
+      create_dir = false;
       break;
 #endif  // defined(OS_CHROMEOS)
 

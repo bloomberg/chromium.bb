@@ -118,19 +118,33 @@ void ResetScreen::Show() {
                                       weak_ptr_factory_.GetWeakPtr()));
   }
 
-  // Set availability of TPM firmware update.
-  tpm_firmware_update::ShouldOfferUpdateViaPowerwash(
-      base::Bind(&ResetScreen::OnTPMFirmwareUpdateAvailableCheck,
-                 weak_ptr_factory_.GetWeakPtr()));
-
   if (dialog_type < reset::DIALOG_VIEW_TYPE_SIZE) {
     UMA_HISTOGRAM_ENUMERATION("Reset.ChromeOS.PowerwashDialogShown",
                               dialog_type, reset::DIALOG_VIEW_TYPE_SIZE);
   }
 
+  // Set availability of TPM firmware update.
   PrefService* prefs = g_browser_process->local_state();
   bool tpm_firmware_update_requested =
       prefs->GetBoolean(prefs::kFactoryResetTPMFirmwareUpdateRequested);
+  if (tpm_firmware_update_requested) {
+    // If an update has been requested previously, rely on the earlier update
+    // availability test to initialize the dialog. This avoids a race condition
+    // where the powerwash dialog gets shown immediately after reboot before the
+    // init job to determine update availability has completed.
+    GetContextEditor().SetBoolean(kContextKeyIsTPMFirmwareUpdateAvailable,
+                                  true);
+  } else {
+    // If a TPM firmware update hasn't previously been requested, check the
+    // system to see whether to offer the checkbox to update TPM firmware. Note
+    // that due to the asynchronous availability check, the decision might not
+    // be available immediately, so set a timeout of 5 seconds.
+    tpm_firmware_update::ShouldOfferUpdateViaPowerwash(
+        base::BindOnce(&ResetScreen::OnTPMFirmwareUpdateAvailableCheck,
+                       weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(5));
+  }
+
   context_editor.SetBoolean(kContextKeyIsTPMFirmwareUpdateChecked,
                             tpm_firmware_update_requested);
   context_editor.SetBoolean(kContextKeyIsTPMFirmwareUpdateEditable,
@@ -208,8 +222,23 @@ void ResetScreen::OnPowerwash() {
     DBusThreadManager::Get()->GetUpdateEngineClient()->Rollback();
   } else if (context_.GetBoolean(kContextKeyIsTPMFirmwareUpdateChecked)) {
     VLOG(1) << "Starting TPM firmware update";
-    DBusThreadManager::Get()->GetSessionManagerClient()->StartTPMFirmwareUpdate(
-        "first_boot");
+    // Re-check availability with a timeout of 5 seconds. This addresses the
+    // case where the powerwash dialog gets shown immediately after reboot and
+    // the decision on whether the update is available is not known immediately.
+    tpm_firmware_update::ShouldOfferUpdateViaPowerwash(
+        base::BindOnce([](bool available) {
+          if (!available) {
+            // This should not happen, except for edge cases such as hijacked
+            // UI, device policy changing while the dialog was up, etc.
+            LOG(ERROR) << "Firmware update no longer available?";
+            return;
+          }
+
+          DBusThreadManager::Get()
+              ->GetSessionManagerClient()
+              ->StartTPMFirmwareUpdate("first_boot");
+        }),
+        base::TimeDelta::FromSeconds(5));
   } else {
     VLOG(1) << "Starting Powerwash";
     DBusThreadManager::Get()->GetSessionManagerClient()->StartDeviceWipe();

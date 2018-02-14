@@ -75,7 +75,7 @@ void BrowserLifetimeHandler::HandleFactoryReset(
                             true);
           prefs->CommitPendingWrite();
           chrome::AttemptRelaunch();
-        }));
+        }), base::TimeDelta());
     return;
   }
 

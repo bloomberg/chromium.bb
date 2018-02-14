@@ -594,7 +594,8 @@ void AboutHandler::HandleRefreshTPMFirmwareUpdateStatus(
     const base::ListValue* args) {
   chromeos::tpm_firmware_update::ShouldOfferUpdateViaPowerwash(
       base::Bind(&AboutHandler::RefreshTPMFirmwareUpdateStatus,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr()),
+      base::TimeDelta());
 }
 
 void AboutHandler::RefreshTPMFirmwareUpdateStatus(bool update_available) {
