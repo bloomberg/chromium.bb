@@ -168,6 +168,7 @@ bool CommandBufferHelper::WaitForGetOffsetInRange(int32_t start, int32_t end) {
 }
 
 void CommandBufferHelper::Flush() {
+  TRACE_EVENT0("gpu", "CommandBufferHelper::Flush");
   // Wrap put_ before flush.
   if (put_ == total_entry_count_)
     put_ = 0;

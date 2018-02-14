@@ -4,6 +4,8 @@
 
 #include "cc/test/test_skcanvas.h"
 
+#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
+
 namespace cc {
 
 SaveCountingCanvas::SaveCountingCanvas() : SkNoDrawCanvas(100, 100) {}

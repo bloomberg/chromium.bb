@@ -94,17 +94,20 @@ CC_PAINT_EXPORT std::string PaintOpTypeToString(PaintOpType type);
 struct CC_PAINT_EXPORT PlaybackParams {
   using CustomDataRasterCallback =
       base::RepeatingCallback<void(SkCanvas* canvas, uint32_t id)>;
+  using DidDrawOpCallback = base::RepeatingCallback<void()>;
 
   explicit PlaybackParams(ImageProvider* image_provider);
   PlaybackParams(
       ImageProvider* image_provider,
       const SkMatrix& original_ctm,
-      CustomDataRasterCallback custom_callback = CustomDataRasterCallback());
+      CustomDataRasterCallback custom_callback = CustomDataRasterCallback(),
+      DidDrawOpCallback did_draw_op_callback = DidDrawOpCallback());
   ~PlaybackParams();
 
   ImageProvider* image_provider;
   const SkMatrix original_ctm;
   CustomDataRasterCallback custom_callback;
+  DidDrawOpCallback did_draw_op_callback;
 };
 
 class CC_PAINT_EXPORT PaintOp {

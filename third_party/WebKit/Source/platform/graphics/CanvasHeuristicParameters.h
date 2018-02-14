@@ -63,6 +63,21 @@ enum {
   // readbacks are prevented.
   kEnableAccelerationToAvoidReadbacks = 1,
 
+  // Accelerated rendering heuristics
+  // =================================
+
+  // Enables frequent flushing of the GrContext for accelerated canvas. Since
+  // skia internally batches the GrOp list when flushing the recording onto the
+  // SkCanvasand may only flush it the command buffer at the end of the frame,
+  // it can lead to inefficient parallelization with the GPU. This enables
+  // triggering context flushes at regular intervals, after a fixed number of
+  // draws.
+  kEnableGrContextFlushes = 1,
+
+  // The maximum number of draw ops executed on the canvas, after which the
+  // underlying GrContext is flushed.
+  kMaxDrawsBeforeContextFlush = 50,
+
 };  // enum
 
 }  // namespace CanvasHeuristicParameters
