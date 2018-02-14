@@ -17,5 +17,6 @@ source_set("tab_grid") {
   deps = [
     "//base",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/tab_switcher",
   ]
 }

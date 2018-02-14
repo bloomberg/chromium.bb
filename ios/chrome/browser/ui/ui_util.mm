@@ -63,6 +63,10 @@ bool IsUIRefreshPhase1Enabled() {
   return base::FeatureList::IsEnabled(kUIRefreshPhase1);
 }
 
+bool IsTabSwitcherTabGridEnabled() {
+  return base::FeatureList::IsEnabled(kTabSwitcherTabGrid);
+}
+
 CGFloat StatusBarHeight() {
   // This is a temporary solution until usage of StatusBarHeight has been
   // replaced with topLayoutGuide.

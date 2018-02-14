@@ -133,6 +133,7 @@
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #import "ios/chrome/browser/ui/stack_view/stack_view_controller.h"
+#include "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_controller.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -1871,20 +1872,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
 
   if (!_tabSwitcherController) {
-    if (IsIPadIdiom()) {
-      _tabSwitcherController = [[TabSwitcherController alloc]
-                initWithBrowserState:_mainBrowserState
-                        mainTabModel:self.mainTabModel
-                         otrTabModel:self.otrTabModel
-                      activeTabModel:self.currentTabModel
-          applicationCommandEndpoint:self];
-    } else {
-      _tabSwitcherController =
-          [[StackViewController alloc] initWithMainTabModel:self.mainTabModel
-                                                otrTabModel:self.otrTabModel
-                                             activeTabModel:self.currentTabModel
-                                 applicationCommandEndpoint:self];
-    }
+    _tabSwitcherController = [self newTabSwitcherController];
   } else {
     // The StackViewController is kept in memory to avoid the performance hit of
     // loading from the nib on next showing, but clears out its card models to
@@ -2520,6 +2508,29 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)setUpCurrentBVCForTesting {
   [self.otrTabModel closeAllTabs];
   [self.mainTabModel closeAllTabs];
+}
+
+#pragma mark - Experimental flag
+
+- (UIViewController<TabSwitcher>*)newTabSwitcherController {
+  if (IsTabSwitcherTabGridEnabled()) {
+    return [[TabGridViewController alloc] init];
+  } else {
+    if (IsIPadIdiom()) {
+      return [[TabSwitcherController alloc]
+                initWithBrowserState:_mainBrowserState
+                        mainTabModel:self.mainTabModel
+                         otrTabModel:self.otrTabModel
+                      activeTabModel:self.currentTabModel
+          applicationCommandEndpoint:self];
+    } else {
+      return
+          [[StackViewController alloc] initWithMainTabModel:self.mainTabModel
+                                                otrTabModel:self.otrTabModel
+                                             activeTabModel:self.currentTabModel
+                                 applicationCommandEndpoint:self];
+    }
+  }
 }
 
 @end

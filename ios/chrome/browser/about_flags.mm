@@ -233,6 +233,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMailtoHandlingWithGoogleUIName,
      flag_descriptions::kMailtoHandlingWithGoogleUIDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kMailtoHandledWithGoogleUI)},
+    {"tab-switcher-tab-grid", flag_descriptions::kTabSwitcherTabGridName,
+     flag_descriptions::kTabSwitcherTabGridDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kTabSwitcherTabGrid)},
 };
 
 // Add all switches from experimental flags to |command_line|.

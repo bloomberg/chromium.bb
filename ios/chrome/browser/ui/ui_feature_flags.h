@@ -11,4 +11,8 @@
 // used directly. Instead use ui_util::IsUIRefreshPhase1Enabled().
 extern const base::Feature kUIRefreshPhase1;
 
+// Used to enable the tab grid on phone and tablet. This flag should not be
+// used directly. Instead use ui_util::IsTabSwitcherTabGridEnabled().
+extern const base::Feature kTabSwitcherTabGrid;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_
