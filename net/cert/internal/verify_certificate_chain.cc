@@ -131,7 +131,7 @@ void VerifyTimeValidity(const ParsedCertificate& cert,
 // In practice however there are certificates which use different encodings for
 // specifying RSA with SHA1 (different OIDs). This is special-cased for
 // compatibility sake.
-void VerifySignatureAlgorithmsMatch(const ParsedCertificate& cert,
+bool VerifySignatureAlgorithmsMatch(const ParsedCertificate& cert,
                                     CertErrors* errors) {
   const der::Input& alg1_tlv = cert.signature_algorithm_tlv();
   const der::Input& alg2_tlv = cert.tbs().signature_algorithm_tlv;
@@ -139,7 +139,7 @@ void VerifySignatureAlgorithmsMatch(const ParsedCertificate& cert,
   // Ensure that the two DER-encoded signature algorithms are byte-for-byte
   // equal.
   if (alg1_tlv == alg2_tlv)
-    return;
+    return true;
 
   // But make a compatibility concession if alternate encodings are used
   // TODO(eroman): Turn this warning into an error.
@@ -149,13 +149,14 @@ void VerifySignatureAlgorithmsMatch(const ParsedCertificate& cert,
         cert_errors::kSignatureAlgorithmsDifferentEncoding,
         CreateCertErrorParams2Der("Certificate.algorithm", alg1_tlv,
                                   "TBSCertificate.signature", alg2_tlv));
-    return;
+    return true;
   }
 
   errors->AddError(
       cert_errors::kSignatureAlgorithmMismatch,
       CreateCertErrorParams2Der("Certificate.algorithm", alg1_tlv,
                                 "TBSCertificate.signature", alg2_tlv));
+  return false;
 }
 
 // Verify that |cert| can be used for |required_key_purpose|.
@@ -432,7 +433,8 @@ class PathVerifier {
                                   bool is_target_cert,
                                   const der::GeneralizedTime& time,
                                   KeyPurpose required_key_purpose,
-                                  CertErrors* errors);
+                                  CertErrors* errors,
+                                  bool* shortcircuit_chain_validation);
 
   // This function corresponds to RFC 5280 section 6.1.4's "Preparation for
   // Certificate i+1" procedure. |cert| is expected to be an intermediate.
@@ -456,7 +458,8 @@ class PathVerifier {
   void ProcessRootCertificate(const ParsedCertificate& cert,
                               const CertificateTrust& trust,
                               KeyPurpose required_key_purpose,
-                              CertErrors* errors);
+                              CertErrors* errors,
+                              bool* shortcircuit_chain_validation);
 
   // Parses |spki| to an EVP_PKEY and checks whether the public key is accepted
   // by |delegate_|. On failure parsing returns nullptr. If either parsing the
@@ -757,15 +760,19 @@ void PathVerifier::BasicCertificateProcessing(
     bool is_target_cert,
     const der::GeneralizedTime& time,
     KeyPurpose required_key_purpose,
-    CertErrors* errors) {
+    CertErrors* errors,
+    bool* shortcircuit_chain_validation) {
+  *shortcircuit_chain_validation = false;
   // Check that the signature algorithms in Certificate vs TBSCertificate
   // match. This isn't part of RFC 5280 section 6.1.3, but is mandated by
   // sections 4.1.1.2 and 4.1.2.3.
-  VerifySignatureAlgorithmsMatch(cert, errors);
+  if (!VerifySignatureAlgorithmsMatch(cert, errors))
+    *shortcircuit_chain_validation = true;
 
   // Check whether this signature algorithm is allowed.
   if (!delegate_->IsSignatureAlgorithmAcceptable(cert.signature_algorithm(),
                                                  errors)) {
+    *shortcircuit_chain_validation = true;
     errors->AddError(cert_errors::kUnacceptableSignatureAlgorithm);
   }
 
@@ -775,9 +782,12 @@ void PathVerifier::BasicCertificateProcessing(
     if (!VerifySignedData(cert.signature_algorithm(),
                           cert.tbs_certificate_tlv(), cert.signature_value(),
                           working_public_key_.get())) {
+      *shortcircuit_chain_validation = true;
       errors->AddError(cert_errors::kVerifySignedDataFailed);
     }
   }
+  if (*shortcircuit_chain_validation)
+    return;
 
   // Check the time range for the certificate's validity, ensuring it is valid
   // at |time|.
@@ -1083,21 +1093,19 @@ void PathVerifier::ApplyTrustAnchorConstraints(const ParsedCertificate& cert,
 void PathVerifier::ProcessRootCertificate(const ParsedCertificate& cert,
                                           const CertificateTrust& trust,
                                           KeyPurpose required_key_purpose,
-                                          CertErrors* errors) {
-  // Use the certificate's SPKI and subject when verifying the next certificate.
-  // Note this is initialized even in the case of untrusted roots (they already
-  // emit an error for the distrust).
-  working_public_key_ = ParseAndCheckPublicKey(cert.tbs().spki_tlv, errors);
-  working_normalized_issuer_name_ = cert.normalized_subject();
-
+                                          CertErrors* errors,
+                                          bool* shortcircuit_chain_validation) {
+  *shortcircuit_chain_validation = false;
   switch (trust.type) {
     case CertificateTrustType::UNSPECIFIED:
       // Doesn't chain to a trust anchor - implicitly distrusted
       errors->AddError(cert_errors::kCertIsNotTrustAnchor);
+      *shortcircuit_chain_validation = true;
       break;
     case CertificateTrustType::DISTRUSTED:
       // Chains to an actively distrusted certificate.
       errors->AddError(cert_errors::kDistrustedByTrustStore);
+      *shortcircuit_chain_validation = true;
       break;
     case CertificateTrustType::TRUSTED_ANCHOR:
     case CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS:
@@ -1107,6 +1115,12 @@ void PathVerifier::ProcessRootCertificate(const ParsedCertificate& cert,
       }
       break;
   }
+  if (*shortcircuit_chain_validation)
+    return;
+
+  // Use the certificate's SPKI and subject when verifying the next certificate.
+  working_public_key_ = ParseAndCheckPublicKey(cert.tbs().spki_tlv, errors);
+  working_normalized_issuer_name_ = cert.normalized_subject();
 }
 
 bssl::UniquePtr<EVP_PKEY> PathVerifier::ParseAndCheckPublicKey(
@@ -1216,20 +1230,38 @@ void PathVerifier::Run(
     CertErrors* cert_errors = errors->GetErrorsForCert(index_into_certs);
 
     if (is_root_cert) {
+      bool shortcircuit_chain_validation = false;
       ProcessRootCertificate(cert, last_cert_trust, required_key_purpose,
-                             cert_errors);
+                             cert_errors, &shortcircuit_chain_validation);
+      if (shortcircuit_chain_validation) {
+        // Chains that don't start from a trusted root should short-circuit the
+        // rest of the verification, as accumulating more errors from untrusted
+        // certificates would not be meaningful.
+        DCHECK(cert_errors->ContainsAnyErrorWithSeverity(
+            CertError::SEVERITY_HIGH));
+        return;
+      }
 
       // Don't do any other checks for root certificates.
       continue;
     }
 
+    bool shortcircuit_chain_validation = false;
     // Per RFC 5280 section 6.1:
     //  * Do basic processing for each certificate
     //  * If it is the last certificate in the path (target certificate)
     //     - Then run "Wrap up"
     //     - Otherwise run "Prepare for Next cert"
     BasicCertificateProcessing(cert, is_target_cert, time, required_key_purpose,
-                               cert_errors);
+                               cert_errors, &shortcircuit_chain_validation);
+    if (shortcircuit_chain_validation) {
+      // Signature errors should short-circuit the rest of the verification, as
+      // accumulating more errors from untrusted certificates would not be
+      // meaningful.
+      DCHECK(
+          cert_errors->ContainsAnyErrorWithSeverity(CertError::SEVERITY_HIGH));
+      return;
+    }
     if (!is_target_cert) {
       PrepareForNextCertificate(cert, cert_errors);
     } else {

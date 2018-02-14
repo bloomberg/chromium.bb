@@ -102,6 +102,13 @@ class PkitsTest : public ::testing::Test {
     // Some of the PKITS tests are intentionally given different expectations
     // from PKITS.pdf.
     //
+    // Empty user_constrained_policy_set due to short-circuit on invalid
+    // signatures:
+    //
+    //   4.1.2 - Invalid CA Signature Test2
+    //   4.1.3 - Invalid EE Signature Test3
+    //   4.1.6 - Invalid DSA Signature Test6
+    //
     // Expected to fail because DSA signatures are not supported:
     //
     //   4.1.4 - Valid DSA Signatures Test4
@@ -120,11 +127,19 @@ class PkitsTest : public ::testing::Test {
     //
     //   4.13.34 - Valid URI nameConstraints Test34
     //   4.13.36 - Valid URI nameConstraints Test36
-    if (test_number == "4.1.4" || test_number == "4.1.4" ||
-        test_number == "4.1.5" || test_number == "4.13.21" ||
-        test_number == "4.13.23" || test_number == "4.13.25" ||
-        test_number == "4.13.27" || test_number == "4.13.34" ||
-        test_number == "4.13.36") {
+    if (test_number == "4.1.2" || test_number == "4.1.3" ||
+        test_number == "4.1.6") {
+      PkitsTestInfo modified_info = info;
+      modified_info.user_constrained_policy_set = {};
+      PkitsTestDelegate::RunTest(cert_ders, crl_ders, modified_info);
+    } else if (test_number == "4.1.4" || test_number == "4.1.5") {
+      PkitsTestInfo modified_info = info;
+      modified_info.user_constrained_policy_set = {};
+      modified_info.should_validate = false;
+      PkitsTestDelegate::RunTest(cert_ders, crl_ders, modified_info);
+    } else if (test_number == "4.13.21" || test_number == "4.13.23" ||
+               test_number == "4.13.25" || test_number == "4.13.27" ||
+               test_number == "4.13.34" || test_number == "4.13.36") {
       PkitsTestInfo modified_info = info;
       modified_info.should_validate = false;
       PkitsTestDelegate::RunTest(cert_ders, crl_ders, modified_info);
