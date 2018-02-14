@@ -35,6 +35,7 @@
 #include "base/macros.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/page/Page.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/ThreadSpecific.h"
@@ -48,9 +49,14 @@ static const double kTwentyMinutesInSeconds = 20 * 60;
 static void GetHeapSize(HeapInfo& info) {
   v8::HeapStatistics heap_statistics;
   v8::Isolate::GetCurrent()->GetHeapStatistics(&heap_statistics);
+  info.js_heap_size_limit = heap_statistics.heap_size_limit();
+  // If there are multiple tabs from this renderer, do not report used and total
+  // js heap size.
+  if (Page::OrdinaryPages().size() > 1u)
+    return;
+
   info.used_js_heap_size = heap_statistics.used_heap_size();
   info.total_js_heap_size = heap_statistics.total_physical_size();
-  info.js_heap_size_limit = heap_statistics.heap_size_limit();
 }
 
 class HeapSizeCache {
@@ -86,9 +92,16 @@ class HeapSizeCache {
 
   void Update() {
     GetHeapSize(info_);
-    info_.used_js_heap_size = QuantizeMemorySize(info_.used_js_heap_size);
-    info_.total_js_heap_size = QuantizeMemorySize(info_.total_js_heap_size);
     info_.js_heap_size_limit = QuantizeMemorySize(info_.js_heap_size_limit);
+    DCHECK(info_.used_js_heap_size.has_value() ==
+           info_.total_js_heap_size.has_value());
+    if (!info_.used_js_heap_size.has_value())
+      return;
+
+    info_.used_js_heap_size =
+        QuantizeMemorySize(info_.used_js_heap_size.value());
+    info_.total_js_heap_size =
+        QuantizeMemorySize(info_.total_js_heap_size.value());
   }
 
   double last_update_time_;
@@ -154,6 +167,24 @@ MemoryInfo::MemoryInfo() {
     GetHeapSize(info_);
   else
     HeapSizeCache::ForCurrentThread().GetCachedHeapSize(info_);
+}
+
+size_t MemoryInfo::totalJSHeapSize(bool& is_null) const {
+  if (!info_.total_js_heap_size.has_value()) {
+    is_null = true;
+    return 0;
+  }
+  is_null = false;
+  return info_.total_js_heap_size.value();
+}
+
+size_t MemoryInfo::usedJSHeapSize(bool& is_null) const {
+  if (!info_.used_js_heap_size.has_value()) {
+    is_null = true;
+    return 0;
+  }
+  is_null = false;
+  return info_.used_js_heap_size.value();
 }
 
 }  // namespace blink
