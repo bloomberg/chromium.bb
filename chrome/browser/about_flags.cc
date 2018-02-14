@@ -62,7 +62,6 @@
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_tiles/constants.h"
-#include "components/ntp_tiles/switches.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_switches.h"
@@ -2340,12 +2339,6 @@ const FeatureEntry kFeatureEntries[] = {
          "disallowFetchForDocWrittenScriptsInMainFrame=true",
          switches::kBlinkSettings,
          "disallowFetchForDocWrittenScriptsInMainFrame=false")},
-#if defined(OS_ANDROID)
-    {"enable-ntp-popular-sites", flag_descriptions::kNtpPopularSitesName,
-     flag_descriptions::kNtpPopularSitesDescription, kOsAndroid,
-     ENABLE_DISABLE_VALUE_TYPE(ntp_tiles::switches::kEnableNTPPopularSites,
-                               ntp_tiles::switches::kDisableNTPPopularSites)},
-#endif  // OS_ANDROID
 #if defined(OS_WIN)
     {"trace-export-events-to-etw",
      flag_descriptions::kTraceExportEventsToEtwName,

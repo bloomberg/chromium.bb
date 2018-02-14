@@ -214,7 +214,6 @@ android_library("chrome_java") {
     "//components/location/android:location_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/navigation_interception/android:navigation_interception_java",
-    "//components/ntp_tiles/android:ntp_tiles_java",
     "//components/offline_items_collection/core:core_java",
     "//components/payments/content/android:java",
     "//components/payments/mojom:mojom_java",

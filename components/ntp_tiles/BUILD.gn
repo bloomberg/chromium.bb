@@ -12,8 +12,6 @@ static_library("ntp_tiles") {
     "constants.h",
     "country_code_ios.h",
     "country_code_ios.mm",
-    "field_trial.cc",
-    "field_trial.h",
     "icon_cacher.h",
     "icon_cacher_impl.cc",
     "icon_cacher_impl.h",
@@ -63,10 +61,6 @@ static_library("ntp_tiles") {
     "//components/variations/service",
     "//ui/base",
   ]
-
-  if (is_android) {
-    deps += [ "android:ntp_tiles_jni_headers" ]
-  }
 }
 
 # If you want to use this, let us (ntp-dev@chromium.org) know. In that case, it
