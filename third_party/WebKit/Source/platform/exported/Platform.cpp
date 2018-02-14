@@ -192,7 +192,7 @@ base::SingleThreadTaskRunner* Platform::FileTaskRunner() const {
 
 scoped_refptr<base::SingleThreadTaskRunner> Platform::BaseFileTaskRunner()
     const {
-  return file_thread_ ? file_thread_->GetSingleThreadTaskRunner() : nullptr;
+  return file_thread_ ? file_thread_->GetTaskRunner() : nullptr;
 }
 
 service_manager::Connector* Platform::GetConnector() {

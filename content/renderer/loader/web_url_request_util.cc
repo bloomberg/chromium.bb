@@ -493,7 +493,7 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
               // InterfaceProvider instead (crbug.com/734210).
               blink::Platform::Current()
                   ->MainThread()
-                  ->GetSingleThreadTaskRunner()
+                  ->GetTaskRunner()
                   ->PostTask(FROM_HERE,
                              base::BindOnce(&GetBlobRegistry,
                                             MakeRequest(&blob_registry)));

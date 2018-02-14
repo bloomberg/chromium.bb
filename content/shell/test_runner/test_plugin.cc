@@ -214,10 +214,8 @@ void TestPlugin::Destroy() {
 
   container_ = nullptr;
 
-  blink::Platform::Current()
-      ->MainThread()
-      ->GetSingleThreadTaskRunner()
-      ->DeleteSoon(FROM_HERE, this);
+  blink::Platform::Current()->MainThread()->GetTaskRunner()->DeleteSoon(
+      FROM_HERE, this);
 }
 
 blink::WebPluginContainer* TestPlugin::Container() const {

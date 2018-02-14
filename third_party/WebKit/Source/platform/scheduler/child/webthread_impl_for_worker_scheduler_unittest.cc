@@ -83,7 +83,7 @@ class WebThreadImplForWorkerSchedulerTest : public ::testing::Test {
     base::WaitableEvent completion(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
-    thread_->GetSingleThreadTaskRunner()->PostTask(
+    thread_->GetTaskRunner()->PostTask(
         from_here,
         base::Bind(&WebThreadImplForWorkerSchedulerTest::RunOnWorkerThreadTask,
                    base::Unretained(this), task, &completion));
