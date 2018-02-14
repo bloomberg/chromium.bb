@@ -17,6 +17,14 @@ AllocationTracker::AllocationTracker(CompleteCallback complete_cb,
       backtrace_storage_(backtrace_storage) {}
 
 AllocationTracker::~AllocationTracker() {
+  for (auto& pair : registered_snapshot_callbacks_) {
+    RunnerSnapshotCallbackPair& rsc_pair = pair.second;
+    rsc_pair.first->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(rsc_pair.second), false, AllocationCountMap(),
+                       ContextMap(), AddressToStringMap()));
+  }
+
   std::vector<const Backtrace*> to_free;
   to_free.reserve(live_allocs_.size());
   for (const auto& cur : live_allocs_)

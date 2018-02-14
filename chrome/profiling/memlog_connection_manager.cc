@@ -108,7 +108,9 @@ struct MemlogConnectionManager::Connection {
   uint32_t sampling_rate = 1;
 };
 
-MemlogConnectionManager::MemlogConnectionManager() : weak_factory_(this) {
+MemlogConnectionManager::MemlogConnectionManager()
+    : blocking_thread_("Blocking thread"), weak_factory_(this) {
+  blocking_thread_.Start();
   metrics_timer_.Start(FROM_HERE, base::TimeDelta::FromHours(24),
                        base::Bind(&MemlogConnectionManager::ReportMetrics,
                                   base::Unretained(this)));
@@ -267,9 +269,9 @@ void MemlogConnectionManager::DoDumpOneProcessForTracing(
   // All code paths through here must issue the callback when waiting_responses
   // is 0 or the browser will wait forever for the dump.
   DCHECK(tracking->waiting_responses > 0);
-  tracking->waiting_responses--;
 
   if (!success) {
+    tracking->waiting_responses--;
     if (tracking->waiting_responses == 0)
       std::move(tracking->callback).Run(std::move(tracking->results));
     return;
@@ -306,32 +308,57 @@ void MemlogConnectionManager::DoDumpOneProcessForTracing(
   std::ostringstream oss;
   ExportMemoryMapsAndV2StackTraceToJSON(&params, oss);
   std::string reply = oss.str();
+  size_t reply_size = reply.size();
 
   next_id_ = params.next_id;
 
-  mojo::ScopedSharedBufferHandle buffer =
-      mojo::SharedBufferHandle::Create(reply.size());
-  if (!buffer.is_valid()) {
-    DLOG(ERROR) << "Could not create Mojo shared buffer";
-  } else {
-    mojo::ScopedSharedBufferMapping mapping = buffer->Map(reply.size());
-    if (!mapping) {
-      DLOG(ERROR) << "Could not map Mojo shared buffer";
-    } else {
-      memcpy(mapping.get(), reply.c_str(), reply.size());
+  using FinishedCallback =
+      base::OnceCallback<void(mojo::ScopedSharedBufferHandle)>;
+  FinishedCallback finished_callback = base::BindOnce(
+      [](std::string reply, base::ProcessId pid,
+         scoped_refptr<DumpProcessesForTracingTracking> tracking,
+         mojo::ScopedSharedBufferHandle buffer) {
+        if (!buffer.is_valid()) {
+          DLOG(ERROR) << "Could not create Mojo shared buffer";
+        } else {
+          mojo::ScopedSharedBufferMapping mapping = buffer->Map(reply.size());
+          if (!mapping) {
+            DLOG(ERROR) << "Could not map Mojo shared buffer";
+          } else {
+            memcpy(mapping.get(), reply.c_str(), reply.size());
 
-      profiling::mojom::SharedBufferWithSizePtr result =
-          profiling::mojom::SharedBufferWithSize::New();
-      result->buffer = std::move(buffer);
-      result->size = reply.size();
-      result->pid = pid;
-      tracking->results.push_back(std::move(result));
-    }
-  }
+            profiling::mojom::SharedBufferWithSizePtr result =
+                profiling::mojom::SharedBufferWithSize::New();
+            result->buffer = std::move(buffer);
+            result->size = reply.size();
+            result->pid = pid;
+            tracking->results.push_back(std::move(result));
+          }
+        }
 
-  // When all responses complete, issue done callback.
-  if (tracking->waiting_responses == 0)
-    std::move(tracking->callback).Run(std::move(tracking->results));
+        // When all responses complete, issue done callback.
+        tracking->waiting_responses--;
+        if (tracking->waiting_responses == 0)
+          std::move(tracking->callback).Run(std::move(tracking->results));
+      },
+      std::move(reply), pid, tracking);
+
+  blocking_thread_.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](size_t size,
+                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                        FinishedCallback callback) {
+                       // This call will send a synchronous IPC to the browser
+                       // process.
+                       mojo::ScopedSharedBufferHandle buffer =
+                           mojo::SharedBufferHandle::Create(size);
+                       task_runner->PostTask(FROM_HERE,
+                                             base::BindOnce(std::move(callback),
+                                                            std::move(buffer)));
+
+                     },
+                     reply_size, base::MessageLoop::current()->task_runner(),
+                     std::move(finished_callback)));
 }
 
 }  // namespace profiling
