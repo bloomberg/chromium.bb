@@ -408,10 +408,42 @@ void CastChannelSendFunction::AsyncWorkStart() {
     AsyncWorkCompleted();
     return;
   }
-  // TODO(https://crbug.com/656607): Add proper annotation.
+
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("cast_channel_send", R"(
+        semantics {
+          sender: "Cast Channel"
+          description:
+            "A Cast protocol or application-level message sent to a Cast "
+            "device."
+          trigger:
+            "Triggered by user gesture from using Cast functionality, or "
+            "a webpage using the Presentation API, or "
+            "Cast device discovery internal logic."
+          data:
+            "A serialized Cast protocol or application-level protobuf message. "
+            "A non-exhaustive list of Cast protocol messages:\n"
+            "- Virtual connection requests,\n"
+            "- App availability / media status / receiver status requests,\n"
+            "- Launch / stop Cast session requests,\n"
+            "- Media commands, such as play/pause.\n"
+            "Application-level messages may contain data specific to the Cast "
+            "application."
+          destination: OTHER
+          destination_other:
+            "Data will be sent to a Cast device in local network."
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "This request cannot be disabled, but it would not be sent if user "
+            "does not connect a Cast device to the local network."
+          policy_exception_justification: "Not implemented."
+        })");
+
   socket->transport()->SendMessage(
       message_to_send, base::Bind(&CastChannelSendFunction::OnSend, this),
-      NO_TRAFFIC_ANNOTATION_BUG_656607);
+      traffic_annotation);
 }
 
 void CastChannelSendFunction::OnSend(int result) {
