@@ -22,9 +22,30 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 
 /**
- * Displays the "Add to Homescreen" dialog.
+ * Displays the "Add to Homescreen" dialog, which contains a (possibly editable) title, icon, and
+ * possibly an origin.
+ *
+ * When show() is invoked, the dialog is shown immediately. A spinner is displayed if any data is
+ * not yet fetched, and accepting the dialog is disabled until all data is available and in its
+ * place on the screen.
  */
-public class AddToHomescreenDialog implements AddToHomescreenManager.Observer {
+public class AddToHomescreenDialog {
+    /**
+     * The delegate for which this dialog is displayed. Used by the dialog to indicate when the user
+     * accedes to adding to home screen, and when the dialog is dismissedt gr.
+     */
+    public static interface Delegate {
+        /**
+         * Called when the user accepts adding the item to the home screen with the provided title.
+         */
+        void addToHomescreen(String title);
+
+        /**
+         * Called when the dialog's lifetime is over and it is dismissed from the screen.
+         */
+        void onDialogDismissed();
+    }
+
     private AlertDialog mDialog;
     private View mProgressBarView;
     private ImageView mIconView;
@@ -36,16 +57,12 @@ public class AddToHomescreenDialog implements AddToHomescreenManager.Observer {
     private EditText mShortcutTitleInput;
     private LinearLayout mPwaLayout;
 
-    private AddToHomescreenManager mManager;
+    private Delegate mDelegate;
 
-    /**
-     * Whether {@link mManager} is ready for {@link AddToHomescreenManager#addShortcut()} to be
-     * called.
-     */
-    private boolean mIsReadyToAdd;
+    private boolean mHasIcon;
 
-    public AddToHomescreenDialog(AddToHomescreenManager manager) {
-        mManager = manager;
+    public AddToHomescreenDialog(Delegate delegate) {
+        mDelegate = delegate;
     }
 
     @VisibleForTesting
@@ -103,12 +120,10 @@ public class AddToHomescreenDialog implements AddToHomescreenManager.Observer {
         // The "Add" button should be disabled if the dialog's text field is empty.
         mShortcutTitleInput.addTextChangedListener(new TextWatcher() {
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void afterTextChanged(Editable editableText) {
@@ -122,8 +137,7 @@ public class AddToHomescreenDialog implements AddToHomescreenManager.Observer {
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        // For installing WebAPKs, the text doesn't matter.
-                        mManager.addShortcut(mShortcutTitleInput.getText().toString());
+                        mDelegate.addToHomescreen(mShortcutTitleInput.getText().toString());
                     }
                 });
 
@@ -138,7 +152,7 @@ public class AddToHomescreenDialog implements AddToHomescreenManager.Observer {
             @Override
             public void onDismiss(DialogInterface dialog) {
                 mDialog = null;
-                mManager.destroy();
+                mDelegate.onDialogDismissed();
             }
         });
 
@@ -146,10 +160,9 @@ public class AddToHomescreenDialog implements AddToHomescreenManager.Observer {
     }
 
     /**
-     * Called when the homescreen icon title (and possibly information from the web manifest) is
+     * Called when the home screen icon title (and possibly information from the web manifest) is
      * available.
      */
-    @Override
     public void onUserTitleAvailable(String title, String url, boolean isTitleEditable) {
         if (isTitleEditable) {
             mShortcutTitleInput.setText(title);
@@ -166,25 +179,20 @@ public class AddToHomescreenDialog implements AddToHomescreenManager.Observer {
     }
 
     /**
-     * Called once the manager has finished fetching the homescreen shortcut's data (like the Web
-     * Manifest) and is ready for {@link AddToHomescreenManager#addShortcut()} to be called.
+     * Called when the home screen icon is available. Must be called after onUserTitleAvailable().
      * @param icon Icon to use in the launcher.
      */
-    @Override
-    public void onReadyToAdd(Bitmap icon) {
-        mIsReadyToAdd = true;
-
+    public void onIconAvailable(Bitmap icon) {
         mProgressBarView.setVisibility(View.GONE);
         mIconView.setVisibility(View.VISIBLE);
         mIconView.setImageBitmap(icon);
+
+        mHasIcon = true;
         updateAddButtonEnabledState();
     }
 
-    /**
-     * Updates whether the dialog's OK button is enabled.
-     */
-    public void updateAddButtonEnabledState() {
-        boolean enable = mIsReadyToAdd
+    void updateAddButtonEnabledState() {
+        boolean enable = mHasIcon
                 && (!TextUtils.isEmpty(mShortcutTitleInput.getText())
                            || mPwaLayout.getVisibility() == View.VISIBLE);
         mDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(enable);

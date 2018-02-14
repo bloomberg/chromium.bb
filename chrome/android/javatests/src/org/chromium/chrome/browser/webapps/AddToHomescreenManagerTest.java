@@ -141,7 +141,7 @@ public class AddToHomescreenManagerTest {
 
         @Override
         public void showDialog() {
-            AddToHomescreenManager.Observer observer = new AddToHomescreenManager.Observer() {
+            mDialog = new AddToHomescreenDialog(TestAddToHomescreenManager.this) {
                 @Override
                 public void onUserTitleAvailable(
                         String title, String url, boolean isTitleEditable) {
@@ -151,12 +151,10 @@ public class AddToHomescreenManagerTest {
                 }
 
                 @Override
-                public void onReadyToAdd(Bitmap icon) {
-                    TestAddToHomescreenManager.this.addShortcut(mTitle);
+                public void onIconAvailable(Bitmap icon) {
+                    TestAddToHomescreenManager.this.addToHomescreen(mTitle);
                 }
             };
-
-            setObserver(observer);
         }
     }
 

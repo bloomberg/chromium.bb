@@ -57,7 +57,7 @@ void AddToHomescreenManager::Destroy(JNIEnv* env,
   delete this;
 }
 
-void AddToHomescreenManager::AddShortcut(
+void AddToHomescreenManager::AddToHomescreen(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_user_title) {
@@ -143,5 +143,5 @@ void AddToHomescreenManager::OnDataAvailable(const ShortcutInfo& info,
     java_bitmap = gfx::ConvertToJavaBitmap(&primary_icon);
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_AddToHomescreenManager_onReadyToAdd(env, java_ref_, java_bitmap);
+  Java_AddToHomescreenManager_onIconAvailable(env, java_ref_, java_bitmap);
 }

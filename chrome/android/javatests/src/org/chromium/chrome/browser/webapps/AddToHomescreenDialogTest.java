@@ -48,7 +48,7 @@ public class AddToHomescreenDialogTest {
         }
 
         @Override
-        public void addShortcut(String userRequestedTitle) {}
+        public void addToHomescreen(String userRequestedTitle) {}
     }
 
     @Before
