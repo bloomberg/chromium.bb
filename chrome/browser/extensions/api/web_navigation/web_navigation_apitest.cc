@@ -37,7 +37,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_constants.h"
@@ -276,8 +275,6 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirectSingleProcess) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ForwardBack) {
-  if (content::IsBrowserSideNavigationEnabled())
-    return; // TODO(jam): investigate
   ASSERT_TRUE(RunExtensionTest("webnavigation/forwardBack")) << message_;
 }
 

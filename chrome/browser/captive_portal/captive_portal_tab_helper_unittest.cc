@@ -19,7 +19,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
@@ -343,9 +342,8 @@ TEST_F(CaptivePortalTabHelperTest, HttpsSubframe) {
 // but with a different error code.  Make sure the TabHelper sees the correct
 // error.
 TEST_F(CaptivePortalTabHelperTest, HttpsSubframeParallelError) {
-  if (content::IsBrowserSideNavigationEnabled() &&
-      content::AreAllSitesIsolatedForTesting()) {
-    // http://crbug.com/674734 Fix this test with PlzNavigate and Site Isolation
+  if (content::AreAllSitesIsolatedForTesting()) {
+    // http://crbug.com/674734 Fix this test with Site Isolation
     return;
   }
   // URL used by both frames.

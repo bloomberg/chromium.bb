@@ -22,7 +22,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
 #include "ui/base/page_transition_types.h"
@@ -74,8 +73,7 @@ void BrowserWithTestWindowTest::SetUp() {
       ChromeLayoutProvider::CreateLayoutProvider());
 #endif
 
-  if (content::IsBrowserSideNavigationEnabled())
-    content::BrowserSideNavigationSetUp();
+  content::BrowserSideNavigationSetUp();
 
   profile_manager_ = std::make_unique<TestingProfileManager>(
       TestingBrowserProcess::GetGlobal());
@@ -103,8 +101,7 @@ void BrowserWithTestWindowTest::TearDown() {
   browser_.reset();
   window_.reset();
 
-  if (content::IsBrowserSideNavigationEnabled())
-    content::BrowserSideNavigationTearDown();
+  content::BrowserSideNavigationTearDown();
 
 #if defined(TOOLKIT_VIEWS)
   constrained_window::SetConstrainedWindowViewsClient(nullptr);

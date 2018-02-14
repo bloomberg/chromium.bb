@@ -648,8 +648,7 @@ TEST_F(TranslateManagerRenderViewHostTest, NormalTranslate) {
     return;
 
   // http://crbug.com/695624
-  if (content::IsBrowserSideNavigationEnabled())
-    return;
+  return;
 
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
 

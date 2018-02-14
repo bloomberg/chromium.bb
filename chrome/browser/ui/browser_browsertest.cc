@@ -98,7 +98,6 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
@@ -276,20 +275,11 @@ class RenderViewSizeObserver : public content::WebContentsObserver {
     }
   }
 
-  void DidStartNavigationToPendingEntry(
-      const GURL& url,
-      content::ReloadType reload_type) override {
-    // TODO: remove this method when PlzNavigate is turned on by default.
-    if (!content::IsBrowserSideNavigationEnabled())
-      Resize();
-  }
-
   // Enlarge WebContentsView by |wcv_resize_insets_| while the navigation entry
   // is pending.
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override {
-    if (content::IsBrowserSideNavigationEnabled())
-      Resize();
+    Resize();
   }
 
   void Resize() {

@@ -16,7 +16,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
@@ -253,11 +252,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
   GURL nonaccessible_linked_resource(embedded_test_server()->GetURL(
       "/extensions/api_test/extension_resource_request_policy/"
       "web_accessible/nonaccessible_link_resource.html"));
-  // With PlzNavigate, the first DidStopLoading IPC is dropped because loading
-  // is delayed until the beforeunload handler ACK comes back.
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
-      nonaccessible_linked_resource,
-      content::IsBrowserSideNavigationEnabled() ? 1 : 2);
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), nonaccessible_linked_resource, 1);
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send(document.URL)",
