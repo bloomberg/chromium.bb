@@ -62,8 +62,9 @@ ParsedFeaturePolicy ParseOldAllowSyntax(const String& policy,
   ParsedFeaturePolicy whitelists;
   if (messages) {
     messages->push_back(
-        "The old syntax (allow=\"feature1 feature2 feature3 ...\") will soon "
-        "be deprecated");
+        "The old syntax (allow=\"feature1 feature2 feature3 ...\") is "
+        "deprecated and will be removed in Chrome 68. Use semicolons to "
+        "separate features (allow=\"feature1; feature2; feature3; ...\").");
   }
   Vector<String> tokens;
   policy.Split(' ', tokens);
