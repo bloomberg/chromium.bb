@@ -27,6 +27,10 @@ namespace gpu {
 class ContextSupport;
 struct GpuFeatureInfo;
 
+namespace gles2 {
+class GLES2Interface;
+}
+
 namespace raster {
 class RasterInterface;
 }
@@ -106,6 +110,10 @@ class VIZ_COMMON_EXPORT RasterContextProvider {
   // context provider must have been successfully bound to a thread before
   // calling this.
   virtual const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const = 0;
+
+  // Get a GLES2 interface to the 3d context.  The context provider must have
+  // been successfully bound to a thread before calling this.
+  virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
 
   // Get a Raster interface to the 3d context.  The context provider must have
   // been successfully bound to a thread before calling this.
