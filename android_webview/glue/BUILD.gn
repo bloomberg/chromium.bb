@@ -52,6 +52,7 @@ android_library("glue") {
     "java/src/com/android/webview/chromium/WebMessagePortAdapter.java",
     "java/src/com/android/webview/chromium/WebResourceRequestAdapter.java",
     "java/src/com/android/webview/chromium/WebStorageAdapter.java",
+    "java/src/com/android/webview/chromium/WebkitToSharedGlueConverter.java",
     "java/src/com/android/webview/chromium/WebViewApplication.java",
     "java/src/com/android/webview/chromium/WebViewChromiumAwInit.java",
     "java/src/com/android/webview/chromium/WebViewChromium.java",

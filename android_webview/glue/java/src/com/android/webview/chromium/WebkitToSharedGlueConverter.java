@@ -1,0 +1,19 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package com.android.webview.chromium;
+
+import android.webkit.WebView;
+
+/**
+ * Class converting webkit objects to glue-objects shared between the webkit-glue and the support
+ * library glue.
+ * This class is used to minimize dependencies from the support-library-glue on the webkit-glue.
+ */
+public class WebkitToSharedGlueConverter {
+    public static SharedWebViewChromium getSharedWebViewChromium(WebView webview) {
+        WebViewChromium webviewChromium = (WebViewChromium) webview.getWebViewProvider();
+        return webviewChromium.getSharedWebViewChromium();
+    }
+}

@@ -2351,4 +2351,8 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         checkThread();
         mAwContents.setSmartClipResultHandler(resultHandler);
     }
+
+    SharedWebViewChromium getSharedWebViewChromium() {
+        return mSharedWebViewChromium;
+    }
 }
