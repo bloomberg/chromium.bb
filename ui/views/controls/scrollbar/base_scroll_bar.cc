@@ -268,20 +268,37 @@ void BaseScrollBar::ShowContextMenuForView(View* source,
   View::ConvertPointFromWidget(this, &temp_pt);
   context_menu_mouse_position_ = IsHorizontal() ? temp_pt.x() : temp_pt.y();
 
-  views::MenuItemView* menu = new views::MenuItemView(this);
-  // MenuRunner takes ownership of |menu|.
-  menu_runner_.reset(new MenuRunner(
-      menu, MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
-  menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollHere);
-  menu->AppendSeparator();
-  menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollStart);
-  menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollEnd);
-  menu->AppendSeparator();
-  menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollPageUp);
-  menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollPageDown);
-  menu->AppendSeparator();
-  menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollPrev);
-  menu->AppendDelegateMenuItem(ScrollBarContextMenuCommand_ScrollNext);
+  if (!menu_model_) {
+    menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
+    menu_model_->AddItemWithStringId(ScrollBarContextMenuCommand_ScrollHere,
+                                     IDS_APP_SCROLLBAR_CXMENU_SCROLLHERE);
+    menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_->AddItemWithStringId(
+        ScrollBarContextMenuCommand_ScrollStart,
+        IsHorizontal() ? IDS_APP_SCROLLBAR_CXMENU_SCROLLLEFTEDGE
+                       : IDS_APP_SCROLLBAR_CXMENU_SCROLLHOME);
+    menu_model_->AddItemWithStringId(
+        ScrollBarContextMenuCommand_ScrollEnd,
+        IsHorizontal() ? IDS_APP_SCROLLBAR_CXMENU_SCROLLRIGHTEDGE
+                       : IDS_APP_SCROLLBAR_CXMENU_SCROLLEND);
+    menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_->AddItemWithStringId(ScrollBarContextMenuCommand_ScrollPageUp,
+                                     IDS_APP_SCROLLBAR_CXMENU_SCROLLPAGEUP);
+    menu_model_->AddItemWithStringId(ScrollBarContextMenuCommand_ScrollPageDown,
+                                     IDS_APP_SCROLLBAR_CXMENU_SCROLLPAGEDOWN);
+    menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+    menu_model_->AddItemWithStringId(ScrollBarContextMenuCommand_ScrollPrev,
+                                     IsHorizontal()
+                                         ? IDS_APP_SCROLLBAR_CXMENU_SCROLLLEFT
+                                         : IDS_APP_SCROLLBAR_CXMENU_SCROLLUP);
+    menu_model_->AddItemWithStringId(ScrollBarContextMenuCommand_ScrollNext,
+                                     IsHorizontal()
+                                         ? IDS_APP_SCROLLBAR_CXMENU_SCROLLRIGHT
+                                         : IDS_APP_SCROLLBAR_CXMENU_SCROLLDOWN);
+  }
+  menu_runner_ = std::make_unique<MenuRunner>(
+      menu_model_.get(),
+      MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU);
   menu_runner_->RunMenuAt(GetWidget(), nullptr, gfx::Rect(p, gfx::Size()),
                           MENU_ANCHOR_TOPLEFT, source_type);
 }
@@ -289,42 +306,7 @@ void BaseScrollBar::ShowContextMenuForView(View* source,
 ///////////////////////////////////////////////////////////////////////////////
 // BaseScrollBar, Menu::Delegate implementation:
 
-base::string16 BaseScrollBar::GetLabel(int id) const {
-  int ids_value = 0;
-  switch (id) {
-    case ScrollBarContextMenuCommand_ScrollHere:
-      ids_value = IDS_APP_SCROLLBAR_CXMENU_SCROLLHERE;
-      break;
-    case ScrollBarContextMenuCommand_ScrollStart:
-      ids_value = IsHorizontal() ? IDS_APP_SCROLLBAR_CXMENU_SCROLLLEFTEDGE
-                                 : IDS_APP_SCROLLBAR_CXMENU_SCROLLHOME;
-      break;
-    case ScrollBarContextMenuCommand_ScrollEnd:
-      ids_value = IsHorizontal() ? IDS_APP_SCROLLBAR_CXMENU_SCROLLRIGHTEDGE
-                                 : IDS_APP_SCROLLBAR_CXMENU_SCROLLEND;
-      break;
-    case ScrollBarContextMenuCommand_ScrollPageUp:
-      ids_value = IDS_APP_SCROLLBAR_CXMENU_SCROLLPAGEUP;
-      break;
-    case ScrollBarContextMenuCommand_ScrollPageDown:
-      ids_value = IDS_APP_SCROLLBAR_CXMENU_SCROLLPAGEDOWN;
-      break;
-    case ScrollBarContextMenuCommand_ScrollPrev:
-      ids_value = IsHorizontal() ? IDS_APP_SCROLLBAR_CXMENU_SCROLLLEFT
-                                 : IDS_APP_SCROLLBAR_CXMENU_SCROLLUP;
-      break;
-    case ScrollBarContextMenuCommand_ScrollNext:
-      ids_value = IsHorizontal() ? IDS_APP_SCROLLBAR_CXMENU_SCROLLRIGHT
-                                 : IDS_APP_SCROLLBAR_CXMENU_SCROLLDOWN;
-      break;
-    default:
-      NOTREACHED() << "Invalid BaseScrollBar Context Menu command!";
-  }
-
-  return ids_value ? l10n_util::GetStringUTF16(ids_value) : base::string16();
-}
-
-bool BaseScrollBar::IsCommandEnabled(int id) const {
+bool BaseScrollBar::IsCommandIdEnabled(int id) const {
   switch (id) {
     case ScrollBarContextMenuCommand_ScrollPageUp:
     case ScrollBarContextMenuCommand_ScrollPageDown:
@@ -333,7 +315,11 @@ bool BaseScrollBar::IsCommandEnabled(int id) const {
   return true;
 }
 
-void BaseScrollBar::ExecuteCommand(int id) {
+bool BaseScrollBar::IsCommandIdChecked(int id) const {
+  return false;
+}
+
+void BaseScrollBar::ExecuteCommand(int id, int event_flags) {
   switch (id) {
     case ScrollBarContextMenuCommand_ScrollHere:
       ScrollToThumbPosition(context_menu_mouse_position_, true);

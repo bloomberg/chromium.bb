@@ -7,10 +7,10 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/views/animation/scroll_animator.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
 #include "ui/views/repeat_controller.h"
 
@@ -30,7 +30,7 @@ class MenuRunner;
 class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
                                    public ScrollDelegate,
                                    public ContextMenuController,
-                                   public MenuDelegate {
+                                   public ui::SimpleMenuModel::Delegate {
  public:
   explicit BaseScrollBar(bool horizontal);
   ~BaseScrollBar() override;
@@ -90,10 +90,10 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override;
 
-  // Menu::Delegate overrides:
-  base::string16 GetLabel(int id) const override;
-  bool IsCommandEnabled(int id) const override;
-  void ExecuteCommand(int id) override;
+  // ui::SimpleMenuModel::Delegate overrides:
+  bool IsCommandIdChecked(int id) const override;
+  bool IsCommandIdEnabled(int id) const override;
+  void ExecuteCommand(int id, int event_flags) override;
 
  protected:
   BaseScrollBarThumb* GetThumb() const;
@@ -166,6 +166,7 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
   // was invoked.
   int context_menu_mouse_position_;
 
+  std::unique_ptr<ui::SimpleMenuModel> menu_model_;
   std::unique_ptr<MenuRunner> menu_runner_;
   std::unique_ptr<ScrollAnimator> scroll_animator_;
 
