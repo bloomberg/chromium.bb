@@ -62,7 +62,7 @@ class KeyboardTest : public ::testing::Test {
                                            WebInputEvent::Type type,
                                            const String& key = g_empty_string) {
     WebKeyboardEvent event(type, modifiers,
-                           WebInputEvent::kTimeStampForTesting);
+                           WebInputEvent::GetStaticTimeStampForTests());
     event.text[0] = key_code;
     event.windows_key_code = key_code;
     event.dom_key = Platform::Current()->DomKeyEnumFromString(key);

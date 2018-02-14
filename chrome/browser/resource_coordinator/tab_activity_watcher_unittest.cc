@@ -64,7 +64,7 @@ const UkmMetricMap kBasicMetricValues({
 
 blink::WebMouseEvent CreateMouseEvent(WebInputEvent::Type event_type) {
   return blink::WebMouseEvent(event_type, WebInputEvent::kNoModifiers,
-                              WebInputEvent::kTimeStampForTesting);
+                              WebInputEvent::GetStaticTimeStampForTests());
 }
 
 }  // namespace

@@ -299,7 +299,7 @@ class LeftMouseClick {
       : web_contents_(web_contents),
         mouse_event_(blink::WebInputEvent::kMouseDown,
                      blink::WebInputEvent::kNoModifiers,
-                     blink::WebInputEvent::kTimeStampForTesting) {
+                     blink::WebInputEvent::GetStaticTimeStampForTests()) {
     mouse_event_.button = blink::WebMouseEvent::Button::kLeft;
   }
 
@@ -796,7 +796,7 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
   void OpenContextMenu(content::WebContents* web_contents) {
     blink::WebMouseEvent mouse_event(
         blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
-        blink::WebInputEvent::kTimeStampForTesting);
+        blink::WebInputEvent::GetStaticTimeStampForTests());
     mouse_event.button = blink::WebMouseEvent::Button::kRight;
     mouse_event.SetPositionInWidget(1, 1);
     web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
@@ -3870,7 +3870,7 @@ IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, DISABLED_TouchAccessibility) {
   blink::WebMouseEvent accessibility_touch_event(
       blink::WebInputEvent::kMouseMove,
       blink::WebInputEvent::kIsTouchAccessibility,
-      blink::WebInputEvent::kTimeStampForTesting);
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   accessibility_touch_event.SetPositionInWidget(95, 55);
   web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
       accessibility_touch_event);
@@ -4083,7 +4083,7 @@ IN_PROC_BROWSER_TEST_F(WebViewGuestScrollLatchingTest,
   blink::WebGestureEvent scroll_begin(
       blink::WebGestureEvent::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::kTimeStampForTesting);
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   scroll_begin.source_device = blink::kWebGestureDeviceTouchpad;
   scroll_begin.x = guest_scroll_location.x();
   scroll_begin.y = guest_scroll_location.y();
@@ -4107,7 +4107,7 @@ IN_PROC_BROWSER_TEST_F(WebViewGuestScrollLatchingTest,
   blink::WebGestureEvent scroll_update(
       blink::WebGestureEvent::kGestureScrollUpdate,
       blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::kTimeStampForTesting);
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   scroll_update.source_device = scroll_begin.source_device;
   scroll_update.x = scroll_begin.x;
   scroll_update.y = scroll_begin.y;

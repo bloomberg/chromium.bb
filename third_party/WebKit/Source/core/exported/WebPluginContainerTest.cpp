@@ -258,8 +258,9 @@ void ClearClipboardBuffer() {
 void CreateAndHandleKeyboardEvent(WebElement* plugin_container_one_element,
                                   WebInputEvent::Modifiers modifier_key,
                                   int key_code) {
-  WebKeyboardEvent web_keyboard_event(WebInputEvent::kRawKeyDown, modifier_key,
-                                      WebInputEvent::kTimeStampForTesting);
+  WebKeyboardEvent web_keyboard_event(
+      WebInputEvent::kRawKeyDown, modifier_key,
+      WebInputEvent::GetStaticTimeStampForTests());
   web_keyboard_event.windows_key_code = key_code;
   KeyboardEvent* key_event = KeyboardEvent::Create(web_keyboard_event, nullptr);
   ToWebPluginContainerImpl(plugin_container_one_element->PluginContainer())
@@ -768,7 +769,7 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
 
   WebGestureEvent event(WebInputEvent::kGestureLongPress,
                         WebInputEvent::kNoModifiers,
-                        WebInputEvent::kTimeStampForTesting);
+                        WebInputEvent::GetStaticTimeStampForTests());
   event.source_device = kWebGestureDeviceTouchscreen;
 
   // First, send an event that doesn't hit the plugin to verify that the
@@ -813,7 +814,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventTranslated) {
 
   WebMouseWheelEvent event(WebInputEvent::kMouseWheel,
                            WebInputEvent::kNoModifiers,
-                           WebInputEvent::kTimeStampForTesting);
+                           WebInputEvent::GetStaticTimeStampForTests());
 
   WebRect rect = plugin_container_one_element.BoundsInViewport();
   event.SetPositionInWidget(rect.x + rect.width / 2, rect.y + rect.height / 2);
@@ -985,7 +986,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventScrolled) {
 
   WebMouseWheelEvent event(WebInputEvent::kMouseWheel,
                            WebInputEvent::kNoModifiers,
-                           WebInputEvent::kTimeStampForTesting);
+                           WebInputEvent::GetStaticTimeStampForTests());
 
   WebRect rect = plugin_container_one_element.BoundsInViewport();
   event.SetPositionInWidget(rect.x + rect.width / 2, rect.y + rect.height / 2);
@@ -1021,7 +1022,7 @@ TEST_F(WebPluginContainerTest, MouseEventScrolled) {
   EventTestPlugin* test_plugin = static_cast<EventTestPlugin*>(plugin);
 
   WebMouseEvent event(WebInputEvent::kMouseMove, WebInputEvent::kNoModifiers,
-                      WebInputEvent::kTimeStampForTesting);
+                      WebInputEvent::GetStaticTimeStampForTests());
 
   WebRect rect = plugin_container_one_element.BoundsInViewport();
   event.SetPositionInWidget(rect.x + rect.width / 2, rect.y + rect.height / 2);
@@ -1060,7 +1061,7 @@ TEST_F(WebPluginContainerTest, MouseEventZoomed) {
   EventTestPlugin* test_plugin = static_cast<EventTestPlugin*>(plugin);
 
   WebMouseEvent event(WebInputEvent::kMouseMove, WebInputEvent::kNoModifiers,
-                      WebInputEvent::kTimeStampForTesting);
+                      WebInputEvent::GetStaticTimeStampForTests());
 
   WebRect rect = plugin_container_one_element.BoundsInViewport();
   event.SetPositionInWidget(rect.x + rect.width / 2, rect.y + rect.height / 2);
@@ -1102,7 +1103,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventZoomed) {
 
   WebMouseWheelEvent event(WebInputEvent::kMouseWheel,
                            WebInputEvent::kNoModifiers,
-                           WebInputEvent::kTimeStampForTesting);
+                           WebInputEvent::GetStaticTimeStampForTests());
 
   WebRect rect = plugin_container_one_element.BoundsInViewport();
   event.SetPositionInWidget(rect.x + rect.width / 2, rect.y + rect.height / 2);

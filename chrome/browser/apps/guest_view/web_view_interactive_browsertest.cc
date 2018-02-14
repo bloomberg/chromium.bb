@@ -393,7 +393,7 @@ class WebViewInteractiveTestBase : public extensions::PlatformAppBrowserTest {
                              int y) {
     blink::WebMouseEvent mouse_event(
         blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
-        blink::WebInputEvent::kTimeStampForTesting);
+        blink::WebInputEvent::GetStaticTimeStampForTests());
     mouse_event.button = button;
     mouse_event.SetPositionInWidget(x, y);
     // Needed for the WebViewTest.ContextMenuPositionAfterCSSTransforms

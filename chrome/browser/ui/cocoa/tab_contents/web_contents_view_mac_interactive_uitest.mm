@@ -60,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewMacInteractiveTest, SelectMenuLifetime) {
   // Send a space key to open the <select>.
   content::NativeWebKeyboardEvent event(
       blink::WebKeyboardEvent::kChar, blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::kTimeStampForTesting);
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   event.text[0] = ' ';
   browser()
       ->tab_strip_model()

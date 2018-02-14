@@ -385,7 +385,7 @@ TEST_P(DragControllerTest, DragImageOffsetWithPageScaleFactor) {
 
   WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
                             WebInputEvent::kNoModifiers,
-                            WebInputEvent::kTimeStampForTesting);
+                            WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = WebMouseEvent::Button::kRight;
   mouse_event.SetPositionInWidget(5, 10);
 
@@ -427,7 +427,7 @@ TEST_P(DragControllerTest, DragLinkWithPageScaleFactor) {
 
   WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
                             WebInputEvent::kNoModifiers,
-                            WebInputEvent::kTimeStampForTesting);
+                            WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = WebMouseEvent::Button::kRight;
   mouse_event.SetFrameScale(1);
   mouse_event.SetPositionInWidget(5, 10);

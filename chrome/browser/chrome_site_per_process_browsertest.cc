@@ -1032,9 +1032,10 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, TwoFingerTapContextMenu) {
   gfx::Point child_location_in_root =
       child_rwhv->TransformPointToRootCoordSpace(child_location);
 
-  blink::WebGestureEvent event(blink::WebInputEvent::kGestureTwoFingerTap,
-                               blink::WebInputEvent::kNoModifiers,
-                               blink::WebInputEvent::kTimeStampForTesting);
+  blink::WebGestureEvent event(
+      blink::WebInputEvent::kGestureTwoFingerTap,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   event.source_device = blink::kWebGestureDeviceTouchscreen;
   event.x = child_location.x();
   event.y = child_location.y();

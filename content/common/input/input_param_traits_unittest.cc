@@ -81,22 +81,22 @@ TEST_F(InputParamTraitsTest, InitializedEvents) {
   ui::LatencyInfo latency;
   latency.set_trace_id(5);
 
-  blink::WebKeyboardEvent key_event(blink::WebInputEvent::kRawKeyDown,
-                                    blink::WebInputEvent::kNoModifiers,
-                                    blink::WebInputEvent::kTimeStampForTesting);
+  blink::WebKeyboardEvent key_event(
+      blink::WebInputEvent::kRawKeyDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   key_event.native_key_code = 5;
   events.push_back(std::make_unique<InputEvent>(key_event, latency));
 
   blink::WebMouseWheelEvent wheel_event(
       blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::kTimeStampForTesting);
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   wheel_event.delta_x = 10;
   latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1, 1);
   events.push_back(std::make_unique<InputEvent>(wheel_event, latency));
 
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::kMouseDown,
-                                   blink::WebInputEvent::kNoModifiers,
-                                   blink::WebInputEvent::kTimeStampForTesting);
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.SetPositionInWidget(10, 0);
   latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 2, 2);
   events.push_back(std::make_unique<InputEvent>(mouse_event, latency));
@@ -104,13 +104,13 @@ TEST_F(InputParamTraitsTest, InitializedEvents) {
   blink::WebGestureEvent gesture_event(
       blink::WebInputEvent::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::kTimeStampForTesting);
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   gesture_event.x = -1;
   events.push_back(std::make_unique<InputEvent>(gesture_event, latency));
 
-  blink::WebTouchEvent touch_event(blink::WebInputEvent::kTouchStart,
-                                   blink::WebInputEvent::kNoModifiers,
-                                   blink::WebInputEvent::kTimeStampForTesting);
+  blink::WebTouchEvent touch_event(
+      blink::WebInputEvent::kTouchStart, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   touch_event.touches_length = 1;
   touch_event.touches[0].radius_x = 1;
   events.push_back(std::make_unique<InputEvent>(touch_event, latency));

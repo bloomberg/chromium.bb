@@ -86,7 +86,7 @@ TEST(LinkHighlightImplTest, verifyWebViewImplIntegration) {
 
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
                               WebInputEvent::kNoModifiers,
-                              WebInputEvent::kTimeStampForTesting);
+                              WebInputEvent::GetStaticTimeStampForTests());
   touch_event.source_device = kWebGestureDeviceTouchscreen;
 
   // The coordinates below are linked to absolute positions in the referenced
@@ -144,7 +144,7 @@ TEST(LinkHighlightImplTest, resetDuringNodeRemoval) {
 
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
                               WebInputEvent::kNoModifiers,
-                              WebInputEvent::kTimeStampForTesting);
+                              WebInputEvent::GetStaticTimeStampForTests());
   touch_event.source_device = kWebGestureDeviceTouchscreen;
   touch_event.x = 20;
   touch_event.y = 20;
@@ -184,7 +184,7 @@ TEST(LinkHighlightImplTest, resetLayerTreeView) {
 
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
                               WebInputEvent::kNoModifiers,
-                              WebInputEvent::kTimeStampForTesting);
+                              WebInputEvent::GetStaticTimeStampForTests());
   touch_event.source_device = kWebGestureDeviceTouchscreen;
   touch_event.x = 20;
   touch_event.y = 20;

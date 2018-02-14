@@ -2158,7 +2158,7 @@ TEST_P(ParameterizedWebFrameTest,
 
   WebGestureEvent gesture_event(WebInputEvent::kGestureTap,
                                 WebInputEvent::kNoModifiers,
-                                WebInputEvent::kTimeStampForTesting);
+                                WebInputEvent::GetStaticTimeStampForTests());
   gesture_event.SetFrameScale(1);
   gesture_event.x = gesture_event.global_x = hit_point.X();
   gesture_event.y = gesture_event.global_y = hit_point.Y();
@@ -4618,9 +4618,9 @@ TEST_P(ParameterizedWebFrameTest, TabKeyCursorMoveTriggersOneSelectionChange) {
 
   WebKeyboardEvent tab_down(WebInputEvent::kKeyDown,
                             WebInputEvent::kNoModifiers,
-                            WebInputEvent::kTimeStampForTesting);
+                            WebInputEvent::GetStaticTimeStampForTests());
   WebKeyboardEvent tab_up(WebInputEvent::kKeyUp, WebInputEvent::kNoModifiers,
-                          WebInputEvent::kTimeStampForTesting);
+                          WebInputEvent::GetStaticTimeStampForTests());
   tab_down.dom_key = Platform::Current()->DomKeyEnumFromString("\t");
   tab_up.dom_key = Platform::Current()->DomKeyEnumFromString("\t");
   tab_down.windows_key_code = VKEY_TAB;
@@ -6282,7 +6282,7 @@ class CompositedSelectionBoundsTest
 
     WebGestureEvent gesture_event(WebInputEvent::kGestureTap,
                                   WebInputEvent::kNoModifiers,
-                                  WebInputEvent::kTimeStampForTesting);
+                                  WebInputEvent::GetStaticTimeStampForTests());
     gesture_event.SetFrameScale(1);
     gesture_event.x = gesture_event.global_x = hit_point.X();
     gesture_event.y = gesture_event.global_y = hit_point.Y();
@@ -6459,7 +6459,7 @@ class DisambiguationPopupTestWebViewClient
 
 static WebCoalescedInputEvent FatTap(int x, int y, int diameter) {
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
-                        WebInputEvent::kTimeStampForTesting);
+                        WebInputEvent::GetStaticTimeStampForTests());
   event.source_device = kWebGestureDeviceTouchscreen;
   event.x = x;
   event.y = y;
@@ -10042,7 +10042,7 @@ TEST_P(ParameterizedWebFrameTest, FrameWidgetTest) {
   helper.GetWebView()->Resize(WebSize(1000, 1000));
 
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
-                        WebInputEvent::kTimeStampForTesting);
+                        WebInputEvent::GetStaticTimeStampForTests());
   event.source_device = kWebGestureDeviceTouchscreen;
   event.x = 20;
   event.y = 20;
@@ -10435,7 +10435,7 @@ class WebFrameOverscrollTest
                                        float delta_x = 0.0,
                                        float delta_y = 0.0) {
     WebGestureEvent event(type, WebInputEvent::kNoModifiers,
-                          WebInputEvent::kTimeStampForTesting);
+                          WebInputEvent::GetStaticTimeStampForTests());
     // TODO(wjmaclean): Make sure that touchpad device is only ever used for
     // gesture scrolling event types.
     event.source_device = GetParam().second;
@@ -11526,15 +11526,15 @@ TEST_P(ParameterizedWebFrameTest, ScrollBeforeLayoutDoesntCrash) {
 
   WebGestureEvent begin_event(WebInputEvent::kGestureScrollBegin,
                               WebInputEvent::kNoModifiers,
-                              WebInputEvent::kTimeStampForTesting);
+                              WebInputEvent::GetStaticTimeStampForTests());
   begin_event.source_device = kWebGestureDeviceTouchpad;
   WebGestureEvent update_event(WebInputEvent::kGestureScrollUpdate,
                                WebInputEvent::kNoModifiers,
-                               WebInputEvent::kTimeStampForTesting);
+                               WebInputEvent::GetStaticTimeStampForTests());
   update_event.source_device = kWebGestureDeviceTouchpad;
   WebGestureEvent end_event(WebInputEvent::kGestureScrollEnd,
                             WebInputEvent::kNoModifiers,
-                            WebInputEvent::kTimeStampForTesting);
+                            WebInputEvent::GetStaticTimeStampForTests());
   end_event.source_device = kWebGestureDeviceTouchpad;
 
   // Try GestureScrollEnd and GestureScrollUpdate first to make sure that not
@@ -12129,7 +12129,7 @@ bool TestSelectAll(const std::string& html) {
 
   WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
                             WebInputEvent::kNoModifiers,
-                            WebInputEvent::kTimeStampForTesting);
+                            WebInputEvent::GetStaticTimeStampForTests());
 
   mouse_event.button = WebMouseEvent::Button::kRight;
   mouse_event.SetPositionInWidget(8, 8);
@@ -12167,7 +12167,7 @@ TEST_P(ParameterizedWebFrameTest, ContextMenuDataSelectedText) {
 
   WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
                             WebInputEvent::kNoModifiers,
-                            WebInputEvent::kTimeStampForTesting);
+                            WebInputEvent::GetStaticTimeStampForTests());
 
   mouse_event.button = WebMouseEvent::Button::kRight;
   mouse_event.SetPositionInWidget(8, 8);
@@ -12195,7 +12195,7 @@ TEST_P(ParameterizedWebFrameTest, ContextMenuDataPasswordSelectedText) {
 
   WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
                             WebInputEvent::kNoModifiers,
-                            WebInputEvent::kTimeStampForTesting);
+                            WebInputEvent::GetStaticTimeStampForTests());
 
   mouse_event.button = WebMouseEvent::Button::kRight;
   mouse_event.SetPositionInWidget(8, 8);
@@ -12226,7 +12226,7 @@ TEST_P(ParameterizedWebFrameTest, ContextMenuDataNonLocatedMenu) {
 
   WebMouseEvent mouse_event(WebInputEvent::kMouseDown,
                             WebInputEvent::kNoModifiers,
-                            WebInputEvent::kTimeStampForTesting);
+                            WebInputEvent::GetStaticTimeStampForTests());
 
   mouse_event.button = WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(0, 0);

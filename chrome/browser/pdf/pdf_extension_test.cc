@@ -1373,7 +1373,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, SmartZoomDisabled) {
   blink::WebGestureEvent smart_zoom_event(
       blink::WebInputEvent::kGestureDoubleTap,
       blink::WebInputEvent::kNoModifiers,
-      blink::WebInputEvent::kTimeStampForTesting);
+      blink::WebInputEvent::GetStaticTimeStampForTests());
   smart_zoom_event.source_device = blink::kWebGestureDeviceTouchpad;
   smart_zoom_event.data.tap.tap_count = 1;
 
