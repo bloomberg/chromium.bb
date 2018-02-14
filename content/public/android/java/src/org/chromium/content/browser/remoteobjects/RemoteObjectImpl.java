@@ -197,10 +197,14 @@ class RemoteObjectImpl implements RemoteObject {
                 if (parameterType == byte.class) {
                     return (byte) numberValue;
                 } else if (parameterType == char.class) {
-                    // LIVECONNECT_COMPLIANCE: Existing behavior is to convert double to 0.
-                    // Spec requires converting doubles similarly to how we convert doubles to
-                    // other numeric types.
-                    return (char) 0;
+                    if (isInt32(numberValue)) {
+                        return (char) numberValue;
+                    } else {
+                        // LIVECONNECT_COMPLIANCE: Existing behavior is to convert double to 0.
+                        // Spec requires converting doubles similarly to how we convert doubles to
+                        // other numeric types.
+                        return (char) 0;
+                    }
                 } else if (parameterType == short.class) {
                     return (short) numberValue;
                 } else if (parameterType == int.class) {
@@ -244,6 +248,16 @@ class RemoteObjectImpl implements RemoteObject {
         RemoteInvocationResult result = new RemoteInvocationResult();
         result.error = error;
         return result;
+    }
+
+    /**
+     * Returns whether the value is an Int32 in the V8 API sense.
+     * That is, it has an integer value in [-2^31, 2^31) and is not negative zero.
+     */
+    private static boolean isInt32(double doubleValue) {
+        return doubleValue % 1.0 == 0.0 && doubleValue >= Integer.MIN_VALUE
+                && doubleValue <= Integer.MAX_VALUE
+                && (doubleValue != 0.0 || (1.0 / doubleValue) > 0.0);
     }
 
     private static String doubleToString(double doubleValue) {

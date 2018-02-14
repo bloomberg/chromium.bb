@@ -353,6 +353,10 @@ public final class RemoteObjectImplTest {
         remoteObject.invokeMethod(
                 "consumeChar", new RemoteInvocationArgument[] {numberArgument(356)}, response);
         remoteObject.invokeMethod(
+                "consumeChar", new RemoteInvocationArgument[] {numberArgument(1.5)}, response);
+        remoteObject.invokeMethod(
+                "consumeChar", new RemoteInvocationArgument[] {numberArgument(-0.0)}, response);
+        remoteObject.invokeMethod(
                 "consumeShort", new RemoteInvocationArgument[] {numberArgument(32768)}, response);
         remoteObject.invokeMethod(
                 "consumeInt", new RemoteInvocationArgument[] {numberArgument(-1.5)}, response);
@@ -384,7 +388,8 @@ public final class RemoteObjectImplTest {
                 "consumeObject", new RemoteInvocationArgument[] {numberArgument(6)}, response);
 
         verify(consumer).accept((byte) 100);
-        verify(consumer).accept((char) 0);
+        verify(consumer).accept('\u0164');
+        verify(consumer, times(2)).accept('\u0000');
         verify(consumer).accept((short) -32768);
         verify(consumer).accept((int) -1);
         verify(consumer).accept(Long.MAX_VALUE);
@@ -398,7 +403,7 @@ public final class RemoteObjectImplTest {
         verify(consumer).accept("123456789");
         verify(consumer).accept("1.23e+08");
         verify(consumer, times(2)).accept(null);
-        verify(response, times(16)).call(resultIsOk());
+        verify(response, times(18)).call(resultIsOk());
     }
 
     private RemoteInvocationResult resultHasError(final int error) {
