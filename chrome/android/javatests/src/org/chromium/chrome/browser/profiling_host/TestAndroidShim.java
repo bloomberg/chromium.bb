@@ -22,10 +22,10 @@ public class TestAndroidShim {
      *  When |pseudoStacks| is true, the stacks use trace-event based stacks
      *  rather than native stacks.
      */
-    public boolean runTestForMode(
-            String mode, boolean dynamicallyStartProfiling, String stackMode) {
-        return nativeRunTestForMode(
-                mNativeTestAndroidShim, mode, dynamicallyStartProfiling, stackMode);
+    public boolean runTestForMode(String mode, boolean dynamicallyStartProfiling, String stackMode,
+            boolean shouldSample, boolean sampleEverything) {
+        return nativeRunTestForMode(mNativeTestAndroidShim, mode, dynamicallyStartProfiling,
+                stackMode, shouldSample, sampleEverything);
     }
 
     /**
@@ -43,5 +43,6 @@ public class TestAndroidShim {
     private native long nativeInit();
     private native void nativeDestroy(long nativeTestAndroidShim);
     private native boolean nativeRunTestForMode(long nativeTestAndroidShim, String mode,
-            boolean dynamicallyStartProfiling, String stackMode);
+            boolean dynamicallyStartProfiling, String stackMode, boolean shouldSample,
+            boolean sampleEverything);
 }

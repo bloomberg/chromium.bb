@@ -72,13 +72,15 @@ struct MemlogConnectionManager::Connection {
              base::ProcessId pid,
              mojom::ProfilingClientPtr client,
              scoped_refptr<MemlogReceiverPipe> p,
-             mojom::ProcessType process_type)
+             mojom::ProcessType process_type,
+             uint32_t sampling_rate)
       : thread(base::StringPrintf("Sender %lld thread",
                                   static_cast<long long>(pid))),
         client(std::move(client)),
         pipe(p),
         process_type(process_type),
-        tracker(std::move(complete_cb), backtrace_storage) {}
+        tracker(std::move(complete_cb), backtrace_storage),
+        sampling_rate(sampling_rate) {}
 
   ~Connection() {
     // The parser may outlive this class because it's refcounted, make sure no
@@ -96,6 +98,14 @@ struct MemlogConnectionManager::Connection {
   // Danger: This lives on the |thread| member above. The connection manager
   // lives on the I/O thread, so accesses to the variable must be synchronized.
   AllocationTracker tracker;
+
+  // When sampling is enabled, allocations are recorded with probability (size /
+  // sampling_rate) when size < sampling_rate. When size >= sampling_rate, the
+  // aggregate probability of an allocation being recorded is 1.0, but the math
+  // and details are tricky. See
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=810748#c4.
+  // A |sampling_rate| of 1 is equivalent to recording all allocations.
+  uint32_t sampling_rate = 1;
 };
 
 MemlogConnectionManager::MemlogConnectionManager() : weak_factory_(this) {
@@ -143,7 +153,7 @@ void MemlogConnectionManager::OnNewConnection(
 
   auto connection = base::MakeUnique<Connection>(
       std::move(complete_cb), &backtrace_storage_, pid, std::move(client),
-      new_pipe, process_type);
+      new_pipe, process_type, params->sampling_rate);
 
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
@@ -237,7 +247,8 @@ void MemlogConnectionManager::DumpProcessesForTracing(
         base::BindOnce(&MemlogConnectionManager::DoDumpOneProcessForTracing,
                        weak_factory_.GetWeakPtr(), tracking, pid,
                        connection->process_type, keep_small_allocations,
-                       strip_path_from_mapped_files));
+                       strip_path_from_mapped_files,
+                       connection->sampling_rate));
     connection->client->FlushMemlogPipe(barrier_id);
   }
 }
@@ -248,6 +259,7 @@ void MemlogConnectionManager::DoDumpOneProcessForTracing(
     mojom::ProcessType process_type,
     bool keep_small_allocations,
     bool strip_path_from_mapped_files,
+    uint32_t sampling_rate,
     bool success,
     AllocationCountMap counts,
     AllocationTracker::ContextMap context,
@@ -289,6 +301,7 @@ void MemlogConnectionManager::DoDumpOneProcessForTracing(
   params.min_count_threshold = keep_small_allocations ? 0 : kMinCountThreshold;
   params.strip_path_from_mapped_files = strip_path_from_mapped_files;
   params.next_id = next_id_;
+  params.sampling_rate = sampling_rate;
 
   std::ostringstream oss;
   ExportMemoryMapsAndV2StackTraceToJSON(&params, oss);

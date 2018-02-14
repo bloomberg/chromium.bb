@@ -34,6 +34,8 @@ struct TestParam {
   ProfilingProcessHost::Mode mode;
   mojom::StackMode stack_mode;
   bool start_profiling_with_command_line_flag;
+  bool should_sample;
+  bool sample_everything;
 };
 
 class MemlogBrowserTest : public InProcessBrowserTest,
@@ -87,6 +89,8 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
   options.stack_mode = GetParam().stack_mode;
   options.profiling_already_started =
       GetParam().start_profiling_with_command_line_flag;
+  options.should_sample = GetParam().should_sample;
+  options.sample_everything = GetParam().sample_everything;
 
   EXPECT_TRUE(driver.RunTest(options));
 }
@@ -108,7 +112,9 @@ std::vector<TestParam> GetParams() {
 
   for (const auto& mode : dynamic_start_modes) {
     for (const auto& stack_mode : stack_modes) {
-      params.push_back({mode, stack_mode, false});
+      params.push_back(
+          {mode, stack_mode, false /* start_profiling_with_command_line_flag */,
+           false /* should_sample */, false /* sample_everything*/});
     }
   }
 
@@ -120,9 +126,23 @@ std::vector<TestParam> GetParams() {
   command_line_start_modes.push_back(ProfilingProcessHost::Mode::kAllRenderers);
   for (const auto& mode : command_line_start_modes) {
     for (const auto& stack_mode : stack_modes) {
-      params.push_back({mode, stack_mode, true});
+      params.push_back(
+          {mode, stack_mode, true /* start_profiling_with_command_line_flag */,
+           false /* should_sample */, false /* sample_everything*/});
     }
   }
+
+  // Test sampling all allocations.
+  params.push_back({ProfilingProcessHost::Mode::kBrowser,
+                    mojom::StackMode::NATIVE_WITH_THREAD_NAMES,
+                    false /* start_profiling_with_command_line_flag */,
+                    true /* should_sample */, true /* sample_everything*/});
+
+  // Test sampling some allocations.
+  params.push_back({ProfilingProcessHost::Mode::kBrowser,
+                    mojom::StackMode::PSEUDO,
+                    false /* start_profiling_with_command_line_flag */,
+                    true /* should_sample */, false /* sample_everything*/});
 
   // Test thread names for native profiling.
   params.push_back({ProfilingProcessHost::Mode::kBrowser,

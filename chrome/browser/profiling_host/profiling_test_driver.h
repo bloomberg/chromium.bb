@@ -49,6 +49,15 @@ class ProfilingTestDriver {
     // Whether the caller has already started profiling with the given mode.
     // When false, the test driver is responsible for starting profiling.
     bool profiling_already_started;
+
+    // Whether to test sampling.
+    bool should_sample;
+
+    // When set to true, the internal sampling_rate is set to 2. While this
+    // doesn't record all allocations, it should record all test allocations
+    // made in this file with exponentially high probability.
+    // When set to false, the internal sampling rate is set to 10000.
+    bool sample_everything;
   };
 
   ProfilingTestDriver();
@@ -93,6 +102,7 @@ class ProfilingTestDriver {
   bool ShouldProfileRenderer();
   bool ShouldIncludeNativeThreadNames();
   bool HasPseudoFrames();
+  bool IsRecordingAllAllocations();
 
   void WaitForProfilingToStartForAllRenderersUIThread();
 

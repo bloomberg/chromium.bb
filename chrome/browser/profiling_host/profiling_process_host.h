@@ -102,13 +102,19 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   static Mode ConvertStringToMode(const std::string& input);
   static mojom::StackMode GetStackModeForStartup();
   static mojom::StackMode ConvertStringToStackMode(const std::string& input);
+
+  static bool GetShouldSampleForStartup();
+  static uint32_t GetSamplingRateForStartup();
+
   bool ShouldProfileNonRendererProcessType(int process_type);
 
   // Launches the profiling process and returns a pointer to it.
   static ProfilingProcessHost* Start(
       content::ServiceManagerConnection* connection,
       Mode mode,
-      mojom::StackMode stack_mode);
+      mojom::StackMode stack_mode,
+      bool should_sample,
+      uint32_t sampling_rate);
 
   // Returns true if Start() has been called.
   static bool has_started() { return has_started_; }
@@ -264,6 +270,9 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // The stack mode determines the type of information that is stored for each
   // stack.
   profiling::mojom::StackMode stack_mode_;
+
+  bool should_sample_ = false;
+  uint32_t sampling_rate_ = 1;
 
   // Whether or not the profiling host is started.
   static bool has_started_;

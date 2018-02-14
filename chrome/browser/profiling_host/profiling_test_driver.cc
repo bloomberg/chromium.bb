@@ -34,12 +34,24 @@ const char kPAEvent[] = "kPAEvent";
 const char kVariadicEvent[] = "kVariadicEvent";
 const char kThreadName[] = "kThreadName";
 
+// Note: When we test sampling with |sample_everything| = true, we set the
+// sampling interval to 2. It's important that all allocations made in this file
+// have size >> 2, so that the probability that they are sampled is
+// exponentially close to 1.
+//
 // Make some specific allocations in Browser to do a deeper test of the
 // allocation tracking.
 constexpr int kMallocAllocSize = 7907;
 constexpr int kMallocAllocCount = 157;
 
 constexpr int kVariadicAllocCount = 157;
+
+// The sample rate should not affect the sampled allocations. Intentionally
+// choose an odd number.
+constexpr int kSampleRate = 7777;
+constexpr int kSamplingAllocSize = 100;
+constexpr int kSamplingAllocCount = 10000;
+const char kSamplingAllocTypeName[] = "kSamplingAllocTypeName";
 
 // Test fixed-size partition alloc. The size must be aligned to system pointer
 // size.
@@ -388,6 +400,109 @@ bool ValidateDump(base::Value* heaps_v2,
   return true;
 }
 
+// |expected_size| of 0 means no expectation.
+bool GetAllocatorSubarray(base::Value* heaps_v2,
+                          const char* allocator_name,
+                          const char* subarray_name,
+                          size_t expected_size,
+                          const base::Value::ListStorage** output) {
+  base::Value* subarray =
+      heaps_v2->FindPath({"allocators", allocator_name, subarray_name});
+  if (!subarray) {
+    LOG(ERROR) << "Failed to find path: 'allocators." << allocator_name << "."
+               << subarray_name << "' in heaps v2";
+    return false;
+  }
+
+  const base::Value::ListStorage& subarray_list = subarray->GetList();
+  if (expected_size && subarray_list.size() != expected_size) {
+    LOG(ERROR) << subarray_name << " has wrong size";
+    return false;
+  }
+
+  *output = &subarray_list;
+  return true;
+}
+
+bool ValidateSamplingAllocations(base::Value* heaps_v2,
+                                 const char* allocator_name,
+                                 int approximate_size,
+                                 int approximate_count,
+                                 const char* type_name) {
+  // Maps type ids to strings.
+  NodeMap type_map;
+  if (!ParseTypes(heaps_v2, &type_map))
+    return false;
+
+  bool found = false;
+  int id_of_type = 0;
+  for (auto& pair : type_map) {
+    if (pair.second.name == type_name) {
+      id_of_type = pair.first;
+      found = true;
+    }
+  }
+
+  if (!found) {
+    LOG(ERROR) << "Failed to find type with name: " << type_name;
+    return false;
+  }
+
+  // Find the type with the appropriate id.
+  const base::Value::ListStorage* types_list;
+  if (!GetAllocatorSubarray(heaps_v2, allocator_name, "types", 0,
+                            &types_list)) {
+    return false;
+  }
+
+  found = false;
+  size_t index = 0;
+  for (size_t i = 0; i < types_list->size(); ++i) {
+    if ((*types_list)[i].GetInt() == id_of_type) {
+      index = i;
+      found = true;
+      break;
+    }
+  }
+
+  if (!found) {
+    LOG(ERROR) << "Failed to find type with correct sid";
+    return false;
+  }
+
+  // Look up the size.
+  const base::Value::ListStorage* sizes;
+  if (!GetAllocatorSubarray(heaps_v2, allocator_name, "sizes",
+                            types_list->size(), &sizes)) {
+    return false;
+  }
+
+  if ((*sizes)[index].GetInt() < approximate_size / 2 ||
+      (*sizes)[index].GetInt() > approximate_size * 2) {
+    LOG(ERROR) << "sampling size " << (*sizes)[index].GetInt()
+               << " was not within a factor of 2 of expected size "
+               << approximate_size;
+    return false;
+  }
+
+  // Look up the count.
+  const base::Value::ListStorage* counts;
+  if (!GetAllocatorSubarray(heaps_v2, allocator_name, "counts",
+                            types_list->size(), &counts)) {
+    return false;
+  }
+
+  if ((*counts)[index].GetInt() < approximate_count / 2 ||
+      (*counts)[index].GetInt() > approximate_count * 2) {
+    LOG(ERROR) << "sampling size " << (*counts)[index].GetInt()
+               << " was not within a factor of 2 of expected count "
+               << approximate_count;
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 ProfilingTestDriver::ProfilingTestDriver()
@@ -526,7 +641,9 @@ bool ProfilingTestDriver::CheckOrStartProfiling() {
     }
   }
 
-  ProfilingProcessHost::Start(connection, options_.mode, options_.stack_mode);
+  ProfilingProcessHost::Start(connection, options_.mode, options_.stack_mode,
+                              options_.should_sample,
+                              options_.sample_everything ? 2 : kSampleRate);
 
   if (run_loop)
     run_loop->Run();
@@ -538,6 +655,16 @@ void ProfilingTestDriver::MakeTestAllocations() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   base::PlatformThread::SetName(kThreadName);
+
+  // In sampling mode, only sampling allocations are relevant.
+  if (!IsRecordingAllAllocations()) {
+    leaks_.reserve(kSamplingAllocCount);
+    for (int i = 0; i < kSamplingAllocCount; ++i) {
+      leaks_.push_back(static_cast<char*>(partition_allocator_.root()->Alloc(
+          kSamplingAllocSize, kSamplingAllocTypeName)));
+    }
+    return;
+  }
 
   leaks_.reserve(2 * kMallocAllocCount + 1 + kPartitionAllocSize);
 
@@ -646,37 +773,47 @@ bool ProfilingTestDriver::ValidateBrowserAllocations(base::Value* dump_json) {
 
   std::string thread_name = ShouldIncludeNativeThreadNames() ? kThreadName : "";
 
-  if (should_validate_dumps) {
-    result = ValidateDump(heaps_v2, kMallocAllocSize * kMallocAllocCount,
-                          kMallocAllocCount, "malloc",
-                          HasPseudoFrames() ? kMallocTypeTag : nullptr,
-                          HasPseudoFrames() ? kMallocEvent : "", thread_name);
-    if (!result) {
-      LOG(ERROR) << "Failed to validate malloc fixed allocations";
-      return false;
+  if (IsRecordingAllAllocations()) {
+    if (should_validate_dumps) {
+      result = ValidateDump(heaps_v2, kMallocAllocSize * kMallocAllocCount,
+                            kMallocAllocCount, "malloc",
+                            HasPseudoFrames() ? kMallocTypeTag : nullptr,
+                            HasPseudoFrames() ? kMallocEvent : "", thread_name);
+      if (!result) {
+        LOG(ERROR) << "Failed to validate malloc fixed allocations";
+        return false;
+      }
+
+      result = ValidateDump(
+          heaps_v2, total_variadic_allocations_, kVariadicAllocCount, "malloc",
+          nullptr, HasPseudoFrames() ? kVariadicEvent : "", thread_name);
+      if (!result) {
+        LOG(ERROR) << "Failed to validate malloc variadic allocations";
+        return false;
+      }
     }
 
-    result = ValidateDump(heaps_v2, total_variadic_allocations_,
-                          kVariadicAllocCount, "malloc", nullptr,
-                          HasPseudoFrames() ? kVariadicEvent : "", thread_name);
+    // TODO(ajwong): Like malloc, all Partition-Alloc allocations get glommed
+    // together for some Android device/OS configurations. However, since there
+    // is only one place that uses partition alloc in the browser process [this
+    // test], the count is still valid. This should still be made more robust by
+    // fixing backtrace. https://crbug.com/786450.
+    result = ValidateDump(heaps_v2, kPartitionAllocSize * kPartitionAllocCount,
+                          kPartitionAllocCount, "partition_alloc",
+                          kPartitionAllocTypeName,
+                          HasPseudoFrames() ? kPAEvent : "", thread_name);
     if (!result) {
-      LOG(ERROR) << "Failed to validate malloc variadic allocations";
+      LOG(ERROR) << "Failed to validate PA allocations";
       return false;
     }
-  }
-
-  // TODO(ajwong): Like malloc, all Partition-Alloc allocations get glommed
-  // together for some Android device/OS configurations. However, since there is
-  // only one place that uses partition alloc in the browser process [this
-  // test], the count is still valid. This should still be made more robust by
-  // fixing backtrace. https://crbug.com/786450.
-  result = ValidateDump(heaps_v2, kPartitionAllocSize * kPartitionAllocCount,
-                        kPartitionAllocCount, "partition_alloc",
-                        kPartitionAllocTypeName,
-                        HasPseudoFrames() ? kPAEvent : "", thread_name);
-  if (!result) {
-    LOG(ERROR) << "Failed to validate PA allocations";
-    return false;
+  } else {
+    bool result = ValidateSamplingAllocations(
+        heaps_v2, "partition_alloc", kSamplingAllocSize * kSamplingAllocCount,
+        kSamplingAllocCount, kSamplingAllocTypeName);
+    if (!result) {
+      LOG(ERROR) << "Failed to validate sampling allocations";
+      return false;
+    }
   }
 
   int process_count = NumProcessesWithName(dump_json, "Browser", nullptr);
@@ -750,6 +887,10 @@ bool ProfilingTestDriver::ShouldIncludeNativeThreadNames() {
 bool ProfilingTestDriver::HasPseudoFrames() {
   return options_.stack_mode == mojom::StackMode::PSEUDO ||
          options_.stack_mode == mojom::StackMode::MIXED;
+}
+
+bool ProfilingTestDriver::IsRecordingAllAllocations() {
+  return !options_.should_sample || options_.sample_everything;
 }
 
 void ProfilingTestDriver::WaitForProfilingToStartForAllRenderersUIThread() {

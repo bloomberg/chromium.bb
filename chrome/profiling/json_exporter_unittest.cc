@@ -291,6 +291,64 @@ TEST(ProfilingJsonExporterTest, Simple) {
   EXPECT_EQ(1u, sizes->GetList().size());
 }
 
+TEST(ProfilingJsonExporterTest, Sampling) {
+  size_t allocation_size = 20;
+  int sampling_rate = 1000;
+  int expected_count = static_cast<int>(sampling_rate / allocation_size);
+
+  BacktraceStorage backtrace_storage;
+
+  std::vector<Address> stack1;
+  stack1.push_back(Address(0x5678));
+  const Backtrace* bt1 = backtrace_storage.Insert(std::move(stack1));
+
+  AllocationEventSet events;
+  events.insert(AllocationEvent(AllocatorType::kMalloc, Address(0x1),
+                                allocation_size, bt1, 0));
+
+  std::ostringstream stream;
+
+  ExportParams params;
+  params.allocs = AllocationEventSetToCountMap(events);
+  params.min_size_threshold = kNoSizeThreshold;
+  params.min_count_threshold = kNoCountThreshold;
+  params.sampling_rate = sampling_rate;
+  ExportMemoryMapsAndV2StackTraceToJSON(&params, stream);
+  std::string json = stream.str();
+
+  // JSON should parse.
+  base::JSONReader reader(base::JSON_PARSE_RFC);
+  std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
+  ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
+      << reader.GetErrorMessage();
+  ASSERT_TRUE(root);
+
+  // Validate the allocators summary.
+  const base::Value* malloc_summary = root->FindPath({"allocators", "malloc"});
+  ASSERT_TRUE(malloc_summary);
+  const base::Value* malloc_size =
+      malloc_summary->FindPath({"attrs", "size", "value"});
+  ASSERT_TRUE(malloc_size);
+  EXPECT_EQ("3e8", malloc_size->GetString());
+
+  const base::Value* heaps_v2 = root->FindKey("heaps_v2");
+  ASSERT_TRUE(heaps_v2);
+
+  // Retrieve the allocations and validate their structure.
+  const base::Value* sizes =
+      heaps_v2->FindPath({"allocators", "malloc", "sizes"});
+
+  ASSERT_TRUE(sizes);
+  EXPECT_EQ(1u, sizes->GetList().size());
+  EXPECT_EQ(sampling_rate, sizes->GetList()[0].GetInt());
+
+  const base::Value* counts =
+      heaps_v2->FindPath({"allocators", "malloc", "counts"});
+  ASSERT_TRUE(counts);
+  EXPECT_EQ(1u, counts->GetList().size());
+  EXPECT_EQ(expected_count, counts->GetList()[0].GetInt());
+}
+
 TEST(ProfilingJsonExporterTest, SimpleWithFilteredAllocations) {
   BacktraceStorage backtrace_storage;
 

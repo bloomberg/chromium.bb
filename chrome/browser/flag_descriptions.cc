@@ -545,6 +545,12 @@ const char kOutOfProcessHeapProfilingKeepSmallAllocationsDescription[] =
     "automatically uploaded traces will always be pruned. This only affects "
     "manually taken memory-infra traces.";
 
+const char kOutOfProcessHeapProfilingSampling[] = "Sample memlog allocations";
+const char kOutOfProcessHeapProfilingSamplingDescription[] =
+    "Use a poisson process to sample allocations. Defaults to a sample rate of "
+    "1000. There will be noise for small, infrequent allocations such that "
+    "[size * frequency < 1000].";
+
 const char kOOPHPStackModeName[] =
     "The type of stack to record for memlog heap dumps";
 const char kOOPHPStackModeDescription[] =
