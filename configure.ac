@@ -62,7 +62,8 @@ if test "x$GCC" = "xyes"; then
 fi
 AC_SUBST(GCC_CFLAGS)
 
-AC_CHECK_FUNCS([accept4 mkostemp posix_fallocate])
+AC_CHECK_HEADERS([sys/prctl.h])
+AC_CHECK_FUNCS([accept4 mkostemp posix_fallocate prctl])
 
 AC_ARG_ENABLE([libraries],
 	      [AC_HELP_STRING([--disable-libraries],

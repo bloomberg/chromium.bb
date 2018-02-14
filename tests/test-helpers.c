@@ -23,12 +23,20 @@
  * SOFTWARE.
  */
 
+#include "config.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <dirent.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+
+#ifdef HAVE_SYS_PRCTL_H
+#include <sys/prctl.h>
+#endif
 
 #include "test-runner.h"
 
@@ -96,4 +104,26 @@ test_sleep(unsigned int sec)
 	};
 
 	assert(nanosleep(&ts, NULL) == 0);
+}
+
+/** Try to disable coredumps
+ *
+ * Useful for tests that crash on purpose, to avoid creating a core file
+ * or launching an application crash handler service or cluttering coredumpctl.
+ *
+ * NOTE: Calling this may make the process undebuggable.
+ */
+void
+test_disable_coredumps(void)
+{
+	struct rlimit r;
+
+	if (getrlimit(RLIMIT_CORE, &r) == 0) {
+		r.rlim_cur = 0;
+		setrlimit(RLIMIT_CORE, &r);
+	}
+
+#if defined(HAVE_PRCTL) && defined(PR_SET_DUMPABLE)
+	prctl(PR_SET_DUMPABLE, 0, 0, 0, 0);
+#endif
 }

@@ -86,6 +86,9 @@ test_usleep(useconds_t);
 void
 test_sleep(unsigned int);
 
+void
+test_disable_coredumps(void);
+
 #define DISABLE_LEAK_CHECKS			\
 	do {					\
 		extern int leak_check_enabled;	\

@@ -53,11 +53,13 @@ FAIL_TEST(exit_failure)
 
 FAIL_TEST(fail_abort)
 {
+	test_disable_coredumps();
 	abort();
 }
 
 FAIL_TEST(fail_wl_abort)
 {
+	test_disable_coredumps();
 	wl_abort("Abort the program\n");
 }
 
@@ -68,11 +70,13 @@ FAIL_TEST(fail_kill)
 
 FAIL_TEST(fail_segv)
 {
+	test_disable_coredumps();
 	* (char **) 0 = "Goodbye, world";
 }
 
 FAIL_TEST(sanity_assert)
 {
+	test_disable_coredumps();
 	/* must fail */
 	assert(0);
 }
@@ -87,6 +91,7 @@ FAIL_TEST(sanity_malloc_direct)
 	assert(p);	/* assert that we got memory, also prevents
 			 * the malloc from getting optimized away. */
 	free(NULL);	/* NULL must not be counted */
+	test_disable_coredumps();
 }
 
 TEST(disable_leak_checks)
@@ -114,6 +119,8 @@ FAIL_TEST(sanity_malloc_indirect)
 	wl_array_add(&array, 14);
 
 	/* not freeing array, must leak */
+
+	test_disable_coredumps();
 }
 
 FAIL_TEST(tc_client_memory_leaks)
@@ -121,6 +128,7 @@ FAIL_TEST(tc_client_memory_leaks)
 	struct display *d = display_create();
 	client_create_noarg(d, sanity_malloc_direct);
 	display_run(d);
+	test_disable_coredumps();
 	display_destroy(d);
 }
 
@@ -129,6 +137,7 @@ FAIL_TEST(tc_client_memory_leaks2)
 	struct display *d = display_create();
 	client_create_noarg(d, sanity_malloc_indirect);
 	display_run(d);
+	test_disable_coredumps();
 	display_destroy(d);
 }
 
@@ -141,6 +150,8 @@ FAIL_TEST(sanity_fd_leak)
 	/* leak 2 file descriptors */
 	if (pipe(fd) < 0)
 		exit(EXIT_SUCCESS); /* failed to fail */
+
+	test_disable_coredumps();
 }
 
 FAIL_TEST(sanity_fd_leak_exec)
@@ -152,6 +163,7 @@ FAIL_TEST(sanity_fd_leak_exec)
 	if (pipe(fd) < 0)
 		exit(EXIT_SUCCESS); /* failed to fail */
 
+	test_disable_coredumps();
 	exec_fd_leak_check(nr_fds);
 }
 
@@ -212,6 +224,7 @@ FAIL_TEST(tc_client_fd_leaks)
 	client_create_noarg(d, sanity_fd_leak);
 	display_run(d);
 
+	test_disable_coredumps();
 	display_destroy(d);
 }
 
@@ -222,12 +235,14 @@ FAIL_TEST(tc_client_fd_leaks_exec)
 	client_create_noarg(d, sanity_fd_leak);
 	display_run(d);
 
+	test_disable_coredumps();
 	display_destroy(d);
 }
 
 FAIL_TEST(timeout_tst)
 {
 	test_set_timeout(1);
+	test_disable_coredumps();
 	/* test should reach timeout */
 	test_sleep(2);
 }
@@ -247,6 +262,7 @@ FAIL_TEST(timeout_reset_tst)
 	test_set_timeout(10);
 	test_set_timeout(1);
 
+	test_disable_coredumps();
 	/* test should fail on timeout */
 	test_sleep(2);
 }
@@ -265,6 +281,7 @@ FAIL_TEST(tc_timeout_tst)
 	struct display *d = display_create();
 	client_create_noarg(d, timeout_tst);
 	display_run(d);
+	test_disable_coredumps();
 	display_destroy(d);
 }
 
@@ -273,6 +290,7 @@ FAIL_TEST(tc_timeout2_tst)
 	struct display *d = display_create();
 	client_create_noarg(d, timeout_reset_tst);
 	display_run(d);
+	test_disable_coredumps();
 	display_destroy(d);
 }
 
