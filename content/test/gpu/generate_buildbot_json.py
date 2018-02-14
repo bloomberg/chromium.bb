@@ -659,19 +659,6 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'mac',
     },
-    'Mac Pro Release (AMD)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '1002:679e',
-          'os': 'Mac-10.10'
-        },
-      ],
-      'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'mac',
-    },
     'Mac Pro FYI Release (AMD)': {
       'swarming_dimensions': [
         {
@@ -680,35 +667,8 @@ FYI_WATERFALL = {
         },
       ],
       'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'mac',
-    },
-    'Mac Pro Debug (AMD)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '1002:679e',
-          'os': 'Mac-10.10'
-        },
-      ],
-      'build_config': 'Debug',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'mac',
-    },
-    'Mac Pro FYI Debug (AMD)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '1002:679e',
-          'os': 'Mac-10.10'
-        },
-      ],
-      'build_config': 'Debug',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
+      # Even though this bot is a one-off, it's still in the Swarming pool.
+      'swarming': True,
       'os_type': 'mac',
     },
     'Mac Retina Release (NVIDIA)': {
@@ -865,20 +825,6 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'mac',
     },
-    'Mac Experimental Retina Release (NVIDIA)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '10de:0fe9',
-          'hidpi': '1',
-          'os': 'Mac-10.13.4',
-          'pool': 'Chrome-GPU',
-        },
-      ],
-      'build_config': 'Release',
-      # This bot is a one-off for testing purposes.
-      'swarming': False,
-      'os_type': 'mac',
-    },
     'Mac FYI Experimental Retina Release (NVIDIA)': {
       'swarming_dimensions': [
         {
@@ -889,8 +835,8 @@ FYI_WATERFALL = {
         },
       ],
       'build_config': 'Release',
-      # This bot is a one-off for testing purposes.
-      'swarming': False,
+      # Even though this bot is a one-off, it's still in the Swarming pool.
+      'swarming': True,
       'os_type': 'mac',
     },
     'Mac GPU ASAN Release': {
@@ -1085,19 +1031,6 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'linux',
     },
-    'Linux Release (AMD R7 240)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '1002:6613',
-          'os': 'Ubuntu'
-        },
-      ],
-      'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'linux',
-    },
     'Linux FYI Release (AMD R7 240)': {
       'swarming_dimensions': [
         {
@@ -1106,9 +1039,8 @@ FYI_WATERFALL = {
         },
       ],
       'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
+      # Even though this bot is a one-off, it's still in the Swarming pool.
+      'swarming': True,
       'os_type': 'linux',
     },
     'Linux GPU TSAN Release': {
@@ -1137,19 +1069,6 @@ FYI_WATERFALL = {
       'os_type': 'linux',
       'instrumentation_type': 'tsan',
     },
-    'Linux Ozone (Intel)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '8086:1912',
-          'os': 'Ubuntu'
-        },
-      ],
-      'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'linux',
-    },
     'Linux FYI Ozone (Intel)': {
       'swarming_dimensions': [
         {
@@ -1158,9 +1077,8 @@ FYI_WATERFALL = {
         },
       ],
       'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
+      # Even though this bot is a one-off, it's still in the Swarming pool.
+      'swarming': True,
       'os_type': 'linux',
     },
     'Android Release (Nexus 5)': {
