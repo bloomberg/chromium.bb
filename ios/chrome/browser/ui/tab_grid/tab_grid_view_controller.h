@@ -7,7 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
-@interface TabGridViewController : UIViewController
+#import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
+
+@interface TabGridViewController : UIViewController<TabSwitcher>
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_VIEW_CONTROLLER_H_
