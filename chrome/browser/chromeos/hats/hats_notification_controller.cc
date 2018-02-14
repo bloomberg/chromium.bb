@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/hats/hats_notification_controller.h"
 
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/hats/hats_dialog.h"
 #include "chrome/browser/chromeos/hats/hats_finch_helper.h"
@@ -203,7 +203,8 @@ void HatsNotificationController::OnPortalDetectionCompleted(
           GURL(kNotificationOriginUrl),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT, kNotifierHats),
-          message_center::RichNotificationData(), this, kNotificationGoogleIcon,
+          message_center::RichNotificationData(), this,
+          ash::kNotificationGoogleIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
 
   NotificationDisplayService::GetForProfile(profile_)->Display(

@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
@@ -113,7 +113,7 @@ LowDiskNotification::CreateNotification(Severity severity) {
           message_center::NOTIFICATION_TYPE_SIMPLE, kLowDiskId, title, message,
           gfx::Image(), base::string16(), GURL(), notifier_id, optional_fields,
           new message_center::HandleNotificationClickDelegate(on_click),
-          kNotificationStorageFullIcon, warning_level);
+          ash::kNotificationStorageFullIcon, warning_level);
 
   return notification;
 }

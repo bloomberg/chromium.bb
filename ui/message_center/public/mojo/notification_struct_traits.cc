@@ -57,6 +57,14 @@ const base::string16& RichNotificationDataStructTraits::accessible_name(
 }
 
 // static
+std::string RichNotificationDataStructTraits::vector_small_image_id(
+    const message_center::RichNotificationData& r) {
+  if (r.vector_small_image && r.vector_small_image->name)
+    return r.vector_small_image->name;
+  return std::string();
+}
+
+// static
 SkColor RichNotificationDataStructTraits::accent_color(
     const message_center::RichNotificationData& r) {
   return r.accent_color;
@@ -70,6 +78,16 @@ bool RichNotificationDataStructTraits::Read(RichNotificationDataDataView data,
       data.should_make_spoken_feedback_for_popup_updates();
   out->clickable = data.clickable();
   out->pinned = data.pinned();
+
+  // Look up the vector icon by ID. This will only work if RegisterVectorIcon
+  // has been called with an appropriate icon.
+  std::string icon_id;
+  if (data.ReadVectorSmallImageId(&icon_id) && !icon_id.empty()) {
+    out->vector_small_image = message_center::GetRegisteredVectorIcon(icon_id);
+    if (!out->vector_small_image)
+      LOG(ERROR) << "Couldn't find icon: " + icon_id;
+  }
+
   out->accent_color = data.accent_color();
   return data.ReadProgressStatus(&out->progress_status) &&
          data.ReadAccessibleName(&out->accessible_name);

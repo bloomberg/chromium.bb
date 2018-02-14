@@ -73,6 +73,8 @@ struct StructTraits<message_center::mojom::RichNotificationDataDataView,
   static bool pinned(const message_center::RichNotificationData& r);
   static const base::string16& accessible_name(
       const message_center::RichNotificationData& r);
+  static std::string vector_small_image_id(
+      const message_center::RichNotificationData& r);
   static SkColor accent_color(const message_center::RichNotificationData& r);
   static bool Read(message_center::mojom::RichNotificationDataDataView data,
                    message_center::RichNotificationData* out);

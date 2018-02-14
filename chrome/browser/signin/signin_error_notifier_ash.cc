@@ -4,12 +4,12 @@
 
 #include "chrome/browser/signin/signin_error_notifier_ash.h"
 
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -103,7 +103,7 @@ void SigninErrorNotifier::OnErrorChanged() {
           GURL(notification_id_), notifier_id, data,
           new message_center::HandleNotificationClickDelegate(
               base::Bind(&HandleNotificationClick)),
-          kNotificationWarningIcon,
+          ash::kNotificationWarningIcon,
           message_center::SystemNotificationWarningLevel::WARNING);
   notification->set_clickable(true);
   notification->SetSystemPriority();

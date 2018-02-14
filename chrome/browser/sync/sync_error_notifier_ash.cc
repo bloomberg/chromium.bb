@@ -4,9 +4,9 @@
 
 #include "chrome/browser/sync/sync_error_notifier_ash.h"
 
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -144,7 +144,7 @@ void SyncErrorNotifier::OnErrorChanged() {
           l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_DISPLAY_SOURCE),
           GURL(notification_id_), notifier_id,
           message_center::RichNotificationData(),
-          new SyncNotificationDelegate(profile_), kNotificationWarningIcon,
+          new SyncNotificationDelegate(profile_), ash::kNotificationWarningIcon,
           message_center::SystemNotificationWarningLevel::WARNING);
   notification->set_clickable(true);
 

@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/command_line.h"
@@ -20,7 +21,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/mobile/mobile_activator.h"
@@ -340,7 +340,7 @@ NetworkPortalNotificationController::CreateDefaultCaptivePortalNotification(
                       : IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE_WIRED,
               base::UTF8ToUTF16(network->name())),
           gfx::Image(), base::string16(), GURL(), notifier_id, data,
-          delegate.get(), kNotificationCaptivePortalIcon,
+          delegate.get(), ash::kNotificationCaptivePortalIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
   return notification;
@@ -394,7 +394,7 @@ NetworkPortalNotificationController::
               IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIFI),
           notification_text, gfx::Image(),
           base::string16() /* display_source */, GURL(), notifier_id, data,
-          delegate.get(), kNotificationCaptivePortalIcon,
+          delegate.get(), ash::kNotificationCaptivePortalIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
   return notification;
