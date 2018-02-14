@@ -306,18 +306,10 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
   // Must be run from the UI thread.
   void CancelPrintJob(CupsPrintJob* job) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-    // Copy job_id and printer_id.  |job| is about to be freed.
-    const int job_id = job->job_id();
-    const std::string printer_id = job->printer().id();
-
-    // Stop montioring jobs after we cancel them.  The user no longer cares.
-    jobs_.erase(job->GetUniqueId());
-
-    query_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&CupsWrapper::CancelJobImpl,
-                   base::Unretained(cups_wrapper_.get()), printer_id, job_id));
+    job->set_state(CupsPrintJob::State::STATE_CANCELLED);
+    NotifyJobCanceled(job);
+    // Ideally we should wait for IPP response.
+    FinishPrintJob(job);
   }
 
   bool SuspendPrintJob(CupsPrintJob* job) override {
@@ -394,6 +386,20 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     ScheduleQuery();
 
     return true;
+  }
+
+  void FinishPrintJob(CupsPrintJob* job) {
+    // Copy job_id and printer_id.  |job| is about to be freed.
+    const int job_id = job->job_id();
+    const std::string printer_id = job->printer().id();
+
+    // Stop montioring jobs after we cancel them.  The user no longer cares.
+    jobs_.erase(job->GetUniqueId());
+
+    query_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&CupsWrapper::CancelJobImpl,
+                                  base::Unretained(cups_wrapper_.get()),
+                                  printer_id, job_id));
   }
 
   // Schedule a query of CUPS for print job status with a delay of |delay|.
@@ -473,11 +479,11 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
         if (print_job->expired()) {
           // Job needs to be forcibly cancelled.
           RecordJobResult(TIMEOUT_CANCEL);
-          CancelPrintJob(print_job);
+          FinishPrintJob(print_job);
           // Beware, print_job was removed from jobs_ and deleted.
         } else if (print_job->PipelineDead()) {
           RecordJobResult(FILTER_FAILED);
-          CancelPrintJob(print_job);
+          FinishPrintJob(print_job);
         } else if (print_job->IsJobFinished()) {
           // Cleanup completed jobs.
           VLOG(1) << "Removing Job " << print_job->document_title();

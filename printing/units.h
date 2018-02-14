@@ -12,6 +12,10 @@ namespace printing {
 // Length of a thousandth of inches in 0.01mm unit.
 const int kHundrethsMMPerInch = 2540;
 
+// Mil is a thousandth of an inch.
+constexpr float kMicronsPerMil = 25.4f;
+constexpr int kMilsPerInch = 1000;
+
 // Length of an inch in CSS's 1pt unit.
 // http://dev.w3.org/csswg/css3-values/#absolute-length-units-cm-mm.-in-pt-pc
 const int kPointsPerInch = 72;
