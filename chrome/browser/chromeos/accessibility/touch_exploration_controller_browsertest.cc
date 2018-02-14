@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/touch_exploration_controller.h"
+#include "ash/accessibility/touch_exploration_controller.h"
 
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/public/cpp/accessibility_types.h"

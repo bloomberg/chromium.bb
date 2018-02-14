@@ -9,6 +9,7 @@
 #include <queue>
 #include <vector>
 
+#include "ash/accessibility/touch_exploration_controller.h"
 #include "ash/ash_constants.h"
 #include "ash/ash_touch_exploration_manager_chromeos.h"
 #include "ash/focus_cycler.h"
@@ -72,7 +73,6 @@
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/base/models/menu_model.h"
-#include "ui/chromeos/touch_exploration_controller.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event_utils.h"

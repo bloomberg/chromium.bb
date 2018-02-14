@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/chromeos/touch_exploration_controller.h"
+#include "ash/accessibility/touch_exploration_controller.h"
 
 #include <math.h>
 #include <stddef.h>
@@ -29,7 +29,7 @@
 
 using EventList = std::vector<std::unique_ptr<ui::Event>>;
 
-namespace ui {
+namespace ash {
 
 namespace {
 
@@ -39,9 +39,7 @@ class EventCapturer : public ui::EventHandler {
   EventCapturer() {}
   ~EventCapturer() override {}
 
-  void Reset() {
-    events_.clear();
-  }
+  void Reset() { events_.clear(); }
 
   void OnEvent(ui::Event* event) override {
     if (event->IsMouseEvent() || event->IsTouchEvent() ||
@@ -75,7 +73,7 @@ int Factorial(int n) {
 }
 
 class MockTouchExplorationControllerDelegate
-    : public ui::TouchExplorationControllerDelegate {
+    : public TouchExplorationControllerDelegate {
  public:
   void SetOutputLevel(int volume) override {
     volume_changes_.push_back(volume);
@@ -217,7 +215,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     aura::test::AuraTestBase::SetUp();
     cursor_client_.reset(new aura::test::TestCursorClient(root_window()));
     root_window()->AddPreTargetHandler(&event_capturer_);
-    generator_.reset(new test::EventGenerator(root_window()));
+    generator_.reset(new ui::test::EventGenerator(root_window()));
 
     simulated_clock_ = new base::SimpleTestTickClock();
     // Tests fail if time is ever 0.
@@ -249,8 +247,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     const EventList& all_events = GetCapturedEvents();
     std::vector<ui::LocatedEvent*> located_events;
     for (size_t i = 0; i < all_events.size(); ++i) {
-      if (all_events[i]->IsMouseEvent() ||
-          all_events[i]->IsTouchEvent() ||
+      if (all_events[i]->IsMouseEvent() || all_events[i]->IsTouchEvent() ||
           all_events[i]->IsGestureEvent()) {
         located_events.push_back(
             static_cast<ui::LocatedEvent*>(all_events[i].get()));
@@ -279,9 +276,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     return events;
   }
 
-  void ClearCapturedEvents() {
-    event_capturer_.Reset();
-  }
+  void ClearCapturedEvents() { event_capturer_.Reset(); }
 
   void AdvanceSimulatedTimePastTapDelay() {
     simulated_clock_->Advance(gesture_detector_config_.double_tap_timeout);
@@ -307,10 +302,8 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     if (!on && touch_exploration_controller_.get()) {
       touch_exploration_controller_.reset();
     } else if (on && !touch_exploration_controller_.get()) {
-      touch_exploration_controller_.reset(
-          new ui::TouchExplorationControllerTestApi(
-              new TouchExplorationController(root_window(), &delegate_,
-                                             nullptr)));
+      touch_exploration_controller_.reset(new TouchExplorationControllerTestApi(
+          new TouchExplorationController(root_window(), &delegate_, nullptr)));
       cursor_client()->ShowCursor();
       cursor_client()->DisableMouseEvents();
     }
@@ -374,8 +367,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
   bool IsInTouchToMouseMode() {
     aura::client::CursorClient* cursor_client =
         aura::client::GetCursorClient(root_window());
-    return cursor_client &&
-           cursor_client->IsMouseEventsEnabled() &&
+    return cursor_client && cursor_client->IsMouseEventsEnabled() &&
            !cursor_client->IsCursorVisible();
   }
 
@@ -427,7 +419,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     touch_exploration_controller_->SetLiftActivationBounds(bounds);
   }
 
-  std::unique_ptr<test::EventGenerator> generator_;
+  std::unique_ptr<ui::test::EventGenerator> generator_;
   ui::GestureDetector::Config gesture_detector_config_;
   // Owned by |ui|.
   base::SimpleTestTickClock* simulated_clock_;
@@ -1380,20 +1372,20 @@ TEST_F(TouchExplorationTest, DISABLED_AllFingerPermutations) {
   // A copy of all events list which can be modified without destrying events.
   std::vector<ui::TouchEvent*> queued_events;
 
-  for (int touch_id = 0; touch_id < 3; touch_id++){
-    int x = 10*touch_id + 1;
-    int y = 10*touch_id + 2;
-    all_events.push_back(std::make_unique<TouchEvent>(
+  for (int touch_id = 0; touch_id < 3; touch_id++) {
+    int x = 10 * touch_id + 1;
+    int y = 10 * touch_id + 2;
+    all_events.push_back(std::make_unique<ui::TouchEvent>(
         ui::ET_TOUCH_PRESSED, gfx::Point(x++, y++), Now(),
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
                            touch_id)));
     queued_events.push_back(all_events.back().get());
-    all_events.push_back(std::make_unique<TouchEvent>(
+    all_events.push_back(std::make_unique<ui::TouchEvent>(
         ui::ET_TOUCH_MOVED, gfx::Point(x++, y++), Now(),
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
                            touch_id)));
     queued_events.push_back(all_events.back().get());
-    all_events.push_back(std::make_unique<TouchEvent>(
+    all_events.push_back(std::make_unique<ui::TouchEvent>(
         ui::ET_TOUCH_RELEASED, gfx::Point(x, y), Now(),
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
                            touch_id)));
@@ -1461,7 +1453,7 @@ TEST_F(TouchExplorationTest, DISABLED_AllFingerPermutations) {
       // |next_dispatch| has to be put in this container so that its time
       // stamp can be changed to this point in the test, when it is being
       // dispatched..
-      EventTestApi test_dispatch(next_dispatch);
+      ui::EventTestApi test_dispatch(next_dispatch);
       test_dispatch.set_time_stamp(Now());
       generator_->Dispatch(next_dispatch);
       queued_events.erase(queued_events.begin() + index);
@@ -1469,16 +1461,16 @@ TEST_F(TouchExplorationTest, DISABLED_AllFingerPermutations) {
       // Keep track of what fingers have been pressed, to release
       // only those fingers at the end, so the check for being in
       // no fingers down can be accurate.
-      if (next_dispatch->type() == ET_TOUCH_PRESSED) {
+      if (next_dispatch->type() == ui::ET_TOUCH_PRESSED) {
         fingers_pressed[next_dispatch->pointer_details().id] = true;
-      } else if (next_dispatch->type() == ET_TOUCH_RELEASED) {
+      } else if (next_dispatch->type() == ui::ET_TOUCH_RELEASED) {
         fingers_pressed[next_dispatch->pointer_details().id] = false;
       }
     }
     ASSERT_EQ(queued_events.size(), 0u);
 
     // Release fingers recorded as pressed.
-    for(int j = 0; j < int(fingers_pressed.size()); j++){
+    for (int j = 0; j < int(fingers_pressed.size()); j++) {
       if (fingers_pressed[j] == true) {
         generator_->ReleaseTouchId(j);
         fingers_pressed[j] = false;
@@ -1894,8 +1886,7 @@ TEST_F(TouchExplorationTest, EnterEarconPlays) {
   locations.push_back(bottom_edge);
 
   for (std::vector<gfx::Point>::const_iterator point = locations.begin();
-       point != locations.end();
-       ++point) {
+       point != locations.end(); ++point) {
     ui::TouchEvent touch_event(
         ui::ET_TOUCH_PRESSED, *point, Now(),
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
@@ -1938,8 +1929,7 @@ TEST_F(TouchExplorationTest, ExitEarconPlays) {
   locations.push_back(bottom_edge);
 
   for (std::vector<gfx::Point>::const_iterator point = locations.begin();
-       point != locations.end();
-       ++point) {
+       point != locations.end(); ++point) {
     generator_->PressTouch();
     generator_->MoveTouch(initial_press);
     generator_->MoveTouch(*point);
@@ -2124,4 +2114,4 @@ TEST_F(TouchExplorationTest, AlreadyHeldFingersGetCanceled) {
   ASSERT_EQ(1U, events.size());
 }
 
-}  // namespace ui
+}  // namespace ash
