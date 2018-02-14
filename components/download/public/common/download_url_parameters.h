@@ -22,7 +22,6 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "storage/browser/blob/blob_data_handle.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -211,19 +210,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
   // system will automatically generate one.
   void set_guid(const std::string& guid) { guid_ = guid; }
 
-  // For downloads of blob URLs, the caller can store a BlobDataHandle in the
-  // DownloadUrlParameters object so that the blob will remain valid until
-  // the download starts. The BlobDataHandle will be attached to the associated
-  // URLRequest.
-  //
-  // This is optional. If left unspecified, and the blob URL cannot be mapped to
-  // a blob by the time the download request starts, then the download will
-  // fail.
-  void set_blob_data_handle(
-      std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
-    blob_data_handle_ = std::move(blob_data_handle);
-  }
-
   // For downloads originating from custom tabs, this records the origin
   // of the custom tab.
   void set_request_origin(const std::string& origin) {
@@ -282,11 +268,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
   bool is_transient() const { return transient_; }
   std::string guid() const { return guid_; }
 
-  // STATE_CHANGING: Return the BlobDataHandle.
-  std::unique_ptr<storage::BlobDataHandle> GetBlobDataHandle() {
-    return std::move(blob_data_handle_);
-  }
-
   // STATE CHANGING: All save_info_ sub-objects will be in an indeterminate
   // state following this call.
   DownloadSaveInfo GetSaveInfo() { return std::move(save_info_); }
@@ -322,7 +303,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadUrlParameters {
   bool fetch_error_body_;
   bool transient_;
   std::string guid_;
-  std::unique_ptr<storage::BlobDataHandle> blob_data_handle_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
   std::string request_origin_;
   DownloadSource download_source_;

@@ -63,6 +63,7 @@
 #include "net/url_request/url_request_context.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/features.h"
+#include "storage/browser/blob/blob_url_loader_factory.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "url/origin.h"
 
@@ -135,6 +136,7 @@ download::DownloadEntry CreateDownloadEntryFromItem(
 
 DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginDownload(
     std::unique_ptr<download::DownloadUrlParameters> params,
+    std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
     content::ResourceContext* resource_context,
     uint32_t download_id,
     base::WeakPtr<DownloadManagerImpl> download_manager) {
@@ -142,8 +144,6 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginDownload(
 
   std::unique_ptr<net::URLRequest> url_request =
       DownloadRequestCore::CreateRequestOnIOThread(download_id, params.get());
-  std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
-      params->GetBlobDataHandle();
   if (blob_data_handle) {
     storage::BlobProtocolHandler::SetRequestedBlobDataHandle(
         url_request.get(), std::move(blob_data_handle));
@@ -177,6 +177,7 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginDownload(
 DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginResourceDownload(
     std::unique_ptr<download::DownloadUrlParameters> params,
     std::unique_ptr<network::ResourceRequest> request,
+    std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
     uint32_t download_id,
     base::WeakPtr<DownloadManagerImpl> download_manager,
@@ -200,14 +201,23 @@ DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginResourceDownload(
       WebContentsImpl::FromRenderFrameHostID, params->render_process_host_id(),
       params->render_frame_host_routing_id());
 
+  network::mojom::URLLoaderFactory* url_loader_factory =
+      url_loader_factory_getter->GetNetworkFactory();
+  if (params->url().SchemeIs(url::kBlobScheme)) {
+    network::mojom::URLLoaderFactoryPtr url_loader_factory_ptr;
+    storage::BlobURLLoaderFactory::Create(
+        std::move(blob_data_handle), params->url(),
+        mojo::MakeRequest(&url_loader_factory_ptr));
+    url_loader_factory = url_loader_factory_ptr.get();
+  }
   // TODO(qinmin): Check the storage permission before creating the URLLoader.
   // This is already done for context menu download, but it is missing for
   // download service and download resumption.
   return DownloadManagerImpl::UniqueUrlDownloadHandlerPtr(
-      ResourceDownloader::BeginDownload(
-          download_manager, std::move(params), std::move(request),
-          url_loader_factory_getter, getter, site_url, tab_url,
-          tab_referrer_url, download_id, false)
+      ResourceDownloader::BeginDownload(download_manager, std::move(params),
+                                        std::move(request), url_loader_factory,
+                                        getter, site_url, tab_url,
+                                        tab_referrer_url, download_id, false)
           .release());
 }
 
@@ -700,7 +710,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
 void DownloadManagerImpl::ResumeInterruptedDownload(
     std::unique_ptr<download::DownloadUrlParameters> params,
     uint32_t id) {
-  BeginDownloadInternal(std::move(params), id);
+  BeginDownloadInternal(std::move(params), nullptr, id);
 }
 
 
@@ -843,6 +853,12 @@ int DownloadManagerImpl::RemoveDownloadsByURLAndTime(
 
 void DownloadManagerImpl::DownloadUrl(
     std::unique_ptr<download::DownloadUrlParameters> params) {
+  DownloadUrl(std::move(params), nullptr);
+}
+
+void DownloadManagerImpl::DownloadUrl(
+    std::unique_ptr<download::DownloadUrlParameters> params,
+    std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
   if (params->post_id() >= 0) {
     // Check this here so that the traceback is more useful.
     DCHECK(params->prefer_cache());
@@ -851,7 +867,8 @@ void DownloadManagerImpl::DownloadUrl(
 
   RecordDownloadCountWithSource(DownloadCountTypes::DOWNLOAD_TRIGGERED_COUNT,
                                 params->download_source());
-  BeginDownloadInternal(std::move(params), download::DownloadItem::kInvalidId);
+  BeginDownloadInternal(std::move(params), std::move(blob_data_handle),
+                        download::DownloadItem::kInvalidId);
 }
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {
@@ -1078,6 +1095,7 @@ void DownloadManagerImpl::CreateDownloadHandlerForNavigation(
 
 void DownloadManagerImpl::BeginDownloadInternal(
     std::unique_ptr<download::DownloadUrlParameters> params,
+    std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
     uint32_t id) {
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     std::unique_ptr<network::ResourceRequest> request =
@@ -1101,20 +1119,22 @@ void DownloadManagerImpl::BeginDownloadInternal(
 
     BrowserThread::PostTaskAndReplyWithResult(
         BrowserThread::IO, FROM_HERE,
-        base::BindOnce(
-            &BeginResourceDownload, std::move(params), std::move(request),
-            storage_partition->url_loader_factory_getter(), id,
-            weak_factory_.GetWeakPtr(), site_url, tab_url, tab_referrer_url),
+        base::BindOnce(&BeginResourceDownload, std::move(params),
+                       std::move(request), std::move(blob_data_handle),
+                       storage_partition->url_loader_factory_getter(), id,
+                       weak_factory_.GetWeakPtr(), site_url, tab_url,
+                       tab_referrer_url),
         base::BindOnce(&DownloadManagerImpl::AddUrlDownloadHandler,
                        weak_factory_.GetWeakPtr()));
   } else {
     BrowserThread::PostTaskAndReplyWithResult(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&BeginDownload, std::move(params),
+                       std::move(blob_data_handle),
                        browser_context_->GetResourceContext(), id,
                        weak_factory_.GetWeakPtr()),
-         base::BindOnce(&DownloadManagerImpl::AddUrlDownloadHandler,
-                        weak_factory_.GetWeakPtr()));
+        base::BindOnce(&DownloadManagerImpl::AddUrlDownloadHandler,
+                       weak_factory_.GetWeakPtr()));
    }
 }
 
