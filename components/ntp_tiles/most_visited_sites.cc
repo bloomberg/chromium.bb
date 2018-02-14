@@ -16,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/ntp_tiles/constants.h"
-#include "components/ntp_tiles/field_trial.h"
 #include "components/ntp_tiles/icon_cacher.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/ntp_tiles/switches.h"
@@ -80,6 +79,10 @@ std::string StripFirstGenericPrefix(const std::string& host) {
     }
   }
   return host;
+}
+
+bool ShouldShowPopularSites() {
+  return base::FeatureList::IsEnabled(kUsePopularSitesSuggestions);
 }
 
 }  // namespace

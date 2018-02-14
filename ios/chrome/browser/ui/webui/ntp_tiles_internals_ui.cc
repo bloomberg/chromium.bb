@@ -8,7 +8,6 @@
 
 #include "components/grit/components_resources.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/ntp_tiles/field_trial.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/webui/ntp_tiles_internals_message_handler.h"
 #include "components/ntp_tiles/webui/ntp_tiles_internals_message_handler_client.h"
