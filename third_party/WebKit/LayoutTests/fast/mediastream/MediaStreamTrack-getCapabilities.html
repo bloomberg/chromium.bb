@@ -1,0 +1,15 @@
+<!DOCTYPE HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+promise_test(function() {
+  return navigator.mediaDevices.getUserMedia({audio: true})
+      .then(function(stream) {
+    var capabilities = stream.getAudioTracks()[0].getCapabilities();
+    assert_greater_than(Object.keys(capabilities).length, 0);
+    assert_true(capabilities.hasOwnProperty('echoCancellation'));
+    assert_true(capabilities.hasOwnProperty('deviceId'));
+    assert_equals(Object.keys(capabilities.echoCancellation).length, 2);
+  });
+}, 'MediaStreamTrack.getCapabilities() support for echoCancellation and deviceId');
+</script>

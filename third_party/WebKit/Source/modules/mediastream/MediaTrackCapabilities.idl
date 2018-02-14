@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 dictionary MediaTrackCapabilities {
+    sequence<boolean> echoCancellation;
+    DOMString deviceId;
     // W3C Image Capture API
     // https://w3c.github.io/mediacapture-image/#mediatrackcapabilities-section
     // TODO(mcasas) move out when partial dictionaries are supported

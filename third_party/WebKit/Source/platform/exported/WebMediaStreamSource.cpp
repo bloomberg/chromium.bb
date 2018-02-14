@@ -166,6 +166,12 @@ WebMediaConstraints WebMediaStreamSource::Constraints() {
   return private_->Constraints();
 }
 
+void WebMediaStreamSource::SetCapabilities(
+    const WebMediaStreamSource::Capabilities& capabilities) {
+  DCHECK(!private_.IsNull());
+  private_->SetCapabilities(capabilities);
+}
+
 bool WebMediaStreamSource::RequiresAudioConsumer() const {
   DCHECK(!private_.IsNull());
   return private_->RequiresAudioConsumer();

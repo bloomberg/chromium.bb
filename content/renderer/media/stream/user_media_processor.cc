@@ -770,7 +770,16 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
       CreateAudioSource(device, source_ready, &has_sw_echo_cancellation);
   audio_source->SetStopCallback(base::Bind(
       &UserMediaProcessor::OnLocalSourceStopped, weak_factory_.GetWeakPtr()));
+
+  std::vector<bool> echo_cancellation;
+  echo_cancellation.push_back(true);
+  echo_cancellation.push_back(false);
+  blink::WebMediaStreamSource::Capabilities capabilities;
+  capabilities.echo_cancellation = echo_cancellation;
+  capabilities.device_id = blink::WebString::FromUTF8(device.id);
+
   source.SetExtraData(audio_source);  // Takes ownership.
+  source.SetCapabilities(capabilities);
   // At this point it is known if software echo cancellation will be used, but
   // final audio parameters for the source are not set yet, so it is not yet
   // known if hardware echo cancellation will actually be used. That information

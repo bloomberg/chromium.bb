@@ -30,7 +30,6 @@
 
 #include "platform/mediastream/MediaStreamSource.h"
 #include "platform/wtf/Assertions.h"
-#include "public/platform/WebMediaStreamSource.h"
 
 namespace blink {
 
