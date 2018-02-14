@@ -27,6 +27,31 @@
 
 namespace net {
 
+namespace {
+
+constexpr NetworkTrafficAnnotationTag
+    kHttpServerErrorResponseTrafficAnnotation =
+        DefineNetworkTrafficAnnotation("http_server_error_response",
+                                       R"(
+      semantics {
+        sender: "HTTP Server"
+        description: "Error response from the built-in HTTP server."
+        trigger: "Sending a request to the HTTP server that it can't handle."
+        data: "A 500 error code."
+        destination: OTHER
+        destination_other: "Any destination the consumer selects."
+      }
+      policy {
+        cookies_allowed: NO
+        setting:
+          "This request cannot be disabled in settings. However it will never "
+          "be made unless user activates an HTTP server."
+        policy_exception_justification:
+          "Not implemented, not used if HTTP Server is not activated."
+      })");
+
+}  // namespace
+
 HttpServer::HttpServer(std::unique_ptr<ServerSocket> server_socket,
                        HttpServer::Delegate* delegate)
     : server_socket_(std::move(server_socket)),
@@ -271,12 +296,11 @@ int HttpServer::HandleReadResult(HttpConnection* connection, int rv) {
       if (!base::StringToSizeT(request.GetHeaderValue(kContentLength),
                                &content_length) ||
           content_length > kMaxBodySize) {
-        // TODO (https://crbug.com/656607): Add proper annotation.
         SendResponse(connection->id(),
                      HttpServerResponseInfo::CreateFor500(
                          "request content-length too big or unknown: " +
                          request.GetHeaderValue(kContentLength)),
-                     NO_TRAFFIC_ANNOTATION_BUG_656607);
+                     kHttpServerErrorResponseTrafficAnnotation);
         Close(connection->id());
         return ERR_CONNECTION_CLOSED;
       }
