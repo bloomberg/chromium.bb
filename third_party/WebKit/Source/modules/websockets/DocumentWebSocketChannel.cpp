@@ -472,6 +472,7 @@ void DocumentWebSocketChannel::ProcessSendQueue() {
   uint64_t consumed_buffered_amount = 0;
   while (!messages_.IsEmpty() && !blob_loader_) {
     Message* message = messages_.front().Get();
+    CHECK(message);
     if (sending_quota_ == 0 && message->type != kMessageTypeClose)
       break;
     switch (message->type) {
@@ -486,17 +487,20 @@ void DocumentWebSocketChannel::ProcessSendQueue() {
         blob_loader_ = new BlobLoader(message->blob_data_handle, this);
         break;
       case kMessageTypeArrayBuffer:
+        CHECK(message->array_buffer);
         SendInternal(WebSocketHandle::kMessageTypeBinary,
                      static_cast<const char*>(message->array_buffer->Data()),
                      message->array_buffer->ByteLength(),
                      &consumed_buffered_amount);
         break;
       case kMessageTypeTextAsCharVector:
+        CHECK(message->vector_data);
         SendInternal(WebSocketHandle::kMessageTypeText,
                      message->vector_data->data(), message->vector_data->size(),
                      &consumed_buffered_amount);
         break;
       case kMessageTypeBinaryAsCharVector:
+        CHECK(message->vector_data);
         SendInternal(WebSocketHandle::kMessageTypeBinary,
                      message->vector_data->data(), message->vector_data->size(),
                      &consumed_buffered_amount);
