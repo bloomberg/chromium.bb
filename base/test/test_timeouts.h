@@ -13,9 +13,6 @@
 // the timeouts for different environments (like TSan).
 class TestTimeouts {
  public:
-  // Argument that can be passed on the command line to indicate "no timeout".
-  static constexpr const char kNoTimeoutSwitchValue[] = "-1";
-
   // Initializes the timeouts. Non thread-safe. Should be called exactly once
   // by the test suite.
   static void Initialize();
