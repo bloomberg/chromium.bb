@@ -550,7 +550,6 @@ void TrayAccessibility::OnAccessibilityStatusChanged(
               kNotifierAccessibility),
           options, nullptr, GetNotificationIcon(being_enabled),
           message_center::SystemNotificationWarningLevel::NORMAL);
-  notification->set_priority(message_center::SYSTEM_PRIORITY);
   message_center->AddNotification(std::move(notification));
 }
 

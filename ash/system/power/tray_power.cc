@@ -235,7 +235,6 @@ bool TrayPower::MaybeShowUsbChargerNotification() {
             message_center::RichNotificationData(),
             new UsbNotificationDelegate(this), kNotificationLowPowerChargerIcon,
             message_center::SystemNotificationWarningLevel::WARNING);
-    notification->set_priority(message_center::SYSTEM_PRIORITY);
     message_center_->AddNotification(std::move(notification));
     return true;
   } else if (!usb_charger_is_connected && usb_charger_was_connected_) {
