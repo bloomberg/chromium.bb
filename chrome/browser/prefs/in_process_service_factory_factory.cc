@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prefs/in_process_service_factory_factory.h"
 
+#include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -11,8 +12,7 @@
 // static
 InProcessPrefServiceFactoryFactory*
 InProcessPrefServiceFactoryFactory::GetInstance() {
-  CR_DEFINE_STATIC_LOCAL(InProcessPrefServiceFactoryFactory, factory, ());
-  return &factory;
+  return base::Singleton<InProcessPrefServiceFactoryFactory>::get();
 }
 
 // static
