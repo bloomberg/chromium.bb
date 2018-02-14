@@ -213,11 +213,6 @@ cc::TaskGraphRunner* VizProcessTransportFactory::GetTaskGraphRunner() {
   return task_graph_runner_.get();
 }
 
-const viz::ResourceSettings& VizProcessTransportFactory::GetResourceSettings()
-    const {
-  return renderer_settings_.resource_settings;
-}
-
 void VizProcessTransportFactory::AddObserver(
     ui::ContextFactoryObserver* observer) {
   observer_list_.AddObserver(observer);

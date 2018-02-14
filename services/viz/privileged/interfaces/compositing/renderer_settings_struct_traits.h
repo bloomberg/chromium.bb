@@ -12,11 +12,6 @@ namespace mojo {
 template <>
 struct StructTraits<viz::mojom::RendererSettingsDataView,
                     viz::RendererSettings> {
-  static const viz::ResourceSettings& resource_settings(
-      const viz::RendererSettings& input) {
-    return input.resource_settings;
-  }
-
   static bool allow_antialiasing(const viz::RendererSettings& input) {
     return input.allow_antialiasing;
   }

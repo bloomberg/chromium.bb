@@ -110,11 +110,6 @@ cc::TaskGraphRunner* TestImageTransportFactory::GetTaskGraphRunner() {
   return &task_graph_runner_;
 }
 
-const viz::ResourceSettings& TestImageTransportFactory::GetResourceSettings()
-    const {
-  return renderer_settings_.resource_settings;
-}
-
 void TestImageTransportFactory::AddObserver(
     ui::ContextFactoryObserver* observer) {
   observer_list_.AddObserver(observer);

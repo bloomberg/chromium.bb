@@ -66,7 +66,6 @@ class FrameSinkManagerImpl;
 class ContextProvider;
 class HostFrameSinkManager;
 class LocalSurfaceId;
-class ResourceSettings;
 }
 
 namespace ui {
@@ -177,9 +176,6 @@ class COMPOSITOR_EXPORT ContextFactory {
 
   // Gets the task graph runner.
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
-
-  // Gets the renderer settings.
-  virtual const viz::ResourceSettings& GetResourceSettings() const = 0;
 
   virtual void AddObserver(ContextFactoryObserver* observer) = 0;
 

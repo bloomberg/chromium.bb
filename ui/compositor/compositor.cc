@@ -36,6 +36,7 @@
 #include "components/viz/common/resources/resource_settings.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "components/viz/host/renderer_settings_creation.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ui_base_switches.h"
@@ -162,7 +163,6 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
 
   if (command_line->HasSwitch(switches::kUIEnableRGBA4444Textures))
     settings.preferred_tile_format = viz::RGBA_4444;
-  settings.resource_settings = context_factory_->GetResourceSettings();
 
 #if defined(OS_MACOSX)
   // Using CoreAnimation to composite requires using GpuMemoryBuffers, which
