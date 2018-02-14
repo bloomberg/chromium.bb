@@ -51,7 +51,13 @@ VRDeviceManager* VRDeviceManager::GetInstance() {
 #endif
 
 #if BUILDFLAG(ENABLE_OCULUS_VR)
-    providers.emplace_back(std::make_unique<device::OculusVRDeviceProvider>());
+    // For now, only use the Oculus when OpenVR is not enabled.
+    // TODO(billorr): Add more complicated logic to avoid routing Oculus devices
+    // through OpenVR.
+    if (base::FeatureList::IsEnabled(features::kOculusVR) &&
+        providers.size() == 0)
+      providers.emplace_back(
+          std::make_unique<device::OculusVRDeviceProvider>());
 #endif
 
     if (base::FeatureList::IsEnabled(features::kWebXrOrientationSensorDevice)) {

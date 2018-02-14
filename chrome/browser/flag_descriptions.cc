@@ -2892,6 +2892,13 @@ const char kWebVrAutopresentFromIntentDescription[] =
 
 #endif  // OS_ANDROID
 
+#if BUILDFLAG(ENABLE_OCULUS_VR)
+const char kOculusVRName[] = "Oculus hardware support";
+const char kOculusVRDescription[] =
+    "If enabled, Chrome will use Oculus devices for VR (supported only on "
+    "Windows 10 or later).";
+#endif  // ENABLE_OCULUS_VR
+
 #if BUILDFLAG(ENABLE_OPENVR)
 const char kOpenVRName[] = "OpenVR hardware support";
 const char kOpenVRDescription[] =
