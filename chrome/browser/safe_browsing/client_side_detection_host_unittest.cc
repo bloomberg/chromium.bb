@@ -930,14 +930,13 @@ TEST_F(ClientSideDetectionHostTest, UpdateIPUrlMap) {
                   browse_info->ips["100.100.100.256"]);
 }
 
-TEST_F(ClientSideDetectionHostTest, NavigationCancelsShouldClassifyUrl) {
-  // This test doesn't work because it makes assumption about how
-  // the message loop is run, and those assumptions are wrong when properly
-  // simulating a navigation with browser-side navigations.
-  // TODO(clamy): Fix the test and re-enable. See crbug.com/753357.
-  return;
+// This test doesn't work because it makes assumption about how
+// the message loop is run, and those assumptions are wrong when properly
+// simulating a navigation with browser-side navigations.
+// TODO(clamy): Fix the test and re-enable. See crbug.com/753357.
+TEST_F(ClientSideDetectionHostTest,
+       DISABLED_NavigationCancelsShouldClassifyUrl) {
   // Test that canceling pending should classify requests works as expected.
-
   GURL first_url("http://first.phishy.url.com");
   GURL second_url("http://second.url.com/");
   // The first few checks are done synchronously so check that they have been
