@@ -55,6 +55,7 @@ PACKAGE_FILTER = [
     "libsmime3.so",
     "libstdc++.so",
     "libxcb.so",
+    "rtld(GNU_HASH)",
 ]
 
 SUPPORTED_FEDORA_RELEASES = ['25', '26', '27']
