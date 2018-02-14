@@ -700,6 +700,9 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         mTabCache.remove(id);
     }
 
+    @Override
+    public void releaseResourcesForTab(int tabId) {}
+
     /**
      * @return The {@link TabModelSelector} instance this class knows about.
      */

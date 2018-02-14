@@ -273,6 +273,12 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeBe
         super.initLayoutTabFromHost(tabId);
     }
 
+    @Override
+    public void releaseResourcesForTab(int tabId) {
+        super.releaseResourcesForTab(tabId);
+        mTitleCache.remove(tabId);
+    }
+
     /**
      * @return The {@link OverviewListLayout} managed by this class.
      */

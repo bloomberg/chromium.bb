@@ -1693,6 +1693,7 @@ public class Stack {
                 // If the tab is completed covered, don't bother drawing it at all.
                 layoutTab.setVisible(false);
                 layoutTab.setDrawDecoration(true);
+                mLayout.releaseResourcesForTab(layoutTab);
             } else {
                 // Fade the tab as it gets too close to the next one. This helps
                 // prevent overlapping shadows from becoming too dark.
