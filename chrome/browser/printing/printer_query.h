@@ -55,6 +55,12 @@ class PrinterQuery : public PrintJobWorkerOwner {
   void SetSettings(std::unique_ptr<base::DictionaryValue> new_settings,
                    base::OnceClosure callback);
 
+#if defined(OS_CHROMEOS)
+  // Updates the current settings with |new_settings|.
+  void SetSettingsFromPOD(std::unique_ptr<printing::PrintSettings> new_settings,
+                          base::OnceClosure callback);
+#endif
+
   // Stops the worker thread since the client is done with this object.
   void StopWorker();
 
