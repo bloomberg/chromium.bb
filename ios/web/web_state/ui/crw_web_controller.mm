@@ -2051,9 +2051,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 
   [self restoreStateFromHistory];
-  // Placeholder navigation is implementation details so should not notify
-  // WebStateObservers.
-  if (!context || !IsPlaceholderUrl(context->GetUrl())) {
+  // Placeholder and restore session URLs are implementation details so should
+  // not notify WebStateObservers.
+  bool isInternalURL = context && (IsPlaceholderUrl(context->GetUrl()) ||
+                                   web::IsRestoreSessionUrl(context->GetUrl()));
+  if (!isInternalURL) {
     _webStateImpl->SetIsLoading(false);
     _webStateImpl->OnPageLoaded(currentURL, loadSuccess);
   }
