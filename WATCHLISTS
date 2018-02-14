@@ -1094,9 +1094,6 @@
     'mojo': {
       'filepath': 'mojo',
     },
-    'mojo_top_level_directory': {
-      'filepath': '^mojo/',
-    },
     'mus': {
       'filepath': 'services/ui/'\
                   '|mojo/gpu/',
@@ -1351,9 +1348,6 @@
     },
     'service_worker': {
       'filepath': 'content/(browser|renderer|child|common)/service_worker/',
-    },
-    'services_network': {
-      'filepath': 'services/network',
     },
     'services_public': {
       'filepath': 'services/([^/]*/)*public/',
@@ -2134,7 +2128,6 @@
              'darin@chromium.org',
              'qsr+mojo@chromium.org',
              'viettrungluu+watch@chromium.org'],
-    'mojo_top_level_directory': ['yzshen+watch@chromium.org'],
     'mus': ['rjkroege@chromium.org'],
     'nacl': ['native-client-reviews@googlegroups.com'],
     'native_client_sdk': ['binji+watch@chromium.org',
@@ -2233,7 +2226,6 @@
                        'serviceworker-reviews@chromium.org',
                        'shimazu+serviceworker@chromium.org',
                        'tzik@chromium.org'],
-    'services_network': ['yzshen+watch@chromium.org'],
     'services_public': ['blundell+services-watchlist@chromium.org'],
     'settings_reset_prompt': ['alito+watch@chromium.org'],
     'site_engagement': ['dominickn+watch@chromium.org'],
